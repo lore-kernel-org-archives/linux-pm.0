@@ -1,82 +1,85 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/3] pm: domains: factor out code to get the generic PM domain from a struct device
-Date: Tue, 24 Mar 2015 01:29:05 +0100
-Message-ID: <5429586.AxdftPXcBp@vostro.rjw.lan>
-References: <20150320171941.GK8656@n2100.arm.linux.org.uk> <CAPDyKFrpM0TYnNvAX8Jw6zUAekh0=XXMJyxWxSgKSao=TQf62Q@mail.gmail.com> <20150323151740.GR8656@n2100.arm.linux.org.uk>
+From: "Yeon, JeHyeon (Tom)" <Tom.Yeon@windriver.com>
+Subject: RE: [PATCH] PM / Hiberante : optimize swsusp_free()
+Date: Tue, 24 Mar 2015 00:50:38 +0000
+Message-ID: <D2D54504A8A67848B028EBEA66F47B9AB2A2786E@ALA-MBA.corp.ad.wrs.com>
+References: <1426753738-26747-1-git-send-email-tom.yeon@windriver.com>
+ <2492546.RHhDx1zacd@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62350 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753129AbbCXAFD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 20:05:03 -0400
-In-Reply-To: <20150323151740.GR8656@n2100.arm.linux.org.uk>
+Received: from mail1.windriver.com ([147.11.146.13]:36396 "EHLO
+	mail1.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751999AbbCXAuu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 20:50:50 -0400
+In-Reply-To: <2492546.RHhDx1zacd@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Tom(JeHyeon) Yeon" <tomyeon750415lkml@gmail.com>
+Cc: "pavel@ucw.cz" <pavel@ucw.cz>, "BROWN, A LEONARD" <len.brown@intel.com>, "jroedel@suse.de" <jroedel@suse.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Monday, March 23, 2015 03:17:40 PM Russell King - ARM Linux wrote:
-> On Mon, Mar 23, 2015 at 02:28:14PM +0100, Ulf Hansson wrote:
-> > On 20 March 2015 at 18:20, Russell King <rmk+kernel@arm.linux.org.uk> wrote:
-> > > The PM domain code contains two methods to get the generic PM domain
-> > > for a struct device.  One is dev_to_genpd() which is only safe when
-> > > we know for certain that the device has a generic PM domain attached.
-> > > The other is coded into genpd_dev_pm_detach() which ensures that the
-> > > PM domain in the struct device is a generic PM domain (and so is safer).
-> > >
-> > > This commit factors out the safer version, documents it, and hides the
-> > > unsafe dev_to_genpd().
-> > >
-> > > Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> > > ---
-> > >  drivers/base/power/domain.c | 46 +++++++++++++++++++++++++++++++--------------
-> > >  include/linux/pm_domain.h   |  6 +++---
-> > >  2 files changed, 35 insertions(+), 17 deletions(-)
-> > >
-> > > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> > > index b3fbc21da2dc..89d2eea7f561 100644
-> > > --- a/drivers/base/power/domain.c
-> > > +++ b/drivers/base/power/domain.c
-> > > @@ -68,7 +68,36 @@ static struct generic_pm_domain *pm_genpd_lookup_name(const char *domain_name)
-> > >         return genpd;
-> > >  }
-> > >
-> > > -struct generic_pm_domain *dev_to_genpd(struct device *dev)
-> > > +/*
-> > > + * Get the generic PM domain for a particular struct device.
-> > > + * This validates the struct device pointer, the PM domain pointer,
-> > > + * and checks that the PM domain pointer is a real generic PM domain.
-> > > + * Any failure results in NULL being returned.
-> > > + */
-> > > +struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev)
-> > 
-> > I wouldn't mind keeping also this function static, unless you foresee
-> > users outside genpd?
-> 
-> _I_ have users of it outside at the moment.
-> 
-> Once the major churn in PM domains is over and I have no use for this
-> externally, I'll consider making it static in my patch set - but all
-> the time that doing so results in breakage for me...
-> 
-> Plus, you're asking me to do yet another 20+ minute re-spin of this
-> patch set.  I'm going to refuse; I'm almost at the point of just not
-> giving a damn on this stuff, it's wasting too much of my time.
-> Especially as, yet again, you should have replied to the emails in the
-> previous round suggesting this change.
-> 
-> Rafael, please merge these three as we previously agreed.  Thanks.
-
-I said I would do that, didn't I?
-
-I've applied this series plus https://patchwork.kernel.org/patch/6056201/
-and https://patchwork.kernel.org/patch/6057441/ on top of that.
-
-Please let me know if you need anything more from the core.
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+SSdtIHNvcnJ5IG5vdCB0byBhbnN3ZXIgaXQuDQpJJ20gdG9vIGJ1c3kgbm93YWRheXMgb24gbXkg
+cHJvamVjdC4NClNvLCBJJ2xsIGFkZCBzb21lIGRldGFpbHMgbGF0ZXIuDQpUaGFuayB5b3UuDQoN
+Ci0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSBbbWFp
+bHRvOnJqd0Byand5c29ja2kubmV0XSANClNlbnQ6IFRodXJzZGF5LCBNYXJjaCAxOSwgMjAxNSA4
+OjM3IFBNDQpUbzogVG9tKEplSHllb24pIFllb24NCkNjOiBwYXZlbEB1Y3cuY3o7IEJST1dOLCBB
+IExFT05BUkQ7IGpyb2VkZWxAc3VzZS5kZTsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51
+eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBZZW9uLCBKZUh5ZW9uIChUb20pDQpTdWJqZWN0OiBS
+ZTogW1BBVENIXSBQTSAvIEhpYmVyYW50ZSA6IG9wdGltaXplIHN3c3VzcF9mcmVlKCkNCg0KT24g
+VGh1cnNkYXksIE1hcmNoIDE5LCAyMDE1IDA1OjI4OjU4IFBNIFRvbSBZZW9uIHdyb3RlOg0KPiBG
+cm9tOiAiVG9tKEplSHllb24pIFllb24iIDx0b20ueWVvbkB3aW5kcml2ZXIuY29tPg0KPiANCj4g
+SSB0ZXN0ZWQgdGhlIHBlcmZvcm1hbmNlIG9mIHN3c3VzcF9mcmVlIG9wZXJhdGlvbi4NCj4gVGhl
+IGZyZWUgdGltZSB0b29rIGFib3V0IDU4NzY4dXMgYmVmb3JlIGNvbW1pdCBmZGQ2NGVkLCBhbmQN
+Cj4gdGhlIGZyZWUgdGltZSB0b29rIGFib3V0IDQwNTM1dXMgYWZ0ZXIgdGhlIGNvbW1pdCBmZGQ2
+NGVkLg0KPiANCj4gQnV0LCBJIG9wdGltaXplZCB0aGUgZnVuY3Rpb24gYmVmb3JlIEkgc2F3IGNv
+bW1pdCBmZGQ2NGVkLg0KPiBTbywgSSBhcHBsaWVkIHRoZSBwYXRjaCBpbiBteSBzeXN0ZW0uKEFS
+TSBDb3JldGV4IEE5LCBEdWFsIENvcmUgMUdIeikNCj4gVGhlIGZyZWUgdGltZSB0b29rIGFib3V0
+IDM1MTY0dXMuDQo+IEkgdGhpbmsgdGhhdCB0aGUgZmluZGluZyByb3V0aW5lIGZvciB0aGUgc2Ft
+ZSBwZm4gaXMgcmVkdW5kYW50DQoNClRoaXMgY2hhbmdlbG9nIGluIHRvdGFsIHBhbnRzLCBzb3Jy
+eS4NCg0KUGxlYXNlIHdyaXRlIHdoYXQgdGhlIHBhdGNoIGlzIGRvaW5nIGFuZCB3aHkgaW5zdGVh
+ZCBvZiBkZXNjcmliaW5nDQp5b3VyIHRlc3RpbmcgZXhwZXJpZW5jZS4gIFRoZSBudW1iZXJzIGFy
+ZSB1c2VmdWwgdG9vLCBidXQgb25seSB0bw0Kc2hvdyB3aGF0IHRoZSBnYWluIGlzLCBhbmQgeW91
+IG5lZWQgdG8gZXhwbGFpbiB3aGF0IGlzIGNoYW5naW5nIGFuZA0Kd2h5Lg0KDQo+IFNpZ25lZC1v
+ZmYtYnk6IFRvbShKZUh5ZW9uKSBZZW9uIDx0b20ueWVvbkB3aW5kcml2ZXIuY29tPg0KPiAtLS0N
+Cj4gIGtlcm5lbC9wb3dlci9zbmFwc2hvdC5jIHwgICA0MyArKysrKysrKysrLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ICAxIGZpbGUgY2hhbmdlZCwgMTAgaW5zZXJ0aW9ucygr
+KSwgMzMgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEva2VybmVsL3Bvd2VyL3NuYXBz
+aG90LmMgYi9rZXJuZWwvcG93ZXIvc25hcHNob3QuYw0KPiBpbmRleCBjMjRkNWEyLi5hMWFkODAx
+IDEwMDY0NA0KPiAtLS0gYS9rZXJuZWwvcG93ZXIvc25hcHNob3QuYw0KPiArKysgYi9rZXJuZWwv
+cG93ZXIvc25hcHNob3QuYw0KPiBAQCAtNzI2LDE0ICs3MjYsNiBAQCBzdGF0aWMgdm9pZCBtZW1v
+cnlfYm1fY2xlYXJfYml0KHN0cnVjdCBtZW1vcnlfYml0bWFwICpibSwgdW5zaWduZWQgbG9uZyBw
+Zm4pDQo+ICAJY2xlYXJfYml0KGJpdCwgYWRkcik7DQo+ICB9DQo+ICANCj4gLXN0YXRpYyB2b2lk
+IG1lbW9yeV9ibV9jbGVhcl9jdXJyZW50KHN0cnVjdCBtZW1vcnlfYml0bWFwICpibSkNCj4gLXsN
+Cj4gLQlpbnQgYml0Ow0KPiAtDQo+IC0JYml0ID0gbWF4KGJtLT5jdXIubm9kZV9iaXQgLSAxLCAw
+KTsNCj4gLQljbGVhcl9iaXQoYml0LCBibS0+Y3VyLm5vZGUtPmRhdGEpOw0KPiAtfQ0KPiAtDQo+
+ICBzdGF0aWMgaW50IG1lbW9yeV9ibV90ZXN0X2JpdChzdHJ1Y3QgbWVtb3J5X2JpdG1hcCAqYm0s
+IHVuc2lnbmVkIGxvbmcgcGZuKQ0KPiAgew0KPiAgCXZvaWQgKmFkZHI7DQo+IEBAIC0xMzQyLDM2
+ICsxMzM0LDIxIEBAIHN0YXRpYyBzdHJ1Y3QgbWVtb3J5X2JpdG1hcCBjb3B5X2JtOw0KPiAgDQo+
+ICB2b2lkIHN3c3VzcF9mcmVlKHZvaWQpDQo+ICB7DQo+IC0JdW5zaWduZWQgbG9uZyBmYl9wZm4s
+IGZyX3BmbjsNCj4gKwl1bnNpZ25lZCBsb25nIHBmbjsNCj4gIA0KPiAgCWlmICghZm9yYmlkZGVu
+X3BhZ2VzX21hcCB8fCAhZnJlZV9wYWdlc19tYXApDQo+ICAJCWdvdG8gb3V0Ow0KPiAgDQo+ICAJ
+bWVtb3J5X2JtX3Bvc2l0aW9uX3Jlc2V0KGZvcmJpZGRlbl9wYWdlc19tYXApOw0KPiAtCW1lbW9y
+eV9ibV9wb3NpdGlvbl9yZXNldChmcmVlX3BhZ2VzX21hcCk7DQo+IC0NCj4gLWxvb3A6DQo+IC0J
+ZnJfcGZuID0gbWVtb3J5X2JtX25leHRfcGZuKGZyZWVfcGFnZXNfbWFwKTsNCj4gLQlmYl9wZm4g
+PSBtZW1vcnlfYm1fbmV4dF9wZm4oZm9yYmlkZGVuX3BhZ2VzX21hcCk7DQo+IC0NCj4gLQkvKg0K
+PiAtCSAqIEZpbmQgdGhlIG5leHQgYml0IHNldCBpbiBib3RoIGJpdG1hcHMuIFRoaXMgaXMgZ3Vh
+cmFudGVlZCB0bw0KPiAtCSAqIHRlcm1pbmF0ZSB3aGVuIGZiX3BmbiA9PSBmcl9wZm4gPT0gQk1f
+RU5EX09GX01BUC4NCj4gLQkgKi8NCj4gLQlkbyB7DQo+IC0JCWlmIChmYl9wZm4gPCBmcl9wZm4p
+DQo+IC0JCQlmYl9wZm4gPSBtZW1vcnlfYm1fbmV4dF9wZm4oZm9yYmlkZGVuX3BhZ2VzX21hcCk7
+DQo+IC0JCWlmIChmcl9wZm4gPCBmYl9wZm4pDQo+IC0JCQlmcl9wZm4gPSBtZW1vcnlfYm1fbmV4
+dF9wZm4oZnJlZV9wYWdlc19tYXApOw0KPiAtCX0gd2hpbGUgKGZiX3BmbiAhPSBmcl9wZm4pOw0K
+PiAtDQo+IC0JaWYgKGZyX3BmbiAhPSBCTV9FTkRfT0ZfTUFQICYmIHBmbl92YWxpZChmcl9wZm4p
+KSB7DQo+IC0JCXN0cnVjdCBwYWdlICpwYWdlID0gcGZuX3RvX3BhZ2UoZnJfcGZuKTsNCj4gLQ0K
+PiAtCQltZW1vcnlfYm1fY2xlYXJfY3VycmVudChmb3JiaWRkZW5fcGFnZXNfbWFwKTsNCj4gLQkJ
+bWVtb3J5X2JtX2NsZWFyX2N1cnJlbnQoZnJlZV9wYWdlc19tYXApOw0KPiAtCQlfX2ZyZWVfcGFn
+ZShwYWdlKTsNCj4gLQkJZ290byBsb29wOw0KPiArCWZvciAoIDsgOyApIHsNCj4gKwkJcGZuICA9
+IG1lbW9yeV9ibV9uZXh0X3Bmbihmb3JiaWRkZW5fcGFnZXNfbWFwKTsNCj4gKwkJaWYgKEJNX0VO
+RF9PRl9NQVAgPT0gcGZuKQ0KPiArCQkJYnJlYWs7DQo+ICsJCWlmIChtZW1vcnlfYm1fdGVzdF9i
+aXQoZnJlZV9wYWdlc19tYXAsIHBmbikpIHsNCg0KU28gd2h5IGV4YWN0bHkgaXNuJ3QgaXQgbmVj
+ZXNzYXJ5IHRvIGxvb2sgYXQgbWVtb3J5X2JtX25leHRfcGZuKGZvcmJpZGRlbl9wYWdlc19tYXAp
+Pw0KDQo+ICsJCQltZW1vcnlfYm1fY2xlYXJfYml0KGZvcmJpZGRlbl9wYWdlc19tYXAsIHBmbik7
+DQo+ICsJCQltZW1vcnlfYm1fY2xlYXJfYml0KGZyZWVfcGFnZXNfbWFwLCBwZm4pOw0KPiArCQkJ
+X19mcmVlX3BhZ2UocGZuX3RvX3BhZ2UocGZuKSk7DQo+ICsJCX0NCj4gIAl9DQo+ICANCj4gIG91
+dDoNCj4gDQoNCi0tIA0KSSBzcGVhayBvbmx5IGZvciBteXNlbGYuDQpSYWZhZWwgSi4gV3lzb2Nr
+aSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIuDQo=
