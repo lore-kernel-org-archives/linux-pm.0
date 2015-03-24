@@ -1,119 +1,59 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 2/2] ARM: cpuidle: Document the code
-Date: Tue, 24 Mar 2015 10:54:02 +0100
-Message-ID: <1427190842-30675-2-git-send-email-daniel.lezcano@linaro.org>
-References: <20150323225828.GC15435@e102568-lin.cambridge.arm.com>
- <1427190842-30675-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1427190842-30675-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: lorenzo.pieralisi@arm.com
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Catalin.Marinas@arm.com, robherring2@gmail.com, arnd@arndb.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lina.iyer@linaro.org, sboyd@codeaurora.org
+From: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [PATCH] HID: input: Fix NULL pointer dereference when
+ power_supply_register fails
+Date: Tue, 24 Mar 2015 12:02:41 +0100 (CET)
+Message-ID: <alpine.LNX.2.00.1503241200220.6781@pobox.suse.cz>
+References: <1427124891-30540-1-git-send-email-k.kozlowski@samsung.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <1427124891-30540-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Carpenter <dan.carpenter@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add kernel-doc format documentation in the code.
+On Mon, 23 Mar 2015, Krzysztof Kozlowski wrote:
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- arch/arm/kernel/cpuidle.c | 58 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 58 insertions(+)
+> Do not call power_supply_powers() if power_supply_register() failed
+> earlier. This fixes possible NULL pointer dereference by
+> power_supply_powers() in such case.
+> 
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> 
+> ---
+> 
+> The patch was prepared on top of next-20150323. It depends on changes in
+> power supply core (battery-2.6.git) so probably it should be applied to
+> the battery tree.
 
-diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
-index 2b0dae3..9219613 100644
---- a/arch/arm/kernel/cpuidle.c
-+++ b/arch/arm/kernel/cpuidle.c
-@@ -21,6 +21,17 @@ static const struct of_cpuidle_method __cpuidle_method_of_table_sentinel
- 
- static struct cpuidle_ops cpuidle_ops[NR_CPUS];
- 
-+/*
-+ * arm_cpuidle_simple_enter() - a wrapper to cpu_do_idle()
-+ * @dev: not used
-+ * @drv: not used
-+ * @index: not used
-+ *
-+ * A trivial wrapper to allow the cpu_do_idle function to be assigned as a
-+ * cpuidle callback by matching the function signature.
-+ *
-+ * Returns the index passed as parameter
-+ */
- int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
- 		struct cpuidle_driver *drv, int index)
- {
-@@ -29,6 +40,16 @@ int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
- 	return index;
- }
- 
-+/*
-+ * arm_cpuidle_suspend() - function to enter low power idle states
-+ * @index: an integer used as an identifier for the low level PM callbacks
-+ *
-+ * This function calls the underlying arch specific low level PM code as
-+ * registered at the init time.
-+ *
-+ * Returns -EOPNOTSUPP if no suspend callback is defined, the result of the
-+ * callback otherwise.
-+ */
- int arm_cpuidle_suspend(int index)
- {
- 	int ret = -EOPNOTSUPP;
-@@ -40,6 +61,15 @@ int arm_cpuidle_suspend(int index)
- 	return ret;
- }
- 
-+/*
-+ * arm_cpuidle_get_ops() - find a registered cpuidle_ops by name
-+ * @method: the method name
-+ *
-+ * Search in the __cpuidle_method_of_table array the cpuidle ops matching the
-+ * method name.
-+ *
-+ * Returns a struct cpuidle_ops pointer, NULL if not found.
-+ */
- static struct cpuidle_ops *__init arm_cpuidle_get_ops(const char *method)
- {
- 	struct of_cpuidle_method *m = __cpuidle_method_of_table;
-@@ -51,6 +81,19 @@ static struct cpuidle_ops *__init arm_cpuidle_get_ops(const char *method)
- 	return NULL;
- }
- 
-+/*
-+ * arm_cpuidle_read_ops() - Initialize the cpuidle ops with the device tree
-+ * @dn: a struct device node corresponding to a cpu node
-+ * @cpu: the cpu identifier
-+ *
-+ * Get the method name defined in the 'enabled-method' property, retrieve the
-+ * associated cpuidle_ops and do a struct copy. This copy is needed because all
-+ * cpuidle_ops are tagged __initdata and will be unloaded after the init
-+ * process.
-+ *
-+ * Return 0 on sucess, -ENOENT if no enabled-method is defined, -EOPNOTSUPP if
-+ * no cpuidle_ops is registered for the enabled-method.
-+ */
- static int __init arm_cpuidle_read_ops(struct device_node *dn, int cpu)
- {
- 	const char *enable_method;
-@@ -75,6 +118,21 @@ static int __init arm_cpuidle_read_ops(struct device_node *dn, int cpu)
- 	return 0;
- }
- 
-+/*
-+ * arm_cpuidle_init() - Initialize cpuidle_ops for a specific cpu
-+ * @cpu: the cpu to be initialized
-+ *
-+ * Initialize the cpuidle ops with the device for the cpu and then call
-+ * the cpu's idle initialization callback. This may fail if the underlying HW
-+ * is not operational.
-+ *
-+ * Returns:
-+ *  0 on success,
-+ *  -ENODEV if it fails to find the cpu node in the device tree,
-+ *  -EOPNOTSUPP if it does not find a registered cpuidle_ops for this cpu,
-+ *  -ENOENT if it fails to find a enabled-method property,
-+ *  -ENXIO if the HW reports a failure or a misconfiguration
-+ */
- int __init arm_cpuidle_init(int cpu)
- {
- 	struct device_node *cpu_node = of_cpu_device_node_get(cpu);
+Acked-by: Jiri Kosina <jkosina@suse.cz>
+
+for the merge through battery-2.6.git. Thanks.
+
+> ---
+>  drivers/hid/hid-input.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+> index a70fa4d7f8f9..008e89bf6f3c 100644
+> --- a/drivers/hid/hid-input.c
+> +++ b/drivers/hid/hid-input.c
+> @@ -452,10 +452,10 @@ static bool hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
+>  		kfree(psy_desc->name);
+>  		kfree(psy_desc);
+>  		dev->battery = NULL;
+> +	} else {
+> +		power_supply_powers(dev->battery, &dev->dev);
+>  	}
+>  
+> -	power_supply_powers(dev->battery, &dev->dev);
+> -
+>  out:
+>  	return true;
+>  }
+
 -- 
-1.9.1
+Jiri Kosina
+SUSE Labs
