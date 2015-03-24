@@ -1,85 +1,28 @@
-From: "Yeon, JeHyeon (Tom)" <Tom.Yeon@windriver.com>
-Subject: RE: [PATCH] PM / Hiberante : optimize swsusp_free()
-Date: Tue, 24 Mar 2015 00:50:38 +0000
-Message-ID: <D2D54504A8A67848B028EBEA66F47B9AB2A2786E@ALA-MBA.corp.ad.wrs.com>
-References: <1426753738-26747-1-git-send-email-tom.yeon@windriver.com>
- <2492546.RHhDx1zacd@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: exynos: allow build for !THERMAL or !CPU_THERMAL cases
+Date: Tue, 24 Mar 2015 07:55:59 +0530
+Message-ID: <CAKohponVdAy7OaMUDW4b1wAE7vyvf0Rha4PXPAXpvBVcyu3CGg@mail.gmail.com>
+References: <2275232.48muFcOOQv@amdc1032>
+	<CAKohpomXnpdLtMpnWeFWdGDCE4t8iEz5aDxA=PhTcR-UKjQM6A@mail.gmail.com>
+	<75115513.B5dLcdQ7nU@amdc1032>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.windriver.com ([147.11.146.13]:36396 "EHLO
-	mail1.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751999AbbCXAuu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 20:50:50 -0400
-In-Reply-To: <2492546.RHhDx1zacd@vostro.rjw.lan>
-Content-Language: en-US
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:33875 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752281AbbCXCZ7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Mar 2015 22:25:59 -0400
+Received: by obbgg8 with SMTP id gg8so137543810obb.1
+        for <linux-pm@vger.kernel.org>; Mon, 23 Mar 2015 19:25:59 -0700 (PDT)
+In-Reply-To: <75115513.B5dLcdQ7nU@amdc1032>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Tom(JeHyeon) Yeon" <tomyeon750415lkml@gmail.com>
-Cc: "pavel@ucw.cz" <pavel@ucw.cz>, "BROWN, A LEONARD" <len.brown@intel.com>, "jroedel@suse.de" <jroedel@suse.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Kukjin Kim <kgene@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-SSdtIHNvcnJ5IG5vdCB0byBhbnN3ZXIgaXQuDQpJJ20gdG9vIGJ1c3kgbm93YWRheXMgb24gbXkg
-cHJvamVjdC4NClNvLCBJJ2xsIGFkZCBzb21lIGRldGFpbHMgbGF0ZXIuDQpUaGFuayB5b3UuDQoN
-Ci0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSBbbWFp
-bHRvOnJqd0Byand5c29ja2kubmV0XSANClNlbnQ6IFRodXJzZGF5LCBNYXJjaCAxOSwgMjAxNSA4
-OjM3IFBNDQpUbzogVG9tKEplSHllb24pIFllb24NCkNjOiBwYXZlbEB1Y3cuY3o7IEJST1dOLCBB
-IExFT05BUkQ7IGpyb2VkZWxAc3VzZS5kZTsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51
-eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBZZW9uLCBKZUh5ZW9uIChUb20pDQpTdWJqZWN0OiBS
-ZTogW1BBVENIXSBQTSAvIEhpYmVyYW50ZSA6IG9wdGltaXplIHN3c3VzcF9mcmVlKCkNCg0KT24g
-VGh1cnNkYXksIE1hcmNoIDE5LCAyMDE1IDA1OjI4OjU4IFBNIFRvbSBZZW9uIHdyb3RlOg0KPiBG
-cm9tOiAiVG9tKEplSHllb24pIFllb24iIDx0b20ueWVvbkB3aW5kcml2ZXIuY29tPg0KPiANCj4g
-SSB0ZXN0ZWQgdGhlIHBlcmZvcm1hbmNlIG9mIHN3c3VzcF9mcmVlIG9wZXJhdGlvbi4NCj4gVGhl
-IGZyZWUgdGltZSB0b29rIGFib3V0IDU4NzY4dXMgYmVmb3JlIGNvbW1pdCBmZGQ2NGVkLCBhbmQN
-Cj4gdGhlIGZyZWUgdGltZSB0b29rIGFib3V0IDQwNTM1dXMgYWZ0ZXIgdGhlIGNvbW1pdCBmZGQ2
-NGVkLg0KPiANCj4gQnV0LCBJIG9wdGltaXplZCB0aGUgZnVuY3Rpb24gYmVmb3JlIEkgc2F3IGNv
-bW1pdCBmZGQ2NGVkLg0KPiBTbywgSSBhcHBsaWVkIHRoZSBwYXRjaCBpbiBteSBzeXN0ZW0uKEFS
-TSBDb3JldGV4IEE5LCBEdWFsIENvcmUgMUdIeikNCj4gVGhlIGZyZWUgdGltZSB0b29rIGFib3V0
-IDM1MTY0dXMuDQo+IEkgdGhpbmsgdGhhdCB0aGUgZmluZGluZyByb3V0aW5lIGZvciB0aGUgc2Ft
-ZSBwZm4gaXMgcmVkdW5kYW50DQoNClRoaXMgY2hhbmdlbG9nIGluIHRvdGFsIHBhbnRzLCBzb3Jy
-eS4NCg0KUGxlYXNlIHdyaXRlIHdoYXQgdGhlIHBhdGNoIGlzIGRvaW5nIGFuZCB3aHkgaW5zdGVh
-ZCBvZiBkZXNjcmliaW5nDQp5b3VyIHRlc3RpbmcgZXhwZXJpZW5jZS4gIFRoZSBudW1iZXJzIGFy
-ZSB1c2VmdWwgdG9vLCBidXQgb25seSB0bw0Kc2hvdyB3aGF0IHRoZSBnYWluIGlzLCBhbmQgeW91
-IG5lZWQgdG8gZXhwbGFpbiB3aGF0IGlzIGNoYW5naW5nIGFuZA0Kd2h5Lg0KDQo+IFNpZ25lZC1v
-ZmYtYnk6IFRvbShKZUh5ZW9uKSBZZW9uIDx0b20ueWVvbkB3aW5kcml2ZXIuY29tPg0KPiAtLS0N
-Cj4gIGtlcm5lbC9wb3dlci9zbmFwc2hvdC5jIHwgICA0MyArKysrKysrKysrLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ICAxIGZpbGUgY2hhbmdlZCwgMTAgaW5zZXJ0aW9ucygr
-KSwgMzMgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEva2VybmVsL3Bvd2VyL3NuYXBz
-aG90LmMgYi9rZXJuZWwvcG93ZXIvc25hcHNob3QuYw0KPiBpbmRleCBjMjRkNWEyLi5hMWFkODAx
-IDEwMDY0NA0KPiAtLS0gYS9rZXJuZWwvcG93ZXIvc25hcHNob3QuYw0KPiArKysgYi9rZXJuZWwv
-cG93ZXIvc25hcHNob3QuYw0KPiBAQCAtNzI2LDE0ICs3MjYsNiBAQCBzdGF0aWMgdm9pZCBtZW1v
-cnlfYm1fY2xlYXJfYml0KHN0cnVjdCBtZW1vcnlfYml0bWFwICpibSwgdW5zaWduZWQgbG9uZyBw
-Zm4pDQo+ICAJY2xlYXJfYml0KGJpdCwgYWRkcik7DQo+ICB9DQo+ICANCj4gLXN0YXRpYyB2b2lk
-IG1lbW9yeV9ibV9jbGVhcl9jdXJyZW50KHN0cnVjdCBtZW1vcnlfYml0bWFwICpibSkNCj4gLXsN
-Cj4gLQlpbnQgYml0Ow0KPiAtDQo+IC0JYml0ID0gbWF4KGJtLT5jdXIubm9kZV9iaXQgLSAxLCAw
-KTsNCj4gLQljbGVhcl9iaXQoYml0LCBibS0+Y3VyLm5vZGUtPmRhdGEpOw0KPiAtfQ0KPiAtDQo+
-ICBzdGF0aWMgaW50IG1lbW9yeV9ibV90ZXN0X2JpdChzdHJ1Y3QgbWVtb3J5X2JpdG1hcCAqYm0s
-IHVuc2lnbmVkIGxvbmcgcGZuKQ0KPiAgew0KPiAgCXZvaWQgKmFkZHI7DQo+IEBAIC0xMzQyLDM2
-ICsxMzM0LDIxIEBAIHN0YXRpYyBzdHJ1Y3QgbWVtb3J5X2JpdG1hcCBjb3B5X2JtOw0KPiAgDQo+
-ICB2b2lkIHN3c3VzcF9mcmVlKHZvaWQpDQo+ICB7DQo+IC0JdW5zaWduZWQgbG9uZyBmYl9wZm4s
-IGZyX3BmbjsNCj4gKwl1bnNpZ25lZCBsb25nIHBmbjsNCj4gIA0KPiAgCWlmICghZm9yYmlkZGVu
-X3BhZ2VzX21hcCB8fCAhZnJlZV9wYWdlc19tYXApDQo+ICAJCWdvdG8gb3V0Ow0KPiAgDQo+ICAJ
-bWVtb3J5X2JtX3Bvc2l0aW9uX3Jlc2V0KGZvcmJpZGRlbl9wYWdlc19tYXApOw0KPiAtCW1lbW9y
-eV9ibV9wb3NpdGlvbl9yZXNldChmcmVlX3BhZ2VzX21hcCk7DQo+IC0NCj4gLWxvb3A6DQo+IC0J
-ZnJfcGZuID0gbWVtb3J5X2JtX25leHRfcGZuKGZyZWVfcGFnZXNfbWFwKTsNCj4gLQlmYl9wZm4g
-PSBtZW1vcnlfYm1fbmV4dF9wZm4oZm9yYmlkZGVuX3BhZ2VzX21hcCk7DQo+IC0NCj4gLQkvKg0K
-PiAtCSAqIEZpbmQgdGhlIG5leHQgYml0IHNldCBpbiBib3RoIGJpdG1hcHMuIFRoaXMgaXMgZ3Vh
-cmFudGVlZCB0bw0KPiAtCSAqIHRlcm1pbmF0ZSB3aGVuIGZiX3BmbiA9PSBmcl9wZm4gPT0gQk1f
-RU5EX09GX01BUC4NCj4gLQkgKi8NCj4gLQlkbyB7DQo+IC0JCWlmIChmYl9wZm4gPCBmcl9wZm4p
-DQo+IC0JCQlmYl9wZm4gPSBtZW1vcnlfYm1fbmV4dF9wZm4oZm9yYmlkZGVuX3BhZ2VzX21hcCk7
-DQo+IC0JCWlmIChmcl9wZm4gPCBmYl9wZm4pDQo+IC0JCQlmcl9wZm4gPSBtZW1vcnlfYm1fbmV4
-dF9wZm4oZnJlZV9wYWdlc19tYXApOw0KPiAtCX0gd2hpbGUgKGZiX3BmbiAhPSBmcl9wZm4pOw0K
-PiAtDQo+IC0JaWYgKGZyX3BmbiAhPSBCTV9FTkRfT0ZfTUFQICYmIHBmbl92YWxpZChmcl9wZm4p
-KSB7DQo+IC0JCXN0cnVjdCBwYWdlICpwYWdlID0gcGZuX3RvX3BhZ2UoZnJfcGZuKTsNCj4gLQ0K
-PiAtCQltZW1vcnlfYm1fY2xlYXJfY3VycmVudChmb3JiaWRkZW5fcGFnZXNfbWFwKTsNCj4gLQkJ
-bWVtb3J5X2JtX2NsZWFyX2N1cnJlbnQoZnJlZV9wYWdlc19tYXApOw0KPiAtCQlfX2ZyZWVfcGFn
-ZShwYWdlKTsNCj4gLQkJZ290byBsb29wOw0KPiArCWZvciAoIDsgOyApIHsNCj4gKwkJcGZuICA9
-IG1lbW9yeV9ibV9uZXh0X3Bmbihmb3JiaWRkZW5fcGFnZXNfbWFwKTsNCj4gKwkJaWYgKEJNX0VO
-RF9PRl9NQVAgPT0gcGZuKQ0KPiArCQkJYnJlYWs7DQo+ICsJCWlmIChtZW1vcnlfYm1fdGVzdF9i
-aXQoZnJlZV9wYWdlc19tYXAsIHBmbikpIHsNCg0KU28gd2h5IGV4YWN0bHkgaXNuJ3QgaXQgbmVj
-ZXNzYXJ5IHRvIGxvb2sgYXQgbWVtb3J5X2JtX25leHRfcGZuKGZvcmJpZGRlbl9wYWdlc19tYXAp
-Pw0KDQo+ICsJCQltZW1vcnlfYm1fY2xlYXJfYml0KGZvcmJpZGRlbl9wYWdlc19tYXAsIHBmbik7
-DQo+ICsJCQltZW1vcnlfYm1fY2xlYXJfYml0KGZyZWVfcGFnZXNfbWFwLCBwZm4pOw0KPiArCQkJ
-X19mcmVlX3BhZ2UocGZuX3RvX3BhZ2UocGZuKSk7DQo+ICsJCX0NCj4gIAl9DQo+ICANCj4gIG91
-dDoNCj4gDQoNCi0tIA0KSSBzcGVhayBvbmx5IGZvciBteXNlbGYuDQpSYWZhZWwgSi4gV3lzb2Nr
-aSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIuDQo=
+On 23 March 2015 at 22:13, Bartlomiej Zolnierkiewicz
+<b.zolnierkie@samsung.com> wrote:
+> Would you pick this patch up or should I resend it to Rafael?
+
+Please resend it to Rafael and cc me and linux-pm list.. Also add my
+Ack to it.
