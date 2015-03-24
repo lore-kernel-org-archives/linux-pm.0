@@ -1,138 +1,82 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH 2/3] Thermal: handle thermal zone device properly during
- system sleep
-Date: Tue, 24 Mar 2015 16:39:15 +0000
-Message-ID: <20150324163915.GA1824@e104805>
-References: <1427174490-7974-1-git-send-email-rui.zhang@intel.com>
- <1427174490-7974-3-git-send-email-rui.zhang@intel.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 5/7] ARM: dts: enable regulator support for i.MX23/i.MX28
+Date: Tue, 24 Mar 2015 10:01:13 -0700
+Message-ID: <20150324170113.GO17265@sirena.org.uk>
+References: <1426984203-9133-1-git-send-email-stefan.wahren@i2se.com>
+ <1426984203-9133-6-git-send-email-stefan.wahren@i2se.com>
+ <20150323060706.GB4946@pengutronix.de>
+ <1469391177.549604.1427133274978.JavaMail.open-xchange@oxbaltgw02.schlund.de>
+ <20150323183740.GI14954@sirena.org.uk> <55110813.7010708@i2se.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <1427174490-7974-3-git-send-email-rui.zhang@intel.com>
-Content-Disposition: inline
-Sender: stable-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
+Content-Type: multipart/mixed; boundary="===============5784214920177159485=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <55110813.7010708@i2se.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Stefan Wahren <stefan.wahren@i2se.com>
+Cc: fabio.estevam@freescale.com, mark.rutland@arm.com, marex@denx.de, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, dbaryshkov@gmail.com, viresh.kumar@linaro.org, Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, rjw@rjwysocki.net, lgirdwood@gmail.com, sre@kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, kernel@pengutronix.de, galak@codeaurora.org, sebastien.szymanski@armadeus.com, shawn.guo@linaro.org, dwmw2@infradead.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-One minor nit
 
-On Tue, Mar 24, 2015 at 05:21:29AM +0000, Zhang Rui wrote:
-> Current thermal code does not handle system sleep well because
-> 1. the cooling device cooling state may be changed during suspend
-> 2. the previous temperature reading becomes invalid after resumed because
->    it is got before system sleep
-> 3. updating thermal zone device during suspending/resuming
->    is wrong because some devices may have already been suspended
->    or may have not been resumed.
-> 
-> Thus, the proper way to do this is to cancel all thermal zone
-> device update requirements during suspend/resume, and after all
-> the devices have been resumed, reset and update every registered
-> thermal zone devices.
-> 
-> This also fixes a regression introduced by
-> commit 19593a1fb1f6718406afca5b867dab184289d406
-> Author: Aaron Lu <aaron.lu@intel.com>
-> Date:   Tue Nov 19 16:59:20 2013 +0800
-> 
->     ACPI / fan: convert to platform driver
-> 
->     Convert ACPI fan driver to a platform driver for the purpose of phasing
->     out ACPI bus.
-> 
->     Signed-off-by: Aaron Lu <aaron.lu@intel.com>
->     Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> 
-> Because, with the commit applied, all the fan devices are attached
-> to the acpi_general_pm_domain, and they are turned on by the pm_domain
-> automatically after resume, without the awareness of thermal core.
-> 
-> CC: <stable@vger.kernel.org> #3.18+
-> Reference: https://bugzilla.kernel.org/show_bug.cgi?id=78201
-> Reference: https://bugzilla.kernel.org/show_bug.cgi?id=91411
-> Tested-by: Manuel Krause <manuelkrause@netscape.net>
-> Tested-by: szegad <szegadlo@poczta.onet.pl>
-> Tested-by: prash <prash.n.rao@gmail.com>
-> Tested-by: amish <ammdispose-arch@yahoo.com>
-> Tested-by: Matthias <morpheusxyz123@yahoo.de>
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> ---
->  drivers/thermal/thermal_core.c | 37 +++++++++++++++++++++++++++++++++++++
->  1 file changed, 37 insertions(+)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 9d6f71b..9c03561 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -37,6 +37,7 @@
->  #include <linux/of.h>
->  #include <net/netlink.h>
->  #include <net/genetlink.h>
-> +#include <linux/suspend.h>
->  
->  #define CREATE_TRACE_POINTS
->  #include <trace/events/thermal.h>
-> @@ -59,6 +60,9 @@ static LIST_HEAD(thermal_governor_list);
->  static DEFINE_MUTEX(thermal_list_lock);
->  static DEFINE_MUTEX(thermal_governor_lock);
->  
-> +static struct notifier_block thermal_pm_nb;
-> +static bool no_thermal_update;
+--===============5784214920177159485==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="jozmn01XJZjDjM3N"
+Content-Disposition: inline
 
-Can this have a name without a negative?  It's a bit hard to read
-the double-negative in "no_thermal_update = false".  Maybe
-"in_suspend" is better?
 
-Cheers,
-Javi
+--jozmn01XJZjDjM3N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> +
->  static struct thermal_governor *def_governor;
->  
->  static struct thermal_governor *__find_governor(const char *name)
-> @@ -491,6 +495,9 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
->  {
->  	int count;
->  
-> +	if (no_thermal_update)
-> +		return;
-> +
->  	if (!tz->ops->get_temp)
->  		return;
->  
-> @@ -1823,6 +1830,33 @@ static void thermal_unregister_governors(void)
->  	thermal_gov_user_space_unregister();
->  }
->  
-> +static int thermal_notify(struct notifier_block *nb,
-> +				unsigned long mode, void *_unused)
-> +{
-> +	struct thermal_zone_device *tz;
-> +
-> +	switch (mode) {
-> +	case PM_HIBERNATION_PREPARE:
-> +	case PM_RESTORE_PREPARE:
-> +	case PM_SUSPEND_PREPARE:
-> +		no_thermal_update = true;
-> +		break;
-> +	case PM_POST_HIBERNATION:
-> +	case PM_POST_RESTORE:
-> +	case PM_POST_SUSPEND:
-> +		no_thermal_update = false;
-> +		list_for_each_entry(tz, &thermal_tz_list, node) {
-> +			thermal_zone_device_reset(tz);
-> +			thermal_zone_device_update(tz);
-> +		}
-> +		break;
-> +	default:
-> +		break;
-> +	}
-> +	return 0;
-> +}
-> +
-> +
->  static int __init thermal_init(void)
->  {
->  	int result;
+On Tue, Mar 24, 2015 at 07:45:39AM +0100, Stefan Wahren wrote:
+> Am 23.03.2015 um 19:37 schrieb Mark Brown:
+
+> > This might be the sort of thing normally handled by a system controller,
+> > I have to say I had assumed this had all been discussed in the previous
+> > iterations of this seriee.
+
+> sorry, but i missed this important fact.
+
+> If you speak of system controller, do you mean the usage of
+> drivers/mfd/syscon.c ?
+
+Yes.
+
+--jozmn01XJZjDjM3N
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJVEZhYAAoJECTWi3JdVIfQvcwH+QFCd7pZyEIoNm6PX7a1fADG
+OO/gKNZjlegdPIhtha/6u5pGCdwXs6v0PNHT4NDCFLJlKDgCHSxKKbN8aA7x3FVW
+ZFNpva9VMZ08llrExAth7n0ptKHbfhUxrnDSSKmCHkYLbb2H8cJ/wY6QIv8Ltou3
+ZKlr/eQUG0VncwM8Scp4tkdVN1AXlpmehRy/H/IvOAQBOPhW4f0uJdeI//iprIHA
+8gSyV75O3wLJgUeSuguIGvO1x2BbQW8yXRB1z/c+ZYn5ZGV34wNuZLJteHwhXbsw
+bTLcteRDpuargfziJrj4srm49qIzxpCO/LIjqnoMuA50LBAy0GpQGlChvicyKXw=
+=ZnWV
+-----END PGP SIGNATURE-----
+
+--jozmn01XJZjDjM3N--
+
+
+--===============5784214920177159485==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============5784214920177159485==--
