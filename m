@@ -1,115 +1,91 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 3/3] Thermal: do thermal zone update after a cooling
- device registered
-Date: Tue, 24 Mar 2015 11:12:50 -0400
-Message-ID: <20150324151249.GD29155@developer.hsd1.ca.comcast.net>
-References: <1427174490-7974-1-git-send-email-rui.zhang@intel.com>
- <1427174490-7974-4-git-send-email-rui.zhang@intel.com>
+Subject: Re: [PATCHv2] ti-soc-thermal: request temperature periodically if hw
+ can't do that itself
+Date: Tue, 24 Mar 2015 12:30:34 -0400
+Message-ID: <20150324163032.GA13813@developer.hsd1.ca.comcast.net>
+References: <20150103114632.GA21883@amd>
+ <20150118202447.GA29014@amd>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="n/aVsWSeQ4JHkrmm"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:33229 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752096AbbCXPMX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Mar 2015 11:12:23 -0400
+	protocol="application/pgp-signature"; boundary="yrj/dFKFPuw6o+aM"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1427174490-7974-4-git-send-email-rui.zhang@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20150118202447.GA29014@amd>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: pali.rohar@gmail.com, sre@debian.org, sre@ring0.de, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com, rui.zhang@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org, stable@vger.kernel.org
 
 
---n/aVsWSeQ4JHkrmm
+--yrj/dFKFPuw6o+aM
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Sun, Jan 18, 2015 at 09:24:47PM +0100, Pavel Machek wrote:
+>=20
+> When periodic mode is not enabled, it is neccessary to force reads.
+>=20
+> Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-On Tue, Mar 24, 2015 at 01:21:30PM +0800, Zhang Rui wrote:
-> When a new cooling device is registered, we need to update the
-> thermal zone to set the new registered cooling device to a proper
-> state.
+This is a malformed patch. here is patch output (or git am)
+patching file drivers/thermal/ti-soc-thermal/ti-bandgap.c
+patch: **** malformed patch at line 68: (english)
+http://www.livejournal.com/~pavelmachek
+
+
+I would really recommend you to use git to send your patches to avoid
+such problems. Can you please resend this patch in its proper format?
+
+
 >=20
-> This fixes a problem that the system is cool, while the fan devices are l=
-eft
-> running on full speed after boot, if fan device is registered after
-> thermal zone device.
->=20
-> CC: <stable@vger.kernel.org> #3.18+
-> Reference:https://bugzilla.kernel.org/show_bug.cgi?id=3D92431
-> Tested-by: Manuel Krause <manuelkrause@netscape.net>
-> Tested-by: szegad <szegadlo@poczta.onet.pl>
-> Tested-by: prash <prash.n.rao@gmail.com>
-> Tested-by: amish <ammdispose-arch@yahoo.com>
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> ---
->  drivers/thermal/thermal_core.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
->=20
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
-e.c
-> index 9c03561..7cef579 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1141,6 +1141,7 @@ __thermal_cooling_device_register(struct device_nod=
-e *np,
->  				  const struct thermal_cooling_device_ops *ops)
->  {
->  	struct thermal_cooling_device *cdev;
-> +	struct thermal_instance *pos, *next;
->  	int result;
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/therma=
+l/ti-soc-thermal/ti-bandgap.c
+> index 634b6ce..2fde78c 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> @@ -43,6 +43,8 @@
 > =20
->  	if (type && strlen(type) >=3D THERMAL_NAME_LENGTH)
-> @@ -1185,6 +1186,15 @@ __thermal_cooling_device_register(struct device_no=
-de *np,
->  	/* Update binding information for 'this' new cdev */
->  	bind_cdev(cdev);
+>  #include "ti-bandgap.h"
 > =20
-> +	list_for_each_entry_safe(pos, next, &cdev->thermal_instances, cdev_node=
-) {
-> +			if (next->cdev_node.next =3D=3D &cdev->thermal_instances) {
-> +				thermal_zone_device_update(next->tz);
-> +				break;
-> +			}
-> +			if (pos->tz !=3D next->tz)
-> +				thermal_zone_device_update(pos->tz);
-
-Shouldn't we simply trigger a thermal_zone_device_update(pos->tz) ? I
-mean, we are adding a new cooling device to the zone, so, it might make
-sense to update it anyway.
-
-> +	}
-
-
+> +static int ti_bandgap_force_single_read(struct ti_bandgap *bgp, int id);
 > +
->  	return cdev;
->  }
+>  /***   Helper functions to access registers and their bitfields   ***/
 > =20
-> --=20
-> 1.9.1
+>  /**
+> @@ -852,14 +831,21 @@ int ti_bandgap_read_temperature(struct ti_bandgap *=
+bgp, int id,
+>  	if (ret)
+>  		return ret;
+> =20
+> +	if (!TI_BANDGAP_HAS(bgp, MODE_CONFIG)) {
+> +		ret =3D ti_bandgap_force_single_read(bgp, id);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +
+>  	spin_lock(&bgp->lock);
+>  	temp =3D ti_bandgap_read_temp(bgp, id);
 >=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> --=20
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
+log.html
 
---n/aVsWSeQ4JHkrmm
+--yrj/dFKFPuw6o+aM
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBAgAGBQJVEX7xAAoJEMLUO4d9pOJW20QH+wfS2A2aQSo8cwXiW2Rrnhck
-XVX0r5x2GnchG0l3CGa8CEWJUigPBuL9eH34D7gSZuj1wE68vGQh2v4Jiy8DY8yK
-Gc464trGdVSMNn6lET+Gyswm7JIIZkDfeaX1m4Bkb2QS6DJyd4DYdgNs12Lnu3OV
-wadKPbpA1jgsmaiEI9pyRw9KMvvonXA4Yi/v86XTiBet+wdbMX187iGJmDU4cFOU
-J3jIEEScTiUWX6BuTGI+eR6O4H6phUv4mp7EVDXKP4xz69grqxcK/q2QQ+LazC5G
-xb30Z7ODL93O0fNDJqOd00+i6WsG9G2gyQC6VoC+u396nsnJsQp+q9n+v5a5gIY=
-=GXQg
+iQEcBAEBAgAGBQJVEZEoAAoJEMLUO4d9pOJWZBEH/RO08iOBFZT3xGZ6J4rWD46K
+GtKiiW4LYsDUjUytNLriWW20AHOirz87v9e6PBTaPDrhoFRbXuEos0wiRQEY9NtQ
+KVdgInsw3X/EDx6rCS6QN/BAJrN2N+0aNrG/dTr5DqggoY9onjIiOawnkOwf3MzN
+GYyaQRvahz/UZP0sjOebpymwc0eRdPRBC+VTJnnaozXuOdFXvcHKfemHcOvwsYwC
+STmBApQQENWiBJNALIozpRtJHaHLTW0A4kHpVzEz2LXkVvQMBajL+vDe7iul8//k
+bfL2zhPdZfijTH9bHJBtHl85qJlzKMu6RKtMXp1P2R+mr843/4e6MNaO0dKPNxA=
+=Uzz3
 -----END PGP SIGNATURE-----
 
---n/aVsWSeQ4JHkrmm--
+--yrj/dFKFPuw6o+aM--
