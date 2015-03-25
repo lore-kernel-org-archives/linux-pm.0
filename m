@@ -1,103 +1,100 @@
 From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [PATCH 3/3] Thermal: do thermal zone update after a cooling
- device registered
-Date: Wed, 25 Mar 2015 02:27:31 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B909263014BA9AD@SHSMSX101.ccr.corp.intel.com>
+Subject: RE: [PATCH 2/3] Thermal: handle thermal zone device properly during
+ system sleep
+Date: Wed, 25 Mar 2015 02:28:16 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B909263014BA9C1@SHSMSX101.ccr.corp.intel.com>
 References: <1427174490-7974-1-git-send-email-rui.zhang@intel.com>
- <1427174490-7974-4-git-send-email-rui.zhang@intel.com>
- <20150324151249.GD29155@developer.hsd1.ca.comcast.net>
+ <1427174490-7974-3-git-send-email-rui.zhang@intel.com>
+ <20150324163915.GA1824@e104805>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20150324151249.GD29155@developer.hsd1.ca.comcast.net>
+In-Reply-To: <20150324163915.GA1824@e104805>
 Content-Language: en-US
 Sender: stable-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
+To: Javi Merino <javi.merino@arm.com>
 Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Eduardo Valentin
-> Sent: Tuesday, March 24, 2015 11:13 PM
-> To: Zhang, Rui
-> Cc: linux-pm@vger.kernel.org; stable@vger.kernel.org
-> Subject: Re: [PATCH 3/3] Thermal: do thermal zone update after a cooling
-> device registered
-> Importance: High
-> 
-> Hi,
-> 
-> On Tue, Mar 24, 2015 at 01:21:30PM +0800, Zhang Rui wrote:
-> > When a new cooling device is registered, we need to update the thermal
-> > zone to set the new registered cooling device to a proper state.
-> >
-> > This fixes a problem that the system is cool, while the fan devices
-> > are left running on full speed after boot, if fan device is registered
-> > after thermal zone device.
-> >
-> > CC: <stable@vger.kernel.org> #3.18+
-> > Reference:https://bugzilla.kernel.org/show_bug.cgi?id=92431
-> > Tested-by: Manuel Krause <manuelkrause@netscape.net>
-> > Tested-by: szegad <szegadlo@poczta.onet.pl>
-> > Tested-by: prash <prash.n.rao@gmail.com>
-> > Tested-by: amish <ammdispose-arch@yahoo.com>
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > ---
-> >  drivers/thermal/thermal_core.c | 10 ++++++++++
-> >  1 file changed, 10 insertions(+)
-> >
-> > diff --git a/drivers/thermal/thermal_core.c
-> > b/drivers/thermal/thermal_core.c index 9c03561..7cef579 100644
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> > @@ -1141,6 +1141,7 @@ __thermal_cooling_device_register(struct
-> device_node *np,
-> >  				  const struct thermal_cooling_device_ops *ops)
-> {
-> >  	struct thermal_cooling_device *cdev;
-> > +	struct thermal_instance *pos, *next;
-> >  	int result;
-> >
-> >  	if (type && strlen(type) >= THERMAL_NAME_LENGTH) @@ -1185,6
-> +1186,15
-> > @@ __thermal_cooling_device_register(struct device_node *np,
-> >  	/* Update binding information for 'this' new cdev */
-> >  	bind_cdev(cdev);
-> >
-> > +	list_for_each_entry_safe(pos, next, &cdev->thermal_instances,
-> cdev_node) {
-> > +			if (next->cdev_node.next == &cdev->thermal_instances)
-> {
-> > +				thermal_zone_device_update(next->tz);
-> > +				break;
-> > +			}
-> > +			if (pos->tz != next->tz)
-> > +				thermal_zone_device_update(pos->tz);
-> 
-> Shouldn't we simply trigger a thermal_zone_device_update(pos->tz) ? I mean,
-> we are adding a new cooling device to the zone, so, it might make sense to
-> update it anyway.
-> 
-We may have a couple of themal instances for the same cdev and thermal zone, but for different trips.
-And the code above ignore the duplicate thermal_zone_device_update() for the same thermal zone.
-
-Thanks,
-rui
-> > +	}
-> 
-> 
-> > +
-> >  	return cdev;
-> >  }
-> >
-> > --
-> > 1.9.1
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> > the body of a message to majordomo@vger.kernel.org More majordomo info
-> > at  http://vger.kernel.org/majordomo-info.html
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogSmF2aSBNZXJpbm8gW21h
+aWx0bzpqYXZpLm1lcmlub0Bhcm0uY29tXQ0KPiBTZW50OiBXZWRuZXNkYXksIE1hcmNoIDI1LCAy
+MDE1IDEyOjM5IEFNDQo+IFRvOiBaaGFuZywgUnVpDQo+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5l
+bC5vcmc7IHN0YWJsZUB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzNd
+IFRoZXJtYWw6IGhhbmRsZSB0aGVybWFsIHpvbmUgZGV2aWNlIHByb3Blcmx5IGR1cmluZw0KPiBz
+eXN0ZW0gc2xlZXANCj4gSW1wb3J0YW5jZTogSGlnaA0KPiANCj4gT25lIG1pbm9yIG5pdA0KPiAN
+Cj4gT24gVHVlLCBNYXIgMjQsIDIwMTUgYXQgMDU6MjE6MjlBTSArMDAwMCwgWmhhbmcgUnVpIHdy
+b3RlOg0KPiA+IEN1cnJlbnQgdGhlcm1hbCBjb2RlIGRvZXMgbm90IGhhbmRsZSBzeXN0ZW0gc2xl
+ZXAgd2VsbCBiZWNhdXNlIDEuIHRoZQ0KPiA+IGNvb2xpbmcgZGV2aWNlIGNvb2xpbmcgc3RhdGUg
+bWF5IGJlIGNoYW5nZWQgZHVyaW5nIHN1c3BlbmQgMi4gdGhlDQo+ID4gcHJldmlvdXMgdGVtcGVy
+YXR1cmUgcmVhZGluZyBiZWNvbWVzIGludmFsaWQgYWZ0ZXIgcmVzdW1lZCBiZWNhdXNlDQo+ID4g
+ICAgaXQgaXMgZ290IGJlZm9yZSBzeXN0ZW0gc2xlZXANCj4gPiAzLiB1cGRhdGluZyB0aGVybWFs
+IHpvbmUgZGV2aWNlIGR1cmluZyBzdXNwZW5kaW5nL3Jlc3VtaW5nDQo+ID4gICAgaXMgd3Jvbmcg
+YmVjYXVzZSBzb21lIGRldmljZXMgbWF5IGhhdmUgYWxyZWFkeSBiZWVuIHN1c3BlbmRlZA0KPiA+
+ICAgIG9yIG1heSBoYXZlIG5vdCBiZWVuIHJlc3VtZWQuDQo+ID4NCj4gPiBUaHVzLCB0aGUgcHJv
+cGVyIHdheSB0byBkbyB0aGlzIGlzIHRvIGNhbmNlbCBhbGwgdGhlcm1hbCB6b25lIGRldmljZQ0K
+PiA+IHVwZGF0ZSByZXF1aXJlbWVudHMgZHVyaW5nIHN1c3BlbmQvcmVzdW1lLCBhbmQgYWZ0ZXIg
+YWxsIHRoZSBkZXZpY2VzDQo+ID4gaGF2ZSBiZWVuIHJlc3VtZWQsIHJlc2V0IGFuZCB1cGRhdGUg
+ZXZlcnkgcmVnaXN0ZXJlZCB0aGVybWFsIHpvbmUNCj4gPiBkZXZpY2VzLg0KPiA+DQo+ID4gVGhp
+cyBhbHNvIGZpeGVzIGEgcmVncmVzc2lvbiBpbnRyb2R1Y2VkIGJ5IGNvbW1pdA0KPiA+IDE5NTkz
+YTFmYjFmNjcxODQwNmFmY2E1Yjg2N2RhYjE4NDI4OWQ0MDYNCj4gPiBBdXRob3I6IEFhcm9uIEx1
+IDxhYXJvbi5sdUBpbnRlbC5jb20+DQo+ID4gRGF0ZTogICBUdWUgTm92IDE5IDE2OjU5OjIwIDIw
+MTMgKzA4MDANCj4gPg0KPiA+ICAgICBBQ1BJIC8gZmFuOiBjb252ZXJ0IHRvIHBsYXRmb3JtIGRy
+aXZlcg0KPiA+DQo+ID4gICAgIENvbnZlcnQgQUNQSSBmYW4gZHJpdmVyIHRvIGEgcGxhdGZvcm0g
+ZHJpdmVyIGZvciB0aGUgcHVycG9zZSBvZiBwaGFzaW5nDQo+ID4gICAgIG91dCBBQ1BJIGJ1cy4N
+Cj4gPg0KPiA+ICAgICBTaWduZWQtb2ZmLWJ5OiBBYXJvbiBMdSA8YWFyb24ubHVAaW50ZWwuY29t
+Pg0KPiA+ICAgICBTaWduZWQtb2ZmLWJ5OiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+
+DQo+ID4NCj4gPiBCZWNhdXNlLCB3aXRoIHRoZSBjb21taXQgYXBwbGllZCwgYWxsIHRoZSBmYW4g
+ZGV2aWNlcyBhcmUgYXR0YWNoZWQgdG8NCj4gPiB0aGUgYWNwaV9nZW5lcmFsX3BtX2RvbWFpbiwg
+YW5kIHRoZXkgYXJlIHR1cm5lZCBvbiBieSB0aGUgcG1fZG9tYWluDQo+ID4gYXV0b21hdGljYWxs
+eSBhZnRlciByZXN1bWUsIHdpdGhvdXQgdGhlIGF3YXJlbmVzcyBvZiB0aGVybWFsIGNvcmUuDQo+
+ID4NCj4gPiBDQzogPHN0YWJsZUB2Z2VyLmtlcm5lbC5vcmc+ICMzLjE4Kw0KPiA+IFJlZmVyZW5j
+ZTogaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD03ODIwMQ0KPiA+
+IFJlZmVyZW5jZTogaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD05
+MTQxMQ0KPiA+IFRlc3RlZC1ieTogTWFudWVsIEtyYXVzZSA8bWFudWVsa3JhdXNlQG5ldHNjYXBl
+Lm5ldD4NCj4gPiBUZXN0ZWQtYnk6IHN6ZWdhZCA8c3plZ2FkbG9AcG9jenRhLm9uZXQucGw+DQo+
+ID4gVGVzdGVkLWJ5OiBwcmFzaCA8cHJhc2gubi5yYW9AZ21haWwuY29tPg0KPiA+IFRlc3RlZC1i
+eTogYW1pc2ggPGFtbWRpc3Bvc2UtYXJjaEB5YWhvby5jb20+DQo+ID4gVGVzdGVkLWJ5OiBNYXR0
+aGlhcyA8bW9ycGhldXN4eXoxMjNAeWFob28uZGU+DQo+ID4gU2lnbmVkLW9mZi1ieTogWmhhbmcg
+UnVpIDxydWkuemhhbmdAaW50ZWwuY29tPg0KPiA+IC0tLQ0KPiA+ICBkcml2ZXJzL3RoZXJtYWwv
+dGhlcm1hbF9jb3JlLmMgfCAzNw0KPiA+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysNCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDM3IGluc2VydGlvbnMoKykNCj4gPg0KPiA+IGRp
+ZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9jb3JlLmMNCj4gPiBiL2RyaXZlcnMv
+dGhlcm1hbC90aGVybWFsX2NvcmUuYyBpbmRleCA5ZDZmNzFiLi45YzAzNTYxIDEwMDY0NA0KPiA+
+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC90aGVybWFsX2NvcmUuYw0KPiA+ICsrKyBiL2RyaXZlcnMv
+dGhlcm1hbC90aGVybWFsX2NvcmUuYw0KPiA+IEBAIC0zNyw2ICszNyw3IEBADQo+ID4gICNpbmNs
+dWRlIDxsaW51eC9vZi5oPg0KPiA+ICAjaW5jbHVkZSA8bmV0L25ldGxpbmsuaD4NCj4gPiAgI2lu
+Y2x1ZGUgPG5ldC9nZW5ldGxpbmsuaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L3N1c3BlbmQuaD4N
+Cj4gPg0KPiA+ICAjZGVmaW5lIENSRUFURV9UUkFDRV9QT0lOVFMNCj4gPiAgI2luY2x1ZGUgPHRy
+YWNlL2V2ZW50cy90aGVybWFsLmg+DQo+ID4gQEAgLTU5LDYgKzYwLDkgQEAgc3RhdGljIExJU1Rf
+SEVBRCh0aGVybWFsX2dvdmVybm9yX2xpc3QpOyAgc3RhdGljDQo+ID4gREVGSU5FX01VVEVYKHRo
+ZXJtYWxfbGlzdF9sb2NrKTsgIHN0YXRpYw0KPiA+IERFRklORV9NVVRFWCh0aGVybWFsX2dvdmVy
+bm9yX2xvY2spOw0KPiA+DQo+ID4gK3N0YXRpYyBzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sgdGhlcm1h
+bF9wbV9uYjsgc3RhdGljIGJvb2wNCj4gPiArbm9fdGhlcm1hbF91cGRhdGU7DQo+IA0KPiBDYW4g
+dGhpcyBoYXZlIGEgbmFtZSB3aXRob3V0IGEgbmVnYXRpdmU/ICBJdCdzIGEgYml0IGhhcmQgdG8g
+cmVhZCB0aGUgZG91YmxlLQ0KPiBuZWdhdGl2ZSBpbiAibm9fdGhlcm1hbF91cGRhdGUgPSBmYWxz
+ZSIuICBNYXliZSAiaW5fc3VzcGVuZCIgaXMgYmV0dGVyPw0KPiANClNvdW5kcyByZWFzb25hYmxl
+LCB3aWxsIGRvIGl0IGluIG5leHQgdmVyc2lvbi4NCg0KVGhhbmtzLA0KUnVpDQoNCj4gQ2hlZXJz
+LA0KPiBKYXZpDQo+IA0KPiA+ICsNCj4gPiAgc3RhdGljIHN0cnVjdCB0aGVybWFsX2dvdmVybm9y
+ICpkZWZfZ292ZXJub3I7DQo+ID4NCj4gPiAgc3RhdGljIHN0cnVjdCB0aGVybWFsX2dvdmVybm9y
+ICpfX2ZpbmRfZ292ZXJub3IoY29uc3QgY2hhciAqbmFtZSkgQEANCj4gPiAtNDkxLDYgKzQ5NSw5
+IEBAIHZvaWQgdGhlcm1hbF96b25lX2RldmljZV91cGRhdGUoc3RydWN0DQo+ID4gdGhlcm1hbF96
+b25lX2RldmljZSAqdHopICB7DQo+ID4gIAlpbnQgY291bnQ7DQo+ID4NCj4gPiArCWlmIChub190
+aGVybWFsX3VwZGF0ZSkNCj4gPiArCQlyZXR1cm47DQo+ID4gKw0KPiA+ICAJaWYgKCF0ei0+b3Bz
+LT5nZXRfdGVtcCkNCj4gPiAgCQlyZXR1cm47DQo+ID4NCj4gPiBAQCAtMTgyMyw2ICsxODMwLDMz
+IEBAIHN0YXRpYyB2b2lkIHRoZXJtYWxfdW5yZWdpc3Rlcl9nb3Zlcm5vcnModm9pZCkNCj4gPiAg
+CXRoZXJtYWxfZ292X3VzZXJfc3BhY2VfdW5yZWdpc3RlcigpOw0KPiA+ICB9DQo+ID4NCj4gPiAr
+c3RhdGljIGludCB0aGVybWFsX25vdGlmeShzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sgKm5iLA0KPiA+
+ICsJCQkJdW5zaWduZWQgbG9uZyBtb2RlLCB2b2lkICpfdW51c2VkKSB7DQo+ID4gKwlzdHJ1Y3Qg
+dGhlcm1hbF96b25lX2RldmljZSAqdHo7DQo+ID4gKw0KPiA+ICsJc3dpdGNoIChtb2RlKSB7DQo+
+ID4gKwljYXNlIFBNX0hJQkVSTkFUSU9OX1BSRVBBUkU6DQo+ID4gKwljYXNlIFBNX1JFU1RPUkVf
+UFJFUEFSRToNCj4gPiArCWNhc2UgUE1fU1VTUEVORF9QUkVQQVJFOg0KPiA+ICsJCW5vX3RoZXJt
+YWxfdXBkYXRlID0gdHJ1ZTsNCj4gPiArCQlicmVhazsNCj4gPiArCWNhc2UgUE1fUE9TVF9ISUJF
+Uk5BVElPTjoNCj4gPiArCWNhc2UgUE1fUE9TVF9SRVNUT1JFOg0KPiA+ICsJY2FzZSBQTV9QT1NU
+X1NVU1BFTkQ6DQo+ID4gKwkJbm9fdGhlcm1hbF91cGRhdGUgPSBmYWxzZTsNCj4gPiArCQlsaXN0
+X2Zvcl9lYWNoX2VudHJ5KHR6LCAmdGhlcm1hbF90el9saXN0LCBub2RlKSB7DQo+ID4gKwkJCXRo
+ZXJtYWxfem9uZV9kZXZpY2VfcmVzZXQodHopOw0KPiA+ICsJCQl0aGVybWFsX3pvbmVfZGV2aWNl
+X3VwZGF0ZSh0eik7DQo+ID4gKwkJfQ0KPiA+ICsJCWJyZWFrOw0KPiA+ICsJZGVmYXVsdDoNCj4g
+PiArCQlicmVhazsNCj4gPiArCX0NCj4gPiArCXJldHVybiAwOw0KPiA+ICt9DQo+ID4gKw0KPiA+
+ICsNCj4gPiAgc3RhdGljIGludCBfX2luaXQgdGhlcm1hbF9pbml0KHZvaWQpDQo+ID4gIHsNCj4g
+PiAgCWludCByZXN1bHQ7DQoNCg==
