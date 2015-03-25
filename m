@@ -1,222 +1,197 @@
-From: "Yeon, JeHyeon (Tom)" <Tom.Yeon@windriver.com>
-Subject: Re: [PATCH] PM / Hiberante : optimize swsusp_free()
-Date: Wed, 25 Mar 2015 01:49:36 +0000
-Message-ID: <D2D54504A8A67848B028EBEA66F47B9AB2A28235@ALA-MBA.corp.ad.wrs.com>
-References: <1426753738-26747-1-git-send-email-tom.yeon@windriver.com>,<2492546.RHhDx1zacd@vostro.rjw.lan>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: [PATCH 1/3] Thermal: initialize thermal zone device correctly
+Date: Wed, 25 Mar 2015 02:14:57 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B909263014BA954@SHSMSX101.ccr.corp.intel.com>
+References: <1427174490-7974-1-git-send-email-rui.zhang@intel.com>
+ <1427174490-7974-2-git-send-email-rui.zhang@intel.com>
+ <20150324150004.GB29155@developer.hsd1.ca.comcast.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.windriver.com ([147.11.146.13]:65362 "EHLO
-	mail1.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbbCYBtr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Mar 2015 21:49:47 -0400
-In-Reply-To: <2492546.RHhDx1zacd@vostro.rjw.lan>
-Content-Language: ko-KR
+Received: from mga11.intel.com ([192.55.52.93]:34318 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751851AbbCYCPC convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Mar 2015 22:15:02 -0400
+In-Reply-To: <20150324150004.GB29155@developer.hsd1.ca.comcast.net>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "pavel@ucw.cz" <pavel@ucw.cz>
-Cc: "BROWN, A LEONARD" <len.brown@intel.com>, "jroedel@suse.de" <jroedel@suse.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Tom(JeHyeon) Yeon" <tomyeon750415lkml@gmail.com>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
 
->From 6cb5fffc41911a29212be52d4ce7e481f5077ccf Mon Sep 17 00:00:00 2001
-From: "Tom(JeHyeon) Yeon" <tom.yeon@windriver.com>
-Date: Thu, 19 Mar 2015 17:10:45 +0900
-Subject: [PATCH] PM / Hiberante : optimize swsusp_free()
 
-Our team developed the snapshot booting.
-Fisrt of all, make a snapshot image, compress it and finally save it
-in the storage(like mmc).
-When the system is booting next time, bootloader read it from mmc,
-decompress it and jump to the kernel.
-In this circumstance, mili seconds is very important.
-So, I prepared this patch, but not applied because I missed the time
-to apply it.
 
-And, I came across to find commit fdd64ed.
-It's very similar to the patch I prepared.
+> -----Original Message-----
+> From: Eduardo Valentin [mailto:edubezval@gmail.com]
+> Sent: Tuesday, March 24, 2015 11:00 PM
+> To: Zhang, Rui
+> Cc: linux-pm@vger.kernel.org; stable@vger.kernel.org
+> Subject: Re: [PATCH 1/3] Thermal: initialize thermal zone device correctly
+> Importance: High
+> 
+> Rui,
+> 
+> A couple of comments.
+> 
+> On Tue, Mar 24, 2015 at 01:21:28PM +0800, Zhang Rui wrote:
+> > After thermal zone device registered, as we have not read any
+> > temperature before, thus tz->temperature should not be 0, which
+> > actually means 0C, and thermal trend is not available.
+> > In this case, we need specially handling for the first
+> > thermal_zone_device_update().
+> >
+> > Both thermal core framework and step_wise governor is enhanced to handle
+> this.
+> >
+> > CC: <stable@vger.kernel.org> #3.18+
+> > Tested-by: Manuel Krause <manuelkrause@netscape.net>
+> > Tested-by: szegad <szegadlo@poczta.onet.pl>
+> > Tested-by: prash <prash.n.rao@gmail.com>
+> > Tested-by: amish <ammdispose-arch@yahoo.com>
+> > Tested-by: Matthias <morpheusxyz123@yahoo.de>
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > ---
+> >  drivers/thermal/step_wise.c    | 15 +++++++++++++--
+> >  drivers/thermal/thermal_core.c | 19 +++++++++++++++++--
+> > drivers/thermal/thermal_core.h |  1 +
+> >  include/linux/thermal.h        |  3 +++
+> >  4 files changed, 34 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+> 
+> Should this patch also include changes in other governors ?
+> 
+No, I've checked the code, step_wise/bang_bang/user_space governor does not have this problem.
 
-I think do { ... } while (fb_pfn != fr_pfn) operation is very similar
-to my patch. but, it takes a little more time to iterate.
-So suggest to iterate one of two maps and check whether the other map
-has the same pfn, finally free the page.
+> > index 5a0f12d..c2bb37c 100644
+> > --- a/drivers/thermal/step_wise.c
+> > +++ b/drivers/thermal/step_wise.c
+> > @@ -63,6 +63,16 @@ static unsigned long get_target_state(struct
+> thermal_instance *instance,
+> >  	next_target = instance->target;
+> >  	dev_dbg(&cdev->device, "cur_state=%ld\n", cur_state);
+> >
+> > +	if (!instance->initialized) {
+> > +		if (throttle) {
+> > +			next_target = (cur_state + 1) >= instance->upper ?
+> > +					instance->upper :
+> > +					((cur_state + 1) < instance->lower ?
+> > +					instance->lower : (cur_state + 1));
+> 
+> Why it makes sense to change the next state if a instance is uninitialized?
+> 
+For thermal safety reason, I prefer to use a higher cooling state because the system is overheating with current cooling state
+I even used to think about using instance->upper directly, but in this case, cooling devices like processors are put into the lowest frequency, and processors on ACPI based platform are put into lowest t-state, which is overkill.
 
-Signed-off-by: Tom(JeHyeon) Yeon <tom.yeon@windriver.com>
----
- kernel/power/snapshot.c |   43 ++++++++++---------------------------------
- 1 file changed, 10 insertions(+), 33 deletions(-)
+> > +		} else
+> > +			next_target = THERMAL_NO_TARGET;
+> > +	}
+> > +
+> >  	switch (trend) {
+> >  	case THERMAL_TREND_RAISING:
+> >  		if (throttle) {
+> > @@ -149,7 +159,8 @@ static void thermal_zone_trip_update(struct
+> thermal_zone_device *tz, int trip)
+> >  		dev_dbg(&instance->cdev->device, "old_target=%d,
+> target=%d\n",
+> >  					old_target, (int)instance->target);
+> >
+> > -		if (old_target == instance->target)
+> > +		if (instance->initialized &&
+> > +		    old_target == instance->target)
+> >  			continue;
+> >
+> >  		/* Activate a passive thermal instance */ @@ -161,7 +172,7
+> @@
+> > static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+> >  			instance->target == THERMAL_NO_TARGET)
+> >  			update_passive_instance(tz, trip_type, -1);
+> >
+> > -
+> > +		instance->initialized = true;
+> >  		instance->cdev->updated = false; /* cdev needs update */
+> >  	}
+> >
+> > diff --git a/drivers/thermal/thermal_core.c
+> > b/drivers/thermal/thermal_core.c index 174d3bc..9d6f71b 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -469,8 +469,22 @@ static void update_temperature(struct
+> thermal_zone_device *tz)
+> >  	mutex_unlock(&tz->lock);
+> >
+> >  	trace_thermal_temperature(tz);
+> > -	dev_dbg(&tz->device, "last_temperature=%d,
+> current_temperature=%d\n",
+> > -				tz->last_temperature, tz->temperature);
+> > +	if (tz->last_temperature == THERMAL_TEMP_INVALID)
+> > +		dev_dbg(&tz->device, "last_temperature N/A,
+> current_temperature=%d\n",
+> > +			tz->temperature);
+> > +	else
+> > +		dev_dbg(&tz->device, "last_temperature=%d,
+> current_temperature=%d\n",
+> > +			tz->last_temperature, tz->temperature);
+> 
+> Should we also teach the tracing facility about THERMAL_TEMP_INVALID?
+> 
+Hmm, I don't quite understand your question.
 
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index c24d5a2..a1ad801 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -726,14 +726,6 @@ static void memory_bm_clear_bit(struct memory_bitmap *bm, unsigned long pfn)
- 	clear_bit(bit, addr);
- }
- 
--static void memory_bm_clear_current(struct memory_bitmap *bm)
--{
--	int bit;
--
--	bit = max(bm->cur.node_bit - 1, 0);
--	clear_bit(bit, bm->cur.node->data);
--}
--
- static int memory_bm_test_bit(struct memory_bitmap *bm, unsigned long pfn)
- {
- 	void *addr;
-@@ -1342,36 +1334,21 @@ static struct memory_bitmap copy_bm;
- 
- void swsusp_free(void)
- {
--	unsigned long fb_pfn, fr_pfn;
-+	unsigned long pfn;
- 
- 	if (!forbidden_pages_map || !free_pages_map)
- 		goto out;
- 
- 	memory_bm_position_reset(forbidden_pages_map);
--	memory_bm_position_reset(free_pages_map);
--
--loop:
--	fr_pfn = memory_bm_next_pfn(free_pages_map);
--	fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
--
--	/*
--	 * Find the next bit set in both bitmaps. This is guaranteed to
--	 * terminate when fb_pfn == fr_pfn == BM_END_OF_MAP.
--	 */
--	do {
--		if (fb_pfn < fr_pfn)
--			fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
--		if (fr_pfn < fb_pfn)
--			fr_pfn = memory_bm_next_pfn(free_pages_map);
--	} while (fb_pfn != fr_pfn);
--
--	if (fr_pfn != BM_END_OF_MAP && pfn_valid(fr_pfn)) {
--		struct page *page = pfn_to_page(fr_pfn);
--
--		memory_bm_clear_current(forbidden_pages_map);
--		memory_bm_clear_current(free_pages_map);
--		__free_page(page);
--		goto loop;
-+	for ( ; ; ) {
-+		pfn  = memory_bm_next_pfn(forbidden_pages_map);
-+		if (BM_END_OF_MAP == pfn)
-+			break;
-+		if (memory_bm_test_bit(free_pages_map, pfn)) {
-+			memory_bm_clear_bit(forbidden_pages_map, pfn);
-+			memory_bm_clear_bit(free_pages_map, pfn);
-+			__free_page(pfn_to_page(pfn));
-+		}
- 	}
- 
- out:
--- 
-1.7.9.5
-
-describe it in details.
-As pavel said, 5ms is not important in the normal booting system.
-but mili seconds is important in the hibernation or snapshot system.
-Just suggestion.
-
-Thank you.
-
-------------------
-On Thursday, March 19, 2015 05:28:58 PM Tom Yeon wrote:
-> From: "Tom(JeHyeon) Yeon" <tom.yeon@windriver.com>
->
-> I tested the performance of swsusp_free operation.
-> The free time took about 58768us before commit fdd64ed, and
-> the free time took about 40535us after the commit fdd64ed.
->
-> But, I optimized the function before I saw commit fdd64ed.
-> So, I applied the patch in my system.(ARM Coretex A9, Dual Core 1GHz)
-> The free time took about 35164us.
-> I think that the finding routine for the same pfn is redundant
-
-This changelog in total pants, sorry.
-
-Please write what the patch is doing and why instead of describing
-your testing experience.  The numbers are useful too, but only to
-show what the gain is, and you need to explain what is changing and
-why.
-
-> Signed-off-by: Tom(JeHyeon) Yeon <tom.yeon@windriver.com>
-> ---
->  kernel/power/snapshot.c |   43 ++++++++++---------------------------------
->  1 file changed, 10 insertions(+), 33 deletions(-)
->
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index c24d5a2..a1ad801 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -726,14 +726,6 @@ static void memory_bm_clear_bit(struct memory_bitmap *bm, unsigned long pfn)
->       clear_bit(bit, addr);
->  }
->
-> -static void memory_bm_clear_current(struct memory_bitmap *bm)
-> -{
-> -     int bit;
-> -
-> -     bit = max(bm->cur.node_bit - 1, 0);
-> -     clear_bit(bit, bm->cur.node->data);
-> -}
-> -
->  static int memory_bm_test_bit(struct memory_bitmap *bm, unsigned long pfn)
->  {
->       void *addr;
-> @@ -1342,36 +1334,21 @@ static struct memory_bitmap copy_bm;
->
->  void swsusp_free(void)
->  {
-> -     unsigned long fb_pfn, fr_pfn;
-> +     unsigned long pfn;
->
->       if (!forbidden_pages_map || !free_pages_map)
->               goto out;
->
->       memory_bm_position_reset(forbidden_pages_map);
-> -     memory_bm_position_reset(free_pages_map);
-> -
-> -loop:
-> -     fr_pfn = memory_bm_next_pfn(free_pages_map);
-> -     fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
-> -
-> -     /*
-> -      * Find the next bit set in both bitmaps. This is guaranteed to
-> -      * terminate when fb_pfn == fr_pfn == BM_END_OF_MAP.
-> -      */
-> -     do {
-> -             if (fb_pfn < fr_pfn)
-> -                     fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
-> -             if (fr_pfn < fb_pfn)
-> -                     fr_pfn = memory_bm_next_pfn(free_pages_map);
-> -     } while (fb_pfn != fr_pfn);
-> -
-> -     if (fr_pfn != BM_END_OF_MAP && pfn_valid(fr_pfn)) {
-> -             struct page *page = pfn_to_page(fr_pfn);
-> -
-> -             memory_bm_clear_current(forbidden_pages_map);
-> -             memory_bm_clear_current(free_pages_map);
-> -             __free_page(page);
-> -             goto loop;
-> +     for ( ; ; ) {
-> +             pfn  = memory_bm_next_pfn(forbidden_pages_map);
-> +             if (BM_END_OF_MAP == pfn)
-> +                     break;
-> +             if (memory_bm_test_bit(free_pages_map, pfn)) {
-
-So why exactly isn't it necessary to look at memory_bm_next_pfn(forbidden_pages_map)?
-
-> +                     memory_bm_clear_bit(forbidden_pages_map, pfn);
-> +                     memory_bm_clear_bit(free_pages_map, pfn);
-> +                     __free_page(pfn_to_page(pfn));
-> +             }
->       }
->
->  out:
->
-
---
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Thanks,
+rui
+> > +}
+> > +
+> > +static void thermal_zone_device_reset(struct thermal_zone_device *tz)
+> > +{
+> > +	struct thermal_instance *pos;
+> > +
+> > +	tz->temperature = THERMAL_TEMP_INVALID;
+> > +	tz->passive = 0;
+> > +	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
+> > +		pos->initialized = false;
+> >  }
+> >
+> >  void thermal_zone_device_update(struct thermal_zone_device *tz) @@
+> > -1574,6 +1588,7 @@ struct thermal_zone_device
+> *thermal_zone_device_register(const char *type,
+> >  	if (!tz->ops->get_temp)
+> >  		thermal_zone_device_set_polling(tz, 0);
+> >
+> > +	thermal_zone_device_reset(tz);
+> >  	thermal_zone_device_update(tz);
+> >
+> >  	return tz;
+> > diff --git a/drivers/thermal/thermal_core.h
+> > b/drivers/thermal/thermal_core.h index 0531c75..6d9ffa5 100644
+> > --- a/drivers/thermal/thermal_core.h
+> > +++ b/drivers/thermal/thermal_core.h
+> > @@ -41,6 +41,7 @@ struct thermal_instance {
+> >  	struct thermal_zone_device *tz;
+> >  	struct thermal_cooling_device *cdev;
+> >  	int trip;
+> > +	bool initialized;
+> >  	unsigned long upper;	/* Highest cooling state for this trip point */
+> >  	unsigned long lower;	/* Lowest cooling state for this trip point */
+> >  	unsigned long target;	/* expected cooling state */
+> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h index
+> > 5eac316..8650b0b 100644
+> > --- a/include/linux/thermal.h
+> > +++ b/include/linux/thermal.h
+> > @@ -40,6 +40,9 @@
+> >  /* No upper/lower limit requirement */
+> >  #define THERMAL_NO_LIMIT	((u32)~0)
+> >
+> > +/* Invalid/uninitialized temperature */
+> > +#define THERMAL_TEMP_INVALID	-27400
+> > +
+> >  /* Unit conversion macros */
+> >  #define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
+> >  				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
+> > --
+> > 1.9.1
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> > the body of a message to majordomo@vger.kernel.org More majordomo info
+> > at  http://vger.kernel.org/majordomo-info.html
