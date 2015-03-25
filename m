@@ -1,98 +1,64 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH/RFC 1/5] clk: shmobile: mstp: Never disable INTC-SYS
-Date: Wed, 25 Mar 2015 05:17:36 +0100
-Message-ID: <CAMuHMdVRhaZY_y2=1+9sZ-kteiguYGeS62Ka-V1WYnNCq_rgQA@mail.gmail.com>
-References: <1426706164-28309-1-git-send-email-geert+renesas@glider.be>
-	<1426706164-28309-2-git-send-email-geert+renesas@glider.be>
-	<20150324232508.7930.89483@quantum>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/2] ARM: cpuidle: Document the code
+Date: Wed, 25 Mar 2015 08:03:56 +0100
+Message-ID: <55125DDC.9000901@linaro.org>
+References: <20150323225828.GC15435@e102568-lin.cambridge.arm.com> <1427190842-30675-1-git-send-email-daniel.lezcano@linaro.org> <1427190842-30675-2-git-send-email-daniel.lezcano@linaro.org> <20150324185144.GB27311@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20150324232508.7930.89483@quantum>
-Sender: linux-sh-owner@vger.kernel.org
-To: Michael Turquette <mturquette@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Marc Zyngier <marc.zyngier@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f172.google.com ([209.85.212.172]:37097 "EHLO
+	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751148AbbCYHEB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Mar 2015 03:04:01 -0400
+Received: by wixw10 with SMTP id w10so24673283wix.0
+        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2015 00:03:59 -0700 (PDT)
+In-Reply-To: <20150324185144.GB27311@red-moon>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, "robherring2@gmail.com" <robherring2@gmail.com>, "arnd@arndb.de" <arnd@arndb.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "lina.iyer@linaro.org" <lina.iyer@linaro.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>
 
-Hi Mike,
-
-On Wed, Mar 25, 2015 at 12:25 AM, Michael Turquette
-<mturquette@linaro.org> wrote:
-> Quoting Geert Uytterhoeven (2015-03-18 12:16:00)
->> INTC-SYS is the module clock for the GIC.  Accessing the GIC while it is
->> disabled causes:
+On 03/24/2015 07:51 PM, Lorenzo Pieralisi wrote:
+> On Tue, Mar 24, 2015 at 09:54:02AM +0000, Daniel Lezcano wrote:
+>> Add kernel-doc format documentation in the code.
 >>
->>     Unhandled fault: asynchronous external abort (0x1211) at 0x00000000
->>
->> Currently, the GIC driver cannot enable its module clock for several
->> reasons:
->>   - It does not use a platform device, so Runtime PM is not an option,
->>   - gic_of_init() runs before any clocks are registered, so it cannot
->>     explicitly enable the clock,
->>   - gic_of_init() cannot return -EPROBE_DEFER, as IRQCHIP_DECLARE()
->>     doesn't support deferred probing.
->>
->> Hence we have to keep on relying on the boot loader for enabling the
->> module clock.
->>
->> To prevent the module clock from being disabled when the CCF core thinks
->> it is unused, and thus causing a system lock-up, add a quirk to the MSTP
->> clock driver to make sure the module clock is never disabled.
->>
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 >> ---
->>  drivers/clk/shmobile/clk-mstp.c | 6 ++++++
->>  1 file changed, 6 insertions(+)
->>
->> diff --git a/drivers/clk/shmobile/clk-mstp.c b/drivers/clk/shmobile/clk-mstp.c
->> index 2d2fe773ac8168f9..742af84735a07450 100644
->> --- a/drivers/clk/shmobile/clk-mstp.c
->> +++ b/drivers/clk/shmobile/clk-mstp.c
->> @@ -62,6 +62,12 @@ static int cpg_mstp_clock_endisable(struct clk_hw *hw, bool enable)
->>         unsigned int i;
->>         u32 value;
->>
->> +       /* INTC-SYS is the module clock of the GIC, and must not be disabled */
->> +       if (!enable && !strcmp(__clk_get_name(hw->clk), "intc-sys")) {
->> +               pr_debug("MSTP %pC skipping disable\n", hw->clk);
->> +               return 0;
->> +       }
+
+[ ... ]
+
+>> + * Returns:
+>> + *  0 on success,
+>> + *  -ENODEV if it fails to find the cpu node in the device tree,
+>> + *  -EOPNOTSUPP if it does not find a registered cpuidle_ops for th=
+is cpu,
+>> + *  -ENOENT if it fails to find a enabled-method property,
 >
-> Hello Geert,
+> Ultra-nit: "an enabled-method"
 >
-> This is a bit ugly for three reasons:
+>> + *  -ENXIO if the HW reports a failure or a misconfiguration
 >
-> 1) we hit this code for every MSTP clock {en,dis}able call
-> 2) __clk_get_name is kind of gross
-
-Sure, this is ugly. That's why this was an RFC.
-I was mainly trying to trigger a reply from the GIC maintainers ;-)
-
-> 3) the enable_count will not be correct. It will be zero but the clock
-> will actually be enabled
-
-That's indeed something I didn't take into account. Will change to just enabling
-the clock from the clock driver.
-
-> Have you considered Lee's series to express these always-on clocks in
-> DT? See,
+> -ENOMEM is missing.
 >
-> https://lkml.org/lkml/2015/2/24/495
+> Apart from these ultraminor changes (and thanks for putting it
+> together):
+>
+> Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>
 
-That solution doesn't apply here, as we do have a correct description
-of the hardware
-in DT (after the other patches in the series, like e.g. (courtesy for
-Lee) http://permalink.gmane.org/gmane.linux.power-management.general/58123).
+Thanks for review Lorenzo. I fixed the comment and pushed in my tree fo=
+r=20
+4.1.
 
-Thanks!
+  -- Daniel
 
-Gr{oetje,eeting}s,
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-                        Geert
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
