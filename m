@@ -1,72 +1,133 @@
-From: Mathias Krause <minipli@googlemail.com>
-Subject: [PATCH] thermal/intel_powerclamp: add __init / __exit annotations
-Date: Wed, 25 Mar 2015 22:16:24 +0100
-Message-ID: <1427318184-21843-1-git-send-email-minipli@googlemail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:38355 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750866AbbCYVQi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Mar 2015 17:16:38 -0400
-Received: by wibgn9 with SMTP id gn9so57885007wib.1
-        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2015 14:16:37 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH/RFC 1/5] clk: shmobile: mstp: Never disable INTC-SYS
+Date: Wed, 25 Mar 2015 22:19:41 +0100
+Message-ID: <CAMuHMdWY7orzt0ONTzmyG8nSagCM1r1HK=zQHzfttfr6cK7eqA@mail.gmail.com>
+References: <1426706164-28309-1-git-send-email-geert+renesas@glider.be>
+	<1426706164-28309-2-git-send-email-geert+renesas@glider.be>
+	<20150324232508.7930.89483@quantum>
+	<CAMuHMdVRhaZY_y2=1+9sZ-kteiguYGeS62Ka-V1WYnNCq_rgQA@mail.gmail.com>
+	<55127E2A.1040300@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <55127E2A.1040300@arm.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Marc Zyngier <marc.zyngier@arm.com>
+Cc: Michael Turquette <mturquette@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Mark Rutland <Mark.Rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, Mathias Krause <minipli@googlemail.com>, Arjan van de Ven <arjan@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-Mark the module init / exit functions with __init / __exit accodingly.
-This allows making the intel_powerclamp_ids[] array __initconst, too, as
-it only gets referenced from powerclamp_probe(). This is safe as
-file2alias doesn't care about the section, but the symbol name for the
-MODULE_DEVICE_TABLE alias.
+Hi Marc,
 
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Signed-off-by: Mathias Krause <minipli@googlemail.com>
----
- drivers/thermal/intel_powerclamp.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+On Wed, Mar 25, 2015 at 10:21 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
+> On 25/03/15 04:17, Geert Uytterhoeven wrote:
+>> On Wed, Mar 25, 2015 at 12:25 AM, Michael Turquette
+>> <mturquette@linaro.org> wrote:
+>>> Quoting Geert Uytterhoeven (2015-03-18 12:16:00)
+>>>> INTC-SYS is the module clock for the GIC.  Accessing the GIC while it is
+>>>> disabled causes:
+>>>>
+>>>>     Unhandled fault: asynchronous external abort (0x1211) at 0x00000000
+>>>>
+>>>> Currently, the GIC driver cannot enable its module clock for several
+>>>> reasons:
+>>>>   - It does not use a platform device, so Runtime PM is not an option,
+>>>>   - gic_of_init() runs before any clocks are registered, so it cannot
+>>>>     explicitly enable the clock,
+>>>>   - gic_of_init() cannot return -EPROBE_DEFER, as IRQCHIP_DECLARE()
+>>>>     doesn't support deferred probing.
+>>>>
+>>>> Hence we have to keep on relying on the boot loader for enabling the
+>>>> module clock.
+>>>>
+>>>> To prevent the module clock from being disabled when the CCF core thinks
+>>>> it is unused, and thus causing a system lock-up, add a quirk to the MSTP
+>>>> clock driver to make sure the module clock is never disabled.
+>>>>
+>>>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>>>> ---
+>>>>  drivers/clk/shmobile/clk-mstp.c | 6 ++++++
+>>>>  1 file changed, 6 insertions(+)
+>>>>
+>>>> diff --git a/drivers/clk/shmobile/clk-mstp.c b/drivers/clk/shmobile/clk-mstp.c
+>>>> index 2d2fe773ac8168f9..742af84735a07450 100644
+>>>> --- a/drivers/clk/shmobile/clk-mstp.c
+>>>> +++ b/drivers/clk/shmobile/clk-mstp.c
+>>>> @@ -62,6 +62,12 @@ static int cpg_mstp_clock_endisable(struct clk_hw *hw, bool enable)
+>>>>         unsigned int i;
+>>>>         u32 value;
+>>>>
+>>>> +       /* INTC-SYS is the module clock of the GIC, and must not be disabled */
+>>>> +       if (!enable && !strcmp(__clk_get_name(hw->clk), "intc-sys")) {
+>>>> +               pr_debug("MSTP %pC skipping disable\n", hw->clk);
+>>>> +               return 0;
+>>>> +       }
+>>>
+>>> Hello Geert,
+>>>
+>>> This is a bit ugly for three reasons:
+>>>
+>>> 1) we hit this code for every MSTP clock {en,dis}able call
+>>> 2) __clk_get_name is kind of gross
+>>
+>> Sure, this is ugly. That's why this was an RFC.
+>> I was mainly trying to trigger a reply from the GIC maintainers ;-)
+>
+> Given that I'm the only GIC-related person on the cc list, I suppose
+> this is puts me on the spot.
 
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index 12623bc02f46..b0f7ced5c3ef 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -667,7 +667,7 @@ static struct thermal_cooling_device_ops powerclamp_cooling_ops = {
- };
- 
- /* runs on Nehalem and later */
--static const struct x86_cpu_id intel_powerclamp_ids[] = {
-+static const struct x86_cpu_id intel_powerclamp_ids[] __initconst = {
- 	{ X86_VENDOR_INTEL, 6, 0x1a},
- 	{ X86_VENDOR_INTEL, 6, 0x1c},
- 	{ X86_VENDOR_INTEL, 6, 0x1e},
-@@ -694,7 +694,7 @@ static const struct x86_cpu_id intel_powerclamp_ids[] = {
- };
- MODULE_DEVICE_TABLE(x86cpu, intel_powerclamp_ids);
- 
--static int powerclamp_probe(void)
-+static int __init powerclamp_probe(void)
- {
- 	if (!x86_match_cpu(intel_powerclamp_ids)) {
- 		pr_err("Intel powerclamp does not run on family %d model %d\n",
-@@ -760,7 +760,7 @@ file_error:
- 	debugfs_remove_recursive(debug_dir);
- }
- 
--static int powerclamp_init(void)
-+static int __init powerclamp_init(void)
- {
- 	int retval;
- 	int bitmap_size;
-@@ -809,7 +809,7 @@ exit_free:
- }
- module_init(powerclamp_init);
- 
--static void powerclamp_exit(void)
-+static void __exit powerclamp_exit(void)
- {
- 	unregister_hotcpu_notifier(&powerclamp_cpu_notifier);
- 	end_power_clamp();
--- 
-1.7.10.4
+> adverse to it. My only gripe is with the undocumented clock property in
+> the binding, and that leads to two questions:
+> This doesn't touch the GIC code at all, so I don't feel completely
 
+The reason no GIC code is touched (for now), is that it's non-trivial to
+fix the GIC driver to handle this.
+
+> adverse to it. My only gripe is with the undocumented clock property in
+> the binding, and that leads to two questions:
+> - the GIC architecture doesn't mention a clock at all, so that's a
+> Renesas special. Do we want to have a vendor-specific property for this?
+> Or does it belong elsewhere?
+
+Apart from being implemented using synchronous logic and thus using a
+clock signal internally, the GIC and its driver don't care about this clock.
+
+When an existing IP module that doesn't care about clocks becomes reused
+on a new SoC, and it now ends up being part of a "PM Domain" (e.g. a Power
+Domain or Clock Domain, or both), this "PM Domain" is a feature of the
+platform, not of the IP module itself (cfr. "(Existing) Device Driver" in [1];
+GIC falls in the same category as the Thermal Module example).
+Hence I don't think it's necessary to mention this in the ARM GIC binding.
+
+> - alternatively, do we want the core GIC code to deal with this? In
+> which case, how do we express the policy?
+
+The proper way to handle this automatically is to add Runtime PM support
+to the driver. However, this requires using a platform device.
+
+I would like to add the clock and GIC dependency on the clock in the DTS now,
+for reasons of DTS stability. But that means I need a temporary workaround
+to avoid the clock from being disabled, until the GIC driver handles this.
+
+I don't expect a fix for the GIC code to just show up magically. I just wanted
+you to be aware of the problem. GIC is not the only problematic module here,
+there are others, cfr. the last slide of [2].
+
+Thanks!
+
+References:
+Presentations at ELC2015:
+  [1] "Last one out, turn off the lights", by Geert Uytterhoeven
+(http://events.linuxfoundation.org/sites/events/files/slides/Last_One_Out_Turn_Off_The_Lights_Handouts.pdf)
+  [2] "Introduction to Kernel Power Managemen", by Kevin Hilman (still
+to appear at http://events.linuxfoundation.org/events/embedded-linux-conference/program/slides)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
