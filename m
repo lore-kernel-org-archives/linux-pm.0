@@ -1,85 +1,45 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v18 10/11] ARM: dts: qcom: Add idle state device nodes for 8064
-Date: Wed, 25 Mar 2015 14:25:35 -0600
-Message-ID: <1427315136-44321-11-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v18 11/11] ARM: qcom: Update defconfig to enable cpuidle
+Date: Wed, 25 Mar 2015 14:25:36 -0600
+Message-ID: <1427315136-44321-12-git-send-email-lina.iyer@linaro.org>
 References: <1427315136-44321-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:34838 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753406AbbCYU0T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Mar 2015 16:26:19 -0400
-Received: by pagj7 with SMTP id j7so40004937pag.2
-        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2015 13:26:18 -0700 (PDT)
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1427315136-44321-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, agross@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Add ARM common idle state device bindings for cpuidle support for APQ
-8064.
+Update defconfig to allow cpuidle for QCOM cpus.
 
-Support Standalone power collapse (SPC) idle state (power down that does not
-affect any SoC idle states) for each cpu.
+* Enable QCOM_PM
+* Enable ARM_QCOM_CPUIDLE
 
 Cc: Kumar Gala <galak@codeaurora.org>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- arch/arm/boot/dts/qcom-apq8064.dtsi | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ arch/arm/configs/qcom_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm/boot/dts/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom-apq8064.dtsi
-index 9fd24bc..592e985 100644
---- a/arch/arm/boot/dts/qcom-apq8064.dtsi
-+++ b/arch/arm/boot/dts/qcom-apq8064.dtsi
-@@ -23,6 +23,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc0>;
- 			qcom,saw = <&saw0>;
-+			cpu-idle-states = <&CPU_SPC>;
- 		};
- 
- 		cpu@1 {
-@@ -33,6 +34,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc1>;
- 			qcom,saw = <&saw1>;
-+			cpu-idle-states = <&CPU_SPC>;
- 		};
- 
- 		cpu@2 {
-@@ -43,6 +45,7 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc2>;
- 			qcom,saw = <&saw2>;
-+			cpu-idle-states = <&CPU_SPC>;
- 		};
- 
- 		cpu@3 {
-@@ -53,12 +56,23 @@
- 			next-level-cache = <&L2>;
- 			qcom,acc = <&acc3>;
- 			qcom,saw = <&saw3>;
-+			cpu-idle-states = <&CPU_SPC>;
- 		};
- 
- 		L2: l2-cache {
- 			compatible = "cache";
- 			cache-level = <2>;
- 		};
-+
-+		idle-states {
-+			CPU_SPC: spc {
-+				compatible = "qcom,idle-state-spc",
-+						"arm,idle-state";
-+				entry-latency-us = <400>;
-+				exit-latency-us = <900>;
-+				min-residency-us = <3000>;
-+			};
-+		};
- 	};
- 
- 	cpu-pmu {
+diff --git a/arch/arm/configs/qcom_defconfig b/arch/arm/configs/qcom_defconfig
+index 8c7da33..56bda6b 100644
+--- a/arch/arm/configs/qcom_defconfig
++++ b/arch/arm/configs/qcom_defconfig
+@@ -30,6 +30,7 @@ CONFIG_CLEANCACHE=y
+ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_ARM_ATAG_DTB_COMPAT=y
+ CONFIG_CPU_IDLE=y
++CONFIG_ARM_QCOM_CPUIDLE=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+@@ -135,6 +136,7 @@ CONFIG_DMADEVICES=y
+ CONFIG_QCOM_BAM_DMA=y
+ CONFIG_STAGING=y
+ CONFIG_QCOM_GSBI=y
++CONFIG_QCOM_PM=y
+ CONFIG_COMMON_CLK_QCOM=y
+ CONFIG_APQ_MMCC_8084=y
+ CONFIG_IPQ_GCC_806X=y
 -- 
 2.1.0
-
