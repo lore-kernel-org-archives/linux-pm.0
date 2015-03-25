@@ -1,40 +1,58 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 00/09] Some kernel/time cleanups (related to timer_suspend/resume)
-Date: Wed, 25 Mar 2015 13:13:51 +0100
-Message-ID: <2450480.24OCjXdgSB@vostro.rjw.lan>
-References: <20150216121435.203983131@infradead.org> <4241632.Wi7SZdKMQs@vostro.rjw.lan>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH] thermal: cpu_cooling: Check memory allocation of
+ power_table
+Date: Wed, 25 Mar 2015 11:47:05 +0000
+Message-ID: <20150325114705.GB3125@e104805>
+References: <1426875613-31612-1-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4241632.Wi7SZdKMQs@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@kernel.org, tglx@linutronix.de, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from eu-smtp-delivery-143.mimecast.com ([146.101.78.143]:31782 "EHLO
+	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752147AbbCYLyG convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 Mar 2015 07:54:06 -0400
+In-Reply-To: <1426875613-31612-1-git-send-email-javi.merino@arm.com>
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "edubezval@gmail.com" <edubezval@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
 
-On Wednesday, March 25, 2015 01:04:23 PM Rafael J. Wysocki wrote:
-> Hi,
+On Fri, Mar 20, 2015 at 06:20:13PM +0000, Javi Merino wrote:
+> We allocate the power_table in memory but we don't test whether the
+> allocation succeeded.  Return -ENOMEM if kcalloc() fails.
 > 
-> On Monday, February 16, 2015 01:14:35 PM Peter Zijlstra wrote:
-> > Hi,
-> > 
-> > While working with Rafael on the suspend to idle machinery Thomas made these
-> > cleanups; since one might as well clean code up while you've done the work of
-> > thinking through it again.
-> > 
-> > As it stands there's very little overlap between Rafael's series and this one
-> > aside from a few trivial fixups. So we'll merge them seperately.
+> Fixes: e0128d8ab423 ("thermal: cpu_cooling: implement the power cooling device API")
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Reported-by: kbuild test robot <fengguang.wu@intel.com>
+> Signed-off-by: Javi Merino <javi.merino@arm.com>
+> ---
+> This applies on top of the linus branch in Eduardo's repository
 > 
-> Since some of the original Thomas' patches needed to be rebased on top of the
-> suspend-to-idle material that went in during the 4.0 merge window, I did
-> that with the patches related to the suspending/resuming of ticks which
-> follow.
+>  drivers/thermal/cpu_cooling.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index c4974144c787..3a01dfd5b29c 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -329,6 +329,10 @@ static int build_dyn_power_table(struct cpufreq_cooling_device *cpufreq_device,
+>  	}
+>  
+>  	power_table = kcalloc(num_opps, sizeof(*power_table), GFP_KERNEL);
+> +	if (!power_table) {
+> +		ret = -ENOMEM;
+> +		goto unlock;
+> +	}
+>  
+>  	for (freq = 0, i = 0;
+>  	     opp = dev_pm_opp_find_freq_ceil(dev, &freq), !IS_ERR(opp);
+> -- 
+> 1.9.1
 
-I forgot to mention that I'd tested these vs suspend-to-idle and suspend-to-RAM
-on a couple of different systems and they don't seem to break anything for me.
+Gentle reminder.  Cheers,
+Javi
 
-Also I have a plan to make the compilation of some PM-related stuff conditional
-on CONFIG_PM_SLEEP etc. on top of these.
-
-Rafael
