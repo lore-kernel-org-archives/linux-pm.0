@@ -1,7 +1,7 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v18 03/11] devicetree: bindings: Document qcom,idle-states
-Date: Wed, 25 Mar 2015 14:25:28 -0600
-Message-ID: <1427315136-44321-4-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v18 07/11] ARM: dts: qcom: Update power-controller device node for 8064 Krait CPUs
+Date: Wed, 25 Mar 2015 14:25:32 -0600
+Message-ID: <1427315136-44321-8-git-send-email-lina.iyer@linaro.org>
 References: <1427315136-44321-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1427315136-44321-1-git-send-email-lina.iyer@linaro.org>
@@ -10,112 +10,55 @@ To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@c
 Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, agross@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Document cpuidle states of QCOM cpus. In addition to arm-idle-state
-compatible string, the ARM idle state definition must define one of the
-following compatible strings -
-	"qcom,idle-state-ret",
-	"qcom,idle-state-spc",
-	"qcom,idle-state-pc",
+Update the SAW2 DT bindings to add qcom,apq8064-saw2-v1.1-cpu compatible
+binding string to configure SPM registers and allow the SPM to put the
+core in deeper idle states when the core is idle.
 
-The compatibles helps the SPM platform driver to use the correct idle
-function when the index to the idle state is passed to the platform
-driver.
-
+Cc: Kumar Gala <galak@codeaurora.org>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- .../bindings/arm/msm/qcom,idle-state.txt           | 84 ++++++++++++++++++++++
- 1 file changed, 84 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+ arch/arm/boot/dts/qcom-apq8064.dtsi | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
-new file mode 100644
-index 0000000..06df04c
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
-@@ -0,0 +1,84 @@
-+QCOM Idle States for cpuidle driver
-+
-+ARM provides idle-state node to define the cpuidle states, as defined in [1].
-+cpuidle-qcom is the cpuidle driver for Qualcomm SoCs and uses these idle
-+states. Idle states have different enter/exit latency and residency values.
-+The idle states supported by the QCOM SoC are defined as -
-+
-+    * Standby
-+    * Retention
-+    * Standalone Power Collapse (Standalone PC or SPC)
-+    * Power Collapse (PC)
-+
-+Standby: Standby does a little more in addition to architectural clock gating.
-+When the WFI instruction is executed the ARM core would gate its internal
-+clocks. In addition to gating the clocks, QCOM cpus use this instruction as a
-+trigger to execute the SPM state machine. The SPM state machine waits for the
-+interrupt to trigger the core back in to active. This triggers the cache
-+hierarchy to enter standby states, when all cpus are idle. An interrupt brings
-+the SPM state machine out of its wait, the next step is to ensure that the
-+cache hierarchy is also out of standby, and then the cpu is allowed to resume
-+execution. This state is defined as a generic ARM WFI state by the ARM cpuidle
-+driver and is not defined in the DT. The SPM state machine should be
-+configured to execute this state by default and after executing every other
-+state below.
-+
-+Retention: Retention is a low power state where the core is clock gated and
-+the memory and the registers associated with the core are retained. The
-+voltage may be reduced to the minimum value needed to keep the processor
-+registers active. The SPM should be configured to execute the retention
-+sequence and would wait for interrupt, before restoring the cpu to execution
-+state. Retention may have a slightly higher latency than Standby.
-+
-+Standalone PC: A cpu can power down and warmboot if there is a sufficient time
-+between the time it enters idle and the next known wake up. SPC mode is used
-+to indicate a core entering a power down state without consulting any other
-+cpu or the system resources. This helps save power only on that core.  The SPM
-+sequence for this idle state is programmed to power down the supply to the
-+core, wait for the interrupt, restore power to the core, and ensure the
-+system state including cache hierarchy is ready before allowing core to
-+resume. Applying power and resetting the core causes the core to warmboot
-+back into Elevation Level (EL) which trampolines the control back to the
-+kernel. Entering a power down state for the cpu, needs to be done by trapping
-+into a EL. Failing to do so, would result in a crash enforced by the warm boot
-+code in the EL for the SoC. On SoCs with write-back L1 cache, the cache has to
-+be flushed in s/w, before powering down the core.
-+
-+Power Collapse: This state is similar to the SPC mode, but distinguishes
-+itself in that the cpu acknowledges and permits the SoC to enter deeper sleep
-+modes. In a hierarchical power domain SoC, this means L2 and other caches can
-+be flushed, system bus, clocks - lowered, and SoC main XO clock gated and
-+voltages reduced, provided all cpus enter this state.  Since the span of low
-+power modes possible at this state is vast, the exit latency and the residency
-+of this low power mode would be considered high even though at a cpu level,
-+this essentially is cpu power down. The SPM in this state also may handshake
-+with the Resource power manager (RPM) processor in the SoC to indicate a
-+complete application processor subsystem shut down.
-+
-+The idle-state for QCOM SoCs are distinguished by the compatible property of
-+the idle-states device node.
-+
-+The devicetree representation of the idle state should be -
-+
-+Required properties:
-+
-+- compatible: Must be one of -
-+			"qcom,idle-state-ret",
-+			"qcom,idle-state-spc",
-+			"qcom,idle-state-pc",
-+		and "arm,idle-state".
-+
-+Other required and optional properties are specified in [1].
-+
-+Example:
-+
-+	idle-states {
-+		CPU_SPC: spc {
-+			compatible = "qcom,idle-state-spc", "arm,idle-state";
-+			entry-latency-us = <150>;
-+			exit-latency-us = <200>;
-+			min-residency-us = <2000>;
-+		};
-+	};
-+
-+[1]. Documentation/devicetree/bindings/arm/idle-states.txt
+diff --git a/arch/arm/boot/dts/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom-apq8064.dtsi
+index b3154c0..9fd24bc 100644
+--- a/arch/arm/boot/dts/qcom-apq8064.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8064.dtsi
+@@ -139,26 +139,26 @@
+ 			reg = <0x020b8000 0x1000>, <0x02008000 0x1000>;
+ 		};
+ 
+-		saw0: regulator@2089000 {
+-			compatible = "qcom,saw2";
++		saw0: power-controller@2089000 {
++			compatible = "qcom,apq8064-saw2-v1.1-cpu", "qcom,saw2";
+ 			reg = <0x02089000 0x1000>, <0x02009000 0x1000>;
+ 			regulator;
+ 		};
+ 
+-		saw1: regulator@2099000 {
+-			compatible = "qcom,saw2";
++		saw1: power-controller@2099000 {
++			compatible = "qcom,apq8064-saw2-v1.1-cpu", "qcom,saw2";
+ 			reg = <0x02099000 0x1000>, <0x02009000 0x1000>;
+ 			regulator;
+ 		};
+ 
+-		saw2: regulator@20a9000 {
+-			compatible = "qcom,saw2";
++		saw2: power-controller@20a9000 {
++			compatible = "qcom,apq8064-saw2-v1.1-cpu", "qcom,saw2";
+ 			reg = <0x020a9000 0x1000>, <0x02009000 0x1000>;
+ 			regulator;
+ 		};
+ 
+-		saw3: regulator@20b9000 {
+-			compatible = "qcom,saw2";
++		saw3: power-controller@20b9000 {
++			compatible = "qcom,apq8064-saw2-v1.1-cpu", "qcom,saw2";
+ 			reg = <0x020b9000 0x1000>, <0x02009000 0x1000>;
+ 			regulator;
+ 		};
 -- 
 2.1.0
