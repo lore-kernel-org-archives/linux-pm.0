@@ -1,17 +1,17 @@
 From: Jacob Pan <jacob.jun.pan@linux.intel.com>
 Subject: Re: [PATCH] thermal/intel_powerclamp: add __init / __exit
  annotations
-Date: Wed, 25 Mar 2015 14:40:01 -0700
-Message-ID: <20150325144001.2fba5799@ultegra>
+Date: Wed, 25 Mar 2015 14:59:41 -0700
+Message-ID: <20150325145941.1a3b0f21@ultegra>
 References: <1427318184-21843-1-git-send-email-minipli@googlemail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:44884 "EHLO mga11.intel.com"
+Received: from mga14.intel.com ([192.55.52.115]:40043 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750764AbbCYVkD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 25 Mar 2015 17:40:03 -0400
+	id S1752193AbbCYV7n (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 Mar 2015 17:59:43 -0400
 In-Reply-To: <1427318184-21843-1-git-send-email-minipli@googlemail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
