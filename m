@@ -1,7 +1,7 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v18 08/11] ARM: dts: qcom: Add idle states device nodes for 8974/8074
-Date: Wed, 25 Mar 2015 14:25:33 -0600
-Message-ID: <1427315136-44321-9-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v18 09/11] ARM: dts: qcom: Add idle states device nodes for 8084
+Date: Wed, 25 Mar 2015 14:25:34 -0600
+Message-ID: <1427315136-44321-10-git-send-email-lina.iyer@linaro.org>
 References: <1427315136-44321-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1427315136-44321-1-git-send-email-lina.iyer@linaro.org>
@@ -11,21 +11,21 @@ Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.o
 List-Id: linux-pm@vger.kernel.org
 
 Add ARM common idle states device bindings for cpuidle support for APQ
-8974/8074.
+8084.
 
-Support Standalone power collapse (SPC) idle state (power down that does
-not affect any SoC idle states) for each cpu.
+Support Standalone power collapse (SPC) idle state (power down that does not
+affect any SoC idle states) for each cpu.
 
 Cc: Kumar Gala <galak@codeaurora.org>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- arch/arm/boot/dts/qcom-msm8974.dtsi | 14 ++++++++++++++
+ arch/arm/boot/dts/qcom-apq8084.dtsi | 14 ++++++++++++++
  1 file changed, 14 insertions(+)
 
-diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index ea8c214..f167bb5 100644
---- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-+++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
+index 8fe89a1..52856f1 100644
+--- a/arch/arm/boot/dts/qcom-apq8084.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
 @@ -22,6 +22,7 @@
  			next-level-cache = <&L2>;
  			qcom,acc = <&acc0>;
