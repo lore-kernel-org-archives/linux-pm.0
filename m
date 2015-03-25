@@ -1,147 +1,110 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH V2 2/3] Thermal: handle thermal zone device properly during system sleep
-Date: Wed, 25 Mar 2015 15:53:15 +0800
-Message-ID: <1427269996-29501-3-git-send-email-rui.zhang@intel.com>
-References: <1427269996-29501-1-git-send-email-rui.zhang@intel.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [GIT PULL] : ARM cpuidle changes for 4.1
+Date: Wed, 25 Mar 2015 10:05:23 +0100
+Message-ID: <55127A53.8050206@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:44556 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750815AbbCYHy5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 25 Mar 2015 03:54:57 -0400
-In-Reply-To: <1427269996-29501-1-git-send-email-rui.zhang@intel.com>
+Received: from mail-wg0-f42.google.com ([74.125.82.42]:33119 "EHLO
+	mail-wg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751021AbbCYJF1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Mar 2015 05:05:27 -0400
+Received: by wgbcc7 with SMTP id cc7so19495064wgb.0
+        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2015 02:05:26 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, stable@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 
-Current thermal code does not handle system sleep well because
-1. the cooling device cooling state may be changed during suspend
-2. the previous temperature reading becomes invalid after resumed because
-   it is got before system sleep
-3. updating thermal zone device during suspending/resuming
-   is wrong because some devices may have already been suspended
-   or may have not been resumed.
 
-Thus, the proper way to do this is to cancel all thermal zone
-device update requirements during suspend/resume, and after all
-the devices have been resumed, reset and update every registered
-thermal zone devices.
+Hi Rafael,
 
-This also fixes a regression introduced by
-commit 19593a1fb1f6718406afca5b867dab184289d406
-Author: Aaron Lu <aaron.lu@intel.com>
-Date:   Tue Nov 19 16:59:20 2013 +0800
+this PR request has the following content:
 
-    ACPI / fan: convert to platform driver
+  - Removed the duplicate header inclusion (Daniel Lezcano).
 
-    Convert ACPI fan driver to a platform driver for the purpose of phasing
-    out ACPI bus.
+  - Unified the generic cpuidle ARM driver with ARM64. Each platform ca=
+n=20
+now define their 'enable-method' in the DT thus allowing to split the=20
+low level PM code from the generic cpuidle framework (Daniel Lezcano).
 
-    Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-    Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+  - Allowed the generic ARM cpuidle driver to register per device and=20
+prevent to register the cpuidle device when the underlying hardware is=20
+misconfigured or an error occurs, thus allowing to fail gracefully=20
+(Daniel Lezcano).
 
-Because, with the commit applied, all the fan devices are attached
-to the acpi_general_pm_domain, and they are turned on by the pm_domain
-automatically after resume, without the awareness of thermal core.
+Thanks !
 
-CC: <stable@vger.kernel.org> #3.18+
-Reference: https://bugzilla.kernel.org/show_bug.cgi?id=78201
-Reference: https://bugzilla.kernel.org/show_bug.cgi?id=91411
-Tested-by: Manuel Krause <manuelkrause@netscape.net>
-Tested-by: szegad <szegadlo@poczta.onet.pl>
-Tested-by: prash <prash.n.rao@gmail.com>
-Tested-by: amish <ammdispose-arch@yahoo.com>
-Tested-by: Matthias <morpheusxyz123@yahoo.de>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/thermal/thermal_core.c | 39 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 39 insertions(+)
+   -- Daniel
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 9d6f71b..2f3c829 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -37,6 +37,7 @@
- #include <linux/of.h>
- #include <net/netlink.h>
- #include <net/genetlink.h>
-+#include <linux/suspend.h>
- 
- #define CREATE_TRACE_POINTS
- #include <trace/events/thermal.h>
-@@ -59,6 +60,8 @@ static LIST_HEAD(thermal_governor_list);
- static DEFINE_MUTEX(thermal_list_lock);
- static DEFINE_MUTEX(thermal_governor_lock);
- 
-+static bool in_suspend;
-+
- static struct thermal_governor *def_governor;
- 
- static struct thermal_governor *__find_governor(const char *name)
-@@ -491,6 +494,9 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
- {
- 	int count;
- 
-+	if (in_suspend)
-+		return;
-+
- 	if (!tz->ops->get_temp)
- 		return;
- 
-@@ -1823,6 +1829,36 @@ static void thermal_unregister_governors(void)
- 	thermal_gov_user_space_unregister();
- }
- 
-+static int thermal_pm_notify(struct notifier_block *nb,
-+				unsigned long mode, void *_unused)
-+{
-+	struct thermal_zone_device *tz;
-+
-+	switch (mode) {
-+	case PM_HIBERNATION_PREPARE:
-+	case PM_RESTORE_PREPARE:
-+	case PM_SUSPEND_PREPARE:
-+		in_suspend = true;
-+		break;
-+	case PM_POST_HIBERNATION:
-+	case PM_POST_RESTORE:
-+	case PM_POST_SUSPEND:
-+		in_suspend = false;
-+		list_for_each_entry(tz, &thermal_tz_list, node) {
-+			thermal_zone_device_reset(tz);
-+			thermal_zone_device_update(tz);
-+		}
-+		break;
-+	default:
-+		break;
-+	}
-+	return 0;
-+}
-+
-+static struct notifier_block thermal_pm_nb = {
-+	.notifier_call = thermal_pm_notify,
-+};
-+
- static int __init thermal_init(void)
- {
- 	int result;
-@@ -1843,6 +1879,8 @@ static int __init thermal_init(void)
- 	if (result)
- 		goto exit_netlink;
- 
-+	register_pm_notifier(&thermal_pm_nb);
-+
- 	return 0;
- 
- exit_netlink:
-@@ -1862,6 +1900,7 @@ static int __init thermal_init(void)
- 
- static void __exit thermal_exit(void)
- {
-+	unregister_pm_notifier(&thermal_pm_nb);
- 	of_thermal_destroy_zones();
- 	genetlink_exit();
- 	class_unregister(&thermal_class);
--- 
-1.9.1
+The following changes since commit bc465aa9d045feb0e13b4a8f32cc33c1943f=
+62d6:
+
+   Linux 4.0-rc5 (2015-03-22 16:50:21 -0700)
+
+are available in the git repository at:
+
+   http://git.linaro.org/people/daniel.lezcano/linux.git cpuidle/4.1
+
+for you to fetch changes up to 9a309d6fd213911321acbfe839e0bdb3a7a9f4bf=
+:
+
+   ARM: cpuidle: Document the code (2015-03-25 09:53:43 +0100)
+
+----------------------------------------------------------------
+Daniel Lezcano (8):
+       ARM: cpuidle: Remove duplicate header inclusion
+       ARM: cpuidle: Add a cpuidle ops structure to be used for DT
+       ARM64: cpuidle: Replace cpu_suspend by the common ARM/ARM64 func=
+tion
+       ARM64: cpuidle: Rename cpu_init_idle to a common function name
+       ARM64: cpuidle: Remove arm64 reference
+       ARM: cpuidle: Enable the ARM64 driver for both ARM32/ARM64
+       ARM: cpuidle: Register per cpuidle device
+       ARM: cpuidle: Document the code
+
+  arch/arm/include/asm/cpuidle.h                     |  23=20
++++++++++++++++++++++++
+  arch/arm/kernel/cpuidle.c                          | 133=20
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+  arch/arm/mach-davinci/cpuidle.c                    |   1 -
+  arch/arm/mach-imx/cpuidle-imx6q.c                  |   1 -
+  arch/arm/mach-imx/cpuidle-imx6sl.c                 |   1 -
+  arch/arm/mach-imx/cpuidle-imx6sx.c                 |   1 -
+  arch/arm/mach-omap2/cpuidle44xx.c                  |   1 -
+  arch/arm/mach-s3c64xx/cpuidle.c                    |   2 +-
+  arch/arm/mach-tegra/cpuidle-tegra20.c              |   1 -
+  arch/arm/mach-tegra/cpuidle-tegra30.c              |   1 -
+  arch/arm64/configs/defconfig                       |   2 +-
+  arch/arm64/include/asm/cpuidle.h                   |   9 ++++++---
+  arch/arm64/kernel/cpuidle.c                        |   2 +-
+  drivers/cpuidle/Kconfig                            |   7 +------
+  drivers/cpuidle/Kconfig.arm                        |  28=20
++++++++++++++++++++---------
+  drivers/cpuidle/Kconfig.arm64                      |  13 ------------=
+-
+  drivers/cpuidle/Makefile                           |   5 +----
+  drivers/cpuidle/{cpuidle-arm64.c =3D> cpuidle-arm.c} |  83=20
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++---------=
+------------
+  drivers/cpuidle/cpuidle-at91.c                     |   1 -
+  drivers/cpuidle/cpuidle-exynos.c                   |   1 -
+  drivers/cpuidle/cpuidle-kirkwood.c                 |   1 -
+  drivers/cpuidle/cpuidle-ux500.c                    |   1 -
+  drivers/cpuidle/cpuidle-zynq.c                     |   1 -
+  include/asm-generic/vmlinux.lds.h                  |   2 ++
+  24 files changed, 249 insertions(+), 72 deletions(-)
+  delete mode 100644 drivers/cpuidle/Kconfig.arm64
+  rename drivers/cpuidle/{cpuidle-arm64.c =3D> cpuidle-arm.c} (56%)
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
