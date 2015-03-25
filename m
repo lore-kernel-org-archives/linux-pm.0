@@ -1,7 +1,7 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 4/8] ARM64: cpuidle: Rename cpu_init_idle to a common function name
-Date: Wed, 25 Mar 2015 10:07:12 +0100
-Message-ID: <1427274436-21916-4-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 8/8] ARM: cpuidle: Document the code
+Date: Wed, 25 Mar 2015 10:07:16 +0100
+Message-ID: <1427274436-21916-8-git-send-email-daniel.lezcano@linaro.org>
 References: <55127A53.8050206@linaro.org>
  <1427274436-21916-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -11,62 +11,110 @@ To: rjw@rjwysocki.net
 Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, lina.iyer@linaro.org, Lorenzo.Pieralisi@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-With this change the cpuidle-arm64.c file calls the same function name
-for both ARM and ARM64.
+Add kernel-doc format documentation in the code.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Kevin Hilman <khilman@linaro.org>
-Acked-by: Rob Herring <robherring2@gmail.com>
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
-Tested-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 ---
- arch/arm64/include/asm/cpuidle.h | 4 ++--
- arch/arm64/kernel/cpuidle.c      | 2 +-
- drivers/cpuidle/cpuidle-arm64.c  | 2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ arch/arm/kernel/cpuidle.c | 59 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 59 insertions(+)
 
-diff --git a/arch/arm64/include/asm/cpuidle.h b/arch/arm64/include/asm/cpuidle.h
-index 460a38b..141b2fc 100644
---- a/arch/arm64/include/asm/cpuidle.h
-+++ b/arch/arm64/include/asm/cpuidle.h
-@@ -4,10 +4,10 @@
- #include <asm/proc-fns.h>
+diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
+index 2b0dae3..318da33 100644
+--- a/arch/arm/kernel/cpuidle.c
++++ b/arch/arm/kernel/cpuidle.c
+@@ -21,6 +21,17 @@ static const struct of_cpuidle_method __cpuidle_method_of_table_sentinel
  
- #ifdef CONFIG_CPU_IDLE
--extern int cpu_init_idle(unsigned int cpu);
-+extern int arm_cpuidle_init(unsigned int cpu);
- extern int cpu_suspend(unsigned long arg);
- #else
--static inline int cpu_init_idle(unsigned int cpu)
-+static inline int arm_cpuidle_init(unsigned int cpu)
+ static struct cpuidle_ops cpuidle_ops[NR_CPUS];
+ 
++/**
++ * arm_cpuidle_simple_enter() - a wrapper to cpu_do_idle()
++ * @dev: not used
++ * @drv: not used
++ * @index: not used
++ *
++ * A trivial wrapper to allow the cpu_do_idle function to be assigned as a
++ * cpuidle callback by matching the function signature.
++ *
++ * Returns the index passed as parameter
++ */
+ int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+ 		struct cpuidle_driver *drv, int index)
  {
- 	return -EOPNOTSUPP;
+@@ -29,6 +40,16 @@ int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+ 	return index;
  }
-diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.c
-index 5c08966..a78143a 100644
---- a/arch/arm64/kernel/cpuidle.c
-+++ b/arch/arm64/kernel/cpuidle.c
-@@ -15,7 +15,7 @@
- #include <asm/cpuidle.h>
- #include <asm/cpu_ops.h>
  
--int cpu_init_idle(unsigned int cpu)
-+int arm_cpuidle_init(unsigned int cpu)
++/**
++ * arm_cpuidle_suspend() - function to enter low power idle states
++ * @index: an integer used as an identifier for the low level PM callbacks
++ *
++ * This function calls the underlying arch specific low level PM code as
++ * registered at the init time.
++ *
++ * Returns -EOPNOTSUPP if no suspend callback is defined, the result of the
++ * callback otherwise.
++ */
+ int arm_cpuidle_suspend(int index)
  {
  	int ret = -EOPNOTSUPP;
+@@ -40,6 +61,15 @@ int arm_cpuidle_suspend(int index)
+ 	return ret;
+ }
+ 
++/**
++ * arm_cpuidle_get_ops() - find a registered cpuidle_ops by name
++ * @method: the method name
++ *
++ * Search in the __cpuidle_method_of_table array the cpuidle ops matching the
++ * method name.
++ *
++ * Returns a struct cpuidle_ops pointer, NULL if not found.
++ */
+ static struct cpuidle_ops *__init arm_cpuidle_get_ops(const char *method)
+ {
+ 	struct of_cpuidle_method *m = __cpuidle_method_of_table;
+@@ -51,6 +81,19 @@ static struct cpuidle_ops *__init arm_cpuidle_get_ops(const char *method)
+ 	return NULL;
+ }
+ 
++/**
++ * arm_cpuidle_read_ops() - Initialize the cpuidle ops with the device tree
++ * @dn: a pointer to a struct device node corresponding to a cpu node
++ * @cpu: the cpu identifier
++ *
++ * Get the method name defined in the 'enable-method' property, retrieve the
++ * associated cpuidle_ops and do a struct copy. This copy is needed because all
++ * cpuidle_ops are tagged __initdata and will be unloaded after the init
++ * process.
++ *
++ * Return 0 on sucess, -ENOENT if no 'enable-method' is defined, -EOPNOTSUPP if
++ * no cpuidle_ops is registered for the 'enable-method'.
++ */
+ static int __init arm_cpuidle_read_ops(struct device_node *dn, int cpu)
+ {
+ 	const char *enable_method;
+@@ -75,6 +118,22 @@ static int __init arm_cpuidle_read_ops(struct device_node *dn, int cpu)
+ 	return 0;
+ }
+ 
++/**
++ * arm_cpuidle_init() - Initialize cpuidle_ops for a specific cpu
++ * @cpu: the cpu to be initialized
++ *
++ * Initialize the cpuidle ops with the device for the cpu and then call
++ * the cpu's idle initialization callback. This may fail if the underlying HW
++ * is not operational.
++ *
++ * Returns:
++ *  0 on success,
++ *  -ENODEV if it fails to find the cpu node in the device tree,
++ *  -EOPNOTSUPP if it does not find a registered cpuidle_ops for this cpu,
++ *  -ENOENT if it fails to find an 'enable-method' property,
++ *  -ENXIO if the HW reports a failure or a misconfiguration,
++ *  -ENOMEM if the HW report an memory allocation failure 
++ */
+ int __init arm_cpuidle_init(int cpu)
+ {
  	struct device_node *cpu_node = of_cpu_device_node_get(cpu);
-diff --git a/drivers/cpuidle/cpuidle-arm64.c b/drivers/cpuidle/cpuidle-arm64.c
-index 0cea244..6ef291c7 100644
---- a/drivers/cpuidle/cpuidle-arm64.c
-+++ b/drivers/cpuidle/cpuidle-arm64.c
-@@ -110,7 +110,7 @@ static int __init arm64_idle_init(void)
- 	 * idle states suspend back-end specific data
- 	 */
- 	for_each_possible_cpu(cpu) {
--		ret = cpu_init_idle(cpu);
-+		ret = arm_cpuidle_init(cpu);
- 		if (ret) {
- 			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
- 			return ret;
 -- 
 1.9.1
