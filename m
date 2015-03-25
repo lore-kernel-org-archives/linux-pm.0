@@ -1,473 +1,97 @@
-From: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v18 01/11] ARM: qcom: Add Subsystem Power Manager (SPM) driver
-Date: Wed, 25 Mar 2015 14:25:26 -0600
-Message-ID: <1427315136-44321-2-git-send-email-lina.iyer@linaro.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v18 06/11] ARM: dts: qcom: Add power-controller device node for 8084 Krait CPUs
+Date: Wed, 25 Mar 2015 14:25:31 -0600
+Message-ID: <1427315136-44321-7-git-send-email-lina.iyer@linaro.org>
 References: <1427315136-44321-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1427315136-44321-1-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, msivasub-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, agross-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f170.google.com ([209.85.192.170]:34332 "EHLO
+	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753381AbbCYU0I (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Mar 2015 16:26:08 -0400
+Received: by pdbni2 with SMTP id ni2so39363156pdb.1
+        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2015 13:26:08 -0700 (PDT)
+In-Reply-To: <1427315136-44321-1-git-send-email-lina.iyer@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, agross@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
 
-SPM is a hardware block that controls the peripheral logic surrounding
-the application cores (cpu/l$). When the core executes WFI instruction,
-the SPM takes over the putting the core in low power state as
-configured. The wake up for the SPM is an interrupt at the GIC, which
-then completes the rest of low power mode sequence and brings the core
-out of low power mode.
+Each Krait CPU in the QCOM 8084 SoC has an SAW power controller to
+regulate the power to the cpu and aide the core in entering idle states.
+Reference the SAW instance and associate the instance with the CPU core.
 
-The SPM has a set of control registers that configure the SPMs
-individually based on the type of the core and the runtime conditions.
-SPM is a finite state machine block to which a sequence is provided and
-it interprets the bytes and executes them in sequence. Each low power
-mode that the core can enter into is provided to the SPM as a sequence.
-
-Configure the SPM to set the core (cpu or L2) into its low power mode,
-the index of the first command in the sequence is set in the SPM_CTL
-register. When the core executes ARM wfi instruction, it triggers the
-SPM state machine to start executing from that index. The SPM state
-machine waits until the interrupt occurs and starts executing the rest
-of the sequence until it hits the end of the sequence. The end of the
-sequence jumps the core out of its low power mode.
-
-Add support for an idle driver to set up the SPM to place the core in
-Standby or Standalone power collapse mode when the core is idle.
-
-Based on work by: Mahesh Sivasubramanian <msivasub-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>,
-Ai Li <ali-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Praveen Chidambaram <pchidamb-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Original tree available at -
-git://codeaurora.org/quic/la/kernel/msm-3.10.git
-
-Cc: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Cc: Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Kumar Gala <galak@codeaurora.org>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/soc/qcom/Kconfig  |   7 +
- drivers/soc/qcom/Makefile |   1 +
- drivers/soc/qcom/spm.c    | 385 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 393 insertions(+)
- create mode 100644 drivers/soc/qcom/spm.c
+ arch/arm/boot/dts/qcom-apq8084.dtsi | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/soc/qcom/Kconfig b/drivers/soc/qcom/Kconfig
-index 7bd2c94..628bcba 100644
---- a/drivers/soc/qcom/Kconfig
-+++ b/drivers/soc/qcom/Kconfig
-@@ -9,3 +9,10 @@ config QCOM_GSBI
-           functions for connecting the underlying serial UART, SPI, and I2C
-           devices to the output pins.
+diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
+index 1f130bc..8fe89a1 100644
+--- a/arch/arm/boot/dts/qcom-apq8084.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
+@@ -21,6 +21,7 @@
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc0>;
++			qcom,saw = <&saw0>;
+ 		};
  
-+config QCOM_PM
-+	bool "Qualcomm Power Management"
-+	depends on ARCH_QCOM
-+	help
-+	  QCOM Platform specific power driver to manage cores and L2 low power
-+	  modes. It interface with various system drivers to put the cores in
-+	  low power modes.
-diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
-index 4389012..931d385 100644
---- a/drivers/soc/qcom/Makefile
-+++ b/drivers/soc/qcom/Makefile
-@@ -1 +1,2 @@
- obj-$(CONFIG_QCOM_GSBI)	+=	qcom_gsbi.o
-+obj-$(CONFIG_QCOM_PM)	+=	spm.o
-diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
-new file mode 100644
-index 0000000..b562af8
---- /dev/null
-+++ b/drivers/soc/qcom/spm.c
-@@ -0,0 +1,385 @@
-+/*
-+ * Copyright (c) 2011-2014, The Linux Foundation. All rights reserved.
-+ * Copyright (c) 2014,2015, Linaro Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
+ 		cpu@1 {
+@@ -30,6 +31,7 @@
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc1>;
++			qcom,saw = <&saw1>;
+ 		};
+ 
+ 		cpu@2 {
+@@ -39,6 +41,7 @@
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc2>;
++			qcom,saw = <&saw2>;
+ 		};
+ 
+ 		cpu@3 {
+@@ -48,6 +51,7 @@
+ 			enable-method = "qcom,kpss-acc-v2";
+ 			next-level-cache = <&L2>;
+ 			qcom,acc = <&acc3>;
++			qcom,saw = <&saw3>;
+ 		};
+ 
+ 		L2: l2-cache {
+@@ -144,7 +148,27 @@
+ 			};
+ 		};
+ 
+-		saw_l2: regulator@f9012000 {
++		saw0: power-controller@f9089000 {
++			compatible = "qcom,apq8084-saw2-v2.1-cpu", "qcom,saw2";
++			reg = <0xf9089000 0x1000>, <0xf9009000 0x1000>;
++		};
 +
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/slab.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/of_device.h>
-+#include <linux/err.h>
-+#include <linux/platform_device.h>
-+#include <linux/cpuidle.h>
-+#include <linux/cpu_pm.h>
-+#include <linux/qcom_scm.h>
++		saw1: power-controller@f9099000 {
++			compatible = "qcom,apq8084-saw2-v2.1-cpu", "qcom,saw2";
++			reg = <0xf9099000 0x1000>, <0xf9009000 0x1000>;
++		};
 +
-+#include <asm/cpuidle.h>
-+#include <asm/proc-fns.h>
-+#include <asm/suspend.h>
++		saw2: power-controller@f90a9000 {
++			compatible = "qcom,apq8084-saw2-v2.1-cpu", "qcom,saw2";
++			reg = <0xf90a9000 0x1000>, <0xf9009000 0x1000>;
++		};
 +
-+#define MAX_PMIC_DATA		2
-+#define MAX_SEQ_DATA		64
-+#define SPM_CTL_INDEX		0x7f
-+#define SPM_CTL_INDEX_SHIFT	4
-+#define SPM_CTL_EN		BIT(0)
++		saw3: power-controller@f90b9000 {
++			compatible = "qcom,apq8084-saw2-v2.1-cpu", "qcom,saw2";
++			reg = <0xf90b9000 0x1000>, <0xf9009000 0x1000>;
++		};
 +
-+enum pm_sleep_mode {
-+	PM_SLEEP_MODE_STBY,
-+	PM_SLEEP_MODE_RET,
-+	PM_SLEEP_MODE_SPC,
-+	PM_SLEEP_MODE_PC,
-+	PM_SLEEP_MODE_NR,
-+};
-+
-+enum spm_reg {
-+	SPM_REG_CFG,
-+	SPM_REG_SPM_CTL,
-+	SPM_REG_DLY,
-+	SPM_REG_PMIC_DLY,
-+	SPM_REG_PMIC_DATA_0,
-+	SPM_REG_PMIC_DATA_1,
-+	SPM_REG_VCTL,
-+	SPM_REG_SEQ_ENTRY,
-+	SPM_REG_SPM_STS,
-+	SPM_REG_PMIC_STS,
-+	SPM_REG_NR,
-+};
-+
-+struct spm_reg_data {
-+	const u8 *reg_offset;
-+	u32 spm_cfg;
-+	u32 spm_dly;
-+	u32 pmic_dly;
-+	u32 pmic_data[MAX_PMIC_DATA];
-+	u8 seq[MAX_SEQ_DATA];
-+	u8 start_index[PM_SLEEP_MODE_NR];
-+};
-+
-+struct spm_driver_data {
-+	void __iomem *reg_base;
-+	const struct spm_reg_data *reg_data;
-+};
-+
-+static const u8 spm_reg_offset_v2_1[SPM_REG_NR] = {
-+	[SPM_REG_CFG]		= 0x08,
-+	[SPM_REG_SPM_CTL]	= 0x30,
-+	[SPM_REG_DLY]		= 0x34,
-+	[SPM_REG_SEQ_ENTRY]	= 0x80,
-+};
-+
-+/* SPM register data for 8974, 8084 */
-+static const struct spm_reg_data spm_reg_8974_8084_cpu  = {
-+	.reg_offset = spm_reg_offset_v2_1,
-+	.spm_cfg = 0x1,
-+	.spm_dly = 0x3C102800,
-+	.seq = { 0x03, 0x0B, 0x0F, 0x00, 0x20, 0x80, 0x10, 0xE8, 0x5B, 0x03,
-+		0x3B, 0xE8, 0x5B, 0x82, 0x10, 0x0B, 0x30, 0x06, 0x26, 0x30,
-+		0x0F },
-+	.start_index[PM_SLEEP_MODE_STBY] = 0,
-+	.start_index[PM_SLEEP_MODE_SPC] = 3,
-+};
-+
-+static const u8 spm_reg_offset_v1_1[SPM_REG_NR] = {
-+	[SPM_REG_CFG]		= 0x08,
-+	[SPM_REG_SPM_CTL]	= 0x20,
-+	[SPM_REG_PMIC_DLY]	= 0x24,
-+	[SPM_REG_PMIC_DATA_0]	= 0x28,
-+	[SPM_REG_PMIC_DATA_1]	= 0x2C,
-+	[SPM_REG_SEQ_ENTRY]	= 0x80,
-+};
-+
-+/* SPM register data for 8064 */
-+static const struct spm_reg_data spm_reg_8064_cpu = {
-+	.reg_offset = spm_reg_offset_v1_1,
-+	.spm_cfg = 0x1F,
-+	.pmic_dly = 0x02020004,
-+	.pmic_data[0] = 0x0084009C,
-+	.pmic_data[1] = 0x00A4001C,
-+	.seq = { 0x03, 0x0F, 0x00, 0x24, 0x54, 0x10, 0x09, 0x03, 0x01,
-+		0x10, 0x54, 0x30, 0x0C, 0x24, 0x30, 0x0F },
-+	.start_index[PM_SLEEP_MODE_STBY] = 0,
-+	.start_index[PM_SLEEP_MODE_SPC] = 2,
-+};
-+
-+static DEFINE_PER_CPU(struct spm_driver_data *, cpu_spm_drv);
-+
-+typedef int (*idle_fn)(int);
-+static DEFINE_PER_CPU(idle_fn*, qcom_idle_ops);
-+
-+static inline void spm_register_write(struct spm_driver_data *drv,
-+					enum spm_reg reg, u32 val)
-+{
-+	if (drv->reg_data->reg_offset[reg])
-+		writel_relaxed(val, drv->reg_base +
-+				drv->reg_data->reg_offset[reg]);
-+}
-+
-+/* Ensure a guaranteed write, before return */
-+static inline void spm_register_write_sync(struct spm_driver_data *drv,
-+					enum spm_reg reg, u32 val)
-+{
-+	u32 ret;
-+
-+	if (!drv->reg_data->reg_offset[reg])
-+		return;
-+
-+	do {
-+		writel_relaxed(val, drv->reg_base +
-+				drv->reg_data->reg_offset[reg]);
-+		ret = readl_relaxed(drv->reg_base +
-+				drv->reg_data->reg_offset[reg]);
-+		if (ret == val)
-+			break;
-+		cpu_relax();
-+	} while (1);
-+}
-+
-+static inline u32 spm_register_read(struct spm_driver_data *drv,
-+					enum spm_reg reg)
-+{
-+	return readl_relaxed(drv->reg_base + drv->reg_data->reg_offset[reg]);
-+}
-+
-+static void spm_set_low_power_mode(struct spm_driver_data *drv,
-+					enum pm_sleep_mode mode)
-+{
-+	u32 start_index;
-+	u32 ctl_val;
-+
-+	start_index = drv->reg_data->start_index[mode];
-+
-+	ctl_val = spm_register_read(drv, SPM_REG_SPM_CTL);
-+	ctl_val &= ~(SPM_CTL_INDEX << SPM_CTL_INDEX_SHIFT);
-+	ctl_val |= start_index << SPM_CTL_INDEX_SHIFT;
-+	ctl_val |= SPM_CTL_EN;
-+	spm_register_write_sync(drv, SPM_REG_SPM_CTL, ctl_val);
-+}
-+
-+static int qcom_pm_collapse(unsigned long int unused)
-+{
-+	qcom_scm_cpu_power_down(QCOM_SCM_CPU_PWR_DOWN_L2_ON);
-+
-+	/*
-+	 * Returns here only if there was a pending interrupt and we did not
-+	 * power down as a result.
-+	 */
-+	return -1;
-+}
-+
-+static int qcom_cpu_spc(int cpu)
-+{
-+	int ret;
-+	struct spm_driver_data *drv = per_cpu(cpu_spm_drv, cpu);
-+
-+	spm_set_low_power_mode(drv, PM_SLEEP_MODE_SPC);
-+	ret = cpu_suspend(0, qcom_pm_collapse);
-+	/*
-+	 * ARM common code executes WFI without calling into our driver and
-+	 * if the SPM mode is not reset, then we may accidently power down the
-+	 * cpu when we intended only to gate the cpu clock.
-+	 * Ensure the state is set to standby before returning.
-+	 */
-+	spm_set_low_power_mode(drv, PM_SLEEP_MODE_STBY);
-+
-+	return ret;
-+}
-+
-+static int qcom_idle_enter(int cpu, unsigned long index)
-+{
-+	return per_cpu(qcom_idle_ops, cpu)[index](cpu);
-+}
-+
-+static const struct of_device_id qcom_idle_state_match[] __initconst = {
-+	{ .compatible = "qcom,idle-state-spc", .data = qcom_cpu_spc },
-+	{ },
-+};
-+
-+static int __init qcom_cpuidle_init(struct device_node *cpu_node, int cpu)
-+{
-+	const struct of_device_id *match_id;
-+	struct device_node *state_node;
-+	int i;
-+	int state_count = 1;
-+	idle_fn idle_fns[CPUIDLE_STATE_MAX];
-+	idle_fn *fns;
-+	cpumask_t mask;
-+	bool use_scm_power_down = false;
-+
-+	for (i = 0; ; i++) {
-+		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-+		if (!state_node)
-+			break;
-+
-+		if (!of_device_is_available(state_node))
-+			continue;
-+
-+		if (i == CPUIDLE_STATE_MAX) {
-+			pr_warn("%s: cpuidle states reached max possible\n",
-+					__func__);
-+			break;
-+		}
-+
-+		match_id = of_match_node(qcom_idle_state_match, state_node);
-+		if (!match_id)
-+			return -ENODEV;
-+
-+		idle_fns[state_count] = match_id->data;
-+
-+		/* Check if any of the states allow power down */
-+		if (match_id->data == qcom_cpu_spc)
-+			use_scm_power_down = true;
-+
-+		state_count++;
-+	}
-+
-+	if (state_count == 1)
-+		goto check_spm;
-+
-+	fns = devm_kcalloc(get_cpu_device(cpu), state_count, sizeof(*fns),
-+			GFP_KERNEL);
-+	if (!fns)
-+		return -ENOMEM;
-+
-+	for (i = 1; i < state_count; i++)
-+		fns[i] = idle_fns[i];
-+
-+	if (use_scm_power_down) {
-+		/* We have atleast one power down mode */
-+		cpumask_clear(&mask);
-+		cpumask_set_cpu(cpu, &mask);
-+		qcom_scm_set_warm_boot_addr(cpu_resume, &mask);
-+	}
-+
-+	per_cpu(qcom_idle_ops, cpu) = fns;
-+
-+	/*
-+	 * SPM probe for the cpu should have happened by now, if the
-+	 * SPM device does not exist, return -ENXIO to indicate that the
-+	 * cpu does not support idle states.
-+	 */
-+check_spm:
-+	return per_cpu(cpu_spm_drv, cpu) ? 0 : -ENXIO;
-+}
-+
-+static struct cpuidle_ops qcom_cpuidle_ops __initdata = {
-+	.suspend = qcom_idle_enter,
-+	.init = qcom_cpuidle_init,
-+};
-+
-+CPUIDLE_METHOD_OF_DECLARE(qcom_idle_v1, "qcom,kpss-acc-v1", &qcom_cpuidle_ops);
-+CPUIDLE_METHOD_OF_DECLARE(qcom_idle_v2, "qcom,kpss-acc-v2", &qcom_cpuidle_ops);
-+
-+static struct spm_driver_data *spm_get_drv(struct platform_device *pdev,
-+		int *spm_cpu)
-+{
-+	struct spm_driver_data *drv = NULL;
-+	struct device_node *cpu_node, *saw_node;
-+	int cpu;
-+	bool found;
-+
-+	for_each_possible_cpu(cpu) {
-+		cpu_node = of_cpu_device_node_get(cpu);
-+		if (!cpu_node)
-+			continue;
-+		saw_node = of_parse_phandle(cpu_node, "qcom,saw", 0);
-+		found = (saw_node == pdev->dev.of_node);
-+		of_node_put(saw_node);
-+		of_node_put(cpu_node);
-+		if (found)
-+			break;
-+	}
-+
-+	if (found) {
-+		drv = devm_kzalloc(&pdev->dev, sizeof(*drv), GFP_KERNEL);
-+		if (drv)
-+			*spm_cpu = cpu;
-+	}
-+
-+	return drv;
-+}
-+
-+static const struct of_device_id spm_match_table[] = {
-+	{ .compatible = "qcom,msm8974-saw2-v2.1-cpu",
-+	  .data = &spm_reg_8974_8084_cpu },
-+	{ .compatible = "qcom,apq8084-saw2-v2.1-cpu",
-+	  .data = &spm_reg_8974_8084_cpu },
-+	{ .compatible = "qcom,apq8064-saw2-v1.1-cpu",
-+	  .data = &spm_reg_8064_cpu },
-+	{ },
-+};
-+
-+static int spm_dev_probe(struct platform_device *pdev)
-+{
-+	struct spm_driver_data *drv;
-+	struct resource *res;
-+	const struct of_device_id *match_id;
-+	void __iomem *addr;
-+	int cpu;
-+
-+	drv = spm_get_drv(pdev, &cpu);
-+	if (!drv)
-+		return -EINVAL;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	drv->reg_base = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(drv->reg_base))
-+		return PTR_ERR(drv->reg_base);
-+
-+	match_id = of_match_node(spm_match_table, pdev->dev.of_node);
-+	if (!match_id)
-+		return -ENODEV;
-+
-+	drv->reg_data = match_id->data;
-+
-+	/* Write the SPM sequences first.. */
-+	addr = drv->reg_base + drv->reg_data->reg_offset[SPM_REG_SEQ_ENTRY];
-+	__iowrite32_copy(addr, drv->reg_data->seq,
-+			ARRAY_SIZE(drv->reg_data->seq) / 4);
-+
-+	/*
-+	 * ..and then the control registers.
-+	 * On some SoC if the control registers are written first and if the
-+	 * CPU was held in reset, the reset signal could trigger the SPM state
-+	 * machine, before the sequences are completely written.
-+	 */
-+	spm_register_write(drv, SPM_REG_CFG, drv->reg_data->spm_cfg);
-+	spm_register_write(drv, SPM_REG_DLY, drv->reg_data->spm_dly);
-+	spm_register_write(drv, SPM_REG_PMIC_DLY, drv->reg_data->pmic_dly);
-+	spm_register_write(drv, SPM_REG_PMIC_DATA_0,
-+				drv->reg_data->pmic_data[0]);
-+	spm_register_write(drv, SPM_REG_PMIC_DATA_1,
-+				drv->reg_data->pmic_data[1]);
-+
-+	/* Set up Standby as the default low power mode */
-+	spm_set_low_power_mode(drv, PM_SLEEP_MODE_STBY);
-+
-+	per_cpu(cpu_spm_drv, cpu) = drv;
-+
-+	return 0;
-+}
-+
-+static struct platform_driver spm_driver = {
-+	.probe = spm_dev_probe,
-+	.driver = {
-+		.name = "saw",
-+		.of_match_table = spm_match_table,
-+	},
-+};
-+module_platform_driver(spm_driver);
-+
-+MODULE_LICENSE("GPL v2");
-+MODULE_DESCRIPTION("SAW power controller driver");
-+MODULE_ALIAS("platform:saw");
++		saw_l2: power-controller@f9012000 {
+ 			compatible = "qcom,saw2";
+ 			reg = <0xf9012000 0x1000>;
+ 			regulator;
 -- 
 2.1.0
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
