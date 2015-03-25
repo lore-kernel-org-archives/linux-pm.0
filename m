@@ -1,213 +1,120 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 2/8] ARM: cpuidle: Add a cpuidle ops structure to be used for
- DT
-Date: Wed, 25 Mar 2015 10:07:10 +0100
-Message-ID: <1427274436-21916-2-git-send-email-daniel.lezcano@linaro.org>
-References: <55127A53.8050206@linaro.org>
- <1427274436-21916-1-git-send-email-daniel.lezcano@linaro.org>
+From: Marc Zyngier <marc.zyngier@arm.com>
+Subject: Re: [PATCH/RFC 1/5] clk: shmobile: mstp: Never disable INTC-SYS
+Date: Wed, 25 Mar 2015 09:21:46 +0000
+Message-ID: <55127E2A.1040300@arm.com>
+References: <1426706164-28309-1-git-send-email-geert+renesas@glider.be>	<1426706164-28309-2-git-send-email-geert+renesas@glider.be>	<20150324232508.7930.89483@quantum> <CAMuHMdVRhaZY_y2=1+9sZ-kteiguYGeS62Ka-V1WYnNCq_rgQA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1427274436-21916-1-git-send-email-daniel.lezcano@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: rjw@rjwysocki.net
-Cc: lina.iyer@linaro.org, Lorenzo.Pieralisi@arm.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdVRhaZY_y2=1+9sZ-kteiguYGeS62Ka-V1WYnNCq_rgQA@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@linaro.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Mark Rutland <Mark.Rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-The current state of the different cpuidle drivers is the different PM
-operations are passed via the platform_data using the platform driver
-paradigm.
+On 25/03/15 04:17, Geert Uytterhoeven wrote:
+> Hi Mike,
+> 
+> On Wed, Mar 25, 2015 at 12:25 AM, Michael Turquette
+> <mturquette@linaro.org> wrote:
+>> Quoting Geert Uytterhoeven (2015-03-18 12:16:00)
+>>> INTC-SYS is the module clock for the GIC.  Accessing the GIC while it is
+>>> disabled causes:
+>>>
+>>>     Unhandled fault: asynchronous external abort (0x1211) at 0x00000000
+>>>
+>>> Currently, the GIC driver cannot enable its module clock for several
+>>> reasons:
+>>>   - It does not use a platform device, so Runtime PM is not an option,
+>>>   - gic_of_init() runs before any clocks are registered, so it cannot
+>>>     explicitly enable the clock,
+>>>   - gic_of_init() cannot return -EPROBE_DEFER, as IRQCHIP_DECLARE()
+>>>     doesn't support deferred probing.
+>>>
+>>> Hence we have to keep on relying on the boot loader for enabling the
+>>> module clock.
+>>>
+>>> To prevent the module clock from being disabled when the CCF core thinks
+>>> it is unused, and thus causing a system lock-up, add a quirk to the MSTP
+>>> clock driver to make sure the module clock is never disabled.
+>>>
+>>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>>> ---
+>>>  drivers/clk/shmobile/clk-mstp.c | 6 ++++++
+>>>  1 file changed, 6 insertions(+)
+>>>
+>>> diff --git a/drivers/clk/shmobile/clk-mstp.c b/drivers/clk/shmobile/clk-mstp.c
+>>> index 2d2fe773ac8168f9..742af84735a07450 100644
+>>> --- a/drivers/clk/shmobile/clk-mstp.c
+>>> +++ b/drivers/clk/shmobile/clk-mstp.c
+>>> @@ -62,6 +62,12 @@ static int cpg_mstp_clock_endisable(struct clk_hw *hw, bool enable)
+>>>         unsigned int i;
+>>>         u32 value;
+>>>
+>>> +       /* INTC-SYS is the module clock of the GIC, and must not be disabled */
+>>> +       if (!enable && !strcmp(__clk_get_name(hw->clk), "intc-sys")) {
+>>> +               pr_debug("MSTP %pC skipping disable\n", hw->clk);
+>>> +               return 0;
+>>> +       }
+>>
+>> Hello Geert,
+>>
+>> This is a bit ugly for three reasons:
+>>
+>> 1) we hit this code for every MSTP clock {en,dis}able call
+>> 2) __clk_get_name is kind of gross
+> 
+> Sure, this is ugly. That's why this was an RFC.
+> I was mainly trying to trigger a reply from the GIC maintainers ;-)
 
-This approach allowed to split the low level PM code from the arch specific
-and the generic cpuidle code.
+Given that I'm the only GIC-related person on the cc list, I suppose
+this is puts me on the spot.
 
-Unfortunately there are complaints about this approach as, in the context of the
-single kernel image, we have multiple drivers loaded in memory for nothing and
-the platform driver is not adequate for cpuidle.
+This doesn't touch the GIC code at all, so I don't feel completely
+adverse to it. My only gripe is with the undocumented clock property in
+the binding, and that leads to two questions:
 
-This patch provides a common interface via cpuidle ops for all new cpuidle
-driver and a definition for the device tree.
+- the GIC architecture doesn't mention a clock at all, so that's a
+Renesas special. Do we want to have a vendor-specific property for this?
+Or does it belong elsewhere?
+- alternatively, do we want the core GIC code to deal with this? In
+which case, how do we express the policy?
 
-It will allow with the next patches to a have a common definition with ARM64
-and share the same cpuidle driver.
+Thanks,
 
-The code is optimized to use the __init section intensively in order to reduce
-the memory footprint after the driver is initialized and unify the function
-names with ARM64.
+	M.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Kevin Hilman <khilman@linaro.org>
-Acked-by: Rob Herring <robherring2@gmail.com>
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
-Tested-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
----
- arch/arm/include/asm/cpuidle.h    | 21 ++++++++++++
- arch/arm/kernel/cpuidle.c         | 72 +++++++++++++++++++++++++++++++++++++++
- arch/arm64/include/asm/cpuidle.h  |  5 ++-
- include/asm-generic/vmlinux.lds.h |  2 ++
- 4 files changed, 99 insertions(+), 1 deletion(-)
+>> 3) the enable_count will not be correct. It will be zero but the clock
+>> will actually be enabled
+> 
+> That's indeed something I didn't take into account. Will change to just enabling
+> the clock from the clock driver.
+> 
+>> Have you considered Lee's series to express these always-on clocks in
+>> DT? See,
+>>
+>> https://lkml.org/lkml/2015/2/24/495
+> 
+> That solution doesn't apply here, as we do have a correct description
+> of the hardware
+> in DT (after the other patches in the series, like e.g. (courtesy for
+> Lee) http://permalink.gmane.org/gmane.linux.power-management.general/58123).
+> 
+> Thanks!
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
+> 
 
-diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
-index 348dc81..0f84249 100644
---- a/arch/arm/include/asm/cpuidle.h
-+++ b/arch/arm/include/asm/cpuidle.h
-@@ -27,4 +27,25 @@ static inline int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
-  */
- #define ARM_CPUIDLE_WFI_STATE ARM_CPUIDLE_WFI_STATE_PWR(UINT_MAX)
- 
-+struct device_node;
-+
-+struct cpuidle_ops {
-+	int (*suspend)(int cpu, unsigned long arg);
-+	int (*init)(struct device_node *, int cpu);
-+};
-+
-+struct of_cpuidle_method {
-+	const char *method;
-+	struct cpuidle_ops *ops;
-+};
-+
-+#define CPUIDLE_METHOD_OF_DECLARE(name, _method, _ops)			\
-+	static const struct of_cpuidle_method __cpuidle_method_of_table_##name \
-+	__used __section(__cpuidle_method_of_table)			\
-+	= { .method = _method, .ops = _ops }
-+
-+extern int arm_cpuidle_suspend(int index);
-+
-+extern int arm_cpuidle_init(int cpu);
-+
- #endif
-diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
-index 45969f8..2b0dae3 100644
---- a/arch/arm/kernel/cpuidle.c
-+++ b/arch/arm/kernel/cpuidle.c
-@@ -10,8 +10,17 @@
-  */
- 
- #include <linux/cpuidle.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
- #include <asm/cpuidle.h>
- 
-+extern struct of_cpuidle_method __cpuidle_method_of_table[];
-+
-+static const struct of_cpuidle_method __cpuidle_method_of_table_sentinel
-+	__used __section(__cpuidle_method_of_table_end);
-+
-+static struct cpuidle_ops cpuidle_ops[NR_CPUS];
-+
- int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
- 		struct cpuidle_driver *drv, int index)
- {
-@@ -19,3 +28,66 @@ int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
- 
- 	return index;
- }
-+
-+int arm_cpuidle_suspend(int index)
-+{
-+	int ret = -EOPNOTSUPP;
-+	int cpu = smp_processor_id();
-+
-+	if (cpuidle_ops[cpu].suspend)
-+		ret = cpuidle_ops[cpu].suspend(cpu, index);
-+
-+	return ret;
-+}
-+
-+static struct cpuidle_ops *__init arm_cpuidle_get_ops(const char *method)
-+{
-+	struct of_cpuidle_method *m = __cpuidle_method_of_table;
-+
-+	for (; m->method; m++)
-+		if (!strcmp(m->method, method))
-+			return m->ops;
-+
-+	return NULL;
-+}
-+
-+static int __init arm_cpuidle_read_ops(struct device_node *dn, int cpu)
-+{
-+	const char *enable_method;
-+	struct cpuidle_ops *ops;
-+
-+	enable_method = of_get_property(dn, "enable-method", NULL);
-+	if (!enable_method)
-+		return -ENOENT;
-+
-+	ops = arm_cpuidle_get_ops(enable_method);
-+	if (!ops) {
-+		pr_warn("%s: unsupported enable-method property: %s\n",
-+			dn->full_name, enable_method);
-+		return -EOPNOTSUPP;
-+	}
-+
-+	cpuidle_ops[cpu] = *ops; /* structure copy */
-+
-+	pr_notice("cpuidle: enable-method property '%s'"
-+		  " found operations\n", enable_method);
-+
-+	return 0;
-+}
-+
-+int __init arm_cpuidle_init(int cpu)
-+{
-+	struct device_node *cpu_node = of_cpu_device_node_get(cpu);
-+	int ret;
-+
-+	if (!cpu_node)
-+		return -ENODEV;
-+
-+	ret = arm_cpuidle_read_ops(cpu_node, cpu);
-+	if (!ret && cpuidle_ops[cpu].init)
-+		ret = cpuidle_ops[cpu].init(cpu_node, cpu);
-+
-+	of_node_put(cpu_node);
-+
-+	return ret;
-+}
-diff --git a/arch/arm64/include/asm/cpuidle.h b/arch/arm64/include/asm/cpuidle.h
-index c60643f..460a38b 100644
---- a/arch/arm64/include/asm/cpuidle.h
-+++ b/arch/arm64/include/asm/cpuidle.h
-@@ -17,5 +17,8 @@ static inline int cpu_suspend(unsigned long arg)
- 	return -EOPNOTSUPP;
- }
- #endif
--
-+static inline int arm_cpuidle_suspend(int index)
-+{
-+	return cpu_suspend(index);
-+}
- #endif
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index ac78910..91c0930 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -167,6 +167,7 @@
- #define IOMMU_OF_TABLES()	OF_TABLE(CONFIG_OF_IOMMU, iommu)
- #define RESERVEDMEM_OF_TABLES()	OF_TABLE(CONFIG_OF_RESERVED_MEM, reservedmem)
- #define CPU_METHOD_OF_TABLES()	OF_TABLE(CONFIG_SMP, cpu_method)
-+#define CPUIDLE_METHOD_OF_TABLES() OF_TABLE(CONFIG_CPU_IDLE, cpuidle_method)
- #define EARLYCON_OF_TABLES()	OF_TABLE(CONFIG_SERIAL_EARLYCON, earlycon)
- 
- #define KERNEL_DTB()							\
-@@ -501,6 +502,7 @@
- 	CLKSRC_OF_TABLES()						\
- 	IOMMU_OF_TABLES()						\
- 	CPU_METHOD_OF_TABLES()						\
-+	CPUIDLE_METHOD_OF_TABLES()					\
- 	KERNEL_DTB()							\
- 	IRQCHIP_OF_MATCH_TABLE()					\
- 	EARLYCON_OF_TABLES()
+
 -- 
-1.9.1
+Jazz is not dead. It just smells funny...
