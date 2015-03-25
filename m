@@ -1,80 +1,37 @@
-From: Michael Turquette <mturquette@linaro.org>
-Subject: Re: [PATCH/RFC 1/5] clk: shmobile: mstp: Never disable INTC-SYS
-Date: Tue, 24 Mar 2015 16:25:08 -0700
-Message-ID: <20150324232508.7930.89483@quantum>
-References: <1426706164-28309-1-git-send-email-geert+renesas@glider.be>
- <1426706164-28309-2-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1426706164-28309-2-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Marc Zyngier <marc.zyngier@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: [PATCH 0/3] power: reset: BCM63xx reboot support
+Date: Tue, 24 Mar 2015 17:17:09 -0700
+Message-ID: <1427242632-7971-1-git-send-email-f.fainelli@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f169.google.com ([209.85.192.169]:33786 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752248AbbCYASN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Mar 2015 20:18:13 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Florian Fainelli <f.fainelli@gmail.com>, jogo@openwrt.org, cernekee@gmail.com, computersforpeace@gmail.com, gregory.0xf0@gmail.com, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com
 
-Quoting Geert Uytterhoeven (2015-03-18 12:16:00)
-> INTC-SYS is the module clock for the GIC.  Accessing the GIC while it is
-> disabled causes:
-> 
->     Unhandled fault: asynchronous external abort (0x1211) at 0x00000000
-> 
-> Currently, the GIC driver cannot enable its module clock for several
-> reasons:
->   - It does not use a platform device, so Runtime PM is not an option,
->   - gic_of_init() runs before any clocks are registered, so it cannot
->     explicitly enable the clock,
->   - gic_of_init() cannot return -EPROBE_DEFER, as IRQCHIP_DECLARE()
->     doesn't support deferred probing.
-> 
-> Hence we have to keep on relying on the boot loader for enabling the
-> module clock.
-> 
-> To prevent the module clock from being disabled when the CCF core thinks
-> it is unused, and thus causing a system lock-up, add a quirk to the MSTP
-> clock driver to make sure the module clock is never disabled.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
->  drivers/clk/shmobile/clk-mstp.c | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/drivers/clk/shmobile/clk-mstp.c b/drivers/clk/shmobile/clk-mstp.c
-> index 2d2fe773ac8168f9..742af84735a07450 100644
-> --- a/drivers/clk/shmobile/clk-mstp.c
-> +++ b/drivers/clk/shmobile/clk-mstp.c
-> @@ -62,6 +62,12 @@ static int cpg_mstp_clock_endisable(struct clk_hw *hw, bool enable)
->         unsigned int i;
->         u32 value;
->  
-> +       /* INTC-SYS is the module clock of the GIC, and must not be disabled */
-> +       if (!enable && !strcmp(__clk_get_name(hw->clk), "intc-sys")) {
-> +               pr_debug("MSTP %pC skipping disable\n", hw->clk);
-> +               return 0;
-> +       }
+Hi all,
 
-Hello Geert,
+This patch series adds support for the BCM6328-style software reset hardware
+block commonly found on Broadcom BCM63xx DSL SoCs.
 
-This is a bit ugly for three reasons:
+Thanks!
 
-1) we hit this code for every MSTP clock {en,dis}able call
-2) __clk_get_name is kind of gross
-3) the enable_count will not be correct. It will be zero but the clock
-will actually be enabled
+Florian Fainelli (3):
+  Documentation: bindings: add BCM6328-style soft reset binding
+  power: reset: add Broadcom BCM63xx software reset driver
+  ARM: dts: BCM63xx: add soft-reset node
 
-Have you considered Lee's series to express these always-on clocks in
-DT? See,
+ .../devicetree/bindings/arm/bcm/bcm63138.txt       | 16 +++++
+ arch/arm/boot/dts/bcm63138.dtsi                    |  5 ++
+ drivers/power/reset/Kconfig                        |  7 ++
+ drivers/power/reset/Makefile                       |  1 +
+ drivers/power/reset/bcm63xx-reboot.c               | 80 ++++++++++++++++++++++
+ 5 files changed, 109 insertions(+)
+ create mode 100644 drivers/power/reset/bcm63xx-reboot.c
 
-https://lkml.org/lkml/2015/2/24/495
+-- 
+2.1.0
 
-Regards,
-Mike
-
-> +
->         spin_lock_irqsave(&group->lock, flags);
->  
->         value = clk_readl(group->smstpcr);
-> -- 
-> 1.9.1
-> 
