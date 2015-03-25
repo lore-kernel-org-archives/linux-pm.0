@@ -1,111 +1,220 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 02/09] tick: Move clocksource related stuff to timekeeping.h
-Date: Wed, 25 Mar 2015 13:06:04 +0100
-Message-ID: <2714218.nM5AEfAHj0@vostro.rjw.lan>
+Subject: [PATCH 03/09] tick: Simplify tick-internal.h
+Date: Wed, 25 Mar 2015 13:06:47 +0100
+Message-ID: <16068264.vcNp79HLaT@vostro.rjw.lan>
 References: <20150216121435.203983131@infradead.org> <4241632.Wi7SZdKMQs@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55718 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752456AbbCYLuB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Mar 2015 07:50:01 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <4241632.Wi7SZdKMQs@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: linux-kernel@vger.kernel.org, mingo@kernel.org, tglx@linutronix.de, Linux PM list <linux-pm@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
 From: Thomas Gleixner <tglx@linutronix.de>
 
-Move clocksource related stuff to timekeeping.h and remove the
-pointless include from ntp.c
+tick-internal.h is pretty confusing as a lot of the stub inlines are
+there several times.
+
+Distangle the maze and make clear functional sections.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 [ rjw: Subject ]
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- kernel/time/clocksource.c   |    2 +-
- kernel/time/jiffies.c       |    2 +-
- kernel/time/ntp.c           |    1 -
- kernel/time/tick-internal.h |    6 ------
- kernel/time/timekeeping.h   |    7 +++++++
- 5 files changed, 9 insertions(+), 9 deletions(-)
+ kernel/time/tick-internal.h |  145 ++++++++++++++------------------------------
+ 1 file changed, 49 insertions(+), 96 deletions(-)
 
-Index: linux-pm/kernel/time/clocksource.c
-===================================================================
---- linux-pm.orig/kernel/time/clocksource.c
-+++ linux-pm/kernel/time/clocksource.c
-@@ -31,7 +31,7 @@
- #include <linux/tick.h>
- #include <linux/kthread.h>
- 
--#include "tick-internal.h"
-+#include "timekeeping.h"
- #include "timekeeping_internal.h"
- 
- /**
-Index: linux-pm/kernel/time/jiffies.c
-===================================================================
---- linux-pm.orig/kernel/time/jiffies.c
-+++ linux-pm/kernel/time/jiffies.c
-@@ -25,7 +25,7 @@
- #include <linux/module.h>
- #include <linux/init.h>
- 
--#include "tick-internal.h"
-+#include "timekeeping.h"
- 
- /* The Jiffies based clocksource is the lowest common
-  * denominator clock source which should function on
-Index: linux-pm/kernel/time/ntp.c
-===================================================================
---- linux-pm.orig/kernel/time/ntp.c
-+++ linux-pm/kernel/time/ntp.c
-@@ -17,7 +17,6 @@
- #include <linux/module.h>
- #include <linux/rtc.h>
- 
--#include "tick-internal.h"
- #include "ntp_internal.h"
- 
- /*
 Index: linux-pm/kernel/time/tick-internal.h
 ===================================================================
 --- linux-pm.orig/kernel/time/tick-internal.h
 +++ linux-pm/kernel/time/tick-internal.h
-@@ -6,10 +6,6 @@
+@@ -27,13 +27,18 @@ extern bool tick_check_replacement(struc
+ 				   struct clock_event_device *newdev);
+ extern void tick_install_replacement(struct clock_event_device *dev);
  
- #include "timekeeping.h"
+-extern void clockevents_shutdown(struct clock_event_device *dev);
++/* Check, if the device is functional or a dummy for broadcast */
++static inline int tick_device_is_functional(struct clock_event_device *dev)
++{
++	return !(dev->features & CLOCK_EVT_FEAT_DUMMY);
++}
  
--extern seqlock_t jiffies_lock;
++extern void clockevents_shutdown(struct clock_event_device *dev);
++extern int __clockevents_update_freq(struct clock_event_device *dev, u32 freq);
+ extern ssize_t sysfs_get_uname(const char *buf, char *dst, size_t cnt);
++#endif /* GENERIC_CLOCKEVENTS */
+ 
+-/*
+- * NO_HZ / high resolution timer shared code
+- */
++/* Oneshot related functions */
+ #ifdef CONFIG_TICK_ONESHOT
+ extern void tick_setup_oneshot(struct clock_event_device *newdev,
+ 			       void (*handler)(struct clock_event_device *),
+@@ -42,69 +47,19 @@ extern int tick_program_event(ktime_t ex
+ extern void tick_oneshot_notify(void);
+ extern int tick_switch_to_oneshot(void (*handler)(struct clock_event_device *));
+ extern void tick_resume_oneshot(void);
+-# ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
+-extern void tick_broadcast_setup_oneshot(struct clock_event_device *bc);
+-extern int tick_broadcast_oneshot_control(unsigned long reason);
+-extern void tick_broadcast_switch_to_oneshot(void);
+-extern void tick_shutdown_broadcast_oneshot(unsigned int *cpup);
+-extern int tick_resume_broadcast_oneshot(struct clock_event_device *bc);
+-extern int tick_broadcast_oneshot_active(void);
+-extern void tick_check_oneshot_broadcast_this_cpu(void);
+-bool tick_broadcast_oneshot_available(void);
+-# else /* BROADCAST */
+-static inline void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
+-{
+-	BUG();
+-}
+-static inline int tick_broadcast_oneshot_control(unsigned long reason) { return 0; }
+-static inline void tick_broadcast_switch_to_oneshot(void) { }
+-static inline void tick_shutdown_broadcast_oneshot(unsigned int *cpup) { }
+-static inline int tick_broadcast_oneshot_active(void) { return 0; }
+-static inline void tick_check_oneshot_broadcast_this_cpu(void) { }
+-static inline bool tick_broadcast_oneshot_available(void) { return true; }
+-# endif /* !BROADCAST */
 -
--#define CS_NAME_LEN	32
++static inline bool tick_oneshot_possible(void) { return true; }
+ #else /* !ONESHOT */
+ static inline
+ void tick_setup_oneshot(struct clock_event_device *newdev,
+ 			void (*handler)(struct clock_event_device *),
+-			ktime_t nextevt)
+-{
+-	BUG();
+-}
+-static inline void tick_resume_oneshot(void)
+-{
+-	BUG();
+-}
+-static inline int tick_program_event(ktime_t expires, int force)
+-{
+-	return 0;
+-}
++			ktime_t nextevt) { BUG(); }
++static inline void tick_resume_oneshot(void) { BUG(); }
++static inline int tick_program_event(ktime_t expires, int force) { return 0; }
+ static inline void tick_oneshot_notify(void) { }
+-static inline void tick_broadcast_setup_oneshot(struct clock_event_device *bc)
+-{
+-	BUG();
+-}
+-static inline int tick_broadcast_oneshot_control(unsigned long reason) { return 0; }
+-static inline void tick_shutdown_broadcast_oneshot(unsigned int *cpup) { }
+-static inline int tick_resume_broadcast_oneshot(struct clock_event_device *bc)
+-{
+-	return 0;
+-}
+-static inline int tick_broadcast_oneshot_active(void) { return 0; }
+-static inline bool tick_broadcast_oneshot_available(void) { return false; }
++static inline bool tick_oneshot_possible(void) { return false; }
+ #endif /* !TICK_ONESHOT */
+ 
+-/* NO_HZ_FULL internal */
+-#ifdef CONFIG_NO_HZ_FULL
+-extern void tick_nohz_init(void);
+-# else
+-static inline void tick_nohz_init(void) { }
+-#endif
 -
- #ifdef CONFIG_GENERIC_CLOCKEVENTS
+-/*
+- * Broadcasting support
+- */
++/* Broadcasting support */
+ #ifdef CONFIG_GENERIC_CLOCKEVENTS_BROADCAST
+ extern int tick_device_uses_broadcast(struct clock_event_device *dev, int cpu);
+ extern void tick_install_broadcast_device(struct clock_event_device *dev);
+@@ -114,53 +69,51 @@ extern void tick_shutdown_broadcast(unsi
+ extern void tick_suspend_broadcast(void);
+ extern int tick_resume_broadcast(void);
+ extern void tick_broadcast_init(void);
+-extern void
+-tick_set_periodic_handler(struct clock_event_device *dev, int broadcast);
+-int tick_broadcast_update_freq(struct clock_event_device *dev, u32 freq);
+-
++extern void tick_set_periodic_handler(struct clock_event_device *dev, int broadcast);
++extern int tick_broadcast_update_freq(struct clock_event_device *dev, u32 freq);
+ #else /* !BROADCAST */
+-
+-static inline void tick_install_broadcast_device(struct clock_event_device *dev)
+-{
+-}
+-
+-static inline int tick_is_broadcast_device(struct clock_event_device *dev)
+-{
+-	return 0;
+-}
+-static inline int tick_device_uses_broadcast(struct clock_event_device *dev,
+-					     int cpu)
+-{
+-	return 0;
+-}
++static inline void tick_install_broadcast_device(struct clock_event_device *dev) { }
++static inline int tick_is_broadcast_device(struct clock_event_device *dev) { return 0; }
++static inline int tick_device_uses_broadcast(struct clock_event_device *dev, int cpu) { return 0; }
+ static inline void tick_do_periodic_broadcast(struct clock_event_device *d) { }
+ static inline void tick_broadcast_on_off(unsigned long reason, int *oncpu) { }
+ static inline void tick_shutdown_broadcast(unsigned int *cpup) { }
+ static inline void tick_suspend_broadcast(void) { }
+ static inline int tick_resume_broadcast(void) { return 0; }
+ static inline void tick_broadcast_init(void) { }
+-static inline int tick_broadcast_update_freq(struct clock_event_device *dev,
+-					     u32 freq) { return -ENODEV; }
++static inline int tick_broadcast_update_freq(struct clock_event_device *dev, u32 freq) { return -ENODEV; }
  
- #define TICK_DO_TIMER_NONE	-1
-@@ -168,5 +164,3 @@ int __clockevents_update_freq(struct clo
+-/*
+- * Set the periodic handler in non broadcast mode
+- */
+-static inline void tick_set_periodic_handler(struct clock_event_device *dev,
+-					     int broadcast)
++/* Set the periodic handler in non broadcast mode */
++static inline void tick_set_periodic_handler(struct clock_event_device *dev, int broadcast)
+ {
+ 	dev->event_handler = tick_handle_periodic;
+ }
+ #endif /* !BROADCAST */
  
- #endif /* GENERIC_CLOCKEVENTS */
+-/*
+- * Check, if the device is functional or a dummy for broadcast
+- */
+-static inline int tick_device_is_functional(struct clock_event_device *dev)
+-{
+-	return !(dev->features & CLOCK_EVT_FEAT_DUMMY);
+-}
+-
+-int __clockevents_update_freq(struct clock_event_device *dev, u32 freq);
+-
+-#endif /* GENERIC_CLOCKEVENTS */
++/* Functions related to oneshot broadcasting */
++#if defined(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST) && defined(CONFIG_TICK_ONESHOT)
++extern void tick_broadcast_setup_oneshot(struct clock_event_device *bc);
++extern int tick_broadcast_oneshot_control(unsigned long reason);
++extern void tick_broadcast_switch_to_oneshot(void);
++extern void tick_shutdown_broadcast_oneshot(unsigned int *cpup);
++extern int tick_resume_broadcast_oneshot(struct clock_event_device *bc);
++extern int tick_broadcast_oneshot_active(void);
++extern void tick_check_oneshot_broadcast_this_cpu(void);
++bool tick_broadcast_oneshot_available(void);
++#else /* BROADCAST && ONESHOT */
++static inline void tick_broadcast_setup_oneshot(struct clock_event_device *bc) { BUG(); }
++static inline int tick_broadcast_oneshot_control(unsigned long reason) { return 0; }
++static inline void tick_broadcast_switch_to_oneshot(void) { }
++static inline void tick_shutdown_broadcast_oneshot(unsigned int *cpup) { }
++static inline int tick_resume_broadcast_oneshot(struct clock_event_device *bc) { return 0; }
++static inline int tick_broadcast_oneshot_active(void) { return 0; }
++static inline void tick_check_oneshot_broadcast_this_cpu(void) { }
++static inline bool tick_broadcast_oneshot_available(void) { return tick_oneshot_possible(); }
++#endif /* !BROADCAST && ONESHOT */
  
--extern void do_timer(unsigned long ticks);
--extern void update_wall_time(void);
-Index: linux-pm/kernel/time/timekeeping.h
-===================================================================
---- linux-pm.orig/kernel/time/timekeeping.h
-+++ linux-pm/kernel/time/timekeeping.h
-@@ -19,4 +19,11 @@ extern void timekeeping_clocktai(struct
- extern int timekeeping_suspend(void);
- extern void timekeeping_resume(void);
- 
-+extern void do_timer(unsigned long ticks);
-+extern void update_wall_time(void);
-+
-+extern seqlock_t jiffies_lock;
-+
-+#define CS_NAME_LEN	32
-+
- #endif
-
++/* NO_HZ_FULL internal */
++#ifdef CONFIG_NO_HZ_FULL
++extern void tick_nohz_init(void);
++# else
++static inline void tick_nohz_init(void) { }
++#endif
