@@ -1,99 +1,121 @@
-From: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v18 02/11] devicetree: bindings: Update qcom,saw2 node bindings
-Date: Wed, 25 Mar 2015 14:25:27 -0600
-Message-ID: <1427315136-44321-3-git-send-email-lina.iyer@linaro.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v18 03/11] devicetree: bindings: Document qcom,idle-states
+Date: Wed, 25 Mar 2015 14:25:28 -0600
+Message-ID: <1427315136-44321-4-git-send-email-lina.iyer@linaro.org>
 References: <1427315136-44321-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1427315136-44321-1-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, msivasub-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, agross-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1427315136-44321-1-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, agross@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Update qcom,saw2 node bindings with compatible strings to identify nodes
-that provides cpuidle functionality for a particular SoC. Remove
-unused compatible strings.
+Document cpuidle states of QCOM cpus. In addition to arm-idle-state
+compatible string, the ARM idle state definition must define one of the
+following compatible strings -
+	"qcom,idle-state-ret",
+	"qcom,idle-state-spc",
+	"qcom,idle-state-pc",
 
-Update examples for different SAW nodes.
+The compatibles helps the SPM platform driver to use the correct idle
+function when the index to the idle state is passed to the platform
+driver.
 
-Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- .../devicetree/bindings/arm/msm/qcom,saw2.txt      | 40 +++++++++++++++++-----
- 1 file changed, 31 insertions(+), 9 deletions(-)
+ .../bindings/arm/msm/qcom,idle-state.txt           | 84 ++++++++++++++++++++++
+ 1 file changed, 84 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
 
-diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt b/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
-index 1505fb8..ae4afc6 100644
---- a/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
-+++ b/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
-@@ -2,22 +2,31 @@ SPM AVS Wrapper 2 (SAW2)
- 
- The SAW2 is a wrapper around the Subsystem Power Manager (SPM) and the
- Adaptive Voltage Scaling (AVS) hardware. The SPM is a programmable
--micro-controller that transitions a piece of hardware (like a processor or
-+power-controller that transitions a piece of hardware (like a processor or
- subsystem) into and out of low power modes via a direct connection to
- the PMIC. It can also be wired up to interact with other processors in the
- system, notifying them when a low power state is entered or exited.
- 
-+Multiple revisions of the SAW hardware are supported using these Device Nodes.
-+SAW2 revisions differ in the register offset and configuration data. Also, the
-+same revision of the SAW in different SoCs may have different configuration
-+data due the the differences in hardware capabilities. Hence the SoC name, the
-+version of the SAW hardware in that SoC and the distinction between cpu (big
-+or Little) or cache, may be needed to uniquely identify the SAW register
-+configuration and initialization data. The compatible string is used to
-+indicate this parameter.
+diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+new file mode 100644
+index 0000000..06df04c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/msm/qcom,idle-state.txt
+@@ -0,0 +1,84 @@
++QCOM Idle States for cpuidle driver
 +
- PROPERTIES
- 
- - compatible:
- 	Usage: required
- 	Value type: <string>
--	Definition: shall contain "qcom,saw2". A more specific value should be
--		    one of:
--			 "qcom,saw2-v1"
--			 "qcom,saw2-v1.1"
--			 "qcom,saw2-v2"
--			 "qcom,saw2-v2.1"
-+	Definition: Must have
-+			"qcom,saw2"
-+		    A more specific value could be one of:
-+			"qcom,apq8064-saw2-v1.1-cpu"
-+			"qcom,msm8974-saw2-v2.1-cpu"
-+			"qcom,apq8084-saw2-v2.1-cpu"
- 
- - reg:
- 	Usage: required
-@@ -26,10 +35,23 @@ PROPERTIES
- 		    the register region. An optional second element specifies
- 		    the base address and size of the alias register region.
- 
-+- regulator:
-+	Usage: optional
-+	Value type: boolean
-+	Definition: Indicates that this SPM device acts as a regulator device
-+			device for the core (CPU or Cache) the SPM is attached
-+			to.
- 
--Example:
-+Example 1:
- 
--	regulator@2099000 {
-+	power-controller@2099000 {
- 		compatible = "qcom,saw2";
- 		reg = <0x02099000 0x1000>, <0x02009000 0x1000>;
-+		regulator;
++ARM provides idle-state node to define the cpuidle states, as defined in [1].
++cpuidle-qcom is the cpuidle driver for Qualcomm SoCs and uses these idle
++states. Idle states have different enter/exit latency and residency values.
++The idle states supported by the QCOM SoC are defined as -
++
++    * Standby
++    * Retention
++    * Standalone Power Collapse (Standalone PC or SPC)
++    * Power Collapse (PC)
++
++Standby: Standby does a little more in addition to architectural clock gating.
++When the WFI instruction is executed the ARM core would gate its internal
++clocks. In addition to gating the clocks, QCOM cpus use this instruction as a
++trigger to execute the SPM state machine. The SPM state machine waits for the
++interrupt to trigger the core back in to active. This triggers the cache
++hierarchy to enter standby states, when all cpus are idle. An interrupt brings
++the SPM state machine out of its wait, the next step is to ensure that the
++cache hierarchy is also out of standby, and then the cpu is allowed to resume
++execution. This state is defined as a generic ARM WFI state by the ARM cpuidle
++driver and is not defined in the DT. The SPM state machine should be
++configured to execute this state by default and after executing every other
++state below.
++
++Retention: Retention is a low power state where the core is clock gated and
++the memory and the registers associated with the core are retained. The
++voltage may be reduced to the minimum value needed to keep the processor
++registers active. The SPM should be configured to execute the retention
++sequence and would wait for interrupt, before restoring the cpu to execution
++state. Retention may have a slightly higher latency than Standby.
++
++Standalone PC: A cpu can power down and warmboot if there is a sufficient time
++between the time it enters idle and the next known wake up. SPC mode is used
++to indicate a core entering a power down state without consulting any other
++cpu or the system resources. This helps save power only on that core.  The SPM
++sequence for this idle state is programmed to power down the supply to the
++core, wait for the interrupt, restore power to the core, and ensure the
++system state including cache hierarchy is ready before allowing core to
++resume. Applying power and resetting the core causes the core to warmboot
++back into Elevation Level (EL) which trampolines the control back to the
++kernel. Entering a power down state for the cpu, needs to be done by trapping
++into a EL. Failing to do so, would result in a crash enforced by the warm boot
++code in the EL for the SoC. On SoCs with write-back L1 cache, the cache has to
++be flushed in s/w, before powering down the core.
++
++Power Collapse: This state is similar to the SPC mode, but distinguishes
++itself in that the cpu acknowledges and permits the SoC to enter deeper sleep
++modes. In a hierarchical power domain SoC, this means L2 and other caches can
++be flushed, system bus, clocks - lowered, and SoC main XO clock gated and
++voltages reduced, provided all cpus enter this state.  Since the span of low
++power modes possible at this state is vast, the exit latency and the residency
++of this low power mode would be considered high even though at a cpu level,
++this essentially is cpu power down. The SPM in this state also may handshake
++with the Resource power manager (RPM) processor in the SoC to indicate a
++complete application processor subsystem shut down.
++
++The idle-state for QCOM SoCs are distinguished by the compatible property of
++the idle-states device node.
++
++The devicetree representation of the idle state should be -
++
++Required properties:
++
++- compatible: Must be one of -
++			"qcom,idle-state-ret",
++			"qcom,idle-state-spc",
++			"qcom,idle-state-pc",
++		and "arm,idle-state".
++
++Other required and optional properties are specified in [1].
++
++Example:
++
++	idle-states {
++		CPU_SPC: spc {
++			compatible = "qcom,idle-state-spc", "arm,idle-state";
++			entry-latency-us = <150>;
++			exit-latency-us = <200>;
++			min-residency-us = <2000>;
++		};
 +	};
 +
-+Example 2:
-+	saw0: power-controller@f9089000 {
-+		compatible = "qcom,apq8084-saw2-v2.1-cpu", "qcom,saw2";
-+		reg = <0xf9089000 0x1000>, <0xf9009000 0x1000>;
- 	};
++[1]. Documentation/devicetree/bindings/arm/idle-states.txt
 -- 
 2.1.0
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
