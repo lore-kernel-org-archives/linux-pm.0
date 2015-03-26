@@ -1,43 +1,225 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 2/3] pm: domains: factor out code to get the generic PM
- domain from a struct device
-Date: Thu, 26 Mar 2015 15:20:43 +0000
-Message-ID: <20150326152043.GL8656@n2100.arm.linux.org.uk>
-References: <20150320171941.GK8656@n2100.arm.linux.org.uk>
- <CAPDyKFrpM0TYnNvAX8Jw6zUAekh0=XXMJyxWxSgKSao=TQf62Q@mail.gmail.com>
- <20150323151740.GR8656@n2100.arm.linux.org.uk>
- <5429586.AxdftPXcBp@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Javi Merino <javi.merino@arm.com>
+Subject: [PATCH] thermal: export thermal_zone_parameters to sysfs
+Date: Thu, 26 Mar 2015 15:53:02 +0000
+Message-ID: <1427385182-14194-1-git-send-email-javi.merino@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.arm.linux.org.uk ([78.32.30.218]:44310 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751382AbbCZPU7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Mar 2015 11:20:59 -0400
-Content-Disposition: inline
-In-Reply-To: <5429586.AxdftPXcBp@vostro.rjw.lan>
+Received: from foss.arm.com ([217.140.101.70]:53859 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752632AbbCZPxS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 26 Mar 2015 11:53:18 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>
 
-On Tue, Mar 24, 2015 at 01:29:05AM +0100, Rafael J. Wysocki wrote:
-> On Monday, March 23, 2015 03:17:40 PM Russell King - ARM Linux wrote:
-> > Rafael, please merge these three as we previously agreed.  Thanks.
-> 
-> I said I would do that, didn't I?
+It's useful for tuning to be able to edit thermal_zone_parameters from
+userspace.  Export them to the thermal_zone sysfs so that they can be
+easily changed.
 
-I wasn't sure if you were going to hold back on it as a result of Uwe's
-comments.
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
+---
 
-> I've applied this series plus https://patchwork.kernel.org/patch/6056201/
-> and https://patchwork.kernel.org/patch/6057441/ on top of that.
-> Please let me know if you need anything more from the core.
+This patch was part of the power_allocator governor series[0] but
+looks like it dropped off the radar.  No changes since the last
+posting.  It applies on top of the linus branch in Eduardo's tree.
 
-I'll replicate what you've applied and test it here (build in progress...)
+[0] http://article.gmane.org/gmane.linux.kernel/1897888
 
-Thanks!
+ Documentation/thermal/sysfs-api.txt |  52 +++++++++++++++++++
+ drivers/thermal/thermal_core.c      | 101 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 153 insertions(+)
 
+diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+index fc7dfe10778b..7d44d7f1a71b 100644
+--- a/Documentation/thermal/sysfs-api.txt
++++ b/Documentation/thermal/sysfs-api.txt
+@@ -184,6 +184,12 @@ Thermal zone device sys I/F, created once it's registered:
+     |---trip_point_[0-*]_type:	Trip point type
+     |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
+     |---emul_temp:		Emulated temperature set node
++    |---sustainable_power:      Sustainable dissipatable power
++    |---k_po:                   Proportional term during temperature overshoot
++    |---k_pu:                   Proportional term during temperature undershoot
++    |---k_i:                    PID's integral term in the power allocator gov
++    |---k_d:                    PID's derivative term in the power allocator
++    |---integral_cutoff:        Offset above which errors are accumulated
+ 
+ Thermal cooling device sys I/F, created once it's registered:
+ /sys/class/thermal/cooling_device[0-*]:
+@@ -307,6 +313,52 @@ emul_temp
+ 	  because userland can easily disable the thermal policy by simply
+ 	  flooding this sysfs node with low temperature values.
+ 
++sustainable_power
++	An estimate of the sustained power that can be dissipated by
++	the thermal zone. Used by the power allocator governor. For
++	more information see Documentation/thermal/power_allocator.txt
++	Unit: milliwatts
++	RW, Optional
++
++k_po
++	The proportional term of the power allocator governor's PID
++	controller during temperature overshoot. Temperature overshoot
++	is when the current temperature is above the "desired
++	temperature" trip point. For more information see
++	Documentation/thermal/power_allocator.txt
++	RW, Optional
++
++k_pu
++	The proportional term of the power allocator governor's PID
++	controller during temperature undershoot. Temperature undershoot
++	is when the current temperature is below the "desired
++	temperature" trip point. For more information see
++	Documentation/thermal/power_allocator.txt
++	RW, Optional
++
++k_i
++	The integral term of the power allocator governor's PID
++	controller. This term allows the PID controller to compensate
++	for long term drift. For more information see
++	Documentation/thermal/power_allocator.txt
++	RW, Optional
++
++k_d
++	The derivative term of the power allocator governor's PID
++	controller. For more information see
++	Documentation/thermal/power_allocator.txt
++	RW, Optional
++
++integral_cutoff
++	Temperature offset from the desired temperature trip point
++	above which the integral term of the power allocator
++	governor's PID controller starts accumulating errors. For
++	example, if integral_cutoff is 0, then the integral term only
++	accumulates error when temperature is above the desired
++	temperature trip point. For more information see
++	Documentation/thermal/power_allocator.txt
++	RW, Optional
++
+ *****************************
+ * Cooling device attributes *
+ *****************************
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 4d1a288fe42f..b12e34372f2a 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -873,6 +873,102 @@ emul_temp_store(struct device *dev, struct device_attribute *attr,
+ static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
+ #endif/*CONFIG_THERMAL_EMULATION*/
+ 
++static ssize_t
++sustainable_power_show(struct device *dev, struct device_attribute *devattr,
++		       char *buf)
++{
++	struct thermal_zone_device *tz = to_thermal_zone(dev);
++
++	if (tz->tzp)
++		return sprintf(buf, "%u\n", tz->tzp->sustainable_power);
++	else
++		return -EIO;
++}
++
++static ssize_t
++sustainable_power_store(struct device *dev, struct device_attribute *devattr,
++			const char *buf, size_t count)
++{
++	struct thermal_zone_device *tz = to_thermal_zone(dev);
++	u32 sustainable_power;
++
++	if (!tz->tzp)
++		return -EIO;
++
++	if (kstrtou32(buf, 10, &sustainable_power))
++		return -EINVAL;
++
++	tz->tzp->sustainable_power = sustainable_power;
++
++	return count;
++}
++static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
++		sustainable_power_store);
++
++#define create_s32_tzp_attr(name)					\
++	static ssize_t							\
++	name##_show(struct device *dev, struct device_attribute *devattr, \
++		char *buf)						\
++	{								\
++	struct thermal_zone_device *tz = to_thermal_zone(dev);		\
++									\
++	if (tz->tzp)							\
++		return sprintf(buf, "%u\n", tz->tzp->name);		\
++	else								\
++		return -EIO;						\
++	}								\
++									\
++	static ssize_t							\
++	name##_store(struct device *dev, struct device_attribute *devattr, \
++		const char *buf, size_t count)				\
++	{								\
++		struct thermal_zone_device *tz = to_thermal_zone(dev);	\
++		s32 value;						\
++									\
++		if (!tz->tzp)						\
++			return -EIO;					\
++									\
++		if (kstrtos32(buf, 10, &value))				\
++			return -EINVAL;					\
++									\
++		tz->tzp->name = value;					\
++									\
++		return count;						\
++	}								\
++	static DEVICE_ATTR(name, S_IWUSR | S_IRUGO, name##_show, name##_store)
++
++create_s32_tzp_attr(k_po);
++create_s32_tzp_attr(k_pu);
++create_s32_tzp_attr(k_i);
++create_s32_tzp_attr(k_d);
++create_s32_tzp_attr(integral_cutoff);
++#undef create_s32_tzp_attr
++
++static struct device_attribute *dev_tzp_attrs[] = {
++	&dev_attr_sustainable_power,
++	&dev_attr_k_po,
++	&dev_attr_k_pu,
++	&dev_attr_k_i,
++	&dev_attr_k_d,
++	&dev_attr_integral_cutoff,
++};
++
++static int create_tzp_attrs(struct device *dev)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(dev_tzp_attrs); i++) {
++		int ret;
++		struct device_attribute *dev_attr = dev_tzp_attrs[i];
++
++		ret = device_create_file(dev, dev_attr);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
+ /**
+  * power_actor_get_max_power() - get the maximum power that a cdev can consume
+  * @cdev:	pointer to &thermal_cooling_device
+@@ -1710,6 +1806,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	if (result)
+ 		goto unregister;
+ 
++	/* Add thermal zone params */
++	result = create_tzp_attrs(&tz->device);
++	if (result)
++		goto unregister;
++
+ 	/* Update 'this' zone's governor information */
+ 	mutex_lock(&thermal_governor_lock);
+ 
 -- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+1.9.1
+
