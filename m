@@ -1,60 +1,60 @@
-From: Ben Dooks <ben.dooks@codethink.co.uk>
-Subject: [PATCH] power/reset: at91: big endian fixes for atsama5d3x
-Date: Thu, 26 Mar 2015 14:16:22 +0000
-Message-ID: <1427379382-25328-1-git-send-email-ben.dooks@codethink.co.uk>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: power/reset: at91: big endian fixes for atsama5d3x
+Date: Thu, 26 Mar 2015 15:59:26 +0100
+Message-ID: <20150326145926.GB30183@earth>
+Reply-To: 1427379382-25328-1-git-send-email-ben.dooks@codethink.co.uk
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="d6Gm4EdcadzBjdND"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ducie-dc1.codethink.co.uk ([185.25.241.215]:36289 "EHLO
-	ducie-dc1.codethink.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752348AbbCZOQ2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Mar 2015 10:16:28 -0400
+Received: from mail.kernel.org ([198.145.29.136]:56681 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752443AbbCZO7y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 26 Mar 2015 10:59:54 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@lists.codethink.co.uk
-Cc: Ben Dooks <ben.dooks@codethink.co.uk>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Guenter Roeck <linux@roeck-us.net>, "open list:POWER SUPPLY CLAS..." <linux-pm@vger.kernel.org>
+To: Ben Dooks <ben.dooks@codethink.co.uk>
+Cc: linux-pm@vger.kernel.org
 
-Fix the passing of big endian data to routines that will be writing
-it to the bus in the wrong order.
 
-Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
---
-CC: Sebastian Reichel <sre@kernel.org> (maintainer:POWER SUPPLY CLAS...,commit_signer:2/5=40%)
-CC: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> (maintainer:POWER SUPPLY CLAS...)
-CC: David Woodhouse <dwmw2@infradead.org> (maintainer:POWER SUPPLY CLAS...)
-CC: Nicolas Ferre <nicolas.ferre@atmel.com> (commit_signer:3/5=60%)
-CC: Alexandre Belloni <alexandre.belloni@free-electrons.com> (commit_signer:3/5=60%,authored:2/5=40%,removed_lines:4/18=22%)
-CC: Maxime Ripard <maxime.ripard@free-electrons.com> (commit_signer:1/5=20%,authored:1/5=20%,added_lines:252/278=91%)
-CC: Guenter Roeck <linux@roeck-us.net> (commit_signer:1/5=20%,authored:1/5=20%,added_lines:18/278=6%,removed_lines:10/18=56%)
-CC: linux-pm@vger.kernel.org (open list:POWER SUPPLY CLAS...)
----
- drivers/power/reset/at91-reset.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+--d6Gm4EdcadzBjdND
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
-index 13584e2..723fd2a 100644
---- a/drivers/power/reset/at91-reset.c
-+++ b/drivers/power/reset/at91-reset.c
-@@ -73,8 +73,8 @@ static int at91sam9260_restart(struct notifier_block *this, unsigned long mode,
- 		: "r" (at91_ramc_base[0]),
- 		  "r" (at91_rstc_base),
- 		  "r" (1),
--		  "r" (AT91_SDRAMC_LPCB_POWER_DOWN),
--		  "r" (AT91_RSTC_KEY | AT91_RSTC_PERRST | AT91_RSTC_PROCRST));
-+		  "r" cpu_to_le32(AT91_SDRAMC_LPCB_POWER_DOWN),
-+		  "r" cpu_to_le32(AT91_RSTC_KEY | AT91_RSTC_PERRST | AT91_RSTC_PROCRST));
- 
- 	return NOTIFY_DONE;
- }
-@@ -116,8 +116,8 @@ static int at91sam9g45_restart(struct notifier_block *this, unsigned long mode,
- 		  "r" (at91_ramc_base[1]),
- 		  "r" (at91_rstc_base),
- 		  "r" (1),
--		  "r" (AT91_DDRSDRC_LPCB_POWER_DOWN),
--		  "r" (AT91_RSTC_KEY | AT91_RSTC_PERRST | AT91_RSTC_PROCRST)
-+		  "r" cpu_to_le32(AT91_DDRSDRC_LPCB_POWER_DOWN),
-+		  "r" cpu_to_le32(AT91_RSTC_KEY | AT91_RSTC_PERRST | AT91_RSTC_PROCRST)
- 		: "r0");
- 
- 	return NOTIFY_DONE;
--- 
-2.1.4
+Hi,
 
+> power/reset: at91: big endian fixes for atsama5d3x
+>
+> Fix the passing of big endian data to routines that
+> will be writing it to the bus in the wrong order.
+
+Thanks, I applied your patch:
+
+http://git.infradead.org/battery-2.6.git/commit/7be5ac2c32bd26c47a05367c0135cb6e67b3d452
+
+-- Sebastian
+
+--d6Gm4EdcadzBjdND
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVFB7LAAoJENju1/PIO/qav4IQAKFHd/5tTJXS3Eha+NO/LLf/
+KOn9SVz3MQTdXMXSuxnRk/mC0VnqNeCe/VbBX/1ycyNMFgWmM78gdDujfc6woCPz
+3pyeKaWiD52nU83jOXli95zP3nQYZu5O3TXzat83BMoAB8quIJ46YOHzZetzcgtn
+yS9xqAoKtF3+xiHD48mQVBrDW7p3dJAbcNWGX1PA5kb/e5Gkqg+I+oPhbNaRQIqi
+7I42XnAgEw+GGvowRo9Juh20qqRGgLbNhGNMaawj7yHQmv4gTtDcDBDn++fD1Suu
+D+loIsEzwouo1drV8g/8qhTc2+Km/EYVwyAkg40+amVlj8CEQ/EkHoNFYRPEAjCN
+xyRVd5t5zcUhEWtOcxMmrmSh6jkrV6CXI9IXSY8ov4tJxUWKR93EJgJlrbTD2ekQ
+1xYJa5qlRsnGr8xxGAwZ2+UNhMFMa3NGGTCeXawuiuA7iqcez9vk9DPHvfD6Q1jx
+sfAUNUn6LK4z6vHYDyIZ7BRRadmMxuUGgmmSE3U0bSvF0N3Mi8L1VP3m/c6lUDpH
+T/NQfM/YP5eDkBy+DR/p4P8wn0tGErllJ5uxX3iBk0yEcluY/sl999YFRhNE3gA4
+9lI9kvrNA0qJNw2vXx0JolpzjdLc88xwvWnicXqHgtZ8OiRVZWxu0igXoI/pRzZj
+0+b3fwoUIy+TYj3Nzpzw
+=c1Kr
+-----END PGP SIGNATURE-----
+
+--d6Gm4EdcadzBjdND--
