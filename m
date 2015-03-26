@@ -1,122 +1,52 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH V2 1/3] Thermal: initialize thermal zone device correctly
-Date: Thu, 26 Mar 2015 12:40:53 +0000
-Message-ID: <9hh4mp82ap6.fsf@e105922-lin.cambridge.arm.com>
-References: <1427269996-29501-1-git-send-email-rui.zhang@intel.com>
-	<1427269996-29501-2-git-send-email-rui.zhang@intel.com>
+From: Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH V8 8/8] MIPS: Loongson: Make CPUFreq usable for Loongson-3
+Date: Thu, 26 Mar 2015 14:05:18 +0100
+Message-ID: <20150326130517.GD9705@linux-mips.org>
+References: <1426213836-28600-1-git-send-email-chenhc@lemote.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <1427269996-29501-2-git-send-email-rui.zhang@intel.com> (Zhang
-	Rui's message of "Wed, 25 Mar 2015 15:53:14 +0800")
-Sender: stable-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org, stable@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from eddie.linux-mips.org ([148.251.95.138]:58338 "EHLO
+	cvs.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751596AbbCZNFZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Mar 2015 09:05:25 -0400
+Received: from localhost.localdomain ([127.0.0.1]:57481 "EHLO linux-mips.org"
+        rhost-flags-OK-OK-OK-FAIL) by eddie.linux-mips.org with ESMTP
+        id S27014639AbbCZNFXEQPcx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 26 Mar 2015 14:05:23 +0100
+Content-Disposition: inline
+In-Reply-To: <1426213836-28600-1-git-send-email-chenhc@lemote.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Huacai Chen <chenhc@lemote.com>
+Cc: "Steven J. Hill" <Steven.Hill@imgtec.com>, linux-mips@linux-mips.org, Fuxin Zhang <zhangfx@lemote.com>, Zhangjin Wu <wuzhangjin@gmail.com>, linux-pm@vger.kernel.org, Hongliang Tao <taohl@lemote.com>
 
-Zhang Rui <rui.zhang@intel.com> writes:
+On Fri, Mar 13, 2015 at 10:30:36AM +0800, Huacai Chen wrote:
 
-> After thermal zone device registered, as we have not read any
-> temperature before, thus tz->temperature should not be 0, which actually
-> means 0C, and thermal trend is not available.
-> In this case, we need specially handling for the first
-> thermal_zone_device_update().
->
-> Both thermal core framework and step_wise governor is enhanced to handle this.
->
-> CC: <stable@vger.kernel.org> #3.18+
-> Tested-by: Manuel Krause <manuelkrause@netscape.net>
-> Tested-by: szegad <szegadlo@poczta.onet.pl>
-> Tested-by: prash <prash.n.rao@gmail.com>
-> Tested-by: amish <ammdispose-arch@yahoo.com>
-> Tested-by: Matthias <morpheusxyz123@yahoo.de>
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> ---
->  drivers/thermal/step_wise.c    | 15 +++++++++++++--
->  drivers/thermal/thermal_core.c | 19 +++++++++++++++++--
->  drivers/thermal/thermal_core.h |  1 +
->  include/linux/thermal.h        |  3 +++
->  4 files changed, 34 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-> index 5a0f12d..c2bb37c 100644
-> --- a/drivers/thermal/step_wise.c
-> +++ b/drivers/thermal/step_wise.c
-> @@ -63,6 +63,16 @@ static unsigned long get_target_state(struct thermal_instance *instance,
->  	next_target = instance->target;
->  	dev_dbg(&cdev->device, "cur_state=%ld\n", cur_state);
->  
-> +	if (!instance->initialized) {
-> +		if (throttle) {
-> +			next_target = (cur_state + 1) >= instance->upper ?
-> +					instance->upper :
-> +					((cur_state + 1) < instance->lower ?
-> +					instance->lower : (cur_state + 1));
-> +		} else
-> +			next_target = THERMAL_NO_TARGET;
-> +	}
-> +
+> Loongson-3A/3B support frequency scaling. But due to hardware
+> limitation, Loongson-3A's frequency scaling is not independent for
+> each core, we suggest enable Loongson-3A's CPUFreq only when there is
+> one core online. Loongson-3B can adjust frequency independently for
+> each core, so it can be always enabled.
+> 
+> Each package has only one register (ChipConfig or FreqCtrl) to control
+> frequency, so we need spinlocks to protect register access for multi-
+> cores. However, we cannot use spinlock when a core becomes into "wait"
+> status (frequency = 0), so we only enable "wait" when there is one core
+> in a package online.
+> 
+> arch/mips/kernel/smp.c is modified to guarantee udelay_val has the
+> correct value while both CPU hotplug and CPUFreq are enabled.
 
-Instead of checking whether the instance has been initialised, you could
-add THERMAL_TREND_INVALID to the thermal_trend enum. That can then be
-handled in the switch case below instead of needing special case
-handling like above.
+With clockscaling you have a fundamental problem with udelay.  If the clock
+is increased for a CPU that already has computed the number of iterations
+of the delay loop for the old, lower clock rate, it is possible that
+udelay won't wait for long enough.
 
-What do you think?
+The opposite case would result in waiting too long but that's not a big
+problem as udelay only guarantees a minimum waiting time.
 
->  	switch (trend) {
->  	case THERMAL_TREND_RAISING:
->  		if (throttle) {
-> @@ -149,7 +159,8 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
->  		dev_dbg(&instance->cdev->device, "old_target=%d, target=%d\n",
->  					old_target, (int)instance->target);
->  
-> -		if (old_target == instance->target)
-> +		if (instance->initialized &&
-> +		    old_target == instance->target)
->  			continue;
->  
->  		/* Activate a passive thermal instance */
-> @@ -161,7 +172,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
->  			instance->target == THERMAL_NO_TARGET)
->  			update_passive_instance(tz, trip_type, -1);
->  
-> -
-> +		instance->initialized = true;
->  		instance->cdev->updated = false; /* cdev needs update */
->  	}
->  
+So you probably need a different delay mechanism than the classic delay
+loop on SMP with clockscaling.
 
-[...]
-
-> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-> index 0531c75..6d9ffa5 100644
-> --- a/drivers/thermal/thermal_core.h
-> +++ b/drivers/thermal/thermal_core.h
-> @@ -41,6 +41,7 @@ struct thermal_instance {
->  	struct thermal_zone_device *tz;
->  	struct thermal_cooling_device *cdev;
->  	int trip;
-> +	bool initialized;
->  	unsigned long upper;	/* Highest cooling state for this trip point */
->  	unsigned long lower;	/* Lowest cooling state for this trip point */
->  	unsigned long target;	/* expected cooling state */
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 5eac316..8650b0b 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -40,6 +40,9 @@
->  /* No upper/lower limit requirement */
->  #define THERMAL_NO_LIMIT	((u32)~0)
->  
-> +/* Invalid/uninitialized temperature */
-> +#define THERMAL_TEMP_INVALID	-27400
-> +
-
-Did you mean -274000 (note the missing '0') which is < 0K? A comment
-would be helpful for anybody reading the code. Took me a while to parse
-it.
-
->  /* Unit conversion macros */
->  #define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
->  				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
+  Ralf
