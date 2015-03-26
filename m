@@ -1,33 +1,122 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 00/20] cpufreq: Don't loose cpufreq history on CPU hotplug
-Date: Thu, 26 Mar 2015 17:29:01 +0530
-Message-ID: <CAKohponcXi5R_02uqVQHRMb8pxZhizxCzF2dN6meVp9SZBBYYg@mail.gmail.com>
-References: <cover.1424345053.git.viresh.kumar@linaro.org>
-	<CAKohponfFhGCAm8Dn_9V4doLhJzt6362q31Ub2nC9C3+o1Mvug@mail.gmail.com>
-	<54F129BA.3030202@codeaurora.org>
-	<CAKohpokc74qadgOVQxGF82BGbj2W2Xymu3y9CO=fU8-OdGTMXA@mail.gmail.com>
-	<5508A702.1040509@codeaurora.org>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH V2 1/3] Thermal: initialize thermal zone device correctly
+Date: Thu, 26 Mar 2015 12:40:53 +0000
+Message-ID: <9hh4mp82ap6.fsf@e105922-lin.cambridge.arm.com>
+References: <1427269996-29501-1-git-send-email-rui.zhang@intel.com>
+	<1427269996-29501-2-git-send-email-rui.zhang@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f47.google.com ([209.85.218.47]:34523 "EHLO
-	mail-oi0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751807AbbCZL7C (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Mar 2015 07:59:02 -0400
-Received: by oigz129 with SMTP id z129so1997655oig.1
-        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2015 04:59:02 -0700 (PDT)
-In-Reply-To: <5508A702.1040509@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1427269996-29501-2-git-send-email-rui.zhang@intel.com> (Zhang
+	Rui's message of "Wed, 25 Mar 2015 15:53:14 +0800")
+Sender: stable-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Prarit Bhargava <prarit@redhat.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Srivatsa Bhat <srivatsa@mit.edu>
 
-On 18 March 2015 at 03:43, Saravana Kannan <skannan@codeaurora.org> wrote:
+Zhang Rui <rui.zhang@intel.com> writes:
 
-> Sorry for the delay. I'm a little bit more available. I'm trying to look at
-> this right now. But obviously, more eyes the better. So, others should feel
-> free to review/chime in.
+> After thermal zone device registered, as we have not read any
+> temperature before, thus tz->temperature should not be 0, which actually
+> means 0C, and thermal trend is not available.
+> In this case, we need specially handling for the first
+> thermal_zone_device_update().
+>
+> Both thermal core framework and step_wise governor is enhanced to handle this.
+>
+> CC: <stable@vger.kernel.org> #3.18+
+> Tested-by: Manuel Krause <manuelkrause@netscape.net>
+> Tested-by: szegad <szegadlo@poczta.onet.pl>
+> Tested-by: prash <prash.n.rao@gmail.com>
+> Tested-by: amish <ammdispose-arch@yahoo.com>
+> Tested-by: Matthias <morpheusxyz123@yahoo.de>
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/thermal/step_wise.c    | 15 +++++++++++++--
+>  drivers/thermal/thermal_core.c | 19 +++++++++++++++++--
+>  drivers/thermal/thermal_core.h |  1 +
+>  include/linux/thermal.h        |  3 +++
+>  4 files changed, 34 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+> index 5a0f12d..c2bb37c 100644
+> --- a/drivers/thermal/step_wise.c
+> +++ b/drivers/thermal/step_wise.c
+> @@ -63,6 +63,16 @@ static unsigned long get_target_state(struct thermal_instance *instance,
+>  	next_target = instance->target;
+>  	dev_dbg(&cdev->device, "cur_state=%ld\n", cur_state);
+>  
+> +	if (!instance->initialized) {
+> +		if (throttle) {
+> +			next_target = (cur_state + 1) >= instance->upper ?
+> +					instance->upper :
+> +					((cur_state + 1) < instance->lower ?
+> +					instance->lower : (cur_state + 1));
+> +		} else
+> +			next_target = THERMAL_NO_TARGET;
+> +	}
+> +
 
-Hi Saravana/Rafael,
+Instead of checking whether the instance has been initialised, you could
+add THERMAL_TREND_INVALID to the thermal_trend enum. That can then be
+handled in the switch case below instead of needing special case
+handling like above.
 
-Can we please finish the reviews here ?
+What do you think?
+
+>  	switch (trend) {
+>  	case THERMAL_TREND_RAISING:
+>  		if (throttle) {
+> @@ -149,7 +159,8 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+>  		dev_dbg(&instance->cdev->device, "old_target=%d, target=%d\n",
+>  					old_target, (int)instance->target);
+>  
+> -		if (old_target == instance->target)
+> +		if (instance->initialized &&
+> +		    old_target == instance->target)
+>  			continue;
+>  
+>  		/* Activate a passive thermal instance */
+> @@ -161,7 +172,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+>  			instance->target == THERMAL_NO_TARGET)
+>  			update_passive_instance(tz, trip_type, -1);
+>  
+> -
+> +		instance->initialized = true;
+>  		instance->cdev->updated = false; /* cdev needs update */
+>  	}
+>  
+
+[...]
+
+> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+> index 0531c75..6d9ffa5 100644
+> --- a/drivers/thermal/thermal_core.h
+> +++ b/drivers/thermal/thermal_core.h
+> @@ -41,6 +41,7 @@ struct thermal_instance {
+>  	struct thermal_zone_device *tz;
+>  	struct thermal_cooling_device *cdev;
+>  	int trip;
+> +	bool initialized;
+>  	unsigned long upper;	/* Highest cooling state for this trip point */
+>  	unsigned long lower;	/* Lowest cooling state for this trip point */
+>  	unsigned long target;	/* expected cooling state */
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index 5eac316..8650b0b 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -40,6 +40,9 @@
+>  /* No upper/lower limit requirement */
+>  #define THERMAL_NO_LIMIT	((u32)~0)
+>  
+> +/* Invalid/uninitialized temperature */
+> +#define THERMAL_TEMP_INVALID	-27400
+> +
+
+Did you mean -274000 (note the missing '0') which is < 0K? A comment
+would be helpful for anybody reading the code. Took me a while to parse
+it.
+
+>  /* Unit conversion macros */
+>  #define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
+>  				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
