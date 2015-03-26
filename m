@@ -1,47 +1,37 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 04/13] thermal: Fix not emulating critical temperatures
-Date: Thu, 26 Mar 2015 19:55:37 +0100
-Message-ID: <20150326185537.GM9742@pengutronix.de>
-References: <1427385240-6086-1-git-send-email-s.hauer@pengutronix.de>
- <1427385240-6086-5-git-send-email-s.hauer@pengutronix.de>
- <55144C5B.7070208@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2 00/20] cpufreq: Don't loose cpufreq history on CPU hotplug
+Date: Thu, 26 Mar 2015 21:28:45 +0100
+Message-ID: <1668524.oqBHi5Cb0r@vostro.rjw.lan>
+References: <cover.1424345053.git.viresh.kumar@linaro.org> <5508A702.1040509@codeaurora.org> <CAKohponcXi5R_02uqVQHRMb8pxZhizxCzF2dN6meVp9SZBBYYg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:33280 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752530AbbCZSzp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Mar 2015 14:55:45 -0400
-Content-Disposition: inline
-In-Reply-To: <55144C5B.7070208@ti.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:61050 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751455AbbCZUEk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Mar 2015 16:04:40 -0400
+In-Reply-To: <CAKohponcXi5R_02uqVQHRMb8pxZhizxCzF2dN6meVp9SZBBYYg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Carlos Hernandez <ceh@ti.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Amit Daniel Kachhap <amit.daniel@samsung.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Saravana Kannan <skannan@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Srivatsa Bhat <srivatsa@mit.edu>
 
-+Cc Amit who implemented the emulation code.
-
-On Thu, Mar 26, 2015 at 02:13:47PM -0400, Carlos Hernandez wrote:
-> On 03/26/2015 11:53 AM, Sascha Hauer wrote:
-> >- The code should only accept an emulated temperature when the emulated
-> >   temperature is lower than the critical temperature. Instead the code
+On Thursday, March 26, 2015 05:29:01 PM Viresh Kumar wrote:
+> On 18 March 2015 at 03:43, Saravana Kannan <skannan@codeaurora.org> wrote:
 > 
-> Why?
-> Emulating temperatures higher than critical temperature is useful
-> for testing. For instance it allows one to validate that critical
-> action (i.e. shutdown) is triggered.
+> > Sorry for the delay. I'm a little bit more available. I'm trying to look at
+> > this right now. But obviously, more eyes the better. So, others should feel
+> > free to review/chime in.
+> 
+> Hi Saravana/Rafael,
+> 
+> Can we please finish the reviews here ?
 
-Not emulating critical temperatures was the intention of the original
-patch adding the emulation code, but it was implemented wrongly. I just
-fix to the intended behaviour.
-However, I also find emulating critical temperatures useful. I could
-also remove the check instead of fixing it if we can agree on that
-behaviour.
+My impression was that there had been some comments to address already.
+Isn't that the case?
 
-Sascha
 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
