@@ -1,117 +1,126 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: hisilicon: add acpu driver
-Date: Thu, 26 Mar 2015 18:54:53 +0530
-Message-ID: <CAKohpokkucU3OO4taaxd+HkvOL6nZiWHfLHJsZVHLacoOctD0w@mail.gmail.com>
-References: <1427370486-14823-1-git-send-email-leo.yan@linaro.org>
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: Re: [PATCH v7 2/5] power: max77843_charger: Add Max77843 charger
+ device driver
+Date: Thu, 26 Mar 2015 22:25:52 +0900
+Message-ID: <551408E0.3060901@samsung.com>
+References: <1425291038-18269-1-git-send-email-jaewon02.kim@samsung.com>
+ <1425291038-18269-3-git-send-email-jaewon02.kim@samsung.com>
+ <20150307201340.GF5233@earth> <54FCEABE.9000007@samsung.com>
+ <CAJKOXPcLoOp30j5ZwFv2_nT5B+nZOnV6utck5KDw3vt-tmWRew@mail.gmail.com>
+ <54FD880E.30903@samsung.com> <1425903199.13415.9.camel@AMDC1943>
+ <54FEF541.6000305@samsung.com> <551119DE.2070402@samsung.com>
+ <CAJKOXPdd5dDgH91NeytobJWg71pYOw5XnhB9N1=m2Mjmxxjv-A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f48.google.com ([209.85.218.48]:33895 "EHLO
-	mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752489AbbCZNYy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Mar 2015 09:24:54 -0400
-Received: by oigz129 with SMTP id z129so3907117oig.1
-        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2015 06:24:53 -0700 (PDT)
-In-Reply-To: <1427370486-14823-1-git-send-email-leo.yan@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-reply-to: <CAJKOXPdd5dDgH91NeytobJWg71pYOw5XnhB9N1=m2Mjmxxjv-A@mail.gmail.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Jaewon Kim <jaewon02.kim@samsung.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Chanwoo Choi <cw00.choi@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Dan Zhao <dan.zhao@hisilicon.com>, zhenwei.wang@hisilicon.com, mohaoju@hisilicon.com, Haojian Zhuang <haojian.zhuang@linaro.org>, Wei Xu <xuwei5@hisilicon.com>
 
-On 26 March 2015 at 17:18, Leo Yan <leo.yan@linaro.org> wrote:
-> Add acpu driver for hisilicon SoC, acpu is application processor
-> subsystem. Currently the acpu has the coupled clock domain for two
-> clusters, so this driver will directly use cpufreq-dt driver as
-> backend.
+On 03/24/2015 05:38 PM, Krzysztof Kozlowski wrote:
+> 2015-03-24 9:01 GMT+01:00 Beomho Seo <beomho.seo@samsung.com>:
+>> On 03/10/2015 10:44 PM, Beomho Seo wrote:
+>>> On 03/09/2015 09:13 PM, Krzysztof Kozlowski wrote:
+>>>> On pon, 2015-03-09 at 20:46 +0900, Beomho Seo wrote:
+>>>>> On 03/09/2015 08:02 PM, Krzysztof Kozlowski wrote:
+>>>>>> 2015-03-09 1:35 GMT+01:00 Beomho Seo <beomho.seo@samsung.com>:
+>>>>>>> On 03/08/2015 05:13 AM, Sebastian Reichel wrote:
+>>>>>>>> On Mon, Mar 02, 2015 at 07:10:35PM +0900, Jaewon Kim wrote:
+>>>>>>>>> From: Beomho Seo <beomho.seo@samsung.com>
+>>>>>>>>>
+>>>>>>>>> This patch adds device driver of max77843 charger. This driver provide
+>>>>>>>>> initialize each charging mode(e.g. fast charge, top-off mode and constant
+>>>>>>>>> charging mode so on.). Additionally, control charging paramters to use
+>>>>>>>>> i2c interface.
+>>>>>>>>>
+>>>>>>>>> Cc: Sebastian Reichel <sre@kernel.org>
+>>>>>>>>> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+>>>>>>>>
+>>>>>>>> Reviewed-By: Sebastian Reichel <sre@kernel.org>
+>>>>>>>>
+>>>>>>>> I can't take it as is, since it depends on the private header file
+>>>>>>>> of PATCHv1.
+>>>>>>>>
+>>>>>>>> -- Sebastian
+>>>>>>>>
+>>>>>>>
+>>>>>>> This patch reviewed by Sebastian.
+>>>>>>> Could you Please merge that your git tree ?
+>>>>>>
+>>>>>> Hi,
+>>>>>>
+>>>>>> ... and again we are adding a new driver for very similar chipset to
+>>>>>> already supported. I looked at spec and the charger's registers are
+>>>>>> almost the same as for max77693. Their layout and addresses are the
+>>>>>> same. I see some minor differences, probably the most important would
+>>>>>> be different values current (fast-charge, top-off). But still 90% of
+>>>>>> registers are the same... Do we really have to add new driver?
+>>>>>>
+>>>>>> Best regards,
+>>>>>> Krzysztof
+>>>>>> --
+>>>>>> To unsubscribe from this list: send the line "unsubscribe linux-input" in
+>>>>>> the body of a message to majordomo@vger.kernel.org
+>>>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>>>>
+>>>>>
+>>>>> Hi,
+>>>>>
+>>>>> Thank you for your comment. As you say, both chip set are similar.
+>>>>> But new driver need for support max77843. It is support different below
+>>>>> - Provide Battery presence information.
+>>>>
+>>>> Another set of power supply properties could be added for that chip.
+>>>> This way the get_property() function would be the same but actually the
+>>>> POWER_SUPPLY_PROP_PRESENT won't be called for max77693.
+>>>>
+>>>>> - Can OTG FET control.
+>>>>
+>>>> Where the OTG FET feature is it enabled in your driver? I couldn't find
+>>>> it.
+>>>>
+>>>
+>>> Sorry. This driver don't control OTG FET feature.
+>>>
+>>>>> - Bigger Fast charge current, Top Off current Threshold selection.
+>>>>> - Various and bigger OTG current limitation.
+>>>>> - Bigger primary charger termination voltage setting.
+>>>>> - Different maximum input current limit selection(Different step).
+>>>>
+>>>> Yes, I mentioned some of these differences (the Fast/top-off
+>>>> differences). These are differences in values so it does not require new
+>>>> driver. There is need to develop new driver just to support different
+>>>> current (3.0 A instead of 2.1 A) or voltage threshold.
+>>>>
+>>>
+>>> They are different charging current, OTG current limitation, top off current,
+>>> charging limitation value. In case OTG current limitation different not
+>>> limitation value but using register bit(max77843 use[7:6] max77693 use[7]
+>>> bit only). Even if this driver not support all feature, some register
+>>> different with max77693(support value, use register bit).
+>>>
+>>> If this driver will combined with max77693 may even be beneficial for
+>>> new Maxim driver. But the present, this driver is related with
+>>> max77843 core driver and max77843-regulator. So I hope this driver
+>>> merge first. And then will extend two driver(max77843 charger and max77693 charger).
+> 
+> I still prefer merging common drivers into one instead of creating
+> some more of them.
+> However I understand your point and I am not entirely opposed against.
+> Especially that you invested quite a bit of time for developing this
+> and my feedback was quite late. To summarize I am fine with your
+> approach.
+> 
+> Best regards,
+> Krzysztof
 >
-> Signed-off-by: Leo Yan <leo.yan@linaro.org>
-> ---
->  drivers/cpufreq/Kconfig.arm         |  9 ++++++++
->  drivers/cpufreq/Makefile            |  1 +
->  drivers/cpufreq/hisi-acpu-cpufreq.c | 43 +++++++++++++++++++++++++++++++++++++
->  3 files changed, 53 insertions(+)
->  create mode 100644 drivers/cpufreq/hisi-acpu-cpufreq.c
->
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 1b06fc4..4f3dbc8 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -108,6 +108,15 @@ config ARM_HIGHBANK_CPUFREQ
->
->           If in doubt, say N.
->
-> +config ARM_HISI_ACPU_CPUFREQ
-> +       tristate "Hisilicon ACPU CPUfreq driver"
-> +       depends on ARCH_HISI && CPUFREQ_DT
-> +       select PM_OPP
-> +       help
-> +         This enables the hisilicon ACPU CPUfreq driver.
-> +
-> +         If in doubt, say N.
-> +
->  config ARM_IMX6Q_CPUFREQ
->         tristate "Freescale i.MX6 cpufreq support"
->         depends on ARCH_MXC
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index 82a1821..6b7a3f0 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -59,6 +59,7 @@ arm-exynos-cpufreq-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)   += exynos4x12-cpufreq.o
->  arm-exynos-cpufreq-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)    += exynos5250-cpufreq.o
->  obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)   += exynos5440-cpufreq.o
->  obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)     += highbank-cpufreq.o
-> +obj-$(CONFIG_ARM_HISI_ACPU_CPUFREQ)    += hisi-acpu-cpufreq.o
->  obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)                += imx6q-cpufreq.o
->  obj-$(CONFIG_ARM_INTEGRATOR)           += integrator-cpufreq.o
->  obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)     += kirkwood-cpufreq.o
-> diff --git a/drivers/cpufreq/hisi-acpu-cpufreq.c b/drivers/cpufreq/hisi-acpu-cpufreq.c
-> new file mode 100644
-> index 0000000..2c7a705
-> --- /dev/null
-> +++ b/drivers/cpufreq/hisi-acpu-cpufreq.c
-> @@ -0,0 +1,43 @@
-> +/*
-> + * Hisilicon Platforms Using ACPU CPUFreq Support
-> + *
-> + * Copyright (c) 2015 Hisilicon Limited.
-> + * Copyright (c) 2015 Linaro Limited.
-> + *
-> + * Leo Yan <leo.yan@linaro.org>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-> + * kind, whether express or implied; without even the implied warranty
-> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
-> +#include <linux/err.h>
-> +#include <linux/init.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +
-> +static int __init hisi_acpu_cpufreq_driver_init(void)
-> +{
-> +       struct platform_device_info devinfo = { .name = "cpufreq-dt", };
-> +       struct platform_device *pdev;
-> +
-> +       if (!of_machine_is_compatible("hisilicon,hi6220"))
-> +               return -ENODEV;
-> +
-> +       pdev = platform_device_register_full(&devinfo);
-> +       return PTR_ERR_OR_ZERO(pdev);
-> +}
-> +module_init(hisi_acpu_cpufreq_driver_init);
-> +
-> +MODULE_AUTHOR("Leo Yan <leo.yan@linaro.org>");
-> +MODULE_DESCRIPTION("Hisilicon acpu cpufreq driver");
-> +MODULE_LICENSE("GPL v2");
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Dear Lee Jones,
+
+Could you please merge that your git tree ?
+
+Best regards,
+Beomho Seo
