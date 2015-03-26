@@ -1,101 +1,96 @@
-From: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Subject: [PATCH 01/13] thermal: Make temperatures consistently unsigned long
-Date: Thu, 26 Mar 2015 16:53:48 +0100
-Message-ID: <1427385240-6086-2-git-send-email-s.hauer@pengutronix.de>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [PATCH 09/13] thermal: of: always set sensor related callbacks
+Date: Thu, 26 Mar 2015 16:53:56 +0100
+Message-ID: <1427385240-6086-10-git-send-email-s.hauer@pengutronix.de>
 References: <1427385240-6086-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1427385240-6086-1-git-send-email-s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1427385240-6086-1-git-send-email-s.hauer@pengutronix.de>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-pm@vger.kernel.org
+Cc: Stephen Warren <swarren@wwwdotorg.org>, Sascha Hauer <s.hauer@pengutronix.de>, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, linux-mediatek@lists.infradead.org, kernel@pengutronix.de, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The thermal framework uses int, long and unsigned long for temperatures
-in millicelsius. The majority of functions uses unsigned long, so change
-the remaining functions to use this type aswell.
+Now that the thermal core treats -ENOSYS like the callbacks were
+not present at all we no longer have to overwrite the ops during
+runtime but instead can always set them and return -ENOSYS if no
+sensor is registered.
 
-Signed-off-by: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/thermal/thermal_core.c | 10 +++++-----
- include/linux/thermal.h        |  6 +++---
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/thermal/of-thermal.c | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 174d3bc..0e4ad7c 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -378,7 +378,7 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
- 
- 	if (trip_type == THERMAL_TRIP_CRITICAL) {
- 		dev_emerg(&tz->device,
--			  "critical temperature reached(%d C),shutting down\n",
-+			  "critical temperature reached(%lu C),shutting down\n",
- 			  tz->temperature / 1000);
- 		orderly_poweroff(true);
- 	}
-@@ -453,7 +453,7 @@ EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
- 
- static void update_temperature(struct thermal_zone_device *tz)
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index b39e22f..df14fdd 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -91,7 +91,7 @@ static int of_thermal_get_temp(struct thermal_zone_device *tz,
  {
--	long temp;
-+	unsigned long temp;
- 	int ret;
+ 	struct __thermal_zone *data = tz->devdata;
  
- 	ret = thermal_zone_get_temp(tz, &temp);
-@@ -469,7 +469,7 @@ static void update_temperature(struct thermal_zone_device *tz)
- 	mutex_unlock(&tz->lock);
+-	if (!data->ops->get_temp)
++	if (!data->ops)
+ 		return -EINVAL;
  
- 	trace_thermal_temperature(tz);
--	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
-+	dev_dbg(&tz->device, "last_temperature=%lu, current_temperature=%lu\n",
- 				tz->last_temperature, tz->temperature);
+ 	return data->ops->get_temp(data->sensor_data, temp);
+@@ -178,7 +178,7 @@ static int of_thermal_set_emul_temp(struct thermal_zone_device *tz,
+ 	struct __thermal_zone *data = tz->devdata;
+ 
+ 	if (!data->ops || !data->ops->set_emul_temp)
+-		return -EINVAL;
++		return -ENOSYS;
+ 
+ 	return data->ops->set_emul_temp(data->sensor_data, temp);
+ }
+@@ -189,8 +189,8 @@ static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
+ 	struct __thermal_zone *data = tz->devdata;
+ 	int r;
+ 
+-	if (!data->ops->get_trend)
+-		return -EINVAL;
++	if (!data->ops || !data->ops->get_trend)
++		return -ENOSYS;
+ 
+ 	r = data->ops->get_trend(data->sensor_data, trip, trend);
+ 	if (r)
+@@ -366,6 +366,10 @@ static int of_thermal_get_crit_temp(struct thermal_zone_device *tz,
  }
  
-@@ -512,7 +512,7 @@ static ssize_t
- temp_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
--	long temperature;
-+	unsigned long temperature;
- 	int ret;
+ static struct thermal_zone_device_ops of_thermal_ops = {
++	.get_temp = of_thermal_get_temp,
++	.get_trend = of_thermal_get_trend,
++	.set_emul_temp = of_thermal_set_emul_temp,
++
+ 	.get_mode = of_thermal_get_mode,
+ 	.set_mode = of_thermal_set_mode,
  
- 	ret = thermal_zone_get_temp(tz, &temperature);
-@@ -520,7 +520,7 @@ temp_show(struct device *dev, struct device_attribute *attr, char *buf)
- 	if (ret)
- 		return ret;
+@@ -399,13 +403,13 @@ thermal_zone_of_add_sensor(struct device_node *zone,
+ 	if (!ops)
+ 		return ERR_PTR(-EINVAL);
  
--	return sprintf(buf, "%ld\n", temperature);
-+	return sprintf(buf, "%lu\n", temperature);
- }
++	if (!ops->get_temp)
++		return ERR_PTR(-EINVAL);
++
+ 	mutex_lock(&tzd->lock);
+ 	tz->ops = ops;
+ 	tz->sensor_data = data;
  
- static ssize_t
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 5eac316..db6c12b 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -180,9 +180,9 @@ struct thermal_zone_device {
- 	int trips;
- 	int passive_delay;
- 	int polling_delay;
--	int temperature;
--	int last_temperature;
--	int emul_temperature;
-+	unsigned long temperature;
-+	unsigned long last_temperature;
-+	unsigned long emul_temperature;
- 	int passive;
- 	unsigned int forced_passive;
- 	struct thermal_zone_device_ops *ops;
+-	tzd->ops->get_temp = of_thermal_get_temp;
+-	tzd->ops->get_trend = of_thermal_get_trend;
+-	tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
+ 	mutex_unlock(&tzd->lock);
+ 
+ 	return tzd;
 -- 
 2.1.4
