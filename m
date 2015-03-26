@@ -1,93 +1,47 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v2] cpufreq: powernv: Add checks to report cpu frequency throttling conditions
-Date: Fri, 27 Mar 2015 00:11:22 +0530
-Message-ID: <1427395282-31875-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 04/13] thermal: Fix not emulating critical temperatures
+Date: Thu, 26 Mar 2015 19:55:37 +0100
+Message-ID: <20150326185537.GM9742@pengutronix.de>
+References: <1427385240-6086-1-git-send-email-s.hauer@pengutronix.de>
+ <1427385240-6086-5-git-send-email-s.hauer@pengutronix.de>
+ <55144C5B.7070208@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:33280 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752530AbbCZSzp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Mar 2015 14:55:45 -0400
+Content-Disposition: inline
+In-Reply-To: <55144C5B.7070208@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Carlos Hernandez <ceh@ti.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Amit Daniel Kachhap <amit.daniel@samsung.com>
 
-Cpu frequency can be throttled due to failures of components like OCC,
-power supply and fan. It can also be throttled due to temperature and
-power limit. We can detect the throttling by checking 1)if max frequency
-is reduced, 2)if the core is put to safe frequency 3)if the SPR based
-frequency management is disabled.
++Cc Amit who implemented the emulation code.
 
-The current status of the core is read from Power Management Status
-Register(PMSR) to check if any of the throttling condition is
-occurred and the appropriate throttling message is reported.
+On Thu, Mar 26, 2015 at 02:13:47PM -0400, Carlos Hernandez wrote:
+> On 03/26/2015 11:53 AM, Sascha Hauer wrote:
+> >- The code should only accept an emulated temperature when the emulated
+> >   temperature is lower than the critical temperature. Instead the code
+> 
+> Why?
+> Emulating temperatures higher than critical temperature is useful
+> for testing. For instance it allows one to validate that critical
+> action (i.e. shutdown) is triggered.
 
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
----
-Changes from V1: Removed unused value of PMCR register
+Not emulating critical temperatures was the intention of the original
+patch adding the emulation code, but it was implemented wrongly. I just
+fix to the intended behaviour.
+However, I also find emulating critical temperatures useful. I could
+also remove the check instead of fixing it if we can agree on that
+behaviour.
 
- drivers/cpufreq/powernv-cpufreq.c | 39 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 38 insertions(+), 1 deletion(-)
+Sascha
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 2dfd4fd..4837eed 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -36,7 +36,7 @@
- #define POWERNV_MAX_PSTATES	256
- 
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
--static bool rebooting;
-+static bool rebooting, throttled;
- 
- /*
-  * Note: The set of pstates consists of contiguous integers, the
-@@ -294,6 +294,40 @@ static inline unsigned int get_nominal_index(void)
- 	return powernv_pstate_info.max - powernv_pstate_info.nominal;
- }
- 
-+static void powernv_cpufreq_throttle_check(unsigned int cpu)
-+{
-+	unsigned long pmsr;
-+	int pmsr_pmax, pmsr_lp;
-+
-+	pmsr = get_pmspr(SPRN_PMSR);
-+
-+	/* Check for Pmax Capping */
-+	pmsr_pmax = (s8)((pmsr >> 32) & 0xFF);
-+	if (pmsr_pmax != powernv_pstate_info.max) {
-+		throttled = true;
-+		pr_warn("Cpu %d Pmax is reduced to %d\n", cpu, pmsr_pmax);
-+	}
-+
-+	/* Check for Psafe by reading LocalPstate
-+	 * or check if Psafe_mode_active- 34th bit is set in PMSR.
-+	 */
-+	pmsr_lp = (s8)((pmsr >> 48) & 0xFF);
-+	if ((pmsr_lp < powernv_pstate_info.min) || ((pmsr >> 30) & 1)) {
-+		throttled = true;
-+		pr_warn("Cpu %d in Psafe %d PMSR[34]=%lx\n", cpu,
-+				pmsr_lp, ((pmsr >> 30) & 1));
-+	}
-+
-+	/* Check if SPR_EM_DISABLED- 33rd bit is set in PMSR */
-+	if ((pmsr >> 31) & 1) {
-+		throttled = true;
-+		pr_warn("Frequency management disabled cpu %d PMSR[33]=%lx\n",
-+				cpu, ((pmsr >> 31) & 1));
-+	}
-+	if (throttled)
-+		pr_warn("Cpu Frequency is throttled\n");
-+}
-+
- /*
-  * powernv_cpufreq_target_index: Sets the frequency corresponding to
-  * the cpufreq table entry indexed by new_index on the cpus in the
-@@ -307,6 +341,9 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- 	if (unlikely(rebooting) && new_index != get_nominal_index())
- 		return 0;
- 
-+	if (!throttled)
-+		powernv_cpufreq_throttle_check(smp_processor_id());
-+
- 	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
- 
- 	/*
 -- 
-1.9.3
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
