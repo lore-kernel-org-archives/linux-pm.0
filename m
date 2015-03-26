@@ -1,30 +1,32 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v7 2/5] power: max77843_charger: Add Max77843 charger
- device driver
-Date: Thu, 26 Mar 2015 08:16:47 +0100
-Message-ID: <CAJKOXPfYyO9GXx+fOscaFaZi6W0CDVNSmQDW6PryNZrnEaHHsg@mail.gmail.com>
-References: <1425291038-18269-1-git-send-email-jaewon02.kim@samsung.com>
-	<1425291038-18269-3-git-send-email-jaewon02.kim@samsung.com>
-	<20150307201340.GF5233@earth>
-	<54FCEABE.9000007@samsung.com>
-	<CAJKOXPcLoOp30j5ZwFv2_nT5B+nZOnV6utck5KDw3vt-tmWRew@mail.gmail.com>
-	<54FD880E.30903@samsung.com>
-	<1425903199.13415.9.camel@AMDC1943>
-	<54FEF541.6000305@samsung.com>
-	<551119DE.2070402@samsung.com>
-	<CAJKOXPdd5dDgH91NeytobJWg71pYOw5XnhB9N1=m2Mjmxxjv-A@mail.gmail.com>
-	<551203CD.4020506@samsung.com>
+From: Adrian Hunter <adrian.hunter@intel.com>
+Subject: Re: [RFC PATCH 0/4] mmc: sdhci: Support maximum DMA latency request
+ via PM QoS
+Date: Thu, 26 Mar 2015 10:29:06 +0200
+Message-ID: <5513C352.2080208@intel.com>
+References: <1427204440-3533-1-git-send-email-adrian.hunter@intel.com> <20150325194259.GB381@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <551203CD.4020506@samsung.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Beomho Seo <beomho.seo@samsung.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Jaewon Kim <jaewon02.kim@samsung.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Chanwoo Choi <cw00.choi@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150325194259.GB381@amd>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc <linux-mmc@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-2015-03-25 1:39 GMT+01:00 Beomho Seo <beomho.seo@samsung.com>:
->
-> Then, Can I request merge this patch ?
+On 25/03/15 21:43, Pavel Machek wrote:
+> Hi!
+> 
+>> Here are some patches to address an issue with SDHCI
+>> in Intel Baytrail. Intel Baytrail has been observed
+>> sometimes to hang if host controllers are using DMA
+>> while deep C-states are used. Workaround that by
+> 
+> I wonder if there is more information on this one? I see your address
+> is "@intel". For example which C states are affected, and if there's
 
-Yes, but it is not up to me :).
+The problem starts at C6 - I will add that to the commit message.
+
+> maybe Intel errata number to quote?
+
+I wasn't able to find an errata number.
