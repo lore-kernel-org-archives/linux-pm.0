@@ -1,72 +1,113 @@
-From: Marc Zyngier <marc.zyngier@arm.com>
-Subject: Re: [PATCH/RFC 1/5] clk: shmobile: mstp: Never disable INTC-SYS
-Date: Thu, 26 Mar 2015 10:39:52 +0000
-Message-ID: <5513E1F8.9020104@arm.com>
-References: <1426706164-28309-1-git-send-email-geert+renesas@glider.be>	<1426706164-28309-2-git-send-email-geert+renesas@glider.be>	<20150324232508.7930.89483@quantum>	<CAMuHMdVRhaZY_y2=1+9sZ-kteiguYGeS62Ka-V1WYnNCq_rgQA@mail.gmail.com>	<55127E2A.1040300@arm.com> <CAMuHMdWY7orzt0ONTzmyG8nSagCM1r1HK=zQHzfttfr6cK7eqA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdWY7orzt0ONTzmyG8nSagCM1r1HK=zQHzfttfr6cK7eqA@mail.gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Michael Turquette <mturquette@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Mark Rutland <Mark.Rutland@arm.com>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: [PATCH v2] cpufreq: hisilicon: add acpu driver
+Date: Thu, 26 Mar 2015 19:48:06 +0800
+Message-ID: <1427370486-14823-1-git-send-email-leo.yan@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f172.google.com ([209.85.192.172]:33833 "EHLO
+	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751869AbbCZLsV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Mar 2015 07:48:21 -0400
+Received: by pdbni2 with SMTP id ni2so60474869pdb.1
+        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2015 04:48:20 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Dan Zhao <dan.zhao@hisilicon.com>, zhenwei.wang@hisilicon.com, mohaoju@hisilicon.com, Haojian Zhuang <haojian.zhuang@linaro.org>, Wei Xu <xuwei5@hisilicon.com>
+Cc: Leo Yan <leo.yan@linaro.org>
 
-Hi Geert,
+Add acpu driver for hisilicon SoC, acpu is application processor
+subsystem. Currently the acpu has the coupled clock domain for two
+clusters, so this driver will directly use cpufreq-dt driver as
+backend.
 
-On 25/03/15 21:19, Geert Uytterhoeven wrote:
+Signed-off-by: Leo Yan <leo.yan@linaro.org>
+---
+ drivers/cpufreq/Kconfig.arm         |  9 ++++++++
+ drivers/cpufreq/Makefile            |  1 +
+ drivers/cpufreq/hisi-acpu-cpufreq.c | 43 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 53 insertions(+)
+ create mode 100644 drivers/cpufreq/hisi-acpu-cpufreq.c
 
-[...]
-
->> adverse to it. My only gripe is with the undocumented clock property in
->> the binding, and that leads to two questions:
->> This doesn't touch the GIC code at all, so I don't feel completely
-> 
-> The reason no GIC code is touched (for now), is that it's non-trivial to
-> fix the GIC driver to handle this.
-
-Indeed.  The interrupt controller is basically the first device to be
-activated in the life of the system, and I can see a nasty chicken and
-egg problem creeping up if you're trying to do clock management in a
-generic way at that level.
-
->> adverse to it. My only gripe is with the undocumented clock property in
->> the binding, and that leads to two questions:
->> - the GIC architecture doesn't mention a clock at all, so that's a
->> Renesas special. Do we want to have a vendor-specific property for this?
->> Or does it belong elsewhere?
-> 
-> Apart from being implemented using synchronous logic and thus using a
-> clock signal internally, the GIC and its driver don't care about this clock.
-> 
-> When an existing IP module that doesn't care about clocks becomes reused
-> on a new SoC, and it now ends up being part of a "PM Domain" (e.g. a Power
-> Domain or Clock Domain, or both), this "PM Domain" is a feature of the
-> platform, not of the IP module itself (cfr. "(Existing) Device Driver" in [1];
-> GIC falls in the same category as the Thermal Module example).
-> Hence I don't think it's necessary to mention this in the ARM GIC binding.
-> 
->> - alternatively, do we want the core GIC code to deal with this? In
->> which case, how do we express the policy?
-> 
-> The proper way to handle this automatically is to add Runtime PM support
-> to the driver. However, this requires using a platform device.
-> 
-> I would like to add the clock and GIC dependency on the clock in the DTS now,
-> for reasons of DTS stability. But that means I need a temporary workaround
-> to avoid the clock from being disabled, until the GIC driver handles this.
-> 
-> I don't expect a fix for the GIC code to just show up magically. I just wanted
-> you to be aware of the problem. GIC is not the only problematic module here,
-> there are others, cfr. the last slide of [2].
-
-As long as there is an agreement from the DT people on the presence of
-that extra property in the GIC node, I'm happy with that. I'd like it to
-be documented though.
-
-Thanks,
-
-	M.
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 1b06fc4..4f3dbc8 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -108,6 +108,15 @@ config ARM_HIGHBANK_CPUFREQ
+ 
+ 	  If in doubt, say N.
+ 
++config ARM_HISI_ACPU_CPUFREQ
++	tristate "Hisilicon ACPU CPUfreq driver"
++	depends on ARCH_HISI && CPUFREQ_DT
++	select PM_OPP
++	help
++	  This enables the hisilicon ACPU CPUfreq driver.
++
++	  If in doubt, say N.
++
+ config ARM_IMX6Q_CPUFREQ
+ 	tristate "Freescale i.MX6 cpufreq support"
+ 	depends on ARCH_MXC
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 82a1821..6b7a3f0 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -59,6 +59,7 @@ arm-exynos-cpufreq-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)	+= exynos4x12-cpufreq.o
+ arm-exynos-cpufreq-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)	+= exynos5250-cpufreq.o
+ obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)	+= exynos5440-cpufreq.o
+ obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
++obj-$(CONFIG_ARM_HISI_ACPU_CPUFREQ)	+= hisi-acpu-cpufreq.o
+ obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
+ obj-$(CONFIG_ARM_INTEGRATOR)		+= integrator-cpufreq.o
+ obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
+diff --git a/drivers/cpufreq/hisi-acpu-cpufreq.c b/drivers/cpufreq/hisi-acpu-cpufreq.c
+new file mode 100644
+index 0000000..2c7a705
+--- /dev/null
++++ b/drivers/cpufreq/hisi-acpu-cpufreq.c
+@@ -0,0 +1,43 @@
++/*
++ * Hisilicon Platforms Using ACPU CPUFreq Support
++ *
++ * Copyright (c) 2015 Hisilicon Limited.
++ * Copyright (c) 2015 Linaro Limited.
++ *
++ * Leo Yan <leo.yan@linaro.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++
++static int __init hisi_acpu_cpufreq_driver_init(void)
++{
++	struct platform_device_info devinfo = { .name = "cpufreq-dt", };
++	struct platform_device *pdev;
++
++	if (!of_machine_is_compatible("hisilicon,hi6220"))
++		return -ENODEV;
++
++	pdev = platform_device_register_full(&devinfo);
++	return PTR_ERR_OR_ZERO(pdev);
++}
++module_init(hisi_acpu_cpufreq_driver_init);
++
++MODULE_AUTHOR("Leo Yan <leo.yan@linaro.org>");
++MODULE_DESCRIPTION("Hisilicon acpu cpufreq driver");
++MODULE_LICENSE("GPL v2");
 -- 
-Jazz is not dead. It just smells funny...
+1.9.1
+
