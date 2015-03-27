@@ -1,59 +1,60 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v18 04/11] ARM: cpuidle: Add cpuidle support for QCOM
- cpus
-Date: Fri, 27 Mar 2015 18:58:25 +0100
-Message-ID: <55159A41.4010700@linaro.org>
-References: <1427315136-44321-1-git-send-email-lina.iyer@linaro.org> <1427315136-44321-5-git-send-email-lina.iyer@linaro.org>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 01/13] thermal: Make temperatures consistently unsigned
+ long
+Date: Fri, 27 Mar 2015 20:07:50 +0100
+Message-ID: <20150327190750.GZ9742@pengutronix.de>
+References: <1427385240-6086-1-git-send-email-s.hauer@pengutronix.de>
+ <1427385240-6086-2-git-send-email-s.hauer@pengutronix.de>
+ <9hhzj6y217d.fsf@e105922-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
+Content-Type: text/plain; charset=iso-8859-15
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1427315136-44321-5-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, agross@codeaurora.org, Arnd Bergmann <arnd@arndb.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:40563 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751396AbbC0TH6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Mar 2015 15:07:58 -0400
+Content-Disposition: inline
+In-Reply-To: <9hhzj6y217d.fsf@e105922-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Punit Agrawal <punit.agrawal@arm.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-On 03/25/2015 09:25 PM, Lina Iyer wrote:
-> Define ARM_QCOM_CPUIDLE config item to enable cpuidle support.
->
-> Cc: Stephen Boyd <sboyd@codeaurora.org>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Kevin Hilman <khilman@linaro.org>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+On Fri, Mar 27, 2015 at 10:18:14AM +0000, Punit Agrawal wrote:
+> Hi Sascha,
+>=20
+> Sascha Hauer <s.hauer@pengutronix.de> writes:
+>=20
+> > The thermal framework uses int, long and unsigned long for temperat=
+ures
+> > in millicelsius. The majority of functions uses unsigned long, so c=
+hange
+> > the remaining functions to use this type aswell.
+> >
+> > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+>=20
+> I'd suggest changing to long instead. It would allow the use of the
+> thermal framework in environments where temperatures are below 0C -
+> quite easily reached in many parts of the world.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+I agree to use a signed type. I also found it not so nice that the ther=
+mal
+core does not support negative temperatures. I only chose unsigned long
+because the patch got smallest that way, but I already expected this
+answer ;)
+We could also use int instead of long. INT_MAX =B0mC is still enough fo=
+r using
+a computer on the surface of the sun (Not for the center though)
 
-> ---
->   drivers/cpuidle/Kconfig.arm | 7 +++++++
->   1 file changed, 7 insertions(+)
->
-> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.ar=
-m
-> index 21340e0..325be7f 100644
-> --- a/drivers/cpuidle/Kconfig.arm
-> +++ b/drivers/cpuidle/Kconfig.arm
-> @@ -74,3 +74,10 @@ config ARM_MVEBU_V7_CPUIDLE
->   	depends on ARCH_MVEBU && !ARM64
->   	help
->   	  Select this to enable cpuidle on Armada 370, 38x and XP processo=
-rs.
-> +
-> +config ARM_QCOM_CPUIDLE
-> +	bool "CPU Idle Driver for QCOM processors"
-> +	depends on ARCH_QCOM
-> +	select ARM_CPUIDLE
-> +	help
-> +	  Select this to enable cpuidle on QCOM processors.
->
-
+Sascha
 
 --=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Pengutronix e.K.                           |                           =
+  |
+Industrial Linux Solutions                 | http://www.pengutronix.de/=
+  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0  =
+  |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-555=
+5 |
