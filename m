@@ -1,645 +1,167 @@
-From: Xinwei Kong <kong.kongxinwei@hisilicon.com>
-Subject: Re: [PATCH v1 1/2] thermal: hisilicon: add new hisilicon thermal
- sensor driver
-Date: Fri, 27 Mar 2015 16:30:48 +0800
-Message-ID: <55151538.3020204@hisilicon.com>
-References: <1427269825-11324-1-git-send-email-kong.kongxinwei@hisilicon.com> <1427269825-11324-2-git-send-email-kong.kongxinwei@hisilicon.com> <5513CDEE.8000807@hisilicon.com>
+From: Keerthy <j-keerthy@ti.com>
+Subject: [PATCH v2] thermal: ti-soc-thermal: dra7: Implement Workaround for Errata i814 - Bandgap Temperature read Dtemp can be corrupted
+Date: Fri, 27 Mar 2015 14:15:01 +0530
+Message-ID: <1427445901-8461-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5513CDEE.8000807@hisilicon.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: YiPing Xu <xuyiping@hisilicon.com>, rui.zhuang@intel.com, edubezval@gmail.com
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linuxarm@huawei.com, linux-kernel@vger.kernel.org, liguozhu@hisilicon.com, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-omap-owner@vger.kernel.org>
+Sender: linux-omap-owner@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, t-kristo@ti.com, j-keerthy@ti.com
 List-Id: linux-pm@vger.kernel.org
 
+Bandgap Temperature read Dtemp can be corrupted
 
+DESCRIPTION
+        Read accesses to registers listed below can be corrupted due to=
+ incorrect resynchronization between
+        clock domains.
 
-On 2015/3/26 17:14, YiPing Xu wrote:
-> =E5=9C=A8 2015/3/25 15:50, Xinwei Kong =E5=86=99=E9=81=93:
->> From: kongxinwei <kong.kongxinwei@hisilicon.com>
->>
->> This patch adds the support for hisilicon thermal sensor, within
->> hisilicon SoC. there will register sensors for thermal framework
->> and use device tree to bind cooling device.
->>
->> Signed-off-by: Leo Yan <leo.yan@linaro.org>
->> Signed-off-by: kongxinwei <kong.kongxinwei@hisilicon.com>
->> ---
->>   drivers/thermal/Kconfig        |   8 +
->>   drivers/thermal/Makefile       |   1 +
->>   drivers/thermal/hisi_thermal.c | 526 +++++++++++++++++++++++++++++=
-++++++++++++
->>   3 files changed, 535 insertions(+)
->>   create mode 100644 drivers/thermal/hisi_thermal.c
->>
->> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->> index af40db0..81aee01 100644
->> --- a/drivers/thermal/Kconfig
->> +++ b/drivers/thermal/Kconfig
->> @@ -136,6 +136,14 @@ config THERMAL_EMULATION
->>         because userland can easily disable the thermal policy by si=
-mply
->>         flooding this sysfs node with low temperature values.
->>
->> +config HISI_THERMAL
->> +    tristate "Hisilicon thermal driver"
->> +    depends on ARCH_HISI && CPU_THERMAL && OF
->> +    help
->> +      Enable this to plug hisilicon's thermal sensor driver into th=
-e Linux
->> +      thermal framework. cpufreq is used as the cooling device to t=
-hrottle
->> +      CPUs when the passive trip is crossed.
->> +
->>   config IMX_THERMAL
->>       tristate "Temperature sensor driver for Freescale i.MX SoCs"
->>       depends on CPU_THERMAL
->> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
->> index fa0dc48..08ae7ac 100644
->> --- a/drivers/thermal/Makefile
->> +++ b/drivers/thermal/Makefile
->> @@ -39,3 +39,4 @@ obj-$(CONFIG_TI_SOC_THERMAL)    +=3D ti-soc-therma=
-l/
->>   obj-$(CONFIG_INT340X_THERMAL)  +=3D int340x_thermal/
->>   obj-$(CONFIG_ST_THERMAL)    +=3D st/
->>   obj-$(CONFIG_TEGRA_SOCTHERM)    +=3D tegra_soctherm.o
->> +obj-$(CONFIG_HISI_THERMAL)     +=3D hisi_thermal.o
->> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_t=
-hermal.c
->> new file mode 100644
->> index 0000000..8edf83a
->> --- /dev/null
->> +++ b/drivers/thermal/hisi_thermal.c
->=20
->    are you sure all the SOCs in hisilicon use the same thermal IP ?
->=20
->    if not, this driver should not use the "hisi_" prefix.
+        Read access to registers below can be corrupted :
+                =E2=80=A2 CTRL_CORE_DTEMP_MPU/GPU/CORE/DSPEVE/IVA_n (n =
+=3D 0 to 4)
+        =E2=80=A2 CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA_n
 
-We can use this hisi thermal driver framework to satisfy diff thermal
-IP, all of SoC will use this drvier by adding a struct about diff IP.
-We may talk about hisi thermal diff IP how to satisfy this driver.
+WORKAROUND
+        Multiple reads to CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA=
+[9:0]:
+        BGAP_DTEMPMPU/GPU/CORE/DSPEVE/IVA is needed to discard false va=
+lue and read right value:
+                1. Perform two successive reads to BGAP_DTEMP bit field=
+=2E
+                        (a) If read1 returns Val1 and read2 returns Val=
+1, then right value is Val1.
+                        (b) If read1 returns Val1, read 2 returns Val2,=
+ a third read is needed.
+                2. Perform third read
+                        (a) If read3 returns Val2 then right value is V=
+al2.
+                        (b) If read3 returns Val3, then right value is =
+Val3.
 
-Thanks
-Xinwei
+Signed-off-by: Keerthy <j-keerthy@ti.com>
+---
 
->=20
->> @@ -0,0 +1,526 @@
->> +/*
->> + * Hisilicon thermal sensor driver
->> + *
->> + * Copyright (c) 2014-2015 Hisilicon Limited.
->> + * Copyright (c) 2014-2015 Linaro Limited.
->> + *
->> + * Xinwei Kong <kong.kongxinwei@hisilicon.com>
->> + * Leo Yan <leo.yan@linaro.org>
->> + *
->> + * This program is free software; you can redistribute it and/or mo=
-dify
->> + * it under the terms of the GNU General Public License version 2 a=
-s
->> + * published by the Free Software Foundation.
->> + *
->> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
->> + * kind, whether express or implied; without even the implied warra=
-nty
->> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
->> + * GNU General Public License for more details.
->> + */
->> +
->> +#include <linux/cpu_cooling.h>
->> +#include <linux/cpufreq.h>
->> +#include <linux/delay.h>
->> +#include <linux/device.h>
->> +#include <linux/init.h>
->> +#include <linux/interrupt.h>
->> +#include <linux/io.h>
->> +#include <linux/kernel.h>
->> +#include <linux/mfd/syscon.h>
->> +#include <linux/module.h>
->> +#include <linux/of.h>
->> +#include <linux/of_device.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/regmap.h>
->> +#include <linux/slab.h>
->> +#include <linux/thermal.h>
->> +#include <linux/types.h>
->> +
->> +#include "thermal_core.h"
->> +
->> +#define TEMP0_LAG            (0x0)
->> +#define TEMP0_TH            (0x4)
->> +#define TEMP0_RST_TH            (0x8)
->> +#define TEMP0_CFG            (0xC)
->> +#define TEMP0_EN            (0x10)
->> +#define TEMP0_INT_EN            (0x14)
->> +#define TEMP0_INT_CLR            (0x18)
->> +#define TEMP0_RST_MSK            (0x1C)
->> +#define TEMP0_RAW_INT            (0x20)
->> +#define TEMP0_MSK_INT            (0x24)
->> +#define TEMP0_VALUE            (0x28)
->> +
->> +#define HISI_TEMP_BASE            (-60)
->> +#define HISI_TEMP_RESET            (100000)
->> +#define HISI_TEMP_PASSIVE        (85000)
->> +
->> +#define HISI_MAX_SENSORS        4
->> +
->> +struct hisi_thermal_sensor {
->> +    struct hisi_thermal_data *thermal;
->> +    struct thermal_zone_device *tzd;
->> +    const struct thermal_trip *trip;
->> +
->> +    uint32_t id;
->> +    uint32_t thres_temp, reset_temp;
->> +};
->> +
->> +struct hisi_thermal_data {
->> +    struct platform_device *pdev;
->> +    struct clk *clk;
->> +
->> +    int irq, irq_bind_sensor;
->> +    bool irq_enabled;
->> +
->> +    unsigned int sensors_num;
->> +    long sensor_temp[HISI_MAX_SENSORS];
->> +    struct hisi_thermal_sensor sensors[HISI_MAX_SENSORS];
->> +
->> +    void __iomem *regs;
->> +};
->> +
->> +static DEFINE_SPINLOCK(thermal_lock);
->> +
->=20
->    "thermal_lock" should be defined in "hisi_thermal_data" to support=
- multi device instance.
->=20
+Read all the temperatures from the 5 sensors and saw that
+they were sane with time.=20
 
-ok,good comments
+Ran cpuloadgen and saw that temperatures rising on all the sensors
+and cooled down as soon as the load was reduced.
 
->> +/* in millicelsius */
->> +static inline int _step_to_temp(int step)
->> +{
->> +    /*
->> +     * Every step equals (1 * 200) / 255 celsius, and finally
->> +     * need convert to millicelsius.
->> +     */
->> +    return (HISI_TEMP_BASE + (step * 200 / 255)) * 1000;
->> +}
->> +
->> +static inline int _temp_to_step(int temp)
->> +{
->> +    return ((temp / 1000 - HISI_TEMP_BASE) * 255 / 200);
->> +}
->> +
->> +static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *=
-data,
->> +                     struct hisi_thermal_sensor *sensor)
->> +{
->> +    unsigned long flags;
->> +    int val;
->> +
->> +    spin_lock_irqsave(&thermal_lock, flags);
->> +
->> +    /* disable module firstly */
->> +    writel(0x0, data->regs + TEMP0_EN);
->> +
->> +    /* select sensor id */
->> +    writel((sensor->id << 12), data->regs + TEMP0_CFG);
->> +
->> +    /* enable module */
->> +    writel(0x1, data->regs + TEMP0_EN);
->> +
->> +    mdelay(5);
->> +
->> +    val =3D readl(data->regs + TEMP0_VALUE);
->> +    val =3D _step_to_temp(val);
->> +
->> +    /* adjust for negative value */
->> +    val =3D (val < 0) ? 0 : val;
->> +
->> +    spin_unlock_irqrestore(&thermal_lock, flags);
->> +
->> +    return val;
->> +}
->> +
->> +static void hisi_thermal_bind_irq(struct hisi_thermal_data *data)
->> +{
->> +    struct hisi_thermal_sensor *sensor;
->> +    unsigned long flags;
->> +
->> +    sensor =3D &data->sensors[data->irq_bind_sensor];
->> +
->> +    spin_lock_irqsave(&thermal_lock, flags);
->> +
->> +    /* setting the hdak time */
->> +    writel(0x0, data->regs + TEMP0_CFG);
->> +
->> +    /* disable module firstly */
->> +    writel(0x0, data->regs + TEMP0_RST_MSK);
->> +    writel(0x0, data->regs + TEMP0_EN);
->> +
->> +    /* select sensor id */
->> +    writel((sensor->id << 12), data->regs + TEMP0_CFG);
->> +
->> +    /* enable for interrupt */
->> +    writel(_temp_to_step(sensor->thres_temp)
->> +            | 0x0FFFFFF00, data->regs + TEMP0_TH);
->> +
->> +    writel(_temp_to_step(HISI_TEMP_RESET), data->regs + TEMP0_RST_T=
-H);
->> +
->> +    /* enable module */
->> +    writel(0x1, data->regs + TEMP0_RST_MSK);
->> +    writel(0x1, data->regs + TEMP0_EN);
->> +
->> +    writel(0x0, data->regs + TEMP0_INT_CLR);
->> +    writel(0x1, data->regs + TEMP0_INT_EN);
->> +
->> +    mdelay(5);
->> +
->> +    spin_unlock_irqrestore(&thermal_lock, flags);
->> +
->> +}
->> +
->> +static void hisi_thermal_enable_sensor(struct hisi_thermal_data *da=
-ta)
->> +{
->> +    struct hisi_thermal_sensor *sensor;
->> +    unsigned long flags;
->> +
->> +    sensor =3D &data->sensors[data->irq_bind_sensor];
->> +
->> +    spin_lock_irqsave(&thermal_lock, flags);
->> +
->> +    /* setting the hdak time */
->> +    writel(0x0, data->regs + TEMP0_CFG);
->> +
->> +    /* disable module firstly */
->> +    writel(0x0, data->regs + TEMP0_RST_MSK);
->> +    writel(0x0, data->regs + TEMP0_EN);
->> +
->> +    /* select sensor id */
->> +    writel((sensor->id << 12), data->regs + TEMP0_CFG);
->> +
->> +    /* enable for interrupt */
->> +    writel(_temp_to_step(sensor->thres_temp)
->> +            | 0x0FFFFFF00, data->regs + TEMP0_TH);
->> +
->> +    writel(_temp_to_step(HISI_TEMP_RESET), data->regs + TEMP0_RST_T=
-H);
->> +
->> +    /* enable module */
->> +    writel(0x1, data->regs + TEMP0_RST_MSK);
->> +    writel(0x1, data->regs + TEMP0_EN);
->> +
->> +    writel(0x0, data->regs + TEMP0_INT_CLR);
->> +    writel(0x1, data->regs + TEMP0_INT_EN);
->> +
->> +    mdelay(5);
->> +
->> +    spin_unlock_irqrestore(&thermal_lock, flags);
->> +
->> +}
->> +
->> +static void hisi_thermal_disable_sensor(struct hisi_thermal_data *d=
-ata)
->> +{
->> +    unsigned long flags;
->> +
->> +    spin_lock_irqsave(&thermal_lock, flags);
->> +
->> +    /* disable sensor module */
->> +    writel(0x0, data->regs + TEMP0_INT_EN);
->> +    writel(0x0, data->regs + TEMP0_RST_MSK);
->> +    writel(0x0, data->regs + TEMP0_EN);
->> +
->> +    spin_unlock_irqrestore(&thermal_lock, flags);
->> +
->> +}
->> +
->> +static int hisi_thermal_get_temp(void *_sensor, long *temp)
->> +{
->> +    struct hisi_thermal_sensor *sensor =3D _sensor;
->> +    struct hisi_thermal_data *data =3D sensor->thermal;
->> +
->> +    int sensor_id =3D 0, i;
->> +    long max_temp =3D 0;
->> +
->> +    *temp =3D hisi_thermal_get_sensor_temp(data, sensor);
->> +
->> +    data->sensor_temp[sensor->id] =3D *temp;
->> +
->> +    for (i =3D 0; i < HISI_MAX_SENSORS; i++) {
->> +        if (data->sensor_temp[i] >=3D max_temp) {
->> +            max_temp =3D data->sensor_temp[i];
->> +            sensor_id =3D i;
->> +        }
->> +    }
->> +
->> +    data->irq_bind_sensor =3D sensor_id;
->> +
->> +    dev_dbg(&data->pdev->dev, "id=3D%d, irq=3D%d, temp=3D%ld, thres=
-=3D%d\n",
->> +        sensor->id, data->irq_enabled, *temp, sensor->thres_temp);
->> +
->> +    /*
->> +     * Bind irq to sensor for two cases:
->> +     *   Reenable alarm IRQ if temperature below threshold;
->> +     *   if irq has been enabled, always set it;
->> +     */
->> +    if (!data->irq_enabled && max_temp < sensor->thres_temp) {
->> +        data->irq_enabled =3D true;
->> +        hisi_thermal_bind_irq(data);
->> +    } else if (data->irq_enabled)
->> +        hisi_thermal_bind_irq(data);
->> +
->> +    return 0;
->> +}
->> +
->> +static struct thermal_zone_of_device_ops hisi_of_thermal_ops =3D {
->> +    .get_temp =3D hisi_thermal_get_temp,
->> +};
->> +
->> +static irqreturn_t hisi_thermal_alarm_irq(int irq, void *dev)
->> +{
->> +    struct hisi_thermal_data *data =3D dev;
->> +    unsigned long flags;
->> +
->> +    spin_lock_irqsave(&thermal_lock, flags);
->> +
->> +    /* disable interrupt */
->> +    writel(0x0, data->regs + TEMP0_INT_EN);
->> +    writel(0x1, data->regs + TEMP0_INT_CLR);
->> +
->> +    spin_unlock_irqrestore(&thermal_lock, flags);
->> +    data->irq_enabled =3D false;
->> +
->> +    return IRQ_WAKE_THREAD;
->> +}
->> +
->> +static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev=
-)
->> +{
->> +    struct hisi_thermal_data *data =3D dev;
->> +    struct hisi_thermal_sensor *sensor;
->> +    int i;
->> +
->> +    sensor =3D &data->sensors[data->irq_bind_sensor];
->> +
->> +    dev_crit(&data->pdev->dev, "THERMAL ALARM: T > %d\n",
->> +         sensor->thres_temp / 1000);
->> +
->> +    for (i =3D 0; i < data->sensors_num; i++)
->> +        thermal_zone_device_update(data->sensors[i].tzd);
->> +
->> +    return IRQ_HANDLED;
->> +}
->> +
->> +static int hisi_thermal_init_sensor(struct platform_device *pdev,
->> +                    struct device_node *np,
->> +                    struct hisi_thermal_data *data,
->> +                    int index)
->> +{
->> +    struct hisi_thermal_sensor *sensor;
->> +    int ret, i;
->> +
->> +    sensor =3D &data->sensors[index];
->> +
->> +    ret =3D of_property_read_u32(np, "hisilicon,tsensor-id",
->> +                    &sensor->id);
->> +    if (ret) {
->> +        dev_err(&pdev->dev, "failed to get id %d: %d\n", index, ret=
-);
->> +        return ret;
->> +    }
->> +
->> +    sensor->thermal =3D data;
->> +    sensor->tzd =3D thermal_zone_of_sensor_register(&pdev->dev, sen=
-sor->id,
->> +                sensor, &hisi_of_thermal_ops);
->> +    if (IS_ERR(sensor->tzd)) {
->> +        ret =3D PTR_ERR(sensor->tzd);
->> +        dev_err(&pdev->dev, "failed to register sensor id %d: %d\n"=
-,
->> +            sensor->id, ret);
->> +        return ret;
->> +    }
->> +
->> +    sensor->trip =3D of_thermal_get_trip_points(sensor->tzd);
->> +
->> +    for (i =3D 0; i < of_thermal_get_ntrips(sensor->tzd); i++) {
->> +        if (sensor->trip[i].type =3D=3D THERMAL_TRIP_PASSIVE) {
->> +            sensor->thres_temp =3D sensor->trip[i].temperature;
->> +            break;
->> +        }
->> +    }
->> +
->> +    return 0;
->> +}
->> +
->> +static int hisi_thermal_get_sensor_data(struct platform_device *pde=
-v)
->> +{
->> +    struct hisi_thermal_data *data =3D platform_get_drvdata(pdev);
->> +    struct device_node *np =3D pdev->dev.of_node;
->> +    struct device_node *child_np;
->> +    int ret, i, index;
->> +
->> +    /* sensor initialization */
->> +    index =3D 0;
->> +    for_each_child_of_node(np, child_np) {
->> +
->> +        if (index >=3D HISI_MAX_SENSORS) {
->> +            dev_err(&pdev->dev, "unsupported sensor number\n");
->> +            ret =3D -EINVAL;
->> +            goto err_init_sensors;
->> +        }
->> +
->> +        ret =3D hisi_thermal_init_sensor(pdev, child_np, data, inde=
-x);
->> +        if (ret)
->> +            goto err_init_sensors;
->> +
->> +        index++;
->> +    }
->> +
->> +    data->sensors_num =3D index;
->> +    return 0;
->> +
->> +err_init_sensors:
->> +    for (i =3D 0; i < index; i++)
->> +        thermal_zone_of_sensor_unregister(&pdev->dev,
->> +                data->sensors[i].tzd);
->> +    return ret;
->> +}
->> +
->> +static const struct of_device_id of_hisi_thermal_match[] =3D {
->> +    { .compatible =3D "hisilicon,tsensor" },
->> +    { /* end */ }
->> +};
->> +MODULE_DEVICE_TABLE(of, of_hisi_thermal_match);
->> +
->> +static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *=
-sensor,
->> +                       bool on)
->> +{
->> +    struct thermal_zone_device *tzd =3D sensor->tzd;
->> +
->> +    tzd->ops->set_mode(tzd,
->> +        on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
->> +}
->> +
->> +static int hisi_thermal_probe(struct platform_device *pdev)
->> +{
->> +    struct hisi_thermal_data *data;
->> +    struct resource *res;
->> +    int i;
->> +    int ret;
->> +
->> +    data =3D devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
->> +    if (!data)
->> +        return -ENOMEM;
->> +
->> +    data->pdev =3D pdev;
->> +
->> +    res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
->> +    data->regs =3D devm_ioremap_resource(&pdev->dev, res);
->> +    if (IS_ERR(data->regs)) {
->> +        dev_err(&pdev->dev, "failed to get io address\n");
->> +        return PTR_ERR(data->regs);
->> +    }
->> +
->> +    data->irq =3D platform_get_irq(pdev, 0);
->> +    if (data->irq < 0)
->> +        return data->irq;
->> +
->> +    ret =3D devm_request_threaded_irq(&pdev->dev, data->irq,
->> +            hisi_thermal_alarm_irq, hisi_thermal_alarm_irq_thread,
->> +            0, "hisi_thermal", data);
->> +    if (ret < 0) {
->> +        dev_err(&pdev->dev, "failed to request alarm irq: %d\n", re=
-t);
->> +        return ret;
->> +    }
->> +
->> +    platform_set_drvdata(pdev, data);
->> +
->> +    data->clk =3D devm_clk_get(&pdev->dev, "thermal_clk");
->> +    if (IS_ERR(data->clk)) {
->> +        ret =3D PTR_ERR(data->clk);
->> +        if (ret !=3D -EPROBE_DEFER)
->> +            dev_err(&pdev->dev,
->> +                "failed to get thermal clk: %d\n", ret);
->> +        return ret;
->> +    }
->> +
->> +    /* enable clock for thermal */
->> +    ret =3D clk_prepare_enable(data->clk);
->> +    if (ret) {
->> +        dev_err(&pdev->dev, "failed to enable thermal clk: %d\n", r=
-et);
->> +        return ret;
->> +    }
->> +
->> +    ret =3D hisi_thermal_get_sensor_data(pdev);
->> +    if (ret) {
->> +        dev_err(&pdev->dev, "failed to get sensor data\n");
->> +        goto err_get_sensor_data;
->> +        return ret;
->> +    }
->> +
->> +    hisi_thermal_enable_sensor(data);
->> +    data->irq_enabled =3D true;
->> +
->> +    for (i =3D 0; i < data->sensors_num; i++)
->> +        hisi_thermal_toggle_sensor(&data->sensors[i], true);
->> +
->> +    return 0;
->> +
->> +err_get_sensor_data:
->> +    clk_disable_unprepare(data->clk);
->> +    return ret;
->> +}
->> +
->> +static int hisi_thermal_remove(struct platform_device *pdev)
->> +{
->> +    struct hisi_thermal_data *data =3D platform_get_drvdata(pdev);
->> +    int i;
->> +
->> +    for (i =3D 0; i < data->sensors_num; i++) {
->> +        struct hisi_thermal_sensor *sensor =3D &data->sensors[i];
->> +
->> +        hisi_thermal_toggle_sensor(sensor, false);
->> +        thermal_zone_of_sensor_unregister(&pdev->dev, sensor->tzd);
->> +    }
->> +
->> +    hisi_thermal_disable_sensor(data);
->> +    clk_disable_unprepare(data->clk);
->> +    return 0;
->> +}
->> +
->> +#ifdef CONFIG_PM_SLEEP
->> +static int hisi_thermal_suspend(struct device *dev)
->> +{
->> +    struct hisi_thermal_data *data =3D dev_get_drvdata(dev);
->> +
->> +    hisi_thermal_disable_sensor(data);
->> +    data->irq_enabled =3D false;
->> +
->> +    clk_disable_unprepare(data->clk);
->> +
->> +    return 0;
->> +}
->> +
->> +static int hisi_thermal_resume(struct device *dev)
->> +{
->> +    struct hisi_thermal_data *data =3D dev_get_drvdata(dev);
->> +
->> +    clk_prepare_enable(data->clk);
->> +
->> +    data->irq_enabled =3D true;
->> +    hisi_thermal_enable_sensor(data);
->> +
->> +    return 0;
->> +}
->> +#endif
->> +
->> +static SIMPLE_DEV_PM_OPS(hisi_thermal_pm_ops,
->> +             hisi_thermal_suspend, hisi_thermal_resume);
->> +
->> +static struct platform_driver hisi_thermal_driver =3D {
->> +    .driver =3D {
->> +        .name    =3D "hisi_thermal",
->> +        .owner  =3D THIS_MODULE,
->> +        .pm    =3D &hisi_thermal_pm_ops,
->> +        .of_match_table =3D of_hisi_thermal_match,
->> +    },
->> +    .probe        =3D hisi_thermal_probe,
->> +    .remove        =3D hisi_thermal_remove,
->> +};
->> +
->> +static int __init hisi_thermal_init(void)
->> +{
->> +    return platform_driver_register(&hisi_thermal_driver);
->> +}
->> +
->> +static void __exit hisi_thermal_exit(void)
->> +{
->> +    platform_driver_unregister(&hisi_thermal_driver);
->> +}
->> +
->> +late_initcall(hisi_thermal_init);
->> +module_exit(hisi_thermal_exit);
->> +
->> +MODULE_AUTHOR("Xinwei Kong <kong.kongxinwei@hisilicon.com>");
->> +MODULE_AUTHOR("Leo Yan <leo.yan@linaro.org>");
->> +MODULE_DESCRIPTION("Hisilicon thermal driver");
->> +MODULE_LICENSE("GPL v2");
->>
->=20
->=20
->=20
-> .
->=20
+ .../thermal/ti-soc-thermal/dra752-thermal-data.c   |  3 +-
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c        | 37 ++++++++++++++=
++++++++-
+ drivers/thermal/ti-soc-thermal/ti-bandgap.h        |  4 +++
+ 3 files changed, 42 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c b/dri=
+vers/thermal/ti-soc-thermal/dra752-thermal-data.c
+index a492927..58b5c66 100644
+--- a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
++++ b/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
+@@ -420,7 +420,8 @@ const struct ti_bandgap_data dra752_data =3D {
+ 			TI_BANDGAP_FEATURE_FREEZE_BIT |
+ 			TI_BANDGAP_FEATURE_TALERT |
+ 			TI_BANDGAP_FEATURE_COUNTER_DELAY |
+-			TI_BANDGAP_FEATURE_HISTORY_BUFFER,
++			TI_BANDGAP_FEATURE_HISTORY_BUFFER |
++			TI_BANDGAP_FEATURE_ERRATA_814,
+ 	.fclock_name =3D "l3instr_ts_gclk_div",
+ 	.div_ck_name =3D "l3instr_ts_gclk_div",
+ 	.conv_table =3D dra752_adc_to_temp,
+diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/ther=
+mal/ti-soc-thermal/ti-bandgap.c
+index 74c0e34..baf822e 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
++++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+@@ -119,6 +119,37 @@ exit:
+ }
+=20
+ /**
++ * ti_dra7_bandgap_read_temp() - helper function to read dra7 sensor t=
+emperature
++ * @bgp: pointer to ti_bandgap structure
++ * @reg: desired register (offset) to be read
++ *
++ * Function to read dra7 bandgap sensor temperature. This is done sepa=
+rately
++ * so as to workaround the errata "Bandgap Temperature read Dtemp can =
+be
++ * corrupted" - Errata ID: i814".
++ * Read accesses to registers listed below can be corrupted due to inc=
+orrect
++ * resynchronization between clock domains.
++ * Read access to registers below can be corrupted :
++ * CTRL_CORE_DTEMP_MPU/GPU/CORE/DSPEVE/IVA_n (n =3D 0 to 4)
++ * CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA_n
++ *
++ * Return: the register value.
++ */
++static u32 ti_dra7_bandgap_read_temp(struct ti_bandgap *bgp,  u32 reg)
++{
++	u32 val1, val2;
++
++	val1 =3D ti_bandgap_readl(bgp, reg);
++	val2 =3D ti_bandgap_readl(bgp, reg);
++
++/* If both times we read the same value then that is right */
++	if (val1 =3D=3D val2)
++		return val1;
++
++/* if val1 and val2 are different read it third time */
++	return ti_bandgap_readl(bgp, reg);
++}
++
++/**
+  * ti_bandgap_read_temp() - helper function to read sensor temperature
+  * @bgp: pointer to ti_bandgap structure
+  * @id: bandgap sensor id
+@@ -148,7 +179,11 @@ static u32 ti_bandgap_read_temp(struct ti_bandgap =
+*bgp, int id)
+ 	}
+=20
+ 	/* read temperature */
+-	temp =3D ti_bandgap_readl(bgp, reg);
++	if (TI_BANDGAP_HAS(bgp, ERRATA_814))
++		temp =3D ti_dra7_bandgap_read_temp(bgp, reg);
++	else
++		temp =3D ti_bandgap_readl(bgp, reg);
++
+ 	temp &=3D tsr->bgap_dtemp_mask;
+=20
+ 	if (TI_BANDGAP_HAS(bgp, FREEZE_BIT))
+diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.h b/drivers/ther=
+mal/ti-soc-thermal/ti-bandgap.h
+index b3adf72..b2da3fc 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-bandgap.h
++++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+@@ -318,6 +318,9 @@ struct ti_temp_sensor {
+  * TI_BANDGAP_FEATURE_HISTORY_BUFFER - used when the bandgap device fe=
+atures
+  *	a history buffer of temperatures.
+  *
++ * TI_BANDGAP_FEATURE_ERRATA_814 - used to workaorund when the bandgap=
+ device
++ *	has Errata 814
++ *
+  * TI_BANDGAP_HAS(b, f) - macro to check if a bandgap device is capabl=
+e of a
+  *      specific feature (above) or not. Return non-zero, if yes.
+  */
+@@ -331,6 +334,7 @@ struct ti_temp_sensor {
+ #define TI_BANDGAP_FEATURE_FREEZE_BIT		BIT(7)
+ #define TI_BANDGAP_FEATURE_COUNTER_DELAY	BIT(8)
+ #define TI_BANDGAP_FEATURE_HISTORY_BUFFER	BIT(9)
++#define TI_BANDGAP_FEATURE_ERRATA_814		BIT(10)
+ #define TI_BANDGAP_HAS(b, f)			\
+ 			((b)->conf->features & TI_BANDGAP_FEATURE_ ## f)
+=20
+--=20
+1.9.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
