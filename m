@@ -1,41 +1,108 @@
-From: Kumar Gala <galak@codeaurora.org>
-Subject: Re: [PATCH v18 04/11] ARM: cpuidle: Add cpuidle support for QCOM cpus
-Date: Fri, 27 Mar 2015 11:22:43 -0500
-Message-ID: <40C051E9-43C0-4BDD-ADE1-1B96DCC13656@codeaurora.org>
-References: <1427315136-44321-1-git-send-email-lina.iyer@linaro.org> <1427315136-44321-5-git-send-email-lina.iyer@linaro.org>
-Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH] cpufreq: exynos: remove dead ->need_apll_change method
+Date: Fri, 27 Mar 2015 17:32:53 +0100
+Message-ID: <2557080.JPtuM0lETZ@amdc1032>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:56835 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752987AbbC0QWr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Mar 2015 12:22:47 -0400
-In-Reply-To: <1427315136-44321-5-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sachin Kamat <sachin.kamat@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, agross@codeaurora.org, Arnd Bergmann <arnd@arndb.de>
 
+Commit 26ab1c62b6e1 ("cpufreq: exynos5250: Set APLL rate
+using CCF API") removed the last user of ->need_apll_change
+method.  Remove it and then cleanup exynos_cpufreq_scale()
+accordingly.
 
-On Mar 25, 2015, at 3:25 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+This patch was tested on Exynos4412 SoC based Trats2 board.
 
-> Define ARM_QCOM_CPUIDLE config item to enable cpuidle support.
-> 
-> Cc: Stephen Boyd <sboyd@codeaurora.org>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Kevin Hilman <khilman@linaro.org>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> ---
-> drivers/cpuidle/Kconfig.arm | 7 +++++++
-> 1 file changed, 7 insertions(+)
+There should be no functional changes caused by this patch.
 
-Acked-by: Kumar Gala <galak@codeaurora.org>
+Cc: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/cpufreq/exynos-cpufreq.c |   30 +++---------------------------
+ drivers/cpufreq/exynos-cpufreq.h |    1 -
+ 2 files changed, 3 insertions(+), 28 deletions(-)
 
-- k
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 82d2fbb..01ed166 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -45,11 +45,9 @@ static int exynos_cpufreq_get_index(unsigned int freq)
+ 
+ static int exynos_cpufreq_scale(unsigned int target_freq)
+ {
+-	struct cpufreq_frequency_table *freq_table = exynos_info->freq_table;
+ 	unsigned int *volt_table = exynos_info->volt_table;
+ 	struct cpufreq_policy *policy = cpufreq_cpu_get(0);
+-	unsigned int arm_volt, safe_arm_volt = 0;
+-	unsigned int mpll_freq_khz = exynos_info->mpll_freq_khz;
++	unsigned int arm_volt;
+ 	struct device *dev = exynos_info->dev;
+ 	unsigned int old_freq;
+ 	int index, old_index;
+@@ -74,21 +72,10 @@ static int exynos_cpufreq_scale(unsigned int target_freq)
+ 		goto out;
+ 	}
+ 
+-	/*
+-	 * ARM clock source will be changed APLL to MPLL temporary
+-	 * To support this level, need to control regulator for
+-	 * required voltage level
+-	 */
+-	if (exynos_info->need_apll_change != NULL) {
+-		if (exynos_info->need_apll_change(old_index, index) &&
+-		   (freq_table[index].frequency < mpll_freq_khz) &&
+-		   (freq_table[old_index].frequency < mpll_freq_khz))
+-			safe_arm_volt = volt_table[exynos_info->pll_safe_idx];
+-	}
+ 	arm_volt = volt_table[index];
+ 
+ 	/* When the new frequency is higher than current frequency */
+-	if ((target_freq > old_freq) && !safe_arm_volt) {
++	if (target_freq > old_freq) {
+ 		/* Firstly, voltage up to increase frequency */
+ 		ret = regulator_set_voltage(arm_regulator, arm_volt, arm_volt);
+ 		if (ret) {
+@@ -98,21 +85,10 @@ static int exynos_cpufreq_scale(unsigned int target_freq)
+ 		}
+ 	}
+ 
+-	if (safe_arm_volt) {
+-		ret = regulator_set_voltage(arm_regulator, safe_arm_volt,
+-				      safe_arm_volt);
+-		if (ret) {
+-			dev_err(dev, "failed to set cpu voltage to %d\n",
+-				safe_arm_volt);
+-			return ret;
+-		}
+-	}
+-
+ 	exynos_info->set_freq(old_index, index);
+ 
+ 	/* When the new frequency is lower than current frequency */
+-	if ((target_freq < old_freq) ||
+-	   ((target_freq > old_freq) && safe_arm_volt)) {
++	if (target_freq < old_freq) {
+ 		/* down the voltage after frequency change */
+ 		ret = regulator_set_voltage(arm_regulator, arm_volt,
+ 				arm_volt);
+diff --git a/drivers/cpufreq/exynos-cpufreq.h b/drivers/cpufreq/exynos-cpufreq.h
+index 9f2062a..fe5a105 100644
+--- a/drivers/cpufreq/exynos-cpufreq.h
++++ b/drivers/cpufreq/exynos-cpufreq.h
+@@ -49,7 +49,6 @@ struct exynos_dvfs_info {
+ 	unsigned int	*volt_table;
+ 	struct cpufreq_frequency_table	*freq_table;
+ 	void (*set_freq)(unsigned int, unsigned int);
+-	bool (*need_apll_change)(unsigned int, unsigned int);
+ 	void __iomem	*cmu_regs;
+ };
+ 
 -- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+1.7.9.5
