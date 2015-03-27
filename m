@@ -1,119 +1,194 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: powernv: Report cpu frequency throttling
-Date: Fri, 27 Mar 2015 13:10:46 +0530
-Message-ID: <CAKohponCrbioGcuiPYvB2LjERCBov7E7GApP3HKPwzcC2x1ZYA@mail.gmail.com>
-References: <1427441523-5189-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v7 2/5] power: max77843_charger: Add Max77843 charger
+ device driver
+Date: Fri, 27 Mar 2015 07:57:58 +0000
+Message-ID: <20150327075758.GB15988@x1>
+References: <54FCEABE.9000007@samsung.com>
+ <CAJKOXPcLoOp30j5ZwFv2_nT5B+nZOnV6utck5KDw3vt-tmWRew@mail.gmail.com>
+ <54FD880E.30903@samsung.com>
+ <1425903199.13415.9.camel@AMDC1943>
+ <54FEF541.6000305@samsung.com>
+ <551119DE.2070402@samsung.com>
+ <CAJKOXPdd5dDgH91NeytobJWg71pYOw5XnhB9N1=m2Mjmxxjv-A@mail.gmail.com>
+ <551408E0.3060901@samsung.com>
+ <20150326135412.GJ5951@x1>
+ <55149AFC.1080009@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:36307 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752724AbbC0Hkr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Mar 2015 03:40:47 -0400
-Received: by obbld8 with SMTP id ld8so13196446obb.3
-        for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2015 00:40:46 -0700 (PDT)
-In-Reply-To: <1427441523-5189-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Received: from mail-wi0-f173.google.com ([209.85.212.173]:35414 "EHLO
+	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753121AbbC0H6D (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Mar 2015 03:58:03 -0400
+Received: by wibbg6 with SMTP id bg6so16877478wib.0
+        for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2015 00:58:01 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <55149AFC.1080009@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Beomho Seo <beomho.seo@samsung.com>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Jaewon Kim <jaewon02.kim@samsung.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Chanwoo Choi <cw00.choi@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-On 27 March 2015 at 13:02, Shilpasri G Bhat
-<shilpa.bhat@linux.vnet.ibm.com> wrote:
-> The power and thermal safety of the system is taken care by an
-> On-Chip-Controller (OCC) which is real-time subsystem embedded within
-> the POWER8 processor. OCC continuously monitors the memory and core
-> temperature, the total system power, state of power supply and fan.
->
-> The cpu frequency can be throttled by OCC for the following reasons:
-> 1)If a processor crosses its power and temperature limit then OCC will
->   lower its Pmax to reduce the frequency and voltage.
-> 2)If OCC crashes then the system is forced to Psafe frequency.
-> 3)If OCC fails to recover then the kernel is not allowed to do any
->   further frequency changes and the chip will remain in Psafe.
->
-> The user can see a drop in performance when frequency is throttled and
-> is unaware of throttling. So detect and report such a condition so
-> that user can check the OCC status to reboot the system or check for
-> power supply or fan failures.
->
-> The current status of the core is read from Power Management Status
-> Register(PMSR) to check if any of the throttling condition is occurred
-> and the appropriate throttling message is reported.
->
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
-> Changes from V2:
-> -Changed commit log to add more details.
-> -Fixed multi-line comment to proper format
->
-> Changes from V1: Removed unused value of PMCR register
->
->  drivers/cpufreq/powernv-cpufreq.c | 40 ++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 39 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 2dfd4fd..0eb89a9 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -36,7 +36,7 @@
->  #define POWERNV_MAX_PSTATES    256
->
->  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
-> -static bool rebooting;
-> +static bool rebooting, throttled;
->
->  /*
->   * Note: The set of pstates consists of contiguous integers, the
-> @@ -294,6 +294,41 @@ static inline unsigned int get_nominal_index(void)
->         return powernv_pstate_info.max - powernv_pstate_info.nominal;
->  }
->
-> +static void powernv_cpufreq_throttle_check(unsigned int cpu)
-> +{
-> +       unsigned long pmsr;
-> +       int pmsr_pmax, pmsr_lp;
-> +
-> +       pmsr = get_pmspr(SPRN_PMSR);
-> +
-> +       /* Check for Pmax Capping */
-> +       pmsr_pmax = (s8)((pmsr >> 32) & 0xFF);
-> +       if (pmsr_pmax != powernv_pstate_info.max) {
-> +               throttled = true;
-> +               pr_warn("Cpu %d Pmax is reduced to %d\n", cpu, pmsr_pmax);
-> +       }
-> +
-> +       /*
-> +        * Check for Psafe by reading LocalPstate
-> +        * or check if Psafe_mode_active- 34th bit is set in PMSR.
-> +        */
-> +       pmsr_lp = (s8)((pmsr >> 48) & 0xFF);
-> +       if ((pmsr_lp < powernv_pstate_info.min) || ((pmsr >> 30) & 1)) {
-> +               throttled = true;
-> +               pr_warn("Cpu %d in Psafe %d PMSR[34]=%lx\n", cpu,
-> +                               pmsr_lp, ((pmsr >> 30) & 1));
-> +       }
-> +
-> +       /* Check if SPR_EM_DISABLED- 33rd bit is set in PMSR */
-> +       if ((pmsr >> 31) & 1) {
-> +               throttled = true;
-> +               pr_warn("Frequency management disabled cpu %d PMSR[33]=%lx\n",
-> +                               cpu, ((pmsr >> 31) & 1));
-> +       }
-> +       if (throttled)
-> +               pr_warn("Cpu Frequency is throttled\n");
-> +}
-> +
->  /*
->   * powernv_cpufreq_target_index: Sets the frequency corresponding to
->   * the cpufreq table entry indexed by new_index on the cpus in the
-> @@ -307,6 +342,9 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->         if (unlikely(rebooting) && new_index != get_nominal_index())
->                 return 0;
->
-> +       if (!throttled)
-> +               powernv_cpufreq_throttle_check(smp_processor_id());
-> +
->         freq_data.pstate_id = powernv_freqs[new_index].driver_data;
+On Fri, 27 Mar 2015, Beomho Seo wrote:
+> On 03/26/2015 10:54 PM, Lee Jones wrote:
+> > On Thu, 26 Mar 2015, Beomho Seo wrote:
+> >> On 03/24/2015 05:38 PM, Krzysztof Kozlowski wrote:
+> >>> 2015-03-24 9:01 GMT+01:00 Beomho Seo <beomho.seo@samsung.com>:
+> >>>> On 03/10/2015 10:44 PM, Beomho Seo wrote:
+> >>>>> On 03/09/2015 09:13 PM, Krzysztof Kozlowski wrote:
+> >>>>>> On pon, 2015-03-09 at 20:46 +0900, Beomho Seo wrote:
+> >>>>>>> On 03/09/2015 08:02 PM, Krzysztof Kozlowski wrote:
+> >>>>>>>> 2015-03-09 1:35 GMT+01:00 Beomho Seo <beomho.seo@samsung.com=
+>:
+> >>>>>>>>> On 03/08/2015 05:13 AM, Sebastian Reichel wrote:
+> >>>>>>>>>> On Mon, Mar 02, 2015 at 07:10:35PM +0900, Jaewon Kim wrote=
+:
+> >>>>>>>>>>> From: Beomho Seo <beomho.seo@samsung.com>
+> >>>>>>>>>>>
+> >>>>>>>>>>> This patch adds device driver of max77843 charger. This d=
+river provide
+> >>>>>>>>>>> initialize each charging mode(e.g. fast charge, top-off m=
+ode and constant
+> >>>>>>>>>>> charging mode so on.). Additionally, control charging par=
+amters to use
+> >>>>>>>>>>> i2c interface.
+> >>>>>>>>>>>
+> >>>>>>>>>>> Cc: Sebastian Reichel <sre@kernel.org>
+> >>>>>>>>>>> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+> >>>>>>>>>>
+> >>>>>>>>>> Reviewed-By: Sebastian Reichel <sre@kernel.org>
+> >>>>>>>>>>
+> >>>>>>>>>> I can't take it as is, since it depends on the private hea=
+der file
+> >>>>>>>>>> of PATCHv1.
+> >>>>>>>>>>
+> >>>>>>>>>> -- Sebastian
+> >>>>>>>>>>
+> >>>>>>>>>
+> >>>>>>>>> This patch reviewed by Sebastian.
+> >>>>>>>>> Could you Please merge that your git tree ?
+> >>>>>>>>
+> >>>>>>>> Hi,
+> >>>>>>>>
+> >>>>>>>> ... and again we are adding a new driver for very similar ch=
+ipset to
+> >>>>>>>> already supported. I looked at spec and the charger's regist=
+ers are
+> >>>>>>>> almost the same as for max77693. Their layout and addresses =
+are the
+> >>>>>>>> same. I see some minor differences, probably the most import=
+ant would
+> >>>>>>>> be different values current (fast-charge, top-off). But stil=
+l 90% of
+> >>>>>>>> registers are the same... Do we really have to add new drive=
+r?
+> >>>>>>>>
+> >>>>>>>> Best regards,
+> >>>>>>>> Krzysztof
+> >>>>>>>>
+> >>>>>>>
+> >>>>>>> Hi,
+> >>>>>>>
+> >>>>>>> Thank you for your comment. As you say, both chip set are sim=
+ilar.
+> >>>>>>> But new driver need for support max77843. It is support diffe=
+rent below
+> >>>>>>> - Provide Battery presence information.
+> >>>>>>
+> >>>>>> Another set of power supply properties could be added for that=
+ chip.
+> >>>>>> This way the get_property() function would be the same but act=
+ually the
+> >>>>>> POWER_SUPPLY_PROP_PRESENT won't be called for max77693.
+> >>>>>>
+> >>>>>>> - Can OTG FET control.
+> >>>>>>
+> >>>>>> Where the OTG FET feature is it enabled in your driver? I coul=
+dn't find
+> >>>>>> it.
+> >>>>>>
+> >>>>>
+> >>>>> Sorry. This driver don't control OTG FET feature.
+> >>>>>
+> >>>>>>> - Bigger Fast charge current, Top Off current Threshold selec=
+tion.
+> >>>>>>> - Various and bigger OTG current limitation.
+> >>>>>>> - Bigger primary charger termination voltage setting.
+> >>>>>>> - Different maximum input current limit selection(Different s=
+tep).
+> >>>>>>
+> >>>>>> Yes, I mentioned some of these differences (the Fast/top-off
+> >>>>>> differences). These are differences in values so it does not r=
+equire new
+> >>>>>> driver. There is need to develop new driver just to support di=
+fferent
+> >>>>>> current (3.0 A instead of 2.1 A) or voltage threshold.
+> >>>>>>
+> >>>>>
+> >>>>> They are different charging current, OTG current limitation, to=
+p off current,
+> >>>>> charging limitation value. In case OTG current limitation diffe=
+rent not
+> >>>>> limitation value but using register bit(max77843 use[7:6] max77=
+693 use[7]
+> >>>>> bit only). Even if this driver not support all feature, some re=
+gister
+> >>>>> different with max77693(support value, use register bit).
+> >>>>>
+> >>>>> If this driver will combined with max77693 may even be benefici=
+al for
+> >>>>> new Maxim driver. But the present, this driver is related with
+> >>>>> max77843 core driver and max77843-regulator. So I hope this dri=
+ver
+> >>>>> merge first. And then will extend two driver(max77843 charger a=
+nd max77693 charger).
+> >>>
+> >>> I still prefer merging common drivers into one instead of creatin=
+g
+> >>> some more of them.
+> >>> However I understand your point and I am not entirely opposed aga=
+inst.
+> >>> Especially that you invested quite a bit of time for developing t=
+his
+> >>> and my feedback was quite late. To summarize I am fine with your
+> >>> approach.
+> >>>
+> >>> Best regards,
+> >>> Krzysztof
+> >>>
+> >>
+> >> Dear Lee Jones,
+> >>
+> >> Could you please merge that your git tree ?
+> >=20
+> > Sorry, I'm lost.  Why am I taking this though the MFD tree?  What
+> > patches are left?  Where are they going?  Am I taking any other
+> > patches?
+> >=20
+>=20
+> Max77843 charger driver is max77843 mfd core dependency.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+What kind of dependancy?  Runtime or build?  Where is the patch that
+it depends on?  Is it in -next for in Mainline already?
+
+> If you think this patch will suitable for battery tree(or other tree)=
+,
+> I would like request for merge battery tree.
+
+If this patch has no build dependencies on patches which are in -next,
+but not in Mainline then it will have to go in via the same tree that
+the dependencies were applied to.  If the dependencies are already in
+Mainline, or they are not build-deps, then it should go in via the
+correct tree, which I believe is Sebastian's tree.
+
+> Also, I will send again this patch and device tree binding document.
+
+Either way you should do that.  Mark them as RESEND instead of PATCH
+and apply all of the Acks you have accumulated so far.
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
