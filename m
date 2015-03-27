@@ -1,76 +1,57 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [RFP] LPC thermal track
-Date: Thu, 26 Mar 2015 20:02:49 -0400
-Message-ID: <20150327000245.GA29752@developer.hsd1.ca.comcast.net>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH v2] cpufreq: hisilicon: add acpu driver
+Date: Fri, 27 Mar 2015 10:02:01 +0800
+Message-ID: <20150327020201.GB4902@leoy-linaro>
+References: <1427370486-14823-1-git-send-email-leo.yan@linaro.org>
+ <55141412.6040600@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:34607 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752342AbbC0ACw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Mar 2015 20:02:52 -0400
-Received: by pacwe9 with SMTP id we9so78014149pac.1
-        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2015 17:02:51 -0700 (PDT)
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:36211 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752810AbbC0CCI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Mar 2015 22:02:08 -0400
+Received: by padcy3 with SMTP id cy3so80627179pad.3
+        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2015 19:02:08 -0700 (PDT)
 Content-Disposition: inline
+In-Reply-To: <55141412.6040600@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>
-Cc: Javi Merino <javi.merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>, cyndis@lakka.kapsi.fi, kapileshwar.singh@arm.com, l.majewski@samsung.com, geert+renesas@glider.be, srinivas.pandruvada@linux.intel.com, wxt@rock-chips.com
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Dan Zhao <dan.zhao@hisilicon.com>, "zhenwei.wang@hisilicon.com" <zhenwei.wang@hisilicon.com>, "mohaoju@hisilicon.com" <mohaoju@hisilicon.com>, Haojian Zhuang <haojian.zhuang@linaro.org>, Wei Xu <xuwei5@hisilicon.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
 
+hi Sudeep,
 
---LZvS9be/3tNcYl/X
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks for reviewing.
 
-Hello all,
+On Thu, Mar 26, 2015 at 02:13:38PM +0000, Sudeep Holla wrote:
+> 
+> On 26/03/15 11:48, Leo Yan wrote:
+> >+static int __init hisi_acpu_cpufreq_driver_init(void)
+> >+{
+> >+	struct platform_device_info devinfo = { .name = "cpufreq-dt", };
+> >+	struct platform_device *pdev;
+> >+
+> >+	if (!of_machine_is_compatible("hisilicon,hi6220"))
+> >+		return -ENODEV;
+> >+
+> >+	pdev = platform_device_register_full(&devinfo);
+> >+	return PTR_ERR_OR_ZERO(pdev);
+> 
+> Since you are not using anything other than name, you can simplify it
+> further by something like:
+> 	platform_device_register_simple("cpufreq-dt", -1, NULL, 0)
 
-I've created a proposal for a thermal microconference track on the LPC
-2015 [1]. The basic idea is to get thermal developers together and
-discuss the thermal role within the Linux environment, from kernel and
-userspace perspective.
+Will use this way and resend patch.
 
-A initial proposal for the topics to be discussed are:
-=2E Closed loop control governors
-=2E Sensor API
-=2E Thermal class: split of temperature sensor device and thermal driver
-=2E Improvements on OF-thermal
-=2E Devfreq vs. clock cooling
-=2E Power model based policies
-=2E User space tools
-=2E User space governors
+> And IMO it need not be a separate driver too, you can add this in mach
+> if it exists(i.e. arm32 though not recommended) or clock code that
+> registers cpu clock. Thoughts ?
 
-If you have interest, or if you have ideas on how to improve the
-framework, reply to this email and add it to the wiki.=20
+This driver will be firstly used for hikey board w/t ARMv8 SoC and i
+prefer de-couple the cpufreq driver w/t clk driver. w/t this cpufreq
+driver, we can easily enhance it and init SoC's specific operations
+for later more hisilicon SoCs.
 
-Add your name in the list of participants as well. Also, if you feel
-like giving a talk on the topic, let's add it to the topic list.
-
-Currently I am simple checking what would be the level of interest to
-have this topic as a LPC microconference.
-
-BR,
-
-Eduardo Valentin
-
-
-[1] - http://wiki.linuxplumbersconf.org/2015:thermal
-
---LZvS9be/3tNcYl/X
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJVFJ4cAAoJEMLUO4d9pOJWsEAH/0kwlAQnq/c/4rmfCRltQ7Si
-5weGDyhvrHMC93gpbqgKshFZQe8HWhfbccecKQOs5cFJxQIJP0ye3NpnOQVyVgfj
-rqCIudHAYbq1scjJtRYanlhRBhz9pFQP7JZ7lbHei2A3lnL1Yz2/yjiXv1/sNQiD
-/TWEfKSeWyj1hx5zaX0FoAW8ylfSMV3gU1Ugh7Ew0y1s4qR8coG3GlLf/QdifVdB
-ETR49AphvHEKop7I2eR/+526dxQjVaQAJ/ex2zGMj+JF6O5MKbJfONcKDDUeJfqW
-zdfwlX8h5XoRIyn9Ph7XXRrF7nRkPzvWWTChqObPgNDVRfko8FK5Mtw0fBxIxHE=
-=qkjx
------END PGP SIGNATURE-----
-
---LZvS9be/3tNcYl/X--
+Thanks,
+Leo Yan
