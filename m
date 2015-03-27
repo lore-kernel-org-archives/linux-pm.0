@@ -1,167 +1,163 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: [PATCH v2] thermal: ti-soc-thermal: dra7: Implement Workaround for Errata i814 - Bandgap Temperature read Dtemp can be corrupted
-Date: Fri, 27 Mar 2015 14:15:01 +0530
-Message-ID: <1427445901-8461-1-git-send-email-j-keerthy@ti.com>
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: Re: [PATCH v7 2/5] power: max77843_charger: Add Max77843 charger
+ device driver
+Date: Fri, 27 Mar 2015 17:45:58 +0900
+Message-ID: <551518C6.9030804@samsung.com>
+References: <54FCEABE.9000007@samsung.com>
+ <CAJKOXPcLoOp30j5ZwFv2_nT5B+nZOnV6utck5KDw3vt-tmWRew@mail.gmail.com>
+ <54FD880E.30903@samsung.com> <1425903199.13415.9.camel@AMDC1943>
+ <54FEF541.6000305@samsung.com> <551119DE.2070402@samsung.com>
+ <CAJKOXPdd5dDgH91NeytobJWg71pYOw5XnhB9N1=m2Mjmxxjv-A@mail.gmail.com>
+ <551408E0.3060901@samsung.com> <20150326135412.GJ5951@x1>
+ <55149AFC.1080009@samsung.com> <20150327075758.GB15988@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-Sender: linux-omap-owner@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, t-kristo@ti.com, j-keerthy@ti.com
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:20318 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753246AbbC0Iqa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Mar 2015 04:46:30 -0400
+In-reply-to: <20150327075758.GB15988@x1>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Jaewon Kim <jaewon02.kim@samsung.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, Inki Dae <inki.dae@samsung.com>, SangBae Lee <sangbae90.lee@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Chanwoo Choi <cw00.choi@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Bandgap Temperature read Dtemp can be corrupted
+On 03/27/2015 04:57 PM, Lee Jones wrote:
+> On Fri, 27 Mar 2015, Beomho Seo wrote:
+>> On 03/26/2015 10:54 PM, Lee Jones wrote:
+>>> On Thu, 26 Mar 2015, Beomho Seo wrote:
+>>>> On 03/24/2015 05:38 PM, Krzysztof Kozlowski wrote:
+>>>>> 2015-03-24 9:01 GMT+01:00 Beomho Seo <beomho.seo@samsung.com>:
+>>>>>> On 03/10/2015 10:44 PM, Beomho Seo wrote:
+>>>>>>> On 03/09/2015 09:13 PM, Krzysztof Kozlowski wrote:
+>>>>>>>> On pon, 2015-03-09 at 20:46 +0900, Beomho Seo wrote:
+>>>>>>>>> On 03/09/2015 08:02 PM, Krzysztof Kozlowski wrote:
+>>>>>>>>>> 2015-03-09 1:35 GMT+01:00 Beomho Seo <beomho.seo@samsung.com>:
+>>>>>>>>>>> On 03/08/2015 05:13 AM, Sebastian Reichel wrote:
+>>>>>>>>>>>> On Mon, Mar 02, 2015 at 07:10:35PM +0900, Jaewon Kim wrote:
+>>>>>>>>>>>>> From: Beomho Seo <beomho.seo@samsung.com>
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> This patch adds device driver of max77843 charger. This driver provide
+>>>>>>>>>>>>> initialize each charging mode(e.g. fast charge, top-off mode and constant
+>>>>>>>>>>>>> charging mode so on.). Additionally, control charging paramters to use
+>>>>>>>>>>>>> i2c interface.
+>>>>>>>>>>>>>
+>>>>>>>>>>>>> Cc: Sebastian Reichel <sre@kernel.org>
+>>>>>>>>>>>>> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+>>>>>>>>>>>>
+>>>>>>>>>>>> Reviewed-By: Sebastian Reichel <sre@kernel.org>
+>>>>>>>>>>>>
+>>>>>>>>>>>> I can't take it as is, since it depends on the private header file
+>>>>>>>>>>>> of PATCHv1.
+>>>>>>>>>>>>
+>>>>>>>>>>>> -- Sebastian
+>>>>>>>>>>>>
+>>>>>>>>>>>
+>>>>>>>>>>> This patch reviewed by Sebastian.
+>>>>>>>>>>> Could you Please merge that your git tree ?
+>>>>>>>>>>
+>>>>>>>>>> Hi,
+>>>>>>>>>>
+>>>>>>>>>> ... and again we are adding a new driver for very similar chipset to
+>>>>>>>>>> already supported. I looked at spec and the charger's registers are
+>>>>>>>>>> almost the same as for max77693. Their layout and addresses are the
+>>>>>>>>>> same. I see some minor differences, probably the most important would
+>>>>>>>>>> be different values current (fast-charge, top-off). But still 90% of
+>>>>>>>>>> registers are the same... Do we really have to add new driver?
+>>>>>>>>>>
+>>>>>>>>>> Best regards,
+>>>>>>>>>> Krzysztof
+>>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> Hi,
+>>>>>>>>>
+>>>>>>>>> Thank you for your comment. As you say, both chip set are similar.
+>>>>>>>>> But new driver need for support max77843. It is support different below
+>>>>>>>>> - Provide Battery presence information.
+>>>>>>>>
+>>>>>>>> Another set of power supply properties could be added for that chip.
+>>>>>>>> This way the get_property() function would be the same but actually the
+>>>>>>>> POWER_SUPPLY_PROP_PRESENT won't be called for max77693.
+>>>>>>>>
+>>>>>>>>> - Can OTG FET control.
+>>>>>>>>
+>>>>>>>> Where the OTG FET feature is it enabled in your driver? I couldn't find
+>>>>>>>> it.
+>>>>>>>>
+>>>>>>>
+>>>>>>> Sorry. This driver don't control OTG FET feature.
+>>>>>>>
+>>>>>>>>> - Bigger Fast charge current, Top Off current Threshold selection.
+>>>>>>>>> - Various and bigger OTG current limitation.
+>>>>>>>>> - Bigger primary charger termination voltage setting.
+>>>>>>>>> - Different maximum input current limit selection(Different step).
+>>>>>>>>
+>>>>>>>> Yes, I mentioned some of these differences (the Fast/top-off
+>>>>>>>> differences). These are differences in values so it does not require new
+>>>>>>>> driver. There is need to develop new driver just to support different
+>>>>>>>> current (3.0 A instead of 2.1 A) or voltage threshold.
+>>>>>>>>
+>>>>>>>
+>>>>>>> They are different charging current, OTG current limitation, top off current,
+>>>>>>> charging limitation value. In case OTG current limitation different not
+>>>>>>> limitation value but using register bit(max77843 use[7:6] max77693 use[7]
+>>>>>>> bit only). Even if this driver not support all feature, some register
+>>>>>>> different with max77693(support value, use register bit).
+>>>>>>>
+>>>>>>> If this driver will combined with max77693 may even be beneficial for
+>>>>>>> new Maxim driver. But the present, this driver is related with
+>>>>>>> max77843 core driver and max77843-regulator. So I hope this driver
+>>>>>>> merge first. And then will extend two driver(max77843 charger and max77693 charger).
+>>>>>
+>>>>> I still prefer merging common drivers into one instead of creating
+>>>>> some more of them.
+>>>>> However I understand your point and I am not entirely opposed against.
+>>>>> Especially that you invested quite a bit of time for developing this
+>>>>> and my feedback was quite late. To summarize I am fine with your
+>>>>> approach.
+>>>>>
+>>>>> Best regards,
+>>>>> Krzysztof
+>>>>>
+>>>>
+>>>> Dear Lee Jones,
+>>>>
+>>>> Could you please merge that your git tree ?
+>>>
+>>> Sorry, I'm lost.  Why am I taking this though the MFD tree?  What
+>>> patches are left?  Where are they going?  Am I taking any other
+>>> patches?
+>>>
+>>
+>> Max77843 charger driver is max77843 mfd core dependency.
+> 
+> What kind of dependancy?  Runtime or build?  Where is the patch that
+> it depends on?  Is it in -next for in Mainline already?
+> 
 
-DESCRIPTION
-        Read accesses to registers listed below can be corrupted due to=
- incorrect resynchronization between
-        clock domains.
+Build. Max77843 charger driver use max77843-private.h. It is in for-mfd-next branch.
 
-        Read access to registers below can be corrupted :
-                =E2=80=A2 CTRL_CORE_DTEMP_MPU/GPU/CORE/DSPEVE/IVA_n (n =
-=3D 0 to 4)
-        =E2=80=A2 CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA_n
+c7f585f mfd: max77843: Add max77843 MFD driver core driver
 
-WORKAROUND
-        Multiple reads to CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA=
-[9:0]:
-        BGAP_DTEMPMPU/GPU/CORE/DSPEVE/IVA is needed to discard false va=
-lue and read right value:
-                1. Perform two successive reads to BGAP_DTEMP bit field=
-=2E
-                        (a) If read1 returns Val1 and read2 returns Val=
-1, then right value is Val1.
-                        (b) If read1 returns Val1, read 2 returns Val2,=
- a third read is needed.
-                2. Perform third read
-                        (a) If read3 returns Val2 then right value is V=
-al2.
-                        (b) If read3 returns Val3, then right value is =
-Val3.
+>> If you think this patch will suitable for battery tree(or other tree),
+>> I would like request for merge battery tree.
+> 
+> If this patch has no build dependencies on patches which are in -next,
+> but not in Mainline then it will have to go in via the same tree that
+> the dependencies were applied to.  If the dependencies are already in
+> Mainline, or they are not build-deps, then it should go in via the
+> correct tree, which I believe is Sebastian's tree.
+> 
+>> Also, I will send again this patch and device tree binding document.
+> 
+> Either way you should do that.  Mark them as RESEND instead of PATCH
+> and apply all of the Acks you have accumulated so far.
+> 
 
-Signed-off-by: Keerthy <j-keerthy@ti.com>
----
+I will send new version because binding document have been modified.
+As your comment patch will be mark.
 
-Read all the temperatures from the 5 sensors and saw that
-they were sane with time.=20
-
-Ran cpuloadgen and saw that temperatures rising on all the sensors
-and cooled down as soon as the load was reduced.
-
- .../thermal/ti-soc-thermal/dra752-thermal-data.c   |  3 +-
- drivers/thermal/ti-soc-thermal/ti-bandgap.c        | 37 ++++++++++++++=
-+++++++-
- drivers/thermal/ti-soc-thermal/ti-bandgap.h        |  4 +++
- 3 files changed, 42 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c b/dri=
-vers/thermal/ti-soc-thermal/dra752-thermal-data.c
-index a492927..58b5c66 100644
---- a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
-+++ b/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
-@@ -420,7 +420,8 @@ const struct ti_bandgap_data dra752_data =3D {
- 			TI_BANDGAP_FEATURE_FREEZE_BIT |
- 			TI_BANDGAP_FEATURE_TALERT |
- 			TI_BANDGAP_FEATURE_COUNTER_DELAY |
--			TI_BANDGAP_FEATURE_HISTORY_BUFFER,
-+			TI_BANDGAP_FEATURE_HISTORY_BUFFER |
-+			TI_BANDGAP_FEATURE_ERRATA_814,
- 	.fclock_name =3D "l3instr_ts_gclk_div",
- 	.div_ck_name =3D "l3instr_ts_gclk_div",
- 	.conv_table =3D dra752_adc_to_temp,
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/ther=
-mal/ti-soc-thermal/ti-bandgap.c
-index 74c0e34..baf822e 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -119,6 +119,37 @@ exit:
- }
-=20
- /**
-+ * ti_dra7_bandgap_read_temp() - helper function to read dra7 sensor t=
-emperature
-+ * @bgp: pointer to ti_bandgap structure
-+ * @reg: desired register (offset) to be read
-+ *
-+ * Function to read dra7 bandgap sensor temperature. This is done sepa=
-rately
-+ * so as to workaround the errata "Bandgap Temperature read Dtemp can =
-be
-+ * corrupted" - Errata ID: i814".
-+ * Read accesses to registers listed below can be corrupted due to inc=
-orrect
-+ * resynchronization between clock domains.
-+ * Read access to registers below can be corrupted :
-+ * CTRL_CORE_DTEMP_MPU/GPU/CORE/DSPEVE/IVA_n (n =3D 0 to 4)
-+ * CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA_n
-+ *
-+ * Return: the register value.
-+ */
-+static u32 ti_dra7_bandgap_read_temp(struct ti_bandgap *bgp,  u32 reg)
-+{
-+	u32 val1, val2;
-+
-+	val1 =3D ti_bandgap_readl(bgp, reg);
-+	val2 =3D ti_bandgap_readl(bgp, reg);
-+
-+/* If both times we read the same value then that is right */
-+	if (val1 =3D=3D val2)
-+		return val1;
-+
-+/* if val1 and val2 are different read it third time */
-+	return ti_bandgap_readl(bgp, reg);
-+}
-+
-+/**
-  * ti_bandgap_read_temp() - helper function to read sensor temperature
-  * @bgp: pointer to ti_bandgap structure
-  * @id: bandgap sensor id
-@@ -148,7 +179,11 @@ static u32 ti_bandgap_read_temp(struct ti_bandgap =
-*bgp, int id)
- 	}
-=20
- 	/* read temperature */
--	temp =3D ti_bandgap_readl(bgp, reg);
-+	if (TI_BANDGAP_HAS(bgp, ERRATA_814))
-+		temp =3D ti_dra7_bandgap_read_temp(bgp, reg);
-+	else
-+		temp =3D ti_bandgap_readl(bgp, reg);
-+
- 	temp &=3D tsr->bgap_dtemp_mask;
-=20
- 	if (TI_BANDGAP_HAS(bgp, FREEZE_BIT))
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.h b/drivers/ther=
-mal/ti-soc-thermal/ti-bandgap.h
-index b3adf72..b2da3fc 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.h
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
-@@ -318,6 +318,9 @@ struct ti_temp_sensor {
-  * TI_BANDGAP_FEATURE_HISTORY_BUFFER - used when the bandgap device fe=
-atures
-  *	a history buffer of temperatures.
-  *
-+ * TI_BANDGAP_FEATURE_ERRATA_814 - used to workaorund when the bandgap=
- device
-+ *	has Errata 814
-+ *
-  * TI_BANDGAP_HAS(b, f) - macro to check if a bandgap device is capabl=
-e of a
-  *      specific feature (above) or not. Return non-zero, if yes.
-  */
-@@ -331,6 +334,7 @@ struct ti_temp_sensor {
- #define TI_BANDGAP_FEATURE_FREEZE_BIT		BIT(7)
- #define TI_BANDGAP_FEATURE_COUNTER_DELAY	BIT(8)
- #define TI_BANDGAP_FEATURE_HISTORY_BUFFER	BIT(9)
-+#define TI_BANDGAP_FEATURE_ERRATA_814		BIT(10)
- #define TI_BANDGAP_HAS(b, f)			\
- 			((b)->conf->features & TI_BANDGAP_FEATURE_ ## f)
-=20
---=20
-1.9.1
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Best regards
+Beomho Seo
