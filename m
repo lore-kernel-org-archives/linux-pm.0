@@ -1,19 +1,24 @@
 From: Xinwei Kong <xweikong@hotmail.com>
 Subject: Re: [PATCH v1 1/2] thermal: hisilicon: add new hisilicon thermal
  sensor driver
-Date: Sun, 29 Mar 2015 00:00:38 +0800
-Message-ID: <BLU436-SMTP167FD742B217F14F25E1EF2C1F70@phx.gbl>
+Date: Sun, 29 Mar 2015 00:01:04 +0800
+Message-ID: <BLU436-SMTP24648E33E078BFAED1BD4E4C1F70@phx.gbl>
 References: <1427269825-11324-1-git-send-email-kong.kongxinwei@hisilicon.com> <1427269825-11324-2-git-send-email-kong.kongxinwei@hisilicon.com> <5513CDEE.8000807@hisilicon.com> <55151538.3020204@hisilicon.com> <5515FCC1.2060302@hisilicon.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from blu004-omc1s12.hotmail.com ([65.55.116.23]:54736 "EHLO
+	BLU004-OMC1S12.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752426AbbC1QBT convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 28 Mar 2015 12:01:19 -0400
 In-Reply-To: <5515FCC1.2060302@hisilicon.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: YiPing Xu <xuyiping@hisilicon.com>, Xinwei Kong <kong.kongxinwei@hisilicon.com>, rui.zhuang@intel.com, edubezval@gmail.com
 Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linuxarm@huawei.com, linux-kernel@vger.kernel.org, liguozhu@hisilicon.com, linux-arm-kernel@lists.infradead.org
-List-Id: linux-pm@vger.kernel.org
 
 
 
