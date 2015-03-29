@@ -1,43 +1,102 @@
-From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: [PATCH] MAINTAINERS: Add me as maintainer of Nokia N900 power supply drivers
-Date: Sun, 29 Mar 2015 15:35:54 +0200
-Message-ID: <1427636154-20874-1-git-send-email-pali.rohar@gmail.com>
+From: Juergen Borleis <juergen@kreuzholzen.de>
+Subject: Re: [PATCH 7/7] ARM: dts: add OPPs for i.MX23/i.MX28
+Date: Sun, 29 Mar 2015 16:40:53 +0200
+Message-ID: <201503291640.56538.juergen@kreuzholzen.de>
+References: <1470793430.944631.1427565192794.JavaMail.open-xchange@oxbaltgw00.schlund.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@linuxfoundation.org>, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www291.your-server.de ([78.46.156.197]:45803 "EHLO
+	www291.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751395AbbC2Olt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 29 Mar 2015 10:41:49 -0400
+In-Reply-To: <1470793430.944631.1427565192794.JavaMail.open-xchange@oxbaltgw00.schlund.de>
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stefan Wahren <stefan.wahren@i2se.com>
+Cc: viresh.kumar@linaro.org, Lucas Stach <l.stach@pengutronix.de>, kernel@pengutronix.de, rjw@rjwysocki.net, dbaryshkov@gmail.com, pawel.moll@arm.com, galak@codeaurora.org, robh+dt@kernel.org, ijc+devicetree@hellion.org.uk, lgirdwood@gmail.com, shawn.guo@linaro.org, sre@kernel.org, linux-pm@vger.kernel.org, fabio.estevam@freescale.com, dwmw2@infradead.org, mark.rutland@arm.com, sebastien.szymanski@armadeus.com, broonie@kernel.org, marex@denx.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
----
- MAINTAINERS |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+Hi Stefan,
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 72a08ef..50df61e 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6917,6 +6917,17 @@ T:	git git://git.rocketboards.org/linux-socfpga-=
-next.git
- S:	Maintained
- F:	arch/nios2/
-=20
-+NOKIA N900 POWER SUPPLY DRIVERS
-+M:	Pali Roh=C3=A1r <pali.rohar@gmail.com>
-+S:	Maintained
-+F:	include/linux/power/bq2415x_charger.h
-+F:	include/linux/power/bq27x00_battery.h
-+F:	include/linux/power/isp1704_charger.h
-+F:	drivers/power/bq2415x_charger.c
-+F:	drivers/power/bq27x00_battery.c
-+F:	drivers/power/isp1704_charger.c
-+F:	drivers/power/rx51_battery.c
-+
- NTB DRIVER
- M:	Jon Mason <jdmason@kudzu.us>
- M:	Dave Jiang <dave.jiang@intel.com>
---=20
-1.7.9.5
+Stefan Wahren wrote:
+> > Juergen Borleis <juergen@kreuzholzen.de> hat am 24. M=C3=A4rz 2015 =
+um 21:45
+> > geschrieben:
+> >
+> > Stefan Wahren wrote:
+> > > [...]
+> > > diff --git a/arch/arm/boot/dts/imx28.dtsi
+> > > b/arch/arm/boot/dts/imx28.dtsi index 98c1be6..21c1921 100644
+> > > --- a/arch/arm/boot/dts/imx28.dtsi
+> > > +++ b/arch/arm/boot/dts/imx28.dtsi
+> > > @@ -38,12 +38,23 @@
+> > > };
+> > >
+> > > cpus {
+> > > - #address-cells =3D <0>;
+> > > + #address-cells =3D <1>;
+> > > #size-cells =3D <0>;
+> > >
+> > > - cpu {
+> > > + cpu@0 {
+> > > compatible =3D "arm,arm926ej-s";
+> > > device_type =3D "cpu";
+> > > + reg =3D <0x0>;
+> > > + operating-points =3D <
+> > > + /* kHz uV */
+> > > + 261819 1350000
+> > > + 360000 1350000
+> > > + 392728 1450000
+> > > + 454737 1550000
+> > > + >;
+> > > + clocks =3D <&clks 4>;
+> > > + clock-latency =3D <61036>; /* two CLK32 periods */
+> > > + cpu-supply =3D <&reg_vddd>;
+> > > };
+> > > };
+> >
+> > Maybe you should take into account not to reduce VDD below 1.55 V i=
+f the
+> > SDRAM controller runs above 196 MHz. The i.MX28 datasheet[1] lists =
+these
+> > restrictions. VDD powers the SDRAM controller as well. From the dat=
+asheet
+> > the table "Frequency versus Voltage for EMICLK" shows:
+> >
+> > EMICLK Fmax (MHz)
+> > VDDD (V) DDR2 mDDR
+> > --------------------------------
+> > 1.550 205.71 205.71
+> > 1.450 196.36 196.36
+> > 1.350 196.36 196.36
+> >
+> > jbe
+> >
+> > [1]
+> > i.MX28 Applications
+> > Processors for Consumer
+> > Products
+> > Silicon Version 1.2
+> >
+> > Document Number: IMX28CEC
+> > Rev. 3, 07/2012
+>
+> the only chance that i see to meet this constraint without introducin=
+g a
+> new cpufreq driver is to change clock ref_cpu
+> and ref_emi.
+>
+> Do you think this solution of a virtual clock [1] can be applied here=
+, too?
+
+This would imply we can change the SDRAM timing at run-time on the fly.=
+ IMHO=20
+that is not possible (at least not easy). I think when the driver detec=
+ts the=20
+SDRAM controller runs above 196 MHz the clock for the CPU core can stil=
+l be=20
+changed, but VDD must be kept at 1.55 V.
+
+Juergen
