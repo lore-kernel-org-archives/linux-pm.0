@@ -1,63 +1,66 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 1/2] cpufreq: arm_big_little: check if the frequency is
- set correctly
-Date: Mon, 30 Mar 2015 14:39:00 +0100
-Message-ID: <551951F4.9070804@arm.com>
-References: <1427718438-31098-1-git-send-email-sudeep.holla@arm.com> <CAKohponxEv3CjhVPAu2Ga5FeSSvtj_W6zGvL3oj2V247f94H=w@mail.gmail.com>
+Subject: Re: [PATCH 2/2] cpufreq: arm_big_little: remove unused cpu-cluster.<n>
+ clock name
+Date: Mon, 30 Mar 2015 14:39:10 +0100
+Message-ID: <551951FE.3050105@arm.com>
+References: <1427718438-31098-1-git-send-email-sudeep.holla@arm.com>	<1427718438-31098-2-git-send-email-sudeep.holla@arm.com> <CAKohpo=EkWcp_vvfQQg5yUR67rhDTB286Fi1j=22qTzOMg=dKw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:60982 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:60987 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752809AbbC3NiF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 30 Mar 2015 09:38:05 -0400
-In-Reply-To: <CAKohponxEv3CjhVPAu2Ga5FeSSvtj_W6zGvL3oj2V247f94H=w@mail.gmail.com>
+	id S1752472AbbC3NiO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 30 Mar 2015 09:38:14 -0400
+In-Reply-To: <CAKohpo=EkWcp_vvfQQg5yUR67rhDTB286Fi1j=22qTzOMg=dKw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Mike Turquette <mike.turquette@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
 
 
-On 30/03/15 14:27, Viresh Kumar wrote:
+On 30/03/15 14:31, Viresh Kumar wrote:
 > On 30 March 2015 at 17:57, Sudeep Holla <sudeep.holla@arm.com> wrote:
->> The actual frequency is set through "clk_change_rate" which is void
->> function. If the underlying hardware fails and returns error, the error
->> is lost in the clk layer. In order to track such failures, we need to
->> read back the frequency(just the cached value as clk_recalc called after
->> clk->ops->set_rate gets the frequency)
+>> The "cpu-cluster.<n>" used to get the cluster clock is not used by any
+>> platform. Moreover __of_clk_get_by_name used in clk_get return error if
+>> the "clock-names" in the DT doesn't match this string. When using DT,
+>> it's not compulsory to specify the clock name unless there are multiple
+>> clock input entries in the consumer.
 >>
->> This patch adds check to see if the frequency is set correctly or if
->> they were any hardware failures and sends the appropriate errors to the
->> cpufreq core.
+>> This patch removes the unused clock string from the driver.
 >>
 >> Cc: Viresh Kumar <viresh.kumar@linaro.org>
 >> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 >> ---
->>   drivers/cpufreq/arm_big_little.c | 2 ++
->>   1 file changed, 2 insertions(+)
+>>   drivers/cpufreq/arm_big_little.c | 4 +---
+>>   1 file changed, 1 insertion(+), 3 deletions(-)
 >>
 >> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
->> index e1a6ba66a7f5..3fc676c63f91 100644
->> --- a/drivers/cpufreq/arm_big_little.c
->> +++ b/drivers/cpufreq/arm_big_little.c
->> @@ -186,6 +186,8 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
->>                  mutex_unlock(&cluster_lock[old_cluster]);
+>> index 3fc676c63f91..813315cd0247 100644
+
+[...]
+
+>> @@ -344,8 +343,7 @@ static int _get_cluster_clk_and_freq_table(struct device *cpu_dev)
+>>                  goto free_opp_table;
 >>          }
 >>
->> +       if (bL_cpufreq_get_rate(cpu) != new_rate)
->> +               return -EIO;
->>          return 0;
->>   }
+>> -       name[12] = cluster + '0';
+>> -       clk[cluster] = clk_get(cpu_dev, name);
+>> +       clk[cluster] = clk_get(cpu_dev, NULL);
+>>          if (!IS_ERR(clk[cluster])) {
+>>                  dev_dbg(cpu_dev, "%s: clk: %p & freq table: %p, cluster: %d\n",
+>>                                  __func__, clk[cluster], freq_table[cluster],
 >
-> This doesn't look to me the right place for fixing this.
+> What about non-DT platforms? Yeah, even I am not sure if any such
+> platform will be there on not, using this driver..
 >
 
-Yes I agree, after going through clk.c, I thought pre-/post- notifiers
-are designed for such purpose. I tried using them but found it
-unnecessary when it can be as simple as in this patch. However it's good
-to hear from Mike as I seem to have assumed a lot here.
+Hope we don't have any in future :)
 
-Regards,
-Sudeep
+> But otherwise,
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+
+Thanks.
