@@ -1,54 +1,97 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] powercap / RAPL: mark rapl_ids array as __initconst
-Date: Mon, 30 Mar 2015 21:17:02 +0200
-Message-ID: <6448986.08Uv5dyIEs@vostro.rjw.lan>
-References: <1427318152-21800-1-git-send-email-minipli@googlemail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFP] LPC thermal track
+Date: Mon, 30 Mar 2015 12:11:17 -0700
+Message-ID: <1427742677.23036.145.camel@spandruv-DESK3.jf.intel.com>
+References: <20150327000245.GA29752@developer.hsd1.ca.comcast.net>
+	 <55154361.90302@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60289 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753045AbbC3Swu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Mar 2015 14:52:50 -0400
-In-Reply-To: <1427318152-21800-1-git-send-email-minipli@googlemail.com>
+Received: from mga09.intel.com ([134.134.136.24]:20161 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753089AbbC3TMi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 30 Mar 2015 15:12:38 -0400
+In-Reply-To: <55154361.90302@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mathias Krause <minipli@googlemail.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>, Javi Merino <Javi.Merino@arm.com>, "cyndis@lakka.kapsi.fi" <cyndis@lakka.kapsi.fi>, Kapileshwar Singh <Kapileshwar.Singh@arm.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "geert+renesas@glider.be" <geert+renesas@glider.be>, "wxt@rock-chips.com" <wxt@rock-chips.com>, Punit Agrawal <punit.agrawal@arm.com>
 
-On Wednesday, March 25, 2015 10:15:52 PM Mathias Krause wrote:
-> The RAPL ids are only tested in rapl_init() which is itself an __init
-> function. For the MODULE_DEVICE_TABLE() file2alias doesn't care about
-> the section, just about the symbol name. Therefore it's safe to mark the
-> rapl_ids[] array as __initconst so its memory can be released after
-> initialization is done.
+On Fri, 2015-03-27 at 11:47 +0000, Punit Agrawal wrote: 
+> Hi Eduardo,
 > 
-> Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Signed-off-by: Mathias Krause <minipli@googlemail.com>
-
-Jacob, any comments?
-
-> ---
->  drivers/powercap/intel_rapl.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Thanks for proposing a thermal micro-conference. It would be good to 
+> discuss the direction things are heading with regards to thermal in linux.
 > 
-> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-> index 63d4033eb683..62f9b322fde0 100644
-> --- a/drivers/powercap/intel_rapl.c
-> +++ b/drivers/powercap/intel_rapl.c
-> @@ -1054,7 +1054,7 @@ static const struct rapl_defaults rapl_defaults_atom = {
->  		.driver_data = (kernel_ulong_t)&_ops,	\
->  		}
->  
-> -static const struct x86_cpu_id rapl_ids[] = {
-> +static const struct x86_cpu_id rapl_ids[] __initconst = {
->  	RAPL_CPU(0x2a, rapl_defaults_core),/* Sandy Bridge */
->  	RAPL_CPU(0x2d, rapl_defaults_core),/* Sandy Bridge EP */
->  	RAPL_CPU(0x37, rapl_defaults_atom),/* Valleyview */
+> On 27/03/15 00:02, Eduardo Valentin wrote:
+> > Hello all,
+> >
+> > I've created a proposal for a thermal microconference track on the LPC
+> > 2015 [1]. The basic idea is to get thermal developers together and
+> > discuss the thermal role within the Linux environment, from kernel and
+> > userspace perspective.
+> >
+> > A initial proposal for the topics to be discussed are:
+> > . Closed loop control governors
+> > . Sensor API
+> > . Thermal class: split of temperature sensor device and thermal driver
+> > . Improvements on OF-thermal
+> > . Devfreq vs. clock cooling
+> > . Power model based policies
+> > . User space tools
+> > . User space governors
+> >
+> > If you have interest, or if you have ideas on how to improve the
+> > framework, reply to this email and add it to the wiki.
+What about
+Some enhancement in thermal zone user space I/F for user space thermal
+controllers
+- Better support for virtual temperature sensors which depends on other
+sensors. 
+- Support for Linux IIO style scale and offset in thermal zone
+temperature calculation.
+- /dev interface for pushing thermal samples instead of raw read of
+temperature to improve performances and push sample instead of pull from
+user space.
+
+Thanks,
+Srinivas 
+> >
+> 
+> I'd like to propose -
+> 
+> . Co-ordination among cooling-devices in the system
+> 
+> In workloads that involve multiple devices such as camera+CPUs+image 
+> singal processor or camera+video encoding, etc. often there are 
+> dependencies across multiple devices' performance states to achieve 
+> minimum acceptable performance (24fps HD encode for example). When 
+> thermally constrained it would help to have some mechanisms to 
+> co-ordinate their performance control. The power allocator governor 
+> attempts to solve some of these problems but it would be good to have a 
+> wider discussion on enabling more scenarios.
+> 
+> 
+> > Add your name in the list of participants as well. Also, if you feel
+> > like giving a talk on the topic, let's add it to the topic list.
+> >
+> 
+> Done.
+> 
+> Cheers,
+> Punit
+> 
+> > Currently I am simple checking what would be the level of interest to
+> > have this topic as a LPC microconference.
+> >
+> > BR,
+> >
+> > Eduardo Valentin
+> >
+> >
+> > [1] - http://wiki.linuxplumbersconf.org/2015:thermal
+> >
 > 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+
