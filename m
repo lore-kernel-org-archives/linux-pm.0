@@ -1,52 +1,62 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH/RFC 1/5] clk: shmobile: rcar-gen2: Add CPG Clock Domain support
-Date: Mon, 30 Mar 2015 11:58:10 +0200
-Message-ID: <CAMuHMdUKjYH9U_o2q9maxCUfvijP=EpX=NUVGOnp=qOF7BHUOw@mail.gmail.com>
-References: <1426708017-28885-1-git-send-email-geert+renesas@glider.be>
-	<1426708017-28885-2-git-send-email-geert+renesas@glider.be>
-	<20150324230036.7930.50037@quantum>
-	<20150325010440.GC1767@verge.net.au>
+From: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v6 2/8] PM / devfreq: tegra: Update to v5 of the submitted
+ patches
+Date: Mon, 30 Mar 2015 10:22:56 +0000 (GMT)
+Message-ID: <1040887254.91981427710975821.JavaMail.weblogic@epmlwas08a>
+Reply-To: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f173.google.com ([209.85.214.173]:33054 "EHLO
-	mail-ob0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751897AbbC3J6K (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Mar 2015 05:58:10 -0400
-In-Reply-To: <20150325010440.GC1767@verge.net.au>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+MIME-version: 1.0
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>, Alex Frid <afrid-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: Michael Turquette <mturquette@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Stephen Boyd <sboyd@codeaurora.org>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-On Wed, Mar 25, 2015 at 2:04 AM, Simon Horman <horms@verge.net.au> wrote:
-> On Tue, Mar 24, 2015 at 04:00:36PM -0700, Michael Turquette wrote:
->> Quoting Geert Uytterhoeven (2015-03-18 12:46:53)
->> > Add Clock Domain support to the R-Car Gen2 Clock Pulse Generator (CPG)
->> > driver using the generic PM Domain.  This allows to power-manage the
->> > module clocks of SoC devices that are part of the CPG Clock Domain using
->> > Runtime PM, or for system suspend/resume.
->> >
->> > SoC devices that are part of the CPG Clock Domain and can be
->> > power-managed through their primary clock should be tagged in DT with a
->> > proper "power-domains" property.
->> >
->> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->>
->> Looks good to me. Which tree do you want this patch to go through?
->
-> My tree seems reasonable from my point of view.
-> Though at this point it would be targeted at v4.2.
-
-Definitely. Please give Laurent some time to comment.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+PiBTZW5kZXIgOiBUb21ldSBWaXpvc288dG9tZXUudml6b3NvQGNvbGxhYm9yYS5jb20+DQo+IERh
+dGUgOiAyMDE1LTAzLTE3IDE4OjM2IChHTVQrMDk6MDApDQo+IFRpdGxlIDogW1BBVENIIHY2IDIv
+OF0gUE0gLyBkZXZmcmVxOiB0ZWdyYTogVXBkYXRlIHRvIHY1IG9mIHRoZSBzdWJtaXR0ZWQgcGF0
+Y2hlcw0KPiANCj4gVGhlcmUgc2VlbWVkIHRvIGJlIHNvbWUgbWlzY29tbXVuaWNhdGlvbiBhbmQg
+YW4gb2xkIHZlcnNpb24gb2YgdGhlDQo+IHN1Ym1pdHRlZCBwYXRjaGVzIHdhcyBtZXJnZWQuDQo+
+IA0KPiBUaGlzIGNvbW1pdCB1cGRhdGVzIHRoZSBkcml2ZXIgdG8gdjUsIHdoaWNoIGhhZCB0aGlz
+IGNoYW5nZWxvZzoNCj4gDQo+ICogQ2xhcmlmeSB0aGUgdW5pdHMgb2YgYXZnX2RlcGVuZGVuY3lf
+dGhyZXNob2xkDQo+ICogUmVtb3ZlIHVudXNlZCByZWZlcmVuY2VzIHRvIHBsYXRmb3JtX2Rldmlj
+ZQ0KPiAqIEVuYWJsZSBhbmQgZGlzYWJsZSBpbnRlcnJ1cHRzIG9uIGdvdmVybm9yIGV2ZW50cw0K
+PiAqIE1ha2Ugc3VyZSB3ZSBoYW5kbGUgYWxsIGludGVycnVwdHMgZm9yIGFueSBvZiB0aGUgZGV2
+aWNlcyB3ZSBhcmUgc2FtcGxpbmcNCj4gKiBNb3ZlIGxvY2tpbmcgdG8gYmUgcGVyLWFjdG1vbi1k
+ZXZpY2UNCj4gDQo+IFNpZ25lZC1vZmYtYnk6IFRvbWV1IFZpem9zbyANCj4gQ0M6IEFsZXggRnJp
+ZCANCj4gQ0M6IE1pa2tvIFBlcnR0dW5lbiANCj4gLS0tDQo+IGRyaXZlcnMvZGV2ZnJlcS90ZWdy
+YS1kZXZmcmVxLmMgfCA0NTUgKysrKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0tLS0tLS0t
+LQ0KPiAxIGZpbGUgY2hhbmdlZCwgMjUyIGluc2VydGlvbnMoKyksIDIwMyBkZWxldGlvbnMoLSkN
+Cj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJlcS5jIGIvZHJp
+dmVycy9kZXZmcmVxL3RlZ3JhLWRldmZyZXEuYw0KPiBpbmRleCAzNDc5MDk2Li5jNzE2MzVhIDEw
+MDY0NA0KPiAtLS0gYS9kcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJlcS5jDQo+ICsrKyBiL2Ry
+aXZlcnMvZGV2ZnJlcS90ZWdyYS1kZXZmcmVxLmMNCltdDQo+IC1zdGF0aWMgc3RydWN0IGRldmZy
+ZXFfZGV2X3Byb2ZpbGUgdGVncmFfZGV2ZnJlcV9wcm9maWxlID0gew0KPiAtIC5wb2xsaW5nX21z
+ID0gMCwNCj4gLSAudGFyZ2V0ID0gdGVncmFfZGV2ZnJlcV90YXJnZXQsDQo+IC0gLmdldF9kZXZf
+c3RhdHVzID0gdGVncmFfZGV2ZnJlcV9nZXRfZGV2X3N0YXR1cywNCj4gLX07DQo+ICtzdGF0aWMg
+aW50IF9faW5pdCB0ZWdyYV9nb3Zlcm5vcl9pbml0KHZvaWQpDQo+ICt7DQo+ICsgcmV0dXJuIGRl
+dmZyZXFfYWRkX2dvdmVybm9yKCZ0ZWdyYV9kZXZmcmVxX2dvdmVybm9yKTsNCj4gK30NCj4gK3N1
+YnN5c19pbml0Y2FsbCh0ZWdyYV9nb3Zlcm5vcl9pbml0KTsNCj4gDQpbXQ0KDQpJdCBsb29rcyBs
+aWtlIHlvdSBuZWVkIHRvIGRpc2FibGUgIm1vZHVsZSIgaW4gdGhlIGNvcnJlc3BvbmRpbmcgS2Nv
+bmZpZy4NCg0KRG8geW91IHdhbnQgdG8gYWRkIGFub3RoZXIgcGF0Y2ggdG8gbWFrZSBpdCBjb21w
+aWxhYmxlIGFzIGEgbW9kdWxlPyBvcg0KZG8geW91IHdhbnQgdG8gbWFrZSBpdCAidHJpc3RhdGUi
+IC0tPiAiYm9vbCI/DQoNCklmIHlvdSB3YW50IHRoZSBsYXR0ZXIsIEkgY2FuIGRvIGl0IGZvciB5
+b3UgYmVmb3JlIEkgc2VuZCBhIHB1bGwgcmVxdWVzdC4NCg0KUGxlYXNlIHJlZmVyIHRvIHRoZSBm
+b2xsb3dpbmc6DQoNCg0KDQptenhAa29oYWt1Oi9ob21lL2tlcm5lbC5vcmcvZGV2ZnJlcSQgbWFr
+ZSBBUkNIPWFybSBtb2R1bGVzDQogIENISyAgICAgaW5jbHVkZS9jb25maWcva2VybmVsLnJlbGVh
+c2UNCiAgQ0hLICAgICBpbmNsdWRlL2dlbmVyYXRlZC91YXBpL2xpbnV4L3ZlcnNpb24uaA0KICBD
+SEsgICAgIGluY2x1ZGUvZ2VuZXJhdGVkL3V0c3JlbGVhc2UuaA0KbWFrZVsxXTogYGluY2x1ZGUv
+Z2VuZXJhdGVkL21hY2gtdHlwZXMuaCcgaXMgdXAgdG8gZGF0ZS4NCiAgQ0FMTCAgICBzY3JpcHRz
+L2NoZWNrc3lzY2FsbHMuc2gNCiAgQ0MgW01dICBkcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJl
+cS5vDQpkcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJlcS5jOjc1ODoxOiBlcnJvcjogcmVkZWZp
+bml0aW9uIG9mIOKAmF9faW5pdHRlc3TigJkNCmRyaXZlcnMvZGV2ZnJlcS90ZWdyYS1kZXZmcmVx
+LmM6NjEzOjE6IG5vdGU6IHByZXZpb3VzIGRlZmluaXRpb24gb2Yg4oCYX19pbml0dGVzdOKAmSB3
+YXMgaGVyZQ0KZHJpdmVycy9kZXZmcmVxL3RlZ3JhLWRldmZyZXEuYzo3NTg6MTogZXJyb3I6IHJl
+ZGVmaW5pdGlvbiBvZiDigJhpbml0X21vZHVsZeKAmQ0KZHJpdmVycy9kZXZmcmVxL3RlZ3JhLWRl
+dmZyZXEuYzo2MTM6MTogbm90ZTogcHJldmlvdXMgZGVmaW5pdGlvbiBvZiDigJhpbml0X21vZHVs
+ZeKAmSB3YXMgaGVyZQ0KbWFrZVsyXTogKioqIFtkcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJl
+cS5vXSBFcnJvciAxDQptYWtlWzFdOiAqKiogW2RyaXZlcnMvZGV2ZnJlcV0gRXJyb3IgMg0KbWFr
+ZTogKioqIFtkcml2ZXJzXSBFcnJvciAyDQptenhAa29oYWt1Oi9ob21lL2tlcm5lbC5vcmcvZGV2
+ZnJlcSQgDQoNCg0KDQpDaGVlcnMsDQpNeXVuZ0pvbw0KDQo=
