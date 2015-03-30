@@ -1,220 +1,131 @@
-From: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
-Subject: Re: [PATCH/RFC 1/5] clk: shmobile: rcar-gen2: Add CPG Clock Domain support
-Date: Tue, 31 Mar 2015 02:53:09 +0300
-Message-ID: <3861934.bVCAbQmBJW@avalon>
-References: <1426708017-28885-1-git-send-email-geert+renesas@glider.be> <1426708017-28885-2-git-send-email-geert+renesas@glider.be>
+From: "Ong, Boon Leong" <boon.leong.ong@intel.com>
+Subject: RE: [PATCHv3 0/1] Intel Quark X1000 DTS thermal driver
+Date: Mon, 30 Mar 2015 23:57:57 +0000
+Message-ID: <AF233D1473C1364ABD51D28909A1B1B733B2E164@PGSMSX104.gar.corp.intel.com>
+References: <1425886977-31078-1-git-send-email-boon.leong.ong@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1426708017-28885-2-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Cc: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:14917 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754022AbbC3X6E convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Mar 2015 19:58:04 -0400
+In-Reply-To: <1425886977-31078-1-git-send-email-boon.leong.ong@intel.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Ong, Boon Leong" <boon.leong.ong@intel.com>, "pure.logic@nexus-software.ie" <pure.logic@nexus-software.ie>, "Kweh, Hock Leong" <hock.leong.kweh@intel.com>, "andy.shevchenko@gmail.com" <andy.shevchenko@gmail.com>
 
-Hi Geert,
+Dear maintainer, gentle ping if this driver is ready for more review/inclusion into Linux v4.1 ?
+Thank you very much.
 
-Thank you for the patch.
-
-On Wednesday 18 March 2015 20:46:53 Geert Uytterhoeven wrote:
-> Add Clock Domain support to the R-Car Gen2 Clock Pulse Generator (CPG)
-> driver using the generic PM Domain.  This allows to power-manage the
-> module clocks of SoC devices that are part of the CPG Clock Domain using
-> Runtime PM, or for system suspend/resume.
-> 
-> SoC devices that are part of the CPG Clock Domain and can be
-> power-managed through their primary clock should be tagged in DT with a
-> proper "power-domains" property.
+>-----Original Message-----
+>From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
+>owner@vger.kernel.org] On Behalf Of Ong Boon Leong
+>Sent: Monday, March 9, 2015 3:43 PM
+>To: Zhang, Rui; edubezval@gmail.com; pure.logic@nexus-software.ie; Kweh,
+>Hock Leong; andy.shevchenko@gmail.com
+>Cc: linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
+>Subject: [PATCHv3 0/1] Intel Quark X1000 DTS thermal driver
 >
-> Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-
-There's one thing that bothers me: the implementation is tied to the CPG 
-driver, but the code is quite generic. That feels a bit wrong, it would be 
-nice to come up with a generic implementation. On the other hand, the 
-platform-dependent part is the list of clocks to manage, specified implicitly 
-through the "pm_clk_add(dev, NULL)" call. That list needs to be specified 
-somewhere, and adding it to the CPG driver is likely the best solution we can 
-have at the moment.
-
-I'm slightly worried that adding the power-domains property to the DT node 
-will introduce backward compatibility issues if we later switch to a different 
-way to specify the clocks to manage automatically. I have no specific example 
-though.
-
-For those reasons,
-
-Acked-by: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
-
-> ---
->  .../clock/renesas,rcar-gen2-cpg-clocks.txt         | 26 ++++++++-
->  arch/arm/mach-shmobile/Kconfig                     |  1 +
->  drivers/clk/shmobile/clk-rcar-gen2.c               | 63 +++++++++++++++++++
->  3 files changed, 88 insertions(+), 2 deletions(-)
-> 
-> diff --git
-> a/Documentation/devicetree/bindings/clock/renesas,rcar-gen2-cpg-clocks.txt
-> b/Documentation/devicetree/bindings/clock/renesas,rcar-gen2-cpg-clocks.txt
-> index b02944fba9de4f86..fc013f225a348929 100644
-> ---
-> a/Documentation/devicetree/bindings/clock/renesas,rcar-gen2-cpg-clocks.txt
-> +++
-> b/Documentation/devicetree/bindings/clock/renesas,rcar-gen2-cpg-clocks.txt
-> @@ -2,6 +2,8 @@
-> 
->  The CPG generates core clocks for the R-Car Gen2 SoCs. It includes three
-> PLLs and several fixed ratio dividers.
-> +The CPG also provides a Clock Domain for SoC devices, in combination with
-> the +CPG Module Stop (MSTP) Clocks.
-> 
->  Required Properties:
-> 
-> @@ -20,10 +22,18 @@ Required Properties:
->    - clock-output-names: The names of the clocks. Supported clocks are
-> "main", "pll0", "pll1", "pll3", "lb", "qspi", "sdh", "sd0", "sd1", "z",
-> "rcan", and "adsp"
-> +  - #power-domain-cells: Must be 0
-> 
-> +SoC devices that are part of the CPG Clock Domain and can be power-managed
-> +through their primary clock should refer to the CPG device node in their
-> +"power-domains" property, as documented by the generic PM domain bindings
-> in +Documentation/devicetree/bindings/power/power_domain.txt.
-> 
-> -Example
-> --------
-> +
-> +Examples
-> +--------
-> +
-> +  - CPG device node:
-> 
->  	cpg_clocks: cpg_clocks@e6150000 {
->  		compatible = "renesas,r8a7790-cpg-clocks",
-> @@ -34,4 +44,16 @@ Example
->  		clock-output-names = "main", "pll0, "pll1", "pll3",
->  				     "lb", "qspi", "sdh", "sd0", "sd1", "z",
->  				     "rcan", "adsp";
-> +		#power-domain-cells = <0>;
-> +	};
-> +
-> +
-> +  - CPG Clock Domain member node:
-> +
-> +	thermal@e61f0000 {
-> +		compatible = "renesas,thermal-r8a7790", "renesas,rcar-thermal";
-> +		reg = <0 0xe61f0000 0 0x14>, <0 0xe61f0100 0 0x38>;
-> +		interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
-> +		clocks = <&mstp5_clks R8A7790_CLK_THERMAL>;
-> +		power-domains = <&cpg_clocks>;
->  	};
-> diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
-> index 0fb484221c90e0eb..048101a3253c52de 100644
-> --- a/arch/arm/mach-shmobile/Kconfig
-> +++ b/arch/arm/mach-shmobile/Kconfig
-> @@ -4,6 +4,7 @@ config ARCH_SHMOBILE
-> 
->  config PM_RCAR
->  	bool
-> +	select PM_GENERIC_DOMAINS
-> 
->  config PM_RMOBILE
->  	bool
-> diff --git a/drivers/clk/shmobile/clk-rcar-gen2.c
-> b/drivers/clk/shmobile/clk-rcar-gen2.c index
-> acfb6d7dbd6bc049..b54439d3722a13ad 100644
-> --- a/drivers/clk/shmobile/clk-rcar-gen2.c
-> +++ b/drivers/clk/shmobile/clk-rcar-gen2.c
-> @@ -18,6 +18,8 @@
->  #include <linux/math64.h>
->  #include <linux/of.h>
->  #include <linux/of_address.h>
-> +#include <linux/pm_clock.h>
-> +#include <linux/pm_domain.h>
->  #include <linux/spinlock.h>
-> 
->  struct rcar_gen2_cpg {
-> @@ -364,6 +366,65 @@ rcar_gen2_cpg_register_clock(struct device_node *np,
-> struct rcar_gen2_cpg *cpg, 4, 0, table, &cpg->lock);
->  }
-> 
-> +#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
-> +static int cpg_pd_attach_dev(struct generic_pm_domain *domain,
-> +			     struct device *dev)
-> +{
-> +	int error;
-> +
-> +	error = pm_clk_create(dev);
-> +	if (error) {
-> +		dev_err(dev, "pm_clk_create failed %d\n", error);
-> +		return error;
-> +	}
-> +
-> +	error = pm_clk_add(dev, NULL);
-> +	if (error) {
-> +		dev_err(dev, "pm_clk_add failed %d\n", error);
-> +		goto fail;
-> +	}
-> +
-> +	return 0;
-> +
-> +fail:
-> +	pm_clk_destroy(dev);
-> +	return error;
-> +}
-> +
-> +static void cpg_pd_detach_dev(struct generic_pm_domain *domain,
-> +			      struct device *dev)
-> +{
-> +	pm_clk_destroy(dev);
-> +}
-> +
-> +static void __init rcar_gen2_cpg_add_pm_domain(struct device_node *np)
-> +{
-> +	struct generic_pm_domain *pd;
-> +	u32 ncells;
-> +
-> +	if (of_property_read_u32(np, "#power-domain-cells", &ncells)) {
-> +		pr_warn("%s lacks #power-domain-cells. Clocks may fail.\n",
-> +			np->full_name);
-> +		return;
-> +	}
-> +
-> +	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
-> +	if (!pd)
-> +		return;
-> +
-> +	pd->name = np->name;
-> +
-> +	pd->flags = GENPD_FLAG_PM_CLK;
-> +	pm_genpd_init(pd, &simple_qos_governor, false);
-> +	pd->attach_dev = cpg_pd_attach_dev;
-> +	pd->detach_dev = cpg_pd_detach_dev;
-> +
-> +	of_genpd_add_provider_simple(np, pd);
-> +}
-> +#else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
-> +static inline void rcar_gen2_cpg_add_pm_domain(struct device_node *np) {}
-> +#endif /* !CONFIG_PM_GENERIC_DOMAINS_OF */
-> +
->  static void __init rcar_gen2_cpg_clocks_init(struct device_node *np)
->  {
->  	const struct cpg_pll_config *config;
-> @@ -415,6 +476,8 @@ static void __init rcar_gen2_cpg_clocks_init(struct
-> device_node *np) }
-> 
->  	of_clk_add_provider(np, of_clk_src_onecell_get, &cpg->data);
-> +
-> +	rcar_gen2_cpg_add_pm_domain(np);
->  }
->  CLK_OF_DECLARE(rcar_gen2_cpg_clks, "renesas,rcar-gen2-cpg-clocks",
->  	       rcar_gen2_cpg_clocks_init);
-
--- 
-Regards,
-
-Laurent Pinchart
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Dear maintainers & communities,
+>
+>This patch introduces DTS thermal driver for Intel Quark X1000.
+>The code implementation is based on intel_soc_dts_thermal.c.
+>
+>Intel Quark X1000 has one on-die DTS with two configurable trip points:
+>critical and hot trip points. However, todate, UEFI BIOS for Quark X1000 uses
+>only critical trip point. UEFI BIOS always lock DTS register before hand-over to
+>Linux kernel.
+>
+>The minimalist thermal design is meant to trigger Linux distro to gracefully
+>power-down the system when its DTS temperature exceeds the configured
+>critical trip point.
+>
+>In anticipation that other variant of Quark platform may come with UEFI BIOS
+>that does not lock DTS register during hand-over, this DTS driver is built with
+>logics to handle such case too.
+>
+>I have tested v1 of the patch on Intel Galileo Gen v2 board and found it
+>satisfactory with logs below:
+>
+>  root@quark:/sys/class/thermal/thermal_zone0# echo disabled > mode
+>  [   46.276881] intel_quark_dts_thermal: DTS is locked. Cannot disable DTS
+>  -sh: echo: write error: Operation not permitted
+>  root@quark:/sys/class/thermal/thermal_zone0#
+>  root@quark:/sys/class/thermal/thermal_zone0# cat temp
+>  53
+>  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_0_temp
+>  105
+>  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_0_type
+>  critical
+>  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_1_temp
+>  20
+>  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_1_type
+>  hot
+>  root@quark:/sys/class/thermal/thermal_zone0# cat type
+>  quark_dts
+>
+>  root@quark:/sys/class/thermal/thermal_zone0# echo 105 > emul_temp
+>  [  179.372981] thermal thermal_zone0: critical temperature reached(0
+>C),shutting down
+>  root@quark:/sys/class/thermal/thermal_zone0#
+>  [  OK  ] Stopped target Multi-User System.
+>           Stopping Telephony service...
+>           Stopping Lightning Fast Webserver With Light System Requirements...
+>           Stopping Target Communication Framework agent...
+>           Stopping Galileo Arduino Layer...
+>  [  OK  ] Stopped target Login Prompts.
+>           Stopping Getty on tty1...
+>           Stopping Serial Getty on ttyS1...
+>           Stopping Login Service...
+>           Stopping D-Bus System Message Bus...
+>           Starting Store Sound Card State...
+>  [  OK  ] Stopped Telephony service.
+>  [  OK  ] Stopped Galileo Arduino Layer.
+>  [  OK  ] Stopped Login Service.
+>  [  OK  ] Stopped D-Bus System Message Bus.
+>  [  OK  ] Stopped Target Communication Framework agent.
+>  [  OK  ] Stopped Lightning Fast Webserver With Light System Requirements.
+>  [  OK  ] Stopped WPA supplicant.
+>  [  OK  ] Stopped Getty on tty1.
+>  [  OK  ] Stopped Serial Getty on ttyS1.
+>
+>Please kindly review the patch at your convenient time and provide me feedback
+>for improvement. Appreciate your time and effort.
+>
+>Thank You
+>Ong Boon Leong
+>Intel Corp.
+>
+>---
+>Changes in v3:
+>* Kconfig dependency changed to X86_INTEL_QUARK
+>
+>Changes in v2:
+>* Fix several commit write-up grammar, choice of words.
+>* Ensure "int ret" in correct order
+>* Add comment to explain DTS register field read/write bit operation
+>* Change to Dual BSD/GPL license
+>* Add logic to ensure safe trip point threshold value being set
+>
+>Ong Boon Leong (1):
+>  thermal: intel Quark SoC X1000 DTS thermal driver
+>
+> drivers/thermal/Kconfig                   |   10
+> drivers/thermal/Makefile                  |    1
+> drivers/thermal/intel_quark_dts_thermal.c |  434
+>+++++++++++++++++++++++++++++
+> 3 files changed, 445 insertions(+)
+> create mode 100644 drivers/thermal/intel_quark_dts_thermal.c
+>
+>--
+>1.7.9.5
+>
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in the body
+>of a message to majordomo@vger.kernel.org More majordomo info at
+>http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
