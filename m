@@ -1,66 +1,62 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 2/2] cpufreq: arm_big_little: remove unused cpu-cluster.<n>
- clock name
-Date: Mon, 30 Mar 2015 14:39:10 +0100
-Message-ID: <551951FE.3050105@arm.com>
-References: <1427718438-31098-1-git-send-email-sudeep.holla@arm.com>	<1427718438-31098-2-git-send-email-sudeep.holla@arm.com> <CAKohpo=EkWcp_vvfQQg5yUR67rhDTB286Fi1j=22qTzOMg=dKw@mail.gmail.com>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH] PM / devfreq: tegra: Register governor on module init
+Date: Mon, 30 Mar 2015 17:08:30 +0200
+Message-ID: <20150330150828.GA18428@ulmo.nvidia.com>
+References: <1040887254.91981427710975821.JavaMail.weblogic@epmlwas08a>
+ <1427720078-28836-1-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:60987 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752472AbbC3NiO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 30 Mar 2015 09:38:14 -0400
-In-Reply-To: <CAKohpo=EkWcp_vvfQQg5yUR67rhDTB286Fi1j=22qTzOMg=dKw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="wRRV7LY7NUeQGEoC"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1427720078-28836-1-git-send-email-tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
 
+--wRRV7LY7NUeQGEoC
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On 30/03/15 14:31, Viresh Kumar wrote:
-> On 30 March 2015 at 17:57, Sudeep Holla <sudeep.holla@arm.com> wrote:
->> The "cpu-cluster.<n>" used to get the cluster clock is not used by any
->> platform. Moreover __of_clk_get_by_name used in clk_get return error if
->> the "clock-names" in the DT doesn't match this string. When using DT,
->> it's not compulsory to specify the clock name unless there are multiple
->> clock input entries in the consumer.
->>
->> This patch removes the unused clock string from the driver.
->>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->> ---
->>   drivers/cpufreq/arm_big_little.c | 4 +---
->>   1 file changed, 1 insertion(+), 3 deletions(-)
->>
->> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
->> index 3fc676c63f91..813315cd0247 100644
-
+On Mon, Mar 30, 2015 at 02:54:38PM +0200, Tomeu Vizoso wrote:
 [...]
+> +static int __init tegra_devfreq_init(void)
+> +{
+> +	int ret = 0;
+> +
+> +	ret = devfreq_add_governor(&tegra_devfreq_governor);
+> +	if (ret) {
+> +		pr_err("%s: failed to add governor: %d\n", __func__, ret);
+> +		return ret;
+> +	}
+> +
+> +	return platform_driver_register(&tegra_devfreq_driver);
 
->> @@ -344,8 +343,7 @@ static int _get_cluster_clk_and_freq_table(struct device *cpu_dev)
->>                  goto free_opp_table;
->>          }
->>
->> -       name[12] = cluster + '0';
->> -       clk[cluster] = clk_get(cpu_dev, name);
->> +       clk[cluster] = clk_get(cpu_dev, NULL);
->>          if (!IS_ERR(clk[cluster])) {
->>                  dev_dbg(cpu_dev, "%s: clk: %p & freq table: %p, cluster: %d\n",
->>                                  __func__, clk[cluster], freq_table[cluster],
->
-> What about non-DT platforms? Yeah, even I am not sure if any such
-> platform will be there on not, using this driver..
->
+Shouldn't you remove the governor on driver registration failure?
 
-Hope we don't have any in future :)
+Thierry
 
-> But otherwise,
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->
+--wRRV7LY7NUeQGEoC
+Content-Type: application/pgp-signature
 
-Thanks.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJVGWbpAAoJEN0jrNd/PrOh1kIQAI90FcZyPJLdpfehccV+ABid
+nuVXlO1cMxvEF1Y/jdC3EGb2PXJ3oKWAyttBWYVjGZ48SxBAboAcOY0bAPWep/Sr
+fXg9eTkPzcHsxilR2tKxct0XTQSeAq4M3nPyotyt5V9zQWA7rHvH6aXXzNz3pqTg
+aIQj2jpKEmL2t17eHDddCVdsW5YTjq2UqnZIwHHAC9GiPBiPJbrDV4LZHmP9Ghfy
+vZYClnuScGnC3cFBvgPZK/Ib/YotNaBPscUPipmtlxaJPB1e/avypLLg6LsVNrYT
+OBNUQeGiVSZ0vJVwnDCPKCO9hds1SyBXzkr7KpPq1ECc2mdMNdl2gqb/KeOQGgiF
+1xvULOkdcnIqouUBMovfbYLoiXZkM7zyu7mE+K76t99Y0jHjrN6eluslCIUrOxlA
+mqp0jfp7aoJM+ZURFJoUJrwHYp6djsgtm9gnbbHP233HD8U6UHKC3qerndSCCYnH
+4rfBHgW4oDbcD1HEd2GxT8f6gFiLX2H4tJ2PU1S9bov392adwWtG426/xQQXyDT+
+T62Ep3Wz9FmtFidkSmjHeiUep7m4eCv+pRFBhudF4rxHffbljniYBG5yK/44ghXQ
+jvyGHckYTEaQQq23lRILT4qp/eFlFTchu7wmgyVd49TWUOKKzJ+xw0yNE7C3605r
+I31HSQwu+Kjq/JDAjmRX
+=j47x
+-----END PGP SIGNATURE-----
+
+--wRRV7LY7NUeQGEoC--
