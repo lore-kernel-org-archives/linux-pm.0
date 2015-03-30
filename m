@@ -1,83 +1,54 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH] PM / devfreq: tegra: Register governor on module init
-Date: Mon, 30 Mar 2015 14:54:38 +0200
-Message-ID: <1427720078-28836-1-git-send-email-tomeu.vizoso@collabora.com>
-References: <1040887254.91981427710975821.JavaMail.weblogic@epmlwas08a>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1040887254.91981427710975821.JavaMail.weblogic@epmlwas08a>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-tegra@vger.kernel.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, linux-pm@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: arm_big_little: check if the frequency is
+ set correctly
+Date: Mon, 30 Mar 2015 18:57:53 +0530
+Message-ID: <CAKohponxEv3CjhVPAu2Ga5FeSSvtj_W6zGvL3oj2V247f94H=w@mail.gmail.com>
+References: <1427718438-31098-1-git-send-email-sudeep.holla@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f51.google.com ([209.85.218.51]:33000 "EHLO
+	mail-oi0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752898AbbC3N1z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Mar 2015 09:27:55 -0400
+Received: by oifl3 with SMTP id l3so128534111oif.0
+        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2015 06:27:54 -0700 (PDT)
+In-Reply-To: <1427718438-31098-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>, Mike Turquette <mike.turquette@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-So this driver builds as a module.
+On 30 March 2015 at 17:57, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> The actual frequency is set through "clk_change_rate" which is void
+> function. If the underlying hardware fails and returns error, the error
+> is lost in the clk layer. In order to track such failures, we need to
+> read back the frequency(just the cached value as clk_recalc called after
+> clk->ops->set_rate gets the frequency)
+>
+> This patch adds check to see if the frequency is set correctly or if
+> they were any hardware failures and sends the appropriate errors to the
+> cpufreq core.
+>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  drivers/cpufreq/arm_big_little.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+> index e1a6ba66a7f5..3fc676c63f91 100644
+> --- a/drivers/cpufreq/arm_big_little.c
+> +++ b/drivers/cpufreq/arm_big_little.c
+> @@ -186,6 +186,8 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+>                 mutex_unlock(&cluster_lock[old_cluster]);
+>         }
+>
+> +       if (bL_cpufreq_get_rate(cpu) != new_rate)
+> +               return -EIO;
+>         return 0;
+>  }
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
----
+This doesn't look to me the right place for fixing this.
 
-Hi,
-
-sorry, I hadn't tested building as a module in the latest iterations but it's something that I would like to work.
-
-This patch should fix it.
-
-Thanks,
-
-Tomeu
----
- drivers/devfreq/tegra-devfreq.c | 33 ++++++++++++++++++++++++++-------
- 1 file changed, 26 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
-index 8e633a6..ed94a5d 100644
---- a/drivers/devfreq/tegra-devfreq.c
-+++ b/drivers/devfreq/tegra-devfreq.c
-@@ -606,12 +606,6 @@ static struct devfreq_governor tegra_devfreq_governor = {
- 	.event_handler = tegra_governor_event_handler,
- };
- 
--static int __init tegra_governor_init(void)
--{
--	return devfreq_add_governor(&tegra_devfreq_governor);
--}
--subsys_initcall(tegra_governor_init);
--
- static int tegra_devfreq_probe(struct platform_device *pdev)
- {
- 	struct tegra_devfreq *tegra;
-@@ -755,7 +749,32 @@ static struct platform_driver tegra_devfreq_driver = {
- 		.of_match_table = tegra_devfreq_of_match,
- 	},
- };
--module_platform_driver(tegra_devfreq_driver);
-+
-+static int __init tegra_devfreq_init(void)
-+{
-+	int ret = 0;
-+
-+	ret = devfreq_add_governor(&tegra_devfreq_governor);
-+	if (ret) {
-+		pr_err("%s: failed to add governor: %d\n", __func__, ret);
-+		return ret;
-+	}
-+
-+	return platform_driver_register(&tegra_devfreq_driver);
-+}
-+module_init(tegra_devfreq_init)
-+
-+static void __exit tegra_devfreq_exit(void)
-+{
-+	int ret = 0;
-+
-+	platform_driver_unregister(&tegra_devfreq_driver);
-+
-+	ret = devfreq_remove_governor(&tegra_devfreq_governor);
-+	if (ret)
-+		pr_err("%s: failed to remove governor: %d\n", __func__, ret);
-+}
-+module_exit(tegra_devfreq_exit)
- 
- MODULE_LICENSE("GPL v2");
- MODULE_DESCRIPTION("Tegra devfreq driver");
--- 
-2.1.0
+@Mike ??
