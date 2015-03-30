@@ -1,55 +1,46 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH 2/2] cpufreq: arm_big_little: remove unused cpu-cluster.<n> clock name
-Date: Mon, 30 Mar 2015 13:27:18 +0100
-Message-ID: <1427718438-31098-2-git-send-email-sudeep.holla@arm.com>
-References: <1427718438-31098-1-git-send-email-sudeep.holla@arm.com>
+Subject: [PATCH 1/2] cpufreq: arm_big_little: check if the frequency is set correctly
+Date: Mon, 30 Mar 2015 13:27:17 +0100
+Message-ID: <1427718438-31098-1-git-send-email-sudeep.holla@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:60821 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:60814 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751806AbbC3M0d (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 30 Mar 2015 08:26:33 -0400
-In-Reply-To: <1427718438-31098-1-git-send-email-sudeep.holla@arm.com>
+	id S1750938AbbC3M0b (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 30 Mar 2015 08:26:31 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-The "cpu-cluster.<n>" used to get the cluster clock is not used by any
-platform. Moreover __of_clk_get_by_name used in clk_get return error if
-the "clock-names" in the DT doesn't match this string. When using DT,
-it's not compulsory to specify the clock name unless there are multiple
-clock input entries in the consumer.
+The actual frequency is set through "clk_change_rate" which is void
+function. If the underlying hardware fails and returns error, the error
+is lost in the clk layer. In order to track such failures, we need to
+read back the frequency(just the cached value as clk_recalc called after
+clk->ops->set_rate gets the frequency)
 
-This patch removes the unused clock string from the driver.
+This patch adds check to see if the frequency is set correctly or if
+they were any hardware failures and sends the appropriate errors to the
+cpufreq core.
 
 Cc: Viresh Kumar <viresh.kumar@linaro.org> 
 Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/cpufreq/arm_big_little.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/cpufreq/arm_big_little.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 3fc676c63f91..813315cd0247 100644
+index e1a6ba66a7f5..3fc676c63f91 100644
 --- a/drivers/cpufreq/arm_big_little.c
 +++ b/drivers/cpufreq/arm_big_little.c
-@@ -324,7 +324,6 @@ static void put_cluster_clk_and_freq_table(struct device *cpu_dev)
- static int _get_cluster_clk_and_freq_table(struct device *cpu_dev)
- {
- 	u32 cluster = raw_cpu_to_cluster(cpu_dev->id);
--	char name[14] = "cpu-cluster.";
- 	int ret;
- 
- 	if (freq_table[cluster])
-@@ -344,8 +343,7 @@ static int _get_cluster_clk_and_freq_table(struct device *cpu_dev)
- 		goto free_opp_table;
+@@ -186,6 +186,8 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+ 		mutex_unlock(&cluster_lock[old_cluster]);
  	}
  
--	name[12] = cluster + '0';
--	clk[cluster] = clk_get(cpu_dev, name);
-+	clk[cluster] = clk_get(cpu_dev, NULL);
- 	if (!IS_ERR(clk[cluster])) {
- 		dev_dbg(cpu_dev, "%s: clk: %p & freq table: %p, cluster: %d\n",
- 				__func__, clk[cluster], freq_table[cluster],
++	if (bL_cpufreq_get_rate(cpu) != new_rate)
++		return -EIO;
+ 	return 0;
+ }
+ 
 -- 
 1.9.1
 
