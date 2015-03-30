@@ -1,97 +1,52 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [RFP] LPC thermal track
-Date: Mon, 30 Mar 2015 12:11:17 -0700
-Message-ID: <1427742677.23036.145.camel@spandruv-DESK3.jf.intel.com>
-References: <20150327000245.GA29752@developer.hsd1.ca.comcast.net>
-	 <55154361.90302@arm.com>
+From: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 6/6] iio/adc/cc10001_adc.c: Fix !HAS_IOMEM build
+Date: Mon, 30 Mar 2015 20:40:39 +0100
+Message-ID: <5519A6B7.1000706@kernel.org>
+References: <1426541230-928-1-git-send-email-richard@nod.at> <1426541230-928-6-git-send-email-richard@nod.at> <550D5772.2010400@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:20161 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753089AbbC3TMi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 30 Mar 2015 15:12:38 -0400
-In-Reply-To: <55154361.90302@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <550D5772.2010400-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Richard Weinberger <richard-/L3Ra7n9ekc@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>, Javi Merino <Javi.Merino@arm.com>, "cyndis@lakka.kapsi.fi" <cyndis@lakka.kapsi.fi>, Kapileshwar Singh <Kapileshwar.Singh@arm.com>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "geert+renesas@glider.be" <geert+renesas@glider.be>, "wxt@rock-chips.com" <wxt@rock-chips.com>, Punit Agrawal <punit.agrawal@arm.com>
 
-On Fri, 2015-03-27 at 11:47 +0000, Punit Agrawal wrote: 
-> Hi Eduardo,
-> 
-> Thanks for proposing a thermal micro-conference. It would be good to 
-> discuss the direction things are heading with regards to thermal in linux.
-> 
-> On 27/03/15 00:02, Eduardo Valentin wrote:
-> > Hello all,
-> >
-> > I've created a proposal for a thermal microconference track on the LPC
-> > 2015 [1]. The basic idea is to get thermal developers together and
-> > discuss the thermal role within the Linux environment, from kernel and
-> > userspace perspective.
-> >
-> > A initial proposal for the topics to be discussed are:
-> > . Closed loop control governors
-> > . Sensor API
-> > . Thermal class: split of temperature sensor device and thermal driver
-> > . Improvements on OF-thermal
-> > . Devfreq vs. clock cooling
-> > . Power model based policies
-> > . User space tools
-> > . User space governors
-> >
-> > If you have interest, or if you have ideas on how to improve the
-> > framework, reply to this email and add it to the wiki.
-What about
-Some enhancement in thermal zone user space I/F for user space thermal
-controllers
-- Better support for virtual temperature sensors which depends on other
-sensors. 
-- Support for Linux IIO style scale and offset in thermal zone
-temperature calculation.
-- /dev interface for pushing thermal samples instead of raw read of
-temperature to improve performances and push sample instead of pull from
-user space.
+On 21/03/15 11:35, Jonathan Cameron wrote:
+> On 16/03/15 21:27, Richard Weinberger wrote:
+>> Fixes:
+>> drivers/built-in.o: In function `cc10001_adc_probe':
+>> cc10001_adc.c:(.text+0x412e92): undefined reference to `devm_ioremap_resource'
+>>
+>> Signed-off-by: Richard Weinberger <richard-/L3Ra7n9ekc@public.gmane.org>
+> Applied to the fixes-togreg branch of iio.git.
+> Won't push this out for a day or so as waiting for Greg to pull the previous set.
+>> ---
+>>  drivers/iio/adc/Kconfig | 3 ++-
+>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
+>> index 202daf8..46379b1 100644
+>> --- a/drivers/iio/adc/Kconfig
+>> +++ b/drivers/iio/adc/Kconfig
+>> @@ -137,7 +137,8 @@ config AXP288_ADC
+>>  
+>>  config CC10001_ADC
+>>  	tristate "Cosmic Circuits 10001 ADC driver"
+>> -	depends on HAS_IOMEM || HAVE_CLK || REGULATOR
+>> +	depends on HAVE_CLK || REGULATOR
+>> +	depends on HAS_IOMEM
+>>  	select IIO_BUFFER
+>>  	select IIO_TRIGGERED_BUFFER
+>>  	help
+>>
+Hmm. Just noticed this whilst sending the pull request.  That
+HAVE_CLK || REGULATOR also seems rather implausible!
 
-Thanks,
-Srinivas 
-> >
 > 
-> I'd like to propose -
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-iio" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
-> . Co-ordination among cooling-devices in the system
-> 
-> In workloads that involve multiple devices such as camera+CPUs+image 
-> singal processor or camera+video encoding, etc. often there are 
-> dependencies across multiple devices' performance states to achieve 
-> minimum acceptable performance (24fps HD encode for example). When 
-> thermally constrained it would help to have some mechanisms to 
-> co-ordinate their performance control. The power allocator governor 
-> attempts to solve some of these problems but it would be good to have a 
-> wider discussion on enabling more scenarios.
-> 
-> 
-> > Add your name in the list of participants as well. Also, if you feel
-> > like giving a talk on the topic, let's add it to the topic list.
-> >
-> 
-> Done.
-> 
-> Cheers,
-> Punit
-> 
-> > Currently I am simple checking what would be the level of interest to
-> > have this topic as a LPC microconference.
-> >
-> > BR,
-> >
-> > Eduardo Valentin
-> >
-> >
-> > [1] - http://wiki.linuxplumbersconf.org/2015:thermal
-> >
-> 
-
-
