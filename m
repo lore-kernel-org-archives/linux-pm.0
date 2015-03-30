@@ -1,125 +1,53 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3] cpufreq: powernv: Report cpu frequency throttling
-Date: Mon, 30 Mar 2015 21:15:34 +0200
-Message-ID: <2339245.XXG4qaq6pt@vostro.rjw.lan>
-References: <1427441523-5189-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <CAKohponCrbioGcuiPYvB2LjERCBov7E7GApP3HKPwzcC2x1ZYA@mail.gmail.com>
+Subject: Re: [PATCH] powercap / RAPL: mark rapl_ids array as __initconst
+Date: Mon, 30 Mar 2015 21:17:02 +0200
+Message-ID: <6448986.08Uv5dyIEs@vostro.rjw.lan>
+References: <1427318152-21800-1-git-send-email-minipli@googlemail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53380 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:60289 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752107AbbC3SvW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Mar 2015 14:51:22 -0400
-In-Reply-To: <CAKohponCrbioGcuiPYvB2LjERCBov7E7GApP3HKPwzcC2x1ZYA@mail.gmail.com>
+	with SMTP id S1753045AbbC3Swu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Mar 2015 14:52:50 -0400
+In-Reply-To: <1427318152-21800-1-git-send-email-minipli@googlemail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Mathias Krause <minipli@googlemail.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Friday, March 27, 2015 01:10:46 PM Viresh Kumar wrote:
-> On 27 March 2015 at 13:02, Shilpasri G Bhat
-> <shilpa.bhat@linux.vnet.ibm.com> wrote:
-> > The power and thermal safety of the system is taken care by an
-> > On-Chip-Controller (OCC) which is real-time subsystem embedded within
-> > the POWER8 processor. OCC continuously monitors the memory and core
-> > temperature, the total system power, state of power supply and fan.
-> >
-> > The cpu frequency can be throttled by OCC for the following reasons:
-> > 1)If a processor crosses its power and temperature limit then OCC will
-> >   lower its Pmax to reduce the frequency and voltage.
-> > 2)If OCC crashes then the system is forced to Psafe frequency.
-> > 3)If OCC fails to recover then the kernel is not allowed to do any
-> >   further frequency changes and the chip will remain in Psafe.
-> >
-> > The user can see a drop in performance when frequency is throttled and
-> > is unaware of throttling. So detect and report such a condition so
-> > that user can check the OCC status to reboot the system or check for
-> > power supply or fan failures.
-> >
-> > The current status of the core is read from Power Management Status
-> > Register(PMSR) to check if any of the throttling condition is occurred
-> > and the appropriate throttling message is reported.
-> >
-> > Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> > ---
-> > Changes from V2:
-> > -Changed commit log to add more details.
-> > -Fixed multi-line comment to proper format
-> >
-> > Changes from V1: Removed unused value of PMCR register
-> >
-> >  drivers/cpufreq/powernv-cpufreq.c | 40 ++++++++++++++++++++++++++++++++++++++-
-> >  1 file changed, 39 insertions(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> > index 2dfd4fd..0eb89a9 100644
-> > --- a/drivers/cpufreq/powernv-cpufreq.c
-> > +++ b/drivers/cpufreq/powernv-cpufreq.c
-> > @@ -36,7 +36,7 @@
-> >  #define POWERNV_MAX_PSTATES    256
-> >
-> >  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
-> > -static bool rebooting;
-> > +static bool rebooting, throttled;
-> >
-> >  /*
-> >   * Note: The set of pstates consists of contiguous integers, the
-> > @@ -294,6 +294,41 @@ static inline unsigned int get_nominal_index(void)
-> >         return powernv_pstate_info.max - powernv_pstate_info.nominal;
-> >  }
-> >
-> > +static void powernv_cpufreq_throttle_check(unsigned int cpu)
-> > +{
-> > +       unsigned long pmsr;
-> > +       int pmsr_pmax, pmsr_lp;
-> > +
-> > +       pmsr = get_pmspr(SPRN_PMSR);
-> > +
-> > +       /* Check for Pmax Capping */
-> > +       pmsr_pmax = (s8)((pmsr >> 32) & 0xFF);
-> > +       if (pmsr_pmax != powernv_pstate_info.max) {
-> > +               throttled = true;
-> > +               pr_warn("Cpu %d Pmax is reduced to %d\n", cpu, pmsr_pmax);
-> > +       }
-> > +
-> > +       /*
-> > +        * Check for Psafe by reading LocalPstate
-> > +        * or check if Psafe_mode_active- 34th bit is set in PMSR.
-> > +        */
-> > +       pmsr_lp = (s8)((pmsr >> 48) & 0xFF);
-> > +       if ((pmsr_lp < powernv_pstate_info.min) || ((pmsr >> 30) & 1)) {
-> > +               throttled = true;
-> > +               pr_warn("Cpu %d in Psafe %d PMSR[34]=%lx\n", cpu,
-> > +                               pmsr_lp, ((pmsr >> 30) & 1));
-> > +       }
-> > +
-> > +       /* Check if SPR_EM_DISABLED- 33rd bit is set in PMSR */
-> > +       if ((pmsr >> 31) & 1) {
-> > +               throttled = true;
-> > +               pr_warn("Frequency management disabled cpu %d PMSR[33]=%lx\n",
-> > +                               cpu, ((pmsr >> 31) & 1));
-> > +       }
-> > +       if (throttled)
-> > +               pr_warn("Cpu Frequency is throttled\n");
-> > +}
-> > +
-> >  /*
-> >   * powernv_cpufreq_target_index: Sets the frequency corresponding to
-> >   * the cpufreq table entry indexed by new_index on the cpus in the
-> > @@ -307,6 +342,9 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
-> >         if (unlikely(rebooting) && new_index != get_nominal_index())
-> >                 return 0;
-> >
-> > +       if (!throttled)
-> > +               powernv_cpufreq_throttle_check(smp_processor_id());
-> > +
-> >         freq_data.pstate_id = powernv_freqs[new_index].driver_data;
+On Wednesday, March 25, 2015 10:15:52 PM Mathias Krause wrote:
+> The RAPL ids are only tested in rapl_init() which is itself an __init
+> function. For the MODULE_DEVICE_TABLE() file2alias doesn't care about
+> the section, just about the symbol name. Therefore it's safe to mark the
+> rapl_ids[] array as __initconst so its memory can be released after
+> initialization is done.
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
+> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Signed-off-by: Mathias Krause <minipli@googlemail.com>
 
-Queued up for 4.1, thanks!
+Jacob, any comments?
 
+> ---
+>  drivers/powercap/intel_rapl.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+> index 63d4033eb683..62f9b322fde0 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -1054,7 +1054,7 @@ static const struct rapl_defaults rapl_defaults_atom = {
+>  		.driver_data = (kernel_ulong_t)&_ops,	\
+>  		}
+>  
+> -static const struct x86_cpu_id rapl_ids[] = {
+> +static const struct x86_cpu_id rapl_ids[] __initconst = {
+>  	RAPL_CPU(0x2a, rapl_defaults_core),/* Sandy Bridge */
+>  	RAPL_CPU(0x2d, rapl_defaults_core),/* Sandy Bridge EP */
+>  	RAPL_CPU(0x37, rapl_defaults_atom),/* Valleyview */
+> 
 
 -- 
 I speak only for myself.
