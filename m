@@ -1,210 +1,220 @@
-From: Joe Perches <joe@perches.com>
-Subject: [PATCH 16/25] include/linux: Use bool function return values of true/false not 1/0
-Date: Mon, 30 Mar 2015 16:46:14 -0700
-Message-ID: <5edb9453646625a405ef0a642bec0819c0e6c2eb.1427759009.git.joe@perches.com>
-References: <cover.1427759009.git.joe@perches.com>
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <cover.1427759009.git.joe@perches.com>
-Sender: owner-linux-mm@kvack.org
-To: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, Jason Wessel <jason.wessel@windriver.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Michael Buesch <m@bues.ch>
-Cc: linux-ide@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net, linux-mm@kvack.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org
+From: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+Subject: Re: [PATCH/RFC 1/5] clk: shmobile: rcar-gen2: Add CPG Clock Domain support
+Date: Tue, 31 Mar 2015 02:53:09 +0300
+Message-ID: <3861934.bVCAbQmBJW@avalon>
+References: <1426708017-28885-1-git-send-email-geert+renesas@glider.be> <1426708017-28885-2-git-send-email-geert+renesas@glider.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1426708017-28885-2-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Cc: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Use the normal return values for bool functions
+Hi Geert,
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- include/linux/blkdev.h               |  2 +-
- include/linux/ide.h                  |  2 +-
- include/linux/kgdb.h                 |  2 +-
- include/linux/mfd/db8500-prcmu.h     |  2 +-
- include/linux/mm.h                   |  2 +-
- include/linux/power_supply.h         |  8 ++++----
- include/linux/ssb/ssb_driver_extif.h |  2 +-
- include/linux/ssb/ssb_driver_gige.h  | 16 ++++++++--------
- 8 files changed, 18 insertions(+), 18 deletions(-)
+Thank you for the patch.
 
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 5d93a66..eced869 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -1591,7 +1591,7 @@ static inline bool blk_integrity_merge_bio(struct request_queue *rq,
- }
- static inline bool blk_integrity_is_initialized(struct gendisk *g)
- {
--	return 0;
-+	return false;
- }
- 
- #endif /* CONFIG_BLK_DEV_INTEGRITY */
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index 93b5ca7..1ba07db 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -1411,7 +1411,7 @@ void ide_acpi_port_init_devices(ide_hwif_t *);
- extern void ide_acpi_set_state(ide_hwif_t *hwif, int on);
- #else
- static inline int ide_acpi_init(void) { return 0; }
--static inline bool ide_port_acpi(ide_hwif_t *hwif) { return 0; }
-+static inline bool ide_port_acpi(ide_hwif_t *hwif) { return false; }
- static inline int ide_acpi_exec_tfs(ide_drive_t *drive) { return 0; }
- static inline void ide_acpi_get_timing(ide_hwif_t *hwif) { ; }
- static inline void ide_acpi_push_timing(ide_hwif_t *hwif) { ; }
-diff --git a/include/linux/kgdb.h b/include/linux/kgdb.h
-index e465bb1..840f494 100644
---- a/include/linux/kgdb.h
-+++ b/include/linux/kgdb.h
-@@ -292,7 +292,7 @@ extern bool kgdb_nmi_poll_knock(void);
- #else
- static inline int kgdb_register_nmi_console(void) { return 0; }
- static inline int kgdb_unregister_nmi_console(void) { return 0; }
--static inline bool kgdb_nmi_poll_knock(void) { return 1; }
-+static inline bool kgdb_nmi_poll_knock(void) { return true; }
- #endif
- 
- extern int kgdb_register_io_module(struct kgdb_io *local_kgdb_io_ops);
-diff --git a/include/linux/mfd/db8500-prcmu.h b/include/linux/mfd/db8500-prcmu.h
-index 0bd6944..3b06175 100644
---- a/include/linux/mfd/db8500-prcmu.h
-+++ b/include/linux/mfd/db8500-prcmu.h
-@@ -744,7 +744,7 @@ static inline int db8500_prcmu_load_a9wdog(u8 id, u32 val)
- 
- static inline bool db8500_prcmu_is_ac_wake_requested(void)
- {
--	return 0;
-+	return false;
- }
- 
- static inline int db8500_prcmu_set_arm_opp(u8 opp)
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 4a3a385..164108c 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -819,7 +819,7 @@ static inline int cpu_pid_to_cpupid(int nid, int pid)
- 
- static inline bool cpupid_pid_unset(int cpupid)
- {
--	return 1;
-+	return true;
- }
- 
- static inline void page_cpupid_reset_last(struct page *page)
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 75a1dd8..b0b45c7 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -350,12 +350,12 @@ static inline bool power_supply_is_amp_property(enum power_supply_property psp)
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
- 	case POWER_SUPPLY_PROP_CURRENT_AVG:
- 	case POWER_SUPPLY_PROP_CURRENT_BOOT:
--		return 1;
-+		return true;
- 	default:
- 		break;
- 	}
- 
--	return 0;
-+	return false;
- }
- 
- static inline bool power_supply_is_watt_property(enum power_supply_property psp)
-@@ -378,12 +378,12 @@ static inline bool power_supply_is_watt_property(enum power_supply_property psp)
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
- 	case POWER_SUPPLY_PROP_POWER_NOW:
--		return 1;
-+		return true;
- 	default:
- 		break;
- 	}
- 
--	return 0;
-+	return false;
- }
- 
- #endif /* __LINUX_POWER_SUPPLY_H__ */
-diff --git a/include/linux/ssb/ssb_driver_extif.h b/include/linux/ssb/ssb_driver_extif.h
-index a410e84..5766b6f 100644
---- a/include/linux/ssb/ssb_driver_extif.h
-+++ b/include/linux/ssb/ssb_driver_extif.h
-@@ -198,7 +198,7 @@ struct ssb_extif {
- 
- static inline bool ssb_extif_available(struct ssb_extif *extif)
- {
--	return 0;
-+	return false;
- }
- 
- static inline
-diff --git a/include/linux/ssb/ssb_driver_gige.h b/include/linux/ssb/ssb_driver_gige.h
-index 0688472..65f7740 100644
---- a/include/linux/ssb/ssb_driver_gige.h
-+++ b/include/linux/ssb/ssb_driver_gige.h
-@@ -75,7 +75,7 @@ static inline bool ssb_gige_have_roboswitch(struct pci_dev *pdev)
- 	if (dev)
- 		return !!(dev->dev->bus->sprom.boardflags_lo &
- 			  SSB_GIGE_BFL_ROBOSWITCH);
--	return 0;
-+	return false;
- }
- 
- /* Returns whether we can only do one DMA at once. */
-@@ -85,7 +85,7 @@ static inline bool ssb_gige_one_dma_at_once(struct pci_dev *pdev)
- 	if (dev)
- 		return ((dev->dev->bus->chip_id == 0x4785) &&
- 			(dev->dev->bus->chip_rev < 2));
--	return 0;
-+	return false;
- }
- 
- /* Returns whether we must flush posted writes. */
-@@ -94,7 +94,7 @@ static inline bool ssb_gige_must_flush_posted_writes(struct pci_dev *pdev)
- 	struct ssb_gige *dev = pdev_to_ssb_gige(pdev);
- 	if (dev)
- 		return (dev->dev->bus->chip_id == 0x4785);
--	return 0;
-+	return false;
- }
- 
- /* Get the device MAC address */
-@@ -158,7 +158,7 @@ static inline void ssb_gige_exit(void)
- 
- static inline bool pdev_is_ssb_gige_core(struct pci_dev *pdev)
- {
--	return 0;
-+	return false;
- }
- static inline struct ssb_gige * pdev_to_ssb_gige(struct pci_dev *pdev)
- {
-@@ -166,19 +166,19 @@ static inline struct ssb_gige * pdev_to_ssb_gige(struct pci_dev *pdev)
- }
- static inline bool ssb_gige_is_rgmii(struct pci_dev *pdev)
- {
--	return 0;
-+	return false;
- }
- static inline bool ssb_gige_have_roboswitch(struct pci_dev *pdev)
- {
--	return 0;
-+	return false;
- }
- static inline bool ssb_gige_one_dma_at_once(struct pci_dev *pdev)
- {
--	return 0;
-+	return false;
- }
- static inline bool ssb_gige_must_flush_posted_writes(struct pci_dev *pdev)
- {
--	return 0;
-+	return false;
- }
- static inline int ssb_gige_get_macaddr(struct pci_dev *pdev, u8 *macaddr)
- {
+On Wednesday 18 March 2015 20:46:53 Geert Uytterhoeven wrote:
+> Add Clock Domain support to the R-Car Gen2 Clock Pulse Generator (CPG)
+> driver using the generic PM Domain.  This allows to power-manage the
+> module clocks of SoC devices that are part of the CPG Clock Domain using
+> Runtime PM, or for system suspend/resume.
+> 
+> SoC devices that are part of the CPG Clock Domain and can be
+> power-managed through their primary clock should be tagged in DT with a
+> proper "power-domains" property.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+
+There's one thing that bothers me: the implementation is tied to the CPG 
+driver, but the code is quite generic. That feels a bit wrong, it would be 
+nice to come up with a generic implementation. On the other hand, the 
+platform-dependent part is the list of clocks to manage, specified implicitly 
+through the "pm_clk_add(dev, NULL)" call. That list needs to be specified 
+somewhere, and adding it to the CPG driver is likely the best solution we can 
+have at the moment.
+
+I'm slightly worried that adding the power-domains property to the DT node 
+will introduce backward compatibility issues if we later switch to a different 
+way to specify the clocks to manage automatically. I have no specific example 
+though.
+
+For those reasons,
+
+Acked-by: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>
+
+> ---
+>  .../clock/renesas,rcar-gen2-cpg-clocks.txt         | 26 ++++++++-
+>  arch/arm/mach-shmobile/Kconfig                     |  1 +
+>  drivers/clk/shmobile/clk-rcar-gen2.c               | 63 +++++++++++++++++++
+>  3 files changed, 88 insertions(+), 2 deletions(-)
+> 
+> diff --git
+> a/Documentation/devicetree/bindings/clock/renesas,rcar-gen2-cpg-clocks.txt
+> b/Documentation/devicetree/bindings/clock/renesas,rcar-gen2-cpg-clocks.txt
+> index b02944fba9de4f86..fc013f225a348929 100644
+> ---
+> a/Documentation/devicetree/bindings/clock/renesas,rcar-gen2-cpg-clocks.txt
+> +++
+> b/Documentation/devicetree/bindings/clock/renesas,rcar-gen2-cpg-clocks.txt
+> @@ -2,6 +2,8 @@
+> 
+>  The CPG generates core clocks for the R-Car Gen2 SoCs. It includes three
+> PLLs and several fixed ratio dividers.
+> +The CPG also provides a Clock Domain for SoC devices, in combination with
+> the +CPG Module Stop (MSTP) Clocks.
+> 
+>  Required Properties:
+> 
+> @@ -20,10 +22,18 @@ Required Properties:
+>    - clock-output-names: The names of the clocks. Supported clocks are
+> "main", "pll0", "pll1", "pll3", "lb", "qspi", "sdh", "sd0", "sd1", "z",
+> "rcan", and "adsp"
+> +  - #power-domain-cells: Must be 0
+> 
+> +SoC devices that are part of the CPG Clock Domain and can be power-managed
+> +through their primary clock should refer to the CPG device node in their
+> +"power-domains" property, as documented by the generic PM domain bindings
+> in +Documentation/devicetree/bindings/power/power_domain.txt.
+> 
+> -Example
+> --------
+> +
+> +Examples
+> +--------
+> +
+> +  - CPG device node:
+> 
+>  	cpg_clocks: cpg_clocks@e6150000 {
+>  		compatible = "renesas,r8a7790-cpg-clocks",
+> @@ -34,4 +44,16 @@ Example
+>  		clock-output-names = "main", "pll0, "pll1", "pll3",
+>  				     "lb", "qspi", "sdh", "sd0", "sd1", "z",
+>  				     "rcan", "adsp";
+> +		#power-domain-cells = <0>;
+> +	};
+> +
+> +
+> +  - CPG Clock Domain member node:
+> +
+> +	thermal@e61f0000 {
+> +		compatible = "renesas,thermal-r8a7790", "renesas,rcar-thermal";
+> +		reg = <0 0xe61f0000 0 0x14>, <0 0xe61f0100 0 0x38>;
+> +		interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
+> +		clocks = <&mstp5_clks R8A7790_CLK_THERMAL>;
+> +		power-domains = <&cpg_clocks>;
+>  	};
+> diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
+> index 0fb484221c90e0eb..048101a3253c52de 100644
+> --- a/arch/arm/mach-shmobile/Kconfig
+> +++ b/arch/arm/mach-shmobile/Kconfig
+> @@ -4,6 +4,7 @@ config ARCH_SHMOBILE
+> 
+>  config PM_RCAR
+>  	bool
+> +	select PM_GENERIC_DOMAINS
+> 
+>  config PM_RMOBILE
+>  	bool
+> diff --git a/drivers/clk/shmobile/clk-rcar-gen2.c
+> b/drivers/clk/shmobile/clk-rcar-gen2.c index
+> acfb6d7dbd6bc049..b54439d3722a13ad 100644
+> --- a/drivers/clk/shmobile/clk-rcar-gen2.c
+> +++ b/drivers/clk/shmobile/clk-rcar-gen2.c
+> @@ -18,6 +18,8 @@
+>  #include <linux/math64.h>
+>  #include <linux/of.h>
+>  #include <linux/of_address.h>
+> +#include <linux/pm_clock.h>
+> +#include <linux/pm_domain.h>
+>  #include <linux/spinlock.h>
+> 
+>  struct rcar_gen2_cpg {
+> @@ -364,6 +366,65 @@ rcar_gen2_cpg_register_clock(struct device_node *np,
+> struct rcar_gen2_cpg *cpg, 4, 0, table, &cpg->lock);
+>  }
+> 
+> +#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+> +static int cpg_pd_attach_dev(struct generic_pm_domain *domain,
+> +			     struct device *dev)
+> +{
+> +	int error;
+> +
+> +	error = pm_clk_create(dev);
+> +	if (error) {
+> +		dev_err(dev, "pm_clk_create failed %d\n", error);
+> +		return error;
+> +	}
+> +
+> +	error = pm_clk_add(dev, NULL);
+> +	if (error) {
+> +		dev_err(dev, "pm_clk_add failed %d\n", error);
+> +		goto fail;
+> +	}
+> +
+> +	return 0;
+> +
+> +fail:
+> +	pm_clk_destroy(dev);
+> +	return error;
+> +}
+> +
+> +static void cpg_pd_detach_dev(struct generic_pm_domain *domain,
+> +			      struct device *dev)
+> +{
+> +	pm_clk_destroy(dev);
+> +}
+> +
+> +static void __init rcar_gen2_cpg_add_pm_domain(struct device_node *np)
+> +{
+> +	struct generic_pm_domain *pd;
+> +	u32 ncells;
+> +
+> +	if (of_property_read_u32(np, "#power-domain-cells", &ncells)) {
+> +		pr_warn("%s lacks #power-domain-cells. Clocks may fail.\n",
+> +			np->full_name);
+> +		return;
+> +	}
+> +
+> +	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
+> +	if (!pd)
+> +		return;
+> +
+> +	pd->name = np->name;
+> +
+> +	pd->flags = GENPD_FLAG_PM_CLK;
+> +	pm_genpd_init(pd, &simple_qos_governor, false);
+> +	pd->attach_dev = cpg_pd_attach_dev;
+> +	pd->detach_dev = cpg_pd_detach_dev;
+> +
+> +	of_genpd_add_provider_simple(np, pd);
+> +}
+> +#else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
+> +static inline void rcar_gen2_cpg_add_pm_domain(struct device_node *np) {}
+> +#endif /* !CONFIG_PM_GENERIC_DOMAINS_OF */
+> +
+>  static void __init rcar_gen2_cpg_clocks_init(struct device_node *np)
+>  {
+>  	const struct cpg_pll_config *config;
+> @@ -415,6 +476,8 @@ static void __init rcar_gen2_cpg_clocks_init(struct
+> device_node *np) }
+> 
+>  	of_clk_add_provider(np, of_clk_src_onecell_get, &cpg->data);
+> +
+> +	rcar_gen2_cpg_add_pm_domain(np);
+>  }
+>  CLK_OF_DECLARE(rcar_gen2_cpg_clks, "renesas,rcar-gen2-cpg-clocks",
+>  	       rcar_gen2_cpg_clocks_init);
+
 -- 
-2.1.2
+Regards,
+
+Laurent Pinchart
 
 --
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
