@@ -1,92 +1,76 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [RFC PATCH 2/2] arm64: kernel: perf: add pmu CPU PM notifier
-Date: Mon, 30 Mar 2015 18:45:40 +0100
-Message-ID: <20150330174540.GB11684@red-moon>
-References: <1426008682-5680-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1426008682-5680-2-git-send-email-lorenzo.pieralisi@arm.com>
- <7hh9try12u.fsf@deeprootsystems.com>
- <CAJ5Y-eZBS9Z0BgQK92MggttEZLitgKOYPyZqg3-7=RggYAJWvw@mail.gmail.com>
- <20150313174002.GA1763@e102568-lin.cambridge.arm.com>
- <7hd24cpj8m.fsf@deeprootsystems.com>
- <20150317172418.GX8399@arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] ACPI: Enable wakeup GPE in freeze mode
+Date: Mon, 30 Mar 2015 21:12:09 +0200
+Message-ID: <4698835.VT8nBgTpoe@vostro.rjw.lan>
+References: <1427450928-7049-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:33460 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753053AbbC3Rp2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 30 Mar 2015 13:45:28 -0400
-Content-Disposition: inline
-In-Reply-To: <20150317172418.GX8399@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1427450928-7049-1-git-send-email-yu.c.chen@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: len.brown@intel.com, rui.zhang@intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Will Deacon <will.deacon@arm.com>
-Cc: Kevin Hilman <khilman@kernel.org>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Mark Rutland <Mark.Rutland@arm.com>
 
-On Tue, Mar 17, 2015 at 05:24:18PM +0000, Will Deacon wrote:
-> On Fri, Mar 13, 2015 at 11:31:37PM +0000, Kevin Hilman wrote:
-> > Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
-> > 
-> > > On Thu, Mar 12, 2015 at 01:18:54PM +0000, Ashwin Chaugule wrote:
-> > >> On 11 March 2015 at 12:02, Kevin Hilman <khilman@kernel.org> wrote:
-> > >> > Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> writes:
-> > >> >
-> > >> >> When a CPU is being profiled through PMU events and it enters suspend
-> > >> >> or idle states, the PMU registers content can be lost, which means that
-> > >> >> counters that were relied upon on power down entry are reset on power
-> > >> >> up to values that are incosistent with the profile session.
-> > >> >>
-> > >> >> This patch adds a CPU PM notifier to arm64 perf code, that detects
-> > >> >> on entry if events are being monitored, and if so, it returns
-> > >> >> failure to the CPU PM notification chain, causing the suspend
-> > >> >> thread or the idle thread to abort power down, therefore preventing
-> > >> >> registers content loss.
-> > >> >>
-> > >> >> By triggering CPU PM notification failure this patch prevents
-> > >> >> suspending a system if the suspend thread is being profiled and
-> > >> >> it also prevents entering idle deep states on cores that have profile
-> > >> >> events in use, somehow limiting power management capabilities when
-> > >> >> there are active perf sessions.
-> > >> >
-> > >> > I guess that's one choice.  Couldn't you also stop the PMU and
-> > >> > save/restore it's context in the notifiers? so that you wouldn't affect
-> > >> > PM capabilities?
-> > >> >
-> > >> > That would imply that you lose the ability to profile after a certain
-> > >> > point in suspend/idle, but maybe that's a better trade off than having
-> > >> > profiling disable certain PM features?
-> > >> 
-> > >> I had something like that a few years ago on the Kraits and Scorpions [1].
-> > >
-> > > That's another option, but the point is understanding how we want to
-> > > tackle the issue, by preventing power down or by restoring the
-> > > PMU registers.
-> > 
-> > Personally, I think the save/restore approach is preferred.  IMO, it's
-> > more intuitive from the perspective of a user who doesn't understand all
-> > the mechanics and also actually allows you to profile most of the
-> > low-power paths and still actually hit the low power states.
+On Friday, March 27, 2015 06:08:48 PM Chen Yu wrote:
+> Currently, in freeze state, wakeup GPE for PCI devices are
+> handled properly because acpi_pci_sleep_wake() invokes acpi_enable_gpe()
+> to enable the wakeup GPE directly. But for the other wakeup-capable
+> devices in ACPI bus, acpi_enable_wakeup_devices() should be invoked
+> to update enable_for_wake mask in gpe_register_info structure, thus
+> acpi_enable_all_wakeup_gpes() can enable the wakeup GPE referred in
+> _PRW methods. And acpi_disable_wakeup_devices() will be called
+> before disable_irq_wake() in acpi_freeze_restore() to restore the mask.
 > 
-> I agree that save/restore is the nicest thing to do, but until we have a
-> generic description of the power-domains in device-tree I really don't want
-> PMU-specific hacks in the arch code to deal with this (since many platforms
-> do not lose PMU state over suspend).
+> This patch fixes a power button wakeup problem on Surface Pro 3,
+> on which platform power button uses EC to deliver event
+> (EC GPE is referred in _PRW).
 > 
-> What Lorenzo is proposing is a stop-gap to prevent perf silently losing its
-> state on platforms where the register contents is lost.
+> Note: enabling EC GPE during freeze state may bring some risks
+> because EC events are expected to fire more frequently than others.
+> Thus it may bring the system out of freeze state unnecessarily.
+> (We already have comments about this in bugzilla)
+> 
+> Fixes https://bugzilla.kernel.org/show_bug.cgi?id=84651
+> 
+> Reported-and-tested-by: Ethan Schoonover <es@ethanschoonover.com>
+> Tested-by: Peter Amidon <psa.pub.0@picnicpark.org>
+> Tested-by: Yani Ioadnnou <yani.ioannou@gmail.com>
+> Tested-by: Mister Wardrop <mister.wardrop@gmail.com>
+> Tested-by: Anton Anikin <anton@anikin.name>
+> Tested-by: Keith McClelland <zismylaptop@gmail.com>
+> Reviewed-by: Zhang Rui <rui.zhang@intel.com>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 
-Yes, that's exactly the goal. I am fine either way, at the moment we are
-not in a position to define whether a core loses the PMU context, that's
-certain.
+Queued up for 4.1 with minor changes in the changelog/subject, thanks!
 
-I am not sure to understand why people want the core to really go
-to shutdown and save/restore perf context if perf is on (eg profiling a
-cpu for cache stats, clearly powering down a core biases the results
-and might even obfuscate them).
+> ---
+>  drivers/acpi/sleep.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+> index 7f251dd..81e5bd4 100644
+> --- a/drivers/acpi/sleep.c
+> +++ b/drivers/acpi/sleep.c
+> @@ -629,6 +629,7 @@ static int acpi_freeze_begin(void)
+>  
+>  static int acpi_freeze_prepare(void)
+>  {
+> +	acpi_enable_wakeup_devices(ACPI_STATE_S0);
+>  	acpi_enable_all_wakeup_gpes();
+>  	acpi_os_wait_events_complete();
+>  	enable_irq_wake(acpi_gbl_FADT.sci_interrupt);
+> @@ -637,6 +638,7 @@ static int acpi_freeze_prepare(void)
+>  
+>  static void acpi_freeze_restore(void)
+>  {
+> +	acpi_disable_wakeup_devices(ACPI_STATE_S0);
+>  	disable_irq_wake(acpi_gbl_FADT.sci_interrupt);
+>  	acpi_enable_all_runtime_gpes();
+>  }
+> 
 
-It is not an easy call. If we go for this patch approach I am happy to
-rebase and retest the series again, for power domains I fear we have to
-wait given the sheer amount of changes in ARM CPUidle world at the moment,
-too much stuff going on there.
-
-Lorenzo
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
