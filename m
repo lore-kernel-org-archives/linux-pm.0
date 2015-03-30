@@ -1,90 +1,102 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] thermal/intel_powerclamp: add __init / __exit
- annotations
-Date: Mon, 30 Mar 2015 15:48:38 -0700
-Message-ID: <20150330154838.1837717f@ultegra>
-References: <1427318184-21843-1-git-send-email-minipli@googlemail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:51013 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753000AbbC3Wsk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 30 Mar 2015 18:48:40 -0400
-In-Reply-To: <1427318184-21843-1-git-send-email-minipli@googlemail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Joe Perches <joe@perches.com>
+Subject: [PATCH 00/25] treewide: Use bool function return values of true/false not 1/0
+Date: Mon, 30 Mar 2015 16:45:58 -0700
+Message-ID: <cover.1427759009.git.joe@perches.com>
+Return-path: <owner-linux-mm@kvack.org>
+Sender: owner-linux-mm@kvack.org
+To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kvmarm@lists.cs.columbia.edu, kvm@vger.kernel.org, linux-omap@vger.kernel.org, kvm-ppc@vger.kernel.org, virtualization@lists.linux-foundation.org, linux-fsdevel@vger.kernel.org, linux-nfs@vger.kernel.org, linux-ide@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net, linux-mm@kvack.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org, alsa-devel@alsa-project.org, bridge@lists.linux-foundation.org, netfilter-devel@vger.kernel.org, coreteam@netfilter.org, patches@opensource.wolfsonmicro.com
+Cc: linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org, linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, sparclinux@vger.kernel.org, linux-scsi@vger.kernel.org, linux-security-module@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mathias Krause <minipli@googlemail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
 
-On Wed, 25 Mar 2015 22:16:24 +0100
-Mathias Krause <minipli@googlemail.com> wrote:
+Joe Perches (25):
+  arm: Use bool function return values of true/false not 1/0
+  arm64: Use bool function return values of true/false not 1/0
+  hexagon: Use bool function return values of true/false not 1/0
+  ia64: Use bool function return values of true/false not 1/0
+  mips: Use bool function return values of true/false not 1/0
+  powerpc: Use bool function return values of true/false not 1/0
+  s390: Use bool function return values of true/false not 1/0
+  sparc: Use bool function return values of true/false not 1/0
+  tile: Use bool function return values of true/false not 1/0
+  unicore32: Use bool function return values of true/false not 1/0
+  x86: Use bool function return values of true/false not 1/0
+  virtio_console: Use bool function return values of true/false not 1/0
+  csiostor: Use bool function return values of true/false not 1/0
+  dcache: Use bool function return values of true/false not 1/0
+  nfsd: nfs4state: Use bool function return values of true/false not 1/0
+  include/linux: Use bool function return values of true/false not 1/0
+  sound: Use bool function return values of true/false not 1/0
+  rcu: tree_plugin: Use bool function return values of true/false not 1/0
+  sched: Use bool function return values of true/false not 1/0
+  ftrace: Use bool function return values of true/false not 1/0
+  slub: Use bool function return values of true/false not 1/0
+  bridge: Use bool function return values of true/false not 1/0
+  netfilter: Use bool function return values of true/false not 1/0
+  security: Use bool function return values of true/false not 1/0
+  sound: wm5100-tables: Use bool function return values of true/false not 1/0
 
-> Mark the module init / exit functions with __init / __exit accodingly.
-> This allows making the intel_powerclamp_ids[] array __initconst, too,
-> as it only gets referenced from powerclamp_probe(). This is safe as
-> file2alias doesn't care about the section, but the symbol name for the
-> MODULE_DEVICE_TABLE alias.
-> 
-looks good to me.
-
-Thanks,
-
-Jacob
-> Cc: Arjan van de Ven <arjan@linux.intel.com>
-> Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> Signed-off-by: Mathias Krause <minipli@googlemail.com>
-> ---
->  drivers/thermal/intel_powerclamp.c |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/thermal/intel_powerclamp.c
-> b/drivers/thermal/intel_powerclamp.c index 12623bc02f46..b0f7ced5c3ef
-> 100644 --- a/drivers/thermal/intel_powerclamp.c
-> +++ b/drivers/thermal/intel_powerclamp.c
-> @@ -667,7 +667,7 @@ static struct thermal_cooling_device_ops
-> powerclamp_cooling_ops = { };
->  
->  /* runs on Nehalem and later */
-> -static const struct x86_cpu_id intel_powerclamp_ids[] = {
-> +static const struct x86_cpu_id intel_powerclamp_ids[] __initconst = {
->  	{ X86_VENDOR_INTEL, 6, 0x1a},
->  	{ X86_VENDOR_INTEL, 6, 0x1c},
->  	{ X86_VENDOR_INTEL, 6, 0x1e},
-> @@ -694,7 +694,7 @@ static const struct x86_cpu_id
-> intel_powerclamp_ids[] = { };
->  MODULE_DEVICE_TABLE(x86cpu, intel_powerclamp_ids);
->  
-> -static int powerclamp_probe(void)
-> +static int __init powerclamp_probe(void)
->  {
->  	if (!x86_match_cpu(intel_powerclamp_ids)) {
->  		pr_err("Intel powerclamp does not run on family %d
-> model %d\n", @@ -760,7 +760,7 @@ file_error:
->  	debugfs_remove_recursive(debug_dir);
->  }
->  
-> -static int powerclamp_init(void)
-> +static int __init powerclamp_init(void)
->  {
->  	int retval;
->  	int bitmap_size;
-> @@ -809,7 +809,7 @@ exit_free:
->  }
->  module_init(powerclamp_init);
->  
-> -static void powerclamp_exit(void)
-> +static void __exit powerclamp_exit(void)
->  {
->  	unregister_hotcpu_notifier(&powerclamp_cpu_notifier);
->  	end_power_clamp();
-> -- 
-> 1.7.10.4
-> 
-
-
-
+ arch/arm/include/asm/dma-mapping.h           |  8 ++--
+ arch/arm/include/asm/kvm_emulate.h           |  2 +-
+ arch/arm/mach-omap2/powerdomain.c            | 14 +++---
+ arch/arm64/include/asm/dma-mapping.h         |  2 +-
+ arch/hexagon/include/asm/dma-mapping.h       |  2 +-
+ arch/ia64/include/asm/dma-mapping.h          |  2 +-
+ arch/mips/include/asm/dma-mapping.h          |  2 +-
+ arch/powerpc/include/asm/dcr-native.h        |  2 +-
+ arch/powerpc/include/asm/dma-mapping.h       |  4 +-
+ arch/powerpc/include/asm/kvm_book3s_64.h     |  4 +-
+ arch/powerpc/sysdev/dcr.c                    |  2 +-
+ arch/s390/include/asm/dma-mapping.h          |  2 +-
+ arch/sparc/mm/init_64.c                      |  8 ++--
+ arch/tile/include/asm/dma-mapping.h          |  2 +-
+ arch/unicore32/include/asm/dma-mapping.h     |  2 +-
+ arch/x86/include/asm/archrandom.h            |  2 +-
+ arch/x86/include/asm/dma-mapping.h           |  2 +-
+ arch/x86/include/asm/kvm_para.h              |  2 +-
+ arch/x86/kvm/cpuid.h                         |  2 +-
+ arch/x86/kvm/vmx.c                           | 72 ++++++++++++++--------------
+ drivers/char/virtio_console.c                |  2 +-
+ drivers/scsi/csiostor/csio_scsi.c            |  4 +-
+ fs/dcache.c                                  | 12 ++---
+ fs/nfsd/nfs4state.c                          |  2 +-
+ include/linux/blkdev.h                       |  2 +-
+ include/linux/ide.h                          |  2 +-
+ include/linux/kgdb.h                         |  2 +-
+ include/linux/mfd/db8500-prcmu.h             |  2 +-
+ include/linux/mm.h                           |  2 +-
+ include/linux/power_supply.h                 |  8 ++--
+ include/linux/ssb/ssb_driver_extif.h         |  2 +-
+ include/linux/ssb/ssb_driver_gige.h          | 16 +++----
+ include/sound/soc.h                          |  4 +-
+ kernel/rcu/tree_plugin.h                     |  4 +-
+ kernel/sched/auto_group.h                    |  2 +-
+ kernel/sched/completion.c                    | 16 ++++---
+ kernel/trace/ftrace.c                        | 10 ++--
+ mm/slub.c                                    | 12 ++---
+ net/bridge/br_private.h                      |  2 +-
+ net/ipv4/netfilter/ipt_ah.c                  |  2 +-
+ net/netfilter/ipset/ip_set_hash_ip.c         |  8 ++--
+ net/netfilter/ipset/ip_set_hash_ipmark.c     |  8 ++--
+ net/netfilter/ipset/ip_set_hash_ipport.c     |  8 ++--
+ net/netfilter/ipset/ip_set_hash_ipportip.c   |  8 ++--
+ net/netfilter/ipset/ip_set_hash_ipportnet.c  |  8 ++--
+ net/netfilter/ipset/ip_set_hash_net.c        |  8 ++--
+ net/netfilter/ipset/ip_set_hash_netiface.c   |  8 ++--
+ net/netfilter/ipset/ip_set_hash_netport.c    |  8 ++--
+ net/netfilter/ipset/ip_set_hash_netportnet.c |  8 ++--
+ net/netfilter/xt_connlimit.c                 |  2 +-
+ net/netfilter/xt_hashlimit.c                 |  2 +-
+ net/netfilter/xt_ipcomp.c                    |  2 +-
+ security/apparmor/file.c                     |  8 ++--
+ security/apparmor/policy.c                   | 10 ++--
+ sound/soc/codecs/wm5100-tables.c             | 12 ++---
+ 55 files changed, 178 insertions(+), 176 deletions(-)
 
 -- 
-Jacob Pan
+2.1.2
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
