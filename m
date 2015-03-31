@@ -1,146 +1,48 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH V3 2/3] Thermal: handle thermal zone device properly during system sleep
-Date: Tue, 31 Mar 2015 10:26:54 +0800
-Message-ID: <1427768815-20948-3-git-send-email-rui.zhang@intel.com>
-References: <1427768815-20948-1-git-send-email-rui.zhang@intel.com>
+From: Mathias Krause <minipli@googlemail.com>
+Subject: Re: [PATCH] powercap / RAPL: mark rapl_ids array as __initconst
+Date: Tue, 31 Mar 2015 07:17:38 +0200
+Message-ID: <CA+rthh_CCOQjSB_Y8C=bzSoiR32w+GSUbD0OuwYqcma=vCo7yg@mail.gmail.com>
+References: <1427318152-21800-1-git-send-email-minipli@googlemail.com>
+	<6448986.08Uv5dyIEs@vostro.rjw.lan>
+	<20150330154635.3fb82c23@ultegra>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:47360 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753967AbbCaC2g (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 30 Mar 2015 22:28:36 -0400
-In-Reply-To: <1427768815-20948-1-git-send-email-rui.zhang@intel.com>
+Received: from mail-wi0-f175.google.com ([209.85.212.175]:38653 "EHLO
+	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750818AbbCaFRk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2015 01:17:40 -0400
+Received: by wibgn9 with SMTP id gn9so11288622wib.1
+        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2015 22:17:39 -0700 (PDT)
+In-Reply-To: <20150330154635.3fb82c23@ultegra>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Current thermal code does not handle system sleep well because
-1. the cooling device cooling state may be changed during suspend
-2. the previous temperature reading becomes invalid after resumed because
-   it is got before system sleep
-3. updating thermal zone device during suspending/resuming
-   is wrong because some devices may have already been suspended
-   or may have not been resumed.
+On 31 March 2015 at 00:46, Jacob Pan <jacob.jun.pan@linux.intel.com> wrote:
+> On Mon, 30 Mar 2015 21:17:02 +0200
+> Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+>> On Wednesday, March 25, 2015 10:15:52 PM Mathias Krause wrote:
+>> > The RAPL ids are only tested in rapl_init() which is itself an
+>> > __init function. For the MODULE_DEVICE_TABLE() file2alias doesn't
+>> > care about the section, just about the symbol name. Therefore it's
+>> > safe to mark the rapl_ids[] array as __initconst so its memory can
+>> > be released after initialization is done.
+>> >
+>> > Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
+>> > Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+>> > Signed-off-by: Mathias Krause <minipli@googlemail.com>
+>>
+>> Jacob, any comments?
+>>
+> looks good to me, though i did ack last week perhaps something wrong
+> with my email.
 
-Thus, the proper way to do this is to cancel all thermal zone
-device update requirements during suspend/resume, and after all
-the devices have been resumed, reset and update every registered
-thermal zone devices.
+You ACKed "[PATCH] thermal/intel_powerclamp: add __init / __exit
+annotations", twice -- not that one ;)
 
-This also fixes a regression introduced by
-commit 19593a1fb1f6718406afca5b867dab184289d406
-Author: Aaron Lu <aaron.lu@intel.com>
-Date:   Tue Nov 19 16:59:20 2013 +0800
 
-    ACPI / fan: convert to platform driver
-
-    Convert ACPI fan driver to a platform driver for the purpose of phasing
-    out ACPI bus.
-
-    Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-    Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-
-Because, with the commit applied, all the fan devices are attached
-to the acpi_general_pm_domain, and they are turned on by the pm_domain
-automatically after resume, without the awareness of thermal core.
-
-CC: <stable@vger.kernel.org> #3.18+
-Reference: https://bugzilla.kernel.org/show_bug.cgi?id=78201
-Reference: https://bugzilla.kernel.org/show_bug.cgi?id=91411
-Tested-by: Manuel Krause <manuelkrause@netscape.net>
-Tested-by: szegad <szegadlo@poczta.onet.pl>
-Tested-by: prash <prash.n.rao@gmail.com>
-Tested-by: amish <ammdispose-arch@yahoo.com>
-Tested-by: Matthias <morpheusxyz123@yahoo.de>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/thermal/thermal_core.c | 39 +++++++++++++++++++++++++++++++++++++++
- 1 file changed, 39 insertions(+)
-
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 9d6f71b..875a9bb 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -37,6 +37,7 @@
- #include <linux/of.h>
- #include <net/netlink.h>
- #include <net/genetlink.h>
-+#include <linux/suspend.h>
- 
- #define CREATE_TRACE_POINTS
- #include <trace/events/thermal.h>
-@@ -59,6 +60,8 @@ static LIST_HEAD(thermal_governor_list);
- static DEFINE_MUTEX(thermal_list_lock);
- static DEFINE_MUTEX(thermal_governor_lock);
- 
-+static atomic_t in_suspend;
-+
- static struct thermal_governor *def_governor;
- 
- static struct thermal_governor *__find_governor(const char *name)
-@@ -491,6 +494,9 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
- {
- 	int count;
- 
-+	if (atomic_read(&in_suspend))
-+		return;
-+
- 	if (!tz->ops->get_temp)
- 		return;
- 
-@@ -1823,6 +1829,36 @@ static void thermal_unregister_governors(void)
- 	thermal_gov_user_space_unregister();
- }
- 
-+static int thermal_pm_notify(struct notifier_block *nb,
-+				unsigned long mode, void *_unused)
-+{
-+	struct thermal_zone_device *tz;
-+
-+	switch (mode) {
-+	case PM_HIBERNATION_PREPARE:
-+	case PM_RESTORE_PREPARE:
-+	case PM_SUSPEND_PREPARE:
-+		atomic_set(&in_suspend, 1);
-+		break;
-+	case PM_POST_HIBERNATION:
-+	case PM_POST_RESTORE:
-+	case PM_POST_SUSPEND:
-+		atomic_set(&in_suspend, 0);
-+		list_for_each_entry(tz, &thermal_tz_list, node) {
-+			thermal_zone_device_reset(tz);
-+			thermal_zone_device_update(tz);
-+		}
-+		break;
-+	default:
-+		break;
-+	}
-+	return 0;
-+}
-+
-+static struct notifier_block thermal_pm_nb = {
-+	.notifier_call = thermal_pm_notify,
-+};
-+
- static int __init thermal_init(void)
- {
- 	int result;
-@@ -1843,6 +1879,8 @@ static int __init thermal_init(void)
- 	if (result)
- 		goto exit_netlink;
- 
-+	register_pm_notifier(&thermal_pm_nb);
-+
- 	return 0;
- 
- exit_netlink:
-@@ -1862,6 +1900,7 @@ static int __init thermal_init(void)
- 
- static void __exit thermal_exit(void)
- {
-+	unregister_pm_notifier(&thermal_pm_nb);
- 	of_thermal_destroy_zones();
- 	genetlink_exit();
- 	class_unregister(&thermal_class);
--- 
-1.9.1
-
+Regards,
+Mathias
