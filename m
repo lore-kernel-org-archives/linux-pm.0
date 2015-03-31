@@ -1,48 +1,72 @@
-From: Mathias Krause <minipli@googlemail.com>
-Subject: Re: [PATCH] powercap / RAPL: mark rapl_ids array as __initconst
-Date: Tue, 31 Mar 2015 07:17:38 +0200
-Message-ID: <CA+rthh_CCOQjSB_Y8C=bzSoiR32w+GSUbD0OuwYqcma=vCo7yg@mail.gmail.com>
-References: <1427318152-21800-1-git-send-email-minipli@googlemail.com>
-	<6448986.08Uv5dyIEs@vostro.rjw.lan>
-	<20150330154635.3fb82c23@ultegra>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PULL REQUEST] PM / devfreq, for Linux 4.1
+Date: Tue, 31 Mar 2015 06:51:11 +0000 (GMT)
+Message-ID: <1953161880.140291427784671181.JavaMail.weblogic@epmlwas02b>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f175.google.com ([209.85.212.175]:38653 "EHLO
-	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750818AbbCaFRk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2015 01:17:40 -0400
-Received: by wibgn9 with SMTP id gn9so11288622wib.1
-        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2015 22:17:39 -0700 (PDT)
-In-Reply-To: <20150330154635.3fb82c23@ultegra>
+Received: from mailout1.samsung.com ([203.254.224.24]:36463 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbbCaGwj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2015 02:52:39 -0400
+Received: from epcpsbgr1.samsung.com
+ (u141.gpu120.samsung.co.kr [203.254.230.141])
+ by mailout1.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
+ 64bit (built May  5 2014))
+ with ESMTP id <0NM200HOWDRQAD90@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 31 Mar 2015 15:52:38 +0900 (KST)
+MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: "RafaelJ.Wysocki<rafael.j.wysocki"@intel.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "TomeuVizoso<tomeu.vizoso"@collabora.com
 
-On 31 March 2015 at 00:46, Jacob Pan <jacob.jun.pan@linux.intel.com> wrote:
-> On Mon, 30 Mar 2015 21:17:02 +0200
-> Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
->> On Wednesday, March 25, 2015 10:15:52 PM Mathias Krause wrote:
->> > The RAPL ids are only tested in rapl_init() which is itself an
->> > __init function. For the MODULE_DEVICE_TABLE() file2alias doesn't
->> > care about the section, just about the symbol name. Therefore it's
->> > safe to mark the rapl_ids[] array as __initconst so its memory can
->> > be released after initialization is done.
->> >
->> > Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
->> > Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
->> > Signed-off-by: Mathias Krause <minipli@googlemail.com>
->>
->> Jacob, any comments?
->>
-> looks good to me, though i did ack last week perhaps something wrong
-> with my email.
+RGVhciBSYWZhZWwsDQoNCkhlcmUgZ29lcyBhIHB1bGwgcmVxdWVzdCBmcm9tIGRldmZyZXEgaW5j
+bHVkaW5nIGRldmljZSBkcml2ZXIgdXBkYXRlcyBhbmQgc3R5bGUgZml4ZXMuDQoNCg0KQ2hlZXJz
+LA0KTXl1bmdKb28NCg0KLS0tLS1CRUdJTiBQR1AgU0lHTkVEIE1FU1NBR0UtLS0tLQ0KSGFzaDog
+U0hBMQ0KDQpUaGUgZm9sbG93aW5nIGNoYW5nZXMgc2luY2UgY29tbWl0IGU0MjM5MWNkMDQ4ODA5
+ZDkwMzI5MWQwN2Y4NmVkMzkzNGNlMTM4ZTk6DQoNCiAgTGludXggNC4wLXJjNiAoMjAxNS0wMy0y
+OSAxNToyNjozMSAtMDcwMCkNCg0KYXJlIGF2YWlsYWJsZSBpbiB0aGUgZ2l0IHJlcG9zaXRvcnkg
+YXQ6DQoNCiAgaHR0cHM6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQv
+bXp4L2RldmZyZXEuZ2l0IHRhZ3MvcHVsbF9yZXFfMjAxNTAzMzENCg0KZm9yIHlvdSB0byBmZXRj
+aCBjaGFuZ2VzIHVwIHRvIDM1OGI2MTVmNTgxMmUyOGRkNzYzZDJhYTEyOTc1NjM5MjdhMmY4OWQ6
+DQoNCiAgUE0gLyBkZXZmcmVxOiB0ZWdyYTogUmVnaXN0ZXIgZ292ZXJub3Igb24gbW9kdWxlIGlu
+aXQgKDIwMTUtMDMtMzEgMTM6MTc6MTUgKzA5MDApDQoNCi0gLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KUHVsbCBSZXF1ZXN0
+IGZvciBSYWZhZWwsIFRhcmdldGluZyBMaW51eCA0LjENCg0KVGhpcyBzZXQgaW5jbHVkZXMgdGVn
+cmEgZHJpdmVyIHVwZGF0ZSBhbmQgc3R5bGUgZml4ZXMuDQoNCi0gLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KQ2hhbndvbyBD
+aG9pICgxKToNCiAgICAgIFBNIC8gZGV2ZnJlcTogZXZlbnQ6IEFkZCBjb25zdCBrZXl3b3JkIGZv
+ciBkZXZmcmVxX2V2ZW50X29wcyBzdHJ1Y3R1cmUNCg0KTXl1bmdKb28gSGFtICgxKToNCiAgICAg
+IFBNIC8gZGV2ZnJlcTogY29ycmVjdCBtaXNsZWFkaW5nIGNvbW1lbnQNCg0KVG9tZXUgVml6b3Nv
+ICg2KToNCiAgICAgIFBNIC8gZGV2ZnJlcTogdGVncmE6IFVwZGF0ZSB0byB2NSBvZiB0aGUgc3Vi
+bWl0dGVkIHBhdGNoZXMNCiAgICAgIFBNIC8gZGV2ZnJlcTogdGVncmE6IFVzZSBjbG9jayByYXRl
+IGNvbnN0cmFpbnRzDQogICAgICBQTSAvIGRldmZyZXE6IHRlZ3JhOiByZW1vdmUgb3BlcmF0aW5n
+LXBvaW50cw0KICAgICAgUE0gLyBkZXZmcmVxOiB0ZWdyYTogU2V0IGRydmRhdGEgYmVmb3JlIGVu
+YWJsaW5nIHRoZSBpcnENCiAgICAgIFBNIC8gZGV2ZnJlcTogdGVncmE6IEVuYWJsZSBpbnRlcnJ1
+cHRzIGFmdGVyIHJlc3VtaW5nIHRoZSBkZXZmcmVxIG1vbml0b3INCiAgICAgIFBNIC8gZGV2ZnJl
+cTogdGVncmE6IFJlZ2lzdGVyIGdvdmVybm9yIG9uIG1vZHVsZSBpbml0DQoNCiBkcml2ZXJzL2Rl
+dmZyZXEvZGV2ZnJlcS5jICAgICAgICAgICB8ICAgMSAtDQogZHJpdmVycy9kZXZmcmVxL2V2ZW50
+L2V4eW5vcy1wcG11LmMgfCAgIDIgKy0NCiBkcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJlcS5j
+ICAgICB8IDUwOSArKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0tLS0tLS0NCiBpbmNsdWRl
+L2xpbnV4L2RldmZyZXEtZXZlbnQuaCAgICAgICB8ICAgMiArLQ0KIDQgZmlsZXMgY2hhbmdlZCwg
+MjkwIGluc2VydGlvbnMoKyksIDIyNCBkZWxldGlvbnMoLSkNCi0tLS0tQkVHSU4gUEdQIFNJR05B
+VFVSRS0tLS0tDQpWZXJzaW9uOiBHbnVQRyB2MQ0KDQppUUljQkFFQkFnQUdCUUpWR2lLRkFBb0pF
+Qk9odXJ2V0JvQ0s3UWdQL1JOdnIwZncrRlZsb3VQM2NkbjUvUDQzDQpUZitIRGVXRkMyWCtYSVll
+WWlVYUdsUmdUQVZ4YTBLT29iUk1sbE9jbnMyeDQyUzRLUDQxczNSdTVBa1R5VDZUDQp4d0YyNzRn
+dVYvRXlqTU5JTEN3bTBNQlkrRFpGLzlmdHJORXFKZzc3MWs2ZEtxanhHS0tsUjFscFQwTFVWcXZs
+DQo0aFRxSkhURms0emRQMEJ0bnZRL1grWXMrV2JkSzk2bzk5ZSsyN2N5OVViWjEyZTNxS3pFbUhN
+SFhkdGJHeEZjDQpWSUIvcXRRWi9SZUplZ084NTEvYVNkaXhUdGJUclkyRHhlYk1yRG1QbksrUWRv
+YXJzczByWXpHVWw0dGMydThNDQowdGtkR1FzVFBwMTg1eE04eGhzTTRhamMxOVFkQnFreHVFU0Vx
+VDNadFU4N3RCSm9Ma3kvMk5vbGZMT3lJWHNkDQpiRUludUltWndVK2FvTmc4ZFhLeitqQ0g3WE94
+VGNnSEplbmFVUGtvcVNqR01FOEl1N0QrZlJLZXhjZEdBYVNDDQpPOE5ydk1nOTNNeldHNmtFd0oz
+WlZGdUk4SG9zeWNsdXhaa2V0WEdQR0ZJZVE4YlRtejM1cG1XQ3pYb25OQlpaDQpjY3MvUmh1VHJV
+VWhIS3Q0Vm51WFJFMHZ2NXV5anRuZ0oxUUZwaFFxdFNLc3AxejVsK3VNTVFNcmZtMllIdTBZDQp3
+ZGk3ZDlzaGw5YklvZndicjdUbFZRTmwvYkNJdFpjNnJ3bE94dDNuS2Qzdk5wQjZscXhSdzcreG10
+ZDl1MDAwDQppY3RQaHlaRUNrcHBFWGdLRkRCMS9Md29LQU5xWkFzVXl4TnJlMUp0OHNoZmR0T2Nv
+TkZJQk9xSmI2b0ZMb1VXDQphSVhoeFVmZDVRVTNVeEUzbGVuWQ0KPVhMR0kNCi0tLS0tRU5EIFBH
+UCBTSUdOQVRVUkUtLS0tLQ0K
 
-You ACKed "[PATCH] thermal/intel_powerclamp: add __init / __exit
-annotations", twice -- not that one ;)
 
-
-Regards,
-Mathias
