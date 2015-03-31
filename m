@@ -1,64 +1,65 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 6/6] USB / PM: Allow USB devices to remain runtime-suspended
- when sleeping
-Date: Tue, 31 Mar 2015 13:09:32 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1503311259340.1453-100000@iolanthe.rowland.org>
-References: <1427818501-10201-7-git-send-email-tomeu.vizoso@collabora.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH 5/6] Input: evdev - Enable runtime PM of the evdev input
+ handler
+Date: Tue, 31 Mar 2015 13:31:38 -0700
+Message-ID: <20150331203138.GB29015@dtor-ws>
+References: <1427818501-10201-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1427818501-10201-6-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1427818501-10201-7-git-send-email-tomeu.vizoso@collabora.com>
+Content-Disposition: inline
+In-Reply-To: <1427818501-10201-6-git-send-email-tomeu.vizoso@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: Linux-pm mailing list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Scot Doyle <lkml14@scotdoyle.com>, Dan Williams <dan.j.williams@intel.com>, Julius Werner <jwerner@chromium.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Pratyush Anand <pratyush.anand@st.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, USB list <linux-usb@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 31 Mar 2015, Tomeu Vizoso wrote:
+On Tue, Mar 31, 2015 at 06:14:49PM +0200, Tomeu Vizoso wrote:
+> So ancestor devices can remain runtime-suspended when the system goes
+> into a sleep state, they and all of their descendant devices need to
+> have runtime PM enabled.
 
-> Have dev_pm_ops.prepare return 1 for USB devices, interfaces, endpoints
-> and ports so that USB devices can remain runtime-suspended when the
-> system goes to a sleep state.
-> 
-> Also enable runtime PM for endpoints, which is another requirement for
-> the above to work.
+I am confused. Input devices are not runtime-PM-enabled, so what
+enabling this on evdev handler buys us? And what about joydev and
+mousedev? Other handlers that might be attached?
+
+The stubbing of prepare also feels wrong: we do want to suspend/resume
+input devices since we want to shut off and restore their leds even if
+device (keyboard) happens to be sleeping.
+
+Thanks.
+
 > 
 > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-
-...
-
-> diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
-> index b1fb9ae..1498faa 100644
-> --- a/drivers/usb/core/usb.c
-> +++ b/drivers/usb/core/usb.c
-> @@ -300,7 +300,7 @@ static int usb_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
+> ---
+>  drivers/input/evdev.c | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/input/evdev.c b/drivers/input/evdev.c
+> index a18f41b..3d60c20 100644
+> --- a/drivers/input/evdev.c
+> +++ b/drivers/input/evdev.c
+> @@ -26,6 +26,7 @@
+>  #include <linux/major.h>
+>  #include <linux/device.h>
+>  #include <linux/cdev.h>
+> +#include <linux/pm_runtime.h>
+>  #include "input-compat.h"
 >  
->  static int usb_dev_prepare(struct device *dev)
->  {
-> -	return 0;		/* Implement eventually? */
-> +	return 1;		/* Implement eventually? */
->  }
+>  enum evdev_clock_type {
+> @@ -1201,6 +1202,8 @@ static int evdev_connect(struct input_handler *handler, struct input_dev *dev,
+>  	if (error)
+>  		goto err_cleanup_evdev;
+>  
+> +	pm_runtime_enable(&evdev->dev);
+> +
+>  	return 0;
+>  
+>   err_cleanup_evdev:
+> -- 
+> 2.3.4
+> 
 
-The rest of the patch is okay, but this part is wrong.  The documented
-requirement is that the prepare callback should return 1 if the device
-is already in the appropriate state.  This means it has to have the
-right wakeup setting.
-
-In other words, if the device is currently in runtime suspend with 
-remote wakeup enabled, but device_may_wakeup() returns 0 (so that the 
-device should be disabled for wakeup when the system goes into 
-suspend), then the prepare callback has to return 0.
-
-Therefore what you need to do here is something like this:
-
-	struct usb_device	*udev = to_usb_device(dev);
-
-	/* Return 0 if the current wakeup setting is wrong, otherwise 1 */
-	if (udev->do_remote_wakeup && !device_may_wakeup(dev))
-		return 0;
-	return 1;
-
-Aside from this issue, I like the patch set.  Do you think you can do 
-something similar for drivers/scsi/scsi_pm.c?  I'm not aware of any 
-wakeup-capable SCSI devices -- not disk or CD/DVD drives, anyway.
-
-Alan Stern
+-- 
+Dmitry
