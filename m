@@ -1,92 +1,142 @@
 From: Beomho Seo <beomho.seo@samsung.com>
-Subject: [PATCH v8 0/2] Add new MFD driver for MAX77843
-Date: Tue, 31 Mar 2015 22:23:33 +0900
-Message-ID: <1427808215-19178-1-git-send-email-beomho.seo@samsung.com>
+Subject: [PATCH v8 2/2] Documentation: Add device tree bindings document for
+ max77843
+Date: Tue, 31 Mar 2015 22:23:35 +0900
+Message-ID: <1427808215-19178-3-git-send-email-beomho.seo@samsung.com>
+References: <1427808215-19178-1-git-send-email-beomho.seo@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1427808215-19178-1-git-send-email-beomho.seo@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: lee.jones@linaro.org, sre@kernel.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, cw00.choi@samsung.com, sangbae90.lee@samsung.com, inki.dae@samsung.com, Beomho Seo <beomho.seo@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, cw00.choi@samsung.com, sangbae90.lee@samsung.com, inki.dae@samsung.com, Jaewon Kim <jaewon02.kim@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Beomho Seo <beomho.seo@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch series adds MAX77843(Multi Function Device) driver.
-The MAX77843 includes MUIC(Micro USB Interface Controller), Li+ Charger
-with Fuel Gauge, 2 safeout LDOs for USB device and haptic controller using PWM.
-It is interfaced to host controller using I2C.
+From: Jaewon Kim <jaewon02.kim@samsung.com>
 
-Changes in v8:
-Charger:
- - Add "Reviewed-by: Sebastian Reichel" He reviewed this patch on Sun 8 Mar 2015.
+Add document describing device tree bindings for max77843 MFD.
+Drivers: MFD core, regulator, extcon, charger and fuelgauge.
 
-Fuelgauge:
- - Remove patch.
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: Kumar Gala <galak@codeaurora.org>
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Doc:
- - Remove about fuelgague.
-
-Changes in v7:
-MFD Core
- - Fix indentation
- - Remove file name, MODULE information
-POWER
- - Fix typos
-
-Changes in v6:
-HAPTIC
- - fixed a situation where holding a Mutex return.
- 
-Changes in v5: 
-MFD Core
- - Use bracket in complex define.
- - Delete unnecessary letter '++'     
-Charger
- - fix Kconfig merge conflict with Kernel version4.0
-     
-Changes in v4:
-MFD Core
- - Fix indentation
- - Add haptic register define in header
-HAPTIC
- - Add haptic driver
-
-Changes in v3:
-MFD Core
- - Fix wrong description and indentation in header.
- - Remove unnecessary variable.
-Regulator
- - Use ARRAY_SIZE() instead of define.
-   
-Changes in v2:
-MFD Core
- - Fix charger regmap handle and typo.
-MUIC
- - Cleanup enum list.
- - Set path before send excon event.
- - Fix variable names and typos for readability.
-Charger
- - Remove unnecessary header.
- - Chnage error message more readable.
- - Remove unnecessary lines.
-Fuelgauge
- - Fix regmap_config and use regmap_read.
- - Add i2c_unregister_device function on *_remove function.
- - Fix typo in Kconfig.
-Doc
- - Remove unnecessary lines.
- - Add example of charger regulator.
-
-Beomho Seo (1):
-  power: max77843_charger: Add Max77843 charger device driver
-
-Jaewon Kim (1):
-  Documentation: Add device tree bindings document for max77843
-
- Documentation/devicetree/bindings/mfd/max77843.txt |  100 ++++
- drivers/power/Kconfig                              |    7 +
- drivers/power/Makefile                             |    1 +
- drivers/power/max77843_charger.c                   |  508 ++++++++++++++++++++
- 4 files changed, 616 insertions(+)
+Signed-off-by: Jaewon Kim <jaewon02.kim@samsung.com>
+Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+---
+ Documentation/devicetree/bindings/mfd/max77843.txt |  100 ++++++++++++++++++++
+ 1 file changed, 100 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/mfd/max77843.txt
- create mode 100644 drivers/power/max77843_charger.c
 
+diff --git a/Documentation/devicetree/bindings/mfd/max77843.txt b/Documentation/devicetree/bindings/mfd/max77843.txt
+new file mode 100644
+index 0000000..4111f84
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/max77843.txt
+@@ -0,0 +1,100 @@
++Maxim MAX77843 multi-function device
++
++MAX77843 is a Multi-Function Device with the following submodules:
++- PMIC	  : 2 SAFEOUT LDOs for USB device
++- CHARGER : Li+ battery charger with Fuel Gauge
++- MUIC	  : Micro USB Interface Controller
++- HAPTIC  : Motor Controller for tactile feedback
++
++It is interfaced to host controller using I2C.
++
++Required properties:
++- compatible : Must be "maxim,max77843".
++- reg : I2C slave address of PMIC block.
++- interrupts : I2C line for main SoCs.
++- interrupt-parent : The parent of interrupt controller.
++
++Optional properties:
++- regulators : The regulators of max77843 have to be instantiated under subnode
++	named "regulators" using the following format.
++
++	[*]refer : Documentation/devicetree/bindings/regulator/regulator.txt
++
++	regulators {
++		SAFEOUT {
++			regulator-name = "SAFEOUT";
++		};
++	}
++
++	List of valid regulator names:
++	- SAFEOUT1, SAFEOUT2, CHARGER.
++
++- max77843-muic : This properties used by extcon consumers.
++	Required properties:
++		- compatible : Must be "maxim,max77842-muic".
++
++- max77843-charger : There battery charger of MAX77843 have to be instantiated
++	under sub-node named "max77843-charger" using the following format.
++	Required properties:
++		- compatible : Must be "maxim,max77842-charger".
++		- maxim,fast-charge-uamp : Fast charge current levels are
++			100 mA to 3150 mA programmed by I2C per 100 mA.
++		- maxim,top-off-uamp : Top off current threshold levels are
++			125 mA to 650 mA programmed by I2C per 75 mA.
++		- maxim,input-uamp-limit : Input current limit levels are
++			100 mA to 3533 mA programmed by I2C per 33 mA.
++
++- max77843-haptic : The MAX77843 haptic device provides the tactile feedback
++	to the user by using PWM(Pulse Width Modulation) signal.
++	Required properties:
++		- compatible : Must be "maxim,max77843-hpatic".
++		- haptic-supply : Power supply for the haptic motor.
++			[*] refer Documentation/devicetree/
++					bindings/regulator/regulator.txt
++		- pwms : phandle for the PWM(Pulse Width Modulation) device.
++			PWM properties should be named "pwms".
++			[*] refer Documentation/devicetree/bindings/pwm/pwm.txt
++
++Example:
++	max77843@66 {
++		compatible = "samsung,max77843";
++		reg = <0x66>;
++		interrupt-parent = <&gpa1>;
++		interrupts = <5 2>;
++
++		regulators {
++			SAFEOUT1 {
++				regulator-name = "SAFEOUT1";
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <4950000>;
++			};
++			SAFEOUT2 {
++				regulator-name = "SAFEOUT2";
++				regulator-min-microvolt = <3300000>;
++				regulator-max-microvolt = <4950000>;
++			};
++			CHARGER {
++				regulator-name = "CHARGER";
++				regulator-min-microamp = <100000>;
++				regulator-max-microamp = <3150000>;
++			};
++		};
++
++		haptic {
++			compatible = "maxim,max77843-haptic";
++			haptic-supply = <&haptic_supply>;
++			pwms = <&pwm 0 40000 0>;
++			pwm-names = "haptic";
++		};
++
++		max77843-muic {
++			compatible = "maxim,max77843-muic";
++		};
++
++		max77843-charger {
++			compatible = "maxim,max77843-charger";
++			maxim,fast-charge-uamp = <450000>;
++			maxim,top-off-uamp = <125000>;
++			maxim,input-uamp-limit = <500000>;
++		};
++	};
 -- 
 1.7.9.5
