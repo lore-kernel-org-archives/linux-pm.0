@@ -1,72 +1,79 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PULL REQUEST] PM / devfreq, for Linux 4.1
-Date: Tue, 31 Mar 2015 06:54:02 +0000 (GMT)
-Message-ID: <710482662.140561427784841523.JavaMail.weblogic@epmlwas02b>
-Reply-To: myungjoo.ham@samsung.com
+From: Xinwei Kong <kong.kongxinwei@hisilicon.com>
+Subject: [PATCH v2 1/2] dt-bindings: Document the hi6220 thermal sensor bindings
+Date: Tue, 31 Mar 2015 14:59:21 +0800
+Message-ID: <1427785162-15172-2-git-send-email-kong.kongxinwei@hisilicon.com>
+References: <1427785162-15172-1-git-send-email-kong.kongxinwei@hisilicon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:22634 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbbCaGyH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2015 02:54:07 -0400
-Received: from epcpsbgr4.samsung.com
- (u144.gpu120.samsung.co.kr [203.254.230.144])
- by mailout2.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
- 64bit (built May  5 2014))
- with ESMTP id <0NM200EVMDU22KD0@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 31 Mar 2015 15:54:02 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1427785162-15172-1-git-send-email-kong.kongxinwei@hisilicon.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rui.zhuang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxarm@huawei.com, devicetree@vger.kernel.org, liguozhu@hisilicon.com, xuwei5@hisilicon.com, jorge.ramirez-ortiz@linaro.org, xweikong@hotmail.com, mark.rutland@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: rafael.j.wysocki@intel.com
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, tomeu.vizoso@collabora.com
 
-RGVhciBSYWZhZWwsDQoNCkhlcmUgZ29lcyBhIHB1bGwgcmVxdWVzdCBmcm9tIGRldmZyZXEgaW5j
-bHVkaW5nIGRldmljZSBkcml2ZXIgdXBkYXRlcyBhbmQgc3R5bGUgZml4ZXMuDQoNCg0KQ2hlZXJz
-LA0KTXl1bmdKb28NCg0KLS0tLS1CRUdJTiBQR1AgU0lHTkVEIE1FU1NBR0UtLS0tLQ0KSGFzaDog
-U0hBMQ0KDQpUaGUgZm9sbG93aW5nIGNoYW5nZXMgc2luY2UgY29tbWl0IGU0MjM5MWNkMDQ4ODA5
-ZDkwMzI5MWQwN2Y4NmVkMzkzNGNlMTM4ZTk6DQoNCiAgTGludXggNC4wLXJjNiAoMjAxNS0wMy0y
-OSAxNToyNjozMSAtMDcwMCkNCg0KYXJlIGF2YWlsYWJsZSBpbiB0aGUgZ2l0IHJlcG9zaXRvcnkg
-YXQ6DQoNCiAgaHR0cHM6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQv
-bXp4L2RldmZyZXEuZ2l0IHRhZ3MvcHVsbF9yZXFfMjAxNTAzMzENCg0KZm9yIHlvdSB0byBmZXRj
-aCBjaGFuZ2VzIHVwIHRvIDM1OGI2MTVmNTgxMmUyOGRkNzYzZDJhYTEyOTc1NjM5MjdhMmY4OWQ6
-DQoNCiAgUE0gLyBkZXZmcmVxOiB0ZWdyYTogUmVnaXN0ZXIgZ292ZXJub3Igb24gbW9kdWxlIGlu
-aXQgKDIwMTUtMDMtMzEgMTM6MTc6MTUgKzA5MDApDQoNCi0gLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KUHVsbCBSZXF1ZXN0
-IGZvciBSYWZhZWwsIFRhcmdldGluZyBMaW51eCA0LjENCg0KVGhpcyBzZXQgaW5jbHVkZXMgdGVn
-cmEgZHJpdmVyIHVwZGF0ZSBhbmQgc3R5bGUgZml4ZXMuDQoNCi0gLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KQ2hhbndvbyBD
-aG9pICgxKToNCiAgICAgIFBNIC8gZGV2ZnJlcTogZXZlbnQ6IEFkZCBjb25zdCBrZXl3b3JkIGZv
-ciBkZXZmcmVxX2V2ZW50X29wcyBzdHJ1Y3R1cmUNCg0KTXl1bmdKb28gSGFtICgxKToNCiAgICAg
-IFBNIC8gZGV2ZnJlcTogY29ycmVjdCBtaXNsZWFkaW5nIGNvbW1lbnQNCg0KVG9tZXUgVml6b3Nv
-ICg2KToNCiAgICAgIFBNIC8gZGV2ZnJlcTogdGVncmE6IFVwZGF0ZSB0byB2NSBvZiB0aGUgc3Vi
-bWl0dGVkIHBhdGNoZXMNCiAgICAgIFBNIC8gZGV2ZnJlcTogdGVncmE6IFVzZSBjbG9jayByYXRl
-IGNvbnN0cmFpbnRzDQogICAgICBQTSAvIGRldmZyZXE6IHRlZ3JhOiByZW1vdmUgb3BlcmF0aW5n
-LXBvaW50cw0KICAgICAgUE0gLyBkZXZmcmVxOiB0ZWdyYTogU2V0IGRydmRhdGEgYmVmb3JlIGVu
-YWJsaW5nIHRoZSBpcnENCiAgICAgIFBNIC8gZGV2ZnJlcTogdGVncmE6IEVuYWJsZSBpbnRlcnJ1
-cHRzIGFmdGVyIHJlc3VtaW5nIHRoZSBkZXZmcmVxIG1vbml0b3INCiAgICAgIFBNIC8gZGV2ZnJl
-cTogdGVncmE6IFJlZ2lzdGVyIGdvdmVybm9yIG9uIG1vZHVsZSBpbml0DQoNCiBkcml2ZXJzL2Rl
-dmZyZXEvZGV2ZnJlcS5jICAgICAgICAgICB8ICAgMSAtDQogZHJpdmVycy9kZXZmcmVxL2V2ZW50
-L2V4eW5vcy1wcG11LmMgfCAgIDIgKy0NCiBkcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJlcS5j
-ICAgICB8IDUwOSArKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0tLS0tLS0NCiBpbmNsdWRl
-L2xpbnV4L2RldmZyZXEtZXZlbnQuaCAgICAgICB8ICAgMiArLQ0KIDQgZmlsZXMgY2hhbmdlZCwg
-MjkwIGluc2VydGlvbnMoKyksIDIyNCBkZWxldGlvbnMoLSkNCi0tLS0tQkVHSU4gUEdQIFNJR05B
-VFVSRS0tLS0tDQpWZXJzaW9uOiBHbnVQRyB2MQ0KDQppUUljQkFFQkFnQUdCUUpWR2lLRkFBb0pF
-Qk9odXJ2V0JvQ0s3UWdQL1JOdnIwZncrRlZsb3VQM2NkbjUvUDQzDQpUZitIRGVXRkMyWCtYSVll
-WWlVYUdsUmdUQVZ4YTBLT29iUk1sbE9jbnMyeDQyUzRLUDQxczNSdTVBa1R5VDZUDQp4d0YyNzRn
-dVYvRXlqTU5JTEN3bTBNQlkrRFpGLzlmdHJORXFKZzc3MWs2ZEtxanhHS0tsUjFscFQwTFVWcXZs
-DQo0aFRxSkhURms0emRQMEJ0bnZRL1grWXMrV2JkSzk2bzk5ZSsyN2N5OVViWjEyZTNxS3pFbUhN
-SFhkdGJHeEZjDQpWSUIvcXRRWi9SZUplZ084NTEvYVNkaXhUdGJUclkyRHhlYk1yRG1QbksrUWRv
-YXJzczByWXpHVWw0dGMydThNDQowdGtkR1FzVFBwMTg1eE04eGhzTTRhamMxOVFkQnFreHVFU0Vx
-VDNadFU4N3RCSm9Ma3kvMk5vbGZMT3lJWHNkDQpiRUludUltWndVK2FvTmc4ZFhLeitqQ0g3WE94
-VGNnSEplbmFVUGtvcVNqR01FOEl1N0QrZlJLZXhjZEdBYVNDDQpPOE5ydk1nOTNNeldHNmtFd0oz
-WlZGdUk4SG9zeWNsdXhaa2V0WEdQR0ZJZVE4YlRtejM1cG1XQ3pYb25OQlpaDQpjY3MvUmh1VHJV
-VWhIS3Q0Vm51WFJFMHZ2NXV5anRuZ0oxUUZwaFFxdFNLc3AxejVsK3VNTVFNcmZtMllIdTBZDQp3
-ZGk3ZDlzaGw5YklvZndicjdUbFZRTmwvYkNJdFpjNnJ3bE94dDNuS2Qzdk5wQjZscXhSdzcreG10
-ZDl1MDAwDQppY3RQaHlaRUNrcHBFWGdLRkRCMS9Md29LQU5xWkFzVXl4TnJlMUp0OHNoZmR0T2Nv
-TkZJQk9xSmI2b0ZMb1VXDQphSVhoeFVmZDVRVTNVeEUzbGVuWQ0KPVhMR0kNCi0tLS0tRU5EIFBH
-UCBTSUdOQVRVUkUtLS0tLQ0K
+From: kongxinwei <kong.kongxinwei@hisilicon.com>
 
+This adds documentation of device tree bindings for the
+thermal sensor controller of hi6220 SoC.
 
+Signed-off-by: Leo Yan <leo.yan@linaro.org>
+Signed-off-by: kongxinwei <kong.kongxinwei@hisilicon.com>
+---
+ .../bindings/thermal/hisilicon-thermal.txt         | 45 ++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+
+diff --git a/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+new file mode 100644
+index 0000000..ceb6e2e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+@@ -0,0 +1,45 @@
++* Hisilicon Thermal
++
++This driver is for hi6220 SoC which contain 4 thermal sensor.
++
++	1. sensor 0: local sensor;
++	2. sensor 1: remote sensor for ACPU cluster 1;
++	3. sensor 2: remote sensor for ACPU cluster 2;
++	4. sensor 3: remote sensor for GPU.
++
++Every sensor use one child node to represent it, so thermal sensor include
++parent node and four child node. The parent node describe common feature and
++child node describe private feature for thermal sensor;
++
++** Required properties :
++
++- compatible: "hisilicon,tsensor".
++- reg: physical base address of thermal sensor and length of memory mapped
++  region.
++- interrupt: The interrupt number to the cpu. Defines the interrupt used
++  by SOCTHERM.
++- clock-names: Input clock name, should be 'thermal_clk'.
++- clocks: phandles for clock specified in "clock-names" property.
++- #thermal-sensor-cells: Should be 1. See ./thermal.txt for a description.
++
++** Required properties for child nodes :
++
++- hisilicon,tsensor-id: the index of thermal sensor and use it to distinguish
++  thermal sensor. For example: <0> stands for local sensor; <1> stands for
++  acpu1 sensor;
++
++Example :
++
++	tsensor: tsensor@0,f7030700 {
++		compatible = "hisilicon,tsensor";
++		reg = <0x0 0xf7030700 0x0 0x1000>;
++		interrupts = <0 7 0x4>;
++		clocks = <&clock_sys HI6220_TSENSOR_CLK>;
++		clock-names = "thermal_clk";
++		#thermal-sensor-cells = <1>;
++
++		local_sensor {
++			hisilicon,tsensor-id = <0>;
++		}
++		.......
++	}
+-- 
+1.9.1
