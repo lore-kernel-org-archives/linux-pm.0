@@ -1,137 +1,67 @@
-From: Grazvydas Ignotas <notasas@gmail.com>
-Subject: Re: [PATCH] ti-soc-thermal: implement omap3 support
-Date: Tue, 31 Mar 2015 18:02:54 +0300
-Message-ID: <CANOLnOO4J3RQCJZB0ibkGc5KhvPu+Q1f-bwc8mpxKCPRgjw5PQ@mail.gmail.com>
-References: <20150103114632.GA21883@amd>
-	<20150118202447.GA29014@amd>
-	<20150331084234.GA11712@amd>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 1/3] power: max17042_battery: Use reg type instead of
+ chip type
+Date: Tue, 31 Mar 2015 17:31:55 +0200
+Message-ID: <20150331153155.GA25737@earth>
+References: <1427808847-19498-1-git-send-email-beomho.seo@samsung.com>
+ <1427808847-19498-2-git-send-email-beomho.seo@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-omap-owner@vger.kernel.org>
-In-Reply-To: <20150331084234.GA11712@amd>
-Sender: linux-omap-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Pali Rohar <pali.rohar@gmail.com>, sre@debian.org, sre@ring0.de, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, khilman@kernel.org, Aaro Koskinen <aaro.koskinen@iki.fi>, ivo.g.dimitrov.75@gmail.com, edubezval@gmail.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="4Ckj6UjgE2iN1+kY"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:51610 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754348AbbCaPcW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 31 Mar 2015 11:32:22 -0400
+Content-Disposition: inline
+In-Reply-To: <1427808847-19498-2-git-send-email-beomho.seo@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Beomho Seo <beomho.seo@samsung.com>
+Cc: linux-pm@vger.kernel.org
 
-On Tue, Mar 31, 2015 at 11:42 AM, Pavel Machek <pavel@ucw.cz> wrote:
->
-> This adds support for OMAP3 chips to ti-soc-thermal. As requested by
-> TI people, it is marked unreliable and warning is printed.
->
-> Signed-off-by: Pavel Machek <pavel@ucw.cz>
->
-> ---
-> ...
-> --- /dev/null
-> +++ b/drivers/thermal/ti-soc-thermal/omap3-thermal-data.c
-> @@ -0,0 +1,103 @@
-> +/*
-> + * OMAP3 thermal driver.
-> + *
-> + * Copyright (C) 2011-2012 Texas Instruments Inc.
-> + * Copyright (C) 2014 Pavel Machek <pavel@ucw.cz>
-> + *
-> + * This software is licensed under the terms of the GNU General Publ=
-ic
-> + * License version 2, as published by the Free Software Foundation, =
-and
-> + * may be copied, distributed, and modified under those terms.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + *
-> + * Note
-> + * http://www.ti.com/lit/er/sprz278f/sprz278f.pdf "Advisory
-> + * 3.1.1.186 MMC OCP Clock Not Gated When Thermal Sensor Is Used"
-> + *
-> + * Also TI says:
-> + * Just be careful when you try to make thermal policy like decision=
-s
-> + * based on this sensor. Placement of the sensor w.r.t the actual lo=
-gic
-> + * generating heat has to be a factor as well. If you are just looki=
-ng
-> + * for an approximation temperature (thermometerish kind), you might=
- be
-> + * ok with this. I am not sure we'd find any TI data around this.. j=
-ust a
-> + * heads up.
-> + */
-> +
-> +#include "ti-thermal.h"
-> +#include "ti-bandgap.h"
-> +
-> +/*
-> + * OMAP34XX has one instance of thermal sensor for MPU
-> + * need to describe the individual bit fields
-> + */
-> +static struct temp_sensor_registers
-> +omap34xx_mpu_temp_sensor_registers =3D {
-> +       .temp_sensor_ctrl =3D 0,
-> +       .bgap_soc_mask =3D BIT(8),
-> +       .bgap_eocz_mask =3D BIT(7),
-> +       .bgap_dtemp_mask =3D 0x7f,
-> +
-> +       .bgap_mode_ctrl =3D 0,
-> +       .mode_ctrl_mask =3D BIT(9),
-> +};
-> +
-> +/* Thresholds and limits for OMAP34XX MPU temperature sensor */
-> +static struct temp_sensor_data omap34xx_mpu_temp_sensor_data =3D {
-> +       .min_freq =3D 32768,
-> +       .max_freq =3D 32768,
-> +       .max_temp =3D -99000,
-> +       .min_temp =3D 99000,
 
-This looks mixed up. Also, perhaps use -40000 to 125000 to match the
-table below?
+--4Ckj6UjgE2iN1+kY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> +       .hyst_val =3D 5000,
-> +};
-> +
-> +/*
-> + * Temperature values in milli degree celsius
-> + */
-> +static const int
-> +omap34xx_adc_to_temp[128] =3D {
-> +       -40000, -40000, -40000, -40000, -40000, -39000, -38000, -3600=
-0,
-> +       -34000, -32000, -31000, -29000, -28000, -26000, -25000, -2400=
-0,
-> +       -22000, -21000, -19000, -18000, -17000, -15000, -14000, -1200=
-0,
-> +       -11000, -9000, -8000, -7000, -5000, -4000, -2000, -1000, 0000=
-,
-> +       1000, 3000, 4000, 5000, 7000, 8000, 10000, 11000, 13000, 1400=
-0,
-> +       15000, 17000, 18000, 20000, 21000, 22000, 24000, 25000, 27000=
-,
-> +       28000, 30000, 31000, 32000, 34000, 35000, 37000, 38000, 39000=
-,
-> +       41000, 42000, 44000, 45000, 47000, 48000, 49000, 51000, 52000=
-,
-> +       53000, 55000, 56000, 58000, 59000, 60000, 62000, 63000, 65000=
-,
-> +       66000, 67000, 69000, 70000, 72000, 73000, 74000, 76000, 77000=
-,
-> +       79000, 80000, 81000, 83000, 84000, 85000, 87000, 88000, 89000=
-,
-> +       91000, 92000, 94000, 95000, 96000, 98000, 99000, 100000,
-> +       102000, 103000, 105000, 106000, 107000, 109000, 110000, 11100=
-0,
-> +       113000, 114000, 116000, 117000, 118000, 120000, 121000, 12200=
-0,
-> +       124000, 124000, 125000, 125000, 125000, 125000, 125000
-> +};
->
+Hi,
 
-Gra=C5=BEvydas
---
-To unsubscribe from this list: send the line "unsubscribe linux-omap" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Tue, Mar 31, 2015 at 10:34:05PM +0900, Beomho Seo wrote:
+> [...]
+>  	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+> -		if (chip->chip_type == MAX17042)
+> +		if (chip->reg_type == MAXIM_REG_TYPE_MAX17047)
+>  			ret = regmap_read(map, MAX17042_V_empty, &data);
+>  		else
+>  			ret = regmap_read(map, MAX17047_V_empty, &data);
+
+Looks like you inverted the logic.
+
+> [...]
+
+-- Sebastian
+
+--4Ckj6UjgE2iN1+kY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVGr3oAAoJENju1/PIO/qak+wP/RXL3MdWqdryd9QTYcTSlqiw
+qiZAlGsWGnnPPWpLftWvF8ADnWaAa6lKUS6o9uZTKZBKCG0Iz41Y/4XfH2Fpx8mk
+rc09rUq2FsQmZ+bnqURhKNHCuRBgvVL0wHGntMSfeI/tYuEuHAOo2f2fRHwggXAI
+elz8+2p6449EPBRIfh5B2jE5ZpOHVqXS3hp+bNoAyLw037/mU2nfVQrelGZUt5cu
+stQRSiIbVU/DB9fzQTUVtWOytYcG1Mm6P9JmZrygTCF3FN9xy7p0MAZTevscbCWe
+MEeqIqu94Kov7pmTEiiZoeD9OCkZS/N2Nu67FTTqx/QvvvTKB17qmmKiIx9F4iQ+
+sEcfiNb68MJsWTg4UsO5R4415kgsy5pBc0UhRM7l4S98Z5sxyWIqZwWjJHfVjf/+
+v+LhTNiMtyQYgOc0qVwHGP59ZYh8TCsS2kPH1KAvCF7N1RwG+da6nvm1A50ktFL/
+8GmkOVDmC2dwmuZ/KUGR1Ya+rzmag29SEAoQVe1suBnbgq8mte5JVXUSbsvhvcRl
+O2LaeF/m31E1MMiLepzf27jtG1JuoIKQKHOg5LOlxkNn4HoQsIKuosxejEq6UMTv
+owFMr/uipgylbKyGYempl/Hy7CBFYXWu0CU8Y3UCGOnk62Wp+BLgrXVItVeLU1AN
+/MNpKCL1c6xYVs+bsw4S
+=2LL9
+-----END PGP SIGNATURE-----
+
+--4Ckj6UjgE2iN1+kY--
