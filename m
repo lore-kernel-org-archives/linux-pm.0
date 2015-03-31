@@ -1,65 +1,36 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH 5/6] Input: evdev - Enable runtime PM of the evdev input
- handler
-Date: Tue, 31 Mar 2015 13:31:38 -0700
-Message-ID: <20150331203138.GB29015@dtor-ws>
-References: <1427818501-10201-1-git-send-email-tomeu.vizoso@collabora.com>
- <1427818501-10201-6-git-send-email-tomeu.vizoso@collabora.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [GIT PULL] kernel/time cleanups (related to tick_suspend/resume)
+Date: Wed, 01 Apr 2015 00:45:07 +0200
+Message-ID: <1905859.5HhZc2HfYG@vostro.rjw.lan>
+References: <20150216121435.203983131@infradead.org> <4241632.Wi7SZdKMQs@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1427818501-10201-6-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-pm@vger.kernel.org, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:61004 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750836AbbCaWUy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2015 18:20:54 -0400
+In-Reply-To: <4241632.Wi7SZdKMQs@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, tglx@linutronix.de, Linux PM list <linux-pm@vger.kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>
 
-On Tue, Mar 31, 2015 at 06:14:49PM +0200, Tomeu Vizoso wrote:
-> So ancestor devices can remain runtime-suspended when the system goes
-> into a sleep state, they and all of their descendant devices need to
-> have runtime PM enabled.
+Hi Ingo,
 
-I am confused. Input devices are not runtime-PM-enabled, so what
-enabling this on evdev handler buys us? And what about joydev and
-mousedev? Other handlers that might be attached?
+Please pull from
 
-The stubbing of prepare also feels wrong: we do want to suspend/resume
-input devices since we want to shut off and restore their leds even if
-device (keyboard) happens to be sleeping.
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git tick-pm
 
-Thanks.
+to receive kernel/time cleanups related to tick_suspend/resume from Thomas Gleixner
+that I've rebased on top of the Linus' tree and reworked slightly.
 
-> 
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> ---
->  drivers/input/evdev.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/input/evdev.c b/drivers/input/evdev.c
-> index a18f41b..3d60c20 100644
-> --- a/drivers/input/evdev.c
-> +++ b/drivers/input/evdev.c
-> @@ -26,6 +26,7 @@
->  #include <linux/major.h>
->  #include <linux/device.h>
->  #include <linux/cdev.h>
-> +#include <linux/pm_runtime.h>
->  #include "input-compat.h"
->  
->  enum evdev_clock_type {
-> @@ -1201,6 +1202,8 @@ static int evdev_connect(struct input_handler *handler, struct input_dev *dev,
->  	if (error)
->  		goto err_cleanup_evdev;
->  
-> +	pm_runtime_enable(&evdev->dev);
-> +
->  	return 0;
->  
->   err_cleanup_evdev:
-> -- 
-> 2.3.4
-> 
+There will be a conflict between this branch and tip that can be resolved with
+the help of the patch from Stephen Rothwell available at:
 
--- 
-Dmitry
+http://marc.info/?l=linux-kernel&m=142778874014355&w=4
+
+Kind regards,
+Rafael
+
