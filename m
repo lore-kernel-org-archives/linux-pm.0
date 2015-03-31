@@ -1,27 +1,27 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
 Subject: [PULL REQUEST] PM / devfreq, for Linux 4.1
-Date: Tue, 31 Mar 2015 06:51:11 +0000 (GMT)
-Message-ID: <1953161880.140291427784671181.JavaMail.weblogic@epmlwas02b>
+Date: Tue, 31 Mar 2015 06:54:02 +0000 (GMT)
+Message-ID: <710482662.140561427784841523.JavaMail.weblogic@epmlwas02b>
 Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:36463 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbbCaGwj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2015 02:52:39 -0400
-Received: from epcpsbgr1.samsung.com
- (u141.gpu120.samsung.co.kr [203.254.230.141])
- by mailout1.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
+Received: from mailout2.samsung.com ([203.254.224.25]:22634 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbbCaGyH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2015 02:54:07 -0400
+Received: from epcpsbgr4.samsung.com
+ (u144.gpu120.samsung.co.kr [203.254.230.144])
+ by mailout2.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
  64bit (built May  5 2014))
- with ESMTP id <0NM200HOWDRQAD90@mailout1.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 31 Mar 2015 15:52:38 +0900 (KST)
+ with ESMTP id <0NM200EVMDU22KD0@mailout2.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 31 Mar 2015 15:54:02 +0900 (KST)
 MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "RafaelJ.Wysocki<rafael.j.wysocki"@intel.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "TomeuVizoso<tomeu.vizoso"@collabora.com
+To: rafael.j.wysocki@intel.com
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, tomeu.vizoso@collabora.com
 
 RGVhciBSYWZhZWwsDQoNCkhlcmUgZ29lcyBhIHB1bGwgcmVxdWVzdCBmcm9tIGRldmZyZXEgaW5j
 bHVkaW5nIGRldmljZSBkcml2ZXIgdXBkYXRlcyBhbmQgc3R5bGUgZml4ZXMuDQoNCg0KQ2hlZXJz
