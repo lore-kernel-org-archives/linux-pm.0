@@ -1,42 +1,67 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH 0/6] Allow UVC devices to remain runtime-suspended when sleeping
-Date: Tue, 31 Mar 2015 18:14:44 +0200
-Message-ID: <1427818501-10201-1-git-send-email-tomeu.vizoso@collabora.com>
+Subject: [PATCH 1/6] [media] uvcvideo: Enable runtime PM of descendant devices
+Date: Tue, 31 Mar 2015 18:14:45 +0200
+Message-ID: <1427818501-10201-2-git-send-email-tomeu.vizoso@collabora.com>
+References: <1427818501-10201-1-git-send-email-tomeu.vizoso@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1427818501-10201-1-git-send-email-tomeu.vizoso@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Alan Stern <stern@rowland.harvard.edu>, Dan Williams <dan.j.williams@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hans Verkuil <hans.verkuil@cisco.com>, Julius Werner <jwerner@chromium.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, linux-usb@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Pratyush Anand <pratyush.anand@st.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ramakrishnan Muthukrishnan <ramakrmu@cisco.com>, Sakari Ailus <sakari.ailus@linux.intel.com>, Scot Doyle <lkml14@scotdoyle.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+So UVC devices can remain runtime-suspended when the system goes into a
+sleep state, they and all of their descendant devices need to have
+runtime PM enable.
 
-this series contain what I needed to do in order to have my USB webcam to not be resumed when the system resumes, reducing considerably the total time that resuming takes.
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+---
+ drivers/media/usb/uvc/uvc_driver.c | 4 ++++
+ drivers/media/usb/uvc/uvc_status.c | 3 +++
+ 2 files changed, 7 insertions(+)
 
-It makes use of the facility that Rafael Wysocki added in aae4518b3 ("PM / sleep: Mechanism to avoid resuming runtime-suspended devices unnecessarily"), which requires that a devices and all its descendants opt-in by having their dev_pm_ops.prepare callback return 1, to have runtime PM enabled, and to be runtime suspended when the system goes to a sleep state.
-
-Thanks,
-
-Tomeu
-
-Tomeu Vizoso (6):
-  [media] uvcvideo: Enable runtime PM of descendant devices
-  [media] v4l2-core: Implement dev_pm_ops.prepare()
-  Input: Implement dev_pm_ops.prepare()
-  [media] media-devnode: Implement dev_pm_ops.prepare callback
-  Input: evdev - Enable runtime PM of the evdev input handler
-  USB / PM: Allow USB devices to remain runtime-suspended when sleeping
-
- drivers/input/evdev.c              |  3 +++
- drivers/input/input.c              | 13 +++++++++++++
- drivers/media/media-devnode.c      | 10 ++++++++++
- drivers/media/usb/uvc/uvc_driver.c |  4 ++++
- drivers/media/usb/uvc/uvc_status.c |  3 +++
- drivers/media/v4l2-core/v4l2-dev.c | 10 ++++++++++
- drivers/usb/core/endpoint.c        | 17 +++++++++++++++++
- drivers/usb/core/message.c         | 16 ++++++++++++++++
- drivers/usb/core/port.c            |  6 ++++++
- drivers/usb/core/usb.c             |  2 +-
- 10 files changed, 83 insertions(+), 1 deletion(-)
-
+diff --git a/drivers/media/usb/uvc/uvc_driver.c b/drivers/media/usb/uvc/uvc_driver.c
+index cf27006..e98830a1 100644
+--- a/drivers/media/usb/uvc/uvc_driver.c
++++ b/drivers/media/usb/uvc/uvc_driver.c
+@@ -1792,6 +1792,8 @@ static int uvc_register_video(struct uvc_device *dev,
+ 		return ret;
+ 	}
+ 
++	pm_runtime_enable(&vdev->dev);
++
+ 	if (stream->type == V4L2_BUF_TYPE_VIDEO_CAPTURE)
+ 		stream->chain->caps |= V4L2_CAP_VIDEO_CAPTURE;
+ 	else
+@@ -1932,6 +1934,8 @@ static int uvc_probe(struct usb_interface *intf,
+ 	if (media_device_register(&dev->mdev) < 0)
+ 		goto error;
+ 
++	pm_runtime_enable(&dev->mdev.devnode.dev);
++
+ 	dev->vdev.mdev = &dev->mdev;
+ #endif
+ 	if (v4l2_device_register(&intf->dev, &dev->vdev) < 0)
+diff --git a/drivers/media/usb/uvc/uvc_status.c b/drivers/media/usb/uvc/uvc_status.c
+index f552ab9..b1d3d8c 100644
+--- a/drivers/media/usb/uvc/uvc_status.c
++++ b/drivers/media/usb/uvc/uvc_status.c
+@@ -13,6 +13,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/input.h>
++#include <linux/pm_runtime.h>
+ #include <linux/slab.h>
+ #include <linux/usb.h>
+ #include <linux/usb/input.h>
+@@ -46,6 +47,8 @@ static int uvc_input_init(struct uvc_device *dev)
+ 	if ((ret = input_register_device(input)) < 0)
+ 		goto error;
+ 
++	pm_runtime_enable(&input->dev);
++
+ 	dev->input = input;
+ 	return 0;
+ 
 -- 
 2.3.4
