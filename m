@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 12/20] ACPI / processor: Use explicit broadcast controll function
-Date: Thu, 02 Apr 2015 00:17:20 +0200
-Message-ID: <1907004.LSbzWGMaAs@vostro.rjw.lan>
+Subject: [PATCH 13/20] intel_idle: Use explicit broadcast oneshot control function
+Date: Thu, 02 Apr 2015 00:20:08 +0200
+Message-ID: <1714498.W4bW2ubkxM@vostro.rjw.lan>
 References: <2112147.0kYCHhbEJT@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <2112147.0kYCHhbEJT@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Thomas Gleixner <tglx@linutronix.de>
@@ -18,29 +18,28 @@ From: Thomas Gleixner <tglx@linutronix.de>
 Replace the clockevents_notify() call with an explicit function call.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Len Brown <lenb@kernel.org>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/processor_idle.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ drivers/idle/intel_idle.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-pm/drivers/acpi/processor_idle.c
+Index: linux-pm/drivers/idle/intel_idle.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/processor_idle.c
-+++ linux-pm/drivers/acpi/processor_idle.c
-@@ -178,11 +178,10 @@ static void lapic_timer_state_broadcast(
- 	int state = cx - pr->power.states;
+--- linux-pm.orig/drivers/idle/intel_idle.c
++++ linux-pm/drivers/idle/intel_idle.c
+@@ -638,12 +638,12 @@ static int intel_idle(struct cpuidle_dev
+ 		leave_mm(cpu);
  
- 	if (state >= pr->power.timer_broadcast_on_state) {
--		unsigned long reason;
--
--		reason = broadcast ?  CLOCK_EVT_NOTIFY_BROADCAST_ENTER :
--			CLOCK_EVT_NOTIFY_BROADCAST_EXIT;
--		clockevents_notify(reason, &pr->id);
-+		if (broadcast)
-+			tick_broadcast_enter();
-+		else
-+			tick_broadcast_exit();
- 	}
+ 	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+-		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
++		tick_broadcast_enter();
+ 
+ 	mwait_idle_with_hints(eax, ecx);
+ 
+ 	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+-		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
++		tick_broadcast_exit();
+ 
+ 	return index;
  }
- 
-
