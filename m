@@ -1,88 +1,32 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 05/20] cpuidle: Use explicit broadcast control function
-Date: Thu, 02 Apr 2015 00:07:56 +0200
-Message-ID: <4520956.lTMqrrT935@vostro.rjw.lan>
-References: <2112147.0kYCHhbEJT@vostro.rjw.lan>
+Subject: [PATCH 00/20] clockevents_notify() removal
+Date: Thu, 02 Apr 2015 00:02:03 +0200
+Message-ID: <2112147.0kYCHhbEJT@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2112147.0kYCHhbEJT@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64552 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753184AbbDAWDj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Apr 2015 18:03:39 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 
-From: Thomas Gleixner <tglx@linutronix.de>
+Hi,
 
-Replace the clockevents_notify() call with an explicit function call.
+This is the next batch of patches from Thomas that remove clockevents_notify().
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/driver.c |   25 ++++++++++++-------------
- 1 file changed, 12 insertions(+), 13 deletions(-)
+I've reordered the set (to put more stratightforward things to the front) and
+rebased it on top of the timers material currently queued up for 4.1.
 
-Index: linux-pm/drivers/cpuidle/driver.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/driver.c
-+++ linux-pm/drivers/cpuidle/driver.c
-@@ -13,7 +13,7 @@
- #include <linux/sched.h>
- #include <linux/cpuidle.h>
- #include <linux/cpumask.h>
--#include <linux/clockchips.h>
-+#include <linux/tick.h>
- 
- #include "cpuidle.h"
- 
-@@ -130,21 +130,20 @@ static inline void __cpuidle_unset_drive
- #endif
- 
- /**
-- * cpuidle_setup_broadcast_timer - enable/disable the broadcast timer
-+ * cpuidle_setup_broadcast_timer - enable/disable the broadcast timer on a cpu
-  * @arg: a void pointer used to match the SMP cross call API
-  *
-- * @arg is used as a value of type 'long' with one of the two values:
-- * - CLOCK_EVT_NOTIFY_BROADCAST_ON
-- * - CLOCK_EVT_NOTIFY_BROADCAST_OFF
-- *
-- * Set the broadcast timer notification for the current CPU.  This function
-- * is executed per CPU by an SMP cross call.  It not supposed to be called
-- * directly.
-+ * If @arg is NULL broadcast is disabled otherwise enabled
-+ *
-+ * This function is executed per CPU by an SMP cross call.  It's not
-+ * supposed to be called directly.
-  */
- static void cpuidle_setup_broadcast_timer(void *arg)
- {
--	int cpu = smp_processor_id();
--	clockevents_notify((long)(arg), &cpu);
-+	if (arg)
-+		tick_broadcast_enable();
-+	else
-+		tick_broadcast_disable();
- }
- 
- /**
-@@ -239,7 +238,7 @@ static int __cpuidle_register_driver(str
- 
- 	if (drv->bctimer)
- 		on_each_cpu_mask(drv->cpumask, cpuidle_setup_broadcast_timer,
--				 (void *)CLOCK_EVT_NOTIFY_BROADCAST_ON, 1);
-+				 (void *)1, 1);
- 
- 	poll_idle_init(drv);
- 
-@@ -263,7 +262,7 @@ static void __cpuidle_unregister_driver(
- 	if (drv->bctimer) {
- 		drv->bctimer = 0;
- 		on_each_cpu_mask(drv->cpumask, cpuidle_setup_broadcast_timer,
--				 (void *)CLOCK_EVT_NOTIFY_BROADCAST_OFF, 1);
-+				 NULL, 1);
- 	}
- 
- 	__cpuidle_unset_driver(drv);
+This series in based on the bleeding-edge branch of the linux-pm tree (which
+for all practical purposes is my linux-next branch with timers/core from tip
+merged into it).
+
+Please let me know how to proceed with these.
+
+Thanks,
+Rafael
