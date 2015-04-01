@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 10/20] x86, amd_idle: Use explicit broadcast oneshot control functions
-Date: Thu, 02 Apr 2015 00:15:24 +0200
-Message-ID: <25992923.yKMiYkL35g@vostro.rjw.lan>
+Subject: [PATCH 11/20] ACPI / PAD: Use explicit broadcast oneshot control function
+Date: Thu, 02 Apr 2015 00:16:33 +0200
+Message-ID: <3739523.xDQFFKjDq1@vostro.rjw.lan>
 References: <2112147.0kYCHhbEJT@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -18,30 +18,38 @@ From: Thomas Gleixner <tglx@linutronix.de>
 Replace the clockevents_notify() call with an explicit function call.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Len Brown <lenb@kernel.org>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- arch/x86/kernel/process.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/acpi/acpi_pad.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Index: linux-pm/arch/x86/kernel/process.c
+Index: linux-pm/drivers/acpi/acpi_pad.c
 ===================================================================
---- linux-pm.orig/arch/x86/kernel/process.c
-+++ linux-pm/arch/x86/kernel/process.c
-@@ -381,7 +381,7 @@ static void amd_e400_idle(void)
- 			tick_broadcast_force();
- 			pr_info("Switch to broadcast mode on CPU%d\n", cpu);
- 		}
--		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
-+		tick_broadcast_enter();
+--- linux-pm.orig/drivers/acpi/acpi_pad.c
++++ linux-pm/drivers/acpi/acpi_pad.c
+@@ -150,7 +150,6 @@ static int power_saving_thread(void *dat
+ 	sched_setscheduler(current, SCHED_RR, &param);
  
- 		default_idle();
+ 	while (!kthread_should_stop()) {
+-		int cpu;
+ 		unsigned long expire_time;
  
-@@ -390,7 +390,7 @@ static void amd_e400_idle(void)
- 		 * called with interrupts disabled.
- 		 */
- 		local_irq_disable();
--		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
-+		tick_broadcast_exit();
- 		local_irq_enable();
- 	} else
- 		default_idle();
+ 		try_to_freeze();
+@@ -174,14 +173,13 @@ static int power_saving_thread(void *dat
+ 			}
+ 			local_irq_disable();
+ 			tick_broadcast_enable();
+-			cpu = smp_processor_id();
+-			clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
++			tick_broadcast_enter();
+ 			stop_critical_timings();
+ 
+ 			mwait_idle_with_hints(power_saving_mwait_eax, 1);
+ 
+ 			start_critical_timings();
+-			clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
++			tick_broadcast_exit();
+ 			local_irq_enable();
+ 
+ 			if (time_before(expire_time, jiffies)) {
