@@ -1,53 +1,39 @@
-From: Beomho Seo <beomho.seo@samsung.com>
-Subject: Re: [PATCH 1/3] power: max17042_battery: Use reg type instead of chip
- type
-Date: Wed, 01 Apr 2015 09:03:14 +0900
-Message-ID: <551B35C2.6070207@samsung.com>
-References: <1427808847-19498-1-git-send-email-beomho.seo@samsung.com>
- <1427808847-19498-2-git-send-email-beomho.seo@samsung.com>
- <20150331153155.GA25737@earth>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/7] OPP: Introduce OPP bindings V2 and supporting code
+Date: Wed, 1 Apr 2015 11:52:50 +0530
+Message-ID: <CAKohpokDhHo1ftcB6b4b+hO125_sqjK0NKESt79GVcWEwiq04w@mail.gmail.com>
+References: <cover.1423642246.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:27127 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752507AbbDAADs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2015 20:03:48 -0400
-Received: from epcpsbgr1.samsung.com
- (u141.gpu120.samsung.co.kr [203.254.230.141])
- by mailout1.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
- 64bit (built May  5 2014))
- with ESMTP id <0NM300CYMPHF84B0@mailout1.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 01 Apr 2015 09:03:15 +0900 (KST)
-In-reply-to: <20150331153155.GA25737@earth>
+Received: from mail-ob0-f178.google.com ([209.85.214.178]:33071 "EHLO
+	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750880AbbDAGWv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Apr 2015 02:22:51 -0400
+Received: by obvd1 with SMTP id d1so64226317obv.0
+        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2015 23:22:50 -0700 (PDT)
+In-Reply-To: <cover.1423642246.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, =?UTF-8?B?J+uMgOyduOq4sCc=?= <inki.dae@samsung.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>
+Cc: Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, Mike Turquette <mike.turquette@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Thomas Abraham <ta.omasab@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lucas Stach <l.stach@pengutronix.de>, Mark Brown <broonie@kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>
 
-On 04/01/2015 12:31 AM, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Tue, Mar 31, 2015 at 10:34:05PM +0900, Beomho Seo wrote:
->> [...]
->>  	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
->> -		if (chip->chip_type == MAX17042)
->> +		if (chip->reg_type == MAXIM_REG_TYPE_MAX17047)
->>  			ret = regmap_read(map, MAX17042_V_empty, &data);
->>  		else
->>  			ret = regmap_read(map, MAX17047_V_empty, &data);
-> 
-> Looks like you inverted the logic.
-> 
->> [...]
-> 
-> -- Sebastian
-> 
+On 11 February 2015 at 13:46, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Now that I have received an verbal Ack from Rob Herring (in a personal
+> conversation) about the bindings, I am showing how the code looks like with
+> these new bindings.
+>
+> Some part is still now done:
+> - Interface for adding new detailed OPPs from platform code instead of DT
+> - Providing cpufreq helpers for the next OPPs
+> - Providing regulator helpers for the target/min/max ranges
+>
+> Please provide feedback on how this looks like..
 
-OK I will fix it.
-Thank you for comment.
+@Rafael: Its been two months now since this was posted. Can we get this
+merged please? If someone finds issues later, we can go fix them ..
 
-Best regards,
-Beomho Seo
+And this *should* not break any existing stuff as this is mostly new stuff..
 
+--
+viresh
