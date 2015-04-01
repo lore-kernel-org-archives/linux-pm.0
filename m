@@ -1,63 +1,132 @@
-From: Beomho Seo <beomho.seo@samsung.com>
-Subject: Re: [PATCH 1/3] power: max17042_battery: Use reg type instead of chip
- type
-Date: Wed, 01 Apr 2015 18:00:44 +0900
-Message-ID: <551BB3BC.8030501@samsung.com>
-References: <1427808574-19397-1-git-send-email-beomho.seo@samsung.com>
- <1427808574-19397-2-git-send-email-beomho.seo@samsung.com>
- <CAJKOXPdM1zt_y19Lv8Q6PPLzhOJSw3JaLRgi=ziaNsg0p=-ieg@mail.gmail.com>
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] cpufreq: powernv: Report cpu frequency throttling
+Date: Wed, 01 Apr 2015 15:14:49 +0530
+Message-ID: <551BBE11.6010309@linux.vnet.ibm.com>
+References: <1427441523-5189-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <CAKohponCrbioGcuiPYvB2LjERCBov7E7GApP3HKPwzcC2x1ZYA@mail.gmail.com> <2339245.XXG4qaq6pt@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:27961 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750726AbbDAJAr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Apr 2015 05:00:47 -0400
-In-reply-to: <CAJKOXPdM1zt_y19Lv8Q6PPLzhOJSw3JaLRgi=ziaNsg0p=-ieg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2339245.XXG4qaq6pt@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: linux-kernel@vger.kernel.org, cw00.choi@samsung.com, sangbae90.lee@samsung.com, inki.dae@samsung.com, linux-pm@vger.kernel.org, myungjoo.ham@samsung.com, Sebastian Reichel <sre@kernel.org>, jonghwa3.lee@samsung.comlinux-pm@vger.kernel.org, beomho.seo@samsung.com
 
-On 04/01/2015 05:18 PM, Krzysztof Kozlowski wrote:
-> 2015-03-31 15:29 GMT+02:00 Beomho Seo <beomho.seo@samsung.com>:
->> Currently, max17042 battery driver choose register map by MAX17042_DevName
->> register. But thid register is return IC specific firmware version. So other
->> maxim chip hard to use this drvier. This patch choose reg_type by driver_data.
+Hi Rafael,
+
+On 03/31/2015 12:45 AM, Rafael J. Wysocki wrote:
+> On Friday, March 27, 2015 01:10:46 PM Viresh Kumar wrote:
+>> On 27 March 2015 at 13:02, Shilpasri G Bhat
+>> <shilpa.bhat@linux.vnet.ibm.com> wrote:
+>>> The power and thermal safety of the system is taken care by an
+>>> On-Chip-Controller (OCC) which is real-time subsystem embedded within
+>>> the POWER8 processor. OCC continuously monitors the memory and core
+>>> temperature, the total system power, state of power supply and fan.
+>>>
+>>> The cpu frequency can be throttled by OCC for the following reasons:
+>>> 1)If a processor crosses its power and temperature limit then OCC will
+>>>   lower its Pmax to reduce the frequency and voltage.
+>>> 2)If OCC crashes then the system is forced to Psafe frequency.
+>>> 3)If OCC fails to recover then the kernel is not allowed to do any
+>>>   further frequency changes and the chip will remain in Psafe.
+>>>
+>>> The user can see a drop in performance when frequency is throttled and
+>>> is unaware of throttling. So detect and report such a condition so
+>>> that user can check the OCC status to reboot the system or check for
+>>> power supply or fan failures.
+>>>
+>>> The current status of the core is read from Power Management Status
+>>> Register(PMSR) to check if any of the throttling condition is occurred
+>>> and the appropriate throttling message is reported.
+>>>
+>>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>>> ---
+>>> Changes from V2:
+>>> -Changed commit log to add more details.
+>>> -Fixed multi-line comment to proper format
+>>>
+>>> Changes from V1: Removed unused value of PMCR register
+>>>
+>>>  drivers/cpufreq/powernv-cpufreq.c | 40 ++++++++++++++++++++++++++++++++++++++-
+>>>  1 file changed, 39 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+>>> index 2dfd4fd..0eb89a9 100644
+>>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>>> @@ -36,7 +36,7 @@
+>>>  #define POWERNV_MAX_PSTATES    256
+>>>
+>>>  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+>>> -static bool rebooting;
+>>> +static bool rebooting, throttled;
+>>>
+>>>  /*
+>>>   * Note: The set of pstates consists of contiguous integers, the
+>>> @@ -294,6 +294,41 @@ static inline unsigned int get_nominal_index(void)
+>>>         return powernv_pstate_info.max - powernv_pstate_info.nominal;
+>>>  }
+>>>
+>>> +static void powernv_cpufreq_throttle_check(unsigned int cpu)
+>>> +{
+>>> +       unsigned long pmsr;
+>>> +       int pmsr_pmax, pmsr_lp;
+>>> +
+>>> +       pmsr = get_pmspr(SPRN_PMSR);
+>>> +
+>>> +       /* Check for Pmax Capping */
+>>> +       pmsr_pmax = (s8)((pmsr >> 32) & 0xFF);
+>>> +       if (pmsr_pmax != powernv_pstate_info.max) {
+>>> +               throttled = true;
+>>> +               pr_warn("Cpu %d Pmax is reduced to %d\n", cpu, pmsr_pmax);
+>>> +       }
+>>> +
+>>> +       /*
+>>> +        * Check for Psafe by reading LocalPstate
+>>> +        * or check if Psafe_mode_active- 34th bit is set in PMSR.
+>>> +        */
+>>> +       pmsr_lp = (s8)((pmsr >> 48) & 0xFF);
+>>> +       if ((pmsr_lp < powernv_pstate_info.min) || ((pmsr >> 30) & 1)) {
+>>> +               throttled = true;
+>>> +               pr_warn("Cpu %d in Psafe %d PMSR[34]=%lx\n", cpu,
+>>> +                               pmsr_lp, ((pmsr >> 30) & 1));
+>>> +       }
+>>> +
+>>> +       /* Check if SPR_EM_DISABLED- 33rd bit is set in PMSR */
+>>> +       if ((pmsr >> 31) & 1) {
+>>> +               throttled = true;
+>>> +               pr_warn("Frequency management disabled cpu %d PMSR[33]=%lx\n",
+>>> +                               cpu, ((pmsr >> 31) & 1));
+>>> +       }
+>>> +       if (throttled)
+>>> +               pr_warn("Cpu Frequency is throttled\n");
+>>> +}
+>>> +
+>>>  /*
+>>>   * powernv_cpufreq_target_index: Sets the frequency corresponding to
+>>>   * the cpufreq table entry indexed by new_index on the cpus in the
+>>> @@ -307,6 +342,9 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>>>         if (unlikely(rebooting) && new_index != get_nominal_index())
+>>>                 return 0;
+>>>
+>>> +       if (!throttled)
+>>> +               powernv_cpufreq_throttle_check(smp_processor_id());
+>>> +
+>>>         freq_data.pstate_id = powernv_freqs[new_index].driver_data;
+>>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> I don't quite get the concept of "reg_type" and why it replaces chip
-> type? It seems that you choose reg_type based on given chip type so
-> there is direct mapping chip_type->reg_type. If max17047 and max17050
-> are the same from the point of view of interface (registers) then they
-> should use the same compatible or the same device type. Something
-> like:
+> Queued up for 4.1, thanks!
+> 
 > 
 
-When I check datasheet, MAX17042_DevName register return Firmware version.
-Firmware version not chip type. For use other maxim chip, be better use
-of_id->data or id->driver_data(be like other maxim mfd driver)
+Kindly revert this patch. This patch requires additional cosmetic
+changes for better readability and maintenance, without any change in
+functionality. I would have wanted to post the diff with the additional
+changes in this patch but it touches almost the whole thing, so I will
+post out v4 version of this patch with all the changes. Apologies for the
+inconvenience.
 
-I will remove reg_type. and chip_type will be assigned through
-of_id->data or id->driver_data.
-
->>  static const struct i2c_device_id max17042_id[] = {
->> -       { "max17042", 0 },
->> -       { "max17047", 1 },
->> -       { "max17050", 2 },
->> +       { "max17042", MAXIM_DEVICE_TYPE_MAX17042 },
->> +       { "max17047", MAXIM_DEVICE_TYPE_MAX17047 },
->> +       { "max17050", MAXIM_DEVICE_TYPE_MAX17047 }, /* Same as 17047 */
->>         { }
-> 
-> So why you are adding the conversion from i2c_device_id -> reg_type?
-> 
-> Beside that, thanks for integrating this into existing driver! Much appreciated.
-> 
-> Best regards,
-> Krzysztof
-> 
-
-Best regards,
-Beomho
-
+Thanks and Regards,
+Shilpa
