@@ -1,60 +1,94 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 1/2] cpufreq: arm_big_little: check if the frequency is
- set correctly
-Date: Wed, 01 Apr 2015 11:01:14 +0100
-Message-ID: <551BC1EA.5030401@arm.com>
-References: <1427718438-31098-1-git-send-email-sudeep.holla@arm.com> <CAKohponxEv3CjhVPAu2Ga5FeSSvtj_W6zGvL3oj2V247f94H=w@mail.gmail.com> <551951F4.9070804@arm.com> <20150331014854.25195.34023@quantum> <551A67CD.50602@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37456 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751168AbbDAKAN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 1 Apr 2015 06:00:13 -0400
-In-Reply-To: <551A67CD.50602@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] irqchip: renesas-irqc: Add wake-up support
+Date: Wed,  1 Apr 2015 14:00:06 +0200
+Message-ID: <1427889606-18671-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-sh-owner@vger.kernel.org>
+Sender: linux-sh-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>
+Cc: linux-sh@vger.kernel.org, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mike.turquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
+The IRQC module clock is managed through Runtime PM and PM Domains.
+If wake-up is enabled, this clock must not be disabled during system
+suspend.
 
+Hence implement irq_chip.irq_set_wake(), which increments/decrements the
+clock's enable_count when needed.
 
-On 31/03/15 10:24, Sudeep Holla wrote:
-> On 31/03/15 02:48, Michael Turquette wrote:
+This fixes wake-up by gpio-keys on r8a73a4/ape6evm.
 
-[...]
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+Against irqchip/renesas
 
->> clk_set_rate returns an error (and always has), so it seems to me that
->> this patch is unnecessary. bL_cpufreq_set_rate checks for an error from
->> clk_set_rate and handles it.
->>
->
-> No that's not correct, may be I was not clear earlier. Let me explain
-> with the stack trace.
->
-> bL_cpufreq_set_target(returns 0 even when clock driver returned error)
->           |
->           V
-> clk_set_rate(returns whatever it get from clk_core_set_rate_nolock)
->           |
->           V
-> clk_core_set_rate_nolock(always return 0 after calling clk_change_rate)
->           |
->           V
-> clk_change_rate(void function, so no return)
->           |
->           V
-> clk->ops->set_rate(i.e. <clock_driver_set_rate>)
->
-> Now for drivers/clk/clk.c IIUC, the return value from clk->ops->set_rate
-> is not checked. Now if <clock_driver_set_rate> returns error when h/w
-> fails to set the rate, I would like to know how the error returned by
-> <clock_driver_set_rate> is returned and received by clk_set_rate.
-> Correct me if I am missing anything in the above sequence.
->
+ drivers/irqchip/irq-renesas-irqc.c | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
 
-Any input on this ? or am I taking non-sense here ?
+diff --git a/drivers/irqchip/irq-renesas-irqc.c b/drivers/irqchip/irq-renesas-irqc.c
+index 718f01cd1aea19f6..cdf80b7794cd738e 100644
+--- a/drivers/irqchip/irq-renesas-irqc.c
++++ b/drivers/irqchip/irq-renesas-irqc.c
+@@ -17,6 +17,7 @@
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  */
+ 
++#include <linux/clk.h>
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
+ #include <linux/spinlock.h>
+@@ -66,6 +67,7 @@ struct irqc_priv {
+ 	struct platform_device *pdev;
+ 	struct irq_chip irq_chip;
+ 	struct irq_domain *irq_domain;
++	struct clk *clk;
+ };
+ 
+ static void irqc_dbg(struct irqc_irq *i, char *str)
+@@ -119,6 +121,21 @@ static int irqc_irq_set_type(struct irq_data *d, unsigned int type)
+ 	return 0;
+ }
+ 
++static int irqc_irq_set_wake(struct irq_data *d, unsigned int on)
++{
++	struct irqc_priv *p = irq_data_get_irq_chip_data(d);
++
++	if (!p->clk)
++		return 0;
++
++	if (on)
++		clk_enable(p->clk);
++	else
++		clk_disable(p->clk);
++
++	return 0;
++}
++
+ static irqreturn_t irqc_irq_handler(int irq, void *dev_id)
+ {
+ 	struct irqc_irq *i = dev_id;
+@@ -181,6 +198,12 @@ static int irqc_probe(struct platform_device *pdev)
+ 	p->pdev = pdev;
+ 	platform_set_drvdata(pdev, p);
+ 
++	p->clk = devm_clk_get(&pdev->dev, NULL);
++	if (IS_ERR(p->clk)) {
++		dev_warn(&pdev->dev, "unable to get clock\n");
++		p->clk = NULL;
++	}
++
+ 	pm_runtime_enable(&pdev->dev);
+ 	pm_runtime_get_sync(&pdev->dev);
+ 
+@@ -224,7 +247,8 @@ static int irqc_probe(struct platform_device *pdev)
+ 	irq_chip->irq_mask = irqc_irq_disable;
+ 	irq_chip->irq_unmask = irqc_irq_enable;
+ 	irq_chip->irq_set_type = irqc_irq_set_type;
+-	irq_chip->flags	= IRQCHIP_SKIP_SET_WAKE | IRQCHIP_MASK_ON_SUSPEND;
++	irq_chip->irq_set_wake = irqc_irq_set_wake;
++	irq_chip->flags	= IRQCHIP_MASK_ON_SUSPEND;
+ 
+ 	p->irq_domain = irq_domain_add_simple(pdev->dev.of_node,
+ 					      p->number_of_irqs,
+-- 
+1.9.1
 
-Regards,
-Sudeep
