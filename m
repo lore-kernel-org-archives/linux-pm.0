@@ -1,39 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/7] OPP: Introduce OPP bindings V2 and supporting code
-Date: Wed, 1 Apr 2015 11:52:50 +0530
-Message-ID: <CAKohpokDhHo1ftcB6b4b+hO125_sqjK0NKESt79GVcWEwiq04w@mail.gmail.com>
-References: <cover.1423642246.git.viresh.kumar@linaro.org>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: [PATCH V2 1/3] Thermal: initialize thermal zone device correctly
+Date: Wed, 1 Apr 2015 07:21:22 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B909263014CB2BB@SHSMSX101.ccr.corp.intel.com>
+References: <1427269996-29501-1-git-send-email-rui.zhang@intel.com>
+	<1427269996-29501-2-git-send-email-rui.zhang@intel.com>
+ <9hh4mp82ap6.fsf@e105922-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f178.google.com ([209.85.214.178]:33071 "EHLO
-	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbbDAGWv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Apr 2015 02:22:51 -0400
-Received: by obvd1 with SMTP id d1so64226317obv.0
-        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2015 23:22:50 -0700 (PDT)
-In-Reply-To: <cover.1423642246.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <9hh4mp82ap6.fsf@e105922-lin.cambridge.arm.com>
+Content-Language: en-US
+Sender: stable-owner@vger.kernel.org
+To: Punit Agrawal <punit.agrawal@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>
-Cc: Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Nishanth Menon <nm@ti.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Stephen Boyd <sboyd@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, Mike Turquette <mike.turquette@linaro.org>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Thomas Abraham <ta.omasab@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Lucas Stach <l.stach@pengutronix.de>, Mark Brown <broonie@kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>
 
-On 11 February 2015 at 13:46, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Now that I have received an verbal Ack from Rob Herring (in a personal
-> conversation) about the bindings, I am showing how the code looks like with
-> these new bindings.
->
-> Some part is still now done:
-> - Interface for adding new detailed OPPs from platform code instead of DT
-> - Providing cpufreq helpers for the next OPPs
-> - Providing regulator helpers for the target/min/max ranges
->
-> Please provide feedback on how this looks like..
+> > diff --git a/drivers/thermal/thermal_core.h
+> > b/drivers/thermal/thermal_core.h index 0531c75..6d9ffa5 100644
+> > --- a/drivers/thermal/thermal_core.h
+> > +++ b/drivers/thermal/thermal_core.h
+> > @@ -41,6 +41,7 @@ struct thermal_instance {
+> >  	struct thermal_zone_device *tz;
+> >  	struct thermal_cooling_device *cdev;
+> >  	int trip;
+> > +	bool initialized;
+> >  	unsigned long upper;	/* Highest cooling state for this trip point */
+> >  	unsigned long lower;	/* Lowest cooling state for this trip point */
+> >  	unsigned long target;	/* expected cooling state */
+> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h index
+> > 5eac316..8650b0b 100644
+> > --- a/include/linux/thermal.h
+> > +++ b/include/linux/thermal.h
+> > @@ -40,6 +40,9 @@
+> >  /* No upper/lower limit requirement */
+> >  #define THERMAL_NO_LIMIT	((u32)~0)
+> >
+> > +/* Invalid/uninitialized temperature */
+> > +#define THERMAL_TEMP_INVALID	-27400
+> > +
+> 
+> Did you mean -274000 (note the missing '0') which is < 0K? A comment would be
+> helpful for anybody reading the code. Took me a while to parse it.
+> 
+Oops, I missed this one.
+Yes, I want to use -274000 which is < 0K to indicate an invalid/uninitialized temperature.
+Updated in patch V4. Thanks for pointing it out.
 
-@Rafael: Its been two months now since this was posted. Can we get this
-merged please? If someone finds issues later, we can go fix them ..
+-rui
 
-And this *should* not break any existing stuff as this is mostly new stuff..
-
---
-viresh
+> >  /* Unit conversion macros */
+> >  #define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
+> >  				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
