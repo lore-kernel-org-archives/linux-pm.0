@@ -1,94 +1,75 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] irqchip: renesas-irqc: Add wake-up support
-Date: Wed,  1 Apr 2015 14:00:06 +0200
-Message-ID: <1427889606-18671-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-sh-owner@vger.kernel.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>
-Cc: linux-sh@vger.kernel.org, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH/RFC 1/5] clk: shmobile: rcar-gen2: Add CPG Clock Domain support
+Date: Wed, 1 Apr 2015 14:13:12 +0200
+Message-ID: <CAMuHMdWuVdOgk6RAzoUtskC3pzz3xs6HmGf5RyrAa3Rs-y56uQ@mail.gmail.com>
+References: <1426708017-28885-1-git-send-email-geert+renesas@glider.be>
+	<1426708017-28885-2-git-send-email-geert+renesas@glider.be>
+	<3861934.bVCAbQmBJW@avalon>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f177.google.com ([209.85.214.177]:33407 "EHLO
+	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753057AbbDAMNN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Apr 2015 08:13:13 -0400
+In-Reply-To: <3861934.bVCAbQmBJW@avalon>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-The IRQC module clock is managed through Runtime PM and PM Domains.
-If wake-up is enabled, this clock must not be disabled during system
-suspend.
+Hi Laurent,
 
-Hence implement irq_chip.irq_set_wake(), which increments/decrements the
-clock's enable_count when needed.
+On Tue, Mar 31, 2015 at 1:53 AM, Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
+> On Wednesday 18 March 2015 20:46:53 Geert Uytterhoeven wrote:
+>> Add Clock Domain support to the R-Car Gen2 Clock Pulse Generator (CPG)
+>> driver using the generic PM Domain.  This allows to power-manage the
+>> module clocks of SoC devices that are part of the CPG Clock Domain using
+>> Runtime PM, or for system suspend/resume.
+>>
+>> SoC devices that are part of the CPG Clock Domain and can be
+>> power-managed through their primary clock should be tagged in DT with a
+>> proper "power-domains" property.
+>>
+>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>
+> There's one thing that bothers me: the implementation is tied to the CPG
+> driver, but the code is quite generic. That feels a bit wrong, it would be
+> nice to come up with a generic implementation. On the other hand, the
+> platform-dependent part is the list of clocks to manage, specified implicitly
+> through the "pm_clk_add(dev, NULL)" call. That list needs to be specified
+> somewhere, and adding it to the CPG driver is likely the best solution we can
+> have at the moment.
 
-This fixes wake-up by gpio-keys on r8a73a4/ape6evm.
+This clock management code is identical to the one in pm-rmobile.c.
+We may consolidate in the future, if we have more PM Domain support (e.g.
+for R-Car Gen2 SYSC). Let's see...
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-Against irqchip/renesas
+> I'm slightly worried that adding the power-domains property to the DT node
+> will introduce backward compatibility issues if we later switch to a different
+> way to specify the clocks to manage automatically. I have no specific example
+> though.
 
- drivers/irqchip/irq-renesas-irqc.c | 26 +++++++++++++++++++++++++-
- 1 file changed, 25 insertions(+), 1 deletion(-)
+Specifying the clocks is indeed the hard part. I use the primary clocks, as
+that is compatible with what we did in the past in drivers/sh/pm_runtime.c.
+I thought about using a special clock name instead, but that may conflict
+with an existing driver-specific DT binding for clk-names, and may cause
+problems if you have to specify the same clock twice with different clk-names.
 
-diff --git a/drivers/irqchip/irq-renesas-irqc.c b/drivers/irqchip/irq-renesas-irqc.c
-index 718f01cd1aea19f6..cdf80b7794cd738e 100644
---- a/drivers/irqchip/irq-renesas-irqc.c
-+++ b/drivers/irqchip/irq-renesas-irqc.c
-@@ -17,6 +17,7 @@
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-  */
- 
-+#include <linux/clk.h>
- #include <linux/init.h>
- #include <linux/platform_device.h>
- #include <linux/spinlock.h>
-@@ -66,6 +67,7 @@ struct irqc_priv {
- 	struct platform_device *pdev;
- 	struct irq_chip irq_chip;
- 	struct irq_domain *irq_domain;
-+	struct clk *clk;
- };
- 
- static void irqc_dbg(struct irqc_irq *i, char *str)
-@@ -119,6 +121,21 @@ static int irqc_irq_set_type(struct irq_data *d, unsigned int type)
- 	return 0;
- }
- 
-+static int irqc_irq_set_wake(struct irq_data *d, unsigned int on)
-+{
-+	struct irqc_priv *p = irq_data_get_irq_chip_data(d);
-+
-+	if (!p->clk)
-+		return 0;
-+
-+	if (on)
-+		clk_enable(p->clk);
-+	else
-+		clk_disable(p->clk);
-+
-+	return 0;
-+}
-+
- static irqreturn_t irqc_irq_handler(int irq, void *dev_id)
- {
- 	struct irqc_irq *i = dev_id;
-@@ -181,6 +198,12 @@ static int irqc_probe(struct platform_device *pdev)
- 	p->pdev = pdev;
- 	platform_set_drvdata(pdev, p);
- 
-+	p->clk = devm_clk_get(&pdev->dev, NULL);
-+	if (IS_ERR(p->clk)) {
-+		dev_warn(&pdev->dev, "unable to get clock\n");
-+		p->clk = NULL;
-+	}
-+
- 	pm_runtime_enable(&pdev->dev);
- 	pm_runtime_get_sync(&pdev->dev);
- 
-@@ -224,7 +247,8 @@ static int irqc_probe(struct platform_device *pdev)
- 	irq_chip->irq_mask = irqc_irq_disable;
- 	irq_chip->irq_unmask = irqc_irq_enable;
- 	irq_chip->irq_set_type = irqc_irq_set_type;
--	irq_chip->flags	= IRQCHIP_SKIP_SET_WAKE | IRQCHIP_MASK_ON_SUSPEND;
-+	irq_chip->irq_set_wake = irqc_irq_set_wake;
-+	irq_chip->flags	= IRQCHIP_MASK_ON_SUSPEND;
- 
- 	p->irq_domain = irq_domain_add_simple(pdev->dev.of_node,
- 					      p->number_of_irqs,
--- 
-1.9.1
+> For those reasons,
+>
+> Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
