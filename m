@@ -1,53 +1,58 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 16/20] sched/idle: Use explicit broadcast oneshot control function
-Date: Thu, 02 Apr 2015 00:22:19 +0200
-Message-ID: <18575128.8R6Lp68k0Q@vostro.rjw.lan>
+Subject: [PATCH 17/20] clockevents: Remove broadcast oneshot control leftovers
+Date: Thu, 02 Apr 2015 00:23:07 +0200
+Message-ID: <1687150.U4peZc8UXL@vostro.rjw.lan>
 References: <2112147.0kYCHhbEJT@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64014 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752688AbbDAWD1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Apr 2015 18:03:27 -0400
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <2112147.0kYCHhbEJT@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Replace the clockevents_notify() call with an explicit function call.
+All users converted. Remove the notify leftovers.
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Original-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- kernel/sched/idle.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ include/linux/clockchips.h |    2 --
+ kernel/time/clockevents.c  |    7 -------
+ 2 files changed, 9 deletions(-)
 
-Index: linux-pm/kernel/sched/idle.c
+Index: linux-pm/include/linux/clockchips.h
 ===================================================================
---- linux-pm.orig/kernel/sched/idle.c
-+++ linux-pm/kernel/sched/idle.c
-@@ -158,8 +158,7 @@ static void cpuidle_idle_call(void)
- 	 * is used from another cpu as a broadcast timer, this call may
- 	 * fail if it is not available
- 	 */
--	if (broadcast &&
--	    clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu))
-+	if (broadcast && tick_broadcast_enter())
- 		goto use_default;
+--- linux-pm.orig/include/linux/clockchips.h
++++ linux-pm/include/linux/clockchips.h
+@@ -11,8 +11,6 @@
+ /* Clock event notification values */
+ enum clock_event_nofitiers {
+ 	CLOCK_EVT_NOTIFY_ADD,
+-	CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
+-	CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+ 	CLOCK_EVT_NOTIFY_CPU_DYING,
+ 	CLOCK_EVT_NOTIFY_CPU_DEAD,
+ };
+Index: linux-pm/kernel/time/clockevents.c
+===================================================================
+--- linux-pm.orig/kernel/time/clockevents.c
++++ linux-pm/kernel/time/clockevents.c
+@@ -655,13 +655,6 @@ int clockevents_notify(unsigned long rea
+ 	raw_spin_lock_irqsave(&clockevents_lock, flags);
  
- 	/* Take note of the planned idle state. */
-@@ -176,7 +175,7 @@ static void cpuidle_idle_call(void)
- 	idle_set_state(this_rq(), NULL);
- 
- 	if (broadcast)
--		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
-+		tick_broadcast_exit();
- 
- 	/*
- 	 * Give the governor an opportunity to reflect on the outcome
+ 	switch (reason) {
+-	case CLOCK_EVT_NOTIFY_BROADCAST_ENTER:
+-		tick_broadcast_enter();
+-		break;
+-	case CLOCK_EVT_NOTIFY_BROADCAST_EXIT:
+-		tick_broadcast_exit();
+-		break;
+-
+ 	case CLOCK_EVT_NOTIFY_CPU_DYING:
+ 		tick_handover_do_timer(arg);
+ 		break;
 
