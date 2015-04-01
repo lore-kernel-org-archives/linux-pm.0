@@ -1,86 +1,44 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH v4 3/6] Documentation: DT: Document twl4030-madc-battery bindings
-Date: Wed, 1 Apr 2015 11:30:37 -0500
-Message-ID: <CAL_JsqL1hMmp-cj56xDKJtdnySgLyCMJtmKVaLLtn=ALKUE8=g@mail.gmail.com>
-References: <1426022847-30912-1-git-send-email-marek@goldelico.com> <1426022847-30912-4-git-send-email-marek@goldelico.com>
+From: Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 0/7] OPP: Introduce OPP bindings V2 and supporting code
+Date: Wed, 1 Apr 2015 11:43:39 -0500
+Message-ID: <CAL_JsqLCjkrb2gT-_hj-UTAs+qn2LZtEm=f_C05ovhdwkZKB-A@mail.gmail.com>
+References: <cover.1423642246.git.viresh.kumar@linaro.org> <CAKohpokDhHo1ftcB6b4b+hO125_sqjK0NKESt79GVcWEwiq04w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1426022847-30912-4-git-send-email-marek@goldelico.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Belisko <marek@goldelico.com>
-Cc: Benoit Cousson <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, hns@goldelico.com
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAKohpokDhHo1ftcB6b4b+hO125_sqjK0NKESt79GVcWEwiq04w-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Mike Turquette <mike.turquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <rob.herring-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Abhilash Kesavan <kesavan.abhilash-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Viswanath Puttagunta <viswanath.puttagunta-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, santosh shilimkar <santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, "olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org" <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sudeep Holla <Sudeep.Holla-5wv7dgnIgG8@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Mar 10, 2015 at 4:27 PM, Marek Belisko <marek@goldelico.com> wrote:
-> Signed-off-by: Marek Belisko <marek@goldelico.com>
-> ---
->  .../bindings/power_supply/twl4030_madc_battery.txt | 43 ++++++++++++++++++++++
->  1 file changed, 43 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
+On Wed, Apr 1, 2015 at 1:22 AM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> On 11 February 2015 at 13:46, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+>> Now that I have received an verbal Ack from Rob Herring (in a personal
+>> conversation) about the bindings, I am showing how the code looks like with
+>> these new bindings.
+
+I have also told you multiple times I want to see others' inputs and
+acks. So yes it looks fine to me, but I am not a user of it.
+
+>> Some part is still now done:
+>> - Interface for adding new detailed OPPs from platform code instead of DT
+>> - Providing cpufreq helpers for the next OPPs
+>> - Providing regulator helpers for the target/min/max ranges
+>>
+>> Please provide feedback on how this looks like..
 >
-> diff --git a/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt b/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
-> new file mode 100644
-> index 0000000..d3dd9d8
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power_supply/twl4030_madc_battery.txt
-> @@ -0,0 +1,43 @@
-> +twl4030_madc_battery
-> +
-> +Required properties:
-> + - compatible : "ti,twl4030-madc-battery"
+> @Rafael: Its been two months now since this was posted. Can we get this
+> merged please? If someone finds issues later, we can go fix them ..
 
-Is this a sub-node of the twl4030 or something? Please define where
-this fits (hint: I would expect to be a sub node of a charging
-controller or battery monitor).
-
-> + - capacity-uah : battery capacity in uAh
-> + - ti,volt-to-capacity-charging-map : list of voltage(mV):level(%) values
-> +       for charging calibration (see example)
-> + - ti,volt-to-capacity-discharging-map : list of voltage(mV):level(%) values
-> +       for discharging calibration (see example)
-
-These seem like properties of the battery independent of the
-battery/charging controller which is the twl4030. Ideally we would
-define battery nodes generically and independent of the charge
-controllers. Then there are smart batteries to consider too.
+If there are users waiting for this, then get their acks first. As you
+already know, I spoke to Stephen at ELC and he still has concerns
+about it. As Qualcomm is probably the most complicated case, it needs
+to work for them (or we accept that it can't and they do everything
+their own way).
 
 Rob
-
-> + - io-channels: Should contain IIO channel specifiers
-> +       for each element in io-channel-names.
-> +- io-channel-names: Should contain the following values:
-> + * "temp" - The ADC channel for temperature reading
-> + * "ichg" - The ADC channel for battery charging status
-> + * "vbat" - The ADC channel to measure the battery voltage
-> +
-> +Example:
-> +       madc-battery {
-> +               compatible = "ti,twl4030-madc-battery";
-> +               capacity-uah = <1200000>;
-> +               ti,volt-to-capacity-charging-map = <4200 100>,
-> +                                               <4100 75>,
-> +                                               <4000 55>,
-> +                                               <3900 25>,
-> +                                               <3800 5>,
-> +                                               <3700 2>,
-> +                                               <3600 1>,
-> +                                               <3300 0>;
-> +
-> +               ti,volt-to-capacity-discharging-map = <4200 100>
-> +                                                  <4100 95>,
-> +                                                  <4000 70>,
-> +                                                  <3800 50>,
-> +                                                  <3700 10>,
-> +                                                  <3600 5>,
-> +                                                  <3300 0>;
-> +               io-channels = <&twl_madc 1>,
-> +                             <&twl_madc 10>,
-> +                             <&twl_madc 12>;
-> +               io-channel-names = "temp",
-> +                                  "ichg",
-> +                                  "vbat";
-> +       };
-> --
-> 1.9.1
->
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
