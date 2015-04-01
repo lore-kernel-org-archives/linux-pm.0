@@ -1,46 +1,53 @@
-From: Brian Norris <computersforpeace@gmail.com>
-Subject: thermal: uevent/netlink with step_wise?
-Date: Tue, 31 Mar 2015 15:43:48 -0700
-Message-ID: <20150331224348.GZ32500@ld-irv-0074>
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: Re: [PATCH 1/3] power: max17042_battery: Use reg type instead of chip
+ type
+Date: Wed, 01 Apr 2015 09:03:14 +0900
+Message-ID: <551B35C2.6070207@samsung.com>
+References: <1427808847-19498-1-git-send-email-beomho.seo@samsung.com>
+ <1427808847-19498-2-git-send-email-beomho.seo@samsung.com>
+ <20150331153155.GA25737@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:33790 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751030AbbCaWnz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2015 18:43:55 -0400
-Received: by pdrw1 with SMTP id w1so26276462pdr.0
-        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2015 15:43:55 -0700 (PDT)
-Received: from ld-irv-0074 (5520-maca-inet1-outside.broadcom.com. [216.31.211.11])
-        by mx.google.com with ESMTPSA id li10sm13837090pbc.33.2015.03.31.15.43.54
-        for <linux-pm@vger.kernel.org>
-        (version=TLSv1.2 cipher=RC4-SHA bits=128/128);
-        Tue, 31 Mar 2015 15:43:54 -0700 (PDT)
-Content-Disposition: inline
+Received: from mailout1.samsung.com ([203.254.224.24]:27127 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752507AbbDAADs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2015 20:03:48 -0400
+Received: from epcpsbgr1.samsung.com
+ (u141.gpu120.samsung.co.kr [203.254.230.141])
+ by mailout1.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
+ 64bit (built May  5 2014))
+ with ESMTP id <0NM300CYMPHF84B0@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 01 Apr 2015 09:03:15 +0900 (KST)
+In-reply-to: <20150331153155.GA25737@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, =?UTF-8?B?J+uMgOyduOq4sCc=?= <inki.dae@samsung.com>
 
-Hi,
+On 04/01/2015 12:31 AM, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Tue, Mar 31, 2015 at 10:34:05PM +0900, Beomho Seo wrote:
+>> [...]
+>>  	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+>> -		if (chip->chip_type == MAX17042)
+>> +		if (chip->reg_type == MAXIM_REG_TYPE_MAX17047)
+>>  			ret = regmap_read(map, MAX17042_V_empty, &data);
+>>  		else
+>>  			ret = regmap_read(map, MAX17047_V_empty, &data);
+> 
+> Looks like you inverted the logic.
+> 
+>> [...]
+> 
+> -- Sebastian
+> 
 
-I'm a bit new to the thermal subsystem, but I'm trying to figure out how
-best to use it. It seems quite flexible, but this flexibility means it's
-not obvious what the best approach to using it should be.
+OK I will fix it.
+Thank you for comment.
 
-Particularly, I'm looking right now at using the uevent/netlink
-notification mechanism. It seems that this is only active when we use
-the 'user_space' governor, meaning I can't get any user-space
-notifications when using the in-kernel governor. Am I missing something,
-or is this a known limitation? Is there any reason we can't enable both?
-For the user-space side, I'd mostly be interested in being a consumer;
-e.g., display warnings in high-temperature scenarios; although I might
-also use it to trigger some user-space cooling mechanisms.
+Best regards,
+Beomho Seo
 
-Also, can anyone point me at the best up-to-date documenation,
-especially any overall design documents? Should I just be looking at
-Documentation/thermal/, Documentation/devicetree/bindings/thermal/, and
-example drivers?
-
-Thanks in advance.
-
-Brian
