@@ -1,102 +1,145 @@
 From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH V2 07/20] cpufreq: Call schedule_work() for the last active
- policy
-Date: Wed, 01 Apr 2015 20:40:53 -0700
-Message-ID: <551CBA45.6080702@codeaurora.org>
-References: <cover.1424345053.git.viresh.kumar@linaro.org> <d9273b6f27de39f077b97f2929b47aa885220933.1424345053.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 08/20] cpufreq: Don't clear cpufreq_cpu_data and policy
+ list for inactive policies
+Date: Wed, 01 Apr 2015 21:14:55 -0700
+Message-ID: <551CC23F.2030504@codeaurora.org>
+References: <cover.1424345053.git.viresh.kumar@linaro.org> <7bf6a7ce048290ec871c608883f9c9908adc5345.1424345053.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:56817 "EHLO
+Received: from smtp.codeaurora.org ([198.145.29.96]:57937 "EHLO
 	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbbDBDkz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Apr 2015 23:40:55 -0400
-In-Reply-To: <d9273b6f27de39f077b97f2929b47aa885220933.1424345053.git.viresh.kumar@linaro.org>
+	with ESMTP id S1750712AbbDBEO5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Apr 2015 00:14:57 -0400
+In-Reply-To: <7bf6a7ce048290ec871c608883f9c9908adc5345.1424345053.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com
 
 On 02/19/2015 03:32 AM, Viresh Kumar wrote:
-> We need to call schedule_work() only for the policy belonging to boot CPU, i.e.
-> CPU0. Checking for list_is_last() wouldn't work anymore as there can be inactive
-> policies present in the list after the last active one. 'policy' still points to
-> the last active policy at the termination of the for_each_active_policy() loop,
-> use that to call schedule_work().
+> Now that we can check policy->cpus to find if policy is active or not, we don't
+> need to clean cpufreq_cpu_data and delete policy from the list on light weight
+> tear down of policies (like in suspend).
+>
+> To make it consistent and clean, set cpufreq_cpu_data for all related CPUs when
+> the policy is first created and clean it only while it is freed.
+>
+> Also update cpufreq_cpu_get_raw() to check if cpu is part of policy->cpus mask,
+> so that we don't end up getting policies for unmanaged CPUs.
+
+When you say unmanaged CPUs, do you mean offline CPUs? If so, could you 
+use that term instead? The term unmanaged is kinda ambiguous. This 
+comment applies to the entire series.
+
+> In order to make sure that no users of 'policy' are using an inactive policy,
+> use cpufreq_cpu_get_raw() instead of directly accessing cpufreq_cpu_data.
 >
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->   drivers/cpufreq/cpufreq.c | 15 +++++++--------
->   1 file changed, 7 insertions(+), 8 deletions(-)
+>   drivers/cpufreq/cpufreq.c | 79 ++++++++++++++++++++---------------------------
+>   1 file changed, 34 insertions(+), 45 deletions(-)
 >
 > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index d3f9ce3b94d3..e728c796c327 100644
+> index e728c796c327..e27b2a7bd9b3 100644
 > --- a/drivers/cpufreq/cpufreq.c
 > +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1779,15 +1779,14 @@ void cpufreq_resume(void)
->   		    || __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))
->   			pr_err("%s: Failed to start governor for policy: %p\n",
->   				__func__, policy);
-> -
-> -		/*
-> -		 * schedule call cpufreq_update_policy() for boot CPU, i.e. last
-> -		 * policy in list. It will verify that the current freq is in
-> -		 * sync with what we believe it to be.
-> -		 */
-> -		if (list_is_last(&policy->policy_list, &cpufreq_policy_list))
-> -			schedule_work(&policy->update);
->   	}
-> +
-> +	/*
-> +	 * schedule call cpufreq_update_policy() for boot CPU, i.e. last
-> +	 * policy in list. It will verify that the current freq is in
-> +	 * sync with what we believe it to be.
-> +	 */
-> +	schedule_work(&policy->update);
+> @@ -250,10 +250,18 @@ int cpufreq_generic_init(struct cpufreq_policy *policy,
 >   }
+>   EXPORT_SYMBOL_GPL(cpufreq_generic_init);
 >
->   /**
 
-Ok, I don't think this will work after the next patch/end of the series.
+<SNIP>
 
-Some ground rules/clarification: When the suspend/resume code and this 
-cpufreq_suspend/resume functions talk about boot CPU, they don't really 
-mean the boot CPU. It really means the CPU with the smallest CPU ID when 
-suspend is initiated. For example in a 4 core system, if CPU0 is 
-hotplugged off, then "boot CPU" in the context of suspend/resume is 
-actually CPU1. That's the reason we can't simply do "get policy of CPU0" 
-and the schedule work.
+> @@ -1053,7 +1055,6 @@ static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
+>   				  unsigned int cpu, struct device *dev)
+>   {
+>   	int ret = 0;
+> -	unsigned long flags;
+>
+>   	/* Is cpu already managed ? */
+>   	if (cpumask_test_cpu(cpu, policy->cpus))
+> @@ -1068,13 +1069,7 @@ static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
+>   	}
+>
+>   	down_write(&policy->rwsem);
+> -
+> -	write_lock_irqsave(&cpufreq_driver_lock, flags);
+> -
+>   	cpumask_set_cpu(cpu, policy->cpus);
+> -	per_cpu(cpufreq_cpu_data, cpu) = policy;
+> -	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> -
+>   	up_write(&policy->rwsem);
+>
+>   	if (has_target()) {
+> @@ -1165,6 +1160,17 @@ static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy)
+>
+>   static void cpufreq_policy_free(struct cpufreq_policy *policy)
+>   {
+> +	unsigned long flags;
+> +	int cpu;
+> +
+> +	/* Remove policy from list */
+> +	write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +	list_del(&policy->policy_list);
+> +
+> +	for_each_cpu(cpu, policy->related_cpus)
+> +		per_cpu(cpufreq_cpu_data, cpu) = NULL;
+> +	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +
+>   	free_cpumask_var(policy->related_cpus);
+>   	free_cpumask_var(policy->cpus);
+>   	kfree(policy);
+> @@ -1286,12 +1292,12 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>   			       __func__, ret);
+>   			goto err_init_policy_kobj;
+>   		}
+> -	}
+>
+> -	write_lock_irqsave(&cpufreq_driver_lock, flags);
+> -	for_each_cpu(j, policy->cpus)
+> -		per_cpu(cpufreq_cpu_data, j) = policy;
+> -	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +		write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +		for_each_cpu(j, policy->related_cpus)
+> +			per_cpu(cpufreq_cpu_data, j) = policy;
+> +		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +	}
 
-So what this patch really is assuming is that the last active policy in 
-the policy list corresponds to the CPU with the smallest CPU ID when 
-suspend is initiated.
+Why not do this is cpufreq_policy_alloc() to be consistent/symmetric 
+with cpufreq_policy_free()? You had to set cpufreq_cpu_data/add to the 
+list this late in cpufreq_add_dev before because you shouldn't be adding 
+a unfinished policy to the cpufreq_cpu_data/list. But now that you check 
+for policy->cpus before returning it, you may be do all of this in 
+cpufreq_policy_alloc()?
 
-That was true when we added/deleted policies when CPUs are hotplugged 
-on/off (even during lightweight tear-down, we did add/delete). However, 
-at the end of the series, we won't be adding/deleting these policies 
-from the list for each hotplug add/remove. So, the last active policy in 
-the list doesn't always correspond to the online CPU with the smallest 
-CPU ID during suspend/resume.
+>   	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
+>   		policy->cur = cpufreq_driver->get(policy->cpu);
+> @@ -1350,11 +1356,11 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>   			goto err_out_unregister;
+>   		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+>   				CPUFREQ_CREATE_POLICY, policy);
+> -	}
+>
+> -	write_lock_irqsave(&cpufreq_driver_lock, flags);
+> -	list_add(&policy->policy_list, &cpufreq_policy_list);
+> -	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +		write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +		list_add(&policy->policy_list, &cpufreq_policy_list);
+> +		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +	}
 
-Here's an example case:
-* Assume we never physically hot plug the CPUs.
-* Assume it's a system with 4 independent CPUs.
-* We boot with just CPU0 active.
-* So, the policy list will now have: CPU0 policy.
-* CPU2 is then brought online.
-* So, the policy list will now have: CPU2 policy, CPU0 policy.
-* CPU1 is then brought online.
-* So, the policy list will now have: CPU1 policy CPU2 policy, CPU0 policy.
-* CPU0 is taken offline.
-* So, the policy list will now have: CPU1 policy CPU2 policy, CPU0 
-inactive policy.
-* Now suspend happens and then we resume.
-* We really need to be scheduling the work for CPU1 since that's the 
-"boot cpu" for suspend/resume.
-* But the last active policy is for CPU2 and we schedule work for that.
+You could probably do this as part of policy alloc too?
 
-Nack for the patch, unless I missed some list maintenance code.
+>
+>   	cpufreq_init_policy(policy);
+>
+> @@ -1378,11 +1384,6 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>
+
+Rest of the patch looks good.
 
 -Saravana
 
