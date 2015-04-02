@@ -1,108 +1,45 @@
-From: "Fu, Borun" <borun.fu@intel.com>
-Subject: RE: [PATCH] PM / watchdog: iTCO: stop watchdog during system suspend
-Date: Thu, 2 Apr 2015 02:13:56 +0000
-Message-ID: <48A8D21F3057FE4DB59C829EB7A1638A10EA3311@SHSMSX104.ccr.corp.intel.com>
-References: <2017660.nPaHVT8bW3@vostro.rjw.lan>
- <48A8D21F3057FE4DB59C829EB7A1638A10EA3254@SHSMSX104.ccr.corp.intel.com>
- <551C973C.3080902@roeck-us.net>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 0/7] OPP: Introduce OPP bindings V2 and supporting code
+Date: Thu, 2 Apr 2015 08:30:23 +0530
+Message-ID: <CAKohpomsJnOeMDNcSz-1WwyN692G_JfZt=LtFvJh7_93cLxHbg@mail.gmail.com>
+References: <cover.1423642246.git.viresh.kumar@linaro.org>
+	<CAKohpokDhHo1ftcB6b4b+hO125_sqjK0NKESt79GVcWEwiq04w@mail.gmail.com>
+	<CAL_JsqLCjkrb2gT-_hj-UTAs+qn2LZtEm=f_C05ovhdwkZKB-A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:10877 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751695AbbDBCOV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 1 Apr 2015 22:14:21 -0400
-In-Reply-To: <551C973C.3080902@roeck-us.net>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAL_JsqLCjkrb2gT-_hj-UTAs+qn2LZtEm=f_C05ovhdwkZKB-A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Mike Turquette <mike.turquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <rob.herring-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Abhilash Kesavan <kesavan.abhilash-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Viswanath Puttagunta <viswanath.puttagunta-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, santosh shilimkar <santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, "olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org" <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sudeep Holla <Sudeep.Holla-5wv7dgnIgG8@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Wim Van Sebroeck <wim@iguana.be>, "Li, Aubrey" <aubrey.li@intel.com>
 
-U29ycnksIG15IGZhdWx0LiBJdCBzaG91bGQgd29yayBhcyB3ZWxsLiANCg0KLS0tLS1PcmlnaW5h
-bCBNZXNzYWdlLS0tLS0NCkZyb206IEd1ZW50ZXIgUm9lY2sgW21haWx0bzpsaW51eEByb2Vjay11
-cy5uZXRdIA0KU2VudDogVGh1cnNkYXksIEFwcmlsIDAyLCAyMDE1IDk6MTENClRvOiBGdSwgQm9y
-dW47IFJhZmFlbCBKLiBXeXNvY2tpOyBsaW51eC13YXRjaGRvZ0B2Z2VyLmtlcm5lbC5vcmcNCkNj
-OiBMaW51eCBLZXJuZWwgTWFpbGluZyBMaXN0OyBMaW51eCBQTSBsaXN0OyBXaW0gVmFuIFNlYnJv
-ZWNrOyBMaSwgQXVicmV5OyBXYW5nLCBGcmFuaw0KU3ViamVjdDogUmU6IFtQQVRDSF0gUE0gLyB3
-YXRjaGRvZzogaVRDTzogc3RvcCB3YXRjaGRvZyBkdXJpbmcgc3lzdGVtIHN1c3BlbmQNCg0KT24g
-MDQvMDEvMjAxNSAwNTo1MiBQTSwgRnUsIEJvcnVuIHdyb3RlOg0KPiBIaSBSYWZhZWwsDQo+IHdh
-dGNoZG9nX2FjdGl2ZSgpIGZ1bmN0aW9uIGlzIG5vdCBpbXBsZW1lbnRlZCBpbiB5b3VyIHBhdGNo
-LiBQbHMuIGFkZCBpdC4NCj4NCg0KUGxlYXNlIGV4cGxhaW4gd2h5IHVzaW5nIHRoZSBzdGFuZGFy
-ZCB3YXRjaGRvZ19hY3RpdmUoKSB3b3VsZCBub3Qgd29yayBoZXJlLg0KDQpHdWVudGVyDQoNCj4g
-c3RhdGljIGludCB3YXRjaGRvZ19hY3RpdmUoc3RydWN0IGRldmljZSAqZGV2KSB7DQo+ICAgICAg
-ICAgdW5zaWduZWQgaW50IHZhbDsNCj4NCj4gICAgICAgICBzcGluX2xvY2soJmlUQ09fd2R0X3By
-aXZhdGUuaW9fbG9jayk7DQo+ICAgICAgICAgdmFsID0gaW53KFRDTzFfQ05UKTsNCj4gICAgICAg
-ICBzcGluX3VubG9jaygmaVRDT193ZHRfcHJpdmF0ZS5pb19sb2NrKTsNCj4NCj4gICAgICAgICAv
-KiBCaXQgMTE6IFRDTyBUaW1lciBIYWx0ICovDQo+ICAgICAgICAgaWYgKHZhbCAmIDB4MDgwMCkN
-Cj4gICAgICAgICAgICAgICAgIHJldHVybiAwOw0KPiAgICAgICAgIGVsc2UNCj4gICAgICAgICAg
-ICAgICAgIHJldHVybiAxOw0KPiB9DQo+DQo+IFJlZ2FyZHMsDQo+IEJvcnVuDQo+IC0tLS0tT3Jp
-Z2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3
-QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFRodXJzZGF5LCBBcHJpbCAwMiwgMjAxNSA4OjMxDQo+
-IFRvOiBsaW51eC13YXRjaGRvZ0B2Z2VyLmtlcm5lbC5vcmcNCj4gQ2M6IExpbnV4IEtlcm5lbCBN
-YWlsaW5nIExpc3Q7IExpbnV4IFBNIGxpc3Q7IFdpbSBWYW4gU2Vicm9lY2s7IExpLCANCj4gQXVi
-cmV5OyBGdSwgQm9ydW4NCj4gU3ViamVjdDogW1BBVENIXSBQTSAvIHdhdGNoZG9nOiBpVENPOiBz
-dG9wIHdhdGNoZG9nIGR1cmluZyBzeXN0ZW0gDQo+IHN1c3BlbmQNCj4NCj4gRnJvbTogUmFmYWVs
-IEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPg0KPg0KPiBJZiB0aGUgdGFy
-Z2V0IHNsZWVwIHN0YXRlIG9mIHRoZSBzeXN0ZW0gaXMgbm90IGFuIEFDUEkgc2xlZXAgc3RhdGUg
-KFMxLCBTMiBvciBTMyksIHRoZSBUQ08gd2F0Y2hkb2cgbmVlZHMgdG8gYmUgc3RvcHBlZCBkdXJp
-bmcgc3lzdGVtIHN1c3BlbmQsIGJlY2F1c2UgaXQgbWF5IG5vdCBiZSBwb3NzaWJsZSB0byBwaW5n
-IGl0IGFueSBtb3JlIGFmdGVyIHRpbWVrZWVwaW5nIGhhcyBiZWVuIHN1c3BlbmRlZCAoc3VzcGVu
-ZC10by1pZGxlIGRvZXMgdGhhdCBmb3Igb25lIGV4YW1wbGUpLg0KPg0KPiBGb3IgdGhpcyByZWFz
-b24sIHByb3ZpZGUgLT5zdXNwZW5kX25vaXJxIGFuZCAtPnJlc3VtZV9ub2lycSBjYWxsYmFja3Mg
-Zm9yIHRoZSBpVENPIHdhdGNoZG9nIGRyaXZlciBhbmQgdXNlIHRoZW0gdG8gc3RvcCBhbmQgcmVz
-dGFydCB0aGUgd2F0Y2hkb2cgZHVyaW5nIHN5c3RlbSBzdXNwZW5kIGFuZCByZXN1bWUsIHJlc3Bl
-Y3RpdmVseSwgaWYgdGhlIHN5c3RlbSBpcyBub3QgZ29pbmcgdG8gZW50ZXIgYW4gQUNQSSBzbGVl
-cCBzdGF0ZSAoaW4gd2hpY2ggY2FzZSB0aGUgd2F0Y2hkb2cgd2lsbCBiZSBzdG9wcGVkIGJ5IHRo
-ZSBwbGF0Zm9ybSBmaXJtd2FyZSBiZWZvcmUgdGhlIHN0YXRlIGlzIGVudGVyZWQpLg0KPg0KPiBS
-ZXBvcnRlZC1ieTogQm9ydW4gRnUgPGJvcnVuLmZ1QGludGVsLmNvbT4NCj4gU2lnbmVkLW9mZi1i
-eTogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPg0KPiAtLS0N
-Cj4gICBkcml2ZXJzL3dhdGNoZG9nL2lUQ09fd2R0LmMgfCAgIDUxICsrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+ICAgMSBmaWxlIGNoYW5nZWQsIDUxIGluc2Vy
-dGlvbnMoKykNCj4NCj4gSW5kZXg6IGxpbnV4LXBtL2RyaXZlcnMvd2F0Y2hkb2cvaVRDT193ZHQu
-Yw0KPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09DQo+IC0tLSBsaW51eC1wbS5vcmlnL2RyaXZlcnMvd2F0Y2hkb2cvaVRD
-T193ZHQuYw0KPiArKysgbGludXgtcG0vZHJpdmVycy93YXRjaGRvZy9pVENPX3dkdC5jDQo+IEBA
-IC01MSw2ICs1MSw3IEBADQo+ICAgI2RlZmluZSBEUlZfVkVSU0lPTgkiMS4xMSINCj4NCj4gICAv
-KiBJbmNsdWRlcyAqLw0KPiArI2luY2x1ZGUgPGxpbnV4L2FjcGkuaD4JCQkvKiBGb3IgQUNQSSBz
-dXBwb3J0ICovDQo+ICAgI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgkJLyogRm9yIG1vZHVsZSBz
-cGVjaWZpYyBpdGVtcyAqLw0KPiAgICNpbmNsdWRlIDxsaW51eC9tb2R1bGVwYXJhbS5oPgkJLyog
-Rm9yIG5ldyBtb2R1bGVwYXJhbSdzICovDQo+ICAgI2luY2x1ZGUgPGxpbnV4L3R5cGVzLmg+CQkv
-KiBGb3Igc3RhbmRhcmQgdHlwZXMgKGxpa2Ugc2l6ZV90KSAqLw0KPiBAQCAtMTAzLDYgKzEwNCw4
-IEBAIHN0YXRpYyBzdHJ1Y3QgewkJLyogdGhpcyBpcyBwcml2YXRlIGRhdGENCj4gICAJc3RydWN0
-IHBsYXRmb3JtX2RldmljZSAqZGV2Ow0KPiAgIAkvKiB0aGUgUENJLWRldmljZSAqLw0KPiAgIAlz
-dHJ1Y3QgcGNpX2RldiAqcGRldjsNCj4gKwkvKiB3aGV0aGVyIG9yIG5vdCB0aGUgd2F0Y2hkb2cg
-aGFzIGJlZW4gc3VzcGVuZGVkICovDQo+ICsJYm9vbCBzdXNwZW5kZWQ7DQo+ICAgfSBpVENPX3dk
-dF9wcml2YXRlOw0KPg0KPiAgIC8qIG1vZHVsZSBwYXJhbWV0ZXJzICovDQo+IEBAIC01NzEsMTIg
-KzU3NCw2MCBAQCBzdGF0aWMgdm9pZCBpVENPX3dkdF9zaHV0ZG93bihzdHJ1Y3QgcGxhDQo+ICAg
-CWlUQ09fd2R0X3N0b3AoTlVMTCk7DQo+ICAgfQ0KPg0KPiArI2lmZGVmIENPTkZJR19QTV9TTEVF
-UA0KPiArLyoNCj4gKyAqIFN1c3BlbmQtdG8taWRsZSByZXF1aXJlcyB0aGlzLCBiZWNhdXNlIGl0
-IHN0b3BzIHRoZSB0aWNrcyBhbmQgDQo+ICt0aW1la2VlcGluZywgc28NCj4gKyAqIHRoZSB3YXRj
-aGRvZyBjYW5ub3QgYmUgcGluZ2VkIHdoaWxlIGluIHRoYXQgc3RhdGUuICBJbiBBQ1BJIHNsZWVw
-IA0KPiArc3RhdGVzIHRoZQ0KPiArICogd2F0Y2hkb2cgaXMgc3RvcHBlZCBieSB0aGUgcGxhdGZv
-cm0gZmlybXdhcmUuDQo+ICsgKi8NCj4gKw0KPiArI2lmZGVmIENPTkZJR19BQ1BJDQo+ICtzdGF0
-aWMgaW5saW5lIGJvb2wgbmVlZF9zdXNwZW5kKHZvaWQpIHsNCj4gKwlyZXR1cm4gYWNwaV90YXJn
-ZXRfc3lzdGVtX3N0YXRlKCkgPT0gQUNQSV9TVEFURV9TMDsgfSAjZWxzZSBzdGF0aWMgDQo+ICtp
-bmxpbmUgYm9vbCBuZWVkX3N1c3BlbmQodm9pZCkgeyByZXR1cm4gdHJ1ZTsgfSAjZW5kaWYNCj4g
-Kw0KPiArc3RhdGljIGludCBpVENPX3dkdF9zdXNwZW5kX25vaXJxKHN0cnVjdCBkZXZpY2UgKmRl
-dikgew0KPiArCWludCByZXQgPSAwOw0KPiArDQo+ICsJaVRDT193ZHRfcHJpdmF0ZS5zdXNwZW5k
-ZWQgPSBmYWxzZTsNCj4gKwlpZiAod2F0Y2hkb2dfYWN0aXZlKCZpVENPX3dkdF93YXRjaGRvZ19k
-ZXYpICYmIG5lZWRfc3VzcGVuZCgpKSB7DQo+ICsJCXJldCA9IGlUQ09fd2R0X3N0b3AoJmlUQ09f
-d2R0X3dhdGNoZG9nX2Rldik7DQo+ICsJCWlmICghcmV0KQ0KPiArCQkJaVRDT193ZHRfcHJpdmF0
-ZS5zdXNwZW5kZWQgPSB0cnVlOw0KPiArCX0NCj4gKwlyZXR1cm4gcmV0Ow0KPiArfQ0KPiArDQo+
-ICtzdGF0aWMgaW50IGlUQ09fd2R0X3Jlc3VtZV9ub2lycShzdHJ1Y3QgZGV2aWNlICpkZXYpIHsN
-Cj4gKwlpZiAoaVRDT193ZHRfcHJpdmF0ZS5zdXNwZW5kZWQpDQo+ICsJCWlUQ09fd2R0X3N0YXJ0
-KCZpVENPX3dkdF93YXRjaGRvZ19kZXYpOw0KPiArDQo+ICsJcmV0dXJuIDA7DQo+ICt9DQo+ICsN
-Cj4gK3N0cnVjdCBkZXZfcG1fb3BzIGlUQ09fd2R0X3BtID0gew0KPiArCS5zdXNwZW5kX25vaXJx
-ID0gaVRDT193ZHRfc3VzcGVuZF9ub2lycSwNCj4gKwkucmVzdW1lX25vaXJxID0gaVRDT193ZHRf
-cmVzdW1lX25vaXJxLCB9Ow0KPiArDQo+ICsjZGVmaW5lIElUQ09fV0RUX1BNX09QUwkmaVRDT193
-ZHRfcG0NCj4gKyNlbHNlDQo+ICsjZGVmaW5lIElUQ09fV0RUX1BNX09QUwlOVUxMDQo+ICsjZW5k
-aWYgLyogQ09ORklHX1BNX1NMRUVQICovDQo+ICsNCj4gICBzdGF0aWMgc3RydWN0IHBsYXRmb3Jt
-X2RyaXZlciBpVENPX3dkdF9kcml2ZXIgPSB7DQo+ICAgCS5wcm9iZSAgICAgICAgICA9IGlUQ09f
-d2R0X3Byb2JlLA0KPiAgIAkucmVtb3ZlICAgICAgICAgPSBpVENPX3dkdF9yZW1vdmUsDQo+ICAg
-CS5zaHV0ZG93biAgICAgICA9IGlUQ09fd2R0X3NodXRkb3duLA0KPiAgIAkuZHJpdmVyICAgICAg
-ICAgPSB7DQo+ICAgCQkubmFtZSAgID0gRFJWX05BTUUsDQo+ICsJCS5wbSAgICAgPSBJVENPX1dE
-VF9QTV9PUFMsDQo+ICAgCX0sDQo+ICAgfTsNCj4NCj4NCj4gTiAgICAgciAgeSAgIGIgWCAgx6d2
-IF4gKd66ey5uICsgICAgeyAgIFwgICAge2F5IB3Kh9qZICxqIA0KPiAgIGYgICBoICAgeiAeIHcg
-ICANCiAgIGo6K3YgICB3IGogbSAgICAgICAgIHpaKyAgICAg3aJqIiAgIXRtbD0NCj4NCg0K
+On 1 April 2015 at 22:13, Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+
+> I have also told you multiple times I want to see others' inputs and
+> acks. So yes it looks fine to me, but I am not a user of it.
+
+Right :) and so I am trying hard to get those people to review it. Probably
+Stephen will respond now and I have also managed to convince Nishanth
+to review it :)
+
+>> @Rafael: Its been two months now since this was posted. Can we get this
+>> merged please? If someone finds issues later, we can go fix them ..
+
+So, atleast I got the required attention :)
+
+> If there are users waiting for this, then get their acks first. As you
+
+I am one of those for my cpufreq-dt driver. :)
+
+> already know, I spoke to Stephen at ELC and he still has concerns
+> about it. As Qualcomm is probably the most complicated case, it needs
+> to work for them (or we accept that it can't and they do everything
+> their own way).
+
+Yeah, so we can't wait for them for ever. They have to respond now if
+they want to use it. Or we go ahead ...
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
