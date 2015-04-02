@@ -1,121 +1,107 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / watchdog: iTCO: stop watchdog during system suspend
-Date: Thu, 02 Apr 2015 02:31:01 +0200
-Message-ID: <2017660.nPaHVT8bW3@vostro.rjw.lan>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH] irqchip: renesas-irqc: Add wake-up support
+Date: Thu, 2 Apr 2015 09:19:46 +0900
+Message-ID: <20150402001945.GB16176@verge.net.au>
+References: <1427889606-18671-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63915 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751576AbbDBAGr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Apr 2015 20:06:47 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:38691 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752107AbbDBATv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Apr 2015 20:19:51 -0400
+Content-Disposition: inline
+In-Reply-To: <1427889606-18671-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-watchdog@vger.kernel.org
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Wim Van Sebroeck <wim@iguana.be>, Aubrey Li <aubrey.li@intel.com>, Borun Fu <borun.fu@intel.com>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wed, Apr 01, 2015 at 02:00:06PM +0200, Geert Uytterhoeven wrote:
+> The IRQC module clock is managed through Runtime PM and PM Domains.
+> If wake-up is enabled, this clock must not be disabled during system
+> suspend.
+> 
+> Hence implement irq_chip.irq_set_wake(), which increments/decrements the
+> clock's enable_count when needed.
+> 
+> This fixes wake-up by gpio-keys on r8a73a4/ape6evm.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-If the target sleep state of the system is not an ACPI sleep state
-(S1, S2 or S3), the TCO watchdog needs to be stopped during system
-suspend, because it may not be possible to ping it any more after
-timekeeping has been suspended (suspend-to-idle does that for
-one example).
+Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
 
-For this reason, provide ->suspend_noirq and ->resume_noirq
-callbacks for the iTCO watchdog driver and use them to stop
-and restart the watchdog during system suspend and resume,
-respectively, if the system is not going to enter an ACPI
-sleep state (in which case the watchdog will be stopped
-by the platform firmware before the state is entered).
-
-Reported-by: Borun Fu <borun.fu@intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/watchdog/iTCO_wdt.c |   51 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 51 insertions(+)
-
-Index: linux-pm/drivers/watchdog/iTCO_wdt.c
-===================================================================
---- linux-pm.orig/drivers/watchdog/iTCO_wdt.c
-+++ linux-pm/drivers/watchdog/iTCO_wdt.c
-@@ -51,6 +51,7 @@
- #define DRV_VERSION	"1.11"
- 
- /* Includes */
-+#include <linux/acpi.h>			/* For ACPI support */
- #include <linux/module.h>		/* For module specific items */
- #include <linux/moduleparam.h>		/* For new moduleparam's */
- #include <linux/types.h>		/* For standard types (like size_t) */
-@@ -103,6 +104,8 @@ static struct {		/* this is private data
- 	struct platform_device *dev;
- 	/* the PCI-device */
- 	struct pci_dev *pdev;
-+	/* whether or not the watchdog has been suspended */
-+	bool suspended;
- } iTCO_wdt_private;
- 
- /* module parameters */
-@@ -571,12 +574,60 @@ static void iTCO_wdt_shutdown(struct pla
- 	iTCO_wdt_stop(NULL);
- }
- 
-+#ifdef CONFIG_PM_SLEEP
-+/*
-+ * Suspend-to-idle requires this, because it stops the ticks and timekeeping, so
-+ * the watchdog cannot be pinged while in that state.  In ACPI sleep states the
-+ * watchdog is stopped by the platform firmware.
-+ */
-+
-+#ifdef CONFIG_ACPI
-+static inline bool need_suspend(void)
-+{
-+	return acpi_target_system_state() == ACPI_STATE_S0;
-+}
-+#else
-+static inline bool need_suspend(void) { return true; }
-+#endif
-+
-+static int iTCO_wdt_suspend_noirq(struct device *dev)
-+{
-+	int ret = 0;
-+
-+	iTCO_wdt_private.suspended = false;
-+	if (watchdog_active(&iTCO_wdt_watchdog_dev) && need_suspend()) {
-+		ret = iTCO_wdt_stop(&iTCO_wdt_watchdog_dev);
-+		if (!ret)
-+			iTCO_wdt_private.suspended = true;
-+	}
-+	return ret;
-+}
-+
-+static int iTCO_wdt_resume_noirq(struct device *dev)
-+{
-+	if (iTCO_wdt_private.suspended)
-+		iTCO_wdt_start(&iTCO_wdt_watchdog_dev);
-+
-+	return 0;
-+}
-+
-+struct dev_pm_ops iTCO_wdt_pm = {
-+	.suspend_noirq = iTCO_wdt_suspend_noirq,
-+	.resume_noirq = iTCO_wdt_resume_noirq,
-+};
-+
-+#define ITCO_WDT_PM_OPS	&iTCO_wdt_pm
-+#else
-+#define ITCO_WDT_PM_OPS	NULL
-+#endif /* CONFIG_PM_SLEEP */
-+
- static struct platform_driver iTCO_wdt_driver = {
- 	.probe          = iTCO_wdt_probe,
- 	.remove         = iTCO_wdt_remove,
- 	.shutdown       = iTCO_wdt_shutdown,
- 	.driver         = {
- 		.name   = DRV_NAME,
-+		.pm     = ITCO_WDT_PM_OPS,
- 	},
- };
- 
-
+> ---
+> Against irqchip/renesas
+> 
+>  drivers/irqchip/irq-renesas-irqc.c | 26 +++++++++++++++++++++++++-
+>  1 file changed, 25 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/irqchip/irq-renesas-irqc.c b/drivers/irqchip/irq-renesas-irqc.c
+> index 718f01cd1aea19f6..cdf80b7794cd738e 100644
+> --- a/drivers/irqchip/irq-renesas-irqc.c
+> +++ b/drivers/irqchip/irq-renesas-irqc.c
+> @@ -17,6 +17,7 @@
+>   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+>   */
+>  
+> +#include <linux/clk.h>
+>  #include <linux/init.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/spinlock.h>
+> @@ -66,6 +67,7 @@ struct irqc_priv {
+>  	struct platform_device *pdev;
+>  	struct irq_chip irq_chip;
+>  	struct irq_domain *irq_domain;
+> +	struct clk *clk;
+>  };
+>  
+>  static void irqc_dbg(struct irqc_irq *i, char *str)
+> @@ -119,6 +121,21 @@ static int irqc_irq_set_type(struct irq_data *d, unsigned int type)
+>  	return 0;
+>  }
+>  
+> +static int irqc_irq_set_wake(struct irq_data *d, unsigned int on)
+> +{
+> +	struct irqc_priv *p = irq_data_get_irq_chip_data(d);
+> +
+> +	if (!p->clk)
+> +		return 0;
+> +
+> +	if (on)
+> +		clk_enable(p->clk);
+> +	else
+> +		clk_disable(p->clk);
+> +
+> +	return 0;
+> +}
+> +
+>  static irqreturn_t irqc_irq_handler(int irq, void *dev_id)
+>  {
+>  	struct irqc_irq *i = dev_id;
+> @@ -181,6 +198,12 @@ static int irqc_probe(struct platform_device *pdev)
+>  	p->pdev = pdev;
+>  	platform_set_drvdata(pdev, p);
+>  
+> +	p->clk = devm_clk_get(&pdev->dev, NULL);
+> +	if (IS_ERR(p->clk)) {
+> +		dev_warn(&pdev->dev, "unable to get clock\n");
+> +		p->clk = NULL;
+> +	}
+> +
+>  	pm_runtime_enable(&pdev->dev);
+>  	pm_runtime_get_sync(&pdev->dev);
+>  
+> @@ -224,7 +247,8 @@ static int irqc_probe(struct platform_device *pdev)
+>  	irq_chip->irq_mask = irqc_irq_disable;
+>  	irq_chip->irq_unmask = irqc_irq_enable;
+>  	irq_chip->irq_set_type = irqc_irq_set_type;
+> -	irq_chip->flags	= IRQCHIP_SKIP_SET_WAKE | IRQCHIP_MASK_ON_SUSPEND;
+> +	irq_chip->irq_set_wake = irqc_irq_set_wake;
+> +	irq_chip->flags	= IRQCHIP_MASK_ON_SUSPEND;
+>  
+>  	p->irq_domain = irq_domain_add_simple(pdev->dev.of_node,
+>  					      p->number_of_irqs,
+> -- 
+> 1.9.1
+> 
