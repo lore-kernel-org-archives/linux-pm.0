@@ -1,104 +1,76 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH V2 14/20] cpufreq: Track cpu managing sysfs kobjects separately
-Date: Wed, 01 Apr 2015 21:40:56 -0700
-Message-ID: <551CC858.4020809@codeaurora.org>
-References: <cover.1424345053.git.viresh.kumar@linaro.org> <58ae61a8e5c09f94140d68f3c081559823fa885f.1424345053.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: Schedule work for the first-online CPU on resume
+Date: Thu,  2 Apr 2015 10:21:33 +0530
+Message-ID: <9775122d957a0cd594cfc43b2d81ebbf78e6dc2f.1427950272.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:59091 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751360AbbDBEk7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Apr 2015 00:40:59 -0400
-In-Reply-To: <58ae61a8e5c09f94140d68f3c081559823fa885f.1424345053.git.viresh.kumar@linaro.org>
+Received: from mail-pd0-f169.google.com ([209.85.192.169]:36116 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750828AbbDBEvr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Apr 2015 00:51:47 -0400
+Received: by pdea3 with SMTP id a3so26031695pde.3
+        for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2015 21:51:46 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, "3.15+" <stable@vger.kernel.org>
 
-On 02/19/2015 03:32 AM, Viresh Kumar wrote:
-> From: Saravana Kannan <skannan@codeaurora.org>
->
-> In order to prepare for the next few commits, that will stop migrating sysfs
-> files on cpu hotplug, this patch starts managing sysfs-cpu separately.
->
-> The behavior is still the same as we are still migrating sysfs files on hotplug,
-> later commits would change that.
->
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->   drivers/cpufreq/cpufreq.c | 11 +++++++----
->   include/linux/cpufreq.h   |  4 +++-
->   2 files changed, 10 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 155e6ff2fa85..fff08145d9ff 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -981,7 +981,7 @@ static int cpufreq_add_dev_symlink(struct cpufreq_policy *policy)
->   	for_each_cpu(j, policy->cpus) {
->   		struct device *cpu_dev;
->
-> -		if (j == policy->cpu)
-> +		if (j == policy->kobj_cpu)
->   			continue;
->
->   		pr_debug("Adding link for CPU: %u\n", j);
-> @@ -1200,6 +1200,7 @@ static int update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu,
->
->   	down_write(&policy->rwsem);
->   	policy->cpu = cpu;
-> +	policy->kobj_cpu = cpu;
->   	up_write(&policy->rwsem);
->
->   	return 0;
-> @@ -1257,10 +1258,12 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
->   	 * the creation of a brand new one. So we need to perform this update
->   	 * by invoking update_policy_cpu().
->   	 */
-> -	if (recover_policy && cpu != policy->cpu)
-> +	if (recover_policy && cpu != policy->cpu) {
->   		WARN_ON(update_policy_cpu(policy, cpu, dev));
-> -	else
-> +	} else {
->   		policy->cpu = cpu;
-> +		policy->kobj_cpu = cpu;
-> +	}
->
->   	cpumask_copy(policy->cpus, cpumask_of(cpu));
->
-> @@ -1439,7 +1442,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
->   			CPUFREQ_NAME_LEN);
->   	up_write(&policy->rwsem);
->
-> -	if (cpu != policy->cpu) {
-> +	if (cpu != policy->kobj_cpu) {
->   		sysfs_remove_link(&dev->kobj, "cpufreq");
->   	} else if (cpus > 1) {
->   		/* Nominate new CPU */
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 48e37c07eb84..29ad97c34fd5 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -65,7 +65,9 @@ struct cpufreq_policy {
->
->   	unsigned int		shared_type; /* ACPI: ANY or ALL affected CPUs
->   						should set cpufreq */
-> -	unsigned int		cpu;    /* cpu nr of CPU managing this policy */
-> +	unsigned int		cpu;    /* cpu managing this policy, must be online */
-> +	unsigned int		kobj_cpu; /* cpu managing sysfs files, can be offline */
-> +
->   	struct clk		*clk;
->   	struct cpufreq_cpuinfo	cpuinfo;/* see above */
->
->
+All CPUs leaving the first-online CPU are hotplugged out on suspend and
+and cpufreq core stops managing them.
 
-Acked?
+On resume, we need to call cpufreq_update_policy() for this CPU's policy
+to make sure its frequency is in sync with cpufreq's cached value, as it
+might have got updated by hardware during suspend/resume.
 
--Saravana
+The policies are always added to the top of the policy-list. So, in
+normal circumstances, CPU 0's policy will be the last one in the list.
+And so the code checks for the last policy.
 
+But there are cases where it will fail. Consider quad-core system, with
+policy-per core. If CPU0 is hotplugged out and added back again, the
+last policy will be on CPU1 :(
+
+To fix this in a proper way, always look for the policy of the first
+online CPU. That way we will be sure that we are calling
+cpufreq_update_policy() for the only CPU that wasn't hotplugged out.
+
+Cc: 3.15+ <stable@vger.kernel.org> # 3.15+
+Fixes: 2f0aea936360 ("cpufreq: suspend governors on system suspend/hibernate")
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 28e59a48b35f..8ae655c364f4 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1698,15 +1698,18 @@ void cpufreq_resume(void)
+ 		    || __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS))
+ 			pr_err("%s: Failed to start governor for policy: %p\n",
+ 				__func__, policy);
+-
+-		/*
+-		 * schedule call cpufreq_update_policy() for boot CPU, i.e. last
+-		 * policy in list. It will verify that the current freq is in
+-		 * sync with what we believe it to be.
+-		 */
+-		if (list_is_last(&policy->policy_list, &cpufreq_policy_list))
+-			schedule_work(&policy->update);
+ 	}
++
++	/*
++	 * schedule call cpufreq_update_policy() for first-online CPU, as that
++	 * wouldn't be hotplugged-out on suspend. It will verify that the
++	 * current freq is in sync with what we believe it to be.
++	 */
++	policy = cpufreq_cpu_get_raw(cpumask_first(cpu_online_mask));
++	if (WARN_ON(!policy))
++		return;
++
++	schedule_work(&policy->update);
+ }
+ 
+ /**
 -- 
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.3.0.rc0.44.ga94655d
+
