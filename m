@@ -1,74 +1,104 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 11/20] cpufreq: Manage governor usage history with 'policy->last_governor'
-Date: Thu, 2 Apr 2015 10:56:46 +0530
-Message-ID: <CAKohpo=wa+JChF+2MzqYUftmPP16WDrquU6B8++-PoLq9tmsjA@mail.gmail.com>
-References: <cover.1424345053.git.viresh.kumar@linaro.org>
-	<073c66088540954706ba5ffc0e4c2efa4759d197.1424345053.git.viresh.kumar@linaro.org>
-	<551CC6C3.2000102@codeaurora.org>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: thermal: uevent/netlink with step_wise?
+Date: Thu, 2 Apr 2015 05:28:47 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB590912D402@BGSMSX101.gar.corp.intel.com>
+References: <20150331224348.GZ32500@ld-irv-0074>
+ <20150401211718.GA32500@ld-irv-0074>
+ <4D68720C2E767A4AA6A8796D42C8EB590912C2CD@BGSMSX101.gar.corp.intel.com>
+ <20150402051100.GF19571@brian-ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f177.google.com ([209.85.214.177]:36658 "EHLO
-	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbbDBF0r (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Apr 2015 01:26:47 -0400
-Received: by obbec2 with SMTP id ec2so112425762obb.3
-        for <linux-pm@vger.kernel.org>; Wed, 01 Apr 2015 22:26:46 -0700 (PDT)
-In-Reply-To: <551CC6C3.2000102@codeaurora.org>
+Received: from mga02.intel.com ([134.134.136.20]:49219 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750828AbbDBFaX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Apr 2015 01:30:23 -0400
+In-Reply-To: <20150402051100.GF19571@brian-ubuntu>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
+To: Brian Norris <computersforpeace@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>
 
-On 2 April 2015 at 10:04, Saravana Kannan <skannan@codeaurora.org> wrote:
-> This governor restore code actually has bug -- at least in 3.12 (I think)
-> but probably has a bug in this kernel too. So, this patch actually also
-> fixes a bug.
+>-----Original Message-----
+>From: Brian Norris [mailto:computersforpeace@gmail.com]
+>Sent: Thursday, April 2, 2015 10:41 AM
+>To: R, Durgadoss
+>Cc: linux-pm@vger.kernel.org; Brown, Len; Lukasz Majewski; Eduardo Valentin; Zhang, Rui
+>Subject: Re: thermal: uevent/netlink with step_wise?
 >
-> The bug has to do with restoring the wrong governor (as in, not the governor
-> that was last picked by userspace) for a particular hot plug sequence.
+>Hi Durga,
 >
-> Assume one cluster has CPUs 2, 3.
-> Assume default governor is performance.
-> CPU2 is first brought online.
-> Governor is changed to ondemand.
-> CPU2 is taken offline.
-> CPU3 is brought online.
-> Governor gets set to performance.
-> So, governor for the cluster is now not what was last picked by userspace.
-
-Wasn't aware of that, you are right. Updated my logs for this.
-
->> -       for_each_present_cpu(cpu) {
->> -               if (cpu_online(cpu))
->> -                       continue;
->> -               if (!strcmp(per_cpu(cpufreq_cpu_governor, cpu),
->> governor->name))
->> -                       strcpy(per_cpu(cpufreq_cpu_governor, cpu), "\0");
->> +       /* clear last_governor for all inactive policies */
->> +       read_lock_irqsave(&cpufreq_driver_lock, flags);
+>On Thu, Apr 02, 2015 at 04:28:16AM +0000, R, Durgadoss wrote:
+>> >-----Original Message-----
+>> >From: Brian Norris [mailto:computersforpeace@gmail.com]
+>> >Sent: Thursday, April 2, 2015 2:47 AM
+>> >To: linux-pm@vger.kernel.org
+>> >Cc: R, Durgadoss; Brown, Len; Lukasz Majewski; Eduardo Valentin
+>> >Subject: Re: thermal: uevent/netlink with step_wise?
+>> >
+>> >On Tue, Mar 31, 2015 at 03:43:48PM -0700, Brian Norris wrote:
+>> >> Particularly, I'm looking right now at using the uevent/netlink
+>> >> notification mechanism. It seems that this is only active when we use
+>> >> the 'user_space' governor, meaning I can't get any user-space
+>> >> notifications when using the in-kernel governor. Am I missing something,
+>> >> or is this a known limitation? Is there any reason we can't enable both?
+>>
+>> When we use an in-kernel governor, we expect that the governor takes care of
+>> all the required throttling etc. Hence, we did not add notification for
+>> in-kernel governors.
+>>
+>> And we let the user space decide the actions when user space governor
+>> is selected and this requires notification.
 >
+>OK, thanks for the explanation. I guess that matches my reading of the
+>code.
 >
-> You are writing to a variable that's protected. This should be a write lock.
+>> That said,
+>> I do not think we have a hard rule saying we should not notify
+>> User space in in kernel governors. I think you can add it in your
+>> driver if you need it..
+>
+>OK. I suppose I may do that if I decide I need that. But if I'm going to
+>be doing other general thermal management aspects from user space, I may
+>just defer entirely to user-space instead, and ignore the in-kernel
+>governor. I'm now trying to determine if there are many (any?) downsides
+>to that.
 
-cpufreq_driver_lock isn't responsible for protecting policy fields, but
-the list of policies. And so was a read lock here.
+AFAIK, there are no downsides. You can very well do that..
 
->> +       for_each_inactive_policy(policy, tpolicy) {
->> +               if (!strcmp(policy->last_governor, governor->name))
->> +                       strcpy(policy->last_governor, "\0");
->>         }
->> +       read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+Thanks,
+Durga
 
-And we don't need to take writelock to policy->rwsem here as the
-policy is already inactive.
-
-> Nack due to lock.
-
-Just to clear the concepts, and not fighting with you :)
-
-I don't think you used Nack correctly here. You have raised some
-mistakes in the patch here, and its not that the patch and the idea
-behind it is not acceptable.
-
-So, probably Nack was a bit harsh :)
+>
+>> >> For the user-space side, I'd mostly be interested in being a consumer;
+>> >> e.g., display warnings in high-temperature scenarios; although I might
+>> >> also use it to trigger some user-space cooling mechanisms.
+>> >
+>> >I'm noticing two additional interesting details.
+>> >
+>> >1. There's a separate netlink event mechanism that has never been used.
+>> >See generate_netlink_event(), from this commit:
+>> >
+>> >commit 4cb18728709683c91a5f6f8d5f337bfb498b089a
+>> >Author: R.Durgadoss <durgadoss.r@intel.com>
+>> >Date:   Wed Oct 27 03:33:29 2010 +0530
+>> >
+>> >    thermal: Add event notification to thermal framework
+>>
+>> This netlink notification was added much before we had the
+>> UEvent reporting.
+>
+>Right, it looked that way.
+>
+>> Once we had UEvent reporting, We even
+>> discussed about removing this one. Afraid of breaking any
+>> user space depending on this, we have not done that.
+>
+>But no one calls this function, so how would it break user space? Or is
+>Intel maintaining a body of out-of-tree code that uses this?
+>
+>Thanks for your comments.
+>
+>Brian
