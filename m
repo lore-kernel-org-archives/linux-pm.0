@@ -1,43 +1,159 @@
-From: Adrian Hunter <adrian.hunter@intel.com>
-Subject: Re: [RFC PATCH 0/4] mmc: sdhci: Support maximum DMA latency request
- via PM QoS
-Date: Thu, 02 Apr 2015 22:35:15 +0300
-Message-ID: <551D99F3.2080804@intel.com>
-References: <1427204440-3533-1-git-send-email-adrian.hunter@intel.com> <CAJvTdK=kKBOeg=vj40EdMR2cnHzagxsFB1dMOKHbsnPLkMauvQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [PATCH] PM / watchdog: iTCO: stop watchdog during system suspend
+Date: Fri, 03 Apr 2015 00:04:02 +0200
+Message-ID: <2928815.XiLbVYtUVn@vostro.rjw.lan>
+References: <2017660.nPaHVT8bW3@vostro.rjw.lan> <551C99A4.40608@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:55903 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751249AbbDBTfU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 2 Apr 2015 15:35:20 -0400
-In-Reply-To: <CAJvTdK=kKBOeg=vj40EdMR2cnHzagxsFB1dMOKHbsnPLkMauvQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <551C99A4.40608-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Cc: linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Aubrey Li <aubrey.li-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Borun Fu <borun.fu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc <linux-mmc@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 1/04/2015 10:59 p.m., Len Brown wrote:
->> Ad hoc testing with Lenovo Thinkpad 10 showed a stress
->> test could run for at least 24 hours with the patches,
->> compared to less than an hour without.
->
-> There is a patch in linux-next to delete C1E from BYT,
-> since it is problematic on multiple platforms.
-> I don't suppose that just disabling that state without disabling C6
-> is sufficient to fix the Thinkpad 10?  (I'm betting not, but
-> it can't hurt to try -- you can use the "disable" attribute for the state
-> in /sys/devices/system/cpu/cpu*/cpuidle/stateN)
->
-> I think your choice of the PM_QOS sub-system here is the right one,
-> and that your selection of 20usec threshold is also a good choice
-> for what you want to do -- though on non-intel_idle machine somplace,
-> there may be some ACPI BIOS _CST with random number for C6 latency.
->
-> It would be interesting to see how your C6 residency (turbostat
-> --debug will show this to you)
-> and your battery life are changed by disabling C6 during MMC activity.
+On Wednesday, April 01, 2015 06:21:40 PM Guenter Roeck wrote:
+> On 04/01/2015 05:31 PM, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 
-I will do some more testing as you suggest, although it will have to
-wait until next week due to Easter holidays here.
+[cut]
+
+> Hi Rafael,
+> 
+> This only covers suspend and resume, but not any of the other
+> sleep operations (like SIMPLE_DEV_PM_OPS would do).
+> Is that intentional ?
+
+Yes, it is:
+ (1) The problemm at hand is strictly specific to system suspend.
+ (2) The SIMPLE_DEV_PM_OPS etc macros don't cover the _noirq callback variants
+     (and we want to use the _noirq variants, because we want the watchdog to
+     be stopped as late and restarted as early as reasonably possible).
+ (3) I'm not even sure if adding runtime PM support to this driver would make
+     any sense. :-)
+
+> 
+> > +};
+> > +
+> > +#define ITCO_WDT_PM_OPS	&iTCO_wdt_pm
+> 
+> Checkpatch wants to see (&iTCO_wdt_pm).
+> 
+> ERROR: Macros with complex values should be enclosed in parentheses
+
+Please find an updated patch below.
+
+Rafael
+
+
+---
+From: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: PM / watchdog: iTCO: stop watchdog during system suspend
+
+If the target sleep state of the system is not an ACPI sleep state
+(S1, S2 or S3), the TCO watchdog needs to be stopped during system
+suspend, because it may not be possible to ping it any more after
+timekeeping has been suspended (suspend-to-idle does that for
+one example).
+
+For this reason, provide ->suspend_noirq and ->resume_noirq
+callbacks for the iTCO watchdog driver and use them to stop
+and restart the watchdog during system suspend and resume,
+respectively, if the system is not going to enter an ACPI
+sleep state (in which case the watchdog will be stopped
+by the platform firmware before the state is entered).
+
+Reported-by: Borun Fu <borun.fu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+---
+ drivers/watchdog/iTCO_wdt.c |   51 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 51 insertions(+)
+
+Index: linux-pm/drivers/watchdog/iTCO_wdt.c
+===================================================================
+--- linux-pm.orig/drivers/watchdog/iTCO_wdt.c
++++ linux-pm/drivers/watchdog/iTCO_wdt.c
+@@ -51,6 +51,7 @@
+ #define DRV_VERSION	"1.11"
+ 
+ /* Includes */
++#include <linux/acpi.h>			/* For ACPI support */
+ #include <linux/module.h>		/* For module specific items */
+ #include <linux/moduleparam.h>		/* For new moduleparam's */
+ #include <linux/types.h>		/* For standard types (like size_t) */
+@@ -103,6 +104,8 @@ static struct {		/* this is private data
+ 	struct platform_device *dev;
+ 	/* the PCI-device */
+ 	struct pci_dev *pdev;
++	/* whether or not the watchdog has been suspended */
++	bool suspended;
+ } iTCO_wdt_private;
+ 
+ /* module parameters */
+@@ -571,12 +574,60 @@ static void iTCO_wdt_shutdown(struct pla
+ 	iTCO_wdt_stop(NULL);
+ }
+ 
++#ifdef CONFIG_PM_SLEEP
++/*
++ * Suspend-to-idle requires this, because it stops the ticks and timekeeping, so
++ * the watchdog cannot be pinged while in that state.  In ACPI sleep states the
++ * watchdog is stopped by the platform firmware.
++ */
++
++#ifdef CONFIG_ACPI
++static inline bool need_suspend(void)
++{
++	return acpi_target_system_state() == ACPI_STATE_S0;
++}
++#else
++static inline bool need_suspend(void) { return true; }
++#endif
++
++static int iTCO_wdt_suspend_noirq(struct device *dev)
++{
++	int ret = 0;
++
++	iTCO_wdt_private.suspended = false;
++	if (watchdog_active(&iTCO_wdt_watchdog_dev) && need_suspend()) {
++		ret = iTCO_wdt_stop(&iTCO_wdt_watchdog_dev);
++		if (!ret)
++			iTCO_wdt_private.suspended = true;
++	}
++	return ret;
++}
++
++static int iTCO_wdt_resume_noirq(struct device *dev)
++{
++	if (iTCO_wdt_private.suspended)
++		iTCO_wdt_start(&iTCO_wdt_watchdog_dev);
++
++	return 0;
++}
++
++struct dev_pm_ops iTCO_wdt_pm = {
++	.suspend_noirq = iTCO_wdt_suspend_noirq,
++	.resume_noirq = iTCO_wdt_resume_noirq,
++};
++
++#define ITCO_WDT_PM_OPS	(&iTCO_wdt_pm)
++#else
++#define ITCO_WDT_PM_OPS	NULL
++#endif /* CONFIG_PM_SLEEP */
++
+ static struct platform_driver iTCO_wdt_driver = {
+ 	.probe          = iTCO_wdt_probe,
+ 	.remove         = iTCO_wdt_remove,
+ 	.shutdown       = iTCO_wdt_shutdown,
+ 	.driver         = {
+ 		.name   = DRV_NAME,
++		.pm     = ITCO_WDT_PM_OPS,
+ 	},
+ };
+ 
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
