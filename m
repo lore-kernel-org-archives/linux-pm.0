@@ -1,96 +1,84 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 1/2] cpufreq: arm_big_little: check if the frequency is
- set correctly
-Date: Thu, 02 Apr 2015 09:55:05 +0100
-Message-ID: <551D03E9.508@arm.com>
-References: <1427718438-31098-1-git-send-email-sudeep.holla@arm.com> <CAKohponxEv3CjhVPAu2Ga5FeSSvtj_W6zGvL3oj2V247f94H=w@mail.gmail.com> <551951F4.9070804@arm.com> <20150331014854.25195.34023@quantum> <551A67CD.50602@arm.com> <20150401214814.14369.56281@quantum>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH] fix sysfs showing the correct C-states after AC->DC and
+ DC->AC transitions
+Date: Thu, 02 Apr 2015 14:04:35 +0200
+Message-ID: <2713092.F08tekMTF5@amdc1032>
+References: <3701793.GEjYLvWeTc@netbook>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:39749 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751772AbbDBIyB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 2 Apr 2015 04:54:01 -0400
-In-Reply-To: <20150401214814.14369.56281@quantum>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-reply-to: <3701793.GEjYLvWeTc@netbook>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Thomas Schlichter <thomas.schlichter@web.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mike.turquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
 
+On Wednesday, April 01, 2015 08:04:34 PM Thomas Schlichter wrote:
+> Hello,
 
-On 01/04/15 22:48, Michael Turquette wrote:
-> Quoting Sudeep Holla (2015-03-31 02:24:29)
+Hi,
 
-[...]
+> I do have a Samsung NC20 netbook which provides the C-states C1 and C2 to the 
+> OS when connected to AC, and additionally provides the C3 C-state when 
+> disconnected from AC. With the current kernels I have these two problems 
+> (regressions):
+> 
+> 1. The number of C-states shown in sysfs is fixed to the number of C-states
+>    present at boot.
+>    If I boot with AC connected, I always only see the C-states up to C2 even
+>    if I disconnect AC.
+> 
+>    The reason is commit 130a5f692425e6237229598a8624da0a247f33d5
+>    "ACPI / cpuidle: remove dev->state_count setting". It removes the update of
+>    dev->state_count, but sysfs uses exactly this variable to show the
+>    C-states.
+> 
+>    The fix is to use drv->state_count in sysfs. As this is currently the last
+>    user of dev->state_count, this variable can be completely removed. And this
+>    is exactly what Bartlomiej Zolnierkiewicz's not yet applied patch "[PATCH
+>    v2 9/9] cpuidle: remove state_count field from struct cpuidle_device"
+>    http://marc.info/?m=138756533317836 does.
+> 
+>    Long story short: That patch fixes problem 1 for me.
 
->>
->> No that's not correct, may be I was not clear earlier. Let me explain
->> with the stack trace.
->>
->> bL_cpufreq_set_target(returns 0 even when clock driver returned error)
->>           |
->>           V
->> clk_set_rate(returns whatever it get from clk_core_set_rate_nolock)
->>           |
->>           V
->> clk_core_set_rate_nolock(always return 0 after calling clk_change_rate)
->
-> Ah, now I understand our misunderstanding.
->
-> clk_core_set_rate_nolock can fail BEFORE calling clk_change_rate, which
-> is where we do a lot of the work to see if the rate change is even
-> possible. That is what I was referring to in my previous mail.
->
+Rafael, please apply that patch (as Thomas has noticed it is required
+to fix issue with dynamic dev/drv->state_count updates, sorry for not
+catching it earlier).
 
-Ah, I guessed so as I was not clear in my earlier email. A simple flow
-diagram did the job better for me :)
+[ Originally the whole series was dropped when patch #8 ("[PATCH v2 8/9]
+  intel_idle: use the common cpuidle_[un]register() routines") turned out
+  to introduce some problems.  Patches #1-7 were later re-merged but not
+  patch #9 (which is independent of patch #8). ]
 
-> What you have is a failing .set_rate callback and you need to know if it
-> failed. You are correct that we are not handling the return value from
-> .set_rate. That needs to change.
->
+> 2. After a AC->DC or DC->AC transition, the name and description of the
+>    POLLING C-state become "<null>".
+> 
+>    Here, the reason is commit d7c7f103262bc2248548ed0e113e916e843c4eeb
+>    "cpuidle: don't call poll_idle_init() for every cpu". It only calls
+>    poll_idle_init() during cpuidle_register_driver() instead of
+>    cpuidle_enable_device() and thus does not re-initialize the fields of
+>    drv->states[0] after acpi_processor_setup_cpuidle_states() cleared them.
+> 
+>    Here, the fix is to _not_ clear drv->states[0] in
+>    acpi_processor_setup_cpuidle_states(). For this purpose I created a small
+>    patch.
 
-Cool, since I had not followed the design of the clock APIs, I assumed
-it needs to be handled in one of the way: notifiers or get_rate. Thanks
-for the clarification.
+This patch looks fine to me.  FWIW:
 
->>           |
->>           V
->> clk_change_rate(void function, so no return)
->>           |
->>           V
->> clk->ops->set_rate(i.e. <clock_driver_set_rate>)
->>
->> Now for drivers/clk/clk.c IIUC, the return value from clk->ops->set_rate
->> is not checked. Now if <clock_driver_set_rate> returns error when h/w
->> fails to set the rate, I would like to know how the error returned by
->> <clock_driver_set_rate> is returned and received by clk_set_rate.
->> Correct me if I am missing anything in the above sequence.
->>
->> In the current state of code, one can use notifier(basically
->> POST_RATE_CHANGE is called only if the clock rate changes), but since
->> the clk_recalc reads back the clock rate, I found this patch is simpler
->> compared to the notifiers.
->
-> Simpler, but not better. What you want is to know if the rate change
-> failed. We need to through an exception when .set_rate fails and
-> propagate the error up the call chain to the cpufreq driver.
->
+Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Agreed, but I was under the assumption that since the POST_RATE_CHANGE
-notifier are not called, it's implicit. So you are saying that's not the
-case ?
+> For your convenience, both of the fixing patches are attached to this mail.
+> The first one is necessary for all kernels since 3.14, the second one for all
+> kernels since 3.13. So I'd propose to push both of them also to the necessary
+> stable kernels.
 
-> I'm thinking of ways to do this ... would require some surgery to the
-> clock framework but it might give us a more elegant way to recover from
-> a failure and roll back to a known good state.
->
+Sounds good to me.  Thank you for working on this.
 
-Agreed. I avoid doing that for 2 reasons: firstly as you said it needs
-changes at multiple places and secondly I assumed alternate ways to
-handle it as the designed way.
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-Regards,
-Sudeep
