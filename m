@@ -1,74 +1,78 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH V2 10/20] cpufreq: Don't traverse list of all policies
- for adding policy for a cpu
-Date: Wed, 01 Apr 2015 21:24:28 -0700
-Message-ID: <551CC47C.4030504@codeaurora.org>
-References: <cover.1424345053.git.viresh.kumar@linaro.org> <3311b25e3e3f698ad654215d7bf9a1c3613b7d78.1424345053.git.viresh.kumar@linaro.org>
+From: "R, Durgadoss" <durgadoss.r@intel.com>
+Subject: RE: thermal: uevent/netlink with step_wise?
+Date: Thu, 2 Apr 2015 04:28:16 +0000
+Message-ID: <4D68720C2E767A4AA6A8796D42C8EB590912C2CD@BGSMSX101.gar.corp.intel.com>
+References: <20150331224348.GZ32500@ld-irv-0074>
+ <20150401211718.GA32500@ld-irv-0074>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:58791 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbbDBEYa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Apr 2015 00:24:30 -0400
-In-Reply-To: <3311b25e3e3f698ad654215d7bf9a1c3613b7d78.1424345053.git.viresh.kumar@linaro.org>
+Received: from mga01.intel.com ([192.55.52.88]:35435 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750711AbbDBE2U convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Apr 2015 00:28:20 -0400
+In-Reply-To: <20150401211718.GA32500@ld-irv-0074>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com
+To: Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "Brown, Len" <len.brown@intel.com>, Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>
 
-On 02/19/2015 03:32 AM, Viresh Kumar wrote:
-> We reach here while adding policy for a CPU and enter into the 'if' block only
-> if a policy already exists for the CPU in question. As cpufreq_cpu_data is
-> filled once and for all now, we can reuse it to find the relevant policy instead
-> of traversing the list of all policies.
+>-----Original Message-----
+>From: Brian Norris [mailto:computersforpeace@gmail.com]
+>Sent: Thursday, April 2, 2015 2:47 AM
+>To: linux-pm@vger.kernel.org
+>Cc: R, Durgadoss; Brown, Len; Lukasz Majewski; Eduardo Valentin
+>Subject: Re: thermal: uevent/netlink with step_wise?
 >
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->   drivers/cpufreq/cpufreq.c | 17 +++++++----------
->   1 file changed, 7 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index f849b2a33d3e..20d5f4590c4b 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1211,7 +1211,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
->   {
->   	unsigned int j, cpu = dev->id;
->   	int ret = -ENOMEM;
-> -	struct cpufreq_policy *policy, *tpolicy;
-> +	struct cpufreq_policy *policy;
->   	unsigned long flags;
->   	bool recover_policy = cpufreq_suspended;
->
-> @@ -1224,16 +1224,13 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
->   		return 0;
->
->   	/* Check if this cpu already has a policy to manage it */
-> -	read_lock_irqsave(&cpufreq_driver_lock, flags);
-> -	for_each_active_policy(policy, tpolicy) {
-> -		if (cpumask_test_cpu(cpu, policy->related_cpus)) {
-> -			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> -			ret = cpufreq_add_policy_cpu(policy, cpu, dev);
-> -			up_read(&cpufreq_rwsem);
-> -			return ret;
-> -		}
-> +	policy = per_cpu(cpufreq_cpu_data, cpu);
-> +	if (policy && !policy_is_inactive(policy)) {
-> +		WARN_ON(!cpumask_test_cpu(cpu, policy->related_cpus));
-> +		ret = cpufreq_add_policy_cpu(policy, cpu, dev);
-> +		up_read(&cpufreq_rwsem);
-> +		return ret;
->   	}
-> -	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
->
->   	/*
->   	 * Restore the saved policy when doing light-weight init and fall back
->
+>On Tue, Mar 31, 2015 at 03:43:48PM -0700, Brian Norris wrote:
+>> Particularly, I'm looking right now at using the uevent/netlink
+>> notification mechanism. It seems that this is only active when we use
+>> the 'user_space' governor, meaning I can't get any user-space
+>> notifications when using the in-kernel governor. Am I missing something,
+>> or is this a known limitation? Is there any reason we can't enable both?
 
-Acked-by: Saravana Kannan <skannan@codeaurora.org>
+When we use an in-kernel governor, we expect that the governor takes care of 
+all the required throttling etc. Hence, we did not add notification for
+in-kernel governors.
 
--- 
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+And we let the user space decide the actions when user space governor
+is selected and this requires notification.
+
+That said,
+I do not think we have a hard rule saying we should not notify
+User space in in kernel governors. I think you can add it in your
+driver if you need it..
+
+>> For the user-space side, I'd mostly be interested in being a consumer;
+>> e.g., display warnings in high-temperature scenarios; although I might
+>> also use it to trigger some user-space cooling mechanisms.
+>
+>I'm noticing two additional interesting details.
+>
+>1. There's a separate netlink event mechanism that has never been used.
+>See generate_netlink_event(), from this commit:
+>
+>commit 4cb18728709683c91a5f6f8d5f337bfb498b089a
+>Author: R.Durgadoss <durgadoss.r@intel.com>
+>Date:   Wed Oct 27 03:33:29 2010 +0530
+>
+>    thermal: Add event notification to thermal framework
+
+This netlink notification was added much before we had the
+UEvent reporting. Once we had UEvent reporting, We even
+discussed about removing this one. Afraid of breaking any
+user space depending on this, we have not done that.
+
+Thanks,
+Durga
+
+>
+>2. The Samsung Exynos thermal driver reports uevent info directly, no
+>matter which governor is in use. See exynos_report_trigger(). Is it
+>acceptable to augment drivers in this way, or wouldn't it make more
+>sense to improve the core framework to support this type of
+>notification?
+>
+>Brian
