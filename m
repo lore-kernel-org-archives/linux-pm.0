@@ -1,34 +1,47 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v2 3/7] [media] uvcvideo: Set input_dev.stay_runtime_suspended flag
-Date: Fri,  3 Apr 2015 14:57:52 +0200
-Message-ID: <1428065887-16017-4-git-send-email-tomeu.vizoso@collabora.com>
+Subject: [PATCH v2 6/7] [media] media-devnode: Implement dev_pm_ops.prepare callback
+Date: Fri,  3 Apr 2015 14:57:55 +0200
+Message-ID: <1428065887-16017-7-git-send-email-tomeu.vizoso@collabora.com>
 References: <1428065887-16017-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-media-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1428065887-16017-1-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-media-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-So that the UVC device can remain runtime suspended when the system goes
-into a sleep state, let the input device do the same.
+Have it return 1 so that media device nodes that are runtime-suspended
+won't be suspended when the system goes to a sleep state. This can make
+resume times considerably shorter because these devices don't need to be
+resumed when the system is awaken.
 
 Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 ---
- drivers/media/usb/uvc/uvc_status.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/media/media-devnode.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/media/usb/uvc/uvc_status.c b/drivers/media/usb/uvc/uvc_status.c
-index f552ab9..78647c0 100644
---- a/drivers/media/usb/uvc/uvc_status.c
-+++ b/drivers/media/usb/uvc/uvc_status.c
-@@ -39,6 +39,7 @@ static int uvc_input_init(struct uvc_device *dev)
- 	input->phys = dev->input_phys;
- 	usb_to_input_id(dev->udev, &input->id);
- 	input->dev.parent = &dev->intf->dev;
-+	input->stay_runtime_suspended = true;
+diff --git a/drivers/media/media-devnode.c b/drivers/media/media-devnode.c
+index ebf9626..2c36d0a 100644
+--- a/drivers/media/media-devnode.c
++++ b/drivers/media/media-devnode.c
+@@ -76,8 +76,18 @@ static void media_devnode_release(struct device *cd)
+ 		mdev->release(mdev);
+ }
  
- 	__set_bit(EV_KEY, input->evbit);
- 	__set_bit(KEY_CAMERA, input->keybit);
++static int media_bus_prepare(struct device *dev)
++{
++	return 1;
++}
++
++static const struct dev_pm_ops media_bus_pm_ops = {
++	.prepare = media_bus_prepare,
++};
++
+ static struct bus_type media_bus_type = {
+ 	.name = MEDIA_NAME,
++	.pm = &media_bus_pm_ops,
+ };
+ 
+ static ssize_t media_read(struct file *filp, char __user *buf,
 -- 
 2.3.4
