@@ -1,85 +1,123 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Unreliable hibernation on Lenovo x230 (regression)
-Date: Fri, 3 Apr 2015 18:40:35 +0200
-Message-ID: <20150403164035.GA17177@amd>
-References: <20150401214743.20fbe2c5@porcupinefactory.org>
- <20150402152805.GA17021@amd>
- <20150403175825.79816fea@porcupinefactory.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 0/6] cpufreq: use generic cpufreq drivers for Exynos4210
+ platform
+Date: Fri, 03 Apr 2015 18:43:43 +0200
+Message-ID: <1428079429-4252-1-git-send-email-b.zolnierkie@samsung.com>
+References: <'@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42043 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752215AbbDCQki (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Apr 2015 12:40:38 -0400
-Content-Disposition: inline
-In-Reply-To: <20150403175825.79816fea@porcupinefactory.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:48254 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751844AbbDCQoP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Apr 2015 12:44:15 -0400
+In-reply-to: <'@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rhn <kebuac.rhn@porcupinefactory.org>
-Cc: kernel list <linux-kernel@vger.kernel.org>, joeyli.kernel@gmail.com, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 
-Hi!
+Hi,
 
-> > > Between kernel 3.16 and 3.17, a regression has been introduced where the first hibernation after regular shutdown always fails to resume. Subsequent hibernations succeed.
-> > > 
-> > > The system is a Lenovo x230 with Intel i5, booting with EFI, with the hibernate partition located on a secondary SSD drive. Installed system is Fedora 20, hibernation and reboots were issued using the KDE shutdown dialog.
-> > > 
-> > > I have tracked the problem to first appear in the commit
-> > > e67ee10190e69332f929bdd6594a312363321a66	Merge branches 'pm-sleep', 'pm-cpufreq' and 'pm-cpuidle'
-> > > 
-> > > The problem itself manifests in dmesg as follows (system was first
-> > > restarted, then hibernated - this log is from the subsequent
-> > resume):
-> > 
-> > Ok, can you try to disable cpufreq and cpuidle, and then try if it
-> > reproduces?
-> > 
-> > At that point, this is the candidate:
-> > 
-> > commit e67ee10190e69332f929bdd6594a312363321a66
-> > Merge: 21c806d 84c91b7 39c8bba 372ba8c
-> > Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Date:   Mon Aug 11 23:19:48 2014 +0200
-> > 
-> >     Merge branches 'pm-sleep', 'pm-cpufreq' and 'pm-cpuidle'
-> > 
-> >     * pm-sleep:
-> >           PM / hibernate: avoid unsafe pages in e820 reserved regions
-> > 
-> > ...
-> > Alternatively, you can just try to revert
-> > 
-> > commit 84c91b7ae07c62cf6dee7fde3277f4be21331f85
-> > Author: Lee, Chun-Yi <joeyli.kernel@gmail.com>
-> > Date:   Mon Aug 4 23:23:21 2014 +0800
-> > 
-> >     PM / hibernate: avoid unsafe pages in e820 reserved regions
-> > 
-> >     When the machine doesn't well handle the e820 persistent when
-> >     hibernate
-> >         resuming, then it may cause page fault when writing image to
-> >     snapshot
-> >         buffer:
-> > 
-> > 
-> > ...
-> > 
-> > Thanks,
-> > 									Pavel
-> 
-> I tried to disable CONFIG_CPU_IDLE and CONFIG_CPU_FREQ, however for some reason I could only disable CONFIG_CPU_FREQ.
-> 
-> The bug persisted.
-> 
-> Reverting the commit 84c91b7 on top of e67ee10 fixes the problem.
+This patch series removes the use of Exynos4210 specific support
+from cpufreq-exynos driver and enables the use of cpufreq-dt driver
+for this platform.
 
-Ok, I guess next steps would be verify if 4.0 has the problem, and if
-revert of 84c91b7 there fixes it, too... maybe we should revert it for
-4.0?
+It consists of a modified "[PATCH v12 0/6] cpufreq: use generic
+cpufreq drivers for exynos platforms" [1] patch series from Thomas
+Abraham.  As there have not been updates of this patchset since
+November 2014 I decided to dust it off myself.  I updated Thomas'
+patchset to current kernels, fixed bugs that I noticed and removed
+non-Exynos4210 support for now (to speed up inclusion in upstream
+kernel).  Since some modifications were not trivial I dropped all
+Reviewed-by:, Tested-by: and Acked-by: tags.  Please review/test
+this patchset and reply with revelant tag (Thank You!).  I also
+plan to work on Exynos4x12 support next (which was missing in
+the original patchset) and then on Exynos5250/Exynos5420 one.
+
+This patch series has been tested on Exynos4210 based Origen and
+Trats boards.
+
+Depends on:
+- next-20150330 branch of linux-next kernel tree
+  (mfd tree contains a crucial fix for MAX8997 PMIC support)
+- "[PATCH] clk: samsung: exynos4: Disable ARMCLK down feature on
+  Exynos4210 SoC" [2]
+
+[1] https://www.marc.info/?l=linux-arm-kernel&m=141657611003803&w=2
+[2] https://lkml.org/lkml/2015/3/27/568
+
+Changes over Thomas' code:
+- fixed issue with wrong dividers being setup by Common Clock Framework
+  (by an addition of CLK_RECALC_NEW_RATES clock flag to mout_apll clock,
+  without this change cpufreq-dt driver showed ~10 mA larger energy
+  consumption when compared to cpufreq-exynos one when "performance"
+  cpufreq governor was used on Exynos4210 SoC based Origen board), this
+  was probably meant to be workarounded by use of CLK_GET_RATE_NOCACHE
+  and CLK_DIVIDER_READ_ONLY clock flags in the original patchset (in
+  "[PATCH v12 6/6] clk: samsung: remove unused clock aliases and update
+  clock flags") but using these flags is not sufficient to fix the issue
+  observed
+- fixed issue with setting lower dividers before the parent clock speed
+  was lowered (the issue resulted in lockup on Exynos4210 SoC based
+  Origen board when "ondemand" cpufreq governor was stress tested)
+- fixed missing spin_unlock on error in exynos_cpuclk_post_rate_change()
+  problem by moving cfg_data search outside of the spin locked area
+- removed leftover kfree() in exynos_register_cpu_clock() that could
+  result in dereferencing the NULL pointer on error
+- moved spin_lock earlier in exynos_cpuclk_pre_rate_change() to cover
+  reading of E4210_SRC_CPU and E4210_DIV_CPU1 registers
+- added missing "last chance" checks to wait_until_divider_stable() and
+  wait_until_mux_stable() (needed in case that IRQ handling took long
+  time to proceed and resulted in function printing incorrect error
+  message about timeout)
+- moved E4210_CPU_DIV[0,1]() macros just before their only users,
+  this resulted in moving them from patch #2 to patch #3/6 ("clk:
+  samsung: exynos4: add cpu clock configuration data and instantiate
+  cpu clock")
+- added my Copyrights to drivers/clk/samsung/clk-cpu.c
+- updated exynos-cpufreq.[c,h]
+- removed non-Exynos4210 support for now
+- dropped "[PATCH v12 6/6] clk: samsung: remove unused clock aliases and
+  update clock flags" altogether for now
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
 
-									Pavel
+Bartlomiej Zolnierkiewicz (1):
+  clk: add CLK_RECALC_NEW_RATES clock flag for Exynos cpu clock support
+
+Thomas Abraham (5):
+  clk: samsung: add infrastructure to register cpu clocks
+  clk: samsung: exynos4: add cpu clock configuration data and
+    instantiate cpu clock
+  ARM: dts: Exynos4210: add CPU OPP and regulator supply property
+  ARM: Exynos: switch to using generic cpufreq driver for Exynos4210
+  cpufreq: exynos: remove Exynos4210 specific cpufreq driver support
+
+ arch/arm/boot/dts/exynos4210-origen.dts         |    4 +
+ arch/arm/boot/dts/exynos4210-trats.dts          |    4 +
+ arch/arm/boot/dts/exynos4210-universal_c210.dts |    4 +
+ arch/arm/boot/dts/exynos4210.dtsi               |   12 +
+ arch/arm/mach-exynos/exynos.c                   |   21 +-
+ drivers/clk/clk.c                               |    3 +
+ drivers/clk/samsung/Makefile                    |    2 +-
+ drivers/clk/samsung/clk-cpu.c                   |  349 +++++++++++++++++++++++
+ drivers/clk/samsung/clk-cpu.h                   |   73 +++++
+ drivers/clk/samsung/clk-exynos4.c               |   24 +-
+ drivers/cpufreq/Kconfig.arm                     |   11 -
+ drivers/cpufreq/Makefile                        |    1 -
+ drivers/cpufreq/exynos-cpufreq.c                |    5 +-
+ drivers/cpufreq/exynos-cpufreq.h                |    9 -
+ drivers/cpufreq/exynos4210-cpufreq.c            |  184 ------------
+ include/linux/clk-provider.h                    |    1 +
+ 16 files changed, 495 insertions(+), 212 deletions(-)
+ create mode 100644 drivers/clk/samsung/clk-cpu.c
+ create mode 100644 drivers/clk/samsung/clk-cpu.h
+ delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.7.9.5
+
