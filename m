@@ -1,12 +1,14 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 0/6] staging: board: armadillo800eva: Board staging for
- sh_mobile_lcdc_fb
-Date: Fri,  3 Apr 2015 14:41:57 +0200
-Message-ID: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH/RFC 5/6] staging: board: Add support for devices with complex
+ dependencies
+Date: Fri,  3 Apr 2015 14:42:02 +0200
+Message-ID: <1428064923-24950-6-git-send-email-geert+renesas@glider.be>
+References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
 List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
  <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
 List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
@@ -20,86 +22,166 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Magnus Damm <damm+renesas@o
 Cc: devel@driverdev.osuosl.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Marc Zyngier <marc.zyngier@arm.com>, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-	Hi all,
+Add support for easy registering of one ore more platform devices that
+may:
+  - need clocks that are described in DT,
+  - need pin control configuration,
+  - rely on a configured GPIO,
+  - be part of a PM Domain.
 
-This RFC patch series adds board staging support for r8a7740/armadillo.
-For now this supports only the frame buffer device for the on-board LCD.
-The goal is to complete the move to ARM multiplatform kernels for all
-shmobile platforms, and drop the existing board files
-(arch/arm/mach-shmobile/board-*).
+All these dependencies are optional.
 
-The board staging area was introduced last year to allow continuous
-upstream in-tree development and integration of platform devices. It
-helps developers integrate devices as platform devices for device
-drivers that only provide platform device bindings.  This in turn allows
-for incremental development of both hardware feature support and DT
-binding work in parallel.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/staging/board/board.c | 76 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/staging/board/board.h | 31 ++++++++++++++++++
+ 2 files changed, 107 insertions(+)
 
-This series consists of 4 parts:
-  - Patch 1 re-enables compilation of the board staging area, which was
-    disabled after a compile breakage, but has been fixed in the mean
-    time,
-  - Path 2 moves initialization of staging board code to an earlier
-    moment, as currently it happens after unused PM domains are powered
-    down,
-  - Patches 3 and 4 (hopefully) fix the existing kzm9d board staging
-    code, which was presumably broken by commit 9a1091ef0017c40a
-    ("irqchip: gic: Support hierarchy irq domain."),
-  - Patches 5 and 6 add support for registering platform devices with
-    complex dependencies (clocks, pinctrl, gpios, PM domains), and add
-    armadillo board staging code for enabling a frame buffer on the
-    on-board LCD.
-
-Questions:
-  - Are there other devices from board-armadillo.c that work fine in
-    armadillo-legacy, and that we want to add?
-    I think this is the list of devices lacking DT support and/or
-    missing in DTS:
-      - renesas_usbhs (does this work? the platform device is
-	instantiated conditionally, but the condition (gpio state) is
-	never true?)
-      - sh-mobile-hdmi/sh_mobile_lcdc_fb.1 (this seems to be broken in
-	-legacy?)
-      - sdhi1 (we do have sdhi0)
-      - mmcif
-      - soc-camera-pdrv/sh_mobile_ceu
-      - ipmmu
-      - sh-dma-engine (this will probably never get DT support)
-
-  - What about support for other boards (kzm9g, bockw, marzen)?
-
-This was tested on r8a7740/armadillo.
-This was not tested on emev2/kzm9d, due to lack of hardware.
-
-Thanks for your comments!
-
-Geert Uytterhoeven (6):
-  Revert "staging: board: disable as it breaks the build"
-  [RFC] staging: board: Initialize staging board code earlier
-  [RFC] staging: board: Add support for translating hwirq to virq numbers
-  [RFC] staging: board: kzm9d: Translate hwirq numbers to virq numbers
-  [RFC] staging: board: Add support for devices with complex dependencies
-  [RFC] staging: board: armadillo800eva: Board staging for sh_mobile_lcdc_fb
-
- drivers/staging/board/Kconfig           |   1 -
- drivers/staging/board/Makefile          |   3 +-
- drivers/staging/board/armadillo800eva.c | 124 ++++++++++++++++++++++++++++
- drivers/staging/board/board.c           | 142 ++++++++++++++++++++++++++++++++
- drivers/staging/board/board.h           |  38 ++++++++-
- drivers/staging/board/kzm9d.c           |  10 ++-
- 6 files changed, 313 insertions(+), 5 deletions(-)
- create mode 100644 drivers/staging/board/armadillo800eva.c
-
+diff --git a/drivers/staging/board/board.c b/drivers/staging/board/board.c
+index b84ac2837a20bf06..da2469e2d4262fac 100644
+--- a/drivers/staging/board/board.c
++++ b/drivers/staging/board/board.c
+@@ -9,6 +9,9 @@
+ 
+ #define pr_fmt(fmt)	"board_staging: "  fmt
+ 
++#include <linux/clk.h>
++#include <linux/clkdev.h>
++#include <linux/gpio.h>
+ #include <linux/init.h>
+ #include <linux/irq.h>
+ #include <linux/device.h>
+@@ -16,6 +19,9 @@
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/of_irq.h>
++#include <linux/pinctrl/machine.h>
++#include <linux/platform_device.h>
++#include <linux/pm_domain.h>
+ 
+ #include "board.h"
+ 
+@@ -104,3 +110,73 @@ void __init board_staging_fixup_irq_resources(struct resource *res,
+ 			res[i].start = virq;
+ 		}
+ }
++
++int __init board_staging_register_clock(const struct board_staging_clk *bsc)
++{
++	struct clk *clk;
++	int error;
++
++	pr_debug("Registering clock %s for con_id %s dev_id %s\n", bsc->clk,
++		 bsc->con_id, bsc->dev_id);
++	clk = clk_get(NULL, bsc->clk);
++	if (IS_ERR(clk)) {
++		error = PTR_ERR(clk);
++		pr_err("Failed to get clock %s (%d)\n", bsc->clk, error);
++		return error;
++	}
++
++	error = clk_register_clkdev(clk, bsc->con_id, bsc->dev_id);
++	if (error)
++		pr_err("Failed to register clock %s (%d)\n", bsc->clk, error);
++		return error;
++
++	clk_put(clk);
++	return 0;
++}
++
++int __init board_staging_register_device(const struct board_staging_dev *dev)
++{
++	struct platform_device *pdev = dev->pdev;
++	unsigned int i;
++	int error;
++
++	pr_debug("Trying to register device %s\n", pdev->name);
++	if (board_staging_dt_node_available(pdev->resource,
++					    pdev->num_resources)) {
++		pr_warn("Skipping %s, already in DT\n", pdev->name);
++		return -EEXIST;
++	}
++
++	board_staging_fixup_irq_resources(pdev->resource, pdev->num_resources);
++
++	for (i = 0; i < dev->nclocks; i++)
++		board_staging_register_clock(&dev->clocks[i]);
++
++	if (dev->npinmaps)
++		pinctrl_register_mappings(dev->pinmaps, dev->npinmaps);
++
++	for (i = 0; i < dev->ngpios; i++)
++		gpio_request_one(dev->gpios[i].gpio, dev->gpios[i].flags,
++				 pdev->name);
++
++	error = platform_device_register(pdev);
++	if (error) {
++		pr_err("Failed to register device %s (%d)\n", pdev->name,
++		       error);
++		return error;
++	}
++
++	if (dev->domain)
++		__pm_genpd_name_add_device(dev->domain, &pdev->dev, NULL);
++
++	return error;
++}
++
++void __init board_staging_register_devices(const struct board_staging_dev *devs,
++					   unsigned int ndevs)
++{
++	unsigned int i;
++
++	for (i = 0; i < ndevs; i++)
++		board_staging_register_device(&devs[i]);
++}
+diff --git a/drivers/staging/board/board.h b/drivers/staging/board/board.h
+index 4cedc3c46e287eb7..7aaa0f7d6fafb9e5 100644
+--- a/drivers/staging/board/board.h
++++ b/drivers/staging/board/board.h
+@@ -4,12 +4,43 @@
+ #include <linux/init.h>
+ #include <linux/of.h>
+ 
++struct board_staging_clk {
++	const char *clk;
++	const char *con_id;
++	const char *dev_id;
++};
++
++struct board_staging_gpio {
++	unsigned int gpio;
++	unsigned long flags;	/* See GPIOF_* */
++};
++
++struct board_staging_dev {
++	/* Platform Device */
++	struct platform_device *pdev;
++	/* Clocks (optional) */
++	const struct board_staging_clk *clocks;
++	unsigned int nclocks;
++	/* Pin Control Maps (optional) */
++	const struct pinctrl_map *pinmaps;
++	unsigned int npinmaps;
++	/* GPIOs (optional) */
++	const struct board_staging_gpio *gpios;
++	unsigned int ngpios;
++	/* PM Domain (optional) */
++	const char *domain;
++};
++
+ struct resource;
+ 
+ bool board_staging_dt_node_available(const struct resource *resource,
+ 				     unsigned int num_resources);
+ int board_staging_setup_hwirq_xlate(const char *irqc_match, unsigned int base);
+ void board_staging_fixup_irq_resources(struct resource *res, unsigned int nres);
++int board_staging_register_clock(const struct board_staging_clk *bsc);
++int board_staging_register_device(const struct board_staging_dev *dev);
++void board_staging_register_devices(const struct board_staging_dev *devs,
++				    unsigned int ndevs);
+ 
+ #define board_staging(str, fn)			\
+ static int __init runtime_board_check(void)	\
 -- 
 1.9.1
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
