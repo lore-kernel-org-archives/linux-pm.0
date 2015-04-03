@@ -1,37 +1,49 @@
-From: Jason Cooper <jason@lakedaemon.net>
-Subject: Re: [PATCH] irqchip: renesas-irqc: Add wake-up support
-Date: Thu, 2 Apr 2015 23:32:22 +0000
-Message-ID: <20150402233222.GK24598@io.lakedaemon.net>
-References: <1427889606-18671-1-git-send-email-geert+renesas@glider.be>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [v2][PATCH 17/21] sched/idle: Use explicit broadcast oneshot control function
+Date: Fri, 03 Apr 2015 02:34:49 +0200
+Message-ID: <6422336.RMm7oUHcXh@vostro.rjw.lan>
+References: <2112147.0kYCHhbEJT@vostro.rjw.lan> <2186067.gb1n6y4Zoc@vostro.rjw.lan> <3410621.5uMny9y0B7@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1427889606-18671-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-sh@vger.kernel.org, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <3410621.5uMny9y0B7@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Apr 01, 2015 at 02:00:06PM +0200, Geert Uytterhoeven wrote:
-> The IRQC module clock is managed through Runtime PM and PM Domains.
-> If wake-up is enabled, this clock must not be disabled during system
-> suspend.
-> 
-> Hence implement irq_chip.irq_set_wake(), which increments/decrements the
-> clock's enable_count when needed.
-> 
-> This fixes wake-up by gpio-keys on r8a73a4/ape6evm.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
-> Against irqchip/renesas
-> 
->  drivers/irqchip/irq-renesas-irqc.c | 26 +++++++++++++++++++++++++-
->  1 file changed, 25 insertions(+), 1 deletion(-)
+From: Thomas Gleixner <tglx@linutronix.de>
 
-Applied to irqchip/renesas with Simon's Reviewed-by.
+Replace the clockevents_notify() call with an explicit function call.
 
-thx,
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/sched/idle.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-Jason.
+Index: linux-pm/kernel/sched/idle.c
+===================================================================
+--- linux-pm.orig/kernel/sched/idle.c
++++ linux-pm/kernel/sched/idle.c
+@@ -158,8 +158,7 @@ static void cpuidle_idle_call(void)
+ 	 * is used from another cpu as a broadcast timer, this call may
+ 	 * fail if it is not available
+ 	 */
+-	if (broadcast &&
+-	    clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu))
++	if (broadcast && tick_broadcast_enter())
+ 		goto use_default;
+ 
+ 	/* Take note of the planned idle state. */
+@@ -176,7 +175,7 @@ static void cpuidle_idle_call(void)
+ 	idle_set_state(this_rq(), NULL);
+ 
+ 	if (broadcast)
+-		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
++		tick_broadcast_exit();
+ 
+ 	/*
+ 	 * Give the governor an opportunity to reflect on the outcome
+
