@@ -1,36 +1,51 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v2 1/2] power: max17042_battery: Use reg type instead of
- chip type
-Date: Fri, 3 Apr 2015 11:01:05 +0200
-Message-ID: <CAJKOXPe9wRK-TYXkMbN0h6B6zWSTYJRvLy8Ji6vWLULxaRbreQ@mail.gmail.com>
-References: <1428049570-3295-1-git-send-email-beomho.seo@samsung.com>
-	<1428049570-3295-2-git-send-email-beomho.seo@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / watchdog: iTCO: stop watchdog during system suspend
+Date: Fri, 03 Apr 2015 13:04:47 +0200
+Message-ID: <1741516.p64k4HnZLy@vostro.rjw.lan>
+References: <2017660.nPaHVT8bW3@vostro.rjw.lan> <2928815.XiLbVYtUVn@vostro.rjw.lan> <551E29B7.7050801@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f173.google.com ([209.85.160.173]:33764 "EHLO
-	mail-yk0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751338AbbDCJBG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Apr 2015 05:01:06 -0400
-In-Reply-To: <1428049570-3295-2-git-send-email-beomho.seo@samsung.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:60735 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752530AbbDCKkc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Apr 2015 06:40:32 -0400
+In-Reply-To: <551E29B7.7050801@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Beomho Seo <beomho.seo@samsung.com>
-Cc: sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cw00.choi@samsung.com, inki.dae@samsung.com, sangbae90.lee@samsung.com, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+To: Guenter Roeck <linux@roeck-us.net>, Wim Van Sebroeck <wim@iguana.be>
+Cc: linux-watchdog@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Aubrey Li <aubrey.li@intel.com>, Borun Fu <borun.fu@intel.com>
 
-2015-04-03 10:26 GMT+02:00 Beomho Seo <beomho.seo@samsung.com>:
-> Currently, max17042 battery driver choose register map by MAX17042_DevName
-> register. But it is return IC specific firmware version. So other maxim chip
-> hard to use this drvier. This patch choose chip type from driver_data.
->
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
-> ---
->  drivers/power/max17042_battery.c       |   33 ++++++++++----------------------
->  include/linux/power/max17042_battery.h |    9 ++++++++-
->  2 files changed, 18 insertions(+), 24 deletions(-)
+On Thursday, April 02, 2015 10:48:39 PM Guenter Roeck wrote:
+> On 04/02/2015 03:04 PM, Rafael J. Wysocki wrote:
+> [ ... ]
+> >
+> > ---
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Subject: PM / watchdog: iTCO: stop watchdog during system suspend
+> >
+> > If the target sleep state of the system is not an ACPI sleep state
+> > (S1, S2 or S3), the TCO watchdog needs to be stopped during system
+> > suspend, because it may not be possible to ping it any more after
+> > timekeeping has been suspended (suspend-to-idle does that for
+> > one example).
+> >
+> > For this reason, provide ->suspend_noirq and ->resume_noirq
+> > callbacks for the iTCO watchdog driver and use them to stop
+> > and restart the watchdog during system suspend and resume,
+> > respectively, if the system is not going to enter an ACPI
+> > sleep state (in which case the watchdog will be stopped
+> > by the platform firmware before the state is entered).
+> >
+> > Reported-by: Borun Fu <borun.fu@intel.com>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Thanks!
 
-Best regards,
-Krzysztof
+I'll take it into the PM tree, unless anyone objects.
+
+Rafael
+
