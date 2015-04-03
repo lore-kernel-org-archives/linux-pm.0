@@ -1,8 +1,8 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 6/6] staging: board: armadillo800eva: Board staging for
- sh_mobile_lcdc_fb
-Date: Fri,  3 Apr 2015 14:42:03 +0200
-Message-ID: <1428064923-24950-7-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH/RFC 3/6] staging: board: Add support for translating hwirq to
+ virq numbers
+Date: Fri,  3 Apr 2015 14:42:00 +0200
+Message-ID: <1428064923-24950-4-git-send-email-geert+renesas@glider.be>
 References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,165 +22,125 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Magnus Damm <damm+renesas@o
 Cc: devel@driverdev.osuosl.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Marc Zyngier <marc.zyngier@arm.com>, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Add staging board support for the r8a7740-based armadillo800eva board
-and add platform devices to allow in-tree continuous development of the
-drivers on the armadillo800eva board.
+As of commit 9a1091ef0017c40a ("irqchip: gic: Support hierarchy irq
+domain."), GIC IRQ numbers are virtual, breaking hardcoded hardware IRQ
+numbers in platform device resources.
 
-When DT bindings are ready for theses drivers then the platform devices
-in the armadillo800eva staging board code can easily be removed. Until
-then we use platform devices to continuously improve the driver and
-integrate code.
+Add support for translating hardware IRQ numbers to virtual IRQ numbers,
+and fixing up platform device resources with hardcoded IRQ numbers.
 
-Added platform devices:
-  - sh_mobile_lcdc_fb for the on-board LCD.
+Add a copyright header, including the original author.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-What other devices do we want to add?
----
- drivers/staging/board/Makefile          |   3 +-
- drivers/staging/board/armadillo800eva.c | 124 ++++++++++++++++++++++++++++++++
- 2 files changed, 126 insertions(+), 1 deletion(-)
- create mode 100644 drivers/staging/board/armadillo800eva.c
+ drivers/staging/board/board.c | 66 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/staging/board/board.h |  5 ++++
+ 2 files changed, 71 insertions(+)
 
-diff --git a/drivers/staging/board/Makefile b/drivers/staging/board/Makefile
-index 65d39ecfad63bbf4..6842745feb9404f8 100644
---- a/drivers/staging/board/Makefile
-+++ b/drivers/staging/board/Makefile
-@@ -1,2 +1,3 @@
- obj-y	:= board.o
--obj-$(CONFIG_ARCH_EMEV2)      += kzm9d.o
-+obj-$(CONFIG_ARCH_EMEV2)	+= kzm9d.o
-+obj-$(CONFIG_ARCH_R8A7740)	+= armadillo800eva.o
-diff --git a/drivers/staging/board/armadillo800eva.c b/drivers/staging/board/armadillo800eva.c
-new file mode 100644
-index 0000000000000000..f9cb645877f52c52
---- /dev/null
-+++ b/drivers/staging/board/armadillo800eva.c
-@@ -0,0 +1,124 @@
+diff --git a/drivers/staging/board/board.c b/drivers/staging/board/board.c
+index d5a6abc845191c93..b84ac2837a20bf06 100644
+--- a/drivers/staging/board/board.c
++++ b/drivers/staging/board/board.c
+@@ -1,10 +1,27 @@
 +/*
-+ * Staging board support for Armadillo 800 eva.
-+ * Enable not-yet-DT-capable devices here.
++ * Copyright (C) 2014 Magnus Damm
++ * Copyright (C) 2015 Glider bvba
 + *
-+ * Based on board-armadillo800eva.c
-+ *
-+ * Copyright (C) 2012 Renesas Solutions Corp.
-+ * Copyright (C) 2012 Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; version 2 of the License.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
 + */
 +
-+#include <linux/dma-mapping.h>
-+#include <linux/fb.h>
-+#include <linux/gpio.h>
-+#include <linux/kernel.h>
-+#include <linux/pinctrl/machine.h>
-+#include <linux/platform_device.h>
-+#include <linux/videodev2.h>
++#define pr_fmt(fmt)	"board_staging: "  fmt
 +
-+#include <video/sh_mobile_lcdc.h>
+ #include <linux/init.h>
++#include <linux/irq.h>
+ #include <linux/device.h>
+ #include <linux/kernel.h>
+ #include <linux/of.h>
+ #include <linux/of_address.h>
++#include <linux/of_irq.h>
 +
-+#include "board.h"
+ #include "board.h"
+ 
++static struct device_node *irqc_node __initdata;
++static unsigned int irqc_base __initdata;
 +
+ static bool find_by_address(u64 base_address)
+ {
+ 	struct device_node *dn = of_find_all_nodes(NULL);
+@@ -38,3 +55,52 @@ bool __init board_staging_dt_node_available(const struct resource *resource,
+ 
+ 	return false; /* Nothing found */
+ }
 +
-+static struct fb_videomode lcdc0_mode = {
-+	.name		= "AMPIER/AM-800480",
-+	.xres		= 800,
-+	.yres		= 480,
-+	.left_margin	= 88,
-+	.right_margin	= 40,
-+	.hsync_len	= 128,
-+	.upper_margin	= 20,
-+	.lower_margin	= 5,
-+	.vsync_len	= 5,
-+	.sync		= 0,
-+};
-+
-+static struct sh_mobile_lcdc_info lcdc0_info = {
-+	.clock_source	= LCDC_CLK_BUS,
-+	.ch[0] = {
-+		.chan		= LCDC_CHAN_MAINLCD,
-+		.fourcc		= V4L2_PIX_FMT_RGB565,
-+		.interface_type	= RGB24,
-+		.clock_divider	= 5,
-+		.flags		= 0,
-+		.lcd_modes	= &lcdc0_mode,
-+		.num_modes	= 1,
-+		.panel_cfg = {
-+			.width	= 111,
-+			.height = 68,
-+		},
-+	},
-+};
-+
-+static struct resource lcdc0_resources[] = {
-+	[0] = {
-+		.name	= "LCD0",
-+		.start	= 0xfe940000,
-+		.end	= 0xfe943fff,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start	= 177 + 32,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device lcdc0_device = {
-+	.name		= "sh_mobile_lcdc_fb",
-+	.num_resources	= ARRAY_SIZE(lcdc0_resources),
-+	.resource	= lcdc0_resources,
-+	.id		= 0,
-+	.dev	= {
-+		.platform_data	= &lcdc0_info,
-+		.coherent_dma_mask = DMA_BIT_MASK(32),
-+	},
-+};
-+
-+static const struct board_staging_clk lcdc0_clocks[] __initconst = {
-+	{ "lcdc0", NULL, "sh_mobile_lcdc_fb.0" },
-+};
-+
-+static const struct pinctrl_map lcdc0_pinmaps[] __initconst = {
-+	PIN_MAP_MUX_GROUP_DEFAULT("sh_mobile_lcdc_fb.0", "e6050000.pfc",
-+				  "lcd0_data24_0", "lcd0"),
-+	PIN_MAP_MUX_GROUP_DEFAULT("sh_mobile_lcdc_fb.0", "e6050000.pfc",
-+				  "lcd0_lclk_1", "lcd0"),
-+	PIN_MAP_MUX_GROUP_DEFAULT("sh_mobile_lcdc_fb.0", "e6050000.pfc",
-+				  "lcd0_sync", "lcd0"),
-+};
-+
-+static const struct board_staging_gpio lcdc0_gpios[] __initconst = {
-+	{ 176, GPIOF_OUT_INIT_HIGH },	/* DBGMD/LCDC0/FSIA MUX */
-+};
-+
-+static const struct board_staging_dev armadillo800eva_devices[] __initconst = {
-+	{
-+		.pdev		= &lcdc0_device,
-+		.clocks		= lcdc0_clocks,
-+		.nclocks	= ARRAY_SIZE(lcdc0_clocks),
-+		.pinmaps	= lcdc0_pinmaps,
-+		.npinmaps	= ARRAY_SIZE(lcdc0_pinmaps),
-+		.gpios		= lcdc0_gpios,
-+		.ngpios		= ARRAY_SIZE(lcdc0_gpios),
-+		.domain		= "a4lc",
-+	},
-+};
-+
-+static void __init armadillo800eva_init(void)
++int __init board_staging_setup_hwirq_xlate(const char *irqc_match,
++					   unsigned int base)
 +{
-+	board_staging_setup_hwirq_xlate("arm,cortex-a9-gic", 32);
-+	board_staging_register_devices(armadillo800eva_devices,
-+				       ARRAY_SIZE(armadillo800eva_devices));
++	irqc_node = of_find_compatible_node(NULL, NULL, irqc_match);
++
++	WARN_ON(!irqc_node);
++	if (!irqc_node)
++		return -ENOENT;
++
++	irqc_base = base;
++	return 0;
 +}
 +
-+board_staging("renesas,armadillo800eva", armadillo800eva_init);
++static unsigned int __init xlate_hwirq(unsigned int hwirq)
++{
++	struct of_phandle_args irq_data;
++	unsigned int irq;
++
++	if (!irqc_node)
++		return hwirq;
++
++	irq_data.np = irqc_node;
++	irq_data.args_count = 3;
++	irq_data.args[0] = 0;
++	irq_data.args[1] = hwirq - irqc_base;
++	irq_data.args[2] = IRQ_TYPE_LEVEL_HIGH;
++
++	irq = irq_create_of_mapping(&irq_data);
++	if (WARN_ON(!irq))
++		irq = hwirq;
++
++	return irq;
++}
++
++void __init board_staging_fixup_irq_resources(struct resource *res,
++					      unsigned int nres)
++{
++	unsigned int i;
++
++	for (i = 0; i < nres; i++)
++		if (res[i].flags == IORESOURCE_IRQ) {
++			unsigned int hwirq = res[i].start;
++			unsigned int virq = xlate_hwirq(hwirq);
++
++			pr_debug("hwirq %u -> virq %u\n", hwirq, virq);
++			res[i].start = virq;
++		}
++}
+diff --git a/drivers/staging/board/board.h b/drivers/staging/board/board.h
+index e9c914985d4acb36..4cedc3c46e287eb7 100644
+--- a/drivers/staging/board/board.h
++++ b/drivers/staging/board/board.h
+@@ -1,10 +1,15 @@
+ #ifndef __BOARD_H__
+ #define __BOARD_H__
++
+ #include <linux/init.h>
+ #include <linux/of.h>
+ 
++struct resource;
++
+ bool board_staging_dt_node_available(const struct resource *resource,
+ 				     unsigned int num_resources);
++int board_staging_setup_hwirq_xlate(const char *irqc_match, unsigned int base);
++void board_staging_fixup_irq_resources(struct resource *res, unsigned int nres);
+ 
+ #define board_staging(str, fn)			\
+ static int __init runtime_board_check(void)	\
 -- 
 1.9.1
