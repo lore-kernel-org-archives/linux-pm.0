@@ -1,53 +1,52 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v2 5/7] [media] v4l2-core: Implement dev_pm_ops.prepare()
-Date: Fri,  3 Apr 2015 14:57:54 +0200
-Message-ID: <1428065887-16017-6-git-send-email-tomeu.vizoso@collabora.com>
+Subject: [PATCH v2 4/7] [media] uvcvideo: Enable runtime PM of descendant devices
+Date: Fri,  3 Apr 2015 14:57:53 +0200
+Message-ID: <1428065887-16017-5-git-send-email-tomeu.vizoso@collabora.com>
 References: <1428065887-16017-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f181.google.com ([209.85.212.181]:37574 "EHLO
-	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753150AbbDCM6h (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Apr 2015 08:58:37 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1428065887-16017-1-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Hans Verkuil <hans.verkuil@cisco.com>, Sakari Ailus <sakari.ailus@linux.intel.com>, Ramakrishnan Muthukrishnan <ramakrmu@cisco.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Have it return 1 so that video devices that are runtime-suspended won't
-be suspended when the system goes to a sleep state. This can make resume
-times considerably shorter because these devices don't need to be
-resumed when the system is awaken.
+So UVC devices can remain runtime-suspended when the system goes into a
+sleep state, they and all of their descendant devices need to have
+runtime PM enable.
 
 Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 ---
- drivers/media/v4l2-core/v4l2-dev.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/media/usb/uvc/uvc_driver.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/media/v4l2-core/v4l2-dev.c b/drivers/media/v4l2-core/v4l2-dev.c
-index e2b8b3e..b74e3d3 100644
---- a/drivers/media/v4l2-core/v4l2-dev.c
-+++ b/drivers/media/v4l2-core/v4l2-dev.c
-@@ -219,9 +219,19 @@ static void v4l2_device_release(struct device *cd)
- 		v4l2_device_put(v4l2_dev);
+diff --git a/drivers/media/usb/uvc/uvc_driver.c b/drivers/media/usb/uvc/uvc_driver.c
+index cf27006..687e5fb 100644
+--- a/drivers/media/usb/uvc/uvc_driver.c
++++ b/drivers/media/usb/uvc/uvc_driver.c
+@@ -1855,6 +1855,15 @@ static int uvc_register_chains(struct uvc_device *dev)
+ 	return 0;
  }
  
-+static int video_device_prepare(struct device *dev)
++static int uvc_pm_runtime_enable(struct device *dev, void *data)
 +{
-+	return 1;
++	pm_runtime_enable(dev);
++
++	device_for_each_child(dev, NULL, uvc_pm_runtime_enable);
++
++	return 0;
 +}
 +
-+static const struct dev_pm_ops video_device_pm_ops = {
-+	.prepare = video_device_prepare,
-+};
-+
- static struct class video_class = {
- 	.name = VIDEO_NAME,
- 	.dev_groups = video_device_groups,
-+	.pm = &video_device_pm_ops,
- };
+ /* ------------------------------------------------------------------------
+  * USB probe, disconnect, suspend and resume
+  */
+@@ -1959,6 +1968,8 @@ static int uvc_probe(struct usb_interface *intf,
+ 			"supported.\n", ret);
+ 	}
  
- struct video_device *video_devdata(struct file *file)
++	device_for_each_child(&dev->intf->dev, NULL, uvc_pm_runtime_enable);
++
+ 	uvc_trace(UVC_TRACE_PROBE, "UVC device initialized.\n");
+ 	usb_enable_autosuspend(udev);
+ 	return 0;
 -- 
 2.3.4
-
