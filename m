@@ -1,306 +1,506 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 6/6] cpufreq: exynos: remove Exynos4210 specific cpufreq driver
- support
-Date: Fri, 03 Apr 2015 18:43:49 +0200
-Message-ID: <1428079429-4252-7-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH 2/6] clk: samsung: add infrastructure to register cpu clocks
+Date: Fri, 03 Apr 2015 18:43:45 +0200
+Message-ID: <1428079429-4252-3-git-send-email-b.zolnierkie@samsung.com>
 References: <'@samsung.com>
  <1428079429-4252-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1428079429-4252-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
 From: Thomas Abraham <thomas.ab@samsung.com>
 
-Exynos4210 based platforms have switched over to use generic
-cpufreq driver for cpufreq functionality. So the Exynos
-specific cpufreq support for these platforms can be removed.
+The CPU clock provider supplies the clock to the CPU clock domain. The
+composition and organization of the CPU clock provider could vary among
+Exynos SoCs. A CPU clock provider can be composed of clock mux, dividers
+and gates. This patch defines a new clock type for CPU clock provider and
+adds infrastructure to register the CPU clock providers for Samsung
+platforms.
 
 Changes by Bartlomiej:
-- dropped Exynos5250 support removal for now
-- updated exynos-cpufreq.[c,h]
+- fixed issue with setting lower dividers before the parent clock speed
+  was lowered (the issue resulted in lockup on Exynos4210 SoC based
+  Origen board when "ondemand" cpufreq governor was stress tested)
+- fixed missing spin_unlock on error in exynos_cpuclk_post_rate_change()
+  problem by moving cfg_data search outside of the spin locked area
+- removed leftover kfree() in exynos_register_cpu_clock() that could
+  result in dereferencing the NULL pointer on error
+- moved spin_lock earlier in exynos_cpuclk_pre_rate_change() to cover
+  reading of E4210_SRC_CPU and E4210_DIV_CPU1 registers
+- added missing "last chance" checks to wait_until_divider_stable() and
+  wait_until_mux_stable() (needed in case that IRQ handling took long
+  time to proceed and resulted in function printing incorrect error
+  message about timeout)
+- moved E4210_CPU_DIV[0,1]() macros just before their only users,
+  this resulted in moving them from patch #2 to patch #3/6 ("clk:
+  samsung: exynos4: add cpu clock configuration data and instantiate
+  cpu clock")
+- removed E5250_CPU_DIV[0,1](), E5420_EGL_DIV0() and E5420_KFC_DIV()
+  macros for now
+- added my Copyrights to drivers/clk/samsung/clk-cpu.c
 
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Mike Turquette <mturquette@linaro.org>
 Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
 Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/cpufreq/Kconfig.arm          |   11 --
- drivers/cpufreq/Makefile             |    1 -
- drivers/cpufreq/exynos-cpufreq.c     |    5 +-
- drivers/cpufreq/exynos-cpufreq.h     |    9 --
- drivers/cpufreq/exynos4210-cpufreq.c |  184 ----------------------------------
- 5 files changed, 1 insertion(+), 209 deletions(-)
- delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
+ drivers/clk/samsung/Makefile  |    2 +-
+ drivers/clk/samsung/clk-cpu.c |  349 +++++++++++++++++++++++++++++++++++++++++
+ drivers/clk/samsung/clk-cpu.h |   73 +++++++++
+ 3 files changed, 423 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/clk/samsung/clk-cpu.c
+ create mode 100644 drivers/clk/samsung/clk-cpu.h
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 1b06fc4..1d7ddc5 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -36,17 +36,6 @@ config ARM_EXYNOS_CPUFREQ
+diff --git a/drivers/clk/samsung/Makefile b/drivers/clk/samsung/Makefile
+index 17e9af7..9e8bd83 100644
+--- a/drivers/clk/samsung/Makefile
++++ b/drivers/clk/samsung/Makefile
+@@ -2,7 +2,7 @@
+ # Samsung Clock specific Makefile
+ #
  
- 	  If in doubt, say N.
- 
--config ARM_EXYNOS4210_CPUFREQ
--	bool "SAMSUNG EXYNOS4210"
--	depends on CPU_EXYNOS4210
--	depends on ARM_EXYNOS_CPUFREQ
--	default y
--	help
--	  This adds the CPUFreq driver for Samsung EXYNOS4210
--	  SoC (S5PV310 or S5PC210).
--
--	  If in doubt, say N.
--
- config ARM_EXYNOS4X12_CPUFREQ
- 	bool "SAMSUNG EXYNOS4x12"
- 	depends on SOC_EXYNOS4212 || SOC_EXYNOS4412
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 26df0ad..cb16319 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -54,7 +54,6 @@ obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
- obj-$(CONFIG_UX500_SOC_DB8500)		+= dbx500-cpufreq.o
- obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)	+= arm-exynos-cpufreq.o
- arm-exynos-cpufreq-y					:= exynos-cpufreq.o
--arm-exynos-cpufreq-$(CONFIG_ARM_EXYNOS4210_CPUFREQ)	+= exynos4210-cpufreq.o
- arm-exynos-cpufreq-$(CONFIG_ARM_EXYNOS4X12_CPUFREQ)	+= exynos4x12-cpufreq.o
- arm-exynos-cpufreq-$(CONFIG_ARM_EXYNOS5250_CPUFREQ)	+= exynos5250-cpufreq.o
- obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)	+= exynos5440-cpufreq.o
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 01ed166..2d78f63 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -144,10 +144,7 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
- 
- 	exynos_info->dev = &pdev->dev;
- 
--	if (of_machine_is_compatible("samsung,exynos4210")) {
--		exynos_info->type = EXYNOS_SOC_4210;
--		ret = exynos4210_cpufreq_init(exynos_info);
--	} else if (of_machine_is_compatible("samsung,exynos4212")) {
-+	if (of_machine_is_compatible("samsung,exynos4212")) {
- 		exynos_info->type = EXYNOS_SOC_4212;
- 		ret = exynos4x12_cpufreq_init(exynos_info);
- 	} else if (of_machine_is_compatible("samsung,exynos4412")) {
-diff --git a/drivers/cpufreq/exynos-cpufreq.h b/drivers/cpufreq/exynos-cpufreq.h
-index fe5a105..bf03d7e 100644
---- a/drivers/cpufreq/exynos-cpufreq.h
-+++ b/drivers/cpufreq/exynos-cpufreq.h
-@@ -18,7 +18,6 @@ enum cpufreq_level_index {
- };
- 
- enum exynos_soc_type {
--	EXYNOS_SOC_4210,
- 	EXYNOS_SOC_4212,
- 	EXYNOS_SOC_4412,
- 	EXYNOS_SOC_5250,
-@@ -52,14 +51,6 @@ struct exynos_dvfs_info {
- 	void __iomem	*cmu_regs;
- };
- 
--#ifdef CONFIG_ARM_EXYNOS4210_CPUFREQ
--extern int exynos4210_cpufreq_init(struct exynos_dvfs_info *);
--#else
--static inline int exynos4210_cpufreq_init(struct exynos_dvfs_info *info)
--{
--	return -EOPNOTSUPP;
--}
--#endif
- #ifdef CONFIG_ARM_EXYNOS4X12_CPUFREQ
- extern int exynos4x12_cpufreq_init(struct exynos_dvfs_info *);
- #else
-diff --git a/drivers/cpufreq/exynos4210-cpufreq.c b/drivers/cpufreq/exynos4210-cpufreq.c
-deleted file mode 100644
-index 843ec82..0000000
---- a/drivers/cpufreq/exynos4210-cpufreq.c
-+++ /dev/null
-@@ -1,184 +0,0 @@
--/*
-- * Copyright (c) 2010-2011 Samsung Electronics Co., Ltd.
-- *		http://www.samsung.com
-- *
-- * EXYNOS4210 - CPU frequency scaling support
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
--*/
--
--#include <linux/module.h>
--#include <linux/kernel.h>
--#include <linux/err.h>
--#include <linux/clk.h>
--#include <linux/io.h>
--#include <linux/slab.h>
--#include <linux/cpufreq.h>
--#include <linux/of.h>
--#include <linux/of_address.h>
--
--#include "exynos-cpufreq.h"
--
--static struct clk *cpu_clk;
--static struct clk *moutcore;
--static struct clk *mout_mpll;
--static struct clk *mout_apll;
--static struct exynos_dvfs_info *cpufreq;
--
--static unsigned int exynos4210_volt_table[] = {
--	1250000, 1150000, 1050000, 975000, 950000,
--};
--
--static struct cpufreq_frequency_table exynos4210_freq_table[] = {
--	{0, L0, 1200 * 1000},
--	{0, L1, 1000 * 1000},
--	{0, L2,  800 * 1000},
--	{0, L3,  500 * 1000},
--	{0, L4,  200 * 1000},
--	{0, 0, CPUFREQ_TABLE_END},
--};
--
--static struct apll_freq apll_freq_4210[] = {
--	/*
--	 * values:
--	 * freq
--	 * clock divider for CORE, COREM0, COREM1, PERIPH, ATB, PCLK_DBG, APLL, RESERVED
--	 * clock divider for COPY, HPM, RESERVED
--	 * PLL M, P, S
--	 */
--	APLL_FREQ(1200, 0, 3, 7, 3, 4, 1, 7, 0, 5, 0, 0, 150, 3, 1),
--	APLL_FREQ(1000, 0, 3, 7, 3, 4, 1, 7, 0, 4, 0, 0, 250, 6, 1),
--	APLL_FREQ(800,  0, 3, 7, 3, 3, 1, 7, 0, 3, 0, 0, 200, 6, 1),
--	APLL_FREQ(500,  0, 3, 7, 3, 3, 1, 7, 0, 3, 0, 0, 250, 6, 2),
--	APLL_FREQ(200,  0, 1, 3, 1, 3, 1, 0, 0, 3, 0, 0, 200, 6, 3),
--};
--
--static void exynos4210_set_clkdiv(unsigned int div_index)
--{
--	unsigned int tmp;
--
--	/* Change Divider - CPU0 */
--
--	tmp = apll_freq_4210[div_index].clk_div_cpu0;
--
--	__raw_writel(tmp, cpufreq->cmu_regs + EXYNOS4_CLKDIV_CPU);
--
--	do {
--		tmp = __raw_readl(cpufreq->cmu_regs + EXYNOS4_CLKDIV_STATCPU);
--	} while (tmp & 0x1111111);
--
--	/* Change Divider - CPU1 */
--
--	tmp = apll_freq_4210[div_index].clk_div_cpu1;
--
--	__raw_writel(tmp, cpufreq->cmu_regs + EXYNOS4_CLKDIV_CPU1);
--
--	do {
--		tmp = __raw_readl(cpufreq->cmu_regs + EXYNOS4_CLKDIV_STATCPU1);
--	} while (tmp & 0x11);
--}
--
--static void exynos4210_set_apll(unsigned int index)
--{
--	unsigned int tmp, freq = apll_freq_4210[index].freq;
--
--	/* MUX_CORE_SEL = MPLL, ARMCLK uses MPLL for lock time */
--	clk_set_parent(moutcore, mout_mpll);
--
--	do {
--		tmp = (__raw_readl(cpufreq->cmu_regs + EXYNOS4_CLKMUX_STATCPU)
--			>> EXYNOS4_CLKSRC_CPU_MUXCORE_SHIFT);
--		tmp &= 0x7;
--	} while (tmp != 0x2);
--
--	clk_set_rate(mout_apll, freq * 1000);
--
--	/* MUX_CORE_SEL = APLL */
--	clk_set_parent(moutcore, mout_apll);
--
--	do {
--		tmp = __raw_readl(cpufreq->cmu_regs + EXYNOS4_CLKMUX_STATCPU);
--		tmp &= EXYNOS4_CLKMUX_STATCPU_MUXCORE_MASK;
--	} while (tmp != (0x1 << EXYNOS4_CLKSRC_CPU_MUXCORE_SHIFT));
--}
--
--static void exynos4210_set_frequency(unsigned int old_index,
--				     unsigned int new_index)
--{
--	if (old_index > new_index) {
--		exynos4210_set_clkdiv(new_index);
--		exynos4210_set_apll(new_index);
--	} else if (old_index < new_index) {
--		exynos4210_set_apll(new_index);
--		exynos4210_set_clkdiv(new_index);
--	}
--}
--
--int exynos4210_cpufreq_init(struct exynos_dvfs_info *info)
--{
--	struct device_node *np;
--	unsigned long rate;
--
--	/*
--	 * HACK: This is a temporary workaround to get access to clock
--	 * controller registers directly and remove static mappings and
--	 * dependencies on platform headers. It is necessary to enable
--	 * Exynos multi-platform support and will be removed together with
--	 * this whole driver as soon as Exynos gets migrated to use
--	 * cpufreq-dt driver.
--	 */
--	np = of_find_compatible_node(NULL, NULL, "samsung,exynos4210-clock");
--	if (!np) {
--		pr_err("%s: failed to find clock controller DT node\n",
--			__func__);
--		return -ENODEV;
--	}
--
--	info->cmu_regs = of_iomap(np, 0);
--	if (!info->cmu_regs) {
--		pr_err("%s: failed to map CMU registers\n", __func__);
--		return -EFAULT;
--	}
--
--	cpu_clk = clk_get(NULL, "armclk");
--	if (IS_ERR(cpu_clk))
--		return PTR_ERR(cpu_clk);
--
--	moutcore = clk_get(NULL, "moutcore");
--	if (IS_ERR(moutcore))
--		goto err_moutcore;
--
--	mout_mpll = clk_get(NULL, "mout_mpll");
--	if (IS_ERR(mout_mpll))
--		goto err_mout_mpll;
--
--	rate = clk_get_rate(mout_mpll) / 1000;
--
--	mout_apll = clk_get(NULL, "mout_apll");
--	if (IS_ERR(mout_apll))
--		goto err_mout_apll;
--
--	info->mpll_freq_khz = rate;
--	/* 800Mhz */
--	info->pll_safe_idx = L2;
--	info->cpu_clk = cpu_clk;
--	info->volt_table = exynos4210_volt_table;
--	info->freq_table = exynos4210_freq_table;
--	info->set_freq = exynos4210_set_frequency;
--
--	cpufreq = info;
--
--	return 0;
--
--err_mout_apll:
--	clk_put(mout_mpll);
--err_mout_mpll:
--	clk_put(moutcore);
--err_moutcore:
--	clk_put(cpu_clk);
--
--	pr_debug("%s: failed initialization\n", __func__);
--	return -EINVAL;
--}
+-obj-$(CONFIG_COMMON_CLK)	+= clk.o clk-pll.o
++obj-$(CONFIG_COMMON_CLK)	+= clk.o clk-pll.o clk-cpu.o
+ obj-$(CONFIG_SOC_EXYNOS3250)	+= clk-exynos3250.o
+ obj-$(CONFIG_ARCH_EXYNOS4)	+= clk-exynos4.o
+ obj-$(CONFIG_SOC_EXYNOS4415)	+= clk-exynos4415.o
+diff --git a/drivers/clk/samsung/clk-cpu.c b/drivers/clk/samsung/clk-cpu.c
+new file mode 100644
+index 0000000..3a1fe07
+--- /dev/null
++++ b/drivers/clk/samsung/clk-cpu.c
+@@ -0,0 +1,349 @@
++/*
++ * Copyright (c) 2014 Samsung Electronics Co., Ltd.
++ * Author: Thomas Abraham <thomas.ab@samsung.com>
++ *
++ * Copyright (c) 2015 Samsung Electronics Co., Ltd.
++ * Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This file contains the utility function to register CPU clock for Samsung
++ * Exynos platforms. A CPU clock is defined as a clock supplied to a CPU or a
++ * group of CPUs. The CPU clock is typically derived from a hierarchy of clock
++ * blocks which includes mux and divider blocks. There are a number of other
++ * auxiliary clocks supplied to the CPU domain such as the debug blocks and AXI
++ * clock for CPU domain. The rates of these auxiliary clocks are related to the
++ * CPU clock rate and this relation is usually specified in the hardware manual
++ * of the SoC or supplied after the SoC characterization.
++ *
++ * The below implementation of the CPU clock allows the rate changes of the CPU
++ * clock and the corresponding rate changes of the auxillary clocks of the CPU
++ * domain. The platform clock driver provides a clock register configuration
++ * for each configurable rate which is then used to program the clock hardware
++ * registers to acheive a fast co-oridinated rate change for all the CPU domain
++ * clocks.
++ *
++ * On a rate change request for the CPU clock, the rate change is propagated
++ * upto the PLL supplying the clock to the CPU domain clock blocks. While the
++ * CPU domain PLL is reconfigured, the CPU domain clocks are driven using an
++ * alternate clock source. If required, the alternate clock source is divided
++ * down in order to keep the output clock rate within the previous OPP limits.
++*/
++
++#include <linux/errno.h>
++#include "clk-cpu.h"
++
++#define E4210_SRC_CPU		0x0
++#define E4210_STAT_CPU		0x200
++#define E4210_DIV_CPU0		0x300
++#define E4210_DIV_CPU1		0x304
++#define E4210_DIV_STAT_CPU0	0x400
++#define E4210_DIV_STAT_CPU1	0x404
++
++#define E4210_DIV0_RATIO0_MASK	0x7
++#define E4210_DIV1_HPM_MASK	(0x7 << 4)
++#define E4210_DIV1_COPY_MASK	(0x7 << 0)
++#define E4210_MUX_HPM_MASK	(1 << 20)
++#define E4210_DIV0_ATB_SHIFT	16
++#define E4210_DIV0_ATB_MASK	(DIV_MASK << E4210_DIV0_ATB_SHIFT)
++
++#define MAX_DIV			8
++#define DIV_MASK		7
++#define DIV_MASK_ALL		0xffffffff
++#define MUX_MASK		7
++
++/*
++ * Helper function to wait until divider(s) have stabilized after the divider
++ * value has changed.
++ */
++static void wait_until_divider_stable(void __iomem *div_reg, unsigned long mask)
++{
++	unsigned long timeout = jiffies + msecs_to_jiffies(10);
++
++	do {
++		if (!(readl(div_reg) & mask))
++			return;
++	} while (time_before(jiffies, timeout));
++
++	if (!(readl(div_reg) & mask))
++		return;
++
++	pr_err("%s: timeout in divider stablization\n", __func__);
++}
++
++/*
++ * Helper function to wait until mux has stabilized after the mux selection
++ * value was changed.
++ */
++static void wait_until_mux_stable(void __iomem *mux_reg, u32 mux_pos,
++					unsigned long mux_value)
++{
++	unsigned long timeout = jiffies + msecs_to_jiffies(10);
++
++	do {
++		if (((readl(mux_reg) >> mux_pos) & MUX_MASK) == mux_value)
++			return;
++	} while (time_before(jiffies, timeout));
++
++	if (((readl(mux_reg) >> mux_pos) & MUX_MASK) == mux_value)
++		return;
++
++	pr_err("%s: re-parenting mux timed-out\n", __func__);
++}
++
++/* common round rate callback useable for all types of CPU clocks */
++static long exynos_cpuclk_round_rate(struct clk_hw *hw,
++			unsigned long drate, unsigned long *prate)
++{
++	struct clk *parent = __clk_get_parent(hw->clk);
++	*prate = __clk_round_rate(parent, drate);
++	return *prate;
++}
++
++/* common recalc rate callback useable for all types of CPU clocks */
++static unsigned long exynos_cpuclk_recalc_rate(struct clk_hw *hw,
++			unsigned long parent_rate)
++{
++	/*
++	 * The CPU clock output (armclk) rate is the same as its parent
++	 * rate. Although there exist certain dividers inside the CPU
++	 * clock block that could be used to divide the parent clock,
++	 * the driver does not make use of them currently, except during
++	 * frequency transitions.
++	 */
++	return parent_rate;
++}
++
++static const struct clk_ops exynos_cpuclk_clk_ops = {
++	.recalc_rate = exynos_cpuclk_recalc_rate,
++	.round_rate = exynos_cpuclk_round_rate,
++};
++
++/*
++ * Helper function to set the 'safe' dividers for the CPU clock. The parameters
++ * div and mask contain the divider value and the register bit mask of the
++ * dividers to be programmed.
++ */
++static void exynos_set_safe_div(void __iomem *base, unsigned long div,
++					unsigned long mask)
++{
++	unsigned long div0;
++
++	div0 = readl(base + E4210_DIV_CPU0);
++	div0 = (div0 & ~mask) | (div & mask);
++	writel(div0, base + E4210_DIV_CPU0);
++	wait_until_divider_stable(base + E4210_DIV_STAT_CPU0, mask);
++}
++
++/* handler for pre-rate change notification from parent clock */
++static int exynos_cpuclk_pre_rate_change(struct clk_notifier_data *ndata,
++			struct exynos_cpuclk *cpuclk, void __iomem *base)
++{
++	const struct exynos_cpuclk_cfg_data *cfg_data = cpuclk->cfg;
++	unsigned long alt_prate = clk_get_rate(cpuclk->alt_parent);
++	unsigned long alt_div = 0, alt_div_mask = DIV_MASK;
++	unsigned long div0, div1 = 0, mux_reg;
++
++	/* find out the divider values to use for clock data */
++	while ((cfg_data->prate * 1000) != ndata->new_rate) {
++		if (cfg_data->prate == 0)
++			return -EINVAL;
++		cfg_data++;
++	}
++
++	spin_lock(cpuclk->lock);
++
++	/*
++	 * For the selected PLL clock frequency, get the pre-defined divider
++	 * values. If the clock for sclk_hpm is not sourced from apll, then
++	 * the values for DIV_COPY and DIV_HPM dividers need not be set.
++	 */
++	div0 = cfg_data->div0;
++	if (test_bit(CLK_CPU_HAS_DIV1, &cpuclk->flags)) {
++		div1 = cfg_data->div1;
++		if (readl(base + E4210_SRC_CPU) & E4210_MUX_HPM_MASK)
++			div1 = readl(base + E4210_DIV_CPU1) &
++				(E4210_DIV1_HPM_MASK | E4210_DIV1_COPY_MASK);
++	}
++
++	/*
++	 * If the old parent clock speed is less than the clock speed of
++	 * the alternate parent, then it should be ensured that at no point
++	 * the armclk speed is more than the old_prate until the dividers are
++	 * set.  Also workaround the issue of the dividers being set to lower
++	 * values before the parent clock speed is set to new lower speed
++	 * (this can result in too high speed of armclk output clocks).
++	 */
++	if (alt_prate > ndata->old_rate || ndata->old_rate > ndata->new_rate) {
++		unsigned long tmp_rate = min(ndata->old_rate, ndata->new_rate);
++
++		alt_div = DIV_ROUND_UP(alt_prate, tmp_rate) - 1;
++		WARN_ON(alt_div >= MAX_DIV);
++
++		if (test_bit(CLK_CPU_NEEDS_DEBUG_ALT_DIV, &cpuclk->flags)) {
++			/*
++			 * In Exynos4210, ATB clock parent is also mout_core. So
++			 * ATB clock also needs to be mantained at safe speed.
++			 */
++			alt_div |= E4210_DIV0_ATB_MASK;
++			alt_div_mask |= E4210_DIV0_ATB_MASK;
++		}
++		exynos_set_safe_div(base, alt_div, alt_div_mask);
++		div0 |= alt_div;
++	}
++
++	/* select sclk_mpll as the alternate parent */
++	mux_reg = readl(base + E4210_SRC_CPU);
++	writel(mux_reg | (1 << 16), base + E4210_SRC_CPU);
++	wait_until_mux_stable(base + E4210_STAT_CPU, 16, 2);
++
++	/* alternate parent is active now. set the dividers */
++	writel(div0, base + E4210_DIV_CPU0);
++	wait_until_divider_stable(base + E4210_DIV_STAT_CPU0, DIV_MASK_ALL);
++
++	if (test_bit(CLK_CPU_HAS_DIV1, &cpuclk->flags)) {
++		writel(div1, base + E4210_DIV_CPU1);
++		wait_until_divider_stable(base + E4210_DIV_STAT_CPU1,
++				DIV_MASK_ALL);
++	}
++
++	spin_unlock(cpuclk->lock);
++	return 0;
++}
++
++/* handler for post-rate change notification from parent clock */
++static int exynos_cpuclk_post_rate_change(struct clk_notifier_data *ndata,
++			struct exynos_cpuclk *cpuclk, void __iomem *base)
++{
++	const struct exynos_cpuclk_cfg_data *cfg_data = cpuclk->cfg;
++	unsigned long div = 0, div_mask = DIV_MASK;
++	unsigned long mux_reg;
++
++	/* find out the divider values to use for clock data */
++	if (test_bit(CLK_CPU_NEEDS_DEBUG_ALT_DIV, &cpuclk->flags)) {
++		while ((cfg_data->prate * 1000) != ndata->new_rate) {
++			if (cfg_data->prate == 0)
++				return -EINVAL;
++			cfg_data++;
++		}
++	}
++
++	spin_lock(cpuclk->lock);
++
++	/* select mout_apll as the alternate parent */
++	mux_reg = readl(base + E4210_SRC_CPU);
++	writel(mux_reg & ~(1 << 16), base + E4210_SRC_CPU);
++	wait_until_mux_stable(base + E4210_STAT_CPU, 16, 1);
++
++	if (test_bit(CLK_CPU_NEEDS_DEBUG_ALT_DIV, &cpuclk->flags)) {
++		div |= (cfg_data->div0 & E4210_DIV0_ATB_MASK);
++		div_mask |= E4210_DIV0_ATB_MASK;
++	}
++
++	exynos_set_safe_div(base, div, div_mask);
++	spin_unlock(cpuclk->lock);
++	return 0;
++}
++
++/*
++ * This notifier function is called for the pre-rate and post-rate change
++ * notifications of the parent clock of cpuclk.
++ */
++static int exynos_cpuclk_notifier_cb(struct notifier_block *nb,
++				unsigned long event, void *data)
++{
++	struct clk_notifier_data *ndata = data;
++	struct exynos_cpuclk *cpuclk;
++	void __iomem *base;
++	int err = 0;
++
++	cpuclk = container_of(nb, struct exynos_cpuclk, clk_nb);
++	base = cpuclk->ctrl_base;
++
++	if (event == PRE_RATE_CHANGE)
++		err = exynos_cpuclk_pre_rate_change(ndata, cpuclk, base);
++	else if (event == POST_RATE_CHANGE)
++		err = exynos_cpuclk_post_rate_change(ndata, cpuclk, base);
++
++	return notifier_from_errno(err);
++}
++
++/* helper function to register a CPU clock */
++int __init exynos_register_cpu_clock(struct samsung_clk_provider *ctx,
++		unsigned int lookup_id, const char *name, const char *parent,
++		const char *alt_parent, unsigned long offset,
++		const struct exynos_cpuclk_cfg_data *cfg,
++		unsigned long num_cfgs, unsigned long flags)
++{
++	struct exynos_cpuclk *cpuclk;
++	struct clk_init_data init;
++	struct clk *clk;
++	int ret = 0;
++
++	cpuclk = kzalloc(sizeof(*cpuclk), GFP_KERNEL);
++	if (!cpuclk)
++		return -ENOMEM;
++
++	init.name = name;
++	init.flags = CLK_SET_RATE_PARENT;
++	init.parent_names = &parent;
++	init.num_parents = 1;
++	init.ops = &exynos_cpuclk_clk_ops;
++
++	cpuclk->hw.init = &init;
++	cpuclk->ctrl_base = ctx->reg_base + offset;
++	cpuclk->lock = &ctx->lock;
++	cpuclk->flags = flags;
++	cpuclk->clk_nb.notifier_call = exynos_cpuclk_notifier_cb;
++
++	cpuclk->alt_parent = __clk_lookup(alt_parent);
++	if (!cpuclk->alt_parent) {
++		pr_err("%s: could not lookup alternate parent %s\n",
++				__func__, alt_parent);
++		ret = -EINVAL;
++		goto free_cpuclk;
++	}
++
++	clk = __clk_lookup(parent);
++	if (!clk) {
++		pr_err("%s: could not lookup parent clock %s\n",
++				__func__, parent);
++		ret = -EINVAL;
++		goto free_cpuclk;
++	}
++
++	ret = clk_notifier_register(clk, &cpuclk->clk_nb);
++	if (ret) {
++		pr_err("%s: failed to register clock notifier for %s\n",
++				__func__, name);
++		goto free_cpuclk;
++	}
++
++	cpuclk->cfg = kmemdup(cfg, sizeof(*cfg) * num_cfgs, GFP_KERNEL);
++	if (!cpuclk->cfg) {
++		pr_err("%s: could not allocate memory for cpuclk data\n",
++				__func__);
++		ret = -ENOMEM;
++		goto unregister_clk_nb;
++	}
++
++	clk = clk_register(NULL, &cpuclk->hw);
++	if (IS_ERR(clk)) {
++		pr_err("%s: could not register cpuclk %s\n", __func__,	name);
++		ret = PTR_ERR(clk);
++		goto free_cpuclk_data;
++	}
++
++	samsung_clk_add_lookup(ctx, clk, lookup_id);
++	return 0;
++
++free_cpuclk_data:
++	kfree(cpuclk->cfg);
++unregister_clk_nb:
++	clk_notifier_unregister(__clk_lookup(parent), &cpuclk->clk_nb);
++free_cpuclk:
++	kfree(cpuclk);
++	return ret;
++}
+diff --git a/drivers/clk/samsung/clk-cpu.h b/drivers/clk/samsung/clk-cpu.h
+new file mode 100644
+index 0000000..37874d3
+--- /dev/null
++++ b/drivers/clk/samsung/clk-cpu.h
+@@ -0,0 +1,73 @@
++/*
++ * Copyright (c) 2014 Samsung Electronics Co., Ltd.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Common Clock Framework support for all PLL's in Samsung platforms
++*/
++
++#ifndef __SAMSUNG_CLK_CPU_H
++#define __SAMSUNG_CLK_CPU_H
++
++#include "clk.h"
++
++/**
++ * struct exynos_cpuclk_data: config data to setup cpu clocks.
++ * @prate: frequency of the primary parent clock (in KHz).
++ * @div0: value to be programmed in the div_cpu0 register.
++ * @div1: value to be programmed in the div_cpu1 register.
++ *
++ * This structure holds the divider configuration data for dividers in the CPU
++ * clock domain. The parent frequency at which these divider values are valid is
++ * specified in @prate. The @prate is the frequency of the primary parent clock.
++ * For CPU clock domains that do not have a DIV1 register, the @div1 member
++ * value is not used.
++ */
++struct exynos_cpuclk_cfg_data {
++	unsigned long	prate;
++	unsigned long	div0;
++	unsigned long	div1;
++};
++
++/**
++ * struct exynos_cpuclk: information about clock supplied to a CPU core.
++ * @hw:	handle between CCF and CPU clock.
++ * @alt_parent: alternate parent clock to use when switching the speed
++ *	of the primary parent clock.
++ * @ctrl_base:	base address of the clock controller.
++ * @lock: cpu clock domain register access lock.
++ * @cfg: cpu clock rate configuration data.
++ * @num_cfgs: number of array elements in @cfg array.
++ * @clk_nb: clock notifier registered for changes in clock speed of the
++ *	primary parent clock.
++ * @flags: configuration flags for the CPU clock.
++ *
++ * This structure holds information required for programming the CPU clock for
++ * various clock speeds.
++ */
++struct exynos_cpuclk {
++	struct clk_hw				hw;
++	struct clk				*alt_parent;
++	void __iomem				*ctrl_base;
++	spinlock_t				*lock;
++	const struct exynos_cpuclk_cfg_data	*cfg;
++	const unsigned long			num_cfgs;
++	struct notifier_block			clk_nb;
++	unsigned long				flags;
++
++/* The CPU clock registers has DIV1 configuration register */
++#define CLK_CPU_HAS_DIV1		(1 << 0)
++/* When ALT parent is active, debug clocks need safe divider values */
++#define CLK_CPU_NEEDS_DEBUG_ALT_DIV	(1 << 1)
++};
++
++extern int __init exynos_register_cpu_clock(struct samsung_clk_provider *ctx,
++			unsigned int lookup_id, const char *name,
++			const char *parent, const char *alt_parent,
++			unsigned long offset,
++			const struct exynos_cpuclk_cfg_data *cfg,
++			unsigned long num_cfgs, unsigned long flags);
++
++#endif /* __SAMSUNG_CLK_CPU_H */
 -- 
 1.7.9.5
