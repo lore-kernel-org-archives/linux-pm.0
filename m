@@ -1,60 +1,147 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [v2][PATCH 12/21] ACPI / PAD: Use explicit broadcast oneshot control function
-Date: Fri, 03 Apr 2015 02:06:37 +0200
-Message-ID: <1552509.UntNmyqF5v@vostro.rjw.lan>
+Subject: [v2][PATCH 16/21] ARM: tegra: Use explicit broadcast oneshot control function
+Date: Fri, 03 Apr 2015 02:32:14 +0200
+Message-ID: <2131111.rjxRLX1eZB@vostro.rjw.lan>
 References: <2112147.0kYCHhbEJT@vostro.rjw.lan> <2186067.gb1n6y4Zoc@vostro.rjw.lan> <3410621.5uMny9y0B7@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59042 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752818AbbDCAQR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Apr 2015 20:16:17 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <3410621.5uMny9y0B7@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Ingo Molnar <mingo@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Thomas Gleixner <tglx@linutronix.de>
 
 Replace the clockevents_notify() call with an explicit function call.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Len Brown <lenb@kernel.org>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>
+Cc: Alexandre Courbot <gnurou@gmail.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/acpi_pad.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ arch/arm/mach-tegra/cpuidle-tegra114.c |    6 +++---
+ arch/arm/mach-tegra/cpuidle-tegra20.c  |   10 +++++-----
+ arch/arm/mach-tegra/cpuidle-tegra30.c  |   10 +++++-----
+ 3 files changed, 13 insertions(+), 13 deletions(-)
 
-Index: linux-pm/drivers/acpi/acpi_pad.c
+Index: linux-pm/arch/arm/mach-tegra/cpuidle-tegra114.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/acpi_pad.c
-+++ linux-pm/drivers/acpi/acpi_pad.c
-@@ -150,7 +150,6 @@ static int power_saving_thread(void *dat
- 	sched_setscheduler(current, SCHED_RR, &param);
+--- linux-pm.orig/arch/arm/mach-tegra/cpuidle-tegra114.c
++++ linux-pm/arch/arm/mach-tegra/cpuidle-tegra114.c
+@@ -15,7 +15,7 @@
+  */
  
- 	while (!kthread_should_stop()) {
--		int cpu;
- 		unsigned long expire_time;
+ #include <asm/firmware.h>
+-#include <linux/clockchips.h>
++#include <linux/tick.h>
+ #include <linux/cpuidle.h>
+ #include <linux/cpu_pm.h>
+ #include <linux/kernel.h>
+@@ -44,7 +44,7 @@ static int tegra114_idle_power_down(stru
+ 	tegra_set_cpu_in_lp2();
+ 	cpu_pm_enter();
  
- 		try_to_freeze();
-@@ -174,14 +173,13 @@ static int power_saving_thread(void *dat
- 			}
- 			local_irq_disable();
- 			tick_broadcast_enable();
--			cpu = smp_processor_id();
--			clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
-+			tick_broadcast_enter();
- 			stop_critical_timings();
+-	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
++	tick_broadcast_enter();
  
- 			mwait_idle_with_hints(power_saving_mwait_eax, 1);
+ 	call_firmware_op(prepare_idle);
  
- 			start_critical_timings();
--			clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
-+			tick_broadcast_exit();
- 			local_irq_enable();
+@@ -52,7 +52,7 @@ static int tegra114_idle_power_down(stru
+ 	if (call_firmware_op(do_idle, 0) == -ENOSYS)
+ 		cpu_suspend(0, tegra30_sleep_cpu_secondary_finish);
  
- 			if (time_before(expire_time, jiffies)) {
-
+-	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
++	tick_broadcast_exit();
+ 
+ 	cpu_pm_exit();
+ 	tegra_clear_cpu_in_lp2();
+Index: linux-pm/arch/arm/mach-tegra/cpuidle-tegra20.c
+===================================================================
+--- linux-pm.orig/arch/arm/mach-tegra/cpuidle-tegra20.c
++++ linux-pm/arch/arm/mach-tegra/cpuidle-tegra20.c
+@@ -20,7 +20,7 @@
+  */
+ 
+ #include <linux/clk/tegra.h>
+-#include <linux/clockchips.h>
++#include <linux/tick.h>
+ #include <linux/cpuidle.h>
+ #include <linux/cpu_pm.h>
+ #include <linux/kernel.h>
+@@ -135,11 +135,11 @@ static bool tegra20_cpu_cluster_power_do
+ 	if (tegra20_reset_cpu_1() || !tegra_cpu_rail_off_ready())
+ 		return false;
+ 
+-	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
++	tick_broadcast_enter();
+ 
+ 	tegra_idle_lp2_last();
+ 
+-	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
++	tick_broadcast_exit();
+ 
+ 	if (cpu_online(1))
+ 		tegra20_wake_cpu1_from_reset();
+@@ -152,13 +152,13 @@ static bool tegra20_idle_enter_lp2_cpu_1
+ 					 struct cpuidle_driver *drv,
+ 					 int index)
+ {
+-	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
++	tick_broadcast_enter();
+ 
+ 	cpu_suspend(0, tegra20_sleep_cpu_secondary_finish);
+ 
+ 	tegra20_cpu_clear_resettable();
+ 
+-	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
++	tick_broadcast_exit();
+ 
+ 	return true;
+ }
+Index: linux-pm/arch/arm/mach-tegra/cpuidle-tegra30.c
+===================================================================
+--- linux-pm.orig/arch/arm/mach-tegra/cpuidle-tegra30.c
++++ linux-pm/arch/arm/mach-tegra/cpuidle-tegra30.c
+@@ -20,7 +20,7 @@
+  */
+ 
+ #include <linux/clk/tegra.h>
+-#include <linux/clockchips.h>
++#include <linux/tick.h>
+ #include <linux/cpuidle.h>
+ #include <linux/cpu_pm.h>
+ #include <linux/kernel.h>
+@@ -75,11 +75,11 @@ static bool tegra30_cpu_cluster_power_do
+ 		return false;
+ 	}
+ 
+-	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
++	tick_broadcast_enter();
+ 
+ 	tegra_idle_lp2_last();
+ 
+-	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
++	tick_broadcast_exit();
+ 
+ 	return true;
+ }
+@@ -89,13 +89,13 @@ static bool tegra30_cpu_core_power_down(
+ 					struct cpuidle_driver *drv,
+ 					int index)
+ {
+-	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
++	tick_broadcast_enter();
+ 
+ 	smp_wmb();
+ 
+ 	cpu_suspend(0, tegra30_sleep_cpu_secondary_finish);
+ 
+-	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
++	tick_broadcast_exit();
+ 
+ 	return true;
+ }
