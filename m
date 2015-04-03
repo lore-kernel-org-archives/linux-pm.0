@@ -1,52 +1,75 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v2 4/7] [media] uvcvideo: Enable runtime PM of descendant devices
-Date: Fri,  3 Apr 2015 14:57:53 +0200
-Message-ID: <1428065887-16017-5-git-send-email-tomeu.vizoso@collabora.com>
+Subject: [PATCH v2 2/7] Input: Add input_dev.stay_runtime_suspended flag
+Date: Fri,  3 Apr 2015 14:57:51 +0200
+Message-ID: <1428065887-16017-3-git-send-email-tomeu.vizoso@collabora.com>
 References: <1428065887-16017-1-git-send-email-tomeu.vizoso@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1428065887-16017-1-git-send-email-tomeu.vizoso@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-So UVC devices can remain runtime-suspended when the system goes into a
-sleep state, they and all of their descendant devices need to have
-runtime PM enable.
+It indicates that if the device is runtime suspended when the system
+goes into a sleep state, it will be left in that state instead of
+suspended and resumed.
+
+It's useful for devices such as UVC that register an input device for
+the buttons that they may have and that should remain runtime suspended
+when the system suspends.
 
 Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 ---
- drivers/media/usb/uvc/uvc_driver.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/input/input.c | 8 ++++++++
+ include/linux/input.h | 4 ++++
+ 2 files changed, 12 insertions(+)
 
-diff --git a/drivers/media/usb/uvc/uvc_driver.c b/drivers/media/usb/uvc/uvc_driver.c
-index cf27006..687e5fb 100644
---- a/drivers/media/usb/uvc/uvc_driver.c
-+++ b/drivers/media/usb/uvc/uvc_driver.c
-@@ -1855,6 +1855,15 @@ static int uvc_register_chains(struct uvc_device *dev)
+diff --git a/drivers/input/input.c b/drivers/input/input.c
+index 9666309..2bcc708 100644
+--- a/drivers/input/input.c
++++ b/drivers/input/input.c
+@@ -1741,12 +1741,20 @@ static int input_dev_poweroff(struct device *dev)
  	return 0;
  }
  
-+static int uvc_pm_runtime_enable(struct device *dev, void *data)
++static int input_dev_prepare(struct device *dev)
 +{
-+	pm_runtime_enable(dev);
++	struct input_dev *input_dev = to_input_dev(dev);
 +
-+	device_for_each_child(dev, NULL, uvc_pm_runtime_enable);
-+
-+	return 0;
++	return input_dev->stay_runtime_suspended;
 +}
 +
- /* ------------------------------------------------------------------------
-  * USB probe, disconnect, suspend and resume
-  */
-@@ -1959,6 +1968,8 @@ static int uvc_probe(struct usb_interface *intf,
- 			"supported.\n", ret);
- 	}
+ static const struct dev_pm_ops input_dev_pm_ops = {
+ 	.suspend	= input_dev_suspend,
+ 	.resume		= input_dev_resume,
+ 	.freeze		= input_dev_freeze,
+ 	.poweroff	= input_dev_poweroff,
+ 	.restore	= input_dev_resume,
++	.prepare	= input_dev_prepare,
+ };
  
-+	device_for_each_child(&dev->intf->dev, NULL, uvc_pm_runtime_enable);
-+
- 	uvc_trace(UVC_TRACE_PROBE, "UVC device initialized.\n");
- 	usb_enable_autosuspend(udev);
- 	return 0;
+ static int input_class_prepare(struct device *dev)
+diff --git a/include/linux/input.h b/include/linux/input.h
+index 82ce323..7466961 100644
+--- a/include/linux/input.h
++++ b/include/linux/input.h
+@@ -117,6 +117,9 @@ struct input_value {
+  * @vals: array of values queued in the current frame
+  * @devres_managed: indicates that devices is managed with devres framework
+  *	and needs not be explicitly unregistered or freed.
++ * @stay_runtime_suspended: indicates that if the device is runtime suspended
++ *	when the system goes into a sleep state, it will be left in that state
++ *	instead of suspended and resumed
+  */
+ struct input_dev {
+ 	const char *name;
+@@ -187,6 +190,7 @@ struct input_dev {
+ 	struct input_value *vals;
+ 
+ 	bool devres_managed;
++	bool stay_runtime_suspended;
+ };
+ #define to_input_dev(d) container_of(d, struct input_dev, dev)
+ 
 -- 
 2.3.4
