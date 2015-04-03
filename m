@@ -1,49 +1,47 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 2/6] staging: board: Initialize staging board code earlier
-Date: Fri,  3 Apr 2015 14:41:59 +0200
-Message-ID: <1428064923-24950-3-git-send-email-geert+renesas@glider.be>
-References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH][fix for tip/timers/core] timers / PM: Fix up tick_unfreeze()
+Date: Fri, 03 Apr 2015 15:21:51 +0200
+Message-ID: <8099075.V0LvN3pQAV@vostro.rjw.lan>
+References: <1698741.eezk9tnXtG@vostro.rjw.lan> <tip-f46481d0a7cb942b84145acb80ad43bdb1ff8eb4@git.kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Magnus Damm <damm+renesas@opensource.se>, Arnd Bergmann <arnd@arndb.de>, Simon Horman <horms+renesas@verge.net.au>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: devel@driverdev.osuosl.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Marc Zyngier <marc.zyngier@arm.com>, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:57433 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752393AbbDCM5f (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Apr 2015 08:57:35 -0400
+In-Reply-To: <tip-f46481d0a7cb942b84145acb80ad43bdb1ff8eb4@git.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: peterz@infradead.org, mingo@kernel.org
+Cc: rafael.j.wysocki@intel.com, konrad.wilk@oracle.com, boris.ostrovsky@oracle.com, tglx@linutronix.de, david.vrabel@citrix.com, linux-kernel@vger.kernel.org, hpa@zytor.com, Linux PM list <linux-pm@vger.kernel.org>
 
-Currently the staging board code is initialized from a late_initcall().
-However, unused PM domains are also disabled from a late_initcall(),
-which happens before due to link order.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Change the initialization of staging board code from using
-late_initcall() to device_initcall() to fix this.
+A recent conflict resolution has left tick_resume() in
+tick_unfreeze() which leads to an unbalanced execution of
+tick_resume_broadcast() every time that function runs.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Fix that by replacing the tick_resume() in tick_unfreeze()
+with tick_resume_local() as appropriate.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/staging/board/board.h | 2 +-
+ kernel/time/tick-common.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/board/board.h b/drivers/staging/board/board.h
-index 2390ed6c31a42f2f..e9c914985d4acb36 100644
---- a/drivers/staging/board/board.h
-+++ b/drivers/staging/board/board.h
-@@ -15,6 +15,6 @@ static int __init runtime_board_check(void)	\
- 	return 0;				\
- }						\
- 						\
--late_initcall(runtime_board_check)
-+device_initcall(runtime_board_check)
+Index: linux-pm/kernel/time/tick-common.c
+===================================================================
+--- linux-pm.orig/kernel/time/tick-common.c
++++ linux-pm/kernel/time/tick-common.c
+@@ -482,7 +482,7 @@ void tick_unfreeze(void)
+ 	if (tick_freeze_depth == num_online_cpus())
+ 		timekeeping_resume();
+ 	else
+-		tick_resume();
++		tick_resume_local();
  
- #endif /* __BOARD_H__ */
--- 
-1.9.1
+ 	tick_freeze_depth--;
+ 
+
