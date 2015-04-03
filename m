@@ -1,353 +1,133 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [v2][PATCH 20/21] clockevents: Cleanup dead cpu explicitely
-Date: Fri, 03 Apr 2015 02:38:05 +0200
-Message-ID: <1735025.raBZdQHM3m@vostro.rjw.lan>
-References: <2112147.0kYCHhbEJT@vostro.rjw.lan> <2186067.gb1n6y4Zoc@vostro.rjw.lan> <3410621.5uMny9y0B7@vostro.rjw.lan>
+From: joeyli <jlee@suse.com>
+Subject: Re: Unreliable hibernation on Lenovo x230 (regression)
+Date: Fri, 3 Apr 2015 09:23:35 +0800
+Message-ID: <20150403012335.GF2320@linux-rxt1.site>
+References: <20150401214743.20fbe2c5@porcupinefactory.org>
+ <20150402152805.GA17021@amd>
+ <20150402165054.GD2320@linux-rxt1.site>
+ <20150402172221.GE2320@linux-rxt1.site>
+ <20150402201200.1cf003f7@porcupinefactory.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <3410621.5uMny9y0B7@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.nue.novell.com ([195.135.221.5]:37158 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752962AbbDCBXw (ORCPT
+	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+	Thu, 2 Apr 2015 21:23:52 -0400
+Content-Disposition: inline
+In-Reply-To: <20150402201200.1cf003f7@porcupinefactory.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rhn <kebuac.rhn@porcupinefactory.org>
+Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, joeyli.kernel@gmail.com, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-From: Thomas Gleixner <tglx@linutronix.de>
+On Thu, Apr 02, 2015 at 08:12:00PM +0200, rhn wrote:
+> On Fri, 3 Apr 2015 01:22:21 +0800
+> joeyli <jlee@suse.com> wrote:
+> 
+> > On Fri, Apr 03, 2015 at 12:50:54AM +0800, joeyli wrote:
+> > > Hi, 
+> > > 
+> > > On Thu, Apr 02, 2015 at 05:28:05PM +0200, Pavel Machek wrote:
+> > > > On Wed 2015-04-01 21:47:43, rhn wrote:
+> > > > > Hello,
+> > > > > 
+> > > > > Between kernel 3.16 and 3.17, a regression has been introduced where the first hibernation after regular shutdown always fails to resume. Subsequent hibernations succeed.
+> > > > > 
+> > > > > The system is a Lenovo x230 with Intel i5, booting with EFI, with the hibernate partition located on a secondary SSD drive. Installed system is Fedora 20, hibernation and reboots were issued using the KDE shutdown dialog.
+> > > > > 
+> > > > > I have tracked the problem to first appear in the commit
+> > > > > e67ee10190e69332f929bdd6594a312363321a66	Merge branches 'pm-sleep', 'pm-cpufreq' and 'pm-cpuidle'
+> > > > > 
+> > > > > The problem itself manifests in dmesg as follows (system was first
+> > > > > restarted, then hibernated - this log is from the subsequent
+> > > > resume):
+> > > > 
+> > > > Ok, can you try to disable cpufreq and cpuidle, and then try if it
+> > > > reproduces?
+> > > > 
+> > > > At that point, this is the candidate:
+> > > > 
+> > > > commit e67ee10190e69332f929bdd6594a312363321a66
+> > > > Merge: 21c806d 84c91b7 39c8bba 372ba8c
+> > > > Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > Date:   Mon Aug 11 23:19:48 2014 +0200
+> > > > 
+> > > >     Merge branches 'pm-sleep', 'pm-cpufreq' and 'pm-cpuidle'
+> > > > 
+> > > >     * pm-sleep:
+> > > >           PM / hibernate: avoid unsafe pages in e820 reserved regions
+> > > > 
+> > > > ...
+> > > > Alternatively, you can just try to revert
+> > > > 
+> > > > commit 84c91b7ae07c62cf6dee7fde3277f4be21331f85
+> > > > Author: Lee, Chun-Yi <joeyli.kernel@gmail.com>
+> > > > Date:   Mon Aug 4 23:23:21 2014 +0800
+> > > > 
+> > > >     PM / hibernate: avoid unsafe pages in e820 reserved regions
+> > > > 
+> > > >     When the machine doesn't well handle the e820 persistent when
+> > > >     hibernate
+> > > >         resuming, then it may cause page fault when writing image to
+> > > >     snapshot
+> > > >         buffer:
+> > > > 
+> > > > 
+> > > > ...
+> > > > 
+> > > > Thanks,
+> > > > 									Pavel
+> > > 
+> > > Before revert 84c91b7ae patch, please check does there have log similar as
+> > > following in dmesg when hibernate resume fail?
+> > > 
+> > > [   24.349777] PM: 0xab9bc000 in e820 nosave region: [mem 0xab9bc000-0xab9c2fff]
+> > > 
+> > > The address may different, by you should see "e820 nosave region" log. Otherwise
+> > > we got another problem.
+> > >
+> > 
+> > Forgot to mention, please add "debug no_console_suspend=1 loglevel=9" to kernel
+> > parameter then try to reproduce issue and look at dmesg.
+> > 
+> > 
+> > Thanks a lot!
+> > Joey Lee 
+> 
+> Yes, it's present in dmesg when hibernate fails (default kernel params):
+> [    3.138824] PM: 0x9d3d3000 in e820 nosave region: [mem 0x9d3d3000-0x9d3d3fff]
+>
 
-clockevents_notify() is a leftover from the early design of the
-clockevents facility. It's really not a notification mechanism, it's a
-multiplex call. We are way better off to have explicit calls instead of this
-monstrosity.
+OK, then the message means 0x9d3d3000 address used by image kernel but in e820
+region of current boot. Need check does this e820 region used by setup_data so
+reserved as E820_RESERVED_KERN.
 
-Split out the cleanup function for a dead cpu and invoke it directly
-from the cpu down code. Make it conditional on CPU_HOTPLUG as well.
+Need your complete dmesg to verify the e820 table. If the above assumption is
+true, then Yinghai Lu's patchset could fix this problem:
 
-Temporary change, will be refined in the future.
+x86: Kill E820_RESERVED_KERN
+https://lkml.org/lkml/2015/3/4/434
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-[ rjw: Rebased, added clockevents_notify() removal ]
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- include/linux/clockchips.h   |    6 -----
- include/linux/tick.h         |    2 +
- kernel/cpu.c                 |    1 
- kernel/time/clockevents.c    |   51 +++++++++++++++++--------------------------
- kernel/time/hrtimer.c        |    3 --
- kernel/time/tick-broadcast.c |   39 ++++++++++++++++----------------
- kernel/time/tick-common.c    |    6 ++---
- kernel/time/tick-internal.h  |   10 ++++----
- 8 files changed, 52 insertions(+), 66 deletions(-)
+The target kernel version to merge his patches is v4.1
+ 
+> I probably didn't make it clear - the top dmesg in my original message was from failed resume.
+> 
+> Cheers,
+> rhn
 
-Index: linux-pm/include/linux/clockchips.h
-===================================================================
---- linux-pm.orig/include/linux/clockchips.h
-+++ linux-pm/include/linux/clockchips.h
-@@ -8,12 +8,6 @@
- #ifndef _LINUX_CLOCKCHIPS_H
- #define _LINUX_CLOCKCHIPS_H
- 
--/* Clock event notification values */
--enum clock_event_nofitiers {
--	CLOCK_EVT_NOTIFY_ADD,
--	CLOCK_EVT_NOTIFY_CPU_DEAD,
--};
--
- #ifdef CONFIG_GENERIC_CLOCKEVENTS
- 
- # include <linux/clocksource.h>
-Index: linux-pm/include/linux/tick.h
-===================================================================
---- linux-pm.orig/include/linux/tick.h
-+++ linux-pm/include/linux/tick.h
-@@ -20,6 +20,7 @@ extern void tick_suspend_local(void);
- /* Should be core only, but XEN resume magic and ARM BL switcher require it */
- extern void tick_resume_local(void);
- extern void tick_handover_do_timer(void);
-+extern void tick_cleanup_dead_cpu(int cpu);
- #else /* CONFIG_GENERIC_CLOCKEVENTS */
- static inline void tick_init(void) { }
- static inline void tick_freeze(void) { }
-@@ -27,6 +28,7 @@ static inline void tick_unfreeze(void) {
- static inline void tick_suspend_local(void) { }
- static inline void tick_resume_local(void) { }
- static inline void tick_handover_do_timer(void) { }
-+static inline void tick_cleanup_dead_cpu(int cpu) { }
- #endif /* !CONFIG_GENERIC_CLOCKEVENTS */
- 
- #ifdef CONFIG_TICK_ONESHOT
-Index: linux-pm/kernel/cpu.c
-===================================================================
---- linux-pm.orig/kernel/cpu.c
-+++ linux-pm/kernel/cpu.c
-@@ -419,6 +419,7 @@ static int __ref _cpu_down(unsigned int
- 	__cpu_die(cpu);
- 
- 	/* CPU is completely dead: tell everyone.  Too late to complain. */
-+	tick_cleanup_dead_cpu(cpu);
- 	cpu_notify_nofail(CPU_DEAD | mod, hcpu);
- 
- 	check_for_tasks(cpu);
-Index: linux-pm/kernel/time/clockevents.c
-===================================================================
---- linux-pm.orig/kernel/time/clockevents.c
-+++ linux-pm/kernel/time/clockevents.c
-@@ -642,49 +642,40 @@ void clockevents_resume(void)
- 			dev->resume(dev);
- }
- 
-+#ifdef CONFIG_HOTPLUG_CPU
- /**
-- * clockevents_notify - notification about relevant events
-- * Returns 0 on success, any other value on error
-+ * tick_cleanup_dead_cpu - Cleanup the tick and clockevents of a dead cpu
-  */
--int clockevents_notify(unsigned long reason, void *arg)
-+void tick_cleanup_dead_cpu(int cpu)
- {
- 	struct clock_event_device *dev, *tmp;
- 	unsigned long flags;
--	int cpu, ret = 0;
- 
- 	raw_spin_lock_irqsave(&clockevents_lock, flags);
- 
--	switch (reason) {
--	case CLOCK_EVT_NOTIFY_CPU_DEAD:
--		tick_shutdown_broadcast_oneshot(arg);
--		tick_shutdown_broadcast(arg);
--		tick_shutdown(arg);
--		/*
--		 * Unregister the clock event devices which were
--		 * released from the users in the notify chain.
--		 */
--		list_for_each_entry_safe(dev, tmp, &clockevents_released, list)
-+	tick_shutdown_broadcast_oneshot(cpu);
-+	tick_shutdown_broadcast(cpu);
-+	tick_shutdown(cpu);
-+	/*
-+	 * Unregister the clock event devices which were
-+	 * released from the users in the notify chain.
-+	 */
-+	list_for_each_entry_safe(dev, tmp, &clockevents_released, list)
-+		list_del(&dev->list);
-+	/*
-+	 * Now check whether the CPU has left unused per cpu devices
-+	 */
-+	list_for_each_entry_safe(dev, tmp, &clockevent_devices, list) {
-+		if (cpumask_test_cpu(cpu, dev->cpumask) &&
-+		    cpumask_weight(dev->cpumask) == 1 &&
-+		    !tick_is_broadcast_device(dev)) {
-+			BUG_ON(dev->state != CLOCK_EVT_STATE_DETACHED);
- 			list_del(&dev->list);
--		/*
--		 * Now check whether the CPU has left unused per cpu devices
--		 */
--		cpu = *((int *)arg);
--		list_for_each_entry_safe(dev, tmp, &clockevent_devices, list) {
--			if (cpumask_test_cpu(cpu, dev->cpumask) &&
--			    cpumask_weight(dev->cpumask) == 1 &&
--			    !tick_is_broadcast_device(dev)) {
--				BUG_ON(dev->state != CLOCK_EVT_STATE_DETACHED);
--				list_del(&dev->list);
--			}
- 		}
--		break;
--	default:
--		break;
- 	}
- 	raw_spin_unlock_irqrestore(&clockevents_lock, flags);
--	return ret;
- }
--EXPORT_SYMBOL_GPL(clockevents_notify);
-+#endif
- 
- #ifdef CONFIG_SYSFS
- struct bus_type clockevents_subsys = {
-Index: linux-pm/kernel/time/hrtimer.c
-===================================================================
---- linux-pm.orig/kernel/time/hrtimer.c
-+++ linux-pm/kernel/time/hrtimer.c
-@@ -1709,11 +1709,8 @@ static int hrtimer_cpu_notify(struct not
- #ifdef CONFIG_HOTPLUG_CPU
- 	case CPU_DEAD:
- 	case CPU_DEAD_FROZEN:
--	{
--		clockevents_notify(CLOCK_EVT_NOTIFY_CPU_DEAD, &scpu);
- 		migrate_hrtimers(scpu);
- 		break;
--	}
- #endif
- 
- 	default:
-Index: linux-pm/kernel/time/tick-broadcast.c
-===================================================================
---- linux-pm.orig/kernel/time/tick-broadcast.c
-+++ linux-pm/kernel/time/tick-broadcast.c
-@@ -410,14 +410,14 @@ void tick_set_periodic_handler(struct cl
- 		dev->event_handler = tick_handle_periodic_broadcast;
- }
- 
-+#ifdef CONFIG_HOTPLUG_CPU
- /*
-  * Remove a CPU from broadcasting
-  */
--void tick_shutdown_broadcast(unsigned int *cpup)
-+void tick_shutdown_broadcast(unsigned int cpu)
- {
- 	struct clock_event_device *bc;
- 	unsigned long flags;
--	unsigned int cpu = *cpup;
- 
- 	raw_spin_lock_irqsave(&tick_broadcast_lock, flags);
- 
-@@ -432,6 +432,7 @@ void tick_shutdown_broadcast(unsigned in
- 
- 	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
- }
-+#endif
- 
- void tick_suspend_broadcast(void)
- {
-@@ -672,21 +673,6 @@ static void broadcast_shutdown_local(str
- 	clockevents_set_state(dev, CLOCK_EVT_STATE_SHUTDOWN);
- }
- 
--void hotplug_cpu__broadcast_tick_pull(int deadcpu)
--{
--	struct clock_event_device *bc;
--	unsigned long flags;
--
--	raw_spin_lock_irqsave(&tick_broadcast_lock, flags);
--	bc = tick_broadcast_device.evtdev;
--
--	if (bc && broadcast_needs_cpu(bc, deadcpu)) {
--		/* This moves the broadcast assignment to this CPU: */
--		clockevents_program_event(bc, bc->next_event, 1);
--	}
--	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
--}
--
- /**
-  * tick_broadcast_oneshot_control - Enter/exit broadcast oneshot mode
-  * @state:	The target state (enter/exit)
-@@ -908,14 +894,28 @@ void tick_broadcast_switch_to_oneshot(vo
- 	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
- }
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+void hotplug_cpu__broadcast_tick_pull(int deadcpu)
-+{
-+	struct clock_event_device *bc;
-+	unsigned long flags;
-+
-+	raw_spin_lock_irqsave(&tick_broadcast_lock, flags);
-+	bc = tick_broadcast_device.evtdev;
-+
-+	if (bc && broadcast_needs_cpu(bc, deadcpu)) {
-+		/* This moves the broadcast assignment to this CPU: */
-+		clockevents_program_event(bc, bc->next_event, 1);
-+	}
-+	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
-+}
- 
- /*
-  * Remove a dead CPU from broadcasting
-  */
--void tick_shutdown_broadcast_oneshot(unsigned int *cpup)
-+void tick_shutdown_broadcast_oneshot(unsigned int cpu)
- {
- 	unsigned long flags;
--	unsigned int cpu = *cpup;
- 
- 	raw_spin_lock_irqsave(&tick_broadcast_lock, flags);
- 
-@@ -929,6 +929,7 @@ void tick_shutdown_broadcast_oneshot(uns
- 
- 	raw_spin_unlock_irqrestore(&tick_broadcast_lock, flags);
- }
-+#endif
- 
- /*
-  * Check, whether the broadcast device is in one shot mode
-Index: linux-pm/kernel/time/tick-common.c
-===================================================================
---- linux-pm.orig/kernel/time/tick-common.c
-+++ linux-pm/kernel/time/tick-common.c
-@@ -348,7 +348,6 @@ void tick_handover_do_timer(void)
- 			TICK_DO_TIMER_NONE;
- 	}
- }
--#endif
- 
- /*
-  * Shutdown an event device on a given cpu:
-@@ -357,9 +356,9 @@ void tick_handover_do_timer(void)
-  * access the hardware device itself.
-  * We just set the mode and remove it from the lists.
-  */
--void tick_shutdown(unsigned int *cpup)
-+void tick_shutdown(unsigned int cpu)
- {
--	struct tick_device *td = &per_cpu(tick_cpu_device, *cpup);
-+	struct tick_device *td = &per_cpu(tick_cpu_device, cpu);
- 	struct clock_event_device *dev = td->evtdev;
- 
- 	td->mode = TICKDEV_MODE_PERIODIC;
-@@ -375,6 +374,7 @@ void tick_shutdown(unsigned int *cpup)
- 		td->evtdev = NULL;
- 	}
- }
-+#endif
- 
- /**
-  * tick_suspend_local - Suspend the local tick device
-Index: linux-pm/kernel/time/tick-internal.h
-===================================================================
---- linux-pm.orig/kernel/time/tick-internal.h
-+++ linux-pm/kernel/time/tick-internal.h
-@@ -20,7 +20,7 @@ extern int tick_do_timer_cpu __read_most
- extern void tick_setup_periodic(struct clock_event_device *dev, int broadcast);
- extern void tick_handle_periodic(struct clock_event_device *dev);
- extern void tick_check_new_device(struct clock_event_device *dev);
--extern void tick_shutdown(unsigned int *cpup);
-+extern void tick_shutdown(unsigned int cpu);
- extern void tick_suspend(void);
- extern void tick_resume(void);
- extern bool tick_check_replacement(struct clock_event_device *curdev,
-@@ -52,7 +52,7 @@ extern ssize_t sysfs_get_uname(const cha
- extern int tick_device_uses_broadcast(struct clock_event_device *dev, int cpu);
- extern void tick_install_broadcast_device(struct clock_event_device *dev);
- extern int tick_is_broadcast_device(struct clock_event_device *dev);
--extern void tick_shutdown_broadcast(unsigned int *cpup);
-+extern void tick_shutdown_broadcast(unsigned int cpu);
- extern void tick_suspend_broadcast(void);
- extern void tick_resume_broadcast(void);
- extern bool tick_resume_check_broadcast(void);
-@@ -66,7 +66,7 @@ static inline void tick_install_broadcas
- static inline int tick_is_broadcast_device(struct clock_event_device *dev) { return 0; }
- static inline int tick_device_uses_broadcast(struct clock_event_device *dev, int cpu) { return 0; }
- static inline void tick_do_periodic_broadcast(struct clock_event_device *d) { }
--static inline void tick_shutdown_broadcast(unsigned int *cpup) { }
-+static inline void tick_shutdown_broadcast(unsigned int cpu) { }
- static inline void tick_suspend_broadcast(void) { }
- static inline void tick_resume_broadcast(void) { }
- static inline bool tick_resume_check_broadcast(void) { return false; }
-@@ -119,7 +119,7 @@ static inline int tick_check_oneshot_cha
- #if defined(CONFIG_GENERIC_CLOCKEVENTS_BROADCAST) && defined(CONFIG_TICK_ONESHOT)
- extern void tick_broadcast_setup_oneshot(struct clock_event_device *bc);
- extern void tick_broadcast_switch_to_oneshot(void);
--extern void tick_shutdown_broadcast_oneshot(unsigned int *cpup);
-+extern void tick_shutdown_broadcast_oneshot(unsigned int cpu);
- extern int tick_broadcast_oneshot_active(void);
- extern void tick_check_oneshot_broadcast_this_cpu(void);
- bool tick_broadcast_oneshot_available(void);
-@@ -127,7 +127,7 @@ extern struct cpumask *tick_get_broadcas
- #else /* !(BROADCAST && ONESHOT): */
- static inline void tick_broadcast_setup_oneshot(struct clock_event_device *bc) { BUG(); }
- static inline void tick_broadcast_switch_to_oneshot(void) { }
--static inline void tick_shutdown_broadcast_oneshot(unsigned int *cpup) { }
-+static inline void tick_shutdown_broadcast_oneshot(unsigned int cpu) { }
- static inline int tick_broadcast_oneshot_active(void) { return 0; }
- static inline void tick_check_oneshot_broadcast_this_cpu(void) { }
- static inline bool tick_broadcast_oneshot_available(void) { return tick_oneshot_possible(); }
+On the other hand,
+Could you please check you are using platform mode to turn off machine for
+hibernating?
 
+$ cat /sys/power/disk
+[platform] shutdown reboot suspend
+
+And, if possible, please file bug on bugzilla.kernel.org and give me the bug
+number. I prefer collect log and debugging history in bugzilla for further
+tracking.
+
+
+Thanks a lot!
+Joey Lee
