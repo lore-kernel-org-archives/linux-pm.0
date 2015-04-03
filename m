@@ -1,8 +1,7 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 4/6] staging: board: kzm9d: Translate hwirq numbers to
- virq numbers
-Date: Fri,  3 Apr 2015 14:42:01 +0200
-Message-ID: <1428064923-24950-5-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH 1/6] Revert "staging: board: disable as it breaks the build"
+Date: Fri,  3 Apr 2015 14:41:58 +0200
+Message-ID: <1428064923-24950-2-git-send-email-geert+renesas@glider.be>
 References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,47 +21,27 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Magnus Damm <damm+renesas@o
 Cc: devel@driverdev.osuosl.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Marc Zyngier <marc.zyngier@arm.com>, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-As of commit 9a1091ef0017c40a ("irqchip: gic: Support hierarchy irq
-domain."), GIC IRQ numbers are virtual, breaking hardcoded hardware IRQ
-numbers in platform device resources.
+This reverts commit d13778d537a0ed6115d2a79a942af999cfb8eec6.
 
-Translate the hardware IRQ numbers to virtual IRQ numbers to fix this.
+Commit 13c11072536f2613 ("staging:board: remove unnecessary function")
+fixed the build of drivers/staging/board/board.c.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-Untested due to lack of hardware
----
- drivers/staging/board/kzm9d.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/staging/board/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/staging/board/kzm9d.c b/drivers/staging/board/kzm9d.c
-index 533f3026e17aa723..8ea7a1a9bd777dc7 100644
---- a/drivers/staging/board/kzm9d.c
-+++ b/drivers/staging/board/kzm9d.c
-@@ -4,16 +4,22 @@
- #include <linux/platform_device.h>
- #include "board.h"
+diff --git a/drivers/staging/board/Kconfig b/drivers/staging/board/Kconfig
+index 0a89ad16371f7ded..b8ee81840666ad35 100644
+--- a/drivers/staging/board/Kconfig
++++ b/drivers/staging/board/Kconfig
+@@ -1,7 +1,6 @@
+ config STAGING_BOARD
+ 	bool "Staging Board Support"
+ 	depends on OF_ADDRESS
+-	depends on BROKEN
+ 	help
+ 	  Select to enable per-board staging support code.
  
--static const struct resource usbs1_res[] __initconst = {
-+static struct resource usbs1_res[] __initdata = {
- 	DEFINE_RES_MEM(0xe2800000, 0x2000),
- 	DEFINE_RES_IRQ(159),
- };
- 
- static void __init kzm9d_init(void)
- {
--	if (!board_staging_dt_node_available(usbs1_res, ARRAY_SIZE(usbs1_res)))
-+	board_staging_setup_hwirq_xlate("arm,cortex-a9-gic", 32);
-+
-+	if (!board_staging_dt_node_available(usbs1_res,
-+					     ARRAY_SIZE(usbs1_res))) {
-+		board_staging_fixup_irq_resources(usbs1_res,
-+						  ARRAY_SIZE(usbs1_res));
- 		platform_device_register_simple("emxx_udc", -1, usbs1_res,
- 						ARRAY_SIZE(usbs1_res));
-+	}
- }
- 
- board_staging("renesas,kzm9d", kzm9d_init);
 -- 
 1.9.1
