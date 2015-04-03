@@ -1,51 +1,79 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH/RFC 5/6] staging: board: Add support for devices with
- complex dependencies
-Date: Fri, 3 Apr 2015 15:27:40 +0200
-Message-ID: <CAMuHMdVhX-MrFxeW5j98NLaQQtJ+DToxkz2Z1+SRSs7YF27RDw@mail.gmail.com>
-References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
-	<1428064923-24950-6-git-send-email-geert+renesas@glider.be>
-	<20150403125727.GT10964@mwanda>
+From: rhn <kebuac.rhn@porcupinefactory.org>
+Subject: Re: Unreliable hibernation on Lenovo x230 (regression)
+Date: Fri, 3 Apr 2015 17:58:25 +0200
+Message-ID: <20150403175825.79816fea@porcupinefactory.org>
+References: <20150401214743.20fbe2c5@porcupinefactory.org>
+	<20150402152805.GA17021@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f181.google.com ([209.85.214.181]:34743 "EHLO
-	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750987AbbDCN1l (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Apr 2015 09:27:41 -0400
-In-Reply-To: <20150403125727.GT10964@mwanda>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150402152805.GA17021@amd>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rhn <kebuac.rhn@porcupinefactory.org>, kernel list <linux-kernel@vger.kernel.org>, joeyli.kernel@gmail.com, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Magnus Damm <damm+renesas@opensource.se>, Arnd Bergmann <arnd@arndb.de>, Simon Horman <horms+renesas@verge.net.au>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, driverdevel <devel@driverdev.osuosl.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Marc Zyngier <marc.zyngier@arm.com>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Fri, Apr 3, 2015 at 2:57 PM, Dan Carpenter <dan.carpenter@oracle.com> wrote:
->> +     error = clk_register_clkdev(clk, bsc->con_id, bsc->dev_id);
->> +     if (error)
->> +             pr_err("Failed to register clock %s (%d)\n", bsc->clk, error);
->> +             return error;
->
-> Missing curly braces.  Also it's weird that don't we need a clk_put()
-> on the error patch as well as the success path?
+On Thu, 2 Apr 2015 17:28:05 +0200
+Pavel Machek <pavel@ucw.cz> wrote:
 
-Thanks!
+> On Wed 2015-04-01 21:47:43, rhn wrote:
+> > Hello,
+> > 
+> > Between kernel 3.16 and 3.17, a regression has been introduced where the first hibernation after regular shutdown always fails to resume. Subsequent hibernations succeed.
+> > 
+> > The system is a Lenovo x230 with Intel i5, booting with EFI, with the hibernate partition located on a secondary SSD drive. Installed system is Fedora 20, hibernation and reboots were issued using the KDE shutdown dialog.
+> > 
+> > I have tracked the problem to first appear in the commit
+> > e67ee10190e69332f929bdd6594a312363321a66	Merge branches 'pm-sleep', 'pm-cpufreq' and 'pm-cpuidle'
+> > 
+> > The problem itself manifests in dmesg as follows (system was first
+> > restarted, then hibernated - this log is from the subsequent
+> resume):
+> 
+> Ok, can you try to disable cpufreq and cpuidle, and then try if it
+> reproduces?
+> 
+> At that point, this is the candidate:
+> 
+> commit e67ee10190e69332f929bdd6594a312363321a66
+> Merge: 21c806d 84c91b7 39c8bba 372ba8c
+> Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Date:   Mon Aug 11 23:19:48 2014 +0200
+> 
+>     Merge branches 'pm-sleep', 'pm-cpufreq' and 'pm-cpuidle'
+> 
+>     * pm-sleep:
+>           PM / hibernate: avoid unsafe pages in e820 reserved regions
+> 
+> ...
+> Alternatively, you can just try to revert
+> 
+> commit 84c91b7ae07c62cf6dee7fde3277f4be21331f85
+> Author: Lee, Chun-Yi <joeyli.kernel@gmail.com>
+> Date:   Mon Aug 4 23:23:21 2014 +0800
+> 
+>     PM / hibernate: avoid unsafe pages in e820 reserved regions
+> 
+>     When the machine doesn't well handle the e820 persistent when
+>     hibernate
+>         resuming, then it may cause page fault when writing image to
+>     snapshot
+>         buffer:
+> 
+> 
+> ...
+> 
+> Thanks,
+> 									Pavel
 
-So it worked only by accident: with the new per-user struct clk instances
-clk_put() must not be called if clk_register_clkdev() succeeded.
+I tried to disable CONFIG_CPU_IDLE and CONFIG_CPU_FREQ, however for some reason I could only disable CONFIG_CPU_FREQ.
 
-Will call clk_put() only if it failed.
+The bug persisted.
 
->> +
->> +     clk_put(clk);
->> +     return 0;
+Reverting the commit 84c91b7 on top of e67ee10 fixes the problem.
 
-Gr{oetje,eeting}s,
+I created a copy of the bug report here: https://bugzilla.kernel.org/show_bug.cgi?id=96111
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Cheers,
+rhn
