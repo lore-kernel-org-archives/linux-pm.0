@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [v2][PATCH 17/21] sched/idle: Use explicit broadcast oneshot control function
-Date: Fri, 03 Apr 2015 02:34:49 +0200
-Message-ID: <6422336.RMm7oUHcXh@vostro.rjw.lan>
+Subject: [v2][PATCH 21/21] timekeeping: Get rid of stale comment
+Date: Fri, 03 Apr 2015 02:39:05 +0200
+Message-ID: <2422730.dmO29q661S@vostro.rjw.lan>
 References: <2112147.0kYCHhbEJT@vostro.rjw.lan> <2186067.gb1n6y4Zoc@vostro.rjw.lan> <3410621.5uMny9y0B7@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -10,40 +10,34 @@ Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <3410621.5uMny9y0B7@vostro.rjw.lan>
 Sender: linux-acpi-owner@vger.kernel.org
 To: Ingo Molnar <mingo@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, John Stultz <john.stultz@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Thomas Gleixner <tglx@linutronix.de>
 
-Replace the clockevents_notify() call with an explicit function call.
+Arch specific management of xtime/jiffies/wall_to_monotonic is gone
+for quite a while. Zap the stale comment.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: John Stultz <john.stultz@linaro.org>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- kernel/sched/idle.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ kernel/time/timekeeping.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
-Index: linux-pm/kernel/sched/idle.c
+Index: linux-pm/kernel/time/timekeeping.c
 ===================================================================
---- linux-pm.orig/kernel/sched/idle.c
-+++ linux-pm/kernel/sched/idle.c
-@@ -158,8 +158,7 @@ static void cpuidle_idle_call(void)
- 	 * is used from another cpu as a broadcast timer, this call may
- 	 * fail if it is not available
- 	 */
--	if (broadcast &&
--	    clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu))
-+	if (broadcast && tick_broadcast_enter())
- 		goto use_default;
+--- linux-pm.orig/kernel/time/timekeeping.c
++++ linux-pm/kernel/time/timekeeping.c
+@@ -1307,10 +1307,6 @@ void timekeeping_inject_sleeptime64(stru
  
- 	/* Take note of the planned idle state. */
-@@ -176,7 +175,7 @@ static void cpuidle_idle_call(void)
- 	idle_set_state(this_rq(), NULL);
- 
- 	if (broadcast)
--		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
-+		tick_broadcast_exit();
- 
- 	/*
- 	 * Give the governor an opportunity to reflect on the outcome
+ /**
+  * timekeeping_resume - Resumes the generic timekeeping subsystem.
+- *
+- * This is for the generic clocksource timekeeping.
+- * xtime/wall_to_monotonic/jiffies/etc are
+- * still managed by arch specific suspend/resume code.
+  */
+ void timekeeping_resume(void)
+ {
 
