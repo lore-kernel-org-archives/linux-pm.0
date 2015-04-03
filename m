@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [v2][PATCH 04/21] ACPI / PAD: Use explicit broadcast control function
-Date: Fri, 03 Apr 2015 02:01:49 +0200
-Message-ID: <1521832.mm0ZfkTzTA@vostro.rjw.lan>
+Subject: [v2][PATCH 09/21] clockevents: Remove the broadcast control leftovers
+Date: Fri, 03 Apr 2015 02:03:42 +0200
+Message-ID: <2076318.76XJZ8QYP3@vostro.rjw.lan>
 References: <2112147.0kYCHhbEJT@vostro.rjw.lan> <2186067.gb1n6y4Zoc@vostro.rjw.lan> <3410621.5uMny9y0B7@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -10,41 +10,52 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <3410621.5uMny9y0B7@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Ingo Molnar <mingo@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Len Brown <lenb@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Thomas Gleixner <tglx@linutronix.de>
 
-Replace the clockevents_notify() call with an explicit function call.
+All users converted. Remove the notify leftovers.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Len Brown <lenb@kernel.org>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/acpi_pad.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ include/linux/clockchips.h |    3 ---
+ kernel/time/clockevents.c  |   10 ----------
+ 2 files changed, 13 deletions(-)
 
-Index: linux-pm/drivers/acpi/acpi_pad.c
+Index: linux-pm/include/linux/clockchips.h
 ===================================================================
---- linux-pm.orig/drivers/acpi/acpi_pad.c
-+++ linux-pm/drivers/acpi/acpi_pad.c
-@@ -26,7 +26,7 @@
- #include <linux/kthread.h>
- #include <linux/freezer.h>
- #include <linux/cpu.h>
--#include <linux/clockchips.h>
-+#include <linux/tick.h>
- #include <linux/slab.h>
- #include <linux/acpi.h>
- #include <asm/mwait.h>
-@@ -172,9 +172,8 @@ static int power_saving_thread(void *dat
- 				mark_tsc_unstable("TSC halts in idle");
- 				tsc_marked_unstable = 1;
- 			}
--			clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ON, &cpu);
+--- linux-pm.orig/include/linux/clockchips.h
++++ linux-pm/include/linux/clockchips.h
+@@ -11,9 +11,6 @@
+ /* Clock event notification values */
+ enum clock_event_nofitiers {
+ 	CLOCK_EVT_NOTIFY_ADD,
+-	CLOCK_EVT_NOTIFY_BROADCAST_ON,
+-	CLOCK_EVT_NOTIFY_BROADCAST_OFF,
+-	CLOCK_EVT_NOTIFY_BROADCAST_FORCE,
+ 	CLOCK_EVT_NOTIFY_BROADCAST_ENTER,
+ 	CLOCK_EVT_NOTIFY_BROADCAST_EXIT,
+ 	CLOCK_EVT_NOTIFY_CPU_DYING,
+Index: linux-pm/kernel/time/clockevents.c
+===================================================================
+--- linux-pm.orig/kernel/time/clockevents.c
++++ linux-pm/kernel/time/clockevents.c
+@@ -655,16 +655,6 @@ int clockevents_notify(unsigned long rea
+ 	raw_spin_lock_irqsave(&clockevents_lock, flags);
+ 
+ 	switch (reason) {
+-	case CLOCK_EVT_NOTIFY_BROADCAST_ON:
+-		tick_broadcast_enable();
+-		break;
+-	case CLOCK_EVT_NOTIFY_BROADCAST_OFF:
+-		tick_broadcast_disable();
+-		break;
+-	case CLOCK_EVT_NOTIFY_BROADCAST_FORCE:
+-		tick_broadcast_force();
+-		break;
 -
- 			local_irq_disable();
-+			tick_broadcast_enable();
- 			cpu = smp_processor_id();
- 			clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
- 			stop_critical_timings();
+ 	case CLOCK_EVT_NOTIFY_BROADCAST_ENTER:
+ 	case CLOCK_EVT_NOTIFY_BROADCAST_EXIT:
+ 		ret = tick_broadcast_oneshot_control(reason);
