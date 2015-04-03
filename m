@@ -1,88 +1,81 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH 5/6] Input: evdev - Enable runtime PM of the evdev input handler
-Date: Fri, 3 Apr 2015 15:03:43 +0200
-Message-ID: <CAAObsKDQoUR728pnadJGx229-rGBm2=sU3nN-a8xN_hWk4FM0A@mail.gmail.com>
-References: <1427818501-10201-1-git-send-email-tomeu.vizoso@collabora.com>
- <1427818501-10201-6-git-send-email-tomeu.vizoso@collabora.com> <20150331203138.GB29015@dtor-ws>
+Subject: Re: [PATCH 6/6] USB / PM: Allow USB devices to remain
+ runtime-suspended when sleeping
+Date: Fri, 3 Apr 2015 15:05:55 +0200
+Message-ID: <CAAObsKB4O8K3MCXfYgkA55A9VT-ugX7jvtNS+0BaqsiDOivzGw@mail.gmail.com>
+References: <1427818501-10201-7-git-send-email-tomeu.vizoso@collabora.com> <Pine.LNX.4.44L0.1503311259340.1453-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f174.google.com ([209.85.216.174]:36584 "EHLO
-	mail-qc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752862AbbDCNEE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Apr 2015 09:04:04 -0400
-In-Reply-To: <20150331203138.GB29015@dtor-ws>
+Received: from mail-qc0-f181.google.com ([209.85.216.181]:34982 "EHLO
+	mail-qc0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753021AbbDCNGS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Apr 2015 09:06:18 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1503311259340.1453-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-input@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux-pm mailing list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Scot Doyle <lkml14@scotdoyle.com>, Dan Williams <dan.j.williams@intel.com>, Julius Werner <jwerner@chromium.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Pratyush Anand <pratyush.anand@st.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, USB list <linux-usb@vger.kernel.org>, Kernel development list <linux-kernel@vger.kernel.org>
 
-On 31 March 2015 at 22:31, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> On Tue, Mar 31, 2015 at 06:14:49PM +0200, Tomeu Vizoso wrote:
->> So ancestor devices can remain runtime-suspended when the system goes
->> into a sleep state, they and all of their descendant devices need to
->> have runtime PM enabled.
+On 31 March 2015 at 19:09, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Tue, 31 Mar 2015, Tomeu Vizoso wrote:
 >
-> I am confused. Input devices are not runtime-PM-enabled, so what
-> enabling this on evdev handler buys us?
+>> Have dev_pm_ops.prepare return 1 for USB devices, interfaces, endpoints
+>> and ports so that USB devices can remain runtime-suspended when the
+>> system goes to a sleep state.
+>>
+>> Also enable runtime PM for endpoints, which is another requirement for
+>> the above to work.
+>>
+>> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+>
+> ...
+>
+>> diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
+>> index b1fb9ae..1498faa 100644
+>> --- a/drivers/usb/core/usb.c
+>> +++ b/drivers/usb/core/usb.c
+>> @@ -300,7 +300,7 @@ static int usb_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
+>>
+>>  static int usb_dev_prepare(struct device *dev)
+>>  {
+>> -     return 0;               /* Implement eventually? */
+>> +     return 1;               /* Implement eventually? */
+>>  }
+>
+> The rest of the patch is okay, but this part is wrong.  The documented
+> requirement is that the prepare callback should return 1 if the device
+> is already in the appropriate state.  This means it has to have the
+> right wakeup setting.
+>
+> In other words, if the device is currently in runtime suspend with
+> remote wakeup enabled, but device_may_wakeup() returns 0 (so that the
+> device should be disabled for wakeup when the system goes into
+> suspend), then the prepare callback has to return 0.
+>
+> Therefore what you need to do here is something like this:
+>
+>         struct usb_device       *udev = to_usb_device(dev);
+>
+>         /* Return 0 if the current wakeup setting is wrong, otherwise 1 */
+>         if (udev->do_remote_wakeup && !device_may_wakeup(dev))
+>                 return 0;
+>         return 1;
 
-The UVC driver would be enabling runtime PM for the input device that
-it registers.
+Thanks, in v2 I have also covered the other case, as suggested by Oliver.
 
-> And what about joydev and
-> mousedev? Other handlers that might be attached?
+> Aside from this issue, I like the patch set.  Do you think you can do
+> something similar for drivers/scsi/scsi_pm.c?  I'm not aware of any
+> wakeup-capable SCSI devices -- not disk or CD/DVD drives, anyway.
 
-Not sure, tbh. What I have ended up doing in v2 is descending the tree
-from the UVC device and enabling runtime PM for all descendants. The
-idea is that the UVC driver knows whether it should remain runtime
-suspended and that its descendants should copy it.
-
-> The stubbing of prepare also feels wrong: we do want to suspend/resume
-> input devices since we want to shut off and restore their leds even if
-> device (keyboard) happens to be sleeping.
-
-Fair enough, I have introduced a flag that allows the creator of the
-input device to decide that.
+I think I will be able to allocate some time on monday to look at this.
 
 Thanks,
 
 Tomeu
 
-> Thanks.
+> Alan Stern
 >
->>
->> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
->> ---
->>  drivers/input/evdev.c | 3 +++
->>  1 file changed, 3 insertions(+)
->>
->> diff --git a/drivers/input/evdev.c b/drivers/input/evdev.c
->> index a18f41b..3d60c20 100644
->> --- a/drivers/input/evdev.c
->> +++ b/drivers/input/evdev.c
->> @@ -26,6 +26,7 @@
->>  #include <linux/major.h>
->>  #include <linux/device.h>
->>  #include <linux/cdev.h>
->> +#include <linux/pm_runtime.h>
->>  #include "input-compat.h"
->>
->>  enum evdev_clock_type {
->> @@ -1201,6 +1202,8 @@ static int evdev_connect(struct input_handler *handler, struct input_dev *dev,
->>       if (error)
->>               goto err_cleanup_evdev;
->>
->> +     pm_runtime_enable(&evdev->dev);
->> +
->>       return 0;
->>
->>   err_cleanup_evdev:
->> --
->> 2.3.4
->>
->
-> --
-> Dmitry
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
