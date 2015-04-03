@@ -1,57 +1,61 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: Re: [PATCH/RFC 5/6] staging: board: Add support for devices with
- complex dependencies
-Date: Fri, 3 Apr 2015 15:57:27 +0300
-Message-ID: <20150403125727.GT10964@mwanda>
-References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
- <1428064923-24950-6-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-Content-Disposition: inline
-In-Reply-To: <1428064923-24950-6-git-send-email-geert+renesas@glider.be>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: devel@driverdev.osuosl.org, devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, linux-pm@vger.kernel.org, Marc Zyngier <marc.zyngier@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-sh@vger.kernel.org, Magnus Damm <damm+renesas@opensource.se>, linux-kernel@vger.kernel.org, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Simon Horman <horms+renesas@verge.net.au>, linux-arm-kernel@lists.infradead.org
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [PATCH v2 1/7] Input: Implement dev_pm_ops.prepare in input_class
+Date: Fri,  3 Apr 2015 14:57:50 +0200
+Message-ID: <1428065887-16017-2-git-send-email-tomeu.vizoso@collabora.com>
+References: <1428065887-16017-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f182.google.com ([209.85.212.182]:37888 "EHLO
+	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753027AbbDCM62 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Apr 2015 08:58:28 -0400
+In-Reply-To: <1428065887-16017-1-git-send-email-tomeu.vizoso@collabora.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Apr 03, 2015 at 02:42:02PM +0200, Geert Uytterhoeven wrote:
-> +int __init board_staging_register_clock(const struct board_staging_clk *bsc)
-> +{
-> +	struct clk *clk;
-> +	int error;
-> +
-> +	pr_debug("Registering clock %s for con_id %s dev_id %s\n", bsc->clk,
-> +		 bsc->con_id, bsc->dev_id);
-> +	clk = clk_get(NULL, bsc->clk);
-> +	if (IS_ERR(clk)) {
-> +		error = PTR_ERR(clk);
-> +		pr_err("Failed to get clock %s (%d)\n", bsc->clk, error);
-> +		return error;
-> +	}
-> +
-> +	error = clk_register_clkdev(clk, bsc->con_id, bsc->dev_id);
-> +	if (error)
-> +		pr_err("Failed to register clock %s (%d)\n", bsc->clk, error);
-> +		return error;
+Have it return 1 so that input handlers don't block input devices from
+remaining runtime suspended when the system goes into a sleep state. For
+this to happen, the handler device needs to have runtime PM enabled.
 
-Missing curly braces.  Also it's weird that don't we need a clk_put()
-on the error patch as well as the success path?
+This can make resume times considerably shorter because these devices
+won't be resumed when the system is awaken.
 
-> +
-> +	clk_put(clk);
-> +	return 0;
-> +}
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+---
+ drivers/input/input.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
+diff --git a/drivers/input/input.c b/drivers/input/input.c
+index cc357f1..9666309 100644
+--- a/drivers/input/input.c
++++ b/drivers/input/input.c
+@@ -1748,6 +1748,15 @@ static const struct dev_pm_ops input_dev_pm_ops = {
+ 	.poweroff	= input_dev_poweroff,
+ 	.restore	= input_dev_resume,
+ };
++
++static int input_class_prepare(struct device *dev)
++{
++	return 1;
++}
++
++static const struct dev_pm_ops input_class_pm_ops = {
++	.prepare	= input_class_prepare,
++};
+ #endif /* CONFIG_PM */
+ 
+ static struct device_type input_dev_type = {
+@@ -1767,6 +1776,9 @@ static char *input_devnode(struct device *dev, umode_t *mode)
+ struct class input_class = {
+ 	.name		= "input",
+ 	.devnode	= input_devnode,
++#ifdef CONFIG_PM_SLEEP
++	.pm		= &input_class_pm_ops,
++#endif
+ };
+ EXPORT_SYMBOL_GPL(input_class);
+ 
+-- 
+2.3.4
 
-regards,
-dan carpenter
