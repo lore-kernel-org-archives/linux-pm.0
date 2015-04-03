@@ -1,51 +1,105 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / watchdog: iTCO: stop watchdog during system suspend
-Date: Fri, 03 Apr 2015 13:04:47 +0200
-Message-ID: <1741516.p64k4HnZLy@vostro.rjw.lan>
-References: <2017660.nPaHVT8bW3@vostro.rjw.lan> <2928815.XiLbVYtUVn@vostro.rjw.lan> <551E29B7.7050801@roeck-us.net>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC 0/6] staging: board: armadillo800eva: Board staging for
+ sh_mobile_lcdc_fb
+Date: Fri,  3 Apr 2015 14:41:57 +0200
+Message-ID: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60735 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752530AbbDCKkc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Apr 2015 06:40:32 -0400
-In-Reply-To: <551E29B7.7050801@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Magnus Damm <damm+renesas@opensource.se>, Arnd Bergmann <arnd@arndb.de>, Simon Horman <horms+renesas@verge.net.au>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: devel@driverdev.osuosl.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Marc Zyngier <marc.zyngier@arm.com>, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>, Wim Van Sebroeck <wim@iguana.be>
-Cc: linux-watchdog@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Aubrey Li <aubrey.li@intel.com>, Borun Fu <borun.fu@intel.com>
 
-On Thursday, April 02, 2015 10:48:39 PM Guenter Roeck wrote:
-> On 04/02/2015 03:04 PM, Rafael J. Wysocki wrote:
-> [ ... ]
-> >
-> > ---
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Subject: PM / watchdog: iTCO: stop watchdog during system suspend
-> >
-> > If the target sleep state of the system is not an ACPI sleep state
-> > (S1, S2 or S3), the TCO watchdog needs to be stopped during system
-> > suspend, because it may not be possible to ping it any more after
-> > timekeeping has been suspended (suspend-to-idle does that for
-> > one example).
-> >
-> > For this reason, provide ->suspend_noirq and ->resume_noirq
-> > callbacks for the iTCO watchdog driver and use them to stop
-> > and restart the watchdog during system suspend and resume,
-> > respectively, if the system is not going to enter an ACPI
-> > sleep state (in which case the watchdog will be stopped
-> > by the platform firmware before the state is entered).
-> >
-> > Reported-by: Borun Fu <borun.fu@intel.com>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+	Hi all,
 
-Thanks!
+This RFC patch series adds board staging support for r8a7740/armadillo.
+For now this supports only the frame buffer device for the on-board LCD.
+The goal is to complete the move to ARM multiplatform kernels for all
+shmobile platforms, and drop the existing board files
+(arch/arm/mach-shmobile/board-*).
 
-I'll take it into the PM tree, unless anyone objects.
+The board staging area was introduced last year to allow continuous
+upstream in-tree development and integration of platform devices. It
+helps developers integrate devices as platform devices for device
+drivers that only provide platform device bindings.  This in turn allows
+for incremental development of both hardware feature support and DT
+binding work in parallel.
 
-Rafael
+This series consists of 4 parts:
+  - Patch 1 re-enables compilation of the board staging area, which was
+    disabled after a compile breakage, but has been fixed in the mean
+    time,
+  - Path 2 moves initialization of staging board code to an earlier
+    moment, as currently it happens after unused PM domains are powered
+    down,
+  - Patches 3 and 4 (hopefully) fix the existing kzm9d board staging
+    code, which was presumably broken by commit 9a1091ef0017c40a
+    ("irqchip: gic: Support hierarchy irq domain."),
+  - Patches 5 and 6 add support for registering platform devices with
+    complex dependencies (clocks, pinctrl, gpios, PM domains), and add
+    armadillo board staging code for enabling a frame buffer on the
+    on-board LCD.
 
+Questions:
+  - Are there other devices from board-armadillo.c that work fine in
+    armadillo-legacy, and that we want to add?
+    I think this is the list of devices lacking DT support and/or
+    missing in DTS:
+      - renesas_usbhs (does this work? the platform device is
+	instantiated conditionally, but the condition (gpio state) is
+	never true?)
+      - sh-mobile-hdmi/sh_mobile_lcdc_fb.1 (this seems to be broken in
+	-legacy?)
+      - sdhi1 (we do have sdhi0)
+      - mmcif
+      - soc-camera-pdrv/sh_mobile_ceu
+      - ipmmu
+      - sh-dma-engine (this will probably never get DT support)
+
+  - What about support for other boards (kzm9g, bockw, marzen)?
+
+This was tested on r8a7740/armadillo.
+This was not tested on emev2/kzm9d, due to lack of hardware.
+
+Thanks for your comments!
+
+Geert Uytterhoeven (6):
+  Revert "staging: board: disable as it breaks the build"
+  [RFC] staging: board: Initialize staging board code earlier
+  [RFC] staging: board: Add support for translating hwirq to virq numbers
+  [RFC] staging: board: kzm9d: Translate hwirq numbers to virq numbers
+  [RFC] staging: board: Add support for devices with complex dependencies
+  [RFC] staging: board: armadillo800eva: Board staging for sh_mobile_lcdc_fb
+
+ drivers/staging/board/Kconfig           |   1 -
+ drivers/staging/board/Makefile          |   3 +-
+ drivers/staging/board/armadillo800eva.c | 124 ++++++++++++++++++++++++++++
+ drivers/staging/board/board.c           | 142 ++++++++++++++++++++++++++++++++
+ drivers/staging/board/board.h           |  38 ++++++++-
+ drivers/staging/board/kzm9d.c           |  10 ++-
+ 6 files changed, 313 insertions(+), 5 deletions(-)
+ create mode 100644 drivers/staging/board/armadillo800eva.c
+
+-- 
+1.9.1
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
