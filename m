@@ -1,58 +1,103 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 12/20] cpufreq: Mark policy->governor = NULL for
- inactive policies
-Date: Sat, 4 Apr 2015 08:37:09 +0530
-Message-ID: <CAKohpo=wyQ-_+B-rycMfoi1KpSWrBJWQx4JAanca=p+1OpJgUA@mail.gmail.com>
-References: <cover.1424345053.git.viresh.kumar@linaro.org>
-	<466c5246b6ad83b960eeb63ab34a04379448980d.1424345053.git.viresh.kumar@linaro.org>
-	<551CC7E2.6070806@codeaurora.org>
-	<CAKohpok37PXGxmP+M-d8mpT-eGxaCjtAwgQdZO=mJ9PmvxTv3w@mail.gmail.com>
-	<551F3C7B.7060004@codeaurora.org>
+From: rhn <kebuac.rhn@porcupinefactory.org>
+Subject: Re: Unreliable hibernation on Lenovo x230 (regression)
+Date: Sat, 4 Apr 2015 10:12:43 +0200
+Message-ID: <20150404101243.5a229e3b@porcupinefactory.org>
+References: <20150401214743.20fbe2c5@porcupinefactory.org>
+	<20150402152805.GA17021@amd>
+	<20150403175825.79816fea@porcupinefactory.org>
+	<3344848.SIHh1OazTO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f169.google.com ([209.85.214.169]:35528 "EHLO
-	mail-ob0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751730AbbDDDHK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Apr 2015 23:07:10 -0400
-Received: by obbfy7 with SMTP id fy7so105920051obb.2
-        for <linux-pm@vger.kernel.org>; Fri, 03 Apr 2015 20:07:09 -0700 (PDT)
-In-Reply-To: <551F3C7B.7060004@codeaurora.org>
+Received: from 178.212.147.28.siec.idealan.pl ([178.212.147.28]:56428 "EHLO
+	porcupinefactory.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752026AbbDDIMw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 4 Apr 2015 04:12:52 -0400
+In-Reply-To: <3344848.SIHh1OazTO@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: rhn <kebuac.rhn@porcupinefactory.org>, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, joeyli.kernel@gmail.com, linux-pm@vger.kernel.org, joeyli <jlee@suse.com>
 
-On 4 April 2015 at 06:50, Saravana Kannan <skannan@codeaurora.org> wrote:
-> I would strongly prefer that this is not done and just clear out the pointer
-> if/when the governor module is removed.
+On Fri, 03 Apr 2015 23:43:30 +0200
+"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
 
-Okay, I give up ..
+> On Friday, April 03, 2015 05:58:25 PM rhn wrote:
+> > On Thu, 2 Apr 2015 17:28:05 +0200
+> > Pavel Machek <pavel@ucw.cz> wrote:
+> > 
+> > > On Wed 2015-04-01 21:47:43, rhn wrote:
+> > > > Hello,
+> > > > 
+> > > > Between kernel 3.16 and 3.17, a regression has been introduced where the first hibernation after regular shutdown always fails to resume. Subsequent hibernations succeed.
+> > > > 
+> > > > The system is a Lenovo x230 with Intel i5, booting with EFI, with the hibernate partition located on a secondary SSD drive. Installed system is Fedora 20, hibernation and reboots were issued using the KDE shutdown dialog.
+> > > > 
+> > > > I have tracked the problem to first appear in the commit
+> > > > e67ee10190e69332f929bdd6594a312363321a66	Merge branches 'pm-sleep', 'pm-cpufreq' and 'pm-cpuidle'
+> > > > 
+> > > > The problem itself manifests in dmesg as follows (system was first
+> > > > restarted, then hibernated - this log is from the subsequent
+> > > resume):
+> > > 
+> > > Ok, can you try to disable cpufreq and cpuidle, and then try if it
+> > > reproduces?
+> > > 
+> > > At that point, this is the candidate:
+> > > 
+> > > commit e67ee10190e69332f929bdd6594a312363321a66
+> > > Merge: 21c806d 84c91b7 39c8bba 372ba8c
+> > > Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > Date:   Mon Aug 11 23:19:48 2014 +0200
+> > > 
+> > >     Merge branches 'pm-sleep', 'pm-cpufreq' and 'pm-cpuidle'
+> > > 
+> > >     * pm-sleep:
+> > >           PM / hibernate: avoid unsafe pages in e820 reserved regions
+> > > 
+> > > ...
+> > > Alternatively, you can just try to revert
+> > > 
+> > > commit 84c91b7ae07c62cf6dee7fde3277f4be21331f85
+> > > Author: Lee, Chun-Yi <joeyli.kernel@gmail.com>
+> > > Date:   Mon Aug 4 23:23:21 2014 +0800
+> > > 
+> > >     PM / hibernate: avoid unsafe pages in e820 reserved regions
+> > > 
+> > >     When the machine doesn't well handle the e820 persistent when
+> > >     hibernate
+> > >         resuming, then it may cause page fault when writing image to
+> > >     snapshot
+> > >         buffer:
+> > > 
+> > > 
+> > > ...
+> > > 
+> > > Thanks,
+> > > 									Pavel
+> > 
+> > I tried to disable CONFIG_CPU_IDLE and CONFIG_CPU_FREQ, however for some reason I could only disable CONFIG_CPU_FREQ.
+> > 
+> > The bug persisted.
+> > 
+> > Reverting the commit 84c91b7 on top of e67ee10 fixes the problem.
+> > 
+> > I created a copy of the bug report here: https://bugzilla.kernel.org/show_bug.cgi?id=96111
+> 
+> Please check if 4.0-rc6 still has the problem and if reverting the commit in
+> question on top of it fixes the problem too.
+> 
+> 
 
-This looks fine ?
+I took the commit 8f778bbc542ddf8f6243b21d6aca087e709cabdc as the base for further checking (I started building before I read your message). It's a descendant of 4.0-rc6, so I hope it's not going to make a difference.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 4604ad5d9c0c..1f285b06d473 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1094,7 +1094,6 @@ static struct cpufreq_policy
-*cpufreq_policy_restore(unsigned int cpu)
-        if (likely(policy)) {
-                /* Policy should be inactive here */
-                WARN_ON(!policy_is_inactive(policy));
--               policy->governor = NULL;
-        }
+Results:
+8f778bb : bad
+8f778bb + reverted 84c91b7 : good
+8f778bb + patch [1] : good
 
-        return policy;
-@@ -2156,8 +2155,10 @@ void cpufreq_unregister_governor(struct
-cpufreq_governor *governor)
-        /* clear last_governor for all inactive policies */
-        read_lock_irqsave(&cpufreq_driver_lock, flags);
-        for_each_inactive_policy(policy, tpolicy) {
--               if (!strcmp(policy->last_governor, governor->name))
-+               if (!strcmp(policy->last_governor, governor->name)) {
-+                       policy->governor = NULL;
-                        strcpy(policy->last_governor, "\0");
-+               }
-        }
-        read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+Thanks!
+
+[1]:
+x86: Kill E820_RESERVED_KERN  https://lkml.org/lkml/2015/3/4/434 as suggested in joeyli's other email.
