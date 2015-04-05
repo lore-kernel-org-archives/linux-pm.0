@@ -1,58 +1,51 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH/RFC 5/6] staging: board: Add support for devices with
- complex dependencies
-Date: Sun, 5 Apr 2015 11:00:56 +0200
-Message-ID: <CAMuHMdWsc=2QvKfpYmN=M6As_KWENW2nhSqa8ajkZrQFe+dCPw@mail.gmail.com>
-References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
- <1428064923-24950-6-git-send-email-geert+renesas@glider.be>
- <34835209.cQQp4PEGGk@avalon>
+From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>
+Subject: [PATCH 0/3] dm-crypt: Adds support for wiping key when doing suspend/hibernation
+Date: Sun,  5 Apr 2015 19:20:16 +0200
+Message-ID: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <34835209.cQQp4PEGGk@avalon>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: driverdevel <devel@driverdev.osuosl.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Linux-sh list <linux-sh@vger.kernel.org>, Marc Zyngier <marc.zyngier@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Magnus Damm <damm+renesas@opensource.se>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Simon Horman <horms+renesas@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f170.google.com ([209.85.212.170]:33745 "EHLO
+	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752290AbbDERUx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Apr 2015 13:20:53 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>, Neil Brown <neilb@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>
 
-Hi Laurent,
+This patch series increase security of suspend and hibernate actions. I=
+t allows
+user to safely wipe crypto keys before suspend and hibernate actions st=
+arts
+without race conditions on userspace process with heavy I/O.
 
-On Sat, Apr 4, 2015 at 2:46 PM, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
->> +     for (i = 0; i < dev->ngpios; i++)
->> +             gpio_request_one(dev->gpios[i].gpio, dev->gpios[i].flags,
->> +                              pdev->name);
->
-> Aren't GPIO numbers dynamic too in DT-based systems ? Beside, shouldn't it be
+To automatically wipe cryto key for <device> before hibernate action ca=
+ll:
+$ dmsetup message <device> 0 key wipe_on_hibernation 1
 
-Apparently not, as the old legacy number still works, and it doesn't work
-without.
+To automatically wipe cryto key for <device> before suspend action call=
+:
+$ dmsetup message <device> 0 key wipe_on_suspend 1
 
-> the responsibility of the drievr to request the GPIOs it needs ?
+(Value 0 after wipe_* string reverts original behaviour - to not wipe k=
+ey)
 
-As far as I understand it, on Armadillo this is used more for platform
-configuration than for device configuration, as it affects multiple devices
-(the comment says DBGMD/LCDC0/FSIA MUX).
+Pali Roh=C3=A1r (3):
+  PM suspend/hibernate: Call notifier after freezing processes
+  dm: Export function dm_suspend_md()
+  dm-crypt: Adds support for wiping key when doing suspend/hibernation
 
-I guess I could use a "gpio-hog" subnode in DT instead, but then we're already
-implementing the conversion to DT ;-)
+ drivers/md/dm-crypt.c    |  109 ++++++++++++++++++++++++++++++++++++++=
++++++---
+ drivers/md/dm.c          |    6 +++
+ drivers/md/dm.h          |    5 +++
+ include/linux/suspend.h  |    2 +
+ kernel/power/hibernate.c |    2 +
+ kernel/power/suspend.c   |    4 +-
+ 6 files changed, 120 insertions(+), 8 deletions(-)
 
-Gr{oetje,eeting}s,
+--=20
+1.7.9.5
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
