@@ -1,63 +1,49 @@
-From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: [PATCH 2/3] dm: Export function dm_suspend_md()
-Date: Sun,  5 Apr 2015 19:20:18 +0200
-Message-ID: <1428254419-7334-3-git-send-email-pali.rohar@gmail.com>
-References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH/RFC 5/6] staging: board: Add support for devices with complex dependencies
+Date: Sun, 05 Apr 2015 23:06:20 +0300
+Message-ID: <2722685.XFRaAHH9GQ@avalon>
+References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be> <34835209.cQQp4PEGGk@avalon> <CAMuHMdWsc=2QvKfpYmN=M6As_KWENW2nhSqa8ajkZrQFe+dCPw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>, Neil Brown <neilb@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Cc: dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdWsc=2QvKfpYmN=M6As_KWENW2nhSqa8ajkZrQFe+dCPw@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Magnus Damm <damm+renesas@opensource.se>, Arnd Bergmann <arnd@arndb.de>, Simon Horman <horms+renesas@verge.net.au>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Marc Zyngier <marc.zyngier@arm.com>, driverdevel <devel@driverdev.osuosl.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch exports function dm_suspend_md() which suspend mapped device=
- so other
-kernel drivers can use it and could suspend mapped device when needed.
+Hi Geert,
 
-Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
----
- drivers/md/dm.c |    6 ++++++
- drivers/md/dm.h |    5 +++++
- 2 files changed, 11 insertions(+)
+On Sunday 05 April 2015 11:00:56 Geert Uytterhoeven wrote:
+> On Sat, Apr 4, 2015 at 2:46 PM, Laurent Pinchart wrote:
+> >> +     for (i = 0; i < dev->ngpios; i++)
+> >> +             gpio_request_one(dev->gpios[i].gpio, dev->gpios[i].flags,
+> >> +                              pdev->name);
+> > 
+> > Aren't GPIO numbers dynamic too in DT-based systems ? Beside, shouldn't it
+> > be
+>
+> Apparently not, as the old legacy number still works, and it doesn't work
+> without.
 
-diff --git a/drivers/md/dm.c b/drivers/md/dm.c
-index 8001fe9..919ce95 100644
---- a/drivers/md/dm.c
-+++ b/drivers/md/dm.c
-@@ -3053,6 +3053,12 @@ out:
- 	return r;
- }
-=20
-+int dm_suspend_md(struct mapped_device *md)
-+{
-+	return dm_suspend(md, DM_SUSPEND_LOCKFS_FLAG);
-+}
-+EXPORT_SYMBOL_GPL(dm_suspend_md);
-+
- /*
-  * Internal suspend/resume works like userspace-driven suspend. It wai=
-ts
-  * until all bios finish and prevents issuing new bios to the target d=
-rivers.
-diff --git a/drivers/md/dm.h b/drivers/md/dm.h
-index 59f53e7..623c9a8 100644
---- a/drivers/md/dm.h
-+++ b/drivers/md/dm.h
-@@ -152,6 +152,11 @@ int dm_test_deferred_remove_flag(struct mapped_dev=
-ice *md);
- void dm_deferred_remove(void);
-=20
- /*
-+ * Suspend mapped_device
-+ */
-+int dm_suspend_md(struct mapped_device *md);
-+
-+/*
-  * The device-mapper can be driven through one of two interfaces;
-  * ioctl or filesystem, depending which patch you have applied.
-  */
---=20
-1.7.9.5
+I think we're just lucky there that the SoC main GPIO controller gets 
+registered first and starts counting GPIOs with a zero offset.
+ 
+> > the responsibility of the drievr to request the GPIOs it needs ?
+> 
+> As far as I understand it, on Armadillo this is used more for platform
+> configuration than for device configuration, as it affects multiple devices
+> (the comment says DBGMD/LCDC0/FSIA MUX).
+> 
+> I guess I could use a "gpio-hog" subnode in DT instead, but then we're
+> already implementing the conversion to DT ;-)
+
+But that's the goal :-) I'd rather move GPIO and pinctrl to DT directly as we 
+already have the infrastructure to do so.
+
+-- 
+Regards,
+
+Laurent Pinchart
+
