@@ -1,75 +1,120 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v18 01/11] ARM: qcom: Add Subsystem Power Manager (SPM)
- driver
-Date: Sat, 4 Apr 2015 13:09:24 -0600
-Message-ID: <20150404190924.GB24500@linaro.org>
-References: <1427315136-44321-1-git-send-email-lina.iyer@linaro.org>
- <1427315136-44321-2-git-send-email-lina.iyer@linaro.org>
- <7hlhi8280c.fsf@deeprootsystems.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: Unreliable hibernation on Lenovo x230 (regression)
+Date: Sun, 5 Apr 2015 15:24:41 +0800
+Message-ID: <20150405072441.GC27614@linux-rxt1.site>
+References: <20150401214743.20fbe2c5@porcupinefactory.org>
+ <20150402152805.GA17021@amd>
+ <20150403175825.79816fea@porcupinefactory.org>
+ <3344848.SIHh1OazTO@vostro.rjw.lan>
+ <20150404101243.5a229e3b@porcupinefactory.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f178.google.com ([209.85.223.178]:36479 "EHLO
-	mail-ie0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752430AbbDDTJ1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 4 Apr 2015 15:09:27 -0400
-Received: by iebrs15 with SMTP id rs15so204907ieb.3
-        for <linux-pm@vger.kernel.org>; Sat, 04 Apr 2015 12:09:26 -0700 (PDT)
+Received: from smtp.nue.novell.com ([195.135.221.5]:42559 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750746AbbDEHY6 (ORCPT
+	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+	Sun, 5 Apr 2015 03:24:58 -0400
 Content-Disposition: inline
-In-Reply-To: <7hlhi8280c.fsf@deeprootsystems.com>
+In-Reply-To: <20150404101243.5a229e3b@porcupinefactory.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: daniel.lezcano@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, agross@codeaurora.org, Arnd Bergmann <arnd@arndb.de>
+To: rhn <kebuac.rhn@porcupinefactory.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, joeyli.kernel@gmail.com, linux-pm@vger.kernel.org
 
-On Fri, Apr 03 2015 at 15:54 -0600, Kevin Hilman wrote:
->Lina Iyer <lina.iyer@linaro.org> writes:
->
->> SPM is a hardware block that controls the peripheral logic surrounding
->> the application cores (cpu/l$). When the core executes WFI instruction,
->> the SPM takes over the putting the core in low power state as
->> configured. The wake up for the SPM is an interrupt at the GIC, which
->> then completes the rest of low power mode sequence and brings the core
->> out of low power mode.
->>
->> The SPM has a set of control registers that configure the SPMs
->> individually based on the type of the core and the runtime conditions.
->> SPM is a finite state machine block to which a sequence is provided and
->> it interprets the bytes and executes them in sequence. Each low power
->> mode that the core can enter into is provided to the SPM as a sequence.
->>
->> Configure the SPM to set the core (cpu or L2) into its low power mode,
->> the index of the first command in the sequence is set in the SPM_CTL
->> register. When the core executes ARM wfi instruction, it triggers the
->> SPM state machine to start executing from that index. The SPM state
->> machine waits until the interrupt occurs and starts executing the rest
->> of the sequence until it hits the end of the sequence. The end of the
->> sequence jumps the core out of its low power mode.
->>
->> Add support for an idle driver to set up the SPM to place the core in
->> Standby or Standalone power collapse mode when the core is idle.
->>
->> Based on work by: Mahesh Sivasubramanian <msivasub@codeaurora.org>,
->> Ai Li <ali@codeaurora.org>, Praveen Chidambaram <pchidamb@codeaurora.org>
->> Original tree available at -
->> git://codeaurora.org/quic/la/kernel/msm-3.10.git
->>
->> Cc: Stephen Boyd <sboyd@codeaurora.org>
->> Cc: Arnd Bergmann <arnd@arndb.de>
->> Cc: Kevin Hilman <khilman@linaro.org>
->> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->
->Acked-by: Kevin Hilman <khilman@linaro.org>
->
->and also tested on qcom-apq8064-ifc6410 and
->qcom-msm8974-sony-xperia-honami and saw the various states being entered
->on all CPUs.
+Hi Rafael, 
 
-Thanks Kevin.
+On Sat, Apr 04, 2015 at 10:12:43AM +0200, rhn wrote:
+> On Fri, 03 Apr 2015 23:43:30 +0200
+> "Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+> 
+> > On Friday, April 03, 2015 05:58:25 PM rhn wrote:
+> > > On Thu, 2 Apr 2015 17:28:05 +0200
+> > > Pavel Machek <pavel@ucw.cz> wrote:
+> > > 
+> > > > On Wed 2015-04-01 21:47:43, rhn wrote:
+> > > > > Hello,
+> > > > > 
+> > > > > Between kernel 3.16 and 3.17, a regression has been introduced where the first hibernation after regular shutdown always fails to resume. Subsequent hibernations succeed.
+> > > > > 
+> > > > > The system is a Lenovo x230 with Intel i5, booting with EFI, with the hibernate partition located on a secondary SSD drive. Installed system is Fedora 20, hibernation and reboots were issued using the KDE shutdown dialog.
+> > > > > 
+> > > > > I have tracked the problem to first appear in the commit
+> > > > > e67ee10190e69332f929bdd6594a312363321a66	Merge branches 'pm-sleep', 'pm-cpufreq' and 'pm-cpuidle'
+> > > > > 
+> > > > > The problem itself manifests in dmesg as follows (system was first
+> > > > > restarted, then hibernated - this log is from the subsequent
+> > > > resume):
+> > > > 
+> > > > Ok, can you try to disable cpufreq and cpuidle, and then try if it
+> > > > reproduces?
+> > > > 
+> > > > At that point, this is the candidate:
+> > > > 
+> > > > commit e67ee10190e69332f929bdd6594a312363321a66
+> > > > Merge: 21c806d 84c91b7 39c8bba 372ba8c
+> > > > Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > Date:   Mon Aug 11 23:19:48 2014 +0200
+> > > > 
+> > > >     Merge branches 'pm-sleep', 'pm-cpufreq' and 'pm-cpuidle'
+> > > > 
+> > > >     * pm-sleep:
+> > > >           PM / hibernate: avoid unsafe pages in e820 reserved regions
+> > > > 
+> > > > ...
+> > > > Alternatively, you can just try to revert
+> > > > 
+> > > > commit 84c91b7ae07c62cf6dee7fde3277f4be21331f85
+> > > > Author: Lee, Chun-Yi <joeyli.kernel@gmail.com>
+> > > > Date:   Mon Aug 4 23:23:21 2014 +0800
+> > > > 
+> > > >     PM / hibernate: avoid unsafe pages in e820 reserved regions
+> > > > 
+> > > >     When the machine doesn't well handle the e820 persistent when
+> > > >     hibernate
+> > > >         resuming, then it may cause page fault when writing image to
+> > > >     snapshot
+> > > >         buffer:
+> > > > 
+> > > > 
+> > > > ...
+> > > > 
+> > > > Thanks,
+> > > > 									Pavel
+> > > 
+> > > I tried to disable CONFIG_CPU_IDLE and CONFIG_CPU_FREQ, however for some reason I could only disable CONFIG_CPU_FREQ.
+> > > 
+> > > The bug persisted.
+> > > 
+> > > Reverting the commit 84c91b7 on top of e67ee10 fixes the problem.
+> > > 
+> > > I created a copy of the bug report here: https://bugzilla.kernel.org/show_bug.cgi?id=96111
+> > 
+> > Please check if 4.0-rc6 still has the problem and if reverting the commit in
+> > question on top of it fixes the problem too.
+> > 
+> > 
+> 
+> I took the commit 8f778bbc542ddf8f6243b21d6aca087e709cabdc as the base for further checking (I started building before I read your message). It's a descendant of 4.0-rc6, so I hope it's not going to make a difference.
+> 
+> Results:
+> 8f778bb : bad
+> 8f778bb + reverted 84c91b7 : good
+> 8f778bb + patch [1] : good
+
+Thanks for your dmesg on bko#96111.
+I checked and confirm there have the situation of setup_data reserved as E820_RESERVED_KERN.
+I will add comment on bugzilla.
+
+> 
+> Thanks!
+> 
+> [1]:
+> x86: Kill E820_RESERVED_KERN  https://lkml.org/lkml/2015/3/4/434 as suggested in joeyli's other email.
+
+I think just revert 84c91b7ae until Yinghai Lu's patches merged to v4.1.
+I will resend 84c91b7ae patch until Yinghai Lu's patches merged.
 
 
->
->Tested-by: Kevin Hilman <khilman@linaro.org>
->
->Kevin
+Regards
+Joey Lee
