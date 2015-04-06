@@ -1,49 +1,104 @@
-From: Beomho Seo <beomho.seo@samsung.com>
-Subject: Re: [PATCH v2 1/2] power: max17042_battery: Use reg type instead of
- chip type
-Date: Mon, 06 Apr 2015 22:34:15 +0900
-Message-ID: <55228B57.7@samsung.com>
-References: <1428049570-3295-1-git-send-email-beomho.seo@samsung.com>
- <1428049570-3295-2-git-send-email-beomho.seo@samsung.com>
- <CAJKOXPe9wRK-TYXkMbN0h6B6zWSTYJRvLy8Ji6vWLULxaRbreQ@mail.gmail.com>
+From: Matt Porter <mporter-OWPKS81ov/FWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH v2 1/2] dt-bindings: Document the hi6220 thermal sensor
+ bindings
+Date: Mon, 6 Apr 2015 10:03:55 -0400
+Message-ID: <20150406140355.GI30984@beef>
+References: <1427785162-15172-1-git-send-email-kong.kongxinwei@hisilicon.com>
+ <1427785162-15172-2-git-send-email-kong.kongxinwei@hisilicon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:54184 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753250AbbDFNeR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Apr 2015 09:34:17 -0400
-In-reply-to: <CAJKOXPe9wRK-TYXkMbN0h6B6zWSTYJRvLy8Ji6vWLULxaRbreQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1427785162-15172-2-git-send-email-kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Xinwei Kong <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
+Cc: rui.zhuang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxarm-hv44wF8Li93QT0dZR+AlfA@public.gmane.org, xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jorge.ramirez-ortiz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, xweikong-PkbjNfxxIARBDgjK7y7TUQ@public.gmane.org, liguozhu-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cw00.choi@samsung.com, inki.dae@samsung.com, sangbae90.lee@samsung.com
 
-On 04/03/2015 06:01 PM, Krzysztof Kozlowski wrote:
-> 2015-04-03 10:26 GMT+02:00 Beomho Seo <beomho.seo@samsung.com>:
->> Currently, max17042 battery driver choose register map by MAX17042_DevName
->> register. But it is return IC specific firmware version. So other maxim chip
->> hard to use this drvier. This patch choose chip type from driver_data.
->>
->> Cc: Sebastian Reichel <sre@kernel.org>
->> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
->> ---
->>  drivers/power/max17042_battery.c       |   33 ++++++++++----------------------
->>  include/linux/power/max17042_battery.h |    9 ++++++++-
->>  2 files changed, 18 insertions(+), 24 deletions(-)
+On Tue, Mar 31, 2015 at 02:59:21PM +0800, Xinwei Kong wrote:
+> From: kongxinwei <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
 > 
-> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> This adds documentation of device tree bindings for the
+> thermal sensor controller of hi6220 SoC.
 > 
-> Best regards,
-> Krzysztof
+> Signed-off-by: Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Signed-off-by: kongxinwei <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
+> ---
+>  .../bindings/thermal/hisilicon-thermal.txt         | 45 ++++++++++++++++++++++
+>  1 file changed, 45 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
 > 
+> diff --git a/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+> new file mode 100644
+> index 0000000..ceb6e2e
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+> @@ -0,0 +1,45 @@
+> +* Hisilicon Thermal
+> +
+> +This driver is for hi6220 SoC which contain 4 thermal sensor.
+> +
+> +	1. sensor 0: local sensor;
+> +	2. sensor 1: remote sensor for ACPU cluster 1;
+> +	3. sensor 2: remote sensor for ACPU cluster 2;
+> +	4. sensor 3: remote sensor for GPU.
+> +
+> +Every sensor use one child node to represent it, so thermal sensor include
+> +parent node and four child node. The parent node describe common feature and
+> +child node describe private feature for thermal sensor;
+> +
+> +** Required properties :
+> +
+> +- compatible: "hisilicon,tsensor".
+> +- reg: physical base address of thermal sensor and length of memory mapped
+> +  region.
+> +- interrupt: The interrupt number to the cpu. Defines the interrupt used
+> +  by SOCTHERM.
+> +- clock-names: Input clock name, should be 'thermal_clk'.
+> +- clocks: phandles for clock specified in "clock-names" property.
+> +- #thermal-sensor-cells: Should be 1. See ./thermal.txt for a description.
+> +
+> +** Required properties for child nodes :
+> +
+> +- hisilicon,tsensor-id: the index of thermal sensor and use it to distinguish
+> +  thermal sensor. For example: <0> stands for local sensor; <1> stands for
+> +  acpu1 sensor;
 
-Thanks Krzysztof for your reviews.
+Please show an example illustrating why this property is needed. The
+example below doesn't show any per sensor properties aside from the
+sensor id. Other bindings with a similar sub-sensor hardware design like
+tegra-soctherm and rockchip-thermal don't have a need for a vendor
+specific property like this. Their drivers simply iterate over an id
+index during thermal sensor registration.
 
-Sebastian, Could you please merge that your git tree?
+-Matt
 
-Best regards
-Beomho
-
-
+> +
+> +Example :
+> +
+> +	tsensor: tsensor@0,f7030700 {
+> +		compatible = "hisilicon,tsensor";
+> +		reg = <0x0 0xf7030700 0x0 0x1000>;
+> +		interrupts = <0 7 0x4>;
+> +		clocks = <&clock_sys HI6220_TSENSOR_CLK>;
+> +		clock-names = "thermal_clk";
+> +		#thermal-sensor-cells = <1>;
+> +
+> +		local_sensor {
+> +			hisilicon,tsensor-id = <0>;
+> +		}
+> +		.......
+> +	}
+> -- 
+> 1.9.1
+> 
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
