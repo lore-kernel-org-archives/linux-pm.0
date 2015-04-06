@@ -1,61 +1,62 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 16/25] include/linux: Use bool function return values of
- true/false not 1/0
-Date: Mon, 6 Apr 2015 21:39:32 +0200
-Message-ID: <20150406193931.GA987@earth>
-References: <cover.1427759009.git.joe@perches.com>
- <5edb9453646625a405ef0a642bec0819c0e6c2eb.1427759009.git.joe@perches.com>
+From: Mike Snitzer <snitzer@redhat.com>
+Subject: Re: [PATCH 0/3] dm-crypt: Adds support for wiping key when doing
+ suspend/hibernation
+Date: Mon, 6 Apr 2015 16:51:45 -0400
+Message-ID: <20150406205145.GA19677@redhat.com>
+References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com>
+ <20150406130045.GA18583@redhat.com>
+ <20150406132505.GB9978@amd>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="fUYQa+Pmc3FrFX/N"
-Return-path: <owner-linux-mm@kvack.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:39887 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753237AbbDFUvr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 6 Apr 2015 16:51:47 -0400
 Content-Disposition: inline
-In-Reply-To: <5edb9453646625a405ef0a642bec0819c0e6c2eb.1427759009.git.joe@perches.com>
-Sender: owner-linux-mm@kvack.org
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, Jason Wessel <jason.wessel@windriver.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Michael Buesch <m@bues.ch>, linux-ide@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net, linux-mm@kvack.org, linux-pm@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20150406132505.GB9978@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Alasdair Kergon <agk@redhat.com>, Neil Brown <neilb@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
+On Mon, Apr 06 2015 at  9:25am -0400,
+Pavel Machek <pavel@ucw.cz> wrote:
 
---fUYQa+Pmc3FrFX/N
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> On Mon 2015-04-06 09:00:46, Mike Snitzer wrote:
+> > On Sun, Apr 05 2015 at  1:20pm -0400,
+> > Pali Roh=E1r <pali.rohar@gmail.com> wrote:
+> >=20
+> > > This patch series increase security of suspend and hibernate acti=
+ons. It allows
+> > > user to safely wipe crypto keys before suspend and hibernate acti=
+ons starts
+> > > without race conditions on userspace process with heavy I/O.
+> > >=20
+> > > To automatically wipe cryto key for <device> before hibernate act=
+ion call:
+> > > $ dmsetup message <device> 0 key wipe_on_hibernation 1
+> > >=20
+> > > To automatically wipe cryto key for <device> before suspend actio=
+n call:
+> > > $ dmsetup message <device> 0 key wipe_on_suspend 1
+> > >=20
+> > > (Value 0 after wipe_* string reverts original behaviour - to not =
+wipe key)
+> >=20
+> > Can you elaborate on the attack vector your changes are meant to pr=
+otect
+> > against?  The user already authorized access, why is it inherently
+> > dangerous to _not_ wipe the associated key across these events?
+>=20
+> Umm. You are using your notebook. It is unlikely to be stolen at that
+> point. You close the lid and board the airplane, stowing it in
+> overhead bin. There's much better chance of notebook being stolen now=
+=2E
 
-Hi,
-
-On Mon, Mar 30, 2015 at 04:46:14PM -0700, Joe Perches wrote:
-> Use the normal return values for bool functions
-
-Acked-By: Sebastian Reichel <sre@kernel.org>
-
--- Sebastian
-
---fUYQa+Pmc3FrFX/N
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVIuDwAAoJENju1/PIO/qaqk4P/1T77yAjH3OWYaxSSH8mrwQs
-dYFbDr7X97o2lePKrZe/1fFTpO24u+tOp6v27f7NkRDiw+A7k1ZkHLbGKsCZ4CFc
-9vbR4vE1sPPlbLZTgkHzvGYlTAjdMEa5elbDMRthh+vvqI7Q/yIX+H5Ln+Txtk7u
-MPpv6JqW9efxZgxOUnSaFa8Xlj2VbAKqzQsMYICTRjYezmPV5gdd165KMCV41PqC
-vdiF6HxjaB+lyW7vhWzCA660MJGpqOelRk1vYjR2uoNFbVQnEv1Z0NGBrr1xEtW2
-CWdeee+kj3JtAFFTMNgZZpGzbdZ0Ka4tg8Yk2Sxo3tsOO+l7D0s+S6qlIaCqOmd9
-hse/43XhxQbxl5fW9Oriu76sDYYxccdk7syqGf/2rsakVk3StJprfLrhyOnYkx8C
-UCVeWH/JNiH4ngov8Iz4hIUMpXrmo9gUSYK3Z7qX5Xg6F9hTLIxZnJAh3ShNyOYr
-lSf3K/SsHigNYtm5+YwFzaYqIaSnBfdeiMuStK6sT5+cDDUAeQ2ilt9/tCZbPfvC
-DemPzS371iq80QPzDDmva74L3TKYUJOodOY/rBCDJYtMwLdH3UotDHPjKFBQ3nnS
-h64nLHgmHR0CRQtqp/Sz+ePY8Cjs69OLxhHi6RQyijZjKc2Uarxkfcs6DcMdn1WL
-TbT3PZSZMM547HAFeN4v
-=yK9g
------END PGP SIGNATURE-----
-
---fUYQa+Pmc3FrFX/N--
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Yes, pretty straight forward but the thief would need to then login upo=
+n
+resume (at least with most common desktop configs)... the barrier then
+is only the strength of the user's password and not the crypt
+passphrase.
