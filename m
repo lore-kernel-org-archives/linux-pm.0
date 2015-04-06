@@ -1,72 +1,177 @@
 From: Marc Zyngier <marc.zyngier@arm.com>
-Subject: Re: [PATCH/RFC 0/6] staging: board: armadillo800eva: Board staging
- for =?UTF-8?Q?sh=5Fmobile=5Flcdc=5Ffb?=
-Date: Mon, 06 Apr 2015 11:23:14 +0100
-Message-ID: <9cb05c4e687de35ada0b83fe816393c8@www.loen.fr>
+Subject: Re: [PATCH/RFC 3/6] staging: board: Add support for translating hwirq
+ to virq numbers
+Date: Mon, 06 Apr 2015 11:45:44 +0100
+Message-ID: <7a82f5d435aaaf8d121233769a77943c@www.loen.fr>
 References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
+ <1428064923-24950-4-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <1428064923-24950-4-git-send-email-geert+renesas@glider.be>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
 To: Geert Uytterhoeven <geert+renesas@glider.be>
 Cc: devel@driverdev.osuosl.org, devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-sh@vger.kernel.org, Magnus Damm <damm+renesas@opensource.se>, linux-kernel@vger.kernel.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Simon Horman <horms+renesas@verge.net.au>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Geert,
-
-On 2015-04-03 13:41, Geert Uytterhoeven wrote:
-> Hi all,
+On 2015-04-03 13:42, Geert Uytterhoeven wrote:
+> As of commit 9a1091ef0017c40a ("irqchip: gic: Support hierarchy irq
+> domain."), GIC IRQ numbers are virtual, breaking hardcoded hardware 
+> IRQ
+> numbers in platform device resources.
 >
-> This RFC patch series adds board staging support for 
-> r8a7740/armadillo.
-> For now this supports only the frame buffer device for the on-board 
-> LCD.
-> The goal is to complete the move to ARM multiplatform kernels for all
-> shmobile platforms, and drop the existing board files
-> (arch/arm/mach-shmobile/board-*).
+> Add support for translating hardware IRQ numbers to virtual IRQ 
+> numbers,
+> and fixing up platform device resources with hardcoded IRQ numbers.
 >
-> The board staging area was introduced last year to allow continuous
-> upstream in-tree development and integration of platform devices. It
-> helps developers integrate devices as platform devices for device
-> drivers that only provide platform device bindings.  This in turn 
-> allows
-> for incremental development of both hardware feature support and DT
-> binding work in parallel.
+> Add a copyright header, including the original author.
 >
-> This series consists of 4 parts:
->   - Patch 1 re-enables compilation of the board staging area, which 
-> was
->     disabled after a compile breakage, but has been fixed in the mean
->     time,
->   - Path 2 moves initialization of staging board code to an earlier
->     moment, as currently it happens after unused PM domains are 
-> powered
->     down,
->   - Patches 3 and 4 (hopefully) fix the existing kzm9d board staging
->     code, which was presumably broken by commit 9a1091ef0017c40a
->     ("irqchip: gic: Support hierarchy irq domain."),
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>  drivers/staging/board/board.c | 66
+> +++++++++++++++++++++++++++++++++++++++++++
+>  drivers/staging/board/board.h |  5 ++++
+>  2 files changed, 71 insertions(+)
+>
+> diff --git a/drivers/staging/board/board.c 
+> b/drivers/staging/board/board.c
+> index d5a6abc845191c93..b84ac2837a20bf06 100644
+> --- a/drivers/staging/board/board.c
+> +++ b/drivers/staging/board/board.c
+> @@ -1,10 +1,27 @@
+> +/*
+> + * Copyright (C) 2014 Magnus Damm
+> + * Copyright (C) 2015 Glider bvba
+> + *
+> + * This file is subject to the terms and conditions of the GNU
+> General Public
+> + * License.  See the file "COPYING" in the main directory of this 
+> archive
+> + * for more details.
+> + */
+> +
+> +#define pr_fmt(fmt)	"board_staging: "  fmt
+> +
+>  #include <linux/init.h>
+> +#include <linux/irq.h>
+>  #include <linux/device.h>
+>  #include <linux/kernel.h>
+>  #include <linux/of.h>
+>  #include <linux/of_address.h>
+> +#include <linux/of_irq.h>
+> +
+>  #include "board.h"
+>
+> +static struct device_node *irqc_node __initdata;
+> +static unsigned int irqc_base __initdata;
+> +
+>  static bool find_by_address(u64 base_address)
+>  {
+>  	struct device_node *dn = of_find_all_nodes(NULL);
+> @@ -38,3 +55,52 @@ bool __init board_staging_dt_node_available(const
+> struct resource *resource,
+>
+>  	return false; /* Nothing found */
+>  }
+> +
+> +int __init board_staging_setup_hwirq_xlate(const char *irqc_match,
+> +					   unsigned int base)
+> +{
+> +	irqc_node = of_find_compatible_node(NULL, NULL, irqc_match);
+> +
+> +	WARN_ON(!irqc_node);
+> +	if (!irqc_node)
+> +		return -ENOENT;
+> +
+> +	irqc_base = base;
+> +	return 0;
+> +}
 
-Please allow me a semantic correction here: this commit never broke 
-anything. It merely revealed how platform code (OMAP, iMX6, shmobile) 
-abused the irq_domain subsystem, hoping to get away with only a partial 
-conversion to DT. The platform code itself was broken from the moment it 
-used DT to discover its interrupt controller.
+And what happens when you have multiple (cascaded) interrupt 
+controllers, each wanting to register with this translation service? You 
+should at least check that nobody has been here before.
 
-The truth is, it is not possible to sanely convert bits of a platform 
-to DT. The changes creep into all the subsystems, and doing it in stages 
-requires tons of ugly hacks (and I've written my share of them).
+> +static unsigned int __init xlate_hwirq(unsigned int hwirq)
+> +{
+> +	struct of_phandle_args irq_data;
+> +	unsigned int irq;
+> +
+> +	if (!irqc_node)
+> +		return hwirq;
+> +
+> +	irq_data.np = irqc_node;
+> +	irq_data.args_count = 3;
+> +	irq_data.args[0] = 0;
+> +	irq_data.args[1] = hwirq - irqc_base;
+> +	irq_data.args[2] = IRQ_TYPE_LEVEL_HIGH;
 
-That being said, I'm off reviewing these two matches.
+And what happens for edge interrupts? Or LEVEL_LOW? This is very much 
+GIC specific (3 args...). How does it work with non-GIC interrupt 
+controllers?
+
+> +
+> +	irq = irq_create_of_mapping(&irq_data);
+> +	if (WARN_ON(!irq))
+> +		irq = hwirq;
+> +
+> +	return irq;
+> +}
+> +
+> +void __init board_staging_fixup_irq_resources(struct resource *res,
+> +					      unsigned int nres)
+> +{
+> +	unsigned int i;
+> +
+> +	for (i = 0; i < nres; i++)
+> +		if (res[i].flags == IORESOURCE_IRQ) {
+> +			unsigned int hwirq = res[i].start;
+> +			unsigned int virq = xlate_hwirq(hwirq);
+> +
+> +			pr_debug("hwirq %u -> virq %u\n", hwirq, virq);
+> +			res[i].start = virq;
+> +		}
+> +}
+> diff --git a/drivers/staging/board/board.h 
+> b/drivers/staging/board/board.h
+> index e9c914985d4acb36..4cedc3c46e287eb7 100644
+> --- a/drivers/staging/board/board.h
+> +++ b/drivers/staging/board/board.h
+> @@ -1,10 +1,15 @@
+>  #ifndef __BOARD_H__
+>  #define __BOARD_H__
+> +
+>  #include <linux/init.h>
+>  #include <linux/of.h>
+>
+> +struct resource;
+> +
+>  bool board_staging_dt_node_available(const struct resource 
+> *resource,
+>  				     unsigned int num_resources);
+> +int board_staging_setup_hwirq_xlate(const char *irqc_match, unsigned
+> int base);
+> +void board_staging_fixup_irq_resources(struct resource *res,
+> unsigned int nres);
+>
+>  #define board_staging(str, fn)			\
+>  static int __init runtime_board_check(void)	\
+
+It won't surprise you that I don't really like this approach. It is 
+controller-specific, restrictive, and allows platform code to continue 
+doing something that is essentially wrong. Should this code ever move 
+out of staging, it should depend on CONFIG_BROKEN, because this is 
+essentially what it is - support code for broken systems. I'd also 
+welcome moving parts of the OMAP4/5 code to such CONFIG_BROKEN 
+dependency.
 
 Thanks,
 
