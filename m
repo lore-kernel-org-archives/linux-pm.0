@@ -1,104 +1,68 @@
-From: Matt Porter <mporter-OWPKS81ov/FWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH v2 1/2] dt-bindings: Document the hi6220 thermal sensor
- bindings
-Date: Mon, 6 Apr 2015 10:03:55 -0400
-Message-ID: <20150406140355.GI30984@beef>
-References: <1427785162-15172-1-git-send-email-kong.kongxinwei@hisilicon.com>
- <1427785162-15172-2-git-send-email-kong.kongxinwei@hisilicon.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 0/2] power: max17042-battery: Modify max17042 battery
+ driver
+Date: Mon, 6 Apr 2015 17:54:29 +0200
+Message-ID: <20150406155429.GA18145@earth>
+References: <1428049570-3295-1-git-send-email-beomho.seo@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="C7zPtVaVf+AK4Oqc"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:36729 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753357AbbDFPzB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 6 Apr 2015 11:55:01 -0400
 Content-Disposition: inline
-In-Reply-To: <1427785162-15172-2-git-send-email-kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Xinwei Kong <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
-Cc: rui.zhuang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxarm-hv44wF8Li93QT0dZR+AlfA@public.gmane.org, xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jorge.ramirez-ortiz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, xweikong-PkbjNfxxIARBDgjK7y7TUQ@public.gmane.org, liguozhu-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <1428049570-3295-1-git-send-email-beomho.seo@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Beomho Seo <beomho.seo@samsung.com>
+Cc: k.kozlowski@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cw00.choi@samsung.com, inki.dae@samsung.com, sangbae90.lee@samsung.com
 
-On Tue, Mar 31, 2015 at 02:59:21PM +0800, Xinwei Kong wrote:
-> From: kongxinwei <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
-> 
-> This adds documentation of device tree bindings for the
-> thermal sensor controller of hi6220 SoC.
-> 
-> Signed-off-by: Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Signed-off-by: kongxinwei <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
-> ---
->  .../bindings/thermal/hisilicon-thermal.txt         | 45 ++++++++++++++++++++++
->  1 file changed, 45 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
-> new file mode 100644
-> index 0000000..ceb6e2e
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
-> @@ -0,0 +1,45 @@
-> +* Hisilicon Thermal
-> +
-> +This driver is for hi6220 SoC which contain 4 thermal sensor.
-> +
-> +	1. sensor 0: local sensor;
-> +	2. sensor 1: remote sensor for ACPU cluster 1;
-> +	3. sensor 2: remote sensor for ACPU cluster 2;
-> +	4. sensor 3: remote sensor for GPU.
-> +
-> +Every sensor use one child node to represent it, so thermal sensor include
-> +parent node and four child node. The parent node describe common feature and
-> +child node describe private feature for thermal sensor;
-> +
-> +** Required properties :
-> +
-> +- compatible: "hisilicon,tsensor".
-> +- reg: physical base address of thermal sensor and length of memory mapped
-> +  region.
-> +- interrupt: The interrupt number to the cpu. Defines the interrupt used
-> +  by SOCTHERM.
-> +- clock-names: Input clock name, should be 'thermal_clk'.
-> +- clocks: phandles for clock specified in "clock-names" property.
-> +- #thermal-sensor-cells: Should be 1. See ./thermal.txt for a description.
-> +
-> +** Required properties for child nodes :
-> +
-> +- hisilicon,tsensor-id: the index of thermal sensor and use it to distinguish
-> +  thermal sensor. For example: <0> stands for local sensor; <1> stands for
-> +  acpu1 sensor;
 
-Please show an example illustrating why this property is needed. The
-example below doesn't show any per sensor properties aside from the
-sensor id. Other bindings with a similar sub-sensor hardware design like
-tegra-soctherm and rockchip-thermal don't have a need for a vendor
-specific property like this. Their drivers simply iterate over an id
-index during thermal sensor registration.
+--C7zPtVaVf+AK4Oqc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--Matt
+Hi Beomho,
 
-> +
-> +Example :
-> +
-> +	tsensor: tsensor@0,f7030700 {
-> +		compatible = "hisilicon,tsensor";
-> +		reg = <0x0 0xf7030700 0x0 0x1000>;
-> +		interrupts = <0 7 0x4>;
-> +		clocks = <&clock_sys HI6220_TSENSOR_CLK>;
-> +		clock-names = "thermal_clk";
-> +		#thermal-sensor-cells = <1>;
-> +
-> +		local_sensor {
-> +			hisilicon,tsensor-id = <0>;
-> +		}
-> +		.......
-> +	}
-> -- 
-> 1.9.1
-> 
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Fri, Apr 03, 2015 at 05:26:07PM +0900, Beomho Seo wrote:
+> This patch modify max17042-battery.c fuel gauge driver for use max77843 f=
+uel
+> gauge. and then, fix minor cording style issue.
+>=20
+> This patchset is written based on recently battery git tree.
+
+Thanks, pulled:
+
+http://git.infradead.org/battery-2.6.git/commit/709c2c70c8ea73f488971f1de3c=
+39fbdac995951
+http://git.infradead.org/battery-2.6.git/commit/bbaeeaaf314aaf5e32e20070378=
+bc14792ae3752
+
+-- Sebastian
+
+--C7zPtVaVf+AK4Oqc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVIqwyAAoJENju1/PIO/qafHwQAJcGfwuVyCVjK8mTHHE+8Bga
+hMGmgLuESJG3iO17B4qGvAiYqJ576ceZUT3YomXeZVCDd836R2RBv09b2j6wcVaM
+Xsb2Q5xcIjukQx/l65HaXdOv3F8zgWuoywK5UuHVXVczxJmkc7cUEGFJYD35SrN2
+bhWb4ULJfnoBRJpJzICClbRcT/nyzlMdhDaArGP4xnQfeXB5wlwYmN7Yr1yFy/bW
+lcdKtZn1D1P3rNgQKC4OPGsLiuSs0KfS6snl20v9p2ilO4p+tVHQ4YZreWPjjfUV
+7RYkgrMjz7RcqLKdY5GBVaL9et1Il+3TcTCmjPe1uIi66/A2luZJcTZoGFzePd4v
+g//RGQyfaRMl2wqqE50Rir2+huXBcsciknSHNE2pjzn1/LFB9tIiw1uzi4GbJgVq
+mzsjO72sfiBOxsOQ8pqO4OQxV75DZphEo0+rfpOZ1gshOh9qzWAF9TZHF/CLUxFC
+gnAimln2+MmnTIVet1ptHoGvnwrZOa0yPprV/acmwyYdGUYQshehid9UEZNI7P7K
+wOpW26E8DslOApYHv2dCXbHztsr0pqLYn5VQhhgp/WhhttW//EaVQRVKGyeI2LWh
+wx3OHsXEWpkveuCVfHYFnAeuk7Ug4EwToHb59zhZZ2RA2bqnU6tbIjVQHmEVfp57
+cZprr9X97rEIM51P8UAf
+=xMZm
+-----END PGP SIGNATURE-----
+
+--C7zPtVaVf+AK4Oqc--
