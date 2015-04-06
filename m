@@ -1,49 +1,51 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH/RFC 5/6] staging: board: Add support for devices with complex dependencies
-Date: Sun, 05 Apr 2015 23:06:20 +0300
-Message-ID: <2722685.XFRaAHH9GQ@avalon>
-References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be> <34835209.cQQp4PEGGk@avalon> <CAMuHMdWsc=2QvKfpYmN=M6As_KWENW2nhSqa8ajkZrQFe+dCPw@mail.gmail.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 1/6] Revert "staging: board: disable as it breaks the
+ build"
+Date: Mon, 6 Apr 2015 09:40:32 +0900
+Message-ID: <20150406004031.GD1841@verge.net.au>
+References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
+ <1428064923-24950-2-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdWsc=2QvKfpYmN=M6As_KWENW2nhSqa8ajkZrQFe+dCPw@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1428064923-24950-2-git-send-email-geert+renesas@glider.be>
 Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Magnus Damm <damm+renesas@opensource.se>, Arnd Bergmann <arnd@arndb.de>, Simon Horman <horms+renesas@verge.net.au>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Marc Zyngier <marc.zyngier@arm.com>, driverdevel <devel@driverdev.osuosl.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Magnus Damm <damm+renesas@opensource.se>, Arnd Bergmann <arnd@arndb.de>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Marc Zyngier <marc.zyngier@arm.com>, devel@driverdev.osuosl.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Geert,
-
-On Sunday 05 April 2015 11:00:56 Geert Uytterhoeven wrote:
-> On Sat, Apr 4, 2015 at 2:46 PM, Laurent Pinchart wrote:
-> >> +     for (i = 0; i < dev->ngpios; i++)
-> >> +             gpio_request_one(dev->gpios[i].gpio, dev->gpios[i].flags,
-> >> +                              pdev->name);
-> > 
-> > Aren't GPIO numbers dynamic too in DT-based systems ? Beside, shouldn't it
-> > be
->
-> Apparently not, as the old legacy number still works, and it doesn't work
-> without.
-
-I think we're just lucky there that the SoC main GPIO controller gets 
-registered first and starts counting GPIOs with a zero offset.
- 
-> > the responsibility of the drievr to request the GPIOs it needs ?
+On Fri, Apr 03, 2015 at 02:41:58PM +0200, Geert Uytterhoeven wrote:
+> This reverts commit d13778d537a0ed6115d2a79a942af999cfb8eec6.
 > 
-> As far as I understand it, on Armadillo this is used more for platform
-> configuration than for device configuration, as it affects multiple devices
-> (the comment says DBGMD/LCDC0/FSIA MUX).
+> Commit 13c11072536f2613 ("staging:board: remove unnecessary function")
+> fixed the build of drivers/staging/board/board.c.
 > 
-> I guess I could use a "gpio-hog" subnode in DT instead, but then we're
-> already implementing the conversion to DT ;-)
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-But that's the goal :-) I'd rather move GPIO and pinctrl to DT directly as we 
-already have the infrastructure to do so.
+Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
 
--- 
-Regards,
-
-Laurent Pinchart
-
+> ---
+>  drivers/staging/board/Kconfig | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/drivers/staging/board/Kconfig b/drivers/staging/board/Kconfig
+> index 0a89ad16371f7ded..b8ee81840666ad35 100644
+> --- a/drivers/staging/board/Kconfig
+> +++ b/drivers/staging/board/Kconfig
+> @@ -1,7 +1,6 @@
+>  config STAGING_BOARD
+>  	bool "Staging Board Support"
+>  	depends on OF_ADDRESS
+> -	depends on BROKEN
+>  	help
+>  	  Select to enable per-board staging support code.
+>  
+> -- 
+> 1.9.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
