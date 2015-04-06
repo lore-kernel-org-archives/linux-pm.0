@@ -1,60 +1,75 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: Unreliable hibernation on Lenovo x230 (regression)
-Date: Mon, 6 Apr 2015 09:12:34 +0200
-Message-ID: <20150406071234.GA1382@gmail.com>
-References: <20150401214743.20fbe2c5@porcupinefactory.org>
- <20150402152805.GA17021@amd>
- <20150403175825.79816fea@porcupinefactory.org>
- <3344848.SIHh1OazTO@vostro.rjw.lan>
- <20150404101243.5a229e3b@porcupinefactory.org>
- <20150405072441.GC27614@linux-rxt1.site>
- <CAE9FiQV95==v5VAkOUnWkGGEVWe=JEBCnw7X6gm8m26eHDgifg@mail.gmail.com>
+From: Marc Zyngier <marc.zyngier@arm.com>
+Subject: Re: [PATCH/RFC 0/6] staging: board: armadillo800eva: Board staging
+ for =?UTF-8?Q?sh=5Fmobile=5Flcdc=5Ffb?=
+Date: Mon, 06 Apr 2015 11:23:14 +0100
+Message-ID: <9cb05c4e687de35ada0b83fe816393c8@www.loen.fr>
+References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAE9FiQV95==v5VAkOUnWkGGEVWe=JEBCnw7X6gm8m26eHDgifg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: joeyli <jlee@suse.com>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>, Thomas Gleixner <tglx@linutronix.de>, rhn <kebuac.rhn@porcupinefactory.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Borislav Petkov <bp@alien8.de>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: devel@driverdev.osuosl.org, devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-sh@vger.kernel.org, Magnus Damm <damm+renesas@opensource.se>, linux-kernel@vger.kernel.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Simon Horman <horms+renesas@verge.net.au>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Geert,
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+On 2015-04-03 13:41, Geert Uytterhoeven wrote:
+> Hi all,
+>
+> This RFC patch series adds board staging support for 
+> r8a7740/armadillo.
+> For now this supports only the frame buffer device for the on-board 
+> LCD.
+> The goal is to complete the move to ARM multiplatform kernels for all
+> shmobile platforms, and drop the existing board files
+> (arch/arm/mach-shmobile/board-*).
+>
+> The board staging area was introduced last year to allow continuous
+> upstream in-tree development and integration of platform devices. It
+> helps developers integrate devices as platform devices for device
+> drivers that only provide platform device bindings.  This in turn 
+> allows
+> for incremental development of both hardware feature support and DT
+> binding work in parallel.
+>
+> This series consists of 4 parts:
+>   - Patch 1 re-enables compilation of the board staging area, which 
+> was
+>     disabled after a compile breakage, but has been fixed in the mean
+>     time,
+>   - Path 2 moves initialization of staging board code to an earlier
+>     moment, as currently it happens after unused PM domains are 
+> powered
+>     down,
+>   - Patches 3 and 4 (hopefully) fix the existing kzm9d board staging
+>     code, which was presumably broken by commit 9a1091ef0017c40a
+>     ("irqchip: gic: Support hierarchy irq domain."),
 
-> On Sun, Apr 5, 2015 at 12:24 AM, joeyli <jlee@suse.com> wrote:
-> >> >
-> >>
-> >> I took the commit 8f778bbc542ddf8f6243b21d6aca087e709cabdc as the base for further checking (I started building before I read your message). It's a descendant of 4.0-rc6, so I hope it's not going to make a difference.
-> >>
-> >> Results:
-> >> 8f778bb : bad
-> >> 8f778bb + reverted 84c91b7 : good
-> >> 8f778bb + patch [1] : good
-> >
-> > Thanks for your dmesg on bko#96111.
-> > I checked and confirm there have the situation of setup_data reserved as E820_RESERVED_KERN.
-> > I will add comment on bugzilla.
-> >
-> >>
-> >> Thanks!
-> >>
-> >> [1]:
-> >> x86: Kill E820_RESERVED_KERN  https://lkml.org/lkml/2015/3/4/434 as suggested in joeyli's other email.
-> >
-> > I think just revert 84c91b7ae until Yinghai Lu's patches merged to v4.1.
-> > I will resend 84c91b7ae patch until Yinghai Lu's patches merged.
-> 
-> Can you please put https://lkml.org/lkml/2015/3/4/434
-> into tip?
+Please allow me a semantic correction here: this commit never broke 
+anything. It merely revealed how platform code (OMAP, iMX6, shmobile) 
+abused the irq_domain subsystem, hoping to get away with only a partial 
+conversion to DT. The platform code itself was broken from the moment it 
+used DT to discover its interrupt controller.
 
-I cannot apply this patch without a readable changelog, see:
+The truth is, it is not possible to sanely convert bits of a platform 
+to DT. The changes creep into all the subsystems, and doing it in stages 
+requires tons of ugly hacks (and I've written my share of them).
 
-  http://lkml.iu.edu/hypermail/linux/kernel/1503.1/05342.html
-
-Your changelog (again) violates about half of the principles I tried 
-to outline in that post.
+That being said, I'm off reviewing these two matches.
 
 Thanks,
 
-	Ingo
+         M.
+-- 
+Fast, cheap, reliable. Pick two.
