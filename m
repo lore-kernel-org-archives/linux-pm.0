@@ -1,51 +1,38 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 1/6] Revert "staging: board: disable as it breaks the
- build"
-Date: Mon, 6 Apr 2015 09:40:32 +0900
-Message-ID: <20150406004031.GD1841@verge.net.au>
-References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
- <1428064923-24950-2-git-send-email-geert+renesas@glider.be>
+From: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
+Subject: [RFC/PATCH 0/4] Add cpuidle support for r8a7791
+Date: Mon, 6 Apr 2015 12:50:40 +0900
+Message-ID: <1428292244-2160-1-git-send-email-keita.kobayashi.ym@renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1428064923-24950-2-git-send-email-geert+renesas@glider.be>
 Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Magnus Damm <damm+renesas@opensource.se>, Arnd Bergmann <arnd@arndb.de>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Marc Zyngier <marc.zyngier@arm.com>, devel@driverdev.osuosl.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: horms@verge.net.au, rjw@rjwysocki.net, daniel.lezcano@linaro.org
+Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, magnus.damm@gmail.com, Keita Kobayashi <keita.kobayashi.ym@renesas.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 03, 2015 at 02:41:58PM +0200, Geert Uytterhoeven wrote:
-> This reverts commit d13778d537a0ed6115d2a79a942af999cfb8eec6.
-> 
-> Commit 13c11072536f2613 ("staging:board: remove unnecessary function")
-> fixed the build of drivers/staging/board/board.c.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Hello
 
-Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
+These patches add cpuidle support for Renesas r8a7791 SoC.
+The r8a7791 cpuidle supports WFI and the cpu power state(Core-Standby)
+using Generic ARM CPU idle driver(cpuidle-arm).
 
-> ---
->  drivers/staging/board/Kconfig | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/staging/board/Kconfig b/drivers/staging/board/Kconfig
-> index 0a89ad16371f7ded..b8ee81840666ad35 100644
-> --- a/drivers/staging/board/Kconfig
-> +++ b/drivers/staging/board/Kconfig
-> @@ -1,7 +1,6 @@
->  config STAGING_BOARD
->  	bool "Staging Board Support"
->  	depends on OF_ADDRESS
-> -	depends on BROKEN
->  	help
->  	  Select to enable per-board staging support code.
->  
-> -- 
-> 1.9.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Based on : next-20150402
+Tested on : koelsch board
+
+Keita Kobayashi (4):
+  ARM: cpuidle: Add cpuidle support for R-Car Gen2 series
+  ARM: shmobile: Add cpuidle_ops for R-Car cpuidle
+  ARM: shmobile: dtsi: Add cpuidle parameters into each cpu for r8a7791
+  ARM: shmobile: Enable Renesas R-Car cpuidle for shmobile_defconfig
+
+ arch/arm/boot/dts/r8a7791.dtsi        | 13 +++++++++++++
+ arch/arm/configs/shmobile_defconfig   |  2 ++
+ arch/arm/mach-shmobile/platsmp-apmu.c | 11 +++++++++--
+ arch/arm/mach-shmobile/platsmp-apmu.h |  1 +
+ arch/arm/mach-shmobile/pm-rcar-gen2.c | 17 +++++++++++++++++
+ drivers/cpuidle/Kconfig.arm           |  8 ++++++++
+ 6 files changed, 50 insertions(+), 2 deletions(-)
+
+-- 
+1.9.1
+
