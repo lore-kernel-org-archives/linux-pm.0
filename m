@@ -1,56 +1,93 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v4 6/6] power: twl4030_madc_battery: Add missing
- MODULE_ALIAS
-Date: Mon, 6 Apr 2015 19:45:15 +0200
-Message-ID: <20150406174515.GF18145@earth>
-References: <1426022847-30912-1-git-send-email-marek@goldelico.com>
- <1426022847-30912-7-git-send-email-marek@goldelico.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/3] dm-crypt: Adds support for wiping key when doing
+ suspend/hibernation
+Date: Mon, 6 Apr 2015 20:17:38 +0200
+Message-ID: <20150406181738.GC9978@amd>
+References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com>
+ <20150406130045.GA18583@redhat.com>
+ <201504061529.57299@pali>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="ChQOR20MqfxkMJg9"
-Return-path: <linux-omap-owner@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36032 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751945AbbDFSRl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Apr 2015 14:17:41 -0400
 Content-Disposition: inline
-In-Reply-To: <1426022847-30912-7-git-send-email-marek@goldelico.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Marek Belisko <marek@goldelico.com>
-Cc: bcousson@baylibre.com, tony@atomide.com, dbaryshkov@gmail.com, dwmw2@infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, hns@goldelico.com
+In-Reply-To: <201504061529.57299@pali>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>
+Cc: Mike Snitzer <snitzer@redhat.com>, Alasdair Kergon <agk@redhat.com>, Neil Brown <neilb@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
+On Mon 2015-04-06 15:29:57, Pali Roh=E1r wrote:
+> On Monday 06 April 2015 15:00:46 Mike Snitzer wrote:
+> > On Sun, Apr 05 2015 at  1:20pm -0400,
+> >=20
+> > Pali Roh=E1r <pali.rohar@gmail.com> wrote:
+> > > This patch series increase security of suspend and hibernate
+> > > actions. It allows user to safely wipe crypto keys before
+> > > suspend and hibernate actions starts without race
+> > > conditions on userspace process with heavy I/O.
+> > >=20
+> > > To automatically wipe cryto key for <device> before
+> > > hibernate action call: $ dmsetup message <device> 0 key
+> > > wipe_on_hibernation 1
+> > >=20
+> > > To automatically wipe cryto key for <device> before suspend
+> > > action call: $ dmsetup message <device> 0 key
+> > > wipe_on_suspend 1
+> > >=20
+> > > (Value 0 after wipe_* string reverts original behaviour - to
+> > > not wipe key)
+> >=20
+> > Can you elaborate on the attack vector your changes are meant
+> > to protect against?  The user already authorized access, why
+> > is it inherently dangerous to _not_ wipe the associated key
+> > across these events?
+>=20
+> Hi,
+>=20
+> yes, I will try to explain current problems with cryptsetup=20
+> luksSuspend command and hibernation.
+>=20
+> First, sometimes it is needed to put machine into other hands.=20
+> You can still watch other person what is doing with machine, but=20
+> once if you let machine unlocked (e.g opened luks disk), she/he=20
+> can access encrypted data.
+>=20
+> If you turn off machine, it could be safe, because luks disk=20
+> devices are locked. But if you enter machine into suspend or=20
+> hibernate state luks devices are still open. And my patches try=20
+> to achieve similar security as when machine is off (=3D no crypto=20
+> keys in RAM or on swap).
+>=20
+> When doing hibernate on unencrypted swap it is to prevent leaking=20
+> crypto keys to hibernate image (which is stored in swap).
+>=20
+> When doing suspend action it is again to prevent leaking crypto=20
+> keys. E.g when you suspend laptop and put it off (somebody can=20
+> remove RAMs and do some cold boot attack).
+>=20
+> The most common situation is:
+> You have mounted partition from dm-crypt device (e.g. /home/),=20
+> some userspace processes access it (e.g opened firefox which=20
+> still reads/writes to cache ~/.firefox/) and you want to drop=20
+> crypto keys from kernel for some time.
+>=20
+> For that operation there is command cryptsetup luksSuspend, which=20
+> suspend dm device and then tell kernel to wipe crypto keys. All=20
+> I/O operations are then stopped and userspace processes which=20
+> want to do some those I/O operations are stopped too (until you=20
+> call cryptsetup luksResume and enter correct key).
 
---ChQOR20MqfxkMJg9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Actually... is the list of sites where the process wait small enough?
+Could we modify them to be freezeable? Suspend should work even if
+user stopped the his crypto partitions...
 
-Hi,
-
-On Tue, Mar 10, 2015 at 10:27:27PM +0100, Marek Belisko wrote:
-> Without MODULE_ALIAS twl4030_madc_battery won't get loaded
-> automatically.
-
-Thanks, pulled.
-
--- Sebastian
-
---ChQOR20MqfxkMJg9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVIsYrAAoJENju1/PIO/qa86cQAIIVO1XGLAFAM+RgIXlRYMpU
-ue/SBF4/eW7M3MqLHnAhmZ+BklwE3d5ZXTxZwBjj0RHve6peKE0zLQ7f+Stp6m0E
-baJs/fuaiGf0K9d+qTe4XFJdiRCPm1iEH0yR1pbsnoDbGutbdSgj/kyU4fRgBjzP
-/14syUpQNIk1/wMYuvRl/j3LhlemVoMpWxHWgjfPnGfzM29gq5Bq73mkgMgqL6Hb
-AQTgUvWNcgF9Svc2JtMTl4DkgK2D3vd863277Zk4w9psY7beJ4+qAejUkNvYkwOG
-3PtcT0Xqutv0GCYsd3m2tro8X2ivI9bU4lxT3cQXjIi8Pu60VWGTyIoPOcmDkQOe
-P+HtpxKoxUFYrna0VE4wsoc81JhzRGp/a8kjaVjEziwDNFd/NRSNk7rh7CTFfq7L
-y9ApNf0ASfCQETrZFvZNbslP0Ag1ZeMn/FC5X+bwUm2BDyPnaJJP6fsVmC3iTG7y
-EVsgL6PjQnahsifArQpfWY1ZKquYHwdu6RbPvsLrMxqJPr/FXJGmXfRmJ52l9+qc
-LmgWd4VYD3z59p5Omb66seJNx8I64gl1chzDf3iyAo60tABxtEpKiq+30thGMyTL
-7cwe6yTY5ZUDVqWK/KFLcbD9ESebF1Hl3R0FwmCjVhEOJurnEsW7KudMleW510Pe
-U8lqgxPhbDUiu3WgV0C3
-=9D7f
------END PGP SIGNATURE-----
-
---ChQOR20MqfxkMJg9--
+								Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
+/blog.html
