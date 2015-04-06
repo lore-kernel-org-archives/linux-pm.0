@@ -1,118 +1,49 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH 0/3] dm-crypt: Adds support for wiping key when doing suspend/hibernation
-Date: Mon, 6 Apr 2015 15:29:57 +0200
-Message-ID: <201504061529.57299@pali>
-References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com> <20150406130045.GA18583@redhat.com>
+From: Beomho Seo <beomho.seo@samsung.com>
+Subject: Re: [PATCH v2 1/2] power: max17042_battery: Use reg type instead of
+ chip type
+Date: Mon, 06 Apr 2015 22:34:15 +0900
+Message-ID: <55228B57.7@samsung.com>
+References: <1428049570-3295-1-git-send-email-beomho.seo@samsung.com>
+ <1428049570-3295-2-git-send-email-beomho.seo@samsung.com>
+ <CAJKOXPe9wRK-TYXkMbN0h6B6zWSTYJRvLy8Ji6vWLULxaRbreQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1933368.W9vSGLKYyh";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f43.google.com ([74.125.82.43]:34252 "EHLO
-	mail-wg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752847AbbDFNaB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Apr 2015 09:30:01 -0400
-In-Reply-To: <20150406130045.GA18583@redhat.com>
+Received: from mailout1.samsung.com ([203.254.224.24]:54184 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753250AbbDFNeR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Apr 2015 09:34:17 -0400
+In-reply-to: <CAJKOXPe9wRK-TYXkMbN0h6B6zWSTYJRvLy8Ji6vWLULxaRbreQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Snitzer <snitzer@redhat.com>
-Cc: Alasdair Kergon <agk@redhat.com>, Neil Brown <neilb@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: sre@kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cw00.choi@samsung.com, inki.dae@samsung.com, sangbae90.lee@samsung.com
 
---nextPart1933368.W9vSGLKYyh
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+On 04/03/2015 06:01 PM, Krzysztof Kozlowski wrote:
+> 2015-04-03 10:26 GMT+02:00 Beomho Seo <beomho.seo@samsung.com>:
+>> Currently, max17042 battery driver choose register map by MAX17042_DevName
+>> register. But it is return IC specific firmware version. So other maxim chip
+>> hard to use this drvier. This patch choose chip type from driver_data.
+>>
+>> Cc: Sebastian Reichel <sre@kernel.org>
+>> Signed-off-by: Beomho Seo <beomho.seo@samsung.com>
+>> ---
+>>  drivers/power/max17042_battery.c       |   33 ++++++++++----------------------
+>>  include/linux/power/max17042_battery.h |    9 ++++++++-
+>>  2 files changed, 18 insertions(+), 24 deletions(-)
+> 
+> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> 
+> Best regards,
+> Krzysztof
+> 
 
-On Monday 06 April 2015 15:00:46 Mike Snitzer wrote:
-> On Sun, Apr 05 2015 at  1:20pm -0400,
->=20
-> Pali Roh=C3=A1r <pali.rohar@gmail.com> wrote:
-> > This patch series increase security of suspend and hibernate
-> > actions. It allows user to safely wipe crypto keys before
-> > suspend and hibernate actions starts without race
-> > conditions on userspace process with heavy I/O.
-> >=20
-> > To automatically wipe cryto key for <device> before
-> > hibernate action call: $ dmsetup message <device> 0 key
-> > wipe_on_hibernation 1
-> >=20
-> > To automatically wipe cryto key for <device> before suspend
-> > action call: $ dmsetup message <device> 0 key
-> > wipe_on_suspend 1
-> >=20
-> > (Value 0 after wipe_* string reverts original behaviour - to
-> > not wipe key)
->=20
-> Can you elaborate on the attack vector your changes are meant
-> to protect against?  The user already authorized access, why
-> is it inherently dangerous to _not_ wipe the associated key
-> across these events?
+Thanks Krzysztof for your reviews.
 
-Hi,
+Sebastian, Could you please merge that your git tree?
 
-yes, I will try to explain current problems with cryptsetup=20
-luksSuspend command and hibernation.
+Best regards
+Beomho
 
-=46irst, sometimes it is needed to put machine into other hands.=20
-You can still watch other person what is doing with machine, but=20
-once if you let machine unlocked (e.g opened luks disk), she/he=20
-can access encrypted data.
 
-If you turn off machine, it could be safe, because luks disk=20
-devices are locked. But if you enter machine into suspend or=20
-hibernate state luks devices are still open. And my patches try=20
-to achieve similar security as when machine is off (=3D no crypto=20
-keys in RAM or on swap).
-
-When doing hibernate on unencrypted swap it is to prevent leaking=20
-crypto keys to hibernate image (which is stored in swap).
-
-When doing suspend action it is again to prevent leaking crypto=20
-keys. E.g when you suspend laptop and put it off (somebody can=20
-remove RAMs and do some cold boot attack).
-
-The most common situation is:
-You have mounted partition from dm-crypt device (e.g. /home/),=20
-some userspace processes access it (e.g opened firefox which=20
-still reads/writes to cache ~/.firefox/) and you want to drop=20
-crypto keys from kernel for some time.
-
-=46or that operation there is command cryptsetup luksSuspend, which=20
-suspend dm device and then tell kernel to wipe crypto keys. All=20
-I/O operations are then stopped and userspace processes which=20
-want to do some those I/O operations are stopped too (until you=20
-call cryptsetup luksResume and enter correct key).
-
-Now if you want to suspend/hiberate your machine (when some of dm=20
-devices are suspeneded and some processes are stopped due to=20
-pending I/O) it is not possible. Kernel freeze_processes function=20
-will fail because userspace processes are still stopped inside=20
-some I/O syscall (read/write, etc,...).
-
-My patches fixes this problem and do those operations (suspend dm=20
-device, wipe crypto keys, enter suspend/hiberate) in correct=20
-order and without race condition.
-
-dm device is suspended *after* userspace processes are freezed=20
-and after that are crypto keys wiped. And then computer/laptop=20
-enters into suspend/hibernate state.
-
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
-
---nextPart1933368.W9vSGLKYyh
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAlUiilUACgkQi/DJPQPkQ1KklgCgywqcKHqUpcj/IA+R8ff8bVBf
-vE8An1j2X42WqynGPflzaB42WKUBqn9X
-=dMDB
------END PGP SIGNATURE-----
-
---nextPart1933368.W9vSGLKYyh--
