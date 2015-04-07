@@ -1,113 +1,124 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 10/13] thermal: Make struct thermal_zone_device_ops const
-Date: Mon, 6 Apr 2015 20:29:49 -0700
-Message-ID: <20150407032948.GN4648@localhost.localdomain>
-References: <1427385240-6086-1-git-send-email-s.hauer@pengutronix.de>
- <1427385240-6086-11-git-send-email-s.hauer@pengutronix.de>
+From: Xinwei Kong <kong.kongxinwei@hisilicon.com>
+Subject: Re: [PATCH v2 1/2] dt-bindings: Document the hi6220 thermal sensor
+ bindings
+Date: Tue, 7 Apr 2015 11:46:22 +0800
+Message-ID: <5523530E.3000400@hisilicon.com>
+References: <1427785162-15172-1-git-send-email-kong.kongxinwei@hisilicon.com> <1427785162-15172-2-git-send-email-kong.kongxinwei@hisilicon.com> <20150406140355.GI30984@beef>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="nRwNdQxTdQ7rZk9A"
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:35171 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753160AbbDGD3l (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Apr 2015 23:29:41 -0400
-Content-Disposition: inline
-In-Reply-To: <1427385240-6086-11-git-send-email-s.hauer@pengutronix.de>
+Received: from szxga02-in.huawei.com ([119.145.14.65]:23501 "EHLO
+	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752993AbbDGDpg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Apr 2015 23:45:36 -0400
+In-Reply-To: <20150406140355.GI30984@beef>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+To: Matt Porter <mporter@konsulko.com>
+Cc: rui.zhuang@intel.com, "edubezval@gmail.com" <edubezval@gmail.com>, mark.rutland@arm.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linuxarm@huawei.com, xuwei5@hisilicon.com, linux-kernel@vger.kernel.org, jorge.ramirez-ortiz@linaro.org, xweikong@hotmail.com, liguozhu@hisilicon.com, linux-arm-kernel@lists.infradead.org
 
 
---nRwNdQxTdQ7rZk9A
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, Mar 26, 2015 at 04:53:57PM +0100, Sascha Hauer wrote:
-> Now that the of thermal support no longer changes the
-> thermal_zone_device_ops it can be const again.
->=20
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> ---
->  drivers/thermal/thermal_core.c | 2 +-
->  include/linux/thermal.h        | 6 +++---
+On 2015/4/6 22:03, Matt Porter wrote:
+> On Tue, Mar 31, 2015 at 02:59:21PM +0800, Xinwei Kong wrote:
+>> From: kongxinwei <kong.kongxinwei@hisilicon.com>
+>>
+>> This adds documentation of device tree bindings for the
+>> thermal sensor controller of hi6220 SoC.
+>>
+>> Signed-off-by: Leo Yan <leo.yan@linaro.org>
+>> Signed-off-by: kongxinwei <kong.kongxinwei@hisilicon.com>
+>> ---
+>>  .../bindings/thermal/hisilicon-thermal.txt         | 45 ++++++++++++++++++++++
+>>  1 file changed, 45 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+>> new file mode 100644
+>> index 0000000..ceb6e2e
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+>> @@ -0,0 +1,45 @@
+>> +* Hisilicon Thermal
+>> +
+>> +This driver is for hi6220 SoC which contain 4 thermal sensor.
+>> +
+>> +	1. sensor 0: local sensor;
+>> +	2. sensor 1: remote sensor for ACPU cluster 1;
+>> +	3. sensor 2: remote sensor for ACPU cluster 2;
+>> +	4. sensor 3: remote sensor for GPU.
+>> +
+>> +Every sensor use one child node to represent it, so thermal sensor include
+>> +parent node and four child node. The parent node describe common feature and
+>> +child node describe private feature for thermal sensor;
+>> +
+>> +** Required properties :
+>> +
+>> +- compatible: "hisilicon,tsensor".
+>> +- reg: physical base address of thermal sensor and length of memory mapped
+>> +  region.
+>> +- interrupt: The interrupt number to the cpu. Defines the interrupt used
+>> +  by SOCTHERM.
+>> +- clock-names: Input clock name, should be 'thermal_clk'.
+>> +- clocks: phandles for clock specified in "clock-names" property.
+>> +- #thermal-sensor-cells: Should be 1. See ./thermal.txt for a description.
+>> +
+>> +** Required properties for child nodes :
+>> +
+>> +- hisilicon,tsensor-id: the index of thermal sensor and use it to distinguish
+>> +  thermal sensor. For example: <0> stands for local sensor; <1> stands for
+>> +  acpu1 sensor;
+> 
+> Please show an example illustrating why this property is needed. The
+> example below doesn't show any per sensor properties aside from the
+> sensor id. Other bindings with a similar sub-sensor hardware design like
+> tegra-soctherm and rockchip-thermal don't have a need for a vendor
+> specific property like this. Their drivers simply iterate over an id
+> index during thermal sensor registration.
+> 
+> -Matt
+> 
+Thermal Ip of hisilicon SoC can get four module temperature--local sensor, ACPU0
+sensor, ACPU1 sensor and gpu sensor. In order to use these sensors, this driver
+will make use of sensor id to distinguish sensor in using process.
 
-I believe this change deserves to be done together with the required driver=
-=20
-updates on those parts that calls this function.
+These four sensors only get one sensor temperature at the same times. Because
+these sensor commonly use the same register by setting diff value to enable one
+sensor. howerver, sensor id is key flag for these diff sensor modules.
 
->  2 files changed, 4 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
-e.c
-> index acf00b5..dcdf45e 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1455,7 +1455,7 @@ static void remove_trip_attrs(struct thermal_zone_d=
-evice *tz)
->   */
->  struct thermal_zone_device *thermal_zone_device_register(const char *typ=
-e,
->  	int trips, int mask, void *devdata,
-> -	struct thermal_zone_device_ops *ops,
-> +	const struct thermal_zone_device_ops *ops,
->  	const struct thermal_zone_params *tzp,
->  	int passive_delay, int polling_delay)
->  {
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 2f77091..ac2897c 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -185,7 +185,7 @@ struct thermal_zone_device {
->  	unsigned long emul_temperature;
->  	int passive;
->  	unsigned int forced_passive;
-> -	struct thermal_zone_device_ops *ops;
-> +	const struct thermal_zone_device_ops *ops;
->  	const struct thermal_zone_params *tzp;
->  	struct thermal_governor *governor;
->  	struct list_head thermal_instances;
-> @@ -317,7 +317,7 @@ void thermal_zone_of_sensor_unregister(struct device =
-*dev,
-> =20
->  #if IS_ENABLED(CONFIG_THERMAL)
->  struct thermal_zone_device *thermal_zone_device_register(const char *, i=
-nt, int,
-> -		void *, struct thermal_zone_device_ops *,
-> +		void *, const struct thermal_zone_device_ops *,
->  		const struct thermal_zone_params *, int, int);
->  void thermal_zone_device_unregister(struct thermal_zone_device *);
-> =20
-> @@ -345,7 +345,7 @@ void thermal_notify_framework(struct thermal_zone_dev=
-ice *, int);
->  #else
->  static inline struct thermal_zone_device *thermal_zone_device_register(
->  	const char *type, int trips, int mask, void *devdata,
-> -	struct thermal_zone_device_ops *ops,
-> +	const struct thermal_zone_device_ops *ops,
->  	const struct thermal_zone_params *tzp,
->  	int passive_delay, int polling_delay)
->  { return ERR_PTR(-ENODEV); }
-> --=20
-> 2.1.4
->=20
+If deleting sensor id, this driver will define some value which set diff sensor
+regitser and it difficult to understand sensor register operation.
 
---nRwNdQxTdQ7rZk9A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Thanks
+Xinwei
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+>> +
+>> +Example :
+>> +
+>> +	tsensor: tsensor@0,f7030700 {
+>> +		compatible = "hisilicon,tsensor";
+>> +		reg = <0x0 0xf7030700 0x0 0x1000>;
+>> +		interrupts = <0 7 0x4>;
+>> +		clocks = <&clock_sys HI6220_TSENSOR_CLK>;
+>> +		clock-names = "thermal_clk";
+>> +		#thermal-sensor-cells = <1>;
+>> +
+>> +		local_sensor {
+>> +			hisilicon,tsensor-id = <0>;
+>> +		}
+>> +		.......
+>> +	}
+>> -- 
+>> 1.9.1
+>>
+>>
+>>
+>> _______________________________________________
+>> linux-arm-kernel mailing list
+>> linux-arm-kernel@lists.infradead.org
+>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> 
+> .
+> 
 
-iQEcBAEBAgAGBQJVI08lAAoJEMLUO4d9pOJWyJQH/i4Ih5803Oj9REwGKmScmdcR
-yClv35cFFhn12178CUHWl1nOHq6uLXWLfTQ6YusGwWYKQTLhFCV3ezFII9DQX7Mb
-zqVYKow9LvFNbj9HMS+8h1UlNTr5RaSazZaXHdenUR39C3YVtqQE1OEuOLbOAQdy
-mzkUZT6ytU2zwMYqgMdk7b7Byqh71+LxDth8RIsDP8aMAG2QcKPk4OZssqShYGK6
-jBxDI+4CmAXW2iM7z1ibwGKihtb82uHaEgrWsIHr8+pnVkjq4zsVwKdPAfDieWSw
-8lP/JpZQREwho3zzo0vbk/RNZVaiJ58b6kBBK81R1sVk2AlNm8ZRwng6QksNnsY=
-=dKXq
------END PGP SIGNATURE-----
-
---nRwNdQxTdQ7rZk9A--
