@@ -1,178 +1,176 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 06/13] thermal: streamline get_trend callbacks
-Date: Mon, 6 Apr 2015 20:19:52 -0700
-Message-ID: <20150407031950.GK4648@localhost.localdomain>
-References: <1427385240-6086-1-git-send-email-s.hauer@pengutronix.de>
- <1427385240-6086-7-git-send-email-s.hauer@pengutronix.de>
+From: Keerthy <a0393675@ti.com>
+Subject: Re: [PATCH v2] thermal: ti-soc-thermal: dra7: Implement Workaround
+ for Errata i814 - Bandgap Temperature read Dtemp can be corrupted
+Date: Tue, 7 Apr 2015 08:50:04 +0530
+Message-ID: <55234CE4.5070901@ti.com>
+References: <1427445901-8461-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="0FM4RQAc0jwHekq5"
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:36503 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752902AbbDGDTq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Apr 2015 23:19:46 -0400
-Content-Disposition: inline
-In-Reply-To: <1427385240-6086-7-git-send-email-s.hauer@pengutronix.de>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:47411 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753027AbbDGDUN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 6 Apr 2015 23:20:13 -0400
+In-Reply-To: <1427445901-8461-1-git-send-email-j-keerthy@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+To: Keerthy <j-keerthy@ti.com>, edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, t-kristo@ti.com
 
+Hi Eduardo,
 
---0FM4RQAc0jwHekq5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Friday 27 March 2015 02:15 PM, Keerthy wrote:
+> Bandgap Temperature read Dtemp can be corrupted
+>
+> DESCRIPTION
+>          Read accesses to registers listed below can be corrupted due=
+ to incorrect resynchronization between
+>          clock domains.
+>
+>          Read access to registers below can be corrupted :
+>                  =E2=80=A2 CTRL_CORE_DTEMP_MPU/GPU/CORE/DSPEVE/IVA_n =
+(n =3D 0 to 4)
+>          =E2=80=A2 CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA_n
+>
+> WORKAROUND
+>          Multiple reads to CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/=
+IVA[9:0]:
+>          BGAP_DTEMPMPU/GPU/CORE/DSPEVE/IVA is needed to discard false=
+ value and read right value:
+>                  1. Perform two successive reads to BGAP_DTEMP bit fi=
+eld.
+>                          (a) If read1 returns Val1 and read2 returns =
+Val1, then right value is Val1.
+>                          (b) If read1 returns Val1, read 2 returns Va=
+l2, a third read is needed.
+>                  2. Perform third read
+>                          (a) If read3 returns Val2 then right value i=
+s Val2.
+>                          (b) If read3 returns Val3, then right value =
+is Val3.
+>
 
-On Thu, Mar 26, 2015 at 04:53:53PM +0100, Sascha Hauer wrote:
-> The .get_trend callback in struct thermal_zone_device_ops has the prototy=
-pe:
->=20
-> 	int (*get_trend) (struct thermal_zone_device *, int,
-> 			  enum thermal_trend *);
->=20
-> whereas the .get_trend callback in struct thermal_zone_of_device_ops has:
->=20
-> 	int (*get_trend)(void *, long *);
->=20
-> Streamline both prototypes and add the trip argument to the OF callback
-> aswell and use enum thermal_trend * instead of an integer pointer.
->=20
-> While the OF prototype may be the better one, this should be decided at
-> framework level and not on OF level.
->=20
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+A gentle ping on this.
+
+> Signed-off-by: Keerthy <j-keerthy@ti.com>
 > ---
->  drivers/thermal/of-thermal.c                       | 11 +---------
->  drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 25 +++++++---------=
-------
->  include/linux/thermal.h                            |  2 +-
->  3 files changed, 10 insertions(+), 28 deletions(-)
->=20
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 668fb1b..b39e22f 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -187,24 +187,15 @@ static int of_thermal_get_trend(struct thermal_zone=
-_device *tz, int trip,
->  				enum thermal_trend *trend)
->  {
->  	struct __thermal_zone *data =3D tz->devdata;
-> -	long dev_trend;
->  	int r;
-> =20
->  	if (!data->ops->get_trend)
->  		return -EINVAL;
-> =20
-> -	r =3D data->ops->get_trend(data->sensor_data, &dev_trend);
-> +	r =3D data->ops->get_trend(data->sensor_data, trip, trend);
->  	if (r)
->  		return r;
-> =20
-> -	/* TODO: These intervals might have some thresholds, but in core code */
-> -	if (dev_trend > 0)
-> -		*trend =3D THERMAL_TREND_RAISING;
-> -	else if (dev_trend < 0)
-> -		*trend =3D THERMAL_TREND_DROPPING;
-> -	else
-> -		*trend =3D THERMAL_TREND_STABLE;
-> -
->  	return 0;
->  }
-> =20
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers=
-/thermal/ti-soc-thermal/ti-thermal-common.c
-> index a38c175..7f8e5f3 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> @@ -238,7 +238,7 @@ static int ti_thermal_get_trip_temp(struct thermal_zo=
-ne_device *thermal,
->  	return 0;
->  }
-> =20
-> -static int __ti_thermal_get_trend(void *p, long *trend)
-> +static int __ti_thermal_get_trend(void *p, int trip, enum thermal_trend =
-*trend)
->  {
->  	struct ti_thermal_data *data =3D p;
->  	struct ti_bandgap *bgp;
-> @@ -251,22 +251,6 @@ static int __ti_thermal_get_trend(void *p, long *tre=
-nd)
->  	if (ret)
->  		return ret;
-> =20
-> -	*trend =3D tr;
-> -
-> -	return 0;
-> -}
-> -
-> -/* Get the temperature trend callback functions for thermal zone */
-> -static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
-> -				int trip, enum thermal_trend *trend)
-> -{
-> -	int ret;
-> -	long tr;
-> -
-> -	ret =3D __ti_thermal_get_trend(thermal->devdata, &tr);
-> -	if (ret)
-> -		return ret;
-> -
->  	if (tr > 0)
->  		*trend =3D THERMAL_TREND_RAISING;
->  	else if (tr < 0)
-> @@ -277,6 +261,13 @@ static int ti_thermal_get_trend(struct thermal_zone_=
-device *thermal,
->  	return 0;
->  }
-> =20
-> +/* Get the temperature trend callback functions for thermal zone */
-> +static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
-> +				int trip, enum thermal_trend *trend)
+>
+> Read all the temperatures from the 5 sensors and saw that
+> they were sane with time.
+>
+> Ran cpuloadgen and saw that temperatures rising on all the sensors
+> and cooled down as soon as the load was reduced.
+>
+>   .../thermal/ti-soc-thermal/dra752-thermal-data.c   |  3 +-
+>   drivers/thermal/ti-soc-thermal/ti-bandgap.c        | 37 +++++++++++=
+++++++++++-
+>   drivers/thermal/ti-soc-thermal/ti-bandgap.h        |  4 +++
+>   3 files changed, 42 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c b/d=
+rivers/thermal/ti-soc-thermal/dra752-thermal-data.c
+> index a492927..58b5c66 100644
+> --- a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
+> +++ b/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
+> @@ -420,7 +420,8 @@ const struct ti_bandgap_data dra752_data =3D {
+>   			TI_BANDGAP_FEATURE_FREEZE_BIT |
+>   			TI_BANDGAP_FEATURE_TALERT |
+>   			TI_BANDGAP_FEATURE_COUNTER_DELAY |
+> -			TI_BANDGAP_FEATURE_HISTORY_BUFFER,
+> +			TI_BANDGAP_FEATURE_HISTORY_BUFFER |
+> +			TI_BANDGAP_FEATURE_ERRATA_814,
+>   	.fclock_name =3D "l3instr_ts_gclk_div",
+>   	.div_ck_name =3D "l3instr_ts_gclk_div",
+>   	.conv_table =3D dra752_adc_to_temp,
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/th=
+ermal/ti-soc-thermal/ti-bandgap.c
+> index 74c0e34..baf822e 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> @@ -119,6 +119,37 @@ exit:
+>   }
+>
+>   /**
+> + * ti_dra7_bandgap_read_temp() - helper function to read dra7 sensor=
+ temperature
+> + * @bgp: pointer to ti_bandgap structure
+> + * @reg: desired register (offset) to be read
+> + *
+> + * Function to read dra7 bandgap sensor temperature. This is done se=
+parately
+> + * so as to workaround the errata "Bandgap Temperature read Dtemp ca=
+n be
+> + * corrupted" - Errata ID: i814".
+> + * Read accesses to registers listed below can be corrupted due to i=
+ncorrect
+> + * resynchronization between clock domains.
+> + * Read access to registers below can be corrupted :
+> + * CTRL_CORE_DTEMP_MPU/GPU/CORE/DSPEVE/IVA_n (n =3D 0 to 4)
+> + * CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA_n
+> + *
+> + * Return: the register value.
+> + */
+> +static u32 ti_dra7_bandgap_read_temp(struct ti_bandgap *bgp,  u32 re=
+g)
 > +{
-> +	return __ti_thermal_get_trend(thermal->devdata, trip, trend);
+> +	u32 val1, val2;
+> +
+> +	val1 =3D ti_bandgap_readl(bgp, reg);
+> +	val2 =3D ti_bandgap_readl(bgp, reg);
+> +
+> +/* If both times we read the same value then that is right */
+> +	if (val1 =3D=3D val2)
+> +		return val1;
+> +
+> +/* if val1 and val2 are different read it third time */
+> +	return ti_bandgap_readl(bgp, reg);
 > +}
 > +
->  /* Get critical temperature callback functions for thermal zone */
->  static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
->  				    unsigned long *temp)
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index db6c12b..ba2e29a 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -273,7 +273,7 @@ struct thermal_genl_event {
->   */
->  struct thermal_zone_of_device_ops {
->  	int (*get_temp)(void *, long *);
-> -	int (*get_trend)(void *, long *);
-> +	int (*get_trend)(void *, int trend, enum thermal_trend *);
-
-Could you please keep the kernel doc entry up to date?
-
-
-Apart from that, looks good to me.
-
->  	int (*set_emul_temp)(void *, unsigned long);
->  };
-> =20
-> --=20
-> 2.1.4
->=20
-
---0FM4RQAc0jwHekq5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQEcBAEBAgAGBQJVI0zRAAoJEMLUO4d9pOJWd1sH/1efN2Us60VOa2IrQ7JTb/xp
-kEQuZKcb27AXv7T4gbYqJUKz9XbYz0U2xK2/SJL/a+MD66efm2WQBAzN2ay919Cm
-kuwi/dAUKGaDq7tj/DsvcsK0IMd8DA3FRGYE7Yi1ynPqjr4gQ7WnlQBsI00UclpD
-MutAzReGhTDs65qEV9NDFtvkB5xCHfhtYyNo2+K1nds+R+KDMFccEcPP0r1fjniT
-vVymzHaQarb5g3TV8iUXgaMTEVmAFGBUWtRYLPUJd6PXRWeh6+II+bAX7FNDTcW7
-EOczz2SokC7c7hK83TPPOZ3z2W+ycEFGARVZfuNmK6Q6H1rc79mEwQhDM1bVpcY=
-=qZRm
------END PGP SIGNATURE-----
-
---0FM4RQAc0jwHekq5--
+> +/**
+>    * ti_bandgap_read_temp() - helper function to read sensor temperat=
+ure
+>    * @bgp: pointer to ti_bandgap structure
+>    * @id: bandgap sensor id
+> @@ -148,7 +179,11 @@ static u32 ti_bandgap_read_temp(struct ti_bandga=
+p *bgp, int id)
+>   	}
+>
+>   	/* read temperature */
+> -	temp =3D ti_bandgap_readl(bgp, reg);
+> +	if (TI_BANDGAP_HAS(bgp, ERRATA_814))
+> +		temp =3D ti_dra7_bandgap_read_temp(bgp, reg);
+> +	else
+> +		temp =3D ti_bandgap_readl(bgp, reg);
+> +
+>   	temp &=3D tsr->bgap_dtemp_mask;
+>
+>   	if (TI_BANDGAP_HAS(bgp, FREEZE_BIT))
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.h b/drivers/th=
+ermal/ti-soc-thermal/ti-bandgap.h
+> index b3adf72..b2da3fc 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+> @@ -318,6 +318,9 @@ struct ti_temp_sensor {
+>    * TI_BANDGAP_FEATURE_HISTORY_BUFFER - used when the bandgap device=
+ features
+>    *	a history buffer of temperatures.
+>    *
+> + * TI_BANDGAP_FEATURE_ERRATA_814 - used to workaorund when the bandg=
+ap device
+> + *	has Errata 814
+> + *
+>    * TI_BANDGAP_HAS(b, f) - macro to check if a bandgap device is cap=
+able of a
+>    *      specific feature (above) or not. Return non-zero, if yes.
+>    */
+> @@ -331,6 +334,7 @@ struct ti_temp_sensor {
+>   #define TI_BANDGAP_FEATURE_FREEZE_BIT		BIT(7)
+>   #define TI_BANDGAP_FEATURE_COUNTER_DELAY	BIT(8)
+>   #define TI_BANDGAP_FEATURE_HISTORY_BUFFER	BIT(9)
+> +#define TI_BANDGAP_FEATURE_ERRATA_814		BIT(10)
+>   #define TI_BANDGAP_HAS(b, f)			\
+>   			((b)->conf->features & TI_BANDGAP_FEATURE_ ## f)
+>
+>
