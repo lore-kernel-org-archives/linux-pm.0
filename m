@@ -1,97 +1,121 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Unreliable hibernation on Lenovo x230 (regression)
-Date: Tue, 07 Apr 2015 01:28:04 +0200
-Message-ID: <1485724.gKixXC7XHQ@vostro.rjw.lan>
-References: <20150401214743.20fbe2c5@porcupinefactory.org> <3344848.SIHh1OazTO@vostro.rjw.lan> <20150405072613.GD27614@linux-rxt1.site>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH] [RFC] PM / Domains: multiple states
+Date: Mon, 06 Apr 2015 17:06:57 -0700
+Message-ID: <7hvbh8sswu.fsf@deeprootsystems.com>
+References: <1427963699-2638-1-git-send-email-ahaslam@baylibre.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59143 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752673AbbDFXDn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Apr 2015 19:03:43 -0400
-In-Reply-To: <20150405072613.GD27614@linux-rxt1.site>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:35130 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752688AbbDGAHA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Apr 2015 20:07:00 -0400
+Received: by pddn5 with SMTP id n5so59937465pdd.2
+        for <linux-pm@vger.kernel.org>; Mon, 06 Apr 2015 17:07:00 -0700 (PDT)
+In-Reply-To: <1427963699-2638-1-git-send-email-ahaslam@baylibre.com>
+	(ahaslam@baylibre.com's message of "Thu, 2 Apr 2015 10:34:59 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: joeyli <jlee@suse.com>
-Cc: rhn <kebuac.rhn@porcupinefactory.org>, Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>, joeyli.kernel@gmail.com, linux-pm@vger.kernel.org
+To: ahaslam@baylibre.com
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, ulf.hansson@linaro.org
 
-On Sunday, April 05, 2015 03:26:13 PM joeyli wrote:
-> On Fri, Apr 03, 2015 at 11:43:30PM +0200, Rafael J. Wysocki wrote:
-> > On Friday, April 03, 2015 05:58:25 PM rhn wrote:
-> > > On Thu, 2 Apr 2015 17:28:05 +0200
-> > > Pavel Machek <pavel@ucw.cz> wrote:
-> > > 
-> > > > On Wed 2015-04-01 21:47:43, rhn wrote:
-> > > > > Hello,
-> > > > > 
-> > > > > Between kernel 3.16 and 3.17, a regression has been introduced where the first hibernation after regular shutdown always fails to resume. Subsequent hibernations succeed.
-> > > > > 
-> > > > > The system is a Lenovo x230 with Intel i5, booting with EFI, with the hibernate partition located on a secondary SSD drive. Installed system is Fedora 20, hibernation and reboots were issued using the KDE shutdown dialog.
-> > > > > 
-> > > > > I have tracked the problem to first appear in the commit
-> > > > > e67ee10190e69332f929bdd6594a312363321a66	Merge branches 'pm-sleep', 'pm-cpufreq' and 'pm-cpuidle'
-> > > > > 
-> > > > > The problem itself manifests in dmesg as follows (system was first
-> > > > > restarted, then hibernated - this log is from the subsequent
-> > > > resume):
-> > > > 
-> > > > Ok, can you try to disable cpufreq and cpuidle, and then try if it
-> > > > reproduces?
-> > > > 
-> > > > At that point, this is the candidate:
-> > > > 
-> > > > commit e67ee10190e69332f929bdd6594a312363321a66
-> > > > Merge: 21c806d 84c91b7 39c8bba 372ba8c
-> > > > Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > Date:   Mon Aug 11 23:19:48 2014 +0200
-> > > > 
-> > > >     Merge branches 'pm-sleep', 'pm-cpufreq' and 'pm-cpuidle'
-> > > > 
-> > > >     * pm-sleep:
-> > > >           PM / hibernate: avoid unsafe pages in e820 reserved regions
-> > > > 
-> > > > ...
-> > > > Alternatively, you can just try to revert
-> > > > 
-> > > > commit 84c91b7ae07c62cf6dee7fde3277f4be21331f85
-> > > > Author: Lee, Chun-Yi <joeyli.kernel@gmail.com>
-> > > > Date:   Mon Aug 4 23:23:21 2014 +0800
-> > > > 
-> > > >     PM / hibernate: avoid unsafe pages in e820 reserved regions
-> > > > 
-> > > >     When the machine doesn't well handle the e820 persistent when
-> > > >     hibernate
-> > > >         resuming, then it may cause page fault when writing image to
-> > > >     snapshot
-> > > >         buffer:
-> > > > 
-> > > > 
-> > > > ...
-> > > > 
-> > > > Thanks,
-> > > > 									Pavel
-> > > 
-> > > I tried to disable CONFIG_CPU_IDLE and CONFIG_CPU_FREQ, however for some reason I could only disable CONFIG_CPU_FREQ.
-> > > 
-> > > The bug persisted.
-> > > 
-> > > Reverting the commit 84c91b7 on top of e67ee10 fixes the problem.
-> > > 
-> > > I created a copy of the bug report here: https://bugzilla.kernel.org/show_bug.cgi?id=96111
-> > 
-> > Please check if 4.0-rc6 still has the problem and if reverting the commit in
-> > question on top of it fixes the problem too.
-> > 
-> > 
-> 
-> I think just revert 84c91b7ae until Yinghai Lu's patches merged to v4.1.                                                                                                                 
-> I will resend 84c91b7ae patch until Yinghai Lu's patches merged.                                                                                                                         
+ahaslam@baylibre.com writes:
 
-OK, I'll queue up a revert of 84c91b7ae as a fix for 4.0.
+> From: Axel Haslam <ahaslam@baylibre.com>
+>
+> Some architectures may have intermediate
+> power levels between on and off. each state in
+> between may have its own set of registers to
+> save and restore, and procedures to put the power
+> domain into that state.
 
+Maybe a bit more description is needed here, something like:
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+...the most common of these being a "retention" state, where clocks are
+gated, and voltage is lowered to a retention voltage so the domain is
+not technically "off" (as in zero volts) but is in a low-power state,
+with all or part of the logic/memory retained.
+
+For those more familiar with ACPI, you might also mention the simliarity
+to ACPI D states:
+http://en.wikipedia.org/wiki/Advanced_Configuration_and_Power_Interface#Device_states
+
+> This patch adds the ability to declare multiple
+> states for a given generic power domain, the
+> idea is that the deepest state will be entered which
+> does not violate any of the device or sub-domain
+> latency constraints.
+>
+> for this purpose, the device save and restore callbacks
+> take in a new parameter "state" which is the state
+> the domain is trying to go to. The implementation
+> of these callbacks can use this to save and restore
+> the appropriate registers. Also the power on and off
+> callbacks and latencies are now tied to a particular
+> state.
+
+The unfortunate problem here is that the underlying framework (runtime
+PM) doesn't yet know about multiple power states, so I'm not sure (yet)
+how to make this work at the genpd level without also changing runtime
+PM understand the concept of multiple power states.  
+
+So, maybe I'm missing something, but I'm not yet sure how this would be
+useful without the underlying support in runtime PM also.
+
+> States should be declared in ascending order from shallowest
+> to deepest, deepest meaning the state which takes longer
+> to enter and exit. The declaration would look something like:
+>
+> 	struct genpd_power_state states[3] = {
+> 		{
+> 			.name= "LOW_POWER_1",
+> 			.power_off = arch_callback_lp1,
+> 			.power_on = arch_callback_lp1,
+> 			.power_off_latency_ns = 1000000,
+> 			.power_on_latency_ns = 1000000,
+>
+> 		},
+> 		{
+> 			.name= "LOW_POWER_2",
+> 			.power_off = arch_callback_lp2,
+> 			.power_on = arch_callback_lp2,
+> 			.power_off_latency_ns = 2000000,
+> 			.power_on_latency_ns = 2000000,
+>
+> 		},
+> 		{
+> 			.name= "OFF",
+> 			.power_off = arch_callback_off,
+> 			.power_on = arch_callback_off,
+> 			.power_off_latency_ns = 4000000,
+> 			.power_on_latency_ns = 4000000,
+>
+> 		},
+> 	};
+
+We might also need a per-state flag stating whether context is lost, so
+we know whether the save/restore state stuff actually needs to be
+called.
+
+[...]
+
+> @@ -118,14 +120,33 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+>  			link->master->max_off_time_changed = true;
+>  
+>  		genpd->max_off_time_changed = false;
+> -		genpd->cached_power_down_ok = false;
+> -		genpd->max_off_time_ns = -1;
+> +		/*
+> +		 * invalidate the cached values for every state
+> +		 */
+> +		for (i = 0; i < genpd->state_count; i++) {
+> +			genpd->states[i].cached_power_down_ok =
+> +				GPD_CACHED_UNKNOWN;
+> +			genpd->max_off_time_ns = -1;
+> +		}
+> +
+
+I'm not quite understanding the need for these new GPD_CACHED_* flags,
+and this change isn't described in the changelog.
+
+Kevin
