@@ -1,62 +1,65 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [PATCH 6/7] thermal: Use bool function return values of
- true/false not 1/0
-Date: Tue, 7 Apr 2015 05:43:02 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B909263014CE7E8@SHSMSX101.ccr.corp.intel.com>
-References: <cover.1427736972.git.joe@perches.com>
- <04644fca79a1987084bc46fca59c419fab0a4448.1427736972.git.joe@perches.com>
+From: keita kobayashi <keita.kobayashi.ym@renesas.com>
+Subject: Re: [RFC/PATCH 1/4] ARM: cpuidle: Add cpuidle support for R-Car Gen2
+ series
+Date: Tue, 7 Apr 2015 14:48:04 +0900
+Message-ID: <55236F94.40909@renesas.com>
+References: <1428292244-2160-1-git-send-email-keita.kobayashi.ym@renesas.com> <1428292244-2160-2-git-send-email-keita.kobayashi.ym@renesas.com> <20150407014407.GC27486@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:45392 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750756AbbDGFpN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Apr 2015 01:45:13 -0400
-In-Reply-To: <04644fca79a1987084bc46fca59c419fab0a4448.1427736972.git.joe@perches.com>
-Content-Language: en-US
+Received: from relmlor3.renesas.com ([210.160.252.173]:46371 "EHLO
+	relmlie2.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750940AbbDGFsV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Apr 2015 01:48:21 -0400
+In-Reply-To: <20150407014407.GC27486@verge.net.au>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Simon Horman <horms@verge.net.au>
+Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, magnus.damm@gmail.com
 
+Hi Simon
 
+Thank you for your feedback.
 
-> -----Original Message-----
-> From: Joe Perches [mailto:joe@perches.com]
-> Sent: Tuesday, March 31, 2015 1:43 AM
-> To: linux-kernel@vger.kernel.org; Zhang, Rui; Eduardo Valentin
-> Cc: linux-pm@vger.kernel.org
-> Subject: [PATCH 6/7] thermal: Use bool function return values of true/false not
-> 1/0
-> Importance: High
+(2015/04/07 10:44), Simon Horman wrote:
+
+> On Mon, Apr 06, 2015 at 12:50:41PM +0900, Keita Kobayashi wrote:
+>> Define ARM_RCAR_CPUIDLE config item to enable cpuidle
+>> support for Renesas R-Car Gen2 SoCs.
+>>
+>> Signed-off-by: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
+>> ---
+>>  drivers/cpuidle/Kconfig.arm | 8 ++++++++
+>>  1 file changed, 8 insertions(+)
+>>
+>> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+>> index 21340e0..ea9d61e 100644
+>> --- a/drivers/cpuidle/Kconfig.arm
+>> +++ b/drivers/cpuidle/Kconfig.arm
+>> @@ -74,3 +74,11 @@ config ARM_MVEBU_V7_CPUIDLE
+>>  	depends on ARCH_MVEBU && !ARM64
+>>  	help
+>>  	  Select this to enable cpuidle on Armada 370, 38x and XP processors.
+>> +
+>> +config ARM_RCAR_CPUIDLE
+>> +	bool "CPU Idle Driver for the R-Car SoCs"
+>> +	depends on ARCH_RCAR_GEN2
+>> +	select ARM_CPUIDLE
+>> +	select ARM_CPU_SUSPEND
+>> +	help
+>> +	  Select this to enable cpuidle for R-Car SoCs
 > 
-> Use the normal return values for bool functions
+> I hate to be the harbinger of bad news but I don't believe this will
+> reliably work because ARM_CPUIDLE selects DT_IDLE_STATES and I believe that
+> Kconfig does not support recursive selection[1].
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
-
-Applied.
-
-Thanks,
-rui
-> ---
->  drivers/thermal/thermal_core.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> [1] http://lkml.iu.edu/hypermail/linux/kernel/1412.0/04004.html
 > 
-> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-> index 9e20e4d..749d41a 100644
-> --- a/drivers/thermal/thermal_core.h
-> +++ b/drivers/thermal/thermal_core.h
-> @@ -115,7 +115,7 @@ static inline int of_thermal_get_ntrips(struct
-> thermal_zone_device *tz)  static inline bool of_thermal_is_trip_valid(struct
-> thermal_zone_device *tz,
->  					    int trip)
->  {
-> -	return 0;
-> +	return false;
->  }
->  static inline const struct thermal_trip *  of_thermal_get_trip_points(struct
-> thermal_zone_device *tz)
-> --
-> 2.1.2
+> I suggest changing select ARM_CPUIDLE to depends on ARM_CPUIDLE.
+> I would be tempted to make the same change for ARM_CPU_SUSPEND too.
 
+I will fix it with V2 patch.
+
+Regards.
+Keita Kobayashi
