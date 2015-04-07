@@ -1,39 +1,47 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 1/6] Revert "staging: board: disable as it breaks the build"
-Date: Tue, 7 Apr 2015 15:16:54 +0200
-Message-ID: <CAMuHMdX1uHq23h_qsq2csTSYbAhN9ZDdMviDi=KtbLuWucYWXA@mail.gmail.com>
-References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
-	<1428064923-24950-2-git-send-email-geert+renesas@glider.be>
-	<20150406004031.GD1841@verge.net.au>
+From: Alasdair G Kergon <agk@redhat.com>
+Subject: Re: [dm-devel] [PATCH 3/3] dm-crypt: Adds support for wiping key
+	when doing suspend/hibernation
+Date: Tue, 7 Apr 2015 14:55:52 +0100
+Message-ID: <20150407135552.GA32694@agk-dp.fab.redhat.com>
+References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com> <1428254419-7334-4-git-send-email-pali.rohar@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150406004031.GD1841@verge.net.au>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Magnus Damm <damm+renesas@opensource.se>, Arnd Bergmann <arnd@arndb.de>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Marc Zyngier <marc.zyngier@arm.com>, driverdevel <devel@driverdev.osuosl.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:52902 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752825AbbDGNzz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Apr 2015 09:55:55 -0400
+Content-Disposition: inline
+In-Reply-To: <1428254419-7334-4-git-send-email-pali.rohar@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>
+Cc: Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>, Neil Brown <neilb@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-raid@vger.kernel.org, dm-devel@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Mon, Apr 6, 2015 at 2:40 AM, Simon Horman <horms@verge.net.au> wrote:
-> On Fri, Apr 03, 2015 at 02:41:58PM +0200, Geert Uytterhoeven wrote:
->> This reverts commit d13778d537a0ed6115d2a79a942af999cfb8eec6.
->>
->> Commit 13c11072536f2613 ("staging:board: remove unnecessary function")
->> fixed the build of drivers/staging/board/board.c.
->>
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->
-> Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
+On Sun, Apr 05, 2015 at 07:20:19PM +0200, Pali Roh=E1r wrote:
+> This patch adds dm message commands and option strings to optionally =
+wipe key
+> from dm-crypt device before entering suspend or hibernate state.
+=20
+Try to avoid 0/1 - use descriptive options instead.=20
+E.g. key wipe_on_hibernation / key retain_on_hibernation  (message)
+     wipe_key_on_hiberation ('dmsetup table' - don't forget the reporti=
+ng interface!)
 
-Acked-by? Reviewed-by? Tested-by? Rejected-by?
+Have you tested against every state the driver might be in at the time =
+of
+suspend/hibernation?
 
-Gr{oetje,eeting}s,
+> +static void crypt_suspend_and_wipe_key(struct crypt_config *cc)
+> +{
+> +	dm_suspend_md(dm_table_get_md(cc->ti->table));
 
-                        Geert
+I'm not particularly keen on this - silently ignoring expected error st=
+ates
+like -EINVAL rather than checking first and not calling the function at=
+ all
+when it's known not to be needed.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Alasdair
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
