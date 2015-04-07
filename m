@@ -1,166 +1,108 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 12/13] thermal: Add support for hardware-tracked trip
- points
-Date: Mon, 6 Apr 2015 19:40:28 -0700
-Message-ID: <20150407024027.GG4648@localhost.localdomain>
+Subject: Re: [PATCH 13/13] thermal: of: implement .set_trips for device tree
+ thermal zones
+Date: Mon, 6 Apr 2015 19:43:08 -0700
+Message-ID: <20150407024307.GH4648@localhost.localdomain>
 References: <1427385240-6086-1-git-send-email-s.hauer@pengutronix.de>
- <1427385240-6086-13-git-send-email-s.hauer@pengutronix.de>
+ <1427385240-6086-14-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="9/eUdp+dLtKXvemk"
+	protocol="application/pgp-signature"; boundary="/9ZOS6odDaRI+0hI"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:36018 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752884AbbDGCkU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Apr 2015 22:40:20 -0400
+Received: from mail-pd0-f181.google.com ([209.85.192.181]:35077 "EHLO
+	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752884AbbDGCnA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Apr 2015 22:43:00 -0400
 Content-Disposition: inline
-In-Reply-To: <1427385240-6086-13-git-send-email-s.hauer@pengutronix.de>
+In-Reply-To: <1427385240-6086-14-git-send-email-s.hauer@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sascha Hauer <s.hauer@pengutronix.de>
 Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
 
---9/eUdp+dLtKXvemk
+--/9ZOS6odDaRI+0hI
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Mar 26, 2015 at 04:53:59PM +0100, Sascha Hauer wrote:
-> This adds support for hardware-tracked trip points to the device tree
-> thermal sensor framework.
->=20
-> The framework supports an arbitrary number of trip points. Whenever
-> the current temperature is updated, the trip points immediately
-> below and above the current temperature are found. A .set_trips
-> callback is then called with the temperatures. If there is no trip
-> point above or below the current temperature, the passed trip
-> temperature will be ULONG_MAX or 0 respectively. In this callback,
-> the driver should program the hardware such that it is notified
-> when either of these trip points are triggered. When a trip point
-> is triggered, the driver should call `thermal_zone_device_update'
-> for the respective thermal zone. This will cause the trip points
-> to be updated again.
->=20
-> If .set_trips is not implemented, the framework behaves as before.
->=20
-> This patch is based on an earlier version from Mikko Perttunen
-> <mikko.perttunen@kapsi.fi>
->=20
+On Thu, Mar 26, 2015 at 04:54:00PM +0100, Sascha Hauer wrote:
 > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 > ---
->  drivers/thermal/thermal_core.c | 41 ++++++++++++++++++++++++++++++++++++=
-+++++
->  include/linux/thermal.h        |  3 +++
->  2 files changed, 44 insertions(+)
+>  drivers/thermal/of-thermal.c | 12 ++++++++++++
+>  include/linux/thermal.h      |  1 +
+>  2 files changed, 13 insertions(+)
+
+Can you please include at least one user of this call back in your patch
+series?
+
 >=20
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_cor=
-e.c
-> index dcdf45e..7138f8f 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -434,6 +434,45 @@ int thermal_zone_get_temp(struct thermal_zone_device=
- *tz, unsigned long *temp)
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> index 9b63193..a3de5de 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -97,6 +97,17 @@ static int of_thermal_get_temp(struct thermal_zone_dev=
+ice *tz,
+>  	return data->ops->get_temp(data->sensor_data, temp);
 >  }
->  EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
 > =20
-> +static void thermal_zone_set_trips(struct thermal_zone_device *tz)
+> +static int of_thermal_set_trips(struct thermal_zone_device *tz,
+> +			       unsigned long low, unsigned long high)
 > +{
-> +	unsigned long low =3D 0;
-> +	unsigned long high =3D ULONG_MAX;
-> +	unsigned long trip_temp, hysteresis;
-> +	unsigned long temp =3D tz->temperature;
-> +	int i;
+> +	struct __thermal_zone *data =3D tz->devdata;
 > +
-> +	if (!tz->ops->set_trips)
-> +		return;
+> +	if (!data->ops || !data->ops->set_trips)
+> +		return -ENOSYS;
 > +
-> +	/* No need to change trip points */
-> +	if (temp > tz->prev_low_trip && temp < tz->prev_high_trip)
-> +		return;
-> +
-> +	for (i =3D 0; i < tz->trips; i++) {
-> +		unsigned long trip_low;
-> +
-> +		tz->ops->get_trip_temp(tz, i, &trip_temp);
-> +		tz->ops->get_trip_hyst(tz, i, &hysteresis);
-> +
-> +		trip_low =3D trip_temp - hysteresis;
-> +
-> +		if (trip_low < temp && trip_low > low)
-> +			low =3D trip_low;
-> +
-> +		if (trip_temp > temp && trip_temp < high)
-> +			high =3D trip_temp;
-> +	}
-> +
-> +	tz->prev_low_trip =3D low;
-> +	tz->prev_high_trip =3D high;
-> +
-> +	dev_dbg(&tz->device, "new temperature boundaries: %lu < x < %lu\n",
-> +			low, high);
-> +
-> +	tz->ops->set_trips(tz, low, high);
+> +	return data->ops->set_trips(data->sensor_data, low, high);
 > +}
 > +
->  void thermal_zone_device_update(struct thermal_zone_device *tz)
->  {
->  	int count;
-> @@ -460,6 +499,8 @@ void thermal_zone_device_update(struct thermal_zone_d=
-evice *tz)
->  	dev_dbg(&tz->device, "last_temperature=3D%lu, current_temperature=3D%lu=
-\n",
->  				tz->last_temperature, tz->temperature);
+>  /**
+>   * of_thermal_get_ntrips - function to export number of available trip
+>   *			   points.
+> @@ -367,6 +378,7 @@ static int of_thermal_get_crit_temp(struct thermal_zo=
+ne_device *tz,
 > =20
-> +	thermal_zone_set_trips(tz);
-
-Do we need to lock the tz->lock to perform this operation of setting the
-hardware trip points?
-
-> +
->  	for (count =3D 0; count < tz->trips; count++)
->  		handle_thermal_trip(tz, count);
->  }
+>  static const struct thermal_zone_device_ops of_thermal_ops =3D {
+>  	.get_temp =3D of_thermal_get_temp,
+> +	.set_trips =3D of_thermal_set_trips,
+>  	.get_trend =3D of_thermal_get_trend,
+>  	.set_emul_temp =3D of_thermal_set_emul_temp,
+> =20
 > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index ac2897c..b870702 100644
+> index b870702..84a5b5d 100644
 > --- a/include/linux/thermal.h
 > +++ b/include/linux/thermal.h
-> @@ -87,6 +87,7 @@ struct thermal_zone_device_ops {
->  	int (*unbind) (struct thermal_zone_device *,
->  		       struct thermal_cooling_device *);
->  	int (*get_temp) (struct thermal_zone_device *, unsigned long *);
-> +	int (*set_trips) (struct thermal_zone_device *, unsigned long, unsigned=
- long);
->  	int (*get_mode) (struct thermal_zone_device *,
->  			 enum thermal_device_mode *);
->  	int (*set_mode) (struct thermal_zone_device *,
-> @@ -183,6 +184,8 @@ struct thermal_zone_device {
->  	unsigned long temperature;
->  	unsigned long last_temperature;
->  	unsigned long emul_temperature;
-> +	unsigned long prev_low_trip;
-> +	unsigned long prev_high_trip;
->  	int passive;
->  	unsigned int forced_passive;
->  	const struct thermal_zone_device_ops *ops;
+> @@ -276,6 +276,7 @@ struct thermal_genl_event {
+>   */
+>  struct thermal_zone_of_device_ops {
+>  	int (*get_temp)(void *, unsigned long *);
+> +	int (*set_trips)(void *, unsigned long, unsigned long);
+
+Could you please keep the kernel doc entry up to date? I know we donot
+have entries for all structs, but I am working in improving this.
+
+>  	int (*get_trend)(void *, int trend, enum thermal_trend *);
+>  	int (*set_emul_temp)(void *, unsigned long);
+>  };
 > --=20
 > 2.1.4
 >=20
 
---9/eUdp+dLtKXvemk
+--/9ZOS6odDaRI+0hI
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQEcBAEBAgAGBQJVI0OXAAoJEMLUO4d9pOJWl4UH/0sK7HEA1M6SkZYyb1nTiyJM
-hu3WltO7xC8/nwej2OsLfh5G/zmwvqWNGUYPxbQrmgpJPSvE+DOAyuHXRLY/lCt2
-FH9aNFTtIfNn6WhmsMBSy3rFVxCkZ8BNVZSZPHelKOXiQLDDpBWtnZ08F0rPT5wH
-U/AZmKb2lNJj3iqQ+7DsPY7O96mkmq0QsCb6p7NFzXGakfWfODJswjBuGmJa9RTt
-YTr/B07+/ou9uoQMi/ehfy5SS/UEJmZNsTatvpvTwU2nI7fTxxiBWmJClS2Zxfas
-OoV7UbRGEBCI9gNpo3eXTcnmmo0z4erhbi4C82kjm+ViYBxFujrTXA5QetFgppo=
-=vY1O
+iQEcBAEBAgAGBQJVI0Q4AAoJEMLUO4d9pOJW5UcH/01txPxO8jBRWLK1cVn8m66T
+hQkmPAZba9scUBJUD40Ez1dY2RVO9Fp61Szd2CZed8sYCljaPQ69K5gQHceGdZPN
+ry/jq9YZlLvnRJ2tsIvHaNWkhrUU5OS2YRefqeSeaLIVpTHhv9dm4kF8t90DOy6K
+YEw9hhFRn/hl0XYYTMhSrrs/cFU6UtnkG8IAzxbFd6p+a/EhLZ+SoBpMxMEW2avl
+sRsuM21JmUD2FsP+XqRHcQ2U8ydZPM+HHnM3V+NEpGtZhmyshY2TBzLhm476e2cf
+r1kpE6uYvc9f2/51PhvJ+9UjM+ZqwLTdLPcTJyBRjkV4ZZgZm+YizI95NkKUGX0=
+=DHYs
 -----END PGP SIGNATURE-----
 
---9/eUdp+dLtKXvemk--
+--/9ZOS6odDaRI+0hI--
