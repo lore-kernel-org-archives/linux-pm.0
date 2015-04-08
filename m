@@ -1,125 +1,199 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH] ARM: tegra: cpuidle: implement
- cpuidle_state.enter_freeze()
-Date: Wed, 8 Apr 2015 12:55:46 +0100
-Message-ID: <20150408115546.GA24271@red-moon>
-References: <1428490480-10144-1-git-send-email-tomeu.vizoso@collabora.com>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: [PATCH V4 1/3] Thermal: initialize thermal zone device correctly
+Date: Wed, 8 Apr 2015 13:01:08 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B909263014CF6E2@SHSMSX101.ccr.corp.intel.com>
+References: <1428373476-14257-1-git-send-email-rui.zhang@intel.com>
+ <1428373476-14257-2-git-send-email-rui.zhang@intel.com>
+ <20150407024709.GI4648@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:50345 "EHLO foss.arm.com"
+Received: from mga03.intel.com ([134.134.136.65]:47402 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751364AbbDHLzz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 8 Apr 2015 07:55:55 -0400
-Content-Disposition: inline
-In-Reply-To: <1428490480-10144-1-git-send-email-tomeu.vizoso@collabora.com>
+	id S1751577AbbDHNBY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Apr 2015 09:01:24 -0400
+In-Reply-To: <20150407024709.GI4648@localhost.localdomain>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Russell King <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, Apr 08, 2015 at 11:54:38AM +0100, Tomeu Vizoso wrote:
-> This callback is expected to do the same as enter() only that all
-> non-wakeup IRQs are expected to be disabled.
 
-This is not true or at least it is misworded. The enter_freeze() function
-is expected to return from the state with IRQs disabled at CPU level, or
-put it differently it must not re-enable IRQs while executing since the
-tick is frozen.
 
-> It will be called when the system goes to suspend-to-idle and will
-> reduce power usage because CPUs won't be awaken for unnecessary IRQs.
+> -----Original Message-----
+> From: Eduardo Valentin [mailto:edubezval@gmail.com]
+> Sent: Tuesday, April 7, 2015 10:47 AM
+> To: Zhang, Rui
+> Cc: linux-pm@vger.kernel.org
+> Subject: Re: [PATCH V4 1/3] Thermal: initialize thermal zone device correctly
+> Importance: High
 > 
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  arch/arm/mach-tegra/cpuidle-tegra114.c | 31 ++++++++++++++++++++++++-------
->  1 file changed, 24 insertions(+), 7 deletions(-)
+> On Tue, Apr 07, 2015 at 10:24:34AM +0800, Zhang Rui wrote:
+> > After thermal zone device registered, as we have not read any
+> > temperature before, thus tz->temperature should not be 0, which
+> > actually means 0C, and thermal trend is not available.
+> > In this case, we need specially handling for the first
+> > thermal_zone_device_update().
+> >
+> > Both thermal core framework and step_wise governor is enhanced to handle
+> this.
+> >
+> > CC: <stable@vger.kernel.org> #3.18+
+> > Tested-by: Manuel Krause <manuelkrause@netscape.net>
+> > Tested-by: szegad <szegadlo@poczta.onet.pl>
+> > Tested-by: prash <prash.n.rao@gmail.com>
+> > Tested-by: amish <ammdispose-arch@yahoo.com>
+> > Tested-by: Matthias <morpheusxyz123@yahoo.de>
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 > 
-> diff --git a/arch/arm/mach-tegra/cpuidle-tegra114.c b/arch/arm/mach-tegra/cpuidle-tegra114.c
-> index f2b586d..ef06001 100644
-> --- a/arch/arm/mach-tegra/cpuidle-tegra114.c
-> +++ b/arch/arm/mach-tegra/cpuidle-tegra114.c
-> @@ -39,28 +39,44 @@ static int tegra114_idle_power_down(struct cpuidle_device *dev,
->  				    struct cpuidle_driver *drv,
->  				    int index)
->  {
-> -	local_fiq_disable();
-> -
->  	tegra_set_cpu_in_lp2();
->  	cpu_pm_enter();
->  
-> -	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
-> -
->  	call_firmware_op(prepare_idle);
->  
->  	/* Do suspend by ourselves if the firmware does not implement it */
->  	if (call_firmware_op(do_idle, 0) == -ENOSYS)
->  		cpu_suspend(0, tegra30_sleep_cpu_secondary_finish);
->  
-> -	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
-> -
->  	cpu_pm_exit();
->  	tegra_clear_cpu_in_lp2();
->  
-> +	return index;
-> +}
-> +
-> +static int tegra114_idle_enter(struct cpuidle_device *dev,
-> +			       struct cpuidle_driver *drv,
-> +			       int index)
-> +{
-> +	local_fiq_disable();
-> +
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
-> +
-> +	index = tegra114_idle_power_down(dev, drv, index);
-> +
-> +	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
-> +
->  	local_fiq_enable();
->  
->  	return index;
->  }
-> +
-> +static void tegra114_idle_enter_freeze(struct cpuidle_device *dev,
-> +				       struct cpuidle_driver *drv,
-> +				       int index)
-> +{
-> +	tegra114_idle_power_down(dev, drv, index);
-
-Cool. So if the problem is FIQs, you don't disabled them on entry
-which means you enter the "frozen" state with FIQs enabled and tick frozen,
-unless I am missing something.
-
-The question here is: are we allowed to enable FIQs before returning
-from an enter_freeze() call (and to enter it with FIQs enabled) ?
-
-If we are not your code here certainly does not solve the issue, since
-it does _not_ disable FIQs upon enter_freeze call anyway.
-
-Lorenzo
-
-> +}
->  #endif
->  
->  static struct cpuidle_driver tegra_idle_driver = {
-> @@ -71,7 +87,8 @@ static struct cpuidle_driver tegra_idle_driver = {
->  		[0] = ARM_CPUIDLE_WFI_STATE_PWR(600),
->  #ifdef CONFIG_PM_SLEEP
->  		[1] = {
-> -			.enter			= tegra114_idle_power_down,
-> +			.enter			= tegra114_idle_enter,
-> +			.enter_freeze		= tegra114_idle_enter_freeze,
->  			.exit_latency		= 500,
->  			.target_residency	= 1000,
->  			.power_usage		= 0,
-> -- 
-> 2.3.4
+> Can you please consider the comments I made on V3?
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Sorry, I missed your previous comment.
+
+> Summary:
 > 
+> 1. Change initialized to trend_valid
+
+I don't think it is proper to call it "trend_valid" because in the case that cooling device
+is registered after thermal zone (the problem pointed out in patch 3/3),
+the new created thermal_instance needs to be set properly, and the trend is valid
+at this time actually.
+
+IMO, thermal_instance->initialized just means if the thermal instance is evaluated for
+the first time or not, and if yes, we need some special handling.
+
+> 2. return next_target earlier in the get_target_state, so the behavior is
+> consistent.
+
+Agreed. Will fix in next version.
+
+Thanks,
+rui
+> 
+> > ---
+> >  drivers/thermal/step_wise.c    | 15 +++++++++++++--
+> >  drivers/thermal/thermal_core.c | 19 +++++++++++++++++--
+> > drivers/thermal/thermal_core.h |  1 +
+> >  include/linux/thermal.h        |  3 +++
+> >  4 files changed, 34 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+> > index 5a0f12d..c2bb37c 100644
+> > --- a/drivers/thermal/step_wise.c
+> > +++ b/drivers/thermal/step_wise.c
+> > @@ -63,6 +63,16 @@ static unsigned long get_target_state(struct
+> thermal_instance *instance,
+> >  	next_target = instance->target;
+> >  	dev_dbg(&cdev->device, "cur_state=%ld\n", cur_state);
+> >
+> > +	if (!instance->initialized) {
+> > +		if (throttle) {
+> > +			next_target = (cur_state + 1) >= instance->upper ?
+> > +					instance->upper :
+> > +					((cur_state + 1) < instance->lower ?
+> > +					instance->lower : (cur_state + 1));
+> > +		} else
+> > +			next_target = THERMAL_NO_TARGET;
+> > +	}
+> > +
+> >  	switch (trend) {
+> >  	case THERMAL_TREND_RAISING:
+> >  		if (throttle) {
+> > @@ -149,7 +159,8 @@ static void thermal_zone_trip_update(struct
+> thermal_zone_device *tz, int trip)
+> >  		dev_dbg(&instance->cdev->device, "old_target=%d,
+> target=%d\n",
+> >  					old_target, (int)instance->target);
+> >
+> > -		if (old_target == instance->target)
+> > +		if (instance->initialized &&
+> > +		    old_target == instance->target)
+> >  			continue;
+> >
+> >  		/* Activate a passive thermal instance */ @@ -161,7 +172,7
+> @@
+> > static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+> >  			instance->target == THERMAL_NO_TARGET)
+> >  			update_passive_instance(tz, trip_type, -1);
+> >
+> > -
+> > +		instance->initialized = true;
+> >  		instance->cdev->updated = false; /* cdev needs update */
+> >  	}
+> >
+> > diff --git a/drivers/thermal/thermal_core.c
+> > b/drivers/thermal/thermal_core.c index 174d3bc..9d6f71b 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -469,8 +469,22 @@ static void update_temperature(struct
+> thermal_zone_device *tz)
+> >  	mutex_unlock(&tz->lock);
+> >
+> >  	trace_thermal_temperature(tz);
+> > -	dev_dbg(&tz->device, "last_temperature=%d,
+> current_temperature=%d\n",
+> > -				tz->last_temperature, tz->temperature);
+> > +	if (tz->last_temperature == THERMAL_TEMP_INVALID)
+> > +		dev_dbg(&tz->device, "last_temperature N/A,
+> current_temperature=%d\n",
+> > +			tz->temperature);
+> > +	else
+> > +		dev_dbg(&tz->device, "last_temperature=%d,
+> current_temperature=%d\n",
+> > +			tz->last_temperature, tz->temperature); }
+> > +
+> > +static void thermal_zone_device_reset(struct thermal_zone_device *tz)
+> > +{
+> > +	struct thermal_instance *pos;
+> > +
+> > +	tz->temperature = THERMAL_TEMP_INVALID;
+> > +	tz->passive = 0;
+> > +	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
+> > +		pos->initialized = false;
+> >  }
+> >
+> >  void thermal_zone_device_update(struct thermal_zone_device *tz) @@
+> > -1574,6 +1588,7 @@ struct thermal_zone_device
+> *thermal_zone_device_register(const char *type,
+> >  	if (!tz->ops->get_temp)
+> >  		thermal_zone_device_set_polling(tz, 0);
+> >
+> > +	thermal_zone_device_reset(tz);
+> >  	thermal_zone_device_update(tz);
+> >
+> >  	return tz;
+> > diff --git a/drivers/thermal/thermal_core.h
+> > b/drivers/thermal/thermal_core.h index 0531c75..6d9ffa5 100644
+> > --- a/drivers/thermal/thermal_core.h
+> > +++ b/drivers/thermal/thermal_core.h
+> > @@ -41,6 +41,7 @@ struct thermal_instance {
+> >  	struct thermal_zone_device *tz;
+> >  	struct thermal_cooling_device *cdev;
+> >  	int trip;
+> > +	bool initialized;
+> >  	unsigned long upper;	/* Highest cooling state for this trip point */
+> >  	unsigned long lower;	/* Lowest cooling state for this trip point */
+> >  	unsigned long target;	/* expected cooling state */
+> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h index
+> > 5eac316..fb96b15 100644
+> > --- a/include/linux/thermal.h
+> > +++ b/include/linux/thermal.h
+> > @@ -40,6 +40,9 @@
+> >  /* No upper/lower limit requirement */
+> >  #define THERMAL_NO_LIMIT	((u32)~0)
+> >
+> > +/* use value, which < 0K, to indicate an invalid/uninitialized temperature */
+> > +#define THERMAL_TEMP_INVALID	-274000
+> > +
+> >  /* Unit conversion macros */
+> >  #define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
+> >  				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
+> > --
+> > 1.9.1
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> > the body of a message to majordomo@vger.kernel.org More majordomo info
+> > at  http://vger.kernel.org/majordomo-info.html
