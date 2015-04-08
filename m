@@ -1,199 +1,63 @@
 From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [PATCH V4 1/3] Thermal: initialize thermal zone device correctly
-Date: Wed, 8 Apr 2015 13:01:08 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B909263014CF6E2@SHSMSX101.ccr.corp.intel.com>
-References: <1428373476-14257-1-git-send-email-rui.zhang@intel.com>
- <1428373476-14257-2-git-send-email-rui.zhang@intel.com>
- <20150407024709.GI4648@localhost.localdomain>
+Subject: RE: [PATCH 1/3] Thermal: Intel SoC: DTS thermal IOSF core
+Date: Wed, 8 Apr 2015 13:07:46 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B909263014CF718@SHSMSX101.ccr.corp.intel.com>
+References: <1425330780-18957-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <744357E9AAD1214791ACBA4B0B909263014CE76D@SHSMSX101.ccr.corp.intel.com>
+	 <AF233D1473C1364ABD51D28909A1B1B733B39667@PGSMSX104.gar.corp.intel.com>
+ <1428435957.28880.59.camel@spandruv-DESK3.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:47402 "EHLO mga03.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:3478 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751577AbbDHNBY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Apr 2015 09:01:24 -0400
-In-Reply-To: <20150407024709.GI4648@localhost.localdomain>
+	id S1752639AbbDHNHw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 8 Apr 2015 09:07:52 -0400
+In-Reply-To: <1428435957.28880.59.camel@spandruv-DESK3.jf.intel.com>
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Ong, Boon Leong" <boon.leong.ong@intel.com>
+Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-
-
-> -----Original Message-----
-> From: Eduardo Valentin [mailto:edubezval@gmail.com]
-> Sent: Tuesday, April 7, 2015 10:47 AM
-> To: Zhang, Rui
-> Cc: linux-pm@vger.kernel.org
-> Subject: Re: [PATCH V4 1/3] Thermal: initialize thermal zone device correctly
-> Importance: High
-> 
-> On Tue, Apr 07, 2015 at 10:24:34AM +0800, Zhang Rui wrote:
-> > After thermal zone device registered, as we have not read any
-> > temperature before, thus tz->temperature should not be 0, which
-> > actually means 0C, and thermal trend is not available.
-> > In this case, we need specially handling for the first
-> > thermal_zone_device_update().
-> >
-> > Both thermal core framework and step_wise governor is enhanced to handle
-> this.
-> >
-> > CC: <stable@vger.kernel.org> #3.18+
-> > Tested-by: Manuel Krause <manuelkrause@netscape.net>
-> > Tested-by: szegad <szegadlo@poczta.onet.pl>
-> > Tested-by: prash <prash.n.rao@gmail.com>
-> > Tested-by: amish <ammdispose-arch@yahoo.com>
-> > Tested-by: Matthias <morpheusxyz123@yahoo.de>
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> 
-> Can you please consider the comments I made on V3?
-> 
-Sorry, I missed your previous comment.
-
-> Summary:
-> 
-> 1. Change initialized to trend_valid
-
-I don't think it is proper to call it "trend_valid" because in the case that cooling device
-is registered after thermal zone (the problem pointed out in patch 3/3),
-the new created thermal_instance needs to be set properly, and the trend is valid
-at this time actually.
-
-IMO, thermal_instance->initialized just means if the thermal instance is evaluated for
-the first time or not, and if yes, we need some special handling.
-
-> 2. return next_target earlier in the get_target_state, so the behavior is
-> consistent.
-
-Agreed. Will fix in next version.
-
-Thanks,
-rui
-> 
-> > ---
-> >  drivers/thermal/step_wise.c    | 15 +++++++++++++--
-> >  drivers/thermal/thermal_core.c | 19 +++++++++++++++++--
-> > drivers/thermal/thermal_core.h |  1 +
-> >  include/linux/thermal.h        |  3 +++
-> >  4 files changed, 34 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-> > index 5a0f12d..c2bb37c 100644
-> > --- a/drivers/thermal/step_wise.c
-> > +++ b/drivers/thermal/step_wise.c
-> > @@ -63,6 +63,16 @@ static unsigned long get_target_state(struct
-> thermal_instance *instance,
-> >  	next_target = instance->target;
-> >  	dev_dbg(&cdev->device, "cur_state=%ld\n", cur_state);
-> >
-> > +	if (!instance->initialized) {
-> > +		if (throttle) {
-> > +			next_target = (cur_state + 1) >= instance->upper ?
-> > +					instance->upper :
-> > +					((cur_state + 1) < instance->lower ?
-> > +					instance->lower : (cur_state + 1));
-> > +		} else
-> > +			next_target = THERMAL_NO_TARGET;
-> > +	}
-> > +
-> >  	switch (trend) {
-> >  	case THERMAL_TREND_RAISING:
-> >  		if (throttle) {
-> > @@ -149,7 +159,8 @@ static void thermal_zone_trip_update(struct
-> thermal_zone_device *tz, int trip)
-> >  		dev_dbg(&instance->cdev->device, "old_target=%d,
-> target=%d\n",
-> >  					old_target, (int)instance->target);
-> >
-> > -		if (old_target == instance->target)
-> > +		if (instance->initialized &&
-> > +		    old_target == instance->target)
-> >  			continue;
-> >
-> >  		/* Activate a passive thermal instance */ @@ -161,7 +172,7
-> @@
-> > static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
-> >  			instance->target == THERMAL_NO_TARGET)
-> >  			update_passive_instance(tz, trip_type, -1);
-> >
-> > -
-> > +		instance->initialized = true;
-> >  		instance->cdev->updated = false; /* cdev needs update */
-> >  	}
-> >
-> > diff --git a/drivers/thermal/thermal_core.c
-> > b/drivers/thermal/thermal_core.c index 174d3bc..9d6f71b 100644
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> > @@ -469,8 +469,22 @@ static void update_temperature(struct
-> thermal_zone_device *tz)
-> >  	mutex_unlock(&tz->lock);
-> >
-> >  	trace_thermal_temperature(tz);
-> > -	dev_dbg(&tz->device, "last_temperature=%d,
-> current_temperature=%d\n",
-> > -				tz->last_temperature, tz->temperature);
-> > +	if (tz->last_temperature == THERMAL_TEMP_INVALID)
-> > +		dev_dbg(&tz->device, "last_temperature N/A,
-> current_temperature=%d\n",
-> > +			tz->temperature);
-> > +	else
-> > +		dev_dbg(&tz->device, "last_temperature=%d,
-> current_temperature=%d\n",
-> > +			tz->last_temperature, tz->temperature); }
-> > +
-> > +static void thermal_zone_device_reset(struct thermal_zone_device *tz)
-> > +{
-> > +	struct thermal_instance *pos;
-> > +
-> > +	tz->temperature = THERMAL_TEMP_INVALID;
-> > +	tz->passive = 0;
-> > +	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
-> > +		pos->initialized = false;
-> >  }
-> >
-> >  void thermal_zone_device_update(struct thermal_zone_device *tz) @@
-> > -1574,6 +1588,7 @@ struct thermal_zone_device
-> *thermal_zone_device_register(const char *type,
-> >  	if (!tz->ops->get_temp)
-> >  		thermal_zone_device_set_polling(tz, 0);
-> >
-> > +	thermal_zone_device_reset(tz);
-> >  	thermal_zone_device_update(tz);
-> >
-> >  	return tz;
-> > diff --git a/drivers/thermal/thermal_core.h
-> > b/drivers/thermal/thermal_core.h index 0531c75..6d9ffa5 100644
-> > --- a/drivers/thermal/thermal_core.h
-> > +++ b/drivers/thermal/thermal_core.h
-> > @@ -41,6 +41,7 @@ struct thermal_instance {
-> >  	struct thermal_zone_device *tz;
-> >  	struct thermal_cooling_device *cdev;
-> >  	int trip;
-> > +	bool initialized;
-> >  	unsigned long upper;	/* Highest cooling state for this trip point */
-> >  	unsigned long lower;	/* Lowest cooling state for this trip point */
-> >  	unsigned long target;	/* expected cooling state */
-> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h index
-> > 5eac316..fb96b15 100644
-> > --- a/include/linux/thermal.h
-> > +++ b/include/linux/thermal.h
-> > @@ -40,6 +40,9 @@
-> >  /* No upper/lower limit requirement */
-> >  #define THERMAL_NO_LIMIT	((u32)~0)
-> >
-> > +/* use value, which < 0K, to indicate an invalid/uninitialized temperature */
-> > +#define THERMAL_TEMP_INVALID	-274000
-> > +
-> >  /* Unit conversion macros */
-> >  #define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
-> >  				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
-> > --
-> > 1.9.1
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> > the body of a message to majordomo@vger.kernel.org More majordomo info
-> > at  http://vger.kernel.org/majordomo-info.html
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogU3Jpbml2YXMgUGFuZHJ1
+dmFkYSBbbWFpbHRvOnNyaW5pdmFzLnBhbmRydXZhZGFAbGludXguaW50ZWwuY29tXQ0KPiBTZW50
+OiBXZWRuZXNkYXksIEFwcmlsIDgsIDIwMTUgMzo0NiBBTQ0KPiBUbzogT25nLCBCb29uIExlb25n
+DQo+IENjOiBaaGFuZywgUnVpOyBlZHViZXp2YWxAZ21haWwuY29tOyBsaW51eC1wbUB2Z2VyLmtl
+cm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzNdIFRoZXJtYWw6IEludGVsIFNvQzog
+RFRTIHRoZXJtYWwgSU9TRiBjb3JlDQo+IEltcG9ydGFuY2U6IEhpZ2gNCj4gDQo+IE9uIFR1ZSwg
+MjAxNS0wNC0wNyBhdCAwNjowMSArMDAwMCwgT25nLCBCb29uIExlb25nIHdyb3RlOg0KPiA+ID4t
+LS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID5Gcm9tOiBaaGFuZywgUnVpDQo+ID4gPlNl
+bnQ6IFR1ZXNkYXksIEFwcmlsIDcsIDIwMTUgMToyNSBQTQ0KPiA+ID5UbzogU3Jpbml2YXMgUGFu
+ZHJ1dmFkYTsgZWR1YmV6dmFsQGdtYWlsLmNvbQ0KPiA+ID5DYzogbGludXgtcG1Admdlci5rZXJu
+ZWwub3JnOyBPbmcsIEJvb24gTGVvbmcNCj4gPiA+U3ViamVjdDogUkU6IFtQQVRDSCAxLzNdIFRo
+ZXJtYWw6IEludGVsIFNvQzogRFRTIHRoZXJtYWwgSU9TRiBjb3JlDQo+ID4gPg0KPiA+ID5UaGUg
+cXVhcmsgdGhlcm1hbCBkcml2ZXINCj4gPiA+KGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcv
+cGF0Y2gvNTk2NTIxMS8pIGFsc28gdXNlcyBpb3NmLCBidXQgaXQgc2VlbXMNCj4gdGhhdCBpdCBj
+YW4gbm90IHJldXNlIHRoZSBjb2RlIGluIHRoaXMgcGF0Y2ggc2V0Lg0KPiA+ID4NCj4gPiA+U3Jp
+bml2YXMgYW5kIEJvb24gTGVvbmcsDQo+ID4gPkNhbiB5b3UgcGxlYXNlIGNoZWNrIGlmIGl0IGlz
+IHBvc3NpYmxlIHRvIHJlZmluZSB0aGUgY29kZT8NCj4gPiBBaGguLi4gdGhpcyB3YXMgZGlzY3Vz
+c2VkIGludGVybmFsIGJlZm9yZSB3aXRoIFNyaW5pdmFzLg0KPiA+IFRoZSBpbml0aWFsIHZlcnNp
+b24gd2FzIHVzaW5nIHRoZSBzYW1lIGRyaXZlciBmb3IgQmF5dHJhaWwgYnV0IGl0IGhhcyB0bw0K
+PiByZWZhY3RvcmVkIHRvDQo+ID4gc3VwcG9ydCBib3RoIEJZVCAmIFF1YXJrLg0KPiA+DQo+ID4g
+RnJvbSBteSBhc3Nlc3NtZW50LCB0aGVybWFsIERUUyBoYXJkd2FyZSBkaWZmZXJlbmNlIGZvciBC
+WVQgdnMgUXVhcmsgYXMNCj4gZm9sbG93Og0KPiA+IDEpIFF1YXJrIGlzIHVzaW5nIGRlZ3JlZSBD
+Lg0KPiA+ICAgICAgQllUIGlzIHVzaW5nIG1pbGxpLWRlZ3JlZSBCWVQuDQo+ID4gMikgUXVhcmsg
+ZG9lcyBub3Qgc3VwcG9ydCBEVFMgQXV4LCBQVFRTUyAmIFBUTUMuDQo+ID4gICAgICBCWVQgSFcg
+c3VwcG9ydHMgdGhlbS4NCj4gPiAzKSBRdWFyayBkb2VzIG5vdCBoYXZlIE1TUiByZWdpc3RlciBm
+b3IgVGogTWF4DQo+ID4gICAgIEJZVCBwcm92aWRlcyBNU1IgcmVnaXN0ZXIgZm9yIFRqIE1heCB2
+YWx1ZS4NCj4gPiA0KSBRdWFyayBkb2VzIG5vdCBoYXZlIEFQSUMgaW50ZXJydXB0IGZvciB0aGVy
+bWFsIHpvbmUgdXBkYXRlLA0KPiA+ICAgICAgaXQgZGVwZW5kcyBvbiBwb2xsaW5nIG1vZGUuDQo+
+ID4gICAgIEJZVCBoYXMgQVBJQyBpbnRlcnJ1cHQgZm9yIHVwZGF0aW5nIHRoZXJtYWwgem9uZQ0K
+PiA+DQo+ID4gU3Jpbml2YXMgc3VnZ2VzdGVkIGxhdGUgbGFzdCB5ZWFyIHRvIHNwaW4gbmV3IGRy
+aXZlciBmb3IgUXVhcmsgdGhlcm1hbCBkcml2ZXIuDQo+ID4gSSB0aGluayB0aGF0IGxvb2tpbmcg
+YXQgdGhlIHZhc3QgaGFyZHdhcmUgZGlmZmVyZW5jZSwgSSBhZ3JlZSB0aGF0IGl0DQo+ID4gd2ls
+bCBiZSBiZXR0ZXIgZm9yIFF1YXJrIHRvIGhhdmUgYSBzZXBhcmF0ZSB0aGVybWFsIGRyaXZlci4N
+Cj4gPg0KPiBXZSBoYXZlIGxvb2tlZCBpbnRvIHRoaXMgYXMgQm9vbiBzdWdnZXN0ZWQuIE90aGVy
+IHRoYW4gdXNpbmcgSU9TRiBmb3INCj4gY29tbXVuaWNhdGlvbiB0aGVyZSBpcyBub3QgbXVjaCBj
+b21tb25hbGl0eSAoVGhleSBkb24ndCBldmVuIGhhdmUgc2FtZQ0KPiByZWdpc3RlcnMpLiBTbyBJ
+IHN1Z2dlc3RlZCB0byBoYXZlIGEgc3BlY2lhbCBxdWFyayBkdHMgZHJpdmVyLg0KPiANCkkgc2Vl
+Lg0KQm90aCBwYXRjaGVzIHF1ZXVlZCBmb3IgNC4xDQoNClRoYW5rcywNCnJ1aQ0KPiBUaGFua3Ms
+DQo+IFNyaW5pdmFzDQo+IA0KPiA+IEhhcHB5IHRvIGRpc2N1c3MgZnVydGhlciB3aGljaCBpcyB0
+aGUgcmlnaHQgZGlyZWN0aW9uLiBUaGFua3MNCj4gDQoNCg==
