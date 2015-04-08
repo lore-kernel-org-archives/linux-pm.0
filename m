@@ -1,436 +1,488 @@
-From: ahaslam@baylibre.com
-Subject: [PATCH 1/2] [RFC] PM / Domains: add multiple states
-Date: Wed,  8 Apr 2015 17:42:04 +0200
-Message-ID: <1428507725-12205-2-git-send-email-ahaslam@baylibre.com>
-References: <1428507725-12205-1-git-send-email-ahaslam@baylibre.com>
+From: Jim Bos <jim876@xs4all.nl>
+Subject: Re: [PATCH] x86/ACPI: Fix regression caused by 16ee7b3dcc56
+Date: Wed, 08 Apr 2015 17:51:10 +0200
+Message-ID: <55254E6E.6000705@xs4all.nl>
+References: <55214A0D.9000404@xs4all.nl> <1428417244-32416-1-git-send-email-jiang.liu@linux.intel.com> <55240A82.30101@xs4all.nl> <5524BBEA.5040701@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="------------040008020208060203000804"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f44.google.com ([74.125.82.44]:34182 "EHLO
-	mail-wg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753343AbbDHPmY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Apr 2015 11:42:24 -0400
-Received: by wgbdm7 with SMTP id dm7so92664432wgb.1
-        for <linux-pm@vger.kernel.org>; Wed, 08 Apr 2015 08:42:23 -0700 (PDT)
-In-Reply-To: <1428507725-12205-1-git-send-email-ahaslam@baylibre.com>
+Received: from lb2-smtp-cloud6.xs4all.net ([194.109.24.28]:50598 "EHLO
+	lb2-smtp-cloud6.xs4all.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752115AbbDHPvP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Apr 2015 11:51:15 -0400
+In-Reply-To: <5524BBEA.5040701@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: khilman@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org
-Cc: bcousson@baylibre.com, Axel Haslam <ahaslam@baylibre.com>
+To: Jiang Liu <jiang.liu@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-From: Axel Haslam <ahaslam@baylibre.com>
+This is a multi-part message in MIME format.
+--------------040008020208060203000804
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 
-Some architectures may have intermediate
-power levels between on and off. each state in
-between may have its own set of registers to
-save and restore, and procedures to put the power
-domain into that state.
+On 04/08/2015 07:26 AM, Jiang Liu wrote:
+> On 2015/4/8 0:49, Jim Bos wrote:
+>> On 04/07/2015 04:34 PM, Jiang Liu wrote:
+>>> Hi Jim,
+>>> 	Could you please help to test this patch against v4.0-rc6?
+>>> Thanks!
+>>> Gerry
+>>>
+>>> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+>>> ---
+>>>  arch/x86/kernel/acpi/boot.c |   10 +++++++---
+>>>  1 file changed, 7 insertions(+), 3 deletions(-)
+>>>
+>>> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+>>> index 803b684676ff..f7f1fe7cd1b0 100644
+>>> --- a/arch/x86/kernel/acpi/boot.c
+>>> +++ b/arch/x86/kernel/acpi/boot.c
+>>> @@ -403,10 +403,14 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
+>>>  static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
+>>>  			   int polarity)
+>>>  {
+>>> -	int irq, node;
+>>> +	int i, irq, node;
+>>>  
+>>> -	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
+>>> -		return gsi;
+>>> +	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC) {
+>>> +		for (i = 0; i < nr_legacy_irqs(); i++)
+>>> +			if (isa_irq_to_gsi[i] == gsi)
+>>> +				return i;
+>>> +		return -1;
+>>> +	}
+>>>  
+>>>  	trigger = trigger == ACPI_EDGE_SENSITIVE ? 0 : 1;
+>>>  	polarity = polarity == ACPI_ACTIVE_HIGH ? 0 : 1;
+>>>
+>>
+>> Jiang,
+>>
+>> It definitely seems to be an improvement, using Virtualbox guest with
+>> your patch applied acpi-events work for all combinations (smp/nosmp
+>> with/without I/O APIC assigned to the guest).
+>>
+>> However, on the Dell laptop it still doesn't work.  To be sure I built a
+>> 3.16 kernel on this laptop and acpi_event power-button lid close/open
+>> are working just fine.
+>>
+>> Attached config + dmesg + cat /proc/interrupt for the working 3.16 case
+>> and still not working 4.0-rc6+patch case.
+> Hi Jim,
+> 	According to the attached files, you are building a UP kernel
+> with IOAPIC enabled. This configuration works well on my HP laptop.
+> And according to file IRQs from 4.0-rc6, it shows:
+>  9:          1    XT-PIC  acpi
+> That means kernel has received one ACPI SCI interrupt, but no
+> following-on ACPI SCI interrupts, I can't figure out the root cause yet.
+> 
+> So could you please help to dump ACPI tables from your dell laptop by
+> using acpidump utility?
+> Thanks!
+> Gerry
+> 
+>>
+>> Thanks,
+>> Jim
+>>
 
-This patch adds the ability to declare multiple
-states for a given generic power domain, the
-idea is that the deepest state will be entered which
-does not violate any of the device or sub-domain
-latency constraints.
+Gerry,
 
-for this purpose, the device save and restore callbacks
-take in a new parameter "state" which is the state
-the domain is trying to go to. The implementation
-of these callbacks can use this to save and restore
-the appropriate registers. Also the power on and off
-callbacks and latencies are now tied to a particular
-state.
+Attached acpidump (binary files and regular dump).
+I just tested 4.0-rc6+your_patch on another single core system, AMD
+geode board, and that works fine now!
+So indeed it seems there is something special about the dell laptop as
+that's the only system, I've available here, which still has an issue.
+_
+Jim
 
-States should be declared in ascending order from shallowest
-to deepest, deepest meaning the state which takes longer
-to enter and exit. The declaration would look something like:
 
-struct generic_pm_domain pd1 = {
-	.name = "pd1",
-	.states = {
-		[0] = {
-			.name= "D0",
-			.power_off = D0_power_off_cb,
-			.power_on = D0_power_on_cb,
-			.power_off_latency_ns = 1000000,
-			.power_on_latency_ns = 1000000,
-		},
-		[1] = {
-			.name= "D1",
-			.power_off = D1_power_off_cb,
-			.power_on = D1_power_on_cb,
-			.power_off_latency_ns = 2000000,
-			.power_on_latency_ns = 2000000,
-		},
-		[2] = {
-			.name= "D2",
-			.power_off = D2_power_off_cb,
-			.power_on = D2_power_on_cb,
-			.power_off_latency_ns = 3000000,
-			.power_on_latency_ns = 3000000,
-		},
-	},
+--------------040008020208060203000804
+Content-Type: application/x-compressed-tar;
+ name="acpi-dell.tgz"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+ filename="acpi-dell.tgz"
 
-	.state_count = 3,
-	.dev_ops.start = dev_callback_start,
-	.dev_ops.stop = dev_callback_stop,
-	.dev_ops.save_state = dev_callback_save,
-	.dev_ops.restore_state = dev_callback_restore,
-
-};
-
-Signed-off-by: Axel Haslam <ahaslam@baylibre.com>
----
- drivers/base/power/domain.c          | 80 ++++++++++++++++++++++++++++--------
- drivers/base/power/domain_governor.c | 14 ++++---
- include/linux/pm_domain.h            | 27 ++++++++----
- 3 files changed, 90 insertions(+), 31 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index ef54f98..33baecb 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -46,6 +46,36 @@
- 	}									\
- 	__retval;								\
- })
-+#define GENPD_DEV_CALLBACK_STATE(genpd, type, callback, dev, state)	\
-+({									\
-+	type (*__routine)(struct device *__d, int __s);			\
-+	type __ret = (type)0;						\
-+									\
-+	__routine = genpd->dev_ops.callback;				\
-+	if (__routine) {						\
-+		__ret = __routine(dev, state);				\
-+	}								\
-+	__ret;								\
-+})
-+
-+#define GENPD_DEV_TIMED_CALLBACK_STATE(genpd, type, callback, dev,	\
-+					field, name, state)		\
-+({									\
-+	ktime_t __start = ktime_get();					\
-+	type __retval = GENPD_DEV_CALLBACK_STATE(genpd, type, callback,	\
-+						 dev, state);		\
-+	s64 __elapsed = ktime_to_ns(ktime_sub(ktime_get(), __start));	\
-+	struct gpd_timing_data *__td = &dev_gpd_data(dev)->td;		\
-+	if (!__retval && __elapsed > __td->field[state]) {		\
-+		__td->field[state] = __elapsed;				\
-+		dev_dbg(dev, name					\
-+		"State %d latency exceeded, new value %lld ns\n",	\
-+			state, __elapsed);				\
-+		genpd->max_off_time_changed = true;			\
-+		__td->constraint_changed = true;			\
-+	}								\
-+	__retval;							\
-+})
- 
- static LIST_HEAD(gpd_list);
- static DEFINE_MUTEX(gpd_list_lock);
-@@ -141,12 +171,13 @@ static void genpd_set_active(struct generic_pm_domain *genpd)
- 
- static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
- {
-+	int target_state = genpd->target_state;
- 	s64 usecs64;
- 
- 	if (!genpd->cpuidle_data)
- 		return;
- 
--	usecs64 = genpd->power_on_latency_ns;
-+	usecs64 = genpd->states[target_state].power_on_latency_ns;
- 	do_div(usecs64, NSEC_PER_USEC);
- 	usecs64 += genpd->cpuidle_data->saved_exit_latency;
- 	genpd->cpuidle_data->idle_state->exit_latency = usecs64;
-@@ -154,23 +185,24 @@ static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
- 
- static int genpd_power_on(struct generic_pm_domain *genpd)
- {
-+	int target_state = genpd->target_state;
- 	ktime_t time_start;
- 	s64 elapsed_ns;
- 	int ret;
- 
--	if (!genpd->power_on)
-+	if (!genpd->states[target_state].power_on)
- 		return 0;
- 
- 	time_start = ktime_get();
--	ret = genpd->power_on(genpd);
-+	ret = genpd->states[target_state].power_on(genpd);
- 	if (ret)
- 		return ret;
- 
- 	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
--	if (elapsed_ns <= genpd->power_on_latency_ns)
-+	if (elapsed_ns <= genpd->states[target_state].power_on_latency_ns)
- 		return ret;
- 
--	genpd->power_on_latency_ns = elapsed_ns;
-+	genpd->states[target_state].power_on_latency_ns = elapsed_ns;
- 	genpd->max_off_time_changed = true;
- 	genpd_recalc_cpu_exit_latency(genpd);
- 	pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
-@@ -181,23 +213,24 @@ static int genpd_power_on(struct generic_pm_domain *genpd)
- 
- static int genpd_power_off(struct generic_pm_domain *genpd)
- {
-+	int target_state = genpd->target_state;
- 	ktime_t time_start;
- 	s64 elapsed_ns;
- 	int ret;
- 
--	if (!genpd->power_off)
-+	if (!genpd->states[target_state].power_off)
- 		return 0;
- 
- 	time_start = ktime_get();
--	ret = genpd->power_off(genpd);
-+	ret = genpd->states[target_state].power_off(genpd);
- 	if (ret == -EBUSY)
- 		return ret;
- 
- 	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
--	if (elapsed_ns <= genpd->power_off_latency_ns)
-+	if (elapsed_ns <= genpd->states[target_state].power_off_latency_ns)
- 		return ret;
- 
--	genpd->power_off_latency_ns = elapsed_ns;
-+	genpd->states[target_state].power_off_latency_ns = elapsed_ns;
- 	genpd->max_off_time_changed = true;
- 	pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
- 		genpd->name, "off", elapsed_ns);
-@@ -326,15 +359,17 @@ static int genpd_start_dev_no_timing(struct generic_pm_domain *genpd,
- 
- static int genpd_save_dev(struct generic_pm_domain *genpd, struct device *dev)
- {
--	return GENPD_DEV_TIMED_CALLBACK(genpd, int, save_state, dev,
--					save_state_latency_ns, "state save");
-+	return GENPD_DEV_TIMED_CALLBACK_STATE(genpd, int, save_state, dev,
-+					save_state_latency_ns, "state save",
-+					genpd->target_state);
- }
- 
- static int genpd_restore_dev(struct generic_pm_domain *genpd, struct device *dev)
- {
--	return GENPD_DEV_TIMED_CALLBACK(genpd, int, restore_state, dev,
-+	return GENPD_DEV_TIMED_CALLBACK_STATE(genpd, int, restore_state, dev,
- 					restore_state_latency_ns,
--					"state restore");
-+					"state restore",
-+					genpd->target_state);
- }
- 
- static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
-@@ -486,6 +521,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 	struct pm_domain_data *pdd;
- 	struct gpd_link *link;
- 	unsigned int not_suspended;
-+	int target_state;
- 	int ret = 0;
- 
-  start:
-@@ -538,6 +574,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 
- 	genpd->status = GPD_STATE_BUSY;
- 	genpd->poweroff_task = current;
-+	target_state = genpd->target_state;
- 
- 	list_for_each_entry_reverse(pdd, &genpd->dev_list, list_node) {
- 		ret = atomic_read(&genpd->sd_count) == 0 ?
-@@ -572,7 +609,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 		goto out;
- 	}
- 
--	if (genpd->power_off) {
-+	if (genpd->states[target_state].power_off) {
- 		if (atomic_read(&genpd->sd_count) > 0) {
- 			ret = -EBUSY;
- 			goto out;
-@@ -1809,7 +1846,7 @@ int pm_genpd_name_detach_cpuidle(const char *name)
-  * pm_genpd_default_save_state - Default "save device state" for PM domains.
-  * @dev: Device to handle.
-  */
--static int pm_genpd_default_save_state(struct device *dev)
-+static int pm_genpd_default_save_state(struct device *dev, int state)
- {
- 	int (*cb)(struct device *__dev);
- 
-@@ -1832,7 +1869,7 @@ static int pm_genpd_default_save_state(struct device *dev)
-  * pm_genpd_default_restore_state - Default PM domains "restore device state".
-  * @dev: Device to handle.
-  */
--static int pm_genpd_default_restore_state(struct device *dev)
-+static int pm_genpd_default_restore_state(struct device *dev, int state)
- {
- 	int (*cb)(struct device *__dev);
- 
-@@ -1877,6 +1914,8 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
- 	genpd->resume_count = 0;
- 	genpd->device_count = 0;
- 	genpd->max_off_time_ns = -1;
-+	/* on init assume we are coming from the deepest state */
-+	genpd->target_state = genpd->state_count - 1;
- 	genpd->max_off_time_changed = true;
- 	genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
- 	genpd->domain.ops.runtime_resume = pm_genpd_runtime_resume;
-@@ -2249,12 +2288,13 @@ static int pm_genpd_summary_one(struct seq_file *s,
- 		[GPD_STATE_WAIT_MASTER] = "wait-master",
- 		[GPD_STATE_BUSY] = "busy",
- 		[GPD_STATE_REPEAT] = "off-in-progress",
--		[GPD_STATE_POWER_OFF] = "off"
-+		[GPD_STATE_POWER_OFF] = "off:"
- 	};
- 	struct pm_domain_data *pm_data;
- 	const char *kobj_path;
- 	struct gpd_link *link;
- 	int ret;
-+	int target_state = genpd->target_state;
- 
- 	ret = mutex_lock_interruptible(&genpd->lock);
- 	if (ret)
-@@ -2262,7 +2302,11 @@ static int pm_genpd_summary_one(struct seq_file *s,
- 
- 	if (WARN_ON(genpd->status >= ARRAY_SIZE(status_lookup)))
- 		goto exit;
--	seq_printf(s, "%-30s  %-15s  ", genpd->name, status_lookup[genpd->status]);
-+
-+	seq_printf(s, "%-30s  %s%-15s  ", genpd->name,
-+		status_lookup[genpd->status],
-+		(genpd->status == GPD_STATE_POWER_OFF) ?
-+			genpd->states[target_state].name : "");
- 
- 	/*
- 	 * Modifications on the list require holding locks on both
-diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-index 2a4154a..deaaa76 100644
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -100,10 +100,12 @@ static bool default_stop_ok(struct device *dev)
- static bool default_power_down_ok(struct dev_pm_domain *pd)
- {
- 	struct generic_pm_domain *genpd = pd_to_genpd(pd);
-+	struct generic_pm_domain_data *gpd_data;
- 	struct gpd_link *link;
- 	struct pm_domain_data *pdd;
- 	s64 min_off_time_ns;
- 	s64 off_on_time_ns;
-+	int state = 0;
- 
- 	if (genpd->max_off_time_changed) {
- 		struct gpd_link *link;
-@@ -124,8 +126,8 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 		return genpd->cached_power_down_ok;
- 	}
- 
--	off_on_time_ns = genpd->power_off_latency_ns +
--				genpd->power_on_latency_ns;
-+	off_on_time_ns = genpd->states[state].power_off_latency_ns +
-+			genpd->states[state].power_on_latency_ns;
- 	/*
- 	 * It doesn't make sense to remove power from the domain if saving
- 	 * the state of all devices in it and the power off/power on operations
-@@ -134,9 +136,10 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 	 * All devices in this domain have been stopped already at this point.
- 	 */
- 	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
-+		gpd_data = to_gpd_data(pdd);
- 		if (pdd->dev->driver)
- 			off_on_time_ns +=
--				to_gpd_data(pdd)->td.save_state_latency_ns;
-+				gpd_data->td.save_state_latency_ns[state];
- 	}
- 
- 	min_off_time_ns = -1;
-@@ -193,7 +196,7 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 		 * constraint_ns cannot be negative here, because the device has
- 		 * been suspended.
- 		 */
--		constraint_ns -= td->restore_state_latency_ns;
-+		constraint_ns -= td->restore_state_latency_ns[state];
- 		if (constraint_ns <= off_on_time_ns)
- 			return false;
- 
-@@ -216,7 +219,8 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 	 * time and the time needed to turn the domain on is the maximum
- 	 * theoretical time this domain can spend in the "off" state.
- 	 */
--	genpd->max_off_time_ns = min_off_time_ns - genpd->power_on_latency_ns;
-+	genpd->max_off_time_ns = min_off_time_ns -
-+			genpd->states[state].power_on_latency_ns;
- 	return true;
- }
- 
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 3082247..d57ea37 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -17,6 +17,8 @@
- #include <linux/notifier.h>
- #include <linux/cpuidle.h>
- 
-+#define GENPD_MAX_NSTATES 10
-+
- /* Defines used for the flags field in the struct generic_pm_domain */
- #define GENPD_FLAG_PM_CLK	(1U << 0) /* PM domain uses PM clk */
- 
-@@ -36,8 +38,8 @@ struct dev_power_governor {
- struct gpd_dev_ops {
- 	int (*start)(struct device *dev);
- 	int (*stop)(struct device *dev);
--	int (*save_state)(struct device *dev);
--	int (*restore_state)(struct device *dev);
-+	int (*save_state)(struct device *dev, int state);
-+	int (*restore_state)(struct device *dev, int state);
- 	bool (*active_wakeup)(struct device *dev);
- };
- 
-@@ -46,6 +48,16 @@ struct gpd_cpuidle_data {
- 	struct cpuidle_state *idle_state;
- };
- 
-+struct generic_pm_domain;
-+
-+struct genpd_power_state {
-+	char *name;
-+	s64 power_off_latency_ns;
-+	s64 power_on_latency_ns;
-+	int (*power_off)(struct generic_pm_domain *domain);
-+	int (*power_on)(struct generic_pm_domain *domain);
-+};
-+
- struct generic_pm_domain {
- 	struct dev_pm_domain domain;	/* PM domain operations */
- 	struct list_head gpd_list_node;	/* Node in the global PM domains list */
-@@ -66,10 +78,6 @@ struct generic_pm_domain {
- 	unsigned int suspended_count;	/* System suspend device counter */
- 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
- 	bool suspend_power_off;	/* Power status before system suspend */
--	int (*power_off)(struct generic_pm_domain *domain);
--	s64 power_off_latency_ns;
--	int (*power_on)(struct generic_pm_domain *domain);
--	s64 power_on_latency_ns;
- 	struct gpd_dev_ops dev_ops;
- 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
- 	bool max_off_time_changed;
-@@ -80,6 +88,9 @@ struct generic_pm_domain {
- 	void (*detach_dev)(struct generic_pm_domain *domain,
- 			   struct device *dev);
- 	unsigned int flags;		/* Bit field of configs for genpd */
-+	int target_state; /* state that genpd will go to when off */
-+	struct genpd_power_state states[GENPD_MAX_NSTATES];
-+	int state_count; /* number of states*/
- };
- 
- static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
-@@ -97,8 +108,8 @@ struct gpd_link {
- struct gpd_timing_data {
- 	s64 stop_latency_ns;
- 	s64 start_latency_ns;
--	s64 save_state_latency_ns;
--	s64 restore_state_latency_ns;
-+	s64 save_state_latency_ns[GENPD_MAX_NSTATES];
-+	s64 restore_state_latency_ns[GENPD_MAX_NSTATES];
- 	s64 effective_constraint_ns;
- 	bool constraint_changed;
- 	bool cached_stop_ok;
--- 
-1.9.1
-
+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
+--------------040008020208060203000804--
