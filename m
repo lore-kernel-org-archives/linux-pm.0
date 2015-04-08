@@ -1,81 +1,39 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH] MAINTAINERS: Add me as maintainer of Nokia N900 power supply drivers
-Date: Tue, 7 Apr 2015 22:59:45 +0200
-Message-ID: <201504072259.45809@pali>
-References: <1427636154-20874-1-git-send-email-pali.rohar@gmail.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 1/6] Revert "staging: board: disable as it breaks the
+ build"
+Date: Wed, 8 Apr 2015 09:44:05 +0900
+Message-ID: <20150408004400.GA3456@verge.net.au>
+References: <1428064923-24950-1-git-send-email-geert+renesas@glider.be>
+ <1428064923-24950-2-git-send-email-geert+renesas@glider.be>
+ <20150406004031.GD1841@verge.net.au>
+ <CAMuHMdX1uHq23h_qsq2csTSYbAhN9ZDdMviDi=KtbLuWucYWXA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6743766.psDfCv9aRJ";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f44.google.com ([74.125.82.44]:34803 "EHLO
-	mail-wg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751548AbbDGU7t (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Apr 2015 16:59:49 -0400
-In-Reply-To: <1427636154-20874-1-git-send-email-pali.rohar@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdX1uHq23h_qsq2csTSYbAhN9ZDdMviDi=KtbLuWucYWXA@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Magnus Damm <damm+renesas@opensource.se>, Arnd Bergmann <arnd@arndb.de>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Marc Zyngier <marc.zyngier@arm.com>, driverdevel <devel@driverdev.osuosl.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@linuxfoundation.org>
 
---nextPart6743766.psDfCv9aRJ
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+On Tue, Apr 07, 2015 at 03:16:54PM +0200, Geert Uytterhoeven wrote:
+> On Mon, Apr 6, 2015 at 2:40 AM, Simon Horman <horms@verge.net.au> wrote:
+> > On Fri, Apr 03, 2015 at 02:41:58PM +0200, Geert Uytterhoeven wrote:
+> >> This reverts commit d13778d537a0ed6115d2a79a942af999cfb8eec6.
+> >>
+> >> Commit 13c11072536f2613 ("staging:board: remove unnecessary function")
+> >> fixed the build of drivers/staging/board/board.c.
+> >>
+> >> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> >
+> > Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
+> 
+> Acked-by? Reviewed-by? Tested-by? Rejected-by?
 
-=46orgot to mention reason in commit message:
+To be honest I was flipping between Signed-off-by and Acked-by.
+But it seems you don't think either of those would be appropriate.
+So how about:
 
-I'm author of two of those drivers (bq2415x and rx51) and I added=20
-more patches for other twos. Also I fished (proper) open source=20
-power management software for Nokia N900 and those kernel drivers=20
-are part of it.
+Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
 
-On Sunday 29 March 2015 15:35:54 Pali Roh=C3=A1r wrote:
-> Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
-> ---
->  MAINTAINERS |   11 +++++++++++
->  1 file changed, 11 insertions(+)
->=20
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 72a08ef..50df61e 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -6917,6 +6917,17 @@ T:	git
-> git://git.rocketboards.org/linux-socfpga-next.git
-> S:	Maintained
->  F:	arch/nios2/
->=20
-> +NOKIA N900 POWER SUPPLY DRIVERS
-> +M:	Pali Roh=C3=A1r <pali.rohar@gmail.com>
-> +S:	Maintained
-> +F:	include/linux/power/bq2415x_charger.h
-> +F:	include/linux/power/bq27x00_battery.h
-> +F:	include/linux/power/isp1704_charger.h
-> +F:	drivers/power/bq2415x_charger.c
-> +F:	drivers/power/bq27x00_battery.c
-> +F:	drivers/power/isp1704_charger.c
-> +F:	drivers/power/rx51_battery.c
-> +
->  NTB DRIVER
->  M:	Jon Mason <jdmason@kudzu.us>
->  M:	Dave Jiang <dave.jiang@intel.com>
-
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
-
---nextPart6743766.psDfCv9aRJ
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAlUkRUEACgkQi/DJPQPkQ1IEmwCeP17wlGKCXPa4LojKfYl6AMUD
-M3cAoLTJuRy7H7y1g7pYlKy9t/Q63+Ih
-=KFwu
------END PGP SIGNATURE-----
-
---nextPart6743766.psDfCv9aRJ--
