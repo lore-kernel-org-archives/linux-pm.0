@@ -1,78 +1,54 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [PATCH V4 1/3] Thermal: initialize thermal zone device correctly
-Date: Thu, 9 Apr 2015 15:45:53 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B909263014CFE85@SHSMSX101.ccr.corp.intel.com>
-References: <1428373476-14257-1-git-send-email-rui.zhang@intel.com>
- <1428373476-14257-2-git-send-email-rui.zhang@intel.com>
- <20150407024709.GI4648@localhost.localdomain>
- <744357E9AAD1214791ACBA4B0B909263014CF6E2@SHSMSX101.ccr.corp.intel.com>
- <20150409144423.GA27702@e104805>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: [GIT PULL] Samsung Thermal for v4.1 merge window
+Date: Thu, 09 Apr 2015 18:09:17 +0200
+Message-ID: <20150409180917.4d177432@amdc2363>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:15382 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755477AbbDIPp6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 9 Apr 2015 11:45:58 -0400
-In-Reply-To: <20150409144423.GA27702@e104805>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogSmF2aSBNZXJpbm8gW21h
-aWx0bzpqYXZpLm1lcmlub0Bhcm0uY29tXQ0KPiBTZW50OiBUaHVyc2RheSwgQXByaWwgOSwgMjAx
-NSAxMDo0NCBQTQ0KPiBUbzogWmhhbmcsIFJ1aQ0KPiBDYzogRWR1YXJkbyBWYWxlbnRpbjsgbGlu
-dXgtcG1Admdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjQgMS8zXSBUaGVy
-bWFsOiBpbml0aWFsaXplIHRoZXJtYWwgem9uZSBkZXZpY2UgY29ycmVjdGx5DQo+IEltcG9ydGFu
-Y2U6IEhpZ2gNCj4gDQo+IE9uIFdlZCwgQXByIDA4LCAyMDE1IGF0IDAyOjAxOjA4UE0gKzAxMDAs
-IFpoYW5nLCBSdWkgd3JvdGU6DQo+ID4NCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdl
-LS0tLS0NCj4gPiA+IEZyb206IEVkdWFyZG8gVmFsZW50aW4gW21haWx0bzplZHViZXp2YWxAZ21h
-aWwuY29tXQ0KPiA+ID4gU2VudDogVHVlc2RheSwgQXByaWwgNywgMjAxNSAxMDo0NyBBTQ0KPiA+
-ID4gVG86IFpoYW5nLCBSdWkNCj4gPiA+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcNCj4g
-PiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjQgMS8zXSBUaGVybWFsOiBpbml0aWFsaXplIHRoZXJt
-YWwgem9uZSBkZXZpY2UNCj4gPiA+IGNvcnJlY3RseQ0KPiA+ID4gSW1wb3J0YW5jZTogSGlnaA0K
-PiA+ID4NCj4gPiA+IE9uIFR1ZSwgQXByIDA3LCAyMDE1IGF0IDEwOjI0OjM0QU0gKzA4MDAsIFpo
-YW5nIFJ1aSB3cm90ZToNCj4gPiA+ID4gQWZ0ZXIgdGhlcm1hbCB6b25lIGRldmljZSByZWdpc3Rl
-cmVkLCBhcyB3ZSBoYXZlIG5vdCByZWFkIGFueQ0KPiA+ID4gPiB0ZW1wZXJhdHVyZSBiZWZvcmUs
-IHRodXMgdHotPnRlbXBlcmF0dXJlIHNob3VsZCBub3QgYmUgMCwgd2hpY2gNCj4gPiA+ID4gYWN0
-dWFsbHkgbWVhbnMgMEMsIGFuZCB0aGVybWFsIHRyZW5kIGlzIG5vdCBhdmFpbGFibGUuDQo+ID4g
-PiA+IEluIHRoaXMgY2FzZSwgd2UgbmVlZCBzcGVjaWFsbHkgaGFuZGxpbmcgZm9yIHRoZSBmaXJz
-dA0KPiA+ID4gPiB0aGVybWFsX3pvbmVfZGV2aWNlX3VwZGF0ZSgpLg0KPiA+ID4gPg0KPiA+ID4g
-PiBCb3RoIHRoZXJtYWwgY29yZSBmcmFtZXdvcmsgYW5kIHN0ZXBfd2lzZSBnb3Zlcm5vciBpcyBl
-bmhhbmNlZCB0bw0KPiA+ID4gPiBoYW5kbGUNCj4gPiA+IHRoaXMuDQo+ID4gPiA+DQo+ID4gPiA+
-IENDOiA8c3RhYmxlQHZnZXIua2VybmVsLm9yZz4gIzMuMTgrDQo+ID4gPiA+IFRlc3RlZC1ieTog
-TWFudWVsIEtyYXVzZSA8bWFudWVsa3JhdXNlQG5ldHNjYXBlLm5ldD4NCj4gPiA+ID4gVGVzdGVk
-LWJ5OiBzemVnYWQgPHN6ZWdhZGxvQHBvY3p0YS5vbmV0LnBsPg0KPiA+ID4gPiBUZXN0ZWQtYnk6
-IHByYXNoIDxwcmFzaC5uLnJhb0BnbWFpbC5jb20+DQo+ID4gPiA+IFRlc3RlZC1ieTogYW1pc2gg
-PGFtbWRpc3Bvc2UtYXJjaEB5YWhvby5jb20+DQo+ID4gPiA+IFRlc3RlZC1ieTogTWF0dGhpYXMg
-PG1vcnBoZXVzeHl6MTIzQHlhaG9vLmRlPg0KPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBaaGFuZyBS
-dWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+DQo+ID4gPg0KPiA+ID4gQ2FuIHlvdSBwbGVhc2UgY29u
-c2lkZXIgdGhlIGNvbW1lbnRzIEkgbWFkZSBvbiBWMz8NCj4gPiA+DQo+ID4gU29ycnksIEkgbWlz
-c2VkIHlvdXIgcHJldmlvdXMgY29tbWVudC4NCj4gPg0KPiA+ID4gU3VtbWFyeToNCj4gPiA+DQo+
-ID4gPiAxLiBDaGFuZ2UgaW5pdGlhbGl6ZWQgdG8gdHJlbmRfdmFsaWQNCj4gPg0KPiA+IEkgZG9u
-J3QgdGhpbmsgaXQgaXMgcHJvcGVyIHRvIGNhbGwgaXQgInRyZW5kX3ZhbGlkIiBiZWNhdXNlIGlu
-IHRoZQ0KPiA+IGNhc2UgdGhhdCBjb29saW5nIGRldmljZSBpcyByZWdpc3RlcmVkIGFmdGVyIHRo
-ZXJtYWwgem9uZSAodGhlIHByb2JsZW0NCj4gPiBwb2ludGVkIG91dCBpbiBwYXRjaCAzLzMpLCB0
-aGUgbmV3IGNyZWF0ZWQgdGhlcm1hbF9pbnN0YW5jZSBuZWVkcyB0bw0KPiA+IGJlIHNldCBwcm9w
-ZXJseSwgYW5kIHRoZSB0cmVuZCBpcyB2YWxpZCBhdCB0aGlzIHRpbWUgYWN0dWFsbHkuDQo+ID4N
-Cj4gPiBJTU8sIHRoZXJtYWxfaW5zdGFuY2UtPmluaXRpYWxpemVkIGp1c3QgbWVhbnMgaWYgdGhl
-IHRoZXJtYWwgaW5zdGFuY2UNCj4gPiBpcyBldmFsdWF0ZWQgZm9yIHRoZSBmaXJzdCB0aW1lIG9y
-IG5vdCwgYW5kIGlmIHllcywgd2UgbmVlZCBzb21lIHNwZWNpYWwgaGFuZGxpbmcuDQo+IA0KPiBJ
-IHRoaW5rIHRoZSBtYWluIHNvdXJjZSBvZiBjb25mdXNpb24gaGVyZSBpcyB0aGUgZmFjdCB0aGF0
-IHRoaXMgaXMgb25seSBuZWVkZWQgZm9yDQo+IHN0ZXBfd2lzZS4gIFRoZXJtYWwgZ292ZXJub3Jz
-IHRoYXQgZG9uJ3QgY2FyZSBhYm91dCB0cmVuZCB3aWxsIGFsd2F5cyBoYXZlDQo+IHRoZXJtYWwg
-aW5zdGFuY2VzIHdpdGggImluaXRpYWxpemVkIiBiZWluZyBmYWxzZSwgd2hpY2ggc2VlbXMgY291
-bnRlci1pbnR1aXRpdmUuDQoNCkdvb2QgcG9pbnQuDQpGYWlyZV9zaGFyZSBnb3Zlcm5vciAgYWx3
-YXlzIHJlLWNhbGN1bGF0ZSB0aGUgY29vbGluZyBzdGF0ZSBvZiBldmVyeSB0aGVybWFsIGluc3Rh
-bmNlcy4NClVzZXJfc3BhY2UgZ292ZXJub3IgZG9lcyBub3QgY2FyZSBhYm91dCB0aGVybWFsIGlu
-c3RhbmNlIGF0IGFsbC4NCkJhbmdfYmFuZyBnb3Zlcm5vciBhY3R1YWxseSB1c2VzIFRIRVJNQUxf
-Tk9fVEFSR0VUIGFzIHRoZSBzaWduIG9mIGEgInVuaW5pdGlhbGl6ZWQiIHRoZXJtYWwgaW5zdGFu
-Y2UuIEkgY2FuIG1vZGlmeSBiYW5nX2JhbmcgZ292ZXJub3IgYXMgd2VsbCBpZiB5b3UgdGhpbmsg
-dGhpcyBpcyBjb25mdXNpbmcuDQoNClRoYW5rcywNCnJ1aQ0KPiBUaGUgb25seSBuYW1lIEkgY2Fu
-IHRoaW5rIG9mIGlzICJub3RfeWV0X2V2YWx1YXRlZF9ieV9zdGVwX3dpc2UiIHdoaWNoIGlzDQo+
-IHJpZGljdWxvdXNseSBsb25nIG5hbWUgZm9yIGEgdmFyaWFibGUsIGJ1dCBjYW4gd2UgZ2V0IHNv
-bWV0aGluZyBtb3JlIGRlc2NyaXB0aXZlDQo+IHRoYW4gImluaXRpYWxpemVkIj8NCg0KDQo+IA0K
-PiBDaGVlcnMsDQo+IEphdmkNCg0K
+Dear Eduardo,
+
+Please find my pull request for Samsung Thermal targeting v4.1 merge
+window.
+
+The following changes since commit
+96d927aa14deb1c4bf6bfd758776ad942463865d:
+
+  thermal: cpu_cooling: Fix power calculation when CPUs are offline
+  (2015-04-07 11:01:22 -0700)
+
+are available in the git repository at:
+
+  git@github.com:lmajewski/linux-samsung-thermal.git next
+
+for you to fetch changes up to 8e256d78739e5f47ed79a9c7fdb7d5346526dd85:
+
+  thermal: exynos: Add the support for Exynos5433 TMU (2015-04-09
+  17:34:10 +0200)
+
+----------------------------------------------------------------
+Chanwoo Choi (1):
+      thermal: exynos: Add the support for Exynos5433 TMU
+
+ drivers/thermal/samsung/exynos_tmu.c | 187
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ drivers/thermal/samsung/exynos_tmu.h |   1 + 
+
+2 files changed, 186 insertions(+), 2 deletions(-)
+
+
+Test HW: Odroid U3.
+Build GCC: 4.9.2
+SHA1: 8e256d78739e5f47ed79a9c7fdb7d5346526dd85
+
+-- 
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
