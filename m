@@ -1,127 +1,150 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH 1/3] PM suspend/hibernate: Call notifier after freezing processes
-Date: Thu, 9 Apr 2015 08:36:57 +0200
-Message-ID: <201504090836.57365@pali>
-References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com> <1428254419-7334-2-git-send-email-pali.rohar@gmail.com> <1530775.n2Kjx1bffW@vostro.rjw.lan>
+From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Subject: Re: [PATCH] ARM: tegra: cpuidle: implement cpuidle_state.enter_freeze()
+Date: Thu, 09 Apr 2015 11:18:25 +0200
+Message-ID: <552643E1.3060200@collabora.com>
+References: <1428490480-10144-1-git-send-email-tomeu.vizoso@collabora.com> <20150408115546.GA24271@red-moon>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2566388.gOmNIJrIqI";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-raid-owner@vger.kernel.org>
-In-Reply-To: <1530775.n2Kjx1bffW@vostro.rjw.lan>
-Sender: linux-raid-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>, Neil Brown <neilb@suse.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150408115546.GA24271@red-moon>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Cc: "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
---nextPart2566388.gOmNIJrIqI
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+On 04/08/2015 01:55 PM, Lorenzo Pieralisi wrote:
+> On Wed, Apr 08, 2015 at 11:54:38AM +0100, Tomeu Vizoso wrote:
+>> This callback is expected to do the same as enter() only that all
+>> non-wakeup IRQs are expected to be disabled.
+> 
+> This is not true or at least it is misworded. The enter_freeze() function
+> is expected to return from the state with IRQs disabled at CPU level, or
+> put it differently it must not re-enable IRQs while executing since the
+> tick is frozen.
 
-On Thursday 09 April 2015 02:28:41 Rafael J. Wysocki wrote:
-> On Sunday, April 05, 2015 07:20:17 PM Pali Roh=C3=A1r wrote:
-> > To prevent race conditions on userspace processes with I/O
-> > some taks must be called after processes are freezed. This
-> > patch adds new events which are delivered by
-> > pm_notifier_call_chain() after freezing processes when
-> > doing suspend or hibernate action.
-> >=20
-> > Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
->=20
-> Please don't add more notifiers.  Just call whatever you need
-> directly from where you need to call that.
->=20
-> If that is device-related, try to use device PM
-> suspend/hibernate callbacks instead.
->=20
+True, only that it mentions interrupts in general, not just IRQs (I
+don't know if the terminology used in the base code matches the one in
+ARM's documentation).
 
-Hi! It is not possible to use any exiting pm notifiers! This is=20
-reason why I added new ones. As I wrote wiping dm crypt keys must=20
-be done *after* userspace processes are freezed to prevent race=20
-conditions...
+/*
+ * CPUs execute ->enter_freeze with the local tick or entire timekeeping
+ * suspended, so it must not re-enable interrupts at any point (even
+ * temporarily) or attempt to change states of clock event devices.
+ */
 
-> > ---
-> >=20
-> >  include/linux/suspend.h  |    2 ++
-> >  kernel/power/hibernate.c |    2 ++
-> >  kernel/power/suspend.c   |    4 +++-
-> >  3 files changed, 7 insertions(+), 1 deletion(-)
-> >=20
-> > diff --git a/include/linux/suspend.h
-> > b/include/linux/suspend.h index 5efe743..bc743c8 100644
-> > --- a/include/linux/suspend.h
-> > +++ b/include/linux/suspend.h
-> > @@ -368,6 +368,8 @@ static inline bool
-> > hibernation_available(void) { return false; }
-> >=20
-> >  #define PM_POST_SUSPEND		0x0004 /* Suspend finished */
-> >  #define PM_RESTORE_PREPARE	0x0005 /* Going to restore a
-> >  saved image */ #define PM_POST_RESTORE		0x0006 /*
-> >  Restore
-> >  failed */
-> >=20
-> > +#define PM_HIBERNATION_AFTER_FREEZE	0x0007 /* After
-> > hibernation freeze */ +#define
-> > PM_SUSPEND_AFTER_FREEZE		0x0008 /* After suspend freeze */
-> >=20
-> >  extern struct mutex pm_mutex;
-> >=20
-> > diff --git a/kernel/power/hibernate.c
-> > b/kernel/power/hibernate.c index 2329daa..184f7ee 100644
-> > --- a/kernel/power/hibernate.c
-> > +++ b/kernel/power/hibernate.c
-> > @@ -671,6 +671,8 @@ int hibernate(void)
-> >=20
-> >  	if (error)
-> >  =09
-> >  		goto Exit;
-> >=20
-> > +	pm_notifier_call_chain(PM_HIBERNATION_AFTER_FREEZE);
-> > +
-> >=20
-> >  	lock_device_hotplug();
-> >  	/* Allocate memory management structures */
-> >  	error =3D create_basic_memory_bitmaps();
-> >=20
-> > diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> > index b7d6b3a..1776938 100644
-> > --- a/kernel/power/suspend.c
-> > +++ b/kernel/power/suspend.c
-> > @@ -268,8 +268,10 @@ static int
-> > suspend_prepare(suspend_state_t state)
-> >=20
-> >  	trace_suspend_resume(TPS("freeze_processes"), 0, true);
-> >  	error =3D suspend_freeze_processes();
-> >  	trace_suspend_resume(TPS("freeze_processes"), 0, false);
-> >=20
-> > -	if (!error)
-> > +	if (!error) {
-> > +		pm_notifier_call_chain(PM_SUSPEND_AFTER_FREEZE);
-> >=20
-> >  		return 0;
-> >=20
-> > +	}
-> >=20
-> >  	suspend_stats.failed_freeze++;
-> >  	dpm_save_failed_step(SUSPEND_FREEZE);
+>> It will be called when the system goes to suspend-to-idle and will
+>> reduce power usage because CPUs won't be awaken for unnecessary IRQs.
+>>
+>> Signed-off-by: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+>> Cc: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+>> ---
+>>  arch/arm/mach-tegra/cpuidle-tegra114.c | 31 ++++++++++++++++++++++++-------
+>>  1 file changed, 24 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/arch/arm/mach-tegra/cpuidle-tegra114.c b/arch/arm/mach-tegra/cpuidle-tegra114.c
+>> index f2b586d..ef06001 100644
+>> --- a/arch/arm/mach-tegra/cpuidle-tegra114.c
+>> +++ b/arch/arm/mach-tegra/cpuidle-tegra114.c
+>> @@ -39,28 +39,44 @@ static int tegra114_idle_power_down(struct cpuidle_device *dev,
+>>  				    struct cpuidle_driver *drv,
+>>  				    int index)
+>>  {
+>> -	local_fiq_disable();
+>> -
+>>  	tegra_set_cpu_in_lp2();
+>>  	cpu_pm_enter();
+>>  
+>> -	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
+>> -
+>>  	call_firmware_op(prepare_idle);
+>>  
+>>  	/* Do suspend by ourselves if the firmware does not implement it */
+>>  	if (call_firmware_op(do_idle, 0) == -ENOSYS)
+>>  		cpu_suspend(0, tegra30_sleep_cpu_secondary_finish);
+>>  
+>> -	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
+>> -
+>>  	cpu_pm_exit();
+>>  	tegra_clear_cpu_in_lp2();
+>>  
+>> +	return index;
+>> +}
+>> +
+>> +static int tegra114_idle_enter(struct cpuidle_device *dev,
+>> +			       struct cpuidle_driver *drv,
+>> +			       int index)
+>> +{
+>> +	local_fiq_disable();
+>> +
+>> +	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
+>> +
+>> +	index = tegra114_idle_power_down(dev, drv, index);
+>> +
+>> +	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
+>> +
+>>  	local_fiq_enable();
+>>  
+>>  	return index;
+>>  }
+>> +
+>> +static void tegra114_idle_enter_freeze(struct cpuidle_device *dev,
+>> +				       struct cpuidle_driver *drv,
+>> +				       int index)
+>> +{
+>> +	tegra114_idle_power_down(dev, drv, index);
+> 
+> Cool. So if the problem is FIQs, you don't disabled them on entry
+> which means you enter the "frozen" state with FIQs enabled and tick frozen,
+> unless I am missing something.
 
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+I have gone a bit deeper in the code and that's correct, AFAICS.
 
---nextPart2566388.gOmNIJrIqI
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+> The question here is: are we allowed to enable FIQs before returning
+> from an enter_freeze() call (and to enter it with FIQs enabled) ?
+> 
+> If we are not your code here certainly does not solve the issue, since
+> it does _not_ disable FIQs upon enter_freeze call anyway.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+I think doing that would go against the wording of the comment I quoted
+above, so I see two ways of fixing this:
 
-iEYEABECAAYFAlUmHgkACgkQi/DJPQPkQ1KqBQCgsCMPDSjapvieT2WGen4RFz1c
-FZ0AoLar16geldAQXYKF7cbDoVv1l2bf
-=QehT
------END PGP SIGNATURE-----
+* Change the wording to refer to normal IRQs and leave the task of
+enabling and disabling FIQs to the enter_freeze implementation (ugly and
+I don't see any good reason for this)
 
---nextPart2566388.gOmNIJrIqI--
+* Have FIQs already disabled when enter_freeze gets called, probably by
+having arch_cpu_idle_enter do it on ARM (and the inverse in
+arch_cpu_idle_exit)?
+
+Rafael, what's your opinion on this?
+
+Thanks,
+
+Tomeu
+
+> Lorenzo
+> 
+>> +}
+>>  #endif
+>>  
+>>  static struct cpuidle_driver tegra_idle_driver = {
+>> @@ -71,7 +87,8 @@ static struct cpuidle_driver tegra_idle_driver = {
+>>  		[0] = ARM_CPUIDLE_WFI_STATE_PWR(600),
+>>  #ifdef CONFIG_PM_SLEEP
+>>  		[1] = {
+>> -			.enter			= tegra114_idle_power_down,
+>> +			.enter			= tegra114_idle_enter,
+>> +			.enter_freeze		= tegra114_idle_enter_freeze,
+>>  			.exit_latency		= 500,
+>>  			.target_residency	= 1000,
+>>  			.power_usage		= 0,
+>> -- 
+>> 2.3.4
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
