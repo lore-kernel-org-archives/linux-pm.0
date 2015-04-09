@@ -1,65 +1,95 @@
-From: Mathias Krause <minipli@googlemail.com>
-Subject: Re: [PATCH] powercap / RAPL: mark rapl_ids array as __initconst
-Date: Wed, 8 Apr 2015 20:41:30 +0200
-Message-ID: <CA+rthh-TU_a3=fBdQRR_koebeUFGJnfhqaFBdTrTRQnd9axR6g@mail.gmail.com>
-References: <1427318152-21800-1-git-send-email-minipli@googlemail.com>
-	<6448986.08Uv5dyIEs@vostro.rjw.lan>
-	<20150330154635.3fb82c23@ultegra>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/3] PM suspend/hibernate: Call notifier after freezing processes
+Date: Thu, 09 Apr 2015 02:28:41 +0200
+Message-ID: <1530775.n2Kjx1bffW@vostro.rjw.lan>
+References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com> <1428254419-7334-2-git-send-email-pali.rohar@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f169.google.com ([209.85.212.169]:36607 "EHLO
-	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754692AbbDHSlc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Apr 2015 14:41:32 -0400
-Received: by wizk4 with SMTP id k4so65782769wiz.1
-        for <linux-pm@vger.kernel.org>; Wed, 08 Apr 2015 11:41:30 -0700 (PDT)
-In-Reply-To: <20150330154635.3fb82c23@ultegra>
+Received: from v094114.home.net.pl ([79.96.170.134]:60715 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753881AbbDIAEQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Apr 2015 20:04:16 -0400
+In-Reply-To: <1428254419-7334-2-git-send-email-pali.rohar@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Pali =?ISO-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>
+Cc: Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>, Neil Brown <neilb@suse.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 31 March 2015 at 00:46, Jacob Pan <jacob.jun.pan@linux.intel.com> wrote:
-> On Mon, 30 Mar 2015 21:17:02 +0200
-> Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
->> On Wednesday, March 25, 2015 10:15:52 PM Mathias Krause wrote:
->> > The RAPL ids are only tested in rapl_init() which is itself an
->> > __init function. For the MODULE_DEVICE_TABLE() file2alias doesn't
->> > care about the section, just about the symbol name. Therefore it's
->> > safe to mark the rapl_ids[] array as __initconst so its memory can
->> > be released after initialization is done.
->> >
->> > Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
->> > Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
->> > Signed-off-by: Mathias Krause <minipli@googlemail.com>
->>
->> Jacob, any comments?
->>
-> looks good to me, though i did ack last week perhaps something wrong
-> with my email.
->> > ---
->> >  drivers/powercap/intel_rapl.c |    2 +-
->> >  1 file changed, 1 insertion(+), 1 deletion(-)
->> >
->> > diff --git a/drivers/powercap/intel_rapl.c
->> > b/drivers/powercap/intel_rapl.c index 63d4033eb683..62f9b322fde0
->> > 100644 --- a/drivers/powercap/intel_rapl.c
->> > +++ b/drivers/powercap/intel_rapl.c
->> > @@ -1054,7 +1054,7 @@ static const struct rapl_defaults
->> > rapl_defaults_atom = { .driver_data = (kernel_ulong_t)&_ops,
->> > \ }
->> >
->> > -static const struct x86_cpu_id rapl_ids[] = {
->> > +static const struct x86_cpu_id rapl_ids[] __initconst = {
->> >     RAPL_CPU(0x2a, rapl_defaults_core),/* Sandy Bridge */
->> >     RAPL_CPU(0x2d, rapl_defaults_core),/* Sandy Bridge EP */
->> >     RAPL_CPU(0x37, rapl_defaults_atom),/* Valleyview */
->> >
->>
->> --
+On Sunday, April 05, 2015 07:20:17 PM Pali Roh=C3=A1r wrote:
+> To prevent race conditions on userspace processes with I/O some taks =
+must be
+> called after processes are freezed. This patch adds new events which =
+are
+> delivered by pm_notifier_call_chain() after freezing processes when d=
+oing
+> suspend or hibernate action.
+>=20
+> Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
 
-Ping. Rafael, any objections?
+Please don't add more notifiers.  Just call whatever you need directly =
+from
+where you need to call that.
 
-Mathias
+If that is device-related, try to use device PM suspend/hibernate callb=
+acks
+instead.
+
+> ---
+>  include/linux/suspend.h  |    2 ++
+>  kernel/power/hibernate.c |    2 ++
+>  kernel/power/suspend.c   |    4 +++-
+>  3 files changed, 7 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> index 5efe743..bc743c8 100644
+> --- a/include/linux/suspend.h
+> +++ b/include/linux/suspend.h
+> @@ -368,6 +368,8 @@ static inline bool hibernation_available(void) { =
+return false; }
+>  #define PM_POST_SUSPEND		0x0004 /* Suspend finished */
+>  #define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved image =
+*/
+>  #define PM_POST_RESTORE		0x0006 /* Restore failed */
+> +#define PM_HIBERNATION_AFTER_FREEZE	0x0007 /* After hibernation free=
+ze */
+> +#define PM_SUSPEND_AFTER_FREEZE		0x0008 /* After suspend freeze */
+> =20
+>  extern struct mutex pm_mutex;
+> =20
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index 2329daa..184f7ee 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -671,6 +671,8 @@ int hibernate(void)
+>  	if (error)
+>  		goto Exit;
+> =20
+> +	pm_notifier_call_chain(PM_HIBERNATION_AFTER_FREEZE);
+> +
+>  	lock_device_hotplug();
+>  	/* Allocate memory management structures */
+>  	error =3D create_basic_memory_bitmaps();
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index b7d6b3a..1776938 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -268,8 +268,10 @@ static int suspend_prepare(suspend_state_t state=
+)
+>  	trace_suspend_resume(TPS("freeze_processes"), 0, true);
+>  	error =3D suspend_freeze_processes();
+>  	trace_suspend_resume(TPS("freeze_processes"), 0, false);
+> -	if (!error)
+> +	if (!error) {
+> +		pm_notifier_call_chain(PM_SUSPEND_AFTER_FREEZE);
+>  		return 0;
+> +	}
+> =20
+>  	suspend_stats.failed_freeze++;
+>  	dpm_save_failed_step(SUSPEND_FREEZE);
+>=20
+
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
