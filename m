@@ -1,95 +1,52 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [GIT PULL] Samsung Thermal for v4.1 merge window
-Date: Thu, 9 Apr 2015 10:36:34 -0700
-Message-ID: <20150409173632.GA11022@localhost.localdomain>
-References: <20150409180917.4d177432@amdc2363>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="MGYHOYXEY6WxJCY8"
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v19 2/3] ARM: config: Update qcom_defconfig to enable cpuidle
+Date: Thu,  9 Apr 2015 13:20:42 -0600
+Message-ID: <1428607243-7723-3-git-send-email-lina.iyer@linaro.org>
+References: <1428607243-7723-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f181.google.com ([209.85.192.181]:35325 "EHLO
-	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753818AbbDIRgY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Apr 2015 13:36:24 -0400
-Content-Disposition: inline
-In-Reply-To: <20150409180917.4d177432@amdc2363>
+Received: from mail-pd0-f179.google.com ([209.85.192.179]:34666 "EHLO
+	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933181AbbDITVl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Apr 2015 15:21:41 -0400
+Received: by pdbqa5 with SMTP id qa5so105636981pdb.1
+        for <linux-pm@vger.kernel.org>; Thu, 09 Apr 2015 12:21:41 -0700 (PDT)
+In-Reply-To: <1428607243-7723-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: olof@lixom.net, arnd@arndb.de
+Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
 
+Update qcom_defconfig to allow cpuidle for QCOM cpus.
 
---MGYHOYXEY6WxJCY8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* Enable QCOM_PM
+* Enable ARM_CPUIDLE
 
-Lukasz,
+Cc: Kumar Gala <galak@codeaurora.org>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+---
+ arch/arm/configs/qcom_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
 
-On Thu, Apr 09, 2015 at 06:09:17PM +0200, Lukasz Majewski wrote:
-> Dear Eduardo,
->=20
-> Please find my pull request for Samsung Thermal targeting v4.1 merge
-> window.
->=20
-> The following changes since commit
-> 96d927aa14deb1c4bf6bfd758776ad942463865d:
->=20
->   thermal: cpu_cooling: Fix power calculation when CPUs are offline
->   (2015-04-07 11:01:22 -0700)
->=20
-> are available in the git repository at:
->=20
->   git@github.com:lmajewski/linux-samsung-thermal.git next
->=20
-> for you to fetch changes up to 8e256d78739e5f47ed79a9c7fdb7d5346526dd85:
->=20
->   thermal: exynos: Add the support for Exynos5433 TMU (2015-04-09
->   17:34:10 +0200)
->=20
-> ----------------------------------------------------------------
-> Chanwoo Choi (1):
->       thermal: exynos: Add the support for Exynos5433 TMU
->=20
->  drivers/thermal/samsung/exynos_tmu.c | 187
->  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
-+++++++++++++++--
->  drivers/thermal/samsung/exynos_tmu.h |   1 +=20
->=20
-> 2 files changed, 186 insertions(+), 2 deletions(-)
+diff --git a/arch/arm/configs/qcom_defconfig b/arch/arm/configs/qcom_defconfig
+index 8c7da33..33a5339 100644
+--- a/arch/arm/configs/qcom_defconfig
++++ b/arch/arm/configs/qcom_defconfig
+@@ -30,6 +30,7 @@ CONFIG_CLEANCACHE=y
+ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_ARM_ATAG_DTB_COMPAT=y
+ CONFIG_CPU_IDLE=y
++CONFIG_ARM_CPUIDLE=y
+ CONFIG_VFP=y
+ CONFIG_NEON=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+@@ -135,6 +136,7 @@ CONFIG_DMADEVICES=y
+ CONFIG_QCOM_BAM_DMA=y
+ CONFIG_STAGING=y
+ CONFIG_QCOM_GSBI=y
++CONFIG_QCOM_PM=y
+ CONFIG_COMMON_CLK_QCOM=y
+ CONFIG_APQ_MMCC_8084=y
+ CONFIG_IPQ_GCC_806X=y
+-- 
+2.1.0
 
-Pulled. Thanks.
-
-BR,
-
->=20
->=20
-> Test HW: Odroid U3.
-> Build GCC: 4.9.2
-> SHA1: 8e256d78739e5f47ed79a9c7fdb7d5346526dd85
->=20
-> --=20
-> Best regards,
->=20
-> Lukasz Majewski
->=20
-> Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
-
---MGYHOYXEY6WxJCY8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQEcBAEBAgAGBQJVJricAAoJEMLUO4d9pOJW3PsIAJxnQjpUoklOqpbzlPGDh6YR
-y4LWwn6OSprKam9O3xyuEkpjxRoQ0NswJ4ABD1Yr9rrmhqxN0KBQ3eHTStKEPOg0
-qOI6qodmiv4eXHK0uKn+795HwxVRyLAX1/Q3KzV4B4CEq2pgZOWNMGrgd+zbhwHD
-ACa5Q26Hh/dYMo5OfY8OZm6qGmPUC1CakYAh9gjloQX+ScVKgocbl77r66fgzuZQ
-ua/GUMC5hkmG+yLQvMpDu3y3PawKsQvYU+KwyyNQwwTDRL94c27T/rUxggmtkdkX
-KyRi1OTO8KHNv8IllgFCgsA98Q01pBqvMVlN8tQo5G2mEhIjnPHvYP07cPXAfdo=
-=XwLZ
------END PGP SIGNATURE-----
-
---MGYHOYXEY6WxJCY8--
