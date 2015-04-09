@@ -1,69 +1,95 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v18 01/11] ARM: qcom: Add Subsystem Power Manager (SPM)
- driver
-Date: Thu, 9 Apr 2015 11:04:49 -0600
-Message-ID: <20150409170449.GC943@linaro.org>
-References: <1427315136-44321-1-git-send-email-lina.iyer@linaro.org>
- <1427315136-44321-2-git-send-email-lina.iyer@linaro.org>
- <20150409165841.GA30503@codeaurora.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [GIT PULL] Samsung Thermal for v4.1 merge window
+Date: Thu, 9 Apr 2015 10:36:34 -0700
+Message-ID: <20150409173632.GA11022@localhost.localdomain>
+References: <20150409180917.4d177432@amdc2363>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="MGYHOYXEY6WxJCY8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f181.google.com ([209.85.192.181]:35325 "EHLO
+	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753818AbbDIRgY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Apr 2015 13:36:24 -0400
 Content-Disposition: inline
-In-Reply-To: <20150409165841.GA30503@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: daniel.lezcano@linaro.org, khilman@linaro.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, msivasub@codeaurora.org, devicetree@vger.kernel.org, agross@codeaurora.org, Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <20150409180917.4d177432@amdc2363>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Thu, Apr 09 2015 at 10:58 -0600, Stephen Boyd wrote:
->On 03/25, Lina Iyer wrote:
->> SPM is a hardware block that controls the peripheral logic surrounding
->> the application cores (cpu/l$). When the core executes WFI instruction,
->> the SPM takes over the putting the core in low power state as
->> configured. The wake up for the SPM is an interrupt at the GIC, which
->> then completes the rest of low power mode sequence and brings the core
->> out of low power mode.
->>
->> The SPM has a set of control registers that configure the SPMs
->> individually based on the type of the core and the runtime conditions.
->> SPM is a finite state machine block to which a sequence is provided and
->> it interprets the bytes and executes them in sequence. Each low power
->> mode that the core can enter into is provided to the SPM as a sequence.
->>
->> Configure the SPM to set the core (cpu or L2) into its low power mode,
->> the index of the first command in the sequence is set in the SPM_CTL
->> register. When the core executes ARM wfi instruction, it triggers the
->> SPM state machine to start executing from that index. The SPM state
->> machine waits until the interrupt occurs and starts executing the rest
->> of the sequence until it hits the end of the sequence. The end of the
->> sequence jumps the core out of its low power mode.
->>
->> Add support for an idle driver to set up the SPM to place the core in
->> Standby or Standalone power collapse mode when the core is idle.
->>
->> Based on work by: Mahesh Sivasubramanian <msivasub@codeaurora.org>,
->> Ai Li <ali@codeaurora.org>, Praveen Chidambaram <pchidamb@codeaurora.org>
->> Original tree available at -
->> git://codeaurora.org/quic/la/kernel/msm-3.10.git
->>
->> Cc: Stephen Boyd <sboyd@codeaurora.org>
->> Cc: Arnd Bergmann <arnd@arndb.de>
->> Cc: Kevin Hilman <khilman@linaro.org>
->> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->> ---
->
->Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
->
-Thank you.
 
->I suppose you're going to wait for 4.2 on this? It seems to
->depend on dlezcano's patches in the cpuidle tree and some scm
->patches that have gone through arm-soc.
->
-Just this morning, I sent out a mail to Kumar, Olof and Arnd. Lets see
-if this can be pulled in before 4.2.
->-- 
->Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
->a Linux Foundation Collaborative Project
+--MGYHOYXEY6WxJCY8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Lukasz,
+
+On Thu, Apr 09, 2015 at 06:09:17PM +0200, Lukasz Majewski wrote:
+> Dear Eduardo,
+>=20
+> Please find my pull request for Samsung Thermal targeting v4.1 merge
+> window.
+>=20
+> The following changes since commit
+> 96d927aa14deb1c4bf6bfd758776ad942463865d:
+>=20
+>   thermal: cpu_cooling: Fix power calculation when CPUs are offline
+>   (2015-04-07 11:01:22 -0700)
+>=20
+> are available in the git repository at:
+>=20
+>   git@github.com:lmajewski/linux-samsung-thermal.git next
+>=20
+> for you to fetch changes up to 8e256d78739e5f47ed79a9c7fdb7d5346526dd85:
+>=20
+>   thermal: exynos: Add the support for Exynos5433 TMU (2015-04-09
+>   17:34:10 +0200)
+>=20
+> ----------------------------------------------------------------
+> Chanwoo Choi (1):
+>       thermal: exynos: Add the support for Exynos5433 TMU
+>=20
+>  drivers/thermal/samsung/exynos_tmu.c | 187
+>  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
++++++++++++++++--
+>  drivers/thermal/samsung/exynos_tmu.h |   1 +=20
+>=20
+> 2 files changed, 186 insertions(+), 2 deletions(-)
+
+Pulled. Thanks.
+
+BR,
+
+>=20
+>=20
+> Test HW: Odroid U3.
+> Build GCC: 4.9.2
+> SHA1: 8e256d78739e5f47ed79a9c7fdb7d5346526dd85
+>=20
+> --=20
+> Best regards,
+>=20
+> Lukasz Majewski
+>=20
+> Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+
+--MGYHOYXEY6WxJCY8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQEcBAEBAgAGBQJVJricAAoJEMLUO4d9pOJW3PsIAJxnQjpUoklOqpbzlPGDh6YR
+y4LWwn6OSprKam9O3xyuEkpjxRoQ0NswJ4ABD1Yr9rrmhqxN0KBQ3eHTStKEPOg0
+qOI6qodmiv4eXHK0uKn+795HwxVRyLAX1/Q3KzV4B4CEq2pgZOWNMGrgd+zbhwHD
+ACa5Q26Hh/dYMo5OfY8OZm6qGmPUC1CakYAh9gjloQX+ScVKgocbl77r66fgzuZQ
+ua/GUMC5hkmG+yLQvMpDu3y3PawKsQvYU+KwyyNQwwTDRL94c27T/rUxggmtkdkX
+KyRi1OTO8KHNv8IllgFCgsA98Q01pBqvMVlN8tQo5G2mEhIjnPHvYP07cPXAfdo=
+=XwLZ
+-----END PGP SIGNATURE-----
+
+--MGYHOYXEY6WxJCY8--
