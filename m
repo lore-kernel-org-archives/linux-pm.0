@@ -1,150 +1,119 @@
-From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Subject: Re: [PATCH] ARM: tegra: cpuidle: implement cpuidle_state.enter_freeze()
-Date: Thu, 09 Apr 2015 11:18:25 +0200
-Message-ID: <552643E1.3060200@collabora.com>
-References: <1428490480-10144-1-git-send-email-tomeu.vizoso@collabora.com> <20150408115546.GA24271@red-moon>
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: Re: [PATCH] x86/ACPI: Fix regression caused by 16ee7b3dcc56
+Date: Thu, 09 Apr 2015 18:15:24 +0800
+Message-ID: <5526513C.9090200@linux.intel.com>
+References: <55214A0D.9000404@xs4all.nl> <1428417244-32416-1-git-send-email-jiang.liu@linux.intel.com> <55240A82.30101@xs4all.nl> <5524BBEA.5040701@linux.intel.com> <55254E6E.6000705@xs4all.nl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150408115546.GA24271@red-moon>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-Cc: "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:6176 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934021AbbDIKP2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 9 Apr 2015 06:15:28 -0400
+In-Reply-To: <55254E6E.6000705@xs4all.nl>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jim Bos <jim876@xs4all.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On 04/08/2015 01:55 PM, Lorenzo Pieralisi wrote:
-> On Wed, Apr 08, 2015 at 11:54:38AM +0100, Tomeu Vizoso wrote:
->> This callback is expected to do the same as enter() only that all
->> non-wakeup IRQs are expected to be disabled.
-> 
-> This is not true or at least it is misworded. The enter_freeze() function
-> is expected to return from the state with IRQs disabled at CPU level, or
-> put it differently it must not re-enable IRQs while executing since the
-> tick is frozen.
-
-True, only that it mentions interrupts in general, not just IRQs (I
-don't know if the terminology used in the base code matches the one in
-ARM's documentation).
-
-/*
- * CPUs execute ->enter_freeze with the local tick or entire timekeeping
- * suspended, so it must not re-enable interrupts at any point (even
- * temporarily) or attempt to change states of clock event devices.
- */
-
->> It will be called when the system goes to suspend-to-idle and will
->> reduce power usage because CPUs won't be awaken for unnecessary IRQs.
+On 2015/4/8 23:51, Jim Bos wrote:
+> On 04/08/2015 07:26 AM, Jiang Liu wrote:
+>> On 2015/4/8 0:49, Jim Bos wrote:
+>>> On 04/07/2015 04:34 PM, Jiang Liu wrote:
+>>>> Hi Jim,
+>>>> 	Could you please help to test this patch against v4.0-rc6?
+>>>> Thanks!
+>>>> Gerry
+>>>>
+>>>> Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+>>>> ---
+>>>>  arch/x86/kernel/acpi/boot.c |   10 +++++++---
+>>>>  1 file changed, 7 insertions(+), 3 deletions(-)
+>>>>
+>>>> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+>>>> index 803b684676ff..f7f1fe7cd1b0 100644
+>>>> --- a/arch/x86/kernel/acpi/boot.c
+>>>> +++ b/arch/x86/kernel/acpi/boot.c
+>>>> @@ -403,10 +403,14 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
+>>>>  static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
+>>>>  			   int polarity)
+>>>>  {
+>>>> -	int irq, node;
+>>>> +	int i, irq, node;
+>>>>  
+>>>> -	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
+>>>> -		return gsi;
+>>>> +	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC) {
+>>>> +		for (i = 0; i < nr_legacy_irqs(); i++)
+>>>> +			if (isa_irq_to_gsi[i] == gsi)
+>>>> +				return i;
+>>>> +		return -1;
+>>>> +	}
+>>>>  
+>>>>  	trigger = trigger == ACPI_EDGE_SENSITIVE ? 0 : 1;
+>>>>  	polarity = polarity == ACPI_ACTIVE_HIGH ? 0 : 1;
+>>>>
+>>>
+>>> Jiang,
+>>>
+>>> It definitely seems to be an improvement, using Virtualbox guest with
+>>> your patch applied acpi-events work for all combinations (smp/nosmp
+>>> with/without I/O APIC assigned to the guest).
+>>>
+>>> However, on the Dell laptop it still doesn't work.  To be sure I built a
+>>> 3.16 kernel on this laptop and acpi_event power-button lid close/open
+>>> are working just fine.
+>>>
+>>> Attached config + dmesg + cat /proc/interrupt for the working 3.16 case
+>>> and still not working 4.0-rc6+patch case.
+>> Hi Jim,
+>> 	According to the attached files, you are building a UP kernel
+>> with IOAPIC enabled. This configuration works well on my HP laptop.
+>> And according to file IRQs from 4.0-rc6, it shows:
+>>  9:          1    XT-PIC  acpi
+>> That means kernel has received one ACPI SCI interrupt, but no
+>> following-on ACPI SCI interrupts, I can't figure out the root cause yet.
 >>
->> Signed-off-by: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
->> Cc: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
->> ---
->>  arch/arm/mach-tegra/cpuidle-tegra114.c | 31 ++++++++++++++++++++++++-------
->>  1 file changed, 24 insertions(+), 7 deletions(-)
+>> So could you please help to dump ACPI tables from your dell laptop by
+>> using acpidump utility?
+>> Thanks!
+>> Gerry
 >>
->> diff --git a/arch/arm/mach-tegra/cpuidle-tegra114.c b/arch/arm/mach-tegra/cpuidle-tegra114.c
->> index f2b586d..ef06001 100644
->> --- a/arch/arm/mach-tegra/cpuidle-tegra114.c
->> +++ b/arch/arm/mach-tegra/cpuidle-tegra114.c
->> @@ -39,28 +39,44 @@ static int tegra114_idle_power_down(struct cpuidle_device *dev,
->>  				    struct cpuidle_driver *drv,
->>  				    int index)
->>  {
->> -	local_fiq_disable();
->> -
->>  	tegra_set_cpu_in_lp2();
->>  	cpu_pm_enter();
->>  
->> -	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
->> -
->>  	call_firmware_op(prepare_idle);
->>  
->>  	/* Do suspend by ourselves if the firmware does not implement it */
->>  	if (call_firmware_op(do_idle, 0) == -ENOSYS)
->>  		cpu_suspend(0, tegra30_sleep_cpu_secondary_finish);
->>  
->> -	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
->> -
->>  	cpu_pm_exit();
->>  	tegra_clear_cpu_in_lp2();
->>  
->> +	return index;
->> +}
->> +
->> +static int tegra114_idle_enter(struct cpuidle_device *dev,
->> +			       struct cpuidle_driver *drv,
->> +			       int index)
->> +{
->> +	local_fiq_disable();
->> +
->> +	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &dev->cpu);
->> +
->> +	index = tegra114_idle_power_down(dev, drv, index);
->> +
->> +	clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &dev->cpu);
->> +
->>  	local_fiq_enable();
->>  
->>  	return index;
->>  }
->> +
->> +static void tegra114_idle_enter_freeze(struct cpuidle_device *dev,
->> +				       struct cpuidle_driver *drv,
->> +				       int index)
->> +{
->> +	tegra114_idle_power_down(dev, drv, index);
+>>>
+>>> Thanks,
+>>> Jim
+>>>
 > 
-> Cool. So if the problem is FIQs, you don't disabled them on entry
-> which means you enter the "frozen" state with FIQs enabled and tick frozen,
-> unless I am missing something.
-
-I have gone a bit deeper in the code and that's correct, AFAICS.
-
-> The question here is: are we allowed to enable FIQs before returning
-> from an enter_freeze() call (and to enter it with FIQs enabled) ?
+> Gerry,
 > 
-> If we are not your code here certainly does not solve the issue, since
-> it does _not_ disable FIQs upon enter_freeze call anyway.
+> Attached acpidump (binary files and regular dump).
+> I just tested 4.0-rc6+your_patch on another single core system, AMD
+> geode board, and that works fine now!
+> So indeed it seems there is something special about the dell laptop as
+> that's the only system, I've available here, which still has an issue.
+Hi Jim,
+	I'm really confused. I can't even explain why my previous
+patch fixes the issue on AMD geode board now:(
 
-I think doing that would go against the wording of the comment I quoted
-above, so I see two ways of fixing this:
+For the Dell laptop, seems you have:
+1) build a kernel with Local APIC and IOAPIC enabled
+2) lapic is disabled by BIOS, so there's no ACPI MADT(APIC)
+table at all.
+That means the laptop is working with 8259 PICs only.
+There's little change between 3.16 and 4.0 related to 8259.
 
-* Change the wording to refer to normal IRQs and leave the task of
-enabling and disabling FIQs to the enter_freeze implementation (ugly and
-I don't see any good reason for this)
+For the AMD geode board, I still think original code is right.
+I can't explain why the patch fix the issue.
 
-* Have FIQs already disabled when enter_freeze gets called, probably by
-having arch_cpu_idle_enter do it on ARM (and the inverse in
-arch_cpu_idle_exit)?
+So could you please help to:
+1) Try to enable lapic on Dell laptop in BIOS
+2) Dump acpi tables and dmesg on AMD board
 
-Rafael, what's your opinion on this?
-
-Thanks,
-
-Tomeu
-
-> Lorenzo
+If that still doesn't help, I will try to send you some
+debug patches to gather more info.
+Thanks!
+Gerry
+> _
+> Jim
 > 
->> +}
->>  #endif
->>  
->>  static struct cpuidle_driver tegra_idle_driver = {
->> @@ -71,7 +87,8 @@ static struct cpuidle_driver tegra_idle_driver = {
->>  		[0] = ARM_CPUIDLE_WFI_STATE_PWR(600),
->>  #ifdef CONFIG_PM_SLEEP
->>  		[1] = {
->> -			.enter			= tegra114_idle_power_down,
->> +			.enter			= tegra114_idle_enter,
->> +			.enter_freeze		= tegra114_idle_enter_freeze,
->>  			.exit_latency		= 500,
->>  			.target_residency	= 1000,
->>  			.power_usage		= 0,
->> -- 
->> 2.3.4
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
