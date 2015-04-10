@@ -1,477 +1,967 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/2] [RFC] PM / Domains: add multiple states
-Date: Fri, 10 Apr 2015 12:24:39 +0200
-Message-ID: <CAPDyKFoSvY=G7PQ5EnacTDfmuxYw398A0h_TV--6E9exXJv-cg@mail.gmail.com>
-References: <1428507725-12205-1-git-send-email-ahaslam@baylibre.com>
-	<1428507725-12205-2-git-send-email-ahaslam@baylibre.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f182.google.com ([209.85.220.182]:35788 "EHLO
-	mail-qk0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754613AbbDJKYk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Apr 2015 06:24:40 -0400
-Received: by qkhg7 with SMTP id g7so24009405qkh.2
-        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2015 03:24:39 -0700 (PDT)
-In-Reply-To: <1428507725-12205-2-git-send-email-ahaslam@baylibre.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH] power_supply: Add TI BQ24257 charger driver
+Date: Fri, 10 Apr 2015 16:18:17 +0300
+Message-ID: <1428671897-12232-1-git-send-email-laurentiu.palcu@intel.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+Cc: Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: ahaslam@baylibre.com
-Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Benoit Cousson <bcousson@baylibre.com>
 
-On 8 April 2015 at 17:42,  <ahaslam@baylibre.com> wrote:
-> From: Axel Haslam <ahaslam@baylibre.com>
->
-> Some architectures may have intermediate
-> power levels between on and off. each state in
-> between may have its own set of registers to
-> save and restore, and procedures to put the power
-> domain into that state.
->
-> This patch adds the ability to declare multiple
-> states for a given generic power domain, the
-> idea is that the deepest state will be entered which
-> does not violate any of the device or sub-domain
-> latency constraints.
->
-> for this purpose, the device save and restore callbacks
-> take in a new parameter "state" which is the state
-> the domain is trying to go to. The implementation
-> of these callbacks can use this to save and restore
-> the appropriate registers. Also the power on and off
-> callbacks and latencies are now tied to a particular
-> state.
->
-> States should be declared in ascending order from shallowest
-> to deepest, deepest meaning the state which takes longer
-> to enter and exit. The declaration would look something like:
->
-> struct generic_pm_domain pd1 = {
->         .name = "pd1",
->         .states = {
->                 [0] = {
->                         .name= "D0",
->                         .power_off = D0_power_off_cb,
->                         .power_on = D0_power_on_cb,
->                         .power_off_latency_ns = 1000000,
->                         .power_on_latency_ns = 1000000,
->                 },
->                 [1] = {
->                         .name= "D1",
->                         .power_off = D1_power_off_cb,
->                         .power_on = D1_power_on_cb,
->                         .power_off_latency_ns = 2000000,
->                         .power_on_latency_ns = 2000000,
->                 },
->                 [2] = {
->                         .name= "D2",
->                         .power_off = D2_power_off_cb,
->                         .power_on = D2_power_on_cb,
->                         .power_off_latency_ns = 3000000,
->                         .power_on_latency_ns = 3000000,
->                 },
->         },
->
->         .state_count = 3,
->         .dev_ops.start = dev_callback_start,
->         .dev_ops.stop = dev_callback_stop,
+Based on the datasheet found here:
+http://www.ti.com/lit/ds/symlink/bq24257.pdf
 
-I would like to get the complete picture.
+Signed-off-by: Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+---
+The driver was tested using an EVM [1], not with a final product.
 
-Could you elaborate on what theese two callbacks will be doing in your case?
+[1] http://www.ti.com/tool/bq24257evm-150
 
->         .dev_ops.save_state = dev_callback_save,
->         .dev_ops.restore_state = dev_callback_restore,
+laurentiu
 
-...and some more information about these as well, please.
+ .../devicetree/bindings/power/bq24257.txt          |  21 +
+ drivers/power/Kconfig                              |   7 +
+ drivers/power/Makefile                             |   1 +
+ drivers/power/bq24257_charger.c                    | 868 +++++++++++++++++++++
+ 4 files changed, 897 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/bq24257.txt
+ create mode 100644 drivers/power/bq24257_charger.c
 
->
-> };
->
-> Signed-off-by: Axel Haslam <ahaslam@baylibre.com>
-> ---
->  drivers/base/power/domain.c          | 80 ++++++++++++++++++++++++++++--------
->  drivers/base/power/domain_governor.c | 14 ++++---
->  include/linux/pm_domain.h            | 27 ++++++++----
->  3 files changed, 90 insertions(+), 31 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index ef54f98..33baecb 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -46,6 +46,36 @@
->         }                                                                       \
->         __retval;                                                               \
->  })
-> +#define GENPD_DEV_CALLBACK_STATE(genpd, type, callback, dev, state)    \
-> +({                                                                     \
-> +       type (*__routine)(struct device *__d, int __s);                 \
-> +       type __ret = (type)0;                                           \
-> +                                                                       \
-> +       __routine = genpd->dev_ops.callback;                            \
-> +       if (__routine) {                                                \
-> +               __ret = __routine(dev, state);                          \
-> +       }                                                               \
-> +       __ret;                                                          \
-> +})
-> +
-> +#define GENPD_DEV_TIMED_CALLBACK_STATE(genpd, type, callback, dev,     \
-> +                                       field, name, state)             \
-> +({                                                                     \
-> +       ktime_t __start = ktime_get();                                  \
-> +       type __retval = GENPD_DEV_CALLBACK_STATE(genpd, type, callback, \
-> +                                                dev, state);           \
-> +       s64 __elapsed = ktime_to_ns(ktime_sub(ktime_get(), __start));   \
-> +       struct gpd_timing_data *__td = &dev_gpd_data(dev)->td;          \
-> +       if (!__retval && __elapsed > __td->field[state]) {              \
-> +               __td->field[state] = __elapsed;                         \
-> +               dev_dbg(dev, name                                       \
-> +               "State %d latency exceeded, new value %lld ns\n",       \
-> +                       state, __elapsed);                              \
-> +               genpd->max_off_time_changed = true;                     \
-> +               __td->constraint_changed = true;                        \
-> +       }                                                               \
-> +       __retval;                                                       \
-> +})
+diff --git a/Documentation/devicetree/bindings/power/bq24257.txt b/Documentation/devicetree/bindings/power/bq24257.txt
+new file mode 100644
+index 0000000..5c9d394
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/bq24257.txt
+@@ -0,0 +1,21 @@
++Binding for TI bq24257 Li-Ion Charger
++
++Required properties:
++- compatible: Should contain one of the following:
++ * "ti,bq24257"
++- reg:			   integer, i2c address of the device.
++- ti,battery-regulation-voltage: integer, maximum charging voltage in uV.
++- ti,charge-current:	   integer, maximum charging current in uA.
++- ti,termination-current:  integer, charge will be terminated when current in
++			   constant-voltage phase drops below this value (in uA).
++
++Example:
++
++bq24257 {
++	compatible = "ti,bq24257";
++	reg = <0x6a>;
++
++	ti,battery-regulation-voltage = <4200000>;
++	ti,charge-current = <1000000>;
++	ti,termination-current = <50000>;
++};
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index 4091fb0..20352a7 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -388,6 +388,13 @@ config CHARGER_BQ24190
+ 	help
+ 	  Say Y to enable support for the TI BQ24190 battery charger.
+ 
++config CHARGER_BQ24257
++	tristate "TI BQ24257 battery charger driver"
++	depends on I2C && GPIOLIB
++	depends on REGMAP_I2C
++	help
++	  Say Y to enable support for the TI BQ24257 battery charger.
++
+ config CHARGER_BQ24735
+ 	tristate "TI BQ24735 battery charger support"
+ 	depends on I2C && GPIOLIB
+diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+index b7b0181..19a1f41 100644
+--- a/drivers/power/Makefile
++++ b/drivers/power/Makefile
+@@ -58,6 +58,7 @@ obj-$(CONFIG_CHARGER_MAX8997)	+= max8997_charger.o
+ obj-$(CONFIG_CHARGER_MAX8998)	+= max8998_charger.o
+ obj-$(CONFIG_CHARGER_BQ2415X)	+= bq2415x_charger.o
+ obj-$(CONFIG_CHARGER_BQ24190)	+= bq24190_charger.o
++obj-$(CONFIG_CHARGER_BQ24257)	+= bq24257_charger.o
+ obj-$(CONFIG_CHARGER_BQ24735)	+= bq24735-charger.o
+ obj-$(CONFIG_POWER_AVS)		+= avs/
+ obj-$(CONFIG_CHARGER_SMB347)	+= smb347-charger.o
+diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+new file mode 100644
+index 0000000..58b9af1
+--- /dev/null
++++ b/drivers/power/bq24257_charger.c
+@@ -0,0 +1,868 @@
++/*
++ * TI BQ24257 charger driver
++ *
++ * Copyright (C) 2015 Intel Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/i2c.h>
++#include <linux/power_supply.h>
++#include <linux/regmap.h>
++#include <linux/types.h>
++#include <linux/gpio/consumer.h>
++#include <linux/interrupt.h>
++#include <linux/delay.h>
++
++#include <linux/acpi.h>
++#include <linux/of.h>
++
++#define BQ24257_REG_1			0x00
++#define BQ24257_REG_2			0x01
++#define BQ24257_REG_3			0x02
++#define BQ24257_REG_4			0x03
++#define BQ24257_REG_5			0x04
++#define BQ24257_REG_6			0x05
++#define BQ24257_REG_7			0x06
++
++#define BQ24257_MANUFACTURER		"Texas Instruments"
++#define BQ24257_STAT_IRQ		"stat"
++#define BQ24257_PG_GPIO			"pg"
++
++#define BQ24257_ILIM_SET_DELAY		1000	/* msec */
++
++enum bq24257_fields {
++	F_WD_FAULT, F_WD_EN, F_STAT, F_FAULT,			    /* REG 1 */
++	F_RESET, F_IILIMIT, F_EN_STAT, F_EN_TERM, F_CE, F_HZ_MODE,  /* REG 2 */
++	F_VBAT, F_USB_DET,					    /* REG 3 */
++	F_ICHG, F_ITERM,					    /* REG 4 */
++	F_LOOP_STATUS, F_LOW_CHG, F_DPDM_EN, F_CE_STATUS, F_VINDPM, /* REG 5 */
++	F_X2_TMR_EN, F_TMR, F_SYSOFF, F_TS_STAT,		    /* REG 6 */
++	F_VOVP, F_CLR_VDP, F_FORCE_BATDET, F_FORCE_PTM,		    /* REG 7 */
++
++	F_MAX_FIELDS
++};
++
++/* initial field values, converted from uV/uA */
++struct bq24257_init_data {
++	u8 ichg;	/* charge current      */
++	u8 vbat;	/* regulation voltage  */
++	u8 iterm;	/* termination current */
++};
++
++struct bq24257_state {
++	u8 status;
++	u8 fault;
++	bool power_good;
++};
++
++struct bq24257_device {
++	struct i2c_client *client;
++	struct device *dev;
++	struct power_supply *charger;
++	struct power_supply_desc charger_desc;
++
++	struct regmap *rmap;
++	struct regmap_field *rmap_fields[F_MAX_FIELDS];
++
++	struct gpio_desc *pg;
++
++	struct delayed_work iilimit_setup_work;
++
++	struct bq24257_init_data init_data;
++	struct bq24257_state state;
++
++	struct mutex lock; /* protect state data */
++};
++
++static bool bq24257_is_writeable_reg(struct device *dev, unsigned int reg)
++{
++	return true;
++}
++
++static bool bq24257_is_volatile_reg(struct device *dev, unsigned int reg)
++{
++	switch (reg) {
++	case BQ24257_REG_2:
++	case BQ24257_REG_4:
++		return false;
++
++	default:
++		return true;
++	}
++}
++
++static const struct regmap_config bq24257_regmap_config = {
++	.reg_bits = 8,
++	.val_bits = 8,
++
++	.max_register = BQ24257_REG_7,
++	.cache_type = REGCACHE_RBTREE,
++
++	.writeable_reg = bq24257_is_writeable_reg,
++	.volatile_reg = bq24257_is_volatile_reg,
++};
++
++static const struct reg_field bq24257_reg_fields[] = {
++	/* REG 1 */
++	[F_WD_FAULT]		= REG_FIELD(BQ24257_REG_1, 7, 7),
++	[F_WD_EN]		= REG_FIELD(BQ24257_REG_1, 6, 6),
++	[F_STAT]		= REG_FIELD(BQ24257_REG_1, 4, 5),
++	[F_FAULT]		= REG_FIELD(BQ24257_REG_1, 0, 3),
++	/* REG 2 */
++	[F_RESET]		= REG_FIELD(BQ24257_REG_2, 7, 7),
++	[F_IILIMIT]		= REG_FIELD(BQ24257_REG_2, 4, 6),
++	[F_EN_STAT]		= REG_FIELD(BQ24257_REG_2, 3, 3),
++	[F_EN_TERM]		= REG_FIELD(BQ24257_REG_2, 2, 2),
++	[F_CE]			= REG_FIELD(BQ24257_REG_2, 1, 1),
++	[F_HZ_MODE]		= REG_FIELD(BQ24257_REG_2, 0, 0),
++	/* REG 3 */
++	[F_VBAT]		= REG_FIELD(BQ24257_REG_3, 2, 7),
++	[F_USB_DET]		= REG_FIELD(BQ24257_REG_3, 0, 1),
++	/* REG 4 */
++	[F_ICHG]		= REG_FIELD(BQ24257_REG_4, 3, 7),
++	[F_ITERM]		= REG_FIELD(BQ24257_REG_4, 0, 2),
++	/* REG 5 */
++	[F_LOOP_STATUS]		= REG_FIELD(BQ24257_REG_5, 6, 7),
++	[F_LOW_CHG]		= REG_FIELD(BQ24257_REG_5, 5, 5),
++	[F_DPDM_EN]		= REG_FIELD(BQ24257_REG_5, 4, 4),
++	[F_CE_STATUS]		= REG_FIELD(BQ24257_REG_5, 3, 3),
++	[F_VINDPM]		= REG_FIELD(BQ24257_REG_5, 0, 2),
++	/* REG 6 */
++	[F_X2_TMR_EN]		= REG_FIELD(BQ24257_REG_6, 7, 7),
++	[F_TMR]			= REG_FIELD(BQ24257_REG_6, 5, 6),
++	[F_SYSOFF]		= REG_FIELD(BQ24257_REG_6, 4, 4),
++	[F_TS_STAT]		= REG_FIELD(BQ24257_REG_6, 0, 2),
++	/* REG 7 */
++	[F_VOVP]		= REG_FIELD(BQ24257_REG_7, 5, 7),
++	[F_CLR_VDP]		= REG_FIELD(BQ24257_REG_7, 4, 4),
++	[F_FORCE_BATDET]	= REG_FIELD(BQ24257_REG_7, 3, 3),
++	[F_FORCE_PTM]		= REG_FIELD(BQ24257_REG_7, 2, 2)
++};
++
++static const u32 bq24257_vbat_map[] = {
++	3500000, 3520000, 3540000, 3560000, 3580000, 3600000, 3620000, 3640000,
++	3660000, 3680000, 3700000, 3720000, 3740000, 3760000, 3780000, 3800000,
++	3820000, 3840000, 3860000, 3880000, 3900000, 3920000, 3940000, 3960000,
++	3980000, 4000000, 4020000, 4040000, 4060000, 4080000, 4100000, 4120000,
++	4140000, 4160000, 4180000, 4200000, 4220000, 4240000, 4260000, 4280000,
++	4300000, 4320000, 4340000, 4360000, 4380000, 4400000, 4420000, 4440000
++};
++
++#define BQ24257_VBAT_MAP_SIZE		ARRAY_SIZE(bq24257_vbat_map)
++
++static const u32 bq24257_ichg_map[] = {
++	500000, 550000, 600000, 650000, 700000, 750000, 800000, 850000, 900000,
++	950000, 1000000, 1050000, 1100000, 1150000, 1200000, 1250000, 1300000,
++	1350000, 1400000, 1450000, 1500000, 1550000, 1600000, 1650000, 1700000,
++	1750000, 1800000, 1850000, 1900000, 1950000, 2000000
++};
++
++#define BQ24257_ICHG_MAP_SIZE		ARRAY_SIZE(bq24257_ichg_map)
++
++static const u32 bq24257_iterm_map[] = {
++	50000, 75000, 100000, 125000, 150000, 175000, 200000, 225000
++};
++
++#define BQ24257_ITERM_MAP_SIZE		ARRAY_SIZE(bq24257_iterm_map)
++
++static int bq24257_field_read(struct bq24257_device *bq,
++			      enum bq24257_fields field_id)
++{
++	int ret;
++	int val;
++
++	ret = regmap_field_read(bq->rmap_fields[field_id], &val);
++	if (ret < 0)
++		return ret;
++
++	return val;
++}
++
++static int bq24257_field_write(struct bq24257_device *bq,
++			       enum bq24257_fields field_id, u8 val)
++{
++	return regmap_field_write(bq->rmap_fields[field_id], val);
++}
++
++static u8 bq24257_find_idx(u32 value, const u32 *map, u8 map_size)
++{
++	u8 idx;
++
++	for (idx = 1; idx < map_size; idx++)
++		if (value < map[idx])
++			break;
++
++	return idx - 1;
++}
++
++enum bq24257_status {
++	STATUS_READY,
++	STATUS_CHARGE_IN_PROGRESS,
++	STATUS_CHARGE_DONE,
++	STATUS_FAULT,
++};
++
++enum bq24257_fault {
++	FAULT_NORMAL,
++	FAULT_INPUT_OVP,
++	FAULT_INPUT_UVLO,
++	FAULT_SLEEP,
++	FAULT_BAT_TS,
++	FAULT_BAT_OVP,
++	FAULT_TS,
++	FAULT_TIMER,
++	FAULT_NO_BAT,
++	FAULT_ISET,
++	FAULT_INPUT_LDO_LOW,
++};
++
++static int bq24257_power_supply_get_property(struct power_supply *psy,
++					     enum power_supply_property psp,
++					     union power_supply_propval *val)
++{
++	struct bq24257_device *bq = power_supply_get_drvdata(psy);
++	struct bq24257_state state;
++
++	mutex_lock(&bq->lock);
++	state = bq->state;
++	mutex_unlock(&bq->lock);
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_STATUS:
++		if (!state.power_good)
++			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
++		else if (state.status == STATUS_READY)
++			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
++		else if (state.status == STATUS_CHARGE_IN_PROGRESS)
++			val->intval = POWER_SUPPLY_STATUS_CHARGING;
++		else if (state.status == STATUS_CHARGE_DONE)
++			val->intval = POWER_SUPPLY_STATUS_FULL;
++		else
++			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
++		break;
++
++	case POWER_SUPPLY_PROP_MANUFACTURER:
++		val->strval = BQ24257_MANUFACTURER;
++		break;
++
++	case POWER_SUPPLY_PROP_ONLINE:
++		val->intval = state.power_good;
++		break;
++
++	case POWER_SUPPLY_PROP_HEALTH:
++		switch (state.fault) {
++		case FAULT_NORMAL:
++			val->intval = POWER_SUPPLY_HEALTH_GOOD;
++			break;
++
++		case FAULT_INPUT_OVP:
++		case FAULT_BAT_OVP:
++			val->intval = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
++			break;
++
++		case FAULT_TS:
++		case FAULT_BAT_TS:
++			val->intval = POWER_SUPPLY_HEALTH_OVERHEAT;
++			break;
++
++		case FAULT_TIMER:
++			val->intval = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
++			break;
++
++		default:
++			val->intval = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
++			break;
++		}
++
++		break;
++
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
++		val->intval = bq24257_ichg_map[bq->init_data.ichg];
++		break;
++
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
++		val->intval = bq24257_ichg_map[BQ24257_ICHG_MAP_SIZE - 1];
++		break;
++
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
++		val->intval = bq24257_vbat_map[bq->init_data.vbat];
++		break;
++
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
++		val->intval = bq24257_vbat_map[BQ24257_VBAT_MAP_SIZE - 1];
++		break;
++
++	case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
++		val->intval = bq24257_iterm_map[bq->init_data.iterm];
++		break;
++
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int bq24257_get_chip_state(struct bq24257_device *bq,
++				  struct bq24257_state *state)
++{
++	int ret;
++
++	ret = bq24257_field_read(bq, F_STAT);
++	if (ret < 0)
++		return ret;
++
++	state->status = ret;
++
++	ret = bq24257_field_read(bq, F_FAULT);
++	if (ret < 0)
++		return ret;
++
++	state->fault = ret;
++
++	state->power_good = !gpiod_get_value_cansleep(bq->pg);
++
++	return 0;
++}
++
++static bool bq24257_state_changed(struct bq24257_device *bq,
++				  struct bq24257_state *new_state)
++{
++	int ret;
++
++	mutex_lock(&bq->lock);
++	ret = (bq->state.status != new_state->status ||
++	       bq->state.fault != new_state->fault ||
++	       bq->state.power_good != new_state->power_good);
++	mutex_unlock(&bq->lock);
++
++	return ret;
++}
++
++enum bq24257_loop_status {
++	LOOP_STATUS_NONE,
++	LOOP_STATUS_IN_DPM,
++	LOOP_STATUS_IN_CURRENT_LIMIT,
++	LOOP_STATUS_THERMAL,
++};
++
++enum bq24257_in_ilimit {
++	IILIMIT_100,
++	IILIMIT_150,
++	IILIMIT_500,
++	IILIMIT_900,
++	IILIMIT_1500,
++	IILIMIT_2000,
++	IILIMIT_EXT,
++	IILIMIT_NONE,
++};
++
++enum bq24257_port_type {
++	PORT_TYPE_DCP,		/* Dedicated Charging Port */
++	PORT_TYPE_CDP,		/* Charging Downstream Port */
++	PORT_TYPE_SDP,		/* Standard Downstream Port */
++	PORT_TYPE_NON_STANDARD,
++};
++
++enum bq24257_safety_timer {
++	SAFETY_TIMER_45,
++	SAFETY_TIMER_360,
++	SAFETY_TIMER_540,
++	SAFETY_TIMER_NONE,
++};
++
++static int bq24257_iilimit_autoset(struct bq24257_device *bq)
++{
++	int loop_status;
++	int iilimit;
++	int port_type;
++	int ret;
++	const u8 new_iilimit[] = {
++		[PORT_TYPE_DCP] = IILIMIT_2000,
++		[PORT_TYPE_CDP] = IILIMIT_2000,
++		[PORT_TYPE_SDP] = IILIMIT_500,
++		[PORT_TYPE_NON_STANDARD] = IILIMIT_500
++	};
++
++	ret = bq24257_field_read(bq, F_LOOP_STATUS);
++	if (ret < 0)
++		goto error;
++
++	loop_status = ret;
++
++	ret = bq24257_field_read(bq, F_IILIMIT);
++	if (ret < 0)
++		goto error;
++
++	iilimit = ret;
++
++	/*
++	 * All USB ports should be able to handle 500mA. If not, DPM will lower
++	 * the charging current to accommodate the power source. No need to set
++	 * a lower IILIMIT value.
++	 */
++	if (loop_status == LOOP_STATUS_IN_DPM && iilimit == IILIMIT_500)
++		return 0;
++
++	ret = bq24257_field_read(bq, F_USB_DET);
++	if (ret < 0)
++		goto error;
++
++	port_type = ret;
++
++	ret = bq24257_field_write(bq, F_IILIMIT, new_iilimit[port_type]);
++	if (ret < 0)
++		goto error;
++
++	ret = bq24257_field_write(bq, F_TMR, SAFETY_TIMER_360);
++	if (ret < 0)
++		goto error;
++
++	ret = bq24257_field_write(bq, F_CLR_VDP, 1);
++	if (ret < 0)
++		goto error;
++
++	dev_dbg(bq->dev, "port/loop = %d/%d -> iilimit = %d\n",
++		port_type, loop_status, new_iilimit[port_type]);
++
++	return 0;
++
++error:
++	dev_err(bq->dev, "%s: Error communicating with the chip.\n", __func__);
++	return ret;
++}
++
++static void bq24257_iilimit_setup_work(struct work_struct *work)
++{
++	struct bq24257_device *bq = container_of(work, struct bq24257_device,
++						 iilimit_setup_work.work);
++
++	bq24257_iilimit_autoset(bq);
++}
++
++static void bq24257_handle_state_change(struct bq24257_device *bq,
++					struct bq24257_state *new_state)
++{
++	int ret;
++	struct bq24257_state old_state;
++	bool reset_iilimit = false;
++	bool config_iilimit = false;
++
++	mutex_lock(&bq->lock);
++	old_state = bq->state;
++	mutex_unlock(&bq->lock);
++
++	if (!new_state->power_good) {			     /* power removed */
++		cancel_delayed_work_sync(&bq->iilimit_setup_work);
++
++		/* activate D+/D- port detection algorithm */
++		ret = bq24257_field_write(bq, F_DPDM_EN, 1);
++		if (ret < 0)
++			goto error;
++
++		reset_iilimit = true;
++	} else if (!old_state.power_good) {		    /* power inserted */
++		config_iilimit = true;
++	} else if (new_state->fault == FAULT_NO_BAT) {	   /* battery removed */
++		cancel_delayed_work_sync(&bq->iilimit_setup_work);
++
++		reset_iilimit = true;
++	} else if (old_state.fault == FAULT_NO_BAT) {    /* battery connected */
++		config_iilimit = true;
++	} else if (new_state->fault == FAULT_TIMER) { /* safety timer expired */
++		dev_err(bq->dev, "Safety timer expired! Battery dead?\n");
++	}
++
++	if (reset_iilimit) {
++		ret = bq24257_field_write(bq, F_IILIMIT, IILIMIT_500);
++		if (ret < 0)
++			goto error;
++	} else if (config_iilimit) {
++		schedule_delayed_work(&bq->iilimit_setup_work,
++				      msecs_to_jiffies(BQ24257_ILIM_SET_DELAY));
++	}
++
++	return;
++
++error:
++	dev_err(bq->dev, "%s: Error communicating with the chip.\n", __func__);
++}
++
++static irqreturn_t bq24257_irq_handler_thread(int irq, void *private)
++{
++	int ret;
++	struct bq24257_device *bq = private;
++	struct bq24257_state state;
++
++	ret = bq24257_get_chip_state(bq, &state);
++	if (ret < 0)
++		return IRQ_HANDLED;
++
++	if (!bq24257_state_changed(bq, &state))
++		return IRQ_HANDLED;
++
++	dev_dbg(bq->dev, "irq(state changed): status/fault/pg = %d/%d/%d\n",
++		state.status, state.fault, state.power_good);
++
++	bq24257_handle_state_change(bq, &state);
++
++	mutex_lock(&bq->lock);
++	bq->state = state;
++	mutex_unlock(&bq->lock);
++
++	power_supply_changed(bq->charger);
++
++	return IRQ_HANDLED;
++}
++
++static int bq24257_hw_init(struct bq24257_device *bq)
++{
++	int ret;
++	int i;
++	struct bq24257_state state;
++
++	const struct {
++		int field;
++		u32 value;
++	} init_data[] = {
++		{F_ICHG, bq->init_data.ichg},
++		{F_VBAT, bq->init_data.vbat},
++		{F_ITERM, bq->init_data.iterm}
++	};
++
++	/*
++	 * Disable the watchdog timer to prevent the IC from going back to
++	 * default settings after 50 seconds of I2C inactivity.
++	 */
++	ret = bq24257_field_write(bq, F_WD_EN, 0);
++	if (ret < 0)
++		return ret;
++
++	/* configure the charge currents and voltages */
++	for (i = 0; i < ARRAY_SIZE(init_data); i++) {
++		ret = bq24257_field_write(bq, init_data[i].field,
++					  init_data[i].value);
++		if (ret < 0)
++			return ret;
++	}
++
++	ret = bq24257_get_chip_state(bq, &state);
++	if (ret < 0)
++		return ret;
++
++	mutex_lock(&bq->lock);
++	bq->state = state;
++	mutex_unlock(&bq->lock);
++
++	if (!state.power_good)
++		/* activate D+/D- detection algorithm */
++		ret = bq24257_field_write(bq, F_DPDM_EN, 1);
++	else if (state.fault != FAULT_NO_BAT)
++		ret = bq24257_iilimit_autoset(bq);
++
++	return ret;
++}
++
++static enum power_supply_property bq24257_power_supply_props[] = {
++	POWER_SUPPLY_PROP_MANUFACTURER,
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_ONLINE,
++	POWER_SUPPLY_PROP_HEALTH,
++	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
++	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
++	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
++	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
++	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
++};
++
++static char *bq24257_charger_supplied_to[] = {
++	"main-battery",
++};
++
++static int bq24257_power_supply_init(struct bq24257_device *bq)
++{
++	struct power_supply_config psy_cfg = { .drv_data = bq, };
++	struct power_supply_desc *psy_desc = &bq->charger_desc;
++
++	psy_desc->name = "bq24257-charger";
++	psy_desc->type = POWER_SUPPLY_TYPE_USB;
++	psy_desc->properties = bq24257_power_supply_props;
++	psy_desc->num_properties = ARRAY_SIZE(bq24257_power_supply_props);
++	psy_desc->get_property = bq24257_power_supply_get_property;
++
++	psy_cfg.supplied_to = bq24257_charger_supplied_to;
++	psy_cfg.num_supplicants = ARRAY_SIZE(bq24257_charger_supplied_to);
++
++	bq->charger = power_supply_register(bq->dev, psy_desc, &psy_cfg);
++	if (IS_ERR(bq->charger))
++		return PTR_ERR(bq->charger);
++
++	return 0;
++}
++
++static int bq24257_irq_probe(struct bq24257_device *bq)
++{
++	int ret;
++	struct gpio_desc *stat_irq;
++
++	stat_irq = devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0);
++	if (IS_ERR(stat_irq)) {
++		dev_err(bq->dev, "could not probe stat_irq pin\n");
++		return PTR_ERR(stat_irq);
++	}
++
++	ret = gpiod_direction_input(stat_irq);
++	if (ret < 0)
++		return ret;
++
++	return gpiod_to_irq(stat_irq);
++}
++
++static int bq24257_pg_gpio_probe(struct bq24257_device *bq)
++{
++	bq->pg = devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0);
++	if (IS_ERR(bq->pg)) {
++		dev_err(bq->dev, "could not probe PG pin\n");
++		return PTR_ERR(bq->pg);
++	}
++
++	return gpiod_direction_input(bq->pg);
++}
++
++static int bq24257_fw_probe(struct bq24257_device *bq)
++{
++	int ret;
++	u32 property;
++
++	ret = device_property_read_u32(bq->dev, "ti,charge-current", &property);
++	if (ret < 0)
++		return ret;
++
++	bq->init_data.ichg = bq24257_find_idx(property, bq24257_ichg_map,
++					      BQ24257_ICHG_MAP_SIZE);
++
++	ret = device_property_read_u32(bq->dev, "ti,battery-regulation-voltage",
++				       &property);
++	if (ret < 0)
++		return ret;
++
++	bq->init_data.vbat = bq24257_find_idx(property, bq24257_vbat_map,
++					      BQ24257_VBAT_MAP_SIZE);
++
++	ret = device_property_read_u32(bq->dev, "ti,termination-current",
++				       &property);
++	if (ret < 0)
++		return ret;
++
++	bq->init_data.iterm = bq24257_find_idx(property, bq24257_iterm_map,
++					       BQ24257_ITERM_MAP_SIZE);
++
++	return 0;
++}
++
++static int bq24257_probe(struct i2c_client *client,
++			 const struct i2c_device_id *id)
++{
++	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
++	struct device *dev = &client->dev;
++	struct bq24257_device *bq;
++	int ret;
++	int i;
++
++	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA)) {
++		dev_err(dev, "No support for SMBUS_BYTE_DATA\n");
++		return -ENODEV;
++	}
++
++	bq = devm_kzalloc(dev, sizeof(*bq), GFP_KERNEL);
++	if (!bq)
++		return -ENOMEM;
++
++	bq->client = client;
++	bq->dev = dev;
++
++	mutex_init(&bq->lock);
++
++	bq->rmap = devm_regmap_init_i2c(client, &bq24257_regmap_config);
++	if (IS_ERR(bq->rmap)) {
++		dev_err(dev, "failed to allocate register map\n");
++		return PTR_ERR(bq->rmap);
++	}
++
++	for (i = 0; i < ARRAY_SIZE(bq24257_reg_fields); i++) {
++		const struct reg_field *reg_fields = bq24257_reg_fields;
++
++		bq->rmap_fields[i] = devm_regmap_field_alloc(dev, bq->rmap,
++							     reg_fields[i]);
++		if (IS_ERR(bq->rmap_fields[i])) {
++			dev_err(dev, "cannot allocate regmap field\n");
++			return PTR_ERR(bq->rmap_fields[i]);
++		}
++	}
++
++	i2c_set_clientdata(client, bq);
++
++	INIT_DELAYED_WORK(&bq->iilimit_setup_work, bq24257_iilimit_setup_work);
++
++	if (!dev->platform_data) {
++		ret = bq24257_fw_probe(bq);
++		if (ret < 0) {
++			dev_err(dev, "Cannot read device properties.\n");
++			return ret;
++		}
++	} else {
++		return -ENODEV;
++	}
++
++	/* we can only check Power Good status by probing the PG pin */
++	ret = bq24257_pg_gpio_probe(bq);
++	if (ret < 0)
++		return ret;
++
++	/* reset all registers to defaults */
++	ret = bq24257_field_write(bq, F_RESET, 1);
++	if (ret < 0)
++		return ret;
++
++	/*
++	 * Put the RESET bit back to 0, in cache. For some reason the HW always
++	 * returns 1 on this bit, so this is the only way to avoid resetting the
++	 * chip every time we update another field in this register.
++	 */
++	ret = bq24257_field_write(bq, F_RESET, 0);
++	if (ret < 0)
++		return ret;
++
++	ret = bq24257_hw_init(bq);
++	if (ret < 0) {
++		dev_err(dev, "Cannot initialize the chip.\n");
++		return ret;
++	}
++
++	if (client->irq <= 0)
++		client->irq = bq24257_irq_probe(bq);
++
++	if (client->irq < 0) {
++		dev_err(dev, "no irq resource found\n");
++		return client->irq;
++	}
++
++	ret = devm_request_threaded_irq(dev, client->irq, NULL,
++					bq24257_irq_handler_thread,
++					IRQF_TRIGGER_FALLING |
++					IRQF_TRIGGER_RISING | IRQF_ONESHOT,
++					BQ24257_STAT_IRQ, bq);
++	if (ret)
++		return ret;
++
++	ret = bq24257_power_supply_init(bq);
++	if (ret < 0)
++		dev_err(dev, "Failed to register power supply\n");
++
++	return ret;
++}
++
++static int bq24257_remove(struct i2c_client *client)
++{
++	struct bq24257_device *bq = i2c_get_clientdata(client);
++
++	cancel_delayed_work_sync(&bq->iilimit_setup_work);
++
++	power_supply_unregister(bq->charger);
++
++	bq24257_field_write(bq, F_RESET, 1); /* reset to defaults */
++
++	return 0;
++}
++
++#ifdef CONFIG_PM_SLEEP
++static int bq24257_suspend(struct device *dev)
++{
++	struct bq24257_device *bq = dev_get_drvdata(dev);
++	int ret = 0;
++
++	cancel_delayed_work_sync(&bq->iilimit_setup_work);
++
++	/* reset all registers to default (and activate standalone mode) */
++	ret = bq24257_field_write(bq, F_RESET, 1);
++	if (ret < 0)
++		dev_err(bq->dev, "Cannot reset chip to standalone mode.\n");
++
++	return ret;
++}
++
++static int bq24257_resume(struct device *dev)
++{
++	int ret;
++	struct bq24257_device *bq = dev_get_drvdata(dev);
++
++	ret = regcache_drop_region(bq->rmap, BQ24257_REG_1, BQ24257_REG_7);
++	if (ret < 0)
++		return ret;
++
++	ret = bq24257_field_write(bq, F_RESET, 0);
++	if (ret < 0)
++		return ret;
++
++	ret = bq24257_hw_init(bq);
++	if (ret < 0) {
++		dev_err(bq->dev, "Cannot init chip after resume.\n");
++		return ret;
++	}
++
++	/* signal userspace, maybe state changed while suspended */
++	power_supply_changed(bq->charger);
++
++	return 0;
++}
++#endif
++
++static const struct dev_pm_ops bq24257_pm = {
++	SET_SYSTEM_SLEEP_PM_OPS(bq24257_suspend, bq24257_resume)
++};
++
++static const struct i2c_device_id bq24257_i2c_ids[] = {
++	{ "bq24257", 0 },
++	{},
++};
++MODULE_DEVICE_TABLE(i2c, bq24257_i2c_ids);
++
++static const struct of_device_id bq24257_of_match[] = {
++	{ .compatible = "ti,bq24257", },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, bq24257_of_match);
++
++static const struct acpi_device_id bq24257_acpi_match[] = {
++	{"BQ242570", 0},
++	{},
++};
++MODULE_DEVICE_TABLE(acpi, bq24257_acpi_match);
++
++static struct i2c_driver bq24257_driver = {
++	.driver = {
++		.name = "bq24257-charger",
++		.of_match_table = of_match_ptr(bq24257_of_match),
++		.acpi_match_table = ACPI_PTR(bq24257_acpi_match),
++		.pm = &bq24257_pm,
++	},
++	.probe = bq24257_probe,
++	.remove = bq24257_remove,
++	.id_table = bq24257_i2c_ids,
++};
++module_i2c_driver(bq24257_driver);
++
++MODULE_AUTHOR("Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>");
++MODULE_DESCRIPTION("bq24257 charger driver");
++MODULE_LICENSE("GPL");
+-- 
+1.9.1
 
-In general I would like to move away from using such macros, since I
-think it becomes less readable code.
-I know we have them already, but that is to me not a good reason for
-adding yet another pair.
-
-Should we try to find a better way?
-
->
->  static LIST_HEAD(gpd_list);
->  static DEFINE_MUTEX(gpd_list_lock);
-> @@ -141,12 +171,13 @@ static void genpd_set_active(struct generic_pm_domain *genpd)
->
->  static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
->  {
-> +       int target_state = genpd->target_state;
->         s64 usecs64;
->
->         if (!genpd->cpuidle_data)
->                 return;
->
-> -       usecs64 = genpd->power_on_latency_ns;
-> +       usecs64 = genpd->states[target_state].power_on_latency_ns;
->         do_div(usecs64, NSEC_PER_USEC);
->         usecs64 += genpd->cpuidle_data->saved_exit_latency;
->         genpd->cpuidle_data->idle_state->exit_latency = usecs64;
-> @@ -154,23 +185,24 @@ static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
->
->  static int genpd_power_on(struct generic_pm_domain *genpd)
->  {
-> +       int target_state = genpd->target_state;
->         ktime_t time_start;
->         s64 elapsed_ns;
->         int ret;
->
-> -       if (!genpd->power_on)
-> +       if (!genpd->states[target_state].power_on)
->                 return 0;
->
->         time_start = ktime_get();
-> -       ret = genpd->power_on(genpd);
-> +       ret = genpd->states[target_state].power_on(genpd);
->         if (ret)
->                 return ret;
->
->         elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
-> -       if (elapsed_ns <= genpd->power_on_latency_ns)
-> +       if (elapsed_ns <= genpd->states[target_state].power_on_latency_ns)
->                 return ret;
->
-> -       genpd->power_on_latency_ns = elapsed_ns;
-> +       genpd->states[target_state].power_on_latency_ns = elapsed_ns;
->         genpd->max_off_time_changed = true;
->         genpd_recalc_cpu_exit_latency(genpd);
->         pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
-> @@ -181,23 +213,24 @@ static int genpd_power_on(struct generic_pm_domain *genpd)
->
->  static int genpd_power_off(struct generic_pm_domain *genpd)
->  {
-> +       int target_state = genpd->target_state;
->         ktime_t time_start;
->         s64 elapsed_ns;
->         int ret;
->
-> -       if (!genpd->power_off)
-> +       if (!genpd->states[target_state].power_off)
->                 return 0;
->
->         time_start = ktime_get();
-> -       ret = genpd->power_off(genpd);
-> +       ret = genpd->states[target_state].power_off(genpd);
->         if (ret == -EBUSY)
->                 return ret;
->
->         elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
-> -       if (elapsed_ns <= genpd->power_off_latency_ns)
-> +       if (elapsed_ns <= genpd->states[target_state].power_off_latency_ns)
->                 return ret;
->
-> -       genpd->power_off_latency_ns = elapsed_ns;
-> +       genpd->states[target_state].power_off_latency_ns = elapsed_ns;
->         genpd->max_off_time_changed = true;
->         pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
->                 genpd->name, "off", elapsed_ns);
-> @@ -326,15 +359,17 @@ static int genpd_start_dev_no_timing(struct generic_pm_domain *genpd,
->
->  static int genpd_save_dev(struct generic_pm_domain *genpd, struct device *dev)
->  {
-> -       return GENPD_DEV_TIMED_CALLBACK(genpd, int, save_state, dev,
-> -                                       save_state_latency_ns, "state save");
-> +       return GENPD_DEV_TIMED_CALLBACK_STATE(genpd, int, save_state, dev,
-> +                                       save_state_latency_ns, "state save",
-> +                                       genpd->target_state);
->  }
->
->  static int genpd_restore_dev(struct generic_pm_domain *genpd, struct device *dev)
->  {
-> -       return GENPD_DEV_TIMED_CALLBACK(genpd, int, restore_state, dev,
-> +       return GENPD_DEV_TIMED_CALLBACK_STATE(genpd, int, restore_state, dev,
->                                         restore_state_latency_ns,
-> -                                       "state restore");
-> +                                       "state restore",
-> +                                       genpd->target_state);
->  }
->
->  static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
-> @@ -486,6 +521,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
->         struct pm_domain_data *pdd;
->         struct gpd_link *link;
->         unsigned int not_suspended;
-> +       int target_state;
->         int ret = 0;
->
->   start:
-> @@ -538,6 +574,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
->
->         genpd->status = GPD_STATE_BUSY;
->         genpd->poweroff_task = current;
-> +       target_state = genpd->target_state;
->
->         list_for_each_entry_reverse(pdd, &genpd->dev_list, list_node) {
->                 ret = atomic_read(&genpd->sd_count) == 0 ?
-> @@ -572,7 +609,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
->                 goto out;
->         }
->
-> -       if (genpd->power_off) {
-> +       if (genpd->states[target_state].power_off) {
->                 if (atomic_read(&genpd->sd_count) > 0) {
->                         ret = -EBUSY;
->                         goto out;
-> @@ -1809,7 +1846,7 @@ int pm_genpd_name_detach_cpuidle(const char *name)
->   * pm_genpd_default_save_state - Default "save device state" for PM domains.
->   * @dev: Device to handle.
->   */
-> -static int pm_genpd_default_save_state(struct device *dev)
-> +static int pm_genpd_default_save_state(struct device *dev, int state)
-
-Why change this?
-
->  {
->         int (*cb)(struct device *__dev);
->
-> @@ -1832,7 +1869,7 @@ static int pm_genpd_default_save_state(struct device *dev)
->   * pm_genpd_default_restore_state - Default PM domains "restore device state".
->   * @dev: Device to handle.
->   */
-> -static int pm_genpd_default_restore_state(struct device *dev)
-> +static int pm_genpd_default_restore_state(struct device *dev, int state)
-
-Why change this?
-
->  {
->         int (*cb)(struct device *__dev);
->
-> @@ -1877,6 +1914,8 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
->         genpd->resume_count = 0;
->         genpd->device_count = 0;
->         genpd->max_off_time_ns = -1;
-> +       /* on init assume we are coming from the deepest state */
-> +       genpd->target_state = genpd->state_count - 1;
-
-Couldn't we have the SoC specific genpd driver configure this instead?
-That would make it more flexible.
-
->         genpd->max_off_time_changed = true;
->         genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
->         genpd->domain.ops.runtime_resume = pm_genpd_runtime_resume;
-> @@ -2249,12 +2288,13 @@ static int pm_genpd_summary_one(struct seq_file *s,
->                 [GPD_STATE_WAIT_MASTER] = "wait-master",
->                 [GPD_STATE_BUSY] = "busy",
->                 [GPD_STATE_REPEAT] = "off-in-progress",
-> -               [GPD_STATE_POWER_OFF] = "off"
-> +               [GPD_STATE_POWER_OFF] = "off:"
->         };
->         struct pm_domain_data *pm_data;
->         const char *kobj_path;
->         struct gpd_link *link;
->         int ret;
-> +       int target_state = genpd->target_state;
->
->         ret = mutex_lock_interruptible(&genpd->lock);
->         if (ret)
-> @@ -2262,7 +2302,11 @@ static int pm_genpd_summary_one(struct seq_file *s,
->
->         if (WARN_ON(genpd->status >= ARRAY_SIZE(status_lookup)))
->                 goto exit;
-> -       seq_printf(s, "%-30s  %-15s  ", genpd->name, status_lookup[genpd->status]);
-> +
-> +       seq_printf(s, "%-30s  %s%-15s  ", genpd->name,
-> +               status_lookup[genpd->status],
-> +               (genpd->status == GPD_STATE_POWER_OFF) ?
-> +                       genpd->states[target_state].name : "");
->
->         /*
->          * Modifications on the list require holding locks on both
-> diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-> index 2a4154a..deaaa76 100644
-> --- a/drivers/base/power/domain_governor.c
-> +++ b/drivers/base/power/domain_governor.c
-> @@ -100,10 +100,12 @@ static bool default_stop_ok(struct device *dev)
->  static bool default_power_down_ok(struct dev_pm_domain *pd)
->  {
->         struct generic_pm_domain *genpd = pd_to_genpd(pd);
-> +       struct generic_pm_domain_data *gpd_data;
->         struct gpd_link *link;
->         struct pm_domain_data *pdd;
->         s64 min_off_time_ns;
->         s64 off_on_time_ns;
-> +       int state = 0;
->
->         if (genpd->max_off_time_changed) {
->                 struct gpd_link *link;
-> @@ -124,8 +126,8 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
->                 return genpd->cached_power_down_ok;
->         }
->
-> -       off_on_time_ns = genpd->power_off_latency_ns +
-> -                               genpd->power_on_latency_ns;
-> +       off_on_time_ns = genpd->states[state].power_off_latency_ns +
-> +                       genpd->states[state].power_on_latency_ns;
->         /*
->          * It doesn't make sense to remove power from the domain if saving
->          * the state of all devices in it and the power off/power on operations
-> @@ -134,9 +136,10 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
->          * All devices in this domain have been stopped already at this point.
->          */
->         list_for_each_entry(pdd, &genpd->dev_list, list_node) {
-> +               gpd_data = to_gpd_data(pdd);
->                 if (pdd->dev->driver)
->                         off_on_time_ns +=
-> -                               to_gpd_data(pdd)->td.save_state_latency_ns;
-> +                               gpd_data->td.save_state_latency_ns[state];
->         }
->
->         min_off_time_ns = -1;
-> @@ -193,7 +196,7 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
->                  * constraint_ns cannot be negative here, because the device has
->                  * been suspended.
->                  */
-> -               constraint_ns -= td->restore_state_latency_ns;
-> +               constraint_ns -= td->restore_state_latency_ns[state];
->                 if (constraint_ns <= off_on_time_ns)
->                         return false;
->
-> @@ -216,7 +219,8 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
->          * time and the time needed to turn the domain on is the maximum
->          * theoretical time this domain can spend in the "off" state.
->          */
-> -       genpd->max_off_time_ns = min_off_time_ns - genpd->power_on_latency_ns;
-> +       genpd->max_off_time_ns = min_off_time_ns -
-> +                       genpd->states[state].power_on_latency_ns;
->         return true;
->  }
->
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 3082247..d57ea37 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -17,6 +17,8 @@
->  #include <linux/notifier.h>
->  #include <linux/cpuidle.h>
->
-> +#define GENPD_MAX_NSTATES 10
-> +
->  /* Defines used for the flags field in the struct generic_pm_domain */
->  #define GENPD_FLAG_PM_CLK      (1U << 0) /* PM domain uses PM clk */
->
-> @@ -36,8 +38,8 @@ struct dev_power_governor {
->  struct gpd_dev_ops {
->         int (*start)(struct device *dev);
->         int (*stop)(struct device *dev);
-> -       int (*save_state)(struct device *dev);
-> -       int (*restore_state)(struct device *dev);
-> +       int (*save_state)(struct device *dev, int state);
-> +       int (*restore_state)(struct device *dev, int state);
-
-I don't see why these changes are needed, but that's maybe because I
-don't get the big picture, yet, :-)
-
->         bool (*active_wakeup)(struct device *dev);
->  };
->
-> @@ -46,6 +48,16 @@ struct gpd_cpuidle_data {
->         struct cpuidle_state *idle_state;
->  };
->
-> +struct generic_pm_domain;
-> +
-> +struct genpd_power_state {
-> +       char *name;
-> +       s64 power_off_latency_ns;
-> +       s64 power_on_latency_ns;
-> +       int (*power_off)(struct generic_pm_domain *domain);
-> +       int (*power_on)(struct generic_pm_domain *domain);
-> +};
-> +
->  struct generic_pm_domain {
->         struct dev_pm_domain domain;    /* PM domain operations */
->         struct list_head gpd_list_node; /* Node in the global PM domains list */
-> @@ -66,10 +78,6 @@ struct generic_pm_domain {
->         unsigned int suspended_count;   /* System suspend device counter */
->         unsigned int prepared_count;    /* Suspend counter of prepared devices */
->         bool suspend_power_off; /* Power status before system suspend */
-> -       int (*power_off)(struct generic_pm_domain *domain);
-> -       s64 power_off_latency_ns;
-> -       int (*power_on)(struct generic_pm_domain *domain);
-> -       s64 power_on_latency_ns;
-
-This will break compilation for some SoC using genpd.
-
->         struct gpd_dev_ops dev_ops;
->         s64 max_off_time_ns;    /* Maximum allowed "suspended" time. */
->         bool max_off_time_changed;
-> @@ -80,6 +88,9 @@ struct generic_pm_domain {
->         void (*detach_dev)(struct generic_pm_domain *domain,
->                            struct device *dev);
->         unsigned int flags;             /* Bit field of configs for genpd */
-> +       int target_state; /* state that genpd will go to when off */
-> +       struct genpd_power_state states[GENPD_MAX_NSTATES];
-> +       int state_count; /* number of states*/
->  };
->
->  static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
-> @@ -97,8 +108,8 @@ struct gpd_link {
->  struct gpd_timing_data {
->         s64 stop_latency_ns;
->         s64 start_latency_ns;
-> -       s64 save_state_latency_ns;
-> -       s64 restore_state_latency_ns;
-> +       s64 save_state_latency_ns[GENPD_MAX_NSTATES];
-> +       s64 restore_state_latency_ns[GENPD_MAX_NSTATES];
-
-This will break compilation for some SoC using genpd.
-
->         s64 effective_constraint_ns;
->         bool constraint_changed;
->         bool cached_stop_ok;
-> --
-
-Kind regards
-Uffe
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
