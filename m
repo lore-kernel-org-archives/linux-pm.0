@@ -1,82 +1,107 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 0/6] cpufreq: use generic cpufreq drivers for Exynos4x12
- platform
-Date: Fri, 10 Apr 2015 19:58:56 +0200
-Message-ID: <1428688742-15578-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Subject: [PATCH 5/6] ARM: Exynos: switch to using generic cpufreq driver for
+ Exynos4x12
+Date: Fri, 10 Apr 2015 19:59:01 +0200
+Message-ID: <1428688742-15578-6-git-send-email-b.zolnierkie@samsung.com>
+References: <1428688742-15578-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:19937 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756566AbbDJSAO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Apr 2015 14:00:14 -0400
+In-reply-to: <1428688742-15578-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
-List-Id: linux-pm@vger.kernel.org
 
-Hi,
+The new CPU clock type allows the use of generic CPUfreq driver.
+Switch Exynos4x12 to using generic cpufreq driver.
 
-This patch series removes the use of Exynos4x12 specific support
-from cpufreq-exynos driver and enables the use of cpufreq-dt driver
-for this platform.
+This patch also takes care of making ARM_EXYNOS_CPU_FREQ_BOOST_SW
+config option depend on cpufreq-dt driver instead of exynos-cpufreq
+one and fixes the minor issue present with the old code (support
+for 'boost' mode in the exynos-cpufreq driver was enabled for all
+supported SoCs even though 'boost' frequency was provided only for
+Exynos4x12 ones).
 
-In order to preserve support for Exynos4x12 'boost' mode cpufreq-dt
-driver is made aware of 'boost' mode frequencies and boost-opps
-binding is provided.
+Cc: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+Cc: Thomas Abraham <thomas.ab@samsung.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ arch/arm/mach-exynos/exynos.c    |   14 ++++++++++++++
+ drivers/cpufreq/Kconfig.arm      |    2 +-
+ drivers/cpufreq/exynos-cpufreq.c |    3 ---
+ 3 files changed, 15 insertions(+), 4 deletions(-)
 
-boost-opps binding is currently limited to cpufreq-dt but once there is
-a need for cpufreq wide and/or generic Linux device support for 'boost'
-mode cpufreq-dt can be updated to handle the new code without changing
-the binding itself.
-
-The decision to make 'boost' mode support limited to cpufreq-dt driver
-for now was taken because 'boost' mode is currently a niche feature and
-code needed for parsing boost-opps binding is minimal and simple.  More
-generic (i.e. separate 'boost' OPPs list in struct device and generic
-cpufreq convertion of them to freq_table format) support would need far
-more code and effort to make it work.  Doing it without a demonstrated
-real need would be on overengineering IMHO.
-
-This patch series has been tested on Exynos4412 based Odroid-U3 and
-Trats2 boards.
-
-Depends on:
-- next-20150330 branch of linux-next kernel tree
-- "[PATCH 0/6] cpufreq: use generic cpufreq drivers for Exynos4210
-  platform" [1]
-
-[1] http://www.kernelhub.org/?msg=721136&p=2
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-
-Bartlomiej Zolnierkiewicz (6):
-  cpufreq / OPP: allow allocation of extra table entries in freq_table
-  cpufreq-dt: add 'boost' mode frequencies support
-  clk: samsung: exynos4x12: add cpu clock configuration data and
-    instantiate cpu clock
-  ARM: dts: Exynos4x12: add CPU OPP and regulator supply property
-  ARM: Exynos: switch to using generic cpufreq driver for Exynos4x12
-  cpufreq: exynos: remove Exynos4x12 specific cpufreq driver support
-
- .../devicetree/bindings/cpufreq/cpufreq-dt.txt     |   14 ++
- arch/arm/boot/dts/exynos4212.dtsi                  |   22 ++
- arch/arm/boot/dts/exynos4412-odroid-common.dtsi    |    4 +
- arch/arm/boot/dts/exynos4412-origen.dts            |    5 +
- arch/arm/boot/dts/exynos4412-trats2.dts            |    5 +
- arch/arm/boot/dts/exynos4412.dtsi                  |   22 ++
- arch/arm/mach-exynos/exynos.c                      |   14 ++
- drivers/clk/samsung/clk-exynos4.c                  |   50 +++++
- drivers/cpufreq/Kconfig.arm                        |   13 +-
- drivers/cpufreq/Makefile                           |    1 -
- drivers/cpufreq/cpufreq-dt.c                       |  114 ++++++++--
- drivers/cpufreq/cpufreq_opp.c                      |   18 +-
- drivers/cpufreq/exynos-cpufreq.c                   |   11 +-
- drivers/cpufreq/exynos-cpufreq.h                   |   21 --
- drivers/cpufreq/exynos4x12-cpufreq.c               |  236 --------------------
- include/linux/cpufreq-dt.h                         |    1 +
- include/linux/cpufreq.h                            |    3 +
- 17 files changed, 257 insertions(+), 297 deletions(-)
- delete mode 100644 drivers/cpufreq/exynos4x12-cpufreq.c
-
+diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+index 4e13de5..637d862 100644
+--- a/arch/arm/mach-exynos/exynos.c
++++ b/arch/arm/mach-exynos/exynos.c
+@@ -20,6 +20,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/pm_domain.h>
+ #include <linux/irqchip.h>
++#include <linux/cpufreq-dt.h>
+ 
+ #include <asm/cacheflush.h>
+ #include <asm/hardware/cache-l2x0.h>
+@@ -197,6 +198,12 @@ static void __init exynos_init_irq(void)
+ 	exynos_map_pmu();
+ }
+ 
++struct cpufreq_dt_platform_data cpufreq_dt_pd = {
++#ifdef CONFIG_ARM_EXYNOS_CPU_FREQ_BOOST_SW
++	.boost_supported = true,
++#endif
++};
++
+ static const struct of_device_id exynos_cpufreq_matches[] = {
+ 	{ .compatible = "samsung,exynos4210", .data = "cpufreq-dt" },
+ 	{ /* sentinel */ }
+@@ -207,6 +214,13 @@ static void __init exynos_cpufreq_init(void)
+ 	struct device_node *root = of_find_node_by_path("/");
+ 	const struct of_device_id *match;
+ 
++	if (of_machine_is_compatible("samsung,exynos4212") ||
++	    of_machine_is_compatible("samsung,exynos4412")) {
++		platform_device_register_data(NULL, "cpufreq-dt", -1,
++					&cpufreq_dt_pd, sizeof(cpufreq_dt_pd));
++		return;
++	}
++
+ 	match = of_match_node(exynos_cpufreq_matches, root);
+ 	if (!match) {
+ 		platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 1d7ddc5..78cb0b9 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -60,7 +60,7 @@ config ARM_EXYNOS5250_CPUFREQ
+ 
+ config ARM_EXYNOS_CPU_FREQ_BOOST_SW
+ 	bool "EXYNOS Frequency Overclocking - Software"
+-	depends on ARM_EXYNOS_CPUFREQ && THERMAL
++	depends on CPUFREQ_DT && THERMAL
+ 	select CPU_FREQ_BOOST_SW
+ 	select EXYNOS_THERMAL
+ 	help
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 2d78f63..e48d4f1 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -125,9 +125,6 @@ static struct cpufreq_driver exynos_driver = {
+ 	.init		= exynos_cpufreq_cpu_init,
+ 	.name		= "exynos_cpufreq",
+ 	.attr		= cpufreq_generic_attr,
+-#ifdef CONFIG_ARM_EXYNOS_CPU_FREQ_BOOST_SW
+-	.boost_supported = true,
+-#endif
+ #ifdef CONFIG_PM
+ 	.suspend	= cpufreq_generic_suspend,
+ #endif
 -- 
 1.7.9.5
+
