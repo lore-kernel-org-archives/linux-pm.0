@@ -1,39 +1,117 @@
-From: Kristen Carlson Accardi <kristen@linux.intel.com>
-Subject: [PATCH] intel_pstate: Change the setpoint for atom params
-Date: Fri, 10 Apr 2015 11:06:43 -0700
-Message-ID: <1428689203-3204-1-git-send-email-kristen@linux.intel.com>
+From: Michael Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH v8 10/18] clk: tegra: Initialize PLL_X before CCLK_G to ensure it
+ has a parent
+Date: Fri, 10 Apr 2015 14:08:32 -0700
+Message-ID: <20150410210832.14369.65901@quantum>
+References: <1425213881-5262-1-git-send-email-mikko.perttunen@kapsi.fi>
+ <1425213881-5262-11-git-send-email-mikko.perttunen@kapsi.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:16372 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754316AbbDJSGq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 10 Apr 2015 14:06:46 -0400
+Received: from mail-ig0-f169.google.com ([209.85.213.169]:33013 "EHLO
+	mail-ig0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756456AbbDJVIj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Apr 2015 17:08:39 -0400
+Received: by ignm3 with SMTP id m3so21539007ign.0
+        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2015 14:08:38 -0700 (PDT)
+In-Reply-To: <1425213881-5262-11-git-send-email-mikko.perttunen@kapsi.fi>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org
+To: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi, Mikko Perttunen <mikko.perttunen@kapsi.fi>
 
-Change the setpoint for the Baytrail and Cherrytrail cpus.  This
-will cause more aggressive pstate selection and improves
-performance on a variety of workloads with little power penalty.
+Quoting Mikko Perttunen (2015-03-01 04:44:33)
+> This patch moves the initialization of PLL_X to be slightly before
+> that of CCLK_G. This ensures that at boot, CCLK_G will immediately
+> have a parent and the common clock framework can determine its
+> clock rate correctly.
+> 
+> Without this patch, calling clk_put on CCLK_G could cause the CCF
+> to set its rate to zero, hanging the system.
 
-Signed-off-by: Kristen Carlson Accardi <kristen@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Hi Mikko,
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 872c577..204e43e 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -636,7 +636,7 @@ static struct cpu_defaults byt_params = {
- 	.pid_policy = {
- 		.sample_rate_ms = 10,
- 		.deadband = 0,
--		.setpoint = 97,
-+		.setpoint = 60,
- 		.p_gain_pct = 14,
- 		.d_gain_pct = 0,
- 		.i_gain_pct = 4,
--- 
-1.9.3
+Patch looks fine to me but I wanted to get more info on the behavior you
+mentioned above about clk_put. Is there some special circumstance that
+causes this for you? Why does calling clk_put adjust the rate of your
+clock?
 
+Thanks,
+Mike
+
+> 
+> Signed-off-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+> ---
+> v8:
+> - Added
+> 
+>  drivers/clk/tegra/clk-tegra-super-gen4.c | 46 ++++++++++++++++++--------------
+>  1 file changed, 26 insertions(+), 20 deletions(-)
+> 
+> diff --git a/drivers/clk/tegra/clk-tegra-super-gen4.c b/drivers/clk/tegra/clk-tegra-super-gen4.c
+> index f1f4410..c5ea9ee 100644
+> --- a/drivers/clk/tegra/clk-tegra-super-gen4.c
+> +++ b/drivers/clk/tegra/clk-tegra-super-gen4.c
+> @@ -104,6 +104,32 @@ void __init tegra_super_clk_gen4_init(void __iomem *clk_base,
+>         struct clk *clk;
+>         struct clk **dt_clk;
+>  
+> +       /*
+> +        * Register PLL_X first so that CCLK_G has a parent at registration
+> +        * time. This ensures that the common clock framework knows CCLK_G's
+> +        * rate.
+> +        */
+> +
+> +#if defined(CONFIG_ARCH_TEGRA_114_SOC) || defined(CONFIG_ARCH_TEGRA_124_SOC)
+> +       /* PLLX */
+> +       dt_clk = tegra_lookup_dt_id(tegra_clk_pll_x, tegra_clks);
+> +       if (!dt_clk)
+> +               return;
+> +
+> +       clk = tegra_clk_register_pllxc("pll_x", "pll_ref", clk_base,
+> +                       pmc_base, CLK_IGNORE_UNUSED, params, NULL);
+> +       *dt_clk = clk;
+> +
+> +       /* PLLX_OUT0 */
+> +
+> +       dt_clk = tegra_lookup_dt_id(tegra_clk_pll_x_out0, tegra_clks);
+> +       if (!dt_clk)
+> +               return;
+> +       clk = clk_register_fixed_factor(NULL, "pll_x_out0", "pll_x",
+> +                                       CLK_SET_RATE_PARENT, 1, 2);
+> +       *dt_clk = clk;
+> +#endif
+> +
+>         /* CCLKG */
+>         dt_clk = tegra_lookup_dt_id(tegra_clk_cclk_g, tegra_clks);
+>         if (dt_clk) {
+> @@ -127,25 +153,5 @@ void __init tegra_super_clk_gen4_init(void __iomem *clk_base,
+>         }
+>  
+>         tegra_sclk_init(clk_base, tegra_clks);
+> -
+> -#if defined(CONFIG_ARCH_TEGRA_114_SOC) || defined(CONFIG_ARCH_TEGRA_124_SOC)
+> -       /* PLLX */
+> -       dt_clk = tegra_lookup_dt_id(tegra_clk_pll_x, tegra_clks);
+> -       if (!dt_clk)
+> -               return;
+> -
+> -       clk = tegra_clk_register_pllxc("pll_x", "pll_ref", clk_base,
+> -                       pmc_base, CLK_IGNORE_UNUSED, params, NULL);
+> -       *dt_clk = clk;
+> -
+> -       /* PLLX_OUT0 */
+> -
+> -       dt_clk = tegra_lookup_dt_id(tegra_clk_pll_x_out0, tegra_clks);
+> -       if (!dt_clk)
+> -               return;
+> -       clk = clk_register_fixed_factor(NULL, "pll_x_out0", "pll_x",
+> -                                       CLK_SET_RATE_PARENT, 1, 2);
+> -       *dt_clk = clk;
+> -#endif
+>  }
+>  
+> -- 
+> 2.3.0
+> 
