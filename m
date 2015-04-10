@@ -1,530 +1,261 @@
-From: Ong Boon Leong <boon.leong.ong@intel.com>
-Subject: [PATCHv4 1/1] thermal: intel Quark SoC X1000 DTS thermal driver
-Date: Fri, 10 Apr 2015 12:07:01 +0800
-Message-ID: <1428638821-9737-2-git-send-email-boon.leong.ong@intel.com>
-References: <1428638821-9737-1-git-send-email-boon.leong.ong@intel.com>
+From: Keerthy <a0393675@ti.com>
+Subject: Re: [PATCH v2] thermal: ti-soc-thermal: dra7: Implement Workaround
+ for Errata i814 - Bandgap Temperature read Dtemp can be corrupted
+Date: Fri, 10 Apr 2015 11:02:05 +0530
+Message-ID: <55276055.20902@ti.com>
+References: <1427445901-8461-1-git-send-email-j-keerthy@ti.com> <55234CE4.5070901@ti.com> <20150407200516.GD4203@localhost.localdomain> <5524AD87.7040406@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:33165 "EHLO mga01.intel.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:52592 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750824AbbDJEHz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 10 Apr 2015 00:07:55 -0400
-In-Reply-To: <1428638821-9737-1-git-send-email-boon.leong.ong@intel.com>
+	id S1752077AbbDJFcN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 10 Apr 2015 01:32:13 -0400
+In-Reply-To: <5524AD87.7040406@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, pure.logic@nexus-software.ie, hock.leong.kweh@intel.com, andy.shevchenko@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Keerthy <j-keerthy@ti.com>, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, t-kristo@ti.com
 
-In Intel Quark SoC X1000, there is one on-die digital temperature sensor(DTS).
-The DTS offers both hot & critical trip points.
 
-However, in current distribution of UEFI BIOS for Quark platform, only
-critical trip point is configured to be 105 degree Celsius (based on Quark
-SW ver1.0.1 and hot trip point is not used due to lack of IRQ.
 
-There is no active cooling device for Quark SoC, so Quark SoC thermal
-management logic expects Linux distro to orderly power-off when temperature
-of the DTS exceeds the configured critical trip point.
+On Wednesday 08 April 2015 09:54 AM, Keerthy wrote:
+> Hi Eduardo,
+>
+> Thanks for the review comments.
+>
+> On Wednesday 08 April 2015 01:35 AM, Eduardo Valentin wrote:
+>> Hello K,
+>>
+>> On Tue, Apr 07, 2015 at 08:50:04AM +0530, Keerthy wrote:
+>>> Hi Eduardo,
+>>>
+>>> On Friday 27 March 2015 02:15 PM, Keerthy wrote:
+>>>> Bandgap Temperature read Dtemp can be corrupted
+>>>>
+>>>> DESCRIPTION
+>>>>          Read accesses to registers listed below can be corrupted
+>>>> due to incorrect resynchronization between
+>>>>          clock domains.
+>>>>
+>>>>          Read access to registers below can be corrupted :
+>>>>                  =E2=80=A2 CTRL_CORE_DTEMP_MPU/GPU/CORE/DSPEVE/IVA=
+_n (n =3D 0
+>>>> to 4)
+>>>>          =E2=80=A2 CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA_n
+>>>>
+>>>> WORKAROUND
+>>>>          Multiple reads to
+>>>> CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA[9:0]:
+>>>>          BGAP_DTEMPMPU/GPU/CORE/DSPEVE/IVA is needed to discard
+>>>> false value and read right value:
+>>>>                  1. Perform two successive reads to BGAP_DTEMP bit
+>>>> field.
+>>>>                          (a) If read1 returns Val1 and read2 retur=
+ns
+>>>> Val1, then right value is Val1.
+>>>>                          (b) If read1 returns Val1, read 2 returns
+>>>> Val2, a third read is needed.
+>>>>                  2. Perform third read
+>>>>                          (a) If read3 returns Val2 then right valu=
+e
+>>>> is Val2.
+>>>>                          (b) If read3 returns Val3, then right val=
+ue
+>>>> is Val3.
+>>
+>> The third read description (b) is misleading/confusing. Does it mean
+>> third read value is always correct or do we need to compare against =
+val1
+>> and val2? if val3 !=3D val2 && val3 !=3D val1, which one is correct?=
+ none?
+>
+> That is all is given in the errata description. Seems to assume third
+> one is right value always.
 
-Kernel param "polling_delay" in milliseconds is used to control the frequency
-the DTS temperature is read by thermal framework. It defaults to 2-second.
-To change it, use kernel boot param "intel_quark_dts_thermal.polling_delay=X".
+Got a confirmation from the designer that synchronization shall be=20
+complete by third read hence it is the right value irrespective of the=20
+first and second..
 
-User interacts with Quark SoC DTS thermal driver through sysfs via:
-/sys/class/thermal/thermal_zone0/
-
-For example:
- - to read DTS temperature
-   $ cat temp
- - to read critical trip point
-   $ cat trip_point_0_temp
- - to read trip point type
-   $ cat trip_point_0_type
- - to emulate temperature raise to test orderly shutdown by Linux distro
-   $ echo 105 > emul_temp
-
-Tested-by: Bryan O'Donoghue <pure.logic@nexus-software.ie>
-Signed-off-by: Ong Boon Leong <boon.leong.ong@intel.com>
-Reviewed-by: Bryan O'Donoghue <pure.logic@nexus-software.ie>
-Reviewed-by: Kweh, Hock Leong <hock.leong.kweh@intel.com>
----
- drivers/thermal/Kconfig                   |   10 +
- drivers/thermal/Makefile                  |    1 +
- drivers/thermal/intel_quark_dts_thermal.c |  433 +++++++++++++++++++++++++++++
- 3 files changed, 444 insertions(+)
- create mode 100644 drivers/thermal/intel_quark_dts_thermal.c
-
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index af40db0..f72b352 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -261,6 +261,16 @@ config INTEL_SOC_DTS_THERMAL
- 	  notification methods.The other trip is a critical trip point, which
- 	  was set by the driver based on the TJ MAX temperature.
-
-+config INTEL_QUARK_DTS_THERMAL
-+	tristate "Intel Quark DTS thermal driver"
-+	depends on X86_INTEL_QUARK
-+	help
-+	  Enable this to register Intel Quark SoC (e.g. X1000) platform digital
-+	  temperature sensor (DTS). For X1000 SoC, it has one on-die DTS.
-+	  The DTS will be registered as a thermal zone. There are two trip points:
-+	  hot & critical. The critical trip point default value is set by
-+	  underlying BIOS/Firmware.
-+
- config INT340X_THERMAL
- 	tristate "ACPI INT340X thermal drivers"
- 	depends on X86 && ACPI
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index fa0dc48..17d3f92 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -35,6 +35,7 @@ obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
- obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
- obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
- obj-$(CONFIG_INTEL_SOC_DTS_THERMAL)	+= intel_soc_dts_thermal.o
-+obj-$(CONFIG_INTEL_QUARK_DTS_THERMAL)	+= intel_quark_dts_thermal.o
- obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
- obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
- obj-$(CONFIG_ST_THERMAL)	+= st/
-diff --git a/drivers/thermal/intel_quark_dts_thermal.c b/drivers/thermal/intel_quark_dts_thermal.c
-new file mode 100644
-index 0000000..d764a89
---- /dev/null
-+++ b/drivers/thermal/intel_quark_dts_thermal.c
-@@ -0,0 +1,433 @@
-+/*
-+ * intel_quark_dts_thermal.c
-+ * Copyright (c) 2015, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * Quark DTS thermal driver is implemented by referencing
-+ * intel_soc_dts_thermal.c.
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/module.h>
-+#include <linux/slab.h>
-+#include <linux/interrupt.h>
-+#include <linux/thermal.h>
-+#include <asm/cpu_device_id.h>
-+#include <asm/iosf_mbi.h>
-+
-+#define X86_FAMILY_QUARK	0x5
-+#define X86_MODEL_QUARK_X1000	0x9
-+
-+/* DTS reset is programmed via QRK_MBI_UNIT_SOC */
-+#define QRK_DTS_REG_OFFSET_RESET	0x34
-+#define QRK_DTS_RESET_BIT		BIT(0)
-+
-+/* DTS enable is programmed via QRK_MBI_UNIT_RMU */
-+#define QRK_DTS_REG_OFFSET_ENABLE	0xB0
-+#define QRK_DTS_ENABLE_BIT		BIT(15)
-+
-+/* Temperature Register is read via QRK_MBI_UNIT_RMU */
-+#define QRK_DTS_REG_OFFSET_TEMP		0xB1
-+#define QRK_DTS_MASK_TEMP		0xFF
-+#define QRK_DTS_OFFSET_TEMP		0
-+#define QRK_DTS_OFFSET_REL_TEMP		16
-+#define QRK_DTS_TEMP_BASE		50
-+
-+/* Programmable Trip Point Register is configured via QRK_MBI_UNIT_RMU */
-+#define QRK_DTS_REG_OFFSET_PTPS		0xB2
-+#define QRK_DTS_MASK_TP_THRES		0xFF
-+#define QRK_DTS_SHIFT_TP		8
-+#define QRK_DTS_ID_TP_CRITICAL		0
-+#define QRK_DTS_SAFE_TP_THRES		105
-+
-+/* Thermal Sensor Register Lock */
-+#define QRK_DTS_REG_OFFSET_LOCK		0x71
-+#define QRK_DTS_LOCK_BIT		BIT(5)
-+
-+/* Quark DTS has 2 trip points: hot & catastrophic */
-+#define QRK_MAX_DTS_TRIPS	2
-+/* If DTS not locked, all trip points are configurable */
-+#define QRK_DTS_WR_MASK_SET	0x3
-+/* If DTS locked, all trip points are not configurable */
-+#define QRK_DTS_WR_MASK_CLR	0
-+
-+#define DEFAULT_POLL_DELAY	2000
-+
-+struct soc_sensor_entry {
-+	bool locked;
-+	u32 store_ptps;
-+	u32 store_dts_enable;
-+	enum thermal_device_mode mode;
-+	struct thermal_zone_device *tzone;
-+};
-+
-+static struct soc_sensor_entry *soc_dts;
-+
-+static int polling_delay = DEFAULT_POLL_DELAY;
-+module_param(polling_delay, int, 0644);
-+MODULE_PARM_DESC(polling_delay,
-+	"Polling interval for checking trip points (in milliseconds)");
-+
-+static DEFINE_MUTEX(dts_update_mutex);
-+
-+static int soc_dts_enable(struct thermal_zone_device *tzd)
-+{
-+	u32 out;
-+	struct soc_sensor_entry *aux_entry = tzd->devdata;
-+	int ret;
-+
-+	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
-+					QRK_DTS_REG_OFFSET_ENABLE, &out);
-+	if (ret)
-+		return ret;
-+
-+	if (out & QRK_DTS_ENABLE_BIT) {
-+		aux_entry->mode = THERMAL_DEVICE_ENABLED;
-+		return 0;
-+	}
-+
-+	if (!aux_entry->locked) {
-+		out |= QRK_DTS_ENABLE_BIT;
-+		ret = iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
-+					QRK_DTS_REG_OFFSET_ENABLE, out);
-+		if (ret)
-+			return ret;
-+
-+		aux_entry->mode = THERMAL_DEVICE_ENABLED;
-+	} else {
-+		aux_entry->mode = THERMAL_DEVICE_DISABLED;
-+		pr_info("DTS is locked. Cannot enable DTS\n");
-+		ret = -EPERM;
-+	}
-+
-+	return ret;
-+}
-+
-+static int soc_dts_disable(struct thermal_zone_device *tzd)
-+{
-+	u32 out;
-+	struct soc_sensor_entry *aux_entry = tzd->devdata;
-+	int ret;
-+
-+	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
-+					QRK_DTS_REG_OFFSET_ENABLE, &out);
-+	if (ret)
-+		return ret;
-+
-+	if (!(out & QRK_DTS_ENABLE_BIT)) {
-+		aux_entry->mode = THERMAL_DEVICE_DISABLED;
-+		return 0;
-+	}
-+
-+	if (!aux_entry->locked) {
-+		out &= ~QRK_DTS_ENABLE_BIT;
-+		ret = iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
-+					QRK_DTS_REG_OFFSET_ENABLE, out);
-+
-+		if (ret)
-+			return ret;
-+
-+		aux_entry->mode = THERMAL_DEVICE_DISABLED;
-+	} else {
-+		aux_entry->mode = THERMAL_DEVICE_ENABLED;
-+		pr_info("DTS is locked. Cannot disable DTS\n");
-+		ret = -EPERM;
-+	}
-+
-+	return ret;
-+}
-+
-+static int _get_trip_temp(int trip, unsigned long *temp)
-+{
-+	int status;
-+	u32 out;
-+
-+	mutex_lock(&dts_update_mutex);
-+	status = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
-+				QRK_DTS_REG_OFFSET_PTPS, &out);
-+	mutex_unlock(&dts_update_mutex);
-+
-+	if (status)
-+		return status;
-+
-+	/*
-+	 * Thermal Sensor Programmable Trip Point Register has 8-bit
-+	 * fields for critical (catastrophic) and hot set trip point
-+	 * thresholds. The threshold value is always offset by its
-+	 * temperature base (50 degree Celsius).
-+	 */
-+	*temp = (out >> (trip * QRK_DTS_SHIFT_TP)) & QRK_DTS_MASK_TP_THRES;
-+	*temp -= QRK_DTS_TEMP_BASE;
-+
-+	return 0;
-+}
-+
-+static inline int sys_get_trip_temp(struct thermal_zone_device *tzd,
-+				int trip, unsigned long *temp)
-+{
-+	return _get_trip_temp(trip, temp);
-+}
-+
-+static inline int sys_get_crit_temp(struct thermal_zone_device *tzd,
-+				unsigned long *temp)
-+{
-+	return _get_trip_temp(QRK_DTS_ID_TP_CRITICAL, temp);
-+}
-+
-+static int update_trip_temp(struct soc_sensor_entry *aux_entry,
-+				int trip, unsigned long temp)
-+{
-+	u32 out;
-+	u32 temp_out;
-+	u32 store_ptps;
-+	int ret;
-+
-+	mutex_lock(&dts_update_mutex);
-+	if (aux_entry->locked) {
-+		ret = -EPERM;
-+		goto failed;
-+	}
-+
-+	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
-+				QRK_DTS_REG_OFFSET_PTPS, &store_ptps);
-+	if (ret)
-+		goto failed;
-+
-+	/*
-+	 * Protection against unsafe trip point thresdhold value.
-+	 * As Quark X1000 data-sheet does not provide any recommendation
-+	 * regarding the safe trip point threshold value to use, we choose
-+	 * the safe value according to the threshold value set by UEFI BIOS.
-+	 */
-+	if (temp > QRK_DTS_SAFE_TP_THRES)
-+		temp = QRK_DTS_SAFE_TP_THRES;
-+
-+	/*
-+	 * Thermal Sensor Programmable Trip Point Register has 8-bit
-+	 * fields for critical (catastrophic) and hot set trip point
-+	 * thresholds. The threshold value is always offset by its
-+	 * temperature base (50 degree Celsius).
-+	 */
-+	temp_out = temp + QRK_DTS_TEMP_BASE;
-+	out = (store_ptps & ~(QRK_DTS_MASK_TP_THRES <<
-+		(trip * QRK_DTS_SHIFT_TP)));
-+	out |= (temp_out & QRK_DTS_MASK_TP_THRES) <<
-+		(trip * QRK_DTS_SHIFT_TP);
-+
-+	ret = iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
-+				QRK_DTS_REG_OFFSET_PTPS, out);
-+
-+failed:
-+	mutex_unlock(&dts_update_mutex);
-+	return ret;
-+}
-+
-+static inline int sys_set_trip_temp(struct thermal_zone_device *tzd, int trip,
-+				unsigned long temp)
-+{
-+	return update_trip_temp(tzd->devdata, trip, temp);
-+}
-+
-+static int sys_get_trip_type(struct thermal_zone_device *thermal,
-+		int trip, enum thermal_trip_type *type)
-+{
-+	if (trip)
-+		*type = THERMAL_TRIP_HOT;
-+	else
-+		*type = THERMAL_TRIP_CRITICAL;
-+
-+	return 0;
-+}
-+
-+static int sys_get_curr_temp(struct thermal_zone_device *tzd,
-+				unsigned long *temp)
-+{
-+	u32 out;
-+	int ret;
-+
-+	mutex_lock(&dts_update_mutex);
-+	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
-+					QRK_DTS_REG_OFFSET_TEMP, &out);
-+	mutex_unlock(&dts_update_mutex);
-+
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * Thermal Sensor Temperature Register has 8-bit field
-+	 * for temperature value (offset by temperature base
-+	 * 50 degree Celsius).
-+	 */
-+	out = (out >> QRK_DTS_OFFSET_TEMP) & QRK_DTS_MASK_TEMP;
-+	*temp = out - QRK_DTS_TEMP_BASE;
-+
-+	return 0;
-+}
-+
-+static int sys_get_mode(struct thermal_zone_device *tzd,
-+				enum thermal_device_mode *mode)
-+{
-+	struct soc_sensor_entry *aux_entry = tzd->devdata;
-+	*mode = aux_entry->mode;
-+	return 0;
-+}
-+
-+static int sys_set_mode(struct thermal_zone_device *tzd,
-+				enum thermal_device_mode mode)
-+{
-+	int ret;
-+
-+	mutex_lock(&dts_update_mutex);
-+	if (mode == THERMAL_DEVICE_ENABLED)
-+		ret = soc_dts_enable(tzd);
-+	else
-+		ret = soc_dts_disable(tzd);
-+	mutex_unlock(&dts_update_mutex);
-+
-+	return ret;
-+}
-+
-+static struct thermal_zone_device_ops tzone_ops = {
-+	.get_temp = sys_get_curr_temp,
-+	.get_trip_temp = sys_get_trip_temp,
-+	.get_trip_type = sys_get_trip_type,
-+	.set_trip_temp = sys_set_trip_temp,
-+	.get_crit_temp = sys_get_crit_temp,
-+	.get_mode = sys_get_mode,
-+	.set_mode = sys_set_mode,
-+};
-+
-+static void free_soc_dts(struct soc_sensor_entry *aux_entry)
-+{
-+	if (aux_entry) {
-+		if (!aux_entry->locked) {
-+			mutex_lock(&dts_update_mutex);
-+			iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
-+					QRK_DTS_REG_OFFSET_ENABLE,
-+					aux_entry->store_dts_enable);
-+
-+			iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
-+					QRK_DTS_REG_OFFSET_PTPS,
-+					aux_entry->store_ptps);
-+			mutex_unlock(&dts_update_mutex);
-+		}
-+		thermal_zone_device_unregister(aux_entry->tzone);
-+		kfree(aux_entry);
-+	}
-+}
-+
-+static struct soc_sensor_entry *alloc_soc_dts(void)
-+{
-+	struct soc_sensor_entry *aux_entry;
-+	int err;
-+	u32 out;
-+	int wr_mask;
-+
-+	aux_entry = kzalloc(sizeof(*aux_entry), GFP_KERNEL);
-+	if (!aux_entry) {
-+		err = -ENOMEM;
-+		return ERR_PTR(-ENOMEM);
-+	}
-+
-+	/* Check if DTS register is locked */
-+	err = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
-+					QRK_DTS_REG_OFFSET_LOCK,
-+					&out);
-+	if (err)
-+		goto err_ret;
-+
-+	if (out & QRK_DTS_LOCK_BIT) {
-+		aux_entry->locked = true;
-+		wr_mask = QRK_DTS_WR_MASK_CLR;
-+	} else {
-+		aux_entry->locked = false;
-+		wr_mask = QRK_DTS_WR_MASK_SET;
-+	}
-+
-+	/* Store DTS default state if DTS registers are not locked */
-+	if (!aux_entry->locked) {
-+		/* Store DTS default enable for restore on exit */
-+		err = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
-+					QRK_DTS_REG_OFFSET_ENABLE,
-+					&aux_entry->store_dts_enable);
-+		if (err)
-+			goto err_ret;
-+
-+		/* Store DTS default PTPS register for restore on exit */
-+		err = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
-+					QRK_DTS_REG_OFFSET_PTPS,
-+					&aux_entry->store_ptps);
-+		if (err)
-+			goto err_ret;
-+	}
-+
-+	aux_entry->tzone = thermal_zone_device_register("quark_dts",
-+			QRK_MAX_DTS_TRIPS,
-+			wr_mask,
-+			aux_entry, &tzone_ops, NULL, 0, polling_delay);
-+	if (IS_ERR(aux_entry->tzone)) {
-+		err = PTR_ERR(aux_entry->tzone);
-+		goto err_ret;
-+	}
-+
-+	mutex_lock(&dts_update_mutex);
-+	err = soc_dts_enable(aux_entry->tzone);
-+	mutex_unlock(&dts_update_mutex);
-+	if (err)
-+		goto err_aux_status;
-+
-+	return aux_entry;
-+
-+err_aux_status:
-+	thermal_zone_device_unregister(aux_entry->tzone);
-+err_ret:
-+	kfree(aux_entry);
-+	return ERR_PTR(err);
-+}
-+
-+static const struct x86_cpu_id qrk_thermal_ids[] __initconst  = {
-+	{ X86_VENDOR_INTEL, X86_FAMILY_QUARK, X86_MODEL_QUARK_X1000 },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(x86cpu, qrk_thermal_ids);
-+
-+static int __init intel_quark_thermal_init(void)
-+{
-+	int err = 0;
-+
-+	if (!x86_match_cpu(qrk_thermal_ids) || !iosf_mbi_available())
-+		return -ENODEV;
-+
-+	soc_dts = alloc_soc_dts();
-+	if (IS_ERR(soc_dts)) {
-+		err = PTR_ERR(soc_dts);
-+		goto err_free;
-+	}
-+
-+	return 0;
-+
-+err_free:
-+	free_soc_dts(soc_dts);
-+	return err;
-+}
-+
-+static void __exit intel_quark_thermal_exit(void)
-+{
-+	free_soc_dts(soc_dts);
-+}
-+
-+module_init(intel_quark_thermal_init)
-+module_exit(intel_quark_thermal_exit)
-+
-+MODULE_DESCRIPTION("Intel Quark DTS Thermal Driver");
-+MODULE_AUTHOR("Ong Boon Leong <boon.leong.ong@intel.com>");
-+MODULE_LICENSE("Dual BSD/GPL");
---
-1.7.9.5
-
+>
+>>
+>>>>
+>>>
+>>
+>> Thanks for the detailed errata description.
+>>
+>>> A gentle ping on this.
+>>>
+>>
+>> Sorry for the late answer. (minor) Comment below:
+>>
+>>>> Signed-off-by: Keerthy <j-keerthy@ti.com>
+>>>> ---
+>>>>
+>>>> Read all the temperatures from the 5 sensors and saw that
+>>>> they were sane with time.
+>>>>
+>>>> Ran cpuloadgen and saw that temperatures rising on all the sensors
+>>>> and cooled down as soon as the load was reduced.
+>>>>
+>>>>   .../thermal/ti-soc-thermal/dra752-thermal-data.c   |  3 +-
+>>>>   drivers/thermal/ti-soc-thermal/ti-bandgap.c        | 37
+>>>> +++++++++++++++++++++-
+>>>>   drivers/thermal/ti-soc-thermal/ti-bandgap.h        |  4 +++
+>>>>   3 files changed, 42 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff --git a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
+>>>> b/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
+>>>> index a492927..58b5c66 100644
+>>>> --- a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
+>>>> +++ b/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
+>>>> @@ -420,7 +420,8 @@ const struct ti_bandgap_data dra752_data =3D {
+>>>>               TI_BANDGAP_FEATURE_FREEZE_BIT |
+>>>>               TI_BANDGAP_FEATURE_TALERT |
+>>>>               TI_BANDGAP_FEATURE_COUNTER_DELAY |
+>>>> -            TI_BANDGAP_FEATURE_HISTORY_BUFFER,
+>>>> +            TI_BANDGAP_FEATURE_HISTORY_BUFFER |
+>>>> +            TI_BANDGAP_FEATURE_ERRATA_814,
+>>>>       .fclock_name =3D "l3instr_ts_gclk_div",
+>>>>       .div_ck_name =3D "l3instr_ts_gclk_div",
+>>>>       .conv_table =3D dra752_adc_to_temp,
+>>>> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+>>>> b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+>>>> index 74c0e34..baf822e 100644
+>>>> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+>>>> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+>>>> @@ -119,6 +119,37 @@ exit:
+>>>>   }
+>>>>
+>>>>   /**
+>>>> + * ti_dra7_bandgap_read_temp() - helper function to read dra7
+>>>> sensor temperature
+>>>> + * @bgp: pointer to ti_bandgap structure
+>>>> + * @reg: desired register (offset) to be read
+>>>> + *
+>>>> + * Function to read dra7 bandgap sensor temperature. This is done
+>>>> separately
+>>>> + * so as to workaround the errata "Bandgap Temperature read Dtemp
+>>>> can be
+>>>> + * corrupted" - Errata ID: i814".
+>>>> + * Read accesses to registers listed below can be corrupted due t=
+o
+>>>> incorrect
+>>>> + * resynchronization between clock domains.
+>>>> + * Read access to registers below can be corrupted :
+>>>> + * CTRL_CORE_DTEMP_MPU/GPU/CORE/DSPEVE/IVA_n (n =3D 0 to 4)
+>>>> + * CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA_n
+>>>> + *
+>>>> + * Return: the register value.
+>>>> + */
+>>>> +static u32 ti_dra7_bandgap_read_temp(struct ti_bandgap *bgp,  u32=
+ reg)
+>>
+>> Are you sure this bug affects only DRA7? I would prefer you name thi=
+s
+>> not specific to soc version. Maybe bind it to the errata:
+>
+> AFAIK it is impacting DRA7 not sure of OMAP5 and OMAP4. Okay I can na=
+me
+> it on the errata number. Yeah makes sense too. If other versions tend=
+ to
+> have this then we can just add this errata feature to them also.
+>
+>>
+>> +static u32 ti_i814_bandgap_read_temp(struct ti_bandgap *bgp,  u32 r=
+eg)
+>>
+>>>> +{
+>>>> +    u32 val1, val2;
+>>>> +
+>>>> +    val1 =3D ti_bandgap_readl(bgp, reg);
+>>>> +    val2 =3D ti_bandgap_readl(bgp, reg);
+>>>> +
+>>>> +/* If both times we read the same value then that is right */
+>>
+>> Please, indent the comments too.
+>
+> Okay.
+>
+>>
+>>>> +    if (val1 =3D=3D val2)
+>>>> +        return val1;
+>>>> +
+>>>> +/* if val1 and val2 are different read it third time */
+>>
+>> ditto.
+>
+> Okay
+>
+>>
+>>>> +    return ti_bandgap_readl(bgp, reg);
+>>
+>> Actually, if I understood the errata description correctly, you need=
+ to:
+>> 1. read a third time (val3)
+>> 2. compare val3 against val2, and return val2 if they are same
+>>
+>> If they are different, the errata is not clear. Can you please clari=
+fy?
+>
+> 2. Perform third read
+> (a) If read3 returns Val2 then right value is Val2.
+> (b) If read3 returns Val3, then right value is Val3.
+>
+> Which means errata assumes third value is the good value no matter wh=
+at.
+>
+>>
+>>>> +}
+>>>> +
+>>>> +/**
+>>>>    * ti_bandgap_read_temp() - helper function to read sensor
+>>>> temperature
+>>>>    * @bgp: pointer to ti_bandgap structure
+>>>>    * @id: bandgap sensor id
+>>>> @@ -148,7 +179,11 @@ static u32 ti_bandgap_read_temp(struct
+>>>> ti_bandgap *bgp, int id)
+>>>>       }
+>>>>
+>>>>       /* read temperature */
+>>>> -    temp =3D ti_bandgap_readl(bgp, reg);
+>>>> +    if (TI_BANDGAP_HAS(bgp, ERRATA_814))
+>>>> +        temp =3D ti_dra7_bandgap_read_temp(bgp, reg);
+>>>> +    else
+>>>> +        temp =3D ti_bandgap_readl(bgp, reg);
+>>>> +
+>>>>       temp &=3D tsr->bgap_dtemp_mask;
+>>>>
+>>>>       if (TI_BANDGAP_HAS(bgp, FREEZE_BIT))
+>>>> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+>>>> b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+>>>> index b3adf72..b2da3fc 100644
+>>>> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+>>>> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+>>>> @@ -318,6 +318,9 @@ struct ti_temp_sensor {
+>>>>    * TI_BANDGAP_FEATURE_HISTORY_BUFFER - used when the bandgap
+>>>> device features
+>>>>    *    a history buffer of temperatures.
+>>>>    *
+>>>> + * TI_BANDGAP_FEATURE_ERRATA_814 - used to workaorund when the
+>>>> bandgap device
+>>>> + *    has Errata 814
+>>>> + *
+>>>>    * TI_BANDGAP_HAS(b, f) - macro to check if a bandgap device is
+>>>> capable of a
+>>>>    *      specific feature (above) or not. Return non-zero, if yes=
+=2E
+>>>>    */
+>>>> @@ -331,6 +334,7 @@ struct ti_temp_sensor {
+>>>>   #define TI_BANDGAP_FEATURE_FREEZE_BIT        BIT(7)
+>>>>   #define TI_BANDGAP_FEATURE_COUNTER_DELAY    BIT(8)
+>>>>   #define TI_BANDGAP_FEATURE_HISTORY_BUFFER    BIT(9)
+>>>> +#define TI_BANDGAP_FEATURE_ERRATA_814        BIT(10)
+>>>>   #define TI_BANDGAP_HAS(b, f)            \
+>>>>               ((b)->conf->features & TI_BANDGAP_FEATURE_ ## f)
+>>>>
+>>>>
+>
+> -Keerthy
