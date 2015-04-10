@@ -1,106 +1,530 @@
 From: Ong Boon Leong <boon.leong.ong@intel.com>
-Subject: [PATCHv4 0/1] Intel Quark X1000 DTS thermal driver
-Date: Fri, 10 Apr 2015 12:07:00 +0800
-Message-ID: <1428638821-9737-1-git-send-email-boon.leong.ong@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCHv4 1/1] thermal: intel Quark SoC X1000 DTS thermal driver
+Date: Fri, 10 Apr 2015 12:07:01 +0800
+Message-ID: <1428638821-9737-2-git-send-email-boon.leong.ong@intel.com>
+References: <1428638821-9737-1-git-send-email-boon.leong.ong@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:33165 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750824AbbDJEHz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 10 Apr 2015 00:07:55 -0400
+In-Reply-To: <1428638821-9737-1-git-send-email-boon.leong.ong@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com, pure.logic@nexus-software.ie, hock.leong.kweh@intel.com, andy.shevchenko@gmail.com
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-Dear maintainers & communities,
+In Intel Quark SoC X1000, there is one on-die digital temperature sensor(DTS).
+The DTS offers both hot & critical trip points.
 
-This patch introduces DTS thermal driver for Intel Quark X1000.
-The code implementation is based on intel_soc_dts_thermal.c.
+However, in current distribution of UEFI BIOS for Quark platform, only
+critical trip point is configured to be 105 degree Celsius (based on Quark
+SW ver1.0.1 and hot trip point is not used due to lack of IRQ.
 
-Intel Quark X1000 has one on-die DTS with two configurable trip points:
-critical and hot trip points. However, todate, UEFI BIOS for Quark X1000
-uses only critical trip point. UEFI BIOS always lock DTS register before
-hand-over to Linux kernel.
+There is no active cooling device for Quark SoC, so Quark SoC thermal
+management logic expects Linux distro to orderly power-off when temperature
+of the DTS exceeds the configured critical trip point.
 
-The minimalist thermal design is meant to trigger Linux distro to gracefully
-power-down the system when its DTS temperature exceeds the configured critical
-trip point.
+Kernel param "polling_delay" in milliseconds is used to control the frequency
+the DTS temperature is read by thermal framework. It defaults to 2-second.
+To change it, use kernel boot param "intel_quark_dts_thermal.polling_delay=X".
 
-In anticipation that other variant of Quark platform may come with UEFI BIOS
-that does not lock DTS register during hand-over, this DTS driver is built
-with logics to handle such case too.
+User interacts with Quark SoC DTS thermal driver through sysfs via:
+/sys/class/thermal/thermal_zone0/
 
-I have tested v4 of the patch on Intel Galileo Gen v2 board and found it
-satisfactory with logs below:
+For example:
+ - to read DTS temperature
+   $ cat temp
+ - to read critical trip point
+   $ cat trip_point_0_temp
+ - to read trip point type
+   $ cat trip_point_0_type
+ - to emulate temperature raise to test orderly shutdown by Linux distro
+   $ echo 105 > emul_temp
 
-  root@quark:/sys/class/thermal/thermal_zone0# echo disabled > mode
-  [   46.276881] intel_quark_dts_thermal: DTS is locked. Cannot disable DTS
-  -sh: echo: write error: Operation not permitted
-  root@quark:/sys/class/thermal/thermal_zone0#
-  root@quark:/sys/class/thermal/thermal_zone0# cat temp
-  53
-  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_0_temp
-  105
-  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_0_type
-  critical
-  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_1_temp
-  20
-  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_1_type
-  hot
-  root@quark:/sys/class/thermal/thermal_zone0# cat type
-  quark_dts
-
-  root@quark:/sys/class/thermal/thermal_zone0# echo 105 > emul_temp
-  [  179.372981] thermal thermal_zone0: critical temperature reached(0 C),shutting down
-  root@quark:/sys/class/thermal/thermal_zone0#
-  [  OK  ] Stopped target Multi-User System.
-           Stopping Telephony service...
-           Stopping Lightning Fast Webserver With Light System Requirements...
-           Stopping Target Communication Framework agent...
-           Stopping Galileo Arduino Layer...
-  [  OK  ] Stopped target Login Prompts.
-           Stopping Getty on tty1...
-           Stopping Serial Getty on ttyS1...
-           Stopping Login Service...
-           Stopping D-Bus System Message Bus...
-           Starting Store Sound Card State...
-  [  OK  ] Stopped Telephony service.
-  [  OK  ] Stopped Galileo Arduino Layer.
-  [  OK  ] Stopped Login Service.
-  [  OK  ] Stopped D-Bus System Message Bus.
-  [  OK  ] Stopped Target Communication Framework agent.
-  [  OK  ] Stopped Lightning Fast Webserver With Light System Requirements.
-  [  OK  ] Stopped WPA supplicant.
-  [  OK  ] Stopped Getty on tty1.
-  [  OK  ] Stopped Serial Getty on ttyS1.
-
-Please kindly review the patch at your convenient time and provide me feedback
-for improvement. Appreciate your time and effort.
-
-Thank You
-Ong Boon Leong
-Intel Corp.
-
+Tested-by: Bryan O'Donoghue <pure.logic@nexus-software.ie>
+Signed-off-by: Ong Boon Leong <boon.leong.ong@intel.com>
+Reviewed-by: Bryan O'Donoghue <pure.logic@nexus-software.ie>
+Reviewed-by: Kweh, Hock Leong <hock.leong.kweh@intel.com>
 ---
-Changes in v4:
-* Fixed unused variable 'aux_entry' as reported by kbuild-all@01.org
-  in line 287 by remove it.
-* Added reviewed-by tag from Kweh Hock Leong since v3.
-
-Changes in v3:
-* Kconfig dependency changed to X86_INTEL_QUARK
-
-Changes in v2:
-* Fix several commit write-up grammar, choice of words.
-* Ensure "int ret" in correct order
-* Add comment to explain DTS register field read/write bit operation
-* Change to Dual BSD/GPL license
-* Add logic to ensure safe trip point threshold value being set
-
-Ong Boon Leong (1):
-  thermal: intel Quark SoC X1000 DTS thermal driver
-
- drivers/thermal/Kconfig                   |   10
- drivers/thermal/Makefile                  |    1
- drivers/thermal/intel_quark_dts_thermal.c |  434 +++++++++++++++++++++++++++++
- 3 files changed, 445 insertions(+)
+ drivers/thermal/Kconfig                   |   10 +
+ drivers/thermal/Makefile                  |    1 +
+ drivers/thermal/intel_quark_dts_thermal.c |  433 +++++++++++++++++++++++++++++
+ 3 files changed, 444 insertions(+)
  create mode 100644 drivers/thermal/intel_quark_dts_thermal.c
 
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index af40db0..f72b352 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -261,6 +261,16 @@ config INTEL_SOC_DTS_THERMAL
+ 	  notification methods.The other trip is a critical trip point, which
+ 	  was set by the driver based on the TJ MAX temperature.
+
++config INTEL_QUARK_DTS_THERMAL
++	tristate "Intel Quark DTS thermal driver"
++	depends on X86_INTEL_QUARK
++	help
++	  Enable this to register Intel Quark SoC (e.g. X1000) platform digital
++	  temperature sensor (DTS). For X1000 SoC, it has one on-die DTS.
++	  The DTS will be registered as a thermal zone. There are two trip points:
++	  hot & critical. The critical trip point default value is set by
++	  underlying BIOS/Firmware.
++
+ config INT340X_THERMAL
+ 	tristate "ACPI INT340X thermal drivers"
+ 	depends on X86 && ACPI
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index fa0dc48..17d3f92 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -35,6 +35,7 @@ obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
+ obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
+ obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
+ obj-$(CONFIG_INTEL_SOC_DTS_THERMAL)	+= intel_soc_dts_thermal.o
++obj-$(CONFIG_INTEL_QUARK_DTS_THERMAL)	+= intel_quark_dts_thermal.o
+ obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
+ obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
+ obj-$(CONFIG_ST_THERMAL)	+= st/
+diff --git a/drivers/thermal/intel_quark_dts_thermal.c b/drivers/thermal/intel_quark_dts_thermal.c
+new file mode 100644
+index 0000000..d764a89
+--- /dev/null
++++ b/drivers/thermal/intel_quark_dts_thermal.c
+@@ -0,0 +1,433 @@
++/*
++ * intel_quark_dts_thermal.c
++ * Copyright (c) 2015, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * Quark DTS thermal driver is implemented by referencing
++ * intel_soc_dts_thermal.c.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/module.h>
++#include <linux/slab.h>
++#include <linux/interrupt.h>
++#include <linux/thermal.h>
++#include <asm/cpu_device_id.h>
++#include <asm/iosf_mbi.h>
++
++#define X86_FAMILY_QUARK	0x5
++#define X86_MODEL_QUARK_X1000	0x9
++
++/* DTS reset is programmed via QRK_MBI_UNIT_SOC */
++#define QRK_DTS_REG_OFFSET_RESET	0x34
++#define QRK_DTS_RESET_BIT		BIT(0)
++
++/* DTS enable is programmed via QRK_MBI_UNIT_RMU */
++#define QRK_DTS_REG_OFFSET_ENABLE	0xB0
++#define QRK_DTS_ENABLE_BIT		BIT(15)
++
++/* Temperature Register is read via QRK_MBI_UNIT_RMU */
++#define QRK_DTS_REG_OFFSET_TEMP		0xB1
++#define QRK_DTS_MASK_TEMP		0xFF
++#define QRK_DTS_OFFSET_TEMP		0
++#define QRK_DTS_OFFSET_REL_TEMP		16
++#define QRK_DTS_TEMP_BASE		50
++
++/* Programmable Trip Point Register is configured via QRK_MBI_UNIT_RMU */
++#define QRK_DTS_REG_OFFSET_PTPS		0xB2
++#define QRK_DTS_MASK_TP_THRES		0xFF
++#define QRK_DTS_SHIFT_TP		8
++#define QRK_DTS_ID_TP_CRITICAL		0
++#define QRK_DTS_SAFE_TP_THRES		105
++
++/* Thermal Sensor Register Lock */
++#define QRK_DTS_REG_OFFSET_LOCK		0x71
++#define QRK_DTS_LOCK_BIT		BIT(5)
++
++/* Quark DTS has 2 trip points: hot & catastrophic */
++#define QRK_MAX_DTS_TRIPS	2
++/* If DTS not locked, all trip points are configurable */
++#define QRK_DTS_WR_MASK_SET	0x3
++/* If DTS locked, all trip points are not configurable */
++#define QRK_DTS_WR_MASK_CLR	0
++
++#define DEFAULT_POLL_DELAY	2000
++
++struct soc_sensor_entry {
++	bool locked;
++	u32 store_ptps;
++	u32 store_dts_enable;
++	enum thermal_device_mode mode;
++	struct thermal_zone_device *tzone;
++};
++
++static struct soc_sensor_entry *soc_dts;
++
++static int polling_delay = DEFAULT_POLL_DELAY;
++module_param(polling_delay, int, 0644);
++MODULE_PARM_DESC(polling_delay,
++	"Polling interval for checking trip points (in milliseconds)");
++
++static DEFINE_MUTEX(dts_update_mutex);
++
++static int soc_dts_enable(struct thermal_zone_device *tzd)
++{
++	u32 out;
++	struct soc_sensor_entry *aux_entry = tzd->devdata;
++	int ret;
++
++	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
++					QRK_DTS_REG_OFFSET_ENABLE, &out);
++	if (ret)
++		return ret;
++
++	if (out & QRK_DTS_ENABLE_BIT) {
++		aux_entry->mode = THERMAL_DEVICE_ENABLED;
++		return 0;
++	}
++
++	if (!aux_entry->locked) {
++		out |= QRK_DTS_ENABLE_BIT;
++		ret = iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
++					QRK_DTS_REG_OFFSET_ENABLE, out);
++		if (ret)
++			return ret;
++
++		aux_entry->mode = THERMAL_DEVICE_ENABLED;
++	} else {
++		aux_entry->mode = THERMAL_DEVICE_DISABLED;
++		pr_info("DTS is locked. Cannot enable DTS\n");
++		ret = -EPERM;
++	}
++
++	return ret;
++}
++
++static int soc_dts_disable(struct thermal_zone_device *tzd)
++{
++	u32 out;
++	struct soc_sensor_entry *aux_entry = tzd->devdata;
++	int ret;
++
++	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
++					QRK_DTS_REG_OFFSET_ENABLE, &out);
++	if (ret)
++		return ret;
++
++	if (!(out & QRK_DTS_ENABLE_BIT)) {
++		aux_entry->mode = THERMAL_DEVICE_DISABLED;
++		return 0;
++	}
++
++	if (!aux_entry->locked) {
++		out &= ~QRK_DTS_ENABLE_BIT;
++		ret = iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
++					QRK_DTS_REG_OFFSET_ENABLE, out);
++
++		if (ret)
++			return ret;
++
++		aux_entry->mode = THERMAL_DEVICE_DISABLED;
++	} else {
++		aux_entry->mode = THERMAL_DEVICE_ENABLED;
++		pr_info("DTS is locked. Cannot disable DTS\n");
++		ret = -EPERM;
++	}
++
++	return ret;
++}
++
++static int _get_trip_temp(int trip, unsigned long *temp)
++{
++	int status;
++	u32 out;
++
++	mutex_lock(&dts_update_mutex);
++	status = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
++				QRK_DTS_REG_OFFSET_PTPS, &out);
++	mutex_unlock(&dts_update_mutex);
++
++	if (status)
++		return status;
++
++	/*
++	 * Thermal Sensor Programmable Trip Point Register has 8-bit
++	 * fields for critical (catastrophic) and hot set trip point
++	 * thresholds. The threshold value is always offset by its
++	 * temperature base (50 degree Celsius).
++	 */
++	*temp = (out >> (trip * QRK_DTS_SHIFT_TP)) & QRK_DTS_MASK_TP_THRES;
++	*temp -= QRK_DTS_TEMP_BASE;
++
++	return 0;
++}
++
++static inline int sys_get_trip_temp(struct thermal_zone_device *tzd,
++				int trip, unsigned long *temp)
++{
++	return _get_trip_temp(trip, temp);
++}
++
++static inline int sys_get_crit_temp(struct thermal_zone_device *tzd,
++				unsigned long *temp)
++{
++	return _get_trip_temp(QRK_DTS_ID_TP_CRITICAL, temp);
++}
++
++static int update_trip_temp(struct soc_sensor_entry *aux_entry,
++				int trip, unsigned long temp)
++{
++	u32 out;
++	u32 temp_out;
++	u32 store_ptps;
++	int ret;
++
++	mutex_lock(&dts_update_mutex);
++	if (aux_entry->locked) {
++		ret = -EPERM;
++		goto failed;
++	}
++
++	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
++				QRK_DTS_REG_OFFSET_PTPS, &store_ptps);
++	if (ret)
++		goto failed;
++
++	/*
++	 * Protection against unsafe trip point thresdhold value.
++	 * As Quark X1000 data-sheet does not provide any recommendation
++	 * regarding the safe trip point threshold value to use, we choose
++	 * the safe value according to the threshold value set by UEFI BIOS.
++	 */
++	if (temp > QRK_DTS_SAFE_TP_THRES)
++		temp = QRK_DTS_SAFE_TP_THRES;
++
++	/*
++	 * Thermal Sensor Programmable Trip Point Register has 8-bit
++	 * fields for critical (catastrophic) and hot set trip point
++	 * thresholds. The threshold value is always offset by its
++	 * temperature base (50 degree Celsius).
++	 */
++	temp_out = temp + QRK_DTS_TEMP_BASE;
++	out = (store_ptps & ~(QRK_DTS_MASK_TP_THRES <<
++		(trip * QRK_DTS_SHIFT_TP)));
++	out |= (temp_out & QRK_DTS_MASK_TP_THRES) <<
++		(trip * QRK_DTS_SHIFT_TP);
++
++	ret = iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
++				QRK_DTS_REG_OFFSET_PTPS, out);
++
++failed:
++	mutex_unlock(&dts_update_mutex);
++	return ret;
++}
++
++static inline int sys_set_trip_temp(struct thermal_zone_device *tzd, int trip,
++				unsigned long temp)
++{
++	return update_trip_temp(tzd->devdata, trip, temp);
++}
++
++static int sys_get_trip_type(struct thermal_zone_device *thermal,
++		int trip, enum thermal_trip_type *type)
++{
++	if (trip)
++		*type = THERMAL_TRIP_HOT;
++	else
++		*type = THERMAL_TRIP_CRITICAL;
++
++	return 0;
++}
++
++static int sys_get_curr_temp(struct thermal_zone_device *tzd,
++				unsigned long *temp)
++{
++	u32 out;
++	int ret;
++
++	mutex_lock(&dts_update_mutex);
++	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
++					QRK_DTS_REG_OFFSET_TEMP, &out);
++	mutex_unlock(&dts_update_mutex);
++
++	if (ret)
++		return ret;
++
++	/*
++	 * Thermal Sensor Temperature Register has 8-bit field
++	 * for temperature value (offset by temperature base
++	 * 50 degree Celsius).
++	 */
++	out = (out >> QRK_DTS_OFFSET_TEMP) & QRK_DTS_MASK_TEMP;
++	*temp = out - QRK_DTS_TEMP_BASE;
++
++	return 0;
++}
++
++static int sys_get_mode(struct thermal_zone_device *tzd,
++				enum thermal_device_mode *mode)
++{
++	struct soc_sensor_entry *aux_entry = tzd->devdata;
++	*mode = aux_entry->mode;
++	return 0;
++}
++
++static int sys_set_mode(struct thermal_zone_device *tzd,
++				enum thermal_device_mode mode)
++{
++	int ret;
++
++	mutex_lock(&dts_update_mutex);
++	if (mode == THERMAL_DEVICE_ENABLED)
++		ret = soc_dts_enable(tzd);
++	else
++		ret = soc_dts_disable(tzd);
++	mutex_unlock(&dts_update_mutex);
++
++	return ret;
++}
++
++static struct thermal_zone_device_ops tzone_ops = {
++	.get_temp = sys_get_curr_temp,
++	.get_trip_temp = sys_get_trip_temp,
++	.get_trip_type = sys_get_trip_type,
++	.set_trip_temp = sys_set_trip_temp,
++	.get_crit_temp = sys_get_crit_temp,
++	.get_mode = sys_get_mode,
++	.set_mode = sys_set_mode,
++};
++
++static void free_soc_dts(struct soc_sensor_entry *aux_entry)
++{
++	if (aux_entry) {
++		if (!aux_entry->locked) {
++			mutex_lock(&dts_update_mutex);
++			iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
++					QRK_DTS_REG_OFFSET_ENABLE,
++					aux_entry->store_dts_enable);
++
++			iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
++					QRK_DTS_REG_OFFSET_PTPS,
++					aux_entry->store_ptps);
++			mutex_unlock(&dts_update_mutex);
++		}
++		thermal_zone_device_unregister(aux_entry->tzone);
++		kfree(aux_entry);
++	}
++}
++
++static struct soc_sensor_entry *alloc_soc_dts(void)
++{
++	struct soc_sensor_entry *aux_entry;
++	int err;
++	u32 out;
++	int wr_mask;
++
++	aux_entry = kzalloc(sizeof(*aux_entry), GFP_KERNEL);
++	if (!aux_entry) {
++		err = -ENOMEM;
++		return ERR_PTR(-ENOMEM);
++	}
++
++	/* Check if DTS register is locked */
++	err = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
++					QRK_DTS_REG_OFFSET_LOCK,
++					&out);
++	if (err)
++		goto err_ret;
++
++	if (out & QRK_DTS_LOCK_BIT) {
++		aux_entry->locked = true;
++		wr_mask = QRK_DTS_WR_MASK_CLR;
++	} else {
++		aux_entry->locked = false;
++		wr_mask = QRK_DTS_WR_MASK_SET;
++	}
++
++	/* Store DTS default state if DTS registers are not locked */
++	if (!aux_entry->locked) {
++		/* Store DTS default enable for restore on exit */
++		err = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
++					QRK_DTS_REG_OFFSET_ENABLE,
++					&aux_entry->store_dts_enable);
++		if (err)
++			goto err_ret;
++
++		/* Store DTS default PTPS register for restore on exit */
++		err = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
++					QRK_DTS_REG_OFFSET_PTPS,
++					&aux_entry->store_ptps);
++		if (err)
++			goto err_ret;
++	}
++
++	aux_entry->tzone = thermal_zone_device_register("quark_dts",
++			QRK_MAX_DTS_TRIPS,
++			wr_mask,
++			aux_entry, &tzone_ops, NULL, 0, polling_delay);
++	if (IS_ERR(aux_entry->tzone)) {
++		err = PTR_ERR(aux_entry->tzone);
++		goto err_ret;
++	}
++
++	mutex_lock(&dts_update_mutex);
++	err = soc_dts_enable(aux_entry->tzone);
++	mutex_unlock(&dts_update_mutex);
++	if (err)
++		goto err_aux_status;
++
++	return aux_entry;
++
++err_aux_status:
++	thermal_zone_device_unregister(aux_entry->tzone);
++err_ret:
++	kfree(aux_entry);
++	return ERR_PTR(err);
++}
++
++static const struct x86_cpu_id qrk_thermal_ids[] __initconst  = {
++	{ X86_VENDOR_INTEL, X86_FAMILY_QUARK, X86_MODEL_QUARK_X1000 },
++	{}
++};
++MODULE_DEVICE_TABLE(x86cpu, qrk_thermal_ids);
++
++static int __init intel_quark_thermal_init(void)
++{
++	int err = 0;
++
++	if (!x86_match_cpu(qrk_thermal_ids) || !iosf_mbi_available())
++		return -ENODEV;
++
++	soc_dts = alloc_soc_dts();
++	if (IS_ERR(soc_dts)) {
++		err = PTR_ERR(soc_dts);
++		goto err_free;
++	}
++
++	return 0;
++
++err_free:
++	free_soc_dts(soc_dts);
++	return err;
++}
++
++static void __exit intel_quark_thermal_exit(void)
++{
++	free_soc_dts(soc_dts);
++}
++
++module_init(intel_quark_thermal_init)
++module_exit(intel_quark_thermal_exit)
++
++MODULE_DESCRIPTION("Intel Quark DTS Thermal Driver");
++MODULE_AUTHOR("Ong Boon Leong <boon.leong.ong@intel.com>");
++MODULE_LICENSE("Dual BSD/GPL");
 --
 1.7.9.5
+
