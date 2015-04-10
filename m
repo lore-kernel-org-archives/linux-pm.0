@@ -1,92 +1,106 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: Re: [PATCH] x86/ACPI: Fix regression caused by 16ee7b3dcc56
-Date: Fri, 10 Apr 2015 09:56:28 +0800
-Message-ID: <55272DCC.1010900@linux.intel.com>
-References: <55214A0D.9000404@xs4all.nl> <1428417244-32416-1-git-send-email-jiang.liu@linux.intel.com> <55240A82.30101@xs4all.nl> <5524BBEA.5040701@linux.intel.com> <55254E6E.6000705@xs4all.nl> <5526513C.9090200@linux.intel.com> <5526ABA9.1000700@xs4all.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:65283 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753356AbbDJB4f (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 9 Apr 2015 21:56:35 -0400
-In-Reply-To: <5526ABA9.1000700@xs4all.nl>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ong Boon Leong <boon.leong.ong@intel.com>
+Subject: [PATCHv4 0/1] Intel Quark X1000 DTS thermal driver
+Date: Fri, 10 Apr 2015 12:07:00 +0800
+Message-ID: <1428638821-9737-1-git-send-email-boon.leong.ong@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, pure.logic@nexus-software.ie, hock.leong.kweh@intel.com, andy.shevchenko@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jim Bos <jim876@xs4all.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On 2015/4/10 0:41, Jim Bos wrote:
-> On 04/09/2015 12:15 PM, Jiang Liu wrote:
->> On 2015/4/8 23:51, Jim Bos wrote:
->>> On 04/08/2015 07:26 AM, Jiang Liu wrote:
->>>> On 2015/4/8 0:49, Jim Bos wrote:
->>>>> On 04/07/2015 04:34 PM, Jiang Liu wrote:
-<snip>
->> Hi Jim,
->> 	I'm really confused. I can't even explain why my previous
->> patch fixes the issue on AMD geode board now:(
->>
->> For the Dell laptop, seems you have:
->> 1) build a kernel with Local APIC and IOAPIC enabled
->> 2) lapic is disabled by BIOS, so there's no ACPI MADT(APIC)
->> table at all.
->> That means the laptop is working with 8259 PICs only.
->> There's little change between 3.16 and 4.0 related to 8259.
->>
->> For the AMD geode board, I still think original code is right.
->> I can't explain why the patch fix the issue.
->>
->> So could you please help to:
->> 1) Try to enable lapic on Dell laptop in BIOS
->> 2) Dump acpi tables and dmesg on AMD board
->>
->> If that still doesn't help, I will try to send you some
->> debug patches to gather more info.
->> Thanks!
->> Gerry
->>> _
->>> Jim
->>>
->>
-> 
-> Gerry,
-> 
-> As you mentioned your patch shouldn't make a difference, run some more
-> tests, as it turns out:
-> - geode system  broken on 3.16+ up to and including 3.19, however, on
-> plain 4.0-rc6 it works!  Root cause appears to be there isn't an ACPI
-> interrupt assigned in non-working kernels.
-> - other system I got my hands on: Pentium(R) CPU G3220, broken on 3.19.0
-> when boot parameter 'nosmp' is specified, again no acpi entry in
-> /proc/interrupts,  working fine on 4.0-rc6
-> 
-> So obviously between 3.19 and 4.0-rc6 something got fixed here!
-Hi Jim,
-Yes, the bugfix patch should be:
-commit 1ea76fbadd66("x86/irq: Fix regression caused by commit b568b8601f05")
+Dear maintainers & communities,
 
-> The Dell laptop remains the only problem then on 4.0-rc6, there IS an
-> acpi interrupt  (but firing once apparently).
-> There isn't an option in BIOS to enable LAPIC, however, when specifying
-> 'lapic' as boot parameter I got interesting result, still not working
-> and /proc/interrups still shows XT-PIC.  Doing a diff between dmesg on
-> 3.19 and 4.0-rc6 this pops out:
-> 
-> -Local APIC disabled by BIOS -- you can enable it with "lapic"
-> -APIC: disable apic facility
-> -APIC: switched to apic NOOP
-> +Local APIC disabled by BIOS -- reenabling.
-> +Found and enabled local APIC!
-> 
-> +Enabling APIC mode:  Flat.  Using 0 I/O APICs
-What's the last know working kernel for Dell laptop?
-Does it work as expected with v3.19 kernel?
-Do you means this message is from plain v4.0-rc6 kernel?
-Thanks!
-Gerry
+This patch introduces DTS thermal driver for Intel Quark X1000.
+The code implementation is based on intel_soc_dts_thermal.c.
 
-> 
-> Jim
-> 
+Intel Quark X1000 has one on-die DTS with two configurable trip points:
+critical and hot trip points. However, todate, UEFI BIOS for Quark X1000
+uses only critical trip point. UEFI BIOS always lock DTS register before
+hand-over to Linux kernel.
+
+The minimalist thermal design is meant to trigger Linux distro to gracefully
+power-down the system when its DTS temperature exceeds the configured critical
+trip point.
+
+In anticipation that other variant of Quark platform may come with UEFI BIOS
+that does not lock DTS register during hand-over, this DTS driver is built
+with logics to handle such case too.
+
+I have tested v4 of the patch on Intel Galileo Gen v2 board and found it
+satisfactory with logs below:
+
+  root@quark:/sys/class/thermal/thermal_zone0# echo disabled > mode
+  [   46.276881] intel_quark_dts_thermal: DTS is locked. Cannot disable DTS
+  -sh: echo: write error: Operation not permitted
+  root@quark:/sys/class/thermal/thermal_zone0#
+  root@quark:/sys/class/thermal/thermal_zone0# cat temp
+  53
+  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_0_temp
+  105
+  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_0_type
+  critical
+  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_1_temp
+  20
+  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_1_type
+  hot
+  root@quark:/sys/class/thermal/thermal_zone0# cat type
+  quark_dts
+
+  root@quark:/sys/class/thermal/thermal_zone0# echo 105 > emul_temp
+  [  179.372981] thermal thermal_zone0: critical temperature reached(0 C),shutting down
+  root@quark:/sys/class/thermal/thermal_zone0#
+  [  OK  ] Stopped target Multi-User System.
+           Stopping Telephony service...
+           Stopping Lightning Fast Webserver With Light System Requirements...
+           Stopping Target Communication Framework agent...
+           Stopping Galileo Arduino Layer...
+  [  OK  ] Stopped target Login Prompts.
+           Stopping Getty on tty1...
+           Stopping Serial Getty on ttyS1...
+           Stopping Login Service...
+           Stopping D-Bus System Message Bus...
+           Starting Store Sound Card State...
+  [  OK  ] Stopped Telephony service.
+  [  OK  ] Stopped Galileo Arduino Layer.
+  [  OK  ] Stopped Login Service.
+  [  OK  ] Stopped D-Bus System Message Bus.
+  [  OK  ] Stopped Target Communication Framework agent.
+  [  OK  ] Stopped Lightning Fast Webserver With Light System Requirements.
+  [  OK  ] Stopped WPA supplicant.
+  [  OK  ] Stopped Getty on tty1.
+  [  OK  ] Stopped Serial Getty on ttyS1.
+
+Please kindly review the patch at your convenient time and provide me feedback
+for improvement. Appreciate your time and effort.
+
+Thank You
+Ong Boon Leong
+Intel Corp.
+
+---
+Changes in v4:
+* Fixed unused variable 'aux_entry' as reported by kbuild-all@01.org
+  in line 287 by remove it.
+* Added reviewed-by tag from Kweh Hock Leong since v3.
+
+Changes in v3:
+* Kconfig dependency changed to X86_INTEL_QUARK
+
+Changes in v2:
+* Fix several commit write-up grammar, choice of words.
+* Ensure "int ret" in correct order
+* Add comment to explain DTS register field read/write bit operation
+* Change to Dual BSD/GPL license
+* Add logic to ensure safe trip point threshold value being set
+
+Ong Boon Leong (1):
+  thermal: intel Quark SoC X1000 DTS thermal driver
+
+ drivers/thermal/Kconfig                   |   10
+ drivers/thermal/Makefile                  |    1
+ drivers/thermal/intel_quark_dts_thermal.c |  434 +++++++++++++++++++++++++++++
+ 3 files changed, 445 insertions(+)
+ create mode 100644 drivers/thermal/intel_quark_dts_thermal.c
+
+--
+1.7.9.5
