@@ -1,130 +1,105 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / Hiberante : optimize swsusp_free()
-Date: Sat, 11 Apr 2015 02:20:16 +0200
-Message-ID: <1845757.HKx1NOssGd@vostro.rjw.lan>
-References: <1426753738-26747-1-git-send-email-tom.yeon@windriver.com> <2492546.RHhDx1zacd@vostro.rjw.lan> <D2D54504A8A67848B028EBEA66F47B9AB2A28235@ALA-MBA.corp.ad.wrs.com>
+Subject: Re: [PATCH] cpufreq/intel_pstate: Fix an annoying !CONFIG_SMP warning
+Date: Sat, 11 Apr 2015 02:22:03 +0200
+Message-ID: <7709303.8dfyH4hoC9@vostro.rjw.lan>
+References: <1428067193-9608-1-git-send-email-bp@alien8.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <D2D54504A8A67848B028EBEA66F47B9AB2A28235@ALA-MBA.corp.ad.wrs.com>
+In-Reply-To: <1428067193-9608-1-git-send-email-bp@alien8.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Yeon, JeHyeon (Tom)" <Tom.Yeon@windriver.com>
-Cc: "pavel@ucw.cz" <pavel@ucw.cz>, "jroedel@suse.de" <jroedel@suse.de>, "BROWN, A LEONARD" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Tom(JeHyeon) Yeon" <tomyeon750415lkml@gmail.com>
+To: Borislav Petkov <bp@alien8.de>, Kristen Carlson Accardi <kristen@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, March 25, 2015 01:49:36 AM Yeon, JeHyeon wrote:
-> From 6cb5fffc41911a29212be52d4ce7e481f5077ccf Mon Sep 17 00:00:00 2001
-> From: "Tom(JeHyeon) Yeon" <tom.yeon@windriver.com>
-> Date: Thu, 19 Mar 2015 17:10:45 +0900
-> Subject: [PATCH] PM / Hiberante : optimize swsusp_free()
-> 
-> Our team developed the snapshot booting.
-> Fisrt of all, make a snapshot image, compress it and finally save it
-> in the storage(like mmc).
-> When the system is booting next time, bootloader read it from mmc,
-> decompress it and jump to the kernel.
-> In this circumstance, mili seconds is very important.
-> So, I prepared this patch, but not applied because I missed the time
-> to apply it.
-> 
-> And, I came across to find commit fdd64ed.
-> It's very similar to the patch I prepared.
+On Friday, April 03, 2015 03:19:53 PM Borislav Petkov wrote:
+> From: Borislav Petkov <bp@suse.de>
+>=20
+> I keep seeing
+>=20
+>   drivers/cpufreq/intel_pstate.c: In function =E2=80=98intel_pstate_i=
+nit=E2=80=99:
+>   drivers/cpufreq/intel_pstate.c:1187:26: warning: initialization fro=
+m incompatible pointer type
+>     struct cpuinfo_x86 *c =3D &boot_cpu_data;
+>=20
+> when doing randconfig builds.
+>=20
+> This is caused by the fact that when !CONFIG_SMP, asm/processor.h
+> defines cpu_info to boot_cpu_data and the local variable
+>=20
+>   struct cpu_defaults *cpu_info
+>=20
+> overshadows it leading to this unfortunate assignment in the
+> preprocessed source:
+>=20
+>  struct cpu_defaults *boot_cpu_data;
+>  struct cpuinfo_x86 *c =3D &boot_cpu_data;
+>=20
+> Rename the local variable and use static_cpu_has_safe() which allevia=
+tes
+> the need for defining a local cpuinfo_x86 pointer.
 
-So the part of the changelog above this line is not really relevant.
+Kristen, any comments here?
 
-But the below is OK.
-
-> I think do { ... } while (fb_pfn != fr_pfn) operation is very similar
-> to my patch. but, it takes a little more time to iterate.
-> So suggest to iterate one of two maps and check whether the other map
-> has the same pfn, finally free the page.
-> 
-> Signed-off-by: Tom(JeHyeon) Yeon <tom.yeon@windriver.com>
-
-As for the patch itself ->
-
+> Signed-off-by: Borislav Petkov <bp@suse.de>
+> Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
 > ---
->  kernel/power/snapshot.c |   43 ++++++++++---------------------------------
->  1 file changed, 10 insertions(+), 33 deletions(-)
-> 
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index c24d5a2..a1ad801 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -726,14 +726,6 @@ static void memory_bm_clear_bit(struct memory_bitmap *bm, unsigned long pfn)
->  	clear_bit(bit, addr);
->  }
->  
-> -static void memory_bm_clear_current(struct memory_bitmap *bm)
-> -{
-> -	int bit;
-> -
-> -	bit = max(bm->cur.node_bit - 1, 0);
-> -	clear_bit(bit, bm->cur.node->data);
-> -}
-> -
->  static int memory_bm_test_bit(struct memory_bitmap *bm, unsigned long pfn)
+>  drivers/cpufreq/intel_pstate.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_p=
+state.c
+> index 872c5772c5d3..0b883f131a73 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -31,6 +31,7 @@
+>  #include <asm/div64.h>
+>  #include <asm/msr.h>
+>  #include <asm/cpu_device_id.h>
+> +#include <asm/cpufeature.h>
+> =20
+>  #define BYT_RATIOS		0x66a
+>  #define BYT_VIDS		0x66b
+> @@ -1183,8 +1184,7 @@ static int __init intel_pstate_init(void)
 >  {
->  	void *addr;
-> @@ -1342,36 +1334,21 @@ static struct memory_bitmap copy_bm;
->  
->  void swsusp_free(void)
->  {
-> -	unsigned long fb_pfn, fr_pfn;
-> +	unsigned long pfn;
->  
->  	if (!forbidden_pages_map || !free_pages_map)
->  		goto out;
->  
->  	memory_bm_position_reset(forbidden_pages_map);
-> -	memory_bm_position_reset(free_pages_map);
-> -
-> -loop:
-> -	fr_pfn = memory_bm_next_pfn(free_pages_map);
-> -	fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
-> -
-> -	/*
-> -	 * Find the next bit set in both bitmaps. This is guaranteed to
-> -	 * terminate when fb_pfn == fr_pfn == BM_END_OF_MAP.
-> -	 */
-> -	do {
-> -		if (fb_pfn < fr_pfn)
-> -			fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
-> -		if (fr_pfn < fb_pfn)
-> -			fr_pfn = memory_bm_next_pfn(free_pages_map);
-> -	} while (fb_pfn != fr_pfn);
-> -
-> -	if (fr_pfn != BM_END_OF_MAP && pfn_valid(fr_pfn)) {
-> -		struct page *page = pfn_to_page(fr_pfn);
-> -
-> -		memory_bm_clear_current(forbidden_pages_map);
-> -		memory_bm_clear_current(free_pages_map);
-> -		__free_page(page);
-> -		goto loop;
-> +	for ( ; ; ) {
-> +		pfn  = memory_bm_next_pfn(forbidden_pages_map);
-> +		if (BM_END_OF_MAP == pfn)
+>  	int cpu, rc =3D 0;
+>  	const struct x86_cpu_id *id;
+> -	struct cpu_defaults *cpu_info;
+> -	struct cpuinfo_x86 *c =3D &boot_cpu_data;
+> +	struct cpu_defaults *cpu_def;
+> =20
+>  	if (no_load)
+>  		return -ENODEV;
+> @@ -1200,10 +1200,10 @@ static int __init intel_pstate_init(void)
+>  	if (intel_pstate_platform_pwr_mgmt_exists())
+>  		return -ENODEV;
+> =20
+> -	cpu_info =3D (struct cpu_defaults *)id->driver_data;
+> +	cpu_def =3D (struct cpu_defaults *)id->driver_data;
+> =20
+> -	copy_pid_params(&cpu_info->pid_policy);
+> -	copy_cpu_funcs(&cpu_info->funcs);
+> +	copy_pid_params(&cpu_def->pid_policy);
+> +	copy_cpu_funcs(&cpu_def->funcs);
+> =20
+>  	if (intel_pstate_msrs_not_valid())
+>  		return -ENODEV;
+> @@ -1214,7 +1214,7 @@ static int __init intel_pstate_init(void)
+>  	if (!all_cpu_data)
+>  		return -ENOMEM;
+> =20
+> -	if (cpu_has(c,X86_FEATURE_HWP) && !no_hwp)
+> +	if (static_cpu_has_safe(X86_FEATURE_HWP) && !no_hwp)
+>  		intel_pstate_hwp_enable();
+> =20
+>  	if (!hwp_active && hwp_only)
+>=20
 
--> First, the usual way of writing such things is
-
-		if (pfn == BM_END_OF_MAP)
-
-(ie. the variable on the left-hand side of the operator).
-
-Second, don't you need to do the pfn_valid() check here too?
-
-> +			break;
-> +		if (memory_bm_test_bit(free_pages_map, pfn)) {
-> +			memory_bm_clear_bit(forbidden_pages_map, pfn);
-> +			memory_bm_clear_bit(free_pages_map, pfn);
-> +			__free_page(pfn_to_page(pfn));
-> +		}
->  	}
->  
->  out:
-
-
--- 
+--=20
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
