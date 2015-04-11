@@ -1,132 +1,100 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: Re: [PATCH] x86/ACPI: Fix regression caused by 16ee7b3dcc56 & c50f13c672df7
-Date: Sun, 12 Apr 2015 00:57:02 +0800
-Message-ID: <5529525E.4090706@linux.intel.com>
-References: <55214A0D.9000404@xs4all.nl> <1428417244-32416-1-git-send-email-jiang.liu@linux.intel.com> <55240A82.30101@xs4all.nl> <5524BBEA.5040701@linux.intel.com> <55254E6E.6000705@xs4all.nl> <5526513C.9090200@linux.intel.com> <5526ABA9.1000700@xs4all.nl> <55272DCC.1010900@linux.intel.com> <552938F6.8020601@xs4all.nl>
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Subject: Re: [PATCH] power: add poodle battery driver
+Date: Sat, 11 Apr 2015 23:54:21 +0300
+Message-ID: <CALT56yN-dH=0Er01V3MUYEK2t1gw0Zb6gO_qqnUpPspqrJVPYQ@mail.gmail.com>
+References: <1427714679-27472-1-git-send-email-dbaryshkov@gmail.com>
+	<20150406164428.GB18145@earth>
+	<CALT56yOH-rc1RG=xQhcGT-FKJz7D9qKd+rO+8s4PdYrK0weCGQ@mail.gmail.com>
+	<20150407154023.GA23823@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:46151 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751546AbbDKQ5H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 11 Apr 2015 12:57:07 -0400
-In-Reply-To: <552938F6.8020601@xs4all.nl>
+Received: from mail-ie0-f181.google.com ([209.85.223.181]:36593 "EHLO
+	mail-ie0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755545AbbDKUyW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 11 Apr 2015 16:54:22 -0400
+Received: by iebrs15 with SMTP id rs15so40562066ieb.3
+        for <linux-pm@vger.kernel.org>; Sat, 11 Apr 2015 13:54:21 -0700 (PDT)
+In-Reply-To: <20150407154023.GA23823@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jim Bos <jim876@xs4all.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Andrea Adami <andrea.adami@gmail.com>
 
-On 2015/4/11 23:08, Jim Bos wrote:
-> On 04/10/2015 03:56 AM, Jiang Liu wrote:
->> On 2015/4/10 0:41, Jim Bos wrote:
->>> On 04/09/2015 12:15 PM, Jiang Liu wrote:
->>>> On 2015/4/8 23:51, Jim Bos wrote:
->>>>> On 04/08/2015 07:26 AM, Jiang Liu wrote:
->>>>>> On 2015/4/8 0:49, Jim Bos wrote:
->>>>>>> On 04/07/2015 04:34 PM, Jiang Liu wrote:
->> <snip>
->>>> Hi Jim,
->>>> 	I'm really confused. I can't even explain why my previous
->>>> patch fixes the issue on AMD geode board now:(
->>>>
->>>> For the Dell laptop, seems you have:
->>>> 1) build a kernel with Local APIC and IOAPIC enabled
->>>> 2) lapic is disabled by BIOS, so there's no ACPI MADT(APIC)
->>>> table at all.
->>>> That means the laptop is working with 8259 PICs only.
->>>> There's little change between 3.16 and 4.0 related to 8259.
->>>>
->>>> For the AMD geode board, I still think original code is right.
->>>> I can't explain why the patch fix the issue.
->>>>
->>>> So could you please help to:
->>>> 1) Try to enable lapic on Dell laptop in BIOS
->>>> 2) Dump acpi tables and dmesg on AMD board
->>>>
->>>> If that still doesn't help, I will try to send you some
->>>> debug patches to gather more info.
->>>> Thanks!
->>>> Gerry
->>>>> _
->>>>> Jim
->>>>>
->>>>
->>>
->>> Gerry,
->>>
->>> As you mentioned your patch shouldn't make a difference, run some more
->>> tests, as it turns out:
->>> - geode system  broken on 3.16+ up to and including 3.19, however, on
->>> plain 4.0-rc6 it works!  Root cause appears to be there isn't an ACPI
->>> interrupt assigned in non-working kernels.
->>> - other system I got my hands on: Pentium(R) CPU G3220, broken on 3.19.0
->>> when boot parameter 'nosmp' is specified, again no acpi entry in
->>> /proc/interrupts,  working fine on 4.0-rc6
->>>
->>> So obviously between 3.19 and 4.0-rc6 something got fixed here!
->> Hi Jim,
->> Yes, the bugfix patch should be:
->> commit 1ea76fbadd66("x86/irq: Fix regression caused by commit b568b8601f05")
->>
->>> The Dell laptop remains the only problem then on 4.0-rc6, there IS an
->>> acpi interrupt  (but firing once apparently).
->>> There isn't an option in BIOS to enable LAPIC, however, when specifying
->>> 'lapic' as boot parameter I got interesting result, still not working
->>> and /proc/interrups still shows XT-PIC.  Doing a diff between dmesg on
->>> 3.19 and 4.0-rc6 this pops out:
->>>
->>> -Local APIC disabled by BIOS -- you can enable it with "lapic"
->>> -APIC: disable apic facility
->>> -APIC: switched to apic NOOP
->>> +Local APIC disabled by BIOS -- reenabling.
->>> +Found and enabled local APIC!
->>>
->>> +Enabling APIC mode:  Flat.  Using 0 I/O APICs
->> What's the last know working kernel for Dell laptop?
->> Does it work as expected with v3.19 kernel?
->> Do you means this message is from plain v4.0-rc6 kernel?
->> Thanks!
->> Gerry
->>
->>>
->>> Jim
->>>
->>
-> 
-> Gerry, Rafael,
-> 
-> Ok, found it.
-> It was very 'interesting' bisect, because there were 2 overlapping
-> issues here.  On the Dell laptop some kernels there wasn't an ACPI
-> interrupt at all or it fired once and then seemed to get stuck.
-> Turns out that kernel version:
-> 3.16: OK
-> 3.17: Broken (no acpi interrupt)
-> 3.18: actually fine
-> 3.19: Broken
-> 
-> So started bisecting between 3.18 or 3.19, in the end found Rafael's
-> patch which broke it:
-> 
-> ==
-> commit c50f13c672df758b59e026c15b9118f3ed46edc4
-> Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Date:   Mon Dec 1 23:50:16 2014 +0100
-> 
->     ACPICA: Save current masks of enabled GPEs after enable register writes
-> ==
-> 
-> Reverting that patch on top of 4.0-rc7 (with some offsets and one
-> trivial manual edit) and I finally got a working ACPI interrupt again!
-Hi Jim,
-	Thanks for your great effort to bisect the regression.
-And it gets reasonable now:)
-Thanks!
-Gerry
+Hello,
 
-> 
-> Jim
-> 
-> 
-> 
+2015-04-07 18:40 GMT+03:00 Sebastian Reichel <sre@kernel.org>:
+> Hi,
+>
+> On Tue, Apr 07, 2015 at 03:34:30PM +0300, Dmitry Eremin-Solenikov wrote:
+>> > On Mon, Mar 30, 2015 at 02:24:39PM +0300, Dmitry Eremin-Solenikov wrote:
+>> >> Add a driver supporting battery charging on Sharp SL-5600 (poodle).
+>> >> Voltage and temperature readings are provided through add7846 hwmon
+>> >> interface. Battery voltage is in1_input (mV) and temp in in0_input
+>> >> (values unknown, but should be less than 2441).
+>> >
+>> > You may want to convert add7846 to iio interface, which can be
+>> > exposed via hwmon and requested by other kernel drivers (e.g. this
+>> > one).
+>>
+>> This needs a more careful thought. I have several devices in mind,
+>> which provide touchscreen + ADC interfaces, where ADC is used
+>> for battery voltage and temperature sensing. Sometimes additional
+>> GPIOs are in play. Thus I'd like for now to sustain from changing
+>> ads7846 driver. Or, at least to delay such changes, iff there will be
+>> no real design/ideas how to handle such devices in a generic enough
+>> way.
+>
+> If you have more of these devices it's even more appealing to use
+> the IIO interface. You can basically keep the touchscreen part of
+> the ads7846 driver and replace hwmon with IIO. Then other kernel
+> drivers can request an IIO channel, but you are still able to use
+> hwmon interface from userspace via iio-hwmon.
+
+There are more chips like this, not all of them are ads7846.
+I'll think about your suggestion. However I do not see this as a first
+priority task.
+
+
+>
+>> [...]
+>
+>> >> +static int poodle_battery_probe(struct platform_device *dev)
+>> >> +{
+>> >> + int ret;
+>> >> +
+>> >> + ret = gpio_request_array(poodle_batt_gpios,
+>> >> + ARRAY_SIZE(poodle_batt_gpios));
+>> >> + if (ret)
+>> >> + return ret;
+>> >> +
+>> >> + mutex_init(&poodle_bat_main.work_lock);
+>> >> +
+>> >> + INIT_WORK(&bat_work, poodle_bat_work);
+>> >> +
+>> >> + ret = power_supply_register(&dev->dev, &poodle_bat_main.psy);
+>> >> + if (ret)
+>> >> + goto err_psy_reg_main;
+>> >
+>> > we have devm_power_supply_register() now.
+>>
+>> Not so sure about it. I'd like to cancel work after unregistering power_supply.
+>> I think I'll even switch from devm_request_irq back to request_irq to be able
+>> to cancel IRQs before canceling work.
+
+To be sure that there are no pending work items, after canceling the work
+in driver remove callback. Basically I'd like to be sure of the following
+sequence:
+
+- shut down IRQs, so that no external events can schedule work
+- unregister psy so replugging AC can not schedule work
+- cancel all pending work
+- free memory
+
+Would you have any suggestions other than doing first two unregistrations
+by hand?
+
+
+-- 
+With best wishes
+Dmitry
