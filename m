@@ -1,129 +1,125 @@
-From: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
-Subject: Re: [PATCH v8 10/18] clk: tegra: Initialize PLL_X before CCLK_G to
- ensure it has a parent
-Date: Sat, 11 Apr 2015 14:00:24 +0300
-Message-ID: <5528FEC8.3080103@kapsi.fi>
-References: <1425213881-5262-1-git-send-email-mikko.perttunen@kapsi.fi> <1425213881-5262-11-git-send-email-mikko.perttunen@kapsi.fi> <20150410210832.14369.65901@quantum>
+From: Jim Bos <jim876@xs4all.nl>
+Subject: Re: [PATCH] x86/ACPI: Fix regression caused by 16ee7b3dcc56 & c50f13c672df7
+Date: Sat, 11 Apr 2015 17:08:38 +0200
+Message-ID: <552938F6.8020601@xs4all.nl>
+References: <55214A0D.9000404@xs4all.nl> <1428417244-32416-1-git-send-email-jiang.liu@linux.intel.com> <55240A82.30101@xs4all.nl> <5524BBEA.5040701@linux.intel.com> <55254E6E.6000705@xs4all.nl> <5526513C.9090200@linux.intel.com> <5526ABA9.1000700@xs4all.nl> <55272DCC.1010900@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150410210832.14369.65901@quantum>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Michael Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tuomas.tynkkynen-X3B1VOXEql0@public.gmane.org, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lb3-smtp-cloud6.xs4all.net ([194.109.24.31]:45924 "EHLO
+	lb3-smtp-cloud6.xs4all.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752896AbbDKPIn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 11 Apr 2015 11:08:43 -0400
+In-Reply-To: <55272DCC.1010900@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jiang Liu <jiang.liu@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On 04/11/2015 12:08 AM, Michael Turquette wrote:
-> Quoting Mikko Perttunen (2015-03-01 04:44:33)
->> This patch moves the initialization of PLL_X to be slightly before
->> that of CCLK_G. This ensures that at boot, CCLK_G will immediately
->> have a parent and the common clock framework can determine its
->> clock rate correctly.
+On 04/10/2015 03:56 AM, Jiang Liu wrote:
+> On 2015/4/10 0:41, Jim Bos wrote:
+>> On 04/09/2015 12:15 PM, Jiang Liu wrote:
+>>> On 2015/4/8 23:51, Jim Bos wrote:
+>>>> On 04/08/2015 07:26 AM, Jiang Liu wrote:
+>>>>> On 2015/4/8 0:49, Jim Bos wrote:
+>>>>>> On 04/07/2015 04:34 PM, Jiang Liu wrote:
+> <snip>
+>>> Hi Jim,
+>>> 	I'm really confused. I can't even explain why my previous
+>>> patch fixes the issue on AMD geode board now:(
+>>>
+>>> For the Dell laptop, seems you have:
+>>> 1) build a kernel with Local APIC and IOAPIC enabled
+>>> 2) lapic is disabled by BIOS, so there's no ACPI MADT(APIC)
+>>> table at all.
+>>> That means the laptop is working with 8259 PICs only.
+>>> There's little change between 3.16 and 4.0 related to 8259.
+>>>
+>>> For the AMD geode board, I still think original code is right.
+>>> I can't explain why the patch fix the issue.
+>>>
+>>> So could you please help to:
+>>> 1) Try to enable lapic on Dell laptop in BIOS
+>>> 2) Dump acpi tables and dmesg on AMD board
+>>>
+>>> If that still doesn't help, I will try to send you some
+>>> debug patches to gather more info.
+>>> Thanks!
+>>> Gerry
+>>>> _
+>>>> Jim
+>>>>
+>>>
 >>
->> Without this patch, calling clk_put on CCLK_G could cause the CCF
->> to set its rate to zero, hanging the system.
->
-> Hi Mikko,
->
-> Patch looks fine to me but I wanted to get more info on the behavior you
-> mentioned above about clk_put. Is there some special circumstance that
-> causes this for you? Why does calling clk_put adjust the rate of your
-> clock?
->
-> Thanks,
-> Mike
+>> Gerry,
+>>
+>> As you mentioned your patch shouldn't make a difference, run some more
+>> tests, as it turns out:
+>> - geode system  broken on 3.16+ up to and including 3.19, however, on
+>> plain 4.0-rc6 it works!  Root cause appears to be there isn't an ACPI
+>> interrupt assigned in non-working kernels.
+>> - other system I got my hands on: Pentium(R) CPU G3220, broken on 3.19.0
+>> when boot parameter 'nosmp' is specified, again no acpi entry in
+>> /proc/interrupts,  working fine on 4.0-rc6
+>>
+>> So obviously between 3.19 and 4.0-rc6 something got fixed here!
+> Hi Jim,
+> Yes, the bugfix patch should be:
+> commit 1ea76fbadd66("x86/irq: Fix regression caused by commit b568b8601f05")
+> 
+>> The Dell laptop remains the only problem then on 4.0-rc6, there IS an
+>> acpi interrupt  (but firing once apparently).
+>> There isn't an option in BIOS to enable LAPIC, however, when specifying
+>> 'lapic' as boot parameter I got interesting result, still not working
+>> and /proc/interrups still shows XT-PIC.  Doing a diff between dmesg on
+>> 3.19 and 4.0-rc6 this pops out:
+>>
+>> -Local APIC disabled by BIOS -- you can enable it with "lapic"
+>> -APIC: disable apic facility
+>> -APIC: switched to apic NOOP
+>> +Local APIC disabled by BIOS -- reenabling.
+>> +Found and enabled local APIC!
+>>
+>> +Enabling APIC mode:  Flat.  Using 0 I/O APICs
+> What's the last know working kernel for Dell laptop?
+> Does it work as expected with v3.19 kernel?
+> Do you means this message is from plain v4.0-rc6 kernel?
+> Thanks!
+> Gerry
+> 
+>>
+>> Jim
+>>
+> 
 
-Hi Mike,
+Gerry, Rafael,
 
-this is the chain of events:
-- CCLK_G is registered. CCF stores its current rate, but since it 
-doesn't have a parent at this point, the rate is assumed zero.
-- tegra cpufreq driver tries to probe, and clk_gets CCLK_G
-- tegra dfll driver tries to probe, but fails
-- tegra cpufreq driver's probe fails, and during unwinding clk_puts CCLK_G
-- CCF attempts to restore CCLK_G's rate to what it was prior to the 
-clk_get (to revert possible changes due to clock constraints)
-- the stored rate was zero, so CCLK_G is set to zero.
+Ok, found it.
+It was very 'interesting' bisect, because there were 2 overlapping
+issues here.  On the Dell laptop some kernels there wasn't an ACPI
+interrupt at all or it fired once and then seemed to get stuck.
+Turns out that kernel version:
+3.16: OK
+3.17: Broken (no acpi interrupt)
+3.18: actually fine
+3.19: Broken
 
-We did discuss it a bit on IRC with Tomeu and Peter and agreed that some 
-fix in CCF should be done, but we didn't get much further than that.
+So started bisecting between 3.18 or 3.19, in the end found Rafael's
+patch which broke it:
 
-Mikko
+==
+commit c50f13c672df758b59e026c15b9118f3ed46edc4
+Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Date:   Mon Dec 1 23:50:16 2014 +0100
 
->
->>
->> Signed-off-by: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
->> ---
->> v8:
->> - Added
->>
->>   drivers/clk/tegra/clk-tegra-super-gen4.c | 46 ++++++++++++++++++--------------
->>   1 file changed, 26 insertions(+), 20 deletions(-)
->>
->> diff --git a/drivers/clk/tegra/clk-tegra-super-gen4.c b/drivers/clk/tegra/clk-tegra-super-gen4.c
->> index f1f4410..c5ea9ee 100644
->> --- a/drivers/clk/tegra/clk-tegra-super-gen4.c
->> +++ b/drivers/clk/tegra/clk-tegra-super-gen4.c
->> @@ -104,6 +104,32 @@ void __init tegra_super_clk_gen4_init(void __iomem *clk_base,
->>          struct clk *clk;
->>          struct clk **dt_clk;
->>
->> +       /*
->> +        * Register PLL_X first so that CCLK_G has a parent at registration
->> +        * time. This ensures that the common clock framework knows CCLK_G's
->> +        * rate.
->> +        */
->> +
->> +#if defined(CONFIG_ARCH_TEGRA_114_SOC) || defined(CONFIG_ARCH_TEGRA_124_SOC)
->> +       /* PLLX */
->> +       dt_clk = tegra_lookup_dt_id(tegra_clk_pll_x, tegra_clks);
->> +       if (!dt_clk)
->> +               return;
->> +
->> +       clk = tegra_clk_register_pllxc("pll_x", "pll_ref", clk_base,
->> +                       pmc_base, CLK_IGNORE_UNUSED, params, NULL);
->> +       *dt_clk = clk;
->> +
->> +       /* PLLX_OUT0 */
->> +
->> +       dt_clk = tegra_lookup_dt_id(tegra_clk_pll_x_out0, tegra_clks);
->> +       if (!dt_clk)
->> +               return;
->> +       clk = clk_register_fixed_factor(NULL, "pll_x_out0", "pll_x",
->> +                                       CLK_SET_RATE_PARENT, 1, 2);
->> +       *dt_clk = clk;
->> +#endif
->> +
->>          /* CCLKG */
->>          dt_clk = tegra_lookup_dt_id(tegra_clk_cclk_g, tegra_clks);
->>          if (dt_clk) {
->> @@ -127,25 +153,5 @@ void __init tegra_super_clk_gen4_init(void __iomem *clk_base,
->>          }
->>
->>          tegra_sclk_init(clk_base, tegra_clks);
->> -
->> -#if defined(CONFIG_ARCH_TEGRA_114_SOC) || defined(CONFIG_ARCH_TEGRA_124_SOC)
->> -       /* PLLX */
->> -       dt_clk = tegra_lookup_dt_id(tegra_clk_pll_x, tegra_clks);
->> -       if (!dt_clk)
->> -               return;
->> -
->> -       clk = tegra_clk_register_pllxc("pll_x", "pll_ref", clk_base,
->> -                       pmc_base, CLK_IGNORE_UNUSED, params, NULL);
->> -       *dt_clk = clk;
->> -
->> -       /* PLLX_OUT0 */
->> -
->> -       dt_clk = tegra_lookup_dt_id(tegra_clk_pll_x_out0, tegra_clks);
->> -       if (!dt_clk)
->> -               return;
->> -       clk = clk_register_fixed_factor(NULL, "pll_x_out0", "pll_x",
->> -                                       CLK_SET_RATE_PARENT, 1, 2);
->> -       *dt_clk = clk;
->> -#endif
->>   }
->>
->> --
->> 2.3.0
->>
+    ACPICA: Save current masks of enabled GPEs after enable register writes
+==
+
+Reverting that patch on top of 4.0-rc7 (with some offsets and one
+trivial manual edit) and I finally got a working ACPI interrupt again!
+
+Jim
+
+
+
