@@ -1,139 +1,201 @@
 From: Doug Smythies <doug.smythies@gmail.com>
-Subject: [PATCH 0/5] intel_pstate: Use C0 time, calculate target pstate directly
-Date: Sat, 11 Apr 2015 21:10:25 -0700
-Message-ID: <1428811830-15006-1-git-send-email-dsmythies@telus.net>
+Subject: [PATCH 1/5] intel_pstate: Add tsc collection and keep previous target pstate. Add both to trace.
+Date: Sat, 11 Apr 2015 21:10:26 -0700
+Message-ID: <1428811830-15006-2-git-send-email-dsmythies@telus.net>
+References: <1428811830-15006-1-git-send-email-dsmythies@telus.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:33704 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750720AbbDLEKy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Apr 2015 00:10:54 -0400
-Received: by paboj16 with SMTP id oj16so65259542pab.0
-        for <linux-pm@vger.kernel.org>; Sat, 11 Apr 2015 21:10:54 -0700 (PDT)
+Received: from mail-pd0-f179.google.com ([209.85.192.179]:34018 "EHLO
+	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750865AbbDLELE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Apr 2015 00:11:04 -0400
+Received: by pdbqa5 with SMTP id qa5so68175002pdb.1
+        for <linux-pm@vger.kernel.org>; Sat, 11 Apr 2015 21:11:03 -0700 (PDT)
+In-Reply-To: <1428811830-15006-1-git-send-email-dsmythies@telus.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: kristen@linux.intel.com, rjw@rjwysocki.net
 Cc: dsmythies@telus.net, linux-pm@vger.kernel.org
 
-This patch set attempts to address some issues with
-the intel_pstate driver:
+The intel_pstate driver is difficult to debug and investigate without tsc.
+Also, it is likely use of tsc, and some version of C0 percentage,
+will be re-introdcued in futute.
+There have also been occasions where it is desirebale to know, and
+confirm, the previous target pstate.
+This patch brings back tsc, adds previous target pstate,
+and adds both to the trace data collection.
 
-The driver has a finicky tradeoffs between fixed point
-integer math and gain settings and the setpoint.
+Signed-off-by: Doug Smythies <dsmythies@telus.net>
+---
+ drivers/cpufreq/intel_pstate.c | 31 +++++++++++++++++++++----------
+ include/trace/events/power.h   | 25 +++++++++++++++++--------
+ 2 files changed, 38 insertions(+), 18 deletions(-)
 
-The application is not really best suited to a PID
-(Proportional Integral Derivative) controller.
-
-The duration method can incorrectly drive the target
-pstate downwards, because a long duration might not
-be due to idle.
-
-The driver can incorrectly drive the target pstate
-upwards, when the C0 time is virtually 0.
-
-The patch set brings back the use of C0 time as the driving
-input as to what to do next in terms of target pstate.
-Recall that C0 time was used once before and was eventually
-removed due to situations of pstate lockup at a low pstate.
-Why is this time better? Because it is scaled properly,
-whereas it was not before. Also the response curve is
-flexible and adjustable.
-
-Patch 1 basically adds better debug information to the
-perf data. It was originally requested in June, and Dirk agreed
-to include it in September. Regardless of the acceptance or
-rejection of this whole patch set, please accept this one.
-scripts/checkpatch.pl complains about one line as over 80
-characters, not sure how to split the line.
-
-Patch 2 brings back the use of C0 time for the calculation
-of core_busy. Floor and ceiling hold values can be adjusted
-Once the floor load is reached the response is linear until
-the ceiling load is reached. The equations are just a simple
-y=mx+b line, where m = slope and b = intercept.
-Equation 1: min = m * floor + b
-Equation 2: max = m * ceiling + b
-Two equations and two unknowns, solved and coded.
-scripts/checkpatch.pl O.K.
-
-Patch 3 bypasses the PID controller and calculates the
-target pstate directly. An IIR (Infinite Impulse
-Response) filter takes care of filtering.
-Again a simple y=mx+b line.
-Equation 1: pmin = m * min + b
-Equation 2: pmax = m * max + b
-Again, two simple equations and two unknowns, solved
-and coded.
-scripts/checkpatch.pl O.K.
-Note: not the same min and max as in patch 2.
-
-Note: There are two definitions of percent within
-this driver, one goes to 100% at the max turbo (if
-it is enabled) and the other is 100% at the max
-non-turbo (enabled or not). It can be very confusing.
-The min used in patch 3 must be the mathematical min
-for the processor under the current turbo enabled or
-disabled state, which might not be the same
-as /sys/devices/system/cpu/intel_pstate/min_perf_pct
-when turbo is enabled.
-
-Patch 4 adds weighting to longer duration events to,
-at least partially, compensate for the asymmetric
-rising and falling load typical durations.
-scripts/checkpatch.pl O.K.
-
-Patch 5 just adjusts the default IIR gain.
-10 percent gives a rising edge response time similar
-to the current version of the driver.
-scripts/checkpatch.pl O.K.
-
-Anticipated questions:
-
-Q: Shouldn't the response curve be normalized to a reference
-pstate, perhaps the max non-turbo pstate?
-
-A: Doing so can create a lockup scenario, depending on the
-response curve settings and the overall pstate range of the
-particular processor. A downside to not normalizing has not been
-detected.
-
-Q: One of the patches in the set is titled V2. What was V1?
-
-A: To a limit, V1 ran the IIR filter N times when the duration
-was N times nominal. The method was expensive in terms of
-multiplies and divides. V2 saves a lot of clock cycles, and
-is good enough.
-
-Migration path:
-
-It should not be assumed that the current pstate is actually
-what was in effect during the last sample time. If a higher
-pstate was actually used, due to another active CPU, then
-that should override the use of the current pstate in the filter.
-This issue also exists in the current version of the driver,
-and was only discovered a few days ago. see also:
-https://bugzilla.kernel.org/show_bug.cgi?id=93521#c55
-This will be addressed, if possible, in a future patch.
-
-There are likely some math (multiply and divide) savings that
-can be realized in future patches.
-
-While the use of the PID controller has been eliminated, and
-because the change is likely to be controversial, the
-code has been left intact. It will be removed in a future patch.
-
-Doug Smythies (5):
-  intel_pstate: Add tsc collection and keep previous target pstate. Add
-    both to trace.
-  intel_pstate: Use C0 time for busy calculations (again).
-  intel_pstate: Calculate target pstate directly.
-  intel_pstate: Compensate for intermediate durations (v2).
-  intel_pstate: Adjust default IIR filter gain.
-
- Documentation/cpu-freq/intel-pstate.txt |   2 +
- drivers/cpufreq/intel_pstate.c          | 188 ++++++++++++++++++++++++--------
- include/trace/events/power.h            |  25 +++--
- 3 files changed, 163 insertions(+), 52 deletions(-)
-
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 872c577..f181ce5 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -67,6 +67,7 @@ struct sample {
+ 	int32_t core_pct_busy;
+ 	u64 aperf;
+ 	u64 mperf;
++	u64 tsc;
+ 	int freq;
+ 	ktime_t time;
+ };
+@@ -108,6 +109,7 @@ struct cpudata {
+ 	ktime_t last_sample_time;
+ 	u64	prev_aperf;
+ 	u64	prev_mperf;
++	u64	prev_tsc;
+ 	struct sample sample;
+ };
+ 
+@@ -725,23 +727,28 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
+ {
+ 	u64 aperf, mperf;
+ 	unsigned long flags;
++	u64 tsc;
+ 
+ 	local_irq_save(flags);
+ 	rdmsrl(MSR_IA32_APERF, aperf);
+ 	rdmsrl(MSR_IA32_MPERF, mperf);
++	tsc = native_read_tsc();
+ 	local_irq_restore(flags);
+ 
+ 	cpu->last_sample_time = cpu->sample.time;
+ 	cpu->sample.time = ktime_get();
+ 	cpu->sample.aperf = aperf;
+ 	cpu->sample.mperf = mperf;
++	cpu->sample.tsc =  tsc;
+ 	cpu->sample.aperf -= cpu->prev_aperf;
+ 	cpu->sample.mperf -= cpu->prev_mperf;
++	cpu->sample.tsc -= cpu->prev_tsc;
+ 
+ 	intel_pstate_calc_busy(cpu);
+ 
+ 	cpu->prev_aperf = aperf;
+ 	cpu->prev_mperf = mperf;
++	cpu->prev_tsc = tsc;
+ }
+ 
+ static inline void intel_hwp_set_sample_time(struct cpudata *cpu)
+@@ -806,6 +813,10 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+ 	int32_t busy_scaled;
+ 	struct _pid *pid;
+ 	signed int ctl;
++	int from;
++	struct sample *sample;
++
++	from = cpu->pstate.current_pstate;
+ 
+ 	pid = &cpu->pid;
+ 	busy_scaled = intel_pstate_get_scaled_busy(cpu);
+@@ -814,6 +825,16 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+ 
+ 	/* Negative values of ctl increase the pstate and vice versa */
+ 	intel_pstate_set_pstate(cpu, cpu->pstate.current_pstate - ctl);
++
++	sample = &cpu->sample;
++	trace_pstate_sample(fp_toint(sample->core_pct_busy),
++		fp_toint(busy_scaled),
++		from,
++		cpu->pstate.current_pstate,
++		sample->mperf,
++		sample->aperf,
++		sample->tsc,
++		sample->freq);
+ }
+ 
+ static void intel_hwp_timer_func(unsigned long __data)
+@@ -827,21 +848,11 @@ static void intel_hwp_timer_func(unsigned long __data)
+ static void intel_pstate_timer_func(unsigned long __data)
+ {
+ 	struct cpudata *cpu = (struct cpudata *) __data;
+-	struct sample *sample;
+ 
+ 	intel_pstate_sample(cpu);
+ 
+-	sample = &cpu->sample;
+-
+ 	intel_pstate_adjust_busy_pstate(cpu);
+ 
+-	trace_pstate_sample(fp_toint(sample->core_pct_busy),
+-			fp_toint(intel_pstate_get_scaled_busy(cpu)),
+-			cpu->pstate.current_pstate,
+-			sample->mperf,
+-			sample->aperf,
+-			sample->freq);
+-
+ 	intel_pstate_set_sample_time(cpu);
+ }
+ 
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index d19840b..630d1e5 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -42,45 +42,54 @@ TRACE_EVENT(pstate_sample,
+ 
+ 	TP_PROTO(u32 core_busy,
+ 		u32 scaled_busy,
+-		u32 state,
++		u32 from,
++		u32 to,
+ 		u64 mperf,
+ 		u64 aperf,
++		u64 tsc,
+ 		u32 freq
+ 		),
+ 
+ 	TP_ARGS(core_busy,
+ 		scaled_busy,
+-		state,
++		from,
++		to,
+ 		mperf,
+ 		aperf,
++		tsc,
+ 		freq
+ 		),
+ 
+ 	TP_STRUCT__entry(
+ 		__field(u32, core_busy)
+ 		__field(u32, scaled_busy)
+-		__field(u32, state)
++		__field(u32, from)
++		__field(u32, to)
+ 		__field(u64, mperf)
+ 		__field(u64, aperf)
++		__field(u64, tsc)
+ 		__field(u32, freq)
+-
+-	),
++		),
+ 
+ 	TP_fast_assign(
+ 		__entry->core_busy = core_busy;
+ 		__entry->scaled_busy = scaled_busy;
+-		__entry->state = state;
++		__entry->from = from;
++		__entry->to = to;
+ 		__entry->mperf = mperf;
+ 		__entry->aperf = aperf;
++		__entry->tsc = tsc;
+ 		__entry->freq = freq;
+ 		),
+ 
+-	TP_printk("core_busy=%lu scaled=%lu state=%lu mperf=%llu aperf=%llu freq=%lu ",
++	TP_printk("core_busy=%lu scaled=%lu from=%lu to=%lu mperf=%llu aperf=%llu tsc=%llu freq=%lu ",
+ 		(unsigned long)__entry->core_busy,
+ 		(unsigned long)__entry->scaled_busy,
+-		(unsigned long)__entry->state,
++		(unsigned long)__entry->from,
++		(unsigned long)__entry->to,
+ 		(unsigned long long)__entry->mperf,
+ 		(unsigned long long)__entry->aperf,
++		(unsigned long long)__entry->tsc,
+ 		(unsigned long)__entry->freq
+ 		)
+ 
 -- 
 1.9.1
 
