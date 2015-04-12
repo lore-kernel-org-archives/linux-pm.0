@@ -1,82 +1,139 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] Last minutes thermal-SoC management updates for v4.0
-Date: Sat, 11 Apr 2015 19:46:13 -0700
-Message-ID: <20150412024611.GA12807@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="82I3+IH0IqGh5yIs"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, Rui Zhang <rui.zhang@intel.com>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+From: Doug Smythies <doug.smythies@gmail.com>
+Subject: [PATCH 0/5] intel_pstate: Use C0 time, calculate target pstate directly
+Date: Sat, 11 Apr 2015 21:10:25 -0700
+Message-ID: <1428811830-15006-1-git-send-email-dsmythies@telus.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:33704 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750720AbbDLEKy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Apr 2015 00:10:54 -0400
+Received: by paboj16 with SMTP id oj16so65259542pab.0
+        for <linux-pm@vger.kernel.org>; Sat, 11 Apr 2015 21:10:54 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kristen@linux.intel.com, rjw@rjwysocki.net
+Cc: dsmythies@telus.net, linux-pm@vger.kernel.org
 
+This patch set attempts to address some issues with
+the intel_pstate driver:
 
---82I3+IH0IqGh5yIs
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The driver has a finicky tradeoffs between fixed point
+integer math and gain settings and the setpoint.
 
-Hello Linus,
+The application is not really best suited to a PID
+(Proportional Integral Derivative) controller.
 
-Please pull from
+The duration method can incorrectly drive the target
+pstate downwards, because a long duration might not
+be due to idle.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
+The driver can incorrectly drive the target pstate
+upwards, when the C0 time is virtually 0.
 
-to receive Thermal-SoC Management updates for v4.0-rc7 with top-most
+The patch set brings back the use of C0 time as the driving
+input as to what to do next in terms of target pstate.
+Recall that C0 time was used once before and was eventually
+removed due to situations of pstate lockup at a low pstate.
+Why is this time better? Because it is scaled properly,
+whereas it was not before. Also the response curve is
+flexible and adjustable.
 
-541d529f9845d249d1cb84f1b395e48f0a117e3f:
+Patch 1 basically adds better debug information to the
+perf data. It was originally requested in June, and Dirk agreed
+to include it in September. Regardless of the acceptance or
+rejection of this whole patch set, please accept this one.
+scripts/checkpatch.pl complains about one line as over 80
+characters, not sure how to split the line.
 
-  drivers: thermal: st: remove several sparse warnings (2015-04-07 13:43:28 -0700)
+Patch 2 brings back the use of C0 time for the calculation
+of core_busy. Floor and ceiling hold values can be adjusted
+Once the floor load is reached the response is linear until
+the ceiling load is reached. The equations are just a simple
+y=mx+b line, where m = slope and b = intercept.
+Equation 1: min = m * floor + b
+Equation 2: max = m * ceiling + b
+Two equations and two unknowns, solved and coded.
+scripts/checkpatch.pl O.K.
 
-on top of commit f8b3d8a5af7559a58613384cd23fc03a3c787acf:
+Patch 3 bypasses the PID controller and calculates the
+target pstate directly. An IIR (Infinite Impulse
+Response) filter takes care of filtering.
+Again a simple y=mx+b line.
+Equation 1: pmin = m * min + b
+Equation 2: pmax = m * max + b
+Again, two simple equations and two unknowns, solved
+and coded.
+scripts/checkpatch.pl O.K.
+Note: not the same min and max as in patch 2.
 
-  Merge tag 'usb-4.0-rc6' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb (2015-04-04 12:26:28 -0700)
+Note: There are two definitions of percent within
+this driver, one goes to 100% at the max turbo (if
+it is enabled) and the other is 100% at the max
+non-turbo (enabled or not). It can be very confusing.
+The min used in patch 3 must be the mathematical min
+for the processor under the current turbo enabled or
+disabled state, which might not be the same
+as /sys/devices/system/cpu/intel_pstate/min_perf_pct
+when turbo is enabled.
 
-Specifics:
-- Minor fixes on ST and RCAR thermal drivers.
-- Avoid flooding kernel log when driver returns -EAGAIN.
+Patch 4 adds weighting to longer duration events to,
+at least partially, compensate for the asymmetric
+rising and falling load typical durations.
+scripts/checkpatch.pl O.K.
 
-Note: I am sending this pull on Rui's behalf while he fixes issues in
-his Linux box.
+Patch 5 just adjusts the default IIR gain.
+10 percent gives a rising edge response time similar
+to the current version of the driver.
+scripts/checkpatch.pl O.K.
 
-BR,
+Anticipated questions:
 
-Eduardo Valentin
-----------------------------------------------------------------
-Eduardo Valentin (1):
-      drivers: thermal: st: remove several sparse warnings
+Q: Shouldn't the response curve be normalized to a reference
+pstate, perhaps the max non-turbo pstate?
 
-Fabian Frederick (1):
-      thermal: constify of_device_id array
+A: Doing so can create a lockup scenario, depending on the
+response curve settings and the overall pstate range of the
+particular processor. A downside to not normalizing has not been
+detected.
 
-Geert Uytterhoeven (1):
-      thermal: rcar: Fix typo in r8a73a4 SoC name
+Q: One of the patches in the set is titled V2. What was V1?
 
-Hans de Goede (1):
-      thermal: Do not log an error if thermal_zone_get_temp returns -EAGAIN
+A: To a limit, V1 ran the IIR filter N times when the duration
+was N times nominal. The method was expensive in terms of
+multiplies and divides. V2 saves a lot of clock cycles, and
+is good enough.
 
- Documentation/devicetree/bindings/thermal/rcar-thermal.txt |  2 +-
- drivers/thermal/st/st_thermal.c                            |  2 +-
- drivers/thermal/st/st_thermal_memmap.c                     | 10 +++++-----
- drivers/thermal/st/st_thermal_syscfg.c                     | 14 +++++++-------
- drivers/thermal/thermal_core.c                             |  6 ++++--
- 5 files changed, 18 insertions(+), 16 deletions(-)
+Migration path:
 
---82I3+IH0IqGh5yIs
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+It should not be assumed that the current pstate is actually
+what was in effect during the last sample time. If a higher
+pstate was actually used, due to another active CPU, then
+that should override the use of the current pstate in the filter.
+This issue also exists in the current version of the driver,
+and was only discovered a few days ago. see also:
+https://bugzilla.kernel.org/show_bug.cgi?id=93521#c55
+This will be addressed, if possible, in a future patch.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+There are likely some math (multiply and divide) savings that
+can be realized in future patches.
 
-iQEcBAEBAgAGBQJVKdxmAAoJEMLUO4d9pOJW6lgH/3VGTzyVPxUAD8T3Zm5KP64H
-/mtwnzhVyfQurDWb9tg7UK1ExN2menpab3Wr27loZgPMMCuQHDkuDVrKCEiu2etA
-WBu/PWuS25qA5XPK6L/gs3u4DYP59wt2HcvHhcQqhkcBM49nQzUc4nk8a2URSRd2
-nuzGfTLhxHWHWv6EYz3NqC1TlxU8hUAMiBQdanV3pf2EgBSXkKwzmYo8AEQT08TV
-3RUfkbwQWyStHgLpMX7Eekt8RdDDuqTPtVgvZzBg8stXpraNV8CkkGRXCzTXWUHG
-IrB1NYtIvXk47W4Rxec8yM/uJ0L4Ul1p7Z2a4/3/OCIpFXX3oJ2efikpL4CsYho=
-=cyKs
------END PGP SIGNATURE-----
+While the use of the PID controller has been eliminated, and
+because the change is likely to be controversial, the
+code has been left intact. It will be removed in a future patch.
 
---82I3+IH0IqGh5yIs--
+Doug Smythies (5):
+  intel_pstate: Add tsc collection and keep previous target pstate. Add
+    both to trace.
+  intel_pstate: Use C0 time for busy calculations (again).
+  intel_pstate: Calculate target pstate directly.
+  intel_pstate: Compensate for intermediate durations (v2).
+  intel_pstate: Adjust default IIR filter gain.
+
+ Documentation/cpu-freq/intel-pstate.txt |   2 +
+ drivers/cpufreq/intel_pstate.c          | 188 ++++++++++++++++++++++++--------
+ include/trace/events/power.h            |  25 +++--
+ 3 files changed, 163 insertions(+), 52 deletions(-)
+
+-- 
+1.9.1
+
