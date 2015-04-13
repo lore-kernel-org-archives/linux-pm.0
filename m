@@ -1,112 +1,191 @@
-From: Kristen Carlson Accardi <kristen@linux.intel.com>
-Subject: Re: [PATCH] cpufreq/intel_pstate: Fix an annoying !CONFIG_SMP
- warning
-Date: Mon, 13 Apr 2015 12:32:30 -0700
-Message-ID: <20150413123230.065b795c@kcaccard-desk.amr.corp.intel.com>
-References: <1428067193-9608-1-git-send-email-bp@alien8.de>
-	<7709303.8dfyH4hoC9@vostro.rjw.lan>
+From: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
+Subject: Re: [PATCH v8 10/18] clk: tegra: Initialize PLL_X before CCLK_G to
+ ensure it has a parent
+Date: Mon, 13 Apr 2015 22:35:19 +0300
+Message-ID: <552C1A77.9060500@kapsi.fi>
+References: <1425213881-5262-1-git-send-email-mikko.perttunen@kapsi.fi> <1425213881-5262-11-git-send-email-mikko.perttunen@kapsi.fi> <20150410210832.14369.65901@quantum> <5528FEC8.3080103@kapsi.fi> <CAAObsKCHUG7Auwu29My5xfynsQ1Jm6KB0bGxf1e3uUO6dvsBRA@mail.gmail.com> <20150413193108.19585.29183@quantum>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7709303.8dfyH4hoC9@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Borislav Petkov <bp@alien8.de>, LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150413193108.19585.29183@quantum>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Michael Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, tuomas.tynkkynen-X3B1VOXEql0@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 11 Apr 2015 02:22:03 +0200
-"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+On 04/13/2015 10:31 PM, Michael Turquette wrote:
+> Quoting Tomeu Vizoso (2015-04-13 05:17:01)
+>> On 11 April 2015 at 13:00, Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org> wrote:
+>>> On 04/11/2015 12:08 AM, Michael Turquette wrote:
+>>>>
+>>>> Quoting Mikko Perttunen (2015-03-01 04:44:33)
+>>>>>
+>>>>> This patch moves the initialization of PLL_X to be slightly before
+>>>>> that of CCLK_G. This ensures that at boot, CCLK_G will immediately
+>>>>> have a parent and the common clock framework can determine its
+>>>>> clock rate correctly.
+>>>>>
+>>>>> Without this patch, calling clk_put on CCLK_G could cause the CCF
+>>>>> to set its rate to zero, hanging the system.
+>>>>
+>>>>
+>>>> Hi Mikko,
+>>>>
+>>>> Patch looks fine to me but I wanted to get more info on the behavior you
+>>>> mentioned above about clk_put. Is there some special circumstance that
+>>>> causes this for you? Why does calling clk_put adjust the rate of your
+>>>> clock?
+>>>>
+>>>> Thanks,
+>>>> Mike
+>>>
+>>>
+>>> Hi Mike,
+>>>
+>>> this is the chain of events:
+>>> - CCLK_G is registered. CCF stores its current rate, but since it doesn't
+>>> have a parent at this point, the rate is assumed zero.
+>>> - tegra cpufreq driver tries to probe, and clk_gets CCLK_G
+>>> - tegra dfll driver tries to probe, but fails
+>>> - tegra cpufreq driver's probe fails, and during unwinding clk_puts CCLK_G
+>>> - CCF attempts to restore CCLK_G's rate to what it was prior to the clk_get
+>>> (to revert possible changes due to clock constraints)
+>>
+>> The CCF will currently only do so if any constraints were set in the
+>> per-user clk that was destroyed, so this particular problem shouldn't
+>> happen any more: ec02ace clk: Only recalculate the rate if needed
+>
+> Precisely. clk_put shouldn't be setting rates unless we're releasing a
+> constraint. Can this re-ordering patch be dropped?
 
-> On Friday, April 03, 2015 03:19:53 PM Borislav Petkov wrote:
-> > From: Borislav Petkov <bp@suse.de>
-> >=20
-> > I keep seeing
-> >=20
-> >   drivers/cpufreq/intel_pstate.c: In function =E2=80=98intel_pstate=
-_init=E2=80=99:
-> >   drivers/cpufreq/intel_pstate.c:1187:26: warning: initialization f=
-rom incompatible pointer type
-> >     struct cpuinfo_x86 *c =3D &boot_cpu_data;
-> >=20
-> > when doing randconfig builds.
-> >=20
-> > This is caused by the fact that when !CONFIG_SMP, asm/processor.h
-> > defines cpu_info to boot_cpu_data and the local variable
-> >=20
-> >   struct cpu_defaults *cpu_info
-> >=20
-> > overshadows it leading to this unfortunate assignment in the
-> > preprocessed source:
-> >=20
-> >  struct cpu_defaults *boot_cpu_data;
-> >  struct cpuinfo_x86 *c =3D &boot_cpu_data;
-> >=20
-> > Rename the local variable and use static_cpu_has_safe() which allev=
-iates
-> > the need for defining a local cpuinfo_x86 pointer.
->=20
-> Kristen, any comments here?
+Yes.
 
-Seems fine to me.
+I'll try to post a (hopefully) final version of the series tomorrow.
 
-Acked-by: Kristen Carlson Accardi <kristen@linux.intel.com>
+Thanks, Mikko.
 
->=20
-> > Signed-off-by: Borislav Petkov <bp@suse.de>
-> > Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Cc: linux-pm@vger.kernel.org
-> > ---
-> >  drivers/cpufreq/intel_pstate.c | 12 ++++++------
-> >  1 file changed, 6 insertions(+), 6 deletions(-)
-> >=20
-> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel=
-_pstate.c
-> > index 872c5772c5d3..0b883f131a73 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -31,6 +31,7 @@
-> >  #include <asm/div64.h>
-> >  #include <asm/msr.h>
-> >  #include <asm/cpu_device_id.h>
-> > +#include <asm/cpufeature.h>
-> > =20
-> >  #define BYT_RATIOS		0x66a
-> >  #define BYT_VIDS		0x66b
-> > @@ -1183,8 +1184,7 @@ static int __init intel_pstate_init(void)
-> >  {
-> >  	int cpu, rc =3D 0;
-> >  	const struct x86_cpu_id *id;
-> > -	struct cpu_defaults *cpu_info;
-> > -	struct cpuinfo_x86 *c =3D &boot_cpu_data;
-> > +	struct cpu_defaults *cpu_def;
-> > =20
-> >  	if (no_load)
-> >  		return -ENODEV;
-> > @@ -1200,10 +1200,10 @@ static int __init intel_pstate_init(void)
-> >  	if (intel_pstate_platform_pwr_mgmt_exists())
-> >  		return -ENODEV;
-> > =20
-> > -	cpu_info =3D (struct cpu_defaults *)id->driver_data;
-> > +	cpu_def =3D (struct cpu_defaults *)id->driver_data;
-> > =20
-> > -	copy_pid_params(&cpu_info->pid_policy);
-> > -	copy_cpu_funcs(&cpu_info->funcs);
-> > +	copy_pid_params(&cpu_def->pid_policy);
-> > +	copy_cpu_funcs(&cpu_def->funcs);
-> > =20
-> >  	if (intel_pstate_msrs_not_valid())
-> >  		return -ENODEV;
-> > @@ -1214,7 +1214,7 @@ static int __init intel_pstate_init(void)
-> >  	if (!all_cpu_data)
-> >  		return -ENOMEM;
-> > =20
-> > -	if (cpu_has(c,X86_FEATURE_HWP) && !no_hwp)
-> > +	if (static_cpu_has_safe(X86_FEATURE_HWP) && !no_hwp)
-> >  		intel_pstate_hwp_enable();
-> > =20
-> >  	if (!hwp_active && hwp_only)
-> >=20
->=20
+>
+>>
+>>> - the stored rate was zero, so CCLK_G is set to zero.
+>>>
+>>> We did discuss it a bit on IRC with Tomeu and Peter and agreed that some fix
+>>> in CCF should be done, but we didn't get much further than that.
+>>
+>> Wonder if we could somehow make sure that the rate in the CCF matches
+>> the current state of the HW.
+>
+> If there is no constraint expressed by Linux software then we
+> should not care.
+>
+> Probably we need to track a few more things in the framework. Stephen
+> and I were discussing struct clk.hw_en which tracks the enable/disable
+> state of the hardware independently of the enable_count (e.g. gate clock
+> is enabled by bootloader but not enabled by Linux ccf).
+>
+> Tracking something like "is_clk_initialized" would be helpful. It is an
+> abstract concept but knowing that clock has been successfully hooked up
+> to its parent and that its rate has been properly calculated would be
+> very helpful for some corner cases.
+>
+> Regards,
+> Mike
+>
+>>
+>> Regards,
+>>
+>> Tomeu
+>>
+>>> Mikko
+>>>
+>>>
+>>>>
+>>>>>
+>>>>> Signed-off-by: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
+>>>>> ---
+>>>>> v8:
+>>>>> - Added
+>>>>>
+>>>>>    drivers/clk/tegra/clk-tegra-super-gen4.c | 46
+>>>>> ++++++++++++++++++--------------
+>>>>>    1 file changed, 26 insertions(+), 20 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/clk/tegra/clk-tegra-super-gen4.c
+>>>>> b/drivers/clk/tegra/clk-tegra-super-gen4.c
+>>>>> index f1f4410..c5ea9ee 100644
+>>>>> --- a/drivers/clk/tegra/clk-tegra-super-gen4.c
+>>>>> +++ b/drivers/clk/tegra/clk-tegra-super-gen4.c
+>>>>> @@ -104,6 +104,32 @@ void __init tegra_super_clk_gen4_init(void __iomem
+>>>>> *clk_base,
+>>>>>           struct clk *clk;
+>>>>>           struct clk **dt_clk;
+>>>>>
+>>>>> +       /*
+>>>>> +        * Register PLL_X first so that CCLK_G has a parent at
+>>>>> registration
+>>>>> +        * time. This ensures that the common clock framework knows
+>>>>> CCLK_G's
+>>>>> +        * rate.
+>>>>> +        */
+>>>>> +
+>>>>> +#if defined(CONFIG_ARCH_TEGRA_114_SOC) ||
+>>>>> defined(CONFIG_ARCH_TEGRA_124_SOC)
+>>>>> +       /* PLLX */
+>>>>> +       dt_clk = tegra_lookup_dt_id(tegra_clk_pll_x, tegra_clks);
+>>>>> +       if (!dt_clk)
+>>>>> +               return;
+>>>>> +
+>>>>> +       clk = tegra_clk_register_pllxc("pll_x", "pll_ref", clk_base,
+>>>>> +                       pmc_base, CLK_IGNORE_UNUSED, params, NULL);
+>>>>> +       *dt_clk = clk;
+>>>>> +
+>>>>> +       /* PLLX_OUT0 */
+>>>>> +
+>>>>> +       dt_clk = tegra_lookup_dt_id(tegra_clk_pll_x_out0, tegra_clks);
+>>>>> +       if (!dt_clk)
+>>>>> +               return;
+>>>>> +       clk = clk_register_fixed_factor(NULL, "pll_x_out0", "pll_x",
+>>>>> +                                       CLK_SET_RATE_PARENT, 1, 2);
+>>>>> +       *dt_clk = clk;
+>>>>> +#endif
+>>>>> +
+>>>>>           /* CCLKG */
+>>>>>           dt_clk = tegra_lookup_dt_id(tegra_clk_cclk_g, tegra_clks);
+>>>>>           if (dt_clk) {
+>>>>> @@ -127,25 +153,5 @@ void __init tegra_super_clk_gen4_init(void __iomem
+>>>>> *clk_base,
+>>>>>           }
+>>>>>
+>>>>>           tegra_sclk_init(clk_base, tegra_clks);
+>>>>> -
+>>>>> -#if defined(CONFIG_ARCH_TEGRA_114_SOC) ||
+>>>>> defined(CONFIG_ARCH_TEGRA_124_SOC)
+>>>>> -       /* PLLX */
+>>>>> -       dt_clk = tegra_lookup_dt_id(tegra_clk_pll_x, tegra_clks);
+>>>>> -       if (!dt_clk)
+>>>>> -               return;
+>>>>> -
+>>>>> -       clk = tegra_clk_register_pllxc("pll_x", "pll_ref", clk_base,
+>>>>> -                       pmc_base, CLK_IGNORE_UNUSED, params, NULL);
+>>>>> -       *dt_clk = clk;
+>>>>> -
+>>>>> -       /* PLLX_OUT0 */
+>>>>> -
+>>>>> -       dt_clk = tegra_lookup_dt_id(tegra_clk_pll_x_out0, tegra_clks);
+>>>>> -       if (!dt_clk)
+>>>>> -               return;
+>>>>> -       clk = clk_register_fixed_factor(NULL, "pll_x_out0", "pll_x",
+>>>>> -                                       CLK_SET_RATE_PARENT, 1, 2);
+>>>>> -       *dt_clk = clk;
+>>>>> -#endif
+>>>>>    }
+>>>>>
+>>>>> --
+>>>>> 2.3.0
+>>>>>
+>>>
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>>> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at  http://www.tux.org/lkml/
