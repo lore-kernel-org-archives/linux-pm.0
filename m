@@ -1,156 +1,78 @@
-From: Kristen Carlson Accardi <kristen@linux.intel.com>
-Subject: Re: [PATCH 0/5] intel_pstate: Use C0 time, calculate target pstate
- directly
-Date: Mon, 13 Apr 2015 09:32:14 -0700
-Message-ID: <20150413093214.63dc6184@kcaccard-desk.amr.corp.intel.com>
-References: <1428811830-15006-1-git-send-email-dsmythies@telus.net>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 0/4] cpufreq: use generic cpufreq drivers for Exynos5250
+ platform
+Date: Mon, 13 Apr 2015 19:33:57 +0200
+Message-ID: <1428946441-17058-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:43397 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932162AbbDMQcQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 13 Apr 2015 12:32:16 -0400
-In-Reply-To: <1428811830-15006-1-git-send-email-dsmythies@telus.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Kevin Hilman <khilman@linaro.org>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, linux-samsung-soc@vger.kernel.org, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <doug.smythies@gmail.com>
-Cc: rjw@rjwysocki.net, dsmythies@telus.net, linux-pm@vger.kernel.org
 
-Hi Doug,
+Hi,
 
-On Sat, 11 Apr 2015 21:10:25 -0700
-Doug Smythies <doug.smythies@gmail.com> wrote:
+This patch series removes the use of Exynos5250 specific support
+from exynos-cpufreq driver and enables the use of cpufreq-dt driver
+for this platform.  The exynos-cpufreq driver itself is also removed
+as it is no longer used/needed after Exynos5250 support removal.
 
-> This patch set attempts to address some issues with
-> the intel_pstate driver:
-> 
-> The driver has a finicky tradeoffs between fixed point
-> integer math and gain settings and the setpoint.
-> 
-> The application is not really best suited to a PID
-> (Proportional Integral Derivative) controller.
+This patch series has been tested on Exynos5250 based Arndale board.
 
-Agree!
+Depends on:
+- next-20150330 branch of linux-next kernel tree
+- "[PATCH 0/6] cpufreq: use generic cpufreq drivers for Exynos4210
+  platform" [1]
+- "[PATCH 0/6] cpufreq: use generic cpufreq drivers for Exynos4x12
+  platform" [2]
+- "[PATCH] cpufreq: exynos: remove dead ->need_apll_change method" [3]
 
-> 
-> The duration method can incorrectly drive the target
-> pstate downwards, because a long duration might not
-> be due to idle.
-> 
-> The driver can incorrectly drive the target pstate
-> upwards, when the C0 time is virtually 0.
-> 
-> The patch set brings back the use of C0 time as the driving
-> input as to what to do next in terms of target pstate.
-> Recall that C0 time was used once before and was eventually
-> removed due to situations of pstate lockup at a low pstate.
-> Why is this time better? Because it is scaled properly,
-> whereas it was not before. Also the response curve is
-> flexible and adjustable.
-> 
-> Patch 1 basically adds better debug information to the
-> perf data. It was originally requested in June, and Dirk agreed
-> to include it in September. Regardless of the acceptance or
-> rejection of this whole patch set, please accept this one.
-> scripts/checkpatch.pl complains about one line as over 80
-> characters, not sure how to split the line.
-> 
-> Patch 2 brings back the use of C0 time for the calculation
-> of core_busy. Floor and ceiling hold values can be adjusted
-> Once the floor load is reached the response is linear until
-> the ceiling load is reached. The equations are just a simple
-> y=mx+b line, where m = slope and b = intercept.
-> Equation 1: min = m * floor + b
-> Equation 2: max = m * ceiling + b
-> Two equations and two unknowns, solved and coded.
-> scripts/checkpatch.pl O.K.
-> 
-> Patch 3 bypasses the PID controller and calculates the
-> target pstate directly. An IIR (Infinite Impulse
-> Response) filter takes care of filtering.
-> Again a simple y=mx+b line.
-> Equation 1: pmin = m * min + b
-> Equation 2: pmax = m * max + b
-> Again, two simple equations and two unknowns, solved
-> and coded.
-> scripts/checkpatch.pl O.K.
-> Note: not the same min and max as in patch 2.
-> 
-> Note: There are two definitions of percent within
-> this driver, one goes to 100% at the max turbo (if
-> it is enabled) and the other is 100% at the max
-> non-turbo (enabled or not). It can be very confusing.
-> The min used in patch 3 must be the mathematical min
-> for the processor under the current turbo enabled or
-> disabled state, which might not be the same
-> as /sys/devices/system/cpu/intel_pstate/min_perf_pct
-> when turbo is enabled.
-> 
-> Patch 4 adds weighting to longer duration events to,
-> at least partially, compensate for the asymmetric
-> rising and falling load typical durations.
-> scripts/checkpatch.pl O.K.
-> 
-> Patch 5 just adjusts the default IIR gain.
-> 10 percent gives a rising edge response time similar
-> to the current version of the driver.
-> scripts/checkpatch.pl O.K.
-> 
-> Anticipated questions:
-> 
-> Q: Shouldn't the response curve be normalized to a reference
-> pstate, perhaps the max non-turbo pstate?
-> 
-> A: Doing so can create a lockup scenario, depending on the
-> response curve settings and the overall pstate range of the
-> particular processor. A downside to not normalizing has not been
-> detected.
-> 
-> Q: One of the patches in the set is titled V2. What was V1?
-> 
-> A: To a limit, V1 ran the IIR filter N times when the duration
-> was N times nominal. The method was expensive in terms of
-> multiplies and divides. V2 saves a lot of clock cycles, and
-> is good enough.
-> 
-> Migration path:
-> 
-> It should not be assumed that the current pstate is actually
-> what was in effect during the last sample time. If a higher
-> pstate was actually used, due to another active CPU, then
-> that should override the use of the current pstate in the filter.
-> This issue also exists in the current version of the driver,
-> and was only discovered a few days ago. see also:
-> https://bugzilla.kernel.org/show_bug.cgi?id=93521#c55
-> This will be addressed, if possible, in a future patch.
-> 
-> There are likely some math (multiply and divide) savings that
-> can be realized in future patches.
-> 
-> While the use of the PID controller has been eliminated, and
-> because the change is likely to be controversial, the
-> code has been left intact. It will be removed in a future patch.
+[1] http://www.kernelhub.org/?msg=721136&p=2
+[2] http://marc.info/?l=linux-pm&m=142868881101873&w=2
+[3] https://lkml.org/lkml/2015/3/27/574
 
-I am completely supportive of removing the PID controller.
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-> 
-> Doug Smythies (5):
->   intel_pstate: Add tsc collection and keep previous target pstate. Add
->     both to trace.
->   intel_pstate: Use C0 time for busy calculations (again).
->   intel_pstate: Calculate target pstate directly.
->   intel_pstate: Compensate for intermediate durations (v2).
->   intel_pstate: Adjust default IIR filter gain.
-> 
->  Documentation/cpu-freq/intel-pstate.txt |   2 +
->  drivers/cpufreq/intel_pstate.c          | 188 ++++++++++++++++++++++++--------
->  include/trace/events/power.h            |  25 +++--
->  3 files changed, 163 insertions(+), 52 deletions(-)
-> 
+Bartlomiej Zolnierkiewicz (1):
+  cpufreq: exynos: remove Exynos5250 specific cpufreq driver support
 
-Thanks for your patches, I'll be doing some testing and review and let
-you know how things go.
+Thomas Abraham (3):
+  clk: samsung: exynos5250: add cpu clock configuration data and
+    instantiate cpu clock
+  ARM: dts: Exynos5250: add CPU OPP and regulator supply property
+  ARM: Exynos: switch to using generic cpufreq driver for Exynos5250
 
-Kristen
+ arch/arm/boot/dts/exynos5250-arndale.dts  |    4 +
+ arch/arm/boot/dts/exynos5250-smdk5250.dts |    4 +
+ arch/arm/boot/dts/exynos5250-snow.dts     |    4 +
+ arch/arm/boot/dts/exynos5250-spring.dts   |    4 +
+ arch/arm/boot/dts/exynos5250.dtsi         |   22 +++
+ arch/arm/mach-exynos/exynos.c             |    1 +
+ drivers/clk/samsung/clk-exynos5250.c      |   31 +++++
+ drivers/cpufreq/Kconfig.arm               |   22 ---
+ drivers/cpufreq/Makefile                  |    3 -
+ drivers/cpufreq/exynos-cpufreq.c          |  203 ----------------------------
+ drivers/cpufreq/exynos-cpufreq.h          |   67 ---------
+ drivers/cpufreq/exynos5250-cpufreq.c      |  210 -----------------------------
+ include/dt-bindings/clock/exynos5250.h    |    1 +
+ 13 files changed, 71 insertions(+), 505 deletions(-)
+ delete mode 100644 drivers/cpufreq/exynos-cpufreq.c
+ delete mode 100644 drivers/cpufreq/exynos-cpufreq.h
+ delete mode 100644 drivers/cpufreq/exynos5250-cpufreq.c
+
+-- 
+1.7.9.5
