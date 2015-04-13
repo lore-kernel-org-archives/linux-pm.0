@@ -1,119 +1,156 @@
 From: Kristen Carlson Accardi <kristen@linux.intel.com>
-Subject: Re: [PATCH] intel_pstate: Change the setpoint for atom params
-Date: Mon, 13 Apr 2015 09:29:22 -0700
-Message-ID: <20150413092922.72f7a39c@kcaccard-desk.amr.corp.intel.com>
-References: <1428689203-3204-1-git-send-email-kristen@linux.intel.com>
-	<002601d073f7$31780550$94680ff0$@net>
+Subject: Re: [PATCH 0/5] intel_pstate: Use C0 time, calculate target pstate
+ directly
+Date: Mon, 13 Apr 2015 09:32:14 -0700
+Message-ID: <20150413093214.63dc6184@kcaccard-desk.amr.corp.intel.com>
+References: <1428811830-15006-1-git-send-email-dsmythies@telus.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:34730 "EHLO mga14.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:43397 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932151AbbDMQ3X (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 13 Apr 2015 12:29:23 -0400
-In-Reply-To: <002601d073f7$31780550$94680ff0$@net>
+	id S932162AbbDMQcQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 13 Apr 2015 12:32:16 -0400
+In-Reply-To: <1428811830-15006-1-git-send-email-dsmythies@telus.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org
+To: Doug Smythies <doug.smythies@gmail.com>
+Cc: rjw@rjwysocki.net, dsmythies@telus.net, linux-pm@vger.kernel.org
 
 Hi Doug,
 
-On Fri, 10 Apr 2015 18:31:10 -0700
-"Doug Smythies" <dsmythies@telus.net> wrote:
+On Sat, 11 Apr 2015 21:10:25 -0700
+Doug Smythies <doug.smythies@gmail.com> wrote:
 
-> On 2015.04.10 11:07 Kristen Carlson Accardi wrote:
+> This patch set attempts to address some issues with
+> the intel_pstate driver:
 > 
-> > Change the setpoint for the Baytrail and Cherrytrail cpus.  This
-> > will cause more aggressive pstate selection and improves
-> > performance on a variety of workloads with little power penalty.
-> >
-> > Signed-off-by: Kristen Carlson Accardi <kristen@linux.intel.com>
-> > ---
-> > drivers/cpufreq/intel_pstate.c | 2 +-
-> > 1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> > index 872c577..204e43e 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -636,7 +636,7 @@ static struct cpu_defaults byt_params = {
-> > 	.pid_policy = {
-> > 		.sample_rate_ms = 10,
-> > 		.deadband = 0,
-> > -		.setpoint = 97,
-> > +		.setpoint = 60,
-> > 		.p_gain_pct = 14,
-> > 		.d_gain_pct = 0,
-> > 		.i_gain_pct = 4,
-> > -- 
-> > 1.9.3
+> The driver has a finicky tradeoffs between fixed point
+> integer math and gain settings and the setpoint.
 > 
-> That is a drastic change in setpoint.
-> Doesn't it push the response curve very close to
-> the performance mode response curve, but with an
-> increased tendency to oscillate? I'm asking why don't you
-> just use performance mode?
+> The application is not really best suited to a PID
+> (Proportional Integral Derivative) controller.
 
-Not quite - the power is still better with this setpoint vs. just 100%
-with performance mode.
+Agree!
 
 > 
-> With such a big change shouldn't you also then be able to eliminate
-> the integral gain? As far as I can determine the integral gain was
-> only to compensate for such a low proportional gain and the very
-> finicky integer math, where it will never bump up to the final pstate
-> at the old setpoint of 97, whereas the integral of the error eventually
-> will (which is not the normal reason for using an integral term).
+> The duration method can incorrectly drive the target
+> pstate downwards, because a long duration might not
+> be due to idle.
 > 
-> For example, for the old settings a 100% load would give an fp_error of 3.
-> When multiplied by a gain of 14 percent would be 0.42 which would round to 0.
-> Meanwhile the integral term at 4 percent would take 5 passes through
-> the driver to integrate to the point of rounding to a pstate increase. Hence
-> sluggish response time.
+> The driver can incorrectly drive the target pstate
+> upwards, when the C0 time is virtually 0.
 > 
-> By the way, I am about to submit a patch set for review that eliminates
-> setpoint and the PID controller entirely.
+> The patch set brings back the use of C0 time as the driving
+> input as to what to do next in terms of target pstate.
+> Recall that C0 time was used once before and was eventually
+> removed due to situations of pstate lockup at a low pstate.
+> Why is this time better? Because it is scaled properly,
+> whereas it was not before. Also the response curve is
+> flexible and adjustable.
+> 
+> Patch 1 basically adds better debug information to the
+> perf data. It was originally requested in June, and Dirk agreed
+> to include it in September. Regardless of the acceptance or
+> rejection of this whole patch set, please accept this one.
+> scripts/checkpatch.pl complains about one line as over 80
+> characters, not sure how to split the line.
+> 
+> Patch 2 brings back the use of C0 time for the calculation
+> of core_busy. Floor and ceiling hold values can be adjusted
+> Once the floor load is reached the response is linear until
+> the ceiling load is reached. The equations are just a simple
+> y=mx+b line, where m = slope and b = intercept.
+> Equation 1: min = m * floor + b
+> Equation 2: max = m * ceiling + b
+> Two equations and two unknowns, solved and coded.
+> scripts/checkpatch.pl O.K.
+> 
+> Patch 3 bypasses the PID controller and calculates the
+> target pstate directly. An IIR (Infinite Impulse
+> Response) filter takes care of filtering.
+> Again a simple y=mx+b line.
+> Equation 1: pmin = m * min + b
+> Equation 2: pmax = m * max + b
+> Again, two simple equations and two unknowns, solved
+> and coded.
+> scripts/checkpatch.pl O.K.
+> Note: not the same min and max as in patch 2.
+> 
+> Note: There are two definitions of percent within
+> this driver, one goes to 100% at the max turbo (if
+> it is enabled) and the other is 100% at the max
+> non-turbo (enabled or not). It can be very confusing.
+> The min used in patch 3 must be the mathematical min
+> for the processor under the current turbo enabled or
+> disabled state, which might not be the same
+> as /sys/devices/system/cpu/intel_pstate/min_perf_pct
+> when turbo is enabled.
+> 
+> Patch 4 adds weighting to longer duration events to,
+> at least partially, compensate for the asymmetric
+> rising and falling load typical durations.
+> scripts/checkpatch.pl O.K.
+> 
+> Patch 5 just adjusts the default IIR gain.
+> 10 percent gives a rising edge response time similar
+> to the current version of the driver.
+> scripts/checkpatch.pl O.K.
+> 
+> Anticipated questions:
+> 
+> Q: Shouldn't the response curve be normalized to a reference
+> pstate, perhaps the max non-turbo pstate?
+> 
+> A: Doing so can create a lockup scenario, depending on the
+> response curve settings and the overall pstate range of the
+> particular processor. A downside to not normalizing has not been
+> detected.
+> 
+> Q: One of the patches in the set is titled V2. What was V1?
+> 
+> A: To a limit, V1 ran the IIR filter N times when the duration
+> was N times nominal. The method was expensive in terms of
+> multiplies and divides. V2 saves a lot of clock cycles, and
+> is good enough.
+> 
+> Migration path:
+> 
+> It should not be assumed that the current pstate is actually
+> what was in effect during the last sample time. If a higher
+> pstate was actually used, due to another active CPU, then
+> that should override the use of the current pstate in the filter.
+> This issue also exists in the current version of the driver,
+> and was only discovered a few days ago. see also:
+> https://bugzilla.kernel.org/show_bug.cgi?id=93521#c55
+> This will be addressed, if possible, in a future patch.
+> 
+> There are likely some math (multiply and divide) savings that
+> can be realized in future patches.
+> 
+> While the use of the PID controller has been eliminated, and
+> because the change is likely to be controversial, the
+> code has been left intact. It will be removed in a future patch.
 
-I'm super happy about this, as eliminating the PID controller has been
-on my list of things to do.  However, I'm going to need to do a lot of
-benchmarking on a variety of platforms to make sure we haven't regressed
-anything. I'm not sure if we can get these changes in or not this
-version, in which case the above patch immediately improves things for
-atom without too much risk and has already been regression tested on
-the affected platforms.
+I am completely supportive of removing the PID controller.
 
 > 
-> The attached graphs detail what I have been saying.
-> (I hope I can include 123K bytes of attachments in this on-list e-mail.
-> It used to work in 2012.)
+> Doug Smythies (5):
+>   intel_pstate: Add tsc collection and keep previous target pstate. Add
+>     both to trace.
+>   intel_pstate: Use C0 time for busy calculations (again).
+>   intel_pstate: Calculate target pstate directly.
+>   intel_pstate: Compensate for intermediate durations (v2).
+>   intel_pstate: Adjust default IIR filter gain.
 > 
-> The first is the CPU frequency verses load response curve.
-> The load is fixed, independent of the CPU frequency, i.e.
-> not a realistic real world scenario. There is no "before" this
-> patch reference line on the graph because the CPU frequency never
-> went up from the minimum pstate for that reference test, with my
-> processor.
-> 
-> The second is the CPU frequency verses load response curve,
-> where the load is roughly what it would be if the CPU frequency
-> was forced to be the non-turbo maximum, i.e. a more realistic real
-> world scenario.
-> 
-> Note that the same average "load" can be obtained from many different
-> CO state verses not C0 state frequencies, or what I call work / sleep
-> frequencies. For no particular reason, the graphs were done at 200
-> and 75 Hertz work / sleep frequencies.
-> 
-> Note that I do not have a baytrail CPU, and used my i7-2600K CPU for
-> these tests.
-> 
-> As a teaser, the graphs include the response curves for the patch set
-> I hope to submit for review shortly.
+>  Documentation/cpu-freq/intel-pstate.txt |   2 +
+>  drivers/cpufreq/intel_pstate.c          | 188 ++++++++++++++++++++++++--------
+>  include/trace/events/power.h            |  25 +++--
+>  3 files changed, 163 insertions(+), 52 deletions(-)
 > 
 
-Thanks for the work, I'm eager to try out your patches and will keep
-you informed as testing progresses.
+Thanks for your patches, I'll be doing some testing and review and let
+you know how things go.
 
 Kristen
