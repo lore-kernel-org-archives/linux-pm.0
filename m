@@ -1,163 +1,124 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH] power_supply: Add TI BQ24257 charger driver
-Date: Mon, 13 Apr 2015 22:11:57 +0900
-Message-ID: <552BC09D.9040502@samsung.com>
-References: <1428671897-12232-1-git-send-email-laurentiu.palcu@intel.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/2] [RFC] PM / Domains: add multiple states
+Date: Mon, 13 Apr 2015 15:25:29 +0200
+Message-ID: <CAPDyKFrjzF0cmvCXo7PqJ6zhLJ+DPBimtekvANDzoZgLRbuS-Q@mail.gmail.com>
+References: <1428507725-12205-1-git-send-email-ahaslam@baylibre.com>
+	<1428507725-12205-2-git-send-email-ahaslam@baylibre.com>
+	<CAPDyKFoSvY=G7PQ5EnacTDfmuxYw398A0h_TV--6E9exXJv-cg@mail.gmail.com>
+	<552B9BAD.9050809@baylibre.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f170.google.com ([209.85.192.170]:33333 "EHLO
-	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752889AbbDMNME (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Apr 2015 09:12:04 -0400
-In-Reply-To: <1428671897-12232-1-git-send-email-laurentiu.palcu@intel.com>
+Received: from mail-oi0-f52.google.com ([209.85.218.52]:36448 "EHLO
+	mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753332AbbDMNZa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Apr 2015 09:25:30 -0400
+Received: by oift201 with SMTP id t201so3647860oif.3
+        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2015 06:25:29 -0700 (PDT)
+In-Reply-To: <552B9BAD.9050809@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laurentiu Palcu <laurentiu.palcu@intel.com>, Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Axel Haslam <ahaslam@baylibre.com>
+Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Benoit Cousson <bcousson@baylibre.com>
 
-W dniu 10.04.2015 o 22:18, Laurentiu Palcu pisze:
-> Based on the datasheet found here:
-> http://www.ti.com/lit/ds/symlink/bq24257.pdf
+Hi Axel,
+
+On 13 April 2015 at 12:34, Axel Haslam <ahaslam@baylibre.com> wrote:
+> Hi Uffe,
 >
-> Signed-off-by: Laurentiu Palcu <laurentiu.palcu@intel.com>
+>
+> On 10/04/2015 12:24, Ulf Hansson wrote:
+>>
+>> On 8 April 2015 at 17:42,  <ahaslam@baylibre.com> wrote:
+>>>
+>>> From: Axel Haslam <ahaslam@baylibre.com>
+>
+>
+>>>
+>>>          .state_count = 3,
+>>>          .dev_ops.start = dev_callback_start,
+>>>          .dev_ops.stop = dev_callback_stop,
+>>
+>>
+>> I would like to get the complete picture.
+>>
+>> Could you elaborate on what theese two callbacks will be doing in your
+>> case?
+>
+>
+> The idea is to add support to platforms where a power domain can be put into
+> intermediate low power modes (retention), and not just on or off. context
+> may be lost for only a subset of registers depending on how deep the
+> retantion state is. Also the wakeup/sleep latency
+> would differ. a  device constraint may not allow for a domain to go to off,
+> but it may allow a Retention state.
 
-(...)
+These registers you are talking about, are those coupled with the PM
+domain and/or the actual devices within the PM domain?
 
-> diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-> new file mode 100644
-> index 0000000..58b9af1
-> --- /dev/null
-> +++ b/drivers/power/bq24257_charger.c
-> @@ -0,0 +1,868 @@
-> +/*
-> + * TI BQ24257 charger driver
-> + *
-> + * Copyright (C) 2015 Intel Corporation
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/i2c.h>
-> +#include <linux/power_supply.h>
-> +#include <linux/regmap.h>
-> +#include <linux/types.h>
-> +#include <linux/gpio/consumer.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/delay.h>
-> +
-> +#include <linux/acpi.h>
-> +#include <linux/of.h>
-> +
-> +#define BQ24257_REG_1			0x00
-> +#define BQ24257_REG_2			0x01
-> +#define BQ24257_REG_3			0x02
-> +#define BQ24257_REG_4			0x03
-> +#define BQ24257_REG_5			0x04
-> +#define BQ24257_REG_6			0x05
-> +#define BQ24257_REG_7			0x06
-> +
-> +#define BQ24257_MANUFACTURER		"Texas Instruments"
-> +#define BQ24257_STAT_IRQ		"stat"
-> +#define BQ24257_PG_GPIO			"pg"
-> +
-> +#define BQ24257_ILIM_SET_DELAY		1000	/* msec */
-> +
-> +enum bq24257_fields {
-> +	F_WD_FAULT, F_WD_EN, F_STAT, F_FAULT,			    /* REG 1 */
-> +	F_RESET, F_IILIMIT, F_EN_STAT, F_EN_TERM, F_CE, F_HZ_MODE,  /* REG 2 */
-> +	F_VBAT, F_USB_DET,					    /* REG 3 */
-> +	F_ICHG, F_ITERM,					    /* REG 4 */
-> +	F_LOOP_STATUS, F_LOW_CHG, F_DPDM_EN, F_CE_STATUS, F_VINDPM, /* REG 5 */
-> +	F_X2_TMR_EN, F_TMR, F_SYSOFF, F_TS_STAT,		    /* REG 6 */
-> +	F_VOVP, F_CLR_VDP, F_FORCE_BATDET, F_FORCE_PTM,		    /* REG 7 */
-> +
-> +	F_MAX_FIELDS
-> +};
-> +
-> +/* initial field values, converted from uV/uA */
-> +struct bq24257_init_data {
-> +	u8 ichg;	/* charge current      */
-> +	u8 vbat;	/* regulation voltage  */
-> +	u8 iterm;	/* termination current */
-> +};
-> +
-> +struct bq24257_state {
-> +	u8 status;
-> +	u8 fault;
-> +	bool power_good;
-> +};
-> +
-> +struct bq24257_device {
-> +	struct i2c_client *client;
-> +	struct device *dev;
-> +	struct power_supply *charger;
-> +	struct power_supply_desc charger_desc;
-> +
-> +	struct regmap *rmap;
-> +	struct regmap_field *rmap_fields[F_MAX_FIELDS];
-> +
-> +	struct gpio_desc *pg;
-> +
-> +	struct delayed_work iilimit_setup_work;
-> +
-> +	struct bq24257_init_data init_data;
-> +	struct bq24257_state state;
-> +
-> +	struct mutex lock; /* protect state data */
-> +};
-> +
-> +static bool bq24257_is_writeable_reg(struct device *dev, unsigned int reg)
-> +{
-> +	return true;
+Normally, save/restore of device's registers are handled from
+driver's/subsystem's (bus) runtime PM callbacks and not from the PM
+domain. That's why I wonder about the details.
 
-What is the benefit of such function always returning true?
+>
+> I tested the patch using a dummy driver that would register several devices,
+> and genpds, some of them would be subdomains, so that i could test if the
+> most restrictive constraint on a genpd was respected.
+> in my case these callbacks are not doing anything.
+>
+>
+>>
+>>>          .dev_ops.save_state = dev_callback_save,
+>>>          .dev_ops.restore_state = dev_callback_restore,
+>>
+>>
+>> ...and some more information about these as well, please.
+>
+>
+> im not sure i understood these functions correctly.
+>
+> my thought is that the arch would implement these functions to
+> save/restore the registers it needs for a given power domain.
+> i added an extra argument to save and restore so the implementation
+> would use this information to decide what is needed to save and restore.
 
-(...)
+As default genpd assigns these callbacks to
+pm_genpd_default_save|restore_state().
 
-> +
-> +static enum power_supply_property bq24257_power_supply_props[] = {
-> +	POWER_SUPPLY_PROP_MANUFACTURER,
-> +	POWER_SUPPLY_PROP_STATUS,
-> +	POWER_SUPPLY_PROP_ONLINE,
-> +	POWER_SUPPLY_PROP_HEALTH,
-> +	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
-> +	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
-> +	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
-> +	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
-> +	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
-> +};
-> +
-> +static char *bq24257_charger_supplied_to[] = {
-> +	"main-battery",
-> +};
-> +
-> +static int bq24257_power_supply_init(struct bq24257_device *bq)
-> +{
-> +	struct power_supply_config psy_cfg = { .drv_data = bq, };
-> +	struct power_supply_desc *psy_desc = &bq->charger_desc;
-> +
-> +	psy_desc->name = "bq24257-charger";
-> +	psy_desc->type = POWER_SUPPLY_TYPE_USB;
-> +	psy_desc->properties = bq24257_power_supply_props;
-> +	psy_desc->num_properties = ARRAY_SIZE(bq24257_power_supply_props);
-> +	psy_desc->get_property = bq24257_power_supply_get_property;
+This is a simplified description of what they do:
 
-You are not modifying the power_supply_desc so it can be made a static 
-const variable (file scope).
+When all devices within a PM domain is "idle" (no runtime PM reference
+count exists for any device within the PM domain),
+pm_genpd_default_save() will be invoked to have it walk the hierarchy
+of the runtime PM suspend callbacks. The one picked, will then have to
+deal with saving register context and other necessary operations to
+put the device into low power state.
 
-Best regards,
-Krzysztof
+Vice verse happens for pm_genpd_default_restore_state().
 
+>
+> again these were on my dummy driver, so they are not
+> doing anything, in my case.
+>
 
+ [...]
+
+>>> +static int pm_genpd_default_restore_state(struct device *dev, int state)
+>>
+>>
+>> Why change this?
+>
+>
+>
+> so that the driver can save or not context depending on what state is beeing
+> entered. also, there may be a subset of registers to save. but again, im not
+> sure this was the intended purpose of these functions.
+> i could not find examples of someone that uses them.
+
+Then I first think you need to consider how to propagate this state to
+the driver, because there are no way of doing that today.
+
+[...]
+
+Kind regards
+Uffe
