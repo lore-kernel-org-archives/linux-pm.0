@@ -1,58 +1,31 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: PM / Domains: Infinite loop during reboot
-Date: Mon, 13 Apr 2015 14:18:16 +0200
-Message-ID: <CAMuHMdVAnZ5mH7EwJKVeKWSDqCxn+TSH1VOHoK3B2=b8oByoHg@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] x86/power/hibernate: Use local labels in asm
+Date: Mon, 13 Apr 2015 14:51:22 +0200
+Message-ID: <20150413125122.GA21051@amd>
+References: <1428867906-12016-1-git-send-email-bp@alien8.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux-sh list <linux-sh@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1428867906-12016-1-git-send-email-bp@alien8.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Sometimes reboot doesn't work on r8a7791/koelsch with the CPG clock domain.
-With additional debug messages, you can see it hangs in an infinite loop:
+On Sun 2015-04-12 21:45:06, Borislav Petkov wrote:
+> From: Borislav Petkov <bp@suse.de>
+> 
+> ... so that they don't appear in the object file and thus in objdump
+> output. They're local anyway and have a meaning only within that file.
+> 
+> No functionality change.
+> 
+> Signed-off-by: Borislav Petkov <bp@suse.de>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-rcar-dmac ec720000.dma-controller: removing from PM domain cpg_clocks
-pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
-pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
-pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
-pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
-pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
-pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
-pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
-pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
-pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
-[...]
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Presumably this is this loop in genpd_dev_pm_detach():
-
-        while (1) {
-                ret = pm_genpd_remove_device(pd, dev);
-                if (ret != -EAGAIN)
-                        break;
-                cond_resched();
-        }
-
-which is retried because genpd->prepared_count > 0 in pm_genpd_remove_device().
-This looks a bit strange, as no suspend is in progress, so prepared_count
-should be zero?
-
-I'm adding more debugging code to verify this, but it's not 100% reproducable.
-
-[...]
-
-Confirmed: prepared_count turns out to be 1 at reboot time if at least one
-s2ram cycle happened before. Additional s2ram cycles don't seem to increase
-prepared_count any further.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
