@@ -1,62 +1,76 @@
-From: Oleksandr Natalenko <oleksandr@natalenko.name>
-Subject: Re: [BUG] oops in cpufreq driver with AMD Kaveri CPU
-Date: Tue, 14 Apr 2015 19:07:46 +0300
-Message-ID: <1465982.AWUTj1UaDo@spock>
-References: <4708675.eITUXPv8Ih@spock> <1767434.385ncFoNtj@spock> <9508464.Rg48i9FdUc@spock>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH] cpupower: fix breakage from libpci API change
+Date: Tue, 14 Apr 2015 18:28:59 +0200
+Message-ID: <6742910.A5LcpWTI3L@skinner>
+References: <1428956641-7765-1-git-send-email-dev@lynxeye.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <9508464.Rg48i9FdUc@spock>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, linux-acpi@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:43685 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755518AbbDNQ3B (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 14 Apr 2015 12:29:01 -0400
+In-Reply-To: <1428956641-7765-1-git-send-email-dev@lynxeye.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lucas Stach <dev@lynxeye.de>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net
 
-Cross-posting from kernel bugzilla:
+Hi,
 
-===
-Definitely not a kernel bug.
+On Monday, April 13, 2015 10:24:01 PM Lucas Stach wrote:
+> libpci 3.3.0 introduced an additional member in the pci_filter struct
+> which needs to be initialized to -1 to get the same behavior as before
+> the API change.
+Sounds not that clever, but there probably is a reason for this...
 
-I've replaced RAM module with another one and the issue went away.
+I am not that familiar with the pci lib and its recent changes, but
+below patch looks reasonable.
 
-No idea why oopses refered to ACPI, but they seem to be the result of simple 
-hardware incompatibility.
-===
+Acked-by: Thomas Renninger <trenn@suse.de>
 
-On Tuesday 18 November 2014 21:07:51 Oleksandr Natalenko wrote:
-> Hmmm, weird, acpi=off as well as disabling ASPM and NMI watchdog didn't help
-> : (.
+
+> The libpci internal helpers got updated accordingly,
+> but as the cpupower pci helpers initialized the struct themselves the
+> behavior changed.
 > 
-> Now trying to update BIOS.
+> Use the libpci helper pci_filter_init() to fix this and guard against
+> similar breakages in the future.
 > 
-> P.S. Still affected while using 3.17.2 kernel.
+> This fixes probing of the AMD fam12h/14h cpuidle monitor on systems
+> with libpci >= 3.3.0.
 > 
-> On Tuesday 11 November 2014 12:41:18 Oleksandr Natalenko wrote:
-> > It seems that this bug has nothing to do with acpi-cpufreq code but with
-> > another ACPI area.
-> > 
-> > With ACPI enabled kernel may hang in a day or in a week (never survived
-> > more than approx. 2 weeks). With acpi=off it seems to work OK. For
-> > instance, I had to boot Ubuntu installer with acpi disabled to finish it
-> > successfully.
-> > 
-> > Usually, hanging is not accompanied by panic log. Only small vertical red
-> > lines appear on the screen near letters (tried to use plaintext 80x25
-> > console without radeon and got the same issue).
-> > 
-> > Still observing this for 3.16 kernel.
-> > 
-> > On Wednesday 13 August 2014 10:12:06 Viresh Kumar wrote:
-> > > On 13 August 2014 00:24, Oleksandr Natalenko <oleksandr@natalenko.name>
-> > 
-> > wrote:
-> > > > Updated logs.
-> > > 
-> > > Also will it be possible for you to find the last working kernel after
-> > > which this
-> > > happened?
--- 
-Oleksandr post-factum Natalenko, MSc
-pf-kernel community
-https://natalenko.name/
+> Signed-off-by: Lucas Stach <dev@lynxeye.de>
+> ---
+>  tools/power/cpupower/utils/helpers/pci.c | 11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
+> 
+> diff --git a/tools/power/cpupower/utils/helpers/pci.c
+> b/tools/power/cpupower/utils/helpers/pci.c index 9690798..8b27898 100644
+> --- a/tools/power/cpupower/utils/helpers/pci.c
+> +++ b/tools/power/cpupower/utils/helpers/pci.c
+> @@ -25,14 +25,21 @@
+>  struct pci_dev *pci_acc_init(struct pci_access **pacc, int domain, int bus,
+> int slot, int func, int vendor, int dev)
+>  {
+> -	struct pci_filter filter_nb_link = { domain, bus, slot, func,
+> -					     vendor, dev };
+> +	struct pci_filter filter_nb_link;
+>  	struct pci_dev *device;
+> 
+>  	*pacc = pci_alloc();
+>  	if (*pacc == NULL)
+>  		return NULL;
+> 
+> +	pci_filter_init(*pacc, &filter_nb_link);
+> +	filter_nb_link.domain	= domain;
+> +	filter_nb_link.bus	= bus;
+> +	filter_nb_link.slot	= slot;
+> +	filter_nb_link.func	= func;
+> +	filter_nb_link.vendor	= vendor;
+> +	filter_nb_link.device	= dev;
+> +
+>  	pci_init(*pacc);
+>  	pci_scan_bus(*pacc);
+
