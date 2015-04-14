@@ -1,93 +1,56 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v5 10/11] clk: qcom: gdsc: Enable an RCG before turning on the gdsc
-Date: Tue, 14 Apr 2015 18:42:16 +0530
-Message-ID: <1429017137-20218-11-git-send-email-rnayak@codeaurora.org>
+Subject: [PATCH v5 11/11] clk: qcom: gdsc: Add oxili GDSC for msm8916
+Date: Tue, 14 Apr 2015 18:42:17 +0530
+Message-ID: <1429017137-20218-12-git-send-email-rnayak@codeaurora.org>
 References: <1429017137-20218-1-git-send-email-rnayak@codeaurora.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:37115 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755040AbbDNNNN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2015 09:13:13 -0400
 In-Reply-To: <1429017137-20218-1-git-send-email-rnayak@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: sboyd@codeaurora.org, mturquette@linaro.org
 Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, Rajendra Nayak <rnayak@codeaurora.org>
-List-Id: linux-pm@vger.kernel.org
 
-Some gdsc instances require a certain root clock (RCG) to be turned on *before*
-the power domain itself can be turned on. Handle this as part of the gdsc
-enable/disable callbacks.
+With the support to control root clk along with the gdsc
+powerdomain now added, add the gdsc data for oxili on
+msm8916.
 
 Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 ---
- drivers/clk/qcom/gdsc.c | 20 +++++++++++++++++++-
- drivers/clk/qcom/gdsc.h |  3 +++
- 2 files changed, 22 insertions(+), 1 deletion(-)
+ drivers/clk/qcom/gcc-msm8916.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/clk/qcom/gdsc.c b/drivers/clk/qcom/gdsc.c
-index ab55310..480ebf6 100644
---- a/drivers/clk/qcom/gdsc.c
-+++ b/drivers/clk/qcom/gdsc.c
-@@ -83,6 +83,9 @@ static int gdsc_enable(struct generic_pm_domain *domain)
- 	struct gdsc *sc = domain_to_gdsc(domain);
- 	int ret;
- 
-+	if (sc->root_clk)
-+		clk_prepare_enable(sc->root_clk);
-+
- 	ret = gdsc_toggle_logic(sc, true);
- 	if (ret)
- 		return ret;
-@@ -100,9 +103,15 @@ static int gdsc_enable(struct generic_pm_domain *domain)
- 
- static int gdsc_disable(struct generic_pm_domain *domain)
- {
-+	int ret;
- 	struct gdsc *sc = domain_to_gdsc(domain);
- 
--	return gdsc_toggle_logic(sc, false);
-+	ret = gdsc_toggle_logic(sc, false);
-+
-+	if (sc->root_clk)
-+		clk_disable_unprepare(sc->root_clk);
-+
-+	return ret;
- }
- 
- static int gdsc_attach(struct generic_pm_domain *domain, struct device *dev)
-@@ -127,6 +136,15 @@ static int gdsc_attach(struct generic_pm_domain *domain, struct device *dev)
- 			goto fail;
- 		}
- 	}
-+
-+	if (sc->root_con_id) {
-+		sc->root_clk = clk_get(dev, sc->root_con_id);
-+		if (IS_ERR(sc->root_clk)) {
-+			dev_err(dev, "failed to get root clock\n");
-+			return PTR_ERR(sc->root_clk);
-+		}
-+	}
-+
- 	return 0;
- fail:
- 	pm_clk_destroy(dev);
-diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
-index 734f341..1ad9d53 100644
---- a/drivers/clk/qcom/gdsc.h
-+++ b/drivers/clk/qcom/gdsc.h
-@@ -14,6 +14,7 @@
- #ifndef __QCOM_GDSC_H__
- #define __QCOM_GDSC_H__
- 
-+#include <linux/clk.h>
- #include <linux/pm_domain.h>
- #include <linux/regmap.h>
- 
-@@ -28,6 +29,8 @@ struct gdsc {
- 	struct generic_pm_domain	pd;
- 	struct regmap			*regmap;
- 	unsigned int			gdscr;
-+	char				*root_con_id;
-+	struct clk			*root_clk;
- 	char				*con_ids[];
+diff --git a/drivers/clk/qcom/gcc-msm8916.c b/drivers/clk/qcom/gcc-msm8916.c
+index d799be9..08a8224 100644
+--- a/drivers/clk/qcom/gcc-msm8916.c
++++ b/drivers/clk/qcom/gcc-msm8916.c
+@@ -2591,6 +2591,14 @@ static struct gdsc vfe_gdsc = {
+ 	},
  };
  
++static struct gdsc oxili_gdsc = {
++	.gdscr = 0x5901c,
++	.pd = {
++		.name = "oxili",
++	},
++	.root_con_id = "gfx3d_clk_src",
++};
++
+ static struct clk_regmap *gcc_msm8916_clocks[] = {
+ 	[GPLL0] = &gpll0.clkr,
+ 	[GPLL0_VOTE] = &gpll0_vote,
+@@ -2737,6 +2745,7 @@ static struct gdsc *gcc_msm8916_gdscs[] = {
+ 	[MDSS_GDSC] = &mdss_gdsc,
+ 	[JPEG_GDSC] = &jpeg_gdsc,
+ 	[VFE_GDSC] = &vfe_gdsc,
++	[OXILI_GDSC] = &oxili_gdsc,
+ };
+ 
+ static const struct qcom_reset_map gcc_msm8916_resets[] = {
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
+
