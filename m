@@ -1,38 +1,96 @@
-From: =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>
-Subject: Re: [GIT PULL] power supply changes for 4.1
-Date: Tue, 14 Apr 2015 22:02:45 +0900
-Message-ID: <CAJKOXPdRyF1Y3iNLBaKMH90pDPUyvXwb-zYLP=d31S-ye-Wj7w@mail.gmail.com>
-References: <20150413133508.GA3377@earth>
-	<CA+55aFyuc35uMsHHFAyNEMq4WodBjNLv58KMt4xOfMW+6Tqe1Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: [PATCH v5 00/11] Add support for QCOM GDSCs
+Date: Tue, 14 Apr 2015 18:42:06 +0530
+Message-ID: <1429017137-20218-1-git-send-email-rnayak@codeaurora.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vn0-f54.google.com ([209.85.216.54]:33065 "EHLO
-	mail-vn0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753291AbbDNNCr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2015 09:02:47 -0400
-In-Reply-To: <CA+55aFyuc35uMsHHFAyNEMq4WodBjNLv58KMt4xOfMW+6Tqe1Q@mail.gmail.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:36954 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752877AbbDNNMc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2015 09:12:32 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Sebastian Reichel <sre@ring0.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: sboyd@codeaurora.org, mturquette@linaro.org
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, Rajendra Nayak <rnayak@codeaurora.org>
 
-2015-04-14 10:09 GMT+09:00 Linus Torvalds <torvalds@linux-foundation.org>:
-> On Mon, Apr 13, 2015 at 6:35 AM, Sebastian Reichel <sre@ring0.de> wrote:
->>
->>  * new API for safe access of power supply function attrs
->>  * devres support for power supply (un)registration
->
-> I'm not sure this is the reason, but suspend/resume on my laptop now
-> complains wildly.
->
-> I'm *assuming* the culprit is commit 297d716f6260 ("power_supply:
-> Change ownership from driver to core") and probably the ACPI changes
-> in particular. But I didn't bisect, I'm just pasting the warning
-> messages here.
+GDSCs (Global Distributed Switch Controllers) control switches
+that supply power to an on-chip power domain and hence can be
+programmed in SW to safely power collapse and restore power to the
+respective PDs. They are part of a considerable number of recent QCOM
+SoCs (This series adds support for msm8974, msm8916 and apq8084 devices)
+and are part of the Clock control block.
 
-That's my fault. I inverted the logic in if() statement in that
-commit. Sorry for that, I'll send a fix.
+The series implements support for GDSC using the genpd framework
+modelling these as SW controllable power domains and uses PM clocks
+to control clocks within the gdsc.
 
-Best regards,
-Krzysztof
+* Client drivers which plan to use GDSC can refer to
+  Documentation/devicetree/bindings/power/power_domain.txt to know
+  how to hook up the power domain for the device through DT
+* Runtime PM specific documentation can be found in
+  Documentation/power/runtime_pm.txt
+* Patches are based of latest clk-next branch
+
+Changes since v4:
+* Added clock control support using PM clocks
+* Included WA to enable an RCG (needed for Oxili gdsc in 8916)
+
+Changes since v3:
+* static inline'd gdsc_register/unregister stubs
+* error check fixes in gdsc_register
+* dropped oxili_gdsc for 8916 as its broken and needs additional
+WA's not part of this series
+* split dts and driver changes into seperate patches
+* Updated and included Stephanes patch to add gdscs to apq8084 mmcc
+in the series
+
+Changes since v2:
+* gdsc_unregister added
+* gdsc_register/unregister introduced in patch 1/6
+
+Changes since v1:
+* added err checks for regmap apis
+* added gdsc_register() in gdsc.c
+
+Rajendra Nayak (7):
+  clk: qcom: gdsc: Prepare common clk probe to register gdscs
+  clk: qcom: gdsc: Add GDSCs in msm8916 GCC
+  clk: qcom: gdsc: Add GDSCs in apq8084 GCC
+  arm: dts: qcom: Add #power-domain-cells property
+  clk: qcom: gdsc: Use PM clocks to control gdsc clocks
+  clk: qcom: gdsc: Enable an RCG before turning on the gdsc
+  clk: qcom: gdsc: Add oxili GDSC for msm8916
+
+Stephane Viau (1):
+  clk: qcom: gdsc: Add GDSCs in apq8084 MMCC
+
+Stephen Boyd (3):
+  clk: qcom: Add support for GDSCs
+  clk: qcom: gdsc: Add GDSCs in msm8974 GCC
+  clk: qcom: gdsc: Add GDSCs in msm8974 MMCC
+
+ arch/arm/boot/dts/qcom-apq8084.dtsi           |   1 +
+ arch/arm/boot/dts/qcom-msm8974.dtsi           |   2 +
+ drivers/clk/qcom/Kconfig                      |  10 ++
+ drivers/clk/qcom/Makefile                     |   1 +
+ drivers/clk/qcom/common.c                     |  16 +-
+ drivers/clk/qcom/common.h                     |   2 +
+ drivers/clk/qcom/gcc-apq8084.c                |  38 +++++
+ drivers/clk/qcom/gcc-msm8916.c                |  47 ++++++
+ drivers/clk/qcom/gcc-msm8974.c                |  14 ++
+ drivers/clk/qcom/gdsc.c                       | 228 ++++++++++++++++++++++++++
+ drivers/clk/qcom/gdsc.h                       |  50 ++++++
+ drivers/clk/qcom/mmcc-apq8084.c               |  56 ++++++-
+ drivers/clk/qcom/mmcc-msm8974.c               |  54 ++++++
+ include/dt-bindings/clock/qcom,gcc-apq8084.h  |   6 +
+ include/dt-bindings/clock/qcom,gcc-msm8916.h  |   8 +
+ include/dt-bindings/clock/qcom,gcc-msm8974.h  |   3 +
+ include/dt-bindings/clock/qcom,mmcc-apq8084.h |   8 +
+ include/dt-bindings/clock/qcom,mmcc-msm8974.h |   8 +
+ 18 files changed, 550 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/clk/qcom/gdsc.c
+ create mode 100644 drivers/clk/qcom/gdsc.h
+
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
+
