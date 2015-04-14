@@ -1,128 +1,95 @@
-From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Subject: Re: [PATCH v8 00/18] Tegra124 CL-DVFS / DFLL clocksource + cpufreq
-Date: Wed, 15 Apr 2015 00:10:30 +0300
-Message-ID: <552D8246.8040207@kapsi.fi>
-References: <1425213881-5262-1-git-send-email-mikko.perttunen@kapsi.fi> <20150311100741.GK19577@ulmo.nvidia.com> <20150410211157.14369.51754@quantum> <552CF947.9030609@kapsi.fi> <20150414192108.6a376ce8@bbrezillon> <552D6D34.2030806@kapsi.fi> <20150414210652.19585.10463@quantum>
+From: Frans Klaver <frans.klaver@xsens.com>
+Subject: Re: [patch 33/39] power: reset: ltc2952: Remove bogus
+ hrtimer_start() return value checks
+Date: Tue, 14 Apr 2015 23:38:28 +0200
+Message-ID: <20150414213828.GA30224@ci00147.xsens-tech.local>
+References: <20150414203303.702062272@linutronix.de>
+ <20150414203503.322172417@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150414210652.19585.10463@quantum>
+Content-Disposition: inline
+In-Reply-To: <20150414203503.322172417@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Michael Turquette <mturquette@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>, swarren@wwwdotorg.org, gnurou@gmail.com, pdeschrijver@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Marcelo Tosatti <mtosatt@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, =?utf-8?B?UmVuw4PCqQ==?= Moll <linux@r-moll.nl>, Wolfram Sang <wsa@the-dreams.de>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 04/15/2015 12:06 AM, Michael Turquette wrote:
-> Quoting Mikko Perttunen (2015-04-14 12:40:36)
->> On 04/14/2015 08:21 PM, Boris Brezillon wrote:
->>> Hi Mikko,
->>>
->>> On Tue, 14 Apr 2015 14:25:59 +0300
->>> Mikko Perttunen <mikko.perttunen@kapsi.fi> wrote:
->>>
->>>> On 04/11/2015 12:11 AM, Michael Turquette wrote:
->>>>> Quoting Thierry Reding (2015-03-11 03:07:43)
->>>>>> Hi Mike,
->>>>>>
->>>>>> Have you had a chance to look at these changes to the Tegra clock
->>>>>> driver? If you're fine with it, I'd like to take these patches through
->>>>>> the Tegra tree because the rest of the series depends on them. I can
->>>>>> provide a stable branch in case we need to base other Tegra clock
->>>>>> changes on top of this.
->>>>>
->>>>> Hi Thierry,
->>>>>
->>>>> Clock patches (and corresponding DT binding descriptions and changes to
->>>>> DTS) look fine to me. Please add:
->>>>>
->>>>> Acked-by: Michael Turquette <mturquette@linaro.org>
->>>>>
->>>>> I did have a question about the beahvior of clk_put in one of Mikko's
->>>>> patches but it should not gate this series. I'm just trying to find out
->>>>> if we have a bug in the framework or if the Tegra driver is a special
->>>>> case.
->>>>>
->>>>> Also I do not think a stable branch is necessary.
->>>>>
->>>>> Regards,
->>>>> Mike
->>>>>
->>>>
->>>> Looks like in the meantime, this has been partially broken by
->>>> 03bc10ab5b0f "clk: check ->determine/round_rate() return value in
->>>> clk_calc_new_rates". The highest rates supported by the DFLL clock have
->>>> 1 in the MSB, so those cannot be entered after the aforementioned patch,
->>>> as the return value of round_rate is interpreted as an error. Avenues
->>>> that I can see: 1) revert the above patch 2) restrict the cpu clock rate
->>>> to those with 0 in the MSB 3) move to 64-bit clock rates.
->>>
->>> How about changing ->determine_rate() and ->round_rate() prototypes so
->>> that they always return 0 or an error code and passing the adjusted_rate
->>> as an argument ?
->>>
->>> Something like that:
->>>
->>>        int (*round_rate)(struct clk_hw *hw, unsigned long *rate,
->>>                          unsigned long *parent_rate);
->>>        int (*determine_rate)(struct clk_hw *hw, unsigned long *rate,
->>>                              unsigned long min_rate,
->>>                              unsigned long max_rate,
->>>                              unsigned long *best_parent_rate,
->>>                              struct clk_hw **best_parent_hw);
->>>
->>> I know this implies a lot of changes (in all clock drivers and in the
->>> core infrastructure), but I really think we should not mix error codes
->>> and clock frequencies (even if we decide to move to a 64 bits rate
->>> approach).
->>
->> This sounds like a good idea, too.
->
-> I've had this idea as well, which is to never return rates but only
-> error codes, and rates are passed by reference like in your example
-> above. Clearly the *best_parent_rate stuff already functions this way.
-> Would be cool to use a programming language that supported complex
-> return types ;-)
+On Tue, Apr 14, 2015 at 09:09:20PM +0000, Thomas Gleixner wrote:
+> The return value of hrtimer_start() tells whether the timer was
+> inactive or active already when hrtimer_start() was called.
+>=20
+> The code emits a bogus warning if the timer was active already
+> claiming that the timer could not be started.
+>=20
+> Remove it.
 
-Algebraic data type pipe dreams.. :)
+Thanks for catching this.
 
->
->>
->>>
->>> Anyway, IMHO the only alternative to this solution is solution #3,
->>> because #1 implies re-introducing another bug where
->>> ->round_rate()/->determine_rate() are silently ignored, and #2 implies
->>> lying about your DFLL capabilities.
->>>
->>
->> Yeah, #1 and #2 weren't really meant as realistic options to end up with :)
->
-> Yes, seems that we're heading towards #3. In the mean time option #1.5
-> (the one where we change the round_rate/determine_rate semantics) is
-> probably a good idea and can resolve this issue in the shorter term
-> compared to signed 64-bit rates (and will be necessary anyhow if we use
-> unsigned 64-bit rates).
->
-> I'll add this to the high priority todo list since the Tegra EMC stuff
-> won't go for 4.1 but will very likely go for 4.2.
+> Cc: "Ren=C3=83=C2=A9 Moll" <Rene.Moll@xsens.com>
 
-Wonderful :)
+Rene no longer works at Xsens, so this address is no longer in use. Ins=
+tead:
+
+Cc: "Ren=C3=A9 Moll" <linux@r-moll.nl>
+
+That said, I'm not sure if he's actively monitoring this mailbox, or
+even if he should still be mentioned as maintainer of this driver.
+
+
+> ---
+>  drivers/power/reset/ltc2952-poweroff.c |   18 +++---------------
+>  1 file changed, 3 insertions(+), 15 deletions(-)
+>=20
+> Index: tip/drivers/power/reset/ltc2952-poweroff.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- tip.orig/drivers/power/reset/ltc2952-poweroff.c
+> +++ tip/drivers/power/reset/ltc2952-poweroff.c
+> @@ -120,18 +120,7 @@ static enum hrtimer_restart ltc2952_powe
+> =20
+>  static void ltc2952_poweroff_start_wde(struct ltc2952_poweroff *data=
+)
+>  {
+> -	if (hrtimer_start(&data->timer_wde, data->wde_interval,
+> -			  HRTIMER_MODE_REL)) {
+> -		/*
+> -		 * The device will not toggle the watchdog reset,
+> -		 * thus shut down is only safe if the PowerPath controller
+> -		 * has a long enough time-off before triggering a hardware
+> -		 * power-off.
+> -		 *
+> -		 * Only sending a warning as the system will power-off anyway
+> -		 */
+> -		dev_err(data->dev, "unable to start the timer\n");
+> -	}
+> +	hrtimer_start(&data->timer_wde, data->wde_interval, HRTIMER_MODE_RE=
+L);
+>  }
+> =20
+>  static enum hrtimer_restart
+> @@ -165,9 +154,8 @@ static irqreturn_t ltc2952_poweroff_hand
+>  	}
+> =20
+>  	if (gpiod_get_value(data->gpio_trigger)) {
+> -		if (hrtimer_start(&data->timer_trigger, data->trigger_delay,
+> -				  HRTIMER_MODE_REL))
+> -			dev_err(data->dev, "unable to start the wait timer\n");
+> +		hrtimer_start(&data->timer_trigger, data->trigger_delay,
+> +			      HRTIMER_MODE_REL);
+>  	} else {
+>  		hrtimer_cancel(&data->timer_trigger);
+>  		/* omitting return value check, timer should have been valid */
+
+You might as well remove this bogus comment along with the rest.
+hrtimer_cancel()s return value says nothing about the validity of the
+passed timer.
+
+In any case
+
+Acked-by: Frans Klaver <frans.klaver@xsens.com>
 
 Thanks,
-Mikko
-
->
-> Regards,
-> Mike
->
->>
->>> Mike, what's your opinion ?
->>>
->>> Best Regards,
->>>
->>> Boris
->>>
->>
->> Cheers,
->> Mikko.
->>
+=46rans
