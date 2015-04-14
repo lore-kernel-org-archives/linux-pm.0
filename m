@@ -1,99 +1,122 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] power supply changes for 4.1
-Date: Mon, 13 Apr 2015 18:09:03 -0700
-Message-ID: <CA+55aFyuc35uMsHHFAyNEMq4WodBjNLv58KMt4xOfMW+6Tqe1Q@mail.gmail.com>
-References: <20150413133508.GA3377@earth>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f173.google.com ([209.85.213.173]:32885 "EHLO
-	mail-ig0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751906AbbDNBJE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Apr 2015 21:09:04 -0400
-In-Reply-To: <20150413133508.GA3377@earth>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [Patch Part2 v5 28/33] x86/irq, ACPI: Kill private function mp_register_gsi()/ mp_unregister_gsi()
+Date: Tue, 14 Apr 2015 10:30:05 +0800
+Message-ID: <1428978610-28986-29-git-send-email-jiang.liu@linux.intel.com>
+References: <1428978610-28986-1-git-send-email-jiang.liu@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1428978610-28986-1-git-send-email-jiang.liu@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Dimitri Sivanich <sivanich@sgi.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org
+Cc: Jiang Liu <jiang.liu@linux.intel.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, David Cohen <david.a.cohen@linux.intel.com>, Sander Eikelenboom <linux@eikelenboom.it>, David Vrabel <david.vrabel@citrix.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@ring0.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Mon, Apr 13, 2015 at 6:35 AM, Sebastian Reichel <sre@ring0.de> wrote:
->
->  * new API for safe access of power supply function attrs
->  * devres support for power supply (un)registration
+Function mp_register_gsi() is only called once, so fold it into caller
+acpi_register_gsi_ioapic(). Do the same for mp_unregister_gsi().
 
-I'm not sure this is the reason, but suspend/resume on my laptop now
-complains wildly.
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Joerg Roedel <joro@8bytes.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Link: http://lkml.kernel.org/r/1416901802-24211-37-git-send-email-jiang.liu@linux.intel.com
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Tested-by: Joerg Roedel <jroedel@suse.de>
+---
+ arch/x86/kernel/acpi/boot.c |   57 ++++++++++++++-----------------------------
+ 1 file changed, 18 insertions(+), 39 deletions(-)
 
-I'm *assuming* the culprit is commit 297d716f6260 ("power_supply:
-Change ownership from driver to core") and probably the ACPI changes
-in particular. But I didn't bisect, I'm just pasting the warning
-messages here.
-
-Hmm?
-
-               Linus
-
---- snip snip ---
-
-
-   ------------[ cut here ]------------
-   WARNING: CPU: 0 PID: 4018 at fs/sysfs/dir.c:31 sysfs_warn_dup+0x55/0x70()
-   sysfs: cannot create duplicate filename
-'/devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/device:00/PNP0C09:00/PNP0C0A:00/power_supply/BAT0'
-   CPU: 0 PID: 4018 Comm: systemd-sleep Not tainted
-4.0.0-02620-gb79013b2449c #28
-   Hardware name: Sony Corporation SVP11213CXB/VAIO, BIOS R0270V7 05/17/2013
-   Call Trace:
-     dump_stack+0x40/0x50
-     warn_slowpath_common+0x77/0xb0
-     warn_slowpath_fmt+0x45/0x50
-     kernfs_path+0x42/0x50
-     sysfs_warn_dup+0x55/0x70
-     sysfs_create_dir_ns+0x7e/0x90
-     kobject_add_internal+0xac/0x370
-     kobject_add+0x66/0xb0
-     device_add+0x106/0x670
-     __power_supply_register+0x134/0x280
-     sysfs_add_battery+0x6d/0x99
-     battery_notify+0x3b/0x5f
-     notifier_call_chain+0x47/0x70
-     __blocking_notifier_call_chain+0x3c/0x60
-     pm_notifier_call_chain+0x15/0x40
-     pm_suspend+0x231/0x2f0
-     from_kgid_munged+0x9/0x20
-     state_store+0x71/0xf0
-     kernfs_fop_write+0x124/0x180
-     vfs_write+0xad/0x1e0
-     SyS_write+0x3d/0xa0
-     system_call_fastpath+0x12/0x6a
-   ---[ end trace 48e03e2b845e5eff ]---
-   ------------[ cut here ]------------
-   WARNING: CPU: 0 PID: 4018 at lib/kobject.c:240
-kobject_add_internal+0x2f4/0x370()
-   kobject_add_internal failed for BAT0 with -EEXIST, don't try to
-register things with the same name in the same directory.
-   CPU: 0 PID: 4018 Comm: systemd-sleep Tainted: G        W
-4.0.0-02620-gb79013b2449c #28
-   Hardware name: Sony Corporation SVP11213CXB/VAIO, BIOS R0270V7 05/17/2013
-   Call Trace:
-     dump_stack+0x40/0x50
-     warn_slowpath_common+0x77/0xb0
-     warn_slowpath_fmt+0x45/0x50
-     sysfs_create_dir_ns+0x7e/0x90
-     kobject_add_internal+0x2f4/0x370
-     kobject_add+0x66/0xb0
-     device_add+0x106/0x670
-     __power_supply_register+0x134/0x280
-     sysfs_add_battery+0x6d/0x99
-     battery_notify+0x3b/0x5f
-     notifier_call_chain+0x47/0x70
-     __blocking_notifier_call_chain+0x3c/0x60
-     pm_notifier_call_chain+0x15/0x40
-     pm_suspend+0x231/0x2f0
-     from_kgid_munged+0x9/0x20
-     state_store+0x71/0xf0
-     kernfs_fop_write+0x124/0x180
-     vfs_write+0xad/0x1e0
-     SyS_write+0x3d/0xa0
-     system_call_fastpath+0x12/0x6a
-   ---[ end trace 48e03e2b845e5f00 ]---
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 21e460b3b360..91a10120ed10 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -400,42 +400,6 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
+ 	return 0;
+ }
+ 
+-static int mp_register_gsi(struct device *dev, u32 gsi, int trigger,
+-			   int polarity)
+-{
+-	int irq, node;
+-	struct irq_alloc_info info;
+-
+-	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
+-		return gsi;
+-
+-	trigger = trigger == ACPI_EDGE_SENSITIVE ? 0 : 1;
+-	polarity = polarity == ACPI_ACTIVE_HIGH ? 0 : 1;
+-	node = dev ? dev_to_node(dev) : NUMA_NO_NODE;
+-	ioapic_set_alloc_attr(&info, node, trigger, polarity);
+-	irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC, &info);
+-	if (irq < 0)
+-		return irq;
+-
+-	/* Don't set up the ACPI SCI because it's already set up */
+-	if (enable_update_mptable && acpi_gbl_FADT.sci_interrupt != gsi)
+-		mp_config_acpi_gsi(dev, gsi, trigger, polarity);
+-
+-	return irq;
+-}
+-
+-static void mp_unregister_gsi(u32 gsi)
+-{
+-	int irq;
+-
+-	if (acpi_irq_model != ACPI_IRQ_MODEL_IOAPIC)
+-		return;
+-
+-	irq = mp_map_gsi_to_irq(gsi, 0, NULL);
+-	if (irq > 0)
+-		mp_unmap_irq(irq);
+-}
+-
+ static struct irq_domain_ops acpi_irqdomain_ops = {
+ 	.alloc = mp_irqdomain_alloc,
+ 	.free = mp_irqdomain_free,
+@@ -662,10 +626,21 @@ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,
+ 				    int trigger, int polarity)
+ {
+ 	int irq = gsi;
+-
+ #ifdef CONFIG_X86_IO_APIC
++	int node;
++	struct irq_alloc_info info;
++
++	node = dev ? dev_to_node(dev) : NUMA_NO_NODE;
++	trigger = trigger == ACPI_EDGE_SENSITIVE ? 0 : 1;
++	polarity = polarity == ACPI_ACTIVE_HIGH ? 0 : 1;
++	ioapic_set_alloc_attr(&info, node, trigger, polarity);
++
+ 	mutex_lock(&acpi_ioapic_lock);
+-	irq = mp_register_gsi(dev, gsi, trigger, polarity);
++	irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC, &info);
++	/* Don't set up the ACPI SCI because it's already set up */
++	if (irq >= 0 && enable_update_mptable &&
++	    acpi_gbl_FADT.sci_interrupt != gsi)
++		mp_config_acpi_gsi(dev, gsi, trigger, polarity);
+ 	mutex_unlock(&acpi_ioapic_lock);
+ #endif
+ 
+@@ -675,8 +650,12 @@ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,
+ static void acpi_unregister_gsi_ioapic(u32 gsi)
+ {
+ #ifdef CONFIG_X86_IO_APIC
++	int irq;
++
+ 	mutex_lock(&acpi_ioapic_lock);
+-	mp_unregister_gsi(gsi);
++	irq = mp_map_gsi_to_irq(gsi, 0, NULL);
++	if (irq > 0)
++		mp_unmap_irq(irq);
+ 	mutex_unlock(&acpi_ioapic_lock);
+ #endif
+ }
+-- 
+1.7.10.4
