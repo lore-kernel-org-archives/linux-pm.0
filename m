@@ -1,51 +1,45 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v5 07/11] clk: qcom: gdsc: Add GDSCs in apq8084 MMCC
-Date: Tue, 14 Apr 2015 18:42:13 +0530
-Message-ID: <1429017137-20218-8-git-send-email-rnayak@codeaurora.org>
+Subject: [PATCH v5 06/11] clk: qcom: gdsc: Add GDSCs in apq8084 GCC
+Date: Tue, 14 Apr 2015 18:42:12 +0530
+Message-ID: <1429017137-20218-7-git-send-email-rnayak@codeaurora.org>
 References: <1429017137-20218-1-git-send-email-rnayak@codeaurora.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:37043 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754898AbbDNNMy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2015 09:12:54 -0400
 In-Reply-To: <1429017137-20218-1-git-send-email-rnayak@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: sboyd@codeaurora.org, mturquette@linaro.org
 Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, Rajendra Nayak <rnayak@codeaurora.org>
-List-Id: linux-pm@vger.kernel.org
 
-From: Stephane Viau <sviau@codeaurora.org>
+Add the GDSC instances that exist as part of apq8084 GCC block
 
-Add the GDSC instances that exist as part of apq8084 MMCC block.
-
-Signed-off-by: Stephane Viau <sviau@codeaurora.org>
 Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 ---
- drivers/clk/qcom/Kconfig                      |  1 +
- drivers/clk/qcom/mmcc-apq8084.c               | 56 ++++++++++++++++++++++++++-
- include/dt-bindings/clock/qcom,mmcc-apq8084.h |  8 ++++
- 3 files changed, 64 insertions(+), 1 deletion(-)
+ drivers/clk/qcom/Kconfig                     |  1 +
+ drivers/clk/qcom/gcc-apq8084.c               | 38 ++++++++++++++++++++++++++++
+ include/dt-bindings/clock/qcom,gcc-apq8084.h |  6 +++++
+ 3 files changed, 45 insertions(+)
 
 diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-index 7dcb7e5..8b6c49d 100644
+index 34945fa..7dcb7e5 100644
 --- a/drivers/clk/qcom/Kconfig
 +++ b/drivers/clk/qcom/Kconfig
-@@ -17,6 +17,7 @@ config APQ_GCC_8084
- config APQ_MMCC_8084
- 	tristate "APQ8084 Multimedia Clock Controller"
- 	select APQ_GCC_8084
+@@ -7,6 +7,7 @@ config COMMON_CLK_QCOM
+ 
+ config APQ_GCC_8084
+ 	tristate "APQ8084 Global Clock Controller"
 +	select QCOM_GDSC
  	depends on COMMON_CLK_QCOM
  	help
- 	  Support for the multimedia clock controller on apq8084 devices.
-diff --git a/drivers/clk/qcom/mmcc-apq8084.c b/drivers/clk/qcom/mmcc-apq8084.c
-index 1b17df2..a4d7428 100644
---- a/drivers/clk/qcom/mmcc-apq8084.c
-+++ b/drivers/clk/qcom/mmcc-apq8084.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
-+ * Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
-  *
-  * This software is licensed under the terms of the GNU General Public
-  * License version 2, as published by the Free Software Foundation, and
-@@ -26,6 +26,7 @@
+ 	  Support for the global clock controller on apq8084 devices.
+diff --git a/drivers/clk/qcom/gcc-apq8084.c b/drivers/clk/qcom/gcc-apq8084.c
+index 54a756b9..f010ffc 100644
+--- a/drivers/clk/qcom/gcc-apq8084.c
++++ b/drivers/clk/qcom/gcc-apq8084.c
+@@ -31,6 +31,7 @@
  #include "clk-rcg.h"
  #include "clk-branch.h"
  #include "reset.h"
@@ -53,97 +47,80 @@ index 1b17df2..a4d7428 100644
  
  enum {
  	P_XO,
-@@ -3077,6 +3078,48 @@ static const struct pll_config mmpll3_config = {
- 	.aux_output_mask = BIT(1),
+@@ -3253,6 +3254,34 @@ static struct clk_branch gcc_usb_hsic_system_clk = {
+ 	},
  };
  
-+static struct gdsc venus0_gdsc = {
-+	.gdscr = 0x1024,
++static struct gdsc usb_hs_hsic_gdsc = {
++	.gdscr = 0x404,
 +	.pd = {
-+		.name = "venus0",
++		.name = "usb_hs_hsic",
 +	},
 +};
 +
-+static struct gdsc mdss_gdsc = {
-+	.gdscr = 0x2304,
++static struct gdsc pcie0_gdsc = {
++	.gdscr = 0x1ac4,
 +	.pd = {
-+		.name = "mdss",
++		.name = "pcie0",
 +	},
 +};
 +
-+static struct gdsc camss_jpeg_gdsc = {
-+	.gdscr = 0x35a4,
++static struct gdsc pcie1_gdsc = {
++	.gdscr = 0x1b44,
 +	.pd = {
-+		.name = "camss_jpeg",
++		.name = "pcie1",
 +	},
 +};
 +
-+static struct gdsc camss_vfe_gdsc = {
-+	.gdscr = 0x36a4,
++static struct gdsc usb30_gdsc = {
++	.gdscr = 0x1e84,
 +	.pd = {
-+		.name = "camss_vfe",
++		.name = "usb30",
 +	},
 +};
 +
-+static struct gdsc oxili_gdsc = {
-+	.gdscr = 0x4024,
-+	.pd = {
-+		.name = "oxili",
-+	},
-+};
-+
-+static struct gdsc oxilicx_gdsc = {
-+	.gdscr = 0x4034,
-+	.pd = {
-+		.name = "oxilicx",
-+	},
-+};
-+
- static struct clk_regmap *mmcc_apq8084_clocks[] = {
- 	[MMSS_AHB_CLK_SRC] = &mmss_ahb_clk_src.clkr,
- 	[MMSS_AXI_CLK_SRC] = &mmss_axi_clk_src.clkr,
-@@ -3294,6 +3337,15 @@ static const struct qcom_reset_map mmcc_apq8084_resets[] = {
- 	[MMSSNOCAXI_RESET] = { 0x5060 },
+ static struct clk_regmap *gcc_apq8084_clocks[] = {
+ 	[GPLL0] = &gpll0.clkr,
+ 	[GPLL0_VOTE] = &gpll0_vote,
+@@ -3446,6 +3475,13 @@ static struct clk_regmap *gcc_apq8084_clocks[] = {
+ 	[GCC_USB_HSIC_SYSTEM_CLK] = &gcc_usb_hsic_system_clk.clkr,
  };
  
-+static struct gdsc *mmcc_apq8084_gdscs[] = {
-+	[VENUS0_GDSC] = &venus0_gdsc,
-+	[MDSS_GDSC] = &mdss_gdsc,
-+	[CAMSS_JPEG_GDSC] = &camss_jpeg_gdsc,
-+	[CAMSS_VFE_GDSC] = &camss_vfe_gdsc,
-+	[OXILI_GDSC] = &oxili_gdsc,
-+	[OXILICX_GDSC] = &oxilicx_gdsc,
++static struct gdsc *gcc_apq8084_gdscs[] = {
++	[USB_HS_HSIC_GDSC] = &usb_hs_hsic_gdsc,
++	[PCIE0_GDSC] = &pcie0_gdsc,
++	[PCIE1_GDSC] = &pcie1_gdsc,
++	[USB30_GDSC] = &usb30_gdsc,
 +};
 +
- static const struct regmap_config mmcc_apq8084_regmap_config = {
- 	.reg_bits	= 32,
- 	.reg_stride	= 4,
-@@ -3308,6 +3360,8 @@ static const struct qcom_cc_desc mmcc_apq8084_desc = {
- 	.num_clks = ARRAY_SIZE(mmcc_apq8084_clocks),
- 	.resets = mmcc_apq8084_resets,
- 	.num_resets = ARRAY_SIZE(mmcc_apq8084_resets),
-+	.gdscs = mmcc_apq8084_gdscs,
-+	.num_gdscs = ARRAY_SIZE(mmcc_apq8084_gdscs),
+ static const struct qcom_reset_map gcc_apq8084_resets[] = {
+ 	[GCC_SYSTEM_NOC_BCR] = { 0x0100 },
+ 	[GCC_CONFIG_NOC_BCR] = { 0x0140 },
+@@ -3554,6 +3590,8 @@ static const struct qcom_cc_desc gcc_apq8084_desc = {
+ 	.num_clks = ARRAY_SIZE(gcc_apq8084_clocks),
+ 	.resets = gcc_apq8084_resets,
+ 	.num_resets = ARRAY_SIZE(gcc_apq8084_resets),
++	.gdscs = gcc_apq8084_gdscs,
++	.num_gdscs = ARRAY_SIZE(gcc_apq8084_gdscs),
  };
  
- static const struct of_device_id mmcc_apq8084_match_table[] = {
-diff --git a/include/dt-bindings/clock/qcom,mmcc-apq8084.h b/include/dt-bindings/clock/qcom,mmcc-apq8084.h
-index d72b5b3..21fec5d 100644
---- a/include/dt-bindings/clock/qcom,mmcc-apq8084.h
-+++ b/include/dt-bindings/clock/qcom,mmcc-apq8084.h
-@@ -180,4 +180,12 @@
- #define VPU_SLEEP_CLK			163
- #define VPU_VDP_CLK			164
+ static const struct of_device_id gcc_apq8084_match_table[] = {
+diff --git a/include/dt-bindings/clock/qcom,gcc-apq8084.h b/include/dt-bindings/clock/qcom,gcc-apq8084.h
+index 2c0da56..5aa7ebe 100644
+--- a/include/dt-bindings/clock/qcom,gcc-apq8084.h
++++ b/include/dt-bindings/clock/qcom,gcc-apq8084.h
+@@ -348,4 +348,10 @@
+ #define GCC_PCIE_1_PIPE_CLK				331
+ #define GCC_PCIE_1_SLV_AXI_CLK				332
  
-+/* GDSCs */
-+#define VENUS0_GDSC			0
-+#define MDSS_GDSC			1
-+#define CAMSS_JPEG_GDSC			2
-+#define CAMSS_VFE_GDSC			3
-+#define OXILI_GDSC			4
-+#define OXILICX_GDSC			5
++/* gdscs */
++#define USB_HS_HSIC_GDSC				0
++#define PCIE0_GDSC					1
++#define PCIE1_GDSC					2
++#define USB30_GDSC					3
 +
  #endif
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
+
