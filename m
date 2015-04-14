@@ -1,316 +1,115 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Patch Part2 v5 31/33] x86: Cleanup irq_domain ops
-Date: Tue, 14 Apr 2015 10:30:08 +0800
-Message-ID: <1428978610-28986-32-git-send-email-jiang.liu@linux.intel.com>
-References: <1428978610-28986-1-git-send-email-jiang.liu@linux.intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/3] dm-crypt: Adds support for wiping key when doing
+ suspend/hibernation
+Date: Tue, 14 Apr 2015 08:41:48 +0200
+Message-ID: <20150414064148.GA20597@amd>
+References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com>
+ <20150406130045.GA18583@redhat.com>
+ <201504061529.57299@pali>
+ <20150409131208.GA9504@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:9378 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752100AbbDNCej (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 13 Apr 2015 22:34:39 -0400
-In-Reply-To: <1428978610-28986-1-git-send-email-jiang.liu@linux.intel.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43085 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753068AbbDNGlv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2015 02:41:51 -0400
+Content-Disposition: inline
+In-Reply-To: <20150409131208.GA9504@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>, Borislav Petkov <bp@alien8.de>, Dimitri Sivanich <sivanich@sgi.com>, x86@kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiang Liu <jiang.liu@linux.intel.com>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh@kernel.org>
-Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, David Cohen <david.a.cohen@linux.intel.com>, Sander Eikelenboom <linux@eikelenboom.it>, David Vrabel <david.vrabel@citrix.com>, Andrew Morton <akpm@linux-foundation.org>, Tony Luck <tony.luck@intel.com>, Joerg Roedel <joro@8bytes.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, sfi-devel@simplefirmware.org
+To: Mike Snitzer <snitzer@redhat.com>
+Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Alasdair Kergon <agk@redhat.com>, Neil Brown <neilb@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-From: Thomas Gleixner <tglx@linutronix.de>
+On Thu 2015-04-09 09:12:08, Mike Snitzer wrote:
+> On Mon, Apr 06 2015 at  9:29am -0400,
+> Pali Roh=E1r <pali.rohar@gmail.com> wrote:
+>=20
+> > On Monday 06 April 2015 15:00:46 Mike Snitzer wrote:
+> > > On Sun, Apr 05 2015 at  1:20pm -0400,
+> > >=20
+> > > Pali Roh=E1r <pali.rohar@gmail.com> wrote:
+> > > > This patch series increase security of suspend and hibernate
+> > > > actions. It allows user to safely wipe crypto keys before
+> > > > suspend and hibernate actions starts without race
+> > > > conditions on userspace process with heavy I/O.
+> > > >=20
+> > > > To automatically wipe cryto key for <device> before
+> > > > hibernate action call: $ dmsetup message <device> 0 key
+> > > > wipe_on_hibernation 1
+> > > >=20
+> > > > To automatically wipe cryto key for <device> before suspend
+> > > > action call: $ dmsetup message <device> 0 key
+> > > > wipe_on_suspend 1
+> > > >=20
+> > > > (Value 0 after wipe_* string reverts original behaviour - to
+> > > > not wipe key)
+> > >=20
+> > > Can you elaborate on the attack vector your changes are meant
+> > > to protect against?  The user already authorized access, why
+> > > is it inherently dangerous to _not_ wipe the associated key
+> > > across these events?
+> >=20
+> > Hi,
+> >=20
+> > yes, I will try to explain current problems with cryptsetup=20
+> > luksSuspend command and hibernation.
+> >=20
+> > First, sometimes it is needed to put machine into other hands.=20
+> > You can still watch other person what is doing with machine, but=20
+> > once if you let machine unlocked (e.g opened luks disk), she/he=20
+> > can access encrypted data.
+> >=20
+> > If you turn off machine, it could be safe, because luks disk=20
+> > devices are locked. But if you enter machine into suspend or=20
+> > hibernate state luks devices are still open. And my patches try=20
+> > to achieve similar security as when machine is off (=3D no crypto=20
+> > keys in RAM or on swap).
+> >=20
+> > When doing hibernate on unencrypted swap it is to prevent leaking=20
+> > crypto keys to hibernate image (which is stored in swap).
+> >=20
+> > When doing suspend action it is again to prevent leaking crypto=20
+> > keys. E.g when you suspend laptop and put it off (somebody can=20
+> > remove RAMs and do some cold boot attack).
+> >=20
+> > The most common situation is:
+> > You have mounted partition from dm-crypt device (e.g. /home/),=20
+> > some userspace processes access it (e.g opened firefox which=20
+> > still reads/writes to cache ~/.firefox/) and you want to drop=20
+> > crypto keys from kernel for some time.
+> >=20
+> > For that operation there is command cryptsetup luksSuspend, which=20
+> > suspend dm device and then tell kernel to wipe crypto keys. All=20
+> > I/O operations are then stopped and userspace processes which=20
+> > want to do some those I/O operations are stopped too (until you=20
+> > call cryptsetup luksResume and enter correct key).
+> >=20
+> > Now if you want to suspend/hiberate your machine (when some of dm=20
+> > devices are suspeneded and some processes are stopped due to=20
+> > pending I/O) it is not possible. Kernel freeze_processes function=20
+> > will fail because userspace processes are still stopped inside=20
+> > some I/O syscall (read/write, etc,...).
+> >=20
+> > My patches fixes this problem and do those operations (suspend dm=20
+> > device, wipe crypto keys, enter suspend/hiberate) in correct=20
+> > order and without race condition.
+> >=20
+> > dm device is suspended *after* userspace processes are freezed=20
+> > and after that are crypto keys wiped. And then computer/laptop=20
+> > enters into suspend/hibernate state.
+>=20
+> Wouldn't it be better to fix freeze_processes() to be tolerant of
+> processes that are hung as a side-effect of their backing storage bei=
+ng
+> suspended?  A hibernate shouldn't fail simply because a user chose to
+> suspend a DM device.
 
-We have 3 identical copies of the ioapic domain ops for acpi, mpparse,
-and sfi. Have a global one in the io_apic code and be done with it.
-
-To avoid include hell in io_apic.h, create a private irqdomain header
-and include the generic irqdomain header from there.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jiang Liu <jiang.liu@linux.intel.com>
-Cc: x86@kernel.org
-Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
----
- arch/x86/include/asm/io_apic.h   |   29 ++---------------------------
- arch/x86/include/asm/irqdomain.h |   34 ++++++++++++++++++++++++++++++++++
- arch/x86/kernel/acpi/boot.c      |   13 +++----------
- arch/x86/kernel/apic/io_apic.c   |    9 ++++++++-
- arch/x86/kernel/devicetree.c     |   12 ++++++------
- arch/x86/kernel/mpparse.c        |    9 +--------
- arch/x86/platform/sfi/sfi.c      |   10 ++--------
- 7 files changed, 56 insertions(+), 60 deletions(-)
- create mode 100644 arch/x86/include/asm/irqdomain.h
-
-diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-index 53a70a30b674..144c4d37ae86 100644
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -96,7 +96,7 @@ struct IR_IO_APIC_route_entry {
- } __attribute__ ((packed));
- 
- struct irq_alloc_info;
--struct irq_data;
-+struct ioapic_domain_cfg;
- 
- #define IOAPIC_AUTO			-1
- #define IOAPIC_EDGE			0
-@@ -163,23 +163,6 @@ extern int restore_ioapic_entries(void);
- extern void setup_ioapic_ids_from_mpc(void);
- extern void setup_ioapic_ids_from_mpc_nocheck(void);
- 
--enum ioapic_domain_type {
--	IOAPIC_DOMAIN_INVALID,
--	IOAPIC_DOMAIN_LEGACY,
--	IOAPIC_DOMAIN_STRICT,
--	IOAPIC_DOMAIN_DYNAMIC,
--};
--
--struct device_node;
--struct irq_domain;
--struct irq_domain_ops;
--
--struct ioapic_domain_cfg {
--	enum ioapic_domain_type		type;
--	const struct irq_domain_ops	*ops;
--	struct device_node		*dev;
--};
--
- extern int mp_find_ioapic(u32 gsi);
- extern int mp_find_ioapic_pin(int ioapic, u32 gsi);
- extern int mp_map_gsi_to_irq(u32 gsi, unsigned int flags,
-@@ -189,15 +172,7 @@ extern int mp_register_ioapic(int id, u32 address, u32 gsi_base,
- 			      struct ioapic_domain_cfg *cfg);
- extern int mp_unregister_ioapic(u32 gsi_base);
- extern int mp_ioapic_registered(u32 gsi_base);
--extern int mp_irqdomain_alloc(struct irq_domain *domain, unsigned int virq,
--			      unsigned int nr_irqs, void *arg);
--extern void mp_irqdomain_free(struct irq_domain *domain, unsigned int virq,
--			      unsigned int nr_irqs);
--extern void mp_irqdomain_activate(struct irq_domain *domain,
--				  struct irq_data *irq_data);
--extern void mp_irqdomain_deactivate(struct irq_domain *domain,
--				    struct irq_data *irq_data);
--extern int mp_irqdomain_ioapic_idx(struct irq_domain *domain);
-+
- extern void ioapic_set_alloc_attr(struct irq_alloc_info *info,
- 				  int node, int trigger, int polarity);
- 
-diff --git a/arch/x86/include/asm/irqdomain.h b/arch/x86/include/asm/irqdomain.h
-new file mode 100644
-index 000000000000..fe0d4c6636ec
---- /dev/null
-+++ b/arch/x86/include/asm/irqdomain.h
-@@ -0,0 +1,34 @@
-+#ifndef _ASM_IRQDOMAIN_H
-+#define _ASM_IRQDOMAIN_H
-+
-+#include <linux/irqdomain.h>
-+
-+enum ioapic_domain_type {
-+	IOAPIC_DOMAIN_INVALID,
-+	IOAPIC_DOMAIN_LEGACY,
-+	IOAPIC_DOMAIN_STRICT,
-+	IOAPIC_DOMAIN_DYNAMIC,
-+};
-+
-+struct device_node;
-+struct irq_data;
-+
-+struct ioapic_domain_cfg {
-+	enum ioapic_domain_type		type;
-+	const struct irq_domain_ops	*ops;
-+	struct device_node		*dev;
-+};
-+
-+extern const struct irq_domain_ops mp_ioapic_irqdomain_ops;
-+
-+extern int mp_irqdomain_alloc(struct irq_domain *domain, unsigned int virq,
-+			      unsigned int nr_irqs, void *arg);
-+extern void mp_irqdomain_free(struct irq_domain *domain, unsigned int virq,
-+			      unsigned int nr_irqs);
-+extern void mp_irqdomain_activate(struct irq_domain *domain,
-+				  struct irq_data *irq_data);
-+extern void mp_irqdomain_deactivate(struct irq_domain *domain,
-+				    struct irq_data *irq_data);
-+extern int mp_irqdomain_ioapic_idx(struct irq_domain *domain);
-+
-+#endif
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 91a10120ed10..cb9f6f12246b 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -31,12 +31,12 @@
- #include <linux/module.h>
- #include <linux/dmi.h>
- #include <linux/irq.h>
--#include <linux/irqdomain.h>
- #include <linux/slab.h>
- #include <linux/bootmem.h>
- #include <linux/ioport.h>
- #include <linux/pci.h>
- 
-+#include <asm/irqdomain.h>
- #include <asm/pci_x86.h>
- #include <asm/pgtable.h>
- #include <asm/io_apic.h>
-@@ -400,20 +400,13 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
- 	return 0;
- }
- 
--static struct irq_domain_ops acpi_irqdomain_ops = {
--	.alloc = mp_irqdomain_alloc,
--	.free = mp_irqdomain_free,
--	.activate = mp_irqdomain_activate,
--	.deactivate = mp_irqdomain_deactivate,
--};
--
- static int __init
- acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)
- {
- 	struct acpi_madt_io_apic *ioapic = NULL;
- 	struct ioapic_domain_cfg cfg = {
- 		.type = IOAPIC_DOMAIN_DYNAMIC,
--		.ops = &acpi_irqdomain_ops,
-+		.ops = &mp_ioapic_irqdomain_ops,
- 	};
- 
- 	ioapic = (struct acpi_madt_io_apic *)header;
-@@ -764,7 +757,7 @@ int acpi_register_ioapic(acpi_handle handle, u64 phys_addr, u32 gsi_base)
- 	u64 addr;
- 	struct ioapic_domain_cfg cfg = {
- 		.type = IOAPIC_DOMAIN_DYNAMIC,
--		.ops = &acpi_irqdomain_ops,
-+		.ops = &mp_ioapic_irqdomain_ops,
- 	};
- 
- 	ioapic_id = acpi_get_ioapic_id(handle, gsi_base, &addr);
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index ce7063087f74..1eea1682b01b 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -41,13 +41,13 @@
- #include <linux/acpi.h>
- #include <linux/module.h>
- #include <linux/syscore_ops.h>
--#include <linux/irqdomain.h>
- #include <linux/freezer.h>
- #include <linux/kthread.h>
- #include <linux/jiffies.h>	/* time_after() */
- #include <linux/slab.h>
- #include <linux/bootmem.h>
- 
-+#include <asm/irqdomain.h>
- #include <asm/idle.h>
- #include <asm/io.h>
- #include <asm/smp.h>
-@@ -2995,3 +2995,10 @@ int mp_irqdomain_ioapic_idx(struct irq_domain *domain)
- {
- 	return (int)(long)domain->host_data;
- }
-+
-+const struct irq_domain_ops mp_ioapic_irqdomain_ops = {
-+	.alloc		= mp_irqdomain_alloc,
-+	.free		= mp_irqdomain_free,
-+	.activate	= mp_irqdomain_activate,
-+	.deactivate	= mp_irqdomain_deactivate,
-+};
-diff --git a/arch/x86/kernel/devicetree.c b/arch/x86/kernel/devicetree.c
-index 9ca73a700912..421375b1efd5 100644
---- a/arch/x86/kernel/devicetree.c
-+++ b/arch/x86/kernel/devicetree.c
-@@ -4,7 +4,6 @@
- #include <linux/bootmem.h>
- #include <linux/export.h>
- #include <linux/io.h>
--#include <linux/irqdomain.h>
- #include <linux/interrupt.h>
- #include <linux/list.h>
- #include <linux/of.h>
-@@ -17,6 +16,7 @@
- #include <linux/of_pci.h>
- #include <linux/initrd.h>
- 
-+#include <asm/irqdomain.h>
- #include <asm/hpet.h>
- #include <asm/apic.h>
- #include <asm/pci_x86.h>
-@@ -216,11 +216,11 @@ static int dt_irqdomain_alloc(struct irq_domain *domain, unsigned int virq,
- 	return mp_irqdomain_alloc(domain, virq, nr_irqs, &tmp);
- }
- 
--const struct irq_domain_ops ioapic_irq_domain_ops = {
--	.alloc = dt_irqdomain_alloc,
--	.free = mp_irqdomain_free,
--	.activate = mp_irqdomain_activate,
--	.deactivate = mp_irqdomain_deactivate,
-+static const struct irq_domain_ops ioapic_irq_domain_ops = {
-+	.alloc		= dt_irqdomain_alloc,
-+	.free		= mp_irqdomain_free,
-+	.activate	= mp_irqdomain_activate,
-+	.deactivate	= mp_irqdomain_deactivate,
- };
- 
- static void __init dtb_add_ioapic(struct device_node *dn)
-diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index aa4feee74dbe..30ca7607cbbb 100644
---- a/arch/x86/kernel/mpparse.c
-+++ b/arch/x86/kernel/mpparse.c
-@@ -19,8 +19,8 @@
- #include <linux/module.h>
- #include <linux/smp.h>
- #include <linux/pci.h>
--#include <linux/irqdomain.h>
- 
-+#include <asm/irqdomain.h>
- #include <asm/mtrr.h>
- #include <asm/mpspec.h>
- #include <asm/pgalloc.h>
-@@ -113,13 +113,6 @@ static void __init MP_bus_info(struct mpc_bus *m)
- 		pr_warn("Unknown bustype %s - ignoring\n", str);
- }
- 
--static struct irq_domain_ops mp_ioapic_irqdomain_ops = {
--	.alloc = mp_irqdomain_alloc,
--	.free = mp_irqdomain_free,
--	.activate = mp_irqdomain_activate,
--	.deactivate = mp_irqdomain_deactivate,
--};
--
- static void __init MP_ioapic_info(struct mpc_ioapic *m)
- {
- 	struct ioapic_domain_cfg cfg = {
-diff --git a/arch/x86/platform/sfi/sfi.c b/arch/x86/platform/sfi/sfi.c
-index b66b194f9900..6c7111bbd1e9 100644
---- a/arch/x86/platform/sfi/sfi.c
-+++ b/arch/x86/platform/sfi/sfi.c
-@@ -25,8 +25,8 @@
- #include <linux/init.h>
- #include <linux/sfi.h>
- #include <linux/io.h>
--#include <linux/irqdomain.h>
- 
-+#include <asm/irqdomain.h>
- #include <asm/io_apic.h>
- #include <asm/mpspec.h>
- #include <asm/setup.h>
-@@ -71,12 +71,6 @@ static int __init sfi_parse_cpus(struct sfi_table_header *table)
- #endif /* CONFIG_X86_LOCAL_APIC */
- 
- #ifdef CONFIG_X86_IO_APIC
--static struct irq_domain_ops sfi_ioapic_irqdomain_ops = {
--	.alloc = mp_irqdomain_alloc,
--	.free = mp_irqdomain_free,
--	.activate = mp_irqdomain_activate,
--	.deactivate = mp_irqdomain_deactivate,
--};
- 
- static int __init sfi_parse_ioapic(struct sfi_table_header *table)
- {
-@@ -85,7 +79,7 @@ static int __init sfi_parse_ioapic(struct sfi_table_header *table)
- 	int i, num;
- 	struct ioapic_domain_cfg cfg = {
- 		.type = IOAPIC_DOMAIN_STRICT,
--		.ops = &sfi_ioapic_irqdomain_ops,
-+		.ops = &mp_ioapic_irqdomain_ops,
- 	};
- 
- 	sb = (struct sfi_table_simple *)table;
--- 
-1.7.10.4
-
+That would be nice, I agree. But that's non-trivial ammount of work
+and might be (close to) impossible.
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
+/blog.html
