@@ -1,89 +1,93 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [RFC 5/5] drivers: sh: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
-Date: Tue, 14 Apr 2015 19:04:33 +0530
-Message-ID: <1429018473-21865-6-git-send-email-rnayak@codeaurora.org>
-References: <1429018473-21865-1-git-send-email-rnayak@codeaurora.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1429018473-21865-1-git-send-email-rnayak@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: rjw@rjwysocki.net, ssantosh@kernel.org, tony@atomide.com, khilman@deeprootsystems.com, nsekhar@ti.com, magnus.damm@gmail.com
-Cc: linux-arm-msm@vger.kernel.org, inux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-sh@vger.kernel.org, Rajendra Nayak <rnayak@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] ACPI / battery: Fix doubly added battery on system suspend
+Date: Tue, 14 Apr 2015 16:49:51 +0200
+Message-ID: <11175509.8BujP5BLVe@vostro.rjw.lan>
+References: <1429017853-3520-1-git-send-email-k.kozlowski.k@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1429017853-3520-1-git-send-email-k.kozlowski.k@gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-USE_PM_CLK_RUNTIME_OPS is introduced so we don't repeat the same code
-to do runtime_suspend and runtime_resume across users of PM clocks.
-Use it to remove the boilerplate code.
+On Tuesday, April 14, 2015 10:24:13 PM Krzysztof Kozlowski wrote:
+> The commit 297d716f6260 ("power_supply: Change ownership from driver to
+> core") inverted the logic in battery_notify(). As an effect already
+> present battery was re-added on each system suspend or hibernation.
+> 
+> Dmesg:
+> [  107.999370] WARNING: CPU: 0 PID: 303 at ../fs/sysfs/dir.c:31 sysfs_warn_dup+0x68/0x80()
+> [  107.999374] sysfs: cannot create duplicate filename '/devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A03:00/PNP0C0A:00/power_supply/BAT0'
+> [  107.999418] CPU: 0 PID: 303 Comm: rtcwake Not tainted 4.0.0-ARCH-02621-g07e6253af953 #48
+> [  107.999421] Hardware name: innotek GmbH VirtualBox/VirtualBox, BIOS VirtualBox 12/01/2006
+> [  107.999425]  0000000000000000 000000008600f41a ffff88001cf3f9f8 ffffffff8156c77d
+> [  107.999430]  0000000000000000 ffff88001cf3fa50 ffff88001cf3fa38 ffffffff81074cea
+> [  107.999434]  000029b71cf3fa38 ffff88001e387000 ffff88001cc3bfb8 ffff88001ce1e258
+> [  107.999439] Call Trace:
+> [  107.999446]  [<ffffffff8156c77d>] dump_stack+0x4c/0x6e
+> [  107.999453]  [<ffffffff81074cea>] warn_slowpath_common+0x8a/0xc0
+> [  107.999458]  [<ffffffff81074d75>] warn_slowpath_fmt+0x55/0x70
+> [  107.999464]  [<ffffffff8124c548>] ? kernfs_path+0x48/0x60
+> [  107.999468]  [<ffffffff8124fd28>] sysfs_warn_dup+0x68/0x80
+> [  107.999472]  [<ffffffff8124fdcd>] sysfs_create_dir_ns+0x8d/0xa0
+> [  107.999478]  [<ffffffff812bfae6>] kobject_add_internal+0xb6/0x370
+> [  107.999483]  [<ffffffff812bffbf>] kobject_add+0x6f/0xd0
+> [  107.999489]  [<ffffffff813e0310>] device_add+0x120/0x6c0
+> [  107.999494]  [<ffffffff813de800>] ? dev_set_name+0x50/0x70
+> [  107.999500]  [<ffffffff8141ed95>] __power_supply_register+0x145/0x290
+> [  107.999506]  [<ffffffffa0104234>] ? extract_package+0x73/0xc5 [battery]
+> [  107.999511]  [<ffffffff8141ef10>] power_supply_register_no_ws+0x10/0x20
+> [  107.999517]  [<ffffffffa01044aa>] sysfs_add_battery+0x84/0xc5 [battery]
+> [  107.999522]  [<ffffffffa0104b7f>] battery_notify+0x45/0x6b [battery]
+> [  107.999527]  [<ffffffff8109476f>] notifier_call_chain+0x4f/0x80
+> [  107.999532]  [<ffffffff81094b5b>] __blocking_notifier_call_chain+0x4b/0x70
+> [  107.999537]  [<ffffffff81094b96>] blocking_notifier_call_chain+0x16/0x20
+> [  107.999543]  [<ffffffff810c20aa>] pm_notifier_call_chain+0x1a/0x40
+> [  107.999548]  [<ffffffff810c399d>] pm_suspend+0x3ed/0x4e0
+> [  107.999552]  [<ffffffff810c2087>] state_store+0xa7/0xb0
+> [  107.999557]  [<ffffffff812bee0f>] kobj_attr_store+0xf/0x20
+> [  107.999561]  [<ffffffff8124f41a>] sysfs_kf_write+0x3a/0x50
+> [  107.999565]  [<ffffffff8124e8f7>] kernfs_fop_write+0x127/0x180
+> [  107.999571]  [<ffffffff811d5727>] vfs_write+0xb7/0x200
+> [  107.999576]  [<ffffffff811d6409>] SyS_write+0x59/0xd0
+> [  107.999581]  [<ffffffff81571f2e>] system_call_fastpath+0x12/0x71
+> [  107.999586] ---[ end trace 3977e3a58591fca2 ]---
+> 
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+> Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
----
- drivers/sh/pm_runtime.c | 47 ++---------------------------------------------
- 1 file changed, 2 insertions(+), 45 deletions(-)
+Fixes: 297d716f6260 (power_supply: Change ownership from driver to core)
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-diff --git a/drivers/sh/pm_runtime.c b/drivers/sh/pm_runtime.c
-index cd4c293..e0fd1e0 100644
---- a/drivers/sh/pm_runtime.c
-+++ b/drivers/sh/pm_runtime.c
-@@ -20,58 +20,15 @@
- #include <linux/bitmap.h>
- #include <linux/slab.h>
- 
--#ifdef CONFIG_PM
--static int sh_pm_runtime_suspend(struct device *dev)
--{
--	int ret;
--
--	ret = pm_generic_runtime_suspend(dev);
--	if (ret) {
--		dev_err(dev, "failed to suspend device\n");
--		return ret;
--	}
--
--	ret = pm_clk_suspend(dev);
--	if (ret) {
--		dev_err(dev, "failed to suspend clock\n");
--		pm_generic_runtime_resume(dev);
--		return ret;
--	}
--
--	return 0;
--}
--
--static int sh_pm_runtime_resume(struct device *dev)
--{
--	int ret;
--
--	ret = pm_clk_resume(dev);
--	if (ret) {
--		dev_err(dev, "failed to resume clock\n");
--		return ret;
--	}
--
--	return pm_generic_runtime_resume(dev);
--}
--
- static struct dev_pm_domain default_pm_domain = {
- 	.ops = {
--		.runtime_suspend = sh_pm_runtime_suspend,
--		.runtime_resume = sh_pm_runtime_resume,
-+		USE_PM_CLK_RUNTIME_OPS
- 		USE_PLATFORM_PM_SLEEP_OPS
- 	},
- };
- 
--#define DEFAULT_PM_DOMAIN_PTR	(&default_pm_domain)
--
--#else
--
--#define DEFAULT_PM_DOMAIN_PTR	NULL
--
--#endif /* CONFIG_PM */
--
- static struct pm_clk_notifier_block platform_bus_notifier = {
--	.pm_domain = DEFAULT_PM_DOMAIN_PTR,
-+	.pm_domain = &default_pm_domain,
- 	.con_ids = { NULL, },
- };
- 
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+Linus, can you please apply this one directly if it works for you?
+
+Rafael
+
+
+> ---
+> 
+> This fixes commit 297d716f6260 which was recently pulled from battery
+> tree:
+> https://lkml.org/lkml/2015/4/13/396.
+> ---
+>  drivers/acpi/battery.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+> index fdc16ce9d272..672263a3832c 100644
+> --- a/drivers/acpi/battery.c
+> +++ b/drivers/acpi/battery.c
+> @@ -1106,7 +1106,7 @@ static int battery_notify(struct notifier_block *nb,
+>  		if (!acpi_battery_present(battery))
+>  			return 0;
+>  
+> -		if (battery->bat) {
+> +		if (!battery->bat) {
+>  			result = acpi_battery_get_info(battery);
+>  			if (result)
+>  				return result;
+> 
+
