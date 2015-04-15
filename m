@@ -1,112 +1,153 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/3] cpuidle: Add some comments in the cpuidle_enter function
-Date: Wed, 15 Apr 2015 15:46:36 +0200
-Message-ID: <CAJZ5v0jazzbqqVSXUyWsGs_eJK1Di6btPP4HN=348VGAn_f-rg@mail.gmail.com>
-References: <1429092024-20498-1-git-send-email-daniel.lezcano@linaro.org>
-	<1429092024-20498-2-git-send-email-daniel.lezcano@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 3/3] sched: fair: Fix wrong idle timestamp usage
+Date: Wed, 15 Apr 2015 17:43:17 +0200
+Message-ID: <552E8715.4060601@linaro.org>
+References: <1429092024-20498-1-git-send-email-daniel.lezcano@linaro.org> <1429092024-20498-3-git-send-email-daniel.lezcano@linaro.org> <20150415121831.GU5029@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f53.google.com ([209.85.218.53]:35976 "EHLO
-	mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751809AbbDONrA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Apr 2015 09:47:00 -0400
-In-Reply-To: <1429092024-20498-2-git-send-email-daniel.lezcano@linaro.org>
+Received: from mail-wi0-f177.google.com ([209.85.212.177]:33449 "EHLO
+	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754334AbbDOPnS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Apr 2015 11:43:18 -0400
+Received: by wiax7 with SMTP id x7so115034974wia.0
+        for <linux-pm@vger.kernel.org>; Wed, 15 Apr 2015 08:43:17 -0700 (PDT)
+In-Reply-To: <20150415121831.GU5029@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, nicolas.pitre@linaro.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, nicolas.pitre@linaro.org, Ingo Molnar <mingo@redhat.com>
 
-On Wed, Apr 15, 2015 at 12:00 PM, Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
-> The code is a bit poor in comments. Fix that by adding some comments in the
-> cpuidle enter function.
+On 04/15/2015 02:18 PM, Peter Zijlstra wrote:
+> On Wed, Apr 15, 2015 at 12:00:24PM +0200, Daniel Lezcano wrote:
+>> The find_idlest_cpu is assuming the rq->idle_stamp information refle=
+cts when
+>> the cpu entered the idle state. This is wrong as the cpu may exit an=
+d enter
+>> the idle state several times without the rq->idle_stamp being update=
+d.
 >
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/cpuidle/cpuidle.c | 31 +++++++++++++++++++++++++++++++
->  1 file changed, 31 insertions(+)
+> Sure, but you forgot to tell us why it matters.
+
+Yes, right. Thanks for pointing this out.
+
+Assuming we are in the situation where there are several idle cpus in=20
+the same idle state.
+
+With the current code, the function find_idlest_cpu will choose a cpu=20
+with the shortest idle duration. This information is based on the=20
+rq->idle_stamp variable and is correct until one of the idle cpu is=20
+exiting the cpuidle_enter function and re-entering it again. As soon as=
+=20
+this happen, the rq->idle_stamp value is no longer a reliable informati=
+on.
+
+Example:
+
+  * CPU0 and CPU1 are running
+  * CPU2 and CPU3 are in the C3 state.
+  * CPU2 entered idle at T2
+  * CPU3 entered idle at T3
+  * T2 < T3
+
+The function find_idlest_cpu will choose CPU3 because it has a shorter=20
+idle duration.
+
+Then CPU3 is woken up by an interrupt, process it and re-enter idle C3.
+
+The information will still give the out to date information T2 < T3 and=
+=20
+find_idlest_cpu will choose CPU2 instead of CPU3.
+
+Even if that shouldn't have a big impact on the performance and energy=20
+side, we are dealing with a wrong information preventing us to improve=20
+the energy side later (eg. prevent to wakeup a cpu which did not reach=20
+its target residency yet).
+
+>> We have two informations here:
+>>
+>>   * rq->idle_stamp gives when the idle task has been scheduled
+>>   * idle->idle_stamp gives when the cpu entered the idle state
 >
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 1220dac..5e6c6be 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -162,19 +162,50 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+> I'm not a native speaker, but I'm pretty sure 'information' is a word
+> without a plural, a google search suggests it to be a non-countable
+> noun.
+
+Ha, sounds like it is a common mistake for non native speaker :)
+
+"Informations" is correct but apparently very uncommon, so uncommon it=20
+is considered incorrect.
+
+Thanks for the tip, I will keep it in mind :)
+
+>> The patch fixes that by using the latter information and fallbacks t=
+o
+>> the rq's timestamp when the idle state is not accessible
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> ---
+>>   kernel/sched/fair.c | 42 ++++++++++++++++++++++++++++-------------=
+-
+>>   1 file changed, 28 insertions(+), 14 deletions(-)
+>>
+>> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+>> index 46855d0..b44f1ad 100644
+>> --- a/kernel/sched/fair.c
+>> +++ b/kernel/sched/fair.c
+>> @@ -4704,21 +4704,35 @@ find_idlest_cpu(struct sched_group *group, s=
+truct task_struct *p, int this_cpu)
+>>   		if (idle_cpu(i)) {
+>>   			struct rq *rq =3D cpu_rq(i);
+>>   			struct cpuidle_state *idle =3D idle_get_state(rq);
+>> +
+>> +			if (idle) {
+>> +				if (idle->exit_latency < min_exit_latency) {
+>> +					/*
+>> +					 * We give priority to a CPU
+>> +					 * whose idle state has the
+>> +					 * smallest exit latency
+>> +					 * irrespective of any idle
+>> +					 * timestamp.
+>> +					 */
+>> +					min_exit_latency =3D idle->exit_latency;
+>> +					latest_idle_timestamp =3D idle->idle_stamp;
+>> +					shallowest_idle_cpu =3D i;
+>> +				} else if (idle->exit_latency =3D=3D min_exit_latency &&
+>> +					   idle->idle_stamp > latest_idle_timestamp) {
+>> +					/*
+>> +					 * If the CPU is in the same
+>> +					 * idle state, choose the more
+>> +					 * recent one as it might have
+>> +					 * a warmer cache
+>> +					 */
+>> +					latest_idle_timestamp =3D idle->idle_stamp;
+>> +					shallowest_idle_cpu =3D i;
+>> +				}
+>> +			} else if (rq->idle_stamp > latest_idle_timestamp) {
+>>   				/*
+>> +				 * If no active idle state, then the
+>> +				 * most recent idled CPU might have a
+>> +				 * warmer cache
+>>   				 */
+>>   				latest_idle_timestamp =3D rq->idle_stamp;
+>>   				shallowest_idle_cpu =3D i;
 >
->         trace_cpu_idle_rcuidle(index, dev->cpu);
+> Urgh, you made horrid code more horrible.
 >
-> +       /*
-> +        * Store the idle start time for this cpu, this information
-> +        * will be used by cpuidle to measure how long the cpu has
-> +        * been idle and by the scheduler to prevent to wake it up too
-> +        * early
-> +        */
->         target_state->idle_stamp = ktime_to_us(ktime_get());
->
-> +       /*
-> +        * The enter to the low level idle routine. This call will block
-> +        * until an interrupt occurs meaning it is the end of the idle
-> +        * period
-> +        */
->         entered_state = target_state->enter(dev, drv, index);
->
-> +       /*
-> +        * Measure as soon as possible the duration of the idle
-> +        * period. It MUST be done before re-enabling the interrupt in
-> +        * order to prevent to add in the idle time measurement the
-> +        * interrupt handling duration
+> And all without reason.
 
-That's unless ->enter() itself re-enables interrupts which it may do, right?
+Ok. What is horrible ? The 'if then else' blocks or the algorithm itsel=
+f ?
 
-Which is why we made governors use next_timer_us as the "measured"
-value if the measured value itself is greater.
 
-I'd just say "Compute the idle duration here to avoid adding interrupt
-handling time to the idle time in case an interrupt occurs as soon as
-re-enabled".
 
-> +        */
->         diff = ktime_to_us(ktime_sub_us(ktime_get(), target_state->idle_stamp));
->
-> +       /*
-> +        * Reset the idle time stamp as the scheduler may think the cpu is idle
-> +        * while it is in the process of waking up
-> +        */
->         target_state->idle_stamp = 0;
->
->         trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
->
-> +       /*
-> +        * The cpuidle_enter_coupled uses the cpuidle_enter function.
-> +        * Don't re-enable the interrupts and let the enter_coupled
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-"let the enter_coupled function wait" (without the "to").
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-> +        * function to wait for all cpus to sync and to enable the
-> +        * interrupts again from there
-> +        */
-
-And I would just say "In the coupled case interrupts will be enabled
-by cpuidle_enter_coupled()".
-
->         if (!cpuidle_state_is_coupled(dev, drv, entered_state))
->                 local_irq_enable();
->
-> +       /*
-> +        * The idle duration will be casted to an integer, prevent to
-
-"will be cast" (like "Cast Away").
-
-> +        * overflow by setting a boundary to INT_MAX
-> +        */
->         if (diff > INT_MAX)
->                 diff = INT_MAX;
-
-But anyway, instead of adding that comment, why not to change the code
-like this:
-
-dev->last_residency = diff < INT_MAX ? diff : INT_MAX;
-
-and it now should be clear what happens without the comment.
-
-Rafael
