@@ -1,142 +1,118 @@
-From: tyeon <tom.yeon@windriver.com>
-Subject: Re: [PATCH] PM / Hiberante : optimize swsusp_free()
-Date: Wed, 15 Apr 2015 10:40:49 +0900
-Message-ID: <552DC1A1.3070601@windriver.com>
-References: <1426753738-26747-1-git-send-email-tom.yeon@windriver.com> <2492546.RHhDx1zacd@vostro.rjw.lan> <D2D54504A8A67848B028EBEA66F47B9AB2A28235@ALA-MBA.corp.ad.wrs.com> <1845757.HKx1NOssGd@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Ong Boon Leong <boon.leong.ong@intel.com>
+Subject: [PATCHv6 0/1] Intel Quark X1000 DTS thermal driver
+Date: Wed, 15 Apr 2015 10:08:14 +0800
+Message-ID: <1429063696-23572-1-git-send-email-boon.leong.ong@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.windriver.com ([147.11.146.13]:33947 "EHLO
-	mail1.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753708AbbDOBlO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2015 21:41:14 -0400
-In-Reply-To: <1845757.HKx1NOssGd@vostro.rjw.lan>
+Received: from mga01.intel.com ([192.55.52.88]:14447 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753708AbbDOCIl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 14 Apr 2015 22:08:41 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "pavel@ucw.cz" <pavel@ucw.cz>, "jroedel@suse.de" <jroedel@suse.de>, "BROWN, A LEONARD" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Tom(JeHyeon) Yeon" <tomyeon750415lkml@gmail.com>
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: pebolle@tiscali.nl, pure.logic@nexus-software.ie, hock.leong.kweh@intel.com, andy.shevchenko@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Saturday, April 11, 2015 09:20 AM Rafael J. Wysocki worte:
-> On Wednesday, March 25, 2015 01:49:36 AM Yeon, JeHyeon wrote:
->>  From 6cb5fffc41911a29212be52d4ce7e481f5077ccf Mon Sep 17 00:00:00 2001
->> From: "Tom(JeHyeon) Yeon" <tom.yeon@windriver.com>
->> Date: Thu, 19 Mar 2015 17:10:45 +0900
->> Subject: [PATCH] PM / Hiberante : optimize swsusp_free()
->>
->> Our team developed the snapshot booting.
->> Fisrt of all, make a snapshot image, compress it and finally save it
->> in the storage(like mmc).
->> When the system is booting next time, bootloader read it from mmc,
->> decompress it and jump to the kernel.
->> In this circumstance, mili seconds is very important.
->> So, I prepared this patch, but not applied because I missed the time
->> to apply it.
->>
->> And, I came across to find commit fdd64ed.
->> It's very similar to the patch I prepared.
->
-> So the part of the changelog above this line is not really relevant.
->
-> But the below is OK.
-Ok, I'll get rid of the upper changelog.
->
->> I think do { ... } while (fb_pfn != fr_pfn) operation is very similar
->> to my patch. but, it takes a little more time to iterate.
->> So suggest to iterate one of two maps and check whether the other map
->> has the same pfn, finally free the page.
->>
->> Signed-off-by: Tom(JeHyeon) Yeon <tom.yeon@windriver.com>
->
-> As for the patch itself ->
->
->> ---
->>   kernel/power/snapshot.c |   43 ++++++++++---------------------------------
->>   1 file changed, 10 insertions(+), 33 deletions(-)
->>
->> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
->> index c24d5a2..a1ad801 100644
->> --- a/kernel/power/snapshot.c
->> +++ b/kernel/power/snapshot.c
->> @@ -726,14 +726,6 @@ static void memory_bm_clear_bit(struct memory_bitmap *bm, unsigned long pfn)
->>   	clear_bit(bit, addr);
->>   }
->>
->> -static void memory_bm_clear_current(struct memory_bitmap *bm)
->> -{
->> -	int bit;
->> -
->> -	bit = max(bm->cur.node_bit - 1, 0);
->> -	clear_bit(bit, bm->cur.node->data);
->> -}
->> -
->>   static int memory_bm_test_bit(struct memory_bitmap *bm, unsigned long pfn)
->>   {
->>   	void *addr;
->> @@ -1342,36 +1334,21 @@ static struct memory_bitmap copy_bm;
->>
->>   void swsusp_free(void)
->>   {
->> -	unsigned long fb_pfn, fr_pfn;
->> +	unsigned long pfn;
->>
->>   	if (!forbidden_pages_map || !free_pages_map)
->>   		goto out;
->>
->>   	memory_bm_position_reset(forbidden_pages_map);
->> -	memory_bm_position_reset(free_pages_map);
->> -
->> -loop:
->> -	fr_pfn = memory_bm_next_pfn(free_pages_map);
->> -	fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
->> -
->> -	/*
->> -	 * Find the next bit set in both bitmaps. This is guaranteed to
->> -	 * terminate when fb_pfn == fr_pfn == BM_END_OF_MAP.
->> -	 */
->> -	do {
->> -		if (fb_pfn < fr_pfn)
->> -			fb_pfn = memory_bm_next_pfn(forbidden_pages_map);
->> -		if (fr_pfn < fb_pfn)
->> -			fr_pfn = memory_bm_next_pfn(free_pages_map);
->> -	} while (fb_pfn != fr_pfn);
->> -
->> -	if (fr_pfn != BM_END_OF_MAP && pfn_valid(fr_pfn)) {
->> -		struct page *page = pfn_to_page(fr_pfn);
->> -
->> -		memory_bm_clear_current(forbidden_pages_map);
->> -		memory_bm_clear_current(free_pages_map);
->> -		__free_page(page);
->> -		goto loop;
->> +	for ( ; ; ) {
->> +		pfn  = memory_bm_next_pfn(forbidden_pages_map);
->> +		if (BM_END_OF_MAP == pfn)
->
-> -> First, the usual way of writing such things is
->
-> 		if (pfn == BM_END_OF_MAP)
->
-> (ie. the variable on the left-hand side of the operator).
-Is there any rules for this this in kernel?
-Sometime, human makes a mistake like "if (pfn = BM_END_OF_MAP)"
-that's why I wrote like that even though the compiler may notice about it.
->
-> Second, don't you need to do the pfn_valid() check here too?
-hmm. I can add pfn_valid() check. but I don't think that pfn_valid() 
-should be checked in this stage.
-I think forbidden_pages_map & free_pages_map should be always valid.
-Is there any possibility those are not valid in this stage?
->
->> +			break;
->> +		if (memory_bm_test_bit(free_pages_map, pfn)) {
->> +			memory_bm_clear_bit(forbidden_pages_map, pfn);
->> +			memory_bm_clear_bit(free_pages_map, pfn);
->> +			__free_page(pfn_to_page(pfn));
->> +		}
->>   	}
->>
->>   out:
->
->
+Dear maintainers & communities,
 
-thanks.
+This patch introduces DTS thermal driver for Intel Quark X1000.
+The code implementation is based on intel_soc_dts_thermal.c.
+
+Intel Quark X1000 has one on-die DTS with two configurable trip points:
+critical and hot trip points. However, todate, UEFI BIOS for Quark X1000
+uses only critical trip point. UEFI BIOS always lock DTS register before
+hand-over to Linux kernel.
+
+The minimalist thermal design is meant to trigger Linux distro to gracefully
+power-down the system when its DTS temperature exceeds the configured critical
+trip point.
+
+In anticipation that other variant of Quark platform may come with UEFI BIOS
+that does not lock DTS register during hand-over, this DTS driver is built
+with logics to handle such case too.
+
+I have tested v4 of the patch on Intel Galileo Gen v2 board and found it
+satisfactory with logs below:
+
+  root@quark:/sys/class/thermal/thermal_zone0# echo disabled > mode
+  [   46.276881] intel_quark_dts_thermal: DTS is locked. Cannot disable DTS
+  -sh: echo: write error: Operation not permitted
+  root@quark:/sys/class/thermal/thermal_zone0#
+  root@quark:/sys/class/thermal/thermal_zone0# cat temp
+  53
+  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_0_temp
+  105
+  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_0_type
+  critical
+  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_1_temp
+  20
+  root@quark:/sys/class/thermal/thermal_zone0# cat trip_point_1_type
+  hot
+  root@quark:/sys/class/thermal/thermal_zone0# cat type
+  quark_dts
+
+  root@quark:/sys/class/thermal/thermal_zone0# echo 105 > emul_temp
+  [  179.372981] thermal thermal_zone0: critical temperature reached(0 C),shutting down
+  root@quark:/sys/class/thermal/thermal_zone0#
+  [  OK  ] Stopped target Multi-User System.
+           Stopping Telephony service...
+           Stopping Lightning Fast Webserver With Light System Requirements...
+           Stopping Target Communication Framework agent...
+           Stopping Galileo Arduino Layer...
+  [  OK  ] Stopped target Login Prompts.
+           Stopping Getty on tty1...
+           Stopping Serial Getty on ttyS1...
+           Stopping Login Service...
+           Stopping D-Bus System Message Bus...
+           Starting Store Sound Card State...
+  [  OK  ] Stopped Telephony service.
+  [  OK  ] Stopped Galileo Arduino Layer.
+  [  OK  ] Stopped Login Service.
+  [  OK  ] Stopped D-Bus System Message Bus.
+  [  OK  ] Stopped Target Communication Framework agent.
+  [  OK  ] Stopped Lightning Fast Webserver With Light System Requirements.
+  [  OK  ] Stopped WPA supplicant.
+  [  OK  ] Stopped Getty on tty1.
+  [  OK  ] Stopped Serial Getty on ttyS1.
+
+Please kindly review the patch at your convenient time and provide me feedback
+for improvement. Appreciate your time and effort.
+
+Thank You
+Ong Boon Leong
+Intel Corp.
+
+---
+Changes in v6:
+ * Revised to use the recommended dual license style per feedback from Rui.
+   Thanks!
+
+Changes in v5:
+ * Added BSD License as reported by Paul Bolle <pebolle@tiscali.nl>.
+
+Changes in v4:
+* Fixed unused variable 'aux_entry' as reported by kbuild-all@01.org
+  in line 287 by remove it.
+* Added reviewed-by tag from Kweh Hock Leong since v3.
+
+Changes in v3:
+* Kconfig dependency changed to X86_INTEL_QUARK
+
+Changes in v2:
+* Fix several commit write-up grammar, choice of words.
+* Ensure "int ret" in correct order
+* Add comment to explain DTS register field read/write bit operation
+* Change to Dual BSD/GPL license
+* Add logic to ensure safe trip point threshold value being set
+
+Ong Boon Leong (1):
+  thermal: intel Quark SoC X1000 DTS thermal driver
+
+ drivers/thermal/Kconfig                   |   10 +
+ drivers/thermal/Makefile                  |    1 +
+ drivers/thermal/intel_quark_dts_thermal.c |  473 +++++++++++++++++++++++++++++
+ 3 files changed, 484 insertions(+)
+ create mode 100644 drivers/thermal/intel_quark_dts_thermal.c
+
+--
+1.7.9.5
+
