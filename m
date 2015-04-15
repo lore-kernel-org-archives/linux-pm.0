@@ -1,153 +1,92 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 3/3] sched: fair: Fix wrong idle timestamp usage
-Date: Wed, 15 Apr 2015 17:43:17 +0200
-Message-ID: <552E8715.4060601@linaro.org>
-References: <1429092024-20498-1-git-send-email-daniel.lezcano@linaro.org> <1429092024-20498-3-git-send-email-daniel.lezcano@linaro.org> <20150415121831.GU5029@twins.programming.kicks-ass.net>
+From: tip-bot for Borislav Petkov <tipbot@zytor.com>
+Subject: [tip:x86/asm] x86/asm, x86/acpi/wakeup_64.S:
+  Make global label a local one
+Date: Wed, 15 Apr 2015 08:46:22 -0700
+Message-ID: <tip-c0f6feba784e1087b905ad097d2d9ac0aaf744a5@git.kernel.org>
+References: <1429080614-22610-1-git-send-email-bp@alien8.de>
+Reply-To: bp@suse.de, luto@amacapital.net, linux-pm@vger.kernel.org,
+	  pavel@ucw.cz, dvlasenk@redhat.com, linux-kernel@vger.kernel.org,
+	  bp@alien8.de, tglx@linutronix.de, torvalds@linux-foundation.org,
+	  brgerst@gmail.com, hpa@zytor.com, len.brown@intel.com,
+	  mingo@kernel.org, rjw@rjwysocki.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f177.google.com ([209.85.212.177]:33449 "EHLO
-	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754334AbbDOPnS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Apr 2015 11:43:18 -0400
-Received: by wiax7 with SMTP id x7so115034974wia.0
-        for <linux-pm@vger.kernel.org>; Wed, 15 Apr 2015 08:43:17 -0700 (PDT)
-In-Reply-To: <20150415121831.GU5029@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1429080614-22610-1-git-send-email-bp@alien8.de>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-tip-commits@vger.kernel.org
+Cc: hpa@zytor.com, mingo@kernel.org, len.brown@intel.com, rjw@rjwysocki.net, tglx@linutronix.de, torvalds@linux-foundation.org, bp@alien8.de, brgerst@gmail.com, dvlasenk@redhat.com, linux-kernel@vger.kernel.org, bp@suse.de, pavel@ucw.cz, luto@amacapital.net, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, nicolas.pitre@linaro.org, Ingo Molnar <mingo@redhat.com>
 
-On 04/15/2015 02:18 PM, Peter Zijlstra wrote:
-> On Wed, Apr 15, 2015 at 12:00:24PM +0200, Daniel Lezcano wrote:
->> The find_idlest_cpu is assuming the rq->idle_stamp information refle=
-cts when
->> the cpu entered the idle state. This is wrong as the cpu may exit an=
-d enter
->> the idle state several times without the rq->idle_stamp being update=
-d.
->
-> Sure, but you forgot to tell us why it matters.
+Commit-ID:  c0f6feba784e1087b905ad097d2d9ac0aaf744a5
+Gitweb:     http://git.kernel.org/tip/c0f6feba784e1087b905ad097d2d9ac0aaf744a5
+Author:     Borislav Petkov <bp@suse.de>
+AuthorDate: Wed, 15 Apr 2015 08:50:14 +0200
+Committer:  Ingo Molnar <mingo@kernel.org>
+CommitDate: Wed, 15 Apr 2015 11:38:01 +0200
 
-Yes, right. Thanks for pointing this out.
+x86/asm, x86/acpi/wakeup_64.S: Make global label a local one
 
-Assuming we are in the situation where there are several idle cpus in=20
-the same idle state.
+Make it a local symbol so that it doesn't appear in objdump
+output.
 
-With the current code, the function find_idlest_cpu will choose a cpu=20
-with the shortest idle duration. This information is based on the=20
-rq->idle_stamp variable and is correct until one of the idle cpu is=20
-exiting the cpuidle_enter function and re-entering it again. As soon as=
-=20
-this happen, the rq->idle_stamp value is no longer a reliable informati=
-on.
+No functionality change - code remains the same, just the global
+label disappears:
 
-Example:
+	 ffffffff81039dbe:       bf 03 00 00 00          mov    $0x3,%edi
+	 ffffffff81039dc3:       31 c0                   xor    %eax,%eax
+	 ffffffff81039dc5:       e8 b6 fd ff ff          callq  ffffffff81039b80 <x86_acpi_enter_sleep_state>
+	-ffffffff81039dca:       eb 00                   jmp    ffffffff81039dcc <resume_point>
+	-
+	-ffffffff81039dcc <resume_point>:
+	+ffffffff81039dca:       eb 00                   jmp    ffffffff81039dcc <do_suspend_lowlevel+0x9c>
+	 ffffffff81039dcc:       48 c7 c0 80 1a ca 82    mov    $0xffffffff82ca1a80,%rax
+	 ffffffff81039dd3:       48 8b 98 e2 00 00 00    mov    0xe2(%rax),%rbx
+	 ffffffff81039dda:       0f 22 e3                mov    %rbx,%cr4
 
-  * CPU0 and CPU1 are running
-  * CPU2 and CPU3 are in the C3 state.
-  * CPU2 entered idle at T2
-  * CPU3 entered idle at T3
-  * T2 < T3
+Signed-off-by: Borislav Petkov <bp@suse.de>
+Cc: <linux-pm@vger.kernel.org>
+Cc: Andy Lutomirski <luto@amacapital.net>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Brian Gerst <brgerst@gmail.com>
+Cc: Denys Vlasenko <dvlasenk@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Link: http://lkml.kernel.org/r/1429080614-22610-1-git-send-email-bp@alien8.de
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+---
+ arch/x86/kernel/acpi/wakeup_64.S | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-The function find_idlest_cpu will choose CPU3 because it has a shorter=20
-idle duration.
-
-Then CPU3 is woken up by an interrupt, process it and re-enter idle C3.
-
-The information will still give the out to date information T2 < T3 and=
-=20
-find_idlest_cpu will choose CPU2 instead of CPU3.
-
-Even if that shouldn't have a big impact on the performance and energy=20
-side, we are dealing with a wrong information preventing us to improve=20
-the energy side later (eg. prevent to wakeup a cpu which did not reach=20
-its target residency yet).
-
->> We have two informations here:
->>
->>   * rq->idle_stamp gives when the idle task has been scheduled
->>   * idle->idle_stamp gives when the cpu entered the idle state
->
-> I'm not a native speaker, but I'm pretty sure 'information' is a word
-> without a plural, a google search suggests it to be a non-countable
-> noun.
-
-Ha, sounds like it is a common mistake for non native speaker :)
-
-"Informations" is correct but apparently very uncommon, so uncommon it=20
-is considered incorrect.
-
-Thanks for the tip, I will keep it in mind :)
-
->> The patch fixes that by using the latter information and fallbacks t=
-o
->> the rq's timestamp when the idle state is not accessible
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> ---
->>   kernel/sched/fair.c | 42 ++++++++++++++++++++++++++++-------------=
--
->>   1 file changed, 28 insertions(+), 14 deletions(-)
->>
->> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
->> index 46855d0..b44f1ad 100644
->> --- a/kernel/sched/fair.c
->> +++ b/kernel/sched/fair.c
->> @@ -4704,21 +4704,35 @@ find_idlest_cpu(struct sched_group *group, s=
-truct task_struct *p, int this_cpu)
->>   		if (idle_cpu(i)) {
->>   			struct rq *rq =3D cpu_rq(i);
->>   			struct cpuidle_state *idle =3D idle_get_state(rq);
->> +
->> +			if (idle) {
->> +				if (idle->exit_latency < min_exit_latency) {
->> +					/*
->> +					 * We give priority to a CPU
->> +					 * whose idle state has the
->> +					 * smallest exit latency
->> +					 * irrespective of any idle
->> +					 * timestamp.
->> +					 */
->> +					min_exit_latency =3D idle->exit_latency;
->> +					latest_idle_timestamp =3D idle->idle_stamp;
->> +					shallowest_idle_cpu =3D i;
->> +				} else if (idle->exit_latency =3D=3D min_exit_latency &&
->> +					   idle->idle_stamp > latest_idle_timestamp) {
->> +					/*
->> +					 * If the CPU is in the same
->> +					 * idle state, choose the more
->> +					 * recent one as it might have
->> +					 * a warmer cache
->> +					 */
->> +					latest_idle_timestamp =3D idle->idle_stamp;
->> +					shallowest_idle_cpu =3D i;
->> +				}
->> +			} else if (rq->idle_stamp > latest_idle_timestamp) {
->>   				/*
->> +				 * If no active idle state, then the
->> +				 * most recent idled CPU might have a
->> +				 * warmer cache
->>   				 */
->>   				latest_idle_timestamp =3D rq->idle_stamp;
->>   				shallowest_idle_cpu =3D i;
->
-> Urgh, you made horrid code more horrible.
->
-> And all without reason.
-
-Ok. What is horrible ? The 'if then else' blocks or the algorithm itsel=
-f ?
-
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
+index ae693b5..8c35df4 100644
+--- a/arch/x86/kernel/acpi/wakeup_64.S
++++ b/arch/x86/kernel/acpi/wakeup_64.S
+@@ -62,7 +62,7 @@ ENTRY(do_suspend_lowlevel)
+ 	pushfq
+ 	popq	pt_regs_flags(%rax)
+ 
+-	movq	$resume_point, saved_rip(%rip)
++	movq	$.Lresume_point, saved_rip(%rip)
+ 
+ 	movq	%rsp, saved_rsp
+ 	movq	%rbp, saved_rbp
+@@ -75,10 +75,10 @@ ENTRY(do_suspend_lowlevel)
+ 	xorl	%eax, %eax
+ 	call	x86_acpi_enter_sleep_state
+ 	/* in case something went wrong, restore the machine status and go on */
+-	jmp	resume_point
++	jmp	.Lresume_point
+ 
+ 	.align 4
+-resume_point:
++.Lresume_point:
+ 	/* We don't restore %rax, it must be 0 anyway */
+ 	movq	$saved_context, %rax
+ 	movq	saved_context_cr4(%rax), %rbx
