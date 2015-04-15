@@ -1,155 +1,74 @@
-From: Joonyoung Shim <jy0922.shim@samsung.com>
-Subject: Re: [PATCH 1/2] thermal: exynos: Reorder exynos_map_dt_data() function
-Date: Wed, 15 Apr 2015 15:45:46 +0900
-Message-ID: <552E091A.2000902@samsung.com>
-References: <1421667844-13627-1-git-send-email-l.majewski@samsung.com>
- <1421667844-13627-2-git-send-email-l.majewski@samsung.com>
- <CAM4voakDBLbshW3EvFN4YRx1o1ApMLJVZ2ZQ0Bb6NwhmoT8WFA@mail.gmail.com>
- <20150122100124.65e7a19e@amdc2363>
- <CAM4voani1xcgRU3e11_pnYw4d7Yj=QOKun8g_DywmxDxOwEgRQ@mail.gmail.com>
- <20150129230616.GJ29837@developer.amazonguestwifi.org>
- <20150130091422.669930c8@amdc2363>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+From: Borislav Petkov <bp@alien8.de>
+Subject: [PATCH] acpi/wakeup_64.S: Make global label a local one
+Date: Wed, 15 Apr 2015 08:50:14 +0200
+Message-ID: <1429080614-22610-1-git-send-email-bp@alien8.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:43457 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751301AbbDOGpt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Apr 2015 02:45:49 -0400
-In-reply-to: <20150130091422.669930c8@amdc2363>
+Received: from mail.skyhub.de ([78.46.96.112]:34203 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752160AbbDOGwf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 15 Apr 2015 02:52:35 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <edubezval@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: X86 ML <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 
-Hi Lukasz,
+From: Borislav Petkov <bp@suse.de>
 
-On 01/30/2015 05:14 PM, Lukasz Majewski wrote:
-> Hi Eduardo, Abhilash,
-> 
->> On Thu, Jan 22, 2015 at 06:02:07PM +0530, Abhilash Kesavan wrote:
->>> Hi Lukasz,
->>>
->>> On Thu, Jan 22, 2015 at 2:31 PM, Lukasz Majewski
->>> <l.majewski@samsung.com> wrote:
->>>> Hi Abhilash,
->>>>
->>>>> Hi Lukasz,
->>>>>
->>>>> On Mon, Jan 19, 2015 at 5:14 PM, Lukasz Majewski
->>>>> <l.majewski@samsung.com> wrote:
->>>>>> The exynos_map_dt_data() function must be called before
->>>>>> thermal_zone_of_sensor_register(), and hence provide tmu_read()
->>>>>> function, before it is needed.
->>>>>>
->>>>>> This change is driven by adding support for enabling
->>>>>> thermal_zoneX when it is properly initialized.
->>>>>>
->>>>>> One can read the mode of operation
->>>>>> at /sys/class/thermal/thermal_zone0/mode Such functionality was
->>>>>> missing in the of-thermal.c code.
->>>>>>
->>>>>> Reported-by: Abhilash Kesavan <a.kesavan@samsung.com>
->>>>>> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
->>>>>> ---
->>>>>>  drivers/thermal/samsung/exynos_tmu.c | 7 ++++---
->>>>>>  1 file changed, 4 insertions(+), 3 deletions(-)
->>>>>>
->>>>>> diff --git a/drivers/thermal/samsung/exynos_tmu.c
->>>>>> b/drivers/thermal/samsung/exynos_tmu.c index 9d2d685..5d946ab
->>>>>> 100644 --- a/drivers/thermal/samsung/exynos_tmu.c
->>>>>> +++ b/drivers/thermal/samsung/exynos_tmu.c
->>>>>> @@ -975,15 +975,16 @@ static int exynos_tmu_probe(struct
->>>>>> platform_device *pdev) platform_set_drvdata(pdev, data);
->>>>>>         mutex_init(&data->lock);
->>>>>>
->>>>>> +       ret = exynos_map_dt_data(pdev);
->>>>>> +       if (ret)
->>>>>> +               goto err_sensor;
+Make it a local symbol so that it doesn't appear in objdump output.
 
-It's enough to just return ret.
+No functionality change - code remains the same, just the global label
+disappears:
 
-One more, i think to need to take out regulator enable codes from
-exynos_map_dt_data. If not, can't restore about regulator when error
-occurs.
+--- before	2015-04-15 08:44:43.088036283 +0200
++++ after	2015-04-15 08:40:38.292028826 +0200
+@@ -36,9 +36,7 @@ ffffffff81039dba:       48 83 c4 08
+ ffffffff81039dbe:       bf 03 00 00 00          mov    $0x3,%edi
+ ffffffff81039dc3:       31 c0                   xor    %eax,%eax
+ ffffffff81039dc5:       e8 b6 fd ff ff          callq  ffffffff81039b80 <x86_acpi_enter_sleep_state>
+-ffffffff81039dca:       eb 00                   jmp    ffffffff81039dcc <resume_point>
+-
+-ffffffff81039dcc <resume_point>:
++ffffffff81039dca:       eb 00                   jmp    ffffffff81039dcc <do_suspend_lowlevel+0x9c>
+ ffffffff81039dcc:       48 c7 c0 80 1a ca 82    mov    $0xffffffff82ca1a80,%rax
+ ffffffff81039dd3:       48 8b 98 e2 00 00 00    mov    0xe2(%rax),%rbx
+ ffffffff81039dda:       0f 22 e3                mov    %rbx,%cr4
 
->>>>>> +
->>>>>>         data->tzd =
->>>>>> thermal_zone_of_sensor_register(&pdev->dev, 0, data,
->>>>>> &exynos_sensor_ops); if (IS_ERR(data->tzd)) {
->>>>>>                 pr_err("thermal: tz: %p ERROR\n", data->tzd);
->>>>>>                 return PTR_ERR(data->tzd);
->>>>>>         }
->>>>>> -       ret = exynos_map_dt_data(pdev);
->>>>>> -       if (ret)
->>>>>> -               goto err_sensor;
->>>>>>
->>>>>>         pdata = data->pdata;
->>>>>
->>>>> I have been testing this along with your v5 patch set and am
->>>>> seeing incorrect temperature being reported at boot-up on
->>>>> exynos7.
->>>>
->>>> Does it show a maximal temperature value (0x1FF)?
->>>
->>> I did not print the current temperature register, but I remember the
->>> message showing ~105C. Will give you the register value when I test
->>> with more debug prints tomorrow.
->>>
->>>>
->>>>>  It looks
->>>>> like exynos_tmu_read gets called from
->>>>> thermal_zone_of_device_update during boot-up, now that we have
->>>>> it populated early. However, as the tmu initialization function
->>>>> has not been called yet it returns a wrong value. Does that
->>>>> sound correct ?
->>>>
->>>> No, this is a mistake. However, I'm wondering why on Exynos4/5
->>>> this error didn't show up...
->>>
->>> I have been lowering the software trip point temperature in the
->>> exynos7 dts file (to 55C) for testing purposes. Hence, when the
->>> temperature is read incorrectly as ~105C the board trips at boot-up
-> 
-> 					^^^^ this is a very unusual
-> 					value - I had problems with
-> 					reading 0xFF values with
-> 					similar symptom (but this was
-> 					caused by lack of vtmu).
-> 
->>> itself. Maybe for exynos4/5 the incorrect value read during boot-up
->>> is in the non-tripping range and once the tmu is initialized later
->>> it continues to function properly thereafter ?
->>>
->>>>
->>>> The reordering is needed to be able to call set_mode callback at
->>>> of-thermal.c to set the mode.
->>>>
->>>> If this change causes problems, then another solution (probably
->>>> not so neat) must be found.
->>>
->>> Please let me know if you need any further details.
-> 
-> Abhilash, could you provide more details (like relevant output from
-> dmesg) and point me a list of patches which shall I apply to test this
-> issue on Exynos4/5?
-> 
->>
->> What is the status of this patch? Is it still required?
-> 
-> It is strange, since on Exynos4/5 this works and some problems show up
-> when run on Exynos7.
-> 
+Signed-off-by: Borislav Petkov <bp@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: <x86@kernel.org>
+Cc: <linux-pm@vger.kernel.org>
+---
+ arch/x86/kernel/acpi/wakeup_64.S | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-I'm also wondering the status of this patch.
+diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
+index ae693b51ed8e..8c35df468104 100644
+--- a/arch/x86/kernel/acpi/wakeup_64.S
++++ b/arch/x86/kernel/acpi/wakeup_64.S
+@@ -62,7 +62,7 @@ ENTRY(do_suspend_lowlevel)
+ 	pushfq
+ 	popq	pt_regs_flags(%rax)
+ 
+-	movq	$resume_point, saved_rip(%rip)
++	movq	$.Lresume_point, saved_rip(%rip)
+ 
+ 	movq	%rsp, saved_rsp
+ 	movq	%rbp, saved_rbp
+@@ -75,10 +75,10 @@ ENTRY(do_suspend_lowlevel)
+ 	xorl	%eax, %eax
+ 	call	x86_acpi_enter_sleep_state
+ 	/* in case something went wrong, restore the machine status and go on */
+-	jmp	resume_point
++	jmp	.Lresume_point
+ 
+ 	.align 4
+-resume_point:
++.Lresume_point:
+ 	/* We don't restore %rax, it must be 0 anyway */
+ 	movq	$saved_context, %rax
+ 	movq	saved_context_cr4(%rax), %rbx
+-- 
+2.3.5
 
-I get below errors when boots odroidxu3 board without this patch.
-
-[    4.831980] thermal thermal_zone0: failed to read out thermal zone (-22)
-[    4.838096] thermal thermal_zone1: failed to read out thermal zone (-22)
-[    4.844894] thermal thermal_zone2: failed to read out thermal zone (-22)
-[    4.851470] thermal thermal_zone3: failed to read out thermal zone (-22)
-[    4.858186] thermal thermal_zone4: failed to read out thermal zone (-22)
-
-Thanks.
