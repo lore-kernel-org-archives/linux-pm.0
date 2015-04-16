@@ -1,140 +1,116 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: [PATCH] thermal: ti-soc-thermal: dra7: Implement Workaround for Errata i813
-Date: Thu, 16 Apr 2015 15:48:34 +0530
-Message-ID: <1429179514-21677-1-git-send-email-j-keerthy@ti.com>
+From: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
+Subject: [RFC/PATCH v2 2/5] ARM: shmobile: Add cpuidle_ops for R-Car cpuidle
+Date: Thu, 16 Apr 2015 19:35:37 +0900
+Message-ID: <1429180540-5692-3-git-send-email-keita.kobayashi.ym@renesas.com>
+References: <1429180540-5692-1-git-send-email-keita.kobayashi.ym@renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:58005 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751647AbbDPKSo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 16 Apr 2015 06:18:44 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1429180540-5692-1-git-send-email-keita.kobayashi.ym@renesas.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: horms@verge.net.au, rjw@rjwysocki.net, daniel.lezcano@linaro.org
+Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, magnus.damm@gmail.com, Keita Kobayashi <keita.kobayashi.ym@renesas.com>
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com
-Cc: rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, j-keerthy@ti.com
 
-DESCRIPTION
+This patch add Core-Standby support for R-Car cpuidle.
 
-Spurious Thermal Alert: Talert can happen randomly while the device remains under the temperature limit
-defined for this event to trig. This spurious event is caused by a incorrect re-synchronization between
-clock domains. The comparison between configured threshold and current temperature value can happen
-while the value is transitioning (metastable), thus causing inappropriate event generation.
-No spurious event occurs as long as the threshold value stays unchanged. Spurious event can be
-generated while a thermal alert threshold is modified in
-CONTROL_BANDGAP_THRESHOLD_MPU/GPU/CORE/DSPEVE/IVA_n.
-WORKAROUND
-
-Spurious event generation can be avoided by performing following sequence when the threshold is
-modified:
-1. Mask the hot/cold events at the thermal IP level.
-2. Modify Threshold.
-3. Unmask the hot/cold events at the thermal IP level.
-
-Signed-off-by: Keerthy <j-keerthy@ti.com>
+Signed-off-by: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
 ---
- .../thermal/ti-soc-thermal/dra752-thermal-data.c   |  3 +-
- drivers/thermal/ti-soc-thermal/ti-bandgap.c        | 41 +++++++++++++++++++++-
- drivers/thermal/ti-soc-thermal/ti-bandgap.h        |  4 ++-
- 3 files changed, 45 insertions(+), 3 deletions(-)
+ arch/arm/mach-shmobile/platsmp-apmu.c | 14 +++++++++++---
+ arch/arm/mach-shmobile/platsmp-apmu.h |  1 +
+ arch/arm/mach-shmobile/pm-rcar-gen2.c | 17 +++++++++++++++++
+ 3 files changed, 29 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c b/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
-index 58b5c66..4cd051d 100644
---- a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
-+++ b/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
-@@ -421,7 +421,8 @@ const struct ti_bandgap_data dra752_data = {
- 			TI_BANDGAP_FEATURE_TALERT |
- 			TI_BANDGAP_FEATURE_COUNTER_DELAY |
- 			TI_BANDGAP_FEATURE_HISTORY_BUFFER |
--			TI_BANDGAP_FEATURE_ERRATA_814,
-+			TI_BANDGAP_FEATURE_ERRATA_814 |
-+			TI_BANDGAP_FEATURE_ERRATA_813,
- 	.fclock_name = "l3instr_ts_gclk_div",
- 	.div_ck_name = "l3instr_ts_gclk_div",
- 	.conv_table = dra752_adc_to_temp,
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-index 94acd80..c2c585a 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -445,7 +445,7 @@ static int ti_bandgap_update_alert_threshold(struct ti_bandgap *bgp, int id,
+diff --git a/arch/arm/mach-shmobile/platsmp-apmu.c b/arch/arm/mach-shmobile/platsmp-apmu.c
+index f483b56..a35f97c 100644
+--- a/arch/arm/mach-shmobile/platsmp-apmu.c
++++ b/arch/arm/mach-shmobile/platsmp-apmu.c
+@@ -139,7 +139,8 @@ int shmobile_smp_apmu_boot_secondary(unsigned int cpu, struct task_struct *idle)
+ }
+ #endif
+ 
+-#if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_SUSPEND)
++#if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_SUSPEND) || \
++    defined(CONFIG_ARM_RCAR_CPUIDLE)
+ /* nicked from arch/arm/mach-exynos/hotplug.c */
+ static inline void cpu_enter_lowpower_a15(void)
  {
- 	struct temp_sensor_data *ts_data = bgp->conf->sensors[id].ts_data;
- 	struct temp_sensor_registers *tsr;
--	u32 thresh_val, reg_val, t_hot, t_cold;
-+	u32 thresh_val, reg_val, t_hot, t_cold, ctrl;
- 	int err = 0;
+@@ -215,7 +216,7 @@ int shmobile_smp_apmu_cpu_kill(unsigned int cpu)
+ }
+ #endif
  
- 	tsr = bgp->conf->sensors[id].registers;
-@@ -477,8 +477,47 @@ static int ti_bandgap_update_alert_threshold(struct ti_bandgap *bgp, int id,
- 		  ~(tsr->threshold_thot_mask | tsr->threshold_tcold_mask);
- 	reg_val |= (t_hot << __ffs(tsr->threshold_thot_mask)) |
- 		   (t_cold << __ffs(tsr->threshold_tcold_mask));
-+
-+	/**
-+	 * Errata i813:
-+	 * Spurious Thermal Alert: Talert can happen randomly while the device
-+	 * remains under the temperature limit defined for this event to trig.
-+	 * This spurious event is caused by a incorrect re-synchronization
-+	 * between clock domains. The comparison between configured threshold
-+	 * and current temperature value can happen while the value is
-+	 * transitioning (metastable), thus causing inappropriate event
-+	 * generation. No spurious event occurs as long as the threshold value
-+	 * stays unchanged. Spurious event can be generated while a thermal
-+	 * alert threshold is modified in
-+	 * CONTROL_BANDGAP_THRESHOLD_MPU/GPU/CORE/DSPEVE/IVA_n.
-+	 */
-+
-+	if (TI_BANDGAP_HAS(bgp, ERRATA_813)) {
-+		/* Mask t_hot and t_cold events at the IP Level */
-+		ctrl = ti_bandgap_readl(bgp, tsr->bgap_mask_ctrl);
-+
-+		if (hot)
-+			ctrl &= ~tsr->mask_hot_mask;
-+		else
-+			ctrl &= ~tsr->mask_cold_mask;
-+
-+		ti_bandgap_writel(bgp, ctrl, tsr->bgap_mask_ctrl);
-+	}
-+
-+	/* Write the threshold value */
- 	ti_bandgap_writel(bgp, reg_val, tsr->bgap_threshold);
+-#if defined(CONFIG_SUSPEND)
++#if defined(CONFIG_SUSPEND) || defined(CONFIG_ARM_RCAR_CPUIDLE)
+ static int shmobile_smp_apmu_do_suspend(unsigned long cpu)
+ {
+ 	shmobile_smp_hook(cpu, virt_to_phys(cpu_resume), 0);
+@@ -224,10 +225,17 @@ static int shmobile_smp_apmu_do_suspend(unsigned long cpu)
+ 	return 1;
+ }
  
-+	if (TI_BANDGAP_HAS(bgp, ERRATA_813)) {
-+		/* Unmask t_hot and t_cold events at the IP Level */
-+		ctrl = ti_bandgap_readl(bgp, tsr->bgap_mask_ctrl);
-+		if (hot)
-+			ctrl |= tsr->mask_hot_mask;
-+		else
-+			ctrl |= tsr->mask_cold_mask;
+-static int shmobile_smp_apmu_enter_suspend(suspend_state_t state)
++void shmobile_smp_apmu_enter_corestandby(void)
+ {
+ 	cpu_suspend(smp_processor_id(), shmobile_smp_apmu_do_suspend);
+ 	cpu_leave_lowpower();
++}
++#endif
 +
-+		ti_bandgap_writel(bgp, ctrl, tsr->bgap_mask_ctrl);
-+	}
-+
- 	if (err) {
- 		dev_err(bgp->dev, "failed to reprogram thot threshold\n");
- 		err = -EIO;
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.h b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
-index b2da3fc..0c52f7a 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.h
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
-@@ -320,7 +320,8 @@ struct ti_temp_sensor {
-  *
-  * TI_BANDGAP_FEATURE_ERRATA_814 - used to workaorund when the bandgap device
-  *	has Errata 814
-- *
-+ * TI_BANDGAP_FEATURE_ERRATA_813 - used to workaorund when the bandgap device
-+ *	has Errata 813
-  * TI_BANDGAP_HAS(b, f) - macro to check if a bandgap device is capable of a
-  *      specific feature (above) or not. Return non-zero, if yes.
++#if defined(CONFIG_SUSPEND)
++static int shmobile_smp_apmu_enter_suspend(suspend_state_t state)
++{
++	shmobile_smp_apmu_enter_corestandby();
+ 	return 0;
+ }
+ 
+diff --git a/arch/arm/mach-shmobile/platsmp-apmu.h b/arch/arm/mach-shmobile/platsmp-apmu.h
+index 76512c9..c7dc00a 100644
+--- a/arch/arm/mach-shmobile/platsmp-apmu.h
++++ b/arch/arm/mach-shmobile/platsmp-apmu.h
+@@ -28,5 +28,6 @@ extern int shmobile_smp_apmu_boot_secondary(unsigned int cpu,
+ 					    struct task_struct *idle);
+ extern void shmobile_smp_apmu_cpu_die(unsigned int cpu);
+ extern int shmobile_smp_apmu_cpu_kill(unsigned int cpu);
++extern void shmobile_smp_apmu_enter_corestandby(void);
+ 
+ #endif /* PLATSMP_APMU_H */
+diff --git a/arch/arm/mach-shmobile/pm-rcar-gen2.c b/arch/arm/mach-shmobile/pm-rcar-gen2.c
+index 6815781..846b8ae 100644
+--- a/arch/arm/mach-shmobile/pm-rcar-gen2.c
++++ b/arch/arm/mach-shmobile/pm-rcar-gen2.c
+@@ -10,11 +10,15 @@
+  * for more details.
   */
-@@ -335,6 +336,7 @@ struct ti_temp_sensor {
- #define TI_BANDGAP_FEATURE_COUNTER_DELAY	BIT(8)
- #define TI_BANDGAP_FEATURE_HISTORY_BUFFER	BIT(9)
- #define TI_BANDGAP_FEATURE_ERRATA_814		BIT(10)
-+#define TI_BANDGAP_FEATURE_ERRATA_813		BIT(11)
- #define TI_BANDGAP_HAS(b, f)			\
- 			((b)->conf->features & TI_BANDGAP_FEATURE_ ## f)
  
++#include <linux/cpuidle.h>
++#include <linux/ioport.h>
+ #include <linux/kernel.h>
+ #include <linux/of.h>
+ #include <linux/smp.h>
++#include <asm/cpuidle.h>
+ #include <asm/io.h>
+ #include "common.h"
++#include "platsmp-apmu.h"
+ #include "pm-rcar.h"
+ #include "rcar-gen2.h"
+ 
+@@ -113,3 +117,16 @@ void __init rcar_gen2_pm_init(void)
+ 	rcar_gen2_sysc_init(syscier);
+ 	shmobile_smp_apmu_suspend_init();
+ }
++
++#if defined(CONFIG_ARM_RCAR_CPUIDLE)
++static int rcar_cpuidle_enter(int cpu, unsigned long index)
++{
++	shmobile_smp_apmu_enter_corestandby();
++	return 0;
++}
++
++struct cpuidle_ops rcar_cpuidle_ops __initdata = {
++	.suspend = rcar_cpuidle_enter,
++};
++CPUIDLE_METHOD_OF_DECLARE(rcar, "renesas,rcar-idle", &rcar_cpuidle_ops);
++#endif
 -- 
 1.9.1
 
