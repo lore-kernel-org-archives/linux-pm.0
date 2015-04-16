@@ -1,209 +1,182 @@
-From: Joonyoung Shim <jy0922.shim@samsung.com>
-Subject: Re: [PATCH 1/2] thermal: exynos: Reorder exynos_map_dt_data() function
-Date: Thu, 16 Apr 2015 10:01:49 +0900
-Message-ID: <552F09FD.7020200@samsung.com>
-References: <1421667844-13627-1-git-send-email-l.majewski@samsung.com>
- <1421667844-13627-2-git-send-email-l.majewski@samsung.com>
- <CAM4voakDBLbshW3EvFN4YRx1o1ApMLJVZ2ZQ0Bb6NwhmoT8WFA@mail.gmail.com>
- <20150122100124.65e7a19e@amdc2363>
- <CAM4voani1xcgRU3e11_pnYw4d7Yj=QOKun8g_DywmxDxOwEgRQ@mail.gmail.com>
- <20150129230616.GJ29837@developer.amazonguestwifi.org>
- <20150130091422.669930c8@amdc2363> <552E091A.2000902@samsung.com>
- <20150415130554.264b61cc@amdc2363>
+From: Keerthy <a0393675@ti.com>
+Subject: Re: [PATCH v2] thermal: ti-soc-thermal: dra7: Implement Workaround
+ for Errata i814 - Bandgap Temperature read Dtemp can be corrupted
+Date: Thu, 16 Apr 2015 13:19:07 +0530
+Message-ID: <552F6973.8050500@ti.com>
+References: <1428647790-6585-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20150415130554.264b61cc@amdc2363>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:33074 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751363AbbDPHtP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Apr 2015 03:49:15 -0400
+In-Reply-To: <1428647790-6585-1-git-send-email-j-keerthy@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Keerthy <j-keerthy@ti.com>, edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, "Kristo, Tero" <t-kristo@ti.com>
 
-Hi Lukasz,
 
-On 04/15/2015 08:05 PM, Lukasz Majewski wrote:
-> Hi Joonyoung,
-> 
->> Hi Lukasz,
->>
->> On 01/30/2015 05:14 PM, Lukasz Majewski wrote:
->>> Hi Eduardo, Abhilash,
->>>
->>>> On Thu, Jan 22, 2015 at 06:02:07PM +0530, Abhilash Kesavan wrote:
->>>>> Hi Lukasz,
->>>>>
->>>>> On Thu, Jan 22, 2015 at 2:31 PM, Lukasz Majewski
->>>>> <l.majewski@samsung.com> wrote:
->>>>>> Hi Abhilash,
->>>>>>
->>>>>>> Hi Lukasz,
->>>>>>>
->>>>>>> On Mon, Jan 19, 2015 at 5:14 PM, Lukasz Majewski
->>>>>>> <l.majewski@samsung.com> wrote:
->>>>>>>> The exynos_map_dt_data() function must be called before
->>>>>>>> thermal_zone_of_sensor_register(), and hence provide tmu_read()
->>>>>>>> function, before it is needed.
->>>>>>>>
->>>>>>>> This change is driven by adding support for enabling
->>>>>>>> thermal_zoneX when it is properly initialized.
->>>>>>>>
->>>>>>>> One can read the mode of operation
->>>>>>>> at /sys/class/thermal/thermal_zone0/mode Such functionality was
->>>>>>>> missing in the of-thermal.c code.
->>>>>>>>
->>>>>>>> Reported-by: Abhilash Kesavan <a.kesavan@samsung.com>
->>>>>>>> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
->>>>>>>> ---
->>>>>>>>  drivers/thermal/samsung/exynos_tmu.c | 7 ++++---
->>>>>>>>  1 file changed, 4 insertions(+), 3 deletions(-)
->>>>>>>>
->>>>>>>> diff --git a/drivers/thermal/samsung/exynos_tmu.c
->>>>>>>> b/drivers/thermal/samsung/exynos_tmu.c index 9d2d685..5d946ab
->>>>>>>> 100644 --- a/drivers/thermal/samsung/exynos_tmu.c
->>>>>>>> +++ b/drivers/thermal/samsung/exynos_tmu.c
->>>>>>>> @@ -975,15 +975,16 @@ static int exynos_tmu_probe(struct
->>>>>>>> platform_device *pdev) platform_set_drvdata(pdev, data);
->>>>>>>>         mutex_init(&data->lock);
->>>>>>>>
->>>>>>>> +       ret = exynos_map_dt_data(pdev);
->>>>>>>> +       if (ret)
->>>>>>>> +               goto err_sensor;
->>
->> It's enough to just return ret.
->>
->> One more, i think to need to take out regulator enable codes from
->> exynos_map_dt_data. If not, can't restore about regulator when error
->> occurs.
->>
->>>>>>>> +
->>>>>>>>         data->tzd =
->>>>>>>> thermal_zone_of_sensor_register(&pdev->dev, 0, data,
->>>>>>>> &exynos_sensor_ops); if (IS_ERR(data->tzd)) {
->>>>>>>>                 pr_err("thermal: tz: %p ERROR\n", data->tzd);
->>>>>>>>                 return PTR_ERR(data->tzd);
->>>>>>>>         }
->>>>>>>> -       ret = exynos_map_dt_data(pdev);
->>>>>>>> -       if (ret)
->>>>>>>> -               goto err_sensor;
->>>>>>>>
->>>>>>>>         pdata = data->pdata;
->>>>>>>
->>>>>>> I have been testing this along with your v5 patch set and am
->>>>>>> seeing incorrect temperature being reported at boot-up on
->>>>>>> exynos7.
->>>>>>
->>>>>> Does it show a maximal temperature value (0x1FF)?
->>>>>
->>>>> I did not print the current temperature register, but I remember
->>>>> the message showing ~105C. Will give you the register value when
->>>>> I test with more debug prints tomorrow.
->>>>>
->>>>>>
->>>>>>>  It looks
->>>>>>> like exynos_tmu_read gets called from
->>>>>>> thermal_zone_of_device_update during boot-up, now that we have
->>>>>>> it populated early. However, as the tmu initialization function
->>>>>>> has not been called yet it returns a wrong value. Does that
->>>>>>> sound correct ?
->>>>>>
->>>>>> No, this is a mistake. However, I'm wondering why on Exynos4/5
->>>>>> this error didn't show up...
->>>>>
->>>>> I have been lowering the software trip point temperature in the
->>>>> exynos7 dts file (to 55C) for testing purposes. Hence, when the
->>>>> temperature is read incorrectly as ~105C the board trips at
->>>>> boot-up
->>>
->>> 					^^^^ this is a very unusual
->>> 					value - I had problems with
->>> 					reading 0xFF values with
->>> 					similar symptom (but this
->>> was caused by lack of vtmu).
->>>
->>>>> itself. Maybe for exynos4/5 the incorrect value read during
->>>>> boot-up is in the non-tripping range and once the tmu is
->>>>> initialized later it continues to function properly thereafter ?
->>>>>
->>>>>>
->>>>>> The reordering is needed to be able to call set_mode callback at
->>>>>> of-thermal.c to set the mode.
->>>>>>
->>>>>> If this change causes problems, then another solution (probably
->>>>>> not so neat) must be found.
->>>>>
->>>>> Please let me know if you need any further details.
->>>
->>> Abhilash, could you provide more details (like relevant output from
->>> dmesg) and point me a list of patches which shall I apply to test
->>> this issue on Exynos4/5?
->>>
->>>>
->>>> What is the status of this patch? Is it still required?
->>>
->>> It is strange, since on Exynos4/5 this works and some problems show
->>> up when run on Exynos7.
->>>
->>
->> I'm also wondering the status of this patch.
-> 
-> This patch has been dropped.
-> 
->>
->> I get below errors when boots odroidxu3 board without this patch.
-> 
-> Could you share the exact SHA1 and branch which you use in your setup?
-> 
 
-I tested with of odroidxu3 patchset for pwm-fan control of Anand Moon on
-20150414 -next.
+On Friday 10 April 2015 12:06 PM, Keerthy wrote:
+> Bandgap Temperature read Dtemp can be corrupted
+>
+> DESCRIPTION
+>          Read accesses to registers listed below can be corrupted due=
+ to incorrect resynchronization between
+>          clock domains.
+>
+>          Read access to registers below can be corrupted :
+>                  =E2=80=A2 CTRL_CORE_DTEMP_MPU/GPU/CORE/DSPEVE/IVA_n =
+(n =3D 0 to 4)
+>          =E2=80=A2 CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA_n
+>
+> WORKAROUND
+>          Multiple reads to CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/=
+IVA[9:0]:
+>          BGAP_DTEMPMPU/GPU/CORE/DSPEVE/IVA is needed to discard false=
+ value and read right value:
+>                  1. Perform two successive reads to BGAP_DTEMP bit fi=
+eld.
+>                          (a) If read1 returns Val1 and read2 returns =
+Val1, then right value is Val1.
+>                          (b) If read1 returns Val1, read 2 returns Va=
+l2, a third read is needed.
+>                  2. Perform third read
+>                          (a) If read3 returns Val2 then right value i=
+s Val2.
+>                          (b) If read3 returns Val3, then right value =
+is Val3.
+>
+>          The above in gist means if val1 and val2 are the same then w=
+e can go ahead with that value
+>          else we need a third read which will be right since synchron=
+ization will be complete by then.
+>
+> Signed-off-by: Keerthy <j-keerthy@ti.com>
+> ---
 
-http://www.spinics.net/lists/arm-kernel/msg412031.html
+A Gentle ping on this. This has the comments fixed.
 
-> For a reference please check following branch at github (this is the
-> code which should be merged to v4.1-rc1)
-> 
-> git@github.com:lmajewski/linux-samsung-thermal.git
-> 
-> branch: next [1]
-> 
-> This branch includes exynos7 support done by Chanwoo.
-> 
-
-I got following errors from branch [1] without patchset of Anand Moon,
-
-[    4.576442] thermal thermal_zone0: failed to read out thermal zone 0
-[    4.581685] 10060000.tmu supply vtmu not found, using dummy regulator
-[    4.588223] thermal thermal_zone1: failed to read out thermal zone 1
-[    4.594110] 10064000.tmu supply vtmu not found, using dummy regulator
-[    4.600849] thermal thermal_zone2: failed to read out thermal zone 2
-[    4.606847] 10068000.tmu supply vtmu not found, using dummy regulator
-[    4.613640] thermal thermal_zone3: failed to read out thermal zone 3
-[    4.619584] 1006c000.tmu supply vtmu not found, using dummy regulator
-[    4.626370] thermal thermal_zone4: failed to read out thermal zone 4
-[    4.632324] 100a0000.tmu supply vtmu not found, using dummy regulator
-
->>
->> [    4.831980] thermal thermal_zone0: failed to read out thermal zone
->> (-22) [    4.838096] thermal thermal_zone1: failed to read out
->> thermal zone (-22) [    4.844894] thermal thermal_zone2: failed to
->> read out thermal zone (-22) [    4.851470] thermal thermal_zone3:
->> failed to read out thermal zone (-22) [    4.858186] thermal
->> thermal_zone4: failed to read out thermal zone (-22)
->>
-> 
-> This issue has been fixed by following patch:
-> "thermal: exynos: fix: Check if data->tmu_read callback is present
-> before read"
-> 
-> SHA1: 4531fa1684bb883ee01f1a182900b1e15d461b3
-> 
-
-I already have this commit on my test branch.
-
-> Please check [1] if it solves your problems.
-> 
->> Thanks.
-> 
-
-Thanks.
+>
+> Changes in V2:
+>
+>    * Added more details in the description part.
+>    * Indented the comments.
+>    * Renamed ti_dra7_bandgap_read_temp to ti_errata814_bandgap_read_t=
+emp.
+>
+>   .../thermal/ti-soc-thermal/dra752-thermal-data.c   |  3 +-
+>   drivers/thermal/ti-soc-thermal/ti-bandgap.c        | 37 +++++++++++=
+++++++++++-
+>   drivers/thermal/ti-soc-thermal/ti-bandgap.h        |  4 +++
+>   3 files changed, 42 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c b/d=
+rivers/thermal/ti-soc-thermal/dra752-thermal-data.c
+> index a492927..58b5c66 100644
+> --- a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
+> +++ b/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
+> @@ -420,7 +420,8 @@ const struct ti_bandgap_data dra752_data =3D {
+>   			TI_BANDGAP_FEATURE_FREEZE_BIT |
+>   			TI_BANDGAP_FEATURE_TALERT |
+>   			TI_BANDGAP_FEATURE_COUNTER_DELAY |
+> -			TI_BANDGAP_FEATURE_HISTORY_BUFFER,
+> +			TI_BANDGAP_FEATURE_HISTORY_BUFFER |
+> +			TI_BANDGAP_FEATURE_ERRATA_814,
+>   	.fclock_name =3D "l3instr_ts_gclk_div",
+>   	.div_ck_name =3D "l3instr_ts_gclk_div",
+>   	.conv_table =3D dra752_adc_to_temp,
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/th=
+ermal/ti-soc-thermal/ti-bandgap.c
+> index 74c0e34..94acd80 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> @@ -119,6 +119,37 @@ exit:
+>   }
+>
+>   /**
+> + * ti_errata814_bandgap_read_temp() - helper function to read dra7 s=
+ensor temperature
+> + * @bgp: pointer to ti_bandgap structure
+> + * @reg: desired register (offset) to be read
+> + *
+> + * Function to read dra7 bandgap sensor temperature. This is done se=
+parately
+> + * so as to workaround the errata "Bandgap Temperature read Dtemp ca=
+n be
+> + * corrupted" - Errata ID: i814".
+> + * Read accesses to registers listed below can be corrupted due to i=
+ncorrect
+> + * resynchronization between clock domains.
+> + * Read access to registers below can be corrupted :
+> + * CTRL_CORE_DTEMP_MPU/GPU/CORE/DSPEVE/IVA_n (n =3D 0 to 4)
+> + * CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA_n
+> + *
+> + * Return: the register value.
+> + */
+> +static u32 ti_errata814_bandgap_read_temp(struct ti_bandgap *bgp,  u=
+32 reg)
+> +{
+> +	u32 val1, val2;
+> +
+> +	val1 =3D ti_bandgap_readl(bgp, reg);
+> +	val2 =3D ti_bandgap_readl(bgp, reg);
+> +
+> +	/* If both times we read the same value then that is right */
+> +	if (val1 =3D=3D val2)
+> +		return val1;
+> +
+> +	/* if val1 and val2 are different read it third time */
+> +	return ti_bandgap_readl(bgp, reg);
+> +}
+> +
+> +/**
+>    * ti_bandgap_read_temp() - helper function to read sensor temperat=
+ure
+>    * @bgp: pointer to ti_bandgap structure
+>    * @id: bandgap sensor id
+> @@ -148,7 +179,11 @@ static u32 ti_bandgap_read_temp(struct ti_bandga=
+p *bgp, int id)
+>   	}
+>
+>   	/* read temperature */
+> -	temp =3D ti_bandgap_readl(bgp, reg);
+> +	if (TI_BANDGAP_HAS(bgp, ERRATA_814))
+> +		temp =3D ti_errata814_bandgap_read_temp(bgp, reg);
+> +	else
+> +		temp =3D ti_bandgap_readl(bgp, reg);
+> +
+>   	temp &=3D tsr->bgap_dtemp_mask;
+>
+>   	if (TI_BANDGAP_HAS(bgp, FREEZE_BIT))
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.h b/drivers/th=
+ermal/ti-soc-thermal/ti-bandgap.h
+> index b3adf72..b2da3fc 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+> @@ -318,6 +318,9 @@ struct ti_temp_sensor {
+>    * TI_BANDGAP_FEATURE_HISTORY_BUFFER - used when the bandgap device=
+ features
+>    *	a history buffer of temperatures.
+>    *
+> + * TI_BANDGAP_FEATURE_ERRATA_814 - used to workaorund when the bandg=
+ap device
+> + *	has Errata 814
+> + *
+>    * TI_BANDGAP_HAS(b, f) - macro to check if a bandgap device is cap=
+able of a
+>    *      specific feature (above) or not. Return non-zero, if yes.
+>    */
+> @@ -331,6 +334,7 @@ struct ti_temp_sensor {
+>   #define TI_BANDGAP_FEATURE_FREEZE_BIT		BIT(7)
+>   #define TI_BANDGAP_FEATURE_COUNTER_DELAY	BIT(8)
+>   #define TI_BANDGAP_FEATURE_HISTORY_BUFFER	BIT(9)
+> +#define TI_BANDGAP_FEATURE_ERRATA_814		BIT(10)
+>   #define TI_BANDGAP_HAS(b, f)			\
+>   			((b)->conf->features & TI_BANDGAP_FEATURE_ ## f)
+>
+>
