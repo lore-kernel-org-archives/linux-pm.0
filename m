@@ -1,66 +1,44 @@
-From: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
-Subject: [RFC/PATCH v2 4/5] ARM: shmobile: dtsi: Add cpuidle parameters into each cpu for r8a7791
-Date: Thu, 16 Apr 2015 19:35:39 +0900
-Message-ID: <1429180540-5692-5-git-send-email-keita.kobayashi.ym@renesas.com>
-References: <1429180540-5692-1-git-send-email-keita.kobayashi.ym@renesas.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: weiyj_lk@163.com
+Subject: [PATCH] power/reset: at91: fix return value check in at91_reset_platform_probe()
+Date: Thu, 16 Apr 2015 20:19:43 +0800
+Message-ID: <1429186783-20895-1-git-send-email-weiyj_lk@163.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relmlor3.renesas.com ([210.160.252.173]:20033 "EHLO
-	relmlie2.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753668AbbDPKyy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Apr 2015 06:54:54 -0400
-In-Reply-To: <1429180540-5692-1-git-send-email-keita.kobayashi.ym@renesas.com>
+Received: from m12-16.163.com ([220.181.12.16]:34409 "EHLO m12-16.163.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754704AbbDPMVa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 16 Apr 2015 08:21:30 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: horms@verge.net.au, rjw@rjwysocki.net, daniel.lezcano@linaro.org
-Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, magnus.damm@gmail.com, Keita Kobayashi <keita.kobayashi.ym@renesas.com>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Guenter Roeck <linux@roeck-us.net>, Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Wei Yongjun <yongjun_wei@trendmicro.com.cn>, linux-pm@vger.kernel.org
 
-This patch add enable-method node and idle-states node for r8a7791.
+From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-Signed-off-by: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
+In case of error, the function devm_ioremap() returns NULL
+not ERR_PTR(). The IS_ERR() test in the return value check
+should be replaced with NULL test.
+
+Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 ---
- arch/arm/boot/dts/r8a7791.dtsi | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/power/reset/at91-reset.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/r8a7791.dtsi b/arch/arm/boot/dts/r8a7791.dtsi
-index 3e9f824..0063615 100644
---- a/arch/arm/boot/dts/r8a7791.dtsi
-+++ b/arch/arm/boot/dts/r8a7791.dtsi
-@@ -46,11 +46,13 @@
- 		cpu0: cpu@0 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a15";
-+			enable-method = "renesas,rcar-idle";
- 			reg = <0>;
- 			clock-frequency = <1500000000>;
- 			voltage-tolerance = <1>; /* 1% */
- 			clocks = <&cpg_clocks R8A7791_CLK_Z>;
- 			clock-latency = <300000>; /* 300 us */
-+			cpu-idle-states = <&CORE_STANDBY>;
+diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
+index 13584e2..4d7d60e 100644
+--- a/drivers/power/reset/at91-reset.c
++++ b/drivers/power/reset/at91-reset.c
+@@ -212,9 +212,9 @@ static int at91_reset_platform_probe(struct platform_device *pdev)
+ 		res = platform_get_resource(pdev, IORESOURCE_MEM, idx + 1 );
+ 		at91_ramc_base[idx] = devm_ioremap(&pdev->dev, res->start,
+ 						   resource_size(res));
+-		if (IS_ERR(at91_ramc_base[idx])) {
++		if (!at91_ramc_base[idx]) {
+ 			dev_err(&pdev->dev, "Could not map ram controller address\n");
+-			return PTR_ERR(at91_ramc_base[idx]);
++			return -ENOMEM;
+ 		}
+ 	}
  
- 			/* kHz - uV - OPPs unknown yet */
- 			operating-points = <1500000 1000000>,
-@@ -64,8 +66,19 @@
- 		cpu1: cpu@1 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a15";
-+			enable-method = "renesas,rcar-idle";
- 			reg = <1>;
- 			clock-frequency = <1500000000>;
-+			cpu-idle-states = <&CORE_STANDBY>;
-+		};
-+
-+		idle-states {
-+			CORE_STANDBY: CoreStandby {
-+				compatible = "arm,idle-state";
-+				entry-latency-us = <500>;
-+				exit-latency-us = <2300>;
-+				min-residency-us = <2800>;
-+			};
- 		};
- 	};
- 
--- 
-1.9.1
 
