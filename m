@@ -1,39 +1,43 @@
-From: Heinz Diehl <htd+ml@fritha.org>
-Subject: Failure to wake from S2D
-Date: Thu, 16 Apr 2015 11:47:39 +0200
-Message-ID: <20150416094739.GA10911@fritha.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v2] power_supply: Add TI BQ24257 charger driver
+Date: Thu, 16 Apr 2015 18:59:50 +0900
+Message-ID: <CAJKOXPfb1TSQ9k+9nXfrefPRxJtsRjVw5WfpcV3DPpse5fzO+g@mail.gmail.com>
+References: <1429176676-10354-1-git-send-email-laurentiu.palcu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.17.24]:64992 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753242AbbDPJrn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Apr 2015 05:47:43 -0400
-Received: from localhost ([88.90.246.218]) by mrelayeu.kundenserver.de
- (mreue104) with ESMTPSA (Nemesis) id 0MI6Uo-1Yeq6k2epa-003sN4 for
- <linux-pm@vger.kernel.org>; Thu, 16 Apr 2015 11:47:40 +0200
-Content-Disposition: inline
+Received: from mail-vn0-f53.google.com ([209.85.216.53]:40750 "EHLO
+	mail-vn0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753630AbbDPJ7v (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Apr 2015 05:59:51 -0400
+In-Reply-To: <1429176676-10354-1-git-send-email-laurentiu.palcu@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Laurentiu Palcu <laurentiu.palcu@intel.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+2015-04-16 18:31 GMT+09:00 Laurentiu Palcu <laurentiu.palcu@intel.com>:
+> Based on the datasheet found here:
+> http://www.ti.com/lit/ds/symlink/bq24257.pdf
+>
+> Signed-off-by: Laurentiu Palcu <laurentiu.palcu@intel.com>
+> ---
+> Changes since v1:
+>  * removed redundant bq24257_is_writeable_reg();
+>  * made power_supply_desc struct a static const, since it's not changed;
+>
+> laurentiu
+>
+>  .../devicetree/bindings/power/bq24257.txt          |  21 +
+>  drivers/power/Kconfig                              |   7 +
+>  drivers/power/Makefile                             |   1 +
+>  drivers/power/bq24257_charger.c                    | 863 +++++++++++++++++++++
+>  4 files changed, 892 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/bq24257.txt
+>  create mode 100644 drivers/power/bq24257_charger.c
+>
 
-about 3-4 times out of 10, my system doesn't wake from S2D. S2R works
-flawlessly. The only documentation I have is a screenshot when the system hangs
-(hard reset required), due to "no_console_suspend=1".
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 
-The screendump is here:
-http://www.fritha.org/dump.jpg
-
-The dump shows the output running kernel 4.0.0-rc5, but the same output is
-present using 3.19.x or 4.0.0 final.
-
-Booting with "maxcpus=1" resolves the problem, but that can't be a serious
-option on a multicore Xeon. The mainboard is an Asus H97-Pro with the latest
-BIOS.
-
-Thanks,
- Heinz.
- 
-
+Best regards,
+Krzysztof
