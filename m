@@ -1,182 +1,92 @@
-From: Keerthy <a0393675@ti.com>
-Subject: Re: [PATCH v2] thermal: ti-soc-thermal: dra7: Implement Workaround
- for Errata i814 - Bandgap Temperature read Dtemp can be corrupted
-Date: Thu, 16 Apr 2015 13:19:07 +0530
-Message-ID: <552F6973.8050500@ti.com>
-References: <1428647790-6585-1-git-send-email-j-keerthy@ti.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 3/3] sched: fair: Fix wrong idle timestamp usage
+Date: Thu, 16 Apr 2015 10:46:47 +0200
+Message-ID: <552F76F7.6090405@linaro.org>
+References: <1429092024-20498-1-git-send-email-daniel.lezcano@linaro.org> <1429092024-20498-3-git-send-email-daniel.lezcano@linaro.org> <20150415121831.GU5029@twins.programming.kicks-ass.net> <552E8715.4060601@linaro.org> <20150415171057.GA4300@e105550-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
+Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:33074 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751363AbbDPHtP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Apr 2015 03:49:15 -0400
-In-Reply-To: <1428647790-6585-1-git-send-email-j-keerthy@ti.com>
+Received: from mail-wg0-f48.google.com ([74.125.82.48]:36486 "EHLO
+	mail-wg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964912AbbDPIqr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Apr 2015 04:46:47 -0400
+Received: by wgsk9 with SMTP id k9so72804424wgs.3
+        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2015 01:46:46 -0700 (PDT)
+In-Reply-To: <20150415171057.GA4300@e105550-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>, edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, "Kristo, Tero" <t-kristo@ti.com>
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>, Ingo Molnar <mingo@redhat.com>
+
+On 04/15/2015 07:10 PM, Morten Rasmussen wrote:
+> On Wed, Apr 15, 2015 at 04:43:17PM +0100, Daniel Lezcano wrote:
+>> On 04/15/2015 02:18 PM, Peter Zijlstra wrote:
+>>> On Wed, Apr 15, 2015 at 12:00:24PM +0200, Daniel Lezcano wrote:
+>>>> The find_idlest_cpu is assuming the rq->idle_stamp information ref=
+lects when
+>>>> the cpu entered the idle state. This is wrong as the cpu may exit =
+and enter
+>>>> the idle state several times without the rq->idle_stamp being upda=
+ted.
+>>>
+>>> Sure, but you forgot to tell us why it matters.
+>>
+>> Yes, right. Thanks for pointing this out.
+>>
+>> Assuming we are in the situation where there are several idle cpus i=
+n
+>> the same idle state.
+>>
+>> With the current code, the function find_idlest_cpu will choose a cp=
+u
+>> with the shortest idle duration. This information is based on the
+>> rq->idle_stamp variable and is correct until one of the idle cpu is
+>> exiting the cpuidle_enter function and re-entering it again. As soon=
+ as
+>> this happen, the rq->idle_stamp value is no longer a reliable inform=
+ation.
+>>
+>> Example:
+>>
+>>    * CPU0 and CPU1 are running
+>>    * CPU2 and CPU3 are in the C3 state.
+>>    * CPU2 entered idle at T2
+>>    * CPU3 entered idle at T3
+>>    * T2 < T3
+>>
+>> The function find_idlest_cpu will choose CPU3 because it has a short=
+er
+>> idle duration.
+>>
+>> Then CPU3 is woken up by an interrupt, process it and re-enter idle =
+C3.
+>>
+>> The information will still give the out to date information T2 < T3 =
+and
+>> find_idlest_cpu will choose CPU2 instead of CPU3.
+>
+> I can't get the example to match your description of how
+> find_idlest_cpu() is supposed to work :-(
+>
+> Did you mean CPU2 (not CPU3) getting woken up by an interrupt and
+> find_busiest_cpu() choosing CPU3 instead of CPU2 after the interrupt?
+>
+> In your example find_busiest_cpu() should return CPU3 before the
+> interrupt as it went to sleep last and the interrupt on CPU3 should n=
+ot
+> affect that choice as CPU3 is still the last cpu to go to sleep
+> (regardless of your patch). No?
+
+Yes you are right. I meant CPU2 is woken up by the interrupt.
 
 
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-On Friday 10 April 2015 12:06 PM, Keerthy wrote:
-> Bandgap Temperature read Dtemp can be corrupted
->
-> DESCRIPTION
->          Read accesses to registers listed below can be corrupted due=
- to incorrect resynchronization between
->          clock domains.
->
->          Read access to registers below can be corrupted :
->                  =E2=80=A2 CTRL_CORE_DTEMP_MPU/GPU/CORE/DSPEVE/IVA_n =
-(n =3D 0 to 4)
->          =E2=80=A2 CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA_n
->
-> WORKAROUND
->          Multiple reads to CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/=
-IVA[9:0]:
->          BGAP_DTEMPMPU/GPU/CORE/DSPEVE/IVA is needed to discard false=
- value and read right value:
->                  1. Perform two successive reads to BGAP_DTEMP bit fi=
-eld.
->                          (a) If read1 returns Val1 and read2 returns =
-Val1, then right value is Val1.
->                          (b) If read1 returns Val1, read 2 returns Va=
-l2, a third read is needed.
->                  2. Perform third read
->                          (a) If read3 returns Val2 then right value i=
-s Val2.
->                          (b) If read3 returns Val3, then right value =
-is Val3.
->
->          The above in gist means if val1 and val2 are the same then w=
-e can go ahead with that value
->          else we need a third read which will be right since synchron=
-ization will be complete by then.
->
-> Signed-off-by: Keerthy <j-keerthy@ti.com>
-> ---
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-A Gentle ping on this. This has the comments fixed.
-
->
-> Changes in V2:
->
->    * Added more details in the description part.
->    * Indented the comments.
->    * Renamed ti_dra7_bandgap_read_temp to ti_errata814_bandgap_read_t=
-emp.
->
->   .../thermal/ti-soc-thermal/dra752-thermal-data.c   |  3 +-
->   drivers/thermal/ti-soc-thermal/ti-bandgap.c        | 37 +++++++++++=
-++++++++++-
->   drivers/thermal/ti-soc-thermal/ti-bandgap.h        |  4 +++
->   3 files changed, 42 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c b/d=
-rivers/thermal/ti-soc-thermal/dra752-thermal-data.c
-> index a492927..58b5c66 100644
-> --- a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
-> +++ b/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
-> @@ -420,7 +420,8 @@ const struct ti_bandgap_data dra752_data =3D {
->   			TI_BANDGAP_FEATURE_FREEZE_BIT |
->   			TI_BANDGAP_FEATURE_TALERT |
->   			TI_BANDGAP_FEATURE_COUNTER_DELAY |
-> -			TI_BANDGAP_FEATURE_HISTORY_BUFFER,
-> +			TI_BANDGAP_FEATURE_HISTORY_BUFFER |
-> +			TI_BANDGAP_FEATURE_ERRATA_814,
->   	.fclock_name =3D "l3instr_ts_gclk_div",
->   	.div_ck_name =3D "l3instr_ts_gclk_div",
->   	.conv_table =3D dra752_adc_to_temp,
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/th=
-ermal/ti-soc-thermal/ti-bandgap.c
-> index 74c0e34..94acd80 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> @@ -119,6 +119,37 @@ exit:
->   }
->
->   /**
-> + * ti_errata814_bandgap_read_temp() - helper function to read dra7 s=
-ensor temperature
-> + * @bgp: pointer to ti_bandgap structure
-> + * @reg: desired register (offset) to be read
-> + *
-> + * Function to read dra7 bandgap sensor temperature. This is done se=
-parately
-> + * so as to workaround the errata "Bandgap Temperature read Dtemp ca=
-n be
-> + * corrupted" - Errata ID: i814".
-> + * Read accesses to registers listed below can be corrupted due to i=
-ncorrect
-> + * resynchronization between clock domains.
-> + * Read access to registers below can be corrupted :
-> + * CTRL_CORE_DTEMP_MPU/GPU/CORE/DSPEVE/IVA_n (n =3D 0 to 4)
-> + * CTRL_CORE_TEMP_SENSOR_MPU/GPU/CORE/DSPEVE/IVA_n
-> + *
-> + * Return: the register value.
-> + */
-> +static u32 ti_errata814_bandgap_read_temp(struct ti_bandgap *bgp,  u=
-32 reg)
-> +{
-> +	u32 val1, val2;
-> +
-> +	val1 =3D ti_bandgap_readl(bgp, reg);
-> +	val2 =3D ti_bandgap_readl(bgp, reg);
-> +
-> +	/* If both times we read the same value then that is right */
-> +	if (val1 =3D=3D val2)
-> +		return val1;
-> +
-> +	/* if val1 and val2 are different read it third time */
-> +	return ti_bandgap_readl(bgp, reg);
-> +}
-> +
-> +/**
->    * ti_bandgap_read_temp() - helper function to read sensor temperat=
-ure
->    * @bgp: pointer to ti_bandgap structure
->    * @id: bandgap sensor id
-> @@ -148,7 +179,11 @@ static u32 ti_bandgap_read_temp(struct ti_bandga=
-p *bgp, int id)
->   	}
->
->   	/* read temperature */
-> -	temp =3D ti_bandgap_readl(bgp, reg);
-> +	if (TI_BANDGAP_HAS(bgp, ERRATA_814))
-> +		temp =3D ti_errata814_bandgap_read_temp(bgp, reg);
-> +	else
-> +		temp =3D ti_bandgap_readl(bgp, reg);
-> +
->   	temp &=3D tsr->bgap_dtemp_mask;
->
->   	if (TI_BANDGAP_HAS(bgp, FREEZE_BIT))
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.h b/drivers/th=
-ermal/ti-soc-thermal/ti-bandgap.h
-> index b3adf72..b2da3fc 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.h
-> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
-> @@ -318,6 +318,9 @@ struct ti_temp_sensor {
->    * TI_BANDGAP_FEATURE_HISTORY_BUFFER - used when the bandgap device=
- features
->    *	a history buffer of temperatures.
->    *
-> + * TI_BANDGAP_FEATURE_ERRATA_814 - used to workaorund when the bandg=
-ap device
-> + *	has Errata 814
-> + *
->    * TI_BANDGAP_HAS(b, f) - macro to check if a bandgap device is cap=
-able of a
->    *      specific feature (above) or not. Return non-zero, if yes.
->    */
-> @@ -331,6 +334,7 @@ struct ti_temp_sensor {
->   #define TI_BANDGAP_FEATURE_FREEZE_BIT		BIT(7)
->   #define TI_BANDGAP_FEATURE_COUNTER_DELAY	BIT(8)
->   #define TI_BANDGAP_FEATURE_HISTORY_BUFFER	BIT(9)
-> +#define TI_BANDGAP_FEATURE_ERRATA_814		BIT(10)
->   #define TI_BANDGAP_HAS(b, f)			\
->   			((b)->conf->features & TI_BANDGAP_FEATURE_ ## f)
->
->
