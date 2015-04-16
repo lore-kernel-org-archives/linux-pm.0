@@ -1,150 +1,209 @@
-From: Brian Norris <computersforpeace@gmail.com>
-Subject: Re: [PATCH 12/13] thermal: Add support for hardware-tracked trip
- points
-Date: Wed, 15 Apr 2015 11:06:48 -0700
-Message-ID: <20150415180648.GS32500@ld-irv-0074>
-References: <1427385240-6086-1-git-send-email-s.hauer@pengutronix.de>
- <1427385240-6086-13-git-send-email-s.hauer@pengutronix.de>
+From: Joonyoung Shim <jy0922.shim@samsung.com>
+Subject: Re: [PATCH 1/2] thermal: exynos: Reorder exynos_map_dt_data() function
+Date: Thu, 16 Apr 2015 10:01:49 +0900
+Message-ID: <552F09FD.7020200@samsung.com>
+References: <1421667844-13627-1-git-send-email-l.majewski@samsung.com>
+ <1421667844-13627-2-git-send-email-l.majewski@samsung.com>
+ <CAM4voakDBLbshW3EvFN4YRx1o1ApMLJVZ2ZQ0Bb6NwhmoT8WFA@mail.gmail.com>
+ <20150122100124.65e7a19e@amdc2363>
+ <CAM4voani1xcgRU3e11_pnYw4d7Yj=QOKun8g_DywmxDxOwEgRQ@mail.gmail.com>
+ <20150129230616.GJ29837@developer.amazonguestwifi.org>
+ <20150130091422.669930c8@amdc2363> <552E091A.2000902@samsung.com>
+ <20150415130554.264b61cc@amdc2363>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f174.google.com ([209.85.192.174]:36463 "EHLO
-	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932980AbbDOSG5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Apr 2015 14:06:57 -0400
-Content-Disposition: inline
-In-Reply-To: <1427385240-6086-13-git-send-email-s.hauer@pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <20150415130554.264b61cc@amdc2363>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lukasz Majewski <l.majewski@majess.pl>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-Hi Sascha,
+Hi Lukasz,
 
-On Thu, Mar 26, 2015 at 04:53:59PM +0100, Sascha Hauer wrote:
-> This adds support for hardware-tracked trip points to the device tree
-> thermal sensor framework.
+On 04/15/2015 08:05 PM, Lukasz Majewski wrote:
+> Hi Joonyoung,
 > 
-> The framework supports an arbitrary number of trip points. Whenever
-> the current temperature is updated, the trip points immediately
-> below and above the current temperature are found. A .set_trips
-> callback is then called with the temperatures. If there is no trip
-> point above or below the current temperature, the passed trip
-> temperature will be ULONG_MAX or 0 respectively. In this callback,
-> the driver should program the hardware such that it is notified
-> when either of these trip points are triggered. When a trip point
-> is triggered, the driver should call `thermal_zone_device_update'
-> for the respective thermal zone. This will cause the trip points
-> to be updated again.
+>> Hi Lukasz,
+>>
+>> On 01/30/2015 05:14 PM, Lukasz Majewski wrote:
+>>> Hi Eduardo, Abhilash,
+>>>
+>>>> On Thu, Jan 22, 2015 at 06:02:07PM +0530, Abhilash Kesavan wrote:
+>>>>> Hi Lukasz,
+>>>>>
+>>>>> On Thu, Jan 22, 2015 at 2:31 PM, Lukasz Majewski
+>>>>> <l.majewski@samsung.com> wrote:
+>>>>>> Hi Abhilash,
+>>>>>>
+>>>>>>> Hi Lukasz,
+>>>>>>>
+>>>>>>> On Mon, Jan 19, 2015 at 5:14 PM, Lukasz Majewski
+>>>>>>> <l.majewski@samsung.com> wrote:
+>>>>>>>> The exynos_map_dt_data() function must be called before
+>>>>>>>> thermal_zone_of_sensor_register(), and hence provide tmu_read()
+>>>>>>>> function, before it is needed.
+>>>>>>>>
+>>>>>>>> This change is driven by adding support for enabling
+>>>>>>>> thermal_zoneX when it is properly initialized.
+>>>>>>>>
+>>>>>>>> One can read the mode of operation
+>>>>>>>> at /sys/class/thermal/thermal_zone0/mode Such functionality was
+>>>>>>>> missing in the of-thermal.c code.
+>>>>>>>>
+>>>>>>>> Reported-by: Abhilash Kesavan <a.kesavan@samsung.com>
+>>>>>>>> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+>>>>>>>> ---
+>>>>>>>>  drivers/thermal/samsung/exynos_tmu.c | 7 ++++---
+>>>>>>>>  1 file changed, 4 insertions(+), 3 deletions(-)
+>>>>>>>>
+>>>>>>>> diff --git a/drivers/thermal/samsung/exynos_tmu.c
+>>>>>>>> b/drivers/thermal/samsung/exynos_tmu.c index 9d2d685..5d946ab
+>>>>>>>> 100644 --- a/drivers/thermal/samsung/exynos_tmu.c
+>>>>>>>> +++ b/drivers/thermal/samsung/exynos_tmu.c
+>>>>>>>> @@ -975,15 +975,16 @@ static int exynos_tmu_probe(struct
+>>>>>>>> platform_device *pdev) platform_set_drvdata(pdev, data);
+>>>>>>>>         mutex_init(&data->lock);
+>>>>>>>>
+>>>>>>>> +       ret = exynos_map_dt_data(pdev);
+>>>>>>>> +       if (ret)
+>>>>>>>> +               goto err_sensor;
+>>
+>> It's enough to just return ret.
+>>
+>> One more, i think to need to take out regulator enable codes from
+>> exynos_map_dt_data. If not, can't restore about regulator when error
+>> occurs.
+>>
+>>>>>>>> +
+>>>>>>>>         data->tzd =
+>>>>>>>> thermal_zone_of_sensor_register(&pdev->dev, 0, data,
+>>>>>>>> &exynos_sensor_ops); if (IS_ERR(data->tzd)) {
+>>>>>>>>                 pr_err("thermal: tz: %p ERROR\n", data->tzd);
+>>>>>>>>                 return PTR_ERR(data->tzd);
+>>>>>>>>         }
+>>>>>>>> -       ret = exynos_map_dt_data(pdev);
+>>>>>>>> -       if (ret)
+>>>>>>>> -               goto err_sensor;
+>>>>>>>>
+>>>>>>>>         pdata = data->pdata;
+>>>>>>>
+>>>>>>> I have been testing this along with your v5 patch set and am
+>>>>>>> seeing incorrect temperature being reported at boot-up on
+>>>>>>> exynos7.
+>>>>>>
+>>>>>> Does it show a maximal temperature value (0x1FF)?
+>>>>>
+>>>>> I did not print the current temperature register, but I remember
+>>>>> the message showing ~105C. Will give you the register value when
+>>>>> I test with more debug prints tomorrow.
+>>>>>
+>>>>>>
+>>>>>>>  It looks
+>>>>>>> like exynos_tmu_read gets called from
+>>>>>>> thermal_zone_of_device_update during boot-up, now that we have
+>>>>>>> it populated early. However, as the tmu initialization function
+>>>>>>> has not been called yet it returns a wrong value. Does that
+>>>>>>> sound correct ?
+>>>>>>
+>>>>>> No, this is a mistake. However, I'm wondering why on Exynos4/5
+>>>>>> this error didn't show up...
+>>>>>
+>>>>> I have been lowering the software trip point temperature in the
+>>>>> exynos7 dts file (to 55C) for testing purposes. Hence, when the
+>>>>> temperature is read incorrectly as ~105C the board trips at
+>>>>> boot-up
+>>>
+>>> 					^^^^ this is a very unusual
+>>> 					value - I had problems with
+>>> 					reading 0xFF values with
+>>> 					similar symptom (but this
+>>> was caused by lack of vtmu).
+>>>
+>>>>> itself. Maybe for exynos4/5 the incorrect value read during
+>>>>> boot-up is in the non-tripping range and once the tmu is
+>>>>> initialized later it continues to function properly thereafter ?
+>>>>>
+>>>>>>
+>>>>>> The reordering is needed to be able to call set_mode callback at
+>>>>>> of-thermal.c to set the mode.
+>>>>>>
+>>>>>> If this change causes problems, then another solution (probably
+>>>>>> not so neat) must be found.
+>>>>>
+>>>>> Please let me know if you need any further details.
+>>>
+>>> Abhilash, could you provide more details (like relevant output from
+>>> dmesg) and point me a list of patches which shall I apply to test
+>>> this issue on Exynos4/5?
+>>>
+>>>>
+>>>> What is the status of this patch? Is it still required?
+>>>
+>>> It is strange, since on Exynos4/5 this works and some problems show
+>>> up when run on Exynos7.
+>>>
+>>
+>> I'm also wondering the status of this patch.
 > 
-> If .set_trips is not implemented, the framework behaves as before.
+> This patch has been dropped.
 > 
-> This patch is based on an earlier version from Mikko Perttunen
-> <mikko.perttunen@kapsi.fi>
+>>
+>> I get below errors when boots odroidxu3 board without this patch.
 > 
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> ---
->  drivers/thermal/thermal_core.c | 41 +++++++++++++++++++++++++++++++++++++++++
->  include/linux/thermal.h        |  3 +++
->  2 files changed, 44 insertions(+)
+> Could you share the exact SHA1 and branch which you use in your setup?
 > 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index dcdf45e..7138f8f 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -434,6 +434,45 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, unsigned long *temp)
->  }
->  EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
->  
-> +static void thermal_zone_set_trips(struct thermal_zone_device *tz)
-> +{
-> +	unsigned long low = 0;
-> +	unsigned long high = ULONG_MAX;
-> +	unsigned long trip_temp, hysteresis;
-> +	unsigned long temp = tz->temperature;
-> +	int i;
-> +
-> +	if (!tz->ops->set_trips)
-> +		return;
-> +
-> +	/* No need to change trip points */
-> +	if (temp > tz->prev_low_trip && temp < tz->prev_high_trip)
-> +		return;
 
-I see that you don't actually initialize prev_{low,high}_trip during
-device initialization, so they both start out as zero. I suppose that
-works here, mostly by coincidence, because it means we'll still always
-recalculate trip points the first time, but might it make sense to
-explicitly initialize them to:
-  low = ULONG_MAX
-  high = 0
-at init time? (Or, if these change to integer: INT_MAX and -INT_MAX?)
+I tested with of odroidxu3 patchset for pwm-fan control of Anand Moon on
+20150414 -next.
 
-Thanks,
-Brian
+http://www.spinics.net/lists/arm-kernel/msg412031.html
 
-> +
-> +	for (i = 0; i < tz->trips; i++) {
-> +		unsigned long trip_low;
-> +
-> +		tz->ops->get_trip_temp(tz, i, &trip_temp);
-> +		tz->ops->get_trip_hyst(tz, i, &hysteresis);
-> +
-> +		trip_low = trip_temp - hysteresis;
-> +
-> +		if (trip_low < temp && trip_low > low)
-> +			low = trip_low;
-> +
-> +		if (trip_temp > temp && trip_temp < high)
-> +			high = trip_temp;
-> +	}
-> +
-> +	tz->prev_low_trip = low;
-> +	tz->prev_high_trip = high;
-> +
-> +	dev_dbg(&tz->device, "new temperature boundaries: %lu < x < %lu\n",
-> +			low, high);
-> +
-> +	tz->ops->set_trips(tz, low, high);
-> +}
-> +
->  void thermal_zone_device_update(struct thermal_zone_device *tz)
->  {
->  	int count;
-> @@ -460,6 +499,8 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
->  	dev_dbg(&tz->device, "last_temperature=%lu, current_temperature=%lu\n",
->  				tz->last_temperature, tz->temperature);
->  
-> +	thermal_zone_set_trips(tz);
-> +
->  	for (count = 0; count < tz->trips; count++)
->  		handle_thermal_trip(tz, count);
->  }
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index ac2897c..b870702 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -87,6 +87,7 @@ struct thermal_zone_device_ops {
->  	int (*unbind) (struct thermal_zone_device *,
->  		       struct thermal_cooling_device *);
->  	int (*get_temp) (struct thermal_zone_device *, unsigned long *);
-> +	int (*set_trips) (struct thermal_zone_device *, unsigned long, unsigned long);
->  	int (*get_mode) (struct thermal_zone_device *,
->  			 enum thermal_device_mode *);
->  	int (*set_mode) (struct thermal_zone_device *,
-> @@ -183,6 +184,8 @@ struct thermal_zone_device {
->  	unsigned long temperature;
->  	unsigned long last_temperature;
->  	unsigned long emul_temperature;
-> +	unsigned long prev_low_trip;
-> +	unsigned long prev_high_trip;
->  	int passive;
->  	unsigned int forced_passive;
->  	const struct thermal_zone_device_ops *ops;
-> -- 
-> 2.1.4
+> For a reference please check following branch at github (this is the
+> code which should be merged to v4.1-rc1)
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> git@github.com:lmajewski/linux-samsung-thermal.git
+> 
+> branch: next [1]
+> 
+> This branch includes exynos7 support done by Chanwoo.
+> 
+
+I got following errors from branch [1] without patchset of Anand Moon,
+
+[    4.576442] thermal thermal_zone0: failed to read out thermal zone 0
+[    4.581685] 10060000.tmu supply vtmu not found, using dummy regulator
+[    4.588223] thermal thermal_zone1: failed to read out thermal zone 1
+[    4.594110] 10064000.tmu supply vtmu not found, using dummy regulator
+[    4.600849] thermal thermal_zone2: failed to read out thermal zone 2
+[    4.606847] 10068000.tmu supply vtmu not found, using dummy regulator
+[    4.613640] thermal thermal_zone3: failed to read out thermal zone 3
+[    4.619584] 1006c000.tmu supply vtmu not found, using dummy regulator
+[    4.626370] thermal thermal_zone4: failed to read out thermal zone 4
+[    4.632324] 100a0000.tmu supply vtmu not found, using dummy regulator
+
+>>
+>> [    4.831980] thermal thermal_zone0: failed to read out thermal zone
+>> (-22) [    4.838096] thermal thermal_zone1: failed to read out
+>> thermal zone (-22) [    4.844894] thermal thermal_zone2: failed to
+>> read out thermal zone (-22) [    4.851470] thermal thermal_zone3:
+>> failed to read out thermal zone (-22) [    4.858186] thermal
+>> thermal_zone4: failed to read out thermal zone (-22)
+>>
+> 
+> This issue has been fixed by following patch:
+> "thermal: exynos: fix: Check if data->tmu_read callback is present
+> before read"
+> 
+> SHA1: 4531fa1684bb883ee01f1a182900b1e15d461b3
+> 
+
+I already have this commit on my test branch.
+
+> Please check [1] if it solves your problems.
+> 
+>> Thanks.
+> 
+
+Thanks.
