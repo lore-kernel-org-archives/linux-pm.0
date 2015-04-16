@@ -1,116 +1,41 @@
 From: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
-Subject: [RFC/PATCH v2 2/5] ARM: shmobile: Add cpuidle_ops for R-Car cpuidle
-Date: Thu, 16 Apr 2015 19:35:37 +0900
-Message-ID: <1429180540-5692-3-git-send-email-keita.kobayashi.ym@renesas.com>
+Subject: [RFC/PATCH v2 3/5] devicetree: bindings: Add new cpuidle enable method for Renesas R-car SoCs
+Date: Thu, 16 Apr 2015 19:35:38 +0900
+Message-ID: <1429180540-5692-4-git-send-email-keita.kobayashi.ym@renesas.com>
 References: <1429180540-5692-1-git-send-email-keita.kobayashi.ym@renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-sh-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from relmlor2.renesas.com ([210.160.252.172]:47746 "EHLO
+	relmlie1.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757173AbbDPKgK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Apr 2015 06:36:10 -0400
 In-Reply-To: <1429180540-5692-1-git-send-email-keita.kobayashi.ym@renesas.com>
-Sender: linux-sh-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: horms@verge.net.au, rjw@rjwysocki.net, daniel.lezcano@linaro.org
 Cc: linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, magnus.damm@gmail.com, Keita Kobayashi <keita.kobayashi.ym@renesas.com>
-List-Id: linux-pm@vger.kernel.org
 
-This patch add Core-Standby support for R-Car cpuidle.
+This patch add the ARM CPUs Device Tree binding to document a new
+enable method of Renesas cpuidle.
 
 Signed-off-by: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
 ---
- arch/arm/mach-shmobile/platsmp-apmu.c | 14 +++++++++++---
- arch/arm/mach-shmobile/platsmp-apmu.h |  1 +
- arch/arm/mach-shmobile/pm-rcar-gen2.c | 17 +++++++++++++++++
- 3 files changed, 29 insertions(+), 3 deletions(-)
+ Documentation/devicetree/bindings/arm/cpus.txt | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/mach-shmobile/platsmp-apmu.c b/arch/arm/mach-shmobile/platsmp-apmu.c
-index f483b56..a35f97c 100644
---- a/arch/arm/mach-shmobile/platsmp-apmu.c
-+++ b/arch/arm/mach-shmobile/platsmp-apmu.c
-@@ -139,7 +139,8 @@ int shmobile_smp_apmu_boot_secondary(unsigned int cpu, struct task_struct *idle)
- }
- #endif
+diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
+index 8b9e0a9..663ee11 100644
+--- a/Documentation/devicetree/bindings/arm/cpus.txt
++++ b/Documentation/devicetree/bindings/arm/cpus.txt
+@@ -196,6 +196,7 @@ nodes to be present and contain the properties described below.
+ 			    "qcom,gcc-msm8660"
+ 			    "qcom,kpss-acc-v1"
+ 			    "qcom,kpss-acc-v2"
++			    "renesas,rcar-idle"
+ 			    "rockchip,rk3066-smp"
  
--#if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_SUSPEND)
-+#if defined(CONFIG_HOTPLUG_CPU) || defined(CONFIG_SUSPEND) || \
-+    defined(CONFIG_ARM_RCAR_CPUIDLE)
- /* nicked from arch/arm/mach-exynos/hotplug.c */
- static inline void cpu_enter_lowpower_a15(void)
- {
-@@ -215,7 +216,7 @@ int shmobile_smp_apmu_cpu_kill(unsigned int cpu)
- }
- #endif
- 
--#if defined(CONFIG_SUSPEND)
-+#if defined(CONFIG_SUSPEND) || defined(CONFIG_ARM_RCAR_CPUIDLE)
- static int shmobile_smp_apmu_do_suspend(unsigned long cpu)
- {
- 	shmobile_smp_hook(cpu, virt_to_phys(cpu_resume), 0);
-@@ -224,10 +225,17 @@ static int shmobile_smp_apmu_do_suspend(unsigned long cpu)
- 	return 1;
- }
- 
--static int shmobile_smp_apmu_enter_suspend(suspend_state_t state)
-+void shmobile_smp_apmu_enter_corestandby(void)
- {
- 	cpu_suspend(smp_processor_id(), shmobile_smp_apmu_do_suspend);
- 	cpu_leave_lowpower();
-+}
-+#endif
-+
-+#if defined(CONFIG_SUSPEND)
-+static int shmobile_smp_apmu_enter_suspend(suspend_state_t state)
-+{
-+	shmobile_smp_apmu_enter_corestandby();
- 	return 0;
- }
- 
-diff --git a/arch/arm/mach-shmobile/platsmp-apmu.h b/arch/arm/mach-shmobile/platsmp-apmu.h
-index 76512c9..c7dc00a 100644
---- a/arch/arm/mach-shmobile/platsmp-apmu.h
-+++ b/arch/arm/mach-shmobile/platsmp-apmu.h
-@@ -28,5 +28,6 @@ extern int shmobile_smp_apmu_boot_secondary(unsigned int cpu,
- 					    struct task_struct *idle);
- extern void shmobile_smp_apmu_cpu_die(unsigned int cpu);
- extern int shmobile_smp_apmu_cpu_kill(unsigned int cpu);
-+extern void shmobile_smp_apmu_enter_corestandby(void);
- 
- #endif /* PLATSMP_APMU_H */
-diff --git a/arch/arm/mach-shmobile/pm-rcar-gen2.c b/arch/arm/mach-shmobile/pm-rcar-gen2.c
-index 6815781..846b8ae 100644
---- a/arch/arm/mach-shmobile/pm-rcar-gen2.c
-+++ b/arch/arm/mach-shmobile/pm-rcar-gen2.c
-@@ -10,11 +10,15 @@
-  * for more details.
-  */
- 
-+#include <linux/cpuidle.h>
-+#include <linux/ioport.h>
- #include <linux/kernel.h>
- #include <linux/of.h>
- #include <linux/smp.h>
-+#include <asm/cpuidle.h>
- #include <asm/io.h>
- #include "common.h"
-+#include "platsmp-apmu.h"
- #include "pm-rcar.h"
- #include "rcar-gen2.h"
- 
-@@ -113,3 +117,16 @@ void __init rcar_gen2_pm_init(void)
- 	rcar_gen2_sysc_init(syscier);
- 	shmobile_smp_apmu_suspend_init();
- }
-+
-+#if defined(CONFIG_ARM_RCAR_CPUIDLE)
-+static int rcar_cpuidle_enter(int cpu, unsigned long index)
-+{
-+	shmobile_smp_apmu_enter_corestandby();
-+	return 0;
-+}
-+
-+struct cpuidle_ops rcar_cpuidle_ops __initdata = {
-+	.suspend = rcar_cpuidle_enter,
-+};
-+CPUIDLE_METHOD_OF_DECLARE(rcar, "renesas,rcar-idle", &rcar_cpuidle_ops);
-+#endif
+ 	- cpu-release-addr
 -- 
 1.9.1
 
