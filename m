@@ -1,67 +1,48 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH] ARM: tegra: cpuidle: implement cpuidle_state.enter_freeze()
-Date: Fri, 17 Apr 2015 17:02:53 +0200
-Message-ID: <CAAObsKATZy9+Tn0pJcDCaNzpxLX6GqX0TO_t7w8tgirWQgJF9w@mail.gmail.com>
-References: <1428490480-10144-1-git-send-email-tomeu.vizoso@collabora.com>
- <20150408115546.GA24271@red-moon> <552643E1.3060200@collabora.com>
- <285738930.THBQOWvsah@vostro.rjw.lan> <20150410100844.GC23730@red-moon>
- <CAAObsKAihF1k1yzZxQEs_jpPnCdV3HQbLaYHWu1QNsNd5zqiOg@mail.gmail.com> <20150417140819.GB2347@red-moon>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150417140819.GB2347@red-moon>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Russell King <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH v3 0/2] Allow UVC devices to remain runtime-suspended when sleeping
+Date: Fri, 17 Apr 2015 17:24:48 +0200
+Message-ID: <1429284290-25153-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f171.google.com ([209.85.212.171]:37648 "EHLO
+	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394AbbDQPZs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Apr 2015 11:25:48 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 17 April 2015 at 16:08, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
-> On Thu, Apr 16, 2015 at 03:37:19PM +0100, Tomeu Vizoso wrote:
->
-> [...]
->
->> >> I don't know what FIQs are. :-)
->> >
->> > In short, fast IRQs, it is a separate IRQ line handled as a separate
->> > exception source with some private (banked) registers that minimize registers
->> > saving/restoring. They are not identical to NMI on x86, since
->> > their behaviour (handling) may be overriden by platforms and they
->> > can be masked.
->> >
->> >> ->enter_freeze is entered with interrupts disabled on the local CPU.  It is
->> >> not supposed to re-enable them.  That is, while in the ->enter_freeze callback
->> >> routine, the CPU must not be interrupted aby anything other than NMI.
->> >
->> > It boils down to what FIQs handlers are allowed to do with tick frozen
->> > and what they are (may be) currently used for.
->> >
->> > Russell has more insights on this than I do, in particular what FIQs are
->> > currently used for on ARM and if we can leave them enabled safely with tick
->> > frozen.
->>
->> But even if it's currently safe to leave them enabled, is there any
->> reason for not disabling them?
->
-> Ok, the point here is: either it is safe, and you leave them enabled,
-> or it is not and we must disable them *before* enter_freeze() is entered.
->
-> Disabling them in the platform enter_freeze() hook does not make sense,
-> because this means we run with FIQs enabled with tick frozen, either
-> it is safe or it is not, it can't be both.
+v3:	* Add a new power.force_direct_complete to let devices express that it's
+	safe to let them be runtime-suspended at system sleep regardless of the state
+	of their descendants
 
-Sure, that's why I proposed doing it in arch_cpu_idle_enter/exit.
+v2:	* Let creators of the input device to decide whether it should remain
+	runtime suspended when the system goes into a sleep state
+	* Don't enable PM runtime on all evdev handlers
+	* Cope with another wrong wakeup setting in usb_dev_prepare
 
-> I would ask Russell opinion on this, before making any decision.
+Hi,
 
-Sure, that would be very welcome.
+this series contain what I needed to do in order to have my USB webcam to not
+be resumed when the system resumes, reducing considerably the total time that
+resuming takes.
 
-Regards,
+It makes use of the facility that Rafael Wysocki added in aae4518b3 ("PM /
+sleep: Mechanism to avoid resuming runtime-suspended devices unnecessarily").
+
+Thanks,
 
 Tomeu
 
-> Lorenzo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Tomeu Vizoso (2):
+  PM / sleep: Let devices force direct_complete
+  [media] uvcvideo: Remain runtime-suspended at sleeps
+
+ drivers/base/power/main.c          | 13 +++++++++----
+ drivers/media/usb/uvc/uvc_driver.c |  2 ++
+ include/linux/pm.h                 |  1 +
+ 3 files changed, 12 insertions(+), 4 deletions(-)
+
+-- 
+2.3.5
+
