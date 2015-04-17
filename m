@@ -1,57 +1,60 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH RFC 0/7] arm64: qcom: cpuidle support for MSM8916 SoC
-Date: Fri, 17 Apr 2015 17:49:02 -0600
-Message-ID: <1429314549-6730-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
+Subject: [PATCH RFC 3/7] qcom: spm: Use u32 for register offsets
+Date: Fri, 17 Apr 2015 17:49:05 -0600
+Message-ID: <1429314549-6730-4-git-send-email-lina.iyer@linaro.org>
+References: <1429314549-6730-1-git-send-email-lina.iyer@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:35883 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753693AbbDQXt2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Apr 2015 19:49:28 -0400
+Received: by pabsx10 with SMTP id sx10so140271950pab.3
+        for <linux-pm@vger.kernel.org>; Fri, 17 Apr 2015 16:49:27 -0700 (PDT)
+In-Reply-To: <1429314549-6730-1-git-send-email-lina.iyer@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: arnd@arndb.de, catalin.marinas@arm.com, mark.rutland@arm.com, Will.Deacon@arm.com, lorenzo.pieralisi@arm.com
 Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org, mlocke@codeaurora.org, bryanh@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Newer SoC's allow a bigger memory range for the SPM. The offsets for the
+SPM sequences could therefore, be more than the capcacity of u8.
 
-This patchset adds cpuidle support for the MSM8916 Qualcomm SoC.  This is based
-on cpu-ops patches for the QCOM arm-v8 SoCs [1].
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+---
+ drivers/soc/qcom/spm.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-MSM8916 SoC is a quad-A53 SoC with an L2 configured as a single cluster. Like
-many other QCOM SoC's the power management for the cpu is controlled by a
-peripheral hardware block called the Subsystem Power Manager (SPM) [2]. The SPM
-is a finite state machine that is triggered when the core executes the ARM WFI
-instruction. SPM is configured to execute the desired idle state before
-terminating the cpu in SCM. Low power modes supported are WFI and SPC (standalone
-power collapse - individual cpu power down state).
-
-The patches do the following -
-
-- Modify ARM32 cpuidle_ops structure to match that of ARM64
-- Support ARM32 and AARCH64 initialization using the same platform code
-- Add 8916 specific SPM register information
-- Add device bindings for 8916 SPM nodes
-- Add cpuidle device bindings.
-
-Thanks,
-Lina
-
-[1]. https://lkml.org/lkml/2015/4/9/774
-[2]. http://www.spinics.net/lists/arm-kernel/msg411542.html
-
-Lina Iyer (7):
-  arm: Modify cpuidle_ops structures to match ARM64
-  arm64: qcom: Add SPM driver support for ARM and ARM64
-  qcom: spm: Use u32 for register offsets
-  qcom: spm: Add 8916 SPM register data
-  arm64: dts: Add power-controller device bindings for QCOM 8916 SoC
-  arm64: dts: Add cpu idle states for 8916
-  arm64: defconfig: Enable power management support for QCOM SoCs
-
- .../devicetree/bindings/arm/msm/qcom,saw2.txt      |  1 +
- arch/arm/include/asm/cpuidle.h                     |  4 +--
- arch/arm/kernel/cpuidle.c                          |  2 +-
- arch/arm64/boot/dts/qcom/msm8916.dtsi              | 38 ++++++++++++++++++++
- arch/arm64/configs/defconfig                       |  1 +
- drivers/soc/qcom/cpu_ops.c                         |  5 +++
- drivers/soc/qcom/spm.c                             | 40 ++++++++++++++++++----
- 7 files changed, 82 insertions(+), 9 deletions(-)
-
+diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
+index b66d86c..392a714 100644
+--- a/drivers/soc/qcom/spm.c
++++ b/drivers/soc/qcom/spm.c
+@@ -60,7 +60,7 @@ enum spm_reg {
+ };
+ 
+ struct spm_reg_data {
+-	const u8 *reg_offset;
++	const u32 *reg_offset;
+ 	u32 spm_cfg;
+ 	u32 spm_dly;
+ 	u32 pmic_dly;
+@@ -74,7 +74,7 @@ struct spm_driver_data {
+ 	const struct spm_reg_data *reg_data;
+ };
+ 
+-static const u8 spm_reg_offset_v2_1[SPM_REG_NR] = {
++static const u32 spm_reg_offset_v2_1[SPM_REG_NR] = {
+ 	[SPM_REG_CFG]		= 0x08,
+ 	[SPM_REG_SPM_CTL]	= 0x30,
+ 	[SPM_REG_DLY]		= 0x34,
+@@ -93,7 +93,7 @@ static const struct spm_reg_data spm_reg_8974_8084_cpu  = {
+ 	.start_index[PM_SLEEP_MODE_SPC] = 3,
+ };
+ 
+-static const u8 spm_reg_offset_v1_1[SPM_REG_NR] = {
++static const u32 spm_reg_offset_v1_1[SPM_REG_NR] = {
+ 	[SPM_REG_CFG]		= 0x08,
+ 	[SPM_REG_SPM_CTL]	= 0x20,
+ 	[SPM_REG_PMIC_DLY]	= 0x24,
 -- 
 2.1.0
+
