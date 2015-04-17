@@ -1,65 +1,67 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [RFC/PATCH v2 1/5] ARM: cpuidle: Add cpuidle support for R-Car
- Gen2 series
-Date: Fri, 17 Apr 2015 21:14:38 +0900
-Message-ID: <CANqRtoQ_tQB326cnxzKaM-Ts6QwSa8y+sn+jM95XuCfsa00hNw@mail.gmail.com>
+From: Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [RFC/PATCH v2 3/5] devicetree: bindings: Add new cpuidle enable
+ method for Renesas R-car SoCs
+Date: Fri, 17 Apr 2015 21:26:27 +0900
+Message-ID: <CANqRtoQ04KxrSsLR5QEM9PekSYiRuSVzCn1p3KwN8mKf6JuvBQ@mail.gmail.com>
 References: <1429180540-5692-1-git-send-email-keita.kobayashi.ym@renesas.com>
-	<1429180540-5692-2-git-send-email-keita.kobayashi.ym@renesas.com>
+	<1429180540-5692-4-git-send-email-keita.kobayashi.ym@renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1429180540-5692-2-git-send-email-keita.kobayashi.ym@renesas.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
-Cc: "Simon Horman [Horms]" <horms@verge.net.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, SH-Linux <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1429180540-5692-4-git-send-email-keita.kobayashi.ym-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Keita Kobayashi <keita.kobayashi.ym-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Cc: "Simon Horman [Horms]" <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, SH-Linux <linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi Kobayashi-san,
 
 On Thu, Apr 16, 2015 at 7:35 PM, Keita Kobayashi
-<keita.kobayashi.ym@renesas.com> wrote:
-> Define ARM_RCAR_CPUIDLE config item to enable cpuidle
-> support for Renesas R-Car Gen2 SoCs.
+<keita.kobayashi.ym-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org> wrote:
+> This patch add the ARM CPUs Device Tree binding to document a new
+> enable method of Renesas cpuidle.
 >
-> Signed-off-by: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
+> Signed-off-by: Keita Kobayashi <keita.kobayashi.ym-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
 > ---
->  drivers/cpuidle/Kconfig.arm | 8 ++++++++
->  1 file changed, 8 insertions(+)
+>  Documentation/devicetree/bindings/arm/cpus.txt | 1 +
+>  1 file changed, 1 insertion(+)
 >
-> diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-> index 21340e0..1bff62e 100644
-> --- a/drivers/cpuidle/Kconfig.arm
-> +++ b/drivers/cpuidle/Kconfig.arm
-> @@ -74,3 +74,11 @@ config ARM_MVEBU_V7_CPUIDLE
->         depends on ARCH_MVEBU && !ARM64
->         help
->           Select this to enable cpuidle on Armada 370, 38x and XP processors.
-> +
-> +config ARM_RCAR_CPUIDLE
-> +       bool "CPU Idle Driver for the R-Car SoCs"
-> +       depends on ARCH_RCAR_GEN2
-> +       depends on ARM_CPUIDLE
-> +       select ARM_CPU_SUSPEND
-> +       help
-> +         Select this to enable cpuidle for R-Car SoCs
+> diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
+> index 8b9e0a9..663ee11 100644
+> --- a/Documentation/devicetree/bindings/arm/cpus.txt
+> +++ b/Documentation/devicetree/bindings/arm/cpus.txt
+> @@ -196,6 +196,7 @@ nodes to be present and contain the properties described below.
+>                             "qcom,gcc-msm8660"
+>                             "qcom,kpss-acc-v1"
+>                             "qcom,kpss-acc-v2"
+> +                           "renesas,rcar-idle"
+>                             "rockchip,rk3066-smp"
+>
+>         - cpu-release-addr
 
-Thanks for your efforts. May I ask why we need a separate Kconfig
-entry for this portion? It looks a bit overkill to me.
+I don't mind this portion so much and I can see other vendors are
+using this format. And with risk of upsetting the DT police I have to
+mention my doubts about why we need this particular piece of binding.
 
-I have not tried this myself, but it seems to me that you could simply
-modify arch/arm/mach-shmobile/Kconfig something like this:
+The proposed string by this patch does not seem to describe any
+hardware but it is aligned to other existing stings referring to
+software such as "spin-table" and "psci". From a C code implementation
+point of view we would get enough information to make a good decision
+by just checking SoC compatible string. At the same time, this seems
+to be the standard way of doing things and standard is good.
 
-config ARCH_RCAR_GEN2
- bool
- select PM_RCAR if PM || SMP
-+ select ARM_CPU_SUSPEND if ARM_CPUIDLE
- select RENESAS_IRQC
-
-and then in patch 2/5 use ARM_CPUIDLE for the #ifdefs instead of
-ARM_RCAR_CPUIDLE.
-
-I think that would simplify things if possible.
+So if we should turn this into something that describes actual
+hardware, how about pointing out the APMU hardware that is actually
+managing the Core Standby mode that this CPUIdle implementation is
+invoking? May I suggest using "renesas,rcar-apmu"? Or perhaps to be
+safe we should do per-SoC string like in other cases like
+"renesas,r8a7791-apmu"? Or is there some way we can make this work
+without adding a new binding?
 
 Thanks,
 
 / magnus
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
