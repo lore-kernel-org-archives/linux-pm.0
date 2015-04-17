@@ -1,85 +1,75 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH RFC 5/7] arm64: dts: Add power-controller device bindings for QCOM 8916 SoC
-Date: Fri, 17 Apr 2015 17:49:07 -0600
-Message-ID: <1429314549-6730-6-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH RFC 6/7] arm64: dts: Add cpu idle states for 8916
+Date: Fri, 17 Apr 2015 17:49:08 -0600
+Message-ID: <1429314549-6730-7-git-send-email-lina.iyer@linaro.org>
 References: <1429314549-6730-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:36054 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932070AbbDQXth (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Apr 2015 19:49:37 -0400
+Received: by pabsx10 with SMTP id sx10so140274995pab.3
+        for <linux-pm@vger.kernel.org>; Fri, 17 Apr 2015 16:49:37 -0700 (PDT)
 In-Reply-To: <1429314549-6730-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: arnd@arndb.de, catalin.marinas@arm.com, mark.rutland@arm.com, Will.Deacon@arm.com, lorenzo.pieralisi@arm.com
 Cc: daniel.lezcano@linaro.org, khilman@linaro.org, sboyd@codeaurora.org, galak@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org, mlocke@codeaurora.org, bryanh@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-CPUs on the MSM8916 SoC has a power controller for each cpu that aids in
-regualting power during active and idle usecase. Add SAW device bindings
-for each cpu and L2.
+Add ARM common idle states device bindings for cpuidle support for 8916
+SOC.
 
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- arch/arm64/boot/dts/qcom/msm8916.dtsi | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ arch/arm64/boot/dts/qcom/msm8916.dtsi | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-index ac4b3e5..a3232be 100644
+index a3232be..3c46898 100644
 --- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
 +++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-@@ -51,6 +51,7 @@
- 			enable-method = "qcom,arm-cortex-acc";
+@@ -52,6 +52,7 @@
  			qcom,acc = <&acc0>;
  			next-level-cache = <&L2_0>;
-+			qcom,saw = <&saw0>;
+ 			qcom,saw = <&saw0>;
++			cpu-idle-states = <&CPU_SPC>;
  			L2_0: l2-cache {
  			      compatible = "arm,arch-cache";
  			      cache-level = <2>;
-@@ -65,6 +66,7 @@
- 			enable-method = "qcom,arm-cortex-acc";
+@@ -67,6 +68,7 @@
  			qcom,acc = <&acc1>;
  			next-level-cache = <&L2_0>;
-+			qcom,saw = <&saw1>;
+ 			qcom,saw = <&saw1>;
++			cpu-idle-states = <&CPU_SPC>;
  		};
  
  		CPU2: cpu@2 {
-@@ -74,6 +76,7 @@
- 			enable-method = "qcom,arm-cortex-acc";
+@@ -77,6 +79,7 @@
  			qcom,acc = <&acc2>;
  			next-level-cache = <&L2_0>;
-+			qcom,saw = <&saw2>;
+ 			qcom,saw = <&saw2>;
++			cpu-idle-states = <&CPU_SPC>;
  		};
  
  		CPU3: cpu@3 {
-@@ -83,6 +86,7 @@
- 			enable-method = "qcom,arm-cortex-acc";
+@@ -87,6 +90,17 @@
  			qcom,acc = <&acc3>;
  			next-level-cache = <&L2_0>;
-+			qcom,saw = <&saw3>;
+ 			qcom,saw = <&saw3>;
++			cpu-idle-states = <&CPU_SPC>;
++		};
++
++		idle-states {
++			CPU_SPC: spc {
++				compatible = "qcom,idle-state-spc",
++						"arm,idle-state";
++				entry-latency-us = <130>;
++				exit-latency-us = <150>;
++				min-residency-us = <2000>;
++			};
  		};
  	};
  
-@@ -254,5 +258,25 @@
- 			reg = <0x0b0b8000 0x1000>,
- 			      <0x0b008000 0x1000>;
- 		};
-+
-+		saw0: power-controller@B089000 {
-+			compatible = "qcom,msm8916-saw2-v3.0-cpu";
-+			reg = <0xB089000 0x1000>, <0xB009000 0x1000>;
-+		};
-+
-+		saw1: power-controller@B099000 {
-+			compatible = "qcom,msm8916-saw2-v3.0-cpu";
-+			reg = <0xB099000 0x1000>, <0xB009000 0x1000>;
-+		};
-+
-+		saw2: power-controller@B0A9000 {
-+			compatible = "qcom,msm8916-saw2-v3.0-cpu";
-+			reg = <0xB0A9000 0x1000>, <0xB009000 0x1000>;
-+		};
-+
-+		saw3: power-controller@B0B9000 {
-+			compatible = "qcom,msm8916-saw2-v3.0-cpu";
-+			reg = <0xB0B9000 0x1000>, <0xB009000 0x1000>;
-+		};
- 	};
- };
 -- 
 2.1.0
+
