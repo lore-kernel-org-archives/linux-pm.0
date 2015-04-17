@@ -1,57 +1,87 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH] ARM: tegra: cpuidle: implement
- cpuidle_state.enter_freeze()
-Date: Fri, 17 Apr 2015 15:08:19 +0100
-Message-ID: <20150417140819.GB2347@red-moon>
-References: <1428490480-10144-1-git-send-email-tomeu.vizoso@collabora.com>
- <20150408115546.GA24271@red-moon>
- <552643E1.3060200@collabora.com>
- <285738930.THBQOWvsah@vostro.rjw.lan>
- <20150410100844.GC23730@red-moon>
- <CAAObsKAihF1k1yzZxQEs_jpPnCdV3HQbLaYHWu1QNsNd5zqiOg@mail.gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [RFC/PATCH v2 3/5] devicetree: bindings: Add new cpuidle enable
+ method for Renesas R-car SoCs
+Date: Fri, 17 Apr 2015 15:37:23 +0100
+Message-ID: <20150417143723.GC2347@red-moon>
+References: <1429180540-5692-1-git-send-email-keita.kobayashi.ym@renesas.com>
+ <1429180540-5692-4-git-send-email-keita.kobayashi.ym@renesas.com>
+ <20150417124624.GD21904@leverpostej>
+ <CANqRtoTaGc7QCJAVj8Jhpo5HgbwyfiRQZz5j0zBkE1cBkDZAzQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <CAAObsKAihF1k1yzZxQEs_jpPnCdV3HQbLaYHWu1QNsNd5zqiOg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Russell King <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <CANqRtoTaGc7QCJAVj8Jhpo5HgbwyfiRQZz5j0zBkE1cBkDZAzQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, Keita Kobayashi <keita.kobayashi.ym-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, "horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org" <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, "rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 16, 2015 at 03:37:19PM +0100, Tomeu Vizoso wrote:
-
-[...]
-
-> >> I don't know what FIQs are. :-)
-> >
-> > In short, fast IRQs, it is a separate IRQ line handled as a separate
-> > exception source with some private (banked) registers that minimize registers
-> > saving/restoring. They are not identical to NMI on x86, since
-> > their behaviour (handling) may be overriden by platforms and they
-> > can be masked.
-> >
-> >> ->enter_freeze is entered with interrupts disabled on the local CPU.  It is
-> >> not supposed to re-enable them.  That is, while in the ->enter_freeze callback
-> >> routine, the CPU must not be interrupted aby anything other than NMI.
-> >
-> > It boils down to what FIQs handlers are allowed to do with tick frozen
-> > and what they are (may be) currently used for.
-> >
-> > Russell has more insights on this than I do, in particular what FIQs are
-> > currently used for on ARM and if we can leave them enabled safely with tick
-> > frozen.
+On Fri, Apr 17, 2015 at 02:11:24PM +0100, Magnus Damm wrote:
+> Hi Mark,
 > 
-> But even if it's currently safe to leave them enabled, is there any
-> reason for not disabling them?
+> On Fri, Apr 17, 2015 at 9:46 PM, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org> wrote:
+> > On Thu, Apr 16, 2015 at 11:35:38AM +0100, Keita Kobayashi wrote:
+> >> This patch add the ARM CPUs Device Tree binding to document a new
+> >> enable method of Renesas cpuidle.
+> >>
+> >> Signed-off-by: Keita Kobayashi <keita.kobayashi.ym-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+> >> ---
+> >>  Documentation/devicetree/bindings/arm/cpus.txt | 1 +
+> >>  1 file changed, 1 insertion(+)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
+> >> index 8b9e0a9..663ee11 100644
+> >> --- a/Documentation/devicetree/bindings/arm/cpus.txt
+> >> +++ b/Documentation/devicetree/bindings/arm/cpus.txt
+> >> @@ -196,6 +196,7 @@ nodes to be present and contain the properties described below.
+> >>                           "qcom,gcc-msm8660"
+> >>                           "qcom,kpss-acc-v1"
+> >>                           "qcom,kpss-acc-v2"
+> >> +                         "renesas,rcar-idle"
+> >
+> > The enable-method is about how to bring the CPU up (and potentially
+> > implies other things, like how to take it down again).
+> 
+> Thanks for your clarification. I now understand that this is related
+> to SMP boot and CPU Hotplug.
+> 
+> > These is no code in this series to that effect, no semantics are
+> > provided, and the name implies this is idle-specific.
+> >
+> > So this doesn't look right, and makes no sense to me.
+> 
+> Ok, I somehow (incorrectly?) assumed that the following line in patch
+> 2/5* tied into this:
+> +CPUIDLE_METHOD_OF_DECLARE(rcar, "renesas,rcar-idle", &rcar_cpuidle_ops);
+> 
+> [*] [RFC/PATCH v2 2/5] ARM: shmobile: Add cpuidle_ops for R-Car cpuidle
+> 
+> But if it is unrelated it should of course be dropped or reworked.
 
-Ok, the point here is: either it is safe, and you leave them enabled,
-or it is not and we must disable them *before* enter_freeze() is entered.
+It is related, but Mark's remark is correct. We have to keep in mind
+that an enable-method defines how a CPU is powered {up/down} and
+also suspended (quiesced through idle).
 
-Disabling them in the platform enter_freeze() hook does not make sense,
-because this means we run with FIQs enabled with tick frozen, either
-it is safe or it is not, it can't be both.
+It has to be defined through proper bindings and related code, adding a
+random compatible string for the sake of matching does not cut it,
+that is not acceptable and I stated it from the beginning.
 
-I would ask Russell opinion on this, before making any decision.
+So, to make it clear, an enable-method defines CPU operations as a
+whole, cpu init, power{up/down} and suspend.
+
+It must be documented with proper bindings that defines compatible string and
+related properties.
+
+The sooner we incorporate the CPUidle ops into SMP ops the better to
+prevent this abuse from happening, an enable-method encompasses SMP
+ops and CPUidle ops, actually they must be merged because they represent
+the enable-method implementation as a whole.
+
+I hope this helps.
 
 Lorenzo
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
