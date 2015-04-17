@@ -1,51 +1,39 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v3 2/2] [media] uvcvideo: Remain runtime-suspended at
- sleeps
-Date: Fri, 17 Apr 2015 13:32:50 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1504171331050.1319-100000@iolanthe.rowland.org>
-References: <1429284290-25153-3-git-send-email-tomeu.vizoso@collabora.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Dasaratharaman Chandramouli
+	<dasaratharaman.chandramouli@intel.com>
+Subject: [PATCH] intel powerclamp: support Knights Landing
+Date: Fri, 17 Apr 2015 15:31:06 -0700
+Message-ID: <1429309866-63063-1-git-send-email-dasaratharaman.chandramouli@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:39868 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932908AbbDQRcv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Apr 2015 13:32:51 -0400
-In-Reply-To: <1429284290-25153-3-git-send-email-tomeu.vizoso@collabora.com>
+Received: from mga14.intel.com ([192.55.52.115]:15255 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751669AbbDQWbZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 17 Apr 2015 18:31:25 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-pm@vger.kernel.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jacob Pan Jun <jacob.jun.pan@intel.com>
+Cc: Nikhil Rao <nikhil.rao@intel.com>, Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>
 
-On Fri, 17 Apr 2015, Tomeu Vizoso wrote:
+This patch enables intel_powerclamp driver to run on the
+next-generation Intel(R) Xeon Phi Microarchitecture
+code named "Knights Landing"
 
-> When the system goes to sleep and afterwards resumes, a significant
-> amount of time is spent suspending and resuming devices that were
-> already runtime-suspended.
-> 
-> By setting the power.force_direct_complete flag, the PM core will ignore
-> the state of descendant devices and the device will be let in
-> runtime-suspend.
-> 
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> ---
->  drivers/media/usb/uvc/uvc_driver.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/media/usb/uvc/uvc_driver.c b/drivers/media/usb/uvc/uvc_driver.c
-> index 5970dd6..ae75a70 100644
-> --- a/drivers/media/usb/uvc/uvc_driver.c
-> +++ b/drivers/media/usb/uvc/uvc_driver.c
-> @@ -1945,6 +1945,8 @@ static int uvc_probe(struct usb_interface *intf,
->  			"supported.\n", ret);
->  	}
->  
-> +	intf->dev.parent->power.force_direct_complete = true;
+Signed-off-by: Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>
+---
+ drivers/thermal/intel_powerclamp.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-This seems wrong.  The uvc driver is bound to intf, not to intf's
-parent.  So it would be okay for the driver to set
-intf->dev.power.force_direct_complete, but it's wrong to set
-intf->dev.parent->power.force_direct_complete.
-
-Alan Stern
+diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+index 12623bc..e34ccd5 100644
+--- a/drivers/thermal/intel_powerclamp.c
++++ b/drivers/thermal/intel_powerclamp.c
+@@ -690,6 +690,7 @@ static const struct x86_cpu_id intel_powerclamp_ids[] = {
+ 	{ X86_VENDOR_INTEL, 6, 0x4c},
+ 	{ X86_VENDOR_INTEL, 6, 0x4d},
+ 	{ X86_VENDOR_INTEL, 6, 0x56},
++	{ X86_VENDOR_INTEL, 6, 0x57},
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(x86cpu, intel_powerclamp_ids);
+-- 
+1.8.1.5
 
