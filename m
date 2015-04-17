@@ -1,38 +1,50 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH 0/5] intel_pstate: Use C0 time, calculate target pstate directly
-Date: Thu, 16 Apr 2015 09:35:26 -0700
-Message-ID: <002801d07863$591554d0$0b3ffe70$@net>
-References: <1428811830-15006-1-git-send-email-dsmythies@telus.net>
+From: Ben Hutchings <ben.hutchings@codethink.co.uk>
+Subject: [PATCH] PM / Runtime: add note about re-calling in during device
+ probe()
+Date: Fri, 17 Apr 2015 01:14:15 +0100
+Message-ID: <1429229655.8341.73.camel@xylophone.i.decadent.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta6.telus.net ([209.171.16.79]:56282 "EHLO cmta6.telus.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752067AbbDPQf3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 16 Apr 2015 12:35:29 -0400
-In-Reply-To: <1428811830-15006-1-git-send-email-dsmythies@telus.net>
-Content-Language: en-ca
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-doc-owner@vger.kernel.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-doc@vger.kernel.org, CT kernel <linux-kernel@lists.codethink.co.uk>
 List-Id: linux-pm@vger.kernel.org
-To: kristen@linux.intel.com, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org
 
-On 2015.04.11 09:10 Doug Smythies wrote:
+From: Ben Dooks <ben.dooks@codethink.co.uk>
 
-> Patch 1 basically adds better debug information to the
-> perf data. It was originally requested in June, and Dirk agreed
-> to include it in September. Regardless of the acceptance or
-> rejection of this whole patch set, please accept this one.
-> scripts/checkpatch.pl complains about one line as over 80
-> characters, not sure how to split the line.
+The sh_eth driver has come up with an issue where the runtime_pm
+code suspends it during the probe() method due to the network
+device registration re-calling into the driver.
 
-Please consider to accept patch 1 of 5 for inclusion
-in Kernel 4.1RC1.
+Add a note about this into the documentation.
 
-I understand the need to do regression and multiple platform
-testing on the rest of the patch set, but this one
-just adds some useful debug information.
+Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+Signed-off-by: Ben Hutchings <ben.hutchings@codethink.co.uk>
+---
+ Documentation/power/runtime_pm.txt |    6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+index 44fe1d28a163..e76dc0ad4d2b 100644
+--- a/Documentation/power/runtime_pm.txt
++++ b/Documentation/power/runtime_pm.txt
+@@ -556,6 +556,12 @@ helper functions described in Section 4.  In that case, pm_runtime_resume()
+ should be used.  Of course, for this purpose the device's runtime PM has to be
+ enabled earlier by calling pm_runtime_enable().
+ 
++Note, if the device may execute pm_runtime calls during the probe (such as
++if it is registers with a subsystem that may call back in) then the
++pm_runtime_get_sync() call paired with a pm_runtime_put() call will be
++appropriate to ensure that the device is not put back to sleep during the
++probe. This can happen with systems such as the network device layer.
++
+ It may be desirable to suspend the device once ->probe() has finished.
+ Therefore the driver core uses the asyncronous pm_request_idle() to submit a
+ request to execute the subsystem-level idle callback for the device at that
+-- 
+1.7.10.4
+
 
 
