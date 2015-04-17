@@ -1,45 +1,65 @@
-From: Mark Rutland <mark.rutland@arm.com>
+From: Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 Subject: Re: [RFC/PATCH v2 3/5] devicetree: bindings: Add new cpuidle enable
  method for Renesas R-car SoCs
-Date: Fri, 17 Apr 2015 13:46:25 +0100
-Message-ID: <20150417124624.GD21904@leverpostej>
+Date: Fri, 17 Apr 2015 22:11:24 +0900
+Message-ID: <CANqRtoTaGc7QCJAVj8Jhpo5HgbwyfiRQZz5j0zBkE1cBkDZAzQ@mail.gmail.com>
 References: <1429180540-5692-1-git-send-email-keita.kobayashi.ym@renesas.com>
- <1429180540-5692-4-git-send-email-keita.kobayashi.ym@renesas.com>
+	<1429180540-5692-4-git-send-email-keita.kobayashi.ym@renesas.com>
+	<20150417124624.GD21904@leverpostej>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1429180540-5692-4-git-send-email-keita.kobayashi.ym@renesas.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
-Cc: "horms@verge.net.au" <horms@verge.net.au>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "magnus.damm@gmail.com" <magnus.damm@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150417124624.GD21904@leverpostej>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: Keita Kobayashi <keita.kobayashi.ym-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, "horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org" <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, "rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Apr 16, 2015 at 11:35:38AM +0100, Keita Kobayashi wrote:
-> This patch add the ARM CPUs Device Tree binding to document a new
-> enable method of Renesas cpuidle.
-> 
-> Signed-off-by: Keita Kobayashi <keita.kobayashi.ym@renesas.com>
-> ---
->  Documentation/devicetree/bindings/arm/cpus.txt | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
-> index 8b9e0a9..663ee11 100644
-> --- a/Documentation/devicetree/bindings/arm/cpus.txt
-> +++ b/Documentation/devicetree/bindings/arm/cpus.txt
-> @@ -196,6 +196,7 @@ nodes to be present and contain the properties described below.
->  			    "qcom,gcc-msm8660"
->  			    "qcom,kpss-acc-v1"
->  			    "qcom,kpss-acc-v2"
-> +			    "renesas,rcar-idle"
+Hi Mark,
 
-The enable-method is about how to bring the CPU up (and potentially
-implies other things, like how to take it down again).
+On Fri, Apr 17, 2015 at 9:46 PM, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org> wrote:
+> On Thu, Apr 16, 2015 at 11:35:38AM +0100, Keita Kobayashi wrote:
+>> This patch add the ARM CPUs Device Tree binding to document a new
+>> enable method of Renesas cpuidle.
+>>
+>> Signed-off-by: Keita Kobayashi <keita.kobayashi.ym-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+>> ---
+>>  Documentation/devicetree/bindings/arm/cpus.txt | 1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
+>> index 8b9e0a9..663ee11 100644
+>> --- a/Documentation/devicetree/bindings/arm/cpus.txt
+>> +++ b/Documentation/devicetree/bindings/arm/cpus.txt
+>> @@ -196,6 +196,7 @@ nodes to be present and contain the properties described below.
+>>                           "qcom,gcc-msm8660"
+>>                           "qcom,kpss-acc-v1"
+>>                           "qcom,kpss-acc-v2"
+>> +                         "renesas,rcar-idle"
+>
+> The enable-method is about how to bring the CPU up (and potentially
+> implies other things, like how to take it down again).
 
-These is no code in this series to that effect, no semantics are
-provided, and the name implies this is idle-specific.
+Thanks for your clarification. I now understand that this is related
+to SMP boot and CPU Hotplug.
 
-So this doesn't look right, and makes no sense to me.
+> These is no code in this series to that effect, no semantics are
+> provided, and the name implies this is idle-specific.
+>
+> So this doesn't look right, and makes no sense to me.
 
-Mark.
+Ok, I somehow (incorrectly?) assumed that the following line in patch
+2/5* tied into this:
++CPUIDLE_METHOD_OF_DECLARE(rcar, "renesas,rcar-idle", &rcar_cpuidle_ops);
+
+[*] [RFC/PATCH v2 2/5] ARM: shmobile: Add cpuidle_ops for R-Car cpuidle
+
+But if it is unrelated it should of course be dropped or reworked.
+
+Thanks,
+
+/ magnus
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
