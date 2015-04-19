@@ -1,59 +1,47 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [GIT PULL] turbostat update for Linux-4.1
-Date: Sat, 18 Apr 2015 22:24:58 -0400
-Message-ID: <CAJvTdKk4iuoW1sw_zQYAaJ+ETy5RWkKcB4FLUyQ+eu3bkoOMOA@mail.gmail.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH 01/12] tools/power turbostat: simplify default output
+Date: Sun, 19 Apr 2015 07:26:24 -0700
+Message-ID: <000301d07aac$d1856bd0$74904370$@net>
+References: <1429404027-23203-1-git-send-email-lenb@kernel.org> <1cc21f7b6b747220c29b42cfd1c84b5648d12407.1429402554.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta5.telus.net ([209.171.16.78]:42544 "EHLO cmta5.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751979AbbDSO02 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 19 Apr 2015 10:26:28 -0400
+In-Reply-To: <1cc21f7b6b747220c29b42cfd1c84b5648d12407.1429402554.git.len.brown@intel.com>
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Len Brown' <lenb@kernel.org>
+Cc: 'Len Brown' <len.brown@intel.com>, linux-pm@vger.kernel.org
 
-Hi Linus,
+On 2015.04.18 17:40 Len Brown wrote:
 
-Please pull these updates to the turbostat utility.
-Just one kernel dependency in this batch -- added a #define to msr-index.h
+> Casual turbostat users generally just want to know MHz.
+> So by default, just print enough information to make sense of MHz.
+> 
+> All the other configuration data and columns for C-states and temperature etc,
+> are printed with the --debug option.
 
-thanks!
-Len Brown, Intel Open Source Technology Center
+I almost never use turbostat to obtain MHz.
+I only use turbostat to observe Energy or Power, and C-states.
+
+I am not in favor of this change.
+
+I do not want the extra clutter that comes with the --debug option
+(although I do use it sometimes).
+When doing experiments manually, without a script, it is convenient
+to have many energy or power samples visible on the screen all at once.
+
+Note: If I am using the acpi cpufreq driver (i.e. rarely), then yes
+I use turbostat to obtain actual CPU frequencies, as I know of no
+other way.
+
+I reviewed some help type forums, and yes while many postings involving
+turbostat are about CPU frequency, there are also some about power.
 
 
-The following changes since commit 39a8804455fb23f09157341d3ba7db6d7ae6ee76:
-
-  Linux 4.0 (2015-04-12 15:12:50 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git turbostat
-
-for you to fetch changes up to e9257f5fa48cc296d7eed35acf9f2ad195184122:
-
-  tools/power turbostat: correct dumped pkg-cstate-limit value
-(2015-04-18 14:20:52 -0400)
-
-----------------------------------------------------------------
-Andrey Semin (1):
-      tools/power turbostat: correct DRAM RAPL units on recent Xeon processors
-
-Len Brown (10):
-      tools/power turbostat: simplify default output
-      tools/power turbostat: update PERF_LIMIT_REASONS decoding
-      tools/power turbostat: label base frequency
-      x86 msr-index: define MSR_TURBO_RATIO_LIMIT,1,2
-      tools/power turbostat: use new MSR_TURBO_RATIO_LIMIT names
-      tools/power turbostat: dump MSR_TURBO_RATIO_LIMIT2
-      tools/power turbostat: modprobe msr, if needed
-      tools/power turbostat: Initial Skylake support
-      tools/power turbostat: calculate TSC frequency from CPUID(0x15) on SKL
-      tools/power turbostat: correct dumped pkg-cstate-limit value
-
-Thomas D (1):
-      tools/power turbostat: Use $(CURDIR) instead of $(PWD) and add
-support for O= option in Makefile
-
- arch/x86/include/uapi/asm/msr-index.h |   8 +
- tools/power/x86/turbostat/Makefile    |   6 +-
- tools/power/x86/turbostat/turbostat.8 | 138 ++++++-----
- tools/power/x86/turbostat/turbostat.c | 436 ++++++++++++++++++++++++++--------
- 4 files changed, 427 insertions(+), 161 deletions(-)
