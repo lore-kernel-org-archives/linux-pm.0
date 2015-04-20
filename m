@@ -1,58 +1,44 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH v3 2/2] [media] uvcvideo: Remain runtime-suspended at sleeps
-Date: Mon, 20 Apr 2015 09:11:36 +0200
-Message-ID: <CAAObsKCP4dTvOPB=XrZexauHmdC99JYkc6cYKoaT-vZjnLaynw@mail.gmail.com>
-References: <1429284290-25153-3-git-send-email-tomeu.vizoso@collabora.com> <Pine.LNX.4.44L0.1504171331050.1319-100000@iolanthe.rowland.org>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH 1/1] x86: replace cpu_up hard-coded mdelay with variable
+Date: Mon, 20 Apr 2015 09:13:06 +0200
+Message-ID: <20150420071306.GA14315@gmail.com>
+References: <1429404795-23260-1-git-send-email-lenb@kernel.org>
+ <87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1504171331050.1319-100000@iolanthe.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, linux-media@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f181.google.com ([209.85.212.181]:34687 "EHLO
+	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752641AbbDTHNL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Apr 2015 03:13:11 -0400
+Content-Disposition: inline
+In-Reply-To: <87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
 
-On 17 April 2015 at 19:32, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Fri, 17 Apr 2015, Tomeu Vizoso wrote:
->
->> When the system goes to sleep and afterwards resumes, a significant
->> amount of time is spent suspending and resuming devices that were
->> already runtime-suspended.
->>
->> By setting the power.force_direct_complete flag, the PM core will ignore
->> the state of descendant devices and the device will be let in
->> runtime-suspend.
->>
->> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
->> ---
->>  drivers/media/usb/uvc/uvc_driver.c | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/drivers/media/usb/uvc/uvc_driver.c b/drivers/media/usb/uvc/uvc_driver.c
->> index 5970dd6..ae75a70 100644
->> --- a/drivers/media/usb/uvc/uvc_driver.c
->> +++ b/drivers/media/usb/uvc/uvc_driver.c
->> @@ -1945,6 +1945,8 @@ static int uvc_probe(struct usb_interface *intf,
->>                       "supported.\n", ret);
->>       }
->>
->> +     intf->dev.parent->power.force_direct_complete = true;
->
-> This seems wrong.  The uvc driver is bound to intf, not to intf's
-> parent.  So it would be okay for the driver to set
-> intf->dev.power.force_direct_complete, but it's wrong to set
-> intf->dev.parent->power.force_direct_complete.
 
-Agreed.
+* Len Brown <lenb@kernel.org> wrote:
+
+> +config X86_INIT_MDELAY
+> +	int "Milliseconds to wait to de-assert INIT upon CPU startup" if SMP
+> +	range 0 10
+> +	default "10"
+> +	---help---
+> +	  This allows you to specify how long the BSP will delay
+> +	  between asserting INIT and de-asserting INIT when starting another CPU.
+> +	  This delay is paid on each cpu-online operation, including boot-time,
+> +	  resume from suspend, and resume from hibernate.  The the value of
+> +	  10 millisec was specified by Multi-Processor Spec 1.4 in 1997.
+> +	  But modern hardware does not require any delay.
+
+What's the cutoff for 'modern hardware' - which CPUs stopped requiring 
+the delay?
+
+Also, is there any public document where the no-delay is specified for 
+'modern hardware'?
 
 Thanks,
 
-Tomeu
-
-> Alan Stern
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+	Ingo
