@@ -1,43 +1,43 @@
 From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH 1/1] x86: replace cpu_up hard-coded mdelay with variable
-Date: Mon, 20 Apr 2015 09:13:06 +0200
-Message-ID: <20150420071306.GA14315@gmail.com>
+Subject: Re: [PATCH 0/1] speeding up cpu_up()
+Date: Mon, 20 Apr 2015 09:15:56 +0200
+Message-ID: <20150420071556.GB14315@gmail.com>
 References: <1429404795-23260-1-git-send-email-lenb@kernel.org>
- <87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f181.google.com ([209.85.212.181]:34687 "EHLO
-	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752641AbbDTHNL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Apr 2015 03:13:11 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1429404795-23260-1-git-send-email-lenb@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Len Brown <lenb@kernel.org>
-Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+List-Id: linux-pm@vger.kernel.org
 
 
 * Len Brown <lenb@kernel.org> wrote:
 
-> +config X86_INIT_MDELAY
-> +	int "Milliseconds to wait to de-assert INIT upon CPU startup" if SMP
-> +	range 0 10
-> +	default "10"
-> +	---help---
-> +	  This allows you to specify how long the BSP will delay
-> +	  between asserting INIT and de-asserting INIT when starting another CPU.
-> +	  This delay is paid on each cpu-online operation, including boot-time,
-> +	  resume from suspend, and resume from hibernate.  The the value of
-> +	  10 millisec was specified by Multi-Processor Spec 1.4 in 1997.
-> +	  But modern hardware does not require any delay.
+> The following patch...
+> 
+> [PATCH 1/1] x86: replace cpu_up hard-coded mdelay with variable
+> 
+> enables reducing cpu_up() time by 10ms on modern systems.
+> 
+> This means that for every processor in the system,
+> boot-time and resume-time can be reduced by 10ms per-processor.
+> 
+> Once this patch is accepted, I'll send a subsequent patch
+> to update the default delay, as appropriate.
+> 
+> thanks,
+> Len Brown, Intel Open Source Technology Center
 
-What's the cutoff for 'modern hardware' - which CPUs stopped requiring 
-the delay?
+So instead of playing games with an ancient delay, I'd suggest we 
+install the 10 msec INIT assertion wait as a platform quirk instead, 
+and activate it for all CPUs/systems that we think might need it, with 
+a sufficiently robust and future-proof quirk cutoff condition.
 
-Also, is there any public document where the no-delay is specified for 
-'modern hardware'?
+New systems won't have the quirk active and thus won't have to have 
+this delay configurable either.
 
 Thanks,
 
