@@ -1,63 +1,42 @@
-From: "pi-cheng.chen" <pi-cheng.chen@linaro.org>
-Subject: [PATCH 2/2] ARM64: mt8173: dts Add MT8173 cpufreq driver support
-Date: Mon, 20 Apr 2015 17:27:27 +0800
-Message-ID: <1429522047-16675-3-git-send-email-pi-cheng.chen@linaro.org>
-References: <1429522047-16675-1-git-send-email-pi-cheng.chen@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1429522047-16675-1-git-send-email-pi-cheng.chen@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Mike Turquette <mturquette@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>
-Cc: "pi-cheng.chen" <pi-cheng.chen@linaro.org>, "Joe.C" <yingjoe.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Howard Chen <ibanezchen@gmail.com>, fan.chen@mediatek.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-mediatek@lists.infradead.org
+From: "Brown, Len" <len.brown@intel.com>
+Subject: RE: [PATCH 1/1] x86: replace cpu_up hard-coded mdelay with variable
+Date: Mon, 20 Apr 2015 12:37:52 +0000
+Message-ID: <1A7043D5F58CCB44A599DFD55ED4C94846861500@fmsmsx115.amr.corp.intel.com>
+References: <1429404795-23260-1-git-send-email-lenb@kernel.org>
+ <87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com>
+ <20150420071306.GA14315@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:12504 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754730AbbDTMhz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Apr 2015 08:37:55 -0400
+In-Reply-To: <20150420071306.GA14315@gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>, Len Brown <lenb@kernel.org>
+Cc: "x86@kernel.org" <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
 
-This patch adds voltage supplies and clocks used by MT8173 cpufreq driver.
+> What's the cutoff for 'modern hardware' - which CPUs stopped requiring
+> the delay?
 
-Signed-off-by: pi-cheng.chen <pi-cheng.chen@linaro.org>
----
- arch/arm64/boot/dts/mediatek/mt8173-evb.dts | 9 +++++++++
- arch/arm64/boot/dts/mediatek/mt8173.dtsi    | 6 ++++++
- 2 files changed, 15 insertions(+)
+This is the topic of ongoing research, and I'm not ready to send
+the patch setting a new default until I've heard back from a few more HW people.
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8173-evb.dts b/arch/arm64/boot/dts/mediatek/mt8173-evb.dts
-index 96e141c..7a00cfe 100644
---- a/arch/arm64/boot/dts/mediatek/mt8173-evb.dts
-+++ b/arch/arm64/boot/dts/mediatek/mt8173-evb.dts
-@@ -330,3 +330,12 @@
- 	status = "okay";
- 	clock-frequency = <100000>;
- };
-+
-+&cpu0 {
-+	proc-supply = <&mt6397_vpca15_reg>;
-+};
-+
-+&cpu2 {
-+	proc-supply = <&da9211_vcpu_reg>;
-+	sram-supply = <&mt6397_vsramca7_reg>;
-+};
-diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-index d9cc84e..b8a5454 100644
---- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-@@ -51,6 +51,9 @@
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a53";
- 			reg = <0x000>;
-+			clocks = <&infracfg INFRA_CA53SEL>,
-+				 <&apmixedsys APMIXED_MAINPLL>;
-+			clock-names = "cpu", "intermediate";
- 		};
- 
- 		cpu1: cpu@1 {
-@@ -65,6 +68,9 @@
- 			compatible = "arm,cortex-a57";
- 			reg = <0x100>;
- 			enable-method = "psci";
-+			clocks = <&infracfg INFRA_CA57SEL>,
-+				 <&apmixedsys APMIXED_MAINPLL>;
-+			clock-names = "cpu", "intermediate";
- 		};
- 
- 		cpu3: cpu@101 {
--- 
-1.9.1
+Every system I've tested appears to work with delay 0.
+Were I to guess, I'd venture that every
+system that runs an X86_64 kernel might count as "modern" -- even
+the 2005 AMD Turion laptop I've got in the bone pile.
+
+> Also, is there any public document where the no-delay is specified for
+> 'modern hardware'?
+
+Unfortunately only the converse is true.  There is an ancient document specifying
+that the delay may be necessary.
+
+cheers,
+-Len
+
