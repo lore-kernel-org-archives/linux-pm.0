@@ -1,75 +1,47 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: default value of power/wakeup
-Date: Mon, 20 Apr 2015 13:41:41 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1504201339270.1321-100000@iolanthe.rowland.org>
-References: <CAGnHSE=tvTisq3xd67edEcC+pBOqUmWoUU2nKZXhR5AfRzNO7g@mail.gmail.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH 1/1] x86: replace cpu_up hard-coded mdelay with variable
+Date: Mon, 20 Apr 2015 19:45:44 +0200
+Message-ID: <20150420174544.GA18931@gmail.com>
+References: <1429404795-23260-1-git-send-email-lenb@kernel.org>
+ <87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com>
+ <20150420071306.GA14315@gmail.com>
+ <1A7043D5F58CCB44A599DFD55ED4C94846861500@fmsmsx115.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:50652 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751429AbbDTRlm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Apr 2015 13:41:42 -0400
-In-Reply-To: <CAGnHSE=tvTisq3xd67edEcC+pBOqUmWoUU2nKZXhR5AfRzNO7g@mail.gmail.com>
+Received: from mail-wi0-f174.google.com ([209.85.212.174]:34416 "EHLO
+	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750771AbbDTRpu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Apr 2015 13:45:50 -0400
+Content-Disposition: inline
+In-Reply-To: <1A7043D5F58CCB44A599DFD55ED4C94846861500@fmsmsx115.amr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tom Yan <tom.ty89@gmail.com>
-Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Brown, Len" <len.brown@intel.com>
+Cc: Len Brown <lenb@kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
 
-On Tue, 21 Apr 2015, Tom Yan wrote:
 
-> I have the following two USB wireless mouse/keyboard receivers:
-> 
-> logitech-djreceiver 0003:046D:C52B.0003: hiddev0,hidraw0: USB HID
-> v1.11 Device [Logitech USB Receiver] on usb-0000:00:14.0-13/input2
-> hid-generic 0003:046D:C52E.0005: input,hidraw2: USB HID v1.11 Keyboard
-> [Logitech USB Receiver] on usb-0000:00:14.0-14/input0
-> 
-> The default values in their power/wakeup:
-> [tom@localhost ~]$ cat /sys/bus/usb/devices/3-13/power/wakeup
-> disabled
-> [tom@localhost ~]$ cat /sys/bus/usb/devices/3-14/power/wakeup
-> enabled
-> 
-> According to https://www.kernel.org/doc/Documentation/usb/power-management.txt:
-> 
-> power/wakeup
-> 
->         This file is empty if the device does not support
->         remote wakeup.  Otherwise the file contains either the
->         word "enabled" or the word "disabled", ...
-> 
-> My question is, which part of the kernel or system determines the
-> default value? When I had a quick look on the source of the two driver
-> modules, I couldn't find any code related. So what caused the
-> difference?
-> 
-> P.S. I have no udev rule related to power/wakeup, which is the case I
-> am asking about.
-> 
-> [tom@localhost ~]$ cd /etc/udev/rules.d/
-> [tom@localhost rules.d]$ grep wakeup *
-> grep: *: No such file or directory
-> [tom@localhost rules.d]$ cd /lib/udev/rules.d/
-> [tom@localhost rules.d]$ grep wakeup *
-> 42-usb-hid-pm.rules:# advertise remote wakeup support but don't
-> actually implement
-> 42-usb-hid-pm.rules:# remote wakeup is working.
+* Brown, Len <len.brown@intel.com> wrote:
 
-This is from usbhid_start() in drivers/hid/usbhid/hid-core.c:
+> > What's the cutoff for 'modern hardware' - which CPUs stopped requiring
+> > the delay?
+> 
+> This is the topic of ongoing research, and I'm not ready to send
+> the patch setting a new default until I've heard back from a few more HW people.
+> 
+> Every system I've tested appears to work with delay 0.
+> Were I to guess, I'd venture that every
+> system that runs an X86_64 kernel might count as "modern" -- even
+> the 2005 AMD Turion laptop I've got in the bone pile.
 
-	/* Some keyboards don't work until their LEDs have been set.
-	 * Since BIOSes do set the LEDs, it must be safe for any device
-	 * that supports the keyboard boot protocol.
-	 * In addition, enable remote wakeup by default for all keyboard
-	 * devices supporting the boot protocol.
-	 */
-	if (interface->desc.bInterfaceSubClass == USB_INTERFACE_SUBCLASS_BOOT &&
-			interface->desc.bInterfaceProtocol ==
-				USB_INTERFACE_PROTOCOL_KEYBOARD) {
-		usbhid_set_leds(hid);
-		device_set_wakeup_enable(&dev->dev, 1);
-	}
+Could we use the apic version as a cutoff perhaps?
 
-Alan Stern
+It would be nice to 'automatically' include modern 32-bit x86 systems 
+as well.
 
+Any failure here would be relatively easy to bisect to, so we might as 
+well guess a bit and refine the quirk condition if needed?
+
+Thanks,
+
+	Ingo
