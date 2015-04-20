@@ -1,15 +1,15 @@
 From: ahaslam@baylibre.com
-Subject: [RFC v3 1/7] PM / Domains: structure changes for multiple states
-Date: Mon, 20 Apr 2015 17:02:02 +0200
-Message-ID: <1429542128-21021-2-git-send-email-ahaslam@baylibre.com>
+Subject: [PATCH] ARM: s3c64xx: pm: Convert to multiple states
+Date: Mon, 20 Apr 2015 17:02:04 +0200
+Message-ID: <1429542128-21021-4-git-send-email-ahaslam@baylibre.com>
 References: <1429542128-21021-1-git-send-email-ahaslam@baylibre.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f173.google.com ([209.85.212.173]:33066 "EHLO
-	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751185AbbDTPCR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Apr 2015 11:02:17 -0400
-Received: by wiax7 with SMTP id x7so85716955wia.0
-        for <linux-pm@vger.kernel.org>; Mon, 20 Apr 2015 08:02:15 -0700 (PDT)
+Received: from mail-wi0-f171.google.com ([209.85.212.171]:35148 "EHLO
+	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753179AbbDTPCU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Apr 2015 11:02:20 -0400
+Received: by widdi4 with SMTP id di4so102984637wid.0
+        for <linux-pm@vger.kernel.org>; Mon, 20 Apr 2015 08:02:19 -0700 (PDT)
 In-Reply-To: <1429542128-21021-1-git-send-email-ahaslam@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -18,289 +18,134 @@ Cc: bcousson@baylibre.com, linux-pm@vger.kernel.org, Axel Haslam <ahaslam@baylib
 
 From: Axel Haslam <ahaslam@baylibre.com>
 
-Add the structure changes to be able to declare
-multiple states. When trying to set a power domain
-to off, genpd will be able to choose from an array
-of states declared by the platform.
+The generic power domain framework added structure changes
+to support multiple intermediate states when powering off a domain.
 
-The power on and off callbacks and latencies are
-now tied to a particular state.
-
-States should be declared in ascending order from
-shallowest to deepest, deepest meaning the state
-which takes longer to enter and exit.
-
-if the genpd is initially off, the user should set the
-.init_state field when registering the genpd,
-so that genpd knows which callbacks to call to set the
-domain to on.
-
-An genpd with multiple states would look something like:
-
-struct generic_pm_domain pd1 = {
-	.name = "PD1",
-	.states = {
-		[0] = {
-			.name= "D0",
-			.power_off = D0_power_off_cb,
-			.power_on = D0_power_on_cb,
-			.power_off_latency_ns = D0_POWER_OFF_LATENCY,
-			.power_on_latency_ns = D0_POWER_ON_LATENCY,
-		},
-		[1] = {
-			.name= "D1",
-			.power_off = D1_power_off_cb,
-			.power_on = D1_power_on_cb,
-			.power_off_latency_ns = D1_POWER_OFF_LATENCY,
-			.power_on_latency_ns = D1_POWER_ON_LATENCY,
-		},
-		[2] = {
-			.name= "D2",
-			.power_off = D2_power_off_cb,
-			.power_on = D2_power_on_cb,
-			.power_off_latency_ns = D2_POWER_OFF_LATENCY,
-			.power_on_latency_ns = D2_POWER_ON_LATENCY,
-		},
-	},
-	.state_count = 3,
-	.init_state = 2,
-	[...]
-};
+These changes are needed to prevent compilation breaks with
+the new structures.
 
 Signed-off-by: Axel Haslam <ahaslam@baylibre.com>
 ---
- drivers/base/power/domain.c          | 43 +++++++++++++++++++++++++++---------
- drivers/base/power/domain_governor.c |  8 ++++---
- include/linux/pm_domain.h            | 21 ++++++++++++++----
- 3 files changed, 54 insertions(+), 18 deletions(-)
+ arch/arm/mach-s3c64xx/pm.c | 57 +++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 41 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 45937f8..5fa5fb6 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -141,12 +141,13 @@ static void genpd_set_active(struct generic_pm_domain *genpd)
- 
- static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
- {
-+	int target_state = genpd->target_state;
- 	s64 usecs64;
- 
- 	if (!genpd->cpuidle_data)
- 		return;
- 
--	usecs64 = genpd->power_on_latency_ns;
-+	usecs64 = genpd->states[target_state].power_on_latency_ns;
- 	do_div(usecs64, NSEC_PER_USEC);
- 	usecs64 += genpd->cpuidle_data->saved_exit_latency;
- 	genpd->cpuidle_data->idle_state->exit_latency = usecs64;
-@@ -154,23 +155,24 @@ static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
- 
- static int genpd_power_on(struct generic_pm_domain *genpd)
- {
-+	int target_state = genpd->target_state;
- 	ktime_t time_start;
- 	s64 elapsed_ns;
- 	int ret;
- 
--	if (!genpd->power_on)
-+	if (!genpd->states[target_state].power_on)
- 		return 0;
- 
- 	time_start = ktime_get();
--	ret = genpd->power_on(genpd);
-+	ret = genpd->states[target_state].power_on(genpd);
- 	if (ret)
- 		return ret;
- 
- 	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
--	if (elapsed_ns <= genpd->power_on_latency_ns)
-+	if (elapsed_ns <= genpd->states[target_state].power_on_latency_ns)
- 		return ret;
- 
--	genpd->power_on_latency_ns = elapsed_ns;
-+	genpd->states[target_state].power_on_latency_ns = elapsed_ns;
- 	genpd->max_off_time_changed = true;
- 	genpd_recalc_cpu_exit_latency(genpd);
- 	pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
-@@ -181,23 +183,24 @@ static int genpd_power_on(struct generic_pm_domain *genpd)
- 
- static int genpd_power_off(struct generic_pm_domain *genpd)
- {
-+	int target_state = genpd->target_state;
- 	ktime_t time_start;
- 	s64 elapsed_ns;
- 	int ret;
- 
--	if (!genpd->power_off)
-+	if (!genpd->states[target_state].power_off)
- 		return 0;
- 
- 	time_start = ktime_get();
--	ret = genpd->power_off(genpd);
-+	ret = genpd->states[target_state].power_off(genpd);
- 	if (ret == -EBUSY)
- 		return ret;
- 
- 	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
--	if (elapsed_ns <= genpd->power_off_latency_ns)
-+	if (elapsed_ns <= genpd->states[target_state].power_off_latency_ns)
- 		return ret;
- 
--	genpd->power_off_latency_ns = elapsed_ns;
-+	genpd->states[target_state].power_off_latency_ns = elapsed_ns;
- 	genpd->max_off_time_changed = true;
- 	pr_warn("%s: Power-%s latency exceeded, new value %lld ns\n",
- 		genpd->name, "off", elapsed_ns);
-@@ -486,6 +489,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 	struct pm_domain_data *pdd;
- 	struct gpd_link *link;
- 	unsigned int not_suspended;
-+	int target_state;
- 	int ret = 0;
- 
-  start:
-@@ -538,6 +542,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 
- 	genpd->status = GPD_STATE_BUSY;
- 	genpd->poweroff_task = current;
-+	target_state = genpd->target_state;
- 
- 	list_for_each_entry_reverse(pdd, &genpd->dev_list, list_node) {
- 		ret = atomic_read(&genpd->sd_count) == 0 ?
-@@ -572,7 +577,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 		goto out;
- 	}
- 
--	if (genpd->power_off) {
-+	if (genpd->states[target_state].power_off) {
- 		if (atomic_read(&genpd->sd_count) > 0) {
- 			ret = -EBUSY;
- 			goto out;
-@@ -1877,6 +1882,17 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
- 	genpd->resume_count = 0;
- 	genpd->device_count = 0;
- 	genpd->max_off_time_ns = -1;
-+
-+	/*
-+	 * we have to set the target off state to the initial off state
-+	 * so that when the genpd powers on, it knows what callback
-+	 * to use.
-+	 */
-+	genpd->target_state = genpd->init_state;
-+	if (genpd->state_count < 1) {
-+		pr_err("Tried to init pm domain %s without states!\n",
-+			genpd->name);
-+	}
- 	genpd->max_off_time_changed = true;
- 	genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
- 	genpd->domain.ops.runtime_resume = pm_genpd_runtime_resume;
-@@ -2251,6 +2267,7 @@ static int pm_genpd_summary_one(struct seq_file *s,
- 		[GPD_STATE_REPEAT] = "off-in-progress",
- 		[GPD_STATE_POWER_OFF] = "off"
- 	};
-+	int target_state = genpd->target_state;
- 	struct pm_domain_data *pm_data;
- 	const char *kobj_path;
- 	struct gpd_link *link;
-@@ -2262,7 +2279,11 @@ static int pm_genpd_summary_one(struct seq_file *s,
- 
- 	if (WARN_ON(genpd->status >= ARRAY_SIZE(status_lookup)))
- 		goto exit;
--	seq_printf(s, "%-30s  %-15s  ", genpd->name, status_lookup[genpd->status]);
-+
-+	seq_printf(s, "%-30s  %s  ", genpd->name,
-+		(genpd->status == GPD_STATE_POWER_OFF) ?
-+			genpd->states[target_state].name :
-+			status_lookup[genpd->status]);
- 
- 	/*
- 	 * Modifications on the list require holding locks on both
-diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-index 2a4154a..8630fce 100644
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -104,6 +104,7 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 	struct pm_domain_data *pdd;
- 	s64 min_off_time_ns;
- 	s64 off_on_time_ns;
-+	int state = 0;
- 
- 	if (genpd->max_off_time_changed) {
- 		struct gpd_link *link;
-@@ -124,8 +125,8 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 		return genpd->cached_power_down_ok;
- 	}
- 
--	off_on_time_ns = genpd->power_off_latency_ns +
--				genpd->power_on_latency_ns;
-+	off_on_time_ns = genpd->states[state].power_off_latency_ns +
-+			genpd->states[state].power_on_latency_ns;
- 	/*
- 	 * It doesn't make sense to remove power from the domain if saving
- 	 * the state of all devices in it and the power off/power on operations
-@@ -216,7 +217,8 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 	 * time and the time needed to turn the domain on is the maximum
- 	 * theoretical time this domain can spend in the "off" state.
- 	 */
--	genpd->max_off_time_ns = min_off_time_ns - genpd->power_on_latency_ns;
-+	genpd->max_off_time_ns = min_off_time_ns -
-+			genpd->states[state].power_on_latency_ns;
- 	return true;
- }
- 
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 080e778..9bf9217 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -17,6 +17,8 @@
- #include <linux/notifier.h>
- #include <linux/cpuidle.h>
- 
-+#define GENPD_MAX_NSTATES 10
-+
- /* Defines used for the flags field in the struct generic_pm_domain */
- #define GENPD_FLAG_PM_CLK	(1U << 0) /* PM domain uses PM clk */
- 
-@@ -46,6 +48,16 @@ struct gpd_cpuidle_data {
- 	struct cpuidle_state *idle_state;
+diff --git a/arch/arm/mach-s3c64xx/pm.c b/arch/arm/mach-s3c64xx/pm.c
+index aaf7bea..8536d14 100644
+--- a/arch/arm/mach-s3c64xx/pm.c
++++ b/arch/arm/mach-s3c64xx/pm.c
+@@ -89,8 +89,12 @@ static struct s3c64xx_pm_domain s3c64xx_pm_irom = {
+ 	.name = "IROM",
+ 	.ena = S3C64XX_NORMALCFG_IROM_ON,
+ 	.pd = {
+-		.power_off = s3c64xx_pd_off,
+-		.power_on = s3c64xx_pd_on,
++		.states[0] = {
++			.name = "off",
++			.power_off = s3c64xx_pd_off,
++			.power_on = s3c64xx_pd_on,
++		},
++		.state_count = 1,
+ 	},
  };
  
-+struct generic_pm_domain;
-+
-+struct genpd_power_state {
-+	char *name;
-+	s64 power_off_latency_ns;
-+	s64 power_on_latency_ns;
-+	int (*power_off)(struct generic_pm_domain *domain);
-+	int (*power_on)(struct generic_pm_domain *domain);
-+};
-+
- struct generic_pm_domain {
- 	struct dev_pm_domain domain;	/* PM domain operations */
- 	struct list_head gpd_list_node;	/* Node in the global PM domains list */
-@@ -66,10 +78,6 @@ struct generic_pm_domain {
- 	unsigned int suspended_count;	/* System suspend device counter */
- 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
- 	bool suspend_power_off;	/* Power status before system suspend */
--	int (*power_off)(struct generic_pm_domain *domain);
--	s64 power_off_latency_ns;
--	int (*power_on)(struct generic_pm_domain *domain);
--	s64 power_on_latency_ns;
- 	struct gpd_dev_ops dev_ops;
- 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
- 	bool max_off_time_changed;
-@@ -80,6 +88,11 @@ struct generic_pm_domain {
- 	void (*detach_dev)(struct generic_pm_domain *domain,
- 			   struct device *dev);
- 	unsigned int flags;		/* Bit field of configs for genpd */
-+
-+	struct genpd_power_state states[GENPD_MAX_NSTATES];
-+	int target_state; /* state that genpd will go to when off */
-+	int init_state; /* initial genpd state */
-+	int state_count; /* number of states */
+@@ -99,8 +103,11 @@ static struct s3c64xx_pm_domain s3c64xx_pm_etm = {
+ 	.ena = S3C64XX_NORMALCFG_DOMAIN_ETM_ON,
+ 	.pwr_stat = S3C64XX_BLKPWRSTAT_ETM,
+ 	.pd = {
+-		.power_off = s3c64xx_pd_off,
+-		.power_on = s3c64xx_pd_on,
++		.states[0] = {
++			.name = "off",
++			.power_off = s3c64xx_pd_off,
++			.power_on = s3c64xx_pd_on,
++		}
+ 	},
  };
  
- static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
+@@ -109,8 +116,11 @@ static struct s3c64xx_pm_domain s3c64xx_pm_s = {
+ 	.ena = S3C64XX_NORMALCFG_DOMAIN_S_ON,
+ 	.pwr_stat = S3C64XX_BLKPWRSTAT_S,
+ 	.pd = {
+-		.power_off = s3c64xx_pd_off,
+-		.power_on = s3c64xx_pd_on,
++		.states[0] = {
++			.name = "off",
++			.power_off = s3c64xx_pd_off,
++			.power_on = s3c64xx_pd_on,
++		}
+ 	},
+ };
+ 
+@@ -119,8 +129,11 @@ static struct s3c64xx_pm_domain s3c64xx_pm_f = {
+ 	.ena = S3C64XX_NORMALCFG_DOMAIN_F_ON,
+ 	.pwr_stat = S3C64XX_BLKPWRSTAT_F,
+ 	.pd = {
+-		.power_off = s3c64xx_pd_off,
+-		.power_on = s3c64xx_pd_on,
++		.states[0] = {
++			.name = "off",
++			.power_off = s3c64xx_pd_off,
++			.power_on = s3c64xx_pd_on,
++		}
+ 	},
+ };
+ 
+@@ -129,8 +142,11 @@ static struct s3c64xx_pm_domain s3c64xx_pm_p = {
+ 	.ena = S3C64XX_NORMALCFG_DOMAIN_P_ON,
+ 	.pwr_stat = S3C64XX_BLKPWRSTAT_P,
+ 	.pd = {
+-		.power_off = s3c64xx_pd_off,
+-		.power_on = s3c64xx_pd_on,
++		.states[0] = {
++			.name = "off",
++			.power_off = s3c64xx_pd_off,
++			.power_on = s3c64xx_pd_on,
++		}
+ 	},
+ };
+ 
+@@ -139,8 +155,11 @@ static struct s3c64xx_pm_domain s3c64xx_pm_i = {
+ 	.ena = S3C64XX_NORMALCFG_DOMAIN_I_ON,
+ 	.pwr_stat = S3C64XX_BLKPWRSTAT_I,
+ 	.pd = {
+-		.power_off = s3c64xx_pd_off,
+-		.power_on = s3c64xx_pd_on,
++		.states[0] = {
++			.name = "off",
++			.power_off = s3c64xx_pd_off,
++			.power_on = s3c64xx_pd_on,
++		}
+ 	},
+ };
+ 
+@@ -148,8 +167,11 @@ static struct s3c64xx_pm_domain s3c64xx_pm_g = {
+ 	.name = "G",
+ 	.ena = S3C64XX_NORMALCFG_DOMAIN_G_ON,
+ 	.pd = {
+-		.power_off = s3c64xx_pd_off,
+-		.power_on = s3c64xx_pd_on,
++		.states[0] = {
++			.name = "off",
++			.power_off = s3c64xx_pd_off,
++			.power_on = s3c64xx_pd_on,
++		}
+ 	},
+ };
+ 
+@@ -158,8 +180,11 @@ static struct s3c64xx_pm_domain s3c64xx_pm_v = {
+ 	.ena = S3C64XX_NORMALCFG_DOMAIN_V_ON,
+ 	.pwr_stat = S3C64XX_BLKPWRSTAT_V,
+ 	.pd = {
+-		.power_off = s3c64xx_pd_off,
+-		.power_on = s3c64xx_pd_on,
++		.states[0] = {
++			.name = "off",
++			.power_off = s3c64xx_pd_off,
++			.power_on = s3c64xx_pd_on,
++		}
+ 	},
+ };
+ 
 -- 
 1.9.1
 
