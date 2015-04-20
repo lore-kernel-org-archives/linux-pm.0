@@ -1,63 +1,36 @@
-From: Tom Yan <tom.ty89-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: default value of power/wakeup
-Date: Tue, 21 Apr 2015 05:20:19 +0800
-Message-ID: <CAGnHSEnrS9+4Kq_bx5S_gtRMm2pCbn5ETTa-Cegy+XBvN8sX1g@mail.gmail.com>
-References: <CAGnHSE=pYr+0pDqS3x=G6qQGLtkP+8yx9OZH_0h=pctrfB85JQ@mail.gmail.com>
-	<Pine.LNX.4.44L0.1504201527570.1321-100000@iolanthe.rowland.org>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [RFC 0/5] PM / clock_ops: provide default runtime ops and cleanup users
+Date: Mon, 20 Apr 2015 16:21:23 -0700
+Message-ID: <7hfv7ue68c.fsf@deeprootsystems.com>
+References: <1429018473-21865-1-git-send-email-rnayak@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <Pine.LNX.4.44L0.1504201527570.1321-100000-IYeN2dnnYyZXsRXLowluHWD2FQJk+8+b@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Cc: linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:35320 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752308AbbDTXV1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Apr 2015 19:21:27 -0400
+Received: by pabtp1 with SMTP id tp1so221537789pab.2
+        for <linux-pm@vger.kernel.org>; Mon, 20 Apr 2015 16:21:27 -0700 (PDT)
+In-Reply-To: <1429018473-21865-1-git-send-email-rnayak@codeaurora.org>
+	(Rajendra Nayak's message of "Tue, 14 Apr 2015 19:04:28 +0530")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: rjw@rjwysocki.net, ssantosh@kernel.org, tony@atomide.com, nsekhar@ti.com, magnus.damm@gmail.com, linux-arm-msm@vger.kernel.org, inux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-sh@vger.kernel.org
 
-On 21 April 2015 at 03:44, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org> wrote:
+Rajendra Nayak <rnayak@codeaurora.org> writes:
 
-> The generic driver includes code for enabling wakeup by default,
+> Most users of PM clocks do the exact same thing in runtime callbacks.
 
-Is there a part of code which can shows this? It seems to me that the
-usbhid module is loaded for all USB HID devices, so I doubt a bit:
+Probably because they were all copied from mach-davinci. ;)
 
-[tom@localhost ~]$ journalctl -b -1 | grep hid
-Apr 21 05:00:36 localhost kernel: hidraw: raw HID events driver (C) Jiri Kosina
-Apr 21 05:00:36 localhost kernel: usbcore: registered new interface
-driver usbhid
-Apr 21 05:00:36 localhost kernel: usbhid: USB HID core driver
-Apr 21 05:00:36 localhost kernel: hid-generic 0003:046D:C52E.0001:
-input,hidraw0: USB HID v1.11 Keyboard [Logitech USB Receiver] on
-usb-0000:00:14.0-14/input0
-Apr 21 05:00:36 localhost kernel: hid-generic 0003:046D:C52E.0002:
-input,hiddev0,hidraw1: USB HID v1.11 Mouse [Logitech USB Receiver] on
-usb-0000:00:14.0-14/input1
+> Provide default callbacks and cleanup the existing users (keystone/davinci/omap1/sh)
 
-[tom@localhost ~]$ journalctl -b -2 | grep hid
-Apr 21 04:59:58 localhost kernel: hidraw: raw HID events driver (C) Jiri Kosina
-Apr 21 04:59:58 localhost kernel: usbcore: registered new interface
-driver usbhid
-Apr 21 04:59:58 localhost kernel: usbhid: USB HID core driver
-Apr 21 04:59:58 localhost kernel: logitech-djreceiver
-0003:046D:C52B.0003: hiddev0,hidraw0: USB HID v1.11 Device [Logitech
-USB Receiver] on usb-0000:00:14.0-13/input2
-Apr 21 04:59:58 localhost kernel: logitech-hidpp-device
-0003:046D:4024.0004: input,hidraw1: USB HID v1.11 Keyboard [Logitech
-K400] on usb-0000:00:14.0-13:1
+Very nice cleanup, Thanks!
 
-[tom@localhost ~]$ lsusb -t
-/:  Bus 04.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/6p, 5000M
-    |__ Port 1: Dev 2, If 0, Class=Mass Storage, Driver=usb-storage, 5000M
-/:  Bus 03.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/14p, 480M
-    |__ Port 13: Dev 2, If 0, Class=Human Interface Device, Driver=usbhid, 12M
-    |__ Port 13: Dev 2, If 1, Class=Human Interface Device, Driver=usbhid, 12M
-    |__ Port 13: Dev 2, If 2, Class=Human Interface Device, Driver=usbhid, 12M
-    |__ Port 14: Dev 3, If 0, Class=Human Interface Device, Driver=usbhid, 12M
-    |__ Port 14: Dev 3, If 1, Class=Human Interface Device, Driver=usbhid, 12M
-/:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=ehci-pci/2p, 480M
-    |__ Port 1: Dev 2, If 0, Class=Hub, Driver=hub/8p, 480M
-/:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=ehci-pci/2p, 480M
-    |__ Port 1: Dev 2, If 0, Class=Hub, Driver=hub/6p, 480M
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+For the series:
+
+Reviewed-by: Kevin Hilman <khilman@linaro.org>
+
+Kevin
