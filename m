@@ -1,53 +1,52 @@
-From: ahaslam@baylibre.com
-Subject: [RFC v3 7/7] ARM: ux500: pm: Convert to multiple states
-Date: Mon, 20 Apr 2015 17:02:08 +0200
-Message-ID: <1429542128-21021-8-git-send-email-ahaslam@baylibre.com>
-References: <1429542128-21021-1-git-send-email-ahaslam@baylibre.com>
+From: Tom Yan <tom.ty89@gmail.com>
+Subject: default value of power/wakeup
+Date: Tue, 21 Apr 2015 00:45:06 +0800
+Message-ID: <CAGnHSE=tvTisq3xd67edEcC+pBOqUmWoUU2nKZXhR5AfRzNO7g@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f43.google.com ([74.125.82.43]:33981 "EHLO
-	mail-wg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751223AbbDTPC1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Apr 2015 11:02:27 -0400
-Received: by wgso17 with SMTP id o17so182616225wgs.1
-        for <linux-pm@vger.kernel.org>; Mon, 20 Apr 2015 08:02:26 -0700 (PDT)
-In-Reply-To: <1429542128-21021-1-git-send-email-ahaslam@baylibre.com>
+Received: from mail-qk0-f177.google.com ([209.85.220.177]:35545 "EHLO
+	mail-qk0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752769AbbDTQpH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Apr 2015 12:45:07 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@linaro.org, rjw@rjwysocki.net
-Cc: bcousson@baylibre.com, linux-pm@vger.kernel.org, Axel Haslam <ahaslam@baylibre.com>
+To: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org
 
-From: Axel Haslam <ahaslam@baylibre.com>
+I have the following two USB wireless mouse/keyboard receivers:
 
-The generic power domain framework added structure changes
-to support multiple intermediate states when powering off a domain.
+logitech-djreceiver 0003:046D:C52B.0003: hiddev0,hidraw0: USB HID
+v1.11 Device [Logitech USB Receiver] on usb-0000:00:14.0-13/input2
+hid-generic 0003:046D:C52E.0005: input,hidraw2: USB HID v1.11 Keyboard
+[Logitech USB Receiver] on usb-0000:00:14.0-14/input0
 
-These changes are needed to prevent compilation breaks with
-the new structures.
+The default values in their power/wakeup:
+[tom@localhost ~]$ cat /sys/bus/usb/devices/3-13/power/wakeup
+disabled
+[tom@localhost ~]$ cat /sys/bus/usb/devices/3-14/power/wakeup
+enabled
 
-Signed-off-by: Axel Haslam <ahaslam@baylibre.com>
----
- arch/arm/mach-ux500/pm_domains.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+According to https://www.kernel.org/doc/Documentation/usb/power-management.txt:
 
-diff --git a/arch/arm/mach-ux500/pm_domains.c b/arch/arm/mach-ux500/pm_domains.c
-index 4d71c90..7b685e3 100644
---- a/arch/arm/mach-ux500/pm_domains.c
-+++ b/arch/arm/mach-ux500/pm_domains.c
-@@ -41,8 +41,12 @@ static int pd_power_on(struct generic_pm_domain *domain)
- 
- static struct generic_pm_domain ux500_pm_domain_vape = {
- 	.name = "VAPE",
--	.power_off = pd_power_off,
--	.power_on = pd_power_on,
-+	.states[0] = {
-+		.power_off = pd_power_off,
-+		.power_on = pd_power_on,
-+		.name = "off",
-+	},
-+	.state_count = 1,
- };
- 
- static struct generic_pm_domain *ux500_pm_domains[NR_DOMAINS] = {
--- 
-1.9.1
+power/wakeup
 
+        This file is empty if the device does not support
+        remote wakeup.  Otherwise the file contains either the
+        word "enabled" or the word "disabled", ...
+
+My question is, which part of the kernel or system determines the
+default value? When I had a quick look on the source of the two driver
+modules, I couldn't find any code related. So what caused the
+difference?
+
+P.S. I have no udev rule related to power/wakeup, which is the case I
+am asking about.
+
+[tom@localhost ~]$ cd /etc/udev/rules.d/
+[tom@localhost rules.d]$ grep wakeup *
+grep: *: No such file or directory
+[tom@localhost rules.d]$ cd /lib/udev/rules.d/
+[tom@localhost rules.d]$ grep wakeup *
+42-usb-hid-pm.rules:# advertise remote wakeup support but don't
+actually implement
+42-usb-hid-pm.rules:# remote wakeup is working.
