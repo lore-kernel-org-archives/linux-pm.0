@@ -1,42 +1,93 @@
-From: "Brown, Len" <len.brown@intel.com>
-Subject: RE: [PATCH 1/1] x86: replace cpu_up hard-coded mdelay with variable
-Date: Mon, 20 Apr 2015 12:37:52 +0000
-Message-ID: <1A7043D5F58CCB44A599DFD55ED4C94846861500@fmsmsx115.amr.corp.intel.com>
-References: <1429404795-23260-1-git-send-email-lenb@kernel.org>
- <87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com>
- <20150420071306.GA14315@gmail.com>
+From: "Dov Levenglick" <dovl@codeaurora.org>
+Subject: Re: [RFC PATCH 1/4] PM / QoS: Add pm_qos_cancel_request_lazy() that
+ doesn't sleep
+Date: Mon, 20 Apr 2015 14:00:35 -0000
+Message-ID: <03394129c3ef5958dcfbe3726959ecd1.squirrel@www.codeaurora.org>
+References: <1427204440-3533-1-git-send-email-adrian.hunter@intel.com>
+    <1427204440-3533-2-git-send-email-adrian.hunter@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:12504 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754730AbbDTMhz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Apr 2015 08:37:55 -0400
-In-Reply-To: <20150420071306.GA14315@gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1427204440-3533-2-git-send-email-adrian.hunter@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Adrian Hunter <adrian.hunter@intel.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc <linux-mmc@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>, Len Brown <lenb@kernel.org>
-Cc: "x86@kernel.org" <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
 
-> What's the cutoff for 'modern hardware' - which CPUs stopped requiring
-> the delay?
+> Add pm_qos_cancel_request_lazy() which is convenient for
+> contexts that may not sleep.
+>
+> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
+> ---
+>  include/linux/pm_qos.h |  2 ++
+>  kernel/power/qos.c     | 20 ++++++++++++++++++++
+>  2 files changed, 22 insertions(+)
+>
+> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+> index 7b3ae0c..f44d353 100644
+> --- a/include/linux/pm_qos.h
+> +++ b/include/linux/pm_qos.h
+> @@ -126,6 +126,8 @@ void pm_qos_update_request(struct pm_qos_request *req,
+>  			   s32 new_value);
+>  void pm_qos_update_request_timeout(struct pm_qos_request *req,
+>  				   s32 new_value, unsigned long
+> timeout_us);
+> +void pm_qos_cancel_request_lazy(struct pm_qos_request *req,
+> +				unsigned int timeout_us);
+>  void pm_qos_remove_request(struct pm_qos_request *req);
+>
 
-This is the topic of ongoing research, and I'm not ready to send
-the patch setting a new default until I've heard back from a few more HW people.
+I think that this could be acheived using existing API if
+pm_qos_update_request_timeout() were to be called with the existing
+timeout value.
+Since reading the existing timeout value is missing - and I think would be
+a useful feature to have for other use-cases - do you agree with such an
+approach?
 
-Every system I've tested appears to work with delay 0.
-Were I to guess, I'd venture that every
-system that runs an X86_64 kernel might count as "modern" -- even
-the 2005 AMD Turion laptop I've got in the bone pile.
+>  int pm_qos_request(int pm_qos_class);
+> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+> index 97b0df7..ac131cb 100644
+> --- a/kernel/power/qos.c
+> +++ b/kernel/power/qos.c
+> @@ -517,6 +517,26 @@ void pm_qos_update_request_timeout(struct
+> pm_qos_request *req, s32 new_value,
+>  }
+>
+>  /**
+> + * pm_qos_cancel_request_lazy - cancels an existing qos request lazily.
+> + * @req : handle to list element holding a pm_qos request to use
+> + * @timeout_us: the delay before cancelling this qos request in usecs.
+> + *
+> + * After timeout_us, this qos request is cancelled.
+> + */
+> +void pm_qos_cancel_request_lazy(struct pm_qos_request *req,
+> +				unsigned int timeout_us)
+> +{
+> +	if (!req)
+> +		return;
+> +	if (WARN(!pm_qos_request_active(req),
+> +		 "%s called for unknown object.", __func__))
+> +		return;
+> +
+> +	schedule_delayed_work(&req->work, usecs_to_jiffies(timeout_us));
+> +}
+> +EXPORT_SYMBOL_GPL(pm_qos_cancel_request_lazy);
+> +
+> +/**
+>   * pm_qos_remove_request - modifies an existing qos request
+>   * @req: handle to request list element
+>   *
+> --
+> 1.9.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-> Also, is there any public document where the no-delay is specified for
-> 'modern hardware'?
 
-Unfortunately only the converse is true.  There is an ancient document specifying
-that the delay may be necessary.
-
-cheers,
--Len
-
+QUALCOMM ISRAEL, on behalf of Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
