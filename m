@@ -1,53 +1,78 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH/RFC 00/03] irqchip: renesas-irqc: Fine grained Runtime PM support
-Date: Wed, 22 Apr 2015 00:01:15 +0900
-Message-ID: <20150421150115.14288.88519.sendpatchset@little-apple>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:34656 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752266AbbDUO7l (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Apr 2015 10:59:41 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH/RFC 01/03] irqchip: renesas-irqc: Add irq_enable() and irq_disable()
+Date: Wed, 22 Apr 2015 00:01:26 +0900
+Message-ID: <20150421150126.14288.6375.sendpatchset@little-apple>
+References: <20150421150115.14288.88519.sendpatchset@little-apple>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <20150421150115.14288.88519.sendpatchset@little-apple>
+Sender: linux-sh-owner@vger.kernel.org
 To: linux-sh@vger.kernel.org
 Cc: jason@lakedaemon.net, geert+renesas@glider.be, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, horms@verge.net.au, Magnus Damm <magnus.damm@gmail.com>, tglx@linutronix.de
+List-Id: linux-pm@vger.kernel.org
 
-irqchip: renesas-irqc: Fine grained Runtime PM support
+From: Magnus Damm <damm+renesas@opensource.se>
 
-[PATCH/RFC 01/03] irqchip: renesas-irqc: Add irq_enable() and irq_disable()
-[PATCH/RFC 02/03] irqchip: renesas-irqc: Add fine grained Runtime PM code
-[PATCH/RFC 03/03] irqchip: renesas-irqc: Rely on Runtime PM for wakeup
-
-These patches attempt to convert the IRQC driver from using a mix of clock
-framework and Runtime PM into only using Runtime PM and doing that in a
-more fine grained way than before. With these patches in place, if there
-is no interrupt used then the clock and/or power domain will not be used.
-
-Basic operation is that With these patches applied ->irq_enable() will
-perform Runtime PM 'get sync' and ->irq_disable() simply performs
-Runtime PM 'put'. The trigger mode callback is assumed to happen at any
-time so there is a get/put wrapper there.
-
-Unless I'm misunderstanding the IRQ core code this means that the IRQC
-struct device will be in Runtime PM 'get sync' state after someone has
-started using an interrupt.
-
-As for wakeup support, based on IRQ_WAKEUP_STATE being toggled in
-irq_set_irq_wake() together with the irqd_is_wakeup_set() usage in
-suspend_device_irqs() it looks like interrupts used for wakeup will
-stay enabled once we use Runtime PM in ->irq_enable() and ->irq_disable()
-and because of that the clock operations and custom ->irq_set_wake()
-should not be necessary.
-
-I have boot tested this with some simple PHY link state change IRQs
-on a Koelsch board, but I have not tried Suspend-to-RAM yet with wakeup
-support. It would be useful to test this with Suspend-to-RAM on APE6EVM.
-
-Thanks to Geert for hooking up APE6EVM interrupt wake support!
+Hook up ->irq_enable() and ->irq_disable() together with
+->irq_mask() and ->irq_unmask(). This should not adjust
+any code behaviour at all.
 
 Signed-off-by: Magnus Damm <damm+renesas@opensource.se>
 ---
- Written against next-20150421
 
- drivers/irqchip/irq-renesas-irqc.c |   61 +++++++++++++++---------------------
- 1 file changed, 27 insertions(+), 34 deletions(-)
+ drivers/irqchip/irq-renesas-irqc.c |   24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
+
+--- 0001/drivers/irqchip/irq-renesas-irqc.c
++++ work/drivers/irqchip/irq-renesas-irqc.c	2015-04-21 23:09:53.116371520 +0900
+@@ -76,24 +76,34 @@ static void irqc_dbg(struct irqc_irq *i,
+ 		str, i->requested_irq, i->hw_irq, i->domain_irq);
+ }
+ 
+-static void irqc_irq_enable(struct irq_data *d)
++static void irqc_irq_unmask(struct irq_data *d)
+ {
+ 	struct irqc_priv *p = irq_data_get_irq_chip_data(d);
+ 	int hw_irq = irqd_to_hwirq(d);
+ 
+-	irqc_dbg(&p->irq[hw_irq], "enable");
++	irqc_dbg(&p->irq[hw_irq], "unmask");
+ 	iowrite32(BIT(hw_irq), p->cpu_int_base + IRQC_EN_SET);
+ }
+ 
+-static void irqc_irq_disable(struct irq_data *d)
++static void irqc_irq_mask(struct irq_data *d)
+ {
+ 	struct irqc_priv *p = irq_data_get_irq_chip_data(d);
+ 	int hw_irq = irqd_to_hwirq(d);
+ 
+-	irqc_dbg(&p->irq[hw_irq], "disable");
++	irqc_dbg(&p->irq[hw_irq], "mask");
+ 	iowrite32(BIT(hw_irq), p->cpu_int_base + IRQC_EN_STS);
+ }
+ 
++static void irqc_irq_enable(struct irq_data *d)
++{
++	irqc_irq_unmask(d);
++}
++
++static void irqc_irq_disable(struct irq_data *d)
++{
++	irqc_irq_mask(d);
++}
++
+ static unsigned char irqc_sense[IRQ_TYPE_SENSE_MASK + 1] = {
+ 	[IRQ_TYPE_LEVEL_LOW]	= 0x01,
+ 	[IRQ_TYPE_LEVEL_HIGH]	= 0x02,
+@@ -244,8 +254,10 @@ static int irqc_probe(struct platform_de
+ 
+ 	irq_chip = &p->irq_chip;
+ 	irq_chip->name = name;
+-	irq_chip->irq_mask = irqc_irq_disable;
+-	irq_chip->irq_unmask = irqc_irq_enable;
++	irq_chip->irq_enable = irqc_irq_enable;
++	irq_chip->irq_disable = irqc_irq_disable;
++	irq_chip->irq_mask = irqc_irq_mask;
++	irq_chip->irq_unmask = irqc_irq_unmask;
+ 	irq_chip->irq_set_type = irqc_irq_set_type;
+ 	irq_chip->irq_set_wake = irqc_irq_set_wake;
+ 	irq_chip->flags	= IRQCHIP_MASK_ON_SUSPEND;
