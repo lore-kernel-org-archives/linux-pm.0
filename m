@@ -1,60 +1,83 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [RFC/PATCH v2 3/5] devicetree: bindings: Add new cpuidle enable
- method for Renesas R-car SoCs
-Date: Tue, 21 Apr 2015 11:55:39 +0100
-Message-ID: <20150421105539.GA26706@red-moon>
-References: <1429180540-5692-1-git-send-email-keita.kobayashi.ym@renesas.com>
- <1429180540-5692-4-git-send-email-keita.kobayashi.ym@renesas.com>
- <20150417124624.GD21904@leverpostej>
- <CANqRtoTaGc7QCJAVj8Jhpo5HgbwyfiRQZz5j0zBkE1cBkDZAzQ@mail.gmail.com>
- <20150417143723.GC2347@red-moon>
- <5534AD37.20705@renesas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:46362 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751973AbbDUKzo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 21 Apr 2015 06:55:44 -0400
-Content-Disposition: inline
-In-Reply-To: <5534AD37.20705@renesas.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH 0/8] cpufreq: add generic cpufreq driver support for
+ Exynos5250/5800 platforms
+Date: Tue, 21 Apr 2015 15:17:50 +0200
+Message-ID: <1429622278-12216-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: keita kobayashi <keita.kobayashi.ym@renesas.com>
-Cc: Magnus Damm <magnus.damm@gmail.com>, Mark Rutland <Mark.Rutland@arm.com>, "horms@verge.net.au" <horms@verge.net.au>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On Mon, Apr 20, 2015 at 08:39:35AM +0100, keita kobayashi wrote:
+Hi,
 
-[...]
+This patch series adds generic arm_big_little_dt cpufreq driver
+support for Exynos5420/5800 (using the new CPU clock type which
+allows it).  It also:
+- enhances arm_big_little[_dt] driver with CPU cluster regulator
+  support
+- fixes CPU clock configuration data and CPU operating points
+  setup for Exynos5800
+- adds CPU cluster regulator supplies for ODROID-XU3 board
 
-> > It is related, but Mark's remark is correct. We have to keep in mind
-> > that an enable-method defines how a CPU is powered {up/down} and
-> > also suspended (quiesced through idle).
-> > 
-> > It has to be defined through proper bindings and related code, adding a
-> > random compatible string for the sake of matching does not cut it,
-> > that is not acceptable and I stated it from the beginning.
-> > 
-> > So, to make it clear, an enable-method defines CPU operations as a
-> > whole, cpu init, power{up/down} and suspend.
-> > 
-> > It must be documented with proper bindings that defines compatible string and
-> > related properties.
-> > 
-> > The sooner we incorporate the CPUidle ops into SMP ops the better to
-> > prevent this abuse from happening, an enable-method encompasses SMP
-> > ops and CPUidle ops, actually they must be merged because they represent
-> > the enable-method implementation as a whole.
-> > 
-> > I hope this helps.
-> > 
-> > Lorenzo
-> 
-> 
-> I will rename "renesas,rcar-idle" in the next patch.
+This patch series has been tested on Exynos5800 based ODROID-XU3
+board.
 
-It is not just about renaming a compatible string, it is about defining
-a DT binding and related enable-method as a whole.
+Depends on:
+- next-20150330 branch of linux-next kernel tree
+- "[PATCH 0/6] cpufreq: use generic cpufreq drivers for Exynos4210
+  platform" [1]
+- "[PATCH 0/6] cpufreq: use generic cpufreq drivers for Exynos4x12
+  platform" [2]
+- "[PATCH] cpufreq: exynos: remove dead ->need_apll_change method" [3]
+- "[PATCH 0/4] cpufreq: use generic cpufreq drivers for Exynos5250
+  platform" [4]
 
-Thanks,
-Lorenzo
+[1] http://www.kernelhub.org/?msg=721136&p=2
+[2] http://marc.info/?l=linux-pm&m=142868881101873&w=2
+[3] https://lkml.org/lkml/2015/3/27/574
+[4] https://lkml.org/lkml/2015/4/13/611
+
+Changes over Thomas' original v12 code:
+- split Exynos5420 and Exynos5800 support
+- moved E5420_[EGL,KFC]_DIV0() macros to clk-exynos5420.c
+- disabled cpufreq if big.LITTLE switcher support is enabled
+- enhanced arm_big_little[_dt] driver with CPU cluster regulator
+  support
+- fixed CPU clock configuration data for Exynos5800
+- fixed CPU operating points setup for Exynos5800
+- added CPU cluster regulator supplies for ODROID-XU3 board
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+Bartlomiej Zolnierkiewicz (4):
+  cpufreq: arm_big_little: add cluster regulator support
+  ARM: dts: add cluster regulator supply properties for
+    exynos5422-odroidxu3
+  clk: samsung: exynos5800: fix cpu clock configuration data
+  ARM: dts: Exynos5800: fix CPU OPP
+
+Thomas Abraham (4):
+  clk: samsung: exynos5420: add cpu clock configuration data and
+    instantiate cpu clock
+  ARM: dts: Exynos5420: add CPU OPP and regulator supply property
+  ARM: Exynos: use generic cpufreq driver for Exynos5420
+  ARM: Exynos: use generic cpufreq driver for Exynos5800
+
+ .../bindings/cpufreq/arm_big_little_dt.txt         |    4 +
+ arch/arm/boot/dts/exynos5420.dtsi                  |   38 +++++
+ arch/arm/boot/dts/exynos5422-odroidxu3.dts         |    8 +
+ arch/arm/boot/dts/exynos5800.dtsi                  |   39 +++++
+ arch/arm/mach-exynos/exynos.c                      |    8 +
+ drivers/clk/samsung/clk-exynos5420.c               |   88 ++++++++++-
+ drivers/cpufreq/arm_big_little.c                   |  153 +++++++++++++++++---
+ include/dt-bindings/clock/exynos5420.h             |    2 +
+ 8 files changed, 320 insertions(+), 20 deletions(-)
+
+-- 
+1.7.9.5
