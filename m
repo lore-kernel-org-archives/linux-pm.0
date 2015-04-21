@@ -1,41 +1,51 @@
-From: Dan Carpenter <dan.carpenter-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
-Subject: [patch] thermal: rockchip: fix an error code
-Date: Tue, 21 Apr 2015 12:34:10 +0300
-Message-ID: <20150421093410.GE12098@mwanda>
+From: =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>
+Subject: Re: [RFC v3 0/7] genpd multiple states v3
+Date: Tue, 21 Apr 2015 19:01:29 +0900
+Message-ID: <CAJKOXPcvaAR2ZF=y2b2RLRW0CNE3ToWtzt4wYf6KNL7i_3TwNA@mail.gmail.com>
+References: <1429542128-21021-1-git-send-email-ahaslam@baylibre.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Content-Disposition: inline
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kernel-janitors-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vn0-f44.google.com ([209.85.216.44]:40973 "EHLO
+	mail-vn0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751688AbbDUKBa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Apr 2015 06:01:30 -0400
+Received: by vnbg190 with SMTP id g190so32507231vnb.8
+        for <linux-pm@vger.kernel.org>; Tue, 21 Apr 2015 03:01:30 -0700 (PDT)
+In-Reply-To: <1429542128-21021-1-git-send-email-ahaslam@baylibre.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: ahaslam@baylibre.com
+Cc: ulf.hansson@linaro.org, khilman@linaro.org, rjw@rjwysocki.net, bcousson@baylibre.com, linux-pm@vger.kernel.org
 
-There is a copy and paste bug, "->clk" vs "->pclk", so we return the
-wrong error code here.
+2015-04-21 0:02 GMT+09:00  <ahaslam@baylibre.com>:
+> From: Axel Haslam <ahaslam@baylibre.com>
+>
+> Some architectures may have intermediate power
+> levels between on and off. each state in between
+> may have its own set of procedures to put the
+> power domain into that state.
+>
+> This patch adds the ability to declare multiple
+> states for a given generic power domain, the idea
+> is that the deepest state will be entered which
+> does not violate any of the device or sub-domain
+> latency constraints.
+>
+> Changes since v2:
+> * remove state argument and macros from save/restore
+> callbacks.
+>
+> * added init_state for platforms to pass the
+> initial state when the genpd is initially off.
+>
+> * convert current genpd users for the structure changes.
+>
+> * compile tested for shmobile_defconfig, exynos_defconfig,
+> s3c6400_defconfig u8500_defconfig.
 
-Fixes: cbac8f639437 ('thermal: rockchip: add driver for thermal')
-Signed-off-by: Dan Carpenter <dan.carpenter-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
+Still the patch does not seem to be bisectable. Have you compiled each
+config on each commit (not just beginning and end of patchset)?
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 3aa46ac..cd8f5f93 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -529,7 +529,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
- 
- 	thermal->pclk = devm_clk_get(&pdev->dev, "apb_pclk");
- 	if (IS_ERR(thermal->pclk)) {
--		error = PTR_ERR(thermal->clk);
-+		error = PTR_ERR(thermal->pclk);
- 		dev_err(&pdev->dev, "failed to get apb_pclk clock: %d\n",
- 			error);
- 		return error;
+Best regards,
+Krzysztof
