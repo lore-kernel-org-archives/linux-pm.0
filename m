@@ -1,68 +1,84 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: default value of power/wakeup
-Date: Tue, 21 Apr 2015 11:51:07 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1504211126530.1518-100000@iolanthe.rowland.org>
-References: <CAGnHSEmFjAAAkfFTfgtM1yWXsSZBWraoc1mzQRR7v02FubpeWA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:36621 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932882AbbDUPvI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Apr 2015 11:51:08 -0400
-In-Reply-To: <CAGnHSEmFjAAAkfFTfgtM1yWXsSZBWraoc1mzQRR7v02FubpeWA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v2 7/8] ARM: dts: Exynos5800: fix CPU OPP
+Date: Tue, 21 Apr 2015 17:49:04 +0200
+Message-ID: <1429631345-16409-8-git-send-email-b.zolnierkie@samsung.com>
+References: <1429631345-16409-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1429631345-16409-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>, Sachin Kamat <sachin.kamat@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tom Yan <tom.ty89@gmail.com>
-Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, 21 Apr 2015, Tom Yan wrote:
+Fix CPU operating points for Exynos5800 (it uses different
+voltages than Exynos5420 and supports additional frequencies).
+However don't use 2000MHz & 1900MHz OPPs (for A15 cores) and
+1400MHz OPP (for A7 cores) until there is a separate DTS for
+ODROID-XU3 Lite board (which doesn't support these higher
+OPPs).
 
-> By blacklisting the hid-generic, I think I can confirm hid-generic is
-> the module that matters. Though I'm curious how it use the code from
-> usbhid/hid-core.c because I couldn't find a clue in the short
-> hid-generic.c.
+Based on Hardkernel's kernel for ODROID-XU3 board.
 
-In fact, hid-generic.c contains no executable code at all!  What 
-matters is that it is a driver and it can bind to a device.  Take a 
-look at the hid_device_probe() routine in hid-core.c, and bear in mind 
-that hid_hw_start() is an inline routine which calls 
-hdev->ll_driver->start().
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Doug Anderson <dianders@chromium.org>
+Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+Cc: Andreas Faerber <afaerber@suse.de>
+Cc: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Thomas Abraham <thomas.ab@samsung.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ arch/arm/boot/dts/exynos5800.dtsi |   39 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
 
-> Anyway I don't know much about coding so it's not really my concern.
-> But I think the fact hid-generic sets a default (no matter if it's
-> "enabled" or "disabled") brings a problem. The reason is, the wakeup
-> attribute is not "initialized" or "created" by hid-generic, so udev
-> can apply a rule related to the attribute before hid-generic get
-> loaded (which seems to be what it is doing, see
-> https://bugs.freedesktop.org/show_bug.cgi?id=90041). If the module
-> gets loaded or reloaded afterwards, the value would be set to the
-> hard-coded default anyway.
-
-This is a similar problem affecting all devices.  The wakeup attribute
-in sysfs (along with all the other power-related sysfs attributes) gets
-created before the device is probed.  Consequently, any changes made by
-drivers in their probe routines don't show up in the initial sysfs 
-files.
-
-> Perhaps it is possible to change the behaviour by rewriting some bits
-> of udev, but I don't see the point of doing so. IMHO these hard-coded
-> default should be avoid from all drivers until it is really necessary,
-> and when it is needed, it's best to have the default set right at the
-> point when the attribute is initialized if possible.
-
-Setting the default when the attribute gets initialized is not possible
-in this case.  The wakeup attribute belongs to the USB device, but the
-fact that the device can act as a keyboard is hidden away in one of the
-interfaces (and the interfaces are registered _after_ the device).  
-Things would be a little better if the wakeup attribute were a property
-of the interface, but it isn't.
-
-Anyway, you're suggesting that drivers should never override sysfs
-attribute values.  But there doesn't seem to be any other way to
-implement the kernel's policy that wakeup should be enabled by default
-for all keyboard devices.  After all, only the driver knows whether or
-not the device it manages is a keyboard.
-
-Alan Stern
-
+diff --git a/arch/arm/boot/dts/exynos5800.dtsi b/arch/arm/boot/dts/exynos5800.dtsi
+index c0bb356..ba7ecd2 100644
+--- a/arch/arm/boot/dts/exynos5800.dtsi
++++ b/arch/arm/boot/dts/exynos5800.dtsi
+@@ -19,6 +19,45 @@
+ 	compatible = "samsung,exynos5800", "samsung,exynos5";
+ };
+ 
++&cpu0 {
++	operating-points = <
++		1800000 1250000
++		1700000 1250000
++		1600000 1250000
++		1500000 1100000
++		1400000 1100000
++		1300000 1100000
++		1200000 1000000
++		1100000 1000000
++		1000000 1000000
++		 900000 1000000
++		 800000  900000
++		 700000  900000
++		 600000  900000
++		 500000  900000
++		 400000  900000
++		 300000  900000
++		 200000  900000
++	>;
++};
++
++&cpu4 {
++	operating-points = <
++		1300000 1250000
++		1200000 1250000
++		1100000 1250000
++		1000000 1100000
++		 900000 1100000
++		 800000 1100000
++		 700000 1000000
++		 600000 1000000
++		 500000 1000000
++		 400000 1000000
++		 300000  900000
++		 200000  900000
++	>;
++};
++
+ &clock {
+ 	compatible = "samsung,exynos5800-clock";
+ };
+-- 
+1.7.9.5
