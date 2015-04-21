@@ -1,106 +1,90 @@
-From: Adrian Hunter <adrian.hunter@intel.com>
-Subject: Re: [RFC PATCH 1/4] PM / QoS: Add pm_qos_cancel_request_lazy() that
- doesn't sleep
-Date: Tue, 21 Apr 2015 11:26:50 +0300
-Message-ID: <553609CA.8000806@intel.com>
-References: <1427204440-3533-1-git-send-email-adrian.hunter@intel.com>    <1427204440-3533-2-git-send-email-adrian.hunter@intel.com> <03394129c3ef5958dcfbe3726959ecd1.squirrel@www.codeaurora.org>
+From: "Rajendra Nayak" <rnayak@codeaurora.org>
+Subject: Re: [RFC 0/5] PM / clock_ops: provide default runtime ops and
+ cleanup users
+Date: Tue, 21 Apr 2015 08:56:49 -0000
+Message-ID: <775b18eaf35d4319ae4762098e558d1b.squirrel@www.codeaurora.org>
+References: <1429018473-21865-1-git-send-email-rnayak@codeaurora.org>
+    <7hfv7ue68c.fsf@deeprootsystems.com> <55358AE5.1070900@oracle.com>
+    <CAMuHMdX3-Ces57VcpyXEJBSUB07ZtpcCiN8ZpiStGcQnDEHt4A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:21140 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753565AbbDUI3B (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 21 Apr 2015 04:29:01 -0400
-In-Reply-To: <03394129c3ef5958dcfbe3726959ecd1.squirrel@www.codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdX3-Ces57VcpyXEJBSUB07ZtpcCiN8ZpiStGcQnDEHt4A@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: santosh shilimkar <santosh.shilimkar@oracle.com>, Kevin Hilman <khilman@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, Sekhar Nori <nsekhar@ti.com>, Magnus Damm <magnus.damm@gmail.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Dov Levenglick <dovl@codeaurora.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc <linux-mmc@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 20/04/15 17:00, Dov Levenglick wrote:
->> Add pm_qos_cancel_request_lazy() which is convenient for
->> contexts that may not sleep.
->>
->> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
->> ---
->>  include/linux/pm_qos.h |  2 ++
->>  kernel/power/qos.c     | 20 ++++++++++++++++++++
->>  2 files changed, 22 insertions(+)
->>
->> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
->> index 7b3ae0c..f44d353 100644
->> --- a/include/linux/pm_qos.h
->> +++ b/include/linux/pm_qos.h
->> @@ -126,6 +126,8 @@ void pm_qos_update_request(struct pm_qos_request *req,
->>  			   s32 new_value);
->>  void pm_qos_update_request_timeout(struct pm_qos_request *req,
->>  				   s32 new_value, unsigned long
->> timeout_us);
->> +void pm_qos_cancel_request_lazy(struct pm_qos_request *req,
->> +				unsigned int timeout_us);
->>  void pm_qos_remove_request(struct pm_qos_request *req);
->>
-> 
-> I think that this could be acheived using existing API if
-> pm_qos_update_request_timeout() were to be called with the existing
-> timeout value.
 
-I don't follow what you mean. There is no existing timeout value.
-Did you mean existing request value? There is still the difference wrt
-cancel_delayed_work_sync.
+> On Tue, Apr 21, 2015 at 1:25 AM, santosh shilimkar
+> <santosh.shilimkar@oracle.com> wrote:
+>> On 4/20/2015 4:21 PM, Kevin Hilman wrote:
+>>>
+>>> Rajendra Nayak <rnayak@codeaurora.org> writes:
+>>>
+>>>> Most users of PM clocks do the exact same thing in runtime callbacks.
+>>>
+>>>
+>>> Probably because they were all copied from mach-davinci. ;)
+>>>
+>> Yep. ;-)
+>
+> If you're interested in the history, I did some digging last year:
+> http://lists.infradead.org/pipermail/linux-arm-kernel/2014-March/242352.html
+>
+>>>> Provide default callbacks and cleanup the existing users
+>>>> (keystone/davinci/omap1/sh)
+>>>
+>>>
+>>> Very nice cleanup, Thanks!
+>
+> Note that the new code always has a dev_pm_domain, while the old code had
+> it
+> conditionally on CONFIG_PM.
 
-> Since reading the existing timeout value is missing - and I think would be
-> a useful feature to have for other use-cases - do you agree with such an
-> approach?
-> 
->>  int pm_qos_request(int pm_qos_class);
->> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
->> index 97b0df7..ac131cb 100644
->> --- a/kernel/power/qos.c
->> +++ b/kernel/power/qos.c
->> @@ -517,6 +517,26 @@ void pm_qos_update_request_timeout(struct
->> pm_qos_request *req, s32 new_value,
->>  }
->>
->>  /**
->> + * pm_qos_cancel_request_lazy - cancels an existing qos request lazily.
->> + * @req : handle to list element holding a pm_qos request to use
->> + * @timeout_us: the delay before cancelling this qos request in usecs.
->> + *
->> + * After timeout_us, this qos request is cancelled.
->> + */
->> +void pm_qos_cancel_request_lazy(struct pm_qos_request *req,
->> +				unsigned int timeout_us)
->> +{
->> +	if (!req)
->> +		return;
->> +	if (WARN(!pm_qos_request_active(req),
->> +		 "%s called for unknown object.", __func__))
->> +		return;
->> +
->> +	schedule_delayed_work(&req->work, usecs_to_jiffies(timeout_us));
->> +}
->> +EXPORT_SYMBOL_GPL(pm_qos_cancel_request_lazy);
->> +
->> +/**
->>   * pm_qos_remove_request - modifies an existing qos request
->>   * @req: handle to request list element
->>   *
->> --
->> 1.9.1
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
-> 
-> 
-> QUALCOMM ISRAEL, on behalf of Qualcomm Innovation Center, Inc.
-> The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-> a Linux Foundation Collaborative Project
-> 
-> 
-> 
+Right, but since USE_PM_CLK_RUNTIME_OPS is actually a nop with
+!CONFIG_PM, we don't really need the checks anymore.
 
+>
+> I don't think that matters much, as we seem to be having more and more
+> systems that rely on CONFIG_PM=y...
+>
+>>> For the series:
+>>>
+>>> Reviewed-by: Kevin Hilman <khilman@linaro.org>
+>>>
+>> Acked-by: Santosh Shilimkar <ssantosh@kernel.org>
+>
+> Looks good to me, and works fine on (pre-Clock Domain) r8a7791/koelsch
+> and r8a7740/armadillo-legacy (with PM Domains, but still relying on the
+> drivers/sh/pm_runtime.c hack for devices in the C5 "always on" domain).
+>
+> This code is no longer used in multiplatform kernels on shmobile boards
+> with real PM Domains.
+>
+> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Thanks,
+Rajendra
+
+>
+> Gr{oetje,eeting}s,
+>
+>                         Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 --
+> geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker.
+> But
+> when I'm talking to journalists I just say "programmer" or something like
+> that.
+>                                 -- Linus Torvalds
+>
+
+
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
