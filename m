@@ -1,91 +1,82 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH/RFC 03/03] irqchip: renesas-irqc: Rely on Runtime PM for wakeup
-Date: Wed, 22 Apr 2015 00:01:48 +0900
-Message-ID: <20150421150148.14288.86804.sendpatchset@little-apple>
-References: <20150421150115.14288.88519.sendpatchset@little-apple>
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20150421150115.14288.88519.sendpatchset@little-apple>
-Sender: linux-sh-owner@vger.kernel.org
-To: linux-sh@vger.kernel.org
-Cc: jason@lakedaemon.net, geert+renesas@glider.be, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, horms@verge.net.au, Magnus Damm <magnus.damm@gmail.com>, tglx@linutronix.de
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: default value of power/wakeup
+Date: Tue, 21 Apr 2015 11:23:24 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1504211108270.1518-100000@iolanthe.rowland.org>
+References: <CAGnHSEnrS9+4Kq_bx5S_gtRMm2pCbn5ETTa-Cegy+XBvN8sX1g@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:36600 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753512AbbDUPX0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Apr 2015 11:23:26 -0400
+In-Reply-To: <CAGnHSEnrS9+4Kq_bx5S_gtRMm2pCbn5ETTa-Cegy+XBvN8sX1g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tom Yan <tom.ty89@gmail.com>
+Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org
 
-From: Magnus Damm <damm+renesas@opensource.se>
+On Tue, 21 Apr 2015, Tom Yan wrote:
 
-Get rid of the clock control code and rely on Runtime PM
-for wakeup handling. This more or less reverts the earlier
-commit "irqchip: renesas-irqc: Add wake-up support" however
-to work ->irq_enable() and ->irq_disable() need to manage
-Runtime PM state.
+> On 21 April 2015 at 03:44, Alan Stern <stern@rowland.harvard.edu> wrote:
+> 
+> > The generic driver includes code for enabling wakeup by default,
+> 
+> Is there a part of code which can shows this? It seems to me that the
+> usbhid module is loaded for all USB HID devices, so I doubt a bit:
+> 
+> [tom@localhost ~]$ journalctl -b -1 | grep hid
+> Apr 21 05:00:36 localhost kernel: hidraw: raw HID events driver (C) Jiri Kosina
+> Apr 21 05:00:36 localhost kernel: usbcore: registered new interface
+> driver usbhid
+> Apr 21 05:00:36 localhost kernel: usbhid: USB HID core driver
+> Apr 21 05:00:36 localhost kernel: hid-generic 0003:046D:C52E.0001:
+> input,hidraw0: USB HID v1.11 Keyboard [Logitech USB Receiver] on
+> usb-0000:00:14.0-14/input0
+> Apr 21 05:00:36 localhost kernel: hid-generic 0003:046D:C52E.0002:
+> input,hiddev0,hidraw1: USB HID v1.11 Mouse [Logitech USB Receiver] on
+> usb-0000:00:14.0-14/input1
+> 
+> [tom@localhost ~]$ journalctl -b -2 | grep hid
+> Apr 21 04:59:58 localhost kernel: hidraw: raw HID events driver (C) Jiri Kosina
+> Apr 21 04:59:58 localhost kernel: usbcore: registered new interface
+> driver usbhid
+> Apr 21 04:59:58 localhost kernel: usbhid: USB HID core driver
+> Apr 21 04:59:58 localhost kernel: logitech-djreceiver
+> 0003:046D:C52B.0003: hiddev0,hidraw0: USB HID v1.11 Device [Logitech
+> USB Receiver] on usb-0000:00:14.0-13/input2
+> Apr 21 04:59:58 localhost kernel: logitech-hidpp-device
+> 0003:046D:4024.0004: input,hidraw1: USB HID v1.11 Keyboard [Logitech
+> K400] on usb-0000:00:14.0-13:1
+> 
+> [tom@localhost ~]$ lsusb -t
+> /:  Bus 04.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/6p, 5000M
+>     |__ Port 1: Dev 2, If 0, Class=Mass Storage, Driver=usb-storage, 5000M
+> /:  Bus 03.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/14p, 480M
+>     |__ Port 13: Dev 2, If 0, Class=Human Interface Device, Driver=usbhid, 12M
+>     |__ Port 13: Dev 2, If 1, Class=Human Interface Device, Driver=usbhid, 12M
+>     |__ Port 13: Dev 2, If 2, Class=Human Interface Device, Driver=usbhid, 12M
+>     |__ Port 14: Dev 3, If 0, Class=Human Interface Device, Driver=usbhid, 12M
+>     |__ Port 14: Dev 3, If 1, Class=Human Interface Device, Driver=usbhid, 12M
+> /:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=ehci-pci/2p, 480M
+>     |__ Port 1: Dev 2, If 0, Class=Hub, Driver=hub/8p, 480M
+> /:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=ehci-pci/2p, 480M
+>     |__ Port 1: Dev 2, If 0, Class=Hub, Driver=hub/6p, 480M
 
-Signed-off-by: Magnus Damm <damm+renesas@opensource.se>
----
+You see this because logitech_djreceiver overrides the setting of the 
+ll_driver field in struct hid_device.
 
- Needs testing before applying.
+Briefly, usbhid/hid-core.c initializes the wakeup setting in 
+usbhid_start(), which is the .start member of usb_hid_driver, which is 
+assigned (in usbhid_probe()) to hid->ll_driver.
 
- drivers/irqchip/irq-renesas-irqc.c |   26 +-------------------------
- 1 file changed, 1 insertion(+), 25 deletions(-)
+But the logi_dj_recv_add_djhid_device() routine in hid-logitech-dj.c 
+changes dj_hiddev->ll_driver to &logi_dj_ll_driver, and its .start 
+member is logi_dj_ll_start(), which does not initialize the wakeup 
+setting.  Since usbhid_start() never gets called, the device doesn't 
+get enabled for wakeup.
 
---- 0003/drivers/irqchip/irq-renesas-irqc.c
-+++ work/drivers/irqchip/irq-renesas-irqc.c	2015-04-21 23:25:06.106368239 +0900
-@@ -17,7 +17,6 @@
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-  */
- 
--#include <linux/clk.h>
- #include <linux/init.h>
- #include <linux/platform_device.h>
- #include <linux/spinlock.h>
-@@ -67,7 +66,6 @@ struct irqc_priv {
- 	struct platform_device *pdev;
- 	struct irq_chip irq_chip;
- 	struct irq_domain *irq_domain;
--	struct clk *clk;
- };
- 
- static void irqc_dbg(struct irqc_irq *i, char *str)
-@@ -139,21 +137,6 @@ static int irqc_irq_set_type(struct irq_
- 	return 0;
- }
- 
--static int irqc_irq_set_wake(struct irq_data *d, unsigned int on)
--{
--	struct irqc_priv *p = irq_data_get_irq_chip_data(d);
--
--	if (!p->clk)
--		return 0;
--
--	if (on)
--		clk_enable(p->clk);
--	else
--		clk_disable(p->clk);
--
--	return 0;
--}
--
- static irqreturn_t irqc_irq_handler(int irq, void *dev_id)
- {
- 	struct irqc_irq *i = dev_id;
-@@ -216,12 +199,6 @@ static int irqc_probe(struct platform_de
- 	p->pdev = pdev;
- 	platform_set_drvdata(pdev, p);
- 
--	p->clk = devm_clk_get(&pdev->dev, NULL);
--	if (IS_ERR(p->clk)) {
--		dev_warn(&pdev->dev, "unable to get clock\n");
--		p->clk = NULL;
--	}
--
- 	pm_runtime_enable(&pdev->dev);
- 
- 	/* get hold of manadatory IOMEM */
-@@ -266,8 +243,7 @@ static int irqc_probe(struct platform_de
- 	irq_chip->irq_mask = irqc_irq_mask;
- 	irq_chip->irq_unmask = irqc_irq_unmask;
- 	irq_chip->irq_set_type = irqc_irq_set_type;
--	irq_chip->irq_set_wake = irqc_irq_set_wake;
--	irq_chip->flags	= IRQCHIP_MASK_ON_SUSPEND;
-+	irq_chip->flags	= IRQCHIP_SKIP_SET_WAKE | IRQCHIP_MASK_ON_SUSPEND;
- 
- 	p->irq_domain = irq_domain_add_simple(pdev->dev.of_node,
- 					      p->number_of_irqs,
+See the logi_dj_probe() routine for more details about how this works.
+
+Alan Stern
+
