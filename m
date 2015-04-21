@@ -1,137 +1,50 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v2 2/8] ARM: dts: Exynos5420/5800: add cluster regulator supply
- properties
-Date: Tue, 21 Apr 2015 17:48:59 +0200
-Message-ID: <1429631345-16409-3-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v2 5/8] ARM: Exynos: use generic cpufreq driver for Exynos5420
+Date: Tue, 21 Apr 2015 17:49:02 +0200
+Message-ID: <1429631345-16409-6-git-send-email-b.zolnierkie@samsung.com>
 References: <1429631345-16409-1-git-send-email-b.zolnierkie@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1429631345-16409-1-git-send-email-b.zolnierkie@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Doug Anderson <dianders@chromium.org>, Lukasz Majewski <l.majewski@samsung.com>, Kevin Hilman <khilman@linaro.org>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, Sachin Kamat <sachin.kamat@linaro.org>, b.zolnierkie@samsung.com, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, linux-samsung-soc@vger.kernel.org, Andreas Faerber <afaerber@suse.de>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-arm-kernel@lists.infradead.org
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Add cluster regulator supply properties as a preparation to
-adding generic arm_big_little_dt cpufreq driver support for
-Exynos5420 and Exynos5800 based boards.
+From: Thomas Abraham <thomas.ab@samsung.com>
 
+The new CPU clock type allows the use of generic arm_big_little_dt
+cpufreq driver for Exynos5420.
+
+Changes by Bartlomiej:
+- split Exynos5420 support from the original patch
+- disable cpufreq if big.LITTLE switcher support is enabled
+
+Cc: Tomasz Figa <tomasz.figa@gmail.com>
 Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Doug Anderson <dianders@chromium.org>
 Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-Cc: Andreas Faerber <afaerber@suse.de>
-Cc: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: Thomas Abraham <thomas.ab@samsung.com>
+Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- arch/arm/boot/dts/exynos5420-arndale-octa.dts |    8 ++++++++
- arch/arm/boot/dts/exynos5420-peach-pit.dts    |    8 ++++++++
- arch/arm/boot/dts/exynos5420-smdk5420.dts     |    8 ++++++++
- arch/arm/boot/dts/exynos5422-odroidxu3.dts    |    8 ++++++++
- arch/arm/boot/dts/exynos5800-peach-pi.dts     |    8 ++++++++
- 5 files changed, 40 insertions(+)
+ arch/arm/mach-exynos/exynos.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/arm/boot/dts/exynos5420-arndale-octa.dts b/arch/arm/boot/dts/exynos5420-arndale-octa.dts
-index b82b6fa..b9fe40a 100644
---- a/arch/arm/boot/dts/exynos5420-arndale-octa.dts
-+++ b/arch/arm/boot/dts/exynos5420-arndale-octa.dts
-@@ -369,6 +369,14 @@
- 	};
+diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+index 4b03a32..11ac7fb 100644
+--- a/arch/arm/mach-exynos/exynos.c
++++ b/arch/arm/mach-exynos/exynos.c
+@@ -207,6 +207,13 @@ struct cpufreq_dt_platform_data cpufreq_dt_pd = {
+ static const struct of_device_id exynos_cpufreq_matches[] = {
+ 	{ .compatible = "samsung,exynos4210", .data = "cpufreq-dt" },
+ 	{ .compatible = "samsung,exynos5250", .data = "cpufreq-dt" },
++/*
++ * FIXME: When big.LITTLE switcher is enabled system lockups during
++ * ondemand governor stress testing (observed on ODROID-XU3 board).
++ */
++#ifndef CONFIG_BL_SWITCHER
++	{ .compatible = "samsung,exynos5420", .data = "arm-bL-cpufreq-dt" },
++#endif
+ 	{ /* sentinel */ }
  };
  
-+&cpu0 {
-+	cpu-cluster.0-supply = <&buck2_reg>;
-+};
-+
-+&cpu4 {
-+	cpu-cluster.1-supply = <&buck6_reg>;
-+};
-+
- &usbdrd_dwc3_1 {
- 	dr_mode = "host";
- };
-diff --git a/arch/arm/boot/dts/exynos5420-peach-pit.dts b/arch/arm/boot/dts/exynos5420-peach-pit.dts
-index 0788d08..5bf04f4 100644
---- a/arch/arm/boot/dts/exynos5420-peach-pit.dts
-+++ b/arch/arm/boot/dts/exynos5420-peach-pit.dts
-@@ -676,6 +676,14 @@
- 	};
- };
- 
-+&cpu0 {
-+	cpu-cluster.0-supply = <&buck2_reg>;
-+};
-+
-+&cpu4 {
-+	cpu-cluster.1-supply = <&buck6_reg>;
-+};
-+
- &i2c_2 {
- 	status = "okay";
- 	samsung,i2c-sda-delay = <100>;
-diff --git a/arch/arm/boot/dts/exynos5420-smdk5420.dts b/arch/arm/boot/dts/exynos5420-smdk5420.dts
-index 9103f23..089dedb 100644
---- a/arch/arm/boot/dts/exynos5420-smdk5420.dts
-+++ b/arch/arm/boot/dts/exynos5420-smdk5420.dts
-@@ -420,3 +420,11 @@
- 		};
- 	};
- };
-+
-+&cpu0 {
-+	cpu-cluster.0-supply = <&buck2_reg>;
-+};
-+
-+&cpu4 {
-+	cpu-cluster.1-supply = <&buck6_reg>;
-+};
-diff --git a/arch/arm/boot/dts/exynos5422-odroidxu3.dts b/arch/arm/boot/dts/exynos5422-odroidxu3.dts
-index edc25cf..e876016 100644
---- a/arch/arm/boot/dts/exynos5422-odroidxu3.dts
-+++ b/arch/arm/boot/dts/exynos5422-odroidxu3.dts
-@@ -355,6 +355,14 @@
- 	dr_mode = "otg";
- };
- 
-+&cpu0 {
-+	cpu-cluster.0-supply = <&buck2_reg>;
-+};
-+
-+&cpu4 {
-+	cpu-cluster.1-supply = <&buck6_reg>;
-+};
-+
- &i2c_0 {
- 	status = "okay";
- 
-diff --git a/arch/arm/boot/dts/exynos5800-peach-pi.dts b/arch/arm/boot/dts/exynos5800-peach-pi.dts
-index 412f41d..630c87c 100644
---- a/arch/arm/boot/dts/exynos5800-peach-pi.dts
-+++ b/arch/arm/boot/dts/exynos5800-peach-pi.dts
-@@ -638,6 +638,14 @@
- 	};
- };
- 
-+&cpu0 {
-+	cpu-cluster.0-supply = <&buck2_reg>;
-+};
-+
-+&cpu4 {
-+	cpu-cluster.1-supply = <&buck6_reg>;
-+};
-+
- &i2c_2 {
- 	status = "okay";
- 	samsung,i2c-sda-delay = <100>;
 -- 
 1.7.9.5
