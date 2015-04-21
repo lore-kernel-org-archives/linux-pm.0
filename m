@@ -1,78 +1,81 @@
 From: Magnus Damm <magnus.damm@gmail.com>
-Subject: [PATCH/RFC 01/03] irqchip: renesas-irqc: Add irq_enable() and irq_disable()
-Date: Wed, 22 Apr 2015 00:01:26 +0900
-Message-ID: <20150421150126.14288.6375.sendpatchset@little-apple>
+Subject: [PATCH/RFC 02/03] irqchip: renesas-irqc: Add fine grained Runtime PM code
+Date: Wed, 22 Apr 2015 00:01:37 +0900
+Message-ID: <20150421150137.14288.45064.sendpatchset@little-apple>
 References: <20150421150115.14288.88519.sendpatchset@little-apple>
-Return-path: <linux-sh-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20150421150115.14288.88519.sendpatchset@little-apple>
-Sender: linux-sh-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-sh@vger.kernel.org
 Cc: jason@lakedaemon.net, geert+renesas@glider.be, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, horms@verge.net.au, Magnus Damm <magnus.damm@gmail.com>, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm+renesas@opensource.se>
 
-Hook up ->irq_enable() and ->irq_disable() together with
-->irq_mask() and ->irq_unmask(). This should not adjust
-any code behaviour at all.
+Convert Runtime PM support from coarse grained "always enabled"
+into more fine grained per-interrupt optional enablement.
 
 Signed-off-by: Magnus Damm <damm+renesas@opensource.se>
 ---
 
- drivers/irqchip/irq-renesas-irqc.c |   24 ++++++++++++++++++------
- 1 file changed, 18 insertions(+), 6 deletions(-)
+ drivers/irqchip/irq-renesas-irqc.c |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
---- 0001/drivers/irqchip/irq-renesas-irqc.c
-+++ work/drivers/irqchip/irq-renesas-irqc.c	2015-04-21 23:09:53.116371520 +0900
-@@ -76,24 +76,34 @@ static void irqc_dbg(struct irqc_irq *i,
- 		str, i->requested_irq, i->hw_irq, i->domain_irq);
- }
+--- 0002/drivers/irqchip/irq-renesas-irqc.c
++++ work/drivers/irqchip/irq-renesas-irqc.c	2015-04-21 23:16:17.686370138 +0900
+@@ -96,12 +96,18 @@ static void irqc_irq_mask(struct irq_dat
  
--static void irqc_irq_enable(struct irq_data *d)
-+static void irqc_irq_unmask(struct irq_data *d)
+ static void irqc_irq_enable(struct irq_data *d)
  {
- 	struct irqc_priv *p = irq_data_get_irq_chip_data(d);
- 	int hw_irq = irqd_to_hwirq(d);
- 
--	irqc_dbg(&p->irq[hw_irq], "enable");
-+	irqc_dbg(&p->irq[hw_irq], "unmask");
- 	iowrite32(BIT(hw_irq), p->cpu_int_base + IRQC_EN_SET);
++	struct irqc_priv *p = irq_data_get_irq_chip_data(d);
++
++	pm_runtime_get_sync(&p->pdev->dev);
+ 	irqc_irq_unmask(d);
  }
  
--static void irqc_irq_disable(struct irq_data *d)
-+static void irqc_irq_mask(struct irq_data *d)
+ static void irqc_irq_disable(struct irq_data *d)
  {
- 	struct irqc_priv *p = irq_data_get_irq_chip_data(d);
- 	int hw_irq = irqd_to_hwirq(d);
- 
--	irqc_dbg(&p->irq[hw_irq], "disable");
-+	irqc_dbg(&p->irq[hw_irq], "mask");
- 	iowrite32(BIT(hw_irq), p->cpu_int_base + IRQC_EN_STS);
++	struct irqc_priv *p = irq_data_get_irq_chip_data(d);
++
+ 	irqc_irq_mask(d);
++	pm_runtime_put(&p->pdev->dev);
  }
  
-+static void irqc_irq_enable(struct irq_data *d)
-+{
-+	irqc_irq_unmask(d);
-+}
-+
-+static void irqc_irq_disable(struct irq_data *d)
-+{
-+	irqc_irq_mask(d);
-+}
-+
  static unsigned char irqc_sense[IRQ_TYPE_SENSE_MASK + 1] = {
- 	[IRQ_TYPE_LEVEL_LOW]	= 0x01,
- 	[IRQ_TYPE_LEVEL_HIGH]	= 0x02,
-@@ -244,8 +254,10 @@ static int irqc_probe(struct platform_de
+@@ -124,10 +130,12 @@ static int irqc_irq_set_type(struct irq_
+ 	if (!value)
+ 		return -EINVAL;
  
- 	irq_chip = &p->irq_chip;
- 	irq_chip->name = name;
--	irq_chip->irq_mask = irqc_irq_disable;
--	irq_chip->irq_unmask = irqc_irq_enable;
-+	irq_chip->irq_enable = irqc_irq_enable;
-+	irq_chip->irq_disable = irqc_irq_disable;
-+	irq_chip->irq_mask = irqc_irq_mask;
-+	irq_chip->irq_unmask = irqc_irq_unmask;
- 	irq_chip->irq_set_type = irqc_irq_set_type;
- 	irq_chip->irq_set_wake = irqc_irq_set_wake;
- 	irq_chip->flags	= IRQCHIP_MASK_ON_SUSPEND;
++	pm_runtime_get_sync(&p->pdev->dev);
+ 	tmp = ioread32(p->iomem + IRQC_CONFIG(hw_irq));
+ 	tmp &= ~0x3f;
+ 	tmp |= value;
+ 	iowrite32(tmp, p->iomem + IRQC_CONFIG(hw_irq));
++	pm_runtime_put(&p->pdev->dev);
+ 	return 0;
+ }
+ 
+@@ -215,7 +223,6 @@ static int irqc_probe(struct platform_de
+ 	}
+ 
+ 	pm_runtime_enable(&pdev->dev);
+-	pm_runtime_get_sync(&pdev->dev);
+ 
+ 	/* get hold of manadatory IOMEM */
+ 	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+@@ -300,7 +307,6 @@ err3:
+ err2:
+ 	iounmap(p->iomem);
+ err1:
+-	pm_runtime_put(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+ 	kfree(p);
+ err0:
+@@ -317,7 +323,6 @@ static int irqc_remove(struct platform_d
+ 
+ 	irq_domain_remove(p->irq_domain);
+ 	iounmap(p->iomem);
+-	pm_runtime_put(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+ 	kfree(p);
+ 	return 0;
