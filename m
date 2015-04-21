@@ -1,126 +1,86 @@
-From: "Dov Levenglick" <dovl@codeaurora.org>
-Subject: Re: [RFC PATCH 1/4] PM / QoS: Add pm_qos_cancel_request_lazy() that
- doesn't sleep
-Date: Tue, 21 Apr 2015 10:18:27 -0000
-Message-ID: <c4537efead55f0b072d33d4e36090039.squirrel@www.codeaurora.org>
-References: <1427204440-3533-1-git-send-email-adrian.hunter@intel.com>
-    <1427204440-3533-2-git-send-email-adrian.hunter@intel.com>
-    <03394129c3ef5958dcfbe3726959ecd1.squirrel@www.codeaurora.org>
-    <553609CA.8000806@intel.com>
+From: Tom Yan <tom.ty89-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: default value of power/wakeup
+Date: Tue, 21 Apr 2015 18:19:50 +0800
+Message-ID: <CAGnHSEmFjAAAkfFTfgtM1yWXsSZBWraoc1mzQRR7v02FubpeWA@mail.gmail.com>
+References: <CAGnHSE=pYr+0pDqS3x=G6qQGLtkP+8yx9OZH_0h=pctrfB85JQ@mail.gmail.com>
+	<Pine.LNX.4.44L0.1504201527570.1321-100000@iolanthe.rowland.org>
+	<CAGnHSEnrS9+4Kq_bx5S_gtRMm2pCbn5ETTa-Cegy+XBvN8sX1g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <553609CA.8000806@intel.com>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Adrian Hunter <adrian.hunter@intel.com>
-Cc: Dov Levenglick <dovl@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc <linux-mmc@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAGnHSEnrS9+4Kq_bx5S_gtRMm2pCbn5ETTa-Cegy+XBvN8sX1g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Cc: linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-> On 20/04/15 17:00, Dov Levenglick wrote:
->>> Add pm_qos_cancel_request_lazy() which is convenient for
->>> contexts that may not sleep.
->>>
->>> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
->>> ---
->>>  include/linux/pm_qos.h |  2 ++
->>>  kernel/power/qos.c     | 20 ++++++++++++++++++++
->>>  2 files changed, 22 insertions(+)
->>>
->>> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
->>> index 7b3ae0c..f44d353 100644
->>> --- a/include/linux/pm_qos.h
->>> +++ b/include/linux/pm_qos.h
->>> @@ -126,6 +126,8 @@ void pm_qos_update_request(struct pm_qos_request
-> *req,
->>>  			   s32 new_value);
->>>  void pm_qos_update_request_timeout(struct pm_qos_request *req,
->>>  				   s32 new_value, unsigned long
->>> timeout_us);
->>> +void pm_qos_cancel_request_lazy(struct pm_qos_request *req,
->>> +				unsigned int timeout_us);
->>>  void pm_qos_remove_request(struct pm_qos_request *req);
->>>
->>
->> I think that this could be acheived using existing API if
->> pm_qos_update_request_timeout() were to be called with the existing
->> timeout value.
+By blacklisting the hid-generic, I think I can confirm hid-generic is
+the module that matters. Though I'm curious how it use the code from
+usbhid/hid-core.c because I couldn't find a clue in the short
+hid-generic.c.
+
+Anyway I don't know much about coding so it's not really my concern.
+But I think the fact hid-generic sets a default (no matter if it's
+"enabled" or "disabled") brings a problem. The reason is, the wakeup
+attribute is not "initialized" or "created" by hid-generic, so udev
+can apply a rule related to the attribute before hid-generic get
+loaded (which seems to be what it is doing, see
+https://bugs.freedesktop.org/show_bug.cgi?id=90041). If the module
+gets loaded or reloaded afterwards, the value would be set to the
+hard-coded default anyway.
+
+Perhaps it is possible to change the behaviour by rewriting some bits
+of udev, but I don't see the point of doing so. IMHO these hard-coded
+default should be avoid from all drivers until it is really necessary,
+and when it is needed, it's best to have the default set right at the
+point when the attribute is initialized if possible.
+
+On 21 April 2015 at 05:20, Tom Yan <tom.ty89-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+> On 21 April 2015 at 03:44, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org> wrote:
 >
-> I don't follow what you mean. There is no existing timeout value.
-> Did you mean existing request value? There is still the difference wrt
-> cancel_delayed_work_sync.
-
-I did mean the existing request value. Thanks.
-There is also the cancel_delayed_work_sync, however I think that that
-should be called in any case in order to cancel any other pending timeout
-changes.
-
+>> The generic driver includes code for enabling wakeup by default,
 >
->> Since reading the existing timeout value is missing - and I think would
-> be
->> a useful feature to have for other use-cases - do you agree with such an
->> approach?
->>
->>>  int pm_qos_request(int pm_qos_class);
->>> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
->>> index 97b0df7..ac131cb 100644
->>> --- a/kernel/power/qos.c
->>> +++ b/kernel/power/qos.c
->>> @@ -517,6 +517,26 @@ void pm_qos_update_request_timeout(struct
->>> pm_qos_request *req, s32 new_value,
->>>  }
->>>
->>>  /**
->>> + * pm_qos_cancel_request_lazy - cancels an existing qos request
-> lazily.
->>> + * @req : handle to list element holding a pm_qos request to use
->>> + * @timeout_us: the delay before cancelling this qos request in usecs.
->>> + *
->>> + * After timeout_us, this qos request is cancelled.
->>> + */
->>> +void pm_qos_cancel_request_lazy(struct pm_qos_request *req,
->>> +				unsigned int timeout_us)
->>> +{
->>> +	if (!req)
->>> +		return;
->>> +	if (WARN(!pm_qos_request_active(req),
->>> +		 "%s called for unknown object.", __func__))
->>> +		return;
->>> +
->>> +	schedule_delayed_work(&req->work, usecs_to_jiffies(timeout_us));
->>> +}
->>> +EXPORT_SYMBOL_GPL(pm_qos_cancel_request_lazy);
->>> +
->>> +/**
->>>   * pm_qos_remove_request - modifies an existing qos request
->>>   * @req: handle to request list element
->>>   *
->>> --
->>> 1.9.1
->>>
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>
->>
->>
->> QUALCOMM ISRAEL, on behalf of Qualcomm Innovation Center, Inc.
->> The Qualcomm Innovation Center, Inc. is a member of the Code Aurora
-> Forum,
->> a Linux Foundation Collaborative Project
->>
->>
->>
+> Is there a part of code which can shows this? It seems to me that the
+> usbhid module is loaded for all USB HID devices, so I doubt a bit:
 >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> [tom@localhost ~]$ journalctl -b -1 | grep hid
+> Apr 21 05:00:36 localhost kernel: hidraw: raw HID events driver (C) Jiri Kosina
+> Apr 21 05:00:36 localhost kernel: usbcore: registered new interface
+> driver usbhid
+> Apr 21 05:00:36 localhost kernel: usbhid: USB HID core driver
+> Apr 21 05:00:36 localhost kernel: hid-generic 0003:046D:C52E.0001:
+> input,hidraw0: USB HID v1.11 Keyboard [Logitech USB Receiver] on
+> usb-0000:00:14.0-14/input0
+> Apr 21 05:00:36 localhost kernel: hid-generic 0003:046D:C52E.0002:
+> input,hiddev0,hidraw1: USB HID v1.11 Mouse [Logitech USB Receiver] on
+> usb-0000:00:14.0-14/input1
 >
-
-
-QUALCOMM ISRAEL, on behalf of Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+> [tom@localhost ~]$ journalctl -b -2 | grep hid
+> Apr 21 04:59:58 localhost kernel: hidraw: raw HID events driver (C) Jiri Kosina
+> Apr 21 04:59:58 localhost kernel: usbcore: registered new interface
+> driver usbhid
+> Apr 21 04:59:58 localhost kernel: usbhid: USB HID core driver
+> Apr 21 04:59:58 localhost kernel: logitech-djreceiver
+> 0003:046D:C52B.0003: hiddev0,hidraw0: USB HID v1.11 Device [Logitech
+> USB Receiver] on usb-0000:00:14.0-13/input2
+> Apr 21 04:59:58 localhost kernel: logitech-hidpp-device
+> 0003:046D:4024.0004: input,hidraw1: USB HID v1.11 Keyboard [Logitech
+> K400] on usb-0000:00:14.0-13:1
+>
+> [tom@localhost ~]$ lsusb -t
+> /:  Bus 04.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/6p, 5000M
+>     |__ Port 1: Dev 2, If 0, Class=Mass Storage, Driver=usb-storage, 5000M
+> /:  Bus 03.Port 1: Dev 1, Class=root_hub, Driver=xhci_hcd/14p, 480M
+>     |__ Port 13: Dev 2, If 0, Class=Human Interface Device, Driver=usbhid, 12M
+>     |__ Port 13: Dev 2, If 1, Class=Human Interface Device, Driver=usbhid, 12M
+>     |__ Port 13: Dev 2, If 2, Class=Human Interface Device, Driver=usbhid, 12M
+>     |__ Port 14: Dev 3, If 0, Class=Human Interface Device, Driver=usbhid, 12M
+>     |__ Port 14: Dev 3, If 1, Class=Human Interface Device, Driver=usbhid, 12M
+> /:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=ehci-pci/2p, 480M
+>     |__ Port 1: Dev 2, If 0, Class=Hub, Driver=hub/8p, 480M
+> /:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=ehci-pci/2p, 480M
+>     |__ Port 1: Dev 2, If 0, Class=Hub, Driver=hub/6p, 480M
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
