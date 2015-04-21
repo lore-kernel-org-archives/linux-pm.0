@@ -1,66 +1,53 @@
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH] MAINTAINERS: Add me as maintainer of Nokia N900 power
- supply drivers
-Date: Tue, 21 Apr 2015 15:37:00 +0200
-Message-ID: <20150421133700.GR6515@pali>
-References: <1427636154-20874-1-git-send-email-pali.rohar@gmail.com>
- <201504072259.45809@pali>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: [PATCH/RFC 00/03] irqchip: renesas-irqc: Fine grained Runtime PM support
+Date: Wed, 22 Apr 2015 00:01:15 +0900
+Message-ID: <20150421150115.14288.88519.sendpatchset@little-apple>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:35423 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751973AbbDUNhE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Apr 2015 09:37:04 -0400
-Content-Disposition: inline
-In-Reply-To: <201504072259.45809@pali>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:34656 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752266AbbDUO7l (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Apr 2015 10:59:41 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@linuxfoundation.org>
+To: linux-sh@vger.kernel.org
+Cc: jason@lakedaemon.net, geert+renesas@glider.be, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, horms@verge.net.au, Magnus Damm <magnus.damm@gmail.com>, tglx@linutronix.de
 
-Hi Sebastian & others. Is this change ok? Can you include it?
+irqchip: renesas-irqc: Fine grained Runtime PM support
 
-On Tuesday 07 April 2015 22:59:45 Pali Roh=C3=A1r wrote:
-> Forgot to mention reason in commit message:
->=20
-> I'm author of two of those drivers (bq2415x and rx51) and I added=20
-> more patches for other twos. Also I fished (proper) open source=20
-> power management software for Nokia N900 and those kernel drivers=20
-> are part of it.
->=20
-> On Sunday 29 March 2015 15:35:54 Pali Roh=C3=A1r wrote:
-> > Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
-> > ---
-> >  MAINTAINERS |   11 +++++++++++
-> >  1 file changed, 11 insertions(+)
-> >=20
-> > diff --git a/MAINTAINERS b/MAINTAINERS
-> > index 72a08ef..50df61e 100644
-> > --- a/MAINTAINERS
-> > +++ b/MAINTAINERS
-> > @@ -6917,6 +6917,17 @@ T:	git
-> > git://git.rocketboards.org/linux-socfpga-next.git
-> > S:	Maintained
-> >  F:	arch/nios2/
-> >=20
-> > +NOKIA N900 POWER SUPPLY DRIVERS
-> > +M:	Pali Roh=C3=A1r <pali.rohar@gmail.com>
-> > +S:	Maintained
-> > +F:	include/linux/power/bq2415x_charger.h
-> > +F:	include/linux/power/bq27x00_battery.h
-> > +F:	include/linux/power/isp1704_charger.h
-> > +F:	drivers/power/bq2415x_charger.c
-> > +F:	drivers/power/bq27x00_battery.c
-> > +F:	drivers/power/isp1704_charger.c
-> > +F:	drivers/power/rx51_battery.c
-> > +
-> >  NTB DRIVER
-> >  M:	Jon Mason <jdmason@kudzu.us>
-> >  M:	Dave Jiang <dave.jiang@intel.com>
->=20
+[PATCH/RFC 01/03] irqchip: renesas-irqc: Add irq_enable() and irq_disable()
+[PATCH/RFC 02/03] irqchip: renesas-irqc: Add fine grained Runtime PM code
+[PATCH/RFC 03/03] irqchip: renesas-irqc: Rely on Runtime PM for wakeup
 
---=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+These patches attempt to convert the IRQC driver from using a mix of clock
+framework and Runtime PM into only using Runtime PM and doing that in a
+more fine grained way than before. With these patches in place, if there
+is no interrupt used then the clock and/or power domain will not be used.
+
+Basic operation is that With these patches applied ->irq_enable() will
+perform Runtime PM 'get sync' and ->irq_disable() simply performs
+Runtime PM 'put'. The trigger mode callback is assumed to happen at any
+time so there is a get/put wrapper there.
+
+Unless I'm misunderstanding the IRQ core code this means that the IRQC
+struct device will be in Runtime PM 'get sync' state after someone has
+started using an interrupt.
+
+As for wakeup support, based on IRQ_WAKEUP_STATE being toggled in
+irq_set_irq_wake() together with the irqd_is_wakeup_set() usage in
+suspend_device_irqs() it looks like interrupts used for wakeup will
+stay enabled once we use Runtime PM in ->irq_enable() and ->irq_disable()
+and because of that the clock operations and custom ->irq_set_wake()
+should not be necessary.
+
+I have boot tested this with some simple PHY link state change IRQs
+on a Koelsch board, but I have not tried Suspend-to-RAM yet with wakeup
+support. It would be useful to test this with Suspend-to-RAM on APE6EVM.
+
+Thanks to Geert for hooking up APE6EVM interrupt wake support!
+
+Signed-off-by: Magnus Damm <damm+renesas@opensource.se>
+---
+ Written against next-20150421
+
+ drivers/irqchip/irq-renesas-irqc.c |   61 +++++++++++++++---------------------
+ 1 file changed, 27 insertions(+), 34 deletions(-)
