@@ -1,44 +1,68 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v2 8/8] ARM: Exynos: use generic cpufreq driver for Exynos5800
-Date: Tue, 21 Apr 2015 17:49:05 +0200
-Message-ID: <1429631345-16409-9-git-send-email-b.zolnierkie@samsung.com>
-References: <1429631345-16409-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1429631345-16409-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: default value of power/wakeup
+Date: Tue, 21 Apr 2015 11:51:07 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1504211126530.1518-100000@iolanthe.rowland.org>
+References: <CAGnHSEmFjAAAkfFTfgtM1yWXsSZBWraoc1mzQRR7v02FubpeWA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:36621 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932882AbbDUPvI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Apr 2015 11:51:08 -0400
+In-Reply-To: <CAGnHSEmFjAAAkfFTfgtM1yWXsSZBWraoc1mzQRR7v02FubpeWA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tom Yan <tom.ty89@gmail.com>
+Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org
 
-From: Thomas Abraham <thomas.ab@samsung.com>
+On Tue, 21 Apr 2015, Tom Yan wrote:
 
-The new CPU clock type allows the use of generic arm_big_little_dt
-cpufreq driver for Exynos5800.
+> By blacklisting the hid-generic, I think I can confirm hid-generic is
+> the module that matters. Though I'm curious how it use the code from
+> usbhid/hid-core.c because I couldn't find a clue in the short
+> hid-generic.c.
 
-Changes by Bartlomiej:
-- split Exynos5800 support from the original patch
-- disable cpufreq if big.LITTLE switcher support is enabled
+In fact, hid-generic.c contains no executable code at all!  What 
+matters is that it is a driver and it can bind to a device.  Take a 
+look at the hid_device_probe() routine in hid-core.c, and bear in mind 
+that hid_hw_start() is an inline routine which calls 
+hdev->ll_driver->start().
 
-Cc: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- arch/arm/mach-exynos/exynos.c |    1 +
- 1 file changed, 1 insertion(+)
+> Anyway I don't know much about coding so it's not really my concern.
+> But I think the fact hid-generic sets a default (no matter if it's
+> "enabled" or "disabled") brings a problem. The reason is, the wakeup
+> attribute is not "initialized" or "created" by hid-generic, so udev
+> can apply a rule related to the attribute before hid-generic get
+> loaded (which seems to be what it is doing, see
+> https://bugs.freedesktop.org/show_bug.cgi?id=90041). If the module
+> gets loaded or reloaded afterwards, the value would be set to the
+> hard-coded default anyway.
 
-diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
-index 11ac7fb..7892062 100644
---- a/arch/arm/mach-exynos/exynos.c
-+++ b/arch/arm/mach-exynos/exynos.c
-@@ -213,6 +213,7 @@ static const struct of_device_id exynos_cpufreq_matches[] = {
-  */
- #ifndef CONFIG_BL_SWITCHER
- 	{ .compatible = "samsung,exynos5420", .data = "arm-bL-cpufreq-dt" },
-+	{ .compatible = "samsung,exynos5800", .data = "arm-bL-cpufreq-dt" },
- #endif
- 	{ /* sentinel */ }
- };
--- 
-1.7.9.5
+This is a similar problem affecting all devices.  The wakeup attribute
+in sysfs (along with all the other power-related sysfs attributes) gets
+created before the device is probed.  Consequently, any changes made by
+drivers in their probe routines don't show up in the initial sysfs 
+files.
+
+> Perhaps it is possible to change the behaviour by rewriting some bits
+> of udev, but I don't see the point of doing so. IMHO these hard-coded
+> default should be avoid from all drivers until it is really necessary,
+> and when it is needed, it's best to have the default set right at the
+> point when the attribute is initialized if possible.
+
+Setting the default when the attribute gets initialized is not possible
+in this case.  The wakeup attribute belongs to the USB device, but the
+fact that the device can act as a keyboard is hidden away in one of the
+interfaces (and the interfaces are registered _after_ the device).  
+Things would be a little better if the wakeup attribute were a property
+of the interface, but it isn't.
+
+Anyway, you're suggesting that drivers should never override sysfs
+attribute values.  But there doesn't seem to be any other way to
+implement the kernel's policy that wakeup should be enabled by default
+for all keyboard devices.  After all, only the driver knows whether or
+not the device it manages is a keyboard.
+
+Alan Stern
+
