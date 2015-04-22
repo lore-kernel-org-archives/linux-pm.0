@@ -1,74 +1,95 @@
-From: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/2] cpufreq: mediatek: Add MT8173 cpufreq driver
-Date: Wed, 22 Apr 2015 11:14:50 +0800
-Message-ID: <CALx668VD7KZv1ejRsWTtZ=EKPej6mEi3ahdhKPoOEwd+oD-QYA@mail.gmail.com>
-References: <1429522047-16675-1-git-send-email-pi-cheng.chen@linaro.org>
-	<1429522047-16675-2-git-send-email-pi-cheng.chen@linaro.org>
-	<1429554517.14597.38.camel@x220>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH 1/1] x86: replace cpu_up hard-coded mdelay with variable
+Date: Wed, 22 Apr 2015 01:40:10 -0400
+Message-ID: <CAP=VYLqofSyGmApHWF4wvidAZ+C0GCV7ScCYnSU2REaCPGywkg@mail.gmail.com>
+References: <1429404795-23260-1-git-send-email-lenb@kernel.org> <87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1429554517.14597.38.camel@x220>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Paul Bolle <pebolle-IWqWACnzNjzz+pZb47iToQ@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Joe.C" <yingjoe.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Eddie Huang <eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Howard Chen <ibanezchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Chen Fan <fan.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Apr 21, 2015 at 2:28 AM, Paul Bolle <pebolle-IWqWACnzNjzz+pZb47iToQ@public.gmane.org> wrote:
-> On Mon, 2015-04-20 at 17:27 +0800, pi-cheng.chen wrote:
->> --- a/drivers/cpufreq/Kconfig.arm
->> +++ b/drivers/cpufreq/Kconfig.arm
+On Sat, Apr 18, 2015 at 8:53 PM, Len Brown <lenb@kernel.org> wrote:
+> From: Len Brown <len.brown@intel.com>
 >
->> +config ARM_MT8173_CPUFREQ
->> +     bool "Mediatek MT8173 CPUFreq support"
->> +     depends on ARCH_MEDIATEK && REGULATOR
->> +     help
->> +       This adds the CPUFreq driver support for Mediatek MT8173 SoC.
->
->> --- a/drivers/cpufreq/Makefile
->> +++ b/drivers/cpufreq/Makefile
->
->> +obj-$(CONFIG_ARM_MT8173_CPUFREQ)     += mt8173-cpufreq.o
->
-> ARM_MT8173_CPUFREQ is a bool symbol, so mt8173-cpufreq.o will never be
-> part of a module.
->
-> (If that's incorrect you can stop reading here.)
->
->> --- /dev/null
->> +++ b/drivers/cpufreq/mt8173-cpufreq.c
->
->> +#include <linux/module.h>
->
-> I guess this include is not needed. And, for what it's worth,
->     make ARCH=arm CROSS_COMPILE=arm-linux-gnu- drivers/cpufreq/mt8173-cpufreq.o
->
-> compiles silently even if it's dropped.
->
->> +module_init(mt8173_cpufreq_driver_init);
->
-> According to include/linux/init.h, for built-in only code, this is
-> equivalent to device_initcall([...]). And two runs of
->     make ARCH=arm CROSS_COMPILE=arm-linux-gnu- drivers/cpufreq/mt8173-cpufreq.i
->
-> confirm that.
 
-Hi Paul,
+[...]
 
-Thanks for your reviewing.
-The <linux/module.h> is not needed here.
-I'll remove it.
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index b7d31ca..d2a91da 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -884,6 +884,21 @@ config SCHED_MC
+>           making when dealing with multi-core CPU chips at a cost of slightly
+>           increased overhead in some places. If unsure say N here.
+>
+> +config X86_INIT_MDELAY
+> +       int "Milliseconds to wait to de-assert INIT upon CPU startup" if SMP
+> +       range 0 10
+> +       default "10"
+> +       ---help---
+> +         This allows you to specify how long the BSP will delay
+> +         between asserting INIT and de-asserting INIT when starting another CPU.
+> +         This delay is paid on each cpu-online operation, including boot-time,
+> +         resume from suspend, and resume from hibernate.  The the value of
 
-Best Regards,
-Pi-Cheng
+Happened to notice a 2x "The the..." when I came across this in linux-next
+today and was reading the help out of curiousity...
 
->
-> Thanks,
->
->
-> Paul Bolle
->
+P.
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+> +         10 millisec was specified by Multi-Processor Spec 1.4 in 1997.
+> +         But modern hardware does not require any delay.
+> +
+> +         The kernel boot-time parameter "cpu_init_mdelay="
+> +         will over-ride this build-time default.
+> +
+>  source "kernel/Kconfig.preempt"
+>
+>  config UP_LATE_INIT
+> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+> index febc6aa..973621f 100644
+> --- a/arch/x86/kernel/smpboot.c
+> +++ b/arch/x86/kernel/smpboot.c
+> @@ -555,6 +555,20 @@ wakeup_secondary_cpu_via_nmi(int apicid, unsigned long start_eip)
+>         return (send_status | accept_status);
+>  }
+>
+> +unsigned int x86_init_mdelay = CONFIG_X86_INIT_MDELAY;
+> +static int __init cpu_init_mdelay(char *str)
+> +{
+> +       unsigned int tmp;
+> +
+> +       get_option(&str, &tmp);
+> +       pr_info("x86_init_mdelay set to %d, was %d", tmp, x86_init_mdelay);
+> +       x86_init_mdelay = tmp;
+> +       return 0;
+> +}
+> +
+> +early_param("cpu_init_mdelay", cpu_init_mdelay);
+> +
+> +
+>  static int
+>  wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
+>  {
+> @@ -586,7 +600,7 @@ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
+>         pr_debug("Waiting for send to finish...\n");
+>         send_status = safe_apic_wait_icr_idle();
+>
+> -       mdelay(10);
+> +       mdelay(x86_init_mdelay);
+>
+>         pr_debug("Deasserting INIT\n");
+>
+> --
+> 2.4.0.rc1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
