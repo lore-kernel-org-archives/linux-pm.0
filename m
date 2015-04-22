@@ -1,156 +1,122 @@
-From: Keerthy <a0393675@ti.com>
-Subject: Re: [PATCH] thermal: ti-soc-thermal: dra7: Implement Workaround for
- Errata i813
-Date: Wed, 22 Apr 2015 18:25:58 +0530
-Message-ID: <55379A5E.2000602@ti.com>
-References: <1429179514-21677-1-git-send-email-j-keerthy@ti.com>
+From: Axel Haslam <ahaslam@baylibre.com>
+Subject: Re: [RFC v4 1/8] PM / Domains: structure changes for multiple states
+Date: Wed, 22 Apr 2015 15:23:01 +0200
+Message-ID: <5537A0B5.5000507@baylibre.com>
+References: <1429695935-15815-1-git-send-email-ahaslam@baylibre.com>	<1429695935-15815-2-git-send-email-ahaslam@baylibre.com> <CAMuHMdXs_Wytg7xwyQP=+L8enzoT2JBg78YTFe59Zp5K8vbq_A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:33268 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752800AbbDVM4E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 22 Apr 2015 08:56:04 -0400
-In-Reply-To: <1429179514-21677-1-git-send-email-j-keerthy@ti.com>
+Received: from mail-wi0-f172.google.com ([209.85.212.172]:35462 "EHLO
+	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755473AbbDVNXF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Apr 2015 09:23:05 -0400
+Received: by widdi4 with SMTP id di4so177594023wid.0
+        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2015 06:23:04 -0700 (PDT)
+In-Reply-To: <CAMuHMdXs_Wytg7xwyQP=+L8enzoT2JBg78YTFe59Zp5K8vbq_A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com
-Cc: Keerthy <j-keerthy@ti.com>, rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, =?UTF-8?B?S3J6eXN6dG9mIEtvesWCb3dza2k=?= <k.kozlowski.k@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benoit Cousson <bcousson@baylibre.com>, Linux PM list <linux-pm@vger.kernel.org>
 
+Hi Geert,
 
-
-On Thursday 16 April 2015 03:48 PM, Keerthy wrote:
-> DESCRIPTION
+>>
+>> if the genpd is initially off, the user should set the
+>> .init_state field when registering the genpd,
+>> so that genpd knows which callbacks to call to set the
+>> domain to on.
 >
-> Spurious Thermal Alert: Talert can happen randomly while the device remains under the temperature limit
-> defined for this event to trig. This spurious event is caused by a incorrect re-synchronization between
-> clock domains. The comparison between configured threshold and current temperature value can happen
-> while the value is transitioning (metastable), thus causing inappropriate event generation.
-> No spurious event occurs as long as the threshold value stays unchanged. Spurious event can be
-> generated while a thermal alert threshold is modified in
-> CONTROL_BANDGAP_THRESHOLD_MPU/GPU/CORE/DSPEVE/IVA_n.
-> WORKAROUND
+> The initial state may depend on various factors (hardware default,
+> boot loader, previously loaded kernel, ...). This is even true with the
+> current binary states.
 >
-> Spurious event generation can be avoided by performing following sequence when the threshold is
-> modified:
-> 1. Mask the hot/cold events at the thermal IP level.
-> 2. Modify Threshold.
-> 3. Unmask the hot/cold events at the thermal IP level.
 
-Hi Eduardo,
+This would mean that the inital state of the genpd cannot be
+hardcoded right?
 
-I got a confirmation that the errata is applicable only to OMPA5 and not 
-DRA7. I have posted a fresh series with that taken care.
+maybe there should be the option to add  platform callback
+to get the initial state from platform specific code or default
+to the hardcoded one? this callback could do whatever it needs to return 
+the on/off status and if off, the index of the current state.
 
-https://www.mail-archive.com/linux-omap@vger.kernel.org/msg116354.html
+
+>> index 45937f8..f60a175 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>
+>> @@ -154,23 +155,24 @@ static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
+>>
+>>   static int genpd_power_on(struct generic_pm_domain *genpd)
+>>   {
+>> +       int target_state = genpd->target_state;
+>>          ktime_t time_start;
+>>          s64 elapsed_ns;
+>>          int ret;
+>>
+>> -       if (!genpd->power_on)
+>> +       if (!genpd->states[target_state].power_on)
+>>                  return 0;
+>>
+>
+> While your series now looks compilable for all patch steps, it's not
+> bisectable: the right hook won't be called until the platform is
+> converted to support multiple states.
+>
+> I think you can fix this by e.g. using -1 for the target_state on non-converted
+> platforms, and doing:
+>
+>          if (target_state < 0) {
+>                  if (!genpd->power_on)
+>                          return 0;
+>          } else {
+>                  if (!genpd->states[target_state].power_on)
+>                          return 0;
+>          }
+>
+> and
+>
+>          ret = target_state < 0 ? genpd->power_on(genpd)
+>                                 : genpd->states[target_state].power_on(genpd);
+>
+> The checks for a negative target_state can be removed only after
+> all platforms have been converted.
+>
+
+Ok, on the next series i will make sure the old callbacks are used until 
+they are converted.
+
+>> +       struct genpd_power_state states[GENPD_MAX_NSTATES];
+>
+> I think states should be a pointer to an array, not an array of 10 entries, to
+> avoid wasting memory on systems with a small number of states.
+
+Ok, I had it as pointer on array on the first series, i changed it
+to make the code simpler, but i can go back to pointer to array
+to save memory.
+
+>
+> E.g. on r8a73a4, we have 24 PM Domains.
+> That would waste 24 * 9 * 32 = 6912 bytes of memory.
+>
+> What about keeping the .power_o{ff,n}() callbacks in struct generic_pm_domain,
+> but adding a state index parameter to the callbacks?
+> That would save even more memory on systems where all callbacks are identical.
+
+makes sense.
 
 Thanks,
-Keerthy
+Axel
 
 >
-> Signed-off-by: Keerthy <j-keerthy@ti.com>
-> ---
->   .../thermal/ti-soc-thermal/dra752-thermal-data.c   |  3 +-
->   drivers/thermal/ti-soc-thermal/ti-bandgap.c        | 41 +++++++++++++++++++++-
->   drivers/thermal/ti-soc-thermal/ti-bandgap.h        |  4 ++-
->   3 files changed, 45 insertions(+), 3 deletions(-)
+> Gr{oetje,eeting}s,
 >
-> diff --git a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c b/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
-> index 58b5c66..4cd051d 100644
-> --- a/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
-> +++ b/drivers/thermal/ti-soc-thermal/dra752-thermal-data.c
-> @@ -421,7 +421,8 @@ const struct ti_bandgap_data dra752_data = {
->   			TI_BANDGAP_FEATURE_TALERT |
->   			TI_BANDGAP_FEATURE_COUNTER_DELAY |
->   			TI_BANDGAP_FEATURE_HISTORY_BUFFER |
-> -			TI_BANDGAP_FEATURE_ERRATA_814,
-> +			TI_BANDGAP_FEATURE_ERRATA_814 |
-> +			TI_BANDGAP_FEATURE_ERRATA_813,
->   	.fclock_name = "l3instr_ts_gclk_div",
->   	.div_ck_name = "l3instr_ts_gclk_div",
->   	.conv_table = dra752_adc_to_temp,
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> index 94acd80..c2c585a 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-> @@ -445,7 +445,7 @@ static int ti_bandgap_update_alert_threshold(struct ti_bandgap *bgp, int id,
->   {
->   	struct temp_sensor_data *ts_data = bgp->conf->sensors[id].ts_data;
->   	struct temp_sensor_registers *tsr;
-> -	u32 thresh_val, reg_val, t_hot, t_cold;
-> +	u32 thresh_val, reg_val, t_hot, t_cold, ctrl;
->   	int err = 0;
+>                          Geert
 >
->   	tsr = bgp->conf->sensors[id].registers;
-> @@ -477,8 +477,47 @@ static int ti_bandgap_update_alert_threshold(struct ti_bandgap *bgp, int id,
->   		  ~(tsr->threshold_thot_mask | tsr->threshold_tcold_mask);
->   	reg_val |= (t_hot << __ffs(tsr->threshold_thot_mask)) |
->   		   (t_cold << __ffs(tsr->threshold_tcold_mask));
-> +
-> +	/**
-> +	 * Errata i813:
-> +	 * Spurious Thermal Alert: Talert can happen randomly while the device
-> +	 * remains under the temperature limit defined for this event to trig.
-> +	 * This spurious event is caused by a incorrect re-synchronization
-> +	 * between clock domains. The comparison between configured threshold
-> +	 * and current temperature value can happen while the value is
-> +	 * transitioning (metastable), thus causing inappropriate event
-> +	 * generation. No spurious event occurs as long as the threshold value
-> +	 * stays unchanged. Spurious event can be generated while a thermal
-> +	 * alert threshold is modified in
-> +	 * CONTROL_BANDGAP_THRESHOLD_MPU/GPU/CORE/DSPEVE/IVA_n.
-> +	 */
-> +
-> +	if (TI_BANDGAP_HAS(bgp, ERRATA_813)) {
-> +		/* Mask t_hot and t_cold events at the IP Level */
-> +		ctrl = ti_bandgap_readl(bgp, tsr->bgap_mask_ctrl);
-> +
-> +		if (hot)
-> +			ctrl &= ~tsr->mask_hot_mask;
-> +		else
-> +			ctrl &= ~tsr->mask_cold_mask;
-> +
-> +		ti_bandgap_writel(bgp, ctrl, tsr->bgap_mask_ctrl);
-> +	}
-> +
-> +	/* Write the threshold value */
->   	ti_bandgap_writel(bgp, reg_val, tsr->bgap_threshold);
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 >
-> +	if (TI_BANDGAP_HAS(bgp, ERRATA_813)) {
-> +		/* Unmask t_hot and t_cold events at the IP Level */
-> +		ctrl = ti_bandgap_readl(bgp, tsr->bgap_mask_ctrl);
-> +		if (hot)
-> +			ctrl |= tsr->mask_hot_mask;
-> +		else
-> +			ctrl |= tsr->mask_cold_mask;
-> +
-> +		ti_bandgap_writel(bgp, ctrl, tsr->bgap_mask_ctrl);
-> +	}
-> +
->   	if (err) {
->   		dev_err(bgp->dev, "failed to reprogram thot threshold\n");
->   		err = -EIO;
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.h b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
-> index b2da3fc..0c52f7a 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.h
-> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
-> @@ -320,7 +320,8 @@ struct ti_temp_sensor {
->    *
->    * TI_BANDGAP_FEATURE_ERRATA_814 - used to workaorund when the bandgap device
->    *	has Errata 814
-> - *
-> + * TI_BANDGAP_FEATURE_ERRATA_813 - used to workaorund when the bandgap device
-> + *	has Errata 813
->    * TI_BANDGAP_HAS(b, f) - macro to check if a bandgap device is capable of a
->    *      specific feature (above) or not. Return non-zero, if yes.
->    */
-> @@ -335,6 +336,7 @@ struct ti_temp_sensor {
->   #define TI_BANDGAP_FEATURE_COUNTER_DELAY	BIT(8)
->   #define TI_BANDGAP_FEATURE_HISTORY_BUFFER	BIT(9)
->   #define TI_BANDGAP_FEATURE_ERRATA_814		BIT(10)
-> +#define TI_BANDGAP_FEATURE_ERRATA_813		BIT(11)
->   #define TI_BANDGAP_HAS(b, f)			\
->   			((b)->conf->features & TI_BANDGAP_FEATURE_ ## f)
->
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                  -- Linus Torvalds
 >
