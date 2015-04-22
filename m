@@ -1,148 +1,73 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] cpufreq: powernv: Register for OCC related opal_message notification
-Date: Wed, 22 Apr 2015 22:34:25 +0530
-Message-ID: <1429722265-2953-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1429722265-2953-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp02.in.ibm.com ([122.248.162.2]:43511 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965881AbbDVRGs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Apr 2015 13:06:48 -0400
-Received: from /spool/local
-	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
-	Wed, 22 Apr 2015 22:36:46 +0530
-In-Reply-To: <1429722265-2953-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+Subject: Re: default value of power/wakeup
+Date: Wed, 22 Apr 2015 19:10:50 +0200
+Message-ID: <20150422171050.GB2551@kroah.com>
+References: <20150422155233.GC32576@kroah.com>
+ <Pine.LNX.4.44L0.1504221213140.1630-100000@iolanthe.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1504221213140.1630-100000-IYeN2dnnYyZXsRXLowluHWD2FQJk+8+b@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Cc: Tom Yan <tom.ty89-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-OCC is an On-Chip-Controller which takes care of power and thermal
-safety of the chip. During runtime due to power failure or
-overtemperature the OCC may throttle the frequencies of the CPUs to
-remain within the power budget.
+On Wed, Apr 22, 2015 at 12:15:36PM -0400, Alan Stern wrote:
+> On Wed, 22 Apr 2015, Greg KH wrote:
+> 
+> > > Index: usb-4.0/drivers/hid/hid-logitech-dj.c
+> > > ===================================================================
+> > > --- usb-4.0.orig/drivers/hid/hid-logitech-dj.c
+> > > +++ usb-4.0/drivers/hid/hid-logitech-dj.c
+> > > @@ -990,6 +990,7 @@ static int logi_dj_probe(struct hid_devi
+> > >  			 const struct hid_device_id *id)
+> > >  {
+> > >  	struct usb_interface *intf = to_usb_interface(hdev->dev.parent);
+> > > +	struct usb_device *udev = interface_to_usbdev(intf);
+> > >  	struct dj_receiver_dev *djrcv_dev;
+> > >  	int retval;
+> > >  
+> > > @@ -1078,6 +1079,9 @@ static int logi_dj_probe(struct hid_devi
+> > >  		goto logi_dj_recv_query_paired_devices_failed;
+> > >  	}
+> > >  
+> > > +	/* Keyboards are enabled for wakeup by default */
+> > > +	device_set_wakeup_enable(&udev->dev, 1);
+> > 
+> > But this device isn't always a keyboard.  For example, mine works with a
+> > mouse.  It's a "universal receiver", you can't know what type of HID
+> > device is plugged into it until it connects to it.  I don't mind making
+> > it auto wakeup, if that works, but the comment isn't correct.
+> 
+> Oh, okay, I didn't realize that.
+> 
+> Is there a reasonable way to enable wakeup only when the driver learns
+> that a keyboard is connected?  Where would the driver do this?
 
-We want the cpufreq driver to be aware of such situations to be able
-to report it to the user. We register to opal_message_notifier to
-receive OCC messages from opal.
+I don't know if the driver ever "knows" this, as you can pair lots of
+different devices to this same receiver.  There's a userspace
+application that lets you manage the device, called "solaar", that this
+option could be changed in.
 
-powernv_cpufreq_throttle_check() reports any frequency throttling and
-this patch will report the reason or event that caused throttling. We
-can be throttled if OCC is reset or OCC limits Pmax due to power or
-thermal reasons. We are also notified of unthrottling after an OCC
-reset or if OCC restores Pmax on the chip.
+But really, putting the device to sleep should work for it no matter if
+this is a keyboard or a mouse or a joystick, as the wakeup logic is in
+the receiver, not in the device on the other end of the wireless link.
 
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-CC: Viresh Kumar <viresh.kumar@linaro.org>
-CC: linux-pm@vger.kernel.org
----
- drivers/cpufreq/powernv-cpufreq.c | 70 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 69 insertions(+), 1 deletion(-)
+Turning autosuspend works for me for my mouse connected.  It doesn't
+work for one of my "real" USB keyboards when it's connected to the
+machine, which is why I can't enable autosuspend for it, as it drives me
+crazy.
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index ebef0d8..5718765 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -32,6 +32,7 @@
- #include <asm/firmware.h>
- #include <asm/reg.h>
- #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
-+#include <asm/opal.h>
- 
- #define POWERNV_MAX_PSTATES	256
- #define PMSR_PSAFE_ENABLE	(1UL << 30)
-@@ -40,7 +41,7 @@
- #define PMSR_LP(x)		((x >> 48) & 0xFF)
- 
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
--static bool rebooting, throttled;
-+static bool rebooting, throttled, occ_reset;
- 
- /*
-  * Note: The set of pstates consists of contiguous integers, the
-@@ -395,6 +396,72 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
- 	.notifier_call = powernv_cpufreq_reboot_notifier,
- };
- 
-+static char throttle_reason[6][50] = {	"No throttling",
-+					"Power Cap",
-+					"Processor Over Temperature",
-+					"Power Supply Failure",
-+					"OverCurrent",
-+					"OCC Reset"
-+				     };
-+
-+static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
-+		unsigned long msg_type, void *msg)
-+{
-+	struct opal_msg *occ_msg = msg;
-+	uint64_t token;
-+	uint64_t chip_id, reason;
-+
-+	if (msg_type != OPAL_MSG_OCC)
-+		return 0;
-+	token = be64_to_cpu(occ_msg->params[0]);
-+	switch (token) {
-+	case 0:
-+		occ_reset = true;
-+		/*
-+		 * powernv_cpufreq_throttle_check() is called in
-+		 * target() callback which can detect the throttle state
-+		 * for governors like ondemand.
-+		 * But static governors will not call target() often thus
-+		 * report throttling here.
-+		 */
-+		if (!throttled) {
-+			throttled = true;
-+			pr_crit("CPU Frequency is throttled\n");
-+		}
-+		pr_info("OCC in Reset\n");
-+		break;
-+	case 1:
-+		pr_info("OCC is Loaded\n");
-+		break;
-+	case 2:
-+		chip_id = be64_to_cpu(occ_msg->params[1]);
-+		reason = be64_to_cpu(occ_msg->params[2]);
-+		if (occ_reset) {
-+			occ_reset = false;
-+			throttled = false;
-+			pr_info("OCC is Active\n");
-+			/* Sanity check for static governors */
-+			powernv_cpufreq_throttle_check(smp_processor_id());
-+		} else if (reason) {
-+			throttled = true;
-+			pr_info("Pmax reduced due to %s on chip %x\n",
-+					throttle_reason[reason], (int)chip_id);
-+		} else {
-+			throttled = false;
-+			pr_info("%s on chip %x\n",
-+					throttle_reason[reason], (int)chip_id);
-+		}
-+		break;
-+	}
-+	return 0;
-+}
-+
-+static struct notifier_block powernv_cpufreq_opal_nb = {
-+	.notifier_call	= powernv_cpufreq_occ_msg,
-+	.next		= NULL,
-+	.priority	= 0,
-+};
-+
- static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
- {
- 	struct powernv_smp_call_data freq_data;
-@@ -430,6 +497,7 @@ static int __init powernv_cpufreq_init(void)
- 	}
- 
- 	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
-+	opal_message_notifier_register(OPAL_MSG_OCC, &powernv_cpufreq_opal_nb);
- 	return cpufreq_register_driver(&powernv_cpufreq_driver);
- }
- module_init(powernv_cpufreq_init);
--- 
-1.9.3
+I don't have a keyboard to test the receiver with at the moment, to see
+if autosuspend works for both things connected at the same time, or for
+just the keyboard.
 
+thanks,
+
+greg k-h
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
