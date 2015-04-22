@@ -1,43 +1,82 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [RFC PATCH v2 0/1] ARM: cpuidle: heterogeneous systems extension
-Date: Wed, 22 Apr 2015 09:55:07 +0100
-Message-ID: <20150422085507.GA22601@red-moon>
-References: <1429200617-9546-1-git-send-email-lorenzo.pieralisi@arm.com>
- <CAMAWPa_fMhgFfL8krDxT9h42mydVogkaYQt1Me1qJTsKeH5dSA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: ahaslam@baylibre.com
+Subject: [RFC v4 0/8] genpd multiple states v4
+Date: Wed, 22 Apr 2015 11:45:27 +0200
+Message-ID: <1429695935-15815-1-git-send-email-ahaslam@baylibre.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:48732 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755813AbbDVIzK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 22 Apr 2015 04:55:10 -0400
-Content-Disposition: inline
-In-Reply-To: <CAMAWPa_fMhgFfL8krDxT9h42mydVogkaYQt1Me1qJTsKeH5dSA@mail.gmail.com>
+Received: from mail-wi0-f177.google.com ([209.85.212.177]:35182 "EHLO
+	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934369AbbDVJq0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Apr 2015 05:46:26 -0400
+Received: by widdi4 with SMTP id di4so170581008wid.0
+        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2015 02:46:25 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Howard Chen <howard.chen@linaro.org>, Rob Herring <robh+dt@kernel.org>, Kevin Hilman <khilman@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Mark Rutland <Mark.Rutland@arm.com>
+To: ulf.hansson@linaro.org, khilman@linaro.org, k.kozlowski.k@gmail.com, rjw@rjwysocki.net
+Cc: bcousson@baylibre.com, linux-pm@vger.kernel.org, Axel Haslam <ahaslam@baylibre.com>
 
-On Tue, Apr 21, 2015 at 07:24:54PM +0100, Kevin Hilman wrote:
-> On Thu, Apr 16, 2015 at 9:10 AM, Lorenzo Pieralisi
-> <lorenzo.pieralisi@arm.com> wrote:
-> 
-> [...]
-> 
-> > This patch sets the maximum number of static CPUidle drivers allowed to
-> > two, since it is hard to foresee systems with more than two sets of CPUs
-> > having different idle states
-> 
-> It's not hard to forsee anymore:
-> 
->    http://www.cnx-software.com/2015/04/21/mediatek-helio-x20-deca-core-processor/
->    https://liliputing.com/2015/04/closer-look-at-mediateks-upcoming-10-core-helio-x20-processor.html
+From: Axel Haslam <ahaslam@baylibre.com>
 
-Eheh I stand corrected :). Not a big deal, drivers can be allocated
-dynamically; it seems that the designs above leave us no choice, the
-idle states are the only differentiating factor when it comes
-to CPUidle driver logical cpumask creation, happy to hear more
-opinions on this, but I do not really see what we can use instead.
+Some architectures may have intermediate power
+levels between on and off. each state in between
+may have its own set of procedures to put the
+power domain into that state.
 
-Thanks,
-Lorenzo
+This patch adds the ability to declare multiple
+states for a given generic power domain, the idea
+is that the deepest state will be entered which
+does not violate any of the device or sub-domain
+latency constraints.
+
+Changes since v3:
+* remove old power on/off function at the end of the
+series so that compilation will not break in between.
+
+Changes since v2:
+* remove state argument and macros from save/restore
+callbacks.
+
+* added init_state for platforms to pass the
+initial state when the genpd is initially off.
+
+* convert current genpd users for the structure changes.
+
+* compile tested for shmobile_defconfig, exynos_defconfig,
+s3c6400_defconfig u8500_defconfig.
+
+Changes since v1:
+* split the changes so that the actual logic that
+selects the target state is a separate patch.
+
+* move the cached logic out of the state function and add
+it back to default_power_down_ok.
+
+* use static arrays instead of dynamic for state declaration
+since its not expected to have lots of intermediate states.
+That way we don't have to mess with allocations.
+
+* rename default_power_down_ok_state to power_down_ok_for_state
+
+
+Axel Haslam (8):
+  PM / Domains: structure changes for multiple states
+  PM / Domains: select deepest state
+  ARM: s3c64xx: pm: Convert to multiple states
+  ARM: exynos: pm: Convert to multiple states
+  ARM: r8a7779: pm: Convert to multiple states
+  ARM: rmobile: pm: Convert to multiple states
+  ARM: ux500: pm: Convert to multiple states
+  PM / Domains: remove old power on/off callbacks.
+
+ arch/arm/mach-exynos/pm_domains.c    |  6 ++-
+ arch/arm/mach-s3c64xx/pm.c           | 57 ++++++++++++++++++--------
+ arch/arm/mach-shmobile/pm-r8a7779.c  |  6 ++-
+ arch/arm/mach-shmobile/pm-rmobile.c  |  6 ++-
+ arch/arm/mach-ux500/pm_domains.c     |  8 +++-
+ drivers/base/power/domain.c          | 43 ++++++++++++++------
+ drivers/base/power/domain_governor.c | 77 ++++++++++++++++++++++++------------
+ include/linux/pm_domain.h            | 21 ++++++++--
+ 8 files changed, 160 insertions(+), 64 deletions(-)
+
+-- 
+1.9.1
+
