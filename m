@@ -1,74 +1,148 @@
-From: Axel Haslam <ahaslam@baylibre.com>
-Subject: Re: [RFC v4 1/8] PM / Domains: structure changes for multiple states
-Date: Wed, 22 Apr 2015 18:26:23 +0200
-Message-ID: <5537CBAF.8050009@baylibre.com>
-References: <1429695935-15815-1-git-send-email-ahaslam@baylibre.com>	<1429695935-15815-2-git-send-email-ahaslam@baylibre.com>	<CAMuHMdXs_Wytg7xwyQP=+L8enzoT2JBg78YTFe59Zp5K8vbq_A@mail.gmail.com>	<5537A0B5.5000507@baylibre.com> <CAMuHMdU2nfmJsoRwAWs+Lxfv22fWVGSBVw6SHOe6BE4yWWJoxw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH 2/2] cpufreq: powernv: Register for OCC related opal_message notification
+Date: Wed, 22 Apr 2015 22:34:25 +0530
+Message-ID: <1429722265-2953-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1429722265-2953-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:33542 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964807AbbDVQ00 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Apr 2015 12:26:26 -0400
-Received: by wiax7 with SMTP id x7so134113780wia.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2015 09:26:25 -0700 (PDT)
-In-Reply-To: <CAMuHMdU2nfmJsoRwAWs+Lxfv22fWVGSBVw6SHOe6BE4yWWJoxw@mail.gmail.com>
+Received: from e28smtp02.in.ibm.com ([122.248.162.2]:43511 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965881AbbDVRGs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Apr 2015 13:06:48 -0400
+Received: from /spool/local
+	by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+	Wed, 22 Apr 2015 22:36:46 +0530
+In-Reply-To: <1429722265-2953-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, =?UTF-8?B?S3J6eXN6dG9mIEtvesWCb3dza2k=?= <k.kozlowski.k@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benoit Cousson <bcousson@baylibre.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-Hi Geert,
+OCC is an On-Chip-Controller which takes care of power and thermal
+safety of the chip. During runtime due to power failure or
+overtemperature the OCC may throttle the frequencies of the CPUs to
+remain within the power budget.
 
-On 22/04/2015 15:57, Geert Uytterhoeven wrote:
-> Hi Axel,
->
-> On Wed, Apr 22, 2015 at 3:23 PM, Axel Haslam <ahaslam@baylibre.com> wrote:
->>>> if the genpd is initially off, the user should set the
->>>> .init_state field when registering the genpd,
->>>> so that genpd knows which callbacks to call to set the
->>>> domain to on.
->>>
->>> The initial state may depend on various factors (hardware default,
->>> boot loader, previously loaded kernel, ...). This is even true with the
->>> current binary states.
->>
->> This would mean that the inital state of the genpd cannot be
->> hardcoded right?
->
-> Indeed. And it should be filled in by the platform code before registration.
->
->>> What about keeping the .power_o{ff,n}() callbacks in struct
->>> generic_pm_domain,
->>> but adding a state index parameter to the callbacks?
->>> That would save even more memory on systems where all callbacks are
->>> identical.
->>
->> makes sense.
->
-> It will complicate compilability/bisectability, though.
->
+We want the cpufreq driver to be aware of such situations to be able
+to report it to the user. We register to opal_message_notifier to
+receive OCC messages from opal.
 
-since the genpd pointer is allready an argument to the .power_o{ff,n}() 
-callbacks, it would be simpler if the platform could check 
-genpd->target_state to know what state is powering on/off to, instead of 
-adding a new argument.
+powernv_cpufreq_throttle_check() reports any frequency throttling and
+this patch will report the reason or event that caused throttling. We
+can be throttled if OCC is reset or OCC limits Pmax due to power or
+thermal reasons. We are also notified of unthrottling after an OCC
+reset or if OCC restores Pmax on the chip.
 
-That way i can remove the power on/off callbacks from the state array,
-and there are no big issues with bisectability.
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+CC: Viresh Kumar <viresh.kumar@linaro.org>
+CC: linux-pm@vger.kernel.org
+---
+ drivers/cpufreq/powernv-cpufreq.c | 70 ++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 69 insertions(+), 1 deletion(-)
 
-regards,
-Axel
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index ebef0d8..5718765 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -32,6 +32,7 @@
+ #include <asm/firmware.h>
+ #include <asm/reg.h>
+ #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
++#include <asm/opal.h>
+ 
+ #define POWERNV_MAX_PSTATES	256
+ #define PMSR_PSAFE_ENABLE	(1UL << 30)
+@@ -40,7 +41,7 @@
+ #define PMSR_LP(x)		((x >> 48) & 0xFF)
+ 
+ static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+-static bool rebooting, throttled;
++static bool rebooting, throttled, occ_reset;
+ 
+ /*
+  * Note: The set of pstates consists of contiguous integers, the
+@@ -395,6 +396,72 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
+ 	.notifier_call = powernv_cpufreq_reboot_notifier,
+ };
+ 
++static char throttle_reason[6][50] = {	"No throttling",
++					"Power Cap",
++					"Processor Over Temperature",
++					"Power Supply Failure",
++					"OverCurrent",
++					"OCC Reset"
++				     };
++
++static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
++		unsigned long msg_type, void *msg)
++{
++	struct opal_msg *occ_msg = msg;
++	uint64_t token;
++	uint64_t chip_id, reason;
++
++	if (msg_type != OPAL_MSG_OCC)
++		return 0;
++	token = be64_to_cpu(occ_msg->params[0]);
++	switch (token) {
++	case 0:
++		occ_reset = true;
++		/*
++		 * powernv_cpufreq_throttle_check() is called in
++		 * target() callback which can detect the throttle state
++		 * for governors like ondemand.
++		 * But static governors will not call target() often thus
++		 * report throttling here.
++		 */
++		if (!throttled) {
++			throttled = true;
++			pr_crit("CPU Frequency is throttled\n");
++		}
++		pr_info("OCC in Reset\n");
++		break;
++	case 1:
++		pr_info("OCC is Loaded\n");
++		break;
++	case 2:
++		chip_id = be64_to_cpu(occ_msg->params[1]);
++		reason = be64_to_cpu(occ_msg->params[2]);
++		if (occ_reset) {
++			occ_reset = false;
++			throttled = false;
++			pr_info("OCC is Active\n");
++			/* Sanity check for static governors */
++			powernv_cpufreq_throttle_check(smp_processor_id());
++		} else if (reason) {
++			throttled = true;
++			pr_info("Pmax reduced due to %s on chip %x\n",
++					throttle_reason[reason], (int)chip_id);
++		} else {
++			throttled = false;
++			pr_info("%s on chip %x\n",
++					throttle_reason[reason], (int)chip_id);
++		}
++		break;
++	}
++	return 0;
++}
++
++static struct notifier_block powernv_cpufreq_opal_nb = {
++	.notifier_call	= powernv_cpufreq_occ_msg,
++	.next		= NULL,
++	.priority	= 0,
++};
++
+ static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+ {
+ 	struct powernv_smp_call_data freq_data;
+@@ -430,6 +497,7 @@ static int __init powernv_cpufreq_init(void)
+ 	}
+ 
+ 	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
++	opal_message_notifier_register(OPAL_MSG_OCC, &powernv_cpufreq_opal_nb);
+ 	return cpufreq_register_driver(&powernv_cpufreq_driver);
+ }
+ module_init(powernv_cpufreq_init);
+-- 
+1.9.3
 
-> Gr{oetje,eeting}s,
->
->                          Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                  -- Linus Torvalds
->
