@@ -1,81 +1,169 @@
-From: Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
-Subject: Re: default value of power/wakeup
-Date: Wed, 22 Apr 2015 20:39:08 +0200
-Message-ID: <20150422183908.GA5090@kroah.com>
-References: <20150422171050.GB2551@kroah.com>
- <Pine.LNX.4.44L0.1504221403380.1630-100000@iolanthe.rowland.org>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH 0/4] cpufreq: use generic cpufreq drivers for Exynos5250 platform
+Date: Wed, 22 Apr 2015 16:40:37 -0700
+Message-ID: <7hegnb91fu.fsf@deeprootsystems.com>
+References: <1428946441-17058-1-git-send-email-b.zolnierkie@samsung.com>
+	<5439319.JYC6t7bzy4@amdc1032> <7hsibtavuz.fsf@deeprootsystems.com>
+	<4008289.pQOxzKW0Ir@amdc1032>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1504221403380.1630-100000-IYeN2dnnYyZXsRXLowluHWD2FQJk+8+b@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Cc: Tom Yan <tom.ty89-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f175.google.com ([209.85.192.175]:36487 "EHLO
+	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756706AbbDVXkl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Apr 2015 19:40:41 -0400
+Received: by pdea3 with SMTP id a3so1827815pde.3
+        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2015 16:40:41 -0700 (PDT)
+In-Reply-To: <4008289.pQOxzKW0Ir@amdc1032> (Bartlomiej Zolnierkiewicz's
+	message of "Wed, 22 Apr 2015 19:37:43 +0200")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, linux-samsung-soc@vger.kernel.org, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-arm-kernel@lists.infradead.org
 
-On Wed, Apr 22, 2015 at 02:22:44PM -0400, Alan Stern wrote:
-> On Wed, 22 Apr 2015, Greg KH wrote:
-> 
-> > > > But this device isn't always a keyboard.  For example, mine works with a
-> > > > mouse.  It's a "universal receiver", you can't know what type of HID
-> > > > device is plugged into it until it connects to it.  I don't mind making
-> > > > it auto wakeup, if that works, but the comment isn't correct.
-> > > 
-> > > Oh, okay, I didn't realize that.
-> > > 
-> > > Is there a reasonable way to enable wakeup only when the driver learns
-> > > that a keyboard is connected?  Where would the driver do this?
-> > 
-> > I don't know if the driver ever "knows" this, as you can pair lots of
-> > different devices to this same receiver.  There's a userspace
-> > application that lets you manage the device, called "solaar", that this
-> > option could be changed in.
-> > 
-> > But really, putting the device to sleep should work for it no matter if
-> > this is a keyboard or a mouse or a joystick, as the wakeup logic is in
-> > the receiver, not in the device on the other end of the wireless link.
-> > 
-> > Turning autosuspend works for me for my mouse connected.  It doesn't
-> > work for one of my "real" USB keyboards when it's connected to the
-> > machine, which is why I can't enable autosuspend for it, as it drives me
-> > crazy.
-> > 
-> > I don't have a keyboard to test the receiver with at the moment, to see
-> > if autosuspend works for both things connected at the same time, or for
-> > just the keyboard.
-> 
-> Tom and I have been talking about enabling wakeup, not autosuspend.  
-> The question is whether or not the default wakeup setting for the 
-> receiver should be "enabled".
+Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com> writes:
 
-Oh nevermind, sorry about that.
+[...]
 
-> The kernel's policy is that keyboards should be enabled for wakeup, by 
-> default.  I think that matches most people's expectations.  But when 
-> you've got a "universal" receiver, what then?
-> 
-> Should it always be enabled by default because a keyboard _might_ be
-> connected?  Should it be enabled only when a keyboard is detected?  
-> What if multiple devices are connected at the same time?
-> 
-> Shucks -- does the receiver even _work_ as a wakeup device?  It claims
-> to, but that would require it to remain in wireless contact with the
-> remote keyboard even while it's supposed to be in a low-power state,
-> which rather seems to defeat the purpose.
+>> However, with the default governor set to userspace it boots fine until
+>> my userspace (ubuntu) tries to enable the ondemand governor, and then it
+>> hangs. 
+>> 
+>> For it to boot, I have to disable the ondemand governor, and set the
+>> default governor to userspace.
+>
+> I've tried with ARM big.LITTLE cpuidle support enabled (I've just noticed
+> that it is not turned on in exynos_defconfig) and my ODROID-XU3 board
+> fails to boot.  This happens even with cpufreq support disabled (hard
+> lockup happens during mmc initialization which is done just after cpufreq
+> initialization).
 
-I just tried it with my mouse connected, it didn't wake it up.  Couldn't
-tell if it stayed connected to the mouse or not.
+Right, the XU3 has broken secure firmware such that MCPM cannot properly
+control CCI, so CPUidle will hang when trying to hit low power states,
+so you have to disable CCI by adding something like this to the end of
+your XU3 .dts file:
 
-> PS: I've got wakeup enabled for the PS/2 keyboard attached to the
-> computer I'm using now, but it doesn't work.  I have to press the power 
-> button to wake the machine up from suspend.  Probably an issue in the 
-> BIOS or ACPI -- I haven't bothered to try and track it down.
+&cci {
+     status = "disabled";
+};
 
-Same here for my USB keyboard, it doesn't wake the machine up either...
+> Could you please check if disabling cpuidle support helps?
 
-greg k-h
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+For now, I've disabled CPUidle so we have a similar setup, but it
+doesn't change anything on exynos5800-peach-pi
+
+>> As I reported earlier on Thomas' series, I suspect this is related to
+>> the fact that the higher OPPs aren't really functional without voltage
+>> scaling also supported. 
+>
+> Part #4 contains voltage scaling support for arm_big_little[_dt] driver
+> so this should not be a problem any longer.
+>
+> You may try next-20150330-generic-cpufreq-exynos5420-5800-v2-debug
+> branch from my github (with cpufreq debugging printks enabled) to check
+> whether the voltage scaling is indeed done on your board.
+>
+>> I'm also seeing the wait_until_divider_stable errors when switching
+>> between the available A7 OPPs.  I'd reported this one earlier as well,
+>> along with the script to reproduce it.
+>
+> I've tried your script and it works fine for me (I only needed to change
+> cpu4 to cpu0 as on ODROID-XU3 CPUs 0,5,6,7 are A7 and 1,2,3,4 are A15).
+
+Then it seems something isn't quite right for exynos5800-peach-pi.
+Below is the script[1] I'm using on exynos which also checks the voltage
+by quering the regulator fwk (and optionally checking the INA2xx sensors
+on odroid-xu3 if that support is enabled)
+
+On your debug branch, it just gives -1 for all the voltages, so the
+regulator voltage never changes:
+
+# ./dvfs
+CPU regulator: cpu0, vdd_arm, /sys/class/regulator/regulator.18
+[   45.691483] arm_big_little: bL_cpufreq_set_rate: cpu: 0, old cluster: 0, new cluster: 0, freq: 200000
+[   45.699581] arm_big_little: bL_cpufreq_set_rate_cluster: cpu 0, cluster: 0, 400 MHz, -1 mV --> 200 MHz, -1 mV
+current freq: 200000 
+current voltage: 1262500
+[   46.969821] arm_big_little: bL_cpufreq_set_rate: cpu: 0, old cluster: 0, new cluster: 0, freq: 300000
+[   46.978272] arm_big_little: bL_cpufreq_set_rate_cluster: cpu 0, cluster: 0, 200 MHz, -1 mV --> 300 MHz, -1 mV
+current freq: 300000
+current voltage: 1262500
+
+I added a bit more debug to the cpufreq driver[1] and found that the
+regulator_get_optional is failing:
+
+[    3.407295] cpu cpu0: Unable to get regulator cpu-cluster.0
+[    3.458282] cpu cpu4: Unable to get regulator cpu-cluster.1
+
+
+Kevin
+
+
+[1]
+#!/bin/sh
+
+if [ ! -d /sys/devices/system/cpu/cpu0/cpufreq ]; then
+  echo "CPUfreq not enabled in kernel."
+  exit 1
+fi
+
+# NOTE: odroid-xu3: CPU0 = A7.0, CPU1 = A15.0
+cpu=cpu0
+reg_name=vdd_arm
+hwmon=hwmon0
+#cpu=cpu4
+#reg_name=vdd_kfc
+#hwmon=hwmon3
+
+cpu_reg=$(dirname `find /sys/class/regulator/regulator.*/ -name name -exec grep -l $reg_name {} \;`)
+echo CPU regulator: $cpu, $reg_name, $cpu_reg
+
+# Cycle through frequencies (and check voltage)
+cd /sys/devices/system/cpu/$cpu/cpufreq
+echo userspace > scaling_governor
+for freq in `cat scaling_available_frequencies`; do
+  echo ${freq} > scaling_setspeed
+  sleep 0.2
+
+  echo -n "current freq: "
+  cat scaling_cur_freq
+  echo -n "current voltage: "
+  cat ${cpu_reg}/microvolts
+
+  # odroid-xu3 INA231 monitors
+  if [ ! -z $hwmon ]; then
+    if [ -e /sys/class/hwmon/$hwmon/in1_input ]; then
+      echo -n "current voltage (ina2xx)":
+      cat /sys/class/hwmon/$hwmon/in1_input
+    fi
+  fi
+
+  sleep 1
+done
+
+[2]
+diff --git a/drivers/cpufreq/arm_big_little.c
+b/drivers/cpufreq/arm_big_little.c
+index 024f185b2154..4108f909cc9c 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -16,6 +16,7 @@
+  * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  * GNU General Public License for more details.
+  */
++#define DEBUG
+
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+
+@@ -446,6 +447,8 @@ static int _get_cluster_clk_and_freq_table(struct
+device *cpu_dev)
+                ret = regulator_set_voltage_time(reg[cluster], min_uV,
+                max_uV);
+                if (ret > 0)
+                        transition_latencies[cluster] = ret * 1000;
++       } else {
++               dev_warn(cpu_dev, "Unable to get regulator %s", name);
+        }
+
+        ret = dev_pm_opp_init_cpufreq_table(cpu_dev,
+        &freq_table[cluster]);
