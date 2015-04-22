@@ -1,76 +1,117 @@
-From: Axel Haslam <ahaslam@baylibre.com>
-Subject: Re: [RFC v4 1/8] PM / Domains: structure changes for multiple states
-Date: Wed, 22 Apr 2015 16:50:35 +0200
-Message-ID: <5537B53B.4070808@baylibre.com>
-References: <1429695935-15815-1-git-send-email-ahaslam@baylibre.com>	<1429695935-15815-2-git-send-email-ahaslam@baylibre.com> <CAMuHMdXs_Wytg7xwyQP=+L8enzoT2JBg78YTFe59Zp5K8vbq_A@mail.gmail.com> <5537A0B5.5000507@baylibre.com>
+From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Subject: Re: default value of power/wakeup
+Date: Wed, 22 Apr 2015 11:28:29 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1504221028370.1630-100000@iolanthe.rowland.org>
+References: <CAGnHSEkaEBeHdCGCGpLXtF3tKwT4Ck+7TZBpJoO5gNzvpNde4w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f174.google.com ([209.85.212.174]:35835 "EHLO
-	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932874AbbDVOuj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Apr 2015 10:50:39 -0400
-Received: by widdi4 with SMTP id di4so180979647wid.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2015 07:50:38 -0700 (PDT)
-In-Reply-To: <5537A0B5.5000507@baylibre.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAGnHSEkaEBeHdCGCGpLXtF3tKwT4Ck+7TZBpJoO5gNzvpNde4w-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tom Yan <tom.ty89-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, =?UTF-8?B?S3J6eXN6dG9mIEtvesWCb3dza2k=?= <k.kozlowski.k@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benoit Cousson <bcousson@baylibre.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Geert,
+On Wed, 22 Apr 2015, Tom Yan wrote:
 
->>
->> While your series now looks compilable for all patch steps, it's not
->> bisectable: the right hook won't be called until the platform is
->> converted to support multiple states.
->>
->> I think you can fix this by e.g. using -1 for the target_state on
->> non-converted
->> platforms, and doing:
->>
->>          if (target_state < 0) {
->>                  if (!genpd->power_on)
->>                          return 0;
->>          } else {
->>                  if (!genpd->states[target_state].power_on)
->>                          return 0;
->>          }
->>
->> and
->>
->>          ret = target_state < 0 ? genpd->power_on(genpd)
->>                                 :
->> genpd->states[target_state].power_on(genpd);
->>
->> The checks for a negative target_state can be removed only after
->> all platforms have been converted.
->>
+> On 21 April 2015 at 23:51, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org> wrote:
+> > Anyway, you're suggesting that drivers should never override sysfs
+> > attribute values.  But there doesn't seem to be any other way to
+> > implement the kernel's policy that wakeup should be enabled by default
+> > for all keyboard devices.
+> 
+> I just doubt if there should be any of these kinds of kernel's policy,
 
-instead of adding checks for negative target state,
-i think we can use a single state as a placeholder for the
-old callbacks.
+The kernel _has_ to have some policy about default values.  It's 
+unavoidable -- even if you say that the default value for everything 
+will be 0, that's still a policy!
 
-would this be an acceptable solution?
+> especially for non-critical attributes like wakeup. Obviously now udev
+> is put to a very embarassed position (supposedly it should be the one
+> managing these policy, but now the fact is the kernel took its job
+> from it). Also, from the case of my two receivers, we can see that it
+> also causes unnecessary inconsistency to user experience.
 
-on init i can add something like:
+The inconsistency is a bug.  Not all keyboard drivers have implemented
+the wakeup policy.  That can be fixed.  Try applying the patch below 
+and let me know what happens.
 
-+       if (genpd->power_off || genpd->power_on) {
-+               pr_warn("Using old genpd callbacks\n");
-+               genpd->state_count = 1;
-+               genpd->states[0].name = "OFF";
-+               genpd->states[0].power_off = genpd->power_off;
-+               genpd->states[0].power_off_latency_ns =
-+                       genpd->power_off_latency_ns;
-+               genpd->states[0].power_on = genpd->power_on;
-+               genpd->states[0].power_on_latency_ns =
-+                               genpd->power_on_latency_ns;
-+       }
+Overriding udev is unfortunate and we should try to avoid it.  But at
+the moment, I can't see any way to avoid it without making a lot of
+users unhappy (because their keyboards will no longer automatically be
+enabled for wakeup).
+
+> To me it's more of "driver's policy" than the kernel's.
+
+What's the difference?  Drivers are part of the kernel, after all.
+
+>  If it's not
+> trying to make people with same hardware capibilities share the same
+> experience on the same attributes, what's the meaning of these
+> policies then? Yes of course there might be a (great) chance that it
+> might make (many) people with certain hardware feel happier, but
+> objectively does it mean anything? Not to mention that not everyone
+> likes the policy. (Can anyone even confirm that the majority likes
+> wakeup to be enabled for keyboards by default?)
+
+If the kernel developers never did anything until they had first 
+checked to see that a majority of users were in favor, they would never 
+do anything at all.
+
+Do you think Microsoft checked with all their users before introducing
+Windows Vista or Windows 8?  Obviously Linux is not like Windows, for 
+many reasons, but in some respects their developments are similar.
+
+> IMHO it would be best that any general policies considered important
+> to be off-loaded to udev (as a udev rule?). Only when there's no
+> better way (like "communicate directly" with udev?) for the driver to
+> set necessary specific policies for itself, it goes back to this
+> not-so-good method.
+
+If we were to change the policy now, it would be a regression because
+it would make lots of keyboards stop being wakeup-enabled by default.  
+Kernel developers are not allowed to cause regressions except in a few
+rare cases (such as those involving security problems).
+
+> >  After all, only the driver knows whether or not the device it
+> > manages is a keyboard.
+> 
+> I am not sure that I understand what does this mean practically to this issue.
+
+It means that the wakeup setting cannot be initialized correctly when
+the sysfs attribute is created, because the attribute is created before
+the kernel knows that the device is a keyboard (since only the driver
+knows this, and the driver doesn't get bound to the device until after
+the attribute is created).
+
+Alan Stern
+
+
+
+Index: usb-4.0/drivers/hid/hid-logitech-dj.c
+===================================================================
+--- usb-4.0.orig/drivers/hid/hid-logitech-dj.c
++++ usb-4.0/drivers/hid/hid-logitech-dj.c
+@@ -990,6 +990,7 @@ static int logi_dj_probe(struct hid_devi
+ 			 const struct hid_device_id *id)
+ {
+ 	struct usb_interface *intf = to_usb_interface(hdev->dev.parent);
++	struct usb_device *udev = interface_to_usbdev(intf);
+ 	struct dj_receiver_dev *djrcv_dev;
+ 	int retval;
+ 
+@@ -1078,6 +1079,9 @@ static int logi_dj_probe(struct hid_devi
+ 		goto logi_dj_recv_query_paired_devices_failed;
+ 	}
+ 
++	/* Keyboards are enabled for wakeup by default */
++	device_set_wakeup_enable(&udev->dev, 1);
 +
+ 	return retval;
+ 
+ logi_dj_recv_query_paired_devices_failed:
 
-this way, old callbacks are called in case the platform
-has not been converted yet.
-
-Regards
-Axel
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
