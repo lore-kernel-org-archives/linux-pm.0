@@ -1,132 +1,155 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [RFC/RFT 4/6] mmc: sdhci-msm: convert driver to use runtime PM apis
-Date: Thu, 23 Apr 2015 14:15:42 +0530
-Message-ID: <1429778744-13352-5-git-send-email-rnayak@codeaurora.org>
+Subject: [RFC/RFT 6/6] spi: qup: Get rid of clock handling as its done using runtime callbacks
+Date: Thu, 23 Apr 2015 14:15:44 +0530
+Message-ID: <1429778744-13352-7-git-send-email-rnayak@codeaurora.org>
 References: <1429778744-13352-1-git-send-email-rnayak@codeaurora.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:46821 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752576AbbDWIqH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Apr 2015 04:46:07 -0400
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1429778744-13352-1-git-send-email-rnayak@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, linux-mmc@vger.kernel.org
+Cc: Rajendra Nayak <rnayak@codeaurora.org>
+List-Id: linux-pm@vger.kernel.org
 
-With platform support now in place to manage clocks from within runtime PM
-callbacks, get rid of all clock handling from the driver and convert the
-driver to use runtime PM apis.
+Remove all clock handling from the driver as this is not handled from
+within platform runtime callbacks.
 
 Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: <linux-mmc@vger.kernel.org>
 ---
- drivers/mmc/host/sdhci-msm.c | 46 +++++++++++---------------------------------
- 1 file changed, 11 insertions(+), 35 deletions(-)
+ drivers/spi/spi-qup.c | 54 ++++++++++-----------------------------------------
+ 1 file changed, 10 insertions(+), 44 deletions(-)
 
-diff --git a/drivers/mmc/host/sdhci-msm.c b/drivers/mmc/host/sdhci-msm.c
-index 4a09f76..3c62a77 100644
---- a/drivers/mmc/host/sdhci-msm.c
-+++ b/drivers/mmc/host/sdhci-msm.c
-@@ -19,6 +19,7 @@
- #include <linux/delay.h>
- #include <linux/mmc/mmc.h>
- #include <linux/slab.h>
-+#include <linux/pm_runtime.h>
+diff --git a/drivers/spi/spi-qup.c b/drivers/spi/spi-qup.c
+index 810a7fa..a95993b 100644
+--- a/drivers/spi/spi-qup.c
++++ b/drivers/spi/spi-qup.c
+@@ -131,7 +131,6 @@ struct spi_qup {
+ 	void __iomem		*base;
+ 	struct device		*dev;
+ 	struct clk		*cclk;	/* core clock */
+-	struct clk		*iclk;	/* interface clock */
+ 	int			irq;
+ 	spinlock_t		lock;
  
- #include "sdhci-pltfm.h"
+@@ -753,7 +752,7 @@ err_tx:
+ static int spi_qup_probe(struct platform_device *pdev)
+ {
+ 	struct spi_master *master;
+-	struct clk *iclk, *cclk;
++	struct clk *cclk;
+ 	struct spi_qup *controller;
+ 	struct resource *res;
+ 	struct device *dev;
+@@ -775,10 +774,6 @@ static int spi_qup_probe(struct platform_device *pdev)
+ 	if (IS_ERR(cclk))
+ 		return PTR_ERR(cclk);
  
-@@ -56,8 +57,6 @@
- struct sdhci_msm_host {
- 	struct platform_device *pdev;
- 	void __iomem *core_mem;	/* MSM SDCC mapped address */
--	struct clk *clk;	/* main SD/MMC bus clock */
--	struct clk *pclk;	/* SDHC peripheral bus clock */
- 	struct clk *bus_clk;	/* SDHC bus voter clock */
- 	struct mmc_host *mmc;
- 	struct sdhci_pltfm_data sdhci_msm_pdata;
-@@ -469,29 +468,8 @@ static int sdhci_msm_probe(struct platform_device *pdev)
- 			goto pltfm_free;
+-	iclk = devm_clk_get(dev, "iface");
+-	if (IS_ERR(iclk))
+-		return PTR_ERR(iclk);
+-
+ 	/* This is optional parameter */
+ 	if (of_property_read_u32(dev->of_node, "spi-max-frequency", &max_freq))
+ 		max_freq = SPI_MAX_RATE;
+@@ -788,23 +783,15 @@ static int spi_qup_probe(struct platform_device *pdev)
+ 		return -ENXIO;
  	}
  
--	/* Setup main peripheral bus clock */
--	msm_host->pclk = devm_clk_get(&pdev->dev, "iface");
--	if (IS_ERR(msm_host->pclk)) {
--		ret = PTR_ERR(msm_host->pclk);
--		dev_err(&pdev->dev, "Perpheral clk setup failed (%d)\n", ret);
--		goto bus_clk_disable;
+-	ret = clk_prepare_enable(cclk);
+-	if (ret) {
+-		dev_err(dev, "cannot enable core clock\n");
+-		return ret;
 -	}
 -
--	ret = clk_prepare_enable(msm_host->pclk);
--	if (ret)
--		goto bus_clk_disable;
--
--	/* Setup SDC MMC clock */
--	msm_host->clk = devm_clk_get(&pdev->dev, "core");
--	if (IS_ERR(msm_host->clk)) {
--		ret = PTR_ERR(msm_host->clk);
--		dev_err(&pdev->dev, "SDC MMC clk setup failed (%d)\n", ret);
--		goto pclk_disable;
+-	ret = clk_prepare_enable(iclk);
+-	if (ret) {
+-		clk_disable_unprepare(cclk);
+-		dev_err(dev, "cannot enable iface clock\n");
+-		return ret;
 -	}
--
--	ret = clk_prepare_enable(msm_host->clk);
--	if (ret)
--		goto pclk_disable;
-+	pm_runtime_enable(&pdev->dev);
-+	pm_runtime_get_sync(&pdev->dev);
++	pm_runtime_set_autosuspend_delay(dev, MSEC_PER_SEC);
++	pm_runtime_use_autosuspend(dev);
++	pm_runtime_enable(dev);
++	pm_runtime_get_sync(dev);
  
- 	core_memres = platform_get_resource(pdev, IORESOURCE_MEM, 1);
- 	msm_host->core_mem = devm_ioremap_resource(&pdev->dev, core_memres);
-@@ -499,7 +477,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
- 	if (IS_ERR(msm_host->core_mem)) {
- 		dev_err(&pdev->dev, "Failed to remap registers\n");
- 		ret = PTR_ERR(msm_host->core_mem);
--		goto clk_disable;
-+		goto err;
+ 	master = spi_alloc_master(dev, sizeof(struct spi_qup));
+ 	if (!master) {
+-		clk_disable_unprepare(cclk);
+-		clk_disable_unprepare(iclk);
++		pm_runtime_set_suspended(dev);
++		pm_runtime_disable(dev);
+ 		dev_err(dev, "cannot allocate master\n");
+ 		return -ENOMEM;
  	}
+@@ -832,7 +819,6 @@ static int spi_qup_probe(struct platform_device *pdev)
  
- 	/* Reset the core and Enable SDHC mode */
-@@ -511,7 +489,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
- 	if (readl(msm_host->core_mem + CORE_POWER) & CORE_SW_RST) {
- 		dev_err(&pdev->dev, "Stuck in reset\n");
- 		ret = -ETIMEDOUT;
--		goto clk_disable;
-+		goto err;
- 	}
+ 	controller->dev = dev;
+ 	controller->base = base;
+-	controller->iclk = iclk;
+ 	controller->cclk = cclk;
+ 	controller->irq = irq;
  
- 	/* Set HC_MODE_EN bit in HC_MODE register */
-@@ -545,15 +523,13 @@ static int sdhci_msm_probe(struct platform_device *pdev)
- 
- 	ret = sdhci_add_host(host);
+@@ -904,24 +890,17 @@ static int spi_qup_probe(struct platform_device *pdev)
  	if (ret)
--		goto clk_disable;
-+		goto err;
+ 		goto error_dma;
+ 
+-	pm_runtime_set_autosuspend_delay(dev, MSEC_PER_SEC);
+-	pm_runtime_use_autosuspend(dev);
+-	pm_runtime_set_active(dev);
+-	pm_runtime_enable(dev);
+-
+ 	ret = devm_spi_register_master(dev, master);
+ 	if (ret)
+-		goto disable_pm;
++		goto error_dma;
  
  	return 0;
  
--clk_disable:
--	clk_disable_unprepare(msm_host->clk);
--pclk_disable:
--	clk_disable_unprepare(msm_host->pclk);
--bus_clk_disable:
-+err:
-+	pm_runtime_put_sync(&pdev->dev);
+-disable_pm:
+-	pm_runtime_disable(&pdev->dev);
+ error_dma:
+ 	spi_qup_release_dma(master);
+ error:
+-	clk_disable_unprepare(cclk);
+-	clk_disable_unprepare(iclk);
++	pm_runtime_set_suspended(&pdev->dev);
 +	pm_runtime_disable(&pdev->dev);
- 	if (!IS_ERR(msm_host->bus_clk))
- 		clk_disable_unprepare(msm_host->bus_clk);
- pltfm_free:
-@@ -571,8 +547,8 @@ static int sdhci_msm_remove(struct platform_device *pdev)
+ 	spi_master_put(master);
+ 	return ret;
+ }
+@@ -969,8 +948,6 @@ static int spi_qup_suspend(struct device *device)
+ 	if (ret)
+ 		return ret;
  
- 	sdhci_remove_host(host, dead);
- 	sdhci_pltfm_free(pdev);
--	clk_disable_unprepare(msm_host->clk);
--	clk_disable_unprepare(msm_host->pclk);
-+	pm_runtime_put_sync(&pdev->dev);
-+	pm_runtime_disable(&pdev->dev);
- 	if (!IS_ERR(msm_host->bus_clk))
- 		clk_disable_unprepare(msm_host->bus_clk);
+-	clk_disable_unprepare(controller->cclk);
+-	clk_disable_unprepare(controller->iclk);
+ 	return 0;
+ }
+ 
+@@ -980,14 +957,6 @@ static int spi_qup_resume(struct device *device)
+ 	struct spi_qup *controller = spi_master_get_devdata(master);
+ 	int ret;
+ 
+-	ret = clk_prepare_enable(controller->iclk);
+-	if (ret)
+-		return ret;
+-
+-	ret = clk_prepare_enable(controller->cclk);
+-	if (ret)
+-		return ret;
+-
+ 	ret = spi_qup_set_state(controller, QUP_STATE_RESET);
+ 	if (ret)
+ 		return ret;
+@@ -1012,9 +981,6 @@ static int spi_qup_remove(struct platform_device *pdev)
+ 
+ 	spi_qup_release_dma(master);
+ 
+-	clk_disable_unprepare(controller->cclk);
+-	clk_disable_unprepare(controller->iclk);
+-
+ 	pm_runtime_put_noidle(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
  	return 0;
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
-
