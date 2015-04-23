@@ -1,86 +1,50 @@
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH 0/3] dm-crypt: Adds support for wiping key when doing
- suspend/hibernation
-Date: Thu, 23 Apr 2015 19:02:11 +0200
-Message-ID: <20150423170211.GI7646@pali>
-References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com>
- <20150406130045.GA18583@redhat.com>
- <201504061529.57299@pali>
- <20150409131208.GA9504@redhat.com>
- <20150409132836.GD12339@atrey.karlin.mff.cuni.cz>
- <20150409140842.GA9779@redhat.com>
- <20150409141633.GJ12339@atrey.karlin.mff.cuni.cz>
- <20150409142658.GA9839@redhat.com>
- <20150409143827.GK12339@atrey.karlin.mff.cuni.cz>
- <20150414065016.GB20597@amd>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH/RFC 00/03] irqchip: renesas-irqc: Fine grained Runtime PM support
+Date: Thu, 23 Apr 2015 19:49:59 +0200
+Message-ID: <CAMuHMdWtUYoFWWfijFbQCv6Z-phZW2XN+F5n1zfqbZMFGjM+Bg@mail.gmail.com>
+References: <CAMuHMdWN5E35e8CEzOKYRo4PXkzjMpxErg6akCOHKGtAf=D8tQ@mail.gmail.com>
+	<Pine.LNX.4.44L0.1504231040560.1529-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f181.google.com ([209.85.212.181]:36875 "EHLO
-	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741AbbDWRCP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Apr 2015 13:02:15 -0400
-Content-Disposition: inline
-In-Reply-To: <20150414065016.GB20597@amd>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1504231040560.1529-100000@iolanthe.rowland.org>
+Sender: linux-sh-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Magnus Damm <magnus.damm@gmail.com>, Linux-sh list <linux-sh@vger.kernel.org>, Jason Cooper <jason@lakedaemon.net>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Mike Snitzer <snitzer@redhat.com>, Alasdair Kergon <agk@redhat.com>, Neil Brown <neilb@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tuesday 14 April 2015 08:50:16 Pavel Machek wrote:
-> Hi!
->=20
-> > > > > > So proper way is to wipe luks crypto keys *after* userspace=
- processes
-> > > > > > are freezed.
-> > > > >=20
-> > > > > I know you believe that I'm just not accepting that at face v=
-alue.
-> > > >=20
-> > > > If disks are synced before any DM suspend operation then we hav=
-e higher
-> > > > chance of preventing data corruption.
-> > >=20
-> > > disks are already synced as part of the DM suspend operation!
-> > >=20
-> >=20
-> > Yes, but part of hibernate operation is also sync call.
->=20
-> Yes. Maybe that was a mistake.
->=20
+On Thu, Apr 23, 2015 at 4:44 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Thu, 23 Apr 2015, Geert Uytterhoeven wrote:
+>> >> I'm afraid you can't call pm_runtime_get_sync() from these methods, as
+>> >> they may be called from interrupt context.
+>> >
+>> > Ouch. I know the clock framework has prepare/enable separated with
+>> > context, but with the irqchip callbacks I suppose no such separation
+>>
+>> It's not the clock operations, but the pm_runtime operations that cannot be
+>> called from interrupt context.
+>
+> In fact the pm_runtime operations _can_ be called from interrupt
+> context, provided the driver has first invoked pm_runtime_irq_safe().
+> Of course, this requires that none of the runtime-PM callback routines
+> ever sleep or perform a blocking operation.
+>
+> This is all explained in Documentation/power/runtime_pm.txt (search for
+> "irq_safe").
 
-I think not. I do not see any reason why system should not sync disks..=
-=2E
+Perhaps that can help. We'll have to give it a try...
 
-> > > > I still think that correct order is only:
-> > > >=20
-> > > > * freeze processes (which doing continous I/O)
-> > > > * fs & disk sync
-> > > > * DM suspend
-> > > > * wipe crypto keys
-> > > > * enter hibernate
-> > >=20
-> > > I just don't think that extreme is _required_ to have a hibernate=
-/resume
-> > > that incorporates dm-crypt key wiping.
-> >=20
-> > Ok, and what other developers think?
->=20
-> If someone can fix freezer to work with LUKS stopped, that would be a=
-=20
-> good thing. Can you do it, Mike? Then we can look if it works well
-> enough for Pali.
->=20
+I've always found this a bit strange when PM Domains are involved:
+pm_runtime_irq_safe(dev) applies to device dev, while the actual callbacks
+belong to the PM Domain code (the device's driver doesn't have any).
 
-Its not only LUKS devices. Its for all dm devices when are suspended.
+Gr{oetje,eeting}s,
 
-> But that might be too hard / impossible. And at that point, I think
-> Pali's patch is right thing to do.
-> 									Pavel
+                        Geert
 
-Yes I think it is hard too...
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
