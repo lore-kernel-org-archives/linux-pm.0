@@ -1,142 +1,132 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [RFC/RFT 3/6] serial: msm: convert driver to use runtime PM apis
-Date: Thu, 23 Apr 2015 14:15:41 +0530
-Message-ID: <1429778744-13352-4-git-send-email-rnayak@codeaurora.org>
+Subject: [RFC/RFT 4/6] mmc: sdhci-msm: convert driver to use runtime PM apis
+Date: Thu, 23 Apr 2015 14:15:42 +0530
+Message-ID: <1429778744-13352-5-git-send-email-rnayak@codeaurora.org>
 References: <1429778744-13352-1-git-send-email-rnayak@codeaurora.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:46821 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752576AbbDWIqH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Apr 2015 04:46:07 -0400
 In-Reply-To: <1429778744-13352-1-git-send-email-rnayak@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, linux-serial@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, linux-mmc@vger.kernel.org
 
 With platform support now in place to manage clocks from within runtime PM
 callbacks, get rid of all clock handling from the driver and convert the
 driver to use runtime PM apis.
 
 Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: <linux-serial@vger.kernel.org>
+Cc: <linux-mmc@vger.kernel.org>
 ---
- drivers/tty/serial/msm_serial.c | 33 ++++++++++++++++-----------------
- 1 file changed, 16 insertions(+), 17 deletions(-)
+ drivers/mmc/host/sdhci-msm.c | 46 +++++++++++---------------------------------
+ 1 file changed, 11 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/tty/serial/msm_serial.c b/drivers/tty/serial/msm_serial.c
-index b73889c..eb66502 100644
---- a/drivers/tty/serial/msm_serial.c
-+++ b/drivers/tty/serial/msm_serial.c
-@@ -33,6 +33,7 @@
- #include <linux/serial.h>
- #include <linux/clk.h>
- #include <linux/platform_device.h>
-+#include <linux/pm_runtime.h>
+diff --git a/drivers/mmc/host/sdhci-msm.c b/drivers/mmc/host/sdhci-msm.c
+index 4a09f76..3c62a77 100644
+--- a/drivers/mmc/host/sdhci-msm.c
++++ b/drivers/mmc/host/sdhci-msm.c
+@@ -19,6 +19,7 @@
  #include <linux/delay.h>
- #include <linux/of.h>
- #include <linux/of_device.h>
-@@ -50,11 +51,11 @@ struct msm_port {
- 	struct uart_port	uart;
- 	char			name[16];
- 	struct clk		*clk;
--	struct clk		*pclk;
- 	unsigned int		imr;
- 	int			is_uartdm;
- 	unsigned int		old_snap_state;
- 	bool			break_detected;
-+	struct device		*dev;
- };
+ #include <linux/mmc/mmc.h>
+ #include <linux/slab.h>
++#include <linux/pm_runtime.h>
  
- static inline void wait_for_xmitr(struct uart_port *port)
-@@ -464,12 +465,11 @@ static int msm_set_baud_rate(struct uart_port *port, unsigned int baud)
- 	return baud;
- }
+ #include "sdhci-pltfm.h"
  
--static void msm_init_clock(struct uart_port *port)
-+static void msm_init(struct uart_port *port)
- {
- 	struct msm_port *msm_port = UART_TO_MSM(port);
+@@ -56,8 +57,6 @@
+ struct sdhci_msm_host {
+ 	struct platform_device *pdev;
+ 	void __iomem *core_mem;	/* MSM SDCC mapped address */
+-	struct clk *clk;	/* main SD/MMC bus clock */
+-	struct clk *pclk;	/* SDHC peripheral bus clock */
+ 	struct clk *bus_clk;	/* SDHC bus voter clock */
+ 	struct mmc_host *mmc;
+ 	struct sdhci_pltfm_data sdhci_msm_pdata;
+@@ -469,29 +468,8 @@ static int sdhci_msm_probe(struct platform_device *pdev)
+ 			goto pltfm_free;
+ 	}
  
--	clk_prepare_enable(msm_port->clk);
--	clk_prepare_enable(msm_port->pclk);
-+	pm_runtime_get_sync(msm_port->dev);
- 	msm_serial_set_mnd_regs(port);
- }
- 
-@@ -487,7 +487,7 @@ static int msm_startup(struct uart_port *port)
- 	if (unlikely(ret))
- 		return ret;
- 
--	msm_init_clock(port);
-+	msm_init(port);
- 
- 	if (likely(port->fifosize > 12))
- 		rfr_level = port->fifosize - 12;
-@@ -511,7 +511,7 @@ static void msm_shutdown(struct uart_port *port)
- 	msm_port->imr = 0;
- 	msm_write(port, 0, UART_IMR); /* disable interrupts */
- 
--	clk_disable_unprepare(msm_port->clk);
-+	pm_runtime_put_sync(msm_port->dev);
- 
- 	free_irq(port->irq, port);
- }
-@@ -669,12 +669,10 @@ static void msm_power(struct uart_port *port, unsigned int state,
- 
- 	switch (state) {
- 	case 0:
--		clk_prepare_enable(msm_port->clk);
--		clk_prepare_enable(msm_port->pclk);
-+		pm_runtime_get_sync(msm_port->dev);
- 		break;
- 	case 3:
--		clk_disable_unprepare(msm_port->clk);
--		clk_disable_unprepare(msm_port->pclk);
-+		pm_runtime_put_sync(msm_port->dev);
- 		break;
- 	default:
- 		pr_err("msm_serial: Unknown PM state %d\n", state);
-@@ -933,7 +931,7 @@ static int __init msm_console_setup(struct console *co, char *options)
- 	if (unlikely(!port->membase))
- 		return -ENXIO;
- 
--	msm_init_clock(port);
-+	msm_init(port);
- 
- 	if (options)
- 		uart_parse_options(options, &baud, &parity, &bits, &flow);
-@@ -1057,13 +1055,10 @@ static int msm_serial_probe(struct platform_device *pdev)
- 	if (IS_ERR(msm_port->clk))
- 		return PTR_ERR(msm_port->clk);
- 
--	if (msm_port->is_uartdm) {
--		msm_port->pclk = devm_clk_get(&pdev->dev, "iface");
--		if (IS_ERR(msm_port->pclk))
--			return PTR_ERR(msm_port->pclk);
--
-+	if (msm_port->is_uartdm)
- 		clk_set_rate(msm_port->clk, 1843200);
+-	/* Setup main peripheral bus clock */
+-	msm_host->pclk = devm_clk_get(&pdev->dev, "iface");
+-	if (IS_ERR(msm_host->pclk)) {
+-		ret = PTR_ERR(msm_host->pclk);
+-		dev_err(&pdev->dev, "Perpheral clk setup failed (%d)\n", ret);
+-		goto bus_clk_disable;
 -	}
-+
-+	msm_port->dev = &pdev->dev;
- 
- 	port->uartclk = clk_get_rate(msm_port->clk);
- 	dev_info(&pdev->dev, "uartclk = %d\n", port->uartclk);
-@@ -1080,13 +1075,17 @@ static int msm_serial_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, port);
- 
+-
+-	ret = clk_prepare_enable(msm_host->pclk);
+-	if (ret)
+-		goto bus_clk_disable;
+-
+-	/* Setup SDC MMC clock */
+-	msm_host->clk = devm_clk_get(&pdev->dev, "core");
+-	if (IS_ERR(msm_host->clk)) {
+-		ret = PTR_ERR(msm_host->clk);
+-		dev_err(&pdev->dev, "SDC MMC clk setup failed (%d)\n", ret);
+-		goto pclk_disable;
+-	}
+-
+-	ret = clk_prepare_enable(msm_host->clk);
+-	if (ret)
+-		goto pclk_disable;
 +	pm_runtime_enable(&pdev->dev);
-+
- 	return uart_add_one_port(&msm_uart_driver, port);
- }
++	pm_runtime_get_sync(&pdev->dev);
  
- static int msm_serial_remove(struct platform_device *pdev)
- {
- 	struct uart_port *port = platform_get_drvdata(pdev);
-+	struct msm_port *msm_port = UART_TO_MSM(port);
+ 	core_memres = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+ 	msm_host->core_mem = devm_ioremap_resource(&pdev->dev, core_memres);
+@@ -499,7 +477,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
+ 	if (IS_ERR(msm_host->core_mem)) {
+ 		dev_err(&pdev->dev, "Failed to remap registers\n");
+ 		ret = PTR_ERR(msm_host->core_mem);
+-		goto clk_disable;
++		goto err;
+ 	}
  
-+	pm_runtime_disable(msm_port->dev);
- 	uart_remove_one_port(&msm_uart_driver, port);
+ 	/* Reset the core and Enable SDHC mode */
+@@ -511,7 +489,7 @@ static int sdhci_msm_probe(struct platform_device *pdev)
+ 	if (readl(msm_host->core_mem + CORE_POWER) & CORE_SW_RST) {
+ 		dev_err(&pdev->dev, "Stuck in reset\n");
+ 		ret = -ETIMEDOUT;
+-		goto clk_disable;
++		goto err;
+ 	}
  
+ 	/* Set HC_MODE_EN bit in HC_MODE register */
+@@ -545,15 +523,13 @@ static int sdhci_msm_probe(struct platform_device *pdev)
+ 
+ 	ret = sdhci_add_host(host);
+ 	if (ret)
+-		goto clk_disable;
++		goto err;
+ 
+ 	return 0;
+ 
+-clk_disable:
+-	clk_disable_unprepare(msm_host->clk);
+-pclk_disable:
+-	clk_disable_unprepare(msm_host->pclk);
+-bus_clk_disable:
++err:
++	pm_runtime_put_sync(&pdev->dev);
++	pm_runtime_disable(&pdev->dev);
+ 	if (!IS_ERR(msm_host->bus_clk))
+ 		clk_disable_unprepare(msm_host->bus_clk);
+ pltfm_free:
+@@ -571,8 +547,8 @@ static int sdhci_msm_remove(struct platform_device *pdev)
+ 
+ 	sdhci_remove_host(host, dead);
+ 	sdhci_pltfm_free(pdev);
+-	clk_disable_unprepare(msm_host->clk);
+-	clk_disable_unprepare(msm_host->pclk);
++	pm_runtime_put_sync(&pdev->dev);
++	pm_runtime_disable(&pdev->dev);
+ 	if (!IS_ERR(msm_host->bus_clk))
+ 		clk_disable_unprepare(msm_host->bus_clk);
  	return 0;
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
+
