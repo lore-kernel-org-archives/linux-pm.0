@@ -1,84 +1,86 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [RFC 0/7] qcom: Add support for tsens driver
-Date: Thu, 23 Apr 2015 10:52:46 -0600
-Message-ID: <20150423165246.GC555@linaro.org>
-References: <1429796773-7151-1-git-send-email-rnayak@codeaurora.org>
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
+Subject: Re: [PATCH 0/3] dm-crypt: Adds support for wiping key when doing
+ suspend/hibernation
+Date: Thu, 23 Apr 2015 19:02:11 +0200
+Message-ID: <20150423170211.GI7646@pali>
+References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com>
+ <20150406130045.GA18583@redhat.com>
+ <201504061529.57299@pali>
+ <20150409131208.GA9504@redhat.com>
+ <20150409132836.GD12339@atrey.karlin.mff.cuni.cz>
+ <20150409140842.GA9779@redhat.com>
+ <20150409141633.GJ12339@atrey.karlin.mff.cuni.cz>
+ <20150409142658.GA9839@redhat.com>
+ <20150409143827.GK12339@atrey.karlin.mff.cuni.cz>
+ <20150414065016.GB20597@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:34040 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030363AbbDWQwt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Apr 2015 12:52:49 -0400
-Received: by pacyx8 with SMTP id yx8so22839930pac.1
-        for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2015 09:52:48 -0700 (PDT)
+Received: from mail-wi0-f181.google.com ([209.85.212.181]:36875 "EHLO
+	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741AbbDWRCP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Apr 2015 13:02:15 -0400
 Content-Disposition: inline
-In-Reply-To: <1429796773-7151-1-git-send-email-rnayak@codeaurora.org>
+In-Reply-To: <20150414065016.GB20597@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Mike Snitzer <snitzer@redhat.com>, Alasdair Kergon <agk@redhat.com>, Neil Brown <neilb@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu, Apr 23 2015 at 07:51 -0600, Rajendra Nayak wrote:
->This is an attempt to have a single tsens driver for
->the different versions of the tsens IP that exist, on
->different qcom msm/apq SoCs.
+On Tuesday 14 April 2015 08:50:16 Pavel Machek wrote:
+> Hi!
+>=20
+> > > > > > So proper way is to wipe luks crypto keys *after* userspace=
+ processes
+> > > > > > are freezed.
+> > > > >=20
+> > > > > I know you believe that I'm just not accepting that at face v=
+alue.
+> > > >=20
+> > > > If disks are synced before any DM suspend operation then we hav=
+e higher
+> > > > chance of preventing data corruption.
+> > >=20
+> > > disks are already synced as part of the DM suspend operation!
+> > >=20
+> >=20
+> > Yes, but part of hibernate operation is also sync call.
+>=20
+> Yes. Maybe that was a mistake.
+>=20
 
-Thanks, I think the design looks good. Will take a look at the patches.
+I think not. I do not see any reason why system should not sync disks..=
+=2E
 
--- Lina
+> > > > I still think that correct order is only:
+> > > >=20
+> > > > * freeze processes (which doing continous I/O)
+> > > > * fs & disk sync
+> > > > * DM suspend
+> > > > * wipe crypto keys
+> > > > * enter hibernate
+> > >=20
+> > > I just don't think that extreme is _required_ to have a hibernate=
+/resume
+> > > that incorporates dm-crypt key wiping.
+> >=20
+> > Ok, and what other developers think?
+>=20
+> If someone can fix freezer to work with LUKS stopped, that would be a=
+=20
+> good thing. Can you do it, Mike? Then we can look if it works well
+> enough for Pali.
+>=20
 
->Support is added for msm8916, msm8960 and msm8974 families.
->Based on top of the latest eeprom framework patches [1]
->
->A lot of the work is based of original code from Stephen Boyd
->and Siddartha Mohanadoss. I have also picked some of what
->Narendran Rajan did in his attempt to upstream the support
->for 8960 family. I could not keep the original authorship on
->any of the patches because I ended up moving the code around
->quite a bit in an effort to have a single driver for the
->various devices. I would be glad to change the authorship
->for any of the patches if needed.
->
->[1] https://lwn.net/Articles/638565/
->
->Rajendra Nayak (6):
->  thermal: qcom: tsens: Add a skeletal tsens drivers
->  thermal: qcom: tsens-8916: Add support for 8916 family of SoCs
->  thermal: qcom: tsens-8974: Add support for 8974 family of SoCs
->  thermal: qcom: tsens-8960: Add support for 8960 family of SoCs
->  arm: dts: msm8974: Add thermal zones, tsens and eeprom nodes
->  arm: dts: apq8064: Add thermal zones, tsens and eeprom nodes
->
->Srinivas Kandagatla (1):
->  clk: qcom: gcc-msm8960: add child devices support.
->
-> .../devicetree/bindings/thermal/qcom-tsens.txt     |  36 +++
-> arch/arm/boot/dts/qcom-apq8064.dtsi                | 108 +++++++
-> arch/arm/boot/dts/qcom-msm8974.dtsi                | 105 +++++++
-> drivers/clk/qcom/gcc-msm8960.c                     |   4 +-
-> drivers/thermal/Kconfig                            |   5 +
-> drivers/thermal/Makefile                           |   1 +
-> drivers/thermal/qcom/Kconfig                       |  10 +
-> drivers/thermal/qcom/Makefile                      |   2 +
-> drivers/thermal/qcom/tsens-8916.c                  | 107 +++++++
-> drivers/thermal/qcom/tsens-8960.c                  | 336 +++++++++++++++++++++
-> drivers/thermal/qcom/tsens-8974.c                  | 239 +++++++++++++++
-> drivers/thermal/qcom/tsens-common.c                | 128 ++++++++
-> drivers/thermal/qcom/tsens.c                       | 209 +++++++++++++
-> drivers/thermal/qcom/tsens.h                       |  69 +++++
-> 14 files changed, 1358 insertions(+), 1 deletion(-)
-> create mode 100644 Documentation/devicetree/bindings/thermal/qcom-tsens.txt
-> create mode 100644 drivers/thermal/qcom/Kconfig
-> create mode 100644 drivers/thermal/qcom/Makefile
-> create mode 100644 drivers/thermal/qcom/tsens-8916.c
-> create mode 100644 drivers/thermal/qcom/tsens-8960.c
-> create mode 100644 drivers/thermal/qcom/tsens-8974.c
-> create mode 100644 drivers/thermal/qcom/tsens-common.c
-> create mode 100644 drivers/thermal/qcom/tsens.c
-> create mode 100644 drivers/thermal/qcom/tsens.h
->
->-- 
->QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
->of Code Aurora Forum, hosted by The Linux Foundation
->
+Its not only LUKS devices. Its for all dm devices when are suspended.
+
+> But that might be too hard / impossible. And at that point, I think
+> Pali's patch is right thing to do.
+> 									Pavel
+
+Yes I think it is hard too...
+
+--=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
