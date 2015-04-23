@@ -1,75 +1,82 @@
-From: Jin Qian <jinqian@android.com>
-Subject: [PATCH 2/3] power: increment wakeup_count when save_wakeup_count failed.
-Date: Wed, 22 Apr 2015 17:50:11 -0700
-Message-ID: <1429750212-28659-3-git-send-email-jinqian@android.com>
-References: <1429750212-28659-1-git-send-email-jinqian@android.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1429750212-28659-1-git-send-email-jinqian@android.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Jin Qian <jinqian@android.com>
+From: Peter Chen <Peter.Chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Subject: RE: default value of power/wakeup
+Date: Thu, 23 Apr 2015 01:21:27 +0000
+Message-ID: <BN3PR0301MB084933B354441C7D8A37221C81ED0@BN3PR0301MB0849.namprd03.prod.outlook.com>
+References: <20150422171050.GB2551@kroah.com>
+ <Pine.LNX.4.44L0.1504221403380.1630-100000@iolanthe.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <Pine.LNX.4.44L0.1504221403380.1630-100000-IYeN2dnnYyZXsRXLowluHWD2FQJk+8+b@public.gmane.org>
+Content-Language: en-US
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+Cc: Tom Yan <tom.ty89-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-user-space aborts suspend attempt if writing wakeup_count failed.
-Count the write failure towards wakeup_count.
+ 
+> > >
+> > > Oh, okay, I didn't realize that.
+> > >
+> > > Is there a reasonable way to enable wakeup only when the driver
+> > > learns that a keyboard is connected?  Where would the driver do this?
+> >
+> > I don't know if the driver ever "knows" this, as you can pair lots of
+> > different devices to this same receiver.  There's a userspace
+> > application that lets you manage the device, called "solaar", that
+> > this option could be changed in.
+> >
+> > But really, putting the device to sleep should work for it no matter
+> > if this is a keyboard or a mouse or a joystick, as the wakeup logic is
+> > in the receiver, not in the device on the other end of the wireless link.
+> >
+> > Turning autosuspend works for me for my mouse connected.  It doesn't
+> > work for one of my "real" USB keyboards when it's connected to the
+> > machine, which is why I can't enable autosuspend for it, as it drives
+> > me crazy.
+> >
+> > I don't have a keyboard to test the receiver with at the moment, to
+> > see if autosuspend works for both things connected at the same time,
+> > or for just the keyboard.
+> 
+> Tom and I have been talking about enabling wakeup, not autosuspend.
+> The question is whether or not the default wakeup setting for the receiver
+> should be "enabled".
+> 
+> The kernel's policy is that keyboards should be enabled for wakeup, by default.
+> I think that matches most people's expectations.  But when you've got a
+> "universal" receiver, what then?
+> 
+> Should it always be enabled by default because a keyboard _might_ be
+> connected?  Should it be enabled only when a keyboard is detected?
+> What if multiple devices are connected at the same time?
+> 
 
-Signed-off-by: Jin Qian <jinqian@android.com>
----
- drivers/base/power/wakeup.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+>From my point, the user option should not depend on kernel default value.
+If the system you build needs some USB devices as system wakeup source,
+the developers need to make sure the wakeups are enabled before system
+enters suspend.
 
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index f24c622..bdb45f3 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -57,6 +57,8 @@ static LIST_HEAD(wakeup_sources);
- 
- static DECLARE_WAIT_QUEUE_HEAD(wakeup_count_wait_queue);
- 
-+static ktime_t last_read_time;
-+
- /**
-  * wakeup_source_prepare - Prepare a new wakeup source for initialization.
-  * @ws: Wakeup source to prepare.
-@@ -771,10 +773,15 @@ void pm_wakeup_clear(void)
- bool pm_get_wakeup_count(unsigned int *count, bool block)
- {
- 	unsigned int cnt, inpr;
-+	unsigned long flags;
- 
- 	if (block) {
- 		DEFINE_WAIT(wait);
- 
-+		spin_lock_irqsave(&events_lock, flags);
-+		last_read_time = ktime_get();
-+		spin_unlock_irqrestore(&events_lock, flags);
-+
- 		for (;;) {
- 			prepare_to_wait(&wakeup_count_wait_queue, &wait,
- 					TASK_INTERRUPTIBLE);
-@@ -806,6 +813,7 @@ bool pm_save_wakeup_count(unsigned int count)
- {
- 	unsigned int cnt, inpr;
- 	unsigned long flags;
-+	struct wakeup_source *ws;
- 
- 	events_check_enabled = false;
- 	spin_lock_irqsave(&events_lock, flags);
-@@ -813,6 +821,15 @@ bool pm_save_wakeup_count(unsigned int count)
- 	if (cnt == count && inpr == 0) {
- 		saved_count = count;
- 		events_check_enabled = true;
-+	} else {
-+		rcu_read_lock();
-+		list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-+			if (ws->active ||
-+			    ktime_compare(ws->last_time, last_read_time) > 0) {
-+				ws->wakeup_count++;
-+			}
-+		}
-+		rcu_read_unlock();
- 	}
- 	spin_unlock_irqrestore(&events_lock, flags);
- 	return events_check_enabled;
--- 
-2.2.0.rc0.207.ga3a616c
+Peter 
+
+> Shucks -- does the receiver even _work_ as a wakeup device?  It claims to, but
+> that would require it to remain in wireless contact with the remote keyboard
+> even while it's supposed to be in a low-power state, which rather seems to
+> defeat the purpose.
+> 
+> Alan Stern
+> 
+> PS: I've got wakeup enabled for the PS/2 keyboard attached to the computer
+> I'm using now, but it doesn't work.  I have to press the power button to wake
+> the machine up from suspend.  Probably an issue in the BIOS or ACPI -- I
+> haven't bothered to try and track it down.
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in the body
+> of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org More majordomo info at
+> http://vger.kernel.org/majordomo-info.html
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
