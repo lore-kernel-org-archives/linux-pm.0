@@ -1,122 +1,92 @@
-From: Tom Yan <tom.ty89@gmail.com>
-Subject: Re: default value of power/wakeup
-Date: Thu, 23 Apr 2015 13:16:36 +0800
-Message-ID: <CAGnHSEnPCL3PgA9-L5ECD=7WW3ykYrd-cDUXcT1dd-zE9WwXcw@mail.gmail.com>
+From: Peter Chen <Peter.Chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Subject: RE: default value of power/wakeup
+Date: Thu, 23 Apr 2015 05:22:43 +0000
+Message-ID: <BN3PR0301MB0849FD2CF54F10347A5B046E81ED0@BN3PR0301MB0849.namprd03.prod.outlook.com>
 References: <20150422171050.GB2551@kroah.com>
 	<Pine.LNX.4.44L0.1504221403380.1630-100000@iolanthe.rowland.org>
 	<BN3PR0301MB084933B354441C7D8A37221C81ED0@BN3PR0301MB0849.namprd03.prod.outlook.com>
+ <CAGnHSEnPCL3PgA9-L5ECD=7WW3ykYrd-cDUXcT1dd-zE9WwXcw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f171.google.com ([209.85.216.171]:34330 "EHLO
-	mail-qc0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751744AbbDWFQh convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Apr 2015 01:16:37 -0400
-In-Reply-To: <BN3PR0301MB084933B354441C7D8A37221C81ED0@BN3PR0301MB0849.namprd03.prod.outlook.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAGnHSEnPCL3PgA9-L5ECD=7WW3ykYrd-cDUXcT1dd-zE9WwXcw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Content-Language: en-US
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tom Yan <tom.ty89-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>, "linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Chen <Peter.Chen@freescale.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-I'm not saying that the kernel shouldn't initialize the attributes or
-have a default. But it should only set the default when the attribute
-is initialized (It doesn't even matter to me whether it's enabled or
-disabled).
-
-It's just there should not be further manipulation from the kernel
-(e.g. device_set_wakeup_enable) afterwards because
-1. it's brings inconsistency because the function is adopted per driver
-2. it's a user preference and responsibilty
-3. third it prevent udev to apply a rule properly (regression / bug)
-
-P.S. Alan for my case, I don't need a patch for logitech-dj, I just
-need to remove device_set_enable_wakeup from hid_core.c, then I can
-enable or disable the attribute with a udev rule happily for both
-devices.
-
-=E2=96=B6 Show quoted text
-On 23 April 2015 at 09:21, Peter Chen <Peter.Chen@freescale.com> wrote:
->
->> > >
->> > > Oh, okay, I didn't realize that.
->> > >
->> > > Is there a reasonable way to enable wakeup only when the driver
->> > > learns that a keyboard is connected?  Where would the driver do =
-this?
->> >
->> > I don't know if the driver ever "knows" this, as you can pair lots=
- of
->> > different devices to this same receiver.  There's a userspace
->> > application that lets you manage the device, called "solaar", that
->> > this option could be changed in.
->> >
->> > But really, putting the device to sleep should work for it no matt=
-er
->> > if this is a keyboard or a mouse or a joystick, as the wakeup logi=
-c is
->> > in the receiver, not in the device on the other end of the wireles=
-s link.
->> >
->> > Turning autosuspend works for me for my mouse connected.  It doesn=
-'t
->> > work for one of my "real" USB keyboards when it's connected to the
->> > machine, which is why I can't enable autosuspend for it, as it dri=
-ves
->> > me crazy.
->> >
->> > I don't have a keyboard to test the receiver with at the moment, t=
-o
->> > see if autosuspend works for both things connected at the same tim=
-e,
->> > or for just the keyboard.
->>
->> Tom and I have been talking about enabling wakeup, not autosuspend.
->> The question is whether or not the default wakeup setting for the re=
-ceiver
->> should be "enabled".
->>
->> The kernel's policy is that keyboards should be enabled for wakeup, =
-by default.
->> I think that matches most people's expectations.  But when you've go=
-t a
->> "universal" receiver, what then?
->>
->> Should it always be enabled by default because a keyboard _might_ be
->> connected?  Should it be enabled only when a keyboard is detected?
->> What if multiple devices are connected at the same time?
->>
->
-> From my point, the user option should not depend on kernel default va=
-lue.
-> If the system you build needs some USB devices as system wakeup sourc=
-e,
-> the developers need to make sure the wakeups are enabled before syste=
-m
-> enters suspend.
->
-> Peter
->
->> Shucks -- does the receiver even _work_ as a wakeup device?  It clai=
-ms to, but
->> that would require it to remain in wireless contact with the remote =
-keyboard
->> even while it's supposed to be in a low-power state, which rather se=
-ems to
->> defeat the purpose.
->>
->> Alan Stern
->>
->> PS: I've got wakeup enabled for the PS/2 keyboard attached to the co=
-mputer
->> I'm using now, but it doesn't work.  I have to press the power butto=
-n to wake
->> the machine up from suspend.  Probably an issue in the BIOS or ACPI =
--- I
->> haven't bothered to try and track it down.
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-usb"=
- in the body
->> of a message to majordomo@vger.kernel.org More majordomo info at
->> http://vger.kernel.org/majordomo-info.html
+IA0KPiANCj4gSSdtIG5vdCBzYXlpbmcgdGhhdCB0aGUga2VybmVsIHNob3VsZG4ndCBpbml0aWFs
+aXplIHRoZSBhdHRyaWJ1dGVzIG9yIGhhdmUgYSBkZWZhdWx0Lg0KPiBCdXQgaXQgc2hvdWxkIG9u
+bHkgc2V0IHRoZSBkZWZhdWx0IHdoZW4gdGhlIGF0dHJpYnV0ZSBpcyBpbml0aWFsaXplZCAoSXQg
+ZG9lc24ndA0KPiBldmVuIG1hdHRlciB0byBtZSB3aGV0aGVyIGl0J3MgZW5hYmxlZCBvciBkaXNh
+YmxlZCkuDQo+IA0KPiBJdCdzIGp1c3QgdGhlcmUgc2hvdWxkIG5vdCBiZSBmdXJ0aGVyIG1hbmlw
+dWxhdGlvbiBmcm9tIHRoZSBrZXJuZWwgKGUuZy4NCj4gZGV2aWNlX3NldF93YWtldXBfZW5hYmxl
+KSBhZnRlcndhcmRzIGJlY2F1c2UgMS4gaXQncyBicmluZ3MgaW5jb25zaXN0ZW5jeQ0KPiBiZWNh
+dXNlIHRoZSBmdW5jdGlvbiBpcyBhZG9wdGVkIHBlciBkcml2ZXIgMi4gaXQncyBhIHVzZXIgcHJl
+ZmVyZW5jZSBhbmQNCj4gcmVzcG9uc2liaWx0eSAzLiB0aGlyZCBpdCBwcmV2ZW50IHVkZXYgdG8g
+YXBwbHkgYSBydWxlIHByb3Blcmx5IChyZWdyZXNzaW9uIC8gYnVnKQ0KPiANCj4gUC5TLiBBbGFu
+IGZvciBteSBjYXNlLCBJIGRvbid0IG5lZWQgYSBwYXRjaCBmb3IgbG9naXRlY2gtZGosIEkganVz
+dCBuZWVkIHRvIHJlbW92ZQ0KPiBkZXZpY2Vfc2V0X2VuYWJsZV93YWtldXAgZnJvbSBoaWRfY29y
+ZS5jLCB0aGVuIEkgY2FuIGVuYWJsZSBvciBkaXNhYmxlIHRoZQ0KPiBhdHRyaWJ1dGUgd2l0aCBh
+IHVkZXYgcnVsZSBoYXBwaWx5IGZvciBib3RoIGRldmljZXMuDQo+IA0KDQpZb3UgbWF5IGFwcGx5
+IHlvdXIgY2hvaWNlIG5vIG1hdHRlciB3aGF0IHRoZSBkZWZhdWx0IHZhbHVlIGlzLCB3b3VsZCB5
+b3UgdGVsbCB1cw0Kd2h5IHlvdSBjYW4ndCBkbyB0aGF0Pw0KDQpQZXRlcg0KDQo+IOKWtiBTaG93
+IHF1b3RlZCB0ZXh0DQo+IE9uIDIzIEFwcmlsIDIwMTUgYXQgMDk6MjEsIFBldGVyIENoZW4gPFBl
+dGVyLkNoZW5AZnJlZXNjYWxlLmNvbT4gd3JvdGU6DQo+ID4NCj4gPj4gPiA+DQo+ID4+ID4gPiBP
+aCwgb2theSwgSSBkaWRuJ3QgcmVhbGl6ZSB0aGF0Lg0KPiA+PiA+ID4NCj4gPj4gPiA+IElzIHRo
+ZXJlIGEgcmVhc29uYWJsZSB3YXkgdG8gZW5hYmxlIHdha2V1cCBvbmx5IHdoZW4gdGhlIGRyaXZl
+cg0KPiA+PiA+ID4gbGVhcm5zIHRoYXQgYSBrZXlib2FyZCBpcyBjb25uZWN0ZWQ/ICBXaGVyZSB3
+b3VsZCB0aGUgZHJpdmVyIGRvIHRoaXM/DQo+ID4+ID4NCj4gPj4gPiBJIGRvbid0IGtub3cgaWYg
+dGhlIGRyaXZlciBldmVyICJrbm93cyIgdGhpcywgYXMgeW91IGNhbiBwYWlyIGxvdHMNCj4gPj4g
+PiBvZiBkaWZmZXJlbnQgZGV2aWNlcyB0byB0aGlzIHNhbWUgcmVjZWl2ZXIuICBUaGVyZSdzIGEg
+dXNlcnNwYWNlDQo+ID4+ID4gYXBwbGljYXRpb24gdGhhdCBsZXRzIHlvdSBtYW5hZ2UgdGhlIGRl
+dmljZSwgY2FsbGVkICJzb2xhYXIiLCB0aGF0DQo+ID4+ID4gdGhpcyBvcHRpb24gY291bGQgYmUg
+Y2hhbmdlZCBpbi4NCj4gPj4gPg0KPiA+PiA+IEJ1dCByZWFsbHksIHB1dHRpbmcgdGhlIGRldmlj
+ZSB0byBzbGVlcCBzaG91bGQgd29yayBmb3IgaXQgbm8NCj4gPj4gPiBtYXR0ZXIgaWYgdGhpcyBp
+cyBhIGtleWJvYXJkIG9yIGEgbW91c2Ugb3IgYSBqb3lzdGljaywgYXMgdGhlDQo+ID4+ID4gd2Fr
+ZXVwIGxvZ2ljIGlzIGluIHRoZSByZWNlaXZlciwgbm90IGluIHRoZSBkZXZpY2Ugb24gdGhlIG90
+aGVyIGVuZCBvZiB0aGUNCj4gd2lyZWxlc3MgbGluay4NCj4gPj4gPg0KPiA+PiA+IFR1cm5pbmcg
+YXV0b3N1c3BlbmQgd29ya3MgZm9yIG1lIGZvciBteSBtb3VzZSBjb25uZWN0ZWQuICBJdA0KPiA+
+PiA+IGRvZXNuJ3Qgd29yayBmb3Igb25lIG9mIG15ICJyZWFsIiBVU0Iga2V5Ym9hcmRzIHdoZW4g
+aXQncyBjb25uZWN0ZWQNCj4gPj4gPiB0byB0aGUgbWFjaGluZSwgd2hpY2ggaXMgd2h5IEkgY2Fu
+J3QgZW5hYmxlIGF1dG9zdXNwZW5kIGZvciBpdCwgYXMNCj4gPj4gPiBpdCBkcml2ZXMgbWUgY3Jh
+enkuDQo+ID4+ID4NCj4gPj4gPiBJIGRvbid0IGhhdmUgYSBrZXlib2FyZCB0byB0ZXN0IHRoZSBy
+ZWNlaXZlciB3aXRoIGF0IHRoZSBtb21lbnQsIHRvDQo+ID4+ID4gc2VlIGlmIGF1dG9zdXNwZW5k
+IHdvcmtzIGZvciBib3RoIHRoaW5ncyBjb25uZWN0ZWQgYXQgdGhlIHNhbWUNCj4gPj4gPiB0aW1l
+LCBvciBmb3IganVzdCB0aGUga2V5Ym9hcmQuDQo+ID4+DQo+ID4+IFRvbSBhbmQgSSBoYXZlIGJl
+ZW4gdGFsa2luZyBhYm91dCBlbmFibGluZyB3YWtldXAsIG5vdCBhdXRvc3VzcGVuZC4NCj4gPj4g
+VGhlIHF1ZXN0aW9uIGlzIHdoZXRoZXIgb3Igbm90IHRoZSBkZWZhdWx0IHdha2V1cCBzZXR0aW5n
+IGZvciB0aGUNCj4gPj4gcmVjZWl2ZXIgc2hvdWxkIGJlICJlbmFibGVkIi4NCj4gPj4NCj4gPj4g
+VGhlIGtlcm5lbCdzIHBvbGljeSBpcyB0aGF0IGtleWJvYXJkcyBzaG91bGQgYmUgZW5hYmxlZCBm
+b3Igd2FrZXVwLCBieQ0KPiBkZWZhdWx0Lg0KPiA+PiBJIHRoaW5rIHRoYXQgbWF0Y2hlcyBtb3N0
+IHBlb3BsZSdzIGV4cGVjdGF0aW9ucy4gIEJ1dCB3aGVuIHlvdSd2ZSBnb3QNCj4gPj4gYSAidW5p
+dmVyc2FsIiByZWNlaXZlciwgd2hhdCB0aGVuPw0KPiA+Pg0KPiA+PiBTaG91bGQgaXQgYWx3YXlz
+IGJlIGVuYWJsZWQgYnkgZGVmYXVsdCBiZWNhdXNlIGEga2V5Ym9hcmQgX21pZ2h0XyBiZQ0KPiA+
+PiBjb25uZWN0ZWQ/ICBTaG91bGQgaXQgYmUgZW5hYmxlZCBvbmx5IHdoZW4gYSBrZXlib2FyZCBp
+cyBkZXRlY3RlZD8NCj4gPj4gV2hhdCBpZiBtdWx0aXBsZSBkZXZpY2VzIGFyZSBjb25uZWN0ZWQg
+YXQgdGhlIHNhbWUgdGltZT8NCj4gPj4NCj4gPg0KPiA+IEZyb20gbXkgcG9pbnQsIHRoZSB1c2Vy
+IG9wdGlvbiBzaG91bGQgbm90IGRlcGVuZCBvbiBrZXJuZWwgZGVmYXVsdCB2YWx1ZS4NCj4gPiBJ
+ZiB0aGUgc3lzdGVtIHlvdSBidWlsZCBuZWVkcyBzb21lIFVTQiBkZXZpY2VzIGFzIHN5c3RlbSB3
+YWtldXANCj4gPiBzb3VyY2UsIHRoZSBkZXZlbG9wZXJzIG5lZWQgdG8gbWFrZSBzdXJlIHRoZSB3
+YWtldXBzIGFyZSBlbmFibGVkDQo+ID4gYmVmb3JlIHN5c3RlbSBlbnRlcnMgc3VzcGVuZC4NCj4g
+Pg0KPiA+IFBldGVyDQo+ID4NCj4gPj4gU2h1Y2tzIC0tIGRvZXMgdGhlIHJlY2VpdmVyIGV2ZW4g
+X3dvcmtfIGFzIGEgd2FrZXVwIGRldmljZT8gIEl0DQo+ID4+IGNsYWltcyB0bywgYnV0IHRoYXQg
+d291bGQgcmVxdWlyZSBpdCB0byByZW1haW4gaW4gd2lyZWxlc3MgY29udGFjdA0KPiA+PiB3aXRo
+IHRoZSByZW1vdGUga2V5Ym9hcmQgZXZlbiB3aGlsZSBpdCdzIHN1cHBvc2VkIHRvIGJlIGluIGEN
+Cj4gPj4gbG93LXBvd2VyIHN0YXRlLCB3aGljaCByYXRoZXIgc2VlbXMgdG8gZGVmZWF0IHRoZSBw
+dXJwb3NlLg0KPiA+Pg0KPiA+PiBBbGFuIFN0ZXJuDQo+ID4+DQo+ID4+IFBTOiBJJ3ZlIGdvdCB3
+YWtldXAgZW5hYmxlZCBmb3IgdGhlIFBTLzIga2V5Ym9hcmQgYXR0YWNoZWQgdG8gdGhlDQo+ID4+
+IGNvbXB1dGVyIEknbSB1c2luZyBub3csIGJ1dCBpdCBkb2Vzbid0IHdvcmsuICBJIGhhdmUgdG8g
+cHJlc3MgdGhlDQo+ID4+IHBvd2VyIGJ1dHRvbiB0byB3YWtlIHRoZSBtYWNoaW5lIHVwIGZyb20g
+c3VzcGVuZC4gIFByb2JhYmx5IGFuIGlzc3VlDQo+ID4+IGluIHRoZSBCSU9TIG9yIEFDUEkgLS0g
+SSBoYXZlbid0IGJvdGhlcmVkIHRvIHRyeSBhbmQgdHJhY2sgaXQgZG93bi4NCj4gPj4NCj4gPj4g
+LS0NCj4gPj4gVG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVu
+c3Vic2NyaWJlIGxpbnV4LXVzYiINCj4gPj4gaW4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1h
+am9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcgTW9yZSBtYWpvcmRvbW8NCj4gPj4gaW5mbyBhdCBodHRw
+Oi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWwNCg==
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
