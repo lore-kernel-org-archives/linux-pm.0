@@ -1,42 +1,36 @@
-From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Subject: Re: default value of power/wakeup
-Date: Thu, 23 Apr 2015 10:40:32 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1504231039180.1529-100000@iolanthe.rowland.org>
-References: <CAGnHSEnPCL3PgA9-L5ECD=7WW3ykYrd-cDUXcT1dd-zE9WwXcw@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH/RFC 00/03] irqchip: renesas-irqc: Fine grained Runtime
+ PM support
+Date: Thu, 23 Apr 2015 10:44:44 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1504231040560.1529-100000@iolanthe.rowland.org>
+References: <CAMuHMdWN5E35e8CEzOKYRo4PXkzjMpxErg6akCOHKGtAf=D8tQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAGnHSEnPCL3PgA9-L5ECD=7WW3ykYrd-cDUXcT1dd-zE9WwXcw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tom Yan <tom.ty89-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Peter Chen <Peter.Chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Greg KH <greg-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>, "linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdWN5E35e8CEzOKYRo4PXkzjMpxErg6akCOHKGtAf=D8tQ@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Magnus Damm <magnus.damm@gmail.com>, Linux-sh list <linux-sh@vger.kernel.org>, Jason Cooper <jason@lakedaemon.net>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 23 Apr 2015, Tom Yan wrote:
+On Thu, 23 Apr 2015, Geert Uytterhoeven wrote:
 
-> I'm not saying that the kernel shouldn't initialize the attributes or
-> have a default. But it should only set the default when the attribute
-> is initialized (It doesn't even matter to me whether it's enabled or
-> disabled).
+> >> I'm afraid you can't call pm_runtime_get_sync() from these methods, as
+> >> they may be called from interrupt context.
+> >
+> > Ouch. I know the clock framework has prepare/enable separated with
+> > context, but with the irqchip callbacks I suppose no such separation
 > 
-> It's just there should not be further manipulation from the kernel
-> (e.g. device_set_wakeup_enable) afterwards because
-> 1. it's brings inconsistency because the function is adopted per driver
-> 2. it's a user preference and responsibilty
-> 3. third it prevent udev to apply a rule properly (regression / bug)
-> 
-> P.S. Alan for my case, I don't need a patch for logitech-dj, I just
-> need to remove device_set_enable_wakeup from hid_core.c, then I can
-> enable or disable the attribute with a udev rule happily for both
-> devices.
+> It's not the clock operations, but the pm_runtime operations that cannot be
+> called from interrupt context.
 
-I understand that.  But removing device_set_enable_wakeup from
-hid_core.c would annoy a lot of people.  Linus would probably decide
-that it was a regression and would put the function call back in.
+In fact the pm_runtime operations _can_ be called from interrupt
+context, provided the driver has first invoked pm_runtime_irq_safe().  
+Of course, this requires that none of the runtime-PM callback routines
+ever sleep or perform a blocking operation.
+
+This is all explained in Documentation/power/runtime_pm.txt (search for 
+"irq_safe").
 
 Alan Stern
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
