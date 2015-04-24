@@ -1,56 +1,87 @@
-From: "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>
-Subject: Re: [PATCH] mmc: core: add missing pm event in mmc_pm_notify to fix
- hib restore
-Date: Fri, 24 Apr 2015 13:52:15 +0300
-Message-ID: <553A205F.6020608@linaro.org>
-References: <1429785823-16939-1-git-send-email-grygorii.strashko@linaro.org> <CAPDyKFqA5Wvod_0J-52FJ9Vktt1kdq7H7c9UcX-daJ0hazWU+Q@mail.gmail.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH v5 08/11] arm: dts: qcom: Add #power-domain-cells property
+Date: Fri, 24 Apr 2015 16:25:02 +0530
+Message-ID: <553A2106.1030102@codeaurora.org>
+References: <1429017137-20218-1-git-send-email-rnayak@codeaurora.org>	<1429017137-20218-9-git-send-email-rnayak@codeaurora.org> <CAPDyKFoph2TQeSS6XE_UpOPHiZy5tRZWFvUSqccv7rjtHOprsg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f52.google.com ([209.85.215.52]:35038 "EHLO
-	mail-la0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754086AbbDXKwV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Apr 2015 06:52:21 -0400
-Received: by labbd9 with SMTP id bd9so32338744lab.2
-        for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2015 03:52:20 -0700 (PDT)
-In-Reply-To: <CAPDyKFqA5Wvod_0J-52FJ9Vktt1kdq7H7c9UcX-daJ0hazWU+Q@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFoph2TQeSS6XE_UpOPHiZy5tRZWFvUSqccv7rjtHOprsg@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mturquette@linaro.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Georgi Djakov <georgi.djakov@linaro.org>, svarbanov@mm-sol.com, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, sviau@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, Grygorii Strashko <grygorii.strashko@linaro.org>
-Cc: Sumit Semwal <sumit.semwal@linaro.org>, linux-mmc <linux-mmc@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-omap <linux-omap@vger.kernel.org>
 
-On 04/23/2015 04:19 PM, Ulf Hansson wrote:
-> On 23 April 2015 at 12:43,  <grygorii.strashko@linaro.org> wrote:
->> From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+On 04/24/2015 03:15 PM, Ulf Hansson wrote:
+> On 14 April 2015 at 15:12, Rajendra Nayak <rnayak@codeaurora.org> wrote:
+>> msm8974 has gcc and mmcc nodes, and apq8084 has a gcc node which
+>> implement gdsc powerdomains. Add the #power-domain-cells property
+>> to them.
 >>
->> The PM_RESTORE_PREPARE is not handled now in mmc_pm_notify(),
->> as result mmc_rescan() could be scheduled and executed at
->> late hibernation restore stages when MMC device is suspended
->> already - which, in turn, will lead to system crash on TI dra7-evm board:
+>> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+>> ---
+>>   arch/arm/boot/dts/qcom-apq8084.dtsi | 1 +
+>>   arch/arm/boot/dts/qcom-msm8974.dtsi | 2 ++
+>>   2 files changed, 3 insertions(+)
 >>
->> WARNING: CPU: 0 PID: 3188 at drivers/bus/omap_l3_noc.c:148 l3_interrupt_handler+0x258/0x374()
->> 44000000.ocp:L3 Custom Error: MASTER MPU TARGET L4_PER1_P3 (Idle): Data Access in User mode during Functional access
+>> diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
+>> index 1f130bc..55c281c 100644
+>> --- a/arch/arm/boot/dts/qcom-apq8084.dtsi
+>> +++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
+>> @@ -183,6 +183,7 @@
+>>                          compatible = "qcom,gcc-apq8084";
+>>                          #clock-cells = <1>;
+>>                          #reset-cells = <1>;
+>> +                       #power-domain-cells = <1>;
+>
+> So the PM domain will be apart of the clock-controller. That's a bit
+> odd, but I guess the hardware is like that!?
+
+Yes, the gdscs are all part of GCC controller.
+
+>
+> Anyway, what I fail to understand from this patchset is who will be
+> the actual consumer of the PM domain? In other words, what devices
+> will hold the below property in its DT node?
+>
+> power_domains = <phandle index>;
+>
+> This is needed for genpd to have the device at probe time, attached to
+> its PM domain.
+
+Any device which belongs to the collapsible power domain (gdsc)
+Examples are graphics, camera, video encode/decode block (venus) etc
+
+>
+>>                          reg = <0xfc400000 0x4000>;
+>>                  };
 >>
->> Hence, add missed PM_RESTORE_PREPARE PM event in mmc_pm_notify().
+>> diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
+>> index e265ec1..6184d32 100644
+>> --- a/arch/arm/boot/dts/qcom-msm8974.dtsi
+>> +++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+>> @@ -179,6 +179,7 @@
+>>                          compatible = "qcom,gcc-msm8974";
+>>                          #clock-cells = <1>;
+>>                          #reset-cells = <1>;
+>> +                       #power-domain-cells = <1>;
+>>                          reg = <0xfc400000 0x4000>;
+>>                  };
 >>
->> Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
-> 
-> Huh, that was an old bug you found. :-)
-
-oh yes. it's happened thanks to HW issue on my board which
-generates a flood of SDCD IRQs :)
-
-It's the worst case ever to track wrong/missed PM notifiers (
-
-> 
-> I have applied it for fixes and added the below fixes tag.
-> 
-> Fixes: 4c2ef25fe0b8 (mmc: fix all hangs related to mmc/sd card
-> insert/removal during suspend/resume)
-
-Thanks. 
+>> @@ -186,6 +187,7 @@
+>>                          compatible = "qcom,mmcc-msm8974";
+>>                          #clock-cells = <1>;
+>>                          #reset-cells = <1>;
+>> +                       #power-domain-cells = <1>;
+>>                          reg = <0xfd8c0000 0x6000>;
+>>                  };
+>>
+>
+> Kind regards
+> Uffe
+>
 
 -- 
-regards,
--grygorii
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
