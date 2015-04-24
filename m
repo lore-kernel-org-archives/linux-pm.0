@@ -1,50 +1,75 @@
-From: santosh shilimkar <santosh.shilimkar@oracle.com>
-Subject: Re: [PATCH 0/5] PM / clock_ops: provide default runtime ops and cleanup
- users
-Date: Fri, 24 Apr 2015 08:34:33 -0700
-Message-ID: <553A6289.4040001@oracle.com>
-References: <1429777993-11702-1-git-send-email-rnayak@codeaurora.org> <2234398.3O5UMXvvlN@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v5 08/11] arm: dts: qcom: Add #power-domain-cells property
+Date: Fri, 24 Apr 2015 17:43:46 +0200
+Message-ID: <CAPDyKFrUhx-_EHzR=j+tHUUDJPJb1Qw9d4eMV30_z2E-a9r=oA@mail.gmail.com>
+References: <1429017137-20218-1-git-send-email-rnayak@codeaurora.org>
+	<1429017137-20218-9-git-send-email-rnayak@codeaurora.org>
+	<CAPDyKFoph2TQeSS6XE_UpOPHiZy5tRZWFvUSqccv7rjtHOprsg@mail.gmail.com>
+	<553A2106.1030102@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <2234398.3O5UMXvvlN@vostro.rjw.lan>
-Sender: linux-sh-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rajendra Nayak <rnayak@codeaurora.org>
-Cc: ssantosh@kernel.org, tony@atomide.com, khilman@kernel.org, nsekhar@ti.com, magnus.damm@gmail.com, geert@linux-m68k.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-sh@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <553A2106.1030102@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mturquette@linaro.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Georgi Djakov <georgi.djakov@linaro.org>, svarbanov@mm-sol.com, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, sviau@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On 4/24/2015 7:41 AM, Rafael J. Wysocki wrote:
-> On Thursday, April 23, 2015 02:03:08 PM Rajendra Nayak wrote:
->> Most users of PM clocks do the exact same thing in runtime callbacks.
->> Provide default callbacks and cleanup the existing users (keystone/davinci
->> /omap1/sh)
+On 24 April 2015 at 12:55, Rajendra Nayak <rnayak@codeaurora.org> wrote:
+> On 04/24/2015 03:15 PM, Ulf Hansson wrote:
 >>
->> Rajendra Nayak (5):
->>    PM / clock_ops: Provide default runtime ops to users
->>    arm: keystone: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
->>    arm: omap1: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
->>    arm: davinci: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
->>    drivers: sh: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
+>> On 14 April 2015 at 15:12, Rajendra Nayak <rnayak@codeaurora.org> wrote:
+>>>
+>>> msm8974 has gcc and mmcc nodes, and apq8084 has a gcc node which
+>>> implement gdsc powerdomains. Add the #power-domain-cells property
+>>> to them.
+>>>
+>>> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+>>> ---
+>>>   arch/arm/boot/dts/qcom-apq8084.dtsi | 1 +
+>>>   arch/arm/boot/dts/qcom-msm8974.dtsi | 2 ++
+>>>   2 files changed, 3 insertions(+)
+>>>
+>>> diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi
+>>> b/arch/arm/boot/dts/qcom-apq8084.dtsi
+>>> index 1f130bc..55c281c 100644
+>>> --- a/arch/arm/boot/dts/qcom-apq8084.dtsi
+>>> +++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
+>>> @@ -183,6 +183,7 @@
+>>>                          compatible = "qcom,gcc-apq8084";
+>>>                          #clock-cells = <1>;
+>>>                          #reset-cells = <1>;
+>>> +                       #power-domain-cells = <1>;
 >>
->>   arch/arm/mach-davinci/pm_domain.c  | 32 +-------------------------
->>   arch/arm/mach-keystone/pm_domain.c | 33 +-------------------------
->>   arch/arm/mach-omap1/pm_bus.c       | 37 ++----------------------------
->>   drivers/base/power/clock_ops.c     | 38 ++++++++++++++++++++++++++++++
->>   drivers/sh/pm_runtime.c            | 47 ++------------------------------------
->>   include/linux/pm_clock.h           | 10 ++++++++
->>   6 files changed, 54 insertions(+), 143 deletions(-)
->
-> It is not particularly clear to me who is supposed to apply this series, but
-> I can do that if people don't have problems with that.
+>>
+>> So the PM domain will be apart of the clock-controller. That's a bit
+>> odd, but I guess the hardware is like that!?
 >
 >
-I am fine by that given dependency with first patch.
-Another way is, you pick up the first patch and give us an
-immutable branch.
+> Yes, the gdscs are all part of GCC controller.
+>
+>>
+>> Anyway, what I fail to understand from this patchset is who will be
+>> the actual consumer of the PM domain? In other words, what devices
+>> will hold the below property in its DT node?
+>>
+>> power_domains = <phandle index>;
+>>
+>> This is needed for genpd to have the device at probe time, attached to
+>> its PM domain.
+>
+>
+> Any device which belongs to the collapsible power domain (gdsc)
+> Examples are graphics, camera, video encode/decode block (venus) etc
 
-Either way is fine by me.
+Then I expect those drivers to deploy runtime PM (if not already) and
+thus gdsc's PM domain will come into play.
 
+But how will that relate to the GCC controller?
 
-Regards,
-Santosh
+For example when the gdsc's PM domain is about to be powered off,
+since all the devices within it has be runtime PM suspended. What
+happens with the GCC controller then?
+
+Kind regards
+Uffe
