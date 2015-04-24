@@ -1,59 +1,96 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 0/5] PM / clock_ops: provide default runtime ops and
- cleanup users
-Date: Fri, 24 Apr 2015 16:51:03 +0200
-Message-ID: <CAMuHMdWMjULD8jQDA-U6tumnCd=Q7jhZ2koha4CKU-K50tJXmw@mail.gmail.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 3/5] arm: omap1: remove boilerplate code and use
+ USE_PM_CLK_RUNTIME_OPS
+Date: Fri, 24 Apr 2015 08:31:57 -0700
+Message-ID: <20150424153156.GS18048@atomide.com>
 References: <1429777993-11702-1-git-send-email-rnayak@codeaurora.org>
-	<2234398.3O5UMXvvlN@vostro.rjw.lan>
+ <1429777993-11702-4-git-send-email-rnayak@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f174.google.com ([209.85.214.174]:33826 "EHLO
-	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932310AbbDXOvD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Apr 2015 10:51:03 -0400
-In-Reply-To: <2234398.3O5UMXvvlN@vostro.rjw.lan>
+Received: from muru.com ([72.249.23.125]:46619 "EHLO muru.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932218AbbDXPet (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 24 Apr 2015 11:34:49 -0400
+Content-Disposition: inline
+In-Reply-To: <1429777993-11702-4-git-send-email-rnayak@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Simon Horman <horms@verge.net.au>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Sekhar Nori <nsekhar@ti.com>, Magnus Damm <magnus.damm@gmail.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: rjw@rjwysocki.net, ssantosh@kernel.org, khilman@kernel.org, nsekhar@ti.com, magnus.damm@gmail.com, geert@linux-m68k.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-sh@vger.kernel.org
 
-On Fri, Apr 24, 2015 at 4:41 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, April 23, 2015 02:03:08 PM Rajendra Nayak wrote:
->> Most users of PM clocks do the exact same thing in runtime callbacks.
->> Provide default callbacks and cleanup the existing users (keystone/davinci
->> /omap1/sh)
->>
->> Rajendra Nayak (5):
->>   PM / clock_ops: Provide default runtime ops to users
->>   arm: keystone: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
->>   arm: omap1: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
->>   arm: davinci: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
->>   drivers: sh: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
->>
->>  arch/arm/mach-davinci/pm_domain.c  | 32 +-------------------------
->>  arch/arm/mach-keystone/pm_domain.c | 33 +-------------------------
->>  arch/arm/mach-omap1/pm_bus.c       | 37 ++----------------------------
->>  drivers/base/power/clock_ops.c     | 38 ++++++++++++++++++++++++++++++
->>  drivers/sh/pm_runtime.c            | 47 ++------------------------------------
->>  include/linux/pm_clock.h           | 10 ++++++++
->>  6 files changed, 54 insertions(+), 143 deletions(-)
->
-> It is not particularly clear to me who is supposed to apply this series, but
-> I can do that if people don't have problems with that.
+* Rajendra Nayak <rnayak@codeaurora.org> [150423 01:34]:
+> USE_PM_CLK_RUNTIME_OPS is introduced so we don't repeat the same code
+> to do runtime_suspend and runtime_resume across users of PM clocks.
+> Use it to remove the boilerplate code.
+> 
+> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+> Reviewed-by: Kevin Hilman <khilman@linaro.org>
+> Acked-by: Santosh Shilimkar <ssantosh@kernel.org>
+> Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-All later patches depend on the first patch.
+Acked-by: Tony Lindgren <tony@atomide.com>
 
-For shmobile, Simon has queued up changes for drivers/sh/pm_runtime.c,
-but I think they don't conflict with this series.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> ---
+>  arch/arm/mach-omap1/pm_bus.c | 37 ++-----------------------------------
+>  1 file changed, 2 insertions(+), 35 deletions(-)
+> 
+> diff --git a/arch/arm/mach-omap1/pm_bus.c b/arch/arm/mach-omap1/pm_bus.c
+> index c40e209..667c163 100644
+> --- a/arch/arm/mach-omap1/pm_bus.c
+> +++ b/arch/arm/mach-omap1/pm_bus.c
+> @@ -21,48 +21,15 @@
+>  
+>  #include "soc.h"
+>  
+> -#ifdef CONFIG_PM
+> -static int omap1_pm_runtime_suspend(struct device *dev)
+> -{
+> -	int ret;
+> -
+> -	dev_dbg(dev, "%s\n", __func__);
+> -
+> -	ret = pm_generic_runtime_suspend(dev);
+> -	if (ret)
+> -		return ret;
+> -
+> -	ret = pm_clk_suspend(dev);
+> -	if (ret) {
+> -		pm_generic_runtime_resume(dev);
+> -		return ret;
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+> -static int omap1_pm_runtime_resume(struct device *dev)
+> -{
+> -	dev_dbg(dev, "%s\n", __func__);
+> -
+> -	pm_clk_resume(dev);
+> -	return pm_generic_runtime_resume(dev);
+> -}
+> -
+>  static struct dev_pm_domain default_pm_domain = {
+>  	.ops = {
+> -		.runtime_suspend = omap1_pm_runtime_suspend,
+> -		.runtime_resume = omap1_pm_runtime_resume,
+> +		USE_PM_CLK_RUNTIME_OPS
+>  		USE_PLATFORM_PM_SLEEP_OPS
+>  	},
+>  };
+> -#define OMAP1_PM_DOMAIN (&default_pm_domain)
+> -#else
+> -#define OMAP1_PM_DOMAIN NULL
+> -#endif /* CONFIG_PM */
+>  
+>  static struct pm_clk_notifier_block platform_bus_notifier = {
+> -	.pm_domain = OMAP1_PM_DOMAIN,
+> +	.pm_domain = &default_pm_domain,
+>  	.con_ids = { "ick", "fck", NULL, },
+>  };
+>  
+> -- 
+> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+> of Code Aurora Forum, hosted by The Linux Foundation
+> 
