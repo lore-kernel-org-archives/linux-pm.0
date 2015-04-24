@@ -1,42 +1,106 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/5] PM / clock_ops: provide default runtime ops and cleanup users
-Date: Fri, 24 Apr 2015 16:41:49 +0200
-Message-ID: <2234398.3O5UMXvvlN@vostro.rjw.lan>
-References: <1429777993-11702-1-git-send-email-rnayak@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1429777993-11702-1-git-send-email-rnayak@codeaurora.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: ssantosh@kernel.org, tony@atomide.com, khilman@kernel.org, nsekhar@ti.com, magnus.damm@gmail.com, geert@linux-m68k.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-sh@vger.kernel.org
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Subject: [PATCH] Documentation: update cputopology.txt
+Date: Fri, 24 Apr 2015 16:36:45 +0200
+Message-ID: <1429886205-28520-1-git-send-email-bgolaszewski@baylibre.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f169.google.com ([209.85.212.169]:33605 "EHLO
+	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756185AbbDXOgV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Apr 2015 10:36:21 -0400
+Received: by wiax7 with SMTP id x7so36564137wia.0
+        for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2015 07:36:20 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Benoit Cousson <bcousson@baylibre.com>, Axel Haslam <ahaslam@baylibre.com>, Bartosz Golaszewski <bgolaszewski+renesas@baylibre.com>
 
-On Thursday, April 23, 2015 02:03:08 PM Rajendra Nayak wrote:
-> Most users of PM clocks do the exact same thing in runtime callbacks.
-> Provide default callbacks and cleanup the existing users (keystone/davinci
-> /omap1/sh)
-> 
-> Rajendra Nayak (5):
->   PM / clock_ops: Provide default runtime ops to users
->   arm: keystone: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
->   arm: omap1: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
->   arm: davinci: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
->   drivers: sh: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
-> 
->  arch/arm/mach-davinci/pm_domain.c  | 32 +-------------------------
->  arch/arm/mach-keystone/pm_domain.c | 33 +-------------------------
->  arch/arm/mach-omap1/pm_bus.c       | 37 ++----------------------------
->  drivers/base/power/clock_ops.c     | 38 ++++++++++++++++++++++++++++++
->  drivers/sh/pm_runtime.c            | 47 ++------------------------------------
->  include/linux/pm_clock.h           | 10 ++++++++
->  6 files changed, 54 insertions(+), 143 deletions(-)
+From: Bartosz Golaszewski <bgolaszewski+renesas@baylibre.com>
 
-It is not particularly clear to me who is supposed to apply this series, but
-I can do that if people don't have problems with that.
+The documentation on cpu topology seems to be a bit out-of-date. It
+doesn't mention the **_siblings_list attributes and uses old names
+for topology_**_cpumask() macros.
 
+Add information on missing attributes plus some minor clarifications.
 
+Signed-off-by: Bartosz Golaszewski <bgolaszewski+renesas@baylibre.com>
+---
+ Documentation/cputopology.txt | 34 +++++++++++++++++++++++++---------
+ 1 file changed, 25 insertions(+), 9 deletions(-)
+
+diff --git a/Documentation/cputopology.txt b/Documentation/cputopology.txt
+index 0aad6de..27e67d7 100644
+--- a/Documentation/cputopology.txt
++++ b/Documentation/cputopology.txt
+@@ -1,6 +1,6 @@
+ 
+ Export CPU topology info via sysfs. Items (attributes) are similar
+-to /proc/cpuinfo.
++to /proc/cpuinfo output of some architectures:
+ 
+ 1) /sys/devices/system/cpu/cpuX/topology/physical_package_id:
+ 
+@@ -23,20 +23,35 @@ to /proc/cpuinfo.
+ 4) /sys/devices/system/cpu/cpuX/topology/thread_siblings:
+ 
+ 	internal kernel map of cpuX's hardware threads within the same
+-	core as cpuX
++	core as cpuX.
+ 
+-5) /sys/devices/system/cpu/cpuX/topology/core_siblings:
++5) /sys/devices/system/cpu/cpuX/topology/thread_siblings_list:
++
++	human-readable list of cpuX's hardware threads within the same
++	core as cpuX.
++
++6) /sys/devices/system/cpu/cpuX/topology/core_siblings:
+ 
+ 	internal kernel map of cpuX's hardware threads within the same
+ 	physical_package_id.
+ 
+-6) /sys/devices/system/cpu/cpuX/topology/book_siblings:
++7) /sys/devices/system/cpu/cpuX/topology/core_siblings_list:
++
++	human-readable list of cpuX's hardware threads within the same
++	physical_package_id.
++
++8) /sys/devices/system/cpu/cpuX/topology/book_siblings:
+ 
+ 	internal kernel map of cpuX's hardware threads within the same
+ 	book_id.
+ 
++9) /sys/devices/system/cpu/cpuX/topology/book_siblings_list:
++
++	human-readable list of cpuX's hardware threads within the same
++	book_id.
++
+ To implement it in an architecture-neutral way, a new source file,
+-drivers/base/topology.c, is to export the 4 or 6 attributes. The two book
++drivers/base/topology.c, is to export the 6 or 9 attributes. The three book
+ related sysfs files will only be created if CONFIG_SCHED_BOOK is selected.
+ 
+ For an architecture to support this feature, it must define some of
+@@ -48,16 +63,17 @@ these macros in include/asm-XXX/topology.h:
+ #define topology_core_cpumask(cpu)
+ #define topology_book_cpumask(cpu)
+ 
+-The type of **_id is int.
+-The type of siblings is (const) struct cpumask *.
++The type of **_id macros is int.
++The type of **_cpumask macros is (const) struct cpumask *. The latter
++correspond with appropriate **_siblings sysfs attributes.
+ 
+ To be consistent on all architectures, include/linux/topology.h
+ provides default definitions for any of the above macros that are
+ not defined by include/asm-XXX/topology.h:
+ 1) physical_package_id: -1
+ 2) core_id: 0
+-3) thread_siblings: just the given CPU
+-4) core_siblings: just the given CPU
++3) thread_cpumask: just the given CPU
++4) core_cpumask: just the given CPU
+ 
+ For architectures that don't support books (CONFIG_SCHED_BOOK) there are no
+ default definitions for topology_book_id() and topology_book_cpumask().
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+2.1.4
+
