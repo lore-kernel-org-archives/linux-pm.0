@@ -1,508 +1,627 @@
-From: Xinwei Kong <kong.kongxinwei@hisilicon.com>
-Subject: [PATCH v4 2/2] thermal: hisilicon: add new hisilicon thermal sensor driver
-Date: Fri, 24 Apr 2015 11:51:23 +0800
-Message-ID: <1429847483-10552-3-git-send-email-kong.kongxinwei@hisilicon.com>
-References: <1429847483-10552-1-git-send-email-kong.kongxinwei@hisilicon.com>
+From: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: mediatek: Add MT8173 cpufreq driver
+Date: Fri, 24 Apr 2015 14:46:25 +0800
+Message-ID: <CALx668VsT60+kx7o-ZM5Wxk7Nn-rXS21O5SDYr++EeY-zEJ6ew@mail.gmail.com>
+References: <1429522047-16675-1-git-send-email-pi-cheng.chen@linaro.org>
+	<1429522047-16675-2-git-send-email-pi-cheng.chen@linaro.org>
+	<20150423120152.GM6325@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga02-in.huawei.com ([119.145.14.65]:50774 "EHLO
-	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750729AbbDXEI4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Apr 2015 00:08:56 -0400
-In-Reply-To: <1429847483-10552-1-git-send-email-kong.kongxinwei@hisilicon.com>
+Received: from mail-la0-f50.google.com ([209.85.215.50]:34593 "EHLO
+	mail-la0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932719AbbDXGq1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Apr 2015 02:46:27 -0400
+Received: by laat2 with SMTP id t2so28487169laa.1
+        for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2015 23:46:25 -0700 (PDT)
+In-Reply-To: <20150423120152.GM6325@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhuang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxarm@huawei.com, jorge.ramirez-ortiz@linaro.org, mporter@konsulko.com, robh+dt@kernel.org, bintian.wang@huawei.com, khilman@linaro.org, mturquette@linaro.org, rob.herring@linaro.org, zhangfei.gao@linaro.org, haojian.zhuang@linaro.org, xuwei5@hisilicon.com, yanhaifeng@gmail.com, linux@arm.linux.org.uk, guodong.xu@linaro.org, xuyiping@hisilicon.com, wangbinghui@hisilicon.com, zhenwei.wang@hisilicon.com, victor.lixin@hisilicon.com, puck.chen@hisilicon.com, dan.zhao@hisilicon.com, z.liuxinliang@huawei.com, heyunlei@huawei.com, w.f@huawei.com, liguozhu@hisilicon.com, gongyu@hisilicon.com, wanghuan4@hisilicon.com, yudongbin@hisilicon.com
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Mike Turquette <mturquette@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, "Joe.C" <yingjoe.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Howard Chen <ibanezchen@gmail.com>, Chen Fan <fan.chen@mediatek.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, linux-mediatek@lists.infradead.org
 
-From: kongxinwei <kong.kongxinwei@hisilicon.com>
+Hi Sascha,
 
-This patch adds the support for hisilicon thermal sensor, within
-hisilicon SoC. there will register sensors for thermal framework
-and use device tree to bind cooling device.
+Thanks for reviewing.
 
-Signed-off-by: Leo Yan <leo.yan@linaro.org>
-Signed-off-by: kongxinwei <kong.kongxinwei@hisilicon.com>
----
- drivers/thermal/Kconfig        |   8 +
- drivers/thermal/Makefile       |   1 +
- drivers/thermal/hisi_thermal.c | 437 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 446 insertions(+)
- create mode 100644 drivers/thermal/hisi_thermal.c
+On Thu, Apr 23, 2015 at 8:01 PM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> On Mon, Apr 20, 2015 at 05:27:26PM +0800, pi-cheng.chen wrote:
+>> This patch implements MT8173 specific cpufreq driver with OPP table defined
+>> in the driver code.
+>>
+>> Signed-off-by: pi-cheng.chen <pi-cheng.chen@linaro.org>
+>> ---
+>>  drivers/cpufreq/Kconfig.arm      |   6 +
+>>  drivers/cpufreq/Makefile         |   1 +
+>>  drivers/cpufreq/mt8173-cpufreq.c | 509 +++++++++++++++++++++++++++++++++++++++
+>>  3 files changed, 516 insertions(+)
+>>  create mode 100644 drivers/cpufreq/mt8173-cpufreq.c
+>>
+>> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+>> index 1b06fc4..25643c7 100644
+>> --- a/drivers/cpufreq/Kconfig.arm
+>> +++ b/drivers/cpufreq/Kconfig.arm
+>> @@ -132,6 +132,12 @@ config ARM_KIRKWOOD_CPUFREQ
+>>         This adds the CPUFreq driver for Marvell Kirkwood
+>>         SoCs.
+>>
+>> +config ARM_MT8173_CPUFREQ
+>> +     bool "Mediatek MT8173 CPUFreq support"
+>> +     depends on ARCH_MEDIATEK && REGULATOR
+>> +     help
+>> +       This adds the CPUFreq driver support for Mediatek MT8173 SoC.
+>> +
+>>  config ARM_OMAP2PLUS_CPUFREQ
+>>       bool "TI OMAP2+"
+>>       depends on ARCH_OMAP2PLUS
+>> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+>> index 82a1821..da9d616 100644
+>> --- a/drivers/cpufreq/Makefile
+>> +++ b/drivers/cpufreq/Makefile
+>> @@ -62,6 +62,7 @@ obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)  += highbank-cpufreq.o
+>>  obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)              += imx6q-cpufreq.o
+>>  obj-$(CONFIG_ARM_INTEGRATOR)         += integrator-cpufreq.o
+>>  obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)   += kirkwood-cpufreq.o
+>> +obj-$(CONFIG_ARM_MT8173_CPUFREQ)     += mt8173-cpufreq.o
+>>  obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)  += omap-cpufreq.o
+>>  obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)     += pxa2xx-cpufreq.o
+>>  obj-$(CONFIG_PXA3xx)                 += pxa3xx-cpufreq.o
+>> diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
+>> new file mode 100644
+>> index 0000000..a310e72
+>> --- /dev/null
+>> +++ b/drivers/cpufreq/mt8173-cpufreq.c
+>> @@ -0,0 +1,509 @@
+>> +/*
+>> +* Copyright (c) 2015 Linaro Ltd.
+>> +* Author: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+>> +*
+>> +* This program is free software; you can redistribute it and/or modify
+>> +* it under the terms of the GNU General Public License version 2 as
+>> +* published by the Free Software Foundation.
+>> +*
+>> +* This program is distributed in the hope that it will be useful,
+>> +* but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> +* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>> +* GNU General Public License for more details.
+>> +*/
+>> +
+>> +#include <linux/clk.h>
+>> +#include <linux/cpu.h>
+>> +#include <linux/cpufreq.h>
+>> +#include <linux/cpumask.h>
+>> +#include <linux/module.h>
+>> +#include <linux/of.h>
+>> +#include <linux/regulator/consumer.h>
+>> +#include <linux/slab.h>
+>> +
+>> +#define MIN_VOLT_SHIFT               100000
+>> +#define MAX_VOLT_SHIFT               200000
+>> +
+>> +#define OPP(f, vp, vs) {             \
+>> +             .freq   = f,            \
+>> +             .vproc  = vp,           \
+>> +             .vsram  = vs,           \
+>> +     }
+>> +
+>> +struct mtk_cpu_opp {
+>> +     unsigned int freq;
+>> +     int vproc;
+>> +     int vsram;
+>> +};
+>> +
+>> +/*
+>> + * The struct cpu_dvfs_info holds necessary information for doing CPU DVFS of
+>> + * each cluster. For Mediatek SoCs, each CPU cluster in SoC has two voltage
+>> + * inputs, Vproc and Vsram. For some cluster in SoC, the two voltage inputs are
+>> + * supplied by different PMICs. In this case, when scaling up/down the voltage
+>> + * of Vsram and Vproc, the two voltage inputs need to be controlled under a
+>> + * hardware limitation: 100mV < Vsram - Vproc < 200mV
+>> + * When scaling up/down the clock frequency of a cluster, the clock source need
+>> + * to be switched to another stable PLL clock temporarily, and switched back to
+>> + * the original PLL after the it becomes stable at target frequency.
+>> + * Hence the voltage inputs of cluster need to be set to an intermediate voltage
+>> + * before the clock frequency being scaled up/down.
+>> + */
+>> +
+>> +struct cpu_dvfs_info {
+>> +     cpumask_t cpus;
+>> +
+>> +     struct mtk_cpu_opp *opp_tbl;
+>> +     struct mtk_cpu_opp *intermediate_opp;
+>> +     int nr_opp;
+>> +
+>> +     struct regulator *proc_reg;
+>> +     struct regulator *sram_reg;
+>> +     struct clk *cpu_clk;
+>> +     struct clk *inter_pll;
+>> +};
+>> +
+>> +/*
+>> + * This is a temporary solution until we have new OPPv2 bindings. Therefore we
+>> + * could describe the OPPs with (freq, volt, volt) tuple properly in device
+>> + * tree.
+>> + */
+>> +
+>> +/* OPP table for LITTLE cores of MT8173 */
+>> +struct mtk_cpu_opp mt8173_l_opp[] = {
+>> +     OPP(507000000, 859000, 0),
+>> +     OPP(702000000, 908000, 0),
+>> +     OPP(1001000000, 983000, 0),
+>> +     OPP(1105000000, 1009000, 0),
+>> +     OPP(1183000000, 1028000, 0),
+>> +     OPP(1404000000, 1083000, 0),
+>> +     OPP(1508000000, 1109000, 0),
+>> +     OPP(1573000000, 1125000, 0),
+>> +};
+>> +
+>> +/* OPP table for big cores of MT8173 */
+>> +struct mtk_cpu_opp mt8173_b_opp[] = {
+>> +     OPP(507000000, 828000, 928000),
+>> +     OPP(702000000, 867000, 967000),
+>> +     OPP(1001000000, 927000, 1027000),
+>> +     OPP(1209000000, 968000, 1068000),
+>> +     OPP(1404000000, 1007000, 1107000),
+>> +     OPP(1612000000, 1049000, 1149000),
+>> +     OPP(1807000000, 1089000, 1150000),
+>> +     OPP(1989000000, 1125000, 1150000),
+>> +};
+>
+> Do you really need the SRAM voltages? Isn't the SRAM voltage just CPU
+> core voltage + 100mV +- tolerance?
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index af40db0..81aee01 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -136,6 +136,14 @@ config THERMAL_EMULATION
- 	  because userland can easily disable the thermal policy by simply
- 	  flooding this sysfs node with low temperature values.
- 
-+config HISI_THERMAL
-+	tristate "Hisilicon thermal driver"
-+	depends on ARCH_HISI && CPU_THERMAL && OF
-+	help
-+	  Enable this to plug hisilicon's thermal sensor driver into the Linux
-+	  thermal framework. cpufreq is used as the cooling device to throttle
-+	  CPUs when the passive trip is crossed.
-+
- config IMX_THERMAL
- 	tristate "Temperature sensor driver for Freescale i.MX SoCs"
- 	depends on CPU_THERMAL
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index fa0dc48..08ae7ac 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -39,3 +39,4 @@ obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
- obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
- obj-$(CONFIG_ST_THERMAL)	+= st/
- obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra_soctherm.o
-+obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
-diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-new file mode 100644
-index 0000000..255c71b
---- /dev/null
-+++ b/drivers/thermal/hisi_thermal.c
-@@ -0,0 +1,437 @@
-+/*
-+ * Hisilicon thermal sensor driver
-+ *
-+ * Copyright (c) 2014-2015 Hisilicon Limited.
-+ * Copyright (c) 2014-2015 Linaro Limited.
-+ *
-+ * Xinwei Kong <kong.kongxinwei@hisilicon.com>
-+ * Leo Yan <leo.yan@linaro.org>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-+ * kind, whether express or implied; without even the implied warranty
-+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/cpufreq.h>
-+#include <linux/delay.h>
-+#include <linux/device.h>
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/slab.h>
-+#include <linux/thermal.h>
-+#include <linux/types.h>
-+
-+#include "thermal_core.h"
-+
-+#define TEMP0_TH			(0x4)
-+#define TEMP0_RST_TH			(0x8)
-+#define TEMP0_CFG			(0xC)
-+#define TEMP0_EN			(0x10)
-+#define TEMP0_INT_EN			(0x14)
-+#define TEMP0_INT_CLR			(0x18)
-+#define TEMP0_RST_MSK			(0x1C)
-+#define TEMP0_VALUE			(0x28)
-+
-+#define HISI_TEMP_BASE			(-60)
-+#define HISI_TEMP_RESET			(100000)
-+
-+#define HISI_MAX_SENSORS		4
-+
-+struct hisi_thermal_sensor {
-+	struct hisi_thermal_data *thermal;
-+	struct thermal_zone_device *tzd;
-+	const struct thermal_trip *trip;
-+
-+	uint32_t id;
-+	uint32_t thres_temp;
-+	uint32_t reset_temp;
-+};
-+
-+struct hisi_thermal_data {
-+	struct mutex thermal_lock;
-+	struct platform_device *pdev;
-+	struct clk *clk;
-+
-+	int irq, irq_bind_sensor;
-+	bool irq_enabled;
-+
-+	unsigned int sensors_num;
-+	long sensor_temp[HISI_MAX_SENSORS];
-+	struct hisi_thermal_sensor sensors[HISI_MAX_SENSORS];
-+
-+	void __iomem *regs;
-+};
-+
-+/* in millicelsius */
-+static inline int _step_to_temp(int step)
-+{
-+	/*
-+	 * Every step equals (1 * 200) / 255 celsius, and finally
-+	 * need convert to millicelsius.
-+	 */
-+	return (HISI_TEMP_BASE + (step * 200 / 255)) * 1000;
-+}
-+
-+static inline int _temp_to_step(int temp)
-+{
-+	return ((temp / 1000 - HISI_TEMP_BASE) * 255 / 200);
-+}
-+
-+static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
-+					 struct hisi_thermal_sensor *sensor)
-+{
-+	int val;
-+
-+	mutex_lock(&data->thermal_lock);
-+
-+	/* disable interrupt */
-+	writel(0x0, data->regs + TEMP0_INT_EN);
-+	writel(0x1, data->regs + TEMP0_INT_CLR);
-+
-+	/* disable module firstly */
-+	writel(0x0, data->regs + TEMP0_EN);
-+
-+	/* select sensor id */
-+	writel((sensor->id << 12), data->regs + TEMP0_CFG);
-+
-+	/* enable module */
-+	writel(0x1, data->regs + TEMP0_EN);
-+
-+	usleep_range(3000, 5000);
-+
-+	val = readl(data->regs + TEMP0_VALUE);
-+	val = _step_to_temp(val);
-+
-+	/* adjust for negative value */
-+	val = (val < 0) ? 0 : val;
-+
-+	mutex_unlock(&data->thermal_lock);
-+
-+	return val;
-+}
-+
-+static void hisi_thermal_bind_irq(struct hisi_thermal_data *data)
-+{
-+	struct hisi_thermal_sensor *sensor;
-+
-+	sensor = &data->sensors[data->irq_bind_sensor];
-+
-+	mutex_lock(&data->thermal_lock);
-+
-+	/* setting the hdak time */
-+	writel(0x0, data->regs + TEMP0_CFG);
-+
-+	/* disable module firstly */
-+	writel(0x0, data->regs + TEMP0_RST_MSK);
-+	writel(0x0, data->regs + TEMP0_EN);
-+
-+	/* select sensor id */
-+	writel((sensor->id << 12), data->regs + TEMP0_CFG);
-+
-+	/* enable for interrupt */
-+	writel(_temp_to_step(sensor->thres_temp)
-+			| 0x0FFFFFF00, data->regs + TEMP0_TH);
-+
-+	writel(_temp_to_step(HISI_TEMP_RESET), data->regs + TEMP0_RST_TH);
-+
-+	/* enable module */
-+	writel(0x1, data->regs + TEMP0_RST_MSK);
-+	writel(0x1, data->regs + TEMP0_EN);
-+
-+	writel(0x0, data->regs + TEMP0_INT_CLR);
-+	writel(0x1, data->regs + TEMP0_INT_EN);
-+
-+	usleep_range(3000, 5000);
-+
-+	mutex_unlock(&data->thermal_lock);
-+
-+}
-+
-+static void hisi_thermal_enable_sensor(struct hisi_thermal_data *data)
-+{
-+	hisi_thermal_bind_irq(data);
-+}
-+
-+static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
-+{
-+
-+	mutex_lock(&data->thermal_lock);
-+
-+	/* disable sensor module */
-+	writel(0x0, data->regs + TEMP0_INT_EN);
-+	writel(0x0, data->regs + TEMP0_RST_MSK);
-+	writel(0x0, data->regs + TEMP0_EN);
-+
-+	mutex_unlock(&data->thermal_lock);
-+
-+}
-+
-+static int hisi_thermal_get_temp(void *_sensor, long *temp)
-+{
-+	struct hisi_thermal_sensor *sensor = _sensor;
-+	struct hisi_thermal_data *data = sensor->thermal;
-+
-+	int sensor_id = 0, i;
-+	long max_temp = 0;
-+
-+	*temp = hisi_thermal_get_sensor_temp(data, sensor);
-+
-+	data->sensor_temp[sensor->id] = *temp;
-+
-+	for (i = 0; i < HISI_MAX_SENSORS; i++) {
-+		if (data->sensor_temp[i] >= max_temp) {
-+			max_temp = data->sensor_temp[i];
-+			sensor_id = i;
-+		}
-+	}
-+
-+	data->irq_bind_sensor = sensor_id;
-+
-+	dev_dbg(&data->pdev->dev, "id=%d, irq=%d, temp=%ld, thres=%d\n",
-+		sensor->id, data->irq_enabled, *temp, sensor->thres_temp);
-+	/*
-+	 * Bind irq to sensor for two cases:
-+	 *   Reenable alarm IRQ if temperature below threshold;
-+	 *   if irq has been enabled, always set it;
-+	 */
-+	if (data->irq_enabled) {
-+		hisi_thermal_bind_irq(data);
-+		return 0;
-+	}
-+
-+	if (max_temp < sensor->thres_temp) {
-+		data->irq_enabled = true;
-+		hisi_thermal_bind_irq(data);
-+		enable_irq(data->irq);
-+	}
-+
-+	return 0;
-+}
-+
-+static struct thermal_zone_of_device_ops hisi_of_thermal_ops = {
-+	.get_temp = hisi_thermal_get_temp,
-+};
-+
-+static irqreturn_t hisi_thermal_alarm_irq(int irq, void *dev)
-+{
-+	struct hisi_thermal_data *data = dev;
-+
-+	disable_irq_nosync(irq);
-+	data->irq_enabled = false;
-+
-+	return IRQ_WAKE_THREAD;
-+}
-+
-+static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
-+{
-+	struct hisi_thermal_data *data = dev;
-+	struct hisi_thermal_sensor *sensor;
-+	int i;
-+
-+	sensor = &data->sensors[data->irq_bind_sensor];
-+
-+	dev_crit(&data->pdev->dev, "THERMAL ALARM: T > %d\n",
-+		 sensor->thres_temp / 1000);
-+
-+	for (i = 0; i < data->sensors_num; i++)
-+		thermal_zone_device_update(data->sensors[i].tzd);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int hisi_thermal_register_sensor(struct platform_device *pdev,
-+					struct hisi_thermal_data *data,
-+					struct hisi_thermal_sensor *sensor,
-+					int index)
-+{
-+	int ret, i;
-+
-+	sensor->id = index;
-+	sensor->thermal = data;
-+
-+	sensor->tzd = thermal_zone_of_sensor_register(&pdev->dev, sensor->id,
-+				sensor, &hisi_of_thermal_ops);
-+	if (IS_ERR(sensor->tzd)) {
-+		ret = PTR_ERR(sensor->tzd);
-+		dev_err(&pdev->dev, "failed to register sensor id %d: %d\n",
-+			sensor->id, ret);
-+		return ret;
-+	}
-+
-+	sensor->trip = of_thermal_get_trip_points(sensor->tzd);
-+
-+	for (i = 0; i < of_thermal_get_ntrips(sensor->tzd); i++) {
-+		if (sensor->trip[i].type == THERMAL_TRIP_PASSIVE) {
-+			sensor->thres_temp = sensor->trip[i].temperature;
-+			break;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id of_hisi_thermal_match[] = {
-+	{ .compatible = "hisilicon,tsensor" },
-+	{ /* end */ }
-+};
-+MODULE_DEVICE_TABLE(of, of_hisi_thermal_match);
-+
-+static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
-+				       bool on)
-+{
-+	struct thermal_zone_device *tzd = sensor->tzd;
-+
-+	tzd->ops->set_mode(tzd,
-+		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
-+}
-+
-+static int hisi_thermal_probe(struct platform_device *pdev)
-+{
-+	struct hisi_thermal_data *data;
-+	struct resource *res;
-+	int i;
-+	int ret;
-+
-+	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	mutex_init(&data->thermal_lock);
-+	data->pdev = pdev;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	data->regs = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(data->regs)) {
-+		dev_err(&pdev->dev, "failed to get io address\n");
-+		return PTR_ERR(data->regs);
-+	}
-+
-+	data->irq = platform_get_irq(pdev, 0);
-+	if (data->irq < 0)
-+		return data->irq;
-+
-+	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
-+			hisi_thermal_alarm_irq, hisi_thermal_alarm_irq_thread,
-+			0, "hisi_thermal", data);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
-+		return ret;
-+	}
-+
-+	platform_set_drvdata(pdev, data);
-+
-+	data->clk = devm_clk_get(&pdev->dev, "thermal_clk");
-+	if (IS_ERR(data->clk)) {
-+		ret = PTR_ERR(data->clk);
-+		if (ret != -EPROBE_DEFER)
-+			dev_err(&pdev->dev,
-+				"failed to get thermal clk: %d\n", ret);
-+		return ret;
-+	}
-+
-+	/* enable clock for thermal */
-+	ret = clk_prepare_enable(data->clk);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
-+		return ret;
-+	}
-+
-+	for (i = 0; i < HISI_MAX_SENSORS; ++i) {
-+		ret = hisi_thermal_register_sensor(pdev, data,
-+					&data->sensors[i], i);
-+		if (ret) {
-+			dev_err(&pdev->dev,
-+			"failed to register thermal sensor: %d\n", ret);
-+			goto err_get_sensor_data;
-+		}
-+	}
-+
-+	hisi_thermal_enable_sensor(data);
-+	data->irq_enabled = true;
-+
-+	for (i = 0; i < data->sensors_num; i++)
-+		hisi_thermal_toggle_sensor(&data->sensors[i], true);
-+
-+	return 0;
-+
-+err_get_sensor_data:
-+	clk_disable_unprepare(data->clk);
-+	return ret;
-+}
-+
-+static int hisi_thermal_remove(struct platform_device *pdev)
-+{
-+	struct hisi_thermal_data *data = platform_get_drvdata(pdev);
-+	int i;
-+
-+	for (i = 0; i < data->sensors_num; i++) {
-+		struct hisi_thermal_sensor *sensor = &data->sensors[i];
-+
-+		hisi_thermal_toggle_sensor(sensor, false);
-+		thermal_zone_of_sensor_unregister(&pdev->dev, sensor->tzd);
-+	}
-+
-+	hisi_thermal_disable_sensor(data);
-+	clk_disable_unprepare(data->clk);
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM_SLEEP
-+static int hisi_thermal_suspend(struct device *dev)
-+{
-+	struct hisi_thermal_data *data = dev_get_drvdata(dev);
-+
-+	hisi_thermal_disable_sensor(data);
-+	data->irq_enabled = false;
-+
-+	clk_disable_unprepare(data->clk);
-+
-+	return 0;
-+}
-+
-+static int hisi_thermal_resume(struct device *dev)
-+{
-+	struct hisi_thermal_data *data = dev_get_drvdata(dev);
-+
-+	clk_prepare_enable(data->clk);
-+
-+	data->irq_enabled = true;
-+	hisi_thermal_enable_sensor(data);
-+
-+	return 0;
-+}
-+#endif
-+
-+static SIMPLE_DEV_PM_OPS(hisi_thermal_pm_ops,
-+			 hisi_thermal_suspend, hisi_thermal_resume);
-+
-+static struct platform_driver hisi_thermal_driver = {
-+	.driver = {
-+		.name	= "hisi_thermal",
-+		.owner  = THIS_MODULE,
-+		.pm	= &hisi_thermal_pm_ops,
-+		.of_match_table = of_hisi_thermal_match,
-+	},
-+	.probe		= hisi_thermal_probe,
-+	.remove		= hisi_thermal_remove,
-+};
-+
-+module_platform_driver(hisi_thermal_driver);
-+
-+MODULE_AUTHOR("Xinwei Kong <kong.kongxinwei@hisilicon.com>");
-+MODULE_AUTHOR("Leo Yan <leo.yan@linaro.org>");
-+MODULE_DESCRIPTION("Hisilicon thermal driver");
-+MODULE_LICENSE("GPL v2");
--- 
-1.9.1
+Yes, that was also my original idea to describe the OPPs with only (volt, vproc)
+pair in device tree and calculate the SRAM voltages in driver code. One of the
+reason to put SRAM voltages in the table is that I think it will make the code
+cleaner since we are actually controlling 2 regulators at each OPP. But you're
+right, we don't really need it. I'm fine with both approaches. Just
+not sure which
+way is more proper.
 
+The other reason to put this table with SRAM voltages is that I want to fixup
+all voltage values by querying the supported voltages of regulators so that
+it will be easier to do "voltage trace".
 
+>
+>> +
+>> +static inline int need_voltage_trace(struct cpu_dvfs_info *info)
+>> +{
+>> +     return (!IS_ERR_OR_NULL(info->proc_reg) &&
+>> +             !IS_ERR_OR_NULL(info->sram_reg));
+>> +}
+>> +
+>> +static struct mtk_cpu_opp *cpu_opp_find_freq_ceil(struct mtk_cpu_opp *opp_tbl,
+>> +                                               int nr_opp,
+>> +                                               unsigned long rate)
+>> +{
+>> +     int i;
+>> +
+>> +     for (i = 0; i < nr_opp; i++)
+>> +             if (opp_tbl[i].freq >= rate)
+>> +                     return &opp_tbl[i];
+>> +
+>> +     return NULL;
+>> +}
+>> +
+>> +/*
+>> + * Query the exact voltage value that is largest previous to the input voltage
+>> + * value supported by the regulator
+>> + */
+>> +static int get_regulator_voltage_ceil(struct regulator *regulator, int voltage)
+>> +{
+>> +     int cnt, i, volt = -1;
+>> +
+>> +     if (IS_ERR_OR_NULL(regulator))
+>> +             return -EINVAL;
+>> +
+>> +     cnt = regulator_count_voltages(regulator);
+>> +     for (i = 0; i < cnt && volt < voltage; i++)
+>> +             volt = regulator_list_voltage(regulator, i);
+>> +
+>> +     return (i >= cnt) ? -EINVAL : volt;
+>> +}
+>> +
+>> +/*
+>> + * Query the exact voltage value that is smallest following to the input voltage
+>> + * value supported by the regulator
+>> + */
+>> +static int get_regulator_voltage_floor(struct regulator *regulator, int voltage)
+>> +{
+>> +     int cnt, i, volt = -1;
+>> +
+>> +     if (IS_ERR_OR_NULL(regulator))
+>> +             return -EINVAL;
+>> +
+>> +     cnt = regulator_count_voltages(regulator);
+>> +     /* skip all trailing 0s in the list of supported voltages */
+>> +     for (i = cnt - 1; i >= 0 && volt <= 0; i--)
+>> +             volt = regulator_list_voltage(regulator, i);
+>> +
+>> +     for (; i >= 0; i--) {
+>> +             volt = regulator_list_voltage(regulator, i);
+>> +             if (volt <= voltage)
+>> +                     return volt;
+>> +     }
+>> +
+>> +     return -EINVAL;
+>> +}
+>> +
+>> +static int mtk_cpufreq_voltage_trace(struct cpu_dvfs_info *info,
+>> +                                  struct mtk_cpu_opp *opp)
+>> +{
+>> +     struct regulator *proc_reg = info->proc_reg;
+>> +     struct regulator *sram_reg = info->sram_reg;
+>> +     int old_vproc, new_vproc, old_vsram, new_vsram, vsram, vproc, ret;
+>> +
+>> +     old_vproc = regulator_get_voltage(proc_reg);
+>> +     old_vsram = regulator_get_voltage(sram_reg);
+>> +
+>> +     new_vproc = opp->vproc;
+>> +     new_vsram = opp->vsram;
+>> +
+>> +     /*
+>> +      * In the case the voltage is going to be scaled up, Vsram and Vproc
+>> +      * need to be scaled up step by step. In each step, Vsram needs to be
+>> +      * set to (Vproc + 200mV) first, then Vproc is set to (Vsram - 100mV).
+>> +      * Repeat the step until Vsram and Vproc are set to target voltage.
+>> +      */
+>> +     if (old_vproc < new_vproc) {
+>> +next_up_step:
+>> +             old_vsram = regulator_get_voltage(sram_reg);
+>> +
+>> +             vsram = (new_vsram - old_vproc < MAX_VOLT_SHIFT) ?
+>> +                     new_vsram : old_vproc + MAX_VOLT_SHIFT;
+>> +             vsram = get_regulator_voltage_floor(sram_reg, vsram);
+>> +
+>> +             ret = regulator_set_voltage(sram_reg, vsram, vsram);
+>> +             if (ret)
+>> +                     return ret;
+>
+> This introspecting the regulators for possible voltages looks hacky and
+> unnecessary. regulator_set_voltage() can be passed minimum and maximum
+> values, why don't you use it to increase the voltage within sensible
+> limit, like
+>
+>         regulator_set_voltage(sram_reg, old_vsram + 100000, old_vsram + 200000);
+>
+> or similar?
+
+I am sorry I don't understand how could I do it. Would you elaborate?
+
+>
+>> +
+>> +             vproc = (new_vsram == vsram) ?
+>> +                     new_vproc : vsram - MIN_VOLT_SHIFT;
+>> +             vproc = get_regulator_voltage_ceil(proc_reg, vproc);
+>> +
+>> +             ret = regulator_set_voltage(proc_reg, vproc, vproc);
+>> +             if (ret) {
+>> +                     regulator_set_voltage(sram_reg, old_vsram, old_vsram);
+>> +                     return ret;
+>> +             }
+>> +
+>> +             if (new_vproc == vproc && new_vsram == vsram)
+>> +                     return 0;
+>
+> Here you assume that the voltages can be exactly reached. That does not
+> need to be the case, for example with a different PMIC.
+
+That's why I try to fixup all voltage values during initialization. Please check
+mt8173_cpufreq_cpu_opp_fixup() below.
+
+>
+>> +
+>> +             old_vproc = vproc;
+>> +             goto next_up_step;
+>
+> Use C loop instructions to create loops. Using gotos for loops creates
+> readable code only in very rare cases (and this is not one of those)
+
+Will do it.
+
+>
+>> +
+>> +     /*
+>> +      * In the case the voltage is going to be scaled down, Vsram and Vproc
+>> +      * need to be scaled down step by step. In each step, Vproc needs to be
+>> +      * set to (Vsram - 200mV) first, then Vproc is set to (Vproc + 100mV).
+>> +      * Repeat the step until Vsram and Vproc are set to target voltage.
+>> +      */
+>> +     } else if (old_vproc > new_vproc) {
+>> +next_down_step:
+>> +             old_vproc = regulator_get_voltage(proc_reg);
+>> +
+>> +             vproc = (old_vsram - new_vproc < MAX_VOLT_SHIFT) ?
+>> +                     new_vproc : old_vsram - MAX_VOLT_SHIFT;
+>> +             vproc = get_regulator_voltage_ceil(proc_reg, vproc);
+>> +
+>> +             ret = regulator_set_voltage(proc_reg, vproc, vproc);
+>> +             if (ret)
+>> +                     return ret;
+>> +
+>> +             vsram = (new_vproc == vproc) ?
+>> +                     new_vsram : vproc + MIN_VOLT_SHIFT;
+>> +             vsram = get_regulator_voltage_floor(sram_reg, vsram);
+>> +
+>> +             ret = regulator_set_voltage(sram_reg, vsram, vsram);
+>> +             if (ret) {
+>> +                     regulator_set_voltage(proc_reg, old_vproc, old_vproc);
+>> +                     return ret;
+>> +             }
+>> +
+>> +             if (new_vproc == vproc && new_vsram == vsram)
+>> +                     return 0;
+>> +
+>> +             old_vsram = vsram;
+>> +             goto next_down_step;
+>> +     }
+>> +
+>> +     WARN_ON(1);
+>
+> Why warn? You have nothing to do and that should be just fine.
+
+OK. Will remove it.
+
+>
+>> +     return 0;
+>> +}
+>> +
+>> +static int mt8173_cpufreq_set_voltage(struct cpu_dvfs_info *info,
+>> +                                   struct mtk_cpu_opp *opp)
+>> +{
+>> +     if (need_voltage_trace(info))
+>> +             return mtk_cpufreq_voltage_trace(info, opp);
+>> +     else
+>> +             return regulator_set_voltage(info->proc_reg, opp->vproc,
+>> +                                          opp->vproc);
+>> +}
+>> +
+>> +static int mt8173_cpufreq_set_target(struct cpufreq_policy *policy,
+>> +                                  unsigned int index)
+>> +{
+>> +     struct cpufreq_frequency_table *freq_table = policy->freq_table;
+>> +     struct clk *cpu_clk = policy->clk;
+>> +     struct clk *armpll = clk_get_parent(cpu_clk);
+>> +     struct cpu_dvfs_info *info;
+>> +     struct mtk_cpu_opp *new_opp, *target_opp, *inter_opp, *orig_opp;
+>> +     long freq_hz, orig_freq_hz;
+>> +     int old_vproc, ret;
+>> +
+>> +     info = (struct cpu_dvfs_info *)policy->driver_data;
+>> +     inter_opp = info->intermediate_opp;
+>> +     orig_freq_hz = clk_get_rate(cpu_clk);
+>> +     orig_opp = cpu_opp_find_freq_ceil(info->opp_tbl, info->nr_opp,
+>> +                                       orig_freq_hz);
+>> +     if (!orig_opp)
+>> +             return -EINVAL;
+>> +
+>> +     old_vproc = regulator_get_voltage(info->proc_reg);
+>> +     freq_hz = freq_table[index].frequency * 1000;
+>> +     new_opp = cpu_opp_find_freq_ceil(info->opp_tbl, info->nr_opp, freq_hz);
+>
+> Since the frequency table and the opp_tbl have the same indices:
+>
+>         new_opp = info->opp_tbl[index];
+
+Will do it.
+
+>
+>> +     target_opp = new_opp;
+>> +
+>> +     if (!new_opp)
+>> +             return -EINVAL;
+>> +
+>> +     if (target_opp->vproc < inter_opp->vproc)
+>> +             target_opp = info->intermediate_opp;
+>> +
+>> +     if (old_vproc < target_opp->vproc) {
+>
+> old_vproc is used only once, so using regulator_get_voltage(info->proc_reg)
+> directly here make the code clearer.
+
+Will do it.
+
+>
+>> +             ret = mt8173_cpufreq_set_voltage(info, target_opp);
+>> +             if (ret) {
+>> +                     pr_err("cpu%d: failed to scale up voltage!\n",
+>> +                            policy->cpu);
+>> +                     mt8173_cpufreq_set_voltage(info, orig_opp);
+>> +                     return ret;
+>> +             }
+>> +     }
+>> +
+>> +     ret = clk_set_parent(cpu_clk, info->inter_pll);
+>> +     if (ret) {
+>> +             pr_err("cpu%d: failed to re-parent cpu clock!\n",
+>> +                    policy->cpu);
+>> +             mt8173_cpufreq_set_voltage(info, orig_opp);
+>> +             WARN_ON(1);
+>> +             return ret;
+>> +     }
+>> +
+>> +     ret = clk_set_rate(armpll, freq_hz);
+>> +     if (ret) {
+>> +             pr_err("cpu%d: failed to scale cpu clock rate!\n",
+>> +                    policy->cpu);
+>> +             clk_set_parent(cpu_clk, armpll);
+>> +             mt8173_cpufreq_set_voltage(info, orig_opp);
+>> +             return ret;
+>> +     }
+>> +
+>> +     ret = clk_set_parent(cpu_clk, armpll);
+>> +     if (ret) {
+>> +             pr_err("cpu%d: failed to re-parent cpu clock!\n",
+>> +                    policy->cpu);
+>> +             mt8173_cpufreq_set_voltage(info, inter_opp);
+>> +             WARN_ON(1);
+>> +             return ret;
+>> +     }
+>> +
+>> +     if (new_opp->vproc < inter_opp->vproc) {
+>> +             ret = mt8173_cpufreq_set_voltage(info, new_opp);
+>> +             if (ret) {
+>> +                     pr_err("cpu%d: failed to scale down voltage!\n",
+>> +                            policy->cpu);
+>> +                     clk_set_parent(cpu_clk, info->inter_pll);
+>> +                     clk_set_rate(armpll, orig_freq_hz);
+>> +                     clk_set_parent(cpu_clk, armpll);
+>> +                     return ret;
+>> +             }
+>> +     }
+>> +
+>> +     return 0;
+>> +}
+>> +
+>> +static int mt8173_cpufreq_cpu_opp_fixup(struct cpu_dvfs_info *info)
+>> +{
+>> +     struct mtk_cpu_opp *opp_tbl = info->opp_tbl;
+>> +     struct regulator *proc_reg = info->proc_reg;
+>> +     struct regulator *sram_reg = info->sram_reg;
+>> +     int vproc, vsram, i;
+>> +
+>> +     for (i = 0; i < info->nr_opp; i++) {
+>> +             vproc = opp_tbl[i].vproc;
+>> +             vsram = opp_tbl[i].vsram;
+>> +
+>> +             vproc = get_regulator_voltage_ceil(proc_reg, vproc);
+>> +
+>> +             if (!IS_ERR_OR_NULL(sram_reg))
+>> +                     vsram = get_regulator_voltage_ceil(sram_reg, vsram);
+>> +
+>> +             if (vproc < 0 || (!IS_ERR_OR_NULL(sram_reg) && vsram < 0)) {
+>> +                     pr_err("%s: Failed to get voltage setting of OPPs\n",
+>> +                            __func__);
+>> +                     return -EINVAL;
+>> +             }
+>> +
+>> +             opp_tbl[i].vproc = vproc;
+>> +             opp_tbl[i].vsram = vsram;
+>> +     }
+>> +
+>> +     return 0;
+>> +}
+>> +
+>> +static int mt8173_cpufreq_dvfs_init(struct cpu_dvfs_info *info)
+>> +{
+>> +     struct device *cpu_dev;
+>> +     struct regulator *proc_reg, *sram_reg;
+>> +     struct clk *cpu_clk, *inter_pll;
+>> +     unsigned long rate;
+>> +     int cpu, ret;
+>> +
+>> +     cpu = cpumask_first(&info->cpus);
+>> +
+>> +try_next_cpu:
+>> +     cpu_dev = get_cpu_device(cpu);
+>> +     proc_reg = regulator_get_exclusive(cpu_dev, "proc");
+>> +     sram_reg = regulator_get_exclusive(cpu_dev, "sram");
+>> +     cpu_clk = clk_get(cpu_dev, "cpu");
+>> +     inter_pll = clk_get(cpu_dev, "intermediate");
+>> +
+>> +     if (IS_ERR_OR_NULL(proc_reg) || IS_ERR_OR_NULL(cpu_clk) ||
+>> +         IS_ERR_OR_NULL(inter_pll)) {
+>> +             cpu = cpumask_next(cpu, &info->cpus);
+>> +             if (cpu >= nr_cpu_ids)
+>> +                     return -ENODEV;
+>> +
+>> +             goto try_next_cpu;
+>> +     }
+>
+> Use a loop.
+
+Will do it. Or maybe we don't need a loop here if we have these information
+per CPU in the device tree as suggested later in this series by Mark.
+
+>
+>> +
+>> +     /* Both PROC and SRAM regulators are present. This is a big
+>> +      * cluster, and needs to do voltage tracing. */
+>> +     if (!(IS_ERR_OR_NULL(proc_reg) || IS_ERR_OR_NULL(sram_reg))) {
+>> +             info->opp_tbl = mt8173_b_opp;
+>> +             info->nr_opp = sizeof(mt8173_b_opp) / sizeof(mt8173_b_opp[0]);
+>> +     } else {
+>> +             info->opp_tbl = mt8173_l_opp;
+>> +             info->nr_opp = sizeof(mt8173_l_opp) / sizeof(mt8173_l_opp[0]);
+>> +     }
+>> +
+>> +     info->proc_reg = proc_reg;
+>> +     info->sram_reg = sram_reg;
+>> +     info->cpu_clk = cpu_clk;
+>> +     info->inter_pll = inter_pll;
+>> +
+>> +     ret = mt8173_cpufreq_cpu_opp_fixup(info);
+>> +     if (ret) {
+>> +             pr_err("%s: Failed to fixup opp table: %d\n", __func__, ret);
+>> +             return ret;
+>> +     }
+>> +
+>> +     rate = clk_get_rate(info->inter_pll);
+>> +     info->intermediate_opp = cpu_opp_find_freq_ceil(info->opp_tbl,
+>> +                                                     info->nr_opp,
+>> +                                                     rate);
+>> +     if (!info->intermediate_opp) {
+>> +             pr_err("%s: Failed to setup intermediate opp\n", __func__);
+>> +             return -EINVAL;
+>> +     }
+>> +
+>> +     return 0;
+>> +}
+>> +
+>> +static void mt8173_cpufreq_dvfs_release(struct cpu_dvfs_info *info)
+>> +{
+>> +     regulator_put(info->proc_reg);
+>> +     regulator_put(info->sram_reg);
+>> +     clk_put(info->cpu_clk);
+>> +     clk_put(info->inter_pll);
+>> +
+>> +     kfree(info);
+>> +}
+>> +
+>> +static int mt8173_cpufreq_init(struct cpufreq_policy *policy)
+>> +{
+>> +     struct cpu_dvfs_info *info;
+>> +     struct cpufreq_frequency_table *freq_table;
+>> +     int ret, i;
+>> +
+>> +     info = kzalloc(sizeof(*info), GFP_KERNEL);
+>> +     if (!info)
+>> +             return -ENOMEM;
+>> +
+>> +     cpumask_copy(&info->cpus, &cpu_topology[policy->cpu].core_sibling);
+>> +     ret = mt8173_cpufreq_dvfs_init(info);
+>> +     if (ret) {
+>> +             pr_err("%s: Failed to initialize DVFS info: %d\n", __func__,
+>> +                    ret);
+>> +             goto out_dvfs_release;
+>> +     }
+>> +
+>> +     freq_table = kcalloc(info->nr_opp, sizeof(*freq_table), GFP_KERNEL);
+>> +     if (!freq_table) {
+>> +             ret = -ENOMEM;
+>> +             goto out_dvfs_release;
+>> +     }
+>> +
+>> +     for (i = 0; i < info->nr_opp; i++)
+>> +             freq_table[i].frequency = info->opp_tbl[i].freq / 1000;
+>> +
+>> +     freq_table[i].frequency = CPUFREQ_TABLE_END;
+>
+> You are corrupting memory here.
+
+Will fix it.
+
+Thanks for reviewing again.
+
+Best Regards,
+Pi-Cheng
+
+>
+> Sascha
+>
+>
+> --
+> Pengutronix e.K.                           |                             |
+> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
