@@ -1,15 +1,15 @@
 From: ahaslam@baylibre.com
-Subject: [RFC v5 5/8] ARM: r8a7779: pm: Convert to multiple states
-Date: Fri, 24 Apr 2015 19:35:21 +0200
-Message-ID: <1429896924-21540-6-git-send-email-ahaslam@baylibre.com>
+Subject: [RFC v5 4/8] ARM: exynos: pm: Convert to multiple states
+Date: Fri, 24 Apr 2015 19:35:20 +0200
+Message-ID: <1429896924-21540-5-git-send-email-ahaslam@baylibre.com>
 References: <1429896924-21540-1-git-send-email-ahaslam@baylibre.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f173.google.com ([209.85.212.173]:34841 "EHLO
-	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966681AbbDXRfu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Apr 2015 13:35:50 -0400
-Received: by widdi4 with SMTP id di4so30383268wid.0
-        for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2015 10:35:49 -0700 (PDT)
+Received: from mail-wg0-f41.google.com ([74.125.82.41]:36674 "EHLO
+	mail-wg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966672AbbDXRfs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Apr 2015 13:35:48 -0400
+Received: by wgen6 with SMTP id n6so57895507wge.3
+        for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2015 10:35:47 -0700 (PDT)
 In-Reply-To: <1429896924-21540-1-git-send-email-ahaslam@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -26,35 +26,35 @@ the new structures.
 
 Signed-off-by: Axel Haslam <ahaslam@baylibre.com>
 ---
- arch/arm/mach-shmobile/pm-r8a7779.c | 8 ++++++++
+ arch/arm/mach-exynos/pm_domains.c | 8 ++++++++
  1 file changed, 8 insertions(+)
 
-diff --git a/arch/arm/mach-shmobile/pm-r8a7779.c b/arch/arm/mach-shmobile/pm-r8a7779.c
-index 44a74c4..2ecca87 100644
---- a/arch/arm/mach-shmobile/pm-r8a7779.c
-+++ b/arch/arm/mach-shmobile/pm-r8a7779.c
-@@ -79,6 +79,12 @@ static bool pd_active_wakeup(struct device *dev)
- 	return true;
+diff --git a/arch/arm/mach-exynos/pm_domains.c b/arch/arm/mach-exynos/pm_domains.c
+index 37266a8..87e67df 100644
+--- a/arch/arm/mach-exynos/pm_domains.c
++++ b/arch/arm/mach-exynos/pm_domains.c
+@@ -105,6 +105,12 @@ static int exynos_pd_power_off(struct generic_pm_domain *domain)
+ 	return exynos_pd_power(domain, false);
  }
  
-+struct genpd_power_state r8a7779_genpd_states[] = {
++struct genpd_power_state exynos_pm_states[] = {
 +	{
 +		.name = "OFF",
 +	}
 +};
 +
- static void r8a7779_init_pm_domain(struct r8a7779_pm_domain *r8a7779_pd)
+ static __init int exynos4_pm_init_power_domain(void)
  {
- 	struct generic_pm_domain *genpd = &r8a7779_pd->genpd;
-@@ -88,6 +94,8 @@ static void r8a7779_init_pm_domain(struct r8a7779_pm_domain *r8a7779_pd)
- 	genpd->dev_ops.active_wakeup = pd_active_wakeup;
- 	genpd->power_off = pd_power_down;
- 	genpd->power_on = pd_power_up;
-+	genpd->states = r8a7779_genpd_states;
-+	genpd->state_count = ARRAY_SIZE(r8a7779_genpd_states);
+ 	struct platform_device *pdev;
+@@ -130,6 +136,8 @@ static __init int exynos4_pm_init_power_domain(void)
+ 		pd->base = of_iomap(np, 0);
+ 		pd->pd.power_off = exynos_pd_power_off;
+ 		pd->pd.power_on = exynos_pd_power_on;
++		pd->pd.states = exynos_pm_states;
++		pd->pd.state_count = ARRAY_SIZE(exynos_pm_states);
  
- 	if (pd_is_off(&r8a7779_pd->genpd))
- 		pd_power_up(&r8a7779_pd->genpd);
+ 		pd->oscclk = clk_get(dev, "oscclk");
+ 		if (IS_ERR(pd->oscclk))
 -- 
 1.9.1
 
