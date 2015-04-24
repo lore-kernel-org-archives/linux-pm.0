@@ -1,89 +1,101 @@
-From: <grygorii.strashko@linaro.org>
-Subject: [PATCH RESEND v2] leds: fix hibernation on arm when gpio-led used with CPU led trigger
-Date: Fri, 24 Apr 2015 14:57:10 +0300
-Message-ID: <1429876630-15952-1-git-send-email-grygorii.strashko@linaro.org>
-Return-path: <linux-leds-owner@vger.kernel.org>
-Sender: linux-leds-owner@vger.kernel.org
-To: Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Kevin Hilman <khilman@deeprootsystems.com>, linux-leds@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, sumit.semwal@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grygorii Strashko <Grygorii.Strashko@linaro.org>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 1/2] cpufreq: mediatek: Add MT8173 cpufreq driver
+Date: Fri, 24 Apr 2015 14:55:21 +0200
+Message-ID: <20150424125521.GU6325@pengutronix.de>
+References: <1429522047-16675-1-git-send-email-pi-cheng.chen@linaro.org>
+ <1429522047-16675-2-git-send-email-pi-cheng.chen@linaro.org>
+ <20150423120152.GM6325@pengutronix.de>
+ <CALx668VsT60+kx7o-ZM5Wxk7Nn-rXS21O5SDYr++EeY-zEJ6ew@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CALx668VsT60+kx7o-ZM5Wxk7Nn-rXS21O5SDYr++EeY-zEJ6ew@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Mike Turquette <mturquette@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, "Joe.C" <yingjoe.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Howard Chen <ibanezchen@gmail.com>, Chen Fan <fan.chen@mediatek.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, linux-mediatek@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+On Fri, Apr 24, 2015 at 02:46:25PM +0800, Pi-Cheng Chen wrote:
+> Hi Sascha,
+> 
+> Thanks for reviewing.
+> 
+> On Thu, Apr 23, 2015 at 8:01 PM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> > On Mon, Apr 20, 2015 at 05:27:26PM +0800, pi-cheng.chen wrote:
+> >> This patch implements MT8173 specific cpufreq driver with OPP table defined
+> >> in the driver code.
+> >>
+> >> Signed-off-by: pi-cheng.chen <pi-cheng.chen@linaro.org>
+> >> ---
+> >>  drivers/cpufreq/Kconfig.arm      |   6 +
+> >>  drivers/cpufreq/Makefile         |   1 +
+> >>  drivers/cpufreq/mt8173-cpufreq.c | 509 +++++++++++++++++++++++++++++++++++++++
+> >>  3 files changed, 516 insertions(+)
+> >>  create mode 100644 drivers/cpufreq/mt8173-cpufreq.c
+> >>
+> >> +static int mtk_cpufreq_voltage_trace(struct cpu_dvfs_info *info,
+> >> +                                  struct mtk_cpu_opp *opp)
+> >> +{
+> >> +     struct regulator *proc_reg = info->proc_reg;
+> >> +     struct regulator *sram_reg = info->sram_reg;
+> >> +     int old_vproc, new_vproc, old_vsram, new_vsram, vsram, vproc, ret;
+> >> +
+> >> +     old_vproc = regulator_get_voltage(proc_reg);
+> >> +     old_vsram = regulator_get_voltage(sram_reg);
+> >> +
+> >> +     new_vproc = opp->vproc;
+> >> +     new_vsram = opp->vsram;
+> >> +
+> >> +     /*
+> >> +      * In the case the voltage is going to be scaled up, Vsram and Vproc
+> >> +      * need to be scaled up step by step. In each step, Vsram needs to be
+> >> +      * set to (Vproc + 200mV) first, then Vproc is set to (Vsram - 100mV).
+> >> +      * Repeat the step until Vsram and Vproc are set to target voltage.
+> >> +      */
+> >> +     if (old_vproc < new_vproc) {
+> >> +next_up_step:
+> >> +             old_vsram = regulator_get_voltage(sram_reg);
+> >> +
+> >> +             vsram = (new_vsram - old_vproc < MAX_VOLT_SHIFT) ?
+> >> +                     new_vsram : old_vproc + MAX_VOLT_SHIFT;
+> >> +             vsram = get_regulator_voltage_floor(sram_reg, vsram);
+> >> +
+> >> +             ret = regulator_set_voltage(sram_reg, vsram, vsram);
+> >> +             if (ret)
+> >> +                     return ret;
+> >
+> > This introspecting the regulators for possible voltages looks hacky and
+> > unnecessary. regulator_set_voltage() can be passed minimum and maximum
+> > values, why don't you use it to increase the voltage within sensible
+> > limit, like
+> >
+> >         regulator_set_voltage(sram_reg, old_vsram + 100000, old_vsram + 200000);
+> >
+> > or similar?
+> 
+> I am sorry I don't understand how could I do it. Would you elaborate?
 
-Setting a dev_pm_ops suspend/resume pair of callbacks but not a set of
-hibernation callbacks means those pm functions will not be
-called upon hibernation - that leads to system crash on ARM during
-freezing if gpio-led is used in combination with CPU led trigger.
-It may happen after freeze_noirq stage (GPIO is suspended)
-and before syscore_suspend stage (CPU led trigger is suspended)
-- usually when disable_nonboot_cpus() is called.
+You try to set the OPPs to the exact voltages, then next use functions
+to determine the next exact higher voltage and set the regulator voltage
+to an exact value. Instead of doing this you can let the ability to
+specify a voltage range work for you, something like:
 
-Log:
-  PM: noirq freeze of devices complete after 1.425 msecs
-  Disabling non-boot CPUs ...
-    ^ system may crash or stuck here with message (TI AM572x)
+	int tolerance = 50000;
 
-  WARNING: CPU: 0 PID: 3100 at drivers/bus/omap_l3_noc.c:148 l3_interrupt_handler+0x22c/0x370()
-  44000000.ocp:L3 Custom Error: MASTER MPU TARGET L4_PER1_P3 (Idle): Data Access in Supervisor mode during Functional access
+	while (vproc < new_vproc) {
+		int next = min(new_vproc - vproc, 200000);
+		int next_sram = next + 100000;
 
-  CPU1: shutdown
-    ^ or here
+		regulator_set_voltage(sram_reg, next_sram - tolerance, next_sram + tolerance);
+		regulator_set_voltage(vproc_reg, next - tolerance, next + tolerance);
+		vproc = regulator_get_voltage(vproc_reg);
+	}
 
-Fix this by using SIMPLE_DEV_PM_OPS, which appropriately
-assigns the suspend and hibernation callbacks and move
-led_suspend/led_resume under CONFIG_PM_SLEEP to avoid
-build warnings.
+Sascha
 
-Fixes: 73e1ab41a80d (leds: Convert led class driver from legacy pm ops to dev_pm_ops)
-Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
----
-
-Hi All,
-
-Could you pls pay attention on this patch?
-
-This trivial patch was posted at Feb 2015 and
-it's missed two merge windows already ((.
-
-Rebased on top of next (4.1).
-
-Changes in v2:
-- fixed compile time warnings when !CONFIG_PM_SLEEP
-- updated commit message
-
-v2:
-  https://lkml.org/lkml/2015/2/5/323
-v1:
-  https://lkml.org/lkml/2015/2/2/476
-
- drivers/leds/led-class.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
-index 728681d..7fb2a19 100644
---- a/drivers/leds/led-class.c
-+++ b/drivers/leds/led-class.c
-@@ -187,6 +187,7 @@ void led_classdev_resume(struct led_classdev *led_cdev)
- }
- EXPORT_SYMBOL_GPL(led_classdev_resume);
- 
-+#ifdef CONFIG_PM_SLEEP
- static int led_suspend(struct device *dev)
- {
- 	struct led_classdev *led_cdev = dev_get_drvdata(dev);
-@@ -206,11 +207,9 @@ static int led_resume(struct device *dev)
- 
- 	return 0;
- }
-+#endif
- 
--static const struct dev_pm_ops leds_class_dev_pm_ops = {
--	.suspend        = led_suspend,
--	.resume         = led_resume,
--};
-+static SIMPLE_DEV_PM_OPS(leds_class_dev_pm_ops, led_suspend, led_resume);
- 
- static int match_name(struct device *dev, const void *data)
- {
 -- 
-1.9.1
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
