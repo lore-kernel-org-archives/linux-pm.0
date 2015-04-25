@@ -1,90 +1,82 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 2/3] power: increment wakeup_count when save_wakeup_count
- failed.
-Date: Sat, 25 Apr 2015 22:10:34 +0200
-Message-ID: <20150425201034.GA3008@amd>
+Subject: Re: [PATCH 1/3] power: validate wakeup source before activating it.
+Date: Sat, 25 Apr 2015 22:12:25 +0200
+Message-ID: <20150425201225.GB3008@amd>
 References: <1429750212-28659-1-git-send-email-jinqian@android.com>
- <1429750212-28659-3-git-send-email-jinqian@android.com>
+ <1429750212-28659-2-git-send-email-jinqian@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37343 "EHLO
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37420 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbbDYUKj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 25 Apr 2015 16:10:39 -0400
+	with ESMTP id S1752481AbbDYUM3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 25 Apr 2015 16:12:29 -0400
 Content-Disposition: inline
-In-Reply-To: <1429750212-28659-3-git-send-email-jinqian@android.com>
+In-Reply-To: <1429750212-28659-2-git-send-email-jinqian@android.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Jin Qian <jinqian@android.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed 2015-04-22 17:50:11, Jin Qian wrote:
-> user-space aborts suspend attempt if writing wakeup_count failed.
-> Count the write failure towards wakeup_count.
+On Wed 2015-04-22 17:50:10, Jin Qian wrote:
+> A rogue wakeup source not registered in wakeup_sources list is not visible
+> from wakeup_sources_stats_show. Check if the wakeup source is registered
+> properly by looking at the timer function.
 
-Why should writing wakeup_count fail? Can you make sure it does not
-happen, instead?
+How often does that happen?
+
+Will people on your systems actually notice that pr_err()?
 								Pavel
 
 > Signed-off-by: Jin Qian <jinqian@android.com>
 > ---
->  drivers/base/power/wakeup.c | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
+>  drivers/base/power/wakeup.c | 19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
 > 
 > diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index f24c622..bdb45f3 100644
+> index 7726200..f24c622 100644
 > --- a/drivers/base/power/wakeup.c
 > +++ b/drivers/base/power/wakeup.c
-> @@ -57,6 +57,8 @@ static LIST_HEAD(wakeup_sources);
+> @@ -14,6 +14,7 @@
+>  #include <linux/suspend.h>
+>  #include <linux/seq_file.h>
+>  #include <linux/debugfs.h>
+> +#include <linux/types.h>
+>  #include <trace/events/power.h>
 >  
->  static DECLARE_WAIT_QUEUE_HEAD(wakeup_count_wait_queue);
+>  #include "power.h"
+> @@ -351,6 +352,19 @@ int device_set_wakeup_enable(struct device *dev, bool enable)
+>  }
+>  EXPORT_SYMBOL_GPL(device_set_wakeup_enable);
 >  
-> +static ktime_t last_read_time;
+> +/**
+> + * validate_wakeup_source - validate the given wakeup source.
+> + * @ws: Wakeup source to be validated.
+> + */
+> +static bool validate_wakeup_source(struct wakeup_source *ws)
+> +{
+> +	/*
+> +	 * Use timer function to check if the given source is initialized
+> +	 * by wakeup_source_add.
+> +	 */
+> +	return ws->timer.function == pm_wakeup_timer_fn;
+> +}
 > +
->  /**
->   * wakeup_source_prepare - Prepare a new wakeup source for initialization.
->   * @ws: Wakeup source to prepare.
-> @@ -771,10 +773,15 @@ void pm_wakeup_clear(void)
->  bool pm_get_wakeup_count(unsigned int *count, bool block)
+>  /*
+>   * The functions below use the observation that each wakeup event starts a
+>   * period in which the system should not be suspended.  The moment this period
+> @@ -391,6 +405,11 @@ static void wakeup_source_activate(struct wakeup_source *ws)
 >  {
->  	unsigned int cnt, inpr;
-> +	unsigned long flags;
+>  	unsigned int cec;
 >  
->  	if (block) {
->  		DEFINE_WAIT(wait);
->  
-> +		spin_lock_irqsave(&events_lock, flags);
-> +		last_read_time = ktime_get();
-> +		spin_unlock_irqrestore(&events_lock, flags);
+> +	if (!validate_wakeup_source(ws)) {
+> +		pr_err("unregistered wakeup source: %s\n", ws->name);
+> +		return;
+> +	}
 > +
->  		for (;;) {
->  			prepare_to_wait(&wakeup_count_wait_queue, &wait,
->  					TASK_INTERRUPTIBLE);
-> @@ -806,6 +813,7 @@ bool pm_save_wakeup_count(unsigned int count)
->  {
->  	unsigned int cnt, inpr;
->  	unsigned long flags;
-> +	struct wakeup_source *ws;
->  
->  	events_check_enabled = false;
->  	spin_lock_irqsave(&events_lock, flags);
-> @@ -813,6 +821,15 @@ bool pm_save_wakeup_count(unsigned int count)
->  	if (cnt == count && inpr == 0) {
->  		saved_count = count;
->  		events_check_enabled = true;
-> +	} else {
-> +		rcu_read_lock();
-> +		list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-> +			if (ws->active ||
-> +			    ktime_compare(ws->last_time, last_read_time) > 0) {
-> +				ws->wakeup_count++;
-> +			}
-> +		}
-> +		rcu_read_unlock();
->  	}
->  	spin_unlock_irqrestore(&events_lock, flags);
->  	return events_check_enabled;
+>  	/*
+>  	 * active wakeup source should bring the system
+>  	 * out of PM_SUSPEND_FREEZE state
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
