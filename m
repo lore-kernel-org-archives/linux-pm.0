@@ -1,108 +1,91 @@
-From: Jacek Anaszewski <j.anaszewski81@gmail.com>
-Subject: Re: [PATCH RESEND v2] leds: fix hibernation on arm when gpio-led
- used with CPU led trigger
-Date: Sat, 25 Apr 2015 13:51:38 +0200
-Message-ID: <20150425135138.002cb906@ja.home>
-References: <1429876630-15952-1-git-send-email-grygorii.strashko@linaro.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 2/3] power: increment wakeup_count when save_wakeup_count
+ failed.
+Date: Sat, 25 Apr 2015 22:10:34 +0200
+Message-ID: <20150425201034.GA3008@amd>
+References: <1429750212-28659-1-git-send-email-jinqian@android.com>
+ <1429750212-28659-3-git-send-email-jinqian@android.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-leds-owner@vger.kernel.org>
-In-Reply-To: <1429876630-15952-1-git-send-email-grygorii.strashko@linaro.org>
-Sender: linux-leds-owner@vger.kernel.org
-To: grygorii.strashko@linaro.org, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Kevin Hilman <khilman@deeprootsystems.com>, linux-leds@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, sumit.semwal@linaro.org, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37343 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbbDYUKj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 25 Apr 2015 16:10:39 -0400
+Content-Disposition: inline
+In-Reply-To: <1429750212-28659-3-git-send-email-jinqian@android.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jin Qian <jinqian@android.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Grygorii,
+On Wed 2015-04-22 17:50:11, Jin Qian wrote:
+> user-space aborts suspend attempt if writing wakeup_count failed.
+> Count the write failure towards wakeup_count.
 
-Thanks for the patch.
+Why should writing wakeup_count fail? Can you make sure it does not
+happen, instead?
+								Pavel
 
-On Fri, 24 Apr 2015 14:57:10 +0300
-<grygorii.strashko@linaro.org> wrote:
-
-> From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+> Signed-off-by: Jin Qian <jinqian@android.com>
+> ---
+>  drivers/base/power/wakeup.c | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
 > 
-> Setting a dev_pm_ops suspend/resume pair of callbacks but not a set of
-> hibernation callbacks means those pm functions will not be
-> called upon hibernation - that leads to system crash on ARM during
-> freezing if gpio-led is used in combination with CPU led trigger.
-> It may happen after freeze_noirq stage (GPIO is suspended)
-> and before syscore_suspend stage (CPU led trigger is suspended)
-> - usually when disable_nonboot_cpus() is called.
-> 
-> Log:
->   PM: noirq freeze of devices complete after 1.425 msecs
->   Disabling non-boot CPUs ...
->     ^ system may crash or stuck here with message (TI AM572x)
-> 
->   WARNING: CPU: 0 PID: 3100 at drivers/bus/omap_l3_noc.c:148
-> l3_interrupt_handler+0x22c/0x370() 44000000.ocp:L3 Custom Error:
-> MASTER MPU TARGET L4_PER1_P3 (Idle): Data Access in Supervisor mode
-> during Functional access
-> 
->   CPU1: shutdown
->     ^ or here
-> 
-> Fix this by using SIMPLE_DEV_PM_OPS, which appropriately
-> assigns the suspend and hibernation callbacks and move
-> led_suspend/led_resume under CONFIG_PM_SLEEP to avoid
-> build warnings.
-> 
-> Fixes: 73e1ab41a80d (leds: Convert led class driver from legacy pm
-> ops to dev_pm_ops) Signed-off-by: Grygorii Strashko
-> <Grygorii.Strashko@linaro.org> ---
-> 
-> Hi All,
-> 
-> Could you pls pay attention on this patch?
-> 
-> This trivial patch was posted at Feb 2015 and
-> it's missed two merge windows already ((.
-> 
-> Rebased on top of next (4.1).
-> 
-> Changes in v2:
-> - fixed compile time warnings when !CONFIG_PM_SLEEP
-> - updated commit message
-> 
-> v2:
->   https://lkml.org/lkml/2015/2/5/323
-> v1:
->   https://lkml.org/lkml/2015/2/2/476
-> 
->  drivers/leds/led-class.c | 7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/leds/led-class.c b/drivers/leds/led-class.c
-> index 728681d..7fb2a19 100644
-> --- a/drivers/leds/led-class.c
-> +++ b/drivers/leds/led-class.c
-> @@ -187,6 +187,7 @@ void led_classdev_resume(struct led_classdev
-> *led_cdev) }
->  EXPORT_SYMBOL_GPL(led_classdev_resume);
+> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+> index f24c622..bdb45f3 100644
+> --- a/drivers/base/power/wakeup.c
+> +++ b/drivers/base/power/wakeup.c
+> @@ -57,6 +57,8 @@ static LIST_HEAD(wakeup_sources);
 >  
-> +#ifdef CONFIG_PM_SLEEP
->  static int led_suspend(struct device *dev)
+>  static DECLARE_WAIT_QUEUE_HEAD(wakeup_count_wait_queue);
+>  
+> +static ktime_t last_read_time;
+> +
+>  /**
+>   * wakeup_source_prepare - Prepare a new wakeup source for initialization.
+>   * @ws: Wakeup source to prepare.
+> @@ -771,10 +773,15 @@ void pm_wakeup_clear(void)
+>  bool pm_get_wakeup_count(unsigned int *count, bool block)
 >  {
->  	struct led_classdev *led_cdev = dev_get_drvdata(dev);
-> @@ -206,11 +207,9 @@ static int led_resume(struct device *dev)
+>  	unsigned int cnt, inpr;
+> +	unsigned long flags;
 >  
->  	return 0;
->  }
-> +#endif
+>  	if (block) {
+>  		DEFINE_WAIT(wait);
 >  
-> -static const struct dev_pm_ops leds_class_dev_pm_ops = {
-> -	.suspend        = led_suspend,
-> -	.resume         = led_resume,
-> -};
-> +static SIMPLE_DEV_PM_OPS(leds_class_dev_pm_ops, led_suspend,
-> led_resume); 
->  static int match_name(struct device *dev, const void *data)
+> +		spin_lock_irqsave(&events_lock, flags);
+> +		last_read_time = ktime_get();
+> +		spin_unlock_irqrestore(&events_lock, flags);
+> +
+>  		for (;;) {
+>  			prepare_to_wait(&wakeup_count_wait_queue, &wait,
+>  					TASK_INTERRUPTIBLE);
+> @@ -806,6 +813,7 @@ bool pm_save_wakeup_count(unsigned int count)
 >  {
-
-Acked-by: Jacek Anaszewski <j.anaszewski@samsung.com>
+>  	unsigned int cnt, inpr;
+>  	unsigned long flags;
+> +	struct wakeup_source *ws;
+>  
+>  	events_check_enabled = false;
+>  	spin_lock_irqsave(&events_lock, flags);
+> @@ -813,6 +821,15 @@ bool pm_save_wakeup_count(unsigned int count)
+>  	if (cnt == count && inpr == 0) {
+>  		saved_count = count;
+>  		events_check_enabled = true;
+> +	} else {
+> +		rcu_read_lock();
+> +		list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+> +			if (ws->active ||
+> +			    ktime_compare(ws->last_time, last_read_time) > 0) {
+> +				ws->wakeup_count++;
+> +			}
+> +		}
+> +		rcu_read_unlock();
+>  	}
+>  	spin_unlock_irqrestore(&events_lock, flags);
+>  	return events_check_enabled;
 
 -- 
-Best Regards,
-Jacek Anaszewski
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
