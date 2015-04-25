@@ -1,60 +1,98 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] intel powerclamp: support Knights Landing
-Date: Fri, 24 Apr 2015 14:58:35 -0700
-Message-ID: <20150424145835.53888d75@ultegra>
-References: <1429309866-63063-1-git-send-email-dasaratharaman.chandramouli@intel.com>
-	<1429896814.16073.4.camel@localhost>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] More ACPI and power management updates for v4.1-rc1
+Date: Sat, 25 Apr 2015 04:18:58 +0200
+Message-ID: <CAJZ5v0iLmRNhpfgsX8_ZyKTihvFj7vs0Ho845chtDoRsqNvP4g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:22258 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965837AbbDXV6h (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 24 Apr 2015 17:58:37 -0400
-In-Reply-To: <1429896814.16073.4.camel@localhost>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jacob Pan Jun <jacob.jun.pan@intel.com>, Nikhil Rao <nikhil.rao@intel.com>
 
-On Fri, 24 Apr 2015 10:33:34 -0700
-Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>
-wrote:
+Hi Linus,
 
-> Adding Jacob Pan
-> 
-> On Fri, 2015-04-17 at 15:31 -0700, Dasaratharaman Chandramouli wrote:
-> > This patch enables intel_powerclamp driver to run on the
-> > next-generation Intel(R) Xeon Phi Microarchitecture
-> > code named "Knights Landing"
-> > 
-looks good.
+Please pull from
 
-Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-4.1-rc1-2
 
-> > Signed-off-by: Dasaratharaman Chandramouli
-> > <dasaratharaman.chandramouli@intel.com> ---
-> >  drivers/thermal/intel_powerclamp.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/drivers/thermal/intel_powerclamp.c
-> > b/drivers/thermal/intel_powerclamp.c index 12623bc..e34ccd5 100644
-> > --- a/drivers/thermal/intel_powerclamp.c
-> > +++ b/drivers/thermal/intel_powerclamp.c
-> > @@ -690,6 +690,7 @@ static const struct x86_cpu_id
-> > intel_powerclamp_ids[] = { { X86_VENDOR_INTEL, 6, 0x4c},
-> >  	{ X86_VENDOR_INTEL, 6, 0x4d},
-> >  	{ X86_VENDOR_INTEL, 6, 0x56},
-> > +	{ X86_VENDOR_INTEL, 6, 0x57},
-> >  	{}
-> >  };
-> >  MODULE_DEVICE_TABLE(x86cpu, intel_powerclamp_ids);
-> 
-> 
+to receive additional power management and ACPI material for v4.1-rc1
+with top-most commit e0155a99b28f63e007c0c74076ad8ae486a3c9d3
+
+ Merge branches 'acpi-dock', 'acpi-ec' and 'acpi-scan'
+
+on top of commit 0f5abd4020bfd2b1eec6975b91bd5068aa674a93
+
+ Merge tag 'acpica-4.1-rc1' of
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+
+These are fixes mostly (intel_pstate, ACPI core, ACPI EC driver, cpupower
+tool), a new CPU ID for the Intel RAPL driver and one intel_pstate driver
+improvement that didn't make it to my previous pull requests due to timing.
+
+Specifics:
+
+ - Fix a build warning in the intel_pstate driver showing up in non-SMP
+   builds (Borislav Petkov).
+
+ - Change one of the intel_pstate's P-state selection parameters for
+   Baytrail and Cherrytrail CPUs to significantly improve performance
+   at the cost of a small increase in energy consumption (Kristen
+   Carlson Accardi).
+
+ - Fix a NULL pointer dereference in the ACPI EC driver due to an unsafe
+   list walk in the query handler removal routine (Chris Bainbridge).
+
+ - Get rid of a false-positive lockdep warning in the ACPI container
+   hot-remove code (Rafael J Wysocki).
+
+ - Prevent the ACPI device enumeration code from creating device
+   objects of a wrong type in some cases (Rafael J Wysocki).
+
+ - Add Skylake processors support to the Intel RAPL power capping
+   driver (Brian Bian).
+
+ - Drop the stale MAINTAINERS entry for the ACPI dock driver that is
+   regarded as part of the ACPI core and maintained along with it now
+   (Chao Yu).
+
+ - Fix cpupower tool breakage caused by a library API change in libpci
+   3.3.0 (Lucas Stach).
+
+Thanks!
 
 
+---------------
 
+Borislav Petkov (1):
+      cpufreq: intel_pstate: Fix an annoying !CONFIG_SMP warning
 
--- 
-Jacob Pan
+Brian Bian (1):
+      powercap / RAPL: Add support for Intel Skylake processors
+
+Chao Yu (1):
+      MAINTAINERS: remove maintainship entry of docking station driver
+
+Chris Bainbridge (1):
+      ACPI / EC: fix NULL pointer dereference in acpi_ec_remove_query_handler()
+
+Kristen Carlson Accardi (1):
+      intel_pstate: Change the setpoint for Atom params
+
+Lucas Stach (1):
+      cpupower: fix breakage from libpci API change
+
+Rafael J. Wysocki (2):
+      ACPI / scan: Annotate physical_node_lock in acpi_scan_is_offline()
+      ACPI / scan: Add a scan handler for PRP0001
+
+---------------
+
+ MAINTAINERS                              |  6 -----
+ drivers/acpi/ec.c                        |  2 +-
+ drivers/acpi/scan.c                      | 39 +++++++++++++++++++++++++++-----
+ drivers/cpufreq/intel_pstate.c           | 14 ++++++------
+ drivers/powercap/intel_rapl.c            |  1 +
+ tools/power/cpupower/utils/helpers/pci.c | 11 +++++++--
+ 6 files changed, 51 insertions(+), 22 deletions(-)
