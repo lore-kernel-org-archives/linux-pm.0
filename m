@@ -1,57 +1,61 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [RFC/RFT 2/6] clk: qcom: Add runtime support to handle clocks
- using PM clocks
-Date: Sun, 26 Apr 2015 10:49:26 +0200
-Message-ID: <CAMuHMdV_WD7vay-5VC20izUWFjc8rSW4wZQq6Y3xAa+SU0Quig@mail.gmail.com>
-References: <1429778744-13352-1-git-send-email-rnayak@codeaurora.org>
-	<1429778744-13352-3-git-send-email-rnayak@codeaurora.org>
-	<CAPDyKFpVXWGeO_kbOvPbdy83aN6wxkC77ydH_2C3Bo=5QsspoA@mail.gmail.com>
-	<553A21C7.4060506@codeaurora.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: twl4030_charger: need changes to get probed?
+Date: Sun, 26 Apr 2015 12:13:59 +0200
+Message-ID: <20150426101359.GA3933@amd>
+References: <20150224043341.4243.23291.stgit@notabene.brown>
+ <CANOLnONUtfF1UwgW3O5fkAX30UMznZXwbtPkqPFDLR4jFdNqow@mail.gmail.com>
+ <20150306224034.GA20559@amd>
+ <201503062356.06110@pali>
+ <CANOLnONc3+F=e3VfYZyGCtnzMOHV3GrX6cUSV1G4WJDPrgGFSg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <553A21C7.4060506@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CANOLnONc3+F=e3VfYZyGCtnzMOHV3GrX6cUSV1G4WJDPrgGFSg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Grazvydas Ignotas <notasas@gmail.com>
+Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, ivo.g.dimitrov.75@gmail.com, Samuel Ortiz <sameo@linux.intel.com>, khilman@kernel.org, NeilBrown <neilb@suse.de>, sre@debian.org, linux-pm@vger.kernel.org, Aaro Koskinen <aaro.koskinen@iki.fi>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, kernel list <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, GTA04 owners <gta04-owner@goldelico.com>, sre@ring0.de, Tony Lindgren <tony@atomide.com>, David Woodhouse <dwmw2@infradead.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, patrikbachan@gmail.com, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Apr 24, 2015 at 12:58 PM, Rajendra Nayak <rnayak@codeaurora.org> wrote:
->> Second, I want to see less users of pm_clk_add_notifier() since it's
->> not the proper/long-term way of how to assign PM domain pointers to a
->> device. Instead that shall be done at device registration point. In
->> your case while parsing the DT nodes and adding devices onto to their
->> buses.
->
-> but these are devices which do not really have a controllable power
-> domain, they just have controllable clocks.
->
->> Yes, I understand that it will requires quite some work to adopt to
->> this behaviour - but that how it shall be done.
->>
->> Finally, an important note, you don't need to use PM domains for these
->> devices at all and thus you don't need to fix what I propose. Instead
->> you only have to implement the runtime PM callbacks for each driver
->> and manage the clocks from there. That is probably also a easier
->> solution.
->
-> But that would mean I repeat the same code in all drivers to do a
-> clk_get/prepare/enable/disable/unprepare of the same "core" and "iface"
-> clocks. I thought we have clock_ops.c just to avoid that (atleast up
-> until we have a better way of doing it)
-> And there are atleast a few architecture which have used it to avoid the
-> duplication across all drivers (omap1/davinci/sh/keystone)
+Hi!
 
-At least for arm/shmobile, we're planning to move away from this, cfr.
-http://www.spinics.net/lists/linux-sh/msg41114.html
+> >> Ok, but:
+> >>
+> >> 1) Why is the twl4030-bci enabled in n900's dts, then
+> >>
+> >
+> > maybe it is bug in n900 dts...
+> >
+> > Grazvydas, is there some runtime check if twl4030/twl5030 chip
+> > has charger or not? or do we need to explicitly disable device
+> > twl4030-bci in DT?
+> 
+> Actually from looking at the schematics, it looks like the charger
+> pins are still there but all connected to ground. So it probably has
+> the charger after all, it's just not connected or used.
+> 
+> I'm not aware or any registers for direct detection, and indirect
+> detection is difficult because BCI mostly disables itself when no
+> charger is connected and most registers read as 0 or have old values
+> from last charging session (which will never happen on n900).
+> 
+> There is IDCODE register on twl4030 itself, but it's documented as not
+> meaningful when accessed over i2c (when is it meaningful then??).
+> 
+> drivers/mfd/twl-core.c has a i2c_device_id table of various twl4030
+> variants, some of which have no charger. N900 has GAIA/twl5030, which
+> differs from twl4030 only by vaux2 regulator according to that file.
+> N900's old board files specify 5030, but .dts does not.
 
-Gr{oetje,eeting}s,
+I have enabled the (not-too-useful) twl4030 charger on my n900, and
+it seems to break boot with kernels
+34c9a0ffc75ad25b6a60f61e27c4a4b1189b8085 and newer.
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+I'll probably not have time to investigate it further (charger not
+connected to anything is not too useful), but maybe Neil wants to test
+on his phone...?
+									
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
