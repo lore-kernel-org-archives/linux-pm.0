@@ -1,54 +1,174 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: arm_big_little: check if the frequency is
- set correctly
-Date: Mon, 27 Apr 2015 15:56:18 +0530
-Message-ID: <CAKohpomtkPCwHN1ivTSLOg9xj8nKGua=m8LerRG_djMfOr1DiA@mail.gmail.com>
-References: <1430128266-15012-1-git-send-email-sudeep.holla@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH 4/4] cpufreq: arm_big_little: add SCPI interface driver
+Date: Mon, 27 Apr 2015 12:40:46 +0100
+Message-ID: <1430134846-24320-5-git-send-email-sudeep.holla@arm.com>
+References: <1430134846-24320-1-git-send-email-sudeep.holla@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1430128266-15012-1-git-send-email-sudeep.holla@arm.com>
+In-Reply-To: <1430134846-24320-1-git-send-email-sudeep.holla@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: linux-kernel@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 27 April 2015 at 15:21, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> The actual frequency is set through "clk_change_rate" which is void
-> function. If the underlying hardware fails and returns error, the error
-> is lost in the clk layer. In order to track such failures, we need to
-> read back the frequency(just the cached value as clk_recalc called after
-> clk->ops->set_rate gets the frequency)
->
-> This patch adds check to see if the frequency is set correctly or if
-> they were any hardware failures and sends the appropriate errors to the
-> cpufreq core.
->
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Reviewed-by: Michael Turquette <mike.turquette@linaro.org>
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  drivers/cpufreq/arm_big_little.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
->
-> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-> index e1a6ba66a7f5..f65e19f340d0 100644
-> --- a/drivers/cpufreq/arm_big_little.c
-> +++ b/drivers/cpufreq/arm_big_little.c
-> @@ -186,6 +186,15 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
->                 mutex_unlock(&cluster_lock[old_cluster]);
->         }
->
-> +       /*
-> +        * FIXME: clk_set_rate has to handle the case where clk_change_rate
-> +        * can fail due to hardware or firmware issues. Until the clk core
-> +        * layer is fixed, we can check here. In most of the cases we will
-> +        * be reading only the cached value anyway. This needs to  be removed
-> +        * once clk core is fixed.
-> +        */
-> +       if (bL_cpufreq_get_rate(cpu) != new_rate)
-> +               return -EIO;
->         return 0;
->  }
+On some ARM based systems, a separate Cortex-M based System Control
+Processor(SCP) provides the overall power, clock, reset and system
+control including CPU DVFS. SCPI Message Protocol is used to
+communicate with the SCPI.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+This patch adds a interface driver for adding OPPs and registering
+the arm_big_little cpufreq driver for such systems.
+
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
+---
+ drivers/cpufreq/Kconfig.arm    |   9 ++++
+ drivers/cpufreq/Makefile       |   1 +
+ drivers/cpufreq/scpi-cpufreq.c | 103 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 113 insertions(+)
+ create mode 100644 drivers/cpufreq/scpi-cpufreq.c
+
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 4f3dbc8cf729..9e678bf1687c 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -24,6 +24,15 @@ config ARM_VEXPRESS_SPC_CPUFREQ
+           This add the CPUfreq driver support for Versatile Express
+ 	  big.LITTLE platforms using SPC for power management.
+ 
++config ARM_SCPI_CPUFREQ
++        tristate "SCPI based CPUfreq driver"
++	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL
++        help
++          This add the CPUfreq driver support for ARM big.LITTLE platforms
++	  using SCPI interface for CPU power management.
++
++	  This driver works only if firmware the supporting CPU DVFS adhere
++	  to SCPI protocol.
+ 
+ config ARM_EXYNOS_CPUFREQ
+ 	tristate "SAMSUNG EXYNOS CPUfreq Driver"
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index cdce92ae2e8b..02fc9f849d4b 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -79,6 +79,7 @@ obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
+ obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA_CPUFREQ)		+= tegra-cpufreq.o
+ obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
++obj-$(CONFIG_ARM_SCPI_CPUFREQ)		+= scpi-cpufreq.o
+ 
+ ##################################################################################
+ # PowerPC platform drivers
+diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
+new file mode 100644
+index 000000000000..4c2c11a9dfc6
+--- /dev/null
++++ b/drivers/cpufreq/scpi-cpufreq.c
+@@ -0,0 +1,103 @@
++/*
++ * SCPI CPUFreq Interface driver
++ *
++ * It provides necessary ops to arm_big_little cpufreq driver.
++ *
++ * Copyright (C) 2015 ARM Ltd.
++ * Sudeep Holla <sudeep.holla@arm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/cpufreq.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/pm_opp.h>
++#include <linux/scpi_protocol.h>
++#include <linux/types.h>
++
++#include "arm_big_little.h"
++
++static struct scpi_ops *scpi_ops;
++
++static int scpi_init_opp_table(struct device *cpu_dev)
++{
++	u8 domain = topology_physical_package_id(cpu_dev->id);
++	struct scpi_dvfs_info *info;
++	struct scpi_opp *opp;
++	int idx, ret = 0;
++
++	if ((dev_pm_opp_get_opp_count(cpu_dev)) > 0)
++		return 0;
++	info = scpi_ops->dvfs_get_info(domain);
++	if (IS_ERR(info))
++		return PTR_ERR(info);
++
++	opp = info->opps;
++	if (!opp)
++		return -EIO;
++
++	for (idx = 0; idx < info->count; idx++, opp++) {
++		ret = dev_pm_opp_add(cpu_dev, opp->freq, opp->m_volt * 1000);
++		if (ret) {
++			dev_warn(cpu_dev, "failed to add opp %uHz %umV\n",
++				 opp->freq, opp->m_volt);
++			return ret;
++		}
++	}
++	return ret;
++}
++
++static int scpi_get_transition_latency(struct device *cpu_dev)
++{
++	u8 domain = topology_physical_package_id(cpu_dev->id);
++	struct scpi_dvfs_info *info;
++
++	info = scpi_ops->dvfs_get_info(domain);
++	if (IS_ERR(info))
++		return PTR_ERR(info);
++
++	return info->latency;
++}
++
++static struct cpufreq_arm_bL_ops scpi_cpufreq_ops = {
++	.name	= "scpi",
++	.get_transition_latency = scpi_get_transition_latency,
++	.init_opp_table = scpi_init_opp_table,
++};
++
++static int scpi_cpufreq_probe(struct platform_device *pdev)
++{
++	scpi_ops = get_scpi_ops();
++	if (!scpi_ops)
++		return -EIO;
++
++	return bL_cpufreq_register(&scpi_cpufreq_ops);
++}
++
++static int scpi_cpufreq_remove(struct platform_device *pdev)
++{
++	bL_cpufreq_unregister(&scpi_cpufreq_ops);
++	return 0;
++}
++
++static struct platform_driver scpi_cpufreq_platdrv = {
++	.driver = {
++		.name	= "scpi-cpufreq",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= scpi_cpufreq_probe,
++	.remove		= scpi_cpufreq_remove,
++};
++module_platform_driver(scpi_cpufreq_platdrv);
++
++MODULE_LICENSE("GPL");
+-- 
+1.9.1
