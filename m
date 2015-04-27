@@ -1,7 +1,7 @@
 From: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-Subject: [PATCH 2/3] x86, mpparse: Constify irq_domain_ops
-Date: Mon, 27 Apr 2015 21:48:08 +0900
-Message-ID: <1430138889-3310-2-git-send-email-k.kozlowski.k@gmail.com>
+Subject: [PATCH 3/3] x86, irq, SFI: Constify irq_domain_ops
+Date: Mon, 27 Apr 2015 21:48:09 +0900
+Message-ID: <1430138889-3310-3-git-send-email-k.kozlowski.k@gmail.com>
 References: <1430138889-3310-1-git-send-email-k.kozlowski.k@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1430138889-3310-1-git-send-email-k.kozlowski.k@gmail.com>
@@ -15,21 +15,21 @@ code accepts pointer to a const data.
 
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 ---
- arch/x86/kernel/mpparse.c | 2 +-
+ arch/x86/platform/sfi/sfi.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index 2d2a237f2c73..35f05c3b4e4e 100644
---- a/arch/x86/kernel/mpparse.c
-+++ b/arch/x86/kernel/mpparse.c
-@@ -113,7 +113,7 @@ static void __init MP_bus_info(struct mpc_bus *m)
- 		pr_warn("Unknown bustype %s - ignoring\n", str);
- }
+diff --git a/arch/x86/platform/sfi/sfi.c b/arch/x86/platform/sfi/sfi.c
+index 2a8a74f3bd76..68eba8edc437 100644
+--- a/arch/x86/platform/sfi/sfi.c
++++ b/arch/x86/platform/sfi/sfi.c
+@@ -71,7 +71,7 @@ static int __init sfi_parse_cpus(struct sfi_table_header *table)
+ #endif /* CONFIG_X86_LOCAL_APIC */
  
--static struct irq_domain_ops mp_ioapic_irqdomain_ops = {
-+static const struct irq_domain_ops mp_ioapic_irqdomain_ops = {
+ #ifdef CONFIG_X86_IO_APIC
+-static struct irq_domain_ops sfi_ioapic_irqdomain_ops = {
++static const struct irq_domain_ops sfi_ioapic_irqdomain_ops = {
  	.map = mp_irqdomain_map,
- 	.unmap = mp_irqdomain_unmap,
  };
+ 
 -- 
 2.1.0
