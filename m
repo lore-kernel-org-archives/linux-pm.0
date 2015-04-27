@@ -1,63 +1,57 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [RFC/RFT 2/6] clk: qcom: Add runtime support to handle clocks using PM clocks
-Date: Mon, 27 Apr 2015 13:02:02 -0700
-Message-ID: <7hh9s1xrut.fsf@deeprootsystems.com>
-References: <1429778744-13352-1-git-send-email-rnayak@codeaurora.org>
-	<1429778744-13352-3-git-send-email-rnayak@codeaurora.org>
-	<CAPDyKFpVXWGeO_kbOvPbdy83aN6wxkC77ydH_2C3Bo=5QsspoA@mail.gmail.com>
-	<553A21C7.4060506@codeaurora.org>
-	<CAMuHMdV_WD7vay-5VC20izUWFjc8rSW4wZQq6Y3xAa+SU0Quig@mail.gmail.com>
+From: santosh shilimkar <santosh.shilimkar@oracle.com>
+Subject: Re: [PATCH 0/3] Introduce SET_NOIRQ_SYSTEM_SLEEP_PM_OPS and use it
+Date: Mon, 27 Apr 2015 13:27:10 -0700
+Message-ID: <553E9B9E.4080401@oracle.com>
+References: <1430159072-31440-1-git-send-email-grygorii.strashko@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdV_WD7vay-5VC20izUWFjc8rSW4wZQq6Y3xAa+SU0Quig@mail.gmail.com>
-	(Geert Uytterhoeven's message of "Sun, 26 Apr 2015 10:49:26 +0200")
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1430159072-31440-1-git-send-email-grygorii.strashko@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: grygorii.strashko@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
+Cc: ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <ssantosh@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Geert Uytterhoeven <geert@linux-m68k.org> writes:
 
-> On Fri, Apr 24, 2015 at 12:58 PM, Rajendra Nayak <rnayak@codeaurora.org> wrote:
->>> Second, I want to see less users of pm_clk_add_notifier() since it's
->>> not the proper/long-term way of how to assign PM domain pointers to a
->>> device. Instead that shall be done at device registration point. In
->>> your case while parsing the DT nodes and adding devices onto to their
->>> buses.
->>
->> but these are devices which do not really have a controllable power
->> domain, they just have controllable clocks.
->>
->>> Yes, I understand that it will requires quite some work to adopt to
->>> this behaviour - but that how it shall be done.
->>>
->>> Finally, an important note, you don't need to use PM domains for these
->>> devices at all and thus you don't need to fix what I propose. Instead
->>> you only have to implement the runtime PM callbacks for each driver
->>> and manage the clocks from there. That is probably also a easier
->>> solution.
->>
->> But that would mean I repeat the same code in all drivers to do a
->> clk_get/prepare/enable/disable/unprepare of the same "core" and "iface"
->> clocks. I thought we have clock_ops.c just to avoid that (atleast up
->> until we have a better way of doing it)
->> And there are atleast a few architecture which have used it to avoid the
->> duplication across all drivers (omap1/davinci/sh/keystone)
+
+On 4/27/2015 11:24 AM, grygorii.strashko@linaro.org wrote:
+> From: Grygorii Strashko <grygorii.strashko@linaro.org>
 >
-> At least for arm/shmobile, we're planning to move away from this, cfr.
-> http://www.spinics.net/lists/linux-sh/msg41114.html
+> While working on suspend-to-disk functionality on TI dra7-evm (DRA7xx SoC)
+> i've found that the most common problem I have to dial with is absence
+> of corresponding PM callbacks in drivers and, in particular, noirq callbacks.
+> So, I've fixed one driver first
+> commit 6248015d6867 "ARM: omap-device: add missed callback for suspend-to-disk"
+> but then found another one which need to be fixed too (omap_l3_noc.c).
+> At this moment I decided to make my life easier and added new macro
+> SET_NOIRQ_SYSTEM_SLEEP_PM_OPS using the same approach as for the existing
+> SET_SYSTEM_SLEEP_PM_OPS macro.
+>
+> SET_NOIRQ_SYSTEM_SLEEP_PM_OPS: defined for CONFIG_PM_SLEEP and
+> assigns ->suspend_noirq, ->freeze_noirq and ->poweroff_noirq to the same
+> function. Vice versa happens for ->resume_noirq, ->thaw_noirq and
+> ->restore_noirq.
+>
+> Further two patches reuse this newly introduced macro.
+>
+> SET_NOIRQ_SYSTEM_SLEEP_PM_OPS, defined for CONFIG_PM_SLEEP, will
+>      point ->suspend_noirq, ->freeze_noirq and ->poweroff_noirq to the same
+>      function. Vice versa happens for ->resume_noirq, ->thaw_noirq and
+>      ->restore_noirq.
+>
+[...]
 
-Just to clarify for Rajendra's sake... 
-
-SH is moving away from the pm_clk_add_notifier(), but not duplicating
-the clk_get/prepare/enable/disable/unprepare across all the drivers.
-
-Rather, they're using a genpd to model the clock domain, and taking
-advantage of the pm_domain speciic attach callback to attach the PM
-clocks.
-
-This should work for qcom also assuming that these device nodes don't
-also need to belong to a different PM domain.
-
-Kevin
+>
+> Grygorii Strashko (3):
+>    PM / Sleep: Add macro to define common noirq system PM callbacks
+>    bus: omap_l3_noc: add missed callbacks for suspend-to-disk
+>    ARM: omap-device: use SET_NOIRQ_SYSTEM_SLEEP_PM_OPS
+>
+>   arch/arm/mach-omap2/omap_device.c |  7 ++-----
+>   drivers/bus/omap_l3_noc.c         |  4 ++--
+>   include/linux/pm.h                | 12 ++++++++++++
+>   3 files changed, 16 insertions(+), 7 deletions(-)
+>
+Looks fine to me.....
+Acked-by: Santosh Shilimkar <ssantosh@kernel.org>
