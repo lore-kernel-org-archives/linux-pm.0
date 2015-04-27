@@ -1,53 +1,62 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH 0/7] ARM: shmobile: Add IRQC clock to device tree
-Date: Mon, 27 Apr 2015 16:15:14 +0200
-Message-ID: <CAMuHMdXOBPZe6JDccvq88asPJ4D-hA_HPOv0pnUhk9rVwuF6cg@mail.gmail.com>
-References: <1426704961-27322-1-git-send-email-geert+renesas@glider.be>
-	<20150319014328.GJ14051@verge.net.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150319014328.GJ14051-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
-Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Linux-sh list <linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] ARM: gic: Document Power and Clock Domain optional properties
+Date: Mon, 27 Apr 2015 17:00:11 +0200
+Message-ID: <1430146811-29862-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Marc Zyngier <marc.zyngier@arm.com>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Simon,
+On some SoCs, the GIC may be part of a PM Domain (hardware Power and/or
+Clock Domain).  Document the related optional DT properties.
 
-On Thu, Mar 19, 2015 at 2:43 AM, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org> wrote:
-> On Wed, Mar 18, 2015 at 07:55:54PM +0100, Geert Uytterhoeven wrote:
->> This patch series adds the IRQC clock to the device tree on SoCs that
->> have such a clock (r8a73a4 and r8a779x), and adds mininal runtime PM
->> support to the renesas-irqc driver, to make sure the clock is enabled
->> when needed by the external IRQ controller(s).
->> Before, the clock was assumed enabled by the bootloader or reset state.
+Note: As the current GIC driver doesn't support Runtime PM yet, PM
+Domain constraints must be handled elsewhere in e.g. platform code.
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+To preserve DT stability, we would like to add these properties to the
+affected shmobile dtsi files.
+
+On Thu, Mar 26, 2015 at 11:39 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
+> On 25/03/15 21:19, Geert Uytterhoeven wrote:
+>> I would like to add the clock and GIC dependency on the clock in the DTS now,
+>> for reasons of DTS stability. But that means I need a temporary workaround
+>> to avoid the clock from being disabled, until the GIC driver handles this.
 >>
->> As usual when involving clocks, the DTS changes depend stricly on the
->> driver changes. Else the clock will be disabled as assumed unused,
->> breaking the boot.
->>
->> This was tested on r8a73a4/ape6evm and r8a7791/koelsch.
+>> I don't expect a fix for the GIC code to just show up magically. I just wanted
+>> you to be aware of the problem. GIC is not the only problematic module here,
+>> there are others, cfr. the last slide of [2].
 >
-> I will defer the DTS changes until the irqchip changes, which I
-> have reviewed, are accepted.
+> As long as there is an agreement from the DT people on the presence of
+> that extra property in the GIC node, I'm happy with that. I'd like it to
+> be documented though.
 
-The irqchip changes are upstream. Do you want me to resend the DTS
-changes, or will you apply the original patches?
+Full thread at
+http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/331876.html
 
-Thanks!
+ Documentation/devicetree/bindings/arm/gic.txt | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/Documentation/devicetree/bindings/arm/gic.txt b/Documentation/devicetree/bindings/arm/gic.txt
+index 2da059a4790cb3c6..b21113b35f085f27 100644
+--- a/Documentation/devicetree/bindings/arm/gic.txt
++++ b/Documentation/devicetree/bindings/arm/gic.txt
+@@ -58,6 +58,14 @@ Optional
+   regions, used when the GIC doesn't have banked registers. The offset is
+   cpu-offset * cpu-nr.
+ 
++- power-domains : A phandle and PM domain specifier as defined by bindings of
++		  the power controller specified by phandle, used when the GIC
++		  is part of a Power or Clock Domain.
++
++- clocks        : A phandle and clock specifier as defined by bindings of
++		  the clock controller specified by phandle, used when the GIC
++		  is part of a Clock Domain.
++
+ Example:
+ 
+ 	intc: interrupt-controller@fff11000 {
+-- 
+1.9.1
