@@ -1,97 +1,46 @@
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Subject: [PATCH] power_supply: fix oops in collie_battery driver
-Date: Mon, 27 Apr 2015 20:15:43 +0300
-Message-ID: <1430154943-29264-1-git-send-email-dbaryshkov@gmail.com>
+From: Doug Anderson <dianders@chromium.org>
+Subject: Re: [patch] thermal: rockchip: fix an error code
+Date: Mon, 27 Apr 2015 10:50:14 -0700
+Message-ID: <CAD=FV=VT5v_X=yXKF+WooFpHy=9=x6jVMp3RKhVGfrP1e_S81w@mail.gmail.com>
+References: <20150421093410.GE12098@mwanda>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f181.google.com ([209.85.192.181]:35144 "EHLO
-	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932203AbbD0RQA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Apr 2015 13:16:00 -0400
-Received: by pdbqd1 with SMTP id qd1so135033844pdb.2
-        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2015 10:16:00 -0700 (PDT)
+Received: from mail-ig0-f171.google.com ([209.85.213.171]:33634 "EHLO
+	mail-ig0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932817AbbD0RuP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Apr 2015 13:50:15 -0400
+Received: by igbpi8 with SMTP id pi8so73244135igb.0
+        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2015 10:50:14 -0700 (PDT)
+In-Reply-To: <20150421093410.GE12098@mwanda>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Andrea Adami <andrea.adami@gmail.com>
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Caesar Wang <caesar.wang@rock-chips.com>, Eduardo Valentin <edubezval@gmail.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, kernel-janitors@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Fix an oops happening due to typo in 297d716f6260cc9421d971b124ca196b957ee
-[power_supply: Change ownership from driver to core].
+Dan,
 
-Unable to handle kernel NULL pointer dereference at virtual address 00000050
-pgd = c0004000
-[00000050] *pgd=00000000
-Internal error: Oops: 17 [#1] ARM
-Modules linked in:
-CPU: 0 PID: 1 Comm: swapper Not tainted 4.1.0-rc1+ #35
-Hardware name: Sharp-Collie
-task: c381a720 ti: c381e000 task.ti: c381e000
-PC is at collie_bat_get_property+0x10/0x258
-LR is at collie_bat_get_property+0x10/0x258
-pc : [<c0235d28>]    lr : [<c0235d28>]    psr: 20000013
-sp : c381fd60  ip : 00000001  fp : 00000000
-r10: c37b84c0  r9 : c068c9b8  r8 : c37b84a0
-r7 : c37b84c0  r6 : c381fd84  r5 : 00000000  r4 : 00000000
-r3 : c0369380  r2 : c381fd84  r1 : 00000000  r0 : 00000000
-Flags: nzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment kernel
-Control: 0000717f  Table: c3784000  DAC: 00000017
-Process swapper (pid: 1, stack limit = 0xc381e190)
-Stack: (0xc381fd60 to 0xc3820000)
-fd60: c0369380 00000000 c37c0000 c068c9b8 c37b84c0 c0234380 00000000 c0234bc0
-fd80: c042fcec c37b84a0 c0357c64 00000000 c37b84c0 c37c0000 c37b84a0 c0234e98
-fda0: c37be020 00000000 ff0a0004 c37b84c8 c37be020 c37b84c0 c042fcec c383dbc0
-fdc0: c0364060 00000000 00000000 c01be6a8 00000000 c015b220 c37b84c8 c381fdf0
-fde0: c37b84c8 c37b84c8 c37b84c8 c37be020 c041e278 c015b478 c04a45b4 c0045290
-fe00: c381a720 c0345d50 00000001 c37bf020 c0e511d8 c00453c0 c0688058 c37b84c8
-fe20: 00000000 c37b84c0 c37780c0 c0e511d8 c38e2f60 c0e52d24 c04a45b4 c01be134
-fe40: c37b8550 c37b8550 00000000 c0347a8c c37b84a0 00000000 c37b84c0 c0369380
-fe60: c37780c0 00000001 00000061 c02347a0 00000001 c0e52e6c c068d144 c37b77a0
-fe80: 00000000 c068d164 00000000 c0235b3c 00000000 c067fbb4 00000000 c068d1e4
-fea0: 00000000 00000000 00000000 00000000 00000000 00000000 c37b77a0 c068d144
-fec0: c3778020 c06953c0 c049de68 c01d5f54 c0688800 c3778020 c068d144 c0688700
-fee0: c06953c0 c01d6000 c0675b80 c0675b80 c37b77a0 c0009624 c381a720 c000d8dc
-ff00: 00000001 c381ff54 c048a500 c00453c0 c00095a0 20000153 ffffffff c000d8dc
-ff20: c049cbd0 00000001 c04aa064 00000007 c04a9fb0 00000006 c06953c0 c06953c0
-ff40: c048a590 c04a45c0 c04a9ffc 00000006 c06953c0 c06953c0 c048a590 c04a45c0
-ff60: 00000061 c048adf8 00000006 00000006 c048a590 c0036450 00000001 00000000
-ff80: c00363ec 00000000 c033ee7c 00000000 00000000 00000000 00000000 00000000
-ffa0: 00000000 c033ee84 00000000 c000a3c8 00000000 00000000 00000000 00000000
-ffc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-ffe0: 00000000 00000000 00000000 00000000 00000013 00000000 00000000 00000000
-[<c0235d28>] (collie_bat_get_property) from [<c0234380>] (power_supply_get_property+0x1c/0x28)
-[<c0234380>] (power_supply_get_property) from [<c0234bc0>] (power_supply_show_property+0x50/0x1dc)
-[<c0234bc0>] (power_supply_show_property) from [<c0234e98>] (power_supply_uevent+0x9c/0x1cc)
-[<c0234e98>] (power_supply_uevent) from [<c01be6a8>] (dev_uevent+0xb4/0x1d0)
-[<c01be6a8>] (dev_uevent) from [<c015b478>] (kobject_uevent_env+0x1cc/0x4f8)
-[<c015b478>] (kobject_uevent_env) from [<c01be134>] (device_add+0x374/0x524)
-[<c01be134>] (device_add) from [<c02347a0>] (__power_supply_register+0x120/0x180)
-[<c02347a0>] (__power_supply_register) from [<c0235b3c>] (collie_bat_probe+0xe8/0x1b4)
-[<c0235b3c>] (collie_bat_probe) from [<c01d5f54>] (ucb1x00_add_dev+0x30/0x88)
-[<c01d5f54>] (ucb1x00_add_dev) from [<c01d6000>] (ucb1x00_register_driver+0x54/0x78)
-[<c01d6000>] (ucb1x00_register_driver) from [<c0009624>] (do_one_initcall+0x84/0x1f4)
-[<c0009624>] (do_one_initcall) from [<c048adf8>] (kernel_init_freeable+0xf8/0x1b4)
-[<c048adf8>] (kernel_init_freeable) from [<c033ee84>] (kernel_init+0x8/0xec)
-[<c033ee84>] (kernel_init) from [<c000a3c8>] (ret_from_fork+0x14/0x2c)
-Code: e92d40f8 e1a05001 e1a06002 ebfff9bc (e5903050)
----[ end trace 447ee06b251d66b2 ]---
+On Tue, Apr 21, 2015 at 2:34 AM, Dan Carpenter <dan.carpenter@oracle.com> wrote:
+> There is a copy and paste bug, "->clk" vs "->pclk", so we return the
+> wrong error code here.
+>
+> Fixes: cbac8f639437 ('thermal: rockchip: add driver for thermal')
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+>
+> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> index 3aa46ac..cd8f5f93 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -529,7 +529,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+>
+>         thermal->pclk = devm_clk_get(&pdev->dev, "apb_pclk");
+>         if (IS_ERR(thermal->pclk)) {
+> -               error = PTR_ERR(thermal->clk);
+> +               error = PTR_ERR(thermal->pclk);
+>                 dev_err(&pdev->dev, "failed to get apb_pclk clock: %d\n",
+>                         error);
+>                 return error;
 
-Signed-off-by: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
----
- drivers/power/collie_battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks!  :)  An obvious fix, but just in case it helps feel free to add:
 
-diff --git a/drivers/power/collie_battery.c b/drivers/power/collie_battery.c
-index 2da9ed8..8a971b3 100644
---- a/drivers/power/collie_battery.c
-+++ b/drivers/power/collie_battery.c
-@@ -347,7 +347,7 @@ static int collie_bat_probe(struct ucb1x00_dev *dev)
- 		goto err_psy_reg_main;
- 	}
- 
--	psy_main_cfg.drv_data = &collie_bat_bu;
-+	psy_bu_cfg.drv_data = &collie_bat_bu;
- 	collie_bat_bu.psy = power_supply_register(&dev->ucb->dev,
- 						  &collie_bat_bu_desc,
- 						  &psy_bu_cfg);
--- 
-2.1.4
-
+Reviewed-by: Doug Anderson <dianders@chromium.org>
