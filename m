@@ -1,68 +1,105 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH] thermal: armada: Update Armada 380 thermal sensor coefficients
-Date: Mon, 27 Apr 2015 09:40:54 +0200
-Message-ID: <553DE806.4030905@free-electrons.com>
-References: <1429117688-27100-1-git-send-email-gregory.clement@free-electrons.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v5 08/11] arm: dts: qcom: Add #power-domain-cells property
+Date: Mon, 27 Apr 2015 09:52:33 +0200
+Message-ID: <CAPDyKFq1KH7bzRh4+cdoDNJPJKtzbcUbvFDRAbD7g-dEPWSm=w@mail.gmail.com>
+References: <1429017137-20218-1-git-send-email-rnayak@codeaurora.org>
+	<1429017137-20218-9-git-send-email-rnayak@codeaurora.org>
+	<CAPDyKFoph2TQeSS6XE_UpOPHiZy5tRZWFvUSqccv7rjtHOprsg@mail.gmail.com>
+	<553A2106.1030102@codeaurora.org>
+	<CAPDyKFrUhx-_EHzR=j+tHUUDJPJb1Qw9d4eMV30_z2E-a9r=oA@mail.gmail.com>
+	<553D9FB4.6060107@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:44627 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932109AbbD0Hk6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Apr 2015 03:40:58 -0400
-In-Reply-To: <1429117688-27100-1-git-send-email-gregory.clement@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <553D9FB4.6060107@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Mike Turquette <mturquette@linaro.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Georgi Djakov <georgi.djakov@linaro.org>, svarbanov@mm-sol.com, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, sviau@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
-Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, stable@vger.kernel.org
 
-Hi Zhang, Eduardo,
+On 27 April 2015 at 04:32, Rajendra Nayak <rnayak@codeaurora.org> wrote:
+> On 04/24/2015 09:13 PM, Ulf Hansson wrote:
+>>
+>> On 24 April 2015 at 12:55, Rajendra Nayak <rnayak@codeaurora.org> wrote:
+>>>
+>>> On 04/24/2015 03:15 PM, Ulf Hansson wrote:
+>>>>
+>>>>
+>>>> On 14 April 2015 at 15:12, Rajendra Nayak <rnayak@codeaurora.org> wrote:
+>>>>>
+>>>>>
+>>>>> msm8974 has gcc and mmcc nodes, and apq8084 has a gcc node which
+>>>>> implement gdsc powerdomains. Add the #power-domain-cells property
+>>>>> to them.
+>>>>>
+>>>>> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+>>>>> ---
+>>>>>    arch/arm/boot/dts/qcom-apq8084.dtsi | 1 +
+>>>>>    arch/arm/boot/dts/qcom-msm8974.dtsi | 2 ++
+>>>>>    2 files changed, 3 insertions(+)
+>>>>>
+>>>>> diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi
+>>>>> b/arch/arm/boot/dts/qcom-apq8084.dtsi
+>>>>> index 1f130bc..55c281c 100644
+>>>>> --- a/arch/arm/boot/dts/qcom-apq8084.dtsi
+>>>>> +++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
+>>>>> @@ -183,6 +183,7 @@
+>>>>>                           compatible = "qcom,gcc-apq8084";
+>>>>>                           #clock-cells = <1>;
+>>>>>                           #reset-cells = <1>;
+>>>>> +                       #power-domain-cells = <1>;
+>>>>
+>>>>
+>>>>
+>>>> So the PM domain will be apart of the clock-controller. That's a bit
+>>>> odd, but I guess the hardware is like that!?
+>>>
+>>>
+>>>
+>>> Yes, the gdscs are all part of GCC controller.
+>>>
+>>>>
+>>>> Anyway, what I fail to understand from this patchset is who will be
+>>>> the actual consumer of the PM domain? In other words, what devices
+>>>> will hold the below property in its DT node?
+>>>>
+>>>> power_domains = <phandle index>;
+>>>>
+>>>> This is needed for genpd to have the device at probe time, attached to
+>>>> its PM domain.
+>>>
+>>>
+>>>
+>>> Any device which belongs to the collapsible power domain (gdsc)
+>>> Examples are graphics, camera, video encode/decode block (venus) etc
+>>
+>>
+>> Then I expect those drivers to deploy runtime PM (if not already) and
+>> thus gdsc's PM domain will come into play.
+>
+>
+> Most of these drivers aren;t upstream yet. And one of the reasons I am
+> trying to get gdsc support upstream is so these drivers can then be
+> pushed upstream, with runtime support.
 
-On 15/04/2015 19:08, Gregory CLEMENT wrote:
-> From: Nadav Haklai <nadavh@marvell.com>
-> 
-> Improve the Armada 380 thermal sensor accuracy by using updated formula.
-> The updated formula is:
-> Temperature[C degrees] = 0.4761 * tsen_vsen_out - 279.1
-> 
-> Signed-off-by: Nadav Haklai <nadavh@marvell.com>
-> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> Cc: <stable@vger.kernel.org> #v3.16
+That's great news! I am happy to help reviewing, if you like.
 
-Any chance that this fix was merged in 4.1-rc ?
+>
+>>
+>> But how will that relate to the GCC controller?
+>>
+>> For example when the gdsc's PM domain is about to be powered off,
+>> since all the devices within it has be runtime PM suspended. What
+>> happens with the GCC controller then?
+>
+>
+> I don;t seem to completely understand what you are asking. Are you
+> asking if the GCC controller itself is part of a collapsible power
+> domain?
 
-Thanks,
+Yes. Sorry for being a bit vague...
 
-Gregory
+If the gdsc's PM domain is powered off, what happens with the GCC's clocks?
 
-
-> ---
->  drivers/thermal/armada_thermal.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-> index c2556cf5186b..01255fd65135 100644
-> --- a/drivers/thermal/armada_thermal.c
-> +++ b/drivers/thermal/armada_thermal.c
-> @@ -224,9 +224,9 @@ static const struct armada_thermal_data armada380_data = {
->  	.is_valid_shift = 10,
->  	.temp_shift = 0,
->  	.temp_mask = 0x3ff,
-> -	.coef_b = 1169498786UL,
-> -	.coef_m = 2000000UL,
-> -	.coef_div = 4289,
-> +	.coef_b = 2931108200UL,
-> +	.coef_m = 5000000UL,
-> +	.coef_div = 10502,
->  	.inverted = true,
->  };
->  
-> 
-
-
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+Kind regards
+Uffe
