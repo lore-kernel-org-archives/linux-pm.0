@@ -1,139 +1,97 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] ARM: gic: Document Power and Clock Domain optional properties
-Date: Mon, 27 Apr 2015 18:43:13 +0200
-Message-ID: <CAMuHMdVT=vzFazUsJtvPsyB8zX-WJqp19RNVYA=UMfWZtHnF=Q@mail.gmail.com>
-References: <1430146811-29862-1-git-send-email-geert+renesas@glider.be>
-	<20150427155427.GB16191@leverpostej>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [GIT PULL] Thermal-SoC management updates for v4.1-rc1
+Date: Mon, 27 Apr 2015 16:58:02 -0700
+Message-ID: <20150427235801.GA4658@localhost.localdomain>
+References: <20150415054819.GA16396@localhost.localdomain>
+ <20150427083536.GB3066@e104805>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f47.google.com ([209.85.218.47]:36430 "EHLO
-	mail-oi0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753062AbbD0QnO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Apr 2015 12:43:14 -0400
-In-Reply-To: <20150427155427.GB16191@leverpostej>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="SUOF0GtieIMvvwua"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150427083536.GB3066@e104805>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Marc Zyngier <Marc.Zyngier@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Mark,
 
-On Mon, Apr 27, 2015 at 5:54 PM, Mark Rutland <mark.rutland@arm.com> wrote:
-> On Mon, Apr 27, 2015 at 04:00:11PM +0100, Geert Uytterhoeven wrote:
->> On some SoCs, the GIC may be part of a PM Domain (hardware Power and/or
->> Clock Domain).  Document the related optional DT properties.
->>
->> Note: As the current GIC driver doesn't support Runtime PM yet, PM
->> Domain constraints must be handled elsewhere in e.g. platform code.
->
-> I'm worried that without a current user these properties aren't going to
-> see any testing...
+--SUOF0GtieIMvvwua
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Still, DT is supposed to describe the hardware. Even if the driver doesn't
-use the description.
+Javi,
 
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->> ---
->> To preserve DT stability, we would like to add these properties to the
->> affected shmobile dtsi files.
->
-> ... which means that they could be wrong, and will get in the way of
-> stability rather than aiding it.
+On Mon, Apr 27, 2015 at 09:35:36AM +0100, Javi Merino wrote:
+> On Wed, Apr 15, 2015 at 06:48:20AM +0100, Eduardo Valentin wrote:
+> > Hello Rui,
+> >=20
+> > Please pull from
+> >=20
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-ther=
+mal linus
+> >=20
+> > to receive Thermal-SoC Management updates for v4.1-rc1 with top-most
+> >=20
+> > 55920e072776533fd314fb3d9b69c866ed90b3df:
+> >=20
+> >   thermal: exynos: Add the support for Exynos5433 TMU (2015-04-14 22:31=
+:17 -0700)
+> >=20
+> > on top of commit f8b3d8a5af7559a58613384cd23fc03a3c787acf:
+> >=20
+> >   Merge tag 'usb-4.0-rc6' of git://git.kernel.org/pub/scm/linux/kernel/=
+git/gregkh/usb (2015-04-04 12:26:28 -0700)
+> >=20
+> > Specifics:
+> > - Exynos thermal driver learns how to handle Exynos5433 TMU. Thanks to =
+Chanwoo C.;
+> > - Thermal Framework now supports QPNP PMIC temperature alarm as a new t=
+hermal
+> >   driver. Thanks to Ivan T. I.;
+> > - TI thermal driver now has a better implementation for EOCZ bit. Thank=
+s to Pavel M.;
+> > - Thermal Framework now has learned several new capabilities:
+> >   . use power estimates
+> >   . compute weights with relative integers instead of percentages
+> >   . allow governors to have private data in thermal zones
+> >   . export thermal zone parameters through sysfs
+> >   Thanks to the ARM thermal team (Javi M., Punit A., and KP).
+> > - Thermal Framework earns a new thermal governor: power allocator. Firs=
+t in kernel
+> >   closed loop PI(D) controller for thermal control. Thanks to ARM therm=
+al team.
+> > - OF thermal now allows thermal zones to have sustainable power HW spec=
+ification.
+> >   Thanks to Punit.
+>=20
+> 4.1-rc1 is out and it looks like this fell through the cracks.  If
+> there isn't any objection, can any of you send the pull request to
+> Linus?
+>=20
 
-We do know the GIC is part of the power domain, and has a controllable
-clock (on the affected SoCs).
+It has been sent already:
+http://marc.info/?l=3Dlinux-pm&m=3D143013593125080&w=3D2
 
-> I'm also concerned that the carving up of clock inputs, power domains,
-> and other physical details is implementation-specific. I imagine that
-> pretty much every user that will care about this is using GIC-400, so
-> could we make this specific to GIC-400?
+> Thanks,
+> Javi
+>=20
 
-I have no idea which GIC version is being used.
+--SUOF0GtieIMvvwua
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-This is for Renesas R-Mobile APE6 (r8a73a4) and various R-Car Gen2.
-According to the DTS, they're compatible with "arm,cortex-a15-gic" and
-"arm,cortex-a7-gic", and work with that value.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
->> On Thu, Mar 26, 2015 at 11:39 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
->> > On 25/03/15 21:19, Geert Uytterhoeven wrote:
->> >> I would like to add the clock and GIC dependency on the clock in the DTS now,
->> >> for reasons of DTS stability. But that means I need a temporary workaround
->> >> to avoid the clock from being disabled, until the GIC driver handles this.
->> >>
->> >> I don't expect a fix for the GIC code to just show up magically. I just wanted
->> >> you to be aware of the problem. GIC is not the only problematic module here,
->> >> there are others, cfr. the last slide of [2].
->> >
->> > As long as there is an agreement from the DT people on the presence of
->> > that extra property in the GIC node, I'm happy with that. I'd like it to
->> > be documented though.
->>
->> Full thread at
->> http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/331876.html
->>
->>  Documentation/devicetree/bindings/arm/gic.txt | 8 ++++++++
->>  1 file changed, 8 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/arm/gic.txt b/Documentation/devicetree/bindings/arm/gic.txt
->> index 2da059a4790cb3c6..b21113b35f085f27 100644
->> --- a/Documentation/devicetree/bindings/arm/gic.txt
->> +++ b/Documentation/devicetree/bindings/arm/gic.txt
->> @@ -58,6 +58,14 @@ Optional
->>    regions, used when the GIC doesn't have banked registers. The offset is
->>    cpu-offset * cpu-nr.
->>
->> +- power-domains : A phandle and PM domain specifier as defined by bindings of
->> +               the power controller specified by phandle, used when the GIC
->> +               is part of a Power or Clock Domain.
->
-> I imagine that it's possible for the distributor and CPU interfaces to
-> be in separate power domains in some implementaitons.
+iQEcBAEBAgAGBQJVPsz/AAoJEMLUO4d9pOJWh84IAIIchKU3yGIje17otUjD/UP4
+n1bK9TemeDhuVvOtTWwf0jaob99mfWrOsM6keugMq/ndEPs4E81vRG+SdSFxjB0t
+UY2Xl4yv/c1kPCst6HnATK+aI9aC7DfoZl/8mFhfrHbZT8RzkJJMcTTqnkjco4oS
+Byo7mkZL6sgp79j/9g8e1/pEdlbCxk43rfEyeDYfMmzL/mKJrO7vfIx0WPu1mdrC
+x7qILvWFINhjstm1lcvIc69NCBAKvVXAPnNz39z+9ncGRMMEqzTttC6jJDAY8+67
+++wsbew2ouN0t6+jkOwYsiAzuV8SKxxnM1qSRnRgpkrrcrHTstJQnK4Y2+0enaw=
+=lMSU
+-----END PGP SIGNATURE-----
 
-Possibly (then we're gonna need subnodes, each with their own
-power-domains properties?).
-
-> Which components of the GIC does the apply to? The whole thing? Just the
-> GICD?
-
-Unfortunately that's not documented...
-
->> +- clocks        : A phandle and clock specifier as defined by bindings of
->> +               the clock controller specified by phandle, used when the GIC
->> +               is part of a Clock Domain.
->
-> Depending on implementation, a GIC could require multiple clocks, and
-> their names would be implementation-specific (that said, GIC-400 has a
-> single "CLK" input).
-
-Documentation/devicetree/bindings/arm/gic.txt doesn't mention any clocks
-for GIC-400?
-
-> Assuming that you're using GIC-400, could we use clock-names to make
-> that explicit?
-
-You can. But you have to be careful to avoid conflicts, as the controller
-for the clock domain needs to know which clock to use.
-
-On Renesas SoCs, we always used the first clock for power control.
-For the future, we plan to use "fck" if it exists.
-
-Yes, this can be complicated, as ideally it needs synchronization between
-device DT bindings and platform (clock/power domain) DT bindings.
-
-Please also note that any device (hardware IP core) can be reused on an
-SoC that supports clock and/or power domains, and suddenly starts to rely
-on power-domains and clocks properties.
-
-Thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--SUOF0GtieIMvvwua--
