@@ -1,67 +1,45 @@
-From: Axel Haslam <ahaslam@baylibre.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [RFC v5 1/8] PM / Domains: structure changes for multiple states
-Date: Mon, 27 Apr 2015 10:26:51 +0200
-Message-ID: <553DF2CB.3070306@baylibre.com>
-References: <1429896924-21540-1-git-send-email-ahaslam@baylibre.com>	<1429896924-21540-2-git-send-email-ahaslam@baylibre.com> <CAMuHMdWx=g+NLOcJyCAzhFjM-woMEzZQq1Tn4d+ctpGmzyzDxA@mail.gmail.com>
+Date: Mon, 27 Apr 2015 10:30:20 +0200
+Message-ID: <CAMuHMdW-HFbnFyhn2h+NdbzRMtXZmr2guRNo6QwgL+WvrND=cA@mail.gmail.com>
+References: <1429896924-21540-1-git-send-email-ahaslam@baylibre.com>
+	<1429896924-21540-2-git-send-email-ahaslam@baylibre.com>
+	<CAMuHMdWx=g+NLOcJyCAzhFjM-woMEzZQq1Tn4d+ctpGmzyzDxA@mail.gmail.com>
+	<553DF2CB.3070306@baylibre.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f47.google.com ([74.125.82.47]:36448 "EHLO
-	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751989AbbD0I1B (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Apr 2015 04:27:01 -0400
-Received: by wgen6 with SMTP id n6so107421781wge.3
-        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2015 01:26:59 -0700 (PDT)
-In-Reply-To: <CAMuHMdWx=g+NLOcJyCAzhFjM-woMEzZQq1Tn4d+ctpGmzyzDxA@mail.gmail.com>
+Received: from mail-ob0-f181.google.com ([209.85.214.181]:35462 "EHLO
+	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932110AbbD0IaV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Apr 2015 04:30:21 -0400
+Received: by obcux3 with SMTP id ux3so77901298obc.2
+        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2015 01:30:21 -0700 (PDT)
+In-Reply-To: <553DF2CB.3070306@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, =?UTF-8?B?S3J6eXN6dG9mIEtvesWCb3dza2k=?= <k.kozlowski.k@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benoit Cousson <bcousson@baylibre.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: Axel Haslam <ahaslam@baylibre.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benoit Cousson <bcousson@baylibre.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Geert,
+On Mon, Apr 27, 2015 at 10:26 AM, Axel Haslam <ahaslam@baylibre.com> wrote:
+> BTW, im thinking i should add a default OFF state in case the state_count is
+> 0, that way, platforms could not worry about states
+> at all in case they dont define latencies.
 
-Thanks for the review!
+Ideally, the latencies should come from DT, not from C platform code.
 
-On 26/04/2015 10:42, Geert Uytterhoeven wrote:
+Now v4.1-rc1 is out, I'll resurrect my patches for that, as Kevin asked back
+in March.
+They'll be RFC again, as they're gonna need changes to support multiple
+states.
 
->>                  return;
->>
->> +       if (genpd->state_count > 0) {
->> +               /* Copy the state data to allocated memory */
->> +               genpd->states = genpd_alloc_states_data(genpd);
->> +               if (!genpd->states)
->> +                       return;
->> +       }
->> +
->
-> So the above replaces genpd->states (which is usually pointing to a an
-> array of static data) by an allocated copy?
-> Nice trick, but I'm wondering whether it may bite us one day?
-> This also means the static data can't be const.
->
-> Both could be solved by e.g. passing the states array to pm_genpd_init().
+Gr{oetje,eeting}s,
 
-i thought i should avoid adding an argument to init. But you are right, 
-i guess its better that way. ill do it on the on the next spin.
+                        Geert
 
-BTW, im thinking i should add a default OFF state in case the 
-state_count is 0, that way, platforms could not worry about states
-at all in case they dont define latencies.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
-Thanks again,
-Axel.
-
->
-> Gr{oetje,eeting}s,
->
->                          Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                  -- Linus Torvalds
->
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
