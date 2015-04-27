@@ -1,56 +1,66 @@
-From: <grygorii.strashko@linaro.org>
-Subject: [PATCH 1/3] PM / Sleep: Add macro to define common noirq system PM callbacks
-Date: Mon, 27 Apr 2015 21:24:30 +0300
-Message-ID: <1430159072-31440-2-git-send-email-grygorii.strashko@linaro.org>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH 2/3] bus: omap_l3_noc: add missed callbacks for suspend-to-disk
+Date: Mon, 27 Apr 2015 14:30:38 -0500
+Message-ID: <CAGo_u6pryMrJA1HkM84=SH-PRrN2u+f0dzby-LXUbxSiEh9VYA@mail.gmail.com>
 References: <1430159072-31440-1-git-send-email-grygorii.strashko@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1430159072-31440-1-git-send-email-grygorii.strashko@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
-Cc: ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, Grygorii Strashko <Grygorii.Strashko@linaro.org>, Tony Lindgren <tony@atomide.com>, Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <ssantosh@kernel.org>
+	<1430159072-31440-3-git-send-email-grygorii.strashko@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <1430159072-31440-3-git-send-email-grygorii.strashko@linaro.org>
+Sender: linux-omap-owner@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ulf.hansson@linaro.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-omap <linux-omap@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <ssantosh@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+On Mon, Apr 27, 2015 at 1:24 PM,  <grygorii.strashko@linaro.org> wrote:
+> From: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+>
+> Add missed callbacks needed for proper supporting of suspend-to-disk
+> by using recently introduced macro SET_NOIRQ_SYSTEM_SLEEP_PM_OPS.
+>
+> Cc: Tony Lindgren <tony@atomide.com>
+> Cc: Nishanth Menon <nm@ti.com>
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Santosh Shilimkar <ssantosh@kernel.org>
+> Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
+> ---
+>  drivers/bus/omap_l3_noc.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/bus/omap_l3_noc.c b/drivers/bus/omap_l3_noc.c
+> index 11f7982..6ae3884 100644
+> --- a/drivers/bus/omap_l3_noc.c
+> +++ b/drivers/bus/omap_l3_noc.c
+> @@ -300,7 +300,7 @@ static int omap_l3_probe(struct platform_device *pdev)
+>         return ret;
+>  }
+>
+> -#ifdef CONFIG_PM
+> +#ifdef CONFIG_PM_SLEEP
+>
+>  /**
+>   * l3_resume_noirq() - resume function for l3_noc
+> @@ -346,7 +346,7 @@ static int l3_resume_noirq(struct device *dev)
+>  }
+>
+>  static const struct dev_pm_ops l3_dev_pm_ops = {
+> -       .resume_noirq           = l3_resume_noirq,
+> +       SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(NULL, l3_resume_noirq)
+>  };
+>
+>  #define L3_DEV_PM_OPS (&l3_dev_pm_ops)
+> --
+> 1.9.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-The same approach is used as for the existing SET_SYSTEM_SLEEP_PM_OPS,
-but for noirq callbacks.
+Acked-by: Nishanth Menon <nm@ti.com>
 
-New SET_NOIRQ_SYSTEM_SLEEP_PM_OPS, defined for CONFIG_PM_SLEEP, will
-point ->suspend_noirq, ->freeze_noirq and ->poweroff_noirq to the same
-function. Vice versa happens for ->resume_noirq, ->thaw_noirq and
-->restore_noirq.
-
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Nishanth Menon <nm@ti.com>
-Cc: Kevin Hilman <khilman@linaro.org>
-Cc: Santosh Shilimkar <ssantosh@kernel.org>
-Signed-off-by: Grygorii Strashko <Grygorii.Strashko@linaro.org>
----
- include/linux/pm.h | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 2d29c64..4890743 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -342,6 +342,18 @@ struct dev_pm_ops {
- #define SET_LATE_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
- #endif
- 
-+#ifdef CONFIG_PM_SLEEP
-+#define SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
-+	.suspend_noirq = suspend_fn, \
-+	.resume_noirq = resume_fn, \
-+	.freeze_noirq = suspend_fn, \
-+	.thaw_noirq = resume_fn, \
-+	.poweroff_noirq = suspend_fn, \
-+	.restore_noirq = resume_fn,
-+#else
-+#define SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn)
-+#endif
-+
- #ifdef CONFIG_PM
- #define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
- 	.runtime_suspend = suspend_fn, \
 -- 
-1.9.1
+---
+Regards,
+Nishanth Menon
