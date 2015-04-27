@@ -1,92 +1,58 @@
-From: Jin Qian <jinqian@android.com>
-Subject: Re: [PATCH 1/3] power: validate wakeup source before activating it.
-Date: Mon, 27 Apr 2015 11:01:58 -0700
-Message-ID: <CA+yUs=zhTRV+8Yw7=TyNAg6yhh_onL7+s8fcivuF1voQ+aymBw@mail.gmail.com>
-References: <1429750212-28659-1-git-send-email-jinqian@android.com>
-	<1429750212-28659-2-git-send-email-jinqian@android.com>
-	<20150425201225.GB3008@amd>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150425201225.GB3008@amd>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: <grygorii.strashko@linaro.org>
+Subject: [PATCH 0/3] Introduce SET_NOIRQ_SYSTEM_SLEEP_PM_OPS and use it
+Date: Mon, 27 Apr 2015 21:24:29 +0300
+Message-ID: <1430159072-31440-1-git-send-email-grygorii.strashko@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f174.google.com ([209.85.217.174]:34874 "EHLO
+	mail-lb0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964944AbbD0SYh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Apr 2015 14:24:37 -0400
+Received: by lbbuc2 with SMTP id uc2so88920321lbb.2
+        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2015 11:24:35 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
+Cc: ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, Grygorii Strashko <grygorii.strashko@linaro.org>, Tony Lindgren <tony@atomide.com>, Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <ssantosh@kernel.org>
 
-This is a rare case.
+From: Grygorii Strashko <grygorii.strashko@linaro.org>
 
-My thought is to prevent a rogue wakeup source from preventing system
-suspend, which is very difficult to find out if the wakeup source is
-not registered and not visible in /d/wakeup_sources. On the other
-hand, if the wakeup source failed to activate, it's much easier to be
-noticed considering we deal with particular wakeup source. I can make
-the pr_err BUG_ON or WARN_ON if they're more noticeable.
+While working on suspend-to-disk functionality on TI dra7-evm (DRA7xx SoC)
+i've found that the most common problem I have to dial with is absence
+of corresponding PM callbacks in drivers and, in particular, noirq callbacks.
+So, I've fixed one driver first
+commit 6248015d6867 "ARM: omap-device: add missed callback for suspend-to-disk"
+but then found another one which need to be fixed too (omap_l3_noc.c).
+At this moment I decided to make my life easier and added new macro
+SET_NOIRQ_SYSTEM_SLEEP_PM_OPS using the same approach as for the existing
+SET_SYSTEM_SLEEP_PM_OPS macro.
 
-Thanks,
-jin
+SET_NOIRQ_SYSTEM_SLEEP_PM_OPS: defined for CONFIG_PM_SLEEP and
+assigns ->suspend_noirq, ->freeze_noirq and ->poweroff_noirq to the same
+function. Vice versa happens for ->resume_noirq, ->thaw_noirq and
+->restore_noirq.
 
-On Sat, Apr 25, 2015 at 1:12 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Wed 2015-04-22 17:50:10, Jin Qian wrote:
->> A rogue wakeup source not registered in wakeup_sources list is not visible
->> from wakeup_sources_stats_show. Check if the wakeup source is registered
->> properly by looking at the timer function.
->
-> How often does that happen?
->
-> Will people on your systems actually notice that pr_err()?
->                                                                 Pavel
->
->> Signed-off-by: Jin Qian <jinqian@android.com>
->> ---
->>  drivers/base/power/wakeup.c | 19 +++++++++++++++++++
->>  1 file changed, 19 insertions(+)
->>
->> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
->> index 7726200..f24c622 100644
->> --- a/drivers/base/power/wakeup.c
->> +++ b/drivers/base/power/wakeup.c
->> @@ -14,6 +14,7 @@
->>  #include <linux/suspend.h>
->>  #include <linux/seq_file.h>
->>  #include <linux/debugfs.h>
->> +#include <linux/types.h>
->>  #include <trace/events/power.h>
->>
->>  #include "power.h"
->> @@ -351,6 +352,19 @@ int device_set_wakeup_enable(struct device *dev, bool enable)
->>  }
->>  EXPORT_SYMBOL_GPL(device_set_wakeup_enable);
->>
->> +/**
->> + * validate_wakeup_source - validate the given wakeup source.
->> + * @ws: Wakeup source to be validated.
->> + */
->> +static bool validate_wakeup_source(struct wakeup_source *ws)
->> +{
->> +     /*
->> +      * Use timer function to check if the given source is initialized
->> +      * by wakeup_source_add.
->> +      */
->> +     return ws->timer.function == pm_wakeup_timer_fn;
->> +}
->> +
->>  /*
->>   * The functions below use the observation that each wakeup event starts a
->>   * period in which the system should not be suspended.  The moment this period
->> @@ -391,6 +405,11 @@ static void wakeup_source_activate(struct wakeup_source *ws)
->>  {
->>       unsigned int cec;
->>
->> +     if (!validate_wakeup_source(ws)) {
->> +             pr_err("unregistered wakeup source: %s\n", ws->name);
->> +             return;
->> +     }
->> +
->>       /*
->>        * active wakeup source should bring the system
->>        * out of PM_SUSPEND_FREEZE state
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Further two patches reuse this newly introduced macro.
+
+SET_NOIRQ_SYSTEM_SLEEP_PM_OPS, defined for CONFIG_PM_SLEEP, will
+    point ->suspend_noirq, ->freeze_noirq and ->poweroff_noirq to the same
+    function. Vice versa happens for ->resume_noirq, ->thaw_noirq and
+    ->restore_noirq.
+
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: Nishanth Menon <nm@ti.com>
+Cc: Kevin Hilman <khilman@linaro.org>
+Cc: Santosh Shilimkar <ssantosh@kernel.org>
+
+Grygorii Strashko (3):
+  PM / Sleep: Add macro to define common noirq system PM callbacks
+  bus: omap_l3_noc: add missed callbacks for suspend-to-disk
+  ARM: omap-device: use SET_NOIRQ_SYSTEM_SLEEP_PM_OPS
+
+ arch/arm/mach-omap2/omap_device.c |  7 ++-----
+ drivers/bus/omap_l3_noc.c         |  4 ++--
+ include/linux/pm.h                | 12 ++++++++++++
+ 3 files changed, 16 insertions(+), 7 deletions(-)
+
+-- 
+1.9.1
+
