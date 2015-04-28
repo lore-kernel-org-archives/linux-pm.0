@@ -1,67 +1,55 @@
-From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Subject: Re: [PATCH] ARM: tegra: cpuidle: implement cpuidle_state.enter_freeze()
-Date: Tue, 28 Apr 2015 17:07:14 +0200
-Message-ID: <CAAObsKBOZM0qdkrtgQFqMhAq3M2UXUHzZ3jqhrrv0vLrqJgyYA@mail.gmail.com>
-References: <1428490480-10144-1-git-send-email-tomeu.vizoso@collabora.com>
- <20150408115546.GA24271@red-moon> <552643E1.3060200@collabora.com>
- <285738930.THBQOWvsah@vostro.rjw.lan> <20150410100844.GC23730@red-moon>
- <CAAObsKAihF1k1yzZxQEs_jpPnCdV3HQbLaYHWu1QNsNd5zqiOg@mail.gmail.com>
- <20150417140819.GB2347@red-moon> <CAAObsKATZy9+Tn0pJcDCaNzpxLX6GqX0TO_t7w8tgirWQgJF9w@mail.gmail.com>
+From: Kevin Hilman <khilman@linaro.org>
+Subject: Re: [PATCH 0/3] Introduce SET_NOIRQ_SYSTEM_SLEEP_PM_OPS and use it
+Date: Tue, 28 Apr 2015 08:40:04 -0700
+Message-ID: <7hr3r4w9bf.fsf@linaro.org>
+References: <1430159072-31440-1-git-send-email-grygorii.strashko@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAAObsKATZy9+Tn0pJcDCaNzpxLX6GqX0TO_t7w8tgirWQgJF9w-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:33477 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030288AbbD1PkG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2015 11:40:06 -0400
+Received: by pacwv17 with SMTP id wv17so146048980pac.0
+        for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2015 08:40:06 -0700 (PDT)
+In-Reply-To: <1430159072-31440-1-git-send-email-grygorii.strashko@linaro.org>
+	(grygorii strashko's message of "Mon, 27 Apr 2015 21:24:29 +0300")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: grygorii.strashko@linaro.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, ulf.hansson@linaro.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Nishanth Menon <nm@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>
 
-On 17 April 2015 at 17:02, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org> wrote:
-> On 17 April 2015 at 16:08, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org> wrote:
->> On Thu, Apr 16, 2015 at 03:37:19PM +0100, Tomeu Vizoso wrote:
->>
->> [...]
->>
->>> >> I don't know what FIQs are. :-)
->>> >
->>> > In short, fast IRQs, it is a separate IRQ line handled as a separate
->>> > exception source with some private (banked) registers that minimize registers
->>> > saving/restoring. They are not identical to NMI on x86, since
->>> > their behaviour (handling) may be overriden by platforms and they
->>> > can be masked.
->>> >
->>> >> ->enter_freeze is entered with interrupts disabled on the local CPU.  It is
->>> >> not supposed to re-enable them.  That is, while in the ->enter_freeze callback
->>> >> routine, the CPU must not be interrupted aby anything other than NMI.
->>> >
->>> > It boils down to what FIQs handlers are allowed to do with tick frozen
->>> > and what they are (may be) currently used for.
->>> >
->>> > Russell has more insights on this than I do, in particular what FIQs are
->>> > currently used for on ARM and if we can leave them enabled safely with tick
->>> > frozen.
->>>
->>> But even if it's currently safe to leave them enabled, is there any
->>> reason for not disabling them?
->>
->> Ok, the point here is: either it is safe, and you leave them enabled,
->> or it is not and we must disable them *before* enter_freeze() is entered.
->>
->> Disabling them in the platform enter_freeze() hook does not make sense,
->> because this means we run with FIQs enabled with tick frozen, either
->> it is safe or it is not, it can't be both.
+<grygorii.strashko@linaro.org> writes:
+
+> From: Grygorii Strashko <grygorii.strashko@linaro.org>
 >
-> Sure, that's why I proposed doing it in arch_cpu_idle_enter/exit.
+> While working on suspend-to-disk functionality on TI dra7-evm (DRA7xx SoC)
+> i've found that the most common problem I have to dial with is absence
+> of corresponding PM callbacks in drivers and, in particular, noirq callbacks.
+> So, I've fixed one driver first
+> commit 6248015d6867 "ARM: omap-device: add missed callback for suspend-to-disk"
+> but then found another one which need to be fixed too (omap_l3_noc.c).
+> At this moment I decided to make my life easier and added new macro
+> SET_NOIRQ_SYSTEM_SLEEP_PM_OPS using the same approach as for the existing
+> SET_SYSTEM_SLEEP_PM_OPS macro.
 >
->> I would ask Russell opinion on this, before making any decision.
+> SET_NOIRQ_SYSTEM_SLEEP_PM_OPS: defined for CONFIG_PM_SLEEP and
+> assigns ->suspend_noirq, ->freeze_noirq and ->poweroff_noirq to the same
+> function. Vice versa happens for ->resume_noirq, ->thaw_noirq and
+> ->restore_noirq.
 >
-> Sure, that would be very welcome.
+> Further two patches reuse this newly introduced macro.
+>
+> SET_NOIRQ_SYSTEM_SLEEP_PM_OPS, defined for CONFIG_PM_SLEEP, will
+>     point ->suspend_noirq, ->freeze_noirq and ->poweroff_noirq to the same
+>     function. Vice versa happens for ->resume_noirq, ->thaw_noirq and
+>     ->restore_noirq.
 
-Hi Russell,
+For the series:
 
-do you think FIQs should be disabled when the tick is frozen when
-going to suspend to idle?
+Reviewed-by: Kevin Hilman <khilman@linaro.org>
 
-Thanks,
+And for the omap_device changes:
 
-Tomeu
+Acked-by: Kevin Hilman <khilman@linaro.org>
+
