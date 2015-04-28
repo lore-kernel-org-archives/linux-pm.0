@@ -1,68 +1,80 @@
-From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: Re: [patch] thermal: rockchip: fix an error code
-Date: Tue, 28 Apr 2015 08:35:50 +0800
-Message-ID: <553ED5E6.3090800@rock-chips.com>
-References: <20150421093410.GE12098@mwanda> <55371080.4090307@rock-chips.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 0/5] PM / clock_ops: provide default runtime ops and
+ cleanup users
+Date: Tue, 28 Apr 2015 09:46:19 +0900
+Message-ID: <20150428004618.GA1807@verge.net.au>
+References: <553A6289.4040001@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <55371080.4090307-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Dan Carpenter <dan.carpenter-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Cc: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-janitors-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <553A6289.4040001@oracle.com>
+ <CAMuHMdWMjULD8jQDA-U6tumnCd=Q7jhZ2koha4CKU-K50tJXmw@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, santosh shilimkar <santosh.shilimkar@oracle.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rajendra Nayak <rnayak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Sekhar Nori <nsekhar@ti.com>, Magnus Damm <magnus.damm@gmail.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-RGFuLAoK5ZyoIDIwMTXlubQwNOaciDIy5pelIDExOjA3LCBDYWVzYXIgV2FuZyDlhpnpgZM6Cj4K
-Pgo+IOWcqCAyMDE15bm0MDTmnIgyMeaXpSAxNzozNCwgRGFuIENhcnBlbnRlciDlhpnpgZM6Cj4+
-IFRoZXJlIGlzIGEgY29weSBhbmQgcGFzdGUgYnVnLCAiLT5jbGsiIHZzICItPnBjbGsiLCBzbyB3
-ZSByZXR1cm4gdGhlCj4+IHdyb25nIGVycm9yIGNvZGUgaGVyZS4KPj4KPj4gRml4ZXM6IGNiYWM4
-ZjYzOTQzNyAoJ3RoZXJtYWw6IHJvY2tjaGlwOiBhZGQgZHJpdmVyIGZvciB0aGVybWFsJykKPj4g
-U2lnbmVkLW9mZi1ieTogRGFuIENhcnBlbnRlciA8ZGFuLmNhcnBlbnRlckBvcmFjbGUuY29tPgo+
-Pgo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL3JvY2tjaGlwX3RoZXJtYWwuYyAKPj4g
-Yi9kcml2ZXJzL3RoZXJtYWwvcm9ja2NoaXBfdGhlcm1hbC5jCj4+IGluZGV4IDNhYTQ2YWMuLmNk
-OGY1ZjkzIDEwMDY0NAo+PiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvcm9ja2NoaXBfdGhlcm1hbC5j
-Cj4+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9yb2NrY2hpcF90aGVybWFsLmMKPj4gQEAgLTUyOSw3
-ICs1MjksNyBAQCBzdGF0aWMgaW50IHJvY2tjaGlwX3RoZXJtYWxfcHJvYmUoc3RydWN0IAo+PiBw
-bGF0Zm9ybV9kZXZpY2UgKnBkZXYpCj4+ICAgICAgICAgdGhlcm1hbC0+cGNsayA9IGRldm1fY2xr
-X2dldCgmcGRldi0+ZGV2LCAiYXBiX3BjbGsiKTsKPj4gICAgICAgaWYgKElTX0VSUih0aGVybWFs
-LT5wY2xrKSkgewo+PiAtICAgICAgICBlcnJvciA9IFBUUl9FUlIodGhlcm1hbC0+Y2xrKTsKPj4g
-KyAgICAgICAgZXJyb3IgPSBQVFJfRVJSKHRoZXJtYWwtPnBjbGspOwo+IFllYWgsIHlvdSBhcmUg
-cmlnaHQuCj4gUmV2aWV3ZWQtYnk6IENhZXNhciBXYW5nIDx3eHRAcm9jay1jaGlwcy5jb20+Cj4K
-ClRlc3RlZC1ieTogQ2Flc2FyIFdhbmcgPHd4dEByb2NrLWNoaXBzLmNvbT4KCj4gVGhhbmtzLgo+
-Cj4gQ2Flc2FyCj4+ICAgICAgICAgICBkZXZfZXJyKCZwZGV2LT5kZXYsICJmYWlsZWQgdG8gZ2V0
-IGFwYl9wY2xrIGNsb2NrOiAlZFxuIiwKPj4gICAgICAgICAgICAgICBlcnJvcik7Cj4+ICAgICAg
-ICAgICByZXR1cm4gZXJyb3I7Cj4+Cj4+Cj4+Cj4KCi0tIAoqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKgrnjovmmZPohb4gICAgQ2Flc2FyIFdhbmcKUHJvZHVjdCBSJkQgRGVwdC5JSUkKRnV6
-aG91IFJvY2tjaGlwIEVsZWN0cm9uaWNzIENvLkx0ZApBZGRy77yaICBOTy4xOCBCdWlsZGluZywg
-QSBEaXN0cmljdCwgRnV6aG91IFNvZnR3YXJlIFBhcmssR3Vsb3UgRGlzdHJpY3QsRnV6aG91LCBG
-dWppYW4sQ2hpbmEoRnV6aG91IEhlYWRxdWFydGVycykKICAgICAgICAgICAgICAgMjFGLE1hbGF0
-YSBCdWlsZGluZyxLZWppemhvbmd5aSBBdmVudWUsTmFuc2hhbiBEaXN0cmljdCxTaGVuemhlbiAg
-KFNoZW56aGVuIE9mZmljZSkKVGVs77yaKzg2LTU5MS04Mzk5MTkwNi8wNyAtIDgyMjEKTW9iaWxl
-Ois4NiAxNTA1OTQ1Njc0MgpFLW1haWwgOiB3eHRAcm9jay1jaGlwcy5jb20KKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKgpJTVBPUlRB
-TlQgTk9USUNFOiBUaGlzIGVtYWlsIGlzIGZyb20gRnV6aG91IFJvY2tjaGlwIEVsZWN0cm9uaWNz
-IENvLiwgTHRkIC5UaGUgY29udGVudHMgb2YgdGhpcyBlbWFpbCBhbmQgYW55IGF0dGFjaG1lbnRz
-IG1heQpjb250YWluIGluZm9ybWF0aW9uIHRoYXQgaXMgcHJpdmlsZWdlZCwgY29uZmlkZW50aWFs
-IGFuZC9vciBleGVtcHQgZnJvbSBkaXNjbG9zdXJlIHVuZGVyIGFwcGxpY2FibGUgbGF3IGFuZCBy
-ZWxldmFudCBOREEuCklmIHlvdSBhcmUgbm90IHRoZSBpbnRlbmRlZCByZWNpcGllbnQsIHlvdSBh
-cmUgaGVyZWJ5IG5vdGlmaWVkIHRoYXQgYW55IGRpc2Nsb3N1cmUsIGNvcHlpbmcsIGRpc3RyaWJ1
-dGlvbiwgb3IgdXNlIG9mIHRoZQppbmZvcm1hdGlvbiBpcyBTVFJJQ1RMWSBQUk9ISUJJVEVELiBQ
-bGVhc2UgaW1tZWRpYXRlbHkgY29udGFjdCB0aGUgc2VuZGVyIGFzIHNvb24gYXMgcG9zc2libGUg
-YW5kIGRlc3Ryb3kgdGhlIG1hdGVyaWFsCmluIGl0cyBlbnRpcmV0eSBpbiBhbnkgZm9ybWF0LiBU
-aGFuayB5b3UuCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKgoKCgpfX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1yb2NrY2hpcCBtYWlsaW5n
-IGxpc3QKTGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5m
-cmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXJvY2tjaGlwCg==
+On Fri, Apr 24, 2015 at 04:51:03PM +0200, Geert Uytterhoeven wrote:
+> On Fri, Apr 24, 2015 at 4:41 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Thursday, April 23, 2015 02:03:08 PM Rajendra Nayak wrote:
+> >> Most users of PM clocks do the exact same thing in runtime callbacks.
+> >> Provide default callbacks and cleanup the existing users (keystone/davinci
+> >> /omap1/sh)
+> >>
+> >> Rajendra Nayak (5):
+> >>   PM / clock_ops: Provide default runtime ops to users
+> >>   arm: keystone: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
+> >>   arm: omap1: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
+> >>   arm: davinci: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
+> >>   drivers: sh: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
+> >>
+> >>  arch/arm/mach-davinci/pm_domain.c  | 32 +-------------------------
+> >>  arch/arm/mach-keystone/pm_domain.c | 33 +-------------------------
+> >>  arch/arm/mach-omap1/pm_bus.c       | 37 ++----------------------------
+> >>  drivers/base/power/clock_ops.c     | 38 ++++++++++++++++++++++++++++++
+> >>  drivers/sh/pm_runtime.c            | 47 ++------------------------------------
+> >>  include/linux/pm_clock.h           | 10 ++++++++
+> >>  6 files changed, 54 insertions(+), 143 deletions(-)
+> >
+> > It is not particularly clear to me who is supposed to apply this series, but
+> > I can do that if people don't have problems with that.
+> 
+> All later patches depend on the first patch.
+> 
+> For shmobile, Simon has queued up changes for drivers/sh/pm_runtime.c,
+> but I think they don't conflict with this series.
+
+Yes, that is the case. I have some patches (from Geert) queued up for v4.1.
+I have confirmed that they do not conflict with the shmobile (last) patch
+if this series.
+
+<details>
+The patches are in the sh-drivers-for-v4.1 branch of my renesas tree; I
+rebased them yesterday; they should hit next today if there is a next
+today; I plan to send a pull request to Linus in the not to distant future;
+and I envisage they should end up in v4.1-rc2 or rc3.  </details>
+
+On Fri, Apr 24, 2015 at 08:34:33AM -0700, santosh shilimkar wrote:
+> On 4/24/2015 7:41 AM, Rafael J. Wysocki wrote:
+> >On Thursday, April 23, 2015 02:03:08 PM Rajendra Nayak wrote:
+
+[snip]
+
+> >It is not particularly clear to me who is supposed to apply this series, but
+> >I can do that if people don't have problems with that.
+> >
+> >
+> I am fine by that given dependency with first patch.
+> Another way is, you pick up the first patch and give us an
+> immutable branch.
+> 
+> Either way is fine by me.
+
+Likewise.
+
+Here is an ack for the shmobile (last) patch if you decide to take it
+through your tree.
+
+Acked-by: Simon Horman <horms+renesas@verge.net.au>
+
