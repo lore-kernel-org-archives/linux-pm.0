@@ -1,7 +1,7 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 07/13] thermal: inline only once used function
-Date: Tue, 28 Apr 2015 10:25:57 +0200
-Message-ID: <1430209563-647-8-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH 06/13] thermal: Add comment explaining test for critical temperature
+Date: Tue, 28 Apr 2015 10:25:56 +0200
+Message-ID: <1430209563-647-7-git-send-email-s.hauer@pengutronix.de>
 References: <1430209563-647-1-git-send-email-s.hauer@pengutronix.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1430209563-647-1-git-send-email-s.hauer@pengutronix.de>
@@ -10,49 +10,29 @@ To: linux-pm@vger.kernel.org
 Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Inline update_temperature into its only caller to make the code
-more readable.
+The code testing if a temperature should be emulated or not is
+not obvious. Add a comment explaining why this test is done.
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/thermal/thermal_core.c | 17 +++++------------
- 1 file changed, 5 insertions(+), 12 deletions(-)
+ drivers/thermal/thermal_core.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index ffe09186..81ebc24 100644
+index 4633964..ffe09186 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -450,9 +450,12 @@ exit:
- }
- EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
+@@ -435,6 +435,11 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+ 			}
+ 		}
  
--static void update_temperature(struct thermal_zone_device *tz)
-+void thermal_zone_device_update(struct thermal_zone_device *tz)
- {
--	int temp, ret;
-+	int temp, ret, count;
-+
-+	if (!tz->ops->get_temp)
-+		return;
- 
- 	ret = thermal_zone_get_temp(tz, &temp);
- 	if (ret) {
-@@ -471,16 +474,6 @@ static void update_temperature(struct thermal_zone_device *tz)
- 	trace_thermal_temperature(tz);
- 	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
- 				tz->last_temperature, tz->temperature);
--}
--
--void thermal_zone_device_update(struct thermal_zone_device *tz)
--{
--	int count;
--
--	if (!tz->ops->get_temp)
--		return;
--
--	update_temperature(tz);
- 
- 	for (count = 0; count < tz->trips; count++)
- 		handle_thermal_trip(tz, count);
++		/*
++		 * Only allow emulating a temperature when the real temperature
++		 * is below the critical temperature so that the emulation code
++		 * cannot hide critical conditions.
++		 */
+ 		if (!ret && *temp < crit_temp)
+ 			*temp = tz->emul_temperature;
+ 	}
 -- 
 2.1.4
