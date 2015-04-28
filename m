@@ -1,7 +1,7 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 09/13] thermal: Allow sensor ops to fail with -ENOSYS
-Date: Tue, 28 Apr 2015 10:25:59 +0200
-Message-ID: <1430209563-647-10-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH 07/13] thermal: inline only once used function
+Date: Tue, 28 Apr 2015 10:25:57 +0200
+Message-ID: <1430209563-647-8-git-send-email-s.hauer@pengutronix.de>
 References: <1430209563-647-1-git-send-email-s.hauer@pengutronix.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1430209563-647-1-git-send-email-s.hauer@pengutronix.de>
@@ -10,87 +10,49 @@ To: linux-pm@vger.kernel.org
 Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-The thermal core uses the existence of the .get_temp, .get_trend and
-.set_emul_temp to detect whether this operation exists and should be
-used or whether it should be emulated in software. This makes problems
-for of-thermal which has to modify the struct thermal_zone_device_ops
-during runtime whenever a sensor is registered or unregistered.
-
-Let the core test for -ENOSYS from these callbacks and treat it like
-if the callbacks were not present.
-
-This allows of-thermal to always set the sensor related callbacks and
-to make struct thermal_zone_device_ops const again.
+Inline update_temperature into its only caller to make the code
+more readable.
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/thermal/thermal_core.c | 24 +++++++++++++++++-------
- 1 file changed, 17 insertions(+), 7 deletions(-)
+ drivers/thermal/thermal_core.c | 17 +++++------------
+ 1 file changed, 5 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 81ebc24..0f3d26c 100644
+index ffe09186..81ebc24 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -413,13 +413,16 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
-  */
- int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
- {
--	int ret = -EINVAL;
-+	int ret;
- 	int count;
- 	int crit_temp = INT_MAX;
- 	enum thermal_trip_type type;
- 
--	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
--		goto exit;
-+	if (!tz || IS_ERR(tz))
-+		return -EINVAL;
-+
-+	if (!tz->ops->get_temp)
-+		return -ENOSYS;
- 
- 	mutex_lock(&tz->lock);
- 
-@@ -445,7 +448,7 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
- 	}
- 
- 	mutex_unlock(&tz->lock);
--exit:
-+
- 	return ret;
+@@ -450,9 +450,12 @@ exit:
  }
  EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
-@@ -454,10 +457,11 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+ 
+-static void update_temperature(struct thermal_zone_device *tz)
++void thermal_zone_device_update(struct thermal_zone_device *tz)
  {
- 	int temp, ret, count;
- 
--	if (!tz->ops->get_temp)
-+	ret = thermal_zone_get_temp(tz, &temp);
+-	int temp, ret;
++	int temp, ret, count;
 +
-+	if (ret == -ENOSYS)
- 		return;
++	if (!tz->ops->get_temp)
++		return;
  
--	ret = thermal_zone_get_temp(tz, &temp);
+ 	ret = thermal_zone_get_temp(tz, &temp);
  	if (ret) {
- 		if (ret != -EAGAIN)
- 			dev_warn(&tz->device,
-@@ -783,10 +787,16 @@ emul_temp_store(struct device *dev, struct device_attribute *attr,
- 	if (kstrtoul(buf, 10, &temperature))
- 		return -EINVAL;
+@@ -471,16 +474,6 @@ static void update_temperature(struct thermal_zone_device *tz)
+ 	trace_thermal_temperature(tz);
+ 	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
+ 				tz->last_temperature, tz->temperature);
+-}
+-
+-void thermal_zone_device_update(struct thermal_zone_device *tz)
+-{
+-	int count;
+-
+-	if (!tz->ops->get_temp)
+-		return;
+-
+-	update_temperature(tz);
  
--	if (!tz->ops->set_emul_temp) {
-+	if (tz->ops->set_emul_temp)
-+		ret = tz->ops->set_emul_temp(tz, temperature);
-+	else
-+		ret = -ENOSYS;
-+
-+	if (ret == -ENOSYS) {
- 		mutex_lock(&tz->lock);
- 		tz->emul_temperature = temperature;
- 		mutex_unlock(&tz->lock);
-+		ret = 0;
- 	} else {
- 		ret = tz->ops->set_emul_temp(tz, temperature);
- 	}
+ 	for (count = 0; count < tz->trips; count++)
+ 		handle_thermal_trip(tz, count);
 -- 
 2.1.4
