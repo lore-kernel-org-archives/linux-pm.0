@@ -1,77 +1,46 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/2] cpufreq: powernv: Register for OCC related opal_message
- notification
-Date: Tue, 28 Apr 2015 14:37:37 +0530
-Message-ID: <553F4DD9.5060509@linux.vnet.ibm.com>
-References: <1430202214-13807-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1430202214-13807-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <CAKohpomaOvpdOYqAsOyPn0nRG0Mb68JscXhgBPDa6grqRAE8zA@mail.gmail.com> <553F426B.3050601@linux.vnet.ibm.com> <CAKohpon0XNfSo2qht_zZSspQCUMSG1mV_=SMnWdMbTMKQq0DVA@mail.gmail.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 16/20] sched/idle: Use explicit broadcast oneshot control function
+Date: Tue, 28 Apr 2015 12:11:19 +0200
+Message-ID: <CACRpkdZYK1AMx1j0TV2tj9_ipG5NpXFhB+RpzN9Cy8L72hMPKg@mail.gmail.com>
+References: <2112147.0kYCHhbEJT@vostro.rjw.lan>
+	<18575128.8R6Lp68k0Q@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp09.in.ibm.com ([122.248.162.9]:45061 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932510AbbD1JIH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2015 05:08:07 -0400
-Received: from /spool/local
-	by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
-	Tue, 28 Apr 2015 14:38:04 +0530
-In-Reply-To: <CAKohpon0XNfSo2qht_zZSspQCUMSG1mV_=SMnWdMbTMKQq0DVA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <18575128.8R6Lp68k0Q@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
+On Thu, Apr 2, 2015 at 12:22 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 
+> From: Thomas Gleixner <tglx@linutronix.de>
+>
+> Replace the clockevents_notify() call with an explicit function call.
+>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On 04/28/2015 02:23 PM, Viresh Kumar wrote:
-> On 28 April 2015 at 13:48, Shilpasri G Bhat
-> <shilpa.bhat@linux.vnet.ibm.com> wrote:
->> My bad I haven't added explicit comment to state reason behind this change.
->>
->> I modified the definition of *throttle_check() to match the function definition
->> to be called via smp_call() instead of adding an additional wrapper around
->> *throttle_check().
->>
->> OCC is a chip entity and any local throttle state changes should be associated
->> to cpus belonging to that chip. The *throttle_check() will read the core
->> register PMSR to verify throttling. All the cores in a chip will have the same
->> throttled state as they are managed by a the same OCC in that chip.
->>
->> smp_call() is required to ensure *throttle_check() is called on a cpu belonging
->> to the chip for which we have received throttled/unthrottled notification. We
->> could be handling throttled/unthrottled notification of 'chip1' in 'chip2' so do
->> an smp_call() on 'chip1'.
-> 
-> Okay. Lets talk about the code that is already present in mainline. Isn't that
-> suffering from this issue ? If yes, then you need to bugfix that separately.
+For some reason this makes my Ux500 system arbitrarily hang,
+especially during boot. Bisected down to this commit.
+Since the entire changeset is removing the notifications
+altogether I can't just revert it.
 
-Nope. The upstream code does not have this issue as it does not have checks to
-detect unthrottling state. The unthrottling i.e, 'throttled=false' is being
-handled only in this patchset.
+Disabling CONFIG_CPU_IDLE removes the problem.
 
-Yes this can be fixed separately.
+Tried registering a stub driver (I just #if 0 all the code in
+drivers/cpuidle/cpuidle-ux500.c) it still crashes.
 
-> 
->> We are irq_disabled in powernv_cpufreq_occ_msg() the notification handler.
->> Thus the use of kworker to do an smp_call and restore policy->cur.
->>
->> OCC_RESET is global event it affects frequency of all chips. Pmax capping is
->> local event, it affects the frequency of a chip.
->>
-> 
->>> That's a lot. I am not an expert here and so really can't comment on
->>> the internals of ppc. But, is it patch solving a single problem ? I don't
->>> know, I somehow got the impression that it can be split into multiple
->>> (smaller & review-able) patches. Only if it makes sense. Your call.
->>
->> All the changes introduced in this patch is centered around opal_message
->> notification handler powernv_cpufreq_occ_msg(). I can split it into multiple
->> patches but it all will be relevant only to solve the above problem.
-> 
-> And that's what I meant here. Yes, this all is solving a central problem, but
-> a patch must be divided into separate, independently working, entities.
-> 
+That makes me think something inside the cpuidle subsystem
+is locking up after this, but my other idea is that the timer
+may be involved in some way, like this is stressing the timer
+in some new yet untested way.
 
-Yup agree. Will do.
+Has anyone else seen problems with this or is it only
+ux500?
 
+I'm looking closer at it but feel a bit clueless...
+
+Yours,
+Linus Walleij
