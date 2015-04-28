@@ -1,75 +1,137 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [RFC/RFT 2/6] clk: qcom: Add runtime support to handle clocks
- using PM clocks
-Date: Tue, 28 Apr 2015 08:22:04 +0530
-Message-ID: <553EF5D4.60900@codeaurora.org>
-References: <1429778744-13352-1-git-send-email-rnayak@codeaurora.org>	<1429778744-13352-3-git-send-email-rnayak@codeaurora.org>	<CAPDyKFpVXWGeO_kbOvPbdy83aN6wxkC77ydH_2C3Bo=5QsspoA@mail.gmail.com>	<553A21C7.4060506@codeaurora.org>	<CAMuHMdV_WD7vay-5VC20izUWFjc8rSW4wZQq6Y3xAa+SU0Quig@mail.gmail.com> <7hh9s1xrut.fsf@deeprootsystems.com>
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/2] cpufreq: powernv: Register for OCC related opal_message
+ notification
+Date: Tue, 28 Apr 2015 11:06:17 +0530
+Message-ID: <553F1C51.4060901@linux.vnet.ibm.com>
+References: <1429722265-2953-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1429722265-2953-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <CAKohpo=8m=PAof-AF2AQ+rMu-0bF8CvGywb-YaN=u3sJXjLvnw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <7hh9s1xrut.fsf@deeprootsystems.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:58055 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751348AbbD1FhN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2015 01:37:13 -0400
+Received: from /spool/local
+	by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+	Tue, 28 Apr 2015 15:37:11 +1000
+In-Reply-To: <CAKohpo=8m=PAof-AF2AQ+rMu-0bF8CvGywb-YaN=u3sJXjLvnw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 04/28/2015 01:32 AM, Kevin Hilman wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
->
->> On Fri, Apr 24, 2015 at 12:58 PM, Rajendra Nayak <rnayak@codeaurora.org> wrote:
->>>> Second, I want to see less users of pm_clk_add_notifier() since it's
->>>> not the proper/long-term way of how to assign PM domain pointers to a
->>>> device. Instead that shall be done at device registration point. In
->>>> your case while parsing the DT nodes and adding devices onto to their
->>>> buses.
->>>
->>> but these are devices which do not really have a controllable power
->>> domain, they just have controllable clocks.
->>>
->>>> Yes, I understand that it will requires quite some work to adopt to
->>>> this behaviour - but that how it shall be done.
->>>>
->>>> Finally, an important note, you don't need to use PM domains for these
->>>> devices at all and thus you don't need to fix what I propose. Instead
->>>> you only have to implement the runtime PM callbacks for each driver
->>>> and manage the clocks from there. That is probably also a easier
->>>> solution.
->>>
->>> But that would mean I repeat the same code in all drivers to do a
->>> clk_get/prepare/enable/disable/unprepare of the same "core" and "iface"
->>> clocks. I thought we have clock_ops.c just to avoid that (atleast up
->>> until we have a better way of doing it)
->>> And there are atleast a few architecture which have used it to avoid the
->>> duplication across all drivers (omap1/davinci/sh/keystone)
->>
->> At least for arm/shmobile, we're planning to move away from this, cfr.
->> http://www.spinics.net/lists/linux-sh/msg41114.html
->
-> Just to clarify for Rajendra's sake...
->
-> SH is moving away from the pm_clk_add_notifier(), but not duplicating
-> the clk_get/prepare/enable/disable/unprepare across all the drivers.
->
-> Rather, they're using a genpd to model the clock domain, and taking
-> advantage of the pm_domain speciic attach callback to attach the PM
-> clocks.
->
-> This should work for qcom also assuming that these device nodes don't
-> also need to belong to a different PM domain.
+Hi Viresh,
 
-Thanks Kevin, I did look up the patches that Geert pointed me to, and
-figured I can do something similar for qcom as well like you said.
+On 04/27/2015 10:02 AM, Viresh Kumar wrote:
+> On 22 April 2015 at 22:34, Shilpasri G Bhat
+> <shilpa.bhat@linux.vnet.ibm.com> wrote:
+>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> 
+>> +static char throttle_reason[6][50] = { "No throttling",
+> 
+> Don't need to mention 6 here.
+> 
+> And the max length you need right now is 27, so maybe s/50/30 ?
+> 
+> Also, start 'No Throttling' in a new line, like below.
 
-There are 2 types of devices that I will need to handle, one which have
-clocks and also a power switch to turn the power domain on/off (camera,
-graphics, display), and others which only have clocks and no power
-switch to control the power domain (serial, sdhc, i2c, spi).
+Will do.
+> 
+>> +                                       "Power Cap",
+>> +                                       "Processor Over Temperature",
+>> +                                       "Power Supply Failure",
+>> +                                       "OverCurrent",
+> 
+> s/OverCurrent/Over Current/ ?
 
-I was already using genpd attach/detach to handle clocks for the
-devices with a power switch and genpd on/off to turn the PD on and off.
-I guess I can also control the rest of the devices the same way, just
-that the genpd on/off for them would do nothing.
-That way I don't have to use pm_clk_add_notifier() and can also
-associate the power domain (with no on/off control) to devices
-through DT (and there isn;t any duplication of code in the drivers)
+Okay.
+> 
+>> +                                       "OCC Reset"
+>> +                                    };
+>> +
+>> +static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+>> +               unsigned long msg_type, void *msg)
+>> +{
+>> +       struct opal_msg *occ_msg = msg;
+>> +       uint64_t token;
+>> +       uint64_t chip_id, reason;
+>> +
+>> +       if (msg_type != OPAL_MSG_OCC)
+>> +               return 0;
+> 
+> Blank line here.
+
+Okay
+> 
+>> +       token = be64_to_cpu(occ_msg->params[0]);
+> 
+> Here as well..
+> 
+>> +       switch (token) {
+>> +       case 0:
+>> +               occ_reset = true;
+>> +               /*
+>> +                * powernv_cpufreq_throttle_check() is called in
+>> +                * target() callback which can detect the throttle state
+>> +                * for governors like ondemand.
+>> +                * But static governors will not call target() often thus
+>> +                * report throttling here.
+>> +                */
+> 
+> Now, do I understand correctly that this notifier will be called as
+> soon as we switch throttling state ?
+> 
+> If yes, then do we still need the throttle_check() routine you added
+> earlier ? Maybe not.
+
+We cannot remove throttle_check() routine for the following reasons:
+1) To report old firmware bugs which do not restore frequency control to host
+after an OCC reset.
+2) In BMC based boxes if OCC crashes currently firmware will not send 'reset'
+and 'load' messages, in such cases throttle_check() will be sufficient to
+monitor a throttled state caused by 'reset'.
+3) Throttle reporting in old firmwares which do not have this notification.
+
+> 
+>> +               if (!throttled) {
+>> +                       throttled = true;
+>> +                       pr_crit("CPU Frequency is throttled\n");
+>> +               }
+>> +               pr_info("OCC in Reset\n");
+>> +               break;
+>> +       case 1:
+>> +               pr_info("OCC is Loaded\n");
+>> +               break;
+>> +       case 2:
+>> +               chip_id = be64_to_cpu(occ_msg->params[1]);
+>> +               reason = be64_to_cpu(occ_msg->params[2]);
+> 
+> Blank line here.
+
+Okay
+> 
+>> +               if (occ_reset) {
+>> +                       occ_reset = false;
+>> +                       throttled = false;
+>> +                       pr_info("OCC is Active\n");
+>> +                       /* Sanity check for static governors */
+>> +                       powernv_cpufreq_throttle_check(smp_processor_id());
+>> +               } else if (reason) {
+>> +                       throttled = true;
+>> +                       pr_info("Pmax reduced due to %s on chip %x\n",
+>> +                                       throttle_reason[reason], (int)chip_id);
+>> +               } else {
+>> +                       throttled = false;
+>> +                       pr_info("%s on chip %x\n",
+>> +                                       throttle_reason[reason], (int)chip_id);
+>> +               }
+> 
+> Run checkpatch with --strict option, and you will see some warnings.
+
+Okay will do.
+
+Thanks and Regards,
+Shilpa
+
