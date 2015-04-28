@@ -1,30 +1,68 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PULL] Thermal management updates for v4.1-rc2
-Date: Mon, 27 Apr 2015 14:04:53 -0700
-Message-ID: <CA+55aFx3O0Z9M0hBzdkd_bU_Yi1DgEG9=d+3vqyMVAto9TsH4A@mail.gmail.com>
-References: <1430135910.3335.14.camel@rzhang1-mobl4>
+From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: Re: [patch] thermal: rockchip: fix an error code
+Date: Tue, 28 Apr 2015 08:35:50 +0800
+Message-ID: <553ED5E6.3090800@rock-chips.com>
+References: <20150421093410.GE12098@mwanda> <55371080.4090307@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f169.google.com ([209.85.213.169]:38291 "EHLO
-	mail-ig0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965050AbbD0VE4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Apr 2015 17:04:56 -0400
-Received: by igbhj9 with SMTP id hj9so4762260igb.1
-        for <linux-pm@vger.kernel.org>; Mon, 27 Apr 2015 14:04:55 -0700 (PDT)
-In-Reply-To: <1430135910.3335.14.camel@rzhang1-mobl4>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <55371080.4090307-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Dan Carpenter <dan.carpenter-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Caesar Wang <caesar.wang-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Cc: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-janitors-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-On Mon, Apr 27, 2015 at 4:58 AM, Zhang Rui <rui.zhang@intel.com> wrote:
->
-> to receive the Thermal Management updates for v4.1-rc2
-> with top-most commit
-
-This came outside the merge window (why?), so I'm ignoring it.
-
-If you have bug-fixes, send those. The rest can wait until 4.2.
-
-                        Linus
+RGFuLAoK5ZyoIDIwMTXlubQwNOaciDIy5pelIDExOjA3LCBDYWVzYXIgV2FuZyDlhpnpgZM6Cj4K
+Pgo+IOWcqCAyMDE15bm0MDTmnIgyMeaXpSAxNzozNCwgRGFuIENhcnBlbnRlciDlhpnpgZM6Cj4+
+IFRoZXJlIGlzIGEgY29weSBhbmQgcGFzdGUgYnVnLCAiLT5jbGsiIHZzICItPnBjbGsiLCBzbyB3
+ZSByZXR1cm4gdGhlCj4+IHdyb25nIGVycm9yIGNvZGUgaGVyZS4KPj4KPj4gRml4ZXM6IGNiYWM4
+ZjYzOTQzNyAoJ3RoZXJtYWw6IHJvY2tjaGlwOiBhZGQgZHJpdmVyIGZvciB0aGVybWFsJykKPj4g
+U2lnbmVkLW9mZi1ieTogRGFuIENhcnBlbnRlciA8ZGFuLmNhcnBlbnRlckBvcmFjbGUuY29tPgo+
+Pgo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL3JvY2tjaGlwX3RoZXJtYWwuYyAKPj4g
+Yi9kcml2ZXJzL3RoZXJtYWwvcm9ja2NoaXBfdGhlcm1hbC5jCj4+IGluZGV4IDNhYTQ2YWMuLmNk
+OGY1ZjkzIDEwMDY0NAo+PiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvcm9ja2NoaXBfdGhlcm1hbC5j
+Cj4+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9yb2NrY2hpcF90aGVybWFsLmMKPj4gQEAgLTUyOSw3
+ICs1MjksNyBAQCBzdGF0aWMgaW50IHJvY2tjaGlwX3RoZXJtYWxfcHJvYmUoc3RydWN0IAo+PiBw
+bGF0Zm9ybV9kZXZpY2UgKnBkZXYpCj4+ICAgICAgICAgdGhlcm1hbC0+cGNsayA9IGRldm1fY2xr
+X2dldCgmcGRldi0+ZGV2LCAiYXBiX3BjbGsiKTsKPj4gICAgICAgaWYgKElTX0VSUih0aGVybWFs
+LT5wY2xrKSkgewo+PiAtICAgICAgICBlcnJvciA9IFBUUl9FUlIodGhlcm1hbC0+Y2xrKTsKPj4g
+KyAgICAgICAgZXJyb3IgPSBQVFJfRVJSKHRoZXJtYWwtPnBjbGspOwo+IFllYWgsIHlvdSBhcmUg
+cmlnaHQuCj4gUmV2aWV3ZWQtYnk6IENhZXNhciBXYW5nIDx3eHRAcm9jay1jaGlwcy5jb20+Cj4K
+ClRlc3RlZC1ieTogQ2Flc2FyIFdhbmcgPHd4dEByb2NrLWNoaXBzLmNvbT4KCj4gVGhhbmtzLgo+
+Cj4gQ2Flc2FyCj4+ICAgICAgICAgICBkZXZfZXJyKCZwZGV2LT5kZXYsICJmYWlsZWQgdG8gZ2V0
+IGFwYl9wY2xrIGNsb2NrOiAlZFxuIiwKPj4gICAgICAgICAgICAgICBlcnJvcik7Cj4+ICAgICAg
+ICAgICByZXR1cm4gZXJyb3I7Cj4+Cj4+Cj4+Cj4KCi0tIAoqKioqKioqKioqKioqKioqKioqKioq
+KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
+KioqKioqKgrnjovmmZPohb4gICAgQ2Flc2FyIFdhbmcKUHJvZHVjdCBSJkQgRGVwdC5JSUkKRnV6
+aG91IFJvY2tjaGlwIEVsZWN0cm9uaWNzIENvLkx0ZApBZGRy77yaICBOTy4xOCBCdWlsZGluZywg
+QSBEaXN0cmljdCwgRnV6aG91IFNvZnR3YXJlIFBhcmssR3Vsb3UgRGlzdHJpY3QsRnV6aG91LCBG
+dWppYW4sQ2hpbmEoRnV6aG91IEhlYWRxdWFydGVycykKICAgICAgICAgICAgICAgMjFGLE1hbGF0
+YSBCdWlsZGluZyxLZWppemhvbmd5aSBBdmVudWUsTmFuc2hhbiBEaXN0cmljdCxTaGVuemhlbiAg
+KFNoZW56aGVuIE9mZmljZSkKVGVs77yaKzg2LTU5MS04Mzk5MTkwNi8wNyAtIDgyMjEKTW9iaWxl
+Ois4NiAxNTA1OTQ1Njc0MgpFLW1haWwgOiB3eHRAcm9jay1jaGlwcy5jb20KKioqKioqKioqKioq
+KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
+KioqKioqKioqKioqKioqKioqCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
+KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKgpJTVBPUlRB
+TlQgTk9USUNFOiBUaGlzIGVtYWlsIGlzIGZyb20gRnV6aG91IFJvY2tjaGlwIEVsZWN0cm9uaWNz
+IENvLiwgTHRkIC5UaGUgY29udGVudHMgb2YgdGhpcyBlbWFpbCBhbmQgYW55IGF0dGFjaG1lbnRz
+IG1heQpjb250YWluIGluZm9ybWF0aW9uIHRoYXQgaXMgcHJpdmlsZWdlZCwgY29uZmlkZW50aWFs
+IGFuZC9vciBleGVtcHQgZnJvbSBkaXNjbG9zdXJlIHVuZGVyIGFwcGxpY2FibGUgbGF3IGFuZCBy
+ZWxldmFudCBOREEuCklmIHlvdSBhcmUgbm90IHRoZSBpbnRlbmRlZCByZWNpcGllbnQsIHlvdSBh
+cmUgaGVyZWJ5IG5vdGlmaWVkIHRoYXQgYW55IGRpc2Nsb3N1cmUsIGNvcHlpbmcsIGRpc3RyaWJ1
+dGlvbiwgb3IgdXNlIG9mIHRoZQppbmZvcm1hdGlvbiBpcyBTVFJJQ1RMWSBQUk9ISUJJVEVELiBQ
+bGVhc2UgaW1tZWRpYXRlbHkgY29udGFjdCB0aGUgc2VuZGVyIGFzIHNvb24gYXMgcG9zc2libGUg
+YW5kIGRlc3Ryb3kgdGhlIG1hdGVyaWFsCmluIGl0cyBlbnRpcmV0eSBpbiBhbnkgZm9ybWF0LiBU
+aGFuayB5b3UuCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
+KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKgoKCgpfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1yb2NrY2hpcCBtYWlsaW5n
+IGxpc3QKTGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5m
+cmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXJvY2tjaGlwCg==
