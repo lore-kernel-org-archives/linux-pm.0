@@ -1,71 +1,83 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 16/20] sched/idle: Use explicit broadcast oneshot control
- function
-Date: Tue, 28 Apr 2015 14:58:37 +0100
-Message-ID: <553F920D.6090404@arm.com>
-References: <2112147.0kYCHhbEJT@vostro.rjw.lan> <8051605.iKEaLUIlGb@vostro.rjw.lan> <4162206.ldgadmp1aL@vostro.rjw.lan> <21687949.Wq8byZT4f8@vostro.rjw.lan>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: Re: [PATCH v3 1/2] PM / sleep: Let devices force direct_complete
+Date: Tue, 28 Apr 2015 16:26:39 +0200
+Message-ID: <CAAObsKAJzu3uJ3ZNKfK3U8Ae4W9STXXdyhVrNYsn0MK2uSoZHA@mail.gmail.com>
+References: <CAAObsKA7EFRmWGaGS6nTwMzFyoPcSXjmY5CZqHHVE+ART4EJNg@mail.gmail.com>
+ <Pine.LNX.4.44L0.1504200957190.1321-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <21687949.Wq8byZT4f8@vostro.rjw.lan>
+In-Reply-To: <Pine.LNX.4.44L0.1504200957190.1321-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 28/04/15 15:14, Rafael J. Wysocki wrote:
-> On Tuesday, April 28, 2015 03:37:44 PM Rafael J. Wysocki wrote:
->> On Tuesday, April 28, 2015 03:31:54 PM Rafael J. Wysocki wrote:
->>> On Tuesday, April 28, 2015 02:37:10 PM Linus Walleij wrote:
->>>> On Tue, Apr 28, 2015 at 2:19 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>>>> Sudeep:
->>>>>> At-least I observed issue only when I am using hardware broadcast timer.
->>>>>> It doesn't hang when I am using hrtimer as broadcast timer in which case
->>>>>> one of the cpu will be not enter deeper idle states that lose timer.
->>>>>> I will rerun on v4.1-rc1 and post the complete log.
->>>>>
->>>>> So the bug here is that cpuidle_enter() enables interrupts, so the
->>>>> assumption about them being not enabled made by
->>>>> tick_broadcast_oneshot_control() is actually not valid.
->>>>>
->>>>> It looks like we need to acquire the clockevents_lock at least in this
->>>>> particular case.  Let me see where to put it and I'll send a patch for
->>>>> testing.
->>>>
->>>> Aha that looks very much like it. Put me on the patch and I'll
->>>> take it for a spin.
->>>
->>> OK, so something like the below for starters (the _irqsave variant is used to
->>> avoid adding one more WARN_ON(irqs_disabled()) in there).
->>>
->>> I haven't tested it, but then I can't reproduce the original issue in the
->>> first place.
+On 20 April 2015 at 16:12, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Mon, 20 Apr 2015, Tomeu Vizoso wrote:
+>
+>> On 17 April 2015 at 19:30, Alan Stern <stern@rowland.harvard.edu> wrote:
+>> > On Fri, 17 Apr 2015, Laurent Pinchart wrote:
+>> >
+>> >> Hi Tomeu,
+>> >>
+>> >> Thank you for the patch.
+>> >>
+>> >> On Friday 17 April 2015 17:24:49 Tomeu Vizoso wrote:
+>> >> > Introduce a new per-device flag power.force_direct_complete that will
+>> >> > instruct the PM core to ignore the runtime PM status of its descendants
+>> >> > when deciding whether to let this device remain in runtime suspend when
+>> >> > the system goes into a sleep power state.
+>> >> >
+>> >> > This is needed because otherwise it would be needed to get dozens of
+>> >> > drivers to implement the prepare() callback and be runtime PM active
+>> >> > even if they don't have a 1-to-1 relationship with a piece of HW.
+>> >>
+>> >> I'll let PM experts comment on the approach, but I believe the new flag would
+>> >> benefit from being documented (likely in Documentation/power/devices.txt) :-)
+>> >
+>> > Documentation/power/runtime_pm.txt is the right place.
+>> >
+>> > However, I'm not sure that this is the sort of thing Rafael meant when
+>> > he suggested adding a new flag.  I thought he meant the PM core would
+>> > look at the new flag only if there was no ->prepare method at all.
+>> > Then if the new flag was set, the PM core would act as though ->prepare
+>> > had returned 1.  That way there would be no need to add silly little
+>> > one-line *_prepare() routines all over the place.
+>> >
+>> > Maybe he had something else in mind, though...
 >>
->> Of course, the whole "broadcast" thing could be done from cpuidle_enter()
->> in the first place, but then we could not avoid the problem with the cpuidle
->> *callback* enabling interrupts possibly in there anyway (not to mention the
->> "coupled" stuff).
+>> Yeah, I also interpreted it like that, but when I started looking at
+>> how it would work, I found that it would be awkward if the uvcvideo
+>> driver had to track all the devices that get attached below its
+>> devices in order to set that flag to them.
+>>
+>> When thinking about it, it occurred to me that it may make more sense
+>> if we model this as a property of the device bound to the uvcvideo
+>> driver, as what's happening here is that the uvcvideo driver knows
+>> that it's safe to remain in runtime suspend when the system goes to
+>> sleep, and that all its descendant devices can be ignored in that
+>> regard.
 >
-> That said, if the given state is marked with CPUIDLE_FLAG_TIMER_STOP, I really
-> wouldn't expect it to re-enable interrupts on exit and the "coupled" thing
-> seems to be fundamentally at odds with that flag either.
+> What you're proposing makes sense, but it is a significant change to
+> the runtime PM core.  It should be submitted separately, not as part of
+> an update to the UVC driver, and it should be discussed at length.
 >
-> So it should be possible to move the "broadcast" logic into the cpuidle layer,
-> which I'm going to try to do.
+> Basically, you want to mark certain devices to say that they will
+> _always_ use direct-suspend.  This means that all descendant devices
+> will be forced to use direct-suspend also, and therefore any driver
+> bound to one of these descendant devices will be unable to communicate
+> with it during a system sleep transition.  This is a non-trivial
+> restriction.
 >
+> Among other things, it means that wakeup settings can't be altered
+> during a sleep transition.  Therefore this should be allowed only for
+> devices that are not wakeup-capable.
 
-Makes sense.
+Hi Rafael,
 
-> Please test the patch I've sent, though, as it should bring the code back to
-> where it was before the clockevents_notify() removal and it'd be good to verify
-> that.
->
+do you have any comments on this?
 
-I tested your patch and it works now. Anyways I am continuing to run
-stress tests on my board. I will report if I find any issues.
+Thanks,
 
-Regards,
-Sudeep
+Tomeu
