@@ -1,70 +1,56 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 0/3] Introduce SET_NOIRQ_SYSTEM_SLEEP_PM_OPS and use it
-Date: Tue, 28 Apr 2015 09:40:39 +0200
-Message-ID: <CAPDyKFqOTkuJkefVjxyPq0pFfszWbnhnRpQ8DJTr_qoW3=C_Wg@mail.gmail.com>
-References: <1430159072-31440-1-git-send-email-grygorii.strashko@linaro.org>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 01/13] thermal: Make temperatures consistently unsigned
+ long
+Date: Tue, 28 Apr 2015 09:42:24 +0200
+Message-ID: <20150428074224.GI6325@pengutronix.de>
+References: <1427385240-6086-1-git-send-email-s.hauer@pengutronix.de>
+ <1427385240-6086-2-git-send-email-s.hauer@pengutronix.de>
+ <20150427203608.GD29351@xo-6d-61-c0.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f173.google.com ([209.85.216.173]:34698 "EHLO
-	mail-qc0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932105AbbD1Hkj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2015 03:40:39 -0400
-Received: by qcyk17 with SMTP id k17so66448711qcy.1
-        for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2015 00:40:39 -0700 (PDT)
-In-Reply-To: <1430159072-31440-1-git-send-email-grygorii.strashko@linaro.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:58035 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932287AbbD1Hmb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2015 03:42:31 -0400
+Content-Disposition: inline
+In-Reply-To: <20150427203608.GD29351@xo-6d-61-c0.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-omap <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Nishanth Menon <nm@ti.com>, Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <ssantosh@kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-On 27 April 2015 at 20:24,  <grygorii.strashko@linaro.org> wrote:
-> From: Grygorii Strashko <grygorii.strashko@linaro.org>
->
-> While working on suspend-to-disk functionality on TI dra7-evm (DRA7xx SoC)
-> i've found that the most common problem I have to dial with is absence
-> of corresponding PM callbacks in drivers and, in particular, noirq callbacks.
-> So, I've fixed one driver first
-> commit 6248015d6867 "ARM: omap-device: add missed callback for suspend-to-disk"
-> but then found another one which need to be fixed too (omap_l3_noc.c).
-> At this moment I decided to make my life easier and added new macro
-> SET_NOIRQ_SYSTEM_SLEEP_PM_OPS using the same approach as for the existing
-> SET_SYSTEM_SLEEP_PM_OPS macro.
->
-> SET_NOIRQ_SYSTEM_SLEEP_PM_OPS: defined for CONFIG_PM_SLEEP and
-> assigns ->suspend_noirq, ->freeze_noirq and ->poweroff_noirq to the same
-> function. Vice versa happens for ->resume_noirq, ->thaw_noirq and
-> ->restore_noirq.
->
-> Further two patches reuse this newly introduced macro.
->
-> SET_NOIRQ_SYSTEM_SLEEP_PM_OPS, defined for CONFIG_PM_SLEEP, will
->     point ->suspend_noirq, ->freeze_noirq and ->poweroff_noirq to the same
->     function. Vice versa happens for ->resume_noirq, ->thaw_noirq and
->     ->restore_noirq.
->
-> Cc: Tony Lindgren <tony@atomide.com>
-> Cc: Nishanth Menon <nm@ti.com>
-> Cc: Kevin Hilman <khilman@linaro.org>
-> Cc: Santosh Shilimkar <ssantosh@kernel.org>
->
-> Grygorii Strashko (3):
->   PM / Sleep: Add macro to define common noirq system PM callbacks
->   bus: omap_l3_noc: add missed callbacks for suspend-to-disk
->   ARM: omap-device: use SET_NOIRQ_SYSTEM_SLEEP_PM_OPS
->
->  arch/arm/mach-omap2/omap_device.c |  7 ++-----
->  drivers/bus/omap_l3_noc.c         |  4 ++--
->  include/linux/pm.h                | 12 ++++++++++++
->  3 files changed, 16 insertions(+), 7 deletions(-)
->
-> --
-> 1.9.1
->
+On Mon, Apr 27, 2015 at 10:36:08PM +0200, Pavel Machek wrote:
+> On Thu 2015-03-26 16:53:48, Sascha Hauer wrote:
+> > The thermal framework uses int, long and unsigned long for temperatures
+> > in millicelsius. The majority of functions uses unsigned long, so change
+> > the remaining functions to use this type aswell.
+> 
+> Maybe millicelsius_t should be introduced, so that readers immediately know
+> what type it is? Some parts of kernel also use decicelsius and decikelvin, IIRC (ACPI).
 
-For the patchset.
+I have no strong opinion on this. I'll send out the next version without
+typedef for now. Since in my patch I identified most places which need a
+type change anyway it might be a good opportunity to change to a typedef
+if we want to. Any other opinions on this?
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> 
+> 									Pavel
+> 
+> >  	if (trip_type == THERMAL_TRIP_CRITICAL) {
+> >  		dev_emerg(&tz->device,
+> > -			  "critical temperature reached(%d C),shutting down\n",
+> > +			  "critical temperature reached(%lu C),shutting down\n",
+> 
+> space after , ?
 
-Kind regards
-Uffe
+Turns out that in the new version of this series I don't have to modify
+this line anymore. Made this a separate patch.
+
+Sascha
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
