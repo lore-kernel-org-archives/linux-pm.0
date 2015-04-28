@@ -1,27 +1,28 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject: Re: [PATCH 16/20] sched/idle: Use explicit broadcast oneshot control
  function
-Date: Tue, 28 Apr 2015 11:17:51 +0100
-Message-ID: <553F5E4F.9040300@arm.com>
+Date: Tue, 28 Apr 2015 12:34:30 +0200
+Message-ID: <553F6236.5020300@linaro.org>
 References: <2112147.0kYCHhbEJT@vostro.rjw.lan>	<18575128.8R6Lp68k0Q@vostro.rjw.lan> <CACRpkdZYK1AMx1j0TV2tj9_ipG5NpXFhB+RpzN9Cy8L72hMPKg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <CACRpkdZYK1AMx1j0TV2tj9_ipG5NpXFhB+RpzN9Cy8L72hMPKg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: Linus Walleij <linus.walleij@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 28/04/15 11:11, Linus Walleij wrote:
-> On Thu, Apr 2, 2015 at 12:22 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+On 04/28/2015 12:11 PM, Linus Walleij wrote:
+> On Thu, Apr 2, 2015 at 12:22 AM, Rafael J. Wysocki <rjw@rjwysocki.net=
+> wrote:
 >
 >> From: Thomas Gleixner <tglx@linutronix.de>
 >>
->> Replace the clockevents_notify() call with an explicit function call.
+>> Replace the clockevents_notify() call with an explicit function call=
+=2E
 >>
 >> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
@@ -45,13 +46,28 @@ On 28/04/15 11:11, Linus Walleij wrote:
 > ux500?
 >
 > I'm looking closer at it but feel a bit clueless...
+
+If you keep the #if 0 and remove the CPUIDLE_FLAG_TIMER_STOP flag, does=
+=20
+it still crash ?
+
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 >
 
-Yes I am too in similar situation with my Vexpress platform.
-I did report with the lockdep logs[1] before v4.1-rc1.
-I still see the issue with v4.1-rc1.
 
-Regards,
-Sudeep
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-[1] https://lkml.org/lkml/2015/4/23/329
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
