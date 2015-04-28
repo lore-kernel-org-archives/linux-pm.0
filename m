@@ -1,136 +1,147 @@
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 Subject: Re: [PATCH 2/2] cpufreq: powernv: Register for OCC related opal_message
  notification
-Date: Tue, 28 Apr 2015 11:06:17 +0530
-Message-ID: <553F1C51.4060901@linux.vnet.ibm.com>
-References: <1429722265-2953-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1429722265-2953-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <CAKohpo=8m=PAof-AF2AQ+rMu-0bF8CvGywb-YaN=u3sJXjLvnw@mail.gmail.com>
+Date: Tue, 28 Apr 2015 11:10:10 +0530
+Message-ID: <553F1D3A.7010505@linux.vnet.ibm.com>
+References: <1429722265-2953-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1429722265-2953-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <5538DE7E.1020805@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-6
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp03.au.ibm.com ([202.81.31.145]:58055 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbbD1FhN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2015 01:37:13 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:46276 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750970AbbD1FlH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2015 01:41:07 -0400
 Received: from /spool/local
-	by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
-	Tue, 28 Apr 2015 15:37:11 +1000
-In-Reply-To: <CAKohpo=8m=PAof-AF2AQ+rMu-0bF8CvGywb-YaN=u3sJXjLvnw@mail.gmail.com>
+	Tue, 28 Apr 2015 15:41:05 +1000
+In-Reply-To: <5538DE7E.1020805@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-Hi Viresh,
+Hi Preeti,
 
-On 04/27/2015 10:02 AM, Viresh Kumar wrote:
-> On 22 April 2015 at 22:34, Shilpasri G Bhat
-> <shilpa.bhat@linux.vnet.ibm.com> wrote:
+On 04/23/2015 05:28 PM, Preeti U Murthy wrote:
+> Hi Shilpa,
+> 
+> On 04/22/2015 10:34 PM, Shilpasri G Bhat wrote:
+>> OCC is an On-Chip-Controller which takes care of power and thermal
+>> safety of the chip. During runtime due to power failure or
+>> overtemperature the OCC may throttle the frequencies of the CPUs to
+>> remain within the power budget.
+>>
+>> We want the cpufreq driver to be aware of such situations to be able
+>> to report it to the user. We register to opal_message_notifier to
+>> receive OCC messages from opal.
+>>
+>> powernv_cpufreq_throttle_check() reports any frequency throttling and
+>> this patch will report the reason or event that caused throttling. We
+>> can be throttled if OCC is reset or OCC limits Pmax due to power or
+>> thermal reasons. We are also notified of unthrottling after an OCC
+>> reset or if OCC restores Pmax on the chip.
+>>
+>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>> CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>> CC: Viresh Kumar <viresh.kumar@linaro.org>
+>> CC: linux-pm@vger.kernel.org
+>> ---
+>>  drivers/cpufreq/powernv-cpufreq.c | 70 ++++++++++++++++++++++++++++++++++++++-
+>>  1 file changed, 69 insertions(+), 1 deletion(-)
+>>
 >> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> 
->> +static char throttle_reason[6][50] = { "No throttling",
-> 
-> Don't need to mention 6 here.
-> 
-> And the max length you need right now is 27, so maybe s/50/30 ?
-> 
-> Also, start 'No Throttling' in a new line, like below.
-
-Will do.
-> 
->> +                                       "Power Cap",
->> +                                       "Processor Over Temperature",
->> +                                       "Power Supply Failure",
->> +                                       "OverCurrent",
-> 
-> s/OverCurrent/Over Current/ ?
-
-Okay.
-> 
->> +                                       "OCC Reset"
->> +                                    };
+>> index ebef0d8..5718765 100644
+>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>> @@ -32,6 +32,7 @@
+>>  #include <asm/firmware.h>
+>>  #include <asm/reg.h>
+>>  #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
+>> +#include <asm/opal.h>
+>>
+>>  #define POWERNV_MAX_PSTATES	256
+>>  #define PMSR_PSAFE_ENABLE	(1UL << 30)
+>> @@ -40,7 +41,7 @@
+>>  #define PMSR_LP(x)		((x >> 48) & 0xFF)
+>>
+>>  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+>> -static bool rebooting, throttled;
+>> +static bool rebooting, throttled, occ_reset;
+>>
+>>  /*
+>>   * Note: The set of pstates consists of contiguous integers, the
+>> @@ -395,6 +396,72 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
+>>  	.notifier_call = powernv_cpufreq_reboot_notifier,
+>>  };
+>>
+>> +static char throttle_reason[6][50] = {	"No throttling",
+>> +					"Power Cap",
+>> +					"Processor Over Temperature",
+>> +					"Power Supply Failure",
+>> +					"OverCurrent",
+>> +					"OCC Reset"
+>> +				     };
 >> +
 >> +static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->> +               unsigned long msg_type, void *msg)
+>> +		unsigned long msg_type, void *msg)
 >> +{
->> +       struct opal_msg *occ_msg = msg;
->> +       uint64_t token;
->> +       uint64_t chip_id, reason;
+>> +	struct opal_msg *occ_msg = msg;
+>> +	uint64_t token;
+>> +	uint64_t chip_id, reason;
 >> +
->> +       if (msg_type != OPAL_MSG_OCC)
->> +               return 0;
+>> +	if (msg_type != OPAL_MSG_OCC)
+>> +		return 0;
+>> +	token = be64_to_cpu(occ_msg->params[0]);
+>> +	switch (token) {
+>> +	case 0:
+>> +		occ_reset = true;
+>> +		/*
+>> +		 * powernv_cpufreq_throttle_check() is called in
+>> +		 * target() callback which can detect the throttle state
+>> +		 * for governors like ondemand.
+>> +		 * But static governors will not call target() often thus
+>> +		 * report throttling here.
+>> +		 */
+>> +		if (!throttled) {
+>> +			throttled = true;
+>> +			pr_crit("CPU Frequency is throttled\n");
+>> +		}
+>> +		pr_info("OCC in Reset\n");
+>> +		break;
+>> +	case 1:
+>> +		pr_info("OCC is Loaded\n");
+>> +		break;
+>> +	case 2:
 > 
-> Blank line here.
-
-Okay
-> 
->> +       token = be64_to_cpu(occ_msg->params[0]);
-> 
-> Here as well..
-> 
->> +       switch (token) {
->> +       case 0:
->> +               occ_reset = true;
->> +               /*
->> +                * powernv_cpufreq_throttle_check() is called in
->> +                * target() callback which can detect the throttle state
->> +                * for governors like ondemand.
->> +                * But static governors will not call target() often thus
->> +                * report throttling here.
->> +                */
-> 
-> Now, do I understand correctly that this notifier will be called as
-> soon as we switch throttling state ?
-> 
-> If yes, then do we still need the throttle_check() routine you added
-> earlier ? Maybe not.
-
-We cannot remove throttle_check() routine for the following reasons:
-1) To report old firmware bugs which do not restore frequency control to host
-after an OCC reset.
-2) In BMC based boxes if OCC crashes currently firmware will not send 'reset'
-and 'load' messages, in such cases throttle_check() will be sufficient to
-monitor a throttled state caused by 'reset'.
-3) Throttle reporting in old firmwares which do not have this notification.
-
-> 
->> +               if (!throttled) {
->> +                       throttled = true;
->> +                       pr_crit("CPU Frequency is throttled\n");
->> +               }
->> +               pr_info("OCC in Reset\n");
->> +               break;
->> +       case 1:
->> +               pr_info("OCC is Loaded\n");
->> +               break;
->> +       case 2:
->> +               chip_id = be64_to_cpu(occ_msg->params[1]);
->> +               reason = be64_to_cpu(occ_msg->params[2]);
-> 
-> Blank line here.
-
-Okay
-> 
->> +               if (occ_reset) {
->> +                       occ_reset = false;
->> +                       throttled = false;
->> +                       pr_info("OCC is Active\n");
->> +                       /* Sanity check for static governors */
->> +                       powernv_cpufreq_throttle_check(smp_processor_id());
->> +               } else if (reason) {
->> +                       throttled = true;
->> +                       pr_info("Pmax reduced due to %s on chip %x\n",
->> +                                       throttle_reason[reason], (int)chip_id);
->> +               } else {
->> +                       throttled = false;
->> +                       pr_info("%s on chip %x\n",
->> +                                       throttle_reason[reason], (int)chip_id);
->> +               }
-> 
-> Run checkpatch with --strict option, and you will see some warnings.
+> You may want to replace the numbers with macros. Like
+> OCC_RESET,OCC_LOAD, OCC_THROTTLE for better readability.
 
 Okay will do.
+
+> 
+>> +		chip_id = be64_to_cpu(occ_msg->params[1]);
+>> +		reason = be64_to_cpu(occ_msg->params[2]);
+>> +		if (occ_reset) {
+>> +			occ_reset = false;
+>> +			throttled = false;
+>> +			pr_info("OCC is Active\n");
+>> +			/* Sanity check for static governors */
+>> +			powernv_cpufreq_throttle_check(smp_processor_id());
+>> +		} else if (reason) {
+>> +			throttled = true;
+>> +			pr_info("Pmax reduced due to %s on chip %x\n",
+>> +					throttle_reason[reason], (int)chip_id);
+>> +		} else {
+>> +			throttled = false;
+>> +			pr_info("%s on chip %x\n",
+>> +					throttle_reason[reason], (int)chip_id);
+> 
+> Don't you need a powernv_cpufreq_throttle_check() here?  Or is it ok to
+> rely on the OCC notification for unthrottle ?
+
+Yes we need to check. Fixing this in v2.
 
 Thanks and Regards,
 Shilpa
