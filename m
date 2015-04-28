@@ -1,41 +1,43 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 0/7] ARM: shmobile: Add IRQC clock to device tree
-Date: Tue, 28 Apr 2015 09:52:38 +0900
-Message-ID: <20150428005237.GB557@verge.net.au>
-References: <1426704961-27322-1-git-send-email-geert+renesas@glider.be>
- <20150319014328.GJ14051@verge.net.au>
- <CAMuHMdXOBPZe6JDccvq88asPJ4D-hA_HPOv0pnUhk9rVwuF6cg@mail.gmail.com>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: [GIT PULL] Thermal management updates for v4.1-rc2
+Date: Tue, 28 Apr 2015 02:40:02 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B909263014F3F2D@SHSMSX101.ccr.corp.intel.com>
+References: <1430135910.3335.14.camel@rzhang1-mobl4>
+ <CA+55aFx3O0Z9M0hBzdkd_bU_Yi1DgEG9=d+3vqyMVAto9TsH4A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdXOBPZe6JDccvq88asPJ4D-hA_HPOv0pnUhk9rVwuF6cg@mail.gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Magnus Damm <magnus.damm@gmail.com>, Linux-sh list <linux-sh@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:27168 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752864AbbD1CkG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 27 Apr 2015 22:40:06 -0400
+In-Reply-To: <CA+55aFx3O0Z9M0hBzdkd_bU_Yi1DgEG9=d+3vqyMVAto9TsH4A@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-On Mon, Apr 27, 2015 at 04:15:14PM +0200, Geert Uytterhoeven wrote:
-> Hi Simon,
-> 
-> On Thu, Mar 19, 2015 at 2:43 AM, Simon Horman <horms@verge.net.au> wrote:
-> > On Wed, Mar 18, 2015 at 07:55:54PM +0100, Geert Uytterhoeven wrote:
-> >> This patch series adds the IRQC clock to the device tree on SoCs that
-> >> have such a clock (r8a73a4 and r8a779x), and adds mininal runtime PM
-> >> support to the renesas-irqc driver, to make sure the clock is enabled
-> >> when needed by the external IRQ controller(s).
-> >> Before, the clock was assumed enabled by the bootloader or reset state.
-> >>
-> >> As usual when involving clocks, the DTS changes depend stricly on the
-> >> driver changes. Else the clock will be disabled as assumed unused,
-> >> breaking the boot.
-> >>
-> >> This was tested on r8a73a4/ape6evm and r8a7791/koelsch.
-> >
-> > I will defer the DTS changes until the irqchip changes, which I
-> > have reviewed, are accepted.
-> 
-> The irqchip changes are upstream. Do you want me to resend the DTS
-> changes, or will you apply the original patches?
-
-THanks, I have located the original patches and queued them up for v4.2.
+SGksIExpbnVzLA0KDQpTb3JyeSB0aGF0IEkgbWlzc2VkIHRoZSBtZXJnZWQgd2luZG93IGFzIG15
+IGVtYWlsIHdhcyBicm9rZW4gd2hpbGUgSSB3YXMgdHJhdmVsbGluZyBpbiBQb3J0bGFuZCBsYXN0
+IHdlZWsuIEFuZCBJIG5lZWQgdG8gZ2V0IGl0IGZpeGVkIGFmdGVyIEkgY2FtZSBiYWNrIHRoaXMg
+U3VuZGF5Lg0KVGh1cyBJIHdhcyBob3BpbmcgdGhhdCB0aGlzIGNhbiBzdGlsbCBnZXQgbWVyZ2Vk
+IGFzIGl0IGlzIGVhcmx5IC1yYzIuDQpTb3JyeSBmb3IgYnJpbmdpbmcgdGhlIHRyb3VibGUgdG8g
+eW91IGFuZCB0aGUgcGF0Y2ggY29udHJpYnV0b3JzLCBJIHdpbGwgc2VuZCBhbm90aGVyIGdpdCBw
+dWxsIHJlcXVlc3QuDQoNClRoYW5rcywNCnJ1aQ0KIA0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2Ut
+LS0tLQ0KPiBGcm9tOiBsaW51eC1wbS1vd25lckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51
+eC1wbS0NCj4gb3duZXJAdmdlci5rZXJuZWwub3JnXSBPbiBCZWhhbGYgT2YgTGludXMgVG9ydmFs
+ZHMNCj4gU2VudDogVHVlc2RheSwgQXByaWwgMjgsIDIwMTUgNTowNSBBTQ0KPiBUbzogWmhhbmcs
+IFJ1aQ0KPiBDYzogTGludXggUE0gbGlzdA0KPiBTdWJqZWN0OiBSZTogW0dJVCBQVUxMXSBUaGVy
+bWFsIG1hbmFnZW1lbnQgdXBkYXRlcyBmb3IgdjQuMS1yYzINCj4gSW1wb3J0YW5jZTogSGlnaA0K
+PiANCj4gT24gTW9uLCBBcHIgMjcsIDIwMTUgYXQgNDo1OCBBTSwgWmhhbmcgUnVpIDxydWkuemhh
+bmdAaW50ZWwuY29tPiB3cm90ZToNCj4gPg0KPiA+IHRvIHJlY2VpdmUgdGhlIFRoZXJtYWwgTWFu
+YWdlbWVudCB1cGRhdGVzIGZvciB2NC4xLXJjMiB3aXRoIHRvcC1tb3N0DQo+ID4gY29tbWl0DQo+
+IA0KPiBUaGlzIGNhbWUgb3V0c2lkZSB0aGUgbWVyZ2Ugd2luZG93ICh3aHk/KSwgc28gSSdtIGln
+bm9yaW5nIGl0Lg0KPiANCj4gSWYgeW91IGhhdmUgYnVnLWZpeGVzLCBzZW5kIHRob3NlLiBUaGUg
+cmVzdCBjYW4gd2FpdCB1bnRpbCA0LjIuDQo+IA0KPiAgICAgICAgICAgICAgICAgICAgICAgICBM
+aW51cw0KPiAtLQ0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGlu
+ZSAidW5zdWJzY3JpYmUgbGludXgtcG0iIGluIHRoZQ0KPiBib2R5IG9mIGEgbWVzc2FnZSB0byBt
+YWpvcmRvbW9Admdlci5rZXJuZWwub3JnIE1vcmUgbWFqb3Jkb21vIGluZm8gYXQNCj4gaHR0cDov
+L3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1sDQo=
