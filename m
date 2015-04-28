@@ -1,89 +1,67 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 1/2] PM / sleep: Let devices force direct_complete
-Date: Tue, 28 Apr 2015 16:54:57 +0200
-Message-ID: <2306163.VOFFyQbfWp@vostro.rjw.lan>
-References: <CAAObsKA7EFRmWGaGS6nTwMzFyoPcSXjmY5CZqHHVE+ART4EJNg@mail.gmail.com> <Pine.LNX.4.44L0.1504200957190.1321-100000@iolanthe.rowland.org> <CAAObsKAJzu3uJ3ZNKfK3U8Ae4W9STXXdyhVrNYsn0MK2uSoZHA@mail.gmail.com>
+From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Subject: Re: [PATCH] ARM: tegra: cpuidle: implement cpuidle_state.enter_freeze()
+Date: Tue, 28 Apr 2015 17:07:14 +0200
+Message-ID: <CAAObsKBOZM0qdkrtgQFqMhAq3M2UXUHzZ3jqhrrv0vLrqJgyYA@mail.gmail.com>
+References: <1428490480-10144-1-git-send-email-tomeu.vizoso@collabora.com>
+ <20150408115546.GA24271@red-moon> <552643E1.3060200@collabora.com>
+ <285738930.THBQOWvsah@vostro.rjw.lan> <20150410100844.GC23730@red-moon>
+ <CAAObsKAihF1k1yzZxQEs_jpPnCdV3HQbLaYHWu1QNsNd5zqiOg@mail.gmail.com>
+ <20150417140819.GB2347@red-moon> <CAAObsKATZy9+Tn0pJcDCaNzpxLX6GqX0TO_t7w8tgirWQgJF9w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50647 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S965713AbbD1OaG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2015 10:30:06 -0400
-In-Reply-To: <CAAObsKAJzu3uJ3ZNKfK3U8Ae4W9STXXdyhVrNYsn0MK2uSoZHA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAAObsKATZy9+Tn0pJcDCaNzpxLX6GqX0TO_t7w8tgirWQgJF9w-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Tuesday, April 28, 2015 04:26:39 PM Tomeu Vizoso wrote:
-> On 20 April 2015 at 16:12, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Mon, 20 Apr 2015, Tomeu Vizoso wrote:
-> >
-> >> On 17 April 2015 at 19:30, Alan Stern <stern@rowland.harvard.edu> wrote:
-> >> > On Fri, 17 Apr 2015, Laurent Pinchart wrote:
-> >> >
-> >> >> Hi Tomeu,
-> >> >>
-> >> >> Thank you for the patch.
-> >> >>
-> >> >> On Friday 17 April 2015 17:24:49 Tomeu Vizoso wrote:
-> >> >> > Introduce a new per-device flag power.force_direct_complete that will
-> >> >> > instruct the PM core to ignore the runtime PM status of its descendants
-> >> >> > when deciding whether to let this device remain in runtime suspend when
-> >> >> > the system goes into a sleep power state.
-> >> >> >
-> >> >> > This is needed because otherwise it would be needed to get dozens of
-> >> >> > drivers to implement the prepare() callback and be runtime PM active
-> >> >> > even if they don't have a 1-to-1 relationship with a piece of HW.
-> >> >>
-> >> >> I'll let PM experts comment on the approach, but I believe the new flag would
-> >> >> benefit from being documented (likely in Documentation/power/devices.txt) :-)
-> >> >
-> >> > Documentation/power/runtime_pm.txt is the right place.
-> >> >
-> >> > However, I'm not sure that this is the sort of thing Rafael meant when
-> >> > he suggested adding a new flag.  I thought he meant the PM core would
-> >> > look at the new flag only if there was no ->prepare method at all.
-> >> > Then if the new flag was set, the PM core would act as though ->prepare
-> >> > had returned 1.  That way there would be no need to add silly little
-> >> > one-line *_prepare() routines all over the place.
-> >> >
-> >> > Maybe he had something else in mind, though...
-> >>
-> >> Yeah, I also interpreted it like that, but when I started looking at
-> >> how it would work, I found that it would be awkward if the uvcvideo
-> >> driver had to track all the devices that get attached below its
-> >> devices in order to set that flag to them.
-> >>
-> >> When thinking about it, it occurred to me that it may make more sense
-> >> if we model this as a property of the device bound to the uvcvideo
-> >> driver, as what's happening here is that the uvcvideo driver knows
-> >> that it's safe to remain in runtime suspend when the system goes to
-> >> sleep, and that all its descendant devices can be ignored in that
-> >> regard.
-> >
-> > What you're proposing makes sense, but it is a significant change to
-> > the runtime PM core.  It should be submitted separately, not as part of
-> > an update to the UVC driver, and it should be discussed at length.
-> >
-> > Basically, you want to mark certain devices to say that they will
-> > _always_ use direct-suspend.  This means that all descendant devices
-> > will be forced to use direct-suspend also, and therefore any driver
-> > bound to one of these descendant devices will be unable to communicate
-> > with it during a system sleep transition.  This is a non-trivial
-> > restriction.
-> >
-> > Among other things, it means that wakeup settings can't be altered
-> > during a sleep transition.  Therefore this should be allowed only for
-> > devices that are not wakeup-capable.
-> 
-> Hi Rafael,
-> 
-> do you have any comments on this?
+On 17 April 2015 at 17:02, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org> wrote:
+> On 17 April 2015 at 16:08, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org> wrote:
+>> On Thu, Apr 16, 2015 at 03:37:19PM +0100, Tomeu Vizoso wrote:
+>>
+>> [...]
+>>
+>>> >> I don't know what FIQs are. :-)
+>>> >
+>>> > In short, fast IRQs, it is a separate IRQ line handled as a separate
+>>> > exception source with some private (banked) registers that minimize registers
+>>> > saving/restoring. They are not identical to NMI on x86, since
+>>> > their behaviour (handling) may be overriden by platforms and they
+>>> > can be masked.
+>>> >
+>>> >> ->enter_freeze is entered with interrupts disabled on the local CPU.  It is
+>>> >> not supposed to re-enable them.  That is, while in the ->enter_freeze callback
+>>> >> routine, the CPU must not be interrupted aby anything other than NMI.
+>>> >
+>>> > It boils down to what FIQs handlers are allowed to do with tick frozen
+>>> > and what they are (may be) currently used for.
+>>> >
+>>> > Russell has more insights on this than I do, in particular what FIQs are
+>>> > currently used for on ARM and if we can leave them enabled safely with tick
+>>> > frozen.
+>>>
+>>> But even if it's currently safe to leave them enabled, is there any
+>>> reason for not disabling them?
+>>
+>> Ok, the point here is: either it is safe, and you leave them enabled,
+>> or it is not and we must disable them *before* enter_freeze() is entered.
+>>
+>> Disabling them in the platform enter_freeze() hook does not make sense,
+>> because this means we run with FIQs enabled with tick frozen, either
+>> it is safe or it is not, it can't be both.
+>
+> Sure, that's why I proposed doing it in arch_cpu_idle_enter/exit.
+>
+>> I would ask Russell opinion on this, before making any decision.
+>
+> Sure, that would be very welcome.
 
-Well, what Alan has said sounds correct to me.
+Hi Russell,
 
-Rafael
+do you think FIQs should be disabled when the tick is frozen when
+going to suspend to idle?
 
+Thanks,
+
+Tomeu
