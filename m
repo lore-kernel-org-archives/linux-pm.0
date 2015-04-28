@@ -1,43 +1,75 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [GIT PULL] Thermal management updates for v4.1-rc2
-Date: Tue, 28 Apr 2015 02:40:02 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B909263014F3F2D@SHSMSX101.ccr.corp.intel.com>
-References: <1430135910.3335.14.camel@rzhang1-mobl4>
- <CA+55aFx3O0Z9M0hBzdkd_bU_Yi1DgEG9=d+3vqyMVAto9TsH4A@mail.gmail.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [RFC/RFT 2/6] clk: qcom: Add runtime support to handle clocks
+ using PM clocks
+Date: Tue, 28 Apr 2015 08:22:04 +0530
+Message-ID: <553EF5D4.60900@codeaurora.org>
+References: <1429778744-13352-1-git-send-email-rnayak@codeaurora.org>	<1429778744-13352-3-git-send-email-rnayak@codeaurora.org>	<CAPDyKFpVXWGeO_kbOvPbdy83aN6wxkC77ydH_2C3Bo=5QsspoA@mail.gmail.com>	<553A21C7.4060506@codeaurora.org>	<CAMuHMdV_WD7vay-5VC20izUWFjc8rSW4wZQq6Y3xAa+SU0Quig@mail.gmail.com> <7hh9s1xrut.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:27168 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752864AbbD1CkG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 Apr 2015 22:40:06 -0400
-In-Reply-To: <CA+55aFx3O0Z9M0hBzdkd_bU_Yi1DgEG9=d+3vqyMVAto9TsH4A@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <7hh9s1xrut.fsf@deeprootsystems.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-SGksIExpbnVzLA0KDQpTb3JyeSB0aGF0IEkgbWlzc2VkIHRoZSBtZXJnZWQgd2luZG93IGFzIG15
-IGVtYWlsIHdhcyBicm9rZW4gd2hpbGUgSSB3YXMgdHJhdmVsbGluZyBpbiBQb3J0bGFuZCBsYXN0
-IHdlZWsuIEFuZCBJIG5lZWQgdG8gZ2V0IGl0IGZpeGVkIGFmdGVyIEkgY2FtZSBiYWNrIHRoaXMg
-U3VuZGF5Lg0KVGh1cyBJIHdhcyBob3BpbmcgdGhhdCB0aGlzIGNhbiBzdGlsbCBnZXQgbWVyZ2Vk
-IGFzIGl0IGlzIGVhcmx5IC1yYzIuDQpTb3JyeSBmb3IgYnJpbmdpbmcgdGhlIHRyb3VibGUgdG8g
-eW91IGFuZCB0aGUgcGF0Y2ggY29udHJpYnV0b3JzLCBJIHdpbGwgc2VuZCBhbm90aGVyIGdpdCBw
-dWxsIHJlcXVlc3QuDQoNClRoYW5rcywNCnJ1aQ0KIA0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2Ut
-LS0tLQ0KPiBGcm9tOiBsaW51eC1wbS1vd25lckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51
-eC1wbS0NCj4gb3duZXJAdmdlci5rZXJuZWwub3JnXSBPbiBCZWhhbGYgT2YgTGludXMgVG9ydmFs
-ZHMNCj4gU2VudDogVHVlc2RheSwgQXByaWwgMjgsIDIwMTUgNTowNSBBTQ0KPiBUbzogWmhhbmcs
-IFJ1aQ0KPiBDYzogTGludXggUE0gbGlzdA0KPiBTdWJqZWN0OiBSZTogW0dJVCBQVUxMXSBUaGVy
-bWFsIG1hbmFnZW1lbnQgdXBkYXRlcyBmb3IgdjQuMS1yYzINCj4gSW1wb3J0YW5jZTogSGlnaA0K
-PiANCj4gT24gTW9uLCBBcHIgMjcsIDIwMTUgYXQgNDo1OCBBTSwgWmhhbmcgUnVpIDxydWkuemhh
-bmdAaW50ZWwuY29tPiB3cm90ZToNCj4gPg0KPiA+IHRvIHJlY2VpdmUgdGhlIFRoZXJtYWwgTWFu
-YWdlbWVudCB1cGRhdGVzIGZvciB2NC4xLXJjMiB3aXRoIHRvcC1tb3N0DQo+ID4gY29tbWl0DQo+
-IA0KPiBUaGlzIGNhbWUgb3V0c2lkZSB0aGUgbWVyZ2Ugd2luZG93ICh3aHk/KSwgc28gSSdtIGln
-bm9yaW5nIGl0Lg0KPiANCj4gSWYgeW91IGhhdmUgYnVnLWZpeGVzLCBzZW5kIHRob3NlLiBUaGUg
-cmVzdCBjYW4gd2FpdCB1bnRpbCA0LjIuDQo+IA0KPiAgICAgICAgICAgICAgICAgICAgICAgICBM
-aW51cw0KPiAtLQ0KPiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGlu
-ZSAidW5zdWJzY3JpYmUgbGludXgtcG0iIGluIHRoZQ0KPiBib2R5IG9mIGEgbWVzc2FnZSB0byBt
-YWpvcmRvbW9Admdlci5rZXJuZWwub3JnIE1vcmUgbWFqb3Jkb21vIGluZm8gYXQNCj4gaHR0cDov
-L3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1sDQo=
+On 04/28/2015 01:32 AM, Kevin Hilman wrote:
+> Geert Uytterhoeven <geert@linux-m68k.org> writes:
+>
+>> On Fri, Apr 24, 2015 at 12:58 PM, Rajendra Nayak <rnayak@codeaurora.org> wrote:
+>>>> Second, I want to see less users of pm_clk_add_notifier() since it's
+>>>> not the proper/long-term way of how to assign PM domain pointers to a
+>>>> device. Instead that shall be done at device registration point. In
+>>>> your case while parsing the DT nodes and adding devices onto to their
+>>>> buses.
+>>>
+>>> but these are devices which do not really have a controllable power
+>>> domain, they just have controllable clocks.
+>>>
+>>>> Yes, I understand that it will requires quite some work to adopt to
+>>>> this behaviour - but that how it shall be done.
+>>>>
+>>>> Finally, an important note, you don't need to use PM domains for these
+>>>> devices at all and thus you don't need to fix what I propose. Instead
+>>>> you only have to implement the runtime PM callbacks for each driver
+>>>> and manage the clocks from there. That is probably also a easier
+>>>> solution.
+>>>
+>>> But that would mean I repeat the same code in all drivers to do a
+>>> clk_get/prepare/enable/disable/unprepare of the same "core" and "iface"
+>>> clocks. I thought we have clock_ops.c just to avoid that (atleast up
+>>> until we have a better way of doing it)
+>>> And there are atleast a few architecture which have used it to avoid the
+>>> duplication across all drivers (omap1/davinci/sh/keystone)
+>>
+>> At least for arm/shmobile, we're planning to move away from this, cfr.
+>> http://www.spinics.net/lists/linux-sh/msg41114.html
+>
+> Just to clarify for Rajendra's sake...
+>
+> SH is moving away from the pm_clk_add_notifier(), but not duplicating
+> the clk_get/prepare/enable/disable/unprepare across all the drivers.
+>
+> Rather, they're using a genpd to model the clock domain, and taking
+> advantage of the pm_domain speciic attach callback to attach the PM
+> clocks.
+>
+> This should work for qcom also assuming that these device nodes don't
+> also need to belong to a different PM domain.
+
+Thanks Kevin, I did look up the patches that Geert pointed me to, and
+figured I can do something similar for qcom as well like you said.
+
+There are 2 types of devices that I will need to handle, one which have
+clocks and also a power switch to turn the power domain on/off (camera,
+graphics, display), and others which only have clocks and no power
+switch to control the power domain (serial, sdhc, i2c, spi).
+
+I was already using genpd attach/detach to handle clocks for the
+devices with a power switch and genpd on/off to turn the PD on and off.
+I guess I can also control the rest of the devices the same way, just
+that the genpd on/off for them would do nothing.
+That way I don't have to use pm_clk_add_notifier() and can also
+associate the power domain (with no on/off control) to devices
+through DT (and there isn;t any duplication of code in the drivers)
