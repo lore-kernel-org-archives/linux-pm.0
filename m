@@ -1,120 +1,208 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: Using a temperature sensor with 1-bit output for CPU throttling
-Date: Wed, 29 Apr 2015 17:36:05 +0100
-Message-ID: <20150429163605.GM3054@e104805>
-References: <553F6E85.5090402@free.fr> <5540E0E1.6080504@free.fr>
+From: Kristen Carlson Accardi <kristen@linux.intel.com>
+Subject: Re: [PATCH 1/5] intel_pstate: Add tsc collection and keep previous
+ target pstate. Add both to trace.
+Date: Wed, 29 Apr 2015 09:57:07 -0700
+Message-ID: <20150429095707.49e211c2@kcaccard-desk.amr.corp.intel.com>
+References: <1428811830-15006-1-git-send-email-dsmythies@telus.net>
+	<1428811830-15006-2-git-send-email-dsmythies@telus.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f173.google.com ([209.85.212.173]:35486 "EHLO
-	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966209AbbD2QiK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Apr 2015 12:38:10 -0400
-Received: by widdi4 with SMTP id di4so186975801wid.0
-        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2015 09:38:08 -0700 (PDT)
-Received: from debian ([2a01:7e00::f03c:91ff:fe84:bdc4])
-        by mx.google.com with ESMTPSA id js3sm39684001wjc.5.2015.04.29.09.38.08
-        for <linux-pm@vger.kernel.org>
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 29 Apr 2015 09:38:08 -0700 (PDT)
-In-Reply-To: <5540E0E1.6080504@free.fr>
-Content-Language: en-US
+Received: from mga03.intel.com ([134.134.136.65]:40404 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966319AbbD2Q5I (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 29 Apr 2015 12:57:08 -0400
+In-Reply-To: <1428811830-15006-2-git-send-email-dsmythies@telus.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>
-Cc: Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Amit Daniel <amit.kachhap@linaro.org>, Andrew Lunn <andrew@lunn.ch>, Radhesh Fadnis <radhesh.fadnis@ti.com>
+To: Doug Smythies <doug.smythies@gmail.com>
+Cc: rjw@rjwysocki.net, dsmythies@telus.net, linux-pm@vger.kernel.org
 
-T24gV2VkLCBBcHIgMjksIDIwMTUgYXQgMDI6NDc6MTNQTSArMDEwMCwgTWFzb24gd3JvdGU6DQo+
-IE9uIDI4LzA0LzIwMTUgMTM6MjcsIE1hc29uIHdyb3RlOg0KPiANCj4gPiBUaGUgU29DIEknbSB3
-b3JraW5nIG9uIHByb3ZpZGVzIGEgdGVtcGVyYXR1cmUgc2Vuc29yIChOWFApIGluIHRoZSBDUFUg
-YmxvY2suDQo+ID4gVGhlIHNlbnNvciBzZWVtcyB0byBiZSB2ZXJ5IHByaW1pdGl2ZSwgc28gSSB3
-YW50ZWQgdG8gYXNrIGV4cGVyaWVuY2VkIHBlb3BsZQ0KPiA+IHdoYXQgd291bGQgYmUgdGhlIGJl
-c3Qgd2F5IHRvIHVzZSBpdCBmcm9tIExpbnV4Lg0KPiA+IA0KPiA+IEdlbmVyYWwgRGVzY3JpcHRp
-b24NCj4gPiAiVGhlIHNlbnNvciBnZW5lcmF0ZXMgYW4gb3V0cHV0IHNpZ25hbCB0aGF0IGluZGlj
-YXRlcyBpZiB0aGUgZGllIHRlbXBlcmF0dXJlDQo+ID4gZXhjZWVkcyBhIHByb2dyYW1tYWJsZSB0
-aHJlc2hvbGQuIFRoaXMgbWFrZXMgaXQgcGFydGljdWxhcmx5IHN1aXRhYmxlIGZvcg0KPiA+IGRl
-dGVjdGluZyBvdmVyaGVhdGluZy4iDQo+ID4gDQo+ID4gU28gaXQgc2VlbXMgdGhhdCB0aGUgb3Jp
-Z2luYWwgcHVycG9zZSBvZiB0aGlzIHNlbnNvciB3YXMgdG8gcGVyaW9kaWNhbGx5DQo+ID4gY2hl
-Y2sgdGhhdCB0aGUgdGVtcGVyYXR1cmUgaGFzIG5vdCBleGNlZWRlZCBhIGdpdmVuIHRocmVzaG9s
-ZC4NCj4gPiANCj4gPiAtIElzIHRoZSBDUFUgdGVtcCBoaWdoZXIgdGhhbiAxMDDCsEMgPw0KPiA+
-IC0gTm8uDQo+ID4gLSBPSy4gQnVzaW5lc3MgYXMgdXN1YWwuDQo+ID4gDQo+ID4gKDEgc2Vjb25k
-IGxhdGVyKQ0KPiA+IC0gSXMgdGhlIENQVSB0ZW1wIGhpZ2hlciB0aGFuIDEwMMKwQyA/DQo+ID4g
-LSBZZXMuDQo+ID4gLSBVaC1vaCEgSSBuZWVkIHRvIGRvIHNvbWV0aGluZyBhYm91dCBpdC4NCj4g
-PiANCj4gPiANCj4gPiBCYXNpYyBGdW5jdGlvbnMNCj4gPiAiVGhlIHRlbXAgc2Vuc29yIHVzZXMg
-YSBiYW5kZ2FwIHR5cGUgb2YgY2lyY3VpdCB0byBjb21wYXJlIGEgdm9sdGFnZSB3aGljaA0KPiA+
-IGhhcyBhIG5lZ2F0aXZlIHRlbXBlcmF0dXJlIGNvZWZmaWNpZW50IHdpdGggYSB2b2x0YWdlIHRo
-YXQgaXMgcHJvcG9ydGlvbmFsDQo+ID4gdG8gYWJzb2x1dGUgdGVtcGVyYXR1cmUuIEEgcmVzaXN0
-b3IgYmFuayBhbGxvd3MgNDAgZGlmZmVyZW50IHRlbXBlcmF0dXJlDQo+ID4gdGhyZXNob2xkcyB0
-byBiZSBzZWxlY3RlZCBhbmQgdGhlIGxvZ2ljIG91dHB1dCAnb3V0X3RlbXBlcmF0dXJlJyB3aWxs
-IHRoZW4NCj4gPiBpbmRpY2F0ZSB3aGV0aGVyIHRoZSBhY3R1YWwgZGllIHRlbXBlcmF0dXJlIGxp
-ZXMgYWJvdmUgb3IgYmVsb3cgdGhlIHNlbGVjdGVkDQo+ID4gdGhyZXNob2xkLiINCj4gPiANCj4g
-PiBUaGUgYXZhaWxhYmxlIHRocmVzaG9sZHMgc2VlbSB0byBiZSBjaG9zZW4gc29tZXdoYXQgYXJi
-aXRyYXJpbHk6DQo+ID4gDQo+ID4gICAtNDUuMSwgLTM5LjcsIC0zMy43LCAtMjkuNCwgLTI0LjQs
-IC0yMC40LCAtMTUuNCwgLTEwLjEsDQo+ID4gICAtNi40LCAtMS40LCAzLjYsIDcuNiwgMTIuOSwg
-MTYuNiwgMjAuNiwgMjUuNiwgMzAuOSwNCj4gPiAgIDM0LjksIDM4LjYsIDQzLjksIDQ4LjksIDUy
-LjksIDU3LjksIDYxLjksIDY2LjksIDcwLjksDQo+ID4gICA3Ni4zLCA4MS4zLCA4NS4zLCA5MC4z
-LCA5NS4zLCA5OC45LCAxMDIuOSwgMTA4LjMsIDExMS45LA0KPiA+ICAgMTE3LjMsIDEyMi4zLCAx
-MjYuMywgMTMxLjMsIDEzNS4zLCAxMzkuMw0KPiA+IA0KPiA+IFRoZSBzcGFjaW5nIGJldHdlZW4g
-dmFsdWVzIHNlZW1zIGFyYml0cmFyeSBhbHNvLg0KPiA+IChJcyB0aGVyZSBhbiB1bmRlcmx5aW5n
-IHBoeXNpY2FsIGV4cGxhbmF0aW9uPykNCj4gPiANCj4gPiBJJ20gbm90IHN1cmUgdGhhdCB0aGVy
-ZSBpcyBtdWNoIHBvaW50IGluIHRlc3RpbmcgZm9yIHRlbXBlcmF0dXJlcyBsb3dlcg0KPiA+IHRo
-YW4gNTDCsEMgPyAoSSdtIHRvbGQgdGhhdCB0aGUgU29DIGNhbiByZWxpYWJseSBmdW5jdGlvbiB1
-cCB0byAxMjXCsEMuKQ0KPiA+IA0KPiA+IERvIGhpZ2hlciB0ZW1wZXJhdHVyZXMgc2hvcnRlbiB0
-aGUgbGlmZXNwYW4gb2YgYSBjb21wb25lbnQ/DQo+ID4gSW4gb3RoZXIgd29yZHMsIHdvdWxkIGEg
-Q1BVIHJ1bm5pbmcgMjQvNyBhdCAxMDDCsEMgImJyZWFrIiBzb29uZXINCj4gPiB0aGFuIG9uZSBy
-dW5uaW5nIDI0LzcgYXQgNTDCsEMgPw0KPiA+IA0KPiA+IA0KPiA+IENoYXJhY3RlcmlzdGljcw0K
-PiA+IA0KPiA+IFN5bWJvbCAgICAgIFBhcmFtZXRlciAgICAgICAgICAgICBNaW4gIFR5cCAgTWF4
-ICBVbml0DQo+ID4gDQo+ID4gKE9wZXJhdGluZyBjb25kaXRpb25zKQ0KPiA+IFRqdW5jICAgICAg
-SnVuY3Rpb24gdGVtcGVyYXR1cmUgICAtNDAgICAyNSAgIDEyNSAgwrBDDQo+ID4gVmRkICAgICAg
-ICBTdXBwbHkgdm9sdGFnZSAgICAgICAgIDEuMCAgMS4xICAxLjI2ICAgVg0KPiA+IA0KPiA+IChO
-b3JtYWwgb3BlcmF0aW5nIG1vZGUpDQo+ID4gSWRkICAgICAgICAgU3VwcGx5IGN1cnJlbnQgICAg
-ICAgICAgICAgIDUwICAgIDYwICDOvEENCj4gPiBWYmFuZGdhcHJlZiBSZWYgb3V0cHV0IHZvbHRh
-Z2UgICAwLjcyICAwLjggIDAuODggICBWDQo+ID4g4oiGb3V0dGVtcCAgICBBYnNvbHV0ZSBUZW1w
-ICAgICAgICAgICAgICAgwrEyICAgwrExMCAgwrBDDQo+ID4gICAgICAgICAgICAgdGhyZXNob2xk
-IGVycm9yDQo+ID4gVF9yZXMgICAgICAgVGVtcCByZXNvbHV0aW9uICAgICAgICAzICAgIDQuNSAg
-ICA3ICDCsEMNCj4gPiANCj4gPiANCj4gPiBHaXZlbiB0aGUgc2VtYW50aWNzIG9mIHRoZSB0ZW1w
-ZXJhdHVyZSBzZW5zb3IgaGFyZHdhcmUgYmxvY2ssIEkgd2FzDQo+ID4gdGVtcHRlZCB0byBpbXBs
-ZW1lbnQgc29tZXRoaW5nIGFsb25nIHRoZXNlIGxpbmVzOg0KPiA+IA0KPiA+IENyZWF0ZSBhIGtl
-cm5lbCB0aHJlYWQgdGhhdCBydW5zIHBlcmlvZGljYWxseSAoZS5nLiBldmVyeSBzZWNvbmQpDQo+
-ID4gdG8gY2hlY2sgaWYgdGhlIHRlbXBlcmF0dXJlIGlzIGFib3ZlIDEwMMKwQy4NCj4gPiAtIElm
-IG5vdCwgZG8gbm90aGluZw0KPiA+IC0gSWYgeWVzLCBzb21laG93IHByZXZlbnQgdGhlIENQVSBm
-cm9tIHVzaW5nIHRoZSBoaWdoZXN0IGZyZXF1ZW5jaWVzDQo+ID4gZGVmaW5lZCBpbiBjcHVmcmVx
-J3MgZnJlcSB0YWJsZQ0KPiA+IChUaGV5IGFyZSAxMDAwLCA1MDAsIDMzMywgMjAwLCAxMDAgTUh6
-KQ0KPiA+IA0KPiA+IElzIHRoYXQgYSBzZW5zaWJsZSBhcHByb2FjaD8NCj4gPiBJcyB0aGVyZSBh
-IHdheSB0byBpbXBsZW1lbnQgdGhpcyB1c2luZyB0aGUgdGhlcm1hbCBmcmFtZXdvcms/DQo+ID4g
-DQo+ID4gT3IgYW0gSSBsb29raW5nIGF0IHRoaXMgd3JvbmcsIGFuZCB0aGluZ3Mgc2hvdWxkIGJl
-IGRvbmUgYQ0KPiA+IGRpZmZlcmVudCB3YXk/IChJJ20gdXNpbmcgMy4xNCBieSB0aGUgd2F5LikN
-Cj4gPiANCj4gPiBJIHN1cHBvc2UgSSBjb3VsZCBwZXJmb3JtIHNvbWUga2luZCBvZiBiaW5hcnkg
-c2VhcmNoIHRvIHpvb20gaW4NCj4gPiBvbiB0aGUgY3VycmVudCB0aHJlc2hvbGQgKGFsdGhvdWdo
-IGl0IG1pZ2h0IGNoYW5nZSBkdXJpbmcgdGhlDQo+ID4gbWVhc3VyZW1lbnRzLCBzbyBJJ2QgcmF0
-aGVyIG5vdCBnbyB0aGVyZS4pDQo+IA0KPiBJJ20gYXdhcmUgdGhhdCBJIHBvc3RlZCBtYW55IHF1
-ZXN0aW9ucy4gSSdkIGJlIGdyYXRlZnVsIGlmIHNvbWVvbmUNCj4gd291bGQgYW5zd2VyIGV2ZW4g
-YSB0aW55IHN1YnNldC4gVGhhdCB3b3VsZCBnZXQgdGhlIGJhbGwgcm9sbGluZy4NCj4gDQo+IElm
-IEkgdW5kZXJzdGFuZCBjb3JyZWN0bHksIGlmIEkgd2FudCB0byB1c2UgdGhlIENQVSB0aHJvdHRs
-aW5nDQo+IGZyYW1ld29yaywgSSBuZWVkIHRvIGRlZmluZSBhICJ0aGVybWFsIHpvbmUgZGV2aWNl
-IiBhbmQgYQ0KPiAiY29vbGluZyBkZXZpY2UiLiBBRkFJVSwgdGhlIGNvb2xpbmcgZGV2aWNlIGlz
-IHRha2VuIGNhcmUgb2YNCj4gYnkgY3B1X2Nvb2xpbmcuYw0KPiANCj4gICBjcHVmcmVxX2Nvb2xp
-bmdfcmVnaXN0ZXIoY3B1X3ByZXNlbnRfbWFzayk7DQoNCkNvcnJlY3QNCg0KPiBNeSB0ZW1wZXJh
-dHVyZSBzZW5zb3Igd291bGQgYmUgdGhlIHRoZXJtYWwgem9uZSBkZXZpY2U/DQo+IEhvdyBkbyBJ
-IHRpZSB0aGUgdHdvIGRldmljZXMgdG9nZXRoZXI/DQoNCllvdXIgdGVtcGVyYXR1cmUgc2Vuc29y
-IHdvdWxkIGJlIHRoZSBpbnB1dCB0byB0aGUgdGhlcm1hbCB6b25lDQpkZXZpY2UuICBZb3UgcmVn
-aXN0ZXIgaXQgd2l0aCB0aGVybWFsX3pvbmVfZGV2aWNlX3JlZ2lzdGVyKCkuICBTZWUNCkRvY3Vt
-ZW50YXRpb24vdGhlcm1hbC9zeXNmcy1hcGkudHh0IC4gIFlvdXIgdGhlcm1hbCBzZW5zb3INCmRv
-ZXNuJ3QgYWN0dWFsbHkgcmVwb3J0IHRlbXBlcmF0dXJlIGJ1dCB0aGUgdGhlcm1hbCBmcmFtZXdv
-cmsgZXhwZWN0cw0KYSB0ZW1wZXJhdHVyZSwgc28geW91ciB0aGVybWFsIHpvbmUncyBnZXRfdGVt
-cCgpIGZ1bmN0aW9uIHNob3VsZA0KcmVwb3J0IGEgZmFrZSB0ZW1wZXJhdHVyZS4gIEZvciBleGFt
-cGxlLCBpZiB5b3UndmUgY29uZmlndXJlIHlvdXINCnNlbnNvciBmb3IgNTBDLCB0aGVuIHlvdSBj
-b3VsZCByZXBvcnQgNDVDIGlmIHRoZSBzZW5zb3IgcmVhZHMgYXMgMCBhbmQNCjUwQyBpZiB0aGUg
-c2Vuc29yIHJlYWRzIGFzIDEuICBJdCdzIGEgaGFjaywgYnV0IGl0IHNob3VsZCB3b3JrLiAgQmVh
-cg0KaW4gbWluZCB0aGF0IGdldF90ZW1wKCkgc2hvdWxkIHJlcG9ydCBpbiBtaWxsaWNlbHNpdXMu
-DQoNCj4gSXMgdGhhdCB3aGVyZSBhIHRoZXJtYWwgZ292ZXJub3IgY29tZXMgaW4gcGxheT8NCg0K
-QmVjYXVzZSB5b3Ugd2FudCBvbi9vZmYgYmVoYXZpb3IsIHRoZSBiYW5nYmFuZyBnb3Zlcm5vciBp
-cyB0aGUNCnNpbXBsZXN0IHRvIHVzZSBhbmQgc2hvdWxkIGRvIHRoZSB3b3JrLiAgWW91IGNhbiBj
-aG9vc2UgYXMgdGhlIGRlZmF1bHQNCmluIHlvdXIga2VybmVsIGNvbmZpZ3VyYXRpb24gb3IgeW91
-IGNhbiBjaG9vc2UgaXQgYnkgcGFzc2luZyBpdCBhcw0KcGFydCBvZiB0aGUgdHpwIHRoYXQgeW91
-IHBhc3MgdG8gdGhlcm1hbF96b25lX2RldmljZV9yZWdpc3RlcigpDQoNClB1dCBhIHRyaXAgcG9p
-bnQgYXQgdGhlIHRlbXBlcmF0dXJlIHlvdSd2ZSBzZXQgdXAgeW91ciBzZW5zb3IgdG8gYW5kDQpi
-aW5kIHRoZSBjcHUgY29vbGluZyBkZXZpY2UgdG8gaXQuDQoNCkhvcGUgdGhpcyBoZWxwcywNCkph
-dmkNCg==
+On Sat, 11 Apr 2015 21:10:26 -0700
+Doug Smythies <doug.smythies@gmail.com> wrote:
+
+> The intel_pstate driver is difficult to debug and investigate without tsc.
+> Also, it is likely use of tsc, and some version of C0 percentage,
+> will be re-introdcued in futute.
+> There have also been occasions where it is desirebale to know, and
+> confirm, the previous target pstate.
+> This patch brings back tsc, adds previous target pstate,
+> and adds both to the trace data collection.
+> 
+> Signed-off-by: Doug Smythies <dsmythies@telus.net>
+
+Acked-by: Kristen Carlson Accardi <kristen@linux.intel.com>
+
+> ---
+>  drivers/cpufreq/intel_pstate.c | 31 +++++++++++++++++++++----------
+>  include/trace/events/power.h   | 25 +++++++++++++++++--------
+>  2 files changed, 38 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 872c577..f181ce5 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -67,6 +67,7 @@ struct sample {
+>  	int32_t core_pct_busy;
+>  	u64 aperf;
+>  	u64 mperf;
+> +	u64 tsc;
+>  	int freq;
+>  	ktime_t time;
+>  };
+> @@ -108,6 +109,7 @@ struct cpudata {
+>  	ktime_t last_sample_time;
+>  	u64	prev_aperf;
+>  	u64	prev_mperf;
+> +	u64	prev_tsc;
+>  	struct sample sample;
+>  };
+>  
+> @@ -725,23 +727,28 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
+>  {
+>  	u64 aperf, mperf;
+>  	unsigned long flags;
+> +	u64 tsc;
+>  
+>  	local_irq_save(flags);
+>  	rdmsrl(MSR_IA32_APERF, aperf);
+>  	rdmsrl(MSR_IA32_MPERF, mperf);
+> +	tsc = native_read_tsc();
+>  	local_irq_restore(flags);
+>  
+>  	cpu->last_sample_time = cpu->sample.time;
+>  	cpu->sample.time = ktime_get();
+>  	cpu->sample.aperf = aperf;
+>  	cpu->sample.mperf = mperf;
+> +	cpu->sample.tsc =  tsc;
+>  	cpu->sample.aperf -= cpu->prev_aperf;
+>  	cpu->sample.mperf -= cpu->prev_mperf;
+> +	cpu->sample.tsc -= cpu->prev_tsc;
+>  
+>  	intel_pstate_calc_busy(cpu);
+>  
+>  	cpu->prev_aperf = aperf;
+>  	cpu->prev_mperf = mperf;
+> +	cpu->prev_tsc = tsc;
+>  }
+>  
+>  static inline void intel_hwp_set_sample_time(struct cpudata *cpu)
+> @@ -806,6 +813,10 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+>  	int32_t busy_scaled;
+>  	struct _pid *pid;
+>  	signed int ctl;
+> +	int from;
+> +	struct sample *sample;
+> +
+> +	from = cpu->pstate.current_pstate;
+>  
+>  	pid = &cpu->pid;
+>  	busy_scaled = intel_pstate_get_scaled_busy(cpu);
+> @@ -814,6 +825,16 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+>  
+>  	/* Negative values of ctl increase the pstate and vice versa */
+>  	intel_pstate_set_pstate(cpu, cpu->pstate.current_pstate - ctl);
+> +
+> +	sample = &cpu->sample;
+> +	trace_pstate_sample(fp_toint(sample->core_pct_busy),
+> +		fp_toint(busy_scaled),
+> +		from,
+> +		cpu->pstate.current_pstate,
+> +		sample->mperf,
+> +		sample->aperf,
+> +		sample->tsc,
+> +		sample->freq);
+>  }
+>  
+>  static void intel_hwp_timer_func(unsigned long __data)
+> @@ -827,21 +848,11 @@ static void intel_hwp_timer_func(unsigned long __data)
+>  static void intel_pstate_timer_func(unsigned long __data)
+>  {
+>  	struct cpudata *cpu = (struct cpudata *) __data;
+> -	struct sample *sample;
+>  
+>  	intel_pstate_sample(cpu);
+>  
+> -	sample = &cpu->sample;
+> -
+>  	intel_pstate_adjust_busy_pstate(cpu);
+>  
+> -	trace_pstate_sample(fp_toint(sample->core_pct_busy),
+> -			fp_toint(intel_pstate_get_scaled_busy(cpu)),
+> -			cpu->pstate.current_pstate,
+> -			sample->mperf,
+> -			sample->aperf,
+> -			sample->freq);
+> -
+>  	intel_pstate_set_sample_time(cpu);
+>  }
+>  
+> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+> index d19840b..630d1e5 100644
+> --- a/include/trace/events/power.h
+> +++ b/include/trace/events/power.h
+> @@ -42,45 +42,54 @@ TRACE_EVENT(pstate_sample,
+>  
+>  	TP_PROTO(u32 core_busy,
+>  		u32 scaled_busy,
+> -		u32 state,
+> +		u32 from,
+> +		u32 to,
+>  		u64 mperf,
+>  		u64 aperf,
+> +		u64 tsc,
+>  		u32 freq
+>  		),
+>  
+>  	TP_ARGS(core_busy,
+>  		scaled_busy,
+> -		state,
+> +		from,
+> +		to,
+>  		mperf,
+>  		aperf,
+> +		tsc,
+>  		freq
+>  		),
+>  
+>  	TP_STRUCT__entry(
+>  		__field(u32, core_busy)
+>  		__field(u32, scaled_busy)
+> -		__field(u32, state)
+> +		__field(u32, from)
+> +		__field(u32, to)
+>  		__field(u64, mperf)
+>  		__field(u64, aperf)
+> +		__field(u64, tsc)
+>  		__field(u32, freq)
+> -
+> -	),
+> +		),
+>  
+>  	TP_fast_assign(
+>  		__entry->core_busy = core_busy;
+>  		__entry->scaled_busy = scaled_busy;
+> -		__entry->state = state;
+> +		__entry->from = from;
+> +		__entry->to = to;
+>  		__entry->mperf = mperf;
+>  		__entry->aperf = aperf;
+> +		__entry->tsc = tsc;
+>  		__entry->freq = freq;
+>  		),
+>  
+> -	TP_printk("core_busy=%lu scaled=%lu state=%lu mperf=%llu aperf=%llu freq=%lu ",
+> +	TP_printk("core_busy=%lu scaled=%lu from=%lu to=%lu mperf=%llu aperf=%llu tsc=%llu freq=%lu ",
+>  		(unsigned long)__entry->core_busy,
+>  		(unsigned long)__entry->scaled_busy,
+> -		(unsigned long)__entry->state,
+> +		(unsigned long)__entry->from,
+> +		(unsigned long)__entry->to,
+>  		(unsigned long long)__entry->mperf,
+>  		(unsigned long long)__entry->aperf,
+> +		(unsigned long long)__entry->tsc,
+>  		(unsigned long)__entry->freq
+>  		)
+>  
 
