@@ -1,165 +1,186 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [RFC/RFT 3/6] serial: msm: convert driver to use runtime PM apis
-Date: Wed, 29 Apr 2015 08:45:54 +0530
-Message-ID: <55404CEA.5090803@codeaurora.org>
-References: <1429778744-13352-1-git-send-email-rnayak@codeaurora.org> <1429778744-13352-4-git-send-email-rnayak@codeaurora.org> <554022E7.90407@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 4/4] cpufreq: arm_big_little: add SCPI interface driver
+Date: Wed, 29 Apr 2015 11:14:21 +0530
+Message-ID: <CAKohpondhNBhWBjspSSoBUz-V605K+4UEqQFdTCqRd=Yc-RXCg@mail.gmail.com>
+References: <1430134846-24320-1-git-send-email-sudeep.holla@arm.com>
+	<1430134846-24320-5-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:60838 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031217AbbD2DQC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2015 23:16:02 -0400
-In-Reply-To: <554022E7.90407@codeaurora.org>
+Received: from mail-oi0-f52.google.com ([209.85.218.52]:33436 "EHLO
+	mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751794AbbD2FoV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Apr 2015 01:44:21 -0400
+Received: by oica37 with SMTP id a37so13801761oic.0
+        for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2015 22:44:21 -0700 (PDT)
+In-Reply-To: <1430134846-24320-5-git-send-email-sudeep.holla@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: linux-serial@vger.kernel.org, Pramod Gurav <gpramod@codeaurora.org>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
+On 27 April 2015 at 17:10, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 4f3dbc8cf729..9e678bf1687c 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -24,6 +24,15 @@ config ARM_VEXPRESS_SPC_CPUFREQ
+>            This add the CPUfreq driver support for Versatile Express
+>           big.LITTLE platforms using SPC for power management.
+>
+> +config ARM_SCPI_CPUFREQ
+> +        tristate "SCPI based CPUfreq driver"
+> +       depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL
+> +        help
+> +          This add the CPUfreq driver support for ARM big.LITTLE platforms
+> +         using SCPI interface for CPU power management.
+> +
+> +         This driver works only if firmware the supporting CPU DVFS adhere
+> +         to SCPI protocol.
 
-On 04/29/2015 05:46 AM, Stephen Boyd wrote:
-> On 04/23/15 01:45, Rajendra Nayak wrote:
->> With platform support now in place to manage clocks from within runtime PM
->> callbacks, get rid of all clock handling from the driver and convert the
->> driver to use runtime PM apis.
->>
->> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
->> Cc: <linux-serial@vger.kernel.org>
->
-> Pramod is changing the same file in the same area. Please work together
-> if necessary.
-
-Sure, will do. For some reason I thought those changes already made it
-in 4.1, but maybe not.
+Wanna reword that ?
 
 >
-> -Stephen
+>  config ARM_EXYNOS_CPUFREQ
+>         tristate "SAMSUNG EXYNOS CPUfreq Driver"
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index cdce92ae2e8b..02fc9f849d4b 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -79,6 +79,7 @@ obj-$(CONFIG_ARM_SA1110_CPUFREQ)      += sa1110-cpufreq.o
+>  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)                += spear-cpufreq.o
+>  obj-$(CONFIG_ARM_TEGRA_CPUFREQ)                += tegra-cpufreq.o
+>  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ) += vexpress-spc-cpufreq.o
+> +obj-$(CONFIG_ARM_SCPI_CPUFREQ)         += scpi-cpufreq.o
 >
->> ---
->>   drivers/tty/serial/msm_serial.c | 33 ++++++++++++++++-----------------
->>   1 file changed, 16 insertions(+), 17 deletions(-)
->>
->> diff --git a/drivers/tty/serial/msm_serial.c b/drivers/tty/serial/msm_serial.c
->> index b73889c..eb66502 100644
->> --- a/drivers/tty/serial/msm_serial.c
->> +++ b/drivers/tty/serial/msm_serial.c
->> @@ -33,6 +33,7 @@
->>   #include <linux/serial.h>
->>   #include <linux/clk.h>
->>   #include <linux/platform_device.h>
->> +#include <linux/pm_runtime.h>
->>   #include <linux/delay.h>
->>   #include <linux/of.h>
->>   #include <linux/of_device.h>
->> @@ -50,11 +51,11 @@ struct msm_port {
->>   	struct uart_port	uart;
->>   	char			name[16];
->>   	struct clk		*clk;
->> -	struct clk		*pclk;
->>   	unsigned int		imr;
->>   	int			is_uartdm;
->>   	unsigned int		old_snap_state;
->>   	bool			break_detected;
->> +	struct device		*dev;
->>   };
->>
->>   static inline void wait_for_xmitr(struct uart_port *port)
->> @@ -464,12 +465,11 @@ static int msm_set_baud_rate(struct uart_port *port, unsigned int baud)
->>   	return baud;
->>   }
->>
->> -static void msm_init_clock(struct uart_port *port)
->> +static void msm_init(struct uart_port *port)
->>   {
->>   	struct msm_port *msm_port = UART_TO_MSM(port);
->>
->> -	clk_prepare_enable(msm_port->clk);
->> -	clk_prepare_enable(msm_port->pclk);
->> +	pm_runtime_get_sync(msm_port->dev);
->>   	msm_serial_set_mnd_regs(port);
->>   }
->>
->> @@ -487,7 +487,7 @@ static int msm_startup(struct uart_port *port)
->>   	if (unlikely(ret))
->>   		return ret;
->>
->> -	msm_init_clock(port);
->> +	msm_init(port);
->>
->>   	if (likely(port->fifosize > 12))
->>   		rfr_level = port->fifosize - 12;
->> @@ -511,7 +511,7 @@ static void msm_shutdown(struct uart_port *port)
->>   	msm_port->imr = 0;
->>   	msm_write(port, 0, UART_IMR); /* disable interrupts */
->>
->> -	clk_disable_unprepare(msm_port->clk);
->> +	pm_runtime_put_sync(msm_port->dev);
->>
->>   	free_irq(port->irq, port);
->>   }
->> @@ -669,12 +669,10 @@ static void msm_power(struct uart_port *port, unsigned int state,
->>
->>   	switch (state) {
->>   	case 0:
->> -		clk_prepare_enable(msm_port->clk);
->> -		clk_prepare_enable(msm_port->pclk);
->> +		pm_runtime_get_sync(msm_port->dev);
->>   		break;
->>   	case 3:
->> -		clk_disable_unprepare(msm_port->clk);
->> -		clk_disable_unprepare(msm_port->pclk);
->> +		pm_runtime_put_sync(msm_port->dev);
->>   		break;
->>   	default:
->>   		pr_err("msm_serial: Unknown PM state %d\n", state);
->> @@ -933,7 +931,7 @@ static int __init msm_console_setup(struct console *co, char *options)
->>   	if (unlikely(!port->membase))
->>   		return -ENXIO;
->>
->> -	msm_init_clock(port);
->> +	msm_init(port);
->>
->>   	if (options)
->>   		uart_parse_options(options, &baud, &parity, &bits, &flow);
->> @@ -1057,13 +1055,10 @@ static int msm_serial_probe(struct platform_device *pdev)
->>   	if (IS_ERR(msm_port->clk))
->>   		return PTR_ERR(msm_port->clk);
->>
->> -	if (msm_port->is_uartdm) {
->> -		msm_port->pclk = devm_clk_get(&pdev->dev, "iface");
->> -		if (IS_ERR(msm_port->pclk))
->> -			return PTR_ERR(msm_port->pclk);
->> -
->> +	if (msm_port->is_uartdm)
->>   		clk_set_rate(msm_port->clk, 1843200);
->> -	}
->> +
->> +	msm_port->dev = &pdev->dev;
->>
->>   	port->uartclk = clk_get_rate(msm_port->clk);
->>   	dev_info(&pdev->dev, "uartclk = %d\n", port->uartclk);
->> @@ -1080,13 +1075,17 @@ static int msm_serial_probe(struct platform_device *pdev)
->>
->>   	platform_set_drvdata(pdev, port);
->>
->> +	pm_runtime_enable(&pdev->dev);
->> +
->>   	return uart_add_one_port(&msm_uart_driver, port);
->>   }
->>
->>   static int msm_serial_remove(struct platform_device *pdev)
->>   {
->>   	struct uart_port *port = platform_get_drvdata(pdev);
->> +	struct msm_port *msm_port = UART_TO_MSM(port);
->>
->> +	pm_runtime_disable(msm_port->dev);
->>   	uart_remove_one_port(&msm_uart_driver, port);
->>
->>   	return 0;
->
->
+>  ##################################################################################
+>  # PowerPC platform drivers
+> diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
+> new file mode 100644
+> index 000000000000..4c2c11a9dfc6
+> --- /dev/null
+> +++ b/drivers/cpufreq/scpi-cpufreq.c
+> @@ -0,0 +1,103 @@
+> +/*
+> + * SCPI CPUFreq Interface driver
+> + *
+> + * It provides necessary ops to arm_big_little cpufreq driver.
+> + *
+> + * Copyright (C) 2015 ARM Ltd.
+> + * Sudeep Holla <sudeep.holla@arm.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
+> + * kind, whether express or implied; without even the implied warranty
+> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+> +#include <linux/cpufreq.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm_opp.h>
+> +#include <linux/scpi_protocol.h>
+> +#include <linux/types.h>
+> +
+> +#include "arm_big_little.h"
+> +
+> +static struct scpi_ops *scpi_ops;
+> +
+> +static int scpi_init_opp_table(struct device *cpu_dev)
+> +{
+> +       u8 domain = topology_physical_package_id(cpu_dev->id);
+> +       struct scpi_dvfs_info *info;
+> +       struct scpi_opp *opp;
+> +       int idx, ret = 0;
+> +
+> +       if ((dev_pm_opp_get_opp_count(cpu_dev)) > 0)
+> +               return 0;
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+Why, who would have added it ?
+
+> +       info = scpi_ops->dvfs_get_info(domain);
+
+Isn't calling this twice costly for getting the same information ?
+
+> +       if (IS_ERR(info))
+> +               return PTR_ERR(info);
+> +
+> +       opp = info->opps;
+> +       if (!opp)
+> +               return -EIO;
+> +
+> +       for (idx = 0; idx < info->count; idx++, opp++) {
+> +               ret = dev_pm_opp_add(cpu_dev, opp->freq, opp->m_volt * 1000);
+> +               if (ret) {
+> +                       dev_warn(cpu_dev, "failed to add opp %uHz %umV\n",
+> +                                opp->freq, opp->m_volt);
+
+Don't you want to free earlier OPPs here ?
+
+> +                       return ret;
+> +               }
+> +       }
+> +       return ret;
+> +}
+> +
+> +static int scpi_get_transition_latency(struct device *cpu_dev)
+> +{
+> +       u8 domain = topology_physical_package_id(cpu_dev->id);
+> +       struct scpi_dvfs_info *info;
+> +
+> +       info = scpi_ops->dvfs_get_info(domain);
+> +       if (IS_ERR(info))
+> +               return PTR_ERR(info);
+> +
+> +       return info->latency;
+> +}
+> +
+> +static struct cpufreq_arm_bL_ops scpi_cpufreq_ops = {
+> +       .name   = "scpi",
+> +       .get_transition_latency = scpi_get_transition_latency,
+> +       .init_opp_table = scpi_init_opp_table,
+
+Don't want to free/remove OPPs ?
+
+> +};
+> +
+> +static int scpi_cpufreq_probe(struct platform_device *pdev)
+> +{
+> +       scpi_ops = get_scpi_ops();
+> +       if (!scpi_ops)
+> +               return -EIO;
+> +
+> +       return bL_cpufreq_register(&scpi_cpufreq_ops);
+> +}
+> +
+> +static int scpi_cpufreq_remove(struct platform_device *pdev)
+> +{
+> +       bL_cpufreq_unregister(&scpi_cpufreq_ops);
+> +       return 0;
+> +}
+> +
+> +static struct platform_driver scpi_cpufreq_platdrv = {
+> +       .driver = {
+> +               .name   = "scpi-cpufreq",
+> +               .owner  = THIS_MODULE,
+> +       },
+> +       .probe          = scpi_cpufreq_probe,
+> +       .remove         = scpi_cpufreq_remove,
+> +};
+> +module_platform_driver(scpi_cpufreq_platdrv);
+> +
+> +MODULE_LICENSE("GPL");
+
+GPL V2 ?
+
+Author/Description missing ..
+
+> --
+> 1.9.1
+>
