@@ -1,54 +1,88 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 16/20] sched/idle: Use explicit broadcast oneshot control
- function
-Date: Wed, 29 Apr 2015 10:50:57 +0100
-Message-ID: <5540A981.6060209@arm.com>
-References: <2112147.0kYCHhbEJT@vostro.rjw.lan> <553F920D.6090404@arm.com> <2361707.7eGhMTvCz6@vostro.rjw.lan> <6185796.9I7OmaAAcQ@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <6185796.9I7OmaAAcQ@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Sudeep Holla <sudeep.holla@arm.com>, Linus Walleij <linus.walleij@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+From: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+Subject: [PATCH 00/10] regulator/power/mfd/input/extcon: Merge max77843 into max77693
+Date: Wed, 29 Apr 2015 19:58:25 +0900
+Message-ID: <1430305114-23598-1-git-send-email-k.kozlowski.k@gmail.com>
+Return-path: <linux-input-owner@vger.kernel.org>
+Sender: linux-input-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+Hi,
 
-On 29/04/15 02:04, Rafael J. Wysocki wrote:
-> On Wednesday, April 29, 2015 02:50:22 AM Rafael J. Wysocki wrote:
 
-[...]
+The patchset merges max77843 regulator driver into max77693.
+I am asking for review and acks from multiple subsystems.
 
->>
->> Below is the patch I came up with in the meantime.
->>
->> This moves the "switch to broadcast" timer logic into
->> cpuidle_enter_state() which allows tick_broadcast_exit() to be
->> called directly with interrupts disabled (as required), but
->> it also adds a fallback branch reflecting the 4.0 and earlier
->> behavior for idle states that enable interrupts on exit
->> from their ->enter callbacks.
->>
->> I'm not aware of any valid cases when CPUIDLE_FLAG_TIMER_STOP can be
->> set for such states, but people may try to add stuff like that in the
->> future, so it's better to catch that (hence the WARN_ON_ONCE) and do
->> our best to handle it gracefully anyway, IMO.
->>
->> The "if (entered_state == -EBUSY)" check is conservative.  It may
->> be better to do "if (entered_state < 0)" and fall back to the default
->> on all errors, but that's not what we do today (I guess the concern
->> would be "what if the state ->enter returns an error after entering
->> and exiting the idle state, in which case we may miss a wakeup event
->> if we fall back to the default").
->
-> Actually, if my understanding of things is correct (the local clock event
-> device cannot go away from under code executed with interrupts disabled
-> on the local CPU), the simplified one below should be sufficient.
->
 
-Tested-by: Sudeep Holla <sudeep.holla@arm.com>
+Rationale
+=========
+The recently added max77843 regulator driver is very similar to
+its older brother: the max77693. Both devices provide two safeouts
+and a charger.
 
-Regards,
-Sudeep
+The main difference is in charger's output capabilities and related
+registry values.
+
+With some code additions the max77693 regulator driver can support both
+chipsets. This reduces overall code duplication and is a first step
+toward integrating other drivers for these devices.
+
+
+Patchset description
+====================
+Patches 1-3 do various cleanup.
+Patch 4 prepare max77694 regulator driver for supporting different
+devices.
+Patch 5 switch max77693 drivers to common state container.
+Patch 6 updates max77843 drivers to common state container.
+Patches 7-8 do final cleanup before merging.
+Patches 9-10 do the merge of max77843 regulator into max77693.
+
+
+Dependencies
+============
+The patchset is rebased on current regulator tree:
+v4.1-rc1-8-ge2a4e9538fe6. It touches all currently merged max77843
+drivers: extcon, mfd, input and regulator (charger driver was not yet
+merged).
+
+
+Best regards,
+Krzysztof
+
+
+Krzysztof Kozlowski (10):
+  mfd/extcon: max77693: Remove unused extern declarations and
+    max77693_dev members
+  mfd: max77693: Store I2C device type as enum and add default unknown
+  regulator: max77693: Use core code for charger's is_enabled
+  regulator: max77693: Support different register configurations
+  max77693: Move state container to common header
+  max77843: Switch to common max77693 state container
+  mfd/extcon: max77693: Rename defines to allow inclusion with max77843
+  mfd/extcon: max77843: Rename defines to allow inclusion with max77693
+  regulator: max77693: Add support for MAX77843 device
+  regulator: Remove the max77843 driver
+
+ drivers/extcon/extcon-max77693.c     |  83 +++++++-------
+ drivers/extcon/extcon-max77843.c     |  76 ++++++++-----
+ drivers/input/misc/max77693-haptic.c |   1 +
+ drivers/input/misc/max77843-haptic.c |   3 +-
+ drivers/mfd/max77693.c               |  31 ++---
+ drivers/mfd/max77843.c               |  20 ++--
+ drivers/power/max77693_charger.c     |   1 +
+ drivers/regulator/Kconfig            |  16 +--
+ drivers/regulator/Makefile           |   1 -
+ drivers/regulator/max77693.c         | 174 ++++++++++++++++++++++------
+ drivers/regulator/max77843.c         | 215 -----------------------------------
+ include/linux/mfd/max77693-common.h  |  49 ++++++++
+ include/linux/mfd/max77693-private.h | 134 +++++++++-------------
+ include/linux/mfd/max77843-private.h | 174 +++++++++++++---------------
+ 14 files changed, 443 insertions(+), 535 deletions(-)
+ delete mode 100644 drivers/regulator/max77843.c
+ create mode 100644 include/linux/mfd/max77693-common.h
+
+-- 
+2.1.4
+
