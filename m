@@ -1,131 +1,139 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH][Fix] cpuidle: Run tick_broadcast_exit() with disabled interrupts
-Date: Wed, 29 Apr 2015 16:07:10 +0200
-Message-ID: <2872649.RClMYKns0i@vostro.rjw.lan>
-References: <2112147.0kYCHhbEJT@vostro.rjw.lan> <6185796.9I7OmaAAcQ@vostro.rjw.lan> <5540A981.6060209@arm.com>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: Using a temperature sensor with 1-bit output for CPU throttling
+Date: Wed, 29 Apr 2015 15:47:13 +0200
+Message-ID: <5540E0E1.6080504@free.fr>
+References: <553F6E85.5090402@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5540A981.6060209@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, Peter Zijlstra <peterz@infradead.org>, Linus Walleij <linus.walleij@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <553F6E85.5090402@free.fr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: cpufreq <cpufreq@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Amit Daniel <amit.kachhap@linaro.org>, Andrew Lunn <andrew@lunn.ch>, Radhesh Fadnis <radhesh.fadnis@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 28/04/2015 13:27, Mason wrote:
 
-Commit 335f49196fd6 (sched/idle: Use explicit broadcast oneshot
-control function) replaced clockevents_notify() invocations in
-cpuidle_idle_call() with direct calls to tick_broadcast_enter()
-and tick_broadcast_exit(), but it overlooked the fact that
-interrupts were already enabled before calling the latter which
-led to functional breakage on systems using idle states with the
-CPUIDLE_FLAG_TIMER_STOP flag set.
+> The SoC I'm working on provides a temperature sensor (NXP) in the CPU=
+ block.
+> The sensor seems to be very primitive, so I wanted to ask experienced=
+ people
+> what would be the best way to use it from Linux.
+>=20
+> General Description
+> "The sensor generates an output signal that indicates if the die temp=
+erature
+> exceeds a programmable threshold. This makes it particularly suitable=
+ for
+> detecting overheating."
+>=20
+> So it seems that the original purpose of this sensor was to periodica=
+lly
+> check that the temperature has not exceeded a given threshold.
+>=20
+> - Is the CPU temp higher than 100=C2=B0C ?
+> - No.
+> - OK. Business as usual.
+>=20
+> (1 second later)
+> - Is the CPU temp higher than 100=C2=B0C ?
+> - Yes.
+> - Uh-oh! I need to do something about it.
+>=20
+>=20
+> Basic Functions
+> "The temp sensor uses a bandgap type of circuit to compare a voltage =
+which
+> has a negative temperature coefficient with a voltage that is proport=
+ional
+> to absolute temperature. A resistor bank allows 40 different temperat=
+ure
+> thresholds to be selected and the logic output 'out_temperature' will=
+ then
+> indicate whether the actual die temperature lies above or below the s=
+elected
+> threshold."
+>=20
+> The available thresholds seem to be chosen somewhat arbitrarily:
+>=20
+>   -45.1, -39.7, -33.7, -29.4, -24.4, -20.4, -15.4, -10.1,
+>   -6.4, -1.4, 3.6, 7.6, 12.9, 16.6, 20.6, 25.6, 30.9,
+>   34.9, 38.6, 43.9, 48.9, 52.9, 57.9, 61.9, 66.9, 70.9,
+>   76.3, 81.3, 85.3, 90.3, 95.3, 98.9, 102.9, 108.3, 111.9,
+>   117.3, 122.3, 126.3, 131.3, 135.3, 139.3
+>=20
+> The spacing between values seems arbitrary also.
+> (Is there an underlying physical explanation?)
+>=20
+> I'm not sure that there is much point in testing for temperatures low=
+er
+> than 50=C2=B0C ? (I'm told that the SoC can reliably function up to 1=
+25=C2=B0C.)
+>=20
+> Do higher temperatures shorten the lifespan of a component?
+> In other words, would a CPU running 24/7 at 100=C2=B0C "break" sooner
+> than one running 24/7 at 50=C2=B0C ?
+>=20
+>=20
+> Characteristics
+>=20
+> Symbol      Parameter             Min  Typ  Max  Unit
+>=20
+> (Operating conditions)
+> Tjunc      Junction temperature   -40   25   125  =C2=B0C
+> Vdd        Supply voltage         1.0  1.1  1.26   V
+>=20
+> (Normal operating mode)
+> Idd         Supply current              50    60  =CE=BCA
+> Vbandgapref Ref output voltage   0.72  0.8  0.88   V
+> =E2=88=86outtemp    Absolute Temp               =C2=B12   =C2=B110  =C2=
+=B0C
+>             threshold error
+> T_res       Temp resolution        3    4.5    7  =C2=B0C
+>=20
+>=20
+> Given the semantics of the temperature sensor hardware block, I was
+> tempted to implement something along these lines:
+>=20
+> Create a kernel thread that runs periodically (e.g. every second)
+> to check if the temperature is above 100=C2=B0C.
+> - If not, do nothing
+> - If yes, somehow prevent the CPU from using the highest frequencies
+> defined in cpufreq's freq table
+> (They are 1000, 500, 333, 200, 100 MHz)
+>=20
+> Is that a sensible approach?
+> Is there a way to implement this using the thermal framework?
+>=20
+> Or am I looking at this wrong, and things should be done a
+> different way? (I'm using 3.14 by the way.)
+>=20
+> I suppose I could perform some kind of binary search to zoom in
+> on the current threshold (although it might change during the
+> measurements, so I'd rather not go there.)
 
-Fix that by moving the invocations of tick_broadcast_enter()
-and tick_broadcast_exit() down into cpuidle_enter_state() where
-interrupts are still disabled when tick_broadcast_exit() is
-called.  Also ensure that interrupts will be disabled before
-running tick_broadcast_exit() even if they have been enabled by
-the idle state's ->enter callback.  Trigger a WARN_ON_ONCE() in
-that case, as we generally don't want that to happen for states
-with CPUIDLE_FLAG_TIMER_STOP set.
+I'm aware that I posted many questions. I'd be grateful if someone
+would answer even a tiny subset. That would get the ball rolling.
 
-Fixes: 335f49196fd6 (sched/idle: Use explicit broadcast oneshot control function)
-Reported-and-tested-by: Linus Walleij <linus.walleij@linaro.org>
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Reported-and-tested-by: Sudeep Holla <sudeep.holla@arm.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+If I understand correctly, if I want to use the CPU throttling
+framework, I need to define a "thermal zone device" and a
+"cooling device". AFAIU, the cooling device is taken care of
+by cpu_cooling.c
 
-Thanks for the testing and ACKs, here it goes again with all tags and
-a changelog.
+  cpufreq_cooling_register(cpu_present_mask);
 
-If anything is missing/incorrect, please let me know ASAP as I'm going to
-push this to Linus in a couple of days.
+My temperature sensor would be the thermal zone device?
+How do I tie the two devices together?
+Is that where a thermal governor comes in play?
 
----
- drivers/cpuidle/cpuidle.c |   16 ++++++++++++++++
- kernel/sched/idle.c       |   16 ++--------------
- 2 files changed, 18 insertions(+), 14 deletions(-)
+I took a look at the dove_thermal driver, because it seems simple
+enough to understand (by me).
 
-Index: linux-pm/kernel/sched/idle.c
-===================================================================
---- linux-pm.orig/kernel/sched/idle.c
-+++ linux-pm/kernel/sched/idle.c
-@@ -81,7 +81,6 @@ static void cpuidle_idle_call(void)
- 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
- 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
- 	int next_state, entered_state;
--	unsigned int broadcast;
- 	bool reflect;
- 
- 	/*
-@@ -150,17 +149,6 @@ static void cpuidle_idle_call(void)
- 		goto exit_idle;
- 	}
- 
--	broadcast = drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP;
--
--	/*
--	 * Tell the time framework to switch to a broadcast timer
--	 * because our local timer will be shutdown. If a local timer
--	 * is used from another cpu as a broadcast timer, this call may
--	 * fail if it is not available
--	 */
--	if (broadcast && tick_broadcast_enter())
--		goto use_default;
--
- 	/* Take note of the planned idle state. */
- 	idle_set_state(this_rq(), &drv->states[next_state]);
- 
-@@ -174,8 +162,8 @@ static void cpuidle_idle_call(void)
- 	/* The cpu is no longer idle or about to enter idle. */
- 	idle_set_state(this_rq(), NULL);
- 
--	if (broadcast)
--		tick_broadcast_exit();
-+	if (entered_state == -EBUSY)
-+		goto use_default;
- 
- 	/*
- 	 * Give the governor an opportunity to reflect on the outcome
-Index: linux-pm/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/cpuidle.c
-+++ linux-pm/drivers/cpuidle/cpuidle.c
-@@ -158,9 +158,18 @@ int cpuidle_enter_state(struct cpuidle_d
- 	int entered_state;
- 
- 	struct cpuidle_state *target_state = &drv->states[index];
-+	bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
- 	ktime_t time_start, time_end;
- 	s64 diff;
- 
-+	/*
-+	 * Tell the time framework to switch to a broadcast timer because our
-+	 * local timer will be shut down.  If a local timer is used from another
-+	 * CPU as a broadcast timer, this call may fail if it is not available.
-+	 */
-+	if (broadcast && tick_broadcast_enter())
-+		return -EBUSY;
-+
- 	trace_cpu_idle_rcuidle(index, dev->cpu);
- 	time_start = ktime_get();
- 
-@@ -169,6 +178,13 @@ int cpuidle_enter_state(struct cpuidle_d
- 	time_end = ktime_get();
- 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
- 
-+	if (broadcast) {
-+		if (WARN_ON_ONCE(!irqs_disabled()))
-+			local_irq_disable();
-+
-+		tick_broadcast_exit();
-+	}
-+
- 	if (!cpuidle_state_is_coupled(dev, drv, entered_state))
- 		local_irq_enable();
- 
+Looking at ti-soc-thermal/omap?-thermal-data.c
+the lookup table looks familiar. Are they using the same kind
+of technology as my primitive sensor? (bandgap)
+I do note that the precision is much higher though.
+
+Regards.
+
