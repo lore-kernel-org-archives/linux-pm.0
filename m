@@ -1,49 +1,57 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 09/10] regulator: max77693: Add support for MAX77843
- device
-Date: Wed, 29 Apr 2015 18:58:45 +0100
-Message-ID: <20150429175845.GS22845@sirena.org.uk>
-References: <1430305114-23598-1-git-send-email-k.kozlowski.k@gmail.com>
- <1430305114-23598-10-git-send-email-k.kozlowski.k@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] ARM: gic: Document Power and Clock Domain optional properties
+Date: Wed, 29 Apr 2015 20:12:32 +0200
+Message-ID: <CAMuHMdVao2jOV7kZrcTw9UMa4kvSRMhfN5KQgQ8V-4fPS6ouaQ@mail.gmail.com>
+References: <1430146811-29862-1-git-send-email-geert+renesas@glider.be>
+	<20150427155427.GB16191@leverpostej>
+	<CAMuHMdVT=vzFazUsJtvPsyB8zX-WJqp19RNVYA=UMfWZtHnF=Q@mail.gmail.com>
+	<20150427171502.GD16191@leverpostej>
+	<CAMuHMdVY5Oh7b9Pme2jiwtV4GBPqK-T5nfxnB9_1ufFzueUjLA@mail.gmail.com>
+	<20150429125703.GB11757@leverpostej>
+	<CAMuHMdU1T9t8O8J4F0KkhcoeYO9sNLpp+jARaCEP0ZKiVgBqJA@mail.gmail.com>
+	<20150429151527.GA8781@leverpostej>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="bqR6j9rbojULRSO5"
-Return-path: <linux-input-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1430305114-23598-10-git-send-email-k.kozlowski.k@gmail.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150429151527.GA8781@leverpostej>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Marc Zyngier <Marc.Zyngier@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Apr 29, 2015 at 5:15 PM, Mark Rutland <mark.rutland@arm.com> wrote:
+>> > diff --git a/drivers/irqchip/irq-gic.c b/drivers/irqchip/irq-gic.c
+>> > index 7b315e3..02c8bb4 100644
+>> > --- a/drivers/irqchip/irq-gic.c
+>> > +++ b/drivers/irqchip/irq-gic.c
+>> > @@ -959,6 +959,7 @@ void __init gic_init_bases(unsigned int gic_nr, int irq_start,
+>> >         irq_hw_number_t hwirq_base;
+>> >         struct gic_chip_data *gic;
+>> >         int gic_irqs, irq_base, i;
+>> > +       unsigned long iidr;
+>> >
+>> >         BUG_ON(gic_nr >= MAX_GIC_NR);
+>> >
+>> > @@ -996,6 +997,9 @@ void __init gic_init_bases(unsigned int gic_nr, int irq_start,
+>> >                 gic_set_base_accessor(gic, gic_get_common_base);
+>> >         }
+>> >
+>> > +       iidr = readl_relaxed(gic_data_dist_base(gic) + GIC_DIST_IIDR);
+>> > +       pr_info("GICD_IIDR reports 0x%08lx\n", (unsigned long)iidr);
+>>
+>> No need for the cast.
+>
+> For arm64 there is ;)
 
---bqR6j9rbojULRSO5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Why? iidr is already unsigned long.
 
-On Wed, Apr 29, 2015 at 07:58:34PM +0900, Krzysztof Kozlowski wrote:
+Gr{oetje,eeting}s,
 
-> The charger and safeout part of MAX77843 is almost the same as MAX77693.
-> From regulator point of view the only differences are the constraints
-> and register values related to these constraints. Now the max77693
-> regulator driver can be used for MAX77843.
+                        Geert
 
-Acked-by: Mark Brown <broonie@kernel.org>
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---bqR6j9rbojULRSO5
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJVQRvVAAoJECTWi3JdVIfQ9jUH/idddzq9+Zc/kfkRPh20u6YD
-CCHTYz8JUGSQ24iTRGSv/GCaxAneuI7xFzLK18N4zqQ9I9PoTM43JNFCRprm/CYq
-uVCwr6VX+4JtD6C5wGpLxg9C2o6nP7dBf2gu1O62RbLCCy4EO9L/4whN/pbzSwis
-ZQmXRNLCaxUtlp1pH1cjJhX2wxY3QHBoWlI+Z60CpLTXIWhNHPY82kF6YGsL3+H6
-KUtHglKDm/ResCeN6I6vQJWOd1opUfd4QrMBmCzISLOIcxLDgqI4NP05V/lzmIz8
-waOtnsUfYPJBfWafXylJ0dQSBWrGBk8L/sC/vKiVJM300K5L3jglofARBXzrvqU=
-=pqYR
------END PGP SIGNATURE-----
-
---bqR6j9rbojULRSO5--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
