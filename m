@@ -1,134 +1,120 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH] ARM: gic: Document Power and Clock Domain optional
- properties
-Date: Wed, 29 Apr 2015 16:15:28 +0100
-Message-ID: <20150429151527.GA8781@leverpostej>
-References: <1430146811-29862-1-git-send-email-geert+renesas@glider.be>
- <20150427155427.GB16191@leverpostej>
- <CAMuHMdVT=vzFazUsJtvPsyB8zX-WJqp19RNVYA=UMfWZtHnF=Q@mail.gmail.com>
- <20150427171502.GD16191@leverpostej>
- <CAMuHMdVY5Oh7b9Pme2jiwtV4GBPqK-T5nfxnB9_1ufFzueUjLA@mail.gmail.com>
- <20150429125703.GB11757@leverpostej>
- <CAMuHMdU1T9t8O8J4F0KkhcoeYO9sNLpp+jARaCEP0ZKiVgBqJA@mail.gmail.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: Using a temperature sensor with 1-bit output for CPU throttling
+Date: Wed, 29 Apr 2015 17:36:05 +0100
+Message-ID: <20150429163605.GM3054@e104805>
+References: <553F6E85.5090402@free.fr> <5540E0E1.6080504@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:33515 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933223AbbD2PPi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 29 Apr 2015 11:15:38 -0400
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdU1T9t8O8J4F0KkhcoeYO9sNLpp+jARaCEP0ZKiVgBqJA@mail.gmail.com>
+Received: from mail-wi0-f173.google.com ([209.85.212.173]:35486 "EHLO
+	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966209AbbD2QiK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Apr 2015 12:38:10 -0400
+Received: by widdi4 with SMTP id di4so186975801wid.0
+        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2015 09:38:08 -0700 (PDT)
+Received: from debian ([2a01:7e00::f03c:91ff:fe84:bdc4])
+        by mx.google.com with ESMTPSA id js3sm39684001wjc.5.2015.04.29.09.38.08
+        for <linux-pm@vger.kernel.org>
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 29 Apr 2015 09:38:08 -0700 (PDT)
+In-Reply-To: <5540E0E1.6080504@free.fr>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Marc Zyngier <Marc.Zyngier@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>
+To: Mason <slash.tmp@free.fr>
+Cc: Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Amit Daniel <amit.kachhap@linaro.org>, Andrew Lunn <andrew@lunn.ch>, Radhesh Fadnis <radhesh.fadnis@ti.com>
 
-Hi Geert,
+T24gV2VkLCBBcHIgMjksIDIwMTUgYXQgMDI6NDc6MTNQTSArMDEwMCwgTWFzb24gd3JvdGU6DQo+
+IE9uIDI4LzA0LzIwMTUgMTM6MjcsIE1hc29uIHdyb3RlOg0KPiANCj4gPiBUaGUgU29DIEknbSB3
+b3JraW5nIG9uIHByb3ZpZGVzIGEgdGVtcGVyYXR1cmUgc2Vuc29yIChOWFApIGluIHRoZSBDUFUg
+YmxvY2suDQo+ID4gVGhlIHNlbnNvciBzZWVtcyB0byBiZSB2ZXJ5IHByaW1pdGl2ZSwgc28gSSB3
+YW50ZWQgdG8gYXNrIGV4cGVyaWVuY2VkIHBlb3BsZQ0KPiA+IHdoYXQgd291bGQgYmUgdGhlIGJl
+c3Qgd2F5IHRvIHVzZSBpdCBmcm9tIExpbnV4Lg0KPiA+IA0KPiA+IEdlbmVyYWwgRGVzY3JpcHRp
+b24NCj4gPiAiVGhlIHNlbnNvciBnZW5lcmF0ZXMgYW4gb3V0cHV0IHNpZ25hbCB0aGF0IGluZGlj
+YXRlcyBpZiB0aGUgZGllIHRlbXBlcmF0dXJlDQo+ID4gZXhjZWVkcyBhIHByb2dyYW1tYWJsZSB0
+aHJlc2hvbGQuIFRoaXMgbWFrZXMgaXQgcGFydGljdWxhcmx5IHN1aXRhYmxlIGZvcg0KPiA+IGRl
+dGVjdGluZyBvdmVyaGVhdGluZy4iDQo+ID4gDQo+ID4gU28gaXQgc2VlbXMgdGhhdCB0aGUgb3Jp
+Z2luYWwgcHVycG9zZSBvZiB0aGlzIHNlbnNvciB3YXMgdG8gcGVyaW9kaWNhbGx5DQo+ID4gY2hl
+Y2sgdGhhdCB0aGUgdGVtcGVyYXR1cmUgaGFzIG5vdCBleGNlZWRlZCBhIGdpdmVuIHRocmVzaG9s
+ZC4NCj4gPiANCj4gPiAtIElzIHRoZSBDUFUgdGVtcCBoaWdoZXIgdGhhbiAxMDDCsEMgPw0KPiA+
+IC0gTm8uDQo+ID4gLSBPSy4gQnVzaW5lc3MgYXMgdXN1YWwuDQo+ID4gDQo+ID4gKDEgc2Vjb25k
+IGxhdGVyKQ0KPiA+IC0gSXMgdGhlIENQVSB0ZW1wIGhpZ2hlciB0aGFuIDEwMMKwQyA/DQo+ID4g
+LSBZZXMuDQo+ID4gLSBVaC1vaCEgSSBuZWVkIHRvIGRvIHNvbWV0aGluZyBhYm91dCBpdC4NCj4g
+PiANCj4gPiANCj4gPiBCYXNpYyBGdW5jdGlvbnMNCj4gPiAiVGhlIHRlbXAgc2Vuc29yIHVzZXMg
+YSBiYW5kZ2FwIHR5cGUgb2YgY2lyY3VpdCB0byBjb21wYXJlIGEgdm9sdGFnZSB3aGljaA0KPiA+
+IGhhcyBhIG5lZ2F0aXZlIHRlbXBlcmF0dXJlIGNvZWZmaWNpZW50IHdpdGggYSB2b2x0YWdlIHRo
+YXQgaXMgcHJvcG9ydGlvbmFsDQo+ID4gdG8gYWJzb2x1dGUgdGVtcGVyYXR1cmUuIEEgcmVzaXN0
+b3IgYmFuayBhbGxvd3MgNDAgZGlmZmVyZW50IHRlbXBlcmF0dXJlDQo+ID4gdGhyZXNob2xkcyB0
+byBiZSBzZWxlY3RlZCBhbmQgdGhlIGxvZ2ljIG91dHB1dCAnb3V0X3RlbXBlcmF0dXJlJyB3aWxs
+IHRoZW4NCj4gPiBpbmRpY2F0ZSB3aGV0aGVyIHRoZSBhY3R1YWwgZGllIHRlbXBlcmF0dXJlIGxp
+ZXMgYWJvdmUgb3IgYmVsb3cgdGhlIHNlbGVjdGVkDQo+ID4gdGhyZXNob2xkLiINCj4gPiANCj4g
+PiBUaGUgYXZhaWxhYmxlIHRocmVzaG9sZHMgc2VlbSB0byBiZSBjaG9zZW4gc29tZXdoYXQgYXJi
+aXRyYXJpbHk6DQo+ID4gDQo+ID4gICAtNDUuMSwgLTM5LjcsIC0zMy43LCAtMjkuNCwgLTI0LjQs
+IC0yMC40LCAtMTUuNCwgLTEwLjEsDQo+ID4gICAtNi40LCAtMS40LCAzLjYsIDcuNiwgMTIuOSwg
+MTYuNiwgMjAuNiwgMjUuNiwgMzAuOSwNCj4gPiAgIDM0LjksIDM4LjYsIDQzLjksIDQ4LjksIDUy
+LjksIDU3LjksIDYxLjksIDY2LjksIDcwLjksDQo+ID4gICA3Ni4zLCA4MS4zLCA4NS4zLCA5MC4z
+LCA5NS4zLCA5OC45LCAxMDIuOSwgMTA4LjMsIDExMS45LA0KPiA+ICAgMTE3LjMsIDEyMi4zLCAx
+MjYuMywgMTMxLjMsIDEzNS4zLCAxMzkuMw0KPiA+IA0KPiA+IFRoZSBzcGFjaW5nIGJldHdlZW4g
+dmFsdWVzIHNlZW1zIGFyYml0cmFyeSBhbHNvLg0KPiA+IChJcyB0aGVyZSBhbiB1bmRlcmx5aW5n
+IHBoeXNpY2FsIGV4cGxhbmF0aW9uPykNCj4gPiANCj4gPiBJJ20gbm90IHN1cmUgdGhhdCB0aGVy
+ZSBpcyBtdWNoIHBvaW50IGluIHRlc3RpbmcgZm9yIHRlbXBlcmF0dXJlcyBsb3dlcg0KPiA+IHRo
+YW4gNTDCsEMgPyAoSSdtIHRvbGQgdGhhdCB0aGUgU29DIGNhbiByZWxpYWJseSBmdW5jdGlvbiB1
+cCB0byAxMjXCsEMuKQ0KPiA+IA0KPiA+IERvIGhpZ2hlciB0ZW1wZXJhdHVyZXMgc2hvcnRlbiB0
+aGUgbGlmZXNwYW4gb2YgYSBjb21wb25lbnQ/DQo+ID4gSW4gb3RoZXIgd29yZHMsIHdvdWxkIGEg
+Q1BVIHJ1bm5pbmcgMjQvNyBhdCAxMDDCsEMgImJyZWFrIiBzb29uZXINCj4gPiB0aGFuIG9uZSBy
+dW5uaW5nIDI0LzcgYXQgNTDCsEMgPw0KPiA+IA0KPiA+IA0KPiA+IENoYXJhY3RlcmlzdGljcw0K
+PiA+IA0KPiA+IFN5bWJvbCAgICAgIFBhcmFtZXRlciAgICAgICAgICAgICBNaW4gIFR5cCAgTWF4
+ICBVbml0DQo+ID4gDQo+ID4gKE9wZXJhdGluZyBjb25kaXRpb25zKQ0KPiA+IFRqdW5jICAgICAg
+SnVuY3Rpb24gdGVtcGVyYXR1cmUgICAtNDAgICAyNSAgIDEyNSAgwrBDDQo+ID4gVmRkICAgICAg
+ICBTdXBwbHkgdm9sdGFnZSAgICAgICAgIDEuMCAgMS4xICAxLjI2ICAgVg0KPiA+IA0KPiA+IChO
+b3JtYWwgb3BlcmF0aW5nIG1vZGUpDQo+ID4gSWRkICAgICAgICAgU3VwcGx5IGN1cnJlbnQgICAg
+ICAgICAgICAgIDUwICAgIDYwICDOvEENCj4gPiBWYmFuZGdhcHJlZiBSZWYgb3V0cHV0IHZvbHRh
+Z2UgICAwLjcyICAwLjggIDAuODggICBWDQo+ID4g4oiGb3V0dGVtcCAgICBBYnNvbHV0ZSBUZW1w
+ICAgICAgICAgICAgICAgwrEyICAgwrExMCAgwrBDDQo+ID4gICAgICAgICAgICAgdGhyZXNob2xk
+IGVycm9yDQo+ID4gVF9yZXMgICAgICAgVGVtcCByZXNvbHV0aW9uICAgICAgICAzICAgIDQuNSAg
+ICA3ICDCsEMNCj4gPiANCj4gPiANCj4gPiBHaXZlbiB0aGUgc2VtYW50aWNzIG9mIHRoZSB0ZW1w
+ZXJhdHVyZSBzZW5zb3IgaGFyZHdhcmUgYmxvY2ssIEkgd2FzDQo+ID4gdGVtcHRlZCB0byBpbXBs
+ZW1lbnQgc29tZXRoaW5nIGFsb25nIHRoZXNlIGxpbmVzOg0KPiA+IA0KPiA+IENyZWF0ZSBhIGtl
+cm5lbCB0aHJlYWQgdGhhdCBydW5zIHBlcmlvZGljYWxseSAoZS5nLiBldmVyeSBzZWNvbmQpDQo+
+ID4gdG8gY2hlY2sgaWYgdGhlIHRlbXBlcmF0dXJlIGlzIGFib3ZlIDEwMMKwQy4NCj4gPiAtIElm
+IG5vdCwgZG8gbm90aGluZw0KPiA+IC0gSWYgeWVzLCBzb21laG93IHByZXZlbnQgdGhlIENQVSBm
+cm9tIHVzaW5nIHRoZSBoaWdoZXN0IGZyZXF1ZW5jaWVzDQo+ID4gZGVmaW5lZCBpbiBjcHVmcmVx
+J3MgZnJlcSB0YWJsZQ0KPiA+IChUaGV5IGFyZSAxMDAwLCA1MDAsIDMzMywgMjAwLCAxMDAgTUh6
+KQ0KPiA+IA0KPiA+IElzIHRoYXQgYSBzZW5zaWJsZSBhcHByb2FjaD8NCj4gPiBJcyB0aGVyZSBh
+IHdheSB0byBpbXBsZW1lbnQgdGhpcyB1c2luZyB0aGUgdGhlcm1hbCBmcmFtZXdvcms/DQo+ID4g
+DQo+ID4gT3IgYW0gSSBsb29raW5nIGF0IHRoaXMgd3JvbmcsIGFuZCB0aGluZ3Mgc2hvdWxkIGJl
+IGRvbmUgYQ0KPiA+IGRpZmZlcmVudCB3YXk/IChJJ20gdXNpbmcgMy4xNCBieSB0aGUgd2F5LikN
+Cj4gPiANCj4gPiBJIHN1cHBvc2UgSSBjb3VsZCBwZXJmb3JtIHNvbWUga2luZCBvZiBiaW5hcnkg
+c2VhcmNoIHRvIHpvb20gaW4NCj4gPiBvbiB0aGUgY3VycmVudCB0aHJlc2hvbGQgKGFsdGhvdWdo
+IGl0IG1pZ2h0IGNoYW5nZSBkdXJpbmcgdGhlDQo+ID4gbWVhc3VyZW1lbnRzLCBzbyBJJ2QgcmF0
+aGVyIG5vdCBnbyB0aGVyZS4pDQo+IA0KPiBJJ20gYXdhcmUgdGhhdCBJIHBvc3RlZCBtYW55IHF1
+ZXN0aW9ucy4gSSdkIGJlIGdyYXRlZnVsIGlmIHNvbWVvbmUNCj4gd291bGQgYW5zd2VyIGV2ZW4g
+YSB0aW55IHN1YnNldC4gVGhhdCB3b3VsZCBnZXQgdGhlIGJhbGwgcm9sbGluZy4NCj4gDQo+IElm
+IEkgdW5kZXJzdGFuZCBjb3JyZWN0bHksIGlmIEkgd2FudCB0byB1c2UgdGhlIENQVSB0aHJvdHRs
+aW5nDQo+IGZyYW1ld29yaywgSSBuZWVkIHRvIGRlZmluZSBhICJ0aGVybWFsIHpvbmUgZGV2aWNl
+IiBhbmQgYQ0KPiAiY29vbGluZyBkZXZpY2UiLiBBRkFJVSwgdGhlIGNvb2xpbmcgZGV2aWNlIGlz
+IHRha2VuIGNhcmUgb2YNCj4gYnkgY3B1X2Nvb2xpbmcuYw0KPiANCj4gICBjcHVmcmVxX2Nvb2xp
+bmdfcmVnaXN0ZXIoY3B1X3ByZXNlbnRfbWFzayk7DQoNCkNvcnJlY3QNCg0KPiBNeSB0ZW1wZXJh
+dHVyZSBzZW5zb3Igd291bGQgYmUgdGhlIHRoZXJtYWwgem9uZSBkZXZpY2U/DQo+IEhvdyBkbyBJ
+IHRpZSB0aGUgdHdvIGRldmljZXMgdG9nZXRoZXI/DQoNCllvdXIgdGVtcGVyYXR1cmUgc2Vuc29y
+IHdvdWxkIGJlIHRoZSBpbnB1dCB0byB0aGUgdGhlcm1hbCB6b25lDQpkZXZpY2UuICBZb3UgcmVn
+aXN0ZXIgaXQgd2l0aCB0aGVybWFsX3pvbmVfZGV2aWNlX3JlZ2lzdGVyKCkuICBTZWUNCkRvY3Vt
+ZW50YXRpb24vdGhlcm1hbC9zeXNmcy1hcGkudHh0IC4gIFlvdXIgdGhlcm1hbCBzZW5zb3INCmRv
+ZXNuJ3QgYWN0dWFsbHkgcmVwb3J0IHRlbXBlcmF0dXJlIGJ1dCB0aGUgdGhlcm1hbCBmcmFtZXdv
+cmsgZXhwZWN0cw0KYSB0ZW1wZXJhdHVyZSwgc28geW91ciB0aGVybWFsIHpvbmUncyBnZXRfdGVt
+cCgpIGZ1bmN0aW9uIHNob3VsZA0KcmVwb3J0IGEgZmFrZSB0ZW1wZXJhdHVyZS4gIEZvciBleGFt
+cGxlLCBpZiB5b3UndmUgY29uZmlndXJlIHlvdXINCnNlbnNvciBmb3IgNTBDLCB0aGVuIHlvdSBj
+b3VsZCByZXBvcnQgNDVDIGlmIHRoZSBzZW5zb3IgcmVhZHMgYXMgMCBhbmQNCjUwQyBpZiB0aGUg
+c2Vuc29yIHJlYWRzIGFzIDEuICBJdCdzIGEgaGFjaywgYnV0IGl0IHNob3VsZCB3b3JrLiAgQmVh
+cg0KaW4gbWluZCB0aGF0IGdldF90ZW1wKCkgc2hvdWxkIHJlcG9ydCBpbiBtaWxsaWNlbHNpdXMu
+DQoNCj4gSXMgdGhhdCB3aGVyZSBhIHRoZXJtYWwgZ292ZXJub3IgY29tZXMgaW4gcGxheT8NCg0K
+QmVjYXVzZSB5b3Ugd2FudCBvbi9vZmYgYmVoYXZpb3IsIHRoZSBiYW5nYmFuZyBnb3Zlcm5vciBp
+cyB0aGUNCnNpbXBsZXN0IHRvIHVzZSBhbmQgc2hvdWxkIGRvIHRoZSB3b3JrLiAgWW91IGNhbiBj
+aG9vc2UgYXMgdGhlIGRlZmF1bHQNCmluIHlvdXIga2VybmVsIGNvbmZpZ3VyYXRpb24gb3IgeW91
+IGNhbiBjaG9vc2UgaXQgYnkgcGFzc2luZyBpdCBhcw0KcGFydCBvZiB0aGUgdHpwIHRoYXQgeW91
+IHBhc3MgdG8gdGhlcm1hbF96b25lX2RldmljZV9yZWdpc3RlcigpDQoNClB1dCBhIHRyaXAgcG9p
+bnQgYXQgdGhlIHRlbXBlcmF0dXJlIHlvdSd2ZSBzZXQgdXAgeW91ciBzZW5zb3IgdG8gYW5kDQpi
+aW5kIHRoZSBjcHUgY29vbGluZyBkZXZpY2UgdG8gaXQuDQoNCkhvcGUgdGhpcyBoZWxwcywNCkph
+dmkNCg==
 
-> >> >> > I'm also concerned that the carving up of clock inputs, power domains,
-> >> >> > and other physical details is implementation-specific. I imagine that
-> >> >> > pretty much every user that will care about this is using GIC-400, so
-> >> >> > could we make this specific to GIC-400?
-> >> >>
-> >> >> I have no idea which GIC version is being used.
-> >> >
-> >> > This is unfortunate.
-> >> >
-> >> >> This is for Renesas R-Mobile APE6 (r8a73a4) and various R-Car Gen2.
-> >> >> According to the DTS, they're compatible with "arm,cortex-a15-gic" and
-> >> >> "arm,cortex-a7-gic", and work with that value.
-> >> >
-> >> > Who put the DT together in the first place?
-> >>
-> >> Magnus (added to CC).
-> >>
-> >> > If it's a multi-cluster SoC then we know that we're not using any
-> >> > built-in distributor...
-> >>
-> >> R-Mobile APE6 has 2 clusters (4xCA15 and 4xCA7).
-> >> R-Car Gen2 has 1 or 2 clusters (2/4xCA15 and/or 2/4xCA7).
-> >
-> > It looks like we should be able to read the GICD_IIDR to figure out what
-> > imlpementation is used. Could you see what GICD_IIDR reports on those
-> > platforms? There's a patch at the end of the email to do so.
-> 
-> Thanks!
-> 
->   - R-Mobile APE6 (r8a73a4):        GICD_IIDR reports 0x0200043b
->   - R-Car Gen M2-W (r8a7791):       GICD_IIDR reports 0x0200043b
-> 
->         ProductID = 0x02 (GIC-400)
->         Variant = 0x0
->         Revision = 0x0
->         Implementer = 0x43b (ARM)
-> 
-> So both are GIC-400 (in the mean time I found a reference to GIC-400 in
-> the APE6 docs).
-
-Ok. We already support the "arm,gic-400" compatible string, so these
-could be moved over, and given a CLK clock input.
-
-> I also ran it on a few other SoCs:
-> 
->   - SH-Mobile AG5 (sh73a0):         GICD_IIDR reports 0x0102043b
-> 
->         Implementation version = 0x01 (Cortex-A9 MPCore)
->         Revision number = 0x020
->         Implementer = 0x43b (ARM)
-> 
->     Which GIC is that?
-
-That seems to be a GIC internal to the A9 MPCore, so "arm,cortex-a9-gic"
-is fine for this.
-
-It seems to take separate PERIPHCLK and PERIPHCLKEN clock inputs, though
-it's not clear to be from the TRM whether PERIPHCLKEN is generated
-internally from PERIPHCLK, or if it needs to be generated by an external
-clock controller.
-
->   - R-Mobile A1 (r8a7740):          GICD_IIDR reports 0x0000043b
-> 
->         ProductID = 0x00 (GIC-500 or Cortex-A15 MPCore or PL390)
->         Variant = 0x0
->         Revision = 0x0
->         Implementer = 0x43b (ARM)
-> 
->     Seems like 0x0000043b can mean multiple things. Docs say PL390 r0p0.
-
-We might want to add an "arm,pl390" compatible string for this. The
-PL390 seems to take a single "gclk" clock input.
-
-> > diff --git a/drivers/irqchip/irq-gic.c b/drivers/irqchip/irq-gic.c
-> > index 7b315e3..02c8bb4 100644
-> > --- a/drivers/irqchip/irq-gic.c
-> > +++ b/drivers/irqchip/irq-gic.c
-> > @@ -959,6 +959,7 @@ void __init gic_init_bases(unsigned int gic_nr, int irq_start,
-> >         irq_hw_number_t hwirq_base;
-> >         struct gic_chip_data *gic;
-> >         int gic_irqs, irq_base, i;
-> > +       unsigned long iidr;
-> >
-> >         BUG_ON(gic_nr >= MAX_GIC_NR);
-> >
-> > @@ -996,6 +997,9 @@ void __init gic_init_bases(unsigned int gic_nr, int irq_start,
-> >                 gic_set_base_accessor(gic, gic_get_common_base);
-> >         }
-> >
-> > +       iidr = readl_relaxed(gic_data_dist_base(gic) + GIC_DIST_IIDR);
-> > +       pr_info("GICD_IIDR reports 0x%08lx\n", (unsigned long)iidr);
-> 
-> No need for the cast.
-
-For arm64 there is ;)
-
-> Perhaps just
-> 
->         pr_debug("GICD_IIDR reports 0x%08lx\n",
->                  readl_relaxed(gic_data_dist_base(gic) + GIC_DIST_IIDR));
-
-I could fold the read in, but with the cast it was either overly long or
-weirdly formatted.
-
-Thanks,
-Mark.
