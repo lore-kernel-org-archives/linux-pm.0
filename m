@@ -1,73 +1,117 @@
-From: ahaslam@baylibre.com
-Subject: [PATCH/RFC v6 5/5] PM / Domains: remove old power on/off callbacks.
-Date: Wed, 29 Apr 2015 21:10:15 +0200
-Message-ID: <1430334615-1161-6-git-send-email-ahaslam@baylibre.com>
-References: <1430334615-1161-1-git-send-email-ahaslam@baylibre.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f50.google.com ([74.125.82.50]:35360 "EHLO
-	mail-wg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751564AbbD2TL0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Apr 2015 15:11:26 -0400
-Received: by wgyo15 with SMTP id o15so38938220wgy.2
-        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2015 12:11:24 -0700 (PDT)
-In-Reply-To: <1430334615-1161-1-git-send-email-ahaslam@baylibre.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Fabian Frederick <fabf@skynet.be>
+Subject: [PATCH V2 linux-next] cpufreq: pxa: replace typedef pxa_freqs_t by structure
+Date: Wed, 29 Apr 2015 21:32:59 +0200
+Message-ID: <1430335980-9765-1-git-send-email-fabf@skynet.be>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Fabian Frederick <fabf@skynet.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@linaro.org, k.kozlowski.k@gmail.com, geert@linux-m68k.org, rjw@rjwysocki.net
-Cc: bcousson@baylibre.com, linux-pm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>
 
-From: Axel Haslam <ahaslam+renesas@baylibre.com>
+typedef is not really useful here. Replace it by structure
+to improve readability.typedef should only be used in some cases.
+(See Documentation/CodingStyle Chapter 5 for details).
 
-Now that all known users have been converted to use the state
-version of the callbacks, we can remove the default callbacks
-without breaking compilation.
-
-Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
+Signed-off-by: Fabian Frederick <fabf@skynet.be>
 ---
- drivers/base/power/domain.c | 15 ---------------
- include/linux/pm_domain.h   |  2 --
- 2 files changed, 17 deletions(-)
+V2: verbose changelog.
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 4ea1365..30bff3f 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1510,21 +1510,6 @@ static int genpd_alloc_states_data(struct generic_pm_domain *genpd,
- 			st[i].power_off_latency_ns;
+ drivers/cpufreq/pxa2xx-cpufreq.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
+index e24269a..fcf6e34 100644
+--- a/drivers/cpufreq/pxa2xx-cpufreq.c
++++ b/drivers/cpufreq/pxa2xx-cpufreq.c
+@@ -56,7 +56,7 @@ module_param(pxa27x_maxfreq, uint, 0);
+ MODULE_PARM_DESC(pxa27x_maxfreq, "Set the pxa27x maxfreq in MHz"
+ 		 "(typically 624=>pxa270, 416=>pxa271, 520=>pxa272)");
+ 
+-typedef struct {
++struct pxa_freqs {
+ 	unsigned int khz;
+ 	unsigned int membus;
+ 	unsigned int cccr;
+@@ -64,7 +64,7 @@ typedef struct {
+ 	unsigned int cclkcfg;
+ 	int vmin;
+ 	int vmax;
+-} pxa_freqs_t;
++};
+ 
+ /* Define the refresh period in mSec for the SDRAM and the number of rows */
+ #define SDRAM_TREF	64	/* standard 64ms SDRAM */
+@@ -86,7 +86,7 @@ static unsigned int sdram_rows;
+ /* Use the run mode frequencies for the CPUFREQ_POLICY_PERFORMANCE policy */
+ #define CCLKCFG			CCLKCFG_TURBO | CCLKCFG_FCS
+ 
+-static pxa_freqs_t pxa255_run_freqs[] =
++static struct pxa_freqs pxa255_run_freqs[] =
+ {
+ 	/* CPU   MEMBUS  CCCR  DIV2 CCLKCFG	           run  turbo PXbus SDRAM */
+ 	{ 99500,  99500, 0x121, 1,  CCLKCFG, -1, -1},	/*  99,   99,   50,   50  */
+@@ -98,7 +98,7 @@ static pxa_freqs_t pxa255_run_freqs[] =
+ };
+ 
+ /* Use the turbo mode frequencies for the CPUFREQ_POLICY_POWERSAVE policy */
+-static pxa_freqs_t pxa255_turbo_freqs[] =
++static struct pxa_freqs pxa255_turbo_freqs[] =
+ {
+ 	/* CPU   MEMBUS  CCCR  DIV2 CCLKCFG	   run  turbo PXbus SDRAM */
+ 	{ 99500, 99500,  0x121, 1,  CCLKCFG, -1, -1},	/*  99,   99,   50,   50  */
+@@ -153,7 +153,7 @@ MODULE_PARM_DESC(pxa255_turbo_table, "Selects the frequency table (0 = run table
+    ((HT) ? CCLKCFG_HALFTURBO : 0) | \
+    ((T)  ? CCLKCFG_TURBO : 0))
+ 
+-static pxa_freqs_t pxa27x_freqs[] = {
++static struct pxa_freqs pxa27x_freqs[] = {
+ 	{104000, 104000, PXA27x_CCCR(1,	 8, 2), 0, CCLKCFG2(1, 0, 1),  900000, 1705000 },
+ 	{156000, 104000, PXA27x_CCCR(1,	 8, 3), 0, CCLKCFG2(1, 0, 1), 1000000, 1705000 },
+ 	{208000, 208000, PXA27x_CCCR(0, 16, 2), 1, CCLKCFG2(0, 0, 1), 1180000, 1705000 },
+@@ -171,7 +171,7 @@ extern unsigned get_clk_frequency_khz(int info);
+ 
+ #ifdef CONFIG_REGULATOR
+ 
+-static int pxa_cpufreq_change_voltage(pxa_freqs_t *pxa_freq)
++static int pxa_cpufreq_change_voltage(struct pxa_freqs *pxa_freq)
+ {
+ 	int ret = 0;
+ 	int vmin, vmax;
+@@ -202,7 +202,7 @@ static void __init pxa_cpufreq_init_voltages(void)
  	}
+ }
+ #else
+-static int pxa_cpufreq_change_voltage(pxa_freqs_t *pxa_freq)
++static int pxa_cpufreq_change_voltage(struct pxa_freqs *pxa_freq)
+ {
+ 	return 0;
+ }
+@@ -211,7 +211,7 @@ static void __init pxa_cpufreq_init_voltages(void) { }
+ #endif
  
--	/*
--	 * Copy the latency values To keep compatibility with
--	 * platfroms that are not converted to use the multiple states.
--	 * This will be removed once all platfroms are converted to use
--	 * multiple states. note that non converted platfroms will use the
--	 * default single off state.
--	 */
--	if (genpd->power_on_latency_ns != 0)
--		genpd->states[0].power_on_latency_ns =
--				genpd->power_on_latency_ns;
--
--	if (genpd->power_off_latency_ns != 0)
--		genpd->states[0].power_off_latency_ns =
--				genpd->power_off_latency_ns;
--
- 	genpd->state_count = st_count;
+ static void find_freq_tables(struct cpufreq_frequency_table **freq_table,
+-			     pxa_freqs_t **pxa_freqs)
++			     struct pxa_freqs **pxa_freqs)
+ {
+ 	if (cpu_is_pxa25x()) {
+ 		if (!pxa255_turbo_table) {
+@@ -270,7 +270,7 @@ static unsigned int pxa_cpufreq_get(unsigned int cpu)
+ static int pxa_set_target(struct cpufreq_policy *policy, unsigned int idx)
+ {
+ 	struct cpufreq_frequency_table *pxa_freqs_table;
+-	pxa_freqs_t *pxa_freq_settings;
++	struct pxa_freqs *pxa_freq_settings;
+ 	unsigned long flags;
+ 	unsigned int new_freq_cpu, new_freq_mem;
+ 	unsigned int unused, preset_mdrefr, postset_mdrefr, cclkcfg;
+@@ -361,7 +361,7 @@ static int pxa_cpufreq_init(struct cpufreq_policy *policy)
+ 	int i;
+ 	unsigned int freq;
+ 	struct cpufreq_frequency_table *pxa255_freq_table;
+-	pxa_freqs_t *pxa255_freqs;
++	struct pxa_freqs *pxa255_freqs;
  
- 	/* to save memory, Name allocation will happen if debug is enabled */
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 8a3d43f..935984f 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -73,9 +73,7 @@ struct generic_pm_domain {
- 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
- 	bool suspend_power_off;	/* Power status before system suspend */
- 	int (*power_off)(struct generic_pm_domain *domain);
--	s64 power_off_latency_ns;
- 	int (*power_on)(struct generic_pm_domain *domain);
--	s64 power_on_latency_ns;
- 	struct gpd_dev_ops dev_ops;
- 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
- 	bool max_off_time_changed;
+ 	/* try to guess pxa27x cpu */
+ 	if (cpu_is_pxa27x())
 -- 
 1.9.1
-
