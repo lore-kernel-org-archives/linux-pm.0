@@ -1,22 +1,28 @@
 From: Eduardo Valentin <edubezval@gmail.com>
 Subject: Re: [RFP] LPC thermal track
-Date: Tue, 28 Apr 2015 22:23:21 -0700
-Message-ID: <20150429052321.GA6080@localhost.localdomain>
+Date: Tue, 28 Apr 2015 22:24:15 -0700
+Message-ID: <20150429052414.GB6080@localhost.localdomain>
 References: <20150327000245.GA29752@developer.hsd1.ca.comcast.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f169.google.com ([209.85.192.169]:35537 "EHLO
-	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030444AbbD1WX0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2015 18:23:26 -0400
-Received: by pdbqd1 with SMTP id qd1so8647033pdb.2
-        for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2015 15:23:25 -0700 (PDT)
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:33723 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031148AbbD1WYU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2015 18:24:20 -0400
+Received: by pacwv17 with SMTP id wv17so8582787pac.0
+        for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2015 15:24:19 -0700 (PDT)
 Content-Disposition: inline
 In-Reply-To: <20150327000245.GA29752@developer.hsd1.ca.comcast.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Linux PM <linux-pm@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>, "cyndis@lakka.kapsi.fi" <cyndis@lakka.kapsi.fi>, Kapileshwar Singh <kapileshwar.singh@arm.com>, Lukasz Majewski <l.majewski@samsung.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Caesar Wang <wxt@rock-chips.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Amit Daniel Kachhap <amit.daniel@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, Sachin Kamat <sachin.kamat@linaro.org>, Linus Torvalds <torvalds@linux-foundation.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Durgadoss R <durgadoss.r@intel.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Len Brown <len.brown@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Wolfr
+
+
+--k+w/mQv8wyuph6w0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
 Hello folks,
 
@@ -73,3 +79,21 @@ Eduardo Valentin
 >
 > [1] - http://wiki.linuxplumbersconf.org/2015:thermal
 
+
+--k+w/mQv8wyuph6w0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQEcBAEBAgAGBQJVQGr5AAoJEMLUO4d9pOJWd40IAIVpjzeVgJ09aqvVdPhchnPv
++PMNl6GWdKpyAmdjEqP7vXZgwPwbYmFgZH8zW2kT/7cPjqJzERoRNGa3doEnUKKq
+sjS2ZJwBS8lIWCaURNBxmB+nq+mA2vjuVU5fzSXlpOXSjb1YB2nOmqPuz+Vm3EL8
+61oDUFtdxQpsup1PbJdrxL3uh94U2j6zwbcEKC6MdhI4TksQt7jxB0sGnRmEPxPV
+qV+juFKZvVrjnC2TQ6R1XZomlZPXvARQrHllzzoWBHiijdUAL4GubLCFuf1bdeDg
+3niNP6/lyWn6CO7Gjhg5wM7IJU9yLUuB68Jg0ly1ZqCMtQfTng88ll8baXMmsOg=
+=ettB
+-----END PGP SIGNATURE-----
+
+--k+w/mQv8wyuph6w0--
