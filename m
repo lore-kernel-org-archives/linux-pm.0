@@ -1,73 +1,51 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 1/2] cpufreq: mediatek: Add MT8173 cpufreq driver
-Date: Thu, 30 Apr 2015 09:42:18 +0200
-Message-ID: <20150430074218.GH4946@pengutronix.de>
-References: <1429522047-16675-1-git-send-email-pi-cheng.chen@linaro.org>
- <1429522047-16675-2-git-send-email-pi-cheng.chen@linaro.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCHv2] power_supply: Add support for Richtek rt9455 battery charger
+Date: Thu, 30 Apr 2015 16:53:56 +0900
+Message-ID: <CAJKOXPfb6-HY8XP-nqPziC=M-+w8PwLF-zgGr9HXiCotY=+XUg@mail.gmail.com>
+References: <1430338406-24012-1-git-send-email-anda-maria.nicolae@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1429522047-16675-2-git-send-email-pi-cheng.chen@linaro.org>
+In-Reply-To: <1430338406-24012-1-git-send-email-anda-maria.nicolae@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "pi-cheng.chen" <pi-cheng.chen@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Mike Turquette <mturquette@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, "Joe.C" <yingjoe.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Howard Chen <ibanezchen@gmail.com>, fan.chen@mediatek.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-mediatek@lists.infradead.org
+To: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
+Cc: sre@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Apr 20, 2015 at 05:27:26PM +0800, pi-cheng.chen wrote:
-> This patch implements MT8173 specific cpufreq driver with OPP table defined
-> in the driver code.
-> 
-> Signed-off-by: pi-cheng.chen <pi-cheng.chen@linaro.org>
-> ---
->  drivers/cpufreq/Kconfig.arm      |   6 +
->  drivers/cpufreq/Makefile         |   1 +
->  drivers/cpufreq/mt8173-cpufreq.c | 509 +++++++++++++++++++++++++++++++++++++++
->  3 files changed, 516 insertions(+)
->  create mode 100644 drivers/cpufreq/mt8173-cpufreq.c
-> 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 1b06fc4..25643c7 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> +
-> +static int mt8173_cpufreq_dvfs_init(struct cpu_dvfs_info *info)
-> +{
-> +	struct device *cpu_dev;
-> +	struct regulator *proc_reg, *sram_reg;
-> +	struct clk *cpu_clk, *inter_pll;
-> +	unsigned long rate;
-> +	int cpu, ret;
-> +
-> +	cpu = cpumask_first(&info->cpus);
-> +
-> +try_next_cpu:
-> +	cpu_dev = get_cpu_device(cpu);
-> +	proc_reg = regulator_get_exclusive(cpu_dev, "proc");
-> +	sram_reg = regulator_get_exclusive(cpu_dev, "sram");
-> +	cpu_clk = clk_get(cpu_dev, "cpu");
-> +	inter_pll = clk_get(cpu_dev, "intermediate");
-> +
-> +	if (IS_ERR_OR_NULL(proc_reg) || IS_ERR_OR_NULL(cpu_clk) ||
-> +	    IS_ERR_OR_NULL(inter_pll)) {
-> +		cpu = cpumask_next(cpu, &info->cpus);
-> +		if (cpu >= nr_cpu_ids)
-> +			return -ENODEV;
-> +
-> +		goto try_next_cpu;
-> +	}
+2015-04-30 5:13 GMT+09:00 Anda-Maria Nicolae <anda-maria.nicolae@intel.com>:
+> Based on the datasheet found here:
+> http://www.richtek.com/download_ds.jsp?p=RT9455
+>
+> Updates from the previous version:
+> - replaced license GPLv2 with GPL
+> - replaced vendor prefix rt with richtek
+> - replaced uppercase properties names from devicetree with lowercase separated by dash properties names
+> - replaced I/O read/write API with regmap_read/write and regmap_field_read/write
+> - used kernel multiline comment
+> - used DELAYED_WORK and scheduled the works in system_power_efficient_wq. It is high probability that the device is in suspend state while charging (i.e. the user leaves the device to charge during night) and it is needed that the scheduled works to be executed as planned.
 
-Please keep an eye on the error pathes. This one is quite broken. You
-get references to resources here which you never release. Also
--EPROBE_DEFER is a valid return value from regulator_get which is not
-handled here.
+I think when device is suspended (e.g. to RAM) no work will ever be
+executed. The timers (for delayed work) will not wake up the device...
+RTC could wake but this is different story. My proposal of deferred
+timers is affected by idle CPU time. Are you sure that you want to
+wake up from the system suspend?
 
-Also IS_ERR_OR_NULL() is most probably wrong here. Should be IS_ERR().
+> - replaced struct power_supply_desc rt9455_charger_desc with static const struct power_supply_desc rt9455_charger_desc
+> - replaced if (IS_ERR_OR_NULL(info->charger)) with if (IS_ERR(info->charger))
+> - replaced {"RTK9455", 0} with { "RTK9455", 0 }
+> - removed .owner = THIS_MODULE
+>
+> Signed-off-by: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
 
-Sascha
+You missed some of my comments. I mentioned wrong error paths around
+put_usb_phy in probe. They do not seem to be fixed...
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Just one hint - mostly new bindings are posted in separate patches at
+the beginning of the patchset. I actually don't mind. but separating
+them will probably give you higher chance of review from DT people.
+This is also mentioned in:
+Documentation/devicetree/bindings/submitting-patches.txt
+
+Best regards,
+Krzysztof
