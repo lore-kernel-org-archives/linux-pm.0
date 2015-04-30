@@ -1,184 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 3/3] OPP: Add 'opp-next' in operating-points-v2 bindings
-Date: Thu, 30 Apr 2015 17:38:01 +0530
-Message-ID: <1ee98ae5b45083e681c7f530e0ae9195e5636119.1430394884.git.viresh.kumar@linaro.org>
-References: <cover.1430394884.git.viresh.kumar@linaro.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v3 1/2] PM / sleep: Let devices force direct_complete
+Date: Thu, 30 Apr 2015 10:53:35 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1504301048410.1791-100000@iolanthe.rowland.org>
+References: <CAPDyKFpLLJaMFsf5f8A42jjVqu+BkMMAH5ksHt0aA71QMQBH6w@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:33690 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750963AbbD3MIW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Apr 2015 08:08:22 -0400
-Received: by pdbnk13 with SMTP id nk13so58897033pdb.0
-        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2015 05:08:21 -0700 (PDT)
-In-Reply-To: <cover.1430394884.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1430394884.git.viresh.kumar@linaro.org>
-References: <cover.1430394884.git.viresh.kumar@linaro.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:43427 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752706AbbD3Oxh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Apr 2015 10:53:37 -0400
+In-Reply-To: <CAPDyKFpLLJaMFsf5f8A42jjVqu+BkMMAH5ksHt0aA71QMQBH6w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mike.turquette@linaro.org, sboyd@codeaurora.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, Viresh Kumar <viresh.kumar@linaro.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>
 
-Many platforms require to switch to a intermediate frequency before
-switching to a final frequency. Or they can switch to only particular
-OPPs from any OPP.
+On Thu, 30 Apr 2015, Ulf Hansson wrote:
 
-For these add another property in OPP-v2, 'opp-next'.
+> I hesitated to send this reply, since it might add confusion. If
+> that's the case, please ignore it.
+> 
+> I have a long term vision to fully enable support for a runtime PM
+> centric configuration for drivers/subsystems. The idea is, that such
+> driver/subsystem should get system PM for "free".
+> 
+> The main goal is to simplify PM implementation for these drivers/subsystems.
+> 
+> They should need to implement the runtime PM callbacks only and not
+> the system PM ones. During system PM suspend, the requirement is that
+> the corresponding devices should be guaranteed to be "runtime PM
+> suspended". Somehow that then needs to be managed by the PM core.
+> 
+> I am not sure it's doable, but I wanted to bring it up within the
+> context of $subject patch, since it proposes yet another optimization
+> path for runtime PM during system PM.
 
-Refer to the bindings for more details.
+I suspect it is _not_ doable.  Consider a reasonable scenario: a driver
+that does pm_runtime_get_sync() in its open routine and
+pm_runtime_put() in its release routine.  If a user process holds the
+device file open during a system suspend, it will be impossible for the
+PM core to do a runtime suspend.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- Documentation/devicetree/bindings/power/opp.txt | 130 ++++++++++++++++++++++++
- 1 file changed, 130 insertions(+)
+On the other hand, there's nothing to prevent drivers from setting 
+their ->suspend and ->runtime_suspend structure members to point at the 
+same routine.  The routine would need to handle the case where it was 
+called for a system suspend while the device was already runtime 
+suspended, but that doesn't seem too hard.  With the "direct-suspend" 
+option, even this wouldn't be necessary.
 
-diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
-index 07959903ec32..c96dc77121b7 100644
---- a/Documentation/devicetree/bindings/power/opp.txt
-+++ b/Documentation/devicetree/bindings/power/opp.txt
-@@ -72,6 +72,9 @@ properties.
- 
- - clock-latency-ns: Specifies the maximum possible transition latency (in
-   nanoseconds) for switching to this OPP from any other OPP.
-+- opp-next: It contains a list of phandles to other OPPs, to which we can switch
-+  directly from this OPP (Explained later with examples). Missing property means
-+  no restriction on switching to other OPPs.
- - turbo-mode: Marks the OPP to be used only for turbo modes.
- - status: Marks the node enabled/disabled.
- 
-@@ -363,6 +366,133 @@ Example 4: Handling multiple regulators
- 	};
- };
- 
-+Example 5: How to use "opp-next" property ?
-+
-+1.) Switch to a intermediate OPP (entry00) before switching to any other OPP.
-+
-+/ {
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu@0 {
-+			compatible = "arm,cortex-a7";
-+			reg = <0>;
-+			next-level-cache = <&L2>;
-+			clocks = <&clk_controller 0>;
-+			clock-names = "cpu";
-+			opp-supply = <&cpu_supply0>;
-+			operating-points-v2 = <&cpu0_opp>;
-+		};
-+	};
-+
-+	cpu0_opp: opp0 {
-+		compatible = "operating-points-v2";
-+		shared-opp;
-+
-+		opp_next: entry00 {
-+			opp-khz = <500000>;
-+			opp-microvolt = <800000>;
-+			clock-latency-ns = <300000>;
-+			/* Can switch to any OPP from here */
-+		};
-+		entry01 {
-+			opp-khz = <600000>;
-+			opp-microvolt = <800000>;
-+			clock-latency-ns = <300000>;
-+			opp-next = <&opp_next>;
-+		};
-+		entry02 {
-+			opp-khz = <900000>;
-+			opp-microvolt = <970000 975000 985000>;
-+			clock-latency-ns = <300000>;
-+			opp-next = <&opp_next>;
-+		};
-+		entry03 {
-+			opp-khz = <1000000>;
-+			opp-microvolt = <970000 975000 985000>;
-+			clock-latency-ns = <300000>;
-+			opp-next = <&opp_next>;
-+		};
-+		entry04 {
-+			opp-khz = <1100000>;
-+			opp-microvolt = <980000 1000000 1010000>;
-+			clock-latency-ns = <310000>;
-+			opp-next = <&opp_next>;
-+		};
-+		entry05 {
-+			opp-khz = <1200000>;
-+			opp-microvolt = <1025000>;
-+			clock-latency-ns = <290000>;
-+			opp-next = <&opp_next>;
-+			turbo-mode;
-+		};
-+	};
-+};
-+
-+2.) Can only switch to the next or previous OPP directly.
-+
-+/ {
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu@0 {
-+			compatible = "arm,cortex-a7";
-+			reg = <0>;
-+			next-level-cache = <&L2>;
-+			clocks = <&clk_controller 0>;
-+			clock-names = "cpu";
-+			opp-supply = <&cpu_supply0>;
-+			operating-points-v2 = <&cpu0_opp>;
-+		};
-+	};
-+
-+	cpu0_opp: opp0 {
-+		compatible = "operating-points-v2";
-+		shared-opp;
-+
-+		opp_next0: entry00 {
-+			opp-khz = <500000>;
-+			opp-microvolt = <800000>;
-+			clock-latency-ns = <300000>;
-+			opp-next = <&opp_next1>;
-+		};
-+		opp_next1: entry01 {
-+			opp-khz = <600000>;
-+			opp-microvolt = <800000>;
-+			clock-latency-ns = <300000>;
-+			opp-next = <&opp_next0>, <&opp_next2>;
-+		};
-+		opp_next2: entry02 {
-+			opp-khz = <900000>;
-+			opp-microvolt = <970000 975000 985000>;
-+			clock-latency-ns = <300000>;
-+			opp-next = <&opp_next1>, <&opp_next3>;
-+		};
-+		opp_next3: entry03 {
-+			opp-khz = <1000000>;
-+			opp-microvolt = <970000 975000 985000>;
-+			clock-latency-ns = <300000>;
-+			opp-next = <&opp_next2>, <&opp_next4>;
-+		};
-+		opp_next4: entry04 {
-+			opp-khz = <1100000>;
-+			opp-microvolt = <980000 1000000 1010000>;
-+			clock-latency-ns = <310000>;
-+			opp-next = <&opp_next3>, <&opp_next5>;
-+		};
-+		opp_next5: entry05 {
-+			opp-khz = <1200000>;
-+			opp-microvolt = <1025000>;
-+			clock-latency-ns = <290000>;
-+			opp-next = <&opp_next4>;
-+			turbo-mode;
-+		};
-+	};
-+};
-+
-+
- 
- Deprecated Bindings
- -------------------
--- 
-2.3.0.rc0.44.ga94655d
+Alan Stern
 
