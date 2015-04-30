@@ -1,58 +1,85 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [RFC PATCH v2 0/1] ARM: cpuidle: heterogeneous systems extension
-Date: Thu, 30 Apr 2015 16:51:33 +0100
-Message-ID: <20150430155133.GA9863@red-moon>
-References: <1429200617-9546-1-git-send-email-lorenzo.pieralisi@arm.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: bq27x00_battery: Add missing MODULE_ALIAS
+Date: Thu, 30 Apr 2015 17:55:27 +0200
+Message-ID: <20150430155527.GF6133@earth>
+References: <1430252586-5104-1-git-send-email-marek@goldelico.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="SxgehGEc6vB0cZwN"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:60427 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750891AbbD3Pzd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 30 Apr 2015 11:55:33 -0400
 Content-Disposition: inline
-In-Reply-To: <1429200617-9546-1-git-send-email-lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: Howard Chen <howard.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sudeep Holla <Sudeep.Holla-5wv7dgnIgG8@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mathieu Poirier <mathieu.poirier-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>
+In-Reply-To: <1430252586-5104-1-git-send-email-marek@goldelico.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Marek Belisko <marek@goldelico.com>
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hns@goldelico.com
 
-On Thu, Apr 16, 2015 at 05:10:16PM +0100, Lorenzo Pieralisi wrote:
-> This patch is a v2 of a previous posting:
-> 
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/328192.html
-> 
-> v1 -> v2:
-> 
-> - Rebased against 4.0
-> - Removed DT affinity probe interface
-> - Improved and optimized idle states comparison and cpumask creation
-> - Merged DT idle states vetting code in the ARM CPUidle driver
-> 
-> This patch aims at enabling the generic CPUidle driver on ARM systems
-> with heterogeneous idle states. In the CPUidle context the kernel
-> considers cpus equal (and group them together through a CPUidle driver)
-> if they share the same set of idle states.
-> Since the idle states represent the differentiation point when it comes
-> to creating CPUidle drivers (their states and related cpu logical mask),
-> the idle states can be used as a means to create logical masks of cpus
-> for which the CPUidle driver applies.
-> 
-> This patch sets the maximum number of static CPUidle drivers allowed to
-> two, since it is hard to foresee systems with more than two sets of CPUs
-> having different idle states; it is meant to keep allocation simple
-> while keeping functionality.
-> 
-> The code carrying out idle states comparison is completely generic
-> and borrowed from OF unit tests; it overrides the OF API entirely
-> though to carry out properties (ie phandles list) comparison in the
-> fastest possible way. If deemed worthwhile it can be moved to generic OF
-> layer.
-> 
-> Tested through several dts idle states permutations on Juno board with
-> CPUidle and related idle states enabled.
 
-Are there any comments/opinions on this patch ?
+--SxgehGEc6vB0cZwN
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Lorenzo
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Hi,
+
+On Tue, Apr 28, 2015 at 10:23:06PM +0200, Marek Belisko wrote:
+> Without MODULE_ALIAS bq27x00_battery module won't get loaded
+> automatically.
+>=20
+> Signed-off-by: Marek Belisko <marek@goldelico.com>
+> ---
+>  drivers/power/bq27x00_battery.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>=20
+> diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_batt=
+ery.c
+> index a57433d..542927e 100644
+> --- a/drivers/power/bq27x00_battery.c
+> +++ b/drivers/power/bq27x00_battery.c
+> @@ -1109,6 +1109,12 @@ static void __exit bq27x00_battery_exit(void)
+>  }
+>  module_exit(bq27x00_battery_exit);
+> =20
+> +#ifdef CONFIG_BATTERY_BQ27X00_PLATFORM
+> +MODULE_ALIAS("platform:bq27000-battery");
+> +#else
+> +MODULE_ALIAS("i2c:bq27000-battery");
+> +#endif
+> +
+>  MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
+>  MODULE_DESCRIPTION("BQ27x00 battery monitor driver");
+>  MODULE_LICENSE("GPL");
+
+NAK. You should set the alias by checking for
+CONFIG_BATTERY_BQ27X00_PLATFORM and CONFIG_BATTERY_BQ27X00_I2C
+respectively, so that all scenarios are handled.
+
+-- Sebastian
+
+--SxgehGEc6vB0cZwN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVQlBvAAoJENju1/PIO/qaYeIP+wWzPSeDq5YcTc1nG1bLQsAb
+hDjeWyXyV8OwGhbKqKqkGmbo6P0WJRx4GissCvVGMcTrWdmw5dlW93FUeqKiK8Cv
+zhp5stKNodRBNCtNUlxjnpLevie0jT63ScWpZVV5+KfKSZAsv8HTf3lQriDsl0Q7
+Fx3mqN8SuRFurEelc5tkdxeReUNhpQXmdPScPG6iRScpBlFIqTtQxu32rhegeE+C
+hHNoSXWN1myT8AAwDKfT3FwwrXocS1DHnv4qKjGqgXxKg7LXrdCm1SKL4A00AtiN
+d+2TGVuxSUihohFxP6G3LkWDZOU74qhKREK8VRI4aWsNQ5ostg8bdNUjrTxoPsCS
+l+ZJ3rgHAtrKvbRLGD8q7PamGemfdlsf1/YX/XfqwM2lAZKXO/XWFGXRyE/yegcO
+sQPO8TX2hnTapyIH1CMHku+K/z3qzGAEOWkCXFQE74rPZYmz2BqghVn2Y+b98Nr7
+govV82l4bn/tH9pXvMeh6CeYTZVCTVPyjgI75uLDBRtgYwl/hIAe0ZkDDQx1LAjJ
+xcmZmqee6kcRT4hAIUmR47LJqlWfCxDz6H52ePNQA5mpoFPjyUKkYkZnNUEhVM+M
+zGT7OXUwR4+MAuxObFL7lMFKrWJrPwtbrgC/yDPHoAhGRRv2i2qNAou5IhVHDqcP
+5jQw32UtRngsFz2759j3
+=Iy0u
+-----END PGP SIGNATURE-----
+
+--SxgehGEc6vB0cZwN--
