@@ -1,85 +1,70 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: bq27x00_battery: Add missing MODULE_ALIAS
-Date: Thu, 30 Apr 2015 17:55:27 +0200
-Message-ID: <20150430155527.GF6133@earth>
-References: <1430252586-5104-1-git-send-email-marek@goldelico.com>
+From: Axel Haslam <ahaslam@baylibre.com>
+Subject: Re: [PATCH v7 1/5] PM / Domains: prepare for multiple states
+Date: Thu, 30 Apr 2015 18:06:38 +0200
+Message-ID: <5542530E.80803@baylibre.com>
+References: <1430391335-7588-1-git-send-email-ahaslam@baylibre.com> <1430391335-7588-2-git-send-email-ahaslam@baylibre.com> <20150430152959.GD424@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="SxgehGEc6vB0cZwN"
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:60427 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750891AbbD3Pzd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 30 Apr 2015 11:55:33 -0400
-Content-Disposition: inline
-In-Reply-To: <1430252586-5104-1-git-send-email-marek@goldelico.com>
+Received: from mail-wi0-f172.google.com ([209.85.212.172]:33936 "EHLO
+	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937AbbD3QGn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Apr 2015 12:06:43 -0400
+Received: by wicmx19 with SMTP id mx19so16632505wic.1
+        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2015 09:06:42 -0700 (PDT)
+In-Reply-To: <20150430152959.GD424@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Marek Belisko <marek@goldelico.com>
-Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hns@goldelico.com
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: ulf.hansson@linaro.org, khilman@linaro.org, k.kozlowski.k@gmail.com, geert@linux-m68k.org, rjw@rjwysocki.net, bcousson@baylibre.com, linux-pm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>
 
+Hi Lina,
 
---SxgehGEc6vB0cZwN
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 30/04/2015 17:29, Lina Iyer wrote:
+> On Thu, Apr 30 2015 at 04:57 -0600, ahaslam@baylibre.com wrote:
+>> From: Axel Haslam <ahaslam+renesas@baylibre.com>
+>>
+>> prepare generic power domain init function parameters
+>> to accept a pointer to the states structure that describes
+>> the possible states that a power domain can enter.
+>>
+>> There is no functional change, as support for multiple
+>> domains will be added in subsequent patches.
+>>
+>> Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
+>
+> <...>
+>
+>> extern void pm_genpd_init(struct generic_pm_domain *genpd,
+>> -              struct dev_power_governor *gov, bool is_off);
+>> +              struct dev_power_governor *gov,
+>> +              const struct genpd_power_state *states,
+>> +              unsigned int state_count, bool is_off);
+>>
+>
+> Wouldnt it be better to setup another function pm_genpd_init_simple()
+> that calls into pm_genpd_init() with no arguments?
+>
+> static inline void pm_genpd_init_simple(struct generic_pm_domain *genpd,
+>                                struct dev_power_governor *gov, bool is_off)
+> {
+>      return pm_genpd_init(genpd, gov, NULL, 0, is_off);
+> }
 
-Hi,
+Im not against adding the wrapper if it simplifies things. But, in 
+general, i think all latencies should be set, otherwise genpd may 
+violate device constraints by turning a power domain off when it should 
+not. So maybe, by leaving the arguments, it kind of sends the message to 
+the developer that something important is needed.
 
-On Tue, Apr 28, 2015 at 10:23:06PM +0200, Marek Belisko wrote:
-> Without MODULE_ALIAS bq27x00_battery module won't get loaded
-> automatically.
->=20
-> Signed-off-by: Marek Belisko <marek@goldelico.com>
-> ---
->  drivers/power/bq27x00_battery.c | 6 ++++++
->  1 file changed, 6 insertions(+)
->=20
-> diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_batt=
-ery.c
-> index a57433d..542927e 100644
-> --- a/drivers/power/bq27x00_battery.c
-> +++ b/drivers/power/bq27x00_battery.c
-> @@ -1109,6 +1109,12 @@ static void __exit bq27x00_battery_exit(void)
->  }
->  module_exit(bq27x00_battery_exit);
-> =20
-> +#ifdef CONFIG_BATTERY_BQ27X00_PLATFORM
-> +MODULE_ALIAS("platform:bq27000-battery");
-> +#else
-> +MODULE_ALIAS("i2c:bq27000-battery");
-> +#endif
-> +
->  MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
->  MODULE_DESCRIPTION("BQ27x00 battery monitor driver");
->  MODULE_LICENSE("GPL");
+Regards,
+Axel
 
-NAK. You should set the alias by checking for
-CONFIG_BATTERY_BQ27X00_PLATFORM and CONFIG_BATTERY_BQ27X00_I2C
-respectively, so that all scenarios are handled.
-
--- Sebastian
-
---SxgehGEc6vB0cZwN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVQlBvAAoJENju1/PIO/qaYeIP+wWzPSeDq5YcTc1nG1bLQsAb
-hDjeWyXyV8OwGhbKqKqkGmbo6P0WJRx4GissCvVGMcTrWdmw5dlW93FUeqKiK8Cv
-zhp5stKNodRBNCtNUlxjnpLevie0jT63ScWpZVV5+KfKSZAsv8HTf3lQriDsl0Q7
-Fx3mqN8SuRFurEelc5tkdxeReUNhpQXmdPScPG6iRScpBlFIqTtQxu32rhegeE+C
-hHNoSXWN1myT8AAwDKfT3FwwrXocS1DHnv4qKjGqgXxKg7LXrdCm1SKL4A00AtiN
-d+2TGVuxSUihohFxP6G3LkWDZOU74qhKREK8VRI4aWsNQ5ostg8bdNUjrTxoPsCS
-l+ZJ3rgHAtrKvbRLGD8q7PamGemfdlsf1/YX/XfqwM2lAZKXO/XWFGXRyE/yegcO
-sQPO8TX2hnTapyIH1CMHku+K/z3qzGAEOWkCXFQE74rPZYmz2BqghVn2Y+b98Nr7
-govV82l4bn/tH9pXvMeh6CeYTZVCTVPyjgI75uLDBRtgYwl/hIAe0ZkDDQx1LAjJ
-xcmZmqee6kcRT4hAIUmR47LJqlWfCxDz6H52ePNQA5mpoFPjyUKkYkZnNUEhVM+M
-zGT7OXUwR4+MAuxObFL7lMFKrWJrPwtbrgC/yDPHoAhGRRv2i2qNAou5IhVHDqcP
-5jQw32UtRngsFz2759j3
-=Iy0u
------END PGP SIGNATURE-----
-
---SxgehGEc6vB0cZwN--
+>
+> It would be explicit that way to indicate the new genpd feature that
+> would let
+> domains support multiple states.
+>
+> Thanks,
+> Lina
