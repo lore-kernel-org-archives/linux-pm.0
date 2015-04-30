@@ -1,69 +1,58 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [patch 33/39] power: reset: ltc2952: Remove bogus
- hrtimer_start() return value checks
-Date: Thu, 30 Apr 2015 17:49:30 +0200
-Message-ID: <20150430154930.GE6133@earth>
-References: <20150414203303.702062272@linutronix.de>
- <20150414203503.322172417@linutronix.de>
+From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [RFC PATCH v2 0/1] ARM: cpuidle: heterogeneous systems extension
+Date: Thu, 30 Apr 2015 16:51:33 +0100
+Message-ID: <20150430155133.GA9863@red-moon>
+References: <1429200617-9546-1-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="u5E4XgoOPWr4PD9E"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:60080 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750710AbbD3Pth (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 30 Apr 2015 11:49:37 -0400
-Content-Disposition: inline
-In-Reply-To: <20150414203503.322172417@linutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Marcelo Tosatti <mtosatt@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Frans Klaver <frans.klaver@xsens.com>, =?iso-8859-1?B?UmVuw6k=?= Moll <Rene.Moll@xsens.com>, Wolfram Sang <wsa@the-dreams.de>, linux-pm@vger.kernel.org
-
-
---u5E4XgoOPWr4PD9E
 Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <1429200617-9546-1-git-send-email-lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: Howard Chen <howard.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sudeep Holla <Sudeep.Holla-5wv7dgnIgG8@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mathieu Poirier <mathieu.poirier-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thu, Apr 16, 2015 at 05:10:16PM +0100, Lorenzo Pieralisi wrote:
+> This patch is a v2 of a previous posting:
+> 
+> http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/328192.html
+> 
+> v1 -> v2:
+> 
+> - Rebased against 4.0
+> - Removed DT affinity probe interface
+> - Improved and optimized idle states comparison and cpumask creation
+> - Merged DT idle states vetting code in the ARM CPUidle driver
+> 
+> This patch aims at enabling the generic CPUidle driver on ARM systems
+> with heterogeneous idle states. In the CPUidle context the kernel
+> considers cpus equal (and group them together through a CPUidle driver)
+> if they share the same set of idle states.
+> Since the idle states represent the differentiation point when it comes
+> to creating CPUidle drivers (their states and related cpu logical mask),
+> the idle states can be used as a means to create logical masks of cpus
+> for which the CPUidle driver applies.
+> 
+> This patch sets the maximum number of static CPUidle drivers allowed to
+> two, since it is hard to foresee systems with more than two sets of CPUs
+> having different idle states; it is meant to keep allocation simple
+> while keeping functionality.
+> 
+> The code carrying out idle states comparison is completely generic
+> and borrowed from OF unit tests; it overrides the OF API entirely
+> though to carry out properties (ie phandles list) comparison in the
+> fastest possible way. If deemed worthwhile it can be moved to generic OF
+> layer.
+> 
+> Tested through several dts idle states permutations on Juno board with
+> CPUidle and related idle states enabled.
 
-On Tue, Apr 14, 2015 at 09:09:20PM -0000, Thomas Gleixner wrote:
-> The return value of hrtimer_start() tells whether the timer was
-> inactive or active already when hrtimer_start() was called.
->=20
-> The code emits a bogus warning if the timer was active already
-> claiming that the timer could not be started.
->=20
-> Remove it.
+Are there any comments/opinions on this patch ?
 
-Thanks, queued for 4.1-rc with Acked-By from Frans Klaver:
-
-http://git.infradead.org/battery-2.6.git/commit/d8818257d3befce6ce7da4c0911=
-2654914c3fd58
-
--- Sebastian
-
---u5E4XgoOPWr4PD9E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVQk8KAAoJENju1/PIO/qaq4oP/1muC47BRn2EBjaRZZRJlZz5
-rwBdlRyvMZpN9ZTzTM43kp3LhR6DwbmTwGLiPzAe0zbGPkCCmF3clL47JdiZEBdK
-nsF75Pq3y2bTjZdhWGpKRFHLzBQhuXR2RPlPRF/k9DPBju32dUVuZqQVnPQjeP8O
-sszSq3hhQ+zqjWbF2GspYu4ZxP+pYyRRXMKqaioWEk9Pjbt1cz4L/UYKcTaLqJ8p
-L4VV6JWVsCyCQgHIMx9bfcpHvOYRQtMceApjnSPMlREop4+HQxK8jhfrObpV+f2K
-wBGYXfF8JT1UqaT7e9qIiA8aOM4LyH2XCC0MQY9neFmwFuMyA/93tm1jCuVvsvzW
-6oqLqTnlPUt7dE5BKOXrkN/H3Rg8yQ8BbdrAiG9XlNP98iH7Xfc8B7pcywecBoCR
-x90bhuMp+j70sGBQkT35rljJVEuxO3Ir2+vGzDl13VAy4S+vJw/sS57JwhTJ59S2
-HB3DENiXcDOtpfj0AgZ1GJkG7u0nR3llAc3L+fNhxseiv0/dunrvi1XJ+Xp+6Es0
-geno/vOG2yensyAqlHxSUH070dtcJ0sNkvDhAPtCKR1VVyWDpgqjLoJZsYWF19NG
-mh+Rdm/p3QsO3ezyYXflaxJG1c28AK4T9jGqQbUHJcWayAGCvkPa145JTcNzau4W
-rKyG5rA9SOBVwWIfK4w2
-=SpT3
------END PGP SIGNATURE-----
-
---u5E4XgoOPWr4PD9E--
+Thanks,
+Lorenzo
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
