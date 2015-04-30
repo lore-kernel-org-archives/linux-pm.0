@@ -1,60 +1,69 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power_supply: fix oops in collie_battery driver
-Date: Thu, 30 Apr 2015 17:42:07 +0200
-Message-ID: <20150430154207.GD6133@earth>
-References: <1430154943-29264-1-git-send-email-dbaryshkov@gmail.com>
+Subject: Re: [patch 33/39] power: reset: ltc2952: Remove bogus
+ hrtimer_start() return value checks
+Date: Thu, 30 Apr 2015 17:49:30 +0200
+Message-ID: <20150430154930.GE6133@earth>
+References: <20150414203303.702062272@linutronix.de>
+ <20150414203503.322172417@linutronix.de>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="fOHHtNG4YXGJ0yqR"
+	protocol="application/pgp-signature"; boundary="u5E4XgoOPWr4PD9E"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:59695 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:60080 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750807AbbD3PmQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 30 Apr 2015 11:42:16 -0400
+	id S1750710AbbD3Pth (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 30 Apr 2015 11:49:37 -0400
 Content-Disposition: inline
-In-Reply-To: <1430154943-29264-1-git-send-email-dbaryshkov@gmail.com>
+In-Reply-To: <20150414203503.322172417@linutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: linux-pm@vger.kernel.org, Andrea Adami <andrea.adami@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Marcelo Tosatti <mtosatt@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Frans Klaver <frans.klaver@xsens.com>, =?iso-8859-1?B?UmVuw6k=?= Moll <Rene.Moll@xsens.com>, Wolfram Sang <wsa@the-dreams.de>, linux-pm@vger.kernel.org
 
 
---fOHHtNG4YXGJ0yqR
+--u5E4XgoOPWr4PD9E
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Dmitry,
+Hi,
 
-On Mon, Apr 27, 2015 at 08:15:43PM +0300, Dmitry Eremin-Solenikov wrote:
-> Fix an oops happening due to typo in 297d716f6260cc9421d971b124ca196b957ee
-> [power_supply: Change ownership from driver to core].
+On Tue, Apr 14, 2015 at 09:09:20PM -0000, Thomas Gleixner wrote:
+> The return value of hrtimer_start() tells whether the timer was
+> inactive or active already when hrtimer_start() was called.
+>=20
+> The code emits a bogus warning if the timer was active already
+> claiming that the timer could not be started.
+>=20
+> Remove it.
 
-Thanks, queued for 4.1-rc with proper Fixes tag:
+Thanks, queued for 4.1-rc with Acked-By from Frans Klaver:
 
-http://git.infradead.org/battery-2.6.git/commit/ce992369cf29a8762b46338756ef5aba35774981
+http://git.infradead.org/battery-2.6.git/commit/d8818257d3befce6ce7da4c0911=
+2654914c3fd58
 
 -- Sebastian
 
---fOHHtNG4YXGJ0yqR
+--u5E4XgoOPWr4PD9E
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJVQk1PAAoJENju1/PIO/qaADUP/iYUFSWuyIx1eBGLOvRLEQ/Q
-f1/arxeEuFUcKu7FiDQGQ2AAMZfPohAkXa5iXThMSwaAYCkW2uHu6N3D23hj3PUl
-5cB/M6ralSqHYxM/afhkvdmgb3KsWrnHYlq/o9+VOil1Okkn3jzyJkZ6agb+JMyK
-LRuSadJfTItmgyTedxz8+Z+Bl/wC/qNM+IvWy/Vc+ZFvSDGHxTDVVj0545MeM/Qv
-3P+Aa9ig8e5VCmpBr5jW9whJLcCkeuyTSLaAGfhmufRYN1dnoCvVX75Df6qgDZJx
-FtoenqZs+VhGzEWCvhpr/MDWDPG2Iu3d/PSvFwM2T1iuCO55sOYu18n8oApcjBPI
-NhRYMdqnygEEWgn0C2o1tcjHjmpm9pzpJ1HdTL64OmH4Go4UQctZ4jNX0Vb8I+WW
-oS6IB2Rqxu4dd1Tvq+QbTlQ2MrpdmEcgRWdyB02UdcpGWyAC19yZ7MECABnvRnxp
-ITg3h3JewMZRqp6i3P7fOq0czCTpW+Um4jilO+mT3fO3SfVN7+l6js00q+rOdqE8
-Uasos7X63b2Tlp5xPiaxm+8c1j41aB0p1jJpBNllMB5vtOUoTGJp5PlUuZ+L13wG
-qiRk8ptuTjRfg7FFqUi3dbeeokwBWnT/g+epITUPh3rbHFT1PvXfFdKzlXF2MpcN
-tX1/s47DzzP77LBPyi56
-=SNTy
+iQIcBAEBCgAGBQJVQk8KAAoJENju1/PIO/qaq4oP/1muC47BRn2EBjaRZZRJlZz5
+rwBdlRyvMZpN9ZTzTM43kp3LhR6DwbmTwGLiPzAe0zbGPkCCmF3clL47JdiZEBdK
+nsF75Pq3y2bTjZdhWGpKRFHLzBQhuXR2RPlPRF/k9DPBju32dUVuZqQVnPQjeP8O
+sszSq3hhQ+zqjWbF2GspYu4ZxP+pYyRRXMKqaioWEk9Pjbt1cz4L/UYKcTaLqJ8p
+L4VV6JWVsCyCQgHIMx9bfcpHvOYRQtMceApjnSPMlREop4+HQxK8jhfrObpV+f2K
+wBGYXfF8JT1UqaT7e9qIiA8aOM4LyH2XCC0MQY9neFmwFuMyA/93tm1jCuVvsvzW
+6oqLqTnlPUt7dE5BKOXrkN/H3Rg8yQ8BbdrAiG9XlNP98iH7Xfc8B7pcywecBoCR
+x90bhuMp+j70sGBQkT35rljJVEuxO3Ir2+vGzDl13VAy4S+vJw/sS57JwhTJ59S2
+HB3DENiXcDOtpfj0AgZ1GJkG7u0nR3llAc3L+fNhxseiv0/dunrvi1XJ+Xp+6Es0
+geno/vOG2yensyAqlHxSUH070dtcJ0sNkvDhAPtCKR1VVyWDpgqjLoJZsYWF19NG
+mh+Rdm/p3QsO3ezyYXflaxJG1c28AK4T9jGqQbUHJcWayAGCvkPa145JTcNzau4W
+rKyG5rA9SOBVwWIfK4w2
+=SpT3
 -----END PGP SIGNATURE-----
 
---fOHHtNG4YXGJ0yqR--
+--u5E4XgoOPWr4PD9E--
