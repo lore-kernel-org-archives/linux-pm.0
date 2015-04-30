@@ -1,159 +1,80 @@
-From: ahaslam@baylibre.com
-Subject: [PATCH v7 3/5] PM / Domains: make governor select deepest state
-Date: Thu, 30 Apr 2015 12:55:33 +0200
-Message-ID: <1430391335-7588-4-git-send-email-ahaslam@baylibre.com>
-References: <1430391335-7588-1-git-send-email-ahaslam@baylibre.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V4 0/3] OPP: Introduce OPP (V2) bindings
+Date: Thu, 30 Apr 2015 17:37:58 +0530
+Message-ID: <cover.1430394884.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f174.google.com ([209.85.212.174]:34266 "EHLO
-	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752049AbbD3K5E (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Apr 2015 06:57:04 -0400
-Received: by wicmx19 with SMTP id mx19so10165436wic.1
-        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2015 03:57:03 -0700 (PDT)
-In-Reply-To: <1430391335-7588-1-git-send-email-ahaslam@baylibre.com>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:35933 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750717AbbD3MII (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Apr 2015 08:08:08 -0400
+Received: by pabsx10 with SMTP id sx10so57918729pab.3
+        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2015 05:08:08 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@linaro.org, k.kozlowski.k@gmail.com, geert@linux-m68k.org, rjw@rjwysocki.net
-Cc: bcousson@baylibre.com, linux-pm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mike.turquette@linaro.org, sboyd@codeaurora.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-From: Axel Haslam <ahaslam+renesas@baylibre.com>
+Hi Guys (Specially Stephen),
 
-now that the structures of genpd can support
-multiple state definitions, add the logic in
-the governor to select the deepest possible
-state when powering down.
+These are dangling since a long time now and I am really getting discouraged to
+take these further. Not many people have reviewed them, apart from few nice
+folks.
 
-For this, create the new function power_down_ok_for_state
-which will test if a particular state will not violate
-the devices and sub-domains constraints.
+One last try ..
 
-default_power_down_ok is modified to try each
-state starting from the deepest until a valid
-state is found or there are no more states to test.
+I have tried to take care of most of the concerns you had Stephen, please let me
+know if they workout for you or you don't want these bindings to take care of
+qcom stuff at all. Then we can keep them simple and carry on. Ofcourse we would
+like to handle every platform here :)
 
-the resulting state will be valid until
-there are latency or constraint changes,
-thus, we can avoid looping every power_down,
-and use the cached results instead.
+V3->V4:
+- Dropped code changes as we are still concerned about bindings.
+- separated out into three patches, some of which might be NAK'd. :)
+- The first patch presents basic OPP stuff that was reviewed earlier. It also
+  has support for multiple regulators, with values for both current and voltage.
+- Second patch is based on a special concern that Stephen had about multiple OPP
+  tables, one of which the parsing code will select at runtime.
+- Third one separates out 'opp-next' or Intermediate freq support as Mike T. had
+  few concerns over it. He wanted the clock driver to take care of this and so
+  do not want it to be passed by DT and used by cpufreq. Also, there were
+  concerns like the platform may not want to choose intermediate frequency as a
+  target frequency for longer runs, which wasn't prevented in earlier bindings.
+  And so it is kept separate to be NAK'd quietly, without much disturbances.
 
-Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
----
- drivers/base/power/domain_governor.c | 76 +++++++++++++++++++++---------------
- 1 file changed, 45 insertions(+), 31 deletions(-)
+  ---------------x-------------------x------------------------
 
-diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-index 5e63a84..8139c01 100644
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -97,7 +97,8 @@ static bool default_stop_ok(struct device *dev)
-  *
-  * This routine must be executed under the PM domain's lock.
-  */
--static bool default_power_down_ok(struct dev_pm_domain *pd)
-+static bool power_down_ok_for_state(struct dev_pm_domain *pd,
-+				     unsigned int state)
- {
- 	struct generic_pm_domain *genpd = pd_to_genpd(pd);
- 	struct gpd_link *link;
-@@ -105,31 +106,8 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 	s64 min_off_time_ns;
- 	s64 off_on_time_ns;
- 
--	if (genpd->max_off_time_changed) {
--		struct gpd_link *link;
--
--		/*
--		 * We have to invalidate the cached results for the masters, so
--		 * use the observation that default_power_down_ok() is not
--		 * going to be called for any master until this instance
--		 * returns.
--		 */
--		list_for_each_entry(link, &genpd->slave_links, slave_node)
--			link->master->max_off_time_changed = true;
--
--		genpd->max_off_time_changed = false;
--		genpd->cached_power_down_ok = false;
--		genpd->max_off_time_ns = -1;
--	} else {
--		return genpd->cached_power_down_ok;
--	}
--
--	/*
--	 * Use the only available state, until multiple state support is added
--	 * to the governor.
--	 */
--	off_on_time_ns = genpd->states[0].power_off_latency_ns +
--				genpd->states[0].power_on_latency_ns;
-+	off_on_time_ns = genpd->states[state].power_off_latency_ns +
-+		genpd->states[state].power_on_latency_ns;
- 	/*
- 	 * It doesn't make sense to remove power from the domain if saving
- 	 * the state of all devices in it and the power off/power on operations
-@@ -205,8 +183,6 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 			min_off_time_ns = constraint_ns;
- 	}
- 
--	genpd->cached_power_down_ok = true;
--
- 	/*
- 	 * If the computed minimum device off time is negative, there are no
- 	 * latency constraints, so the domain can spend arbitrary time in the
-@@ -219,14 +195,52 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 	 * The difference between the computed minimum subdomain or device off
- 	 * time and the time needed to turn the domain on is the maximum
- 	 * theoretical time this domain can spend in the "off" state.
--	 * Use the only available state, until multiple state support is added
--	 * to the governor.
- 	 */
- 	genpd->max_off_time_ns = min_off_time_ns -
--		genpd->states[0].power_on_latency_ns;
-+			genpd->states[state].power_on_latency_ns;
- 	return true;
- }
- 
-+static bool default_power_down_ok(struct dev_pm_domain *pd)
-+{
-+	struct generic_pm_domain *genpd = pd_to_genpd(pd);
-+	unsigned int last_state_idx = genpd->state_count - 1;
-+	struct gpd_link *link;
-+	bool retval = false;
-+	unsigned int i;
-+
-+	/*
-+	 * if there was no change on max_off_time, we can return the
-+	 * cached value and we dont need to find a new target_state
-+	 */
-+	if (!genpd->max_off_time_changed)
-+		return genpd->cached_power_down_ok;
-+
-+	/*
-+	 * We have to invalidate the cached results for the masters, so
-+	 * use the observation that default_power_down_ok() is not
-+	 * going to be called for any master until this instance
-+	 * returns.
-+	 */
-+	list_for_each_entry(link, &genpd->slave_links, slave_node)
-+		link->master->max_off_time_changed = true;
-+
-+	genpd->max_off_time_ns = -1;
-+	genpd->max_off_time_changed = false;
-+
-+	/* find a state to power down to, starting from the deepest */
-+	for (i = 0; i < genpd->state_count; i++) {
-+		if (power_down_ok_for_state(pd, last_state_idx - i)) {
-+			genpd->state_idx = last_state_idx - i;
-+			retval = true;
-+			break;
-+		}
-+	}
-+
-+	genpd->cached_power_down_ok = retval;
-+	return retval;
-+}
-+
- static bool always_on_power_down_ok(struct dev_pm_domain *domain)
- {
- 	return false;
+Current OPP (Operating performance point) DT bindings are proven to be
+insufficient at multiple instances.
+
+The shortcomings we are trying to solve here:
+
+- Getting clock sharing information between CPUs. Single shared clock vs
+  independent clock per core vs shared clock per cluster.
+
+- Support for specifying current levels along with voltages.
+
+- Support for multiple regulators.
+
+- Support for turbo modes.
+
+- Other per OPP settings: transition latencies, disabled status, etc.?
+
+- Expandability of OPPs in future.
+
+This patchset shows a path forward to get all these fixed. Please give some
+comments this time and lets get this done.
+
+--
+viresh
+
+Viresh Kumar (3):
+  OPP: Redefine bindings to overcome shortcomings
+  OPP: Allow multiple OPP tables to be passed via DT
+  OPP: Add 'opp-next' in operating-points-v2 bindings
+
+ Documentation/devicetree/bindings/power/opp.txt | 501 +++++++++++++++++++++++-
+ 1 file changed, 497 insertions(+), 4 deletions(-)
+
 -- 
-1.9.1
+2.3.0.rc0.44.ga94655d
 
