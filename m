@@ -1,68 +1,60 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power/reset: at91: fix return value check in
- at91_reset_platform_probe()
-Date: Thu, 30 Apr 2015 17:38:49 +0200
-Message-ID: <20150430153848.GC6133@earth>
-References: <1429186783-20895-1-git-send-email-weiyj_lk@163.com>
+Subject: Re: [PATCH] power_supply: fix oops in collie_battery driver
+Date: Thu, 30 Apr 2015 17:42:07 +0200
+Message-ID: <20150430154207.GD6133@earth>
+References: <1430154943-29264-1-git-send-email-dbaryshkov@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="gr/z0/N6AeWAPJVB"
+	protocol="application/pgp-signature"; boundary="fOHHtNG4YXGJ0yqR"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:59396 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:59695 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751728AbbD3Piz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 30 Apr 2015 11:38:55 -0400
+	id S1750807AbbD3PmQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 30 Apr 2015 11:42:16 -0400
 Content-Disposition: inline
-In-Reply-To: <1429186783-20895-1-git-send-email-weiyj_lk@163.com>
+In-Reply-To: <1430154943-29264-1-git-send-email-dbaryshkov@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: weiyj_lk@163.com
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Guenter Roeck <linux@roeck-us.net>, Maxime Ripard <maxime.ripard@free-electrons.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, linux-pm@vger.kernel.org
+To: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: linux-pm@vger.kernel.org, Andrea Adami <andrea.adami@gmail.com>
 
 
---gr/z0/N6AeWAPJVB
+--fOHHtNG4YXGJ0yqR
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Wei,
+Hi Dmitry,
 
-On Thu, Apr 16, 2015 at 08:19:43PM +0800, weiyj_lk@163.com wrote:
-> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
->=20
-> In case of error, the function devm_ioremap() returns NULL
-> not ERR_PTR(). The IS_ERR() test in the return value check
-> should be replaced with NULL test.
->=20
-> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+On Mon, Apr 27, 2015 at 08:15:43PM +0300, Dmitry Eremin-Solenikov wrote:
+> Fix an oops happening due to typo in 297d716f6260cc9421d971b124ca196b957ee
+> [power_supply: Change ownership from driver to core].
 
 Thanks, queued for 4.1-rc with proper Fixes tag:
 
-http://git.infradead.org/battery-2.6.git/commit/932df43005389300a3336421e4a=
-edb25390ae144
+http://git.infradead.org/battery-2.6.git/commit/ce992369cf29a8762b46338756ef5aba35774981
 
 -- Sebastian
 
---gr/z0/N6AeWAPJVB
+--fOHHtNG4YXGJ0yqR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJVQkyGAAoJENju1/PIO/qax+cP/2o8zcLIeoXzBmqlESO76Npl
-Fd4Rr66/uTgKp2hQGN5S3Jdwk4saChXWZsX9DkoZHKmHSoB2YmexUsC9P96IbtOd
-UnJ89ToOfs2sCGJetqfv0gz4AzcYx8X3et4E+RsqZwsJYhDy99B8Ov3kvg45/l+N
-8vWo8mA6hjPBUS7nc+ilHwx6sL70QyFtPw9+ujkDgkqHVH3mnAJ3+7fhQBOlGVJB
-JPecurHt/STknBuGcL4VZSZ37eaLdPB+HNyaZ7TM4BrQ40LGi19pnXRZVrWW7qSv
-RnC2wtQtzxKY2J4bgMiVRsXJXIkGRFqOnQtMFaf0TR9R+8rosuNcRxch09g8DLy7
-IQs1zGsP2LKcgF7HXetTNYAnTSSIaRVF8wcdsPAoe2jDjUsluu22CdpJGqRBQriG
-29B6+kB11FMRWNI1cYQiefKxQOlBBL1l2cbYxRElH5kdR045nlZ61Jm3IA6dUzlC
-PMJlj1HARWm6rW9Y6T66Na4UcZZO2F6ai9vMNHl+C0wxkT4PIFd9x/eOCgxZcKGf
-2KCVWmLnf2b8cE2R04S3t7HTZ0Gzue6a49Bv2ey7z7pmgEzrmGcBrVdnRLkGKexe
-Jtqp3tOmpdlEb4HXEuKVsPAk86qQomhvVjfhNvGVFcONcMWQlR3uTFWzeYRe+6kR
-GnKMuo4PMhfZz8AIhjwY
-=ttw4
+iQIcBAEBCgAGBQJVQk1PAAoJENju1/PIO/qaADUP/iYUFSWuyIx1eBGLOvRLEQ/Q
+f1/arxeEuFUcKu7FiDQGQ2AAMZfPohAkXa5iXThMSwaAYCkW2uHu6N3D23hj3PUl
+5cB/M6ralSqHYxM/afhkvdmgb3KsWrnHYlq/o9+VOil1Okkn3jzyJkZ6agb+JMyK
+LRuSadJfTItmgyTedxz8+Z+Bl/wC/qNM+IvWy/Vc+ZFvSDGHxTDVVj0545MeM/Qv
+3P+Aa9ig8e5VCmpBr5jW9whJLcCkeuyTSLaAGfhmufRYN1dnoCvVX75Df6qgDZJx
+FtoenqZs+VhGzEWCvhpr/MDWDPG2Iu3d/PSvFwM2T1iuCO55sOYu18n8oApcjBPI
+NhRYMdqnygEEWgn0C2o1tcjHjmpm9pzpJ1HdTL64OmH4Go4UQctZ4jNX0Vb8I+WW
+oS6IB2Rqxu4dd1Tvq+QbTlQ2MrpdmEcgRWdyB02UdcpGWyAC19yZ7MECABnvRnxp
+ITg3h3JewMZRqp6i3P7fOq0czCTpW+Um4jilO+mT3fO3SfVN7+l6js00q+rOdqE8
+Uasos7X63b2Tlp5xPiaxm+8c1j41aB0p1jJpBNllMB5vtOUoTGJp5PlUuZ+L13wG
+qiRk8ptuTjRfg7FFqUi3dbeeokwBWnT/g+epITUPh3rbHFT1PvXfFdKzlXF2MpcN
+tX1/s47DzzP77LBPyi56
+=SNTy
 -----END PGP SIGNATURE-----
 
---gr/z0/N6AeWAPJVB--
+--fOHHtNG4YXGJ0yqR--
