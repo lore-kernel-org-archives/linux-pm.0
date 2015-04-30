@@ -1,72 +1,156 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management and ACPI fixes for 4.1-rc2
-Date: Thu, 30 Apr 2015 22:09:37 +0200
-Message-ID: <CAJZ5v0gMTXhJDL_Uq3M0FdshY6wtxEQFHQRO0t=7=6yv9MZPiw@mail.gmail.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH][Fix] cpuidle: Run tick_broadcast_exit() with disabled
+ interrupts
+Date: Thu, 30 Apr 2015 16:12:46 -0400 (EDT)
+Message-ID: <alpine.LFD.2.11.1504301602180.1582@knanqh.ubzr>
+References: <2112147.0kYCHhbEJT@vostro.rjw.lan> <6185796.9I7OmaAAcQ@vostro.rjw.lan> <5540A981.6060209@arm.com> <2872649.RClMYKns0i@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f42.google.com ([209.85.192.42]:35279 "EHLO
+	mail-qg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752914AbbD3UMu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Apr 2015 16:12:50 -0400
+Received: by qgej70 with SMTP id j70so29871939qge.2
+        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2015 13:12:49 -0700 (PDT)
+In-Reply-To: <2872649.RClMYKns0i@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Peter Zijlstra <peterz@infradead.org>, Linus Walleij <linus.walleij@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 
-Hi Linus,
+On Wed, 29 Apr 2015, Rafael J. Wysocki wrote:
 
-Please pull from
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Commit 335f49196fd6 (sched/idle: Use explicit broadcast oneshot
+> control function) replaced clockevents_notify() invocations in
+> cpuidle_idle_call() with direct calls to tick_broadcast_enter()
+> and tick_broadcast_exit(), but it overlooked the fact that
+> interrupts were already enabled before calling the latter which
+> led to functional breakage on systems using idle states with the
+> CPUIDLE_FLAG_TIMER_STOP flag set.
+> 
+> Fix that by moving the invocations of tick_broadcast_enter()
+> and tick_broadcast_exit() down into cpuidle_enter_state() where
+> interrupts are still disabled when tick_broadcast_exit() is
+> called.  Also ensure that interrupts will be disabled before
+> running tick_broadcast_exit() even if they have been enabled by
+> the idle state's ->enter callback.  Trigger a WARN_ON_ONCE() in
+> that case, as we generally don't want that to happen for states
+> with CPUIDLE_FLAG_TIMER_STOP set.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-4.1-rc2
+Incidentally I was debugging this issue as well when I saw this thread.
 
-to receive power management and ACPI fixes for v4.1-rc2 with
-top-most commit 50904a7ddd1cab3e1d2ca007161e976f858d934f
+And it turns out that I did report this issue 2 months ago:
+http://article.gmane.org/gmane.linux.kernel/1892049
+What happened?
 
- Merge branches 'acpica', 'acpi-battery' and 'pm-cpuidle'
+> Fixes: 335f49196fd6 (sched/idle: Use explicit broadcast oneshot control function)
+> Reported-and-tested-by: Linus Walleij <linus.walleij@linaro.org>
+> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Reported-and-tested-by: Sudeep Holla <sudeep.holla@arm.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-on top of commit b787f68c36d49bb1d9236f403813641efa74a031
+Tested-by: Nicolas Pitre <nico@linaro.org>
 
- Linux 4.1-rc1
-
-Three regression fixes this time, one for a recent regression in the
-cpuidle core affecting multiple systems, one for an inadvertently
-added duplicate typedef in ACPICA that breaks compilation with
-GCC 4.5 and one for an ACPI Smart Battery Subsystem driver regression
-introduced during the 3.18 cycle (stable-candidate).
-
-Specifics:
-
- - Fix for a regression in the cpuidle core introduced by one of
-   the recent commits in the clockevents_notify() removal series
-   that put a call to a function which had to be executed with
-   disabled interrupts into a code path running with enabled
-   interrupts (Rafael J Wysocki).
-
- - Fix for a build problem in ACPICA (with GCC 4.5) introduced by one
-   of the recent ACPICA tools commits that added a duplicate typedef
-   to one of the ACPICA's header files by mistake (Olaf Hering).
-
- - Fix for a regression in the ACPI SBS (Smart Battery Subsystem)
-   driver introduced during the 3.18 development cycle causing the
-   smart battery manager to be marked as not present when it should
-   be marked as present (Chris Bainbridge).
-
-Thanks!
-
-
----------------
-
-Chris Bainbridge (1):
-      ACPI / SBS: Enable battery manager when present
-
-Olaf Hering (1):
-      ACPICA: remove duplicate u8 typedef
-
-Rafael J. Wysocki (1):
-      cpuidle: Run tick_broadcast_exit() with disabled interrupts
-
----------------
-
- drivers/acpi/sbs.c        |  2 +-
- drivers/cpuidle/cpuidle.c | 16 ++++++++++++++++
- include/acpi/actypes.h    |  1 -
- kernel/sched/idle.c       | 16 ++--------------
- 4 files changed, 19 insertions(+), 16 deletions(-)
+> ---
+> 
+> Thanks for the testing and ACKs, here it goes again with all tags and
+> a changelog.
+> 
+> If anything is missing/incorrect, please let me know ASAP as I'm going to
+> push this to Linus in a couple of days.
+> 
+> ---
+>  drivers/cpuidle/cpuidle.c |   16 ++++++++++++++++
+>  kernel/sched/idle.c       |   16 ++--------------
+>  2 files changed, 18 insertions(+), 14 deletions(-)
+> 
+> Index: linux-pm/kernel/sched/idle.c
+> ===================================================================
+> --- linux-pm.orig/kernel/sched/idle.c
+> +++ linux-pm/kernel/sched/idle.c
+> @@ -81,7 +81,6 @@ static void cpuidle_idle_call(void)
+>  	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+>  	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+>  	int next_state, entered_state;
+> -	unsigned int broadcast;
+>  	bool reflect;
+>  
+>  	/*
+> @@ -150,17 +149,6 @@ static void cpuidle_idle_call(void)
+>  		goto exit_idle;
+>  	}
+>  
+> -	broadcast = drv->states[next_state].flags & CPUIDLE_FLAG_TIMER_STOP;
+> -
+> -	/*
+> -	 * Tell the time framework to switch to a broadcast timer
+> -	 * because our local timer will be shutdown. If a local timer
+> -	 * is used from another cpu as a broadcast timer, this call may
+> -	 * fail if it is not available
+> -	 */
+> -	if (broadcast && tick_broadcast_enter())
+> -		goto use_default;
+> -
+>  	/* Take note of the planned idle state. */
+>  	idle_set_state(this_rq(), &drv->states[next_state]);
+>  
+> @@ -174,8 +162,8 @@ static void cpuidle_idle_call(void)
+>  	/* The cpu is no longer idle or about to enter idle. */
+>  	idle_set_state(this_rq(), NULL);
+>  
+> -	if (broadcast)
+> -		tick_broadcast_exit();
+> +	if (entered_state == -EBUSY)
+> +		goto use_default;
+>  
+>  	/*
+>  	 * Give the governor an opportunity to reflect on the outcome
+> Index: linux-pm/drivers/cpuidle/cpuidle.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpuidle/cpuidle.c
+> +++ linux-pm/drivers/cpuidle/cpuidle.c
+> @@ -158,9 +158,18 @@ int cpuidle_enter_state(struct cpuidle_d
+>  	int entered_state;
+>  
+>  	struct cpuidle_state *target_state = &drv->states[index];
+> +	bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
+>  	ktime_t time_start, time_end;
+>  	s64 diff;
+>  
+> +	/*
+> +	 * Tell the time framework to switch to a broadcast timer because our
+> +	 * local timer will be shut down.  If a local timer is used from another
+> +	 * CPU as a broadcast timer, this call may fail if it is not available.
+> +	 */
+> +	if (broadcast && tick_broadcast_enter())
+> +		return -EBUSY;
+> +
+>  	trace_cpu_idle_rcuidle(index, dev->cpu);
+>  	time_start = ktime_get();
+>  
+> @@ -169,6 +178,13 @@ int cpuidle_enter_state(struct cpuidle_d
+>  	time_end = ktime_get();
+>  	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+>  
+> +	if (broadcast) {
+> +		if (WARN_ON_ONCE(!irqs_disabled()))
+> +			local_irq_disable();
+> +
+> +		tick_broadcast_exit();
+> +	}
+> +
+>  	if (!cpuidle_state_is_coupled(dev, drv, entered_state))
+>  		local_irq_enable();
+>  
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
