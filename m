@@ -1,94 +1,97 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC/RFT 2/6] clk: qcom: Add runtime support to handle clocks
- using PM clocks
-Date: Thu, 30 Apr 2015 08:21:40 +0200
-Message-ID: <CAPDyKFqXZtKxSnwXwUSSDA6vFtaJ_FoGWn495KdU5=17k7Um5w@mail.gmail.com>
-References: <1429778744-13352-1-git-send-email-rnayak@codeaurora.org>
-	<1429778744-13352-3-git-send-email-rnayak@codeaurora.org>
-	<CAPDyKFpVXWGeO_kbOvPbdy83aN6wxkC77ydH_2C3Bo=5QsspoA@mail.gmail.com>
-	<553A21C7.4060506@codeaurora.org>
-	<CAMuHMdV_WD7vay-5VC20izUWFjc8rSW4wZQq6Y3xAa+SU0Quig@mail.gmail.com>
-	<7hh9s1xrut.fsf@deeprootsystems.com>
-	<553EF5D4.60900@codeaurora.org>
-	<CAMuHMdW8OKDODHTw=A=vCFR9PN3KUr_fiGSiNkn0Q7Q16axU6g@mail.gmail.com>
-	<5540A923.8000104@codeaurora.org>
-	<CAMuHMdWWv5qADWP4CMj5Kj62v_FK9JxMP6NXOpyN8GTk05raAQ@mail.gmail.com>
-	<CAPDyKFoja9OZf+X2eaBGwTXoqFHchOz9vopLYF+wiguHXwznzw@mail.gmail.com>
-	<CAMuHMdXXkgTDjdYanQNUJFXqUXLtGrLCOugs94MaCvg9O7wbXA@mail.gmail.com>
+Subject: Re: [PATCH v3 1/2] PM / sleep: Let devices force direct_complete
+Date: Thu, 30 Apr 2015 09:11:45 +0200
+Message-ID: <CAPDyKFpLLJaMFsf5f8A42jjVqu+BkMMAH5ksHt0aA71QMQBH6w@mail.gmail.com>
+References: <CAAObsKA7EFRmWGaGS6nTwMzFyoPcSXjmY5CZqHHVE+ART4EJNg@mail.gmail.com>
+	<Pine.LNX.4.44L0.1504200957190.1321-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdXXkgTDjdYanQNUJFXqUXLtGrLCOugs94MaCvg9O7wbXA@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, Kevin Hilman <khilman@kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1504200957190.1321-100000@iolanthe.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 29 April 2015 at 15:08, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> Hi Ulf,
+On 20 April 2015 at 16:12, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Mon, 20 Apr 2015, Tomeu Vizoso wrote:
 >
-> On Wed, Apr 29, 2015 at 2:31 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>> Geert, thanks, I was wondering how you handle the !CONFIG_PM case for
->>>> rmobile. I mean who turns the clocks on for the devices when you build
->>>> with CONFIG_PM disabled?
->>>
->>> We still use pm_clk_add_notifier() in drivers/sh/pm_runtime.c if
->>> CONFIG_PM_GENERIC_DOMAINS_OF=n. Hence the second instance of
->>> pm_clk_notify() will enable the clocks at driver binding time.
->>> Hardware power domains are assumed enabled by reset state/the boot
->>> loader.
+>> On 17 April 2015 at 19:30, Alan Stern <stern@rowland.harvard.edu> wrote:
+>> > On Fri, 17 Apr 2015, Laurent Pinchart wrote:
+>> >
+>> >> Hi Tomeu,
+>> >>
+>> >> Thank you for the patch.
+>> >>
+>> >> On Friday 17 April 2015 17:24:49 Tomeu Vizoso wrote:
+>> >> > Introduce a new per-device flag power.force_direct_complete that will
+>> >> > instruct the PM core to ignore the runtime PM status of its descendants
+>> >> > when deciding whether to let this device remain in runtime suspend when
+>> >> > the system goes into a sleep power state.
+>> >> >
+>> >> > This is needed because otherwise it would be needed to get dozens of
+>> >> > drivers to implement the prepare() callback and be runtime PM active
+>> >> > even if they don't have a 1-to-1 relationship with a piece of HW.
+>> >>
+>> >> I'll let PM experts comment on the approach, but I believe the new flag would
+>> >> benefit from being documented (likely in Documentation/power/devices.txt) :-)
+>> >
+>> > Documentation/power/runtime_pm.txt is the right place.
+>> >
+>> > However, I'm not sure that this is the sort of thing Rafael meant when
+>> > he suggested adding a new flag.  I thought he meant the PM core would
+>> > look at the new flag only if there was no ->prepare method at all.
+>> > Then if the new flag was set, the PM core would act as though ->prepare
+>> > had returned 1.  That way there would be no need to add silly little
+>> > one-line *_prepare() routines all over the place.
+>> >
+>> > Maybe he had something else in mind, though...
 >>
->> Yes, it a bit tricky - but I guess that's the current only viable
->> solution if we have when using the pm_clk API.
+>> Yeah, I also interpreted it like that, but when I started looking at
+>> how it would work, I found that it would be awkward if the uvcvideo
+>> driver had to track all the devices that get attached below its
+>> devices in order to set that flag to them.
 >>
->>> Given the amount of PM infrastructure involved when hardware power and
->>> clock domains are involved, I think at one point we'll have to start restricting
->>> our builds to CONFIG_PM=y.
->>
->> I don't think that would solve the problem, since you may still have
->> cross SoC drivers which may be used without CONFIG_PM.
+>> When thinking about it, it occurred to me that it may make more sense
+>> if we model this as a property of the device bound to the uvcvideo
+>> driver, as what's happening here is that the uvcvideo driver knows
+>> that it's safe to remain in runtime suspend when the system goes to
+>> sleep, and that all its descendant devices can be ignored in that
+>> regard.
 >
-> That's not as much of a problem as it sounds:
->   - If the driver cares (needs to know) about the clock, it should already
->     manage it itself.
-
-Agree!
-
->   - If it doesn't care about the clock, it just needs Runtime PM support.
->     That will do the right thing on platforms with (needs PM=y) and without
->     (doesn't care about PM=x) clock domains.
-
-How about those drivers that cares about clocks and thus manages them,
-but also cares about runtime PM?
-
-I believe we will get a clock reference count issue in these cases,
-since both the PM domain and the driver will manage the clocks.
-
-I assume that's why we have had a few attempts to have "runtime PM
-clocks" specially marked, one was via DT, to have clear distinguish
-between who will be responsible to manage them.
-
-Those attempts did get nacked, so the problem is still there I assume.
-
-> So the bigger "problem" is making sure all drivers have at least minimal
-> Runtime PM support, else they can't be reused as-is on systems with PM
-> domains.
+> What you're proposing makes sense, but it is a significant change to
+> the runtime PM core.  It should be submitted separately, not as part of
+> an update to the UVC driver, and it should be discussed at length.
 >
->> So all SoC that uses a driver which expects clocks to be managed using
->> PM clocks from a PM domain, will need the above "trick". Right?
+> Basically, you want to mark certain devices to say that they will
+> _always_ use direct-suspend.  This means that all descendant devices
+> will be forced to use direct-suspend also, and therefore any driver
+> bound to one of these descendant devices will be unable to communicate
+> with it during a system sleep transition.  This is a non-trivial
+> restriction.
 >
-> One remaining issue with pm_clk_add_notifier() is that it applies to all
-> platform devices in the system, not just the on-SoC devices. Hence it may
-> inadvertently manage clocks for off-SoC devices it's not supposed to touch.
+> Among other things, it means that wakeup settings can't be altered
+> during a sleep transition.  Therefore this should be allowed only for
+> devices that are not wakeup-capable.
+>
 
-Yes. That's really bad. :-)
+I hesitated to send this reply, since it might add confusion. If
+that's the case, please ignore it.
 
-Additionally, it means devices that isn't part of the platform bus
-isn't able to use PM clk domains at all.
+I have a long term vision to fully enable support for a runtime PM
+centric configuration for drivers/subsystems. The idea is, that such
+driver/subsystem should get system PM for "free".
 
-Within this context, I find it hard to advise people to use PM clk
-domains (via pm_clk_add_notifier()), since there just so many open
-issues. What works a _little_ better is to use PM clks via genpd.
+The main goal is to simplify PM implementation for these drivers/subsystems.
+
+They should need to implement the runtime PM callbacks only and not
+the system PM ones. During system PM suspend, the requirement is that
+the corresponding devices should be guaranteed to be "runtime PM
+suspended". Somehow that then needs to be managed by the PM core.
+
+I am not sure it's doable, but I wanted to bring it up within the
+context of $subject patch, since it proposes yet another optimization
+path for runtime PM during system PM.
 
 Kind regards
 Uffe
