@@ -1,44 +1,45 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: [PATCH] power: reset: Add MFD_SYSCON depends for brcmstb
-Date: Thu, 30 Apr 2015 12:55:02 -0700
-Message-ID: <1430423702-6320-1-git-send-email-f.fainelli@gmail.com>
+From: Marek Belisko <marek@goldelico.com>
+Subject: [PATCH] power: bq27x00_battery: Add missing MODULE_ALIAS
+Date: Thu, 30 Apr 2015 22:05:58 +0200
+Message-ID: <1430424358-30244-1-git-send-email-marek@goldelico.com>
+References: <1430252586-5104-1-git-send-email-marek@goldelico.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:33344 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839AbbD3TzN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Apr 2015 15:55:13 -0400
+Received: from mail-wi0-f179.google.com ([209.85.212.179]:35795 "EHLO
+	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbbD3UGI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Apr 2015 16:06:08 -0400
+In-Reply-To: <1430252586-5104-1-git-send-email-marek@goldelico.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, dwmw2@infradead.org, dbaryshkov@gmail.com, sre@kernel.org, computersforpeace@gmail.com, bcm-kernel-feedback-list@broadcom.com, Florian Fainelli <f.fainelli@gmail.com>
+To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hns@goldelico.com, Marek Belisko <marek@goldelico.com>
 
-The Broadcom STB reboot driver depends on MFD_SYSCON, it uses
-syscon_regmap_lookup_by_phandle() which will not lookup syscon phandles
-if MFD_SYSCON is disabled, and instead will return -ENOSYS since it is
-turned into an inline stub.
+Without MODULE_ALIAS bq27x00_battery module won't get loaded automatically.
 
-Fixes: 030494e75064c ("power: reset: Add reboot driver for brcmstb")
-Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+Signed-off-by: Marek Belisko <marek@goldelico.com>
 ---
-Sebastian,
+ drivers/power/bq27x00_battery.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Could you queue this as a fix for 4.1? Thanks!
-
- drivers/power/reset/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 028e76504519..f37135c312fd 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -41,6 +41,7 @@ config POWER_RESET_AXXIA
- config POWER_RESET_BRCMSTB
- 	bool "Broadcom STB reset driver" if COMPILE_TEST
- 	depends on ARM
-+	depends on MFD_SYSCON
- 	default ARCH_BRCMSTB
- 	help
- 	  This driver provides restart support for ARM-based Broadcom STB
+diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_battery.c
+index a57433d..b6b9837 100644
+--- a/drivers/power/bq27x00_battery.c
++++ b/drivers/power/bq27x00_battery.c
+@@ -1109,6 +1109,14 @@ static void __exit bq27x00_battery_exit(void)
+ }
+ module_exit(bq27x00_battery_exit);
+ 
++#ifdef CONFIG_BATTERY_BQ27X00_PLATFORM
++MODULE_ALIAS("platform:bq27000-battery");
++#endif
++
++#ifdef CONFIG_BATTERY_BQ27X00_I2C
++MODULE_ALIAS("i2c:bq27000-battery");
++#endif
++
+ MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
+ MODULE_DESCRIPTION("BQ27x00 battery monitor driver");
+ MODULE_LICENSE("GPL");
 -- 
-2.1.0
+1.9.1
 
