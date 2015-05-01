@@ -1,61 +1,90 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH][Fix] cpuidle: Run tick_broadcast_exit() with disabled interrupts
-Date: Fri, 01 May 2015 00:10:35 +0200
-Message-ID: <1934706.ixTLMcGVHV@vostro.rjw.lan>
-References: <2112147.0kYCHhbEJT@vostro.rjw.lan> <2872649.RClMYKns0i@vostro.rjw.lan> <alpine.LFD.2.11.1504301602180.1582@knanqh.ubzr>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 0/5] PM / clock_ops: provide default runtime ops and
+ cleanup users
+Date: Fri, 1 May 2015 10:09:10 +0900
+Message-ID: <20150501010909.GI13754@verge.net.au>
+References: <553A6289.4040001@oracle.com>
+ <CAMuHMdWMjULD8jQDA-U6tumnCd=Q7jhZ2koha4CKU-K50tJXmw@mail.gmail.com>
+ <20150428004618.GA1807@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.11.1504301602180.1582@knanqh.ubzr>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Peter Zijlstra <peterz@infradead.org>, Linus Walleij <linus.walleij@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150428004618.GA1807@verge.net.au>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, santosh shilimkar <santosh.shilimkar@oracle.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rajendra Nayak <rnayak@codeaurora.org>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@kernel.org>, Sekhar Nori <nsekhar@ti.com>, Magnus Damm <magnus.damm@gmail.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, April 30, 2015 04:12:46 PM Nicolas Pitre wrote:
-> On Wed, 29 Apr 2015, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tue, Apr 28, 2015 at 09:46:18AM +0900, Simon Horman wrote:
+> On Fri, Apr 24, 2015 at 04:51:03PM +0200, Geert Uytterhoeven wrote:
+> > On Fri, Apr 24, 2015 at 4:41 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > > On Thursday, April 23, 2015 02:03:08 PM Rajendra Nayak wrote:
+> > >> Most users of PM clocks do the exact same thing in runtime callbacks.
+> > >> Provide default callbacks and cleanup the existing users (keystone/davinci
+> > >> /omap1/sh)
+> > >>
+> > >> Rajendra Nayak (5):
+> > >>   PM / clock_ops: Provide default runtime ops to users
+> > >>   arm: keystone: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
+> > >>   arm: omap1: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
+> > >>   arm: davinci: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
+> > >>   drivers: sh: remove boilerplate code and use USE_PM_CLK_RUNTIME_OPS
+> > >>
+> > >>  arch/arm/mach-davinci/pm_domain.c  | 32 +-------------------------
+> > >>  arch/arm/mach-keystone/pm_domain.c | 33 +-------------------------
+> > >>  arch/arm/mach-omap1/pm_bus.c       | 37 ++----------------------------
+> > >>  drivers/base/power/clock_ops.c     | 38 ++++++++++++++++++++++++++++++
+> > >>  drivers/sh/pm_runtime.c            | 47 ++------------------------------------
+> > >>  include/linux/pm_clock.h           | 10 ++++++++
+> > >>  6 files changed, 54 insertions(+), 143 deletions(-)
+> > >
+> > > It is not particularly clear to me who is supposed to apply this series, but
+> > > I can do that if people don't have problems with that.
 > > 
-> > Commit 335f49196fd6 (sched/idle: Use explicit broadcast oneshot
-> > control function) replaced clockevents_notify() invocations in
-> > cpuidle_idle_call() with direct calls to tick_broadcast_enter()
-> > and tick_broadcast_exit(), but it overlooked the fact that
-> > interrupts were already enabled before calling the latter which
-> > led to functional breakage on systems using idle states with the
-> > CPUIDLE_FLAG_TIMER_STOP flag set.
+> > All later patches depend on the first patch.
 > > 
-> > Fix that by moving the invocations of tick_broadcast_enter()
-> > and tick_broadcast_exit() down into cpuidle_enter_state() where
-> > interrupts are still disabled when tick_broadcast_exit() is
-> > called.  Also ensure that interrupts will be disabled before
-> > running tick_broadcast_exit() even if they have been enabled by
-> > the idle state's ->enter callback.  Trigger a WARN_ON_ONCE() in
-> > that case, as we generally don't want that to happen for states
-> > with CPUIDLE_FLAG_TIMER_STOP set.
+> > For shmobile, Simon has queued up changes for drivers/sh/pm_runtime.c,
+> > but I think they don't conflict with this series.
 > 
-> Incidentally I was debugging this issue as well when I saw this thread.
+> Yes, that is the case. I have some patches (from Geert) queued up for v4.1.
+> I have confirmed that they do not conflict with the shmobile (last) patch
+> if this series.
 > 
-> And it turns out that I did report this issue 2 months ago:
-> http://article.gmane.org/gmane.linux.kernel/1892049
-> What happened?
+> <details>
+> The patches are in the sh-drivers-for-v4.1 branch of my renesas tree; I
+> rebased them yesterday; they should hit next today if there is a next
+> today; I plan to send a pull request to Linus in the not to distant future;
+> and I envisage they should end up in v4.1-rc2 or rc3.
 
-The patch series had been picked up by someone else (me), reordered and rebased
-in the meantime and your report was missed.  Sorry about that.
+The above mentioned changes were tagged as renesas-sh-drivers-for-v4.1 in
+my renesas tree; were merged into in Linus's tree yesterday; and should
+thus be included in v4.1-rc2.
 
-> > Fixes: 335f49196fd6 (sched/idle: Use explicit broadcast oneshot control function)
-> > Reported-and-tested-by: Linus Walleij <linus.walleij@linaro.org>
-> > Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> > Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Reported-and-tested-by: Sudeep Holla <sudeep.holla@arm.com>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+I do not have any other changes to drivers/sh/pm_runtime.c pending at this time.
+
+> </details>
 > 
-> Tested-by: Nicolas Pitre <nico@linaro.org>
-
-Thanks!
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> On Fri, Apr 24, 2015 at 08:34:33AM -0700, santosh shilimkar wrote:
+> > On 4/24/2015 7:41 AM, Rafael J. Wysocki wrote:
+> > >On Thursday, April 23, 2015 02:03:08 PM Rajendra Nayak wrote:
+> 
+> [snip]
+> 
+> > >It is not particularly clear to me who is supposed to apply this series, but
+> > >I can do that if people don't have problems with that.
+> > >
+> > >
+> > I am fine by that given dependency with first patch.
+> > Another way is, you pick up the first patch and give us an
+> > immutable branch.
+> > 
+> > Either way is fine by me.
+> 
+> Likewise.
+> 
+> Here is an ack for the shmobile (last) patch if you decide to take it
+> through your tree.
+> 
+> Acked-by: Simon Horman <horms+renesas@verge.net.au>
+> 
