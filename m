@@ -1,89 +1,111 @@
-From: Fabian Frederick <fabf@skynet.be>
-Subject: [PATCH V3 2/2 linux-next] cpufreq: pxa: make pxa_freqs arrays const
-Date: Fri,  1 May 2015 10:34:01 +0200
-Message-ID: <1430469241-30556-2-git-send-email-fabf@skynet.be>
-References: <1430469241-30556-1-git-send-email-fabf@skynet.be>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [PATCH] PM / sleep: Let devices force direct_complete
+Date: Fri,  1 May 2015 12:03:30 +0200
+Message-ID: <1430474611-25560-1-git-send-email-tomeu.vizoso@collabora.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailrelay114.isp.belgacom.be ([195.238.20.141]:16268 "EHLO
-	mailrelay114.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750935AbbEAIeP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 May 2015 04:34:15 -0400
-In-Reply-To: <1430469241-30556-1-git-send-email-fabf@skynet.be>
+Received: from mail-wi0-f172.google.com ([209.85.212.172]:38518 "EHLO
+	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751995AbbEAKEU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 May 2015 06:04:20 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: Joe Perches <joe@perches.com>, Viresh Kumar <viresh.kumar@linaro.org>, Fabian Frederick <fabf@skynet.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Alan Stern <stern@rowland.harvard.edu>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 
-pxa255_run_freqs and pxa255_turbo_freqs are only read.
-This patch updates arrays declaration, find_freq_tables()
-and its callsites.
+Introduce a new per-device flag power.force_direct_complete that will
+instruct the PM core to let that device remain in runtime suspend when
+the system goes into a sleep power state, regardless of the PM state of
+any of its descendants.
 
-Suggested-by: Joe Perches <joe@perches.com>
-Signed-off-by: Fabian Frederick <fabf@skynet.be>
+This is needed because otherwise it would be needed to get dozens of
+drivers to implement the prepare() callback and be runtime PM active
+even if they don't have a 1-to-1 relationship with a piece of HW.
+
+This only applies to devices that aren't wakeup-capable, as those would
+need to setup their IRQs as wakeup-capable in their prepare() callbacks.
+
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 ---
-Compiled but untested.
 
- drivers/cpufreq/pxa2xx-cpufreq.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+Hi,
 
-diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
-index fcf6e34..1d99c97 100644
---- a/drivers/cpufreq/pxa2xx-cpufreq.c
-+++ b/drivers/cpufreq/pxa2xx-cpufreq.c
-@@ -86,7 +86,7 @@ static unsigned int sdram_rows;
- /* Use the run mode frequencies for the CPUFREQ_POLICY_PERFORMANCE policy */
- #define CCLKCFG			CCLKCFG_TURBO | CCLKCFG_FCS
+I'm sending this as a standalone patch as suggested by Alan.
+
+Thanks,
+
+Tomeu
+
+---
+ Documentation/power/runtime_pm.txt | 10 ++++++++++
+ drivers/base/power/main.c          | 14 ++++++++++----
+ include/linux/pm.h                 |  1 +
+ 3 files changed, 21 insertions(+), 4 deletions(-)
+
+diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+index 44fe1d2..3b0c68d 100644
+--- a/Documentation/power/runtime_pm.txt
++++ b/Documentation/power/runtime_pm.txt
+@@ -665,6 +665,16 @@ as appropriate.  This only applies to system suspend transitions that are not
+ related to hibernation (see Documentation/power/devices.txt for more
+ information).
  
--static struct pxa_freqs pxa255_run_freqs[] =
-+static const struct pxa_freqs pxa255_run_freqs[] =
- {
- 	/* CPU   MEMBUS  CCCR  DIV2 CCLKCFG	           run  turbo PXbus SDRAM */
- 	{ 99500,  99500, 0x121, 1,  CCLKCFG, -1, -1},	/*  99,   99,   50,   50  */
-@@ -98,7 +98,7 @@ static struct pxa_freqs pxa255_run_freqs[] =
- };
++For devices that know that can remain runtime suspended when the system
++transitions to a sleep state regardless of the PM state of their descendants,
++the flag power.force_direct_complete can be set on their device structures.
++This can be useful when a real device has several virtual devices as
++descendants and it would be very cumbersome to make sure that they return a
++positive value in their .prepare() callback and have runtime PM enabled. Usage
++of power.force_direct_complete is only allowed to devices that aren't
++wakeup-capable, as they would need to set their IRQs as wakeups in their
++.prepare() callbacks before the system transitions to a sleep state.
++
+ The PM core does its best to reduce the probability of race conditions between
+ the runtime PM and system suspend/resume (and hibernation) callbacks by carrying
+ out the following operations:
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 3d874ec..7b962f5 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1438,7 +1438,9 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 		if (parent) {
+ 			spin_lock_irq(&parent->power.lock);
  
- /* Use the turbo mode frequencies for the CPUFREQ_POLICY_POWERSAVE policy */
--static struct pxa_freqs pxa255_turbo_freqs[] =
-+static const struct pxa_freqs pxa255_turbo_freqs[] =
- {
- 	/* CPU   MEMBUS  CCCR  DIV2 CCLKCFG	   run  turbo PXbus SDRAM */
- 	{ 99500, 99500,  0x121, 1,  CCLKCFG, -1, -1},	/*  99,   99,   50,   50  */
-@@ -171,7 +171,7 @@ extern unsigned get_clk_frequency_khz(int info);
+-			dev->parent->power.direct_complete = false;
++			if (!dev->parent->power.force_direct_complete)
++				dev->parent->power.direct_complete = false;
++
+ 			if (dev->power.wakeup_path
+ 			    && !dev->parent->power.ignore_children)
+ 				dev->parent->power.wakeup_path = true;
+@@ -1605,9 +1607,13 @@ static int device_prepare(struct device *dev, pm_message_t state)
+ 	 * will do the same thing with all of its descendants".  This only
+ 	 * applies to suspend transitions, however.
+ 	 */
+-	spin_lock_irq(&dev->power.lock);
+-	dev->power.direct_complete = ret > 0 && state.event == PM_EVENT_SUSPEND;
+-	spin_unlock_irq(&dev->power.lock);
++	if (state.event == PM_EVENT_SUSPEND) {
++		spin_lock_irq(&dev->power.lock);
++		dev->power.direct_complete = ret > 0 ||
++			(dev->power.force_direct_complete &&
++			 !device_can_wakeup(dev));
++		spin_unlock_irq(&dev->power.lock);
++	}
+ 	return 0;
+ }
  
- #ifdef CONFIG_REGULATOR
- 
--static int pxa_cpufreq_change_voltage(struct pxa_freqs *pxa_freq)
-+static int pxa_cpufreq_change_voltage(const struct pxa_freqs *pxa_freq)
- {
- 	int ret = 0;
- 	int vmin, vmax;
-@@ -211,7 +211,7 @@ static void __init pxa_cpufreq_init_voltages(void) { }
- #endif
- 
- static void find_freq_tables(struct cpufreq_frequency_table **freq_table,
--			     struct pxa_freqs **pxa_freqs)
-+			     const struct pxa_freqs **pxa_freqs)
- {
- 	if (cpu_is_pxa25x()) {
- 		if (!pxa255_turbo_table) {
-@@ -270,7 +270,7 @@ static unsigned int pxa_cpufreq_get(unsigned int cpu)
- static int pxa_set_target(struct cpufreq_policy *policy, unsigned int idx)
- {
- 	struct cpufreq_frequency_table *pxa_freqs_table;
--	struct pxa_freqs *pxa_freq_settings;
-+	const struct pxa_freqs *pxa_freq_settings;
- 	unsigned long flags;
- 	unsigned int new_freq_cpu, new_freq_mem;
- 	unsigned int unused, preset_mdrefr, postset_mdrefr, cclkcfg;
-@@ -361,7 +361,7 @@ static int pxa_cpufreq_init(struct cpufreq_policy *policy)
- 	int i;
- 	unsigned int freq;
- 	struct cpufreq_frequency_table *pxa255_freq_table;
--	struct pxa_freqs *pxa255_freqs;
-+	const struct pxa_freqs *pxa255_freqs;
- 
- 	/* try to guess pxa27x cpu */
- 	if (cpu_is_pxa27x())
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index 2d29c64..2e41cfd 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -553,6 +553,7 @@ struct dev_pm_info {
+ 	bool			ignore_children:1;
+ 	bool			early_init:1;	/* Owned by the PM core */
+ 	bool			direct_complete:1;	/* Owned by the PM core */
++	bool			force_direct_complete:1;
+ 	spinlock_t		lock;
+ #ifdef CONFIG_PM_SLEEP
+ 	struct list_head	entry;
 -- 
-1.9.1
+2.3.6
 
