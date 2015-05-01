@@ -1,101 +1,126 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [GIT PULL] Thermal management updates for v4.1-rc2
-Date: Fri, 01 May 2015 09:36:35 +0800
-Message-ID: <1430444195.29011.8.camel@rzhang1-mobl4>
-References: <1430135910.3335.14.camel@rzhang1-mobl4>
-	 <CA+55aFx3O0Z9M0hBzdkd_bU_Yi1DgEG9=d+3vqyMVAto9TsH4A@mail.gmail.com>
-	 <744357E9AAD1214791ACBA4B0B909263014F3F2D@SHSMSX101.ccr.corp.intel.com>
-	 <20150429015837.GA4517@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Fabian Frederick <fabf@skynet.be>
+Subject: [PATCH V3 1/2 linux-next] cpufreq: pxa: replace typedef pxa_freqs_t by structure
+Date: Fri,  1 May 2015 10:34:00 +0200
+Message-ID: <1430469241-30556-1-git-send-email-fabf@skynet.be>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:59667 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751775AbbEABgh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 30 Apr 2015 21:36:37 -0400
-In-Reply-To: <20150429015837.GA4517@localhost.localdomain>
+Received: from mailrelay114.isp.belgacom.be ([195.238.20.141]:16268 "EHLO
+	mailrelay114.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750786AbbEAIeL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 May 2015 04:34:11 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Joe Perches <joe@perches.com>, Viresh Kumar <viresh.kumar@linaro.org>, Fabian Frederick <fabf@skynet.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-Hi, Eduardo,
+typedef is not really useful here. Replace it by structure
+to improve readability. typedef should only be used in some cases.
+(See Documentation/CodingStyle Chapter 5 for details).
 
-On Tue, 2015-04-28 at 18:58 -0700, Eduardo Valentin wrote:
-> Linus, Rui,
-> 
-> On Tue, Apr 28, 2015 at 02:40:02AM +0000, Zhang, Rui wrote:
-> > Hi, Linus,
-> > 
-> > Sorry that I missed the merged window as my email was broken while I was travelling in Portland last week. And I need to get it fixed after I came back this Sunday.
-> > Thus I was hoping that this can still get merged as it is early -rc2.
-> > Sorry for bringing the trouble to you and the patch contributors, I will send another git pull request.
-> > 
-> > Thanks,
-> > rui
-> >  
-> > > -----Original Message-----
-> > > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> > > owner@vger.kernel.org] On Behalf Of Linus Torvalds
-> > > Sent: Tuesday, April 28, 2015 5:05 AM
-> > > To: Zhang, Rui
-> > > Cc: Linux PM list
-> > > Subject: Re: [GIT PULL] Thermal management updates for v4.1-rc2
-> > > Importance: High
-> > > 
-> > > On Mon, Apr 27, 2015 at 4:58 AM, Zhang Rui <rui.zhang@intel.com> wrote:
-> > > >
-> > > > to receive the Thermal Management updates for v4.1-rc2 with top-most
-> > > > commit
-> > > 
-> > > This came outside the merge window (why?), so I'm ignoring it.
-> > > 
-> > > If you have bug-fixes, send those. The rest can wait until 4.2.
-> > > 
-> 
-> Linus,
-> 
-> We have content that has been waiting for 4.1 merge window for some
-> time. It was sent into linux-next several weeks ago [1]. My 4.1 pull 
-> to Rui was a couple of weeks ago [2]. 
-> 
-> It is disappointing for the developers who has been waiting for final
-> merge of their code that in the end it didn't make it due to corporate
-> email issues. 
-> 
-> I know it is your call to pull it or not for 4.1. I just want to explain 
-> that the thermal-soc content is not a last minute change.
+Signed-off-by: Fabian Frederick <fabf@skynet.be>
+---
+Compiled but untested.
 
-Again, I'm sorry that I missed this merge window.
-It's disappointing but I think we should move forward.
-can you please send me two git pull requests, one for 4.1-rc and another
-for 4.2?
+V3: -constify arrays(patch 2) (suggested by Joe Perches)
+    -fix typo in changelog (thanks to Viresh Kumar)
+V2: -verbose changelog.
 
-> Rui,
-> 
-> Whenever you have such issues, let me know and we can do something to
-> avoid content missing the merge window. I can of course, send pulls with
-> accepted content, just the way I have been sending.
-> 
-Sure will do next time. It is my mistake that I thought I was able to
-catch the merge window.
+ drivers/cpufreq/pxa2xx-cpufreq.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-thanks,
-rui
-> 
-> BR,
-> 
-> Eduardo Valentin
-> 
-> [1] - https://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/commit/?id=899e56ad58f544e115070a7b4bd7b2dafc646936
-> [2] - http://marc.info/?l=linux-pm&m=142907689627135&w=2
-> 
-> 
-> > >                         Linus
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-pm" in the
-> > > body of a message to majordomo@vger.kernel.org More majordomo info at
-> > > http://vger.kernel.org/majordomo-info.html
-
+diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
+index e24269a..fcf6e34 100644
+--- a/drivers/cpufreq/pxa2xx-cpufreq.c
++++ b/drivers/cpufreq/pxa2xx-cpufreq.c
+@@ -56,7 +56,7 @@ module_param(pxa27x_maxfreq, uint, 0);
+ MODULE_PARM_DESC(pxa27x_maxfreq, "Set the pxa27x maxfreq in MHz"
+ 		 "(typically 624=>pxa270, 416=>pxa271, 520=>pxa272)");
+ 
+-typedef struct {
++struct pxa_freqs {
+ 	unsigned int khz;
+ 	unsigned int membus;
+ 	unsigned int cccr;
+@@ -64,7 +64,7 @@ typedef struct {
+ 	unsigned int cclkcfg;
+ 	int vmin;
+ 	int vmax;
+-} pxa_freqs_t;
++};
+ 
+ /* Define the refresh period in mSec for the SDRAM and the number of rows */
+ #define SDRAM_TREF	64	/* standard 64ms SDRAM */
+@@ -86,7 +86,7 @@ static unsigned int sdram_rows;
+ /* Use the run mode frequencies for the CPUFREQ_POLICY_PERFORMANCE policy */
+ #define CCLKCFG			CCLKCFG_TURBO | CCLKCFG_FCS
+ 
+-static pxa_freqs_t pxa255_run_freqs[] =
++static struct pxa_freqs pxa255_run_freqs[] =
+ {
+ 	/* CPU   MEMBUS  CCCR  DIV2 CCLKCFG	           run  turbo PXbus SDRAM */
+ 	{ 99500,  99500, 0x121, 1,  CCLKCFG, -1, -1},	/*  99,   99,   50,   50  */
+@@ -98,7 +98,7 @@ static pxa_freqs_t pxa255_run_freqs[] =
+ };
+ 
+ /* Use the turbo mode frequencies for the CPUFREQ_POLICY_POWERSAVE policy */
+-static pxa_freqs_t pxa255_turbo_freqs[] =
++static struct pxa_freqs pxa255_turbo_freqs[] =
+ {
+ 	/* CPU   MEMBUS  CCCR  DIV2 CCLKCFG	   run  turbo PXbus SDRAM */
+ 	{ 99500, 99500,  0x121, 1,  CCLKCFG, -1, -1},	/*  99,   99,   50,   50  */
+@@ -153,7 +153,7 @@ MODULE_PARM_DESC(pxa255_turbo_table, "Selects the frequency table (0 = run table
+    ((HT) ? CCLKCFG_HALFTURBO : 0) | \
+    ((T)  ? CCLKCFG_TURBO : 0))
+ 
+-static pxa_freqs_t pxa27x_freqs[] = {
++static struct pxa_freqs pxa27x_freqs[] = {
+ 	{104000, 104000, PXA27x_CCCR(1,	 8, 2), 0, CCLKCFG2(1, 0, 1),  900000, 1705000 },
+ 	{156000, 104000, PXA27x_CCCR(1,	 8, 3), 0, CCLKCFG2(1, 0, 1), 1000000, 1705000 },
+ 	{208000, 208000, PXA27x_CCCR(0, 16, 2), 1, CCLKCFG2(0, 0, 1), 1180000, 1705000 },
+@@ -171,7 +171,7 @@ extern unsigned get_clk_frequency_khz(int info);
+ 
+ #ifdef CONFIG_REGULATOR
+ 
+-static int pxa_cpufreq_change_voltage(pxa_freqs_t *pxa_freq)
++static int pxa_cpufreq_change_voltage(struct pxa_freqs *pxa_freq)
+ {
+ 	int ret = 0;
+ 	int vmin, vmax;
+@@ -202,7 +202,7 @@ static void __init pxa_cpufreq_init_voltages(void)
+ 	}
+ }
+ #else
+-static int pxa_cpufreq_change_voltage(pxa_freqs_t *pxa_freq)
++static int pxa_cpufreq_change_voltage(struct pxa_freqs *pxa_freq)
+ {
+ 	return 0;
+ }
+@@ -211,7 +211,7 @@ static void __init pxa_cpufreq_init_voltages(void) { }
+ #endif
+ 
+ static void find_freq_tables(struct cpufreq_frequency_table **freq_table,
+-			     pxa_freqs_t **pxa_freqs)
++			     struct pxa_freqs **pxa_freqs)
+ {
+ 	if (cpu_is_pxa25x()) {
+ 		if (!pxa255_turbo_table) {
+@@ -270,7 +270,7 @@ static unsigned int pxa_cpufreq_get(unsigned int cpu)
+ static int pxa_set_target(struct cpufreq_policy *policy, unsigned int idx)
+ {
+ 	struct cpufreq_frequency_table *pxa_freqs_table;
+-	pxa_freqs_t *pxa_freq_settings;
++	struct pxa_freqs *pxa_freq_settings;
+ 	unsigned long flags;
+ 	unsigned int new_freq_cpu, new_freq_mem;
+ 	unsigned int unused, preset_mdrefr, postset_mdrefr, cclkcfg;
+@@ -361,7 +361,7 @@ static int pxa_cpufreq_init(struct cpufreq_policy *policy)
+ 	int i;
+ 	unsigned int freq;
+ 	struct cpufreq_frequency_table *pxa255_freq_table;
+-	pxa_freqs_t *pxa255_freqs;
++	struct pxa_freqs *pxa255_freqs;
+ 
+ 	/* try to guess pxa27x cpu */
+ 	if (cpu_is_pxa27x())
+-- 
+1.9.1
 
