@@ -1,37 +1,55 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 1/1] x86: replace cpu_up hard-coded mdelay with variable
-Date: Fri, 1 May 2015 14:02:41 -0700
-Message-ID: <CAJvTdKnv8ibbu3NyQ4j62HbR7Sc92xF-DUQfsMuxGFf3-4Geiw@mail.gmail.com>
-References: <1429404795-23260-1-git-send-email-lenb@kernel.org>
-	<87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com>
-	<CAP=VYLqofSyGmApHWF4wvidAZ+C0GCV7ScCYnSU2REaCPGywkg@mail.gmail.com>
-	<20150422060734.GA25230@gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: bq27x00_battery: Add missing MODULE_ALIAS
+Date: Fri, 1 May 2015 23:03:41 +0200
+Message-ID: <20150501210340.GB27735@earth>
+References: <1430252586-5104-1-git-send-email-marek@goldelico.com>
+ <1430424358-30244-1-git-send-email-marek@goldelico.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f171.google.com ([209.85.217.171]:33419 "EHLO
-	mail-lb0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbbEAVCn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 May 2015 17:02:43 -0400
-In-Reply-To: <20150422060734.GA25230@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="7iMSBzlTiPOCCT2k"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1430424358-30244-1-git-send-email-marek@goldelico.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Marek Belisko <marek@goldelico.com>
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hns@goldelico.com
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-On Tue, Apr 21, 2015 at 11:07 PM, Ingo Molnar <mingo@kernel.org> wrote:
->
-> * Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
 
->> Happened to notice a 2x "The the..." when I came across this in
->> linux-next today and was reading the help out of curiousity...
->
-> Len, this commit isn't in a permanent Git tree yet, right? We want to
-> do this through the x86 tree, and along the suggestions I made.
+--7iMSBzlTiPOCCT2k
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-It was in my -next tree -- no not permanent, yes, since removed (today).
-Yes, I plan to send you a v2 and TIP is the right place for it to live.
+Hi,
 
-Paul, thanks for noticing the typo.
+On Thu, Apr 30, 2015 at 10:05:58PM +0200, Marek Belisko wrote:
+> Without MODULE_ALIAS bq27x00_battery module won't get loaded
+> automatically.
 
-Len Brown, Intel Open Source Technology Center
+Thanks, queued into fixes.
+
+-- Sebastian
+
+--7iMSBzlTiPOCCT2k
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVQ+osAAoJENju1/PIO/qamcEP/iPt2GZeBmWLc+3Rekos+OF/
+TsvUphJHHy+chrbQIqzJKV9tIurRiQKhgffKZUVz31F+SFsOjEAfqxIk9+iACgM+
+21WpU3Ok0oc888s+m22BnGcSGEDnYn6VsvPlhtsZojHZ63vzbAnsqNAAmDR46JgG
+HLd/RJZ8aPhqfw7lmPMI0IoLEl44lcVfdZH4+ueijOD4f2BgyFnaV0GUVAC4Pu3Y
+w3mrz3sAsJDgYiZ2xbQUFVwlmDTu5Govm11IenanVgpGOnWUPxV+f1/Z8QYMs4In
+/BBTlFI0Iih2Z1SmIT30BfP53KQ428sB7wU1/8BGD6Ac7SFbBiPyxQjL+UjrCd/h
+GtwgEVpn5jYzoRrfpiohONlonUw/7wEu8lBNs6+oSWaK3CKpsX7TDAx0ydkZ6XiN
+co6sUmPPAV3wRyd8md5MgsWKp3BHZMDPEA2HsnzY14NNvw/TCVIQTVIJktjo0eMu
+zM5bfrtiT93ySCabQ1k+XWuSXbkdhxY1b1prKoWt/tQiwqi8EqIzOJz8gfUtAu2g
+JhSHpFKiVIL7X60UE673vl/KG+RUbNqEn4Hx3WplOadq5BU+V359tjYZK2SIhbOw
+PIEeFj7FcdsRRVWvlVdxPVkXnWv6wEOVdYFrkHmwAJJuWZIKXL1VBS28/CQT1P8s
+sQRzDpICpLlzGyxQoKHs
+=ha3N
+-----END PGP SIGNATURE-----
+
+--7iMSBzlTiPOCCT2k--
