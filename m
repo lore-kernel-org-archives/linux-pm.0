@@ -1,121 +1,37 @@
-From: Benjamin Coddington <bcodding@redhat.com>
-Subject: Re: NFS Freezer and stuck tasks
-Date: Fri, 1 May 2015 16:56:00 -0400 (EDT)
-Message-ID: <alpine.OSX.2.19.9992.1505011631390.946@planck.local>
-References: <20150304220027.GB20242@sbohrermbp13-local.rgmadvisors.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 1/1] x86: replace cpu_up hard-coded mdelay with variable
+Date: Fri, 1 May 2015 14:02:41 -0700
+Message-ID: <CAJvTdKnv8ibbu3NyQ4j62HbR7Sc92xF-DUQfsMuxGFf3-4Geiw@mail.gmail.com>
+References: <1429404795-23260-1-git-send-email-lenb@kernel.org>
+	<87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com>
+	<CAP=VYLqofSyGmApHWF4wvidAZ+C0GCV7ScCYnSU2REaCPGywkg@mail.gmail.com>
+	<20150422060734.GA25230@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150304220027.GB20242@sbohrermbp13-local.rgmadvisors.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Shawn Bohrer <shawn.bohrer@gmail.com>
-Cc: linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mayoff@rgmadvisors.com, Jeff Layton <jeff.layton@primarydata.com>, fsorenso@redhat.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f171.google.com ([209.85.217.171]:33419 "EHLO
+	mail-lb0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750763AbbEAVCn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 May 2015 17:02:43 -0400
+In-Reply-To: <20150422060734.GA25230@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-On Wed, 4 Mar 2015, Shawn Bohrer wrote:
+On Tue, Apr 21, 2015 at 11:07 PM, Ingo Molnar <mingo@kernel.org> wrote:
+>
+> * Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
 
-> Hello,
+>> Happened to notice a 2x "The the..." when I came across this in
+>> linux-next today and was reading the help out of curiousity...
 >
-> We're using the Linux cgroup Freezer on some machines that use NFS and
-> have run into what appears to be a bug where frozen tasks are blocking
-> running tasks and preventing them from completing.  On one of our
-> machines which happens to be running an older 3.10.46 kernel we have
-> frozen some of the tasks on the system using the cgroup Freezer.  We
-> also have a separate set of tasks which are NOT frozen which are stuck
-> trying to open some files on NFS.
->
-> Looking at the frozen tasks there are several that have the following
-> stack:
->
-> [<ffffffff814fd055>] rpc_wait_bit_killable+0x35/0x80
-> [<ffffffff814fd01d>] __rpc_wait_for_completion_task+0x2d/0x30
-> [<ffffffff811dce5d>] nfs4_run_open_task+0x11d/0x170
-> [<ffffffff811de7a3>] _nfs4_open_and_get_state+0x53/0x260
-> [<ffffffff811e12d1>] nfs4_do_open+0x121/0x400
-> [<ffffffff811e15e1>] nfs4_atomic_open+0x31/0x50
-> [<ffffffff811f02dc>] nfs4_file_open+0xac/0x180
-> [<ffffffff811479be>] do_dentry_open.isra.19+0x1ee/0x280
-> [<ffffffff81147b3e>] finish_open+0x1e/0x30
-> [<ffffffff811578d2>] do_last.isra.64+0x2c2/0xc40
-> [<ffffffff81158519>] path_openat.isra.65+0x2c9/0x490
-> [<ffffffff81158c38>] do_filp_open+0x38/0x80
-> [<ffffffff81148cd4>] do_sys_open+0xe4/0x1c0
-> [<ffffffff81148dce>] SyS_open+0x1e/0x20
-> [<ffffffff8153e719>] system_call_fastpath+0x16/0x1b
-> [<ffffffffffffffff>] 0xffffffffffffffff
->
-> Here it looks like we are waiting in a wait queue inside
-> rpc_wait_bit_killable() for RPC_TASK_ACTIVE.
->
-> And there is a single task with a stack that looks like the following:
->
-> [<ffffffff8107dc05>] __refrigerator+0x55/0x150
-> [<ffffffff814fd086>] rpc_wait_bit_killable+0x66/0x80
-> [<ffffffff814fd01d>] __rpc_wait_for_completion_task+0x2d/0x30
-> [<ffffffff811dce5d>] nfs4_run_open_task+0x11d/0x170
-> [<ffffffff811de7a3>] _nfs4_open_and_get_state+0x53/0x260
-> [<ffffffff811e12d1>] nfs4_do_open+0x121/0x400
-> [<ffffffff811e15e1>] nfs4_atomic_open+0x31/0x50
-> [<ffffffff811f02dc>] nfs4_file_open+0xac/0x180
-> [<ffffffff811479be>] do_dentry_open.isra.19+0x1ee/0x280
-> [<ffffffff81147b3e>] finish_open+0x1e/0x30
-> [<ffffffff811578d2>] do_last.isra.64+0x2c2/0xc40
-> [<ffffffff81158519>] path_openat.isra.65+0x2c9/0x490
-> [<ffffffff81158c38>] do_filp_open+0x38/0x80
-> [<ffffffff81148cd4>] do_sys_open+0xe4/0x1c0
-> [<ffffffff81148dce>] SyS_open+0x1e/0x20
-> [<ffffffff8153e719>] system_call_fastpath+0x16/0x1b
-> [<ffffffffffffffff>] 0xffffffffffffffff
->
-> This looks similar but the different offset into
-> rpc_wait_bit_killable() shows that we have returned from the
-> schedule() call in freezable_schedule() and are now blocked in
-> __refrigerator() inside freezer_count()
->
-> Similarly if you look at the tasks that are NOT frozen but are stuck
-> opening a NFS file, they also have the following stack showing they are
-> waiting in the wait queue for RPC_TASK_ACTIVE.
->
-> [<ffffffff814fd055>] rpc_wait_bit_killable+0x35/0x80
-> [<ffffffff814fd01d>] __rpc_wait_for_completion_task+0x2d/0x30
-> [<ffffffff811dce5d>] nfs4_run_open_task+0x11d/0x170
-> [<ffffffff811de7a3>] _nfs4_open_and_get_state+0x53/0x260
-> [<ffffffff811e12d1>] nfs4_do_open+0x121/0x400
-> [<ffffffff811e15e1>] nfs4_atomic_open+0x31/0x50
-> [<ffffffff811f02dc>] nfs4_file_open+0xac/0x180
-> [<ffffffff811479be>] do_dentry_open.isra.19+0x1ee/0x280
-> [<ffffffff81147b3e>] finish_open+0x1e/0x30
-> [<ffffffff811578d2>] do_last.isra.64+0x2c2/0xc40
-> [<ffffffff81158519>] path_openat.isra.65+0x2c9/0x490
-> [<ffffffff81158c38>] do_filp_open+0x38/0x80
-> [<ffffffff81148cd4>] do_sys_open+0xe4/0x1c0
-> [<ffffffff81148dce>] SyS_open+0x1e/0x20
-> [<ffffffff8153e719>] system_call_fastpath+0x16/0x1b
-> [<ffffffffffffffff>] 0xffffffffffffffff
->
-> We have hit this a couple of times now and know that if we THAW all of
-> the frozen tasks that running tasks will unwedge and finish.
->
-> Additionally we have also tried thawing the single task that is frozen
-> in __refrigerator() inside rpc_wait_bit_killable().  This usually
-> results in different frozen task entering the __refrigerator() state
-> inside rpc_wait_bit_killable().  It looks like each one of those tasks
-> must wake up another letting it progress.  Again if you thaw enough of
-> the frozen tasks eventually everything unwedges and everything
-> completes.
->
-> I've looked through the 3.10 stable patches since 3.10.46 and don't
-> see anything that looks like it addresses this.  Does anyone have any
-> idea what might be going on here, and what the fix might be?
->
-> Thanks,
-> Shawn
+> Len, this commit isn't in a permanent Git tree yet, right? We want to
+> do this through the x86 tree, and along the suggestions I made.
 
-Hi Shawn, just started looking at this myself, and as Frank Sorensen points
-out in https://bugzilla.redhat.com/show_bug.cgi?id=1209143 the problem is
-that a task takes the xprt lock and then ends up in the refrigerator
-effectively blocking other tasks from proceeding.
+It was in my -next tree -- no not permanent, yes, since removed (today).
+Yes, I plan to send you a v2 and TIP is the right place for it to live.
 
-Jeff, any suggestions on how to proceed here?
+Paul, thanks for noticing the typo.
 
-Ben
+Len Brown, Intel Open Source Technology Center
