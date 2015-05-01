@@ -1,125 +1,44 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM / sleep: Let devices force direct_complete
-Date: Fri, 1 May 2015 13:24:30 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1505011321280.1365-100000@iolanthe.rowland.org>
-References: <1430474611-25560-1-git-send-email-tomeu.vizoso@collabora.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v7 1/5] PM / Domains: prepare for multiple states
+Date: Fri, 1 May 2015 20:58:37 +0200
+Message-ID: <CAMuHMdW+B53fftE9i_CKcf6wO+MpYhGXU_5J7TbhuO4tfXNHcg@mail.gmail.com>
+References: <1430391335-7588-1-git-send-email-ahaslam@baylibre.com>
+	<1430391335-7588-2-git-send-email-ahaslam@baylibre.com>
+	<20150430152959.GD424@linaro.org>
+	<5542530E.80803@baylibre.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:51278 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751070AbbEARYb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 May 2015 13:24:31 -0400
-In-Reply-To: <1430474611-25560-1-git-send-email-tomeu.vizoso@collabora.com>
+Received: from mail-oi0-f50.google.com ([209.85.218.50]:35102 "EHLO
+	mail-oi0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751122AbbEAS6i (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 May 2015 14:58:38 -0400
+Received: by oign205 with SMTP id n205so75759926oig.2
+        for <linux-pm@vger.kernel.org>; Fri, 01 May 2015 11:58:37 -0700 (PDT)
+In-Reply-To: <5542530E.80803@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-kernel@vger.kernel.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+To: Axel Haslam <ahaslam@baylibre.com>
+Cc: Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benoit Cousson <bcousson@baylibre.com>, Linux PM list <linux-pm@vger.kernel.org>, Axel Haslam <ahaslam+renesas@baylibre.com>
 
-On Fri, 1 May 2015, Tomeu Vizoso wrote:
+On Thu, Apr 30, 2015 at 6:06 PM, Axel Haslam <ahaslam@baylibre.com> wrote:
+> Im not against adding the wrapper if it simplifies things. But, in general,
+> i think all latencies should be set, otherwise genpd may violate device
+> constraints by turning a power domain off when it should not. So maybe, by
+> leaving the arguments, it kind of sends the message to the developer that
+> something important is needed.
 
-> Introduce a new per-device flag power.force_direct_complete that will
-> instruct the PM core to let that device remain in runtime suspend when
-> the system goes into a sleep power state, regardless of the PM state of
-> any of its descendants.
-> 
-> This is needed because otherwise it would be needed to get dozens of
-> drivers to implement the prepare() callback and be runtime PM active
-> even if they don't have a 1-to-1 relationship with a piece of HW.
-> 
-> This only applies to devices that aren't wakeup-capable, as those would
-> need to setup their IRQs as wakeup-capable in their prepare() callbacks.
-> 
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> ---
-> 
-> Hi,
-> 
-> I'm sending this as a standalone patch as suggested by Alan.
-> 
-> Thanks,
-> 
-> Tomeu
-> 
-> ---
->  Documentation/power/runtime_pm.txt | 10 ++++++++++
->  drivers/base/power/main.c          | 14 ++++++++++----
->  include/linux/pm.h                 |  1 +
->  3 files changed, 21 insertions(+), 4 deletions(-)
-> 
-> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-> index 44fe1d2..3b0c68d 100644
-> --- a/Documentation/power/runtime_pm.txt
-> +++ b/Documentation/power/runtime_pm.txt
-> @@ -665,6 +665,16 @@ as appropriate.  This only applies to system suspend transitions that are not
->  related to hibernation (see Documentation/power/devices.txt for more
->  information).
->  
-> +For devices that know that can remain runtime suspended when the system
-> +transitions to a sleep state regardless of the PM state of their descendants,
-> +the flag power.force_direct_complete can be set on their device structures.
-> +This can be useful when a real device has several virtual devices as
-> +descendants and it would be very cumbersome to make sure that they return a
-> +positive value in their .prepare() callback and have runtime PM enabled. Usage
-> +of power.force_direct_complete is only allowed to devices that aren't
-> +wakeup-capable, as they would need to set their IRQs as wakeups in their
-> +.prepare() callbacks before the system transitions to a sleep state.
-> +
+Note that in the absence of latencies, device constraints may indeed be
+violated once. After that the genpd core will have measured the real
+latency value, and will start using that.
 
-This seems okay to me.  It specifically states that 
-force_direct_complete should be used only when it is known that the PM 
-states of the descendant devices don't matter.
+Gr{oetje,eeting}s,
 
->  The PM core does its best to reduce the probability of race conditions between
->  the runtime PM and system suspend/resume (and hibernation) callbacks by carrying
->  out the following operations:
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 3d874ec..7b962f5 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -1438,7 +1438,9 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
->  		if (parent) {
->  			spin_lock_irq(&parent->power.lock);
->  
-> -			dev->parent->power.direct_complete = false;
-> +			if (!dev->parent->power.force_direct_complete)
-> +				dev->parent->power.direct_complete = false;
-> +
->  			if (dev->power.wakeup_path
->  			    && !dev->parent->power.ignore_children)
->  				dev->parent->power.wakeup_path = true;
-> @@ -1605,9 +1607,13 @@ static int device_prepare(struct device *dev, pm_message_t state)
->  	 * will do the same thing with all of its descendants".  This only
->  	 * applies to suspend transitions, however.
->  	 */
-> -	spin_lock_irq(&dev->power.lock);
-> -	dev->power.direct_complete = ret > 0 && state.event == PM_EVENT_SUSPEND;
-> -	spin_unlock_irq(&dev->power.lock);
-> +	if (state.event == PM_EVENT_SUSPEND) {
-> +		spin_lock_irq(&dev->power.lock);
-> +		dev->power.direct_complete = ret > 0 ||
-> +			(dev->power.force_direct_complete &&
-> +			 !device_can_wakeup(dev));
-> +		spin_unlock_irq(&dev->power.lock);
-> +	}
->  	return 0;
->  }
->  
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 2d29c64..2e41cfd 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -553,6 +553,7 @@ struct dev_pm_info {
->  	bool			ignore_children:1;
->  	bool			early_init:1;	/* Owned by the PM core */
->  	bool			direct_complete:1;	/* Owned by the PM core */
-> +	bool			force_direct_complete:1;
->  	spinlock_t		lock;
->  #ifdef CONFIG_PM_SLEEP
->  	struct list_head	entry;
+                        Geert
 
-Rafael, do you think we need a setter routine that acquires the
-spinlock before turning on this bit?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Alan Stern
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
