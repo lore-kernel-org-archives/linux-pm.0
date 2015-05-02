@@ -1,55 +1,52 @@
-From: Aravind Gopalakrishnan <aravind.gopalakrishnan@amd.com>
-Subject: Re: [PATCH 0/1] speeding up cpu_up()
-Date: Fri, 1 May 2015 19:42:52 -0500
-Message-ID: <55441D8C.2080509@amd.com>
-References: <1429404795-23260-1-git-send-email-lenb@kernel.org>
- <20150420071556.GB14315@gmail.com>
- <CAJvTdKnYbJbun_UJXbGgKuh7DEBXoQdD6Unbm=Jopuw_C_U4ng@mail.gmail.com>
- <20150501224729.GN10239@pd.tnic>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150501224729.GN10239@pd.tnic>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>, Len Brown <lenb@kernel.org>
-Cc: Ingo Molnar <mingo@kernel.org>, X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: [PATCH] thermal: power_allocator: round the division when divvying up power
+Date: Sat,  2 May 2015 10:15:24 +0100
+Message-ID: <1430558124-5783-1-git-send-email-javi.merino@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:39819 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751281AbbEBJPq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 2 May 2015 05:15:46 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
+In situations where there is an uneven number of cooling devices, the
+division of power among them can lead to a milliwatt being dropped on
+the floor due to rounding errors.  This doesn't sound like a lot, but
+some devices only grant the lowest cooling device state for their
+maximum power.  So for instance, if the granted_power is the maximum
+power and all devices are getting their maximum power, one would get
+max_power - 1, making it choose cooling device state 1, instead of 0.
 
-On 5/1/15 5:47 PM, Borislav Petkov wrote:
-> On Fri, May 01, 2015 at 02:42:39PM -0700, Len Brown wrote:
->> On Mon, Apr 20, 2015 at 12:15 AM, Ingo Molnar <mingo@kernel.org> wrote:
->>
->>> So instead of playing games with an ancient delay, I'd suggest we
->>> install the 10 msec INIT assertion wait as a platform quirk instead,
->>> and activate it for all CPUs/systems that we think might need it, with
->>> a sufficiently robust and future-proof quirk cutoff condition.
->>>
->>> New systems won't have the quirk active and thus won't have to have
->>> this delay configurable either.
->> Okay, at this time, I think the quirk would apply to:
->>
->> 1. Intel family 5 (original pentium) -- some may actually need the quirk
->> 2. Intel family F (pentium4) -- mostly b/c I don't want to bother
->> finding/testing p4
->> 3. All AMD (happy to narrow down, if somebody can speak for AMD)
-> Aravind and I could probably test on a couple of AMD boxes to narrow down.
->
-> @Aravind, see here:
->
-> https://lkml.kernel.org/r/87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com
->
-> You could ask around whether a timeout is needed between the assertion
-> and deassertion of INIT done by the BSP when booting other cores.
+Round the division to make the calculation more accurate.
 
-Sure, I'll ask around and try mdelay(0) on some systems as well.
-I can gather Fam15h, Fam16h but don't have K8's or older.
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
+---
+Hi,
 
-Will let you know how it goes.
+This patch should apply on top of the linus branch in Eduardo's repository.
 
--Aravind.
+ drivers/thermal/power_allocator.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> If not, we probably should convert, at least modern AMD machines, to the
-> no-delay default.
->
+diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
+index 3ca7530deac6..4672250b329f 100644
+--- a/drivers/thermal/power_allocator.c
++++ b/drivers/thermal/power_allocator.c
+@@ -196,7 +196,8 @@ static void divvy_up_power(u32 *req_power, u32 *max_power, int num_actors,
+ 	for (i = 0; i < num_actors; i++) {
+ 		u64 req_range = req_power[i] * power_range;
+ 
+-		granted_power[i] = div_u64(req_range, total_req_power);
++		granted_power[i] = DIV_ROUND_CLOSEST_ULL(req_range,
++							 total_req_power);
+ 
+ 		if (granted_power[i] > max_power[i]) {
+ 			extra_power += granted_power[i] - max_power[i];
+-- 
+1.9.1
+
