@@ -1,178 +1,55 @@
-From: Jeff Layton <jeff.layton@primarydata.com>
-Subject: Re: NFS Freezer and stuck tasks
-Date: Fri, 1 May 2015 19:17:41 -0400
-Message-ID: <20150501191741.17bed93c@tlielax.poochiereds.net>
-References: <20150304220027.GB20242@sbohrermbp13-local.rgmadvisors.com>
-	<alpine.OSX.2.19.9992.1505011631390.946@planck.local>
-	<alpine.OSX.2.19.9992.1505011708000.656@planck.local>
+From: Aravind Gopalakrishnan <aravind.gopalakrishnan@amd.com>
+Subject: Re: [PATCH 0/1] speeding up cpu_up()
+Date: Fri, 1 May 2015 19:42:52 -0500
+Message-ID: <55441D8C.2080509@amd.com>
+References: <1429404795-23260-1-git-send-email-lenb@kernel.org>
+ <20150420071556.GB14315@gmail.com>
+ <CAJvTdKnYbJbun_UJXbGgKuh7DEBXoQdD6Unbm=Jopuw_C_U4ng@mail.gmail.com>
+ <20150501224729.GN10239@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f174.google.com ([209.85.220.174]:35249 "EHLO
-	mail-qk0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780AbbEAXRp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 May 2015 19:17:45 -0400
-Received: by qkhg7 with SMTP id g7so58695607qkh.2
-        for <linux-pm@vger.kernel.org>; Fri, 01 May 2015 16:17:44 -0700 (PDT)
-In-Reply-To: <alpine.OSX.2.19.9992.1505011708000.656@planck.local>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150501224729.GN10239@pd.tnic>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>, Len Brown <lenb@kernel.org>
+Cc: Ingo Molnar <mingo@kernel.org>, X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: linux-pm@vger.kernel.org
-To: Benjamin Coddington <bcodding@redhat.com>
-Cc: Shawn Bohrer <shawn.bohrer@gmail.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mayoff@rgmadvisors.com, fsorenso@redhat.com, tj@kernel.org
 
-On Fri, 1 May 2015 17:10:34 -0400 (EDT)
-Benjamin Coddington <bcodding@redhat.com> wrote:
 
-> On Fri, 1 May 2015, Benjamin Coddington wrote:
-> 
-> > On Wed, 4 Mar 2015, Shawn Bohrer wrote:
-> >
-> > > Hello,
-> > >
-> > > We're using the Linux cgroup Freezer on some machines that use NFS and
-> > > have run into what appears to be a bug where frozen tasks are blocking
-> > > running tasks and preventing them from completing.  On one of our
-> > > machines which happens to be running an older 3.10.46 kernel we have
-> > > frozen some of the tasks on the system using the cgroup Freezer.  We
-> > > also have a separate set of tasks which are NOT frozen which are stuck
-> > > trying to open some files on NFS.
-> > >
-> > > Looking at the frozen tasks there are several that have the following
-> > > stack:
-> > >
-> > > [<ffffffff814fd055>] rpc_wait_bit_killable+0x35/0x80
-> > > [<ffffffff814fd01d>] __rpc_wait_for_completion_task+0x2d/0x30
-> > > [<ffffffff811dce5d>] nfs4_run_open_task+0x11d/0x170
-> > > [<ffffffff811de7a3>] _nfs4_open_and_get_state+0x53/0x260
-> > > [<ffffffff811e12d1>] nfs4_do_open+0x121/0x400
-> > > [<ffffffff811e15e1>] nfs4_atomic_open+0x31/0x50
-> > > [<ffffffff811f02dc>] nfs4_file_open+0xac/0x180
-> > > [<ffffffff811479be>] do_dentry_open.isra.19+0x1ee/0x280
-> > > [<ffffffff81147b3e>] finish_open+0x1e/0x30
-> > > [<ffffffff811578d2>] do_last.isra.64+0x2c2/0xc40
-> > > [<ffffffff81158519>] path_openat.isra.65+0x2c9/0x490
-> > > [<ffffffff81158c38>] do_filp_open+0x38/0x80
-> > > [<ffffffff81148cd4>] do_sys_open+0xe4/0x1c0
-> > > [<ffffffff81148dce>] SyS_open+0x1e/0x20
-> > > [<ffffffff8153e719>] system_call_fastpath+0x16/0x1b
-> > > [<ffffffffffffffff>] 0xffffffffffffffff
-> > >
-> > > Here it looks like we are waiting in a wait queue inside
-> > > rpc_wait_bit_killable() for RPC_TASK_ACTIVE.
-> > >
-> > > And there is a single task with a stack that looks like the following:
-> > >
-> > > [<ffffffff8107dc05>] __refrigerator+0x55/0x150
-> > > [<ffffffff814fd086>] rpc_wait_bit_killable+0x66/0x80
-> > > [<ffffffff814fd01d>] __rpc_wait_for_completion_task+0x2d/0x30
-> > > [<ffffffff811dce5d>] nfs4_run_open_task+0x11d/0x170
-> > > [<ffffffff811de7a3>] _nfs4_open_and_get_state+0x53/0x260
-> > > [<ffffffff811e12d1>] nfs4_do_open+0x121/0x400
-> > > [<ffffffff811e15e1>] nfs4_atomic_open+0x31/0x50
-> > > [<ffffffff811f02dc>] nfs4_file_open+0xac/0x180
-> > > [<ffffffff811479be>] do_dentry_open.isra.19+0x1ee/0x280
-> > > [<ffffffff81147b3e>] finish_open+0x1e/0x30
-> > > [<ffffffff811578d2>] do_last.isra.64+0x2c2/0xc40
-> > > [<ffffffff81158519>] path_openat.isra.65+0x2c9/0x490
-> > > [<ffffffff81158c38>] do_filp_open+0x38/0x80
-> > > [<ffffffff81148cd4>] do_sys_open+0xe4/0x1c0
-> > > [<ffffffff81148dce>] SyS_open+0x1e/0x20
-> > > [<ffffffff8153e719>] system_call_fastpath+0x16/0x1b
-> > > [<ffffffffffffffff>] 0xffffffffffffffff
-> > >
-> > > This looks similar but the different offset into
-> > > rpc_wait_bit_killable() shows that we have returned from the
-> > > schedule() call in freezable_schedule() and are now blocked in
-> > > __refrigerator() inside freezer_count()
-> > >
-> > > Similarly if you look at the tasks that are NOT frozen but are stuck
-> > > opening a NFS file, they also have the following stack showing they are
-> > > waiting in the wait queue for RPC_TASK_ACTIVE.
-> > >
-> > > [<ffffffff814fd055>] rpc_wait_bit_killable+0x35/0x80
-> > > [<ffffffff814fd01d>] __rpc_wait_for_completion_task+0x2d/0x30
-> > > [<ffffffff811dce5d>] nfs4_run_open_task+0x11d/0x170
-> > > [<ffffffff811de7a3>] _nfs4_open_and_get_state+0x53/0x260
-> > > [<ffffffff811e12d1>] nfs4_do_open+0x121/0x400
-> > > [<ffffffff811e15e1>] nfs4_atomic_open+0x31/0x50
-> > > [<ffffffff811f02dc>] nfs4_file_open+0xac/0x180
-> > > [<ffffffff811479be>] do_dentry_open.isra.19+0x1ee/0x280
-> > > [<ffffffff81147b3e>] finish_open+0x1e/0x30
-> > > [<ffffffff811578d2>] do_last.isra.64+0x2c2/0xc40
-> > > [<ffffffff81158519>] path_openat.isra.65+0x2c9/0x490
-> > > [<ffffffff81158c38>] do_filp_open+0x38/0x80
-> > > [<ffffffff81148cd4>] do_sys_open+0xe4/0x1c0
-> > > [<ffffffff81148dce>] SyS_open+0x1e/0x20
-> > > [<ffffffff8153e719>] system_call_fastpath+0x16/0x1b
-> > > [<ffffffffffffffff>] 0xffffffffffffffff
-> > >
-> > > We have hit this a couple of times now and know that if we THAW all of
-> > > the frozen tasks that running tasks will unwedge and finish.
-> > >
-> > > Additionally we have also tried thawing the single task that is frozen
-> > > in __refrigerator() inside rpc_wait_bit_killable().  This usually
-> > > results in different frozen task entering the __refrigerator() state
-> > > inside rpc_wait_bit_killable().  It looks like each one of those tasks
-> > > must wake up another letting it progress.  Again if you thaw enough of
-> > > the frozen tasks eventually everything unwedges and everything
-> > > completes.
-> > >
-> > > I've looked through the 3.10 stable patches since 3.10.46 and don't
-> > > see anything that looks like it addresses this.  Does anyone have any
-> > > idea what might be going on here, and what the fix might be?
-> > >
-> > > Thanks,
-> > > Shawn
-> >
-> > Hi Shawn, just started looking at this myself, and as Frank Sorensen points
-> > out in https://bugzilla.redhat.com/show_bug.cgi?id=1209143 the problem is
-> > that a task takes the xprt lock and then ends up in the refrigerator
-> > effectively blocking other tasks from proceeding.
-> >
-> > Jeff, any suggestions on how to proceed here?
-> 
-> Sorry for the noise, and self-reply..  Looks like there's additional context
-> here: http://marc.info/?t=136761512100007&r=1&w=2
-> 
-> Due to a number of locking problems the answer to this problem is likely to
-> be "don't do that" for now.
-> 
-> Ben
+On 5/1/15 5:47 PM, Borislav Petkov wrote:
+> On Fri, May 01, 2015 at 02:42:39PM -0700, Len Brown wrote:
+>> On Mon, Apr 20, 2015 at 12:15 AM, Ingo Molnar <mingo@kernel.org> wrote:
+>>
+>>> So instead of playing games with an ancient delay, I'd suggest we
+>>> install the 10 msec INIT assertion wait as a platform quirk instead,
+>>> and activate it for all CPUs/systems that we think might need it, with
+>>> a sufficiently robust and future-proof quirk cutoff condition.
+>>>
+>>> New systems won't have the quirk active and thus won't have to have
+>>> this delay configurable either.
+>> Okay, at this time, I think the quirk would apply to:
+>>
+>> 1. Intel family 5 (original pentium) -- some may actually need the quirk
+>> 2. Intel family F (pentium4) -- mostly b/c I don't want to bother
+>> finding/testing p4
+>> 3. All AMD (happy to narrow down, if somebody can speak for AMD)
+> Aravind and I could probably test on a couple of AMD boxes to narrow down.
+>
+> @Aravind, see here:
+>
+> https://lkml.kernel.org/r/87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com
+>
+> You could ask around whether a timeout is needed between the assertion
+> and deassertion of INIT done by the BSP when booting other cores.
 
-Yeah, that's definitely the answer for now.
+Sure, I'll ask around and try mdelay(0) on some systems as well.
+I can gather Fam15h, Fam16h but don't have K8's or older.
 
-NFS and the freezer basically cooperate if you are freezing the whole
-system, but freezing some tasks and not others is fraught with peril.
-The problem is that by the time you get a freeze "signal" you might be
-very deep inside the call stack, holding VFS layer locks, etc. and that
-can block other non-freezing tasks from progressing.
+Will let you know how it goes.
 
-My memory is vague, but Tejun (cc'ed) and I discussed this a couple of
-years or so ago and the tentative idea at the time was to teach the
-NFS and RPC code to return a particular error akin to ERESTARTSYS
-(EFREEZE?) when a freeze event comes in and we haven't yet sent an RPC
-call.
+-Aravind.
 
-The idea was to teach the ptrace layer to watch for this error and
-freeze at that point and then to reissue the syscall after resume. All
-of that's a non-trivial task though, as knowledge of this would need to
-be plumbed all the way through the stack down to the RPC layer.
-
-When you have already sent the call though, then things get trickier.
-You want to wait for a bit and see if the reply comes in. If it does,
-great...just return and let the freeze in userland happen.
-
-If it doesn't though then you're sort of screwed as you can't really
-freeze (at least if you have a hard mount) since that mandates that you
-keep retransmitting. So, we also discussed adding a new hard/soft
-variant (slushy?) that basically acts like "hard" most of the time, but
-"soft" when the freezer kicks in. That's not transparent to userland
-though, so YMMV there...
-
-Anyway, I'm afraid I won't have time to work on this anytime soon, but
-if someone else wanted to pick up that torch and run with it I can try
-to offer encouragement and guidance.
-
--- 
-Jeff Layton <jeff.layton@primarydata.com>
+> If not, we probably should convert, at least modern AMD machines, to the
+> no-delay default.
+>
