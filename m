@@ -1,93 +1,64 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: [4.1-rc1][Hibernation failed]  bisect result  included
-Date: Sun, 3 May 2015 15:54:39 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402CA0E2@SHSMSX101.ccr.corp.intel.com>
+From: Aravind Gopalakrishnan <aravind.gopalakrishnan@amd.com>
+Subject: Re: [PATCH 0/1] speeding up cpu_up()
+Date: Sun, 3 May 2015 11:13:25 -0500
+Message-ID: <55464925.5050600@amd.com>
+References: <1429404795-23260-1-git-send-email-lenb@kernel.org>
+ <20150420071556.GB14315@gmail.com>
+ <CAJvTdKnYbJbun_UJXbGgKuh7DEBXoQdD6Unbm=Jopuw_C_U4ng@mail.gmail.com>
+ <20150501224729.GN10239@pd.tnic> <55441D8C.2080509@amd.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="_002_36DF59CE26D8EE47B0655C516E9CE6402CA0E2SHSMSX101ccrcorpi_"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:33331 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750776AbbECPyo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 3 May 2015 11:54:44 -0400
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <55441D8C.2080509@amd.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>, Len Brown <lenb@kernel.org>
+Cc: Ingo Molnar <mingo@kernel.org>, X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: linux-pm@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "dehrenberg@chromium.org" <dehrenberg@chromium.org>, "Zhang, Rui" <rui.zhang@intel.com>, "Lu, Aaron" <aaron.lu@intel.com>
-
---_002_36DF59CE26D8EE47B0655C516E9CE6402CA0E2SHSMSX101ccrcorpi_
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-Hi,all,
-When we are doing QA test, a hibernation failor was found on latest kernel =
-4.1-rc1,
-resume from hibernation failed with the following error:
-
-PM: Hibernation image not present or could not be loaded.
-
-Bisect shows following commit might trigger this problem:
-commit 283e7ad0241155710f99a9f39d13313a53336926
-
-The  reason for failor is that, some distribution use klibc in initrd
-to restore the image, and klibc will provide kernel with the device=20
-format of major:minor:offset,
-for example, 8:3:0 represents a swap partition, and klibc will
-echo 8:3:0 > /sys/power/resume to resume the system manually.
-However in current implementation, format of 8:3:0 will be regarded=20
-as an invalid device, so restoring from hibernation failed.
-
-Do we need to add support for device format like 8:3:0?
-I'm happy to debug more specifically if you can let me know what=20
-would be of use, and I've also attached a temporary patch=20
-for this problem, not sure if it is suitable,  thanks.
 
 
+On 5/1/15 7:42 PM, Aravind Gopalakrishnan wrote:
+>
+> On 5/1/15 5:47 PM, Borislav Petkov wrote:
+>> On Fri, May 01, 2015 at 02:42:39PM -0700, Len Brown wrote:
+>>> On Mon, Apr 20, 2015 at 12:15 AM, Ingo Molnar <mingo@kernel.org> wrote:
+>>>
+>>>> So instead of playing games with an ancient delay, I'd suggest we
+>>>> install the 10 msec INIT assertion wait as a platform quirk instead,
+>>>> and activate it for all CPUs/systems that we think might need it, with
+>>>> a sufficiently robust and future-proof quirk cutoff condition.
+>>>>
+>>>> New systems won't have the quirk active and thus won't have to have
+>>>> this delay configurable either.
+>>> Okay, at this time, I think the quirk would apply to:
+>>>
+>>> 1. Intel family 5 (original pentium) -- some may actually need the 
+>>> quirk
+>>> 2. Intel family F (pentium4) -- mostly b/c I don't want to bother
+>>> finding/testing p4
+>>> 3. All AMD (happy to narrow down, if somebody can speak for AMD)
+>> Aravind and I could probably test on a couple of AMD boxes to narrow 
+>> down.
+>>
+>> @Aravind, see here:
+>>
+>> https://lkml.kernel.org/r/87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com 
+>>
+>>
+>> You could ask around whether a timeout is needed between the assertion
+>> and deassertion of INIT done by the BSP when booting other cores.
+>
+> Sure, I'll ask around and try mdelay(0) on some systems as well.
+> I can gather Fam15h, Fam16h but don't have K8's or older.
+>
+> Will let you know how it goes.
+Update:
+Fam15h Model00h-0fh, Fam15hModel60h and Fam16h Model 00h-0fh processors 
+boot fine with mdelay(0) and BSP brings up all secondary cpus correctly. 
+I don't have Fam15hModel30h system currently up, but I'll try that too 
+tomorrow.
 
+I am yet to get feedback from HW folks regarding this though.
 
-Best Regards,
-Yu
-
-
---_002_36DF59CE26D8EE47B0655C516E9CE6402CA0E2SHSMSX101ccrcorpi_
-Content-Type: application/octet-stream;
-	name="0001-init-support-device-of-major-minor-offset-format.patch"
-Content-Description: 0001-init-support-device-of-major-minor-offset-format.patch
-Content-Disposition: attachment;
-	filename="0001-init-support-device-of-major-minor-offset-format.patch";
-	size=1601; creation-date="Sun, 03 May 2015 15:51:54 GMT";
-	modification-date="Sun, 03 May 2015 15:51:54 GMT"
-Content-Transfer-Encoding: base64
-
-RnJvbSBhNjVkNzZjMTQzYjMxNWMzMjJiNWM3YTlmYjM2NTcwM2M5ZjMyNzk4IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBDaGVuIFl1IDx5dS5jLmNoZW5AaW50ZWwuY29tPgpEYXRlOiBT
-dW4sIDMgTWF5IDIwMTUgMjI6MzU6MDUgKzA4MDAKU3ViamVjdDogW1JGQ10gaW5pdDogc3VwcG9y
-dCBkZXZpY2Ugb2YgbWFqb3I6bWlub3I6b2Zmc2V0IGZvcm1hdAoKRGlzdHJpYnV0aW9uIGxpa2Ug
-VWJ1bnR1IHVzZXMga2xpYmMgcmF0aGVyIHRoYW4gdXN3c3VzcCB0byByZXN1bWUKc3lzdGVtIGZy
-b20gaGliZXJuYXRpb24sIHdoaWNoIHdpbGwgdHJlYXQgc3dhcCBwYXJ0aXRpb24vZmlsZSBpbgp0
-aGUgZm9ybSBvZiBtYWpvcjptaW5vcjpvZmZzZXQuIEZvciBleGFtcGxlLCA4OjM6MCByZXByZXNl
-bnRzIGEKc3dhcCBwYXJ0aXRpb24gaW4ga2xpYmMsIGFuZCBrbGliYydzIHJlc3VtZSBwcm9jZXNz
-IGluIGluaXRyZCB3aWxsCmZpbmFsbHkgZWNobyA4OjM6MCB0byAvc3lzL3Bvd2VyL3Jlc3VtZSBm
-b3IgbWFudWFsbHkgcmVzdG9yaW5nLgpIb3dldmVyIGluIGN1cnJlbnQgaW1wbGVtZW50YXRpb24s
-IDg6MzowIHdpbGwgYmUgdHJlYXRlZCBhcyBhbiBpbnZhbGlkCmRldmljZSBmb3JtYXQsIGFuZCBp
-dCBpcyBmb3VuZCB0aGF0IG1hbnVhbCByZXN1bW1pbmcgZnJvbSBoaWJlcm5hdGlvbgp3aWxsIGZh
-aWwgb24gbGFzdGVzdCBrZXJuZWwuCgpUaGlzIHBhdGNoIGFkZHMgc3VwcG9ydCBmb3IgZGV2aWNl
-IHdpdGggbWFqb3I6bWlub3I6b2Zmc2V0IGZvcm1hdAp3aGVuIHJlc3VtbWluZyBmcm9tIGhpYmVy
-bmF0aW9uLgoKUmVwb3J0ZWQtYnk6IFByaWdlbnQsIENocmlzdG9waGUgPGNocmlzdG9waGUucHJp
-Z2VudEBpbnRlbC5jb20+CgpTaWduZWQtb2ZmLWJ5OiBDaGVuIFl1IDx5dS5jLmNoZW5AaW50ZWwu
-Y29tPgotLS0KIGluaXQvZG9fbW91bnRzLmMgfCA2ICsrKystLQogMSBmaWxlIGNoYW5nZWQsIDQg
-aW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9pbml0L2RvX21vdW50
-cy5jIGIvaW5pdC9kb19tb3VudHMuYwppbmRleCA4MzY5ZmZhLi4yZDM2YmYxIDEwMDY0NAotLS0g
-YS9pbml0L2RvX21vdW50cy5jCisrKyBiL2luaXQvZG9fbW91bnRzLmMKQEAgLTIyNSwxMCArMjI1
-LDEyIEBAIGRldl90IG5hbWVfdG9fZGV2X3QoY29uc3QgY2hhciAqbmFtZSkKICNlbmRpZgogCiAJ
-aWYgKHN0cm5jbXAobmFtZSwgIi9kZXYvIiwgNSkgIT0gMCkgewotCQl1bnNpZ25lZCBtYWosIG1p
-bjsKKwkJdW5zaWduZWQgbWFqLCBtaW4sIG9mZnNldDsKIAkJY2hhciBkdW1teTsKIAotCQlpZiAo
-c3NjYW5mKG5hbWUsICIldToldSVjIiwgJm1haiwgJm1pbiwgJmR1bW15KSA9PSAyKSB7CisJCWlm
-ICgoc3NjYW5mKG5hbWUsICIldToldSVjIiwgJm1haiwgJm1pbiwgJmR1bW15KSA9PSAyKSB8fAor
-CQkJKHNzY2FuZihuYW1lLCAiJXU6JXU6JXU6JWMiLCAmbWFqLCAmbWluLCAmb2Zmc2V0LAorCQkJ
-JmR1bW15KSA9PSAzKSkgewogCQkJcmVzID0gTUtERVYobWFqLCBtaW4pOwogCQkJaWYgKG1haiAh
-PSBNQUpPUihyZXMpIHx8IG1pbiAhPSBNSU5PUihyZXMpKQogCQkJCWdvdG8gZmFpbDsKLS0gCjEu
-OS4xCgo=
-
---_002_36DF59CE26D8EE47B0655C516E9CE6402CA0E2SHSMSX101ccrcorpi_--
+Thanks,
+-Aravind.
