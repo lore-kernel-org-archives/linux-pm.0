@@ -1,52 +1,58 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH] thermal: power_allocator: round the division when divvying up power
-Date: Sat,  2 May 2015 10:15:24 +0100
-Message-ID: <1430558124-5783-1-git-send-email-javi.merino@arm.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: NFS Freezer and stuck tasks
+Date: Sat, 2 May 2015 22:03:10 -0400
+Message-ID: <20150503020310.GH1949@htj.duckdns.org>
+References: <20150304220027.GB20242@sbohrermbp13-local.rgmadvisors.com>
+ <alpine.OSX.2.19.9992.1505011631390.946@planck.local>
+ <alpine.OSX.2.19.9992.1505011708000.656@planck.local>
+ <20150501191741.17bed93c@tlielax.poochiereds.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:39819 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751281AbbEBJPq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 2 May 2015 05:15:46 -0400
+Received: from mail-qk0-f179.google.com ([209.85.220.179]:34848 "EHLO
+	mail-qk0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750955AbbECCDO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 2 May 2015 22:03:14 -0400
+Content-Disposition: inline
+In-Reply-To: <20150501191741.17bed93c@tlielax.poochiereds.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Jeff Layton <jeff.layton@primarydata.com>
+Cc: Benjamin Coddington <bcodding@redhat.com>, Shawn Bohrer <shawn.bohrer@gmail.com>, linux-nfs@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mayoff@rgmadvisors.com, fsorenso@redhat.com
 
-In situations where there is an uneven number of cooling devices, the
-division of power among them can lead to a milliwatt being dropped on
-the floor due to rounding errors.  This doesn't sound like a lot, but
-some devices only grant the lowest cooling device state for their
-maximum power.  So for instance, if the granted_power is the maximum
-power and all devices are getting their maximum power, one would get
-max_power - 1, making it choose cooling device state 1, instead of 0.
+Hey, Jeff.
 
-Round the division to make the calculation more accurate.
+On Fri, May 01, 2015 at 07:17:41PM -0400, Jeff Layton wrote:
+> > Sorry for the noise, and self-reply..  Looks like there's additional context
+> > here: http://marc.info/?t=136761512100007&r=1&w=2
+> > 
+> > Due to a number of locking problems the answer to this problem is likely to
+> > be "don't do that" for now.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
----
-Hi,
+Unfortunately, cgroup freezer is currently inherently broken.  As it
+currently stands, the situation is - if it works for certain use
+cases, great; otherwise, don't do that.
 
-This patch should apply on top of the linus branch in Eduardo's repository.
+...
+> My memory is vague, but Tejun (cc'ed) and I discussed this a couple of
+> years or so ago and the tentative idea at the time was to teach the
+> NFS and RPC code to return a particular error akin to ERESTARTSYS
+> (EFREEZE?) when a freeze event comes in and we haven't yet sent an RPC
+> call.
 
- drivers/thermal/power_allocator.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+The idea is that freezing should be essentially identical to how
+SIGSTOP is handled when viewed from kernel side.
 
-diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-index 3ca7530deac6..4672250b329f 100644
---- a/drivers/thermal/power_allocator.c
-+++ b/drivers/thermal/power_allocator.c
-@@ -196,7 +196,8 @@ static void divvy_up_power(u32 *req_power, u32 *max_power, int num_actors,
- 	for (i = 0; i < num_actors; i++) {
- 		u64 req_range = req_power[i] * power_range;
- 
--		granted_power[i] = div_u64(req_range, total_req_power);
-+		granted_power[i] = DIV_ROUND_CLOSEST_ULL(req_range,
-+							 total_req_power);
- 
- 		if (granted_power[i] > max_power[i]) {
- 			extra_power += granted_power[i] - max_power[i];
+> The idea was to teach the ptrace layer to watch for this error and
+> freeze at that point and then to reissue the syscall after resume. All
+> of that's a non-trivial task though, as knowledge of this would need to
+> be plumbed all the way through the stack down to the RPC layer.
+
+So, if nfs can abort and return to userland on sigpending, the task
+will be able to finish quckly; otherwise, it'd have to wait till nfs
+finishes.
+
+Thanks.
+
 -- 
-1.9.1
-
+tejun
