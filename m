@@ -1,49 +1,49 @@
-From: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Subject: Re: [PATCH V2 5/6] regulator: add mxs on-chip regulator driver
-Date: Mon, 4 May 2015 22:34:55 +0200 (CEST)
-Message-ID: <1693367404.879766.1430771695242.JavaMail.open-xchange@oxbaltgw08.schlund.de>
-References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com> <1430346747-28728-6-git-send-email-stefan.wahren@i2se.com> <20150504123648.GU15510@sirena.org.uk>
-Reply-To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/4] sched / idle: Move the default idle call code to a separate function
+Date: Mon, 04 May 2015 23:08:29 +0200
+Message-ID: <4693756.ntBpWDU92s@vostro.rjw.lan>
+References: <3084951.QaIkFrZ3VU@vostro.rjw.lan> <1607938.mB5HZupMYV@vostro.rjw.lan> <20150504142245.GL23123@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150504123648.GU15510-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, fabio.estevam-KZfg59tc24xl57MIdRCFDg@public.gmane.org, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, sebastien.szymanski-d2DlULPkwbNWk0Htik3J/w@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:62462 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750997AbbEDUn3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 May 2015 16:43:29 -0400
+In-Reply-To: <20150504142245.GL23123@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Hi Mark,
+On Monday, May 04, 2015 04:22:45 PM Peter Zijlstra wrote:
+> On Mon, May 04, 2015 at 03:56:24PM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > Move the code under the "use_default" label in cpuidle_idle_call()
+> > into a separate (new) function.
+> > 
+> > This just allows the subsequent changes to be more stratightforward.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  kernel/sched/idle.c |   42 +++++++++++++++++++++++-------------------
+> >  1 file changed, 23 insertions(+), 19 deletions(-)
+> > 
+> > Index: linux-pm/kernel/sched/idle.c
+> > ===================================================================
+> > --- linux-pm.orig/kernel/sched/idle.c
+> > +++ linux-pm/kernel/sched/idle.c
+> > @@ -67,6 +67,17 @@ void __weak arch_cpu_idle(void)
+> >  	local_irq_enable();
+> >  }
+> >  
+> > +static void default_idle_call(void) {
+> 
+> Please put opening brace of function on a new line.
 
-> Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> hat am 4. Mai 2015 um 14:36 geschrieben:
->
->
-> On Wed, Apr 29, 2015 at 10:32:26PM +0000, Stefan Wahren wrote:
->
-> > +static struct regulator_ops mxs_dcdc_ops = {
-> > + .is_enabled = regulator_is_enabled_regmap,
-> > +};
->
-> Why do we have an is_enabled() operation but no enable or disable
-> operation? 
+Ah that's weird.  I wonder why I haven't noticed this myself.
 
-i'm sorry, i forgot the following point in the changelog:
+Rafael
 
-- move dcdc handling from mxs_power to mxs-regulator
-
-I hope the change is okay. I implemented only is_enabled() to have at least 1
-operation.
-But it's not really necessary.
-
-> I'm also not 100% clear what code the DCDCs and LDOs are
-> sharing here...
-
-Actually only probing and the regulator info structure.
-
-Best regards
-Stefan
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
