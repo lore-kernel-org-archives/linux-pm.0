@@ -1,313 +1,189 @@
-From: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-Subject: Re: [PATCH] power: max17042_battery: add HEALTH and TEMP_* properties
- support
-Date: Mon, 04 May 2015 23:41:55 +0900
-Message-ID: <55478533.9050109@gmail.com>
-References: <1430777920-16348-1-git-send-email-ramakrishna.pallala@intel.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 3/4] sched / idle: Eliminate the "reflect" check from
+ cpuidle_idle_call()
+Date: Mon, 04 May 2015 16:49:50 +0200
+Message-ID: <5547870E.6060308@linaro.org>
+References: <3084951.QaIkFrZ3VU@vostro.rjw.lan> <1728148.BeERL39LLY@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:33601 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751115AbbEDOmA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 May 2015 10:42:00 -0400
-In-Reply-To: <1430777920-16348-1-git-send-email-ramakrishna.pallala@intel.com>
+Received: from mail-wg0-f47.google.com ([74.125.82.47]:35478 "EHLO
+	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751010AbbEDOty (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 May 2015 10:49:54 -0400
+Received: by wgyo15 with SMTP id o15so152754168wgy.2
+        for <linux-pm@vger.kernel.org>; Mon, 04 May 2015 07:49:53 -0700 (PDT)
+In-Reply-To: <1728148.BeERL39LLY@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-W dniu 05.05.2015 o 07:18, Ramakrishna Pallala pisze:
-> This patch adds the support for following battery properties
-> to max17042 fuel gauge driver.
+On 05/04/2015 03:57 PM, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Since cpuidle_reflect() should only be called if the idle state
+> to enter was selected by cpuidle_select(), there is the "reflect"
+> variable in cpuidle_idle_call() whose value is used to determine
+> whether or not that is the case.
+>
+> However, if the entire code run between the conditional setting
+> "reflect" and the call to cpuidle_reflect() is moved to a separate
+> function, it will be possible to call that new function in both
+> branches of the conditional, in which case cpuidle_reflect() will
+> only need to be called from one of them too and the "reflect"
+> variable won't be necessary any more.
+>
+> This eliminates one check made by cpuidle_idle_call() on the majority
+> of its invocations, so change the code as described.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The patchset itself looks good. Only minor nits and a question at the end.
+Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-> 
-> POWER_SUPPLY_PROP_TEMP_ALERT_MIN
-> POWER_SUPPLY_PROP_TEMP_ALERT_MAX
-> POWER_SUPPLY_PROP_TEMP_MIN
-> POWER_SUPPLY_PROP_TEMP_MAX
-> POWER_SUPPLY_PROP_HEALTH
-> 
-> Signed-off-by: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
 > ---
->  drivers/power/max17042_battery.c       |  190 ++++++++++++++++++++++++++++++--
->  include/linux/power/max17042_battery.h |    4 +
->  2 files changed, 183 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/power/max17042_battery.c b/drivers/power/max17042_battery.c
-> index 6cc5e87..d8f15ce 100644
-> --- a/drivers/power/max17042_battery.c
-> +++ b/drivers/power/max17042_battery.c
-> @@ -63,6 +63,8 @@
->  #define dP_ACC_100	0x1900
->  #define dP_ACC_200	0x3200
->  
-> +#define MAX17042_VMAX_TOLERENCE		50 /* 50 mV */
-
-s/TOLERENCE/TOLERANCE/
-
-
-> +
->  struct max17042_chip {
->  	struct i2c_client *client;
->  	struct regmap *regmap;
-> @@ -85,10 +87,94 @@ static enum power_supply_property max17042_battery_props[] = {
->  	POWER_SUPPLY_PROP_CHARGE_FULL,
->  	POWER_SUPPLY_PROP_CHARGE_COUNTER,
->  	POWER_SUPPLY_PROP_TEMP,
-> +	POWER_SUPPLY_PROP_TEMP_ALERT_MIN,
-> +	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
-> +	POWER_SUPPLY_PROP_TEMP_MIN,
-> +	POWER_SUPPLY_PROP_TEMP_MAX,
-> +	POWER_SUPPLY_PROP_HEALTH,
->  	POWER_SUPPLY_PROP_CURRENT_NOW,
->  	POWER_SUPPLY_PROP_CURRENT_AVG,
->  };
->  
-> +static int max17042_get_temperature(struct max17042_chip *chip, int *temp)
+>   kernel/sched/idle.c |   90 ++++++++++++++++++++++++++--------------=
+------------
+>   1 file changed, 46 insertions(+), 44 deletions(-)
+>
+> Index: linux-pm/kernel/sched/idle.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-pm.orig/kernel/sched/idle.c
+> +++ linux-pm/kernel/sched/idle.c
+> @@ -78,6 +78,46 @@ static void default_idle_call(void) {
+>   		arch_cpu_idle();
+>   }
+>
+> +static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_d=
+evice *dev,
+> +		      int next_state)
 > +{
-> +	int ret;
-> +	u32 data;
-> +	struct regmap *map = chip->regmap;
+> +	int entered_state;
 > +
-> +	ret = regmap_read(map, MAX17042_TEMP, &data);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	*temp = data;
-> +	/* The value is signed. */
-> +	if (*temp & 0x8000) {
-> +		*temp = (0x7fff & ~*temp) + 1;
-> +		*temp *= -1;
+> +	/* Fall back to the default arch idle method on errors. */
+> +	if (next_state < 0) {
+> +		default_idle_call();
+> +		return next_state;
 > +	}
 > +
-> +	/* The value is converted into deci-centigrade scale */
-> +	/* Units of LSB = 1 / 256 degree Celsius */
-> +	*temp = *temp * 10 / 256;
-> +	return 0;
+> +	/*
+> +	 * The idle task must be scheduled, it is pointless to go to idle, =
+just
+> +	 * update no idle residency and return.
+> +	 */
+> +	if (current_clr_polling_and_test()) {
+> +		dev->last_residency =3D 0;
+> +		local_irq_enable();
+> +		return -EBUSY;
+> +	}
+> +
+> +	/* Take note of the planned idle state. */
+> +	idle_set_state(this_rq(), &drv->states[next_state]);
+> +
+> +	/*
+> +	 * Enter the idle state previously returned by the governor decisio=
+n.
+> +	 * This function will block until an interrupt occurs and will take
+> +	 * care of re-enabling the local interrupts
+> +	 */
+> +	entered_state =3D cpuidle_enter(drv, dev, next_state);
+> +
+> +	/* The cpu is no longer idle or about to enter idle. */
+> +	idle_set_state(this_rq(), NULL);
+> +
+> +	if (entered_state =3D=3D -EBUSY)
+> +		default_idle_call();
+> +
+> +	return entered_state;
 > +}
 > +
-> +static int max17042_get_battery_health(struct max17042_chip *chip, int *health)
-> +{
-> +	int temp, vavg, vbatt, ret;
-> +	u32 val;
-> +
-> +	ret = regmap_read(chip->regmap, MAX17042_AvgVCELL, &val);
-> +	if (ret < 0)
-> +		goto health_error;
-> +
-> +	/* bits [0-3] unused */
-> +	vavg = val * 625 / 8;
-> +	/* Convert to milli volts */
-
-s/milli volts/millivolts/
-
-> +	vavg /= 1000;
-> +
-> +	ret = regmap_read(chip->regmap, MAX17042_VCELL, &val);
-> +	if (ret < 0)
-> +		goto health_error;
-> +
-> +	/* bits [0-3] unused */
-> +	vbatt = val * 625 / 8;
-> +	/* Convert to milli volts */
-> +	vbatt /= 1000;
-> +
-> +	if (vavg < chip->pdata->vmin) {
-> +		*health = POWER_SUPPLY_HEALTH_DEAD;
-> +		goto out;
-> +	}
-> +
-> +	if (vbatt > chip->pdata->vmax + MAX17042_VMAX_TOLERENCE) {
-> +		*health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-> +		goto out;
-> +	}
-> +
-> +	ret = max17042_get_temperature(chip, &temp);
-> +	if (ret < 0)
-> +		goto health_error;
-> +
-> +	if (temp <= chip->pdata->temp_min) {
-> +		*health = POWER_SUPPLY_HEALTH_COLD;
-> +		goto out;
-> +	}
-> +
-> +	if (temp >= chip->pdata->temp_max) {
-> +		*health = POWER_SUPPLY_HEALTH_OVERHEAT;
-> +		goto out;
-> +	}
-> +
-> +	*health = POWER_SUPPLY_HEALTH_GOOD;
-> +
-> +out:
-> +	return 0;
-> +
-> +health_error:
-> +	return ret;
-> +}
-> +
->  static int max17042_get_property(struct power_supply *psy,
->  			    enum power_supply_property psp,
->  			    union power_supply_propval *val)
-> @@ -181,19 +267,34 @@ static int max17042_get_property(struct power_supply *psy,
->  		val->intval = data * 1000 / 2;
->  		break;
->  	case POWER_SUPPLY_PROP_TEMP:
-> -		ret = regmap_read(map, MAX17042_TEMP, &data);
-> +		ret = max17042_get_temperature(chip, &val->intval);
-> +		if (ret < 0)
-> +			return ret;
-> +		break;
-> +	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
-> +		ret = regmap_read(map, MAX17042_TALRT_Th, &data);
-> +		if (ret < 0)
-> +			return ret;
-> +		/* LSB is Alert Minimum. In deci-centigrade */
-> +		val->intval = (data & 0xff) * 10;
-> +		break;
-> +	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
-> +		ret = regmap_read(map, MAX17042_TALRT_Th, &data);
-> +		if (ret < 0)
-> +			return ret;
-> +		/* MSB is Alert Maximum. In deci-centigrade */
-> +		val->intval = (data >> 8) * 10;
-> +		break;
-> +	case POWER_SUPPLY_PROP_TEMP_MIN:
-> +		val->intval = chip->pdata->temp_min;
-> +		break;
-> +	case POWER_SUPPLY_PROP_TEMP_MAX:
-> +		val->intval = chip->pdata->temp_max;
-> +		break;
-> +	case POWER_SUPPLY_PROP_HEALTH:
-> +		ret = max17042_get_battery_health(chip, &val->intval);
->  		if (ret < 0)
->  			return ret;
+>   /**
+>    * cpuidle_idle_call - the main idle function
+>    *
+> @@ -92,7 +132,6 @@ static void cpuidle_idle_call(void)
+>   	struct cpuidle_device *dev =3D __this_cpu_read(cpuidle_devices);
+>   	struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(dev);
+>   	int next_state, entered_state;
+> -	bool reflect;
+>
+>   	/*
+>   	 * Check if the idle task must be rescheduled. If it is the
+> @@ -137,56 +176,19 @@ static void cpuidle_idle_call(void)
+>   			goto exit_idle;
+>   		}
+>
+> -		reflect =3D false;
+>   		next_state =3D cpuidle_find_deepest_state(drv, dev);
+> +		call_cpuidle(drv, dev, next_state);
+>   	} else {
+> -		reflect =3D true;
+>   		/*
+>   		 * Ask the cpuidle framework to choose a convenient idle state.
+>   		 */
+>   		next_state =3D cpuidle_select(drv, dev);
+> -	}
+> -	/* Fall back to the default arch idle method on errors. */
+> -	if (next_state < 0) {
+> -		default_idle_call();
+> -		goto exit_idle;
+> -	}
 > -
-> -		val->intval = data;
-> -		/* The value is signed. */
-> -		if (val->intval & 0x8000) {
-> -			val->intval = (0x7fff & ~val->intval) + 1;
-> -			val->intval *= -1;
-> -		}
-> -		/* The value is converted into deci-centigrade scale */
-> -		/* Units of LSB = 1 / 256 degree Celsius */
-> -		val->intval = val->intval * 10 / 256;
->  		break;
->  	case POWER_SUPPLY_PROP_CURRENT_NOW:
->  		if (chip->pdata->enable_current_sense) {
-> @@ -237,6 +338,69 @@ static int max17042_get_property(struct power_supply *psy,
->  	return 0;
->  }
->  
-> +static int max17042_set_property(struct power_supply *psy,
-> +			    enum power_supply_property psp,
-> +			    const union power_supply_propval *val)
-> +{
-> +	struct max17042_chip *chip = power_supply_get_drvdata(psy);
-> +	struct regmap *map = chip->regmap;
-> +	int ret = 0;
-> +	u32 data;
-> +	int8_t temp;
-> +
-> +	switch (psp) {
-> +	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
-> +		ret = regmap_read(map, MAX17042_TALRT_Th, &data);
-> +		if (ret < 0)
-> +			return ret;
-> +
-> +		/* Input in deci-centigrade, convert to centigrade */
-> +		temp = val->intval / 10;
-> +		/* force min < max */
-> +		if (temp >= (int8_t)(data >> 8))
-> +			temp = (int8_t)(data >> 8) - 1;
-> +		/* Write both MAX and MIN ALERT */
-> +		data = (data & 0xff00) + temp;
-> +		ret = regmap_write(map, MAX17042_TALRT_Th, data);
-> +		break;
-> +	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
-> +		ret = regmap_read(map, MAX17042_TALRT_Th, &data);
-> +		if (ret < 0)
-> +			return ret;
-> +
-> +		/* Input in Deci-Centigrade, convert to centigrade */
-> +		temp = val->intval / 10;
-> +		/* force max > min */
-> +		if (temp <= (int8_t)(data & 0xff))
-> +			temp = (int8_t)(data & 0xff) + 1;
-> +		/* Write both MAX and MIN ALERT */
-> +		data = (data & 0xff) + (temp << 8);
-> +		ret = regmap_write(map, MAX17042_TALRT_Th, data);
-> +		break;
-> +	default:
-> +		ret = -EINVAL;
+> -	/*
+> -	 * The idle task must be scheduled, it is pointless to
+> -	 * go to idle, just update no idle residency and get
+> -	 * out of this function
+> -	 */
+> -	if (current_clr_polling_and_test()) {
+> -		dev->last_residency =3D 0;
+> -		entered_state =3D next_state;
+> -		local_irq_enable();
+> -		goto exit_idle;
+> -	}
+> -
+> -	/* Take note of the planned idle state. */
+> -	idle_set_state(this_rq(), &drv->states[next_state]);
+> -
+> -	/*
+> -	 * Enter the idle state previously returned by the governor decisio=
+n.
+> -	 * This function will block until an interrupt occurs and will take
+> -	 * care of re-enabling the local interrupts
+> -	 */
+> -	entered_state =3D cpuidle_enter(drv, dev, next_state);
+> -
+> -	/* The cpu is no longer idle or about to enter idle. */
+> -	idle_set_state(this_rq(), NULL);
+> -
+> -	if (entered_state =3D=3D -EBUSY) {
+> -		default_idle_call();
+> -		goto exit_idle;
+> -	}
+> -
+> -	/*
+> -	 * Give the governor an opportunity to reflect on the outcome
+> -	 */
+> -	if (reflect)
+> +		entered_state =3D call_cpuidle(drv, dev, next_state);
+> +		/*
+> +		 * Give the governor an opportunity to reflect on the outcome
+> +		 */
+>   		cpuidle_reflect(dev, entered_state);
 > +	}
-> +
-> +	return ret;
-> +}
-> +
-> +static int max17042_property_is_writeable(struct power_supply *psy,
-> +		enum power_supply_property psp)
-> +{
-> +	int ret;
-> +
-> +	switch (psp) {
-> +	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
-> +	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
-> +		ret = 1;
-> +		break;
-> +	default:
-> +		ret = 0;
-> +	}
-> +
-> +	return ret;
-> +}
-> +
->  static int max17042_write_verify_reg(struct regmap *map, u8 reg, u32 value)
->  {
->  	int retries = 8;
-> @@ -665,6 +829,8 @@ static const struct power_supply_desc max17042_psy_desc = {
->  	.name		= "max170xx_battery",
->  	.type		= POWER_SUPPLY_TYPE_BATTERY,
->  	.get_property	= max17042_get_property,
-> +	.set_property	= max17042_set_property,
-> +	.property_is_writeable	= max17042_property_is_writeable,
->  	.properties	= max17042_battery_props,
->  	.num_properties	= ARRAY_SIZE(max17042_battery_props),
->  };
-> @@ -673,6 +839,8 @@ static const struct power_supply_desc max17042_no_current_sense_psy_desc = {
->  	.name		= "max170xx_battery",
->  	.type		= POWER_SUPPLY_TYPE_BATTERY,
->  	.get_property	= max17042_get_property,
-> +	.set_property	= max17042_set_property,
-> +	.property_is_writeable	= max17042_property_is_writeable,
->  	.properties	= max17042_battery_props,
->  	.num_properties	= ARRAY_SIZE(max17042_battery_props) - 2,
->  };
-> diff --git a/include/linux/power/max17042_battery.h b/include/linux/power/max17042_battery.h
-> index cf112b4..89ca4a8 100644
-> --- a/include/linux/power/max17042_battery.h
-> +++ b/include/linux/power/max17042_battery.h
-> @@ -215,6 +215,10 @@ struct max17042_platform_data {
->  	 * the datasheet although it can be changed by board designers.
->  	 */
->  	unsigned int r_sns;
-> +	int         vmin;	/* in milli volts */
-> +	int         vmax;	/* in milli volts */
+>
+>   exit_idle:
+>   	__current_set_polling();
+>
 
-s/milli volts/millivolts/
 
-> +	int         temp_min;	/* in tenths of degree Celsius */
-> +	int         temp_max;	/* in tenths of degree Celsius */
->  };
->  
->  #endif /* __MAX17042_BATTERY_H_ */
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-The question is who will set these values in pdata? We do not have board
-files anymore so I think you should extend the DT bindings so this could
-be used.
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-Best regards,
-Krzysztof
