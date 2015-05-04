@@ -1,181 +1,120 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 3/4] sched / idle: Eliminate the "reflect" check from
- cpuidle_idle_call()
-Date: Mon, 04 May 2015 16:49:50 +0200
-Message-ID: <5547870E.6060308@linaro.org>
-References: <3084951.QaIkFrZ3VU@vostro.rjw.lan> <1728148.BeERL39LLY@vostro.rjw.lan>
+Subject: Re: [PATCH 4/4] sched / idle: Call default_idle_call() from cpuidle_enter_state()
+Date: Mon, 04 May 2015 17:04:08 +0200
+Message-ID: <55478A68.8060902@linaro.org>
+References: <3084951.QaIkFrZ3VU@vostro.rjw.lan> <3809765.j45t3RE71A@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f47.google.com ([74.125.82.47]:35478 "EHLO
-	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751010AbbEDOty (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 May 2015 10:49:54 -0400
-Received: by wgyo15 with SMTP id o15so152754168wgy.2
-        for <linux-pm@vger.kernel.org>; Mon, 04 May 2015 07:49:53 -0700 (PDT)
-In-Reply-To: <1728148.BeERL39LLY@vostro.rjw.lan>
+Received: from mail-wg0-f41.google.com ([74.125.82.41]:32896 "EHLO
+	mail-wg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751114AbbEDPEM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 May 2015 11:04:12 -0400
+Received: by wgin8 with SMTP id n8so152984230wgi.0
+        for <linux-pm@vger.kernel.org>; Mon, 04 May 2015 08:04:11 -0700 (PDT)
+In-Reply-To: <3809765.j45t3RE71A@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 05/04/2015 03:57 PM, Rafael J. Wysocki wrote:
+On 05/04/2015 03:58 PM, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> Since cpuidle_reflect() should only be called if the idle state
-> to enter was selected by cpuidle_select(), there is the "reflect"
-> variable in cpuidle_idle_call() whose value is used to determine
-> whether or not that is the case.
->
-> However, if the entire code run between the conditional setting
-> "reflect" and the call to cpuidle_reflect() is moved to a separate
-> function, it will be possible to call that new function in both
-> branches of the conditional, in which case cpuidle_reflect() will
-> only need to be called from one of them too and the "reflect"
-> variable won't be necessary any more.
->
-> This eliminates one check made by cpuidle_idle_call() on the majority
-> of its invocations, so change the code as described.
+> The check of the cpuidle_enter() return value against -EBUSY
+> made in call_cpuidle() will not be necessary any more if
+> cpuidle_enter_state() calls default_idle_call() directly when it
+> is about to return -EBUSY, so make that happen and eliminate the
+> check.
 >
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
+ >
 > ---
->   kernel/sched/idle.c |   90 ++++++++++++++++++++++++++--------------=
-------------
->   1 file changed, 46 insertions(+), 44 deletions(-)
+>   drivers/cpuidle/cpuidle.c |    4 +++-
+>   drivers/cpuidle/cpuidle.h |    2 ++
+>   kernel/sched/idle.c       |   14 ++++++--------
+>   3 files changed, 11 insertions(+), 9 deletions(-)
 >
+> Index: linux-pm/drivers/cpuidle/cpuidle.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-pm.orig/drivers/cpuidle/cpuidle.c
+> +++ linux-pm/drivers/cpuidle/cpuidle.c
+> @@ -167,8 +167,10 @@ int cpuidle_enter_state(struct cpuidle_d
+>   	 * local timer will be shut down.  If a local timer is used from a=
+nother
+>   	 * CPU as a broadcast timer, this call may fail if it is not avail=
+able.
+>   	 */
+> -	if (broadcast && tick_broadcast_enter())
+> +	if (broadcast && tick_broadcast_enter()) {
+> +		default_idle_call();
+>   		return -EBUSY;
+> +	}
+>
+>   	trace_cpu_idle_rcuidle(index, dev->cpu);
+>   	time_start =3D ktime_get();
+> Index: linux-pm/drivers/cpuidle/cpuidle.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-pm.orig/drivers/cpuidle/cpuidle.h
+> +++ linux-pm/drivers/cpuidle/cpuidle.h
+> @@ -18,6 +18,8 @@ extern int cpuidle_enter_state(struct cp
+>   /* idle loop */
+>   extern void cpuidle_install_idle_handler(void);
+>   extern void cpuidle_uninstall_idle_handler(void);
+> +/* kernel/sched/idle.c */
+> +extern void default_idle_call(void);
+
+There is a cyclic dependency introduced with this function.
+
+idle.c <=3D> cpuidle.c
+
+Are we sure we want them to be mutually dependent ?
+
+>   /* governors */
+>   extern int cpuidle_switch_governor(struct cpuidle_governor *gov);
 > Index: linux-pm/kernel/sched/idle.c
 > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 > --- linux-pm.orig/kernel/sched/idle.c
 > +++ linux-pm/kernel/sched/idle.c
-> @@ -78,6 +78,46 @@ static void default_idle_call(void) {
->   		arch_cpu_idle();
+> @@ -67,11 +67,12 @@ void __weak arch_cpu_idle(void)
+>   	local_irq_enable();
 >   }
 >
-> +static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_d=
-evice *dev,
-> +		      int next_state)
-> +{
-> +	int entered_state;
-> +
-> +	/* Fall back to the default arch idle method on errors. */
-> +	if (next_state < 0) {
-> +		default_idle_call();
-> +		return next_state;
-> +	}
-> +
-> +	/*
-> +	 * The idle task must be scheduled, it is pointless to go to idle, =
-just
-> +	 * update no idle residency and return.
-> +	 */
-> +	if (current_clr_polling_and_test()) {
-> +		dev->last_residency =3D 0;
-> +		local_irq_enable();
-> +		return -EBUSY;
-> +	}
-> +
-> +	/* Take note of the planned idle state. */
-> +	idle_set_state(this_rq(), &drv->states[next_state]);
-> +
-> +	/*
-> +	 * Enter the idle state previously returned by the governor decisio=
-n.
-> +	 * This function will block until an interrupt occurs and will take
-> +	 * care of re-enabling the local interrupts
-> +	 */
-> +	entered_state =3D cpuidle_enter(drv, dev, next_state);
-> +
-> +	/* The cpu is no longer idle or about to enter idle. */
-> +	idle_set_state(this_rq(), NULL);
-> +
-> +	if (entered_state =3D=3D -EBUSY)
-> +		default_idle_call();
-> +
-> +	return entered_state;
-> +}
-> +
->   /**
->    * cpuidle_idle_call - the main idle function
->    *
-> @@ -92,7 +132,6 @@ static void cpuidle_idle_call(void)
->   	struct cpuidle_device *dev =3D __this_cpu_read(cpuidle_devices);
->   	struct cpuidle_driver *drv =3D cpuidle_get_cpu_driver(dev);
->   	int next_state, entered_state;
-> -	bool reflect;
+> -static void default_idle_call(void) {
+> -	/*
+> -	 * We can't use the cpuidle framework, let's use the default idle
+> -	 * routine.
+> -	 */
+> +/**
+> + * default_idle_call - Default CPU idle routine.
+> + *
+> + * To use when the cpuidle framework cannot be used.
+> + */
+> +void default_idle_call(void) {
+
+Same comment as Peter on the patch 1/4.
+
+>   	if (current_clr_polling_and_test())
+>   		local_irq_enable();
+>   	else
+> @@ -112,9 +113,6 @@ static int call_cpuidle(struct cpuidle_d
+>   	/* The cpu is no longer idle or about to enter idle. */
+>   	idle_set_state(this_rq(), NULL);
 >
->   	/*
->   	 * Check if the idle task must be rescheduled. If it is the
-> @@ -137,56 +176,19 @@ static void cpuidle_idle_call(void)
->   			goto exit_idle;
->   		}
->
-> -		reflect =3D false;
->   		next_state =3D cpuidle_find_deepest_state(drv, dev);
-> +		call_cpuidle(drv, dev, next_state);
->   	} else {
-> -		reflect =3D true;
->   		/*
->   		 * Ask the cpuidle framework to choose a convenient idle state.
->   		 */
->   		next_state =3D cpuidle_select(drv, dev);
-> -	}
-> -	/* Fall back to the default arch idle method on errors. */
-> -	if (next_state < 0) {
+> -	if (entered_state =3D=3D -EBUSY)
 > -		default_idle_call();
-> -		goto exit_idle;
-> -	}
 > -
-> -	/*
-> -	 * The idle task must be scheduled, it is pointless to
-> -	 * go to idle, just update no idle residency and get
-> -	 * out of this function
-> -	 */
-> -	if (current_clr_polling_and_test()) {
-> -		dev->last_residency =3D 0;
-> -		entered_state =3D next_state;
-> -		local_irq_enable();
-> -		goto exit_idle;
-> -	}
-> -
-> -	/* Take note of the planned idle state. */
-> -	idle_set_state(this_rq(), &drv->states[next_state]);
-> -
-> -	/*
-> -	 * Enter the idle state previously returned by the governor decisio=
-n.
-> -	 * This function will block until an interrupt occurs and will take
-> -	 * care of re-enabling the local interrupts
-> -	 */
-> -	entered_state =3D cpuidle_enter(drv, dev, next_state);
-> -
-> -	/* The cpu is no longer idle or about to enter idle. */
-> -	idle_set_state(this_rq(), NULL);
-> -
-> -	if (entered_state =3D=3D -EBUSY) {
-> -		default_idle_call();
-> -		goto exit_idle;
-> -	}
-> -
-> -	/*
-> -	 * Give the governor an opportunity to reflect on the outcome
-> -	 */
-> -	if (reflect)
-> +		entered_state =3D call_cpuidle(drv, dev, next_state);
-> +		/*
-> +		 * Give the governor an opportunity to reflect on the outcome
-> +		 */
->   		cpuidle_reflect(dev, entered_state);
-> +	}
+>   	return entered_state;
+>   }
 >
->   exit_idle:
->   	__current_set_polling();
 >
 
 
