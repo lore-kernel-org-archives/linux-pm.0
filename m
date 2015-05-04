@@ -1,68 +1,49 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Re: [PATCH V2 4/6] DT: add binding for mxs on-chip regulators
-Date: Mon, 4 May 2015 22:20:50 +0200 (CEST)
-Message-ID: <1858103470.878923.1430770850541.JavaMail.open-xchange@oxbaltgw08.schlund.de>
-References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com>
- <1430346747-28728-5-git-send-email-stefan.wahren@i2se.com>
- <201505041551.26355.jbe@pengutronix.de>
-Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
+From: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Subject: Re: [PATCH V2 5/6] regulator: add mxs on-chip regulator driver
+Date: Mon, 4 May 2015 22:34:55 +0200 (CEST)
+Message-ID: <1693367404.879766.1430771695242.JavaMail.open-xchange@oxbaltgw08.schlund.de>
+References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com> <1430346747-28728-6-git-send-email-stefan.wahren@i2se.com> <20150504123648.GU15510@sirena.org.uk>
+Reply-To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <201505041551.26355.jbe@pengutronix.de>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: =?UTF-8?Q?=22J=C3=BCrgen_Borleis=22?= <jbe@pengutronix.de>
-Cc: fabio.estevam@freescale.com, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Kumar Gala <galak@codeaurora.org>, sebastien.szymanski@armadeus.com, Shawn Guo <shawn.guo@linaro.org>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150504123648.GU15510-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, fabio.estevam-KZfg59tc24xl57MIdRCFDg@public.gmane.org, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, sebastien.szymanski-d2DlULPkwbNWk0Htik3J/w@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-SGVsbG8gSnVlcmdlbiwKCj4gSsO8cmdlbiBCb3JsZWlzIDxqYmVAcGVuZ3V0cm9uaXguZGU+IGhh
-dCBhbSA0LiBNYWkgMjAxNSB1bSAxNTo1MSBnZXNjaHJpZWJlbjoKPgo+Cj4gSGkgU3RlZmFuLAo+
-Cj4gZm9yIHRoZSBpLk1YMjMgdGhlIHJlZ3VsYXRvciBkYWlzeSBjaGFpbiBsb29rcyBhIGxpdHRs
-ZSBiaXQgZGlmZmVyZW50Ogo+Cj4gKy0tLS0tLS0tLS0tLSsgICAgIFZERDVWICArLS0tLS0tLS0t
-KyAgVkRESU8KPiB8IERDLURDICAgICAgfCAgICstLS0tLS0tLT4gTElOUkVHICArLS0tLS0tLS0t
-PisKPiB8ICAgICAgICAgICAgfCAgICAgICAgICAgIHwgVkRESU8gICB8ICAgICAgICAgIHwKPiB8
-ICAgICAgICAgICAgfCAgICAgICAgICAgICstLS0tLS0tLS0rICAgICAgICAgIHwKPiB8IERDRENf
-VkRESU8gKy0+LSstLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLSsKPiB8ICAgICAgICAgICAg
-fCAgIHwKPiB8ICAgICAgICAgICAgfCAgIHwgVkRESU8gICstLS0tLS0tLS0rIFZERE1FTQo+IHwg
-ICAgICAgICAgICB8ICAgKy0tLS0tLS0tPiBMSU5SRUcgICstLS0tLS0tLS0+Cj4gfCAgICAgICAg
-ICAgIHwgICB8ICAgICAgICB8IFZERE1FTSAgfAo+IHwgICAgICAgICAgICB8ICAgfCAgICAgICAg
-Ky0tLS0tLS0tLSsKPiB8ICAgICAgICAgICAgfCAgIHwgVkRESU8gICstLS0tLS0tLS0rICBWRERB
-Cj4gfCAgICAgICAgICAgIHwgICArLS0tLS0tLS0+IExJTlJFRyAgKy0tLS0tLS0tLT4rCj4gfCAg
-ICAgICAgICAgIHwgICAgICAgICAgICB8IFZEREEgICAgfCAgICAgICAgICB8Cj4gfCAgICAgICAg
-ICAgIHwgICAgICAgICAgICArLS0tLS0tLS0tKyAgICAgICAgICB8Cj4gfCBEQ0RDX1ZEREEgICst
-Pi0rLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0rCj4gfCAgICAgICAgICAgIHwgICB8IFZE
-REEgICArLS0tLS0tLS0tKyAgVkRERAo+IHwgICAgICAgICAgICB8ICAgKy0tLS0tLS0tPiBMSU5S
-RUcgICstLS0tLS0tLS0+Kwo+IHwgICAgICAgICAgICB8ICAgICAgICAgICAgfCBWREREICAgIHwg
-ICAgICAgICAgfAo+IHwgICAgICAgICAgICB8ICAgICAgICAgICAgKy0tLS0tLS0tLSsgICAgICAg
-ICAgfAo+IHwgRENEQ19WREREICArLT4tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tKwo+
-ICstLS0tLS0tLS0tLS0rICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfAo+ICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgdgoKZGFtbiEgSSBkaWRu
-J3Qgbm90aWNlZCB0aGF0IFZERE1FTSBpcyBwb3dlcmVkIGJ5IFZERElPIGFuZCBWREQxUDUgaXMg
-cG93ZXJlZCBieQpWRERBLiBUaGFuayB5b3UgdmVyeSBtdWNoLgoKRnJvbSBteSB1bmRlcnN0YW5k
-aW5nIFZERE1FTSBhbmQgVkREMVA1IGRlc2NyaWJlIHRoZSBzYW1lIHJlZ3VsYXRvciBmdW5jdGlv
-bgoocHJvdmlkZXMgcG93ZXIgdG8gZXh0ZXJuYWwgbWVtb3J5IHN1Y2ggYXMgU0RSQU0gYW5kIG1E
-RFIgd2hpY2ggZG9lc24ndCBmaXQgdG8KVkRERCwgVkRESU8gb3IgVkREQSkuIEJ1dCB0aGUgdXNh
-Z2Ugb2YKdGhlIG5hbWUgaXMgbm90IGNvbnNpc3RlbnQgYWNyb3NzIHRoZSBkb2N1bWVudGF0aW9u
-OgogICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgIHwgaS5NWDIzIHwgaS5NWDI4
-IAotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KQXBwbGljYXRpb24gbm90ZSAg
-fCBWRERNRU0gfCBWREQxUDUKUmVmZXJlbmNlIG1hbnVhbCAgfCBWRERNRU0gfCBWRERNRU0KRGF0
-YSBzaGVldCAgICAgICAgfCAtICAgICAgfCBWREQxUDUKCkkgd291bGQgc3VnZ2VzdCB0byB1c2Ug
-VkRETUVNLCBiZWNhdXNlIHRoZSByZWdpc3RlcnMgYXJlIGFsd2F5cyBjYWxsZWQgSFdfVkRETUVN
-Cihmb3IgYm90aCBTb0NzKS4KCkkgdGhpbmsgd2UgaGF2ZSAzIG9wdGlvbnMgaGVyZToKCmEpIGFk
-ZCB0aGUgcmVndWxhdG9yIGRhaXN5IGNoYWluIGZvciB0aGUgaS5NWDIzIHRvbwpiKSByZW1vdmUg
-VkREMVA1IGZyb20gdGhlIGkuTVgyOCBkaWFncmFtIHNvIGl0IHdvdWxkIGZpdCBmb3IgYm90aCBh
-Z2FpbgpjKSByZW1vdmUgdGhlIGRpYWdyYW0gY29tcGxldGUKCkkgd291bGQgcHJlZmVyIG9wdGlv
-biBiLiBXaGF0J3MgeW91ciBvcGluaW9uPwoKPgo+IFJlZ2FyZHMsCj4gSnVlcmdlbgoKQmVzdCBy
-ZWdhcmRzClN0ZWZhbgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0
-cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGlu
-Zm8vbGludXgtYXJtLWtlcm5lbAo=
+Hi Mark,
+
+> Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> hat am 4. Mai 2015 um 14:36 geschrieben:
+>
+>
+> On Wed, Apr 29, 2015 at 10:32:26PM +0000, Stefan Wahren wrote:
+>
+> > +static struct regulator_ops mxs_dcdc_ops = {
+> > + .is_enabled = regulator_is_enabled_regmap,
+> > +};
+>
+> Why do we have an is_enabled() operation but no enable or disable
+> operation? 
+
+i'm sorry, i forgot the following point in the changelog:
+
+- move dcdc handling from mxs_power to mxs-regulator
+
+I hope the change is okay. I implemented only is_enabled() to have at least 1
+operation.
+But it's not really necessary.
+
+> I'm also not 100% clear what code the DCDCs and LDOs are
+> sharing here...
+
+Actually only probing and the regulator info structure.
+
+Best regards
+Stefan
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
