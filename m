@@ -1,59 +1,217 @@
-From: Aravind Gopalakrishnan <aravind.gopalakrishnan@amd.com>
-Subject: Re: [PATCH 0/1] speeding up cpu_up()
-Date: Mon, 4 May 2015 17:45:17 -0500
-Message-ID: <5547F67D.2080307@amd.com>
-References: <1429404795-23260-1-git-send-email-lenb@kernel.org>
- <20150420071556.GB14315@gmail.com>
- <CAJvTdKnYbJbun_UJXbGgKuh7DEBXoQdD6Unbm=Jopuw_C_U4ng@mail.gmail.com>
- <20150501224729.GN10239@pd.tnic> <55441D8C.2080509@amd.com>
- <55464925.5050600@amd.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/5] intel_pstate: Add tsc collection and keep previous target pstate. Add both to trace.
+Date: Tue, 05 May 2015 01:34:35 +0200
+Message-ID: <5094354.jYfpa47biY@vostro.rjw.lan>
+References: <1428811830-15006-1-git-send-email-dsmythies@telus.net> <1428811830-15006-2-git-send-email-dsmythies@telus.net> <20150429095707.49e211c2@kcaccard-desk.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1bon0116.outbound.protection.outlook.com ([157.56.111.116]:12288
-	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750887AbbEDWpY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 May 2015 18:45:24 -0400
-In-Reply-To: <55464925.5050600@amd.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:63336 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750832AbbEDXJf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 May 2015 19:09:35 -0400
+In-Reply-To: <20150429095707.49e211c2@kcaccard-desk.amr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>, Len Brown <lenb@kernel.org>
-Cc: Ingo Molnar <mingo@kernel.org>, X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+To: Kristen Carlson Accardi <kristen@linux.intel.com>
+Cc: Doug Smythies <doug.smythies@gmail.com>, dsmythies@telus.net, linux-pm@vger.kernel.org
 
-On 5/3/2015 11:13 AM, Aravind Gopalakrishnan wrote:
->
-> On 5/1/15 7:42 PM, Aravind Gopalakrishnan wrote:
->>
->> On 5/1/15 5:47 PM, Borislav Petkov wrote:
->>> Aravind and I could probably test on a couple of AMD boxes to narrow 
->>> down.
->>>
->>> @Aravind, see here:
->>>
->>> https://lkml.kernel.org/r/87d69aab88c14d65ae1e7be55050d1b689b59b4b.1429402494.git.len.brown@intel.com 
->>>
->>>
->>> You could ask around whether a timeout is needed between the assertion
->>> and deassertion of INIT done by the BSP when booting other cores.
->>
->> Sure, I'll ask around and try mdelay(0) on some systems as well.
->> I can gather Fam15h, Fam16h but don't have K8's or older.
->>
->> Will let you know how it goes.
-> Update:
-> Fam15h Model00h-0fh, Fam15hModel60h and Fam16h Model 00h-0fh 
-> processors boot fine with mdelay(0) and BSP brings up all secondary 
-> cpus correctly. I don't have Fam15hModel30h system currently up, but 
-> I'll try that too tomorrow.
->
-> I am yet to get feedback from HW folks regarding this though.
+On Wednesday, April 29, 2015 09:57:07 AM Kristen Carlson Accardi wrote:
+> On Sat, 11 Apr 2015 21:10:26 -0700
+> Doug Smythies <doug.smythies@gmail.com> wrote:
+> 
+> > The intel_pstate driver is difficult to debug and investigate without tsc.
+> > Also, it is likely use of tsc, and some version of C0 percentage,
+> > will be re-introdcued in futute.
+> > There have also been occasions where it is desirebale to know, and
+> > confirm, the previous target pstate.
+> > This patch brings back tsc, adds previous target pstate,
+> > and adds both to the trace data collection.
+> > 
+> > Signed-off-by: Doug Smythies <dsmythies@telus.net>
+> 
+> Acked-by: Kristen Carlson Accardi <kristen@linux.intel.com>
 
-Tested a delay of 0 on Fam10h and Fam15h Model 30h-3fh and both work fine.
+Queued up for 4.2 with minor changes in the changelog/subject, thanks!
 
-Feedback from asking internally about this is that we should be OK to 
-move to a no-delay default from K8 onwards.
+> > ---
+> >  drivers/cpufreq/intel_pstate.c | 31 +++++++++++++++++++++----------
+> >  include/trace/events/power.h   | 25 +++++++++++++++++--------
+> >  2 files changed, 38 insertions(+), 18 deletions(-)
+> > 
+> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> > index 872c577..f181ce5 100644
+> > --- a/drivers/cpufreq/intel_pstate.c
+> > +++ b/drivers/cpufreq/intel_pstate.c
+> > @@ -67,6 +67,7 @@ struct sample {
+> >  	int32_t core_pct_busy;
+> >  	u64 aperf;
+> >  	u64 mperf;
+> > +	u64 tsc;
+> >  	int freq;
+> >  	ktime_t time;
+> >  };
+> > @@ -108,6 +109,7 @@ struct cpudata {
+> >  	ktime_t last_sample_time;
+> >  	u64	prev_aperf;
+> >  	u64	prev_mperf;
+> > +	u64	prev_tsc;
+> >  	struct sample sample;
+> >  };
+> >  
+> > @@ -725,23 +727,28 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
+> >  {
+> >  	u64 aperf, mperf;
+> >  	unsigned long flags;
+> > +	u64 tsc;
+> >  
+> >  	local_irq_save(flags);
+> >  	rdmsrl(MSR_IA32_APERF, aperf);
+> >  	rdmsrl(MSR_IA32_MPERF, mperf);
+> > +	tsc = native_read_tsc();
+> >  	local_irq_restore(flags);
+> >  
+> >  	cpu->last_sample_time = cpu->sample.time;
+> >  	cpu->sample.time = ktime_get();
+> >  	cpu->sample.aperf = aperf;
+> >  	cpu->sample.mperf = mperf;
+> > +	cpu->sample.tsc =  tsc;
+> >  	cpu->sample.aperf -= cpu->prev_aperf;
+> >  	cpu->sample.mperf -= cpu->prev_mperf;
+> > +	cpu->sample.tsc -= cpu->prev_tsc;
+> >  
+> >  	intel_pstate_calc_busy(cpu);
+> >  
+> >  	cpu->prev_aperf = aperf;
+> >  	cpu->prev_mperf = mperf;
+> > +	cpu->prev_tsc = tsc;
+> >  }
+> >  
+> >  static inline void intel_hwp_set_sample_time(struct cpudata *cpu)
+> > @@ -806,6 +813,10 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+> >  	int32_t busy_scaled;
+> >  	struct _pid *pid;
+> >  	signed int ctl;
+> > +	int from;
+> > +	struct sample *sample;
+> > +
+> > +	from = cpu->pstate.current_pstate;
+> >  
+> >  	pid = &cpu->pid;
+> >  	busy_scaled = intel_pstate_get_scaled_busy(cpu);
+> > @@ -814,6 +825,16 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+> >  
+> >  	/* Negative values of ctl increase the pstate and vice versa */
+> >  	intel_pstate_set_pstate(cpu, cpu->pstate.current_pstate - ctl);
+> > +
+> > +	sample = &cpu->sample;
+> > +	trace_pstate_sample(fp_toint(sample->core_pct_busy),
+> > +		fp_toint(busy_scaled),
+> > +		from,
+> > +		cpu->pstate.current_pstate,
+> > +		sample->mperf,
+> > +		sample->aperf,
+> > +		sample->tsc,
+> > +		sample->freq);
+> >  }
+> >  
+> >  static void intel_hwp_timer_func(unsigned long __data)
+> > @@ -827,21 +848,11 @@ static void intel_hwp_timer_func(unsigned long __data)
+> >  static void intel_pstate_timer_func(unsigned long __data)
+> >  {
+> >  	struct cpudata *cpu = (struct cpudata *) __data;
+> > -	struct sample *sample;
+> >  
+> >  	intel_pstate_sample(cpu);
+> >  
+> > -	sample = &cpu->sample;
+> > -
+> >  	intel_pstate_adjust_busy_pstate(cpu);
+> >  
+> > -	trace_pstate_sample(fp_toint(sample->core_pct_busy),
+> > -			fp_toint(intel_pstate_get_scaled_busy(cpu)),
+> > -			cpu->pstate.current_pstate,
+> > -			sample->mperf,
+> > -			sample->aperf,
+> > -			sample->freq);
+> > -
+> >  	intel_pstate_set_sample_time(cpu);
+> >  }
+> >  
+> > diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+> > index d19840b..630d1e5 100644
+> > --- a/include/trace/events/power.h
+> > +++ b/include/trace/events/power.h
+> > @@ -42,45 +42,54 @@ TRACE_EVENT(pstate_sample,
+> >  
+> >  	TP_PROTO(u32 core_busy,
+> >  		u32 scaled_busy,
+> > -		u32 state,
+> > +		u32 from,
+> > +		u32 to,
+> >  		u64 mperf,
+> >  		u64 aperf,
+> > +		u64 tsc,
+> >  		u32 freq
+> >  		),
+> >  
+> >  	TP_ARGS(core_busy,
+> >  		scaled_busy,
+> > -		state,
+> > +		from,
+> > +		to,
+> >  		mperf,
+> >  		aperf,
+> > +		tsc,
+> >  		freq
+> >  		),
+> >  
+> >  	TP_STRUCT__entry(
+> >  		__field(u32, core_busy)
+> >  		__field(u32, scaled_busy)
+> > -		__field(u32, state)
+> > +		__field(u32, from)
+> > +		__field(u32, to)
+> >  		__field(u64, mperf)
+> >  		__field(u64, aperf)
+> > +		__field(u64, tsc)
+> >  		__field(u32, freq)
+> > -
+> > -	),
+> > +		),
+> >  
+> >  	TP_fast_assign(
+> >  		__entry->core_busy = core_busy;
+> >  		__entry->scaled_busy = scaled_busy;
+> > -		__entry->state = state;
+> > +		__entry->from = from;
+> > +		__entry->to = to;
+> >  		__entry->mperf = mperf;
+> >  		__entry->aperf = aperf;
+> > +		__entry->tsc = tsc;
+> >  		__entry->freq = freq;
+> >  		),
+> >  
+> > -	TP_printk("core_busy=%lu scaled=%lu state=%lu mperf=%llu aperf=%llu freq=%lu ",
+> > +	TP_printk("core_busy=%lu scaled=%lu from=%lu to=%lu mperf=%llu aperf=%llu tsc=%llu freq=%lu ",
+> >  		(unsigned long)__entry->core_busy,
+> >  		(unsigned long)__entry->scaled_busy,
+> > -		(unsigned long)__entry->state,
+> > +		(unsigned long)__entry->from,
+> > +		(unsigned long)__entry->to,
+> >  		(unsigned long long)__entry->mperf,
+> >  		(unsigned long long)__entry->aperf,
+> > +		(unsigned long long)__entry->tsc,
+> >  		(unsigned long)__entry->freq
+> >  		)
+> >  
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Thanks,
--Aravind.
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
