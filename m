@@ -1,43 +1,55 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2] PM / Domains: Correct unit address in power-controller example
-Date: Mon,  4 May 2015 16:13:24 +0200
-Message-ID: <1430748804-7586-1-git-send-email-geert+renesas@glider.be>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/4] sched / idle: Move the default idle call code to a
+ separate function
+Date: Mon, 4 May 2015 16:22:45 +0200
+Message-ID: <20150504142245.GL23123@twins.programming.kicks-ass.net>
+References: <3084951.QaIkFrZ3VU@vostro.rjw.lan>
+ <1607938.mB5HZupMYV@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from xavier.telenet-ops.be ([195.130.132.52]:48890 "EHLO
-	xavier.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751932AbbEDONd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 May 2015 10:13:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:34555 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750778AbbEDOW5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 May 2015 10:22:57 -0400
+Content-Disposition: inline
+In-Reply-To: <1607938.mB5HZupMYV@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-In example 2 of the generic PM domains DT bindings, the unit address of
-the device node representing the child power controller doesn't match
-its "reg" property. Correct it.
+On Mon, May 04, 2015 at 03:56:24PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Move the code under the "use_default" label in cpuidle_idle_call()
+> into a separate (new) function.
+> 
+> This just allows the subsequent changes to be more stratightforward.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  kernel/sched/idle.c |   42 +++++++++++++++++++++++-------------------
+>  1 file changed, 23 insertions(+), 19 deletions(-)
+> 
+> Index: linux-pm/kernel/sched/idle.c
+> ===================================================================
+> --- linux-pm.orig/kernel/sched/idle.c
+> +++ linux-pm/kernel/sched/idle.c
+> @@ -67,6 +67,17 @@ void __weak arch_cpu_idle(void)
+>  	local_irq_enable();
+>  }
+>  
+> +static void default_idle_call(void) {
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Kevin Hilman <khilman@linaro.org>
----
-v2:
-  - Add Acked-by
----
- Documentation/devicetree/bindings/power/power_domain.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Please put opening brace of function on a new line.
 
-diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-index d6505bef655dc2df..32d1d3a399fe2a48 100644
---- a/Documentation/devicetree/bindings/power/power_domain.txt
-+++ b/Documentation/devicetree/bindings/power/power_domain.txt
-@@ -56,7 +56,7 @@ Example 2:
- 		#power-domain-cells = <1>;
- 	};
- 
--	child: power-controller@12340000 {
-+	child: power-controller@12341000 {
- 		compatible = "foo,power-controller";
- 		reg = <0x12341000 0x1000>;
- 		power-domains = <&parent 0>;
--- 
-1.9.1
-
+> +	/*
+> +	 * We can't use the cpuidle framework, let's use the default idle
+> +	 * routine.
+> +	 */
+> +	if (current_clr_polling_and_test())
+> +		local_irq_enable();
+> +	else
+> +		arch_cpu_idle();
+> +}
