@@ -1,128 +1,135 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 4/4] sched / idle: Call default_idle_call() from cpuidle_enter_state()
-Date: Mon, 04 May 2015 17:04:08 +0200
-Message-ID: <55478A68.8060902@linaro.org>
-References: <3084951.QaIkFrZ3VU@vostro.rjw.lan> <3809765.j45t3RE71A@vostro.rjw.lan>
+From: "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>
+Subject: RE: [PATCH] power: max17042_battery: add HEALTH and TEMP_*
+ properties support
+Date: Mon, 4 May 2015 15:07:33 +0000
+Message-ID: <D854C92F57B1B347B57E531E78D05EAD578252A3@BGSMSX104.gar.corp.intel.com>
+References: <1430777920-16348-1-git-send-email-ramakrishna.pallala@intel.com>
+ <55478533.9050109@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f41.google.com ([74.125.82.41]:32896 "EHLO
-	mail-wg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751114AbbEDPEM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 May 2015 11:04:12 -0400
-Received: by wgin8 with SMTP id n8so152984230wgi.0
-        for <linux-pm@vger.kernel.org>; Mon, 04 May 2015 08:04:11 -0700 (PDT)
-In-Reply-To: <3809765.j45t3RE71A@vostro.rjw.lan>
+Received: from mga03.intel.com ([134.134.136.65]:53790 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751010AbbEDPHi convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 May 2015 11:07:38 -0400
+In-Reply-To: <55478533.9050109@gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
 
-On 05/04/2015 03:58 PM, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> The check of the cpuidle_enter() return value against -EBUSY
-> made in call_cpuidle() will not be necessary any more if
-> cpuidle_enter_state() calls default_idle_call() directly when it
-> is about to return -EBUSY, so make that happen and eliminate the
-> check.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
- >
-> ---
->   drivers/cpuidle/cpuidle.c |    4 +++-
->   drivers/cpuidle/cpuidle.h |    2 ++
->   kernel/sched/idle.c       |   14 ++++++--------
->   3 files changed, 11 insertions(+), 9 deletions(-)
->
-> Index: linux-pm/drivers/cpuidle/cpuidle.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-pm.orig/drivers/cpuidle/cpuidle.c
-> +++ linux-pm/drivers/cpuidle/cpuidle.c
-> @@ -167,8 +167,10 @@ int cpuidle_enter_state(struct cpuidle_d
->   	 * local timer will be shut down.  If a local timer is used from a=
-nother
->   	 * CPU as a broadcast timer, this call may fail if it is not avail=
-able.
->   	 */
-> -	if (broadcast && tick_broadcast_enter())
-> +	if (broadcast && tick_broadcast_enter()) {
-> +		default_idle_call();
->   		return -EBUSY;
-> +	}
->
->   	trace_cpu_idle_rcuidle(index, dev->cpu);
->   	time_start =3D ktime_get();
-> Index: linux-pm/drivers/cpuidle/cpuidle.h
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-pm.orig/drivers/cpuidle/cpuidle.h
-> +++ linux-pm/drivers/cpuidle/cpuidle.h
-> @@ -18,6 +18,8 @@ extern int cpuidle_enter_state(struct cp
->   /* idle loop */
->   extern void cpuidle_install_idle_handler(void);
->   extern void cpuidle_uninstall_idle_handler(void);
-> +/* kernel/sched/idle.c */
-> +extern void default_idle_call(void);
+Hi,
 
-There is a cyclic dependency introduced with this function.
+> W dniu 05.05.2015 o 07:18, Ramakrishna Pallala pisze:
+> > This patch adds the support for following battery properties to
+> > max17042 fuel gauge driver.
+> 
+> The patchset itself looks good. Only minor nits and a question at the end.
+> 
+> >
+> > POWER_SUPPLY_PROP_TEMP_ALERT_MIN
+> > POWER_SUPPLY_PROP_TEMP_ALERT_MAX
+> > POWER_SUPPLY_PROP_TEMP_MIN
+> > POWER_SUPPLY_PROP_TEMP_MAX
+> > POWER_SUPPLY_PROP_HEALTH
+> >
+> > Signed-off-by: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
+> > ---
+> >  drivers/power/max17042_battery.c       |  190
+> ++++++++++++++++++++++++++++++--
+> >  include/linux/power/max17042_battery.h |    4 +
+> >  2 files changed, 183 insertions(+), 11 deletions(-)
+> >
+> > diff --git a/drivers/power/max17042_battery.c
+> > b/drivers/power/max17042_battery.c
+> > index 6cc5e87..d8f15ce 100644
+> > --- a/drivers/power/max17042_battery.c
+> > +++ b/drivers/power/max17042_battery.c
+> > @@ -63,6 +63,8 @@
+> >  #define dP_ACC_100	0x1900
+> >  #define dP_ACC_200	0x3200
+> >
+> > +#define MAX17042_VMAX_TOLERENCE		50 /* 50 mV */
+> 
+> s/TOLERENCE/TOLERANCE/
+Ok..
 
-idle.c <=3D> cpuidle.c
+[snip]
 
-Are we sure we want them to be mutually dependent ?
+> > +
+> > +static int max17042_get_battery_health(struct max17042_chip *chip,
+> > +int *health) {
+> > +	int temp, vavg, vbatt, ret;
+> > +	u32 val;
+> > +
+> > +	ret = regmap_read(chip->regmap, MAX17042_AvgVCELL, &val);
+> > +	if (ret < 0)
+> > +		goto health_error;
+> > +
+> > +	/* bits [0-3] unused */
+> > +	vavg = val * 625 / 8;
+> > +	/* Convert to milli volts */
+> 
+> s/milli volts/millivolts/
+Ok..
 
->   /* governors */
->   extern int cpuidle_switch_governor(struct cpuidle_governor *gov);
-> Index: linux-pm/kernel/sched/idle.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-pm.orig/kernel/sched/idle.c
-> +++ linux-pm/kernel/sched/idle.c
-> @@ -67,11 +67,12 @@ void __weak arch_cpu_idle(void)
->   	local_irq_enable();
->   }
->
-> -static void default_idle_call(void) {
-> -	/*
-> -	 * We can't use the cpuidle framework, let's use the default idle
-> -	 * routine.
-> -	 */
-> +/**
-> + * default_idle_call - Default CPU idle routine.
-> + *
-> + * To use when the cpuidle framework cannot be used.
-> + */
-> +void default_idle_call(void) {
+[snip]
 
-Same comment as Peter on the patch 1/4.
+> > @@ -665,6 +829,8 @@ static const struct power_supply_desc
+> max17042_psy_desc = {
+> >  	.name		= "max170xx_battery",
+> >  	.type		= POWER_SUPPLY_TYPE_BATTERY,
+> >  	.get_property	= max17042_get_property,
+> > +	.set_property	= max17042_set_property,
+> > +	.property_is_writeable	= max17042_property_is_writeable,
+> >  	.properties	= max17042_battery_props,
+> >  	.num_properties	= ARRAY_SIZE(max17042_battery_props),
+> >  };
+> > @@ -673,6 +839,8 @@ static const struct power_supply_desc
+> max17042_no_current_sense_psy_desc = {
+> >  	.name		= "max170xx_battery",
+> >  	.type		= POWER_SUPPLY_TYPE_BATTERY,
+> >  	.get_property	= max17042_get_property,
+> > +	.set_property	= max17042_set_property,
+> > +	.property_is_writeable	= max17042_property_is_writeable,
+> >  	.properties	= max17042_battery_props,
+> >  	.num_properties	= ARRAY_SIZE(max17042_battery_props) - 2,
+> >  };
+> > diff --git a/include/linux/power/max17042_battery.h
+> > b/include/linux/power/max17042_battery.h
+> > index cf112b4..89ca4a8 100644
+> > --- a/include/linux/power/max17042_battery.h
+> > +++ b/include/linux/power/max17042_battery.h
+> > @@ -215,6 +215,10 @@ struct max17042_platform_data {
+> >  	 * the datasheet although it can be changed by board designers.
+> >  	 */
+> >  	unsigned int r_sns;
+> > +	int         vmin;	/* in milli volts */
+> > +	int         vmax;	/* in milli volts */
+> 
+> s/milli volts/millivolts/
+Ok..
 
->   	if (current_clr_polling_and_test())
->   		local_irq_enable();
->   	else
-> @@ -112,9 +113,6 @@ static int call_cpuidle(struct cpuidle_d
->   	/* The cpu is no longer idle or about to enter idle. */
->   	idle_set_state(this_rq(), NULL);
->
-> -	if (entered_state =3D=3D -EBUSY)
-> -		default_idle_call();
-> -
->   	return entered_state;
->   }
->
->
+> > +	int         temp_min;	/* in tenths of degree Celsius */
+> > +	int         temp_max;	/* in tenths of degree Celsius */
+> >  };
+> >
+> >  #endif /* __MAX17042_BATTERY_H_ */
+> 
+> The question is who will set these values in pdata? We do not have board files
+> anymore so I think you should extend the DT bindings so this could be used.
+
+In our platform we don't use device tree...the enumeration is based on SFI model and
+there is board file in our platform.
+
+To complete the platforms which use device tree, I can add of_property_read_u32() calls for
+new pdata variables and submit the patch.
+
+Thanks,
+Ram
 
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
 
