@@ -1,110 +1,313 @@
-From: Mike Snitzer <snitzer@redhat.com>
-Subject: Re: [4.1-rc1][Hibernation failed]  bisect result  included
-Date: Mon, 4 May 2015 10:26:54 -0400
-Message-ID: <20150504142654.GA985@redhat.com>
-References: <36DF59CE26D8EE47B0655C516E9CE6402CA0E2@SHSMSX101.ccr.corp.intel.com>
- <59629198.7WWMERNz9P@vostro.rjw.lan>
+From: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+Subject: Re: [PATCH] power: max17042_battery: add HEALTH and TEMP_* properties
+ support
+Date: Mon, 04 May 2015 23:41:55 +0900
+Message-ID: <55478533.9050109@gmail.com>
+References: <1430777920-16348-1-git-send-email-ramakrishna.pallala@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:55538 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750968AbbEDO04 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 May 2015 10:26:56 -0400
-Content-Disposition: inline
-In-Reply-To: <59629198.7WWMERNz9P@vostro.rjw.lan>
+Received: from mail-pd0-f171.google.com ([209.85.192.171]:33601 "EHLO
+	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751115AbbEDOmA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 May 2015 10:42:00 -0400
+In-Reply-To: <1430777920-16348-1-git-send-email-ramakrishna.pallala@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Chen, Yu C" <yu.c.chen@intel.com>, Dan Ehrenberg <dehrenberg@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "Lu, Aaron" <aaron.lu@intel.com>, Martin Steigerwald <martin@lichtvoll.de>, dm-devel@redhat.com
+To: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
 
-On Mon, May 04 2015 at 10:08am -0400,
-Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+W dniu 05.05.2015 o 07:18, Ramakrishna Pallala pisze:
+> This patch adds the support for following battery properties
+> to max17042 fuel gauge driver.
 
-> On Sunday, May 03, 2015 03:54:39 PM Chen, Yu C wrote:
-> > Hi,all,
-> > When we are doing QA test, a hibernation failor was found on latest kernel 4.1-rc1,
-> > resume from hibernation failed with the following error:
-> > 
-> > PM: Hibernation image not present or could not be loaded.
-> > 
-> > Bisect shows following commit might trigger this problem:
-> > commit 283e7ad0241155710f99a9f39d13313a53336926
-> > 
-> > The  reason for failor is that, some distribution use klibc in initrd
-> > to restore the image, and klibc will provide kernel with the device 
-> > format of major:minor:offset,
-> > for example, 8:3:0 represents a swap partition, and klibc will
-> > echo 8:3:0 > /sys/power/resume to resume the system manually.
-> > However in current implementation, format of 8:3:0 will be regarded 
-> > as an invalid device, so restoring from hibernation failed.
-> > 
-> > Do we need to add support for device format like 8:3:0?
-> > I'm happy to debug more specifically if you can let me know what 
-> > would be of use, and I've also attached a temporary patch 
-> > for this problem, not sure if it is suitable,  thanks.
+The patchset itself looks good. Only minor nits and a question at the end.
+
 > 
-> It'd be better to send the patch inline so it is not lost in replies.
-> Reproduced below.
+> POWER_SUPPLY_PROP_TEMP_ALERT_MIN
+> POWER_SUPPLY_PROP_TEMP_ALERT_MAX
+> POWER_SUPPLY_PROP_TEMP_MIN
+> POWER_SUPPLY_PROP_TEMP_MAX
+> POWER_SUPPLY_PROP_HEALTH
 > 
-> Dan, Mike, any chance to look at this?  It is a functional regression for
-> some people.
-
-Sorry about this.  Wasn't aware that such a strange format was being
-used.  The proposed patch looks good to me (formatting is a bit weird
-though, the last "&dummy) == 3)) {" line shouldnt be needed if previous
-line isn't indented so far.
-
-Unless other more official init maintainer(s) want to pick this fix up:
-since I committed the commit that caused this regression I can pick this
-patch up and get it to Linus for 4.1-rc3 inclussion via linux-dm.git.
-Please just let me know, thanks!
-
+> Signed-off-by: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
 > ---
-> From a65d76c143b315c322b5c7a9fb365703c9f32798 Mon Sep 17 00:00:00 2001
-> From: Chen Yu <yu.c.chen@intel.com>
-> Date: Sun, 3 May 2015 22:35:05 +0800
-> Subject: [RFC] init: support device of major:minor:offset format
+>  drivers/power/max17042_battery.c       |  190 ++++++++++++++++++++++++++++++--
+>  include/linux/power/max17042_battery.h |    4 +
+>  2 files changed, 183 insertions(+), 11 deletions(-)
 > 
-> Distribution like Ubuntu uses klibc rather than uswsusp to resume
-> system from hibernation, which will treat swap partition/file in
-> the form of major:minor:offset. For example, 8:3:0 represents a
-> swap partition in klibc, and klibc's resume process in initrd will
-> finally echo 8:3:0 to /sys/power/resume for manually restoring.
-> However in current implementation, 8:3:0 will be treated as an invalid
-> device format, and it is found that manual resumming from hibernation
-> will fail on lastest kernel.
-> 
-> This patch adds support for device with major:minor:offset format
-> when resumming from hibernation.
-> 
-> Reported-by: Prigent, Christophe <christophe.prigent@intel.com>
-> 
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> ---
->  init/do_mounts.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/init/do_mounts.c b/init/do_mounts.c
-> index 8369ffa..2d36bf1 100644
-> --- a/init/do_mounts.c
-> +++ b/init/do_mounts.c
-> @@ -225,10 +225,12 @@ dev_t name_to_dev_t(const char *name)
->  #endif
+> diff --git a/drivers/power/max17042_battery.c b/drivers/power/max17042_battery.c
+> index 6cc5e87..d8f15ce 100644
+> --- a/drivers/power/max17042_battery.c
+> +++ b/drivers/power/max17042_battery.c
+> @@ -63,6 +63,8 @@
+>  #define dP_ACC_100	0x1900
+>  #define dP_ACC_200	0x3200
 >  
->  	if (strncmp(name, "/dev/", 5) != 0) {
-> -		unsigned maj, min;
-> +		unsigned maj, min, offset;
->  		char dummy;
+> +#define MAX17042_VMAX_TOLERENCE		50 /* 50 mV */
+
+s/TOLERENCE/TOLERANCE/
+
+
+> +
+>  struct max17042_chip {
+>  	struct i2c_client *client;
+>  	struct regmap *regmap;
+> @@ -85,10 +87,94 @@ static enum power_supply_property max17042_battery_props[] = {
+>  	POWER_SUPPLY_PROP_CHARGE_FULL,
+>  	POWER_SUPPLY_PROP_CHARGE_COUNTER,
+>  	POWER_SUPPLY_PROP_TEMP,
+> +	POWER_SUPPLY_PROP_TEMP_ALERT_MIN,
+> +	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
+> +	POWER_SUPPLY_PROP_TEMP_MIN,
+> +	POWER_SUPPLY_PROP_TEMP_MAX,
+> +	POWER_SUPPLY_PROP_HEALTH,
+>  	POWER_SUPPLY_PROP_CURRENT_NOW,
+>  	POWER_SUPPLY_PROP_CURRENT_AVG,
+>  };
 >  
-> -		if (sscanf(name, "%u:%u%c", &maj, &min, &dummy) == 2) {
-> +		if ((sscanf(name, "%u:%u%c", &maj, &min, &dummy) == 2) ||
-> +			(sscanf(name, "%u:%u:%u:%c", &maj, &min, &offset,
-> +			&dummy) == 3)) {
->  			res = MKDEV(maj, min);
->  			if (maj != MAJOR(res) || min != MINOR(res))
->  				goto fail;
-> -- 
-> 1.9.1
-> 
-> 
+> +static int max17042_get_temperature(struct max17042_chip *chip, int *temp)
+> +{
+> +	int ret;
+> +	u32 data;
+> +	struct regmap *map = chip->regmap;
+> +
+> +	ret = regmap_read(map, MAX17042_TEMP, &data);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	*temp = data;
+> +	/* The value is signed. */
+> +	if (*temp & 0x8000) {
+> +		*temp = (0x7fff & ~*temp) + 1;
+> +		*temp *= -1;
+> +	}
+> +
+> +	/* The value is converted into deci-centigrade scale */
+> +	/* Units of LSB = 1 / 256 degree Celsius */
+> +	*temp = *temp * 10 / 256;
+> +	return 0;
+> +}
+> +
+> +static int max17042_get_battery_health(struct max17042_chip *chip, int *health)
+> +{
+> +	int temp, vavg, vbatt, ret;
+> +	u32 val;
+> +
+> +	ret = regmap_read(chip->regmap, MAX17042_AvgVCELL, &val);
+> +	if (ret < 0)
+> +		goto health_error;
+> +
+> +	/* bits [0-3] unused */
+> +	vavg = val * 625 / 8;
+> +	/* Convert to milli volts */
+
+s/milli volts/millivolts/
+
+> +	vavg /= 1000;
+> +
+> +	ret = regmap_read(chip->regmap, MAX17042_VCELL, &val);
+> +	if (ret < 0)
+> +		goto health_error;
+> +
+> +	/* bits [0-3] unused */
+> +	vbatt = val * 625 / 8;
+> +	/* Convert to milli volts */
+> +	vbatt /= 1000;
+> +
+> +	if (vavg < chip->pdata->vmin) {
+> +		*health = POWER_SUPPLY_HEALTH_DEAD;
+> +		goto out;
+> +	}
+> +
+> +	if (vbatt > chip->pdata->vmax + MAX17042_VMAX_TOLERENCE) {
+> +		*health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+> +		goto out;
+> +	}
+> +
+> +	ret = max17042_get_temperature(chip, &temp);
+> +	if (ret < 0)
+> +		goto health_error;
+> +
+> +	if (temp <= chip->pdata->temp_min) {
+> +		*health = POWER_SUPPLY_HEALTH_COLD;
+> +		goto out;
+> +	}
+> +
+> +	if (temp >= chip->pdata->temp_max) {
+> +		*health = POWER_SUPPLY_HEALTH_OVERHEAT;
+> +		goto out;
+> +	}
+> +
+> +	*health = POWER_SUPPLY_HEALTH_GOOD;
+> +
+> +out:
+> +	return 0;
+> +
+> +health_error:
+> +	return ret;
+> +}
+> +
+>  static int max17042_get_property(struct power_supply *psy,
+>  			    enum power_supply_property psp,
+>  			    union power_supply_propval *val)
+> @@ -181,19 +267,34 @@ static int max17042_get_property(struct power_supply *psy,
+>  		val->intval = data * 1000 / 2;
+>  		break;
+>  	case POWER_SUPPLY_PROP_TEMP:
+> -		ret = regmap_read(map, MAX17042_TEMP, &data);
+> +		ret = max17042_get_temperature(chip, &val->intval);
+> +		if (ret < 0)
+> +			return ret;
+> +		break;
+> +	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
+> +		ret = regmap_read(map, MAX17042_TALRT_Th, &data);
+> +		if (ret < 0)
+> +			return ret;
+> +		/* LSB is Alert Minimum. In deci-centigrade */
+> +		val->intval = (data & 0xff) * 10;
+> +		break;
+> +	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
+> +		ret = regmap_read(map, MAX17042_TALRT_Th, &data);
+> +		if (ret < 0)
+> +			return ret;
+> +		/* MSB is Alert Maximum. In deci-centigrade */
+> +		val->intval = (data >> 8) * 10;
+> +		break;
+> +	case POWER_SUPPLY_PROP_TEMP_MIN:
+> +		val->intval = chip->pdata->temp_min;
+> +		break;
+> +	case POWER_SUPPLY_PROP_TEMP_MAX:
+> +		val->intval = chip->pdata->temp_max;
+> +		break;
+> +	case POWER_SUPPLY_PROP_HEALTH:
+> +		ret = max17042_get_battery_health(chip, &val->intval);
+>  		if (ret < 0)
+>  			return ret;
+> -
+> -		val->intval = data;
+> -		/* The value is signed. */
+> -		if (val->intval & 0x8000) {
+> -			val->intval = (0x7fff & ~val->intval) + 1;
+> -			val->intval *= -1;
+> -		}
+> -		/* The value is converted into deci-centigrade scale */
+> -		/* Units of LSB = 1 / 256 degree Celsius */
+> -		val->intval = val->intval * 10 / 256;
+>  		break;
+>  	case POWER_SUPPLY_PROP_CURRENT_NOW:
+>  		if (chip->pdata->enable_current_sense) {
+> @@ -237,6 +338,69 @@ static int max17042_get_property(struct power_supply *psy,
+>  	return 0;
+>  }
+>  
+> +static int max17042_set_property(struct power_supply *psy,
+> +			    enum power_supply_property psp,
+> +			    const union power_supply_propval *val)
+> +{
+> +	struct max17042_chip *chip = power_supply_get_drvdata(psy);
+> +	struct regmap *map = chip->regmap;
+> +	int ret = 0;
+> +	u32 data;
+> +	int8_t temp;
+> +
+> +	switch (psp) {
+> +	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
+> +		ret = regmap_read(map, MAX17042_TALRT_Th, &data);
+> +		if (ret < 0)
+> +			return ret;
+> +
+> +		/* Input in deci-centigrade, convert to centigrade */
+> +		temp = val->intval / 10;
+> +		/* force min < max */
+> +		if (temp >= (int8_t)(data >> 8))
+> +			temp = (int8_t)(data >> 8) - 1;
+> +		/* Write both MAX and MIN ALERT */
+> +		data = (data & 0xff00) + temp;
+> +		ret = regmap_write(map, MAX17042_TALRT_Th, data);
+> +		break;
+> +	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
+> +		ret = regmap_read(map, MAX17042_TALRT_Th, &data);
+> +		if (ret < 0)
+> +			return ret;
+> +
+> +		/* Input in Deci-Centigrade, convert to centigrade */
+> +		temp = val->intval / 10;
+> +		/* force max > min */
+> +		if (temp <= (int8_t)(data & 0xff))
+> +			temp = (int8_t)(data & 0xff) + 1;
+> +		/* Write both MAX and MIN ALERT */
+> +		data = (data & 0xff) + (temp << 8);
+> +		ret = regmap_write(map, MAX17042_TALRT_Th, data);
+> +		break;
+> +	default:
+> +		ret = -EINVAL;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static int max17042_property_is_writeable(struct power_supply *psy,
+> +		enum power_supply_property psp)
+> +{
+> +	int ret;
+> +
+> +	switch (psp) {
+> +	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
+> +	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
+> +		ret = 1;
+> +		break;
+> +	default:
+> +		ret = 0;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+>  static int max17042_write_verify_reg(struct regmap *map, u8 reg, u32 value)
+>  {
+>  	int retries = 8;
+> @@ -665,6 +829,8 @@ static const struct power_supply_desc max17042_psy_desc = {
+>  	.name		= "max170xx_battery",
+>  	.type		= POWER_SUPPLY_TYPE_BATTERY,
+>  	.get_property	= max17042_get_property,
+> +	.set_property	= max17042_set_property,
+> +	.property_is_writeable	= max17042_property_is_writeable,
+>  	.properties	= max17042_battery_props,
+>  	.num_properties	= ARRAY_SIZE(max17042_battery_props),
+>  };
+> @@ -673,6 +839,8 @@ static const struct power_supply_desc max17042_no_current_sense_psy_desc = {
+>  	.name		= "max170xx_battery",
+>  	.type		= POWER_SUPPLY_TYPE_BATTERY,
+>  	.get_property	= max17042_get_property,
+> +	.set_property	= max17042_set_property,
+> +	.property_is_writeable	= max17042_property_is_writeable,
+>  	.properties	= max17042_battery_props,
+>  	.num_properties	= ARRAY_SIZE(max17042_battery_props) - 2,
+>  };
+> diff --git a/include/linux/power/max17042_battery.h b/include/linux/power/max17042_battery.h
+> index cf112b4..89ca4a8 100644
+> --- a/include/linux/power/max17042_battery.h
+> +++ b/include/linux/power/max17042_battery.h
+> @@ -215,6 +215,10 @@ struct max17042_platform_data {
+>  	 * the datasheet although it can be changed by board designers.
+>  	 */
+>  	unsigned int r_sns;
+> +	int         vmin;	/* in milli volts */
+> +	int         vmax;	/* in milli volts */
+
+s/milli volts/millivolts/
+
+> +	int         temp_min;	/* in tenths of degree Celsius */
+> +	int         temp_max;	/* in tenths of degree Celsius */
+>  };
+>  
+>  #endif /* __MAX17042_BATTERY_H_ */
+
+The question is who will set these values in pdata? We do not have board
+files anymore so I think you should extend the DT bindings so this could
+be used.
+
+Best regards,
+Krzysztof
