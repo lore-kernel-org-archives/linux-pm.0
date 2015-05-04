@@ -1,57 +1,106 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
-Date: Mon, 4 May 2015 13:12:09 +0100
-Message-ID: <20150504121209.GM15510@sirena.org.uk>
-References: <cover.1430394884.git.viresh.kumar@linaro.org>
- <d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar@linaro.org>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH V2 5/6] regulator: add mxs on-chip regulator driver
+Date: Mon, 4 May 2015 13:36:48 +0100
+Message-ID: <20150504123648.GU15510@sirena.org.uk>
+References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com>
+ <1430346747-28728-6-git-send-email-stefan.wahren@i2se.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="m+utxuhC6KVTvgNz"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, rob.herring-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, arnd.bergmann-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, mike.turquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org, Sudeep.Holla-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, viswanath.puttagunta-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, ta.omasab-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, kesavan.abhilash-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org
+Content-Type: multipart/mixed; boundary="===============0149849540362123708=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1430346747-28728-6-git-send-email-stefan.wahren@i2se.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Stefan Wahren <stefan.wahren@i2se.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, fabio.estevam@freescale.com, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Kumar Gala <galak@codeaurora.org>, sebastien.szymanski@armadeus.com, Shawn Guo <shawn.guo@linaro.org>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 
---m+utxuhC6KVTvgNz
+--===============0149849540362123708==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="O0IT7rLmWuveAsNR"
+Content-Disposition: inline
+
+
+--O0IT7rLmWuveAsNR
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Thu, Apr 30, 2015 at 05:37:59PM +0530, Viresh Kumar wrote:
+On Wed, Apr 29, 2015 at 10:32:26PM +0000, Stefan Wahren wrote:
 
-> +- opp-microamp: current in micro Amperes. It can contain entries for multiple
-> +  regulators.
+> +static struct regulator_ops mxs_dcdc_ops = {
+> +	.is_enabled		= regulator_is_enabled_regmap,
+> +};
+
+Why do we have an is_enabled() operation but no enable or disable
+operation?  I'm also not 100% clear what code the DCDCs and LDOs are
+sharing here...
+
+> +	initdata = of_get_regulator_init_data(dev, dev->of_node, &info->desc);
+> +	if (!initdata) {
+> +		dev_err(dev, "missing regulator init data\n");
+> +		return -EINVAL;
+> +	}
+
+This is not an error, init data is totally optional.
+
+> +	rdev = devm_regulator_register(dev, &info->desc, &config);
+> +	if (IS_ERR(rdev)) {
+> +		int ret = PTR_ERR(rdev);
 > +
-> +  A single regulator's current is specified with an array of size one or three.
-> +  Single entry is for target current and three entries are for <target min max>
-> +  currents.
+> +		dev_err(dev, "%s: failed to register regulator(%d)\n",
+> +			__func__, ret);
+> +		return ret;
+> +	}
+> +
+> +	if (!of_property_read_u32(dev->of_node, "switching-frequency",
+> +				  &switch_freq))
+> +		mxs_set_dcdc_freq(rdev, switch_freq);
 
-What is this for - are you trying to define OPPs for current regulators?
-If you are that's worrying, I can't think of a sensible use case.  If
-that's not what's happening then the binding needs to be more specific
-about what this is supposed to mean.
+why are we registering the regulator before we've finished parsing the
+DT - I'd expect us to do this first rather than have things potentially
+start using the regulator with the confguration not completed.
 
---m+utxuhC6KVTvgNz
+> +	platform_set_drvdata(pdev, rdev);
+
+This looks unsafe - either we don't need to set this at all or one of
+the ops could be invoked when the regulator is registered and try to use
+the driver data before it is set.
+
+--O0IT7rLmWuveAsNR
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBCAAGBQJVR2IYAAoJECTWi3JdVIfQSvsH/08AXn11XXi9P0d58UCqLswK
-vIS5x28xRtE8qkOQI72Gt6eXu+QVdNHlzY7oocNoJcy607nwfOwFzv8Ghmz6cFQr
-A0qqt4d36tTxqZkxZGP+vVxdhTAzLOcH4UvW+wit5Ui75L6Yv2Aon0u9Ei4ZQ1+N
-U/hp+1wk2WYN98QRdeT3z3f0xTDVG6Dfxpm4zfjrnivze8m+ETZ7X48erKF6RMAg
-eM3THXkRpW7fcVoKqalc7EiihGjI/RDc61sQqWRBNC059dmRMfaGPRAMqjmMsQ7k
-wNFzUamXVS8tzn5VhRyrgj0E+Spk+yWGuyuhYGkdch8mxmXksldr4U31Vt8J32Y=
-=0VO9
+iQEcBAEBCAAGBQJVR2fgAAoJECTWi3JdVIfQlyQH/jeeZ9yFd3xeZ6utDoCdzHO+
+G7COOPMAErf+jnkRV4Z/LkLmmgq80mEVO+o86QiCl6Vbv5v/po+XVzoCglIWVu1r
+60X7Uqf/Dyux7XzM4T55mjpOUPsjh+Dsl7U0/BZ1fXySF4tOSVfhIPmPLZYpnQfP
+S/XdM9G6QHN/y3atS80vtFtpLwMi8LgQBI7IxpeTD0ncF2WtGIM9faZTakLR0oJT
+1SPvvAhKOv5NvaF8Pb0v+jDx8iobL0DqTLRgU1b8Mg4mfhwxGazeV+wcroC4Gz5f
+b8VmsNVEgqRDT+WPva4xSTOO/rM0W1YSgl5M/K+QhLG+zfPhy92MZz5yyEavv1s=
+=dF2D
 -----END PGP SIGNATURE-----
 
---m+utxuhC6KVTvgNz--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--O0IT7rLmWuveAsNR--
+
+
+--===============0149849540362123708==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============0149849540362123708==--
