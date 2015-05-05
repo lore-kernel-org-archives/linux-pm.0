@@ -1,59 +1,72 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / sleep: Refine diagnostic messages in enter_state()
-Date: Tue, 05 May 2015 23:42:25 +0200
-Message-ID: <2242846.s2CNuMpWnm@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+From: Jin Qian <jinqian@android.com>
+Subject: [PATCH v2 1/3] power: validate wakeup source before activating it.
+Date: Tue,  5 May 2015 15:24:13 -0700
+Message-ID: <1430864653-5582-1-git-send-email-jinqian@android.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f179.google.com ([209.85.213.179]:34068 "EHLO
+	mail-ig0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965129AbbEEWZI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 May 2015 18:25:08 -0400
+Received: by iget9 with SMTP id t9so87527600ige.1
+        for <linux-pm@vger.kernel.org>; Tue, 05 May 2015 15:25:07 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Jin Qian <jinqian@android.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+A rogue wakeup source not registered in wakeup_sources list is not visible
+from wakeup_sources_stats_show. Check if the wakeup source is registered
+properly by looking at the timer function.
 
-Some of the system suspend diagnostic messages related to
-suspend-to-idle refer to it as "freeze sleep" or "freeze state"
-while the others say "suspend-to-idle".  To reduce the possible
-confusion that may result from that, refine the former either to
-say "suspend to idle" too or to make it clearer that what is printed
-is a state string written to /sys/power/state ("mem", "standby",
-or "freeze").
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Jin Qian <jinqian@android.com>
 ---
- kernel/power/suspend.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/base/power/wakeup.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-Index: linux-pm/kernel/power/suspend.c
-===================================================================
---- linux-pm.orig/kernel/power/suspend.c
-+++ linux-pm/kernel/power/suspend.c
-@@ -468,7 +468,7 @@ static int enter_state(suspend_state_t s
- 	if (state == PM_SUSPEND_FREEZE) {
- #ifdef CONFIG_PM_DEBUG
- 		if (pm_test_level != TEST_NONE && pm_test_level <= TEST_CPUS) {
--			pr_warning("PM: Unsupported test mode for freeze state,"
-+			pr_warning("PM: Unsupported test mode for suspend to idle,"
- 				   "please choose none/freezer/devices/platform.\n");
- 			return -EAGAIN;
- 		}
-@@ -488,7 +488,7 @@ static int enter_state(suspend_state_t s
- 	printk("done.\n");
- 	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index 7726200..5d866b9 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -14,6 +14,7 @@
+ #include <linux/suspend.h>
+ #include <linux/seq_file.h>
+ #include <linux/debugfs.h>
++#include <linux/types.h>
+ #include <trace/events/power.h>
  
--	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
-+	pr_debug("PM: Preparing system for sleep (%s)\n", pm_states[state]);
- 	error = suspend_prepare(state);
- 	if (error)
- 		goto Unlock;
-@@ -497,7 +497,7 @@ static int enter_state(suspend_state_t s
- 		goto Finish;
+ #include "power.h"
+@@ -351,6 +352,19 @@ int device_set_wakeup_enable(struct device *dev, bool enable)
+ }
+ EXPORT_SYMBOL_GPL(device_set_wakeup_enable);
  
- 	trace_suspend_resume(TPS("suspend_enter"), state, false);
--	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
-+	pr_debug("PM: Suspending system (%s)\n", pm_states[state]);
- 	pm_restrict_gfp_mask();
- 	error = suspend_devices_and_enter(state);
- 	pm_restore_gfp_mask();
++/**
++ * validate_wakeup_source - validate the given wakeup source.
++ * @ws: Wakeup source to be validated.
++ */
++static bool validate_wakeup_source(struct wakeup_source *ws)
++{
++	/*
++	 * Use timer function to check if the given source is initialized
++	 * by wakeup_source_add.
++	 */
++	return ws->timer.function == pm_wakeup_timer_fn;
++}
++
+ /*
+  * The functions below use the observation that each wakeup event starts a
+  * period in which the system should not be suspended.  The moment this period
+@@ -391,6 +405,11 @@ static void wakeup_source_activate(struct wakeup_source *ws)
+ {
+ 	unsigned int cec;
+ 
++	if (WARN_ON(!validate_wakeup_source(ws))) {
++		pr_err("unregistered wakeup source: %s\n", ws->name);
++		return;
++	}
++
+ 	/*
+ 	 * active wakeup source should bring the system
+ 	 * out of PM_SUSPEND_FREEZE state
+-- 
+2.2.0.rc0.207.ga3a616c
+
