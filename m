@@ -1,155 +1,84 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 4/6] cpufreq: powernv: Call throttle_check() on receiving
- OCC_THROTTLE
-Date: Tue, 05 May 2015 09:30:50 +0530
-Message-ID: <55484072.5060400@linux.vnet.ibm.com>
-References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1430729652-14813-5-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>
+Subject: Re: [PATCHv2] power_supply: Add support for Richtek rt9455 battery charger
+Date: Tue, 5 May 2015 14:35:16 +0900
+Message-ID: <CAJKOXPezR=gb7mNyG4OpumYq+NEzyhh8DaWmi_5P4j-F76onjg@mail.gmail.com>
+References: <1430338406-24012-1-git-send-email-anda-maria.nicolae@intel.com>
+	<20150430091648.GD10973@lpalcu-linux>
+	<11982715D62E664DBACA4351A418B0581437E182@IRSMSX107.ger.corp.intel.com>
+	<20150504152209.GF10973@lpalcu-linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-6
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e39.co.us.ibm.com ([32.97.110.160]:36933 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446AbbEEEA7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 May 2015 00:00:59 -0400
-Received: from /spool/local
-	by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Mon, 4 May 2015 22:00:58 -0600
-In-Reply-To: <1430729652-14813-5-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Received: from mail-vn0-f49.google.com ([209.85.216.49]:38613 "EHLO
+	mail-vn0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755502AbbEEFfS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 May 2015 01:35:18 -0400
+In-Reply-To: <20150504152209.GF10973@lpalcu-linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
+To: Laurentiu Palcu <laurentiu.palcu@intel.com>
+Cc: "Nicolae, Anda-maria" <anda-maria.nicolae@intel.com>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "galak@codeaurora.org" <galak@codeaurora.org>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-Hi Shilpa,
+2015-05-05 0:22 GMT+09:00 Laurentiu Palcu <laurentiu.palcu@intel.com>:
+> Hi Anda,
+>
+> Can you please use a decent mail client to reply to emails? It was
+> really hard for me to figure out which were my comments and which were
+> yours... And I tested 3 different clients: mutt, evolution and
+> outlook(the web app).
+>
+> More comments inline.
+>
+> laurentiu
+>
+> On Mon, May 04, 2015 at 05:12:07PM +0300, Nicolae, Anda-maria wrote:
 
-On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
-> Re-evaluate the chip's throttled state on recieving OCC_THROTTLE
-> notification by executing *throttle_check() on any one of the cpu on
-> the chip. This is a sanity check to verify if we were indeed
-> throttled/unthrottled after receiving OCC_THROTTLE notification.
-> 
-> We cannot call *throttle_check() directly from the notification
-> handler because we could be handling chip1's notification in chip2. So
-> initiate an smp_call to execute *throttle_check(). We are irq-disabled
-> in the notification handler, so use a worker thread to smp_call
-> throttle_check() on any of the cpu in the chipmask.
+(...)
 
-I see that the first patch takes care of reporting *per-chip* throttling
-for pmax capping condition. But where are we taking care of reporting
-"pstate set to safe" and "freq control disabled" scenarios per-chip ?
+>> > +
+>> (...)
+>> > +
+>> > +static int rt9455_charger_set_voltage_max(struct rt9455_info *info,
+>> > +                                       const union power_supply_propval *val)
+>> > +{
+>> > +     return rt9455_set_field_val(info, F_VMREG,
+>> > +                                 rt9455_vmreg_values,
+>> > +                                 ARRAY_SIZE(rt9455_vmreg_values),
+>> > +                                 val->intval);
+>> > +}
+>> > +
+>> > +static int rt9455_charger_set_property(struct power_supply *psy,
+>> > +                                    enum power_supply_property psp,
+>> > +                                    const union power_supply_propval *val)
+>> > +{
+>> > +     struct rt9455_info *info = power_supply_get_drvdata(psy);
+>> > +
+>> > +     switch (psp) {
+>> > +     case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+>> > +             return rt9455_charger_set_current(info, val);
+>> > +     case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+>> > +             return rt9455_charger_set_voltage(info, val);
+>> Personally, I'm against having these properties writable. A user might
+>> play with the charging voltage or current and then complain that the
+>> battery does not charge at all, or it takes ages to charge. I'd leave
+>> these to be set by manufacturer through DT/ACPI. But, it's just an
+>> opinion.
+>>
+>> If the user really wants to damage his/her battery, he/she can charge
+>> the values from DT/ACPI.
 
-> 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 28 ++++++++++++++++++++++++++--
->  1 file changed, 26 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 9268424..9618813 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -50,6 +50,8 @@ static bool rebooting, throttled, occ_reset;
->  static struct chip {
->  	unsigned int id;
->  	bool throttled;
-> +	cpumask_t mask;
-> +	struct work_struct throttle;
->  } *chips;
-> 
->  static int nr_chips;
-> @@ -310,8 +312,9 @@ static inline unsigned int get_nominal_index(void)
->  	return powernv_pstate_info.max - powernv_pstate_info.nominal;
->  }
-> 
-> -static void powernv_cpufreq_throttle_check(unsigned int cpu)
-> +static void powernv_cpufreq_throttle_check(void *data)
->  {
-> +	unsigned int cpu = smp_processor_id();
->  	unsigned long pmsr;
->  	int pmsr_pmax, pmsr_lp, i;
-> 
-> @@ -373,7 +376,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->  		return 0;
-> 
->  	if (!throttled)
-> -		powernv_cpufreq_throttle_check(smp_processor_id());
-> +		powernv_cpufreq_throttle_check(NULL);
-> 
->  	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
-> 
-> @@ -418,6 +421,14 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
->  	.notifier_call = powernv_cpufreq_reboot_notifier,
->  };
-> 
-> +void powernv_cpufreq_work_fn(struct work_struct *work)
-> +{
-> +	struct chip *chip = container_of(work, struct chip, throttle);
-> +
-> +	smp_call_function_any(&chip->mask,
-> +			      powernv_cpufreq_throttle_check, NULL, 0);
-> +}
-> +
->  static char throttle_reason[][30] = {
->  					"No throttling",
->  					"Power Cap",
-> @@ -433,6 +444,7 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->  	struct opal_msg *occ_msg = msg;
->  	uint64_t token;
->  	uint64_t chip_id, reason;
-> +	int i;
-> 
->  	if (msg_type != OPAL_MSG_OCC)
->  		return 0;
-> @@ -466,6 +478,10 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->  			occ_reset = false;
->  			throttled = false;
->  			pr_info("OCC: Active\n");
-> +
-> +			for (i = 0; i < nr_chips; i++)
-> +				schedule_work(&chips[i].throttle);
-> +
->  			return 0;
->  		}
-> 
-> @@ -476,6 +492,12 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->  		else if (!reason)
->  			pr_info("OCC: Chip %u %s\n", (unsigned int)chip_id,
->  				throttle_reason[reason]);
-> +		else
-> +			return 0;
+No, the end user does not change the DT/ACPI. It just runs some Linux
+distro or Android phone. The userspace does not change DT either. So
+allowing userspace to set this through regular sysfs API is rather
+exceptional.
 
-Why the else section ? The code can never reach here, can it ?
+>> Also, numerous charger drivers expose these
+>> properties as writable.  I prefer leaving them as they are.
 
-> +
-> +		for (i = 0; i < nr_chips; i++)
-> +			if (chips[i].id == chip_id)
-> +				schedule_work(&chips[i].throttle);
->  	}
+I found only one mainline driver which exposes these properties as
+writeable: bq24190_charger.c. Others do not. Many other drivers uses
+power supply class only as a reading interface. The charger is
+actually operated through respective regulator driver.
 
-Should we not do this only when we get unthrottled so as to cross verify
-if it is indeed the case ? In case of throttling notification, opal's
-verdict is final and there is no need to cross verify right ?
-
-Perhaps the one thing that needs to be taken care in addition to
-reporting throttling is setting the chip's throttled parameter to true.
-This should do right ? I don't see the need to call throttle_check() here.
-
-Regards
-Preeti U Murthy
-
-
->  	return 0;
->  }
-> @@ -527,6 +549,8 @@ static int init_chip_info(void)
->  	for (i = 0; i < nr_chips; i++) {
->  		chips[i].id = chip[i];
->  		chips[i].throttled = false;
-> +		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
-> +		INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
->  	}
-> 
->  	return 0;
-> 
-
+Best regards,
+Krzysztof
