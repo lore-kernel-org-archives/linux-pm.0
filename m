@@ -1,53 +1,66 @@
-From: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Subject: Re: [PATCH V2 4/6] DT: add binding for mxs on-chip regulators
-Date: Tue, 5 May 2015 19:12:34 +0200 (CEST)
-Message-ID: <1195324103.963873.1430845954289.JavaMail.open-xchange@oxbaltgw07.schlund.de>
-References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com> <201505041551.26355.jbe@pengutronix.de> <1858103470.878923.1430770850541.JavaMail.open-xchange@oxbaltgw08.schlund.de> <201505051021.01939.jbe@pengutronix.de>
-Reply-To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: A desktop environment[1] kernel wishlist
+Date: Tue, 5 May 2015 10:39:48 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1505051027110.1639-100000@iolanthe.rowland.org>
+References: <CAJFHJrrYhOtjQENR2-_v2XDeYUJCB1tw7MnZbWjC0d-Mz3Z15g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <201505051021.01939.jbe-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: =?UTF-8?Q?=22J=C3=BCrgen_Borleis=22?= <jbe-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, fabio.estevam-KZfg59tc24xl57MIdRCFDg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, sebastien.szymanski-d2DlULPkwbNWk0Htik3J/w@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJFHJrrYhOtjQENR2-_v2XDeYUJCB1tw7MnZbWjC0d-Mz3Z15g@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chirantan Ekbote <chirantan@chromium.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Olof Johansson <olof@lixom.net>, Bastien Nocera <hadess@hadess.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, snanda@chromium.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Juergen,
+On Mon, 4 May 2015, Chirantan Ekbote wrote:
 
-> J=C3=BCrgen Borleis <jbe-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org> hat am 5. Mai 2015 um 10:21 =
-geschrieben:
->
->
-> Hi Stefan,
->
-> On Monday 04 May 2015 22:20:50 Stefan Wahren wrote:
-> > [...]
-> >=20
-> > I think we have 3 options here:
-> >
-> > a) add the regulator daisy chain for the i.MX23 too
-> > b) remove VDD1P5 from the i.MX28 diagram so it would fit for both a=
-gain
-> > c) remove the diagram complete
-> >
-> > I would prefer option b. What's your opinion?
->
-> I prefer a) because once the details are known, we should keep them.
+> Ok so now I can talk about how lucid sleep fits into all of this.  The
+> power manager only considers a suspend attempt successful if the write
+> to /sys/power/state was successful.  If the suspend was successful,
+> the power manager then reads another sysfs file
+> (/sys/power/wakeup_type in our kernel) to determine if the wakeup
+> event was user-triggered.  If the event was user-triggered it sends
+> out a DBus signal announcing the end of the suspend, Chrome thaws its
+> renderer processes, the full UI comes back up, and the user can start
+> working.  If the event was _not_ user-triggred (if it was the RTC or
+> NIC), the power manager sends out a different DBus signal announcing
+> that the system is in lucid sleep and will re-suspend soon.  It will
+> then wait for all registered applications to report readiness to
+> suspend or for the max timeout to expire.
+> 
+> If it so happens that a user interacts with the system while it is in
+> this state, the power manager detects it via the user activity message
+> that Chrome sends.  This could be real (keyboard, trackpad) or
+> simulated (lid, power button).  Either way, the power manager responds
+> the same way: it announces the end of the suspend, Chrome thaws its
+> renderers, the full UI comes back up, and the user starts working.  If
+> there is no user activity and all applications report ready, the power
+> manager gets ready to suspend the system again.  Since the NIC is now
+> a wakeup source, the power manager doesn't read the wakeup_count until
+> after all applications have reported ready because accessing the
+> network could increment the wakeup_count and cause false positives.
 
-beside the point this could be to much diagrams for a binding documenta=
-tion, i
-don't have any objections about option a).
+This gives only an implicit description of the difference between
+"lucid sleep" and normal resume.  I gather that "lucid sleep" means you
+avoid reactivating some parts of the hardware (in particular the parts
+used by the renderers), and perhaps also you shorten the inactivity
+delay before the next suspend.
 
->
-> Regards,
-> Juergen
+Is that right?  The main point of "lucid sleep" is to allow the system 
+to do a partial resume, in which some of the most power-hungry parts 
+remain suspended?
 
-Regards
-Stefan
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+If that's true then some of the recent work on "direct-complete" may be 
+sufficient to do what you want.  See commit f71495f3f0c5 (PM / sleep: 
+Update device PM documentation to cover direct_complete) and the 
+preceding commits.  The idea is that under some circumstances, devices 
+that were in runtime-suspend before a system sleep can remain in 
+runtime-suspend when the system wakes up.
+
+If you can force the rendering hardware to go into runtime-suspend when
+starting a system suspend, it can remain powered down when the system
+wakes up.  Then if it isn't needed for anything (because you suspend
+the system again before doing any UI activity), it can remain powered
+down the entire time.  No need for a separate "lucid sleep" state.
+
+Alan Stern
