@@ -1,164 +1,45 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 4/6] cpufreq: powernv: Call throttle_check() on receiving
- OCC_THROTTLE
-Date: Tue, 05 May 2015 12:03:00 +0530
-Message-ID: <5548641C.5090208@linux.vnet.ibm.com>
-References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1430729652-14813-5-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <55484072.5060400@linux.vnet.ibm.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH 0/1] speeding up cpu_up()
+Date: Tue, 5 May 2015 09:15:11 +0200
+Message-ID: <20150505071510.GA3910@pd.tnic>
+References: <1429404795-23260-1-git-send-email-lenb@kernel.org>
+ <20150420071556.GB14315@gmail.com>
+ <CAJvTdKnYbJbun_UJXbGgKuh7DEBXoQdD6Unbm=Jopuw_C_U4ng@mail.gmail.com>
+ <20150501224729.GN10239@pd.tnic>
+ <55441D8C.2080509@amd.com>
+ <55464925.5050600@amd.com>
+ <5547F67D.2080307@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-6
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:46721 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752796AbbEEGd5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 May 2015 02:33:57 -0400
-Received: from /spool/local
-	by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
-	Tue, 5 May 2015 16:33:55 +1000
-In-Reply-To: <55484072.5060400@linux.vnet.ibm.com>
+Received: from mail.skyhub.de ([78.46.96.112]:46579 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756304AbbEEHPN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 May 2015 03:15:13 -0400
+Content-Disposition: inline
+In-Reply-To: <5547F67D.2080307@amd.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
+To: Aravind Gopalakrishnan <aravind.gopalakrishnan@amd.com>, Len Brown <lenb@kernel.org>
+Cc: Ingo Molnar <mingo@kernel.org>, X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
 
-Hi Preeti,
+On Mon, May 04, 2015 at 05:45:17PM -0500, Aravind Gopalakrishnan wrote:
+> Tested a delay of 0 on Fam10h and Fam15h Model 30h-3fh and both work fine.
 
-On 05/05/2015 09:30 AM, Preeti U Murthy wrote:
-> Hi Shilpa,
-> 
-> On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
->> Re-evaluate the chip's throttled state on recieving OCC_THROTTLE
->> notification by executing *throttle_check() on any one of the cpu on
->> the chip. This is a sanity check to verify if we were indeed
->> throttled/unthrottled after receiving OCC_THROTTLE notification.
->>
->> We cannot call *throttle_check() directly from the notification
->> handler because we could be handling chip1's notification in chip2. So
->> initiate an smp_call to execute *throttle_check(). We are irq-disabled
->> in the notification handler, so use a worker thread to smp_call
->> throttle_check() on any of the cpu in the chipmask.
-> 
-> I see that the first patch takes care of reporting *per-chip* throttling
-> for pmax capping condition. But where are we taking care of reporting
-> "pstate set to safe" and "freq control disabled" scenarios per-chip ?
-> 
+Cool, thanks for testing.
 
-IMO let us not have "psafe" and "freq control disabled" states managed per-chip.
-Because when the above two conditions occur it is likely to happen across all
-chips during an OCC reset cycle. So I am setting 'throttled' to false on
-OCC_ACTIVE and re-verifying if it actually is the case by invoking
-*throttle_check().
+> Feedback from asking internally about this is that we should be OK to move
+> to a no-delay default from K8 onwards.
 
->>
->> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
->> ---
->>  drivers/cpufreq/powernv-cpufreq.c | 28 ++++++++++++++++++++++++++--
->>  1 file changed, 26 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
->> index 9268424..9618813 100644
->> --- a/drivers/cpufreq/powernv-cpufreq.c
->> +++ b/drivers/cpufreq/powernv-cpufreq.c
->> @@ -50,6 +50,8 @@ static bool rebooting, throttled, occ_reset;
->>  static struct chip {
->>  	unsigned int id;
->>  	bool throttled;
->> +	cpumask_t mask;
->> +	struct work_struct throttle;
->>  } *chips;
->>
->>  static int nr_chips;
->> @@ -310,8 +312,9 @@ static inline unsigned int get_nominal_index(void)
->>  	return powernv_pstate_info.max - powernv_pstate_info.nominal;
->>  }
->>
->> -static void powernv_cpufreq_throttle_check(unsigned int cpu)
->> +static void powernv_cpufreq_throttle_check(void *data)
->>  {
->> +	unsigned int cpu = smp_processor_id();
->>  	unsigned long pmsr;
->>  	int pmsr_pmax, pmsr_lp, i;
->>
->> @@ -373,7 +376,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->>  		return 0;
->>
->>  	if (!throttled)
->> -		powernv_cpufreq_throttle_check(smp_processor_id());
->> +		powernv_cpufreq_throttle_check(NULL);
->>
->>  	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
->>
->> @@ -418,6 +421,14 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
->>  	.notifier_call = powernv_cpufreq_reboot_notifier,
->>  };
->>
->> +void powernv_cpufreq_work_fn(struct work_struct *work)
->> +{
->> +	struct chip *chip = container_of(work, struct chip, throttle);
->> +
->> +	smp_call_function_any(&chip->mask,
->> +			      powernv_cpufreq_throttle_check, NULL, 0);
->> +}
->> +
->>  static char throttle_reason[][30] = {
->>  					"No throttling",
->>  					"Power Cap",
->> @@ -433,6 +444,7 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->>  	struct opal_msg *occ_msg = msg;
->>  	uint64_t token;
->>  	uint64_t chip_id, reason;
->> +	int i;
->>
->>  	if (msg_type != OPAL_MSG_OCC)
->>  		return 0;
->> @@ -466,6 +478,10 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->>  			occ_reset = false;
->>  			throttled = false;
->>  			pr_info("OCC: Active\n");
->> +
->> +			for (i = 0; i < nr_chips; i++)
->> +				schedule_work(&chips[i].throttle);
->> +
->>  			return 0;
->>  		}
->>
->> @@ -476,6 +492,12 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->>  		else if (!reason)
->>  			pr_info("OCC: Chip %u %s\n", (unsigned int)chip_id,
->>  				throttle_reason[reason]);
->> +		else
->> +			return 0;
-> 
-> Why the else section ? The code can never reach here, can it ?
+Also cool :-)
 
-When reason > 5 , we dont want to handle it.
+@Len: So everything with X86_VENDOR_AMD and c->x86 >= 0xf should be fine.
 
-> 
->> +
->> +		for (i = 0; i < nr_chips; i++)
->> +			if (chips[i].id == chip_id)
->> +				schedule_work(&chips[i].throttle);
->>  	}
-> 
-> Should we not do this only when we get unthrottled so as to cross verify
-> if it is indeed the case ? In case of throttling notification, opal's
-> verdict is final and there is no need to cross verify right ?
+Thanks.
 
-Two reasons for invoking *throttle_check() on throttling:
-1) We just got to know the reason and not the Pmax value we are getting
-throttled to.
-2) It could be a spurious message caused due to late/lost delivery. My point
-here is let us not completely rely on the notification to declare throttling
-unless we verify it from reading PMSR.
+-- 
+Regards/Gruss,
+    Boris.
 
-> 
-> Perhaps the one thing that needs to be taken care in addition to
-> reporting throttling is setting the chip's throttled parameter to true.
-> This should do right ? I don't see the need to call throttle_check() here.
-> 
->
-
-Thanks and Regards,
-Shilpa
-
+ECO tip #101: Trim your mails when you reply.
+--
