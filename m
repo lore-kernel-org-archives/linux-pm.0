@@ -1,53 +1,59 @@
-From: Chirantan Ekbote <chirantan@chromium.org>
-Subject: Re: A desktop environment[1] kernel wishlist
-Date: Tue, 5 May 2015 13:58:12 -0700
-Message-ID: <CAJFHJrpFAvQ7zZMj-Ap6rYU24Gy0fwca6WqqNSg6-rrS0mxASA@mail.gmail.com>
-References: <CAJFHJrp=h=jxSNLTyszYs3Ac3PoZKFy-dVJXLehO36r-4p-8=w@mail.gmail.com>
-	<Pine.LNX.4.44L0.1505051532000.1639-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM / sleep: Refine diagnostic messages in enter_state()
+Date: Tue, 05 May 2015 23:42:25 +0200
+Message-ID: <2242846.s2CNuMpWnm@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1505051532000.1639-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Olof Johansson <olof@lixom.net>, Bastien Nocera <hadess@hadess.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, snanda@chromium.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 5, 2015 at 12:35 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Tue, 5 May 2015, Chirantan Ekbote wrote:
->
->> This is our plan for the next version (see my email earlier in this
->> thread).  Keeping a hybrid power state with hacks in the drivers isn't
->> really maintainable, scalable, or upstream-able and has caused us some
->> headaches already.  Unfortunately we were working with the 3.14 kernel
->> at the time, which didn't have the framework necessary to do anything
->> else.  The new version of lucid sleep will have the power manager
->> runtime suspend power-hungry devices before a suspend so that they
->> remain powered off at resume time.  The power manager can then decide
->> to resume those devices based on whether the wakeup event was
->> user-triggered.
->>
->> Being able to determine the wakeup type from userspace is the only
->> functionality we need from the kernel that doesn't already exist in
->> mainline.
->
-> Maybe you can simplify the problem.  You don't really need to know the
-> wakeup type, or to determine which device was responsible for the
-> wakeup.  All you really need to know is whether the wakeup was
-> user-triggered.  That may be much easier to discover.
->
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-You are, of course, correct.  Ultimately the only requirement we have
-is that there exists a way for userspace to determine if the system
-woke up because of a user-triggered event.  The actual mechanism by
-which this determination is made isn't something I feel strongly
-about.  The reason I had been focusing on exposing the actual wakeup
-event to userspace is because classifying wakeup events as
-user-triggered or not feels to me like a policy decision that should
-be left to userspace.  If the kernel maintainers are ok with doing
-this work in the kernel instead and only exposing a binary yes/no bit
-to userspace for user-triggered wakeups, that's perfectly fine because
-it still meets our requirements.
+Some of the system suspend diagnostic messages related to
+suspend-to-idle refer to it as "freeze sleep" or "freeze state"
+while the others say "suspend-to-idle".  To reduce the possible
+confusion that may result from that, refine the former either to
+say "suspend to idle" too or to make it clearer that what is printed
+is a state string written to /sys/power/state ("mem", "standby",
+or "freeze").
 
-> Alan Stern
->
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/power/suspend.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -468,7 +468,7 @@ static int enter_state(suspend_state_t s
+ 	if (state == PM_SUSPEND_FREEZE) {
+ #ifdef CONFIG_PM_DEBUG
+ 		if (pm_test_level != TEST_NONE && pm_test_level <= TEST_CPUS) {
+-			pr_warning("PM: Unsupported test mode for freeze state,"
++			pr_warning("PM: Unsupported test mode for suspend to idle,"
+ 				   "please choose none/freezer/devices/platform.\n");
+ 			return -EAGAIN;
+ 		}
+@@ -488,7 +488,7 @@ static int enter_state(suspend_state_t s
+ 	printk("done.\n");
+ 	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+ 
+-	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
++	pr_debug("PM: Preparing system for sleep (%s)\n", pm_states[state]);
+ 	error = suspend_prepare(state);
+ 	if (error)
+ 		goto Unlock;
+@@ -497,7 +497,7 @@ static int enter_state(suspend_state_t s
+ 		goto Finish;
+ 
+ 	trace_suspend_resume(TPS("suspend_enter"), state, false);
+-	pr_debug("PM: Entering %s sleep\n", pm_states[state]);
++	pr_debug("PM: Suspending system (%s)\n", pm_states[state]);
+ 	pm_restrict_gfp_mask();
+ 	error = suspend_devices_and_enter(state);
+ 	pm_restore_gfp_mask();
