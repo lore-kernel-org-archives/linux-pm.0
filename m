@@ -1,39 +1,126 @@
-From: Anisse Astier <anisse@astier.eu>
-Subject: Re: [PATCH v2 3/4] PM / Hibernate: fix SANITIZE_FREED_PAGES
-Date: Tue, 5 May 2015 14:41:37 +0200
-Message-ID: <CALUN=qJ8sH1nez2t0j_wO=C+JLCejP_r+Skh_QWk1=J3DOHDQw@mail.gmail.com>
-References: <1430774218-5311-1-git-send-email-anisse@astier.eu>
- <1430774218-5311-4-git-send-email-anisse@astier.eu> <5547E995.9980.80084D6@pageexec.freemail.hu>
- <28072506.ijDyy3q5rs@vostro.rjw.lan>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: PM / Domains: Infinite loop during reboot
+Date: Tue, 5 May 2015 15:49:35 +0200
+Message-ID: <CAMuHMdUTirgF7Qk2uMPYnejCOa14Khi=Sn8-y23TsRyJrFT-6A@mail.gmail.com>
+References: <CAMuHMdVAnZ5mH7EwJKVeKWSDqCxn+TSH1VOHoK3B2=b8oByoHg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <28072506.ijDyy3q5rs@vostro.rjw.lan>
-Sender: owner-linux-mm@kvack.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: PaX Team <pageexec@freemail.hu>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, linux-mm@kvack.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdVAnZ5mH7EwJKVeKWSDqCxn+TSH1VOHoK3B2=b8oByoHg@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 5, 2015 at 12:29 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> I haven't seen it, for one, and I'm wondering why the "clearing" cannot be done
-> at the swsusp_free() time?
-
-Because the validity of the free pages bitmap is short-lived since
-device resume code might do some allocations.
-
+On Mon, Apr 13, 2015 at 2:18 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> Sometimes reboot doesn't work on r8a7791/koelsch with the CPG clock domain.
+> With additional debug messages, you can see it hangs in an infinite loop:
 >
-> In any case, please CC hibernation-related patches and discussions thereof to
-> linux-pm@vger.kernel.org.
+> rcar-dmac ec720000.dma-controller: removing from PM domain cpg_clocks
+> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+> [...]
+>
+> Presumably this is this loop in genpd_dev_pm_detach():
+>
+>         while (1) {
+>                 ret = pm_genpd_remove_device(pd, dev);
+>                 if (ret != -EAGAIN)
+>                         break;
+>                 cond_resched();
+>         }
+>
+> which is retried because genpd->prepared_count > 0 in pm_genpd_remove_device().
+> This looks a bit strange, as no suspend is in progress, so prepared_count
+> should be zero?
+>
+> I'm adding more debugging code to verify this, but it's not 100% reproducable.
+>
+> [...]
+>
+> Confirmed: prepared_count turns out to be 1 at reboot time if at least one
+> s2ram cycle happened before. Additional s2ram cycles don't seem to increase
+> prepared_count any further.
 
-Thanks, I had to forget something when sending this series :-/ ; I'm
-preparing v3 that will be sent to linux-pm too.
+This seems to be caused by the sh_cmt driver's sh_cmt_enable() calling
+dev_pm_syscore_device(..., true).
 
-Regards,
+If dev->power.syscore is set, device_prepare(), device_complete() et al.
+skip further operation.
 
-Anisse
+Hence during an s2ram+resume cycle, the following happens:
+
+    PM: Syncing filesystems ... done.
+    PM: Preparing system for mem sleep
+    Freezing user space processes ... (elapsed 0.001 seconds) done.
+    Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
+    PM: Entering mem sleep
+    Suspending console(s) (use no_console_suspend to debug)
+
+    [ pm_genpd_prepare() is called for all devices (incl. sh_cmt), ]
+    [ increasing prepared_count ]
+
+    PM: suspend of devices complete after 36.472 msecs
+    PM: late suspend of devices complete after 7.569 msecs
+    PM: noirq suspend of devices complete after 8.035 msecs
+    Disabling non-boot CPUs ...
+    CPU1: shutdown
+
+    [ sh_cmt_enable() is called, and power.syscore becomes true ]
+
+    Enabling non-boot CPUs ...
+    CPU1 is up
+    PM: noirq resume of devices complete after 4.724 msecs
+    PM: early resume of devices complete after 5.100 msecs
+    PM: resume of devices complete after 84.156 msecs
+
+    [ pm_genpd_complete() is called for all devices (except for sh_cmt!, ]
+    [ as its power.syscore is now true!), decreasing prepared_count ]
+
+    [ prepared_count is now 1 instead of 0! ]
+
+    PM: Finishing wakeup.
+    Restarting tasks ...
+
+During subsequent s2ram+resume cycles, the prepared_count imbalance doesn't
+increase, as pm_genpd_prepare() is no longer called for sh_cmt due to
+power.syscore still being set.
+
+During reboot/halt, platform_drv_shutdown() is called for any platform device
+that has a driver with a .shutdown() method (on R-Car Gen2, that's just the
+rcar-dmac driver). platform_drv_shutdown() calls dev_pm_domain_detach(),
+which enters an infinite loop, due to the prepared_count imbalance.
+
+On R-Mobile, the imbalance also happens. But there it doesn't cause any issues
+as sh_cmt is part of a PM domain that doesn't contain any devices with drivers
+that have .shutdown() methods.
+
+I see two ways to fix this:
+  1. Fix the prepared_count imbalance.
+     Anyone with a clue?
+  2. Fix the infinite loop.
+       a. Limit the loop to a fixed number of retries (e.g. 20),
+       b. Remove the call to dev_pm_domain_detach() from
+          platform_drv_shutdown(). Others buses (amba, i2c, spi) do not call
+          it from their .shutdown() method, only from .remove().
+
+Thanks for your comments and suggestions!
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 --
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
