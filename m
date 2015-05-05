@@ -1,104 +1,150 @@
-From: "Dr. Christopher Harrison" <acarranzav@munichiclayo.gob.pe>
-Subject: Von Dr. Christopher Harrison (Bitte antworten)
-Date: Tue, 5 May 2015 05:19:39 -0500 (PET)
-Message-ID: <1538426345.11543.1430821179251.JavaMail.zimbra@munichiclayo.gob.pe>
-Reply-To: "Dr. Christopher Harrison" <dr.christopherhar90@yahoo.co.uk>
+From: Bastien Nocera <hadess@hadess.net>
+Subject: Re: A desktop environment[1] kernel wishlist
+Date: Tue, 05 May 2015 12:46:40 +0200
+Message-ID: <1430822800.7954.5.camel@hadess.net>
+References: <1413881397.30379.7.camel@hadess.net>
+	 <CAOesGMg6UBuF=OJ-JdAUx-sD5MnLL8+Ag=xeJFmr-Dxezti2YA@mail.gmail.com>
+	 <CAJFHJrp8R+Na73W2Jx6BJ+JnHTGZfd61d+EracgehS+ZQoZOcg@mail.gmail.com>
+	 <286173531.vzKW1UoxJJ@vostro.rjw.lan>
+	 <CAJFHJrrYhOtjQENR2-_v2XDeYUJCB1tw7MnZbWjC0d-Mz3Z15g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.munichiclayo.gob.pe ([190.41.147.109]:54361 "EHLO
-	mail.munichiclayo.gob.pe" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757593AbbEEKNX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 May 2015 06:13:23 -0400
+Received: from relay4-d.mail.gandi.net ([217.70.183.196]:37798 "EHLO
+	relay4-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752532AbbEEKqp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 May 2015 06:46:45 -0400
+In-Reply-To: <CAJFHJrrYhOtjQENR2-_v2XDeYUJCB1tw7MnZbWjC0d-Mz3Z15g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chirantan Ekbote <chirantan@chromium.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Olof Johansson <olof@lixom.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, snanda@chromium.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>
 
+On Mon, 2015-05-04 at 16:30 -0700, Chirantan Ekbote wrote:
+> 
+<snip>
+> In the interest of brevity, I didn't go into the design of suspend /
+> resume in userspace in my last email but it seems like there's no way
+> around it.
+> 
+> Ignoring lucid sleep for a moment, here is how a regular suspend 
+> works
+> in the power manager.  The power manager sees a suspend request 
+> either
+> because the user has been idle for X amount of time (usually 15
+> minutes) or the user explicitly requested it by closing the lid.  The
+> power manager reads the value of /sys/power/wakeup_count and then
+> announces an imminent suspend to the rest of the system via DBus.
+> Interested applications (like the network manager and Chrome) will
+> have registered with the power manager to be informed about this when
+> they started up.  For example, this is when Chrome would freeze its
+> renderer processes.  The power manager will now wait for them to
+> report back their readiness to suspend.  Once all applications have
+> reported ready (or the maximum timeout occurs), the power manager
+> performs some final preparations (like setting the resume brightness
+> for the display).
 
-Lieber Freund,
+logind in systemd also does this, using block or delay inhibitors over
+D-Bus:
+http://www.freedesktop.org/wiki/Software/systemd/inhibit/
 
+>   The last thing the power manager does, right before
+> writing "mem" to /sys/power/state, is write the wakeup_count that it
+> read earlier to /sys/power/wakeup_count.  If the write fails, the
+> power manager considers the suspend attempt failed, reads the new
+> wakeup_count, and starts a timer (usually 10 seconds) to retry the
+> suspend.  The same thing happens if the write to /sys/power/state
+> fails.
 
-Wie geht es dir heute? Ich hoffe, in Ordnung, ich bin Dr. Christopher H=
-arrison von NothWest London, England. Ich arbeite f=C3=BCr Zweig Lloyds=
- Bank London. Ich schreibe Ihnen aus meinem B=C3=BCro, das aus einem gr=
-o=C3=9Fen immense Vorteil f=C3=BCr uns beide sein wird. In meiner Abtei=
-lung, dass die Co-Trainer (Gro=C3=9Fregion London), entdeckte ich eine =
-verlassene Summe von =C2=A3 16,5 Millionen Pfund (Sechzehn Millionen f=C3=
-=BCnfhunderttausend Pfund und Pfund Sterling) in einem Konto, das Sie m=
-it einem unserer ausl=C3=A4ndischen Kunden Sp=C3=A4te Herr Ron Bramlage=
- geh=C3=B6rt , ein Amerikaner, der in Kansas Staaten lebt, die ein Opfe=
-r von einem Hubschrauberabsturz im vergangenen Jahr 8. Juni 2012, in Fl=
-orida Sumpf ihn und Familienmitglieder zu t=C3=B6ten war. Ron war 45 Ja=
-hre alt. Auch in der Chopper zum Zeitpunkt des Absturzes war seine Frau=
- Rebecca, 43, und die Kinder des Paares - Brandon, 15; Boston, 13; Beau=
-, 11; und 8-j=C3=A4hrige Roxanne - wurden get=C3=B6tet. Der Pilot war a=
-uch tot.
+Is this something that logind should do as well?
 
+> It may be the case that the event that incremented the count happened
+> because a user was trying to cancel the suspend.  The user could have
+> pressed some keys on the keyboard, touched the trackpad, opened the
+> lid, pressed the power button, etc, etc.  For the keyboard and
+> trackpad these events make their way up to Chrome, which sends a user
+> activity message to the power manager.  This is a message that Chrome
+> sends to the power manager even during regular activity, up to five
+> times a second, to prevent the idle timeout from occuring.  When the
+> power manager sees this user activity message while waiting to retry
+> the suspend, it cancels the retry and sends out a DBus signal
+> informing the system that the suspend is now complete.  For events
+> like opening the lid or pressing the power button, the power manager
+> monitors those events in /dev/input and simulates a user activity
+> message from chrome if any of them fire.
+> 
+> 
+> Ok so now I can talk about how lucid sleep fits into all of this. 
+>  The
+> power manager only considers a suspend attempt successful if the 
+> write
+> to /sys/power/state was successful.  If the suspend was successful,
+> the power manager then reads another sysfs file
+> (/sys/power/wakeup_type in our kernel) to determine if the wakeup
+> event was user-triggered.
 
-Ich suche Ihre Partnerschaft und Zusammenarbeit zur Durchf=C3=BChrung d=
-ieser Transaktion zusammen, weil der Lloyds Bank schlie=C3=9Ft einige i=
-hrer Zweigstellen und den Zweig, wo dieser Fonds hinterlegt ist unter d=
-enen geschlossen werden, so dass ich m=C3=B6chte, dass wir diesen Fonds=
- zu bekommen, bevor ihre Verschluss. Ich habe Sie kontaktiert, weil ich=
- glaube, Sie werden nicht weglaufen mit eigenen Aktien dieses Fonds, we=
-nn es Ihrem Konto eingeht, und die gemeinsame Nutzung Quote von 60% f=C3=
-=BCr mich und 40% f=C3=BCr Ihre Zusammenarbeit. F=C3=BCr Sie die Lloyds=
- Bank, um sicherzustellen, Schlie=C3=9Fen Niederlassungen besuchen Sie =
-diese Seite:
+This is where your lucid sleep implementation matches up with what I
+had in mind for that wishlist.
 
+>   If the event was user-triggered it sends
+> out a DBus signal announcing the end of the suspend, Chrome thaws its
+> renderer processes, the full UI comes back up, and the user can start
+> working.  If the event was _not_ user-triggred (if it was the RTC or
+> NIC), the power manager sends out a different DBus signal announcing
+> that the system is in lucid sleep and will re-suspend soon.  It will
+> then wait for all registered applications to report readiness to
+> suspend or for the max timeout to expire.
+> 
+> If it so happens that a user interacts with the system while it is in
+> this state, the power manager detects it via the user activity 
+> message
+> that Chrome sends.  This could be real (keyboard, trackpad) or
+> simulated (lid, power button).  Either way, the power manager 
+> responds
+> the same way: it announces the end of the suspend, Chrome thaws its
+> renderers, the full UI comes back up, and the user starts working. 
+>  If
+> there is no user activity and all applications report ready, the 
+> power
+> manager gets ready to suspend the system again.  Since the NIC is now
+> a wakeup source, the power manager doesn't read the wakeup_count 
+> until
+> after all applications have reported ready because accessing the
+> network could increment the wakeup_count and cause false positives.
+> 
+> If either the write to /sys/power/wakeup_count or /sys/power/state
+> fails from lucid sleep, the power manager re-announces that the 
+> system
+> is in lucid sleep and will re-suspend soon.  It's actually a little
+> smart about this: it will only re-announce lucid sleep if there was a
+> wakeup_count mismatch or if the write to /sys/power/state returned
+> EBUSY.  Other failures only trigger a simple retry and no DBus 
+> signal.
+> We do this because these wakeup events may legitimately trigger lucid
+> sleep.  For example, more packets may arrive from the network or the
+> RTC may go off and applications don't perform work until they hear
+> from the power manager that the system is in lucid sleep.  At this
+> point the power manager is back to waiting for applications to report
+> ready (or for the retry timer to fire).  This process may repeat
+> multiple times if we keep getting wakeup events right as the system
+> tries to re-suspend.
+> 
+> 
+> So that was a little long-winded but hopefully I've addressed all 
+> your
+> concerns about potential race conditions in this code.  I simplified 
+> a
+> few bits because would just complicate the discussion but for the 
+> most
+> part this is how the feature works now.  Having the kernel emit a
+> uevent with the wakeup event type would take the place of the power
+> manager reading from /sys/power/wakeup_type in this system but
+> wouldn't really affect anything else.
 
-https://uk.news.yahoo.com/lloyds-bank-more-200-branches-close-181000783=
---finance.html#4KVKdTh
+Could you or Tomeu explain the driver changes that are necessary? Do
+only drivers that we want to be usable as wakeup sources need to be
+changed? Do you have examples of such a patch?
 
+Cheers
 
-Aufgrund der Sensibilit=C3=A4t der Transaktion und die Vertraulichkeit =
-hier, jetzt unsere Bank hat f=C3=BCr keine der Verwandten warten zu kom=
-men-up f=C3=BCr die Behauptung, aber niemand hat in der Suche die Verwa=
-ndten f=C3=BCr eine lange Zeit jetzt getan, dass ich pers=C3=B6nlich ni=
-cht erfolgreich waren . Mein lieber Freund, ich suche Ihre Zustimmung a=
-n Sie als n=C3=A4chsten Angeh=C3=B6rigen / Will Beg=C3=BCnstigter des V=
-erstorbenen zu pr=C3=A4sentieren, so dass die Erl=C3=B6se aus diesem Ko=
-nto bei =C2=A3 16,5 Millionen Pfund an Sie gezahlt werden bewertet.
-
-
-Das wird f=C3=BCr mich ausgezahlt oder geteilt in diese Prozents=C3=A4t=
-ze, 60% und 40% zu Ihnen, ich habe alle notwendigen rechtlichen Dokumen=
-te, die wir verwendet werden, um diese Behauptung wir machen gesichert.=
- Alles was ich brauche ist es, in Ihrem Namen zu den Dokumenten f=C3=BC=
-llen und legalisiert es in den Hof und die Lloyds Bank hier, um Ihnen z=
-u beweisen, als berechtigten Empf=C3=A4nger, ist Alles, was ich jetzt b=
-rauche Ihre ehrliche Zusammenarbeit, Verschwiegenheit und Vertrauen, da=
-mit wir sehen, diese Transaktion durch. Ich garantiere Ihnen, dass dies=
- unter einer legitimen Anordnung, die Sie von einem Versto=C3=9F gegen =
-das Gesetz hier in England und in Ihrem Land zu sch=C3=BCtzen wird ausg=
-ef=C3=BChrt.
-
-
-Bitte, bitte senden Sie mir die folgenden: wir haben 7 Tage, um es zu d=
-urchlaufen, das ist sehr, sehr URGENT PLEASE.
-
-
-1. Vollst=C3=A4ndiger Name: ......................
-2. Ihre Telefonnummer: .................
-3. Ihre Kontaktadresse: ..................
-4. Alter / Geschlecht: ...................
-5. Kern Job / Beruf: ..............
-
-
-Bitte beantworten Sie meine E-Mail hier: harrisondr.christoph_office@ya=
-hoo.co.uk
-
-
-Ich habe euch in Kontakt gebracht, zu glauben, dass Sie nicht weglaufen=
- mit eigenen Aktien dieses Fonds, wenn es Ihrem Konto kommt, hoffe ich,=
- k=C3=B6nnen Sie auf diese vertrauen? Wie Sie wissen, diese Transaktion=
- beinhalten sehr viel Geld. Bitte Standard freundlich zeigen Sie Ihr In=
-teresse, indem sie mich mit Ihren Angaben wie oben, so kann ich Ihnen m=
-ehr Informationen dar=C3=BCber, wie die Bank gehen, um diesen Fonds zu =
-Ihnen innerhalb von 5 Bankarbeitstagen =C3=BCbertragen bekommen zu erbr=
-ingen. Endeavour zu antworten, dass sie nicht l=C3=A4nger auf mich gewa=
-rtet. Ok, mein lieber Freund?
-
-
-=46reundliche Gr=C3=BC=C3=9Fe,
-Dr. Christopher Harrison
