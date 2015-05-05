@@ -1,81 +1,39 @@
-From: =?utf-8?q?J=C3=BCrgen_Borleis?= <jbe@pengutronix.de>
-Subject: Re: [PATCH V2 4/6] DT: add binding for mxs on-chip regulators
-Date: Tue, 5 May 2015 10:21:01 +0200
-Message-ID: <201505051021.01939.jbe@pengutronix.de>
-References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com> <201505041551.26355.jbe@pengutronix.de> <1858103470.878923.1430770850541.JavaMail.open-xchange@oxbaltgw08.schlund.de>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 01/10] mfd/extcon: max77693: Remove unused extern
+ declarations and max77693_dev members
+Date: Tue, 5 May 2015 09:24:02 +0100
+Message-ID: <20150505082402.GS4047@x1>
+References: <1430305114-23598-1-git-send-email-k.kozlowski.k@gmail.com>
+ <1430305114-23598-2-git-send-email-k.kozlowski.k@gmail.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:37878 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754847AbbEEISa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 May 2015 04:18:30 -0400
-In-Reply-To: <1858103470.878923.1430770850541.JavaMail.open-xchange@oxbaltgw08.schlund.de>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1430305114-23598-2-git-send-email-k.kozlowski.k@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: Sascha Hauer <kernel@pengutronix.de>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, fabio.estevam@freescale.com, David Woodhouse <dwmw2@infradead.org>, Russell King <linux@arm.linux.org.uk>, Mark Rutland <mark.rutland@arm.com>, sebastien.szymanski@armadeus.com, devicetree@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-arm-kernel@lists.infradead.org
 
-Hi Stefan,
+On Wed, 29 Apr 2015, Krzysztof Kozlowski wrote:
 
-On Monday 04 May 2015 22:20:50 Stefan Wahren wrote:
-> [...]
-> >
-> > +------------+     VDD5V  +---------+  VDDIO
-> > | DC-DC      |   +--------> LINREG  +--------->+
-> > |            |            | VDDIO   |          |
-> > |            |            +---------+          |
-> > |            |                                 |
-> > | DCDC_VDDIO +->-+-----------------------------+
-> > |            |   |
-> > |            |   | VDDIO  +---------+ VDDMEM
-> > |            |   +--------> LINREG  +--------->
-> > |            |   |        | VDDMEM  |
-> > |            |   |        +---------+
-> > |            |   | VDDIO  +---------+  VDDA
-> > |            |   +--------> LINREG  +--------->+
-> > |            |            | VDDA    |          |
-> > |            |            +---------+          |
-> > | DCDC_VDDA  +->-+-----------------------------+
-> > |            |   |
-> > |            |   | VDDA   +---------+  VDDD
-> > |            |   +--------> LINREG  +--------->+
-> > |            |            | VDDD    |          |
-> > |            |            +---------+          |
-> > | DCDC_VDDD  +->-------------------------------+
-> > +------------+                                 |
-> >                                                v
->
-> damn! I didn't noticed that VDDMEM is powered by VDDIO and VDD1P5 is
-> powered by VDDA. Thank you very much.
->
-> From my understanding VDDMEM and VDD1P5 describe the same regulator
-> function (provides power to external memory such as SDRAM and mDDR which
-> doesn't fit to VDDD, VDDIO or VDDA). But the usage of
-> the name is not consistent across the documentation:
->                   | i.MX23 | i.MX28
-> ------------------------------------
-> Application note  | VDDMEM | VDD1P5
-> Reference manual  | VDDMEM | VDDMEM
-> Data sheet        | -      | VDD1P5
->
-> I would suggest to use VDDMEM, because the registers are always called
-> HW_VDDMEM (for both SoCs).
+> Clean up the max77693 private header file by removing:
+> 1. Left-overs from previous way of interrupt handling (driver uses
+>    regmap_irq_chip).
+> 2. Unused members of struct 'max77693_dev' related to interrupts in
+>    extcon driver.
+>=20
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+> ---
+>  drivers/extcon/extcon-max77693.c     | 4 ----
+>  include/linux/mfd/max77693-private.h | 8 --------
 
-Ack.
+=46or the MFD changes:
+  Acked-by: Lee Jones <lee.jones@linaro.org>
 
-> I think we have 3 options here:
->
-> a) add the regulator daisy chain for the i.MX23 too
-> b) remove VDD1P5 from the i.MX28 diagram so it would fit for both again
-> c) remove the diagram complete
->
-> I would prefer option b. What's your opinion?
-
-I prefer a) because once the details are known, we should keep them.
-
-Regards,
-Juergen
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
