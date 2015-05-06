@@ -1,55 +1,36 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [RFC V2] init: support device of major:minor:offset format
-Date: Wed,  6 May 2015 08:24:14 +0800
-Message-ID: <1430871854-7096-1-git-send-email-yu.c.chen@intel.com>
+From: Mike Snitzer <snitzer@redhat.com>
+Subject: Re: [4.1-rc1][Hibernation failed]  bisect result  included
+Date: Tue, 5 May 2015 22:01:39 -0400
+Message-ID: <20150506020138.GA12034@redhat.com>
+References: <36DF59CE26D8EE47B0655C516E9CE6402CA0E2@SHSMSX101.ccr.corp.intel.com>
+ <20150504142654.GA985@redhat.com>
+ <55482B44.6060407@intel.com>
+ <1578315.Syt0DGTIqh@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:28843 "EHLO mga14.intel.com"
+Received: from mx1.redhat.com ([209.132.183.28]:40752 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751682AbbEFAUY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 May 2015 20:20:24 -0400
+	id S1751225AbbEFCBt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 May 2015 22:01:49 -0400
+Content-Disposition: inline
+In-Reply-To: <1578315.Syt0DGTIqh@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: snitzer@redhat.com, rafael.j.wysocki@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zhang@intel.com, Chen Yu <yu.c.chen@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Yu Chen <yu.c.chen@intel.com>, Dan Ehrenberg <dehrenberg@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "Lu, Aaron" <aaron.lu@intel.com>, Martin Steigerwald <martin@lichtvoll.de>, dm-devel@redhat.com
 
-Distribution like Ubuntu uses klibc rather than uswsusp to resume
-system from hibernation, which will treat swap partition/file in
-the form of major:minor:offset. For example, 8:3:0 represents a
-swap partition in klibc, and klibc's resume process in initrd will
-finally echo 8:3:0 to /sys/power/resume for manually restoring.
-However in current implementation, 8:3:0 will be treated as an invalid
-device format, and it is found that manual resumming from hibernation
-will fail on lastest kernel.
+On Tue, May 05 2015 at  4:48pm -0400,
+Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 
-This patch adds support for device with major:minor:offset format
-when resumming from hibernation.
+> On Tuesday, May 05, 2015 10:30:28 AM Yu Chen wrote:
+> > 
+> > Thank you very much, Mike and Rafeal,
+> > I'll send another version titled with V2 for review.
+> 
+> Have you sent it already?  Where is it if so?
 
-Reported-by: Prigent Christophe <christophe.prigent@intel.com>
-Reported-by: Martin Steigerwald <martin@lichtvoll.de>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- init/do_mounts.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+I staged what I was expecting v2 to be in linux-dm.git's 'for-next'
+earlier today.  I am planning to send it to Linus on Thursday, see:
 
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 8369ffa..e2e3538 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -225,10 +225,12 @@ dev_t name_to_dev_t(const char *name)
- #endif
- 
- 	if (strncmp(name, "/dev/", 5) != 0) {
--		unsigned maj, min;
-+		unsigned maj, min, offset;
- 		char dummy;
- 
--		if (sscanf(name, "%u:%u%c", &maj, &min, &dummy) == 2) {
-+		if ((sscanf(name, "%u:%u%c", &maj, &min, &dummy) == 2) ||
-+		    (sscanf(name,
-+			    "%u:%u:%u:%c", &maj, &min, &offset, &dummy) == 3)) {
- 			res = MKDEV(maj, min);
- 			if (maj != MAJOR(res) || min != MINOR(res))
- 				goto fail;
--- 
-1.9.1
-
+https://git.kernel.org/cgit/linux/kernel/git/device-mapper/linux-dm.git/commit/?h=for-next&id=cb31ef485dd4c6a205d1064b42027f82076d00c8
