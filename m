@@ -1,154 +1,99 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH RFC 3/5] ACPI / sleep: move acpi_processor_sleep to sleep.c
-Date: Wed,  6 May 2015 15:31:28 +0100
-Message-ID: <1430922690-6966-4-git-send-email-sudeep.holla@arm.com>
-References: <1430922690-6966-1-git-send-email-sudeep.holla@arm.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1430922690-6966-1-git-send-email-sudeep.holla@arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Hanjun Guo <hanjun.guo@linaro.org>, Al Stone <ahs3@redhat.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v3 1/2] PM / sleep: Let devices force direct_complete
+Date: Wed, 6 May 2015 10:43:34 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1505061035300.1094-100000@iolanthe.rowland.org>
+References: <CAPDyKFpeP8iTw1qat5sd5gtrzk0d+a2hg_EF-2u14HRPcMbE3Q@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:33787 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750876AbbEFOnf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 May 2015 10:43:35 -0400
+In-Reply-To: <CAPDyKFpeP8iTw1qat5sd5gtrzk0d+a2hg_EF-2u14HRPcMbE3Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>
 
-acpi_processor_sleep is neither related nor used by CPUIdle framework.
-It's used in system suspend/resume path as a syscore operation. It makes
-more sense to move it to acpi/sleep.c where all the S-state transition
-(a.k.a. Linux system suspend/hiberate) related code are present.
+On Wed, 6 May 2015, Ulf Hansson wrote:
 
-Also make it depend on CONFIG_ACPI_SYSTEM_POWER_STATES_SUPPORT so that
-it's not compiled on architecture like ARM64 where S-states are not
-yet defined in ACPI.
+> On 30 April 2015 at 16:53, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Thu, 30 Apr 2015, Ulf Hansson wrote:
+> >
+> >> I hesitated to send this reply, since it might add confusion. If
+> >> that's the case, please ignore it.
+> >>
+> >> I have a long term vision to fully enable support for a runtime PM
+> >> centric configuration for drivers/subsystems. The idea is, that such
+> >> driver/subsystem should get system PM for "free".
+> >>
+> >> The main goal is to simplify PM implementation for these drivers/subsystems.
+> >>
+> >> They should need to implement the runtime PM callbacks only and not
+> >> the system PM ones. During system PM suspend, the requirement is that
+> >> the corresponding devices should be guaranteed to be "runtime PM
+> >> suspended". Somehow that then needs to be managed by the PM core.
+> >>
+> >> I am not sure it's doable, but I wanted to bring it up within the
+> >> context of $subject patch, since it proposes yet another optimization
+> >> path for runtime PM during system PM.
+> >
+> > I suspect it is _not_ doable.  Consider a reasonable scenario: a driver
+> > that does pm_runtime_get_sync() in its open routine and
+> > pm_runtime_put() in its release routine.  If a user process holds the
+> > device file open during a system suspend, it will be impossible for the
+> > PM core to do a runtime suspend.
+> 
+> Alan, thanks for your reply.
+> 
+> There are certainly drivers/subsystems that can't full-fill the
+> requirements to have the PM core to deal with what I propose. Somehow
+> drivers/subsystems would have to announce its capability for this.
+> 
+> Those drivers/subsystems I have been looking at, is dealing with I/O.
+> Typically platform/amba devices, which drivers has registered
+> subsystem specific callbacks at ->probe(). One of these callbacks are
+> invoked when there is an I/O request to serve from the subsystem's
+> core layer.
+> 
+> In the beginning of that callback, pm_runtime_get_sync() is invoked.
+> When the request has been served and the controller can be runtime PM
+> suspended, the driver call pm_runtime_put() or possibly
+> pm_runtime_put_autosuspend().
+> 
+> These drivers/subsystem may be considered as being "runtime PM
+> centric", since during system PM suspend they don't have any system PM
+> specific things to deal with. They only want to make sure their
+> devices becomes "runtime PM suspended".
+> 
+> There's no doubt that they can do that by implementing the system PM
+> ->suspend() callbacks, in one way or the other.
+> 
+> To simplify PM implementation for these drivers/subsystems, it would
+> have been nice if the PM core could handle this "automagically", thus
+> drivers/subsystems wouldn't have to implement the system PM callbacks
+> at all. Reaching that point, would likely make it easier to understand
+> how to implement a "runtime PM centric" driver/subsystem.
 
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
----
- drivers/acpi/processor_idle.c | 37 -------------------------------------
- drivers/acpi/sleep.c          | 37 +++++++++++++++++++++++++++++++++++++
- include/acpi/processor.h      |  2 +-
- 3 files changed, 38 insertions(+), 38 deletions(-)
+The drivers/subsystems don't have to implement these things, because
+you have _already_ implemented them: pm_runtime_force_suspend() and 
+pm_runtime_force_resume().  A driver/subsystem merely has to store 
+pointers to these routines in its dev_pm_ops structure.
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 39e0c8e36244..38bdbf36bf4e 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -34,7 +34,6 @@
- #include <linux/sched.h>       /* need_resched() */
- #include <linux/tick.h>
- #include <linux/cpuidle.h>
--#include <linux/syscore_ops.h>
- #include <acpi/processor.h>
- 
- /*
-@@ -198,42 +197,6 @@ static void lapic_timer_state_broadcast(struct acpi_processor *pr,
- 
- #endif
- 
--#ifdef CONFIG_PM_SLEEP
--static u32 saved_bm_rld;
--
--static int acpi_processor_suspend(void)
--{
--	acpi_read_bit_register(ACPI_BITREG_BUS_MASTER_RLD, &saved_bm_rld);
--	return 0;
--}
--
--static void acpi_processor_resume(void)
--{
--	u32 resumed_bm_rld = 0;
--
--	acpi_read_bit_register(ACPI_BITREG_BUS_MASTER_RLD, &resumed_bm_rld);
--	if (resumed_bm_rld == saved_bm_rld)
--		return;
--
--	acpi_write_bit_register(ACPI_BITREG_BUS_MASTER_RLD, saved_bm_rld);
--}
--
--static struct syscore_ops acpi_processor_syscore_ops = {
--	.suspend = acpi_processor_suspend,
--	.resume = acpi_processor_resume,
--};
--
--void acpi_processor_syscore_init(void)
--{
--	register_syscore_ops(&acpi_processor_syscore_ops);
--}
--
--void acpi_processor_syscore_exit(void)
--{
--	unregister_syscore_ops(&acpi_processor_syscore_ops);
--}
--#endif /* CONFIG_PM_SLEEP */
--
- #if defined(CONFIG_X86)
- static void tsc_check_state(int state)
- {
-diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-index 2f0d4db40a9e..cfea056e3d82 100644
---- a/drivers/acpi/sleep.c
-+++ b/drivers/acpi/sleep.c
-@@ -19,6 +19,7 @@
- #include <linux/reboot.h>
- #include <linux/acpi.h>
- #include <linux/module.h>
-+#include <linux/syscore_ops.h>
- #include <asm/io.h>
- #include <trace/events/power.h>
- 
-@@ -672,6 +673,42 @@ static void acpi_sleep_suspend_setup(void)
- static inline void acpi_sleep_suspend_setup(void) {}
- #endif /* !CONFIG_SUSPEND */
- 
-+#ifdef CONFIG_PM_SLEEP
-+static u32 saved_bm_rld;
-+
-+static int acpi_processor_suspend(void)
-+{
-+	acpi_read_bit_register(ACPI_BITREG_BUS_MASTER_RLD, &saved_bm_rld);
-+	return 0;
-+}
-+
-+static void acpi_processor_resume(void)
-+{
-+	u32 resumed_bm_rld = 0;
-+
-+	acpi_read_bit_register(ACPI_BITREG_BUS_MASTER_RLD, &resumed_bm_rld);
-+	if (resumed_bm_rld == saved_bm_rld)
-+		return;
-+
-+	acpi_write_bit_register(ACPI_BITREG_BUS_MASTER_RLD, saved_bm_rld);
-+}
-+
-+static struct syscore_ops acpi_processor_syscore_ops = {
-+	.suspend = acpi_processor_suspend,
-+	.resume = acpi_processor_resume,
-+};
-+
-+void acpi_processor_syscore_init(void)
-+{
-+	register_syscore_ops(&acpi_processor_syscore_ops);
-+}
-+
-+void acpi_processor_syscore_exit(void)
-+{
-+	unregister_syscore_ops(&acpi_processor_syscore_ops);
-+}
-+#endif /* CONFIG_PM_SLEEP */
-+
- #ifdef CONFIG_HIBERNATION
- static unsigned long s4_hardware_signature;
- static struct acpi_table_facs *facs;
-diff --git a/include/acpi/processor.h b/include/acpi/processor.h
-index 42a7ca744ff1..ffe675caa766 100644
---- a/include/acpi/processor.h
-+++ b/include/acpi/processor.h
-@@ -308,7 +308,7 @@ int acpi_processor_cst_has_changed(struct acpi_processor *pr);
- int acpi_processor_hotplug(struct acpi_processor *pr);
- extern struct cpuidle_driver acpi_idle_driver;
- 
--#ifdef CONFIG_PM_SLEEP
-+#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_ACPI_SYSTEM_POWER_STATES_SUPPORT)
- void acpi_processor_syscore_init(void);
- void acpi_processor_syscore_exit(void);
- #else
--- 
-1.9.1
+> > On the other hand, there's nothing to prevent drivers from setting
+> > their ->suspend and ->runtime_suspend structure members to point at the
+> > same routine.  The routine would need to handle the case where it was
+> > called for a system suspend while the device was already runtime
+> > suspended, but that doesn't seem too hard.  With the "direct-suspend"
+> > option, even this wouldn't be necessary.
+> 
+> That would likely work, but again it would require drivers/subsystems
+> to assign system PM callbacks.
+
+You said just above that the driver/subsystem would have to announce
+its capability for this somehow.  Using suitable callback pointers
+would be a good way to make that announcement.
+
+Alan Stern
 
