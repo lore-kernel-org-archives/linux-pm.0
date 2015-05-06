@@ -1,79 +1,50 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH] thermal: armada: Update Armada 380 thermal sensor coefficients
-Date: Wed, 06 May 2015 14:45:45 +0200
-Message-ID: <554A0CF9.7080608@free-electrons.com>
-References: <1429117688-27100-1-git-send-email-gregory.clement@free-electrons.com> <553DE806.4030905@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <553DE806.4030905@free-electrons.com>
-Sender: stable-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, stable@vger.kernel.org
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH RFC 0/5] ACPI / core : few cleanups and updates for LPI
+Date: Wed,  6 May 2015 15:31:25 +0100
+Message-ID: <1430922690-6966-1-git-send-email-sudeep.holla@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:47696 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752085AbbEFObo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 6 May 2015 10:31:44 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Hanjun Guo <hanjun.guo@linaro.org>, Al Stone <ahs3@redhat.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-Hi Zhang, Eduardo,
+Hi Rafael,
 
-On 27/04/2015 09:40, Gregory CLEMENT wrote:
-> Hi Zhang, Eduardo,
-> 
-> On 15/04/2015 19:08, Gregory CLEMENT wrote:
->> From: Nadav Haklai <nadavh@marvell.com>
->>
->> Improve the Armada 380 thermal sensor accuracy by using updated formula.
->> The updated formula is:
->> Temperature[C degrees] = 0.4761 * tsen_vsen_out - 279.1
->>
->> Signed-off-by: Nadav Haklai <nadavh@marvell.com>
->> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
->> Cc: <stable@vger.kernel.org> #v3.16
-> 
-> Any chance that this fix was merged in 4.1-rc ?
+I am working on adding Low Power Idle(LPI) states support that was
+recently added in ACPI 6.0. Before introducing the LPI support, here
+are few updates and cleanups/reorganisation so that LPI support can be
+added to processor_idle module to co-exist with C-state. Few of these
+changes also help in enabling ACPI_PROCESSOR on ARM64 which is currently
+disabled and few others are just to be consistent.
 
-I saw that you missed the merge window. However I think this patch is really
-a fix and is a good candidate to be merged in 4.1.
+Regards,
+Sudeep
 
 
-Thanks,
+Sudeep Holla (5):
+  ACPI / containers : add support for ACPI0010 processor container
+  ACPI / processor: always compile perflib if CONFIG_ACPI_PROCESSOR
+  ACPI / sleep: move acpi_processor_sleep to sleep.c
+  ACPI / processor_idle: replace PREFIX with pr_fmt
+  ACPI / processor_idle : introduce ARCH_SUPPORTS_ACPI_PROCESSOR_CSTATE
 
-Gregory
-
-
-> 
-> Thanks,
-> 
-> Gregory
-> 
-> 
->> ---
->>  drivers/thermal/armada_thermal.c | 6 +++---
->>  1 file changed, 3 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
->> index c2556cf5186b..01255fd65135 100644
->> --- a/drivers/thermal/armada_thermal.c
->> +++ b/drivers/thermal/armada_thermal.c
->> @@ -224,9 +224,9 @@ static const struct armada_thermal_data armada380_data = {
->>  	.is_valid_shift = 10,
->>  	.temp_shift = 0,
->>  	.temp_mask = 0x3ff,
->> -	.coef_b = 1169498786UL,
->> -	.coef_m = 2000000UL,
->> -	.coef_div = 4289,
->> +	.coef_b = 2931108200UL,
->> +	.coef_m = 5000000UL,
->> +	.coef_div = 10502,
->>  	.inverted = true,
->>  };
->>  
->>
-> 
-> 
-
+ Documentation/memory-hotplug.txt |   2 +-
+ arch/ia64/Kconfig                |   1 +
+ arch/x86/Kconfig                 |   1 +
+ arch/x86/include/asm/acpi.h      |   2 -
+ drivers/acpi/Kconfig             |   3 +
+ drivers/acpi/Makefile            |   2 +-
+ drivers/acpi/container.c         |   1 +
+ drivers/acpi/processor_idle.c    | 119 +++++++++++++++++----------------------
+ drivers/acpi/sleep.c             |  37 ++++++++++++
+ include/acpi/processor.h         |  33 +----------
+ include/linux/cpufreq.h          |   4 ++
+ 11 files changed, 104 insertions(+), 101 deletions(-)
 
 -- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+1.9.1
+
