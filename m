@@ -1,81 +1,128 @@
-From: =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>
-Subject: Re: [PATCH v3] power_supply: Add support for Richtek rt9455 battery charger
-Date: Wed, 6 May 2015 21:10:28 +0900
-Message-ID: <CAJKOXPdnmvNXUyt31NfXK8AAY1VCyz=2oPXCu9qdcfw3sHS7tA@mail.gmail.com>
-References: <1430843530-26252-1-git-send-email-anda-maria.nicolae@intel.com>
-	<20150506114003.GM10973@lpalcu-linux>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 4/4] sched: cpufreq_cfs: pelt-based cpu frequency scaling
+Date: Wed, 6 May 2015 14:22:40 +0200
+Message-ID: <20150506122240.GY23123@twins.programming.kicks-ass.net>
+References: <1430777441-15087-1-git-send-email-mturquette@linaro.org>
+ <1430777441-15087-5-git-send-email-mturquette@linaro.org>
+ <20150505090042.GC21418@twins.programming.kicks-ass.net>
+ <20150505182347.16410.16338@quantum>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vn0-f53.google.com ([209.85.216.53]:35158 "EHLO
-	mail-vn0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751697AbbEFMK3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 May 2015 08:10:29 -0400
-In-Reply-To: <20150506114003.GM10973@lpalcu-linux>
+Received: from bombadil.infradead.org ([198.137.202.9]:45463 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750868AbbEFMXA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 May 2015 08:23:00 -0400
+Content-Disposition: inline
+In-Reply-To: <20150505182347.16410.16338@quantum>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laurentiu Palcu <laurentiu.palcu@intel.com>
-Cc: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>, sre@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: Michael Turquette <mturquette@linaro.org>
+Cc: mingo@kernel.org, linux-kernel@vger.kernel.org, preeti@linux.vnet.ibm.com, Morten.Rasmussen@arm.com, riel@redhat.com, efault@gmx.de, nicolas.pitre@linaro.org, daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, amit.kucheria@linaro.org, juri.lelli@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, alex.shi@linaro.org, linux-pm@vger.kernel.org
 
-2015-05-06 20:40 GMT+09:00 Laurentiu Palcu <laurentiu.palcu@intel.com>:
-> On Tue, May 05, 2015 at 07:32:10PM +0300, Anda-Maria Nicolae wrote:
->> +static int rt9455_probe(struct i2c_client *client,
->> +                     const struct i2c_device_id *id)
->> +{
->> +     struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
->> +     struct device *dev = &client->dev;
->> +     struct rt9455_info *info;
->> +     struct power_supply_config rt9455_charger_config = {};
->> +     /* mandatory device-specific data values */
->> +     u32 ichrg, ieoc_percentage, voreg;
->> +     /* optional device-specific data values */
->> +     u32 mivr = -1, iaicr = -1;
->> +     int i, ret;
->> +
->> +     if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA)) {
->> +             dev_err(dev, "No support for SMBUS_BYTE_DATA\n");
->> +             return -ENODEV;
->> +     }
->> +     info = devm_kzalloc(dev, sizeof(*info), GFP_KERNEL);
->> +     if (!info)
->> +             return -ENOMEM;
->> +
->> +     info->client = client;
->> +     i2c_set_clientdata(client, info);
->> +
->> +     info->regmap = devm_regmap_init_i2c(client,
->> +                                         &rt9455_regmap_config);
->> +     if (IS_ERR(info->regmap)) {
->> +             dev_err(dev, "Failed to initialize register map\n");
->> +             return -EINVAL;
->> +     }
->> +
->> +     for (i = 0; i < F_MAX_FIELDS; i++) {
->> +             info->regmap_fields[i] =
->> +                     devm_regmap_field_alloc(dev, info->regmap,
->> +                                             rt9455_reg_fields[i]);
->> +             if (IS_ERR(info->regmap_fields[i])) {
->> +                     dev_err(dev,
->> +                             "Failed to allocate regmap field = %d\n", i);
->> +                     return PTR_ERR(info->regmap_fields[i]);
->> +             }
->> +     }
->> +
->> +     ret = rt9455_discover_charger(info, &ichrg, &ieoc_percentage,
->> +                                   &voreg, &mivr, &iaicr);
->> +     if (ret) {
->> +             dev_err(dev, "Failed to discover charger\n");
->> +             return ret;
->> +     }
->> +
->> +#if IS_ENABLED(CONFIG_USB_PHY)
->> +     info->usb_phy = usb_get_phy(USB_PHY_TYPE_USB2);
-> If you used devm_usb_get_phy() you wouldn't have to worry about
-> releasing usb_phy(as Krzysztof suggested in the previous mail). It's up
-> to you.
+On Tue, May 05, 2015 at 11:23:47AM -0700, Michael Turquette wrote:
+> Quoting Peter Zijlstra (2015-05-05 02:00:42)
+> > On Mon, May 04, 2015 at 03:10:41PM -0700, Michael Turquette wrote:
+> > > This policy is implemented using the cpufreq governor interface for two
+> > > main reasons:
+> > > 
+> > > 1) re-using the cpufreq machine drivers without using the governor
+> > > interface is hard.
+> > > 
+> > > 2) using the cpufreq interface allows us to switch between the
+> > > scheduler-driven policy and legacy cpufreq governors such as ondemand at
+> > > run-time. This is very useful for comparative testing and tuning.
+> > 
+> > Urgh,. so I don't really like that. It adds a lot of noise to the
+> > system. You do the irq work thing to kick the cpufreq threads which do
+> > their little thing -- and their wakeup will influence the cfs
+> > accounting, which in turn will start the whole thing anew.
+> > 
+> > I would really prefer you did a whole new system with directly invoked
+> > drivers that avoid the silly dance. Your 'new' ARM systems should be
+> > well capable of that.
+> 
+> Thanks for the review Peter.
 
-That's a good idea, it would simplify the exit and error paths. But
-still usb_unregister_notifier() would be needed.
+Well, I didn't actually get beyond the Changelog; although I have
+rectified this now. A few more comments below.
 
-Best regards,
-Krzysztof
+> We'll need something in process context for the many cpufreq drivers
+> that might sleep during their cpu frequency transition, no? This is due
+> to calls into the regulator framework, the clock framework and sometimes
+> other things such as conversing with a power management IC or voting
+> with some system controller.
+
+Yes, we need _something_. I just spoke to a bunch of people on IRC and
+it does indeed seem that I was mistaken in my assumption that modern ARM
+systems were 'easy' in this regard.
+
+> > As to the drivers, they're mostly fairly small and self contained, it
+> > should not be too hard to hack them up to work without cpufreq.
+> 
+> The drivers are not the only thing. I want to leverage the existing
+> cpufreq core infrastructure:
+> 
+> * rate change notifiers
+> * cpu hotplug awareness
+> * methods to fetch frequency tables from firmware (acpi, devicetree)
+> * other stuff I can't think of now
+> 
+> So I do not think we should throw out the baby with the bath water. The
+> thing that people really don't like about cpufreq are the governors IMO.
+> Let's fix that by creating a list of requirements that we really want
+> for scheduler-driven cpu frequency selection:
+> 
+> 0) do something smart with scheduler statistics to create an improved
+> frequency selection algorithm over existing cpufreq governors
+> 
+> 1) support upcoming and legacy hardware, within reason
+> 
+> 2) if a system exports a fast, async frequency selection interface to
+> Linux, then provide a solution that doesn't do any irq_work or kthread
+> stuff.  Do it all in the fast path
+> 
+> 3) if a system has a slow, synchronous interface for frequency
+> selection, then provide an acceptable solution for kicking this work to
+> process context. Limit time in the fast path
+> 
+> The patch set tries to tackle 0, 1 and 3. Would the inclusion of #2 make
+> you feel better about supporting "newer" hardware with a fire-and-forget
+> frequency selection interface?
+
+I should probably look at doing a x86 support patch to try some of this
+out, I'll try and find some time to play with that.
+
+So two comments on the actual code:
+
+1) Ideally these hooks would be called from places where we've just
+computed the cpu utilization already. I understand this is currently not
+the case and we need to do it in-situ.
+
+That said; it would be good to have the interface such that we pass the
+utilization in; this would of course mean we'd have to compute it at the
+call sites, this should be fine I think.
+
+
+2) I dislike how policy->cpus is handled; it feels upside down.
+If per 1 each CPU already computed its utilization and provides it in
+the call, we should not have to recompute it and its scale factor (which
+btw seems done slightly odd too, I know humans like 10 base, but
+computers suck at it).
+
+Why not something like:
+
+	usage = ((1024 + 256) * usage) >> 10; /* +25% */
+
+	old_usage = __this_cpu_read(gd->usage);
+	__this_cpu_write(gd->usage, usage);
+
+	max_usage = 0;
+	for_each_cpu(cpu, policy->cpus)
+		max_usage = max(max_usage, per_cpu(gd->usage, cpu));
+
+	if (max_usage < old_usage || /* dropped */
+	    (max_usage == usage && max_usage != old_usage)) /* raised */
+		request_change(max_usage);
+
+
