@@ -1,489 +1,351 @@
-From: Anda-Maria Nicolae <anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+From: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
 Subject: Re: [PATCH v3] power_supply: Add support for Richtek rt9455 battery
  charger
-Date: Wed, 06 May 2015 18:41:00 +0300
-Message-ID: <554A360C.7020401@intel.com>
-References: <1430843530-26252-1-git-send-email-anda-maria.nicolae@intel.com> <20150506114003.GM10973@lpalcu-linux>
+Date: Wed, 06 May 2015 19:02:32 +0300
+Message-ID: <554A3B18.7050401@intel.com>
+References: <1430843530-26252-1-git-send-email-anda-maria.nicolae@intel.com> <CAJKOXPfu-O8XnbYjjn4hz0EGpN1R2afeS1Fjvhb4XDjQof0iXA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150506114003.GM10973@lpalcu-linux>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:29305 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750698AbbEFQAH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 6 May 2015 12:00:07 -0400
+In-Reply-To: <CAJKOXPfu-O8XnbYjjn4hz0EGpN1R2afeS1Fjvhb4XDjQof0iXA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?B?S3J6eXN6dG9mIEtvesWCb3dza2k=?= <k.kozlowski.k@gmail.com>
+Cc: sre@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-Hi Laurentiu,
 
-Inline are the answers to your comments.
-
-Thanks,
-Anda
-
-On 05/06/2015 02:40 PM, Laurentiu Palcu wrote:
-> On Tue, May 05, 2015 at 07:32:10PM +0300, Anda-Maria Nicolae wrote:
+On 05/06/2015 10:58 AM, Krzysztof Koz=C5=82owski wrote:
+> 2015-05-06 1:32 GMT+09:00 Anda-Maria Nicolae <anda-maria.nicolae@inte=
+l.com>:
 >> Based on the datasheet found here:
->> http://www.richtek.com/download_ds.jsp?p=RT9455
+>> http://www.richtek.com/download_ds.jsp?p=3DRT9455
 >>
->> Signed-off-by: Anda-Maria Nicolae <anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+>> Signed-off-by: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
 >> ---
 >>
 >> Updates from v2 version:
->> - removed unused masks and keep the used ones. I have tried to access mask field
->> from struct regmap_field, but I have received the following compilation error:
->> "dereferencing pointer to incomplete type". I think this happens because I include
->> the file include/linux/regmap.h and in this file struct regmap_field is only declared
->> and not defined. Struct regmap_field is defined in drivers/base/regmap/internal.h.
->> If I include this file, compilation works. But I do not think it is a good idea
->> to include it; I did not find any other driver which includes this file. I also
->> could not find any driver that accesses mask field from struct regmap_field.
-> If you want to go this path, which looks promising since you can get rid
-> of all mask macros, you don't need regmap_field to compute your masks.
-> You need reg_field (include/linux/regmap.h). When you setup your fields,
-> you use:
->
-> static const struct reg_field rt9455_reg_fields[] = {...};
->
-> Hence, you have access to both msb and lsb of each field and you can
-> easily compute your mask. Just an idea.
->
-Because the masks are constant, I believe it is better to define macros 
-for them instead of calculating every time the driver uses one of them. 
-This is why I wanted to use mask field: to avoid calculating them and to 
-remove the macros.
->> For instance, drivers/pwm/pwm-sti.c at lines 157, 158, also uses masks.
+>> - removed unused masks and keep the used ones. I have tried to acces=
+s mask field
+>> from struct regmap_field, but I have received the following compilat=
+ion error:
+>> "dereferencing pointer to incomplete type". I think this happens bec=
+ause I include
+>> the file include/linux/regmap.h and in this file struct regmap_field=
+ is only declared
+>> and not defined. Struct regmap_field is defined in drivers/base/regm=
+ap/internal.h.
+>> If I include this file, compilation works. But I do not think it is =
+a good idea
+>> to include it; I did not find any other driver which includes this f=
+ile. I also
+>> could not find any driver that accesses mask field from struct regma=
+p_field.
+>> For instance, drivers/pwm/pwm-sti.c at lines 157, 158, also uses mas=
+ks.
 >>
->> - I have also kept REG_FIELD definitions for interrupt registers, since, for instance,
+>> - I have also kept REG_FIELD definitions for interrupt registers, si=
+nce, for instance,
 >> I use F_BATAB to check battery presence property.
 >>
->> - cached regs 0x05 and 0x06. Also, I have added rt9455_is_writeable_reg function
+>> - cached regs 0x05 and 0x06. Also, I have added rt9455_is_writeable_=
+reg function
 >> for writeable_reg field of regmap_config.
 >>
->> - used POWER_STATUS_DISCHARGING, replaced break with and replaced it with return and
->> indented it correctly. I spent some time on this and I finally understood what is happening.
->> So, if PWR_RDY bit is set, but STAT bits value is 0, the charger may be in one
+>> - used POWER_STATUS_DISCHARGING, replaced break with and replaced it=
+ with return and
+>> indented it correctly. I spent some time on this and I finally under=
+stood what is happening.
+>> So, if PWR_RDY bit is set, but STAT bits value is 0, the charger may=
+ be in one
 >> of the following cases:
 >> 1. CHG_EN bit is 0.
 >> 2. CHG_EN bit is 1 but the battery is not connected.
 >> In any of these cases, POWER_SUPPLY_STATUS_NOT_CHARGING is returned.
->> If the PWR_RDY bit is cleared, POWER_SUPPLY_STATUS_DISCHARGING is returned.
+>> If the PWR_RDY bit is cleared, POWER_SUPPLY_STATUS_DISCHARGING is re=
+turned.
 >>
->> - used VOREG bits value instead of VMREG in functions rt9455_charger_get_voltage_max()/
->> rt9455_charger_set_voltage_max(). Although RT9455 charger has VMREG bits which,
->> according to the datasheet, represent "Maximum battery regulation voltage", the
->> charger never uses VMREG value as maximum threshold for battery voltage. This
->> happens because TE and TE_SHDN_EN bits are set during rt9455_probe(), and charging
->> operation is terminated when charging current is less than ICHRG x IEOC. When charging
->> operation is terminated, battery voltage is almost equal to VOREG. Therefore,
->> VMREG value is not taken into account. This is the reason why VOREG value is
+>> - used VOREG bits value instead of VMREG in functions rt9455_charger=
+_get_voltage_max()/
+>> rt9455_charger_set_voltage_max(). Although RT9455 charger has VMREG =
+bits which,
+>> according to the datasheet, represent "Maximum battery regulation vo=
+ltage", the
+>> charger never uses VMREG value as maximum threshold for battery volt=
+age. This
+>> happens because TE and TE_SHDN_EN bits are set during rt9455_probe()=
+, and charging
+>> operation is terminated when charging current is less than ICHRG x I=
+EOC. When charging
+>> operation is terminated, battery voltage is almost equal to VOREG. T=
+herefore,
+>> VMREG value is not taken into account. This is the reason why VOREG =
+value is
 >> set/returned in these functions.
-> Something's not right... What happens in the following scenario:
-> VMREG=4.2V (default value) and user sets VOREG=4.45V? Did you test this
-> case. I really doubt VMREG field is not used at all. Of course, you can set
-> VMREG to maximum value in which case VMREG doesn't really matter.
-
-I have set VMREG to its maximum value in rt9455_hw_init() function. 
-Please take a look at my last patch.
-Yes, I have tested this case with a battery whose voltage is 3.97V, 
-VOREG = 4.45V and VMREG = 4.2V. The charger drains current from the 
-power source. If I set VOREG to 4V, from 4.45V, Charge done interrupt is 
-triggered and no current is drained from the power source. If I increase 
-VMREG to 4.45V, and keep VOREG to 4V, no input current is drained from 
-the power source, but if I increase VOREG to 4.2V, the charger drains 
-current from the power source. This is why I have decided to use VOREG 
-instead of VMREG.
-
->
+>>
 >> - corrected comment from rt9455_usb_event_id() function.
 >>
->> - replaced IS_ERR_OR_NULL() with IS_ERR() to check the result of usb_get_phy()
->> function. Also, if usb_register_notifier() fails, since usb_put_phy() is immediately
->> called, I have set info->usb_phy to ERR_PTR(-ENODEV) so that in rt9455_remove()
+>> - replaced IS_ERR_OR_NULL() with IS_ERR() to check the result of usb=
+_get_phy()
+>> function. Also, if usb_register_notifier() fails, since usb_put_phy(=
+) is immediately
+>> called, I have set info->usb_phy to ERR_PTR(-ENODEV) so that in rt94=
+55_remove()
 >> usb_put_phy is not mistakenly called again.
 >>
 >>   .../devicetree/bindings/power/rt9455_charger.txt   |   43 +
 >>   .../devicetree/bindings/vendor-prefixes.txt        |    1 +
 >>   drivers/power/Kconfig                              |    6 +
 >>   drivers/power/Makefile                             |    1 +
->>   drivers/power/rt9455_charger.c                     | 1801 ++++++++++++++++++++
+>>   drivers/power/rt9455_charger.c                     | 1801 ++++++++=
+++++++++++++
 >>   5 files changed, 1852 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/power/rt9455_charger.txt
+>>   create mode 100644 Documentation/devicetree/bindings/power/rt9455_=
+charger.txt
 >>   create mode 100644 drivers/power/rt9455_charger.c
 >>
-> (...)
->
->> +static int rt9455_charger_get_status(struct rt9455_info *info,
->> +				     union power_supply_propval *val)
->> +{
->> +	unsigned int v, pwr_rdy;
->> +	int ret;
+>> diff --git a/Documentation/devicetree/bindings/power/rt9455_charger.=
+txt b/Documentation/devicetree/bindings/power/rt9455_charger.txt
+>> new file mode 100644
+>> index 0000000..7e8aed6
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power/rt9455_charger.txt
+>> @@ -0,0 +1,43 @@
+>> +Binding for Richtek rt9455 battery charger
 >> +
->> +	ret = regmap_field_read(info->regmap_fields[F_STAT], &v);
->> +	if (ret) {
->> +		dev_err(&info->client->dev, "Failed to read STAT bits\n");
->> +		return ret;
->> +	}
+>> +Required properties:
+>> +- compatible: Should contain one of the following:
+>> + * "richtek,rt9455"
 >> +
->> +	switch (v) {
->> +	case 0:
->> +		ret = regmap_field_read(info->regmap_fields[F_PWR_RDY],
->> +					&pwr_rdy);
->> +		if (ret) {
->> +			dev_err(&info->client->dev, "Failed to read PWR_RDY bit\n");
->> +			return ret;
->> +		}
+>> +- reg:                                 integer, i2c address of the =
+device.
+>> +- richtek,output-charge-current:       integer, output current from=
+ the charger to the
+>> +                                       battery, in uA.
+>> +- richtek,end-of-charge-percentage:    integer, percent of the outp=
+ut charge current.
+>> +                                       When the current in constant=
+-voltage phase drops
+>> +                                       below output_charge_current =
+x end-of-charge-percentage,
+>> +                                       charge is terminated.
+>> +- richtek,battery-regulation-voltage:  integer, maximum battery vol=
+tage in uV.
 >> +
->> +		if (!pwr_rdy) {
->> +			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
->> +			return 0;
->> +		}
->> +		/*
->> +		 * If PWR_RDY bit is set, but STAT bits value is 0, the charger
->> +		 * may be in one of the following cases:
->> +		 * 1. CHG_EN bit is 0.
->> +		 * 2. CHG_EN bit is 1 but the battery is not connected.
->> +		 * In any of these cases, POWER_SUPPLY_STATUS_NOT_CHARGING is
->> +		 * returned.
->> +		 */
->> +		val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
->> +		return 0;
-> If STAT is always 0 when charger is removed, I guess this solution is
-> fine. Though you could do the PWR_RDY check first and, if it's 1, you
-> could then continue with STAT evaluation.
->
->> +	case 1:
->> +		val->intval = POWER_SUPPLY_STATUS_CHARGING;
->> +		return 0;
->> +	case 2:
->> +		val->intval = POWER_SUPPLY_STATUS_FULL;
->> +		return 0;
->> +	default:
->> +		val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
->> +		return 0;
->> +	}
->> +}
+>> +Optional properties:
+>> +- richtek,min-input-voltage-regulation: integer, input voltage leve=
+l in uA, used to
+>> +                                       decrease voltage level when =
+the over current
+>> +                                       of the input power source oc=
+curs.
+>> +                                       This prevents input voltage =
+drop due to insufficient
+>> +                                       current provided by the powe=
+r source.
+>> +- richtek,avg-input-current-regulation: integer, input current valu=
+e drained by the
+>> +                                       charger from the power sourc=
+e.
 >> +
-> (...)
+>> +Example:
 >> +
->> +static int rt9455_charger_get_voltage(struct rt9455_info *info,
->> +				      union power_supply_propval *val)
->> +{
->> +	int voltage;
->> +	int ret;
+>> +rt9455@22 {
+>> +       compatible =3D "richtek,rt9455";
+>> +       reg =3D <0x22>;
 >> +
->> +	ret = rt9455_get_field_val(info, F_VOREG,
->> +				   rt9455_voreg_values,
->> +				   ARRAY_SIZE(rt9455_voreg_values),
->> +				   &voltage);
->> +	if (ret) {
->> +		dev_err(&info->client->dev, "Failed to read VOREG value\n");
->> +		return ret;
->> +	}
+>> +       interrupt-parent =3D <&gpio1>;
+>> +       interrupts =3D <0 1>;
 >> +
->> +	val->intval = voltage;
+>> +       interrupt-gpio =3D <&gpio1 0 1>;
+>> +       reset-gpio =3D <&gpio1 1 1>;
 >> +
->> +	return 0;
->> +}
+>> +       richtek,output-charge-current       =3D <500000>;
+>> +       richtek,end-of-charge-percentage    =3D <10>;
+>> +       richtek,battery-regulation-voltage  =3D <4200000>;
 >> +
->> +static int rt9455_charger_get_voltage_max(struct rt9455_info *info,
->> +					  union power_supply_propval *val)
->> +{
->> +	/*
->> +	 * Although RT9455 charger has VMREG bits which, according to the
->> +	 * datasheet, represent "Maximum battery regulation voltage", the
->> +	 * charger never uses VMREG value as maximum threshold for battery
->> +	 * voltage. This happens because TE and TE_SHDN_EN bits are set during
->> +	 * rt9455_probe(), and charging operation is terminated when charging
->> +	 * current is less than ICHRG x IEOC. When charging operation is
->> +	 * terminated, battery voltage is almost equal to VOREG. Therefore,
->> +	 * VMREG value is not taken into account. This is the reason why maximum
->> +	 * VOREG value is returned in this function. Also, maximum VOREG value
->> +	 * equals maximum VMREG value: 4.45V.
->> +	 */
->> +	int idx = ARRAY_SIZE(rt9455_voreg_values) - 1;
->> +
->> +	val->intval = rt9455_voreg_values[idx];
->> +
->> +	return 0;
->> +}
->> +
-> (...)
->> +
->> +static int rt9455_charger_set_voltage(struct rt9455_info *info,
->> +				      const union power_supply_propval *val)
->> +{
->> +	return rt9455_set_field_val(info, F_VOREG,
->> +				    rt9455_voreg_values,
->> +				    ARRAY_SIZE(rt9455_voreg_values),
->> +				    val->intval);
->> +}
->> +
->> +static int rt9455_charger_set_voltage_max(struct rt9455_info *info,
->> +					  const union power_supply_propval *val)
->> +{
->> +	/*
->> +	 * Although RT9455 charger has VMREG bits which, according to the
->> +	 * datasheet, represent "Maximum battery regulation voltage", the
->> +	 * charger never uses VMREG value as maximum threshold for battery
->> +	 * voltage. This happens because TE and TE_SHDN_EN bits are set during
->> +	 * rt9455_probe(), and charging operation is terminated when charging
->> +	 * current is less than ICHRG x IEOC. When charging operation is
->> +	 * terminated, battery voltage is almost equal to VOREG. Therefore,
->> +	 * VMREG value is not taken into account. This is the reason why VOREG
->> +	 * value is set in this function.
->> +	 */
->> +	return rt9455_set_field_val(info, F_VOREG,
->> +				    rt9455_voreg_values,
->> +				    ARRAY_SIZE(rt9455_voreg_values),
->> +				    val->intval);
->> +}
-> Apparently, rt9455_charger_set_voltage_max() and
-> rt9455_charger_set_voltage() do the same thing?
-
-Yes, they do the same thing. If I increase VMREG instead of VOREG, the 
-charger does not drain current if the battery voltage is almost equal to 
-VOREG and I think the user wants the contrary.
-
-> (...)
->
->> +static int rt9455_usb_event_id(struct rt9455_info *info,
->> +			       u8 opa_mode, u8 iaicr)
->> +{
->> +	struct device *dev = &info->client->dev;
->> +	int ret;
->> +
->> +	if (opa_mode == RT9455_CHARGE_MODE) {
->> +		/*
->> +		 * If the charger is in charge mode, and it has received
->> +		 * USB_EVENT_ID, this means a consumer device is connected and
->> +		 * it should be powered by the charger.
->> +		 * In this case, the charger goes into boost mode.
->> +		 */
->> +		dev_dbg(dev, "USB_EVENT_ID received, therefore the charger goes into boost mode\n");
->> +		ret = regmap_field_write(info->regmap_fields[F_OPA_MODE],
->> +					 RT9455_BOOST_MODE);
-> I missed this previously but, when you switch to boost mode here,
-> shouldn't you set the boost output voltage somewhere? According to
-> chip's specification, VOREG is used for both battery regulation and
-> boost output. So, if the user sets the battery regulation to 4.45
-> (maximum), when switching to boost mode you'll end up with 5.6V on VBUS
-> rail. I'm not an expert in USB specifications but a quick google search
-> revealed that the maximum VBUS voltage is 5.25V.
->
-> Perhaps you should add a DT property to let the user choose boost output
-> voltage.
-Did not know that. I understand. Will do it.
->> +		if (ret) {
->> +			dev_err(dev, "Failed to set charger in boost mode\n");
->> +			return NOTIFY_DONE;
->> +		}
->> +	}
->> +
->> +	dev_dbg(dev, "USB_EVENT_ID received, therefore IAICR is set to its minimum value\n");
->> +	if (iaicr != RT9455_IAICR_100MA) {
->> +		ret = regmap_field_write(info->regmap_fields[F_IAICR],
->> +					 RT9455_IAICR_100MA);
->> +		if (ret) {
->> +			dev_err(dev, "Failed to set IAICR value\n");
->> +			return NOTIFY_DONE;
->> +		}
->> +	}
->> +
->> +	return NOTIFY_OK;
->> +}
->> +
-> (...)
->> +
->> +static int rt9455_probe(struct i2c_client *client,
->> +			const struct i2c_device_id *id)
->> +{
->> +	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
->> +	struct device *dev = &client->dev;
->> +	struct rt9455_info *info;
->> +	struct power_supply_config rt9455_charger_config = {};
->> +	/* mandatory device-specific data values */
->> +	u32 ichrg, ieoc_percentage, voreg;
->> +	/* optional device-specific data values */
->> +	u32 mivr = -1, iaicr = -1;
->> +	int i, ret;
->> +
->> +	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA)) {
->> +		dev_err(dev, "No support for SMBUS_BYTE_DATA\n");
->> +		return -ENODEV;
->> +	}
->> +	info = devm_kzalloc(dev, sizeof(*info), GFP_KERNEL);
->> +	if (!info)
->> +		return -ENOMEM;
->> +
->> +	info->client = client;
->> +	i2c_set_clientdata(client, info);
->> +
->> +	info->regmap = devm_regmap_init_i2c(client,
->> +					    &rt9455_regmap_config);
->> +	if (IS_ERR(info->regmap)) {
->> +		dev_err(dev, "Failed to initialize register map\n");
->> +		return -EINVAL;
->> +	}
->> +
->> +	for (i = 0; i < F_MAX_FIELDS; i++) {
->> +		info->regmap_fields[i] =
->> +			devm_regmap_field_alloc(dev, info->regmap,
->> +						rt9455_reg_fields[i]);
->> +		if (IS_ERR(info->regmap_fields[i])) {
->> +			dev_err(dev,
->> +				"Failed to allocate regmap field = %d\n", i);
->> +			return PTR_ERR(info->regmap_fields[i]);
->> +		}
->> +	}
->> +
->> +	ret = rt9455_discover_charger(info, &ichrg, &ieoc_percentage,
->> +				      &voreg, &mivr, &iaicr);
->> +	if (ret) {
->> +		dev_err(dev, "Failed to discover charger\n");
->> +		return ret;
->> +	}
->> +
->> +#if IS_ENABLED(CONFIG_USB_PHY)
->> +	info->usb_phy = usb_get_phy(USB_PHY_TYPE_USB2);
-> If you used devm_usb_get_phy() you wouldn't have to worry about
-> releasing usb_phy(as Krzysztof suggested in the previous mail). It's up
-> to you.
->
-Ok.
->> +	if (IS_ERR(info->usb_phy)) {
->> +		dev_err(dev, "Failed to get USB transceiver\n");
->> +	} else {
->> +		info->nb.notifier_call = rt9455_usb_event;
->> +		ret = usb_register_notifier(info->usb_phy, &info->nb);
->> +		if (ret) {
->> +			dev_err(dev, "Failed to register USB notifier\n");
->> +			usb_put_phy(info->usb_phy);
->> +			/*
->> +			 * Since usb_put_phy() has been called, info->usb_phy is
->> +			 * set to ERR_PTR so that in rt9455_remove()
->> +			 * usb_put_phy() is not mistakenly called again.
->> +			 */
->> +			info->usb_phy = ERR_PTR(-ENODEV);
->> +		}
->> +	}
->> +#endif
->> +
->> +	INIT_DEFERRABLE_WORK(&info->pwr_rdy_work, rt9455_pwr_rdy_work_callback);
->> +	INIT_DEFERRABLE_WORK(&info->max_charging_time_work,
->> +			     rt9455_max_charging_time_work_callback);
->> +	INIT_DEFERRABLE_WORK(&info->batt_presence_work,
->> +			     rt9455_batt_presence_work_callback);
->> +
->> +	rt9455_charger_config.of_node		= dev->of_node;
->> +	rt9455_charger_config.drv_data		= info;
->> +	rt9455_charger_config.supplied_to	= rt9455_charger_supplied_to;
->> +	rt9455_charger_config.num_supplicants	=
->> +					ARRAY_SIZE(rt9455_charger_supplied_to);
->> +	ret = devm_request_threaded_irq(dev, client->irq, NULL,
->> +					rt9455_irq_handler_thread,
->> +					IRQF_TRIGGER_LOW | IRQF_ONESHOT,
->> +					RT9455_DRIVER_NAME, info);
->> +	if (ret) {
->> +		dev_err(dev, "Failed to register IRQ handler\n");
->> +		return ret;
->> +	}
->> +
->> +	ret = rt9455_hw_init(info, ichrg, ieoc_percentage, voreg, mivr, iaicr);
->> +	if (ret) {
->> +		dev_err(dev, "Failed to set charger to its default values\n");
->> +		return ret;
->> +	}
->> +
->> +	info->charger = power_supply_register(dev, &rt9455_charger_desc,
->> +					      &rt9455_charger_config);
->> +	if (IS_ERR(info->charger)) {
->> +		dev_err(dev, "Failed to register charger\n");
->> +		ret = PTR_ERR(info->charger);
->> +		goto put_usb_phy;
->> +	}
->> +
->> +	return 0;
->> +
->> +put_usb_phy:
->> +#if IS_ENABLED(CONFIG_USB_PHY)
->> +	if (!IS_ERR(info->usb_phy))  {
->> +		usb_unregister_notifier(info->usb_phy, &info->nb);
->> +		usb_put_phy(info->usb_phy);
->> +		info->usb_phy = ERR_PTR(-ENODEV);
->> +	}
->> +#endif
->> +	return ret;
->> +}
->> +
->> +static int rt9455_remove(struct i2c_client *client)
->> +{
->> +	int ret;
->> +	struct rt9455_info *info = i2c_get_clientdata(client);
->> +
->> +	ret = rt9455_register_reset(info);
->> +	if (ret)
->> +		dev_err(&info->client->dev, "Failed to set charger to its default values\n");
->> +
->> +#if IS_ENABLED(CONFIG_USB_PHY)
->> +	if (!IS_ERR(info->usb_phy)) {
->> +		usb_unregister_notifier(info->usb_phy, &info->nb);
->> +		usb_put_phy(info->usb_phy);
->> +	}
->> +#endif
->> +
->> +	cancel_delayed_work_sync(&info->pwr_rdy_work);
->> +	cancel_delayed_work_sync(&info->max_charging_time_work);
->> +	cancel_delayed_work_sync(&info->batt_presence_work);
->> +
->> +	power_supply_unregister(info->charger);
->> +
->> +	return ret;
->> +}
->> +
->> +static const struct i2c_device_id rt9455_i2c_id_table[] = {
->> +	{ RT9455_DRIVER_NAME, 0 },
->> +	{ },
+>> +       richtek,min-input-voltage-regulation =3D <4500000>;
+>> +       richtek,avg-input-current-regulation =3D <500000>;
 >> +};
->> +MODULE_DEVICE_TABLE(i2c, rt9455_i2c_id_table);
->> +
->> +static const struct of_device_id rt9455_of_match[] = {
->> +	{ .compatible = "richtek,rt9455", },
->> +	{ },
->> +};
->> +MODULE_DEVICE_TABLE(of, rt9455_of_match);
->> +
->> +static const struct acpi_device_id rt9455_i2c_acpi_match[] = {
->> +	{ "RT945500", 0 },
->> +	{ }
->> +};
->> +MODULE_DEVICE_TABLE(acpi, rt9455_i2c_acpi_match);
->> +
->> +static struct i2c_driver rt9455_driver = {
->> +	.probe		= rt9455_probe,
->> +	.remove		= rt9455_remove,
->> +	.id_table	= rt9455_i2c_id_table,
->> +	.driver = {
->> +		.name		= RT9455_DRIVER_NAME,
->> +		.of_match_table	= of_match_ptr(rt9455_of_match),
->> +		.acpi_match_table = ACPI_PTR(rt9455_i2c_acpi_match),
->> +	},
->> +};
->> +module_i2c_driver(rt9455_driver);
->> +
->> +MODULE_LICENSE("GPL");
->> +MODULE_AUTHOR("Anda-Maria Nicolae <anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>");
->> +MODULE_ALIAS("i2c:rt9455-charger");
->> +MODULE_DESCRIPTION("Richtek RT9455 Charger Driver");
->> -- 
->> 1.7.9.5
+>> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b=
+/Documentation/devicetree/bindings/vendor-prefixes.txt
+>> index 8033919..7b8c129 100644
+>> --- a/Documentation/devicetree/bindings/vendor-prefixes.txt
+>> +++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
+>> @@ -161,6 +161,7 @@ ralink      Mediatek/Ralink Technology Corp.
+>>   ramtron        Ramtron International
+>>   realtek Realtek Semiconductor Corp.
+>>   renesas        Renesas Electronics Corporation
+>> +richtek        Richtek Technology Corporation
+>>   ricoh  Ricoh Co. Ltd.
+>>   rockchip       Fuzhou Rockchip Electronics Co., Ltd
+>>   samsung        Samsung Semiconductor
+>> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+>> index 4091fb0..39f208d 100644
+>> --- a/drivers/power/Kconfig
+>> +++ b/drivers/power/Kconfig
+>> @@ -439,6 +439,12 @@ config BATTERY_RT5033
+>>            The fuelgauge calculates and determines the battery state=
+ of charge
+>>            according to battery open circuit voltage.
 >>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> +config CHARGER_RT9455
+>> +       tristate "Richtek RT9455 battery charger driver"
+>> +       depends on I2C && GPIOLIB
+> Laurentiu Palcu pointed already the need of REGMAP_I2C dependency.
+> Actually you need to select it.
+Will do it.
+>
+> (...)
+>
+>> +
+>> +static int rt9455_charger_property_is_writeable(struct power_supply=
+ *psy,
+>> +                                               enum power_supply_pr=
+operty psp)
+>> +{
+>> +       switch (psp) {
+>> +       case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+>> +       case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+>> +       case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
+>> +               return 1;
+>> +       default:
+>> +               return 0;
+>> +       }
+>> +}
+> And comments from previous email? Which "numerous charger drivers" ex=
+pose these
+> properties as writable?
+>
+Yesterday I run: POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT and drivers=20
+were shown. What I did not do was to look in those drivers to see if=20
+indeed the property is writeable, or if it is readable.
+I agree with removing them from the driver.  I've spent some time to=20
+understand them and this is why I did not agree with this in the beginn=
+ing.
+> (...)
+>
+>> +static int rt9455_probe(struct i2c_client *client,
+>> +                       const struct i2c_device_id *id)
+>> +{
+>> +       struct i2c_adapter *adapter =3D to_i2c_adapter(client->dev.p=
+arent);
+>> +       struct device *dev =3D &client->dev;
+>> +       struct rt9455_info *info;
+>> +       struct power_supply_config rt9455_charger_config =3D {};
+>> +       /* mandatory device-specific data values */
+>> +       u32 ichrg, ieoc_percentage, voreg;
+>> +       /* optional device-specific data values */
+>> +       u32 mivr =3D -1, iaicr =3D -1;
+>> +       int i, ret;
+>> +
+>> +       if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DA=
+TA)) {
+>> +               dev_err(dev, "No support for SMBUS_BYTE_DATA\n");
+>> +               return -ENODEV;
+>> +       }
+>> +       info =3D devm_kzalloc(dev, sizeof(*info), GFP_KERNEL);
+>> +       if (!info)
+>> +               return -ENOMEM;
+>> +
+>> +       info->client =3D client;
+>> +       i2c_set_clientdata(client, info);
+>> +
+>> +       info->regmap =3D devm_regmap_init_i2c(client,
+>> +                                           &rt9455_regmap_config);
+>> +       if (IS_ERR(info->regmap)) {
+>> +               dev_err(dev, "Failed to initialize register map\n");
+>> +               return -EINVAL;
+>> +       }
+>> +
+>> +       for (i =3D 0; i < F_MAX_FIELDS; i++) {
+>> +               info->regmap_fields[i] =3D
+>> +                       devm_regmap_field_alloc(dev, info->regmap,
+>> +                                               rt9455_reg_fields[i]=
+);
+>> +               if (IS_ERR(info->regmap_fields[i])) {
+>> +                       dev_err(dev,
+>> +                               "Failed to allocate regmap field =3D=
+ %d\n", i);
+>> +                       return PTR_ERR(info->regmap_fields[i]);
+>> +               }
+>> +       }
+>> +
+>> +       ret =3D rt9455_discover_charger(info, &ichrg, &ieoc_percenta=
+ge,
+>> +                                     &voreg, &mivr, &iaicr);
+>> +       if (ret) {
+>> +               dev_err(dev, "Failed to discover charger\n");
+>> +               return ret;
+>> +       }
+>> +
+>> +#if IS_ENABLED(CONFIG_USB_PHY)
+>> +       info->usb_phy =3D usb_get_phy(USB_PHY_TYPE_USB2);
+>> +       if (IS_ERR(info->usb_phy)) {
+>> +               dev_err(dev, "Failed to get USB transceiver\n");
+>> +       } else {
+>> +               info->nb.notifier_call =3D rt9455_usb_event;
+>> +               ret =3D usb_register_notifier(info->usb_phy, &info->=
+nb);
+>> +               if (ret) {
+>> +                       dev_err(dev, "Failed to register USB notifie=
+r\n");
+>> +                       usb_put_phy(info->usb_phy);
+>> +                       /*
+>> +                        * Since usb_put_phy() has been called, info=
+->usb_phy is
+>> +                        * set to ERR_PTR so that in rt9455_remove()
+>> +                        * usb_put_phy() is not mistakenly called ag=
+ain.
+>> +                        */
+>> +                       info->usb_phy =3D ERR_PTR(-ENODEV);
+>> +               }
+>> +       }
+>> +#endif
+>> +
+>> +       INIT_DEFERRABLE_WORK(&info->pwr_rdy_work, rt9455_pwr_rdy_wor=
+k_callback);
+>> +       INIT_DEFERRABLE_WORK(&info->max_charging_time_work,
+>> +                            rt9455_max_charging_time_work_callback)=
+;
+>> +       INIT_DEFERRABLE_WORK(&info->batt_presence_work,
+>> +                            rt9455_batt_presence_work_callback);
+>> +
+>> +       rt9455_charger_config.of_node           =3D dev->of_node;
+>> +       rt9455_charger_config.drv_data          =3D info;
+>> +       rt9455_charger_config.supplied_to       =3D rt9455_charger_s=
+upplied_to;
+>> +       rt9455_charger_config.num_supplicants   =3D
+>> +                                       ARRAY_SIZE(rt9455_charger_su=
+pplied_to);
+>> +       ret =3D devm_request_threaded_irq(dev, client->irq, NULL,
+>> +                                       rt9455_irq_handler_thread,
+>> +                                       IRQF_TRIGGER_LOW | IRQF_ONES=
+HOT,
+>> +                                       RT9455_DRIVER_NAME, info);
+>> +       if (ret) {
+>> +               dev_err(dev, "Failed to register IRQ handler\n");
+> I pointed this 2 times, so maybe third time lucky? I think we
+> misunderstood each other. Why are you not cleaning the usb_phy? If
+> this fails then you should goto put_usb_phy because now it leaks.
+Ok, I understand.
+>
+>> +               return ret;
+>> +       }
+>> +
+>> +       ret =3D rt9455_hw_init(info, ichrg, ieoc_percentage, voreg, =
+mivr, iaicr);
+>> +       if (ret) {
+>> +               dev_err(dev, "Failed to set charger to its default v=
+alues\n");
+>> +               return ret;
+> Ditto.
+Ok, I understand.
+> Best regards,
+> Krzysztof
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
