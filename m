@@ -1,79 +1,55 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: A desktop environment[1] kernel wishlist
-Date: Wed, 6 May 2015 01:51:49 +0200
-Message-ID: <CAJZ5v0h0w9YDT+1pESxw2tNbA+=Sdg0WE82E5UPSDZPcxA=vbQ@mail.gmail.com>
-References: <CAJFHJrp=h=jxSNLTyszYs3Ac3PoZKFy-dVJXLehO36r-4p-8=w@mail.gmail.com>
-	<Pine.LNX.4.44L0.1505051532000.1639-100000@iolanthe.rowland.org>
-	<CAJFHJrpFAvQ7zZMj-Ap6rYU24Gy0fwca6WqqNSg6-rrS0mxASA@mail.gmail.com>
-	<1524218.bZcVRu7XR6@vostro.rjw.lan>
-	<alpine.DEB.2.02.1505051634140.2429@nftneq.ynat.uz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [RFC V2] init: support device of major:minor:offset format
+Date: Wed,  6 May 2015 08:24:14 +0800
+Message-ID: <1430871854-7096-1-git-send-email-yu.c.chen@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f47.google.com ([74.125.82.47]:36024 "EHLO
-	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750764AbbEEXvv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 May 2015 19:51:51 -0400
-In-Reply-To: <alpine.DEB.2.02.1505051634140.2429@nftneq.ynat.uz>
+Received: from mga14.intel.com ([192.55.52.115]:28843 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751682AbbEFAUY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 May 2015 20:20:24 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: David Lang <david@lang.hm>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Chirantan Ekbote <chirantan@chromium.org>, Alan Stern <stern@rowland.harvard.edu>, John Stultz <john.stultz@linaro.org>, Olof Johansson <olof@lixom.net>, Bastien Nocera <hadess@hadess.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, snanda@chromium.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: snitzer@redhat.com, rafael.j.wysocki@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zhang@intel.com, Chen Yu <yu.c.chen@intel.com>
 
-On Wed, May 6, 2015 at 1:38 AM, David Lang <david@lang.hm> wrote:
-> On Wed, 6 May 2015, Rafael J. Wysocki wrote:
->
->>> You are, of course, correct.  Ultimately the only requirement we have
->>> is that there exists a way for userspace to determine if the system
->>> woke up because of a user-triggered event.  The actual mechanism by
->>> which this determination is made isn't something I feel strongly
->>> about.  The reason I had been focusing on exposing the actual wakeup
->>> event to userspace is because classifying wakeup events as
->>> user-triggered or not feels to me like a policy decision that should
->>> be left to userspace.  If the kernel maintainers are ok with doing
->>> this work in the kernel instead and only exposing a binary yes/no bit
->>> to userspace for user-triggered wakeups, that's perfectly fine because
->>> it still meets our requirements.
->>
->>
->> Well, please see the message I've just sent.
->>
->> All wakeup devices have a wakeup source object associated with them.  In
->> principle, we can expose a "priority" attribute from that for user space
->> to
->> set as it wants to.  There may be two values of it, like "normal" and
->> "high"
->> for example.
->>
->> Then, what only remains is to introduce separate wakeup counts for the
->> "high"
->> priority and "normal" priority wakeup sources and teach the power manager
->> to
->> use them.
->>
->> That leaves no policy in the kernel, but it actually has a chance to work.
->
->
-> how about instead of setting two states and defining that one must be a
-> subset of the other you instead have the existing feed of events and then
-> allow software that cares to define additional feeds that take the current
-> feed and filter it. We allow bpf filters in the kernel, so use those to
-> filter what events the additional feed is going to receive.
->
-> remember that the interesting numbers in CS are 0, 1, and many, not 2 :-)
->
-> don't limit things to two feeds with one always being a subset of the other,
-> create a mechanism to allow an arbitrary number of feeds that can be
-> filtered in different ways
+Distribution like Ubuntu uses klibc rather than uswsusp to resume
+system from hibernation, which will treat swap partition/file in
+the form of major:minor:offset. For example, 8:3:0 represents a
+swap partition in klibc, and klibc's resume process in initrd will
+finally echo 8:3:0 to /sys/power/resume for manually restoring.
+However in current implementation, 8:3:0 will be treated as an invalid
+device format, and it is found that manual resumming from hibernation
+will fail on lastest kernel.
 
-In my example above "high" is not a subset of "normal".  They are
-separate sets.  Each of them is a subset of the set of all wakeup
-sources, but that's obvious.
+This patch adds support for device with major:minor:offset format
+when resumming from hibernation.
 
-And yes, you can create more of them, but then you'll need an
-interface to manipulate them which will probably be overkill for the
-use case at hand.
+Reported-by: Prigent Christophe <christophe.prigent@intel.com>
+Reported-by: Martin Steigerwald <martin@lichtvoll.de>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ init/do_mounts.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Do you envision a use case where more than two sets would be necessary?
+diff --git a/init/do_mounts.c b/init/do_mounts.c
+index 8369ffa..e2e3538 100644
+--- a/init/do_mounts.c
++++ b/init/do_mounts.c
+@@ -225,10 +225,12 @@ dev_t name_to_dev_t(const char *name)
+ #endif
+ 
+ 	if (strncmp(name, "/dev/", 5) != 0) {
+-		unsigned maj, min;
++		unsigned maj, min, offset;
+ 		char dummy;
+ 
+-		if (sscanf(name, "%u:%u%c", &maj, &min, &dummy) == 2) {
++		if ((sscanf(name, "%u:%u%c", &maj, &min, &dummy) == 2) ||
++		    (sscanf(name,
++			    "%u:%u:%u:%c", &maj, &min, &offset, &dummy) == 3)) {
+ 			res = MKDEV(maj, min);
+ 			if (maj != MAJOR(res) || min != MINOR(res))
+ 				goto fail;
+-- 
+1.9.1
 
-Rafael
