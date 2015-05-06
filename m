@@ -1,99 +1,282 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v3 1/2] PM / sleep: Let devices force direct_complete
-Date: Wed, 6 May 2015 10:43:34 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1505061035300.1094-100000@iolanthe.rowland.org>
-References: <CAPDyKFpeP8iTw1qat5sd5gtrzk0d+a2hg_EF-2u14HRPcMbE3Q@mail.gmail.com>
+From: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
+Subject: [PATCH] PM / sleep: cancel the synchronous restriction of pm-trace
+Date: Wed, 06 May 2015 22:47:24 +0800
+Message-ID: <554A297C.2040305@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:33787 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750876AbbEFOnf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 May 2015 10:43:35 -0400
-In-Reply-To: <CAPDyKFpeP8iTw1qat5sd5gtrzk0d+a2hg_EF-2u14HRPcMbE3Q@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: len.brown@intel.com, pavel@ucw.cz, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@linaro.org>
 
-On Wed, 6 May 2015, Ulf Hansson wrote:
+Some system-hang occur only when multiple device PM methods
+are running asynchronously. So should cancel the synchronization
+of pm-trace, and make it suitable for asynchronous PM environment.
 
-> On 30 April 2015 at 16:53, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Thu, 30 Apr 2015, Ulf Hansson wrote:
-> >
-> >> I hesitated to send this reply, since it might add confusion. If
-> >> that's the case, please ignore it.
-> >>
-> >> I have a long term vision to fully enable support for a runtime PM
-> >> centric configuration for drivers/subsystems. The idea is, that such
-> >> driver/subsystem should get system PM for "free".
-> >>
-> >> The main goal is to simplify PM implementation for these drivers/subsystems.
-> >>
-> >> They should need to implement the runtime PM callbacks only and not
-> >> the system PM ones. During system PM suspend, the requirement is that
-> >> the corresponding devices should be guaranteed to be "runtime PM
-> >> suspended". Somehow that then needs to be managed by the PM core.
-> >>
-> >> I am not sure it's doable, but I wanted to bring it up within the
-> >> context of $subject patch, since it proposes yet another optimization
-> >> path for runtime PM during system PM.
-> >
-> > I suspect it is _not_ doable.  Consider a reasonable scenario: a driver
-> > that does pm_runtime_get_sync() in its open routine and
-> > pm_runtime_put() in its release routine.  If a user process holds the
-> > device file open during a system suspend, it will be impossible for the
-> > PM core to do a runtime suspend.
-> 
-> Alan, thanks for your reply.
-> 
-> There are certainly drivers/subsystems that can't full-fill the
-> requirements to have the PM core to deal with what I propose. Somehow
-> drivers/subsystems would have to announce its capability for this.
-> 
-> Those drivers/subsystems I have been looking at, is dealing with I/O.
-> Typically platform/amba devices, which drivers has registered
-> subsystem specific callbacks at ->probe(). One of these callbacks are
-> invoked when there is an I/O request to serve from the subsystem's
-> core layer.
-> 
-> In the beginning of that callback, pm_runtime_get_sync() is invoked.
-> When the request has been served and the controller can be runtime PM
-> suspended, the driver call pm_runtime_put() or possibly
-> pm_runtime_put_autosuspend().
-> 
-> These drivers/subsystem may be considered as being "runtime PM
-> centric", since during system PM suspend they don't have any system PM
-> specific things to deal with. They only want to make sure their
-> devices becomes "runtime PM suspended".
-> 
-> There's no doubt that they can do that by implementing the system PM
-> ->suspend() callbacks, in one way or the other.
-> 
-> To simplify PM implementation for these drivers/subsystems, it would
-> have been nice if the PM core could handle this "automagically", thus
-> drivers/subsystems wouldn't have to implement the system PM callbacks
-> at all. Reaching that point, would likely make it easier to understand
-> how to implement a "runtime PM centric" driver/subsystem.
+Signed-off-by: Zhonghui Fu <zhonghui.fu@linux.intel.com>
+---
+ drivers/base/power/main.c |   53 +++++++++++++++++++++-----------------------
+ include/linux/pm-trace.h  |   24 ++++++++++++--------
+ kernel/power/main.c       |    2 +
+ 3 files changed, 41 insertions(+), 38 deletions(-)
 
-The drivers/subsystems don't have to implement these things, because
-you have _already_ implemented them: pm_runtime_force_suspend() and 
-pm_runtime_force_resume().  A driver/subsystem merely has to store 
-pointers to these routines in its dev_pm_ops structure.
-
-> > On the other hand, there's nothing to prevent drivers from setting
-> > their ->suspend and ->runtime_suspend structure members to point at the
-> > same routine.  The routine would need to handle the case where it was
-> > called for a system suspend while the device was already runtime
-> > suspended, but that doesn't seem too hard.  With the "direct-suspend"
-> > option, even this wouldn't be necessary.
-> 
-> That would likely work, but again it would require drivers/subsystems
-> to assign system PM callbacks.
-
-You said just above that the driver/subsystem would have to announce
-its capability for this somehow.  Using suitable callback pointers
-would be a good way to make that announcement.
-
-Alan Stern
-
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 3d874ec..40daf48 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -476,9 +476,6 @@ static int device_resume_noirq(struct device *dev, pm_message_t state, bool asyn
+ 	char *info = NULL;
+ 	int error = 0;
+ 
+-	TRACE_DEVICE(dev);
+-	TRACE_RESUME(0);
+-
+ 	if (dev->power.syscore || dev->power.direct_complete)
+ 		goto Out;
+ 
+@@ -506,19 +503,21 @@ static int device_resume_noirq(struct device *dev, pm_message_t state, bool asyn
+ 		callback = pm_noirq_op(dev->driver->pm, state);
+ 	}
+ 
++	TRACE_DEVICE_START(dev);
++	TRACE_RESUME(0);
++
+ 	error = dpm_run_callback(callback, dev, state, info);
+ 	dev->power.is_noirq_suspended = false;
+ 
++	TRACE_DEVICE_END();
+  Out:
+ 	complete_all(&dev->power.completion);
+-	TRACE_RESUME(error);
+ 	return error;
+ }
+ 
+ static bool is_async(struct device *dev)
+ {
+-	return dev->power.async_suspend && pm_async_enabled
+-		&& !pm_trace_is_enabled();
++	return dev->power.async_suspend && pm_async_enabled;
+ }
+ 
+ static void async_resume_noirq(void *data, async_cookie_t cookie)
+@@ -605,9 +604,6 @@ static int device_resume_early(struct device *dev, pm_message_t state, bool asyn
+ 	char *info = NULL;
+ 	int error = 0;
+ 
+-	TRACE_DEVICE(dev);
+-	TRACE_RESUME(0);
+-
+ 	if (dev->power.syscore || dev->power.direct_complete)
+ 		goto Out;
+ 
+@@ -635,12 +631,14 @@ static int device_resume_early(struct device *dev, pm_message_t state, bool asyn
+ 		callback = pm_late_early_op(dev->driver->pm, state);
+ 	}
+ 
++	TRACE_DEVICE_START(dev);
++	TRACE_RESUME(0);
++
+ 	error = dpm_run_callback(callback, dev, state, info);
+ 	dev->power.is_late_suspended = false;
+ 
++	TRACE_DEVICE_END();
+  Out:
+-	TRACE_RESUME(error);
+-
+ 	pm_runtime_enable(dev);
+ 	complete_all(&dev->power.completion);
+ 	return error;
+@@ -734,9 +732,6 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+ 	int error = 0;
+ 	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
+ 
+-	TRACE_DEVICE(dev);
+-	TRACE_RESUME(0);
+-
+ 	if (dev->power.syscore)
+ 		goto Complete;
+ 
+@@ -801,9 +796,13 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+ 	}
+ 
+  End:
++	TRACE_DEVICE_START(dev);
++	TRACE_RESUME(0);
++
+ 	error = dpm_run_callback(callback, dev, state, info);
+ 	dev->power.is_suspended = false;
+ 
++	TRACE_DEVICE_END();
+  Unlock:
+ 	device_unlock(dev);
+ 	dpm_watchdog_clear(&wd);
+@@ -811,8 +810,6 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+  Complete:
+ 	complete_all(&dev->power.completion);
+ 
+-	TRACE_RESUME(error);
+-
+ 	return error;
+ }
+ 
+@@ -1017,9 +1014,6 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
+ 	char *info = NULL;
+ 	int error = 0;
+ 
+-	TRACE_DEVICE(dev);
+-	TRACE_SUSPEND(0);
+-
+ 	if (async_error)
+ 		goto Complete;
+ 
+@@ -1052,15 +1046,18 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
+ 		callback = pm_noirq_op(dev->driver->pm, state);
+ 	}
+ 
++	TRACE_DEVICE_START(dev);
++	TRACE_SUSPEND(0);
++
+ 	error = dpm_run_callback(callback, dev, state, info);
+ 	if (!error)
+ 		dev->power.is_noirq_suspended = true;
+ 	else
+ 		async_error = error;
+ 
++	TRACE_DEVICE_END();
+ Complete:
+ 	complete_all(&dev->power.completion);
+-	TRACE_SUSPEND(error);
+ 	return error;
+ }
+ 
+@@ -1161,9 +1158,6 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+ 	char *info = NULL;
+ 	int error = 0;
+ 
+-	TRACE_DEVICE(dev);
+-	TRACE_SUSPEND(0);
+-
+ 	__pm_runtime_disable(dev, false);
+ 
+ 	if (async_error)
+@@ -1198,14 +1192,17 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+ 		callback = pm_late_early_op(dev->driver->pm, state);
+ 	}
+ 
++	TRACE_DEVICE_START(dev);
++	TRACE_SUSPEND(0);
++
+ 	error = dpm_run_callback(callback, dev, state, info);
+ 	if (!error)
+ 		dev->power.is_late_suspended = true;
+ 	else
+ 		async_error = error;
+ 
++	TRACE_DEVICE_END();
+ Complete:
+-	TRACE_SUSPEND(error);
+ 	complete_all(&dev->power.completion);
+ 	return error;
+ }
+@@ -1346,9 +1343,6 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	int error = 0;
+ 	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
+ 
+-	TRACE_DEVICE(dev);
+-	TRACE_SUSPEND(0);
+-
+ 	dpm_wait_for_children(dev, async);
+ 
+ 	if (async_error)
+@@ -1428,8 +1422,12 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 		callback = pm_op(dev->driver->pm, state);
+ 	}
+ 
++	TRACE_DEVICE_START(dev);
++	TRACE_SUSPEND(0);
++
+ 	error = dpm_run_callback(callback, dev, state, info);
+ 
++	TRACE_DEVICE_END();
+  End:
+ 	if (!error) {
+ 		struct device *parent = dev->parent;
+@@ -1455,7 +1453,6 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 	if (error)
+ 		async_error = error;
+ 
+-	TRACE_SUSPEND(error);
+ 	return error;
+ }
+ 
+diff --git a/include/linux/pm-trace.h b/include/linux/pm-trace.h
+index ecbde7a..aa480b1 100644
+--- a/include/linux/pm-trace.h
++++ b/include/linux/pm-trace.h
+@@ -6,29 +6,33 @@
+ #include <linux/types.h>
+ 
+ extern int pm_trace_enabled;
+-
+-static inline int pm_trace_is_enabled(void)
+-{
+-       return pm_trace_enabled;
+-}
++extern struct mutex pt_mutex;
+ 
+ struct device;
+ extern void set_trace_device(struct device *);
+ extern void generate_pm_trace(const void *tracedata, unsigned int user);
+ extern int show_trace_dev_match(char *buf, size_t size);
+ 
+-#define TRACE_DEVICE(dev) do { \
++#define TRACE_DEVICE_START(dev) do { \
+ 	if (pm_trace_enabled) \
++		mutex_lock(&pt_mutex); \
+ 		set_trace_device(dev); \
+ 	} while(0)
+ 
++#define TRACE_DEVICE_END() \
++do { \
++	if (pm_trace_enabled) { \
++		mutex_unlock(&pt_mutex); \
++	} \
++} while (0)
++
+ #else
+ 
+-static inline int pm_trace_is_enabled(void) { return 0; }
++#define TRACE_DEVICE_START(dev) do { } while (0)
++#define TRACE_DEVICE_END() do { } while (0)
+ 
+-#define TRACE_DEVICE(dev) do { } while (0)
+-#define TRACE_RESUME(dev) do { } while (0)
+-#define TRACE_SUSPEND(dev) do { } while (0)
++#define TRACE_RESUME(user) do { } while (0)
++#define TRACE_SUSPEND(user) do { } while (0)
+ 
+ #endif
+ 
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 86e8157..ffd5145 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -515,6 +515,7 @@ power_attr(wake_unlock);
+ 
+ #ifdef CONFIG_PM_TRACE
+ int pm_trace_enabled;
++struct mutex pt_mutex;
+ 
+ static ssize_t pm_trace_show(struct kobject *kobj, struct kobj_attribute *attr,
+ 			     char *buf)
+@@ -533,6 +534,7 @@ pm_trace_store(struct kobject *kobj, struct kobj_attribute *attr,
+ 		if (pm_trace_enabled) {
+ 			pr_warn("PM: Enabling pm_trace changes system date and time during resume.\n"
+ 				"PM: Correct system time has to be restored manually after resume.\n");
++			mutex_init(&pt_mutex);
+ 		}
+ 		return n;
+ 	}
+-- 1.7.1
