@@ -1,60 +1,65 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: [PATCH RFC 2/5] ACPI / processor: always compile perflib if CONFIG_ACPI_PROCESSOR
-Date: Wed, 6 May 2015 14:36:38 -0400
-Message-ID: <CAJ5Y-eYJ9ydv3Meoco3o9KHhSXSxrRmot1ZW2_ZJosG4h+eprg@mail.gmail.com>
-References: <1430922690-6966-1-git-send-email-sudeep.holla@arm.com>
-	<1430922690-6966-3-git-send-email-sudeep.holla@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Jin Qian <jinqian@android.com>
+Subject: [PATCH v2 1/3] power: validate wakeup source before activating it.
+Date: Wed,  6 May 2015 11:51:07 -0700
+Message-ID: <1430938267-14951-1-git-send-email-jinqian@android.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f46.google.com ([209.85.218.46]:34531 "EHLO
-	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751454AbbEFSgj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 May 2015 14:36:39 -0400
-Received: by oiko83 with SMTP id o83so14946819oik.1
-        for <linux-pm@vger.kernel.org>; Wed, 06 May 2015 11:36:38 -0700 (PDT)
-In-Reply-To: <1430922690-6966-3-git-send-email-sudeep.holla@arm.com>
+Received: from mail-ig0-f176.google.com ([209.85.213.176]:38024 "EHLO
+	mail-ig0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751590AbbEFSwA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 May 2015 14:52:00 -0400
+Received: by igbhj9 with SMTP id hj9so25279220igb.1
+        for <linux-pm@vger.kernel.org>; Wed, 06 May 2015 11:52:00 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Hanjun Guo <hanjun.guo@linaro.org>, Al Stone <ahs3@redhat.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Jin Qian <jinqian@android.com>
 
-Hello,
+A rogue wakeup source not registered in wakeup_sources list is not visible
+from wakeup_sources_stats_show. Check if the wakeup source is registered
+properly by looking at the timer struct.
 
-On 6 May 2015 at 10:31, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> Similar to the  idle, thermal and throttling libraries, always compile
-> the perflib if CONFIG_ACPI_PROCESSOR is enabled. This not only makes
-> perflib alligned with other libraries but also helps in some sanity
-> testing of these ACPI methods even when a particular feature is not
-> enabled in the kernel configuration.
->
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  drivers/acpi/Makefile    |  2 +-
->  include/acpi/processor.h | 29 -----------------------------
->  include/linux/cpufreq.h  |  4 ++++
->  3 files changed, 5 insertions(+), 30 deletions(-)
->
-> diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
-> index 8a063e276530..33aef9d8b260 100644
-> --- a/drivers/acpi/Makefile
-> +++ b/drivers/acpi/Makefile
-> @@ -84,7 +84,7 @@ obj-$(CONFIG_ACPI_BGRT)               += bgrt.o
->  # processor has its own "processor." module_param namespace
->  processor-y                    := processor_driver.o processor_throttling.o
->  processor-y                    += processor_idle.o processor_thermal.o
-> -processor-$(CONFIG_CPU_FREQ)   += processor_perflib.o
-> +processor-y                    += processor_perflib.o
+Signed-off-by: Jin Qian <jinqian@android.com>
+---
+ drivers/base/power/wakeup.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-I'd prefer that we create a separate kconfig option for this. (perhaps
-even default it to 'y'). This library is quite specific to a certain
-type of CPU performance management methods (includes _PSS and friends)
-which are superseded by CPPC. The OS is not expected to support both
-at runtime, so by keeping this a config option, we can then disable it
-at compile time when CPPC is enabled. We could couple
-processor_throttling, thermal and perflib under this config option
-(CONFIG_PSS ?) since they're all under the same CPU performance
-management umbrella. Thoughts?
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index 7726200..aead738 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -351,6 +351,20 @@ int device_set_wakeup_enable(struct device *dev, bool enable)
+ }
+ EXPORT_SYMBOL_GPL(device_set_wakeup_enable);
+ 
++/**
++ * wakeup_source_not_registered - validate the given wakeup source.
++ * @ws: Wakeup source to be validated.
++ */
++static bool wakeup_source_not_registered(struct wakeup_source *ws)
++{
++	/*
++	 * Use timer struct to check if the given source is initialized
++	 * by wakeup_source_add.
++	 */
++	return ws->timer.function != pm_wakeup_timer_fn ||
++		   ws->timer.data != (unsigned long)ws;
++}
++
+ /*
+  * The functions below use the observation that each wakeup event starts a
+  * period in which the system should not be suspended.  The moment this period
+@@ -391,6 +405,11 @@ static void wakeup_source_activate(struct wakeup_source *ws)
+ {
+ 	unsigned int cec;
+ 
++	if (WARN_ONCE(wakeup_source_not_registered(ws),
++			"unregistered wakeup source\n")) {
++		return;
++	}
++
+ 	/*
+ 	 * active wakeup source should bring the system
+ 	 * out of PM_SUSPEND_FREEZE state
+-- 
+2.2.0.rc0.207.ga3a616c
 
-Regards,
-Ashwin.
