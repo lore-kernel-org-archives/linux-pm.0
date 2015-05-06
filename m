@@ -1,101 +1,154 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH RFC 4/5] ACPI / processor_idle: replace PREFIX with pr_fmt
-Date: Wed,  6 May 2015 15:31:29 +0100
-Message-ID: <1430922690-6966-5-git-send-email-sudeep.holla@arm.com>
+Subject: [PATCH RFC 3/5] ACPI / sleep: move acpi_processor_sleep to sleep.c
+Date: Wed,  6 May 2015 15:31:28 +0100
+Message-ID: <1430922690-6966-4-git-send-email-sudeep.holla@arm.com>
 References: <1430922690-6966-1-git-send-email-sudeep.holla@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1430922690-6966-1-git-send-email-sudeep.holla@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Hanjun Guo <hanjun.guo@linaro.org>, Al Stone <ahs3@redhat.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Like few of the other ACPI modules, replace PREFIX with pr_fmt and
-change all the printk call sites to use pr_* companion functions
-in processor_idle.
+acpi_processor_sleep is neither related nor used by CPUIdle framework.
+It's used in system suspend/resume path as a syscore operation. It makes
+more sense to move it to acpi/sleep.c where all the S-state transition
+(a.k.a. Linux system suspend/hiberate) related code are present.
+
+Also make it depend on CONFIG_ACPI_SYSTEM_POWER_STATES_SUPPORT so that
+it's not compiled on architecture like ARM64 where S-states are not
+yet defined in ACPI.
 
 Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/acpi/processor_idle.c | 25 +++++++++++--------------
- 1 file changed, 11 insertions(+), 14 deletions(-)
+ drivers/acpi/processor_idle.c | 37 -------------------------------------
+ drivers/acpi/sleep.c          | 37 +++++++++++++++++++++++++++++++++++++
+ include/acpi/processor.h      |  2 +-
+ 3 files changed, 38 insertions(+), 38 deletions(-)
 
 diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 38bdbf36bf4e..866179651dd9 100644
+index 39e0c8e36244..38bdbf36bf4e 100644
 --- a/drivers/acpi/processor_idle.c
 +++ b/drivers/acpi/processor_idle.c
-@@ -27,6 +27,7 @@
-  *
-  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  */
-+#define pr_fmt(fmt) "ACPI: " fmt
+@@ -34,7 +34,6 @@
+ #include <linux/sched.h>       /* need_resched() */
+ #include <linux/tick.h>
+ #include <linux/cpuidle.h>
+-#include <linux/syscore_ops.h>
+ #include <acpi/processor.h>
  
- #include <linux/module.h>
- #include <linux/acpi.h>
-@@ -46,8 +47,6 @@
- #include <asm/apic.h>
+ /*
+@@ -198,42 +197,6 @@ static void lapic_timer_state_broadcast(struct acpi_processor *pr,
+ 
  #endif
  
--#define PREFIX "ACPI: "
+-#ifdef CONFIG_PM_SLEEP
+-static u32 saved_bm_rld;
 -
- #define ACPI_PROCESSOR_CLASS            "processor"
- #define _COMPONENT              ACPI_PROCESSOR_COMPONENT
- ACPI_MODULE_NAME("processor_idle");
-@@ -84,9 +83,9 @@ static int set_max_cstate(const struct dmi_system_id *id)
- 	if (max_cstate > ACPI_PROCESSOR_MAX_POWER)
- 		return 0;
+-static int acpi_processor_suspend(void)
+-{
+-	acpi_read_bit_register(ACPI_BITREG_BUS_MASTER_RLD, &saved_bm_rld);
+-	return 0;
+-}
+-
+-static void acpi_processor_resume(void)
+-{
+-	u32 resumed_bm_rld = 0;
+-
+-	acpi_read_bit_register(ACPI_BITREG_BUS_MASTER_RLD, &resumed_bm_rld);
+-	if (resumed_bm_rld == saved_bm_rld)
+-		return;
+-
+-	acpi_write_bit_register(ACPI_BITREG_BUS_MASTER_RLD, saved_bm_rld);
+-}
+-
+-static struct syscore_ops acpi_processor_syscore_ops = {
+-	.suspend = acpi_processor_suspend,
+-	.resume = acpi_processor_resume,
+-};
+-
+-void acpi_processor_syscore_init(void)
+-{
+-	register_syscore_ops(&acpi_processor_syscore_ops);
+-}
+-
+-void acpi_processor_syscore_exit(void)
+-{
+-	unregister_syscore_ops(&acpi_processor_syscore_ops);
+-}
+-#endif /* CONFIG_PM_SLEEP */
+-
+ #if defined(CONFIG_X86)
+ static void tsc_check_state(int state)
+ {
+diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+index 2f0d4db40a9e..cfea056e3d82 100644
+--- a/drivers/acpi/sleep.c
++++ b/drivers/acpi/sleep.c
+@@ -19,6 +19,7 @@
+ #include <linux/reboot.h>
+ #include <linux/acpi.h>
+ #include <linux/module.h>
++#include <linux/syscore_ops.h>
+ #include <asm/io.h>
+ #include <trace/events/power.h>
  
--	printk(KERN_NOTICE PREFIX "%s detected - limiting to C%ld max_cstate."
--	       " Override with \"processor.max_cstate=%d\"\n", id->ident,
--	       (long)id->driver_data, ACPI_PROCESSOR_MAX_POWER + 1);
-+	pr_notice("%s detected - limiting to C%ld max_cstate."
-+		  " Override with \"processor.max_cstate=%d\"\n", id->ident,
-+		  (long)id->driver_data, ACPI_PROCESSOR_MAX_POWER + 1);
+@@ -672,6 +673,42 @@ static void acpi_sleep_suspend_setup(void)
+ static inline void acpi_sleep_suspend_setup(void) {}
+ #endif /* !CONFIG_SUSPEND */
  
- 	max_cstate = (long)id->driver_data;
++#ifdef CONFIG_PM_SLEEP
++static u32 saved_bm_rld;
++
++static int acpi_processor_suspend(void)
++{
++	acpi_read_bit_register(ACPI_BITREG_BUS_MASTER_RLD, &saved_bm_rld);
++	return 0;
++}
++
++static void acpi_processor_resume(void)
++{
++	u32 resumed_bm_rld = 0;
++
++	acpi_read_bit_register(ACPI_BITREG_BUS_MASTER_RLD, &resumed_bm_rld);
++	if (resumed_bm_rld == saved_bm_rld)
++		return;
++
++	acpi_write_bit_register(ACPI_BITREG_BUS_MASTER_RLD, saved_bm_rld);
++}
++
++static struct syscore_ops acpi_processor_syscore_ops = {
++	.suspend = acpi_processor_suspend,
++	.resume = acpi_processor_resume,
++};
++
++void acpi_processor_syscore_init(void)
++{
++	register_syscore_ops(&acpi_processor_syscore_ops);
++}
++
++void acpi_processor_syscore_exit(void)
++{
++	unregister_syscore_ops(&acpi_processor_syscore_ops);
++}
++#endif /* CONFIG_PM_SLEEP */
++
+ #ifdef CONFIG_HIBERNATION
+ static unsigned long s4_hardware_signature;
+ static struct acpi_table_facs *facs;
+diff --git a/include/acpi/processor.h b/include/acpi/processor.h
+index 42a7ca744ff1..ffe675caa766 100644
+--- a/include/acpi/processor.h
++++ b/include/acpi/processor.h
+@@ -308,7 +308,7 @@ int acpi_processor_cst_has_changed(struct acpi_processor *pr);
+ int acpi_processor_hotplug(struct acpi_processor *pr);
+ extern struct cpuidle_driver acpi_idle_driver;
  
-@@ -318,7 +317,7 @@ static int acpi_processor_get_power_info_cst(struct acpi_processor *pr)
- 
- 	/* There must be at least 2 elements */
- 	if (!cst || (cst->type != ACPI_TYPE_PACKAGE) || cst->package.count < 2) {
--		printk(KERN_ERR PREFIX "not enough elements in _CST\n");
-+		pr_err("not enough elements in _CST\n");
- 		ret = -EFAULT;
- 		goto end;
- 	}
-@@ -327,7 +326,7 @@ static int acpi_processor_get_power_info_cst(struct acpi_processor *pr)
- 
- 	/* Validate number of power states. */
- 	if (count < 1 || count != cst->package.count - 1) {
--		printk(KERN_ERR PREFIX "count given by _CST is not valid\n");
-+		pr_err("count given by _CST is not valid\n");
- 		ret = -EFAULT;
- 		goto end;
- 	}
-@@ -436,11 +435,9 @@ static int acpi_processor_get_power_info_cst(struct acpi_processor *pr)
- 		 * (From 1 through ACPI_PROCESSOR_MAX_POWER - 1)
- 		 */
- 		if (current_count >= (ACPI_PROCESSOR_MAX_POWER - 1)) {
--			printk(KERN_WARNING
--			       "Limiting number of power states to max (%d)\n",
--			       ACPI_PROCESSOR_MAX_POWER);
--			printk(KERN_WARNING
--			       "Please increase ACPI_PROCESSOR_MAX_POWER if needed.\n");
-+			pr_warn("Limiting number of power states to max (%d)\n",
-+				ACPI_PROCESSOR_MAX_POWER);
-+			pr_warn("Please increase ACPI_PROCESSOR_MAX_POWER if needed.\n");
- 			break;
- 		}
- 	}
-@@ -1064,8 +1061,8 @@ int acpi_processor_power_init(struct acpi_processor *pr)
- 			retval = cpuidle_register_driver(&acpi_idle_driver);
- 			if (retval)
- 				return retval;
--			printk(KERN_DEBUG "ACPI: %s registered with cpuidle\n",
--					acpi_idle_driver.name);
-+			pr_debug("%s registered with cpuidle\n",
-+				 acpi_idle_driver.name);
- 		}
- 
- 		dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+-#ifdef CONFIG_PM_SLEEP
++#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_ACPI_SYSTEM_POWER_STATES_SUPPORT)
+ void acpi_processor_syscore_init(void);
+ void acpi_processor_syscore_exit(void);
+ #else
 -- 
 1.9.1
+
