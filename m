@@ -1,54 +1,79 @@
-From: Bastien Nocera <hadess@hadess.net>
-Subject: Re: A desktop environment[1] kernel wishlist
-Date: Wed, 06 May 2015 14:41:38 +0200
-Message-ID: <1430916098.2786.9.camel@hadess.net>
-References: <1413881397.30379.7.camel@hadess.net>
-	 <CAOesGMg6UBuF=OJ-JdAUx-sD5MnLL8+Ag=xeJFmr-Dxezti2YA@mail.gmail.com>
-	 <CAJFHJrp8R+Na73W2Jx6BJ+JnHTGZfd61d+EracgehS+ZQoZOcg@mail.gmail.com>
-	 <286173531.vzKW1UoxJJ@vostro.rjw.lan>
-	 <CAJFHJrrYhOtjQENR2-_v2XDeYUJCB1tw7MnZbWjC0d-Mz3Z15g@mail.gmail.com>
-	 <1430822800.7954.5.camel@hadess.net>
-	 <CAJFHJrr=TMuP2fz99=tRE6ev9AZokM2Y9NQdP4JhGOyExXgwvg@mail.gmail.com>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH] thermal: armada: Update Armada 380 thermal sensor coefficients
+Date: Wed, 06 May 2015 14:45:45 +0200
+Message-ID: <554A0CF9.7080608@free-electrons.com>
+References: <1429117688-27100-1-git-send-email-gregory.clement@free-electrons.com> <553DE806.4030905@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relay5-d.mail.gandi.net ([217.70.183.197]:60714 "EHLO
-	relay5-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750826AbbEFMln (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 May 2015 08:41:43 -0400
-In-Reply-To: <CAJFHJrr=TMuP2fz99=tRE6ev9AZokM2Y9NQdP4JhGOyExXgwvg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <553DE806.4030905@free-electrons.com>
+Sender: stable-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chirantan Ekbote <chirantan@chromium.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Olof Johansson <olof@lixom.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, snanda@chromium.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, 2015-05-05 at 12:22 -0700, Chirantan Ekbote wrote:
-> On Tue, May 5, 2015 at 3:46 AM, Bastien Nocera <hadess@hadess.net> 
-> wrote:
-> > 
-> > >   The last thing the power manager does, right before
-> > > writing "mem" to /sys/power/state, is write the wakeup_count 
-> > > that it
-> > > read earlier to /sys/power/wakeup_count.  If the write fails, the
-> > > power manager considers the suspend attempt failed, reads the new
-> > > wakeup_count, and starts a timer (usually 10 seconds) to retry 
-> > > the
-> > > suspend.  The same thing happens if the write to /sys/power/state
-> > > fails.
-> > 
-> > Is this something that logind should do as well?
-> > 
+Hi Zhang, Eduardo,
+
+On 27/04/2015 09:40, Gregory CLEMENT wrote:
+> Hi Zhang, Eduardo,
 > 
-> We do it to avoid a race condition where a wakeup event occurs after
-> userspace has started the suspend process but before anything writes
-> "mem" to /sys/power/state.  I'm guessing that this is something 
-> logind
-> should be doing as well since the chances of missing a wakeup event
-> increase the longer any given delay inhibitor takes to delay a
-> suspend.
+> On 15/04/2015 19:08, Gregory CLEMENT wrote:
+>> From: Nadav Haklai <nadavh@marvell.com>
+>>
+>> Improve the Armada 380 thermal sensor accuracy by using updated formula.
+>> The updated formula is:
+>> Temperature[C degrees] = 0.4761 * tsen_vsen_out - 279.1
+>>
+>> Signed-off-by: Nadav Haklai <nadavh@marvell.com>
+>> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+>> Cc: <stable@vger.kernel.org> #v3.16
+> 
+> Any chance that this fix was merged in 4.1-rc ?
 
-File https://bugzilla.freedesktop.org/show_bug.cgi?id=90339
+I saw that you missed the merge window. However I think this patch is really
+a fix and is a good candidate to be merged in 4.1.
 
-Cheers
 
+Thanks,
+
+Gregory
+
+
+> 
+> Thanks,
+> 
+> Gregory
+> 
+> 
+>> ---
+>>  drivers/thermal/armada_thermal.c | 6 +++---
+>>  1 file changed, 3 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+>> index c2556cf5186b..01255fd65135 100644
+>> --- a/drivers/thermal/armada_thermal.c
+>> +++ b/drivers/thermal/armada_thermal.c
+>> @@ -224,9 +224,9 @@ static const struct armada_thermal_data armada380_data = {
+>>  	.is_valid_shift = 10,
+>>  	.temp_shift = 0,
+>>  	.temp_mask = 0x3ff,
+>> -	.coef_b = 1169498786UL,
+>> -	.coef_m = 2000000UL,
+>> -	.coef_div = 4289,
+>> +	.coef_b = 2931108200UL,
+>> +	.coef_m = 5000000UL,
+>> +	.coef_div = 10502,
+>>  	.inverted = true,
+>>  };
+>>  
+>>
+> 
+> 
+
+
+-- 
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
