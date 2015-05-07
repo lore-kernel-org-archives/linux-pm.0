@@ -1,40 +1,85 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] cpuidle: Handle tick_broadcast_enter() failure gracefully
-Date: Thu, 07 May 2015 10:56:45 +0100
-Message-ID: <554B36DD.5080807@arm.com>
-References: <20150507052600.20882.39542.stgit@preeti.in.ibm.com>
+From: Wei Ni <wni@nvidia.com>
+Subject: [PATCH] thermal: add available policies sysfs attribute
+Date: Thu, 7 May 2015 18:07:08 +0800
+Message-ID: <1430993228-28142-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150507052600.20882.39542.stgit@preeti.in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: "peterz@infradead.org" <peterz@infradead.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, "rlippert@google.com" <rlippert@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linus.walleij@linaro.org" <linus.walleij@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "mingo@redhat.com" <mingo@redhat.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:17076 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751962AbbEGKHB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 06:07:01 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, Wei Ni <wni@nvidia.com>
 
-Hi Preeti,
+Adds avaiable_policies sysfs attribute to a thermal zone.
+This attribute show the avaible governor can be used for the
+zone. This is a R attribute.
 
-On 07/05/15 06:26, Preeti U Murthy wrote:
-> When a CPU has to enter an idle state where tick stops, it makes a call
-> to tick_broadcast_enter(). The call will fail if this CPU is the
-> broadcast CPU. Today, under such a circumstance, the arch cpuidle code
-> handles this CPU.  This is not convincing because not only are we not
-> aware what the arch cpuidle code does, but we also do not account for
-> the idle state residency time and usage of such a CPU.
->
-> This scenario can be handled better by simply asking the cpuidle
-> governor to choose an idle state where in ticks do not stop. To
-> accommodate this change move the setting of runqueue idle state from the
-> core to the cpuidle driver, else the rq->idle_state will be set wrong.
->
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> ---
-> Based on linux-pm/bleeding-edge
+Signed-off-by: Wei Ni <wni@nvidia.com>
+---
+ drivers/thermal/thermal_core.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-I am unable to apply this patch cleanly on linux-pm/bleeding-edge
-I think it conflicts with few patches that Rafael posted recently
-which are in the branch now.
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 962de1847cc0..bc202aaceb00 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -847,6 +847,24 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
+ 	return sprintf(buf, "%s\n", tz->governor->name);
+ }
+ 
++static ssize_t
++available_policies_show(struct device *dev, struct device_attribute *devattr,
++			char *buf)
++{
++	struct thermal_governor *pos;
++	ssize_t count = 0;
++
++	mutex_lock(&thermal_governor_lock);
++
++	list_for_each_entry(pos, &thermal_governor_list, governor_list)
++		count += sprintf(buf + count, "%s ", pos->name);
++	count += sprintf(buf + count, "\n");
++
++	mutex_unlock(&thermal_governor_lock);
++
++	return count;
++}
++
+ #ifdef CONFIG_THERMAL_EMULATION
+ static ssize_t
+ emul_temp_store(struct device *dev, struct device_attribute *attr,
+@@ -1028,6 +1046,7 @@ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+ static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
+ static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
+ static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
++static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
+ 
+ /* sys I/F for cooling device */
+ #define to_cooling_device(_dev)	\
+@@ -1813,6 +1832,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	if (result)
+ 		goto unregister;
+ 
++	/* Create available_policies attribute */
++	result = device_create_file(&tz->device, &dev_attr_available_policies);
++	if (result)
++		goto unregister;
++
+ 	/* Update 'this' zone's governor information */
+ 	mutex_lock(&thermal_governor_lock);
+ 
+@@ -1913,6 +1937,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 	if (tz->ops->get_mode)
+ 		device_remove_file(&tz->device, &dev_attr_mode);
+ 	device_remove_file(&tz->device, &dev_attr_policy);
++	device_remove_file(&tz->device, &dev_attr_available_policies);
+ 	remove_trip_attrs(tz);
+ 	thermal_set_governor(tz, NULL);
+ 
+-- 
+1.9.1
 
-Regards,
-Sudeep
