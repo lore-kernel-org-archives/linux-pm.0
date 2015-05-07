@@ -1,81 +1,55 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management and ACPI fixes for 4.1-rc3
-Date: Thu, 7 May 2015 23:11:15 +0200
-Message-ID: <CAJZ5v0iPW-DhwDyM1pZ=hG_sZeh3yMzh+T-Ej9k6uDpAXiBsUw@mail.gmail.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
+Date: Thu, 7 May 2015 14:18:55 -0700
+Message-ID: <20150507211855.GA2455@codeaurora.org>
+References: <cover.1430394884.git.viresh.kumar@linaro.org>
+ <d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar@linaro.org>
+ <20150504121209.GM15510@sirena.org.uk>
+ <CAKohponRXiWbgT26=tO83jJgbteBf38ggE7mKvLCv+wFMW1cvA@mail.gmail.com>
+ <20150505105714.GA22845@sirena.org.uk>
+ <CAKohpo=09ZhXxh5Cm7Ww9Gy-AYRp9=j82tup6atVN+aOF8twdA@mail.gmail.com>
+ <20150505171252.GI22845@sirena.org.uk>
+ <CAKohpo=kJs076afzERPMqjELgwpN6nR2yoyEjW6XY7YSEbRuCA@mail.gmail.com>
+ <20150507055231.GB32399@codeaurora.org>
+ <20150507110233.GR15510@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:47263 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751724AbbEGVS6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 17:18:58 -0400
+Content-Disposition: inline
+In-Reply-To: <20150507110233.GR15510@sirena.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Nishanth Menon <nm@ti.com>, Mike Turquette <mike.turquette@linaro.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, santosh
 
-Hi Linus,
-
-Please pull from
-
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-4.1-rc3
-
-to receive power management and ACPI fixes for v4.1-rc3 with
-top-most commit 9a5d9315e41cc0dfc97a3b0a8e222d30566cf3fe
-
- Merge branches 'acpi-resources', 'acpi-battery', 'acpi-doc' and 'acpi-pnp'
-
-on top of commit 5ebe6afaf0057ac3eaeb98defd5456894b446d22
-
- Linux 4.1-rc2
-
-These include three regression fixes (PCI resources management, ACPI/PNP
-device enumeration, ACPI SBS on MacBook) and two ACPI documentation fixes
-related to GPIO.
-
-Specifics:
-
- - Fix for a PCI resources management regression introduced during
-   the 4.0 cycle and related to the handling of ACPI resources'
-   Producer/Consumer flags that turn out to be useless (Jiang Liu).
-
- - Fix for a MacBook regression related to the Smart Battery Subsystem
-   (SBS) driver causing various problems (stalls on boot, failure to
-   detect or report battery) to happen and introduced during the 3.18
-   cycle (Chris Bainbridge).
-
- - Fix for an ACPI/PNP device enumeration regression introduced during
-   the 3.16 cycle caused by failing to include two PNP device IDs into
-   the list of IDs that PNP device objects need to be created for
-   (Witold Szczeponik).
-
- - Fixes for two minor mistakes in the ACPI GPIO properties
-   documentation (Antonio Ospite, Rafael J Wysocki).
-
-Thanks!
+On 05/07, Mark Brown wrote:
+> On Wed, May 06, 2015 at 10:52:31PM -0700, Stephen Boyd wrote:
+> 
+> > If you look at the cpufreq/clock/pmic code on our codeaurora.org
+> > tree you'll see that it's used to pass a value with uA units
+> > through the regulator_set_optimum_mode() API. The call to
+> > regulator_set_optimum_mode() is here[1], and the place where we
+> > parse the OPP table from DT is here[2]. My understanding is that
+> 
+> I'm not looking for anyone to explain this to me in e-mail, what I'm
+> looking for is for the binding document to be clear so someone can tell
+> what the binding means by reading the documentation for the binding.
 
 
----------------
+Ok. Perhaps the simplest thing to do then is to reuse wording
+from the regulator_set_load() API documentation? That's the only
+usage of this value I'm aware of. Something like:
 
-Antonio Ospite (1):
-      ACPI / documentation: fix a sentence about GPIO resources
+	The current load of the device when using this OPP. Used
+	to set the most efficient regulator operating mode.
 
-Chris Bainbridge (1):
-      ACPI / SBS: Add 5 us delay to fix SBS hangs on MacBook
+We don't need any sort of min/max for this property either, so a
+single value should be all that's required.
 
-Jiang Liu (1):
-      x86/PCI/ACPI: Make all resources except [io 0xcf8-0xcff]
-available on PCI bus
-
-Rafael J. Wysocki (1):
-      ACPI / documentation: Fix ambiguity in the GPIO properties document
-
-Witold Szczeponik (1):
-      ACPI / PNP: add two IDs to list for PNPACPI device enumeration
-
----------------
-
- Documentation/acpi/enumeration.txt     |  2 +-
- Documentation/acpi/gpio-properties.txt |  6 +++---
- arch/x86/pci/acpi.c                    | 24 ++++++++++++++++++++++--
- drivers/acpi/acpi_pnp.c                |  2 ++
- drivers/acpi/resource.c                |  2 +-
- drivers/acpi/sbshc.c                   | 22 ++++++++++++++++++++++
- 6 files changed, 51 insertions(+), 7 deletions(-)
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
