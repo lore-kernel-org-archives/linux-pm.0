@@ -1,69 +1,71 @@
-From: Chirantan Ekbote <chirantan@chromium.org>
-Subject: Re: A desktop environment[1] kernel wishlist
-Date: Thu, 7 May 2015 11:21:49 -0700
-Message-ID: <CAJFHJrqdSykB4p8AVAHj9hjQCjHdk2fmtMSBkshw_eu4kbyo6Q@mail.gmail.com>
-References: <CAJFHJrp=h=jxSNLTyszYs3Ac3PoZKFy-dVJXLehO36r-4p-8=w@mail.gmail.com>
-	<Pine.LNX.4.44L0.1505051532000.1639-100000@iolanthe.rowland.org>
-	<CAJFHJrpFAvQ7zZMj-Ap6rYU24Gy0fwca6WqqNSg6-rrS0mxASA@mail.gmail.com>
-	<20150507180336.77b44005@lxorguk.ukuu.org.uk>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH V2 5/6] regulator: add mxs on-chip regulator driver
+Date: Thu, 7 May 2015 20:37:18 +0200 (CEST)
+Message-ID: <1875749167.82542.1431023838932.JavaMail.open-xchange@oxbsltgw04.schlund.de>
+References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com>
+ <1430346747-28728-6-git-send-email-stefan.wahren@i2se.com>
+ <20150504123648.GU15510@sirena.org.uk>
+ <1693367404.879766.1430771695242.JavaMail.open-xchange@oxbaltgw08.schlund.de>
+Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f182.google.com ([209.85.220.182]:36232 "EHLO
-	mail-qk0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751926AbbEGSVu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 14:21:50 -0400
-Received: by qku63 with SMTP id 63so33230188qku.3
-        for <linux-pm@vger.kernel.org>; Thu, 07 May 2015 11:21:49 -0700 (PDT)
-In-Reply-To: <20150507180336.77b44005@lxorguk.ukuu.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1693367404.879766.1430771695242.JavaMail.open-xchange@oxbaltgw08.schlund.de>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Mark Brown <broonie@kernel.org>
+Cc: fabio.estevam@freescale.com, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Kumar Gala <galak@codeaurora.org>, sebastien.szymanski@armadeus.com, Shawn Guo <shawn.guo@linaro.org>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Olof Johansson <olof@lixom.net>, Bastien Nocera <hadess@hadess.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, snanda@chromium.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thu, May 7, 2015 at 10:03 AM, One Thousand Gnomes
-<gnomes@lxorguk.ukuu.org.uk> wrote:
->> You are, of course, correct.  Ultimately the only requirement we have
->> is that there exists a way for userspace to determine if the system
->> woke up because of a user-triggered event.  The actual mechanism by
->
-> No. That is irrelevant. You need a way to ascertain if a user triggered
-> event has occurred since you suspended.
->
-> The two are not the same thing.
->
-> If your box wakes up due to something like a wireless card deciding it
-> needs to poke the base station and the user hits a key a microsecond
-> after wakeup then you want the display on.
->
-> The question is never "did the user wake the machine" the question is "did
-> the user do something that takes me out of 'lucid sleep/snooze/whatever'
-> since I suspended". Every user event could equally occur a microsecond
-> after a wakeup from a non user source, so every time you must ask the
-> "since suspend" question.
->
+Hi Mark,
 
-Yes, this is what Rafael said earlier and if you had read my reply,
-you would have seen that I have already admitted that this is a
-situation that our current implementation does not handle properly.
-However, this hasn't been a very big issue for us in practice because
-1) the window during which an event could get dropped like this is
-presumably very small and 2) the standard user behavior when their
-computer doesn't wake up is to start pressing random keys, which we do
-end up catching.  No, this is not a great user experience and we want
-to fix it for the next version.
-
-> In fact if you had some kind of hypoethetical event counter incremented
-> by the device on it causing a wakeup event *or* an event while active
-> (and no way to tell them apat) that would provide a correct race free
-> interface to figure out if the display ought to be on
+> Stefan Wahren <stefan.wahren@i2se.com> hat am 4. Mai 2015 um 22:34
+> geschrieben:
 >
-
-Again, this is basically what Rafael suggested earlier and I've
-already said that it sounds like a perfectly reasonable solution to
-me.
-
-> It doesn't solve the powering off as a key is hit race but that's a
-> different beast.
 >
-> Alan
+> Hi Mark,
+>
+> > Mark Brown <broonie@kernel.org> hat am 4. Mai 2015 um 14:36 geschrieben:
+> >
+> >
+> > On Wed, Apr 29, 2015 at 10:32:26PM +0000, Stefan Wahren wrote:
+> >
+> > > +static struct regulator_ops mxs_dcdc_ops = {
+> > > + .is_enabled = regulator_is_enabled_regmap,
+> > > +};
+> >
+> > Why do we have an is_enabled() operation but no enable or disable
+> > operation?
+>
+> i'm sorry, i forgot the following point in the changelog:
+>
+> - move dcdc handling from mxs_power to mxs-regulator
+>
+> I hope the change is okay. I implemented only is_enabled() to have at least 1
+> operation.
+> But it's not really necessary.
+
+do we need enable / disable operation?
+
+In the bootloader code enabling the DC-DC is critical. There is a known issue
+which falsely triggers the brownout detection.
+
+>
+> > I'm also not 100% clear what code the DCDCs and LDOs are
+> > sharing here...
+>
+> Actually only probing and the regulator info structure.
+
+How can i improve that?
+
+>
+> Best regards
+> Stefan
