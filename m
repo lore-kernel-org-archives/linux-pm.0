@@ -1,77 +1,81 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH V2 5/6] regulator: add mxs on-chip regulator driver
-Date: Thu, 7 May 2015 20:32:36 +0100
-Message-ID: <20150507193236.GS22845@sirena.org.uk>
-References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com>
- <1430346747-28728-6-git-send-email-stefan.wahren@i2se.com>
- <20150504123648.GU15510@sirena.org.uk>
- <1693367404.879766.1430771695242.JavaMail.open-xchange@oxbaltgw08.schlund.de>
- <1875749167.82542.1431023838932.JavaMail.open-xchange@oxbsltgw04.schlund.de>
- <20150507185216.GP22845@sirena.org.uk>
- <535744342.64563.1431026719818.JavaMail.open-xchange@oxbsltgw09.schlund.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2] cpuidle: Handle tick_broadcast_enter() failure gracefully
+Date: Thu, 07 May 2015 22:50:14 +0200
+Message-ID: <1562115.g1s3BW0dJA@vostro.rjw.lan>
+References: <20150507174355.25321.85885.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="HlaF2WMUX0OM2JlS"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:55143 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751565AbbEGTdh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 15:33:37 -0400
-Content-Disposition: inline
-In-Reply-To: <535744342.64563.1431026719818.JavaMail.open-xchange@oxbsltgw09.schlund.de>
+Received: from v094114.home.net.pl ([79.96.170.134]:55555 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751158AbbEGUZK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 16:25:10 -0400
+In-Reply-To: <20150507174355.25321.85885.stgit@preeti.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: Sascha Hauer <kernel@pengutronix.de>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Sebastian Reichel <sre@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, fabio.estevam@freescale.com, David Woodhouse <dwmw2@infradead.org>, Russell King <linux@arm.linux.org.uk>, Mark Rutland <mark.rutland@arm.com>, sebastien.szymanski@armadeus.com, devicetree@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com, daniel.lezcano@linaro.org, rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org
+
+On Thursday, May 07, 2015 11:17:21 PM Preeti U Murthy wrote:
+> When a CPU has to enter an idle state where tick stops, it makes a call
+> to tick_broadcast_enter(). The call will fail if this CPU is the
+> broadcast CPU. Today, under such a circumstance, the arch cpuidle code
+> handles this CPU.  This is not convincing because not only are we not
+> aware what the arch cpuidle code does, but we also do not account for
+> the idle state residency time and usage of such a CPU.
+> 
+> This scenario can be handled better by simply asking the cpuidle
+> governor to choose an idle state where in ticks do not stop. To
+> accommodate this change move the setting of runqueue idle state from the
+> core to the cpuidle driver, else the rq->idle_state will be set wrong.
+> 
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> ---
+> Changes from V1: https://lkml.org/lkml/2015/5/7/24
+> Rebased on the latest linux-pm/bleeding-edge
+> 
+>  drivers/cpuidle/cpuidle.c          |   21 +++++++++++++++++----
+>  drivers/cpuidle/governors/ladder.c |   13 ++++++++++---
+>  drivers/cpuidle/governors/menu.c   |    6 +++++-
+>  include/linux/cpuidle.h            |    6 +++---
+>  include/linux/sched.h              |   16 ++++++++++++++++
+>  kernel/sched/core.c                |   17 +++++++++++++++++
+>  kernel/sched/fair.c                |    2 +-
+>  kernel/sched/idle.c                |    8 +-------
+>  kernel/sched/sched.h               |   24 ------------------------
+>  9 files changed, 70 insertions(+), 43 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index 8c24f95..b7e86f4 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/module.h>
+>  #include <linux/suspend.h>
+>  #include <linux/tick.h>
+> +#include <linux/sched.h>
+>  #include <trace/events/power.h>
+>  
+>  #include "cpuidle.h"
+> @@ -168,10 +169,17 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>  	 * CPU as a broadcast timer, this call may fail if it is not available.
+>  	 */
+>  	if (broadcast && tick_broadcast_enter()) {
+> -		default_idle_call();
+> -		return -EBUSY;
+> +		index = cpuidle_select(drv, dev, !broadcast);
+
+No, you can't do that.
+
+This code path may be used by suspend-to-idle and that should not call
+cpuidle_select().
+
+What's needed here seems to be a fallback mechanism like "choose the
+deepest state shallower than X and such that it won't stop the tick".
+You don't really need to run a full governor for that.
 
 
---HlaF2WMUX0OM2JlS
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, May 07, 2015 at 09:25:19PM +0200, Stefan Wahren wrote:
-> > Mark Brown <broonie@kernel.org> hat am 7. Mai 2015 um 20:52 geschrieben:
-
-> > > In the bootloader code enabling the DC-DC is critical. There is a kno=
-wn
-> > > issue
-> > > which falsely triggers the brownout detection.
-
-> > Why would the driver not provide these operations?
-
-> I didn't implement this operation because the suggested workaround for the
-> hardware issue isn't very nice=20
-> (disable brownout detection during enabling DC-DC). I was afraid of the
-> implementation.
-
-That doesn't sound too complicated?
-
-> > If the devices aren't sharing code then they should be separate drivers.
-
-> Okay.=20
-
-> mxs-regulator-ldo.c
-> mxs-regulator-dcdc.c
-
-> What do you think of?
-
-Sure.
-
---HlaF2WMUX0OM2JlS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJVS73TAAoJECTWi3JdVIfQZrIH/2giExvR8LhSg53DLrXeQgYh
-FF+sBNnXA6eRdvBDsnTWkkB8EUY9oWyjFqfdNHtsJiMndHgwxx/fyvT0ux4rgcDe
-4thlXBpFz2fQMkK3C4mvnLPxJpAos58t2AYT1o87OwOGZL9PCLtOKHAleepafi/G
-asguzXl9wqkJJHLNGqi0zv/Crq/hmkc6rCrdJKOXo3Fg6R3MO0lU46x1OR38Tttw
-V13Ls7OFQ+8T2+pEMib2yMq6a9zjyo/JRtEOfYOikLyUGe5DwtCFYk1nGqK5lLd9
-rn55DcFfnrv0RsnkFIm6jsYZW9TXW7kf/pPzPSZt4E2piJcsy/Da3X2/3aVr40Q=
-=rpxi
------END PGP SIGNATURE-----
-
---HlaF2WMUX0OM2JlS--
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
