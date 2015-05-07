@@ -1,24 +1,15 @@
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: [RESEND PATCH] cpuidle: Handle tick_broadcast_enter() failure
- gracefully
-Date: Thu, 07 May 2015 23:09:08 +0530
-Message-ID: <20150507173803.25119.90827.stgit@preeti.in.ibm.com>
+Subject: [PATCH V2] cpuidle: Handle tick_broadcast_enter() failure gracefully
+Date: Thu, 07 May 2015 23:17:21 +0530
+Message-ID: <20150507174355.25321.85885.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e33.co.us.ibm.com ([32.97.110.151]:58366 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbbEGRj0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 13:39:26 -0400
-Received: from /spool/local
-	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Thu, 7 May 2015 11:39:26 -0600
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com, daniel.lezcano@linaro.org
 Cc: rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org
+List-Id: linux-pm@vger.kernel.org
 
 When a CPU has to enter an idle state where tick stops, it makes a call
 to tick_broadcast_enter(). The call will fail if this CPU is the
@@ -34,6 +25,7 @@ core to the cpuidle driver, else the rq->idle_state will be set wrong.
 
 Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 ---
+Changes from V1: https://lkml.org/lkml/2015/5/7/24
 Rebased on the latest linux-pm/bleeding-edge
 
  drivers/cpuidle/cpuidle.c          |   21 +++++++++++++++++----
@@ -48,7 +40,7 @@ Rebased on the latest linux-pm/bleeding-edge
  9 files changed, 70 insertions(+), 43 deletions(-)
 
 diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 61c417b..8f5657e 100644
+index 8c24f95..b7e86f4 100644
 --- a/drivers/cpuidle/cpuidle.c
 +++ b/drivers/cpuidle/cpuidle.c
 @@ -21,6 +21,7 @@
@@ -59,25 +51,27 @@ index 61c417b..8f5657e 100644
  #include <trace/events/power.h>
  
  #include "cpuidle.h"
-@@ -167,8 +168,15 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 	 * local timer will be shut down.  If a local timer is used from another
+@@ -168,10 +169,17 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
  	 * CPU as a broadcast timer, this call may fail if it is not available.
  	 */
--	if (broadcast && tick_broadcast_enter())
+ 	if (broadcast && tick_broadcast_enter()) {
+-		default_idle_call();
 -		return -EBUSY;
-+	if (broadcast && tick_broadcast_enter()) {
 +		index = cpuidle_select(drv, dev, !broadcast);
-+		if (index < 0)
++		if (index < 0) {
++			default_idle_call();
 +			return -EBUSY;
++		}
 +		target_state = &drv->states[index];
-+	}
-+
+ 	}
+ 
 +	/* Take note of the planned idle state. */
 +	idle_set_state(smp_processor_id(), target_state);
- 
++
  	trace_cpu_idle_rcuidle(index, dev->cpu);
  	time_start = ktime_get();
-@@ -178,6 +186,9 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 
+@@ -180,6 +188,9 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
  	time_end = ktime_get();
  	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
  
@@ -87,7 +81,7 @@ index 61c417b..8f5657e 100644
  	if (broadcast) {
  		if (WARN_ON_ONCE(!irqs_disabled()))
  			local_irq_disable();
-@@ -213,12 +224,14 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+@@ -215,12 +226,14 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
   *
   * @drv: the cpuidle driver
   * @dev: the cpuidle device
@@ -156,7 +150,7 @@ index 401c010..c437322 100644
  			return last_idx - 1;
  		}
 diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index b8a5fa1..900404f 100644
+index 22e4463..3faee74 100644
 --- a/drivers/cpuidle/governors/menu.c
 +++ b/drivers/cpuidle/governors/menu.c
 @@ -280,8 +280,10 @@ again:
@@ -212,7 +206,7 @@ index 9c5e892..d7c1734 100644
  
  	struct module 		*owner;
 diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 8222ae4..ff4e2df 100644
+index 26a2e61..fef8359 100644
 --- a/include/linux/sched.h
 +++ b/include/linux/sched.h
 @@ -45,6 +45,7 @@ struct sched_param {
@@ -223,7 +217,7 @@ index 8222ae4..ff4e2df 100644
  
  #include <linux/time.h>
  #include <linux/param.h>
-@@ -901,6 +902,21 @@ enum cpu_idle_type {
+@@ -893,6 +894,21 @@ enum cpu_idle_type {
  	CPU_MAX_IDLE_TYPES
  };
  
@@ -246,10 +240,10 @@ index 8222ae4..ff4e2df 100644
   * Increase resolution of cpu_capacity calculations
   */
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index f9123a8..427e190 100644
+index fe22f75..8e1cc50 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -3231,6 +3231,23 @@ struct task_struct *idle_task(int cpu)
+@@ -3216,6 +3216,23 @@ struct task_struct *idle_task(int cpu)
  	return cpu_rq(cpu)->idle;
  }
  
@@ -287,20 +281,11 @@ index ffeaa41..211ef9a 100644
  				/*
  				 * We give priority to a CPU whose idle state
 diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index fefcb1f..5bd766c 100644
+index 5933d06..502e915 100644
 --- a/kernel/sched/idle.c
 +++ b/kernel/sched/idle.c
-@@ -131,7 +131,7 @@ static void cpuidle_idle_call(void)
- 		/*
- 		 * Ask the cpuidle framework to choose a convenient idle state.
- 		 */
--		next_state = cpuidle_select(drv, dev);
-+		next_state = cpuidle_select(drv, dev, 1);
- 	}
- 	/* Fall back to the default arch idle method on errors. */
- 	if (next_state < 0)
-@@ -149,9 +149,6 @@ static void cpuidle_idle_call(void)
- 		goto exit_idle;
+@@ -101,9 +101,6 @@ static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+ 		return -EBUSY;
  	}
  
 -	/* Take note of the planned idle state. */
@@ -309,16 +294,25 @@ index fefcb1f..5bd766c 100644
  	/*
  	 * Enter the idle state previously returned by the governor decision.
  	 * This function will block until an interrupt occurs and will take
-@@ -159,9 +156,6 @@ static void cpuidle_idle_call(void)
+@@ -111,9 +108,6 @@ static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
  	 */
  	entered_state = cpuidle_enter(drv, dev, next_state);
  
 -	/* The cpu is no longer idle or about to enter idle. */
 -	idle_set_state(this_rq(), NULL);
 -
- 	if (entered_state == -EBUSY)
- 		goto use_default;
+ 	return entered_state;
+ }
  
+@@ -181,7 +175,7 @@ static void cpuidle_idle_call(void)
+ 		/*
+ 		 * Ask the cpuidle framework to choose a convenient idle state.
+ 		 */
+-		next_state = cpuidle_select(drv, dev);
++		next_state = cpuidle_select(drv, dev, 1);
+ 		entered_state = call_cpuidle(drv, dev, next_state);
+ 		/*
+ 		 * Give the governor an opportunity to reflect on the outcome
 diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
 index e0e1299..2c56caa 100644
 --- a/kernel/sched/sched.h
@@ -354,4 +348,3 @@ index e0e1299..2c56caa 100644
  extern void sysrq_sched_debug_show(void);
  extern void sched_init_granularity(void);
  extern void update_max_interval(void);
-
