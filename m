@@ -1,165 +1,186 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 1/6] cpufreq: poowernv: Handle throttling due to Pmax
- capping at chip level
-Date: Thu, 07 May 2015 16:05:21 +0530
-Message-ID: <554B3FE9.7050908@linux.vnet.ibm.com>
-References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1430729652-14813-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <55483E4B.4080405@linux.vnet.ibm.com> <55485DE9.4070609@linux.vnet.ibm.com> <55488188.9070908@linux.vnet.ibm.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH 4/4] sched: cpufreq_cfs: pelt-based cpu frequency scaling
+Date: Thu, 07 May 2015 11:49:27 +0100
+Message-ID: <554B4337.4050007@arm.com>
+References: <1430777441-15087-1-git-send-email-mturquette@linaro.org> <1430777441-15087-5-git-send-email-mturquette@linaro.org> <20150505090042.GC21418@twins.programming.kicks-ass.net> <20150505182347.16410.16338@quantum> <20150506122240.GY23123@twins.programming.kicks-ass.net> <20150507041725.16410.58417@quantum>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp09.in.ibm.com ([122.248.162.9]:46415 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753376AbbEGKfv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 06:35:51 -0400
-Received: from /spool/local
-	by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
-	Thu, 7 May 2015 16:05:49 +0530
-In-Reply-To: <55488188.9070908@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150507041725.16410.58417@quantum>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Michael Turquette <mturquette@linaro.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: "mingo@kernel.org" <mingo@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "riel@redhat.com" <riel@redhat.com>, "efault@gmx.de" <efault@gmx.de>, "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "amit.kucheria@linaro.org" <amit.kucheria@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "ashwin.chaugule@linaro.org" <ashwin.chaugule@linaro.org>, "alex.shi@linaro.org" <alex.shi@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org
 
+Hi Mike,
 
-
-On 05/05/2015 02:08 PM, Preeti U Murthy wrote:
-> On 05/05/2015 11:36 AM, Shilpasri G Bhat wrote:
->> Hi Preeti,
->>
->> On 05/05/2015 09:21 AM, Preeti U Murthy wrote:
->>> Hi Shilpa,
+On 07/05/15 05:17, Michael Turquette wrote:
+> Quoting Peter Zijlstra (2015-05-06 05:22:40)
+>> On Tue, May 05, 2015 at 11:23:47AM -0700, Michael Turquette wrote:
+>>> Quoting Peter Zijlstra (2015-05-05 02:00:42)
+>>>> On Mon, May 04, 2015 at 03:10:41PM -0700, Michael Turquette wrote:
+>>>>> This policy is implemented using the cpufreq governor interface for two
+>>>>> main reasons:
+>>>>>
+>>>>> 1) re-using the cpufreq machine drivers without using the governor
+>>>>> interface is hard.
+>>>>>
+>>>>> 2) using the cpufreq interface allows us to switch between the
+>>>>> scheduler-driven policy and legacy cpufreq governors such as ondemand at
+>>>>> run-time. This is very useful for comparative testing and tuning.
+>>>>
+>>>> Urgh,. so I don't really like that. It adds a lot of noise to the
+>>>> system. You do the irq work thing to kick the cpufreq threads which do
+>>>> their little thing -- and their wakeup will influence the cfs
+>>>> accounting, which in turn will start the whole thing anew.
+>>>>
+>>>> I would really prefer you did a whole new system with directly invoked
+>>>> drivers that avoid the silly dance. Your 'new' ARM systems should be
+>>>> well capable of that.
 >>>
->>> On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
->>>> The On-Chip-Controller(OCC) can throttle cpu frequency by reducing the
->>>> max allowed frequency for that chip if the chip exceeds its power or
->>>> temperature limits. As Pmax capping is a chip level condition report
->>>> this throttling behavior at chip level and also do not set the global
->>>> 'throttled' on Pmax capping instead set the per-chip throttled
->>>> variable. Report unthrottling if Pmax is restored after throttling.
->>>>
->>>> This patch adds a structure to store chip id and throttled state of
->>>> the chip.
->>>>
->>>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
->>>> ---
->>>>  drivers/cpufreq/powernv-cpufreq.c | 59 ++++++++++++++++++++++++++++++++++++---
->>>>  1 file changed, 55 insertions(+), 4 deletions(-)
->>>>
->>>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
->>>> index ebef0d8..d0c18c9 100644
->>>> --- a/drivers/cpufreq/powernv-cpufreq.c
->>>> +++ b/drivers/cpufreq/powernv-cpufreq.c
->>>> @@ -27,6 +27,7 @@
->>>>  #include <linux/smp.h>
->>>>  #include <linux/of.h>
->>>>  #include <linux/reboot.h>
->>>> +#include <linux/slab.h>
->>>>
->>>>  #include <asm/cputhreads.h>
->>>>  #include <asm/firmware.h>
->>>> @@ -42,6 +43,13 @@
->>>>  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
->>>>  static bool rebooting, throttled;
->>>>
->>>> +static struct chip {
->>>> +	unsigned int id;
->>>> +	bool throttled;
->>>> +} *chips;
->>>> +
->>>> +static int nr_chips;
->>>> +
->>>>  /*
->>>>   * Note: The set of pstates consists of contiguous integers, the
->>>>   * smallest of which is indicated by powernv_pstate_info.min, the
->>>> @@ -301,22 +309,33 @@ static inline unsigned int get_nominal_index(void)
->>>>  static void powernv_cpufreq_throttle_check(unsigned int cpu)
->>>>  {
->>>>  	unsigned long pmsr;
->>>> -	int pmsr_pmax, pmsr_lp;
->>>> +	int pmsr_pmax, pmsr_lp, i;
->>>>
->>>>  	pmsr = get_pmspr(SPRN_PMSR);
->>>>
->>>> +	for (i = 0; i < nr_chips; i++)
->>>> +		if (chips[i].id == cpu_to_chip_id(cpu))
->>>> +			break;
->>>> +
->>>>  	/* Check for Pmax Capping */
->>>>  	pmsr_pmax = (s8)PMSR_MAX(pmsr);
->>>>  	if (pmsr_pmax != powernv_pstate_info.max) {
->>>> -		throttled = true;
->>>> -		pr_info("CPU %d Pmax is reduced to %d\n", cpu, pmsr_pmax);
->>>> -		pr_info("Max allowed Pstate is capped\n");
->>>> +		if (chips[i].throttled)
->>>> +			goto next;
->>>> +		chips[i].throttled = true;
->>>> +		pr_info("CPU %d on Chip %u has Pmax reduced to %d\n", cpu,
->>>> +			chips[i].id, pmsr_pmax);
->>>> +	} else if (chips[i].throttled) {
->>>> +		chips[i].throttled = false;
->>>
->>> Is this check on pmax sufficient to indicate that the chip is unthrottled ?
+>>> Thanks for the review Peter.
 >>
->> Unthrottling due to Pmax uncapping here is specific to a chip. So it is
->> sufficient to decide throttling/unthrottling when OCC is active for that chip.
+>> Well, I didn't actually get beyond the Changelog; although I have
+>> rectified this now. A few more comments below.
 > 
-> Ok then we can perhaps exit after detecting unthrottling here.
-
-This won't work for older firmwares which do not clear "Frequency control
-enabled bit" on OCC reset cycle. So let us check for remaining two conditions on
-unthrottling as well.
-
->>
->>>
->>>> +		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
->>>> +			chips[i].id, pmsr_pmax);
->>>>  	}
->>>>
->>>>  	/*
->>>>  	 * Check for Psafe by reading LocalPstate
->>>>  	 * or check if Psafe_mode_active is set in PMSR.
->>>>  	 */
->>>> +next:
->>>>  	pmsr_lp = (s8)PMSR_LP(pmsr);
->>>>  	if ((pmsr_lp < powernv_pstate_info.min) ||
->>>>  				(pmsr & PMSR_PSAFE_ENABLE)) {
->>>> @@ -414,6 +433,33 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
->>>>  	.attr		= powernv_cpu_freq_attr,
->>>
->>> What about the situation where although occ is active, this particular
->>> chip has been throttled and we end up repeatedly reporting "pstate set
->>> to safe" and "frequency control disabled from OS" ? Should we not have a
->>> check on (chips[i].throttled) before reporting an anomaly for these two
->>> scenarios as well just like you have for pmsr_pmax ?
->>
->> We will not have "Psafe" and "frequency control disabled" repeatedly printed
->> because of global variable 'throttled', which is set to true on passing any of
->> these two conditions.
->>
->> It is quite unlikely behavior to have only one chip in "Psafe" or "frequency
->> control disabled" state. These two conditions are most likely to happen during
->> an OCC reset cycle which will occur across all chips.
+> Thanks for the Real Deal review Peter.
 > 
-> Let us then add a comment to indicate that Psafe and frequency control
-> disabled conditions will fail *only if OCC is inactive* and not
-> otherwise and that this is a system wide phenomenon.
+>>
+>>> We'll need something in process context for the many cpufreq drivers
+>>> that might sleep during their cpu frequency transition, no? This is due
+>>> to calls into the regulator framework, the clock framework and sometimes
+>>> other things such as conversing with a power management IC or voting
+>>> with some system controller.
+>>
+>> Yes, we need _something_. I just spoke to a bunch of people on IRC and
+>> it does indeed seem that I was mistaken in my assumption that modern ARM
+>> systems were 'easy' in this regard.
+>>
+>>>> As to the drivers, they're mostly fairly small and self contained, it
+>>>> should not be too hard to hack them up to work without cpufreq.
+>>>
+>>> The drivers are not the only thing. I want to leverage the existing
+>>> cpufreq core infrastructure:
+>>>
+>>> * rate change notifiers
+>>> * cpu hotplug awareness
+>>> * methods to fetch frequency tables from firmware (acpi, devicetree)
+>>> * other stuff I can't think of now
+>>>
+>>> So I do not think we should throw out the baby with the bath water. The
+>>> thing that people really don't like about cpufreq are the governors IMO.
+>>> Let's fix that by creating a list of requirements that we really want
+>>> for scheduler-driven cpu frequency selection:
+>>>
+>>> 0) do something smart with scheduler statistics to create an improved
+>>> frequency selection algorithm over existing cpufreq governors
+>>>
+>>> 1) support upcoming and legacy hardware, within reason
+>>>
+>>> 2) if a system exports a fast, async frequency selection interface to
+>>> Linux, then provide a solution that doesn't do any irq_work or kthread
+>>> stuff.  Do it all in the fast path
+>>>
+>>> 3) if a system has a slow, synchronous interface for frequency
+>>> selection, then provide an acceptable solution for kicking this work to
+>>> process context. Limit time in the fast path
+>>>
+>>> The patch set tries to tackle 0, 1 and 3. Would the inclusion of #2 make
+>>> you feel better about supporting "newer" hardware with a fire-and-forget
+>>> frequency selection interface?
+>>
+>> I should probably look at doing a x86 support patch to try some of this
+>> out, I'll try and find some time to play with that.
+>>
+>> So two comments on the actual code:
+>>
+>> 1) Ideally these hooks would be called from places where we've just
+>> computed the cpu utilization already. I understand this is currently not
+>> the case and we need to do it in-situ.
 > 
+> Are you thinking of placing the hook somewhere such as
+> update_entity_load_avg?
+> 
+> I did not choose that as a call site since I was worried that it would
+> be too noisy; we can enter that function multiple times in the same
+> pass through the scheduler.
+> 
+> On the other hand if dvfs transitions are cheap for a platform then it
+> might not be so bad to call it multiple times. For platforms where dvfs
+> transitions are expensive we could store per-cpu new_capacity data
+> multiple times and make sure that we only try to program the hardware as
+> deferred work later on.
+> 
+>>
+>> That said; it would be good to have the interface such that we pass the
+>> utilization in; this would of course mean we'd have to compute it at the
+>> call sites, this should be fine I think.
+> 
+> I changed the code to do this but didn't have time to test it. Will send
+> the patch with these changes tomorrow.
+> 
+>>
+>>
+>> 2) I dislike how policy->cpus is handled; it feels upside down.
+> 
+> I agree. It feels better to push the utilization from cfs instead of
+> pull it from the frequency selection policy.
+> 
+> I chose to do it this way since there isn't an obvious way to pass some
+> private data to an irq_work callback, but I've overcome this with some
+> per-cpu data internal to the governor.
+>
 
-I agree that adding a comment here will clear global vs local throttling
-scenarios, but this will contradict the architectural design of OCC wherein it
-can independently go to "Psafe" and "frequency control disabled" state. It is
-the implementation in FSP today that has made the above two states global. My
-point is adding a comment here may be confusing if at all for the future
-firmwares this implementation is changed. Having said that the current patch set
-still seems fit for the newer implementation for the following reason:
-1) The aim here is to identify any sort of throttling and report it to the user
-with least flooding of error messages, which will happen even if OCC can
-independently reset and restore.
-2) On unthrottling verify throttling on the chips with the exception of Pmax
-capping is also taken care by this patch set.
+This new interface looks like what I was also proposing in the
+discussion we had [1], are you going to send out something along this
+line?
 
-Thanks and Regards,
-Shilpa
+I think it would be good to have something like that. As Peter is
+saying, together with Morten's/Dietmar's series, we could try to do
+wiser decisions on when to trigger the whole machinery.
 
+Thanks,
+
+- Juri
+
+[1] https://lists.linaro.org/pipermail/eas-dev/2015-April/000129.html
+
+>> If per 1 each CPU already computed its utilization and provides it in
+>> the call, we should not have to recompute it and its scale factor (which
+>> btw seems done slightly odd too, I know humans like 10 base, but
+>> computers suck at it).
+>>
+>> Why not something like:
+>>
+>>         usage = ((1024 + 256) * usage) >> 10; /* +25% */
+> 
+> This works when the max capacity is always 1024, but that is not always
+> the case for some new ARM systems. For cpu's whose max capacity is less
+> than 1024 we would still need to normalize against capacity_orig_of().
+> 
+> Doing the SCHED_LOAD_SCALE thing is fine for me now, but at some point
+> it will probably need to be changed by Morten/Juri/Dietmar for their EAS
+> patch series, which deals with some of these cpu capacity scale issues.
+> 
+>>
+>>         old_usage = __this_cpu_read(gd->usage);
+>>         __this_cpu_write(gd->usage, usage);
+>>
+>>         max_usage = 0;
+>>         for_each_cpu(cpu, policy->cpus)
+>>                 max_usage = max(max_usage, per_cpu(gd->usage, cpu));
+>>
+>>         if (max_usage < old_usage || /* dropped */
+>>             (max_usage == usage && max_usage != old_usage)) /* raised */
+>>                 request_change(max_usage);
+> 
+> Yes this should work fine. I've pulled it into the patch that I'll
+> test and publish tomorrow.
+> 
+> Thanks,
+> Mike
+> 
+>>
+>>
+> 
