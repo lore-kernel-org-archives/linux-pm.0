@@ -1,71 +1,179 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
-Date: Thu, 7 May 2015 17:43:39 +0530
-Message-ID: <CAKohpomYQw67KuX29PLawmd1dSXHx7pMt7+8BzmLPfHSqhMB2g@mail.gmail.com>
-References: <cover.1430394884.git.viresh.kumar@linaro.org>
-	<d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar@linaro.org>
-	<20150504121209.GM15510@sirena.org.uk>
-	<CAKohponRXiWbgT26=tO83jJgbteBf38ggE7mKvLCv+wFMW1cvA@mail.gmail.com>
-	<20150505105714.GA22845@sirena.org.uk>
-	<CAKohpo=09ZhXxh5Cm7Ww9Gy-AYRp9=j82tup6atVN+aOF8twdA@mail.gmail.com>
-	<20150505171252.GI22845@sirena.org.uk>
-	<CAKohpo=kJs076afzERPMqjELgwpN6nR2yoyEjW6XY7YSEbRuCA@mail.gmail.com>
-	<20150507055231.GB32399@codeaurora.org>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 1/6] cpufreq: poowernv: Handle throttling due to Pmax
+ capping at chip level
+Date: Thu, 07 May 2015 17:45:16 +0530
+Message-ID: <554B5754.6010902@linux.vnet.ibm.com>
+References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1430729652-14813-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <55483E4B.4080405@linux.vnet.ibm.com> <55485DE9.4070609@linux.vnet.ibm.com> <55488188.9070908@linux.vnet.ibm.com> <554B3FE9.7050908@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f48.google.com ([209.85.218.48]:34743 "EHLO
-	mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751917AbbEGMNj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 08:13:39 -0400
-Received: by oiko83 with SMTP id o83so31608783oik.1
-        for <linux-pm@vger.kernel.org>; Thu, 07 May 2015 05:13:39 -0700 (PDT)
-In-Reply-To: <20150507055231.GB32399@codeaurora.org>
+Received: from e18.ny.us.ibm.com ([129.33.205.208]:47069 "EHLO
+	e18.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751675AbbEGMP0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 08:15:26 -0400
+Received: from /spool/local
+	by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Thu, 7 May 2015 08:15:26 -0400
+In-Reply-To: <554B3FE9.7050908@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Mark Brown <broonie@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Nishanth Menon <nm@ti.com>, Mike Turquette <mike.turquette@linaro.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, santosh
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org
 
-On 7 May 2015 at 11:22, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> If you look at the cpufreq/clock/pmic code on our codeaurora.org
-> tree you'll see that it's used to pass a value with uA units
-> through the regulator_set_optimum_mode() API. The call to
-> regulator_set_optimum_mode() is here[1], and the place where we
-> parse the OPP table from DT is here[2]. My understanding is that
-> with recent changes to the regulator framework, we would do a
-> s/regulator_set_optimum_mode/regulator_set_load/ and things would
-> otherwise be the same on the consumer side. On the regulator
-> side, we would move the .get_optimum_mode op to .set_load instead
-> of the hack where we write to the hardware in
-> .get_optimum_mode[3].
->
-> So does that mean it corresponds to a limit, or a nominal
-> constant draw value, or a value to regulator to? From what I can
-> tell it's used to figure out how many phases to enable[4]. I
-> suspect that means it's being used to figure out what value it
-> should regulate to. In newer PMICs this is all done
-> automatically, but at least for some of the PMICs we need to do
-> it manually.
+On 05/07/2015 04:05 PM, Shilpasri G Bhat wrote:
+> 
+> 
+> On 05/05/2015 02:08 PM, Preeti U Murthy wrote:
+>> On 05/05/2015 11:36 AM, Shilpasri G Bhat wrote:
+>>> Hi Preeti,
+>>>
+>>> On 05/05/2015 09:21 AM, Preeti U Murthy wrote:
+>>>> Hi Shilpa,
+>>>>
+>>>> On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
+>>>>> The On-Chip-Controller(OCC) can throttle cpu frequency by reducing the
+>>>>> max allowed frequency for that chip if the chip exceeds its power or
+>>>>> temperature limits. As Pmax capping is a chip level condition report
+>>>>> this throttling behavior at chip level and also do not set the global
+>>>>> 'throttled' on Pmax capping instead set the per-chip throttled
+>>>>> variable. Report unthrottling if Pmax is restored after throttling.
+>>>>>
+>>>>> This patch adds a structure to store chip id and throttled state of
+>>>>> the chip.
+>>>>>
+>>>>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>>>>> ---
+>>>>>  drivers/cpufreq/powernv-cpufreq.c | 59 ++++++++++++++++++++++++++++++++++++---
+>>>>>  1 file changed, 55 insertions(+), 4 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+>>>>> index ebef0d8..d0c18c9 100644
+>>>>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>>>>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>>>>> @@ -27,6 +27,7 @@
+>>>>>  #include <linux/smp.h>
+>>>>>  #include <linux/of.h>
+>>>>>  #include <linux/reboot.h>
+>>>>> +#include <linux/slab.h>
+>>>>>
+>>>>>  #include <asm/cputhreads.h>
+>>>>>  #include <asm/firmware.h>
+>>>>> @@ -42,6 +43,13 @@
+>>>>>  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+>>>>>  static bool rebooting, throttled;
+>>>>>
+>>>>> +static struct chip {
+>>>>> +	unsigned int id;
+>>>>> +	bool throttled;
+>>>>> +} *chips;
+>>>>> +
+>>>>> +static int nr_chips;
+>>>>> +
+>>>>>  /*
+>>>>>   * Note: The set of pstates consists of contiguous integers, the
+>>>>>   * smallest of which is indicated by powernv_pstate_info.min, the
+>>>>> @@ -301,22 +309,33 @@ static inline unsigned int get_nominal_index(void)
+>>>>>  static void powernv_cpufreq_throttle_check(unsigned int cpu)
+>>>>>  {
+>>>>>  	unsigned long pmsr;
+>>>>> -	int pmsr_pmax, pmsr_lp;
+>>>>> +	int pmsr_pmax, pmsr_lp, i;
+>>>>>
+>>>>>  	pmsr = get_pmspr(SPRN_PMSR);
+>>>>>
+>>>>> +	for (i = 0; i < nr_chips; i++)
+>>>>> +		if (chips[i].id == cpu_to_chip_id(cpu))
+>>>>> +			break;
+>>>>> +
+>>>>>  	/* Check for Pmax Capping */
+>>>>>  	pmsr_pmax = (s8)PMSR_MAX(pmsr);
+>>>>>  	if (pmsr_pmax != powernv_pstate_info.max) {
+>>>>> -		throttled = true;
+>>>>> -		pr_info("CPU %d Pmax is reduced to %d\n", cpu, pmsr_pmax);
+>>>>> -		pr_info("Max allowed Pstate is capped\n");
+>>>>> +		if (chips[i].throttled)
+>>>>> +			goto next;
+>>>>> +		chips[i].throttled = true;
+>>>>> +		pr_info("CPU %d on Chip %u has Pmax reduced to %d\n", cpu,
+>>>>> +			chips[i].id, pmsr_pmax);
+>>>>> +	} else if (chips[i].throttled) {
+>>>>> +		chips[i].throttled = false;
+>>>>
+>>>> Is this check on pmax sufficient to indicate that the chip is unthrottled ?
+>>>
+>>> Unthrottling due to Pmax uncapping here is specific to a chip. So it is
+>>> sufficient to decide throttling/unthrottling when OCC is active for that chip.
+>>
+>> Ok then we can perhaps exit after detecting unthrottling here.
+> 
+> This won't work for older firmwares which do not clear "Frequency control
+> enabled bit" on OCC reset cycle. So let us check for remaining two conditions on
+> unthrottling as well.
 
-By current phases, you probably meant [1], right ?
+ok.
 
-Also what I couldn't understand is how are you controlling the
-current here?
+> 
+>>>
+>>>>
+>>>>> +		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
+>>>>> +			chips[i].id, pmsr_pmax);
+>>>>>  	}
+>>>>>
+>>>>>  	/*
+>>>>>  	 * Check for Psafe by reading LocalPstate
+>>>>>  	 * or check if Psafe_mode_active is set in PMSR.
+>>>>>  	 */
+>>>>> +next:
+>>>>>  	pmsr_lp = (s8)PMSR_LP(pmsr);
+>>>>>  	if ((pmsr_lp < powernv_pstate_info.min) ||
+>>>>>  				(pmsr & PMSR_PSAFE_ENABLE)) {
+>>>>> @@ -414,6 +433,33 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
+>>>>>  	.attr		= powernv_cpu_freq_attr,
+>>>>
+>>>> What about the situation where although occ is active, this particular
+>>>> chip has been throttled and we end up repeatedly reporting "pstate set
+>>>> to safe" and "frequency control disabled from OS" ? Should we not have a
+>>>> check on (chips[i].throttled) before reporting an anomaly for these two
+>>>> scenarios as well just like you have for pmsr_pmax ?
+>>>
+>>> We will not have "Psafe" and "frequency control disabled" repeatedly printed
+>>> because of global variable 'throttled', which is set to true on passing any of
+>>> these two conditions.
+>>>
+>>> It is quite unlikely behavior to have only one chip in "Psafe" or "frequency
+>>> control disabled" state. These two conditions are most likely to happen during
+>>> an OCC reset cycle which will occur across all chips.
+>>
+>> Let us then add a comment to indicate that Psafe and frequency control
+>> disabled conditions will fail *only if OCC is inactive* and not
+>> otherwise and that this is a system wide phenomenon.
+>>
+> 
+> I agree that adding a comment here will clear global vs local throttling
+> scenarios, but this will contradict the architectural design of OCC wherein it
+> can independently go to "Psafe" and "frequency control disabled" state. It is
+> the implementation in FSP today that has made the above two states global. My
+> point is adding a comment here may be confusing if at all for the future
+> firmwares this implementation is changed. Having said that the current patch set
+> still seems fit for the newer implementation for the following reason:
+> 1) The aim here is to identify any sort of throttling and report it to the user
+> with least flooding of error messages, which will happen even if OCC can
+> independently reset and restore.
+> 2) On unthrottling verify throttling on the chips with the exception of Pmax
+> capping is also taken care by this patch set.
 
-- Is this a current only regulator ? Probably not as your code has
-a uv value as well..
+Ok as long as we are reporting right, its fine.
 
-- Now if uV is fixed, how is the target current controlled separately ?
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> 
+> Thanks and Regards,
+> Shilpa
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
 
-- Should we have a min/max/target value of this current ? Like what
-we are doing for voltage. Or is this just the 'target' current ?
-
-- And finally how exactly should we write this in bindings to make
-it clear to all users ?
-
-Thanks.
-
---
-viresh
-
-[1] http://en.wikipedia.org/wiki/Three-phase_electric_power
