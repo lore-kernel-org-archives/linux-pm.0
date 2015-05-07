@@ -1,156 +1,143 @@
-From: Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v3] power_supply: Add support for Richtek rt9455 battery
- charger
-Date: Thu, 7 May 2015 10:22:58 +0300
-Message-ID: <20150507072258.GP10973@lpalcu-linux>
-References: <1430843530-26252-1-git-send-email-anda-maria.nicolae@intel.com>
- <20150506114003.GM10973@lpalcu-linux>
- <554A360C.7020401@intel.com>
+From: Martin Steigerwald <martin@lichtvoll.de>
+Subject: Re: [BUG] ThinkPad T520 overheating with P-State driver
+Date: Thu, 07 May 2015 10:20:22 +0200
+Message-ID: <7417602.R7WtsaR5vb@merkaba>
+References: <2208008.uDRZL3Gdb7@merkaba> <000601d08870$b2979e60$17c6db20$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <554A360C.7020401-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Anda-Maria Nicolae <anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mondschein.lichtvoll.de ([194.150.191.11]:42544 "EHLO
+	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751324AbbEGIUY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 04:20:24 -0400
+In-Reply-To: <000601d08870$b2979e60$17c6db20$@net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 'Kristen Carlson Accardi' <kristen@linux.intel.com>
 
-Hi Anda,
+Am Mittwoch, 6. Mai 2015, 19:51:19 schrieb Doug Smythies:
+> On 2015.05.06 13:37 Martin Steigerwald wrote:
+> > I get frequencies like:
+> >=20
+> > 3080566
+> > 3068945
+> > 3009082
+> > 2999902
+>=20
+> Please know that the intel_pstate driver reports actual CPU frequenci=
+es
+> over the last sample interval. In terms of heat, they don't mean anyt=
+hing,
+> you would have to look at how much time the CPU spent in the C0 and o=
+ther
+> states.
 
-On Wed, May 06, 2015 at 06:41:00PM +0300, Anda-Maria Nicolae wrote:
-(...)
-> >>Updates from v2 version:
-> >>- removed unused masks and keep the used ones. I have tried to access mask field
-> >>from struct regmap_field, but I have received the following compilation error:
-> >>"dereferencing pointer to incomplete type". I think this happens because I include
-> >>the file include/linux/regmap.h and in this file struct regmap_field is only declared
-> >>and not defined. Struct regmap_field is defined in drivers/base/regmap/internal.h.
-> >>If I include this file, compilation works. But I do not think it is a good idea
-> >>to include it; I did not find any other driver which includes this file. I also
-> >>could not find any driver that accesses mask field from struct regmap_field.
-> >If you want to go this path, which looks promising since you can get rid
-> >of all mask macros, you don't need regmap_field to compute your masks.
-> >You need reg_field (include/linux/regmap.h). When you setup your fields,
-> >you use:
-> >
-> >static const struct reg_field rt9455_reg_fields[] = {...};
-> >
-> >Hence, you have access to both msb and lsb of each field and you can
-> >easily compute your mask. Just an idea.
-> >
-> Because the masks are constant, I believe it is better to define
-> macros for them instead of calculating every time the driver uses
-> one of them. This is why I wanted to use mask field: to avoid
-> calculating them and to remove the macros.
-How about using a macro like the one below?
+Okay, so that would be=20
 
-GET_MASK(fid)	(BIT(rt9455_reg_fields[fid].msb] + 1) - BIT(rt9455_reg_fields[fid].lsb))
+merkaba:/sys/devices/system/cpu/cpu0/cpufreq> ls stats
+time_in_state  total_trans
 
-You can just do: v & GET_MASK(F_TSDI)
+for acpi-cpufreq, and for Intel P-State I suppose there is something=20
+similar?
 
-instead of: v & RT9455_REG_IRQ1_TSDI_MASK
+Powertop can show this as well I think. Can these value be resetted so =
+I=20
+could test just for this workload?
 
-It looks simple enough and uses the information that you already have when
-declaring the reg_fields. The runtime performance will not be impacted
-since the compiler will compute the value at compile time. Does that
-sound good to you?
+> > Yet with acpi-cpufreq without limiting maximum performance at all, =
+I get
+> > the following with the *same* workload:
+> >=20
+> > 2501000
+> > 2501000
+> > 1000000
+> > 1000000
+>=20
+> Please know that the acpi-cpufreq driver reports what frequency (psta=
+te)
+> It is asking for, not what might actually be happening.
+> If your CPU 2 and 3 were ever active during that sample time
+> They would be at the same frequency as your turbostate CPU 0 or 1,
+> which ever is higher.
 
-> >>For instance, drivers/pwm/pwm-sti.c at lines 157, 158, also uses masks.
-> >>
-> >>- I have also kept REG_FIELD definitions for interrupt registers, since, for instance,
-> >>I use F_BATAB to check battery presence property.
-> >>
-> >>- cached regs 0x05 and 0x06. Also, I have added rt9455_is_writeable_reg function
-> >>for writeable_reg field of regmap_config.
-> >>
-> >>- used POWER_STATUS_DISCHARGING, replaced break with and replaced it with return and
-> >>indented it correctly. I spent some time on this and I finally understood what is happening.
-> >>So, if PWR_RDY bit is set, but STAT bits value is 0, the charger may be in one
-> >>of the following cases:
-> >>1. CHG_EN bit is 0.
-> >>2. CHG_EN bit is 1 but the battery is not connected.
-> >>In any of these cases, POWER_SUPPLY_STATUS_NOT_CHARGING is returned.
-> >>If the PWR_RDY bit is cleared, POWER_SUPPLY_STATUS_DISCHARGING is returned.
-> >>
-> >>- used VOREG bits value instead of VMREG in functions rt9455_charger_get_voltage_max()/
-> >>rt9455_charger_set_voltage_max(). Although RT9455 charger has VMREG bits which,
-> >>according to the datasheet, represent "Maximum battery regulation voltage", the
-> >>charger never uses VMREG value as maximum threshold for battery voltage. This
-> >>happens because TE and TE_SHDN_EN bits are set during rt9455_probe(), and charging
-> >>operation is terminated when charging current is less than ICHRG x IEOC. When charging
-> >>operation is terminated, battery voltage is almost equal to VOREG. Therefore,
-> >>VMREG value is not taken into account. This is the reason why VOREG value is
-> >>set/returned in these functions.
-> >Something's not right... What happens in the following scenario:
-> >VMREG=4.2V (default value) and user sets VOREG=4.45V? Did you test this
-> >case. I really doubt VMREG field is not used at all. Of course, you can set
-> >VMREG to maximum value in which case VMREG doesn't really matter.
-> 
-> I have set VMREG to its maximum value in rt9455_hw_init() function.
-> Please take a look at my last patch.
-Yes, I saw that.
+Okay. So I can=B4t see anything from it.
 
-> Yes, I have tested this case with a battery whose voltage is 3.97V,
-> VOREG = 4.45V and VMREG = 4.2V. The charger drains current from the
-> power source. If I set VOREG to 4V, from 4.45V, Charge done
-> interrupt is triggered and no current is drained from the power
-> source. If I increase VMREG to 4.45V, and keep VOREG to 4V, no input
-> current is drained from the power source, but if I increase VOREG to
-> 4.2V, the charger drains current from the power source. This is why
-> I have decided to use VOREG instead of VMREG.
-OK, the behavior you're describing looks as expected. But VMREG and
-VOREG is about voltages, not currents. Did you measure the output
-voltage when VOREG=4.45V and VMREG=4.2? What is it? I suspect it will be
-4.2V.
+What I experience tough it that the workload of playing PlaneShift work=
+s=20
+*much* better with acpi-cpufreq on this machine.
 
-So, my point is, I'm pretty sure VMREG is not ignored if one chooses to
-use it.
+I bet the machine may need a fan replacement, or cleaning, but last tim=
+e I=20
+looked it appeared to be clean enough. Yet there is a huge difference b=
+etween=20
+hitting forced throttling each 2 minutes or just three or four times du=
+ring=20
+an evening.
 
-(...)
-> >>+
-> >>+static int rt9455_charger_set_voltage(struct rt9455_info *info,
-> >>+				      const union power_supply_propval *val)
-> >>+{
-> >>+	return rt9455_set_field_val(info, F_VOREG,
-> >>+				    rt9455_voreg_values,
-> >>+				    ARRAY_SIZE(rt9455_voreg_values),
-> >>+				    val->intval);
-> >>+}
-> >>+
-> >>+static int rt9455_charger_set_voltage_max(struct rt9455_info *info,
-> >>+					  const union power_supply_propval *val)
-> >>+{
-> >>+	/*
-> >>+	 * Although RT9455 charger has VMREG bits which, according to the
-> >>+	 * datasheet, represent "Maximum battery regulation voltage", the
-> >>+	 * charger never uses VMREG value as maximum threshold for battery
-> >>+	 * voltage. This happens because TE and TE_SHDN_EN bits are set during
-> >>+	 * rt9455_probe(), and charging operation is terminated when charging
-> >>+	 * current is less than ICHRG x IEOC. When charging operation is
-> >>+	 * terminated, battery voltage is almost equal to VOREG. Therefore,
-> >>+	 * VMREG value is not taken into account. This is the reason why VOREG
-> >>+	 * value is set in this function.
-> >>+	 */
-> >>+	return rt9455_set_field_val(info, F_VOREG,
-> >>+				    rt9455_voreg_values,
-> >>+				    ARRAY_SIZE(rt9455_voreg_values),
-> >>+				    val->intval);
-> >>+}
-> >Apparently, rt9455_charger_set_voltage_max() and
-> >rt9455_charger_set_voltage() do the same thing?
-> 
-> Yes, they do the same thing. If I increase VMREG instead of VOREG,
-> the charger does not drain current if the battery voltage is almost
-> equal to VOREG and I think the user wants the contrary.
-I'm sorry but your explanation has nothing to do with the fact that you
-are duplicating code here... You could've had one function, instead of
-2. Never mind though, it looks like you decided not to have these
-properties writable and these functions will probably be gone
-altogether.
+Also it stayed longer in forced throttling state, with acpi-cpufreq it =
+was=20
+there quite shortly. And the room was one degree warmer even.
 
-laurentiu 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+So at least under my conditions acpi-cpufreq appears to work way better=
+,=20
+cause hitting forced throttling as much as it hits with P-State actuall=
+y=20
+makes things slower, way slower. In my understanding it should avoid hi=
+tting=20
+this forced throttling.
+
+I tried thermald then, but it injected idle states up to the point wher=
+e the=20
+machine became basically unusable.
+
+I am quite full with things, but I once I have a bit more time I would =
+like=20
+to gather some debug data. Would state statistics be enough or would=20
+anything else be needed?
+
+Of course, if you just say, Intel P-State does a better job at ultilizi=
+ng=20
+maximum power and is not supposed to work on aged hardware with some co=
+oling=20
+deficiences, I can spare my time. Still then it would be good it it res=
+pected=20
+the no_turbo setting.
+
+Also it seems to somewhat respect max_perf_pct, but if there is work to=
+ do=20
+it exceeds it as well. It would be good to have a way to tell it "Hey, =
+this=20
+machine is a bit old, it doesn=B4t do the cooling as well as it when it=
+ was=20
+new and it could hit the CPU for 3,2 GHz (instead of 2,5 GHz) for half =
+an=20
+hour without ever overheating, so please be a bit more gentle with it, =
+until=20
+I eventually replaced fan or did whatever is needed to bring it back to=
+ full=20
+cooling functionality".
+
+> > There is also some other bug report about this:
+> > Please change intel_pstate default to disable
+> > https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1188647
+> > appears to be quite old, but still seems unresolved.
+>=20
+> That bug report is very old, and is closed.
+> I made a late entry on that bug report on 2014.06.08,
+> and have submitted a patch set to deal with, among other things,
+> the long duration issue.
+
+Oh, I thought it was just closed by disabling Intel P-State, I didn=B4t=
+ see=20
+any actual fix to the issue in there. Ah, okay, your last comment menti=
+oned=20
+fixed, I was not sure whether they really fixed the issue from reading =
+your=20
+comment.
+
+Thanks,
+--=20
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
