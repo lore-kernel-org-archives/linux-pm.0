@@ -1,48 +1,257 @@
-From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Subject: Re: A desktop environment[1] kernel wishlist
-Date: Thu, 7 May 2015 17:54:56 +0100
-Message-ID: <20150507175456.51376473@lxorguk.ukuu.org.uk>
-References: <1413881397.30379.7.camel@hadess.net>
-	<2236285.G0hRnmeVkc@vostro.rjw.lan>
-	<CAAObsKBRs7iD2hHa0smhz-1c2e6HW+r2_CxPhv48Cs4yH+npUQ@mail.gmail.com>
-	<26037972.gZDpmonflh@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <26037972.gZDpmonflh@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Chirantan Ekbote <chirantan@chromium.org>, Olof Johansson <olof@lixom.net>, John Stultz <john.stultz@linaro.org>, Bastien Nocera <hadess@hadess.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, snanda@chromium.org, Linux PM list <linux-pm@vger.kernel.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [RFC PATCH] cpuidle: Remove the default poll idle loop
+Date: Thu,  7 May 2015 18:56:20 +0200
+Message-ID: <1431017784-19599-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: daniel.lezcano@linaro.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Mohammad Merajul Islam Molla <meraj.enigma@gmail.com>, Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@linux.com>, Mel Gorman <mgorman@suse.de>, Javi Merino <javi.merino@arm.com>, Jiri Kosina <jkosina@suse.cz>, Antonio Ospite <ao2@ao2.it>, "open list:ACPI" <linux-acpi@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "open list:CPUIDLE DRIVERS" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 05 May 2015 14:31:26 +0200
+The poll idle loop is useful only for the *menu* governor: when there
+is a timer about to shutdown very soon (less than 5us), then we default
+to the poll idle if no other idle state is found, otherwise the 'hlt'
+state is the default.
 
-> For example, when you wake up from S3 on ACPI-based systems, the best you
-> can get is what devices have generated the wakeup events, but there's
-> no input available from that (like you won't know which key has been
-> pressed).  You may not get that even.  You may only know what GPEs have
-> caused the wakeup to happen and they may be shared.
-> 
-> For PCI wakeup, the wakeup event may be out of band.  You need to walk
-> the hierarchy and check the PME status bits to identify the wakeup device
-> and then you need to be careful enough not to reset it while putting into
-> D0 for the input data associated with the event to be available.  I'm not
-> sure how many device/driver combinations this actually works for.
-> 
-> For USB wakeup, you get the wakeup event from the controller which may be
-> a PCI device.  Getting to the USB device itself from there requires some
-> work and even then the device may not "remember" what exactly happened.
-> 
-> Further, if you wake up via the PC keyboard from suspend-to-idle, the
-> wakeup key code is not available, the only thing you know is that the
-> interrupts has occured (that may be changed, but it's how the current
-> code works).
+The poll idle state is x86 specific, hence leading to the DRIVER_START
+index hell all around the code and prone to buggy code.
 
-It's probably got to change, otherwise once machines get able to sleep
-between keypresses it's going to suck every time you pause and think for
-a minute then begin typing. Remember display being off for suspend is
-purely a limitation of most current display panels.
+I have been looking on a x86 24 cpus system, how many times this state is
+called. It appears to be very rarely used with a recent kernel. Furthermore
+the poll code is more than 7 years old and now very fast idle instruction
+exists (less than 1us).
 
+Another pitfall with the poll idle state is when the governor makes a bad
+prediction and selects this state while the idle state duration is much
+more longer, that results in an excessive energy consumption.
 
-Alan
+Remove this state and the related code as it brings more complexity for
+a very discutable benefit.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/acpi/processor_idle.c      |  8 ++++----
+ drivers/cpuidle/cpuidle.c          |  6 +++---
+ drivers/cpuidle/driver.c           | 32 --------------------------------
+ drivers/cpuidle/governors/ladder.c | 12 ++++++------
+ drivers/cpuidle/governors/menu.c   | 13 ++-----------
+ include/linux/cpuidle.h            |  6 ------
+ 6 files changed, 15 insertions(+), 62 deletions(-)
+
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 39e0c8e..4fbbe07 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -799,7 +799,7 @@ static int acpi_idle_enter(struct cpuidle_device *dev,
+ 
+ 	if (cx->type != ACPI_STATE_C1) {
+ 		if (acpi_idle_fallback_to_c1(pr) && num_online_cpus() > 1) {
+-			index = CPUIDLE_DRIVER_STATE_START;
++			index = 0;
+ 			cx = per_cpu(acpi_cstate[index], dev->cpu);
+ 		} else if (cx->type == ACPI_STATE_C3 && pr->flags.bm_check) {
+ 			if (cx->bm_sts_skip || !acpi_idle_bm_check()) {
+@@ -863,7 +863,7 @@ struct cpuidle_driver acpi_idle_driver = {
+ static int acpi_processor_setup_cpuidle_cx(struct acpi_processor *pr,
+ 					   struct cpuidle_device *dev)
+ {
+-	int i, count = CPUIDLE_DRIVER_STATE_START;
++	int i, count = 0;
+ 	struct acpi_processor_cx *cx;
+ 
+ 	if (!pr->flags.power_setup_done)
+@@ -908,7 +908,7 @@ static int acpi_processor_setup_cpuidle_cx(struct acpi_processor *pr,
+  */
+ static int acpi_processor_setup_cpuidle_states(struct acpi_processor *pr)
+ {
+-	int i, count = CPUIDLE_DRIVER_STATE_START;
++	int i, count = 0;
+ 	struct acpi_processor_cx *cx;
+ 	struct cpuidle_state *state;
+ 	struct cpuidle_driver *drv = &acpi_idle_driver;
+@@ -920,7 +920,7 @@ static int acpi_processor_setup_cpuidle_states(struct acpi_processor *pr)
+ 		return -EINVAL;
+ 
+ 	drv->safe_state_index = -1;
+-	for (i = CPUIDLE_DRIVER_STATE_START; i < CPUIDLE_STATE_MAX; i++) {
++	for (i = 0; i < CPUIDLE_STATE_MAX; i++) {
+ 		drv->states[i].name[0] = '\0';
+ 		drv->states[i].desc[0] = '\0';
+ 	}
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 61c417b..ffdbf1f 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -65,7 +65,7 @@ int cpuidle_play_dead(void)
+ 		return -ENODEV;
+ 
+ 	/* Find lowest-power state that supports long-term idle */
+-	for (i = drv->state_count - 1; i >= CPUIDLE_DRIVER_STATE_START; i--)
++	for (i = drv->state_count - 1; i >= 0; i--)
+ 		if (drv->states[i].enter_dead)
+ 			return drv->states[i].enter_dead(dev, i);
+ 
+@@ -76,9 +76,9 @@ static int find_deepest_state(struct cpuidle_driver *drv,
+ 			      struct cpuidle_device *dev, bool freeze)
+ {
+ 	unsigned int latency_req = 0;
+-	int i, ret = freeze ? -1 : CPUIDLE_DRIVER_STATE_START - 1;
++	int i, ret = freeze ? -1 : 0;
+ 
+-	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
++	for (i = 0; i < drv->state_count; i++) {
+ 		struct cpuidle_state *s = &drv->states[i];
+ 		struct cpuidle_state_usage *su = &dev->states_usage[i];
+ 
+diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+index 5db1478..8b51220 100644
+--- a/drivers/cpuidle/driver.c
++++ b/drivers/cpuidle/driver.c
+@@ -177,36 +177,6 @@ static void __cpuidle_driver_init(struct cpuidle_driver *drv)
+ 	}
+ }
+ 
+-#ifdef CONFIG_ARCH_HAS_CPU_RELAX
+-static int poll_idle(struct cpuidle_device *dev,
+-		struct cpuidle_driver *drv, int index)
+-{
+-	local_irq_enable();
+-	if (!current_set_polling_and_test()) {
+-		while (!need_resched())
+-			cpu_relax();
+-	}
+-	current_clr_polling();
+-
+-	return index;
+-}
+-
+-static void poll_idle_init(struct cpuidle_driver *drv)
+-{
+-	struct cpuidle_state *state = &drv->states[0];
+-
+-	snprintf(state->name, CPUIDLE_NAME_LEN, "POLL");
+-	snprintf(state->desc, CPUIDLE_DESC_LEN, "CPUIDLE CORE POLL IDLE");
+-	state->exit_latency = 0;
+-	state->target_residency = 0;
+-	state->power_usage = -1;
+-	state->enter = poll_idle;
+-	state->disabled = false;
+-}
+-#else
+-static void poll_idle_init(struct cpuidle_driver *drv) {}
+-#endif /* !CONFIG_ARCH_HAS_CPU_RELAX */
+-
+ /**
+  * __cpuidle_register_driver: register the driver
+  * @drv: a valid pointer to a struct cpuidle_driver
+@@ -240,8 +210,6 @@ static int __cpuidle_register_driver(struct cpuidle_driver *drv)
+ 		on_each_cpu_mask(drv->cpumask, cpuidle_setup_broadcast_timer,
+ 				 (void *)1, 1);
+ 
+-	poll_idle_init(drv);
+-
+ 	return 0;
+ }
+ 
+diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+index 401c010..304e08c 100644
+--- a/drivers/cpuidle/governors/ladder.c
++++ b/drivers/cpuidle/governors/ladder.c
+@@ -96,13 +96,13 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+ 	}
+ 
+ 	/* consider demotion */
+-	if (last_idx > CPUIDLE_DRIVER_STATE_START &&
++	if (last_idx > 0 &&
+ 	    (drv->states[last_idx].disabled ||
+ 	    dev->states_usage[last_idx].disable ||
+ 	    drv->states[last_idx].exit_latency > latency_req)) {
+ 		int i;
+ 
+-		for (i = last_idx - 1; i > CPUIDLE_DRIVER_STATE_START; i--) {
++		for (i = last_idx - 1; i > 0; i--) {
+ 			if (drv->states[i].exit_latency <= latency_req)
+ 				break;
+ 		}
+@@ -110,7 +110,7 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+ 		return i;
+ 	}
+ 
+-	if (last_idx > CPUIDLE_DRIVER_STATE_START &&
++	if (last_idx > 0 &&
+ 	    last_residency < last_state->threshold.demotion_time) {
+ 		last_state->stats.demotion_count++;
+ 		last_state->stats.promotion_count = 0;
+@@ -137,9 +137,9 @@ static int ladder_enable_device(struct cpuidle_driver *drv,
+ 	struct ladder_device_state *lstate;
+ 	struct cpuidle_state *state;
+ 
+-	ldev->last_state_idx = CPUIDLE_DRIVER_STATE_START;
++	ldev->last_state_idx = 0;
+ 
+-	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
++	for (i = 0; i < drv->state_count; i++) {
+ 		state = &drv->states[i];
+ 		lstate = &ldev->states[i];
+ 
+@@ -151,7 +151,7 @@ static int ladder_enable_device(struct cpuidle_driver *drv,
+ 
+ 		if (i < drv->state_count - 1)
+ 			lstate->threshold.promotion_time = state->exit_latency;
+-		if (i > CPUIDLE_DRIVER_STATE_START)
++		if (i > 0)
+ 			lstate->threshold.demotion_time = state->exit_latency;
+ 	}
+ 
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index b8a5fa1..5c5e7db 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -294,7 +294,7 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 		data->needs_update = 0;
+ 	}
+ 
+-	data->last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
++	data->last_state_idx = 0;
+ 
+ 	/* Special case when user has set very strict latency requirement */
+ 	if (unlikely(latency_req == 0))
+@@ -327,19 +327,10 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 		latency_req = interactivity_req;
+ 
+ 	/*
+-	 * We want to default to C1 (hlt), not to busy polling
+-	 * unless the timer is happening really really soon.
+-	 */
+-	if (data->next_timer_us > 5 &&
+-	    !drv->states[CPUIDLE_DRIVER_STATE_START].disabled &&
+-		dev->states_usage[CPUIDLE_DRIVER_STATE_START].disable == 0)
+-		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
+-
+-	/*
+ 	 * Find the idle state with the lowest power while satisfying
+ 	 * our constraints.
+ 	 */
+-	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
++	for (i = 0; i < drv->state_count; i++) {
+ 		struct cpuidle_state *s = &drv->states[i];
+ 		struct cpuidle_state_usage *su = &dev->states_usage[i];
+ 
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 9c5e892..351b652 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -236,10 +236,4 @@ static inline int cpuidle_register_governor(struct cpuidle_governor *gov)
+ {return 0;}
+ #endif
+ 
+-#ifdef CONFIG_ARCH_HAS_CPU_RELAX
+-#define CPUIDLE_DRIVER_STATE_START	1
+-#else
+-#define CPUIDLE_DRIVER_STATE_START	0
+-#endif
+-
+ #endif /* _LINUX_CPUIDLE_H */
+-- 
+1.9.1
+
