@@ -1,98 +1,71 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 00/20] cpufreq: Don't loose cpufreq history on CPU hotplug
-Date: Fri, 08 May 2015 00:18:25 +0200
-Message-ID: <2093221.tWDI6k3mz2@vostro.rjw.lan>
-References: <cover.1424345053.git.viresh.kumar@linaro.org>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
+Date: Thu, 7 May 2015 23:18:42 +0100
+Message-ID: <20150507221842.GW22845@sirena.org.uk>
+References: <d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar@linaro.org>
+ <20150504121209.GM15510@sirena.org.uk>
+ <CAKohponRXiWbgT26=tO83jJgbteBf38ggE7mKvLCv+wFMW1cvA@mail.gmail.com>
+ <20150505105714.GA22845@sirena.org.uk>
+ <CAKohpo=09ZhXxh5Cm7Ww9Gy-AYRp9=j82tup6atVN+aOF8twdA@mail.gmail.com>
+ <20150505171252.GI22845@sirena.org.uk>
+ <CAKohpo=kJs076afzERPMqjELgwpN6nR2yoyEjW6XY7YSEbRuCA@mail.gmail.com>
+ <20150507055231.GB32399@codeaurora.org>
+ <20150507110233.GR15510@sirena.org.uk>
+ <20150507211855.GA2455@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="+E8tZd0NUIRz5HKc"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61450 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750907AbbEGVxV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 17:53:21 -0400
-In-Reply-To: <cover.1424345053.git.viresh.kumar@linaro.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:55309 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbbEGWTF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 18:19:05 -0400
+Content-Disposition: inline
+In-Reply-To: <20150507211855.GA2455@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Srivatsa Bhat <srivatsa@mit.edu>Saravana Kannan <skannan@codeaurora.org>
-
-On Thursday, February 19, 2015 05:02:02 PM Viresh Kumar wrote:
-> Hi Rafael,
-> 
-> The aim of this series is to stop managing cpufreq sysfs directories on CPU
-> hotplugs.
-> 
-> Currently on removal of a 'cpu != policy->cpu', we remove its sysfs directories
-> by removing the soft-link. And on removal of policy->cpu, we migrate the sysfs
-> directories to the next cpu. But if policy->cpu was the last CPU, we remove the
-> policy completely and allocate it again as soon as the CPUs come back. This has
-> shortcomings:
-> 
-> - Code Complexity
-> - Slower hotplug
-> - sysfs file permissions are reset after all policy->cpus are offlined
-> - CPUFreq stats history lost after all policy->cpus are offlined
-> - Special management of sysfs stuff during suspend/resume
-> 
-> 
-> To make things simple we stop playing with sysfs files unless the driver is
-> getting removed. Also the policy is kept intact to be used later.
-> 
-> First few patches provide a clean base for others *more important* patches.
-> 
-> Rebased-over: your bleeding edge branch as there were dependencies on my earlier
-> patches.
-> 
-> Pushed here:
-> 
-> git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/core/sysfs
-> 
-> v1->V2:
-> - Dropped the idea of using policy-lists for getting policy for any cpu
-> - Also dropped fallback list and its per-cpu variable
-> - Stopped cleaning cpufreq_cpu_data and doing list_del(policy) on logical
->   hotplug.
-> - Added support for physical hotplug of CPUs (Untested).
-> 
-> @Srivatsa: Can you please have a look at the above change? I have cc'd you only
-> on this one.
-> 
-> Saravana Kannan (1):
->   cpufreq: Track cpu managing sysfs kobjects separately
-> 
-> Cc: Srivatsa Bhat <srivatsa@mit.edu>
-> 
-> Viresh Kumar (19):
->   cpufreq: Add doc style comment about cpufreq_cpu_{get|put}()
->   cpufreq: Merge __cpufreq_add_dev() and cpufreq_add_dev()
->   cpufreq: Throw warning when we try to get policy for an invalid CPU
->   cpufreq: Keep a single path for adding managed CPUs
->   cpufreq: Clear policy->cpus even for the last CPU
->   cpufreq: Create for_each_{in}active_policy()
->   cpufreq: Call schedule_work() for the last active policy
->   cpufreq: Don't clear cpufreq_cpu_data and policy list for inactive
->     policies
->   cpufreq: Get rid of cpufreq_cpu_data_fallback
->   cpufreq: Don't traverse list of all policies for adding policy for a
->     cpu
->   cpufreq: Manage governor usage history with 'policy->last_governor'
->   cpufreq: Mark policy->governor = NULL for inactive policies
->   cpufreq: Don't allow updating inactive-policies from sysfs
->   cpufreq: Stop migrating sysfs files on hotplug
->   cpufreq: Remove cpufreq_update_policy()
->   cpufreq: Initialize policy->kobj while allocating policy
->   cpufreq: Call cpufreq_policy_put_kobj() from cpufreq_policy_free()
->   cpufreq: Restart governor as soon as possible
->   cpufreq: Add support for physical hoplug of CPUs
-> 
->  drivers/cpufreq/cpufreq.c | 593 ++++++++++++++++++++++++++--------------------
->  include/linux/cpufreq.h   |   5 +-
->  2 files changed, 340 insertions(+), 258 deletions(-)
-
-I've queued up the first 5 for 4.2, but the rest needs refreshing at least.
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Nishanth Menon <nm@ti.com>, Mike Turquette <mike.turquette@linaro.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, santosh
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--+E8tZd0NUIRz5HKc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Thu, May 07, 2015 at 02:18:55PM -0700, Stephen Boyd wrote:
+> On 05/07, Mark Brown wrote:
+
+> > I'm not looking for anyone to explain this to me in e-mail, what I'm
+> > looking for is for the binding document to be clear so someone can tell
+> > what the binding means by reading the documentation for the binding.
+
+> Ok. Perhaps the simplest thing to do then is to reuse wording
+> from the regulator_set_load() API documentation? That's the only
+> usage of this value I'm aware of. Something like:
+
+> 	The current load of the device when using this OPP. Used
+> 	to set the most efficient regulator operating mode.
+
+> We don't need any sort of min/max for this property either, so a
+> single value should be all that's required.
+
+That makes sense to me.  Perhaps "current drawn by the device" rather
+than "current load of the device" since current is sadly overloaded :/
+
+--+E8tZd0NUIRz5HKc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJVS+TBAAoJECTWi3JdVIfQA/AH/ApKBMqEOU22yQpC5elWPn0r
+sb+leNW3TK3PU/ieHDH4veGJE5DkWLvV0tnl8BjjyYXDfkEo3G2V5Sgx1RTq4413
+jwlKqP8FUrPfHZ5dKfsV38EQZOF/sD5Ocanv+5qFZt6DUsAtCUc37MEDKAFDBfNr
+TpEjAMBczgxnzJG+eJHl4Wcis9VaDYFfR2znZUf8CoNTH015BdZijdcX6ul6ERdK
+kDl4ovxgvVRhHDtXndxKAqLl8Ti46RtJkqXlH1HQT/epybTBe4OtkFrHcAdjOfwp
+Zf0KBwDn2icyD1Vp86VdtXYjFVZeBn82hfIh0TS/E6rEWaeXG/ElBL3i2YdzRys=
+=bi+q
+-----END PGP SIGNATURE-----
+
+--+E8tZd0NUIRz5HKc--
