@@ -1,74 +1,94 @@
 From: Anisse Astier <anisse@astier.eu>
-Subject: [PATCH v3 3/4] mm/page_alloc.c: add config option to sanitize freed pages
-Date: Thu,  7 May 2015 08:34:11 +0200
-Message-ID: <1430980452-2767-4-git-send-email-anisse@astier.eu>
+Subject: [PATCH v3 4/4] mm: Add debug code for SANITIZE_FREED_PAGES
+Date: Thu,  7 May 2015 08:34:12 +0200
+Message-ID: <1430980452-2767-5-git-send-email-anisse@astier.eu>
 References: <1430980452-2767-1-git-send-email-anisse@astier.eu>
-Return-path: <owner-linux-mm@kvack.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f181.google.com ([209.85.212.181]:35578 "EHLO
+	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932166AbbEGGgi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 02:36:38 -0400
+Received: by widdi4 with SMTP id di4so229113653wid.0
+        for <linux-pm@vger.kernel.org>; Wed, 06 May 2015 23:36:37 -0700 (PDT)
 In-Reply-To: <1430980452-2767-1-git-send-email-anisse@astier.eu>
-Sender: owner-linux-mm@kvack.org
-Cc: Anisse Astier <anisse@astier.eu>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+Cc: Anisse Astier <anisse@astier.eu>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This new config option will sanitize all freed pages. This is a pretty
-low-level change useful to track some cases of use-after-free, help
-kernel same-page merging in VM environments, and counter a few info
-leaks.
+Add debug code for sanitize freed pages to print status and verify pages
+at alloc to make sure they're clean. It can be useful if you have
+crashes when using SANITIZE_FREED_PAGES.
 
 Signed-off-by: Anisse Astier <anisse@astier.eu>
 ---
- mm/Kconfig      | 12 ++++++++++++
- mm/page_alloc.c | 12 ++++++++++++
- 2 files changed, 24 insertions(+)
+ kernel/power/snapshot.c |  8 ++++++--
+ mm/Kconfig              | 10 ++++++++++
+ mm/page_alloc.c         | 18 ++++++++++++++++++
+ 3 files changed, 34 insertions(+), 2 deletions(-)
 
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 673ade1..dfbfb5f 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -1044,9 +1044,13 @@ void clear_free_pages(void)
+ 	memory_bm_position_reset(bm);
+ 	pfn = memory_bm_next_pfn(bm);
+ 	while (pfn != BM_END_OF_MAP) {
+-		if (pfn_valid(pfn))
++		if (pfn_valid(pfn)) {
++#ifdef CONFIG_SANITIZE_FREED_PAGES_DEBUG
++			printk(KERN_INFO "Clearing page %p\n",
++					page_address(pfn_to_page(pfn)));
++#endif
+ 			clear_highpage(pfn_to_page(pfn));
+-
++		}
+ 		pfn = memory_bm_next_pfn(bm);
+ 	}
+ 	memory_bm_position_reset(bm);
 diff --git a/mm/Kconfig b/mm/Kconfig
-index 390214d..e9fb3bd 100644
+index e9fb3bd..95364f2 100644
 --- a/mm/Kconfig
 +++ b/mm/Kconfig
-@@ -635,3 +635,15 @@ config MAX_STACK_SIZE_MB
- 	  changed to a smaller value in which case that is used.
+@@ -647,3 +647,13 @@ config SANITIZE_FREED_PAGES
+ 	  Depending on your workload it will greatly reduce performance.
  
- 	  A sane initial value is 80 MB.
+ 	  If unsure, say N.
 +
-+config SANITIZE_FREED_PAGES
-+	bool "Sanitize memory pages after free"
++config SANITIZE_FREED_PAGES_DEBUG
++	bool "Debug sanitize pages feature"
 +	default n
++	depends on SANITIZE_FREED_PAGES && DEBUG_KERNEL
 +	help
-+	  This option is used to make sure all pages freed are zeroed. This is
-+	  quite low-level and doesn't handle your slab buffers.
-+	  It has various applications, from preventing some info leaks to
-+	  helping kernel same-page merging in virtualised environments.
-+	  Depending on your workload it will greatly reduce performance.
-+
++	  This option adds some debugging code for the SANITIZE_FREED_PAGES
++	  option, as well as verification code to ensure pages are really
++	  zeroed. Don't enable unless you want to debug this feature.
 +	  If unsure, say N.
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 4d5ce6e..c29e3a0 100644
+index c29e3a0..f6105e5 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -795,6 +795,12 @@ static bool free_pages_prepare(struct page *page, unsigned int order)
- 		debug_check_no_obj_freed(page_address(page),
- 					   PAGE_SIZE << order);
- 	}
-+
-+#ifdef CONFIG_SANITIZE_FREED_PAGES
-+	for (i = 0; i < (1 << order); i++)
-+		clear_highpage(page + i);
-+#endif
-+
- 	arch_free_page(page, order);
- 	kernel_map_pages(page, 1 << order, 0);
- 
-@@ -960,9 +966,15 @@ static int prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags,
- 	kernel_map_pages(page, 1 << order, 1);
- 	kasan_alloc_pages(page, order);
- 
-+#ifndef CONFIG_SANITIZE_FREED_PAGES
-+	/* SANITIZE_FREED_PAGES relies implicitly on the fact that pages are
-+	 * cleared before use, so we don't need gfp zero in the default case
-+	 * because all pages go through the free_pages_prepare code path when
-+	 * switching from bootmem to the default allocator */
- 	if (gfp_flags & __GFP_ZERO)
+@@ -975,6 +975,24 @@ static int prep_new_page(struct page *page, unsigned int order, gfp_t gfp_flags,
  		for (i = 0; i < (1 << order); i++)
  			clear_highpage(page + i);
+ #endif
++#ifdef CONFIG_SANITIZE_FREED_PAGES_DEBUG
++	for (i = 0; i < (1 << order); i++) {
++		struct page *p = page + i;
++		void *kaddr = kmap_atomic(p);
++		void *found = memchr_inv(kaddr, 0, PAGE_SIZE);
++		kunmap_atomic(kaddr);
++
++		if (found) {
++			pr_err("page %p is not zero on alloc! %s\n",
++					page_address(p), (gfp_flags &
++						__GFP_ZERO) ?
++					"fixing." : "");
++			if (gfp_flags & __GFP_ZERO) {
++				clear_highpage(p);
++			}
++		}
++	}
 +#endif
  
  	if (order && (gfp_flags & __GFP_COMP))
@@ -76,8 +96,3 @@ index 4d5ce6e..c29e3a0 100644
 -- 
 1.9.3
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
