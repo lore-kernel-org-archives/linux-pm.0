@@ -1,85 +1,80 @@
 From: Wei Ni <wni@nvidia.com>
-Subject: [PATCH] thermal: add available policies sysfs attribute
-Date: Thu, 7 May 2015 18:07:08 +0800
-Message-ID: <1430993228-28142-1-git-send-email-wni@nvidia.com>
+Subject: Re: [PATCH] thermal: of: fix cooling_spec.args for 64bit
+Date: Thu, 7 May 2015 18:21:49 +0800
+Message-ID: <554B3CBD.5030308@nvidia.com>
+References: <1430972952-16303-1-git-send-email-wni@nvidia.com> <9hha8xg3ecb.fsf@e105922-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:17076 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751962AbbEGKHB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 06:07:01 -0400
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:3397 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753072AbbEGKVp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 06:21:45 -0400
+In-Reply-To: <9hha8xg3ecb.fsf@e105922-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, Wei Ni <wni@nvidia.com>
+To: Punit Agrawal <punit.agrawal@arm.com>
+Cc: edubezval@gmail.com, rui.zhang@intel.com, linux-pm@vger.kernel.org
 
-Adds avaiable_policies sysfs attribute to a thermal zone.
-This attribute show the avaible governor can be used for the
-zone. This is a R attribute.
 
-Signed-off-by: Wei Ni <wni@nvidia.com>
----
- drivers/thermal/thermal_core.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 962de1847cc0..bc202aaceb00 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -847,6 +847,24 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
- 	return sprintf(buf, "%s\n", tz->governor->name);
- }
- 
-+static ssize_t
-+available_policies_show(struct device *dev, struct device_attribute *devattr,
-+			char *buf)
-+{
-+	struct thermal_governor *pos;
-+	ssize_t count = 0;
-+
-+	mutex_lock(&thermal_governor_lock);
-+
-+	list_for_each_entry(pos, &thermal_governor_list, governor_list)
-+		count += sprintf(buf + count, "%s ", pos->name);
-+	count += sprintf(buf + count, "\n");
-+
-+	mutex_unlock(&thermal_governor_lock);
-+
-+	return count;
-+}
-+
- #ifdef CONFIG_THERMAL_EMULATION
- static ssize_t
- emul_temp_store(struct device *dev, struct device_attribute *attr,
-@@ -1028,6 +1046,7 @@ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
- static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
- static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
- static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
-+static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
- 
- /* sys I/F for cooling device */
- #define to_cooling_device(_dev)	\
-@@ -1813,6 +1832,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	if (result)
- 		goto unregister;
- 
-+	/* Create available_policies attribute */
-+	result = device_create_file(&tz->device, &dev_attr_available_policies);
-+	if (result)
-+		goto unregister;
-+
- 	/* Update 'this' zone's governor information */
- 	mutex_lock(&thermal_governor_lock);
- 
-@@ -1913,6 +1937,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 	if (tz->ops->get_mode)
- 		device_remove_file(&tz->device, &dev_attr_mode);
- 	device_remove_file(&tz->device, &dev_attr_policy);
-+	device_remove_file(&tz->device, &dev_attr_available_policies);
- 	remove_trip_attrs(tz);
- 	thermal_set_governor(tz, NULL);
- 
--- 
-1.9.1
+On 2015=E5=B9=B405=E6=9C=8807=E6=97=A5 17:51, Punit Agrawal wrote:
+> Wei Ni <wni@nvidia.com> writes:
+>=20
+>> The THERMAL_NO_LIMIT is defined as -1UL, when it is set in DT,
+>> the of-thermal will use of_parse_phandle_with_args() to parse it.
+>> Since the args is uint32_t, so in 32bit system, the of framework
+>> will read it as 0xffffffff, it's the expected value "-1".
+>> But in 64bit system, this value is read as 0x00000000ffffffff,
+>> it's not a negative value, it will cause problems.
+>>
+>> This change can fix this issue.
+>=20
+> If I understand the issue correctly, a patch fixing this is already
+> merged. Does "commit a940cb34f: thermal: Fix cdev registration with
+> THERMAL_NO_LIMIT on 64bit" not work for you?
 
+Hmm, yes, this fix can work for me.
+I made a mistake, and didn't notice this change.
+Sorry, please ignore my patch.
+
+Wei.
+
+>=20
+>>
+>> Signed-off-by: Wei Ni <wni@nvidia.com>
+>> ---
+>>  drivers/thermal/of-thermal.c | 6 ++++--
+>>  1 file changed, 4 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-therm=
+al.c
+>> index 9e8c614103ef..8d6b4070dea3 100644
+>> --- a/drivers/thermal/of-thermal.c
+>> +++ b/drivers/thermal/of-thermal.c
+>> @@ -613,8 +613,10 @@ static int thermal_of_populate_bind_params(stru=
+ct device_node *np,
+>>  	}
+>>  	__tbp->cooling_device =3D cooling_spec.np;
+>>  	if (cooling_spec.args_count >=3D 2) { /* at least min and max */
+>> -		__tbp->min =3D cooling_spec.args[0];
+>> -		__tbp->max =3D cooling_spec.args[1];
+>> +		__tbp->min =3D cooling_spec.args[0] =3D=3D -1U ?
+>> +			THERMAL_NO_LIMIT : cooling_spec.args[0];
+>> +		__tbp->max =3D cooling_spec.args[1] =3D=3D -1U ?
+>> +			THERMAL_NO_LIMIT : cooling_spec.args[1];
+>>  	} else {
+>>  		pr_err("wrong reference to cooling device, missing limits\n");
+>>  	}
+-----------------------------------------------------------------------=
+------------
+This email message is for the sole use of the intended recipient(s) and=
+ may contain
+confidential information.  Any unauthorized review, use, disclosure or =
+distribution
+is prohibited.  If you are not the intended recipient, please contact t=
+he sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------=
+------------
