@@ -1,66 +1,59 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [RFC V2] init: support device of major:minor:offset format
-Date: Thu, 07 May 2015 09:42:27 +0800
-Message-ID: <554AC303.4060007@intel.com>
-References: <1430871854-7096-1-git-send-email-yu.c.chen@intel.com> <CAMuHMdW1PEksGjE7mcKoN_n7sdLorLgw9uiJDxxp469C4ru-SQ@mail.gmail.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [BUG] ThinkPad T520 overheating with P-State driver
+Date: Wed, 6 May 2015 19:51:19 -0700
+Message-ID: <000601d08870$b2979e60$17c6db20$@net>
+References: <2208008.uDRZL3Gdb7@merkaba>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:11231 "EHLO mga14.intel.com"
+Received: from cmta11.telus.net ([209.171.16.84]:43106 "EHLO cmta11.telus.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750824AbbEGBiJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 6 May 2015 21:38:09 -0400
-In-Reply-To: <CAMuHMdW1PEksGjE7mcKoN_n7sdLorLgw9uiJDxxp469C4ru-SQ@mail.gmail.com>
+	id S1751726AbbEGCvY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 6 May 2015 22:51:24 -0400
+In-Reply-To: <2208008.uDRZL3Gdb7@merkaba>
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Mike Snitzer <snitzer@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+To: 'Martin Steigerwald' <martin@lichtvoll.de>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, 'Kristen Carlson Accardi' <kristen@linux.intel.com>
 
-Hi, Geert
+On 2015.05.06 13:37 Martin Steigerwald wrote:
 
-On 05/07/2015 12:49 AM, Geert Uytterhoeven wrote:
-> On Wed, May 6, 2015 at 2:24 AM, Chen Yu <yu.c.chen@intel.com> wrote:
->> Distribution like Ubuntu uses klibc rather than uswsusp to resume
->> system from hibernation, which will treat swap partition/file in
->> the form of major:minor:offset. For example, 8:3:0 represents a
->> swap partition in klibc, and klibc's resume process in initrd will
->> finally echo 8:3:0 to /sys/power/resume for manually restoring.
->> However in current implementation, 8:3:0 will be treated as an invalid
+> I get frequencies like:
 >
-> Why can't klibc write the same information as uswsusp?
-I agree. However it seems that klibc treats all device/file as such
-fixed format when dealing with hibernation, I guess that might be
-easier for it to implement?
+> 3080566
+> 3068945
+> 3009082
+> 2999902 
 
-> Why should the kernel adapt to a specific piece of userspace?
->
->> device format, and it is found that manual resumming from hibernation
->> will fail on lastest kernel.
->
-> Is this a regression, perhaps introduced by commit 283e7ad024115571
-> ("init: stricter checking of major:minor root= values")? If that is the case,
-> please say so.
->
-yes, it is. I think there's a modified patch for it at:
+Please know that the intel_pstate driver reports actual CPU frequencies
+over the last sample interval. In terms of heat, they don't mean anything,
+you would have to look at how much time the CPU spent in the C0 and other states.
 
-https://git.kernel.org/cgit/linux/kernel/git/device-mapper/linux-dm.git/commit/?h=for-next&id=cb31ef485dd4c6a205d1064b42027f82076d00c8
+> Yet with acpi-cpufreq without limiting maximum performance at all, I get the 
+> following with the *same* workload:
 
+> 2501000
+> 2501000
+> 1000000
+> 1000000
 
-Thanks
+Please know that the acpi-cpufreq driver reports what frequency (pstate)
+It is asking for, not what might actually be happening.
+If your CPU 2 and 3 were ever active during that sample time
+They would be at the same frequency as your turbostate CPU 0 or 1,
+which ever is higher.
 
-Best Regards,
-Yu
+> There is also some other bug report about this:
+> Please change intel_pstate default to disable 
+> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1188647
+> appears to be quite old, but still seems unresolved.
 
-> Gr{oetje,eeting}s,
->
->                          Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                  -- Linus Torvalds
->
+That bug report is very old, and is closed.
+I made a late entry on that bug report on 2014.06.08,
+and have submitted a patch set to deal with, among other things,
+the long duration issue. 
+
 
