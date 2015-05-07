@@ -1,64 +1,77 @@
-From: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+From: Mark Brown <broonie@kernel.org>
 Subject: Re: [PATCH V2 5/6] regulator: add mxs on-chip regulator driver
-Date: Thu, 7 May 2015 21:25:19 +0200 (CEST)
-Message-ID: <535744342.64563.1431026719818.JavaMail.open-xchange@oxbsltgw09.schlund.de>
-References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com> <1430346747-28728-6-git-send-email-stefan.wahren@i2se.com> <20150504123648.GU15510@sirena.org.uk> <1693367404.879766.1430771695242.JavaMail.open-xchange@oxbaltgw08.schlund.de> <1875749167.82542.1431023838932.JavaMail.open-xchange@oxbsltgw04.schlund.de> <20150507185216.GP22845@sirena.org.uk>
-Reply-To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Date: Thu, 7 May 2015 20:32:36 +0100
+Message-ID: <20150507193236.GS22845@sirena.org.uk>
+References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com>
+ <1430346747-28728-6-git-send-email-stefan.wahren@i2se.com>
+ <20150504123648.GU15510@sirena.org.uk>
+ <1693367404.879766.1430771695242.JavaMail.open-xchange@oxbaltgw08.schlund.de>
+ <1875749167.82542.1431023838932.JavaMail.open-xchange@oxbsltgw04.schlund.de>
+ <20150507185216.GP22845@sirena.org.uk>
+ <535744342.64563.1431026719818.JavaMail.open-xchange@oxbsltgw09.schlund.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150507185216.GP22845-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, fabio.estevam-KZfg59tc24xl57MIdRCFDg@public.gmane.org, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, sebastien.szymanski-d2DlULPkwbNWk0Htik3J/w@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="HlaF2WMUX0OM2JlS"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:55143 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751565AbbEGTdh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 15:33:37 -0400
+Content-Disposition: inline
+In-Reply-To: <535744342.64563.1431026719818.JavaMail.open-xchange@oxbsltgw09.schlund.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stefan Wahren <stefan.wahren@i2se.com>
+Cc: Sascha Hauer <kernel@pengutronix.de>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Kumar Gala <galak@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Shawn Guo <shawn.guo@linaro.org>, Sebastian Reichel <sre@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, fabio.estevam@freescale.com, David Woodhouse <dwmw2@infradead.org>, Russell King <linux@arm.linux.org.uk>, Mark Rutland <mark.rutland@arm.com>, sebastien.szymanski@armadeus.com, devicetree@vger.kernel.org
 
-> Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> hat am 7. Mai 2015 um 20:52 geschrieben:
->
->
-> On Thu, May 07, 2015 at 08:37:18PM +0200, Stefan Wahren wrote:
-> > > Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org> hat am 4. Mai 2015 um 22:34
->
-> > > i'm sorry, i forgot the following point in the changelog:
->
-> > > - move dcdc handling from mxs_power to mxs-regulator
->
-> > > I hope the change is okay. I implemented only is_enabled() to have at
-> > > least 1
-> > > operation.
-> > > But it's not really necessary.
->
-> > do we need enable / disable operation?
->
-> > In the bootloader code enabling the DC-DC is critical. There is a known
-> > issue
-> > which falsely triggers the brownout detection.
->
-> Why would the driver not provide these operations?
 
-I didn't implement this operation because the suggested workaround for the
-hardware issue isn't very nice 
-(disable brownout detection during enabling DC-DC). I was afraid of the
-implementation.
+--HlaF2WMUX0OM2JlS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->
-> > > > I'm also not 100% clear what code the DCDCs and LDOs are
-> > > > sharing here...
->
-> > > Actually only probing and the regulator info structure.
->
-> > How can i improve that?
->
-> If the devices aren't sharing code then they should be separate drivers.
+On Thu, May 07, 2015 at 09:25:19PM +0200, Stefan Wahren wrote:
+> > Mark Brown <broonie@kernel.org> hat am 7. Mai 2015 um 20:52 geschrieben:
 
-Okay. 
+> > > In the bootloader code enabling the DC-DC is critical. There is a kno=
+wn
+> > > issue
+> > > which falsely triggers the brownout detection.
 
-mxs-regulator-ldo.c
-mxs-regulator-dcdc.c
+> > Why would the driver not provide these operations?
 
-What do you think of?
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> I didn't implement this operation because the suggested workaround for the
+> hardware issue isn't very nice=20
+> (disable brownout detection during enabling DC-DC). I was afraid of the
+> implementation.
+
+That doesn't sound too complicated?
+
+> > If the devices aren't sharing code then they should be separate drivers.
+
+> Okay.=20
+
+> mxs-regulator-ldo.c
+> mxs-regulator-dcdc.c
+
+> What do you think of?
+
+Sure.
+
+--HlaF2WMUX0OM2JlS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJVS73TAAoJECTWi3JdVIfQZrIH/2giExvR8LhSg53DLrXeQgYh
+FF+sBNnXA6eRdvBDsnTWkkB8EUY9oWyjFqfdNHtsJiMndHgwxx/fyvT0ux4rgcDe
+4thlXBpFz2fQMkK3C4mvnLPxJpAos58t2AYT1o87OwOGZL9PCLtOKHAleepafi/G
+asguzXl9wqkJJHLNGqi0zv/Crq/hmkc6rCrdJKOXo3Fg6R3MO0lU46x1OR38Tttw
+V13Ls7OFQ+8T2+pEMib2yMq6a9zjyo/JRtEOfYOikLyUGe5DwtCFYk1nGqK5lLd9
+rn55DcFfnrv0RsnkFIm6jsYZW9TXW7kf/pPzPSZt4E2piJcsy/Da3X2/3aVr40Q=
+=rpxi
+-----END PGP SIGNATURE-----
+
+--HlaF2WMUX0OM2JlS--
