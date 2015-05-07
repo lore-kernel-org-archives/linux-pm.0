@@ -1,130 +1,48 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH] thermal/powerclamp: fix missing newer package c-states
-Date: Thu,  7 May 2015 09:03:59 -0700
-Message-ID: <1431014639-6488-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:30787 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751035AbbEGQFY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 7 May 2015 12:05:24 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Subject: Re: A desktop environment[1] kernel wishlist
+Date: Thu, 7 May 2015 17:54:56 +0100
+Message-ID: <20150507175456.51376473@lxorguk.ukuu.org.uk>
+References: <1413881397.30379.7.camel@hadess.net>
+	<2236285.G0hRnmeVkc@vostro.rjw.lan>
+	<CAAObsKBRs7iD2hHa0smhz-1c2e6HW+r2_CxPhv48Cs4yH+npUQ@mail.gmail.com>
+	<26037972.gZDpmonflh@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <26037972.gZDpmonflh@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Chirantan Ekbote <chirantan@chromium.org>, Olof Johansson <olof@lixom.net>, John Stultz <john.stultz@linaro.org>, Bastien Nocera <hadess@hadess.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, snanda@chromium.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
-Cc: Rafael Wysocki <rafael.j.wysocki@intel.com>, Kristen Carlson Accardi <kristen.c.accardi@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-Package C8 to C10 was introduced in newer Intel CPUs, we need to
-include them in the package c-state residency calculation.
-Otherwise, idle injection target is not accurately maintained by
-the closed control loop.
+On Tue, 05 May 2015 14:31:26 +0200
 
-Also cleaned up the code to make it scale better with large number
-of c-states.
+> For example, when you wake up from S3 on ACPI-based systems, the best you
+> can get is what devices have generated the wakeup events, but there's
+> no input available from that (like you won't know which key has been
+> pressed).  You may not get that even.  You may only know what GPEs have
+> caused the wakeup to happen and they may be shared.
+> 
+> For PCI wakeup, the wakeup event may be out of band.  You need to walk
+> the hierarchy and check the PME status bits to identify the wakeup device
+> and then you need to be careful enough not to reset it while putting into
+> D0 for the input data associated with the event to be available.  I'm not
+> sure how many device/driver combinations this actually works for.
+> 
+> For USB wakeup, you get the wakeup event from the controller which may be
+> a PCI device.  Getting to the USB device itself from there requires some
+> work and even then the device may not "remember" what exactly happened.
+> 
+> Further, if you wake up via the PC keyboard from suspend-to-idle, the
+> wakeup key code is not available, the only thing you know is that the
+> interrupts has occured (that may be changed, but it's how the current
+> code works).
 
-Reported-by: Kristen Carlson Accardi <kristen@linux.intel.com>
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/thermal/intel_powerclamp.c | 80 ++++++++++++++++++++------------------
- 1 file changed, 43 insertions(+), 37 deletions(-)
+It's probably got to change, otherwise once machines get able to sleep
+between keypresses it's going to suck every time you pause and think for
+a minute then begin typing. Remember display being off for suspend is
+purely a limitation of most current display panels.
 
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index 12623bc..104058b 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -206,51 +206,57 @@ static void find_target_mwait(void)
- 
- }
- 
-+struct pkg_cstate_info {
-+	bool skip;
-+	int msr_index;
-+	int cstate_id;
-+};
-+
-+#define PKG_CSTATE_INIT(id) {				\
-+		.msr_index = MSR_PKG_C##id##_RESIDENCY, \
-+		.cstate_id = id				\
-+			}
-+
-+static struct pkg_cstate_info pkg_cstates[] = {
-+	PKG_CSTATE_INIT(2),
-+	PKG_CSTATE_INIT(3),
-+	PKG_CSTATE_INIT(6),
-+	PKG_CSTATE_INIT(7),
-+	PKG_CSTATE_INIT(8),
-+	PKG_CSTATE_INIT(9),
-+	PKG_CSTATE_INIT(10),
-+	{NULL},
-+};
-+
- static bool has_pkg_state_counter(void)
- {
--	u64 tmp;
--	return !rdmsrl_safe(MSR_PKG_C2_RESIDENCY, &tmp) ||
--	       !rdmsrl_safe(MSR_PKG_C3_RESIDENCY, &tmp) ||
--	       !rdmsrl_safe(MSR_PKG_C6_RESIDENCY, &tmp) ||
--	       !rdmsrl_safe(MSR_PKG_C7_RESIDENCY, &tmp);
-+	u64 val;
-+	struct pkg_cstate_info *info = pkg_cstates;
-+
-+	/* check if any one of the counter msrs exists */
-+	while (info->msr_index) {
-+		if (!rdmsrl_safe(info->msr_index, &val))
-+			return true;
-+		info++;
-+	}
-+
-+	return false;
- }
- 
- static u64 pkg_state_counter(void)
- {
- 	u64 val;
- 	u64 count = 0;
--
--	static bool skip_c2;
--	static bool skip_c3;
--	static bool skip_c6;
--	static bool skip_c7;
--
--	if (!skip_c2) {
--		if (!rdmsrl_safe(MSR_PKG_C2_RESIDENCY, &val))
--			count += val;
--		else
--			skip_c2 = true;
--	}
--
--	if (!skip_c3) {
--		if (!rdmsrl_safe(MSR_PKG_C3_RESIDENCY, &val))
--			count += val;
--		else
--			skip_c3 = true;
--	}
--
--	if (!skip_c6) {
--		if (!rdmsrl_safe(MSR_PKG_C6_RESIDENCY, &val))
--			count += val;
--		else
--			skip_c6 = true;
--	}
--
--	if (!skip_c7) {
--		if (!rdmsrl_safe(MSR_PKG_C7_RESIDENCY, &val))
--			count += val;
--		else
--			skip_c7 = true;
-+	struct pkg_cstate_info *info = pkg_cstates;
-+
-+	while (info->msr_index) {
-+		if (!info->skip) {
-+			if (!rdmsrl_safe(info->msr_index, &val))
-+				count += val;
-+			else
-+				info->skip = true;
-+		}
-+		info++;
- 	}
- 
- 	return count;
--- 
-1.9.1
 
+Alan
