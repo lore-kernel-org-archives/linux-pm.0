@@ -1,80 +1,71 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2] cpuidle: Handle tick_broadcast_enter() failure gracefully
-Date: Thu, 07 May 2015 22:50:14 +0200
-Message-ID: <1562115.g1s3BW0dJA@vostro.rjw.lan>
-References: <20150507174355.25321.85885.stgit@preeti.in.ibm.com>
+Subject: Re: [PATCH] intel_pstate: set BYT MSR with wrmsrl_on_cpu()
+Date: Thu, 07 May 2015 22:58:11 +0200
+Message-ID: <2313402.8O0OJYkUeN@vostro.rjw.lan>
+References: <1431017979-28349-1-git-send-email-joe.konno@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55555 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:52588 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751158AbbEGUZK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 16:25:10 -0400
-In-Reply-To: <20150507174355.25321.85885.stgit@preeti.in.ibm.com>
+	with SMTP id S1751310AbbEGUdH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 16:33:07 -0400
+In-Reply-To: <1431017979-28349-1-git-send-email-joe.konno@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com, daniel.lezcano@linaro.org, rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org
+To: Joe Konno <joe.konno@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, kristen@linux.intel.com
 
-On Thursday, May 07, 2015 11:17:21 PM Preeti U Murthy wrote:
-> When a CPU has to enter an idle state where tick stops, it makes a call
-> to tick_broadcast_enter(). The call will fail if this CPU is the
-> broadcast CPU. Today, under such a circumstance, the arch cpuidle code
-> handles this CPU.  This is not convincing because not only are we not
-> aware what the arch cpuidle code does, but we also do not account for
-> the idle state residency time and usage of such a CPU.
+On Thursday, May 07, 2015 09:59:39 AM Joe Konno wrote:
+> From: Joe Konno <joe.konno@intel.com>
 > 
-> This scenario can be handled better by simply asking the cpuidle
-> governor to choose an idle state where in ticks do not stop. To
-> accommodate this change move the setting of runqueue idle state from the
-> core to the cpuidle driver, else the rq->idle_state will be set wrong.
+> In instances where the default cpufreq governor is Performance, reading
+
+I'm not really sure what this is about.  You're talking about cpufreq governors
+and this is an intel_pstate patch.  What gives?
+
+> from MSR 0x199 on an applicable multi-core Atom system saw boot-to-boot
+> variability in the P-State value set to each logical core.  Sometimes
+> only one logical core would be set properly, other times two or three.
+> There was an assumption in the code that only a thread on the intended
+> logical core would be calling the wrmsrl() function. That was disproven
+> during debug, as cpufreq, at init, was not always calling from the same
+> as the logical core it targeted. Thus, use wrmsrl_on_cpu() instead, as
+> done in the core_set_pstate() function.
 > 
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> For: LCK-1822
+
+This tag is meaningless upstream.
+
+> Fixes: 007bea098b86 ("intel_pstate: Add setting voltage value for
+>        baytrail P states.")
+
+So, you're fixing a function introduced by the above commit, right?
+
+> Signed-off-by: Joe Konno <joe.konno@intel.com>
 > ---
-> Changes from V1: https://lkml.org/lkml/2015/5/7/24
-> Rebased on the latest linux-pm/bleeding-edge
+>  drivers/cpufreq/intel_pstate.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
->  drivers/cpuidle/cpuidle.c          |   21 +++++++++++++++++----
->  drivers/cpuidle/governors/ladder.c |   13 ++++++++++---
->  drivers/cpuidle/governors/menu.c   |    6 +++++-
->  include/linux/cpuidle.h            |    6 +++---
->  include/linux/sched.h              |   16 ++++++++++++++++
->  kernel/sched/core.c                |   17 +++++++++++++++++
->  kernel/sched/fair.c                |    2 +-
->  kernel/sched/idle.c                |    8 +-------
->  kernel/sched/sched.h               |   24 ------------------------
->  9 files changed, 70 insertions(+), 43 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 8c24f95..b7e86f4 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -21,6 +21,7 @@
->  #include <linux/module.h>
->  #include <linux/suspend.h>
->  #include <linux/tick.h>
-> +#include <linux/sched.h>
->  #include <trace/events/power.h>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 6414661ac1c4..c45d274a75c8 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -535,7 +535,7 @@ static void byt_set_pstate(struct cpudata *cpudata, int pstate)
 >  
->  #include "cpuidle.h"
-> @@ -168,10 +169,17 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
->  	 * CPU as a broadcast timer, this call may fail if it is not available.
->  	 */
->  	if (broadcast && tick_broadcast_enter()) {
-> -		default_idle_call();
-> -		return -EBUSY;
-> +		index = cpuidle_select(drv, dev, !broadcast);
+>  	val |= vid;
+>  
+> -	wrmsrl(MSR_IA32_PERF_CTL, val);
+> +	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
 
-No, you can't do that.
+So the bug is that this may run on a CPU which is not cpudata->cpu in which
+case the write will not happen where it should.  Is that correct?
 
-This code path may be used by suspend-to-idle and that should not call
-cpuidle_select().
-
-What's needed here seems to be a fallback mechanism like "choose the
-deepest state shallower than X and such that it won't stop the tick".
-You don't really need to run a full governor for that.
-
+>  }
+>  
+>  #define BYT_BCLK_FREQS 5
+> 
 
 -- 
 I speak only for myself.
