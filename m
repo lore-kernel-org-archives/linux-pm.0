@@ -1,174 +1,212 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 4/6] cpufreq: powernv: Call throttle_check() on receiving
- OCC_THROTTLE
-Date: Thu, 07 May 2015 17:49:22 +0530
-Message-ID: <554B584A.3030507@linux.vnet.ibm.com>
-References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1430729652-14813-5-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <55484072.5060400@linux.vnet.ibm.com> <5548641C.5090208@linux.vnet.ibm.com> <5548824C.2030602@linux.vnet.ibm.com>
+From: Michael Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH 4/4] sched: cpufreq_cfs: pelt-based cpu frequency scaling
+Date: Thu, 07 May 2015 07:25:10 -0700
+Message-ID: <20150507142510.16410.65807@quantum>
+References: <1430777441-15087-1-git-send-email-mturquette@linaro.org>
+ <1430777441-15087-5-git-send-email-mturquette@linaro.org>
+ <20150505090042.GC21418@twins.programming.kicks-ass.net>
+ <20150505182347.16410.16338@quantum>
+ <20150506122240.GY23123@twins.programming.kicks-ass.net>
+ <20150507041725.16410.58417@quantum> <554B4337.4050007@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5548824C.2030602@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f178.google.com ([209.85.223.178]:34606 "EHLO
+	mail-ie0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751977AbbEGOZU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 10:25:20 -0400
+Received: by iedfl3 with SMTP id fl3so45141550ied.1
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2015 07:25:20 -0700 (PDT)
+In-Reply-To: <554B4337.4050007@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: "mingo@kernel.org" <mingo@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "riel@redhat.com" <riel@redhat.com>, "efault@gmx.de" <efault@gmx.de>, "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "amit.kucheria@linaro.org" <amit.kucheria@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "ashwin.chaugule@linaro.org" <ashwin.chaugule@linaro.org>, "alex.shi@linaro.org" <alex.shi@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 05/05/2015 02:11 PM, Preeti U Murthy wrote:
-> On 05/05/2015 12:03 PM, Shilpasri G Bhat wrote:
->> Hi Preeti,
->>
->> On 05/05/2015 09:30 AM, Preeti U Murthy wrote:
->>> Hi Shilpa,
->>>
->>> On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
->>>> Re-evaluate the chip's throttled state on recieving OCC_THROTTLE
->>>> notification by executing *throttle_check() on any one of the cpu on
->>>> the chip. This is a sanity check to verify if we were indeed
->>>> throttled/unthrottled after receiving OCC_THROTTLE notification.
->>>>
->>>> We cannot call *throttle_check() directly from the notification
->>>> handler because we could be handling chip1's notification in chip2. So
->>>> initiate an smp_call to execute *throttle_check(). We are irq-disabled
->>>> in the notification handler, so use a worker thread to smp_call
->>>> throttle_check() on any of the cpu in the chipmask.
->>>
->>> I see that the first patch takes care of reporting *per-chip* throttling
->>> for pmax capping condition. But where are we taking care of reporting
->>> "pstate set to safe" and "freq control disabled" scenarios per-chip ?
->>>
->>
->> IMO let us not have "psafe" and "freq control disabled" states managed per-chip.
->> Because when the above two conditions occur it is likely to happen across all
->> chips during an OCC reset cycle. So I am setting 'throttled' to false on
->> OCC_ACTIVE and re-verifying if it actually is the case by invoking
->> *throttle_check().
+Quoting Juri Lelli (2015-05-07 03:49:27)
+> Hi Mike,
 > 
-> Alright like I pointed in the previous reply, a comment to indicate that
-> psafe and freq control disabled conditions will fail when occ is
-> inactive and that all chips face the consequence of this will help.
+> On 07/05/15 05:17, Michael Turquette wrote:
+> > Quoting Peter Zijlstra (2015-05-06 05:22:40)
+> >> On Tue, May 05, 2015 at 11:23:47AM -0700, Michael Turquette wrote:
+> >>> Quoting Peter Zijlstra (2015-05-05 02:00:42)
+> >>>> On Mon, May 04, 2015 at 03:10:41PM -0700, Michael Turquette wrote:
+> >>>>> This policy is implemented using the cpufreq governor interface for two
+> >>>>> main reasons:
+> >>>>>
+> >>>>> 1) re-using the cpufreq machine drivers without using the governor
+> >>>>> interface is hard.
+> >>>>>
+> >>>>> 2) using the cpufreq interface allows us to switch between the
+> >>>>> scheduler-driven policy and legacy cpufreq governors such as ondemand at
+> >>>>> run-time. This is very useful for comparative testing and tuning.
+> >>>>
+> >>>> Urgh,. so I don't really like that. It adds a lot of noise to the
+> >>>> system. You do the irq work thing to kick the cpufreq threads which do
+> >>>> their little thing -- and their wakeup will influence the cfs
+> >>>> accounting, which in turn will start the whole thing anew.
+> >>>>
+> >>>> I would really prefer you did a whole new system with directly invoked
+> >>>> drivers that avoid the silly dance. Your 'new' ARM systems should be
+> >>>> well capable of that.
+> >>>
+> >>> Thanks for the review Peter.
+> >>
+> >> Well, I didn't actually get beyond the Changelog; although I have
+> >> rectified this now. A few more comments below.
+> > 
+> > Thanks for the Real Deal review Peter.
+> > 
+> >>
+> >>> We'll need something in process context for the many cpufreq drivers
+> >>> that might sleep during their cpu frequency transition, no? This is due
+> >>> to calls into the regulator framework, the clock framework and sometimes
+> >>> other things such as conversing with a power management IC or voting
+> >>> with some system controller.
+> >>
+> >> Yes, we need _something_. I just spoke to a bunch of people on IRC and
+> >> it does indeed seem that I was mistaken in my assumption that modern ARM
+> >> systems were 'easy' in this regard.
+> >>
+> >>>> As to the drivers, they're mostly fairly small and self contained, it
+> >>>> should not be too hard to hack them up to work without cpufreq.
+> >>>
+> >>> The drivers are not the only thing. I want to leverage the existing
+> >>> cpufreq core infrastructure:
+> >>>
+> >>> * rate change notifiers
+> >>> * cpu hotplug awareness
+> >>> * methods to fetch frequency tables from firmware (acpi, devicetree)
+> >>> * other stuff I can't think of now
+> >>>
+> >>> So I do not think we should throw out the baby with the bath water. The
+> >>> thing that people really don't like about cpufreq are the governors IMO.
+> >>> Let's fix that by creating a list of requirements that we really want
+> >>> for scheduler-driven cpu frequency selection:
+> >>>
+> >>> 0) do something smart with scheduler statistics to create an improved
+> >>> frequency selection algorithm over existing cpufreq governors
+> >>>
+> >>> 1) support upcoming and legacy hardware, within reason
+> >>>
+> >>> 2) if a system exports a fast, async frequency selection interface to
+> >>> Linux, then provide a solution that doesn't do any irq_work or kthread
+> >>> stuff.  Do it all in the fast path
+> >>>
+> >>> 3) if a system has a slow, synchronous interface for frequency
+> >>> selection, then provide an acceptable solution for kicking this work to
+> >>> process context. Limit time in the fast path
+> >>>
+> >>> The patch set tries to tackle 0, 1 and 3. Would the inclusion of #2 make
+> >>> you feel better about supporting "newer" hardware with a fire-and-forget
+> >>> frequency selection interface?
+> >>
+> >> I should probably look at doing a x86 support patch to try some of this
+> >> out, I'll try and find some time to play with that.
+> >>
+> >> So two comments on the actual code:
+> >>
+> >> 1) Ideally these hooks would be called from places where we've just
+> >> computed the cpu utilization already. I understand this is currently not
+> >> the case and we need to do it in-situ.
+> > 
+> > Are you thinking of placing the hook somewhere such as
+> > update_entity_load_avg?
+> > 
+> > I did not choose that as a call site since I was worried that it would
+> > be too noisy; we can enter that function multiple times in the same
+> > pass through the scheduler.
+> > 
+> > On the other hand if dvfs transitions are cheap for a platform then it
+> > might not be so bad to call it multiple times. For platforms where dvfs
+> > transitions are expensive we could store per-cpu new_capacity data
+> > multiple times and make sure that we only try to program the hardware as
+> > deferred work later on.
+> > 
+> >>
+> >> That said; it would be good to have the interface such that we pass the
+> >> utilization in; this would of course mean we'd have to compute it at the
+> >> call sites, this should be fine I think.
+> > 
+> > I changed the code to do this but didn't have time to test it. Will send
+> > the patch with these changes tomorrow.
+> > 
+> >>
+> >>
+> >> 2) I dislike how policy->cpus is handled; it feels upside down.
+> > 
+> > I agree. It feels better to push the utilization from cfs instead of
+> > pull it from the frequency selection policy.
+> > 
+> > I chose to do it this way since there isn't an obvious way to pass some
+> > private data to an irq_work callback, but I've overcome this with some
+> > per-cpu data internal to the governor.
+> >
+> 
+> This new interface looks like what I was also proposing in the
+> discussion we had [1], are you going to send out something along this
+> line?
 
->From your explanation on the thread of the first patch of this series,
-this will not be required.
+Yes, it will look something like your patch, but different as well. I'll
+send it out shortly.
 
-So,
-Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+I'm not reducing how we kick the whole machinery, but I'm adding extra
+points to bail early if:
 
-Regards
-Preeti U Murthy
+1) capacity utilization did not change
+2) frequency won't be changed as a result of capacity utilization change
+
+Regards,
+Mike
+
 > 
->>
->>>>
->>>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
->>>> ---
->>>>  drivers/cpufreq/powernv-cpufreq.c | 28 ++++++++++++++++++++++++++--
->>>>  1 file changed, 26 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
->>>> index 9268424..9618813 100644
->>>> --- a/drivers/cpufreq/powernv-cpufreq.c
->>>> +++ b/drivers/cpufreq/powernv-cpufreq.c
->>>> @@ -50,6 +50,8 @@ static bool rebooting, throttled, occ_reset;
->>>>  static struct chip {
->>>>  	unsigned int id;
->>>>  	bool throttled;
->>>> +	cpumask_t mask;
->>>> +	struct work_struct throttle;
->>>>  } *chips;
->>>>
->>>>  static int nr_chips;
->>>> @@ -310,8 +312,9 @@ static inline unsigned int get_nominal_index(void)
->>>>  	return powernv_pstate_info.max - powernv_pstate_info.nominal;
->>>>  }
->>>>
->>>> -static void powernv_cpufreq_throttle_check(unsigned int cpu)
->>>> +static void powernv_cpufreq_throttle_check(void *data)
->>>>  {
->>>> +	unsigned int cpu = smp_processor_id();
->>>>  	unsigned long pmsr;
->>>>  	int pmsr_pmax, pmsr_lp, i;
->>>>
->>>> @@ -373,7 +376,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->>>>  		return 0;
->>>>
->>>>  	if (!throttled)
->>>> -		powernv_cpufreq_throttle_check(smp_processor_id());
->>>> +		powernv_cpufreq_throttle_check(NULL);
->>>>
->>>>  	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
->>>>
->>>> @@ -418,6 +421,14 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
->>>>  	.notifier_call = powernv_cpufreq_reboot_notifier,
->>>>  };
->>>>
->>>> +void powernv_cpufreq_work_fn(struct work_struct *work)
->>>> +{
->>>> +	struct chip *chip = container_of(work, struct chip, throttle);
->>>> +
->>>> +	smp_call_function_any(&chip->mask,
->>>> +			      powernv_cpufreq_throttle_check, NULL, 0);
->>>> +}
->>>> +
->>>>  static char throttle_reason[][30] = {
->>>>  					"No throttling",
->>>>  					"Power Cap",
->>>> @@ -433,6 +444,7 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->>>>  	struct opal_msg *occ_msg = msg;
->>>>  	uint64_t token;
->>>>  	uint64_t chip_id, reason;
->>>> +	int i;
->>>>
->>>>  	if (msg_type != OPAL_MSG_OCC)
->>>>  		return 0;
->>>> @@ -466,6 +478,10 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->>>>  			occ_reset = false;
->>>>  			throttled = false;
->>>>  			pr_info("OCC: Active\n");
->>>> +
->>>> +			for (i = 0; i < nr_chips; i++)
->>>> +				schedule_work(&chips[i].throttle);
->>>> +
->>>>  			return 0;
->>>>  		}
->>>>
->>>> @@ -476,6 +492,12 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->>>>  		else if (!reason)
->>>>  			pr_info("OCC: Chip %u %s\n", (unsigned int)chip_id,
->>>>  				throttle_reason[reason]);
->>>> +		else
->>>> +			return 0;
->>>
->>> Why the else section ? The code can never reach here, can it ?
->>
->> When reason > 5 , we dont want to handle it.
+> I think it would be good to have something like that. As Peter is
+> saying, together with Morten's/Dietmar's series, we could try to do
+> wiser decisions on when to trigger the whole machinery.
 > 
-> Of course! My bad!
->>
->>>
->>>> +
->>>> +		for (i = 0; i < nr_chips; i++)
->>>> +			if (chips[i].id == chip_id)
->>>> +				schedule_work(&chips[i].throttle);
->>>>  	}
->>>
->>> Should we not do this only when we get unthrottled so as to cross verify
->>> if it is indeed the case ? In case of throttling notification, opal's
->>> verdict is final and there is no need to cross verify right ?
->>
->> Two reasons for invoking *throttle_check() on throttling:
->> 1) We just got to know the reason and not the Pmax value we are getting
->> throttled to.
->> 2) It could be a spurious message caused due to late/lost delivery. My point
->> here is let us not completely rely on the notification to declare throttling
->> unless we verify it from reading PMSR.
+> Thanks,
 > 
-> Sounds good.
+> - Juri
 > 
-> Regards
-> Preeti U Murthy
+> [1] https://lists.linaro.org/pipermail/eas-dev/2015-April/000129.html
 > 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> >> If per 1 each CPU already computed its utilization and provides it in
+> >> the call, we should not have to recompute it and its scale factor (which
+> >> btw seems done slightly odd too, I know humans like 10 base, but
+> >> computers suck at it).
+> >>
+> >> Why not something like:
+> >>
+> >>         usage = ((1024 + 256) * usage) >> 10; /* +25% */
+> > 
+> > This works when the max capacity is always 1024, but that is not always
+> > the case for some new ARM systems. For cpu's whose max capacity is less
+> > than 1024 we would still need to normalize against capacity_orig_of().
+> > 
+> > Doing the SCHED_LOAD_SCALE thing is fine for me now, but at some point
+> > it will probably need to be changed by Morten/Juri/Dietmar for their EAS
+> > patch series, which deals with some of these cpu capacity scale issues.
+> > 
+> >>
+> >>         old_usage = __this_cpu_read(gd->usage);
+> >>         __this_cpu_write(gd->usage, usage);
+> >>
+> >>         max_usage = 0;
+> >>         for_each_cpu(cpu, policy->cpus)
+> >>                 max_usage = max(max_usage, per_cpu(gd->usage, cpu));
+> >>
+> >>         if (max_usage < old_usage || /* dropped */
+> >>             (max_usage == usage && max_usage != old_usage)) /* raised */
+> >>                 request_change(max_usage);
+> > 
+> > Yes this should work fine. I've pulled it into the patch that I'll
+> > test and publish tomorrow.
+> > 
+> > Thanks,
+> > Mike
+> > 
+> >>
+> >>
+> > 
 > 
