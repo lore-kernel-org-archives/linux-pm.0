@@ -1,51 +1,55 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Fri, 8 May 2015 10:34:13 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1505081026250.1219-100000@iolanthe.rowland.org>
-References: <b1587e8b2c664632ecd0d9ad1a3e56733da76490.1431068823.git.len.brown@intel.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [RFC PATCH] PM, freezer: Don't thaw when it's intended frozen
+ processes
+Date: Fri, 8 May 2015 11:25:13 -0400
+Message-ID: <20150508152513.GB28439@htj.duckdns.org>
+References: <20150507064557.GA26928@july>
+ <20150507154212.GA12245@htj.duckdns.org>
+ <CAH9JG2UAVRgX0Mg0d7WgG0URpkgu4q_bbNMXyOOEh9WFPztppQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:59509 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751378AbbEHOeO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 10:34:14 -0400
-In-Reply-To: <b1587e8b2c664632ecd0d9ad1a3e56733da76490.1431068823.git.len.brown@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <CAH9JG2UAVRgX0Mg0d7WgG0URpkgu4q_bbNMXyOOEh9WFPztppQ@mail.gmail.com>
+Sender: owner-linux-mm@kvack.org
+To: Kyungmin Park <kmpark@infradead.org>
+Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>, "\\Rafael J. Wysocki\\" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-On Fri, 8 May 2015, Len Brown wrote:
+Hello, Kyungmin.
 
-> From: Len Brown <len.brown@intel.com>
+On Fri, May 08, 2015 at 09:04:26AM +0900, Kyungmin Park wrote:
+> > I need to think more about it but as an *optimization* we can add
+> > freezing() test before actually waking tasks up during resume, but can
+> > you please clarify what you're seeing?
 > 
-> Remove sys_sync() from the kernel's suspend flow.
+> The mobile application has life cycle and one of them is 'suspend'
+> state. it's different from 'pause' or 'background'.
+> if there are some application and enter go 'suspend' state. all
+> behaviors are stopped and can't do anything. right it's suspended. but
+> after system suspend & resume, these application is thawed and
+> running. even though system know it's suspended.
 > 
-> sys_sync() is extremely expensive in some configurations,
-> and so the kernel should not force users to pay this cost
-> on every suspend.
+> We made some test application, print out some message within infinite
+> loop. when it goes 'suspend' state. nothing is print out. but after
+> system suspend & resume, it prints out again. that's not desired
+> behavior. and want to address it.
 > 
-> The user-space utilities s2ram and s2disk choose to invoke sync() today.
-> A user can invoke suspend directly via /sys/power/state to skip that cost.
+> frozen user processes should be remained as frozen while system
+> suspend & resume.
 
-I can understand the motivation for this, but is it aimed in the right 
-direction?
+Yes, they should and I'm not sure why what you're saying is happening
+because freezing() test done from the frozen tasks themselves should
+keep them in the freezer.  Which kernel version did you test?  Can you
+please verify it against a recent kernel?
 
-Consider a system where sys_sync() is very expensive.  Should such a
-system be using system suspend in the first place?  If there is a valid
-use case, why does the extra overhead of sys_sync() matter?
+Thanks.
 
-To put it another way, if the system wants to go into a low-latency
-suspend state, why doesn't it use an extreme version of runtime suspend
-rather than system suspend?
+-- 
+tejun
 
-This reminds me of the discussions we had with the Android developers
-when they proposed adding wakelocks to the kernel -- they needed them
-so that they could support system suspend when what they really wanted
-to do was an extreme version of runtime suspend.  But generally
-speaking, sys_sync() is not tremendously expensive on devices running
-Android.
-
-Alan Stern
-
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
