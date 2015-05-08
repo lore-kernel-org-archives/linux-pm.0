@@ -1,37 +1,42 @@
-From: Len Brown <lenb@kernel.org>
+From: Borislav Petkov <bp@alien8.de>
 Subject: Re: [PATCH 2/2] x86: speed cpu_up by quirking cpu_init_udelay
-Date: Fri, 8 May 2015 14:15:42 -0400
-Message-ID: <CAJvTdKk3TM1PMUgGeWCxThzVknfBc8xMK-dJkbxJrwkWhjGzLg@mail.gmail.com>
+Date: Fri, 8 May 2015 20:27:32 +0200
+Message-ID: <20150508182731.GF3904@pd.tnic>
 References: <418898b5b9a6d76e7fbbd2af7cc988de1a5a287d.1431066425.git.len.brown@intel.com>
-	<170f6f6e9ac4aa4d8ec1ed5000bee95463897337.1431066425.git.len.brown@intel.com>
-	<20150508083250.GB4137@pd.tnic>
+ <170f6f6e9ac4aa4d8ec1ed5000bee95463897337.1431066425.git.len.brown@intel.com>
+ <20150508083250.GB4137@pd.tnic>
+ <CAJvTdKk3TM1PMUgGeWCxThzVknfBc8xMK-dJkbxJrwkWhjGzLg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f43.google.com ([209.85.215.43]:36521 "EHLO
-	mail-la0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752628AbbEHSPn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 14:15:43 -0400
-In-Reply-To: <20150508083250.GB4137@pd.tnic>
+Received: from mail.skyhub.de ([78.46.96.112]:43898 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753270AbbEHS1e (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 8 May 2015 14:27:34 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJvTdKk3TM1PMUgGeWCxThzVknfBc8xMK-dJkbxJrwkWhjGzLg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
+To: Len Brown <lenb@kernel.org>
 Cc: X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-On Fri, May 8, 2015 at 4:32 AM, Borislav Petkov <bp@alien8.de> wrote:
+On Fri, May 08, 2015 at 02:15:42PM -0400, Len Brown wrote:
+> I agree with you. Further, you made me think about it, and while it
+> was helpful when I wrote the patch, I don't think any printk() is
+> needed upstream.
 
->> +     pr_debug("cpu_init_udelay quirk to %d, was %d", new_udelay, init_udelay);
->
-> Can we make this printk(KERN_DEBUG please?
->
-> I'd like to be able to slap "debug" on the command line and not
-> recompile the kernel. And no, dyndbg="file smpboot.c +p" or whatever the
-> syntax is, simply doesn't scale if I want to see all debug messages from
-> early boot.
+Yeah, you're right.
 
-I agree with you.  Further, you made me think about it, and while it was helpful
-when I wrote the patch, I don't think any printk() is needed upstream.
+If a user did override it with cpu_init_udelay, it'll be in
+/proc/cmdline. And dmesg, and so on...
 
-see v3 just sent.
+> see v3 just sent.
 
-Len Brown, Intel Open Source Technology Center
+Looks ok.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+ECO tip #101: Trim your mails when you reply.
+--
