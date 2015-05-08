@@ -1,51 +1,29 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 2/2] cpufreq: dt: allow driver to boot automatically
-Date: Fri, 8 May 2015 15:16:35 -0500
-Message-ID: <554D19A3.8030607@ti.com>
-References: <1431115050-23693-1-git-send-email-balbi@ti.com> <1431115050-23693-2-git-send-email-balbi@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/2 v3] speed up cpu_up()
+Date: Fri, 08 May 2015 22:43:06 +0200
+Message-ID: <2116679.yOmM0yGbfx@vostro.rjw.lan>
+References: <1431107287-22022-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:48845 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932378AbbEHURL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 8 May 2015 16:17:11 -0400
-In-Reply-To: <1431115050-23693-2-git-send-email-balbi@ti.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:61541 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932369AbbEHUSC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 16:18:02 -0400
+In-Reply-To: <1431107287-22022-1-git-send-email-lenb@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Felipe Balbi <balbi@ti.com>, Tony Lindgren <tony@atomide.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 05/08/2015 02:57 PM, Felipe Balbi wrote:
-> by adding the missing MODULE_ALIAS(), cpufreq-dt
-> can be autoloaded by udev/systemd.
+On Friday, May 08, 2015 01:48:05 PM Len Brown wrote:
+> Thanks for the feedback, here is a simplifed pair of patches.
 > 
-> Signed-off-by: Felipe Balbi <balbi@ti.com>
-> ---
->  drivers/cpufreq/cpufreq-dt.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-> index bab67db54b7e..528a82bf5038 100644
-> --- a/drivers/cpufreq/cpufreq-dt.c
-> +++ b/drivers/cpufreq/cpufreq-dt.c
-> @@ -416,6 +416,7 @@ static struct platform_driver dt_cpufreq_platdrv = {
->  };
->  module_platform_driver(dt_cpufreq_platdrv);
->  
-> +MODULE_ALIAS("platform:cpufreq-dt");
->  MODULE_AUTHOR("Viresh Kumar <viresh.kumar@linaro.org>");
->  MODULE_AUTHOR("Shawn Guo <shawn.guo@linaro.org>");
->  MODULE_DESCRIPTION("Generic cpufreq driver");
-> 
+> I also like the x2apic optimization, since it addresses additional delays.
+>  -- though we may be able to optimize those in the non-x2apic case too.
 
-This patch does not depend on patch #1 of the series.
+For both [1-2/2]:
 
-other than that..
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Acked-by: Nishanth Menon <nm@ti.com>
-
--- 
-Regards,
-Nishanth Menon
