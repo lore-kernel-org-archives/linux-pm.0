@@ -1,255 +1,216 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V3 01/14] cpufreq: Create for_each_{in}active_policy()
-Date: Fri, 08 May 2015 23:46:56 +0200
-Message-ID: <5045046.BY2j8T62rF@vostro.rjw.lan>
-References: <cover.1431065963.git.viresh.kumar@linaro.org> <79f880aba9ad5159e070f2ca172139cb2c254430.1431065963.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3] cpuidle: Handle tick_broadcast_enter() failure gracefully
+Date: Fri, 08 May 2015 23:51:38 +0200
+Message-ID: <3981224.gz7iCfoVSM@vostro.rjw.lan>
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com> <8680371.ymYIEaFYPT@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57483 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:64286 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751097AbbEHVVw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 17:21:52 -0400
-In-Reply-To: <79f880aba9ad5159e070f2ca172139cb2c254430.1431065963.git.viresh.kumar@linaro.org>
+	with SMTP id S1752795AbbEHV0d (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 17:26:33 -0400
+In-Reply-To: <8680371.ymYIEaFYPT@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Srivatsa Bhat <srivatsa@mit.edu>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com, daniel.lezcano@linaro.org, rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org
 
-On Friday, May 08, 2015 11:53:44 AM Viresh Kumar wrote:
-> policy->cpus is cleared unconditionally now on hotplug-out of a CPU and
-> it can be checked to know if a policy is active or not. Create helper
-> routines to iterate over all active/inactive policies, based on
-> policy->cpus field.
+On Friday, May 08, 2015 04:18:02 PM Rafael J. Wysocki wrote:
+> On Friday, May 08, 2015 01:05:32 PM Preeti U Murthy wrote:
+> > When a CPU has to enter an idle state where tick stops, it makes a call
+> > to tick_broadcast_enter(). The call will fail if this CPU is the
+> > broadcast CPU. Today, under such a circumstance, the arch cpuidle code
+> > handles this CPU.  This is not convincing because not only do we not
+> > know what the arch cpuidle code does, but we also do not account for the
+> > idle state residency time and usage of such a CPU.
+> > 
+> > This scenario can be handled better by simply choosing an idle state
+> > where in ticks do not stop. To accommodate this change move the setting
+> > of runqueue idle state from the core to the cpuidle driver, else the
+> > rq->idle_state will be set wrong.
+> > 
+> > Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> > ---
+> > Changes from V2: https://lkml.org/lkml/2015/5/7/78
+> > Introduce a function in cpuidle core to select an idle state where ticks do not
+> > stop rather than going through the governors.
+> > 
+> > Changes from V1: https://lkml.org/lkml/2015/5/7/24
+> > Rebased on the latest linux-pm/bleeding-edge branch
+> > 
+> >  drivers/cpuidle/cpuidle.c |   45 +++++++++++++++++++++++++++++++++++++++++++--
+> >  include/linux/sched.h     |   16 ++++++++++++++++
+> >  kernel/sched/core.c       |   17 +++++++++++++++++
+> >  kernel/sched/fair.c       |    2 +-
+> >  kernel/sched/idle.c       |    6 ------
+> >  kernel/sched/sched.h      |   24 ------------------------
+> >  6 files changed, 77 insertions(+), 33 deletions(-)
+> > 
+> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> > index 8c24f95..d1af760 100644
+> > --- a/drivers/cpuidle/cpuidle.c
+> > +++ b/drivers/cpuidle/cpuidle.c
+> > @@ -21,6 +21,7 @@
+> >  #include <linux/module.h>
+> >  #include <linux/suspend.h>
+> >  #include <linux/tick.h>
+> > +#include <linux/sched.h>
+> >  #include <trace/events/power.h>
+> >  
+> >  #include "cpuidle.h"
+> > @@ -146,6 +147,36 @@ int cpuidle_enter_freeze(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+> >  	return index;
+> >  }
+> >  
+> > +/*
+> > + * find_tick_valid_state - select a state where tick does not stop
+> > + * @dev: cpuidle device for this cpu
+> > + * @drv: cpuidle driver for this cpu
+> > + */
+> > +static int find_tick_valid_state(struct cpuidle_device *dev,
+> > +				struct cpuidle_driver *drv)
+> > +{
+> > +	int i, ret = -1;
+> > +
+> > +	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
+> > +		struct cpuidle_state *s = &drv->states[i];
+> > +		struct cpuidle_state_usage *su = &dev->states_usage[i];
+> > +
+> > +		/*
+> > +		 * We do not explicitly check for latency requirement
+> > +		 * since it is safe to assume that only shallower idle
+> > +		 * states will have the CPUIDLE_FLAG_TIMER_STOP bit
+> > +		 * cleared and they will invariably meet the latency
+> > +		 * requirement.
+> > +		 */
+> > +		if (s->disabled || su->disable ||
+> > +			(s->flags & CPUIDLE_FLAG_TIMER_STOP))
+> > +			continue;
+> > +
+> > +		ret = i;
+> > +	}
+> > +	return ret;
+> > +}
+> > +
+> >  /**
+> >   * cpuidle_enter_state - enter the state and update stats
+> >   * @dev: cpuidle device for this cpu
+> > @@ -168,10 +199,17 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+> >  	 * CPU as a broadcast timer, this call may fail if it is not available.
+> >  	 */
+> >  	if (broadcast && tick_broadcast_enter()) {
+> > -		default_idle_call();
+> > -		return -EBUSY;
+> > +		index = find_tick_valid_state(dev, drv);
 > 
-> Replace all instances of for_each_policy() with for_each_active_policy()
-> to make them iterate only for active policies. (We haven't made changes
-> yet to keep inactive policies in the same list, but that will be
-> followed in a later patch).
+> Well, the new state needs to be deeper
+
+I should have said "shallower", sorry about that.
+
+The state chosen by the governor satisfies certain latency requirements and we
+can't violate those by choosing a deeper state here.
+
+But the patch I sent actually did the right thing. :-)
+
+> than the old one or you may violate the governor's choice and this doesn't
+> guarantee that.
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Also I don't quite see a reason to duplicate the find_deepest_state() functionality
+> here.
+> 
+> > +		if (index < 0) {
+> > +			default_idle_call();
+> > +			return -EBUSY;
+> > +		}
+> > +		target_state = &drv->states[index];
+> >  	}
+> >  
+> > +	/* Take note of the planned idle state. */
+> > +	idle_set_state(smp_processor_id(), target_state);
+> 
+> And I wouldn't do this either.
+> 
+> The behavior here is pretty much as though the driver demoted the state chosen
+> by the governor and we don't call idle_set_state() again in those cases.
+> 
+> > +
+> >  	trace_cpu_idle_rcuidle(index, dev->cpu);
+> >  	time_start = ktime_get();
+> 
+> Overall, something like the patch below (untested) should work I suppose?
+> 
 > ---
->  drivers/cpufreq/cpufreq.c | 82 +++++++++++++++++++++++++++++++++++++++++------
->  1 file changed, 73 insertions(+), 9 deletions(-)
+>  drivers/cpuidle/cpuidle.c |   21 ++++++++++++++-------
+>  1 file changed, 14 insertions(+), 7 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 8cf0c0e7aea8..9229e7f81673 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -32,11 +32,75 @@
->  #include <trace/events/power.h>
+> Index: linux-pm/drivers/cpuidle/cpuidle.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpuidle/cpuidle.c
+> +++ linux-pm/drivers/cpuidle/cpuidle.c
+> @@ -73,17 +73,19 @@ int cpuidle_play_dead(void)
+>  }
 >  
->  /* Macros to iterate over lists */
-> -/* Iterate over online CPUs policies */
->  static LIST_HEAD(cpufreq_policy_list);
-> +
-> +static inline bool policy_is_inactive(struct cpufreq_policy *policy)
-> +{
-> +	return cpumask_empty(policy->cpus);
-> +}
-> +
-> +/*
-> + * Finds Next Acive/Inactive policy
-> + *
-> + * policy: Previous policy.
-> + * active: Looking for active policy (true) or Inactive policy (false).
-> + */
-
-A proper kerneldoc, please.
-
-> +static struct cpufreq_policy *next_policy(struct cpufreq_policy *policy,
-> +					  bool active)
-> +{
-> +	do {
-> +		if (likely(policy))
-
-The likely() thing looks like an attempted overoptimization.  I wouldn't use it.
-
-> +			policy = list_next_entry(policy, policy_list);
-> +		else
-> +			policy = list_first_entry(&cpufreq_policy_list,
-> +						  typeof(*policy), policy_list);
-> +
-> +		/* No more policies */
-> +		if (&policy->policy_list == &cpufreq_policy_list)
-
-Why does this ignore the 'active' arg? 
-
-> +			return policy;
-> +
-> +		/*
-> +		 * Table to explains logic behind following expression:
-> +		 *
-> +		 *	Active		policy_is_inactive	Result
-> +		 *						(policy or next)
-> +		 *
-> +		 *	0		0			next
-> +		 *	0		1			policy
-> +		 *	1		0			policy
-> +		 *	1		1			next
-> +		 */
-> +	} while (!(active ^ policy_is_inactive(policy)));
-> +
-> +	return policy;
-> +}
-> +
-> +/*
-> + * Iterate over online CPUs policies
-
-"CPU policies" would look better IMO.
-
-> + *
-> + * Explanation:
-> + * - expr1: marks __temp NULL and gets the first __active policy.
-> + * - expr2: checks if list is finished, if yes then it sets __policy to the last
-> + *	    __active policy and returns 0 to end the loop.
-> + * - expr3: preserves last __active policy and gets the next one.
-
-I'd expect this to describe the arguments rather.  Also the code is rather
-difficult to follow.
-
-The XOR thing is rather an unnecessary trick (it acts on bools but quite
-directly assumes them to be integers with the lowest bit representing the
-value) and you can do "active == !policy_is_inactive(policy)" instead.
-
-So if you separate the last check as
-
-static bool suitable_policy(struct cpufreq_policy *policy, bool active)
-{
-	return active == !policy_is_inactive(policy);
-}
-
-then you can introduce
-
-static struct cpufreq_policy *first_policy(bool active)
-{
-	struct cpufreq_policy *policy;
-
-	policy = list_first_entry(&cpufreq_policy_list, typeof(*policy), policy_list);
-	if (!suitable_policy(policy, active))
-		policy = next_policy(policy, active);
-
-	return policy;
-}
-
-and then next_policy() becomes much simpler and, moreover, this:
-
-> + */
-> +#define __for_each_active_policy(__policy, __temp, __active)		\
-> +	for (__temp = NULL, __policy = next_policy(NULL, __active);	\
-> +	     &__policy->policy_list != &cpufreq_policy_list ||		\
-> +	     ((__policy = __temp) && 0);				\
-> +	     __temp = __policy, __policy = next_policy(__policy, __active))
-
-can be rewritten as:
-
-#define __for_each_active_policy(__policy, __active)		\
-	for (__policy = first_policy(__active);	__policy;	\
-	     __policy = next_policy(__policy, __active))
-
-and you don't need to explain what it does even.  Of course, next_policy()
-has to return 'false' when it can't find anything suitable, but that shouldn't
-be too difficult to arrange I suppose?
-
-Or if you need __temp because the object pointed to by __policy can go away,
-you can follow the design of list_for_each_entry_safe() here.
-
-> +
->  #define for_each_policy(__policy)				\
->  	list_for_each_entry(__policy, &cpufreq_policy_list, policy_list)
->  
-> +/*
-> + * Routines to iterate over active or inactive policies
-> + * __policy: next active/inactive policy will be returned in this.
-> + * __temp: for internal purpose, not to be used by caller.
-> + */
-> +#define for_each_active_policy(__policy, __temp) __for_each_active_policy(__policy, __temp, true)
-> +#define for_each_inactive_policy(__policy, __temp) __for_each_active_policy(__policy, __temp, false)
-
-I must admit to having a problem with this definition.
-
-	#define for_each_inactive_something(X) 	__for_each_active_something(X)
-
-looks really confusing.
-
-Maybe rename __for_each_active_policy() to __for_each_suitable_policy()?
-
-> +
->  /* Iterate over governors */
->  static LIST_HEAD(cpufreq_governor_list);
->  #define for_each_governor(__governor)				\
-> @@ -1142,7 +1206,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>  static int find_deepest_state(struct cpuidle_driver *drv,
+> -			      struct cpuidle_device *dev, bool freeze)
+> +			      struct cpuidle_device *dev, bool freeze,
+> +			      int limit, unsigned int flags_to_avoid)
 >  {
->  	unsigned int j, cpu = dev->id;
->  	int ret = -ENOMEM;
-> -	struct cpufreq_policy *policy;
-> +	struct cpufreq_policy *policy, *tpolicy;
-
-I'd just use "tmp" or "aux" instead of "tpolicy".
-
->  	unsigned long flags;
->  	bool recover_policy = cpufreq_suspended;
+>  	unsigned int latency_req = 0;
+>  	int i, ret = freeze ? -1 : CPUIDLE_DRIVER_STATE_START - 1;
 >  
-> @@ -1156,7 +1220,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+> -	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
+> +	for (i = CPUIDLE_DRIVER_STATE_START; i < limit; i++) {
+>  		struct cpuidle_state *s = &drv->states[i];
+>  		struct cpuidle_state_usage *su = &dev->states_usage[i];
 >  
->  	/* Check if this CPU already has a policy to manage it */
->  	read_lock_irqsave(&cpufreq_driver_lock, flags);
-> -	for_each_policy(policy) {
-> +	for_each_active_policy(policy, tpolicy) {
->  		if (cpumask_test_cpu(cpu, policy->related_cpus)) {
->  			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
->  			ret = cpufreq_add_policy_cpu(policy, cpu, dev);
-> @@ -1664,7 +1728,7 @@ EXPORT_SYMBOL(cpufreq_generic_suspend);
->   */
->  void cpufreq_suspend(void)
+>  		if (s->disabled || su->disable || s->exit_latency <= latency_req
+> -		    || (freeze && !s->enter_freeze))
+> +		    || (freeze && !s->enter_freeze)
+> +		    || (s->flags & flags_to_avoid))
+>  			continue;
+>  
+>  		latency_req = s->exit_latency;
+> @@ -100,7 +102,7 @@ static int find_deepest_state(struct cpu
+>  int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
+>  			       struct cpuidle_device *dev)
 >  {
-> -	struct cpufreq_policy *policy;
-> +	struct cpufreq_policy *policy, *tpolicy;
+> -	return find_deepest_state(drv, dev, false);
+> +	return find_deepest_state(drv, dev, false, drv->state_count, 0);
+>  }
 >  
->  	if (!cpufreq_driver)
->  		return;
-> @@ -1674,7 +1738,7 @@ void cpufreq_suspend(void)
+>  static void enter_freeze_proper(struct cpuidle_driver *drv,
+> @@ -139,7 +141,7 @@ int cpuidle_enter_freeze(struct cpuidle_
+>  	 * that interrupts won't be enabled when it exits and allows the tick to
+>  	 * be frozen safely.
+>  	 */
+> -	index = find_deepest_state(drv, dev, true);
+> +	index = find_deepest_state(drv, dev, true, drv->state_count, 0);
+>  	if (index >= 0)
+>  		enter_freeze_proper(drv, dev, index);
 >  
->  	pr_debug("%s: Suspending Governors\n", __func__);
+> @@ -168,8 +170,13 @@ int cpuidle_enter_state(struct cpuidle_d
+>  	 * CPU as a broadcast timer, this call may fail if it is not available.
+>  	 */
+>  	if (broadcast && tick_broadcast_enter()) {
+> -		default_idle_call();
+> -		return -EBUSY;
+> +		index = find_deepest_state(drv, dev, false, index,
+> +					   CPUIDLE_FLAG_TIMER_STOP);
+> +		if (index < 0) {
+> +			default_idle_call();
+> +			return -EBUSY;
+> +		}
+> +		target_state = &drv->states[index];
+>  	}
 >  
-> -	for_each_policy(policy) {
-> +	for_each_active_policy(policy, tpolicy) {
->  		if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
->  			pr_err("%s: Failed to stop governor for policy: %p\n",
->  				__func__, policy);
-> @@ -1696,7 +1760,7 @@ void cpufreq_suspend(void)
->   */
->  void cpufreq_resume(void)
->  {
-> -	struct cpufreq_policy *policy;
-> +	struct cpufreq_policy *policy, *tpolicy;
->  
->  	if (!cpufreq_driver)
->  		return;
-> @@ -1708,7 +1772,7 @@ void cpufreq_resume(void)
->  
->  	pr_debug("%s: Resuming Governors\n", __func__);
->  
-> -	for_each_policy(policy) {
-> +	for_each_active_policy(policy, tpolicy) {
->  		if (cpufreq_driver->resume && cpufreq_driver->resume(policy))
->  			pr_err("%s: Failed to resume driver: %p\n", __func__,
->  				policy);
-> @@ -2351,10 +2415,10 @@ static struct notifier_block __refdata cpufreq_cpu_notifier = {
->  static int cpufreq_boost_set_sw(int state)
->  {
->  	struct cpufreq_frequency_table *freq_table;
-> -	struct cpufreq_policy *policy;
-> +	struct cpufreq_policy *policy, *tpolicy;
->  	int ret = -EINVAL;
->  
-> -	for_each_policy(policy) {
-> +	for_each_active_policy(policy, tpolicy) {
->  		freq_table = cpufreq_frequency_get_table(policy->cpu);
->  		if (freq_table) {
->  			ret = cpufreq_frequency_table_cpuinfo(policy,
+>  	trace_cpu_idle_rcuidle(index, dev->cpu);
 > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
 I speak only for myself.
