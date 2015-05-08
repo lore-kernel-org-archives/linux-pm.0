@@ -1,112 +1,71 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v7 2/5] PM / Domains: core changes for multiple states
-Date: Fri, 08 May 2015 13:53:27 -0700
-Message-ID: <7ha8xehjug.fsf@deeprootsystems.com>
-References: <1430391335-7588-1-git-send-email-ahaslam@baylibre.com>
-	<1430391335-7588-3-git-send-email-ahaslam@baylibre.com>
-	<20150507155359.GA15980@linaro.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] PM / clock_ops: Fix clock error check in __pm_clk_add()
+Date: Fri, 8 May 2015 22:59:04 +0200
+Message-ID: <CAMuHMdVJsUNaWiULVeWKj5BE-wCDetmYi6Hh0CUrcdu9GP4tyQ@mail.gmail.com>
+References: <1431074863-19124-1-git-send-email-geert+renesas@glider.be>
+	<20150508171955.GA38039@dtor-ws>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:34483 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751097AbbEHUxd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 16:53:33 -0400
-Received: by pacyx8 with SMTP id yx8so58956223pac.1
-        for <linux-pm@vger.kernel.org>; Fri, 08 May 2015 13:53:30 -0700 (PDT)
-In-Reply-To: <20150507155359.GA15980@linaro.org> (Lina Iyer's message of "Thu,
-	7 May 2015 09:53:59 -0600")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150508171955.GA38039@dtor-ws>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Grygorii Strashko <Grygorii.Strashko@linaro.org>, Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: ahaslam@baylibre.com, ulf.hansson@linaro.org, k.kozlowski.k@gmail.com, geert@linux-m68k.org, rjw@rjwysocki.net, bcousson@baylibre.com, linux-pm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>
 
-Lina Iyer <lina.iyer@linaro.org> writes:
-
-> On Thu, Apr 30 2015 at 04:57 -0600, ahaslam@baylibre.com wrote:
->>From: Axel Haslam <ahaslam+renesas@baylibre.com>
+On Fri, May 8, 2015 at 7:19 PM, Dmitry Torokhov
+<dmitry.torokhov@gmail.com> wrote:
+> On Fri, May 08, 2015 at 10:47:43AM +0200, Geert Uytterhoeven wrote:
+>> In the final iteration of commit 245bd6f6af8a62a2 ("PM / clock_ops: Add
+>> pm_clk_add_clk()"), a refcount increment was added by Grygorii Strashko.
+>> However, the accompanying IS_ERR() check operates on the wrong clock
+>> pointer, which is always zero at this point, i.e. not an error.
+>> This may lead to a NULL pointer dereference later, when __clk_get()
+>> tries to dereference an error pointer.
 >>
->>Add the core changes to be able to declare multiple states.
->>When trying to set a power domain to off, genpd will be able
->>to choose from an array of states declared by the platform.
->>
->>The power on and off latencies are now tied to a state.
->>
->>States should be declared in ascending order from shallowest
->>to deepest, deepest meaning the state which takes longer to
->>enter and exit.
->>
->>the power_off and power_on function can use the 'state_idx'
->>field of the generic_pm_domain structure, to distinguish between
->>the different states and act accordingly.
->>
->> - if the genpd is initially off, the user should set the state_idx
->>   field when registering the genpd.
->>
->> - if no states are passed to pm_genpd_init, a single OFF
->>   state with no latency is assumed.
->>
->>Example:
->>
->>static int pd1_power_on(struct generic_pm_domain *domain)
->>{
->>	/* domain->state_idx = state the domain is coming from */
->>}
->>
->>static int pd1_power_off(struct generic_pm_domain *domain)
->>{
->>	/* domain->state_idx = desired powered off state */
->>}
->>
->>const struct genpd_power_state pd_states[] = {
->>	{
->>		.name = "RET",
->>		.power_on_latency_ns = ON_LATENCY_FAST,
->>		.power_off_latency_ns = OFF_LATENCY_FAST,
->>	},
->>	{
->>		.name = "DEEP_RET",
->>		.power_on_latency_ns = ON_LATENCY_MED,
->>		.power_off_latency_ns = OFF_LATENCY_MED,
->>	},
->>	{
->>		.name = "OFF",
->>		.power_on_latency_ns = ON_LATENCY_SLOW,
->>		.power_off_latency_ns = OFF_LATENCY_SLOW,
->>	}
->>};
->>
+>> Check the passed clock pointer instead to fix this.
 >
-> I am trying to use your patches in fashioning a genpd for the cpu
-> domain.
->
-> The cpus are part of a power domain that can be powered off when the
-> cpus are powered off as part of the cpuidle. One of the biggest power
-> savings comes from powering off the domain completely. However, powering
-> off the domain involves flushing of caches (possibly) and turning off
-> some regulators and peripheral hardware. The power benefit is only
-> realized when the domain remains powered off for a certain period of
-> time, otherwise the overhead of powering on/off would add up to the
-> ineffeciency in the system.
->
-> So a governor that determines the idle state of the domain has two
-> things that needs to match, the time available to power off the domain
-> (which we can get from timer wheel) and the other residency as dictated
-> by the platform.
->
-> I was wondering if we could match the idle state definition of the
-> domain with that of the cpu, which has a precedence in the kernel. The
-> idle state of the cpu [1] is a superset of the idle state definition you
-> have above.  That way a shim layer could pick up domain idle states from
-> DT and pass the states to pm_genpd_init(). The use of these values could
-> depend on the genpd governor.
+> Frankly I would remove the check altogether. Why do we only check for
+> IS_ERR and not NULL or otherwise validate the pointer? The clk is passed
 
-IMO, we need to keep the domain latency descriptions separate from the
-the devices within those domains, which could be CPUs or any other form
-of device.
+__clk_get() does the NULL check.
 
-It should be the job of the governor then to look at the domain latency
-along with latencies of the other devices in the domain to make its
-decision.
+> in and we do not call any API that would return ERR_PTR-encoded value to
+> us so we shoud lnot even try to handle IS_ERR here.
+>
+>>
+>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> Fixes: 245bd6f6af8a62a2 ("PM / clock_ops: Add pm_clk_add_clk()")
+>> ---
+>> Note that there are no users of pm_clk_add_clk() in next-20150508, so
+>> for now no in-tree code is affected.
+>> ---
+>>  drivers/base/power/clock_ops.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+>> index 7fdd0172605afe1b..c7b0fcebf168cabe 100644
+>> --- a/drivers/base/power/clock_ops.c
+>> +++ b/drivers/base/power/clock_ops.c
+>> @@ -93,7 +93,7 @@ static int __pm_clk_add(struct device *dev, const char *con_id,
+>>                       return -ENOMEM;
+>>               }
+>>       } else {
+>> -             if (IS_ERR(ce->clk) || !__clk_get(clk)) {
+>> +             if (IS_ERR(clk) || !__clk_get(clk)) {
+>>                       kfree(ce);
+>>                       return -ENOENT;
+>>               }
+>> --
+>> 1.9.1
 
-Kevin
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
