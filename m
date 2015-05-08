@@ -1,68 +1,37 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/2] x86: remove 10ms delay from cpu_up() on modern processors
-Date: Fri,  8 May 2015 13:48:07 -0400
-Message-ID: <8cfb5aaffa494a62f67af45d952bf02a1c8c718b.1431106775.git.len.brown@intel.com>
-References: <1431107287-22022-1-git-send-email-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1431107287-22022-1-git-send-email-lenb@kernel.org>
-In-Reply-To: <3f51dfd7de5bf660b62d01216edce41b0904fddf.1431106775.git.len.brown@intel.com>
-References: <3f51dfd7de5bf660b62d01216edce41b0904fddf.1431106775.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
+Subject: Re: [PATCH 2/2] x86: speed cpu_up by quirking cpu_init_udelay
+Date: Fri, 8 May 2015 14:15:42 -0400
+Message-ID: <CAJvTdKk3TM1PMUgGeWCxThzVknfBc8xMK-dJkbxJrwkWhjGzLg@mail.gmail.com>
+References: <418898b5b9a6d76e7fbbd2af7cc988de1a5a287d.1431066425.git.len.brown@intel.com>
+	<170f6f6e9ac4aa4d8ec1ed5000bee95463897337.1431066425.git.len.brown@intel.com>
+	<20150508083250.GB4137@pd.tnic>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f43.google.com ([209.85.215.43]:36521 "EHLO
+	mail-la0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752628AbbEHSPn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 14:15:43 -0400
+In-Reply-To: <20150508083250.GB4137@pd.tnic>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>
+Cc: X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-From: Len Brown <len.brown@intel.com>
+On Fri, May 8, 2015 at 4:32 AM, Borislav Petkov <bp@alien8.de> wrote:
 
-Modern processor familes do not require the 10ms delay
-in cpu_up() to de-assert INIT.  This speeds up boot
-and resume by 10ms per (application) processor.
+>> +     pr_debug("cpu_init_udelay quirk to %d, was %d", new_udelay, init_udelay);
+>
+> Can we make this printk(KERN_DEBUG please?
+>
+> I'd like to be able to slap "debug" on the command line and not
+> recompile the kernel. And no, dyndbg="file smpboot.c +p" or whatever the
+> syntax is, simply doesn't scale if I want to see all debug messages from
+> early boot.
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/kernel/smpboot.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+I agree with you.  Further, you made me think about it, and while it was helpful
+when I wrote the patch, I don't think any printk() is needed upstream.
 
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 0ddc28b..3ab3df5 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -524,6 +524,7 @@ void __inquire_remote_apic(int apicid)
-  * many cores and don't require that delay.
-  *
-  * Cmdline "init_cpu_udelay=" is available to over-ride this delay.
-+ * Modern processor families are quirked to remove the delay entirely.
-  */
- #define UDELAY_10MS_DEFAULT 10000
- 
-@@ -537,6 +538,18 @@ static int __init cpu_init_udelay(char *str)
- }
- early_param("cpu_init_udelay", cpu_init_udelay);
- 
-+static void __init smp_quirk_init_udelay(void)
-+{
-+	/* if cmdline changed it from default, leave it alone */
-+	if (init_udelay != UDELAY_10MS_DEFAULT)
-+		return;
-+
-+	/* if modern processor, use no delay */
-+	if (((boot_cpu_data.x86_vendor == X86_VENDOR_INTEL) && (boot_cpu_data.x86 == 6)) ||
-+	    ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) && (boot_cpu_data.x86 >= 0xF)))
-+		init_udelay = 0;
-+}
-+
- /*
-  * Poke the other CPU in the eye via NMI to wake it up. Remember that the normal
-  * INIT, INIT, STARTUP sequence will reset the chip hard for us, and this
-@@ -1191,6 +1204,8 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
- 		uv_system_init();
- 
- 	set_mtrr_aps_delayed_init();
-+
-+	smp_quirk_init_udelay();
- }
- 
- void arch_enable_nonboot_cpus_begin(void)
--- 
-2.4.0.rc1
+see v3 just sent.
+
+Len Brown, Intel Open Source Technology Center
