@@ -1,78 +1,73 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH RFC 2/5] ACPI / processor: always compile perflib if CONFIG_ACPI_PROCESSOR
-Date: Fri, 08 May 2015 11:06:26 +0100
-Message-ID: <554C8AA2.8020105@arm.com>
-References: <1430922690-6966-1-git-send-email-sudeep.holla@arm.com>	<1430922690-6966-3-git-send-email-sudeep.holla@arm.com> <CAJ5Y-eYJ9ydv3Meoco3o9KHhSXSxrRmot1ZW2_ZJosG4h+eprg@mail.gmail.com> <554C7960.4040107@linaro.org>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
+Date: Fri, 8 May 2015 11:58:57 +0100
+Message-ID: <20150508105857.GB22845@sirena.org.uk>
+References: <CAKohponRXiWbgT26=tO83jJgbteBf38ggE7mKvLCv+wFMW1cvA@mail.gmail.com>
+ <20150505105714.GA22845@sirena.org.uk>
+ <CAKohpo=09ZhXxh5Cm7Ww9Gy-AYRp9=j82tup6atVN+aOF8twdA@mail.gmail.com>
+ <20150505171252.GI22845@sirena.org.uk>
+ <CAKohpo=kJs076afzERPMqjELgwpN6nR2yoyEjW6XY7YSEbRuCA@mail.gmail.com>
+ <20150507055231.GB32399@codeaurora.org>
+ <20150507110233.GR15510@sirena.org.uk>
+ <20150507211855.GA2455@codeaurora.org>
+ <20150507221842.GW22845@sirena.org.uk>
+ <CAKohpomU8wm0T=A7EkosdOjXbP8q2Cb726Hsjh08KTKYjoz3-A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <554C7960.4040107@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Hanjun Guo <hanjun.guo@linaro.org>, Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux acpi <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "ahs3@redhat.com" <ahs3@redhat.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="laBhmkiQtYGknO4U"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:56200 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751438AbbEHK7Z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 06:59:25 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKohpomU8wm0T=A7EkosdOjXbP8q2Cb726Hsjh08KTKYjoz3-A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Nishanth Menon <nm@ti.com>, Mike Turquette <mike.turquette@linaro.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, santosh
 
 
+--laBhmkiQtYGknO4U
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 08/05/15 09:52, Hanjun Guo wrote:
-> On 2015=E5=B9=B405=E6=9C=8807=E6=97=A5 02:36, Ashwin Chaugule wrote:
->> Hello,
->>
->> On 6 May 2015 at 10:31, Sudeep Holla <sudeep.holla@arm.com> wrote:
->>> Similar to the  idle, thermal and throttling libraries, always comp=
-ile
->>> the perflib if CONFIG_ACPI_PROCESSOR is enabled. This not only make=
-s
->>> perflib alligned with other libraries but also helps in some sanity
->>> testing of these ACPI methods even when a particular feature is not
->>> enabled in the kernel configuration.
->>>
->>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->>> ---
->>>    drivers/acpi/Makefile    |  2 +-
->>>    include/acpi/processor.h | 29 -----------------------------
->>>    include/linux/cpufreq.h  |  4 ++++
->>>    3 files changed, 5 insertions(+), 30 deletions(-)
->>>
->>> diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
->>> index 8a063e276530..33aef9d8b260 100644
->>> --- a/drivers/acpi/Makefile
->>> +++ b/drivers/acpi/Makefile
->>> @@ -84,7 +84,7 @@ obj-$(CONFIG_ACPI_BGRT)               +=3D bgrt.o
->>>    # processor has its own "processor." module_param namespace
->>>    processor-y                    :=3D processor_driver.o processor=
-_throttling.o
->>>    processor-y                    +=3D processor_idle.o processor_t=
-hermal.o
->>> -processor-$(CONFIG_CPU_FREQ)   +=3D processor_perflib.o
->>> +processor-y                    +=3D processor_perflib.o
->>
->> I'd prefer that we create a separate kconfig option for this. (perha=
-ps
->> even default it to 'y'). This library is quite specific to a certain
->> type of CPU performance management methods (includes _PSS and friend=
-s)
->> which are superseded by CPPC. The OS is not expected to support both
->> at runtime, so by keeping this a config option, we can then disable =
-it
->> at compile time when CPPC is enabled. We could couple
->
-> I agree. CPPC and _PSS are different way of controlling CPU freq,
-> and I think _PSS may not be used on ARM.
->
+On Fri, May 08, 2015 at 12:17:44PM +0530, Viresh Kumar wrote:
 
-While I agree having a separate config option is good, but I won't
-assume _PSS might not be used on ARM as I have seen patches posted on
-the list in past to use _PSS on ARM platform[1].
+> Thanks Mark. I have reworded it as:
+>=20
+> - opp-microamp: Current drawn by the device in micro Amperes. It is used =
+to set
+>   the most efficient regulator operating mode.
+>=20
+>   Should only be set if opp-microvolt is set for the OPP.
+>=20
+>   Entries for multiple regulators must be present in the same order as
+>   regulators are specified in device's DT node. If this property isn't re=
+quired
+>   for few regulators, then this should be marked as zero for them. If it =
+isn't
+>   required for any regulator, then this property need not be present.
 
-Regards,
-Sudeep
+> Please let me know if this looks fine now.
 
-[1] http://marc.info/?l=3Dlinaro-acpi&m=3D139745485418399&w=3D2
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+That should be fine, microamperes is usually one word.
+
+--laBhmkiQtYGknO4U
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJVTJbwAAoJECTWi3JdVIfQ4ZUH/0827Tk+IkaZuV7pkqOgRkRT
+w09VJXpZANXGr5OFBuEwTUOJQn37Sh5L8Rnvt22jiWnZOD0cdFVqZC+dWIZkdFXf
+aflaDgosK+hb381FRzN4di+r1DQLVcH1Gtnr6IHf31T+5LJf0D9mBxZaFzOF+lc1
+d8tkps3NOVm/HFrJi30CdZ26ZLU5oUSoF+eGBvB6dOwkPxWK2SDLuHGXgkWxj74p
+e28G57VnXbDdNxmY0vk+eIdOOLtNUlTvenIRHfMSDDKC6UG7QWhyPqQGMOSfJTRT
+kWFi4reCtgq8GiAzXxd8UFXMpGiu6JXZTQ0lZlmJzZtWmZhNtU5PGeBc/5TyKYk=
+=0S5J
+-----END PGP SIGNATURE-----
+
+--laBhmkiQtYGknO4U--
