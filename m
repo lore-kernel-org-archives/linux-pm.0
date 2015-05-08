@@ -1,47 +1,88 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 0/6] powernv: cpufreq: Report frequency throttle by OCC
-Date: Fri, 8 May 2015 10:42:34 +0530
-Message-ID: <CAKohpokZcJeCEaKnfQC-78s2KKCJ9a7UqSA_R8VbjEX2HUGVNQ@mail.gmail.com>
-References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Subject: [PATCH V3 00/14] cpufreq: Don't loose cpufreq history on CPU hotplug
+Date: Fri,  8 May 2015 11:53:43 +0530
+Message-ID: <cover.1431065963.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f49.google.com ([209.85.218.49]:36728 "EHLO
-	mail-oi0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbbEHFMf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 01:12:35 -0400
-Received: by oift201 with SMTP id t201so50691130oif.3
-        for <linux-pm@vger.kernel.org>; Thu, 07 May 2015 22:12:35 -0700 (PDT)
-In-Reply-To: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:35375 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750842AbbEHGYa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 02:24:30 -0400
+Received: by pdbqd1 with SMTP id qd1so66758348pdb.2
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2015 23:24:30 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Srivatsa Bhat <srivatsa@mit.edu>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 4 May 2015 at 14:24, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> wrote:
-> This patchset intends to add frequency throttle reporting mechanism
-> to powernv-cpufreq driver when OCC throttles the frequency. OCC is an
-> On-Chip-Controller which takes care of the power and thermal safety of
-> the chip. The CPU frequency can be throttled during an OCC reset or
-> when OCC tries to limit the max allowed frequency. The patchset will
-> report such conditions so as to keep the user informed about reason
-> for the drop in performance of workloads when frequency is throttled.
->
-> Changes from v2:
-> - Split into multiple patches
-> - Semantic fixes
->
-> Shilpasri G Bhat (6):
->   cpufreq: poowernv: Handle throttling due to Pmax capping at chip level
->   powerpc/powernv: Add definition of OPAL_MSG_OCC message type
->   cpufreq: powernv: Register for OCC related opal_message notification
->   cpufreq: powernv: Call throttle_check() on receiving OCC_THROTTLE
->   cpufreq: powernv: Report Psafe only if PMSR.psafe_mode_active bit is
->     set
->   cpufreq: powernv: Restore cpu frequency to policy->cur on unthrottling
->
->  arch/powerpc/include/asm/opal-api.h |   8 ++
->  drivers/cpufreq/powernv-cpufreq.c   | 199 +++++++++++++++++++++++++++++++++---
->  2 files changed, 192 insertions(+), 15 deletions(-)
+Hi Rafael,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+The aim of this series is to stop managing cpufreq sysfs directories on CPU
+hotplug.
+
+Currently on removal of a 'cpu != policy->cpu', we remove its sysfs directories
+by removing the soft-link. And on removal of policy->cpu, we migrate the sysfs
+directories to the next cpu in policy. But if policy->cpu was the last CPU, we
+remove the policy completely and allocate it again once the CPUs come back.
+
+This has shortcomings:
+
+- Code Complexity
+- Slower hotplug
+- sysfs file permissions are reset after all policy->cpus are offlined
+- CPUFreq stats history lost after all policy->cpus are offlined
+- Special management of sysfs stuff during suspend/resume
+
+
+To make things simple we can stop playing with sysfs files unless the driver is
+getting removed. Also the policy can be kept intact to be used later.
+
+First few patches provide a clean base for others *more important* patches.
+
+Rebased-over: your bleeding edge branch as there were dependencies on my earlier
+patches.
+
+Pushed here:
+git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/core/sysfs-v3
+
+V2->V3:
+- First five are already applied by you and the 7th one was sent separately as a
+  fix earlier and got applied. So, V2 had 20 patches and V3 has 14.
+- Dropped while(1) and used do/while.
+- policy->governor marked as NULL only while removing the governor and not when
+  policy becomes inactive.
+- Commit logs/comments updated
+- Applied Acks from Saravan
+
+v1->V2:
+- Dropped the idea of using policy-lists for getting policy for any cpu
+- Also dropped fallback list and its per-cpu variable
+- Stopped cleaning cpufreq_cpu_data and doing list_del(policy) on logical
+  hotplug.
+- Added support for physical hotplug of CPUs (Untested).
+
+Saravana Kannan (1):
+  cpufreq: Track cpu managing sysfs kobjects separately
+
+Viresh Kumar (13):
+  cpufreq: Create for_each_{in}active_policy()
+  cpufreq: Don't clear cpufreq_cpu_data and policy list for inactive
+    policies
+  cpufreq: Get rid of cpufreq_cpu_data_fallback
+  cpufreq: Don't traverse all active policies to find policy for a cpu
+  cpufreq: Manage governor usage history with 'policy->last_governor'
+  cpufreq: Mark policy->governor = NULL for inactive policies
+  cpufreq: Don't allow updating inactive-policies from sysfs
+  cpufreq: Stop migrating sysfs files on hotplug
+  cpufreq: Remove cpufreq_update_policy()
+  cpufreq: Initialize policy->kobj while allocating policy
+  cpufreq: Call cpufreq_policy_put_kobj() from cpufreq_policy_free()
+  cpufreq: Restart governor as soon as possible
+  cpufreq: Add support for physical hoplug of CPUs
+
+ drivers/cpufreq/cpufreq.c | 509 ++++++++++++++++++++++++++--------------------
+ include/linux/cpufreq.h   |   5 +-
+ 2 files changed, 290 insertions(+), 224 deletions(-)
+
+-- 
+2.4.0
+
