@@ -1,42 +1,28 @@
-From: Ruchi Kandoi <kandoiruchi@google.com>
-Subject: [PATCH] suspend: Return error when pending wakeup source is found.
-Date: Thu,  7 May 2015 19:07:42 -0700
-Message-ID: <1431050862-26473-1-git-send-email-kandoiruchi@google.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 06/20] cpufreq: Create for_each_{in}active_policy()
+Date: Fri, 8 May 2015 08:03:57 +0530
+Message-ID: <CAKohpo=oD4Y9ymNKbmpDm_P1MV4biBmpxLyXRdwVznk2m9+HJg@mail.gmail.com>
+References: <cover.1424345053.git.viresh.kumar@linaro.org>
+	<CAKohpokanT+6scDTYotp90GNhyatURQNyjKpkfDKxgU9vhbWqQ@mail.gmail.com>
+	<550C7299.7030308@codeaurora.org>
+	<2175643.St6HWqz1AC@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f177.google.com ([209.85.213.177]:38759 "EHLO
-	mail-ig0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750995AbbEHCJX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 22:09:23 -0400
-Received: by igbhj9 with SMTP id hj9so10052676igb.1
-        for <linux-pm@vger.kernel.org>; Thu, 07 May 2015 19:09:22 -0700 (PDT)
+Received: from mail-oi0-f51.google.com ([209.85.218.51]:35610 "EHLO
+	mail-oi0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751050AbbEHCd5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 22:33:57 -0400
+Received: by oign205 with SMTP id n205so48720339oig.2
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2015 19:33:57 -0700 (PDT)
+In-Reply-To: <2175643.St6HWqz1AC@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kandoiruchi@google.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Saravana Kannan <skannan@codeaurora.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>
 
-If a wakeup source is found to be pending in the last stage of suspend
-after syscore suspend then the device doesn't suspend but the error is
-not propogated which causes an error in the accounting for the number
-of suspend aborts and successful suspends.
+On 8 May 2015 at 03:41, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> Viresh, have you ever sent an update of this one?
 
-Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
----
- kernel/power/suspend.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 8d7a1ef..343b4e4 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -366,6 +366,8 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
- 			trace_suspend_resume(TPS("machine_suspend"),
- 				state, false);
- 			events_check_enabled = false;
-+		} else if (*wakeup) {
-+			error = -EBUSY;
- 		}
- 		syscore_resume();
- 	}
--- 
-2.2.0.rc0.207.ga3a616c
-
+I haven't sent updates for any patches, was waiting for reviews
+to finish. But will send the new copies now.
