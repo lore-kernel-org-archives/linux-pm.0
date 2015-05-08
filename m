@@ -1,97 +1,102 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 1/2] x86: replace cpu_up hard-coded mdelay with variable udelay
-Date: Fri,  8 May 2015 02:37:54 -0400
-Message-ID: <418898b5b9a6d76e7fbbd2af7cc988de1a5a287d.1431066425.git.len.brown@intel.com>
+Subject: [PATCH 2/2] x86: speed cpu_up by quirking cpu_init_udelay
+Date: Fri,  8 May 2015 02:37:55 -0400
+Message-ID: <170f6f6e9ac4aa4d8ec1ed5000bee95463897337.1431066425.git.len.brown@intel.com>
 References: <1431067075-11449-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vn0-f53.google.com ([209.85.216.53]:44977 "EHLO
-	mail-vn0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752383AbbEHGiT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 02:38:19 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1431067075-11449-1-git-send-email-lenb@kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <418898b5b9a6d76e7fbbd2af7cc988de1a5a287d.1431066425.git.len.brown@intel.com>
+References: <418898b5b9a6d76e7fbbd2af7cc988de1a5a287d.1431066425.git.len.brown@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Len Brown <len.brown@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-Replace the hard-coded mdelay(10) in cpu_up() to a variable udelay.
+Modern processor familes are on a white-list to remove
+the costly cpu_init_udelay 10000.  Unknown processor families
+get the traditional 10ms delay in cpu_up().
 
-Add a boot-time override, "cpu_init_udelay=N"
-
-Default unchanged at 10ms on all systems.
+This seemed more efficient than forcing modern processors
+to exhaustively search a black-list having all the old
+processor families that should have a 10ms delay.
+For not only are new processor familes infrequently added,
+the white list also allows a delay other than 0, if needed.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Documentation/kernel-parameters.txt |  6 ++++++
- arch/x86/kernel/smpboot.c           | 28 +++++++++++++++++++++++++++-
- 2 files changed, 33 insertions(+), 1 deletion(-)
+ arch/x86/kernel/smpboot.c | 37 +++++++++++++++++++++++++++++++++++--
+ 1 file changed, 35 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index bfcb1a6..0a16309 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -737,6 +737,12 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 	cpuidle.off=1	[CPU_IDLE]
- 			disable the cpuidle sub-system
- 
-+	cpu_init_udelay=N
-+			[X86] Delay for N microsec between assert and de-assert
-+			of APIC INIT to start processors.  This delay occurs
-+			on every CPU online, such as boot, and resume from suspend.
-+			Default: 10000
-+
- 	cpcihp_generic=	[HW,PCI] Generic port I/O CompactPCI driver
- 			Format:
- 			<first_slot>,<last_slot>,<port>,<enum_bit>[,<debug>]
 diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index febc6aa..76734f4 100644
+index 76734f4..34a08ff 100644
 --- a/arch/x86/kernel/smpboot.c
 +++ b/arch/x86/kernel/smpboot.c
-@@ -517,6 +517,32 @@ void __inquire_remote_apic(int apicid)
- }
+@@ -76,6 +76,7 @@
+ #include <asm/i8259.h>
+ #include <asm/realmode.h>
+ #include <asm/misc.h>
++#include <asm/cpu_device_id.h>
  
- /*
-+ * The Multiprocessor Specification 1.4 (1997) example code suggests
-+ * that there should be a 10ms delay between the BSP asserting INIT
-+ * and de-asserting INIT, when starting a remote processor.
-+ * But that slows boot and resume on modern processors, which include
-+ * many cores and don't require that delay.
-+ *
-+ * cmdline "init_cpu_udelay=" is available to specify this delay.
-+ */
-+#define UDELAY_10MS_DEFAULT 10000
+ /* State of each CPU */
+ DEFINE_PER_CPU(int, cpu_state) = { 0 };
+@@ -521,14 +522,44 @@ void __inquire_remote_apic(int apicid)
+  * that there should be a 10ms delay between the BSP asserting INIT
+  * and de-asserting INIT, when starting a remote processor.
+  * But that slows boot and resume on modern processors, which include
+- * many cores and don't require that delay.
+- *
++ * many cores and don't require that delay.  Here we default to the
++ * legacy delay, but quirk new processors to skip the delay.
+  * cmdline "init_cpu_udelay=" is available to specify this delay.
+  */
+ #define UDELAY_10MS_DEFAULT 10000
+ 
+ static unsigned int init_udelay = UDELAY_10MS_DEFAULT;
+ 
++static const struct x86_cpu_id init_udelay_ids[] = {
++	{ X86_VENDOR_INTEL, 0x6, X86_MODEL_ANY, X86_FEATURE_ANY, 0 },
++	{ X86_VENDOR_AMD, 0x16, X86_MODEL_ANY, X86_FEATURE_ANY, 0 },
++	{ X86_VENDOR_AMD, 0x15, X86_MODEL_ANY, X86_FEATURE_ANY, 0 },
++	{ X86_VENDOR_AMD, 0x14, X86_MODEL_ANY, X86_FEATURE_ANY, 0 },
++	{ X86_VENDOR_AMD, 0x12, X86_MODEL_ANY, X86_FEATURE_ANY, 0 },
++	{ X86_VENDOR_AMD, 0x11, X86_MODEL_ANY, X86_FEATURE_ANY, 0 },
++	{ X86_VENDOR_AMD, 0x10, X86_MODEL_ANY, X86_FEATURE_ANY, 0 },
++	{ X86_VENDOR_AMD, 0xF, X86_MODEL_ANY, X86_FEATURE_ANY, 0 },
++	{}
++};
++MODULE_DEVICE_TABLE(x86cpu, init_udelay_ids);
 +
-+static unsigned int init_udelay = UDELAY_10MS_DEFAULT;
-+
-+static int __init cpu_init_udelay(char *str)
++static void __init smp_quirk_init_udelay(void)
 +{
++	const struct x86_cpu_id *id;
 +	unsigned int new_udelay;
 +
-+	get_option(&str, &new_udelay);
-+	pr_debug("cpu_init_udelay=%d, was %d", new_udelay, init_udelay);
-+	init_udelay = new_udelay;
++	id = x86_match_cpu(init_udelay_ids);
++	if (id == NULL)
++		return;	/* if no match, keep default */
 +
-+	return 0;
++	if (init_udelay != UDELAY_10MS_DEFAULT)
++		return;	/* if cmdline changed from default, leave it alone */
++
++	new_udelay = (unsigned long) id->driver_data;
++	pr_debug("cpu_init_udelay quirk to %d, was %d", new_udelay, init_udelay);
++	init_udelay = new_udelay;
 +}
 +
-+early_param("cpu_init_udelay", cpu_init_udelay);
+ static int __init cpu_init_udelay(char *str)
+ {
+ 	unsigned int new_udelay;
+@@ -1196,6 +1227,8 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ 		uv_system_init();
+ 
+ 	set_mtrr_aps_delayed_init();
 +
-+/*
-  * Poke the other CPU in the eye via NMI to wake it up. Remember that the normal
-  * INIT, INIT, STARTUP sequence will reset the chip hard for us, and this
-  * won't ... remember to clear down the APIC, etc later.
-@@ -586,7 +612,7 @@ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
- 	pr_debug("Waiting for send to finish...\n");
- 	send_status = safe_apic_wait_icr_idle();
++	smp_quirk_init_udelay();
+ }
  
--	mdelay(10);
-+	udelay(init_udelay);
- 
- 	pr_debug("Deasserting INIT\n");
- 
+ void arch_enable_nonboot_cpus_begin(void)
 -- 
 2.4.0.rc1
-
