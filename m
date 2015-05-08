@@ -1,77 +1,47 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 4/6] cpufreq: powernv: Call throttle_check() on receiving
- OCC_THROTTLE
-Date: Fri, 08 May 2015 09:16:44 +0530
-Message-ID: <554C31A4.8050903@linux.vnet.ibm.com>
-References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <5548824C.2030602@linux.vnet.ibm.com> <554B584A.3030507@linux.vnet.ibm.com> <4161534.4Jyd5dl4um@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 0/6] powernv: cpufreq: Report frequency throttle by OCC
+Date: Fri, 8 May 2015 10:42:34 +0530
+Message-ID: <CAKohpokZcJeCEaKnfQC-78s2KKCJ9a7UqSA_R8VbjEX2HUGVNQ@mail.gmail.com>
+References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e17.ny.us.ibm.com ([129.33.205.207]:59064 "EHLO
-	e17.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750995AbbEHDqw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 23:46:52 -0400
-Received: from /spool/local
-	by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Thu, 7 May 2015 23:46:51 -0400
-In-Reply-To: <4161534.4Jyd5dl4um@vostro.rjw.lan>
+Received: from mail-oi0-f49.google.com ([209.85.218.49]:36728 "EHLO
+	mail-oi0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413AbbEHFMf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 01:12:35 -0400
+Received: by oift201 with SMTP id t201so50691130oif.3
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2015 22:12:35 -0700 (PDT)
+In-Reply-To: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linuxppc-dev@ozlabs.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, viresh.kumar@linaro.org
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 05/08/2015 02:29 AM, Rafael J. Wysocki wrote:
-> On Thursday, May 07, 2015 05:49:22 PM Preeti U Murthy wrote:
->> On 05/05/2015 02:11 PM, Preeti U Murthy wrote:
->>> On 05/05/2015 12:03 PM, Shilpasri G Bhat wrote:
->>>> Hi Preeti,
->>>>
->>>> On 05/05/2015 09:30 AM, Preeti U Murthy wrote:
->>>>> Hi Shilpa,
->>>>>
->>>>> On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
->>>>>> Re-evaluate the chip's throttled state on recieving OCC_THROTTLE
->>>>>> notification by executing *throttle_check() on any one of the cpu on
->>>>>> the chip. This is a sanity check to verify if we were indeed
->>>>>> throttled/unthrottled after receiving OCC_THROTTLE notification.
->>>>>>
->>>>>> We cannot call *throttle_check() directly from the notification
->>>>>> handler because we could be handling chip1's notification in chip2. So
->>>>>> initiate an smp_call to execute *throttle_check(). We are irq-disabled
->>>>>> in the notification handler, so use a worker thread to smp_call
->>>>>> throttle_check() on any of the cpu in the chipmask.
->>>>>
->>>>> I see that the first patch takes care of reporting *per-chip* throttling
->>>>> for pmax capping condition. But where are we taking care of reporting
->>>>> "pstate set to safe" and "freq control disabled" scenarios per-chip ?
->>>>>
->>>>
->>>> IMO let us not have "psafe" and "freq control disabled" states managed per-chip.
->>>> Because when the above two conditions occur it is likely to happen across all
->>>> chips during an OCC reset cycle. So I am setting 'throttled' to false on
->>>> OCC_ACTIVE and re-verifying if it actually is the case by invoking
->>>> *throttle_check().
->>>
->>> Alright like I pointed in the previous reply, a comment to indicate that
->>> psafe and freq control disabled conditions will fail when occ is
->>> inactive and that all chips face the consequence of this will help.
->>
->> From your explanation on the thread of the first patch of this series,
->> this will not be required.
->>
->> So,
->> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> 
-> OK, so is the whole series reviewed now?
+On 4 May 2015 at 14:24, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> wrote:
+> This patchset intends to add frequency throttle reporting mechanism
+> to powernv-cpufreq driver when OCC throttles the frequency. OCC is an
+> On-Chip-Controller which takes care of the power and thermal safety of
+> the chip. The CPU frequency can be throttled during an OCC reset or
+> when OCC tries to limit the max allowed frequency. The patchset will
+> report such conditions so as to keep the user informed about reason
+> for the drop in performance of workloads when frequency is throttled.
+>
+> Changes from v2:
+> - Split into multiple patches
+> - Semantic fixes
+>
+> Shilpasri G Bhat (6):
+>   cpufreq: poowernv: Handle throttling due to Pmax capping at chip level
+>   powerpc/powernv: Add definition of OPAL_MSG_OCC message type
+>   cpufreq: powernv: Register for OCC related opal_message notification
+>   cpufreq: powernv: Call throttle_check() on receiving OCC_THROTTLE
+>   cpufreq: powernv: Report Psafe only if PMSR.psafe_mode_active bit is
+>     set
+>   cpufreq: powernv: Restore cpu frequency to policy->cur on unthrottling
+>
+>  arch/powerpc/include/asm/opal-api.h |   8 ++
+>  drivers/cpufreq/powernv-cpufreq.c   | 199 +++++++++++++++++++++++++++++++++---
+>  2 files changed, 192 insertions(+), 15 deletions(-)
 
-Yes the whole series has been reviewed.
-
-Regards
-Preeti U Murthy
-
-
-> 
-> 
-
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
