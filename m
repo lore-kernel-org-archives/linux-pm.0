@@ -1,55 +1,52 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [RFC PATCH] PM, freezer: Don't thaw when it's intended frozen
- processes
-Date: Fri, 8 May 2015 11:25:13 -0400
-Message-ID: <20150508152513.GB28439@htj.duckdns.org>
-References: <20150507064557.GA26928@july>
- <20150507154212.GA12245@htj.duckdns.org>
- <CAH9JG2UAVRgX0Mg0d7WgG0URpkgu4q_bbNMXyOOEh9WFPztppQ@mail.gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH RFC 1/5] ACPI / containers : add support for ACPI0010
+ processor container
+Date: Fri, 08 May 2015 16:32:33 +0100
+Message-ID: <554CD711.3090903@arm.com>
+References: <1430922690-6966-1-git-send-email-sudeep.holla@arm.com> <1430922690-6966-2-git-send-email-sudeep.holla@arm.com> <554C78C2.706@linaro.org> <2334052.J3vzukF2MM@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <CAH9JG2UAVRgX0Mg0d7WgG0URpkgu4q_bbNMXyOOEh9WFPztppQ@mail.gmail.com>
-Sender: owner-linux-mm@kvack.org
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>, "\\Rafael J. Wysocki\\" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:53340 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751677AbbEHPcg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 8 May 2015 11:32:36 -0400
+In-Reply-To: <2334052.J3vzukF2MM@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "hanjun.guo@linaro.org" <hanjun.guo@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "ahs3@redhat.com" <ahs3@redhat.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 
-Hello, Kyungmin.
 
-On Fri, May 08, 2015 at 09:04:26AM +0900, Kyungmin Park wrote:
-> > I need to think more about it but as an *optimization* we can add
-> > freezing() test before actually waking tasks up during resume, but can
-> > you please clarify what you're seeing?
-> 
-> The mobile application has life cycle and one of them is 'suspend'
-> state. it's different from 'pause' or 'background'.
-> if there are some application and enter go 'suspend' state. all
-> behaviors are stopped and can't do anything. right it's suspended. but
-> after system suspend & resume, these application is thawed and
-> running. even though system know it's suspended.
-> 
-> We made some test application, print out some message within infinite
-> loop. when it goes 'suspend' state. nothing is print out. but after
-> system suspend & resume, it prints out again. that's not desired
-> behavior. and want to address it.
-> 
-> frozen user processes should be remained as frozen while system
-> suspend & resume.
 
-Yes, they should and I'm not sure why what you're saying is happening
-because freezing() test done from the frozen tasks themselves should
-keep them in the freezer.  Which kernel version did you test?  Can you
-please verify it against a recent kernel?
+On 08/05/15 15:06, Rafael J. Wysocki wrote:
+> On Friday, May 08, 2015 04:50:10 PM Hanjun Guo wrote:
+>> Hi Sudeep,
+>>
+>> On 2015=E5=B9=B405=E6=9C=8806=E6=97=A5 22:31, Sudeep Holla wrote:
+>>> ACPI 6.0 adds support for optional processor container device which=
+ may
+>>> contain child objects that are either processor devices or other pr=
+ocessor
+>>> containers. This allows representing hierarchical processor topolog=
+ies.
+>>>
+>>> It is declared using the _HID of ACPI0010. It may also have _CID of
+>>> PNP0A05, which represents a generic container device.
+>>
+>> Container device helps support hotplug of nodes, CPUs, and memory,
+>> does this container device ACPI0010 used for the same purpose?
+>
+> That's correct and the patch isn't.
+>
 
-Thanks.
+Thanks Rafael for the clarification.
 
--- 
-tejun
+Just curious if the firmware adds _CID of PNP0A05 to support OS that
+don't parse processor containers, will the current code not create
+containers using _CID ?
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Regards,
+Sudeep
