@@ -1,129 +1,77 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: [[PATCH v2]] thermal: add available policies sysfs attribute
-Date: Fri, 8 May 2015 10:47:11 +0800
-Message-ID: <1431053231-3390-1-git-send-email-wni@nvidia.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 4/6] cpufreq: powernv: Call throttle_check() on receiving
+ OCC_THROTTLE
+Date: Fri, 08 May 2015 09:16:44 +0530
+Message-ID: <554C31A4.8050903@linux.vnet.ibm.com>
+References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <5548824C.2030602@linux.vnet.ibm.com> <554B584A.3030507@linux.vnet.ibm.com> <4161534.4Jyd5dl4um@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:6594 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751381AbbEHCq5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 22:46:57 -0400
+Received: from e17.ny.us.ibm.com ([129.33.205.207]:59064 "EHLO
+	e17.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995AbbEHDqw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 23:46:52 -0400
+Received: from /spool/local
+	by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Thu, 7 May 2015 23:46:51 -0400
+In-Reply-To: <4161534.4Jyd5dl4um@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, Wei Ni <wni@nvidia.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, viresh.kumar@linaro.org
 
-The Linux thermal framework support to change thermal governor
-policy in userspace, but it can't show what available policies
-supported.
+On 05/08/2015 02:29 AM, Rafael J. Wysocki wrote:
+> On Thursday, May 07, 2015 05:49:22 PM Preeti U Murthy wrote:
+>> On 05/05/2015 02:11 PM, Preeti U Murthy wrote:
+>>> On 05/05/2015 12:03 PM, Shilpasri G Bhat wrote:
+>>>> Hi Preeti,
+>>>>
+>>>> On 05/05/2015 09:30 AM, Preeti U Murthy wrote:
+>>>>> Hi Shilpa,
+>>>>>
+>>>>> On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
+>>>>>> Re-evaluate the chip's throttled state on recieving OCC_THROTTLE
+>>>>>> notification by executing *throttle_check() on any one of the cpu on
+>>>>>> the chip. This is a sanity check to verify if we were indeed
+>>>>>> throttled/unthrottled after receiving OCC_THROTTLE notification.
+>>>>>>
+>>>>>> We cannot call *throttle_check() directly from the notification
+>>>>>> handler because we could be handling chip1's notification in chip2. So
+>>>>>> initiate an smp_call to execute *throttle_check(). We are irq-disabled
+>>>>>> in the notification handler, so use a worker thread to smp_call
+>>>>>> throttle_check() on any of the cpu in the chipmask.
+>>>>>
+>>>>> I see that the first patch takes care of reporting *per-chip* throttling
+>>>>> for pmax capping condition. But where are we taking care of reporting
+>>>>> "pstate set to safe" and "freq control disabled" scenarios per-chip ?
+>>>>>
+>>>>
+>>>> IMO let us not have "psafe" and "freq control disabled" states managed per-chip.
+>>>> Because when the above two conditions occur it is likely to happen across all
+>>>> chips during an OCC reset cycle. So I am setting 'throttled' to false on
+>>>> OCC_ACTIVE and re-verifying if it actually is the case by invoking
+>>>> *throttle_check().
+>>>
+>>> Alright like I pointed in the previous reply, a comment to indicate that
+>>> psafe and freq control disabled conditions will fail when occ is
+>>> inactive and that all chips face the consequence of this will help.
+>>
+>> From your explanation on the thread of the first patch of this series,
+>> this will not be required.
+>>
+>> So,
+>> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> 
+> OK, so is the whole series reviewed now?
 
-This patch adds available_policies attribute to the thermal
-framework, it can list the thermal governors which can be
-used for a particular zone. This attribute is read only.
+Yes the whole series has been reviewed.
 
-Signed-off-by: Wei Ni <wni@nvidia.com>
----
-v2: This change had been submitted and discussed in
-http://marc.info/?l=linux-tegra&m=138961183931457&w=2
-https://www.marc.info/?l=linux-pm&m=138986468007449&w=1
-cherry-picked it,and updated to this v2 version.
+Regards
+Preeti U Murthy
 
- Documentation/thermal/sysfs-api.txt |  6 ++++++
- drivers/thermal/thermal_core.c      | 28 ++++++++++++++++++++++++++++
- 2 files changed, 34 insertions(+)
 
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index 7d44d7f1a71b..e7d03cfafc63 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -180,6 +180,7 @@ Thermal zone device sys I/F, created once it's registered:
-     |---temp:			Current temperature
-     |---mode:			Working mode of the thermal zone
-     |---policy:			Thermal governor used for this zone
-+    |---available_policies:	Available thermal governors for this zone
-     |---trip_point_[0-*]_temp:	Trip point temperature
-     |---trip_point_[0-*]_type:	Trip point type
-     |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
-@@ -254,6 +255,10 @@ policy
- 	One of the various thermal governors used for a particular zone.
- 	RW, Required
- 
-+available_policies
-+	Available thermal governors which can be used for a particular zone.
-+	RO, Required
-+
- trip_point_[0-*]_temp
- 	The temperature above which trip point will be fired.
- 	Unit: millidegree Celsius
-@@ -401,6 +406,7 @@ method, the sys I/F structure will be built like this:
-     |---temp:			37000
-     |---mode:			enabled
-     |---policy:			step_wise
-+    |---available_policies:	step_wise fair_share
-     |---trip_point_0_temp:	100000
-     |---trip_point_0_type:	critical
-     |---trip_point_1_temp:	80000
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 962de1847cc0..68a603a3d4ed 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -847,6 +847,27 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
- 	return sprintf(buf, "%s\n", tz->governor->name);
- }
- 
-+static ssize_t
-+available_policies_show(struct device *dev, struct device_attribute *devattr,
-+			char *buf)
-+{
-+	struct thermal_governor *pos;
-+	ssize_t count = 0;
-+	ssize_t size;
-+
-+	mutex_lock(&thermal_governor_lock);
-+
-+	list_for_each_entry(pos, &thermal_governor_list, governor_list) {
-+		size = PAGE_SIZE - count;
-+		count += scnprintf(buf + count, size, "%s ", pos->name);
-+	}
-+	count += scnprintf(buf + count, size, "\n");
-+
-+	mutex_unlock(&thermal_governor_lock);
-+
-+	return count;
-+}
-+
- #ifdef CONFIG_THERMAL_EMULATION
- static ssize_t
- emul_temp_store(struct device *dev, struct device_attribute *attr,
-@@ -1028,6 +1049,7 @@ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
- static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
- static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
- static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
-+static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
- 
- /* sys I/F for cooling device */
- #define to_cooling_device(_dev)	\
-@@ -1813,6 +1835,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	if (result)
- 		goto unregister;
- 
-+	/* Create available_policies attribute */
-+	result = device_create_file(&tz->device, &dev_attr_available_policies);
-+	if (result)
-+		goto unregister;
-+
- 	/* Update 'this' zone's governor information */
- 	mutex_lock(&thermal_governor_lock);
- 
-@@ -1913,6 +1940,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 	if (tz->ops->get_mode)
- 		device_remove_file(&tz->device, &dev_attr_mode);
- 	device_remove_file(&tz->device, &dev_attr_policy);
-+	device_remove_file(&tz->device, &dev_attr_available_policies);
- 	remove_trip_attrs(tz);
- 	thermal_set_governor(tz, NULL);
- 
--- 
-1.9.1
+> 
+> 
 
