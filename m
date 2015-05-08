@@ -1,58 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH RFC 1/5] ACPI / containers : add support for ACPI0010 processor container
-Date: Fri, 08 May 2015 22:33:08 +0200
-Message-ID: <4776276.Jd7Q2QdcgM@vostro.rjw.lan>
-References: <1430922690-6966-1-git-send-email-sudeep.holla@arm.com> <2334052.J3vzukF2MM@vostro.rjw.lan> <554CD711.3090903@arm.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH 1/2] arm: boot: dts: am4372: add operating points
+Date: Fri, 8 May 2015 15:09:23 -0500
+Message-ID: <554D17F3.7090008@ti.com>
+References: <1431115050-23693-1-git-send-email-balbi@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58555 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932079AbbEHUID convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 16:08:03 -0400
-In-Reply-To: <554CD711.3090903@arm.com>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:60450 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752999AbbEHUKC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 8 May 2015 16:10:02 -0400
+In-Reply-To: <1431115050-23693-1-git-send-email-balbi@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "hanjun.guo@linaro.org" <hanjun.guo@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "ahs3@redhat.com" <ahs3@redhat.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+To: Felipe Balbi <balbi@ti.com>, Tony Lindgren <tony@atomide.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 
-On Friday, May 08, 2015 04:32:33 PM Sudeep Holla wrote:
->=20
-> On 08/05/15 15:06, Rafael J. Wysocki wrote:
-> > On Friday, May 08, 2015 04:50:10 PM Hanjun Guo wrote:
-> >> Hi Sudeep,
-> >>
-> >> On 2015=E5=B9=B405=E6=9C=8806=E6=97=A5 22:31, Sudeep Holla wrote:
-> >>> ACPI 6.0 adds support for optional processor container device whi=
-ch may
-> >>> contain child objects that are either processor devices or other =
-processor
-> >>> containers. This allows representing hierarchical processor topol=
-ogies.
-> >>>
-> >>> It is declared using the _HID of ACPI0010. It may also have _CID =
-of
-> >>> PNP0A05, which represents a generic container device.
-> >>
-> >> Container device helps support hotplug of nodes, CPUs, and memory,
-> >> does this container device ACPI0010 used for the same purpose?
-> >
-> > That's correct and the patch isn't.
-> >
->=20
-> Thanks Rafael for the clarification.
->=20
-> Just curious if the firmware adds _CID of PNP0A05 to support OS that
-> don't parse processor containers, will the current code not create
-> containers using _CID ?
+On 05/08/2015 02:57 PM, Felipe Balbi wrote:
+> By adding operating points, cpufreq-dt has a
+> chance of running and doing something useful.
+> 
+> Signed-off-by: Felipe Balbi <balbi@ti.com>
+> ---
+>  arch/arm/boot/dts/am4372.dtsi | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/am4372.dtsi b/arch/arm/boot/dts/am4372.dtsi
+> index c80a3e233792..ea1db20f64fc 100644
+> --- a/arch/arm/boot/dts/am4372.dtsi
+> +++ b/arch/arm/boot/dts/am4372.dtsi
+> @@ -38,6 +38,15 @@
+>  			clocks = <&dpll_mpu_ck>;
+>  			clock-names = "cpu";
+>  
+> +			operating-points = <
+> +				/* kHz		uV */
+> +				1000000		1325000 /* OPP_NITRO */
+> +				 800000		1260000 /* OPP_TURBO */
+> +				 720000		1200000 /* OPP_120 */
+> +				 600000		1100000 /* OPP_100 */
+> +				 300000		 950000 /* OPP_50 */
+> +			>;
+> +
+>  			clock-latency = <300000>; /* From omap-cpufreq driver */
+>  		};
+>  	};
+> 
+which of these OPPs need AVS? which of these are dependent on Efuse bit
+dependent?
 
-Yes, it will, but you can prevent that from happening by adding a new
-scan handler just for ACPI0010 (that may just return 1 from its ->attac=
-h
-callback and do nothing else).
-
-
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+-- 
+Regards,
+Nishanth Menon
