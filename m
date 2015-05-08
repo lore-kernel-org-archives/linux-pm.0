@@ -1,70 +1,48 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH 2/2] x86: speed cpu_up by quirking cpu_init_udelay
-Date: Fri, 8 May 2015 10:32:51 +0200
-Message-ID: <20150508083250.GB4137@pd.tnic>
-References: <418898b5b9a6d76e7fbbd2af7cc988de1a5a287d.1431066425.git.len.brown@intel.com>
- <170f6f6e9ac4aa4d8ec1ed5000bee95463897337.1431066425.git.len.brown@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] PM / clock_ops: Fix clock error check in __pm_clk_add()
+Date: Fri,  8 May 2015 10:47:43 +0200
+Message-ID: <1431074863-19124-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.skyhub.de ([78.46.96.112]:44519 "EHLO mail.skyhub.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750755AbbEHIcx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 8 May 2015 04:32:53 -0400
-Content-Disposition: inline
-In-Reply-To: <170f6f6e9ac4aa4d8ec1ed5000bee95463897337.1431066425.git.len.brown@intel.com>
+Received: from andre.telenet-ops.be ([195.130.132.53]:49086 "EHLO
+	andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750905AbbEHIrq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 04:47:46 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Grygorii Strashko <Grygorii.Strashko@linaro.org>, Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-On Fri, May 08, 2015 at 02:37:55AM -0400, Len Brown wrote:
-> From: Len Brown <len.brown@intel.com>
-> 
-> Modern processor familes are on a white-list to remove
-> the costly cpu_init_udelay 10000.  Unknown processor families
-> get the traditional 10ms delay in cpu_up().
-> 
-> This seemed more efficient than forcing modern processors
-> to exhaustively search a black-list having all the old
-> processor families that should have a 10ms delay.
-> For not only are new processor familes infrequently added,
-> the white list also allows a delay other than 0, if needed.
-> 
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  arch/x86/kernel/smpboot.c | 37 +++++++++++++++++++++++++++++++++++--
->  1 file changed, 35 insertions(+), 2 deletions(-)
+In the final iteration of commit 245bd6f6af8a62a2 ("PM / clock_ops: Add
+pm_clk_add_clk()"), a refcount increment was added by Grygorii Strashko.
+However, the accompanying IS_ERR() check operates on the wrong clock
+pointer, which is always zero at this point, i.e. not an error.
+This may lead to a NULL pointer dereference later, when __clk_get()
+tries to dereference an error pointer.
 
-...
+Check the passed clock pointer instead to fix this.
 
-> +static void __init smp_quirk_init_udelay(void)
-> +{
-> +	const struct x86_cpu_id *id;
-> +	unsigned int new_udelay;
-> +
-> +	id = x86_match_cpu(init_udelay_ids);
-> +	if (id == NULL)
-> +		return;	/* if no match, keep default */
-> +
-> +	if (init_udelay != UDELAY_10MS_DEFAULT)
-> +		return;	/* if cmdline changed from default, leave it alone */
-> +
-> +	new_udelay = (unsigned long) id->driver_data;
-> +	pr_debug("cpu_init_udelay quirk to %d, was %d", new_udelay, init_udelay);
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Fixes: 245bd6f6af8a62a2 ("PM / clock_ops: Add pm_clk_add_clk()")
+---
+Note that there are no users of pm_clk_add_clk() in next-20150508, so
+for now no in-tree code is affected.
+---
+ drivers/base/power/clock_ops.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Can we make this printk(KERN_DEBUG please?
-
-I'd like to be able to slap "debug" on the command line and not
-recompile the kernel. And no, dyndbg="file smpboot.c +p" or whatever the
-syntax is, simply doesn't scale if I want to see all debug messages from
-early boot.
-
-Thanks.
-
+diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+index 7fdd0172605afe1b..c7b0fcebf168cabe 100644
+--- a/drivers/base/power/clock_ops.c
++++ b/drivers/base/power/clock_ops.c
+@@ -93,7 +93,7 @@ static int __pm_clk_add(struct device *dev, const char *con_id,
+ 			return -ENOMEM;
+ 		}
+ 	} else {
+-		if (IS_ERR(ce->clk) || !__clk_get(clk)) {
++		if (IS_ERR(clk) || !__clk_get(clk)) {
+ 			kfree(ce);
+ 			return -ENOENT;
+ 		}
 -- 
-Regards/Gruss,
-    Boris.
+1.9.1
 
-ECO tip #101: Trim your mails when you reply.
---
