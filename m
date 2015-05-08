@@ -1,42 +1,51 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
-Date: Fri, 8 May 2015 12:19:40 +0530
-Message-ID: <CAKohpo=Eq=Eno6PThDkNFm_tDKv47mTPWhjb_JHPs7+78x3Q-g@mail.gmail.com>
-References: <cover.1430394884.git.viresh.kumar@linaro.org>
-	<d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar@linaro.org>
-	<20150504121209.GM15510@sirena.org.uk>
-	<CAKohponRXiWbgT26=tO83jJgbteBf38ggE7mKvLCv+wFMW1cvA@mail.gmail.com>
-	<20150505105714.GA22845@sirena.org.uk>
-	<CAKohpo=09ZhXxh5Cm7Ww9Gy-AYRp9=j82tup6atVN+aOF8twdA@mail.gmail.com>
-	<20150505171252.GI22845@sirena.org.uk>
-	<CAKohpo=kJs076afzERPMqjELgwpN6nR2yoyEjW6XY7YSEbRuCA@mail.gmail.com>
-	<20150507055231.GB32399@codeaurora.org>
-	<CAKohpomYQw67KuX29PLawmd1dSXHx7pMt7+8BzmLPfHSqhMB2g@mail.gmail.com>
-	<20150507213015.GB2455@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 1/1] suspend: delete sys_sync()
+Date: Fri,  8 May 2015 03:08:43 -0400
+Message-ID: <b1587e8b2c664632ecd0d9ad1a3e56733da76490.1431068823.git.len.brown@intel.com>
+Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f175.google.com ([209.85.214.175]:33405 "EHLO
-	mail-ob0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752406AbbEHGtl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 02:49:41 -0400
-Received: by obblk2 with SMTP id lk2so49180708obb.0
-        for <linux-pm@vger.kernel.org>; Thu, 07 May 2015 23:49:40 -0700 (PDT)
-In-Reply-To: <20150507213015.GB2455@codeaurora.org>
+Received: from mail-vn0-f54.google.com ([209.85.216.54]:40447 "EHLO
+	mail-vn0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752353AbbEHHIx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 03:08:53 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Mark Brown <broonie@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Nishanth Menon <nm@ti.com>, Mike Turquette <mike.turquette@linaro.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, santosh
+To: rjw@rjwysocki.net, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-On 8 May 2015 at 03:00, Stephen Boyd <sboyd@codeaurora.org> wrote:
-> On 05/07, Viresh Kumar wrote:
+From: Len Brown <len.brown@intel.com>
 
->> - Now if uV is fixed, how is the target current controlled separately ?
->
-> uV is not fixed
+Remove sys_sync() from the kernel's suspend flow.
 
-I meant uV is fixed for this particular OPP, i.e. min/tar/max value.
+sys_sync() is extremely expensive in some configurations,
+and so the kernel should not force users to pay this cost
+on every suspend.
 
+The user-space utilities s2ram and s2disk choose to invoke sync() today.
+A user can invoke suspend directly via /sys/power/state to skip that cost.
 
-What about the other changes? Does these fix the use cases you shared
-earlier ? I will send a new updated version then..
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ kernel/power/suspend.c | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index b7d6b3a..6d237bb 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -473,12 +473,6 @@ static int enter_state(suspend_state_t state)
+ 	if (state == PM_SUSPEND_FREEZE)
+ 		freeze_begin();
+ 
+-	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+-	printk(KERN_INFO "PM: Syncing filesystems ... ");
+-	sys_sync();
+-	printk("done.\n");
+-	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+-
+ 	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
+ 	error = suspend_prepare(state);
+ 	if (error)
+-- 
+2.4.0.rc1
+
