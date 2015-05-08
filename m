@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 04/14] cpufreq: Don't traverse all active policies to find policy for a cpu
-Date: Fri,  8 May 2015 11:53:47 +0530
-Message-ID: <91b416f7a706ae0cbb5f90168988326793e05001.1431065963.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 07/14] cpufreq: Don't allow updating inactive-policies from sysfs
+Date: Fri,  8 May 2015 11:53:50 +0530
+Message-ID: <6ad4377106496d9d148005c902602c66eb307930.1431065963.git.viresh.kumar@linaro.org>
 References: <cover.1431065963.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:34176 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbbEHGYt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 02:24:49 -0400
-Received: by pdbqa5 with SMTP id qa5so66447614pdb.1
-        for <linux-pm@vger.kernel.org>; Thu, 07 May 2015 23:24:49 -0700 (PDT)
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:33058 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751319AbbEHGY6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 02:24:58 -0400
+Received: by pdbnk13 with SMTP id nk13so66954301pdb.0
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2015 23:24:58 -0700 (PDT)
 In-Reply-To: <cover.1431065963.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1431065963.git.viresh.kumar@linaro.org>
 References: <cover.1431065963.git.viresh.kumar@linaro.org>
@@ -18,55 +18,66 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Srivatsa Bhat <srivatsa@mit.edu>, Viresh Kumar <viresh.kumar@linaro.org>
 
-We reach here while adding policy for a CPU and enter into the 'if'
-block only if a policy already exists for the CPU.
+Later commits would change the way policies are managed today. Policies
+wouldn't be freed on cpu hotplug (currently they aren't freed only for
+suspend), and while the CPU is offline, the sysfs cpufreq files would
+still be present.
 
-As cpufreq_cpu_data is set for all policy->related_cpus now, when the
-policy is first added, we can use that to find the CPU's policy instead
-of traversing the list of all active policies.
+User may accidentally try to update the sysfs files in following
+directory: '/sys/devices/system/cpu/cpuX/cpufreq/'. And that would
+result in undefined behavior as policy wouldn't be active then.
 
-Acked-by: Saravana Kannan <skannan@codeaurora.org>
+Apart from updating the store() routine, we also update __cpufreq_get()
+which can call cpufreq_out_of_sync(). The later routine tries to update
+policy->cur and starts notifying kernel about it.
+
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 17 +++++++----------
- 1 file changed, 7 insertions(+), 10 deletions(-)
+ drivers/cpufreq/cpufreq.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b60311fe207f..a3eb76969969 100644
+index bd8a47b5054e..652a843a553b 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1212,7 +1212,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- {
- 	unsigned int j, cpu = dev->id;
- 	int ret = -ENOMEM;
--	struct cpufreq_policy *policy, *tpolicy;
-+	struct cpufreq_policy *policy;
- 	unsigned long flags;
- 	bool recover_policy = cpufreq_suspended;
+@@ -887,11 +887,22 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
  
-@@ -1225,16 +1225,13 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 		return 0;
+ 	down_write(&policy->rwsem);
  
- 	/* Check if this CPU already has a policy to manage it */
--	read_lock_irqsave(&cpufreq_driver_lock, flags);
--	for_each_active_policy(policy, tpolicy) {
--		if (cpumask_test_cpu(cpu, policy->related_cpus)) {
--			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
--			ret = cpufreq_add_policy_cpu(policy, cpu, dev);
--			up_read(&cpufreq_rwsem);
--			return ret;
--		}
-+	policy = per_cpu(cpufreq_cpu_data, cpu);
-+	if (policy && !policy_is_inactive(policy)) {
-+		WARN_ON(!cpumask_test_cpu(cpu, policy->related_cpus));
-+		ret = cpufreq_add_policy_cpu(policy, cpu, dev);
-+		up_read(&cpufreq_rwsem);
-+		return ret;
- 	}
--	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
++	/*
++	 * Policy might not be active currently, and so we shouldn't try
++	 * updating any values here. policy->cpus is cleared for inactive policy
++	 * and so cpufreq_cpu_get_raw() should fail.
++	 */
++	if (unlikely(policy_is_inactive(policy))) {
++		ret = -EPERM;
++		goto unlock_policy_rwsem;
++	}
++
+ 	if (fattr->store)
+ 		ret = fattr->store(policy, buf, count);
+ 	else
+ 		ret = -EIO;
  
- 	/*
- 	 * Restore the saved policy when doing light-weight init and fall back
++unlock_policy_rwsem:
+ 	up_write(&policy->rwsem);
+ 
+ 	up_read(&cpufreq_rwsem);
+@@ -1619,6 +1630,14 @@ static unsigned int __cpufreq_get(struct cpufreq_policy *policy)
+ 
+ 	ret_freq = cpufreq_driver->get(policy->cpu);
+ 
++	/*
++	 * Policy might not be active currently, and so we shouldn't try
++	 * updating any values here. policy->cpus is cleared for inactive policy
++	 * and so cpufreq_cpu_get_raw() should fail.
++	 */
++	if (unlikely(policy_is_inactive(policy)))
++		return ret_freq;
++
+ 	if (ret_freq && policy->cur &&
+ 		!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
+ 		/* verify no discrepancy between actual and
 -- 
 2.4.0
 
