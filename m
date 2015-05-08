@@ -1,68 +1,112 @@
 From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH] PM / sleep: Let devices force direct_complete
-Date: Fri, 08 May 2015 13:33:36 -0700
-Message-ID: <7hioc2hkrj.fsf@deeprootsystems.com>
-References: <1430474611-25560-1-git-send-email-tomeu.vizoso@collabora.com>
+Subject: Re: [PATCH v7 2/5] PM / Domains: core changes for multiple states
+Date: Fri, 08 May 2015 13:53:27 -0700
+Message-ID: <7ha8xehjug.fsf@deeprootsystems.com>
+References: <1430391335-7588-1-git-send-email-ahaslam@baylibre.com>
+	<1430391335-7588-3-git-send-email-ahaslam@baylibre.com>
+	<20150507155359.GA15980@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1430474611-25560-1-git-send-email-tomeu.vizoso@collabora.com>
-	(Tomeu Vizoso's message of "Fri, 1 May 2015 12:03:30 +0200")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:34483 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751097AbbEHUxd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 16:53:33 -0400
+Received: by pacyx8 with SMTP id yx8so58956223pac.1
+        for <linux-pm@vger.kernel.org>; Fri, 08 May 2015 13:53:30 -0700 (PDT)
+In-Reply-To: <20150507155359.GA15980@linaro.org> (Lina Iyer's message of "Thu,
+	7 May 2015 09:53:59 -0600")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: ahaslam@baylibre.com, ulf.hansson@linaro.org, k.kozlowski.k@gmail.com, geert@linux-m68k.org, rjw@rjwysocki.net, bcousson@baylibre.com, linux-pm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>
 
-Tomeu Vizoso <tomeu.vizoso@collabora.com> writes:
+Lina Iyer <lina.iyer@linaro.org> writes:
 
-> Introduce a new per-device flag power.force_direct_complete that will
-> instruct the PM core to let that device remain in runtime suspend when
-> the system goes into a sleep power state, regardless of the PM state of
-> any of its descendants.
+> On Thu, Apr 30 2015 at 04:57 -0600, ahaslam@baylibre.com wrote:
+>>From: Axel Haslam <ahaslam+renesas@baylibre.com>
+>>
+>>Add the core changes to be able to declare multiple states.
+>>When trying to set a power domain to off, genpd will be able
+>>to choose from an array of states declared by the platform.
+>>
+>>The power on and off latencies are now tied to a state.
+>>
+>>States should be declared in ascending order from shallowest
+>>to deepest, deepest meaning the state which takes longer to
+>>enter and exit.
+>>
+>>the power_off and power_on function can use the 'state_idx'
+>>field of the generic_pm_domain structure, to distinguish between
+>>the different states and act accordingly.
+>>
+>> - if the genpd is initially off, the user should set the state_idx
+>>   field when registering the genpd.
+>>
+>> - if no states are passed to pm_genpd_init, a single OFF
+>>   state with no latency is assumed.
+>>
+>>Example:
+>>
+>>static int pd1_power_on(struct generic_pm_domain *domain)
+>>{
+>>	/* domain->state_idx = state the domain is coming from */
+>>}
+>>
+>>static int pd1_power_off(struct generic_pm_domain *domain)
+>>{
+>>	/* domain->state_idx = desired powered off state */
+>>}
+>>
+>>const struct genpd_power_state pd_states[] = {
+>>	{
+>>		.name = "RET",
+>>		.power_on_latency_ns = ON_LATENCY_FAST,
+>>		.power_off_latency_ns = OFF_LATENCY_FAST,
+>>	},
+>>	{
+>>		.name = "DEEP_RET",
+>>		.power_on_latency_ns = ON_LATENCY_MED,
+>>		.power_off_latency_ns = OFF_LATENCY_MED,
+>>	},
+>>	{
+>>		.name = "OFF",
+>>		.power_on_latency_ns = ON_LATENCY_SLOW,
+>>		.power_off_latency_ns = OFF_LATENCY_SLOW,
+>>	}
+>>};
+>>
 >
-> This is needed because otherwise it would be needed to get dozens of
-> drivers to implement the prepare() callback and be runtime PM active
-> even if they don't have a 1-to-1 relationship with a piece of HW.
+> I am trying to use your patches in fashioning a genpd for the cpu
+> domain.
 >
-> This only applies to devices that aren't wakeup-capable, as those would
-> need to setup their IRQs as wakeup-capable in their prepare() callbacks.
+> The cpus are part of a power domain that can be powered off when the
+> cpus are powered off as part of the cpuidle. One of the biggest power
+> savings comes from powering off the domain completely. However, powering
+> off the domain involves flushing of caches (possibly) and turning off
+> some regulators and peripheral hardware. The power benefit is only
+> realized when the domain remains powered off for a certain period of
+> time, otherwise the overhead of powering on/off would add up to the
+> ineffeciency in the system.
 >
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> ---
+> So a governor that determines the idle state of the domain has two
+> things that needs to match, the time available to power off the domain
+> (which we can get from timer wheel) and the other residency as dictated
+> by the platform.
 >
-> Hi,
->
-> I'm sending this as a standalone patch as suggested by Alan.
->
-> Thanks,
->
-> Tomeu
->
-> ---
->  Documentation/power/runtime_pm.txt | 10 ++++++++++
->  drivers/base/power/main.c          | 14 ++++++++++----
->  include/linux/pm.h                 |  1 +
->  3 files changed, 21 insertions(+), 4 deletions(-)
->
-> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-> index 44fe1d2..3b0c68d 100644
-> --- a/Documentation/power/runtime_pm.txt
-> +++ b/Documentation/power/runtime_pm.txt
-> @@ -665,6 +665,16 @@ as appropriate.  This only applies to system suspend transitions that are not
->  related to hibernation (see Documentation/power/devices.txt for more
->  information).
->  
-> +For devices that know that can remain runtime suspended when the system
+> I was wondering if we could match the idle state definition of the
+> domain with that of the cpu, which has a precedence in the kernel. The
+> idle state of the cpu [1] is a superset of the idle state definition you
+> have above.  That way a shim layer could pick up domain idle states from
+> DT and pass the states to pm_genpd_init(). The use of these values could
+> depend on the genpd governor.
 
-s/that know that/that know they/ ?
+IMO, we need to keep the domain latency descriptions separate from the
+the devices within those domains, which could be CPUs or any other form
+of device.
 
-> +transitions to a sleep state regardless of the PM state of their descendants,
-> +the flag power.force_direct_complete can be set on their device structures.
-> +This can be useful when a real device has several virtual devices as
-> +descendants and it would be very cumbersome to make sure that they return a
-> +positive value in their .prepare() callback and have runtime PM enabled. Usage
-> +of power.force_direct_complete is only allowed to devices that aren't
-> +wakeup-capable, as they would need to set their IRQs as wakeups in their
-> +.prepare() callbacks before the system transitions to a sleep state.
+It should be the job of the governor then to look at the domain latency
+along with latencies of the other devices in the domain to make its
+decision.
 
 Kevin
