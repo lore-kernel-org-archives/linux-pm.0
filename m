@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 10/14] cpufreq: Remove cpufreq_update_policy()
-Date: Fri,  8 May 2015 11:53:53 +0530
-Message-ID: <ad619038127263b74307103082f8821084fe44d0.1431065963.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 08/14] cpufreq: Track cpu managing sysfs kobjects separately
+Date: Fri,  8 May 2015 11:53:51 +0530
+Message-ID: <d13639d0e30e854ef7e7e1f15675cb89b8eebdc0.1431065963.git.viresh.kumar@linaro.org>
 References: <cover.1431065963.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f175.google.com ([209.85.192.175]:33886 "EHLO
-	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbbEHGZM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 02:25:12 -0400
-Received: by pdbqa5 with SMTP id qa5so66461483pdb.1
-        for <linux-pm@vger.kernel.org>; Thu, 07 May 2015 23:25:12 -0700 (PDT)
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:35445 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751384AbbEHGZC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 02:25:02 -0400
+Received: by pdbqd1 with SMTP id qd1so66779128pdb.2
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2015 23:25:02 -0700 (PDT)
 In-Reply-To: <cover.1431065963.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1431065963.git.viresh.kumar@linaro.org>
 References: <cover.1431065963.git.viresh.kumar@linaro.org>
@@ -18,81 +18,82 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Srivatsa Bhat <srivatsa@mit.edu>, Viresh Kumar <viresh.kumar@linaro.org>
 
-cpufreq_update_policy() was kept as a separate routine earlier as it was
-handling migration of sysfs directories, which isn't done anymore. It is
-only updating policy->cpu now and can be removed.
+From: Saravana Kannan <skannan@codeaurora.org>
 
+In order to prepare for the next few commits, that will stop migrating
+sysfs files on cpu hotplug, this patch starts managing sysfs-cpu
+separately.
+
+The behavior is still the same as we are still migrating sysfs files on
+hotplug, later commits would change that.
+
+Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 32 ++++++++++----------------------
- 1 file changed, 10 insertions(+), 22 deletions(-)
+ drivers/cpufreq/cpufreq.c | 11 +++++++----
+ include/linux/cpufreq.h   |  4 +++-
+ 2 files changed, 10 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 67f0ef711c6d..9dfdd79c9a60 100644
+index 652a843a553b..75647c13a12b 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1117,6 +1117,10 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
- 	if (likely(policy)) {
- 		/* Policy should be inactive here */
- 		WARN_ON(!policy_is_inactive(policy));
-+
-+		down_write(&policy->rwsem);
-+		policy->cpu = cpu;
-+		up_write(&policy->rwsem);
- 	}
+@@ -982,7 +982,7 @@ static int cpufreq_add_dev_symlink(struct cpufreq_policy *policy)
+ 	for_each_cpu(j, policy->cpus) {
+ 		struct device *cpu_dev;
  
- 	return policy;
-@@ -1201,16 +1205,6 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy)
- 	kfree(policy);
- }
+-		if (j == policy->cpu)
++		if (j == policy->kobj_cpu)
+ 			continue;
  
--static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
--{
--	if (WARN_ON(cpu == policy->cpu))
--		return;
--
--	down_write(&policy->rwsem);
--	policy->cpu = cpu;
--	up_write(&policy->rwsem);
--}
--
- /**
-  * cpufreq_add_dev - add a CPU device
-  *
-@@ -1257,15 +1251,6 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 			goto nomem_out;
- 	}
+ 		pr_debug("Adding link for CPU: %u\n", j);
+@@ -1201,6 +1201,7 @@ static int update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu,
  
--	/*
--	 * In the resume path, since we restore a saved policy, the assignment
--	 * to policy->cpu is like an update of the existing policy, rather than
--	 * the creation of a brand new one. So we need to perform this update
--	 * by invoking update_policy_cpu().
--	 */
--	if (recover_policy && cpu != policy->cpu)
--		update_policy_cpu(policy, cpu);
--
- 	cpumask_copy(policy->cpus, cpumask_of(cpu));
- 
- 	/* call driver. From then on the cpufreq must be able
-@@ -1446,11 +1431,14 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
- 	if (cpu != policy->cpu)
- 		return 0;
- 
--	if (cpus > 1)
-+	if (cpus > 1) {
- 		/* Nominate new CPU */
--		update_policy_cpu(policy, cpumask_any_but(policy->cpus, cpu));
--	else if (cpufreq_driver->stop_cpu)
-+		down_write(&policy->rwsem);
-+		policy->cpu = cpumask_any_but(policy->cpus, cpu);
-+		up_write(&policy->rwsem);
-+	} else if (cpufreq_driver->stop_cpu) {
- 		cpufreq_driver->stop_cpu(policy);
-+	}
+ 	down_write(&policy->rwsem);
+ 	policy->cpu = cpu;
++	policy->kobj_cpu = cpu;
+ 	up_write(&policy->rwsem);
  
  	return 0;
- }
+@@ -1258,10 +1259,12 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	 * the creation of a brand new one. So we need to perform this update
+ 	 * by invoking update_policy_cpu().
+ 	 */
+-	if (recover_policy && cpu != policy->cpu)
++	if (recover_policy && cpu != policy->cpu) {
+ 		WARN_ON(update_policy_cpu(policy, cpu, dev));
+-	else
++	} else {
+ 		policy->cpu = cpu;
++		policy->kobj_cpu = cpu;
++	}
+ 
+ 	cpumask_copy(policy->cpus, cpumask_of(cpu));
+ 
+@@ -1440,7 +1443,7 @@ static int __cpufreq_remove_dev_prepare(struct device *dev,
+ 			CPUFREQ_NAME_LEN);
+ 	up_write(&policy->rwsem);
+ 
+-	if (cpu != policy->cpu) {
++	if (cpu != policy->kobj_cpu) {
+ 		sysfs_remove_link(&dev->kobj, "cpufreq");
+ 	} else if (cpus > 1) {
+ 		/* Nominate new CPU */
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 48e37c07eb84..29ad97c34fd5 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -65,7 +65,9 @@ struct cpufreq_policy {
+ 
+ 	unsigned int		shared_type; /* ACPI: ANY or ALL affected CPUs
+ 						should set cpufreq */
+-	unsigned int		cpu;    /* cpu nr of CPU managing this policy */
++	unsigned int		cpu;    /* cpu managing this policy, must be online */
++	unsigned int		kobj_cpu; /* cpu managing sysfs files, can be offline */
++
+ 	struct clk		*clk;
+ 	struct cpufreq_cpuinfo	cpuinfo;/* see above */
+ 
 -- 
 2.4.0
 
