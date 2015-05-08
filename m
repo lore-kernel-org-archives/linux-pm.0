@@ -1,41 +1,44 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 4/6] ARM: dts: Exynos4210: add CPU OPP and regulator
- supply property
-Date: Fri, 8 May 2015 09:18:20 +0900
-Message-ID: <CAJKOXPfR5JS546YS3M-8orxO7+SxnzE06h2cyesExyt8Y9fVKw@mail.gmail.com>
-References: <'@samsung.com>
-	<1428079429-4252-1-git-send-email-b.zolnierkie@samsung.com>
-	<1428079429-4252-5-git-send-email-b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v7 1/5] PM / Domains: prepare for multiple states
+Date: Fri, 8 May 2015 09:36:43 +0900
+Message-ID: <CAJKOXPdi3qjgEERM8PmN6Rb-9xGa6V5RW_3zKpnnCECzwmmUbQ@mail.gmail.com>
+References: <1430391335-7588-1-git-send-email-ahaslam@baylibre.com>
+	<1430391335-7588-2-git-send-email-ahaslam@baylibre.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1428079429-4252-5-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>, Sachin Kamat <sachin.kamat@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vn0-f52.google.com ([209.85.216.52]:37982 "EHLO
+	mail-vn0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751122AbbEHAgo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 20:36:44 -0400
+Received: by vnbf1 with SMTP id f1so4393586vnb.5
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2015 17:36:43 -0700 (PDT)
+In-Reply-To: <1430391335-7588-2-git-send-email-ahaslam@baylibre.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: ahaslam@baylibre.com
+Cc: ulf.hansson@linaro.org, khilman@linaro.org, geert@linux-m68k.org, rjw@rjwysocki.net, bcousson@baylibre.com, linux-pm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>
 
-2015-04-04 1:43 GMT+09:00 Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>:
-> From: Thomas Abraham <thomas.ab@samsung.com>
+2015-04-30 19:55 GMT+09:00  <ahaslam@baylibre.com>:
+> From: Axel Haslam <ahaslam+renesas@baylibre.com>
 >
-> For Exynos4210 platforms, add CPU operating points and CPU
-> regulator supply properties for migrating from Exynos specific
-> cpufreq driver to using generic cpufreq driver.
+> prepare generic power domain init function parameters
+> to accept a pointer to the states structure that describes
+> the possible states that a power domain can enter.
 >
-> Changes by Bartlomiej:
-> - removed Exynos5250 and Exynos5420 support for now
+> There is no functional change, as support for multiple
+> domains will be added in subsequent patches.
 >
-> Cc: Kukjin Kim <kgene.kim@samsung.com>
-> Cc: Doug Anderson <dianders@chromium.org>
-> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-> Cc: Andreas Faerber <afaerber@suse.de>
-> Cc: Sachin Kamat <sachin.kamat@linaro.org>
-> Cc: Andreas Farber <afaerber@suse.de>
-> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
+> ---
+>  arch/arm/mach-exynos/pm_domains.c   |  2 +-
 
+For Exynos:
 Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+
+However could you fix up your GIT or email app? It is wrapping lines
+in commit message around ~55 character making the message unreadable.
+Just use default value of 75 characters (gui.commitmsgwidth?).
 
 Best regards,
 Krzysztof
