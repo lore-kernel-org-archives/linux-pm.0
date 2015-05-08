@@ -1,100 +1,56 @@
-From: Joe Konno <joe.konno@linux.intel.com>
-Subject: Re: [PATCH] intel_pstate: set BYT MSR with wrmsrl_on_cpu()
-Date: Thu, 7 May 2015 16:22:32 -0700
-Message-ID: <20150507232232.GA4313@jbkonno-beef.jf.intel.com>
-References: <1431017979-28349-1-git-send-email-joe.konno@linux.intel.com>
- <2313402.8O0OJYkUeN@vostro.rjw.lan>
+From: Kyungmin Park <kmpark@infradead.org>
+Subject: Re: [RFC PATCH] PM, freezer: Don't thaw when it's intended frozen processes
+Date: Fri, 8 May 2015 09:04:26 +0900
+Message-ID: <CAH9JG2UAVRgX0Mg0d7WgG0URpkgu4q_bbNMXyOOEh9WFPztppQ@mail.gmail.com>
+References: <20150507064557.GA26928@july>
+	<20150507154212.GA12245@htj.duckdns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:24580 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751072AbbEGXWc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 7 May 2015 19:22:32 -0400
-Content-Disposition: inline
-In-Reply-To: <2313402.8O0OJYkUeN@vostro.rjw.lan>
+Received: from mail-qc0-f178.google.com ([209.85.216.178]:34699 "EHLO
+	mail-qc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995AbbEHAE1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2015 20:04:27 -0400
+In-Reply-To: <20150507154212.GA12245@htj.duckdns.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, kristen@linux.intel.com
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>, "\\Rafael J. Wysocki\\" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thu, May 07, 2015 at 10:58:11PM +0200, Rafael J. Wysocki wrote:
-> On Thursday, May 07, 2015 09:59:39 AM Joe Konno wrote:
-> > From: Joe Konno <joe.konno@intel.com>
-> > 
-> > In instances where the default cpufreq governor is Performance, reading
-> 
-> I'm not really sure what this is about.  You're talking about cpufreq governors
-> and this is an intel_pstate patch.  What gives?
+On Fri, May 8, 2015 at 12:42 AM, Tejun Heo <tj@kernel.org> wrote:
+> Hello,
+>
+> On Thu, May 07, 2015 at 03:45:57PM +0900, Kyungmin Park wrote:
+>> From: Kyungmin Park <kyungmin.park@samsung.com>
+>>
+>> Some platform uses freezer cgroup for speicial purpose to schedule out some applications. but after suspend & resume, these processes are thawed and running.
+>
+> They shouldn't be able to leave the freezer tho.  Resuming does wake
+> up all tasks but freezing() test would still evaulate to true for the
+> ones frozen by cgroup freezer and they will stay inside the freezer.
+>
+>> but it's inteneded and don't need to thaw it.
+>>
+>> To avoid it, does it possible to modify resume code and don't thaw it when resume? does it resonable?
+>
+> I need to think more about it but as an *optimization* we can add
+> freezing() test before actually waking tasks up during resume, but can
+> you please clarify what you're seeing?
 
-I'll reshuffle the paragraph to bring detail to the fix first, and the
-"when/why" second.
+The mobile application has life cycle and one of them is 'suspend'
+state. it's different from 'pause' or 'background'.
+if there are some application and enter go 'suspend' state. all
+behaviors are stopped and can't do anything. right it's suspended. but
+after system suspend & resume, these application is thawed and
+running. even though system know it's suspended.
 
-In debug I have only seen the bug during boot when cpufreq calls
-intel_pstate's init for each logical core-- often from one, sometimes
-two logical cores.
+We made some test application, print out some message within infinite
+loop. when it goes 'suspend' state. nothing is print out. but after
+system suspend & resume, it prints out again. that's not desired
+behavior. and want to address it.
 
-The bug may occur after init as well, but not enough data to conclude
-one way or the other. I personally have not seen it happen after init in
-my local testing.
+frozen user processes should be remained as frozen while system
+suspend & resume.
 
-> 
-> > from MSR 0x199 on an applicable multi-core Atom system saw boot-to-boot
-> > variability in the P-State value set to each logical core.  Sometimes
-> > only one logical core would be set properly, other times two or three.
-> > There was an assumption in the code that only a thread on the intended
-> > logical core would be calling the wrmsrl() function. That was disproven
-> > during debug, as cpufreq, at init, was not always calling from the same
-> > as the logical core it targeted. Thus, use wrmsrl_on_cpu() instead, as
-> > done in the core_set_pstate() function.
-> > 
-> > For: LCK-1822
-> 
-> This tag is meaningless upstream.
-
-Mimicked another subsystem's practice. I have no problem removing it.
-
-> 
-> > Fixes: 007bea098b86 ("intel_pstate: Add setting voltage value for
-> >        baytrail P states.")
-> 
-> So, you're fixing a function introduced by the above commit, right?
-
-Correct. That commit introduced the byt_set_pstate() function with the
-wrmsrl() call.
-
-> 
-> > Signed-off-by: Joe Konno <joe.konno@intel.com>
-> > ---
-> >  drivers/cpufreq/intel_pstate.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> > index 6414661ac1c4..c45d274a75c8 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -535,7 +535,7 @@ static void byt_set_pstate(struct cpudata *cpudata, int pstate)
-> >  
-> >  	val |= vid;
-> >  
-> > -	wrmsrl(MSR_IA32_PERF_CTL, val);
-> > +	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
-> 
-> So the bug is that this may run on a CPU which is not cpudata->cpu in which
-> case the write will not happen where it should.  Is that correct?
-
-Yes-- I believe my first inline comment spoke to this.
-
-> 
-> >  }
-> >  
-> >  #define BYT_BCLK_FREQS 5
-> > 
-> 
-> -- 
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thank you,
+Kyungmin Park
