@@ -1,42 +1,44 @@
-From: =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>
-Subject: Re: [PATCH v4] power_supply: Add support for Richtek rt9455 battery charger
-Date: Fri, 8 May 2015 21:09:27 +0900
-Message-ID: <CAJKOXPdvOU3RtWaodXqJ3-6exZryyUiGZbdiKfpxd_JvDaih9g@mail.gmail.com>
-References: <1431086300-5289-1-git-send-email-anda-maria.nicolae@intel.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH V3] cpuidle: Handle tick_broadcast_enter() failure gracefully
+Date: Fri, 08 May 2015 13:43:38 +0100
+Message-ID: <554CAF7A.6060609@arm.com>
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vn0-f43.google.com ([209.85.216.43]:38205 "EHLO
-	mail-vn0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751303AbbEHMJ3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 08:09:29 -0400
-In-Reply-To: <1431086300-5289-1-git-send-email-anda-maria.nicolae@intel.com>
+Received: from foss.arm.com ([217.140.101.70]:52887 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751490AbbEHMnm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 8 May 2015 08:43:42 -0400
+In-Reply-To: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
-Cc: sre@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: "peterz@infradead.org" <peterz@infradead.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, "rlippert@google.com" <rlippert@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linus.walleij@linaro.org" <linus.walleij@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "mingo@redhat.com" <mingo@redhat.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 
-2015-05-08 20:58 GMT+09:00 Anda-Maria Nicolae <anda-maria.nicolae@intel.com>:
-> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-> index 4091fb0..b2b230c 100644
-> --- a/drivers/power/Kconfig
-> +++ b/drivers/power/Kconfig
-> @@ -439,6 +439,13 @@ config BATTERY_RT5033
->           The fuelgauge calculates and determines the battery state of charge
->           according to battery open circuit voltage.
+
+
+On 08/05/15 08:35, Preeti U Murthy wrote:
+> When a CPU has to enter an idle state where tick stops, it makes a call
+> to tick_broadcast_enter(). The call will fail if this CPU is the
+> broadcast CPU. Today, under such a circumstance, the arch cpuidle code
+> handles this CPU.  This is not convincing because not only do we not
+> know what the arch cpuidle code does, but we also do not account for the
+> idle state residency time and usage of such a CPU.
 >
-> +config CHARGER_RT9455
-> +       tristate "Richtek RT9455 battery charger driver"
-> +       depends on I2C && GPIOLIB
-> +       depends on REGMAP_I2C
+> This scenario can be handled better by simply choosing an idle state
+> where in ticks do not stop. To accommodate this change move the setting
+> of runqueue idle state from the core to the cpuidle driver, else the
+> rq->idle_state will be set wrong.
+>
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-Like I said previously, I still think you need to select it, not
-depend on it. This is not a user-selectable option, so depending on it
-may hide your driver. If you are unsure in such case you can always:
-$ git grep REGMAP_I2C
+I gave it a spin on ARM64 Juno platform with one of the CPU in broadcast
+mode and Vexpress TC2 with broadcast timer. I found no issues in both
+the cases. So, you can add:
 
-Rest looks fine to me, so with the change above (s/depends on/select/):
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+Tested-by: Sudeep Holla <sudeep.holla@arm.com>
 
-Best regards,
-Krzysztof
+Regards,
+Sudeep
