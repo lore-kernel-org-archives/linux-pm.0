@@ -1,60 +1,114 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter() failures
-Date: Sun, 10 May 2015 01:15:50 +0200
-Message-ID: <8965830.CMQzZzsqm0@vostro.rjw.lan>
-References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com> <10239011.l6QLHlKIVm@vostro.rjw.lan> <3161640.llJtBoKCBr@vostro.rjw.lan>
+Subject: [PATCH 1/3] sched / idle: Call idle_set_state() from cpuidle_enter_state()
+Date: Sun, 10 May 2015 01:18:03 +0200
+Message-ID: <2077088.K8HIhfzNYK@vostro.rjw.lan>
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com> <3161640.llJtBoKCBr@vostro.rjw.lan> <8965830.CMQzZzsqm0@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3161640.llJtBoKCBr@vostro.rjw.lan>
+In-Reply-To: <8965830.CMQzZzsqm0@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, peterz@infradead.org
 Cc: tglx@linutronix.de, rafael.j.wysocki@intel.com, daniel.lezcano@linaro.org, rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, May 09, 2015 10:33:05 PM Rafael J. Wysocki wrote:
-> On Saturday, May 09, 2015 10:11:41 PM Rafael J. Wysocki wrote:
-> > On Saturday, May 09, 2015 11:19:16 AM Preeti U Murthy wrote:
-> > > Hi Rafael,
-> > > 
-> > > On 05/08/2015 07:48 PM, Rafael J. Wysocki wrote:
-> > 
-> > [cut]
-> > 
-> > > >>  
-> > > >> +	/* Take note of the planned idle state. */
-> > > >> +	idle_set_state(smp_processor_id(), target_state);
-> > > > 
-> > > > And I wouldn't do this either.
-> > > > 
-> > > > The behavior here is pretty much as though the driver demoted the state chosen
-> > > > by the governor and we don't call idle_set_state() again in those cases.
-> > > 
-> > > Why is this wrong?
-> > 
-> > It is not "wrong", but incomplete, because demotions done by the cpuidle driver
-> > should also be taken into account in the same way.
-> > 
-> > But I'm seeing that the recent patch of mine that made cpuidle_enter_state()
-> > call default_idle_call() was a mistake, because it might confuse find_idlest_cpu()
-> > significantly as to what state the CPU is in.  I'll drop that one for now.
-> 
-> OK, done.
-> 
-> So after I've dropped it I think we need to do three things:
-> (1) Move the idle_set_state() calls to cpuidle_enter_state().
-> (2) Make cpuidle_enter_state() call default_idle_call() again, but this time
->     do that *before* it has called idle_set_state() for target_state.
-> (3) Introduce demotion as per my last patch.
-> 
-> Let me cut patches for that.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Done as per the above and the patches follow in replies to this messge.
+Introduce a wrapper function around idle_set_state() called
+sched_idle_set_state() that will pass this_rq() to it as the
+first argument and make cpuidle_enter_state() call the new
+function before and after entering the target state.
 
-All on top of the current linux-next branch of the linux-pm.git tree.
+At the same time, remove direct invocations of idle_set_state()
+from call_cpuidle().
 
+This will allow the invocation of default_idle_call() to be
+moved from call_cpuidle() to cpuidle_enter_state() safely
+and call_cpuidle() to be simplified a bit as a result.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpuidle/cpuidle.c |    6 ++++++
+ include/linux/cpuidle.h   |    3 +++
+ kernel/sched/idle.c       |   15 +++++++++------
+ 3 files changed, 18 insertions(+), 6 deletions(-)
+
+Index: linux-pm/kernel/sched/idle.c
+===================================================================
+--- linux-pm.orig/kernel/sched/idle.c
++++ linux-pm/kernel/sched/idle.c
+@@ -15,6 +15,15 @@
+ 
+ #include "sched.h"
+ 
++/**
++ * sched_idle_set_state - Record idle state for the current CPU.
++ * @idle_state: State to record.
++ */
++void sched_idle_set_state(struct cpuidle_state *idle_state)
++{
++	idle_set_state(this_rq(), idle_state);
++}
++
+ static int __read_mostly cpu_idle_force_poll;
+ 
+ void cpu_idle_poll_ctrl(bool enable)
+@@ -100,9 +109,6 @@ static int call_cpuidle(struct cpuidle_d
+ 		return -EBUSY;
+ 	}
+ 
+-	/* Take note of the planned idle state. */
+-	idle_set_state(this_rq(), &drv->states[next_state]);
+-
+ 	/*
+ 	 * Enter the idle state previously returned by the governor decision.
+ 	 * This function will block until an interrupt occurs and will take
+@@ -110,9 +116,6 @@ static int call_cpuidle(struct cpuidle_d
+ 	 */
+ 	entered_state = cpuidle_enter(drv, dev, next_state);
+ 
+-	/* The cpu is no longer idle or about to enter idle. */
+-	idle_set_state(this_rq(), NULL);
+-
+ 	if (entered_state == -EBUSY)
+ 		default_idle_call();
+ 
+Index: linux-pm/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/cpuidle.c
++++ linux-pm/drivers/cpuidle/cpuidle.c
+@@ -170,6 +170,9 @@ int cpuidle_enter_state(struct cpuidle_d
+ 	if (broadcast && tick_broadcast_enter())
+ 		return -EBUSY;
+ 
++	/* Take note of the planned idle state. */
++	sched_idle_set_state(target_state);
++
+ 	trace_cpu_idle_rcuidle(index, dev->cpu);
+ 	time_start = ktime_get();
+ 
+@@ -178,6 +181,9 @@ int cpuidle_enter_state(struct cpuidle_d
+ 	time_end = ktime_get();
+ 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+ 
++	/* The cpu is no longer idle or about to enter idle. */
++	sched_idle_set_state(NULL);
++
+ 	if (broadcast) {
+ 		if (WARN_ON_ONCE(!irqs_disabled()))
+ 			local_irq_disable();
+Index: linux-pm/include/linux/cpuidle.h
+===================================================================
+--- linux-pm.orig/include/linux/cpuidle.h
++++ linux-pm/include/linux/cpuidle.h
+@@ -200,6 +200,9 @@ static inline struct cpuidle_driver *cpu
+ 	struct cpuidle_device *dev) {return NULL; }
+ #endif
+ 
++/* kernel/sched/idle.c */
++extern void sched_idle_set_state(struct cpuidle_state *idle_state);
++
+ #ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
+ void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, atomic_t *a);
+ #else
