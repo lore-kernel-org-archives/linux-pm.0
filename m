@@ -1,58 +1,74 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Sat, 9 May 2015 17:25:18 -0300
-Message-ID: <20150509202518.GB20282@khazad-dum.debian.net>
-References: <4290667.ZqInAykFGS@vostro.rjw.lan>
- <Pine.LNX.4.44L0.1505091556001.5397-100000@netrider.rowland.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM / tick: Add tracepoints for suspend-to-idle diagnostics
+Date: Sun, 10 May 2015 01:09:28 +0200
+Message-ID: <17474563.tpu6u1dKOa@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from out4-smtp.messagingengine.com ([66.111.4.28]:33035 "EHLO
-	out4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750951AbbEIUZW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 May 2015 16:25:22 -0400
-Received: from compute2.internal (compute2.nyi.internal [10.202.2.42])
-	by mailout.nyi.internal (Postfix) with ESMTP id A11F920AAD
-	for <linux-pm@vger.kernel.org>; Sat,  9 May 2015 16:25:21 -0400 (EDT)
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1505091556001.5397-100000@netrider.rowland.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58329 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750951AbbEIWoX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 May 2015 18:44:23 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linuxtronix.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Sat, 09 May 2015, Alan Stern wrote:
-> On Fri, 8 May 2015, Rafael J. Wysocki wrote:
-> > My current view on that is that whether or not to do a sync() before suspending
-> > ultimately is a policy decision and should belong to user space as such (modulo
-> > the autosleep situation when user space may not know when the suspend is going
-> > to happen).
-> > 
-> > Moreover, user space is free to do as many sync()s before suspending as it
-> > wants to and the question here is whether or not the *kernel* should sync()
-> > in the suspend code path.
-> > 
-> > Since we pretty much can demonstrate that having just one sync() in there is
-> > not sufficient in general, should we put two of them in there?  Or just
-> > remove the existing one and leave it to user space entirely?
-> 
-> I don't know about the advantages of one sync over two.  But how about
-> adding a "syncs_before_suspend" (or just "syncs") sysfs attribute that
-> takes a small numeric value?  The default can be 0, and the user could
-> set it to 1 or 2 (or higher).
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-IMO it would be much safer to both have that knob, and to set it to keep the
-current behavior as the default.  Userspace will adapt and change that knob
-to whatever is sufficient based on what it does before signaling the kernel
-to suspend.
+Add suspend/resume tracepoints to tick_freeze() and tick_unfreeze()
+to catch when timekeeping is suspended and resumed during suspend-to-idle
+so as to be able to check whether or not we enter the "frozen" state
+and to measure the time spent in it.
 
-A regression in sync-before-suspend is sure to cause data loss episodes,
-after all.  And, as far as bikeshedding goes, IMHO syncs_before_suspend is
-self-explanatory, which would be a very good reason to use it instead of the
-shorter requires-you-to-know-what-it-is-about "syncs".
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/time/tick-common.c |   15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Index: linux-pm/kernel/time/tick-common.c
+===================================================================
+--- linux-pm.orig/kernel/time/tick-common.c
++++ linux-pm/kernel/time/tick-common.c
+@@ -19,6 +19,7 @@
+ #include <linux/profile.h>
+ #include <linux/sched.h>
+ #include <linux/module.h>
++#include <trace/events/power.h>
+ 
+ #include <asm/irq_regs.h>
+ 
+@@ -457,10 +458,13 @@ void tick_freeze(void)
+ 	raw_spin_lock(&tick_freeze_lock);
+ 
+ 	tick_freeze_depth++;
+-	if (tick_freeze_depth == num_online_cpus())
++	if (tick_freeze_depth == num_online_cpus()) {
++		trace_suspend_resume(TPS("timekeeping_freeze"),
++				     smp_processor_id(), true);
+ 		timekeeping_suspend();
+-	else
++	} else {
+ 		tick_suspend_local();
++	}
+ 
+ 	raw_spin_unlock(&tick_freeze_lock);
+ }
+@@ -478,10 +482,13 @@ void tick_unfreeze(void)
+ {
+ 	raw_spin_lock(&tick_freeze_lock);
+ 
+-	if (tick_freeze_depth == num_online_cpus())
++	if (tick_freeze_depth == num_online_cpus()) {
+ 		timekeeping_resume();
+-	else
++		trace_suspend_resume(TPS("timekeeping_freeze"),
++				     smp_processor_id(), false);
++	} else {
+ 		tick_resume_local();
++	}
+ 
+ 	tick_freeze_depth--;
+ 
+
