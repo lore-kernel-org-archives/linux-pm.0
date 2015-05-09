@@ -1,48 +1,35 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V3] cpuidle: Handle tick_broadcast_enter() failure gracefully
-Date: Sat, 09 May 2015 22:11:41 +0200
-Message-ID: <10239011.l6QLHlKIVm@vostro.rjw.lan>
-References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com> <8680371.ymYIEaFYPT@vostro.rjw.lan> <554D9FDC.6090608@linux.vnet.ibm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Sat, 9 May 2015 15:59:36 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1505091556001.5397-100000@netrider.rowland.org>
+References: <4290667.ZqInAykFGS@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59904 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751233AbbEITqf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 May 2015 15:46:35 -0400
-In-Reply-To: <554D9FDC.6090608@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <4290667.ZqInAykFGS@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <lenb@kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com, daniel.lezcano@linaro.org, rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org
 
-On Saturday, May 09, 2015 11:19:16 AM Preeti U Murthy wrote:
-> Hi Rafael,
+On Fri, 8 May 2015, Rafael J. Wysocki wrote:
+
+> My current view on that is that whether or not to do a sync() before suspending
+> ultimately is a policy decision and should belong to user space as such (modulo
+> the autosleep situation when user space may not know when the suspend is going
+> to happen).
 > 
-> On 05/08/2015 07:48 PM, Rafael J. Wysocki wrote:
-
-[cut]
-
-> >>  
-> >> +	/* Take note of the planned idle state. */
-> >> +	idle_set_state(smp_processor_id(), target_state);
-> > 
-> > And I wouldn't do this either.
-> > 
-> > The behavior here is pretty much as though the driver demoted the state chosen
-> > by the governor and we don't call idle_set_state() again in those cases.
+> Moreover, user space is free to do as many sync()s before suspending as it
+> wants to and the question here is whether or not the *kernel* should sync()
+> in the suspend code path.
 > 
-> Why is this wrong?
+> Since we pretty much can demonstrate that having just one sync() in there is
+> not sufficient in general, should we put two of them in there?  Or just
+> remove the existing one and leave it to user space entirely?
 
-It is not "wrong", but incomplete, because demotions done by the cpuidle driver
-should also be taken into account in the same way.
+I don't know about the advantages of one sync over two.  But how about
+adding a "syncs_before_suspend" (or just "syncs") sysfs attribute that
+takes a small numeric value?  The default can be 0, and the user could
+set it to 1 or 2 (or higher).
 
-But I'm seeing that the recent patch of mine that made cpuidle_enter_state()
-call default_idle_call() was a mistake, because it might confuse find_idlest_cpu()
-significantly as to what state the CPU is in.  I'll drop that one for now.
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Alan Stern
