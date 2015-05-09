@@ -1,104 +1,80 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 2/3] sched / idle: Call default_idle_call() from cpuidle_enter_state()
-Date: Sun, 10 May 2015 01:18:46 +0200
-Message-ID: <7884557.lRUSRr1Rsc@vostro.rjw.lan>
-References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com> <3161640.llJtBoKCBr@vostro.rjw.lan> <8965830.CMQzZzsqm0@vostro.rjw.lan>
+Subject: [Resend][PATCH] PM / tick: Add tracepoints for suspend-to-idle diagnostics
+Date: Sun, 10 May 2015 01:23:35 +0200
+Message-ID: <1543314.9EN5CRZp0f@vostro.rjw.lan>
+References: <17474563.tpu6u1dKOa@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8965830.CMQzZzsqm0@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, peterz@infradead.org
-Cc: tglx@linutronix.de, rafael.j.wysocki@intel.com, daniel.lezcano@linaro.org, rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:61001 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751185AbbEIW63 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 May 2015 18:58:29 -0400
+In-Reply-To: <17474563.tpu6u1dKOa@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The check of the cpuidle_enter() return value against -EBUSY
-made in call_cpuidle() will not be necessary any more if
-cpuidle_enter_state() calls default_idle_call() directly when it
-is about to return -EBUSY, so make that happen and eliminate the
-check.
+Add suspend/resume tracepoints to tick_freeze() and tick_unfreeze()
+to catch when timekeeping is suspended and resumed during suspend-to-idle
+so as to be able to check whether or not we enter the "frozen" state
+and to measure the time spent in it.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpuidle/cpuidle.c |    4 +++-
- include/linux/cpuidle.h   |    1 +
- kernel/sched/idle.c       |   20 +++++++-------------
- 3 files changed, 11 insertions(+), 14 deletions(-)
 
-Index: linux-pm/drivers/cpuidle/cpuidle.c
+Sorry for the duplication, but I messed up the Thomas' address in the previous one.
+
+---
+ kernel/time/tick-common.c |   15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
+
+Index: linux-pm/kernel/time/tick-common.c
 ===================================================================
---- linux-pm.orig/drivers/cpuidle/cpuidle.c
-+++ linux-pm/drivers/cpuidle/cpuidle.c
-@@ -167,8 +167,10 @@ int cpuidle_enter_state(struct cpuidle_d
- 	 * local timer will be shut down.  If a local timer is used from another
- 	 * CPU as a broadcast timer, this call may fail if it is not available.
- 	 */
--	if (broadcast && tick_broadcast_enter())
-+	if (broadcast && tick_broadcast_enter()) {
-+		default_idle_call();
- 		return -EBUSY;
+--- linux-pm.orig/kernel/time/tick-common.c
++++ linux-pm/kernel/time/tick-common.c
+@@ -19,6 +19,7 @@
+ #include <linux/profile.h>
+ #include <linux/sched.h>
+ #include <linux/module.h>
++#include <trace/events/power.h>
+ 
+ #include <asm/irq_regs.h>
+ 
+@@ -457,10 +458,13 @@ void tick_freeze(void)
+ 	raw_spin_lock(&tick_freeze_lock);
+ 
+ 	tick_freeze_depth++;
+-	if (tick_freeze_depth == num_online_cpus())
++	if (tick_freeze_depth == num_online_cpus()) {
++		trace_suspend_resume(TPS("timekeeping_freeze"),
++				     smp_processor_id(), true);
+ 		timekeeping_suspend();
+-	else
++	} else {
+ 		tick_suspend_local();
 +	}
  
- 	/* Take note of the planned idle state. */
- 	sched_idle_set_state(target_state);
-Index: linux-pm/kernel/sched/idle.c
-===================================================================
---- linux-pm.orig/kernel/sched/idle.c
-+++ linux-pm/kernel/sched/idle.c
-@@ -76,12 +76,13 @@ void __weak arch_cpu_idle(void)
- 	local_irq_enable();
+ 	raw_spin_unlock(&tick_freeze_lock);
  }
- 
--static void default_idle_call(void)
-+/**
-+ * default_idle_call - Default CPU idle routine.
-+ *
-+ * To use when the cpuidle framework cannot be used.
-+ */
-+void default_idle_call(void)
+@@ -478,10 +482,13 @@ void tick_unfreeze(void)
  {
--	/*
--	 * We can't use the cpuidle framework, let's use the default idle
--	 * routine.
--	 */
- 	if (current_clr_polling_and_test())
- 		local_irq_enable();
- 	else
-@@ -91,8 +92,6 @@ static void default_idle_call(void)
- static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 		      int next_state)
- {
--	int entered_state;
--
- 	/* Fall back to the default arch idle method on errors. */
- 	if (next_state < 0) {
- 		default_idle_call();
-@@ -114,12 +113,7 @@ static int call_cpuidle(struct cpuidle_d
- 	 * This function will block until an interrupt occurs and will take
- 	 * care of re-enabling the local interrupts
- 	 */
--	entered_state = cpuidle_enter(drv, dev, next_state);
--
--	if (entered_state == -EBUSY)
--		default_idle_call();
--
--	return entered_state;
-+	return cpuidle_enter(drv, dev, next_state);
- }
+ 	raw_spin_lock(&tick_freeze_lock);
  
- /**
-Index: linux-pm/include/linux/cpuidle.h
-===================================================================
---- linux-pm.orig/include/linux/cpuidle.h
-+++ linux-pm/include/linux/cpuidle.h
-@@ -202,6 +202,7 @@ static inline struct cpuidle_driver *cpu
+-	if (tick_freeze_depth == num_online_cpus())
++	if (tick_freeze_depth == num_online_cpus()) {
+ 		timekeeping_resume();
+-	else
++		trace_suspend_resume(TPS("timekeeping_freeze"),
++				     smp_processor_id(), false);
++	} else {
+ 		tick_resume_local();
++	}
  
- /* kernel/sched/idle.c */
- extern void sched_idle_set_state(struct cpuidle_state *idle_state);
-+extern void default_idle_call(void);
+ 	tick_freeze_depth--;
  
- #ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
- void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, atomic_t *a);
+
