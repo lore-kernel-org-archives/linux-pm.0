@@ -1,133 +1,158 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v7 2/5] PM / Domains: core changes for multiple states
-Date: Fri, 8 May 2015 16:31:35 -0600
-Message-ID: <20150508223135.GA16124@linaro.org>
-References: <1430391335-7588-1-git-send-email-ahaslam@baylibre.com>
- <1430391335-7588-3-git-send-email-ahaslam@baylibre.com>
- <20150507155359.GA15980@linaro.org>
- <7ha8xehjug.fsf@deeprootsystems.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 01/14] cpufreq: Create for_each_{in}active_policy()
+Date: Sat, 9 May 2015 07:57:05 +0530
+Message-ID: <CAKohpok17UkMnYx+_igUQin02QqhBtGLvqt2Dz6A9ZN04-EseA@mail.gmail.com>
+References: <cover.1431065963.git.viresh.kumar@linaro.org>
+	<79f880aba9ad5159e070f2ca172139cb2c254430.1431065963.git.viresh.kumar@linaro.org>
+	<5045046.BY2j8T62rF@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f172.google.com ([209.85.223.172]:34470 "EHLO
-	mail-ie0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753258AbbEHWbi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 18:31:38 -0400
-Received: by iedfl3 with SMTP id fl3so82913081ied.1
-        for <linux-pm@vger.kernel.org>; Fri, 08 May 2015 15:31:36 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <7ha8xehjug.fsf@deeprootsystems.com>
+Received: from mail-oi0-f45.google.com ([209.85.218.45]:34975 "EHLO
+	mail-oi0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752702AbbEIC1H (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2015 22:27:07 -0400
+Received: by oign205 with SMTP id n205so71563308oig.2
+        for <linux-pm@vger.kernel.org>; Fri, 08 May 2015 19:27:06 -0700 (PDT)
+In-Reply-To: <5045046.BY2j8T62rF@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: ahaslam@baylibre.com, ulf.hansson@linaro.org, k.kozlowski.k@gmail.com, geert@linux-m68k.org, rjw@rjwysocki.net, bcousson@baylibre.com, linux-pm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Prarit Bhargava <prarit@redhat.com>, Saravana Kannan <skannan@codeaurora.org>, Srivatsa Bhat <srivatsa@mit.edu>
 
-On Fri, May 08 2015 at 14:53 -0600, Kevin Hilman wrote:
->Lina Iyer <lina.iyer@linaro.org> writes:
+Thanks for the really detailed review ..
+
+On 9 May 2015 at 03:16, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Friday, May 08, 2015 11:53:44 AM Viresh Kumar wrote:
+
+>> +/*
+>> + * Finds Next Acive/Inactive policy
+>> + *
+>> + * policy: Previous policy.
+>> + * active: Looking for active policy (true) or Inactive policy (false).
+>> + */
 >
->> On Thu, Apr 30 2015 at 04:57 -0600, ahaslam@baylibre.com wrote:
->>>From: Axel Haslam <ahaslam+renesas@baylibre.com>
->>>
->>>Add the core changes to be able to declare multiple states.
->>>When trying to set a power domain to off, genpd will be able
->>>to choose from an array of states declared by the platform.
->>>
->>>The power on and off latencies are now tied to a state.
->>>
->>>States should be declared in ascending order from shallowest
->>>to deepest, deepest meaning the state which takes longer to
->>>enter and exit.
->>>
->>>the power_off and power_on function can use the 'state_idx'
->>>field of the generic_pm_domain structure, to distinguish between
->>>the different states and act accordingly.
->>>
->>> - if the genpd is initially off, the user should set the state_idx
->>>   field when registering the genpd.
->>>
->>> - if no states are passed to pm_genpd_init, a single OFF
->>>   state with no latency is assumed.
->>>
->>>Example:
->>>
->>>static int pd1_power_on(struct generic_pm_domain *domain)
->>>{
->>>	/* domain->state_idx = state the domain is coming from */
->>>}
->>>
->>>static int pd1_power_off(struct generic_pm_domain *domain)
->>>{
->>>	/* domain->state_idx = desired powered off state */
->>>}
->>>
->>>const struct genpd_power_state pd_states[] = {
->>>	{
->>>		.name = "RET",
->>>		.power_on_latency_ns = ON_LATENCY_FAST,
->>>		.power_off_latency_ns = OFF_LATENCY_FAST,
->>>	},
->>>	{
->>>		.name = "DEEP_RET",
->>>		.power_on_latency_ns = ON_LATENCY_MED,
->>>		.power_off_latency_ns = OFF_LATENCY_MED,
->>>	},
->>>	{
->>>		.name = "OFF",
->>>		.power_on_latency_ns = ON_LATENCY_SLOW,
->>>		.power_off_latency_ns = OFF_LATENCY_SLOW,
->>>	}
->>>};
->>>
->>
->> I am trying to use your patches in fashioning a genpd for the cpu
->> domain.
->>
->> The cpus are part of a power domain that can be powered off when the
->> cpus are powered off as part of the cpuidle. One of the biggest power
->> savings comes from powering off the domain completely. However, powering
->> off the domain involves flushing of caches (possibly) and turning off
->> some regulators and peripheral hardware. The power benefit is only
->> realized when the domain remains powered off for a certain period of
->> time, otherwise the overhead of powering on/off would add up to the
->> ineffeciency in the system.
->>
->> So a governor that determines the idle state of the domain has two
->> things that needs to match, the time available to power off the domain
->> (which we can get from timer wheel) and the other residency as dictated
->> by the platform.
->>
->> I was wondering if we could match the idle state definition of the
->> domain with that of the cpu, which has a precedence in the kernel. The
->> idle state of the cpu [1] is a superset of the idle state definition you
->> have above.  That way a shim layer could pick up domain idle states from
->> DT and pass the states to pm_genpd_init(). The use of these values could
->> depend on the genpd governor.
+> A proper kerneldoc, please.
+
+I thought its an internal function which we may not want to put into
+kernel-doc and so did it this way. Will take care in future ..
+
+>> +static struct cpufreq_policy *next_policy(struct cpufreq_policy *policy,
+>> +                                       bool active)
+>> +{
+>> +     do {
+>> +             if (likely(policy))
 >
->IMO, we need to keep the domain latency descriptions separate from the
->the devices within those domains, which could be CPUs or any other form
->of device.
+> The likely() thing looks like an attempted overoptimization.  I wouldn't use it.
 
-Sure, the devices could be any. All I am saying is the format of idle
-state definitions could be the same (same as cpu). There is a good
-value in specifying the residency of an idle state in addition to the
-the enter and exit latency.
+ok
 
->It should be the job of the governor then to look at the domain latency
->along with latencies of the other devices in the domain to make its
->decision.
+>> +                     policy = list_next_entry(policy, policy_list);
+>> +             else
+>> +                     policy = list_first_entry(&cpufreq_policy_list,
+>> +                                               typeof(*policy), policy_list);
+>> +
+>> +             /* No more policies */
+>> +             if (&policy->policy_list == &cpufreq_policy_list)
+>
+> Why does this ignore the 'active' arg?
 
-Agreed and thats how it should be. In all probablility, a cpu-domain
-governor would need a residency value of the domain idle state to best
-determine the idle state of the domain.
+Because what we are checking here is that the list is finished or not.
+The 'policy' we are returning here is not a real policy, but a
+not-to-be-used structure over the list HEAD.
 
-If we have not stored the residency in struct genpd_power_state, then
-the governor would not have a good way to make that decision.
+>> + * Iterate over online CPUs policies
+>
+> "CPU policies" would look better IMO.
 
-I am not ready yet with my patches, but feel free to browse through my
-working tree at [1] to see how I plan to use this patchset.
+Sure.
 
-Thanks,
-Lina
+>> + * Explanation:
+>> + * - expr1: marks __temp NULL and gets the first __active policy.
+>> + * - expr2: checks if list is finished, if yes then it sets __policy to the last
+>> + *       __active policy and returns 0 to end the loop.
+>> + * - expr3: preserves last __active policy and gets the next one.
+>
+> I'd expect this to describe the arguments rather.  Also the code is rather
+> difficult to follow.
+>
+> The XOR thing is rather an unnecessary trick (it acts on bools but quite
+> directly assumes them to be integers with the lowest bit representing the
+> value) and you can do "active == !policy_is_inactive(policy)" instead.
+>
+> So if you separate the last check as
+>
+> static bool suitable_policy(struct cpufreq_policy *policy, bool active)
+> {
+>         return active == !policy_is_inactive(policy);
+> }
+>
+> then you can introduce
+>
+> static struct cpufreq_policy *first_policy(bool active)
+> {
+>         struct cpufreq_policy *policy;
+>
+>         policy = list_first_entry(&cpufreq_policy_list, typeof(*policy), policy_list);
+>         if (!suitable_policy(policy, active))
+>                 policy = next_policy(policy, active);
+>
+>         return policy;
+> }
+>
+> and then next_policy() becomes much simpler and, moreover, this:
+>
+>> + */
+>> +#define __for_each_active_policy(__policy, __temp, __active)         \
+>> +     for (__temp = NULL, __policy = next_policy(NULL, __active);     \
+>> +          &__policy->policy_list != &cpufreq_policy_list ||          \
+>> +          ((__policy = __temp) && 0);                                \
+>> +          __temp = __policy, __policy = next_policy(__policy, __active))
+>
+> can be rewritten as:
+>
+> #define __for_each_active_policy(__policy, __active)            \
+>         for (__policy = first_policy(__active); __policy;       \
+>              __policy = next_policy(__policy, __active))
+>
+> and you don't need to explain what it does even.  Of course, next_policy()
+> has to return 'false' when it can't find anything suitable, but that shouldn't
+> be too difficult to arrange I suppose?
+>
+> Or if you need __temp because the object pointed to by __policy can go away,
+> you can follow the design of list_for_each_entry_safe() here.
+>
+>> +
+>>  #define for_each_policy(__policy)                            \
+>>       list_for_each_entry(__policy, &cpufreq_policy_list, policy_list)
+>>
+>> +/*
+>> + * Routines to iterate over active or inactive policies
+>> + * __policy: next active/inactive policy will be returned in this.
+>> + * __temp: for internal purpose, not to be used by caller.
+>> + */
+>> +#define for_each_active_policy(__policy, __temp) __for_each_active_policy(__policy, __temp, true)
+>> +#define for_each_inactive_policy(__policy, __temp) __for_each_active_policy(__policy, __temp, false)
+>
+> I must admit to having a problem with this definition.
+>
+>         #define for_each_inactive_something(X)  __for_each_active_something(X)
+>
+> looks really confusing.
+>
+> Maybe rename __for_each_active_policy() to __for_each_suitable_policy()?
+>
+>> +
+>>  /* Iterate over governors */
+>>  static LIST_HEAD(cpufreq_governor_list);
+>>  #define for_each_governor(__governor)                                \
+>> @@ -1142,7 +1206,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>>  {
+>>       unsigned int j, cpu = dev->id;
+>>       int ret = -ENOMEM;
+>> -     struct cpufreq_policy *policy;
+>> +     struct cpufreq_policy *policy, *tpolicy;
+>
+> I'd just use "tmp" or "aux" instead of "tpolicy".
 
-[1].
-https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/genpd-8916-3
+All accepted..
