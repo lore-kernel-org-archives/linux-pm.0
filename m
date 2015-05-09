@@ -1,25 +1,23 @@
 From: Ingo Molnar <mingo@kernel.org>
 Subject: Re: [PATCH 2/2] x86: speed cpu_up by quirking cpu_init_udelay
-Date: Sat, 9 May 2015 09:22:38 +0200
-Message-ID: <20150509072238.GA10106@gmail.com>
+Date: Sat, 9 May 2015 09:24:00 +0200
+Message-ID: <20150509072400.GB10106@gmail.com>
 References: <418898b5b9a6d76e7fbbd2af7cc988de1a5a287d.1431066425.git.len.brown@intel.com>
  <170f6f6e9ac4aa4d8ec1ed5000bee95463897337.1431066425.git.len.brown@intel.com>
  <20150508083250.GB4137@pd.tnic>
  <CAJvTdKk3TM1PMUgGeWCxThzVknfBc8xMK-dJkbxJrwkWhjGzLg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f177.google.com ([209.85.212.177]:37895 "EHLO
-	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751210AbbEIHWn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 May 2015 03:22:43 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
 In-Reply-To: <CAJvTdKk3TM1PMUgGeWCxThzVknfBc8xMK-dJkbxJrwkWhjGzLg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Len Brown <lenb@kernel.org>
-Cc: Borislav Petkov <bp@alien8.de>, X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+Cc: Borislav Petkov <bp@alien8.de>, X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Jason Baron <jbaron@redhat.com>, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@suse.de>
+List-Id: linux-pm@vger.kernel.org
 
+
+(Resending my reply with more dyn-debug folks Cc:-ed)
 
 * Len Brown <lenb@kernel.org> wrote:
 
