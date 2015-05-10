@@ -1,62 +1,61 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: [PATCH 4/7] drivers/cpufreq: Convert non-modular drivers to use builtin_driver_register
-Date: Sun, 10 May 2015 15:49:42 -0400
-Message-ID: <1431287385-1526-5-git-send-email-paul.gortmaker@windriver.com>
-References: <1431287385-1526-1-git-send-email-paul.gortmaker@windriver.com>
+From: Paul Gortmaker <paul.gortmaker-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>
+Subject: [PATCH 0/7] Introduce builtin_driver and use it for non-modular code
+Date: Sun, 10 May 2015 15:49:38 -0400
+Message-ID: <1431287385-1526-1-git-send-email-paul.gortmaker@windriver.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.windriver.com ([147.11.146.13]:47420 "EHLO
-	mail1.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751776AbbEJTuw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 May 2015 15:50:52 -0400
-In-Reply-To: <1431287385-1526-1-git-send-email-paul.gortmaker@windriver.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Paul Gortmaker <paul.gortmaker-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Axel Lin <axel.lin-8E1dMatC8ynQT0dZR+AlfA@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Michal Simek <michal.simek-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-These files depend on Kconfig options all of which are a bool, so
-we use the appropriate registration function, which avoids us
-relying on an implicit inclusion of <module.h> which we are
-doing currently.
+We see an increasing number of non-modular drivers using the
+modular_driver() type register functions.  There are several
+downsides to this (as listed in the 1st commit log), so here
+we introduce similar non-modular macros for builtin drivers.
 
-While this currently works, we really don't want to be including
-the module.h header in non-modular code, which we'd be forced
-to do, pending some upcoming code relocation from init.h into
-module.h.  So we fix it now by using the non-modular equivalent.
+Then we convert builtin drivers (controlled by a bool Kconfig)
+by making the following type of changes:
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kukjin Kim <kgene@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+  module_platform_driver()       --->  builtin_platform_driver()
+  module_platform_driver_probe() --->  builtin_platform_driver_probe().
+
+The set of drivers that are converted here are just the ones that
+showed up as relying on an implicit include of <module.h> during
+a pending header cleanup.  So we convert them here vs. adding
+an include of <module.h> to non-modular code to avoid compile fails.
+Additonal conversions can be done asynchronously at any time.
+
+These changes, and the pending header cleanup are a refactoring of
+a larger series[1] into smaller, more easily reviewed chunks that
+share a common theme.
+
+Note to maintainers:  None of the conversion patches here can be
+taken into subtrees individually, since they all rely on the 1st
+patch to add the builtin macros.  But I'll add Acks as requested.
+
+Thanks,
+Paul.
+
+[1] https://marc.info/?l=linux-kernel&m=139033951228828
 ---
- drivers/cpufreq/exynos-cpufreq.c  | 2 +-
- drivers/cpufreq/s5pv210-cpufreq.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 82d2fbb20f7e..2c2a19f035ee 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -236,4 +236,4 @@ static struct platform_driver exynos_cpufreq_platdrv = {
- 	},
- 	.probe = exynos_cpufreq_probe,
- };
--module_platform_driver(exynos_cpufreq_platdrv);
-+builtin_platform_driver(exynos_cpufreq_platdrv);
-diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-index b0dac7d6ba31..9e231f52150c 100644
---- a/drivers/cpufreq/s5pv210-cpufreq.c
-+++ b/drivers/cpufreq/s5pv210-cpufreq.c
-@@ -659,4 +659,4 @@ static struct platform_driver s5pv210_cpufreq_platdrv = {
- 	},
- 	.probe = s5pv210_cpufreq_probe,
- };
--module_platform_driver(s5pv210_cpufreq_platdrv);
-+builtin_platform_driver(s5pv210_cpufreq_platdrv);
--- 
-2.2.1
-
+Cc: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Cc: Axel Lin <axel.lin-8E1dMatC8ynQT0dZR+AlfA@public.gmane.org>
+Cc: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Cc: Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Michal Simek <michal.simek-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
