@@ -1,57 +1,126 @@
-From: Axel Haslam <ahaslam@baylibre.com>
-Subject: Re: [PATCH v7 1/5] PM / Domains: prepare for multiple states
-Date: Mon, 11 May 2015 10:23:14 +0200
-Message-ID: <CAKXjFTNaUYV9KGSz-gnsKkG=6oLOQo8i=dyvs5NYh=-pPuJdWw@mail.gmail.com>
-References: <1430391335-7588-1-git-send-email-ahaslam@baylibre.com>
-	<1430391335-7588-2-git-send-email-ahaslam@baylibre.com>
-	<CAJKOXPdi3qjgEERM8PmN6Rb-9xGa6V5RW_3zKpnnCECzwmmUbQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f47.google.com ([209.85.218.47]:34265 "EHLO
-	mail-oi0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbbEKIXP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2015 04:23:15 -0400
-Received: by oiko83 with SMTP id o83so98815306oik.1
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2015 01:23:14 -0700 (PDT)
-In-Reply-To: <CAJKOXPdi3qjgEERM8PmN6Rb-9xGa6V5RW_3zKpnnCECzwmmUbQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH] cpufreq: arm_big_little: remove compile-time dependency on BL_SWITCHER
+Date: Mon, 11 May 2015 12:24:33 +0100
+Message-ID: <1431343473-9915-1-git-send-email-sudeep.holla@arm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, Jon Medhurst <tixy@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benoit Cousson <bcousson@baylibre.com>, Linux PM list <linux-pm@vger.kernel.org>, Axel Haslam <ahaslam+renesas@baylibre.com>
 
-Hi Krzysztof,
+With the addition of switcher code, there's compile-time dependency on
+BL_SWITCHER to get arm_big_little driver compiling on ARM64. Since ARM64
+will never add support for BL_SWITCHER, it's better to remove the
+dependency so that the driver can be reused on ARM64 platforms.
 
-On Fri, May 8, 2015 at 2:36 AM, Krzysztof Kozlowski
-<k.kozlowski@samsung.com> wrote:
-> 2015-04-30 19:55 GMT+09:00  <ahaslam@baylibre.com>:
->> From: Axel Haslam <ahaslam+renesas@baylibre.com>
->>
->> prepare generic power domain init function parameters
->> to accept a pointer to the states structure that describes
->> the possible states that a power domain can enter.
->>
->> There is no functional change, as support for multiple
->> domains will be added in subsequent patches.
->>
->> Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
->> ---
->>  arch/arm/mach-exynos/pm_domains.c   |  2 +-
->
-> For Exynos:
-> Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->
-> However could you fix up your GIT or email app? It is wrapping lines
-> in commit message around ~55 character making the message unreadable.
-> Just use default value of 75 characters (gui.commitmsgwidth?).
+This patch adds stubs to remove BL_SWITCHER dependency in the driver.
 
-Ok, ill change the message width in the next series,
-ill wait for acks or comments to the rest of the patches
-before sending it.
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ drivers/cpufreq/Kconfig.arm      |  2 +-
+ drivers/cpufreq/arm_big_little.c | 27 ++++++++++++++++++++++-----
+ 2 files changed, 23 insertions(+), 6 deletions(-)
 
-Regards,
-Axel.
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index d38f1ce95087..39520a61ea6f 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -5,7 +5,7 @@
+ # big LITTLE core layer and glue drivers
+ config ARM_BIG_LITTLE_CPUFREQ
+ 	tristate "Generic ARM big LITTLE CPUfreq driver"
+-	depends on ARM && BIG_LITTLE && ARM_CPU_TOPOLOGY && HAVE_CLK
++	depends on (ARM_CPU_TOPOLOGY || ARM64) && HAVE_CLK
+ 	select PM_OPP
+ 	help
+ 	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index e4d75ca9f3b0..f1e42f8ce0fc 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -31,7 +31,6 @@
+ #include <linux/slab.h>
+ #include <linux/topology.h>
+ #include <linux/types.h>
+-#include <asm/bL_switcher.h>
 
->
-> Best regards,
-> Krzysztof
+ #include "arm_big_little.h"
+
+@@ -41,12 +40,16 @@
+ #define MAX_CLUSTERS	2
+
+ #ifdef CONFIG_BL_SWITCHER
++#include <asm/bL_switcher.h>
+ static bool bL_switching_enabled;
+ #define is_bL_switching_enabled()	bL_switching_enabled
+ #define set_switching_enabled(x)	(bL_switching_enabled = (x))
+ #else
+ #define is_bL_switching_enabled()	false
+ #define set_switching_enabled(x)	do { } while (0)
++#define bL_switch_request(...)		do { } while (0)
++#define bL_switcher_put_enabled()	do { } while (0)
++#define bL_switcher_get_enabled()	do { } while (0)
+ #endif
+
+ #define ACTUAL_FREQ(cluster, freq)  ((cluster == A7_CLUSTER) ? freq << 1 : freq)
+@@ -513,6 +516,7 @@ static struct cpufreq_driver bL_cpufreq_driver = {
+ 	.attr			= cpufreq_generic_attr,
+ };
+
++#ifdef CONFIG_BL_SWITCHER
+ static int bL_cpufreq_switcher_notifier(struct notifier_block *nfb,
+ 					unsigned long action, void *_arg)
+ {
+@@ -545,6 +549,20 @@ static struct notifier_block bL_switcher_notifier = {
+ 	.notifier_call = bL_cpufreq_switcher_notifier,
+ };
+
++static int __bLs_register_notifier(void)
++{
++	return bL_switcher_register_notifier(&bL_switcher_notifier);
++}
++
++static int __bLs_unregister_notifier(void)
++{
++	return bL_switcher_unregister_notifier(&bL_switcher_notifier);
++}
++#else
++static int __bLs_register_notifier(void) { return 0; }
++static int __bLs_unregister_notifier(void) { return 0; }
++#endif
++
+ int bL_cpufreq_register(struct cpufreq_arm_bL_ops *ops)
+ {
+ 	int ret, i;
+@@ -562,8 +580,7 @@ int bL_cpufreq_register(struct cpufreq_arm_bL_ops *ops)
+
+ 	arm_bL_ops = ops;
+
+-	ret = bL_switcher_get_enabled();
+-	set_switching_enabled(ret);
++	set_switching_enabled(bL_switcher_get_enabled());
+
+ 	for (i = 0; i < MAX_CLUSTERS; i++)
+ 		mutex_init(&cluster_lock[i]);
+@@ -574,7 +591,7 @@ int bL_cpufreq_register(struct cpufreq_arm_bL_ops *ops)
+ 				__func__, ops->name, ret);
+ 		arm_bL_ops = NULL;
+ 	} else {
+-		ret = bL_switcher_register_notifier(&bL_switcher_notifier);
++		ret = __bLs_register_notifier();
+ 		if (ret) {
+ 			cpufreq_unregister_driver(&bL_cpufreq_driver);
+ 			arm_bL_ops = NULL;
+@@ -598,7 +615,7 @@ void bL_cpufreq_unregister(struct cpufreq_arm_bL_ops *ops)
+ 	}
+
+ 	bL_switcher_get_enabled();
+-	bL_switcher_unregister_notifier(&bL_switcher_notifier);
++	__bLs_unregister_notifier();
+ 	cpufreq_unregister_driver(&bL_cpufreq_driver);
+ 	bL_switcher_put_enabled();
+ 	pr_info("%s: Un-registered platform driver: %s\n", __func__,
+--
+1.9.1
