@@ -1,60 +1,57 @@
-From: Kyungmin Park <kmpark@infradead.org>
-Subject: Re: [RFC PATCH] PM, freezer: Don't thaw when it's intended frozen processes
-Date: Mon, 11 May 2015 16:47:14 +0900
-Message-ID: <CAH9JG2W6pKi__g-v+9B+-y3HJ=AkdE+W0d0TxmtpBWrXddxL_g@mail.gmail.com>
-References: <20150507064557.GA26928@july>
-	<20150507154212.GA12245@htj.duckdns.org>
-	<CAH9JG2UAVRgX0Mg0d7WgG0URpkgu4q_bbNMXyOOEh9WFPztppQ@mail.gmail.com>
-	<20150508152513.GB28439@htj.duckdns.org>
-	<CAH9JG2VROCekWCAa+1t6Giy2wHC171TD-AXQVxG2vTH-LPcoPA@mail.gmail.com>
+From: Anisse Astier <anisse@astier.eu>
+Subject: Re: [PATCH v3 2/4] PM / Hibernate: prepare for SANITIZE_FREED_PAGES
+Date: Mon, 11 May 2015 09:59:23 +0200
+Message-ID: <CALUN=q+OZFarqRoWMynRZy0ckv7qnsAQvWr9wkvdK_JmA=oomw@mail.gmail.com>
+References: <1430980452-2767-1-git-send-email-anisse@astier.eu>
+ <1430980452-2767-3-git-send-email-anisse@astier.eu> <20150509154455.GA32002@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <CAH9JG2VROCekWCAa+1t6Giy2wHC171TD-AXQVxG2vTH-LPcoPA@mail.gmail.com>
+In-Reply-To: <20150509154455.GA32002@amd>
 Sender: owner-linux-mm@kvack.org
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>, "\\Rafael J. Wysocki\\" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 11, 2015 at 1:28 PM, Kyungmin Park <kmpark@infradead.org> wrote:
-> On Sat, May 9, 2015 at 12:25 AM, Tejun Heo <tj@kernel.org> wrote:
->> Hello, Kyungmin.
->>
->> On Fri, May 08, 2015 at 09:04:26AM +0900, Kyungmin Park wrote:
->>> > I need to think more about it but as an *optimization* we can add
->>> > freezing() test before actually waking tasks up during resume, but can
->>> > you please clarify what you're seeing?
->>>
->>> The mobile application has life cycle and one of them is 'suspend'
->>> state. it's different from 'pause' or 'background'.
->>> if there are some application and enter go 'suspend' state. all
->>> behaviors are stopped and can't do anything. right it's suspended. but
->>> after system suspend & resume, these application is thawed and
->>> running. even though system know it's suspended.
->>>
->>> We made some test application, print out some message within infinite
->>> loop. when it goes 'suspend' state. nothing is print out. but after
->>> system suspend & resume, it prints out again. that's not desired
->>> behavior. and want to address it.
->>>
->>> frozen user processes should be remained as frozen while system
->>> suspend & resume.
->>
->> Yes, they should and I'm not sure why what you're saying is happening
->> because freezing() test done from the frozen tasks themselves should
->> keep them in the freezer.  Which kernel version did you test?  Can you
->> please verify it against a recent kernel?
->
-> The kernel 3.10 is not working as expected, but right the latest
-> kernel is working correctly.
+Hi Pavel,
 
-Please ignore it. test is wrong and it's not working, see Krzysztof Mail.
+Thanks a lot for taking the time to review this.
+
+On Sat, May 9, 2015 at 5:44 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>> +#ifdef CONFIG_SANITIZE_FREED_PAGES
+>> +             clear_free_pages();
+>> +             printk(KERN_INFO "PM: free pages cleared after restore\n");
+>> +#endif
+>> +     }
+>>       platform_leave(platform_mode);
+>>
+>>   Power_up:
+>
+> Can you move the ifdef and the printk into the clear_free_pages?
+
+Sure. I put the printk out originally because i thought there might be
+other uses, but since this is the sole call site right now it
+shouldn't be an issue.
 
 >
-> I see I'll check what's different and which are modified.
+> This is not performance critical in any way...
 >
-> Thank you,
-> Kyungmin Park
+> Otherwise it looks good to me... if the sanitization is considered
+> useful. Did it catch some bugs in the past?
+>
+
+I've read somewhere that users of grsecurity claim that it caught bugs
+in some drivers, but I haven't verified that personally; it's probably
+much less useful than kasan (or even the original grsec feature) as a
+bug-catcher since it doesn't clear freed slab buffers.
+
+I'll wait a few more days for more reviews before sending the next
+version, particularly on the power management part, and in general on
+the usefulness of such feature.
+
+Regards,
+
+Anisse
 
 --
 To unsubscribe, send a message with 'unsubscribe linux-mm' in
