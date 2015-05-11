@@ -1,18 +1,14 @@
 From: Len Brown <lenb@kernel.org>
 Subject: [PATCH 1/2] x86: Add cmdline "cpu_init_udelay=N" to specify cpu_up() delay
-Date: Mon, 11 May 2015 17:06:47 -0400
-Message-ID: <98c0dd8b8d5516124418cf4c1bf6c2e3630d7d8b.1431378048.git.len.brown@intel.com>
-References: <1431378408-5840-1-git-send-email-lenb@kernel.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f54.google.com ([209.85.192.54]:36353 "EHLO
-	mail-qg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932368AbbEKVG5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2015 17:06:57 -0400
-In-Reply-To: <1431378408-5840-1-git-send-email-lenb@kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Date: Mon, 11 May 2015 17:27:09 -0400
+Message-ID: <2fe8e6c798e8def271122f62df9bbf58dc283e2a.1431379433.git.len.brown@intel.com>
+References: <1431379630-6716-1-git-send-email-lenb@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1431379630-6716-1-git-send-email-lenb@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Len Brown <len.brown@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
@@ -27,9 +23,7 @@ Signed-off-by: Len Brown <len.brown@intel.com>
 ---
  Documentation/kernel-parameters.txt |  6 ++++++
  arch/x86/kernel/smpboot.c           | 23 ++++++++++++++++++++++-
- arch/x86/kernel/smpboot.c.rej       | 11 +++++++++++
- 3 files changed, 39 insertions(+), 1 deletion(-)
- create mode 100644 arch/x86/kernel/smpboot.c.rej
+ 2 files changed, 28 insertions(+), 1 deletion(-)
 
 diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
 index 61ab162..a320a41 100644
@@ -89,23 +83,5 @@ index 51203f6..0629a8e 100644
  
  		pr_debug("Deasserting INIT\n");
  
-diff --git a/arch/x86/kernel/smpboot.c.rej b/arch/x86/kernel/smpboot.c.rej
-new file mode 100644
-index 0000000..ccf0bd0
---- /dev/null
-+++ b/arch/x86/kernel/smpboot.c.rej
-@@ -0,0 +1,11 @@
-+--- arch/x86/kernel/smpboot.c
-++++ arch/x86/kernel/smpboot.c
-+@@ -607,7 +628,7 @@ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
-+ 	pr_debug("Waiting for send to finish...\n");
-+ 	send_status = safe_apic_wait_icr_idle();
-+ 
-+-	mdelay(10);
-++	udelay(init_udelay);
-+ 
-+ 	pr_debug("Deasserting INIT\n");
-+ 
 -- 
 2.4.0.rc1
-
