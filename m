@@ -1,50 +1,103 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: [PATCH 7/7] drivers/power: Convert non-modular syscon-reboot to use builtin_driver_register
-Date: Sun, 10 May 2015 15:49:45 -0400
-Message-ID: <1431287385-1526-8-git-send-email-paul.gortmaker@windriver.com>
-References: <1431287385-1526-1-git-send-email-paul.gortmaker@windriver.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH 1/2] arm: boot: dts: am4372: add operating points
+Date: Sun, 10 May 2015 19:23:34 -0500
+Message-ID: <554FF686.5050704@ti.com>
+References: <1431115050-23693-1-git-send-email-balbi@ti.com> <554D17F3.7090008@ti.com> <554D18AB.6060901@ti.com> <20150508202439.GA25459@saruman.tx.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.windriver.com ([147.11.1.11]:58279 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751654AbbEJTwP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 May 2015 15:52:15 -0400
-In-Reply-To: <1431287385-1526-1-git-send-email-paul.gortmaker@windriver.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-omap-owner@vger.kernel.org>
+In-Reply-To: <20150508202439.GA25459@saruman.tx.rr.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: balbi@ti.com
+Cc: Tony Lindgren <tony@atomide.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 
-This file depends on Kconfig options all of which are a bool, so
-we use the appropriate registration function, which avoids us
-relying on an implicit inclusion of <module.h> which we are
-doing currently.
+On 05/08/2015 03:24 PM, Felipe Balbi wrote:
+> On Fri, May 08, 2015 at 03:12:27PM -0500, Nishanth Menon wrote:
+>> On 05/08/2015 03:09 PM, Nishanth Menon wrote:
+>>> On 05/08/2015 02:57 PM, Felipe Balbi wrote:
+>>>> By adding operating points, cpufreq-dt has a
+>>>> chance of running and doing something useful.
+>>>>
+>>>> Signed-off-by: Felipe Balbi <balbi@ti.com>
+>>>> ---
+>>>>  arch/arm/boot/dts/am4372.dtsi | 9 +++++++++
+>>>>  1 file changed, 9 insertions(+)
+>>>>
+>>>> diff --git a/arch/arm/boot/dts/am4372.dtsi b/arch/arm/boot/dts/am4372.dtsi
+>>>> index c80a3e233792..ea1db20f64fc 100644
+>>>> --- a/arch/arm/boot/dts/am4372.dtsi
+>>>> +++ b/arch/arm/boot/dts/am4372.dtsi
+>>>> @@ -38,6 +38,15 @@
+>>>>  			clocks = <&dpll_mpu_ck>;
+>>>>  			clock-names = "cpu";
+>>>>  
+>>>> +			operating-points = <
+>>>> +				/* kHz		uV */
+>>>> +				1000000		1325000 /* OPP_NITRO */
+>>>> +				 800000		1260000 /* OPP_TURBO */
+>>>> +				 720000		1200000 /* OPP_120 */
+>>>> +				 600000		1100000 /* OPP_100 */
+>>>> +				 300000		 950000 /* OPP_50 */
+>>>> +			>;
+>>>> +
+>>>>  			clock-latency = <300000>; /* From omap-cpufreq driver */
+>>>>  		};
+>>>>  	};
+>>>>
+>>> which of these OPPs need AVS? which of these are dependent on Efuse bit
+>>> dependent?
+>>>
+>>
+>>
+>> You can use
+>> http://git.ti.com/ti-linux-kernel/ti-linux-kernel/blobs/ti-linux-3.14.y/arch/arm/mach-omap2/opp43xx_data.c
+>> for reference.
+> 
+> heh, why isn't that upstream yet ? Seems to be ready already. The point
 
-While this currently works, we really don't want to be including
-the module.h header in non-modular code, which we'd be forced
-to do, pending some upcoming code relocation from init.h into
-module.h.  So we fix it now by using the non-modular equivalent.
+we have tried in the past[1] - unfortunately that was just bandaid since
+the existing OPP device tree bindings have very limiting behavior across
+multiple SoCs.This was one of the reasons why we stopped adding more
+OPPs, since we are hoping to see the new bindings[2] which is under
+discussion settle down and help enable support for cases like that we
+have on TI SoCs, iMX SoCs etc.
 
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- drivers/power/reset/syscon-reboot.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> is that as of now, u-boot will set maximum OPP it can find and, for
+> AM437x, that will be 800MHz or 1GHz depending on your board. 1GHz might
+> not be supported in all SoCs and letting that be used all the time is
+> likely going to reduce silicon lifetime.
 
-diff --git a/drivers/power/reset/syscon-reboot.c b/drivers/power/reset/syscon-reboot.c
-index d3c7d245ae63..7d0d269a0837 100644
---- a/drivers/power/reset/syscon-reboot.c
-+++ b/drivers/power/reset/syscon-reboot.c
-@@ -88,4 +88,4 @@ static struct platform_driver syscon_reboot_driver = {
- 		.of_match_table = syscon_reboot_of_match,
- 	},
- };
--module_platform_driver(syscon_reboot_driver);
-+builtin_platform_driver(syscon_reboot_driver);
+> At least allowing ondemand governor run, we will be mostly running at
+> 300MHz and only jump to "invalid" OPPs under load which, granted, is
+> still not perfect, but better than running at 1GHz all the time, don't
+> you agree ?
+The fix for this should ideally be in u-boot - we are trying not to
+introduce dts changes in the hopes that the new proposed bindings that
+Viresh has on discussion comes to conclusion and help introduce new dtb
+support with proper SoC description. allowing an SoC to enter an invalid
+OPP is broken by design. we must attempt to curb it. unfortunately, we
+already do have a broken implementation for AM335x, DRA7 in place which
+went with the assumption that we will be able to do modifiers on top of
+existing dt description and the hopes that [1] will eventually get
+upstream. But, as is clear now, [1] has no future path in upstream
+kernel. following the same broken path for newer SoC definitions will
+probably very short sighted by us.
+
+in my opinion, doing a temporary hack in upstream kernel is not an
+elegant approach. I suggest helping review and approving Viresh's new
+bindings so that we have a longer term solution is more the way to do this.
+
+Just my 2 cents. Thanks once again for identifying the urgent need for
+helping Viresh's series along - will be great if folks could help review
+and approve his series to get them upstream and help all of us ARM SoC
+variations along.
+
+
+[1] http://comments.gmane.org/gmane.linux.ports.arm.kernel/309466
+[2] http://marc.info/?l=devicetree&m=143039569104090&w=2
+
 -- 
-2.2.1
-
+Regards,
+Nishanth Menon
