@@ -1,120 +1,37 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 1/2] thermal: support slope and offset coefficients
-Date: Mon, 11 May 2015 20:04:16 -0700
-Message-ID: <1431399857-13943-2-git-send-email-edubezval@gmail.com>
-References: <1431399857-13943-1-git-send-email-edubezval@gmail.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Mon, 11 May 2015 16:22:26 -0400
+Message-ID: <CAJvTdKk7tHoDC7N3=_7JB3KFSVrKyAhEEoS+RaM3bud=H4XXuw@mail.gmail.com>
+References: <b1587e8b2c664632ecd0d9ad1a3e56733da76490.1431068823.git.len.brown@intel.com>
+	<20150511014428.GB15721@dastard>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f180.google.com ([209.85.192.180]:32930 "EHLO
-	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754459AbbEKUEZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2015 16:04:25 -0400
-In-Reply-To: <1431399857-13943-1-git-send-email-edubezval@gmail.com>
+Received: from mail-lb0-f179.google.com ([209.85.217.179]:34580 "EHLO
+	mail-lb0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751388AbbEKUW2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2015 16:22:28 -0400
+In-Reply-To: <20150511014428.GB15721@dastard>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>, hongtao.jia@freescale.com, kong.kongxinwei@hisilicon.com
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+To: Dave Chinner <david@fromorbit.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-It is common to have a linear extrapolation from
-the current sensor readings and the actual temperature
-value. This is specially the case when the sensor
-is in use to extrapolate hotspots.
+On Sun, May 10, 2015 at 9:44 PM, Dave Chinner <david@fromorbit.com> wrote:
 
-This patch adds slope and offset constants for
-single sensor linear extrapolation equation. Because
-the same sensor can be use in different locations,
-from board to board, these constants are added
-as part of thermal_zone_params.
+> ...Please explain what your use case is that makes this
+> so prohibitively expensive it needs to be removed.
 
-The constants are available through sysfs.
+wake on packet, process packet without turning on the display,
+immediately suspend.  Do this potentially several times per second.
 
-It is up to the device driver to determine
-the usage of these values.
+>> The user-space utilities s2ram and s2disk choose to invoke sync() today.
+>> A user can invoke suspend directly via /sys/power/state to skip that cost.
+>
+> So, you want to have s2disk write all the dirty pages in memory to
+> the suspend image, rather than to the filesystem?
 
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
----
- Documentation/thermal/sysfs-api.txt | 16 ++++++++++++++++
- drivers/thermal/thermal_core.c      |  4 ++++
- include/linux/thermal.h             | 11 +++++++++++
- 3 files changed, 31 insertions(+)
+The s2disk utility is unchanged by this proposal, it already includes a sync().
 
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index 7d44d7f..c1f6864 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -190,6 +190,8 @@ Thermal zone device sys I/F, created once it's registered:
-     |---k_i:                    PID's integral term in the power allocator gov
-     |---k_d:                    PID's derivative term in the power allocator
-     |---integral_cutoff:        Offset above which errors are accumulated
-+    |---slope:                  Slope constant applied as linear extrapolation
-+    |---offset:                 Offset constant applied as linear extrapolation
- 
- Thermal cooling device sys I/F, created once it's registered:
- /sys/class/thermal/cooling_device[0-*]:
-@@ -359,6 +361,20 @@ integral_cutoff
- 	Documentation/thermal/power_allocator.txt
- 	RW, Optional
- 
-+slope
-+	The slope constant used in a linear extrapolation model
-+	to determine a hotspot temperature based off the sensor's
-+	raw readings. It is up to the device driver to determine
-+	the usage of these values.
-+	RW, Optional
-+
-+offset
-+	The offset constant used in a linear extrapolation model
-+	to determine a hotspot temperature based off the sensor's
-+	raw readings. It is up to the device driver to determine
-+	the usage of these values.
-+	RW, Optional
-+
- *****************************
- * Cooling device attributes *
- *****************************
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 962de18..04659bf 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -944,6 +944,8 @@ create_s32_tzp_attr(k_pu);
- create_s32_tzp_attr(k_i);
- create_s32_tzp_attr(k_d);
- create_s32_tzp_attr(integral_cutoff);
-+create_s32_tzp_attr(slope);
-+create_s32_tzp_attr(offset);
- #undef create_s32_tzp_attr
- 
- static struct device_attribute *dev_tzp_attrs[] = {
-@@ -953,6 +955,8 @@ static struct device_attribute *dev_tzp_attrs[] = {
- 	&dev_attr_k_i,
- 	&dev_attr_k_d,
- 	&dev_attr_integral_cutoff,
-+	&dev_attr_slope,
-+	&dev_attr_offset,
- };
- 
- static int create_tzp_attrs(struct device *dev)
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 6bbe11c..037e9df 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -302,6 +302,17 @@ struct thermal_zone_params {
- 
- 	/* threshold below which the error is no longer accumulated */
- 	s32 integral_cutoff;
-+
-+	/*
-+	 * @slope:	slope of a linear temperature adjustment curve.
-+	 * 		Used by thermal zone drivers.
-+	 */
-+	int slope;
-+	/*
-+	 * @offset:	offset of a linear temperature adjustment curve.
-+	 * 		Used by thermal zone drivers (default 0).
-+	 */
-+	int offset;
- };
- 
- struct thermal_genl_event {
--- 
-2.3.4
-
+cheers,
+Len Brown, Intel Open Source Technology Center
