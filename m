@@ -1,67 +1,87 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/2] x86: remove 10ms delay from cpu_up() on modern processors
-Date: Mon, 11 May 2015 17:27:10 -0400
-Message-ID: <021ce30c88f216ad39686646421194dc25671e55.1431379433.git.len.brown@intel.com>
-References: <1431379630-6716-1-git-send-email-lenb@kernel.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: A desktop environment[1] kernel wishlist
+Date: Tue, 12 May 2015 00:12:30 +0200
+Message-ID: <20150511221230.GE4434@amd>
+References: <1413881397.30379.7.camel@hadess.net>
+ <286173531.vzKW1UoxJJ@vostro.rjw.lan>
+ <CAJFHJrrYhOtjQENR2-_v2XDeYUJCB1tw7MnZbWjC0d-Mz3Z15g@mail.gmail.com>
+ <3237283.HPYFlah0t8@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1431379630-6716-1-git-send-email-lenb@kernel.org>
-In-Reply-To: <2fe8e6c798e8def271122f62df9bbf58dc283e2a.1431379433.git.len.brown@intel.com>
-References: <2fe8e6c798e8def271122f62df9bbf58dc283e2a.1431379433.git.len.brown@intel.com>
+Content-Disposition: inline
+In-Reply-To: <3237283.HPYFlah0t8@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Chirantan Ekbote <chirantan@chromium.org>, John Stultz <john.stultz@linaro.org>, Olof Johansson <olof@lixom.net>, Bastien Nocera <hadess@hadess.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, snanda@chromium.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+Hi!
 
-Modern processor familes do not require the 10ms delay
-in cpu_up() to de-assert INIT.  This speeds up boot
-and resume by 10ms per (application) processor.
+> > If the event was user-triggered it sends
+> > out a DBus signal announcing the end of the suspend, Chrome thaws its
+> > renderer processes, the full UI comes back up, and the user can start
+> > working.  If the event was _not_ user-triggred (if it was the RTC or
+> > NIC), the power manager sends out a different DBus signal announcing
+> > that the system is in lucid sleep and will re-suspend soon.  It will
+> > then wait for all registered applications to report readiness to
+> > suspend or for the max timeout to expire.
+> 
+> First let me say that the "user-triggered" vs "non-user-triggered" distinction
+> seems somewhat artificial to me.  All boils down to having a special class
+> of wakeup events that are supposed to make the power manager behave differently
+> after resuming.  Whether or not they are actually triggered by the user
+> doesn't really matter technically.
+...
+> > So that was a little long-winded but hopefully I've addressed all your
+> > concerns about potential race conditions in this code.  I simplified a
+> > few bits because would just complicate the discussion but for the most
+> > part this is how the feature works now.  Having the kernel emit a
+> > uevent with the wakeup event type would take the place of the power
+> > manager reading from /sys/power/wakeup_type in this system but
+> > wouldn't really affect anything else.
+> 
+> Which loops back to my previous remark: Things may get ugly if /sys/power/wakeup_type
+> doesn't do the right thing (the uevent mechanics you'd like to replace it with
+> will really need to do the same, so I'm not quite sure it's worth the effort).
+> 
+> Namely, it really has to cover all events that might have woken you up and
+> happened before stuff has started to be added to the input buffers that Chrome
+> cares about.  It is difficult to identify the exact point where that takes place
+> in the resume sequence, but it should be somewhere in dpm_resume_end().  Why so?
+> Because it really doesn't matter why exactly the system is waking up.  What
+> matters is whether or not an event that you should react to by bringing up the
+> UI happens *at* *any* *time* between (and including) the actual wakeup and the
+> point when you can rely on the input buffers to contain any useful information
+> consumable by Chrome.
+> 
+> This pretty much means that /sys/power/wakeup_type needs to behave almost like
+> /sys/power/wakeup_count, but is limited to a subset of wakeup sources.  That's
+> why I was talking about splitting the wakeup count.
+> 
+> So instead of adding an entirely new mechanics for that, why don't you add
+> something like "priority" or "weight" to struct wakeup_source and assign
+> higher values of that to the wakeup sources associated with the events
+> you want to bring up the UI after resume?  And make those "higher-priority"
+> wakeup sources use a separate wakeup counter, so you can easily verify if
+> any of them has triggered by reading that or making it trigger a uevent if
+> you want to?
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/kernel/smpboot.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+Does it do all we want? What if one device wants to generate both
+"normal" and "higher-priority" wakeup events? (*)
 
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 0629a8e..85bd6aa 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -521,6 +521,7 @@ void __inquire_remote_apic(int apicid)
-  * many cores and don't require that delay.
-  *
-  * Cmdline "init_cpu_udelay=" is available to over-ride this delay.
-+ * Modern processor families are quirked to remove the delay entirely.
-  */
- #define UDELAY_10MS_DEFAULT 10000
- 
-@@ -534,6 +535,18 @@ static int __init cpu_init_udelay(char *str)
- }
- early_param("cpu_init_udelay", cpu_init_udelay);
- 
-+static void __init smp_quirk_init_udelay(void)
-+{
-+	/* if cmdline changed it from default, leave it alone */
-+	if (init_udelay != UDELAY_10MS_DEFAULT)
-+		return;
-+
-+	/* if modern processor, use no delay */
-+	if (((boot_cpu_data.x86_vendor == X86_VENDOR_INTEL) && (boot_cpu_data.x86 == 6)) ||
-+	    ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) && (boot_cpu_data.x86 >= 0xF)))
-+		init_udelay = 0;
-+}
-+
- /*
-  * Poke the other CPU in the eye via NMI to wake it up. Remember that the normal
-  * INIT, INIT, STARTUP sequence will reset the chip hard for us, and this
-@@ -1210,6 +1223,8 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
- 		uv_system_init();
- 
- 	set_mtrr_aps_delayed_init();
-+
-+	smp_quirk_init_udelay();
- }
- 
- void arch_enable_nonboot_cpus_begin(void)
+Should not we have normal interface for keyboard (and similar devices)
+where we could ask "did something interesting happen while we were
+sleeping"? Actually.. maybe the device can queue the events
+that happened during sleep, and deliver them after wakeup? If user
+pressed key during sleep, you should have key event waiting on
+/dev/input/event3...
+
+									Pavel
+(*) Ethernet card might be an example. If machine received wake-on-lan
+packet, it will want to wake up with screen on. If machine received
+normal packet, it might want to process the packet and get back to sleep.
+
 -- 
-2.4.0.rc1
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
