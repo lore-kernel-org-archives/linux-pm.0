@@ -1,24 +1,25 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter() failures
-Date: Tue, 12 May 2015 01:13:45 +0200
-Message-ID: <3712156.vJ010G77Nq@vostro.rjw.lan>
-References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com> <8965830.CMQzZzsqm0@vostro.rjw.lan> <55503C3E.6020804@linux.vnet.ibm.com>
+Date: Tue, 12 May 2015 01:14:01 +0200
+Message-ID: <3891627.8vhHP2jkbR@vostro.rjw.lan>
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com> <8965830.CMQzZzsqm0@vostro.rjw.lan> <5550C721.2050906@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56499 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:60761 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751858AbbEKWsh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2015 18:48:37 -0400
-In-Reply-To: <55503C3E.6020804@linux.vnet.ibm.com>
+	with SMTP id S1752617AbbEKWsw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2015 18:48:52 -0400
+In-Reply-To: <5550C721.2050906@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com, daniel.lezcano@linaro.org, rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, "peterz@infradead.org" <peterz@infradead.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "rlippert@google.com" <rlippert@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linus.walleij@linaro.org" <linus.walleij@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "mingo@redhat.com" <mingo@redhat.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 
-On Monday, May 11, 2015 10:51:02 AM Preeti U Murthy wrote:
-> On 05/10/2015 04:45 AM, Rafael J. Wysocki wrote:
+On Monday, May 11, 2015 04:13:37 PM Sudeep Holla wrote:
+> 
+> On 10/05/15 00:15, Rafael J. Wysocki wrote:
 > > On Saturday, May 09, 2015 10:33:05 PM Rafael J. Wysocki wrote:
 > >> On Saturday, May 09, 2015 10:11:41 PM Rafael J. Wysocki wrote:
 > >>> On Saturday, May 09, 2015 11:19:16 AM Preeti U Murthy wrote:
@@ -28,7 +29,7 @@ On Monday, May 11, 2015 10:51:02 AM Preeti U Murthy wrote:
 > >>>
 > >>> [cut]
 > >>>
-> >>>>>>  
+> >>>>>>
 > >>>>>> +	/* Take note of the planned idle state. */
 > >>>>>> +	idle_set_state(smp_processor_id(), target_state);
 > >>>>>
@@ -51,22 +52,20 @@ On Monday, May 11, 2015 10:51:02 AM Preeti U Murthy wrote:
 > >> So after I've dropped it I think we need to do three things:
 > >> (1) Move the idle_set_state() calls to cpuidle_enter_state().
 > >> (2) Make cpuidle_enter_state() call default_idle_call() again, but this time
-> >>     do that *before* it has called idle_set_state() for target_state.
+> >>      do that *before* it has called idle_set_state() for target_state.
 > >> (3) Introduce demotion as per my last patch.
 > >>
 > >> Let me cut patches for that.
-> > 
+> >
 > > Done as per the above and the patches follow in replies to this messge.
-> > 
+> >
 > > All on top of the current linux-next branch of the linux-pm.git tree.
+> >
 > 
-> The patches look good. Based and tested these patches on top of
-> linux-pm/linux-next (They are not yet in the branch as far as I can see.)
-
-They aren't in the tree yet.  I'll put them in there later today.
-
-> All patches in this series
-> Reviewed and Tested-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> Tested on ARM Vexpress platforms with one of the CPU in broadcast mode
+> and also with broadcast timer. So, you can add:
+> 
+> Tested-by: Sudeep Holla <sudeep.holla@arm.com>
 
 Thanks!
 
