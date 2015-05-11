@@ -1,94 +1,94 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: [PATCH 1/2] arm: boot: dts: am4372: add operating points
-Date: Mon, 11 May 2015 12:02:23 -0500
-Message-ID: <20150511170223.GC22558@saruman.tx.rr.com>
-References: <1431115050-23693-1-git-send-email-balbi@ti.com>
- <554D17F3.7090008@ti.com>
- <554D18AB.6060901@ti.com>
- <20150508202439.GA25459@saruman.tx.rr.com>
- <554FF686.5050704@ti.com>
- <20150511151930.GA19183@saruman.tx.rr.com>
- <CAGo_u6oQ_uzO4B4ezC-Vi8_FQZWH49+6fbutdVgP5s0fL3MhrA@mail.gmail.com>
-Reply-To: <balbi@ti.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 3/7] drivers/cpuidle: Convert non-modular drivers to use
+ builtin_driver_register
+Date: Mon, 11 May 2015 19:13:07 +0200
+Message-ID: <5550E323.1080800@linaro.org>
+References: <1431287385-1526-1-git-send-email-paul.gortmaker@windriver.com> <1431287385-1526-4-git-send-email-paul.gortmaker@windriver.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="3Gf/FFewwPeBMqCJ"
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAGo_u6oQ_uzO4B4ezC-Vi8_FQZWH49+6fbutdVgP5s0fL3MhrA@mail.gmail.com>
-Sender: linux-omap-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: "Balbi, Felipe" <balbi@ti.com>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Viresh Kumar <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1431287385-1526-4-git-send-email-paul.gortmaker@windriver.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Paul Gortmaker <paul.gortmaker@windriver.com>, linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michal Simek <michal.simek@xilinx.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
---3Gf/FFewwPeBMqCJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 05/10/2015 09:49 PM, Paul Gortmaker wrote:
+> All these drivers are configured with Kconfig options that are
+> declared as bool.  Hence it is not possible for the code
+> to be built as modular.  However the code is currently using the
+> module_platform_driver() macro for driver registration.
+>
+> While this currently works, we really don't want to be including
+> the module.h header in non-modular code, which we'll be forced
+> to do, pending some upcoming code relocation from init.h into
+> module.h.  So we fix it now by using the non-modular equivalent.
+>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Michal Simek <michal.simek@xilinx.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
-HI,
+Sounds reasonable.
 
-On Mon, May 11, 2015 at 11:46:13AM -0500, Nishanth Menon wrote:
-> On Mon, May 11, 2015 at 10:19 AM, Felipe Balbi <balbi@ti.com> wrote:
-> >
-> >> in my opinion, doing a temporary hack in upstream kernel is not an
-> >> elegant approach. I suggest helping review and approving Viresh's new
-> >
-> > however this is not a hack, right ? If we get rid of OPP_NITRO and
-> > OPP_TURBO, then we will more than likely always be dealing with safe
-> > OPPs (yeah, I need to confirm this since it's not on public TRM, so as
-> > of now, take this statement with a grain of salt :-), moreover, even
-> > though we're trying to change opp bindings, the current situation is
-> > still very much accepted and will remain valid even after changing
-> > binding :-)
->=20
-> yes - if we do have a documented subset of OPPs that are valid for all
-> "variants" of AM437x, we could add that in using the legacy bindings,
-> but, we will have to do a transition over to the new bindings when
-> they are finalized to support all OPPs appropriately.
+   -- Daniel
 
-sounds fair to me.
+> ---
+>   drivers/cpuidle/cpuidle-at91.c    | 3 +--
+>   drivers/cpuidle/cpuidle-calxeda.c | 3 +--
+>   drivers/cpuidle/cpuidle-zynq.c    | 3 +--
+>   3 files changed, 3 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/cpuidle/cpuidle-at91.c b/drivers/cpuidle/cpuidle=
+-at91.c
+> index f2446c78d87c..9c5853b6ca4a 100644
+> --- a/drivers/cpuidle/cpuidle-at91.c
+> +++ b/drivers/cpuidle/cpuidle-at91.c
+> @@ -62,5 +62,4 @@ static struct platform_driver at91_cpuidle_driver =3D=
+ {
+>   	},
+>   	.probe =3D at91_cpuidle_probe,
+>   };
+> -
+> -module_platform_driver(at91_cpuidle_driver);
+> +builtin_platform_driver(at91_cpuidle_driver);
+> diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpui=
+dle-calxeda.c
+> index 9445e6cc02be..c13feec89ea1 100644
+> --- a/drivers/cpuidle/cpuidle-calxeda.c
+> +++ b/drivers/cpuidle/cpuidle-calxeda.c
+> @@ -75,5 +75,4 @@ static struct platform_driver calxeda_cpuidle_plat_=
+driver =3D {
+>           },
+>           .probe =3D calxeda_cpuidle_probe,
+>   };
+> -
+> -module_platform_driver(calxeda_cpuidle_plat_driver);
+> +builtin_platform_driver(calxeda_cpuidle_plat_driver);
+> diff --git a/drivers/cpuidle/cpuidle-zynq.c b/drivers/cpuidle/cpuidle=
+-zynq.c
+> index 543292b1d38e..6f4257fc56e5 100644
+> --- a/drivers/cpuidle/cpuidle-zynq.c
+> +++ b/drivers/cpuidle/cpuidle-zynq.c
+> @@ -73,5 +73,4 @@ static struct platform_driver zynq_cpuidle_driver =3D=
+ {
+>   	},
+>   	.probe =3D zynq_cpuidle_probe,
+>   };
+> -
+> -module_platform_driver(zynq_cpuidle_driver);
+> +builtin_platform_driver(zynq_cpuidle_driver);
+>
 
-> > Not to mention that people using AM43xx today might be using it under
-> > invalid OPPs and decreasing silicon life; I'd assume that's a very
-> > urgent detail to sort out.
->=20
-> While I do agree that there is always a debate between fixing things
-> in kernel for bootloader issues, but it does not mean that we should
-> just postpone fixing the bootloader in this case - since, at this very
-> moment, we are already in broken configuration - example sitting on a
-> bootloader shell does have the same impact we have at this time.
-
-agreed, I'll cook up a patch for bootloader too.
-
-> Lets try to help Viresh in getting his series sorted out meanwhile -
-> maybe others can help as well :(
-
-sure.
 
 --=20
-balbi
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
---3Gf/FFewwPeBMqCJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVUOCfAAoJEIaOsuA1yqRELf8P/0TYavF3GaDUi+K1AJJEmfco
-NEyoENn9U5OG88/d4Lo5AdOn/lJJXzLYfjR3xY+UMm8i1oqwO+ZjcChLmGN9HwBh
-FYf7SoRIGYSSz1R8FdKSBAn56Fv1Taltjyzyz9+l+iD+/s600gmq5eRfw/ZOg2DP
-xrIaWu5coTQTsdIKE3a+z55ouJKkCSYpnmu9i/y1JQHGLNxPx6jmwr/iYgprvX8o
-741V8LjdOheJBf3n5W6zFLq6wN9LDQOlObn38DcYPTV1m0zn4+uLdx8sFk/wAPuo
-wz+n1bwKTfzxsTs/Q5bL1wjtNXA+YiX5gM86Sl80Be4zpyxhREipo1pmamMkGdVM
-jhCMjG6QCCdjuIDedvbnz0KQaj+ndtGRHD41bmLZHwtWPC3rJt3Sh9i9IUsiZM1s
-7UZcppDwRB60nK2lFNePQfIBNpaTmgABz21f6m6j+p3yyFXYffMAHwolVElMsyF5
-al7Lcpd/LbDLQ/jFINrqMmuwjUwOxxy4f6N1i6YVH4dW8uMRJZa0Mso7XbQGht0L
-AALUzASQOMUVnST+qLvvBeBFrxneDwYYggeicJSrIbvoFkLQSZbGJkdlpqqCGEQe
-qf5INbqCsyTuJtOzYeEAWG1X64OkBaBm6ewdWWPtbcJmuSvDUttoAtMvSVpJt3l1
-thItIN038vivpquDOqUe
-=ACQ2
------END PGP SIGNATURE-----
-
---3Gf/FFewwPeBMqCJ--
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
