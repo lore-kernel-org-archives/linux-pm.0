@@ -1,25 +1,24 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter() failures
-Date: Tue, 12 May 2015 01:14:01 +0200
-Message-ID: <3891627.8vhHP2jkbR@vostro.rjw.lan>
-References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com> <8965830.CMQzZzsqm0@vostro.rjw.lan> <5550C721.2050906@arm.com>
+Date: Tue, 12 May 2015 01:31:14 +0200
+Message-ID: <2602092.6h7ufczYGd@vostro.rjw.lan>
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com> <8965830.CMQzZzsqm0@vostro.rjw.lan> <5550E999.8080005@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60761 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:63860 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752617AbbEKWsw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2015 18:48:52 -0400
-In-Reply-To: <5550C721.2050906@arm.com>
+	with SMTP id S1751655AbbEKXGG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2015 19:06:06 -0400
+In-Reply-To: <5550E999.8080005@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, "peterz@infradead.org" <peterz@infradead.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "rlippert@google.com" <rlippert@google.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linus.walleij@linaro.org" <linus.walleij@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "mingo@redhat.com" <mingo@redhat.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com, rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org, Kevin Hilman <khilman@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Monday, May 11, 2015 04:13:37 PM Sudeep Holla wrote:
-> 
-> On 10/05/15 00:15, Rafael J. Wysocki wrote:
+On Monday, May 11, 2015 07:40:41 PM Daniel Lezcano wrote:
+> On 05/10/2015 01:15 AM, Rafael J. Wysocki wrote:
 > > On Saturday, May 09, 2015 10:33:05 PM Rafael J. Wysocki wrote:
 > >> On Saturday, May 09, 2015 10:11:41 PM Rafael J. Wysocki wrote:
 > >>> On Saturday, May 09, 2015 11:19:16 AM Preeti U Murthy wrote:
@@ -60,12 +59,49 @@ On Monday, May 11, 2015 04:13:37 PM Sudeep Holla wrote:
 > > Done as per the above and the patches follow in replies to this messge.
 > >
 > > All on top of the current linux-next branch of the linux-pm.git tree.
-> >
 > 
-> Tested on ARM Vexpress platforms with one of the CPU in broadcast mode
-> and also with broadcast timer. So, you can add:
+> IMO the resulting code is more and more confusing.
+
+Why is it confusing?
+
+What part of it is confusing?
+
+Patches [1-2/3] simply replace https://patchwork.kernel.org/patch/6326761/
+and I'm not sure why that would be confusing.
+
+Patch [3/3] simply causes cpuidle_enter_state() to pick up a more suitable
+state if tick_broadcast_enter() fails instead of returning an error code
+in that case.  What exactly is confusing in that?
+
+> Except I miss something, the tick_broadcast_enter can fail only if the 
+> local timer of the current cpu is used as a broadcast timer (which is 
+> the case today for PPC only).
+
+well, why does this matter?
+
+> The correct fix would be to tie this local timer with the cpu power 
+> domain and disable the idle state powering down this domain like it was 
+> done for the renesas cpuidle driver.
 > 
-> Tested-by: Sudeep Holla <sudeep.holla@arm.com>
+> IOW, the cpu power domain is in use (because of its local timer), so we 
+> shouldn't shut it down.
+> 
+> No ?
 
-Thanks!
+Sorry, I'm not sure what you're talking about.
 
+The problem at hand is that tick_broadcast_enter() can fail and we need to
+handle that.  If we can prevent it from ever failing, that would be awesome,
+but quite honestly I don't see how to do that ATM.
+
+> I am aware this is not easily fixable because the genpd framework is 
+> incomplete and has some restrictions but I believe it is worth to have a 
+> discussion. Add Kevin and Ulf in Cc.
+
+So I'm going to queue up these patches for 4.2 and we can have a discussion
+just fine regardless.
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
