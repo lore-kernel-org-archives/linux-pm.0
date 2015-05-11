@@ -1,149 +1,65 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 2/2] thermal: of-thermal: add support for reading
- coefficients property  33 O   May 11 Antoine Tenart  ( 15K) [PATCH v4 1/3]
- iio: adc: add support for Berlin
-Date: Mon, 11 May 2015 20:27:52 -0700
-Message-ID: <20150512032751.GJ4810@localhost.localdomain>
-References: <1431399857-13943-1-git-send-email-edubezval@gmail.com>
- <1431399857-13943-3-git-send-email-edubezval@gmail.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Mon, 11 May 2015 16:34:32 -0400
+Message-ID: <CAJvTdKmGFPHtO-rOwXWJr6bPDS4PuEo+g7H-uQhuMc_+kh4CuA@mail.gmail.com>
+References: <4290667.ZqInAykFGS@vostro.rjw.lan>
+	<Pine.LNX.4.44L0.1505091556001.5397-100000@netrider.rowland.org>
+	<20150509202518.GB20282@khazad-dum.debian.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="9aCKuHbn5v2q3RVc"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1431399857-13943-3-git-send-email-edubezval@gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>, hongtao.jia@freescale.com, kong.kongxinwei@hisilicon.com, nrajan@codeaurora.org
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f179.google.com ([209.85.217.179]:34653 "EHLO
+	mail-lb0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752434AbbEKUee (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2015 16:34:34 -0400
+In-Reply-To: <20150509202518.GB20282@khazad-dum.debian.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
+On Sat, May 9, 2015 at 4:25 PM, Henrique de Moraes Holschuh
+<hmh@hmh.eng.br> wrote:
+> On Sat, 09 May 2015, Alan Stern wrote:
+>> On Fri, 8 May 2015, Rafael J. Wysocki wrote:
+>> > My current view on that is that whether or not to do a sync() before suspending
+>> > ultimately is a policy decision and should belong to user space as such (modulo
+>> > the autosleep situation when user space may not know when the suspend is going
+>> > to happen).
+>> >
+>> > Moreover, user space is free to do as many sync()s before suspending as it
+>> > wants to and the question here is whether or not the *kernel* should sync()
+>> > in the suspend code path.
+>> >
+>> > Since we pretty much can demonstrate that having just one sync() in there is
+>> > not sufficient in general, should we put two of them in there?  Or just
+>> > remove the existing one and leave it to user space entirely?
+>>
+>> I don't know about the advantages of one sync over two.  But how about
+>> adding a "syncs_before_suspend" (or just "syncs") sysfs attribute that
+>> takes a small numeric value?  The default can be 0, and the user could
+>> set it to 1 or 2 (or higher).
+>
+> IMO it would be much safer to both have that knob, and to set it to keep the
+> current behavior as the default.  Userspace will adapt and change that knob
+> to whatever is sufficient based on what it does before signaling the kernel
+> to suspend.
+>
+> A regression in sync-before-suspend is sure to cause data loss episodes,
+> after all.  And, as far as bikeshedding goes, IMHO syncs_before_suspend is
+> self-explanatory, which would be a very good reason to use it instead of the
+> shorter requires-you-to-know-what-it-is-about "syncs".
+>
 
---9aCKuHbn5v2q3RVc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+When I first thought about this, I had a similar view:
+https://lkml.org/lkml/2014/1/23/45
 
-Copying Narendran.
+But upon reflection, I do not believe that the kernel is adding value here,
+instead it is imposing a policy, and that policy decision is sometimes
+prohibitively expensive.
+User-space can do this for itself (and in the case of desktop distros,
+already does),
+and so the kernel should butt-out.
 
-On Mon, May 11, 2015 at 08:04:17PM -0700, Eduardo Valentin wrote:
-> In order to avoid having each driver adding their own
-> specific DT property to specify slope and offset,
-> this patch adds a basic coefficient reading from
-> DT thermal zone node. Right now, as the thermal
-> framework does not support multiple sensors,
-> the current coefficients apply only to the only
-> sensor in the thermal zone.
->=20
-> The supported equation is a simple linear model:
-> 	slope * <sensor reading> + offset.
->=20
-> slope and offset are read from the coefficients
-> DT property. In the same way as it is described in
-> the DT thermal binding.
->=20
-> So, as of today, the thermal framework will support
-> only cases like:
->                 /* hotspot =3D 1 * adc + 6000 */
-> 		coefficients =3D          <1      6000>;
->=20
-> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
-> ---
->  drivers/thermal/of-thermal.c | 26 ++++++++++++++++++++++++--
->  1 file changed, 24 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 9e8c614..b295b2b 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -58,6 +58,8 @@ struct __thermal_bind_params {
->   * @mode: current thermal zone device mode (enabled/disabled)
->   * @passive_delay: polling interval while passive cooling is activated
->   * @polling_delay: zone polling interval
-> + * @slope: slope of the temperature adjustment curve
-> + * @offset: offset of the temperature adjustment curve
->   * @ntrips: number of trip points
->   * @trips: an array of trip points (0..ntrips - 1)
->   * @num_tbps: number of thermal bind params
-> @@ -70,6 +72,8 @@ struct __thermal_zone {
->  	enum thermal_device_mode mode;
->  	int passive_delay;
->  	int polling_delay;
-> +	int slope;
-> +	int offset;
-> =20
->  	/* trip data */
->  	int ntrips;
-> @@ -716,7 +720,7 @@ static int thermal_of_populate_trip(struct device_nod=
-e *np,
->   * @np parameter and fills the read data into a __thermal_zone data stru=
-cture
->   * and return this pointer.
->   *
-> - * TODO: Missing properties to parse: thermal-sensor-names and coefficie=
-nts
-> + * TODO: Missing properties to parse: thermal-sensor-names
->   *
->   * Return: On success returns a valid struct __thermal_zone,
->   * otherwise, it returns a corresponding ERR_PTR(). Caller must
-> @@ -728,7 +732,7 @@ thermal_of_build_thermal_zone(struct device_node *np)
->  	struct device_node *child =3D NULL, *gchild;
->  	struct __thermal_zone *tz;
->  	int ret, i;
-> -	u32 prop;
-> +	u32 prop, coef[2];
-> =20
->  	if (!np) {
->  		pr_err("no thermal zone np\n");
-> @@ -753,6 +757,20 @@ thermal_of_build_thermal_zone(struct device_node *np)
->  	}
->  	tz->polling_delay =3D prop;
-> =20
-> +	/*
-> +	 * REVIST: for now, the thermal framework supports only
-> +	 * one sensor per thermal zone. Thus, we are considering
-> +	 * only the first two values as slope and offset.
-> +	 */
-> +	ret =3D of_property_read_u32_array(np, "coefficients", coef, 2);
-> +	if (ret =3D=3D 0) {
-> +		tz->slope =3D coef[0];
-> +		tz->offset =3D coef[1];
-> +	} else {
-> +		tz->slope =3D 1;
-> +		tz->offset =3D 0;
-> +	}
-> +
->  	/* trips */
->  	child =3D of_get_child_by_name(np, "trips");
-> =20
-> @@ -900,6 +918,10 @@ int __init of_parse_thermal_zones(void)
->  		for (i =3D 0; i < tz->ntrips; i++)
->  			mask |=3D 1 << i;
-> =20
-> +		/* these two are left for temperature drivers to use */
-> +		tzp->slope =3D tz->slope;
-> +		tzp->offset =3D tz->offset;
-> +
->  		zone =3D thermal_zone_device_register(child->name, tz->ntrips,
->  						    mask, tz,
->  						    ops, tzp,
-> --=20
-> 2.3.4
->=20
-
---9aCKuHbn5v2q3RVc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQEcBAEBAgAGBQJVUXK8AAoJEMLUO4d9pOJWXo0H/1EjTVqvNjam1HX48I2Hhprp
-x/tRfTbLxlbKzX4AGHwuPjBZkGXkrJFXqbrkOzwjbFeLQ+Z5TMhyBZJsFS6A8SFe
-q+wF52hnBE6QhLNXUgoBqG4UjE/CFj5IplsjqJveAoq6WQpeIGyB6WijYUw3zq3l
-ztCKHCXaL2c4mWjCxaGDBaeTGAb6884ys5fo5JVBYVvgJfLPXuLD0jNzoDfLEUxs
-xGpcxmLUyMq2iw2IymtIizbjRo4Nrh3vSOxBL662lRpO6gVdxD89C3YtRbvpEFtV
-lWy9YGI8qEZNF/fQMvIEzeVOytLTNMIwzTiX4neEpF5wuPmGfCMB1Y68dsc63zQ=
-=/wZr
------END PGP SIGNATURE-----
-
---9aCKuHbn5v2q3RVc--
+thanks,
+Len Brown, Intel Open Source Technology Center
