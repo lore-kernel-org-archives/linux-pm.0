@@ -1,158 +1,51 @@
-From: Axel Haslam <ahaslam@baylibre.com>
-Subject: validate callback for menu governor
-Date: Tue, 12 May 2015 18:30:38 +0200
-Message-ID: <CAKXjFTN7HBGNMBuxh8E8FaACG3xgYuLKYHs6vbQq7WtvKLttrw@mail.gmail.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [RFC PATCH v2 0/1] ARM: cpuidle: heterogeneous systems extension
+Date: Tue, 12 May 2015 10:36:50 -0600
+Message-ID: <20150512163650.GM16124@linaro.org>
+References: <1429200617-9546-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <CAMAWPa_fMhgFfL8krDxT9h42mydVogkaYQt1Me1qJTsKeH5dSA@mail.gmail.com>
+ <20150422085507.GA22601@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f178.google.com ([209.85.214.178]:34480 "EHLO
-	mail-ob0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753185AbbELQaj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2015 12:30:39 -0400
-Received: by obfe9 with SMTP id e9so9814506obf.1
-        for <linux-pm@vger.kernel.org>; Tue, 12 May 2015 09:30:38 -0700 (PDT)
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:34653 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753263AbbELQgx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2015 12:36:53 -0400
+Received: by pacyx8 with SMTP id yx8so18425879pac.1
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2015 09:36:53 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20150422085507.GA22601@red-moon>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, =?UTF-8?Q?Bartosz_Go=C5=82aszewski?= <bgolaszewski@baylibre.com>, Benoit Cousson <bcousson@baylibre.com>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Kevin Hilman <khilman@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Howard Chen <howard.chen@linaro.org>, Rob Herring <robh+dt@kernel.org>, Kevin Hilman <khilman@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Mark Rutland <Mark.Rutland@arm.com>
 
-Hi,
+On Wed, Apr 22 2015 at 02:55 -0600, Lorenzo Pieralisi wrote:
+>On Tue, Apr 21, 2015 at 07:24:54PM +0100, Kevin Hilman wrote:
+>> On Thu, Apr 16, 2015 at 9:10 AM, Lorenzo Pieralisi
+>> <lorenzo.pieralisi@arm.com> wrote:
+>>
+>> [...]
+>>
+>> > This patch sets the maximum number of static CPUidle drivers allowed to
+>> > two, since it is hard to foresee systems with more than two sets of CPUs
+>> > having different idle states
+>>
+>> It's not hard to forsee anymore:
+>>
+>>    http://www.cnx-software.com/2015/04/21/mediatek-helio-x20-deca-core-processor/
+>>    https://liliputing.com/2015/04/closer-look-at-mediateks-upcoming-10-core-helio-x20-processor.html
+>
+>Eheh I stand corrected :). Not a big deal, drivers can be allocated
+>dynamically; it seems that the designs above leave us no choice, the
+>idle states are the only differentiating factor when it comes
+>to CPUidle driver logical cpumask creation, happy to hear more
+>opinions on this, but I do not really see what we can use instead.
 
-Recently a question about cpuidle and cluster off states came
-up in a separate discussion [1].
 
-The question is if it would be useful to add a "validate" callback in the
-cpuidle menu governor. Cpuidle drivers could use this callback to check if
-entering a cluster off state by the "last man" would not violate the target
-residency requirements.
+Dynamic idle driver would be nice. Otherwise, the patch looks good to
+me.
 
-i think the same problem is explained at the top of
-./drivers/cpuidle/cpuidle-big_little.c,
-so im sorry if this was addressed before.
-
-To illustrate the scenario, on a system where cpu0 and cpu1 are in the same
-cluster and where the target residency time for the cluster off state is 5ms,
-imagine that:
-
-cpu 1 enters the cluster off  state at time t0.
-the predicted wakeup by the governor for this cpu is in 20ms
-
-cpu 0 enters the cluster off  state at t0 + 19ms.
-the predicted wakeup is in 30ms.
-
-in this case the cluster off state will actually be entered 1ms before cpu1
-is predicted to wake up, and the cluster off residency constraint would not
-be met.
-
-To avoid this, before entering the cluster off state, the last cpu could
-"validate" that the predicted wakeup time of all the cpus in his cluster
-*still* don't violate the cluster off state requirements.
-
-maybe this is a corner case that does not justify the added logic, which ends
-up being more expensive.
-
-a  simple prototype looks something like this:
-
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index b8a5fa1..bdd3211 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -20,6 +20,7 @@
- #include <linux/sched.h>
- #include <linux/math64.h>
- #include <linux/module.h>
-+#include <linux/cpu.h>
-
- /*
-  * Please note when changing the tuning values:
-@@ -124,6 +125,7 @@ struct menu_device {
-
-     unsigned int    next_timer_us;
-     unsigned int    predicted_us;
-+    unsigned int    predicted_time_us;
-     unsigned int    bucket;
-     unsigned int    correction_factor[BUCKETS];
-     unsigned int    intervals[INTERVALS];
-@@ -276,6 +278,45 @@ again:
-     goto again;
- }
-
-+/* Check if the idle state is still valid for a given cpu */
-+static bool menu_validate(struct cpuidle_driver *drv,
-+        struct cpuidle_device *dev,
-+        int cpu,
-+        int state)
-+{
-+    unsigned int now_us;
-+    int last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
-+    struct menu_device *data;
-+    unsigned int remaining_us;
-+    int i;
-+
-+    now_us = ktime_to_us(ktime_get_raw());
-+    data = per_cpu_ptr(&menu_devices, cpu);
-+    remaining_us = data->predicted_time_us - now_us;
-+
-+    /* Get the new recomended state for this cpu */
-+    for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
-+        struct cpuidle_state *s = &drv->states[i];
-+        struct cpuidle_state_usage *su = &dev->states_usage[i];
-+
-+        if (s->disabled || su->disable)
-+            continue;
-+
-+        if (s->target_residency > remaining_us)
-+            continue;
-+
-+        last_state_idx = i;
-+
-+        /* state (or deeper) is still allowed */
-+        if (last_state_idx >= state)
-+            return true;
-+    }
-+
-+    /* the cpu doest not allow for the requested state */
-+    return false;
-+
-+}
-+
- /**
-  * menu_select - selects the next idle state to enter
-  * @drv: cpuidle driver containing state data
-@@ -352,6 +393,8 @@ static int menu_select(struct cpuidle_driver *drv,
-struct cpuidle_device *dev)
-
-         data->last_state_idx = i;
-     }
-+    data->predicted_time_us = ktime_to_us(ktime_get_raw())
-+        + data->predicted_us;
-
-     return data->last_state_idx;
- }
-@@ -470,6 +513,7 @@ static struct cpuidle_governor menu_governor = {
-     .enable =    menu_enable_device,
-     .select =    menu_select,
-     .reflect =    menu_reflect,
-+    .validate =    menu_validate,
-     .owner =    THIS_MODULE,
- };
-
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 9c5e892..e917fa9 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -226,6 +226,11 @@ struct cpuidle_governor {
-                     struct cpuidle_device *dev);
-     void (*reflect)        (struct cpuidle_device *dev, int index);
-
-+    bool (*validate)    (struct cpuidle_driver *drv,
-+                    struct cpuidle_device *dev,
-+                    int cpu,
-+                    int state);
-+
-     struct module         *owner;
- };
-
-Regards
-Axel
-
-[1] http://marc.info/?l=linux-pm&m=143143190116868&w=2
+Thanks,
+Lina
