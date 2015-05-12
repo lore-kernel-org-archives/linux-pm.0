@@ -1,71 +1,178 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv4 PATCH 10/34] sched: Include blocked utilization in usage tracking
-Date: Tue, 12 May 2015 20:38:45 +0100
-Message-ID: <1431459549-18343-11-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv4 PATCH 18/34] arm: topology: Define TC2 energy and provide it to the scheduler
+Date: Tue, 12 May 2015 20:38:53 +0100
+Message-ID: <1431459549-18343-19-git-send-email-morten.rasmussen@arm.com>
 References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:33813 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933762AbbELTiM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 12 May 2015 15:38:12 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, morten.rasmussen@arm.com
+List-Id: linux-pm@vger.kernel.org
 
-Add the blocked utilization contribution to group sched_entity
-utilization (se->avg.utilization_avg_contrib) and to get_cpu_usage().
-With this change cpu usage now includes recent usage by currently
-non-runnable tasks, hence it provides a more stable view of the cpu
-usage. It does, however, also mean that the meaning of usage is changed:
-A cpu may be momentarily idle while usage is >0. It can no longer be
-assumed that cpu usage >0 implies runnable tasks on the rq.
-cfs_rq->utilization_load_avg or nr_running should be used instead to get
-the current rq status.
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-cc: Ingo Molnar <mingo@redhat.com>
-cc: Peter Zijlstra <peterz@infradead.org>
+This patch is only here to be able to test provisioning of energy related
+data from an arch topology shim layer to the scheduler. Since there is no
+code today which deals with extracting energy related data from the dtb or
+acpi, and process it in the topology shim layer, the content of the
+sched_group_energy structures as well as the idle_state and capacity_state
+arrays are hard-coded here.
 
-Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
+This patch defines the sched_group_energy structure as well as the
+idle_state and capacity_state array for the cluster (relates to sched
+groups (sgs) in DIE sched domain level) and for the core (relates to sgs
+in MC sd level) for a Cortex A7 as well as for a Cortex A15.
+It further provides related implementations of the sched_domain_energy_f
+functions (cpu_cluster_energy() and cpu_core_energy()).
+
+To be able to propagate this information from the topology shim layer to
+the scheduler, the elements of the arm_topology[] table have been
+provisioned with the appropriate sched_domain_energy_f functions.
+
+cc: Russell King <linux@arm.linux.org.uk>
+
+Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- kernel/sched/fair.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ arch/arm/kernel/topology.c | 118 +++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 115 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index ad07398..e40cd88 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -2789,7 +2789,8 @@ static long __update_entity_utilization_avg_contrib(struct sched_entity *se)
- 		__update_task_entity_utilization(se);
- 	else
- 		se->avg.utilization_avg_contrib =
--					group_cfs_rq(se)->utilization_load_avg;
-+				group_cfs_rq(se)->utilization_load_avg +
-+				group_cfs_rq(se)->utilization_blocked_avg;
- 
- 	return se->avg.utilization_avg_contrib - old_contrib;
+diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+index b35d3e5..bbe20c7 100644
+--- a/arch/arm/kernel/topology.c
++++ b/arch/arm/kernel/topology.c
+@@ -274,6 +274,119 @@ void store_cpu_topology(unsigned int cpuid)
+ 		cpu_topology[cpuid].socket_id, mpidr);
  }
-@@ -5046,13 +5047,17 @@ static int select_idle_sibling(struct task_struct *p, int target)
  
- static int get_cpu_usage(int cpu)
- {
-+	int sum;
- 	unsigned long usage = cpu_rq(cpu)->cfs.utilization_load_avg;
-+	unsigned long blocked = cpu_rq(cpu)->cfs.utilization_blocked_avg;
- 	unsigned long capacity_orig = capacity_orig_of(cpu);
- 
--	if (usage >= capacity_orig)
-+	sum = usage + blocked;
++/*
++ * ARM TC2 specific energy cost model data. There are no unit requirements for
++ * the data. Data can be normalized to any reference point, but the
++ * normalization must be consistent. That is, one bogo-joule/watt must be the
++ * same quantity for all data, but we don't care what it is.
++ */
++static struct idle_state idle_states_cluster_a7[] = {
++	 { .power = 25 }, /* WFI */
++	 { .power = 10 }, /* cluster-sleep-l */
++	};
 +
-+	if (sum >= capacity_orig)
- 		return capacity_orig;
++static struct idle_state idle_states_cluster_a15[] = {
++	 { .power = 70 }, /* WFI */
++	 { .power = 25 }, /* cluster-sleep-b */
++	};
++
++static struct capacity_state cap_states_cluster_a7[] = {
++	/* Cluster only power */
++	 { .cap =  150, .power = 2967, }, /*  350 MHz */
++	 { .cap =  172, .power = 2792, }, /*  400 MHz */
++	 { .cap =  215, .power = 2810, }, /*  500 MHz */
++	 { .cap =  258, .power = 2815, }, /*  600 MHz */
++	 { .cap =  301, .power = 2919, }, /*  700 MHz */
++	 { .cap =  344, .power = 2847, }, /*  800 MHz */
++	 { .cap =  387, .power = 3917, }, /*  900 MHz */
++	 { .cap =  430, .power = 4905, }, /* 1000 MHz */
++	};
++
++static struct capacity_state cap_states_cluster_a15[] = {
++	/* Cluster only power */
++	 { .cap =  426, .power =  7920, }, /*  500 MHz */
++	 { .cap =  512, .power =  8165, }, /*  600 MHz */
++	 { .cap =  597, .power =  8172, }, /*  700 MHz */
++	 { .cap =  682, .power =  8195, }, /*  800 MHz */
++	 { .cap =  768, .power =  8265, }, /*  900 MHz */
++	 { .cap =  853, .power =  8446, }, /* 1000 MHz */
++	 { .cap =  938, .power = 11426, }, /* 1100 MHz */
++	 { .cap = 1024, .power = 15200, }, /* 1200 MHz */
++	};
++
++static struct sched_group_energy energy_cluster_a7 = {
++	  .nr_idle_states = ARRAY_SIZE(idle_states_cluster_a7),
++	  .idle_states    = idle_states_cluster_a7,
++	  .nr_cap_states  = ARRAY_SIZE(cap_states_cluster_a7),
++	  .cap_states     = cap_states_cluster_a7,
++};
++
++static struct sched_group_energy energy_cluster_a15 = {
++	  .nr_idle_states = ARRAY_SIZE(idle_states_cluster_a15),
++	  .idle_states    = idle_states_cluster_a15,
++	  .nr_cap_states  = ARRAY_SIZE(cap_states_cluster_a15),
++	  .cap_states     = cap_states_cluster_a15,
++};
++
++static struct idle_state idle_states_core_a7[] = {
++	 { .power = 0 }, /* WFI */
++	};
++
++static struct idle_state idle_states_core_a15[] = {
++	 { .power = 0 }, /* WFI */
++	};
++
++static struct capacity_state cap_states_core_a7[] = {
++	/* Power per cpu */
++	 { .cap =  150, .power =  187, }, /*  350 MHz */
++	 { .cap =  172, .power =  275, }, /*  400 MHz */
++	 { .cap =  215, .power =  334, }, /*  500 MHz */
++	 { .cap =  258, .power =  407, }, /*  600 MHz */
++	 { .cap =  301, .power =  447, }, /*  700 MHz */
++	 { .cap =  344, .power =  549, }, /*  800 MHz */
++	 { .cap =  387, .power =  761, }, /*  900 MHz */
++	 { .cap =  430, .power = 1024, }, /* 1000 MHz */
++	};
++
++static struct capacity_state cap_states_core_a15[] = {
++	/* Power per cpu */
++	 { .cap =  426, .power = 2021, }, /*  500 MHz */
++	 { .cap =  512, .power = 2312, }, /*  600 MHz */
++	 { .cap =  597, .power = 2756, }, /*  700 MHz */
++	 { .cap =  682, .power = 3125, }, /*  800 MHz */
++	 { .cap =  768, .power = 3524, }, /*  900 MHz */
++	 { .cap =  853, .power = 3846, }, /* 1000 MHz */
++	 { .cap =  938, .power = 5177, }, /* 1100 MHz */
++	 { .cap = 1024, .power = 6997, }, /* 1200 MHz */
++	};
++
++static struct sched_group_energy energy_core_a7 = {
++	  .nr_idle_states = ARRAY_SIZE(idle_states_core_a7),
++	  .idle_states    = idle_states_core_a7,
++	  .nr_cap_states  = ARRAY_SIZE(cap_states_core_a7),
++	  .cap_states     = cap_states_core_a7,
++};
++
++static struct sched_group_energy energy_core_a15 = {
++	  .nr_idle_states = ARRAY_SIZE(idle_states_core_a15),
++	  .idle_states    = idle_states_core_a15,
++	  .nr_cap_states  = ARRAY_SIZE(cap_states_core_a15),
++	  .cap_states     = cap_states_core_a15,
++};
++
++/* sd energy functions */
++static inline const struct sched_group_energy *cpu_cluster_energy(int cpu)
++{
++	return cpu_topology[cpu].socket_id ? &energy_cluster_a7 :
++			&energy_cluster_a15;
++}
++
++static inline const struct sched_group_energy *cpu_core_energy(int cpu)
++{
++	return cpu_topology[cpu].socket_id ? &energy_core_a7 :
++			&energy_core_a15;
++}
++
+ static inline int cpu_corepower_flags(void)
+ {
+ 	return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN | \
+@@ -282,10 +395,9 @@ static inline int cpu_corepower_flags(void)
  
--	return usage;
-+	return sum;
- }
+ static struct sched_domain_topology_level arm_topology[] = {
+ #ifdef CONFIG_SCHED_MC
+-	{ cpu_corepower_mask, cpu_corepower_flags, SD_INIT_NAME(GMC) },
+-	{ cpu_coregroup_mask, cpu_core_flags, SD_INIT_NAME(MC) },
++	{ cpu_coregroup_mask, cpu_corepower_flags, cpu_core_energy, SD_INIT_NAME(MC) },
+ #endif
+-	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
++	{ cpu_cpu_mask, 0, cpu_cluster_energy, SD_INIT_NAME(DIE) },
+ 	{ NULL, },
+ };
  
- /*
 -- 
 1.9.1
-
