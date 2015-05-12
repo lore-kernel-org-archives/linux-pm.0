@@ -1,104 +1,82 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv4 PATCH 02/34] sched: Make load tracking frequency scale-invariant
-Date: Tue, 12 May 2015 20:38:37 +0100
-Message-ID: <1431459549-18343-3-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv4 PATCH 03/34] arm: vexpress: Add CPU clock-frequencies to TC2 device-tree
+Date: Tue, 12 May 2015 20:38:38 +0100
+Message-ID: <1431459549-18343-4-git-send-email-morten.rasmussen@arm.com>
 References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:33745 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933488AbbELThy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 12 May 2015 15:37:54 -0400
 In-Reply-To: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, morten.rasmussen@arm.com
-List-Id: linux-pm@vger.kernel.org
 
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-Apply frequency scale-invariance correction factor to load tracking.
-Each segment of the sched_avg::runnable_avg_sum geometric series is now
-scaled by the current frequency so the sched_avg::load_avg_contrib of each
-entity will be invariant with frequency scaling. As a result,
-cfs_rq::runnable_load_avg which is the sum of sched_avg::load_avg_contrib,
-becomes invariant too. So the load level that is returned by
-weighted_cpuload, stays relative to the max frequency of the cpu.
+To enable the parsing of clock frequency and cpu efficiency values
+inside parse_dt_topology [arch/arm/kernel/topology.c] to scale the
+relative capacity of the cpus, this property has to be provided within
+the cpu nodes of the dts file.
 
-Then, we want the keep the load tracking values in a 32bits type, which
-implies that the max value of sched_avg::{runnable|running}_avg_sum must
-be lower than 2^32/88761=48388 (88761 is the max weight of a task). As
-LOAD_AVG_MAX = 47742, arch_scale_freq_capacity must return a value less
-than (48388/47742) << SCHED_CAPACITY_SHIFT = 1037 (SCHED_SCALE_CAPACITY =
-1024). So we define the range to [0..SCHED_SCALE_CAPACITY] in order to
-avoid overflow.
+The patch is a copy of commit 8f15973ef8c3 ("ARM: vexpress: Add CPU
+clock-frequencies to TC2 device-tree") taken from Linaro Stable Kernel
+(LSK) massaged into mainline.
 
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Jon Medhurst <tixy@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>
 
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
 ---
- kernel/sched/fair.c | 28 ++++++++++++++++------------
- 1 file changed, 16 insertions(+), 12 deletions(-)
+ arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index f18ddb7..5eccd63 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -2536,9 +2536,9 @@ static __always_inline int __update_entity_runnable_avg(u64 now, int cpu,
- 							int runnable,
- 							int running)
- {
--	u64 delta, periods;
--	u32 runnable_contrib;
--	int delta_w, decayed = 0;
-+	u64 delta, scaled_delta, periods;
-+	u32 runnable_contrib, scaled_runnable_contrib;
-+	int delta_w, scaled_delta_w, decayed = 0;
- 	unsigned long scale_freq = arch_scale_freq_capacity(NULL, cpu);
+diff --git a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
+index 7a2aeac..76613b2 100644
+--- a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
++++ b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
+@@ -39,6 +39,7 @@
+ 			reg = <0>;
+ 			cci-control-port = <&cci_control1>;
+ 			cpu-idle-states = <&CLUSTER_SLEEP_BIG>;
++			clock-frequency = <1000000000>;
+ 		};
  
- 	delta = now - sa->last_runnable_update;
-@@ -2572,11 +2572,12 @@ static __always_inline int __update_entity_runnable_avg(u64 now, int cpu,
- 		 * period and accrue it.
- 		 */
- 		delta_w = 1024 - delta_w;
-+		scaled_delta_w = (delta_w * scale_freq) >> SCHED_CAPACITY_SHIFT;
-+
- 		if (runnable)
--			sa->runnable_avg_sum += delta_w;
-+			sa->runnable_avg_sum += scaled_delta_w;
- 		if (running)
--			sa->running_avg_sum += delta_w * scale_freq
--				>> SCHED_CAPACITY_SHIFT;
-+			sa->running_avg_sum += scaled_delta_w;
- 		sa->avg_period += delta_w;
+ 		cpu1: cpu@1 {
+@@ -47,6 +48,7 @@
+ 			reg = <1>;
+ 			cci-control-port = <&cci_control1>;
+ 			cpu-idle-states = <&CLUSTER_SLEEP_BIG>;
++			clock-frequency = <1000000000>;
+ 		};
  
- 		delta -= delta_w;
-@@ -2594,20 +2595,23 @@ static __always_inline int __update_entity_runnable_avg(u64 now, int cpu,
+ 		cpu2: cpu@2 {
+@@ -55,6 +57,7 @@
+ 			reg = <0x100>;
+ 			cci-control-port = <&cci_control2>;
+ 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
++			clock-frequency = <800000000>;
+ 		};
  
- 		/* Efficiently calculate \sum (1..n_period) 1024*y^i */
- 		runnable_contrib = __compute_runnable_contrib(periods);
-+		scaled_runnable_contrib = (runnable_contrib * scale_freq)
-+						>> SCHED_CAPACITY_SHIFT;
-+
- 		if (runnable)
--			sa->runnable_avg_sum += runnable_contrib;
-+			sa->runnable_avg_sum += scaled_runnable_contrib;
- 		if (running)
--			sa->running_avg_sum += runnable_contrib * scale_freq
--				>> SCHED_CAPACITY_SHIFT;
-+			sa->running_avg_sum += scaled_runnable_contrib;
- 		sa->avg_period += runnable_contrib;
- 	}
+ 		cpu3: cpu@3 {
+@@ -63,6 +66,7 @@
+ 			reg = <0x101>;
+ 			cci-control-port = <&cci_control2>;
+ 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
++			clock-frequency = <800000000>;
+ 		};
  
- 	/* Remainder of delta accrued against u_0` */
-+	scaled_delta = (delta * scale_freq) >> SCHED_CAPACITY_SHIFT;
-+
- 	if (runnable)
--		sa->runnable_avg_sum += delta;
-+		sa->runnable_avg_sum += scaled_delta;
- 	if (running)
--		sa->running_avg_sum += delta * scale_freq
--			>> SCHED_CAPACITY_SHIFT;
-+		sa->running_avg_sum += scaled_delta;
- 	sa->avg_period += delta;
+ 		cpu4: cpu@4 {
+@@ -71,6 +75,7 @@
+ 			reg = <0x102>;
+ 			cci-control-port = <&cci_control2>;
+ 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
++			clock-frequency = <800000000>;
+ 		};
  
- 	return decayed;
+ 		idle-states {
 -- 
 1.9.1
+
