@@ -1,192 +1,61 @@
-From: Alexandra Yates <alexandra.yates@linux.intel.com>
-Subject: [PATCH] Report interrupt(s) that caused system wakeup
-Date: Tue, 12 May 2015 11:18:59 -0700
-Message-ID: <1431454739-8193-1-git-send-email-alexandra.yates@linux.intel.com>
+From: Michael Turquette <mike.turquette@linaro.org>
+Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
+Date: Tue, 12 May 2015 12:01:34 -0700
+Message-ID: <20150512190134.16410.89041@quantum>
+References: <20150505105714.GA22845@sirena.org.uk> <20150505171252.GI22845@sirena.org.uk>
+ <CAKohpo=kJs076afzERPMqjELgwpN6nR2yoyEjW6XY7YSEbRuCA@mail.gmail.com>
+ <20150507055231.GB32399@codeaurora.org>
+ <20150507110233.GR15510@sirena.org.uk> <20150507211855.GA2455@codeaurora.org>
+ <20150507221842.GW22845@sirena.org.uk>
+ <CAKohpomU8wm0T=A7EkosdOjXbP8q2Cb726Hsjh08KTKYjoz3-A@mail.gmail.com>
+ <555000B6.2010107@ti.com> <20150512052033.GC32300@linux>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:48510 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932809AbbELSSO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 12 May 2015 14:18:14 -0400
+Received: from mail-ig0-f177.google.com ([209.85.213.177]:37304 "EHLO
+	mail-ig0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753719AbbELTBr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2015 15:01:47 -0400
+Received: by igbsb11 with SMTP id sb11so23821012igb.0
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2015 12:01:47 -0700 (PDT)
+In-Reply-To: <20150512052033.GC32300@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Alexandra Yates <alexandra.yates@linux.intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>
+Cc: Mark Brown <broonie@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, santosh shilimkar <santo>
 
-Add a new IRQ flag named IRQD_WAKEUP_TRIGGERED.  This flag is set when a
-given IRQ fires after it has been armed for system wakeup. The flag is
-cleared before arming the IRQ for system wakeup during the next system
-suspend. This feature makes possible to check which IRQs might have
-woken the system up from sleep last time it was suspended.
+Quoting Viresh Kumar (2015-05-11 22:20:33)
+> On 10-05-15, 20:07, Nishanth Menon wrote:
+> > just one minor concern being in the SoC end of the world :). In most
+> > times, the current consumption for a specific OPP varies depending on
+> > the specific location in the process node the die is -> this is even
+> > true among a single lot of wafers as well. some SoC vendors use hot,
+> > nominal and cold terminology to indicate the characteristics of the
+> > specific sample.
+> > 
+> > it might help state which sample end of the spectrum we are talking
+> > about here. reason being: if I put in values based on my board
+> > measurement, the results may not be similar to what someone else's
+> > sample be. Depending on technology, speed binning strategy used by the
+> > vendor, temperature and few other characteristics, these numbers could
+> > be widely divergent.
+> 
+> I don't have any clue about this.. :(
+> 
+> @Mark/stephen: Any inputs ?
 
-Add a new sysfs attribute under /sys/power/ named: pm_last_wakeup_irqs
-when read, will return a list of IRQs with the new flag set.  That will
-be useful for system wakeup diagnostics.
+Nishanth,
 
-Signed-off-by: Alexandra Yates <alexandra.yates@linux.intel.com>
----
- Documentation/ABI/testing/sysfs-power | 11 +++++++++++
- drivers/base/power/wakeup.c           | 25 +++++++++++++++++++++++++
- include/linux/irq.h                   |  7 +++++++
- include/linux/suspend.h               |  1 +
- kernel/irq/pm.c                       |  2 ++
- kernel/power/main.c                   | 23 +++++++++++++++++++++++
- 6 files changed, 69 insertions(+)
+I do not think the idea of the mA property is to perfectly model current
+consumption at a given opp. Instead it is a nominal value that may be
+useful, e.g. for configuring a regulator in Stephen's case.
 
-diff --git a/Documentation/ABI/testing/sysfs-power b/Documentation/ABI/testing/sysfs-power
-index f455181..a28b155 100644
---- a/Documentation/ABI/testing/sysfs-power
-+++ b/Documentation/ABI/testing/sysfs-power
-@@ -256,3 +256,14 @@ Description:
- 		Writing a "1" enables this printing while writing a "0"
- 		disables it.  The default value is "0".  Reading from this file
- 		will display the current value.
-+
-+What:		/sys/power/pm_last_wakeup_irqs
-+Date:		April 2015
-+Contact:	Alexandra Yates <alexandra.yates@linux.intel.org>
-+Description:
-+		The /sys/power/pm_last_wakeup_irqs file allows user space
-+		to identify and report the IRQs responsible from waking the
-+		system up from sleep. The IRQD_WAKEUP_TRIGGERED flag is set and
-+		reported when the given IRQ fires after it has been armed for
-+		system wakeup. This output is useful for system wakeup
-+		diagnostics.
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 7b5ad9a..fa84509 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -755,6 +755,31 @@ void pm_wakeup_clear(void)
- 	pm_abort_suspend = false;
- }
- 
-+/*
-+ * pm_get_last_wakeup_irqs - Parses interrupts to identify which one
-+ * caused the system to wake up from suspend-to-idle.
-+ * @buf: keeps track of the irqs that casued the system to wakeup
-+ */
-+ssize_t pm_get_last_wakeup_irqs(char *buf, size_t size)
-+{
-+	struct irq_desc *desc;
-+	int irq;
-+	char *str = buf;
-+	char *end = buf + size;
-+
-+	if (pm_abort_suspend) {
-+		for_each_irq_desc(irq, desc)
-+			if (irqd_triggered_wakeup(&desc->irq_data))
-+				str += scnprintf(str, end - str, "%d ", irq);
-+
-+		if (str != buf)
-+			str--;
-+
-+		return (str - buf);
-+	}
-+	return 0;
-+}
-+
- /**
-  * pm_get_wakeup_count - Read the number of registered wakeup events.
-  * @count: Address to store the value at.
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 62c6901..9b1a31f 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -182,6 +182,7 @@ struct irq_data {
-  * IRQD_IRQ_MASKED		- Masked state of the interrupt
-  * IRQD_IRQ_INPROGRESS		- In progress state of the interrupt
-  * IRQD_WAKEUP_ARMED		- Wakeup mode armed
-+ * IRQD_WAKEUP_TRIGGERED	- Triggered system wakeup
-  */
- enum {
- 	IRQD_TRIGGER_MASK		= 0xf,
-@@ -196,8 +197,14 @@ enum {
- 	IRQD_IRQ_MASKED			= (1 << 17),
- 	IRQD_IRQ_INPROGRESS		= (1 << 18),
- 	IRQD_WAKEUP_ARMED		= (1 << 19),
-+	IRQD_WAKEUP_TRIGGERED		= (1 << 20),
- };
- 
-+static inline bool irqd_triggered_wakeup(struct irq_data *d)
-+{
-+	return d->state_use_accessors & IRQD_WAKEUP_TRIGGERED;
-+}
-+
- static inline bool irqd_is_setaffinity_pending(struct irq_data *d)
- {
- 	return d->state_use_accessors & IRQD_SETAFFINITY_PENDING;
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 5efe743..7cadded 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -378,6 +378,7 @@ void restore_processor_state(void);
- /* kernel/power/main.c */
- extern int register_pm_notifier(struct notifier_block *nb);
- extern int unregister_pm_notifier(struct notifier_block *nb);
-+extern ssize_t pm_get_last_wakeup_irqs(char *buf, size_t size);
- 
- #define pm_notifier(fn, pri) {				\
- 	static struct notifier_block fn##_nb =			\
-diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-index 5204a6d..52dc34c 100644
---- a/kernel/irq/pm.c
-+++ b/kernel/irq/pm.c
-@@ -22,6 +22,7 @@ bool irq_pm_check_wakeup(struct irq_desc *desc)
- 		desc->depth++;
- 		irq_disable(desc);
- 		pm_system_wakeup();
-+		irqd_set(&desc->irq_data, IRQD_WAKEUP_TRIGGERED);
- 		return true;
- 	}
- 	return false;
-@@ -73,6 +74,7 @@ static bool suspend_device_irq(struct irq_desc *desc, int irq)
- 	if (!desc->action || desc->no_suspend_depth)
- 		return false;
- 
-+	irqd_clear(&desc->irq_data, IRQD_WAKEUP_TRIGGERED);
- 	if (irqd_is_wakeup_set(&desc->irq_data)) {
- 		irqd_set(&desc->irq_data, IRQD_WAKEUP_ARMED);
- 		/*
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 86e8157..8215ca0d 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -272,6 +272,28 @@ static inline void pm_print_times_init(void)
- {
- 	pm_print_times_enabled = !!initcall_debug;
- }
-+
-+static ssize_t pm_last_wakeup_irqs_show(struct kobject *kobj,
-+					struct kobj_attribute *attr,
-+					char *buf)
-+{
-+	size_t ret;
-+
-+	ret = pm_get_last_wakeup_irqs(buf, PAGE_SIZE);
-+	if (ret)
-+		buf[ret++] = '\n';
-+
-+	return ret;
-+}
-+
-+static ssize_t pm_last_wakeup_irqs_store(struct kobject *kobj,
-+					struct kobj_attribute *attr,
-+					const char *buf, size_t n)
-+{
-+	return -EINVAL;
-+}
-+power_attr(pm_last_wakeup_irqs);
-+
- #else /* !CONFIG_PP_SLEEP_DEBUG */
- static inline void pm_print_times_init(void) {}
- #endif /* CONFIG_PM_SLEEP_DEBUG */
-@@ -592,6 +614,7 @@ static struct attribute * g[] = {
- #ifdef CONFIG_PM_SLEEP
- 	&pm_async_attr.attr,
- 	&wakeup_count_attr.attr,
-+	&pm_last_wakeup_irqs_attr.attr,
- #ifdef CONFIG_PM_AUTOSLEEP
- 	&autosleep_attr.attr,
- #endif
--- 
-1.9.1
+The TWLxxxx series of PMICs from TI have configurable SMPS which could
+possibly benefit from this info as well. Most of the time those are left
+in an "automatic mode", but there are manual programming steps to
+achieve higher efficiencies and this property could potentially help you
+do that.
 
+Regards,
+Mike
