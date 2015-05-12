@@ -1,105 +1,95 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter() failures
-Date: Tue, 12 May 2015 01:31:14 +0200
-Message-ID: <2602092.6h7ufczYGd@vostro.rjw.lan>
-References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com> <8965830.CMQzZzsqm0@vostro.rjw.lan> <5550E999.8080005@linaro.org>
+Subject: Re: A desktop environment[1] kernel wishlist
+Date: Tue, 12 May 2015 02:45:52 +0200
+Message-ID: <2569977.BfLROBdnQS@vostro.rjw.lan>
+References: <1413881397.30379.7.camel@hadess.net> <3237283.HPYFlah0t8@vostro.rjw.lan> <20150511221230.GE4434@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63860 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:51932 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751655AbbEKXGG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2015 19:06:06 -0400
-In-Reply-To: <5550E999.8080005@linaro.org>
+	with SMTP id S1751980AbbELAUo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2015 20:20:44 -0400
+In-Reply-To: <20150511221230.GE4434@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com, rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org, Kevin Hilman <khilman@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Chirantan Ekbote <chirantan@chromium.org>, John Stultz <john.stultz@linaro.org>, Olof Johansson <olof@lixom.net>, Bastien Nocera <hadess@hadess.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, snanda@chromium.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Monday, May 11, 2015 07:40:41 PM Daniel Lezcano wrote:
-> On 05/10/2015 01:15 AM, Rafael J. Wysocki wrote:
-> > On Saturday, May 09, 2015 10:33:05 PM Rafael J. Wysocki wrote:
-> >> On Saturday, May 09, 2015 10:11:41 PM Rafael J. Wysocki wrote:
-> >>> On Saturday, May 09, 2015 11:19:16 AM Preeti U Murthy wrote:
-> >>>> Hi Rafael,
-> >>>>
-> >>>> On 05/08/2015 07:48 PM, Rafael J. Wysocki wrote:
-> >>>
-> >>> [cut]
-> >>>
-> >>>>>>
-> >>>>>> +	/* Take note of the planned idle state. */
-> >>>>>> +	idle_set_state(smp_processor_id(), target_state);
-> >>>>>
-> >>>>> And I wouldn't do this either.
-> >>>>>
-> >>>>> The behavior here is pretty much as though the driver demoted the state chosen
-> >>>>> by the governor and we don't call idle_set_state() again in those cases.
-> >>>>
-> >>>> Why is this wrong?
-> >>>
-> >>> It is not "wrong", but incomplete, because demotions done by the cpuidle driver
-> >>> should also be taken into account in the same way.
-> >>>
-> >>> But I'm seeing that the recent patch of mine that made cpuidle_enter_state()
-> >>> call default_idle_call() was a mistake, because it might confuse find_idlest_cpu()
-> >>> significantly as to what state the CPU is in.  I'll drop that one for now.
-> >>
-> >> OK, done.
-> >>
-> >> So after I've dropped it I think we need to do three things:
-> >> (1) Move the idle_set_state() calls to cpuidle_enter_state().
-> >> (2) Make cpuidle_enter_state() call default_idle_call() again, but this time
-> >>      do that *before* it has called idle_set_state() for target_state.
-> >> (3) Introduce demotion as per my last patch.
-> >>
-> >> Let me cut patches for that.
-> >
-> > Done as per the above and the patches follow in replies to this messge.
-> >
-> > All on top of the current linux-next branch of the linux-pm.git tree.
+On Tuesday, May 12, 2015 12:12:30 AM Pavel Machek wrote:
+> Hi!
 > 
-> IMO the resulting code is more and more confusing.
-
-Why is it confusing?
-
-What part of it is confusing?
-
-Patches [1-2/3] simply replace https://patchwork.kernel.org/patch/6326761/
-and I'm not sure why that would be confusing.
-
-Patch [3/3] simply causes cpuidle_enter_state() to pick up a more suitable
-state if tick_broadcast_enter() fails instead of returning an error code
-in that case.  What exactly is confusing in that?
-
-> Except I miss something, the tick_broadcast_enter can fail only if the 
-> local timer of the current cpu is used as a broadcast timer (which is 
-> the case today for PPC only).
-
-well, why does this matter?
-
-> The correct fix would be to tie this local timer with the cpu power 
-> domain and disable the idle state powering down this domain like it was 
-> done for the renesas cpuidle driver.
+> > > If the event was user-triggered it sends
+> > > out a DBus signal announcing the end of the suspend, Chrome thaws its
+> > > renderer processes, the full UI comes back up, and the user can start
+> > > working.  If the event was _not_ user-triggred (if it was the RTC or
+> > > NIC), the power manager sends out a different DBus signal announcing
+> > > that the system is in lucid sleep and will re-suspend soon.  It will
+> > > then wait for all registered applications to report readiness to
+> > > suspend or for the max timeout to expire.
+> > 
+> > First let me say that the "user-triggered" vs "non-user-triggered" distinction
+> > seems somewhat artificial to me.  All boils down to having a special class
+> > of wakeup events that are supposed to make the power manager behave differently
+> > after resuming.  Whether or not they are actually triggered by the user
+> > doesn't really matter technically.
+> ...
+> > > So that was a little long-winded but hopefully I've addressed all your
+> > > concerns about potential race conditions in this code.  I simplified a
+> > > few bits because would just complicate the discussion but for the most
+> > > part this is how the feature works now.  Having the kernel emit a
+> > > uevent with the wakeup event type would take the place of the power
+> > > manager reading from /sys/power/wakeup_type in this system but
+> > > wouldn't really affect anything else.
+> > 
+> > Which loops back to my previous remark: Things may get ugly if /sys/power/wakeup_type
+> > doesn't do the right thing (the uevent mechanics you'd like to replace it with
+> > will really need to do the same, so I'm not quite sure it's worth the effort).
+> > 
+> > Namely, it really has to cover all events that might have woken you up and
+> > happened before stuff has started to be added to the input buffers that Chrome
+> > cares about.  It is difficult to identify the exact point where that takes place
+> > in the resume sequence, but it should be somewhere in dpm_resume_end().  Why so?
+> > Because it really doesn't matter why exactly the system is waking up.  What
+> > matters is whether or not an event that you should react to by bringing up the
+> > UI happens *at* *any* *time* between (and including) the actual wakeup and the
+> > point when you can rely on the input buffers to contain any useful information
+> > consumable by Chrome.
+> > 
+> > This pretty much means that /sys/power/wakeup_type needs to behave almost like
+> > /sys/power/wakeup_count, but is limited to a subset of wakeup sources.  That's
+> > why I was talking about splitting the wakeup count.
+> > 
+> > So instead of adding an entirely new mechanics for that, why don't you add
+> > something like "priority" or "weight" to struct wakeup_source and assign
+> > higher values of that to the wakeup sources associated with the events
+> > you want to bring up the UI after resume?  And make those "higher-priority"
+> > wakeup sources use a separate wakeup counter, so you can easily verify if
+> > any of them has triggered by reading that or making it trigger a uevent if
+> > you want to?
 > 
-> IOW, the cpu power domain is in use (because of its local timer), so we 
-> shouldn't shut it down.
-> 
-> No ?
+> Does it do all we want?
 
-Sorry, I'm not sure what you're talking about.
+I believe so.
 
-The problem at hand is that tick_broadcast_enter() can fail and we need to
-handle that.  If we can prevent it from ever failing, that would be awesome,
-but quite honestly I don't see how to do that ATM.
+> What if one device wants to generate both "normal" and "higher-priority"
+> wakeup events? (*)
+>
+> Should not we have normal interface for keyboard (and similar devices)
+> where we could ask "did something interesting happen while we were
+> sleeping"? Actually.. maybe the device can queue the events
+> that happened during sleep, and deliver them after wakeup? If user
+> pressed key during sleep, you should have key event waiting on
+> /dev/input/event3...
 
-> I am aware this is not easily fixable because the genpd framework is 
-> incomplete and has some restrictions but I believe it is worth to have a 
-> discussion. Add Kevin and Ulf in Cc.
+If it can queue up all of them, it can be "normal" priority just fine
+and user space can read all the queue and decide what to do then.
 
-So I'm going to queue up these patches for 4.2 and we can have a discussion
-just fine regardless.
+The "high-priority" idea is for devices that can't do that at least at one
+point during the suspend-resume cycle.  In those cases we can't simply go
+back and check what the event was, so we need to rely on the device's
+"importance" or "class" (with respect to wakeup).
 
 
 -- 
