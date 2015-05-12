@@ -1,116 +1,75 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv4 PATCH 04/34] sched: Convert arch_scale_cpu_capacity() from weak function to #define
-Date: Tue, 12 May 2015 20:38:39 +0100
-Message-ID: <1431459549-18343-5-git-send-email-morten.rasmussen@arm.com>
-References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: peterz@infradead.org, mingo@redhat.com
-Cc: vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, morten.rasmussen@arm.com
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
+Date: Tue, 12 May 2015 14:57:29 -0500
+Message-ID: <55525B29.2080307@ti.com>
+References: <CAKohpo=kJs076afzERPMqjELgwpN6nR2yoyEjW6XY7YSEbRuCA@mail.gmail.com> <20150507055231.GB32399@codeaurora.org> <20150507110233.GR15510@sirena.org.uk> <20150507211855.GA2455@codeaurora.org> <20150507221842.GW22845@sirena.org.uk> <CAKohpomU8wm0T=A7EkosdOjXbP8q2Cb726Hsjh08KTKYjoz3-A@mail.gmail.com> <555000B6.2010107@ti.com> <20150512052033.GC32300@linux> <20150512190134.16410.89041@quantum> <5552510B.9010306@ti.com> <20150512194134.GC3066@sirena.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:39444 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933616AbbELT60 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 12 May 2015 15:58:26 -0400
+In-Reply-To: <20150512194134.GC3066@sirena.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Michael Turquette <mike.turquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>
 
-Bring arch_scale_cpu_capacity() in line with the recent change of its
-arch_scale_freq_capacity() sibling in commit dfbca41f3479 ("sched:
-Optimize freq invariant accounting") from weak function to #define to
-allow inlining of the function.
+On 05/12/2015 02:41 PM, Mark Brown wrote:
+> On Tue, May 12, 2015 at 02:14:19PM -0500, Nishanth Menon wrote:
+> 
+>> While TWLxx series was kind of nascent in it's ability of choosing
+>> PWM/PFM or auto mode depending on the current targets, newer PMICs
+>> have their own unique techniques -> but, that said, this is a
+>> description of power consumption for a given OPP for the "device", How
+>> would stephen's case work with a PMIC and 2 devices which have
+>> different leakage characteristics (based on which end of the process
+>> spectrum they come from), Lets take an example:
+>> device X consumes 800mA for OPPx
+>> device Y consumes 900mA for OPPy
+uggh... should have been OPPx here.
 
-While at it, remove the ARCH_CAPACITY sched_feature as well. With the
-change to #define there isn't a straightforward way to allow runtime
-switch between an arch implementation and the default implementation of
-arch_scale_cpu_capacity() using sched_feature. The default was to use
-the arch-specific implementation, but only the arm architecture provided
-one.
+> 
+> The system integrator would need to be somewhat conservative when
+> specifying the currents involved.  For plausible applications these are
+> likely to be ballpark figures rather than anything too accurate - if
+> nothing else the instantaneous current draw normally varies very
+> substantially so realistically you're talking about a maximum here.  If
+> the corners vary that dramatically then I'd expect you'd see different
+> OPP tables being used anyway.
 
-cc: Ingo Molnar <mingo@redhat.com>
-cc: Peter Zijlstra <peterz@infradead.org>
+OK - If we state "worst case", then it is quantifiable (if SoC vendors
+would like to expose such information - I doubt mine ever will ;) ).
 
-Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
----
- kernel/sched/fair.c     | 22 +---------------------
- kernel/sched/features.h |  5 -----
- kernel/sched/sched.h    | 11 +++++++++++
- 3 files changed, 12 insertions(+), 26 deletions(-)
+- We might be able to quantify it better by stating worst case(under
+maximum load) steady state current (to avoid including transient
+spikes which are never representative) at ambient temperature(25C).
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 5eccd63..d71d0ca 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -6214,19 +6214,6 @@ static inline int get_sd_load_idx(struct sched_domain *sd,
- 	return load_idx;
- }
- 
--static unsigned long default_scale_cpu_capacity(struct sched_domain *sd, int cpu)
--{
--	if ((sd->flags & SD_SHARE_CPUCAPACITY) && (sd->span_weight > 1))
--		return sd->smt_gain / sd->span_weight;
--
--	return SCHED_CAPACITY_SCALE;
--}
--
--unsigned long __weak arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
--{
--	return default_scale_cpu_capacity(sd, cpu);
--}
--
- static unsigned long scale_rt_capacity(int cpu)
- {
- 	struct rq *rq = cpu_rq(cpu);
-@@ -6256,16 +6243,9 @@ static unsigned long scale_rt_capacity(int cpu)
- 
- static void update_cpu_capacity(struct sched_domain *sd, int cpu)
- {
--	unsigned long capacity = SCHED_CAPACITY_SCALE;
-+	unsigned long capacity = arch_scale_cpu_capacity(sd, cpu);
- 	struct sched_group *sdg = sd->groups;
- 
--	if (sched_feat(ARCH_CAPACITY))
--		capacity *= arch_scale_cpu_capacity(sd, cpu);
--	else
--		capacity *= default_scale_cpu_capacity(sd, cpu);
--
--	capacity >>= SCHED_CAPACITY_SHIFT;
--
- 	cpu_rq(cpu)->cpu_capacity_orig = capacity;
- 
- 	capacity *= scale_rt_capacity(cpu);
-diff --git a/kernel/sched/features.h b/kernel/sched/features.h
-index 91e33cd..03d8072 100644
---- a/kernel/sched/features.h
-+++ b/kernel/sched/features.h
-@@ -36,11 +36,6 @@ SCHED_FEAT(CACHE_HOT_BUDDY, true)
-  */
- SCHED_FEAT(WAKEUP_PREEMPTION, true)
- 
--/*
-- * Use arch dependent cpu capacity functions
-- */
--SCHED_FEAT(ARCH_CAPACITY, true)
--
- SCHED_FEAT(HRTICK, false)
- SCHED_FEAT(DOUBLE_TICK, false)
- SCHED_FEAT(LB_BIAS, true)
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index d854555..b422e08 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -1400,6 +1400,17 @@ unsigned long arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
- }
- #endif
- 
-+#ifndef arch_scale_cpu_capacity
-+static __always_inline
-+unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
-+{
-+	if ((sd->flags & SD_SHARE_CPUCAPACITY) && (sd->span_weight > 1))
-+		return sd->smt_gain / sd->span_weight;
-+
-+	return SCHED_CAPACITY_SCALE;
-+}
-+#endif
-+
- static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta)
- {
- 	rq->rt_avg += rt_delta * arch_scale_freq_capacity(NULL, cpu_of(rq));
+Current draw for a given OPP across temperature ranges are substantial
+enough even for a given chip - most of us in SoC PM world have already
+seen enough characterization graphs across process and temperature to
+realize that.
+
+>> It is a lot more impactful than using relative numbers for other
+>> purposes - for example energy aware scheduling as an example -> here
+>> the actuals might have better optimization, but hints of relative
+>> power numbers by itself is pretty powerful information to help
+>> scheduling. The usage, in this case, unlike the usage for a PMIC
+>> efficiency selection, is not based on absolutes and is meant more of a
+>> hint (closer to usage such as clock transition latency numbers).
+> 
+> You're not comparing two similar types of object here, you're trying to
+> provide information on an actual physical value to get fed into other
+> actual physical values.
+> 
+
+True - I was trying to highlight how the same "consumption data" could
+be interpreted differently. Hence my request for more clarity on the
+description. By describing the specificity of current consumption, the
+binding should ideally prevent mis-interpretation in usage elsewhere.
+
 -- 
-1.9.1
+Regards,
+Nishanth Menon
