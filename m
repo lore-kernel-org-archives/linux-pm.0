@@ -1,102 +1,85 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv4 PATCH 17/34] sched: Introduce SD_SHARE_CAP_STATES sched_domain flag
-Date: Tue, 12 May 2015 20:38:52 +0100
-Message-ID: <1431459549-18343-18-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv4 PATCH 21/34] sched: Highest energy aware balancing sched_domain level pointer
+Date: Tue, 12 May 2015 20:38:56 +0100
+Message-ID: <1431459549-18343-22-git-send-email-morten.rasmussen@arm.com>
 References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:33937 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933894AbbELTik (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 12 May 2015 15:38:40 -0400
 In-Reply-To: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, morten.rasmussen@arm.com
-List-Id: linux-pm@vger.kernel.org
 
-cpufreq is currently keeping it a secret which cpus are sharing
-clock source. The scheduler needs to know about clock domains as well
-to become more energy aware. The SD_SHARE_CAP_STATES domain flag
-indicates whether cpus belonging to the sched_domain share capacity
-states (P-states).
+Add another member to the family of per-cpu sched_domain shortcut
+pointers. This one, sd_ea, points to the highest level at which energy
+model is provided. At this level and all levels below all sched_groups
+have energy model data attached.
 
-There is no connection with cpufreq (yet). The flag must be set by
-the arch specific topology code.
+Partial energy model information is possible but restricted to providing
+energy model data for lower level sched_domains (sd_ea and below) and
+leaving load-balancing on levels above to non-energy-aware
+load-balancing. For example, it is possible to apply energy-aware
+scheduling within each socket on a multi-socket system and let normal
+scheduling handle load-balancing between sockets.
 
-cc: Russell King <linux@arm.linux.org.uk>
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- arch/arm/kernel/topology.c |  3 ++-
- include/linux/sched.h      |  1 +
- kernel/sched/core.c        | 10 +++++++---
- 3 files changed, 10 insertions(+), 4 deletions(-)
+ kernel/sched/core.c  | 11 ++++++++++-
+ kernel/sched/sched.h |  1 +
+ 2 files changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index 5867587..b35d3e5 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -276,7 +276,8 @@ void store_cpu_topology(unsigned int cpuid)
- 
- static inline int cpu_corepower_flags(void)
- {
--	return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN;
-+	return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN | \
-+	       SD_SHARE_CAP_STATES;
- }
- 
- static struct sched_domain_topology_level arm_topology[] = {
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index cf79eef..fe77e54 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -981,6 +981,7 @@ extern void wake_up_q(struct wake_q_head *head);
- #define SD_PREFER_SIBLING	0x1000	/* Prefer to place tasks in a sibling domain */
- #define SD_OVERLAP		0x2000	/* sched_domains of this level overlap */
- #define SD_NUMA			0x4000	/* cross-node balancing */
-+#define SD_SHARE_CAP_STATES	0x8000  /* Domain members share capacity state */
- 
- #ifdef CONFIG_SCHED_SMT
- static inline int cpu_smt_flags(void)
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index ab42515..5499b2c 100644
+index 5499b2c..8818bf0 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -5555,7 +5555,8 @@ static int sd_degenerate(struct sched_domain *sd)
- 			 SD_BALANCE_EXEC |
- 			 SD_SHARE_CPUCAPACITY |
- 			 SD_SHARE_PKG_RESOURCES |
--			 SD_SHARE_POWERDOMAIN)) {
-+			 SD_SHARE_POWERDOMAIN |
-+			 SD_SHARE_CAP_STATES)) {
- 		if (sd->groups != sd->groups->next)
- 			return 0;
- 	}
-@@ -5587,7 +5588,8 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
- 				SD_SHARE_CPUCAPACITY |
- 				SD_SHARE_PKG_RESOURCES |
- 				SD_PREFER_SIBLING |
--				SD_SHARE_POWERDOMAIN);
-+				SD_SHARE_POWERDOMAIN |
-+				SD_SHARE_CAP_STATES);
- 		if (nr_node_ids == 1)
- 			pflags &= ~SD_SERIALIZE;
- 	}
-@@ -6241,6 +6243,7 @@ static int sched_domains_curr_level;
-  * SD_SHARE_PKG_RESOURCES - describes shared caches
-  * SD_NUMA                - describes NUMA topologies
-  * SD_SHARE_POWERDOMAIN   - describes shared power domain
-+ * SD_SHARE_CAP_STATES    - describes shared capacity states
-  *
-  * Odd one out:
-  * SD_ASYM_PACKING        - describes SMT quirks
-@@ -6250,7 +6253,8 @@ static int sched_domains_curr_level;
- 	 SD_SHARE_PKG_RESOURCES |	\
- 	 SD_NUMA |			\
- 	 SD_ASYM_PACKING |		\
--	 SD_SHARE_POWERDOMAIN)
-+	 SD_SHARE_POWERDOMAIN |		\
-+	 SD_SHARE_CAP_STATES)
+@@ -5777,11 +5777,12 @@ DEFINE_PER_CPU(int, sd_llc_id);
+ DEFINE_PER_CPU(struct sched_domain *, sd_numa);
+ DEFINE_PER_CPU(struct sched_domain *, sd_busy);
+ DEFINE_PER_CPU(struct sched_domain *, sd_asym);
++DEFINE_PER_CPU(struct sched_domain *, sd_ea);
  
- static struct sched_domain *
- sd_init(struct sched_domain_topology_level *tl, int cpu)
+ static void update_top_cache_domain(int cpu)
+ {
+ 	struct sched_domain *sd;
+-	struct sched_domain *busy_sd = NULL;
++	struct sched_domain *busy_sd = NULL, *ea_sd = NULL;
+ 	int id = cpu;
+ 	int size = 1;
+ 
+@@ -5802,6 +5803,14 @@ static void update_top_cache_domain(int cpu)
+ 
+ 	sd = highest_flag_domain(cpu, SD_ASYM_PACKING);
+ 	rcu_assign_pointer(per_cpu(sd_asym, cpu), sd);
++
++	for_each_domain(cpu, sd) {
++		if (sd->groups->sge)
++			ea_sd = sd;
++		else
++			break;
++	}
++	rcu_assign_pointer(per_cpu(sd_ea, cpu), ea_sd);
+ }
+ 
+ /*
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index ea32e9e..b627dfa 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -829,6 +829,7 @@ DECLARE_PER_CPU(int, sd_llc_id);
+ DECLARE_PER_CPU(struct sched_domain *, sd_numa);
+ DECLARE_PER_CPU(struct sched_domain *, sd_busy);
+ DECLARE_PER_CPU(struct sched_domain *, sd_asym);
++DECLARE_PER_CPU(struct sched_domain *, sd_ea);
+ 
+ struct sched_group_capacity {
+ 	atomic_t ref;
 -- 
 1.9.1
+
