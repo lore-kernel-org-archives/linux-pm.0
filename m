@@ -1,41 +1,56 @@
-From: Michael Turquette <mike.turquette@linaro.org>
-Subject: Re: [PATCH V4 3/3] OPP: Add 'opp-next' in operating-points-v2 bindings
-Date: Tue, 12 May 2015 14:47:14 -0700
-Message-ID: <20150512214714.16410.59831@quantum>
-References: <cover.1430394884.git.viresh.kumar@linaro.org>
- <1ee98ae5b45083e681c7f530e0ae9195e5636119.1430394884.git.viresh.kumar@linaro.org>
+From: Sai Gurrappadi <sgurrappadi@nvidia.com>
+Subject: Re: [RFCv4 PATCH 00/34] sched: Energy cost model for energy-aware
+ scheduling
+Date: Tue, 12 May 2015 15:07:26 -0700
+Message-ID: <5552799E.2060507@nvidia.com>
+References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f178.google.com ([209.85.223.178]:33366 "EHLO
-	mail-ie0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933135AbbELVr1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2015 17:47:27 -0400
-Received: by iebgx4 with SMTP id gx4so14770792ieb.0
-        for <linux-pm@vger.kernel.org>; Tue, 12 May 2015 14:47:26 -0700 (PDT)
-In-Reply-To: <1ee98ae5b45083e681c7f530e0ae9195e5636119.1430394884.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>, peterz@infradead.org, mingo@redhat.com
+Cc: vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Peter Boonstoppel <pboonstoppel@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, sboyd@codeaurora.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-Quoting Viresh Kumar (2015-04-30 05:08:01)
-> Many platforms require to switch to a intermediate frequency before
-> switching to a final frequency. Or they can switch to only particular
-> OPPs from any OPP.
+
+On 05/12/2015 12:38 PM, Morten Rasmussen wrote:
+> Test results for ARM TC2 (2xA15+3xA7) with cpufreq enabled:
 > 
-> For these add another property in OPP-v2, 'opp-next'.
+> sysbench: Single task running for 3 seconds.
+> rt-app [4]: mp3 playback use-case model
+> rt-app [4]: 5 ~[6,13,19,25,31,38,44,50]% periodic (2ms) tasks
 > 
-> Refer to the bindings for more details.
+> Note: % is relative to the capacity of the fastest cpu at the highest
+> frequency, i.e. the more busy ones do not fit on little cpus.
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> A newer version of rt-app was used which supports a better but slightly
+> different way of modelling the periodic tasks. Numbers are therefore
+> _not_ comparable to the RFCv3 numbers.
+> 
+> Average numbers for 20 runs per test (ARM TC2).
+> 
+> Energy		Mainline	EAS		noEAS
+> 
+> sysbench	100		251*		227*
+> 
+> rt-app mp3	100		63		111
+> 
+> rt-app 6%	100		42		102
+> rt-app 13%	100		58		101
+> rt-app 19%	100		87		101
+> rt-app 25%	100		94		104
+> rt-app 31%	100		93		104
+> rt-app 38%	100		114		117
+> rt-app 44%	100		115		118
+> rt-app 50%	100		125		126
 
-We should never encode any aspect of the dvfs transition sequence into
-DT. Raw data such as clock frequency or supply voltage might be OK, but
-the programming steps should be left entirely to drivers.
+Hi Morten,
 
-So this patch gets a NAK from me.
+What is noEAS? From the numbers, noEAS != Mainline?
 
-Regards,
-Mike
+Maybe also have some perf numbers to show that perf is in fact preserved
+while lowering power.
+
+-Sai
