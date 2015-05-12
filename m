@@ -1,7 +1,7 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv4 PATCH 08/34] sched: Get rid of scaling usage by cpu_capacity_orig
-Date: Tue, 12 May 2015 20:38:43 +0100
-Message-ID: <1431459549-18343-9-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv4 PATCH 06/34] sched: Make usage tracking cpu scale-invariant
+Date: Tue, 12 May 2015 20:38:41 +0100
+Message-ID: <1431459549-18343-7-git-send-email-morten.rasmussen@arm.com>
 References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
@@ -12,77 +12,108 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-Since now we have besides frequency invariant also cpu (uarch plus max
-system frequency) invariant cfs_rq::utilization_load_avg both, frequency
-and cpu scaling happens as part of the load tracking.
-So cfs_rq::utilization_load_avg does not have to be scaled by the original
-capacity of the cpu again.
+Besides the existing frequency scale-invariance correction factor, apply
+cpu scale-invariance correction factor to usage tracking.
+
+Cpu scale-invariance takes cpu performance deviations due to
+micro-architectural differences (i.e. instructions per seconds) between
+cpus in HMP systems (e.g. big.LITTLE) and differences in the frequency
+value of the highest OPP between cpus in SMP systems into consideration.
+
+Each segment of the sched_avg::running_avg_sum geometric series is now
+scaled by the cpu performance factor too so the
+sched_avg::utilization_avg_contrib of each entity will be invariant from
+the particular cpu of the HMP/SMP system it is gathered on.
+
+So the usage level that is returned by get_cpu_usage stays relative to
+the max cpu performance of the system.
+
+In contrast to usage, load (sched_avg::runnable_avg_sum) is currently
+not considered to be made cpu scale-invariant because this will have a
+negative effect on the the existing load balance code based on
+s[dg]_lb_stats::avg_load in overload scenarios.
+
+example: 7 always running tasks
+         4 on cluster 0 (2 cpus w/ cpu_capacity=512)
+         3 on cluster 1 (1 cpu w/ cpu_capacity=1024)
+
+                 cluster 0     cluster 1
+
+capacity         1024 (2*512)  1024 (1*1024)
+load             4096          3072
+cpu-scaled load  2048          3072
+
+Simply using cpu-scaled load in the existing lb code would declare
+cluster 1 busier than cluster 0, although the compute capacity budget
+for one task is higher on cluster 1 (1024/3 = 341) than on cluster 0
+(2*512/4 = 256).
 
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- kernel/sched/fair.c | 34 +++++++++++++++++++++-------------
- 1 file changed, 21 insertions(+), 13 deletions(-)
+ kernel/sched/fair.c  | 13 +++++++++++++
+ kernel/sched/sched.h |  2 +-
+ 2 files changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index af55982..8420444 100644
+index d71d0ca..af55982 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -4998,32 +4998,40 @@ static int select_idle_sibling(struct task_struct *p, int target)
- done:
- 	return target;
- }
+@@ -2540,6 +2540,7 @@ static __always_inline int __update_entity_runnable_avg(u64 now, int cpu,
+ 	u32 runnable_contrib, scaled_runnable_contrib;
+ 	int delta_w, scaled_delta_w, decayed = 0;
+ 	unsigned long scale_freq = arch_scale_freq_capacity(NULL, cpu);
++	unsigned long scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
+ 
+ 	delta = now - sa->last_runnable_update;
+ 	/*
+@@ -2576,6 +2577,10 @@ static __always_inline int __update_entity_runnable_avg(u64 now, int cpu,
+ 
+ 		if (runnable)
+ 			sa->runnable_avg_sum += scaled_delta_w;
 +
- /*
-  * get_cpu_usage returns the amount of capacity of a CPU that is used by CFS
-  * tasks. The unit of the return value must be the one of capacity so we can
-  * compare the usage with the capacity of the CPU that is available for CFS
-  * task (ie cpu_capacity).
-+ *
-  * cfs.utilization_load_avg is the sum of running time of runnable tasks on a
-  * CPU. It represents the amount of utilization of a CPU in the range
-- * [0..SCHED_LOAD_SCALE].  The usage of a CPU can't be higher than the full
-- * capacity of the CPU because it's about the running time on this CPU.
-- * Nevertheless, cfs.utilization_load_avg can be higher than SCHED_LOAD_SCALE
-- * because of unfortunate rounding in avg_period and running_load_avg or just
-- * after migrating tasks until the average stabilizes with the new running
-- * time. So we need to check that the usage stays into the range
-- * [0..cpu_capacity_orig] and cap if necessary.
-- * Without capping the usage, a group could be seen as overloaded (CPU0 usage
-- * at 121% + CPU1 usage at 80%) whereas CPU1 has 20% of available capacity
-+ * [0..capacity_orig] where capacity_orig is the cpu_capacity available at the
-+ * highest frequency (arch_scale_freq_capacity()). The usage of a CPU converges
-+ * towards a sum equal to or less than the current capacity (capacity_curr <=
-+ * capacity_orig) of the CPU because it is the running time on this CPU scaled
-+ * by capacity_curr. Nevertheless, cfs.utilization_load_avg can be higher than
-+ * capacity_curr or even higher than capacity_orig because of unfortunate
-+ * rounding in avg_period and running_load_avg or just after migrating tasks
-+ * (and new task wakeups) until the average stabilizes with the new running
-+ * time. We need to check that the usage stays into the range
-+ * [0..capacity_orig] and cap if necessary. Without capping the usage, a group
-+ * could be seen as overloaded (CPU0 usage at 121% + CPU1 usage at 80%) whereas
-+ * CPU1 has 20% of available capacity. We allow usage to overshoot
-+ * capacity_curr (but not capacity_orig) as it useful for predicting the
-+ * capacity required after task migrations (scheduler-driven DVFS).
-  */
++		scaled_delta_w *= scale_cpu;
++		scaled_delta_w >>= SCHED_CAPACITY_SHIFT;
 +
- static int get_cpu_usage(int cpu)
+ 		if (running)
+ 			sa->running_avg_sum += scaled_delta_w;
+ 		sa->avg_period += delta_w;
+@@ -2600,6 +2605,10 @@ static __always_inline int __update_entity_runnable_avg(u64 now, int cpu,
+ 
+ 		if (runnable)
+ 			sa->runnable_avg_sum += scaled_runnable_contrib;
++
++		scaled_runnable_contrib *= scale_cpu;
++		scaled_runnable_contrib >>= SCHED_CAPACITY_SHIFT;
++
+ 		if (running)
+ 			sa->running_avg_sum += scaled_runnable_contrib;
+ 		sa->avg_period += runnable_contrib;
+@@ -2610,6 +2619,10 @@ static __always_inline int __update_entity_runnable_avg(u64 now, int cpu,
+ 
+ 	if (runnable)
+ 		sa->runnable_avg_sum += scaled_delta;
++
++	scaled_delta *= scale_cpu;
++	scaled_delta >>= SCHED_CAPACITY_SHIFT;
++
+ 	if (running)
+ 		sa->running_avg_sum += scaled_delta;
+ 	sa->avg_period += delta;
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index b422e08..3193025 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -1404,7 +1404,7 @@ unsigned long arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
+ static __always_inline
+ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
  {
- 	unsigned long usage = cpu_rq(cpu)->cfs.utilization_load_avg;
--	unsigned long capacity = capacity_orig_of(cpu);
-+	unsigned long capacity_orig = capacity_orig_of(cpu);
+-	if ((sd->flags & SD_SHARE_CPUCAPACITY) && (sd->span_weight > 1))
++	if (sd && (sd->flags & SD_SHARE_CPUCAPACITY) && (sd->span_weight > 1))
+ 		return sd->smt_gain / sd->span_weight;
  
--	if (usage >= SCHED_LOAD_SCALE)
--		return capacity;
-+	if (usage >= capacity_orig)
-+		return capacity_orig;
- 
--	return (usage * capacity) >> SCHED_LOAD_SHIFT;
-+	return usage;
- }
- 
- /*
+ 	return SCHED_CAPACITY_SCALE;
 -- 
 1.9.1
