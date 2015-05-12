@@ -1,52 +1,157 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv4 PATCH 11/34] sched: Remove blocked load and utilization contributions of dying tasks
-Date: Tue, 12 May 2015 20:38:46 +0100
-Message-ID: <1431459549-18343-12-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv4 PATCH 09/34] sched: Track blocked utilization contributions
+Date: Tue, 12 May 2015 20:38:44 +0100
+Message-ID: <1431459549-18343-10-git-send-email-morten.rasmussen@arm.com>
 References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:33830 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933808AbbELTiP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 12 May 2015 15:38:15 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, morten.rasmussen@arm.com
+List-Id: linux-pm@vger.kernel.org
 
-Task being dequeued for the last time (state == TASK_DEAD) are dequeued
-with the DEQUEUE_SLEEP flag which causes their load and utilization
-contributions to be added to the runqueue blocked load and utilization.
-Hence they will contain load or utilization that is gone away. The issue
-only exists for the root cfs_rq as cgroup_exit() doesn't set
-DEQUEUE_SLEEP for task group exits.
-
-If runnable+blocked load is to be used as a better estimate for cpu
-load the dead task contributions need to be removed to prevent
-load_balance() (idle_balance() in particular) from over-estimating the
-cpu load.
+Introduces the blocked utilization, the utilization counter-part to
+cfs_rq->blocked_load_avg. It is the sum of sched_entity utilization
+contributions of entities that were recently on the cfs_rq and are
+currently blocked. Combined with the sum of utilization of entities
+currently on the cfs_rq or currently running
+(cfs_rq->utilization_load_avg) this provides a more stable average
+view of the cpu usage.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- kernel/sched/fair.c | 2 ++
- 1 file changed, 2 insertions(+)
+ kernel/sched/fair.c  | 30 +++++++++++++++++++++++++++++-
+ kernel/sched/sched.h |  8 ++++++--
+ 2 files changed, 35 insertions(+), 3 deletions(-)
 
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index e40cd88..d045404 100644
+index 8420444..ad07398 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -3202,6 +3202,8 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
- 	 * Update run-time statistics of the 'current'.
- 	 */
- 	update_curr(cfs_rq);
-+	if (entity_is_task(se) && task_of(se)->state == TASK_DEAD)
-+		flags &= !DEQUEUE_SLEEP;
- 	dequeue_entity_load_avg(cfs_rq, se, flags & DEQUEUE_SLEEP);
+@@ -2803,6 +2803,15 @@ static inline void subtract_blocked_load_contrib(struct cfs_rq *cfs_rq,
+ 		cfs_rq->blocked_load_avg = 0;
+ }
  
- 	update_stats_dequeue(cfs_rq, se);
++static inline void subtract_utilization_blocked_contrib(struct cfs_rq *cfs_rq,
++						long utilization_contrib)
++{
++	if (likely(utilization_contrib < cfs_rq->utilization_blocked_avg))
++		cfs_rq->utilization_blocked_avg -= utilization_contrib;
++	else
++		cfs_rq->utilization_blocked_avg = 0;
++}
++
+ static inline u64 cfs_rq_clock_task(struct cfs_rq *cfs_rq);
+ 
+ /* Update a sched_entity's runnable average */
+@@ -2838,6 +2847,8 @@ static inline void update_entity_load_avg(struct sched_entity *se,
+ 		cfs_rq->utilization_load_avg += utilization_delta;
+ 	} else {
+ 		subtract_blocked_load_contrib(cfs_rq, -contrib_delta);
++		subtract_utilization_blocked_contrib(cfs_rq,
++							-utilization_delta);
+ 	}
+ }
+ 
+@@ -2855,14 +2866,20 @@ static void update_cfs_rq_blocked_load(struct cfs_rq *cfs_rq, int force_update)
+ 		return;
+ 
+ 	if (atomic_long_read(&cfs_rq->removed_load)) {
+-		unsigned long removed_load;
++		unsigned long removed_load, removed_utilization;
+ 		removed_load = atomic_long_xchg(&cfs_rq->removed_load, 0);
++		removed_utilization =
++			atomic_long_xchg(&cfs_rq->removed_utilization, 0);
+ 		subtract_blocked_load_contrib(cfs_rq, removed_load);
++		subtract_utilization_blocked_contrib(cfs_rq,
++							removed_utilization);
+ 	}
+ 
+ 	if (decays) {
+ 		cfs_rq->blocked_load_avg = decay_load(cfs_rq->blocked_load_avg,
+ 						      decays);
++		cfs_rq->utilization_blocked_avg =
++			decay_load(cfs_rq->utilization_blocked_avg, decays);
+ 		atomic64_add(decays, &cfs_rq->decay_counter);
+ 		cfs_rq->last_decay = now;
+ 	}
+@@ -2909,6 +2926,8 @@ static inline void enqueue_entity_load_avg(struct cfs_rq *cfs_rq,
+ 	/* migrated tasks did not contribute to our blocked load */
+ 	if (wakeup) {
+ 		subtract_blocked_load_contrib(cfs_rq, se->avg.load_avg_contrib);
++		subtract_utilization_blocked_contrib(cfs_rq,
++					se->avg.utilization_avg_contrib);
+ 		update_entity_load_avg(se, 0);
+ 	}
+ 
+@@ -2935,6 +2954,8 @@ static inline void dequeue_entity_load_avg(struct cfs_rq *cfs_rq,
+ 	cfs_rq->utilization_load_avg -= se->avg.utilization_avg_contrib;
+ 	if (sleep) {
+ 		cfs_rq->blocked_load_avg += se->avg.load_avg_contrib;
++		cfs_rq->utilization_blocked_avg +=
++						se->avg.utilization_avg_contrib;
+ 		se->avg.decay_count = atomic64_read(&cfs_rq->decay_counter);
+ 	} /* migrations, e.g. sleep=0 leave decay_count == 0 */
+ }
+@@ -5147,6 +5168,8 @@ migrate_task_rq_fair(struct task_struct *p, int next_cpu)
+ 		se->avg.decay_count = -__synchronize_entity_decay(se);
+ 		atomic_long_add(se->avg.load_avg_contrib,
+ 						&cfs_rq->removed_load);
++		atomic_long_add(se->avg.utilization_avg_contrib,
++					&cfs_rq->removed_utilization);
+ 	}
+ 
+ 	/* We have migrated, no longer consider this task hot */
+@@ -8129,6 +8152,8 @@ static void switched_from_fair(struct rq *rq, struct task_struct *p)
+ 	if (se->avg.decay_count) {
+ 		__synchronize_entity_decay(se);
+ 		subtract_blocked_load_contrib(cfs_rq, se->avg.load_avg_contrib);
++		subtract_utilization_blocked_contrib(cfs_rq,
++					se->avg.utilization_avg_contrib);
+ 	}
+ #endif
+ }
+@@ -8188,6 +8213,7 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
+ #ifdef CONFIG_SMP
+ 	atomic64_set(&cfs_rq->decay_counter, 1);
+ 	atomic_long_set(&cfs_rq->removed_load, 0);
++	atomic_long_set(&cfs_rq->removed_utilization, 0);
+ #endif
+ }
+ 
+@@ -8240,6 +8266,8 @@ static void task_move_group_fair(struct task_struct *p, int queued)
+ 		 */
+ 		se->avg.decay_count = atomic64_read(&cfs_rq->decay_counter);
+ 		cfs_rq->blocked_load_avg += se->avg.load_avg_contrib;
++		cfs_rq->utilization_blocked_avg +=
++						se->avg.utilization_avg_contrib;
+ #endif
+ 	}
+ }
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 3193025..1070692 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -375,11 +375,15 @@ struct cfs_rq {
+ 	 * the blocked sched_entities on the rq.
+ 	 * utilization_load_avg is the sum of the average running time of the
+ 	 * sched_entities on the rq.
++	 * utilization_blocked_avg is the utilization equivalent of
++	 * blocked_load_avg, i.e. the sum of running contributions of blocked
++	 * sched_entities associated with the rq.
+ 	 */
+-	unsigned long runnable_load_avg, blocked_load_avg, utilization_load_avg;
++	unsigned long runnable_load_avg, blocked_load_avg;
++	unsigned long utilization_load_avg, utilization_blocked_avg;
+ 	atomic64_t decay_counter;
+ 	u64 last_decay;
+-	atomic_long_t removed_load;
++	atomic_long_t removed_load, removed_utilization;
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 	/* Required to track per-cpu representation of a task_group */
 -- 
 1.9.1
-
