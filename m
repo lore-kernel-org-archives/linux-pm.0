@@ -1,7 +1,7 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv4 PATCH 23/34] sched: Extend sched_group_energy to test load-balancing decisions
-Date: Tue, 12 May 2015 20:38:58 +0100
-Message-ID: <1431459549-18343-24-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv4 PATCH 28/34] sched: Count number of shallower idle-states in struct sched_group_energy
+Date: Tue, 12 May 2015 20:39:03 +0100
+Message-ID: <1431459549-18343-29-git-send-email-morten.rasmussen@arm.com>
 References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
@@ -10,217 +10,85 @@ To: peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, morten.rasmussen@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-Extended sched_group_energy() to support energy prediction with usage
-(tasks) added/removed from a specific cpu or migrated between a pair of
-cpus. Useful for load-balancing decision making.
+cpuidle associates all idle-states with each cpu while the energy model
+associates them with the sched_group covering the cpus coordinating
+entry to the idle-state. To look up the idle-state power consumption in
+the energy model it is therefore necessary to translate from cpuidle
+idle-state index to energy model index. For this purpose it is helpful
+to know how many idle-states that are listed in lower level sched_groups
+(in struct sched_group_energy).
+
+Example: ARMv8 big.LITTLE JUNO (Cortex A57, A53) idle-states:
+Idle-state              cpuidle         Energy model table indices
+                        index           per-cpu sg      per-cluster sg
+WFI                     0               0               (0)
+Core power-down         1               1               0*
+Cluster power-down      2               (1)             1
+
+For per-cpu sgs no translation is required. If cpuidle reports state
+index 0 or 1, the cpu is in WFI or core power-down, respectively. We can
+look the idle-power up directly in the sg energy model table. Idle-state
+cluster power-down, is represented in the per-cluster sg energy model
+table as index 1. Index 0* is reserved for cluster power consumption
+when the cpus all are in state 0 or 1, but cpuidle decided not to go for
+cluster power-down. Given the index from cpuidle we can compute the
+correct index in the energy model tables for the sgs at each level if we
+know how many states are in the tables in the child sgs. The actual
+translation is implemented in a later patch.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- kernel/sched/fair.c | 86 +++++++++++++++++++++++++++++++++++++----------------
- 1 file changed, 60 insertions(+), 26 deletions(-)
+ include/linux/sched.h |  1 +
+ kernel/sched/core.c   | 12 ++++++++++++
+ 2 files changed, 13 insertions(+)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 2677ca6..52403e9 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -4810,15 +4810,17 @@ static unsigned long capacity_curr_of(int cpu)
-  * capacity_curr (but not capacity_orig) as it useful for predicting the
-  * capacity required after task migrations (scheduler-driven DVFS).
-  */
--
--static unsigned long get_cpu_usage(int cpu)
-+static unsigned long __get_cpu_usage(int cpu, int delta)
- {
- 	int sum;
- 	unsigned long usage = cpu_rq(cpu)->cfs.utilization_load_avg;
- 	unsigned long blocked = cpu_rq(cpu)->cfs.utilization_blocked_avg;
- 	unsigned long capacity_orig = capacity_orig_of(cpu);
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index fe77e54..9ea43cd 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1027,6 +1027,7 @@ struct sched_group_energy {
+ 	atomic_t ref;
+ 	unsigned int nr_idle_states;	/* number of idle states */
+ 	struct idle_state *idle_states;	/* ptr to idle state array */
++	unsigned int nr_idle_states_below; /* number idle states in lower groups */
+ 	unsigned int nr_cap_states;	/* number of capacity states */
+ 	struct capacity_state *cap_states; /* ptr to capacity state array */
+ };
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index d307db8..98a83e4 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6109,6 +6109,7 @@ static void init_sched_energy(int cpu, struct sched_domain *sd,
+ 	struct sched_group_energy *energy = sg->sge;
+ 	sched_domain_energy_f fn = tl->energy;
+ 	struct cpumask *mask = sched_group_cpus(sg);
++	int nr_idle_states_below = 0;
  
--	sum = usage + blocked;
-+	sum = usage + blocked + delta;
+ 	if (fn && sd->child && !sd->child->groups->sge) {
+ 		pr_err("BUG: EAS setup broken for CPU%d\n", cpu);
+@@ -6133,9 +6134,20 @@ static void init_sched_energy(int cpu, struct sched_domain *sd,
+ 	if (cpumask_weight(mask) > 1)
+ 		check_sched_energy_data(cpu, fn, mask);
+ 
++	/* Figure out the number of true cpuidle states below current group */
++	sd = sd->child;
++	for_each_lower_domain(sd) {
++		nr_idle_states_below += sd->groups->sge->nr_idle_states;
 +
-+	if (sum < 0)
-+		return 0;
- 
- 	if (sum >= capacity_orig)
- 		return capacity_orig;
-@@ -4826,13 +4828,28 @@ static unsigned long get_cpu_usage(int cpu)
- 	return sum;
- }
- 
-+static unsigned long get_cpu_usage(int cpu)
-+{
-+	return __get_cpu_usage(cpu, 0);
-+}
-+
- static inline bool energy_aware(void)
- {
- 	return sched_feat(ENERGY_AWARE);
- }
- 
-+struct energy_env {
-+	struct sched_group	*sg_top;
-+	struct sched_group	*sg_cap;
-+	int			cap_idx;
-+	int			usage_delta;
-+	int			src_cpu;
-+	int			dst_cpu;
-+	int			energy;
-+};
-+
- /*
-- * cpu_norm_usage() returns the cpu usage relative to a specific capacity,
-+ * __cpu_norm_usage() returns the cpu usage relative to a specific capacity,
-  * i.e. it's busy ratio, in the range [0..SCHED_LOAD_SCALE] which is useful for
-  * energy calculations. Using the scale-invariant usage returned by
-  * get_cpu_usage() and approximating scale-invariant usage by:
-@@ -4845,9 +4862,9 @@ static inline bool energy_aware(void)
-  *
-  *   norm_usage = running_time/time ~ usage/capacity
-  */
--static unsigned long cpu_norm_usage(int cpu, unsigned long capacity)
-+static unsigned long __cpu_norm_usage(int cpu, unsigned long capacity, int delta)
- {
--	int usage = __get_cpu_usage(cpu);
-+	int usage = __get_cpu_usage(cpu, delta);
- 
- 	if (usage >= capacity)
- 		return SCHED_CAPACITY_SCALE;
-@@ -4855,13 +4872,25 @@ static unsigned long cpu_norm_usage(int cpu, unsigned long capacity)
- 	return (usage << SCHED_CAPACITY_SHIFT)/capacity;
- }
- 
--static unsigned long group_max_usage(struct sched_group *sg)
-+static int calc_usage_delta(struct energy_env *eenv, int cpu)
- {
--	int i;
-+	if (cpu == eenv->src_cpu)
-+		return -eenv->usage_delta;
-+	if (cpu == eenv->dst_cpu)
-+		return eenv->usage_delta;
-+	return 0;
-+}
-+
-+static
-+unsigned long group_max_usage(struct energy_env *eenv, struct sched_group *sg)
-+{
-+	int i, delta;
- 	unsigned long max_usage = 0;
- 
--	for_each_cpu(i, sched_group_cpus(sg))
--		max_usage = max(max_usage, get_cpu_usage(i));
-+	for_each_cpu(i, sched_group_cpus(sg)) {
-+		delta = calc_usage_delta(eenv, i);
-+		max_usage = max(max_usage, __get_cpu_usage(i, delta));
++		/* Disregard non-cpuidle 'active' idle states */
++		if (sd->child)
++			nr_idle_states_below--;
 +	}
- 
- 	return max_usage;
- }
-@@ -4875,31 +4904,36 @@ static unsigned long group_max_usage(struct sched_group *sg)
-  * latter is used as the estimate as it leads to a more pessimistic energy
-  * estimate (more busy).
-  */
--static unsigned long group_norm_usage(struct sched_group *sg, int cap_idx)
-+static unsigned
-+long group_norm_usage(struct energy_env *eenv, struct sched_group *sg)
- {
--	int i;
-+	int i, delta;
- 	unsigned long usage_sum = 0;
--	unsigned long capacity = sg->sge->cap_states[cap_idx].cap;
-+	unsigned long capacity = sg->sge->cap_states[eenv->cap_idx].cap;
- 
--	for_each_cpu(i, sched_group_cpus(sg))
--		usage_sum += cpu_norm_usage(i, capacity);
-+	for_each_cpu(i, sched_group_cpus(sg)) {
-+		delta = calc_usage_delta(eenv, i);
-+		usage_sum += __cpu_norm_usage(i, capacity, delta);
-+	}
- 
- 	if (usage_sum > SCHED_CAPACITY_SCALE)
- 		return SCHED_CAPACITY_SCALE;
- 	return usage_sum;
- }
- 
--static int find_new_capacity(struct sched_group *sg,
-+static int find_new_capacity(struct energy_env *eenv,
- 		struct sched_group_energy *sge)
- {
- 	int idx;
--	unsigned long util = group_max_usage(sg);
-+	unsigned long util = group_max_usage(eenv, eenv->sg_cap);
- 
- 	for (idx = 0; idx < sge->nr_cap_states; idx++) {
- 		if (sge->cap_states[idx].cap >= util)
- 			return idx;
- 	}
- 
-+	eenv->cap_idx = idx;
 +
- 	return idx;
- }
- 
-@@ -4912,16 +4946,16 @@ static int find_new_capacity(struct sched_group *sg,
-  * gather the same usage statistics multiple times. This can probably be done in
-  * a faster but more complex way.
-  */
--static unsigned int sched_group_energy(struct sched_group *sg_top)
-+static unsigned int sched_group_energy(struct energy_env *eenv)
- {
- 	struct sched_domain *sd;
- 	int cpu, total_energy = 0;
- 	struct cpumask visit_cpus;
- 	struct sched_group *sg;
- 
--	WARN_ON(!sg_top->sge);
-+	WARN_ON(!eenv->sg_top->sge);
- 
--	cpumask_copy(&visit_cpus, sched_group_cpus(sg_top));
-+	cpumask_copy(&visit_cpus, sched_group_cpus(eenv->sg_top));
- 
- 	while (!cpumask_empty(&visit_cpus)) {
- 		struct sched_group *sg_shared_cap = NULL;
-@@ -4944,17 +4978,16 @@ static unsigned int sched_group_energy(struct sched_group *sg_top)
- 				break;
- 
- 			do {
--				struct sched_group *sg_cap_util;
- 				unsigned long group_util;
- 				int sg_busy_energy, sg_idle_energy, cap_idx;
- 
- 				if (sg_shared_cap && sg_shared_cap->group_weight >= sg->group_weight)
--					sg_cap_util = sg_shared_cap;
-+					eenv->sg_cap = sg_shared_cap;
- 				else
--					sg_cap_util = sg;
-+					eenv->sg_cap = sg;
- 
--				cap_idx = find_new_capacity(sg_cap_util, sg->sge);
--				group_util = group_norm_usage(sg, cap_idx);
-+				cap_idx = find_new_capacity(eenv, sg->sge);
-+				group_util = group_norm_usage(eenv, sg);
- 				sg_busy_energy = (group_util * sg->sge->cap_states[cap_idx].power)
- 										>> SCHED_CAPACITY_SHIFT;
- 				sg_idle_energy = ((SCHED_LOAD_SCALE-group_util) * sg->sge->idle_states[0].power)
-@@ -4965,7 +4998,7 @@ static unsigned int sched_group_energy(struct sched_group *sg_top)
- 				if (!sd->child)
- 					cpumask_xor(&visit_cpus, &visit_cpus, sched_group_cpus(sg));
- 
--				if (cpumask_equal(sched_group_cpus(sg), sched_group_cpus(sg_top)))
-+				if (cpumask_equal(sched_group_cpus(sg), sched_group_cpus(eenv->sg_top)))
- 					goto next_cpu;
- 
- 			} while (sg = sg->next, sg != sd->groups);
-@@ -4974,6 +5007,7 @@ static unsigned int sched_group_energy(struct sched_group *sg_top)
- 		continue;
- 	}
- 
-+	eenv->energy = total_energy;
- 	return total_energy;
- }
- 
+ 	energy->nr_idle_states = fn(cpu)->nr_idle_states;
+ 	memcpy(energy->idle_states, fn(cpu)->idle_states,
+ 	       energy->nr_idle_states*sizeof(struct idle_state));
++	energy->nr_idle_states_below = nr_idle_states_below;
+ 	energy->nr_cap_states = fn(cpu)->nr_cap_states;
+ 	memcpy(energy->cap_states, fn(cpu)->cap_states,
+ 	       energy->nr_cap_states*sizeof(struct capacity_state));
 -- 
 1.9.1
