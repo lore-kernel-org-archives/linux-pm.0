@@ -1,7 +1,7 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv4 PATCH 22/34] sched: Calculate energy consumption of sched_group
-Date: Tue, 12 May 2015 20:38:57 +0100
-Message-ID: <1431459549-18343-23-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv4 PATCH 31/34] sched: Energy-aware wake-up task placement
+Date: Tue, 12 May 2015 20:39:06 +0100
+Message-ID: <1431459549-18343-32-git-send-email-morten.rasmussen@arm.com>
 References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
@@ -10,179 +10,127 @@ To: peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, morten.rasmussen@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-For energy-aware load-balancing decisions it is necessary to know the
-energy consumption estimates of groups of cpus. This patch introduces a
-basic function, sched_group_energy(), which estimates the energy
-consumption of the cpus in the group and any resources shared by the
-members of the group.
+Let available compute capacity and estimated energy impact select
+wake-up target cpu when energy-aware scheduling is enabled and the
+system in not over-utilized (above the tipping point).
 
-NOTE: The function has five levels of identation and breaks the 80
-character limit. Refactoring is necessary.
+energy_aware_wake_cpu() attempts to find group of cpus with sufficient
+compute capacity to accommodate the task and find a cpu with enough spare
+capacity to handle the task within that group. Preference is given to
+cpus with enough spare capacity at the current OPP. Finally, the energy
+impact of the new target and the previous task cpu is compared to select
+the wake-up target cpu.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- kernel/sched/fair.c | 146 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 146 insertions(+)
+ kernel/sched/fair.c | 85 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 84 insertions(+), 1 deletion(-)
 
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 70f2700..2677ca6 100644
+index bb44646..fe41e1e 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -4831,6 +4831,152 @@ static inline bool energy_aware(void)
- 	return sched_feat(ENERGY_AWARE);
+@@ -5394,6 +5394,86 @@ static int select_idle_sibling(struct task_struct *p, int target)
+ 	return target;
  }
  
-+/*
-+ * cpu_norm_usage() returns the cpu usage relative to a specific capacity,
-+ * i.e. it's busy ratio, in the range [0..SCHED_LOAD_SCALE] which is useful for
-+ * energy calculations. Using the scale-invariant usage returned by
-+ * get_cpu_usage() and approximating scale-invariant usage by:
-+ *
-+ *   usage ~ (curr_freq/max_freq)*1024 * capacity_orig/1024 * running_time/time
-+ *
-+ * the normalized usage can be found using the specific capacity.
-+ *
-+ *   capacity = capacity_orig * curr_freq/max_freq
-+ *
-+ *   norm_usage = running_time/time ~ usage/capacity
-+ */
-+static unsigned long cpu_norm_usage(int cpu, unsigned long capacity)
-+{
-+	int usage = __get_cpu_usage(cpu);
-+
-+	if (usage >= capacity)
-+		return SCHED_CAPACITY_SCALE;
-+
-+	return (usage << SCHED_CAPACITY_SHIFT)/capacity;
-+}
-+
-+static unsigned long group_max_usage(struct sched_group *sg)
-+{
-+	int i;
-+	unsigned long max_usage = 0;
-+
-+	for_each_cpu(i, sched_group_cpus(sg))
-+		max_usage = max(max_usage, get_cpu_usage(i));
-+
-+	return max_usage;
-+}
-+
-+/*
-+ * group_norm_usage() returns the approximated group usage relative to it's
-+ * current capacity (busy ratio) in the range [0..SCHED_LOAD_SCALE] for use in
-+ * energy calculations. Since task executions may or may not overlap in time in
-+ * the group the true normalized usage is between max(cpu_norm_usage(i)) and
-+ * sum(cpu_norm_usage(i)) when iterating over all cpus in the group, i. The
-+ * latter is used as the estimate as it leads to a more pessimistic energy
-+ * estimate (more busy).
-+ */
-+static unsigned long group_norm_usage(struct sched_group *sg, int cap_idx)
-+{
-+	int i;
-+	unsigned long usage_sum = 0;
-+	unsigned long capacity = sg->sge->cap_states[cap_idx].cap;
-+
-+	for_each_cpu(i, sched_group_cpus(sg))
-+		usage_sum += cpu_norm_usage(i, capacity);
-+
-+	if (usage_sum > SCHED_CAPACITY_SCALE)
-+		return SCHED_CAPACITY_SCALE;
-+	return usage_sum;
-+}
-+
-+static int find_new_capacity(struct sched_group *sg,
-+		struct sched_group_energy *sge)
-+{
-+	int idx;
-+	unsigned long util = group_max_usage(sg);
-+
-+	for (idx = 0; idx < sge->nr_cap_states; idx++) {
-+		if (sge->cap_states[idx].cap >= util)
-+			return idx;
-+	}
-+
-+	return idx;
-+}
-+
-+/*
-+ * sched_group_energy(): Returns absolute energy consumption of cpus belonging
-+ * to the sched_group including shared resources shared only by members of the
-+ * group. Iterates over all cpus in the hierarchy below the sched_group starting
-+ * from the bottom working it's way up before going to the next cpu until all
-+ * cpus are covered at all levels. The current implementation is likely to
-+ * gather the same usage statistics multiple times. This can probably be done in
-+ * a faster but more complex way.
-+ */
-+static unsigned int sched_group_energy(struct sched_group *sg_top)
++static int energy_aware_wake_cpu(struct task_struct *p)
 +{
 +	struct sched_domain *sd;
-+	int cpu, total_energy = 0;
-+	struct cpumask visit_cpus;
-+	struct sched_group *sg;
++	struct sched_group *sg, *sg_target;
++	int target_max_cap = INT_MAX;
++	int target_cpu = task_cpu(p);
++	int i;
 +
-+	WARN_ON(!sg_top->sge);
++	sd = rcu_dereference(per_cpu(sd_ea, task_cpu(p)));
 +
-+	cpumask_copy(&visit_cpus, sched_group_cpus(sg_top));
++	if (!sd)
++		return -1;
 +
-+	while (!cpumask_empty(&visit_cpus)) {
-+		struct sched_group *sg_shared_cap = NULL;
++	sg = sd->groups;
++	sg_target = sg;
 +
-+		cpu = cpumask_first(&visit_cpus);
++	/*
++	 * Find group with sufficient capacity. We only get here if no cpu is
++	 * overutilized. We may end up overutilizing a cpu by adding the task,
++	 * but that should not be any worse than select_idle_sibling().
++	 * load_balance() should sort it out later as we get above the tipping
++	 * point.
++	 */
++	do {
++		/* Assuming all cpus are the same in group */
++		int max_cap_cpu = group_first_cpu(sg);
 +
 +		/*
-+		 * Is the group utilization affected by cpus outside this
-+		 * sched_group?
++		 * Assume smaller max capacity means more energy-efficient.
++		 * Ideally we should query the energy model for the right
++		 * answer but it easily ends up in an exhaustive search.
 +		 */
-+		sd = highest_flag_domain(cpu, SD_SHARE_CAP_STATES);
-+		if (sd && sd->parent)
-+			sg_shared_cap = sd->parent->groups;
-+
-+		for_each_domain(cpu, sd) {
-+			sg = sd->groups;
-+
-+			/* Has this sched_domain already been visited? */
-+			if (sd->child && group_first_cpu(sg) != cpu)
-+				break;
-+
-+			do {
-+				struct sched_group *sg_cap_util;
-+				unsigned long group_util;
-+				int sg_busy_energy, sg_idle_energy, cap_idx;
-+
-+				if (sg_shared_cap && sg_shared_cap->group_weight >= sg->group_weight)
-+					sg_cap_util = sg_shared_cap;
-+				else
-+					sg_cap_util = sg;
-+
-+				cap_idx = find_new_capacity(sg_cap_util, sg->sge);
-+				group_util = group_norm_usage(sg, cap_idx);
-+				sg_busy_energy = (group_util * sg->sge->cap_states[cap_idx].power)
-+										>> SCHED_CAPACITY_SHIFT;
-+				sg_idle_energy = ((SCHED_LOAD_SCALE-group_util) * sg->sge->idle_states[0].power)
-+										>> SCHED_CAPACITY_SHIFT;
-+
-+				total_energy += sg_busy_energy + sg_idle_energy;
-+
-+				if (!sd->child)
-+					cpumask_xor(&visit_cpus, &visit_cpus, sched_group_cpus(sg));
-+
-+				if (cpumask_equal(sched_group_cpus(sg), sched_group_cpus(sg_top)))
-+					goto next_cpu;
-+
-+			} while (sg = sg->next, sg != sd->groups);
++		if (capacity_of(max_cap_cpu) < target_max_cap &&
++		    task_fits_capacity(p, max_cap_cpu)) {
++			sg_target = sg;
++			target_max_cap = capacity_of(max_cap_cpu);
 +		}
-+next_cpu:
-+		continue;
++	} while (sg = sg->next, sg != sd->groups);
++
++	/* Find cpu with sufficient capacity */
++	for_each_cpu_and(i, tsk_cpus_allowed(p), sched_group_cpus(sg_target)) {
++		/*
++		 * p's blocked utilization is still accounted for on prev_cpu
++		 * so prev_cpu will receive a negative bias due the double
++		 * accouting. However, the blocked utilization may be zero.
++		 */
++		int new_usage = get_cpu_usage(i) + task_utilization(p);
++
++		if (new_usage >	capacity_orig_of(i))
++			continue;
++
++		if (new_usage <	capacity_curr_of(i)) {
++			target_cpu = i;
++			if (cpu_rq(i)->nr_running)
++				break;
++		}
++
++		/* cpu has capacity at higher OPP, keep it as fallback */
++		if (target_cpu == task_cpu(p))
++			target_cpu = i;
 +	}
 +
-+	return total_energy;
++	if (target_cpu != task_cpu(p)) {
++		struct energy_env eenv = {
++			.usage_delta	= task_utilization(p),
++			.src_cpu	= task_cpu(p),
++			.dst_cpu	= target_cpu,
++		};
++
++		/* Not enough spare capacity on previous cpu */
++		if (cpu_overutilized(task_cpu(p)))
++			return target_cpu;
++
++		if (energy_diff(&eenv) >= 0)
++			return task_cpu(p);
++	}
++
++	return target_cpu;
 +}
 +
- static int wake_wide(struct task_struct *p)
- {
- 	int factor = this_cpu_read(sd_llc_size);
+ /*
+  * select_task_rq_fair: Select target runqueue for the waking task in domains
+  * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
+@@ -5446,7 +5526,10 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
+ 		prev_cpu = cpu;
+ 
+ 	if (sd_flag & SD_BALANCE_WAKE && want_sibling) {
+-		new_cpu = select_idle_sibling(p, prev_cpu);
++		if (energy_aware() && !cpu_rq(cpu)->rd->overutilized)
++			new_cpu = energy_aware_wake_cpu(p);
++		else
++			new_cpu = select_idle_sibling(p, prev_cpu);
+ 		goto unlock;
+ 	}
+ 
 -- 
 1.9.1
