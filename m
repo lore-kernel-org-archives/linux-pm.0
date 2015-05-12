@@ -1,53 +1,175 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv4 PATCH 05/34] arm: Update arch_scale_cpu_capacity() to reflect change to define
-Date: Tue, 12 May 2015 20:38:40 +0100
-Message-ID: <1431459549-18343-6-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv4 PATCH 01/34] arm: Frequency invariant scheduler load-tracking support
+Date: Tue, 12 May 2015 20:38:36 +0100
+Message-ID: <1431459549-18343-2-git-send-email-morten.rasmussen@arm.com>
 References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:33723 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933214AbbELThs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 12 May 2015 15:37:48 -0400
 In-Reply-To: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, morten.rasmussen@arm.com
-List-Id: linux-pm@vger.kernel.org
 
-arch_scale_cpu_capacity() is no longer a weak function but a #define
-instead. Include the #define in topology.h.
+From: Morten Rasmussen <Morten.Rasmussen@arm.com>
 
-cc: Russell King <linux@arm.linux.org.uk>
+Implements arch-specific function to provide the scheduler with a
+frequency scaling correction factor for more accurate load-tracking.
+The factor is:
+
+	current_freq(cpu) << SCHED_CAPACITY_SHIFT / max_freq(cpu)
+
+This implementation only provides frequency invariance. No cpu
+invariance yet.
+
+Cc: Russell King <linux@arm.linux.org.uk>
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- arch/arm/include/asm/topology.h | 4 ++++
- arch/arm/kernel/topology.c      | 2 +-
- 2 files changed, 5 insertions(+), 1 deletion(-)
+ arch/arm/include/asm/topology.h |  7 ++++++
+ arch/arm/kernel/smp.c           | 56 +++++++++++++++++++++++++++++++++++++++--
+ arch/arm/kernel/topology.c      | 17 +++++++++++++
+ 3 files changed, 78 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
-index 4b985dc..cf66aca 100644
+index 2fe85ff..4b985dc 100644
 --- a/arch/arm/include/asm/topology.h
 +++ b/arch/arm/include/asm/topology.h
-@@ -31,6 +31,10 @@ unsigned long arm_arch_scale_freq_capacity(struct sched_domain *sd, int cpu);
+@@ -24,6 +24,13 @@ void init_cpu_topology(void);
+ void store_cpu_topology(unsigned int cpuid);
+ const struct cpumask *cpu_coregroup_mask(int cpu);
  
- DECLARE_PER_CPU(atomic_long_t, cpu_freq_capacity);
- 
-+#define arch_scale_cpu_capacity arm_arch_scale_cpu_capacity
++#define arch_scale_freq_capacity arm_arch_scale_freq_capacity
++struct sched_domain;
 +extern
-+unsigned long arm_arch_scale_cpu_capacity(struct sched_domain *sd, int cpu);
++unsigned long arm_arch_scale_freq_capacity(struct sched_domain *sd, int cpu);
++
++DECLARE_PER_CPU(atomic_long_t, cpu_freq_capacity);
 +
  #else
  
  static inline void init_cpu_topology(void) { }
+diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
+index cca5b87..856bb3d 100644
+--- a/arch/arm/kernel/smp.c
++++ b/arch/arm/kernel/smp.c
+@@ -677,12 +677,34 @@ static DEFINE_PER_CPU(unsigned long, l_p_j_ref);
+ static DEFINE_PER_CPU(unsigned long, l_p_j_ref_freq);
+ static unsigned long global_l_p_j_ref;
+ static unsigned long global_l_p_j_ref_freq;
++static DEFINE_PER_CPU(atomic_long_t, cpu_max_freq);
++DEFINE_PER_CPU(atomic_long_t, cpu_freq_capacity);
++
++/*
++ * Scheduler load-tracking scale-invariance
++ *
++ * Provides the scheduler with a scale-invariance correction factor that
++ * compensates for frequency scaling through arch_scale_freq_capacity()
++ * (implemented in topology.c).
++ */
++static inline
++void scale_freq_capacity(int cpu, unsigned long curr, unsigned long max)
++{
++	unsigned long capacity;
++
++	if (!max)
++		return;
++
++	capacity = (curr << SCHED_CAPACITY_SHIFT) / max;
++	atomic_long_set(&per_cpu(cpu_freq_capacity, cpu), capacity);
++}
+ 
+ static int cpufreq_callback(struct notifier_block *nb,
+ 					unsigned long val, void *data)
+ {
+ 	struct cpufreq_freqs *freq = data;
+ 	int cpu = freq->cpu;
++	unsigned long max = atomic_long_read(&per_cpu(cpu_max_freq, cpu));
+ 
+ 	if (freq->flags & CPUFREQ_CONST_LOOPS)
+ 		return NOTIFY_OK;
+@@ -707,6 +729,9 @@ static int cpufreq_callback(struct notifier_block *nb,
+ 					per_cpu(l_p_j_ref_freq, cpu),
+ 					freq->new);
+ 	}
++
++	scale_freq_capacity(cpu, freq->new, max);
++
+ 	return NOTIFY_OK;
+ }
+ 
+@@ -714,11 +739,38 @@ static struct notifier_block cpufreq_notifier = {
+ 	.notifier_call  = cpufreq_callback,
+ };
+ 
++static int cpufreq_policy_callback(struct notifier_block *nb,
++						unsigned long val, void *data)
++{
++	struct cpufreq_policy *policy = data;
++	int i;
++
++	if (val != CPUFREQ_NOTIFY)
++		return NOTIFY_OK;
++
++	for_each_cpu(i, policy->cpus) {
++		scale_freq_capacity(i, policy->cur, policy->max);
++		atomic_long_set(&per_cpu(cpu_max_freq, i), policy->max);
++	}
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block cpufreq_policy_notifier = {
++	.notifier_call	= cpufreq_policy_callback,
++};
++
+ static int __init register_cpufreq_notifier(void)
+ {
+-	return cpufreq_register_notifier(&cpufreq_notifier,
++	int ret;
++
++	ret = cpufreq_register_notifier(&cpufreq_notifier,
+ 						CPUFREQ_TRANSITION_NOTIFIER);
++	if (ret)
++		return ret;
++
++	return cpufreq_register_notifier(&cpufreq_policy_notifier,
++						CPUFREQ_POLICY_NOTIFIER);
+ }
+ core_initcall(register_cpufreq_notifier);
+-
+ #endif
 diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index 9c09e6e..bad267c 100644
+index 08b7847..9c09e6e 100644
 --- a/arch/arm/kernel/topology.c
 +++ b/arch/arm/kernel/topology.c
-@@ -42,7 +42,7 @@
-  */
- static DEFINE_PER_CPU(unsigned long, cpu_scale);
- 
--unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
-+unsigned long arm_arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
- {
- 	return per_cpu(cpu_scale, cpu);
+@@ -169,6 +169,23 @@ static void update_cpu_capacity(unsigned int cpu)
+ 		cpu, arch_scale_cpu_capacity(NULL, cpu));
  }
+ 
++/*
++ * Scheduler load-tracking scale-invariance
++ *
++ * Provides the scheduler with a scale-invariance correction factor that
++ * compensates for frequency scaling (arch_scale_freq_capacity()). The scaling
++ * factor is updated in smp.c
++ */
++unsigned long arm_arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
++{
++	unsigned long curr = atomic_long_read(&per_cpu(cpu_freq_capacity, cpu));
++
++	if (!curr)
++		return SCHED_CAPACITY_SCALE;
++
++	return curr;
++}
++
+ #else
+ static inline void parse_dt_topology(void) {}
+ static inline void update_cpu_capacity(unsigned int cpuid) {}
 -- 
 1.9.1
+
