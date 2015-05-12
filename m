@@ -1,7 +1,7 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv4 PATCH 31/34] sched: Energy-aware wake-up task placement
-Date: Tue, 12 May 2015 20:39:06 +0100
-Message-ID: <1431459549-18343-32-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv4 PATCH 26/34] sched: Store system-wide maximum cpu capacity in root domain
+Date: Tue, 12 May 2015 20:39:01 +0100
+Message-ID: <1431459549-18343-27-git-send-email-morten.rasmussen@arm.com>
 References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
@@ -10,127 +10,65 @@ To: peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, morten.rasmussen@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-Let available compute capacity and estimated energy impact select
-wake-up target cpu when energy-aware scheduling is enabled and the
-system in not over-utilized (above the tipping point).
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-energy_aware_wake_cpu() attempts to find group of cpus with sufficient
-compute capacity to accommodate the task and find a cpu with enough spare
-capacity to handle the task within that group. Preference is given to
-cpus with enough spare capacity at the current OPP. Finally, the energy
-impact of the new target and the previous task cpu is compared to select
-the wake-up target cpu.
+To be able to compare the capacity of the target cpu with the highest
+cpu capacity of the system in the wakeup path, store the system-wide
+maximum cpu capacity in the root domain.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
-Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
+Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- kernel/sched/fair.c | 85 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 84 insertions(+), 1 deletion(-)
+ kernel/sched/core.c  | 8 ++++++++
+ kernel/sched/sched.h | 3 +++
+ 2 files changed, 11 insertions(+)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index bb44646..fe41e1e 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -5394,6 +5394,86 @@ static int select_idle_sibling(struct task_struct *p, int target)
- 	return target;
- }
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 8818bf0..d307db8 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6848,6 +6848,7 @@ static int build_sched_domains(const struct cpumask *cpu_map,
+ 	enum s_alloc alloc_state;
+ 	struct sched_domain *sd;
+ 	struct s_data d;
++	struct rq *rq;
+ 	int i, ret = -ENOMEM;
  
-+static int energy_aware_wake_cpu(struct task_struct *p)
-+{
-+	struct sched_domain *sd;
-+	struct sched_group *sg, *sg_target;
-+	int target_max_cap = INT_MAX;
-+	int target_cpu = task_cpu(p);
-+	int i;
+ 	alloc_state = __visit_domain_allocation_hell(&d, cpu_map);
+@@ -6901,11 +6902,18 @@ static int build_sched_domains(const struct cpumask *cpu_map,
+ 	/* Attach the domains */
+ 	rcu_read_lock();
+ 	for_each_cpu(i, cpu_map) {
++		rq = cpu_rq(i);
+ 		sd = *per_cpu_ptr(d.sd, i);
+ 		cpu_attach_domain(sd, d.rd, i);
 +
-+	sd = rcu_dereference(per_cpu(sd_ea, task_cpu(p)));
-+
-+	if (!sd)
-+		return -1;
-+
-+	sg = sd->groups;
-+	sg_target = sg;
-+
-+	/*
-+	 * Find group with sufficient capacity. We only get here if no cpu is
-+	 * overutilized. We may end up overutilizing a cpu by adding the task,
-+	 * but that should not be any worse than select_idle_sibling().
-+	 * load_balance() should sort it out later as we get above the tipping
-+	 * point.
-+	 */
-+	do {
-+		/* Assuming all cpus are the same in group */
-+		int max_cap_cpu = group_first_cpu(sg);
-+
-+		/*
-+		 * Assume smaller max capacity means more energy-efficient.
-+		 * Ideally we should query the energy model for the right
-+		 * answer but it easily ends up in an exhaustive search.
-+		 */
-+		if (capacity_of(max_cap_cpu) < target_max_cap &&
-+		    task_fits_capacity(p, max_cap_cpu)) {
-+			sg_target = sg;
-+			target_max_cap = capacity_of(max_cap_cpu);
-+		}
-+	} while (sg = sg->next, sg != sd->groups);
-+
-+	/* Find cpu with sufficient capacity */
-+	for_each_cpu_and(i, tsk_cpus_allowed(p), sched_group_cpus(sg_target)) {
-+		/*
-+		 * p's blocked utilization is still accounted for on prev_cpu
-+		 * so prev_cpu will receive a negative bias due the double
-+		 * accouting. However, the blocked utilization may be zero.
-+		 */
-+		int new_usage = get_cpu_usage(i) + task_utilization(p);
-+
-+		if (new_usage >	capacity_orig_of(i))
-+			continue;
-+
-+		if (new_usage <	capacity_curr_of(i)) {
-+			target_cpu = i;
-+			if (cpu_rq(i)->nr_running)
-+				break;
-+		}
-+
-+		/* cpu has capacity at higher OPP, keep it as fallback */
-+		if (target_cpu == task_cpu(p))
-+			target_cpu = i;
-+	}
-+
-+	if (target_cpu != task_cpu(p)) {
-+		struct energy_env eenv = {
-+			.usage_delta	= task_utilization(p),
-+			.src_cpu	= task_cpu(p),
-+			.dst_cpu	= target_cpu,
-+		};
-+
-+		/* Not enough spare capacity on previous cpu */
-+		if (cpu_overutilized(task_cpu(p)))
-+			return target_cpu;
-+
-+		if (energy_diff(&eenv) >= 0)
-+			return task_cpu(p);
-+	}
-+
-+	return target_cpu;
-+}
-+
- /*
-  * select_task_rq_fair: Select target runqueue for the waking task in domains
-  * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
-@@ -5446,7 +5526,10 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
- 		prev_cpu = cpu;
- 
- 	if (sd_flag & SD_BALANCE_WAKE && want_sibling) {
--		new_cpu = select_idle_sibling(p, prev_cpu);
-+		if (energy_aware() && !cpu_rq(cpu)->rd->overutilized)
-+			new_cpu = energy_aware_wake_cpu(p);
-+		else
-+			new_cpu = select_idle_sibling(p, prev_cpu);
- 		goto unlock;
++		if (rq->cpu_capacity_orig > rq->rd->max_cpu_capacity)
++			rq->rd->max_cpu_capacity = rq->cpu_capacity_orig;
  	}
+ 	rcu_read_unlock();
  
++	rq = cpu_rq(cpumask_first(cpu_map));
++	pr_info("Max cpu capacity: %lu\n", rq->rd->max_cpu_capacity);
++
+ 	ret = 0;
+ error:
+ 	__free_domain_allocs(&d, alloc_state, cpu_map);
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index a5d2d69..95c8ff7 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -553,6 +553,9 @@ struct root_domain {
+ 	 */
+ 	cpumask_var_t rto_mask;
+ 	struct cpupri cpupri;
++
++	/* Maximum cpu capacity in the system. */
++	unsigned long max_cpu_capacity;
+ };
+ 
+ extern struct root_domain def_root_domain;
 -- 
 1.9.1
