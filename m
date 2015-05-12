@@ -1,71 +1,72 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+From: Mason <slash.tmp@free.fr>
 Subject: Re: schedule_timeout sleeps too long after dividing CPU frequency
-Date: Tue, 12 May 2015 16:50:04 +0100
-Message-ID: <20150512155004.GP2067@n2100.arm.linux.org.uk>
-References: <55520F0F.5010906@free.fr>
- <CAKohpo=eMA6L9=jK=bAnbFuDxcdtpQNub0WFnSy6MOqB3jOdjA@mail.gmail.com>
- <555218C7.5050602@free.fr>
+Date: Tue, 12 May 2015 18:03:40 +0200
+Message-ID: <5552245C.2080701@free.fr>
+References: <55520F0F.5010906@free.fr> <20150512152332.GO2067@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.arm.linux.org.uk ([78.32.30.218]:39920 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933045AbbELPuR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2015 11:50:17 -0400
-Content-Disposition: inline
-In-Reply-To: <555218C7.5050602@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20150512152332.GO2067@n2100.arm.linux.org.uk>
+Sender: cpufreq-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Tue, May 12, 2015 at 05:14:15PM +0200, Mason wrote:
-> This ties in to another thread I started in LAKML:
-> ("High-resolution timers not supported when using smp_twd on Cortex A9")
+On 12/05/2015 17:23, Russell King - ARM Linux wrote:
+
+> On Tue, May 12, 2015 at 04:32:47PM +0200, Mason wrote:
 > 
-> $ git show 5388a6b2 arch/arm/kernel/smp_twd.c
-> commit 5388a6b266e9c3357353332ba0cd5549082887f1
-> Author: Russell King <rmk+kernel@arm.linux.org.uk>
-> Date:   Mon Jul 26 13:19:43 2010 +0100
+>> I'm working on a Cortex A9 based platform.
+>>
+>> I have a basic clock tree, and a very basic cpufreq driver using
+>> mostly generic driver glue:
+>>
+>> static struct cpufreq_driver tangox_cpufreq_driver = {
+>> 	.name		= "tangox-cpufreq",
+>> 	.init		= tangox_cpu_init,
+>> 	.verify		= cpufreq_generic_frequency_table_verify,
+>> 	.target_index	= tangox_target,
+>> 	.get		= cpufreq_generic_get,
+>> 	.exit		= cpufreq_generic_exit,
+>> 	.attr		= cpufreq_generic_attr,
+>> };
+>>
+>> My target_index function is trivial:
+>>
+>> static int tangox_target(struct cpufreq_policy *policy, unsigned int idx)
+>> {
+>> 	return clk_set_rate(policy->clk, freq_table[idx].frequency * 1000);
+>> }
+>>
+>> I was testing an unrelated driver at low frequencies, with the nominal
+>> frequency (999 MHz) divided by 54 (i.e. freq = 18.5 MHz) and I noticed
+>> that when the driver calls
+>>
+>>     schedule_timeout(HZ);
+>>
+>> the thread sleeps 54 seconds instead of 1.
 > 
->     ARM: SMP: Always enable clock event broadcast support
->     
->     The TWD local timers are unable to wake up the CPU when it is placed
->     into a low power mode, eg. C3.  Therefore, we need to adapt things
->     such that the TWD code can cope with this.
->     
->     We do this by always providing a broadcast tick function, and marking
->     the fact that the TWD local timer will stop in low power modes.  This
->     means that when the CPU is placed into a low power mode, the core
->     timer code marks this fact, and allows an IPI to be given to the core.
-> 
-> This mentions a "broadcast tick function" (of which I know nothing).
-> Is this what you're referring to?
+> I'm guessing that this will be because your local timer changes frequency
+> with the CPU, which means that the clockevent which was set for one second
+> ends up timing out after 54 seconds.
 
-No.  This has nothing to do with low power modes.
+That's the first thing I suspected, but smp_twd.c registers a clk_notifier
+to be notified of CPU frequency changes:
 
-How this works depends on how your kernel is configured, but essentially
-it's something like this:
+static struct notifier_block twd_clk_nb = {
+	.notifier_call = twd_rate_change,
+};
 
-* The CPU which will be idling sets its local timer to wake up after N
-  counter cycles, where N is calculated from the timer frequency.
+static int twd_clk_init(void)
+{
+	if (twd_evt && __this_cpu_ptr(twd_evt) && !IS_ERR(twd_clk))
+		return clk_notifier_register(twd_clk, &twd_clk_nb);
 
-* When the local timer fires, the CPU is kicked out of the idle loop, and
-  it reads the current system time.  If the current system time indicates
-  that the software timer set in schedule_timeout() has fired, that
-  software timer fires.
+	return 0;
+}
 
-If the local timer changes frequency without the idling CPU being woken
-up, then the problem you're referring to can happen.
+And I instrumented twd_update_frequency() to check it was being called.
 
-As you're not giving much information about your system (including
-indicating where we might see some source code) we're not able to help
-more than providing above descriptions.  Maybe if you posted your
-patches so far to support the project you're working on, we could
-provide better answers.
+Regards.
 
-Thanks.
-
--- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
