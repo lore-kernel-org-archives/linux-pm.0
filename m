@@ -1,82 +1,88 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv4 PATCH 03/34] arm: vexpress: Add CPU clock-frequencies to TC2 device-tree
-Date: Tue, 12 May 2015 20:38:38 +0100
-Message-ID: <1431459549-18343-4-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv4 PATCH 08/34] sched: Get rid of scaling usage by cpu_capacity_orig
+Date: Tue, 12 May 2015 20:38:43 +0100
+Message-ID: <1431459549-18343-9-git-send-email-morten.rasmussen@arm.com>
 References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:33745 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933488AbbELThy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 12 May 2015 15:37:54 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, morten.rasmussen@arm.com
+List-Id: linux-pm@vger.kernel.org
 
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-To enable the parsing of clock frequency and cpu efficiency values
-inside parse_dt_topology [arch/arm/kernel/topology.c] to scale the
-relative capacity of the cpus, this property has to be provided within
-the cpu nodes of the dts file.
+Since now we have besides frequency invariant also cpu (uarch plus max
+system frequency) invariant cfs_rq::utilization_load_avg both, frequency
+and cpu scaling happens as part of the load tracking.
+So cfs_rq::utilization_load_avg does not have to be scaled by the original
+capacity of the cpu again.
 
-The patch is a copy of commit 8f15973ef8c3 ("ARM: vexpress: Add CPU
-clock-frequencies to TC2 device-tree") taken from Linaro Stable Kernel
-(LSK) massaged into mainline.
-
-Cc: Jon Medhurst <tixy@linaro.org>
-Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts | 5 +++++
- 1 file changed, 5 insertions(+)
+ kernel/sched/fair.c | 34 +++++++++++++++++++++-------------
+ 1 file changed, 21 insertions(+), 13 deletions(-)
 
-diff --git a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
-index 7a2aeac..76613b2 100644
---- a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
-+++ b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
-@@ -39,6 +39,7 @@
- 			reg = <0>;
- 			cci-control-port = <&cci_control1>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_BIG>;
-+			clock-frequency = <1000000000>;
- 		};
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index af55982..8420444 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -4998,32 +4998,40 @@ static int select_idle_sibling(struct task_struct *p, int target)
+ done:
+ 	return target;
+ }
++
+ /*
+  * get_cpu_usage returns the amount of capacity of a CPU that is used by CFS
+  * tasks. The unit of the return value must be the one of capacity so we can
+  * compare the usage with the capacity of the CPU that is available for CFS
+  * task (ie cpu_capacity).
++ *
+  * cfs.utilization_load_avg is the sum of running time of runnable tasks on a
+  * CPU. It represents the amount of utilization of a CPU in the range
+- * [0..SCHED_LOAD_SCALE].  The usage of a CPU can't be higher than the full
+- * capacity of the CPU because it's about the running time on this CPU.
+- * Nevertheless, cfs.utilization_load_avg can be higher than SCHED_LOAD_SCALE
+- * because of unfortunate rounding in avg_period and running_load_avg or just
+- * after migrating tasks until the average stabilizes with the new running
+- * time. So we need to check that the usage stays into the range
+- * [0..cpu_capacity_orig] and cap if necessary.
+- * Without capping the usage, a group could be seen as overloaded (CPU0 usage
+- * at 121% + CPU1 usage at 80%) whereas CPU1 has 20% of available capacity
++ * [0..capacity_orig] where capacity_orig is the cpu_capacity available at the
++ * highest frequency (arch_scale_freq_capacity()). The usage of a CPU converges
++ * towards a sum equal to or less than the current capacity (capacity_curr <=
++ * capacity_orig) of the CPU because it is the running time on this CPU scaled
++ * by capacity_curr. Nevertheless, cfs.utilization_load_avg can be higher than
++ * capacity_curr or even higher than capacity_orig because of unfortunate
++ * rounding in avg_period and running_load_avg or just after migrating tasks
++ * (and new task wakeups) until the average stabilizes with the new running
++ * time. We need to check that the usage stays into the range
++ * [0..capacity_orig] and cap if necessary. Without capping the usage, a group
++ * could be seen as overloaded (CPU0 usage at 121% + CPU1 usage at 80%) whereas
++ * CPU1 has 20% of available capacity. We allow usage to overshoot
++ * capacity_curr (but not capacity_orig) as it useful for predicting the
++ * capacity required after task migrations (scheduler-driven DVFS).
+  */
++
+ static int get_cpu_usage(int cpu)
+ {
+ 	unsigned long usage = cpu_rq(cpu)->cfs.utilization_load_avg;
+-	unsigned long capacity = capacity_orig_of(cpu);
++	unsigned long capacity_orig = capacity_orig_of(cpu);
  
- 		cpu1: cpu@1 {
-@@ -47,6 +48,7 @@
- 			reg = <1>;
- 			cci-control-port = <&cci_control1>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_BIG>;
-+			clock-frequency = <1000000000>;
- 		};
+-	if (usage >= SCHED_LOAD_SCALE)
+-		return capacity;
++	if (usage >= capacity_orig)
++		return capacity_orig;
  
- 		cpu2: cpu@2 {
-@@ -55,6 +57,7 @@
- 			reg = <0x100>;
- 			cci-control-port = <&cci_control2>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
-+			clock-frequency = <800000000>;
- 		};
+-	return (usage * capacity) >> SCHED_LOAD_SHIFT;
++	return usage;
+ }
  
- 		cpu3: cpu@3 {
-@@ -63,6 +66,7 @@
- 			reg = <0x101>;
- 			cci-control-port = <&cci_control2>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
-+			clock-frequency = <800000000>;
- 		};
- 
- 		cpu4: cpu@4 {
-@@ -71,6 +75,7 @@
- 			reg = <0x102>;
- 			cci-control-port = <&cci_control2>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
-+			clock-frequency = <800000000>;
- 		};
- 
- 		idle-states {
+ /*
 -- 
 1.9.1
-
