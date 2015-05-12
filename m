@@ -1,145 +1,224 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter() failures
-Date: Tue, 12 May 2015 15:23:25 +0200
-Message-ID: <2919083.VPTOth98op@vostro.rjw.lan>
-References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com> <2602092.6h7ufczYGd@vostro.rjw.lan> <5551BCBF.2000806@linaro.org>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [RFC PATCH v2 1/1] drivers: cpuidle: cpuidle-arm: heterogeneous
+ systems extension
+Date: Tue, 12 May 2015 14:03:39 +0100
+Message-ID: <20150512130339.GB15131@red-moon>
+References: <1429200617-9546-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1429200617-9546-2-git-send-email-lorenzo.pieralisi@arm.com>
+ <554771D3.5010701@linaro.org>
+ <20150505155615.GA23106@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60784 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932730AbbELM6Q (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2015 08:58:16 -0400
-In-Reply-To: <5551BCBF.2000806@linaro.org>
+Received: from foss.arm.com ([217.140.101.70]:60613 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932745AbbELNDv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 12 May 2015 09:03:51 -0400
+Content-Disposition: inline
+In-Reply-To: <20150505155615.GA23106@red-moon>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com, rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org, Kevin Hilman <khilman@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Howard Chen <howard.chen@linaro.org>, Kevin Hilman <khilman@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Tuesday, May 12, 2015 10:41:35 AM Daniel Lezcano wrote:
-> On 05/12/2015 01:31 AM, Rafael J. Wysocki wrote:
-> > On Monday, May 11, 2015 07:40:41 PM Daniel Lezcano wrote:
-> >> On 05/10/2015 01:15 AM, Rafael J. Wysocki wrote:
-> >>> On Saturday, May 09, 2015 10:33:05 PM Rafael J. Wysocki wrote:
-> >>>> On Saturday, May 09, 2015 10:11:41 PM Rafael J. Wysocki wrote:
-> >>>>> On Saturday, May 09, 2015 11:19:16 AM Preeti U Murthy wrote:
-> >>>>>> Hi Rafael,
-> >>>>>>
-> >>>>>> On 05/08/2015 07:48 PM, Rafael J. Wysocki wrote:
-> >>>>>
-> >>>>> [cut]
-> >>>>>
-> >>>>>>>>
-> >>>>>>>> +	/* Take note of the planned idle state. */
-> >>>>>>>> +	idle_set_state(smp_processor_id(), target_state);
-> >>>>>>>
-> >>>>>>> And I wouldn't do this either.
-> >>>>>>>
-> >>>>>>> The behavior here is pretty much as though the driver demoted the state chosen
-> >>>>>>> by the governor and we don't call idle_set_state() again in those cases.
-> >>>>>>
-> >>>>>> Why is this wrong?
-> >>>>>
-> >>>>> It is not "wrong", but incomplete, because demotions done by the cpuidle driver
-> >>>>> should also be taken into account in the same way.
-> >>>>>
-> >>>>> But I'm seeing that the recent patch of mine that made cpuidle_enter_state()
-> >>>>> call default_idle_call() was a mistake, because it might confuse find_idlest_cpu()
-> >>>>> significantly as to what state the CPU is in.  I'll drop that one for now.
-> >>>>
-> >>>> OK, done.
-> >>>>
-> >>>> So after I've dropped it I think we need to do three things:
-> >>>> (1) Move the idle_set_state() calls to cpuidle_enter_state().
-> >>>> (2) Make cpuidle_enter_state() call default_idle_call() again, but this time
-> >>>>       do that *before* it has called idle_set_state() for target_state.
-> >>>> (3) Introduce demotion as per my last patch.
-> >>>>
-> >>>> Let me cut patches for that.
-> >>>
-> >>> Done as per the above and the patches follow in replies to this messge.
-> >>>
-> >>> All on top of the current linux-next branch of the linux-pm.git tree.
-> >>
-> >> IMO the resulting code is more and more confusing.
-> >
-> > Why is it confusing?
-> >
-> > What part of it is confusing?
-> >
-> > Patches [1-2/3] simply replace https://patchwork.kernel.org/patch/6326761/
-> > and I'm not sure why that would be confusing.
-> >
-> > Patch [3/3] simply causes cpuidle_enter_state() to pick up a more suitable
-> > state if tick_broadcast_enter() fails instead of returning an error code
-> > in that case.  What exactly is confusing in that?
-> >
-> >> Except I miss something, the tick_broadcast_enter can fail only if the
-> >> local timer of the current cpu is used as a broadcast timer (which is
-> >> the case today for PPC only).
-> >
-> > well, why does this matter?
-> >
-> >> The correct fix would be to tie this local timer with the cpu power
-> >> domain and disable the idle state powering down this domain like it was
-> >> done for the renesas cpuidle driver.
-> >>
-> >> IOW, the cpu power domain is in use (because of its local timer), so we
-> >> shouldn't shut it down.
-> >>
-> >> No ?
-> >
-> > Sorry, I'm not sure what you're talking about.
-> >
-> > The problem at hand is that tick_broadcast_enter() can fail and we need to
-> > handle that.  If we can prevent it from ever failing, that would be awesome,
-> > but quite honestly I don't see how to do that ATM.
+On Tue, May 05, 2015 at 04:56:15PM +0100, Lorenzo Pieralisi wrote:
+> On Mon, May 04, 2015 at 02:19:15PM +0100, Daniel Lezcano wrote:
+> > On 04/16/2015 06:10 PM, Lorenzo Pieralisi wrote:
 > 
-> Ok, sorry. Let me clarify.
+> <snip>
 > 
-> You did a mechanism two years ago with pm_genpd_attach_cpuidle and 
-> power_on/off. That disables a cpuidle state when a power domain is in use.
+> > >   /*
+> > > - * arm_idle_init
+> > > + * Compare idle states phandle properties
+> > >    *
+> > > - * Registers the arm specific cpuidle driver with the cpuidle
+> > > - * framework. It relies on core code to parse the idle states
+> > > - * and initialize them using driver data structures accordingly.
+> > > + * Return true if properties are valid and equal, false otherwise
+> >
+> > Just a detail. Would be more consistent to return zero when valid and
+> > equal ?
 > 
-> The idea I was proposing is to reuse this approach.
+> Consistent with memcmp you mean ? Yes, I can change it.
 > 
-> The logic is:
+> > >    */
+> > > -static int __init arm_idle_init(void)
+> > > +static bool __init idle_states_cmp(struct property *states1,
+> > > +                                struct property *states2)
+> > > +{
+> > > +     /*
+> > > +      * NB: Implemented through code from drivers/of/unittest.c
+> > > +      *     Function is generic and can be moved to generic OF code
+> > > +      *     if needed
+> > > +      */
+> > > +     return states1 && states2 &&
+> > > +            (states1->length == states2->length) &&
+> > > +            states1->value && states2->value &&
+> > > +            !memcmp(states1->value, states2->value, states1->length);
+> > > +}
+> > > +
+> > > +static int __init arm_idle_init_driver(struct cpuidle_driver *drv)
+> > >   {
+> > > -     int cpu, ret;
+> > > -     struct cpuidle_driver *drv = &arm_idle_driver;
+> > > +     int ret, cpu;
+> > >       struct cpuidle_device *dev;
+> > > +     struct property *curr_idle_states, *idle_states = NULL;
+> > > +     struct device_node *cpu_node;
+> > > +
+> > > +     for_each_cpu(cpu, drv->cpumask) {
+> > > +             cpu_node = of_cpu_device_node_get(cpu);
+> > > +             curr_idle_states = of_find_property(cpu_node,
+> > > +                                                 "cpu-idle-states", NULL);
+> > > +             of_node_put(cpu_node);
+> > > +
+> > > +             /*
+> > > +              * Stash the first valid idle states phandle in the cpumask.
+> > > +              * If curr_idle_states is NULL assigning it to idle_states
+> > > +              * is harmless and it is managed by idle states comparison
+> > > +              * code. Keep track of first valid phandle so that
+> > > +              * subsequent cpus can compare against it.
+> > > +              */
+> > > +             if (!idle_states)
+> > > +                     idle_states = curr_idle_states;
+> > > +
+> > > +             /*
+> > > +              * If idle states phandles are not equal, remove the
+> > > +              * cpu from the driver mask since a CPUidle driver
+> > > +              * is only capable of managing uniform idle states.
+> > > +              *
+> > > +              * Comparison works also when idle_states and
+> > > +              * curr_idle_states are the same property, since
+> > > +              * they can be == NULL so the cpu must be removed from
+> > > +              * the driver mask in that case too (ie cpu has no idle
+> > > +              * states).
+> > > +              */
+> > > +             if (!idle_states_cmp(idle_states, curr_idle_states))
+> > > +                     cpumask_clear_cpu(cpu, drv->cpumask);
+> > > +     }
+> > > +
+> > > +     /*
+> > > +      *  If there are no valid states for this driver we rely on arch
+> > > +      *  default idle behaviour, bail out
+> > > +      */
+> > > +     if (!idle_states)
+> > > +             return -ENODEV;
+> > >
+> > >       /*
+> > >        * Initialize idle states data, starting at index 1.
+> > > @@ -117,7 +173,7 @@ static int __init arm_idle_init(void)
+> > >        * Call arch CPU operations in order to initialize
+> > >        * idle states suspend back-end specific data
+> > >        */
+> > > -     for_each_possible_cpu(cpu) {
+> > > +     for_each_cpu(cpu, drv->cpumask) {
+> > >               ret = arm_cpuidle_init(cpu);
+> > >
+> > >               /*
+> > > @@ -157,7 +213,77 @@ out_fail:
+> > >       }
+> > >
+> > >       cpuidle_unregister_driver(drv);
+> > > +     return ret;
+> > > +}
+> > > +
+> > > +/*
+> > > + * arm_idle_init
+> > > + *
+> > > + * Registers the arm specific cpuidle driver(s) with the cpuidle
+> > > + * framework. It relies on core code to parse the idle states
+> > > + * and initialize them using driver data structures accordingly.
+> > > + */
+> > > +static int __init arm_idle_init(void)
+> > > +{
+> > > +     int i, ret = -ENODEV;
+> > > +     struct cpuidle_driver *drv;
+> > > +     cpumask_var_t tmpmask;
+> > > +
+> > > +     /*
+> > > +      * These drivers require DT idle states to be present.
+> > > +      * If no idle states are detected there is no reason to
+> > > +      * proceed any further hence we return early.
+> > > +      */
+> > > +     if (!of_find_node_by_name(NULL, "idle-states"))
+> > > +             return -ENODEV;
+> > > +
+> > > +     if (!alloc_cpumask_var(&tmpmask, GFP_KERNEL))
+> > > +             return -ENOMEM;
+> > > +
+> > > +     /*
+> > > +      * We need to vet idle states to create CPUidle drivers
+> > > +      * that share a common set of them. Create a tmp mask
+> > > +      * that we use to keep track of initialized cpus.
+> > > +      * Start off by initializing the mask with all possible
+> > > +      * cpus, we clear it as we go, till either all cpus
+> > > +      * have a CPUidle driver initialized or there are some
+> > > +      * CPUs that have no idle states or a parsing error
+> > > +      * occurs.
+> > > +      */
+> > > +     cpumask_copy(tmpmask, cpu_possible_mask);
+> > > +
+> > > +     for (i = 0; !cpumask_empty(tmpmask); i++) {
+> > > +             if (i == ARM_CPUIDLE_MAX_DRIVERS) {
+> > > +                     pr_warn("number of drivers exceeding static allocation\n");
+> > > +                     break;
+> > > +             }
+> > > +
+> > > +             drv = &arm_idle_drivers[i];
+> > > +             drv->cpumask = kzalloc(cpumask_size(), GFP_KERNEL);
+> > > +             if (!drv->cpumask) {
+> > > +                     ret = -ENOMEM;
+> > > +                     break;
+> > > +             }
+> > > +             /*
+> > > +              * Force driver mask, arm_idle_init_driver()
+> > > +              * will tweak it by vetting idle states.
+> > > +              */
+> > > +             cpumask_copy(drv->cpumask, tmpmask);
+> >
+> > Why do you need to copy tmpmask ? Isn't simpler to have a zero-ed
+> > cpumask and let the arm_idle_init_driver function to set a bit instead
+> > of clearing it ?
 > 
-> "The local timer is in use, this idle state power downs this timer, then 
-> disable it".
-
-I'm not sure it's about powering down.  Stopping rather (which may or may
-not involve powering down).
-
-> So it is when the broadcast timer is 'bound_on' a cpu, we disable the 
-> idle states. That could be done via a loop looking for the TIMER_STOP 
-> flag or via the power domain.
+> No, because we need to keep track of logical cpus that have been
+> already parsed, we need a tmpmask to keep track of that, how could
+> we do it otherwise ? We can have more than two cpumask sets.
 > 
-> Hence the cpuidle_select will never return a state which powers downs 
-> the local cpu (because they are disabled) and tick_broadcast_enter can't 
-> fail because it is never called.
+> >
+> > > +             ret = arm_idle_init_driver(drv);
+> > > +             if (ret) {
+> > > +                     kfree(drv->cpumask);
+> > > +                     break;
+> > > +             }
+> > > +             /*
+> > > +              * Remove the cpus that were part of the registered
+> > > +              * driver from the mask of cpus to be initialized
+> > > +              * and restart.
+> > > +              */
+> > > +             cpumask_andnot(tmpmask, tmpmask, drv->cpumask);
+> >
+> > If there is a DT definition with just a cluster with the cpuidle driver
+> > set and another one without any idle state, we will have always a
+> > pr_warn because i == ARM_CPUIDLE_MAX_DRIVERS due to tmpmask being never
+> > equal to a zero mask. Is it the purpose to detect such cases ?
 > 
-> Does it make more sense ?
+> Not really, because arm_idle_init_driver() would return -ENODEV when
+> it detects cpus with no idle states and the loop will break before warning.
+> 
+> If we had two cluster of cpus with an idle-states set per cluster plus
+> some cpus with no idle states the warning would be hit, because
+> in actual facts we have more cpuidle sets than drivers (I know, a cpu
+> set with no idle states falls back to default idle, but I think
+> that's a detail that is easy to sort out).
+> 
+> I can create idle drivers dynamically so that the ARM_CPUIDLE_MAX_DRIVERS
+> check can be removed or relaxed (but the code becomes slightly more complex).
+> 
+> Thanks for having a look, apart from these comments do we think it is
+> a reasonable approach ?
 
-Well, you've not explained what's confusing in the code after this series
-in the first place. :-)
+Any further comments ? I can post a v2 with an updated idle_states_cmp()
+return value, if we think the multiple drivers approach is valid.
 
-Second, quite honestly, I don't see a connection to genpd here.
-
-What you seem to be saying is "maybe we can eliminate the need to check the
-return value of tick_broadcast_enter() in the idle loop if we proactively
-disable the TIMER_STOP idle states of a CPU when we start to use that CPU's
-timer as a broadcast one".
-
-So this seems to be about the timekeeping rather than power domains, because
-that's where the broadcast thing is done.  So the code setting up the CPU's
-timer for broadcast would pretty much need to pause cpuidle, go through the
-CPU's idle states and disable the TIMER_STOP ones.  And do the reverse when the
-timer is not going the be used for broadcast any more.  So question is whether
-or not this is actually really more straightforward than checking the return
-value of tick_broadcast_enter() in the idle loop after all.
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Thanks a lot,
+Lorenzo
