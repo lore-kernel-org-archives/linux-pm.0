@@ -1,97 +1,102 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: A desktop environment[1] kernel wishlist
-Date: Tue, 12 May 2015 02:45:52 +0200
-Message-ID: <2569977.BfLROBdnQS@vostro.rjw.lan>
-References: <1413881397.30379.7.camel@hadess.net> <3237283.HPYFlah0t8@vostro.rjw.lan> <20150511221230.GE4434@amd>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: [GIT PULL] power supply changes for 4.1-rc
+Date: Tue, 12 May 2015 03:31:23 +0200
+Message-ID: <20150512013123.GA24231@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="/9DWx/yDrRhgMJTb"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51932 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751980AbbELAUo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2015 20:20:44 -0400
-In-Reply-To: <20150511221230.GE4434@amd>
+Received: from mail.kernel.org ([198.145.29.136]:56352 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751922AbbELBbh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 May 2015 21:31:37 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Chirantan Ekbote <chirantan@chromium.org>, John Stultz <john.stultz@linaro.org>, Olof Johansson <olof@lixom.net>, Bastien Nocera <hadess@hadess.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, snanda@chromium.org, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>
-
-On Tuesday, May 12, 2015 12:12:30 AM Pavel Machek wrote:
-> Hi!
-> 
-> > > If the event was user-triggered it sends
-> > > out a DBus signal announcing the end of the suspend, Chrome thaws its
-> > > renderer processes, the full UI comes back up, and the user can start
-> > > working.  If the event was _not_ user-triggred (if it was the RTC or
-> > > NIC), the power manager sends out a different DBus signal announcing
-> > > that the system is in lucid sleep and will re-suspend soon.  It will
-> > > then wait for all registered applications to report readiness to
-> > > suspend or for the max timeout to expire.
-> > 
-> > First let me say that the "user-triggered" vs "non-user-triggered" distinction
-> > seems somewhat artificial to me.  All boils down to having a special class
-> > of wakeup events that are supposed to make the power manager behave differently
-> > after resuming.  Whether or not they are actually triggered by the user
-> > doesn't really matter technically.
-> ...
-> > > So that was a little long-winded but hopefully I've addressed all your
-> > > concerns about potential race conditions in this code.  I simplified a
-> > > few bits because would just complicate the discussion but for the most
-> > > part this is how the feature works now.  Having the kernel emit a
-> > > uevent with the wakeup event type would take the place of the power
-> > > manager reading from /sys/power/wakeup_type in this system but
-> > > wouldn't really affect anything else.
-> > 
-> > Which loops back to my previous remark: Things may get ugly if /sys/power/wakeup_type
-> > doesn't do the right thing (the uevent mechanics you'd like to replace it with
-> > will really need to do the same, so I'm not quite sure it's worth the effort).
-> > 
-> > Namely, it really has to cover all events that might have woken you up and
-> > happened before stuff has started to be added to the input buffers that Chrome
-> > cares about.  It is difficult to identify the exact point where that takes place
-> > in the resume sequence, but it should be somewhere in dpm_resume_end().  Why so?
-> > Because it really doesn't matter why exactly the system is waking up.  What
-> > matters is whether or not an event that you should react to by bringing up the
-> > UI happens *at* *any* *time* between (and including) the actual wakeup and the
-> > point when you can rely on the input buffers to contain any useful information
-> > consumable by Chrome.
-> > 
-> > This pretty much means that /sys/power/wakeup_type needs to behave almost like
-> > /sys/power/wakeup_count, but is limited to a subset of wakeup sources.  That's
-> > why I was talking about splitting the wakeup count.
-> > 
-> > So instead of adding an entirely new mechanics for that, why don't you add
-> > something like "priority" or "weight" to struct wakeup_source and assign
-> > higher values of that to the wakeup sources associated with the events
-> > you want to bring up the UI after resume?  And make those "higher-priority"
-> > wakeup sources use a separate wakeup counter, so you can easily verify if
-> > any of them has triggered by reading that or making it trigger a uevent if
-> > you want to?
-> 
-> Does it do all we want?
-
-I believe so.
-
-> What if one device wants to generate both "normal" and "higher-priority"
-> wakeup events? (*)
->
-> Should not we have normal interface for keyboard (and similar devices)
-> where we could ask "did something interesting happen while we were
-> sleeping"? Actually.. maybe the device can queue the events
-> that happened during sleep, and deliver them after wakeup? If user
-> pressed key during sleep, you should have key event waiting on
-> /dev/input/event3...
-
-If it can queue up all of them, it can be "normal" priority just fine
-and user space can read all the queue and decide what to do then.
-
-The "high-priority" idea is for devices that can't do that at least at one
-point during the suspend-resume cycle.  In those cases we can't simply go
-back and check what the event was, so we need to rely on the device's
-"importance" or "class" (with respect to wakeup).
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--/9DWx/yDrRhgMJTb
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+The following changes since commit b787f68c36d49bb1d9236f403813641efa74a031:
+
+  Linux 4.1-rc1 (2015-04-26 17:59:10 -0700)
+
+are available in the git repository at:
+
+  git://git.infradead.org/battery-2.6.git tags/for-v4.1-rc
+
+for you to fetch changes up to 8ebb7e9c1a502cfc300618c19c3c6f06fc76d237:
+
+  power: bq27x00_battery: Add missing MODULE_ALIAS (2015-05-01 23:01:48 +02=
+00)
+
+----------------------------------------------------------------
+power supply and reset fixes for the v4.1 series
+
+ * misc. fixes
+
+----------------------------------------------------------------
+Dmitry Eremin-Solenikov (1):
+      power_supply: fix oops in collie_battery driver
+
+Florian Fainelli (1):
+      power: reset: Add MFD_SYSCON depends for brcmstb
+
+Marek Belisko (1):
+      power: bq27x00_battery: Add missing MODULE_ALIAS
+
+Pali Roh=E1r (1):
+      MAINTAINERS: Add me as maintainer of Nokia N900 power supply drivers
+
+Ramakrishna Pallala (1):
+      axp288_fuel_gauge: Add original author details
+
+Thomas Gleixner (1):
+      power: reset: ltc2952: Remove bogus hrtimer_start() return value chec=
+ks
+
+Wei Yongjun (1):
+      power/reset: at91: fix return value check in at91_reset_platform_prob=
+e()
+
+ MAINTAINERS                            | 11 +++++++++++
+ drivers/power/axp288_fuel_gauge.c      |  1 +
+ drivers/power/bq27x00_battery.c        |  8 ++++++++
+ drivers/power/collie_battery.c         |  2 +-
+ drivers/power/reset/Kconfig            |  1 +
+ drivers/power/reset/at91-reset.c       |  4 ++--
+ drivers/power/reset/ltc2952-poweroff.c | 18 +++---------------
+ 7 files changed, 27 insertions(+), 18 deletions(-)
+
+-- Sebastian
+
+--/9DWx/yDrRhgMJTb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVUVfrAAoJENju1/PIO/qa1VMQAJkt64Ndok+BQ0wGUJM+jS5T
+3tgGWHMXnSqMrqW6+8hO6ZNLXGt7xzwVRHk69Wh9h3P2PtZM4EvfJLQVJSbdAyKR
+s2GMbC/EIR+f3aSOyumYv0D5kYMXkrmBvhoRQBJGYO4YYMIVHEdlhyeyqeVBACg9
+OxFjhF5959Cm2m6wUOdGmyOqtZ3+OcnkUQALMkTaqaAULaeVCyVpdj7bLXb5oq+o
+zvl59vXAfE45xHoMqYoH7Uyzni2eAZDEfM2zrqqZP+LsVcB76VThhrd1El8QKLEh
+NTu/gzGezd5OJYb5AhjNhFbO8+/RPiv+PXR4XuC/75+jQ8YKh/NGjk1h9Laf8tjD
+qoH/s30EmPuXoXFYrA6sXA2mYPm1OrBLne1DP8G/TTPwi7J6V8osRcHxmLVBcR5X
+6iNeS2nYpopn7OsCNfF/lxdezradBXLAV6b/t9c/uxgHa1p0sEC1OXQRniHDXLhY
+1nFZZGW4sIvbfs+M2kD3/0ERGmhiUeKj6BBTVdXHGU/RvqVKaDCFGuZRrFv+hNRm
+KTjTzNME4wUi58bAu8+Kz8bnUIpkHHg90aErA7eFn8VY/euOx0yVStEB0DXPbz+u
+zLiRccULZ6hNWU91E6fk6Qwv6TUfBGV5cdFDNaVmqLOzpAAAGyO3XA9RDJdQFwUM
+AuGOKMrkNqOk0RBehjDq
+=XFFM
+-----END PGP SIGNATURE-----
+
+--/9DWx/yDrRhgMJTb--
