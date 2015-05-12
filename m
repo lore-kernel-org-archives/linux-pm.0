@@ -1,91 +1,111 @@
-From: Xinwei Kong <kong.kongxinwei@hisilicon.com>
-Subject: Re: [PATCH RESEND v4 0/2] 96boards: add thermal senor support to
- hikey board
-Date: Tue, 12 May 2015 11:12:39 +0800
-Message-ID: <55516FA7.3040808@hisilicon.com>
-References: <1430707940-14468-1-git-send-email-kong.kongxinwei@hisilicon.com> <20150512013107.GE4810@localhost.localdomain>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
+Date: Tue, 12 May 2015 10:46:33 +0530
+Message-ID: <20150512051633.GB32300@linux>
+References: <cover.1430394884.git.viresh.kumar@linaro.org>
+ <d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar@linaro.org>
+ <554FFFA3.1060801@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga02-in.huawei.com ([119.145.14.65]:35385 "EHLO
-	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752032AbbELDLa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2015 23:11:30 -0400
-In-Reply-To: <20150512013107.GE4810@localhost.localdomain>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:36782 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751413AbbELFQj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2015 01:16:39 -0400
+Received: by pabsx10 with SMTP id sx10so132395398pab.3
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2015 22:16:39 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <554FFFA3.1060801@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: rui.zhuang@intel.com, amit.kucheria@linaro.org, punit.agrawal@arm.com, Javi.Merino@arm.com, jorge.ramirez-ortiz@linaro.org, haojian.zhuang@linaro.org, linux-pm@vger.kernel.org, linuxarm@huawei.com, devicetree@vger.kernel.org, dan.zhao@hisilicon.com, liguozhu@hisilicon.com, mporter@konsulko.com, gongyu@hisilicon.com, guodong.xu@linaro.org, robh@kernel.org, leo.yan@linaro.org, zhenwei.wang@hisilicon.com, zhangfei.gao@linaro.org, z.liuxinliang@huawei.com, xuwei5@hisilicon.com, w.f@huawei.com, yuanzhichang@hisilicon.com, mark.rutland@arm.comLeo Yan <leo.yan@linaro.org>
+To: Nishanth Menon <nm@ti.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, arnd.bergmann@linaro.org, broonie@kernel.org, mike.turquette@linaro.org, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
+Hi Nishanth,
 
+On 10-05-15, 20:02, Nishanth Menon wrote:
+> On 04/30/2015 07:07 AM, Viresh Kumar wrote:
 
-On 2015/5/12 9:31, Eduardo Valentin wrote:
-> On Mon, May 04, 2015 at 10:52:18AM +0800, Xinwei Kong wrote:
->> From: kongxinwei <kong.kongxinwei@hisilicon.com>
->>
->> The Linaro connect introduce 96boards series in Hong Kong,The HiKey board
->> is the first board to be certified 96Boards Consumer Edition compatible.
->> This board is based on the HiSilicon SoC. you can get more information
->> from https://www.96boards.org.
->>
->> The hisilicon SoC contains thermal module, this thermal module has 4 sensors,
->>
->> 	- sensor 0: local sensor;
->> 	- sensor 1: remote sensor for ACPU cluster 1;
->> 	- sensor 2: remote sensor for ACPU cluster 2;
->> 	- sensor 3: remote sensor for GPU;
->>
->> It can obtain this device temperature by operating this hardware. The new
->> sensor driver satisfies thermal framework and to realize the ACPU ,GPU and
->> so on to cool function.
->>
->> Changes v0->v1;
->> * Delete this hi6220 dtsi.
->> * Fix documentation and error checks.
->> * Modify this driver which makes use of kernel to decide how to dynamically
->>   bind the interrupt to hottest sensor.
->> * Delete "sensor-thres-temp" property and read thermal_zone trips points
->>   replace of it.
->> * Delete "sensor-reset-temp" property and define the fixed value replace
->>   of it.
->>
->> Changes v1->v2;
->> * change patch's position between binding document and driver file
->> * clean up some regiser for enabling thermal sensor
->> * use mutex lock to replace the spin lock
->>
->> Changes v2->v3;
->> * delete sensor id property in binding document 
->> * fix sensor driver to satisfy sensor register after deleting sensor id
->>   property
->>
->> Changes v3->v4;
->> * using "usleep_range" function instead of "msleep" function
->> * delete code detail error
->>
->> kongxinwei (2):
->>   dt-bindings: Document the hi6220 thermal sensor bindings
->>   thermal: hisilicon: add new hisilicon thermal sensor driver
->>
->>  .../bindings/thermal/hisilicon-thermal.txt         |  23 ++
->>  drivers/thermal/Kconfig                            |   8 +
->>  drivers/thermal/Makefile                           |   1 +
->>  drivers/thermal/hisi_thermal.c                     | 437 +++++++++++++++++++++
+> > +the liberty of choosing these. These triplets are called Operating Performance
 > 
-> Can you please include a patch adding the DT bindings for a board in you
-> next version? Even if the patches don't go in one single tree, it is
-> good to review all patches (DT and drivers) in one single patch series.
+> I suggest we dont call them as triplets either -> note, we have added
+> clk transition latency per OPP, so they are not exactly triplets either.
+
+Sure.
+
+> > +Points aka OPPs. This document defines bindings for these OPPs applicable across
+> > +wide range of devices. For illustration purpose, this document uses CPU as a
+> > +device.
+> > +
+> > +
 > 
+> Would be good to point to operating-points (the legacy document) as
+> well. It might be good to state that only one of the properties should
+> be used for the device node OPP description.
 
-Ok, accept it.
+Hmm, okay.
 
->>  4 files changed, 469 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
->>  create mode 100644 drivers/thermal/hisi_thermal.c
->>
->> -- 
->> 1.9.1
->>
->>
+> > +Optional properties:
+> > +- shared-opp: Indicates that device nodes using this OPP descriptor's phandle
+> > +  switch their DVFS state together, i.e. they share clock/voltage/current lines.
+> > +  Missing property means devices have independent clock/voltage/current lines,
+> > +  but they share OPP tables.
+> 
+> Is'nt this property redundant? by the fact that phandle is reused for
+> cpu1 should indicate shared OPP table, correct?
 
+There are two things we can share:
+- OPP tables (And not the clock lines themselves). For example,
+  consider a quad-core platform with independent clock/voltage lines
+  for all CPUs but all the CPUs have same OPP table.
+
+- Clock/voltage rails: This is described by the above property. I
+  thought the examples should have made this clear, anything left
+  there ?
+
+> > +- turbo-mode: Marks the OPP to be used only for turbo modes.
+> 
+> Might be great to add some description for what "turbo mode" means here.
+
+Okay.
+
+> That said, flexibility of this approach is awesome, thanks for doing
+> this, I believe we did have a discussion about "safe OPP" for thermal
+> behavior -> now that we have phandles for OPPs, we  can give phandle
+> pointer to the thermal framework. in addition, we can also use phandle
+> for marking throttling information in thermal framework instead of
+> indices as well. which allows a lot of flexibility.
+> 
+> in some systems, we'd have need to mark certain OPPs for entry into
+> suspend(tegra?) or during shutdown (for example) - do we allow for such
+> description as phandle pointer back to the OPP nodes (from cpu0 device)
+> OR do we describe them as additional properties?
+
+Haven't thought about it earlier. In case we need them, probably it
+should go in the OPP table.
+
+NOTE: Mike T. once told me that we shouldn't over-abuse the bindings
+by putting every detail there. And I am not sure at all on how to draw
+that line.
+
+> > +- status: Marks the node enabled/disabled.
+> 
+> One question we'd probably want the new framework to address is the need
+> for OPPs based on Efuse options - Am I correct in believing that the
+> solution that iMX, and TI SoCs probably need is something similar to
+> modifying the status to disabled? or do we have Vendor specfic modifier
+> properties that would be allowed?
+
+See PATCH 2/3 for that.
+ 
+> One additional behavior need I noticed in various old threads is a need
+> to restrict transition OPPs -> certain SoCs might have constraints on
+> next OPP they can transition from certain OPPs in-order to achieve a new
+> OPP. again, such behavior could be phandle lists OR properties that link
+> the chain up together. Number of such needs did sound less, but still
+> just thought to bring it up.
+
+See 0/3 and 3/3 for that. Its present in my solution but Mike T. is
+strictly against keeping that in OPP table. And so 3/3 may get Nak'd.
+
+Thanks a lot for your reviews.
