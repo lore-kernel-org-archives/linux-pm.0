@@ -1,60 +1,74 @@
-From: Michael Turquette <mturquette@linaro.org>
-Subject: [PATCH RFC v2 3/4] sched: expose capacity_of in sched.h
-Date: Mon, 11 May 2015 19:13:14 -0700
-Message-ID: <1431396795-32439-4-git-send-email-mturquette@linaro.org>
-References: <1431396795-32439-1-git-send-email-mturquette@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1431396795-32439-1-git-send-email-mturquette@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: peterz@infradead.org, mingo@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, preeti@linux.vnet.ibm.com, Morten.Rasmussen@arm.com, riel@redhat.com, efault@gmx.de, nicolas.pitre@linaro.org, daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, amit.kucheria@linaro.org, juri.lelli@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, alex.shi@linaro.org, abelvesa@gmail.com, Michael Turquette <mturquette@linaro.org>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH v5 09/11] clk: qcom: gdsc: Use PM clocks to control gdsc
+ clocks
+Date: Tue, 12 May 2015 08:32:12 +0530
+Message-ID: <55516D34.1000501@codeaurora.org>
+References: <1429017137-20218-1-git-send-email-rnayak@codeaurora.org> <1429017137-20218-10-git-send-email-rnayak@codeaurora.org> <554249AF.6070909@mm-sol.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <554249AF.6070909@mm-sol.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stanimir Varbanov <svarbanov@mm-sol.com>
+Cc: sboyd@codeaurora.org, mturquette@linaro.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, srinivas.kandagatla@linaro.org, sviau@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-capacity_of is of use to a cpu frequency scaling policy based on cfs
-load tracking and cpu capacity utilization metrics. Expose this call in
-sched.h so it can be used in such a policy.
+[]
+>>
+>> +static int gdsc_attach(struct generic_pm_domain *domain, struct device *dev)
+>> +{
+>> +	int ret;
+>> +	struct gdsc *sc = domain_to_gdsc(domain);
+>> +	char **con_id;
+>> +
+>> +	if (!sc->con_ids[0])
+>> +		return 0;
+>
+> Did you test this on your side? It panic kernel badly cause the flexible
+> array is not initialised.
+>
+> Could you revisit the above check. Or you could add below initialisation
+> for every gdsc structure in gcc-xxx.c files.
 
-Signed-off-by: Michael Turquette <mturquette@linaro.org>
----
-Changes in v2:
-	Do not expose get_cpu_usage or capacity_orig_of in sched.h
-	Expose capacity_of instead
+Hey, that does seem like a problem. Not sure how I did not end up
+seeing it. I'll fix it up, thanks.
 
- kernel/sched/fair.c  | 5 -----
- kernel/sched/sched.h | 5 +++++
- 2 files changed, 5 insertions(+), 5 deletions(-)
+>
+> static struct gdsc venus_gdsc = {
+> 	.gdscr = 0x4c018,
+> 	.pd = {
+> 		.name = "venus",
+> 	},
+> 	.con_ids = { NULL },
+> };
+>
+>
+>> +
+>> +	ret = pm_clk_create(dev);
+>> +	if (ret) {
+>> +		dev_err(dev, "pm_clk_create failed %d\n", ret);
+>> +		return ret;
+>> +	}
+>> +
+>> +	for (con_id = sc->con_ids; *con_id; con_id++) {
+>> +		ret = pm_clk_add(dev, *con_id);
+>> +		if (ret) {
+>> +			dev_err(dev, "pm_clk_add failed %d\n", ret);
+>> +			goto fail;
+>> +		}
+>> +	}
+>> +	return 0;
+>> +fail:
+>> +	pm_clk_destroy(dev);
+>> +	return ret;
+>> +};
+>> +
+>
+> <snip>
+>
+>
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 75aec8d..d27ded9 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -4361,11 +4361,6 @@ static unsigned long target_load(int cpu, int type)
- 	return max(rq->cpu_load[type-1], total);
- }
- 
--static unsigned long capacity_of(int cpu)
--{
--	return cpu_rq(cpu)->cpu_capacity;
--}
--
- static unsigned long capacity_orig_of(int cpu)
- {
- 	return cpu_rq(cpu)->cpu_capacity_orig;
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index e0e1299..4925bc4 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -1396,6 +1396,11 @@ unsigned long arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
- }
- #endif
- 
-+static inline unsigned long capacity_of(int cpu)
-+{
-+	return cpu_rq(cpu)->cpu_capacity;
-+}
-+
- static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta)
- {
- 	rq->rt_avg += rt_delta * arch_scale_freq_capacity(NULL, cpu_of(rq));
 -- 
-1.9.1
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
