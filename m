@@ -1,47 +1,38 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/7] drivers/cpufreq: Convert non-modular drivers to use
- builtin_driver_register
-Date: Tue, 12 May 2015 12:34:44 +0530
-Message-ID: <20150512070444.GE32300@linux>
-References: <1431287385-1526-1-git-send-email-paul.gortmaker@windriver.com>
- <1431287385-1526-5-git-send-email-paul.gortmaker@windriver.com>
+Subject: Re: [PATCH] cpufreq: arm_big_little: remove compile-time dependency
+ on BL_SWITCHER
+Date: Tue, 12 May 2015 12:57:54 +0530
+Message-ID: <20150512072754.GF32300@linux>
+References: <1431343473-9915-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:35469 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752790AbbELH16 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2015 03:27:58 -0400
+Received: by pabtp1 with SMTP id tp1so137154720pab.2
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2015 00:27:58 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1431287385-1526-5-git-send-email-paul.gortmaker@windriver.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <1431343473-9915-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Medhurst <tixy@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 10-05-15, 15:49, Paul Gortmaker wrote:
-> These files depend on Kconfig options all of which are a bool, so
-> we use the appropriate registration function, which avoids us
-> relying on an implicit inclusion of <module.h> which we are
-> doing currently.
+On 11-05-15, 12:24, Sudeep Holla wrote:
+> With the addition of switcher code, there's compile-time dependency on
+> BL_SWITCHER to get arm_big_little driver compiling on ARM64. Since ARM64
+
+The Kconfig dependency isn't on the switcher but big.LITTLE, which
+isn't defined for arm64. So, we need a bit of clarity here.
+
+> @@ -562,8 +580,7 @@ int bL_cpufreq_register(struct cpufreq_arm_bL_ops *ops)
 > 
-> While this currently works, we really don't want to be including
-> the module.h header in non-modular code, which we'd be forced
-> to do, pending some upcoming code relocation from init.h into
-> module.h.  So we fix it now by using the non-modular equivalent.
+>  	arm_bL_ops = ops;
 > 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Kukjin Kim <kgene@kernel.org>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> ---
->  drivers/cpufreq/exynos-cpufreq.c  | 2 +-
+> -	ret = bL_switcher_get_enabled();
+> -	set_switching_enabled(ret);
+> +	set_switching_enabled(bL_switcher_get_enabled());
 
-Exynos can be compiled as a module:
-
-drivers/cpufreq/Kconfig.arm:
-
-config ARM_EXYNOS_CPUFREQ
-	tristate "SAMSUNG EXYNOS CPUfreq Driver"
-	depends on CPU_EXYNOS4210 || SOC_EXYNOS4212 || SOC_EXYNOS4412 || SOC_EXYNOS5250
-
---
-viresh
+This change wasn't required.
