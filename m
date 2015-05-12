@@ -1,7 +1,7 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv4 PATCH 26/34] sched: Store system-wide maximum cpu capacity in root domain
-Date: Tue, 12 May 2015 20:39:01 +0100
-Message-ID: <1431459549-18343-27-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv4 PATCH 33/34] sched: Enable idle balance to pull single task towards cpu with higher capacity
+Date: Tue, 12 May 2015 20:39:08 +0100
+Message-ID: <1431459549-18343-34-git-send-email-morten.rasmussen@arm.com>
 References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
@@ -12,63 +12,50 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-To be able to compare the capacity of the target cpu with the highest
-cpu capacity of the system in the wakeup path, store the system-wide
-maximum cpu capacity in the root domain.
+We do not want to miss out on the ability to pull a single remaining
+task from a potential source cpu towards an idle destination cpu if the
+energy aware system operates above the tipping point.
+
+Add an extra criteria to need_active_balance() to kick off active load
+balance if the source cpu is over-utilized and has lower capacity than
+the destination cpu.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
+Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- kernel/sched/core.c  | 8 ++++++++
- kernel/sched/sched.h | 3 +++
- 2 files changed, 11 insertions(+)
+ kernel/sched/fair.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 8818bf0..d307db8 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -6848,6 +6848,7 @@ static int build_sched_domains(const struct cpumask *cpu_map,
- 	enum s_alloc alloc_state;
- 	struct sched_domain *sd;
- 	struct s_data d;
-+	struct rq *rq;
- 	int i, ret = -ENOMEM;
- 
- 	alloc_state = __visit_domain_allocation_hell(&d, cpu_map);
-@@ -6901,11 +6902,18 @@ static int build_sched_domains(const struct cpumask *cpu_map,
- 	/* Attach the domains */
- 	rcu_read_lock();
- 	for_each_cpu(i, cpu_map) {
-+		rq = cpu_rq(i);
- 		sd = *per_cpu_ptr(d.sd, i);
- 		cpu_attach_domain(sd, d.rd, i);
-+
-+		if (rq->cpu_capacity_orig > rq->rd->max_cpu_capacity)
-+			rq->rd->max_cpu_capacity = rq->cpu_capacity_orig;
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 83218e0..8efeb1d 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -7527,6 +7527,13 @@ static int need_active_balance(struct lb_env *env)
+ 			return 1;
  	}
- 	rcu_read_unlock();
  
-+	rq = cpu_rq(cpumask_first(cpu_map));
-+	pr_info("Max cpu capacity: %lu\n", rq->rd->max_cpu_capacity);
++	if ((capacity_of(env->src_cpu) < capacity_of(env->dst_cpu)) &&
++				env->src_rq->cfs.h_nr_running == 1 &&
++				cpu_overutilized(env->src_cpu) &&
++				!cpu_overutilized(env->dst_cpu)) {
++			return 1;
++	}
 +
- 	ret = 0;
- error:
- 	__free_domain_allocs(&d, alloc_state, cpu_map);
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index a5d2d69..95c8ff7 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -553,6 +553,9 @@ struct root_domain {
- 	 */
- 	cpumask_var_t rto_mask;
- 	struct cpupri cpupri;
-+
-+	/* Maximum cpu capacity in the system. */
-+	unsigned long max_cpu_capacity;
- };
+ 	return unlikely(sd->nr_balance_failed > sd->cache_nice_tries+2);
+ }
  
- extern struct root_domain def_root_domain;
+@@ -7881,7 +7888,8 @@ static int idle_balance(struct rq *this_rq)
+ 	this_rq->idle_stamp = rq_clock(this_rq);
+ 
+ 	if (this_rq->avg_idle < sysctl_sched_migration_cost ||
+-	    !this_rq->rd->overload) {
++	    (!energy_aware() && !this_rq->rd->overload) ||
++	    (energy_aware() && !this_rq->rd->overutilized)) {
+ 		rcu_read_lock();
+ 		sd = rcu_dereference_check_sched_domain(this_rq->sd);
+ 		if (sd)
 -- 
 1.9.1
