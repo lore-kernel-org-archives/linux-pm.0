@@ -1,72 +1,99 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: schedule_timeout sleeps too long after dividing CPU frequency
-Date: Tue, 12 May 2015 18:03:40 +0200
-Message-ID: <5552245C.2080701@free.fr>
-References: <55520F0F.5010906@free.fr> <20150512152332.GO2067@n2100.arm.linux.org.uk>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
+Date: Tue, 12 May 2015 11:04:50 -0500
+Message-ID: <555224A2.7000308@ti.com>
+References: <cover.1430394884.git.viresh.kumar@linaro.org> <d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar@linaro.org> <554FFFA3.1060801@ti.com> <20150512051633.GB32300@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20150512152332.GO2067@n2100.arm.linux.org.uk>
-Sender: cpufreq-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, cpufreq <cpufreq@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:40868 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933059AbbELQFn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 12 May 2015 12:05:43 -0400
+In-Reply-To: <20150512051633.GB32300@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, arnd.bergmann@linaro.org, broonie@kernel.org, mike.turquette@linaro.org, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-On 12/05/2015 17:23, Russell King - ARM Linux wrote:
+Hi Viresh,
+On 05/12/2015 12:16 AM, Viresh Kumar wrote:
+[..]
+> On 10-05-15, 20:02, Nishanth Menon wrote:
+>> On 04/30/2015 07:07 AM, Viresh Kumar wrote:
 
-> On Tue, May 12, 2015 at 04:32:47PM +0200, Mason wrote:
+One additional comment - after re-reading the bindings again..
 > 
->> I'm working on a Cortex A9 based platform.
+> +- opp-microvolt: voltage in micro Volts. It can contain entries for multiple
+> +  regulators.
+> +
+> +  A single regulator's voltage is specified with an array of size one or three.
+> +  Single entry is for target voltage and three entries are for <target min max>
+> +  voltages.
+
+Just curious -> is'nt it better to just have min<->max range? binding
+as it stands right now is open to interpretation as to what will be
+attempted and in what sequence? with a valid min, target or max -
+is'nt it more power efficient always to go for a "min" than a target?
+
+Further, min<->max implies anywhere in that range and is more
+consistent with "regulator like" description.
+
+
+>> That said, flexibility of this approach is awesome, thanks for doing
+>> this, I believe we did have a discussion about "safe OPP" for thermal
+>> behavior -> now that we have phandles for OPPs, we  can give phandle
+>> pointer to the thermal framework. in addition, we can also use phandle
+>> for marking throttling information in thermal framework instead of
+>> indices as well. which allows a lot of flexibility.
 >>
->> I have a basic clock tree, and a very basic cpufreq driver using
->> mostly generic driver glue:
->>
->> static struct cpufreq_driver tangox_cpufreq_driver = {
->> 	.name		= "tangox-cpufreq",
->> 	.init		= tangox_cpu_init,
->> 	.verify		= cpufreq_generic_frequency_table_verify,
->> 	.target_index	= tangox_target,
->> 	.get		= cpufreq_generic_get,
->> 	.exit		= cpufreq_generic_exit,
->> 	.attr		= cpufreq_generic_attr,
->> };
->>
->> My target_index function is trivial:
->>
->> static int tangox_target(struct cpufreq_policy *policy, unsigned int idx)
->> {
->> 	return clk_set_rate(policy->clk, freq_table[idx].frequency * 1000);
->> }
->>
->> I was testing an unrelated driver at low frequencies, with the nominal
->> frequency (999 MHz) divided by 54 (i.e. freq = 18.5 MHz) and I noticed
->> that when the driver calls
->>
->>     schedule_timeout(HZ);
->>
->> the thread sleeps 54 seconds instead of 1.
+>> in some systems, we'd have need to mark certain OPPs for entry into
+>> suspend(tegra?) or during shutdown (for example) - do we allow for such
+>> description as phandle pointer back to the OPP nodes (from cpu0 device)
+>> OR do we describe them as additional properties?
 > 
-> I'm guessing that this will be because your local timer changes frequency
-> with the CPU, which means that the clockevent which was set for one second
-> ends up timing out after 54 seconds.
+> Haven't thought about it earlier. In case we need them, probably it
+> should go in the OPP table.
 
-That's the first thing I suspected, but smp_twd.c registers a clk_notifier
-to be notified of CPU frequency changes:
+> 
+> NOTE: Mike T. once told me that we shouldn't over-abuse the bindings
+> by putting every detail there. And I am not sure at all on how to draw
+> that line.
 
-static struct notifier_block twd_clk_nb = {
-	.notifier_call = twd_rate_change,
-};
+True. one option might be to allow for vendor specific property
+extensions - that will let vendors add in additional quirky data
+custom to their SoCs as needed.
 
-static int twd_clk_init(void)
-{
-	if (twd_evt && __this_cpu_ptr(twd_evt) && !IS_ERR(twd_clk))
-		return clk_notifier_register(twd_clk, &twd_clk_nb);
+> 
+>>> +- status: Marks the node enabled/disabled.
+>>
+>> One question we'd probably want the new framework to address is the need
+>> for OPPs based on Efuse options - Am I correct in believing that the
+>> solution that iMX, and TI SoCs probably need is something similar to
+>> modifying the status to disabled? or do we have Vendor specfic modifier
+>> properties that would be allowed?
+> 
+> See PATCH 2/3 for that.
 
-	return 0;
-}
+Sorry about that. I had kind of expected all bindings to be a single
+patch :)..
 
-And I instrumented twd_update_frequency() to check it was being called.
+>  
+>> One additional behavior need I noticed in various old threads is a need
+>> to restrict transition OPPs -> certain SoCs might have constraints on
+>> next OPP they can transition from certain OPPs in-order to achieve a new
+>> OPP. again, such behavior could be phandle lists OR properties that link
+>> the chain up together. Number of such needs did sound less, but still
+>> just thought to bring it up.
+> 
+> See 0/3 and 3/3 for that. Its present in my solution but Mike T. is
+> strictly against keeping that in OPP table. And so 3/3 may get Nak'd.
+> 
 
-Regards.
+missed this as well :(
 
+
+-- 
+Regards,
+Nishanth Menon
