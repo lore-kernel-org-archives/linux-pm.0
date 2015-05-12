@@ -1,169 +1,83 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv4 PATCH 25/34] sched: Add over-utilization/tipping point indicator
-Date: Tue, 12 May 2015 20:39:00 +0100
-Message-ID: <1431459549-18343-26-git-send-email-morten.rasmussen@arm.com>
-References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: peterz@infradead.org, mingo@redhat.com
-Cc: vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, morten.rasmussen@arm.com
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
+Date: Tue, 12 May 2015 20:41:34 +0100
+Message-ID: <20150512194134.GC3066@sirena.org.uk>
+References: <CAKohpo=kJs076afzERPMqjELgwpN6nR2yoyEjW6XY7YSEbRuCA@mail.gmail.com>
+ <20150507055231.GB32399@codeaurora.org>
+ <20150507110233.GR15510@sirena.org.uk>
+ <20150507211855.GA2455@codeaurora.org>
+ <20150507221842.GW22845@sirena.org.uk>
+ <CAKohpomU8wm0T=A7EkosdOjXbP8q2Cb726Hsjh08KTKYjoz3-A@mail.gmail.com>
+ <555000B6.2010107@ti.com>
+ <20150512052033.GC32300@linux>
+ <20150512190134.16410.89041@quantum>
+ <5552510B.9010306@ti.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="Ytgo/kJyDF3J5kSH"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:35150 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933978AbbELTlz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2015 15:41:55 -0400
+Content-Disposition: inline
+In-Reply-To: <5552510B.9010306@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: Michael Turquette <mike.turquette@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, "olof@lixom.net" <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>
 
-Energy-aware scheduling is only meant to be active while the system is
-_not_ over-utilized. That is, there are spare cycles available to shift
-tasks around based on their actual utilization to get a more
-energy-efficient task distribution without depriving any tasks. When
-above the tipping point task placement is done the traditional way,
-spreading the tasks across as many cpus as possible based on priority
-scaled load to preserve smp_nice.
 
-The over-utilization condition is conservatively chosen to indicate
-over-utilization as soon as one cpu is fully utilized at it's highest
-frequency. We don't consider groups as lumping usage and capacity
-together for a group of cpus may hide the fact that one or more cpus in
-the group are over-utilized while group-siblings are partially idle. The
-tasks could be served better if moved to another group with completely
-idle cpus. This is particularly problematic if some cpus have a
-significantly reduced capacity due to RT/IRQ pressure or if the system
-has cpus of different capacity (e.g. ARM big.LITTLE).
+--Ytgo/kJyDF3J5kSH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-cc: Ingo Molnar <mingo@redhat.com>
-cc: Peter Zijlstra <peterz@infradead.org>
+On Tue, May 12, 2015 at 02:14:19PM -0500, Nishanth Menon wrote:
 
-Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
----
- kernel/sched/fair.c  | 35 +++++++++++++++++++++++++++++++----
- kernel/sched/sched.h |  3 +++
- 2 files changed, 34 insertions(+), 4 deletions(-)
+> While TWLxx series was kind of nascent in it's ability of choosing
+> PWM/PFM or auto mode depending on the current targets, newer PMICs
+> have their own unique techniques -> but, that said, this is a
+> description of power consumption for a given OPP for the "device", How
+> would stephen's case work with a PMIC and 2 devices which have
+> different leakage characteristics (based on which end of the process
+> spectrum they come from), Lets take an example:
+> device X consumes 800mA for OPPx
+> device Y consumes 900mA for OPPy
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index f36ab2f3..5b7bc28 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -4266,6 +4266,8 @@ static inline void hrtick_update(struct rq *rq)
- }
- #endif
- 
-+static bool cpu_overutilized(int cpu);
-+
- /*
-  * The enqueue_task method is called before nr_running is
-  * increased. Here we update the fair scheduling stats and
-@@ -4276,6 +4278,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- {
- 	struct cfs_rq *cfs_rq;
- 	struct sched_entity *se = &p->se;
-+	int task_new = !(flags & ENQUEUE_WAKEUP);
- 
- 	for_each_sched_entity(se) {
- 		if (se->on_rq)
-@@ -4310,6 +4313,9 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- 	if (!se) {
- 		update_rq_runnable_avg(rq, rq->nr_running);
- 		add_nr_running(rq, 1);
-+		if (!task_new && !rq->rd->overutilized &&
-+		    cpu_overutilized(rq->cpu))
-+			rq->rd->overutilized = true;
- 	}
- 	hrtick_update(rq);
- }
-@@ -4937,6 +4943,14 @@ static int find_new_capacity(struct energy_env *eenv,
- 	return idx;
- }
- 
-+static unsigned int capacity_margin = 1280; /* ~20% margin */
-+
-+static bool cpu_overutilized(int cpu)
-+{
-+	return (capacity_of(cpu) * 1024) <
-+				(get_cpu_usage(cpu) * capacity_margin);
-+}
-+
- /*
-  * sched_group_energy(): Returns absolute energy consumption of cpus belonging
-  * to the sched_group including shared resources shared only by members of the
-@@ -6732,11 +6746,12 @@ static enum group_type group_classify(struct lb_env *env,
-  * @local_group: Does group contain this_cpu.
-  * @sgs: variable to hold the statistics for this group.
-  * @overload: Indicate more than one runnable task for any CPU.
-+ * @overutilized: Indicate overutilization for any CPU.
-  */
- static inline void update_sg_lb_stats(struct lb_env *env,
- 			struct sched_group *group, int load_idx,
- 			int local_group, struct sg_lb_stats *sgs,
--			bool *overload)
-+			bool *overload, bool *overutilized)
- {
- 	unsigned long load;
- 	int i;
-@@ -6766,6 +6781,9 @@ static inline void update_sg_lb_stats(struct lb_env *env,
- 		sgs->sum_weighted_load += weighted_cpuload(i);
- 		if (idle_cpu(i))
- 			sgs->idle_cpus++;
-+
-+		if (cpu_overutilized(i))
-+			*overutilized = true;
- 	}
- 
- 	/* Adjust by relative CPU capacity of the group */
-@@ -6871,7 +6889,7 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
- 	struct sched_group *sg = env->sd->groups;
- 	struct sg_lb_stats tmp_sgs;
- 	int load_idx, prefer_sibling = 0;
--	bool overload = false;
-+	bool overload = false, overutilized = false;
- 
- 	if (child && child->flags & SD_PREFER_SIBLING)
- 		prefer_sibling = 1;
-@@ -6893,7 +6911,7 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
- 		}
- 
- 		update_sg_lb_stats(env, sg, load_idx, local_group, sgs,
--						&overload);
-+						&overload, &overutilized);
- 
- 		if (local_group)
- 			goto next_group;
-@@ -6935,8 +6953,14 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
- 		/* update overload indicator if we are at root domain */
- 		if (env->dst_rq->rd->overload != overload)
- 			env->dst_rq->rd->overload = overload;
--	}
- 
-+		/* Update over-utilization (tipping point, U >= 0) indicator */
-+		if (env->dst_rq->rd->overutilized != overutilized)
-+			env->dst_rq->rd->overutilized = overutilized;
-+	} else {
-+		if (!env->dst_rq->rd->overutilized && overutilized)
-+			env->dst_rq->rd->overutilized = true;
-+	}
- }
- 
- /**
-@@ -8300,6 +8324,9 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
- 		task_tick_numa(rq, curr);
- 
- 	update_rq_runnable_avg(rq, 1);
-+
-+	if (!rq->rd->overutilized && cpu_overutilized(task_cpu(curr)))
-+		rq->rd->overutilized = true;
- }
- 
- /*
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index b627dfa..a5d2d69 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -535,6 +535,9 @@ struct root_domain {
- 	/* Indicate more than one runnable task for any CPU */
- 	bool overload;
- 
-+	/* Indicate one or more cpus over-utilized (tipping point) */
-+	bool overutilized;
-+
- 	/*
- 	 * The bit corresponding to a CPU gets set here if such CPU has more
- 	 * than one runnable -deadline task (as it is below for RT tasks).
--- 
-1.9.1
+The system integrator would need to be somewhat conservative when
+specifying the currents involved.  For plausible applications these are
+likely to be ballpark figures rather than anything too accurate - if
+nothing else the instantaneous current draw normally varies very
+substantially so realistically you're talking about a maximum here.  If
+the corners vary that dramatically then I'd expect you'd see different
+OPP tables being used anyway.
+
+> It is a lot more impactful than using relative numbers for other
+> purposes - for example energy aware scheduling as an example -> here
+> the actuals might have better optimization, but hints of relative
+> power numbers by itself is pretty powerful information to help
+> scheduling. The usage, in this case, unlike the usage for a PMIC
+> efficiency selection, is not based on absolutes and is meant more of a
+> hint (closer to usage such as clock transition latency numbers).
+
+You're not comparing two similar types of object here, you're trying to
+provide information on an actual physical value to get fed into other
+actual physical values.
+
+--Ytgo/kJyDF3J5kSH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJVUldtAAoJECTWi3JdVIfQMrUH/isKSgOuFnEEw/Rmw/Rv6icC
+uT4t+UKWG3xjNTkaqZgMokh4i1HzXrb6a8mLrqGUtYrk6Vl3mjSjmlLl+cSCBSnK
+AVRVo4U1zo2BokGfzoCEufXi1D8PgqP269bZZGB/K3mVFo32IQMYUGOvoXCtcVaY
+0+ybbWez7itWtOgp/tpb/I5opke+gJ3HDkJJK3zhhOB1gpHn0HvGYiCC42JlPokx
+EbGezneMHjBK1ZCoKGYAjyqn5swCLdxlc34wiaKE1SqfYsA+/wTFI5lB4EBRdUDa
+sgVS5HvUbG0U0ejK8b5oGOBaYOOEoLeUp28xbjmDP+Ma47we+W9YCuwz1BenPH4=
+=0+Cj
+-----END PGP SIGNATURE-----
+
+--Ytgo/kJyDF3J5kSH--
