@@ -1,102 +1,69 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: [GIT PULL] power supply changes for 4.1-rc
-Date: Tue, 12 May 2015 03:31:23 +0200
-Message-ID: <20150512013123.GA24231@earth>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="/9DWx/yDrRhgMJTb"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:56352 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751922AbbELBbh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 11 May 2015 21:31:37 -0400
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+From: Michael Turquette <mturquette@linaro.org>
+Subject: [PATCH RFC v2 0/4] scheduler-driven cpu frequency selection
+Date: Mon, 11 May 2015 19:13:11 -0700
+Message-ID: <1431396795-32439-1-git-send-email-mturquette@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: peterz@infradead.org, mingo@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, preeti@linux.vnet.ibm.com, Morten.Rasmussen@arm.com, riel@redhat.com, efault@gmx.de, nicolas.pitre@linaro.org, daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, amit.kucheria@linaro.org, juri.lelli@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, alex.shi@linaro.org, abelvesa@gmail.com, Michael Turquette <mturquette@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
+This series implements an event-driven cpufreq governor that scales cpu
+frequency as a function of cfs runqueue utilization. The intent of this RFC is
+to get some discussion going about how the scheduler can become the policy
+engine for selecting cpu frequency, what limitations exist and what design do
+we want to take to get to a solution.
 
---/9DWx/yDrRhgMJTb
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+V2 changes the interface exposed from the governor to cfs. Instead of being a
+"pull" model where get_cpu_usage is used to fetch the utilization, that
+information is pushed into the governor. After making this change it becomes
+clear that selecting a new capacity target for a cpu can be done entirely
+within fair.c without any knowledge of cpufreq or the hardware. I didn't go
+that far in this version of the series, but it is something to consider. Such a
+change would mean that we do not pass in a utilization value but instead a
+capacity target.
 
-Hi,
+RFC v1 from May 4, 2015:
+http://lkml.kernel.org/r/<1430777441-15087-1-git-send-email-mturquette@linaro.org>
 
-The following changes since commit b787f68c36d49bb1d9236f403813641efa74a031:
+Old, original idea from October/November of 2014:
+http://lkml.kernel.org/r/<1413958051-7103-1-git-send-email-mturquette@linaro.org>
 
-  Linux 4.1-rc1 (2015-04-26 17:59:10 -0700)
+This series depends on having frequency-invariant representations for load.
+This requires Vincent's recently merged cpu capacity rework patches, as well as
+a new patch from Morten included here. Morten's patch will likely make an
+appearance in his energy aware scheduling v4 series.
 
-are available in the git repository at:
+Thanks to Juri Lelli <juri.lelli@arm.com> for contributing to the development
+of the governor.
 
-  git://git.infradead.org/battery-2.6.git tags/for-v4.1-rc
+A git branch with these patches can be pulled from here:
+https://git.linaro.org/people/mike.turquette/linux.git sched-freq
 
-for you to fetch changes up to 8ebb7e9c1a502cfc300618c19c3c6f06fc76d237:
+Smoke testing has been done on an OMAP4 Pandaboard and an Exynos 5800
+Chromebook2. Extensive benchmarking and regression testing has not yet been
+done.
 
-  power: bq27x00_battery: Add missing MODULE_ALIAS (2015-05-01 23:01:48 +02=
-00)
+Michael Turquette (3):
+  sched: sched feature for cpu frequency selection
+  sched: expose capacity_of in sched.h
+  sched: cpufreq_cfs: pelt-based cpu frequency scaling
 
-----------------------------------------------------------------
-power supply and reset fixes for the v4.1 series
+Morten Rasmussen (1):
+  arm: Frequency invariant scheduler load-tracking support
 
- * misc. fixes
+ arch/arm/include/asm/topology.h |   7 +
+ arch/arm/kernel/smp.c           |  53 ++++++-
+ arch/arm/kernel/topology.c      |  17 ++
+ drivers/cpufreq/Kconfig         |  24 +++
+ include/linux/cpufreq.h         |   3 +
+ kernel/sched/Makefile           |   1 +
+ kernel/sched/cpufreq_cfs.c      | 343 ++++++++++++++++++++++++++++++++++++++++
+ kernel/sched/fair.c             |  24 ++-
+ kernel/sched/features.h         |   6 +
+ kernel/sched/sched.h            |  13 ++
+ 10 files changed, 484 insertions(+), 7 deletions(-)
+ create mode 100644 kernel/sched/cpufreq_cfs.c
 
-----------------------------------------------------------------
-Dmitry Eremin-Solenikov (1):
-      power_supply: fix oops in collie_battery driver
-
-Florian Fainelli (1):
-      power: reset: Add MFD_SYSCON depends for brcmstb
-
-Marek Belisko (1):
-      power: bq27x00_battery: Add missing MODULE_ALIAS
-
-Pali Roh=E1r (1):
-      MAINTAINERS: Add me as maintainer of Nokia N900 power supply drivers
-
-Ramakrishna Pallala (1):
-      axp288_fuel_gauge: Add original author details
-
-Thomas Gleixner (1):
-      power: reset: ltc2952: Remove bogus hrtimer_start() return value chec=
-ks
-
-Wei Yongjun (1):
-      power/reset: at91: fix return value check in at91_reset_platform_prob=
-e()
-
- MAINTAINERS                            | 11 +++++++++++
- drivers/power/axp288_fuel_gauge.c      |  1 +
- drivers/power/bq27x00_battery.c        |  8 ++++++++
- drivers/power/collie_battery.c         |  2 +-
- drivers/power/reset/Kconfig            |  1 +
- drivers/power/reset/at91-reset.c       |  4 ++--
- drivers/power/reset/ltc2952-poweroff.c | 18 +++---------------
- 7 files changed, 27 insertions(+), 18 deletions(-)
-
--- Sebastian
-
---/9DWx/yDrRhgMJTb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVUVfrAAoJENju1/PIO/qa1VMQAJkt64Ndok+BQ0wGUJM+jS5T
-3tgGWHMXnSqMrqW6+8hO6ZNLXGt7xzwVRHk69Wh9h3P2PtZM4EvfJLQVJSbdAyKR
-s2GMbC/EIR+f3aSOyumYv0D5kYMXkrmBvhoRQBJGYO4YYMIVHEdlhyeyqeVBACg9
-OxFjhF5959Cm2m6wUOdGmyOqtZ3+OcnkUQALMkTaqaAULaeVCyVpdj7bLXb5oq+o
-zvl59vXAfE45xHoMqYoH7Uyzni2eAZDEfM2zrqqZP+LsVcB76VThhrd1El8QKLEh
-NTu/gzGezd5OJYb5AhjNhFbO8+/RPiv+PXR4XuC/75+jQ8YKh/NGjk1h9Laf8tjD
-qoH/s30EmPuXoXFYrA6sXA2mYPm1OrBLne1DP8G/TTPwi7J6V8osRcHxmLVBcR5X
-6iNeS2nYpopn7OsCNfF/lxdezradBXLAV6b/t9c/uxgHa1p0sEC1OXQRniHDXLhY
-1nFZZGW4sIvbfs+M2kD3/0ERGmhiUeKj6BBTVdXHGU/RvqVKaDCFGuZRrFv+hNRm
-KTjTzNME4wUi58bAu8+Kz8bnUIpkHHg90aErA7eFn8VY/euOx0yVStEB0DXPbz+u
-zLiRccULZ6hNWU91E6fk6Qwv6TUfBGV5cdFDNaVmqLOzpAAAGyO3XA9RDJdQFwUM
-AuGOKMrkNqOk0RBehjDq
-=XFFM
------END PGP SIGNATURE-----
-
---/9DWx/yDrRhgMJTb--
+-- 
+1.9.1
