@@ -1,7 +1,7 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 06/15] thermal: inline only once used function
-Date: Wed, 13 May 2015 10:52:34 +0200
-Message-ID: <1431507163-19933-7-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH 12/15] thermal: of: implement .set_trips for device tree thermal zones
+Date: Wed, 13 May 2015 10:52:40 +0200
+Message-ID: <1431507163-19933-13-git-send-email-s.hauer@pengutronix.de>
 References: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de>
@@ -10,49 +10,61 @@ To: linux-pm@vger.kernel.org
 Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Inline update_temperature into its only caller to make the code
-more readable.
-
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/thermal/thermal_core.c | 17 +++++------------
- 1 file changed, 5 insertions(+), 12 deletions(-)
+ drivers/thermal/of-thermal.c | 12 ++++++++++++
+ include/linux/thermal.h      |  3 +++
+ 2 files changed, 15 insertions(+)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index e204deb..19da022 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -450,9 +450,12 @@ exit:
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index bd3185e..f8dd847 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -97,6 +97,17 @@ static int of_thermal_get_temp(struct thermal_zone_device *tz,
+ 	return data->ops->get_temp(data->sensor_data, temp);
  }
- EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
  
--static void update_temperature(struct thermal_zone_device *tz)
-+void thermal_zone_device_update(struct thermal_zone_device *tz)
- {
--	int temp, ret;
-+	int temp, ret, count;
++static int of_thermal_set_trips(struct thermal_zone_device *tz,
++			       int low, int high)
++{
++	struct __thermal_zone *data = tz->devdata;
 +
-+	if (!tz->ops->get_temp)
-+		return;
++	if (!data->ops || !data->ops->set_trips)
++		return -ENOSYS;
++
++	return data->ops->set_trips(data->sensor_data, low, high);
++}
++
+ /**
+  * of_thermal_get_ntrips - function to export number of available trip
+  *			   points.
+@@ -367,6 +378,7 @@ static int of_thermal_get_crit_temp(struct thermal_zone_device *tz,
  
- 	ret = thermal_zone_get_temp(tz, &temp);
- 	if (ret) {
-@@ -471,16 +474,6 @@ static void update_temperature(struct thermal_zone_device *tz)
- 	trace_thermal_temperature(tz);
- 	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
- 				tz->last_temperature, tz->temperature);
--}
--
--void thermal_zone_device_update(struct thermal_zone_device *tz)
--{
--	int count;
--
--	if (!tz->ops->get_temp)
--		return;
--
--	update_temperature(tz);
+ static const struct thermal_zone_device_ops of_thermal_ops = {
+ 	.get_temp = of_thermal_get_temp,
++	.set_trips = of_thermal_set_trips,
+ 	.get_trend = of_thermal_get_trend,
+ 	.set_emul_temp = of_thermal_set_emul_temp,
  
- 	for (count = 0; count < tz->trips; count++)
- 		handle_thermal_trip(tz, count);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index aef6e13..b751f6b 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -267,12 +267,15 @@ struct thermal_genl_event {
+  *
+  * Optional:
+  * @get_trend: a pointer to a function that reads the sensor temperature trend.
++ * @set_trips: a pointer to a function that sets a temperature window which shall
++ *             trigger an interrupt when it is left.
+  * @set_emul_temp: a pointer to a function that sets sensor emulated
+  *		   temperature.
+  */
+ struct thermal_zone_of_device_ops {
+ 	int (*get_temp)(void *, int *);
+ 	int (*get_trend)(void *, int, enum thermal_trend *);
++	int (*set_trips)(void *, int, int);
+ 	int (*set_emul_temp)(void *, int);
+ };
+ 
 -- 
 2.1.4
