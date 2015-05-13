@@ -1,147 +1,102 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: Using a temperature sensor with 1-bit output for CPU throttling
-Date: Wed, 13 May 2015 10:02:38 +0200
-Message-ID: <5553051E.7080700@free.fr>
-References: <553F6E85.5090402@free.fr> <5540E0E1.6080504@free.fr>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH/RFC v6 5/7] PM / Domains: Add helper variable np = dev->of_node
+Date: Wed, 13 May 2015 10:10:01 +0200
+Message-ID: <CAPDyKFoTe8hk1-T9_Tz5HdUcUbitR7nuuawB9iG16yCYiycKRA@mail.gmail.com>
+References: <1430138622-14029-1-git-send-email-geert+renesas@glider.be>
+	<1430138622-14029-6-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <5540E0E1.6080504@free.fr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: cpufreq <cpufreq@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Andrew Lunn <andrew@lunn.ch>, Amit Kachhap <amit.kachhap@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f178.google.com ([209.85.220.178]:36306 "EHLO
+	mail-qk0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752925AbbEMIKC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2015 04:10:02 -0400
+Received: by qku63 with SMTP id 63so23085299qku.3
+        for <linux-pm@vger.kernel.org>; Wed, 13 May 2015 01:10:01 -0700 (PDT)
+In-Reply-To: <1430138622-14029-6-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Axel Haslam <ahaslam@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 29/04/2015 15:47, Mason wrote:
+On 27 April 2015 at 14:43, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> Just a cleanup, no functional changes.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Acked-by: Kevin Hilman <khilman@linaro.org>
 
-> On 28/04/2015 13:27, Mason wrote:
->=20
->> The SoC I'm working on provides a temperature sensor (NXP) in the CP=
-U block.
->> The sensor seems to be very primitive, so I wanted to ask experience=
-d people
->> what would be the best way to use it from Linux.
->>
->> General Description
->> "The sensor generates an output signal that indicates if the die tem=
-perature
->> exceeds a programmable threshold. This makes it particularly suitabl=
-e for
->> detecting overheating."
->>
->> So it seems that the original purpose of this sensor was to periodic=
-ally
->> check that the temperature has not exceeded a given threshold.
->>
->> - Is the CPU temp higher than 100=C2=B0C ?
->> - No.
->> - OK. Business as usual.
->>
->> (1 second later)
->> - Is the CPU temp higher than 100=C2=B0C ?
->> - Yes.
->> - Uh-oh! I need to do something about it.
->>
->>
->> Basic Functions
->> "The temp sensor uses a bandgap type of circuit to compare a voltage=
- which
->> has a negative temperature coefficient with a voltage that is propor=
-tional
->> to absolute temperature. A resistor bank allows 40 different tempera=
-ture
->> thresholds to be selected and the logic output 'out_temperature' wil=
-l then
->> indicate whether the actual die temperature lies above or below the =
-selected
->> threshold."
->>
->> The available thresholds seem to be chosen somewhat arbitrarily:
->>
->>   -45.1, -39.7, -33.7, -29.4, -24.4, -20.4, -15.4, -10.1,
->>   -6.4, -1.4, 3.6, 7.6, 12.9, 16.6, 20.6, 25.6, 30.9,
->>   34.9, 38.6, 43.9, 48.9, 52.9, 57.9, 61.9, 66.9, 70.9,
->>   76.3, 81.3, 85.3, 90.3, 95.3, 98.9, 102.9, 108.3, 111.9,
->>   117.3, 122.3, 126.3, 131.3, 135.3, 139.3
->>
->> The spacing between values seems arbitrary also.
->> (Is there an underlying physical explanation?)
->>
->> I'm not sure that there is much point in testing for temperatures lo=
-wer
->> than 50=C2=B0C ? (I'm told that the SoC can reliably function up to =
-125=C2=B0C.)
->>
->> Do higher temperatures shorten the lifespan of a component?
->> In other words, would a CPU running 24/7 at 100=C2=B0C "break" soone=
-r
->> than one running 24/7 at 50=C2=B0C ?
->>
->>
->> Characteristics
->>
->> Symbol      Parameter             Min  Typ  Max  Unit
->>
->> (Operating conditions)
->> Tjunc      Junction temperature   -40   25   125  =C2=B0C
->> Vdd        Supply voltage         1.0  1.1  1.26   V
->>
->> (Normal operating mode)
->> Idd         Supply current              50    60  =CE=BCA
->> Vbandgapref Ref output voltage   0.72  0.8  0.88   V
->> =E2=88=86outtemp    Absolute Temp               =C2=B12   =C2=B110  =
-=C2=B0C
->>             threshold error
->> T_res       Temp resolution        3    4.5    7  =C2=B0C
->>
->>
->> Given the semantics of the temperature sensor hardware block, I was
->> tempted to implement something along these lines:
->>
->> Create a kernel thread that runs periodically (e.g. every second)
->> to check if the temperature is above 100=C2=B0C.
->> - If not, do nothing
->> - If yes, somehow prevent the CPU from using the highest frequencies
->> defined in cpufreq's freq table
->> (They are 1000, 500, 333, 200, 100 MHz)
->>
->> Is that a sensible approach?
->> Is there a way to implement this using the thermal framework?
->>
->> Or am I looking at this wrong, and things should be done a
->> different way? (I'm using 3.14 by the way.)
->>
->> I suppose I could perform some kind of binary search to zoom in
->> on the current threshold (although it might change during the
->> measurements, so I'd rather not go there.)
->=20
-> I'm aware that I posted many questions. I'd be grateful if someone
-> would answer even a tiny subset. That would get the ball rolling.
->=20
-> If I understand correctly, if I want to use the CPU throttling
-> framework, I need to define a "thermal zone device" and a
-> "cooling device". AFAIU, the cooling device is taken care of
-> by cpu_cooling.c
->=20
->   cpufreq_cooling_register(cpu_present_mask);
->=20
-> My temperature sensor would be the thermal zone device?
-> How do I tie the two devices together?
-> Is that where a thermal governor comes in play?
->=20
-> I took a look at the dove_thermal driver, because it seems simple
-> enough to understand (by me).
->=20
-> Looking at ti-soc-thermal/omap?-thermal-data.c
-> the lookup table looks familiar. Are they using the same kind
-> of technology as my primitive sensor? (bandgap)
-> I do note that the precision is much higher though.
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Hello everyone,
-
-Is there, perhaps, a better place to discuss these issues?
-(IRC, web forum, other mailing list, Stack Overflow, ...)
-
-Regards.
-
+> ---
+> v6:
+>   - Rebased on top of v4.1-rc1 for new RFC,
+>
+> v4:
+>   - Add more explanations,
+>   - Add Acked-by,
+>
+> v3:
+>   - No changes,
+>
+> v2:
+>   - New.
+> ---
+>  drivers/base/power/domain.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index d1531602ae64528d..d20caa2c92b57edf 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -2190,17 +2190,18 @@ static void genpd_dev_pm_sync(struct device *dev)
+>   */
+>  int genpd_dev_pm_attach(struct device *dev)
+>  {
+> +       struct device_node *np = dev->of_node;
+>         struct of_phandle_args pd_args;
+>         struct generic_pm_domain *pd;
+>         int ret;
+>
+> -       if (!dev->of_node)
+> +       if (!np)
+>                 return -ENODEV;
+>
+>         if (dev->pm_domain)
+>                 return -EEXIST;
+>
+> -       ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
+> +       ret = of_parse_phandle_with_args(np, "power-domains",
+>                                         "#power-domain-cells", 0, &pd_args);
+>         if (ret < 0) {
+>                 if (ret != -ENOENT)
+> @@ -2211,8 +2212,7 @@ int genpd_dev_pm_attach(struct device *dev)
+>                  * (for backwards compatibility of DT ABI)
+>                  */
+>                 pd_args.args_count = 0;
+> -               pd_args.np = of_parse_phandle(dev->of_node,
+> -                                               "samsung,power-domain", 0);
+> +               pd_args.np = of_parse_phandle(np, "samsung,power-domain", 0);
+>                 if (!pd_args.np)
+>                         return -ENOENT;
+>         }
+> @@ -2221,7 +2221,7 @@ int genpd_dev_pm_attach(struct device *dev)
+>         if (IS_ERR(pd)) {
+>                 dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
+>                         __func__, PTR_ERR(pd));
+> -               of_node_put(dev->of_node);
+> +               of_node_put(np);
+>                 return PTR_ERR(pd);
+>         }
+>
+> @@ -2237,7 +2237,7 @@ int genpd_dev_pm_attach(struct device *dev)
+>         if (ret < 0) {
+>                 dev_err(dev, "failed to add to PM domain %s: %d",
+>                         pd->name, ret);
+> -               of_node_put(dev->of_node);
+> +               of_node_put(np);
+>                 return ret;
+>         }
+>
+> --
+> 1.9.1
+>
