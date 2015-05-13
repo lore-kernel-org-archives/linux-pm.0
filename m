@@ -1,197 +1,108 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: validate callback for menu governor
-Date: Wed, 13 May 2015 02:13:29 +0200
-Message-ID: <2016693.8fDGBo5Ojl@vostro.rjw.lan>
-References: <CAKXjFTN7HBGNMBuxh8E8FaACG3xgYuLKYHs6vbQq7WtvKLttrw@mail.gmail.com>
+Subject: Re: [PATCH] PM / clock_ops: Fix clock error check in __pm_clk_add()
+Date: Wed, 13 May 2015 02:22:50 +0200
+Message-ID: <2196912.kiJqTqq7oO@vostro.rjw.lan>
+References: <1431074863-19124-1-git-send-email-geert+renesas@glider.be> <55523F67.9040100@linaro.org> <20150512180733.GB20725@dtor-ws>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:49655 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933877AbbELXsV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2015 19:48:21 -0400
-In-Reply-To: <CAKXjFTN7HBGNMBuxh8E8FaACG3xgYuLKYHs6vbQq7WtvKLttrw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150512180733.GB20725@dtor-ws>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Axel Haslam <ahaslam@baylibre.com>
-Cc: Lina Iyer <lina.iyer@linaro.org>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux PM list <linux-pm@vger.kernel.org>, Bartosz =?utf-8?B?R2/FgmFzemV3c2tp?= <bgolaszewski@baylibre.com>, Benoit Cousson <bcousson@baylibre.com>
 
-On Tuesday, May 12, 2015 06:30:38 PM Axel Haslam wrote:
-> Hi,
+On Tuesday, May 12, 2015 11:07:33 AM Dmitry Torokhov wrote:
+> On Tue, May 12, 2015 at 08:59:03PM +0300, Grygorii.Strashko@linaro.org wrote:
+> > On 05/12/2015 07:42 PM, Dmitry Torokhov wrote:
+> > > On Tue, May 12, 2015 at 04:55:39PM +0300, Grygorii.Strashko@linaro.org wrote:
+> > >> On 05/09/2015 12:05 AM, Dmitry Torokhov wrote:
+> > >>> On Fri, May 08, 2015 at 10:59:04PM +0200, Geert Uytterhoeven wrote:
+> > >>>> On Fri, May 8, 2015 at 7:19 PM, Dmitry Torokhov
+> > >>>> <dmitry.torokhov@gmail.com> wrote:
+> > >>>>> On Fri, May 08, 2015 at 10:47:43AM +0200, Geert Uytterhoeven wrote:
+> > >>>>>> In the final iteration of commit 245bd6f6af8a62a2 ("PM / clock_ops: Add
+> > >>>>>> pm_clk_add_clk()"), a refcount increment was added by Grygorii Strashko.
+> > >>>>>> However, the accompanying IS_ERR() check operates on the wrong clock
+> > >>>>>> pointer, which is always zero at this point, i.e. not an error.
+> > >>>>>> This may lead to a NULL pointer dereference later, when __clk_get()
+> > >>>>>> tries to dereference an error pointer.
+> > >>>>>>
+> > >>>>>> Check the passed clock pointer instead to fix this.
+> > >>>>>
+> > >>>>> Frankly I would remove the check altogether. Why do we only check for
+> > >>>>> IS_ERR and not NULL or otherwise validate the pointer? The clk is passed
+> > >>>>
+> > >>>> __clk_get() does the NULL check.
+> > >>>
+> > >>> No, not really. It _handles_ clk being NULL and returns "everything is
+> > >>> fine". In any case it is __clk_get's decision what to do.
+> > >>>
+> > >>> I dislike gratuitous checks of arguments passed in. Instead of relying
+> > >>> on APIs refusing grabage we better not pass garbage to these APIs in the
+> > >>> first place. So I'd change it to trust that we are given a usable
+> > >>> pointer and simply do:
+> > >>>
+> > >>> 	if (!__clk_get(clk)) {
+> > >>> 		kfree(ce);
+> > >>> 		return -ENOENTl
+> > >>> 	}
+> > >>
+> > >> Not sure this is right thing to do, because this API initially
+> > >> was intended to be used as below [1]:
+> > >> 	clk = of_clk_get(dev->of_node, i));
+> > >>   	ret = pm_clk_add_clk(dev, clk);
+> > >>   	clk_put(clk);
+> > >>
+> > >> and of_clk_get may return ERR_PTR().
+> > > 
+> > > Jeez, that sequence was not meant to be taken literally, it does miss
+> > > error handling completely. If you notice the majority of users of this
+> > > API do something like below:
+> > > 
+> > > 	i = 0;
+> > > 	while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
+> > > 		dev_dbg(dev, "adding clock '%s' to list of PM clocks\n",
+> > > 			__clk_get_name(clk));
+> > > 		error = pm_clk_add_clk(dev, clk);
+> > > 		clk_put(clk);
+> > > 		if (error) {
+> > > 			dev_err(dev, "pm_clk_add_clk failed %d\n", error);
+> > > 			pm_clk_destroy(dev);
+> > > 			return error;
+> > > 		}
+> > > 	}
+> > > 
+> > > i.e. it already validates clk pointer before passing it on since it
+> > > needs to know when to stop iterating.
+> > 
+> > np. It's just my opinion - if you agree that code will just crash
+> > in case of passing invalid @clk argument (in worst case:)
+> > 
+> > int __clk_get(struct clk *clk)
+> > {
+> > 	struct clk_core *core = !clk ? NULL : clk->core;
+> > 						^^^ here
 > 
-> Recently a question about cpuidle and cluster off states came
-> up in a separate discussion [1].
-> 
-> The question is if it would be useful to add a "validate" callback in the
-> cpuidle menu governor. Cpuidle drivers could use this callback to check if
-> entering a cluster off state by the "last man" would not violate the target
-> residency requirements.
+> Yes, it will crash if you pass invalid pointer here, be it
+> ERR_PTR-encoded value, or, for example, 0x1, or maybe (void
+> *)random_32(). The latter will probably not crash right away, but cause
+> some random damage that will manifest later.
 
-So consider how it works in the platform-coordinated mode.  CPUs requrest a
-certain cluster state and the platform records the requests.  It doesn't
-record the expected wakeup times, though, but only who requested what state
-and uses that information to determine what wakeup latency is acceptable
-worst-case.
+Oh well.  Shouldn't we actually do:
 
-Should the OS-coordinated variant work differently?
+int __clk_get(struct clk *clk)
+{
+ 	struct clk_core *core = IS_ERR_OR_NULL(clk) ? NULL : clk->core;
 
-> i think the same problem is explained at the top of
-> ./drivers/cpuidle/cpuidle-big_little.c,
-> so im sorry if this was addressed before.
-> 
-> To illustrate the scenario, on a system where cpu0 and cpu1 are in the same
-> cluster and where the target residency time for the cluster off state is 5ms,
-> imagine that:
-> 
-> cpu 1 enters the cluster off  state at time t0.
+and remove the check from __pm_clk_add() at the same time?
 
-It doesn't enter that state just yet.  A request to enter it is made at this
-time.
+Knowingly crashing on an error encoded as a pointer is kind of disgusting to me
+and the difference between that and a random invalid pointer is that poeple who
+pass error values encoded as pointers up the stack usually expect them to be
+handled cleanly.
 
-> the predicted wakeup by the governor for this cpu is in 20ms
-> 
-> cpu 0 enters the cluster off  state at t0 + 19ms.
-> the predicted wakeup is in 30ms.
-> 
-> in this case the cluster off state will actually be entered 1ms before cpu1
-> is predicted to wake up, and the cluster off residency constraint would not
-> be met.
-
-The target residency is not a constraint.  It is an advisory value for the
-governor to consider, but if a CPU wakes up earlier than that, we'll just
-not save energy (or save less of it).  It is not critical as long as it
-doesn't happen too often.
-
-> To avoid this, before entering the cluster off state, the last cpu could
-> "validate" that the predicted wakeup time of all the cpus in his cluster
-> *still* don't violate the cluster off state requirements.
-
-That is potentially racy with respect to wakeups of the other CPUs, isn't it?
-
-> maybe this is a corner case that does not justify the added logic, which ends
-> up being more expensive.
-
-It really seems so.
-
-> a  simple prototype looks something like this:
-> 
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index b8a5fa1..bdd3211 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -20,6 +20,7 @@
->  #include <linux/sched.h>
->  #include <linux/math64.h>
->  #include <linux/module.h>
-> +#include <linux/cpu.h>
-> 
->  /*
->   * Please note when changing the tuning values:
-> @@ -124,6 +125,7 @@ struct menu_device {
-> 
->      unsigned int    next_timer_us;
->      unsigned int    predicted_us;
-> +    unsigned int    predicted_time_us;
-
-The names here are too similar to each other.
-
->      unsigned int    bucket;
->      unsigned int    correction_factor[BUCKETS];
->      unsigned int    intervals[INTERVALS];
-> @@ -276,6 +278,45 @@ again:
->      goto again;
->  }
-> 
-> +/* Check if the idle state is still valid for a given cpu */
-> +static bool menu_validate(struct cpuidle_driver *drv,
-> +        struct cpuidle_device *dev,
-> +        int cpu,
-> +        int state)
-> +{
-> +    unsigned int now_us;
-> +    int last_state_idx = CPUIDLE_DRIVER_STATE_START - 1;
-> +    struct menu_device *data;
-> +    unsigned int remaining_us;
-> +    int i;
-> +
-> +    now_us = ktime_to_us(ktime_get_raw());
-> +    data = per_cpu_ptr(&menu_devices, cpu);
-> +    remaining_us = data->predicted_time_us - now_us;
-> +
-
-If 'state' is the state selected by the governor, I don't quite understand why
-you need the loop below.  Can't you simply check if the sum of target_residency
-and exit_latency of 'state' is still below remaining_us?
-
-> +    /* Get the new recomended state for this cpu */
-> +    for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
-> +        struct cpuidle_state *s = &drv->states[i];
-> +        struct cpuidle_state_usage *su = &dev->states_usage[i];
-> +
-> +        if (s->disabled || su->disable)
-> +            continue;
-> +
-> +        if (s->target_residency > remaining_us)
-> +            continue;
-> +
-> +        last_state_idx = i;
-> +
-> +        /* state (or deeper) is still allowed */
-> +        if (last_state_idx >= state)
-> +            return true;
-> +    }
-> +
-> +    /* the cpu doest not allow for the requested state */
-> +    return false;
-> +
-> +}
-> +
->  /**
->   * menu_select - selects the next idle state to enter
->   * @drv: cpuidle driver containing state data
-> @@ -352,6 +393,8 @@ static int menu_select(struct cpuidle_driver *drv,
-> struct cpuidle_device *dev)
-> 
->          data->last_state_idx = i;
->      }
-> +    data->predicted_time_us = ktime_to_us(ktime_get_raw())
-> +        + data->predicted_us;
-> 
->      return data->last_state_idx;
->  }
-> @@ -470,6 +513,7 @@ static struct cpuidle_governor menu_governor = {
->      .enable =    menu_enable_device,
->      .select =    menu_select,
->      .reflect =    menu_reflect,
-> +    .validate =    menu_validate,
->      .owner =    THIS_MODULE,
->  };
-> 
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 9c5e892..e917fa9 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -226,6 +226,11 @@ struct cpuidle_governor {
->                      struct cpuidle_device *dev);
->      void (*reflect)        (struct cpuidle_device *dev, int index);
-> 
-> +    bool (*validate)    (struct cpuidle_driver *drv,
-> +                    struct cpuidle_device *dev,
-> +                    int cpu,
-> +                    int state);
-> +
->      struct module         *owner;
->  };
-> 
-> Regards
-> Axel
-> 
-> [1] http://marc.info/?l=linux-pm&m=143143190116868&w=2
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
 I speak only for myself.
