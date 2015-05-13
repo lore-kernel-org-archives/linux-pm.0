@@ -1,269 +1,73 @@
-From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Subject: [PATCH v9 04/17] clk: tegra: Add functions for parsing CVB tables
-Date: Wed, 13 May 2015 17:58:38 +0300
-Message-ID: <1431529131-16710-5-git-send-email-mikko.perttunen@kapsi.fi>
+From: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
+Subject: [PATCH v9 08/17] clk: tegra: Save/restore CCLKG_BURST_POLICY on suspend
+Date: Wed, 13 May 2015 17:58:42 +0300
+Message-ID: <1431529131-16710-9-git-send-email-mikko.perttunen@kapsi.fi>
 References: <1431529131-16710-1-git-send-email-mikko.perttunen@kapsi.fi>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1431529131-16710-1-git-send-email-mikko.perttunen@kapsi.fi>
-Sender: linux-kernel-owner@vger.kernel.org
-To: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi, Tuomas Tynkkynen <ttynkkynen@nvidia.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1431529131-16710-1-git-send-email-mikko.perttunen-/1wQRMveznE@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tuomas.tynkkynen-X3B1VOXEql0@public.gmane.org, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
+From: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-Tegra CVB tables encode the relationship between operating voltage
-and optimal frequency as a function of the so-called speedo value.
-The speedo value is written to the on-chip fuses at the factory,
-which allows the voltage-frequency operating points to be calculated
-on an per-chip basis.
+Save and restore this register since the LP1 restore assembly routines
+fiddle with it. Otherwise the CPU would keep running on PLLX after
+resume from suspend even when DFLL was the original clocksource.
 
-Add utility functions to parse the Tegra-specific tables and export the
-voltage-frequency pairs to the generic OPP framework for other drivers
-to use.
-
-Signed-off-by: Tuomas Tynkkynen <ttynkkynen@nvidia.com>
-Signed-off-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Acked-by: Peter De Schrijver <pdeschrijver@nvidia.com>
-Acked-by: Michael Turquette <mturquette@linaro.org>
+Signed-off-by: Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
+Acked-by: Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Acked-by: Michael Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- arch/arm/mach-tegra/Kconfig |   1 +
- drivers/clk/tegra/cvb.c     | 140 ++++++++++++++++++++++++++++++++++++++++++++
- drivers/clk/tegra/cvb.h     |  67 +++++++++++++++++++++
- 3 files changed, 208 insertions(+)
- create mode 100644 drivers/clk/tegra/cvb.c
- create mode 100644 drivers/clk/tegra/cvb.h
+ drivers/clk/tegra/clk-tegra124.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/arch/arm/mach-tegra/Kconfig b/arch/arm/mach-tegra/Kconfig
-index 5d1a318..0fa4c5f 100644
---- a/arch/arm/mach-tegra/Kconfig
-+++ b/arch/arm/mach-tegra/Kconfig
-@@ -8,6 +8,7 @@ menuconfig ARCH_TEGRA
- 	select HAVE_ARM_SCU if SMP
- 	select HAVE_ARM_TWD if SMP
- 	select PINCTRL
-+	select PM_OPP
- 	select ARCH_HAS_RESET_CONTROLLER
- 	select RESET_CONTROLLER
- 	select SOC_BUS
-diff --git a/drivers/clk/tegra/cvb.c b/drivers/clk/tegra/cvb.c
-new file mode 100644
-index 0000000..0204e08
---- /dev/null
-+++ b/drivers/clk/tegra/cvb.c
-@@ -0,0 +1,140 @@
-+/*
-+ * Utility functions for parsing Tegra CVB voltage tables
-+ *
-+ * Copyright (C) 2012-2014 NVIDIA Corporation.  All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ */
-+#include <linux/err.h>
-+#include <linux/kernel.h>
-+#include <linux/pm_opp.h>
+diff --git a/drivers/clk/tegra/clk-tegra124.c b/drivers/clk/tegra/clk-tegra124.c
+index 42ba3d9..ef9c161 100644
+--- a/drivers/clk/tegra/clk-tegra124.c
++++ b/drivers/clk/tegra/clk-tegra124.c
+@@ -98,6 +98,8 @@
+ #define PMC_PLLM_WB0_OVERRIDE 0x1dc
+ #define PMC_PLLM_WB0_OVERRIDE_2 0x2b0
+ 
++#define CCLKG_BURST_POLICY 0x368
 +
-+#include "cvb.h"
+ #define UTMIP_PLL_CFG2 0x488
+ #define UTMIP_PLL_CFG2_STABLE_COUNT(x) (((x) & 0xffff) << 6)
+ #define UTMIP_PLL_CFG2_ACTIVE_DLY_COUNT(x) (((x) & 0x3f) << 18)
+@@ -130,6 +132,8 @@
+ #ifdef CONFIG_PM_SLEEP
+ static struct cpu_clk_suspend_context {
+ 	u32 clk_csite_src;
++	u32 cclkg_burst;
++	u32 cclkg_divider;
+ } tegra124_cpu_clk_sctx;
+ #endif
+ 
+@@ -1323,12 +1327,22 @@ static void tegra124_cpu_clock_suspend(void)
+ 	tegra124_cpu_clk_sctx.clk_csite_src =
+ 				readl(clk_base + CLK_SOURCE_CSITE);
+ 	writel(3 << 30, clk_base + CLK_SOURCE_CSITE);
 +
-+/* cvb_mv = ((c2 * speedo / s_scale + c1) * speedo / s_scale + c0) */
-+static inline int get_cvb_voltage(int speedo, int s_scale,
-+				  const struct cvb_coefficients *cvb)
-+{
-+	int mv;
++	tegra124_cpu_clk_sctx.cclkg_burst =
++				readl(clk_base + CCLKG_BURST_POLICY);
++	tegra124_cpu_clk_sctx.cclkg_divider =
++				readl(clk_base + CCLKG_BURST_POLICY + 4);
+ }
+ 
+ static void tegra124_cpu_clock_resume(void)
+ {
+ 	writel(tegra124_cpu_clk_sctx.clk_csite_src,
+ 				clk_base + CLK_SOURCE_CSITE);
 +
-+	/* apply only speedo scale: output mv = cvb_mv * v_scale */
-+	mv = DIV_ROUND_CLOSEST(cvb->c2 * speedo, s_scale);
-+	mv = DIV_ROUND_CLOSEST((mv + cvb->c1) * speedo, s_scale) + cvb->c0;
-+	return mv;
-+}
-+
-+static int round_cvb_voltage(int mv, int v_scale,
-+			     const struct rail_alignment *align)
-+{
-+	/* combined: apply voltage scale and round to cvb alignment step */
-+	int uv;
-+	int step = (align->step_uv ? : 1000) * v_scale;
-+	int offset = align->offset_uv * v_scale;
-+
-+	uv = max(mv * 1000, offset) - offset;
-+	uv = DIV_ROUND_UP(uv, step) * align->step_uv + align->offset_uv;
-+	return uv / 1000;
-+}
-+
-+enum {
-+	DOWN,
-+	UP
-+};
-+
-+static int round_voltage(int mv, const struct rail_alignment *align, int up)
-+{
-+	if (align->step_uv) {
-+		int uv;
-+
-+		uv = max(mv * 1000, align->offset_uv) - align->offset_uv;
-+		uv = (uv + (up ? align->step_uv - 1 : 0)) / align->step_uv;
-+		return (uv * align->step_uv + align->offset_uv) / 1000;
-+	}
-+	return mv;
-+}
-+
-+static int build_opp_table(const struct cvb_table *d,
-+			   int speedo_value,
-+			   unsigned long max_freq,
-+			   struct device *opp_dev)
-+{
-+	int i, ret, dfll_mv, min_mv, max_mv;
-+	const struct cvb_table_freq_entry *table = NULL;
-+	const struct rail_alignment *align = &d->alignment;
-+
-+	min_mv = round_voltage(d->min_millivolts, align, UP);
-+	max_mv = round_voltage(d->max_millivolts, align, DOWN);
-+
-+	for (i = 0; i < MAX_DVFS_FREQS; i++) {
-+		table = &d->cvb_table[i];
-+		if (!table->freq || (table->freq > max_freq))
-+			break;
-+
-+		/*
-+		 * FIXME after clk_round_rate/clk_determine_rate prototypes
-+		 * have been updated
-+		 */
-+		if (table->freq & (1<<31))
-+			continue;
-+
-+		dfll_mv = get_cvb_voltage(
-+			speedo_value, d->speedo_scale, &table->coefficients);
-+		dfll_mv = round_cvb_voltage(dfll_mv, d->voltage_scale, align);
-+		dfll_mv = clamp(dfll_mv, min_mv, max_mv);
-+
-+		ret = dev_pm_opp_add(opp_dev, table->freq, dfll_mv * 1000);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * tegra_cvb_build_opp_table - build OPP table from Tegra CVB tables
-+ * @cvb_tables: array of CVB tables
-+ * @sz: size of the previously mentioned array
-+ * @process_id: process id of the HW module
-+ * @speedo_id: speedo id of the HW module
-+ * @speedo_value: speedo value of the HW module
-+ * @max_rate: highest safe clock rate
-+ * @opp_dev: the struct device * for which the OPP table is built
-+ *
-+ * On Tegra, a CVB table encodes the relationship between operating voltage
-+ * and safe maximal frequency for a given module (e.g. GPU or CPU). This
-+ * function calculates the optimal voltage-frequency operating points
-+ * for the given arguments and exports them via the OPP library for the
-+ * given @opp_dev. Returns a pointer to the struct cvb_table that matched
-+ * or an ERR_PTR on failure.
-+ */
-+const struct cvb_table *tegra_cvb_build_opp_table(
-+		const struct cvb_table *cvb_tables,
-+		size_t sz, int process_id,
-+		int speedo_id, int speedo_value,
-+		unsigned long max_rate,
-+		struct device *opp_dev)
-+{
-+	int i, ret;
-+
-+	for (i = 0; i < sz; i++) {
-+		const struct cvb_table *d = &cvb_tables[i];
-+
-+		if (d->speedo_id != -1 && d->speedo_id != speedo_id)
-+			continue;
-+		if (d->process_id != -1 && d->process_id != process_id)
-+			continue;
-+
-+		ret = build_opp_table(d, speedo_value, max_rate, opp_dev);
-+		return ret ? ERR_PTR(ret) : d;
-+	}
-+
-+	return ERR_PTR(-EINVAL);
-+}
-diff --git a/drivers/clk/tegra/cvb.h b/drivers/clk/tegra/cvb.h
-new file mode 100644
-index 0000000..f62cdc4
---- /dev/null
-+++ b/drivers/clk/tegra/cvb.h
-@@ -0,0 +1,67 @@
-+/*
-+ * Utility functions for parsing Tegra CVB voltage tables
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ */
-+
-+#ifndef __DRIVERS_CLK_TEGRA_CVB_H
-+#define __DRIVERS_CLK_TEGRA_CVB_H
-+
-+#include <linux/types.h>
-+
-+struct device;
-+
-+#define MAX_DVFS_FREQS	40
-+
-+struct rail_alignment {
-+	int offset_uv;
-+	int step_uv;
-+};
-+
-+struct cvb_coefficients {
-+	int c0;
-+	int c1;
-+	int c2;
-+};
-+
-+struct cvb_table_freq_entry {
-+	unsigned long freq;
-+	struct cvb_coefficients coefficients;
-+};
-+
-+struct cvb_cpu_dfll_data {
-+	u32 tune0_low;
-+	u32 tune0_high;
-+	u32 tune1;
-+};
-+
-+struct cvb_table {
-+	int speedo_id;
-+	int process_id;
-+
-+	int min_millivolts;
-+	int max_millivolts;
-+	struct rail_alignment alignment;
-+
-+	int speedo_scale;
-+	int voltage_scale;
-+	struct cvb_table_freq_entry cvb_table[MAX_DVFS_FREQS];
-+	struct cvb_cpu_dfll_data cpu_dfll_data;
-+};
-+
-+const struct cvb_table *tegra_cvb_build_opp_table(
-+		const struct cvb_table *cvb_tables,
-+		size_t sz, int process_id,
-+		int speedo_id, int speedo_value,
-+		unsigned long max_rate,
-+		struct device *opp_dev);
-+
-+#endif
++	writel(tegra124_cpu_clk_sctx.cclkg_burst,
++					clk_base + CCLKG_BURST_POLICY);
++	writel(tegra124_cpu_clk_sctx.cclkg_divider,
++					clk_base + CCLKG_BURST_POLICY + 4);
+ }
+ #endif
+ 
 -- 
 2.3.0
