@@ -1,134 +1,96 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 11/15] thermal: thermal: Add support for hardware-tracked trip points
-Date: Wed, 13 May 2015 10:52:39 +0200
-Message-ID: <1431507163-19933-12-git-send-email-s.hauer@pengutronix.de>
-References: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de>
+From: Paul Bolle <pebolle@tiscali.nl>
+Subject: Re: [PATCH RFC v2 4/4] sched: cpufreq_cfs: pelt-based cpu frequency
+ scaling
+Date: Wed, 13 May 2015 11:19:23 +0200
+Message-ID: <1431508763.2398.169.camel@x220>
+References: <1431396795-32439-1-git-send-email-mturquette@linaro.org>
+	 <1431396795-32439-5-git-send-email-mturquette@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:42362 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754472AbbEMIww (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2015 04:52:52 -0400
-In-Reply-To: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de>
+Received: from lb1-smtp-cloud2.xs4all.net ([194.109.24.21]:48392 "EHLO
+	lb1-smtp-cloud2.xs4all.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753145AbbEMJTk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2015 05:19:40 -0400
+In-Reply-To: <1431396795-32439-5-git-send-email-mturquette@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
+To: Michael Turquette <mturquette@linaro.org>
+Cc: peterz@infradead.org, mingo@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, preeti@linux.vnet.ibm.com, Morten.Rasmussen@arm.com, riel@redhat.com, efault@gmx.de, nicolas.pitre@linaro.org, daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, amit.kucheria@linaro.org, juri.lelli@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, alex.shi@linaro.org, abelvesa@gmail.com
 
-This adds support for hardware-tracked trip points to the device tree
-thermal sensor framework.
+One nit and one question follow.
 
-The framework supports an arbitrary number of trip points. Whenever
-the current temperature is updated, the trip points immediately
-below and above the current temperature are found. A .set_trips
-callback is then called with the temperatures. If there is no trip
-point above or below the current temperature, the passed trip
-temperature will be -INT_MAX or INT_MAX respectively. In this callback,
-the driver should program the hardware such that it is notified
-when either of these trip points are triggered. When a trip point
-is triggered, the driver should call `thermal_zone_device_update'
-for the respective thermal zone. This will cause the trip points
-to be updated again.
+>--- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
 
-If .set_trips is not implemented, the framework behaves as before.
+> +config CPU_FREQ_DEFAULT_GOV_CFS
+> +	bool "cfs"
+> +	select CPU_FREQ_GOV_CFS
+> +	select CPU_FREQ_GOV_PERFORMANCE
+> +	help
+> +	  Use the CPUfreq governor 'cfs' as default. This scales
+> +	  cpu frequency from the scheduler as per-entity load tracking
+> +	  statistics are updated.
 
-This patch is based on an earlier version from Mikko Perttunen
-<mikko.perttunen@kapsi.fi>
+> +config CPU_FREQ_GOV_CFS
+> +	tristate "'cfs' cpufreq governor"
+> +	depends on CPU_FREQ
+> +	select CPU_FREQ_GOV_COMMON
+> +	help
+> +	  'cfs' - this governor scales cpu frequency from the
+> +	  scheduler as a function of cpu capacity utilization. It does
+> +	  not evaluate utilization on a periodic basis (as ondemand
+> +	  does) but instead is invoked from the completely fair
+> +	  scheduler when updating per-entity load tracking statistics.
+> +	  Latency to respond to changes in load is improved over polling
+> +	  governors due to its event-driven design.
+> +
+> +	  If in doubt, say N.
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
----
- drivers/thermal/thermal_core.c | 43 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/thermal.h        |  3 +++
- 2 files changed, 46 insertions(+)
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -485,6 +485,9 @@ extern struct cpufreq_governor cpufreq_gov_ondemand;
+>  #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE)
+>  extern struct cpufreq_governor cpufreq_gov_conservative;
+>  #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_conservative)
+> +#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_CAP_GOV)
+> +extern struct cpufreq_governor cpufreq_gov_cap_gov;
+> +#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_cap_gov)
+>  #endif
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 6bbf61f..3ae1795 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -453,6 +453,45 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
- }
- EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
+Question: grepping for CPU_FREQ_DEFAULT_GOV_CAP_GOV and
+cpufreq_gov_cap_gov didn't gave me hits in next-20150513. And this
+series doesn't add them, does it? So where do they com from?
+
+(Since you add CPU_FREQ_DEFAULT_GOV_CFS and cpufreq_cfs in this patch it
+seems you intended to add those. I briefly looked into the way
+CPUFREQ_DEFAULT_GOVERNOR is set in cpufreq.h when v1 came along, found
+it to complicated for me, and promptly forgot the details, so please
+double check.)
  
-+static void thermal_zone_set_trips(struct thermal_zone_device *tz)
-+{
-+	int low = -INT_MAX;
-+	int high = INT_MAX;
-+	int trip_temp, hysteresis;
-+	int temp = tz->temperature;
-+	int i;
-+
-+	if (!tz->ops->set_trips)
-+		return;
-+
-+	/* No need to change trip points */
-+	if (temp > tz->prev_low_trip && temp < tz->prev_high_trip)
-+		return;
-+
-+	for (i = 0; i < tz->trips; i++) {
-+		int trip_low;
-+
-+		tz->ops->get_trip_temp(tz, i, &trip_temp);
-+		tz->ops->get_trip_hyst(tz, i, &hysteresis);
-+
-+		trip_low = trip_temp - hysteresis;
-+
-+		if (trip_low < temp && trip_low > low)
-+			low = trip_low;
-+
-+		if (trip_temp > temp && trip_temp < high)
-+			high = trip_temp;
-+	}
-+
-+	tz->prev_low_trip = low;
-+	tz->prev_high_trip = high;
-+
-+	dev_dbg(&tz->device, "new temperature boundaries: %d < x < %d\n",
-+			low, high);
-+
-+	tz->ops->set_trips(tz, low, high);
-+}
-+
- void thermal_zone_device_update(struct thermal_zone_device *tz)
- {
- 	int temp, ret, count;
-@@ -479,6 +518,8 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
- 	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
- 				tz->last_temperature, tz->temperature);
- 
-+	thermal_zone_set_trips(tz);
-+
- 	for (count = 0; count < tz->trips; count++)
- 		handle_thermal_trip(tz, count);
- }
-@@ -1494,6 +1535,8 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	tz->trips = trips;
- 	tz->passive_delay = passive_delay;
- 	tz->polling_delay = polling_delay;
-+	tz->prev_low_trip = INT_MAX;
-+	tz->prev_high_trip = -INT_MAX;
- 
- 	dev_set_name(&tz->device, "thermal_zone%d", tz->id);
- 	result = device_register(&tz->device);
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 07bd5e8..aef6e13 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -87,6 +87,7 @@ struct thermal_zone_device_ops {
- 	int (*unbind) (struct thermal_zone_device *,
- 		       struct thermal_cooling_device *);
- 	int (*get_temp) (struct thermal_zone_device *, int *);
-+	int (*set_trips) (struct thermal_zone_device *, int, int);
- 	int (*get_mode) (struct thermal_zone_device *,
- 			 enum thermal_device_mode *);
- 	int (*set_mode) (struct thermal_zone_device *,
-@@ -180,6 +181,8 @@ struct thermal_zone_device {
- 	int last_temperature;
- 	int emul_temperature;
- 	int passive;
-+	int prev_low_trip;
-+	int prev_high_trip;
- 	unsigned int forced_passive;
- 	const struct thermal_zone_device_ops *ops;
- 	const struct thermal_zone_params *tzp;
--- 
-2.1.4
+> --- a/kernel/sched/Makefile
+> +++ b/kernel/sched/Makefile
+
+> +obj-$(CONFIG_CPU_FREQ_GOV_CFS) += cpufreq_cfs.o
+
+> --- /dev/null
+> +++ b/kernel/sched/cpufreq_cfs.c
+
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+
+This states the license is GPL v2.
+
+> +MODULE_LICENSE("GPL");
+
+And, according to include/linux/module.h, this states the license is GPL
+v2 or later. So I think that either the comment at the top of this file
+or the ident used in the MODULE_LICENSE() macro needs to be changed.
+
+Thanks,
+
+
+Paul Bolle
 
