@@ -1,64 +1,42 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH 4/7] drivers/cpufreq: Convert non-modular drivers to use builtin_driver_register
-Date: Tue, 12 May 2015 23:17:30 -0400
-Message-ID: <CAP=VYLqNnn1w8ss9to+NGOhwmq8O8wYY9scMg1vQ1+mQmf=Gyw@mail.gmail.com>
-References: <1431287385-1526-1-git-send-email-paul.gortmaker@windriver.com>
- <1431287385-1526-5-git-send-email-paul.gortmaker@windriver.com> <20150512070444.GE32300@linux>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 2/3] OPP: Allow multiple OPP tables to be passed via DT
+Date: Wed, 13 May 2015 10:11:29 +0530
+Message-ID: <20150513044129.GC28858@linux>
+References: <cover.1430394884.git.viresh.kumar@linaro.org>
+ <d734a94af2263285fe8cef9f177212f15f218944.1430394884.git.viresh.kumar@linaro.org>
+ <555225A0.8050707@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f51.google.com ([74.125.82.51]:35556 "EHLO
-	mail-wg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934004AbbEMDSD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2015 23:18:03 -0400
-In-Reply-To: <20150512070444.GE32300@linux>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:36754 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750956AbbEMEll (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2015 00:41:41 -0400
+Received: by pabsx10 with SMTP id sx10so37705249pab.3
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2015 21:41:40 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <555225A0.8050707@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Nishanth Menon <nm@ti.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, arnd.bergmann@linaro.org, broonie@kernel.org, mike.turquette@linaro.org, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-On Tue, May 12, 2015 at 3:04 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 10-05-15, 15:49, Paul Gortmaker wrote:
->> These files depend on Kconfig options all of which are a bool, so
->> we use the appropriate registration function, which avoids us
->> relying on an implicit inclusion of <module.h> which we are
->> doing currently.
->>
->> While this currently works, we really don't want to be including
->> the module.h header in non-modular code, which we'd be forced
->> to do, pending some upcoming code relocation from init.h into
->> module.h.  So we fix it now by using the non-modular equivalent.
->>
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: Kukjin Kim <kgene@kernel.org>
->> Cc: linux-pm@vger.kernel.org
->> Cc: linux-arm-kernel@lists.infradead.org
->> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
->> ---
->>  drivers/cpufreq/exynos-cpufreq.c  | 2 +-
->
-> Exynos can be compiled as a module:
->
-> drivers/cpufreq/Kconfig.arm:
->
-> config ARM_EXYNOS_CPUFREQ
->         tristate "SAMSUNG EXYNOS CPUfreq Driver"
->         depends on CPU_EXYNOS4210 || SOC_EXYNOS4212 || SOC_EXYNOS4412 || SOC_EXYNOS5250
+On 12-05-15, 11:09, Nishanth Menon wrote:
+> On 04/30/2015 07:08 AM, Viresh Kumar wrote:
+> > (sort of an eeprom) and knowing characteristics of the SoC.
+> 
+> they are more like prom than eeprom in many instances.
 
-Sounds like things have changed since I did the original compile
-testing ; thanks for the heads-up and I will follow up with the details,
-once I can re-test.
+Will replace.
 
-Thanks,
-Paul.
---
+> With some SoCs like AM335x - thanks to some brain dead incompatible
+> hardware design choices, this might end up as a big list or various
+> OPP tables. but overall, I must prefer this approach as well.
+> 
+> Thanks for proposing this. will be great to see examples documented in
+> bindings doc as well.
 
->
-> --
-> viresh
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Right.
+
+-- 
+viresh
