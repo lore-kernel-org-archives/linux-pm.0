@@ -1,791 +1,263 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 14/15] thermal: Add Mediatek thermal controller support
-Date: Wed, 13 May 2015 10:52:42 +0200
-Message-ID: <1431507163-19933-15-git-send-email-s.hauer@pengutronix.de>
-References: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
+Date: Wed, 13 May 2015 14:25:28 +0530
+Message-ID: <20150513085528.GA6994@linux>
+References: <cover.1430394884.git.viresh.kumar@linaro.org>
+ <d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar@linaro.org>
+ <20150512214224.16410.15922@quantum>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:35437 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753145AbbEMIze (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2015 04:55:34 -0400
+Received: by pabtp1 with SMTP id tp1so44163418pab.2
+        for <linux-pm@vger.kernel.org>; Wed, 13 May 2015 01:55:33 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20150512214224.16410.15922@quantum>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michael Turquette <mike.turquette@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-This adds support for the Mediatek thermal controller found on MT8173
-and likely other SoCs.
-The controller is a bit special. It does not have its own ADC, instead
-it controls the on-SoC AUXADC via AHB bus accesses. For this reason
-we need the physical address of the AUXADC. Also it controls a mux
-using AHB bus accesses, so we need the APMIXEDSYS physical address aswell.
+On 12-05-15, 14:42, Michael Turquette wrote:
+> Quoting Viresh Kumar (2015-04-30 05:07:59)
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
----
- drivers/thermal/Kconfig       |   8 +
- drivers/thermal/Makefile      |   1 +
- drivers/thermal/mtk_thermal.c | 728 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 737 insertions(+)
- create mode 100644 drivers/thermal/mtk_thermal.c
+> Sorry for chiming in so late in the process. Also, sorry for the long
+> email. Lots of repetition below:
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index af40db0..3aa5500 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -285,6 +285,14 @@ config ACPI_THERMAL_REL
- 	tristate
- 	depends on ACPI
- 
-+config MTK_THERMAL
-+	tristate "Temperature sensor driver for mediatek SoCs"
-+	depends on ARCH_MEDIATEK || COMPILE_TEST
-+	default y
-+	help
-+	  Enable this option if you want to have support for thermal management
-+	  controller present in Mediatek SoCs
-+
- menu "Texas Instruments thermal drivers"
- source "drivers/thermal/ti-soc-thermal/Kconfig"
- endmenu
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index fa0dc48..51cfab7 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -39,3 +39,4 @@ obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
- obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
- obj-$(CONFIG_ST_THERMAL)	+= st/
- obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra_soctherm.o
-+obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
-diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-new file mode 100644
-index 0000000..27aab12
---- /dev/null
-+++ b/drivers/thermal/mtk_thermal.c
-@@ -0,0 +1,728 @@
-+/*
-+ * Copyright (c) 2014 MediaTek Inc.
-+ * Author: Hanyi.Wu <hanyi.wu@mediatek.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/dmi.h>
-+#include <linux/thermal.h>
-+#include <linux/platform_device.h>
-+#include <linux/types.h>
-+#include <linux/delay.h>
-+#include <linux/slab.h>
-+#include <linux/clk.h>
-+#include <linux/time.h>
-+#include <linux/of.h>
-+#include <linux/of_irq.h>
-+#include <linux/of_address.h>
-+#include <linux/interrupt.h>
-+#include <linux/reset.h>
-+
-+/* AUXADC Registers */
-+#define AUXADC_CON0_V		0x000
-+#define AUXADC_CON1_V		0x004
-+#define AUXADC_CON1_SET_V	0x008
-+#define AUXADC_CON1_CLR_V	0x00c
-+#define AUXADC_CON2_V		0x010
-+#define AUXADC_DATA(channel)	(0x14 + (channel) * 4)
-+#define AUXADC_MISC_V		0x094
-+
-+#define AUXADC_CON1_CHANNEL(x)	(1 << (x))
-+
-+/* Thermal Controller Registers */
-+#define TEMPMONCTL0		0x000
-+#define TEMPMONCTL1		0x004
-+#define TEMPMONCTL2		0x008
-+#define TEMPMONINT		0x00c
-+#define TEMPMONINTSTS		0x010
-+#define TEMPMONIDET0		0x014
-+#define TEMPMONIDET1		0x018
-+#define TEMPMONIDET2		0x01c
-+#define TEMPH2NTHRE		0x024
-+#define TEMPHTHRE		0x028
-+#define TEMPCTHRE		0x02c
-+#define TEMPOFFSETH		0x030
-+#define TEMPOFFSETL		0x034
-+#define TEMPMSRCTL0		0x038
-+#define TEMPMSRCTL1		0x03c
-+#define TEMPAHBPOLL		0x040
-+#define TEMPAHBTO		0x044
-+#define TEMPADCPNP0		0x048
-+#define TEMPADCPNP1		0x04c
-+#define TEMPADCPNP2		0x050
-+#define TEMPADCPNP3		0x0b4
-+
-+#define TEMPADCMUX		0x054
-+#define TEMPADCEXT		0x058
-+#define TEMPADCEXT1		0x05c
-+#define TEMPADCEN		0x060
-+#define TEMPPNPMUXADDR		0x064
-+#define TEMPADCMUXADDR		0x068
-+#define TEMPADCEXTADDR		0x06c
-+#define TEMPADCEXT1ADDR		0x070
-+#define TEMPADCENADDR		0x074
-+#define TEMPADCVALIDADDR	0x078
-+#define TEMPADCVOLTADDR		0x07c
-+#define TEMPRDCTRL		0x080
-+#define TEMPADCVALIDMASK	0x084
-+#define TEMPADCVOLTAGESHIFT	0x088
-+#define TEMPADCWRITECTRL	0x08c
-+#define TEMPMSR0		0x090
-+#define TEMPMSR1		0x094
-+#define TEMPMSR2		0x098
-+#define TEMPMSR3		0x0B8
-+
-+#define TEMPIMMD0		0x0a0
-+#define TEMPIMMD1		0x0a4
-+#define TEMPIMMD2		0x0a8
-+
-+#define TEMPPROTCTL		0x0c0
-+#define TEMPPROTTA		0x0c4
-+#define TEMPPROTTB		0x0c8
-+#define TEMPPROTTC		0x0cc
-+
-+#define TEMPSPARE0		0x0f0
-+#define TEMPSPARE1		0x0f4
-+#define TEMPSPARE2		0x0f8
-+#define TEMPSPARE3		0x0fc
-+
-+#define PTPCORESEL		0x400
-+#define THERMINTST		0x404
-+#define PTPODINTST		0x408
-+#define THSTAGE0ST		0x40c
-+#define THSTAGE1ST		0x410
-+#define THSTAGE2ST		0x414
-+#define THAHBST0		0x418
-+#define THAHBST1		0x41c	/* Only for DE debug */
-+#define PTPSPARE0		0x420
-+#define PTPSPARE1		0x424
-+#define PTPSPARE2		0x428
-+#define PTPSPARE3		0x42c
-+#define THSLPEVEB		0x430
-+
-+#define TEMPMONINT_COLD(sp)			((1 << 0) << ((sp) * 5))
-+#define TEMPMONINT_HOT(sp)			((1 << 1) << ((sp) * 5))
-+#define TEMPMONINT_LOW_OFS(sp)			((1 << 2) << ((sp) * 5))
-+#define TEMPMONINT_HIGH_OFS(sp)			((1 << 3) << ((sp) * 5))
-+#define TEMPMONINT_HOT_TO_NORM(sp)		((1 << 4) << ((sp) * 5))
-+#define TEMPMONINT_TIMEOUT			(1 << 15)
-+#define TEMPMONINT_IMMEDIATE_SENSE(sp)		(1 << (16 + (sp)))
-+#define TEMPMONINT_FILTER_SENSE(sp)		(1 << (19 + (sp)))
-+
-+#define TEMPADCWRITECTRL_ADC_PNP_WRITE		(1 << 0)
-+#define TEMPADCWRITECTRL_ADC_MUX_WRITE		(1 << 1)
-+#define TEMPADCWRITECTRL_ADC_EXTRA_WRITE	(1 << 2)
-+#define TEMPADCWRITECTRL_ADC_EXTRA1_WRITE	(1 << 3)
-+
-+#define TEMPADCVALIDMASK_VALID_HIGH		(1 << 5)
-+#define TEMPADCVALIDMASK_VALID_POS(bit)		(bit)
-+
-+#define TEMPPROTCTL_AVERAGE			(0 << 16)
-+#define TEMPPROTCTL_MAXIMUM			(1 << 16)
-+#define TEMPPROTCTL_SELECTED			(2 << 16)
-+
-+#define MT8173_THERMAL_ZONE_CA57		0
-+#define MT8173_THERMAL_ZONE_CA53		1
-+#define MT8173_THERMAL_ZONE_GPU			2
-+#define MT8173_THERMAL_ZONE_CORE		3
-+
-+#define MT8173_TS1	0
-+#define MT8173_TS2	1
-+#define MT8173_TS3	2
-+#define MT8173_TS4	3
-+#define MT8173_TSABB	4
-+
-+/* AUXADC channel 11 is used for the temperature sensors */
-+#define MT8173_TEMP_AUXADC_CHANNEL	11
-+
-+/* The total number of temperature sensors in the MT8173 */
-+#define MT8173_NUM_SENSORS		5
-+
-+/* The number of banks in the MT8173 */
-+#define MT8173_NUM_BANKS		4
-+
-+/* The number of sensing points per bank */
-+#define MT8173_NUM_SENSING_POINTS	4
-+
-+#define THERMAL_NAME    "mtk-thermal"
-+
-+struct mtk_thermal;
-+
-+struct mtk_thermal_bank {
-+	struct mtk_thermal *mt;
-+	struct thermal_zone_device *tz;
-+	int id;
-+};
-+
-+struct mtk_thermal {
-+	struct device *dev;
-+	void __iomem *thermal_base;
-+	void __iomem *auxadc_base;
-+
-+	u64 auxadc_phys_base;
-+	u64 apmixed_phys_base;
-+	struct reset_control *reset;
-+	struct clk *clk_peri_therm;
-+	struct clk *clk_auxadc;
-+
-+	struct mtk_thermal_bank banks[MT8173_NUM_BANKS];
-+
-+	struct mutex lock;
-+
-+	/* Calibration values */
-+	s32 adc_ge;
-+	s32 adc_oe;
-+	s32 degc_cali;
-+	s32 o_slope;
-+	s32 vts;
-+};
-+
-+struct mtk_thermal_bank_cfg {
-+	unsigned int enable_mask;
-+	unsigned int sensors[4];
-+};
-+
-+static int sensor_mux_values[MT8173_NUM_SENSORS] = { 0, 1, 2, 3, 16 };
-+
-+/*
-+ * The MT8173 thermal controller has four banks. Each bank can read up to
-+ * four temperature sensors simultaneously. The MT8173 has a total of 5
-+ * temperature sensors. We use each bank to measure a certain area of the
-+ * SoC. Since TS2 is located centrally in the SoC it is influenced by multiple
-+ * areas, hence is used in different banks.
-+ */
-+static struct mtk_thermal_bank_cfg bank_data[] = {
-+	{
-+		.enable_mask = 3,
-+		.sensors = { MT8173_TS2, MT8173_TS3 },
-+	}, {
-+		.enable_mask = 3,
-+		.sensors = { MT8173_TS2, MT8173_TS4 },
-+	}, {
-+		.enable_mask = 7,
-+		.sensors = { MT8173_TS1, MT8173_TS2, MT8173_TSABB },
-+	}, {
-+		.enable_mask = 1,
-+		.sensors = { MT8173_TS2 },
-+	},
-+};
-+
-+static int tempmsr_ofs[MT8173_NUM_SENSING_POINTS] = {
-+	TEMPMSR0, TEMPMSR1, TEMPMSR2, TEMPMSR3
-+};
-+
-+static int tempadcpnp_ofs[MT8173_NUM_SENSING_POINTS] = {
-+	TEMPADCPNP0, TEMPADCPNP1, TEMPADCPNP2, TEMPADCPNP3
-+};
-+
-+/**
-+ * raw_to_mcelsius - convert a raw ADC value to mcelsius
-+ * @mt:		The thermal controller
-+ * @raw:	raw ADC value
-+ *
-+ * This converts the raw ADC value to mcelsius using the SoC specific
-+ * calibration constants
-+ */
-+static int raw_to_mcelsius(struct mtk_thermal *mt, u32 raw)
-+{
-+	s32 format_1, format_2, format_3, format_4;
-+	s32 xtoomt;
-+	s32 gain;
-+
-+	raw &= 0xfff;
-+
-+	gain = (10000 + mt->adc_ge);
-+
-+	xtoomt = ((((mt->vts + 3350 - mt->adc_oe) * 10000) / 4096) * 10000) /
-+		gain;
-+
-+	format_1 = ((mt->degc_cali * 10) >> 1);
-+	format_2 = (raw - mt->adc_oe);
-+	format_3 = (((((format_2) * 10000) >> 12) * 10000) / gain) - xtoomt;
-+	format_3 = format_3 * 15 / 18;
-+	format_4 = ((format_3 * 100) / (165 + mt->o_slope));
-+	format_4 = format_4 - (format_4 << 1);
-+
-+	return (format_1 + format_4) * 100;
-+}
-+
-+/**
-+ * mcelsius_to_raw - convert mcelsius to raw ADC value
-+ * @mt:		The thermal controller
-+ * @temp:	The temperature in mcelsius
-+ *
-+ * This converts a temperature in mcelsius to a raw ADC value, needed to
-+ * calculate the trigger values for interrupt generation.
-+ */
-+static u32 mcelsius_to_raw(struct mtk_thermal *mt, int temp)
-+{
-+	s32 format_1, format_2, format_3, format_4;
-+	s32 xtoomt;
-+	s32 gain;
-+
-+	gain = (10000 + mt->adc_ge);
-+
-+	xtoomt = ((((mt->vts + 3350 - mt->adc_oe) * 10000) / 4096) * 10000) /
-+		gain;
-+
-+	format_1 = temp - (mt->degc_cali * 1000 / 2);
-+	format_2 = format_1 * (165 + mt->o_slope) * 18 / 15;
-+	format_2 = format_2 - 2 * format_2;
-+	format_3 = format_2 / 1000 + xtoomt * 10;
-+	format_4 = (format_3 * 4096 / 10000 * gain) / 100000 + mt->adc_oe;
-+
-+	return format_4;
-+}
-+
-+/**
-+ * mtk_thermal_get_bank - get bank
-+ * @bank:	The bank
-+ *
-+ * The bank registers are banked, we have to select a bank in the
-+ * PTPCORESEL register to access it.
-+ */
-+static void mtk_thermal_get_bank(struct mtk_thermal_bank *bank)
-+{
-+	struct mtk_thermal *mt = bank->mt;
-+	u32 val;
-+
-+	mutex_lock(&mt->lock);
-+
-+	val = readl(mt->thermal_base + PTPCORESEL);
-+	val &= ~0xf;
-+	val |= bank->id;
-+	writel(val, mt->thermal_base + PTPCORESEL);
-+}
-+
-+/**
-+ * mtk_thermal_put_bank - release bank
-+ * @bank:	The bank
-+ *
-+ * release a bank previously taken with mtk_thermal_get_bank,
-+ */
-+static void mtk_thermal_put_bank(struct mtk_thermal_bank *bank)
-+{
-+	struct mtk_thermal *mt = bank->mt;
-+
-+	mutex_unlock(&mt->lock);
-+}
-+
-+/**
-+ * mtk_thermal_bank_temperature - get the temperature of a bank
-+ * @bank:	The bank
-+ *
-+ * The temperature of a bank is considered the maximum temperature of
-+ * the sensors associated to the bank.
-+ */
-+static int mtk_thermal_bank_temperature(struct mtk_thermal_bank *bank)
-+{
-+	struct mtk_thermal *mt = bank->mt;
-+	int temp, i, max;
-+	u32 raw;
-+
-+	temp = max = -INT_MAX;
-+
-+	for (i = 0; i < 4; i++) {
-+		int sensno;
-+
-+		if (!(bank_data[bank->id].enable_mask & (1 << i)))
-+			continue;
-+
-+		raw = readl(mt->thermal_base + tempmsr_ofs[i]);
-+
-+		sensno = bank_data[bank->id].sensors[i];
-+		temp = raw_to_mcelsius(mt, raw);
-+
-+		if (temp > max)
-+			max = temp;
-+	}
-+
-+	return max;
-+}
-+
-+static void mtk_thermal_irq_bank(struct mtk_thermal_bank *bank)
-+{
-+	struct mtk_thermal *mt = bank->mt;
-+	int sp;
-+	u32 irqstat;
-+	bool update = false;
-+
-+	mtk_thermal_get_bank(bank);
-+
-+	irqstat = readl(mt->thermal_base + TEMPMONINTSTS);
-+
-+	mtk_thermal_put_bank(bank);
-+
-+	for (sp = 0; sp < 3; sp++) {
-+		if (irqstat & TEMPMONINT_LOW_OFS(sp)) {
-+			update = true;
-+			dev_vdbg(mt->dev, "bank %d sensor %d low offset interrupt\n",
-+					bank->id, sp);
-+		}
-+
-+		if (irqstat & TEMPMONINT_HIGH_OFS(sp)) {
-+			update = true;
-+			dev_vdbg(mt->dev, "bank %d sensor %d high offset interrupt\n",
-+					bank->id, sp);
-+		}
-+	}
-+
-+	if (update)
-+		thermal_zone_device_update(bank->tz);
-+}
-+
-+static irqreturn_t mtk_thermal_irq(int irq, void *dev_id)
-+{
-+	struct mtk_thermal *mt = dev_id;
-+	u32 irqstat = 0;
-+	int i;
-+
-+	irqstat = readl(mt->thermal_base + THERMINTST);
-+
-+	dev_vdbg(mt->dev, "thermal_interrupt_handler : THERMINTST = 0x%x\n",
-+			irqstat);
-+
-+	for (i = 0; i < MT8173_NUM_BANKS; i++) {
-+		if (!(irqstat & (1 << i)))
-+			mtk_thermal_irq_bank(&mt->banks[i]);
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int mtk_read_temp(void *data, int *temp)
-+{
-+	struct mtk_thermal_bank *bank = data;
-+
-+	mtk_thermal_get_bank(bank);
-+
-+	*temp = mtk_thermal_bank_temperature(bank);
-+
-+	mtk_thermal_put_bank(bank);
-+
-+	return 0;
-+}
-+
-+static int mtk_set_trips(void *data, int low, int high)
-+{
-+	struct mtk_thermal_bank *bank = data;
-+	struct mtk_thermal *mt = bank->mt;
-+	int i;
-+	u32 val, enable_mask;
-+	u32 raw_low, raw_high;
-+
-+	raw_low = mcelsius_to_raw(mt, low);
-+	raw_high = mcelsius_to_raw(mt, high);
-+
-+	mtk_thermal_get_bank(bank);
-+
-+	writel(0x0, mt->thermal_base + TEMPMONINT);
-+
-+	writel(TEMPPROTCTL_SELECTED, mt->thermal_base + TEMPPROTCTL);
-+
-+	writel(raw_low, mt->thermal_base + TEMPOFFSETL);
-+	writel(raw_high, mt->thermal_base + TEMPOFFSETH);
-+
-+	enable_mask = readl(mt->thermal_base + TEMPMONCTL0);
-+
-+	val = 0;
-+	for (i = 0; i < MT8173_NUM_SENSING_POINTS; i++)
-+		if (enable_mask & (1 << i))
-+			val |=	TEMPMONINT_LOW_OFS(i) | TEMPMONINT_HIGH_OFS(i);
-+
-+	writel(val, mt->thermal_base + TEMPMONINT);
-+
-+	mtk_thermal_put_bank(bank);
-+
-+	dev_dbg(mt->dev, "new boundaries: %d (0x%04x) < x < %d (0x%04x)\n",
-+			low, mcelsius_to_raw(mt, low),
-+			high, mcelsius_to_raw(mt, high));
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_of_device_ops mtk_thermal_ops = {
-+	.get_temp = mtk_read_temp,
-+	.set_trips = mtk_set_trips,
-+};
-+
-+static void mtk_thermal_init_bank(struct mtk_thermal_bank *bank)
-+{
-+	struct mtk_thermal *mt = bank->mt;
-+	struct mtk_thermal_bank_cfg *cfg = &bank_data[bank->id];
-+	int i;
-+
-+	mtk_thermal_get_bank(bank);
-+
-+	/* bus clock 66M counting unit is 12 * 15.15ns * 256 = 46.540us */
-+	writel(0x0000000c, mt->thermal_base + TEMPMONCTL1);
-+
-+	/*
-+	 * filt interval is 1 * 46.540us = 46.54us,
-+	 * sen interval is 429 * 46.540us = 19.96ms
-+	 */
-+	writel(0x000101ad, mt->thermal_base + TEMPMONCTL2);
-+
-+	/* poll is set to 10u */
-+	writel(0x00000300, mt->thermal_base + TEMPAHBPOLL);
-+
-+	/* temperature sampling control, 1 sample */
-+	writel(0x00000000, mt->thermal_base + TEMPMSRCTL0);
-+
-+	/* exceed this polling time, IRQ would be inserted */
-+	writel(0xffffffff, mt->thermal_base + TEMPAHBTO);
-+
-+	/* number of interrupts per event, 1 is enough */
-+	writel(0x0, mt->thermal_base + TEMPMONIDET0);
-+	writel(0x0, mt->thermal_base + TEMPMONIDET1);
-+
-+	/*
-+	 * The MT8173 thermal controller does not have its own ADC. Instead it
-+	 * uses AHB bus accesses to control the AUXADC. To do this the thermal
-+	 * controller has to be programmed with the physical addresses of the
-+	 * AUXADC registers and with the various bit positions in the AUXADC.
-+	 * Also the thermal controller controls a mux in the APMIXEDSYS register
-+	 * space.
-+	 */
-+
-+	/*
-+	 * this value will be stored to TEMPPNPMUXADDR (TEMPSPARE0)
-+	 * automatically by hw
-+	 */
-+	writel(1 << MT8173_TEMP_AUXADC_CHANNEL, mt->thermal_base + TEMPADCMUX);
-+
-+	/* AHB address for auxadc mux selection */
-+	writel(mt->auxadc_phys_base + 0x00c,
-+			mt->thermal_base + TEMPADCMUXADDR);
-+
-+	/* AHB address for pnp sensor mux selection */
-+	writel(mt->apmixed_phys_base + 0x0604,
-+			mt->thermal_base + TEMPPNPMUXADDR);
-+
-+	/* AHB value for auxadc enable */
-+	writel(1 << MT8173_TEMP_AUXADC_CHANNEL, mt->thermal_base + TEMPADCEN);
-+
-+	/* AHB address for auxadc enable (channel 0 immediate mode selected) */
-+	writel(mt->auxadc_phys_base + AUXADC_CON1_SET_V,
-+			mt->thermal_base + TEMPADCENADDR);
-+
-+	/* AHB address for auxadc valid bit */
-+	writel(mt->auxadc_phys_base + AUXADC_DATA(MT8173_TEMP_AUXADC_CHANNEL),
-+			mt->thermal_base + TEMPADCVALIDADDR);
-+
-+	/* AHB address for auxadc voltage output */
-+	writel(mt->auxadc_phys_base + AUXADC_DATA(MT8173_TEMP_AUXADC_CHANNEL),
-+			mt->thermal_base + TEMPADCVOLTADDR);
-+
-+	/* read valid & voltage are at the same register */
-+	writel(0x0, mt->thermal_base + TEMPRDCTRL);
-+
-+	/* indicate where the valid bit is */
-+	writel(TEMPADCVALIDMASK_VALID_HIGH | TEMPADCVALIDMASK_VALID_POS(12),
-+			mt->thermal_base + TEMPADCVALIDMASK);
-+
-+	/* no shift */
-+	writel(0x0, mt->thermal_base + TEMPADCVOLTAGESHIFT);
-+
-+	/* enable auxadc mux write transaction */
-+	writel(TEMPADCWRITECTRL_ADC_MUX_WRITE,
-+			mt->thermal_base + TEMPADCWRITECTRL);
-+
-+	for (i = 0; i < MT8173_NUM_SENSING_POINTS; i++)
-+		writel(sensor_mux_values[cfg->sensors[i]],
-+				mt->thermal_base + tempadcpnp_ofs[i]);
-+
-+	writel(cfg->enable_mask, mt->thermal_base + TEMPMONCTL0);
-+
-+	writel(TEMPADCWRITECTRL_ADC_PNP_WRITE | TEMPADCWRITECTRL_ADC_MUX_WRITE,
-+			mt->thermal_base + TEMPADCWRITECTRL);
-+
-+	mtk_thermal_put_bank(bank);
-+}
-+
-+static u64 of_get_phys_base(struct device_node *np)
-+{
-+	u64 size64;
-+	const __be32 *regaddr_p;
-+
-+	regaddr_p = of_get_address(np, 0, &size64, NULL);
-+	if (!regaddr_p)
-+		return OF_BAD_ADDR;
-+
-+	return of_translate_address(np, regaddr_p);
-+}
-+
-+static int mtk_thermal_probe(struct platform_device *pdev)
-+{
-+	int ret, i;
-+	struct device_node *auxadc, *apmixedsys, *np = pdev->dev.of_node;
-+	int irq;
-+	struct mtk_thermal *mt;
-+	struct resource *res;
-+
-+	mt = devm_kzalloc(&pdev->dev, sizeof(*mt), GFP_KERNEL);
-+	if (!mt)
-+		return -ENOMEM;
-+
-+	mt->clk_peri_therm = devm_clk_get(&pdev->dev, "therm");
-+	if (IS_ERR(mt->clk_peri_therm))
-+		return PTR_ERR(mt->clk_peri_therm);
-+
-+	mt->clk_auxadc = devm_clk_get(&pdev->dev, "auxadc");
-+	if (IS_ERR(mt->clk_auxadc))
-+		return PTR_ERR(mt->clk_auxadc);
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	mt->thermal_base = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(mt->thermal_base))
-+		return PTR_ERR(mt->thermal_base);
-+
-+	mt->reset = devm_reset_control_get(&pdev->dev, "therm");
-+	if (IS_ERR(mt->reset)) {
-+		ret = PTR_ERR(mt->reset);
-+		dev_err(&pdev->dev, "cannot get reset: %d\n", ret);
-+		return ret;
-+	}
-+
-+	mutex_init(&mt->lock);
-+
-+	mt->dev = &pdev->dev;
-+
-+	auxadc = of_parse_phandle(np, "auxadc", 0);
-+	if (!auxadc) {
-+		dev_err(&pdev->dev, "missing auxadc node\n");
-+		return -ENODEV;
-+	}
-+
-+	mt->auxadc_phys_base = of_get_phys_base(auxadc);
-+	if (mt->auxadc_phys_base == OF_BAD_ADDR) {
-+		dev_err(&pdev->dev, "Can't get auxadc phys address\n");
-+		return -EINVAL;
-+	}
-+
-+	apmixedsys = of_parse_phandle(np, "apmixedsys", 0);
-+	if (!apmixedsys) {
-+		dev_err(&pdev->dev, "missing apmixedsys node\n");
-+		return -ENODEV;
-+	}
-+
-+	mt->apmixed_phys_base = of_get_phys_base(apmixedsys);
-+	if (mt->apmixed_phys_base == OF_BAD_ADDR) {
-+		dev_err(&pdev->dev, "Can't get auxadc phys address\n");
-+		return -EINVAL;
-+	}
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (!irq) {
-+		dev_err(&pdev->dev, "Can't find irq\n");
-+		return -EINVAL;
-+	}
-+
-+	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL, mtk_thermal_irq,
-+			IRQF_ONESHOT, THERMAL_NAME, mt);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Can't request irq %d: %d\n", irq, ret);
-+		return ret;
-+	}
-+
-+	ret = clk_prepare_enable(mt->clk_auxadc);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Can't enable auxadc clk: %d\n", ret);
-+		return ret;
-+	}
-+
-+	reset_control_reset(mt->reset);
-+
-+	ret = clk_prepare_enable(mt->clk_peri_therm);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Can't enable peri clk: %d\n", ret);
-+		goto err_enable_clk;
-+	}
-+
-+	/*
-+	 * These calibration values should finally be provided by the
-+	 * firmware or fuses. For now use default values.
-+	 */
-+	mt->adc_ge = ((512 - 512) * 10000) / 4096;
-+	mt->adc_oe = 512 - 512;
-+	mt->degc_cali = 40;
-+	mt->o_slope = 0;
-+	mt->vts = 260;
-+
-+	for (i = 0; i < MT8173_NUM_BANKS; i++) {
-+		struct mtk_thermal_bank *bank = &mt->banks[i];
-+
-+		bank->id = i;
-+		bank->mt = mt;
-+		mtk_thermal_init_bank(&mt->banks[i]);
-+	}
-+
-+	platform_set_drvdata(pdev, mt);
-+
-+	/*
-+	 * This is needed after initialising the banks because otherwise
-+	 * the first temperature read contains bogus high temperatures which
-+	 * immediately cause a system shutdown.
-+	 */
-+	msleep(100);
-+
-+	for (i = 0; i < MT8173_NUM_BANKS; i++) {
-+		struct mtk_thermal_bank *bank = &mt->banks[i];
-+
-+		bank->tz = thermal_zone_of_sensor_register(&pdev->dev, i, bank,
-+				&mtk_thermal_ops);
-+	}
-+
-+	return 0;
-+
-+err_enable_clk:
-+	clk_disable_unprepare(mt->clk_peri_therm);
-+
-+	return ret;
-+}
-+
-+static int mtk_thermal_remove(struct platform_device *pdev)
-+{
-+	struct mtk_thermal *mt = platform_get_drvdata(pdev);
-+	int i;
-+
-+	for (i = 0; i < MT8173_NUM_BANKS; i++) {
-+		struct mtk_thermal_bank *bank = &mt->banks[i];
-+
-+		if (!IS_ERR(bank))
-+			thermal_zone_of_sensor_unregister(&pdev->dev, bank->tz);
-+	}
-+
-+	clk_disable_unprepare(mt->clk_peri_therm);
-+	clk_disable_unprepare(mt->clk_auxadc);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id mtk_thermal_of_match[] = {
-+	{
-+		.compatible = "mediatek,mt8173-thermal",
-+	}, {
-+	},
-+};
-+
-+static struct platform_driver mtk_thermal_driver = {
-+	.probe = mtk_thermal_probe,
-+	.remove = mtk_thermal_remove,
-+	.driver = {
-+		.name = THERMAL_NAME,
-+		.of_match_table = mtk_thermal_of_match,
-+	},
-+};
-+
-+module_platform_driver(mtk_thermal_driver);
+You are always welcome..
+
+> Why should this new binding exist?
+
+The answer to this particular query is perhaps simple, i.e. we have
+unsolved problems that we wanted to solve in a generic way.
+
+But probably the bigger question is "Should we really put the OPPs
+(new or old bindings) in DT".
+
+Lets start by agreeing on what can be kept in DT. AFAIU, anything that
+describes the device in a OS independent way. Like:
+  - base address
+  - irq line + parent
+  - clocks, regulators, etc..
+  - What about things like register information? That's not what we do
+    normally, but why?
+
+    Perhaps because we want to get rid of redundancy as much as
+    possible.
+    - An implementation of the same device is going to be same across
+      all platforms (unless the platform has tweaked it). And so there
+      is no fun passing the same register information from multiple DT
+      files.
+    - And so we better keep things like register information, bit
+      field descriptions, etc. in driver itself.
+    - For example consider a proprietary controller that has three
+      registers A, B and C. Now the bitwise description/behavior of
+      all the registers in perfectly same for every implementation but
+      the order of these in memory varies per implementation.
+
+      Now we can keep the offsets of these registers in either DT or C
+      code. If only few implementations are using it, then we might
+      keep it in C code, but if there are 10-20 implementations using
+      it in order ABC or BAC or CAB, then it will probably be a good
+      option to try keeping these offsets in DT.
+
+So its not really that we just describe connectivity between
+devices/nodes in DT, it can be anything related to the device.
+
+What if OPPs were kept in C code instead ?
+- In most of the cases (not all of course), we will end up replicating
+  code for platforms. But yes we can still do it and this is already
+  allowed if you really think your platform is special.
+- (Copied from booting-without-of.txt):
+  "It also makes it more flexible for board vendors to do minor
+  hardware upgrades without significantly impacting the kernel code or
+  cluttering it with special cases."
+
+> Is Devicetree really the right place
+> to put all of this data? If DT is the right place for some users, some
+> of the time ... is it always the right place for all users, all of the
+> time?
+
+This is just an attempt to reuse generic code. And platforms are free
+to choose DT or non-DT way for keeping this information.
+
+For some users it might be a good place to keep it, while for others
+it may not be. For example, if a platform really needs to do some stuff
+from its platform code, then it is free to do so.
+
+> > - Expandability of OPPs in future.
+> 
+> This point above gives me heartburn. It appears that this binding is not
+> meant to be "sub-classed" by vendor-specific compatible strings. Please
+> let me know if I'm wrong on that.
+> 
+> The problem with this approach is that every little problem that someone
+> has with the binding will have to be solved by changing the generic opp
+> binding. I do not see how this can scale given the complexity of data,
+> programming sequences and other stuff associated with operating points
+> and dvfs transitions.
+
+(I thought about it a bit more after our offline discussion):
+
+If there is something generic enough, which is required by multiple
+platforms, then of course we can make additions to the bindings.
+
+But I believe we can 'sub-class' this by vendor-specific compatible
+strings as well.
+
+What I told you earlier (in our offline discussion) was that it isn't
+allowed to put driver specific strings here to just choose a driver
+amongst few available at runtime. For example, choosing between
+cpufreq-dt or arm_big_little or any platform driver.
+
+But if a Vendor do need few bindings just for his platforms, then we
+can have a compatible sting for that. As the compatible string now
+will express device's compatibility.
+
+> I like the existing operating points binding. It is very simple. The
+> data can be entirely encoded in DT and then used by the driver for
+> simple dvfs use cases.
+
+The new ones are also simple :)
+
+> Maybe we should just stop there and keep it simple? If the data needed
+> to express an operating point or dvfs transition is very complex, why
+> use DT for that?
+
+Its simple but not complete. And I don't really agree that things are
+way too complex here. In some cases, yes they can be.
+
+> > +Optional properties:
+> > +- shared-opp: Indicates that device nodes using this OPP descriptor's phandle
+> > +  switch their DVFS state together, i.e. they share clock/voltage/current lines.
+> > +  Missing property means devices have independent clock/voltage/current lines,
+> > +  but they share OPP tables.
+> 
+> What is the behavior of not setting 'shared-opp'? The same table is
+> re-used by multiple consumers/devices?
+
+Yes.
+
+> I think a provider/consumer model works better here. E.g. if we have 4
+> cpus that scale independently then there would be 4 opp providers, each
+> provider corresponding to the unique frequency and voltage domains per
+> cpu. If multiple cpu nodes consume the same opp phandle then the sharing
+> becomes implicit: those cpus are in the same frequency and power
+> domains.
+> 
+> This is how it works for other resources, such as specifying a clock or
+> regulator in DT. If two device nodes reference that same resource then
+> it clear that they are using the same physical hardware. Having just a
+> table of data in a node that does not clearly map onto hardware (or a
+> software abstraction that provides access to that hardware) is not as
+> nice IMO.
+
+I partially agree to what you are saying. It is written this way to
+reduce redundancy in DT. For example, in a quad-core system with
+independently scalable CPUs that have exactly same tables for all
+CPUs, we do not want to replicate the same set of 20 OPPs, four times.
+
+But perhaps we can improve it, based on your suggestion. The way I
+have written it today:
+
+/ {
+	cpus {
+		cpu@0 {
+			operating-points-v2 = <&cpu_opp>;
+		};
+
+		cpu@1 {
+			operating-points-v2 = <&cpu_opp>;
+		};
+	};
+
+	cpu_opp: opp {
+		compatible = "operating-points-v2";
+		// shared-opp; Not an shared OPP
+
+		entry00 {
+			opp-khz = <1000000>;
+		};
+		entry01 {
+			opp-khz = <1100000>;
+		};
+	};
+};
+
+And we can rewrite it as:
+
+/ {
+	cpus {
+		cpu@0 {
+			operating-points-v2 = <&opp0_provider>;
+		};
+
+		cpu@1 {
+			operating-points-v2 = <&opp1_provider>;
+		};
+	};
+
+        /* Table is shared between providers */
+	opp_table: opp_table {
+		entry00 {
+			opp-khz = <1000000>;
+		};
+		entry01 {
+			opp-khz = <1100000>;
+		};
+	};
+
+	opp0_provider: opp0 {
+		compatible = "operating-points-v2";
+                opp_table = <&opp_table>;
+	};
+
+	opp1_provider: opp1 {
+		compatible = "operating-points-v2";
+                opp_table = <&opp_table>;
+	};
+};
+
+
+But this is similar to what I proposed initially and people objected
+to it.
+
+> > +- clock-latency-ns: Specifies the maximum possible transition latency (in
+> > +  nanoseconds) for switching to this OPP from any other OPP.
+> > +- turbo-mode: Marks the OPP to be used only for turbo modes.
+> > +- status: Marks the node enabled/disabled.
+> 
+> s/clock/transition/
+> 
+> Scaling the regulator can take longer than the clock. Better to reflect
+> that this value is capturing the total transition time.
+
+So this is how we are doing it today and I am not sure if we want to
+get it from DT now.
+
+	ret = regulator_set_voltage_time(cpu_reg, min_uV, max_uV);
+	if (ret > 0)
+		transition_latency += ret * 1000;
+
+> It seems wrong to me that the clock and supply data is owned by the cpu
+> node, and not the opp descriptor. Everything about the opp transition
+> should belong to a provider node. Then the cpu simply needs to consume
+> that via a phandle.
+
+https://lists.linaro.org/pipermail/linaro-kernel/2014-December/019505.html
+
+> > +Deprecated Bindings
+> > +-------------------
+> >  
+> >  Properties:
+> >  - operating-points: An array of 2-tuples items, and each item consists
+> 
+> I think we should keep these. They work for the simple case.
+
+Hmm, maybe.
+
 -- 
-2.1.4
+viresh
