@@ -1,93 +1,113 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter() failures
-Date: Wed, 13 May 2015 15:59:55 -0700
-Message-ID: <7h7fsc2idw.fsf@deeprootsystems.com>
-References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
-	<2602092.6h7ufczYGd@vostro.rjw.lan> <5551BCBF.2000806@linaro.org>
-	<2919083.VPTOth98op@vostro.rjw.lan>
+From: NeilBrown <neilb@suse.de>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Thu, 14 May 2015 09:22:51 +1000
+Message-ID: <20150514092251.6d0625af@notabene.brown>
+References: <b1587e8b2c664632ecd0d9ad1a3e56733da76490.1431068823.git.len.brown@intel.com>
+	<20150511014428.GB15721@dastard>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ boundary="Sig_/5ciHcd5XNvObRDyaeJPhAU8"; protocol="application/pgp-signature"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:34333 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934504AbbEMW76 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2015 18:59:58 -0400
-Received: by pacyx8 with SMTP id yx8so64290816pac.1
-        for <linux-pm@vger.kernel.org>; Wed, 13 May 2015 15:59:58 -0700 (PDT)
-In-Reply-To: <2919083.VPTOth98op@vostro.rjw.lan> (Rafael J. Wysocki's message
-	of "Tue, 12 May 2015 15:23:25 +0200")
+Received: from cantor2.suse.de ([195.135.220.15]:55009 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965125AbbEMXXB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 13 May 2015 19:23:01 -0400
+In-Reply-To: <20150511014428.GB15721@dastard>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com, rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Dave Chinner <david@fromorbit.com>
+Cc: Len Brown <lenb@kernel.org>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+--Sig_/5ciHcd5XNvObRDyaeJPhAU8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-[...]
+On Mon, 11 May 2015 11:44:28 +1000 Dave Chinner <david@fromorbit.com> wrote:
 
-> Second, quite honestly, I don't see a connection to genpd here.
+> On Fri, May 08, 2015 at 03:08:43AM -0400, Len Brown wrote:
+> > From: Len Brown <len.brown@intel.com>
+> >=20
+> > Remove sys_sync() from the kernel's suspend flow.
+> >=20
+> > sys_sync() is extremely expensive in some configurations,
+> > and so the kernel should not force users to pay this cost
+> > on every suspend.
+>=20
+> Since when? Please explain what your use case is that makes this
+> so prohibitively expensive it needs to be removed.
+>=20
+> >=20
+> > The user-space utilities s2ram and s2disk choose to invoke sync() today.
+> > A user can invoke suspend directly via /sys/power/state to skip that co=
+st.
+>=20
+> So, you want to have s2disk write all the dirty pages in memory to
+> the suspend image, rather than to the filesystem?
+>=20
+> Either way you have to write that dirty data to disk, but if you
+> write it to the suspend image, it then has to be loaded again on
+> resume, and then written again to the filesystem the system has
+> resumed. This doesn't seem very efficient to me....
+>=20
+> And, quite frankly, machines fail to resume from suspne dall the
+> time. e.g. run out of batteries when they are under s2ram
+> conditions, or s2disk fails because a kernel upgrade was done before
+> the s2disk and so can't be resumed. With your change, users lose all
+> the data that was buffered in memory before suspend, whereas right
+> now it is written to disk and so nothing is lost if the resume from
+> suspend fails for whatever reason.
+>=20
+> IOWs, I can see several good reasons why the sys_sync() needs to
+> remain in the suspend code. User data safety and filesystem
+> integrity is far, far more important than a couple of seconds
+> improvement in suspend speed....
 
-The connection with genpd is because the *reason* the timer was
-shutdown/stopped is because it shares power with the CPU, which is why
-the timer stops when the CPU hits ceratin low power states.  IOW, it's
-in the same power domain as the CPU.
+To be honest, this sounds like superstition and fear, not science and fact.
 
-> What you seem to be saying is "maybe we can eliminate the need to check the
-> return value of tick_broadcast_enter() in the idle loop if we proactively
-> disable the TIMER_STOP idle states of a CPU when we start to use that CPU's
-> timer as a broadcast one".
->
-> So this seems to be about the timekeeping rather than power domains, because
-> that's where the broadcast thing is done.  So the code setting up the CPU's
-> timer for broadcast would pretty much need to pause cpuidle, go through the
-> CPU's idle states and disable the TIMER_STOP ones.  And do the reverse when the
-> timer is not going the be used for broadcast any more.  
+"filesystem integrity" is not an issue for the fast majority of filesystems
+which use journalling to ensure continued integrity even after a crash.  I
+think even XFS does that :-)
 
-Or..., modify the timer subystem to use runtime PM on the timer devices,
-create a genpd that includes the timer device, and use
-pm_genpd_attach_cpuidle() to attach that genpd so that whenever that
-timer is runtime PM active, the deeper C-states cannot be hit.
+For those few toy filesystems which don't journal, like VFAT and ..... well,
+VFAT, it may well make sense for VFAT to request a notification on suspend
+and to do whatever is needed to ensure consistent on-storage structures.
 
-> So question is whether or not this is actually really more
-> straightforward than checking the return value of
-> tick_broadcast_enter() in the idle loop after all.
+"User data safety" is not very closely related to "sys_sync".  That call
+doesn't tell my emacs or my libre-office that now is a good time to auto-sa=
+ve.
+All that "sys_sync" saves is data that has been written-but-not-fsynced.
+That is only a small portion of "user data" and anyone who thinks it is
+"safe" is already deluded (possibly deluded by over-exposure to ext3).
 
-Unfortunetly this problem doesn't only affect timers.
+I am very much in favour of Len's patch.  Not only does the sys_sync()
+call have a real cost, but I believe it also has zero value.
 
-Daniel's broader point is that $SUBJECT series only handles this for the
-timer, but there's actually a more general problem to solve for *any*
-device that shares a power domain with a CPU (e.g. CPU-local
-timers, interrupt controllers, performance monitoring units, floating
-point units, etc. etc.)
+Can you identify an actual case where the removal of sys_sync would introdu=
+ce
+a measurable cost?
 
-If we keep adding checks to the idle loop for all those devices, we're
-heading for a mess.  (In fact, this is exactly what CPUidle drivers in
-lots of vendor trees are doing, and it is indeed quite messy, and very
-vendor specific.)
+NeilBrown
 
-Also, solving this more general problem was the primary motivation for
-adding the gnpd _attach_cpuidle() feature in the first place, so why not
-use that?
+--Sig_/5ciHcd5XNvObRDyaeJPhAU8
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
-Longer term, IMO, these dependencies between CPUs and all these "extras"
-logic that share a power domain should be modeled by a genpd.  If all
-those devices are using runtime PM, including the CPUs, and they are
-grouped into a genpd, then we we can very easily know at the genpd level
-whether or not the CPU could be powered down, and to what level.  This
-longer-term solution is what I want to discuss at LPC this year in my
-"Unifiy idle management of CPUs and IO devices" topic[1].  ( Also FYI,
-using a genpd to model a CPU and connected logic is part of the
-motivation behind the recent proposals to add support for multiple
-states to genpd by Axel Haslam. )
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Anyways I digress...
+iQIVAwUBVVPcyznsnt1WYoG5AQJ0DhAAo57iBsf6qCwuOIhYc3cA0beBR+gHl0Fi
+J0fn0ZH1wbq0lUmN2KIxW9Zy86p2LahotNFPr5jnBIJs0l3oSMGzPC9FcXy8zyA8
+qQSVUEm6+tU1HLYAr67BXG2z77g+2MwFDezjV9CWDOBeH/+mQq/wtIZhhoYT6zT0
+KI5T4/dc/FC6f1HRIH5nUiKYZdSA2P1vJiFkgGOP8awPNMgr4i0FdHMOpWl8XEAm
+nSqK1pUNx92FY3q6QAjc+gDTBclRWsDaZpYGn/fXe90UmwZSYpRX2aHvh6xdL0dW
+xrdD4/xaf/HOlrlrsB2cw1gqXHZK/1RIgWk1AIbsBbXEkps9P56ofAT/fP/VXzMi
+1SzcHayM11VYQ8sCg4c8b8BjzDz2LPzB6e/BOYM1JJKAa3tmi/zN/xNxCPW0XIy+
+udi3Hwn7z688golQYe55er9NCYPLz5XDtXmp9a1gd2yznv5SaAaxUrCPmlv7+nDH
+MghtAVA3FcT3wTRNh1Yh36dQVYbt4sYt4VLXLL6wgo+AWzXETDRuylRLsC/4hJp0
+IPiJktJIp6Ex3hrk4KCT1rIPWUg26ne+Spk9bUH16dHGhffYRn+/51fBFchbdOnU
+ANdkGyUNf1uhj7SfUvd65TykRO/wq7q2crepoamLfNlzxNlMFbgmdiFgAxXFDFRB
+Sh9B0c7HdKs=
+=Di7G
+-----END PGP SIGNATURE-----
 
-In the short term, while your patches look fine to me, the objection I
-have is that it's only a band-aid fix that handles timers, but none of
-the other "extras" that might share a power rail with the CPU.  So,
-until we have the long-term stuff sorted out, the better
-short-term solution IMO is the _attach_cpuidle() one above.
-
-Kevin
-
-[1] http://wiki.linuxplumbersconf.org/2015:energy-aware_scheduling
+--Sig_/5ciHcd5XNvObRDyaeJPhAU8--
