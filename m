@@ -1,144 +1,74 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH 1/6] clk: add CLK_RECALC_NEW_RATES clock flag for Exynos
- cpu clock support
-Date: Wed, 13 May 2015 16:13:13 +0200
-Message-ID: <55535BF9.60609@samsung.com>
-References: <'@samsung.com>
- <1428079429-4252-1-git-send-email-b.zolnierkie@samsung.com>
- <1428079429-4252-2-git-send-email-b.zolnierkie@samsung.com>
+From: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
+Date: Wed, 13 May 2015 09:24:57 -0500
+Message-ID: <CAGo_u6o5nw8C3uwLGmP+kbCOG5twmXgC2ATb5Gv-dL3G-grDSg@mail.gmail.com>
+References: <20150507110233.GR15510@sirena.org.uk>
+	<20150507211855.GA2455@codeaurora.org>
+	<20150507221842.GW22845@sirena.org.uk>
+	<CAKohpomU8wm0T=A7EkosdOjXbP8q2Cb726Hsjh08KTKYjoz3-A@mail.gmail.com>
+	<555000B6.2010107@ti.com>
+	<20150512052033.GC32300@linux>
+	<20150512190134.16410.89041@quantum>
+	<5552510B.9010306@ti.com>
+	<20150512194134.GC3066@sirena.org.uk>
+	<55525B29.2080307@ti.com>
+	<20150513115422.GQ3066@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1428079429-4252-2-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150513115422.GQ3066-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Michael Turquette <mike.turquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <rob.herring-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd.bergmann-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org" <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Sudeep Holla <Sudeep.Holla-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Viswanath Puttagunta <viswanath.puttagunta-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Thomas Abraham <ta.omasab-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Abhilash Kesavan <kesavan.abhilash-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 03/04/15 18:43, Bartlomiej Zolnierkiewicz wrote:
-> This flag is needed to fix the issue with wrong dividers being setup
-> by Common Clock Framework when using the new Exynos cpu clock support.
-> 
-> The issue happens because clk_core_set_rate_nolock()  calls
-> clk_calc_new_rates(clk, rate) before both pre/post clock notifiers have
-> a chance to run.  In case of Exynos cpu clock support pre/post clock
-> notifiers are registered for mout_apll clock which is a parent of armclk
-> cpu clock and dividers are modified in both pre and post clock notifier.
-> This results in wrong dividers values being later programmed by
-> clk_change_rate(top).  To workaround the problem CLK_RECALC_NEW_RATES
-> flag is added and it is set for mout_apll clock later so the correct
-> divider values are re-calculated after both pre and post clock notifiers
-> had run.
-> 
-> For example when using "performance" governor on Exynos4210 Origen board
-> the cpufreq-dt driver requests to change the frequency from 1000MHz to
-> 1200MHz and after the change state of the relevant clocks is following:
-> 
-> Without use of CLK_GET_RATE_NOCACHE flag:
-> 
->  fout_apll rate: 1200000000
->          fout_apll_div_2 rate: 600000000
->                  mout_clkout_cpu rate: 600000000
->                          div_clkout_cpu rate: 600000000
->                                  clkout_cpu rate: 600000000
->          mout_apll rate: 1200000000
->                  armclk rate: 1200000000
->                  mout_hpm rate: 1200000000
->                          div_copy rate: 300000000
->                                  div_hpm rate: 300000000
->                  mout_core rate: 1200000000
->                          div_core rate: 1200000000
->                                  div_core2 rate: 1200000000
->                                          arm_clk_div_2 rate: 600000000
->                                          div_corem0 rate: 300000000
->                                          div_corem1 rate: 150000000
->                                          div_periph rate: 300000000
->                          div_atb rate: 300000000
->                                  div_pclk_dbg rate: 150000000
->                  sclk_apll rate: 1200000000
->                          sclk_apll_div_2 rate: 600000000
-> 
-> 
-> With use of CLK_GET_RATE_NOCACHE flag:
-> 
->  fout_apll rate: 1200000000
->          fout_apll_div_2 rate: 600000000
->                  mout_clkout_cpu rate: 600000000
->                          div_clkout_cpu rate: 600000000
->                                  clkout_cpu rate: 600000000
->          mout_apll rate: 1200000000
->                  armclk rate: 1200000000
->                  mout_hpm rate: 1200000000
->                          div_copy rate: 200000000
->                                  div_hpm rate: 200000000
->                  mout_core rate: 1200000000
->                          div_core rate: 1200000000
->                                  div_core2 rate: 1200000000
->                                          arm_clk_div_2 rate: 600000000
->                                          div_corem0 rate: 300000000
->                                          div_corem1 rate: 150000000
->                                          div_periph rate: 300000000
->                          div_atb rate: 240000000
->                                  div_pclk_dbg rate: 120000000
->                  sclk_apll rate: 150000000
->                          sclk_apll_div_2 rate: 75000000
-> 
-> Without this change cpufreq-dt driver showed ~10 mA larger energy
-> consumption when compared to cpufreq-exynos one when "performance"
-> cpufreq governor was used on Exynos4210 SoC based Origen board.
-> 
-> This issue was probably meant to be workarounded by use of
-> CLK_GET_RATE_NOCACHE and CLK_DIVIDER_READ_ONLY clock flags in
-> the original Exynos cpu clock patchset (in "[PATCH v12 6/6] clk:
-> samsung: remove unused clock aliases and update clock flags" patch)
-> but usage of these flags is not sufficient to fix the issue observed.
-> 
-> Cc: Thomas Abraham <thomas.ab@samsung.com>
-> Cc: Tomasz Figa <tomasz.figa@gmail.com>
-> Cc: Mike Turquette <mturquette@linaro.org>
-> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
->  drivers/clk/clk.c            |    3 +++
->  include/linux/clk-provider.h |    1 +
->  2 files changed, 4 insertions(+)
-> 
-> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-> index f85c8e2..97cc73e 100644
-> --- a/drivers/clk/clk.c
-> +++ b/drivers/clk/clk.c
-> @@ -1771,6 +1771,9 @@ static void clk_change_rate(struct clk_core *clk)
->  	if (clk->notifier_count && old_rate != clk->rate)
->  		__clk_notify(clk, POST_RATE_CHANGE, old_rate, clk->rate);
->  
-> +	if (clk->flags & CLK_RECALC_NEW_RATES)
-> +		(void)clk_calc_new_rates(clk, clk->new_rate);
-> +
->  	/*
->  	 * Use safe iteration, as change_rate can actually swap parents
->  	 * for certain clock types.
-> diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
-> index 28abf1b..8d1aebe 100644
-> --- a/include/linux/clk-provider.h
-> +++ b/include/linux/clk-provider.h
-> @@ -31,6 +31,7 @@
->  #define CLK_GET_RATE_NOCACHE	BIT(6) /* do not use the cached clk rate */
->  #define CLK_SET_RATE_NO_REPARENT BIT(7) /* don't re-parent on rate change */
->  #define CLK_GET_ACCURACY_NOCACHE BIT(8) /* do not use the cached clk accuracy */
-> +#define CLK_RECALC_NEW_RATES	BIT(9) /* recalc rates after notifications */
+On Wed, May 13, 2015 at 6:54 AM, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> On Tue, May 12, 2015 at 02:57:29PM -0500, Nishanth Menon wrote:
+>> On 05/12/2015 02:41 PM, Mark Brown wrote:
+>> > On Tue, May 12, 2015 at 02:14:19PM -0500, Nishanth Menon wrote:
+>
+>> > specifying the currents involved.  For plausible applications these are
+>> > likely to be ballpark figures rather than anything too accurate - if
+>> > nothing else the instantaneous current draw normally varies very
+>> > substantially so realistically you're talking about a maximum here.  If
+>> > the corners vary that dramatically then I'd expect you'd see different
+>> > OPP tables being used anyway.
+>
+>> OK - If we state "worst case", then it is quantifiable (if SoC vendors
+>> would like to expose such information - I doubt mine ever will ;) ).
+>> - We might be able to quantify it better by stating worst case(under
+>> maximum load) steady state current (to avoid including transient
+>> spikes which are never representative) at ambient temperature(25C).
+>
+> Qualcomm do.  It kind of depends on the system how worst case it needs
+> to be - it'll depend on the expected performance of both the system and
+> potentially the regulator.  For some systems it may be important to have
+> some accounting for transients.  Equally systems would only need to be
+> as accurate as the underlying hardware was able to make use of.
 
-Mike, Stephen, what do you think about this? I'm rather resistant to
-this new flag approach, it looks like a hack. I don't seem to have better
-ideas to address the missing rate recalculation issue though.
-I thought about making the cpu clk notifier callback returning a specific
-error value, which would then trigger rate recalculation after
-__clk_notify() call in clk_change_rate() function. This way the trigger
-of the repeated rate recalculation would come from a notifier callback,
-rather than from a clock definition. But in general it would be difficult
-to handle multiple notification callbacks, each of which would attempt
-to trigger the rate recalculation.
+True, some parts of the system like choice in regulator sizing has to account
+for transients.
 
--- 
+How about rephrasing as following:
+
+- opp-microamp: The maximum current drawn by the device in microamperes
+  considering system specific parameters (such as transients, process,
+aging, etc.)
+  as necessary,  at an  ambient temperature of 25C. This may be used to set
+  the most efficient regulator operating mode.
+
+  Valid only if opp-microvolt is set for the OPP.
+
+  Entries for multiple regulators must be present in the same order as
+  regulators are specified in device's DT node. If this property isn't required
+  for few regulators, then this should be marked as zero for them. If it isn't
+  required for any regulator, then this property need not be present.
+
+
+---
 Regards,
-Sylwester
+Nishanth Menon
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
