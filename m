@@ -1,121 +1,58 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] PM / clock_ops: Fix clock error check in __pm_clk_add()
-Date: Tue, 12 May 2015 17:32:29 -0700
-Message-ID: <20150513003229.GH20725@dtor-ws>
-References: <1431074863-19124-1-git-send-email-geert+renesas@glider.be>
- <55523F67.9040100@linaro.org>
- <20150512180733.GB20725@dtor-ws>
- <2196912.kiJqTqq7oO@vostro.rjw.lan>
+From: Sai Gurrappadi <sgurrappadi@nvidia.com>
+Subject: Re: [RFCv4 PATCH 11/34] sched: Remove blocked load and utilization
+ contributions of dying tasks
+Date: Tue, 12 May 2015 17:33:22 -0700
+Message-ID: <55529BD2.7020107@nvidia.com>
+References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com> <1431459549-18343-12-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f179.google.com ([209.85.223.179]:36842 "EHLO
-	mail-ie0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964895AbbEMAce (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2015 20:32:34 -0400
-Content-Disposition: inline
-In-Reply-To: <2196912.kiJqTqq7oO@vostro.rjw.lan>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:5275 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751379AbbEMAdk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2015 20:33:40 -0400
+In-Reply-To: <1431459549-18343-12-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Morten Rasmussen <morten.rasmussen@arm.com>, peterz@infradead.org, mingo@redhat.com
+Cc: vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Peter Boonstoppel <pboonstoppel@nvidia.com>
 
-On Wed, May 13, 2015 at 02:22:50AM +0200, Rafael J. Wysocki wrote:
-> On Tuesday, May 12, 2015 11:07:33 AM Dmitry Torokhov wrote:
-> > On Tue, May 12, 2015 at 08:59:03PM +0300, Grygorii.Strashko@linaro.org wrote:
-> > > On 05/12/2015 07:42 PM, Dmitry Torokhov wrote:
-> > > > On Tue, May 12, 2015 at 04:55:39PM +0300, Grygorii.Strashko@linaro.org wrote:
-> > > >> On 05/09/2015 12:05 AM, Dmitry Torokhov wrote:
-> > > >>> On Fri, May 08, 2015 at 10:59:04PM +0200, Geert Uytterhoeven wrote:
-> > > >>>> On Fri, May 8, 2015 at 7:19 PM, Dmitry Torokhov
-> > > >>>> <dmitry.torokhov@gmail.com> wrote:
-> > > >>>>> On Fri, May 08, 2015 at 10:47:43AM +0200, Geert Uytterhoeven wrote:
-> > > >>>>>> In the final iteration of commit 245bd6f6af8a62a2 ("PM / clock_ops: Add
-> > > >>>>>> pm_clk_add_clk()"), a refcount increment was added by Grygorii Strashko.
-> > > >>>>>> However, the accompanying IS_ERR() check operates on the wrong clock
-> > > >>>>>> pointer, which is always zero at this point, i.e. not an error.
-> > > >>>>>> This may lead to a NULL pointer dereference later, when __clk_get()
-> > > >>>>>> tries to dereference an error pointer.
-> > > >>>>>>
-> > > >>>>>> Check the passed clock pointer instead to fix this.
-> > > >>>>>
-> > > >>>>> Frankly I would remove the check altogether. Why do we only check for
-> > > >>>>> IS_ERR and not NULL or otherwise validate the pointer? The clk is passed
-> > > >>>>
-> > > >>>> __clk_get() does the NULL check.
-> > > >>>
-> > > >>> No, not really. It _handles_ clk being NULL and returns "everything is
-> > > >>> fine". In any case it is __clk_get's decision what to do.
-> > > >>>
-> > > >>> I dislike gratuitous checks of arguments passed in. Instead of relying
-> > > >>> on APIs refusing grabage we better not pass garbage to these APIs in the
-> > > >>> first place. So I'd change it to trust that we are given a usable
-> > > >>> pointer and simply do:
-> > > >>>
-> > > >>> 	if (!__clk_get(clk)) {
-> > > >>> 		kfree(ce);
-> > > >>> 		return -ENOENTl
-> > > >>> 	}
-> > > >>
-> > > >> Not sure this is right thing to do, because this API initially
-> > > >> was intended to be used as below [1]:
-> > > >> 	clk = of_clk_get(dev->of_node, i));
-> > > >>   	ret = pm_clk_add_clk(dev, clk);
-> > > >>   	clk_put(clk);
-> > > >>
-> > > >> and of_clk_get may return ERR_PTR().
-> > > > 
-> > > > Jeez, that sequence was not meant to be taken literally, it does miss
-> > > > error handling completely. If you notice the majority of users of this
-> > > > API do something like below:
-> > > > 
-> > > > 	i = 0;
-> > > > 	while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
-> > > > 		dev_dbg(dev, "adding clock '%s' to list of PM clocks\n",
-> > > > 			__clk_get_name(clk));
-> > > > 		error = pm_clk_add_clk(dev, clk);
-> > > > 		clk_put(clk);
-> > > > 		if (error) {
-> > > > 			dev_err(dev, "pm_clk_add_clk failed %d\n", error);
-> > > > 			pm_clk_destroy(dev);
-> > > > 			return error;
-> > > > 		}
-> > > > 	}
-> > > > 
-> > > > i.e. it already validates clk pointer before passing it on since it
-> > > > needs to know when to stop iterating.
-> > > 
-> > > np. It's just my opinion - if you agree that code will just crash
-> > > in case of passing invalid @clk argument (in worst case:)
-> > > 
-> > > int __clk_get(struct clk *clk)
-> > > {
-> > > 	struct clk_core *core = !clk ? NULL : clk->core;
-> > > 						^^^ here
-> > 
-> > Yes, it will crash if you pass invalid pointer here, be it
-> > ERR_PTR-encoded value, or, for example, 0x1, or maybe (void
-> > *)random_32(). The latter will probably not crash right away, but cause
-> > some random damage that will manifest later.
+On 05/12/2015 12:38 PM, Morten Rasmussen wrote:
+> Task being dequeued for the last time (state == TASK_DEAD) are dequeued
+> with the DEQUEUE_SLEEP flag which causes their load and utilization
+> contributions to be added to the runqueue blocked load and utilization.
+> Hence they will contain load or utilization that is gone away. The issue
+> only exists for the root cfs_rq as cgroup_exit() doesn't set
+> DEQUEUE_SLEEP for task group exits.
 > 
-> Oh well.  Shouldn't we actually do:
+> If runnable+blocked load is to be used as a better estimate for cpu
+> load the dead task contributions need to be removed to prevent
+> load_balance() (idle_balance() in particular) from over-estimating the
+> cpu load.
 > 
-> int __clk_get(struct clk *clk)
-> {
->  	struct clk_core *core = IS_ERR_OR_NULL(clk) ? NULL : clk->core;
+> cc: Ingo Molnar <mingo@redhat.com>
+> cc: Peter Zijlstra <peterz@infradead.org>
 > 
-> and remove the check from __pm_clk_add() at the same time?
+> Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
+> ---
+>  kernel/sched/fair.c | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> Knowingly crashing on an error encoded as a pointer is kind of disgusting to me
-> and the difference between that and a random invalid pointer is that poeple who
-> pass error values encoded as pointers up the stack usually expect them to be
-> handled cleanly.
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index e40cd88..d045404 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -3202,6 +3202,8 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
+>  	 * Update run-time statistics of the 'current'.
+>  	 */
+>  	update_curr(cfs_rq);
+> +	if (entity_is_task(se) && task_of(se)->state == TASK_DEAD)
+> +		flags &= !DEQUEUE_SLEEP;
+>  	dequeue_entity_load_avg(cfs_rq, se, flags & DEQUEUE_SLEEP);
+>  
+>  	update_stats_dequeue(cfs_rq, se);
+> 
 
-I think the operative work here is "up". Returning ERR_PTR-encoded
-pointer is fine, checking it fine as well, blindly passing it *down*
-into a random API is not fine and we should not try to accommodate this.
-
-Thanks.
-
--- 
-Dmitry
+Maybe you could use the sched_class->task_dead() callback instead? I
+remember seeing a patch from Yuyang that did that.
