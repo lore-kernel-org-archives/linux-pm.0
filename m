@@ -1,104 +1,93 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v9 00/17] Tegra124 CL-DVFS / DFLL clocksource + cpufreq
-Date: Thu, 14 May 2015 00:47:46 +0200
-Message-ID: <2216026.DiZ8MPKfdF@vostro.rjw.lan>
-References: <1431529131-16710-1-git-send-email-mikko.perttunen@kapsi.fi>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter() failures
+Date: Wed, 13 May 2015 15:59:55 -0700
+Message-ID: <7h7fsc2idw.fsf@deeprootsystems.com>
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
+	<2602092.6h7ufczYGd@vostro.rjw.lan> <5551BCBF.2000806@linaro.org>
+	<2919083.VPTOth98op@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56420 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752393AbbEMWWf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2015 18:22:35 -0400
-In-Reply-To: <1431529131-16710-1-git-send-email-mikko.perttunen@kapsi.fi>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:34333 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934504AbbEMW76 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2015 18:59:58 -0400
+Received: by pacyx8 with SMTP id yx8so64290816pac.1
+        for <linux-pm@vger.kernel.org>; Wed, 13 May 2015 15:59:58 -0700 (PDT)
+In-Reply-To: <2919083.VPTOth98op@vostro.rjw.lan> (Rafael J. Wysocki's message
+	of "Tue, 12 May 2015 15:23:25 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Cc: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, viresh.kumar@linaro.org, mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com, rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com, linuxppc-dev@lists.ozlabs.org, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Wednesday, May 13, 2015 05:58:34 PM Mikko Perttunen wrote:
-> v9 of the Tegra124 cpufreq series. Changes:
-> 
-> - Dropped PLLX reordering patch since it is no longer needed
-> - Removed a couple of unused lines from the DFLL clocksource platform driver
-> - Made the cpufreq driver tristate and removed .owned = THIS_MODULE (as it's not needed for
->   platform devices)
-> - Made the OPP generation code in the CVB parser ignore OPPs where the frequency has the most
->   significant bit set. This can be dropped once Boris Brezillon's patch finds its
->   way into the tree.
-> - Added Acks.
-> 
-> The only patches without Acks are the following:
->   ARM: tegra: enable Tegra124 cpufreq driver by default
->   ARM: tegra: Add CPU regulator to the Jetson TK1 device tree
->   ARM: tegra: Add entries for cpufreq on Tegra124
->   cpufreq: tegra: Rename tegra-cpufreq to tegra20-cpufreq
->   cpufreq: tegra124: Add device tree bindings
-> 
-> These are very minor (4/5 of them are DT patches and the fifth just renames a driver),
-> so hopefully we can get this merged.
-> 
-> Mikko Perttunen (2):
->   clk: tegra: Introduce ability for SoC-specific reset control callbacks
->   ARM: tegra: Add CPU regulator to the Jetson TK1 device tree
-> 
-> Paul Walmsley (1):
->   clk: tegra: Add DFLL DVCO reset control for Tegra124
-> 
-> Tuomas Tynkkynen (14):
->   clk: tegra: Add binding for the Tegra124 DFLL clocksource
->   clk: tegra: Add library for the DFLL clock source (open-loop mode)
->   clk: tegra: Add closed loop support for the DFLL
->   clk: tegra: Add functions for parsing CVB tables
->   clk: tegra: Add Tegra124 DFLL clocksource platform driver
->   clk: tegra: Save/restore CCLKG_BURST_POLICY on suspend
->   clk: tegra: Add the DFLL as a possible parent of the cclk_g clock
->   ARM: tegra: Add the DFLL to Tegra124 device tree
->   ARM: tegra: Enable the DFLL on the Jetson TK1
->   cpufreq: tegra124: Add device tree bindings
->   cpufreq: tegra: Rename tegra-cpufreq to tegra20-cpufreq
->   cpufreq: Add cpufreq driver for Tegra124
->   ARM: tegra: Add entries for cpufreq on Tegra124
->   ARM: tegra: enable Tegra124 cpufreq driver by default
-> 
->  .../bindings/clock/nvidia,tegra124-dfll.txt        |   79 +
->  .../bindings/cpufreq/tegra124-cpufreq.txt          |   44 +
->  arch/arm/boot/dts/tegra124-jetson-tk1.dts          |   15 +-
->  arch/arm/boot/dts/tegra124.dtsi                    |   34 +
->  arch/arm/configs/tegra_defconfig                   |    1 +
->  arch/arm/mach-tegra/Kconfig                        |    1 +
->  drivers/clk/tegra/Makefile                         |    3 +
->  drivers/clk/tegra/clk-dfll.c                       | 1755 ++++++++++++++++++++
->  drivers/clk/tegra/clk-dfll.h                       |   54 +
->  drivers/clk/tegra/clk-tegra-super-gen4.c           |    4 +-
->  drivers/clk/tegra/clk-tegra124-dfll-fcpu.c         |  161 ++
->  drivers/clk/tegra/clk-tegra124.c                   |   82 +
->  drivers/clk/tegra/clk.c                            |   36 +-
->  drivers/clk/tegra/clk.h                            |    3 +
->  drivers/clk/tegra/cvb.c                            |  140 ++
->  drivers/clk/tegra/cvb.h                            |   67 +
->  drivers/cpufreq/Kconfig.arm                        |   13 +-
->  drivers/cpufreq/Makefile                           |    3 +-
->  drivers/cpufreq/tegra124-cpufreq.c                 |  214 +++
->  .../cpufreq/{tegra-cpufreq.c => tegra20-cpufreq.c} |    0
->  include/dt-bindings/reset/tegra124-car.h           |   11 +
->  21 files changed, 2706 insertions(+), 14 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt
->  create mode 100644 drivers/clk/tegra/clk-dfll.c
->  create mode 100644 drivers/clk/tegra/clk-dfll.h
->  create mode 100644 drivers/clk/tegra/clk-tegra124-dfll-fcpu.c
->  create mode 100644 drivers/clk/tegra/cvb.c
->  create mode 100644 drivers/clk/tegra/cvb.h
->  create mode 100644 drivers/cpufreq/tegra124-cpufreq.c
->  rename drivers/cpufreq/{tegra-cpufreq.c => tegra20-cpufreq.c} (100%)
->  create mode 100644 include/dt-bindings/reset/tegra124-car.h
+"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
 
-If I'm supposed to apply this, I need ACKs from the appropriate people on
-all the patches where they are still missing.  Thanks!
+[...]
 
+> Second, quite honestly, I don't see a connection to genpd here.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+The connection with genpd is because the *reason* the timer was
+shutdown/stopped is because it shares power with the CPU, which is why
+the timer stops when the CPU hits ceratin low power states.  IOW, it's
+in the same power domain as the CPU.
+
+> What you seem to be saying is "maybe we can eliminate the need to check the
+> return value of tick_broadcast_enter() in the idle loop if we proactively
+> disable the TIMER_STOP idle states of a CPU when we start to use that CPU's
+> timer as a broadcast one".
+>
+> So this seems to be about the timekeeping rather than power domains, because
+> that's where the broadcast thing is done.  So the code setting up the CPU's
+> timer for broadcast would pretty much need to pause cpuidle, go through the
+> CPU's idle states and disable the TIMER_STOP ones.  And do the reverse when the
+> timer is not going the be used for broadcast any more.  
+
+Or..., modify the timer subystem to use runtime PM on the timer devices,
+create a genpd that includes the timer device, and use
+pm_genpd_attach_cpuidle() to attach that genpd so that whenever that
+timer is runtime PM active, the deeper C-states cannot be hit.
+
+> So question is whether or not this is actually really more
+> straightforward than checking the return value of
+> tick_broadcast_enter() in the idle loop after all.
+
+Unfortunetly this problem doesn't only affect timers.
+
+Daniel's broader point is that $SUBJECT series only handles this for the
+timer, but there's actually a more general problem to solve for *any*
+device that shares a power domain with a CPU (e.g. CPU-local
+timers, interrupt controllers, performance monitoring units, floating
+point units, etc. etc.)
+
+If we keep adding checks to the idle loop for all those devices, we're
+heading for a mess.  (In fact, this is exactly what CPUidle drivers in
+lots of vendor trees are doing, and it is indeed quite messy, and very
+vendor specific.)
+
+Also, solving this more general problem was the primary motivation for
+adding the gnpd _attach_cpuidle() feature in the first place, so why not
+use that?
+
+Longer term, IMO, these dependencies between CPUs and all these "extras"
+logic that share a power domain should be modeled by a genpd.  If all
+those devices are using runtime PM, including the CPUs, and they are
+grouped into a genpd, then we we can very easily know at the genpd level
+whether or not the CPU could be powered down, and to what level.  This
+longer-term solution is what I want to discuss at LPC this year in my
+"Unifiy idle management of CPUs and IO devices" topic[1].  ( Also FYI,
+using a genpd to model a CPU and connected logic is part of the
+motivation behind the recent proposals to add support for multiple
+states to genpd by Axel Haslam. )
+
+Anyways I digress...
+
+In the short term, while your patches look fine to me, the objection I
+have is that it's only a band-aid fix that handles timers, but none of
+the other "extras" that might share a power rail with the CPU.  So,
+until we have the long-term stuff sorted out, the better
+short-term solution IMO is the _attach_cpuidle() one above.
+
+Kevin
+
+[1] http://wiki.linuxplumbersconf.org/2015:energy-aware_scheduling
