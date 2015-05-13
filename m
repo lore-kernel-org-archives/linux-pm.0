@@ -1,38 +1,44 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH v3] Thermal hardware trip points and Mediatek thermal driver
-Date: Wed, 13 May 2015 10:52:28 +0200
-Message-ID: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH 03/15] thermal: remove useless call to thermal_zone_device_set_polling
+Date: Wed, 13 May 2015 10:52:31 +0200
+Message-ID: <1431507163-19933-4-git-send-email-s.hauer@pengutronix.de>
+References: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:42344 "EHLO
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:42348 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754295AbbEMIwt (ORCPT
+	with ESMTP id S1754362AbbEMIwt (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2015 04:52:49 -0400
+In-Reply-To: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
 
-This series adds support for hardware trip points. It picks up earlier
-work from Mikko Perttunen. Mikko implemented hardware trip points as part
-of the device tree support. It was suggested back then to move the
-functionality to the thermal core instead of putting more code into the
-device tree support. This series does exactly that.
+When the thermal zone has no get_temp callback then thermal_zone_device_register()
+calls thermal_zone_device_set_polling() with a polling delay of 0. This
+only cancels the poll_queue. Since the poll_queue hasn't been scheduled this
+is a no-op. Remove it.
 
-The majority of the patches are cleanups and fixes. Patch 11 introduces
-hardware tracked trip points and finally a driver for the Mediatek
-thermal controller is introduced as the first user is added.
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+Acked-by: Eduardo Valentin <edubezval@gmail.com>
+---
+ drivers/thermal/thermal_core.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-All comments welcome
-
-Changes since v2:
-- Add Mediatek thermal controller driver as first user for hardware trip
-  points
-
-Changes since v1:
-- Use int instead of unsigned long consistently for temperatures
-- Instead of misfixing the emulation code add a comment how the
-  code is meant
-- Add doc entry for .set_trips callback
-- initialize prev_low_trip/prev_high_trip properly
-- get tz->lock before calling thermal_zone_set_trips()
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 244784f..1b68d20 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1571,9 +1571,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 
+ 	INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
+ 
+-	if (!tz->ops->get_temp)
+-		thermal_zone_device_set_polling(tz, 0);
+-
+ 	thermal_zone_device_update(tz);
+ 
+ 	return tz;
+-- 
+2.1.4
 
