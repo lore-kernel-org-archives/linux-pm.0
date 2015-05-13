@@ -1,58 +1,46 @@
-From: Sai Gurrappadi <sgurrappadi@nvidia.com>
-Subject: Re: [RFCv4 PATCH 11/34] sched: Remove blocked load and utilization
- contributions of dying tasks
-Date: Tue, 12 May 2015 17:33:22 -0700
-Message-ID: <55529BD2.7020107@nvidia.com>
-References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com> <1431459549-18343-12-git-send-email-morten.rasmussen@arm.com>
+From: Kyungmin Park <kmpark@infradead.org>
+Subject: Re: [RFC PATCH] PM, freezer: Don't thaw when it's intended frozen processes
+Date: Wed, 13 May 2015 09:42:47 +0900
+Message-ID: <CAH9JG2WffvJCB7v1peL3vWbJoJwZH=h8g-o0TmkmfUpsgVci0A@mail.gmail.com>
+References: <20150507064557.GA26928@july>
+	<20150507154212.GA12245@htj.duckdns.org>
+	<CAH9JG2UAVRgX0Mg0d7WgG0URpkgu4q_bbNMXyOOEh9WFPztppQ@mail.gmail.com>
+	<20150508152513.GB28439@htj.duckdns.org>
+	<CAH9JG2VROCekWCAa+1t6Giy2wHC171TD-AXQVxG2vTH-LPcoPA@mail.gmail.com>
+	<CAH9JG2W6pKi__g-v+9B+-y3HJ=AkdE+W0d0TxmtpBWrXddxL_g@mail.gmail.com>
+	<20150512144313.GO11388@htj.duckdns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:5275 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751379AbbEMAdk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2015 20:33:40 -0400
-In-Reply-To: <1431459549-18343-12-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20150512144313.GO11388@htj.duckdns.org>
+Sender: owner-linux-mm@kvack.org
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>, "\\Rafael J. Wysocki\\" <rjw@rjwysocki.net>, David Rientjes <rientjes@google.com>, Johannes Weiner <hannes@cmpxchg.org>, Oleg Nesterov <oleg@redhat.com>, Cong Wang <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>, peterz@infradead.org, mingo@redhat.com
-Cc: vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Peter Boonstoppel <pboonstoppel@nvidia.com>
 
-On 05/12/2015 12:38 PM, Morten Rasmussen wrote:
-> Task being dequeued for the last time (state == TASK_DEAD) are dequeued
-> with the DEQUEUE_SLEEP flag which causes their load and utilization
-> contributions to be added to the runqueue blocked load and utilization.
-> Hence they will contain load or utilization that is gone away. The issue
-> only exists for the root cfs_rq as cgroup_exit() doesn't set
-> DEQUEUE_SLEEP for task group exits.
-> 
-> If runnable+blocked load is to be used as a better estimate for cpu
-> load the dead task contributions need to be removed to prevent
-> load_balance() (idle_balance() in particular) from over-estimating the
-> cpu load.
-> 
-> cc: Ingo Molnar <mingo@redhat.com>
-> cc: Peter Zijlstra <peterz@infradead.org>
-> 
-> Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
-> ---
->  kernel/sched/fair.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index e40cd88..d045404 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -3202,6 +3202,8 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
->  	 * Update run-time statistics of the 'current'.
->  	 */
->  	update_curr(cfs_rq);
-> +	if (entity_is_task(se) && task_of(se)->state == TASK_DEAD)
-> +		flags &= !DEQUEUE_SLEEP;
->  	dequeue_entity_load_avg(cfs_rq, se, flags & DEQUEUE_SLEEP);
->  
->  	update_stats_dequeue(cfs_rq, se);
-> 
+On Tue, May 12, 2015 at 11:43 PM, Tejun Heo <tj@kernel.org> wrote:
+> Hello,
+>
+> On Mon, May 11, 2015 at 04:47:14PM +0900, Kyungmin Park wrote:
+>> > The kernel 3.10 is not working as expected, but right the latest
+>> > kernel is working correctly.
+>>
+>> Please ignore it. test is wrong and it's not working, see Krzysztof Mail.
+>
+> So, I just tested and it does work as expected.  What Krzysztof said
+> is the same thing that I said in the first reply.  The tasks will be
+> woken up but won't leave freezer.  Please re-test.
 
-Maybe you could use the sched_class->task_dead() callback instead? I
-remember seeing a patch from Yuyang that did that.
+Right, it's still in freezer, just one time scheduling is happened.
+and enter freeze state again.
+
+do you think can we avoid it or it's sub-optimal to do as patch?
+
+Thank you,
+Kyungmin Park
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
