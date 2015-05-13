@@ -1,124 +1,104 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / clock_ops: Fix clock error check in __pm_clk_add()
-Date: Thu, 14 May 2015 00:45:32 +0200
-Message-ID: <9611184.kabx71SGcD@vostro.rjw.lan>
-References: <1431074863-19124-1-git-send-email-geert+renesas@glider.be> <2196912.kiJqTqq7oO@vostro.rjw.lan> <20150513003229.GH20725@dtor-ws>
+Subject: Re: [PATCH v9 00/17] Tegra124 CL-DVFS / DFLL clocksource + cpufreq
+Date: Thu, 14 May 2015 00:47:46 +0200
+Message-ID: <2216026.DiZ8MPKfdF@vostro.rjw.lan>
+References: <1431529131-16710-1-git-send-email-mikko.perttunen@kapsi.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57057 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:56420 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S934135AbbEMWUV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2015 18:20:21 -0400
-In-Reply-To: <20150513003229.GH20725@dtor-ws>
+	with SMTP id S1752393AbbEMWWf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2015 18:22:35 -0400
+In-Reply-To: <1431529131-16710-1-git-send-email-mikko.perttunen@kapsi.fi>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <santosh.shilimkar@ti.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Cc: swarren@wwwdotorg.org, thierry.reding@gmail.com, gnurou@gmail.com, pdeschrijver@nvidia.com, viresh.kumar@linaro.org, mturquette@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi
 
-On Tuesday, May 12, 2015 05:32:29 PM Dmitry Torokhov wrote:
-> On Wed, May 13, 2015 at 02:22:50AM +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, May 12, 2015 11:07:33 AM Dmitry Torokhov wrote:
-> > > On Tue, May 12, 2015 at 08:59:03PM +0300, Grygorii.Strashko@linaro.org wrote:
-> > > > On 05/12/2015 07:42 PM, Dmitry Torokhov wrote:
-> > > > > On Tue, May 12, 2015 at 04:55:39PM +0300, Grygorii.Strashko@linaro.org wrote:
-> > > > >> On 05/09/2015 12:05 AM, Dmitry Torokhov wrote:
-> > > > >>> On Fri, May 08, 2015 at 10:59:04PM +0200, Geert Uytterhoeven wrote:
-> > > > >>>> On Fri, May 8, 2015 at 7:19 PM, Dmitry Torokhov
-> > > > >>>> <dmitry.torokhov@gmail.com> wrote:
-> > > > >>>>> On Fri, May 08, 2015 at 10:47:43AM +0200, Geert Uytterhoeven wrote:
-> > > > >>>>>> In the final iteration of commit 245bd6f6af8a62a2 ("PM / clock_ops: Add
-> > > > >>>>>> pm_clk_add_clk()"), a refcount increment was added by Grygorii Strashko.
-> > > > >>>>>> However, the accompanying IS_ERR() check operates on the wrong clock
-> > > > >>>>>> pointer, which is always zero at this point, i.e. not an error.
-> > > > >>>>>> This may lead to a NULL pointer dereference later, when __clk_get()
-> > > > >>>>>> tries to dereference an error pointer.
-> > > > >>>>>>
-> > > > >>>>>> Check the passed clock pointer instead to fix this.
-> > > > >>>>>
-> > > > >>>>> Frankly I would remove the check altogether. Why do we only check for
-> > > > >>>>> IS_ERR and not NULL or otherwise validate the pointer? The clk is passed
-> > > > >>>>
-> > > > >>>> __clk_get() does the NULL check.
-> > > > >>>
-> > > > >>> No, not really. It _handles_ clk being NULL and returns "everything is
-> > > > >>> fine". In any case it is __clk_get's decision what to do.
-> > > > >>>
-> > > > >>> I dislike gratuitous checks of arguments passed in. Instead of relying
-> > > > >>> on APIs refusing grabage we better not pass garbage to these APIs in the
-> > > > >>> first place. So I'd change it to trust that we are given a usable
-> > > > >>> pointer and simply do:
-> > > > >>>
-> > > > >>> 	if (!__clk_get(clk)) {
-> > > > >>> 		kfree(ce);
-> > > > >>> 		return -ENOENTl
-> > > > >>> 	}
-> > > > >>
-> > > > >> Not sure this is right thing to do, because this API initially
-> > > > >> was intended to be used as below [1]:
-> > > > >> 	clk = of_clk_get(dev->of_node, i));
-> > > > >>   	ret = pm_clk_add_clk(dev, clk);
-> > > > >>   	clk_put(clk);
-> > > > >>
-> > > > >> and of_clk_get may return ERR_PTR().
-> > > > > 
-> > > > > Jeez, that sequence was not meant to be taken literally, it does miss
-> > > > > error handling completely. If you notice the majority of users of this
-> > > > > API do something like below:
-> > > > > 
-> > > > > 	i = 0;
-> > > > > 	while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
-> > > > > 		dev_dbg(dev, "adding clock '%s' to list of PM clocks\n",
-> > > > > 			__clk_get_name(clk));
-> > > > > 		error = pm_clk_add_clk(dev, clk);
-> > > > > 		clk_put(clk);
-> > > > > 		if (error) {
-> > > > > 			dev_err(dev, "pm_clk_add_clk failed %d\n", error);
-> > > > > 			pm_clk_destroy(dev);
-> > > > > 			return error;
-> > > > > 		}
-> > > > > 	}
-> > > > > 
-> > > > > i.e. it already validates clk pointer before passing it on since it
-> > > > > needs to know when to stop iterating.
-> > > > 
-> > > > np. It's just my opinion - if you agree that code will just crash
-> > > > in case of passing invalid @clk argument (in worst case:)
-> > > > 
-> > > > int __clk_get(struct clk *clk)
-> > > > {
-> > > > 	struct clk_core *core = !clk ? NULL : clk->core;
-> > > > 						^^^ here
-> > > 
-> > > Yes, it will crash if you pass invalid pointer here, be it
-> > > ERR_PTR-encoded value, or, for example, 0x1, or maybe (void
-> > > *)random_32(). The latter will probably not crash right away, but cause
-> > > some random damage that will manifest later.
-> > 
-> > Oh well.  Shouldn't we actually do:
-> > 
-> > int __clk_get(struct clk *clk)
-> > {
-> >  	struct clk_core *core = IS_ERR_OR_NULL(clk) ? NULL : clk->core;
-> > 
-> > and remove the check from __pm_clk_add() at the same time?
-> > 
-> > Knowingly crashing on an error encoded as a pointer is kind of disgusting to me
-> > and the difference between that and a random invalid pointer is that poeple who
-> > pass error values encoded as pointers up the stack usually expect them to be
-> > handled cleanly.
+On Wednesday, May 13, 2015 05:58:34 PM Mikko Perttunen wrote:
+> v9 of the Tegra124 cpufreq series. Changes:
 > 
-> I think the operative work here is "up". Returning ERR_PTR-encoded
-> pointer is fine, checking it fine as well, blindly passing it *down*
-> into a random API is not fine and we should not try to accommodate this.
+> - Dropped PLLX reordering patch since it is no longer needed
+> - Removed a couple of unused lines from the DFLL clocksource platform driver
+> - Made the cpufreq driver tristate and removed .owned = THIS_MODULE (as it's not needed for
+>   platform devices)
+> - Made the OPP generation code in the CVB parser ignore OPPs where the frequency has the most
+>   significant bit set. This can be dropped once Boris Brezillon's patch finds its
+>   way into the tree.
+> - Added Acks.
+> 
+> The only patches without Acks are the following:
+>   ARM: tegra: enable Tegra124 cpufreq driver by default
+>   ARM: tegra: Add CPU regulator to the Jetson TK1 device tree
+>   ARM: tegra: Add entries for cpufreq on Tegra124
+>   cpufreq: tegra: Rename tegra-cpufreq to tegra20-cpufreq
+>   cpufreq: tegra124: Add device tree bindings
+> 
+> These are very minor (4/5 of them are DT patches and the fifth just renames a driver),
+> so hopefully we can get this merged.
+> 
+> Mikko Perttunen (2):
+>   clk: tegra: Introduce ability for SoC-specific reset control callbacks
+>   ARM: tegra: Add CPU regulator to the Jetson TK1 device tree
+> 
+> Paul Walmsley (1):
+>   clk: tegra: Add DFLL DVCO reset control for Tegra124
+> 
+> Tuomas Tynkkynen (14):
+>   clk: tegra: Add binding for the Tegra124 DFLL clocksource
+>   clk: tegra: Add library for the DFLL clock source (open-loop mode)
+>   clk: tegra: Add closed loop support for the DFLL
+>   clk: tegra: Add functions for parsing CVB tables
+>   clk: tegra: Add Tegra124 DFLL clocksource platform driver
+>   clk: tegra: Save/restore CCLKG_BURST_POLICY on suspend
+>   clk: tegra: Add the DFLL as a possible parent of the cclk_g clock
+>   ARM: tegra: Add the DFLL to Tegra124 device tree
+>   ARM: tegra: Enable the DFLL on the Jetson TK1
+>   cpufreq: tegra124: Add device tree bindings
+>   cpufreq: tegra: Rename tegra-cpufreq to tegra20-cpufreq
+>   cpufreq: Add cpufreq driver for Tegra124
+>   ARM: tegra: Add entries for cpufreq on Tegra124
+>   ARM: tegra: enable Tegra124 cpufreq driver by default
+> 
+>  .../bindings/clock/nvidia,tegra124-dfll.txt        |   79 +
+>  .../bindings/cpufreq/tegra124-cpufreq.txt          |   44 +
+>  arch/arm/boot/dts/tegra124-jetson-tk1.dts          |   15 +-
+>  arch/arm/boot/dts/tegra124.dtsi                    |   34 +
+>  arch/arm/configs/tegra_defconfig                   |    1 +
+>  arch/arm/mach-tegra/Kconfig                        |    1 +
+>  drivers/clk/tegra/Makefile                         |    3 +
+>  drivers/clk/tegra/clk-dfll.c                       | 1755 ++++++++++++++++++++
+>  drivers/clk/tegra/clk-dfll.h                       |   54 +
+>  drivers/clk/tegra/clk-tegra-super-gen4.c           |    4 +-
+>  drivers/clk/tegra/clk-tegra124-dfll-fcpu.c         |  161 ++
+>  drivers/clk/tegra/clk-tegra124.c                   |   82 +
+>  drivers/clk/tegra/clk.c                            |   36 +-
+>  drivers/clk/tegra/clk.h                            |    3 +
+>  drivers/clk/tegra/cvb.c                            |  140 ++
+>  drivers/clk/tegra/cvb.h                            |   67 +
+>  drivers/cpufreq/Kconfig.arm                        |   13 +-
+>  drivers/cpufreq/Makefile                           |    3 +-
+>  drivers/cpufreq/tegra124-cpufreq.c                 |  214 +++
+>  .../cpufreq/{tegra-cpufreq.c => tegra20-cpufreq.c} |    0
+>  include/dt-bindings/reset/tegra124-car.h           |   11 +
+>  21 files changed, 2706 insertions(+), 14 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/clock/nvidia,tegra124-dfll.txt
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/tegra124-cpufreq.txt
+>  create mode 100644 drivers/clk/tegra/clk-dfll.c
+>  create mode 100644 drivers/clk/tegra/clk-dfll.h
+>  create mode 100644 drivers/clk/tegra/clk-tegra124-dfll-fcpu.c
+>  create mode 100644 drivers/clk/tegra/cvb.c
+>  create mode 100644 drivers/clk/tegra/cvb.h
+>  create mode 100644 drivers/cpufreq/tegra124-cpufreq.c
+>  rename drivers/cpufreq/{tegra-cpufreq.c => tegra20-cpufreq.c} (100%)
+>  create mode 100644 include/dt-bindings/reset/tegra124-car.h
 
-You're basically saying "Passing an error-encoding pointer down to an API is
-not valid" which I agree with, but I don't agree that it's OK to crash the
-kernel when that happens.  It's never OK to crash the kernel when we can
-easily avoid that, because it may lead to user data loss.
+If I'm supposed to apply this, I need ACKs from the appropriate people on
+all the patches where they are still missing.  Thanks!
 
-However, you seem to be arguing against fixing up things *silently* which may
-hide serious bugs.  That's a good point, so what about adding a WARN_ON_ONCE()
-aroud the IS_ERR() check in the Geert's patch?
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
