@@ -1,105 +1,85 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [RFCv4 PATCH 31/34] sched: Energy-aware wake-up task placement
-Date: Thu, 14 May 2015 15:03:45 +0100
-Message-ID: <5554AB41.8070602@arm.com>
-References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com> <1431459549-18343-32-git-send-email-morten.rasmussen@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+From: Anisse Astier <anisse@astier.eu>
+Subject: [PATCH v4 0/3] Sanitizing freed pages
+Date: Thu, 14 May 2015 16:19:45 +0200
+Message-ID: <1431613188-4511-1-git-send-email-anisse@astier.eu>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eu-smtp-delivery-143.mimecast.com ([207.82.80.143]:31235 "EHLO
-	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965035AbbENODc convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 14 May 2015 10:03:32 -0400
-In-Reply-To: <1431459549-18343-32-git-send-email-morten.rasmussen@arm.com>
+Received: from mail-wg0-f45.google.com ([74.125.82.45]:36003 "EHLO
+	mail-wg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933391AbbENOT5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 May 2015 10:19:57 -0400
+Received: by wgbhc8 with SMTP id hc8so43597875wgb.3
+        for <linux-pm@vger.kernel.org>; Thu, 14 May 2015 07:19:56 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>
-Cc: "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, "mturquette@linaro.org" <mturquette@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Juri Lelli <Juri.Lelli@arm.com>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Anisse Astier <anisse@astier.eu>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12/05/15 20:39, Morten Rasmussen wrote:
-> Let available compute capacity and estimated energy impact select
-> wake-up target cpu when energy-aware scheduling is enabled and the
-> system in not over-utilized (above the tipping point).
-> 
-> energy_aware_wake_cpu() attempts to find group of cpus with sufficient
-> compute capacity to accommodate the task and find a cpu with enough spare
-> capacity to handle the task within that group. Preference is given to
-> cpus with enough spare capacity at the current OPP. Finally, the energy
-> impact of the new target and the previous task cpu is compared to select
-> the wake-up target cpu.
-> 
-> cc: Ingo Molnar <mingo@redhat.com>
-> cc: Peter Zijlstra <peterz@infradead.org>
-> 
-> Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
+Hi,
 
-[...]
+I'm trying revive an old debate here[1], though with a simpler approach than
+was previously tried. This patch series implements a new option to sanitize
+freed pages, a (very) small subset of what is done in PaX/grsecurity[3],
+inspired by a previous submission [4].
 
->  /*
->   * select_task_rq_fair: Select target runqueue for the waking task in domains
->   * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
-> @@ -5446,7 +5526,10 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
->  		prev_cpu = cpu;
->  
->  	if (sd_flag & SD_BALANCE_WAKE && want_sibling) {
-> -		new_cpu = select_idle_sibling(p, prev_cpu);
-> +		if (energy_aware() && !cpu_rq(cpu)->rd->overutilized)
-> +			new_cpu = energy_aware_wake_cpu(p);
+There are a few different uses that this can cover:
+ - some cases of use-after-free could be detected (crashes), although this not
+   as efficient as KAsan/kmemcheck
+ - it can help with long-term memory consumption in an environment with
+   multiple VMs and Kernel Same-page Merging on the host. [2]
+ - finally, it can reduce infoleaks, although this is hard to measure.
 
-If you run RFCv4 on an X86 system w/o energy model, you get a
-'BUG: unable to handle kernel paging request at ...' problem after you've enabled
-energy awareness (echo ENERGY_AWARE > /sys/kernel/debug/sched_features). 
-    
-This is related to the fact that cpumask functions like cpumask_test_cpu
-(e.g. later in select_task_rq) can't deal with cpu set to -1.
-    
-If you enable CONFIG_DEBUG_PER_CPU_MAPS you get the following warning in this case:
-    
-WARNING: CPU: 0 PID: 0 at include/linux/cpumask.h:117
-cpumask_check.part.79+0x1f/0x30()
-    
-We also get the warning on ARM (w/o energy model) but my TC2 system is not crashing
-like the X86 box.
-    
-Shouldn't we return prev_cpu in case sd_ea is NULL just as select_idle_sibling does
-if prev_cpu is idle?
+The approach is voluntarily kept as simple as possible. A single configuration
+option, no command line option, no sysctl nob. It can of course be changed,
+although I'd be wary of runtime-configuration options that could be used for
+races.
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index f5897a021f23..8a014fdd6e76 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -5394,7 +5394,7 @@ static int select_idle_sibling(struct task_struct *p, int target)
-        return target;
- }
- 
--static int energy_aware_wake_cpu(struct task_struct *p)
-+static int energy_aware_wake_cpu(struct task_struct *p, int target)
- {
-        struct sched_domain *sd;
-        struct sched_group *sg, *sg_target;
-@@ -5405,7 +5405,7 @@ static int energy_aware_wake_cpu(struct task_struct *p)
-        sd = rcu_dereference(per_cpu(sd_ea, task_cpu(p)));
- 
-        if (!sd)
--               return -1;
-+               return target;
- 
-        sg = sd->groups;
-        sg_target = sg;
-@@ -5527,7 +5527,7 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
- 
-        if (sd_flag & SD_BALANCE_WAKE && want_sibling) {
-                if (energy_aware() && !cpu_rq(cpu)->rd->overutilized)
--                       new_cpu = energy_aware_wake_cpu(p);
-+                       new_cpu = energy_aware_wake_cpu(p, prev_cpu);
-                else
-                        new_cpu = select_idle_sibling(p, prev_cpu);
-                goto unlock;
+I haven't been able to measure a meaningful performance difference when
+compiling a (in-cache) kernel; I'd be interested to see what difference it
+makes with your particular workload/hardware (I suspect mine is CPU-bound on
+this small laptop).
 
-> +		else
-> +			new_cpu = select_idle_sibling(p, prev_cpu);
->  		goto unlock;
->  	}
+First patch fixes the hibernate use case which will load all the pages of the
+restored kernel, and then jump into it, leaving the loader kernel pages hanging
+around unclean. We use the free pages bitmap to know which pages should be
+cleaned after restore.
+
+Third patch is debug code that can be used to find issues if this feature fails
+on your system. It shouldn't necessarily be merged.
+
+Changes since v3:
+ - drop original first patch, it has been queued by Andrew in mmotm
+ - fix issue raised by Pavel Machek in hibernate patch
+ - checkpatch issue in third patch
+
+Changes since v2:
+ - reorder patches to fix hibernate first
+ - update debug patch to use memchr_inv
+ - cc linux-pm and maintainers
+
+Changes since v1:
+ - fix some issues raised by David Rientjes, Andi Kleen and PaX Team.
+ - add hibernate fix (third patch)
+ - add debug code, this is "just in case" someone has an issue with this
+   feature. Not sure if it should be merged.
+
+
+[1] https://lwn.net/Articles/334747/
+[2] https://staff.aist.go.jp/k.suzaki/EuroSec12-SUZAKI-revised2.pdf
+[3] http://en.wikibooks.org/wiki/Grsecurity/Appendix/Grsecurity_and_PaX_Configuration_Options#Sanitize_all_freed_memory
+[4] http://article.gmane.org/gmane.linux.kernel.mm/34398
+
+
+Anisse Astier (3):
+  PM / Hibernate: prepare for SANITIZE_FREED_PAGES
+  mm/page_alloc.c: add config option to sanitize freed pages
+  mm: Add debug code for SANITIZE_FREED_PAGES
+
+ kernel/power/hibernate.c |  4 +++-
+ kernel/power/power.h     |  2 ++
+ kernel/power/snapshot.c  | 26 ++++++++++++++++++++++++++
+ mm/Kconfig               | 22 ++++++++++++++++++++++
+ mm/page_alloc.c          | 30 ++++++++++++++++++++++++++++++
+ 5 files changed, 83 insertions(+), 1 deletion(-)
+
+-- 
+1.9.3
 
