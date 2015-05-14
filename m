@@ -1,36 +1,124 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Resend][PATCH] PM / tick: Add tracepoints for suspend-to-idle
- diagnostics
-Date: Thu, 14 May 2015 23:43:11 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1505142342530.4225@nanos>
-References: <17474563.tpu6u1dKOa@vostro.rjw.lan> <1543314.9EN5CRZp0f@vostro.rjw.lan> <9746445.jijJSAGWOf@vostro.rjw.lan>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 2/5] PM / Wakeirq: Add automated device wake IRQ handling
+Date: Thu, 14 May 2015 14:59:21 -0700
+Message-ID: <20150514215921.GQ15563@atomide.com>
+References: <1431560196-5722-1-git-send-email-tony@atomide.com>
+ <20150514155945.GL15563@atomide.com>
+ <20150514211501.GO15563@atomide.com>
+ <3499196.MCAcS31ICO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:39327 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422795AbbENVnA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 May 2015 17:43:00 -0400
-In-Reply-To: <9746445.jijJSAGWOf@vostro.rjw.lan>
+Received: from muru.com ([72.249.23.125]:51061 "EHLO muru.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422827AbbENV7Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 14 May 2015 17:59:25 -0400
+Content-Disposition: inline
+In-Reply-To: <3499196.MCAcS31ICO@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Felipe Balbi <balbi@ti.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Fri, 15 May 2015, Rafael J. Wysocki wrote:
+* Rafael J. Wysocki <rjw@rjwysocki.net> [150514 14:36]:
+> On Thursday, May 14, 2015 02:15:01 PM Tony Lindgren wrote:
+> > * Tony Lindgren <tony@atomide.com> [150514 09:01]:
+> > > * Felipe Balbi <balbi@ti.com> [150513 19:09]:
+> > > > > +void dev_pm_enable_wake_irq(struct device *dev)
+> > > > > +{
+> > > > > +	struct wake_irq *wirq = dev->power.wakeirq;
+> > > > > +
+> > > > > +	if (wirq && wirq->manage_irq)
+> > > > > +		enable_irq(wirq->irq);
+> > > > > +}
+> > > > > +EXPORT_SYMBOL_GPL(dev_pm_enable_wake_irq);
+> > > > 
+> > > > you probably want to enable dev_pm_enable_wake_irq() automatically for
+> > > > from rpm_suspend(). According to runtime_pm documentation, wakeup should
+> > > > always be enabled for runtime suspended devices. I didn't really look
+> > > > through the whole thing yet to know if you did call it or not.
+> > > 
+> > > Yes I think we can also automate that part, I've been playing with an
+> > > additional patch doing that for pm runtime. Been still thinking if
+> > > there's any need to manage that in the consomer driver, I guess not.
+> > 
+> > Here's what that would roughly look and now I also remember why
+> > I did not include it. It adds currently extra checks also for
+> > devices not using dedicated wakeirqs. But basically this would
+> > allow leaving out the enable/disable PM runtime calls from drivers.
+...
 
-> On Sunday, May 10, 2015 01:23:35 AM Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > Add suspend/resume tracepoints to tick_freeze() and tick_unfreeze()
-> > to catch when timekeeping is suspended and resumed during suspend-to-idle
-> > so as to be able to check whether or not we enter the "frozen" state
-> > and to measure the time spent in it.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > @@ -1427,6 +1432,7 @@ int pm_runtime_force_suspend(struct device *dev)
+> >  		goto err;
+> >  	}
+> >  
+> > +	dev_pm_enable_wake_irq(dev);
 > 
-> Thomas, Peter, any objections here?
+> Why here?  This is for system suspend.
+> 
+> >  	ret = callback(dev);
+> >  	if (ret)
+> >  		goto err;
+> > @@ -1434,6 +1440,7 @@ int pm_runtime_force_suspend(struct device *dev)
+> >  	pm_runtime_set_suspended(dev);
+> >  	return 0;
+> >  err:
+> > +	dev_pm_disable_wake_irq(dev);
+> >  	pm_runtime_enable(dev);
+> >  	return ret;
+> >  }
+> > @@ -1463,6 +1470,7 @@ int pm_runtime_force_resume(struct device *dev)
+> >  		goto out;
+> >  	}
+> >  
+> > +	dev_pm_disable_wake_irq(dev);
+> 
+> This one too.
 
-No.
+Oh you're right, seems to work fine for me without those. So it would
+be the following additional patch then (only quickly tested).
 
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Regards,
+
+Tony
+
+8< ----------------
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -10,6 +10,7 @@
+ #include <linux/sched.h>
+ #include <linux/export.h>
+ #include <linux/pm_runtime.h>
++#include <linux/pm_wakeirq.h>
+ #include <trace/events/rpm.h>
+ #include "power.h"
+ 
+@@ -514,6 +515,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
+ 
+ 	callback = RPM_GET_CALLBACK(dev, runtime_suspend);
+ 
++	dev_pm_enable_wake_irq(dev);
+ 	retval = rpm_callback(callback, dev);
+ 	if (retval)
+ 		goto fail;
+@@ -552,6 +554,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
+ 	return retval;
+ 
+  fail:
++	dev_pm_disable_wake_irq(dev);
+ 	__update_runtime_status(dev, RPM_ACTIVE);
+ 	dev->power.deferred_resume = false;
+ 	wake_up_all(&dev->power.wait_queue);
+@@ -734,10 +737,12 @@ static int rpm_resume(struct device *dev, int rpmflags)
+ 
+ 	callback = RPM_GET_CALLBACK(dev, runtime_resume);
+ 
++	dev_pm_disable_wake_irq(dev);
+ 	retval = rpm_callback(callback, dev);
+ 	if (retval) {
+ 		__update_runtime_status(dev, RPM_SUSPENDED);
+ 		pm_runtime_cancel_pending(dev);
++		dev_pm_enable_wake_irq(dev);
+ 	} else {
+  no_callback:
+ 		__update_runtime_status(dev, RPM_ACTIVE);
