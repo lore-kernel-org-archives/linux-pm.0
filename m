@@ -1,65 +1,77 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: schedule_timeout sleeps too long after dividing CPU frequency
-Date: Thu, 14 May 2015 15:06:54 +0200
-Message-ID: <55549DEE.6010202@free.fr>
-References: <55520F0F.5010906@free.fr> <CAKohpo=eMA6L9=jK=bAnbFuDxcdtpQNub0WFnSy6MOqB3jOdjA@mail.gmail.com> <555218C7.5050602@free.fr> <20150512155004.GP2067@n2100.arm.linux.org.uk> <555380F8.5050306@free.fr> <CAOh2x==aCLxCWX9K57hOFVEP1eLo_OYZPe0YvbFvpkXcoSp_hQ@mail.gmail.com> <5554858A.9010207@free.fr> <20150514115456.GB23999@linux>
+From: Kukjin Kim <kgene@kernel.org>
+Subject: Re: [PATCH 0/6] cpufreq: use generic cpufreq drivers forExynos4210platform
+Date: Thu, 14 May 2015 22:07:15 +0900
+Message-ID: <55549E03.6040105@kernel.org>
+References: <'@samsung.com> <1428079429-4252-1-git-send-email-b.zolnierkie@samsung.com> <2036292.PZC6aPyUyX@amdc1976> <55541F92.4020404@kernel.org> <20150514051046.GB9887@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <20150514115456.GB23999@linux>
-Sender: cpufreq-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150514051046.GB9887@linux>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mans Rullgard <mans@mansr.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+Cc: Kukjin Kim <kgene@kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Kevin Hilman <khilman@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, linux-arm-kernel@lists.infradead.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 14/05/2015 13:54, Viresh Kumar wrote:
-
-> Mason wrote:
+On 05/14/15 14:10, Viresh Kumar wrote:
+> On 14-05-15, 13:07, Kukjin Kim wrote:
+>> On 05/13/15 23:08, Bartlomiej Zolnierkiewicz wrote:
+>>>
+>>> Hi,
+>>>
+>> Hi Bart,
+>>
+>>> On Friday, April 03, 2015 06:43:43 PM Bartlomiej Zolnierkiewicz wrote:
+>>>> Hi,
+>>>>
+>>>> This patch series removes the use of Exynos4210 specific support
+>>>> from cpufreq-exynos driver and enables the use of cpufreq-dt driver
+>>>> for this platform.
+>>>
+>>> Gentle Ping.  Mike/Kukjin/Viresh could you please review/ack relevant
+>>> patches (patches #1-3 are for clock subsystem, patches #4-5 for Exynos
+>>> mach/dts and patch #6 is for cpufreq subsystem)?
 > 
->> I'm using a 27 MHz crystal as clocksource. This is independent
->> of the CPU frequency. However, I'm using the ARM TWD as the
->> system's clockevent source, and the TWD's clock is tied to
->> the CPU clock (PERIPHCLK = CPUCLK / 2 on this SoC).
+> Sorry I thought I already Acked an older version of this set and so
+> didn't went for it again. Done now.
 > 
-> The only (very straight forward) problem is that we aren't propagating
-> the freq update to clockevents core and you need to debug a bit there.
-
-I had the same thought, which is why I added the "NEW RATE" trace.
-
-> Also I wanted to see the source of your print message:
-> [   19.650454] NEW RATE=9250000
-> [   19.653644] NEW RATE=9250000
+>> Yes, I totally agreed with this patches for arch side changes and this
+>> approach when Thomas posted.
+>>
+>>> Also what is your
+>>> preferred way to upstream them (patches are not independent so it would
+>>> be best to merge them through one tree, otherwise synchronization of
+>>> git pulls between different subsystem trees will be needed)?
+>>>
+>> I can provide topic branch for arch side changes even it is small. I
+>> think once Viresh and Mike make each topic branch based on -rc or the
+>> smallest changes from each subsystem then I could handle this series or
+>> Viresh or Mike need to handle this series with merging each topic
+>> branches in subsystem. I'm fine either way.
+>>
+>> Viresh and Mike, how do you think about that?
 > 
-> What's this rate ? Old/new ? Because you are at least printing the old
-> rate here, and the function by default gets the new rate.
-
-I added a printk inside twd_update_frequency().
-
-http://lxr.free-electrons.com/source/arch/arm/kernel/smp_twd.c?v=3.14#L107
-
-I inserted printk("NEW RATE=%lu\n", twd_timer_rate);
-right before the call to clockevents_update_freq().
-
-When I execute "echo 18500 > scaling_max_freq"
-the system is supposed to change the CPU frequency to 18.5 MHz
-(I might have a bug lurking there) and PERIPHCLK is 1/2 of that,
-i.e 9.25 MHz.
-
-twd_update_frequency() is called twice: once for each CPU.
-(The timers are local to each CPU.)
-
->> I'm wondering if there's another standard clockevent source
->> I could try (it would be great if it supported high-resolution
->> timers).
+> For cpufreq subsystem changes, you can take them in your tree.
 > 
-> I hope you have some platform general-purpose-timers.
+Hi Viresh, OK, I will take the cpufreq changes with your ack. Thanks for
+your confirmation.
 
-Yes, I do, but I was trying to use as much generic code as
-possible to limit the chances of introducing bugs.
+Hi Mike and Sylwester,
+How can we handle this series well without any problems? hmm...
 
-I'll take a fresh look at the ARM GLOBAL TIMER, but last I
-checked, it didn't seem to handle frequency scaling.
+>>> I'm still hoping that this patchset will make it into v4.2 as there are
+>>> no known issues with it (except minor coding nit for patch #5)...
+>>>
+>> Sure, why not :-)
+> 
+> One thing that looked wrong to me is the email id of Thomas..
+> I believe he has already left Samsung and his id wouldn't exist
+> anymore. Right ?
+> 
+> Then I wouldn't recommend something that doesn't exist to get merged
+> now. Probably use another email id of his.
 
-Regards.
+As Bart replied, Thomas is still Samsung guy, maybe you meant Tomasz? he
+moved to another company last year.
 
+- Kukjin
