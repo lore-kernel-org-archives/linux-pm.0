@@ -1,134 +1,210 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/5] PM / Wakeirq: Add automated device wake IRQ handling
-Date: Fri, 15 May 2015 00:00:40 +0200
-Message-ID: <3499196.MCAcS31ICO@vostro.rjw.lan>
-References: <1431560196-5722-1-git-send-email-tony@atomide.com> <20150514155945.GL15563@atomide.com> <20150514211501.GO15563@atomide.com>
+Subject: Re: [PATCH v2 5/5] cpufreq: arm_big_little: add SCPI interface driver
+Date: Fri, 15 May 2015 00:03:12 +0200
+Message-ID: <4255582.h4bFD3eA9g@vostro.rjw.lan>
+References: <1431618155-3132-1-git-send-email-sudeep.holla@arm.com> <1431618155-3132-6-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51227 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:52765 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1161050AbbENVf1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 May 2015 17:35:27 -0400
-In-Reply-To: <20150514211501.GO15563@atomide.com>
+	with SMTP id S1161109AbbENVh7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 May 2015 17:37:59 -0400
+In-Reply-To: <1431618155-3132-6-git-send-email-sudeep.holla@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Felipe Balbi <balbi@ti.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Thursday, May 14, 2015 02:15:01 PM Tony Lindgren wrote:
-> * Tony Lindgren <tony@atomide.com> [150514 09:01]:
-> > * Felipe Balbi <balbi@ti.com> [150513 19:09]:
-> > > > +void dev_pm_enable_wake_irq(struct device *dev)
-> > > > +{
-> > > > +	struct wake_irq *wirq = dev->power.wakeirq;
-> > > > +
-> > > > +	if (wirq && wirq->manage_irq)
-> > > > +		enable_irq(wirq->irq);
-> > > > +}
-> > > > +EXPORT_SYMBOL_GPL(dev_pm_enable_wake_irq);
-> > > 
-> > > you probably want to enable dev_pm_enable_wake_irq() automatically for
-> > > from rpm_suspend(). According to runtime_pm documentation, wakeup should
-> > > always be enabled for runtime suspended devices. I didn't really look
-> > > through the whole thing yet to know if you did call it or not.
-> > 
-> > Yes I think we can also automate that part, I've been playing with an
-> > additional patch doing that for pm runtime. Been still thinking if
-> > there's any need to manage that in the consomer driver, I guess not.
+On Thursday, May 14, 2015 04:42:35 PM Sudeep Holla wrote:
+> On some ARM based systems, a separate Cortex-M based System Control
+> Processor(SCP) provides the overall power, clock, reset and system
+> control including CPU DVFS. SCPI Message Protocol is used to
+> communicate with the SCPI.
 > 
-> Here's what that would roughly look and now I also remember why
-> I did not include it. It adds currently extra checks also for
-> devices not using dedicated wakeirqs. But basically this would
-> allow leaving out the enable/disable PM runtime calls from drivers.
+> This patch adds a interface driver for adding OPPs and registering
+> the arm_big_little cpufreq driver for such systems.
 > 
-> Regards,
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: linux-pm@vger.kernel.org
+> ---
+>  drivers/cpufreq/Kconfig.arm    |   9 +++
+>  drivers/cpufreq/Makefile       |   1 +
+>  drivers/cpufreq/scpi-cpufreq.c | 124 +++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 134 insertions(+)
+>  create mode 100644 drivers/cpufreq/scpi-cpufreq.c
 > 
-> Tony
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 611cb09239eb..6419b17b89dd 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -24,6 +24,15 @@ config ARM_VEXPRESS_SPC_CPUFREQ
+>            This add the CPUfreq driver support for Versatile Express
+>  	  big.LITTLE platforms using SPC for power management.
+>  
+> +config ARM_SCPI_CPUFREQ
+> +        tristate "SCPI based CPUfreq driver"
+> +	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL
+> +        help
+> +	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
+> +	  using SCPI protocol for CPU power management.
+> +
+> +	  This driver uses SCPI Message Protocol driver to interact with the
+> +	  firmware providing the CPU DVFS functionality.
+>  
+>  config ARM_EXYNOS_CPUFREQ
+>  	tristate "SAMSUNG EXYNOS CPUfreq Driver"
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index cdce92ae2e8b..02fc9f849d4b 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -79,6 +79,7 @@ obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
+>  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
+>  obj-$(CONFIG_ARM_TEGRA_CPUFREQ)		+= tegra-cpufreq.o
+>  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
+> +obj-$(CONFIG_ARM_SCPI_CPUFREQ)		+= scpi-cpufreq.o
+>  
+>  ##################################################################################
+>  # PowerPC platform drivers
+> diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
+> new file mode 100644
+> index 000000000000..443570801229
+> --- /dev/null
+> +++ b/drivers/cpufreq/scpi-cpufreq.c
+> @@ -0,0 +1,124 @@
+> +/*
+> + * SCPI CPUFreq Interface driver
+
+It would be good to expand the TLA here IMO.
+
+The rest I'm leaving to Viresh. :-)
+
+> + *
+> + * It provides necessary ops to arm_big_little cpufreq driver.
+> + *
+> + * Copyright (C) 2015 ARM Ltd.
+> + * Sudeep Holla <sudeep.holla@arm.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
+> + * kind, whether express or implied; without even the implied warranty
+> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+> +#include <linux/cpufreq.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm_opp.h>
+> +#include <linux/scpi_protocol.h>
+> +#include <linux/types.h>
+> +
+> +#include "arm_big_little.h"
+> +
+> +static struct scpi_ops *scpi_ops;
+> +
+> +static struct scpi_dvfs_info *scpi_get_dvfs_info(struct device *cpu_dev)
+> +{
+> +	u8 domain = topology_physical_package_id(cpu_dev->id);
+> +
+> +	if (domain < 0)
+> +		return ERR_PTR(-EINVAL);
+> +	return scpi_ops->dvfs_get_info(domain);
+> +}
+> +
+> +static int scpi_opp_table_ops(struct device *cpu_dev, bool remove)
+> +{
+> +	int idx, ret = 0;
+> +	struct scpi_opp *opp;
+> +	struct scpi_dvfs_info *info = scpi_get_dvfs_info(cpu_dev);
+> +
+> +	if (IS_ERR(info))
+> +		return PTR_ERR(info);
+> +
+> +	if (!info->opps)
+> +		return -EIO;
+> +
+> +	for (opp = info->opps, idx = 0; idx < info->count; idx++, opp++) {
+> +		if (remove)
+> +			dev_pm_opp_remove(cpu_dev, opp->freq);
+> +		else
+> +			ret = dev_pm_opp_add(cpu_dev, opp->freq,
+> +					     opp->m_volt * 1000);
+> +		if (ret) {
+> +			dev_warn(cpu_dev, "failed to add opp %uHz %umV\n",
+> +				 opp->freq, opp->m_volt);
+> +			while (idx-- > 0)
+> +				dev_pm_opp_remove(cpu_dev, (--opp)->freq);
+> +			return ret;
+> +		}
+> +	}
+> +	return ret;
+> +}
+> +
+> +static int scpi_get_transition_latency(struct device *cpu_dev)
+> +{
+> +	struct scpi_dvfs_info *info = scpi_get_dvfs_info(cpu_dev);
+> +
+> +	if (IS_ERR(info))
+> +		return PTR_ERR(info);
+> +	return info->latency;
+> +}
+> +
+> +static int scpi_init_opp_table(struct device *cpu_dev)
+> +{
+> +	return scpi_opp_table_ops(cpu_dev, false);
+> +}
+> +
+> +static void scpi_free_opp_table(struct device *cpu_dev)
+> +{
+> +	scpi_opp_table_ops(cpu_dev, true);
+> +}
+> +
+> +static struct cpufreq_arm_bL_ops scpi_cpufreq_ops = {
+> +	.name	= "scpi",
+> +	.get_transition_latency = scpi_get_transition_latency,
+> +	.init_opp_table = scpi_init_opp_table,
+> +	.free_opp_table = scpi_free_opp_table,
+> +};
+> +
+> +static int scpi_cpufreq_probe(struct platform_device *pdev)
+> +{
+> +	scpi_ops = get_scpi_ops();
+> +	if (!scpi_ops)
+> +		return -EIO;
+> +
+> +	return bL_cpufreq_register(&scpi_cpufreq_ops);
+> +}
+> +
+> +static int scpi_cpufreq_remove(struct platform_device *pdev)
+> +{
+> +	bL_cpufreq_unregister(&scpi_cpufreq_ops);
+> +	scpi_ops = NULL;
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver scpi_cpufreq_platdrv = {
+> +	.driver = {
+> +		.name	= "scpi-cpufreq",
+> +		.owner	= THIS_MODULE,
+> +	},
+> +	.probe		= scpi_cpufreq_probe,
+> +	.remove		= scpi_cpufreq_remove,
+> +};
+> +module_platform_driver(scpi_cpufreq_platdrv);
+> +
+> +MODULE_AUTHOR("Sudeep Holla <sudeep.holla@arm.com>");
+> +MODULE_DESCRIPTION("ARM SCPI CPUFreq interface driver");
+> +MODULE_LICENSE("GPL v2");
 > 
-> 8< -------------------
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -10,6 +10,7 @@
->  #include <linux/sched.h>
->  #include <linux/export.h>
->  #include <linux/pm_runtime.h>
-> +#include <linux/pm_wakeirq.h>
->  #include <trace/events/rpm.h>
->  #include "power.h"
->  
-> @@ -514,6 +515,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
->  
->  	callback = RPM_GET_CALLBACK(dev, runtime_suspend);
->  
-> +	dev_pm_enable_wake_irq(dev);
->  	retval = rpm_callback(callback, dev);
->  	if (retval)
->  		goto fail;
-> @@ -552,6 +554,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
->  	return retval;
->  
->   fail:
-> +	dev_pm_disable_wake_irq(dev);
->  	__update_runtime_status(dev, RPM_ACTIVE);
->  	dev->power.deferred_resume = false;
->  	wake_up_all(&dev->power.wait_queue);
-> @@ -734,10 +737,12 @@ static int rpm_resume(struct device *dev, int rpmflags)
->  
->  	callback = RPM_GET_CALLBACK(dev, runtime_resume);
->  
-> +	dev_pm_disable_wake_irq(dev);
->  	retval = rpm_callback(callback, dev);
->  	if (retval) {
->  		__update_runtime_status(dev, RPM_SUSPENDED);
->  		pm_runtime_cancel_pending(dev);
-> +		dev_pm_enable_wake_irq(dev);
->  	} else {
->   no_callback:
->  		__update_runtime_status(dev, RPM_ACTIVE);
-> @@ -1427,6 +1432,7 @@ int pm_runtime_force_suspend(struct device *dev)
->  		goto err;
->  	}
->  
-> +	dev_pm_enable_wake_irq(dev);
-
-Why here?  This is for system suspend.
-
->  	ret = callback(dev);
->  	if (ret)
->  		goto err;
-> @@ -1434,6 +1440,7 @@ int pm_runtime_force_suspend(struct device *dev)
->  	pm_runtime_set_suspended(dev);
->  	return 0;
->  err:
-> +	dev_pm_disable_wake_irq(dev);
->  	pm_runtime_enable(dev);
->  	return ret;
->  }
-> @@ -1463,6 +1470,7 @@ int pm_runtime_force_resume(struct device *dev)
->  		goto out;
->  	}
->  
-> +	dev_pm_disable_wake_irq(dev);
-
-This one too.
-
->  	ret = callback(dev);
->  	if (ret)
->  		goto out;
-> @@ -1470,6 +1478,7 @@ int pm_runtime_force_resume(struct device *dev)
->  	pm_runtime_set_active(dev);
->  	pm_runtime_mark_last_busy(dev);
->  out:
-> +	dev_pm_enable_wake_irq(dev);
->  	pm_runtime_enable(dev);
->  	return ret;
->  }
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
 I speak only for myself.
