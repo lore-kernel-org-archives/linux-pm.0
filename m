@@ -1,123 +1,158 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter()
- failures
-Date: Thu, 14 May 2015 09:29:17 +0530
-Message-ID: <55541D95.4020107@linux.vnet.ibm.com>
-References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com> <2602092.6h7ufczYGd@vostro.rjw.lan> <5551BCBF.2000806@linaro.org> <2919083.VPTOth98op@vostro.rjw.lan> <7h7fsc2idw.fsf@deeprootsystems.com>
+From: Kukjin Kim <kgene@kernel.org>
+Subject: Re: [PATCH 0/6] cpufreq: use generic cpufreq drivers for Exynos4210platform
+Date: Thu, 14 May 2015 13:07:46 +0900
+Message-ID: <55541F92.4020404@kernel.org>
+References: <'@samsung.com> <1428079429-4252-1-git-send-email-b.zolnierkie@samsung.com> <2036292.PZC6aPyUyX@amdc1976>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e36.co.us.ibm.com ([32.97.110.154]:33836 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934133AbbEND71 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2015 23:59:27 -0400
-Received: from /spool/local
-	by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Wed, 13 May 2015 21:59:26 -0600
-In-Reply-To: <7h7fsc2idw.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <2036292.PZC6aPyUyX@amdc1976>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: rlippert@google.com, Ulf Hansson <ulf.hansson@linaro.org>, rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, peterz@infradead.org, linus.walleij@linaro.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org, Lina Iyer <lina.iyer@linaro.org>
 
-On 05/14/2015 04:29 AM, Kevin Hilman wrote:
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+On 05/13/15 23:08, Bartlomiej Zolnierkiewicz wrote:
 > 
-> [...]
+> Hi,
 > 
->> Second, quite honestly, I don't see a connection to genpd here.
-> 
-> The connection with genpd is because the *reason* the timer was
-> shutdown/stopped is because it shares power with the CPU, which is why
-> the timer stops when the CPU hits ceratin low power states.  IOW, it's
-> in the same power domain as the CPU.
-> 
->> What you seem to be saying is "maybe we can eliminate the need to check the
->> return value of tick_broadcast_enter() in the idle loop if we proactively
->> disable the TIMER_STOP idle states of a CPU when we start to use that CPU's
->> timer as a broadcast one".
+Hi Bart,
+
+> On Friday, April 03, 2015 06:43:43 PM Bartlomiej Zolnierkiewicz wrote:
+>> Hi,
 >>
->> So this seems to be about the timekeeping rather than power domains, because
->> that's where the broadcast thing is done.  So the code setting up the CPU's
->> timer for broadcast would pretty much need to pause cpuidle, go through the
->> CPU's idle states and disable the TIMER_STOP ones.  And do the reverse when the
->> timer is not going the be used for broadcast any more.  
+>> This patch series removes the use of Exynos4210 specific support
+>> from cpufreq-exynos driver and enables the use of cpufreq-dt driver
+>> for this platform.
 > 
-> Or..., modify the timer subystem to use runtime PM on the timer devices,
-> create a genpd that includes the timer device, and use
-> pm_genpd_attach_cpuidle() to attach that genpd so that whenever that
-> timer is runtime PM active, the deeper C-states cannot be hit.
+> Gentle Ping.  Mike/Kukjin/Viresh could you please review/ack relevant
+> patches (patches #1-3 are for clock subsystem, patches #4-5 for Exynos
+> mach/dts and patch #6 is for cpufreq subsystem)?
 
-I think you are missing a point here. If such a solution were possible,
-the tick broadcast framework would not have been designed to support
-deep cpu idle states. One reason we cannot go this way of course, is not
-all archs may support genpd as was pointed out. But the second reason
-IMO is that a timer is runtime PM active as long as there is some
-deferred work, either in the near or far future.
+Yes, I totally agreed with this patches for arch side changes and this
+approach when Thomas posted.
 
-The point behind the broadcast framework is let these CPUs go to deeper
-idle states when the timers are in the "far" future. We can potentially
-save power by doing so and don't need to keep the entire power domain
-active just because the timer is supposed to fire 5 minutes from now,
-which is precisely what happens if we go the genpd way.
+> Also what is your
+> preferred way to upstream them (patches are not independent so it would
+> be best to merge them through one tree, otherwise synchronization of
+> git pulls between different subsystem trees will be needed)?
+> 
+I can provide topic branch for arch side changes even it is small. I
+think once Viresh and Mike make each topic branch based on -rc or the
+smallest changes from each subsystem then I could handle this series or
+Viresh or Mike need to handle this series with merging each topic
+branches in subsystem. I'm fine either way.
 
-Hence I don't think we can trivially club timers with genpd unless we
-have a way to power the timer PM domain down, depending on when it is
-supposed to fire, in which case we will merely be replicating the
-cpuidle governor code.
+Viresh and Mike, how do you think about that?
 
-Regards
-Preeti U Murthy
+> I'm still hoping that this patchset will make it into v4.2 as there are
+> no known issues with it (except minor coding nit for patch #5)...
+> 
+Sure, why not :-)
 
-> 
->> So question is whether or not this is actually really more
->> straightforward than checking the return value of
->> tick_broadcast_enter() in the idle loop after all.
-> 
-> Unfortunetly this problem doesn't only affect timers.
-> 
-> Daniel's broader point is that $SUBJECT series only handles this for the
-> timer, but there's actually a more general problem to solve for *any*
-> device that shares a power domain with a CPU (e.g. CPU-local
-> timers, interrupt controllers, performance monitoring units, floating
-> point units, etc. etc.)
-> 
-> If we keep adding checks to the idle loop for all those devices, we're
-> heading for a mess.  (In fact, this is exactly what CPUidle drivers in
-> lots of vendor trees are doing, and it is indeed quite messy, and very
-> vendor specific.)
-> 
-> Also, solving this more general problem was the primary motivation for
-> adding the gnpd _attach_cpuidle() feature in the first place, so why not
-> use that?
-> 
-> Longer term, IMO, these dependencies between CPUs and all these "extras"
-> logic that share a power domain should be modeled by a genpd.  If all
-> those devices are using runtime PM, including the CPUs, and they are
-> grouped into a genpd, then we we can very easily know at the genpd level
-> whether or not the CPU could be powered down, and to what level.  This
-> longer-term solution is what I want to discuss at LPC this year in my
-> "Unifiy idle management of CPUs and IO devices" topic[1].  ( Also FYI,
-> using a genpd to model a CPU and connected logic is part of the
-> motivation behind the recent proposals to add support for multiple
-> states to genpd by Axel Haslam. )
-> 
-> Anyways I digress...
-> 
-> In the short term, while your patches look fine to me, the objection I
-> have is that it's only a band-aid fix that handles timers, but none of
-> the other "extras" that might share a power rail with the CPU.  So,
-> until we have the long-term stuff sorted out, the better
-> short-term solution IMO is the _attach_cpuidle() one above.
-> 
-> Kevin
-> 
-> [1] http://wiki.linuxplumbersconf.org/2015:energy-aware_scheduling
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+Thanks,
+Kukjin
 
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+> 
+>> It consists of a modified "[PATCH v12 0/6] cpufreq: use generic
+>> cpufreq drivers for exynos platforms" [1] patch series from Thomas
+>> Abraham.  As there have not been updates of this patchset since
+>> November 2014 I decided to dust it off myself.  I updated Thomas'
+>> patchset to current kernels, fixed bugs that I noticed and removed
+>> non-Exynos4210 support for now (to speed up inclusion in upstream
+>> kernel).  Since some modifications were not trivial I dropped all
+>> Reviewed-by:, Tested-by: and Acked-by: tags.  Please review/test
+>> this patchset and reply with revelant tag (Thank You!).  I also
+>> plan to work on Exynos4x12 support next (which was missing in
+>> the original patchset) and then on Exynos5250/Exynos5420 one.
+>>
+>> This patch series has been tested on Exynos4210 based Origen and
+>> Trats boards.
+>>
+>> Depends on:
+>> - next-20150330 branch of linux-next kernel tree
+>>   (mfd tree contains a crucial fix for MAX8997 PMIC support)
+>> - "[PATCH] clk: samsung: exynos4: Disable ARMCLK down feature on
+>>   Exynos4210 SoC" [2]
+>>
+>> [1] https://www.marc.info/?l=linux-arm-kernel&m=141657611003803&w=2
+>> [2] https://lkml.org/lkml/2015/3/27/568
+>>
+>> Changes over Thomas' code:
+>> - fixed issue with wrong dividers being setup by Common Clock Framework
+>>   (by an addition of CLK_RECALC_NEW_RATES clock flag to mout_apll clock,
+>>   without this change cpufreq-dt driver showed ~10 mA larger energy
+>>   consumption when compared to cpufreq-exynos one when "performance"
+>>   cpufreq governor was used on Exynos4210 SoC based Origen board), this
+>>   was probably meant to be workarounded by use of CLK_GET_RATE_NOCACHE
+>>   and CLK_DIVIDER_READ_ONLY clock flags in the original patchset (in
+>>   "[PATCH v12 6/6] clk: samsung: remove unused clock aliases and update
+>>   clock flags") but using these flags is not sufficient to fix the issue
+>>   observed
+>> - fixed issue with setting lower dividers before the parent clock speed
+>>   was lowered (the issue resulted in lockup on Exynos4210 SoC based
+>>   Origen board when "ondemand" cpufreq governor was stress tested)
+>> - fixed missing spin_unlock on error in exynos_cpuclk_post_rate_change()
+>>   problem by moving cfg_data search outside of the spin locked area
+>> - removed leftover kfree() in exynos_register_cpu_clock() that could
+>>   result in dereferencing the NULL pointer on error
+>> - moved spin_lock earlier in exynos_cpuclk_pre_rate_change() to cover
+>>   reading of E4210_SRC_CPU and E4210_DIV_CPU1 registers
+>> - added missing "last chance" checks to wait_until_divider_stable() and
+>>   wait_until_mux_stable() (needed in case that IRQ handling took long
+>>   time to proceed and resulted in function printing incorrect error
+>>   message about timeout)
+>> - moved E4210_CPU_DIV[0,1]() macros just before their only users,
+>>   this resulted in moving them from patch #2 to patch #3/6 ("clk:
+>>   samsung: exynos4: add cpu clock configuration data and instantiate
+>>   cpu clock")
+>> - added my Copyrights to drivers/clk/samsung/clk-cpu.c
+>> - updated exynos-cpufreq.[c,h]
+>> - removed non-Exynos4210 support for now
+>> - dropped "[PATCH v12 6/6] clk: samsung: remove unused clock aliases and
+>>   update clock flags" altogether for now
+>>
+>> Best regards,
+>> --
+>> Bartlomiej Zolnierkiewicz
+>> Samsung R&D Institute Poland
+>> Samsung Electronics
+>>
+>>
+>> Bartlomiej Zolnierkiewicz (1):
+>>   clk: add CLK_RECALC_NEW_RATES clock flag for Exynos cpu clock support
+>>
+>> Thomas Abraham (5):
+>>   clk: samsung: add infrastructure to register cpu clocks
+>>   clk: samsung: exynos4: add cpu clock configuration data and
+>>     instantiate cpu clock
+>>   ARM: dts: Exynos4210: add CPU OPP and regulator supply property
+>>   ARM: Exynos: switch to using generic cpufreq driver for Exynos4210
+>>   cpufreq: exynos: remove Exynos4210 specific cpufreq driver support
+>>
+>>  arch/arm/boot/dts/exynos4210-origen.dts         |    4 +
+>>  arch/arm/boot/dts/exynos4210-trats.dts          |    4 +
+>>  arch/arm/boot/dts/exynos4210-universal_c210.dts |    4 +
+>>  arch/arm/boot/dts/exynos4210.dtsi               |   12 +
+>>  arch/arm/mach-exynos/exynos.c                   |   21 +-
+>>  drivers/clk/clk.c                               |    3 +
+>>  drivers/clk/samsung/Makefile                    |    2 +-
+>>  drivers/clk/samsung/clk-cpu.c                   |  349 +++++++++++++++++++++++
+>>  drivers/clk/samsung/clk-cpu.h                   |   73 +++++
+>>  drivers/clk/samsung/clk-exynos4.c               |   24 +-
+>>  drivers/cpufreq/Kconfig.arm                     |   11 -
+>>  drivers/cpufreq/Makefile                        |    1 -
+>>  drivers/cpufreq/exynos-cpufreq.c                |    5 +-
+>>  drivers/cpufreq/exynos-cpufreq.h                |    9 -
+>>  drivers/cpufreq/exynos4210-cpufreq.c            |  184 ------------
+>>  include/linux/clk-provider.h                    |    1 +
+>>  16 files changed, 495 insertions(+), 212 deletions(-)
+>>  create mode 100644 drivers/clk/samsung/clk-cpu.c
+>>  create mode 100644 drivers/clk/samsung/clk-cpu.h
+>>  delete mode 100644 drivers/cpufreq/exynos4210-cpufreq.c
