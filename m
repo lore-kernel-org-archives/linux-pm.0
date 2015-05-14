@@ -1,66 +1,41 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] cpufreq: arm_big_little: check if the frequency is set correctly
-Date: Fri, 15 May 2015 02:20:36 +0200
-Message-ID: <1778706.Xlqg2QcRzz@vostro.rjw.lan>
-References: <1430128266-15012-1-git-send-email-sudeep.holla@arm.com> <CAKohpomtkPCwHN1ivTSLOg9xj8nKGua=m8LerRG_djMfOr1DiA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Ruchi Kandoi <kandoiruchi@google.com>
+Subject: [PATCH 0/2] Adds cpu power accounting per-pid basis.
+Date: Thu, 14 May 2015 16:55:46 -0700
+Message-ID: <1431647748-13221-1-git-send-email-kandoiruchi@google.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54921 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1423067AbbENXzX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 May 2015 19:55:23 -0400
-In-Reply-To: <CAKohpomtkPCwHN1ivTSLOg9xj8nKGua=m8LerRG_djMfOr1DiA@mail.gmail.com>
+Received: from mail-ig0-f172.google.com ([209.85.213.172]:35241 "EHLO
+	mail-ig0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423087AbbENX4G (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 May 2015 19:56:06 -0400
+Received: by igbyr2 with SMTP id yr2so182361947igb.0
+        for <linux-pm@vger.kernel.org>; Thu, 14 May 2015 16:56:06 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: kandoiruchi@google.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Vladimir Davydov <vdavydov@parallels.com>, Heinrich Schuchardt <xypron.glpk@gmx.de>, Thomas Gleixner <tglx@linutronix.de>, Kees Cook <keescook@chromium.org>, Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, Davidlohr Bueso <dave@stgolabs.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday, April 27, 2015 03:56:18 PM Viresh Kumar wrote:
-> On 27 April 2015 at 15:21, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> > The actual frequency is set through "clk_change_rate" which is void
-> > function. If the underlying hardware fails and returns error, the error
-> > is lost in the clk layer. In order to track such failures, we need to
-> > read back the frequency(just the cached value as clk_recalc called after
-> > clk->ops->set_rate gets the frequency)
-> >
-> > This patch adds check to see if the frequency is set correctly or if
-> > they were any hardware failures and sends the appropriate errors to the
-> > cpufreq core.
-> >
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Reviewed-by: Michael Turquette <mike.turquette@linaro.org>
-> > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> > ---
-> >  drivers/cpufreq/arm_big_little.c | 9 +++++++++
-> >  1 file changed, 9 insertions(+)
-> >
-> > diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-> > index e1a6ba66a7f5..f65e19f340d0 100644
-> > --- a/drivers/cpufreq/arm_big_little.c
-> > +++ b/drivers/cpufreq/arm_big_little.c
-> > @@ -186,6 +186,15 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
-> >                 mutex_unlock(&cluster_lock[old_cluster]);
-> >         }
-> >
-> > +       /*
-> > +        * FIXME: clk_set_rate has to handle the case where clk_change_rate
-> > +        * can fail due to hardware or firmware issues. Until the clk core
-> > +        * layer is fixed, we can check here. In most of the cases we will
-> > +        * be reading only the cached value anyway. This needs to  be removed
-> > +        * once clk core is fixed.
-> > +        */
-> > +       if (bL_cpufreq_get_rate(cpu) != new_rate)
-> > +               return -EIO;
-> >         return 0;
-> >  }
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+These patches add a mechanism which will accurately caculate the CPU power
+used by all the processes in the system. In order to account for the power
+used by all the processes a data field "cpu_power" has been added in the
+task_struct. This field adds power for both the system as well as user
+time. cpu_power contains the total amount of charge(in uAmsec units) used
+by the process. This model takes into account the frequency at which the
+process was running(i.e higher power for processes running at higher
+frequencies). It requires the cpufreq_stats module to be initialized with
+the current numbers for each of the CPU core at each frequency. This will
+be initialized during init time.
 
-Both queued up for 4.2, thanks!
+Ruchi Kandoi (2):
+  cpufreq_stats: Adds sysfs file    
+    /sys/devices/system/cpu/cpufreq/current_in_state
+  sched: cpufreq: Adds a field cpu_power in the task_struct
 
+ drivers/cpufreq/cpufreq_stats.c | 186 +++++++++++++++++++++++++++++++++++++++-
+ include/linux/cpufreq.h         |   8 ++
+ include/linux/sched.h           |   2 +
+ kernel/fork.c                   |   1 +
+ kernel/sched/cputime.c          |   7 ++
+ 5 files changed, 202 insertions(+), 2 deletions(-)
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+2.2.0.rc0.207.ga3a616c
+
