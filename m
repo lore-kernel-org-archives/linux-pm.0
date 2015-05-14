@@ -1,210 +1,87 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 5/5] cpufreq: arm_big_little: add SCPI interface driver
-Date: Fri, 15 May 2015 00:03:12 +0200
-Message-ID: <4255582.h4bFD3eA9g@vostro.rjw.lan>
-References: <1431618155-3132-1-git-send-email-sudeep.holla@arm.com> <1431618155-3132-6-git-send-email-sudeep.holla@arm.com>
+Subject: Re: [Resend][PATCH] PM / tick: Add tracepoints for suspend-to-idle diagnostics
+Date: Fri, 15 May 2015 00:04:57 +0200
+Message-ID: <9746445.jijJSAGWOf@vostro.rjw.lan>
+References: <17474563.tpu6u1dKOa@vostro.rjw.lan> <1543314.9EN5CRZp0f@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52765 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1161109AbbENVh7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 May 2015 17:37:59 -0400
-In-Reply-To: <1431618155-3132-6-git-send-email-sudeep.holla@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1543314.9EN5CRZp0f@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Thursday, May 14, 2015 04:42:35 PM Sudeep Holla wrote:
-> On some ARM based systems, a separate Cortex-M based System Control
-> Processor(SCP) provides the overall power, clock, reset and system
-> control including CPU DVFS. SCPI Message Protocol is used to
-> communicate with the SCPI.
+On Sunday, May 10, 2015 01:23:35 AM Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> This patch adds a interface driver for adding OPPs and registering
-> the arm_big_little cpufreq driver for such systems.
+> Add suspend/resume tracepoints to tick_freeze() and tick_unfreeze()
+> to catch when timekeeping is suspended and resumed during suspend-to-idle
+> so as to be able to check whether or not we enter the "frozen" state
+> and to measure the time spent in it.
 > 
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Thomas, Peter, any objections here?
+
 > ---
->  drivers/cpufreq/Kconfig.arm    |   9 +++
->  drivers/cpufreq/Makefile       |   1 +
->  drivers/cpufreq/scpi-cpufreq.c | 124 +++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 134 insertions(+)
->  create mode 100644 drivers/cpufreq/scpi-cpufreq.c
 > 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 611cb09239eb..6419b17b89dd 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -24,6 +24,15 @@ config ARM_VEXPRESS_SPC_CPUFREQ
->            This add the CPUfreq driver support for Versatile Express
->  	  big.LITTLE platforms using SPC for power management.
+> Sorry for the duplication, but I messed up the Thomas' address in the previous one.
+> 
+> ---
+>  kernel/time/tick-common.c |   15 +++++++++++----
+>  1 file changed, 11 insertions(+), 4 deletions(-)
+> 
+> Index: linux-pm/kernel/time/tick-common.c
+> ===================================================================
+> --- linux-pm.orig/kernel/time/tick-common.c
+> +++ linux-pm/kernel/time/tick-common.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/profile.h>
+>  #include <linux/sched.h>
+>  #include <linux/module.h>
+> +#include <trace/events/power.h>
 >  
-> +config ARM_SCPI_CPUFREQ
-> +        tristate "SCPI based CPUfreq driver"
-> +	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL
-> +        help
-> +	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
-> +	  using SCPI protocol for CPU power management.
-> +
-> +	  This driver uses SCPI Message Protocol driver to interact with the
-> +	  firmware providing the CPU DVFS functionality.
+>  #include <asm/irq_regs.h>
 >  
->  config ARM_EXYNOS_CPUFREQ
->  	tristate "SAMSUNG EXYNOS CPUfreq Driver"
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index cdce92ae2e8b..02fc9f849d4b 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -79,6 +79,7 @@ obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
->  obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
->  obj-$(CONFIG_ARM_TEGRA_CPUFREQ)		+= tegra-cpufreq.o
->  obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
-> +obj-$(CONFIG_ARM_SCPI_CPUFREQ)		+= scpi-cpufreq.o
+> @@ -457,10 +458,13 @@ void tick_freeze(void)
+>  	raw_spin_lock(&tick_freeze_lock);
 >  
->  ##################################################################################
->  # PowerPC platform drivers
-> diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-> new file mode 100644
-> index 000000000000..443570801229
-> --- /dev/null
-> +++ b/drivers/cpufreq/scpi-cpufreq.c
-> @@ -0,0 +1,124 @@
-> +/*
-> + * SCPI CPUFreq Interface driver
-
-It would be good to expand the TLA here IMO.
-
-The rest I'm leaving to Viresh. :-)
-
-> + *
-> + * It provides necessary ops to arm_big_little cpufreq driver.
-> + *
-> + * Copyright (C) 2015 ARM Ltd.
-> + * Sudeep Holla <sudeep.holla@arm.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-> + * kind, whether express or implied; without even the implied warranty
-> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-> +
-> +#include <linux/cpufreq.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_opp.h>
-> +#include <linux/scpi_protocol.h>
-> +#include <linux/types.h>
-> +
-> +#include "arm_big_little.h"
-> +
-> +static struct scpi_ops *scpi_ops;
-> +
-> +static struct scpi_dvfs_info *scpi_get_dvfs_info(struct device *cpu_dev)
-> +{
-> +	u8 domain = topology_physical_package_id(cpu_dev->id);
-> +
-> +	if (domain < 0)
-> +		return ERR_PTR(-EINVAL);
-> +	return scpi_ops->dvfs_get_info(domain);
-> +}
-> +
-> +static int scpi_opp_table_ops(struct device *cpu_dev, bool remove)
-> +{
-> +	int idx, ret = 0;
-> +	struct scpi_opp *opp;
-> +	struct scpi_dvfs_info *info = scpi_get_dvfs_info(cpu_dev);
-> +
-> +	if (IS_ERR(info))
-> +		return PTR_ERR(info);
-> +
-> +	if (!info->opps)
-> +		return -EIO;
-> +
-> +	for (opp = info->opps, idx = 0; idx < info->count; idx++, opp++) {
-> +		if (remove)
-> +			dev_pm_opp_remove(cpu_dev, opp->freq);
-> +		else
-> +			ret = dev_pm_opp_add(cpu_dev, opp->freq,
-> +					     opp->m_volt * 1000);
-> +		if (ret) {
-> +			dev_warn(cpu_dev, "failed to add opp %uHz %umV\n",
-> +				 opp->freq, opp->m_volt);
-> +			while (idx-- > 0)
-> +				dev_pm_opp_remove(cpu_dev, (--opp)->freq);
-> +			return ret;
-> +		}
+>  	tick_freeze_depth++;
+> -	if (tick_freeze_depth == num_online_cpus())
+> +	if (tick_freeze_depth == num_online_cpus()) {
+> +		trace_suspend_resume(TPS("timekeeping_freeze"),
+> +				     smp_processor_id(), true);
+>  		timekeeping_suspend();
+> -	else
+> +	} else {
+>  		tick_suspend_local();
 > +	}
-> +	return ret;
-> +}
-> +
-> +static int scpi_get_transition_latency(struct device *cpu_dev)
-> +{
-> +	struct scpi_dvfs_info *info = scpi_get_dvfs_info(cpu_dev);
-> +
-> +	if (IS_ERR(info))
-> +		return PTR_ERR(info);
-> +	return info->latency;
-> +}
-> +
-> +static int scpi_init_opp_table(struct device *cpu_dev)
-> +{
-> +	return scpi_opp_table_ops(cpu_dev, false);
-> +}
-> +
-> +static void scpi_free_opp_table(struct device *cpu_dev)
-> +{
-> +	scpi_opp_table_ops(cpu_dev, true);
-> +}
-> +
-> +static struct cpufreq_arm_bL_ops scpi_cpufreq_ops = {
-> +	.name	= "scpi",
-> +	.get_transition_latency = scpi_get_transition_latency,
-> +	.init_opp_table = scpi_init_opp_table,
-> +	.free_opp_table = scpi_free_opp_table,
-> +};
-> +
-> +static int scpi_cpufreq_probe(struct platform_device *pdev)
-> +{
-> +	scpi_ops = get_scpi_ops();
-> +	if (!scpi_ops)
-> +		return -EIO;
-> +
-> +	return bL_cpufreq_register(&scpi_cpufreq_ops);
-> +}
-> +
-> +static int scpi_cpufreq_remove(struct platform_device *pdev)
-> +{
-> +	bL_cpufreq_unregister(&scpi_cpufreq_ops);
-> +	scpi_ops = NULL;
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver scpi_cpufreq_platdrv = {
-> +	.driver = {
-> +		.name	= "scpi-cpufreq",
-> +		.owner	= THIS_MODULE,
-> +	},
-> +	.probe		= scpi_cpufreq_probe,
-> +	.remove		= scpi_cpufreq_remove,
-> +};
-> +module_platform_driver(scpi_cpufreq_platdrv);
-> +
-> +MODULE_AUTHOR("Sudeep Holla <sudeep.holla@arm.com>");
-> +MODULE_DESCRIPTION("ARM SCPI CPUFreq interface driver");
-> +MODULE_LICENSE("GPL v2");
+>  
+>  	raw_spin_unlock(&tick_freeze_lock);
+>  }
+> @@ -478,10 +482,13 @@ void tick_unfreeze(void)
+>  {
+>  	raw_spin_lock(&tick_freeze_lock);
+>  
+> -	if (tick_freeze_depth == num_online_cpus())
+> +	if (tick_freeze_depth == num_online_cpus()) {
+>  		timekeeping_resume();
+> -	else
+> +		trace_suspend_resume(TPS("timekeeping_freeze"),
+> +				     smp_processor_id(), false);
+> +	} else {
+>  		tick_resume_local();
+> +	}
+>  
+>  	tick_freeze_depth--;
+>  
 > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
 I speak only for myself.
