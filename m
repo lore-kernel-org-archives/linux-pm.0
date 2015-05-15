@@ -1,37 +1,47 @@
 From: Mason <slash.tmp@free.fr>
 Subject: Re: schedule_timeout sleeps too long after dividing CPU frequency
-Date: Fri, 15 May 2015 11:21:16 +0200
-Message-ID: <5555BA8C.7090906@free.fr>
-References: <CAKohpo=eMA6L9=jK=bAnbFuDxcdtpQNub0WFnSy6MOqB3jOdjA@mail.gmail.com> <555218C7.5050602@free.fr> <20150512155004.GP2067@n2100.arm.linux.org.uk> <555380F8.5050306@free.fr> <CAOh2x==aCLxCWX9K57hOFVEP1eLo_OYZPe0YvbFvpkXcoSp_hQ@mail.gmail.com> <5554858A.9010207@free.fr> <20150514115456.GB23999@linux> <55549DEE.6010202@free.fr> <CAKohpon4AV-7nq=Qm7PpDbbW9ti98avY9zz82htzyHWi5_K7fA@mail.gmail.com> <5554B5C1.2070402@free.fr> <20150515041632.GG6348@linux>
+Date: Fri, 15 May 2015 11:29:34 +0200
+Message-ID: <5555BC7E.7010601@free.fr>
+References: <55520F0F.5010906@free.fr> <CAKohpo=eMA6L9=jK=bAnbFuDxcdtpQNub0WFnSy6MOqB3jOdjA@mail.gmail.com> <555218C7.5050602@free.fr> <20150512155004.GP2067@n2100.arm.linux.org.uk> <555380F8.5050306@free.fr> <CAOh2x==aCLxCWX9K57hOFVEP1eLo_OYZPe0YvbFvpkXcoSp_hQ@mail.gmail.com> <5554858A.9010207@free.fr> <20150514115456.GB23999@linux> <55549DEE.6010202@free.fr> <CAKohpon4AV-7nq=Qm7PpDbbW9ti98avY9zz82htzyHWi5_K7fA@mail.gmail.com> <20150514144239.GZ2067@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp4-g21.free.fr ([212.27.42.4]:2164 "EHLO smtp4-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754462AbbEOJV2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 15 May 2015 05:21:28 -0400
-In-Reply-To: <20150515041632.GG6348@linux>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <20150514144239.GZ2067@n2100.arm.linux.org.uk>
+Sender: cpufreq-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mans Rullgard <mans@mansr.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mans Rullgard <mans@mansr.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 
-On 15/05/2015 06:16, Viresh Kumar wrote:
+On 14/05/2015 16:42, Russell King - ARM Linux wrote:
 
-> What core does your platform have? Cortex A9? Doesn't that uses this
-> timer instead: drivers/clocksource/arm_arch_timer.c ?
+> If it's in periodic mode, the update should still be propagated to the
+> hardware, assuming the generic time keeping code doesn't produce an
+> error.
+> 
+> twd_update_frequency
+> `-clockevents_update_freq
+>   `-__clockevents_update_freq
+>     `-__clockevents_set_state(, CLOCK_EVT_STATE_PERIODIC)
+>       `-dev->set_mode (twd_set_mode)
+> 
+> That re-writes the TWD_TIMER_LOAD register based on twd_timer_rate,
+> which would have been updated by twd_update_frequency().
+> 
+> The question I posed earlier remains: is clockevents_update_freq()
+> failing?  We don't know, because we never check its return value.
+> 
+> Another thing to look at is whether we reach twd_set_mode().
+> 
+> Lastly, printing the values of the TWD_TIMER_LOAD and TWD_TIMER_COUNTER
+> after twd_set_mode() has written TWD_TIMER_LOAD might provide some
+> hints as to what's going on.
 
-Cortex-A9 MPCore r3p0
+I'll have access to the board on Monday.
 
-Generic Timer (aka Architected system timer) is not available
-in Cortex-A9.
+I'll add printk in strategic places, and report back ASAP.
 
-https://community.arm.com/message/8775
-
-"Generic Timer is not an option on the Cortex-A9 (or A8 or A5)
-processors. The Generic Timer is an optional part of the ARMv7
-architecture, and is not implemented by those three processors."
+(I'm considering dropping TWD, and using platform timers.)
 
 Regards.
 
