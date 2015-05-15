@@ -1,114 +1,175 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: schedule_timeout sleeps too long after dividing CPU frequency
-Date: Fri, 15 May 2015 14:15:21 +0100
-Message-ID: <20150515131521.GK2067@n2100.arm.linux.org.uk>
-References: <5554858A.9010207@free.fr>
- <20150514115456.GB23999@linux>
- <55549DEE.6010202@free.fr>
- <CAKohpon4AV-7nq=Qm7PpDbbW9ti98avY9zz82htzyHWi5_K7fA@mail.gmail.com>
- <20150514144239.GZ2067@n2100.arm.linux.org.uk>
- <5555BC7E.7010601@free.fr>
- <20150515095159.GF2067@n2100.arm.linux.org.uk>
- <5555CC1A.5040604@free.fr>
- <20150515115852.GJ2067@n2100.arm.linux.org.uk>
- <5555EA68.7030006@free.fr>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: Re: [PATCH v2] PM / sleep: Let devices force direct_complete
+Date: Fri, 15 May 2015 15:25:00 +0200
+Message-ID: <CAAObsKB6=upGWKnGfhCzrvY+aQEmh+b-35Law=P6WCtLKfcPJg@mail.gmail.com>
+References: <1431610673-16801-1-git-send-email-tomeu.vizoso@collabora.com> <2929090.OdVc2hRah5@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <cpufreq-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5555EA68.7030006@free.fr>
-Sender: cpufreq-owner@vger.kernel.org
-To: Mason <slash.tmp@free.fr>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mans Rullgard <mans@mansr.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2929090.OdVc2hRah5@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 15, 2015 at 02:45:28PM +0200, Mason wrote:
-> The sad part is: I'm working on the "new" kernel.
-> The current "official" kernel is 3.4 (and I'm afraid
-> there's a 2.6.32 still kicking around somewhere).
-> 
-> I'm trying to convince management that one of the advantages
-> of mainlining the port is that it is easier to switch to newer
-> kernels. Do you agree with this assertion?
+On 14 May 2015 at 21:56, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, May 14, 2015 03:37:52 PM Tomeu Vizoso wrote:
+>> Introduce a new per-device flag power.force_direct_complete that will
+>> instruct the PM core to let that device remain in runtime suspend when
+>> the system goes into a sleep power state, regardless of the PM state of
+>> any of its descendants.
+>>
+>> This is needed because otherwise it would be needed to get dozens of
+>> drivers to implement the prepare() callback and be runtime PM active
+>> even if they don't have a 1-to-1 relationship with a piece of HW.
+>>
+>> This only applies to devices that aren't wakeup-capable, as those would
+>> need to setup their IRQs as wakeup-capable in their prepare() callbacks.
+>>
+>> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+>
+> Well, my idea of a "direct complete" flag was a bit different and I have
+> a concern with this particular implementation. ->
 
-Yes and no.  If you can get stuff upstream, it should make things
-easier.
+Yeah, I started like that but then realized that, at least in the
+uvcvideo case, it doesn't know at probe() time how many descendants
+it's going to have.
 
-The difficult bit - and time consuming bit - is getting code upstream.
-Even in my position, I'd suggest allowing about five years for that
-activity, and even then don't have expectations of getting everything
-upstream.
+This was discussed in:
 
-Frankly now, my advice to people would be to just not bother, it's
-*way* too much effort to get everything to an acceptable state,
-especially if the SoC has no support what so ever.
+http://article.gmane.org/gmane.linux.power-management.general/59157
 
-For example, we're still banging on over the iMX6 SoCs - just getting
-the display stuff sorted took more than a year.  Ethernet keeps becoming
-unstable (people keep reporting problems with it) and it became far too
-difficult for me to get my patch set for that upstream, so I dumped it.
+>>
+>> ---
+>>
+>> v2:   * Fix wording as suggested by Kevin Hilman
+>> ---
+>>  Documentation/power/runtime_pm.txt | 10 ++++++++++
+>>  drivers/base/power/main.c          | 14 ++++++++++----
+>>  include/linux/pm.h                 |  1 +
+>>  3 files changed, 21 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+>> index 44fe1d2..e131aab 100644
+>> --- a/Documentation/power/runtime_pm.txt
+>> +++ b/Documentation/power/runtime_pm.txt
+>> @@ -665,6 +665,16 @@ as appropriate.  This only applies to system suspend transitions that are not
+>>  related to hibernation (see Documentation/power/devices.txt for more
+>>  information).
+>>
+>> +For devices that know they can remain runtime suspended when the system
+>> +transitions to a sleep state regardless of the PM state of their descendants,
+>> +the flag power.force_direct_complete can be set on their device structures.
+>> +This can be useful when a real device has several virtual devices as
+>> +descendants and it would be very cumbersome to make sure that they return a
+>> +positive value in their .prepare() callback and have runtime PM enabled. Usage
+>> +of power.force_direct_complete is only allowed to devices that aren't
+>> +wakeup-capable, as they would need to set their IRQs as wakeups in their
+>> +.prepare() callbacks before the system transitions to a sleep state.
+>> +
+>>  The PM core does its best to reduce the probability of race conditions between
+>>  the runtime PM and system suspend/resume (and hibernation) callbacks by carrying
+>>  out the following operations:
+>> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>> index 3d874ec..7b962f5 100644
+>> --- a/drivers/base/power/main.c
+>> +++ b/drivers/base/power/main.c
+>> @@ -1438,7 +1438,9 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+>>               if (parent) {
+>>                       spin_lock_irq(&parent->power.lock);
+>>
+>> -                     dev->parent->power.direct_complete = false;
+>> +                     if (!dev->parent->power.force_direct_complete)
+>> +                             dev->parent->power.direct_complete = false;
+>> +
+>>                       if (dev->power.wakeup_path
+>>                           && !dev->parent->power.ignore_children)
+>>                               dev->parent->power.wakeup_path = true;
+>> @@ -1605,9 +1607,13 @@ static int device_prepare(struct device *dev, pm_message_t state)
+>>        * will do the same thing with all of its descendants".  This only
+>>        * applies to suspend transitions, however.
+>>        */
+>> -     spin_lock_irq(&dev->power.lock);
+>> -     dev->power.direct_complete = ret > 0 && state.event == PM_EVENT_SUSPEND;
+>> -     spin_unlock_irq(&dev->power.lock);
+>> +     if (state.event == PM_EVENT_SUSPEND) {
+>> +             spin_lock_irq(&dev->power.lock);
+>> +             dev->power.direct_complete = ret > 0 ||
+>> +                     (dev->power.force_direct_complete &&
+>> +                      !device_can_wakeup(dev));
+>
+> -> What if the bus type (or PM domain) has a good reason to not return a positive
+> number from ->prepare even though the driver thinks it would be OK to do that?
+>
+> The changes here would break that case I think, wouldn't they?
 
-> > I think you'll have to do the research for that yourself... what
-> > I can say is that TWD is capable of one-shot mode,
-> 
-> Is one-shot mode preferred over periodic mode?
-> (Seems counter-intuitive, as one-shot mode needs to be
-> periodically reprogrammed, whereas periodic mode just
-> keeps firing.)
+Yeah, will try to come up with a way for bus types and PM domains in
+the subtree to be able to override that.
 
-Think about it in terms of high-resolution timers.  How can something
-that's programmed to fire HZ times a second provide you with a high
-resolution timer?  Something that you can program for an arbitary
-period depending on your needs obviously allows higher resolution
-intervals, up to the minimum timer count interval.  It can also provide
-a longer interval, up to the maximum timer count interval.
+Thanks,
 
-> > and is capable of running as a high-res timer:
-> > 
-> > Per CPU device: 0
-> > Clock Event Device: local_timer
-> >  max_delta_ns:   21691754031
-> >  min_delta_ns:   1000
-> >  mult:           425201762
-> >  shift:          31
-> >  mode:           3			<== CLOCK_EVT_MODE_ONESHOT
-> >  next_event:     595603944000000 nsecs
-> >  set_next_event: twd_set_next_event
-> >  set_mode:       twd_set_mode
-> >  event_handler:  hrtimer_interrupt	<== indicates that it's switched
-> > 					to high-res mode
-> >  retries:        0
-> 
-> I'm confused.
-> 
-> In the "High-resolution timers not supported when using
-> smp_twd on Cortex A9" thread, you seemed to agree that
-> TWD could not be used as a hrtimer...
+Tomeu
 
-I guess I was wrong.  I'm no expert on the kernel's time code.  That's
-why I've suggested to you several times that you do the research
-yourself, rather than me having to do that research for you and then
-write an email about it.  It's kind of wasting my time, and you're not
-paying me for this kind of support service...
-
-> > Yes - because the TWD stops in low power modes, which makes it
-> > unsuitable as a high-resolution timer.  These kinds of issues
-> > are annoying, but it's the way things are.
-> 
-> So it looks like TWD can be used as a hrtimer, but something
-> on my platform is making it choose otherwise, and it is not
-> the CLOCK_EVT_FEAT_C3STOP flag?
-
-I've no idea.  I don't have the 3.14 code in front of me to research.
-I _could_ wind my tree back to 3.14, and read that code, but I don't
-see why I should go to all that effort... especially as I have other
-things I need to be getting on with, and other problems to be taking
-care of.
-
-What I'm saying is that I have a platform here running a modern kernel
-which _does_ use the TWD, and it _does_ appear to be running in high-res
-mode.
-
--- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+> I thought about adding a flag that would work if the ->prepare callback was
+> not present.  So device_prepare() would check that flag for NULL 'callback'
+> only and then it would set 'ret' to 1 if the flag was set.
+>
+> Something like in the (untested) patch below.
+>
+> Wouldn't that be sufficient to cover the use cases you care about?
+>
+>> +             spin_unlock_irq(&dev->power.lock);
+>> +     }
+>>       return 0;
+>>  }
+>>
+>> diff --git a/include/linux/pm.h b/include/linux/pm.h
+>> index 2d29c64..2e41cfd 100644
+>> --- a/include/linux/pm.h
+>> +++ b/include/linux/pm.h
+>> @@ -553,6 +553,7 @@ struct dev_pm_info {
+>>       bool                    ignore_children:1;
+>>       bool                    early_init:1;   /* Owned by the PM core */
+>>       bool                    direct_complete:1;      /* Owned by the PM core */
+>> +     bool                    force_direct_complete:1;
+>>       spinlock_t              lock;
+>>  #ifdef CONFIG_PM_SLEEP
+>>       struct list_head        entry;
+>>
+>
+> ---
+>  drivers/base/power/main.c |    2 ++
+>  include/linux/pm.h        |    1 +
+>  2 files changed, 3 insertions(+)
+>
+> Index: linux-pm/drivers/base/power/main.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/main.c
+> +++ linux-pm/drivers/base/power/main.c
+> @@ -1589,6 +1589,8 @@ static int device_prepare(struct device
+>                 trace_device_pm_callback_start(dev, info, state.event);
+>                 ret = callback(dev);
+>                 trace_device_pm_callback_end(dev, ret);
+> +       } else if (dev->power.direct_complete_default) {
+> +               ret = 1;
+>         }
+>
+>         device_unlock(dev);
+> Index: linux-pm/include/linux/pm.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/pm.h
+> +++ linux-pm/include/linux/pm.h
+> @@ -553,6 +553,7 @@ struct dev_pm_info {
+>         bool                    ignore_children:1;
+>         bool                    early_init:1;   /* Owned by the PM core */
+>         bool                    direct_complete:1;      /* Owned by the PM core */
+> +       bool                    direct_complete_default:1;      /* Ditto */
+>         spinlock_t              lock;
+>  #ifdef CONFIG_PM_SLEEP
+>         struct list_head        entry;
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
