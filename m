@@ -1,77 +1,37 @@
-From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Subject: Re: [PATCH] ARM: tegra: cpuidle: implement cpuidle_state.enter_freeze()
-Date: Fri, 15 May 2015 11:03:35 +0200
-Message-ID: <CAAObsKBLHqf1+KUE89Orr7ZwzY3-WEW1CHokSOxSD9pEOmTkhg@mail.gmail.com>
-References: <1428490480-10144-1-git-send-email-tomeu.vizoso@collabora.com>
- <20150408115546.GA24271@red-moon> <552643E1.3060200@collabora.com>
- <285738930.THBQOWvsah@vostro.rjw.lan> <20150410100844.GC23730@red-moon>
- <CAAObsKAihF1k1yzZxQEs_jpPnCdV3HQbLaYHWu1QNsNd5zqiOg@mail.gmail.com> <20150417140819.GB2347@red-moon>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: schedule_timeout sleeps too long after dividing CPU frequency
+Date: Fri, 15 May 2015 11:21:16 +0200
+Message-ID: <5555BA8C.7090906@free.fr>
+References: <CAKohpo=eMA6L9=jK=bAnbFuDxcdtpQNub0WFnSy6MOqB3jOdjA@mail.gmail.com> <555218C7.5050602@free.fr> <20150512155004.GP2067@n2100.arm.linux.org.uk> <555380F8.5050306@free.fr> <CAOh2x==aCLxCWX9K57hOFVEP1eLo_OYZPe0YvbFvpkXcoSp_hQ@mail.gmail.com> <5554858A.9010207@free.fr> <20150514115456.GB23999@linux> <55549DEE.6010202@free.fr> <CAKohpon4AV-7nq=Qm7PpDbbW9ti98avY9zz82htzyHWi5_K7fA@mail.gmail.com> <5554B5C1.2070402@free.fr> <20150515041632.GG6348@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150417140819.GB2347@red-moon>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp4-g21.free.fr ([212.27.42.4]:2164 "EHLO smtp4-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754462AbbEOJV2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 15 May 2015 05:21:28 -0400
+In-Reply-To: <20150515041632.GG6348@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mans Rullgard <mans@mansr.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 
-On 17 April 2015 at 16:08, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org> wrote:
-> On Thu, Apr 16, 2015 at 03:37:19PM +0100, Tomeu Vizoso wrote:
->
-> [...]
->
->> >> I don't know what FIQs are. :-)
->> >
->> > In short, fast IRQs, it is a separate IRQ line handled as a separate
->> > exception source with some private (banked) registers that minimize registers
->> > saving/restoring. They are not identical to NMI on x86, since
->> > their behaviour (handling) may be overriden by platforms and they
->> > can be masked.
->> >
->> >> ->enter_freeze is entered with interrupts disabled on the local CPU.  It is
->> >> not supposed to re-enable them.  That is, while in the ->enter_freeze callback
->> >> routine, the CPU must not be interrupted aby anything other than NMI.
->> >
->> > It boils down to what FIQs handlers are allowed to do with tick frozen
->> > and what they are (may be) currently used for.
->> >
->> > Russell has more insights on this than I do, in particular what FIQs are
->> > currently used for on ARM and if we can leave them enabled safely with tick
->> > frozen.
->>
->> But even if it's currently safe to leave them enabled, is there any
->> reason for not disabling them?
->
-> Ok, the point here is: either it is safe, and you leave them enabled,
-> or it is not and we must disable them *before* enter_freeze() is entered.
->
-> Disabling them in the platform enter_freeze() hook does not make sense,
-> because this means we run with FIQs enabled with tick frozen, either
-> it is safe or it is not, it can't be both.
+On 15/05/2015 06:16, Viresh Kumar wrote:
 
-I have been looking and asking around, and seems like we should
-actually leave FIQs enabled when the tick is frozen and only disable
-them within enter_freeze.
+> What core does your platform have? Cortex A9? Doesn't that uses this
+> timer instead: drivers/clocksource/arm_arch_timer.c ?
 
-My understanding is that FIQ handlers are extremely limited in what
-they can do, with the main use being NMI-like functionality. There are
-a handful of other FIQ handlers in mainline, but they don't call into
-any other kernel code and limit themselves to doing some basic I/O.
+Cortex-A9 MPCore r3p0
 
-The only reason why they should be disabled in enter_freeze is that
-the context of the CPU that is going to a lower power state could
-become corrupted if a FIQ gets fired during a save or restore
-operation.
+Generic Timer (aka Architected system timer) is not available
+in Cortex-A9.
 
-Regards,
+https://community.arm.com/message/8775
 
-Tomeu
+"Generic Timer is not an option on the Cortex-A9 (or A8 or A5)
+processors. The Generic Timer is an optional part of the ARMv7
+architecture, and is not implemented by those three processors."
 
-> I would ask Russell opinion on this, before making any decision.
->
-> Lorenzo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Regards.
+
