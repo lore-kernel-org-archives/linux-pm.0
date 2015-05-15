@@ -1,71 +1,169 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] power: validate wakeup source before activating it.
-Date: Fri, 15 May 2015 02:22:01 +0200
-Message-ID: <1816596.LjGsP0DkBO@vostro.rjw.lan>
-References: <1430951216-3003-1-git-send-email-jinqian@android.com>
+Subject: Re: [PATCH] powercap/RAPL: Floor frequency setting in Atom SoC
+Date: Fri, 15 May 2015 02:23:27 +0200
+Message-ID: <3103353.21mvygJH2D@vostro.rjw.lan>
+References: <1430338403-26885-1-git-send-email-ajay.thomas.david.rajamanickam@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53436 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:51565 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1423067AbbENX4t (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 May 2015 19:56:49 -0400
-In-Reply-To: <1430951216-3003-1-git-send-email-jinqian@android.com>
+	with SMTP id S1423072AbbENX6Q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 May 2015 19:58:16 -0400
+In-Reply-To: <1430338403-26885-1-git-send-email-ajay.thomas.david.rajamanickam@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jin Qian <jinqian@android.com>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Ajay Thomas <ajay.thomas.david.rajamanickam@intel.com>
+Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, minipli@googlemail.com, durgadoss.r@intel.com, jbaron@akamai.com, brian.bian@intel.com, jacob.jun.pan@linux.intel.com, noor.u.mubeen@intel.com
 
-On Wednesday, May 06, 2015 03:26:56 PM Jin Qian wrote:
-> A rogue wakeup source not registered in wakeup_sources list is not visible
-> from wakeup_sources_stats_show. Check if the wakeup source is registered
-> properly by looking at the timer struct.
+On Thursday, April 30, 2015 01:43:23 AM Ajay Thomas wrote:
+> CPU Floor frequency is set in BIOS for newer Atom
+> SoCs. This patch handles configuration of floor
+> frequency for different variants of Atom SoCs
+> appropriately and ensures configuration of floor
+> frequency is not done from driver for these
+> newer Atom SoCs.
 > 
-> Signed-off-by: Jin Qian <jinqian@android.com>
-> ---
->  drivers/base/power/wakeup.c | 18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
+> Since address of the register for configuring
+> floor frequency might change for different
+> Atom SoCs, this patch also prevents potential
+> overwriting of wrong registers.
 > 
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index 7726200..7b5ad9a 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -351,6 +351,20 @@ int device_set_wakeup_enable(struct device *dev, bool enable)
->  }
->  EXPORT_SYMBOL_GPL(device_set_wakeup_enable);
->  
-> +/**
-> + * wakeup_source_not_registered - validate the given wakeup source.
-> + * @ws: Wakeup source to be validated.
-> + */
-> +static bool wakeup_source_not_registered(struct wakeup_source *ws)
-> +{
-> +	/*
-> +	 * Use timer struct to check if the given source is initialized
-> +	 * by wakeup_source_add.
-> +	 */
-> +	return ws->timer.function != pm_wakeup_timer_fn ||
-> +		   ws->timer.data != (unsigned long)ws;
-> +}
-> +
->  /*
->   * The functions below use the observation that each wakeup event starts a
->   * period in which the system should not be suspended.  The moment this period
-> @@ -391,6 +405,10 @@ static void wakeup_source_activate(struct wakeup_source *ws)
->  {
->  	unsigned int cec;
->  
-> +	if (WARN_ONCE(wakeup_source_not_registered(ws),
-> +			"unregistered wakeup source\n"))
-> +		return;
-> +
->  	/*
->  	 * active wakeup source should bring the system
->  	 * out of PM_SUSPEND_FREEZE state
+> Reviewed-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+> Signed-off-by: Ajay Thomas <ajay.thomas.david.rajamanickam@intel.com>
 
 Queued up for 4.2, thanks!
 
+> ---
+>  drivers/powercap/intel_rapl.c |   50 +++++++++++++++++++++++++++++++++--------
+>  1 file changed, 41 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+> index fd24323..f332628 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -187,6 +187,7 @@ struct rapl_package {
+>  };
+>  
+>  struct rapl_defaults {
+> +	u8 floor_freq_reg_addr;
+>  	int (*check_unit)(struct rapl_package *rp, int cpu);
+>  	void (*set_floor_freq)(struct rapl_domain *rd, bool mode);
+>  	u64 (*compute_time_window)(struct rapl_package *rp, u64 val,
+> @@ -196,7 +197,8 @@ struct rapl_defaults {
+>  static struct rapl_defaults *rapl_defaults;
+>  
+>  /* Sideband MBI registers */
+> -#define IOSF_CPU_POWER_BUDGET_CTL (0x2)
+> +#define IOSF_CPU_POWER_BUDGET_CTL_BYT (0x2)
+> +#define IOSF_CPU_POWER_BUDGET_CTL_TNG (0xdf)
+>  
+>  #define PACKAGE_PLN_INT_SAVED   BIT(0)
+>  #define MAX_PRIM_NAME (32)
+> @@ -358,7 +360,8 @@ static int set_domain_enable(struct powercap_zone *power_zone, bool mode)
+>  
+>  	get_online_cpus();
+>  	rapl_write_data_raw(rd, PL1_ENABLE, mode);
+> -	rapl_defaults->set_floor_freq(rd, mode);
+> +	if (rapl_defaults->set_floor_freq)
+> +		rapl_defaults->set_floor_freq(rd, mode);
+>  	put_online_cpus();
+>  
+>  	return 0;
+> @@ -979,16 +982,22 @@ static void set_floor_freq_atom(struct rapl_domain *rd, bool enable)
+>  	static u32 power_ctrl_orig_val;
+>  	u32 mdata;
+>  
+> +	if (!rapl_defaults->floor_freq_reg_addr) {
+> +		pr_err("Invalid floor frequency config register\n");
+> +		return;
+> +	}
+> +
+>  	if (!power_ctrl_orig_val)
+>  		iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_PMC_READ,
+> -			IOSF_CPU_POWER_BUDGET_CTL, &power_ctrl_orig_val);
+> +			rapl_defaults->floor_freq_reg_addr,
+> +				&power_ctrl_orig_val);
+>  	mdata = power_ctrl_orig_val;
+>  	if (enable) {
+>  		mdata &= ~(0x7f << 8);
+>  		mdata |= 1 << 8;
+>  	}
+>  	iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_PMC_WRITE,
+> -		IOSF_CPU_POWER_BUDGET_CTL, mdata);
+> +		rapl_defaults->floor_freq_reg_addr, mdata);
+>  }
+>  
+>  static u64 rapl_compute_time_window_core(struct rapl_package *rp, u64 value,
+> @@ -1029,6 +1038,7 @@ static u64 rapl_compute_time_window_atom(struct rapl_package *rp, u64 value,
+>  }
+>  
+>  static const struct rapl_defaults rapl_defaults_core = {
+> +	.floor_freq_reg_addr = 0,
+>  	.check_unit = rapl_check_unit_core,
+>  	.set_floor_freq = set_floor_freq_default,
+>  	.compute_time_window = rapl_compute_time_window_core,
+> @@ -1041,12 +1051,34 @@ static const struct rapl_defaults rapl_defaults_hsw_server = {
+>  	.dram_domain_energy_unit = 15300,
+>  };
+>  
+> -static const struct rapl_defaults rapl_defaults_atom = {
+> +static const struct rapl_defaults rapl_defaults_byt = {
+> +	.floor_freq_reg_addr = IOSF_CPU_POWER_BUDGET_CTL_BYT,
+> +	.check_unit = rapl_check_unit_atom,
+> +	.set_floor_freq = set_floor_freq_atom,
+> +	.compute_time_window = rapl_compute_time_window_atom,
+> +};
+> +
+> +static const struct rapl_defaults rapl_defaults_tng = {
+> +	.floor_freq_reg_addr = IOSF_CPU_POWER_BUDGET_CTL_TNG,
+>  	.check_unit = rapl_check_unit_atom,
+>  	.set_floor_freq = set_floor_freq_atom,
+>  	.compute_time_window = rapl_compute_time_window_atom,
+>  };
+>  
+> +static const struct rapl_defaults rapl_defaults_ann = {
+> +	.floor_freq_reg_addr = 0,
+> +	.check_unit = rapl_check_unit_atom,
+> +	.set_floor_freq = NULL,
+> +	.compute_time_window = rapl_compute_time_window_atom,
+> +};
+> +
+> +static const struct rapl_defaults rapl_defaults_cht = {
+> +	.floor_freq_reg_addr = 0,
+> +	.check_unit = rapl_check_unit_atom,
+> +	.set_floor_freq = NULL,
+> +	.compute_time_window = rapl_compute_time_window_atom,
+> +};
+> +
+>  #define RAPL_CPU(_model, _ops) {			\
+>  		.vendor = X86_VENDOR_INTEL,		\
+>  		.family = 6,				\
+> @@ -1057,7 +1089,7 @@ static const struct rapl_defaults rapl_defaults_atom = {
+>  static const struct x86_cpu_id rapl_ids[] __initconst = {
+>  	RAPL_CPU(0x2a, rapl_defaults_core),/* Sandy Bridge */
+>  	RAPL_CPU(0x2d, rapl_defaults_core),/* Sandy Bridge EP */
+> -	RAPL_CPU(0x37, rapl_defaults_atom),/* Valleyview */
+> +	RAPL_CPU(0x37, rapl_defaults_byt),/* Valleyview */
+>  	RAPL_CPU(0x3a, rapl_defaults_core),/* Ivy Bridge */
+>  	RAPL_CPU(0x3c, rapl_defaults_core),/* Haswell */
+>  	RAPL_CPU(0x3d, rapl_defaults_core),/* Broadwell */
+> @@ -1065,10 +1097,10 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
+>  	RAPL_CPU(0x4f, rapl_defaults_hsw_server),/* Broadwell servers */
+>  	RAPL_CPU(0x45, rapl_defaults_core),/* Haswell ULT */
+>  	RAPL_CPU(0x4E, rapl_defaults_core),/* Skylake */
+> -	RAPL_CPU(0x4C, rapl_defaults_atom),/* Braswell */
+> -	RAPL_CPU(0x4A, rapl_defaults_atom),/* Tangier */
+> +	RAPL_CPU(0x4C, rapl_defaults_cht),/* Braswell/Cherryview */
+> +	RAPL_CPU(0x4A, rapl_defaults_tng),/* Tangier */
+>  	RAPL_CPU(0x56, rapl_defaults_core),/* Future Xeon */
+> -	RAPL_CPU(0x5A, rapl_defaults_atom),/* Annidale */
+> +	RAPL_CPU(0x5A, rapl_defaults_ann),/* Annidale */
+>  	{}
+>  };
+>  MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
+> 
 
 -- 
 I speak only for myself.
