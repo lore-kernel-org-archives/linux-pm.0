@@ -1,86 +1,54 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: schedule_timeout sleeps too long after dividing CPU frequency
-Date: Fri, 15 May 2015 12:11:18 +0200
-Message-ID: <5555C646.5030504@free.fr>
-References: <CAKohpo=eMA6L9=jK=bAnbFuDxcdtpQNub0WFnSy6MOqB3jOdjA@mail.gmail.com> <555218C7.5050602@free.fr> <20150512155004.GP2067@n2100.arm.linux.org.uk> <555380F8.5050306@free.fr> <CAOh2x==aCLxCWX9K57hOFVEP1eLo_OYZPe0YvbFvpkXcoSp_hQ@mail.gmail.com> <5554858A.9010207@free.fr> <20150514115456.GB23999@linux> <55549DEE.6010202@free.fr> <CAKohpon4AV-7nq=Qm7PpDbbW9ti98avY9zz82htzyHWi5_K7fA@mail.gmail.com> <5554B5C1.2070402@free.fr> <20150515041632.GG6348@linux>
+From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Fri, 15 May 2015 11:35:57 +0100
+Message-ID: <20150515113557.54ef930b@lxorguk.ukuu.org.uk>
+References: <b1587e8b2c664632ecd0d9ad1a3e56733da76490.1431068823.git.len.brown@intel.com>
+	<20150514092251.6d0625af@notabene.brown>
+	<20150514235426.GF4316@dastard>
+	<3798672.EXej90jOp1@vostro.rjw.lan>
+	<CACVXFVMEwOSeP8FM89E4XZPUhDsP6bfeCGmJDK1i5kKs-3MCDg@mail.gmail.com>
+	<CAJZ5v0gvDCwXWc5aAU7dGDsC=8ZbGBhQHgPkP92W=+Z7-v_2wA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp4-g21.free.fr ([212.27.42.4]:55431 "EHLO smtp4-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932075AbbEOKL3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 15 May 2015 06:11:29 -0400
-In-Reply-To: <20150515041632.GG6348@linux>
+Received: from 251.110.2.81.in-addr.arpa ([81.2.110.251]:55459 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753678AbbEOKgX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 May 2015 06:36:23 -0400
+In-Reply-To: <CAJZ5v0gvDCwXWc5aAU7dGDsC=8ZbGBhQHgPkP92W=+Z7-v_2wA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mans Rullgard <mans@mansr.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ming Lei <tom.leiming@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dave Chinner <david@fromorbit.com>, NeilBrown <neilb@suse.de>, Len Brown <lenb@kernel.org>, Linux PM List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-On 15/05/2015 06:16, Viresh Kumar wrote:
-
-> On 14-05-15, 16:48, Mason wrote:
->
->> How do I run the TWD in one-shot mode?
+> > Data loss may be caused for hotplug storage(like USB), or all storage
+> > when power is exhausted during suspend.
 > 
-> I haven't refreshed my memory for the earlier reply, but I have tried
-> to go through the code again.
+> Which also may very well happen at run time, right?
+
+Intuitively users treat "suspended" as a bit like off and do remove
+devices they've "finished with".
+
+Technically yes the instant off/on on a phone is the same as the suspend
+to RAM on a laptop but it doesn't mean the model in people's heads is the
+same... not yet anyway.
+
+> > Is there obvious advantage to remove sys_sync() in the case?
 > 
-> The logic is this:
-> - Oneshot mode is only useful if we are going to support NO_HZ mode.
->   i.e. we can disable the clkevt device during CPU idle ..
-> - For that to work, or in other words for the CPU to wake up from the
->   idle state, we need a broadcast timer. Which will wake up the idle
->   cpu and its clkevt device.
-> 
->   You don't have this 'broadcast' timer in your case and so we aren't
->   able to switch to oneshot mode.
-> 
->   Even if you do that, you will be stuck in LOW resolution mode. And
->   so you probably leave this timer as is and use a out-of-CPU-domain
->   timer for this work, which can support high resolution mode.
+> Yes, there is.  It is not necessary to sync() every time you suspend
+> if you do that very often.
 
-For the record, my kernel config contains:
-(There are some BROADCAST-related options enabled.)
+But if you do it very often you won't have any dirty pages to flush so it
+will be very fast.
 
-#
-# IRQ subsystem
-#
-CONFIG_GENERIC_IRQ_PROBE=y
-CONFIG_GENERIC_IRQ_SHOW=y
-CONFIG_HARDIRQS_SW_RESEND=y
-CONFIG_IRQ_DOMAIN=y
-# CONFIG_IRQ_DOMAIN_DEBUG is not set
-CONFIG_IRQ_FORCED_THREADING=y
-CONFIG_KTIME_SCALAR=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-CONFIG_ARCH_HAS_TICK_BROADCAST=y
-CONFIG_GENERIC_CLOCKEVENTS_BROADCAST=y
+> And it is done in such a place that everything needs to wait for it to complete.
 
-#
-# Timers subsystem
-#
-CONFIG_TICK_ONESHOT=y
-CONFIG_NO_HZ_COMMON=y
-# CONFIG_HZ_PERIODIC is not set
-CONFIG_NO_HZ_IDLE=y
-# CONFIG_NO_HZ_FULL is not set
-CONFIG_NO_HZ=y
-CONFIG_HIGH_RES_TIMERS=y
+Only because the code deciding to trigger any automated suspend doesn't
+do a sync a few seconds before. In the case the user goes to the menus
+and does power->suspend then yes it's a delay. In the case where the OS
+at some level has decided that it's 10 seconds from automatically
+suspending to something the user space can issue a pre-emptive sync to
+get the queue size down.
 
-#
-# CPU/Task time and stats accounting
-#
-CONFIG_TICK_CPU_ACCOUNTING=y
-# CONFIG_VIRT_CPU_ACCOUNTING_GEN is not set
-# CONFIG_IRQ_TIME_ACCOUNTING is not set
-# CONFIG_BSD_PROCESS_ACCT is not set
-# CONFIG_TASKSTATS is not set
-
-
-Full config (and platform patch) provided in <555380F8.5050306@free.fr>
-http://article.gmane.org/gmane.linux.power-management.general/60164
-
-Regards.
-
+Alan
