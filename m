@@ -1,69 +1,33 @@
-From: Heinrich Schuchardt <xypron.glpk@gmx.de>
-Subject: Re: [PATCH v2 0/2] Adds cpu power accounting per-pid basis.
-Date: Fri, 15 May 2015 08:34:18 +0200
-Message-ID: <5555936A.7040304@gmx.de>
-References: <1431648770-7404-1-git-send-email-kandoiruchi@google.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: schedule_timeout sleeps too long after dividing CPU frequency
+Date: Fri, 15 May 2015 10:00:13 +0100
+Message-ID: <20150515090013.GE2067@n2100.arm.linux.org.uk>
+References: <555218C7.5050602@free.fr>
+ <20150512155004.GP2067@n2100.arm.linux.org.uk>
+ <555380F8.5050306@free.fr>
+ <CAOh2x==aCLxCWX9K57hOFVEP1eLo_OYZPe0YvbFvpkXcoSp_hQ@mail.gmail.com>
+ <5554858A.9010207@free.fr>
+ <20150514115456.GB23999@linux>
+ <55549DEE.6010202@free.fr>
+ <CAKohpon4AV-7nq=Qm7PpDbbW9ti98avY9zz82htzyHWi5_K7fA@mail.gmail.com>
+ <5554B5C1.2070402@free.fr>
+ <20150515041632.GG6348@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.gmx.net ([212.227.15.19]:50314 "EHLO mout.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753724AbbEOGfV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 15 May 2015 02:35:21 -0400
-In-Reply-To: <1431648770-7404-1-git-send-email-kandoiruchi@google.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150515041632.GG6348@linux>
+Sender: cpufreq-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Mason <slash.tmp@free.fr>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mans Rullgard <mans@mansr.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ruchi Kandoi <kandoiruchi@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Vladimir Davydov <vdavydov@parallels.com>, Thomas Gleixner <tglx@linutronix.de>, Kees Cook <keescook@chromium.org>, Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, Davidlohr Bueso <dave@stgolabs.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 15.05.2015 02:12, Ruchi Kandoi wrote:
-> These patches add a mechanism which will accurately caculate the CPU power
-> used by all the processes in the system. In order to account for the power
-> used by all the processes a data field "cpu_power" has been added in the
-> task_struct.
+On Fri, May 15, 2015 at 09:46:32AM +0530, Viresh Kumar wrote:
+> What core does your platform has? Cortex A9? Doesn't that uses this
+> timer instead: drivers/clocksource/arm_arch_timer.c ?
 
-Hello Ruchi,
+Cortex A9 doesn't always have the architected timer.
 
-could you, please, explain why the CPU power consumption per task
-information is needed. Please, consider that the CPU causes only part of
-the total system power consumption which also comprises GPU, cooling,
-RAM, etc.
-
-The patch series increases the memory size of the kernel, the memory
-consumption per thread and the thread switching time. So, please,
-introduce a configuration switch to enable/disable the function.
-
-> This field adds power for both the system as well as user
-> time. cpu_power contains the total amount of charge(in uAmsec units) used
-> by the process.
-
-Is there any reasonable way to assign the power consumption to a single
-task if multiple tasks are executed on the same core at the same time
-(e.g. using hyperthreading)?
-
-> This model takes into account the frequency at which the
-> process was running(i.e higher power for processes running at higher
-> frequencies). It requires the cpufreq_stats module to be initialized with
-> the current numbers for each of the CPU core at each frequency. This will
-> be initialized during init time.
-
-This does not account for power consumption depending on anything else
-but frequency, e.g. floating point commands consuming more power than NOPs.
-
-Best regards
-
-Heinrich Schuchardt
-> 
-> Ruchi Kandoi (2):
->   cpufreq_stats: Adds sysfs file    
->     /sys/devices/system/cpu/cpufreq/current_in_state
->   sched: cpufreq: Adds a field cpu_power in the task_struct
-> 
->  drivers/cpufreq/cpufreq_stats.c | 191 +++++++++++++++++++++++++++++++++++++++-
->  include/linux/cpufreq.h         |   8 ++
->  include/linux/sched.h           |   2 +
->  kernel/fork.c                   |   1 +
->  kernel/sched/cputime.c          |   7 ++
->  5 files changed, 207 insertions(+), 2 deletions(-)
-> 
-
+-- 
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.
