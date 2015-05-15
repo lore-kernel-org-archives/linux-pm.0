@@ -1,31 +1,36 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v9 00/17] Tegra124 CL-DVFS / DFLL clocksource + cpufreq
-Date: Fri, 15 May 2015 07:39:55 +0530
-Message-ID: <CAKohpo=0j3wqNhn3jtdYVzL0Kxi30TTivSttnUe4gpdGtHk2tw@mail.gmail.com>
-References: <1431529131-16710-1-git-send-email-mikko.perttunen@kapsi.fi>
-	<2216026.DiZ8MPKfdF@vostro.rjw.lan>
-	<55543D6F.2040704@kapsi.fi>
-	<3099473.H5qjMpDQKF@vostro.rjw.lan>
+Subject: Re: [PATCH v2 1/2] cpufreq_stats: Adds sysfs file
+ /sys/devices/system/cpu/cpufreq/current_in_state
+Date: Fri, 15 May 2015 08:18:43 +0530
+Message-ID: <20150515024843.GE6348@linux>
+References: <1431648770-7404-1-git-send-email-kandoiruchi@google.com>
+ <1431648770-7404-2-git-send-email-kandoiruchi@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f171.google.com ([209.85.214.171]:35812 "EHLO
-	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423026AbbEOCJ4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 May 2015 22:09:56 -0400
-Received: by obcus9 with SMTP id us9so67724941obc.2
-        for <linux-pm@vger.kernel.org>; Thu, 14 May 2015 19:09:55 -0700 (PDT)
-In-Reply-To: <3099473.H5qjMpDQKF@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1431648770-7404-2-git-send-email-kandoiruchi@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ruchi Kandoi <kandoiruchi@google.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Vladimir Davydov <vdavydov@parallels.com>, Heinrich Schuchardt <xypron.glpk@gmx.de>, Thomas Gleixner <tglx@linutronix.de>, Kees Cook <keescook@chromium.org>, Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, Davidlohr Bueso <dave@stgolabs.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Mikko Perttunen <mikko.perttunen@kapsi.fi>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Peter De Schrijver <pdeschrijver@nvidia.com>, Mike Turquette <mturquette@linaro.org>, Paul Walmsley <pwalmsley@nvidia.com>, Vince Hsu <vinceh@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tuomas Tynkkynen <tuomas.tynkkynen@iki.fi>
 
-On 15 May 2015 at 01:45, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> You need ACKs from Viresh for those two, then.  He's officially responsible
-> for ARM cpufreq drivers.
+I am not replying for concept here, as sched maintainers are in a
+better position for that, but a nit below..
 
-I thought an Ack for 14th is enough :)
+On 14-05-15, 17:12, Ruchi Kandoi wrote:
+> Adds the sysfs file for userspace to initialize the active current
+> values for all the cores at each of the frequencies.
+> 
+> The format for storing the values is as follows:
+> echo "CPU<cpu#>:<freq1>=<current in uA> <freq2>=<current>,CPU<cpu#>:
+> ..." > /sys/devices/system/cpu/cpufreq/current_in_state
 
-For: 12/13/14.
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Why this file? And not
+/sys/devices/system/cpu/cpuX/cpufreq/stats/current_in_state ? That way
+you don't have to replicate the same information for all CPUs, as the
+stats folder can be shared by multiple CPUs (which share their
+clock/voltage rails)..
+
+-- 
+viresh
