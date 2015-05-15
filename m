@@ -1,62 +1,33 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
-Date: Fri, 15 May 2015 10:43:35 -0500
-Message-ID: <55561427.4030207@ti.com>
-References: <cover.1430394884.git.viresh.kumar@linaro.org> <d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar@linaro.org> <20150512214224.16410.15922@quantum> <20150513085528.GA6994@linux> <20150513110357.GD3066@sirena.org.uk> <20150514003201.20636.83883@quantum> <CAKohpokeKtcJdrBcPZBBPR2zfJgpvuM_=wRaX5q1Uto2qx1oHQ@mail.gmail.com> <20150515141525.GK6348@linux>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 2/2] sched: cpufreq: Adds a field cpu_power in the
+ task_struct
+Date: Fri, 15 May 2015 18:07:16 +0200
+Message-ID: <20150515160716.GY21418@twins.programming.kicks-ass.net>
+References: <1431647748-13221-1-git-send-email-kandoiruchi@google.com>
+ <1431647748-13221-3-git-send-email-kandoiruchi@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:46583 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934224AbbEOPo0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 May 2015 11:44:26 -0400
-In-Reply-To: <20150515141525.GK6348@linux>
+Received: from casper.infradead.org ([85.118.1.10]:59959 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934713AbbEOQHd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 May 2015 12:07:33 -0400
+Content-Disposition: inline
+In-Reply-To: <1431647748-13221-3-git-send-email-kandoiruchi@google.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mike.turquette@linaro.org>
-Cc: Mark Brown <broonie@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, arnd.bergmann@linaro.org, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
+To: Ruchi Kandoi <kandoiruchi@google.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Vladimir Davydov <vdavydov@parallels.com>, Heinrich Schuchardt <xypron.glpk@gmx.de>, Thomas Gleixner <tglx@linutronix.de>, Kees Cook <keescook@chromium.org>, Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, Davidlohr Bueso <dave@stgolabs.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 05/15/2015 09:15 AM, Viresh Kumar wrote:
-> On 14-05-15, 03:25, Michael Turquette wrote:
->> No, we don't understand the problem space well enough to form an ABI.
+On Thu, May 14, 2015 at 04:55:48PM -0700, Ruchi Kandoi wrote:
+> cpu_power has been added to keep track of amount of power each task is
+> consuming. cpu_power is updated whenever stime and utime are updated for
+> a task. power is computed by taking into account the frequency at which
+> the current core was running and the current for cpu actively
+> running at hat frequency.
 > 
-> And why do you think so? We have been facing many problems since a
-> long time which we are trying to solve here.
 
-I would state "problem space is better defined now based on data made
-public by developers on various SoCs", this new binding seems to
-address majority of the concerns (esp with vendor specific
-extensions). OPP behavior is very SoC vendor specific -> it can only
-evolve with an extensible framework - which is what this new binding
-provides. This is something that was badly missing in the older
-binding and framework (I should blame myself for it), even though the
-previous definitions were simple, in effect it was inflexible to the
-detriment of many SoCs.
+Both you patches completely lack any reason for me to even start
+considering this.
 
-Do we know 100% if the new binding solves every SoC's issues - we wont
-be able to do that unless folks speak up - but then, providing ability
-for vendor specific extension allows to consolidate and make common as
-necessary.
-
-Point blank rejection might be a bit of an overkill, IMHO.
-
-> 
-> I agree that it might not be right to try too many things which may
-> not be required later, but most of the things we have now in new
-> bindings are actually required.
-> 
->> Putting this stuff in C without any philosophical constraints on whether
->> or not we can change it later is the way to go.
-> 
-> I don't agree to that :)
-> 
-I second Viresh on this. Benefit of forcing data separation into
-device tree has provided the flexibility now to be able to loadup OPPs
-from bootloader OR over DTC overlay as desired - that is the right
-choice rather than embedding it within C code, providing kludgy
-extension options to provide dynamic data updates.
-
--- 
-Regards,
-Nishanth Menon
+_WHY_ and _what_ are you doing?
