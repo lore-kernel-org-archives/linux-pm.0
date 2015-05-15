@@ -1,40 +1,55 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Resend][PATCH] PM / tick: Add tracepoints for suspend-to-idle diagnostics
-Date: Fri, 15 May 2015 01:42:55 +0200
-Message-ID: <1892508.rYMRoIEMoX@vostro.rjw.lan>
-References: <17474563.tpu6u1dKOa@vostro.rjw.lan> <9746445.jijJSAGWOf@vostro.rjw.lan> <alpine.DEB.2.11.1505142342530.4225@nanos>
+Subject: Re: [PATCH] PM / Runtime: add note about re-calling in during device probe()
+Date: Fri, 15 May 2015 02:05:38 +0200
+Message-ID: <6732591.pWNRRGpios@vostro.rjw.lan>
+References: <1429229655.8341.73.camel@xylophone.i.decadent.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57957 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933101AbbENXRn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 May 2015 19:17:43 -0400
-In-Reply-To: <alpine.DEB.2.11.1505142342530.4225@nanos>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <1429229655.8341.73.camel@xylophone.i.decadent.org.uk>
+Sender: linux-doc-owner@vger.kernel.org
+To: Ben Hutchings <ben.hutchings@codethink.co.uk>
+Cc: linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, CT kernel <linux-kernel@lists.codethink.co.uk>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thursday, May 14, 2015 11:43:11 PM Thomas Gleixner wrote:
-> On Fri, 15 May 2015, Rafael J. Wysocki wrote:
+On Friday, April 17, 2015 01:14:15 AM Ben Hutchings wrote:
+> From: Ben Dooks <ben.dooks@codethink.co.uk>
 > 
-> > On Sunday, May 10, 2015 01:23:35 AM Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > 
-> > > Add suspend/resume tracepoints to tick_freeze() and tick_unfreeze()
-> > > to catch when timekeeping is suspended and resumed during suspend-to-idle
-> > > so as to be able to check whether or not we enter the "frozen" state
-> > > and to measure the time spent in it.
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > Thomas, Peter, any objections here?
+> The sh_eth driver has come up with an issue where the runtime_pm
+> code suspends it during the probe() method due to the network
+> device registration re-calling into the driver.
 > 
-> No.
+> Add a note about this into the documentation.
 > 
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+> Signed-off-by: Ben Hutchings <ben.hutchings@codethink.co.uk>
 
-Thanks!
+Queued up for 4.2, thanks!
 
+> ---
+>  Documentation/power/runtime_pm.txt |    6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+> index 44fe1d28a163..e76dc0ad4d2b 100644
+> --- a/Documentation/power/runtime_pm.txt
+> +++ b/Documentation/power/runtime_pm.txt
+> @@ -556,6 +556,12 @@ helper functions described in Section 4.  In that case, pm_runtime_resume()
+>  should be used.  Of course, for this purpose the device's runtime PM has to be
+>  enabled earlier by calling pm_runtime_enable().
+>  
+> +Note, if the device may execute pm_runtime calls during the probe (such as
+> +if it is registers with a subsystem that may call back in) then the
+> +pm_runtime_get_sync() call paired with a pm_runtime_put() call will be
+> +appropriate to ensure that the device is not put back to sleep during the
+> +probe. This can happen with systems such as the network device layer.
+> +
+>  It may be desirable to suspend the device once ->probe() has finished.
+>  Therefore the driver core uses the asyncronous pm_request_idle() to submit a
+>  request to execute the subsystem-level idle callback for the device at that
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
