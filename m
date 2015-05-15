@@ -1,251 +1,162 @@
 From: Ruchi Kandoi <kandoiruchi@google.com>
-Subject: [PATCH v2 1/2] cpufreq_stats: Adds sysfs file /sys/devices/system/cpu/cpufreq/current_in_state
-Date: Thu, 14 May 2015 17:12:49 -0700
-Message-ID: <1431648770-7404-2-git-send-email-kandoiruchi@google.com>
+Subject: [PATCH v2 2/2] sched: cpufreq: Adds a field cpu_power in the task_struct
+Date: Thu, 14 May 2015 17:12:50 -0700
+Message-ID: <1431648770-7404-3-git-send-email-kandoiruchi@google.com>
 References: <1431648770-7404-1-git-send-email-kandoiruchi@google.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f171.google.com ([209.85.213.171]:37548 "EHLO
-	mail-ig0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423226AbbEOANH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 May 2015 20:13:07 -0400
-Received: by igbsb11 with SMTP id sb11so88376740igb.0
-        for <linux-pm@vger.kernel.org>; Thu, 14 May 2015 17:13:07 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1431648770-7404-1-git-send-email-kandoiruchi@google.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: kandoiruchi@google.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Vladimir Davydov <vdavydov@parallels.com>, Heinrich Schuchardt <xypron.glpk@gmx.de>, Thomas Gleixner <tglx@linutronix.de>, Kees Cook <keescook@chromium.org>, Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, Davidlohr Bueso <dave@stgolabs.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Adds the sysfs file for userspace to initialize the active current
-values for all the cores at each of the frequencies.
-
-The format for storing the values is as follows:
-echo "CPU<cpu#>:<freq1>=<current in uA> <freq2>=<current>,CPU<cpu#>:
-..." > /sys/devices/system/cpu/cpufreq/current_in_state
+cpu_power has been added to keep track of amount of power each task is
+consuming. cpu_power is updated whenever stime and utime are updated for
+a task. power is computed by taking into account the frequency at which
+the current core was running and the current for cpu actively
+running at hat frequency.
 
 Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
 ---
- drivers/cpufreq/cpufreq_stats.c | 163 +++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 161 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq_stats.c | 28 ++++++++++++++++++++++++++++
+ include/linux/cpufreq.h         |  8 ++++++++
+ include/linux/sched.h           |  2 ++
+ kernel/fork.c                   |  1 +
+ kernel/sched/cputime.c          |  7 +++++++
+ 5 files changed, 46 insertions(+)
 
 diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 5e370a3..6f0b562 100644
+index 6f0b562..682ed898 100644
 --- a/drivers/cpufreq/cpufreq_stats.c
 +++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -30,6 +30,14 @@ struct cpufreq_stats {
- #endif
- };
+@@ -14,6 +14,7 @@
+ #include <linux/module.h>
+ #include <linux/slab.h>
+ #include <linux/cputime.h>
++#include <linux/sched.h>
  
-+struct cpufreq_power_stats {
-+	unsigned int state_num;
-+	unsigned int *curr;
-+	unsigned int *freq_table;
-+};
-+
-+static DEFINE_PER_CPU(struct cpufreq_power_stats *, cpufreq_power_stats);
-+
- static int cpufreq_stats_update(struct cpufreq_stats *stats)
- {
- 	unsigned long long cur_time = get_jiffies_64();
-@@ -61,6 +69,87 @@ static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
- 	return len;
- }
+ static spinlock_t cpufreq_stats_lock;
  
-+static void store_current_value(struct cpufreq_power_stats *powerstats,
-+		int freq, int curr)
-+{
-+	int i;
-+
-+	/* freq_table doesn't contain any CPU_FREQ_INVALID */
-+	for (i = 0; i < powerstats->state_num; i++) {
-+		if (powerstats->freq_table[i] == freq) {
-+			powerstats->curr[i] = curr;
-+			break;
-+		}
-+	}
-+}
-+
-+static ssize_t store_current_in_state(struct cpufreq_policy *policy,
-+		const char *buf, size_t len)
-+{
-+	char *cp, *cp2, *start, *buffer;
-+	unsigned int cpu_num, ret, curr, freq;
-+	struct cpufreq_power_stats *powerstats;
-+
-+	if (!buf || len < 0)
-+		return len;
-+
-+	buffer = kzalloc(len + 1, GFP_KERNEL);
-+	if (!buffer)
-+		return len;
-+
-+	strncpy(buffer, buf, len);
-+	buffer[len] = '\0';
-+	cp = buffer;
-+	spin_lock(&cpufreq_stats_lock);
-+	while ((start = strsep(&cp, ","))) {
-+		ret = sscanf(start, "CPU%u:", &cpu_num);
-+		if (ret != 1 || cpu_num > (num_possible_cpus() - 1)) {
-+			ret = -EINVAL;
-+			goto error;
-+		}
-+		powerstats = per_cpu(cpufreq_power_stats, cpu_num);
-+		if (!powerstats)
-+			continue;
-+
-+		/* sscanf makes sure that strchr doesn't return a NULL */
-+		cp2 = strchr(start, ':') + 1;
-+		while ((start = strsep(&cp2, " "))) {
-+			if (sscanf(start, "%u=%u", &freq, &curr) != 2) {
-+				ret = -EINVAL;
-+				goto error;
-+			}
-+			store_current_value(powerstats, freq, curr);
-+		}
-+	}
-+	ret = len;
-+error:
-+	spin_unlock(&cpufreq_stats_lock);
-+	kfree(buffer);
-+	return ret;
-+}
-+
-+static ssize_t show_current_in_state(struct cpufreq_policy *policy, char *buf)
-+{
-+	ssize_t len = 0;
-+	unsigned int i, cpu;
-+	struct cpufreq_power_stats *powerstats;
-+
-+	spin_lock(&cpufreq_stats_lock);
-+	for_each_possible_cpu(cpu) {
-+		powerstats = per_cpu(cpufreq_power_stats, cpu);
-+		if (!powerstats)
-+			continue;
-+		len += scnprintf(buf + len, PAGE_SIZE - len, "CPU%d:", cpu);
-+		for (i = 0; i < powerstats->state_num; i++)
-+			len += scnprintf(buf + len, PAGE_SIZE - len,
-+					"%d=%d ", powerstats->freq_table[i],
-+					powerstats->curr[i]);
-+		len += scnprintf(buf + len, PAGE_SIZE - len, "\n");
-+	}
-+	spin_unlock(&cpufreq_stats_lock);
-+	return len;
-+}
-+
- #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
- static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
- {
-@@ -107,6 +196,7 @@ cpufreq_freq_attr_ro(trans_table);
- 
- cpufreq_freq_attr_ro(total_trans);
- cpufreq_freq_attr_ro(time_in_state);
-+cpufreq_freq_attr_rw(current_in_state);
- 
- static struct attribute *default_attrs[] = {
- 	&total_trans.attr,
-@@ -159,6 +249,67 @@ static void cpufreq_stats_free_table(unsigned int cpu)
- 	cpufreq_cpu_put(policy);
- }
- 
-+static void cpufreq_powerstats_free(void)
-+{
-+	int cpu;
-+	struct cpufreq_power_stats *powerstats;
-+
-+	sysfs_remove_file(cpufreq_global_kobject, &current_in_state.attr);
-+
-+	for_each_possible_cpu(cpu) {
-+		powerstats = per_cpu(cpufreq_power_stats, cpu);
-+		if (!powerstats)
-+			continue;
-+		kfree(powerstats->curr);
-+		kfree(powerstats);
-+		per_cpu(cpufreq_power_stats, cpu) = NULL;
-+	}
-+}
-+
-+static void cpufreq_powerstats_create(unsigned int cpu)
-+{
-+	unsigned int alloc_size, i = 0, j = 0, count = 0;
-+	struct cpufreq_power_stats *powerstats;
-+	struct cpufreq_frequency_table *pos, *table;
-+
-+	/* We need cpufreq table for creating power stats table */
-+	table = cpufreq_frequency_get_table(cpu);
-+	if (unlikely(!table))
-+		return;
-+
-+	powerstats = kzalloc(sizeof(struct cpufreq_power_stats),
-+			GFP_KERNEL);
-+	if (!powerstats)
-+		return;
-+
-+	/* Find total allocation size */
-+	cpufreq_for_each_valid_entry(pos, table)
-+		count++;
-+
-+	/* Allocate memory for freq table per cpu as well as clockticks per
-+	 * freq*/
-+	alloc_size = count * sizeof(unsigned int) +
-+		count * sizeof(unsigned int);
-+	powerstats->curr = kzalloc(alloc_size, GFP_KERNEL);
-+	if (!powerstats->curr) {
-+		kfree(powerstats);
-+		return;
-+	}
-+	powerstats->freq_table = powerstats->curr + count;
-+
-+	spin_lock(&cpufreq_stats_lock);
-+	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END && j < count; i++) {
-+		unsigned int freq = table[i].frequency;
-+
-+		if (freq == CPUFREQ_ENTRY_INVALID)
-+			continue;
-+		powerstats->freq_table[j++] = freq;
-+	}
-+	powerstats->state_num = j;
-+	per_cpu(cpufreq_power_stats, cpu) = powerstats;
-+	spin_unlock(&cpufreq_stats_lock);
-+}
-+
- static int __cpufreq_stats_create_table(struct cpufreq_policy *policy)
- {
- 	unsigned int i = 0, count = 0, ret = -ENOMEM;
-@@ -249,9 +400,11 @@ static int cpufreq_stat_notifier_policy(struct notifier_block *nb,
- 	int ret = 0;
- 	struct cpufreq_policy *policy = data;
- 
--	if (val == CPUFREQ_CREATE_POLICY)
-+	if (val == CPUFREQ_CREATE_POLICY) {
- 		ret = __cpufreq_stats_create_table(policy);
--	else if (val == CPUFREQ_REMOVE_POLICY)
-+		if (!per_cpu(cpufreq_power_stats, policy->cpu))
-+			cpufreq_powerstats_create(policy->cpu);
-+	} else if (val == CPUFREQ_REMOVE_POLICY)
- 		__cpufreq_stats_free_table(policy);
- 
- 	return ret;
-@@ -335,8 +488,13 @@ static int __init cpufreq_stats_init(void)
- 		return ret;
+@@ -83,6 +84,33 @@ static void store_current_value(struct cpufreq_power_stats *powerstats,
  	}
- 
-+	ret = sysfs_create_file(cpufreq_global_kobject, &current_in_state.attr);
-+	if (ret)
-+		pr_warn("Cannot create sysfs file for cpufreq current stats\n");
-+
- 	return 0;
  }
+ 
++void acct_update_power(struct task_struct *task, cputime_t cputime)
++{
++	struct cpufreq_power_stats *powerstats;
++	struct cpufreq_stats *stats;
++	struct cpufreq_policy *policy;
++	unsigned int cpu_num, curr;
 +
- static void __exit cpufreq_stats_exit(void)
++	if (!task)
++		return;
++	cpu_num = task_cpu(task);
++	powerstats = per_cpu(cpufreq_power_stats, cpu_num);
++	policy = cpufreq_cpu_get(cpu_num);
++	if (!policy)
++		return;
++
++	if (!powerstats || !(policy->stats)) {
++		cpufreq_cpu_put(policy);
++		return;
++	}
++
++	stats = policy->stats;
++	curr = powerstats->curr[stats->last_index];
++	task->cpu_power += curr * cputime_to_usecs(cputime);
++	cpufreq_cpu_put(policy);
++}
++EXPORT_SYMBOL_GPL(acct_update_power);
++
+ static ssize_t store_current_in_state(struct cpufreq_policy *policy,
+ 		const char *buf, size_t len)
  {
- 	unsigned int cpu;
-@@ -347,6 +505,7 @@ static void __exit cpufreq_stats_exit(void)
- 			CPUFREQ_TRANSITION_NOTIFIER);
- 	for_each_online_cpu(cpu)
- 		cpufreq_stats_free_table(cpu);
-+	cpufreq_powerstats_free();
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 2ee4888..86826c8 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -18,6 +18,7 @@
+ #include <linux/notifier.h>
+ #include <linux/spinlock.h>
+ #include <linux/sysfs.h>
++#include <asm/cputime.h>
+ 
+ /*********************************************************************
+  *                        CPUFREQ INTERFACE                          *
+@@ -601,4 +602,11 @@ unsigned int cpufreq_generic_get(unsigned int cpu);
+ int cpufreq_generic_init(struct cpufreq_policy *policy,
+ 		struct cpufreq_frequency_table *table,
+ 		unsigned int transition_latency);
++
++/*********************************************************************
++ *                         CPUFREQ STATS                             *
++ *********************************************************************/
++
++void acct_update_power(struct task_struct *p, cputime_t cputime);
++
+ #endif /* _LINUX_CPUFREQ_H */
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 26a2e61..1f2400a 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1429,6 +1429,7 @@ struct task_struct {
+ 	int __user *clear_child_tid;		/* CLONE_CHILD_CLEARTID */
+ 
+ 	cputime_t utime, stime, utimescaled, stimescaled;
++	unsigned long long cpu_power;
+ 	cputime_t gtime;
+ #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+ 	struct cputime prev_cputime;
+@@ -1441,6 +1442,7 @@ struct task_struct {
+ 		VTIME_USER,
+ 		VTIME_SYS,
+ 	} vtime_snap_whence;
++
+ #endif
+ 	unsigned long nvcsw, nivcsw; /* context switch counts */
+ 	u64 start_time;		/* monotonic time in nsec */
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 03c1eaa..2ca0e9e 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1341,6 +1341,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 
+ 	p->utime = p->stime = p->gtime = 0;
+ 	p->utimescaled = p->stimescaled = 0;
++	p->cpu_power = 0;
+ #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+ 	p->prev_cputime.utime = p->prev_cputime.stime = 0;
+ #endif
+diff --git a/kernel/sched/cputime.c b/kernel/sched/cputime.c
+index 8394b1e..53a79d5 100644
+--- a/kernel/sched/cputime.c
++++ b/kernel/sched/cputime.c
+@@ -4,6 +4,7 @@
+ #include <linux/kernel_stat.h>
+ #include <linux/static_key.h>
+ #include <linux/context_tracking.h>
++#include <linux/cpufreq.h>
+ #include "sched.h"
+ 
+ 
+@@ -149,6 +150,9 @@ void account_user_time(struct task_struct *p, cputime_t cputime,
+ 
+ 	/* Account for user time used */
+ 	acct_account_cputime(p);
++
++	/* Account power usage for user time */
++	acct_update_power(p, cputime);
  }
  
- MODULE_AUTHOR("Zou Nan hai <nanhai.zou@intel.com>");
+ /*
+@@ -199,6 +203,9 @@ void __account_system_time(struct task_struct *p, cputime_t cputime,
+ 
+ 	/* Account for system time used */
+ 	acct_account_cputime(p);
++
++	/* Account power usage for system time */
++	acct_update_power(p, cputime);
+ }
+ 
+ /*
 -- 
 2.2.0.rc0.207.ga3a616c
-
