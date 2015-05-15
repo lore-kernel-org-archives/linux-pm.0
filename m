@@ -1,44 +1,85 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
-Date: Fri, 15 May 2015 19:45:25 +0530
-Message-ID: <20150515141525.GK6348@linux>
-References: <cover.1430394884.git.viresh.kumar@linaro.org>
- <d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar@linaro.org>
- <20150512214224.16410.15922@quantum>
- <20150513085528.GA6994@linux>
- <20150513110357.GD3066@sirena.org.uk>
- <20150514003201.20636.83883@quantum>
- <CAKohpokeKtcJdrBcPZBBPR2zfJgpvuM_=wRaX5q1Uto2qx1oHQ@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Fri, 15 May 2015 10:19:22 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1505151012460.1295-100000@iolanthe.rowland.org>
+References: <20150514235426.GF4316@dastard>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f173.google.com ([209.85.213.173]:38407 "EHLO
-	mail-ig0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752854AbbEOOP3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 May 2015 10:15:29 -0400
-Received: by igcau1 with SMTP id au1so26870297igc.1
-        for <linux-pm@vger.kernel.org>; Fri, 15 May 2015 07:15:29 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAKohpokeKtcJdrBcPZBBPR2zfJgpvuM_=wRaX5q1Uto2qx1oHQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150514235426.GF4316@dastard>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dave Chinner <david@fromorbit.com>
+Cc: NeilBrown <neilb@suse.de>, Len Brown <lenb@kernel.org>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mike.turquette@linaro.org>
-Cc: Mark Brown <broonie@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-On 14-05-15, 03:25, Michael Turquette wrote:
-> No, we don't understand the problem space well enough to form an ABI.
+On Fri, 15 May 2015, Dave Chinner wrote:
 
-And why do you think so? We have been facing many problems since a
-long time which we are trying to solve here.
+> It has nothing to do with journalling, and everything to do with
+> bring filesystems to an *idle state* before suspend runs.  We have a
+> long history of bug reports with XFS that go: suspend, resume, XFS
+> almost immediately detects corruption, shuts down.
+> 
+> The problem is that "sync" doesn't make the filesystem idle - XFs
+> has *lots* of background work going on, and if we aren't *real
+> careful* the filesystem is still doing work while the hardware gets
+> powerd down and the suspend image is being taken. the result is on
+> resume that the on-disk filesystem state does not match the memory
+> image pulled back from resume, and we get shutdowns.
+> 
+> sys_sync() does not guarantee a filesystem is idle - it guarantees
+> the data in memory is recoverable, butit doesn't stop the filesystem
+> from doing things like writing back metadata or running background
+> cleaup tasks. If those aren't stopped properly, then we get into
+> the state where in-memory and on-disk state get out of whack. And
+> s2ram can have these problems too, because if there is IO in flight
+> when the hardware is powered down, that IO is lost....
+> 
+> Every time some piece of generic infrastructure changes behaviour
+> w.r.t. suspend/resume, we get a new set of problems being reported
+> by users. It's extremely hard to test for these problems and it
+> might take months of occasional corruption reports from a user to
+> isolate it to being a suspend/resume problem.  It's a game of
+> whack-a-mole, because quite often they come down to the fact that
+> something changed and nobody in the XFS world knew they had to now
+> set an different initialisation flag on some structure or workqueue
+> to make it work the way it needed to work.
+> 
+> Go back an look at the history of sys_sync() in suspend discussions
+> over the past 10 years.  You'll find me saying exactly the same
+> thing again and again about sys_sync(): it does not guarantee the
+> filesystem is in an idle or coherent, unchanging state, and nothing
+> in the suspend code tells the filesystem to enter an idle or frozen
+> state. We actually have mechanisms for doing this - we use it in the
+> storage layers to idle the filesystem while we do things like *take
+> a snapshot*.
+> 
+> What is the mechanism suspend to disk uses? It *takes a snapshot* of
+> system state, written to disk. It's supposed to be consistent, and
+> the only way you can guarantee the state of an active, mounted
+> filesystem has consistent in-memory state and on-disk state and
+> that it won't get changed is to *freeze the filesystem*.
+> 
+> Removing the sync is only going to make this problem worse because
+> the delta between on-disk and in-memory state is going to be much,
+> much larger. There is also likely to be significant filesystem
+> activity occurring when the filesystem has all it's background
+> threads and work queues abruptly frozen with no warning or
+> co-ordination, which makes it impossible for anyone to test
+> suspend/resume reliably.
+> 
+> Sorry for the long rant, but I've been saying the same thing for 10
+> years, which is abotu as long as I've been dealing with filesystem
+> corruptions that have resulted from suspend/resume.
 
-I agree that it might not be right to try too many things which may
-not be required later, but most of the things we have now in new
-bindings are actually required.
+Are you suggesting that filesystems should register a "freeze the
+filesystem" routine, and the PM core should call this routine during 
+hibernation (aka suspend-to-disk)?  With a corresponding "unfreeze" 
+hook for resume, of course.
 
-> Putting this stuff in C without any philosophical constraints on whether
-> or not we can change it later is the way to go.
+That seems like a good idea to me.  It would also present a logical
+place to add some simple checks for changes to the on-disk image caused
+by the user moving the storage device to another system, modifying the
+contents, and then moving it back all while the current system was 
+hibernating (or suspended).
 
-I don't agree to that :)
-
--- 
-viresh
+Alan Stern
