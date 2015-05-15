@@ -1,162 +1,141 @@
-From: Ruchi Kandoi <kandoiruchi@google.com>
-Subject: [PATCH v2 2/2] sched: cpufreq: Adds a field cpu_power in the task_struct
-Date: Thu, 14 May 2015 17:12:50 -0700
-Message-ID: <1431648770-7404-3-git-send-email-kandoiruchi@google.com>
-References: <1431648770-7404-1-git-send-email-kandoiruchi@google.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1431648770-7404-1-git-send-email-kandoiruchi@google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: kandoiruchi@google.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Vladimir Davydov <vdavydov@parallels.com>, Heinrich Schuchardt <xypron.glpk@gmx.de>, Thomas Gleixner <tglx@linutronix.de>, Kees Cook <keescook@chromium.org>, Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, Davidlohr Bueso <dave@stgolabs.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Ming Lei <tom.leiming@gmail.com>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Fri, 15 May 2015 08:40:07 +0800
+Message-ID: <CACVXFVMEwOSeP8FM89E4XZPUhDsP6bfeCGmJDK1i5kKs-3MCDg@mail.gmail.com>
+References: <b1587e8b2c664632ecd0d9ad1a3e56733da76490.1431068823.git.len.brown@intel.com>
+	<20150514092251.6d0625af@notabene.brown>
+	<20150514235426.GF4316@dastard>
+	<3798672.EXej90jOp1@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f181.google.com ([209.85.214.181]:34698 "EHLO
+	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423209AbbEOAkI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 May 2015 20:40:08 -0400
+In-Reply-To: <3798672.EXej90jOp1@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dave Chinner <david@fromorbit.com>, NeilBrown <neilb@suse.de>, Len Brown <lenb@kernel.org>, Linux PM List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-cpu_power has been added to keep track of amount of power each task is
-consuming. cpu_power is updated whenever stime and utime are updated for
-a task. power is computed by taking into account the frequency at which
-the current core was running and the current for cpu actively
-running at hat frequency.
+On Fri, May 15, 2015 at 8:34 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Friday, May 15, 2015 09:54:26 AM Dave Chinner wrote:
+>> ng back On Thu, May 14, 2015 at 09:22:51AM +1000, NeilBrown wrote:
+>> > On Mon, 11 May 2015 11:44:28 +1000 Dave Chinner <david@fromorbit.com> wrote:
+>> >
+>> > > On Fri, May 08, 2015 at 03:08:43AM -0400, Len Brown wrote:
+>> > > > From: Len Brown <len.brown@intel.com>
+>> > > >
+>> > > > Remove sys_sync() from the kernel's suspend flow.
+>> > > >
+>> > > > sys_sync() is extremely expensive in some configurations,
+>> > > > and so the kernel should not force users to pay this cost
+>> > > > on every suspend.
+>> > >
+>> > > Since when? Please explain what your use case is that makes this
+>> > > so prohibitively expensive it needs to be removed.
+>> > >
+>> > > >
+>> > > > The user-space utilities s2ram and s2disk choose to invoke sync() today.
+>> > > > A user can invoke suspend directly via /sys/power/state to skip that cost.
+>> > >
+>> > > So, you want to have s2disk write all the dirty pages in memory to
+>> > > the suspend image, rather than to the filesystem?
+>> > >
+>> > > Either way you have to write that dirty data to disk, but if you
+>> > > write it to the suspend image, it then has to be loaded again on
+>> > > resume, and then written again to the filesystem the system has
+>> > > resumed. This doesn't seem very efficient to me....
+>> > >
+>> > > And, quite frankly, machines fail to resume from suspne dall the
+>> > > time. e.g. run out of batteries when they are under s2ram
+>> > > conditions, or s2disk fails because a kernel upgrade was done before
+>> > > the s2disk and so can't be resumed. With your change, users lose all
+>> > > the data that was buffered in memory before suspend, whereas right
+>> > > now it is written to disk and so nothing is lost if the resume from
+>> > > suspend fails for whatever reason.
+>> > >
+>> > > IOWs, I can see several good reasons why the sys_sync() needs to
+>> > > remain in the suspend code. User data safety and filesystem
+>> > > integrity is far, far more important than a couple of seconds
+>> > > improvement in suspend speed....
+>> >
+>> > To be honest, this sounds like superstition and fear, not science and fact.
+>> >
+>> > "filesystem integrity" is not an issue for the fast majority of filesystems
+>> > which use journalling to ensure continued integrity even after a crash.  I
+>> > think even XFS does that :-)
+>>
+>> It has nothing to do with journalling, and everything to do with
+>> bring filesystems to an *idle state* before suspend runs.  We have a
+>> long history of bug reports with XFS that go: suspend, resume, XFS
+>> almost immediately detects corruption, shuts down.
+>>
+>> The problem is that "sync" doesn't make the filesystem idle - XFs
+>> has *lots* of background work going on, and if we aren't *real
+>> careful* the filesystem is still doing work while the hardware gets
+>> powerd down and the suspend image is being taken. the result is on
+>> resume that the on-disk filesystem state does not match the memory
+>> image pulled back from resume, and we get shutdowns.
+>>
+>> sys_sync() does not guarantee a filesystem is idle - it guarantees
+>> the data in memory is recoverable, butit doesn't stop the filesystem
+>> from doing things like writing back metadata or running background
+>> cleaup tasks. If those aren't stopped properly, then we get into
+>> the state where in-memory and on-disk state get out of whack. And
+>> s2ram can have these problems too, because if there is IO in flight
+>> when the hardware is powered down, that IO is lost....
+>>
+>> Every time some piece of generic infrastructure changes behaviour
+>> w.r.t. suspend/resume, we get a new set of problems being reported
+>> by users. It's extremely hard to test for these problems and it
+>> might take months of occasional corruption reports from a user to
+>> isolate it to being a suspend/resume problem.  It's a game of
+>> whack-a-mole, because quite often they come down to the fact that
+>> something changed and nobody in the XFS world knew they had to now
+>> set an different initialisation flag on some structure or workqueue
+>> to make it work the way it needed to work.
+>>
+>> Go back an look at the history of sys_sync() in suspend discussions
+>> over the past 10 years.  You'll find me saying exactly the same
+>> thing again and again about sys_sync(): it does not guarantee the
+>> filesystem is in an idle or coherent, unchanging state, and nothing
+>> in the suspend code tells the filesystem to enter an idle or frozen
+>> state. We actually have mechanisms for doing this - we use it in the
+>> storage layers to idle the filesystem while we do things like *take
+>> a snapshot*.
+>>
+>> What is the mechanism suspend to disk uses? It *takes a snapshot* of
+>> system state, written to disk. It's supposed to be consistent, and
+>> the only way you can guarantee the state of an active, mounted
+>> filesystem has consistent in-memory state and on-disk state and
+>> that it won't get changed is to *freeze the filesystem*.
+>>
+>> Removing the sync is only going to make this problem worse because
+>> the delta between on-disk and in-memory state is going to be much,
+>> much larger. There is also likely to be significant filesystem
+>> activity occurring when the filesystem has all it's background
+>> threads and work queues abruptly frozen with no warning or
+>> co-ordination, which makes it impossible for anyone to test
+>> suspend/resume reliably.
+>>
+>> Sorry for the long rant, but I've been saying the same thing for 10
+>> years, which is abotu as long as I've been dealing with filesystem
+>> corruptions that have resulted from suspend/resume.
+>
+> Well, the change proposed by Len is *only* about suspend-to-RAM and
+> similar.  It is *not* about suspend-to-disk, so pretty please let's
+> not confuse things.
+>
+> So what problems may arise specifically in the suspend-to-RAM case if
+> we remove the unconditional sys_sync() from its code path?
 
-Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
----
- drivers/cpufreq/cpufreq_stats.c | 28 ++++++++++++++++++++++++++++
- include/linux/cpufreq.h         |  8 ++++++++
- include/linux/sched.h           |  2 ++
- kernel/fork.c                   |  1 +
- kernel/sched/cputime.c          |  7 +++++++
- 5 files changed, 46 insertions(+)
+Data loss may be caused for hotplug storage(like USB), or all storage
+when power is exhausted during suspend.
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 6f0b562..682ed898 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -14,6 +14,7 @@
- #include <linux/module.h>
- #include <linux/slab.h>
- #include <linux/cputime.h>
-+#include <linux/sched.h>
- 
- static spinlock_t cpufreq_stats_lock;
- 
-@@ -83,6 +84,33 @@ static void store_current_value(struct cpufreq_power_stats *powerstats,
- 	}
- }
- 
-+void acct_update_power(struct task_struct *task, cputime_t cputime)
-+{
-+	struct cpufreq_power_stats *powerstats;
-+	struct cpufreq_stats *stats;
-+	struct cpufreq_policy *policy;
-+	unsigned int cpu_num, curr;
-+
-+	if (!task)
-+		return;
-+	cpu_num = task_cpu(task);
-+	powerstats = per_cpu(cpufreq_power_stats, cpu_num);
-+	policy = cpufreq_cpu_get(cpu_num);
-+	if (!policy)
-+		return;
-+
-+	if (!powerstats || !(policy->stats)) {
-+		cpufreq_cpu_put(policy);
-+		return;
-+	}
-+
-+	stats = policy->stats;
-+	curr = powerstats->curr[stats->last_index];
-+	task->cpu_power += curr * cputime_to_usecs(cputime);
-+	cpufreq_cpu_put(policy);
-+}
-+EXPORT_SYMBOL_GPL(acct_update_power);
-+
- static ssize_t store_current_in_state(struct cpufreq_policy *policy,
- 		const char *buf, size_t len)
- {
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 2ee4888..86826c8 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -18,6 +18,7 @@
- #include <linux/notifier.h>
- #include <linux/spinlock.h>
- #include <linux/sysfs.h>
-+#include <asm/cputime.h>
- 
- /*********************************************************************
-  *                        CPUFREQ INTERFACE                          *
-@@ -601,4 +602,11 @@ unsigned int cpufreq_generic_get(unsigned int cpu);
- int cpufreq_generic_init(struct cpufreq_policy *policy,
- 		struct cpufreq_frequency_table *table,
- 		unsigned int transition_latency);
-+
-+/*********************************************************************
-+ *                         CPUFREQ STATS                             *
-+ *********************************************************************/
-+
-+void acct_update_power(struct task_struct *p, cputime_t cputime);
-+
- #endif /* _LINUX_CPUFREQ_H */
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 26a2e61..1f2400a 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1429,6 +1429,7 @@ struct task_struct {
- 	int __user *clear_child_tid;		/* CLONE_CHILD_CLEARTID */
- 
- 	cputime_t utime, stime, utimescaled, stimescaled;
-+	unsigned long long cpu_power;
- 	cputime_t gtime;
- #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
- 	struct cputime prev_cputime;
-@@ -1441,6 +1442,7 @@ struct task_struct {
- 		VTIME_USER,
- 		VTIME_SYS,
- 	} vtime_snap_whence;
-+
- #endif
- 	unsigned long nvcsw, nivcsw; /* context switch counts */
- 	u64 start_time;		/* monotonic time in nsec */
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 03c1eaa..2ca0e9e 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1341,6 +1341,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 
- 	p->utime = p->stime = p->gtime = 0;
- 	p->utimescaled = p->stimescaled = 0;
-+	p->cpu_power = 0;
- #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
- 	p->prev_cputime.utime = p->prev_cputime.stime = 0;
- #endif
-diff --git a/kernel/sched/cputime.c b/kernel/sched/cputime.c
-index 8394b1e..53a79d5 100644
---- a/kernel/sched/cputime.c
-+++ b/kernel/sched/cputime.c
-@@ -4,6 +4,7 @@
- #include <linux/kernel_stat.h>
- #include <linux/static_key.h>
- #include <linux/context_tracking.h>
-+#include <linux/cpufreq.h>
- #include "sched.h"
- 
- 
-@@ -149,6 +150,9 @@ void account_user_time(struct task_struct *p, cputime_t cputime,
- 
- 	/* Account for user time used */
- 	acct_account_cputime(p);
-+
-+	/* Account power usage for user time */
-+	acct_update_power(p, cputime);
- }
- 
- /*
-@@ -199,6 +203,9 @@ void __account_system_time(struct task_struct *p, cputime_t cputime,
- 
- 	/* Account for system time used */
- 	acct_account_cputime(p);
-+
-+	/* Account power usage for system time */
-+	acct_update_power(p, cputime);
- }
- 
- /*
--- 
-2.2.0.rc0.207.ga3a616c
+Is there obvious advantage to remove sys_sync() in the case?
+
+
+Thanks,
+Ming Lei
