@@ -1,39 +1,67 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Fri, 15 May 2015 10:32:03 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1505151031130.1295-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.1505151019470.1295-100000@iolanthe.rowland.org>
+From: <Frank.Li@freescale.com>
+Subject: [PATCH resend 0/7] Change snvs rtc and poweroff to use syscon add pwrkey driver
+Date: Fri, 15 May 2015 21:36:23 +0800
+Message-ID: <1431696990-23078-1-git-send-email-Frank.Li@freescale.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1505151019470.1295-100000@iolanthe.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: NeilBrown <neilb@suse.de>
-Cc: Dave Chinner <david@fromorbit.com>, Len Brown <lenb@kernel.org>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1on0132.outbound.protection.outlook.com ([157.56.110.132]:35714
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932146AbbEOOpW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 15 May 2015 10:45:22 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: lznuaa@gmail.com, shawn.guo@linaro.org, dmitry.torokhov@gmail.com, robh+dt@kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, sachin.kamat@linaro.org, p.zabel@pengutronix.de
+Cc: linux-arm-kernel@lists.infradead.org, linux-input@vger.kernel.org, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Frank Li <Frank.Li@freescale.com>
 
-On Fri, 15 May 2015, Alan Stern wrote:
+From: Frank Li <Frank.Li@freescale.com>
 
-> On Fri, 15 May 2015, NeilBrown wrote:
-> 
-> > Some storage devices don't handle suspend as well as they should and lose
-> > requests resulting in corruption.  They should obviously be fixed, but it is
-> > you who gets the problem reports and you are not in a position to fix them.
-> > So you want a general solution that hides those problems.
-> > sys_sync at suspend time is a sort-of solution because it flushes and waits
-> > so there  is less in-flight IO immediately after a sys_sync and so less
-> > opportunity for a bad device to stuff up.
-> > But you seem to suggest that sys_sync isn't a complete solution and it
-> > doesn't guarantee that xfs is not doing some background metadata IO.
-> > 
-> > Maybe a sensible thing to do would be to hook the "disk" devices into suspend
-> > and have them flush their queue and possibly send a CACHE_FLUSH command.
-> > That would provide more of a guarantee for you, and less of a cost for Len,
-> > would it not?
-> 
-> The sd driver already does this.
+Resend to add rtc and reset  maintainer.
 
-Sorry -- I meant that it does send a SYNCHRONIZE CACHE command.  It 
-doesn't flush the I/O queue.
+SNVS is MPF module.
+include rtc, power off, ON/OFF power key
+  
+  arm: imx: power-off: change to syscon to access register
+  rtc: arm: imx: snvs: change use syscon to access register
+Above two patch change existed power-off and rtc use syscon
 
-Alan Stern
+  Document: dt: fsl: snvs: change support syscon
+  arm: dts: imx: update snvs to use syscon access register
+Update dt file and document
+
+  input: keyboard: imx: add snvs power key driver
+  document: devicetree: input: imx: i.mx snvs power device tree bindings
+  arm: dts: imx6sx: enable snvs power key
+Added on/off key driver
+
+Frank Li (6):
+  arm: imx: power-off: change to syscon to access register
+  rtc: arm: imx: snvs: change use syscon to access register
+  Document: dt: fsl: snvs: change support syscon
+  arm: dts: imx: update snvs to use syscon access register
+  document: devicetree: input: imx: i.mx snvs power device tree bindings
+  arm: dts: imx6sx: enable snvs power key
+
+Robin Gong (1):
+  input: keyboard: imx: add snvs power key driver
+
+ .../devicetree/bindings/crypto/fsl-sec4.txt        |  93 +++++++--
+ .../devicetree/bindings/input/snvs-pwrkey.txt      |   1 +
+ .../bindings/power_supply/imx-snvs-poweroff.txt    |  24 +--
+ arch/arm/boot/dts/imx6qdl.dtsi                     |  12 +-
+ arch/arm/boot/dts/imx6sl.dtsi                      |  12 +-
+ arch/arm/boot/dts/imx6sx.dtsi                      |  19 +-
+ arch/arm/boot/dts/vfxxx.dtsi                       |   9 +-
+ drivers/input/keyboard/Kconfig                     |  11 +
+ drivers/input/keyboard/Makefile                    |   1 +
+ drivers/input/keyboard/snvs_pwrkey.c               | 232 +++++++++++++++++++++
+ drivers/power/reset/imx-snvs-poweroff.c            |  21 +-
+ drivers/rtc/rtc-snvs.c                             | 124 +++++------
+ 12 files changed, 417 insertions(+), 142 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/input/snvs-pwrkey.txt
+ create mode 100644 drivers/input/keyboard/snvs_pwrkey.c
+
+-- 
+1.9.1
+
