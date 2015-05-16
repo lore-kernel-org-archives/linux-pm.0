@@ -1,103 +1,296 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/3] power: add a dummy wakeup_source to record statistics
-Date: Sat, 16 May 2015 02:41:56 +0200
-Message-ID: <2029445.LdfDNJdYNa@vostro.rjw.lan>
-References: <1429750212-28659-1-git-send-email-jinqian@android.com> <1429750212-28659-4-git-send-email-jinqian@android.com>
+Subject: Re: [PATCH] PM / sleep: cancel the synchronous restriction of pm-trace
+Date: Sat, 16 May 2015 02:45:42 +0200
+Message-ID: <3154303.fma7bByNVc@vostro.rjw.lan>
+References: <554A297C.2040305@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51558 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1946214AbbEPAQm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 May 2015 20:16:42 -0400
-In-Reply-To: <1429750212-28659-4-git-send-email-jinqian@android.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <554A297C.2040305@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
+Cc: len.brown@intel.com, pavel@ucw.cz, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jin Qian <jinqian@android.com>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, April 22, 2015 05:50:12 PM Jin Qian wrote:
-> After a wakeup_source is destroyed, we lost all information such as how
-> long this wakeup_source has been active. Add a dummy wakeup_source to
-> record such info.
+On Wednesday, May 06, 2015 10:47:24 PM Fu, Zhonghui wrote:
+> Some system-hang occur only when multiple device PM methods
+> are running asynchronously. So should cancel the synchronization
+> of pm-trace, and make it suitable for asynchronous PM environment.
 > 
-> Signed-off-by: Jin Qian <jinqian@android.com>
-
-That's fine by me.  Queued up for 4.2, thanks!
-
+> Signed-off-by: Zhonghui Fu <zhonghui.fu@linux.intel.com>
 > ---
->  drivers/base/power/wakeup.c | 35 +++++++++++++++++++++++++++++++++++
->  1 file changed, 35 insertions(+)
+>  drivers/base/power/main.c |   53 +++++++++++++++++++++-----------------------
+>  include/linux/pm-trace.h  |   24 ++++++++++++--------
+>  kernel/power/main.c       |    2 +
+>  3 files changed, 41 insertions(+), 38 deletions(-)
 > 
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index bdb45f3..732683c 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -59,6 +59,11 @@ static DECLARE_WAIT_QUEUE_HEAD(wakeup_count_wait_queue);
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 3d874ec..40daf48 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -476,9 +476,6 @@ static int device_resume_noirq(struct device *dev, pm_message_t state, bool asyn
+>  	char *info = NULL;
+>  	int error = 0;
 >  
->  static ktime_t last_read_time;
+> -	TRACE_DEVICE(dev);
+> -	TRACE_RESUME(0);
+> -
+>  	if (dev->power.syscore || dev->power.direct_complete)
+>  		goto Out;
 >  
-> +static struct wakeup_source deleted_ws = {
-> +	.name = "deleted",
-> +	.lock =  __SPIN_LOCK_UNLOCKED(deleted_ws.lock),
-> +};
-> +
->  /**
->   * wakeup_source_prepare - Prepare a new wakeup source for initialization.
->   * @ws: Wakeup source to prepare.
-> @@ -110,6 +115,33 @@ void wakeup_source_drop(struct wakeup_source *ws)
->  }
->  EXPORT_SYMBOL_GPL(wakeup_source_drop);
+> @@ -506,19 +503,21 @@ static int device_resume_noirq(struct device *dev, pm_message_t state, bool asyn
+>  		callback = pm_noirq_op(dev->driver->pm, state);
+>  	}
 >  
-> +/*
-> + * Record wakeup_source statistics being deleted into a dummy wakeup_source.
-> + */
-> +static void wakeup_source_record(struct wakeup_source *ws)
-> +{
-> +	unsigned long flags;
+> +	TRACE_DEVICE_START(dev);
+> +	TRACE_RESUME(0);
 > +
-> +	spin_lock_irqsave(&deleted_ws.lock, flags);
-> +
-> +	if (ws->event_count) {
-> +		deleted_ws.total_time =
-> +			ktime_add(deleted_ws.total_time, ws->total_time);
-> +		deleted_ws.max_time =
-> +			ktime_add(deleted_ws.max_time, ws->max_time);
-> +		deleted_ws.prevent_sleep_time =
-> +			ktime_add(deleted_ws.prevent_sleep_time,
-> +				  ws->prevent_sleep_time);
-> +		deleted_ws.event_count += ws->event_count;
-> +		deleted_ws.active_count += ws->active_count;
-> +		deleted_ws.relax_count += ws->relax_count;
-> +		deleted_ws.expire_count += ws->expire_count;
-> +		deleted_ws.wakeup_count += ws->wakeup_count;
-> +	}
-> +
-> +	spin_unlock_irqrestore(&deleted_ws.lock, flags);
-> +}
-> +
->  /**
->   * wakeup_source_destroy - Destroy a struct wakeup_source object.
->   * @ws: Wakeup source to destroy.
-> @@ -122,6 +154,7 @@ void wakeup_source_destroy(struct wakeup_source *ws)
->  		return;
+>  	error = dpm_run_callback(callback, dev, state, info);
+>  	dev->power.is_noirq_suspended = false;
 >  
->  	wakeup_source_drop(ws);
-> +	wakeup_source_record(ws);
->  	kfree(ws->name);
->  	kfree(ws);
->  }
-> @@ -930,6 +963,8 @@ static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
->  		print_wakeup_source_stats(m, ws);
->  	rcu_read_unlock();
->  
-> +	print_wakeup_source_stats(m, &deleted_ws);
-> +
->  	return 0;
+> +	TRACE_DEVICE_END();
+>   Out:
+>  	complete_all(&dev->power.completion);
+> -	TRACE_RESUME(error);
+>  	return error;
 >  }
 >  
+>  static bool is_async(struct device *dev)
+>  {
+> -	return dev->power.async_suspend && pm_async_enabled
+> -		&& !pm_trace_is_enabled();
+> +	return dev->power.async_suspend && pm_async_enabled;
+>  }
+>  
+>  static void async_resume_noirq(void *data, async_cookie_t cookie)
+> @@ -605,9 +604,6 @@ static int device_resume_early(struct device *dev, pm_message_t state, bool asyn
+>  	char *info = NULL;
+>  	int error = 0;
+>  
+> -	TRACE_DEVICE(dev);
+> -	TRACE_RESUME(0);
+> -
+>  	if (dev->power.syscore || dev->power.direct_complete)
+>  		goto Out;
+>  
+> @@ -635,12 +631,14 @@ static int device_resume_early(struct device *dev, pm_message_t state, bool asyn
+>  		callback = pm_late_early_op(dev->driver->pm, state);
+>  	}
+>  
+> +	TRACE_DEVICE_START(dev);
+> +	TRACE_RESUME(0);
+> +
+>  	error = dpm_run_callback(callback, dev, state, info);
+>  	dev->power.is_late_suspended = false;
+>  
+> +	TRACE_DEVICE_END();
+>   Out:
+> -	TRACE_RESUME(error);
+> -
+>  	pm_runtime_enable(dev);
+>  	complete_all(&dev->power.completion);
+>  	return error;
+> @@ -734,9 +732,6 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+>  	int error = 0;
+>  	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
+>  
+> -	TRACE_DEVICE(dev);
+> -	TRACE_RESUME(0);
+> -
+>  	if (dev->power.syscore)
+>  		goto Complete;
+>  
+> @@ -801,9 +796,13 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+>  	}
+>  
+>   End:
+> +	TRACE_DEVICE_START(dev);
+> +	TRACE_RESUME(0);
+> +
+>  	error = dpm_run_callback(callback, dev, state, info);
+>  	dev->power.is_suspended = false;
+>  
+> +	TRACE_DEVICE_END();
+>   Unlock:
+>  	device_unlock(dev);
+>  	dpm_watchdog_clear(&wd);
+> @@ -811,8 +810,6 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+>   Complete:
+>  	complete_all(&dev->power.completion);
+>  
+> -	TRACE_RESUME(error);
+> -
+>  	return error;
+>  }
+>  
+> @@ -1017,9 +1014,6 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
+>  	char *info = NULL;
+>  	int error = 0;
+>  
+> -	TRACE_DEVICE(dev);
+> -	TRACE_SUSPEND(0);
+> -
+>  	if (async_error)
+>  		goto Complete;
+>  
+> @@ -1052,15 +1046,18 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
+>  		callback = pm_noirq_op(dev->driver->pm, state);
+>  	}
+>  
+> +	TRACE_DEVICE_START(dev);
+> +	TRACE_SUSPEND(0);
+> +
+>  	error = dpm_run_callback(callback, dev, state, info);
+>  	if (!error)
+>  		dev->power.is_noirq_suspended = true;
+>  	else
+>  		async_error = error;
+>  
+> +	TRACE_DEVICE_END();
+>  Complete:
+>  	complete_all(&dev->power.completion);
+> -	TRACE_SUSPEND(error);
+>  	return error;
+>  }
+>  
+> @@ -1161,9 +1158,6 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+>  	char *info = NULL;
+>  	int error = 0;
+>  
+> -	TRACE_DEVICE(dev);
+> -	TRACE_SUSPEND(0);
+> -
+>  	__pm_runtime_disable(dev, false);
+>  
+>  	if (async_error)
+> @@ -1198,14 +1192,17 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+>  		callback = pm_late_early_op(dev->driver->pm, state);
+>  	}
+>  
+> +	TRACE_DEVICE_START(dev);
+> +	TRACE_SUSPEND(0);
+> +
+>  	error = dpm_run_callback(callback, dev, state, info);
+>  	if (!error)
+>  		dev->power.is_late_suspended = true;
+>  	else
+>  		async_error = error;
+>  
+> +	TRACE_DEVICE_END();
+>  Complete:
+> -	TRACE_SUSPEND(error);
+>  	complete_all(&dev->power.completion);
+>  	return error;
+>  }
+> @@ -1346,9 +1343,6 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+>  	int error = 0;
+>  	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
+>  
+> -	TRACE_DEVICE(dev);
+> -	TRACE_SUSPEND(0);
+> -
+>  	dpm_wait_for_children(dev, async);
+>  
+>  	if (async_error)
+> @@ -1428,8 +1422,12 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+>  		callback = pm_op(dev->driver->pm, state);
+>  	}
+>  
+> +	TRACE_DEVICE_START(dev);
+> +	TRACE_SUSPEND(0);
+> +
+>  	error = dpm_run_callback(callback, dev, state, info);
+>  
+> +	TRACE_DEVICE_END();
+>   End:
+>  	if (!error) {
+>  		struct device *parent = dev->parent;
+> @@ -1455,7 +1453,6 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+>  	if (error)
+>  		async_error = error;
+>  
+> -	TRACE_SUSPEND(error);
+>  	return error;
+>  }
+>  
+> diff --git a/include/linux/pm-trace.h b/include/linux/pm-trace.h
+> index ecbde7a..aa480b1 100644
+> --- a/include/linux/pm-trace.h
+> +++ b/include/linux/pm-trace.h
+> @@ -6,29 +6,33 @@
+>  #include <linux/types.h>
+>  
+>  extern int pm_trace_enabled;
+> -
+> -static inline int pm_trace_is_enabled(void)
+> -{
+> -       return pm_trace_enabled;
+> -}
+> +extern struct mutex pt_mutex;
+>  
+>  struct device;
+>  extern void set_trace_device(struct device *);
+>  extern void generate_pm_trace(const void *tracedata, unsigned int user);
+>  extern int show_trace_dev_match(char *buf, size_t size);
+>  
+> -#define TRACE_DEVICE(dev) do { \
+> +#define TRACE_DEVICE_START(dev) do { \
+>  	if (pm_trace_enabled) \
+> +		mutex_lock(&pt_mutex); \
+>  		set_trace_device(dev); \
+>  	} while(0)
+>  
+> +#define TRACE_DEVICE_END() \
+> +do { \
+> +	if (pm_trace_enabled) { \
+> +		mutex_unlock(&pt_mutex); \
+> +	} \
+> +} while (0)
+> +
+
+Won't this serialize the whole thing again?
+
+>  #else
+>  
+> -static inline int pm_trace_is_enabled(void) { return 0; }
+> +#define TRACE_DEVICE_START(dev) do { } while (0)
+> +#define TRACE_DEVICE_END() do { } while (0)
+>  
+> -#define TRACE_DEVICE(dev) do { } while (0)
+> -#define TRACE_RESUME(dev) do { } while (0)
+> -#define TRACE_SUSPEND(dev) do { } while (0)
+> +#define TRACE_RESUME(user) do { } while (0)
+> +#define TRACE_SUSPEND(user) do { } while (0)
+>  
+>  #endif
+>  
+> diff --git a/kernel/power/main.c b/kernel/power/main.c
+> index 86e8157..ffd5145 100644
+> --- a/kernel/power/main.c
+> +++ b/kernel/power/main.c
+> @@ -515,6 +515,7 @@ power_attr(wake_unlock);
+>  
+>  #ifdef CONFIG_PM_TRACE
+>  int pm_trace_enabled;
+> +struct mutex pt_mutex;
+>  
+>  static ssize_t pm_trace_show(struct kobject *kobj, struct kobj_attribute *attr,
+>  			     char *buf)
+> @@ -533,6 +534,7 @@ pm_trace_store(struct kobject *kobj, struct kobj_attribute *attr,
+>  		if (pm_trace_enabled) {
+>  			pr_warn("PM: Enabling pm_trace changes system date and time during resume.\n"
+>  				"PM: Correct system time has to be restored manually after resume.\n");
+> +			mutex_init(&pt_mutex);
+>  		}
+>  		return n;
+>  	}
+> -- 1.7.1
 > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
 I speak only for myself.
