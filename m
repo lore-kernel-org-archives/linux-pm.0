@@ -1,98 +1,64 @@
 From: Jin Qian <jinqian@android.com>
-Subject: Re: [PATCH 2/3] power: increment wakeup_count when save_wakeup_count failed.
-Date: Fri, 15 May 2015 18:08:32 -0700
-Message-ID: <CA+yUs=ypmLV07LmGu90aLagy2S2yDxSABuByVKFh-ikiNad46Q@mail.gmail.com>
-References: <1429750212-28659-1-git-send-email-jinqian@android.com>
-	<1429750212-28659-3-git-send-email-jinqian@android.com>
-	<6356516.qkiSo3Mux2@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6356516.qkiSo3Mux2@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCHv3 1/3] power: validate wakeup source before activating it.
+Date: Fri, 15 May 2015 18:08:49 -0700
+Message-ID: <1431738529-38087-1-git-send-email-jinqian@android.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f182.google.com ([209.85.223.182]:34753 "EHLO
+	mail-ie0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934479AbbEPBJZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 May 2015 21:09:25 -0400
+Received: by ieczm2 with SMTP id zm2so62909173iec.1
+        for <linux-pm@vger.kernel.org>; Fri, 15 May 2015 18:09:24 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Jin Qian <jinqian@android.com>
 
-Some wakeup event happens every frequently between reading
-wakeup_count and writing back wakeup_count.
-They changed wakeup event count so writes fail and usespace doesn't
-continue to suspend. However, such
-occurrences are not counted in ws->wakeup_count. I spent quite
-sometime finding out the problematic wakeup
-event with inaccurate wakeup_count : )
+A rogue wakeup source not registered in wakeup_sources list is not visible
+from wakeup_sources_stats_show. Check if the wakeup source is registered
+properly by looking at the timer struct.
 
-Thanks,
-jin
+Signed-off-by: Jin Qian <jinqian@android.com>
+---
+ drivers/base/power/wakeup.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index 7726200..457c04f 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -351,6 +351,20 @@ int device_set_wakeup_enable(struct device *dev, bool enable)
+ }
+ EXPORT_SYMBOL_GPL(device_set_wakeup_enable);
+ 
++/**
++ * wakeup_source_not_registered - validate the given wakeup source.
++ * @ws: Wakeup source to be validated.
++ */
++static bool wakeup_source_not_registered(struct wakeup_source *ws)
++{
++	/*
++	 * Use timer struct to check if the given source is initialized
++	 * by wakeup_source_add.
++	 */
++	return ws->timer.function != pm_wakeup_timer_fn ||
++		   ws->timer.data != (unsigned long)ws;
++}
++
+ /*
+  * The functions below use the observation that each wakeup event starts a
+  * period in which the system should not be suspended.  The moment this period
+@@ -391,6 +405,10 @@ static void wakeup_source_activate(struct wakeup_source *ws)
+ {
+ 	unsigned int cec;
+ 
++	if (WARN(wakeup_source_not_registered(ws),
++			"unregistered wakeup source\n"))
++		return;
++
+ 	/*
+ 	 * active wakeup source should bring the system
+ 	 * out of PM_SUSPEND_FREEZE state
+-- 
+2.2.0.rc0.207.ga3a616c
 
-On Fri, May 15, 2015 at 5:34 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, April 22, 2015 05:50:11 PM Jin Qian wrote:
->> user-space aborts suspend attempt if writing wakeup_count failed.
->> Count the write failure towards wakeup_count.
->
-> A use case, please?
->
->> Signed-off-by: Jin Qian <jinqian@android.com>
->> ---
->>  drivers/base/power/wakeup.c | 17 +++++++++++++++++
->>  1 file changed, 17 insertions(+)
->>
->> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
->> index f24c622..bdb45f3 100644
->> --- a/drivers/base/power/wakeup.c
->> +++ b/drivers/base/power/wakeup.c
->> @@ -57,6 +57,8 @@ static LIST_HEAD(wakeup_sources);
->>
->>  static DECLARE_WAIT_QUEUE_HEAD(wakeup_count_wait_queue);
->>
->> +static ktime_t last_read_time;
->> +
->>  /**
->>   * wakeup_source_prepare - Prepare a new wakeup source for initialization.
->>   * @ws: Wakeup source to prepare.
->> @@ -771,10 +773,15 @@ void pm_wakeup_clear(void)
->>  bool pm_get_wakeup_count(unsigned int *count, bool block)
->>  {
->>       unsigned int cnt, inpr;
->> +     unsigned long flags;
->>
->>       if (block) {
->>               DEFINE_WAIT(wait);
->>
->> +             spin_lock_irqsave(&events_lock, flags);
->> +             last_read_time = ktime_get();
->> +             spin_unlock_irqrestore(&events_lock, flags);
->> +
->>               for (;;) {
->>                       prepare_to_wait(&wakeup_count_wait_queue, &wait,
->>                                       TASK_INTERRUPTIBLE);
->> @@ -806,6 +813,7 @@ bool pm_save_wakeup_count(unsigned int count)
->>  {
->>       unsigned int cnt, inpr;
->>       unsigned long flags;
->> +     struct wakeup_source *ws;
->>
->>       events_check_enabled = false;
->>       spin_lock_irqsave(&events_lock, flags);
->> @@ -813,6 +821,15 @@ bool pm_save_wakeup_count(unsigned int count)
->>       if (cnt == count && inpr == 0) {
->>               saved_count = count;
->>               events_check_enabled = true;
->> +     } else {
->> +             rcu_read_lock();
->> +             list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
->> +                     if (ws->active ||
->> +                         ktime_compare(ws->last_time, last_read_time) > 0) {
->> +                             ws->wakeup_count++;
->> +                     }
->> +             }
->> +             rcu_read_unlock();
->>       }
->>       spin_unlock_irqrestore(&events_lock, flags);
->>       return events_check_enabled;
->>
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
