@@ -1,120 +1,80 @@
 From: Jin Qian <jinqian@android.com>
-Subject: Re: [PATCH 3/3] power: add a dummy wakeup_source to record statistics
-Date: Fri, 15 May 2015 18:25:41 -0700
-Message-ID: <CA+yUs=ww4R9qyjr8rrVf70W+-hX2eja7EGtJqVn61CXb5NOypg@mail.gmail.com>
-References: <1429750212-28659-1-git-send-email-jinqian@android.com>
-	<1429750212-28659-4-git-send-email-jinqian@android.com>
-	<2029445.LdfDNJdYNa@vostro.rjw.lan>
+Subject: Re: [PATCH 1/1] power: validate wakeup source before activating it.
+Date: Fri, 15 May 2015 18:28:17 -0700
+Message-ID: <CA+yUs=zjdEShJ=qg15b_CVtWSA1_wMXoc+fzm5psUZRQdN6Mrg@mail.gmail.com>
+References: <1430951216-3003-1-git-send-email-jinqian@android.com>
+	<1816596.LjGsP0DkBO@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f43.google.com ([209.85.215.43]:36847 "EHLO
-	mail-la0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992646AbbEPBZn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 May 2015 21:25:43 -0400
-Received: by lagv1 with SMTP id v1so145547378lag.3
-        for <linux-pm@vger.kernel.org>; Fri, 15 May 2015 18:25:41 -0700 (PDT)
-In-Reply-To: <2029445.LdfDNJdYNa@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1816596.LjGsP0DkBO@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 Hi Rafael,
 
-I made a minor change in [PATCHv3 3/3] power: add a dummy
-wakeup_source to record statistics. Sorry lkml seems down. I can send
-you the link later.
-
-The only diff is that deleted_ws.max_time = max(deleted_ws.max_time,
-ws->max_time) instead of adding them up.
+The latest version is in [PATCHv3 1/3] power: validate wakeup source
+before activating it. I changed WARN_ONCE back to WARN since if
+multiple drivers activating uninitialized wakeup_sources, only the
+first driver will by flagged. We lost alert for other drivers. The
+warning should really happen during driver development. Hope this is
+ok.
 
 Thanks,
 jin
 
-
-On Fri, May 15, 2015 at 5:41 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, April 22, 2015 05:50:12 PM Jin Qian wrote:
->> After a wakeup_source is destroyed, we lost all information such as how
->> long this wakeup_source has been active. Add a dummy wakeup_source to
->> record such info.
+On Thu, May 14, 2015 at 5:22 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, May 06, 2015 03:26:56 PM Jin Qian wrote:
+>> A rogue wakeup source not registered in wakeup_sources list is not visible
+>> from wakeup_sources_stats_show. Check if the wakeup source is registered
+>> properly by looking at the timer struct.
 >>
 >> Signed-off-by: Jin Qian <jinqian@android.com>
->
-> That's fine by me.  Queued up for 4.2, thanks!
->
 >> ---
->>  drivers/base/power/wakeup.c | 35 +++++++++++++++++++++++++++++++++++
->>  1 file changed, 35 insertions(+)
+>>  drivers/base/power/wakeup.c | 18 ++++++++++++++++++
+>>  1 file changed, 18 insertions(+)
 >>
 >> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
->> index bdb45f3..732683c 100644
+>> index 7726200..7b5ad9a 100644
 >> --- a/drivers/base/power/wakeup.c
 >> +++ b/drivers/base/power/wakeup.c
->> @@ -59,6 +59,11 @@ static DECLARE_WAIT_QUEUE_HEAD(wakeup_count_wait_queue);
->>
->>  static ktime_t last_read_time;
->>
->> +static struct wakeup_source deleted_ws = {
->> +     .name = "deleted",
->> +     .lock =  __SPIN_LOCK_UNLOCKED(deleted_ws.lock),
->> +};
->> +
->>  /**
->>   * wakeup_source_prepare - Prepare a new wakeup source for initialization.
->>   * @ws: Wakeup source to prepare.
->> @@ -110,6 +115,33 @@ void wakeup_source_drop(struct wakeup_source *ws)
+>> @@ -351,6 +351,20 @@ int device_set_wakeup_enable(struct device *dev, bool enable)
 >>  }
->>  EXPORT_SYMBOL_GPL(wakeup_source_drop);
+>>  EXPORT_SYMBOL_GPL(device_set_wakeup_enable);
 >>
->> +/*
->> + * Record wakeup_source statistics being deleted into a dummy wakeup_source.
+>> +/**
+>> + * wakeup_source_not_registered - validate the given wakeup source.
+>> + * @ws: Wakeup source to be validated.
 >> + */
->> +static void wakeup_source_record(struct wakeup_source *ws)
+>> +static bool wakeup_source_not_registered(struct wakeup_source *ws)
 >> +{
->> +     unsigned long flags;
->> +
->> +     spin_lock_irqsave(&deleted_ws.lock, flags);
->> +
->> +     if (ws->event_count) {
->> +             deleted_ws.total_time =
->> +                     ktime_add(deleted_ws.total_time, ws->total_time);
->> +             deleted_ws.max_time =
->> +                     ktime_add(deleted_ws.max_time, ws->max_time);
->> +             deleted_ws.prevent_sleep_time =
->> +                     ktime_add(deleted_ws.prevent_sleep_time,
->> +                               ws->prevent_sleep_time);
->> +             deleted_ws.event_count += ws->event_count;
->> +             deleted_ws.active_count += ws->active_count;
->> +             deleted_ws.relax_count += ws->relax_count;
->> +             deleted_ws.expire_count += ws->expire_count;
->> +             deleted_ws.wakeup_count += ws->wakeup_count;
->> +     }
->> +
->> +     spin_unlock_irqrestore(&deleted_ws.lock, flags);
+>> +     /*
+>> +      * Use timer struct to check if the given source is initialized
+>> +      * by wakeup_source_add.
+>> +      */
+>> +     return ws->timer.function != pm_wakeup_timer_fn ||
+>> +                ws->timer.data != (unsigned long)ws;
 >> +}
 >> +
->>  /**
->>   * wakeup_source_destroy - Destroy a struct wakeup_source object.
->>   * @ws: Wakeup source to destroy.
->> @@ -122,6 +154,7 @@ void wakeup_source_destroy(struct wakeup_source *ws)
->>               return;
+>>  /*
+>>   * The functions below use the observation that each wakeup event starts a
+>>   * period in which the system should not be suspended.  The moment this period
+>> @@ -391,6 +405,10 @@ static void wakeup_source_activate(struct wakeup_source *ws)
+>>  {
+>>       unsigned int cec;
 >>
->>       wakeup_source_drop(ws);
->> +     wakeup_source_record(ws);
->>       kfree(ws->name);
->>       kfree(ws);
->>  }
->> @@ -930,6 +963,8 @@ static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
->>               print_wakeup_source_stats(m, ws);
->>       rcu_read_unlock();
->>
->> +     print_wakeup_source_stats(m, &deleted_ws);
+>> +     if (WARN_ONCE(wakeup_source_not_registered(ws),
+>> +                     "unregistered wakeup source\n"))
+>> +             return;
 >> +
->>       return 0;
->>  }
->>
->>
+>>       /*
+>>        * active wakeup source should bring the system
+>>        * out of PM_SUSPEND_FREEZE state
+>
+> Queued up for 4.2, thanks!
+>
 >
 > --
 > I speak only for myself.
