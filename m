@@ -1,116 +1,114 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 1/3] PM / Hibernate: prepare for SANITIZE_FREED_PAGES
-Date: Sat, 16 May 2015 02:28:22 +0200
-Message-ID: <7216052.tCNGRiLFYJ@vostro.rjw.lan>
-References: <1431613188-4511-1-git-send-email-anisse@astier.eu> <1431613188-4511-2-git-send-email-anisse@astier.eu>
+Subject: Re: [PATCH - RESEND] IRQ: don't suspend nested_thread irqs over system suspend.
+Date: Sat, 16 May 2015 02:31:52 +0200
+Message-ID: <1784621.LW7069gAjl@vostro.rjw.lan>
+References: <20150224132805.385a56a5@notabene.brown>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1431613188-4511-2-git-send-email-anisse@astier.eu>
-Sender: owner-linux-mm@kvack.org
-To: Anisse Astier <anisse@astier.eu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:42551 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S2992439AbbEPAGi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 May 2015 20:06:38 -0400
+In-Reply-To: <20150224132805.385a56a5@notabene.brown>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: NeilBrown <neilb@suse.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, GTA04 owners <gta04-owner@goldelico.com>, linux-pm@vger.kernel.org, Kalle Jokiniemi <kalle.jokiniemi@jollamobile.com>, Peter Zijlstra <peterz@infradead.org>
 
-On Thursday, May 14, 2015 04:19:46 PM Anisse Astier wrote:
-> SANITIZE_FREED_PAGES feature relies on having all pages going through
-> the free_pages_prepare path in order to be cleared before being used. In
-> the hibernate use case, free pages will automagically appear in the
-> system without being cleared, left there by the loading kernel.
+On Tuesday, February 24, 2015 01:28:05 PM NeilBrown wrote:
 > 
-> This patch will make sure free pages are cleared on resume; when we'll
-> enable SANITIZE_FREED_PAGES. We free the pages just after resume because
-> we can't do it later: going through any device resume code might
-> allocate some memory and invalidate the free pages bitmap.
+> --Sig_/GFnrHDc1Bs/XVRdbvRQTN5O
+> Content-Type: text/plain; charset=US-ASCII
+> Content-Transfer-Encoding: quoted-printable
 > 
-> Signed-off-by: Anisse Astier <anisse@astier.eu>
+> 
+> 
+> Nested IRQs can only fire when the parent irq fires.
+> So when the parent is suspended, there is no need to suspend
+> the child irq.
+> 
+> Suspending nested irqs can cause a problem is they are suspended or
+> resumed in the wrong order.
+> If an interrupt fires while the parent is active but the child is
+> suspended, then the interrupt will not be acknowledged properly
+> and so an interrupt storm can result.
+> This is particularly likely if the parent is resumed before
+> the child, and the interrupt was raised during suspend.
+> 
+> Ensuring correct ordering would be possible, but it is simpler
+> to just never suspend nested interrupts.
+> 
+> Signed-off-by: NeilBrown <neil@brown.name>
+
+We need to make some progress here.
+
+Can you please resend it again for people to have a fresh look (and CC PeterZ
+this time too)?
+
+> 
 > ---
->  kernel/power/hibernate.c |  4 +++-
->  kernel/power/power.h     |  2 ++
->  kernel/power/snapshot.c  | 22 ++++++++++++++++++++++
->  3 files changed, 27 insertions(+), 1 deletion(-)
+> This is a resend of a patch sent at the end of January 2015.
+> Rafael seemed happy with it, but I receive no other response so I'm resendi=
+> ng.
 > 
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index 2329daa..0a73126 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -305,9 +305,11 @@ static int create_image(int platform_mode)
->  			error);
->  	/* Restore control flow magically appears here */
->  	restore_processor_state();
-> -	if (!in_suspend)
-> +	if (!in_suspend) {
->  		events_check_enabled = false;
->  
-> +		clear_free_pages();
-
-Again, why don't you do that at the swsusp_free() time?
-
-> +	}
->  	platform_leave(platform_mode);
->  
->   Power_up:
-> diff --git a/kernel/power/power.h b/kernel/power/power.h
-> index ce9b832..6d2d7bf 100644
-> --- a/kernel/power/power.h
-> +++ b/kernel/power/power.h
-> @@ -92,6 +92,8 @@ extern int create_basic_memory_bitmaps(void);
->  extern void free_basic_memory_bitmaps(void);
->  extern int hibernate_preallocate_memory(void);
->  
-> +extern void clear_free_pages(void);
-> +
->  /**
->   *	Auxiliary structure used for reading the snapshot image data and
->   *	metadata from and writing them to the list of page backup entries
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index 5235dd4..2335130 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -1032,6 +1032,28 @@ void free_basic_memory_bitmaps(void)
->  	pr_debug("PM: Basic memory bitmaps freed\n");
->  }
->  
-> +void clear_free_pages(void)
-> +{
-> +#ifdef CONFIG_SANITIZE_FREED_PAGES
-> +	struct memory_bitmap *bm = free_pages_map;
-> +	unsigned long pfn;
-> +
-> +	if (WARN_ON(!(free_pages_map)))
-
-One paren too many.
-
-> +		return;
-> +
-> +	memory_bm_position_reset(bm);
-> +	pfn = memory_bm_next_pfn(bm);
-> +	while (pfn != BM_END_OF_MAP) {
-> +		if (pfn_valid(pfn))
-> +			clear_highpage(pfn_to_page(pfn));
-
-Is clear_highpage() also fine for non-highmem pages?
-
-> +
-> +		pfn = memory_bm_next_pfn(bm);
-> +	}
-> +	memory_bm_position_reset(bm);
-> +	printk(KERN_INFO "PM: free pages cleared after restore\n");
-> +#endif /* SANITIZE_FREED_PAGES */
-> +}
-> +
->  /**
->   *	snapshot_additional_pages - estimate the number of additional pages
->   *	be needed for setting up the suspend image data structures for given
+> Thanks,
+> NeilBrown
+> 
+> 
+> diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
+> index 3ca532592704..40cbcfb7fc43 100644
+> --- a/kernel/irq/pm.c
+> +++ b/kernel/irq/pm.c
+> @@ -118,6 +118,8 @@ void suspend_device_irqs(void)
+>  		unsigned long flags;
+>  		bool sync;
+> =20
+> +		if (irq_settings_is_nested_thread(desc))
+> +			continue;
+>  		raw_spin_lock_irqsave(&desc->lock, flags);
+>  		sync =3D suspend_device_irq(desc, irq);
+>  		raw_spin_unlock_irqrestore(&desc->lock, flags);
+> @@ -158,6 +160,8 @@ static void resume_irqs(bool want_early)
+> =20
+>  		if (!is_early && want_early)
+>  			continue;
+> +		if (irq_settings_is_nested_thread(desc))
+> +			continue;
+> =20
+>  		raw_spin_lock_irqsave(&desc->lock, flags);
+>  		resume_irq(desc, irq);
+> 
+> --Sig_/GFnrHDc1Bs/XVRdbvRQTN5O
+> Content-Type: application/pgp-signature
+> Content-Description: OpenPGP digital signature
+> 
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v2
+> 
+> iQIVAwUBVOvhtTnsnt1WYoG5AQKnXxAAjQnaCA2UPMaoXcwoP/Qx1MJpMSjW6Q6v
+> b7NiJTm7ltcKoPBN4y2//p0Wk6BEKT+nCbfqFacj4+MxfjrC4qtjIpsL6lVxi2Iz
+> sBdbhdkKdUsX6ueRKWv5ifK9qbDzBje7QUcGDrJ/9n80rvbVB5AnSH8bM0TADs2W
+> bfg5xWAMLfBZq4yhMTgOkPx7D9LMk6/HmlR55ZEC7JvZo6yKwifyQi18k1wfDlLZ
+> FobxyB6/MexRpjG9RXLpp4MJLV7BV0b6wQhZWWYSFhxVcuYxb9u7BHWumtO9fCMy
+> fgIzSVsZHuPxTH+ct7fbj+Pat+Y38c5RYpq4ojWJP2FnrGjEnrPt+dpw6AnbkPme
+> JudzHus6HhgUu5vLdT/Hu5i1qhVcQVe7OaweqhGs1BReGYX7AVPAsVzJAJ09Fwyb
+> vNIbfuPoTWVI1cz9VV7VgbFHwZgq9/yhk9KhvRaypaMTeuWKbcf2SgiX315w2e21
+> D3Gxa6FDKc+CmnDycrx0eALtfCDp86gR2yeOeiCPAGUp8ICJ5vvAJcnxYVPYzt64
+> JBBILBwzRV/7LNzbkYWEFlq4CCm9HhmkN4/HDC7tMcxCqQoVFTK0eGn5nz9kFZ6x
+> MaUyhhakwK+cAx1bVmTZ+gdBxnaa31p26c2OFdv2VRFnJlFC2X+vc9GFuz8KUZCD
+> d43mKkWNdWQ=
+> =vmFh
+> -----END PGP SIGNATURE-----
+> 
+> --Sig_/GFnrHDc1Bs/XVRdbvRQTN5O--
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
