@@ -1,46 +1,116 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH] ARM: tegra: cpuidle: implement
- cpuidle_state.enter_freeze()
-Date: Sat, 16 May 2015 00:30:41 +0100
-Message-ID: <20150515233041.GN2067@n2100.arm.linux.org.uk>
-References: <1428490480-10144-1-git-send-email-tomeu.vizoso@collabora.com>
- <20150408115546.GA24271@red-moon>
- <552643E1.3060200@collabora.com>
- <285738930.THBQOWvsah@vostro.rjw.lan>
- <20150410100844.GC23730@red-moon>
- <CAAObsKAihF1k1yzZxQEs_jpPnCdV3HQbLaYHWu1QNsNd5zqiOg@mail.gmail.com>
- <20150417140819.GB2347@red-moon>
- <CAAObsKBLHqf1+KUE89Orr7ZwzY3-WEW1CHokSOxSD9pEOmTkhg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v4 1/3] PM / Hibernate: prepare for SANITIZE_FREED_PAGES
+Date: Sat, 16 May 2015 02:28:22 +0200
+Message-ID: <7216052.tCNGRiLFYJ@vostro.rjw.lan>
+References: <1431613188-4511-1-git-send-email-anisse@astier.eu> <1431613188-4511-2-git-send-email-anisse@astier.eu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAAObsKBLHqf1+KUE89Orr7ZwzY3-WEW1CHokSOxSD9pEOmTkhg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <1431613188-4511-2-git-send-email-anisse@astier.eu>
+Sender: owner-linux-mm@kvack.org
+To: Anisse Astier <anisse@astier.eu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 15, 2015 at 11:03:35AM +0200, Tomeu Vizoso wrote:
-> I have been looking and asking around, and seems like we should
-> actually leave FIQs enabled when the tick is frozen and only disable
-> them within enter_freeze.
+On Thursday, May 14, 2015 04:19:46 PM Anisse Astier wrote:
+> SANITIZE_FREED_PAGES feature relies on having all pages going through
+> the free_pages_prepare path in order to be cleared before being used. In
+> the hibernate use case, free pages will automagically appear in the
+> system without being cleared, left there by the loading kernel.
 > 
-> My understanding is that FIQ handlers are extremely limited in what
-> they can do, with the main use being NMI-like functionality. There are
-> a handful of other FIQ handlers in mainline, but they don't call into
-> any other kernel code and limit themselves to doing some basic I/O.
+> This patch will make sure free pages are cleared on resume; when we'll
+> enable SANITIZE_FREED_PAGES. We free the pages just after resume because
+> we can't do it later: going through any device resume code might
+> allocate some memory and invalidate the free pages bitmap.
 > 
-> The only reason why they should be disabled in enter_freeze is that
-> the context of the CPU that is going to a lower power state could
-> become corrupted if a FIQ gets fired during a save or restore
-> operation.
+> Signed-off-by: Anisse Astier <anisse@astier.eu>
+> ---
+>  kernel/power/hibernate.c |  4 +++-
+>  kernel/power/power.h     |  2 ++
+>  kernel/power/snapshot.c  | 22 ++++++++++++++++++++++
+>  3 files changed, 27 insertions(+), 1 deletion(-)
+> 
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index 2329daa..0a73126 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -305,9 +305,11 @@ static int create_image(int platform_mode)
+>  			error);
+>  	/* Restore control flow magically appears here */
+>  	restore_processor_state();
+> -	if (!in_suspend)
+> +	if (!in_suspend) {
+>  		events_check_enabled = false;
+>  
+> +		clear_free_pages();
 
-Right, that makes total sense.
+Again, why don't you do that at the swsusp_free() time?
 
-(And yes, FIQ handlers are very limited in what they're allowed to do,
-since they can't take any locks without the potential for deadlock.)
+> +	}
+>  	platform_leave(platform_mode);
+>  
+>   Power_up:
+> diff --git a/kernel/power/power.h b/kernel/power/power.h
+> index ce9b832..6d2d7bf 100644
+> --- a/kernel/power/power.h
+> +++ b/kernel/power/power.h
+> @@ -92,6 +92,8 @@ extern int create_basic_memory_bitmaps(void);
+>  extern void free_basic_memory_bitmaps(void);
+>  extern int hibernate_preallocate_memory(void);
+>  
+> +extern void clear_free_pages(void);
+> +
+>  /**
+>   *	Auxiliary structure used for reading the snapshot image data and
+>   *	metadata from and writing them to the list of page backup entries
+> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> index 5235dd4..2335130 100644
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -1032,6 +1032,28 @@ void free_basic_memory_bitmaps(void)
+>  	pr_debug("PM: Basic memory bitmaps freed\n");
+>  }
+>  
+> +void clear_free_pages(void)
+> +{
+> +#ifdef CONFIG_SANITIZE_FREED_PAGES
+> +	struct memory_bitmap *bm = free_pages_map;
+> +	unsigned long pfn;
+> +
+> +	if (WARN_ON(!(free_pages_map)))
+
+One paren too many.
+
+> +		return;
+> +
+> +	memory_bm_position_reset(bm);
+> +	pfn = memory_bm_next_pfn(bm);
+> +	while (pfn != BM_END_OF_MAP) {
+> +		if (pfn_valid(pfn))
+> +			clear_highpage(pfn_to_page(pfn));
+
+Is clear_highpage() also fine for non-highmem pages?
+
+> +
+> +		pfn = memory_bm_next_pfn(bm);
+> +	}
+> +	memory_bm_position_reset(bm);
+> +	printk(KERN_INFO "PM: free pages cleared after restore\n");
+> +#endif /* SANITIZE_FREED_PAGES */
+> +}
+> +
+>  /**
+>   *	snapshot_additional_pages - estimate the number of additional pages
+>   *	be needed for setting up the suspend image data structures for given
+> 
 
 -- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
