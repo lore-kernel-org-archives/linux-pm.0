@@ -1,86 +1,102 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/3] power: increment wakeup_count when save_wakeup_count failed.
-Date: Sat, 16 May 2015 02:34:32 +0200
-Message-ID: <6356516.qkiSo3Mux2@vostro.rjw.lan>
-References: <1429750212-28659-1-git-send-email-jinqian@android.com> <1429750212-28659-3-git-send-email-jinqian@android.com>
+Subject: Re: [PATCH 3/3] power: add a dummy wakeup_source to record statistics
+Date: Sat, 16 May 2015 02:41:56 +0200
+Message-ID: <2029445.LdfDNJdYNa@vostro.rjw.lan>
+References: <1429750212-28659-1-git-send-email-jinqian@android.com> <1429750212-28659-4-git-send-email-jinqian@android.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51032 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:51558 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S2992574AbbEPAJR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 May 2015 20:09:17 -0400
-In-Reply-To: <1429750212-28659-3-git-send-email-jinqian@android.com>
+	with SMTP id S1946214AbbEPAQm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 May 2015 20:16:42 -0400
+In-Reply-To: <1429750212-28659-4-git-send-email-jinqian@android.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Jin Qian <jinqian@android.com>
 Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, April 22, 2015 05:50:11 PM Jin Qian wrote:
-> user-space aborts suspend attempt if writing wakeup_count failed.
-> Count the write failure towards wakeup_count.
-
-A use case, please?
-
+On Wednesday, April 22, 2015 05:50:12 PM Jin Qian wrote:
+> After a wakeup_source is destroyed, we lost all information such as how
+> long this wakeup_source has been active. Add a dummy wakeup_source to
+> record such info.
+> 
 > Signed-off-by: Jin Qian <jinqian@android.com>
+
+That's fine by me.  Queued up for 4.2, thanks!
+
 > ---
->  drivers/base/power/wakeup.c | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
+>  drivers/base/power/wakeup.c | 35 +++++++++++++++++++++++++++++++++++
+>  1 file changed, 35 insertions(+)
 > 
 > diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index f24c622..bdb45f3 100644
+> index bdb45f3..732683c 100644
 > --- a/drivers/base/power/wakeup.c
 > +++ b/drivers/base/power/wakeup.c
-> @@ -57,6 +57,8 @@ static LIST_HEAD(wakeup_sources);
+> @@ -59,6 +59,11 @@ static DECLARE_WAIT_QUEUE_HEAD(wakeup_count_wait_queue);
 >  
->  static DECLARE_WAIT_QUEUE_HEAD(wakeup_count_wait_queue);
+>  static ktime_t last_read_time;
 >  
-> +static ktime_t last_read_time;
+> +static struct wakeup_source deleted_ws = {
+> +	.name = "deleted",
+> +	.lock =  __SPIN_LOCK_UNLOCKED(deleted_ws.lock),
+> +};
 > +
 >  /**
 >   * wakeup_source_prepare - Prepare a new wakeup source for initialization.
 >   * @ws: Wakeup source to prepare.
-> @@ -771,10 +773,15 @@ void pm_wakeup_clear(void)
->  bool pm_get_wakeup_count(unsigned int *count, bool block)
->  {
->  	unsigned int cnt, inpr;
+> @@ -110,6 +115,33 @@ void wakeup_source_drop(struct wakeup_source *ws)
+>  }
+>  EXPORT_SYMBOL_GPL(wakeup_source_drop);
+>  
+> +/*
+> + * Record wakeup_source statistics being deleted into a dummy wakeup_source.
+> + */
+> +static void wakeup_source_record(struct wakeup_source *ws)
+> +{
 > +	unsigned long flags;
->  
->  	if (block) {
->  		DEFINE_WAIT(wait);
->  
-> +		spin_lock_irqsave(&events_lock, flags);
-> +		last_read_time = ktime_get();
-> +		spin_unlock_irqrestore(&events_lock, flags);
 > +
->  		for (;;) {
->  			prepare_to_wait(&wakeup_count_wait_queue, &wait,
->  					TASK_INTERRUPTIBLE);
-> @@ -806,6 +813,7 @@ bool pm_save_wakeup_count(unsigned int count)
->  {
->  	unsigned int cnt, inpr;
->  	unsigned long flags;
-> +	struct wakeup_source *ws;
+> +	spin_lock_irqsave(&deleted_ws.lock, flags);
+> +
+> +	if (ws->event_count) {
+> +		deleted_ws.total_time =
+> +			ktime_add(deleted_ws.total_time, ws->total_time);
+> +		deleted_ws.max_time =
+> +			ktime_add(deleted_ws.max_time, ws->max_time);
+> +		deleted_ws.prevent_sleep_time =
+> +			ktime_add(deleted_ws.prevent_sleep_time,
+> +				  ws->prevent_sleep_time);
+> +		deleted_ws.event_count += ws->event_count;
+> +		deleted_ws.active_count += ws->active_count;
+> +		deleted_ws.relax_count += ws->relax_count;
+> +		deleted_ws.expire_count += ws->expire_count;
+> +		deleted_ws.wakeup_count += ws->wakeup_count;
+> +	}
+> +
+> +	spin_unlock_irqrestore(&deleted_ws.lock, flags);
+> +}
+> +
+>  /**
+>   * wakeup_source_destroy - Destroy a struct wakeup_source object.
+>   * @ws: Wakeup source to destroy.
+> @@ -122,6 +154,7 @@ void wakeup_source_destroy(struct wakeup_source *ws)
+>  		return;
 >  
->  	events_check_enabled = false;
->  	spin_lock_irqsave(&events_lock, flags);
-> @@ -813,6 +821,15 @@ bool pm_save_wakeup_count(unsigned int count)
->  	if (cnt == count && inpr == 0) {
->  		saved_count = count;
->  		events_check_enabled = true;
-> +	} else {
-> +		rcu_read_lock();
-> +		list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-> +			if (ws->active ||
-> +			    ktime_compare(ws->last_time, last_read_time) > 0) {
-> +				ws->wakeup_count++;
-> +			}
-> +		}
-> +		rcu_read_unlock();
->  	}
->  	spin_unlock_irqrestore(&events_lock, flags);
->  	return events_check_enabled;
+>  	wakeup_source_drop(ws);
+> +	wakeup_source_record(ws);
+>  	kfree(ws->name);
+>  	kfree(ws);
+>  }
+> @@ -930,6 +963,8 @@ static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
+>  		print_wakeup_source_stats(m, ws);
+>  	rcu_read_unlock();
+>  
+> +	print_wakeup_source_stats(m, &deleted_ws);
+> +
+>  	return 0;
+>  }
+>  
 > 
 
 -- 
