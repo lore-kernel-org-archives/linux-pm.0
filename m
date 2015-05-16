@@ -1,57 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V3 14/14] cpufreq: Add support for physical hoplug of CPUs
-Date: Sat, 16 May 2015 03:18:09 +0200
-Message-ID: <3771347.4CYzBDSQ1Q@vostro.rjw.lan>
-References: <cover.1431065963.git.viresh.kumar@linaro.org> <22ea2a0dd3e860d9b0e8703f49d07ca32e2fc490.1431065963.git.viresh.kumar@linaro.org>
+From: Ruchi Kandoi <kandoiruchi@google.com>
+Subject: Re: [PATCH v2 1/2] cpufreq_stats: Adds sysfs file /sys/devices/system/cpu/cpufreq/current_in_state
+Date: Fri, 15 May 2015 17:55:13 -0700
+Message-ID: <CAL8qYTO3uurrxQBjfPDNL2hamxh4+GCuzX0mxsEw=+go5CPWcQ@mail.gmail.com>
+References: <1431648770-7404-1-git-send-email-kandoiruchi@google.com>
+	<1431648770-7404-2-git-send-email-kandoiruchi@google.com>
+	<20150515024843.GE6348@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:46763 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S934479AbbEPAwz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 May 2015 20:52:55 -0400
-In-Reply-To: <22ea2a0dd3e860d9b0e8703f49d07ca32e2fc490.1431065963.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150515024843.GE6348@linux>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Srivatsa Bhat <srivatsa@mit.edu>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Vladimir Davydov <vdavydov@parallels.com>, Heinrich Schuchardt <xypron.glpk@gmx.de>, Thomas Gleixner <tglx@linutronix.de>, Kees Cook <keescook@chromium.org>, Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, Davidlohr Bueso <dave@stgolabs.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On Friday, May 08, 2015 11:53:57 AM Viresh Kumar wrote:
-> It is possible to physically hotplug the CPUs and it happens in this
-> sequence.
-> 
-> Hot removal:
-> - CPU is offlined first, ~ 'echo 0 >
->   /sys/devices/system/cpu/cpuX/online'
-> - Then its device is removed along with all sysfs files, cpufreq core
->   notified with cpufreq_remove_dev() callback from subsys-interface..
-> 
-> Hot addition:
-> - First the device along with its sysfs files is added, cpufreq core
->   notified with cpufreq_add_dev() callback from subsys-interface..
-> - CPU is onlined, ~ 'echo 1 > /sys/devices/system/cpu/cpuX/online'
-> 
-> This needs to be handled specially as current code isn't taking care of
-> this case. Because we will hit the same routines with both hotplug and
-> subsys callbacks, we can handle most of the stuff with regular hotplug
-> callback paths.  We only need to take care of adding/removing cpufreq
-> sysfs links or freeing policy from subsys callbacks.
-> 
-> And that can be sensed easily as cpu would be offline in those cases.
-> This patch adds special code in those paths to take care of policy and
-> its links.
-> 
-> cpufreq_add_remove_dev_symlink() is also broken into another routine
-> add_remove_cpu_dev_symlink() to reuse code at several places.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Thu, May 14, 2015 at 7:48 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> I am not replying for concept here, as sched maintainers are in a
+> better position for that, but a nit below..
+>
+> On 14-05-15, 17:12, Ruchi Kandoi wrote:
+>> Adds the sysfs file for userspace to initialize the active current
+>> values for all the cores at each of the frequencies.
+>>
+>> The format for storing the values is as follows:
+>> echo "CPU<cpu#>:<freq1>=<current in uA> <freq2>=<current>,CPU<cpu#>:
+>> ..." > /sys/devices/system/cpu/cpufreq/current_in_state
+>
+> Why this file? And not
+> /sys/devices/system/cpu/cpuX/cpufreq/stats/current_in_state ? That way
+> you don't have to replicate the same information for all CPUs, as the
+> stats folder can be shared by multiple CPUs (which share their
+> clock/voltage rails)..
 
-You seem to be breaking things first and then fixing them up with this patch.
+Some of the hand-held devices support hot-plugging of the cpus and
+when the core is hot-plugged out the
+/sys/devices/system/cpu/cpuX/cpufreq directory is removed too. So it
+won't be possible to share folders by multiple CPUs.
 
-Would it be possible to avoid breaking them in the first place?
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+>
+> --
+> viresh
