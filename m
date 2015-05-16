@@ -1,33 +1,37 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 14/14] cpufreq: Add support for physical hoplug of CPUs
-Date: Sat, 16 May 2015 07:43:07 +0530
-Message-ID: <20150516021307.GE4600@linux>
-References: <cover.1431065963.git.viresh.kumar@linaro.org>
- <22ea2a0dd3e860d9b0e8703f49d07ca32e2fc490.1431065963.git.viresh.kumar@linaro.org>
- <3771347.4CYzBDSQ1Q@vostro.rjw.lan>
+Subject: Re: [PATCH v2 1/2] cpufreq_stats: Adds sysfs file
+ /sys/devices/system/cpu/cpufreq/current_in_state
+Date: Sat, 16 May 2015 07:45:39 +0530
+Message-ID: <20150516021539.GF4600@linux>
+References: <1431648770-7404-1-git-send-email-kandoiruchi@google.com>
+ <1431648770-7404-2-git-send-email-kandoiruchi@google.com>
+ <20150515024843.GE6348@linux>
+ <CAL8qYTO3uurrxQBjfPDNL2hamxh4+GCuzX0mxsEw=+go5CPWcQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:35368 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992449AbbEPCNL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 May 2015 22:13:11 -0400
-Received: by pdea3 with SMTP id a3so39099877pde.2
-        for <linux-pm@vger.kernel.org>; Fri, 15 May 2015 19:13:11 -0700 (PDT)
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:35049 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992656AbbEPCPo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 May 2015 22:15:44 -0400
+Received: by pacwv17 with SMTP id wv17so41469298pac.2
+        for <linux-pm@vger.kernel.org>; Fri, 15 May 2015 19:15:43 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <3771347.4CYzBDSQ1Q@vostro.rjw.lan>
+In-Reply-To: <CAL8qYTO3uurrxQBjfPDNL2hamxh4+GCuzX0mxsEw=+go5CPWcQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Srivatsa Bhat <srivatsa@mit.edu>
+To: Ruchi Kandoi <kandoiruchi@google.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Vladimir Davydov <vdavydov@parallels.com>, Heinrich Schuchardt <xypron.glpk@gmx.de>, Thomas Gleixner <tglx@linutronix.de>, Kees Cook <keescook@chromium.org>, Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, Davidlohr Bueso <dave@stgolabs.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 16-05-15, 03:18, Rafael J. Wysocki wrote:
-> You seem to be breaking things first and then fixing them up with this patch.
-> 
-> Would it be possible to avoid breaking them in the first place?
+On 15-05-15, 17:55, Ruchi Kandoi wrote:
+> Some of the hand-held devices support hot-plugging of the cpus and
+> when the core is hot-plugged out the
+> /sys/devices/system/cpu/cpuX/cpufreq directory is removed too. So it
+> won't be possible to share folders by multiple CPUs.
 
-I thought it was already broken in mainline and so did it towards the
-end. Will check that again.
+Okay, that is changing now..
+
+http://permalink.gmane.org/gmane.linux.power-management.general/59841
 
 -- 
 viresh
