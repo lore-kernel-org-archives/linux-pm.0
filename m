@@ -1,80 +1,65 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/2] twl4030_charger: find associated phy by more
- reliable means.
-Date: Sun, 17 May 2015 11:56:12 +0200
-Message-ID: <20150517095610.GA2612@earth>
-References: <20150322225053.22311.45510.stgit@notabene.brown>
- <20150322225248.22311.50385.stgit@notabene.brown>
- <20150508161205.GE16571@saruman.tx.rr.com>
+From: Michal Hocko <mhocko@suse.cz>
+Subject: suspend regression in 4.1-rc1
+Date: Sun, 17 May 2015 20:50:41 +0200
+Message-ID: <20150517185041.GA5897@dhcp22.suse.cz>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="J/dobhs11T7y2rNN"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20150508161205.GE16571-HgARHv6XitJaoMGHk7MhZQC/G2K4zDHf@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>
-Cc: NeilBrown <neil-+NVA1uvv1dVBDLzU/O5InQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, NeilBrown <neilb-l3A5Bk7waGM@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ulrich Obergfell <uobergfe@redhat.com>, Don Zickus <dzickus@redhat.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
---J/dobhs11T7y2rNN
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
 Hi,
+s2ram broke after 4.1-rc1 for me. The second s2ram simply doesn't wake
+up (fans turn on but the screen is off). I have even noticed fans
+starting also while suspended in some instances (which was especially
+annoying when it happened on the way home from work).
+I've tried /sys/power/pm_test and the issue starts at processors mode.
+Nothing really interesting shows up in the netconsole but I didn't get
+to a more detailed testing there.
 
-On Fri, May 08, 2015 at 11:12:05AM -0500, Felipe Balbi wrote:
-> On Mon, Mar 23, 2015 at 09:52:48AM +1100, NeilBrown wrote:
-> > From: NeilBrown <neilb-l3A5Bk7waGM@public.gmane.org>
-> >=20
-> > twl4030_charger currently finds the associated phy
-> > using usb_get_phy() which will return the first USB2 phy.
-> > If your platform has multiple such phys (as mine does),
-> > this is not reliable (and reliably fails on the GTA04).
-> >=20
-> > Change to use devm_usb_get_phy_by_node(), having found the
-> > node by looking for an appropriately named sibling in
-> > device-tree.
-> >=20
-> > This makes usb-charging dependent on correct device-tree
-> > configuration.
-> >=20
-> > Acked-by: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-> > Signed-off-by: NeilBrown <neilb-l3A5Bk7waGM@public.gmane.org>
-> > ---
->=20
-> Sebastian, can I get your Acked-by here ?
+I've tried to bisect this as 4.0 works reliably. This was tricky though
+because the first bad commit is a merge:
 
-Acked-By: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+commit 1dcf58d6e6e6eb7ec10e9abc56887b040205b06f
+Merge: 80dcc31fbe55 e4b0db72be24
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Tue Apr 14 16:49:17 2015 -0700
 
--- Sebastian
+    Merge branch 'akpm' (patches from Andrew)
 
---J/dobhs11T7y2rNN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+The merge commit is empty and both 80dcc31fbe55 and e4b0db72be24 work
+properly but the merge is bad. So it seems like some of the commits in
+either branch has a side effect which needs other branch in order to
+reproduce.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+So've tried to bisect ^80dcc31fbe55 e4b0db72be24 and merged 80dcc31fbe55
+in each step. This lead to:
 
-iQIcBAEBCgAGBQJVWGW3AAoJENju1/PIO/qaztsP/jNWefxwkayLwpQTxDlRTzv9
-qVUFeUFQTWOeXX7Ci3czk8tDvII8y3eoLPHH4aYkQx5UUmj/QZt/whkgJyzntEqv
-SNEBw8sKUS8oQHm+LYrM6OTQNo0BoRhzfVlW3gIY3k3KvI1D1hIa5qFgCMA76P2N
-g7fk/r1A8AE8z1fQ1izFAi2KyZmNJ37m3Xb6JJ5VzP9YLBIGft5aR0qzwI6o7CQN
-HHEzR4gmQkaTz3AFGc6ybBxso04HDPHLR0NwJWhKlBx/5G5EA1Q04bd8F1qe2aD3
-gXI7Tebag2ASM543Cn+XdFSF5AAv813GvTyALlMMiufjbypvVTHz0fuZdqGaK3q/
-0544s8Vw2kpR7Mc4mRixN9xs/DyX0PmgOXNTQ8pxQKUgPjaYBk6Wx/eR59pet0kD
-Lf/lX6rrjMHvCXIQbiISgTE+mQBE+4WJF06bsvHrtz+86nGUSy3H/qqcI0y2jdkW
-khSoHmJCIQ1PDF0BtnhXC8gd+paC3TLcWuK1OUgUj3im+nPcup+CxYwGa6yBZq8r
-scOS7W3DHVtLx69uZz39NmtccBX9uEmOoAofmK5GRmSPcdGEPnpzPPsXBI6Qh7J+
-tvpooXJPYQKru2dpW+q2DhUoKjUwHlqVUzQAXqSIETYpN9G/XsV65USxsXAMyCFt
-d3YBrgA5mg1Dofc0Y0Hh
-=EkTw
------END PGP SIGNATURE-----
+commit 195daf665a6299de98a4da3843fed2dd9de19d3a
+Author: Ulrich Obergfell <uobergfe@redhat.com>
+Date:   Tue Apr 14 15:44:13 2015 -0700
 
---J/dobhs11T7y2rNN--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+    watchdog: enable the new user interface of the watchdog mechanism
+
+The patch doesn't revert because of follow up changes so I have reverted
+all three:
+692297d8f968 ("watchdog: introduce the hardlockup_detector_disable() function")
+b2f57c3a0df9 ("watchdog: clean up some function names and arguments")
+195daf665a62 ("watchdog: enable the new user interface of the watchdog mechanism")
+
+on top of my current Linus tree (4cfceaf0c087f47033f5e61a801f4136d6fb68c6)
+and the issue is gone. I have hard time to understand what these 3 could have
+to do with suspend path, though.
+
+Then I've tried to bisect the other branch and merge 195daf665a62 during
+each step to find out which patch starts failing. This lead to an even
+weirder commit a1e12da4796a ("perf tools: Add 'I' event modifier for
+exclude_idle bit") but maybe I've just screwed something on the way.
+
+I will continue debugging tomorrow but any hints would be helpful.
+-- 
+Michal Hocko
+SUSE Labs
