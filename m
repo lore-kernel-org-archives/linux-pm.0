@@ -1,115 +1,83 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 11/15] thermal: thermal: Add support for hardware-tracked
- trip points
-Date: Mon, 18 May 2015 14:09:44 +0200
-Message-ID: <20150518120944.GQ6325@pengutronix.de>
-References: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de>
- <1431507163-19933-12-git-send-email-s.hauer@pengutronix.de>
- <5559ABAA.6040001@kapsi.fi>
+From: Stephane Eranian <eranian@google.com>
+Subject: Re: suspend regression in 4.1-rc1
+Date: Mon, 18 May 2015 05:13:05 -0700
+Message-ID: <CABPqkBTDEXkFuTVZG=LizC2pFwGwswzC6xwxsZAgeVGv5Xw6Ug@mail.gmail.com>
+References: <20150517185041.GA5897@dhcp22.suse.cz>
+	<CA+55aFy2wWy-k0O-Sb2vUCLiLjeKMu7r95bf294qP5UqQHuxfw@mail.gmail.com>
+	<20150518073046.GO17717@twins.programming.kicks-ass.net>
+	<20150518090336.GA6393@dhcp22.suse.cz>
+	<20150518093150.GC21418@twins.programming.kicks-ass.net>
+	<309071648.615900.1431946606778.JavaMail.zimbra@redhat.com>
+	<20150518110513.GE21418@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:53290 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753829AbbERMJv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 08:09:51 -0400
-Content-Disposition: inline
-In-Reply-To: <5559ABAA.6040001@kapsi.fi>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:36475 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752460AbbERMNG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 08:13:06 -0400
+Received: by obbkp3 with SMTP id kp3so120594313obb.3
+        for <linux-pm@vger.kernel.org>; Mon, 18 May 2015 05:13:05 -0700 (PDT)
+In-Reply-To: <20150518110513.GE21418@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ulrich Obergfell <uobergfe@redhat.com>, Michal Hocko <mhocko@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>, Don Zickus <dzickus@redhat.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-Hi Mikko,
+Hi,
 
-On Mon, May 18, 2015 at 12:06:50PM +0300, Mikko Perttunen wrote:
-> > +	for (i =3D 0; i < tz->trips; i++) {
-> > +		int trip_low;
-> > +
-> > +		tz->ops->get_trip_temp(tz, i, &trip_temp);
-> > +		tz->ops->get_trip_hyst(tz, i, &hysteresis);
-> > +
-> > +		trip_low =3D trip_temp - hysteresis;
-> > +
-> > +		if (trip_low < temp && trip_low > low)
-> > +			low =3D trip_low;
-> > +
-> > +		if (trip_temp > temp && trip_temp < high)
-> > +			high =3D trip_temp;
-> > +	}
-> > +
-> > +	tz->prev_low_trip =3D low;
-> > +	tz->prev_high_trip =3D high;
-> > +
-> > +	dev_dbg(&tz->device, "new temperature boundaries: %d < x < %d\n",
-> > +			low, high);
-> > +
-> > +	tz->ops->set_trips(tz, low, high);
->=20
-> This should probably do something if set_trips returns an error
-> code; at least an error message, perhaps enable polling? I'm not
-> exactly sure what safety features the thermal framework has in
-> general if errors happen..
+On Mon, May 18, 2015 at 4:05 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Mon, May 18, 2015 at 06:56:46AM -0400, Ulrich Obergfell wrote:
+>> > Subject: watchdog: Fix merge 'conflict'
+>> >
+>> > Two watchdog changes that came through different trees had a non
+>> > conflicting conflict, that is, one changed the semantics of a variable
+>> > but no actual code conflict happened. So the merge appeared fine, but
+>> > the resulting code did not behave as expected.
+>> >
+>> > Commit 195daf665a62 ("watchdog: enable the new user interface of the
+>> > watchdog mechanism") changes the semantics of watchdog_user_enabled,
+>> > which thereafter is only used by the functions introduced by
+>> > b3738d293233 ("watchdog: Add watchdog enable/disable all functions").
+>>
+>> Don and I already posted a patch in April to address this:
+>>
+>> https://lkml.org/lkml/2015/4/22/306
+>> http://ozlabs.org/~akpm/mmots/broken-out/watchdog-fix-watchdog_nmi_enable_all.patch
+>
+> Yeah, but it seems to have gotten lost on its way to Linus.
+>
+>> > There further appears to be a distinct lack of serialization between
+>> > setting and using watchdog_enabled, so perhaps we should wrap the
+>> > {en,dis}able_all() things in watchdog_proc_mutex.
+>>
+>> As I understand it, the {en,dis}able_all() functions are only called early
+>> at kernel startup, so I do not see how they could be racing with watchdog
+>> code that is executed in the context of write() system calls to parameters
+>> in /proc/sys/kernel. Please see also my earlier reply to Michal for further
+>> details: http://marc.info/?l=linux-pm&m=143194387208250&w=2
+>>
+>> Do we really need synchronization here?
+>
+> Same argument as in my previous email; its best to implement exposed
+> functions fully and correctly, irrespective of their usage sites.
+>
+> It costs little extra and might safe a few hairs down the lined. None of
+> this is performance critical.
 
-Currently a thermal zone has the passive_delay and polling_delay
-variables. If these are nonzero the thermal core will always poll. A
-purely interrupt driven thermal zone would set these values to zero.
-In this case the thermal core has no basis for polling, so we would
-have to make up polling intervals when set_trips fails. Another
-possibility would be to interpret the *_delay variables as 'when
-set_trips is available, do not poll. When something goes wrong, use
-*_delay as polling intervals'
+I cannot reproduce this problem on my T430s running tip.git at 4.1-rc3.
 
->=20
-> One interesting thing I noticed was that at least the bang-bang
-> governor only acts if the temperature is properly smaller than (trip
-> temp - hysteresis). So perhaps we should specify the non-tripping
-> range as [low, high)? Or we could change bang-bang.
+The thing about b37609c30e41 is that is introduces a deferred initcall
+for perf_events. It adds an subsys_initcall after the default initialization
+of perf_events The reason is that the fixup_ht_bug() needs to wait until
+cpu topology is setup before proceeding. Thus by the time
+watchdog_nmi_disable_all() is called from that function, the kernel
+may be multi-cpu already. Thus, there may be a race.
 
-I wonder how we can protect against such off-by-one errors anyway.
-Generally a hardware might operate on raw values rather than directly
-in temperature values in =B0C. This means a driver for this must have
-celsius_to_raw and raw_to_celsius conversion functions. Now it can
-happen that due to rounding errors celsius_to_raw(Tcrit) returns a raw
-value that when converted back to celsius is different from the
-original value in =B0C. This would mean the hardware triggers an interr=
-upt
-for a trip point and the thermal core does not react because get_temp
-actually returns a different temperature than previously programmed as
-interrupt trigger. This way we would lose hot (or cold) events.
 
->=20
-> > +}
-> > +
-> >  void thermal_zone_device_update(struct thermal_zone_device *tz)
-> >  {
-> >  	int temp, ret, count;
-> > @@ -479,6 +518,8 @@ void thermal_zone_device_update(struct
-> thermal_zone_device *tz)
-> >  	dev_dbg(&tz->device, "last_temperature=3D%d, current_temperature=3D=
-%d\n",
-> >  				tz->last_temperature, tz->temperature);
-> >
-> > +	thermal_zone_set_trips(tz);
-> > +
-> >  	for (count =3D 0; count < tz->trips; count++)
-> >  		handle_thermal_trip(tz, count);
-> >  }
->=20
-> set_trips should also be called from temp_store and other places
-> that modify values that affect the trip points.
 
-Good point.
 
-Sascha
-
---=20
-Pengutronix e.K.                           |                           =
-  |
-Industrial Linux Solutions                 | http://www.pengutronix.de/=
-  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0  =
-  |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-555=
-5 |
+commit b37609c30e41264c4df4acff78abfc894499a49b
+Author: Stephane Eranian <eranian@google.com>
+Date:   Mon Nov 17 20:07:04 2014 +0100
+   perf/x86/intel: Make the HT bug workaround conditional on HT enabled
