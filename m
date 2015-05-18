@@ -1,35 +1,42 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v4 2/3] mm/page_alloc.c: add config option to sanitize
- freed pages
-Date: Mon, 18 May 2015 13:21:52 +0200
-Message-ID: <20150518112152.GA16999@amd>
-References: <1431613188-4511-1-git-send-email-anisse@astier.eu>
- <1431613188-4511-3-git-send-email-anisse@astier.eu>
+From: Michal Hocko <mhocko@suse.cz>
+Subject: Re: suspend regression in 4.1-rc1
+Date: Mon, 18 May 2015 14:03:49 +0200
+Message-ID: <20150518120348.GA8787@dhcp22.suse.cz>
+References: <20150517185041.GA5897@dhcp22.suse.cz>
+ <CA+55aFy2wWy-k0O-Sb2vUCLiLjeKMu7r95bf294qP5UqQHuxfw@mail.gmail.com>
+ <20150518073046.GO17717@twins.programming.kicks-ass.net>
+ <20150518090336.GA6393@dhcp22.suse.cz>
+ <670732402.598272.1431943820988.JavaMail.zimbra@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58808 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751288AbbERLV4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 07:21:56 -0400
+Received: from mail-wg0-f50.google.com ([74.125.82.50]:33897 "EHLO
+	mail-wg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752460AbbERMDw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 08:03:52 -0400
 Content-Disposition: inline
-In-Reply-To: <1431613188-4511-3-git-send-email-anisse@astier.eu>
+In-Reply-To: <670732402.598272.1431943820988.JavaMail.zimbra@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Anisse Astier <anisse@astier.eu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Ulrich Obergfell <uobergfe@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Linus Torvalds <torvalds@linux-foundation.org>, Stephane Eranian <eranian@google.com>, Don Zickus <dzickus@redhat.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-On Thu 2015-05-14 16:19:47, Anisse Astier wrote:
-> This new config option will sanitize all freed pages. This is a pretty
-> low-level change useful to track some cases of use-after-free, help
-> kernel same-page merging in VM environments, and counter a few info
-> leaks.
+On Mon 18-05-15 06:10:20, Ulrich Obergfell wrote:
+[...]
+> Michal,
+> 
+> if I understand you correctly, Peter's patch solves the problem for you.
+> I would like to make you aware of a patch that Don and I posted in April.
+> 
+>   https://lkml.org/lkml/2015/4/22/306
+> 
+> watchdog_nmi_enable_all() should not use 'watchdog_user_enabled' at all.
+> It should rather check the NMI_WATCHDOG_ENABLED bit in 'watchdog_enabled'.
+> The patch is also in Andrew Morton's queue.
+> 
+>   http://ozlabs.org/~akpm/mmots/broken-out/watchdog-fix-watchdog_nmi_enable_all.patch
 
-Could you document the "few info leaks"? We may want to fix them for
-!SANTIZE_FREED_PAGES case, too...
-
-Thanks,
-									Pavel
+FWIW: This seems to fix my issue as well.
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Michal Hocko
+SUSE Labs
