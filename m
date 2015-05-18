@@ -1,35 +1,51 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: suspend regression in 4.1-rc1
-Date: Mon, 18 May 2015 10:41:34 +0200
-Message-ID: <20150518084134.GH16478@twins.programming.kicks-ass.net>
-References: <20150517185041.GA5897@dhcp22.suse.cz>
- <CA+55aFy2wWy-k0O-Sb2vUCLiLjeKMu7r95bf294qP5UqQHuxfw@mail.gmail.com>
- <20150518073046.GO17717@twins.programming.kicks-ass.net>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Subject: Re: [PATCH 4/7] arm: dts: imx: update snvs to use syscon access
+ register
+Date: Mon, 18 May 2015 10:45:25 +0200
+Message-ID: <1431938725.3209.15.camel@pengutronix.de>
+References: <1431696990-23078-1-git-send-email-Frank.Li@freescale.com>
+	 <1431696990-23078-5-git-send-email-Frank.Li@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:44038 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750949AbbERIls (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 04:41:48 -0400
-Content-Disposition: inline
-In-Reply-To: <20150518073046.GO17717@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <1431696990-23078-5-git-send-email-Frank.Li@freescale.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Frank.Li@freescale.com
+Cc: lznuaa@gmail.com, shawn.guo@linaro.org, dmitry.torokhov@gmail.com, robh+dt@kernel.org, a.zummo@towertech.it, alexandre.belloni@free-electrons.com, sachin.kamat@linaro.org, linux-arm-kernel@lists.infradead.org, linux-input@vger.kernel.org, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Michal Hocko <mhocko@suse.cz>, Stephane Eranian <eranian@google.com>, Ulrich Obergfell <uobergfe@redhat.com>, Don Zickus <dzickus@redhat.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Mon, May 18, 2015 at 09:30:46AM +0200, Peter Zijlstra wrote:
-> Let me go see if I can reproduce / test this.. as is the below is
-> entirely untested.
+Hi Frank,
 
-I cannot seem to get suspend to fail on my x240 with linus.git.
+Am Freitag, den 15.05.2015, 21:36 +0800 schrieb Frank.Li@freescale.com:
+> From: Frank Li <Frank.Li@freescale.com>
+> 
+> snvs is MFP device. Change dts to use syscon to allocate register resource.
+> 
+> Signed-off-by: Frank Li <Frank.Li@freescale.com>
+> ---
+>  arch/arm/boot/dts/imx6qdl.dtsi | 12 ++++--------
+>  arch/arm/boot/dts/imx6sl.dtsi  | 12 ++++--------
+>  arch/arm/boot/dts/imx6sx.dtsi  | 12 ++++--------
+>  arch/arm/boot/dts/vfxxx.dtsi   |  9 +++------
+>  4 files changed, 15 insertions(+), 30 deletions(-)
+> 
+> diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
+> index 0482a66..6d8161d 100644
+> --- a/arch/arm/boot/dts/imx6qdl.dtsi
+> +++ b/arch/arm/boot/dts/imx6qdl.dtsi
+> @@ -687,21 +687,17 @@
+>  			};
+>  
+>  			snvs@020cc000 {
+> -				compatible = "fsl,sec-v4.0-mon", "simple-bus";
+> -				#address-cells = <1>;
+> -				#size-cells = <1>;
+> -				ranges = <0 0x020cc000 0x4000>;
+> +				compatible = "fsl,sec-v4.0-mon", "syscon",  "simple-bus";
 
-echo mem > /sys/power/state
+The compatible should change from "simple-bus" to "simple-mfd", then.
 
-makes it sleep, and pressing the power button brings it back to life.
+regards
+Philipp
 
-And this is with X loaded and everything up (well, except the wireless,
-as it turns out I need a newer firmware version).
-
-So I'll have to ask someone else to test this :/
