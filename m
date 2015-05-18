@@ -1,148 +1,98 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: 3.18: lockdep problems in cpufreq
-Date: Mon, 18 May 2015 19:56:45 +0100
-Message-ID: <20150518185645.GA28053@n2100.arm.linux.org.uk>
-References: <20141214213655.GA11285@n2100.arm.linux.org.uk>
- <003501d01876$fbc53f80$f34fbe80$%brar@samsung.com>
- <20141215174336.GJ11285@n2100.arm.linux.org.uk>
- <3353119.0CuA8fKaup@vostro.rjw.lan>
- <20141215230922.GL11285@n2100.arm.linux.org.uk>
- <CAKohponhkk9BK6-7ScHeZa4R43iooWQFV8YoPLv6LjO40GNq=A@mail.gmail.com>
+From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Subject: Re: [PATCH 11/15] thermal: thermal: Add support for hardware-tracked
+ trip points
+Date: Mon, 18 May 2015 22:13:46 +0300
+Message-ID: <555A39EA.1060608@kapsi.fi>
+References: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de> <1431507163-19933-12-git-send-email-s.hauer@pengutronix.de> <5559ABAA.6040001@kapsi.fi> <20150518120944.GQ6325@pengutronix.de> <20150518184433.GS11598@ld-irv-0074>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohponhkk9BK6-7ScHeZa4R43iooWQFV8YoPLv6LjO40GNq=A@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Yadwinder Singh Brar <yadi.brar@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kapsi.fi ([217.30.184.167]:37210 "EHLO mail.kapsi.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753760AbbERTOF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 18 May 2015 15:14:05 -0400
+In-Reply-To: <20150518184433.GS11598@ld-irv-0074>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Brian Norris <computersforpeace@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-On Tue, Dec 16, 2014 at 09:11:53AM +0530, Viresh Kumar wrote:
-> On 16 December 2014 at 04:39, Russell King - ARM Linux
-> <linux@arm.linux.org.uk> wrote:
-> > Well, here's a patch which I'm running on top of 3.18 at the moment,
-> > which is basically what I described in my email, and I'm running with it
-> > and it is without any lockdep complaint.
-> 
-> We need two separate patches now, one for 3.18 and other one for 3.19-rc.
-> 3.19 has see lots of changes in this particular file and so we need to
-> change few things here.
+On 05/18/2015 09:44 PM, Brian Norris wrote:
+> On Mon, May 18, 2015 at 02:09:44PM +0200, Sascha Hauer wrote:
+>> On Mon, May 18, 2015 at 12:06:50PM +0300, Mikko Perttunen wrote:
+>>> One interesting thing I noticed was that at least the bang-bang
+>>> governor only acts if the temperature is properly smaller than (tri=
+p
+>>> temp - hysteresis). So perhaps we should specify the non-tripping
+>>> range as [low, high)? Or we could change bang-bang.
+>>
+>> I wonder how we can protect against such off-by-one errors anyway.
+>> Generally a hardware might operate on raw values rather than directl=
+y
+>> in temperature values in =B0C. This means a driver for this must hav=
+e
+>> celsius_to_raw and raw_to_celsius conversion functions. Now it can
+>> happen that due to rounding errors celsius_to_raw(Tcrit) returns a r=
+aw
+>> value that when converted back to celsius is different from the
+>> original value in =B0C. This would mean the hardware triggers an int=
+errupt
+>> for a trip point and the thermal core does not react because get_tem=
+p
+>> actually returns a different temperature than previously programmed =
+as
+>> interrupt trigger. This way we would lose hot (or cold) events.
+>
+> This also highlights another fact: there's a race between interrupt
+> generation and temperature reading (->get_temp()). I would expect any
+> hardware interrupt thermal sensor would also have a latched temperatu=
+re
+> reading to correspond with it, and there would be no guarantee that t=
+his
+> latched temperature will match the polled reading seen once you reach
+> thermal_zone_device_update(). So a hardware driver might report a
+> thermal update, but the temperature reported to the core won't
+> necessarily match what interrupt was meant for.
 
-What happened with this?  I'm still carrying the patch.
+Does this actually matter? The thermal core will reset trips and apply=20
+cooling using the new - most recent - value. Using bang bang as example=
+,=20
+if the temperature has risen since the interrupt fired, the cooling=20
+device will correctly not be switched off. If the temperature has=20
+fallen, it will again be correctly switched off. The only issue is then=
+=20
+if the temperature is exactly 'trip temp - trip hyst' which will cause=20
+set_trips to load the trip points below, but not cause bang bang to tur=
+n=20
+off the cooling device, and the next chance it will have will only be a=
+t=20
+the next below trip point. Well, this is still safe (at least until you=
+=20
+replace "cooling device" with "heating device"), so maybe it isn't that=
+=20
+big of an issue.
 
-> > 8<===
-> > From: Russell King <rmk+kernel@arm.linux.org.uk>
-> > thermal: cpu_cooling: fix lockdep problems in cpu_cooling
-> >
-> > A recent change to the cpu_cooling code introduced a AB-BA deadlock
-> > scenario between the cpufreq_policy_notifier_list rwsem and the
-> > cooling_cpufreq_lock.  This is caused by cooling_cpufreq_lock being held
-> > before the registration/removal of the notifier block (an operation
-> > which takes the rwsem), and the notifier code itself which takes the
-> > locks in the reverse order.
-> >
-> > Solve this by moving to finer grained locking - use one mutex to protect
-> > the cpufreq_dev_list as a whole, and a separate lock to ensure correct
-> > ordering of cpufreq notifier registration and removal.
-> >
-> > I considered taking the cooling_list_lock within cooling_cpufreq_lock to
-> > protect the registration sequence as a whole, but that adds a dependency
-> > between these two locks which is best avoided (lest someone tries to
-> > take those two new locks in the reverse order.)  In any case, it's safer
-> > to have an empty cpufreq_dev_list than to have unnecessary dependencies
-> > between locks.
-> >
-> > Fixes: 2dcd851fe4b4 ("thermal: cpu_cooling: Update always cpufreq policy with thermal constraints")
-> > Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> > ---
-> >
-> >  drivers/thermal/cpu_cooling.c | 16 ++++++++++++----
-> >  1 file changed, 12 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> > index ad09e51ffae4..9e42c6f30785 100644
-> > --- a/drivers/thermal/cpu_cooling.c
-> > +++ b/drivers/thermal/cpu_cooling.c
-> > @@ -57,6 +57,7 @@ static DEFINE_MUTEX(cooling_cpufreq_lock);
-> >
-> >  static unsigned int cpufreq_dev_count;
-> >
-> > +static DEFINE_MUTEX(cooling_list_lock);
-> >  static LIST_HEAD(cpufreq_dev_list);
-> >
-> >  /**
-> > @@ -317,7 +318,7 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
-> >         if (event != CPUFREQ_ADJUST)
-> >                 return 0;
-> >
-> > -       mutex_lock(&cooling_cpufreq_lock);
-> > +       mutex_lock(&cooling_list_lock);
-> >         list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
-> >                 if (!cpumask_test_cpu(policy->cpu,
-> >                                         &cpufreq_dev->allowed_cpus))
-> > @@ -333,7 +334,7 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
-> >                 if (policy->max != max_freq)
-> >                         cpufreq_verify_within_limits(policy, 0, max_freq);
-> >         }
-> > -       mutex_unlock(&cooling_cpufreq_lock);
-> > +       mutex_unlock(&cooling_list_lock);
-> >
-> >         return 0;
-> >  }
-> > @@ -482,6 +483,11 @@ __cpufreq_cooling_register(struct device_node *np,
-> >         }
-> >         cpufreq_dev->cool_dev = cool_dev;
-> >         cpufreq_dev->cpufreq_state = 0;
-> > +
-> > +       mutex_lock(&cooling_list_lock);
-> > +       list_add(&cpufreq_dev->node, &cpufreq_dev_list);
-> > +       mutex_unlock(&cooling_list_lock);
-> > +
-> >         mutex_lock(&cooling_cpufreq_lock);
-> >
-> >         /* Register the notifier for first cpufreq cooling device */
-> > @@ -489,7 +495,6 @@ __cpufreq_cooling_register(struct device_node *np,
-> >                 cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
-> >                                           CPUFREQ_POLICY_NOTIFIER);
-> >         cpufreq_dev_count++;
-> > -       list_add(&cpufreq_dev->node, &cpufreq_dev_list);
-> >
-> >         mutex_unlock(&cooling_cpufreq_lock);
-> >
-> > @@ -553,7 +558,6 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
-> >
-> >         cpufreq_dev = cdev->devdata;
-> >         mutex_lock(&cooling_cpufreq_lock);
-> > -       list_del(&cpufreq_dev->node);
-> >         cpufreq_dev_count--;
-> >
-> >         /* Unregister the notifier for the last cpufreq cooling device */
-> > @@ -562,6 +566,10 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
-> >                                             CPUFREQ_POLICY_NOTIFIER);
-> >         mutex_unlock(&cooling_cpufreq_lock);
-> >
-> > +       mutex_lock(&cooling_list_lock);
-> > +       list_del(&cpufreq_dev->node);
-> > +       mutex_unlock(&cooling_list_lock);
-> > +
-> >         thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
-> >         release_idr(&cpufreq_idr, cpufreq_dev->id);
-> >         kfree(cpufreq_dev);
-> 
-> For 3.18
-> 
-> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+Please point out if there's a problem with my line of reasoning.
 
--- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+=46WIW - at least Tegra doesn't have a latched register like this. Ther=
+e's=20
+just a bit indicating that an interrupt was raised and a temperature=20
+register that updates according to the sensor's input clock.
+
+>
+> I have a patch that adds a thermal_zone_device_update_temp() API, so
+> drivers can report the temperature along with the interrupt
+> notification. (Such a patch also helps so that the driver can choose =
+to
+> round down on cold events and up on hot events, resolving your roundi=
+ng
+> issue too.)
+>
+> Brian
+>
+
+Cheers,
+Mikko
+
