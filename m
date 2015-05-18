@@ -1,88 +1,142 @@
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Subject: Re: suspend regression in 4.1-rc1
-Date: Mon, 18 May 2015 10:49:24 +0900
-Message-ID: <20150518014924.GA2330@swordfish>
-References: <20150517185041.GA5897@dhcp22.suse.cz>
+From: NeilBrown <neilb@suse.de>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Mon, 18 May 2015 11:57:27 +1000
+Message-ID: <20150518115727.72439610@notabene.brown>
+References: <b1587e8b2c664632ecd0d9ad1a3e56733da76490.1431068823.git.len.brown@intel.com>
+	<20150514092251.6d0625af@notabene.brown>
+	<20150514235426.GF4316@dastard>
+	<3798672.EXej90jOp1@vostro.rjw.lan>
+	<CACVXFVMEwOSeP8FM89E4XZPUhDsP6bfeCGmJDK1i5kKs-3MCDg@mail.gmail.com>
+	<CAJZ5v0gvDCwXWc5aAU7dGDsC=8ZbGBhQHgPkP92W=+Z7-v_2wA@mail.gmail.com>
+	<20150515113557.54ef930b@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:35523 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752068AbbERBtD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 May 2015 21:49:03 -0400
-Content-Disposition: inline
-In-Reply-To: <20150517185041.GA5897@dhcp22.suse.cz>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ boundary="Sig_/APfp6l34c+mE6_XEbGJway8"; protocol="application/pgp-signature"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150515113557.54ef930b@lxorguk.ukuu.org.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ming Lei <tom.leiming@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dave Chinner <david@fromorbit.com>, Len Brown <lenb@kernel.org>, Linux PM List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Michal Hocko <mhocko@suse.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Ulrich Obergfell <uobergfe@redhat.com>, Don Zickus <dzickus@redhat.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, LKML <linux-kernel@vger.kernel.org>
 
-On (05/17/15 20:50), Michal Hocko wrote:
-> Hi,
-> s2ram broke after 4.1-rc1 for me. The second s2ram simply doesn't wake
-> up (fans turn on but the screen is off). I have even noticed fans
-> starting also while suspended in some instances (which was especially
-> annoying when it happened on the way home from work).
-> I've tried /sys/power/pm_test and the issue starts at processors mode.
-> Nothing really interesting shows up in the netconsole but I didn't get
-> to a more detailed testing there.
-> 
-> I've tried to bisect this as 4.0 works reliably. This was tricky though
-> because the first bad commit is a merge:
-> 
+--Sig_/APfp6l34c+mE6_XEbGJway8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Hello,
+On Fri, 15 May 2015 11:35:57 +0100 One Thousand Gnomes
+<gnomes@lxorguk.ukuu.org.uk> wrote:
 
-JFI, I see quite similar behaviour on my laptop (linux-next doesn't boot:
-blank screen and fans on). I've tried to bisect yesterday, but it didn't
-go well, showing that the first bad commit is '31ccd0e66d41' (nonsense);
-it seems that the root cause is somewhere between next-20150505 (ok) and
-next-20150506 (boot failure). I'll continue bisecting.
+> > > Data loss may be caused for hotplug storage(like USB), or all storage
+> > > when power is exhausted during suspend.
+> >=20
+> > Which also may very well happen at run time, right?
+>=20
+> Intuitively users treat "suspended" as a bit like off and do remove
+> devices they've "finished with".
+>=20
+> Technically yes the instant off/on on a phone is the same as the suspend
+> to RAM on a laptop but it doesn't mean the model in people's heads is the
+> same... not yet anyway.
+>=20
+> > > Is there obvious advantage to remove sys_sync() in the case?
+> >=20
+> > Yes, there is.  It is not necessary to sync() every time you suspend
+> > if you do that very often.
+>=20
+> But if you do it very often you won't have any dirty pages to flush so it
+> will be very fast.
 
-	-ss
+Several people have said things like this, and yet Len clearly saw a problem
+so sometimes it isn't as fast as you think it should be.  I guess we need
+some data.
 
-> commit 1dcf58d6e6e6eb7ec10e9abc56887b040205b06f
-> Merge: 80dcc31fbe55 e4b0db72be24
-> Author: Linus Torvalds <torvalds@linux-foundation.org>
-> Date:   Tue Apr 14 16:49:17 2015 -0700
-> 
->     Merge branch 'akpm' (patches from Andrew)
-> 
-> The merge commit is empty and both 80dcc31fbe55 and e4b0db72be24 work
-> properly but the merge is bad. So it seems like some of the commits in
-> either branch has a side effect which needs other branch in order to
-> reproduce.
-> 
-> So've tried to bisect ^80dcc31fbe55 e4b0db72be24 and merged 80dcc31fbe55
-> in each step. This lead to:
-> 
-> commit 195daf665a6299de98a4da3843fed2dd9de19d3a
-> Author: Ulrich Obergfell <uobergfe@redhat.com>
-> Date:   Tue Apr 14 15:44:13 2015 -0700
-> 
->     watchdog: enable the new user interface of the watchdog mechanism
-> 
-> The patch doesn't revert because of follow up changes so I have reverted
-> all three:
-> 692297d8f968 ("watchdog: introduce the hardlockup_detector_disable() function")
-> b2f57c3a0df9 ("watchdog: clean up some function names and arguments")
-> 195daf665a62 ("watchdog: enable the new user interface of the watchdog mechanism")
-> 
-> on top of my current Linus tree (4cfceaf0c087f47033f5e61a801f4136d6fb68c6)
-> and the issue is gone. I have hard time to understand what these 3 could have
-> to do with suspend path, though.
-> 
-> Then I've tried to bisect the other branch and merge 195daf665a62 during
-> each step to find out which patch starts failing. This lead to an even
-> weirder commit a1e12da4796a ("perf tools: Add 'I' event modifier for
-> exclude_idle bit") but maybe I've just screwed something on the way.
-> 
-> I will continue debugging tomorrow but any hints would be helpful.
-> -- 
-> Michal Hocko
-> SUSE Labs
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+In fact there seem to be a number of open questions:
+
+1/ Len has seen enough delays to bother sending a patch.  Twice.  Lots of
+   other people claim there shouldn't be much delay.
+
+   Len: can you provide numbers?  How long does the sys_sync take
+   (min/max/mean....).  I think an interesting number would be in a quick
+   "resume, do something, suspend" cycle, what percent of the time is spent
+   in sys_sync.
+   Maybe also report what filesystems are in use, and whether you expect
+   there to be any dirty data.
+
+   If I run "time sync; time sync; time sync" it reports about 50msec for
+   each sync.  If I run "time sleep 0; time sleep 0; time sleep 0" it repor=
+ts
+   about 2 msec.  So sys_sync is taking at least 50msec.
+   Almost all of that is in sync_inodes_sb() and much of that is in
+   _raw_spin_lock.... though I might be misinterpreting perf.  It seems to
+   wait for a BDI flusher thread to go off and do nothing.
+
+   Len: is 50msec enough to bother you?
+
+
+2/ Is a 'sys_sync' really necessary.  People claim that "users might lose
+   data".  I claim that some user data could be still in the application
+   buffers so they would lose that anyway, and applications call fsync after
+   writing everything out, so sys_sync isn't necessary.
+   Does anyone have an example of an application which writes important
+   user data, but doesn't call "fsync" shortly after all data has been writ=
+ten
+   out of the application's internal buffers?
+
+3/ Is a 'sys_sync' sufficient.  Len claims that in some cases, when running
+     sync; sync
+   the second sync takes longer, suggesting that the first sync didn't do
+   everything that was expected.   Prior to Linux 1.3.20, sys_sync didn't
+   wait for everything.  Since then it seems to be designed to, but maybe
+   something isn't right there.
+   In that case, having sys_sync may not be helping anyway.
+
+   Len: can you reliably reproduce this?  Can you provide a recipe?
+
+4/ Which part of 'sync' is really important?
+   sys_sync does two things.  It initiates writeout on dirty data and it
+   wait for writeout to complete.  Even if the former isn't necessary, the
+   latter probably is.  Do we need to reliably wait for all output queues
+   to flush?  Where is the best place to do that?
+
+Thanks,
+NeilBrown
+
+
+
+>=20
+> > And it is done in such a place that everything needs to wait for it to =
+complete.
+>=20
+> Only because the code deciding to trigger any automated suspend doesn't
+> do a sync a few seconds before. In the case the user goes to the menus
+> and does power->suspend then yes it's a delay. In the case where the OS
+> at some level has decided that it's 10 seconds from automatically
+> suspending to something the user space can issue a pre-emptive sync to
+> get the queue size down.
+>=20
+> Alan
+
+
+--Sig_/APfp6l34c+mE6_XEbGJway8
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIVAwUBVVlHCDnsnt1WYoG5AQLeQQ/+JixDVgfzspaRY0RT3j/pBu5Es/5HQTt9
+CoaktfYfo6chp2V+Xjg9kjUYhXL9FajKfc64iUKkTw/39IielPf7uO1H1DU45MvC
+KSQ3pqj2UVEVcdIxUtAY0Bdey1WVmHgCjLEk4OMtp++uNQAB5ATTiCojxfBuBbWC
+g05MFneCnnMEj9uhXzLJaWiw9NWuGTA+XMZPntgwnFElCpKLMrLI4HmSN7429G+d
+0/Y7U4Zvy4Did9hiLoba2Lyv5SuzdQ9O9bjHKeubruzznLBys0q9dA9m1sgOjUW1
+GoO66/bqKCv6zBAuKjyE9r4ZzuwVL00ht9E3kVuSIpILNH1Q80ou0cc9yK+XXvM1
+cpHi6jia+e6HKwQ3p/tZsTpvrsKqn5CZtPoC5ozFi56y258NgzjcTu7gkS3Iawcm
+yX/CaVVeR1i5pPoeuha4Lw4jM2SHznFgTKfDQOApvl7uSL5V1aS2K7Q5RkIVvz2p
+6M50QF3gIt1+/Ptj4gZLpYWNVITCGuOGLs9YC+3dwjM31MoOsxsTHqv4gwJdvT9t
+hcYsEGUtkW0lEXsKqIYf7hv0bqpBqIIQk46CVP6gbKQaCge5ROQ22eCLQafBU/WH
+kv5PG0DgGD+kaDNkPs1gtHjVBn2VME1wAqNUUx+UIvUdXUGZokTP5apWGpUNpl2r
+bZZn4qlKBLg=
+=xhld
+-----END PGP SIGNATURE-----
+
+--Sig_/APfp6l34c+mE6_XEbGJway8--
