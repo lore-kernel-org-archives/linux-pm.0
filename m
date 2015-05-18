@@ -1,114 +1,88 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/3] power: increment wakeup_count when save_wakeup_count failed.
-Date: Mon, 18 May 2015 02:47:01 +0200
-Message-ID: <4311490.ZRNbV6fRsK@vostro.rjw.lan>
-References: <1429750212-28659-1-git-send-email-jinqian@android.com> <6356516.qkiSo3Mux2@vostro.rjw.lan> <CA+yUs=ypmLV07LmGu90aLagy2S2yDxSABuByVKFh-ikiNad46Q@mail.gmail.com>
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Subject: Re: suspend regression in 4.1-rc1
+Date: Mon, 18 May 2015 10:49:24 +0900
+Message-ID: <20150518014924.GA2330@swordfish>
+References: <20150517185041.GA5897@dhcp22.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50147 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751208AbbERAVn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 May 2015 20:21:43 -0400
-In-Reply-To: <CA+yUs=ypmLV07LmGu90aLagy2S2yDxSABuByVKFh-ikiNad46Q@mail.gmail.com>
+Received: from mail-pd0-f171.google.com ([209.85.192.171]:35523 "EHLO
+	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752068AbbERBtD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 May 2015 21:49:03 -0400
+Content-Disposition: inline
+In-Reply-To: <20150517185041.GA5897@dhcp22.suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jin Qian <jinqian@android.com>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Michal Hocko <mhocko@suse.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Ulrich Obergfell <uobergfe@redhat.com>, Don Zickus <dzickus@redhat.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, LKML <linux-kernel@vger.kernel.org>
 
-On Friday, May 15, 2015 06:08:32 PM Jin Qian wrote:
-> Some wakeup event happens every frequently between reading
-> wakeup_count and writing back wakeup_count.
-> They changed wakeup event count so writes fail and usespace doesn't
-> continue to suspend. However, such
-> occurrences are not counted in ws->wakeup_count.
+On (05/17/15 20:50), Michal Hocko wrote:
+> Hi,
+> s2ram broke after 4.1-rc1 for me. The second s2ram simply doesn't wake
+> up (fans turn on but the screen is off). I have even noticed fans
+> starting also while suspended in some instances (which was especially
+> annoying when it happened on the way home from work).
+> I've tried /sys/power/pm_test and the issue starts at processors mode.
+> Nothing really interesting shows up in the netconsole but I didn't get
+> to a more detailed testing there.
+> 
+> I've tried to bisect this as 4.0 works reliably. This was tricky though
+> because the first bad commit is a merge:
+> 
 
-So I hope you've read the comment in wakeup_source_report_event().
+Hello,
 
-> I spent quite sometime finding out the problematic wakeup
-> event with inaccurate wakeup_count : )
+JFI, I see quite similar behaviour on my laptop (linux-next doesn't boot:
+blank screen and fans on). I've tried to bisect yesterday, but it didn't
+go well, showing that the first bad commit is '31ccd0e66d41' (nonsense);
+it seems that the root cause is somewhere between next-20150505 (ok) and
+next-20150506 (boot failure). I'll continue bisecting.
 
-But your patch doesn't fix the problem.  ws->wakeup_count is still racy
-and kind of even more after the patch than before.
+	-ss
 
-
-> On Fri, May 15, 2015 at 5:34 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Wednesday, April 22, 2015 05:50:11 PM Jin Qian wrote:
-> >> user-space aborts suspend attempt if writing wakeup_count failed.
-> >> Count the write failure towards wakeup_count.
-> >
-> > A use case, please?
-> >
-> >> Signed-off-by: Jin Qian <jinqian@android.com>
-> >> ---
-> >>  drivers/base/power/wakeup.c | 17 +++++++++++++++++
-> >>  1 file changed, 17 insertions(+)
-> >>
-> >> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> >> index f24c622..bdb45f3 100644
-> >> --- a/drivers/base/power/wakeup.c
-> >> +++ b/drivers/base/power/wakeup.c
-> >> @@ -57,6 +57,8 @@ static LIST_HEAD(wakeup_sources);
-> >>
-> >>  static DECLARE_WAIT_QUEUE_HEAD(wakeup_count_wait_queue);
-> >>
-> >> +static ktime_t last_read_time;
-> >> +
-> >>  /**
-> >>   * wakeup_source_prepare - Prepare a new wakeup source for initialization.
-> >>   * @ws: Wakeup source to prepare.
-> >> @@ -771,10 +773,15 @@ void pm_wakeup_clear(void)
-> >>  bool pm_get_wakeup_count(unsigned int *count, bool block)
-> >>  {
-> >>       unsigned int cnt, inpr;
-> >> +     unsigned long flags;
-> >>
-> >>       if (block) {
-> >>               DEFINE_WAIT(wait);
-> >>
-> >> +             spin_lock_irqsave(&events_lock, flags);
-> >> +             last_read_time = ktime_get();
-> >> +             spin_unlock_irqrestore(&events_lock, flags);
-> >> +
-> >>               for (;;) {
-> >>                       prepare_to_wait(&wakeup_count_wait_queue, &wait,
-> >>                                       TASK_INTERRUPTIBLE);
-> >> @@ -806,6 +813,7 @@ bool pm_save_wakeup_count(unsigned int count)
-> >>  {
-> >>       unsigned int cnt, inpr;
-> >>       unsigned long flags;
-> >> +     struct wakeup_source *ws;
-> >>
-> >>       events_check_enabled = false;
-> >>       spin_lock_irqsave(&events_lock, flags);
-> >> @@ -813,6 +821,15 @@ bool pm_save_wakeup_count(unsigned int count)
-> >>       if (cnt == count && inpr == 0) {
-> >>               saved_count = count;
-> >>               events_check_enabled = true;
-> >> +     } else {
-> >> +             rcu_read_lock();
-> >> +             list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-> >> +                     if (ws->active ||
-> >> +                         ktime_compare(ws->last_time, last_read_time) > 0) {
-> >> +                             ws->wakeup_count++;
-> >> +                     }
-> >> +             }
-> >> +             rcu_read_unlock();
-> >>       }
-> >>       spin_unlock_irqrestore(&events_lock, flags);
-> >>       return events_check_enabled;
-> >>
-> >
-> > --
-> > I speak only for myself.
-> > Rafael J. Wysocki, Intel Open Source Technology Center.
+> commit 1dcf58d6e6e6eb7ec10e9abc56887b040205b06f
+> Merge: 80dcc31fbe55 e4b0db72be24
+> Author: Linus Torvalds <torvalds@linux-foundation.org>
+> Date:   Tue Apr 14 16:49:17 2015 -0700
+> 
+>     Merge branch 'akpm' (patches from Andrew)
+> 
+> The merge commit is empty and both 80dcc31fbe55 and e4b0db72be24 work
+> properly but the merge is bad. So it seems like some of the commits in
+> either branch has a side effect which needs other branch in order to
+> reproduce.
+> 
+> So've tried to bisect ^80dcc31fbe55 e4b0db72be24 and merged 80dcc31fbe55
+> in each step. This lead to:
+> 
+> commit 195daf665a6299de98a4da3843fed2dd9de19d3a
+> Author: Ulrich Obergfell <uobergfe@redhat.com>
+> Date:   Tue Apr 14 15:44:13 2015 -0700
+> 
+>     watchdog: enable the new user interface of the watchdog mechanism
+> 
+> The patch doesn't revert because of follow up changes so I have reverted
+> all three:
+> 692297d8f968 ("watchdog: introduce the hardlockup_detector_disable() function")
+> b2f57c3a0df9 ("watchdog: clean up some function names and arguments")
+> 195daf665a62 ("watchdog: enable the new user interface of the watchdog mechanism")
+> 
+> on top of my current Linus tree (4cfceaf0c087f47033f5e61a801f4136d6fb68c6)
+> and the issue is gone. I have hard time to understand what these 3 could have
+> to do with suspend path, though.
+> 
+> Then I've tried to bisect the other branch and merge 195daf665a62 during
+> each step to find out which patch starts failing. This lead to an even
+> weirder commit a1e12da4796a ("perf tools: Add 'I' event modifier for
+> exclude_idle bit") but maybe I've just screwed something on the way.
+> 
+> I will continue debugging tomorrow but any hints would be helpful.
+> -- 
+> Michal Hocko
+> SUSE Labs
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> 
