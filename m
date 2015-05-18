@@ -1,106 +1,144 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V5 00/14] cpufreq: Don't loose cpufreq history on CPU hotplug
-Date: Mon, 18 May 2015 10:43:23 +0530
-Message-ID: <cover.1431924457.git.viresh.kumar@linaro.org>
+Subject: [PATCH V5 01/14] cpufreq: Create for_each_{in}active_policy()
+Date: Mon, 18 May 2015 10:43:24 +0530
+Message-ID: <245cec296a2099bc1e52241b645b1f426f4689ef.1431924457.git.viresh.kumar@linaro.org>
+References: <cover.1431924457.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:33080 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbbERFNu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 01:13:50 -0400
-Received: by pdbqa5 with SMTP id qa5so133372539pdb.0
-        for <linux-pm@vger.kernel.org>; Sun, 17 May 2015 22:13:49 -0700 (PDT)
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:34828 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751204AbbERFNy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 01:13:54 -0400
+Received: by pacwv17 with SMTP id wv17so136009469pac.2
+        for <linux-pm@vger.kernel.org>; Sun, 17 May 2015 22:13:53 -0700 (PDT)
+In-Reply-To: <cover.1431924457.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1431924457.git.viresh.kumar@linaro.org>
+References: <cover.1431924457.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Srivatsa Bhat <srivatsa@mit.edu>, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi Rafael,
+policy->cpus is cleared unconditionally now on hotplug-out of a CPU and
+it can be checked to know if a policy is active or not. Create helper
+routines to iterate over all active/inactive policies, based on
+policy->cpus field.
 
-The aim of this series is to stop managing cpufreq sysfs directories on CPU
-hotplug.
+Replace all instances of for_each_policy() with for_each_active_policy()
+to make them iterate only for active policies. (We haven't made changes
+yet to keep inactive policies in the same list, but that will be
+followed in a later patch).
 
-Currently on removal of a 'cpu != policy->cpu', we remove its sysfs directories
-by removing the soft-link. And on removal of policy->cpu, we migrate the sysfs
-directories to the next cpu in policy. But if policy->cpu was the last CPU, we
-remove the policy completely and allocate it again once the CPUs come back.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 66 ++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 59 insertions(+), 7 deletions(-)
 
-This has shortcomings:
-
-- Code Complexity
-- Slower hotplug
-- sysfs file permissions are reset after all policy->cpus are offlined
-- CPUFreq stats history lost after all policy->cpus are offlined
-- Special management of sysfs stuff during suspend/resume
-
-
-To make things simple we can stop playing with sysfs files unless the driver is
-getting removed. Also the policy can be kept intact to be used later.
-
-First few patches provide a clean base for others *more important* patches.
-
-Rebased-over: your linux-next branch as there were dependencies on my earlier
-patches.
-
-Pushed here:
-git://git.linaro.org/people/viresh.kumar/linux.git cpufreq/core/sysfs-v4
-
-V4-V5:
-- Sending all patches again
-- Fixed comments in one of the patches as suggested by you
-- Merged the last commit about "physical hotplug of CPUs" with "cpufreq: Stop
-  migrating sysfs files on hotplug".
-- A new patch (content is old, just separated out into its own patch) "cpufreq:
-  add/remove sysfs links via cpufreq_add_remove_dev_symlink()"
-
-V3-V4:
-- Only four patches sent this time:
-  - [PATCH V4 01/14] cpufreq: Create for_each_{in}active_policy()
-  - [PATCH V4 04/14] cpufreq: Don't traverse all active policies to find
-  - [PATCH V4 05/14] cpufreq: Manage governor usage history with
-  - [PATCH V4 06/14] cpufreq: Mark policy->governor = NULL for inactive
-- Remove __temp from the arguments of for_each_[in]active_policies.
-- Simplified macros/next_policy, etc.
-
-V2->V3:
-- First five are already applied by you and the 7th one was sent separately as a
-  fix earlier and got applied. So, V2 had 20 patches and V3 has 14.
-- Dropped while(1) and used do/while.
-- policy->governor marked as NULL only while removing the governor and not when
-  policy becomes inactive.
-- Commit logs/comments updated
-- Applied Acks from Saravan
-
-v1->V2:
-- Dropped the idea of using policy-lists for getting policy for any cpu
-- Also dropped fallback list and its per-cpu variable
-- Stopped cleaning cpufreq_cpu_data and doing list_del(policy) on logical
-  hotplug.
-- Added support for physical hotplug of CPUs (Untested).
-
-
-Saravana Kannan (1):
-  cpufreq: Track cpu managing sysfs kobjects separately
-
-Viresh Kumar (13):
-  cpufreq: Create for_each_{in}active_policy()
-  cpufreq: Don't clear cpufreq_cpu_data and policy list for inactive
-    policies
-  cpufreq: Get rid of cpufreq_cpu_data_fallback
-  cpufreq: Don't traverse all active policies to find policy for a cpu
-  cpufreq: Manage governor usage history with 'policy->last_governor'
-  cpufreq: Mark policy->governor = NULL for inactive policies
-  cpufreq: Don't allow updating inactive policies from sysfs
-  cpufreq: add/remove sysfs links via cpufreq_add_remove_dev_symlink()
-  cpufreq: Stop migrating sysfs files on hotplug
-  cpufreq: Remove cpufreq_update_policy()
-  cpufreq: Initialize policy->kobj while allocating policy
-  cpufreq: Call cpufreq_policy_put_kobj() from cpufreq_policy_free()
-  cpufreq: Restart governor as soon as possible
-
- drivers/cpufreq/cpufreq.c | 486 +++++++++++++++++++++++++---------------------
- include/linux/cpufreq.h   |   5 +-
- 2 files changed, 268 insertions(+), 223 deletions(-)
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 8cf0c0e7aea8..74d9fcbbe4f9 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -31,10 +31,62 @@
+ #include <linux/tick.h>
+ #include <trace/events/power.h>
+ 
+-/* Macros to iterate over lists */
+-/* Iterate over online CPUs policies */
+ static LIST_HEAD(cpufreq_policy_list);
+-#define for_each_policy(__policy)				\
++
++static inline bool policy_is_inactive(struct cpufreq_policy *policy)
++{
++	return cpumask_empty(policy->cpus);
++}
++
++static bool suitable_policy(struct cpufreq_policy *policy, bool active)
++{
++	return active == !policy_is_inactive(policy);
++}
++
++/* Finds Next Acive/Inactive policy */
++static struct cpufreq_policy *next_policy(struct cpufreq_policy *policy,
++					  bool active)
++{
++	do {
++		policy = list_next_entry(policy, policy_list);
++
++		/* No more policies in the list */
++		if (&policy->policy_list == &cpufreq_policy_list)
++			return NULL;
++	} while (!suitable_policy(policy, active));
++
++	return policy;
++}
++
++static struct cpufreq_policy *first_policy(bool active)
++{
++	struct cpufreq_policy *policy;
++
++	/* No policies in the list */
++	if (list_empty(&cpufreq_policy_list))
++		return NULL;
++
++	policy = list_first_entry(&cpufreq_policy_list, typeof(*policy),
++				  policy_list);
++
++	if (!suitable_policy(policy, active))
++		policy = next_policy(policy, active);
++
++	return policy;
++}
++
++/* Macros to iterate over CPU policies */
++#define for_each_suitable_policy(__policy, __active)	\
++	for (__policy = first_policy(__active);		\
++	     __policy;					\
++	     __policy = next_policy(__policy, __active))
++
++#define for_each_active_policy(__policy)		\
++	for_each_suitable_policy(__policy, true)
++#define for_each_inactive_policy(__policy)		\
++	for_each_suitable_policy(__policy, false)
++
++#define for_each_policy(__policy)			\
+ 	list_for_each_entry(__policy, &cpufreq_policy_list, policy_list)
+ 
+ /* Iterate over governors */
+@@ -1156,7 +1208,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 
+ 	/* Check if this CPU already has a policy to manage it */
+ 	read_lock_irqsave(&cpufreq_driver_lock, flags);
+-	for_each_policy(policy) {
++	for_each_active_policy(policy) {
+ 		if (cpumask_test_cpu(cpu, policy->related_cpus)) {
+ 			read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 			ret = cpufreq_add_policy_cpu(policy, cpu, dev);
+@@ -1674,7 +1726,7 @@ void cpufreq_suspend(void)
+ 
+ 	pr_debug("%s: Suspending Governors\n", __func__);
+ 
+-	for_each_policy(policy) {
++	for_each_active_policy(policy) {
+ 		if (__cpufreq_governor(policy, CPUFREQ_GOV_STOP))
+ 			pr_err("%s: Failed to stop governor for policy: %p\n",
+ 				__func__, policy);
+@@ -1708,7 +1760,7 @@ void cpufreq_resume(void)
+ 
+ 	pr_debug("%s: Resuming Governors\n", __func__);
+ 
+-	for_each_policy(policy) {
++	for_each_active_policy(policy) {
+ 		if (cpufreq_driver->resume && cpufreq_driver->resume(policy))
+ 			pr_err("%s: Failed to resume driver: %p\n", __func__,
+ 				policy);
+@@ -2354,7 +2406,7 @@ static int cpufreq_boost_set_sw(int state)
+ 	struct cpufreq_policy *policy;
+ 	int ret = -EINVAL;
+ 
+-	for_each_policy(policy) {
++	for_each_active_policy(policy) {
+ 		freq_table = cpufreq_frequency_get_table(policy->cpu);
+ 		if (freq_table) {
+ 			ret = cpufreq_frequency_table_cpuinfo(policy,
 -- 
 2.4.0
 
