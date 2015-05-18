@@ -1,167 +1,160 @@
-From: Michal Hocko <mhocko@suse.cz>
-Subject: Re: suspend regression in 4.1-rc1
-Date: Mon, 18 May 2015 11:03:37 +0200
-Message-ID: <20150518090336.GA6393@dhcp22.suse.cz>
-References: <20150517185041.GA5897@dhcp22.suse.cz>
- <CA+55aFy2wWy-k0O-Sb2vUCLiLjeKMu7r95bf294qP5UqQHuxfw@mail.gmail.com>
- <20150518073046.GO17717@twins.programming.kicks-ass.net>
+From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Subject: Re: [PATCH 11/15] thermal: thermal: Add support for hardware-tracked
+ trip points
+Date: Mon, 18 May 2015 12:06:50 +0300
+Message-ID: <5559ABAA.6040001@kapsi.fi>
+References: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de> <1431507163-19933-12-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f43.google.com ([74.125.82.43]:35125 "EHLO
-	mail-wg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751207AbbERJDk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 05:03:40 -0400
-Content-Disposition: inline
-In-Reply-To: <20150518073046.GO17717@twins.programming.kicks-ass.net>
+Received: from mail.kapsi.fi ([217.30.184.167]:46442 "EHLO mail.kapsi.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752275AbbERJHM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 18 May 2015 05:07:12 -0400
+In-Reply-To: <1431507163-19933-12-git-send-email-s.hauer@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Stephane Eranian <eranian@google.com>, Ulrich Obergfell <uobergfe@redhat.com>, Don Zickus <dzickus@redhat.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>
 
-On Mon 18-05-15 09:30:46, Peter Zijlstra wrote:
-> On Sun, May 17, 2015 at 09:33:56PM -0700, Linus Torvalds wrote:
-> > On Sun, May 17, 2015 at 11:50 AM, Michal Hocko <mhocko@suse.cz> wrote:
-> > >
-> > > The merge commit is empty and both 80dcc31fbe55 and e4b0db72be24 work
-> > > properly but the merge is bad. So it seems like some of the commits in
-> > > either branch has a side effect which needs other branch in order to
-> > > reproduce.
-> > >
-> > > So've tried to bisect ^80dcc31fbe55 e4b0db72be24 and merged 80dcc31fbe55
-> > > in each step.
-> > 
-> > Good extra work! Thanks.
-> > 
-> > > This lead to:
-> > >
-> > > commit 195daf665a6299de98a4da3843fed2dd9de19d3a
-> > > Author: Ulrich Obergfell <uobergfe@redhat.com>
-> > > Date:   Tue Apr 14 15:44:13 2015 -0700
-> > >
-> > >     watchdog: enable the new user interface of the watchdog mechanism
-> > >
-> > > The patch doesn't revert because of follow up changes so I have reverted
-> > > all three:
-> > > 692297d8f968 ("watchdog: introduce the hardlockup_detector_disable() function")
-> > > b2f57c3a0df9 ("watchdog: clean up some function names and arguments")
-> > > 195daf665a62 ("watchdog: enable the new user interface of the watchdog mechanism")
-> > 
-> > Hmm. I guess we should just revert those three then. Unless somebody
-> > can see what the subtle interaction is.
-> > 
-> > Actually, looking closer, on the *other* side of the merge, the only
-> > commit that looks like it might be conflicting is
-> > 
-> >     b3738d293233 "watchdog: Add watchdog enable/disable all functions"
-> > 
-> > which is then used by
-> > 
-> >     b37609c30e41 "perf/x86/intel: Make the HT bug workaround
-> > conditional on HT enabled"
-> > 
-> > Does the problem go away if you revert *those* two commits instead?
-> > 
-> > At least that would tell is what the exact bad interaction is.
-> > 
-> > Adding Stephane (author of those watchdog/perf patches) to the Cc. And
-> > PeterZ, who signed them off (Ingo also did, but was already on the
-> > participants list).
-> > 
-> > Anybody see it?
-> 
-> The 'obvious' discrepancy is that 195daf665a62 ("watchdog: enable the
-> new user interface of the watchdog mechanism") changes the semantics of
-> watchdog_user_enabled, which thereafter is only used by the functions
-> introduced by b3738d293233 ("watchdog: Add watchdog enable/disable all
-> functions").
+Thanks for picking up this patch :)
 
-Yeah, this is it! b3738d293233 was definitely in the range I was testing
-when merging 195daf665 into e95e7f627062..80dcc31fbe55. I must have
-screwed something.
+Sorry for being late with these, but here's a few comments..
 
-> There further appears to be a distinct lack of serialization between
-> setting and using watchdog_enabled, so perhaps we should wrap the
-> {en,dis}able_all() things in watchdog_proc_mutex.
-> 
-> Let me go see if I can reproduce / test this.. as is the below is
-> entirely untested.
+On 05/13/2015 11:52 AM, Sascha Hauer wrote:
+ > This adds support for hardware-tracked trip points to the device tree
+ > thermal sensor framework.
+ >
+ > The framework supports an arbitrary number of trip points. Whenever
+ > the current temperature is updated, the trip points immediately
+ > below and above the current temperature are found. A .set_trips
+ > callback is then called with the temperatures. If there is no trip
+ > point above or below the current temperature, the passed trip
+ > temperature will be -INT_MAX or INT_MAX respectively. In this callback,
+ > the driver should program the hardware such that it is notified
+ > when either of these trip points are triggered. When a trip point
+ > is triggered, the driver should call `thermal_zone_device_update'
+ > for the respective thermal zone. This will cause the trip points
+ > to be updated again.
+ >
+ > If .set_trips is not implemented, the framework behaves as before.
+ >
+ > This patch is based on an earlier version from Mikko Perttunen
+ > <mikko.perttunen@kapsi.fi>
+ >
+ > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+ > ---
+ >  drivers/thermal/thermal_core.c | 43 
+++++++++++++++++++++++++++++++++++++++++++
+ >  include/linux/thermal.h        |  3 +++
+ >  2 files changed, 46 insertions(+)
+ >
+ > diff --git a/drivers/thermal/thermal_core.c 
+b/drivers/thermal/thermal_core.c
+ > index 6bbf61f..3ae1795 100644
+ > --- a/drivers/thermal/thermal_core.c
+ > +++ b/drivers/thermal/thermal_core.c
+ > @@ -453,6 +453,45 @@ int thermal_zone_get_temp(struct 
+thermal_zone_device *tz, int *temp)
+ >  }
+ >  EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
+ >
+ > +static void thermal_zone_set_trips(struct thermal_zone_device *tz)
+ > +{
+ > +	int low = -INT_MAX;
+ > +	int high = INT_MAX;
+ > +	int trip_temp, hysteresis;
+ > +	int temp = tz->temperature;
+ > +	int i;
+ > +
+ > +	if (!tz->ops->set_trips)
+ > +		return;
+ > +
+ > +	/* No need to change trip points */
+ > +	if (temp > tz->prev_low_trip && temp < tz->prev_high_trip)
+ > +		return;
+ > +
+ > +	for (i = 0; i < tz->trips; i++) {
+ > +		int trip_low;
+ > +
+ > +		tz->ops->get_trip_temp(tz, i, &trip_temp);
+ > +		tz->ops->get_trip_hyst(tz, i, &hysteresis);
+ > +
+ > +		trip_low = trip_temp - hysteresis;
+ > +
+ > +		if (trip_low < temp && trip_low > low)
+ > +			low = trip_low;
+ > +
+ > +		if (trip_temp > temp && trip_temp < high)
+ > +			high = trip_temp;
+ > +	}
+ > +
+ > +	tz->prev_low_trip = low;
+ > +	tz->prev_high_trip = high;
+ > +
+ > +	dev_dbg(&tz->device, "new temperature boundaries: %d < x < %d\n",
+ > +			low, high);
+ > +
+ > +	tz->ops->set_trips(tz, low, high);
 
-This doesn't hang anymore. I've just had to move the mutex definition
-up to make it compile. So feel free to add my
-Reported-and-tested-by: Michal Hocko <mhocko@suse.cz>
+This should probably do something if set_trips returns an error code; at 
+least an error message, perhaps enable polling? I'm not exactly sure 
+what safety features the thermal framework has in general if errors happen..
 
-Thanks!
+One interesting thing I noticed was that at least the bang-bang governor 
+only acts if the temperature is properly smaller than (trip temp - 
+hysteresis). So perhaps we should specify the non-tripping range as 
+[low, high)? Or we could change bang-bang.
 
-diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-index 56aeedb087e3..c398596c35b8 100644
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -604,6 +604,8 @@ static void watchdog_nmi_disable(unsigned int cpu)
- 	}
- }
- 
-+static DEFINE_MUTEX(watchdog_proc_mutex);
-+
- void watchdog_nmi_enable_all(void)
- {
- 	int cpu;
-@@ -752,8 +754,6 @@ static int proc_watchdog_update(void)
- 
- }
- 
--static DEFINE_MUTEX(watchdog_proc_mutex);
--
- /*
-  * common function for watchdog, nmi_watchdog and soft_watchdog parameter
-  *
+ > +}
+ > +
+ >  void thermal_zone_device_update(struct thermal_zone_device *tz)
+ >  {
+ >  	int temp, ret, count;
+ > @@ -479,6 +518,8 @@ void thermal_zone_device_update(struct 
+thermal_zone_device *tz)
+ >  	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
+ >  				tz->last_temperature, tz->temperature);
+ >
+ > +	thermal_zone_set_trips(tz);
+ > +
+ >  	for (count = 0; count < tz->trips; count++)
+ >  		handle_thermal_trip(tz, count);
+ >  }
 
-> 
-> ---
->  kernel/watchdog.c | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
-> 
-> diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-> index 2316f50b07a4..56aeedb087e3 100644
-> --- a/kernel/watchdog.c
-> +++ b/kernel/watchdog.c
-> @@ -608,19 +608,25 @@ void watchdog_nmi_enable_all(void)
->  {
->  	int cpu;
->  
-> -	if (!watchdog_user_enabled)
-> +	mutex_lock(&watchdog_proc_mutex);
-> +
-> +	if (!(watchdog_enabled & NMI_WATCHDOG_ENABLED))
->  		return;
->  
->  	get_online_cpus();
->  	for_each_online_cpu(cpu)
->  		watchdog_nmi_enable(cpu);
->  	put_online_cpus();
-> +
-> +	mutex_unlock(&watchdog_proc_mutex);
->  }
->  
->  void watchdog_nmi_disable_all(void)
->  {
->  	int cpu;
->  
-> +	mutex_lock(&watchdog_proc_mutex);
-> +
->  	if (!watchdog_running)
->  		return;
->  
-> @@ -628,6 +634,8 @@ void watchdog_nmi_disable_all(void)
->  	for_each_online_cpu(cpu)
->  		watchdog_nmi_disable(cpu);
->  	put_online_cpus();
-> +
-> +	mutex_unlock(&watchdog_proc_mutex);
->  }
->  #else
->  static int watchdog_nmi_enable(unsigned int cpu) { return 0; }
+set_trips should also be called from temp_store and other places that 
+modify values that affect the trip points.
 
--- 
-Michal Hocko
-SUSE Labs
+ > @@ -1494,6 +1535,8 @@ struct thermal_zone_device 
+*thermal_zone_device_register(const char *type,
+ >  	tz->trips = trips;
+ >  	tz->passive_delay = passive_delay;
+ >  	tz->polling_delay = polling_delay;
+ > +	tz->prev_low_trip = INT_MAX;
+ > +	tz->prev_high_trip = -INT_MAX;
+ >
+ >  	dev_set_name(&tz->device, "thermal_zone%d", tz->id);
+ >  	result = device_register(&tz->device);
+ > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+ > index 07bd5e8..aef6e13 100644
+ > --- a/include/linux/thermal.h
+ > +++ b/include/linux/thermal.h
+ > @@ -87,6 +87,7 @@ struct thermal_zone_device_ops {
+ >  	int (*unbind) (struct thermal_zone_device *,
+ >  		       struct thermal_cooling_device *);
+ >  	int (*get_temp) (struct thermal_zone_device *, int *);
+ > +	int (*set_trips) (struct thermal_zone_device *, int, int);
+ >  	int (*get_mode) (struct thermal_zone_device *,
+ >  			 enum thermal_device_mode *);
+ >  	int (*set_mode) (struct thermal_zone_device *,
+ > @@ -180,6 +181,8 @@ struct thermal_zone_device {
+ >  	int last_temperature;
+ >  	int emul_temperature;
+ >  	int passive;
+ > +	int prev_low_trip;
+ > +	int prev_high_trip;
+ >  	unsigned int forced_passive;
+ >  	const struct thermal_zone_device_ops *ops;
+ >  	const struct thermal_zone_params *tzp;
+ >
