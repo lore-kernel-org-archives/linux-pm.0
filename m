@@ -1,221 +1,104 @@
-From: Ulrich Obergfell <uobergfe@redhat.com>
-Subject: Re: suspend regression in 4.1-rc1
-Date: Mon, 18 May 2015 06:10:20 -0400 (EDT)
-Message-ID: <670732402.598272.1431943820988.JavaMail.zimbra@redhat.com>
-References: <20150517185041.GA5897@dhcp22.suse.cz> <CA+55aFy2wWy-k0O-Sb2vUCLiLjeKMu7r95bf294qP5UqQHuxfw@mail.gmail.com> <20150518073046.GO17717@twins.programming.kicks-ass.net> <20150518090336.GA6393@dhcp22.suse.cz>
+From: Anisse Astier <anisse@astier.eu>
+Subject: Re: [PATCH v4 1/3] PM / Hibernate: prepare for SANITIZE_FREED_PAGES
+Date: Mon, 18 May 2015 12:23:00 +0200
+Message-ID: <CALUN=qLrXryb-aZTjXqoUhzjz68fvOae1bDxitYcJ3jBn_1EDg@mail.gmail.com>
+References: <1431613188-4511-1-git-send-email-anisse@astier.eu>
+ <1431613188-4511-2-git-send-email-anisse@astier.eu> <7216052.tCNGRiLFYJ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx4-phx2.redhat.com ([209.132.183.25]:41878 "EHLO
-	mx4-phx2.redhat.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752763AbbERKLJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 06:11:09 -0400
-In-Reply-To: <20150518090336.GA6393@dhcp22.suse.cz>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <7216052.tCNGRiLFYJ@vostro.rjw.lan>
+Sender: owner-linux-mm@kvack.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Michal Hocko <mhocko@suse.cz>
-Cc: Peter Zijlstra <peterz@infradead.org>, Linus Torvalds <torvalds@linux-foundation.org>, Stephane Eranian <eranian@google.com>, Don Zickus <dzickus@redhat.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
------ Original Message -----
-From: "Michal Hocko" <mhocko@suse.cz>
-To: "Peter Zijlstra" <peterz@infradead.org>
-[...]
-> On Mon 18-05-15 09:30:46, Peter Zijlstra wrote:
->> On Sun, May 17, 2015 at 09:33:56PM -0700, Linus Torvalds wrote:
->> > On Sun, May 17, 2015 at 11:50 AM, Michal Hocko <mhocko@suse.cz> wrote:
->> > >
->> > > The merge commit is empty and both 80dcc31fbe55 and e4b0db72be24 work
->> > > properly but the merge is bad. So it seems like some of the commits in
->> > > either branch has a side effect which needs other branch in order to
->> > > reproduce.
->> > >
->> > > So've tried to bisect ^80dcc31fbe55 e4b0db72be24 and merged 80dcc31fbe55
->> > > in each step.
->> >
->> > Good extra work! Thanks.
->> >
->> > > This lead to:
->> > >
->> > > commit 195daf665a6299de98a4da3843fed2dd9de19d3a
->> > > Author: Ulrich Obergfell <uobergfe@redhat.com>
->> > > Date:   Tue Apr 14 15:44:13 2015 -0700
->> > >
->> > >     watchdog: enable the new user interface of the watchdog mechanism
->> > >
->> > > The patch doesn't revert because of follow up changes so I have reverted
->> > > all three:
->> > > 692297d8f968 ("watchdog: introduce the hardlockup_detector_disable() function")
->> > > b2f57c3a0df9 ("watchdog: clean up some function names and arguments")
->> > > 195daf665a62 ("watchdog: enable the new user interface of the watchdog mechanism")
->> >
->> > Hmm. I guess we should just revert those three then. Unless somebody
->> > can see what the subtle interaction is.
->> >
->> > Actually, looking closer, on the *other* side of the merge, the only
->> > commit that looks like it might be conflicting is
->> >
->> >     b3738d293233 "watchdog: Add watchdog enable/disable all functions"
->> >
->> > which is then used by
->> >
->> >     b37609c30e41 "perf/x86/intel: Make the HT bug workaround
->> > conditional on HT enabled"
->> >
->> > Does the problem go away if you revert *those* two commits instead?
->> >
->> > At least that would tell is what the exact bad interaction is.
->> >
->> > Adding Stephane (author of those watchdog/perf patches) to the Cc. And
->> > PeterZ, who signed them off (Ingo also did, but was already on the
->> > participants list).
->> >
->> > Anybody see it?
+Hi Rafael,
+
+Thanks for taking the time to review this.
+
+On Sat, May 16, 2015 at 2:28 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, May 14, 2015 04:19:46 PM Anisse Astier wrote:
+>> SANITIZE_FREED_PAGES feature relies on having all pages going through
+>> the free_pages_prepare path in order to be cleared before being used. In
+>> the hibernate use case, free pages will automagically appear in the
+>> system without being cleared, left there by the loading kernel.
 >>
->> The 'obvious' discrepancy is that 195daf665a62 ("watchdog: enable the
->> new user interface of the watchdog mechanism") changes the semantics of
->> watchdog_user_enabled, which thereafter is only used by the functions
->> introduced by b3738d293233 ("watchdog: Add watchdog enable/disable all
->> functions").
->
-> Yeah, this is it! b3738d293233 was definitely in the range I was testing
-> when merging 195daf665 into e95e7f627062..80dcc31fbe55. I must have
-> screwed something.
->
->> There further appears to be a distinct lack of serialization between
->> setting and using watchdog_enabled, so perhaps we should wrap the
->> {en,dis}able_all() things in watchdog_proc_mutex.
+>> This patch will make sure free pages are cleared on resume; when we'll
+>> enable SANITIZE_FREED_PAGES. We free the pages just after resume because
+>> we can't do it later: going through any device resume code might
+>> allocate some memory and invalidate the free pages bitmap.
 >>
->> Let me go see if I can reproduce / test this.. as is the below is
->> entirely untested.
+>> Signed-off-by: Anisse Astier <anisse@astier.eu>
+>> ---
+>>  kernel/power/hibernate.c |  4 +++-
+>>  kernel/power/power.h     |  2 ++
+>>  kernel/power/snapshot.c  | 22 ++++++++++++++++++++++
+>>  3 files changed, 27 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+>> index 2329daa..0a73126 100644
+>> --- a/kernel/power/hibernate.c
+>> +++ b/kernel/power/hibernate.c
+>> @@ -305,9 +305,11 @@ static int create_image(int platform_mode)
+>>                       error);
+>>       /* Restore control flow magically appears here */
+>>       restore_processor_state();
+>> -     if (!in_suspend)
+>> +     if (!in_suspend) {
+>>               events_check_enabled = false;
+>>
+>> +             clear_free_pages();
 >
-> This doesn't hang anymore. I've just had to move the mutex definition
-> up to make it compile. So feel free to add my
-> Reported-and-tested-by: Michal Hocko <mhocko@suse.cz>
+> Again, why don't you do that at the swsusp_free() time?
+
+Because it's too late, the kernel has already been through device
+resume code, and the free pages bitmap isn't valid anymore; device
+resume code might allocate memory, and we'd be clearing those pages as
+well.
+
+
+>> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+>> index 5235dd4..2335130 100644
+>> --- a/kernel/power/snapshot.c
+>> +++ b/kernel/power/snapshot.c
+>> @@ -1032,6 +1032,28 @@ void free_basic_memory_bitmaps(void)
+>>       pr_debug("PM: Basic memory bitmaps freed\n");
+>>  }
+>>
+>> +void clear_free_pages(void)
+>> +{
+>> +#ifdef CONFIG_SANITIZE_FREED_PAGES
+>> +     struct memory_bitmap *bm = free_pages_map;
+>> +     unsigned long pfn;
+>> +
+>> +     if (WARN_ON(!(free_pages_map)))
 >
-> Thanks!
+> One paren too many.
+
+Thanks, will be fixed.
+
+>
+>> +             return;
+>> +
+>> +     memory_bm_position_reset(bm);
+>> +     pfn = memory_bm_next_pfn(bm);
+>> +     while (pfn != BM_END_OF_MAP) {
+>> +             if (pfn_valid(pfn))
+>> +                     clear_highpage(pfn_to_page(pfn));
+>
+> Is clear_highpage() also fine for non-highmem pages?
 >
 
-Michal,
-
-if I understand you correctly, Peter's patch solves the problem for you.
-I would like to make you aware of a patch that Don and I posted in April.
-
-  https://lkml.org/lkml/2015/4/22/306
-
-watchdog_nmi_enable_all() should not use 'watchdog_user_enabled' at all.
-It should rather check the NMI_WATCHDOG_ENABLED bit in 'watchdog_enabled'.
-The patch is also in Andrew Morton's queue.
-
-  http://ozlabs.org/~akpm/mmots/broken-out/watchdog-fix-watchdog_nmi_enable_all.patch
-
-Peter's patch introduces the same change in watchdog_nmi_enable_all(),
-plus some synchronization. However, I'm not sure if we actually need the
-synchronization. It is my understanding that {en,dis}able_all() are only
-called early during kernel startup via initcall 'fixup_ht_bug':
-
-  kernel_init
-  {
-    kernel_init_freeable
-    {
-      lockup_detector_init
-      {
-        watchdog_enable_all_cpus
-          smpboot_register_percpu_thread(&watchdog_threads)
-      }
-
-      do_basic_setup
-        do_initcalls
-          do_initcall_level
-            do_one_initcall
-              fixup_ht_bug // subsys_initcall(fixup_ht_bug)
-              {
-                watchdog_nmi_disable_all
-
-                watchdog_nmi_enable_all
-              }
-    }
-  }
-
-Peter,
-
-do we really need the synchronization here?
-
+Yes, it works fine for low memory too because kmap_atomic will just
+return the page address if it's already mapped.
 
 Regards,
 
-Uli
+Anisse
 
-
-> diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-> index 56aeedb087e3..c398596c35b8 100644
-> --- a/kernel/watchdog.c
-> +++ b/kernel/watchdog.c
-> @@ -604,6 +604,8 @@ static void watchdog_nmi_disable(unsigned int cpu)
->          }
->  }
->
-> +static DEFINE_MUTEX(watchdog_proc_mutex);
-> +
-> void watchdog_nmi_enable_all(void)
-> {
->         int cpu;
-> @@ -752,8 +754,6 @@ static int proc_watchdog_update(void)
-> 
-> }
-> 
-> -static DEFINE_MUTEX(watchdog_proc_mutex);
-> -
-> /*
->  * common function for watchdog, nmi_watchdog and soft_watchdog parameter
->  *
->
->>
->> ---
->>  kernel/watchdog.c | 10 +++++++++-
->>  1 file changed, 9 insertions(+), 1 deletion(-)
->>
->> diff --git a/kernel/watchdog.c b/kernel/watchdog.c
->> index 2316f50b07a4..56aeedb087e3 100644
->> --- a/kernel/watchdog.c
->> +++ b/kernel/watchdog.c
->> @@ -608,19 +608,25 @@ void watchdog_nmi_enable_all(void)
->>  {
->>          int cpu;
->>  
->> -        if (!watchdog_user_enabled)
->> +        mutex_lock(&watchdog_proc_mutex);
->> +
->> +        if (!(watchdog_enabled & NMI_WATCHDOG_ENABLED))
->>                  return;
->>  
->>          get_online_cpus();
->>          for_each_online_cpu(cpu)
->>                  watchdog_nmi_enable(cpu);
->>          put_online_cpus();
->> +
->> +        mutex_unlock(&watchdog_proc_mutex);
->>  }
->>  
->>  void watchdog_nmi_disable_all(void)
->>  {
->>          int cpu;
->>  
->> +        mutex_lock(&watchdog_proc_mutex);
->> +
->>          if (!watchdog_running)
->>                  return;
->>  
->> @@ -628,6 +634,8 @@ void watchdog_nmi_disable_all(void)
->>          for_each_online_cpu(cpu)
->>                  watchdog_nmi_disable(cpu);
->>          put_online_cpus();
->> +
->> +        mutex_unlock(&watchdog_proc_mutex);
->>  }
->>  #else
->>  static int watchdog_nmi_enable(unsigned int cpu) { return 0; }
->
-> -- 
-> Michal Hocko
-> SUSE Labs
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
