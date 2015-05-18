@@ -1,157 +1,63 @@
-From: Daniel Baluta <daniel.baluta-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: Re: [RFC PATCH 1/2] iio: pm_runtime: Introduce PM runtime helper functions
-Date: Mon, 18 May 2015 21:24:10 +0300
-Message-ID: <CAEnQRZBgsrRUb0-pkHHQth3apppRPA=XehKZHWdkjfJ=iqLSCQ@mail.gmail.com>
-References: <1431966328-11058-1-git-send-email-daniel.baluta@intel.com>
-	<1431966328-11058-2-git-send-email-daniel.baluta@intel.com>
-	<alpine.DEB.2.02.1505181910460.29269@pmeerw.net>
+From: Brian Norris <computersforpeace@gmail.com>
+Subject: Re: [PATCH 11/15] thermal: thermal: Add support for hardware-tracked
+ trip points
+Date: Mon, 18 May 2015 11:44:33 -0700
+Message-ID: <20150518184433.GS11598@ld-irv-0074>
+References: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de>
+ <1431507163-19933-12-git-send-email-s.hauer@pengutronix.de>
+ <5559ABAA.6040001@kapsi.fi>
+ <20150518120944.GQ6325@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <alpine.DEB.2.02.1505181910460.29269-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Meerwald <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>
-Cc: Daniel Baluta <daniel.baluta-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, "linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f174.google.com ([209.85.192.174]:36825 "EHLO
+	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754322AbbERSoi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 14:44:38 -0400
+Content-Disposition: inline
+In-Reply-To: <20150518120944.GQ6325@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Mikko Perttunen <mikko.perttunen@kapsi.fi>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-Adding linux-pm people since Lars suggested that the changes should be
-in the PM core.
+On Mon, May 18, 2015 at 02:09:44PM +0200, Sascha Hauer wrote:
+> On Mon, May 18, 2015 at 12:06:50PM +0300, Mikko Perttunen wrote:
+> > One interesting thing I noticed was that at least the bang-bang
+> > governor only acts if the temperature is properly smaller than (tri=
+p
+> > temp - hysteresis). So perhaps we should specify the non-tripping
+> > range as [low, high)? Or we could change bang-bang.
+>=20
+> I wonder how we can protect against such off-by-one errors anyway.
+> Generally a hardware might operate on raw values rather than directly
+> in temperature values in =B0C. This means a driver for this must have
+> celsius_to_raw and raw_to_celsius conversion functions. Now it can
+> happen that due to rounding errors celsius_to_raw(Tcrit) returns a ra=
+w
+> value that when converted back to celsius is different from the
+> original value in =B0C. This would mean the hardware triggers an inte=
+rrupt
+> for a trip point and the thermal core does not react because get_temp
+> actually returns a different temperature than previously programmed a=
+s
+> interrupt trigger. This way we would lose hot (or cold) events.
 
-I agree, that these changes are not "awfully" IIO specific but no
-other subsystem uses
-this pattern for configuration. In fact iio_pm_runtime_setup can be
-done in many more
-other ways depending on functionality needed.
+This also highlights another fact: there's a race between interrupt
+generation and temperature reading (->get_temp()). I would expect any
+hardware interrupt thermal sensor would also have a latched temperature
+reading to correspond with it, and there would be no guarantee that thi=
+s
+latched temperature will match the polled reading seen once you reach
+thermal_zone_device_update(). So a hardware driver might report a
+thermal update, but the temperature reported to the core won't
+necessarily match what interrupt was meant for.
 
-On Mon, May 18, 2015 at 8:34 PM, Peter Meerwald <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org> wrote:
-> On Mon, 18 May 2015, Daniel Baluta wrote:
->
->> We need this in order to avoid reimplementing the same functions each time
->> we add PM runtime support in a driver.
->
-> comments below
->
->> Simple grep shows the following users:
->>       * accel/mma9551.c
->>       * accel/mmc9553.c
->>       * accel/kxcjk1013.c
->>       * accel/bmc150-accel.c
->>       * gyro/bmg160.c
->>       * imu/kmx61.c
->>       * common/hid-sensors.
->>
->> Signed-off-by: Daniel Baluta <daniel.baluta-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
->> ---
->>  include/linux/iio/pm_runtime.h | 63 ++++++++++++++++++++++++++++++++++++++++++
->>  1 file changed, 63 insertions(+)
->>  create mode 100644 include/linux/iio/pm_runtime.h
->>
->> diff --git a/include/linux/iio/pm_runtime.h b/include/linux/iio/pm_runtime.h
->> new file mode 100644
->> index 0000000..dc2bca7
->> --- /dev/null
->> +++ b/include/linux/iio/pm_runtime.h
->> @@ -0,0 +1,63 @@
->> +/*
->> + * Industrial I/O runtime PM helper functions
->> + *
->> + * Copyright (c) 2015, Intel Corporation.
->> + *
->> + * This file is subject to the terms and conditions of version 2 of
->> + * the GNU General Public License.  See the file COPYING in the main
->> + * directory of this archive for more details.
->> + *
->> + */
->> +#ifndef __IIO_PM_RUNTIME
->> +#define __IIO_PM_RUNTIME
->> +
->> +#include <linux/pm_runtime.h>
->> +
->> +static inline int iio_pm_runtime_setup(struct device *dev, int delay,
->> +                                    bool ignore_children)
->> +{
->> +     int ret;
->> +
->> +     ret = pm_runtime_set_active(dev);
->> +     if (ret)
->
-> just noting: should this be (ret) or (ret < 0)?
->
-> pm_runtime_get_sync() below may return negative, 0, and positive
-> pm_runtime_set_active() seems to return negative or 0
->
-> documentation doesn't tell... wondering if (ret < 0) would be safer here?
+I have a patch that adds a thermal_zone_device_update_temp() API, so
+drivers can report the temperature along with the interrupt
+notification. (Such a patch also helps so that the driver can choose to
+round down on cold events and up on hot events, resolving your rounding
+issue too.)
 
-I think this check is correct, I also found the same check in
-power/pm2301_charger.c:1116. But there is no problem to add if (ret < 0)
-it looks safer.
-
->
->> +             return ret;
->> +
->> +     pm_suspend_ignore_children(dev, ignore_children);
->> +     pm_runtime_enable(dev);
->> +     pm_runtime_set_autosuspend_delay(dev, delay);
->> +     pm_runtime_use_autosuspend(dev);
->> +
->> +     return 0;
->> +}
->> +
->> +static inline void iio_pm_runtime_cleanup(struct device *dev)
->> +{
->> +     pm_runtime_disable(dev);
->> +     pm_runtime_set_suspended(dev);
->> +     pm_runtime_put_noidle(dev);
->> +}
->> +
->> +static inline int iio_pm_runtime_set_power(struct device *dev, bool on)
->
-> why a static inline function in a header file?
-> these functions do not seem to be performance critical and are substantial
-> enough in size to avoid copying the code to every driver
-
-I know about this, but I was trying to avoid another .config option
-that each IIO driver should select when implementing runtime pm support.
-
-I can change this.
-
->
->> +{
->> +#ifdef CONFIG_PM
->> +     int ret;
->> +
->> +     if (on)
->> +             ret = pm_runtime_get_sync(dev);
->> +     else {
->> +             pm_runtime_mark_last_busy(dev);
->> +             ret = pm_runtime_put_autosuspend(dev);
->> +     }
->> +
->> +     if (ret < 0) {
->> +             dev_err(dev, "Failed: iio_set_power_state for %d\n", on);
->
-> the error message doesn't match the function name, the text, 'for %d', is
-> not very clear
-
-Correct. Thanks for spotting this!
->
->> +             if (on)
->> +                     pm_runtime_put_noidle(dev);
->> +
->> +             return ret;
->> +     }
->> +#endif
->> +     return 0;
->> +}
->> +
->> +#endif /* __IIO_PM_RUNTIME */
->>
->
-> --
->
-> Peter Meerwald
-> +43-664-2444418 (mobile)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-iio" in
-> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Brian
