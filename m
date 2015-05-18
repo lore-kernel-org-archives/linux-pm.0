@@ -1,117 +1,48 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: Bug: power supply - NULL pointer dereference in bq27x00 driver
-Date: Mon, 18 May 2015 21:32:43 +0900
-Message-ID: <CAJKOXPfA-3-SKD-UBACd9+wu0t71pOAduxTqAbNZKknyQTdJhg@mail.gmail.com>
-References: <BA8989FA-6ABE-43D4-A8D5-2949F8AE8B24@goldelico.com>
+From: Anisse Astier <anisse@astier.eu>
+Subject: Re: [PATCH v4 2/3] mm/page_alloc.c: add config option to sanitize
+ freed pages
+Date: Mon, 18 May 2015 14:41:19 +0200
+Message-ID: <CALUN=qLHfz5DnSKfaRf833eewOM65FNtxybY9Xw9sp1=qq+Zqw@mail.gmail.com>
+References: <1431613188-4511-1-git-send-email-anisse@astier.eu>
+ <1431613188-4511-3-git-send-email-anisse@astier.eu> <20150518112152.GA16999@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vn0-f47.google.com ([209.85.216.47]:35954 "EHLO
-	mail-vn0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750846AbbERMco convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 08:32:44 -0400
-In-Reply-To: <BA8989FA-6ABE-43D4-A8D5-2949F8AE8B24@goldelico.com>
+Received: from mail-la0-f46.google.com ([209.85.215.46]:34511 "EHLO
+	mail-la0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751025AbbERMll (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 08:41:41 -0400
+Received: by laat2 with SMTP id t2so217425985laa.1
+        for <linux-pm@vger.kernel.org>; Mon, 18 May 2015 05:41:40 -0700 (PDT)
+In-Reply-To: <20150518112152.GA16999@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Rodolfo Giometti <giometti@linux.it>, Sebastian Reichel <sre@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Marek Belisko <marek@goldelico.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, List for communicating with real GTA04 owners <gta04-owner@goldelico.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-2015-05-18 18:40 GMT+09:00 Dr. H. Nikolaus Schaller <hns@goldelico.com>=
-:
-> Hi,
-> we tried to upgrade from 4.0 to 4.1-rc3 kernel and ran into a NULL po=
-inter problem within the bq27x00 driver.
+On Mon, May 18, 2015 at 1:21 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Thu 2015-05-14 16:19:47, Anisse Astier wrote:
+>> This new config option will sanitize all freed pages. This is a pretty
+>> low-level change useful to track some cases of use-after-free, help
+>> kernel same-page merging in VM environments, and counter a few info
+>> leaks.
 >
-> It appears to be introduced by your patch 297d716f6260cc9421d971b124c=
-a196b957ee458
+> Could you document the "few info leaks"? We may want to fix them for
+> !SANTIZE_FREED_PAGES case, too...
 >
-> The problem appears to be that bq27x00_powersupply_init() calls power=
-_supply_register_no_ws() and
-> sets di->bat *after* return. The old code did pass an uninitialized s=
-truct pointer.
->
-> Now for reasons I don=E2=80=99t understand, the power_supply_register=
-_no_ws() appears to call
-> uevent related stuff which in turn calls bq27x00_battery_get_property=
-() before di->bat
-> is properly initialized.
->
-> I have checked with printk in bq27x00_battery_get_property() that di>=
-bat =3D=3D NULL in this case and
-> right before we see the segfault.
->
-> The old code simply did pass a zeroed struct power_supply and perhaps=
- initialized its components
-> during registration.
->
-> Returning some -EINVAL if di->bat =3D=3D NULL would likely solve the =
-NULL pointer dereference but
-> I don=E2=80=99t know what it does to the uevent and if it restores pr=
-evious operation.
->
-> It could have been that it was for good purpose that power_supply_reg=
-ister_no_ws() did not return
-> by value, but by reference to the di->bat struct:
->
-> -       ret =3D power_supply_register_no_ws(di->dev, &di->bat, NULL);
-> +       di->bat =3D power_supply_register_no_ws(di->dev, psy_desc, &p=
-sy_cfg);
->
-> So that code called within the context of power_supply_register_no_ws=
-() could already
-> refer to initialized di->bat.
 
-Indeed this issue was not present in previous design however I think
-the architecture was still error-prone. Starting from driver's probe:
- - some_driver_probe()
-   - power_supply_register(&psy)
-     - device_add()
-       - kobject_uevent() - notify userspace
-        - power_supply_uevent()
-          - power_supply_show_property()
-            - power_supply_get_property()
-              - some_driver_get_property()
+I wish I could; I'd be sending patches for those info leaks, too.
 
-So before probe() ends the power supply core calls driver's
-get_property(). In that time the driver internal structures may not be
-ready yet, because the probe did not end. The get_property() could
-access some registers or other core functions which will be ready
-after power_supply_register() call. For example the
-bq27x00_battery_get_property() accesses delayed work which could be
-(by mistake) not yet initialized.
+What I meant is that this feature can also be used as a general
+protection mechanism against a certain class of info leaks; for
+example, some drivers allocating pages that were previously used by
+other subsystems, and then sending structures to userspace that
+contain padding or uninitialized fields, leaking kernel pointers.
+Having all pages cleared unconditionally can help a bit in some cases
+(hence "a few"), but it's of course not an end-all solution.
 
-I looked at other dev_uevent implementations and almost all of them do
-not call back the driver.
+I'll edit the commit and kconfig messages to be more precise.
 
-Of course this does not change that I introduced the issue and I feel
-bad about it.
-I got some ideas for resolving it:
-1. Fix bq27x00_battery and maybe others so they won't access the 'psy'
-member of its state container. This does not solve the issue from
-architectural point of view - still some uninitialised data may be
-accessed because probe() is in progress. However this would be the
-fastest and the least intrusive.
+Regards,
 
-2. Remove calls to get_property() (and other functions provided by
-driver) from power_supply_uevent(). Unfortunately this may break
-userspace which expects that some data will be present in uevent.
-
-3. Change the API to the previous convention, which you pointed as a re=
-medy:
-ret =3D power_supply_register_no_ws(di->dev, &di->bat, psy_desc, &psy_c=
-fg);
-This also won't solve the issue from 1. that uevent will be called
-before probe ends.
-
-4. Block the power_supply_uevent() from calling the get_property()
-functions until device_add() finishes. This would solve this issue but
-first uevent messages (from adding device) won't contain all of device
-data (just like in solution no 2.) and this won't solve other race -
-someone may call sysfs show() on created device nodes and thus access
-the get_property() before probe finishes.
-
-Any ideas?
-
-Best regards,
-Krzysztof
+Anisse
