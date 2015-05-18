@@ -1,183 +1,136 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: Bug: power supply - NULL pointer dereference in bq27x00 driver
-Date: Mon, 18 May 2015 23:09:45 +0900
-Message-ID: <CAJKOXPfpHKogPPe9-X4PZ0OgJ+mKxo3rx=Fp034Ab9dit4w57A@mail.gmail.com>
-References: <BA8989FA-6ABE-43D4-A8D5-2949F8AE8B24@goldelico.com>
-	<CAJKOXPfA-3-SKD-UBACd9+wu0t71pOAduxTqAbNZKknyQTdJhg@mail.gmail.com>
-	<9C32507E-DA37-4BB0-BD62-00DE9311EC50@goldelico.com>
+From: Don Zickus <dzickus@redhat.com>
+Subject: Re: suspend regression in 4.1-rc1
+Date: Mon, 18 May 2015 10:20:37 -0400
+Message-ID: <20150518142037.GK184517@redhat.com>
+References: <20150517185041.GA5897@dhcp22.suse.cz>
+ <CA+55aFy2wWy-k0O-Sb2vUCLiLjeKMu7r95bf294qP5UqQHuxfw@mail.gmail.com>
+ <20150518073046.GO17717@twins.programming.kicks-ass.net>
+ <20150518090336.GA6393@dhcp22.suse.cz>
+ <20150518093150.GC21418@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vn0-f47.google.com ([209.85.216.47]:41862 "EHLO
-	mail-vn0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750883AbbEROJq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 10:09:46 -0400
-In-Reply-To: <9C32507E-DA37-4BB0-BD62-00DE9311EC50@goldelico.com>
+Received: from mx1.redhat.com ([209.132.183.28]:48900 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751488AbbEROV3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 18 May 2015 10:21:29 -0400
+Content-Disposition: inline
+In-Reply-To: <20150518093150.GC21418@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Rodolfo Giometti <giometti@linux.it>, Sebastian Reichel <sre@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Marek Belisko <marek@goldelico.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, List for communicating with real GTA04 owners <gta04-owner@goldelico.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Michal Hocko <mhocko@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>, Stephane Eranian <eranian@google.com>, Ulrich Obergfell <uobergfe@redhat.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-2015-05-18 22:30 GMT+09:00 Dr. H. Nikolaus Schaller <hns@goldelico.com>=
-:
-> Hi Krzysztof,
->
-> Am 18.05.2015 um 14:32 schrieb Krzysztof Kozlowski <k.kozlowski@samsu=
-ng.com>:
->
->> 2015-05-18 18:40 GMT+09:00 Dr. H. Nikolaus Schaller <hns@goldelico.c=
-om>:
->>> Hi,
->>> we tried to upgrade from 4.0 to 4.1-rc3 kernel and ran into a NULL =
-pointer problem within the bq27x00 driver.
->>>
->>> It appears to be introduced by your patch 297d716f6260cc9421d971b12=
-4ca196b957ee458
->>>
->>> The problem appears to be that bq27x00_powersupply_init() calls pow=
-er_supply_register_no_ws() and
->>> sets di->bat *after* return. The old code did pass an uninitialized=
- struct pointer.
->>>
->>> Now for reasons I don=E2=80=99t understand, the power_supply_regist=
-er_no_ws() appears to call
->>> uevent related stuff which in turn calls bq27x00_battery_get_proper=
-ty() before di->bat
->>> is properly initialized.
->>>
->>> I have checked with printk in bq27x00_battery_get_property() that d=
-i>bat =3D=3D NULL in this case and
->>> right before we see the segfault.
->>>
->>> The old code simply did pass a zeroed struct power_supply and perha=
-ps initialized its components
->>> during registration.
->>>
->>> Returning some -EINVAL if di->bat =3D=3D NULL would likely solve th=
-e NULL pointer dereference but
->>> I don=E2=80=99t know what it does to the uevent and if it restores =
-previous operation.
->>>
->>> It could have been that it was for good purpose that power_supply_r=
-egister_no_ws() did not return
->>> by value, but by reference to the di->bat struct:
->>>
->>> -       ret =3D power_supply_register_no_ws(di->dev, &di->bat, NULL=
-);
->>> +       di->bat =3D power_supply_register_no_ws(di->dev, psy_desc, =
-&psy_cfg);
->>>
->>> So that code called within the context of power_supply_register_no_=
-ws() could already
->>> refer to initialized di->bat.
->>
->> Indeed this issue was not present in previous design however I think
->> the architecture was still error-prone. Starting from driver's probe=
-:
->> - some_driver_probe()
->>   - power_supply_register(&psy)
->>     - device_add()
->>       - kobject_uevent() - notify userspace
->>        - power_supply_uevent()
->>          - power_supply_show_property()
->>            - power_supply_get_property()
->>              - some_driver_get_property()
->>
->> So before probe() ends the power supply core calls driver's
->> get_property(). In that time the driver internal structures may not =
-be
->> ready yet, because the probe did not end.
->
-> Yes, that is indeed a problem. Maybe it did work with the bq27x00 dri=
-ver
-> earlier because the call to power_supply_register(&psy) was the last
-> activity.
+On Mon, May 18, 2015 at 11:31:50AM +0200, Peter Zijlstra wrote:
+> On Mon, May 18, 2015 at 11:03:37AM +0200, Michal Hocko wrote:
+> > This doesn't hang anymore. I've just had to move the mutex definition
+> > up to make it compile. So feel free to add my
+> 
+> I've also fixed a lock leak, see goto unlock :-)
+> 
+> > Reported-and-tested-by: Michal Hocko <mhocko@suse.cz>
+> 
+> *blink* that actually fixed it..
+> 
+> That somewhat leaves me at a loss explaining how s2r was failing.
+> 
+> ---
+> Subject: watchdog: Fix merge 'conflict'
+> 
+> Two watchdog changes that came through different trees had a non
+> conflicting conflict, that is, one changed the semantics of a variable
+> but no actual code conflict happened. So the merge appeared fine, but
+> the resulting code did not behave as expected.
+> 
+> Commit 195daf665a62 ("watchdog: enable the new user interface of the
+> watchdog mechanism") changes the semantics of watchdog_user_enabled,
+> which thereafter is only used by the functions introduced by
+> b3738d293233 ("watchdog: Add watchdog enable/disable all functions").
+> 
+> There further appears to be a distinct lack of serialization between
+> setting and using watchdog_enabled, so perhaps we should wrap the
+> {en,dis}able_all() things in watchdog_proc_mutex.
+> 
+> This patch fixes a s2r failure reported by Michal; which I cannot
+> readily explain. But this does make the code internally consistent
+> again.
 
-Right, for most of the drivers it is the last part of probe.
+I agree with Peter's locking approach.  We need to do better locking the
+variables here.  Poking around the code I see too many variables being
+exposed sadly.
 
->
->> The get_property() could
->> access some registers or other core functions which will be ready
->> after power_supply_register() call. For example the
->> bq27x00_battery_get_property() accesses delayed work which could be
->> (by mistake) not yet initialized.
->>
->> I looked at other dev_uevent implementations and almost all of them =
-do
->> not call back the driver.
->>
->> Of course this does not change that I introduced the issue and I fee=
-l
->> bad about it.
->> I got some ideas for resolving it:
->> 1. Fix bq27x00_battery and maybe others so they won't access the 'ps=
-y'
->> member of its state container. This does not solve the issue from
->> architectural point of view - still some uninitialised data may be
->> accessed because probe() is in progress. However this would be the
->> fastest and the least intrusive.
->
-> The problem might be that it fundamentally changes the driver code
-> architecture. For example one call using di->bat is in
->
-> bq27x00_battery_status() {
-> =E2=80=A6
->                 else if (power_supply_am_i_supplied(di->bat))
->                         status =3D POWER_SUPPLY_STATUS_NOT_CHARGING;
-> =E2=80=A6
-> }
->
->>
->> 2. Remove calls to get_property() (and other functions provided by
->> driver) from power_supply_uevent(). Unfortunately this may break
->> userspace which expects that some data will be present in uevent.
->>
->> 3. Change the API to the previous convention, which you pointed as a=
- remedy:
->> ret =3D power_supply_register_no_ws(di->dev, &di->bat, psy_desc, &ps=
-y_cfg);
->> This also won't solve the issue from 1. that uevent will be called
->> before probe ends.
->
-> Well, we could require that power_supply_register_no_ws() is the last
-> activity to be done in any_driver_probe().
+Thanks Peter!
 
-Some drivers (like drivers/power/lp8727_charger.c) register multiple
-power supplies and there can be only one last call. What is even
-important in this lp8727 case, is that it registers:
- - a battery,
- - two chargers which supply this battery.
+Andrew, this patch can replace 'watchdog-fix-watchdog_nmi_enable_all.patch'
+on your queue.
 
-So when power supplies are registered, the delayed work is executed
-for each supplied battery. Hopefully the the battery is registered as
-last... but I am not quite sure that this is still safe.
-
->> 4. Block the power_supply_uevent() from calling the get_property()
->> functions until device_add() finishes. This would solve this issue b=
-ut
->> first uevent messages (from adding device) won't contain all of devi=
-ce
->> data (just like in solution no 2.) and this won't solve other race -
->> someone may call sysfs show() on created device nodes and thus acces=
-s
->> the get_property() before probe finishes.
->
->>
->> Any ideas?
->
-> 5. is it possible to delay the call to kobject_uevent() after some_dr=
-iver_probe()
-> is finished? E.g. by registering a one-shot delayed work?
->
-> There seems to be a shared workqueue (mentioned e.g. in
-> <http://www.makelinux.net/ldd3/chp-7-sect-6>)
-> but that is an area of the kernel I am not familiar with.
-
-Unfortunately there is no guarantee that delayed work will be executed
-after probe ends. It should be but... who knows when it be scheduled?
-
-Anyway thanks for reporting the issue and ideas.
-
-Best regards,
-Krzysztof
+Acked-by: Don Zickus <dzickus@redhat.com>
+> 
+> Reported-and-tested-by: Michal Hocko <mhocko@suse.cz>
+> Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> ---
+>  kernel/watchdog.c |   20 +++++++++++++++-----
+>  1 file changed, 15 insertions(+), 5 deletions(-)
+> 
+> diff --git a/kernel/watchdog.c b/kernel/watchdog.c
+> index 2316f50..506edcc5 100644
+> --- a/kernel/watchdog.c
+> +++ b/kernel/watchdog.c
+> @@ -41,6 +41,8 @@
+>  #define NMI_WATCHDOG_ENABLED      (1 << NMI_WATCHDOG_ENABLED_BIT)
+>  #define SOFT_WATCHDOG_ENABLED     (1 << SOFT_WATCHDOG_ENABLED_BIT)
+>  
+> +static DEFINE_MUTEX(watchdog_proc_mutex);
+> +
+>  #ifdef CONFIG_HARDLOCKUP_DETECTOR
+>  static unsigned long __read_mostly watchdog_enabled = SOFT_WATCHDOG_ENABLED|NMI_WATCHDOG_ENABLED;
+>  #else
+> @@ -608,26 +610,36 @@ void watchdog_nmi_enable_all(void)
+>  {
+>  	int cpu;
+>  
+> -	if (!watchdog_user_enabled)
+> -		return;
+> +	mutex_lock(&watchdog_proc_mutex);
+> +
+> +	if (!(watchdog_enabled & NMI_WATCHDOG_ENABLED))
+> +		goto unlock;
+>  
+>  	get_online_cpus();
+>  	for_each_online_cpu(cpu)
+>  		watchdog_nmi_enable(cpu);
+>  	put_online_cpus();
+> +
+> +unlock:
+> +	mutex_lock(&watchdog_proc_mutex);
+>  }
+>  
+>  void watchdog_nmi_disable_all(void)
+>  {
+>  	int cpu;
+>  
+> +	mutex_lock(&watchdog_proc_mutex);
+> +
+>  	if (!watchdog_running)
+> -		return;
+> +		goto unlock;
+>  
+>  	get_online_cpus();
+>  	for_each_online_cpu(cpu)
+>  		watchdog_nmi_disable(cpu);
+>  	put_online_cpus();
+> +
+> +unlock:
+> +	mutex_unlock(&watchdog_proc_mutex);
+>  }
+>  #else
+>  static int watchdog_nmi_enable(unsigned int cpu) { return 0; }
+> @@ -744,8 +756,6 @@ static int proc_watchdog_update(void)
+>  
+>  }
+>  
+> -static DEFINE_MUTEX(watchdog_proc_mutex);
+> -
+>  /*
+>   * common function for watchdog, nmi_watchdog and soft_watchdog parameter
+>   *
