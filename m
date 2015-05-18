@@ -1,38 +1,39 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V3 14/14] cpufreq: Add support for physical hoplug of CPUs
-Date: Mon, 18 May 2015 02:30:19 +0200
-Message-ID: <6810633.U8XLCHe8Cd@vostro.rjw.lan>
-References: <cover.1431065963.git.viresh.kumar@linaro.org> <3771347.4CYzBDSQ1Q@vostro.rjw.lan> <20150516021307.GE4600@linux>
+Subject: Re: [PATCH 1/1] power: validate wakeup source before activating it.
+Date: Mon, 18 May 2015 02:34 +0200
+Message-ID: <6066146.sNzXFSI8Td@vostro.rjw.lan>
+References: <1430951216-3003-1-git-send-email-jinqian@android.com> <1816596.LjGsP0DkBO@vostro.rjw.lan> <CA+yUs=zjdEShJ=qg15b_CVtWSA1_wMXoc+fzm5psUZRQdN6Mrg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64324 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751102AbbERAFB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 May 2015 20:05:01 -0400
-In-Reply-To: <20150516021307.GE4600@linux>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CA+yUs=zjdEShJ=qg15b_CVtWSA1_wMXoc+fzm5psUZRQdN6Mrg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jin Qian <jinqian@android.com>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Srivatsa Bhat <srivatsa@mit.edu>
 
-On Saturday, May 16, 2015 07:43:07 AM Viresh Kumar wrote:
-> On 16-05-15, 03:18, Rafael J. Wysocki wrote:
-> > You seem to be breaking things first and then fixing them up with this patch.
-> > 
-> > Would it be possible to avoid breaking them in the first place?
+On Friday, May 15, 2015 06:28:17 PM Jin Qian wrote:
+> Hi Rafael,
 > 
-> I thought it was already broken in mainline and so did it towards the
-> end. Will check that again.
+> The latest version is in [PATCHv3 1/3] power: validate wakeup source
+> before activating it. I changed WARN_ONCE back to WARN since if
+> multiple drivers activating uninitialized wakeup_sources, only the
+> first driver will by flagged.
 
-Well, if the sysfs directories are removed on every offline, then in particular
-they will be removed when the device is physically going away, so it should
-actually work (unless we've broken it already and nobody noticed).
+Which is OK.
 
-If you want to keep them around after offline, you need to become careful
-about the "physical hot-remove" case at the same time (and not several patches
-later).
+If you're a user, you can't fix the problem by yourself and spamming the
+logs with continued warnings doesn't help here.
+
+If you're a developer, you'll fix the first driver and then see the
+warning from the second one.
+
+> We lost alert for other drivers. The warning should really happen during
+> driver development. Hope this is ok.
+
+First, I've applied your patch already.  Second, I really think that
+WARN_ON_ONCE() is better here.
 
 
 -- 
