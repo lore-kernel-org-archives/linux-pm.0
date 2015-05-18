@@ -1,104 +1,77 @@
-From: Anisse Astier <anisse@astier.eu>
-Subject: Re: [PATCH v4 1/3] PM / Hibernate: prepare for SANITIZE_FREED_PAGES
-Date: Mon, 18 May 2015 12:23:00 +0200
-Message-ID: <CALUN=qLrXryb-aZTjXqoUhzjz68fvOae1bDxitYcJ3jBn_1EDg@mail.gmail.com>
-References: <1431613188-4511-1-git-send-email-anisse@astier.eu>
- <1431613188-4511-2-git-send-email-anisse@astier.eu> <7216052.tCNGRiLFYJ@vostro.rjw.lan>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: suspend regression in 4.1-rc1
+Date: Mon, 18 May 2015 12:51:44 +0200
+Message-ID: <20150518105144.GD21418@twins.programming.kicks-ass.net>
+References: <20150517185041.GA5897@dhcp22.suse.cz>
+ <CA+55aFy2wWy-k0O-Sb2vUCLiLjeKMu7r95bf294qP5UqQHuxfw@mail.gmail.com>
+ <20150518073046.GO17717@twins.programming.kicks-ass.net>
+ <20150518090336.GA6393@dhcp22.suse.cz>
+ <670732402.598272.1431943820988.JavaMail.zimbra@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <7216052.tCNGRiLFYJ@vostro.rjw.lan>
-Sender: owner-linux-mm@kvack.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:54333 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752763AbbERKwN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 06:52:13 -0400
+Content-Disposition: inline
+In-Reply-To: <670732402.598272.1431943820988.JavaMail.zimbra@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-Hi Rafael,
-
-Thanks for taking the time to review this.
-
-On Sat, May 16, 2015 at 2:28 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, May 14, 2015 04:19:46 PM Anisse Astier wrote:
->> SANITIZE_FREED_PAGES feature relies on having all pages going through
->> the free_pages_prepare path in order to be cleared before being used. In
->> the hibernate use case, free pages will automagically appear in the
->> system without being cleared, left there by the loading kernel.
->>
->> This patch will make sure free pages are cleared on resume; when we'll
->> enable SANITIZE_FREED_PAGES. We free the pages just after resume because
->> we can't do it later: going through any device resume code might
->> allocate some memory and invalidate the free pages bitmap.
->>
->> Signed-off-by: Anisse Astier <anisse@astier.eu>
->> ---
->>  kernel/power/hibernate.c |  4 +++-
->>  kernel/power/power.h     |  2 ++
->>  kernel/power/snapshot.c  | 22 ++++++++++++++++++++++
->>  3 files changed, 27 insertions(+), 1 deletion(-)
->>
->> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
->> index 2329daa..0a73126 100644
->> --- a/kernel/power/hibernate.c
->> +++ b/kernel/power/hibernate.c
->> @@ -305,9 +305,11 @@ static int create_image(int platform_mode)
->>                       error);
->>       /* Restore control flow magically appears here */
->>       restore_processor_state();
->> -     if (!in_suspend)
->> +     if (!in_suspend) {
->>               events_check_enabled = false;
->>
->> +             clear_free_pages();
->
-> Again, why don't you do that at the swsusp_free() time?
-
-Because it's too late, the kernel has already been through device
-resume code, and the free pages bitmap isn't valid anymore; device
-resume code might allocate memory, and we'd be clearing those pages as
-well.
+To: Ulrich Obergfell <uobergfe@redhat.com>
+Cc: Michal Hocko <mhocko@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>, Stephane Eranian <eranian@google.com>, Don Zickus <dzickus@redhat.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
 
->> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
->> index 5235dd4..2335130 100644
->> --- a/kernel/power/snapshot.c
->> +++ b/kernel/power/snapshot.c
->> @@ -1032,6 +1032,28 @@ void free_basic_memory_bitmaps(void)
->>       pr_debug("PM: Basic memory bitmaps freed\n");
->>  }
->>
->> +void clear_free_pages(void)
->> +{
->> +#ifdef CONFIG_SANITIZE_FREED_PAGES
->> +     struct memory_bitmap *bm = free_pages_map;
->> +     unsigned long pfn;
->> +
->> +     if (WARN_ON(!(free_pages_map)))
->
-> One paren too many.
+Trim emails already.. this seems a spreading disease.
 
-Thanks, will be fixed.
+On Mon, May 18, 2015 at 06:10:20AM -0400, Ulrich Obergfell wrote:
+> Michal,
+> 
+> if I understand you correctly, Peter's patch solves the problem for you.
+> I would like to make you aware of a patch that Don and I posted in April.
+> 
+>   https://lkml.org/lkml/2015/4/22/306
+> 
+> watchdog_nmi_enable_all() should not use 'watchdog_user_enabled' at all.
+> It should rather check the NMI_WATCHDOG_ENABLED bit in 'watchdog_enabled'.
+> The patch is also in Andrew Morton's queue.
+> 
+>   http://ozlabs.org/~akpm/mmots/broken-out/watchdog-fix-watchdog_nmi_enable_all.patch
+> 
+> Peter's patch introduces the same change in watchdog_nmi_enable_all(),
+> plus some synchronization. However, I'm not sure if we actually need the
+> synchronization. It is my understanding that {en,dis}able_all() are only
+> called early during kernel startup via initcall 'fixup_ht_bug':
+> 
+>   kernel_init
+>   {
+>     kernel_init_freeable
+>     {
+>       lockup_detector_init
+>       {
+>         watchdog_enable_all_cpus
+>           smpboot_register_percpu_thread(&watchdog_threads)
+>       }
+> 
+>       do_basic_setup
+>         do_initcalls
+>           do_initcall_level
+>             do_one_initcall
+>               fixup_ht_bug // subsys_initcall(fixup_ht_bug)
+>               {
+>                 watchdog_nmi_disable_all
+> 
+>                 watchdog_nmi_enable_all
+>               }
+>     }
+>   }
+> 
+> Peter,
+> 
+> do we really need the synchronization here?
 
->
->> +             return;
->> +
->> +     memory_bm_position_reset(bm);
->> +     pfn = memory_bm_next_pfn(bm);
->> +     while (pfn != BM_END_OF_MAP) {
->> +             if (pfn_valid(pfn))
->> +                     clear_highpage(pfn_to_page(pfn));
->
-> Is clear_highpage() also fine for non-highmem pages?
->
+Well, those are the only current usage sites, but the interface is
+exposed and should be fully and correctly implemented, otherwise a next
+user might stumble upon sudden unexpected behaviour.
 
-Yes, it works fine for low memory too because kmap_atomic will just
-return the page address if it's already mapped.
-
-Regards,
-
-Anisse
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+But yes, it appears superfluous for this particular usage.
