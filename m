@@ -1,34 +1,34 @@
 From: kxw <xweikong@hotmail.com>
 Subject: Re: [PATCH RESEND v4 2/2] thermal: hisilicon: add new hisilicon thermal
  sensor driver
-Date: Mon, 18 May 2015 12:36:06 +0800
-Message-ID: <BLU436-SMTP1422D2C1FACC3B972F1E63CC1C40@phx.gbl>
+Date: Mon, 18 May 2015 12:44:25 +0800
+Message-ID: <BLU436-SMTP17726FD87EB9D6C9435C3EC1C40@phx.gbl>
 References: <1430707940-14468-1-git-send-email-kong.kongxinwei@hisilicon.com> <1430707940-14468-3-git-send-email-kong.kongxinwei@hisilicon.com> <20150512012926.GD4810@localhost.localdomain> <5559647F.1060209@hisilicon.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from blu004-omc3s22.hotmail.com ([65.55.116.97]:53165 "EHLO
-	BLU004-OMC3S22.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750911AbbERElY convert rfc822-to-8bit
+Received: from blu004-omc3s32.hotmail.com ([65.55.116.107]:60116 "EHLO
+	BLU004-OMC3S32.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750878AbbEREon convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 18 May 2015 00:41:24 -0400
+	Mon, 18 May 2015 00:44:43 -0400
 In-Reply-To: <5559647F.1060209@hisilicon.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Xinwei Kong <kong.kongxinwei@hisilicon.com>, Eduardo Valentin <edubezval@gmail.com>, rui.zhuang@intel.com
 Cc: amit.kucheria@linaro.org, punit.agrawal@arm.com, Javi.Merino@arm.com, jorge.ramirez-ortiz@linaro.org, haojian.zhuang@linaro.org, linux-pm@vger.kernel.org, linuxarm@huawei.com, devicetree@vger.kernel.org, dan.zhao@hisilicon.com, liguozhu@hisilicon.com, mporter@konsulko.com, gongyu@hisilicon.com, guodong.xu@linaro.org, robh@kernel.org, leo.yan@linaro.org, zhenwei.wang@hisilicon.com, zhangfei.gao@linaro.org, z.liuxinliang@huawei.com, xuwei5@hisilicon.com, w.f@huawei.com, yuanzhichang@hisilicon.com, mark.rutland@arm.com, bintian.wang@huawei.com
 
-hi Eduardo,
+hi Eduardo
 
-I am sorry to understand this following log and hardware principle. bei=
-ng
-afraid of using man  is unreasonable.
+I am sorry the i don't understand this following log and hardware princ=
+iple, being afraid
+of using is unreasonale.
 
-Sorry you to bother me.
+sorry to bother you
 
-Thanks
+thanks
 Xinwei
 
 On 2015=E5=B9=B405=E6=9C=8818=E6=97=A5 12:03, Xinwei Kong wrote:
