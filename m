@@ -1,39 +1,83 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: suspend regression in 4.1-rc1
-Date: Tue, 19 May 2015 09:39:58 +0200
-Message-ID: <20150519073958.GD19282@twins.programming.kicks-ass.net>
-References: <20150517185041.GA5897@dhcp22.suse.cz>
- <CA+55aFy2wWy-k0O-Sb2vUCLiLjeKMu7r95bf294qP5UqQHuxfw@mail.gmail.com>
- <20150518073046.GO17717@twins.programming.kicks-ass.net>
- <20150518090336.GA6393@dhcp22.suse.cz>
- <20150518093150.GC21418@twins.programming.kicks-ass.net>
- <CA+55aFzx2j-yZH0CgMGJ_uw0KbdqaUanEJPKwdm-yXYaFLhRXw@mail.gmail.com>
- <20150519071259.GA6847@dhcp22.suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150519071259.GA6847@dhcp22.suse.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Michal Hocko <mhocko@suse.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Stephane Eranian <eranian@google.com>, Ulrich Obergfell <uobergfe@redhat.com>, Don Zickus <dzickus@redhat.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+From: "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: Re: [RFC/RFT v2 0/2] power_supply: Fix NULL pointer dereference from uevent
+Date: Tue, 19 May 2015 10:28:39 +0200
+Message-ID: <77C4D085-96E6-4874-BD7A-AC4BDFAC3A58@goldelico.com>
+References: <1432019582-27612-1-git-send-email-k.kozlowski@samsung.com>
+Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.216]:59365 "EHLO
+	mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752635AbbESI2t convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 04:28:49 -0400
+In-Reply-To: <1432019582-27612-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, May 19, 2015 at 09:12:59AM +0200, Michal Hocko wrote:
-> On Mon 18-05-15 10:10:50, Linus Torvalds wrote:
-> > On Mon, May 18, 2015 at 2:31 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > > Subject: watchdog: Fix merge 'conflict'
-> > >
-> > > Two watchdog changes that came through different trees had a non
-> > > conflicting conflict, that is, one changed the semantics of a variable
-> > > but no actual code conflict happened. So the merge appeared fine, but
-> > > the resulting code did not behave as expected.
-> > 
-> > Ok, I see that people are still discussing this, but I'll apply it
-> > as-is since I want to get rc4 out the door, and I guess people can
-> > tweak this if there's anything else we want to do longer-term.
-> 
-> The final patch from Peter has a typo. Without the following the system
-> deadlocks obviously:
+Hi,
 
-Duh, sorry about that. :/
+Am 19.05.2015 um 09:13 schrieb Krzysztof Kozlowski <k.kozlowski@samsung=
+=2Ecom>:
+
+> Hi,
+>=20
+>=20
+> Changes since v1:
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> 1. Patch 2: fix invalid member used for container_of().
+> 2. Patch 2: Replace WARN with pr_warn() in __power_supply_register()
+>   if parent is missing.
+>=20
+>=20
+> Description:
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> This is an idea to fix issue in bq27x00 driver (and probably in other=
+s)
+> reported by H. Nikolaus Schaller [0].
+>=20
+> The fixes are marked RFC/RFT because:
+> 1. I do not have bq27x00-like device. I confirmed this and tested on
+>   modified drivers (max77693, ACPI AC). These drivers are not
+>   impacted by the issue but one can easily adjust them to reproduce
+>   the problem.
+> 2. The first uevent coming from power_supply_register() is now
+>   different because it won't contain device properties. I am
+>   not sure how this impacts userspace.
+>=20
+> Comments are welcomed.
+
+appears to work! bq27000 is coming up now without hickups.
+
+What I can=92t test is if the uevent is reasonable because we do not
+have a specific rule triggered by it in our system.
+
+So from my side we are now happy with the solution.
+
+Thanks and BR,
+Nikolaus
+
+>=20
+>=20
+> [0] https://lkml.org/lkml/2015/5/18/152
+>=20
+>=20
+> Best regards,
+> Krzysztof
+>=20
+> Krzysztof Kozlowski (2):
+>  power_supply: Fix NULL pointer dereference during bq27x00_battery
+>    probe
+>  power_supply: Fix possible NULL pointer dereference on early uevent
+>=20
+> drivers/power/power_supply_core.c | 61 ++++++++++++++++++++++++++++++=
++++++----
+> include/linux/power_supply.h      |  1 +
+> 2 files changed, 56 insertions(+), 6 deletions(-)
+>=20
+> --=20
+> 1.9.1
+>=20
+
