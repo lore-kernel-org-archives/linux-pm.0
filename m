@@ -1,45 +1,72 @@
 From: Laurentiu Palcu <laurentiu.palcu@intel.com>
-Subject: [PATCH v2 0/2] Add support for BQ25890 charger chip
-Date: Tue, 19 May 2015 16:24:38 +0300
-Message-ID: <1432041880-7373-1-git-send-email-laurentiu.palcu@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:48042 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751257AbbESNYx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 19 May 2015 09:24:53 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v2 1/2] Documentation: devicetree: Add TI BQ25890 bindings
+Date: Tue, 19 May 2015 16:24:39 +0300
+Message-ID: <1432041880-7373-2-git-send-email-laurentiu.palcu@intel.com>
+References: <1432041880-7373-1-git-send-email-laurentiu.palcu@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1432041880-7373-1-git-send-email-laurentiu.palcu@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 Cc: Laurentiu Palcu <laurentiu.palcu@intel.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Changes since v1:
- * add comment in DT bindings regarding default driver behavior when
-   "ti,thermal-regulation-threshold" property is missing;
- * addressed all Krzysztof's comments, including addition of a reset
-   check counter. Better to be safe than sorry :)
-
-Hi,
-
-This series adds support for BQ25890 USB charger chip. Information about
-the chip can be found here:
-
-http://www.ti.com/product/bq25890
-
-Thanks,
-laurentiu
-
-Laurentiu Palcu (2):
-  Documentation: devicetree: Add TI BQ25890 bindings
-  power_supply: Add support for TI BQ25890 charger chip
-
- .../devicetree/bindings/power/bq25890.txt          |  46 +
- drivers/power/Kconfig                              |   7 +
- drivers/power/Makefile                             |   1 +
- drivers/power/bq25890_charger.c                    | 999 +++++++++++++++++++++
- 4 files changed, 1053 insertions(+)
+Signed-off-by: Laurentiu Palcu <laurentiu.palcu@intel.com>
+---
+ .../devicetree/bindings/power/bq25890.txt          | 46 ++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/power/bq25890.txt
- create mode 100644 drivers/power/bq25890_charger.c
 
+diff --git a/Documentation/devicetree/bindings/power/bq25890.txt b/Documentation/devicetree/bindings/power/bq25890.txt
+new file mode 100644
+index 0000000..c9dd17d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/bq25890.txt
+@@ -0,0 +1,46 @@
++Binding for TI bq25890 Li-Ion Charger
++
++Required properties:
++- compatible: Should contain one of the following:
++    * "ti,bq25890"
++- reg: integer, i2c address of the device.
++- ti,battery-regulation-voltage: integer, maximum charging voltage (in uV);
++- ti,charge-current: integer, maximum charging current (in uA);
++- ti,termination-current: integer, charge will be terminated when current in
++    constant-voltage phase drops below this value (in uA);
++- ti,precharge-current: integer, maximum charge current during precharge
++    phase (in uA);
++- ti,minimum-sys-voltage: integer, when battery is charging and it is below
++    minimum system voltage, the system will be regulated above
++    minimum-sys-voltage setting (in uV);
++- ti,boost-voltage: integer, VBUS voltage level in boost mode (in uV);
++- ti,boost-max-current: integer, maximum allowed current draw in boost mode
++    (in uA).
++
++Optional properties:
++- ti,boost-low-freq: boolean, if present boost mode frequency will be 500kHz,
++    otherwise 1.5MHz;
++- ti,use-ilim-pin: boolean, if present the ILIM resistor will be used and the
++    input current will be the lower between the resistor setting and the IINLIM
++    register setting;
++- ti,thermal-regulation-threshold: integer, temperature above which the charge
++    current is lowered, to avoid overheating (in degrees Celsius). If omitted,
++    the default setting will be used (120 degrees);
++
++Example:
++
++bq25890 {
++        compatible = "ti,bq25890";
++        reg = <0x6a>;
++
++        ti,battery-regulation-voltage = <4200000>;
++        ti,charge-current = <1000000>;
++        ti,termination-current = <50000>;
++        ti,precharge-current = <128000>;
++        ti,minimum-sys-voltage = <3600000>;
++        ti,boost-voltage = <5000000>;
++        ti,boost-max-current = <1000000>;
++
++        ti,use-ilim-pin;
++        ti,thermal-regulation-threshold = <120>;
++};
 -- 
 1.9.1
-
