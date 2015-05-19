@@ -1,152 +1,84 @@
-From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Subject: Re: [PATCH 11/15] thermal: thermal: Add support for hardware-tracked
- trip points
-Date: Tue, 19 May 2015 15:43:59 +0300
-Message-ID: <555B300F.8030305@kapsi.fi>
-References: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de> <1431507163-19933-12-git-send-email-s.hauer@pengutronix.de> <5559ABAA.6040001@kapsi.fi> <20150518120944.GQ6325@pengutronix.de> <20150518184433.GS11598@ld-irv-0074> <555A39EA.1060608@kapsi.fi> <20150518202848.GT11598@ld-irv-0074>
+From: Mel Gorman <mgorman@suse.de>
+Subject: Re: [PATCH v4 0/3] Sanitizing freed pages
+Date: Tue, 19 May 2015 13:46:44 +0100
+Message-ID: <20150519124644.GD2462@suse.de>
+References: <1431613188-4511-1-git-send-email-anisse@astier.eu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=iso-8859-15
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kapsi.fi ([217.30.184.167]:52040 "EHLO mail.kapsi.fi"
+Received: from cantor2.suse.de ([195.135.220.15]:36034 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753651AbbESMoq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 19 May 2015 08:44:46 -0400
-In-Reply-To: <20150518202848.GT11598@ld-irv-0074>
+	id S1755292AbbESMqt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 19 May 2015 08:46:49 -0400
+Content-Disposition: inline
+In-Reply-To: <1431613188-4511-1-git-send-email-anisse@astier.eu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Brian Norris <computersforpeace@gmail.com>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+To: Anisse Astier <anisse@astier.eu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 05/18/15 23:28, Brian Norris wrote:
-> On Mon, May 18, 2015 at 10:13:46PM +0300, Mikko Perttunen wrote:
->> On 05/18/2015 09:44 PM, Brian Norris wrote:
->>> On Mon, May 18, 2015 at 02:09:44PM +0200, Sascha Hauer wrote:
->>>> On Mon, May 18, 2015 at 12:06:50PM +0300, Mikko Perttunen wrote:
->>>>> One interesting thing I noticed was that at least the bang-bang
->>>>> governor only acts if the temperature is properly smaller than (t=
-rip
->>>>> temp - hysteresis). So perhaps we should specify the non-tripping
->>>>> range as [low, high)? Or we could change bang-bang.
->>>>
->>>> I wonder how we can protect against such off-by-one errors anyway.
->>>> Generally a hardware might operate on raw values rather than direc=
-tly
->>>> in temperature values in =B0C. This means a driver for this must h=
-ave
->>>> celsius_to_raw and raw_to_celsius conversion functions. Now it can
->>>> happen that due to rounding errors celsius_to_raw(Tcrit) returns a=
- raw
->>>> value that when converted back to celsius is different from the
->>>> original value in =B0C. This would mean the hardware triggers an i=
-nterrupt
->>>> for a trip point and the thermal core does not react because get_t=
-emp
->>>> actually returns a different temperature than previously programme=
-d as
->>>> interrupt trigger. This way we would lose hot (or cold) events.
->>>
->>> This also highlights another fact: there's a race between interrupt
->>> generation and temperature reading (->get_temp()). I would expect a=
-ny
->>> hardware interrupt thermal sensor would also have a latched tempera=
-ture
->>> reading to correspond with it, and there would be no guarantee that=
- this
->>> latched temperature will match the polled reading seen once you rea=
-ch
->>> thermal_zone_device_update(). So a hardware driver might report a
->>> thermal update, but the temperature reported to the core won't
->>> necessarily match what interrupt was meant for.
->>
->> Does this actually matter? The thermal core will reset trips and
->> apply cooling using the new - most recent - value. Using bang bang
->> as example, if the temperature has risen since the interrupt fired,
->> the cooling device will correctly not be switched off. If the
->> temperature has fallen, it will again be correctly switched off. The
->> only issue is then if the temperature is exactly 'trip temp - trip
->> hyst' which will cause set_trips to load the trip points below, but
->> not cause bang bang to turn off the cooling device, and the next
->> chance it will have will only be at the next below trip point. Well,
->> this is still safe (at least until you replace "cooling device" with
->> "heating device"), so maybe it isn't that big of an issue.
->>
->> Please point out if there's a problem with my line of reasoning.
->
-> I'm not sure I followed exactly the reason for the low-temp/hyst corn=
-er
-> case, but otherwise I guess that makes sense. The only problem IMO, i=
-s
-> that you're encouraging the generation of spurious notifications; if =
-the
-> temperature is constantly changing right around 'trip temp', but it
-> never settles above 'trip temp' long enough for the core to re-captur=
-e
-> the high temperature scenario, you'll just keep making useless calls =
-to
-> thermal_zone_device_update(). This kind of defeats the purpose of the
-> hysteresis, right?
+On Thu, May 14, 2015 at 04:19:45PM +0200, Anisse Astier wrote:
+> Hi,
+> 
+> I'm trying revive an old debate here[1], though with a simpler approach than
+> was previously tried. This patch series implements a new option to sanitize
+> freed pages, a (very) small subset of what is done in PaX/grsecurity[3],
+> inspired by a previous submission [4].
+> 
+> There are a few different uses that this can cover:
+>  - some cases of use-after-free could be detected (crashes), although this not
+>    as efficient as KAsan/kmemcheck
 
-The corner case with bang bang is as follows:
-- Say we have trip points as 50C and 80C, both with 5C hysteresis, and=20
-these are programmed into hardware. So the actual hardware trip points=20
-are 45C and 80C.
-- Currently the temperature is, say, 60C and the fan is turned on.
-- Temperature drops to 45C, the lower trip point is triggered.
-- 45C >=3D 50C - 5C, so the fan is not turned off.
+They're not detected, they're hidden. I'm currently seeing problems with
+a glibc update in userspace where applications are crashing because glibc
+returns buffers with uninitialised data that would previously have been
+zero. In every case so far, they were application bugs that need fixing.
+Having the kernel crash due to uninitialised memory use is bad but hiding
+it is not better.
 
-If we said that the hysteresis was 0C, then bang bang is certainly=20
-correct in that if the trip point was at 50C, it shouldn't turn the fan=
-=20
-off, since that is greater than or equal to the requested temperature=20
-for cooling.
+>  - it can help with long-term memory consumption in an environment with
+>    multiple VMs and Kernel Same-page Merging on the host. [2]
 
-The function you describe would certainly be useful for eliminating=20
-possible superfluous interrupts due to temperature wobble, though I'm=20
-not sure how much of a problem that even would be.
+This is not quantified but a better way of dealing with that problem would
+be for a guest to signal to the host when a page is really free. I vaguely
+recall that s390 has some hinting of this nature. While I accept there
+may be some benefits in some cases, I think it's a weak justification for
+always zeroing pages on free.
 
->
-> I'd really rather have a high temperature interrupt generate exactly =
-one
-> notification to the core framework, and that the sensor driver can re=
-ly
-> on that one interrupt being handled as a high temperature situation,
-> allowing it to disable the high-temp interrupt.
->
-> One of my biggest problems with the thermal subsystem so far is that
-> thermal_zone_device_update() doesn't actually seem to have any specif=
-ic
-> semantic meaning. It just means that there was some reason to update
-> something. So then, you have to reason about a particular thermal
-> governor (bang bang) in order to make something sensible. If I want t=
-o
-> use a different sort of user-space governor, then I have to reevaluat=
-e
-> all these same assumptions, and it seems like I end up with a sub-par
-> solution.
+>  - finally, it can reduce infoleaks, although this is hard to measure.
+> 
 
-Yeah, though I'm not sure if you can ever be sure that the governor is=20
-fine not getting regular temperature updates, so I imagine you might=20
-always end up needing to pick your governors with that in mind. In=20
-practice, this might not be so horrible.
+It obscures them.
 
->
-> As a side note: I have patches to extend some of the uevent informati=
-on
-> passed by the user-space governor too, to accomplish what I'm suggest=
-ing
-> above. Perhaps that would be a better way to discuss what I'm thinkin=
-g.
->
->> FWIW - at least Tegra doesn't have a latched register like this.
->> There's just a bit indicating that an interrupt was raised and a
->> temperature register that updates according to the sensor's input
->> clock.
->
-> A sensor for Broadcom's BCM7xxx has a latched register. If I get the
-> time, I'll post my driver soon.
->
-> Brian
->
+That is leaving aside the fact that this has to be enabled at kconfig time
+which is unlikely to happen on a distribution config. Not many workloads
+depend on the freed path as such but streaming readers are one once the
+files are larger than memory.
 
+> The approach is voluntarily kept as simple as possible. A single configuration
+> option, no command line option, no sysctl nob. It can of course be changed,
+> although I'd be wary of runtime-configuration options that could be used for
+> races.
+> 
+> I haven't been able to measure a meaningful performance difference when
+> compiling a (in-cache) kernel; I'd be interested to see what difference it
+> makes with your particular workload/hardware (I suspect mine is CPU-bound on
+> this small laptop).
+> 
+
+What did you use to determine this and did you check if it was hitting
+the free paths heavily while it's running? It can be very easy to hide
+the cost of something like this if all the frees happen at exit.
+
+Overall, I'm not a big fan of this series. I think it would have made more
+sense to use non-temporal cleaning on pages if they are freed by kswapd or
+on a non-critical path like exit and then track if the page was already
+freed during allocation. Then add a runtime sysctl to make that strict
+and force all zeroing on all frees.
+
+As it is, I think it'll have very few users because of the need to
+enable it at kernel build time and then incur an unavoidable penalty.
+
+-- 
+Mel Gorman
+SUSE Labs
