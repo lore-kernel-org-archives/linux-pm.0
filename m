@@ -1,43 +1,32 @@
-From: yalin wang <yalin.wang2010@gmail.com>
-Subject: Re: [PATCH v4 2/3] mm/page_alloc.c: add config option to sanitize
- freed pages
-Date: Tue, 19 May 2015 09:58:01 +0800
-Message-ID: <CAFP4FLo9Lrr=pQzwLhj6EfiN5LgRTDMj_hBhQW58UQkC55mYHA@mail.gmail.com>
-References: <1431613188-4511-1-git-send-email-anisse@astier.eu>
-	<1431613188-4511-3-git-send-email-anisse@astier.eu>
-	<20150518112152.GA16999@amd>
-	<CALUN=qLHfz5DnSKfaRf833eewOM65FNtxybY9Xw9sp1=qq+Zqw@mail.gmail.com>
-	<20150518130213.GA771@amd>
-	<CALUN=q+VyQgQ+F1HudumDSjFk1PFyEXdwxPNrM_VqKjDKHTfbw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V5 00/14] cpufreq: Don't loose cpufreq history on CPU
+ hotplug
+Date: Tue, 19 May 2015 07:57:46 +0530
+Message-ID: <20150519022746.GE5102@linux>
+References: <cover.1431924457.git.viresh.kumar@linaro.org>
+ <5515479.9CSMtpamVj@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f177.google.com ([209.85.223.177]:33435 "EHLO
-	mail-ie0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750846AbbESB6C (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 21:58:02 -0400
-In-Reply-To: <CALUN=q+VyQgQ+F1HudumDSjFk1PFyEXdwxPNrM_VqKjDKHTfbw@mail.gmail.com>
+Received: from mail-pd0-f169.google.com ([209.85.192.169]:32816 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751073AbbESC1t (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2015 22:27:49 -0400
+Received: by pdbqa5 with SMTP id qa5so2835308pdb.0
+        for <linux-pm@vger.kernel.org>; Mon, 18 May 2015 19:27:49 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <5515479.9CSMtpamVj@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Anisse Astier <anisse@astier.eu>
-Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Srivatsa Bhat <srivatsa@mit.edu>
 
-2015-05-18 21:04 GMT+08:00 Anisse Astier <anisse@astier.eu>:
-> On Mon, May 18, 2015 at 3:02 PM, Pavel Machek <pavel@ucw.cz> wrote:
->>
->> Ok. So there is class of errors where this helps, but you are not
->> aware of any such errors in kernel, so you can't fix them... Right?
->
-> Correct.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-i feel your patch is the same as CONFIG_DEBUG_PAGEALLOC ,
-the difference is that CONFIG_DEBUG_PAGEALLOC  will clear
-page to a magic number, while your patch will
-clear to zero,
-do we really need this duplicated function ?
+On 19-05-15, 02:34, Rafael J. Wysocki wrote:
+> I've applied patches [1-6/14] from your previous series.  Should I replace them
+> with the new ones?
 
-Thanks
+Never realised that you have applied more of these. Yeah, apply
+everything other than 1-6. Thanks.
+
+-- 
+viresh
