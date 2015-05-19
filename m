@@ -1,141 +1,90 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/5] PM / Wakeirq: Add automated device wake IRQ handling
-Date: Tue, 19 May 2015 16:26:37 +0200
-Message-ID: <3371662.LPKmgz3rb9@vostro.rjw.lan>
-References: <1431560196-5722-1-git-send-email-tony@atomide.com> <20150518234400.GN10274@atomide.com> <3554198.gIGuGWK14O@vostro.rjw.lan>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 11/15] thermal: thermal: Add support for hardware-tracked
+ trip points
+Date: Tue, 19 May 2015 16:05:46 +0200
+Message-ID: <20150519140546.GE26575@pengutronix.de>
+References: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de>
+ <1431507163-19933-12-git-send-email-s.hauer@pengutronix.de>
+ <5559ABAA.6040001@kapsi.fi>
+ <20150518120944.GQ6325@pengutronix.de>
+ <20150518184433.GS11598@ld-irv-0074>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3554198.gIGuGWK14O@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Felipe Balbi <balbi@ti.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:45945 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756218AbbESOFv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 10:05:51 -0400
+Content-Disposition: inline
+In-Reply-To: <20150518184433.GS11598@ld-irv-0074>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Brian Norris <computersforpeace@gmail.com>
+Cc: Mikko Perttunen <mikko.perttunen@kapsi.fi>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-On Tuesday, May 19, 2015 04:04:43 PM Rafael J. Wysocki wrote:
-> On Monday, May 18, 2015 04:44:01 PM Tony Lindgren wrote:
-> > * Tony Lindgren <tony@atomide.com> [150518 15:06]:
-> > > +/**
-> > > + * dev_pm_set_wake_irq - Attach device IO interrupt as wake IRQ
-> > > + * @dev: Device entry
-> > > + * @irq: Device IO interrupt
-> > > + *
-> > > + * Attach a device IO interrupt as a wake IRQ. The wake IRQ gets
-> > > + * automatically configured for wake-up from suspend  based
-> > > +void dev_pm_clear_wake_irq(struct device *dev)
-> > > +{
-> > > +	struct wake_irq *wirq = dev->power.wakeirq;
-> > > +	unsigned long flags;
-> > > +
-> > > +	if (!wirq)
-> > > +		return;
-> > > +
-> > > +	device_wakeup_detach_irq(dev);
-> > > +
-> > > +	spin_lock_irqsave(&dev->power.lock, flags);
-> > > +	if (wirq->manage_irq) {
-> > > +		free_irq(wirq->irq, wirq);
-> > > +		wirq->manage_irq = false;
-> > > +	}
-> > > +	dev->power.wakeirq = NULL;
-> > > +	spin_unlock_irqrestore(&dev->power.lock, flags);
-> > > +
-> > > +	wirq->irq = -EINVAL;
-> > > +	kfree(wirq);
-> > > +}
-> > 
-> > I just noticed most of the dev_pm_clear_wake_irq is no longer needed.
-> > We're now freeing it anyways. so it can be just:
-> > 
-> > void dev_pm_clear_wake_irq(struct device *dev)
-> > {
-> > 	struct wake_irq *wirq = dev->power.wakeirq;
-> > 	unsigned long flags;
-> > 
-> > 	if (!wirq)
-> > 		return;
-> > 
-> > 	spin_lock_irqsave(&dev->power.lock, flags);
-> > 	dev->power.wakeirq = NULL;
-> > 	spin_unlock_irqrestore(&dev->power.lock, flags);
-> > 
-> > 	device_wakeup_detach_irq(dev);
-> > 	if (wirq->manage_irq)
-> > 		free_irq(wirq->irq, wirq);
-> > 	kfree(wirq);
-> > }
-> > 
-> > 
-> > Regards,
-> > 
-> > Tony
-> > 
-> > 8< ---------------------
-> > From: Tony Lindgren <tony@atomide.com>
-> > Date: Mon, 18 May 2015 15:40:29 -0700
-> > Subject: [PATCH] PM / Wakeirq: Add automated device wake IRQ handling
-> > 
-> > Turns out we can automate the handling for the device_may_wakeup()
-> > quite a bit by using the kernel wakeup source list.
-> > 
-> > And as some hardware has separate dedicated wake-up interrupt
-> > in addition to the IO interrupt, we can automate the handling by
-> > adding a generic threaded interrupt handler that just calls the
-> > device PM runtime to wake up the device.
-> > 
-> > This allows dropping code from device drivers as we currently
-> > are doing it in multiple ways, and often wrong.
-> > 
-> > For most drivers, we should be able to drop the following
-> > boilerplate code from runtime_suspend and runtime_resume
-> > functions:
-> > 
-> > 	...
-> > 	device_init_wakeup(dev, true);
-> > 	...
-> > 	if (device_may_wakeup(dev)
-> > 		enable_irq_wake(irq);
-> > 	...
-> > 	if (device_may_wakeup(dev)
-> > 		enable_irq_wake(irq);
-> 
-> Closing parens are missin in the above two if () statements.
-> 
-> Also, should the second one be disable_irq_wake(irq)?
-> 
-> > 	...
-> > 	device_init_wakeup(dev, false);
-> > 	...
-> > 
-> > We can replace it with just the following init and exit
-> > time code:
-> > 
-> > 	...
-> > 	device_init_wakeup(dev, true);
-> > 	dev_pm_set_wake_irq(dev, irq);
-> > 	...
-> > 	dev_pm_clear_wake_irq(dev);
-> > 	device_init_wakeup(dev, false);
-> > 	...
-> > 
-> > And for hardware with dedicated wake-up interrupts:
-> > 
-> > 	...
-> > 	device_init_wakeup(dev, true);
-> > 	dev_pm_set_dedicated_wake_irq(dev, irq);
-> > 	...
-> > 	dev_pm_clear_wake_irq(dev);
-> > 	device_init_wakeup(dev, false);
-> > 	...
-> > 
-> > For now, let's only enable it for select PM_WAKEIRQ.
-> 
-> Why?  What would be wrong with doing that unconditionally?
+On Mon, May 18, 2015 at 11:44:33AM -0700, Brian Norris wrote:
+> On Mon, May 18, 2015 at 02:09:44PM +0200, Sascha Hauer wrote:
+> > On Mon, May 18, 2015 at 12:06:50PM +0300, Mikko Perttunen wrote:
+> > > One interesting thing I noticed was that at least the bang-bang
+> > > governor only acts if the temperature is properly smaller than (t=
+rip
+> > > temp - hysteresis). So perhaps we should specify the non-tripping
+> > > range as [low, high)? Or we could change bang-bang.
+> >=20
+> > I wonder how we can protect against such off-by-one errors anyway.
+> > Generally a hardware might operate on raw values rather than direct=
+ly
+> > in temperature values in =B0C. This means a driver for this must ha=
+ve
+> > celsius_to_raw and raw_to_celsius conversion functions. Now it can
+> > happen that due to rounding errors celsius_to_raw(Tcrit) returns a =
+raw
+> > value that when converted back to celsius is different from the
+> > original value in =B0C. This would mean the hardware triggers an in=
+terrupt
+> > for a trip point and the thermal core does not react because get_te=
+mp
+> > actually returns a different temperature than previously programmed=
+ as
+> > interrupt trigger. This way we would lose hot (or cold) events.
+>=20
+> This also highlights another fact: there's a race between interrupt
+> generation and temperature reading (->get_temp()). I would expect any
+> hardware interrupt thermal sensor would also have a latched temperatu=
+re
+> reading to correspond with it, and there would be no guarantee that t=
+his
+> latched temperature will match the polled reading seen once you reach
+> thermal_zone_device_update(). So a hardware driver might report a
+> thermal update, but the temperature reported to the core won't
+> necessarily match what interrupt was meant for.
+>=20
+> I have a patch that adds a thermal_zone_device_update_temp() API, so
+> drivers can report the temperature along with the interrupt
+> notification. (Such a patch also helps so that the driver can choose =
+to
+> round down on cold events and up on hot events, resolving your roundi=
+ng
+> issue too.)
 
-I mean, what about making it depend on CONFIG_PM directly?
+Could you send me that patch? Thinking about it this might indeed work.
+The only thing that a driver needs to make sure then is that it actuall=
+y
+at least one time reports a temperature beyond the currently programmed
+thresholds. With the patch you describe a driver could simply do that b=
+y
+ignoring the current ADC values and simply reporting the previously
+desired values.
 
+Sascha
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--=20
+Pengutronix e.K.                           |                           =
+  |
+Industrial Linux Solutions                 | http://www.pengutronix.de/=
+  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0  =
+  |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-555=
+5 |
