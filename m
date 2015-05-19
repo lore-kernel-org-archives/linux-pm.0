@@ -1,54 +1,83 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC/RFT v2 0/2] power_supply: Fix NULL pointer dereference from uevent
-Date: Tue, 19 May 2015 16:13:00 +0900
-Message-ID: <1432019582-27612-1-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC/RFT v2 1/2] power_supply: Fix NULL pointer dereference during
+ bq27x00_battery probe
+Date: Tue, 19 May 2015 16:13:01 +0900
+Message-ID: <1432019582-27612-2-git-send-email-k.kozlowski@samsung.com>
+References: <1432019582-27612-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1432019582-27612-1-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: "H. Nikolaus Schaller" <hns@goldelico.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Power supply is often registered during probe of a driver. The
+power_supply_register() returns pointer to newly allocated structure as
+return value. However before returning the power_supply_register()
+calls back the get_property() method provided by the driver through
+uevent.
 
+In that time the driver probe is still in progress and driver did not
+assigned pointer to power supply to its local variables. This leads to
+NULL pointer dereference from get_property() function.
+Starting from bq27x00_battery_probe():
+  di->bat = power_supply_register()
+    device_add()
+      kobject_uevent()
+        power_supply_uevent()
+          power_supply_show_property()
+            power_supply_get_property()
+              bq27x00_battery_get_property()
+                dereference of (di->bat) which is NULL here
 
-Changes since v1:
-=================
-1. Patch 2: fix invalid member used for container_of().
-2. Patch 2: Replace WARN with pr_warn() in __power_supply_register()
-   if parent is missing.
+The first uevent of power supply (the one coming from device creation)
+should not call back to the driver. To prevent that from happening,
+increment the atomic use counter at the end of power_supply_register().
+This means that power_supply_get_property() will return -ENODEV.
 
+IMPORTANT:
+The patch has impact on this first uevent sent from power supply because
+it will not contain properties from power supply.
 
-Description:
-============
-This is an idea to fix issue in bq27x00 driver (and probably in others)
-reported by H. Nikolaus Schaller [0].
+The uevent with properties will be sent later after indicating that
+power supply has changed. This also has a race now, but will be fixed in
+other patches.
 
-The fixes are marked RFC/RFT because:
-1. I do not have bq27x00-like device. I confirmed this and tested on
-   modified drivers (max77693, ACPI AC). These drivers are not
-   impacted by the issue but one can easily adjust them to reproduce
-   the problem.
-2. The first uevent coming from power_supply_register() is now
-   different because it won't contain device properties. I am
-   not sure how this impacts userspace.
+Reported-by: H. Nikolaus Schaller <hns@goldelico.com>
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
+---
+ drivers/power/power_supply_core.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-Comments are welcomed.
-
-
-[0] https://lkml.org/lkml/2015/5/18/152
-
-
-Best regards,
-Krzysztof
-
-Krzysztof Kozlowski (2):
-  power_supply: Fix NULL pointer dereference during bq27x00_battery
-    probe
-  power_supply: Fix possible NULL pointer dereference on early uevent
-
- drivers/power/power_supply_core.c | 61 +++++++++++++++++++++++++++++++++++----
- include/linux/power_supply.h      |  1 +
- 2 files changed, 56 insertions(+), 6 deletions(-)
-
+diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
+index 2ed4a4a6b3c5..15da277e0e8d 100644
+--- a/drivers/power/power_supply_core.c
++++ b/drivers/power/power_supply_core.c
+@@ -659,7 +659,6 @@ __power_supply_register(struct device *parent,
+ 	dev->release = power_supply_dev_release;
+ 	dev_set_drvdata(dev, psy);
+ 	psy->desc = desc;
+-	atomic_inc(&psy->use_cnt);
+ 	if (cfg) {
+ 		psy->drv_data = cfg->drv_data;
+ 		psy->of_node = cfg->of_node;
+@@ -700,6 +699,16 @@ __power_supply_register(struct device *parent,
+ 	if (rc)
+ 		goto create_triggers_failed;
+ 
++	/*
++	 * Update use_cnt after any uevents (most notably from device_add()).
++	 * We are here still during driver's probe but
++	 * the power_supply_uevent() calls back driver's get_property
++	 * method so:
++	 * 1. Driver did not assigned the returned struct power_supply,
++	 * 2. Driver could not finish initialization (anything in its probe
++	 *    after calling power_supply_register()).
++	 */
++	atomic_inc(&psy->use_cnt);
+ 	power_supply_changed(psy);
+ 
+ 	return psy;
 -- 
 1.9.1
