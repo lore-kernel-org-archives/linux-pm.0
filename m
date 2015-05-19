@@ -1,764 +1,310 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 2/5] PM / Wakeirq: Add automated device wake IRQ handling
-Date: Tue, 19 May 2015 11:18:42 -0700
-Message-ID: <20150519181842.GR10274@atomide.com>
-References: <1431560196-5722-1-git-send-email-tony@atomide.com>
- <20150518234400.GN10274@atomide.com>
- <3554198.gIGuGWK14O@vostro.rjw.lan>
- <3371662.LPKmgz3rb9@vostro.rjw.lan>
- <20150519150926.GP10274@atomide.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: Re: [PATCH v2 2/7] rtc: arm: imx: snvs: change use syscon to access
+ register
+Date: Tue, 19 May 2015 22:46:44 +0200
+Message-ID: <20150519204644.GC3338@piout.net>
+References: <1432055082-28983-1-git-send-email-Frank.Li@freescale.com>
+ <1432055082-28983-3-git-send-email-Frank.Li@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:52189 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751494AbbESSSr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 19 May 2015 14:18:47 -0400
+Received: from down.free-electrons.com ([37.187.137.238]:48961 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751072AbbESUqq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 16:46:46 -0400
 Content-Disposition: inline
-In-Reply-To: <20150519150926.GP10274@atomide.com>
+In-Reply-To: <1432055082-28983-3-git-send-email-Frank.Li@freescale.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Felipe Balbi <balbi@ti.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org
+To: Frank.Li@freescale.com
+Cc: lznuaa@gmail.com, shawn.guo@linaro.org, dmitry.torokhov@gmail.com, robh+dt@kernel.org, a.zummo@towertech.it, p.zabel@pengutronix.de, linux-arm-kernel@lists.infradead.org, linux-input@vger.kernel.org, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-* Tony Lindgren <tony@atomide.com> [150519 08:21]:
-> * Rafael J. Wysocki <rjw@rjwysocki.net> [150519 07:02]:
-> > On Tuesday, May 19, 2015 04:04:43 PM Rafael J. Wysocki wrote:
-> > > On Monday, May 18, 2015 04:44:01 PM Tony Lindgren wrote:
-> > > > 
-> > > > We can replace it with just the following init and exit
-> > > > time code:
-> > > > 
-> > > > 	...
-> > > > 	device_init_wakeup(dev, true);
-> > > > 	dev_pm_set_wake_irq(dev, irq);
-> > > > 	...
-> > > > 	dev_pm_clear_wake_irq(dev);
-> > > > 	device_init_wakeup(dev, false);
-> > > > 	...
-> > > > 
-> > > > And for hardware with dedicated wake-up interrupts:
-> > > > 
-> > > > 	...
-> > > > 	device_init_wakeup(dev, true);
-> > > > 	dev_pm_set_dedicated_wake_irq(dev, irq);
-> > > > 	...
-> > > > 	dev_pm_clear_wake_irq(dev);
-> > > > 	device_init_wakeup(dev, false);
-> > > > 	...
-> > > > 
-> > > > For now, let's only enable it for select PM_WAKEIRQ.
-> > > 
-> > > Why?  What would be wrong with doing that unconditionally?
+On 20/05/2015 at 01:04:37 +0800, Frank.Li@freescale.com wrote :
+> From: Frank Li <Frank.Li@freescale.com>
 > 
-> No reason to make it conditional any longer. it's there from
-> the earlier version that only handled the dedicated wake IRQS.
+> snvs included rtc, on/off key, power-off module
+> change to syscon to access register
+> 
+> Signed-off-by: Frank Li <Frank.Li@freescale.com>
+Acked-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+
+> ---
+>  drivers/rtc/rtc-snvs.c | 128 +++++++++++++++++++++----------------------------
+>  1 file changed, 54 insertions(+), 74 deletions(-)
+> 
+> diff --git a/drivers/rtc/rtc-snvs.c b/drivers/rtc/rtc-snvs.c
+> index 0479e80..6eaebf1 100644
+> --- a/drivers/rtc/rtc-snvs.c
+> +++ b/drivers/rtc/rtc-snvs.c
+> @@ -18,14 +18,15 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/rtc.h>
+>  #include <linux/clk.h>
+> +#include <linux/mfd/syscon.h>
+> +#include <linux/regmap.h>
 >  
-> > I mean, what about making it depend on CONFIG_PM directly?
+> -/* These register offsets are relative to LP (Low Power) range */
+> -#define SNVS_LPCR		0x04
+> -#define SNVS_LPSR		0x18
+> -#define SNVS_LPSRTCMR		0x1c
+> -#define SNVS_LPSRTCLR		0x20
+> -#define SNVS_LPTAR		0x24
+> -#define SNVS_LPPGDR		0x30
+> +#define SNVS_LPCR		0x38
+> +#define SNVS_LPSR		0x4c
+> +#define SNVS_LPSRTCMR		0x50
+> +#define SNVS_LPSRTCLR		0x54
+> +#define SNVS_LPTAR		0x58
+> +#define SNVS_LPPGDR		0x64
+>  
+>  #define SNVS_LPCR_SRTC_ENV	(1 << 0)
+>  #define SNVS_LPCR_LPTA_EN	(1 << 1)
+> @@ -37,31 +38,34 @@
+>  
+>  struct snvs_rtc_data {
+>  	struct rtc_device *rtc;
+> -	void __iomem *ioaddr;
+> +	struct regmap *snvs;
+>  	int irq;
+> -	spinlock_t lock;
+>  	struct clk *clk;
+>  };
+>  
+> -static u32 rtc_read_lp_counter(void __iomem *ioaddr)
+> +static u32 rtc_read_lp_counter(struct regmap *snvs)
+>  {
+>  	u64 read1, read2;
+> -
+> +	u32 val;
+>  	do {
+> -		read1 = readl(ioaddr + SNVS_LPSRTCMR);
+> +		regmap_read(snvs, SNVS_LPSRTCMR, &val);
+> +		read1 = val;
+>  		read1 <<= 32;
+> -		read1 |= readl(ioaddr + SNVS_LPSRTCLR);
+> +		regmap_read(snvs, SNVS_LPSRTCLR, &val);
+> +		read1 |= val;
+>  
+> -		read2 = readl(ioaddr + SNVS_LPSRTCMR);
+> +		regmap_read(snvs, SNVS_LPSRTCMR, &val);
+> +		read2 = val;
+>  		read2 <<= 32;
+> -		read2 |= readl(ioaddr + SNVS_LPSRTCLR);
+> +		regmap_read(snvs, SNVS_LPSRTCLR, &val);
+> +		read2 |= val;
+>  	} while (read1 != read2);
+>  
+>  	/* Convert 47-bit counter to 32-bit raw second count */
+>  	return (u32) (read1 >> CNTR_TO_SECS_SH);
+>  }
+>  
+> -static void rtc_write_sync_lp(void __iomem *ioaddr)
+> +static void rtc_write_sync_lp(struct regmap *snvs)
+>  {
+>  	u32 count1, count2, count3;
+>  	int i;
+> @@ -69,15 +73,15 @@ static void rtc_write_sync_lp(void __iomem *ioaddr)
+>  	/* Wait for 3 CKIL cycles */
+>  	for (i = 0; i < 3; i++) {
+>  		do {
+> -			count1 = readl(ioaddr + SNVS_LPSRTCLR);
+> -			count2 = readl(ioaddr + SNVS_LPSRTCLR);
+> +			regmap_read(snvs, SNVS_LPSRTCLR, &count1);
+> +			regmap_read(snvs, SNVS_LPSRTCLR, &count2);
+>  		} while (count1 != count2);
+>  
+>  		/* Now wait until counter value changes */
+>  		do {
+>  			do {
+> -				count2 = readl(ioaddr + SNVS_LPSRTCLR);
+> -				count3 = readl(ioaddr + SNVS_LPSRTCLR);
+> +				regmap_read(snvs, SNVS_LPSRTCLR, &count2);
+> +				regmap_read(snvs, SNVS_LPSRTCLR, &count3);
+>  			} while (count2 != count3);
+>  		} while (count3 == count1);
+>  	}
+> @@ -85,23 +89,14 @@ static void rtc_write_sync_lp(void __iomem *ioaddr)
+>  
+>  static int snvs_rtc_enable(struct snvs_rtc_data *data, bool enable)
+>  {
+> -	unsigned long flags;
+>  	int timeout = 1000;
+>  	u32 lpcr;
+>  
+> -	spin_lock_irqsave(&data->lock, flags);
+> -
+> -	lpcr = readl(data->ioaddr + SNVS_LPCR);
+> -	if (enable)
+> -		lpcr |= SNVS_LPCR_SRTC_ENV;
+> -	else
+> -		lpcr &= ~SNVS_LPCR_SRTC_ENV;
+> -	writel(lpcr, data->ioaddr + SNVS_LPCR);
+> -
+> -	spin_unlock_irqrestore(&data->lock, flags);
+> +	regmap_update_bits(data->snvs, SNVS_LPCR, SNVS_LPCR_SRTC_ENV,
+> +			   enable ? SNVS_LPCR_SRTC_ENV : 0);
+>  
+>  	while (--timeout) {
+> -		lpcr = readl(data->ioaddr + SNVS_LPCR);
+> +		regmap_read(data->snvs, SNVS_LPCR, &lpcr);
+>  
+>  		if (enable) {
+>  			if (lpcr & SNVS_LPCR_SRTC_ENV)
+> @@ -121,7 +116,7 @@ static int snvs_rtc_enable(struct snvs_rtc_data *data, bool enable)
+>  static int snvs_rtc_read_time(struct device *dev, struct rtc_time *tm)
+>  {
+>  	struct snvs_rtc_data *data = dev_get_drvdata(dev);
+> -	unsigned long time = rtc_read_lp_counter(data->ioaddr);
+> +	unsigned long time = rtc_read_lp_counter(data->snvs);
+>  
+>  	rtc_time_to_tm(time, tm);
+>  
+> @@ -139,8 +134,8 @@ static int snvs_rtc_set_time(struct device *dev, struct rtc_time *tm)
+>  	snvs_rtc_enable(data, false);
+>  
+>  	/* Write 32-bit time to 47-bit timer, leaving 15 LSBs blank */
+> -	writel(time << CNTR_TO_SECS_SH, data->ioaddr + SNVS_LPSRTCLR);
+> -	writel(time >> (32 - CNTR_TO_SECS_SH), data->ioaddr + SNVS_LPSRTCMR);
+> +	regmap_write(data->snvs, SNVS_LPSRTCLR, time << CNTR_TO_SECS_SH);
+> +	regmap_write(data->snvs, SNVS_LPSRTCMR, time >> (32 - CNTR_TO_SECS_SH));
+>  
+>  	/* Enable RTC again */
+>  	snvs_rtc_enable(data, true);
+> @@ -153,10 +148,10 @@ static int snvs_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
+>  	struct snvs_rtc_data *data = dev_get_drvdata(dev);
+>  	u32 lptar, lpsr;
+>  
+> -	lptar = readl(data->ioaddr + SNVS_LPTAR);
+> +	regmap_read(data->snvs, SNVS_LPTAR, &lptar);
+>  	rtc_time_to_tm(lptar, &alrm->time);
+>  
+> -	lpsr = readl(data->ioaddr + SNVS_LPSR);
+> +	regmap_read(data->snvs, SNVS_LPSR, &lpsr);
+>  	alrm->pending = (lpsr & SNVS_LPSR_LPTA) ? 1 : 0;
+>  
+>  	return 0;
+> @@ -165,21 +160,11 @@ static int snvs_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
+>  static int snvs_rtc_alarm_irq_enable(struct device *dev, unsigned int enable)
+>  {
+>  	struct snvs_rtc_data *data = dev_get_drvdata(dev);
+> -	u32 lpcr;
+> -	unsigned long flags;
+>  
+> -	spin_lock_irqsave(&data->lock, flags);
+> +	regmap_update_bits(data->snvs, SNVS_LPCR, (SNVS_LPCR_LPTA_EN | SNVS_LPCR_LPWUI_EN),
+> +			   enable ? (SNVS_LPCR_LPTA_EN | SNVS_LPCR_LPWUI_EN) : 0);
+>  
+> -	lpcr = readl(data->ioaddr + SNVS_LPCR);
+> -	if (enable)
+> -		lpcr |= (SNVS_LPCR_LPTA_EN | SNVS_LPCR_LPWUI_EN);
+> -	else
+> -		lpcr &= ~(SNVS_LPCR_LPTA_EN | SNVS_LPCR_LPWUI_EN);
+> -	writel(lpcr, data->ioaddr + SNVS_LPCR);
+> -
+> -	spin_unlock_irqrestore(&data->lock, flags);
+> -
+> -	rtc_write_sync_lp(data->ioaddr);
+> +	rtc_write_sync_lp(data->snvs);
+>  
+>  	return 0;
+>  }
+> @@ -189,24 +174,14 @@ static int snvs_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
+>  	struct snvs_rtc_data *data = dev_get_drvdata(dev);
+>  	struct rtc_time *alrm_tm = &alrm->time;
+>  	unsigned long time;
+> -	unsigned long flags;
+> -	u32 lpcr;
+>  
+>  	rtc_tm_to_time(alrm_tm, &time);
+>  
+> -	spin_lock_irqsave(&data->lock, flags);
+> -
+> -	/* Have to clear LPTA_EN before programming new alarm time in LPTAR */
+> -	lpcr = readl(data->ioaddr + SNVS_LPCR);
+> -	lpcr &= ~SNVS_LPCR_LPTA_EN;
+> -	writel(lpcr, data->ioaddr + SNVS_LPCR);
+> -
+> -	spin_unlock_irqrestore(&data->lock, flags);
+> -
+> -	writel(time, data->ioaddr + SNVS_LPTAR);
+> +	regmap_update_bits(data->snvs, SNVS_LPCR, SNVS_LPCR_LPTA_EN, 0);
+> +	regmap_write(data->snvs, SNVS_LPTAR, time);
+>  
+>  	/* Clear alarm interrupt status bit */
+> -	writel(SNVS_LPSR_LPTA, data->ioaddr + SNVS_LPSR);
+> +	regmap_write(data->snvs, SNVS_LPSR, SNVS_LPSR_LPTA);
+>  
+>  	return snvs_rtc_alarm_irq_enable(dev, alrm->enabled);
+>  }
+> @@ -226,7 +201,7 @@ static irqreturn_t snvs_rtc_irq_handler(int irq, void *dev_id)
+>  	u32 lpsr;
+>  	u32 events = 0;
+>  
+> -	lpsr = readl(data->ioaddr + SNVS_LPSR);
+> +	regmap_read(data->snvs, SNVS_LPSR, &lpsr);
+>  
+>  	if (lpsr & SNVS_LPSR_LPTA) {
+>  		events |= (RTC_AF | RTC_IRQF);
+> @@ -238,7 +213,7 @@ static irqreturn_t snvs_rtc_irq_handler(int irq, void *dev_id)
+>  	}
+>  
+>  	/* clear interrupt status */
+> -	writel(lpsr, data->ioaddr + SNVS_LPSR);
+> +	regmap_write(data->snvs, SNVS_LPSR, lpsr);
+>  
+>  	return events ? IRQ_HANDLED : IRQ_NONE;
+>  }
+> @@ -246,17 +221,24 @@ static irqreturn_t snvs_rtc_irq_handler(int irq, void *dev_id)
+>  static int snvs_rtc_probe(struct platform_device *pdev)
+>  {
+>  	struct snvs_rtc_data *data;
+> -	struct resource *res;
+>  	int ret;
+> +	struct device_node *snvs_np;
+>  
+>  	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
+>  	if (!data)
+>  		return -ENOMEM;
+>  
+> -	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -	data->ioaddr = devm_ioremap_resource(&pdev->dev, res);
+> -	if (IS_ERR(data->ioaddr))
+> -		return PTR_ERR(data->ioaddr);
+> +	snvs_np = of_get_parent(pdev->dev.of_node);
+> +	if (!snvs_np)
+> +		return -ENODEV;
+> +
+> +	data->snvs = syscon_node_to_regmap(snvs_np);
+> +	of_node_put(snvs_np);
+> +
+> +	if (!data->snvs) {
+> +		pr_err("Can't snvs syscon\n");
+> +		return -ENODEV;
+> +	}
+>  
+>  	data->irq = platform_get_irq(pdev, 0);
+>  	if (data->irq < 0)
+> @@ -276,13 +258,11 @@ static int snvs_rtc_probe(struct platform_device *pdev)
+>  
+>  	platform_set_drvdata(pdev, data);
+>  
+> -	spin_lock_init(&data->lock);
+> -
+>  	/* Initialize glitch detect */
+> -	writel(SNVS_LPPGDR_INIT, data->ioaddr + SNVS_LPPGDR);
+> +	regmap_write(data->snvs, SNVS_LPPGDR, SNVS_LPPGDR_INIT);
+>  
+>  	/* Clear interrupt status */
+> -	writel(0xffffffff, data->ioaddr + SNVS_LPSR);
+> +	regmap_write(data->snvs, SNVS_LPSR, 0xffffffff);
+>  
+>  	/* Enable RTC */
+>  	snvs_rtc_enable(data, true);
+> -- 
+> 1.9.1
 > 
-> OK let's do that.
 
-Here's the patch updated and now using just CONFIG_PM.
-
-Regards,
-
-Tony
-
-8< ---------------------------
-From: Tony Lindgren <tony@atomide.com>
-Date: Mon, 18 May 2015 15:40:29 -0700
-Subject: [PATCH] PM / Wakeirq: Add automated device wake IRQ handling
-
-Turns out we can automate the handling for the device_may_wakeup()
-quite a bit by using the kernel wakeup source list as suggested
-by Rafael J. Wysocki <rjw@rjwysocki.net>.
-
-And as some hardware has separate dedicated wake-up interrupt
-in addition to the IO interrupt, we can automate the handling by
-adding a generic threaded interrupt handler that just calls the
-device PM runtime to wake up the device.
-
-This allows dropping code from device drivers as we currently
-are doing it in multiple ways, and often wrong.
-
-For most drivers, we should be able to drop the following
-boilerplate code from runtime_suspend and runtime_resume
-functions:
-
-	...
-	device_init_wakeup(dev, true);
-	...
-	if (device_may_wakeup(dev))
-		enable_irq_wake(irq);
-	...
-	if (device_may_wakeup(dev))
-		disable_irq_wake(irq);
-	...
-	device_init_wakeup(dev, false);
-	...
-
-We can replace it with just the following init and exit
-time code:
-
-	...
-	device_init_wakeup(dev, true);
-	dev_pm_set_wake_irq(dev, irq);
-	...
-	dev_pm_clear_wake_irq(dev);
-	device_init_wakeup(dev, false);
-	...
-
-And for hardware with dedicated wake-up interrupts:
-
-	...
-	device_init_wakeup(dev, true);
-	dev_pm_set_dedicated_wake_irq(dev, irq);
-	...
-	dev_pm_clear_wake_irq(dev);
-	device_init_wakeup(dev, false);
-	...
-
-Signed-off-by: Tony Lindgren <tony@atomide.com>
-
-diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
-index 1cb8544..f94a6cc 100644
---- a/drivers/base/power/Makefile
-+++ b/drivers/base/power/Makefile
-@@ -1,4 +1,4 @@
--obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o common.o qos.o runtime.o
-+obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o common.o qos.o runtime.o wakeirq.o
- obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o
- obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
- obj-$(CONFIG_PM_OPP)	+= opp.o
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 3d874ec..6f2515c 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -24,6 +24,7 @@
- #include <linux/pm.h>
- #include <linux/pm_runtime.h>
- #include <linux/pm-trace.h>
-+#include <linux/pm_wakeirq.h>
- #include <linux/interrupt.h>
- #include <linux/sched.h>
- #include <linux/async.h>
-@@ -587,6 +588,7 @@ void dpm_resume_noirq(pm_message_t state)
- 	async_synchronize_full();
- 	dpm_show_time(starttime, state, "noirq");
- 	resume_device_irqs();
-+	device_wakeup_disarm_wake_irqs();
- 	cpuidle_resume();
- 	trace_suspend_resume(TPS("dpm_resume_noirq"), state.event, false);
- }
-@@ -1104,6 +1106,7 @@ int dpm_suspend_noirq(pm_message_t state)
- 
- 	trace_suspend_resume(TPS("dpm_suspend_noirq"), state.event, true);
- 	cpuidle_pause();
-+	device_wakeup_arm_wake_irqs();
- 	suspend_device_irqs();
- 	mutex_lock(&dpm_list_mtx);
- 	pm_transition = state;
-diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-index b6b8a27..f1a5d95 100644
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -20,6 +20,46 @@ static inline void pm_runtime_early_init(struct device *dev)
- extern void pm_runtime_init(struct device *dev);
- extern void pm_runtime_remove(struct device *dev);
- 
-+struct wake_irq {
-+	struct device *dev;
-+	int irq;
-+	bool dedicated_irq:1;
-+};
-+
-+extern void dev_pm_arm_wake_irq(struct wake_irq *wirq);
-+extern void dev_pm_disarm_wake_irq(struct wake_irq *wirq);
-+
-+#ifdef CONFIG_PM_SLEEP
-+
-+extern int device_wakeup_attach_irq(struct device *dev,
-+				    struct wake_irq *wakeirq);
-+extern void device_wakeup_detach_irq(struct device *dev);
-+extern void device_wakeup_arm_wake_irqs(void);
-+extern void device_wakeup_disarm_wake_irqs(void);
-+
-+#else
-+
-+static inline int
-+device_wakeup_attach_irq(struct device *dev,
-+			 struct wake_irq *wakeirq)
-+{
-+	return 0;
-+}
-+
-+static inline void device_wakeup_detach_irq(struct device *dev)
-+{
-+}
-+
-+static inline void device_wakeup_arm_wake_irqs(void)
-+{
-+}
-+
-+static inline void device_wakeup_disarm_wake_irqs(void)
-+{
-+}
-+
-+#endif /* CONFIG_PM_SLEEP */
-+
- /*
-  * sysfs.c
-  */
-@@ -52,6 +92,14 @@ static inline void wakeup_sysfs_remove(struct device *dev) {}
- static inline int pm_qos_sysfs_add(struct device *dev) { return 0; }
- static inline void pm_qos_sysfs_remove(struct device *dev) {}
- 
-+static inline void dev_pm_arm_wake_irq(struct wake_irq *wirq)
-+{
-+}
-+
-+static inline void dev_pm_disarm_wake_irq(struct wake_irq *wirq)
-+{
-+}
-+
- #endif
- 
- #ifdef CONFIG_PM_SLEEP
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 4ffe4a2..e1a10a0 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -10,6 +10,7 @@
- #include <linux/sched.h>
- #include <linux/export.h>
- #include <linux/pm_runtime.h>
-+#include <linux/pm_wakeirq.h>
- #include <trace/events/rpm.h>
- #include "power.h"
- 
-@@ -514,6 +515,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 
- 	callback = RPM_GET_CALLBACK(dev, runtime_suspend);
- 
-+	dev_pm_enable_wake_irq(dev);
- 	retval = rpm_callback(callback, dev);
- 	if (retval)
- 		goto fail;
-@@ -552,6 +554,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 	return retval;
- 
-  fail:
-+	dev_pm_disable_wake_irq(dev);
- 	__update_runtime_status(dev, RPM_ACTIVE);
- 	dev->power.deferred_resume = false;
- 	wake_up_all(&dev->power.wait_queue);
-@@ -734,10 +737,12 @@ static int rpm_resume(struct device *dev, int rpmflags)
- 
- 	callback = RPM_GET_CALLBACK(dev, runtime_resume);
- 
-+	dev_pm_disable_wake_irq(dev);
- 	retval = rpm_callback(callback, dev);
- 	if (retval) {
- 		__update_runtime_status(dev, RPM_SUSPENDED);
- 		pm_runtime_cancel_pending(dev);
-+		dev_pm_enable_wake_irq(dev);
- 	} else {
-  no_callback:
- 		__update_runtime_status(dev, RPM_ACTIVE);
-diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
-new file mode 100644
-index 0000000..7470004
---- /dev/null
-+++ b/drivers/base/power/wakeirq.c
-@@ -0,0 +1,273 @@
-+/*
-+ * wakeirq.c - Device wakeirq helper functions
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-+ * kind, whether express or implied; without even the implied warranty
-+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
-+#include <linux/slab.h>
-+#include <linux/pm_runtime.h>
-+#include <linux/pm_wakeirq.h>
-+
-+#include "power.h"
-+
-+/**
-+ * dev_pm_attach_wake_irq - Attach device interrupt as a wake IRQ
-+ * @dev: Device entry
-+ * @irq: Device wake-up capable interrupt
-+ * @wirq: Wake irq specific data
-+ *
-+ * Internal function to attach either a device IO interrupt or a
-+ * dedicated wake-up interrupt as a wake IRQ.
-+ */
-+static int dev_pm_attach_wake_irq(struct device *dev, int irq,
-+				  struct wake_irq *wirq)
-+{
-+	unsigned long flags;
-+	int err;
-+
-+	if (!dev || !wirq)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&dev->power.lock, flags);
-+	if (dev_WARN_ONCE(dev, dev->power.wakeirq,
-+			  "wake irq already initialized\n")) {
-+		spin_unlock_irqrestore(&dev->power.lock, flags);
-+		return -EEXIST;
-+	}
-+
-+	dev->power.wakeirq = wirq;
-+	spin_unlock_irqrestore(&dev->power.lock, flags);
-+
-+	err = device_wakeup_attach_irq(dev, wirq);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
-+/**
-+ * dev_pm_set_wake_irq - Attach device IO interrupt as wake IRQ
-+ * @dev: Device entry
-+ * @irq: Device IO interrupt
-+ *
-+ * Attach a device IO interrupt as a wake IRQ. The wake IRQ gets
-+ * automatically configured for wake-up from suspend  based
-+ * on the device specific sysfs wakeup entry. Typically called
-+ * during driver probe after calling device_init_wakeup().
-+ */
-+int dev_pm_set_wake_irq(struct device *dev, int irq)
-+{
-+	struct wake_irq *wirq;
-+	int err;
-+
-+	wirq = kzalloc(sizeof(*wirq), GFP_KERNEL);
-+	if (!wirq)
-+		return -ENOMEM;
-+
-+	wirq->dev = dev;
-+	wirq->irq = irq;
-+
-+	err = dev_pm_attach_wake_irq(dev, irq, wirq);
-+	if (err)
-+		kfree(wirq);
-+
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_set_wake_irq);
-+
-+/**
-+ * dev_pm_clear_wake_irq - Detach a device IO interrupt wake IRQ
-+ * @dev: Device entry
-+ *
-+ * Detach a device wake IRQ and free resources.
-+ *
-+ * Note that it's OK for drivers to call this without calling
-+ * dev_pm_set_wake_irq() as all the driver instances may not have
-+ * a wake IRQ configured. This avoid adding wake IRQ specific
-+ * checks into the drivers.
-+ */
-+void dev_pm_clear_wake_irq(struct device *dev)
-+{
-+	struct wake_irq *wirq = dev->power.wakeirq;
-+	unsigned long flags;
-+
-+	if (!wirq)
-+		return;
-+
-+	spin_lock_irqsave(&dev->power.lock, flags);
-+	dev->power.wakeirq = NULL;
-+	spin_unlock_irqrestore(&dev->power.lock, flags);
-+
-+	device_wakeup_detach_irq(dev);
-+	if (wirq->dedicated_irq)
-+		free_irq(wirq->irq, wirq);
-+	kfree(wirq);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_clear_wake_irq);
-+
-+/**
-+ * handle_threaded_wake_irq - Handler for dedicated wake-up interrupts
-+ * @irq: Device specific dedicated wake-up interrupt
-+ * @_wirq: Wake IRQ data
-+ *
-+ * Some devices have a separate wake-up interrupt in addition to the
-+ * device IO interrupt. The wake-up interrupt signals that a device
-+ * should be woken up from it's idle state. This handler uses device
-+ * specific pm_runtime functions to wake the device, and then it's
-+ * up to the device to do whatever it needs to. Note that as the
-+ * device may need to restore context and start up regulators, we
-+ * use a threaded IRQ.
-+ *
-+ * Also note that we are not resending the lost device interrupts.
-+ * We assume that the wake-up interrupt just needs to wake-up the
-+ * device, and then device's pm_runtime_resume() can deal with the
-+ * situation.
-+ */
-+static irqreturn_t handle_threaded_wake_irq(int irq, void *_wirq)
-+{
-+	struct wake_irq *wirq = _wirq;
-+	int res;
-+
-+	/* We don't want RPM_ASYNC or RPM_NOWAIT here */
-+	res = pm_runtime_resume(wirq->dev);
-+	if (res < 0)
-+		dev_warn(wirq->dev,
-+			 "wake IRQ with no resume: %i\n", res);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/**
-+ * dev_pm_set_dedicated_wake_irq - Request a dedicated wake-up interrupt
-+ * @dev: Device entry
-+ * @irq: Device wake-up interrupt
-+ *
-+ * Unless your hardware has separate wake-up interrupts in addition
-+ * to the device IO interrupts, you don't need this.
-+ *
-+ * Sets up a threaded interrupt handler for a device that has
-+ * a dedicated wake-up interrupt in addition to the device IO
-+ * interrupt.
-+ *
-+ * The interrupt starts disabled, and needs to be managed for
-+ * the device by the bus code or the device driver using
-+ * dev_pm_enable_wake_irq() and dev_pm_disable_wake_irq()
-+ * functions.
-+ */
-+int dev_pm_set_dedicated_wake_irq(struct device *dev, int irq)
-+{
-+	struct wake_irq *wirq;
-+	int err;
-+
-+	wirq = kzalloc(sizeof(*wirq), GFP_KERNEL);
-+	if (!wirq)
-+		return -ENOMEM;
-+
-+	wirq->dev = dev;
-+	wirq->irq = irq;
-+	wirq->dedicated_irq = true;
-+	irq_set_status_flags(irq, IRQ_NOAUTOEN);
-+
-+	/*
-+	 * Consumer device may need to power up and restore state
-+	 * so we use a threaded irq.
-+	 */
-+	err = request_threaded_irq(irq, NULL, handle_threaded_wake_irq,
-+				   IRQF_ONESHOT, dev_name(dev), wirq);
-+	if (err)
-+		goto err_free;
-+
-+	err = dev_pm_attach_wake_irq(dev, irq, wirq);
-+	if (err)
-+		goto err_free_irq;
-+
-+	return err;
-+
-+err_free_irq:
-+	free_irq(irq, wirq);
-+err_free:
-+	kfree(wirq);
-+
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_set_dedicated_wake_irq);
-+
-+/**
-+ * dev_pm_enable_wake_irq - Enable device wake-up interrupt
-+ * @dev: Device
-+ *
-+ * Called from the bus code or the device driver for
-+ * runtime_suspend() to enable the wake-up interrupt while
-+ * the device is running.
-+ *
-+ * Note that for runtime_suspend()) the wake-up interrupts
-+ * should be unconditionally enabled unlike for suspend()
-+ * that is conditional.
-+ */
-+void dev_pm_enable_wake_irq(struct device *dev)
-+{
-+	struct wake_irq *wirq = dev->power.wakeirq;
-+
-+	if (wirq && wirq->dedicated_irq)
-+		enable_irq(wirq->irq);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_enable_wake_irq);
-+
-+/**
-+ * dev_pm_disable_wake_irq - Disable device wake-up interrupt
-+ * @dev: Device
-+ *
-+ * Called from the bus code or the device driver for
-+ * runtime_resume() to disable the wake-up interrupt while
-+ * the device is running.
-+ */
-+void dev_pm_disable_wake_irq(struct device *dev)
-+{
-+	struct wake_irq *wirq = dev->power.wakeirq;
-+
-+	if (wirq && wirq->dedicated_irq)
-+		disable_irq_nosync(wirq->irq);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_disable_wake_irq);
-+
-+/**
-+ * dev_pm_arm_wake_irq - Arm device wake-up
-+ * @wirq: Device wake-up interrupt
-+ *
-+ * Sets up the wake-up event conditionally based on the
-+ * device_may_wake().
-+ */
-+void dev_pm_arm_wake_irq(struct wake_irq *wirq)
-+{
-+	if (!wirq)
-+		return;
-+
-+	if (device_may_wakeup(wirq->dev))
-+		enable_irq_wake(wirq->irq);
-+}
-+
-+/**
-+ * dev_pm_disarm_wake_irq - Disarm device wake-up
-+ * @wirq: Device wake-up interrupt
-+ *
-+ * Clears up the wake-up event conditionally based on the
-+ * device_may_wake().
-+ */
-+void dev_pm_disarm_wake_irq(struct wake_irq *wirq)
-+{
-+	if (!wirq)
-+		return;
-+
-+	if (device_may_wakeup(wirq->dev))
-+		disable_irq_wake(wirq->irq);
-+}
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 7726200..7332ebc 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -14,6 +14,7 @@
- #include <linux/suspend.h>
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
-+#include <linux/pm_wakeirq.h>
- #include <trace/events/power.h>
- 
- #include "power.h"
-@@ -239,6 +240,97 @@ int device_wakeup_enable(struct device *dev)
- EXPORT_SYMBOL_GPL(device_wakeup_enable);
- 
- /**
-+ * device_wakeup_attach_irq - Attach a wakeirq to a wakeup source
-+ * @dev: Device to handle
-+ * @wakeirq: Device specific wakeirq entry
-+ *
-+ * Attach a device wakeirq to the wakeup source so the device
-+ * wake IRQ can be configured automatically for suspend and
-+ * resume.
-+ */
-+int device_wakeup_attach_irq(struct device *dev,
-+			     struct wake_irq *wakeirq)
-+{
-+	struct wakeup_source *ws;
-+	int ret = 0;
-+
-+	spin_lock_irq(&dev->power.lock);
-+	ws = dev->power.wakeup;
-+	if (!ws) {
-+		dev_err(dev, "forgot to call call device_init_wakeup?\n");
-+		ret = -EINVAL;
-+		goto unlock;
-+	}
-+
-+	if (ws->wakeirq) {
-+		ret = -EEXIST;
-+		goto unlock;
-+	}
-+
-+	ws->wakeirq = wakeirq;
-+
-+unlock:
-+	spin_unlock_irq(&dev->power.lock);
-+
-+	return ret;
-+}
-+
-+/**
-+ * device_wakeup_detach_irq - Detach a wakeirq from a wakeup source
-+ * @dev: Device to handle
-+ *
-+ * Removes a device wakeirq from the wakeup source.
-+ */
-+void device_wakeup_detach_irq(struct device *dev)
-+{
-+	struct wakeup_source *ws;
-+
-+	spin_lock_irq(&dev->power.lock);
-+	ws = dev->power.wakeup;
-+	if (!ws)
-+		goto unlock;
-+
-+	ws->wakeirq = NULL;
-+
-+unlock:
-+	spin_unlock_irq(&dev->power.lock);
-+}
-+
-+/**
-+ * device_wakeup_arm_wake_irqs(void)
-+ *
-+ * Itereates over the list of device wakeirqs to arm them.
-+ */
-+void device_wakeup_arm_wake_irqs(void)
-+{
-+	struct wakeup_source *ws;
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-+		if (ws->wakeirq)
-+			dev_pm_arm_wake_irq(ws->wakeirq);
-+	}
-+	rcu_read_unlock();
-+}
-+
-+/**
-+ * device_wakeup_disarm_wake_irqs(void)
-+ *
-+ * Itereates over the list of device wakeirqs to disarm them.
-+ */
-+void device_wakeup_disarm_wake_irqs(void)
-+{
-+	struct wakeup_source *ws;
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-+		if (ws->wakeirq)
-+			dev_pm_disarm_wake_irq(ws->wakeirq);
-+	}
-+	rcu_read_unlock();
-+}
-+
-+/**
-  * device_wakeup_detach - Detach a device's wakeup source object from it.
-  * @dev: Device to detach the wakeup source object from.
-  *
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 2d29c64..1c4ed0c 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -529,6 +529,7 @@ enum rpm_request {
- };
- 
- struct wakeup_source;
-+struct wake_irq;
- struct pm_domain_data;
- 
- struct pm_subsys_data {
-@@ -568,6 +569,7 @@ struct dev_pm_info {
- 	unsigned long		timer_expires;
- 	struct work_struct	work;
- 	wait_queue_head_t	wait_queue;
-+	struct wake_irq		*wakeirq;
- 	atomic_t		usage_count;
- 	atomic_t		child_count;
- 	unsigned int		disable_depth:3;
-diff --git a/include/linux/pm_wakeirq.h b/include/linux/pm_wakeirq.h
-new file mode 100644
-index 0000000..4046fa1
---- /dev/null
-+++ b/include/linux/pm_wakeirq.h
-@@ -0,0 +1,52 @@
-+/*
-+ * pm_wakeirq.h - Device wakeirq helper functions
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-+ * kind, whether express or implied; without even the implied warranty
-+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#ifndef _LINUX_PM_WAKEIRQ_H
-+#define _LINUX_PM_WAKEIRQ_H
-+
-+#ifdef CONFIG_PM
-+
-+extern int dev_pm_set_wake_irq(struct device *dev, int irq);
-+extern int dev_pm_set_dedicated_wake_irq(struct device *dev,
-+					 int irq);
-+extern void dev_pm_clear_wake_irq(struct device *dev);
-+extern void dev_pm_enable_wake_irq(struct device *dev);
-+extern void dev_pm_disable_wake_irq(struct device *dev);
-+
-+#else	/* !CONFIG_PM */
-+
-+static inline int dev_pm_set_wake_irq(struct device *dev, int irq)
-+{
-+	return 0;
-+}
-+
-+static inline int dev_pm_set_dedicated__wake_irq(struct device *dev,
-+						 int irq)
-+{
-+	return 0;
-+}
-+
-+static inline void dev_pm_clear_wake_irq(struct device *dev)
-+{
-+}
-+
-+static inline void dev_pm_enable_wake_irq(struct device *dev)
-+{
-+}
-+
-+static inline void dev_pm_disable_wake_irq(struct device *dev)
-+{
-+}
-+
-+#endif	/* CONFIG_PM */
-+#endif	/* _LINUX_PM_WAKEIRQ_H */
-diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
-index a0f7080..a344793 100644
---- a/include/linux/pm_wakeup.h
-+++ b/include/linux/pm_wakeup.h
-@@ -28,9 +28,17 @@
- 
- #include <linux/types.h>
- 
-+struct wake_irq;
-+
- /**
-  * struct wakeup_source - Representation of wakeup sources
-  *
-+ * @name: Name of the wakeup source
-+ * @entry: Wakeup source list entry
-+ * @lock: Wakeup source lock
-+ * @wakeirq: Optional device specific wakeirq
-+ * @timer: Wakeup timer list
-+ * @timer_expires: Wakeup timer expiration
-  * @total_time: Total time this wakeup source has been active.
-  * @max_time: Maximum time this wakeup source has been continuously active.
-  * @last_time: Monotonic clock when the wakeup source's was touched last time.
-@@ -47,6 +55,7 @@ struct wakeup_source {
- 	const char 		*name;
- 	struct list_head	entry;
- 	spinlock_t		lock;
-+	struct wake_irq		*wakeirq;
- 	struct timer_list	timer;
- 	unsigned long		timer_expires;
- 	ktime_t total_time;
+-- 
+Alexandre Belloni, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
