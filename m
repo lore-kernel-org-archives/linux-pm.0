@@ -1,139 +1,299 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH v10 05/17] clk: tegra: Introduce ability for SoC-specific
- reset control callbacks
-Date: Tue, 19 May 2015 17:22:10 +0200
-Message-ID: <20150519152208.GB28161@ulmo.nvidia.com>
-References: <1431529131-16710-6-git-send-email-mikko.perttunen@kapsi.fi>
- <1432035567-19008-1-git-send-email-mikko.perttunen@kapsi.fi>
- <20150519145922.GA28018@ulmo>
- <555B517F.4080506@kapsi.fi>
+From: <Frank.Li-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Subject: [PATCH v2 2/7] rtc: arm: imx: snvs: change use syscon to access register
+Date: Wed, 20 May 2015 01:04:37 +0800
+Message-ID: <1432055082-28983-3-git-send-email-Frank.Li@freescale.com>
+References: <1432055082-28983-1-git-send-email-Frank.Li@freescale.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="KFztAG8eRSV9hGtP"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <555B517F.4080506@kapsi.fi>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Cc: swarren@wwwdotorg.org, gnurou@gmail.com, pdeschrijver@nvidia.com, mturquette@linaro.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, pwalmsley@nvidia.com, vinceh@nvidia.com, pgaikwad@nvidia.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, tuomas.tynkkynen@iki.fi
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1432055082-28983-1-git-send-email-Frank.Li-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: lznuaa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Frank Li <Frank.Li-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+From: Frank Li <Frank.Li-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
 
---KFztAG8eRSV9hGtP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+snvs included rtc, on/off key, power-off module
+change to syscon to access register
 
-On Tue, May 19, 2015 at 06:06:39PM +0300, Mikko Perttunen wrote:
-> On 05/19/2015 05:59 PM, Thierry Reding wrote:
-> >On Tue, May 19, 2015 at 02:39:27PM +0300, Mikko Perttunen wrote:
-> >>This patch allows SoC-specific CAR initialization routines to register
-> >>their own reset_assert and reset_deassert callbacks with the common Teg=
-ra
-> >>CAR code. If defined, the common code will call these callbacks when a
-> >>reset control with number >=3D num_periph_banks * 32 is attempted to be=
- asserted
-> >>or deasserted respectively. Numbers greater than or equal to num_periph=
-_banks * 32
-> >>are used to avoid clashes with low numbers that are automatically mappe=
-d to
-> >>standard CAR reset lines.
-> >>
-> >>Each SoC with these special resets should specify the defined reset con=
-trol
-> >>numbers in a device tree header file.
-> >
-> >This is looking pretty good, but I think we can simplify a wee bit
-> >more...
-> >
-> >>Signed-off-by: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-> >>Acked-by: Michael Turquette <mturquette@linaro.org>
-> >>---
-> >>  drivers/clk/tegra/clk.c | 39 +++++++++++++++++++++++++++++++--------
-> >>  drivers/clk/tegra/clk.h |  3 +++
-> >>  2 files changed, 34 insertions(+), 8 deletions(-)
-> >>
-> >>diff --git a/drivers/clk/tegra/clk.c b/drivers/clk/tegra/clk.c
-> >>index 41cd87c..c093ed9 100644
-> >>--- a/drivers/clk/tegra/clk.c
-> >>+++ b/drivers/clk/tegra/clk.c
-> >>@@ -49,7 +49,6 @@
-> >>  #define RST_DEVICES_L			0x004
-> >>  #define RST_DEVICES_H			0x008
-> >>  #define RST_DEVICES_U			0x00C
-> >>-#define RST_DFLL_DVCO			0x2F4
-> >>  #define RST_DEVICES_V			0x358
-> >>  #define RST_DEVICES_W			0x35C
-> >>  #define RST_DEVICES_X			0x28C
-> >>@@ -79,6 +78,11 @@ static struct clk **clks;
-> >>  static int clk_num;
-> >>  static struct clk_onecell_data clk_data;
-> >>
-> >>+/* Handlers for SoC-specific reset lines */
-> >>+static int (*special_reset_assert)(unsigned long);
-> >>+static int (*special_reset_deassert)(unsigned long);
-> >>+static int special_reset_num;
-> >
-> >I think we can get rid of this if we...
-> >
-> >>+
-> >>  static struct tegra_clk_periph_regs periph_regs[] =3D {
-> >>  	[0] =3D {
-> >>  		.enb_reg =3D CLK_OUT_ENB_L,
-> >>@@ -152,19 +156,29 @@ static int tegra_clk_rst_assert(struct reset_cont=
-roller_dev *rcdev,
-> >>  	 */
-> >>  	tegra_read_chipid();
-> >>
-> >>-	writel_relaxed(BIT(id % 32),
-> >>-			clk_base + periph_regs[id / 32].rst_set_reg);
-> >>+	if (id < periph_banks * 32) {
-> >>+		writel_relaxed(BIT(id % 32),
-> >>+			       clk_base + periph_regs[id / 32].rst_set_reg);
-> >>+		return 0;
-> >>+	} else if (id < periph_banks * 32 + special_reset_num) {
-> >>+		return special_reset_assert(id);
-> >>+	}
-> >
-> >... pass id - periph_banks * 32 into special_reset_assert(). Oh, but
-> >then...
->=20
-> The reason I don't subtract periph_banks * 32 is because this way the code
-> in the SoC-specific callback can just include the dt-bindings header and =
-use
-> the same defines used in the device tree.
+Signed-off-by: Frank Li <Frank.Li-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+---
+ drivers/rtc/rtc-snvs.c | 128 +++++++++++++++++++++----------------------------
+ 1 file changed, 54 insertions(+), 74 deletions(-)
 
-Indeed, you're right. Now if
+diff --git a/drivers/rtc/rtc-snvs.c b/drivers/rtc/rtc-snvs.c
+index 0479e80..6eaebf1 100644
+--- a/drivers/rtc/rtc-snvs.c
++++ b/drivers/rtc/rtc-snvs.c
+@@ -18,14 +18,15 @@
+ #include <linux/platform_device.h>
+ #include <linux/rtc.h>
+ #include <linux/clk.h>
++#include <linux/mfd/syscon.h>
++#include <linux/regmap.h>
+ 
+-/* These register offsets are relative to LP (Low Power) range */
+-#define SNVS_LPCR		0x04
+-#define SNVS_LPSR		0x18
+-#define SNVS_LPSRTCMR		0x1c
+-#define SNVS_LPSRTCLR		0x20
+-#define SNVS_LPTAR		0x24
+-#define SNVS_LPPGDR		0x30
++#define SNVS_LPCR		0x38
++#define SNVS_LPSR		0x4c
++#define SNVS_LPSRTCMR		0x50
++#define SNVS_LPSRTCLR		0x54
++#define SNVS_LPTAR		0x58
++#define SNVS_LPPGDR		0x64
+ 
+ #define SNVS_LPCR_SRTC_ENV	(1 << 0)
+ #define SNVS_LPCR_LPTA_EN	(1 << 1)
+@@ -37,31 +38,34 @@
+ 
+ struct snvs_rtc_data {
+ 	struct rtc_device *rtc;
+-	void __iomem *ioaddr;
++	struct regmap *snvs;
+ 	int irq;
+-	spinlock_t lock;
+ 	struct clk *clk;
+ };
+ 
+-static u32 rtc_read_lp_counter(void __iomem *ioaddr)
++static u32 rtc_read_lp_counter(struct regmap *snvs)
+ {
+ 	u64 read1, read2;
+-
++	u32 val;
+ 	do {
+-		read1 = readl(ioaddr + SNVS_LPSRTCMR);
++		regmap_read(snvs, SNVS_LPSRTCMR, &val);
++		read1 = val;
+ 		read1 <<= 32;
+-		read1 |= readl(ioaddr + SNVS_LPSRTCLR);
++		regmap_read(snvs, SNVS_LPSRTCLR, &val);
++		read1 |= val;
+ 
+-		read2 = readl(ioaddr + SNVS_LPSRTCMR);
++		regmap_read(snvs, SNVS_LPSRTCMR, &val);
++		read2 = val;
+ 		read2 <<= 32;
+-		read2 |= readl(ioaddr + SNVS_LPSRTCLR);
++		regmap_read(snvs, SNVS_LPSRTCLR, &val);
++		read2 |= val;
+ 	} while (read1 != read2);
+ 
+ 	/* Convert 47-bit counter to 32-bit raw second count */
+ 	return (u32) (read1 >> CNTR_TO_SECS_SH);
+ }
+ 
+-static void rtc_write_sync_lp(void __iomem *ioaddr)
++static void rtc_write_sync_lp(struct regmap *snvs)
+ {
+ 	u32 count1, count2, count3;
+ 	int i;
+@@ -69,15 +73,15 @@ static void rtc_write_sync_lp(void __iomem *ioaddr)
+ 	/* Wait for 3 CKIL cycles */
+ 	for (i = 0; i < 3; i++) {
+ 		do {
+-			count1 = readl(ioaddr + SNVS_LPSRTCLR);
+-			count2 = readl(ioaddr + SNVS_LPSRTCLR);
++			regmap_read(snvs, SNVS_LPSRTCLR, &count1);
++			regmap_read(snvs, SNVS_LPSRTCLR, &count2);
+ 		} while (count1 != count2);
+ 
+ 		/* Now wait until counter value changes */
+ 		do {
+ 			do {
+-				count2 = readl(ioaddr + SNVS_LPSRTCLR);
+-				count3 = readl(ioaddr + SNVS_LPSRTCLR);
++				regmap_read(snvs, SNVS_LPSRTCLR, &count2);
++				regmap_read(snvs, SNVS_LPSRTCLR, &count3);
+ 			} while (count2 != count3);
+ 		} while (count3 == count1);
+ 	}
+@@ -85,23 +89,14 @@ static void rtc_write_sync_lp(void __iomem *ioaddr)
+ 
+ static int snvs_rtc_enable(struct snvs_rtc_data *data, bool enable)
+ {
+-	unsigned long flags;
+ 	int timeout = 1000;
+ 	u32 lpcr;
+ 
+-	spin_lock_irqsave(&data->lock, flags);
+-
+-	lpcr = readl(data->ioaddr + SNVS_LPCR);
+-	if (enable)
+-		lpcr |= SNVS_LPCR_SRTC_ENV;
+-	else
+-		lpcr &= ~SNVS_LPCR_SRTC_ENV;
+-	writel(lpcr, data->ioaddr + SNVS_LPCR);
+-
+-	spin_unlock_irqrestore(&data->lock, flags);
++	regmap_update_bits(data->snvs, SNVS_LPCR, SNVS_LPCR_SRTC_ENV,
++			   enable ? SNVS_LPCR_SRTC_ENV : 0);
+ 
+ 	while (--timeout) {
+-		lpcr = readl(data->ioaddr + SNVS_LPCR);
++		regmap_read(data->snvs, SNVS_LPCR, &lpcr);
+ 
+ 		if (enable) {
+ 			if (lpcr & SNVS_LPCR_SRTC_ENV)
+@@ -121,7 +116,7 @@ static int snvs_rtc_enable(struct snvs_rtc_data *data, bool enable)
+ static int snvs_rtc_read_time(struct device *dev, struct rtc_time *tm)
+ {
+ 	struct snvs_rtc_data *data = dev_get_drvdata(dev);
+-	unsigned long time = rtc_read_lp_counter(data->ioaddr);
++	unsigned long time = rtc_read_lp_counter(data->snvs);
+ 
+ 	rtc_time_to_tm(time, tm);
+ 
+@@ -139,8 +134,8 @@ static int snvs_rtc_set_time(struct device *dev, struct rtc_time *tm)
+ 	snvs_rtc_enable(data, false);
+ 
+ 	/* Write 32-bit time to 47-bit timer, leaving 15 LSBs blank */
+-	writel(time << CNTR_TO_SECS_SH, data->ioaddr + SNVS_LPSRTCLR);
+-	writel(time >> (32 - CNTR_TO_SECS_SH), data->ioaddr + SNVS_LPSRTCMR);
++	regmap_write(data->snvs, SNVS_LPSRTCLR, time << CNTR_TO_SECS_SH);
++	regmap_write(data->snvs, SNVS_LPSRTCMR, time >> (32 - CNTR_TO_SECS_SH));
+ 
+ 	/* Enable RTC again */
+ 	snvs_rtc_enable(data, true);
+@@ -153,10 +148,10 @@ static int snvs_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
+ 	struct snvs_rtc_data *data = dev_get_drvdata(dev);
+ 	u32 lptar, lpsr;
+ 
+-	lptar = readl(data->ioaddr + SNVS_LPTAR);
++	regmap_read(data->snvs, SNVS_LPTAR, &lptar);
+ 	rtc_time_to_tm(lptar, &alrm->time);
+ 
+-	lpsr = readl(data->ioaddr + SNVS_LPSR);
++	regmap_read(data->snvs, SNVS_LPSR, &lpsr);
+ 	alrm->pending = (lpsr & SNVS_LPSR_LPTA) ? 1 : 0;
+ 
+ 	return 0;
+@@ -165,21 +160,11 @@ static int snvs_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alrm)
+ static int snvs_rtc_alarm_irq_enable(struct device *dev, unsigned int enable)
+ {
+ 	struct snvs_rtc_data *data = dev_get_drvdata(dev);
+-	u32 lpcr;
+-	unsigned long flags;
+ 
+-	spin_lock_irqsave(&data->lock, flags);
++	regmap_update_bits(data->snvs, SNVS_LPCR, (SNVS_LPCR_LPTA_EN | SNVS_LPCR_LPWUI_EN),
++			   enable ? (SNVS_LPCR_LPTA_EN | SNVS_LPCR_LPWUI_EN) : 0);
+ 
+-	lpcr = readl(data->ioaddr + SNVS_LPCR);
+-	if (enable)
+-		lpcr |= (SNVS_LPCR_LPTA_EN | SNVS_LPCR_LPWUI_EN);
+-	else
+-		lpcr &= ~(SNVS_LPCR_LPTA_EN | SNVS_LPCR_LPWUI_EN);
+-	writel(lpcr, data->ioaddr + SNVS_LPCR);
+-
+-	spin_unlock_irqrestore(&data->lock, flags);
+-
+-	rtc_write_sync_lp(data->ioaddr);
++	rtc_write_sync_lp(data->snvs);
+ 
+ 	return 0;
+ }
+@@ -189,24 +174,14 @@ static int snvs_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *alrm)
+ 	struct snvs_rtc_data *data = dev_get_drvdata(dev);
+ 	struct rtc_time *alrm_tm = &alrm->time;
+ 	unsigned long time;
+-	unsigned long flags;
+-	u32 lpcr;
+ 
+ 	rtc_tm_to_time(alrm_tm, &time);
+ 
+-	spin_lock_irqsave(&data->lock, flags);
+-
+-	/* Have to clear LPTA_EN before programming new alarm time in LPTAR */
+-	lpcr = readl(data->ioaddr + SNVS_LPCR);
+-	lpcr &= ~SNVS_LPCR_LPTA_EN;
+-	writel(lpcr, data->ioaddr + SNVS_LPCR);
+-
+-	spin_unlock_irqrestore(&data->lock, flags);
+-
+-	writel(time, data->ioaddr + SNVS_LPTAR);
++	regmap_update_bits(data->snvs, SNVS_LPCR, SNVS_LPCR_LPTA_EN, 0);
++	regmap_write(data->snvs, SNVS_LPTAR, time);
+ 
+ 	/* Clear alarm interrupt status bit */
+-	writel(SNVS_LPSR_LPTA, data->ioaddr + SNVS_LPSR);
++	regmap_write(data->snvs, SNVS_LPSR, SNVS_LPSR_LPTA);
+ 
+ 	return snvs_rtc_alarm_irq_enable(dev, alrm->enabled);
+ }
+@@ -226,7 +201,7 @@ static irqreturn_t snvs_rtc_irq_handler(int irq, void *dev_id)
+ 	u32 lpsr;
+ 	u32 events = 0;
+ 
+-	lpsr = readl(data->ioaddr + SNVS_LPSR);
++	regmap_read(data->snvs, SNVS_LPSR, &lpsr);
+ 
+ 	if (lpsr & SNVS_LPSR_LPTA) {
+ 		events |= (RTC_AF | RTC_IRQF);
+@@ -238,7 +213,7 @@ static irqreturn_t snvs_rtc_irq_handler(int irq, void *dev_id)
+ 	}
+ 
+ 	/* clear interrupt status */
+-	writel(lpsr, data->ioaddr + SNVS_LPSR);
++	regmap_write(data->snvs, SNVS_LPSR, lpsr);
+ 
+ 	return events ? IRQ_HANDLED : IRQ_NONE;
+ }
+@@ -246,17 +221,24 @@ static irqreturn_t snvs_rtc_irq_handler(int irq, void *dev_id)
+ static int snvs_rtc_probe(struct platform_device *pdev)
+ {
+ 	struct snvs_rtc_data *data;
+-	struct resource *res;
+ 	int ret;
++	struct device_node *snvs_np;
+ 
+ 	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
+ 	if (!data)
+ 		return -ENOMEM;
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	data->ioaddr = devm_ioremap_resource(&pdev->dev, res);
+-	if (IS_ERR(data->ioaddr))
+-		return PTR_ERR(data->ioaddr);
++	snvs_np = of_get_parent(pdev->dev.of_node);
++	if (!snvs_np)
++		return -ENODEV;
++
++	data->snvs = syscon_node_to_regmap(snvs_np);
++	of_node_put(snvs_np);
++
++	if (!data->snvs) {
++		pr_err("Can't snvs syscon\n");
++		return -ENODEV;
++	}
+ 
+ 	data->irq = platform_get_irq(pdev, 0);
+ 	if (data->irq < 0)
+@@ -276,13 +258,11 @@ static int snvs_rtc_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, data);
+ 
+-	spin_lock_init(&data->lock);
+-
+ 	/* Initialize glitch detect */
+-	writel(SNVS_LPPGDR_INIT, data->ioaddr + SNVS_LPPGDR);
++	regmap_write(data->snvs, SNVS_LPPGDR, SNVS_LPPGDR_INIT);
+ 
+ 	/* Clear interrupt status */
+-	writel(0xffffffff, data->ioaddr + SNVS_LPSR);
++	regmap_write(data->snvs, SNVS_LPSR, 0xffffffff);
+ 
+ 	/* Enable RTC */
+ 	snvs_rtc_enable(data, true);
+-- 
+1.9.1
 
-	static int special_reset_num;
-
-could be turned into
-
-	static unsigned int num_special_reset;
-
-I'd be happy to take this into the Tegra clock tree.
-
-Thierry
-
---KFztAG8eRSV9hGtP
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJVW1UgAAoJEN0jrNd/PrOhRiYQAJ5U7P2LdmXYDWf5bklITLT5
-B1UuYQo4UUljiagLsRZ0asTEdd2QpIL29MT8RdxmHXSLiE6tiC4q8b+fJvjOfGMt
-2fLbDXVfeHIoTa9Wyq2YOcmqn68qd8Ox7LKMOIshkXPI4VGURFEY9o44hpGPACuV
-lU+MX+GcxQabec7DtcD4rRf1jjW8cMRqHidFesT/wRLn5JnXUBUD1nuZSV1Xrd3m
-EEaNRYdsB+EQ6K+tNoCDEOQ8zw6QjuOBTPquFg355qwg7ejkZaUao26rI11wH+C1
-8XkZnM9Hyc44omM+978tv+PPEY6PRE3AIR7n1Nz9xaMmY1i7/2BXRdzWQnOkWh+J
-T4c4FxlmkQjhXnhZxhcPwm7YUnL0nRECICvJ0dfplbh/KQjMyjPJaDhBi3bUgkWu
-jE0yenjvJ0D8bt5fvMq/ilwZApA4KT7woC2ISm54A5nKkLdOSgW2Sq0fN+n1R41U
-v0UV7BObvG+k0gTZv+JZBH+cIGJH6J31V0tGln7QYBH8yh3fAUH4ZziLcXyV6038
-Rd/MCTWyz1emD8xPJiGGPyTTMv69jEuPGKL/MtdR0kTML6+w+Fp3RYC6MdmjtxoP
-3R3cm+zkFD3UDW2t5YUPLBxyVKNp4oqoJ4Z+4Ox0TLnArwNi5DLRIUWrZV0ctT+S
-ABKYPYQN3v++1DM7j3ql
-=NA7o
------END PGP SIGNATURE-----
-
---KFztAG8eRSV9hGtP--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
