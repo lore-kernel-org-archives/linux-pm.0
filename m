@@ -1,44 +1,37 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] powercap / RAPL: Support Knights Landing
-Date: Wed, 20 May 2015 01:31:54 +0200
-Message-ID: <4265007.tICN7CeGKt@vostro.rjw.lan>
-References: <1432075069-18196-1-git-send-email-dasaratharaman.chandramouli@intel.com>
+Subject: Re: [PATCH v3 1/2] PM / sleep: Add power.direct_complete_default flag
+Date: Wed, 20 May 2015 01:38:35 +0200
+Message-ID: <4578201.PxaKqbF0aJ@vostro.rjw.lan>
+References: <1432044679-10256-1-git-send-email-tomeu.vizoso@collabora.com> <1432044679-10256-2-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1432075069-18196-1-git-send-email-dasaratharaman.chandramouli@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>, Jacob Pan Jun <jacob.jun.pan@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nikhil Rao <nikhil.rao@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:49208 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752144AbbESXNP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 19:13:15 -0400
+In-Reply-To: <1432044679-10256-2-git-send-email-tomeu.vizoso@collabora.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-pm@vger.kernel.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Tuesday, May 19, 2015 03:37:49 PM Dasaratharaman Chandramouli wrote:
-> This patch enables intel_rapl driver to run on the
-> next-generation Intel(R) Xeon Phi Microarchitecture
-> code named "Knights Landing"
+On Tuesday, May 19, 2015 04:11:15 PM Tomeu Vizoso wrote:
+> Introduce a new per-device flag power.direct_complete_default that will
+> instruct the PM core to let that device remain in runtime suspend when
+> the system goes into a sleep power state, without it having to implement
+> the prepare() callback.
 > 
-> Signed-off-by: Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>
+> This is useful because otherwise it would be needed to get dozens of
+> drivers to implement the prepare() callback even if they don't have a
+> 1-to-1 relationship with a piece of HW.
+> 
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 
-Jacob?
+The code changes look good, but please change the doc/changelog as
+already suggested by Ulf.
 
-> ---
->  drivers/powercap/intel_rapl.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-> index fd24323..5796332 100644
-> --- a/drivers/powercap/intel_rapl.c
-> +++ b/drivers/powercap/intel_rapl.c
-> @@ -1069,6 +1069,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
->  	RAPL_CPU(0x4A, rapl_defaults_atom),/* Tangier */
->  	RAPL_CPU(0x56, rapl_defaults_core),/* Future Xeon */
->  	RAPL_CPU(0x5A, rapl_defaults_atom),/* Annidale */
-> +	RAPL_CPU(0x57, rapl_defaults_hsw_server),/* Knights Landing */
->  	{}
->  };
->  MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
-> 
 
 -- 
 I speak only for myself.
