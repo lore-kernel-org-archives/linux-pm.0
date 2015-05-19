@@ -1,41 +1,78 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
-Date: Wed, 20 May 2015 01:39:25 +0200
-Message-ID: <26522847.rzj8GpQKux@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1505191345480.1453-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH v4 1/3] PM / Hibernate: prepare for SANITIZE_FREED_PAGES
+Date: Wed, 20 May 2015 01:46:05 +0200
+Message-ID: <1526358.9aMpXL2Hv2@vostro.rjw.lan>
+References: <1431613188-4511-1-git-send-email-anisse@astier.eu> <7216052.tCNGRiLFYJ@vostro.rjw.lan> <CALUN=qLrXryb-aZTjXqoUhzjz68fvOae1bDxitYcJ3jBn_1EDg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56435 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:41616 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751714AbbESXOF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 19:14:05 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1505191345480.1453-100000@iolanthe.rowland.org>
+	with SMTP id S1751378AbbESXUp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 19:20:45 -0400
+In-Reply-To: <CALUN=qLrXryb-aZTjXqoUhzjz68fvOae1bDxitYcJ3jBn_1EDg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-kernel@vger.kernel.org
+To: Anisse Astier <anisse@astier.eu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tuesday, May 19, 2015 01:49:15 PM Alan Stern wrote:
-> On Tue, 19 May 2015, Tomeu Vizoso wrote:
+On Monday, May 18, 2015 12:23:00 PM Anisse Astier wrote:
+> Hi Rafael,
 > 
-> > This function makes less cumbersome to enable runtime PM in a device and
-> > its descendants.
-> > 
-> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> Thanks for taking the time to review this.
 > 
-> I don't see the point of this.  In the scenario you have in mind, are
-> the device and all its descendants registered by the same
-> subsystem/driver?  If they are, can't the subsystem/driver code enable
-> runtime PM for each of them when they are registered, by adding a
-> single call in the right spot?
+> On Sat, May 16, 2015 at 2:28 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Thursday, May 14, 2015 04:19:46 PM Anisse Astier wrote:
+> >> SANITIZE_FREED_PAGES feature relies on having all pages going through
+> >> the free_pages_prepare path in order to be cleared before being used. In
+> >> the hibernate use case, free pages will automagically appear in the
+> >> system without being cleared, left there by the loading kernel.
+> >>
+> >> This patch will make sure free pages are cleared on resume; when we'll
+> >> enable SANITIZE_FREED_PAGES. We free the pages just after resume because
+> >> we can't do it later: going through any device resume code might
+> >> allocate some memory and invalidate the free pages bitmap.
+> >>
+> >> Signed-off-by: Anisse Astier <anisse@astier.eu>
+> >> ---
+> >>  kernel/power/hibernate.c |  4 +++-
+> >>  kernel/power/power.h     |  2 ++
+> >>  kernel/power/snapshot.c  | 22 ++++++++++++++++++++++
+> >>  3 files changed, 27 insertions(+), 1 deletion(-)
+> >>
+> >> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> >> index 2329daa..0a73126 100644
+> >> --- a/kernel/power/hibernate.c
+> >> +++ b/kernel/power/hibernate.c
+> >> @@ -305,9 +305,11 @@ static int create_image(int platform_mode)
+> >>                       error);
+> >>       /* Restore control flow magically appears here */
+> >>       restore_processor_state();
+> >> -     if (!in_suspend)
+> >> +     if (!in_suspend) {
+> >>               events_check_enabled = false;
+> >>
+> >> +             clear_free_pages();
+> >
+> > Again, why don't you do that at the swsusp_free() time?
 > 
-> If they don't all belong to the same subsystem/driver, who is going to 
-> call your pm_runtime_enable_recursive routine?  No single caller will 
-> have the right to enable runtime PM for all these devices.
+> Because it's too late, the kernel has already been through device
+> resume code, and the free pages bitmap isn't valid anymore; device
+> resume code might allocate memory, and we'd be clearing those pages as
+> well.
 
-Agreed.
+Are we both talking about the same thing?
+
+swsusp_free() is *the* function that, well, frees all the pages allocated
+by the hibernate core, so how isn't the free pages bitmap valid when it is
+called?
+
+Why don't you add the clearing in there, right at the spot when the pages
+are actually freed?
+
+Moreover, why is the resume code path the only one where freed pages need to
+be sanitized? 
 
 
 -- 
