@@ -1,84 +1,45 @@
-From: Mel Gorman <mgorman@suse.de>
-Subject: Re: [PATCH v4 0/3] Sanitizing freed pages
-Date: Tue, 19 May 2015 13:46:44 +0100
-Message-ID: <20150519124644.GD2462@suse.de>
-References: <1431613188-4511-1-git-send-email-anisse@astier.eu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+From: Laurentiu Palcu <laurentiu.palcu@intel.com>
+Subject: [PATCH v2 0/2] Add support for BQ25890 charger chip
+Date: Tue, 19 May 2015 16:24:38 +0300
+Message-ID: <1432041880-7373-1-git-send-email-laurentiu.palcu@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:36034 "EHLO mx2.suse.de"
+Received: from mga14.intel.com ([192.55.52.115]:48042 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755292AbbESMqt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 19 May 2015 08:46:49 -0400
-Content-Disposition: inline
-In-Reply-To: <1431613188-4511-1-git-send-email-anisse@astier.eu>
+	id S1751257AbbESNYx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 19 May 2015 09:24:53 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Anisse Astier <anisse@astier.eu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: Laurentiu Palcu <laurentiu.palcu@intel.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu, May 14, 2015 at 04:19:45PM +0200, Anisse Astier wrote:
-> Hi,
-> 
-> I'm trying revive an old debate here[1], though with a simpler approach than
-> was previously tried. This patch series implements a new option to sanitize
-> freed pages, a (very) small subset of what is done in PaX/grsecurity[3],
-> inspired by a previous submission [4].
-> 
-> There are a few different uses that this can cover:
->  - some cases of use-after-free could be detected (crashes), although this not
->    as efficient as KAsan/kmemcheck
+Changes since v1:
+ * add comment in DT bindings regarding default driver behavior when
+   "ti,thermal-regulation-threshold" property is missing;
+ * addressed all Krzysztof's comments, including addition of a reset
+   check counter. Better to be safe than sorry :)
 
-They're not detected, they're hidden. I'm currently seeing problems with
-a glibc update in userspace where applications are crashing because glibc
-returns buffers with uninitialised data that would previously have been
-zero. In every case so far, they were application bugs that need fixing.
-Having the kernel crash due to uninitialised memory use is bad but hiding
-it is not better.
+Hi,
 
->  - it can help with long-term memory consumption in an environment with
->    multiple VMs and Kernel Same-page Merging on the host. [2]
+This series adds support for BQ25890 USB charger chip. Information about
+the chip can be found here:
 
-This is not quantified but a better way of dealing with that problem would
-be for a guest to signal to the host when a page is really free. I vaguely
-recall that s390 has some hinting of this nature. While I accept there
-may be some benefits in some cases, I think it's a weak justification for
-always zeroing pages on free.
+http://www.ti.com/product/bq25890
 
->  - finally, it can reduce infoleaks, although this is hard to measure.
-> 
+Thanks,
+laurentiu
 
-It obscures them.
+Laurentiu Palcu (2):
+  Documentation: devicetree: Add TI BQ25890 bindings
+  power_supply: Add support for TI BQ25890 charger chip
 
-That is leaving aside the fact that this has to be enabled at kconfig time
-which is unlikely to happen on a distribution config. Not many workloads
-depend on the freed path as such but streaming readers are one once the
-files are larger than memory.
-
-> The approach is voluntarily kept as simple as possible. A single configuration
-> option, no command line option, no sysctl nob. It can of course be changed,
-> although I'd be wary of runtime-configuration options that could be used for
-> races.
-> 
-> I haven't been able to measure a meaningful performance difference when
-> compiling a (in-cache) kernel; I'd be interested to see what difference it
-> makes with your particular workload/hardware (I suspect mine is CPU-bound on
-> this small laptop).
-> 
-
-What did you use to determine this and did you check if it was hitting
-the free paths heavily while it's running? It can be very easy to hide
-the cost of something like this if all the frees happen at exit.
-
-Overall, I'm not a big fan of this series. I think it would have made more
-sense to use non-temporal cleaning on pages if they are freed by kswapd or
-on a non-critical path like exit and then track if the page was already
-freed during allocation. Then add a runtime sysctl to make that strict
-and force all zeroing on all frees.
-
-As it is, I think it'll have very few users because of the need to
-enable it at kernel build time and then incur an unavoidable penalty.
+ .../devicetree/bindings/power/bq25890.txt          |  46 +
+ drivers/power/Kconfig                              |   7 +
+ drivers/power/Makefile                             |   1 +
+ drivers/power/bq25890_charger.c                    | 999 +++++++++++++++++++++
+ 4 files changed, 1053 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/bq25890.txt
+ create mode 100644 drivers/power/bq25890_charger.c
 
 -- 
-Mel Gorman
-SUSE Labs
+1.9.1
+
