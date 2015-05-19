@@ -1,39 +1,39 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH 2/2] power_supply: charger-manager: Add parent for power supply
-Date: Tue, 19 May 2015 16:16:30 +0900
-Message-ID: <1432019790-5664-3-git-send-email-k.kozlowski@samsung.com>
-References: <1432019790-5664-1-git-send-email-k.kozlowski@samsung.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: suspend regression in 4.1-rc1
+Date: Tue, 19 May 2015 09:39:58 +0200
+Message-ID: <20150519073958.GD19282@twins.programming.kicks-ass.net>
+References: <20150517185041.GA5897@dhcp22.suse.cz>
+ <CA+55aFy2wWy-k0O-Sb2vUCLiLjeKMu7r95bf294qP5UqQHuxfw@mail.gmail.com>
+ <20150518073046.GO17717@twins.programming.kicks-ass.net>
+ <20150518090336.GA6393@dhcp22.suse.cz>
+ <20150518093150.GC21418@twins.programming.kicks-ass.net>
+ <CA+55aFzx2j-yZH0CgMGJ_uw0KbdqaUanEJPKwdm-yXYaFLhRXw@mail.gmail.com>
+ <20150519071259.GA6847@dhcp22.suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1432019790-5664-1-git-send-email-k.kozlowski@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <20150519071259.GA6847@dhcp22.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+To: Michal Hocko <mhocko@suse.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Stephane Eranian <eranian@google.com>, Ulrich Obergfell <uobergfe@redhat.com>, Don Zickus <dzickus@redhat.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The 'parent' argument passed to power_supply_register() is now used to
-postpone callbacks to the driver until the driver's probe end.
+On Tue, May 19, 2015 at 09:12:59AM +0200, Michal Hocko wrote:
+> On Mon 18-05-15 10:10:50, Linus Torvalds wrote:
+> > On Mon, May 18, 2015 at 2:31 AM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > > Subject: watchdog: Fix merge 'conflict'
+> > >
+> > > Two watchdog changes that came through different trees had a non
+> > > conflicting conflict, that is, one changed the semantics of a variable
+> > > but no actual code conflict happened. So the merge appeared fine, but
+> > > the resulting code did not behave as expected.
+> > 
+> > Ok, I see that people are still discussing this, but I'll apply it
+> > as-is since I want to get rc4 out the door, and I guess people can
+> > tweak this if there's anything else we want to do longer-term.
+> 
+> The final patch from Peter has a typo. Without the following the system
+> deadlocks obviously:
 
-Pass current device from charger-manager to utilize that. This will move
-created power supply from virtual to platform devices.
-
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
----
- drivers/power/charger-manager.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
-index 0aed13f90891..1c202ccbd2a6 100644
---- a/drivers/power/charger-manager.c
-+++ b/drivers/power/charger-manager.c
-@@ -1768,7 +1768,8 @@ static int charger_manager_probe(struct platform_device *pdev)
- 
- 	INIT_DELAYED_WORK(&cm->fullbatt_vchk_work, fullbatt_vchk);
- 
--	cm->charger_psy = power_supply_register(NULL, &cm->charger_psy_desc,
-+	cm->charger_psy = power_supply_register(&pdev->dev,
-+						&cm->charger_psy_desc,
- 						&psy_cfg);
- 	if (IS_ERR(cm->charger_psy)) {
- 		dev_err(&pdev->dev, "Cannot register charger-manager with name \"%s\"\n",
--- 
-1.9.1
+Duh, sorry about that. :/
