@@ -1,52 +1,204 @@
-From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH v4 0/3] Sanitizing freed pages
-Date: Tue, 19 May 2015 14:35:40 +0100
-Message-ID: <20150519143540.70410b94@lxorguk.ukuu.org.uk>
-References: <1431613188-4511-1-git-send-email-anisse@astier.eu>
-	<20150519124644.GD2462@suse.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/5] PM / Wakeirq: Add automated device wake IRQ handling
+Date: Tue, 19 May 2015 16:04:43 +0200
+Message-ID: <3554198.gIGuGWK14O@vostro.rjw.lan>
+References: <1431560196-5722-1-git-send-email-tony@atomide.com> <20150518220459.GJ10274@atomide.com> <20150518234400.GN10274@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20150519124644.GD2462@suse.de>
-Sender: owner-linux-mm@kvack.org
-To: Mel Gorman <mgorman@suse.de>
-Cc: Anisse Astier <anisse@astier.eu>, Andrew Morton <akpm@linux-foundation.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:59527 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751928AbbESNjZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 09:39:25 -0400
+In-Reply-To: <20150518234400.GN10274@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Felipe Balbi <balbi@ti.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org
 
-> may be some benefits in some cases, I think it's a weak justification for
-> always zeroing pages on free.
+On Monday, May 18, 2015 04:44:01 PM Tony Lindgren wrote:
+> * Tony Lindgren <tony@atomide.com> [150518 15:06]:
+> > +/**
+> > + * dev_pm_set_wake_irq - Attach device IO interrupt as wake IRQ
+> > + * @dev: Device entry
+> > + * @irq: Device IO interrupt
+> > + *
+> > + * Attach a device IO interrupt as a wake IRQ. The wake IRQ gets
+> > + * automatically configured for wake-up from suspend  based
+> > +void dev_pm_clear_wake_irq(struct device *dev)
+> > +{
+> > +	struct wake_irq *wirq = dev->power.wakeirq;
+> > +	unsigned long flags;
+> > +
+> > +	if (!wirq)
+> > +		return;
+> > +
+> > +	device_wakeup_detach_irq(dev);
+> > +
+> > +	spin_lock_irqsave(&dev->power.lock, flags);
+> > +	if (wirq->manage_irq) {
+> > +		free_irq(wirq->irq, wirq);
+> > +		wirq->manage_irq = false;
+> > +	}
+> > +	dev->power.wakeirq = NULL;
+> > +	spin_unlock_irqrestore(&dev->power.lock, flags);
+> > +
+> > +	wirq->irq = -EINVAL;
+> > +	kfree(wirq);
+> > +}
+> 
+> I just noticed most of the dev_pm_clear_wake_irq is no longer needed.
+> We're now freeing it anyways. so it can be just:
+> 
+> void dev_pm_clear_wake_irq(struct device *dev)
+> {
+> 	struct wake_irq *wirq = dev->power.wakeirq;
+> 	unsigned long flags;
+> 
+> 	if (!wirq)
+> 		return;
+> 
+> 	spin_lock_irqsave(&dev->power.lock, flags);
+> 	dev->power.wakeirq = NULL;
+> 	spin_unlock_irqrestore(&dev->power.lock, flags);
+> 
+> 	device_wakeup_detach_irq(dev);
+> 	if (wirq->manage_irq)
+> 		free_irq(wirq->irq, wirq);
+> 	kfree(wirq);
+> }
+> 
+> 
+> Regards,
+> 
+> Tony
+> 
+> 8< ---------------------
+> From: Tony Lindgren <tony@atomide.com>
+> Date: Mon, 18 May 2015 15:40:29 -0700
+> Subject: [PATCH] PM / Wakeirq: Add automated device wake IRQ handling
+> 
+> Turns out we can automate the handling for the device_may_wakeup()
+> quite a bit by using the kernel wakeup source list.
+> 
+> And as some hardware has separate dedicated wake-up interrupt
+> in addition to the IO interrupt, we can automate the handling by
+> adding a generic threaded interrupt handler that just calls the
+> device PM runtime to wake up the device.
+> 
+> This allows dropping code from device drivers as we currently
+> are doing it in multiple ways, and often wrong.
+> 
+> For most drivers, we should be able to drop the following
+> boilerplate code from runtime_suspend and runtime_resume
+> functions:
+> 
+> 	...
+> 	device_init_wakeup(dev, true);
+> 	...
+> 	if (device_may_wakeup(dev)
+> 		enable_irq_wake(irq);
+> 	...
+> 	if (device_may_wakeup(dev)
+> 		enable_irq_wake(irq);
 
-There are much better reasons for zero on free, including the improved
-latency when pages are faulted in. For virtualisation there are two
-interfaces that would probably make more sense
+Closing parens are missin in the above two if () statements.
 
-1.	'This page is of no further interest, you may fault it back in
-as random data'
+Also, should the second one be disable_irq_wake(irq)?
 
-2.	'This page is discardable, if I touch it *and* you have
-discarded it then please serve me an exception, if you've not discarded
-it them give it me back"
+> 	...
+> 	device_init_wakeup(dev, false);
+> 	...
+> 
+> We can replace it with just the following init and exit
+> time code:
+> 
+> 	...
+> 	device_init_wakeup(dev, true);
+> 	dev_pm_set_wake_irq(dev, irq);
+> 	...
+> 	dev_pm_clear_wake_irq(dev);
+> 	device_init_wakeup(dev, false);
+> 	...
+> 
+> And for hardware with dedicated wake-up interrupts:
+> 
+> 	...
+> 	device_init_wakeup(dev, true);
+> 	dev_pm_set_dedicated_wake_irq(dev, irq);
+> 	...
+> 	dev_pm_clear_wake_irq(dev);
+> 	device_init_wakeup(dev, false);
+> 	...
+> 
+> For now, let's only enable it for select PM_WAKEIRQ.
 
-If I remember my 390 bits the S/390 goes further including the ability to
-say "if I think this page is in memory but in fact the hypervisor is
-going to page it off disc then throw me an exception so I can do clever
-things with the delay time"
+Why?  What would be wrong with doing that unconditionally?
 
-> >  - finally, it can reduce infoleaks, although this is hard to measure.
-> > 
-> It obscures them.
 
-Actually not. If you are doing debug work you zero on free and check for
-mysterious non zeroing before reusing the page. Without that its a win in
-the sense it wipes material (but crypto does that anyway), but it
-replaces that with the risk of a zeroed page being scibbled upon by the
-kernel and leaking kernel scribbles into allocated user pages.
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
 
-Alan
+Looks good overall, a couple of nits below.
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+[cut]
+
+> +/**
+> + * handle_threaded_wake_irq - Handler for dedicated wake-up interrupts
+> + * @irq: Device dedicated wake-up interrupt
+> + * @_wirq: Wake IRQ data
+> + *
+> + * Some devices have a separate wake-up interrupt in addition to the
+> + * device IO interrupt. The wake-up interrupts signal that the device
+> + * should be woken up from a idle state. This handler uses device
+> + * specific pm_runtime functions to wake the device and then it's
+> + * up to the device to do whatever it needs to. Note as the device
+> + * may need to restore context and start up regulators, we use a
+> + * threaded IRQ.
+> + *
+> + * Also note that we are not resending the lost device interrupts.
+> + * We assume that the wake-up interrupt just needs to wake-up the
+> + * device, and the device pm_runtime_resume() can deal with the
+> + * situation.
+> + */
+> +static irqreturn_t handle_threaded_wake_irq(int irq, void *_wirq)
+> +{
+> +	struct wake_irq *wirq = _wirq;
+> +
+> +	/* We don't want RPM_ASYNC or RPM_NOWAIT here */
+> +	return pm_runtime_resume(wirq->dev) ? IRQ_NONE : IRQ_HANDLED;
+
+There are various reasons why pm_runtime_resume() may return error codes and
+some of them don't mean that the interrupt was not legitimate.
+
+Moreover, it returns 1 if the device is already active, in which case the above
+check won't do any good to us.
+
+Why not to return IRQ_HANDLED unconditionally from here?
+
+
+[cut]
+
+> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+> index 7e01f78..d3735bd 100644
+> --- a/kernel/power/Kconfig
+> +++ b/kernel/power/Kconfig
+> @@ -267,6 +267,10 @@ config PM_CLK
+>  	def_bool y
+>  	depends on PM && HAVE_CLK
+>  
+> +config PM_WAKEIRQ
+> +	bool
+> +	depends on PM_SLEEP
+> +
+
+If you really really want this (I'm still not sure why exactly, though), it
+should depend on PM_SLEEP || PM_RUNTIME, because the latter uses it too.
+
+>  config PM_GENERIC_DOMAINS
+>  	bool
+>  	depends on PM
+
+Thanks,
+Rafael
+
