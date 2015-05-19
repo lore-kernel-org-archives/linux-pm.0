@@ -1,38 +1,68 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 1/2] power: reset: gpio-poweroff: let devm_gpiod_get set
- direction of gpio
-Date: Tue, 19 May 2015 15:48:08 +0200
-Message-ID: <CACRpkdZCUdTM0FskjvPy-1-AF-BxHh6ks1WU-g_LemrXGYgt6A@mail.gmail.com>
-References: <1431981907-32578-1-git-send-email-u.kleine-koenig@pengutronix.de>
+From: Mel Gorman <mgorman@suse.de>
+Subject: Re: [PATCH v4 0/3] Sanitizing freed pages
+Date: Tue, 19 May 2015 14:56:04 +0100
+Message-ID: <20150519135604.GE2462@suse.de>
+References: <1431613188-4511-1-git-send-email-anisse@astier.eu>
+ <20150519124644.GD2462@suse.de>
+ <20150519143540.70410b94@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f42.google.com ([209.85.218.42]:35375 "EHLO
-	mail-oi0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755450AbbESNsJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 09:48:09 -0400
-Received: by oign205 with SMTP id n205so11116723oig.2
-        for <linux-pm@vger.kernel.org>; Tue, 19 May 2015 06:48:08 -0700 (PDT)
-In-Reply-To: <1431981907-32578-1-git-send-email-u.kleine-koenig@pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-15
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150519143540.70410b94@lxorguk.ukuu.org.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Cc: Anisse Astier <anisse@astier.eu>, Andrew Morton <akpm@linux-foundation.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, PaX Team <pageexec@freemail.hu>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Sascha Hauer <kernel@pengutronix.de>, Alexandre Courbot <acourbot@nvidia.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Mon, May 18, 2015 at 10:45 PM, Uwe Kleine-K=C3=B6nig
-<u.kleine-koenig@pengutronix.de> wrote:
+On Tue, May 19, 2015 at 02:35:40PM +0100, One Thousand Gnomes wrote:
+> > may be some benefits in some cases, I think it's a weak justification for
+> > always zeroing pages on free.
+> 
+> There are much better reasons for zero on free, including the improved
+> latency when pages are faulted in.
 
-> Since 39b2bbe3d715 (gpio: add flags argument to gpiod_get*() function=
-s)
-> which appeared in v3.17-rc1, the gpiod_get* functions take an additio=
-nal
-> parameter that allows to specify direction and initial value for outp=
-ut.
->
-> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+Not necessarily. Not all pages are currently zero'd on allocation so we're
+trading sometimes zeroing a page at with always zeroing a page on freee. It
+might look good on a benchmark that measures the fault cost and not the
+free but it's not a universal win.
 
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> For virtualisation there are two
+> interfaces that would probably make more sense
+> 
+> 1.	'This page is of no further interest, you may fault it back in
+> as random data'
+> 
+> 2.	'This page is discardable, if I touch it *and* you have
+> discarded it then please serve me an exception, if you've not discarded
+> it them give it me back"
+> 
+> If I remember my 390 bits the S/390 goes further including the ability to
+> say "if I think this page is in memory but in fact the hypervisor is
+> going to page it off disc then throw me an exception so I can do clever
+> things with the delay time"
+> 
 
-Yours,
-Linus Walleij
+I think it's also used to grant another VM the page while it's not in
+use. Overall though, there are better ideas for shrinking VM memory usage
+than zeroing everything and depending on KSM to detect it.
+
+> > >  - finally, it can reduce infoleaks, although this is hard to measure.
+> > > 
+> > It obscures them.
+> 
+> Actually not. If you are doing debug work you zero on free and check for
+> mysterious non zeroing before reusing the page. Without that its a win in
+> the sense it wipes material (but crypto does that anyway), but it
+> replaces that with the risk of a zeroed page being scibbled upon by the
+> kernel and leaking kernel scribbles into allocated user pages.
+> 
+
+Ok, I see now that we just crash differently. Previously the zero
+on allocation would prevent a leak. With this applied the __GFP_ZERO is
+ignored and so different classes of bugs can be detected. Not necessarily
+better but I accept my point was wrong.
+
+-- 
+Mel Gorman
+SUSE Labs
