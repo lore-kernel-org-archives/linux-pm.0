@@ -1,36 +1,41 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 1/2] PM / sleep: Add power.direct_complete_default flag
-Date: Wed, 20 May 2015 01:38:35 +0200
-Message-ID: <4578201.PxaKqbF0aJ@vostro.rjw.lan>
-References: <1432044679-10256-1-git-send-email-tomeu.vizoso@collabora.com> <1432044679-10256-2-git-send-email-tomeu.vizoso@collabora.com>
+Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
+Date: Wed, 20 May 2015 01:39:25 +0200
+Message-ID: <26522847.rzj8GpQKux@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1505191345480.1453-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:49208 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:56435 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752144AbbESXNP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 19:13:15 -0400
-In-Reply-To: <1432044679-10256-2-git-send-email-tomeu.vizoso@collabora.com>
+	with SMTP id S1751714AbbESXOF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 19:14:05 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1505191345480.1453-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-pm@vger.kernel.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-kernel@vger.kernel.org
 
-On Tuesday, May 19, 2015 04:11:15 PM Tomeu Vizoso wrote:
-> Introduce a new per-device flag power.direct_complete_default that will
-> instruct the PM core to let that device remain in runtime suspend when
-> the system goes into a sleep power state, without it having to implement
-> the prepare() callback.
+On Tuesday, May 19, 2015 01:49:15 PM Alan Stern wrote:
+> On Tue, 19 May 2015, Tomeu Vizoso wrote:
 > 
-> This is useful because otherwise it would be needed to get dozens of
-> drivers to implement the prepare() callback even if they don't have a
-> 1-to-1 relationship with a piece of HW.
+> > This function makes less cumbersome to enable runtime PM in a device and
+> > its descendants.
+> > 
+> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 > 
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> I don't see the point of this.  In the scenario you have in mind, are
+> the device and all its descendants registered by the same
+> subsystem/driver?  If they are, can't the subsystem/driver code enable
+> runtime PM for each of them when they are registered, by adding a
+> single call in the right spot?
+> 
+> If they don't all belong to the same subsystem/driver, who is going to 
+> call your pm_runtime_enable_recursive routine?  No single caller will 
+> have the right to enable runtime PM for all these devices.
 
-The code changes look good, but please change the doc/changelog as
-already suggested by Ulf.
+Agreed.
 
 
 -- 
