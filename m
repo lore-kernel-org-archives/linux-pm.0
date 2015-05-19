@@ -1,127 +1,62 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 1/2] PM / sleep: Add power.direct_complete_default flag
-Date: Tue, 19 May 2015 22:47:14 +0200
-Message-ID: <CAPDyKFo-B_fopkCGAKweeEyR_tyMTxi0sNqRd_hz0EYiYsp5qg@mail.gmail.com>
-References: <1432044679-10256-1-git-send-email-tomeu.vizoso@collabora.com>
-	<1432044679-10256-2-git-send-email-tomeu.vizoso@collabora.com>
+From: "PaX Team" <pageexec@freemail.hu>
+Subject: Re: [PATCH v4 0/3] Sanitizing freed pages
+Date: Tue, 19 May 2015 22:59:16 +0200
+Message-ID: <555BA424.2410.2365DFC8@pageexec.freemail.hu>
+References: <1431613188-4511-1-git-send-email-anisse@astier.eu>, <20150519124644.GD2462@suse.de>
+Reply-To: pageexec@freemail.hu
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f180.google.com ([209.85.220.180]:36449 "EHLO
-	mail-qk0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbbESUrP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 16:47:15 -0400
-Received: by qkgw4 with SMTP id w4so18687594qkg.3
-        for <linux-pm@vger.kernel.org>; Tue, 19 May 2015 13:47:14 -0700 (PDT)
-In-Reply-To: <1432044679-10256-2-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Return-path: <owner-linux-mm@kvack.org>
+In-reply-to: <20150519124644.GD2462@suse.de>
+Content-description: Mail message body
+Sender: owner-linux-mm@kvack.org
+To: Anisse Astier <anisse@astier.eu>, Mel Gorman <mgorman@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 19 May 2015 at 16:11, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
->
-> Introduce a new per-device flag power.direct_complete_default that will
-> instruct the PM core to let that device remain in runtime suspend when
-> the system goes into a sleep power state, without it having to implement
-> the prepare() callback.
+On 19 May 2015 at 13:46, Mel Gorman wrote:
 
-The above wording make it sounds like the normal behavior is that the
-PM core will runtime resume the device during the system PM suspend
-phase. That's not the case.
+> On Thu, May 14, 2015 at 04:19:45PM +0200, Anisse Astier wrote:
+> > Hi,
+> > 
+> > I'm trying revive an old debate here[1], though with a simpler approach than
+> > was previously tried. This patch series implements a new option to sanitize
+> > freed pages, a (very) small subset of what is done in PaX/grsecurity[3],
+> > inspired by a previous submission [4].
+> > 
+> > There are a few different uses that this can cover:
+> >  - some cases of use-after-free could be detected (crashes), although this not
+> >    as efficient as KAsan/kmemcheck
+> 
+> They're not detected, they're hidden.
 
-As I understand it for the mentioned cases above, it will skip
-invoking the system PM callbacks, if the device is already runtime
-suspended.
+this is a qualitative argument that cuts both ways. namely, you could say
+that uninitialized memory does *not* trigger any bad behaviour exactly
+because the previous content acts as valid data (say, a valid pointer)
+whereas a null dereference would pretty much always crash (both in userland
+and the kernel). not to mention that a kernel null deref is no longer an
+exploitable bug in many/most situations which can't be said of arbitrary
+uninitialized (read: potentially attacker controlled) values.
 
->
->
-> This is useful because otherwise it would be needed to get dozens of
-> drivers to implement the prepare() callback even if they don't have a
-> 1-to-1 relationship with a piece of HW.
->
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
->
-> ---
->
-> v3:     * Have the flag be a more direct substitute for prepare() as
-> suggested by Rafael
->         * Inherit this flag from the parent device
->
-> v2:     * Fix wording as suggested by Kevin Hilman
-> ---
->  Documentation/power/runtime_pm.txt | 8 +++++++-
->  drivers/base/power/main.c          | 5 +++++
->  include/linux/pm.h                 | 1 +
->  3 files changed, 13 insertions(+), 1 deletion(-)
->
-> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-> index e76dc0a..caf7b53 100644
-> --- a/Documentation/power/runtime_pm.txt
-> +++ b/Documentation/power/runtime_pm.txt
-> @@ -228,6 +228,12 @@ defined in include/linux/pm.h:
->    unsigned int ignore_children;
->      - if set, the value of child_count is ignored (but still updated)
->
-> +  bool direct_complete_default;
-> +    - if set, the device will be left runtime-suspended when the system
-> +      transitions to a sleep state, unless there's a .prepare() callback that
-> +      returns a non-positive value. This flag is inherited from the parent
-> +      device when a device is added to the PM core's list of active devices.
+that said, i always considered this aspect of page sanitization as a
+(potentially useful) side effect, not the design goal.
 
-Similar comment as to the change log.
+> >  - finally, it can reduce infoleaks, although this is hard to measure.
+> > 
+> 
+> It obscures them.
 
-> +
->    unsigned int disable_depth;
->      - used for disabling the helper functions (they work normally if this is
->        equal to zero); the initial value of it is 1 (i.e. runtime PM is
-> @@ -669,7 +675,7 @@ system suspend and resume callbacks for all of those devices, except for the
->  complete callback, which is then entirely responsible for handling the device
->  as appropriate.  This only applies to system suspend transitions that are not
->  related to hibernation (see Documentation/power/devices.txt for more
-> -information).
-> +information).  See also power.direct_complete_default.
->
->  The PM core does its best to reduce the probability of race conditions between
->  the runtime PM and system suspend/resume (and hibernation) callbacks by carrying
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 3d874ec..175ddec 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -128,6 +128,9 @@ void device_pm_add(struct device *dev)
->         if (dev->parent && dev->parent->power.is_prepared)
->                 dev_warn(dev, "parent %s should not be sleeping\n",
->                         dev_name(dev->parent));
-> +       if (dev->parent)
-> +               dev->power.direct_complete_default =
-> +                       dev->parent->power.direct_complete_default;
->         list_add_tail(&dev->power.entry, &dpm_list);
->         mutex_unlock(&dpm_list_mtx);
->  }
-> @@ -1589,6 +1592,8 @@ static int device_prepare(struct device *dev, pm_message_t state)
->                 trace_device_pm_callback_start(dev, info, state.event);
->                 ret = callback(dev);
->                 trace_device_pm_callback_end(dev, ret);
-> +       } else if (dev->power.direct_complete_default) {
-> +               ret = 1;
->         }
->
->         device_unlock(dev);
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 4890743..fcb3451 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -565,6 +565,7 @@ struct dev_pm_info {
->         bool                    ignore_children:1;
->         bool                    early_init:1;   /* Owned by the PM core */
->         bool                    direct_complete:1;      /* Owned by the PM core */
-> +       bool                    direct_complete_default:1;      /* Ditto */
->         spinlock_t              lock;
->  #ifdef CONFIG_PM_SLEEP
->         struct list_head        entry;
-> --
+i don't understand, what is being obscured exactly? maybe the term 'infoleaks'
+is ambiguous, in case of page sanitization it refers to the reduction of data
+lifetime (mostly userland anonymous memory, as per the original design). if
+you were thinking of kernel->userland kind of leaks then i'd say that page
+sanitization has little effect there because all the bugs i can think of were
+not leaking from freed memory (where sanitization would have prevented the
+leak).
 
-Besides the above minor things, this looks good to me.
-
-Kind regards
-Uffe
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
