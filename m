@@ -1,8 +1,8 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [RFC/RFT v2 1/2] power_supply: Fix NULL pointer dereference during
- bq27x00_battery probe
-Date: Tue, 19 May 2015 16:13:01 +0900
-Message-ID: <1432019582-27612-2-git-send-email-k.kozlowski@samsung.com>
+Subject: [RFC/RFT v2 2/2] power_supply: Fix possible NULL pointer dereference
+ on early uevent
+Date: Tue, 19 May 2015 16:13:02 +0900
+Message-ID: <1432019582-27612-3-git-send-email-k.kozlowski@samsung.com>
 References: <1432019582-27612-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1432019582-27612-1-git-send-email-k.kozlowski@samsung.com>
@@ -11,73 +11,176 @@ To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmai
 Cc: "H. Nikolaus Schaller" <hns@goldelico.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Power supply is often registered during probe of a driver. The
-power_supply_register() returns pointer to newly allocated structure as
-return value. However before returning the power_supply_register()
-calls back the get_property() method provided by the driver through
-uevent.
+Don't call the power_supply_changed() from power_supply_register() when
+parent is still probing because it may lead to accessing parent too
+early.
 
-In that time the driver probe is still in progress and driver did not
-assigned pointer to power supply to its local variables. This leads to
-NULL pointer dereference from get_property() function.
+In bq27x00_battery this caused NULL pointer exception because uevent of
+power_supply_changed called back the the get_property() method provided
+by the driver. The get_property() method accessed pointer which should
+be returned by power_supply_register().
+
 Starting from bq27x00_battery_probe():
   di->bat = power_supply_register()
-    device_add()
+    power_supply_changed()
       kobject_uevent()
         power_supply_uevent()
           power_supply_show_property()
             power_supply_get_property()
               bq27x00_battery_get_property()
-                dereference of (di->bat) which is NULL here
+                dereference of di->bat which is NULL here
 
-The first uevent of power supply (the one coming from device creation)
-should not call back to the driver. To prevent that from happening,
-increment the atomic use counter at the end of power_supply_register().
-This means that power_supply_get_property() will return -ENODEV.
+The dereference of di->bat (value returned by power_supply_register())
+is the currently visible problem. However calling back the methods
+provided by driver before ending the probe may lead to accessing other
+driver-related data which is not yet initialized.
 
-IMPORTANT:
-The patch has impact on this first uevent sent from power supply because
-it will not contain properties from power supply.
-
-The uevent with properties will be sent later after indicating that
-power supply has changed. This also has a race now, but will be fixed in
-other patches.
+The call to power_supply_changed() is postponed till probing ends -
+mutex of parent device is released.
 
 Reported-by: H. Nikolaus Schaller <hns@goldelico.com>
 Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
 ---
- drivers/power/power_supply_core.c | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ drivers/power/power_supply_core.c | 50 +++++++++++++++++++++++++++++++++++----
+ include/linux/power_supply.h      |  1 +
+ 2 files changed, 46 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-index 2ed4a4a6b3c5..15da277e0e8d 100644
+index 15da277e0e8d..4bc0c7f459a5 100644
 --- a/drivers/power/power_supply_core.c
 +++ b/drivers/power/power_supply_core.c
-@@ -659,7 +659,6 @@ __power_supply_register(struct device *parent,
- 	dev->release = power_supply_dev_release;
- 	dev_set_drvdata(dev, psy);
- 	psy->desc = desc;
--	atomic_inc(&psy->use_cnt);
- 	if (cfg) {
- 		psy->drv_data = cfg->drv_data;
- 		psy->of_node = cfg->of_node;
-@@ -700,6 +699,16 @@ __power_supply_register(struct device *parent,
- 	if (rc)
- 		goto create_triggers_failed;
+@@ -30,6 +30,8 @@ EXPORT_SYMBOL_GPL(power_supply_notifier);
  
-+	/*
-+	 * Update use_cnt after any uevents (most notably from device_add()).
-+	 * We are here still during driver's probe but
-+	 * the power_supply_uevent() calls back driver's get_property
-+	 * method so:
-+	 * 1. Driver did not assigned the returned struct power_supply,
-+	 * 2. Driver could not finish initialization (anything in its probe
-+	 *    after calling power_supply_register()).
-+	 */
-+	atomic_inc(&psy->use_cnt);
- 	power_supply_changed(psy);
+ static struct device_type power_supply_dev_type;
+ 
++#define POWER_SUPPLY_DEFERRED_REGISTER_TIME	msecs_to_jiffies(10)
++
+ static bool __power_supply_is_supplied_by(struct power_supply *supplier,
+ 					 struct power_supply *supply)
+ {
+@@ -121,6 +123,30 @@ void power_supply_changed(struct power_supply *psy)
+ }
+ EXPORT_SYMBOL_GPL(power_supply_changed);
+ 
++/*
++ * Notify that power supply was registered after parent finished the probing.
++ *
++ * Often power supply is registered from driver's probe function. However
++ * calling power_supply_changed() directly from power_supply_register()
++ * would lead to execution of get_property() function provided by the driver
++ * too early - before the probe ends.
++ *
++ * Avoid that by waiting on parent's mutex.
++ */
++static void power_supply_deferred_register_work(struct work_struct *work)
++{
++	struct power_supply *psy = container_of(work, struct power_supply,
++						deferred_register_work.work);
++
++	if (psy->dev.parent)
++		mutex_lock(&psy->dev.parent->mutex);
++
++	power_supply_changed(psy);
++
++	if (psy->dev.parent)
++		mutex_unlock(&psy->dev.parent->mutex);
++}
++
+ #ifdef CONFIG_OF
+ #include <linux/of.h>
+ 
+@@ -645,6 +671,10 @@ __power_supply_register(struct device *parent,
+ 	struct power_supply *psy;
+ 	int rc;
+ 
++	if (!parent)
++		pr_warn("%s: Expected proper parent device for '%s'\n",
++			__func__, desc->name);
++
+ 	psy = kzalloc(sizeof(*psy), GFP_KERNEL);
+ 	if (!psy)
+ 		return ERR_PTR(-ENOMEM);
+@@ -671,6 +701,8 @@ __power_supply_register(struct device *parent,
+ 		goto dev_set_name_failed;
+ 
+ 	INIT_WORK(&psy->changed_work, power_supply_changed_work);
++	INIT_DELAYED_WORK(&psy->deferred_register_work,
++			  power_supply_deferred_register_work);
+ 
+ 	rc = power_supply_check_supplies(psy);
+ 	if (rc) {
+@@ -709,7 +741,10 @@ __power_supply_register(struct device *parent,
+ 	 *    after calling power_supply_register()).
+ 	 */
+ 	atomic_inc(&psy->use_cnt);
+-	power_supply_changed(psy);
++
++	queue_delayed_work(system_power_efficient_wq,
++			   &psy->deferred_register_work,
++			   POWER_SUPPLY_DEFERRED_REGISTER_TIME);
  
  	return psy;
+ 
+@@ -729,7 +764,8 @@ dev_set_name_failed:
+ 
+ /**
+  * power_supply_register() - Register new power supply
+- * @parent:	Device to be a parent of power supply's device
++ * @parent:	Device to be a parent of power supply's device, usually
++ *		the device which probe function calls this
+  * @desc:	Description of power supply, must be valid through whole
+  *		lifetime of this power supply
+  * @cfg:	Run-time specific configuration accessed during registering,
+@@ -750,7 +786,8 @@ EXPORT_SYMBOL_GPL(power_supply_register);
+ 
+ /**
+  * power_supply_register() - Register new non-waking-source power supply
+- * @parent:	Device to be a parent of power supply's device
++ * @parent:	Device to be a parent of power supply's device, usually
++ *		the device which probe function calls this
+  * @desc:	Description of power supply, must be valid through whole
+  *		lifetime of this power supply
+  * @cfg:	Run-time specific configuration accessed during registering,
+@@ -779,7 +816,8 @@ static void devm_power_supply_release(struct device *dev, void *res)
+ 
+ /**
+  * power_supply_register() - Register managed power supply
+- * @parent:	Device to be a parent of power supply's device
++ * @parent:	Device to be a parent of power supply's device, usually
++ *		the device which probe function calls this
+  * @desc:	Description of power supply, must be valid through whole
+  *		lifetime of this power supply
+  * @cfg:	Run-time specific configuration accessed during registering,
+@@ -814,7 +852,8 @@ EXPORT_SYMBOL_GPL(devm_power_supply_register);
+ 
+ /**
+  * power_supply_register() - Register managed non-waking-source power supply
+- * @parent:	Device to be a parent of power supply's device
++ * @parent:	Device to be a parent of power supply's device, usually
++ *		the device which probe function calls this
+  * @desc:	Description of power supply, must be valid through whole
+  *		lifetime of this power supply
+  * @cfg:	Run-time specific configuration accessed during registering,
+@@ -858,6 +897,7 @@ void power_supply_unregister(struct power_supply *psy)
+ {
+ 	WARN_ON(atomic_dec_return(&psy->use_cnt));
+ 	cancel_work_sync(&psy->changed_work);
++	cancel_delayed_work_sync(&psy->deferred_register_work);
+ 	sysfs_remove_link(&psy->dev.kobj, "powers");
+ 	power_supply_remove_triggers(psy);
+ 	psy_unregister_cooler(psy);
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 75a1dd8dc56e..a80f1fd01ddb 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -237,6 +237,7 @@ struct power_supply {
+ 	/* private */
+ 	struct device dev;
+ 	struct work_struct changed_work;
++	struct delayed_work deferred_register_work;
+ 	spinlock_t changed_lock;
+ 	bool changed;
+ 	atomic_t use_cnt;
 -- 
 1.9.1
