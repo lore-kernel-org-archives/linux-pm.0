@@ -1,75 +1,68 @@
-From: <Frank.Li@freescale.com>
-Subject: [PATCH v2 0/7] Change snvs rtc and poweroff to use syscon add pwrkey
- driver
-Date: Wed, 20 May 2015 01:04:35 +0800
-Message-ID: <1432055082-28983-1-git-send-email-Frank.Li@freescale.com>
+From: Michal Hocko <mhocko@suse.cz>
+Subject: Re: suspend regression in 4.1-rc1
+Date: Tue, 19 May 2015 19:20:21 +0200
+Message-ID: <20150519172020.GA28241@dhcp22.suse.cz>
+References: <20150517185041.GA5897@dhcp22.suse.cz>
+ <CA+55aFy2wWy-k0O-Sb2vUCLiLjeKMu7r95bf294qP5UqQHuxfw@mail.gmail.com>
+ <20150518073046.GO17717@twins.programming.kicks-ass.net>
+ <20150518090336.GA6393@dhcp22.suse.cz>
+ <20150518093150.GC21418@twins.programming.kicks-ass.net>
+ <309071648.615900.1431946606778.JavaMail.zimbra@redhat.com>
+ <20150518142607.GL184517@redhat.com>
+ <20150518144136.GB5726@dhcp22.suse.cz>
+ <20150518154531.GQ184517@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: lznuaa@gmail.com, shawn.guo@linaro.org, dmitry.torokhov@gmail.com, robh+dt@kernel.org, a.zummo@towertech.it, p.zabel@pengutronix.de, alexandre.belloni@free-electrons.com
-Cc: devicetree@vger.kernel.org, Frank Li <Frank.Li@freescale.com>, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150518154531.GQ184517@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Don Zickus <dzickus@redhat.com>
+Cc: Ulrich Obergfell <uobergfe@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Linus Torvalds <torvalds@linux-foundation.org>, Stephane Eranian <eranian@google.com>, Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Frank Li <Frank.Li@freescale.com>
+On Mon 18-05-15 11:45:31, Don Zickus wrote:
+> On Mon, May 18, 2015 at 04:41:37PM +0200, Michal Hocko wrote:
+> > On Mon 18-05-15 10:26:07, Don Zickus wrote:
+> > > On Mon, May 18, 2015 at 06:56:46AM -0400, Ulrich Obergfell wrote:
+> > > > 
+> > > > > There further appears to be a distinct lack of serialization between
+> > > > > setting and using watchdog_enabled, so perhaps we should wrap the
+> > > > > {en,dis}able_all() things in watchdog_proc_mutex.
+> > > > 
+> > > > As I understand it, the {en,dis}able_all() functions are only called early
+> > > > at kernel startup, so I do not see how they could be racing with watchdog
+> > > > code that is executed in the context of write() system calls to parameters
+> > > > in /proc/sys/kernel. Please see also my earlier reply to Michal for further
+> > > > details: http://marc.info/?l=linux-pm&m=143194387208250&w=2
+> > > > 
+> > > > Do we really need synchronization here?
+> > > 
+> > > As Peter said we have to focus on doing things correctly and not based on
+> > > what is currently.
+> > > 
+> > > During s2ram, I believe all the threads get parked and then unparked during
+> > > resume.  I am wondering if the race happens there, threads get unparked and
+> > > stomp on each other when watchdog_nmi_enable_all() is called.
+> > 
+> > Wouldn't that cause an issue during freezer mode of pm_test? I can see
+> > it much later in the processors mode.
+> 
+> I am not familiar with the freeze mode of pm_test. 
 
-Change from v1 to v2
- - Change simple-bus to simple-mfd
- - RTC remove lock.
- - RTC remove comments "These register offsets are relative to LP (Low Power) range"
- - power off, remove extra space
+AFAIU only suspend_prepare is called for this mode. This will trigger
+pm_notifier_call_chain(PM_SUSPEND_PREPARE) and suspend_freeze_processes
+which will freeze all the tasks (including kernel threads).
 
-SNVS is MPF module.
-include rtc, power off, ON/OFF power key
+The hang happened with processors mode which means that everything up to
+platform mode was OK. Which reduces the area to disable_nonboot_cpus.
 
-  arm: imx: power-off: change to syscon to access register
-  rtc: arm: imx: snvs: change use syscon to access register
-Above two patch change existed power-off and rtc use syscon
-
-  Document: dt: fsl: snvs: change support syscon
-  arm: dts: imx: update snvs to use syscon access register
-Update dt file and document
-
-  input: keyboard: imx: add snvs power key driver
-  document: devicetree: input: imx: i.mx snvs power device tree bindings
-  arm: dts: imx6sx: enable snvs power key
-Added on/off key driver
-
-Frank Li (6):
-  arm: imx: power-off: change to syscon to access register
-  rtc: arm: imx: snvs: change use syscon to access register
-  Document: dt: fsl: snvs: change support syscon
-  arm: dts: imx: update snvs to use syscon access register
-  document: devicetree: input: imx: i.mx snvs power device tree bindings
-  arm: dts: imx6sx: enable snvs power key
-
-Robin Gong (1):
-  input: keyboard: imx: add snvs power key driver
-
- .../devicetree/bindings/crypto/fsl-sec4.txt        |  93 +++++++--
- .../devicetree/bindings/input/snvs-pwrkey.txt      |   1 +
- .../bindings/power_supply/imx-snvs-poweroff.txt    |  24 +--
- arch/arm/boot/dts/imx6qdl.dtsi                     |  12 +-
- arch/arm/boot/dts/imx6sl.dtsi                      |  12 +-
- arch/arm/boot/dts/imx6sx.dtsi                      |  19 +-
- arch/arm/boot/dts/vfxxx.dtsi                       |   9 +-
- drivers/input/keyboard/Kconfig                     |  11 +
- drivers/input/keyboard/Makefile                    |   1 +
- drivers/input/keyboard/snvs_pwrkey.c               | 232 +++++++++++++++++++++
- drivers/power/reset/imx-snvs-poweroff.c            |  21 +-
- drivers/rtc/rtc-snvs.c                             | 128 +++++-------
- 12 files changed, 417 insertions(+), 146 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/input/snvs-pwrkey.txt
- create mode 100644 drivers/input/keyboard/snvs_pwrkey.c
+I have tried to put some printks around to see where things go wrong but
+then I found out that my netconsole doesn't dump them because the
+network cards are long suspended. no_console_suspend apparently doesn't
+affect netconsole and the laptop doesn't have regular serial console so
+I just gave up.
 
 -- 
-1.9.1
+Michal Hocko
+SUSE Labs
