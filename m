@@ -1,140 +1,152 @@
-From: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
-Subject: Re: [PATCH v10 05/17] clk: tegra: Introduce ability for SoC-specific
- reset control callbacks
-Date: Tue, 19 May 2015 14:46:32 +0300
-Message-ID: <555B2298.4050809@kapsi.fi>
-References: <1431529131-16710-6-git-send-email-mikko.perttunen@kapsi.fi> <1432035567-19008-1-git-send-email-mikko.perttunen@kapsi.fi>
+From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
+Subject: Re: [PATCH 11/15] thermal: thermal: Add support for hardware-tracked
+ trip points
+Date: Tue, 19 May 2015 15:43:59 +0300
+Message-ID: <555B300F.8030305@kapsi.fi>
+References: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de> <1431507163-19933-12-git-send-email-s.hauer@pengutronix.de> <5559ABAA.6040001@kapsi.fi> <20150518120944.GQ6325@pengutronix.de> <20150518184433.GS11598@ld-irv-0074> <555A39EA.1060608@kapsi.fi> <20150518202848.GT11598@ld-irv-0074>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1432035567-19008-1-git-send-email-mikko.perttunen-/1wQRMveznE@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
-Cc: mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, pwalmsley-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tuomas.tynkkynen-X3B1VOXEql0@public.gmane.org
+Content-Type: text/plain; charset=windows-1252;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kapsi.fi ([217.30.184.167]:52040 "EHLO mail.kapsi.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753651AbbESMoq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 19 May 2015 08:44:46 -0400
+In-Reply-To: <20150518202848.GT11598@ld-irv-0074>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Brian Norris <computersforpeace@gmail.com>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-Forgot to write it in the patch description, but v10 for patches 5 and 6 
-changes the base for custom resets from 0x40000000 to periph_banks * 32 
-and also makes the SoC-specific code tell the core how many special 
-resets it has. This is quite a bit cleaner than the previous version.
+On 05/18/15 23:28, Brian Norris wrote:
+> On Mon, May 18, 2015 at 10:13:46PM +0300, Mikko Perttunen wrote:
+>> On 05/18/2015 09:44 PM, Brian Norris wrote:
+>>> On Mon, May 18, 2015 at 02:09:44PM +0200, Sascha Hauer wrote:
+>>>> On Mon, May 18, 2015 at 12:06:50PM +0300, Mikko Perttunen wrote:
+>>>>> One interesting thing I noticed was that at least the bang-bang
+>>>>> governor only acts if the temperature is properly smaller than (t=
+rip
+>>>>> temp - hysteresis). So perhaps we should specify the non-tripping
+>>>>> range as [low, high)? Or we could change bang-bang.
+>>>>
+>>>> I wonder how we can protect against such off-by-one errors anyway.
+>>>> Generally a hardware might operate on raw values rather than direc=
+tly
+>>>> in temperature values in =B0C. This means a driver for this must h=
+ave
+>>>> celsius_to_raw and raw_to_celsius conversion functions. Now it can
+>>>> happen that due to rounding errors celsius_to_raw(Tcrit) returns a=
+ raw
+>>>> value that when converted back to celsius is different from the
+>>>> original value in =B0C. This would mean the hardware triggers an i=
+nterrupt
+>>>> for a trip point and the thermal core does not react because get_t=
+emp
+>>>> actually returns a different temperature than previously programme=
+d as
+>>>> interrupt trigger. This way we would lose hot (or cold) events.
+>>>
+>>> This also highlights another fact: there's a race between interrupt
+>>> generation and temperature reading (->get_temp()). I would expect a=
+ny
+>>> hardware interrupt thermal sensor would also have a latched tempera=
+ture
+>>> reading to correspond with it, and there would be no guarantee that=
+ this
+>>> latched temperature will match the polled reading seen once you rea=
+ch
+>>> thermal_zone_device_update(). So a hardware driver might report a
+>>> thermal update, but the temperature reported to the core won't
+>>> necessarily match what interrupt was meant for.
+>>
+>> Does this actually matter? The thermal core will reset trips and
+>> apply cooling using the new - most recent - value. Using bang bang
+>> as example, if the temperature has risen since the interrupt fired,
+>> the cooling device will correctly not be switched off. If the
+>> temperature has fallen, it will again be correctly switched off. The
+>> only issue is then if the temperature is exactly 'trip temp - trip
+>> hyst' which will cause set_trips to load the trip points below, but
+>> not cause bang bang to turn off the cooling device, and the next
+>> chance it will have will only be at the next below trip point. Well,
+>> this is still safe (at least until you replace "cooling device" with
+>> "heating device"), so maybe it isn't that big of an issue.
+>>
+>> Please point out if there's a problem with my line of reasoning.
+>
+> I'm not sure I followed exactly the reason for the low-temp/hyst corn=
+er
+> case, but otherwise I guess that makes sense. The only problem IMO, i=
+s
+> that you're encouraging the generation of spurious notifications; if =
+the
+> temperature is constantly changing right around 'trip temp', but it
+> never settles above 'trip temp' long enough for the core to re-captur=
+e
+> the high temperature scenario, you'll just keep making useless calls =
+to
+> thermal_zone_device_update(). This kind of defeats the purpose of the
+> hysteresis, right?
 
-Thanks to Thierry for the idea.
+The corner case with bang bang is as follows:
+- Say we have trip points as 50C and 80C, both with 5C hysteresis, and=20
+these are programmed into hardware. So the actual hardware trip points=20
+are 45C and 80C.
+- Currently the temperature is, say, 60C and the fan is turned on.
+- Temperature drops to 45C, the lower trip point is triggered.
+- 45C >=3D 50C - 5C, so the fan is not turned off.
 
-Mikko
+If we said that the hysteresis was 0C, then bang bang is certainly=20
+correct in that if the trip point was at 50C, it shouldn't turn the fan=
+=20
+off, since that is greater than or equal to the requested temperature=20
+for cooling.
 
-On 05/19/15 14:39, Mikko Perttunen wrote:
-> This patch allows SoC-specific CAR initialization routines to register
-> their own reset_assert and reset_deassert callbacks with the common Tegra
-> CAR code. If defined, the common code will call these callbacks when a
-> reset control with number >= num_periph_banks * 32 is attempted to be asserted
-> or deasserted respectively. Numbers greater than or equal to num_periph_banks * 32
-> are used to avoid clashes with low numbers that are automatically mapped to
-> standard CAR reset lines.
+The function you describe would certainly be useful for eliminating=20
+possible superfluous interrupts due to temperature wobble, though I'm=20
+not sure how much of a problem that even would be.
+
 >
-> Each SoC with these special resets should specify the defined reset control
-> numbers in a device tree header file.
+> I'd really rather have a high temperature interrupt generate exactly =
+one
+> notification to the core framework, and that the sensor driver can re=
+ly
+> on that one interrupt being handled as a high temperature situation,
+> allowing it to disable the high-temp interrupt.
 >
-> Signed-off-by: Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>
-> Acked-by: Michael Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> ---
->   drivers/clk/tegra/clk.c | 39 +++++++++++++++++++++++++++++++--------
->   drivers/clk/tegra/clk.h |  3 +++
->   2 files changed, 34 insertions(+), 8 deletions(-)
+> One of my biggest problems with the thermal subsystem so far is that
+> thermal_zone_device_update() doesn't actually seem to have any specif=
+ic
+> semantic meaning. It just means that there was some reason to update
+> something. So then, you have to reason about a particular thermal
+> governor (bang bang) in order to make something sensible. If I want t=
+o
+> use a different sort of user-space governor, then I have to reevaluat=
+e
+> all these same assumptions, and it seems like I end up with a sub-par
+> solution.
+
+Yeah, though I'm not sure if you can ever be sure that the governor is=20
+fine not getting regular temperature updates, so I imagine you might=20
+always end up needing to pick your governors with that in mind. In=20
+practice, this might not be so horrible.
+
 >
-> diff --git a/drivers/clk/tegra/clk.c b/drivers/clk/tegra/clk.c
-> index 41cd87c..c093ed9 100644
-> --- a/drivers/clk/tegra/clk.c
-> +++ b/drivers/clk/tegra/clk.c
-> @@ -49,7 +49,6 @@
->   #define RST_DEVICES_L			0x004
->   #define RST_DEVICES_H			0x008
->   #define RST_DEVICES_U			0x00C
-> -#define RST_DFLL_DVCO			0x2F4
->   #define RST_DEVICES_V			0x358
->   #define RST_DEVICES_W			0x35C
->   #define RST_DEVICES_X			0x28C
-> @@ -79,6 +78,11 @@ static struct clk **clks;
->   static int clk_num;
->   static struct clk_onecell_data clk_data;
+> As a side note: I have patches to extend some of the uevent informati=
+on
+> passed by the user-space governor too, to accomplish what I'm suggest=
+ing
+> above. Perhaps that would be a better way to discuss what I'm thinkin=
+g.
 >
-> +/* Handlers for SoC-specific reset lines */
-> +static int (*special_reset_assert)(unsigned long);
-> +static int (*special_reset_deassert)(unsigned long);
-> +static int special_reset_num;
-> +
->   static struct tegra_clk_periph_regs periph_regs[] = {
->   	[0] = {
->   		.enb_reg = CLK_OUT_ENB_L,
-> @@ -152,19 +156,29 @@ static int tegra_clk_rst_assert(struct reset_controller_dev *rcdev,
->   	 */
->   	tegra_read_chipid();
+>> FWIW - at least Tegra doesn't have a latched register like this.
+>> There's just a bit indicating that an interrupt was raised and a
+>> temperature register that updates according to the sensor's input
+>> clock.
 >
-> -	writel_relaxed(BIT(id % 32),
-> -			clk_base + periph_regs[id / 32].rst_set_reg);
-> +	if (id < periph_banks * 32) {
-> +		writel_relaxed(BIT(id % 32),
-> +			       clk_base + periph_regs[id / 32].rst_set_reg);
-> +		return 0;
-> +	} else if (id < periph_banks * 32 + special_reset_num) {
-> +		return special_reset_assert(id);
-> +	}
+> A sensor for Broadcom's BCM7xxx has a latched register. If I get the
+> time, I'll post my driver soon.
 >
-> -	return 0;
-> +	return -EINVAL;
->   }
+> Brian
 >
->   static int tegra_clk_rst_deassert(struct reset_controller_dev *rcdev,
->   		unsigned long id)
->   {
-> -	writel_relaxed(BIT(id % 32),
-> -			clk_base + periph_regs[id / 32].rst_clr_reg);
-> +	if (id < periph_banks * 32) {
-> +		writel_relaxed(BIT(id % 32),
-> +			       clk_base + periph_regs[id / 32].rst_clr_reg);
-> +		return 0;
-> +	} else if (id < periph_banks * 32 + special_reset_num) {
-> +		return special_reset_deassert(id);
-> +	}
->
-> -	return 0;
-> +	return -EINVAL;
->   }
->
->   struct tegra_clk_periph_regs *get_reg_bank(int clkid)
-> @@ -286,10 +300,19 @@ void __init tegra_add_of_provider(struct device_node *np)
->   	of_clk_add_provider(np, of_clk_src_onecell_get, &clk_data);
->
->   	rst_ctlr.of_node = np;
-> -	rst_ctlr.nr_resets = periph_banks * 32;
-> +	rst_ctlr.nr_resets = periph_banks * 32 + special_reset_num;
->   	reset_controller_register(&rst_ctlr);
->   }
->
-> +void __init tegra_init_special_resets(int num,
-> +				      int (*assert)(unsigned long),
-> +				      int (*deassert)(unsigned long))
-> +{
-> +	special_reset_num = num;
-> +	special_reset_assert = assert;
-> +	special_reset_deassert = deassert;
-> +}
-> +
->   void __init tegra_register_devclks(struct tegra_devclk *dev_clks, int num)
->   {
->   	int i;
-> diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
-> index 75ddc8ff..f42cbbe 100644
-> --- a/drivers/clk/tegra/clk.h
-> +++ b/drivers/clk/tegra/clk.h
-> @@ -591,6 +591,9 @@ struct tegra_devclk {
->   	char		*con_id;
->   };
->
-> +void tegra_init_special_resets(int num, int (*assert)(unsigned long),
-> +			       int (*deassert)(unsigned long));
-> +
->   void tegra_init_from_table(struct tegra_clk_init_table *tbl,
->   		struct clk *clks[], int clk_max);
->
->
+
