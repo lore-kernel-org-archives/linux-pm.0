@@ -1,45 +1,99 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/5] PM / Wakeirq: Add automated device wake IRQ handling
-Date: Wed, 20 May 2015 02:25:19 +0200
-Message-ID: <143211021.lFoirF2CMg@vostro.rjw.lan>
-References: <1431560196-5722-1-git-send-email-tony@atomide.com> <1757867.ugVzJ2yl3G@vostro.rjw.lan> <20150519232756.GS10274@atomide.com>
+Subject: Re: [PATCH] cpupower: mperf monitor: fix output in MAX_FREQ_SYSFS mode
+Date: Wed, 20 May 2015 02:26:47 +0200
+Message-ID: <31826905.dNXxBhfo7A@vostro.rjw.lan>
+References: <1431354935-7538-1-git-send-email-herton@redhat.com> <20150511154022.GA3390@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:48265 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751816AbbETAAA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 20:00:00 -0400
-In-Reply-To: <20150519232756.GS10274@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150511154022.GA3390@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Herton R. Krzesinski" <herton@redhat.com>, Thomas Renninger <trenn@suse.de>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Felipe Balbi <balbi@ti.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Tuesday, May 19, 2015 04:27:56 PM Tony Lindgren wrote:
-> * Rafael J. Wysocki <rjw@rjwysocki.net> [150519 16:07]:
-> > On Wednesday, May 20, 2015 12:41:06 AM Thomas Gleixner wrote:
-> > > On Wed, 20 May 2015, Rafael J. Wysocki wrote:
-> > > > This one looks really good. :-)
-> > > > 
-> > > > If it doesn't depend on anything, I can apply it right away, so please let me
-> > > > know.
-> 
-> Sure works for me, it just has a dependency to patch #1 in this
-> series ("[PATCH 1/5] PM / Runtime: Update last_busy in rpm_resume").
-
-OK, I'll queue them both up for 4.2, then.
-
-Please let me know if you need a special branch with them.
-
-> > > Can you pretty please trim your replies? It's a PITA to scroll through
-> > > several pages of quoted patch just to find your signature as the extra
-> > > content.
+On Monday, May 11, 2015 12:40:22 PM Herton R. Krzesinski wrote:
+> On Mon, May 11, 2015 at 11:35:35AM -0300, Herton R. Krzesinski wrote:
+> > There is clearly wrong output when mperf monitor runs in MAX_FREQ_SYSFS mode:
+> > average frequency shows in kHz unit (despite the intended output to be in MHz),
+> > and percentages for C state information are all wrong (including high/negative
+> > values shown).
 > > 
-> > Sorry about that.
+> > The problem is that the max_frequency read on initialization isn't used where it
+> > should have been used on mperf_get_count_percent (to estimate the number of
+> > ticks in the given time period), and the value we read from sysfs is in kHz, so
+> > we must divide it to get the MHz value to use in current calculations.
+> > 
+> > While at it, also I fixed another small issues in the debug output of
+> > max_frequency value in mperf_get_count_freq.
+> > 
+> > Signed-off-by: Herton R. Krzesinski <herton@redhat.com>
+> > ---
+> >  tools/power/cpupower/utils/idle_monitor/mperf_monitor.c | 5 +++--
+> >  1 file changed, 3 insertions(+), 2 deletions(-)
 > 
-> Sounds like Thomas might be OK with the patch too then :)
+> Actually please consider v2 patch below, just a minor change in the debug
+> output, which isn't a percentage...
 
-Well, yeah.
+Thomas, any comments?
 
+> From: "Herton R. Krzesinski" <herton@redhat.com>
+> Date: Mon, 11 May 2015 11:18:14 -0300
+> Subject: [PATCH v2] cpupower: mperf monitor: fix output in MAX_FREQ_SYSFS mode
+> 
+> There is clearly wrong output when mperf monitor runs in MAX_FREQ_SYSFS mode:
+> average frequency shows in kHz unit (despite the intended output to be in MHz),
+> and percentages for C state information are all wrong (including high/negative
+> values shown).
+> 
+> The problem is that the max_frequency read on initialization isn't used where it
+> should have been used on mperf_get_count_percent (to estimate the number of
+> ticks in the given time period), and the value we read from sysfs is in kHz, so
+> we must divide it to get the MHz value to use in current calculations.
+> 
+> While at it, also I fixed another small issues in the debug output of
+> max_frequency value in mperf_get_count_freq.
+> 
+> Signed-off-by: Herton R. Krzesinski <herton@redhat.com>
+> ---
+>  tools/power/cpupower/utils/idle_monitor/mperf_monitor.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> v2: remove percent from debug output fix
+> 
+> diff --git a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+> index 90a8c4f..c83f160 100644
+> --- a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+> +++ b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+> @@ -135,7 +135,7 @@ static int mperf_get_count_percent(unsigned int id, double *percent,
+>  		dprint("%s: TSC Ref - mperf_diff: %llu, tsc_diff: %llu\n",
+>  		       mperf_cstates[id].name, mperf_diff, tsc_diff);
+>  	} else if (max_freq_mode == MAX_FREQ_SYSFS) {
+> -		timediff = timespec_diff_us(time_start, time_end);
+> +		timediff = max_frequency * timespec_diff_us(time_start, time_end);
+>  		*percent = 100.0 * mperf_diff / timediff;
+>  		dprint("%s: MAXFREQ - mperf_diff: %llu, time_diff: %llu\n",
+>  		       mperf_cstates[id].name, mperf_diff, timediff);
+> @@ -176,7 +176,7 @@ static int mperf_get_count_freq(unsigned int id, unsigned long long *count,
+>  	dprint("%s: Average freq based on %s maximum frequency:\n",
+>  	       mperf_cstates[id].name,
+>  	       (max_freq_mode == MAX_FREQ_TSC_REF) ? "TSC calculated" : "sysfs read");
+> -	dprint("%max_frequency: %lu", max_frequency);
+> +	dprint("max_frequency: %lu\n", max_frequency);
+>  	dprint("aperf_diff: %llu\n", aperf_diff);
+>  	dprint("mperf_diff: %llu\n", mperf_diff);
+>  	dprint("avg freq:   %llu\n", *count);
+> @@ -279,6 +279,7 @@ use_sysfs:
+>  		return -1;
+>  	}
+>  	max_freq_mode = MAX_FREQ_SYSFS;
+> +	max_frequency /= 1000; /* Default automatically to MHz value */
+>  	return 0;
+>  }
+>  
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
