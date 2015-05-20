@@ -1,69 +1,88 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
-Date: Wed, 20 May 2015 11:03:23 +0200
-Message-ID: <CAAObsKBGPP3UFFPtkq1aj_tZS9ZpJ6W4SY1g3rx1Gf6JRva0ww@mail.gmail.com>
-References: <1432044679-10256-3-git-send-email-tomeu.vizoso@collabora.com> <Pine.LNX.4.44L0.1505191345480.1453-100000@iolanthe.rowland.org>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v3] ARM: tegra: cpuidle: implement
+ cpuidle_state.enter_freeze()
+Date: Wed, 20 May 2015 10:04:55 +0100
+Message-ID: <20150520090455.GC29274@red-moon>
+References: <1432046953-12945-1-git-send-email-tomeu.vizoso@collabora.com>
+ <20150520084441.GA29274@red-moon>
+ <555C4C0D.4040605@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1505191345480.1453-100000@iolanthe.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:37291 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753150AbbETJFA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 20 May 2015 05:05:00 -0400
+Content-Disposition: inline
+In-Reply-To: <555C4C0D.4040605@collabora.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Russell King <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Ingo Molnar <mingo@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 19 May 2015 at 19:49, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Tue, 19 May 2015, Tomeu Vizoso wrote:
->
->> This function makes less cumbersome to enable runtime PM in a device and
->> its descendants.
->>
->> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
->
-> I don't see the point of this.  In the scenario you have in mind, are
-> the device and all its descendants registered by the same
-> subsystem/driver?
+On Wed, May 20, 2015 at 09:55:41AM +0100, Tomeu Vizoso wrote:
+> On 05/20/2015 10:44 AM, Lorenzo Pieralisi wrote:
+> > On Tue, May 19, 2015 at 03:49:12PM +0100, Tomeu Vizoso wrote:
+> >> This callback is expected to do the same as enter() but it has to
+> >> guarantee that interrupts aren't enabled at any point in its execution,
+> >> as the tick is frozen.
+> >>
+> >> It will be called when the system goes to suspend-to-idle and will
+> >> reduce power usage because CPUs won't be awaken for unnecessary IRQs.
+> >>
+> >> By setting the CPUIDLE_FLAG_TIMER_STOP flag, we can reuse the same code
+> >> for both the enter() and enter_freeze() callbacks.
+> >>
+> >> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> >> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>
+> >> ---
+> >>
+> >> v3:	* Set CPUIDLE_FLAG_TIMER_STOP to simplify things as suggested by
+> >> 	Lorenzo Pieralisi
+> >> v2:	* Disable FIQs also when suspending-to-idle
+> >> ---
+> >>  arch/arm/mach-tegra/cpuidle-tegra114.c | 13 +++++++++----
+> >>  1 file changed, 9 insertions(+), 4 deletions(-)
+> >>
+> >> diff --git a/arch/arm/mach-tegra/cpuidle-tegra114.c b/arch/arm/mach-tegra/cpuidle-tegra114.c
+> >> index 155807f..7e59ac0 100644
+> >> --- a/arch/arm/mach-tegra/cpuidle-tegra114.c
+> >> +++ b/arch/arm/mach-tegra/cpuidle-tegra114.c
+> >> @@ -44,16 +44,12 @@ static int tegra114_idle_power_down(struct cpuidle_device *dev,
+> >>  	tegra_set_cpu_in_lp2();
+> >>  	cpu_pm_enter();
+> >>  
+> >> -	tick_broadcast_enter();
+> >> -
+> >>  	call_firmware_op(prepare_idle);
+> >>  
+> >>  	/* Do suspend by ourselves if the firmware does not implement it */
+> >>  	if (call_firmware_op(do_idle, 0) == -ENOSYS)
+> >>  		cpu_suspend(0, tegra30_sleep_cpu_secondary_finish);
+> >>  
+> >> -	tick_broadcast_exit();
+> >> -
+> >>  	cpu_pm_exit();
+> >>  	tegra_clear_cpu_in_lp2();
+> >>  
+> >> @@ -61,6 +57,13 @@ static int tegra114_idle_power_down(struct cpuidle_device *dev,
+> >>  
+> >>  	return index;
+> >>  }
+> >> +
+> >> +static void tegra114_idle_enter_freeze(struct cpuidle_device *dev,
+> >> +				       struct cpuidle_driver *drv,
+> >> +				       int index)
+> >> +{
+> >> +       tegra114_idle_power_down(dev, drv, index);
+> >> +}
+> > 
+> > You do not need this function, remove it and update the enter_freeze
+> > pointer below with tegra114_idle_power_down please.
+> 
+> How so? The callbacks have different signatures.
 
-Not quite, the scenario here is a driver (uvcvideo) that deals with a
-specific piece of hardware and knows that all the descendants of the
-device it's bound to are virtual.
+Sorry, glossed over it, never mind.
 
-The subtree is:
-
-1-1:1.0 (bound to uvcvideo)
-        ep_87
-        input4
-                event4
-        media0
-        video0
-
-I liked how the force_direct_complete flag played out here, but I
-agree with Rafael that it can be abused as the PM domain or the bus
-type weren't able to prevent going directly to complete.
-
-This is my testing branch, btw:
-
-https://git.collabora.com/cgit/user/tomeu/linux.git/log/?h=fast-resume-v5
-
-> If they are, can't the subsystem/driver code enable
-> runtime PM for each of them when they are registered, by adding a
-> single call in the right spot?
->
-> If they don't all belong to the same subsystem/driver, who is going to
-> call your pm_runtime_enable_recursive routine?  No single caller will
-> have the right to enable runtime PM for all these devices.
-
-Yeah, I was thinking that uvcvideo might be able to decide that, but
-I'm not really sure about it.
-
-Thanks,
-
-Tomeu
-
-> Alan Stern
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Lorenzo
