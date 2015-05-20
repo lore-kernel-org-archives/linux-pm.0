@@ -1,51 +1,42 @@
-From: Zhi Li <lznuaa@gmail.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Subject: Re: [PATCH v2 0/7] Change snvs rtc and poweroff to use syscon add
  pwrkey driver
-Date: Wed, 20 May 2015 10:03:46 -0500
-Message-ID: <CAHrpEqQ9F1qXw6RmKPgwpqsFOq=O0dsNL7YtqNQ2ZUVBYz6DSw@mail.gmail.com>
+Date: Wed, 20 May 2015 19:25:41 +0100
+Message-ID: <20150520182540.GQ2067@n2100.arm.linux.org.uk>
 References: <1432055082-28983-1-git-send-email-Frank.Li@freescale.com>
-	<20150520142205.GA24844@dragon>
-	<CAHrpEqSpeMO=zLyii8qZUznP+9EAQqJ-D3O8hbXj99m+UNvpzA@mail.gmail.com>
-	<6111368.e0EOBSJsmZ@jclayton-pc>
+ <20150520015851.GB1071@dragon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f47.google.com ([209.85.218.47]:34282 "EHLO
-	mail-oi0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753898AbbETPDr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 11:03:47 -0400
-In-Reply-To: <6111368.e0EOBSJsmZ@jclayton-pc>
+Received: from pandora.arm.linux.org.uk ([78.32.30.218]:60253 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751609AbbETS0A (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 14:26:00 -0400
+Content-Disposition: inline
+In-Reply-To: <20150520015851.GB1071@dragon>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joshua Clayton <stillcompiling@gmail.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Shawn Guo <shawn.guo@linaro.org>, Alessandro Zummo <a.zummo@towertech.it>, "Frank.Li@freescale.com" <Frank.Li@freescale.com>, rtc-linux@googlegroups.com, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-pm@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Rob Herring <robh+dt@kernel.org>, alexandre.belloni@free-electrons.com, Philipp Zabel <p.zabel@pengutronix.de>, linux-input@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>
+To: Shawn Guo <shawnguo@kernel.org>
+Cc: Frank.Li@freescale.com, a.zummo@towertech.it, rtc-linux@googlegroups.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, dmitry.torokhov@gmail.com, robh+dt@kernel.org, alexandre.belloni@free-electrons.com, p.zabel@pengutronix.de, linux-input@vger.kernel.org, lznuaa@gmail.com, shawn.guo@linaro.org, linux-arm-kernel@lists.infradead.org
 
-On Wed, May 20, 2015 at 9:46 AM, Joshua Clayton
-<stillcompiling@gmail.com> wrote:
->>
->> +       snvs_np = of_get_parent(pdev->dev.of_node);
->> +       if (!snvs_np)
->> +               return -ENODEV;
->> +
->> +       data->snvs = syscon_node_to_regmap(snvs_np);
->> +       of_node_put(snvs_np);
->> +
->> +       if (!data->snvs) {
->> +               pr_err("Can't snvs syscon\n");
->> +               return -ENODEV;
->> +       }
->>
->> How about change error message to " Can't snvs syscon, probably use
->> old dts file"?
-> How about simply: "Cannot find snvs syscon node in devicetree."
+On Wed, May 20, 2015 at 09:58:51AM +0800, Shawn Guo wrote:
+> On Wed, May 20, 2015 at 01:04:35AM +0800, Frank.Li@freescale.com wrote:
+> > Frank Li (6):
+> >   arm: imx: power-off: change to syscon to access register
+> >   rtc: arm: imx: snvs: change use syscon to access register
+> >   Document: dt: fsl: snvs: change support syscon
+> >   arm: dts: imx: update snvs to use syscon access register
+> >   document: devicetree: input: imx: i.mx snvs power device tree bindings
+> >   arm: dts: imx6sx: enable snvs power key
+> 
+> So, the series will break existing DTBs for RTC and poweroff, right?
+> If this is unavoidable, should we at least have some warning messages
+> telling users about his breakage?
 
-Shawn:
-          Are you okay for that?
+What's the justification for breaking existing DTBs?  Really, this is
+something we should strive to avoid, _and_ actually avoid by providing
+backwards compatibility.
 
-best regards
-Frank Li
-
->
->
-> --
-> ~Joshua Clayton
+-- 
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.
