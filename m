@@ -1,12 +1,12 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 16/16] ARM64: dts: mt8173: Add thermal/auxadc device nodes
-Date: Wed, 20 May 2015 15:20:46 +0200
-Message-ID: <1432128046-12921-17-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH 09/16] thermal: of: always set sensor related callbacks
+Date: Wed, 20 May 2015 15:20:39 +0200
+Message-ID: <1432128046-12921-10-git-send-email-s.hauer@pengutronix.de>
 References: <1432128046-12921-1-git-send-email-s.hauer@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:34881 "EHLO
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:34884 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753686AbbETNVL (ORCPT
+	with ESMTP id S1753687AbbETNVL (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 09:21:11 -0400
 In-Reply-To: <1432128046-12921-1-git-send-email-s.hauer@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
@@ -14,47 +14,127 @@ List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
 
+Now that the thermal core treats -ENOSYS like the callbacks were
+not present at all we no longer have to overwrite the ops during
+runtime but instead can always set them and return -ENOSYS if no
+sensor is registered.
+
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- arch/arm64/boot/dts/mediatek/mt8173.dtsi | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ drivers/thermal/of-thermal.c | 33 +++++++++++++--------------------
+ 1 file changed, 13 insertions(+), 20 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-index 924fdb6..50d424f 100644
---- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-@@ -147,6 +147,11 @@
- 				(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
- 		};
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index c84404d..b9c35bd 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -91,7 +91,7 @@ static int of_thermal_get_temp(struct thermal_zone_device *tz,
+ {
+ 	struct __thermal_zone *data = tz->devdata;
  
-+		auxadc: auxadc@11001000 {
-+			compatible = "mediatek,mt8173-auxadc";
-+			reg = <0 0x11001000 0 0x1000>;
-+		};
-+
- 		uart0: serial@11002000 {
- 			compatible = "mediatek,mt8173-uart",
- 					"mediatek,mt6577-uart";
-@@ -182,6 +187,19 @@
- 			clocks = <&uart_clk>;
- 			status = "disabled";
- 		};
-+
-+		thermal: thermal@1100b000 {
-+			#thermal-sensor-cells = <1>;
-+			compatible = "mediatek,mt8173-thermal";
-+			reg = <0 0x1100b000 0 0x1000>;
-+			interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
-+			clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
-+			clock-names = "therm", "auxadc";
-+			resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
-+			reset-names = "therm";
-+			auxadc = <&auxadc>;
-+			apmixedsys = <&apmixedsys>;
-+		};
- 	};
+-	if (!data->ops->get_temp)
++	if (!data->ops)
+ 		return -EINVAL;
  
- };
+ 	return data->ops->get_temp(data->sensor_data, temp);
+@@ -178,7 +178,7 @@ static int of_thermal_set_emul_temp(struct thermal_zone_device *tz,
+ 	struct __thermal_zone *data = tz->devdata;
+ 
+ 	if (!data->ops || !data->ops->set_emul_temp)
+-		return -EINVAL;
++		return -ENOSYS;
+ 
+ 	return data->ops->set_emul_temp(data->sensor_data, temp);
+ }
+@@ -189,8 +189,8 @@ static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
+ 	struct __thermal_zone *data = tz->devdata;
+ 	int r;
+ 
+-	if (!data->ops->get_trend)
+-		return -EINVAL;
++	if (!data->ops || !data->ops->get_trend)
++		return -ENOSYS;
+ 
+ 	r = data->ops->get_trend(data->sensor_data, trip, trend);
+ 	if (r)
+@@ -366,6 +366,10 @@ static int of_thermal_get_crit_temp(struct thermal_zone_device *tz,
+ }
+ 
+ static struct thermal_zone_device_ops of_thermal_ops = {
++	.get_temp = of_thermal_get_temp,
++	.get_trend = of_thermal_get_trend,
++	.set_emul_temp = of_thermal_set_emul_temp,
++
+ 	.get_mode = of_thermal_get_mode,
+ 	.set_mode = of_thermal_set_mode,
+ 
+@@ -399,13 +403,13 @@ thermal_zone_of_add_sensor(struct device_node *zone,
+ 	if (!ops)
+ 		return ERR_PTR(-EINVAL);
+ 
++	if (!ops->get_temp)
++		return ERR_PTR(-EINVAL);
++
+ 	mutex_lock(&tzd->lock);
+ 	tz->ops = ops;
+ 	tz->sensor_data = data;
+ 
+-	tzd->ops->get_temp = of_thermal_get_temp;
+-	tzd->ops->get_trend = of_thermal_get_trend;
+-	tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
+ 	mutex_unlock(&tzd->lock);
+ 
+ 	return tzd;
+@@ -535,9 +539,6 @@ void thermal_zone_of_sensor_unregister(struct device *dev,
+ 		return;
+ 
+ 	mutex_lock(&tzd->lock);
+-	tzd->ops->get_temp = NULL;
+-	tzd->ops->get_trend = NULL;
+-	tzd->ops->set_emul_temp = NULL;
+ 
+ 	tz->ops = NULL;
+ 	tz->sensor_data = NULL;
+@@ -845,7 +846,6 @@ int __init of_parse_thermal_zones(void)
+ {
+ 	struct device_node *np, *child;
+ 	struct __thermal_zone *tz;
+-	struct thermal_zone_device_ops *ops;
+ 
+ 	np = of_find_node_by_name(NULL, "thermal-zones");
+ 	if (!np) {
+@@ -869,29 +869,22 @@ int __init of_parse_thermal_zones(void)
+ 			continue;
+ 		}
+ 
+-		ops = kmemdup(&of_thermal_ops, sizeof(*ops), GFP_KERNEL);
+-		if (!ops)
+-			goto exit_free;
+-
+ 		tzp = kzalloc(sizeof(*tzp), GFP_KERNEL);
+-		if (!tzp) {
+-			kfree(ops);
++		if (!tzp)
+ 			goto exit_free;
+-		}
+ 
+ 		/* No hwmon because there might be hwmon drivers registering */
+ 		tzp->no_hwmon = true;
+ 
+ 		zone = thermal_zone_device_register(child->name, tz->ntrips,
+ 						    0, tz,
+-						    ops, tzp,
++						    &of_thermal_ops, tzp,
+ 						    tz->passive_delay,
+ 						    tz->polling_delay);
+ 		if (IS_ERR(zone)) {
+ 			pr_err("Failed to build %s zone %ld\n", child->name,
+ 			       PTR_ERR(zone));
+ 			kfree(tzp);
+-			kfree(ops);
+ 			of_thermal_free_zone(tz);
+ 			/* attempting to build remaining zones still */
+ 		}
 -- 
 2.1.4
 
