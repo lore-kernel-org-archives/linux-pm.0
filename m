@@ -1,72 +1,87 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH v5 1/3] dt-bindings: Document the hi6220 thermal sensor
- bindings
-Date: Wed, 20 May 2015 09:06:48 +0800
-Message-ID: <20150520010648.GA18345@leoy-linaro>
-References: <1431933109-22764-1-git-send-email-kong.kongxinwei@hisilicon.com>
- <1431933109-22764-2-git-send-email-kong.kongxinwei@hisilicon.com>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH v2 0/7] Change snvs rtc and poweroff to use syscon add
+ pwrkey driver
+Date: Wed, 20 May 2015 09:58:51 +0800
+Message-ID: <20150520015851.GB1071@dragon>
+References: <1432055082-28983-1-git-send-email-Frank.Li@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f169.google.com ([209.85.192.169]:35621 "EHLO
-	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751922AbbETBHI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 21:07:08 -0400
-Received: by pdea3 with SMTP id a3so47454356pde.2
-        for <linux-pm@vger.kernel.org>; Tue, 19 May 2015 18:07:07 -0700 (PDT)
+Received: from mail.kernel.org ([198.145.29.136]:54536 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751126AbbETB7Y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 19 May 2015 21:59:24 -0400
 Content-Disposition: inline
-In-Reply-To: <1431933109-22764-2-git-send-email-kong.kongxinwei@hisilicon.com>
+In-Reply-To: <1432055082-28983-1-git-send-email-Frank.Li@freescale.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Xinwei Kong <kong.kongxinwei@hisilicon.com>
-Cc: edubezval@gmail.com, rui.zhuang@intel.com, amit.kucheria@linaro.org, punit.agrawal@arm.com, Javi.Merino@arm.com, jorge.ramirez-ortiz@linaro.org, haojian.zhuang@linaro.org, linux-pm@vger.kernel.org, dan.zhao@hisilicon.com, devicetree@vger.kernel.org, gongyu@hisilicon.com, guodong.xu@linaro.org, robh@kernel.org, mark.rutland@arm.com, linuxarm@huawei.com, zhenwei.wang@hisilicon.com, mporter@konsulko.com, zhangfei.gao@linaro.org, liguozhu@hisilicon.com
+To: Frank.Li@freescale.com
+Cc: lznuaa@gmail.com, shawn.guo@linaro.org, dmitry.torokhov@gmail.com, robh+dt@kernel.org, a.zummo@towertech.it, p.zabel@pengutronix.de, alexandre.belloni@free-electrons.com, devicetree@vger.kernel.org, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Mon, May 18, 2015 at 03:11:47PM +0800, Xinwei Kong wrote:
-> From: kongxinwei <kong.kongxinwei@hisilicon.com>
+On Wed, May 20, 2015 at 01:04:35AM +0800, Frank.Li@freescale.com wrote:
+> From: Frank Li <Frank.Li@freescale.com>
 > 
-> This adds documentation of device tree bindings for the
-> thermal sensor controller of hi6220 SoC.
+> Change from v1 to v2
+>  - Change simple-bus to simple-mfd
+>  - RTC remove lock.
+>  - RTC remove comments "These register offsets are relative to LP (Low Power) range"
+>  - power off, remove extra space
 > 
-> Signed-off-by: Leo Yan <leo.yan@linaro.org>
-> Signed-off-by: kongxinwei <kong.kongxinwei@hisilicon.com>
-> ---
->  .../bindings/thermal/hisilicon-thermal.txt         | 23 ++++++++++++++++++++++
->  1 file changed, 23 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+> SNVS is MPF module.
+> include rtc, power off, ON/OFF power key
 > 
-> diff --git a/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
-> new file mode 100644
-> index 0000000..b2a349f
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
-> @@ -0,0 +1,23 @@
-> +* Temperature Sensor on hisilicon SoCs
-> +
-> +** Required properties :
-> +
-> +- compatible: "hisilicon,tsensor".
-> +- reg: physical base address of thermal sensor and length of memory mapped
-> +  region.
-> +- interrupt: The interrupt number to the cpu. Defines the interrupt used
-> +  by SOCTHERM.
+>   arm: imx: power-off: change to syscon to access register
+>   rtc: arm: imx: snvs: change use syscon to access register
+> Above two patch change existed power-off and rtc use syscon
+> 
+>   Document: dt: fsl: snvs: change support syscon
+>   arm: dts: imx: update snvs to use syscon access register
+> Update dt file and document
+> 
+>   input: keyboard: imx: add snvs power key driver
+>   document: devicetree: input: imx: i.mx snvs power device tree bindings
+>   arm: dts: imx6sx: enable snvs power key
+> Added on/off key driver
+> 
+> Frank Li (6):
+>   arm: imx: power-off: change to syscon to access register
+>   rtc: arm: imx: snvs: change use syscon to access register
+>   Document: dt: fsl: snvs: change support syscon
+>   arm: dts: imx: update snvs to use syscon access register
+>   document: devicetree: input: imx: i.mx snvs power device tree bindings
+>   arm: dts: imx6sx: enable snvs power key
 
-s/SOCTHERM/tsensor/
+So, the series will break existing DTBs for RTC and poweroff, right?
+If this is unavoidable, should we at least have some warning messages
+telling users about his breakage?
 
-> +- clock-names: Input clock name, should be 'thermal_clk'.
-> +- clocks: phandles for clock specified in "clock-names" property.
-> +- #thermal-sensor-cells: Should be 1. See ./thermal.txt for a description.
-> +
-> +Example :
-> +
-> +	tsensor: tsensor@0,f7030700 {
-> +		compatible = "hisilicon,tsensor";
-> +		reg = <0x0 0xf7030700 0x0 0x1000>;
-> +		interrupts = <0 7 0x4>;
-> +		clocks = <&clock_sys HI6220_TSENSOR_CLK>;
-> +		clock-names = "thermal_clk";
-> +		#thermal-sensor-cells = <1>;
-> +	}
+Shawn
+
+> 
+> Robin Gong (1):
+>   input: keyboard: imx: add snvs power key driver
+> 
+>  .../devicetree/bindings/crypto/fsl-sec4.txt        |  93 +++++++--
+>  .../devicetree/bindings/input/snvs-pwrkey.txt      |   1 +
+>  .../bindings/power_supply/imx-snvs-poweroff.txt    |  24 +--
+>  arch/arm/boot/dts/imx6qdl.dtsi                     |  12 +-
+>  arch/arm/boot/dts/imx6sl.dtsi                      |  12 +-
+>  arch/arm/boot/dts/imx6sx.dtsi                      |  19 +-
+>  arch/arm/boot/dts/vfxxx.dtsi                       |   9 +-
+>  drivers/input/keyboard/Kconfig                     |  11 +
+>  drivers/input/keyboard/Makefile                    |   1 +
+>  drivers/input/keyboard/snvs_pwrkey.c               | 232 +++++++++++++++++++++
+>  drivers/power/reset/imx-snvs-poweroff.c            |  21 +-
+>  drivers/rtc/rtc-snvs.c                             | 128 +++++-------
+>  12 files changed, 417 insertions(+), 146 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/input/snvs-pwrkey.txt
+>  create mode 100644 drivers/input/keyboard/snvs_pwrkey.c
+> 
 > -- 
 > 1.9.1
 > 
 > 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
