@@ -1,99 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpupower: mperf monitor: fix output in MAX_FREQ_SYSFS mode
-Date: Wed, 20 May 2015 02:26:47 +0200
-Message-ID: <31826905.dNXxBhfo7A@vostro.rjw.lan>
-References: <1431354935-7538-1-git-send-email-herton@redhat.com> <20150511154022.GA3390@localhost.localdomain>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH] powercap / RAPL: Support Knights Landing
+Date: Tue, 19 May 2015 17:10:05 -0700
+Message-ID: <20150519171005.1f32c052@jacob-VirtualBox>
+References: <1432075069-18196-1-git-send-email-dasaratharaman.chandramouli@intel.com>
+	<4265007.tICN7CeGKt@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150511154022.GA3390@localhost.localdomain>
+In-Reply-To: <4265007.tICN7CeGKt@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Herton R. Krzesinski" <herton@redhat.com>, Thomas Renninger <trenn@suse.de>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Nikhil Rao <nikhil.rao@intel.com>
+Cc: Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, May 11, 2015 12:40:22 PM Herton R. Krzesinski wrote:
-> On Mon, May 11, 2015 at 11:35:35AM -0300, Herton R. Krzesinski wrote:
-> > There is clearly wrong output when mperf monitor runs in MAX_FREQ_SYSFS mode:
-> > average frequency shows in kHz unit (despite the intended output to be in MHz),
-> > and percentages for C state information are all wrong (including high/negative
-> > values shown).
+On Wed, 20 May 2015 01:31:54 +0200
+"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+
+> On Tuesday, May 19, 2015 03:37:49 PM Dasaratharaman Chandramouli
+> wrote:
+> > This patch enables intel_rapl driver to run on the
+> > next-generation Intel(R) Xeon Phi Microarchitecture
+> > code named "Knights Landing"
 > > 
-> > The problem is that the max_frequency read on initialization isn't used where it
-> > should have been used on mperf_get_count_percent (to estimate the number of
-> > ticks in the given time period), and the value we read from sysfs is in kHz, so
-> > we must divide it to get the MHz value to use in current calculations.
-> > 
-> > While at it, also I fixed another small issues in the debug output of
-> > max_frequency value in mperf_get_count_freq.
-> > 
-> > Signed-off-by: Herton R. Krzesinski <herton@redhat.com>
+> > Signed-off-by: Dasaratharaman Chandramouli
+> > <dasaratharaman.chandramouli@intel.com>
+> 
+> Jacob?
+looks good.
+ Acked-by:Jacob Pan <jacob.jun.pan@linux.intel.com>
+> 
 > > ---
-> >  tools/power/cpupower/utils/idle_monitor/mperf_monitor.c | 5 +++--
-> >  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> Actually please consider v2 patch below, just a minor change in the debug
-> output, which isn't a percentage...
-
-Thomas, any comments?
-
-> From: "Herton R. Krzesinski" <herton@redhat.com>
-> Date: Mon, 11 May 2015 11:18:14 -0300
-> Subject: [PATCH v2] cpupower: mperf monitor: fix output in MAX_FREQ_SYSFS mode
-> 
-> There is clearly wrong output when mperf monitor runs in MAX_FREQ_SYSFS mode:
-> average frequency shows in kHz unit (despite the intended output to be in MHz),
-> and percentages for C state information are all wrong (including high/negative
-> values shown).
-> 
-> The problem is that the max_frequency read on initialization isn't used where it
-> should have been used on mperf_get_count_percent (to estimate the number of
-> ticks in the given time period), and the value we read from sysfs is in kHz, so
-> we must divide it to get the MHz value to use in current calculations.
-> 
-> While at it, also I fixed another small issues in the debug output of
-> max_frequency value in mperf_get_count_freq.
-> 
-> Signed-off-by: Herton R. Krzesinski <herton@redhat.com>
-> ---
->  tools/power/cpupower/utils/idle_monitor/mperf_monitor.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> v2: remove percent from debug output fix
-> 
-> diff --git a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
-> index 90a8c4f..c83f160 100644
-> --- a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
-> +++ b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
-> @@ -135,7 +135,7 @@ static int mperf_get_count_percent(unsigned int id, double *percent,
->  		dprint("%s: TSC Ref - mperf_diff: %llu, tsc_diff: %llu\n",
->  		       mperf_cstates[id].name, mperf_diff, tsc_diff);
->  	} else if (max_freq_mode == MAX_FREQ_SYSFS) {
-> -		timediff = timespec_diff_us(time_start, time_end);
-> +		timediff = max_frequency * timespec_diff_us(time_start, time_end);
->  		*percent = 100.0 * mperf_diff / timediff;
->  		dprint("%s: MAXFREQ - mperf_diff: %llu, time_diff: %llu\n",
->  		       mperf_cstates[id].name, mperf_diff, timediff);
-> @@ -176,7 +176,7 @@ static int mperf_get_count_freq(unsigned int id, unsigned long long *count,
->  	dprint("%s: Average freq based on %s maximum frequency:\n",
->  	       mperf_cstates[id].name,
->  	       (max_freq_mode == MAX_FREQ_TSC_REF) ? "TSC calculated" : "sysfs read");
-> -	dprint("%max_frequency: %lu", max_frequency);
-> +	dprint("max_frequency: %lu\n", max_frequency);
->  	dprint("aperf_diff: %llu\n", aperf_diff);
->  	dprint("mperf_diff: %llu\n", mperf_diff);
->  	dprint("avg freq:   %llu\n", *count);
-> @@ -279,6 +279,7 @@ use_sysfs:
->  		return -1;
->  	}
->  	max_freq_mode = MAX_FREQ_SYSFS;
-> +	max_frequency /= 1000; /* Default automatically to MHz value */
->  	return 0;
->  }
->  
+> >  drivers/powercap/intel_rapl.c | 1 +
+> >  1 file changed, 1 insertion(+)
+> > 
+> > diff --git a/drivers/powercap/intel_rapl.c
+> > b/drivers/powercap/intel_rapl.c index fd24323..5796332 100644
+> > --- a/drivers/powercap/intel_rapl.c
+> > +++ b/drivers/powercap/intel_rapl.c
+> > @@ -1069,6 +1069,7 @@ static const struct x86_cpu_id rapl_ids[]
+> > __initconst = { RAPL_CPU(0x4A, rapl_defaults_atom),/* Tangier */
+> >  	RAPL_CPU(0x56, rapl_defaults_core),/* Future Xeon */
+> >  	RAPL_CPU(0x5A, rapl_defaults_atom),/* Annidale */
+> > +	RAPL_CPU(0x57, rapl_defaults_hsw_server),/* Knights
+> > Landing */ {}
+> >  };
+> >  MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
+> > 
 > 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+[Jacob Pan]
