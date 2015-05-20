@@ -1,7 +1,7 @@
 From: Xinwei Kong <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
-Subject: [PATCH v6 1/3] dt-bindings: Document the hi6220 thermal sensor bindings
-Date: Wed, 20 May 2015 19:16:36 +0800
-Message-ID: <1432120598-18268-2-git-send-email-kong.kongxinwei@hisilicon.com>
+Subject: [PATCH v6 3/3] dts: hi6220: enable thermal sensor for hisilicon SoC
+Date: Wed, 20 May 2015 19:16:38 +0800
+Message-ID: <1432120598-18268-4-git-send-email-kong.kongxinwei@hisilicon.com>
 References: <1432120598-18268-1-git-send-email-kong.kongxinwei@hisilicon.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -14,36 +14,33 @@ List-Id: linux-pm@vger.kernel.org
 
 From: kongxinwei <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
 
-This adds documentation of device tree bindings for the
-thermal sensor controller of hi6220 SoC.
+Dts includes two part: the first part is related with thermal sensor;
+the second part is related with thermal zones, in this part it will
+define the thermal zones and which sensor device should be bound to.
+it also need specify the polling interval for every thermal zone.
 
 Signed-off-by: Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 Signed-off-by: kongxinwei <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
 ---
- .../bindings/thermal/hisilicon-thermal.txt         | 23 ++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+ arch/arm64/boot/dts/hisilicon/hi6220.dtsi | 124 ++++++++++++++++++++++++++++++
+ 1 file changed, 124 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
-new file mode 100644
-index 0000000..dd0027e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
-@@ -0,0 +1,23 @@
-+* Temperature Sensor on hisilicon SoCs
-+
-+** Required properties :
-+
-+- compatible: "hisilicon,tsensor".
-+- reg: physical base address of thermal sensor and length of memory mapped
-+  region.
-+- interrupt: The interrupt number to the cpu. Defines the interrupt used
-+  by /SOCTHERM/tsensor.
-+- clock-names: Input clock name, should be 'thermal_clk'.
-+- clocks: phandles for clock specified in "clock-names" property.
-+- #thermal-sensor-cells: Should be 1. See ./thermal.txt for a description.
-+
-+Example :
+diff --git a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
+index 8ade3d9..eb465a6 100644
+--- a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
++++ b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
+@@ -6,6 +6,7 @@
+ 
+ #include <dt-bindings/clock/hi6220-clock.h>
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
++#include <dt-bindings/thermal/thermal.h>
+ 
+ / {
+ 	compatible = "hisilicon,hi6220";
+@@ -173,4 +174,127 @@
+ 			clock-names = "uartclk", "apb_pclk";
+ 		};
+ 	};
 +
 +	tsensor: tsensor@0,f7030700 {
 +		compatible = "hisilicon,tsensor";
@@ -52,7 +49,122 @@ index 0000000..dd0027e
 +		clocks = <&sys_ctrl HI6220_TSENSOR_CLK>;
 +		clock-names = "thermal_clk";
 +		#thermal-sensor-cells = <1>;
-+	}
++	};
++
++	thermal-zones {
++		local: local {
++			/* milliseconds */
++			polling-delay-passive = <1000>;
++			/* milliseconds */
++			polling-delay = <5000>;
++
++			/* sensor	ID */
++			thermal-sensors = <&tsensor  0>;
++
++			trips {
++				local_alert: local_alert {
++					/* millicelsius */
++					temperature = <70000>;
++					/* millicelsius */
++					hysteresis = <2000>;
++					type = "passive";
++				};
++				local_crit: local_crit {
++					temperature = <90000>;
++					hysteresis = <2000>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				/* There are currently no cooling maps
++				because there are no cooling devices */
++			};
++		};
++
++		cluster1: cluster1 {
++			polling-delay-passive = <1000>;
++			polling-delay = <5000>;
++
++			/* sensor	ID */
++			thermal-sensors = <&tsensor  1>;
++
++			trips {
++				cluster1_alert: cluster1_alert {
++					temperature = <70000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++				cluster1_crit: cluster1_crit {
++					temperature = <90000>;
++					hysteresis = <2000>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				/* There are currently no cooling maps
++				because there are no cooling devices */
++			};
++		};
++
++		cluster0: cluster0 {
++			polling-delay-passive = <1000>;
++			polling-delay = <5000>;
++
++			/* sensor	ID */
++			thermal-sensors = <&tsensor  2>;
++
++			trips {
++				cluster0_alert: cluster0_alert {
++					temperature = <70000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++				cluster0_crit: cluster0_crit {
++					temperature = <90000>;
++					hysteresis = <2000>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				map0 {
++					trip = <&cluster0_alert>;
++					cooling-device =
++					    <&cpu0 THERMAL_NO_LIMIT
++						THERMAL_NO_LIMIT>;
++				};
++			};
++		};
++
++		gpu: gpu {
++			polling-delay-passive = <1000>;
++			polling-delay = <5000>;
++
++			/* sensor	ID */
++			thermal-sensors = <&tsensor  3>;
++
++			trips {
++				gpu_alert: gpu_alert {
++					temperature = <70000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++				gpu_crit: gpu_crit {
++					temperature = <90000>;
++					hysteresis = <2000>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				/* There are currently no cooling maps
++				because there are no cooling devices */
++			};
++		};
++	};
+ };
 -- 
 1.9.1
 
