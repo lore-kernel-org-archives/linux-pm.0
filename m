@@ -1,42 +1,64 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / sleep: cancel the synchronous restriction of
- pm-trace
-Date: Wed, 20 May 2015 15:45:05 +0200
-Message-ID: <20150520134505.GA1479@amd>
-References: <554A297C.2040305@linux.intel.com>
- <3154303.fma7bByNVc@vostro.rjw.lan>
- <555C4AC5.4080901@linux.intel.com>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: [PATCH v2 0/7] Change snvs rtc and poweroff to use syscon add
+ pwrkey driver
+Date: Wed, 20 May 2015 22:22:07 +0800
+Message-ID: <20150520142205.GA24844@dragon>
+References: <1432055082-28983-1-git-send-email-Frank.Li@freescale.com>
+ <20150520015851.GB1071@dragon>
+ <CAHrpEqS5gAsu6=ut-mPwZiipqKJb=VicRooCPFhEf324kuhnDQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-input-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <555C4AC5.4080901@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, len.brown@intel.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <CAHrpEqS5gAsu6=ut-mPwZiipqKJb=VicRooCPFhEf324kuhnDQ@mail.gmail.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Zhi Li <lznuaa@gmail.com>
+Cc: Shawn Guo <shawnguo@kernel.org>, "Frank.Li@freescale.com" <Frank.Li@freescale.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Rob Herring <robh+dt@kernel.org>, a.zummo@towertech.it, p.zabel@pengutronix.de, alexandre.belloni@free-electrons.com, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-> >> -#define TRACE_DEVICE(dev) do { \
-> >> +#define TRACE_DEVICE_START(dev) do { \
-> >>  	if (pm_trace_enabled) \
-> >> +		mutex_lock(&pt_mutex); \
-> >>  		set_trace_device(dev); \
-> >>  	} while(0)
-> >>  
-> >> +#define TRACE_DEVICE_END() \
-> >> +do { \
-> >> +	if (pm_trace_enabled) { \
-> >> +		mutex_unlock(&pt_mutex); \
-> >> +	} \
-> >> +} while (0)
-> >> +
-> > Won't this serialize the whole thing again?
-> Yes, this mutex lock will ultimately serialize all PM operations. But, all device's PM operations are asynchronous each other at first. So, the PM operation order of all devices will vary in multiple suspend/resume. This can be similar to real to an extreme, and helpful to debugging.
+On Tue, May 19, 2015 at 09:44:46PM -0500, Zhi Li wrote:
+> On Tue, May 19, 2015 at 8:58 PM, Shawn Guo <shawnguo@kernel.org> wrote:
+> > On Wed, May 20, 2015 at 01:04:35AM +0800, Frank.Li@freescale.com wrote:
+> >> From: Frank Li <Frank.Li@freescale.com>
+> >>
+> >> Change from v1 to v2
+> >>  - Change simple-bus to simple-mfd
+> >>  - RTC remove lock.
+> >>  - RTC remove comments "These register offsets are relative to LP (Low Power) range"
+> >>  - power off, remove extra space
+> >>
+> >> SNVS is MPF module.
+> >> include rtc, power off, ON/OFF power key
+> >>
+> >>   arm: imx: power-off: change to syscon to access register
+> >>   rtc: arm: imx: snvs: change use syscon to access register
+> >> Above two patch change existed power-off and rtc use syscon
+> >>
+> >>   Document: dt: fsl: snvs: change support syscon
+> >>   arm: dts: imx: update snvs to use syscon access register
+> >> Update dt file and document
+> >>
+> >>   input: keyboard: imx: add snvs power key driver
+> >>   document: devicetree: input: imx: i.mx snvs power device tree bindings
+> >>   arm: dts: imx6sx: enable snvs power key
+> >> Added on/off key driver
+> >>
+> >> Frank Li (6):
+> >>   arm: imx: power-off: change to syscon to access register
+> >>   rtc: arm: imx: snvs: change use syscon to access register
+> >>   Document: dt: fsl: snvs: change support syscon
+> >>   arm: dts: imx: update snvs to use syscon access register
+> >>   document: devicetree: input: imx: i.mx snvs power device tree bindings
+> >>   arm: dts: imx6sx: enable snvs power key
+> >
+> > So, the series will break existing DTBs for RTC and poweroff, right?
+> > If this is unavoidable, should we at least have some warning messages
+> > telling users about his breakage?
 > 
+> How to do that?
+> Just added it commit message or need runtime warning?
 
-I believe the tradeoff here is wrong. Just keep PM_TRACE simple, and
-use something else for a real tricky failures..
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+runtime, so that users can know why their installed DTBs break with the
+new kernel.
+
+Shawn
