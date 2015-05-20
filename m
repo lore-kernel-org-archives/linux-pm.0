@@ -1,175 +1,78 @@
-From: Xinwei Kong <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
-Subject: [PATCH v6 3/3] dts: hi6220: enable thermal sensor for hisilicon SoC
-Date: Wed, 20 May 2015 19:16:38 +0800
-Message-ID: <1432120598-18268-4-git-send-email-kong.kongxinwei@hisilicon.com>
-References: <1432120598-18268-1-git-send-email-kong.kongxinwei@hisilicon.com>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: Re: [PATCH v2 2/5] firmware: add support for ARM System Control and
+ Power Interface(SCPI) protocol
+Date: Wed, 20 May 2015 12:17:16 +0100
+Message-ID: <1432120636.3231.24.camel@linaro.org>
+References: <1431618155-3132-1-git-send-email-sudeep.holla@arm.com>
+	 <1431618155-3132-3-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1432120598-18268-1-git-send-email-kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhuang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, amit.kucheria-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, punit.agrawal-5wv7dgnIgG8@public.gmane.org, Javi.Merino-5wv7dgnIgG8@public.gmane.org, jorge.ramirez-ortiz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, haojian.zhuang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: dan.zhao-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gongyu-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org, guodong.xu-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linuxarm-hv44wF8Li93QT0dZR+AlfA@public.gmane.org, zhenwei.wang-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org, leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, mporter-OWPKS81ov/FWk0Htik3J/w@public.gmane.org, liguozhu-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1431618155-3132-3-git-send-email-sudeep.holla@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: kongxinwei <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
+On Thu, 2015-05-14 at 16:42 +0100, Sudeep Holla wrote:
+> This patch adds support for System Control and Power Interface (SCPI)
+> Message Protocol used between the Application Cores(AP) and the System
+> Control Processor(SCP). The MHU peripheral provides a mechanism for
+> inter-processor communication between SCP's M3 processor and AP.
+> 
+> SCP offers control and management of the core/cluster power states,
+> various power domain DVFS including the core/cluster, certain system
+> clocks configuration, thermal sensors and many others.
+> 
+> This protocol driver provides interface for all the client drivers using
+> SCPI to make use of the features offered by the SCP.
+> 
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> CC: Jassi Brar <jassisinghbrar@gmail.com>
+> Cc: Liviu Dudau <Liviu.Dudau@arm.com>
+> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Cc: Jon Medhurst (Tixy) <tixy@linaro.org>
+> ---
 
-Dts includes two part: the first part is related with thermal sensor;
-the second part is related with thermal zones, in this part it will
-define the thermal zones and which sensor device should be bound to.
-it also need specify the polling interval for every thermal zone.
+Sorry for the delay in looking at this. I have one nitpick below but
+anyway, here's a
 
-Signed-off-by: Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Signed-off-by: kongxinwei <kong.kongxinwei-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
----
- arch/arm64/boot/dts/hisilicon/hi6220.dtsi | 124 ++++++++++++++++++++++++++++++
- 1 file changed, 124 insertions(+)
+Reviewed-by: Jon Medhurst (Tixy) <tixy@linaro.org>
 
-diff --git a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-index 8ade3d9..eb465a6 100644
---- a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-+++ b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
-@@ -6,6 +6,7 @@
- 
- #include <dt-bindings/clock/hi6220-clock.h>
- #include <dt-bindings/interrupt-controller/arm-gic.h>
-+#include <dt-bindings/thermal/thermal.h>
- 
- / {
- 	compatible = "hisilicon,hi6220";
-@@ -173,4 +174,127 @@
- 			clock-names = "uartclk", "apb_pclk";
- 		};
- 	};
-+
-+	tsensor: tsensor@0,f7030700 {
-+		compatible = "hisilicon,tsensor";
-+		reg = <0x0 0xf7030700 0x0 0x1000>;
-+		interrupts = <0 7 0x4>;
-+		clocks = <&sys_ctrl HI6220_TSENSOR_CLK>;
-+		clock-names = "thermal_clk";
-+		#thermal-sensor-cells = <1>;
-+	};
-+
-+	thermal-zones {
-+		local: local {
-+			/* milliseconds */
-+			polling-delay-passive = <1000>;
-+			/* milliseconds */
-+			polling-delay = <5000>;
-+
-+			/* sensor	ID */
-+			thermal-sensors = <&tsensor  0>;
-+
-+			trips {
-+				local_alert: local_alert {
-+					/* millicelsius */
-+					temperature = <70000>;
-+					/* millicelsius */
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+				local_crit: local_crit {
-+					temperature = <90000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				/* There are currently no cooling maps
-+				because there are no cooling devices */
-+			};
-+		};
-+
-+		cluster1: cluster1 {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
-+
-+			/* sensor	ID */
-+			thermal-sensors = <&tsensor  1>;
-+
-+			trips {
-+				cluster1_alert: cluster1_alert {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+				cluster1_crit: cluster1_crit {
-+					temperature = <90000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				/* There are currently no cooling maps
-+				because there are no cooling devices */
-+			};
-+		};
-+
-+		cluster0: cluster0 {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
-+
-+			/* sensor	ID */
-+			thermal-sensors = <&tsensor  2>;
-+
-+			trips {
-+				cluster0_alert: cluster0_alert {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+				cluster0_crit: cluster0_crit {
-+					temperature = <90000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cluster0_alert>;
-+					cooling-device =
-+					    <&cpu0 THERMAL_NO_LIMIT
-+						THERMAL_NO_LIMIT>;
-+				};
-+			};
-+		};
-+
-+		gpu: gpu {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
-+
-+			/* sensor	ID */
-+			thermal-sensors = <&tsensor  3>;
-+
-+			trips {
-+				gpu_alert: gpu_alert {
-+					temperature = <70000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+				gpu_crit: gpu_crit {
-+					temperature = <90000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				/* There are currently no cooling maps
-+				because there are no cooling devices */
-+			};
-+		};
-+	};
- };
+[...]
+> +++ b/drivers/firmware/arm_scpi.c
+[...]
+> +static void scpi_process_cmd(struct scpi_chan *ch, u32 cmd)
+> +{
+> +	unsigned long flags;
+> +	struct scpi_xfer *t, *match = NULL;
+> +
+> +	spin_lock_irqsave(&ch->rx_lock, flags);
+> +	if (list_empty(&ch->rx_pending)) {
+> +		spin_unlock_irqrestore(&ch->rx_lock, flags);
+> +		return;
+> +	}
+> +
+> +	list_for_each_entry(t, &ch->rx_pending, node)
+> +		if (CMD_XTRACT_UNIQ(t->cmd) == CMD_XTRACT_UNIQ(cmd)) {
+> +			list_del(&t->node);
+> +			match = t;
+> +			break;
+> +		}
+> +	/* check if wait_for_completion is in progress or timed-out */
+> +	if (match && !completion_done(&match->done)) {
+> +		struct scpi_shared_mem *mem = ch->rx_payload;
+> +		int len = min(match->rx_len, CMD_SIZE(cmd));
+> +
+> +		match->status = le32_to_cpu(mem->status);
+> +		memcpy_fromio(match->rx_buf, mem->payload, len);
+> +		if (match->rx_len > len)
+
+rx_len is unsigned and len is signed and so I had to go refresh my
+memory from the C standard before I could convince myself that this if
+statement was OK. Might be clearer if len was unsigned, especially as
+it's the 'min' of two unsigned values.
+
 -- 
-1.9.1
-
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Tixy
