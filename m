@@ -1,90 +1,51 @@
-From: Xinwei Kong <kong.kongxinwei@hisilicon.com>
-Subject: [PATCH v6 0/3] 96boards: add thermal senor support to hikey board
-Date: Wed, 20 May 2015 19:16:35 +0800
-Message-ID: <1432120598-18268-1-git-send-email-kong.kongxinwei@hisilicon.com>
+From: "PaX Team" <pageexec@freemail.hu>
+Subject: Re: [PATCH v4 1/3] PM / Hibernate: prepare for SANITIZE_FREED_PAGES
+Date: Wed, 20 May 2015 13:45:43 +0200
+Message-ID: <555C73E7.23237.269170A5@pageexec.freemail.hu>
+References: <1431613188-4511-1-git-send-email-anisse@astier.eu>, <CALUN=qLrXryb-aZTjXqoUhzjz68fvOae1bDxitYcJ3jBn_1EDg@mail.gmail.com>, <1526358.9aMpXL2Hv2@vostro.rjw.lan>
+Reply-To: pageexec@freemail.hu
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga02-in.huawei.com ([119.145.14.65]:39600 "EHLO
-	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752451AbbETLSx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 07:18:53 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Return-path: <owner-linux-mm@kvack.org>
+In-reply-to: <1526358.9aMpXL2Hv2@vostro.rjw.lan>
+Content-description: Mail message body
+Sender: owner-linux-mm@kvack.org
+To: Anisse Astier <anisse@astier.eu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, rui.zhuang@intel.com, amit.kucheria@linaro.org, punit.agrawal@arm.com, Javi.Merino@arm.com, jorge.ramirez-ortiz@linaro.org, haojian.zhuang@linaro.org, mark.rutland@arm.com, linux-pm@vger.kernel.org
-Cc: dan.zhao@hisilicon.com, devicetree@vger.kernel.org, gongyu@hisilicon.com, guodong.xu@linaro.org, robh@kernel.org, linuxarm@huawei.com, zhenwei.wang@hisilicon.com, leo.yan@linaro.org, mporter@konsulko.com, liguozhu@hisilicon.com
 
-From: kongxinwei <kong.kongxinwei@hisilicon.com>
+On 20 May 2015 at 1:46, Rafael J. Wysocki wrote:
 
-The Linaro connect introduce 96boards series in Hong Kong,The HiKey board
-is the first board to be certified 96Boards Consumer Edition compatible.
-This board is based on the HiSilicon SoC. you can get more information
-from https://www.96boards.org.
+> swsusp_free() is *the* function that, well, frees all the pages allocated
+> by the hibernate core, so how isn't the free pages bitmap valid when it is
+> called?
+> 
+> Why don't you add the clearing in there, right at the spot when the pages
+> are actually freed?
 
-The hisilicon SoC contains thermal module, this thermal module has 4 sensors,
+actually swsusp_free uses __free_page which in turn will go through the
+page sanitization logic so there's no need for extra sanitization. that
+said ...
 
-	- sensor 0: local sensor;
-	- sensor 1: remote sensor for ACPU cluster 1;
-	- sensor 2: remote sensor for ACPU cluster 2;
-	- sensor 3: remote sensor for GPU;
+> Moreover, why is the resume code path the only one where freed pages need to
+> be sanitized? 
 
-It can obtain this device temperature by operating this hardware. The new
-sensor driver satisfies thermal framework and to realize the ACPU ,GPU and
-so on to cool function.
+... i had a bug report before (http://marc.info/?l=linux-pm&m=132871433416256)
+which is why i asked Anisse to figure this out before upstreaming the feature.
+i've also asked him already to explain why his approach is the proper fix for
+the problem (which should include the description of the root cause as a start)
+but he hasn't answered that yet.
 
-Changes v5->v6;
-* Add "include" header file
-* Fix mutex lock to protect binding irq variable
+anyway, the big question is how there can be free memory pages after resume
+which are not sanitized. now i have no idea about the hibernation logic but
+i assume that it doesn't save/restore free pages so the question is how the
+kernel gets to learn about these free pages during resume and whether there's
+a path where __free_page() or some other wrapper around free_pages_prepare()
+doesn't get called at all.
 
-Changes v4->v5;
-* Rebase to kernel 4.1-rc1
-* Add the DTS file according to the maintainer advice
-* Clean up "include" header file and fix detail format
-* Deal with negative temperature and add mutex lock to
-  protect binding irq variable
-* Remove this "const struct themal_trip" from "struct
-  hisi_thermal_sensor", making it as local variable
-* Make sensor_temp part of "struct hisi_thremal_sensors"
-
-Changes v3->v4;
-* using "usleep_range" function instead of "msleep" function
-* delete code detail error
-
-Changes v2->v3;
-* delete sensor id property in binding document 
-* fix sensor driver to satisfy sensor register after deleting sensor id
-  property
-
-Changes v1->v2;
-* change patch's position between binding document and driver file
-* clean up some regiser for enabling thermal sensor
-* use mutex lock to replace the spin lock
-
-Changes v0->v1;
-* Delete this hi6220 dtsi.
-* Fix documentation and error checks.
-* Modify this driver which makes use of kernel to decide how to dynamically
-  bind the interrupt to hottest sensor.
-* Delete "sensor-thres-temp" property and read thermal_zone trips points
-  replace of it.
-* Delete "sensor-reset-temp" property and define the fixed value replace
-  of it.
-
-kongxinwei (3):
-  dt-bindings: Document the hi6220 thermal sensor bindings
-  thermal: hisilicon: add new hisilicon thermal sensor driver
-  dts: hi6220: enable thermal sensor for hisilicon SoC
-
- .../bindings/thermal/hisilicon-thermal.txt         |  23 ++
- arch/arm64/boot/dts/hisilicon/hi6220.dtsi          | 124 ++++++
- drivers/thermal/Kconfig                            |   8 +
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/hisi_thermal.c                     | 419 +++++++++++++++++++++
- 5 files changed, 575 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
- create mode 100644 drivers/thermal/hisi_thermal.c
-
--- 
-1.9.1
-
-
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
