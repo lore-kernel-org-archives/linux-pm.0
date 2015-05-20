@@ -1,66 +1,51 @@
-From: Zhi Li <lznuaa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v2 0/7] Change snvs rtc and poweroff to use syscon add
- pwrkey driver
-Date: Wed, 20 May 2015 13:44:58 -0500
-Message-ID: <CAHrpEqSngMgOj5Bjp0XWpw9CJCjoiU63iRuAX3Zw_aEO+-5RHg@mail.gmail.com>
-References: <1432055082-28983-1-git-send-email-Frank.Li@freescale.com>
-	<20150520015851.GB1071@dragon>
-	<20150520182540.GQ2067@n2100.arm.linux.org.uk>
-	<20150520183050.GR2067@n2100.arm.linux.org.uk>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
+Date: Wed, 20 May 2015 12:39:18 -0700
+Message-ID: <555CE2E6.80304@codeaurora.org>
+References: <cover.1430394884.git.viresh.kumar@linaro.org> <d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar@linaro.org> <555BDA7C.7020506@codeaurora.org> <20150520020715.GA6465@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150520183050.GR2067-l+eeeJia6m9vn6HldHNs0ANdhmdF6hFW@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
-Cc: Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, "Frank.Li-KZfg59tc24xl57MIdRCFDg@public.gmane.org" <Frank.Li-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:42240 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752896AbbETTjV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 15:39:21 -0400
+In-Reply-To: <20150520020715.GA6465@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mike.turquette@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-On Wed, May 20, 2015 at 1:30 PM, Russell King - ARM Linux
-<linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org> wrote:
-> On Wed, May 20, 2015 at 07:25:41PM +0100, Russell King - ARM Linux wrote:
->> On Wed, May 20, 2015 at 09:58:51AM +0800, Shawn Guo wrote:
->> > On Wed, May 20, 2015 at 01:04:35AM +0800, Frank.Li-KZfg59tc24xl57MIdRCFDg@public.gmane.org wrote:
->> > > Frank Li (6):
->> > >   arm: imx: power-off: change to syscon to access register
->> > >   rtc: arm: imx: snvs: change use syscon to access register
->> > >   Document: dt: fsl: snvs: change support syscon
->> > >   arm: dts: imx: update snvs to use syscon access register
->> > >   document: devicetree: input: imx: i.mx snvs power device tree bindings
->> > >   arm: dts: imx6sx: enable snvs power key
->> >
->> > So, the series will break existing DTBs for RTC and poweroff, right?
->> > If this is unavoidable, should we at least have some warning messages
->> > telling users about his breakage?
->>
->> What's the justification for breaking existing DTBs?  Really, this is
->> something we should strive to avoid, _and_ actually avoid by providing
->> backwards compatibility.
+On 05/19/15 19:07, Viresh Kumar wrote:
+> On 19-05-15, 17:51, Stephen Boyd wrote:
 >
-> Looking at the RTC code, it would be pretty trivial to do.
+>> Also I wonder if all properties should be optional? I don't have this
+>> scenario today, but perhaps the frequencies could be encoded in fuses,
+>> but the voltages wouldn't be and so we might want to read out the
+>> frequencies for a fixed set of voltages. Of course, if there's nothing
+>> in the OPP node at all, it's not very useful, so perhaps some statement
+>> that at least one of the frequency/voltage/amperage properties should be
+>> present.
+> I am not sure. What we are trying to do (fill partially in DT and
+> partially in platform), is a trick and not the right use of bindings.
 >
-> Rather than passing around struct regmap, pass around the private data
-> structure.
+> Ideally whatever is passed in DT should be complete by itself and
+> doesn't require platform to tweak it (which it can't). For example,
+> the cpufreq-dt driver will try to initialize OPPs from the DT directly
+> and wouldn't know about the platform tweaks. That can work eventually
+> as platform will add OPPs for the same bindings before cpufreq driver
+> will try to do, but that's a trick.
 >
-> Rename the regmap_* function calls to be private accessors.  Implement
-> a set of new accessors - if the private data has the regmap, use the
-> regmap API.  Otherwise, use the old method, and print a warning that an
-> old DT is being used.
+> And then its all about frequency in the first place, and so marking
+> that optional looks wrong. Probably not the right use of these
+> bindings.
 
-This method work.  But code will become ugly and complex. I seach
-whole dts tree.
-Only imx6 use this driver.
+Ok then I won't be using these bindings on any of the new platforms I
+have where half the data is in one place, and half in another. But for
+some of Krait based platforms I have they should be useable.
 
-Does it really valuable to keep compatiblity with cost of complex driver code?
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
 
-best regards
-Frank Li
-
->
-> --
-> FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-> according to speedtest.net.
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
