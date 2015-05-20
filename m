@@ -1,137 +1,95 @@
-From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Subject: Re: [PATCH 01/15] thermal: consistently use int for temperatures
-Date: Wed, 20 May 2015 11:42:31 +0300
-Message-ID: <555C48F7.4050009@kapsi.fi>
-References: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de> <1431507163-19933-2-git-send-email-s.hauer@pengutronix.de> <555C33EC.7050906@kapsi.fi> <20150520083454.GM6325@pengutronix.de>
+From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v3] ARM: tegra: cpuidle: implement
+ cpuidle_state.enter_freeze()
+Date: Wed, 20 May 2015 09:44:41 +0100
+Message-ID: <20150520084441.GA29274@red-moon>
+References: <1432046953-12945-1-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150520083454.GM6325@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1432046953-12945-1-git-send-email-tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Cc: "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ingo Molnar <mingo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 05/20/15 11:34, Sascha Hauer wrote:
-> On Wed, May 20, 2015 at 10:12:44AM +0300, Mikko Perttunen wrote:
->> On 05/13/15 11:52, Sascha Hauer wrote:
->>> The thermal code uses int, long and unsigned long for temperatures
->>> in different places. Using an unsigned type limits the thermal framework
->>> to positive temperatures without need. 'long' is 64bit on several
->>> architectures which is not needed. Consistently use a plain 'int'
->>> for temperatures.
->>>
->>> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
->>> ---
->>> ...
->>
->> It looks like some longs remain in db8500_thermal.c, int340x_thermal/*,
->> intel_soc_dts_thermal.c, kirkwood_thermal.c, rockchip_thermal.c and
->> samsung/exynos_tmu.c. (found by 'grep -R long drivers/thermal/*)
->
-> I looked over it again and found the following. Sorry, I really thought
-> I had compile tested all drivers. I found nothing in db8500_thermal.c,
-> intel_soc_dts_thermal.c and rockchip_thermal.c though. There are some
-> (unsigned)longs used as temperatures in these files, but I haven't
-> changed them on purpose to not make the patch bigger as necessary. I
-> only changed the places where (unsigned)longs are used as pointers.
-> Do you think it's necessary to change all temperatures, even the ones
-> only used internally in drivers?
->
-> Sascha
-
-I guess changing just the framework interface would be fine for now,
-though I don't think there are that many internal uses remaining either.
-
-Reviewed-by: Mikko Perttunen <mperttunen@nvidia.com>
-
-Cheers,
-Mikko.
-
->
-> -----------------------8<------------------
->
->>From 4cf8fe3b3ef1bd9db6090305ea2b9995f0dbffa4 Mon Sep 17 00:00:00 2001
-> From: Sascha Hauer <s.hauer@pengutronix.de>
-> Date: Wed, 20 May 2015 10:28:39 +0200
-> Subject: [PATCH] fixup! thermal: consistently use int for temperatures
->
+On Tue, May 19, 2015 at 03:49:12PM +0100, Tomeu Vizoso wrote:
+> This callback is expected to do the same as enter() but it has to
+> guarantee that interrupts aren't enabled at any point in its execution,
+> as the tick is frozen.
+> 
+> It will be called when the system goes to suspend-to-idle and will
+> reduce power usage because CPUs won't be awaken for unnecessary IRQs.
+> 
+> By setting the CPUIDLE_FLAG_TIMER_STOP flag, we can reuse the same code
+> for both the enter() and enter_freeze() callbacks.
+> 
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> 
 > ---
->   drivers/thermal/int340x_thermal/int3400_thermal.c          | 4 ++--
->   drivers/thermal/int340x_thermal/processor_thermal_device.c | 4 ++--
->   drivers/thermal/kirkwood_thermal.c                         | 2 +-
->   drivers/thermal/samsung/exynos_tmu.c                       | 2 +-
->   4 files changed, 6 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-> index 96bdf8a..5836e55 100644
-> --- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-> +++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-> @@ -186,7 +186,7 @@ static int int3400_thermal_run_osc(acpi_handle handle,
->   }
->
->   static int int3400_thermal_get_temp(struct thermal_zone_device *thermal,
-> -			unsigned long *temp)
-> +			int *temp)
->   {
->   	*temp = 20 * 1000; /* faked temp sensor with 20C */
->   	return 0;
-> @@ -231,7 +231,7 @@ static int int3400_thermal_set_mode(struct thermal_zone_device *thermal,
->   	return result;
->   }
->
-> -static const struct thermal_zone_device_ops int3400_thermal_ops = {
-> +static struct thermal_zone_device_ops int3400_thermal_ops = {
->   	.get_temp = int3400_thermal_get_temp,
->   };
->
-> diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-> index 5e8d8e9..c8afd34 100644
-> --- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
-> +++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-> @@ -139,7 +139,7 @@ static int get_tjmax(void)
->   	return -EINVAL;
->   }
->
-> -static int read_temp_msr(unsigned long *temp)
-> +static int read_temp_msr(int *temp)
->   {
->   	int cpu;
->   	u32 eax, edx;
-> @@ -171,7 +171,7 @@ err_ret:
->   }
->
->   static int proc_thermal_get_zone_temp(struct thermal_zone_device *zone,
-> -					 unsigned long *temp)
-> +					 int *temp)
->   {
->   	int ret;
->
-> diff --git a/drivers/thermal/kirkwood_thermal.c b/drivers/thermal/kirkwood_thermal.c
-> index abba3e2..5bcdbd6 100644
-> --- a/drivers/thermal/kirkwood_thermal.c
-> +++ b/drivers/thermal/kirkwood_thermal.c
-> @@ -33,7 +33,7 @@ struct kirkwood_thermal_priv {
->   };
->
->   static int kirkwood_get_temp(struct thermal_zone_device *thermal,
-> -			  unsigned long *temp)
-> +			  int *temp)
->   {
->   	unsigned long reg;
->   	struct kirkwood_thermal_priv *priv = thermal->devdata;
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index 29eaf4d..ed55fd9 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -812,7 +812,7 @@ out:
->   #else
->   #define exynos4412_tmu_set_emulation NULL
->   #define exynos5440_tmu_set_emulation NULL
-> -static int exynos_tmu_set_emulation(void *drv_data,	unsigned long temp)
-> +static int exynos_tmu_set_emulation(void *drv_data, int temp)
->   	{ return -EINVAL; }
->   #endif /* CONFIG_THERMAL_EMULATION */
->
->
+> 
+> v3:	* Set CPUIDLE_FLAG_TIMER_STOP to simplify things as suggested by
+> 	Lorenzo Pieralisi
+> v2:	* Disable FIQs also when suspending-to-idle
+> ---
+>  arch/arm/mach-tegra/cpuidle-tegra114.c | 13 +++++++++----
+>  1 file changed, 9 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/arm/mach-tegra/cpuidle-tegra114.c b/arch/arm/mach-tegra/cpuidle-tegra114.c
+> index 155807f..7e59ac0 100644
+> --- a/arch/arm/mach-tegra/cpuidle-tegra114.c
+> +++ b/arch/arm/mach-tegra/cpuidle-tegra114.c
+> @@ -44,16 +44,12 @@ static int tegra114_idle_power_down(struct cpuidle_device *dev,
+>  	tegra_set_cpu_in_lp2();
+>  	cpu_pm_enter();
+>  
+> -	tick_broadcast_enter();
+> -
+>  	call_firmware_op(prepare_idle);
+>  
+>  	/* Do suspend by ourselves if the firmware does not implement it */
+>  	if (call_firmware_op(do_idle, 0) == -ENOSYS)
+>  		cpu_suspend(0, tegra30_sleep_cpu_secondary_finish);
+>  
+> -	tick_broadcast_exit();
+> -
+>  	cpu_pm_exit();
+>  	tegra_clear_cpu_in_lp2();
+>  
+> @@ -61,6 +57,13 @@ static int tegra114_idle_power_down(struct cpuidle_device *dev,
+>  
+>  	return index;
+>  }
+> +
+> +static void tegra114_idle_enter_freeze(struct cpuidle_device *dev,
+> +				       struct cpuidle_driver *drv,
+> +				       int index)
+> +{
+> +       tegra114_idle_power_down(dev, drv, index);
+> +}
+
+You do not need this function, remove it and update the enter_freeze
+pointer below with tegra114_idle_power_down please.
+
+Thanks,
+Lorenzo
+
+>  #endif
+>  
+>  static struct cpuidle_driver tegra_idle_driver = {
+> @@ -72,8 +75,10 @@ static struct cpuidle_driver tegra_idle_driver = {
+>  #ifdef CONFIG_PM_SLEEP
+>  		[1] = {
+>  			.enter			= tegra114_idle_power_down,
+> +			.enter_freeze		= tegra114_idle_enter_freeze,
+>  			.exit_latency		= 500,
+>  			.target_residency	= 1000,
+> +			.flags			= CPUIDLE_FLAG_TIMER_STOP,
+>  			.power_usage		= 0,
+>  			.name			= "powered-down",
+>  			.desc			= "CPU power gated",
+> -- 
+> 2.4.1
+> 
