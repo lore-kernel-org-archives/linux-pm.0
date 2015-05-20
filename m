@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V5 1/3] OPP: Redefine bindings to overcome shortcomings
-Date: Wed, 20 May 2015 09:11:38 +0530
-Message-ID: <51a2603050f7993643fea9e5dcd2dba7a5a3fe23.1432091956.git.viresh.kumar@linaro.org>
+Subject: [PATCH V5 3/3] OPP: Add binding for 'opp-suspend'
+Date: Wed, 20 May 2015 09:11:40 +0530
+Message-ID: <618b02107af650bcb3246e165095bbca207d511a.1432091956.git.viresh.kumar@linaro.org>
 References: <cover.1432091956.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f175.google.com ([209.85.192.175]:33163 "EHLO
-	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751997AbbETDmL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 23:42:11 -0400
-Received: by pdbqa5 with SMTP id qa5so52033525pdb.0
-        for <linux-pm@vger.kernel.org>; Tue, 19 May 2015 20:42:10 -0700 (PDT)
+Received: from mail-pd0-f174.google.com ([209.85.192.174]:35458 "EHLO
+	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752468AbbETDmU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2015 23:42:20 -0400
+Received: by pdea3 with SMTP id a3so51986615pde.2
+        for <linux-pm@vger.kernel.org>; Tue, 19 May 2015 20:42:19 -0700 (PDT)
 In-Reply-To: <cover.1432091956.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1432091956.git.viresh.kumar@linaro.org>
 References: <cover.1432091956.git.viresh.kumar@linaro.org>
@@ -18,425 +18,82 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mike.turquette@linaro.org, sboyd@codeaurora.org
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-Current OPP (Operating performance point) DT bindings are proven to be
-insufficient at multiple instances.
+On few platforms, for power efficiency, we want the device to be
+configured for a specific OPP while we put the device in suspend state.
 
-The shortcomings we are trying to solve here:
+Add an optional property in operating-points-v2 bindings for that.
 
-- Getting clock/voltage/current rails sharing information between CPUs.
-  Shared by all cores vs independent clock per core vs shared clock per
-  cluster.
-
-- Support for specifying current levels along with voltages.
-
-- Support for multiple regulators.
-
-- Support for turbo modes.
-
-- Other per OPP settings: transition latencies, disabled status, etc.?
-
-- Expandability of OPPs in future.
-
-This patch introduces new bindings "operating-points-v2" to get these problems
-solved. Refer to the bindings for more details.
-
+Suggested-by: Nishanth Menon <nm@ti.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- Documentation/devicetree/bindings/power/opp.txt | 379 +++++++++++++++++++++++-
- 1 file changed, 375 insertions(+), 4 deletions(-)
+ Documentation/devicetree/bindings/power/opp.txt | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
 diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
-index 74499e5033fc..d132e2927b21 100644
+index 7f30d9b07db7..880f5e14b6e2 100644
 --- a/Documentation/devicetree/bindings/power/opp.txt
 +++ b/Documentation/devicetree/bindings/power/opp.txt
-@@ -1,8 +1,19 @@
--* Generic OPP Interface
-+Generic OPP (Operating Performance Points) Bindings
-+----------------------------------------------------
+@@ -72,6 +72,8 @@ This describes the OPPs belonging to a device. This node can have following
+   Missing property means devices have independent clock/voltage/current lines,
+   but they share OPP tables.
  
--SoCs have a standard set of tuples consisting of frequency and
--voltage pairs that the device will support per voltage domain. These
--are called Operating Performance Points or OPPs.
-+Devices work at voltage-current-frequency combinations and some implementations
-+have the liberty of choosing these. These combinations are called Operating
-+Performance Points aka OPPs. This document defines bindings for these OPPs
-+applicable across wide range of devices. For illustration purpose, this document
-+uses CPU as a device.
++- opp-suspend: Phandle of the OPP to set while device is suspended.
 +
-+This document contain multiple versions of OPP binding and only one of them
-+should be used per device.
-+
-+Binding 1: operating-points
-+============================
-+
-+This binding only supports voltage-frequency pairs.
  
- Properties:
- - operating-points: An array of 2-tuples items, and each item consists
-@@ -23,3 +34,363 @@ cpu@0 {
- 		198000  850000
- 	>;
- };
-+
-+
-+
-+Binding 2: operating-points-v2
-+============================
-+
-+* Property: operating-points-v2
-+
-+Devices supporting OPPs must set their "operating-points-v2" property with
-+phandle to a OPP descriptor in their DT node. The OPP core will use this phandle
-+to find the operating points for the device.
-+
-+
-+* OPP Descriptor Node
-+
-+This describes the OPPs belonging to a device. This node can have following
-+properties:
-+
-+Required properties:
-+- compatible: Allow OPPs to express their compatibility. It should be:
-+  "operating-points-v2".
-+
-+- OPP nodes: One or more OPP nodes describing voltage-current-frequency
-+  combinations. Their name isn't significant but their phandle can be used to
-+  reference an OPP.
-+
-+Optional properties:
-+- opp-shared: Indicates that device nodes using this OPP descriptor's phandle
-+  switch their DVFS state together, i.e. they share clock/voltage/current lines.
-+  Missing property means devices have independent clock/voltage/current lines,
-+  but they share OPP tables.
-+
-+
-+* OPP Node
-+
-+This defines voltage-current-frequency combinations along with other related
-+properties.
-+
-+Required properties:
-+- opp-hz: Frequency in Hz
-+
-+Optional properties:
-+- opp-microvolt: voltage in micro Volts.
-+
-+  A single regulator's voltage is specified with an array of size one or three.
-+  Single entry is for target voltage and three entries are for <target min max>
-+  voltages.
-+
-+  Entries for multiple regulators must be present in the same order as
-+  regulators are specified in device's DT node.
-+
-+- opp-microamp: The maximum current drawn by the device in microamperes
-+  considering system specific parameters (such as transients, process, aging,
-+  maximum operating temperature range etc.) as necessary. This may be used to
-+  set the most efficient regulator operating mode.
-+
-+  Should only be set if opp-microvolt is set for the OPP.
-+
-+  Entries for multiple regulators must be present in the same order as
-+  regulators are specified in device's DT node. If this property isn't required
-+  for few regulators, then this should be marked as zero for them. If it isn't
-+  required for any regulator, then this property need not be present.
-+
-+- clock-latency-ns: Specifies the maximum possible transition latency (in
-+  nanoseconds) for switching to this OPP from any other OPP.
-+
-+- turbo-mode: Marks the OPP to be used only for turbo modes. Turbo mode is
-+  available on some platforms, where the device can run over its operating
-+  frequency for a short duration of time limited by the device's power, current
-+  and thermal limits.
-+
-+- status: Marks the node enabled/disabled.
-+
-+Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
-+
-+/ {
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu@0 {
-+			compatible = "arm,cortex-a9";
-+			reg = <0>;
-+			next-level-cache = <&L2>;
-+			clocks = <&clk_controller 0>;
-+			clock-names = "cpu";
-+			opp-supply = <&cpu_supply0>;
-+			operating-points-v2 = <&cpu0_opp>;
-+		};
-+
-+		cpu@1 {
-+			compatible = "arm,cortex-a9";
-+			reg = <1>;
-+			next-level-cache = <&L2>;
-+			clocks = <&clk_controller 0>;
-+			clock-names = "cpu";
-+			opp-supply = <&cpu_supply0>;
-+			operating-points-v2 = <&cpu0_opp>;
-+		};
-+	};
-+
-+	cpu0_opp: opp0 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		entry00 {
-+			opp-hz = <1000000000>;
-+			opp-microvolt = <970000 975000 985000>;
-+			opp-microamp = <70000>;
-+			clock-latency-ns = <300000>;
-+		};
-+		entry01 {
-+			opp-hz = <1100000000>;
-+			opp-microvolt = <980000 1000000 1010000>;
-+			opp-microamp = <80000>;
-+			clock-latency-ns = <310000>;
-+		};
-+		entry02 {
-+			opp-hz = <1200000000>;
-+			opp-microvolt = <1025000>;
-+			clock-latency-ns = <290000>;
-+			turbo-mode;
-+		};
-+	};
-+};
-+
-+Example 2: Single cluster, Quad-core Qualcom-krait, switches DVFS states
-+independently.
-+
-+/ {
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu@0 {
-+			compatible = "qcom,krait";
-+			reg = <0>;
-+			next-level-cache = <&L2>;
-+			clocks = <&clk_controller 0>;
-+			clock-names = "cpu";
-+			opp-supply = <&cpu_supply0>;
-+			operating-points-v2 = <&cpu0_opp>;
-+		};
-+
-+		cpu@1 {
-+			compatible = "qcom,krait";
-+			reg = <1>;
-+			next-level-cache = <&L2>;
-+			clocks = <&clk_controller 1>;
-+			clock-names = "cpu";
-+			opp-supply = <&cpu_supply1>;
-+			operating-points-v2 = <&cpu0_opp>;
-+		};
-+
-+		cpu@2 {
-+			compatible = "qcom,krait";
-+			reg = <2>;
-+			next-level-cache = <&L2>;
-+			clocks = <&clk_controller 2>;
-+			clock-names = "cpu";
-+			opp-supply = <&cpu_supply2>;
-+			operating-points-v2 = <&cpu0_opp>;
-+		};
-+
-+		cpu@3 {
-+			compatible = "qcom,krait";
-+			reg = <3>;
-+			next-level-cache = <&L2>;
-+			clocks = <&clk_controller 3>;
-+			clock-names = "cpu";
-+			opp-supply = <&cpu_supply3>;
-+			operating-points-v2 = <&cpu0_opp>;
-+		};
-+	};
-+
-+	cpu0_opp: opp0 {
-+		compatible = "operating-points-v2";
-+
-+		/*
-+		 * Missing opp-shared property means CPUs switch DVFS states
-+		 * independently.
-+		 */
-+
-+		entry00 {
-+			opp-hz = <1000000000>;
-+			opp-microvolt = <970000 975000 985000>;
-+			opp-microamp = <70000>;
-+			clock-latency-ns = <300000>;
-+		};
-+		entry01 {
-+			opp-hz = <1100000000>;
-+			opp-microvolt = <980000 1000000 1010000>;
-+			opp-microamp = <80000>;
-+			clock-latency-ns = <310000>;
-+		};
-+		entry02 {
-+			opp-hz = <1200000000>;
-+			opp-microvolt = <1025000>;
-+			opp-microamp = <90000;
-+			lock-latency-ns = <290000>;
-+			turbo-mode;
-+		};
-+	};
-+};
-+
-+Example 3: Dual-cluster, Dual-core per cluster. CPUs within a cluster switch
-+DVFS state together.
-+
-+/ {
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		cpu@0 {
-+			compatible = "arm,cortex-a7";
-+			reg = <0>;
-+			next-level-cache = <&L2>;
-+			clocks = <&clk_controller 0>;
-+			clock-names = "cpu";
-+			opp-supply = <&cpu_supply0>;
-+			operating-points-v2 = <&cluster0_opp>;
-+		};
-+
-+		cpu@1 {
-+			compatible = "arm,cortex-a7";
-+			reg = <1>;
-+			next-level-cache = <&L2>;
-+			clocks = <&clk_controller 0>;
-+			clock-names = "cpu";
-+			opp-supply = <&cpu_supply0>;
-+			operating-points-v2 = <&cluster0_opp>;
-+		};
-+
-+		cpu@100 {
-+			compatible = "arm,cortex-a15";
-+			reg = <100>;
-+			next-level-cache = <&L2>;
-+			clocks = <&clk_controller 1>;
-+			clock-names = "cpu";
-+			opp-supply = <&cpu_supply1>;
-+			operating-points-v2 = <&cluster1_opp>;
-+		};
-+
-+		cpu@101 {
-+			compatible = "arm,cortex-a15";
-+			reg = <101>;
-+			next-level-cache = <&L2>;
-+			clocks = <&clk_controller 1>;
-+			clock-names = "cpu";
-+			opp-supply = <&cpu_supply1>;
-+			operating-points-v2 = <&cluster1_opp>;
-+		};
-+	};
-+
-+	cluster0_opp: opp0 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		entry00 {
-+			opp-hz = <1000000000>;
-+			opp-microvolt = <970000 975000 985000>;
-+			opp-microamp = <70000>;
-+			clock-latency-ns = <300000>;
-+		};
-+		entry01 {
-+			opp-hz = <1100000000>;
-+			opp-microvolt = <980000 1000000 1010000>;
-+			opp-microamp = <80000>;
-+			clock-latency-ns = <310000>;
-+		};
-+		entry02 {
-+			opp-hz = <1200000000>;
-+			opp-microvolt = <1025000>;
-+			opp-microamp = <90000>;
-+			clock-latency-ns = <290000>;
-+			turbo-mode;
-+		};
-+	};
-+
-+	cluster1_opp: opp1 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		entry10 {
-+			opp-hz = <1300000000>;
-+			opp-microvolt = <1045000 1050000 1055000>;
-+			opp-microamp = <95000>;
-+			clock-latency-ns = <400000>;
-+		};
-+		entry11 {
-+			opp-hz = <1400000000>;
-+			opp-microvolt = <1075000>;
-+			opp-microamp = <100000>;
-+			clock-latency-ns = <400000>;
-+		};
-+		entry12 {
-+			opp-hz = <1500000000>;
-+			opp-microvolt = <1010000 1100000 1110000>;
-+			opp-microamp = <95000>;
-+			clock-latency-ns = <400000>;
-+			turbo-mode;
-+		};
-+	};
-+};
-+
-+Example 4: Handling multiple regulators
-+
-+/ {
-+	cpus {
-+		cpu@0 {
-+			compatible = "arm,cortex-a7";
-+			...
-+
-+			opp-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
-+			operating-points-v2 = <&cpu0_opp>;
-+		};
-+	};
-+
-+	cpu0_opp: opp0 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		entry00 {
-+			opp-hz = <1000000000>;
-+			opp-microvolt = <970000>, /* Supply 0 */
-+					<960000>, /* Supply 1 */
-+					<960000>; /* Supply 2 */
-+			opp-microamp =  <70000>,  /* Supply 0 */
-+					<70000>,  /* Supply 1 */
-+					<70000>;  /* Supply 2 */
-+			clock-latency-ns = <300000>;
-+		};
-+
-+		/* OR */
-+
-+		entry00 {
-+			opp-hz = <1000000000>;
-+			opp-microvolt = <970000 975000 985000>, /* Supply 0 */
-+					<960000 965000 975000>, /* Supply 1 */
-+					<960000 965000 975000>; /* Supply 2 */
-+			opp-microamp =  <70000>,		/* Supply 0 */
-+					<70000>,		/* Supply 1 */
-+					<70000>;		/* Supply 2 */
-+			clock-latency-ns = <300000>;
-+		};
-+
-+		/* OR */
-+
-+		entry00 {
-+			opp-hz = <1000000000>;
-+			opp-microvolt = <970000 975000 985000>, /* Supply 0 */
-+					<960000 965000 975000>, /* Supply 1 */
-+					<960000 965000 975000>; /* Supply 2 */
-+			opp-microamp =  <70000>,		/* Supply 0 */
-+					<0>,			/* Supply 1 doesn't need this */
-+					<70000>;		/* Supply 2 */
-+			clock-latency-ns = <300000>;
-+		};
-+	};
-+};
+ * OPP Node
+ 
+@@ -143,9 +145,10 @@ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+ 
+ 	cpu0_opp: opp0 {
+ 		compatible = "operating-points-v2";
++		opp-suspend = <&suspend_opp>;
+ 		opp-shared;
+ 
+-		entry00 {
++		suspend-opp: entry00 {
+ 			opp-hz = <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>;
+ 			opp-microamp = <70000>;
+@@ -217,13 +220,14 @@ independently.
+ 
+ 	cpu0_opp: opp0 {
+ 		compatible = "operating-points-v2";
++		opp-suspend = <&suspend_opp>;
+ 
+ 		/*
+ 		 * Missing opp-shared property means CPUs switch DVFS states
+ 		 * independently.
+ 		 */
+ 
+-		entry00 {
++		suspend-opp: entry00 {
+ 			opp-hz = <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>;
+ 			opp-microamp = <70000>;
+@@ -296,9 +300,10 @@ DVFS state together.
+ 
+ 	cluster0_opp: opp0 {
+ 		compatible = "operating-points-v2";
++		opp-suspend = <&suspend_opp0>;
+ 		opp-shared;
+ 
+-		entry00 {
++		suspend-opp0: entry00 {
+ 			opp-hz = <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>;
+ 			opp-microamp = <70000>;
+@@ -321,9 +326,10 @@ DVFS state together.
+ 
+ 	cluster1_opp: opp1 {
+ 		compatible = "operating-points-v2";
++		opp-suspend = <&suspend_opp1>;
+ 		opp-shared;
+ 
+-		entry10 {
++		suspend-opp1: entry10 {
+ 			opp-hz = <1300000000>;
+ 			opp-microvolt = <1045000 1050000 1055000>;
+ 			opp-microamp = <95000>;
 -- 
 2.4.0
 
