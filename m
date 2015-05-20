@@ -1,48 +1,117 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 11/16] thermal: bang-bang governor: act on lower trip boundary
-Date: Wed, 20 May 2015 15:20:41 +0200
-Message-ID: <1432128046-12921-12-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH 04/16] thermal: Use IS_ENABLED instead of #ifdef
+Date: Wed, 20 May 2015 15:20:34 +0200
+Message-ID: <1432128046-12921-5-git-send-email-s.hauer@pengutronix.de>
 References: <1432128046-12921-1-git-send-email-s.hauer@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:35022 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932137AbbETNV1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 09:21:27 -0400
 In-Reply-To: <1432128046-12921-1-git-send-email-s.hauer@pengutronix.de>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-pm@vger.kernel.org
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Sascha Hauer <s.hauer@pengutronix.de>, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, linux-mediatek@lists.infradead.org, kernel@pengutronix.de, Zhang Rui <rui.zhang@intel.com>, Brian Norris <computersforpeace@gmail.com>, linux-arm-kernel@lists.infradead.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
 
-With interrupt driven thermal zones we pass the lower and upper temperature
-on which shall be acted, so in the governor we have to act on the exact lower
-temperature to be consistent. Otherwise an interrupt may be generated on the
-exact lower temperature, but the bang bang governor does not react.
+Use IS_ENABLED(CONFIG_THERMAL_EMULATION) to make the code more readable
+and to get rid of the addtional #ifdef around the variable definitions
+in thermal_zone_get_temp().
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/thermal/gov_bang_bang.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/thermal_core.c | 45 ++++++++++++++++++------------------------
+ 1 file changed, 19 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/thermal/gov_bang_bang.c b/drivers/thermal/gov_bang_bang.c
-index 70836c5..9d1dfea 100644
---- a/drivers/thermal/gov_bang_bang.c
-+++ b/drivers/thermal/gov_bang_bang.c
-@@ -59,7 +59,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
- 		if (instance->target == 0 && tz->temperature >= trip_temp)
- 			instance->target = 1;
- 		else if (instance->target == 1 &&
--				tz->temperature < trip_temp - trip_hyst)
-+				tz->temperature <= trip_temp - trip_hyst)
- 			instance->target = 0;
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 1b68d20..3e0fe55 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -414,11 +414,9 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
+ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+ {
+ 	int ret = -EINVAL;
+-#ifdef CONFIG_THERMAL_EMULATION
+ 	int count;
+ 	int crit_temp = INT_MAX;
+ 	enum thermal_trip_type type;
+-#endif
  
- 		dev_dbg(&instance->cdev->device, "target=%d\n",
+ 	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
+ 		goto exit;
+@@ -426,25 +424,21 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+ 	mutex_lock(&tz->lock);
+ 
+ 	ret = tz->ops->get_temp(tz, temp);
+-#ifdef CONFIG_THERMAL_EMULATION
+-	if (!tz->emul_temperature)
+-		goto skip_emul;
+-
+-	for (count = 0; count < tz->trips; count++) {
+-		ret = tz->ops->get_trip_type(tz, count, &type);
+-		if (!ret && type == THERMAL_TRIP_CRITICAL) {
+-			ret = tz->ops->get_trip_temp(tz, count, &crit_temp);
+-			break;
+-		}
+-	}
+ 
+-	if (ret)
+-		goto skip_emul;
++	if (IS_ENABLED(CONFIG_THERMAL_EMULATION) && tz->emul_temperature) {
++		for (count = 0; count < tz->trips; count++) {
++			ret = tz->ops->get_trip_type(tz, count, &type);
++			if (!ret && type == THERMAL_TRIP_CRITICAL) {
++				ret = tz->ops->get_trip_temp(tz, count,
++						&crit_temp);
++				break;
++			}
++		}
+ 
+-	if (*temp < crit_temp)
+-		*temp = tz->emul_temperature;
+-skip_emul:
+-#endif
++		if (!ret && *temp < crit_temp)
++			*temp = tz->emul_temperature;
++	}
++ 
+ 	mutex_unlock(&tz->lock);
+ exit:
+ 	return ret;
+@@ -780,7 +774,6 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
+ 	return sprintf(buf, "%s\n", tz->governor->name);
+ }
+ 
+-#ifdef CONFIG_THERMAL_EMULATION
+ static ssize_t
+ emul_temp_store(struct device *dev, struct device_attribute *attr,
+ 		     const char *buf, size_t count)
+@@ -806,7 +799,6 @@ emul_temp_store(struct device *dev, struct device_attribute *attr,
+ 	return ret ? ret : count;
+ }
+ static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
+-#endif/*CONFIG_THERMAL_EMULATION*/
+ 
+ static DEVICE_ATTR(type, 0444, type_show, NULL);
+ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+@@ -1536,11 +1528,12 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 			goto unregister;
+ 	}
+ 
+-#ifdef CONFIG_THERMAL_EMULATION
+-	result = device_create_file(&tz->device, &dev_attr_emul_temp);
+-	if (result)
+-		goto unregister;
+-#endif
++	if (IS_ENABLED(CONFIG_THERMAL_EMULATION)) {
++		result = device_create_file(&tz->device, &dev_attr_emul_temp);
++		if (result)
++			goto unregister;
++	}
++
+ 	/* Create policy attribute */
+ 	result = device_create_file(&tz->device, &dev_attr_policy);
+ 	if (result)
 -- 
 2.1.4
+
