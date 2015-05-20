@@ -1,51 +1,63 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
-Date: Wed, 20 May 2015 12:39:18 -0700
-Message-ID: <555CE2E6.80304@codeaurora.org>
-References: <cover.1430394884.git.viresh.kumar@linaro.org> <d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar@linaro.org> <555BDA7C.7020506@codeaurora.org> <20150520020715.GA6465@linux>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH v2 0/7] Change snvs rtc and poweroff to use syscon add
+ pwrkey driver
+Date: Wed, 20 May 2015 22:56:15 +0100
+Message-ID: <20150520215615.GZ2067@n2100.arm.linux.org.uk>
+References: <1432055082-28983-1-git-send-email-Frank.Li@freescale.com>
+ <20150520015851.GB1071@dragon>
+ <20150520182540.GQ2067@n2100.arm.linux.org.uk>
+ <20150520183050.GR2067@n2100.arm.linux.org.uk>
+ <CAHrpEqSngMgOj5Bjp0XWpw9CJCjoiU63iRuAX3Zw_aEO+-5RHg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:42240 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752896AbbETTjV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 15:39:21 -0400
-In-Reply-To: <20150520020715.GA6465@linux>
+Received: from pandora.arm.linux.org.uk ([78.32.30.218]:60763 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753055AbbETV4e (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 17:56:34 -0400
+Content-Disposition: inline
+In-Reply-To: <CAHrpEqSngMgOj5Bjp0XWpw9CJCjoiU63iRuAX3Zw_aEO+-5RHg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mike.turquette@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
+To: Zhi Li <lznuaa@gmail.com>
+Cc: Shawn Guo <shawnguo@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, "Frank.Li@freescale.com" <Frank.Li@freescale.com>, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, alexandre.belloni@free-electrons.com, Philipp Zabel <p.zabel@pengutronix.de>, linux-input@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 05/19/15 19:07, Viresh Kumar wrote:
-> On 19-05-15, 17:51, Stephen Boyd wrote:
->
->> Also I wonder if all properties should be optional? I don't have this
->> scenario today, but perhaps the frequencies could be encoded in fuses,
->> but the voltages wouldn't be and so we might want to read out the
->> frequencies for a fixed set of voltages. Of course, if there's nothing
->> in the OPP node at all, it's not very useful, so perhaps some statement
->> that at least one of the frequency/voltage/amperage properties should be
->> present.
-> I am not sure. What we are trying to do (fill partially in DT and
-> partially in platform), is a trick and not the right use of bindings.
->
-> Ideally whatever is passed in DT should be complete by itself and
-> doesn't require platform to tweak it (which it can't). For example,
-> the cpufreq-dt driver will try to initialize OPPs from the DT directly
-> and wouldn't know about the platform tweaks. That can work eventually
-> as platform will add OPPs for the same bindings before cpufreq driver
-> will try to do, but that's a trick.
->
-> And then its all about frequency in the first place, and so marking
-> that optional looks wrong. Probably not the right use of these
-> bindings.
+On Wed, May 20, 2015 at 01:44:58PM -0500, Zhi Li wrote:
+> On Wed, May 20, 2015 at 1:30 PM, Russell King - ARM Linux
+> <linux@arm.linux.org.uk> wrote:
+> > Looking at the RTC code, it would be pretty trivial to do.
+> >
+> > Rather than passing around struct regmap, pass around the private data
+> > structure.
+> >
+> > Rename the regmap_* function calls to be private accessors.  Implement
+> > a set of new accessors - if the private data has the regmap, use the
+> > regmap API.  Otherwise, use the old method, and print a warning that an
+> > old DT is being used.
+> 
+> This method work.  But code will become ugly and complex. I seach
+> whole dts tree.
+> Only imx6 use this driver.
+> 
+> Does it really valuable to keep compatiblity with cost of complex driver code?
 
-Ok then I won't be using these bindings on any of the new platforms I
-have where half the data is in one place, and half in another. But for
-some of Krait based platforms I have they should be useable.
+Let me put this a different way.
+
+Would you be upset if you installed a new kernel, rebooted and found that
+the system then fscked your filesystem, stamping a date of 1 Jan 1970
+on it.  Then you use a later dtb, and you have to go through another
+fsck of your filesystem because it's apparently been more than "31 days"
+or so since it was last fscked, and all this caused by the RTC vanishing
+because we couldn't be bothered with backward compatibility?
+
+There are real products out there which use iMX6 today.  In production,
+being sold.
+
+Do not break existing DTBs unless there really is no other choice.
+
+And I don't think it makes the code ugly, though it does make it _slightly_
+more complex.  That's a price worth paying for keeping stuff working.
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.
