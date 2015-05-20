@@ -1,7 +1,7 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 06/16] thermal: inline only once used function
-Date: Wed, 20 May 2015 15:20:36 +0200
-Message-ID: <1432128046-12921-7-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH 07/16] thermal: streamline get_trend callbacks
+Date: Wed, 20 May 2015 15:20:37 +0200
+Message-ID: <1432128046-12921-8-git-send-email-s.hauer@pengutronix.de>
 References: <1432128046-12921-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,50 +21,120 @@ To: linux-pm@vger.kernel.org
 Cc: Stephen Warren <swarren@wwwdotorg.org>, Sascha Hauer <s.hauer@pengutronix.de>, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, linux-mediatek@lists.infradead.org, kernel@pengutronix.de, Zhang Rui <rui.zhang@intel.com>, Brian Norris <computersforpeace@gmail.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Inline update_temperature into its only caller to make the code
-more readable.
+The .get_trend callback in struct thermal_zone_device_ops has the prototype:
+
+	int (*get_trend) (struct thermal_zone_device *, int,
+			  enum thermal_trend *);
+
+whereas the .get_trend callback in struct thermal_zone_of_device_ops has:
+
+	int (*get_trend)(void *, long *);
+
+Streamline both prototypes and add the trip argument to the OF callback
+aswell and use enum thermal_trend * instead of an integer pointer.
+
+While the OF prototype may be the better one, this should be decided at
+framework level and not on OF level.
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-Reviewed-by: Mikko Perttunen <mperttunen@nvidia.com>
 ---
- drivers/thermal/thermal_core.c | 17 +++++------------
- 1 file changed, 5 insertions(+), 12 deletions(-)
+ drivers/thermal/of-thermal.c                       | 11 +---------
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 25 +++++++---------------
+ include/linux/thermal.h                            |  2 +-
+ 3 files changed, 10 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index e204deb..19da022 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -450,9 +450,12 @@ exit:
- }
- EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
- 
--static void update_temperature(struct thermal_zone_device *tz)
-+void thermal_zone_device_update(struct thermal_zone_device *tz)
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index 03839df..c84404d 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -187,24 +187,15 @@ static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
+ 				enum thermal_trend *trend)
  {
--	int temp, ret;
-+	int temp, ret, count;
-+
-+	if (!tz->ops->get_temp)
-+		return;
+ 	struct __thermal_zone *data = tz->devdata;
+-	long dev_trend;
+ 	int r;
  
- 	ret = thermal_zone_get_temp(tz, &temp);
- 	if (ret) {
-@@ -471,16 +474,6 @@ static void update_temperature(struct thermal_zone_device *tz)
- 	trace_thermal_temperature(tz);
- 	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
- 				tz->last_temperature, tz->temperature);
+ 	if (!data->ops->get_trend)
+ 		return -EINVAL;
+ 
+-	r = data->ops->get_trend(data->sensor_data, &dev_trend);
++	r = data->ops->get_trend(data->sensor_data, trip, trend);
+ 	if (r)
+ 		return r;
+ 
+-	/* TODO: These intervals might have some thresholds, but in core code */
+-	if (dev_trend > 0)
+-		*trend = THERMAL_TREND_RAISING;
+-	else if (dev_trend < 0)
+-		*trend = THERMAL_TREND_DROPPING;
+-	else
+-		*trend = THERMAL_TREND_STABLE;
+-
+ 	return 0;
+ }
+ 
+diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+index d3a42bf..ade78eb 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+@@ -238,7 +238,7 @@ static int ti_thermal_get_trip_temp(struct thermal_zone_device *thermal,
+ 	return 0;
+ }
+ 
+-static int __ti_thermal_get_trend(void *p, long *trend)
++static int __ti_thermal_get_trend(void *p, int trip, enum thermal_trend *trend)
+ {
+ 	struct ti_thermal_data *data = p;
+ 	struct ti_bandgap *bgp;
+@@ -251,22 +251,6 @@ static int __ti_thermal_get_trend(void *p, long *trend)
+ 	if (ret)
+ 		return ret;
+ 
+-	*trend = tr;
+-
+-	return 0;
 -}
 -
--void thermal_zone_device_update(struct thermal_zone_device *tz)
+-/* Get the temperature trend callback functions for thermal zone */
+-static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
+-				int trip, enum thermal_trend *trend)
 -{
--	int count;
+-	int ret;
+-	long tr;
 -
--	if (!tz->ops->get_temp)
--		return;
+-	ret = __ti_thermal_get_trend(thermal->devdata, &tr);
+-	if (ret)
+-		return ret;
 -
--	update_temperature(tz);
+ 	if (tr > 0)
+ 		*trend = THERMAL_TREND_RAISING;
+ 	else if (tr < 0)
+@@ -277,6 +261,13 @@ static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
+ 	return 0;
+ }
  
- 	for (count = 0; count < tz->trips; count++)
- 		handle_thermal_trip(tz, count);
++/* Get the temperature trend callback functions for thermal zone */
++static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
++				int trip, enum thermal_trend *trend)
++{
++	return __ti_thermal_get_trend(thermal->devdata, trip, trend);
++}
++
+ /* Get critical temperature callback functions for thermal zone */
+ static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
+ 				    int *temp)
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index e9f2863..5c6a589 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -269,7 +269,7 @@ struct thermal_genl_event {
+  */
+ struct thermal_zone_of_device_ops {
+ 	int (*get_temp)(void *, int *);
+-	int (*get_trend)(void *, long *);
++	int (*get_trend)(void *, int, enum thermal_trend *);
+ 	int (*set_emul_temp)(void *, int);
+ };
+ 
 -- 
 2.1.4
