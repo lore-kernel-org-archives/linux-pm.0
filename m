@@ -1,7 +1,7 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 14/16] dt-bindings: thermal: Add binding document for Mediatek thermal controller
-Date: Wed, 20 May 2015 15:20:44 +0200
-Message-ID: <1432128046-12921-15-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH 05/16] thermal: Add comment explaining test for critical temperature
+Date: Wed, 20 May 2015 15:20:35 +0200
+Message-ID: <1432128046-12921-6-git-send-email-s.hauer@pengutronix.de>
 References: <1432128046-12921-1-git-send-email-s.hauer@pengutronix.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1432128046-12921-1-git-send-email-s.hauer@pengutronix.de>
@@ -10,53 +10,30 @@ To: linux-pm@vger.kernel.org
 Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
----
- .../bindings/thermal/mediatek-thermal.txt          | 36 ++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+The code testing if a temperature should be emulated or not is
+not obvious. Add a comment explaining why this test is done.
 
-diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-new file mode 100644
-index 0000000..adf5d2c
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-@@ -0,0 +1,36 @@
-+* Mediatek Thermal
-+
-+This describes the device tree binding for the Mediatek thermal controller
-+which measures the on-SoC temperatures. This device does not have its own ADC,
-+instead it directly controls the AUXADC via AHB bus accesses. For this reason
-+this device needs phandles to the AUXADC.
-+
-+Required properties:
-+- compatible: "mediatek,mt8173-thermal"
-+- reg: Address range of the thermal controller
-+- interrupts: IRQ for the thermal controller
-+- clocks, clock-names: Clocks needed for the thermal controller. required
-+                       clocks are:
-+		"therm":	Main clock needed for register access
-+		"auxadc":	The AUXADC clock
-+- resets, reset-names: Reference to the reset controller controlling the thermal
-+                       controller. Required reset-names:
-+		"therm":	The main reset line
-+- auxadc: A phandle to the AUXADC which the thermal controller uses
-+- apmixedsys: A phandle to the APMIXEDSYS controller.
-+- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description
-+
-+Example:
-+
-+	thermal: thermal@1100b000 {
-+		#thermal-sensor-cells = <1>;
-+		compatible = "mediatek,mt8173-thermal";
-+		reg = <0 0x1100b000 0 0x1000>;
-+		interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
-+		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
-+		clock-names = "therm", "auxadc";
-+		resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
-+		reset-names = "therm";
-+		auxadc = <&auxadc>;
-+		apmixedsys = <&apmixedsys>;
-+	};
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+Reviewed-by: Mikko Perttunen <mperttunen@nvidia.com>
+---
+ drivers/thermal/thermal_core.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 3e0fe55..e204deb 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -435,6 +435,11 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+ 			}
+ 		}
+ 
++		/*
++		 * Only allow emulating a temperature when the real temperature
++		 * is below the critical temperature so that the emulation code
++		 * cannot hide critical conditions.
++		 */
+ 		if (!ret && *temp < crit_temp)
+ 			*temp = tz->emul_temperature;
+ 	}
 -- 
 2.1.4
