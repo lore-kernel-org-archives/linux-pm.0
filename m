@@ -1,12 +1,12 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 09/16] thermal: of: always set sensor related callbacks
-Date: Wed, 20 May 2015 15:20:39 +0200
-Message-ID: <1432128046-12921-10-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH 12/16] thermal: thermal: Add support for hardware-tracked trip points
+Date: Wed, 20 May 2015 15:20:42 +0200
+Message-ID: <1432128046-12921-13-git-send-email-s.hauer@pengutronix.de>
 References: <1432128046-12921-1-git-send-email-s.hauer@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:34884 "EHLO
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:34876 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753687AbbETNVL (ORCPT
+	with ESMTP id S1752950AbbETNVL (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 09:21:11 -0400
 In-Reply-To: <1432128046-12921-1-git-send-email-s.hauer@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
@@ -14,127 +14,143 @@ List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
 
-Now that the thermal core treats -ENOSYS like the callbacks were
-not present at all we no longer have to overwrite the ops during
-runtime but instead can always set them and return -ENOSYS if no
-sensor is registered.
+This adds support for hardware-tracked trip points to the device tree
+thermal sensor framework.
+
+The framework supports an arbitrary number of trip points. Whenever
+the current temperature is updated, the trip points immediately
+below and above the current temperature are found. A .set_trips
+callback is then called with the temperatures. If there is no trip
+point above or below the current temperature, the passed trip
+temperature will be -INT_MAX or INT_MAX respectively. In this callback,
+the driver should program the hardware such that it is notified
+when either of these trip points are triggered. When a trip point
+is triggered, the driver should call `thermal_zone_device_update'
+for the respective thermal zone. This will cause the trip points
+to be updated again.
+
+If .set_trips is not implemented, the framework behaves as before.
+
+This patch is based on an earlier version from Mikko Perttunen
+<mikko.perttunen@kapsi.fi>
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- drivers/thermal/of-thermal.c | 33 +++++++++++++--------------------
- 1 file changed, 13 insertions(+), 20 deletions(-)
+ drivers/thermal/thermal_core.c | 51 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/thermal.h        |  3 +++
+ 2 files changed, 54 insertions(+)
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index c84404d..b9c35bd 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -91,7 +91,7 @@ static int of_thermal_get_temp(struct thermal_zone_device *tz,
- {
- 	struct __thermal_zone *data = tz->devdata;
- 
--	if (!data->ops->get_temp)
-+	if (!data->ops)
- 		return -EINVAL;
- 
- 	return data->ops->get_temp(data->sensor_data, temp);
-@@ -178,7 +178,7 @@ static int of_thermal_set_emul_temp(struct thermal_zone_device *tz,
- 	struct __thermal_zone *data = tz->devdata;
- 
- 	if (!data->ops || !data->ops->set_emul_temp)
--		return -EINVAL;
-+		return -ENOSYS;
- 
- 	return data->ops->set_emul_temp(data->sensor_data, temp);
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 6bbf61f..80eb4ea 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -453,6 +453,47 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
  }
-@@ -189,8 +189,8 @@ static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
- 	struct __thermal_zone *data = tz->devdata;
- 	int r;
+ EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
  
--	if (!data->ops->get_trend)
--		return -EINVAL;
-+	if (!data->ops || !data->ops->get_trend)
-+		return -ENOSYS;
++static void thermal_zone_set_trips(struct thermal_zone_device *tz)
++{
++	int low = -INT_MAX;
++	int high = INT_MAX;
++	int trip_temp, hysteresis;
++	int temp = tz->temperature;
++	int i, ret;
++
++	if (!tz->ops->set_trips)
++		return;
++
++	for (i = 0; i < tz->trips; i++) {
++		int trip_low;
++
++		tz->ops->get_trip_temp(tz, i, &trip_temp);
++		tz->ops->get_trip_hyst(tz, i, &hysteresis);
++
++		trip_low = trip_temp - hysteresis;
++
++		if (trip_low < temp && trip_low > low)
++			low = trip_low;
++
++		if (trip_temp > temp && trip_temp < high)
++			high = trip_temp;
++	}
++
++	/* No need to change trip points */
++	if (tz->prev_low_trip == low && tz->prev_high_trip == high)
++		return;
++
++	tz->prev_low_trip = low;
++	tz->prev_high_trip = high;
++
++	dev_dbg(&tz->device, "new temperature boundaries: %d < x < %d\n",
++			low, high);
++
++	ret = tz->ops->set_trips(tz, low, high);
++	if (ret)
++		dev_err(&tz->device, "Failed to set trips: %d\n", ret);
++}
++
+ void thermal_zone_device_update(struct thermal_zone_device *tz)
+ {
+ 	int temp, ret, count;
+@@ -479,6 +520,8 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+ 	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
+ 				tz->last_temperature, tz->temperature);
  
- 	r = data->ops->get_trend(data->sensor_data, trip, trend);
- 	if (r)
-@@ -366,6 +366,10 @@ static int of_thermal_get_crit_temp(struct thermal_zone_device *tz,
++	thermal_zone_set_trips(tz);
++
+ 	for (count = 0; count < tz->trips; count++)
+ 		handle_thermal_trip(tz, count);
+ }
+@@ -611,6 +654,9 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
+ 
+ 	ret = tz->ops->set_trip_temp(tz, trip, temperature);
+ 
++	if (!ret)
++		thermal_zone_set_trips(tz);
++
+ 	return ret ? ret : count;
  }
  
- static struct thermal_zone_device_ops of_thermal_ops = {
-+	.get_temp = of_thermal_get_temp,
-+	.get_trend = of_thermal_get_trend,
-+	.set_emul_temp = of_thermal_set_emul_temp,
+@@ -660,6 +706,9 @@ trip_point_hyst_store(struct device *dev, struct device_attribute *attr,
+ 	 */
+ 	ret = tz->ops->set_trip_hyst(tz, trip, temperature);
+ 
++	if (!ret)
++		thermal_zone_set_trips(tz);
 +
- 	.get_mode = of_thermal_get_mode,
- 	.set_mode = of_thermal_set_mode,
+ 	return ret ? ret : count;
+ }
  
-@@ -399,13 +403,13 @@ thermal_zone_of_add_sensor(struct device_node *zone,
- 	if (!ops)
- 		return ERR_PTR(-EINVAL);
+@@ -1494,6 +1543,8 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	tz->trips = trips;
+ 	tz->passive_delay = passive_delay;
+ 	tz->polling_delay = polling_delay;
++	tz->prev_low_trip = INT_MAX;
++	tz->prev_high_trip = -INT_MAX;
  
-+	if (!ops->get_temp)
-+		return ERR_PTR(-EINVAL);
-+
- 	mutex_lock(&tzd->lock);
- 	tz->ops = ops;
- 	tz->sensor_data = data;
- 
--	tzd->ops->get_temp = of_thermal_get_temp;
--	tzd->ops->get_trend = of_thermal_get_trend;
--	tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
- 	mutex_unlock(&tzd->lock);
- 
- 	return tzd;
-@@ -535,9 +539,6 @@ void thermal_zone_of_sensor_unregister(struct device *dev,
- 		return;
- 
- 	mutex_lock(&tzd->lock);
--	tzd->ops->get_temp = NULL;
--	tzd->ops->get_trend = NULL;
--	tzd->ops->set_emul_temp = NULL;
- 
- 	tz->ops = NULL;
- 	tz->sensor_data = NULL;
-@@ -845,7 +846,6 @@ int __init of_parse_thermal_zones(void)
- {
- 	struct device_node *np, *child;
- 	struct __thermal_zone *tz;
--	struct thermal_zone_device_ops *ops;
- 
- 	np = of_find_node_by_name(NULL, "thermal-zones");
- 	if (!np) {
-@@ -869,29 +869,22 @@ int __init of_parse_thermal_zones(void)
- 			continue;
- 		}
- 
--		ops = kmemdup(&of_thermal_ops, sizeof(*ops), GFP_KERNEL);
--		if (!ops)
--			goto exit_free;
--
- 		tzp = kzalloc(sizeof(*tzp), GFP_KERNEL);
--		if (!tzp) {
--			kfree(ops);
-+		if (!tzp)
- 			goto exit_free;
--		}
- 
- 		/* No hwmon because there might be hwmon drivers registering */
- 		tzp->no_hwmon = true;
- 
- 		zone = thermal_zone_device_register(child->name, tz->ntrips,
- 						    0, tz,
--						    ops, tzp,
-+						    &of_thermal_ops, tzp,
- 						    tz->passive_delay,
- 						    tz->polling_delay);
- 		if (IS_ERR(zone)) {
- 			pr_err("Failed to build %s zone %ld\n", child->name,
- 			       PTR_ERR(zone));
- 			kfree(tzp);
--			kfree(ops);
- 			of_thermal_free_zone(tz);
- 			/* attempting to build remaining zones still */
- 		}
+ 	dev_set_name(&tz->device, "thermal_zone%d", tz->id);
+ 	result = device_register(&tz->device);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 07bd5e8..aef6e13 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -87,6 +87,7 @@ struct thermal_zone_device_ops {
+ 	int (*unbind) (struct thermal_zone_device *,
+ 		       struct thermal_cooling_device *);
+ 	int (*get_temp) (struct thermal_zone_device *, int *);
++	int (*set_trips) (struct thermal_zone_device *, int, int);
+ 	int (*get_mode) (struct thermal_zone_device *,
+ 			 enum thermal_device_mode *);
+ 	int (*set_mode) (struct thermal_zone_device *,
+@@ -180,6 +181,8 @@ struct thermal_zone_device {
+ 	int last_temperature;
+ 	int emul_temperature;
+ 	int passive;
++	int prev_low_trip;
++	int prev_high_trip;
+ 	unsigned int forced_passive;
+ 	const struct thermal_zone_device_ops *ops;
+ 	const struct thermal_zone_params *tzp;
 -- 
 2.1.4
 
