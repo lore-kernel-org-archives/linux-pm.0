@@ -1,63 +1,88 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH v2 0/7] Change snvs rtc and poweroff to use syscon add
- pwrkey driver
-Date: Wed, 20 May 2015 22:56:15 +0100
-Message-ID: <20150520215615.GZ2067@n2100.arm.linux.org.uk>
-References: <1432055082-28983-1-git-send-email-Frank.Li@freescale.com>
- <20150520015851.GB1071@dragon>
- <20150520182540.GQ2067@n2100.arm.linux.org.uk>
- <20150520183050.GR2067@n2100.arm.linux.org.uk>
- <CAHrpEqSngMgOj5Bjp0XWpw9CJCjoiU63iRuAX3Zw_aEO+-5RHg@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [RFC/RFT v2 0/2] power_supply: Fix NULL pointer dereference from
+ uevent
+Date: Thu, 21 May 2015 00:20:54 +0200
+Message-ID: <20150520222053.GC28218@earth>
+References: <1432019582-27612-1-git-send-email-k.kozlowski@samsung.com>
+ <77C4D085-96E6-4874-BD7A-AC4BDFAC3A58@goldelico.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.arm.linux.org.uk ([78.32.30.218]:60763 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753055AbbETV4e (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 17:56:34 -0400
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="4SFOXa2GPu3tIq4H"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAHrpEqSngMgOj5Bjp0XWpw9CJCjoiU63iRuAX3Zw_aEO+-5RHg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <77C4D085-96E6-4874-BD7A-AC4BDFAC3A58@goldelico.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhi Li <lznuaa@gmail.com>
-Cc: Shawn Guo <shawnguo@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, "Frank.Li@freescale.com" <Frank.Li@freescale.com>, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, alexandre.belloni@free-electrons.com, Philipp Zabel <p.zabel@pengutronix.de>, linux-input@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, May 20, 2015 at 01:44:58PM -0500, Zhi Li wrote:
-> On Wed, May 20, 2015 at 1:30 PM, Russell King - ARM Linux
-> <linux@arm.linux.org.uk> wrote:
-> > Looking at the RTC code, it would be pretty trivial to do.
-> >
-> > Rather than passing around struct regmap, pass around the private data
-> > structure.
-> >
-> > Rename the regmap_* function calls to be private accessors.  Implement
-> > a set of new accessors - if the private data has the regmap, use the
-> > regmap API.  Otherwise, use the old method, and print a warning that an
-> > old DT is being used.
-> 
-> This method work.  But code will become ugly and complex. I seach
-> whole dts tree.
-> Only imx6 use this driver.
-> 
-> Does it really valuable to keep compatiblity with cost of complex driver code?
 
-Let me put this a different way.
+--4SFOXa2GPu3tIq4H
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Would you be upset if you installed a new kernel, rebooted and found that
-the system then fscked your filesystem, stamping a date of 1 Jan 1970
-on it.  Then you use a later dtb, and you have to go through another
-fsck of your filesystem because it's apparently been more than "31 days"
-or so since it was last fscked, and all this caused by the RTC vanishing
-because we couldn't be bothered with backward compatibility?
+Hi,
 
-There are real products out there which use iMX6 today.  In production,
-being sold.
+On Tue, May 19, 2015 at 10:28:39AM +0200, Dr. H. Nikolaus Schaller wrote:
+> Am 19.05.2015 um 09:13 schrieb Krzysztof Kozlowski <k.kozlowski@samsung.c=
+om>:
+> > Changes since v1:
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > 1. Patch 2: fix invalid member used for container_of().
+> > 2. Patch 2: Replace WARN with pr_warn() in __power_supply_register()
+> >   if parent is missing.
+> >=20
+> >=20
+> > Description:
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > This is an idea to fix issue in bq27x00 driver (and probably in others)
+> > reported by H. Nikolaus Schaller [0].
+> >=20
+> > The fixes are marked RFC/RFT because:
+> > 1. I do not have bq27x00-like device. I confirmed this and tested on
+> >   modified drivers (max77693, ACPI AC). These drivers are not
+> >   impacted by the issue but one can easily adjust them to reproduce
+> >   the problem.
+> > 2. The first uevent coming from power_supply_register() is now
+> >   different because it won't contain device properties. I am
+> >   not sure how this impacts userspace.
+> >=20
+> > Comments are welcomed.
+>=20
+> appears to work! bq27000 is coming up now without hickups.
+>=20
+> What I can=E2=80=99t test is if the uevent is reasonable because we do not
+> have a specific rule triggered by it in our system.
+>=20
+> So from my side we are now happy with the solution.
 
-Do not break existing DTBs unless there really is no other choice.
+So you would be ok with the following added to the patches?
 
-And I don't think it makes the code ugly, though it does make it _slightly_
-more complex.  That's a price worth paying for keeping stuff working.
+Tested-By: Dr. H. Nikolaus Schaller <hns@goldelico.com>
 
--- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+-- Sebastian
+
+--4SFOXa2GPu3tIq4H
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVXQjDAAoJENju1/PIO/qaMz0P/ROk3lvax447ZoG0EpdC8mWF
+yTZRqeOIO0GkiK4QvejudCbo2fIEt16rp/sAFqip6YhuyKrTPvDBO7tmnxutU+cX
+4tMC9HujbetQzWU+vaMJgOwJwbQdU6ScoqmcP2dFib84C2o7VjGF3g3lV03Zmu65
+W8S7GMecC7+z0/Rml2OEu+Vs9j2VWn94z/Hy8PuR7Cur9jnTZwNaNSVSXeTKfkAC
+GWQQyasCiHxHFfkqt/ejVtSEGsh12LLHIrnJl00m7KKdiB/5vIrLv5FQLjYo/ltf
+T9kWpqFwijfVAEaMQIgFyyQu+FMbftjeGi6iNgoF4OycTd3w+LdL7v6XXSfrklKh
+AknAq9dWI22AV0eMhiJiKTbH7hKbaFZCpnnEuscnBpTFjUSsD9rg44Sjfg6w++Id
+lmQnx9hr8Rg+KvRbqOxOww8P7YSK1X7ggCxccFuZMBpJj5goPv1K1J8GBDY0rHMj
+NfOFkxVOL8BpIIEl1/PEHF798bMPJ/K68kNElQbBXYnm18aZ/PLEUtNppKl9uUQi
+3y8mf3s/LHM6W21fWV3bRo2Neb7M1dw7mVoUxDTr5qR7peR0qEXwbGDMzMyaTH9R
+4NztWcFi+f/T5ewRKm+HmvIPnsKJmeESKmYosaDlOwCusFW6uGwFuBLVzbVf6GyR
+uL+GStHNopC4j3SqoJj4
+=GM96
+-----END PGP SIGNATURE-----
+
+--4SFOXa2GPu3tIq4H--
