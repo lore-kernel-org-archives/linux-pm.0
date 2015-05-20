@@ -1,66 +1,35 @@
-From: Mikko Perttunen <mikko.perttunen@kapsi.fi>
-Subject: Re: [PATCH 06/15] thermal: inline only once used function
-Date: Wed, 20 May 2015 10:28:01 +0300
-Message-ID: <555C3781.6090005@kapsi.fi>
-References: <1431507163-19933-1-git-send-email-s.hauer@pengutronix.de> <1431507163-19933-7-git-send-email-s.hauer@pengutronix.de>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/5] PM / Runtime: Update last_busy in rpm_resume
+Date: Wed, 20 May 2015 09:36:41 +0200
+Message-ID: <CAPDyKFqUthtbjP-4X4Qu6jxVkLe7s6tANyttqGUWToihKkww1Q@mail.gmail.com>
+References: <1431560196-5722-1-git-send-email-tony@atomide.com>
+	<1431560196-5722-2-git-send-email-tony@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1431507163-19933-7-git-send-email-s.hauer@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Brian Norris <computersforpeace@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f176.google.com ([209.85.220.176]:34300 "EHLO
+	mail-qk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752531AbbETHgm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 03:36:42 -0400
+Received: by qkgx75 with SMTP id x75so26377065qkg.1
+        for <linux-pm@vger.kernel.org>; Wed, 20 May 2015 00:36:41 -0700 (PDT)
+In-Reply-To: <1431560196-5722-2-git-send-email-tony@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Thomas Gleixner <tglx@linutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-serial@vger.kernel.org, linux-omap <linux-omap@vger.kernel.org>
 
-On 05/13/15 11:52, Sascha Hauer wrote:
-> Inline update_temperature into its only caller to make the code
-> more readable.
+On 14 May 2015 at 01:36, Tony Lindgren <tony@atomide.com> wrote:
+> If we don't update last_busy in rpm_resume, devices can go back
+> to sleep immediately after resume. This happens at least in
+> cases where the device has been powered off and does not have
+> any interrupt pending until there's something in the FIFO.
 >
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> ---
->   drivers/thermal/thermal_core.c | 17 +++++------------
->   1 file changed, 5 insertions(+), 12 deletions(-)
->
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index e204deb..19da022 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -450,9 +450,12 @@ exit:
->   }
->   EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
->
-> -static void update_temperature(struct thermal_zone_device *tz)
-> +void thermal_zone_device_update(struct thermal_zone_device *tz)
->   {
-> -	int temp, ret;
-> +	int temp, ret, count;
-> +
-> +	if (!tz->ops->get_temp)
-> +		return;
->
->   	ret = thermal_zone_get_temp(tz, &temp);
->   	if (ret) {
-> @@ -471,16 +474,6 @@ static void update_temperature(struct thermal_zone_device *tz)
->   	trace_thermal_temperature(tz);
->   	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
->   				tz->last_temperature, tz->temperature);
-> -}
-> -
-> -void thermal_zone_device_update(struct thermal_zone_device *tz)
-> -{
-> -	int count;
-> -
-> -	if (!tz->ops->get_temp)
-> -		return;
-> -
-> -	update_temperature(tz);
->
->   	for (count = 0; count < tz->trips; count++)
->   		handle_thermal_trip(tz, count);
->
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
 
-This is a slight change in that if get_temp fails, governors were 
-updated before but aren't now. But I don't know why that would matter.
+If it's not too late,
 
-Reviewed-by: Mikko Perttunen <mperttunen@nvidia.com>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
