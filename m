@@ -1,71 +1,98 @@
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Subject: Re: [RFCv4 PATCH 22/34] sched: Calculate energy consumption of
- sched_group
-Date: Thu, 21 May 2015 13:27:04 +0530
-Message-ID: <20150521075702.GA20008@linux.vnet.ibm.com>
-References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
- <1431459549-18343-23-git-send-email-morten.rasmussen@arm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v2 0/2] Adds cpu power accounting per-pid basis.
+Date: Thu, 21 May 2015 16:34:43 +0200
+Message-ID: <555DED03.9070002@linaro.org>
+References: <1431648770-7404-1-git-send-email-kandoiruchi@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp08.in.ibm.com ([122.248.162.8]:56088 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751641AbbEUH5R (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 May 2015 03:57:17 -0400
-Received: from /spool/local
-	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <kamalesh@linux.vnet.ibm.com>;
-	Thu, 21 May 2015 13:27:14 +0530
-Content-Disposition: inline
-In-Reply-To: <1431459549-18343-23-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1431648770-7404-1-git-send-email-kandoiruchi@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ruchi Kandoi <kandoiruchi@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Vladimir Davydov <vdavydov@parallels.com>, Heinrich Schuchardt <xypron.glpk@gmx.de>, Thomas Gleixner <tglx@linutronix.de>, Kees Cook <keescook@chromium.org>, Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, Davidlohr Bueso <dave@stgolabs.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-* Morten Rasmussen <morten.rasmussen@arm.com> [2015-05-12 20:38:57]:
+Hi Ruchi,
 
-[...]
-> +/*
-> + * cpu_norm_usage() returns the cpu usage relative to a specific cap=
-acity,
-> + * i.e. it's busy ratio, in the range [0..SCHED_LOAD_SCALE] which is=
- useful for
-> + * energy calculations. Using the scale-invariant usage returned by
-> + * get_cpu_usage() and approximating scale-invariant usage by:
-> + *
-> + *   usage ~ (curr_freq/max_freq)*1024 * capacity_orig/1024 * runnin=
-g_time/time
-> + *
-> + * the normalized usage can be found using the specific capacity.
-> + *
-> + *   capacity =3D capacity_orig * curr_freq/max_freq
-> + *
-> + *   norm_usage =3D running_time/time ~ usage/capacity
-> + */
-> +static unsigned long cpu_norm_usage(int cpu, unsigned long capacity)
-> +{
-> +	int usage =3D __get_cpu_usage(cpu);
+On 05/15/2015 02:12 AM, Ruchi Kandoi wrote:
+> These patches add a mechanism which will accurately caculate the CPU =
+power
+> used by all the processes in the system. In order to account for the =
+power
+> used by all the processes a data field "cpu_power" has been added in =
+the
+> task_struct.
 
-__get_cpu_usage is introduced in next patch "sched: Extend sched_group_=
-energy
-to test load-balancing decisions", applying the series with this patch =
-as top
-most patch breaks the build.
+The term 'energy' makes more sense than 'power'.
 
-kernel/sched/fair.c: In function =E2=80=98cpu_norm_usage=E2=80=99:
-kernel/sched/fair.c:4830:2: error: implicit declaration of function =E2=
-=80=98__get_cpu_usage=E2=80=99 [-Werror=3Dimplicit-function-declaration=
-]
-  int usage =3D __get_cpu_usage(cpu);
-  ^
+> This field adds power for both the system as well as user
+> time. cpu_power contains the total amount of charge(in uAmsec units) =
+used
 
-Given that __get_cpu_usage(), take additional parameter - delta. get_cp=
-u_usage()
-should have been used here.
+Why not use the Joules unit ?
 
-Thanks,
-Kamalesh
+> by the process. This model takes into account the frequency at which =
+the
+> process was running(i.e higher power for processes running at higher
+> frequencies). It requires the cpufreq_stats module to be initialized =
+with
+> the current numbers for each of the CPU core at each frequency. This =
+will
+> be initialized during init time.
 
+The energy task accounting is an interesting feature in my opinion. But=
+=20
+your patchset does not deal with the power management hardware complexi=
+ty.
+
+If we reduce the scope of the task energy accounting to the cpu, we are=
+=20
+facing several issues:
+
+  * A cpu may be supposed to run at a specific OPP but it could share a=
+=20
+clock line with another cpu which is in a higher frequency. So the=20
+frequency is actually at a higher rate than what is assumed
+
+  * The firmware may override the cpufreq decisions
+
+  * A process may be idle but its behavior forces the cpuidle governor=20
+to choose shallow states (that won't occur without the process). For=20
+example, the process is using very short timers, does a small processin=
+g=20
+and then go to sleep again waiting for the next timer expiration. The=20
+result will be a process having a low energy consumption but actually=20
+because of these timers, it will prevent the cpu to enter deep idle sta=
+te
+
+Beside that, the process may be soliciting a subsystem (another process=
+=20
+or hardware) which consumes a lot of energy. That won't be accounted=20
+even if the process is responsible of this extra consumption.
+
+And the last point is: how do you expect to have the energy numbers as=20
+nobody is willing to share them for their platform ?
+
+> Ruchi Kandoi (2):
+>    cpufreq_stats: Adds sysfs file
+>      /sys/devices/system/cpu/cpufreq/current_in_state
+>    sched: cpufreq: Adds a field cpu_power in the task_struct
+>
+>   drivers/cpufreq/cpufreq_stats.c | 191 +++++++++++++++++++++++++++++=
+++++++++++-
+>   include/linux/cpufreq.h         |   8 ++
+>   include/linux/sched.h           |   2 +
+>   kernel/fork.c                   |   1 +
+>   kernel/sched/cputime.c          |   7 ++
+>   5 files changed, 207 insertions(+), 2 deletions(-)
+
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
