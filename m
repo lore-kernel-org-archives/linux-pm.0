@@ -1,60 +1,45 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v2 0/7] Change snvs rtc and poweroff to use syscon add
- pwrkey driver
-Date: Wed, 20 May 2015 17:20:43 -0700
-Message-ID: <20150521002043.GI23809@dtor-ws>
-References: <1432055082-28983-1-git-send-email-Frank.Li@freescale.com>
- <20150520015851.GB1071@dragon>
- <20150520182540.GQ2067@n2100.arm.linux.org.uk>
- <20150520183050.GR2067@n2100.arm.linux.org.uk>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/5] PM / Wakeirq: Add automated device wake IRQ handling
+Date: Thu, 21 May 2015 02:54:14 +0200
+Message-ID: <2273759.0pS9I3MzHs@vostro.rjw.lan>
+References: <1431560196-5722-1-git-send-email-tony@atomide.com> <143211021.lFoirF2CMg@vostro.rjw.lan> <20150520021057.GT10274@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f175.google.com ([209.85.223.175]:35191 "EHLO
-	mail-ie0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751962AbbEUAUt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 20:20:49 -0400
-Content-Disposition: inline
-In-Reply-To: <20150520183050.GR2067@n2100.arm.linux.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150520021057.GT10274@atomide.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Felipe Balbi <balbi@ti.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Shawn Guo <shawnguo@kernel.org>, a.zummo@towertech.it, Frank.Li@freescale.com, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, alexandre.belloni@free-electrons.com, p.zabel@pengutronix.de, linux-input@vger.kernel.org, lznuaa@gmail.com, shawn.guo@linaro.org, linux-arm-kernel@lists.infradead.org
 
-On Wed, May 20, 2015 at 07:30:50PM +0100, Russell King - ARM Linux wrote:
-> On Wed, May 20, 2015 at 07:25:41PM +0100, Russell King - ARM Linux wrote:
-> > On Wed, May 20, 2015 at 09:58:51AM +0800, Shawn Guo wrote:
-> > > On Wed, May 20, 2015 at 01:04:35AM +0800, Frank.Li@freescale.com wrote:
-> > > > Frank Li (6):
-> > > >   arm: imx: power-off: change to syscon to access register
-> > > >   rtc: arm: imx: snvs: change use syscon to access register
-> > > >   Document: dt: fsl: snvs: change support syscon
-> > > >   arm: dts: imx: update snvs to use syscon access register
-> > > >   document: devicetree: input: imx: i.mx snvs power device tree bindings
-> > > >   arm: dts: imx6sx: enable snvs power key
+On Tuesday, May 19, 2015 07:10:57 PM Tony Lindgren wrote:
+> * Rafael J. Wysocki <rjw@rjwysocki.net> [150519 17:01]:
+> > On Tuesday, May 19, 2015 04:27:56 PM Tony Lindgren wrote:
+> > > * Rafael J. Wysocki <rjw@rjwysocki.net> [150519 16:07]:
+> > > > On Wednesday, May 20, 2015 12:41:06 AM Thomas Gleixner wrote:
+> > > > > On Wed, 20 May 2015, Rafael J. Wysocki wrote:
+> > > > > > This one looks really good. :-)
+> > > > > > 
+> > > > > > If it doesn't depend on anything, I can apply it right away, so please let me
+> > > > > > know.
 > > > 
-> > > So, the series will break existing DTBs for RTC and poweroff, right?
-> > > If this is unavoidable, should we at least have some warning messages
-> > > telling users about his breakage?
+> > > Sure works for me, it just has a dependency to patch #1 in this
+> > > series ("[PATCH 1/5] PM / Runtime: Update last_busy in rpm_resume").
 > > 
-> > What's the justification for breaking existing DTBs?  Really, this is
-> > something we should strive to avoid, _and_ actually avoid by providing
-> > backwards compatibility.
+> > OK, I'll queue them both up for 4.2, then.
+> > 
+> > Please let me know if you need a special branch with them.
 > 
-> Looking at the RTC code, it would be pretty trivial to do.
-> 
-> Rather than passing around struct regmap, pass around the private data
-> structure.
-> 
-> Rename the regmap_* function calls to be private accessors.  Implement
-> a set of new accessors - if the private data has the regmap, use the
-> regmap API.  Otherwise, use the old method, and print a warning that an
-> old DT is being used.
+> A separate branch would be nice so I can merge that in too.
 
-Or maybe have drivers create regmap themselves if they see old DTS and
-not bother with the 2 sets of accessors?
+OK
 
-Thanks.
+I added a new pm-wakeirq branch to linux-pm.git with these two patches and
+one other commit related to runtime PM (all based on 4.1-rc4).  This branch
+will not be rebased going forward.
+
 
 -- 
-Dmitry
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
