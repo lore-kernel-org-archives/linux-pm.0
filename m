@@ -1,88 +1,60 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [RFC/RFT v2 0/2] power_supply: Fix NULL pointer dereference from
- uevent
-Date: Thu, 21 May 2015 00:20:54 +0200
-Message-ID: <20150520222053.GC28218@earth>
-References: <1432019582-27612-1-git-send-email-k.kozlowski@samsung.com>
- <77C4D085-96E6-4874-BD7A-AC4BDFAC3A58@goldelico.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v2 0/7] Change snvs rtc and poweroff to use syscon add
+ pwrkey driver
+Date: Wed, 20 May 2015 17:20:43 -0700
+Message-ID: <20150521002043.GI23809@dtor-ws>
+References: <1432055082-28983-1-git-send-email-Frank.Li@freescale.com>
+ <20150520015851.GB1071@dragon>
+ <20150520182540.GQ2067@n2100.arm.linux.org.uk>
+ <20150520183050.GR2067@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="4SFOXa2GPu3tIq4H"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ie0-f175.google.com ([209.85.223.175]:35191 "EHLO
+	mail-ie0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751962AbbEUAUt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 20:20:49 -0400
 Content-Disposition: inline
-In-Reply-To: <77C4D085-96E6-4874-BD7A-AC4BDFAC3A58@goldelico.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Dr. H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20150520183050.GR2067@n2100.arm.linux.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Shawn Guo <shawnguo@kernel.org>, a.zummo@towertech.it, Frank.Li@freescale.com, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org, alexandre.belloni@free-electrons.com, p.zabel@pengutronix.de, linux-input@vger.kernel.org, lznuaa@gmail.com, shawn.guo@linaro.org, linux-arm-kernel@lists.infradead.org
 
+On Wed, May 20, 2015 at 07:30:50PM +0100, Russell King - ARM Linux wrote:
+> On Wed, May 20, 2015 at 07:25:41PM +0100, Russell King - ARM Linux wrote:
+> > On Wed, May 20, 2015 at 09:58:51AM +0800, Shawn Guo wrote:
+> > > On Wed, May 20, 2015 at 01:04:35AM +0800, Frank.Li@freescale.com wrote:
+> > > > Frank Li (6):
+> > > >   arm: imx: power-off: change to syscon to access register
+> > > >   rtc: arm: imx: snvs: change use syscon to access register
+> > > >   Document: dt: fsl: snvs: change support syscon
+> > > >   arm: dts: imx: update snvs to use syscon access register
+> > > >   document: devicetree: input: imx: i.mx snvs power device tree bindings
+> > > >   arm: dts: imx6sx: enable snvs power key
+> > > 
+> > > So, the series will break existing DTBs for RTC and poweroff, right?
+> > > If this is unavoidable, should we at least have some warning messages
+> > > telling users about his breakage?
+> > 
+> > What's the justification for breaking existing DTBs?  Really, this is
+> > something we should strive to avoid, _and_ actually avoid by providing
+> > backwards compatibility.
+> 
+> Looking at the RTC code, it would be pretty trivial to do.
+> 
+> Rather than passing around struct regmap, pass around the private data
+> structure.
+> 
+> Rename the regmap_* function calls to be private accessors.  Implement
+> a set of new accessors - if the private data has the regmap, use the
+> regmap API.  Otherwise, use the old method, and print a warning that an
+> old DT is being used.
 
---4SFOXa2GPu3tIq4H
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Or maybe have drivers create regmap themselves if they see old DTS and
+not bother with the 2 sets of accessors?
 
-Hi,
+Thanks.
 
-On Tue, May 19, 2015 at 10:28:39AM +0200, Dr. H. Nikolaus Schaller wrote:
-> Am 19.05.2015 um 09:13 schrieb Krzysztof Kozlowski <k.kozlowski@samsung.c=
-om>:
-> > Changes since v1:
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > 1. Patch 2: fix invalid member used for container_of().
-> > 2. Patch 2: Replace WARN with pr_warn() in __power_supply_register()
-> >   if parent is missing.
-> >=20
-> >=20
-> > Description:
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > This is an idea to fix issue in bq27x00 driver (and probably in others)
-> > reported by H. Nikolaus Schaller [0].
-> >=20
-> > The fixes are marked RFC/RFT because:
-> > 1. I do not have bq27x00-like device. I confirmed this and tested on
-> >   modified drivers (max77693, ACPI AC). These drivers are not
-> >   impacted by the issue but one can easily adjust them to reproduce
-> >   the problem.
-> > 2. The first uevent coming from power_supply_register() is now
-> >   different because it won't contain device properties. I am
-> >   not sure how this impacts userspace.
-> >=20
-> > Comments are welcomed.
->=20
-> appears to work! bq27000 is coming up now without hickups.
->=20
-> What I can=E2=80=99t test is if the uevent is reasonable because we do not
-> have a specific rule triggered by it in our system.
->=20
-> So from my side we are now happy with the solution.
-
-So you would be ok with the following added to the patches?
-
-Tested-By: Dr. H. Nikolaus Schaller <hns@goldelico.com>
-
--- Sebastian
-
---4SFOXa2GPu3tIq4H
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVXQjDAAoJENju1/PIO/qaMz0P/ROk3lvax447ZoG0EpdC8mWF
-yTZRqeOIO0GkiK4QvejudCbo2fIEt16rp/sAFqip6YhuyKrTPvDBO7tmnxutU+cX
-4tMC9HujbetQzWU+vaMJgOwJwbQdU6ScoqmcP2dFib84C2o7VjGF3g3lV03Zmu65
-W8S7GMecC7+z0/Rml2OEu+Vs9j2VWn94z/Hy8PuR7Cur9jnTZwNaNSVSXeTKfkAC
-GWQQyasCiHxHFfkqt/ejVtSEGsh12LLHIrnJl00m7KKdiB/5vIrLv5FQLjYo/ltf
-T9kWpqFwijfVAEaMQIgFyyQu+FMbftjeGi6iNgoF4OycTd3w+LdL7v6XXSfrklKh
-AknAq9dWI22AV0eMhiJiKTbH7hKbaFZCpnnEuscnBpTFjUSsD9rg44Sjfg6w++Id
-lmQnx9hr8Rg+KvRbqOxOww8P7YSK1X7ggCxccFuZMBpJj5goPv1K1J8GBDY0rHMj
-NfOFkxVOL8BpIIEl1/PEHF798bMPJ/K68kNElQbBXYnm18aZ/PLEUtNppKl9uUQi
-3y8mf3s/LHM6W21fWV3bRo2Neb7M1dw7mVoUxDTr5qR7peR0qEXwbGDMzMyaTH9R
-4NztWcFi+f/T5ewRKm+HmvIPnsKJmeESKmYosaDlOwCusFW6uGwFuBLVzbVf6GyR
-uL+GStHNopC4j3SqoJj4
-=GM96
------END PGP SIGNATURE-----
-
---4SFOXa2GPu3tIq4H--
+-- 
+Dmitry
