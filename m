@@ -1,38 +1,33 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] powercap / RAPL: Support Knights Landing
-Date: Thu, 21 May 2015 03:01:28 +0200
-Message-ID: <7466887.D1gkLetUCV@vostro.rjw.lan>
-References: <1432075069-18196-1-git-send-email-dasaratharaman.chandramouli@intel.com> <4265007.tICN7CeGKt@vostro.rjw.lan> <20150519171005.1f32c052@jacob-VirtualBox>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [PATCH v3] ARM: tegra: cpuidle: implement cpuidle_state.enter_freeze()
+Date: Thu, 21 May 2015 03:02:36 +0200
+Message-ID: <1773599.T1QStsTFTH@vostro.rjw.lan>
+References: <1432046953-12945-1-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150519171005.1f32c052@jacob-VirtualBox>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Nikhil Rao <nikhil.rao@intel.com>, Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1432046953-12945-1-git-send-email-tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene.kim-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ingo Molnar <mingo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, May 19, 2015 05:10:05 PM Jacob Pan wrote:
-> On Wed, 20 May 2015 01:31:54 +0200
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+On Tuesday, May 19, 2015 04:49:12 PM Tomeu Vizoso wrote:
+> This callback is expected to do the same as enter() but it has to
+> guarantee that interrupts aren't enabled at any point in its execution,
+> as the tick is frozen.
 > 
-> > On Tuesday, May 19, 2015 03:37:49 PM Dasaratharaman Chandramouli
-> > wrote:
-> > > This patch enables intel_rapl driver to run on the
-> > > next-generation Intel(R) Xeon Phi Microarchitecture
-> > > code named "Knights Landing"
-> > > 
-> > > Signed-off-by: Dasaratharaman Chandramouli
-> > > <dasaratharaman.chandramouli@intel.com>
-> > 
-> > Jacob?
-> looks good.
->  Acked-by:Jacob Pan <jacob.jun.pan@linux.intel.com>
+> It will be called when the system goes to suspend-to-idle and will
+> reduce power usage because CPUs won't be awaken for unnecessary IRQs.
+> 
+> By setting the CPUIDLE_FLAG_TIMER_STOP flag, we can reuse the same code
+> for both the enter() and enter_freeze() callbacks.
+> 
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 
-Missing space in the tag.
-
-Anyway, queued up for 4.2, thanks!
+Makes sense to me, but I suppose it should go in via arm-soc.
 
 
 -- 
