@@ -1,66 +1,88 @@
-From: Zhi Li <lznuaa@gmail.com>
-Subject: Re: [PATCH v2 0/7] Change snvs rtc and poweroff to use syscon add
- pwrkey driver
-Date: Wed, 20 May 2015 20:16:11 -0500
-Message-ID: <CAHrpEqT0cjujJzr9KD7qhS7F2fZaAhuct4Q8YHYFe0uvaR9_qw@mail.gmail.com>
-References: <1432055082-28983-1-git-send-email-Frank.Li@freescale.com>
-	<20150520015851.GB1071@dragon>
-	<20150520182540.GQ2067@n2100.arm.linux.org.uk>
-	<20150520183050.GR2067@n2100.arm.linux.org.uk>
-	<20150521002043.GI23809@dtor-ws>
+From: Felipe Balbi <balbi@ti.com>
+Subject: Re: [PATCH 2/5] PM / Wakeirq: Add automated device wake IRQ handling
+Date: Wed, 20 May 2015 20:40:26 -0500
+Message-ID: <20150521014026.GA16009@saruman.tx.rr.com>
+References: <1431560196-5722-1-git-send-email-tony@atomide.com>
+ <143211021.lFoirF2CMg@vostro.rjw.lan>
+ <20150520021057.GT10274@atomide.com>
+ <2273759.0pS9I3MzHs@vostro.rjw.lan>
+Reply-To: <balbi@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f177.google.com ([209.85.214.177]:34657 "EHLO
-	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751075AbbEUBQM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 21:16:12 -0400
-In-Reply-To: <20150521002043.GI23809@dtor-ws>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
+Return-path: <linux-omap-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2273759.0pS9I3MzHs@vostro.rjw.lan>
+Sender: linux-omap-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Tony Lindgren <tony@atomide.com>, Thomas Gleixner <tglx@linutronix.de>, Felipe Balbi <balbi@ti.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Shawn Guo <shawnguo@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, "Frank.Li@freescale.com" <Frank.Li@freescale.com>, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, alexandre.belloni@free-electrons.com, Philipp Zabel <p.zabel@pengutronix.de>, linux-input@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, May 20, 2015 at 7:20 PM, Dmitry Torokhov
-<dmitry.torokhov@gmail.com> wrote:
-> On Wed, May 20, 2015 at 07:30:50PM +0100, Russell King - ARM Linux wrote:
->> On Wed, May 20, 2015 at 07:25:41PM +0100, Russell King - ARM Linux wrote:
->> > On Wed, May 20, 2015 at 09:58:51AM +0800, Shawn Guo wrote:
->> > > On Wed, May 20, 2015 at 01:04:35AM +0800, Frank.Li@freescale.com wrote:
->> > > > Frank Li (6):
->> > > >   arm: imx: power-off: change to syscon to access register
->> > > >   rtc: arm: imx: snvs: change use syscon to access register
->> > > >   Document: dt: fsl: snvs: change support syscon
->> > > >   arm: dts: imx: update snvs to use syscon access register
->> > > >   document: devicetree: input: imx: i.mx snvs power device tree bindings
->> > > >   arm: dts: imx6sx: enable snvs power key
->> > >
->> > > So, the series will break existing DTBs for RTC and poweroff, right?
->> > > If this is unavoidable, should we at least have some warning messages
->> > > telling users about his breakage?
->> >
->> > What's the justification for breaking existing DTBs?  Really, this is
->> > something we should strive to avoid, _and_ actually avoid by providing
->> > backwards compatibility.
->>
->> Looking at the RTC code, it would be pretty trivial to do.
->>
->> Rather than passing around struct regmap, pass around the private data
->> structure.
->>
->> Rename the regmap_* function calls to be private accessors.  Implement
->> a set of new accessors - if the private data has the regmap, use the
->> regmap API.  Otherwise, use the old method, and print a warning that an
->> old DT is being used.
->
-> Or maybe have drivers create regmap themselves if they see old DTS and
-> not bother with the 2 sets of accessors?
+--k+w/mQv8wyuph6w0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Does any dt node convert to regmap regardless if there are "syscon"
-compatible string?
+On Thu, May 21, 2015 at 02:54:14AM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, May 19, 2015 07:10:57 PM Tony Lindgren wrote:
+> > * Rafael J. Wysocki <rjw@rjwysocki.net> [150519 17:01]:
+> > > On Tuesday, May 19, 2015 04:27:56 PM Tony Lindgren wrote:
+> > > > * Rafael J. Wysocki <rjw@rjwysocki.net> [150519 16:07]:
+> > > > > On Wednesday, May 20, 2015 12:41:06 AM Thomas Gleixner wrote:
+> > > > > > On Wed, 20 May 2015, Rafael J. Wysocki wrote:
+> > > > > > > This one looks really good. :-)
+> > > > > > >=20
+> > > > > > > If it doesn't depend on anything, I can apply it right away, =
+so please let me
+> > > > > > > know.
+> > > >=20
+> > > > Sure works for me, it just has a dependency to patch #1 in this
+> > > > series ("[PATCH 1/5] PM / Runtime: Update last_busy in rpm_resume").
+> > >=20
+> > > OK, I'll queue them both up for 4.2, then.
+> > >=20
+> > > Please let me know if you need a special branch with them.
+> >=20
+> > A separate branch would be nice so I can merge that in too.
+>=20
+> OK
+>=20
+> I added a new pm-wakeirq branch to linux-pm.git with these two patches and
+> one other commit related to runtime PM (all based on 4.1-rc4).  This bran=
+ch
+> will not be rebased going forward.
 
->
-> Thanks.
->
-> --
-> Dmitry
+Hopefully it's not too late to get my
+
+Reviewed-by: Felipe Balbi <balbi@ti.com>
+
+in the patch. If it is, no problem :-)
+
+cheers
+
+--=20
+balbi
+
+--k+w/mQv8wyuph6w0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVXTeKAAoJEIaOsuA1yqREFPYP+gNaIcM1gYVi7UsHchb1fvD9
+lm9s3UaU2s5aCBcK8vplts+s1G4HN4YmHQFlF8NgXw0IlGzL7fCAKCxvefZ5Wh4S
+MhP9Of/HC8OwSVQKvl6qgfHWqSzfwQHOVpgyYOCKO/royRqUQ07CutBtzyQSHH4p
+sGnZfH+TNG4bDdZTf/aMNxcpNQ1Wuvsgn96ISrZwcbKJws+dya+gAdDovPI4gWD8
+Xl1ivIJbdtznbSG0Zpui81DW1rj9YdeMnV8Lr1rDwzVcmNCD/rznxtBOT/2xAUi/
+e14VxHUIIfxAKcs3sKSkfG6BJV/+tUCJ+nLYeZgfLBuI7bEZ9bi3Y++gQaKnS26b
+B9BPGBdi1xSjQnfmdFNFsNDPZ9cv6uU0q//3CcmFo6xaovtXkA4CHxfQprCQdI9e
+kJ8T2k8AoaCgubpS1LIk++hMw0RNIDOabrLQ8OvG/MG1jmkqiw0HTM6FFA6MvKuU
+fI3E7KSdLIAD5Z8nlg8XCnF4ox0aKTD9qE3smy0eC984RL8CBWwVlEgvlxsBvPmv
+GevD5V8+e632aeYlaAFRITBi7J9S8dXuW7qvhr93LTs0KdTmZfggFqQxMBpsbHjf
+uOm9Ie8NUaOui6h6dCN6d/RBZ23wXfFMrZ+q7+XKXESpfBf7J4dySVLhO78ePUUR
+8B8X+FnpfT7xzTLzJ1rn
+=/qf6
+-----END PGP SIGNATURE-----
+
+--k+w/mQv8wyuph6w0--
