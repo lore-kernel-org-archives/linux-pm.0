@@ -1,32 +1,71 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V5 1/3] OPP: Redefine bindings to overcome shortcomings
-Date: Thu, 21 May 2015 11:36:00 +0530
-Message-ID: <20150521060600.GC17553@linux>
-References: <cover.1432091956.git.viresh.kumar@linaro.org>
- <51a2603050f7993643fea9e5dcd2dba7a5a3fe23.1432091956.git.viresh.kumar@linaro.org>
- <555D6CC8.9050201@ti.com>
- <20150521054602.GE22904@linux>
- <555D740B.6000001@ti.com>
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [RFCv4 PATCH 22/34] sched: Calculate energy consumption of
+ sched_group
+Date: Thu, 21 May 2015 13:27:04 +0530
+Message-ID: <20150521075702.GA20008@linux.vnet.ibm.com>
+References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
+ <1431459549-18343-23-git-send-email-morten.rasmussen@arm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f175.google.com ([209.85.192.175]:35465 "EHLO
-	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751750AbbEUGGE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 May 2015 02:06:04 -0400
-Received: by pdea3 with SMTP id a3so96386500pde.2
-        for <linux-pm@vger.kernel.org>; Wed, 20 May 2015 23:06:04 -0700 (PDT)
+Received: from e28smtp08.in.ibm.com ([122.248.162.8]:56088 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751641AbbEUH5R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 May 2015 03:57:17 -0400
+Received: from /spool/local
+	by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <kamalesh@linux.vnet.ibm.com>;
+	Thu, 21 May 2015 13:27:14 +0530
 Content-Disposition: inline
-In-Reply-To: <555D740B.6000001@ti.com>
+In-Reply-To: <1431459549-18343-23-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, arnd.bergmann@linaro.org, broonie@kernel.org, mike.turquette@linaro.org, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, preeti@linux.vnet.ibm.com, mturquette@linaro.org, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 21-05-15, 00:58, Nishanth Menon wrote:
-> I assume you meant [1] which in turn pointed to [2]. Thanks, will do so.
+* Morten Rasmussen <morten.rasmussen@arm.com> [2015-05-12 20:38:57]:
 
-Right.
+[...]
+> +/*
+> + * cpu_norm_usage() returns the cpu usage relative to a specific cap=
+acity,
+> + * i.e. it's busy ratio, in the range [0..SCHED_LOAD_SCALE] which is=
+ useful for
+> + * energy calculations. Using the scale-invariant usage returned by
+> + * get_cpu_usage() and approximating scale-invariant usage by:
+> + *
+> + *   usage ~ (curr_freq/max_freq)*1024 * capacity_orig/1024 * runnin=
+g_time/time
+> + *
+> + * the normalized usage can be found using the specific capacity.
+> + *
+> + *   capacity =3D capacity_orig * curr_freq/max_freq
+> + *
+> + *   norm_usage =3D running_time/time ~ usage/capacity
+> + */
+> +static unsigned long cpu_norm_usage(int cpu, unsigned long capacity)
+> +{
+> +	int usage =3D __get_cpu_usage(cpu);
 
--- 
-viresh
+__get_cpu_usage is introduced in next patch "sched: Extend sched_group_=
+energy
+to test load-balancing decisions", applying the series with this patch =
+as top
+most patch breaks the build.
+
+kernel/sched/fair.c: In function =E2=80=98cpu_norm_usage=E2=80=99:
+kernel/sched/fair.c:4830:2: error: implicit declaration of function =E2=
+=80=98__get_cpu_usage=E2=80=99 [-Werror=3Dimplicit-function-declaration=
+]
+  int usage =3D __get_cpu_usage(cpu);
+  ^
+
+Given that __get_cpu_usage(), take additional parameter - delta. get_cp=
+u_usage()
+should have been used here.
+
+Thanks,
+Kamalesh
+
