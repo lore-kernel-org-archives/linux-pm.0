@@ -1,88 +1,105 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: [PATCH 2/5] PM / Wakeirq: Add automated device wake IRQ handling
-Date: Wed, 20 May 2015 20:40:26 -0500
-Message-ID: <20150521014026.GA16009@saruman.tx.rr.com>
-References: <1431560196-5722-1-git-send-email-tony@atomide.com>
- <143211021.lFoirF2CMg@vostro.rjw.lan>
- <20150520021057.GT10274@atomide.com>
- <2273759.0pS9I3MzHs@vostro.rjw.lan>
-Reply-To: <balbi@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] ACPI / PM: Turn power resources on and off in the right order during resume
+Date: Thu, 21 May 2015 04:19:49 +0200
+Message-ID: <1692579.9Aunh5vn4X@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
-Return-path: <linux-omap-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2273759.0pS9I3MzHs@vostro.rjw.lan>
-Sender: linux-omap-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tony Lindgren <tony@atomide.com>, Thomas Gleixner <tglx@linutronix.de>, Felipe Balbi <balbi@ti.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
---k+w/mQv8wyuph6w0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Thu, May 21, 2015 at 02:54:14AM +0200, Rafael J. Wysocki wrote:
-> On Tuesday, May 19, 2015 07:10:57 PM Tony Lindgren wrote:
-> > * Rafael J. Wysocki <rjw@rjwysocki.net> [150519 17:01]:
-> > > On Tuesday, May 19, 2015 04:27:56 PM Tony Lindgren wrote:
-> > > > * Rafael J. Wysocki <rjw@rjwysocki.net> [150519 16:07]:
-> > > > > On Wednesday, May 20, 2015 12:41:06 AM Thomas Gleixner wrote:
-> > > > > > On Wed, 20 May 2015, Rafael J. Wysocki wrote:
-> > > > > > > This one looks really good. :-)
-> > > > > > >=20
-> > > > > > > If it doesn't depend on anything, I can apply it right away, =
-so please let me
-> > > > > > > know.
-> > > >=20
-> > > > Sure works for me, it just has a dependency to patch #1 in this
-> > > > series ("[PATCH 1/5] PM / Runtime: Update last_busy in rpm_resume").
-> > >=20
-> > > OK, I'll queue them both up for 4.2, then.
-> > >=20
-> > > Please let me know if you need a special branch with them.
-> >=20
-> > A separate branch would be nice so I can merge that in too.
->=20
-> OK
->=20
-> I added a new pm-wakeirq branch to linux-pm.git with these two patches and
-> one other commit related to runtime PM (all based on 4.1-rc4).  This bran=
-ch
-> will not be rebased going forward.
+According to Section 7.2 of ACPI 6.0, power resources should
+always be enabled and disabled in order given by the "resourceorder"
+field of the corresponding Power Resource objects: "Power Resource
+levels are enabled from low values to high values and are disabled
+from high values to low values."
 
-Hopefully it's not too late to get my
+However, this is not what happens during system resume, because
+in that case the enabling/disabling is carried out in the power
+resource registration order which may not reflect the ordering
+required by the platform.
 
-Reviewed-by: Felipe Balbi <balbi@ti.com>
+For this reason, make the ordering of the global list of all
+power resources in the system (used by the system resume code)
+reflect the one given by the "resourceorder" attributes of the
+Power Resource objects in the ACPI namespace and modify
+acpi_resume_power_resources() to walk the list in the reverse
+order when turning off the power resources that had been off
+before the system was suspended.
 
-in the patch. If it is, no problem :-)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/power.c |   40 ++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 36 insertions(+), 4 deletions(-)
 
-cheers
+Index: linux-pm/drivers/acpi/power.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/power.c
++++ linux-pm/drivers/acpi/power.c
+@@ -760,6 +760,25 @@ static void acpi_power_sysfs_remove(stru
+ 	device_remove_file(&device->dev, &dev_attr_resource_in_use);
+ }
+ 
++static void acpi_power_add_resource_to_list(struct acpi_power_resource *resource)
++{
++	mutex_lock(&power_resource_list_lock);
++
++	if (!list_empty(&acpi_power_resource_list)) {
++		struct acpi_power_resource *r;
++
++		list_for_each_entry(r, &acpi_power_resource_list, list_node)
++			if (r->order > resource->order) {
++				list_add_tail(&resource->list_node, &r->list_node);
++				goto out;
++			}
++	}
++	list_add_tail(&resource->list_node, &acpi_power_resource_list);
++
++ out:
++	mutex_unlock(&power_resource_list_lock);
++}
++
+ int acpi_add_power_resource(acpi_handle handle)
+ {
+ 	struct acpi_power_resource *resource;
+@@ -810,9 +829,7 @@ int acpi_add_power_resource(acpi_handle
+ 	if (!device_create_file(&device->dev, &dev_attr_resource_in_use))
+ 		device->remove = acpi_power_sysfs_remove;
+ 
+-	mutex_lock(&power_resource_list_lock);
+-	list_add(&resource->list_node, &acpi_power_resource_list);
+-	mutex_unlock(&power_resource_list_lock);
++	acpi_power_add_resource_to_list(resource);
+ 	acpi_device_add_finalize(device);
+ 	return 0;
+ 
+@@ -843,7 +860,22 @@ void acpi_resume_power_resources(void)
+ 		    && resource->ref_count) {
+ 			dev_info(&resource->device.dev, "Turning ON\n");
+ 			__acpi_power_on(resource);
+-		} else if (state == ACPI_POWER_RESOURCE_STATE_ON
++		}
++
++		mutex_unlock(&resource->resource_lock);
++	}
++	list_for_each_entry_reverse(resource, &acpi_power_resource_list, list_node) {
++		int result, state;
++
++		mutex_lock(&resource->resource_lock);
++
++		result = acpi_power_get_state(resource->device.handle, &state);
++		if (result) {
++			mutex_unlock(&resource->resource_lock);
++			continue;
++		}
++
++		if (state == ACPI_POWER_RESOURCE_STATE_ON
+ 		    && !resource->ref_count) {
+ 			dev_info(&resource->device.dev, "Turning OFF\n");
+ 			__acpi_power_off(resource);
 
---=20
-balbi
-
---k+w/mQv8wyuph6w0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVXTeKAAoJEIaOsuA1yqREFPYP+gNaIcM1gYVi7UsHchb1fvD9
-lm9s3UaU2s5aCBcK8vplts+s1G4HN4YmHQFlF8NgXw0IlGzL7fCAKCxvefZ5Wh4S
-MhP9Of/HC8OwSVQKvl6qgfHWqSzfwQHOVpgyYOCKO/royRqUQ07CutBtzyQSHH4p
-sGnZfH+TNG4bDdZTf/aMNxcpNQ1Wuvsgn96ISrZwcbKJws+dya+gAdDovPI4gWD8
-Xl1ivIJbdtznbSG0Zpui81DW1rj9YdeMnV8Lr1rDwzVcmNCD/rznxtBOT/2xAUi/
-e14VxHUIIfxAKcs3sKSkfG6BJV/+tUCJ+nLYeZgfLBuI7bEZ9bi3Y++gQaKnS26b
-B9BPGBdi1xSjQnfmdFNFsNDPZ9cv6uU0q//3CcmFo6xaovtXkA4CHxfQprCQdI9e
-kJ8T2k8AoaCgubpS1LIk++hMw0RNIDOabrLQ8OvG/MG1jmkqiw0HTM6FFA6MvKuU
-fI3E7KSdLIAD5Z8nlg8XCnF4ox0aKTD9qE3smy0eC984RL8CBWwVlEgvlxsBvPmv
-GevD5V8+e632aeYlaAFRITBi7J9S8dXuW7qvhr93LTs0KdTmZfggFqQxMBpsbHjf
-uOm9Ie8NUaOui6h6dCN6d/RBZ23wXfFMrZ+q7+XKXESpfBf7J4dySVLhO78ePUUR
-8B8X+FnpfT7xzTLzJ1rn
-=/qf6
------END PGP SIGNATURE-----
-
---k+w/mQv8wyuph6w0--
