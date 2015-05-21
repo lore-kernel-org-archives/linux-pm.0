@@ -1,65 +1,269 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 1/3] PM / Hibernate: prepare for SANITIZE_FREED_PAGES
-Date: Thu, 21 May 2015 03:11:12 +0200
-Message-ID: <4282804.3atZjAcjTt@vostro.rjw.lan>
-References: <1431613188-4511-1-git-send-email-anisse@astier.eu> <555C73E7.23237.269170A5@pageexec.freemail.hu> <CALUN=q+0mUTeJKE0OV8Bkny33M2Psdp4U5dF3vBcyo+mxNb-Nw@mail.gmail.com>
+Subject: Re: [PATCH] PM / sleep: cancel the synchronous restriction of pm-trace
+Date: Thu, 21 May 2015 03:16:05 +0200
+Message-ID: <7277571.Mlj5enddWV@vostro.rjw.lan>
+References: <554A297C.2040305@linux.intel.com> <3154303.fma7bByNVc@vostro.rjw.lan> <555C4AC5.4080901@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:45642 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:60351 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752819AbbEUApu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 20:45:50 -0400
-In-Reply-To: <CALUN=q+0mUTeJKE0OV8Bkny33M2Psdp4U5dF3vBcyo+mxNb-Nw@mail.gmail.com>
+	with SMTP id S1751962AbbEUAuo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 May 2015 20:50:44 -0400
+In-Reply-To: <555C4AC5.4080901@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Anisse Astier <anisse@astier.eu>
-Cc: PaX Team <pageexec@freemail.hu>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, David Rientjes <rientjes@google.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, Brad Spengler <spender@grsecurity.net>, Kees Cook <keescook@chromium.org>, Andi Kleen <andi@firstfloor.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-mm@kvack.org, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
+Cc: len.brown@intel.com, pavel@ucw.cz, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Wednesday, May 20, 2015 02:07:36 PM Anisse Astier wrote:
-> On Wed, May 20, 2015 at 1:45 PM, PaX Team <pageexec@freemail.hu> wrote:
-> >
-> >> Moreover, why is the resume code path the only one where freed pages need to
-> >> be sanitized?
-> >
-> > ... i had a bug report before (http://marc.info/?l=linux-pm&m=132871433416256)
-> > which is why i asked Anisse to figure this out before upstreaming the feature.
-> > i've also asked him already to explain why his approach is the proper fix for
-> > the problem (which should include the description of the root cause as a start)
-> > but he hasn't answered that yet.
-> >
-> > anyway, the big question is how there can be free memory pages after resume
-> > which are not sanitized. now i have no idea about the hibernation logic but
-> > i assume that it doesn't save/restore free pages so the question is how the
-> > kernel gets to learn about these free pages during resume and whether there's
-> > a path where __free_page() or some other wrapper around free_pages_prepare()
-> > doesn't get called at all.
+On Wednesday, May 20, 2015 04:50:13 PM Fu, Zhonghui wrote:
 > 
-> In my opinion the free pages left are those used by the loading kernel.
+> On 2015/5/16 8:45, Rafael J. Wysocki wrote:
+> > On Wednesday, May 06, 2015 10:47:24 PM Fu, Zhonghui wrote:
+> >> Some system-hang occur only when multiple device PM methods
+> >> are running asynchronously. So should cancel the synchronization
+> >> of pm-trace, and make it suitable for asynchronous PM environment.
+> >>
+> >> Signed-off-by: Zhonghui Fu <zhonghui.fu@linux.intel.com>
+> >> ---
+> >>  drivers/base/power/main.c |   53 +++++++++++++++++++++-----------------------
+> >>  include/linux/pm-trace.h  |   24 ++++++++++++--------
+> >>  kernel/power/main.c       |    2 +
+> >>  3 files changed, 41 insertions(+), 38 deletions(-)
+> >>
+> >> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> >> index 3d874ec..40daf48 100644
+> >> --- a/drivers/base/power/main.c
+> >> +++ b/drivers/base/power/main.c
+> >> @@ -476,9 +476,6 @@ static int device_resume_noirq(struct device *dev, pm_message_t state, bool asyn
+> >>  	char *info = NULL;
+> >>  	int error = 0;
+> >>  
+> >> -	TRACE_DEVICE(dev);
+> >> -	TRACE_RESUME(0);
+> >> -
+> >>  	if (dev->power.syscore || dev->power.direct_complete)
+> >>  		goto Out;
+> >>  
+> >> @@ -506,19 +503,21 @@ static int device_resume_noirq(struct device *dev, pm_message_t state, bool asyn
+> >>  		callback = pm_noirq_op(dev->driver->pm, state);
+> >>  	}
+> >>  
+> >> +	TRACE_DEVICE_START(dev);
+> >> +	TRACE_RESUME(0);
+> >> +
+> >>  	error = dpm_run_callback(callback, dev, state, info);
+> >>  	dev->power.is_noirq_suspended = false;
+> >>  
+> >> +	TRACE_DEVICE_END();
+> >>   Out:
+> >>  	complete_all(&dev->power.completion);
+> >> -	TRACE_RESUME(error);
+> >>  	return error;
+> >>  }
+> >>  
+> >>  static bool is_async(struct device *dev)
+> >>  {
+> >> -	return dev->power.async_suspend && pm_async_enabled
+> >> -		&& !pm_trace_is_enabled();
+> >> +	return dev->power.async_suspend && pm_async_enabled;
+> >>  }
+> >>  
+> >>  static void async_resume_noirq(void *data, async_cookie_t cookie)
+> >> @@ -605,9 +604,6 @@ static int device_resume_early(struct device *dev, pm_message_t state, bool asyn
+> >>  	char *info = NULL;
+> >>  	int error = 0;
+> >>  
+> >> -	TRACE_DEVICE(dev);
+> >> -	TRACE_RESUME(0);
+> >> -
+> >>  	if (dev->power.syscore || dev->power.direct_complete)
+> >>  		goto Out;
+> >>  
+> >> @@ -635,12 +631,14 @@ static int device_resume_early(struct device *dev, pm_message_t state, bool asyn
+> >>  		callback = pm_late_early_op(dev->driver->pm, state);
+> >>  	}
+> >>  
+> >> +	TRACE_DEVICE_START(dev);
+> >> +	TRACE_RESUME(0);
+> >> +
+> >>  	error = dpm_run_callback(callback, dev, state, info);
+> >>  	dev->power.is_late_suspended = false;
+> >>  
+> >> +	TRACE_DEVICE_END();
+> >>   Out:
+> >> -	TRACE_RESUME(error);
+> >> -
+> >>  	pm_runtime_enable(dev);
+> >>  	complete_all(&dev->power.completion);
+> >>  	return error;
+> >> @@ -734,9 +732,6 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+> >>  	int error = 0;
+> >>  	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
+> >>  
+> >> -	TRACE_DEVICE(dev);
+> >> -	TRACE_RESUME(0);
+> >> -
+> >>  	if (dev->power.syscore)
+> >>  		goto Complete;
+> >>  
+> >> @@ -801,9 +796,13 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+> >>  	}
+> >>  
+> >>   End:
+> >> +	TRACE_DEVICE_START(dev);
+> >> +	TRACE_RESUME(0);
+> >> +
+> >>  	error = dpm_run_callback(callback, dev, state, info);
+> >>  	dev->power.is_suspended = false;
+> >>  
+> >> +	TRACE_DEVICE_END();
+> >>   Unlock:
+> >>  	device_unlock(dev);
+> >>  	dpm_watchdog_clear(&wd);
+> >> @@ -811,8 +810,6 @@ static int device_resume(struct device *dev, pm_message_t state, bool async)
+> >>   Complete:
+> >>  	complete_all(&dev->power.completion);
+> >>  
+> >> -	TRACE_RESUME(error);
+> >> -
+> >>  	return error;
+> >>  }
+> >>  
+> >> @@ -1017,9 +1014,6 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
+> >>  	char *info = NULL;
+> >>  	int error = 0;
+> >>  
+> >> -	TRACE_DEVICE(dev);
+> >> -	TRACE_SUSPEND(0);
+> >> -
+> >>  	if (async_error)
+> >>  		goto Complete;
+> >>  
+> >> @@ -1052,15 +1046,18 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
+> >>  		callback = pm_noirq_op(dev->driver->pm, state);
+> >>  	}
+> >>  
+> >> +	TRACE_DEVICE_START(dev);
+> >> +	TRACE_SUSPEND(0);
+> >> +
+> >>  	error = dpm_run_callback(callback, dev, state, info);
+> >>  	if (!error)
+> >>  		dev->power.is_noirq_suspended = true;
+> >>  	else
+> >>  		async_error = error;
+> >>  
+> >> +	TRACE_DEVICE_END();
+> >>  Complete:
+> >>  	complete_all(&dev->power.completion);
+> >> -	TRACE_SUSPEND(error);
+> >>  	return error;
+> >>  }
+> >>  
+> >> @@ -1161,9 +1158,6 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+> >>  	char *info = NULL;
+> >>  	int error = 0;
+> >>  
+> >> -	TRACE_DEVICE(dev);
+> >> -	TRACE_SUSPEND(0);
+> >> -
+> >>  	__pm_runtime_disable(dev, false);
+> >>  
+> >>  	if (async_error)
+> >> @@ -1198,14 +1192,17 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+> >>  		callback = pm_late_early_op(dev->driver->pm, state);
+> >>  	}
+> >>  
+> >> +	TRACE_DEVICE_START(dev);
+> >> +	TRACE_SUSPEND(0);
+> >> +
+> >>  	error = dpm_run_callback(callback, dev, state, info);
+> >>  	if (!error)
+> >>  		dev->power.is_late_suspended = true;
+> >>  	else
+> >>  		async_error = error;
+> >>  
+> >> +	TRACE_DEVICE_END();
+> >>  Complete:
+> >> -	TRACE_SUSPEND(error);
+> >>  	complete_all(&dev->power.completion);
+> >>  	return error;
+> >>  }
+> >> @@ -1346,9 +1343,6 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+> >>  	int error = 0;
+> >>  	DECLARE_DPM_WATCHDOG_ON_STACK(wd);
+> >>  
+> >> -	TRACE_DEVICE(dev);
+> >> -	TRACE_SUSPEND(0);
+> >> -
+> >>  	dpm_wait_for_children(dev, async);
+> >>  
+> >>  	if (async_error)
+> >> @@ -1428,8 +1422,12 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+> >>  		callback = pm_op(dev->driver->pm, state);
+> >>  	}
+> >>  
+> >> +	TRACE_DEVICE_START(dev);
+> >> +	TRACE_SUSPEND(0);
+> >> +
+> >>  	error = dpm_run_callback(callback, dev, state, info);
+> >>  
+> >> +	TRACE_DEVICE_END();
+> >>   End:
+> >>  	if (!error) {
+> >>  		struct device *parent = dev->parent;
+> >> @@ -1455,7 +1453,6 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+> >>  	if (error)
+> >>  		async_error = error;
+> >>  
+> >> -	TRACE_SUSPEND(error);
+> >>  	return error;
+> >>  }
+> >>  
+> >> diff --git a/include/linux/pm-trace.h b/include/linux/pm-trace.h
+> >> index ecbde7a..aa480b1 100644
+> >> --- a/include/linux/pm-trace.h
+> >> +++ b/include/linux/pm-trace.h
+> >> @@ -6,29 +6,33 @@
+> >>  #include <linux/types.h>
+> >>  
+> >>  extern int pm_trace_enabled;
+> >> -
+> >> -static inline int pm_trace_is_enabled(void)
+> >> -{
+> >> -       return pm_trace_enabled;
+> >> -}
+> >> +extern struct mutex pt_mutex;
+> >>  
+> >>  struct device;
+> >>  extern void set_trace_device(struct device *);
+> >>  extern void generate_pm_trace(const void *tracedata, unsigned int user);
+> >>  extern int show_trace_dev_match(char *buf, size_t size);
+> >>  
+> >> -#define TRACE_DEVICE(dev) do { \
+> >> +#define TRACE_DEVICE_START(dev) do { \
+> >>  	if (pm_trace_enabled) \
+> >> +		mutex_lock(&pt_mutex); \
+> >>  		set_trace_device(dev); \
+> >>  	} while(0)
+> >>  
+> >> +#define TRACE_DEVICE_END() \
+> >> +do { \
+> >> +	if (pm_trace_enabled) { \
+> >> +		mutex_unlock(&pt_mutex); \
+> >> +	} \
+> >> +} while (0)
+> >> +
+> > Won't this serialize the whole thing again?
+> Yes, this mutex lock will ultimately serialize all PM operations. But, all device's PM operations are asynchronous each other at first. So, the PM operation order of all devices will vary in multiple suspend/resume. This can be similar to real to an extreme, and helpful to debugging.
 
-Well, that is not a matter of opinion really, but it's actually correct.
+I see.  You're saying that callbacks will be serialized, but if they originally
+would be asynchronous with respect to each other (they may run in parallel IOW),
+their respective ordering may vary between suspend-resume cycles.
 
-> If I understand correctly, a suspend (hibernate) image contains *all*
-> the memory necessary for the OS to work; so when you restore it, you
-> restore it all, page tables, and kernel code section included. So when
-> the kernel does a hibernate restoration, it loads it all the pages
-> into memory, then architecture-specific code will jump into the new
-> "resumed" kernel by restoring page table entries and CPU context. When
-> it does that, it leaves the "loader" kernel memory hanging; this
-> memory is seen as free pages by the resumed kernel, but it isn't
-> cleared.
-
-Correct, except that some of the boot kernel's memory will be overwritten
-by the image kernel and all.
-
-> Rafael, am I getting something wrong on the hibernation resume process
-> ? What do you think of this analysis ?
-
-That's more-or-less what's happening.  IOW, after hibernation and resume you
-may see stuff in pages that were previously all zeros as long as they are
-regarded as free by the image kernel.  The stuff in there is all garbage from
-its perspective though.
+The class of bugs you can catch this way is quite limited and the change is
+rather intrusive, so I'm with Pavel on that.
 
 
 -- 
