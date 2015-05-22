@@ -1,41 +1,76 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
-Date: Fri, 22 May 2015 19:34:57 +0530
-Message-ID: <20150522140457.GB7730@linux>
-References: <cover.1430394884.git.viresh.kumar@linaro.org>
- <d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar@linaro.org>
- <20150512214224.16410.15922@quantum>
- <20150513085528.GA6994@linux>
- <555D750F.80304@ti.com>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: Re: [RFCv4 PATCH 22/34] sched: Calculate energy consumption of
+ sched_group
+Date: Fri, 22 May 2015 16:38:04 +0100
+Message-ID: <20150522153804.GF26396@e105550-lin.cambridge.arm.com>
+References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
+ <1431459549-18343-23-git-send-email-morten.rasmussen@arm.com>
+ <20150521075702.GA20008@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:36554 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757204AbbEVOFE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 May 2015 10:05:04 -0400
-Received: by paza2 with SMTP id a2so11270486paz.3
-        for <linux-pm@vger.kernel.org>; Fri, 22 May 2015 07:05:03 -0700 (PDT)
+Received: from foss.arm.com ([217.140.101.70]:44175 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757563AbbEVPgX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 May 2015 11:36:23 -0400
 Content-Disposition: inline
-In-Reply-To: <555D750F.80304@ti.com>
+In-Reply-To: <20150521075702.GA20008@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rob.herring@linaro.org, Nishanth Menon <nm@ti.com>
-Cc: Michael Turquette <mike.turquette@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, arnd.bergmann@linaro.org, broonie@kernel.org, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: "peterz@infradead.org" <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, "mturquette@linaro.org" <mturquette@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Juri Lelli <Juri.Lelli@arm.com>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 21-05-15, 01:02, Nishanth Menon wrote:
-> This argues that clock is an input to the cpu, this is not in-correct,
-> but, it could also be argued that OPP tables are clock dependent.
-> 
-> For example, with multiple clock source options that a device might
-> choose to select from internally(by some means.. lets not just restrict
-> ourselves to just CPUs here for a moment), the tables might be
-> different. We can always debate that this then is the responsibility of
-> the driver handling the description for that device and we might want
-> possibility of vice versa as well - same OPP table used by different
-> clock source selections as well.
+On Thu, May 21, 2015 at 08:57:04AM +0100, Kamalesh Babulal wrote:
+> * Morten Rasmussen <morten.rasmussen@arm.com> [2015-05-12 20:38:57]:
+>=20
+> [...]
+> > +/*
+> > + * cpu_norm_usage() returns the cpu usage relative to a specific c=
+apacity,
+> > + * i.e. it's busy ratio, in the range [0..SCHED_LOAD_SCALE] which =
+is useful for
+> > + * energy calculations. Using the scale-invariant usage returned b=
+y
+> > + * get_cpu_usage() and approximating scale-invariant usage by:
+> > + *
+> > + *   usage ~ (curr_freq/max_freq)*1024 * capacity_orig/1024 * runn=
+ing_time/time
+> > + *
+> > + * the normalized usage can be found using the specific capacity.
+> > + *
+> > + *   capacity =3D capacity_orig * curr_freq/max_freq
+> > + *
+> > + *   norm_usage =3D running_time/time ~ usage/capacity
+> > + */
+> > +static unsigned long cpu_norm_usage(int cpu, unsigned long capacit=
+y)
+> > +{
+> > +	int usage =3D __get_cpu_usage(cpu);
+>=20
+> __get_cpu_usage is introduced in next patch "sched: Extend sched_grou=
+p_energy
+> to test load-balancing decisions", applying the series with this patc=
+h as top
+> most patch breaks the build.
+>=20
+> kernel/sched/fair.c: In function =C3=A2=E2=82=AC=CB=9Ccpu_norm_usage=C3=
+=A2=E2=82=AC=E2=84=A2:
+> kernel/sched/fair.c:4830:2: error: implicit declaration of function =C3=
+=A2=E2=82=AC=CB=9C__get_cpu_usage=C3=A2=E2=82=AC=E2=84=A2 [-Werror=3Dim=
+plicit-function-declaration]
+>   int usage =3D __get_cpu_usage(cpu);
+>   ^
+>=20
+> Given that __get_cpu_usage(), take additional parameter - delta. get_=
+cpu_usage()
+> should have been used here.
 
-@Rob: Any inputs ?
+Yes, you are right. Using get_cpu_usage() here instead should be
+correct. I think it was right in RFCv3, I must have messed it up when I
+moved around some of the patches :(
 
--- 
-viresh
+I will make sure to test the patch set is bisectable next time :)
+
+Thanks,
+Morten
