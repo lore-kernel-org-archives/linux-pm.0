@@ -1,56 +1,43 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq:cpufreq - Fix typo in comment.
-Date: Fri, 22 May 2015 03:32:19 +0200
-Message-ID: <7136415.q1D1SjnnfZ@vostro.rjw.lan>
-References: <1432232271-3753-1-git-send-email-shailendra.capricorn@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq:exynos-cpufreq - Fix for memory leak in case SOC
+ name does not match.
+Date: Fri, 22 May 2015 07:47:30 +0530
+Message-ID: <20150522021730.GA7730@linux>
+References: <1432232981-3917-1-git-send-email-shailendra.capricorn@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58071 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755688AbbEVBG5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 May 2015 21:06:57 -0400
-In-Reply-To: <1432232271-3753-1-git-send-email-shailendra.capricorn@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1432232981-3917-1-git-send-email-shailendra.capricorn@gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Shailendra Verma <shailendra.capricorn@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On Thursday, May 21, 2015 11:47:51 PM Shailendra Verma wrote:
+On 21-05-15, 23:59, Shailendra Verma wrote:
+> During probe free the memory allocated to "exynos_info" in case of unknown
+> SOC type.
 > 
 > Signed-off-by: Shailendra Verma <shailendra.capricorn@gmail.com>
-
-Two typos in two comments really.  Care to fix the subject?
-
 > ---
->  drivers/cpufreq/cpufreq.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/cpufreq/exynos-cpufreq.c |    1 +
+>  1 file changed, 1 insertion(+)
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 8ae655c..b4c7e0f 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -178,7 +178,7 @@ int cpufreq_generic_init(struct cpufreq_policy *policy,
->  	policy->cpuinfo.transition_latency = transition_latency;
->  
->  	/*
-> -	 * The driver only supports the SMP configuartion where all processors
-> +	 * The driver only supports the SMP configuration where all processors
->  	 * share the clock and voltage and clock.
->  	 */
->  	cpumask_setall(policy->cpus);
-> @@ -1891,7 +1891,7 @@ static int __target_index(struct cpufreq_policy *policy,
->  		 * Failed after setting to intermediate freq? Driver should have
->  		 * reverted back to initial frequency and so should we. Check
->  		 * here for intermediate_freq instead of get_intermediate, in
-> -		 * case we have't switched to intermediate freq at all.
-> +		 * case we haven't switched to intermediate freq at all.
->  		 */
->  		if (unlikely(retval && intermediate_freq)) {
->  			freqs.old = intermediate_freq;
-> 
+> diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+> index 82d2fbb..b77923a 100644
+> --- a/drivers/cpufreq/exynos-cpufreq.c
+> +++ b/drivers/cpufreq/exynos-cpufreq.c
+> @@ -182,6 +182,7 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
+>  		ret = exynos5250_cpufreq_init(exynos_info);
+>  	} else {
+>  		pr_err("%s: Unknown SoC type\n", __func__);
+> +		kfree(exynos_info);
+>  		return -ENODEV;
+>  	}
+
+There is no point replicating this stuff. Use labels like: err_vdd_arm
+to get this done. But you also need to make sure the right error gets
+propagated.
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+viresh
