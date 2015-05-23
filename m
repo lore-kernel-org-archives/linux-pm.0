@@ -1,90 +1,67 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 05/10] max77693: Move state container to common header
-Date: Sat, 23 May 2015 17:11:52 +0200
-Message-ID: <20150523151151.GA14029@earth>
-References: <1430305114-23598-1-git-send-email-k.kozlowski.k@gmail.com>
- <1430305114-23598-6-git-send-email-k.kozlowski.k@gmail.com>
+Subject: Re: [PATCH V2 3/6] power: mxs_power: add driver for mxs power
+ subsystem
+Date: Sat, 23 May 2015 19:41:49 +0200
+Message-ID: <20150523174149.GA16004@earth>
+References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com>
+ <1430346747-28728-4-git-send-email-stefan.wahren@i2se.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="VbJkn9YxBvnuCH5J"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="jI8keyz6grp/JLjh"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:55006 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754116AbbEWRmK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 23 May 2015 13:42:10 -0400
 Content-Disposition: inline
-In-Reply-To: <1430305114-23598-6-git-send-email-k.kozlowski.k@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <1430346747-28728-4-git-send-email-stefan.wahren@i2se.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stefan Wahren <stefan.wahren@i2se.com>
+Cc: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Shawn Guo <shawn.guo@linaro.org>, Sascha Hauer <kernel@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, fabio.estevam@freescale.com, sebastien.szymanski@armadeus.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
 
---VbJkn9YxBvnuCH5J
+--jI8keyz6grp/JLjh
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Apr 29, 2015 at 07:58:30PM +0900, Krzysztof Kozlowski wrote:
-> This prepares for merging some of the drivers between max77693 and
-> max77843 so the child MFD driver can be attached to any parent MFD main
-> driver.
->=20
-> Move the state container to common header file. Additionally add
-> consistent 'i2c' prefixes to its members (of 'struct i2c_client' type).
->=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-> ---
->  drivers/extcon/extcon-max77693.c     |  3 ++-
->  drivers/input/misc/max77693-haptic.c |  1 +
->  drivers/mfd/max77693.c               | 31 +++++++++++++------------
->  drivers/power/max77693_charger.c     |  1 +
->  drivers/regulator/max77693.c         |  1 +
->  include/linux/mfd/max77693-common.h  | 44 ++++++++++++++++++++++++++++++=
-++++++
->  include/linux/mfd/max77693-private.h | 25 --------------------
->  7 files changed, 65 insertions(+), 41 deletions(-)
->  create mode 100644 include/linux/mfd/max77693-common.h
->=20
-> [...]
->
-> diff --git a/drivers/power/max77693_charger.c b/drivers/power/max77693_ch=
-arger.c
-> index 754879eb59f6..eb68d0572799 100644
-> --- a/drivers/power/max77693_charger.c
-> +++ b/drivers/power/max77693_charger.c
-> @@ -21,6 +21,7 @@
->  #include <linux/regmap.h>
->  #include <linux/mfd/max77693.h>
->  #include <linux/mfd/max77693-private.h>
-> +#include <linux/mfd/max77693-common.h>
-> =20
->  #define MAX77693_CHARGER_NAME				"max77693-charger"
->  static const char *max77693_charger_model		=3D "MAX77693";
-> [...]
+On Wed, Apr 29, 2015 at 10:32:24PM +0000, Stefan Wahren wrote:
+> This patch adds a minimal driver for the Freescale i.MX23, i.MX28
+> power subsystem. It's required to trigger the probing of the underlying
+> drivers like on-chip regulators.
 
-Acked-By: Sebastian Reichel <sre@kernel.org>
+I'm not sure what you need the power supply class for. I see only
+one property (ac connected), which is constant. Maybe just drop
+the power supply stuff?
+
+This would leave an almost empty driver, which just sets a single
+register at probe time and probes more drivers. That would probably
+be more fitting for the MFD subsystem.
 
 -- Sebastian
 
---VbJkn9YxBvnuCH5J
+--jI8keyz6grp/JLjh
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJVYJi1AAoJENju1/PIO/qatLIP/0a8NA8dHoTE2pkJ/1YuNacL
-PJKrp1VByHUNCkQ3QaBv2GpXE4e9azFUjVBYO91xGjvMUGmnhuz4JjHyEIIZvFhi
-M/Pva0IdZQZ9aKZvN8yztuS3xKkj9GZ9LYxj68AnXV2sYHSrZOwXL2mt/lp+Sr5W
-zDaLxHv9FZt7x7RoDdjnr1Vdz5oPCUsBZ/OqTEXIPfNQfWFavc3zGVT8brPBMvHB
-TRNL7JmPzWEiYwF6lVvlOsFRWosAz+onPnEHz0E66kLSPoQ8HdAwnUgbZ0sjQK5b
-fUBrTpKW0xqDPQX3itT51Twgl8VJuFjSaBpIqthuA2iqbRW9imBy2Mewkq1enfG0
-6Wh9CbZwfLG8z6C2YIMv0/1vqVAGsr7CXGgNIUq40PdGgg5UjSmuYxrJCtbtIOLy
-GGuRUb1obByo4zdVAcWUE39nXgJxose+JFlMWwnE9hbQetYyjHS70AX342OCQtR3
-6KgQxbD2BipER/lizm+iarlsp7fbXdzyAtsXIYek9djK8HO/xpsWQoohOZgLbC7C
-EMDYskd6Lmlz7nRJemIvaIlhLb2+80YHxrdlzdxp7AQdhzh1wJbLV00Hje11ccvA
-hRTnv9fmLlWrdIV7DMcsrex+NhDRzu01AgzPYGHleqriWgsR0ev6keaArLBz4xBC
-4gFEJR04uqifHsYB2Ysa
-=PT7D
+iQIcBAEBCgAGBQJVYLvYAAoJENju1/PIO/qaWZgQAKTotBXJc/t0NyNC+3zsDnZ9
+uFfUgy2L0akB0TvLlq88jQ1d/QUo9laBalCft5dNIPsIHa/hAEPmjb78y5CDyVfj
+0eGCLRLU50fPPArqxhZ+Fudn6ShPr9k6okqkm74E7kYm3rzgQgiz+RCHuY/WxLIO
+jABJ0ZhFqMBGdONhDpH5fk1oZRCtaetb9ycWkSx2M2g1D4QPXUhf/cy2j76cJe6y
+nYsTdnGlUECVmZhioBRrMxJ71BK8RqL/5gDXxJ9ZVkzz4eR8Y1c1Qkvq4G2pWAZK
+EeHO+vcYIkAkySYH2EaL7P+1oFkJ5gY/NAxKy4aN/UVrQ4wSnH7Z/PgvS7laBhTD
+GYjQ4eBvsXS/Z85RZngT3cmZ90cKksJlaexhUnFX1PZ/lrgSh1DnIlzWnodyfjFQ
+I8BDETmm84oEO8oor1gcScjL/kfqLRmFhR3zx2oi3D3FgEabaiMA0uX40qC24HLm
+p03lXgHnfif6JbNqDy9IA+Y2j5K9HI/BgnVY5nkBIwk4pROS7QocmtaeLjTRMS/w
+lqCuiaEtNdbcOOowa/EsJq7HGpgU0uozUKgoLtpsfemqinlLuDMBhqbMdAS7hmZN
+oZhFmOtXBTTJT8ZCwm6aESu1txsZF5l2QhZFUjH63SxfKc8q8XVEjnbvCf6ULrou
+LtkZRiBkRyQiFTth/xDI
+=j6CL
 -----END PGP SIGNATURE-----
 
---VbJkn9YxBvnuCH5J--
+--jI8keyz6grp/JLjh--
