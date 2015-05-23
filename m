@@ -1,78 +1,37 @@
-From: Shailendra Verma <shailendra.capricorn@gmail.com>
-Subject: [PATCH] cpufreq:exynos-cpufreq - Fix for memory leak in case SOC name does not match.
-Date: Sat, 23 May 2015 08:32:51 +0530
-Message-ID: <1432350171-2414-1-git-send-email-shailendra.capricorn@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V5 09/14] cpufreq: add/remove sysfs links via
+ cpufreq_add_remove_dev_symlink()
+Date: Sat, 23 May 2015 09:11:20 +0530
+Message-ID: <20150523034120.GA4210@linux>
+References: <cover.1431924457.git.viresh.kumar@linaro.org>
+ <93a3bfbe26dfa1c298e21da369e6ed37fca1da34.1431924457.git.viresh.kumar@linaro.org>
+ <3403066.ABqM7b3uGI@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f179.google.com ([209.85.192.179]:33589 "EHLO
-	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756159AbbEWDDG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 May 2015 23:03:06 -0400
+Received: from mail-pd0-f171.google.com ([209.85.192.171]:33177 "EHLO
+	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756243AbbEWDlZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 May 2015 23:41:25 -0400
+Received: by pdbqa5 with SMTP id qa5so32966002pdb.0
+        for <linux-pm@vger.kernel.org>; Fri, 22 May 2015 20:41:25 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <3403066.ABqM7b3uGI@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Shailendra Verma <shailendra.capricorn@gmail.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Srivatsa Bhat <srivatsa@mit.edu>
 
-During probe free the memory allocated to "exynos_info" in case of
-unknown SOC type.
+On 23-05-15, 01:28, Rafael J. Wysocki wrote:
+> (The last statement line is likely longer than 80 chars, but that's fine.)
 
-Signed-off-by: Shailendra Verma <shailendra.capricorn@gmail.com>
----
- drivers/cpufreq/exynos-cpufreq.c |   15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+No, it isn't.
 
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index 82d2fbb..5b57a0f 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -182,20 +182,25 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
- 		ret = exynos5250_cpufreq_init(exynos_info);
- 	} else {
- 		pr_err("%s: Unknown SoC type\n", __func__);
--		return -ENODEV;
-+		ret = -ENODEV;
-+		goto err_vdd_arm;
- 	}
- 
--	if (ret)
-+	if (ret) {
-+		ret = -EINVAL;
- 		goto err_vdd_arm;
-+	}
- 
- 	if (exynos_info->set_freq == NULL) {
- 		dev_err(&pdev->dev, "No set_freq function (ERR)\n");
-+		ret = -EINVAL;
- 		goto err_vdd_arm;
- 	}
- 
- 	arm_regulator = regulator_get(NULL, "vdd_arm");
- 	if (IS_ERR(arm_regulator)) {
- 		dev_err(&pdev->dev, "failed to get resource vdd_arm\n");
-+		ret = -EINVAL;
- 		goto err_vdd_arm;
- 	}
- 
-@@ -203,8 +208,10 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
- 	locking_frequency = clk_get_rate(exynos_info->cpu_clk) / 1000;
- 
- 	ret = cpufreq_register_driver(&exynos_driver);
--	if (ret)
-+	if (ret) {
-+		ret = -EINVAL;
- 		goto err_cpufreq_reg;
-+	}
- 
- 	cpu0 = of_get_cpu_node(0, NULL);
- 	if (!cpu0) {
-@@ -227,7 +234,7 @@ err_cpufreq_reg:
- 	regulator_put(arm_regulator);
- err_vdd_arm:
- 	kfree(exynos_info);
--	return -EINVAL;
-+	return ret;
- }
- 
- static struct platform_driver exynos_cpufreq_platdrv = {
+I am dropping this patch and merging it with the next one. Otherwise
+it generates warnings about routine defined but not used. So I will be
+resending 10/14 and that replaces 9-10/14.
+
+Thanks.
+
 -- 
-1.7.9.5
-
+viresh
