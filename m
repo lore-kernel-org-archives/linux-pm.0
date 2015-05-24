@@ -1,58 +1,53 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 1/2] power: axp288_fuel_gauge: Constify platform_device_id
-Date: Sun, 24 May 2015 21:40:51 +0200
-Message-ID: <20150524194050.GC11066@earth>
+Subject: Re: [PATCH 2/2] power: at91-reset: Constify platform_device_id
+Date: Sun, 24 May 2015 21:41:13 +0200
+Message-ID: <20150524194112.GD11066@earth>
 References: <1430495204-31363-1-git-send-email-k.kozlowski.k@gmail.com>
+ <1430495204-31363-2-git-send-email-k.kozlowski.k@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="GZVR6ND4mMseVXL/"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:54207 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751273AbbEXTlN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 24 May 2015 15:41:13 -0400
+	protocol="application/pgp-signature"; boundary="F8dlzb82+Fcn6AgP"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1430495204-31363-1-git-send-email-k.kozlowski.k@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1430495204-31363-2-git-send-email-k.kozlowski.k@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 
---GZVR6ND4mMseVXL/
+--F8dlzb82+Fcn6AgP
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
 Hi,
 
-On Sat, May 02, 2015 at 12:46:43AM +0900, Krzysztof Kozlowski wrote:
-> The platform_device_id is not modified by the driver and core uses it as
-> const.
+On Sat, May 02, 2015 at 12:46:44AM +0900, Krzysztof Kozlowski wrote:
+> The platform_device_id is not modified by the driver and core uses
+> it as const.
 
 Thanks, queued.
 
--- Sebastian
-
---GZVR6ND4mMseVXL/
+--F8dlzb82+Fcn6AgP
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJVYilCAAoJENju1/PIO/qaHtYP/R9uot7qpxxSqzBIoXmBCq9D
-rmy+63Jz5ScZ4NEfIIHc5HDq68NM/SIf7cCCE/YSrkedBZMv2HRknjwzCOIxRgV0
-wgK0JiEZe/Bkru3Eq8xVECv60Akng5yVZl3tRHV3tg3x2fNArT1PxaxH8I3KXXL6
-2RjkC8LZcfe6DQn7u9GmpalFH9aW3pwCVOKr0wLPbA76Y+Y3ugFAYisM6gw20Uz2
-fJETc1xr+LDjJ1HW6psBLOh4oZkplr4xIukSU1aJEFg4cdqSRPxa13+RX5fqv8/B
-48km9uAKgLN/M6VNGt3dEipKAghOSbfda0T16fkmuU49iBpmN2mRBbSIYF86cU9U
-wJffOzSQD884pJNR2b30BVywfu+IlJSp4IPECgggfk8/CXKgdYARB3/Vu9zGg8rc
-xrf+aq34SKySph2LptPOsJR5zakTESEcgleBabKKYEjmQmqGsZVFF27ShwUSvdGj
-0r8Fxqtbc1CfgjMkv7hU5cf/leQlPDYg7ZaMm9VsVb0idBnPbgQ35XPcJ3zAF+YC
-1ky6hA0pgHQuvHNOMr92Qdj2f448Xpu68CaKxNmweIPaxKkn7aqULAk6MKm/wft3
-3Xit6CmSupPl0vX+YVn4xggUKYoCi6B+NOIQ1gCGQvpYL1Ud6iJNkUefwPNQhRhC
-L4DRJgcqjEpyHtaz4reW
-=EQvB
+iQIcBAEBCgAGBQJVYilYAAoJENju1/PIO/qat+oQAKHh4nRGTPYjTi0TPNkckEM4
+NP5YP9C1y+8hGhLnOUijQVrZtF4lKPqLsppzdhBAShJHmIPGIYnccabUJAEs7kfQ
+kytKXI67CeW57kgOwNp7t8Wqb9sSoSmp8ug2zxj1t3qXLv8JAJ4znuOoK/1L6KL6
+1nj0y0genxm5RMH3NW8+OGRkkGL/TwhNxn4LNw5dm+EiIhjxiAfm6VZll3sqt3dA
+A/WRBlnS1/wX6mLkeRxVV/fQQevA6RqthXH92XmyojZy1CutO9klpgWxX6jHRfWu
+f2A7ZMb7sKAYx8vPou4GEYsYix022yt/r1cItcGIzp8ET3UUh/kffgqtb2Ez3p7F
+djdccp5I1YCQc07NcmFk2K4lkG3JLZVoQruxSieXiFI5FXTMTQfH2yuH6yVLSib8
+Khy4ztLUHBYCuw7x/WvaKZFBtIOpvWlXo77KnFXPrHPetZivM2ZhIxJGMdc97nDx
+J0c3OCD85tIvupiBwHfaF/Uriuoxt2W41yaaHE4fFbGJ02QnAPiX6hWzHNwozT3C
+lD6dFVcLiL6Wq3d8qyPsrQk6sfkq0xR18S1QuMtHDUj1KGlT7lcyS0X1apr1Vb83
+uCfQgiTZrKj0syxRKI48JZFUM17BuYQSdmJrbpdm8b0Zq7GS71Bb/BmnnLAzShcx
+ss4L09nX5OPratI2akhS
+=lmTr
 -----END PGP SIGNATURE-----
 
---GZVR6ND4mMseVXL/--
+--F8dlzb82+Fcn6AgP--
