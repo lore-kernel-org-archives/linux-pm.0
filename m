@@ -1,53 +1,65 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 2/2] power: at91-reset: Constify platform_device_id
-Date: Sun, 24 May 2015 21:41:13 +0200
-Message-ID: <20150524194112.GD11066@earth>
-References: <1430495204-31363-1-git-send-email-k.kozlowski.k@gmail.com>
- <1430495204-31363-2-git-send-email-k.kozlowski.k@gmail.com>
+Subject: Re: [PATCH v1] power: axp288_charger: axp288 charger driver
+Date: Sun, 24 May 2015 21:43:26 +0200
+Message-ID: <20150524194325.GE11066@earth>
+References: <1430757967-4844-1-git-send-email-ramakrishna.pallala@intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="F8dlzb82+Fcn6AgP"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="UnaWdueM1EBWVRzC"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:54362 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751282AbbEXTns (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 24 May 2015 15:43:48 -0400
 Content-Disposition: inline
-In-Reply-To: <1430495204-31363-2-git-send-email-k.kozlowski.k@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1430757967-4844-1-git-send-email-ramakrishna.pallala@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Woodhouse David <david.woodhouse@intel.com>
 
 
---F8dlzb82+Fcn6AgP
+--UnaWdueM1EBWVRzC
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Sat, May 02, 2015 at 12:46:44AM +0900, Krzysztof Kozlowski wrote:
-> The platform_device_id is not modified by the driver and core uses
-> it as const.
+On Mon, May 04, 2015 at 10:16:07PM +0530, Ramakrishna Pallala wrote:
+> This patch adds new power supply charger driver support
+> for X-Power AXP288 PMIC integrated charger.
+>=20
+> This driver interfaces with the axp20x mfd driver as a cell
+> and listens to extcon cable events for setting up charging.
+>=20
+> Signed-off-by: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
+> Acked-by: Lee Jones <lee.jones@linaro.org>
 
 Thanks, queued.
 
---F8dlzb82+Fcn6AgP
+-- Sebastian
+
+--UnaWdueM1EBWVRzC
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJVYilYAAoJENju1/PIO/qat+oQAKHh4nRGTPYjTi0TPNkckEM4
-NP5YP9C1y+8hGhLnOUijQVrZtF4lKPqLsppzdhBAShJHmIPGIYnccabUJAEs7kfQ
-kytKXI67CeW57kgOwNp7t8Wqb9sSoSmp8ug2zxj1t3qXLv8JAJ4znuOoK/1L6KL6
-1nj0y0genxm5RMH3NW8+OGRkkGL/TwhNxn4LNw5dm+EiIhjxiAfm6VZll3sqt3dA
-A/WRBlnS1/wX6mLkeRxVV/fQQevA6RqthXH92XmyojZy1CutO9klpgWxX6jHRfWu
-f2A7ZMb7sKAYx8vPou4GEYsYix022yt/r1cItcGIzp8ET3UUh/kffgqtb2Ez3p7F
-djdccp5I1YCQc07NcmFk2K4lkG3JLZVoQruxSieXiFI5FXTMTQfH2yuH6yVLSib8
-Khy4ztLUHBYCuw7x/WvaKZFBtIOpvWlXo77KnFXPrHPetZivM2ZhIxJGMdc97nDx
-J0c3OCD85tIvupiBwHfaF/Uriuoxt2W41yaaHE4fFbGJ02QnAPiX6hWzHNwozT3C
-lD6dFVcLiL6Wq3d8qyPsrQk6sfkq0xR18S1QuMtHDUj1KGlT7lcyS0X1apr1Vb83
-uCfQgiTZrKj0syxRKI48JZFUM17BuYQSdmJrbpdm8b0Zq7GS71Bb/BmnnLAzShcx
-ss4L09nX5OPratI2akhS
-=lmTr
+iQIcBAEBCgAGBQJVYindAAoJENju1/PIO/qaLVYQAIS86GLpdwU7jHethZhCFJth
+6h0Ax8cowRjsh4AHelyL+ZdEeD1/Ngxo0Kh2mNERI+GF2eGHSjPnkGDn7d7gxKpZ
+wKt6Cj2OrAl0fVMObtUGuBEhqmNLkUGpD8AGk/DZOBltvZHHp9Fe2GRxw6GRZGN2
+HUuOvz3qLJb8LabCNbycfx8P3HlUgQrpupoGZhEFqPabCzS1QuKBhkeEFa4JayeM
+A25bIgNjpM46F/J8MlWuqn1ps7QG9gDGgzcznIyjlObvoG2L8QzooIQ1/UXKzem0
+bH4RsUbSOpNGbczPUWe7jQjCC5KMJZUeBmvUygx97ywqsxVmbtmf5n9UxB5bzOnJ
+r27EgpKF03PhzslcJBT7PJg1bpWwOenpuHaJSiCsvnJS7F4hv9GD8oeJ1hgaEp9h
+kTMBW1w0T0fIv+H9OXu7doZkb8cWoPh0x6IR8QmWJmWXeK9OWUP10aHIhSK2IRKX
+vHKamqe2pqxNdppz0mo5iENxYiGN/72E2F6jRxgVP1ihMMuUOn2HK/bTa31nbvT5
+Lk6lwOKhX5l7Km/up7kaSh9YM+y9GUNzLm42zTcD916pblAndYagZS+FxtwLFCVD
+zBWce2MNzMCQ6Z+huLR1XxZtLDwLobqKPWdlJs13t1SjAwcEQbVTLvMLJELodL0N
+9UXNZW+Z4B8qkI8svbRe
+=eDIg
 -----END PGP SIGNATURE-----
 
---F8dlzb82+Fcn6AgP--
+--UnaWdueM1EBWVRzC--
