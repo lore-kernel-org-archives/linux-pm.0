@@ -1,69 +1,66 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 0/2] Add support for BQ25890 charger chip
-Date: Sun, 24 May 2015 21:48:44 +0200
-Message-ID: <20150524194843.GJ11066@earth>
-References: <1432041880-7373-1-git-send-email-laurentiu.palcu@intel.com>
+Subject: Re: [PATCH v2] power: max17042_battery: add HEALTH and TEMP_*
+ properties support
+Date: Sun, 24 May 2015 21:49:24 +0200
+Message-ID: <20150524194923.GK11066@earth>
+References: <1432438918-31002-1-git-send-email-ramakrishna.pallala@intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="/0U0QBNx7JIUZLHm"
+	protocol="application/pgp-signature"; boundary="OOq1TgGhe8eTwFBO"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:54827 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:54898 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301AbbEXTtH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 24 May 2015 15:49:07 -0400
+	id S1751589AbbEXTtq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 24 May 2015 15:49:46 -0400
 Content-Disposition: inline
-In-Reply-To: <1432041880-7373-1-git-send-email-laurentiu.palcu@intel.com>
+In-Reply-To: <1432438918-31002-1-git-send-email-ramakrishna.pallala@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laurentiu Palcu <laurentiu.palcu@intel.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
 
 
---/0U0QBNx7JIUZLHm
+--OOq1TgGhe8eTwFBO
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, May 19, 2015 at 04:24:38PM +0300, Laurentiu Palcu wrote:
-> Changes since v1:
->  * add comment in DT bindings regarding default driver behavior when
->    "ti,thermal-regulation-threshold" property is missing;
->  * addressed all Krzysztof's comments, including addition of a reset
->    check counter. Better to be safe than sorry :)
+On Sun, May 24, 2015 at 09:11:58AM +0530, Ramakrishna Pallala wrote:
+> This patch adds the support for following battery properties
+> to max17042 fuel gauge driver.
 >=20
-> Hi,
->=20
-> This series adds support for BQ25890 USB charger chip. Information about
-> the chip can be found here:
->=20
-> http://www.ti.com/product/bq25890
+> POWER_SUPPLY_PROP_TEMP_ALERT_MIN
+> POWER_SUPPLY_PROP_TEMP_ALERT_MAX
+> POWER_SUPPLY_PROP_TEMP_MIN
+> POWER_SUPPLY_PROP_TEMP_MAX
+> POWER_SUPPLY_PROP_HEALTH
 
 Thanks, queued.
 
 -- Sebastian
 
---/0U0QBNx7JIUZLHm
+--OOq1TgGhe8eTwFBO
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJVYisbAAoJENju1/PIO/qac68QAJY0lDgvwDJtROkN4Mx3kgsN
-GTaGgi6j6MSzc/UhRIVnkkx7n262tSzgzLteRHkyRyfTWkXWTpd3Ly+zsLG/ZVfL
-iI0b5egmDbPiEJPVET3gkSZiRJDbF4K7qprIxAOlI1uvezPWNHeGav3YJR68UULM
-y275p8JJhX4mkNt12CKK10fY7Ak8IHY2kRjgPF5qInAEATDyIdYF7SagLbJOVyko
-P6yYiS2Kc725jp0FaKmxrXSdolXvpgWsmr7vlLABG14cInNrBc2mXIuUWqkWbwzq
-EGNqdJ98QHzqDjEK2TbfjQ/uUySpLV+a9NBMVbjOLCkXZcGEMZv2VzF/vbbRNDn0
-mllj8NLYEIugDV5kg/wbwmXhWGMw6bnc4fj1NRka3+92pIIKcPuLyoTi36N1p368
-kaMsBV3Sb0PekjXHeL4oR2XSefAUCtKmNUVpt+U12vk7Sg7QzfnFZY69ZcQRLHwJ
-OJVjGr0dMy/cHe07Mz6oEIJo4gxMZXp2iUufTeY8iJzoPzJxKUAGQCmhlDguHbNe
-Jyk05sv1G+ewOjWyzcgIFzSBSbjJZwjRnH1qfFKdBWGI1wAZI7KIBfK39ErAKDuS
-sHOCCFzdNpS1zV7V3/RSLwmUSkff250kaHv2bA0a6S1HyZOF6erbGoFyItQ0HSAe
-3a/rbBPTBtVAV/AyAsnd
-=5nIs
+iQIcBAEBCgAGBQJVYitDAAoJENju1/PIO/qaMlIP/joFhO3/9r5p+1wCgvblLhOW
+mRnUGGyEp//5uLHN9FdbEgU8pQjzxHr8xGpnxa63ItwPx/ho/Opwb63O0CkxadXW
+Pl62DGkAAy/OMB+/wsLBf8SKGEyQrqtE6qfWwCbQNRCDvlis0a08DbwdYvHLZ4g9
+nsnNcaPIAmkp3RTC4dWH9SFv2Q3EQBkqqhmrNii/gZmlFCZaR6WhrTKnPC2xfgzg
+dNSpwmj+QVYkGZeA2SCJOFUWn7qvcUSP/NFlgeMTPQq8ds6Sj6AtRW3EttzX8jG9
+sP8TrMa8FrB+w9iOS8lrfYqLQtEyHJL8hyS4U8+8gmEo8w4vUk4UGNDekY+tBrXR
+j71sTOWZtc1NMuvPKEdKE2AnM+Cu+Pj6xHgP1IJBZO3tpgenBvs/l4id6Ij5nYGb
+UdwD+bYPBCHT0io2rws5atcmKzLVjsZC+I9m/muntin81Nn/B/pOumj6D5slgK1e
+rJa5wrFgFrbEq+wpd9qLq8K+CO/ng14zIwAE2VoSiA/QkJQyso40bgA3wB2LO/nP
+isRCPSmGkg4DAxUfIQk/1WPFLen3eO4U/UCqishFVdDG35Ww9AHgKnkg32YVTYRl
+eDBspencscdo6LBFlRK3hbCUapsxRv4r6eyMfCg0duuuPULVjwef8QqhStXiIyO9
++Sf7wjrX3jX8XHmHk/iA
+=knT6
 -----END PGP SIGNATURE-----
 
---/0U0QBNx7JIUZLHm--
+--OOq1TgGhe8eTwFBO--
