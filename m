@@ -1,59 +1,58 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2] power_supply: Add TI BQ24257 charger driver
-Date: Sun, 24 May 2015 21:38:25 +0200
-Message-ID: <20150524193824.GB11066@earth>
-References: <1429176676-10354-1-git-send-email-laurentiu.palcu@intel.com>
+Subject: Re: [PATCH 1/2] power: axp288_fuel_gauge: Constify platform_device_id
+Date: Sun, 24 May 2015 21:40:51 +0200
+Message-ID: <20150524194050.GC11066@earth>
+References: <1430495204-31363-1-git-send-email-k.kozlowski.k@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="uZ3hkaAS1mZxFaxD"
+	protocol="application/pgp-signature"; boundary="GZVR6ND4mMseVXL/"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:54128 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:54207 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751268AbbEXTis (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 24 May 2015 15:38:48 -0400
+	id S1751273AbbEXTlN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 24 May 2015 15:41:13 -0400
 Content-Disposition: inline
-In-Reply-To: <1429176676-10354-1-git-send-email-laurentiu.palcu@intel.com>
+In-Reply-To: <1430495204-31363-1-git-send-email-k.kozlowski.k@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laurentiu Palcu <laurentiu.palcu@intel.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---uZ3hkaAS1mZxFaxD
+--GZVR6ND4mMseVXL/
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, Apr 16, 2015 at 12:31:16PM +0300, Laurentiu Palcu wrote:
-> Based on the datasheet found here:
-> http://www.ti.com/lit/ds/symlink/bq24257.pdf
->=20
-> Signed-off-by: Laurentiu Palcu <laurentiu.palcu@intel.com>
+Hi,
+
+On Sat, May 02, 2015 at 12:46:43AM +0900, Krzysztof Kozlowski wrote:
+> The platform_device_id is not modified by the driver and core uses it as
+> const.
 
 Thanks, queued.
 
 -- Sebastian
 
---uZ3hkaAS1mZxFaxD
+--GZVR6ND4mMseVXL/
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJVYiiuAAoJENju1/PIO/qa6gUQAJ+oHXuYSH6iOF2YVMQwvbd7
-QePhU8GRtMt/cclhoOm8cXesksqxNRFHttNfGi5HakYE/rjGp52oNIc8xQQ/ebGE
-+NeLpXr4QiHo8uN214ZbAxsSu0ImYBqzQDq/ABjXqeGV/YiBivzgZVSzOMmaMGip
-WrjlHShgdkUbzyNRAJhaGA6GKoZCGfQWl8TkgGg13WdFrFcPakDSNiwr+KV7d2yv
-qj2IpbqygnqN2QyMh4i2eHiWrCOgKpxw1obMVR+OKMey9dKF5FaBWa4u/GG7nOGC
-jc1puvuqxKP/5b/0R/OULXIfZ7rbmVHsoX5n4o/diQAJcTGiiSnTNtDfffkB1wes
-t3vYf+AFe93Pu8U0Gzh+eNw+u5WafofnOw3HgApXKvDdnBAnk03klvI5ugMUY0LJ
-fRwf4BVXTnpoVVkw5F5MhRDDZAw5qPWQIgHc1JQKkv2zgOtgQT9I001rJ6cEEAkE
-n95+VnX1kGTvYdhRoBf2iozE81qNbzm5drk/qcb96XInKK0WRGp6UavYWaYzPeHS
-2DFNSy5M7mOIhJ2VafsryLZ0GN/L6i5wTh5W6Ov0c4YlHfytEjssVOw/3x9shLW5
-a0t6eOB9M9CrzNU/Mfb7YrIfVx05eyYXfyC+Kw1il/UD2jeMci4nxPeaykg7ws0V
-/Z70hB8I1oQ2iK+hUH3n
-=VXWo
+iQIcBAEBCgAGBQJVYilCAAoJENju1/PIO/qaHtYP/R9uot7qpxxSqzBIoXmBCq9D
+rmy+63Jz5ScZ4NEfIIHc5HDq68NM/SIf7cCCE/YSrkedBZMv2HRknjwzCOIxRgV0
+wgK0JiEZe/Bkru3Eq8xVECv60Akng5yVZl3tRHV3tg3x2fNArT1PxaxH8I3KXXL6
+2RjkC8LZcfe6DQn7u9GmpalFH9aW3pwCVOKr0wLPbA76Y+Y3ugFAYisM6gw20Uz2
+fJETc1xr+LDjJ1HW6psBLOh4oZkplr4xIukSU1aJEFg4cdqSRPxa13+RX5fqv8/B
+48km9uAKgLN/M6VNGt3dEipKAghOSbfda0T16fkmuU49iBpmN2mRBbSIYF86cU9U
+wJffOzSQD884pJNR2b30BVywfu+IlJSp4IPECgggfk8/CXKgdYARB3/Vu9zGg8rc
+xrf+aq34SKySph2LptPOsJR5zakTESEcgleBabKKYEjmQmqGsZVFF27ShwUSvdGj
+0r8Fxqtbc1CfgjMkv7hU5cf/leQlPDYg7ZaMm9VsVb0idBnPbgQ35XPcJ3zAF+YC
+1ky6hA0pgHQuvHNOMr92Qdj2f448Xpu68CaKxNmweIPaxKkn7aqULAk6MKm/wft3
+3Xit6CmSupPl0vX+YVn4xggUKYoCi6B+NOIQ1gCGQvpYL1Ud6iJNkUefwPNQhRhC
+L4DRJgcqjEpyHtaz4reW
+=EQvB
 -----END PGP SIGNATURE-----
 
---uZ3hkaAS1mZxFaxD--
+--GZVR6ND4mMseVXL/--
