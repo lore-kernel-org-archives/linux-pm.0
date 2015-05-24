@@ -1,318 +1,419 @@
-From: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-Subject: [PATCH v2 5/9] extcon/input/mfd/regulator: max77843: Switch to common max77693 state container
-Date: Sun, 24 May 2015 14:43:29 +0900
-Message-ID: <1432446213-4886-6-git-send-email-k.kozlowski.k@gmail.com>
-References: <1432446213-4886-1-git-send-email-k.kozlowski.k@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1432446213-4886-1-git-send-email-k.kozlowski.k@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v5] power_supply: Add support for Richtek rt9455 battery
+ charger
+Date: Sun, 24 May 2015 13:02:03 +0200
+Message-ID: <20150524110203.GA4188@earth>
+References: <1431089869-14477-1-git-send-email-anda-maria.nicolae@intel.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="0F1p//8PRICkK4MW"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:43968 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751018AbbEXLC2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 24 May 2015 07:02:28 -0400
+Content-Disposition: inline
+In-Reply-To: <1431089869-14477-1-git-send-email-anda-maria.nicolae@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
+Cc: dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-Switch to the same definition of state container as in MAX77693 drivers.
-This will allow usage of one regulator driver in both devices: MAX77693
-and MAX77843.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
----
- drivers/extcon/extcon-max77843.c     | 17 +++++++++--------
- drivers/input/misc/max77843-haptic.c |  3 ++-
- drivers/mfd/max77843.c               | 20 +++++++++++---------
- drivers/regulator/max77843.c         |  6 ++++--
- include/linux/mfd/max77693-common.h  |  5 +++++
- include/linux/mfd/max77843-private.h | 20 --------------------
- 6 files changed, 31 insertions(+), 40 deletions(-)
+--0F1p//8PRICkK4MW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/extcon/extcon-max77843.c b/drivers/extcon/extcon-max77843.c
-index d78a64d7fc20..0f5910dcccb7 100644
---- a/drivers/extcon/extcon-max77843.c
-+++ b/drivers/extcon/extcon-max77843.c
-@@ -16,6 +16,7 @@
- #include <linux/interrupt.h>
- #include <linux/kernel.h>
- #include <linux/mfd/max77843-private.h>
-+#include <linux/mfd/max77693-common.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/workqueue.h>
-@@ -32,7 +33,7 @@ enum max77843_muic_status {
- 
- struct max77843_muic_info {
- 	struct device *dev;
--	struct max77843 *max77843;
-+	struct max77693_dev *max77843;
- 	struct extcon_dev *edev;
- 
- 	struct mutex mutex;
-@@ -198,7 +199,7 @@ static const struct regmap_irq_chip max77843_muic_irq_chip = {
- static int max77843_muic_set_path(struct max77843_muic_info *info,
- 		u8 val, bool attached)
- {
--	struct max77843 *max77843 = info->max77843;
-+	struct max77693_dev *max77843 = info->max77843;
- 	int ret = 0;
- 	unsigned int ctrl1, ctrl2;
- 
-@@ -539,7 +540,7 @@ static void max77843_muic_irq_work(struct work_struct *work)
- {
- 	struct max77843_muic_info *info = container_of(work,
- 			struct max77843_muic_info, irq_work);
--	struct max77843 *max77843 = info->max77843;
-+	struct max77693_dev *max77843 = info->max77843;
- 	int ret = 0;
- 
- 	mutex_lock(&info->mutex);
-@@ -615,7 +616,7 @@ static void max77843_muic_detect_cable_wq(struct work_struct *work)
- {
- 	struct max77843_muic_info *info = container_of(to_delayed_work(work),
- 			struct max77843_muic_info, wq_detcable);
--	struct max77843 *max77843 = info->max77843;
-+	struct max77693_dev *max77843 = info->max77843;
- 	int chg_type, adc, ret;
- 	bool attached;
- 
-@@ -656,7 +657,7 @@ err_cable_wq:
- static int max77843_muic_set_debounce_time(struct max77843_muic_info *info,
- 		enum max77843_muic_adc_debounce_time time)
- {
--	struct max77843 *max77843 = info->max77843;
-+	struct max77693_dev *max77843 = info->max77843;
- 	int ret;
- 
- 	switch (time) {
-@@ -681,7 +682,7 @@ static int max77843_muic_set_debounce_time(struct max77843_muic_info *info,
- 	return 0;
- }
- 
--static int max77843_init_muic_regmap(struct max77843 *max77843)
-+static int max77843_init_muic_regmap(struct max77693_dev *max77843)
- {
- 	int ret;
- 
-@@ -720,7 +721,7 @@ err_muic_i2c:
- 
- static int max77843_muic_probe(struct platform_device *pdev)
- {
--	struct max77843 *max77843 = dev_get_drvdata(pdev->dev.parent);
-+	struct max77693_dev *max77843 = dev_get_drvdata(pdev->dev.parent);
- 	struct max77843_muic_info *info;
- 	unsigned int id;
- 	int i, ret;
-@@ -821,7 +822,7 @@ err_muic_irq:
- static int max77843_muic_remove(struct platform_device *pdev)
- {
- 	struct max77843_muic_info *info = platform_get_drvdata(pdev);
--	struct max77843 *max77843 = info->max77843;
-+	struct max77693_dev *max77843 = info->max77843;
- 
- 	cancel_work_sync(&info->irq_work);
- 	regmap_del_irq_chip(max77843->irq, max77843->irq_data_muic);
-diff --git a/drivers/input/misc/max77843-haptic.c b/drivers/input/misc/max77843-haptic.c
-index dccbb465a055..92583dcc808b 100644
---- a/drivers/input/misc/max77843-haptic.c
-+++ b/drivers/input/misc/max77843-haptic.c
-@@ -15,6 +15,7 @@
- #include <linux/init.h>
- #include <linux/input.h>
- #include <linux/mfd/max77843-private.h>
-+#include <linux/mfd/max77693-common.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
- #include <linux/pwm.h>
-@@ -243,7 +244,7 @@ static void max77843_haptic_close(struct input_dev *dev)
- 
- static int max77843_haptic_probe(struct platform_device *pdev)
- {
--	struct max77843 *max77843 = dev_get_drvdata(pdev->dev.parent);
-+	struct max77693_dev *max77843 = dev_get_drvdata(pdev->dev.parent);
- 	struct max77843_haptic *haptic;
- 	int error;
- 
-diff --git a/drivers/mfd/max77843.c b/drivers/mfd/max77843.c
-index a354ac677ec7..d4ce1303edf7 100644
---- a/drivers/mfd/max77843.c
-+++ b/drivers/mfd/max77843.c
-@@ -18,6 +18,7 @@
- #include <linux/module.h>
- #include <linux/mfd/core.h>
- #include <linux/mfd/max77843-private.h>
-+#include <linux/mfd/max77693-common.h>
- #include <linux/of_device.h>
- #include <linux/platform_device.h>
- 
-@@ -71,7 +72,7 @@ static const struct regmap_irq_chip max77843_irq_chip = {
- };
- 
- /* Charger and Charger regulator use same regmap. */
--static int max77843_chg_init(struct max77843 *max77843)
-+static int max77843_chg_init(struct max77693_dev *max77843)
- {
- 	int ret;
- 
-@@ -101,7 +102,7 @@ err_chg_i2c:
- static int max77843_probe(struct i2c_client *i2c,
- 			  const struct i2c_device_id *id)
- {
--	struct max77843 *max77843;
-+	struct max77693_dev *max77843;
- 	unsigned int reg_data;
- 	int ret;
- 
-@@ -113,6 +114,7 @@ static int max77843_probe(struct i2c_client *i2c,
- 	max77843->dev = &i2c->dev;
- 	max77843->i2c = i2c;
- 	max77843->irq = i2c->irq;
-+	max77843->type = id->driver_data;
- 
- 	max77843->regmap = devm_regmap_init_i2c(i2c,
- 			&max77843_regmap_config);
-@@ -123,7 +125,7 @@ static int max77843_probe(struct i2c_client *i2c,
- 
- 	ret = regmap_add_irq_chip(max77843->regmap, max77843->irq,
- 			IRQF_TRIGGER_LOW | IRQF_ONESHOT | IRQF_SHARED,
--			0, &max77843_irq_chip, &max77843->irq_data);
-+			0, &max77843_irq_chip, &max77843->irq_data_topsys);
- 	if (ret) {
- 		dev_err(&i2c->dev, "Failed to add TOPSYS IRQ chip\n");
- 		return ret;
-@@ -164,18 +166,18 @@ static int max77843_probe(struct i2c_client *i2c,
- 	return 0;
- 
- err_pmic_id:
--	regmap_del_irq_chip(max77843->irq, max77843->irq_data);
-+	regmap_del_irq_chip(max77843->irq, max77843->irq_data_topsys);
- 
- 	return ret;
- }
- 
- static int max77843_remove(struct i2c_client *i2c)
- {
--	struct max77843 *max77843 = i2c_get_clientdata(i2c);
-+	struct max77693_dev *max77843 = i2c_get_clientdata(i2c);
- 
- 	mfd_remove_devices(max77843->dev);
- 
--	regmap_del_irq_chip(max77843->irq, max77843->irq_data);
-+	regmap_del_irq_chip(max77843->irq, max77843->irq_data_topsys);
- 
- 	i2c_unregister_device(max77843->i2c_chg);
- 
-@@ -188,7 +190,7 @@ static const struct of_device_id max77843_dt_match[] = {
- };
- 
- static const struct i2c_device_id max77843_id[] = {
--	{ "max77843", },
-+	{ "max77843", TYPE_MAX77843, },
- 	{ },
- };
- MODULE_DEVICE_TABLE(i2c, max77843_id);
-@@ -196,7 +198,7 @@ MODULE_DEVICE_TABLE(i2c, max77843_id);
- static int __maybe_unused max77843_suspend(struct device *dev)
- {
- 	struct i2c_client *i2c = container_of(dev, struct i2c_client, dev);
--	struct max77843 *max77843 = i2c_get_clientdata(i2c);
-+	struct max77693_dev *max77843 = i2c_get_clientdata(i2c);
- 
- 	disable_irq(max77843->irq);
- 	if (device_may_wakeup(dev))
-@@ -208,7 +210,7 @@ static int __maybe_unused max77843_suspend(struct device *dev)
- static int __maybe_unused max77843_resume(struct device *dev)
- {
- 	struct i2c_client *i2c = container_of(dev, struct i2c_client, dev);
--	struct max77843 *max77843 = i2c_get_clientdata(i2c);
-+	struct max77693_dev *max77843 = i2c_get_clientdata(i2c);
- 
- 	if (device_may_wakeup(dev))
- 		disable_irq_wake(max77843->irq);
-diff --git a/drivers/regulator/max77843.c b/drivers/regulator/max77843.c
-index f4fd0d3cfa6e..93507c3aff23 100644
---- a/drivers/regulator/max77843.c
-+++ b/drivers/regulator/max77843.c
-@@ -16,6 +16,7 @@
- #include <linux/regulator/driver.h>
- #include <linux/regulator/machine.h>
- #include <linux/mfd/max77843-private.h>
-+#include <linux/mfd/max77693-common.h>
- #include <linux/regulator/of_regulator.h>
- 
- enum max77843_regulator_type {
-@@ -130,7 +131,8 @@ static const struct regulator_desc max77843_supported_regulators[] = {
- 	},
- };
- 
--static struct regmap *max77843_get_regmap(struct max77843 *max77843, int reg_id)
-+static struct regmap *max77843_get_regmap(struct max77693_dev *max77843,
-+					  int reg_id)
- {
- 	switch (reg_id) {
- 	case MAX77843_SAFEOUT1:
-@@ -145,7 +147,7 @@ static struct regmap *max77843_get_regmap(struct max77843 *max77843, int reg_id)
- 
- static int max77843_regulator_probe(struct platform_device *pdev)
- {
--	struct max77843 *max77843 = dev_get_drvdata(pdev->dev.parent);
-+	struct max77693_dev *max77843 = dev_get_drvdata(pdev->dev.parent);
- 	struct regulator_config config = {};
- 	int i;
- 
-diff --git a/include/linux/mfd/max77693-common.h b/include/linux/mfd/max77693-common.h
-index 7da4cc38e982..095b121aa725 100644
---- a/include/linux/mfd/max77693-common.h
-+++ b/include/linux/mfd/max77693-common.h
-@@ -15,6 +15,9 @@
- enum max77693_types {
- 	TYPE_MAX77693_UNKNOWN,
- 	TYPE_MAX77693,
-+	TYPE_MAX77843,
-+
-+	TYPE_MAX77693_NUM,
- };
- 
- /*
-@@ -25,12 +28,14 @@ struct max77693_dev {
- 	struct i2c_client *i2c;		/* 0xCC , PMIC, Charger, Flash LED */
- 	struct i2c_client *i2c_muic;	/* 0x4A , MUIC */
- 	struct i2c_client *i2c_haptic;	/* MAX77693: 0x90 , Haptic */
-+	struct i2c_client *i2c_chg;	/* MAX77843: 0xD2, Charger */
- 
- 	enum max77693_types type;
- 
- 	struct regmap *regmap;
- 	struct regmap *regmap_muic;
- 	struct regmap *regmap_haptic;	/* Only MAX77693 */
-+	struct regmap *regmap_chg;	/* Only MAX77843 */
- 
- 	struct regmap_irq_chip_data *irq_data_led;
- 	struct regmap_irq_chip_data *irq_data_topsys;
-diff --git a/include/linux/mfd/max77843-private.h b/include/linux/mfd/max77843-private.h
-index 7178ace8379e..0121d9440340 100644
---- a/include/linux/mfd/max77843-private.h
-+++ b/include/linux/mfd/max77843-private.h
-@@ -431,24 +431,4 @@ enum max77843_irq_muic {
- #define MAX77843_REG_SAFEOUTCTRL_SAFEOUT2_MASK \
- 		(0x3 << SAFEOUTCTRL_SAFEOUT2_SHIFT)
- 
--struct max77843 {
--	struct device *dev;
--
--	struct i2c_client *i2c;
--	struct i2c_client *i2c_chg;
--	struct i2c_client *i2c_fuel;
--	struct i2c_client *i2c_muic;
--
--	struct regmap *regmap;
--	struct regmap *regmap_chg;
--	struct regmap *regmap_fuel;
--	struct regmap *regmap_muic;
--
--	struct regmap_irq_chip_data *irq_data;
--	struct regmap_irq_chip_data *irq_data_chg;
--	struct regmap_irq_chip_data *irq_data_fuel;
--	struct regmap_irq_chip_data *irq_data_muic;
--
--	int irq;
--};
- #endif /* __MAX77843_H__ */
--- 
-2.1.4
+Hi Anda-Maria,
+
+On Fri, May 08, 2015 at 03:57:49PM +0300, Anda-Maria Nicolae wrote:
+> Based on the datasheet found here:
+> http://www.richtek.com/download_ds.jsp?p=3DRT9455
+>=20
+> Signed-off-by: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
+> ---
+>=20
+> Updates from v4 version:                                                 =
+      =20
+> - replaced depends on REGMAP_I2C with select REGMAP_I2C
+> - got the latest version of vendor_prefixes file; prev patch contained an=
+ older one
+> - added explanation in rt9455_charger.txt about what boost-output-voltage=
+ represents
+>=20
+>  .../devicetree/bindings/power/rt9455_charger.txt   |   46 +
+
+Please move this into its own patch, see
+
+Documentation/devicetree/bindings/submitting-patches.txt
+
+>  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+
+Please also move this into its own patch
+
+>  drivers/power/Kconfig                              |    7 +
+>  drivers/power/Makefile                             |    1 +
+>  drivers/power/rt9455_charger.c                     | 1821 ++++++++++++++=
+++++++
+>  5 files changed, 1876 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/rt9455_charge=
+r.txt
+>  create mode 100644 drivers/power/rt9455_charger.c
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/rt9455_charger.txt b=
+/Documentation/devicetree/bindings/power/rt9455_charger.txt
+> new file mode 100644
+> index 0000000..a87c0f5
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/rt9455_charger.txt
+> @@ -0,0 +1,46 @@
+> +Binding for Richtek rt9455 battery charger
+> +
+> +Required properties:
+> +- compatible: Should contain one of the following:
+> + * "richtek,rt9455"
+> +
+> +- reg:					integer, i2c address of the device.
+> +- richtek,output-charge-current:	integer, output current from the charge=
+r to the
+> +					battery, in uA.
+> +- richtek,end-of-charge-percentage:	integer, percent of the output charg=
+e current.
+> +					When the current in constant-voltage phase drops
+> +					below output_charge_current x end-of-charge-percentage,
+> +					charge is terminated.
+> +- richtek,battery-regulation-voltage:	integer, maximum battery voltage i=
+n uV.
+> +- richtek,boost-output-voltage:		integer, maximum voltage provided to co=
+nsumer
+> +					devices, when the charger is in boost mode.
+> +
+> +Optional properties:
+> +- richtek,min-input-voltage-regulation: integer, input voltage level in =
+uA, used to
+> +					decrease voltage level when the over current
+> +					of the input power source occurs.
+> +					This prevents input voltage drop due to insufficient
+> +					current provided by the power source.
+> +- richtek,avg-input-current-regulation: integer, input current value dra=
+ined by the
+> +					charger from the power source.
+> +
+> +Example:
+> +
+> +rt9455@22 {
+> +	compatible =3D "richtek,rt9455";
+> +	reg =3D <0x22>;
+> +
+> +	interrupt-parent =3D <&gpio1>;
+> +	interrupts =3D <0 1>;
+> +
+> +	interrupt-gpio =3D <&gpio1 0 1>;
+> +	reset-gpio =3D <&gpio1 1 1>;
+
+Neither the gpios, nor the interrupts are specified as
+required/optional properties. Also the reset gpio is
+not referenced in the sourcecode at all.
+
+> +	richtek,output-charge-current	    =3D <500000>;
+> +	richtek,end-of-charge-percentage    =3D <10>;
+> +	richtek,battery-regulation-voltage  =3D <4200000>;
+> +	richtek,boost-output-voltage	    =3D <5050000>;
+> +
+> +	richtek,min-input-voltage-regulation =3D <4500000>;
+> +	richtek,avg-input-current-regulation =3D <500000>;
+> +};
+>
+> [...]
+>
+> +/*
+> + * Before setting the charger into boost mode, boost output voltage is
+> + * set. This is needed because boost output voltage may differ from batt=
+ery
+> + * regulation voltage. F_VOREG bits represent either battery regulation =
+voltage
+> + * or boost output voltage, depending on the mode the charger is. Both b=
+attery
+> + * regulation voltage and boost output voltage are read from DT/ACPI dur=
+ing
+> + * probe.
+> + */
+> +static int rt9455_set_boost_voltage_before_boost_mode(struct rt9455_info=
+ *info)
+> +{
+> +	struct device *dev =3D &info->client->dev;
+> +	int curr_boost_voltage, ret;
+> +
+> +	ret =3D rt9455_get_field_val(info, F_VOREG,
+> +				   rt9455_boost_voltage_values,
+> +				   ARRAY_SIZE(rt9455_boost_voltage_values),
+> +				   &curr_boost_voltage);
+> +	if (ret) {
+> +		dev_err(dev, "Failed to read boost output voltage value\n");
+> +		return ret;
+> +	}
+> +
+> +	if (curr_boost_voltage !=3D info->boost_voltage) {
+> +		ret =3D rt9455_set_field_val(info, F_VOREG,
+> +					rt9455_boost_voltage_values,
+> +					ARRAY_SIZE(rt9455_boost_voltage_values),
+> +					info->boost_voltage);
+> +		if (ret) {
+> +			dev_err(dev, "Failed to set boost output voltage value\n");
+> +			return ret;
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+
+The register comparision looks over-engineered to me.
+Just write the new value into the register.
+
+> +/*
+> + * Before setting the charger into charge mode, battery regulation volta=
+ge is
+> + * set. This is needed because boost output voltage may differ from batt=
+ery
+> + * regulation voltage. F_VOREG bits represent either battery regulation =
+voltage
+> + * or boost output voltage, depending on the mode the charger is. Both b=
+attery
+> + * regulation voltage and boost output voltage are read from DT/ACPI dur=
+ing
+> + * probe.
+> + */
+> +static int rt9455_set_voreg_before_charge_mode(struct rt9455_info *info)
+> +{
+> +	struct device *dev =3D &info->client->dev;
+> +	int curr_voreg, ret;
+> +
+> +	ret =3D rt9455_get_field_val(info, F_VOREG,
+> +				   rt9455_voreg_values,
+> +				   ARRAY_SIZE(rt9455_voreg_values),
+> +				   &curr_voreg);
+> +	if (ret) {
+> +		dev_err(dev, "Failed to read VOREG value\n");
+> +		return ret;
+> +	}
+> +
+> +	if (curr_voreg !=3D info->voreg) {
+> +		ret =3D rt9455_set_field_val(info, F_VOREG,
+> +					   rt9455_voreg_values,
+> +					   ARRAY_SIZE(rt9455_voreg_values),
+> +					   info->voreg);
+> +		if (ret) {
+> +			dev_err(dev, "Failed to set VOREG value\n");
+> +			return ret;
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+
+see last comment
+
+> [...]
+>
+> +static int rt9455_setup_irq(struct rt9455_info *info)
+> +{
+> +	struct device *dev =3D &info->client->dev;
+> +	int ret;
+> +
+> +	/* Obtain IRQ GPIO */
+> +	info->gpiod_irq =3D devm_gpiod_get_index(dev, RT9455_IRQ_NAME, 0);
+> +	if (IS_ERR(info->gpiod_irq)) {
+> +		dev_err(dev, "Failed to get IRQ GPIO\n");
+> +		return PTR_ERR(info->gpiod_irq);
+> +	}
+> +
+> +	/* Configure IRQ GPIO */
+> +	ret =3D gpiod_direction_input(info->gpiod_irq);
+> +	if (ret) {
+> +		dev_err(dev, "Failed to set IRQ GPIO direction err =3D %d\n",
+> +			ret);
+> +		return ret;
+> +	}
+> +
+> +	/* Map the pin to an IRQ */
+> +	ret =3D gpiod_to_irq(info->gpiod_irq);
+> +	if (ret < 0) {
+> +		dev_err(dev, "Failed to associate GPIO with an IRQ err =3D %d\n",
+> +			ret);
+> +		return ret;
+> +	}
+> +
+> +	dev_dbg(dev, "GPIO resource, no:%d irq:%d\n",
+> +		desc_to_gpio(info->gpiod_irq), ret);
+> +	info->client->irq =3D ret;
+> +
+> +	info->gpio_irq =3D desc_to_gpio(info->gpiod_irq);
+
+info->gpio_irq is never referenced. Drop it.
+
+> +	return 0;
+> +}
+
+There is no usage of info->gpiod_irq except for irq conversion, so you
+can just drop the whole gpio usage and reference the gpio as irq in the
+DT specification:
+
+interrupts-parent =3D <&gpio42>;
+interrupts =3D <23 IRQ_TYPE_LEVEL_HIGH>;
+
+This way the irq will be assigned to client->irq automatically. For
+ACPI the same will be supported once this patchset is merged:
+
+https://lkml.org/lkml/2015/4/28/455
+
+> [...]
+>
+> +static int rt9455_probe(struct i2c_client *client,
+> +			const struct i2c_device_id *id)
+> +{
+> +	struct i2c_adapter *adapter =3D to_i2c_adapter(client->dev.parent);
+> +	struct device *dev =3D &client->dev;
+> +	struct rt9455_info *info;
+> +	struct power_supply_config rt9455_charger_config =3D {};
+> +	/*
+> +	 * Mandatory device-specific data values. Also, VOREG and boost output
+> +	 * voltage are mandatory values, but they are stored in rt9455_info
+> +	 * structure.
+> +	 */
+> +	u32 ichrg, ieoc_percentage;
+> +	/* Optional device-specific data values. */
+> +	u32 mivr =3D -1, iaicr =3D -1;
+> +	int i, ret;
+> +
+> +	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA)) {
+> +		dev_err(dev, "No support for SMBUS_BYTE_DATA\n");
+> +		return -ENODEV;
+> +	}
+> +	info =3D devm_kzalloc(dev, sizeof(*info), GFP_KERNEL);
+> +	if (!info)
+> +		return -ENOMEM;
+> +
+> +	info->client =3D client;
+> +	i2c_set_clientdata(client, info);
+> +
+> +	info->regmap =3D devm_regmap_init_i2c(client,
+> +					    &rt9455_regmap_config);
+> +	if (IS_ERR(info->regmap)) {
+> +		dev_err(dev, "Failed to initialize register map\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	for (i =3D 0; i < F_MAX_FIELDS; i++) {
+> +		info->regmap_fields[i] =3D
+> +			devm_regmap_field_alloc(dev, info->regmap,
+> +						rt9455_reg_fields[i]);
+> +		if (IS_ERR(info->regmap_fields[i])) {
+> +			dev_err(dev,
+> +				"Failed to allocate regmap field =3D %d\n", i);
+> +			return PTR_ERR(info->regmap_fields[i]);
+> +		}
+> +	}
+> +
+> +	ret =3D rt9455_discover_charger(info, &ichrg, &ieoc_percentage,
+> +				      &mivr, &iaicr);
+> +	if (ret) {
+> +		dev_err(dev, "Failed to discover charger\n");
+> +		return ret;
+> +	}
+> +
+> +#if IS_ENABLED(CONFIG_USB_PHY)
+> +	info->usb_phy =3D devm_usb_get_phy(dev, USB_PHY_TYPE_USB2);
+> +	if (IS_ERR(info->usb_phy)) {
+> +		dev_err(dev, "Failed to get USB transceiver\n");
+> +	} else {
+> +		info->nb.notifier_call =3D rt9455_usb_event;
+> +		ret =3D usb_register_notifier(info->usb_phy, &info->nb);
+> +		if (ret) {
+> +			dev_err(dev, "Failed to register USB notifier\n");
+> +			/*
+> +			 * If usb_register_notifier() fails, set notifier_call
+> +			 * to NULL, to avoid calling usb_unregister_notifier().
+> +			 */
+> +			info->nb.notifier_call =3D NULL;
+> +		}
+> +	}
+> +#endif
+> +
+> +	INIT_DEFERRABLE_WORK(&info->pwr_rdy_work, rt9455_pwr_rdy_work_callback);
+> +	INIT_DEFERRABLE_WORK(&info->max_charging_time_work,
+> +			     rt9455_max_charging_time_work_callback);
+> +	INIT_DEFERRABLE_WORK(&info->batt_presence_work,
+> +			     rt9455_batt_presence_work_callback);
+> +
+> +	rt9455_charger_config.of_node		=3D dev->of_node;
+> +	rt9455_charger_config.drv_data		=3D info;
+> +	rt9455_charger_config.supplied_to	=3D rt9455_charger_supplied_to;
+> +	rt9455_charger_config.num_supplicants	=3D
+> +					ARRAY_SIZE(rt9455_charger_supplied_to);
+> +	ret =3D devm_request_threaded_irq(dev, client->irq, NULL,
+> +					rt9455_irq_handler_thread,
+> +					IRQF_TRIGGER_LOW | IRQF_ONESHOT,
+> +					RT9455_DRIVER_NAME, info);
+> +	if (ret) {
+> +		dev_err(dev, "Failed to register IRQ handler\n");
+> +		goto put_usb_notifier;
+> +	}
+> +
+> +	ret =3D rt9455_hw_init(info, ichrg, ieoc_percentage, mivr, iaicr);
+> +	if (ret) {
+> +		dev_err(dev, "Failed to set charger to its default values\n");
+> +		goto put_usb_notifier;
+> +	}
+> +
+> +	info->charger =3D power_supply_register(dev, &rt9455_charger_desc,
+> +					      &rt9455_charger_config);
+> +	if (IS_ERR(info->charger)) {
+> +		dev_err(dev, "Failed to register charger\n");
+> +		ret =3D PTR_ERR(info->charger);
+> +		goto put_usb_notifier;
+> +	}
+
+You can use devm_power_supply_register() and remove the
+power_supply_unregister() call from rt9455_remove().
+
+> +
+> +	return 0;
+> +
+> +put_usb_notifier:
+> +#if IS_ENABLED(CONFIG_USB_PHY)
+> +	if (info->nb.notifier_call)  {
+> +		usb_unregister_notifier(info->usb_phy, &info->nb);
+> +		info->nb.notifier_call =3D NULL;
+> +	}
+> +#endif
+> +	return ret;
+> +}
+>
+> [...]
+
+-- Sebastian
+
+--0F1p//8PRICkK4MW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVYa+oAAoJENju1/PIO/qaLPAQAIJvoKXRxm+xignDTIwrMvYF
+0aLAZS+2WJBZrJTfuBJOGh6SFbiixG1tPbgmIjGZjkZ1C9mVtvIgebcVLxwgZ4YP
+0ylyaDMfACHiYn2zkTDbcQm8S5y0aYtxWn68nTF4lbapS1eyrVcIgGeKfLybVOAB
+erlfLI9/37Hxh09SA7lcvrS1xaSiDLL6x/H0jrCad3lQ8x7+DeI+BTzfIlqThe8b
+G3oyMP24h0dEj942N9APlyaI5bQIGdRqHei3bY6IJ1hysLMYhOsI9dzEHX6lT+KC
+C2of6M574TxMlUXI1ZYeFsZowy6g0DU1ZwOLOlM7SmKNkGhRLTG6BjrySuZKmjKN
+HybnKPdhQqseiMb/iFSTBt4AKjs6U5e0lmXbeVYjOGIXMz1KHgEqnhZTUy9189az
+ihWS/xu8z0ysjKBNklJXkLCwUoakuRG6J13Pv20kZuAVR/z+XnltohD2okvhWeqg
+LvvPWqbmz7MMWjgrWZu8jNOWWTcd7gmOpX2vvc7RjUI4qVKf/4B2pLQ8Bj7FwLQk
+ImtxTBH7NU3RHkJaTtDVT7Y9UsevNPU+6R2xmY8hiwU6Kl1CQrrYG050QS/SaUwk
+wcwgIGydrUNcRzFcsI5UoHGBkQ7obp8mPit2aT0SEKOXkPR3Hwh53zMCZT2kEj8s
+BclmnhcQhSrfnvjPgXbw
+=Oya/
+-----END PGP SIGNATURE-----
+
+--0F1p//8PRICkK4MW--
