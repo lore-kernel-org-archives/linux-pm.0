@@ -1,48 +1,89 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH 21/21] power-supply: Probe power supplies on demand
-Date: Mon, 25 May 2015 16:53:25 +0200
-Message-ID: <1432565608-26036-22-git-send-email-tomeu.vizoso@collabora.com>
-References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f169.google.com ([209.85.212.169]:38583 "EHLO
-	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751702AbbEYO6o (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 May 2015 10:58:44 -0400
-In-Reply-To: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 4/8] klist: implement klist_prev()
+Date: Mon, 25 May 2015 19:09:28 +0300
+Message-ID: <1432570172-86963-5-git-send-email-andriy.shevchenko@linux.intel.com>
+References: <1432570172-86963-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1432570172-86963-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: =?UTF-8?q?St=C3=A9phane=20Marchesin?= <stephane.marchesin@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Alexander Holler <holler@ahsoftware.de>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-When looking up a power supply through its DT node, ensure that the
-corresponding device has been registered.
+klist_prev() gets the previous element in the list. It is useful to traverse
+through the list in reverse order, for example, to provide LIFO (last in first
+out) variant of access.
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/power/power_supply_core.c | 3 +++
- 1 file changed, 3 insertions(+)
+ include/linux/klist.h |  1 +
+ lib/klist.c           | 41 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 42 insertions(+)
 
-diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-index 2ed4a4a..3dbfce8 100644
---- a/drivers/power/power_supply_core.c
-+++ b/drivers/power/power_supply_core.c
-@@ -17,6 +17,7 @@
- #include <linux/device.h>
- #include <linux/notifier.h>
- #include <linux/err.h>
-+#include <linux/of_platform.h>
- #include <linux/power_supply.h>
- #include <linux/thermal.h>
- #include "power_supply.h"
-@@ -180,6 +181,8 @@ static int power_supply_find_supply_from_node(struct device_node *supply_node)
- {
- 	int error;
+diff --git a/include/linux/klist.h b/include/linux/klist.h
+index 61e5b72..953f283 100644
+--- a/include/linux/klist.h
++++ b/include/linux/klist.h
+@@ -63,6 +63,7 @@ extern void klist_iter_init(struct klist *k, struct klist_iter *i);
+ extern void klist_iter_init_node(struct klist *k, struct klist_iter *i,
+ 				 struct klist_node *n);
+ extern void klist_iter_exit(struct klist_iter *i);
++extern struct klist_node *klist_prev(struct klist_iter *i);
+ extern struct klist_node *klist_next(struct klist_iter *i);
  
-+	of_platform_device_ensure(supply_node);
+ #endif
+diff --git a/lib/klist.c b/lib/klist.c
+index 89b485a..d74cf7a 100644
+--- a/lib/klist.c
++++ b/lib/klist.c
+@@ -324,6 +324,47 @@ static struct klist_node *to_klist_node(struct list_head *n)
+ }
+ 
+ /**
++ * klist_prev - Ante up prev node in list.
++ * @i: Iterator structure.
++ *
++ * First grab list lock. Decrement the reference count of the previous
++ * node, if there was one. Grab the prev node, increment its reference
++ * count, drop the lock, and return that prev node.
++ */
++struct klist_node *klist_prev(struct klist_iter *i)
++{
++	void (*put)(struct klist_node *) = i->i_klist->put;
++	struct klist_node *last = i->i_cur;
++	struct klist_node *prev;
 +
- 	/*
- 	 * class_for_each_device() either returns its own errors or values
- 	 * returned by __power_supply_find_supply_from_node().
++	spin_lock(&i->i_klist->k_lock);
++
++	if (last) {
++		prev = to_klist_node(last->n_node.prev);
++		if (!klist_dec_and_del(last))
++			put = NULL;
++	} else
++		prev = to_klist_node(i->i_klist->k_list.prev);
++
++	i->i_cur = NULL;
++	while (prev != to_klist_node(&i->i_klist->k_list)) {
++		if (likely(!knode_dead(prev))) {
++			kref_get(&prev->n_ref);
++			i->i_cur = prev;
++			break;
++		}
++		prev = to_klist_node(prev->n_node.prev);
++	}
++
++	spin_unlock(&i->i_klist->k_lock);
++
++	if (put && last)
++		put(last);
++	return i->i_cur;
++}
++EXPORT_SYMBOL_GPL(klist_prev);
++
++/**
+  * klist_next - Ante up next node in list.
+  * @i: Iterator structure.
+  *
 -- 
-2.4.1
+2.1.4
 
