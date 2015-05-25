@@ -1,107 +1,41 @@
 From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: [PATCH v5 0/6] CPUFreq driver using CPPC methods
-Date: Mon, 25 May 2015 17:49:41 -0400
-Message-ID: <1432590581-8925-1-git-send-email-ashwin.chaugule@linaro.org>
+Subject: [PATCH v5 1/6] PCC: Initialize PCC Mailbox earlier at boot
+Date: Mon, 25 May 2015 17:50:10 -0400
+Message-ID: <1432590610-8968-1-git-send-email-ashwin.chaugule@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f176.google.com ([209.85.160.176]:36545 "EHLO
-	mail-yk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbbEYVtr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 May 2015 17:49:47 -0400
-Received: by yked142 with SMTP id d142so22873008yke.3
-        for <linux-pm@vger.kernel.org>; Mon, 25 May 2015 14:49:47 -0700 (PDT)
+Received: from mail-yh0-f54.google.com ([209.85.213.54]:36048 "EHLO
+	mail-yh0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750929AbbEYVuS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 May 2015 17:50:18 -0400
+Received: by yhrr66 with SMTP id r66so25575106yhr.3
+        for <linux-pm@vger.kernel.org>; Mon, 25 May 2015 14:50:17 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, patches@linaro.org, jaswinder.singh@linaro.org, viresh.kumar@linaro.org, sudeep.holla@arm.com, Ashwin Chaugule <ashwin.chaugule@linaro.org>
+To: rjw@rjwysocki.net, jaswinder.singh@linaro.org
+Cc: linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, patches@linaro.org, viresh.kumar@linaro.org, sudeep.holla@arm.com, Ashwin Chaugule <ashwin.chaugule@linaro.org>
 
-CPPC:
-====
+This change initializes the PCC Mailbox earlier than
+the ACPI processor driver. This enables drivers introduced
+in follow up patches (e.g. CPPC) to be probed via the ACPI
+processor driver interface. The CPPC probe requires the PCC
+channel to be initialized for it to query each CPUs performance
+capabilites.
 
-CPPC (Collaborative Processor Performance Control) is a new way to control CPU
-performance using an abstract continous scale as against a discretized P-state scale
-which is tied to CPU frequency only. It is defined in the ACPI 5.0+ spec. In brief,
-the basic operation involves:
-- OS makes a CPU performance request. (Can provide min and max tolerable bounds)
+Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+---
+ drivers/mailbox/pcc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-- Platform (such as BMC) is free to optimize request within requested bounds depending
-on power/thermal budgets etc.
-
-- Platform conveys its decision back to OS
-
-The communication between OS and platform occurs through another medium called (PCC)
-Platform communication Channel. This is a generic mailbox like mechanism which includes
-doorbell semantics to indicate register updates. See drivers/mailbox/pcc.c
-
-This patchset introduces a CPPC based CPUFreq driver that works with existing governors
-such as ondemand. The CPPC table parsing and the CPPC communication semantics are
-abstracted into separate files to allow future CPPC based drivers to implement their
-own governors if required.
-
-Initial patchsets included an adaptation of the PID governor from intel_pstate.c. However
-recent experiments led to extensive modifications of the algorithm to calculate CPU
-busyness. Until it is verified that these changes are worthwhile, the existing governors
-should provide for a good enough starting point for ARM64 servers.
-
-Finer details about the PCC and CPPC spec are available in the latest ACPI 5.1
-specification.[2]
-
-Changes since V4:
-- Misc cleanups. Addressed feedback from Rafael.
-- Made acpi_processor.c independent of C-states, P-states and others.
-- Per CPU scanning for _CPC is now made from acpi_processor.c
-- Added new Kconfig options for legacy C states and P states to enable future
-support for newer alternatives as defined in the ACPI spec 6.0.
-
-Changes since V3:
-- Split CPPC backend methods into separate files.
-- Add frontend driver which plugs into existing CPUfreq governors.
-- Simplify PCC driver by moving communication space mapping and read/write
-	into client drivers.
-
-Changes since V2:
-- Select driver if !X86, since intel_pstate will use HWP extensions instead.
-- Added more comments.
-- Added Freq domain awareness and PSD parsing.
-
-Changes since V1:
-- Create a new driver based on Dirks suggestion.
-- Fold in CPPC backend hooks into main driver.
-
-Changes since V0: [1]
-- Split intel_pstate.c into a generic PID governor and platform specific backend.
-- Add CPPC accessors as PID backend.
-
-[1] - http://lwn.net/Articles/608715/
-[2] - http://www.uefi.org/sites/default/files/resources/ACPI_5_1release.pdf
-[3] - https://patches.linaro.org/40705/
-
-
-Ashwin Chaugule (6):
-  PCC: Initialize PCC Mailbox earlier at boot
-  ACPI: Make ACPI processor driver more extensible
-  ACPI: Introduce CPU performance controls using CPPC
-  CPPC: Add a CPUFreq driver for use with CPPC
-  CPPC: Probe for CPPC tables for each ACPI Processor object
-  PCC: Enable PCC only when needed
-
- drivers/acpi/Kconfig            |  58 ++-
- drivers/acpi/Makefile           |   8 +-
- drivers/acpi/cppc_acpi.c        | 808 ++++++++++++++++++++++++++++++++++++++++
- drivers/acpi/processor_driver.c |  89 +++--
- drivers/cpufreq/Kconfig         |   2 +-
- drivers/cpufreq/Kconfig.arm     |  16 +
- drivers/cpufreq/Kconfig.x86     |   2 +
- drivers/cpufreq/Makefile        |   2 +
- drivers/cpufreq/cppc_cpufreq.c  | 197 ++++++++++
- drivers/mailbox/Kconfig         |   2 +-
- drivers/mailbox/pcc.c           |   2 +-
- include/acpi/cppc_acpi.h        | 137 +++++++
- include/acpi/processor.h        | 118 +++++-
- 13 files changed, 1380 insertions(+), 61 deletions(-)
- create mode 100644 drivers/acpi/cppc_acpi.c
- create mode 100644 drivers/cpufreq/cppc_cpufreq.c
- create mode 100644 include/acpi/cppc_acpi.h
-
+diff --git a/drivers/mailbox/pcc.c b/drivers/mailbox/pcc.c
+index 7e91d68..8809587 100644
+--- a/drivers/mailbox/pcc.c
++++ b/drivers/mailbox/pcc.c
+@@ -352,4 +352,4 @@ static int __init pcc_init(void)
+ 
+ 	return 0;
+ }
+-device_initcall(pcc_init);
++postcore_initcall(pcc_init);
 -- 
 1.9.1
 
