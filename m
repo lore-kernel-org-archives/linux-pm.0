@@ -1,89 +1,96 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v2 4/8] klist: implement klist_prev()
-Date: Mon, 25 May 2015 19:09:28 +0300
-Message-ID: <1432570172-86963-5-git-send-email-andriy.shevchenko@linux.intel.com>
-References: <1432570172-86963-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 0/8] mfd: introduce a driver for LPSS devices on SPT
+Date: Mon, 25 May 2015 19:09:24 +0300
+Message-ID: <1432570172-86963-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1432570172-86963-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-klist_prev() gets the previous element in the list. It is useful to traverse
-through the list in reverse order, for example, to provide LIFO (last in first
-out) variant of access.
+The new coming Intel platforms such as Skylake will contain Sunrisepoint PCH.
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- include/linux/klist.h |  1 +
- lib/klist.c           | 41 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 42 insertions(+)
+The driver is based on MFD framework since the main device, i.e. serial bus
+controller, contains register space for itself, DMA part, and an additional
+address space (convergence layer). 
 
-diff --git a/include/linux/klist.h b/include/linux/klist.h
-index 61e5b72..953f283 100644
---- a/include/linux/klist.h
-+++ b/include/linux/klist.h
-@@ -63,6 +63,7 @@ extern void klist_iter_init(struct klist *k, struct klist_iter *i);
- extern void klist_iter_init_node(struct klist *k, struct klist_iter *i,
- 				 struct klist_node *n);
- extern void klist_iter_exit(struct klist_iter *i);
-+extern struct klist_node *klist_prev(struct klist_iter *i);
- extern struct klist_node *klist_next(struct klist_iter *i);
- 
- #endif
-diff --git a/lib/klist.c b/lib/klist.c
-index 89b485a..d74cf7a 100644
---- a/lib/klist.c
-+++ b/lib/klist.c
-@@ -324,6 +324,47 @@ static struct klist_node *to_klist_node(struct list_head *n)
- }
- 
- /**
-+ * klist_prev - Ante up prev node in list.
-+ * @i: Iterator structure.
-+ *
-+ * First grab list lock. Decrement the reference count of the previous
-+ * node, if there was one. Grab the prev node, increment its reference
-+ * count, drop the lock, and return that prev node.
-+ */
-+struct klist_node *klist_prev(struct klist_iter *i)
-+{
-+	void (*put)(struct klist_node *) = i->i_klist->put;
-+	struct klist_node *last = i->i_cur;
-+	struct klist_node *prev;
-+
-+	spin_lock(&i->i_klist->k_lock);
-+
-+	if (last) {
-+		prev = to_klist_node(last->n_node.prev);
-+		if (!klist_dec_and_del(last))
-+			put = NULL;
-+	} else
-+		prev = to_klist_node(i->i_klist->k_list.prev);
-+
-+	i->i_cur = NULL;
-+	while (prev != to_klist_node(&i->i_klist->k_list)) {
-+		if (likely(!knode_dead(prev))) {
-+			kref_get(&prev->n_ref);
-+			i->i_cur = prev;
-+			break;
-+		}
-+		prev = to_klist_node(prev->n_node.prev);
-+	}
-+
-+	spin_unlock(&i->i_klist->k_lock);
-+
-+	if (put && last)
-+		put(last);
-+	return i->i_cur;
-+}
-+EXPORT_SYMBOL_GPL(klist_prev);
-+
-+/**
-  * klist_next - Ante up next node in list.
-  * @i: Iterator structure.
-  *
+The public specification of the register map is avaiable in [3].
+
+This is second generation of the patch series to bring support LPSS devices
+found on Intel Sunrisepoint (Intel Skylake PCH). First one can be found here
+[2].
+
+The series has few logical parts:
+- patches 1-3 prepares PM core, ACPI, and driver core (PM) to handle our case
+- patches 4-6 introduce unregistering platform devices in MFD in reversed
+  order
+- patch 7 implements iDMA 64-bit driver
+- patch 8 introduces an MFD driver for LPSS devices
+
+The patch 8 depends on clkdev_create() helper that has been introduced by
+Russel King in [3].
+
+The driver has been tested with SPI and UART on Intel Skylake PCH.
+
+[1] https://download.01.org/future-platform-configuration-hub/skylake/register-definitions/332219_001_Final.pdf
+[2] https://lkml.org/lkml/2015/3/31/255
+[3] https://patchwork.linuxtv.org/patch/28464/
+
+Changelog v2:
+- new DMA driver to fully support iDMA 64-bit IP
+- patch 3 is added to wake up parent devices when ->probe(), ->remove(), or
+  ->shutdown()
+- MFD core is unregistering devices in reversed order
+- address few Lee's comments on v1
+- address Russel's comment, therefore use clkdev_create() helper
+- intel-lpss{,-acpi,-pci} are modified regarding to above changes
+
+Andy Shevchenko (5):
+  klist: implement klist_prev()
+  driver core: implement device_for_each_child_reverse()
+  mfd: make mfd_remove_devices() iterate in reverse order
+  dmaengine: add a driver for Intel integrated DMA 64-bit
+  mfd: Add support for Intel Sunrisepoint LPSS devices
+
+Heikki Krogerus (1):
+  core: platform: wakeup the parent before trying any driver operations
+
+Mika Westerberg (2):
+  PM / QoS: Make it possible to expose device latency tolerance to
+    userspace
+  ACPI / PM: Attach ACPI power domain only once
+
+ drivers/acpi/device_pm.c      |   8 +
+ drivers/acpi/internal.h       |   2 +
+ drivers/acpi/scan.c           |  46 ++-
+ drivers/base/core.c           |  43 +++
+ drivers/base/platform.c       |  21 +-
+ drivers/base/power/power.h    |   2 +
+ drivers/base/power/qos.c      |  37 +++
+ drivers/base/power/sysfs.c    |  11 +
+ drivers/dma/Kconfig           |   5 +
+ drivers/dma/Makefile          |   1 +
+ drivers/dma/idma64.c          | 749 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/dma/idma64.h          | 233 +++++++++++++
+ drivers/mfd/Kconfig           |  24 ++
+ drivers/mfd/Makefile          |   3 +
+ drivers/mfd/intel-lpss-acpi.c |  84 +++++
+ drivers/mfd/intel-lpss-pci.c  | 113 +++++++
+ drivers/mfd/intel-lpss.c      | 534 ++++++++++++++++++++++++++++++
+ drivers/mfd/intel-lpss.h      |  62 ++++
+ drivers/mfd/mfd-core.c        |   2 +-
+ include/linux/device.h        |   2 +
+ include/linux/klist.h         |   1 +
+ include/linux/pm_qos.h        |   5 +
+ lib/klist.c                   |  41 +++
+ 23 files changed, 2011 insertions(+), 18 deletions(-)
+ create mode 100644 drivers/dma/idma64.c
+ create mode 100644 drivers/dma/idma64.h
+ create mode 100644 drivers/mfd/intel-lpss-acpi.c
+ create mode 100644 drivers/mfd/intel-lpss-pci.c
+ create mode 100644 drivers/mfd/intel-lpss.c
+ create mode 100644 drivers/mfd/intel-lpss.h
+
 -- 
 2.1.4
 
