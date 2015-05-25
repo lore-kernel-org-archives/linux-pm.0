@@ -1,18 +1,12 @@
 From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH 2/2] turbostat, add set_base_cpu()
-Date: Mon, 25 May 2015 08:34:29 -0400
-Message-ID: <1432557269-10994-3-git-send-email-prarit@redhat.com>
-References: <1432557269-10994-1-git-send-email-prarit@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:56244 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752502AbbEYMeg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 25 May 2015 08:34:36 -0400
-In-Reply-To: <1432557269-10994-1-git-send-email-prarit@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 0/2] turbostat, support CPU0 hotplug [v2]
+Date: Mon, 25 May 2015 08:34:27 -0400
+Message-ID: <1432557269-10994-1-git-send-email-prarit@redhat.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: len.brown@intel.com, andrey.semin@intel.com, linux-pm@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>
+List-Id: linux-pm@vger.kernel.org
 
 turbostat does not function properly on systems that support CPU0 hotplug.
 When running turbostat on these systems the following error is seen.
@@ -24,8 +18,8 @@ Try "# modprobe msr": No such file or directory
 This happens because base_cpu is set to 0 in the turbostat code and calls
 to check_dev_msr() will fail if CPU0 has been removed.
 
-This patchset adds functionality to set the value of base_cpu to the lowest
-found cpu on the system.  This patch moves setup_all_buffers() to the
+This patchset adds functionality to set the default cpu value to the
+current running cpu.  This patch moves setup_all_buffers() to the
 beginning of the turbostat_init() so that set_base_cpu() can take advantage
 of topo.max_cpu_num which is set in setup_all_buffers().
 
@@ -61,49 +55,13 @@ that turbostat behaves correctly in those situations as well.
 [v2]: use sched_getcpu() to get current cpu
 
 Signed-off-by: Prarit Bhargava <prarit@redhat.com>
----
- tools/power/x86/turbostat/turbostat.c |   15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 8c2e761..8e4ce9f 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -91,7 +91,7 @@ unsigned int do_gfx_perf_limit_reasons;
- unsigned int do_ring_perf_limit_reasons;
- unsigned int crystal_hz;
- unsigned long long tsc_hz;
--int base_cpu = 0;
-+int base_cpu = -1;
- 
- #define RAPL_PKG		(1 << 0)
- 					/* 0x610 MSR_PKG_POWER_LIMIT */
-@@ -2790,13 +2790,24 @@ void setup_all_buffers(void)
- 	for_all_proc_cpus(initialize_counters);
- }
- 
-+void set_base_cpu(void)
-+{
-+	base_cpu = sched_getcpu();
-+	if (base_cpu < 0)
-+		err(-ENODEV, "No valid cpus found");
-+
-+	if (debug > 1)
-+		fprintf(stderr, "base_cpu = %d\n", base_cpu);
-+}
-+
- void turbostat_init()
- {
-+	setup_all_buffers();
-+	set_base_cpu();
- 	check_dev_msr();
- 	check_permissions();
- 	process_cpuid();
- 
--	setup_all_buffers();
- 
- 	if (debug)
- 		for_all_cpus(print_epb, ODD_COUNTERS);
+Prarit Bhargava (2):
+  turbostat, add base_cpu
+  turbostat, add set_base_cpu()
+
+ tools/power/x86/turbostat/turbostat.c |   44 ++++++++++++++++++++++-----------
+ 1 file changed, 30 insertions(+), 14 deletions(-)
+
 -- 
 1.7.9.3
-
