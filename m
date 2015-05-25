@@ -1,68 +1,109 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 1/3] OPP: Redefine bindings to overcome shortcomings
-Date: Mon, 25 May 2015 17:29:13 +0530
-Message-ID: <20150525115913.GC23464@linux>
-References: <cover.1430394884.git.viresh.kumar@linaro.org>
- <d225e73f183e01fa0b71e4b9248b6a19a3f7d697.1430394884.git.viresh.kumar@linaro.org>
- <555BDA7C.7020506@codeaurora.org>
- <20150520020715.GA6465@linux>
- <555CE2E6.80304@codeaurora.org>
- <20150521043310.GD22904@linux>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: [PATCH 2/2] turbostat, add set_base_cpu()
+Date: Mon, 25 May 2015 08:34:29 -0400
+Message-ID: <1432557269-10994-3-git-send-email-prarit@redhat.com>
+References: <1432557269-10994-1-git-send-email-prarit@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f170.google.com ([209.85.192.170]:33757 "EHLO
-	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751907AbbEYL7T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 May 2015 07:59:19 -0400
-Received: by pdbqa5 with SMTP id qa5so68768375pdb.0
-        for <linux-pm@vger.kernel.org>; Mon, 25 May 2015 04:59:18 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20150521043310.GD22904@linux>
+Received: from mx1.redhat.com ([209.132.183.28]:56244 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752502AbbEYMeg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 25 May 2015 08:34:36 -0400
+In-Reply-To: <1432557269-10994-1-git-send-email-prarit@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rob.herring@linaro.org, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mike.turquette@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
+To: linux-kernel@vger.kernel.org
+Cc: len.brown@intel.com, andrey.semin@intel.com, linux-pm@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>
 
-On 21-05-15, 10:03, Viresh Kumar wrote:
-> On 20-05-15, 12:39, Stephen Boyd wrote:
-> > On 05/19/15 19:07, Viresh Kumar wrote:
-> > > On 19-05-15, 17:51, Stephen Boyd wrote:
-> > >
-> > >> Also I wonder if all properties should be optional? I don't have this
-> > >> scenario today, but perhaps the frequencies could be encoded in fuses,
-> > >> but the voltages wouldn't be and so we might want to read out the
-> > >> frequencies for a fixed set of voltages. Of course, if there's nothing
-> > >> in the OPP node at all, it's not very useful, so perhaps some statement
-> > >> that at least one of the frequency/voltage/amperage properties should be
-> > >> present.
-> > > I am not sure. What we are trying to do (fill partially in DT and
-> > > partially in platform), is a trick and not the right use of bindings.
-> > >
-> > > Ideally whatever is passed in DT should be complete by itself and
-> > > doesn't require platform to tweak it (which it can't). For example,
-> > > the cpufreq-dt driver will try to initialize OPPs from the DT directly
-> > > and wouldn't know about the platform tweaks. That can work eventually
-> > > as platform will add OPPs for the same bindings before cpufreq driver
-> > > will try to do, but that's a trick.
-> > >
-> > > And then its all about frequency in the first place, and so marking
-> > > that optional looks wrong. Probably not the right use of these
-> > > bindings.
-> > 
-> > Ok then I won't be using these bindings on any of the new platforms I
-> > have where half the data is in one place, and half in another. But for
-> > some of Krait based platforms I have they should be useable.
-> 
-> You are not the only one, I have seen other requests (even for the
-> existing bindings) to fill stuff partially in DT as they want freq to
-> come from bootloader.
-> 
-> @Rob: What do you suggest for such platforms? Let them keep (ab)using
-> old or new OPP DT bindings or create another binding to just pass on
-> freq table?
+turbostat does not function properly on systems that support CPU0 hotplug.
+When running turbostat on these systems the following error is seen.
 
-Rob: Can you please comment on this one as well ? Thanks.
+[root@intel-chiefriver-04 ~]# turbostat ls
+turbostat: no /dev/cpu/0/msr
+Try "# modprobe msr": No such file or directory
 
+This happens because base_cpu is set to 0 in the turbostat code and calls
+to check_dev_msr() will fail if CPU0 has been removed.
+
+This patchset adds functionality to set the value of base_cpu to the lowest
+found cpu on the system.  This patch moves setup_all_buffers() to the
+beginning of the turbostat_init() so that set_base_cpu() can take advantage
+of topo.max_cpu_num which is set in setup_all_buffers().
+
+After this change, on a system that has CPU0 removed,
+
+[root@prarit ~]# ./turbostat -d -d ls
+turbostat version 4.5 2 Apr, 2015 - Len Brown <lenb@kernel.org>
+num_cpus 7 max_cpu_num 7
+cpu0 NOT PRESENT
+cpu 1 pkg 0 core 0
+cpu 2 pkg 0 core 1
+cpu 3 pkg 0 core 1
+cpu 4 pkg 0 core 2
+cpu 5 pkg 0 core 2
+cpu 6 pkg 0 core 3
+cpu 7 pkg 0 core 3
+<snip>
+anaconda-ks.cfg  README  turbostat
+    Core     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz     SMI  CPU%c1  CPU%c3  CPU%c6  CPU%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7 PkgWatt CorWatt GFXWatt
+       -       -     492   14.20    3462    2634       0   18.90    0.00    0.00   68.63      27      27    0.00    0.00    0.00    0.00   17.65   12.69    0.00
+       0       1     353    9.95    3552    2645       0    9.68    0.00    0.00   80.37      27      27    0.00    0.00    0.00    0.00   17.65   12.69    0.00
+       1       2     217    7.70    2814    2614       0   64.63    0.00    0.00   27.68      26
+       1       3    2006   57.20    3507    2660       0   15.61
+       2       4     120    3.37    3570    2649       0   10.95    0.00    0.00   85.69      25
+       2       5     155    4.22    3679    2631       0    9.48
+       3       6     296    8.38    3530    2620       0   11.07    0.00    0.00   80.55      17
+       3       7     296    8.15    3630    2617       0   11.22
+0.001160 sec
+
+I have additionally tested various other hotplug configurations to make sure
+that turbostat behaves correctly in those situations as well.
+
+[v2]: use sched_getcpu() to get current cpu
+
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+---
+ tools/power/x86/turbostat/turbostat.c |   15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 8c2e761..8e4ce9f 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -91,7 +91,7 @@ unsigned int do_gfx_perf_limit_reasons;
+ unsigned int do_ring_perf_limit_reasons;
+ unsigned int crystal_hz;
+ unsigned long long tsc_hz;
+-int base_cpu = 0;
++int base_cpu = -1;
+ 
+ #define RAPL_PKG		(1 << 0)
+ 					/* 0x610 MSR_PKG_POWER_LIMIT */
+@@ -2790,13 +2790,24 @@ void setup_all_buffers(void)
+ 	for_all_proc_cpus(initialize_counters);
+ }
+ 
++void set_base_cpu(void)
++{
++	base_cpu = sched_getcpu();
++	if (base_cpu < 0)
++		err(-ENODEV, "No valid cpus found");
++
++	if (debug > 1)
++		fprintf(stderr, "base_cpu = %d\n", base_cpu);
++}
++
+ void turbostat_init()
+ {
++	setup_all_buffers();
++	set_base_cpu();
+ 	check_dev_msr();
+ 	check_permissions();
+ 	process_cpuid();
+ 
+-	setup_all_buffers();
+ 
+ 	if (debug)
+ 		for_all_cpus(print_epb, ODD_COUNTERS);
 -- 
-viresh
+1.7.9.3
+
