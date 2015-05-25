@@ -1,179 +1,121 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH 1/2] turbostat, add base_cpu
-Date: Mon, 25 May 2015 08:34:28 -0400
-Message-ID: <1432557269-10994-2-git-send-email-prarit@redhat.com>
-References: <1432557269-10994-1-git-send-email-prarit@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:34793 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752576AbbEYMeh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 25 May 2015 08:34:37 -0400
-In-Reply-To: <1432557269-10994-1-git-send-email-prarit@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [PATCH 00/21] On-demand device registration
+Date: Mon, 25 May 2015 16:53:04 +0200
+Message-ID: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-gpio-owner@vger.kernel.org>
+Sender: linux-gpio-owner@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: =?UTF-8?q?St=C3=A9phane=20Marchesin?= <stephane.marchesin@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Alexander Holler <holler@ahsoftware.de>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Dan Williams <dan.j.williams@intel.com>, devicetree@vger.kernel.org, dmaengine@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-clk@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-gpio@vger.kernel.org, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-tegra@vger.kernel.org, linux-usb@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: len.brown@intel.com, andrey.semin@intel.com, linux-pm@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>
 
-turbostat does not function properly on systems that support CPU0 hotplug.
-When running turbostat on these systems the following error is seen.
+Hello,
 
-[root@intel-chiefriver-04 ~]# turbostat ls
-turbostat: no /dev/cpu/0/msr
-Try "# modprobe msr": No such file or directory
+I have a problem with the panel on my Tegra Chromebook taking longer th=
+an
+expected to be ready during boot (St=C3=A9phane Marchesin reported what=
+ is
+basically the same issue in [0]), and have looked into ordered probing =
+as a
+better way of solving this than moving nodes around in the DT or playin=
+g with
+initcall levels.
 
-This happens because /dev/cpu/0 is hardcoded in several locations in the
-turbostat code.
+While reading the thread [1] that Alexander Holler started with his ser=
+ies to
+make probing order deterministic, it occurred to me that it should be p=
+ossible
+to achieve the same by registering devices as they are referenced by ot=
+her
+devices.
 
-This patch adds base_cpu, which will be used to track the lowest cpu number
-on the system.  This patch does not add any functionality differences and
-sets base_cpu to 0.
+This basically reuses the information that is already implicit in the p=
+robe()
+implementations, saving us from refactoring existing drivers or adding
+information to DTBs.
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
----
- tools/power/x86/turbostat/turbostat.c |   31 ++++++++++++++++++-------------
- 1 file changed, 18 insertions(+), 13 deletions(-)
+Something I'm not completely happy with is that I have had to move the =
+call to
+of_platform_populate after all platform drivers have been registered.
+Otherwise I don't see how I could register drivers on demand as we don'=
+t have
+yet each driver's compatible strings.
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index bac98ca..8c2e761 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -91,6 +91,7 @@ unsigned int do_gfx_perf_limit_reasons;
- unsigned int do_ring_perf_limit_reasons;
- unsigned int crystal_hz;
- unsigned long long tsc_hz;
-+int base_cpu = 0;
- 
- #define RAPL_PKG		(1 << 0)
- 					/* 0x610 MSR_PKG_POWER_LIMIT */
-@@ -1150,7 +1151,7 @@ dump_nhm_platform_info(void)
- 	unsigned long long msr;
- 	unsigned int ratio;
- 
--	get_msr(0, MSR_NHM_PLATFORM_INFO, &msr);
-+	get_msr(base_cpu, MSR_NHM_PLATFORM_INFO, &msr);
- 
- 	fprintf(stderr, "cpu0: MSR_NHM_PLATFORM_INFO: 0x%08llx\n", msr);
- 
-@@ -1162,7 +1163,7 @@ dump_nhm_platform_info(void)
- 	fprintf(stderr, "%d * %.0f = %.0f MHz base frequency\n",
- 		ratio, bclk, ratio * bclk);
- 
--	get_msr(0, MSR_IA32_POWER_CTL, &msr);
-+	get_msr(base_cpu, MSR_IA32_POWER_CTL, &msr);
- 	fprintf(stderr, "cpu0: MSR_IA32_POWER_CTL: 0x%08llx (C1E auto-promotion: %sabled)\n",
- 		msr, msr & 0x2 ? "EN" : "DIS");
- 
-@@ -1175,7 +1176,7 @@ dump_hsw_turbo_ratio_limits(void)
- 	unsigned long long msr;
- 	unsigned int ratio;
- 
--	get_msr(0, MSR_TURBO_RATIO_LIMIT2, &msr);
-+	get_msr(base_cpu, MSR_TURBO_RATIO_LIMIT2, &msr);
- 
- 	fprintf(stderr, "cpu0: MSR_TURBO_RATIO_LIMIT2: 0x%08llx\n", msr);
- 
-@@ -1197,7 +1198,7 @@ dump_ivt_turbo_ratio_limits(void)
- 	unsigned long long msr;
- 	unsigned int ratio;
- 
--	get_msr(0, MSR_TURBO_RATIO_LIMIT1, &msr);
-+	get_msr(base_cpu, MSR_TURBO_RATIO_LIMIT1, &msr);
- 
- 	fprintf(stderr, "cpu0: MSR_TURBO_RATIO_LIMIT1: 0x%08llx\n", msr);
- 
-@@ -1249,7 +1250,7 @@ dump_nhm_turbo_ratio_limits(void)
- 	unsigned long long msr;
- 	unsigned int ratio;
- 
--	get_msr(0, MSR_TURBO_RATIO_LIMIT, &msr);
-+	get_msr(base_cpu, MSR_TURBO_RATIO_LIMIT, &msr);
- 
- 	fprintf(stderr, "cpu0: MSR_TURBO_RATIO_LIMIT: 0x%08llx\n", msr);
- 
-@@ -1300,7 +1301,7 @@ dump_nhm_cst_cfg(void)
- {
- 	unsigned long long msr;
- 
--	get_msr(0, MSR_NHM_SNB_PKG_CST_CFG_CTL, &msr);
-+	get_msr(base_cpu, MSR_NHM_SNB_PKG_CST_CFG_CTL, &msr);
- 
- #define SNB_C1_AUTO_UNDEMOTE              (1UL << 27)
- #define SNB_C3_AUTO_UNDEMOTE              (1UL << 28)
-@@ -1594,8 +1595,10 @@ restart:
- void check_dev_msr()
- {
- 	struct stat sb;
-+	char pathname[32];
- 
--	if (stat("/dev/cpu/0/msr", &sb))
-+	sprintf(pathname, "/dev/cpu/%d/msr", base_cpu);
-+	if (stat(pathname, &sb))
-  		if (system("/sbin/modprobe msr > /dev/null 2>&1"))
- 			err(-5, "no /dev/cpu/0/msr, Try \"# modprobe msr\" ");
- }
-@@ -1608,6 +1611,7 @@ void check_permissions()
- 	cap_user_data_t cap_data = &cap_data_data;
- 	extern int capget(cap_user_header_t hdrp, cap_user_data_t datap);
- 	int do_exit = 0;
-+	char pathname[32];
- 
- 	/* check for CAP_SYS_RAWIO */
- 	cap_header->pid = getpid();
-@@ -1622,7 +1626,8 @@ void check_permissions()
- 	}
- 
- 	/* test file permissions */
--	if (euidaccess("/dev/cpu/0/msr", R_OK)) {
-+	sprintf(pathname, "/dev/cpu/%d/msr", base_cpu);
-+	if (euidaccess(pathname, R_OK)) {
- 		do_exit++;
- 		warn("/dev/cpu/0/msr open failed, try chown or chmod +r /dev/cpu/*/msr");
- 	}
-@@ -1704,7 +1709,7 @@ int probe_nhm_msrs(unsigned int family, unsigned int model)
- 	default:
- 		return 0;
- 	}
--	get_msr(0, MSR_NHM_SNB_PKG_CST_CFG_CTL, &msr);
-+	get_msr(base_cpu, MSR_NHM_SNB_PKG_CST_CFG_CTL, &msr);
- 
- 	pkg_cstate_limit = pkg_cstate_limits[msr & 0xF];
- 
-@@ -1925,7 +1930,7 @@ double get_tdp(model)
- 	unsigned long long msr;
- 
- 	if (do_rapl & RAPL_PKG_POWER_INFO)
--		if (!get_msr(0, MSR_PKG_POWER_INFO, &msr))
-+		if (!get_msr(base_cpu, MSR_PKG_POWER_INFO, &msr))
- 			return ((msr >> 0) & RAPL_POWER_GRANULARITY) * rapl_power_units;
- 
- 	switch (model) {
-@@ -2006,7 +2011,7 @@ void rapl_probe(unsigned int family, unsigned int model)
- 	}
- 
- 	/* units on package 0, verify later other packages match */
--	if (get_msr(0, MSR_RAPL_POWER_UNIT, &msr))
-+	if (get_msr(base_cpu, MSR_RAPL_POWER_UNIT, &msr))
- 		return;
- 
- 	rapl_power_units = 1.0 / (1 << (msr & 0xF));
-@@ -2340,7 +2345,7 @@ double slm_bclk(void)
- 	unsigned int i;
- 	double freq;
- 
--	if (get_msr(0, MSR_FSB_FREQ, &msr))
-+	if (get_msr(base_cpu, MSR_FSB_FREQ, &msr))
- 		fprintf(stderr, "SLM BCLK: unknown\n");
- 
- 	i = msr & 0xf;
-@@ -2408,7 +2413,7 @@ int set_temperature_target(struct thread_data *t, struct core_data *c, struct pk
- 	if (!do_nhm_platform_info)
- 		goto guess;
- 
--	if (get_msr(0, MSR_IA32_TEMPERATURE_TARGET, &msr))
-+	if (get_msr(base_cpu, MSR_IA32_TEMPERATURE_TARGET, &msr))
- 		goto guess;
- 
- 	target_c_local = (msr >> 16) & 0xFF;
--- 
-1.7.9.3
+=46or machs that don't move of_platform_populate() to a later point, th=
+ese
+patches shouldn't cause any problems but it's not guaranteed that we'll=
+ avoid
+all the deferred probes as some drivers may not be registered yet.
 
+I have tested this on boards with Tegra, iMX.6 and Exynos SoCs, and the=
+se
+patches were enough to eliminate all the deferred probes.
+
+With this series I get the kernel to output to the panel in 0.5s, inste=
+ad of 2.8s.
+
+Regards,
+
+Tomeu
+
+[0] http://lists.freedesktop.org/archives/dri-devel/2014-August/066527.=
+html
+
+[1] https://lkml.org/lkml/2014/5/12/452
+
+Tomeu Vizoso (21):
+  regulator: core: Reduce critical area in _regulator_get
+  ARM: tegra: Add gpio-ranges property
+  ARM: tegra: Register drivers before devices
+  ARM: EXYNOS: Register drivers before devices
+  ARM i.MX6q: Register drivers before devices
+  of/platform: Add of_platform_device_ensure()
+  of/platform: Ensure device registration on lookup
+  gpio: Probe GPIO drivers on demand
+  gpio: Probe pinctrl devices on demand
+  regulator: core: Probe regulators on demand
+  drm: Probe panels on demand
+  drm/tegra: Probe dpaux devices on demand
+  i2c: core: Probe i2c master devices on demand
+  pwm: Probe PWM chip devices on demand
+  backlight: Probe backlight devices on demand
+  usb: phy: Probe phy devices on demand
+  clk: Probe clk providers on demand
+  pinctrl: Probe pinctrl devices on demand
+  phy: core: Probe phy providers on demand
+  dma: of: Probe DMA controllers on demand
+  power-supply: Probe power supplies on demand
+
+ arch/arm/boot/dts/tegra124.dtsi     |  1 +
+ arch/arm/mach-exynos/exynos.c       |  4 +--
+ arch/arm/mach-imx/mach-imx6q.c      | 12 ++++-----
+ arch/arm/mach-tegra/tegra.c         | 21 ++++++---------
+ drivers/clk/clk.c                   |  3 +++
+ drivers/dma/of-dma.c                |  3 +++
+ drivers/gpio/gpiolib-of.c           |  5 ++++
+ drivers/gpu/drm/drm_panel.c         |  3 +++
+ drivers/gpu/drm/tegra/dpaux.c       |  3 +++
+ drivers/i2c/i2c-core.c              |  3 +++
+ drivers/of/platform.c               | 53 +++++++++++++++++++++++++++++=
+++++++++
+ drivers/phy/phy-core.c              |  3 +++
+ drivers/pinctrl/devicetree.c        |  2 ++
+ drivers/power/power_supply_core.c   |  3 +++
+ drivers/pwm/core.c                  |  3 +++
+ drivers/regulator/core.c            | 45 +++++++++++++++--------------=
+--
+ drivers/usb/phy/phy.c               |  3 +++
+ drivers/video/backlight/backlight.c |  3 +++
+ include/linux/of_platform.h         |  2 ++
+ 19 files changed, 130 insertions(+), 45 deletions(-)
+
+--=20
+2.4.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-gpio" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
