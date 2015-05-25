@@ -1,12 +1,18 @@
 From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH 0/2] turbostat, support CPU0 hotplug [v2]
-Date: Mon, 25 May 2015 08:34:27 -0400
-Message-ID: <1432557269-10994-1-git-send-email-prarit@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH 1/2] turbostat, add base_cpu
+Date: Mon, 25 May 2015 08:34:28 -0400
+Message-ID: <1432557269-10994-2-git-send-email-prarit@redhat.com>
+References: <1432557269-10994-1-git-send-email-prarit@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:34793 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752576AbbEYMeh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 25 May 2015 08:34:37 -0400
+In-Reply-To: <1432557269-10994-1-git-send-email-prarit@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: len.brown@intel.com, andrey.semin@intel.com, linux-pm@vger.kernel.org, Prarit Bhargava <prarit@redhat.com>
-List-Id: linux-pm@vger.kernel.org
 
 turbostat does not function properly on systems that support CPU0 hotplug.
 When running turbostat on these systems the following error is seen.
@@ -15,53 +21,159 @@ When running turbostat on these systems the following error is seen.
 turbostat: no /dev/cpu/0/msr
 Try "# modprobe msr": No such file or directory
 
-This happens because base_cpu is set to 0 in the turbostat code and calls
-to check_dev_msr() will fail if CPU0 has been removed.
+This happens because /dev/cpu/0 is hardcoded in several locations in the
+turbostat code.
 
-This patchset adds functionality to set the default cpu value to the
-current running cpu.  This patch moves setup_all_buffers() to the
-beginning of the turbostat_init() so that set_base_cpu() can take advantage
-of topo.max_cpu_num which is set in setup_all_buffers().
-
-After this change, on a system that has CPU0 removed,
-
-[root@prarit ~]# ./turbostat -d -d ls
-turbostat version 4.5 2 Apr, 2015 - Len Brown <lenb@kernel.org>
-num_cpus 7 max_cpu_num 7
-cpu0 NOT PRESENT
-cpu 1 pkg 0 core 0
-cpu 2 pkg 0 core 1
-cpu 3 pkg 0 core 1
-cpu 4 pkg 0 core 2
-cpu 5 pkg 0 core 2
-cpu 6 pkg 0 core 3
-cpu 7 pkg 0 core 3
-<snip>
-anaconda-ks.cfg  README  turbostat
-    Core     CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz     SMI  CPU%c1  CPU%c3  CPU%c6  CPU%c7 CoreTmp  PkgTmp Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7 PkgWatt CorWatt GFXWatt
-       -       -     492   14.20    3462    2634       0   18.90    0.00    0.00   68.63      27      27    0.00    0.00    0.00    0.00   17.65   12.69    0.00
-       0       1     353    9.95    3552    2645       0    9.68    0.00    0.00   80.37      27      27    0.00    0.00    0.00    0.00   17.65   12.69    0.00
-       1       2     217    7.70    2814    2614       0   64.63    0.00    0.00   27.68      26
-       1       3    2006   57.20    3507    2660       0   15.61
-       2       4     120    3.37    3570    2649       0   10.95    0.00    0.00   85.69      25
-       2       5     155    4.22    3679    2631       0    9.48
-       3       6     296    8.38    3530    2620       0   11.07    0.00    0.00   80.55      17
-       3       7     296    8.15    3630    2617       0   11.22
-0.001160 sec
-
-I have additionally tested various other hotplug configurations to make sure
-that turbostat behaves correctly in those situations as well.
-
-[v2]: use sched_getcpu() to get current cpu
+This patch adds base_cpu, which will be used to track the lowest cpu number
+on the system.  This patch does not add any functionality differences and
+sets base_cpu to 0.
 
 Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+---
+ tools/power/x86/turbostat/turbostat.c |   31 ++++++++++++++++++-------------
+ 1 file changed, 18 insertions(+), 13 deletions(-)
 
-Prarit Bhargava (2):
-  turbostat, add base_cpu
-  turbostat, add set_base_cpu()
-
- tools/power/x86/turbostat/turbostat.c |   44 ++++++++++++++++++++++-----------
- 1 file changed, 30 insertions(+), 14 deletions(-)
-
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index bac98ca..8c2e761 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -91,6 +91,7 @@ unsigned int do_gfx_perf_limit_reasons;
+ unsigned int do_ring_perf_limit_reasons;
+ unsigned int crystal_hz;
+ unsigned long long tsc_hz;
++int base_cpu = 0;
+ 
+ #define RAPL_PKG		(1 << 0)
+ 					/* 0x610 MSR_PKG_POWER_LIMIT */
+@@ -1150,7 +1151,7 @@ dump_nhm_platform_info(void)
+ 	unsigned long long msr;
+ 	unsigned int ratio;
+ 
+-	get_msr(0, MSR_NHM_PLATFORM_INFO, &msr);
++	get_msr(base_cpu, MSR_NHM_PLATFORM_INFO, &msr);
+ 
+ 	fprintf(stderr, "cpu0: MSR_NHM_PLATFORM_INFO: 0x%08llx\n", msr);
+ 
+@@ -1162,7 +1163,7 @@ dump_nhm_platform_info(void)
+ 	fprintf(stderr, "%d * %.0f = %.0f MHz base frequency\n",
+ 		ratio, bclk, ratio * bclk);
+ 
+-	get_msr(0, MSR_IA32_POWER_CTL, &msr);
++	get_msr(base_cpu, MSR_IA32_POWER_CTL, &msr);
+ 	fprintf(stderr, "cpu0: MSR_IA32_POWER_CTL: 0x%08llx (C1E auto-promotion: %sabled)\n",
+ 		msr, msr & 0x2 ? "EN" : "DIS");
+ 
+@@ -1175,7 +1176,7 @@ dump_hsw_turbo_ratio_limits(void)
+ 	unsigned long long msr;
+ 	unsigned int ratio;
+ 
+-	get_msr(0, MSR_TURBO_RATIO_LIMIT2, &msr);
++	get_msr(base_cpu, MSR_TURBO_RATIO_LIMIT2, &msr);
+ 
+ 	fprintf(stderr, "cpu0: MSR_TURBO_RATIO_LIMIT2: 0x%08llx\n", msr);
+ 
+@@ -1197,7 +1198,7 @@ dump_ivt_turbo_ratio_limits(void)
+ 	unsigned long long msr;
+ 	unsigned int ratio;
+ 
+-	get_msr(0, MSR_TURBO_RATIO_LIMIT1, &msr);
++	get_msr(base_cpu, MSR_TURBO_RATIO_LIMIT1, &msr);
+ 
+ 	fprintf(stderr, "cpu0: MSR_TURBO_RATIO_LIMIT1: 0x%08llx\n", msr);
+ 
+@@ -1249,7 +1250,7 @@ dump_nhm_turbo_ratio_limits(void)
+ 	unsigned long long msr;
+ 	unsigned int ratio;
+ 
+-	get_msr(0, MSR_TURBO_RATIO_LIMIT, &msr);
++	get_msr(base_cpu, MSR_TURBO_RATIO_LIMIT, &msr);
+ 
+ 	fprintf(stderr, "cpu0: MSR_TURBO_RATIO_LIMIT: 0x%08llx\n", msr);
+ 
+@@ -1300,7 +1301,7 @@ dump_nhm_cst_cfg(void)
+ {
+ 	unsigned long long msr;
+ 
+-	get_msr(0, MSR_NHM_SNB_PKG_CST_CFG_CTL, &msr);
++	get_msr(base_cpu, MSR_NHM_SNB_PKG_CST_CFG_CTL, &msr);
+ 
+ #define SNB_C1_AUTO_UNDEMOTE              (1UL << 27)
+ #define SNB_C3_AUTO_UNDEMOTE              (1UL << 28)
+@@ -1594,8 +1595,10 @@ restart:
+ void check_dev_msr()
+ {
+ 	struct stat sb;
++	char pathname[32];
+ 
+-	if (stat("/dev/cpu/0/msr", &sb))
++	sprintf(pathname, "/dev/cpu/%d/msr", base_cpu);
++	if (stat(pathname, &sb))
+  		if (system("/sbin/modprobe msr > /dev/null 2>&1"))
+ 			err(-5, "no /dev/cpu/0/msr, Try \"# modprobe msr\" ");
+ }
+@@ -1608,6 +1611,7 @@ void check_permissions()
+ 	cap_user_data_t cap_data = &cap_data_data;
+ 	extern int capget(cap_user_header_t hdrp, cap_user_data_t datap);
+ 	int do_exit = 0;
++	char pathname[32];
+ 
+ 	/* check for CAP_SYS_RAWIO */
+ 	cap_header->pid = getpid();
+@@ -1622,7 +1626,8 @@ void check_permissions()
+ 	}
+ 
+ 	/* test file permissions */
+-	if (euidaccess("/dev/cpu/0/msr", R_OK)) {
++	sprintf(pathname, "/dev/cpu/%d/msr", base_cpu);
++	if (euidaccess(pathname, R_OK)) {
+ 		do_exit++;
+ 		warn("/dev/cpu/0/msr open failed, try chown or chmod +r /dev/cpu/*/msr");
+ 	}
+@@ -1704,7 +1709,7 @@ int probe_nhm_msrs(unsigned int family, unsigned int model)
+ 	default:
+ 		return 0;
+ 	}
+-	get_msr(0, MSR_NHM_SNB_PKG_CST_CFG_CTL, &msr);
++	get_msr(base_cpu, MSR_NHM_SNB_PKG_CST_CFG_CTL, &msr);
+ 
+ 	pkg_cstate_limit = pkg_cstate_limits[msr & 0xF];
+ 
+@@ -1925,7 +1930,7 @@ double get_tdp(model)
+ 	unsigned long long msr;
+ 
+ 	if (do_rapl & RAPL_PKG_POWER_INFO)
+-		if (!get_msr(0, MSR_PKG_POWER_INFO, &msr))
++		if (!get_msr(base_cpu, MSR_PKG_POWER_INFO, &msr))
+ 			return ((msr >> 0) & RAPL_POWER_GRANULARITY) * rapl_power_units;
+ 
+ 	switch (model) {
+@@ -2006,7 +2011,7 @@ void rapl_probe(unsigned int family, unsigned int model)
+ 	}
+ 
+ 	/* units on package 0, verify later other packages match */
+-	if (get_msr(0, MSR_RAPL_POWER_UNIT, &msr))
++	if (get_msr(base_cpu, MSR_RAPL_POWER_UNIT, &msr))
+ 		return;
+ 
+ 	rapl_power_units = 1.0 / (1 << (msr & 0xF));
+@@ -2340,7 +2345,7 @@ double slm_bclk(void)
+ 	unsigned int i;
+ 	double freq;
+ 
+-	if (get_msr(0, MSR_FSB_FREQ, &msr))
++	if (get_msr(base_cpu, MSR_FSB_FREQ, &msr))
+ 		fprintf(stderr, "SLM BCLK: unknown\n");
+ 
+ 	i = msr & 0xf;
+@@ -2408,7 +2413,7 @@ int set_temperature_target(struct thread_data *t, struct core_data *c, struct pk
+ 	if (!do_nhm_platform_info)
+ 		goto guess;
+ 
+-	if (get_msr(0, MSR_IA32_TEMPERATURE_TARGET, &msr))
++	if (get_msr(base_cpu, MSR_IA32_TEMPERATURE_TARGET, &msr))
+ 		goto guess;
+ 
+ 	target_c_local = (msr >> 16) & 0xFF;
 -- 
 1.7.9.3
+
