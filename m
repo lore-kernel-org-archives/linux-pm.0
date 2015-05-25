@@ -1,100 +1,137 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v2 5/8] driver core: implement device_for_each_child_reverse()
-Date: Mon, 25 May 2015 19:09:29 +0300
-Message-ID: <1432570172-86963-6-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 2/8] ACPI / PM: Attach ACPI power domain only once
+Date: Mon, 25 May 2015 19:09:26 +0300
+Message-ID: <1432570172-86963-3-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1432570172-86963-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1432570172-86963-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The new function device_for_each_child_reverse() is helpful to traverse the
-registered devices in a reversed order, e.g. in the case when an operation on
-each device should be done first on the last added device, then on one before
-last and so on.
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
 
+Some devices, like MFD subdevices, share a single ACPI companion device so
+that they are able to access their resources and children. However,
+currently all these subdevices are attached to the ACPI power domain and
+this might cause that the power methods for the companion device get called
+more than once.
+
+In order to solve this we attach the ACPI power domain only to the first
+physical device that is bound to the ACPI companion device. In case of MFD
+devices, this is the parent MFD device itself.
+
+Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/base/core.c    | 43 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/device.h |  2 ++
- 2 files changed, 45 insertions(+)
+ drivers/acpi/device_pm.c |  8 ++++++++
+ drivers/acpi/internal.h  |  2 ++
+ drivers/acpi/scan.c      | 46 ++++++++++++++++++++++++++++++----------------
+ 3 files changed, 40 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 21d1303..69b2acc 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -1252,6 +1252,19 @@ void device_unregister(struct device *dev)
+diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
+index 735db11..7d0c7e9 100644
+--- a/drivers/acpi/device_pm.c
++++ b/drivers/acpi/device_pm.c
+@@ -1103,6 +1103,14 @@ int acpi_dev_pm_attach(struct device *dev, bool power_on)
+ 	if (dev->pm_domain)
+ 		return -EEXIST;
+ 
++	/*
++	 * Only attach the power domain to the first device if the
++	 * companion is shared by multiple. This is to prevent doing power
++	 * management twice.
++	 */
++	if (!acpi_device_is_first_physical_node(adev, dev))
++		return -EBUSY;
++
+ 	acpi_add_pm_notifier(adev, dev, acpi_pm_notify_work_func);
+ 	dev->pm_domain = &acpi_general_pm_domain;
+ 	if (power_on) {
+diff --git a/drivers/acpi/internal.h b/drivers/acpi/internal.h
+index ba4a61e..c26a951 100644
+--- a/drivers/acpi/internal.h
++++ b/drivers/acpi/internal.h
+@@ -96,6 +96,8 @@ void acpi_device_add_finalize(struct acpi_device *device);
+ void acpi_free_pnp_ids(struct acpi_device_pnp *pnp);
+ bool acpi_device_is_present(struct acpi_device *adev);
+ bool acpi_device_is_battery(struct acpi_device *adev);
++bool acpi_device_is_first_physical_node(struct acpi_device *adev,
++					const struct device *dev);
+ 
+ /* --------------------------------------------------------------------------
+                                   Power Resource
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index 03141aa..37f8f74 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -223,6 +223,35 @@ static int create_of_modalias(struct acpi_device *acpi_dev, char *modalias,
+ 	return len;
  }
- EXPORT_SYMBOL_GPL(device_unregister);
  
-+static struct device *prev_device(struct klist_iter *i)
-+{
-+	struct klist_node *n = klist_prev(i);
-+	struct device *dev = NULL;
-+	struct device_private *p;
-+
-+	if (n) {
-+		p = to_device_private_parent(n);
-+		dev = p->device;
-+	}
-+	return dev;
-+}
-+
- static struct device *next_device(struct klist_iter *i)
- {
- 	struct klist_node *n = klist_next(i);
-@@ -1342,6 +1355,36 @@ int device_for_each_child(struct device *parent, void *data,
- EXPORT_SYMBOL_GPL(device_for_each_child);
- 
- /**
-+ * device_for_each_child_reverse - device child iterator in reversed order.
-+ * @parent: parent struct device.
-+ * @fn: function to be called for each device.
-+ * @data: data for the callback.
-+ *
-+ * Iterate over @parent's child devices, and call @fn for each,
-+ * passing it @data.
-+ *
-+ * We check the return of @fn each time. If it returns anything
-+ * other than 0, we break out and return that value.
-+ */
-+int device_for_each_child_reverse(struct device *parent, void *data,
-+				  int (*fn)(struct device *dev, void *data))
-+{
-+	struct klist_iter i;
-+	struct device *child;
-+	int error = 0;
-+
-+	if (!parent->p)
-+		return 0;
-+
-+	klist_iter_init(&parent->p->klist_children, &i);
-+	while ((child = prev_device(&i)) && !error)
-+		error = fn(child, data);
-+	klist_iter_exit(&i);
-+	return error;
-+}
-+EXPORT_SYMBOL_GPL(device_for_each_child_reverse);
-+
 +/**
-  * device_find_child - device iterator for locating a particular device.
-  * @parent: parent struct device
-  * @match: Callback function to check device
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 6558af9..cf404a0 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -928,6 +928,8 @@ extern int __must_check device_add(struct device *dev);
- extern void device_del(struct device *dev);
- extern int device_for_each_child(struct device *dev, void *data,
- 		     int (*fn)(struct device *dev, void *data));
-+extern int device_for_each_child_reverse(struct device *dev, void *data,
-+		     int (*fn)(struct device *dev, void *data));
- extern struct device *device_find_child(struct device *dev, void *data,
- 				int (*match)(struct device *dev, void *data));
- extern int device_rename(struct device *dev, const char *new_name);
++ * acpi_device_is_first_physical_node - Is given dev first physical node
++ * @adev: ACPI companion device
++ * @dev: Physical device to check
++ *
++ * Function checks if given @dev is the first physical devices attached to
++ * the ACPI companion device. This distinction is needed in some cases
++ * where the same companion device is shared between many physical devices.
++ *
++ * Note that the caller have to provide valid @adev pointer.
++ */
++bool acpi_device_is_first_physical_node(struct acpi_device *adev,
++					const struct device *dev)
++{
++	bool ret = false;
++
++	mutex_lock(&adev->physical_node_lock);
++	if (!list_empty(&adev->physical_node_list)) {
++		const struct acpi_device_physical_node *node;
++
++		node = list_first_entry(&adev->physical_node_list,
++					struct acpi_device_physical_node, node);
++		ret = node->dev == dev;
++	}
++	mutex_unlock(&adev->physical_node_lock);
++
++	return ret;
++}
++
+ /*
+  * acpi_companion_match() - Can we match via ACPI companion device
+  * @dev: Device in question
+@@ -247,7 +276,6 @@ static int create_of_modalias(struct acpi_device *acpi_dev, char *modalias,
+ static struct acpi_device *acpi_companion_match(const struct device *dev)
+ {
+ 	struct acpi_device *adev;
+-	struct mutex *physical_node_lock;
+ 
+ 	adev = ACPI_COMPANION(dev);
+ 	if (!adev)
+@@ -256,21 +284,7 @@ static struct acpi_device *acpi_companion_match(const struct device *dev)
+ 	if (list_empty(&adev->pnp.ids))
+ 		return NULL;
+ 
+-	physical_node_lock = &adev->physical_node_lock;
+-	mutex_lock(physical_node_lock);
+-	if (list_empty(&adev->physical_node_list)) {
+-		adev = NULL;
+-	} else {
+-		const struct acpi_device_physical_node *node;
+-
+-		node = list_first_entry(&adev->physical_node_list,
+-					struct acpi_device_physical_node, node);
+-		if (node->dev != dev)
+-			adev = NULL;
+-	}
+-	mutex_unlock(physical_node_lock);
+-
+-	return adev;
++	return acpi_device_is_first_physical_node(adev, dev) ? adev : NULL;
+ }
+ 
+ static int __acpi_device_uevent_modalias(struct acpi_device *adev,
 -- 
 2.1.4
-
