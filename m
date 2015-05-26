@@ -1,16 +1,21 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2 2/5] firmware: add support for ARM System Control and
- Power Interface(SCPI) protocol
-Date: Tue, 26 May 2015 12:18:57 +0100
-Message-ID: <556456A1.7030401@arm.com>
-References: <1431618155-3132-1-git-send-email-sudeep.holla@arm.com>	
- <1431618155-3132-3-git-send-email-sudeep.holla@arm.com>
- <1432120636.3231.24.camel@linaro.org>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH V2 5/6] regulator: add mxs on-chip regulator driver
+Date: Tue, 26 May 2015 14:16:55 +0200 (CEST)
+Message-ID: <1290103954.26573.1432642616013.JavaMail.open-xchange@oxbsltgw08.schlund.de>
+References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com>
+ <1430346747-28728-6-git-send-email-stefan.wahren@i2se.com>
+ <20150504123648.GU15510@sirena.org.uk>
+ <1693367404.879766.1430771695242.JavaMail.open-xchange@oxbaltgw08.schlund.de>
+ <1875749167.82542.1431023838932.JavaMail.open-xchange@oxbsltgw04.schlund.de>
+ <20150507185216.GP22845@sirena.org.uk>
+ <535744342.64563.1431026719818.JavaMail.open-xchange@oxbsltgw09.schlund.de>
+ <20150507193236.GS22845@sirena.org.uk>
+Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1432120636.3231.24.camel@linaro.org>
+In-Reply-To: <20150507193236.GS22845@sirena.org.uk>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -20,77 +25,37 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Jon Medhurst (Tixy)" <tixy@linaro.org>
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jassi Brar <jassisinghbrar@gmail.com>, Liviu Dudau <Liviu.Dudau@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Mark Brown <broonie@kernel.org>
+Cc: fabio.estevam@freescale.com, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Kumar Gala <galak@codeaurora.org>, sebastien.szymanski@armadeus.com, Shawn Guo <shawn.guo@linaro.org>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 
-
-On 20/05/15 12:17, Jon Medhurst (Tixy) wrote:
-> On Thu, 2015-05-14 at 16:42 +0100, Sudeep Holla wrote:
->> This patch adds support for System Control and Power Interface (SCPI)
->> Message Protocol used between the Application Cores(AP) and the System
->> Control Processor(SCP). The MHU peripheral provides a mechanism for
->> inter-processor communication between SCP's M3 processor and AP.
->>
->> SCP offers control and management of the core/cluster power states,
->> various power domain DVFS including the core/cluster, certain system
->> clocks configuration, thermal sensors and many others.
->>
->> This protocol driver provides interface for all the client drivers using
->> SCPI to make use of the features offered by the SCP.
->>
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->> CC: Jassi Brar <jassisinghbrar@gmail.com>
->> Cc: Liviu Dudau <Liviu.Dudau@arm.com>
->> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
->> Cc: Jon Medhurst (Tixy) <tixy@linaro.org>
->> ---
+> Mark Brown <broonie@kernel.org> hat am 7. Mai 2015 um 21:32 geschrieben:
 >
-> Sorry for the delay in looking at this. I have one nitpick below but
-> anyway, here's a
 >
-> Reviewed-by: Jon Medhurst (Tixy) <tixy@linaro.org>
+> On Thu, May 07, 2015 at 09:25:19PM +0200, Stefan Wahren wrote:
+> > > Mark Brown <broonie@kernel.org> hat am 7. Mai 2015 um 20:52 geschrieben:
+>
+> > > > In the bootloader code enabling the DC-DC is critical. There is a known
+> > > > issue
+> > > > which falsely triggers the brownout detection.
+>
+> > > Why would the driver not provide these operations?
+>
+> > I didn't implement this operation because the suggested workaround for the
+> > hardware issue isn't very nice
+> > (disable brownout detection during enabling DC-DC). I was afraid of the
+> > implementation.
+>
+> That doesn't sound too complicated?
 >
 
-Thanks!
+Okay, i think i managed the brownout handling.
 
-> [...]
->> +++ b/drivers/firmware/arm_scpi.c
-> [...]
->> +static void scpi_process_cmd(struct scpi_chan *ch, u32 cmd)
->> +{
->> +	unsigned long flags;
->> +	struct scpi_xfer *t, *match = NULL;
->> +
->> +	spin_lock_irqsave(&ch->rx_lock, flags);
->> +	if (list_empty(&ch->rx_pending)) {
->> +		spin_unlock_irqrestore(&ch->rx_lock, flags);
->> +		return;
->> +	}
->> +
->> +	list_for_each_entry(t, &ch->rx_pending, node)
->> +		if (CMD_XTRACT_UNIQ(t->cmd) == CMD_XTRACT_UNIQ(cmd)) {
->> +			list_del(&t->node);
->> +			match = t;
->> +			break;
->> +		}
->> +	/* check if wait_for_completion is in progress or timed-out */
->> +	if (match && !completion_done(&match->done)) {
->> +		struct scpi_shared_mem *mem = ch->rx_payload;
->> +		int len = min(match->rx_len, CMD_SIZE(cmd));
->> +
->> +		match->status = le32_to_cpu(mem->status);
->> +		memcpy_fromio(match->rx_buf, mem->payload, len);
->> +		if (match->rx_len > len)
->
-> rx_len is unsigned and len is signed and so I had to go refresh my
-> memory from the C standard before I could convince myself that this if
-> statement was OK. Might be clearer if len was unsigned, especially as
-> it's the 'min' of two unsigned values.
->
+Unfortunately i'm stuck at the next step. The DC-DC (3 way output) can supply 3
+LDOs vddd, vdda, vddio. In case of a DC-DC state change the 3 regulators needs
+to be reconfigured before.
 
-Fixed locally for next version.
-
-Regards,
-Sudeep
+I tought of REGULATOR_EVENT_PRE_DISABLE and REGULATOR_EVENT_PRE_ENABLE events,
+but i'm not sure that's the right way to achieve a synchronization between DC-DC
+and consuming LDOs.
