@@ -1,48 +1,121 @@
-From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-Subject: Re: [PATCH v2 3/8] core: platform: wakeup the parent before trying
- any driver operations
-Date: Tue, 26 May 2015 16:28:14 +0300
-Message-ID: <20150526132814.GA12719@kuha.fi.intel.com>
-References: <1432570172-86963-4-git-send-email-andriy.shevchenko@linux.intel.com>
- <Pine.LNX.4.44L0.1505251335350.21019-100000@netrider.rowland.org>
+From: =?euc-kr?B?wMzAusXD?= <eun.taik.lee@samsung.com>
+Subject: [RFC PATCH] suspend/resume performance improvement
+Date: Tue, 26 May 2015 14:05:48 +0000 (GMT)
+Message-ID: <1141174354.499851432649147087.JavaMail.weblogic@epmlwas01d>
+Reply-To: eun.taik.lee@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1505251335350.21019-100000@netrider.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:38724 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754810AbbEZOFv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 May 2015 10:05:51 -0400
+Received: from epcpsbgr3.samsung.com
+ (u143.gpu120.samsung.co.kr [203.254.230.143])
+ by mailout4.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
+ 64bit (built May  5 2014))
+ with ESMTP id <0NOY00ILJN5OYCD0@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 26 May 2015 23:05:48 +0900 (KST)
+MIME-version: 1.0
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, May 25, 2015 at 01:36:43PM -0400, Alan Stern wrote:
-> On Mon, 25 May 2015, Andy Shevchenko wrote:
-> 
-> > From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-> > 
-> > If the parent is still suspended when a driver probe,
-> > remove or shutdown is attempted, the result may be a
-> > failure.
-> > 
-> > For example, if the parent is a PCI MFD device that has been
-> > suspended when we try to probe our device, any register
-> > reads will return 0xffffffff.
-> > 
-> > To fix the problem, making sure the parent is always awake
-> > before using driver probe, remove or shutdown.
-> > 
-> > Signed-off-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> > ---
-> >  drivers/base/platform.c | 21 ++++++++++++++++++++-
-> 
-> Why make the changes here rather than in dd.c?  Is there something 
-> special about platform devices?
+V2hlbiBhIHRhc2sgdGhhdCBjYWxscyBzdGF0ZV9zdG9yZSgpIHRvIHN1c3BlbmQNCnRoZSBkZXZp
+Y2UgaGFzIHVzZWQgdXAgbW9zdCBvZiBpdHMgdGltZSBzbGljZSwNCnN1c3BlbmQgc29tZXRpbWVz
+IHRha2UgdG9vIGxvbmcuIChVc2VyIG5vdGljZWFibGUpDQoNClN1c3BlbmQvcmVzdW1lIGlzIGEg
+c3lzdGVtIHdpZGUgb3BlcmF0aW9uLg0KU28sIGluc3RlYWQgb2YgZGVwZW5kaW5nIG9uIGEgdXNl
+cnNwYWNlIHRhc2sncyB0aW1lDQpzbGljZSwgbGV0IGt3b3JrZXIgZG8gdGhlIHdvcmsgdG8gYXZv
+aWQgYSBsb25nIHdhaXQNCm9uIHRoZSBydW5xdWV1ZS4NCg0KU2lnbmVkLW9mZi1ieTogRXVuIFRh
+aWsgTGVlIDxldW4udGFpay5sZWVAc2Ftc3VuZy5jb20+DQotLS0NCiBrZXJuZWwvcG93ZXIvS2Nv
+bmZpZyB8ICAxMiArKysrKw0KIGtlcm5lbC9wb3dlci9tYWluLmMgIHwgMTIxICsrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLQ0KIDIgZmlsZXMgY2hhbmdl
+ZCwgMTMyIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkNCg0KZGlmZiAtLWdpdCBhL2tlcm5l
+bC9wb3dlci9LY29uZmlnIGIva2VybmVsL3Bvd2VyL0tjb25maWcNCmluZGV4IDdlMDFmNzguLjdl
+ZWYzMTcgMTAwNjQ0DQotLS0gYS9rZXJuZWwvcG93ZXIvS2NvbmZpZw0KKysrIGIva2VybmVsL3Bv
+d2VyL0tjb25maWcNCkBAIC0xOCw2ICsxOCwxOCBAQCBjb25maWcgU1VTUEVORF9GUkVFWkVSDQog
+DQogCSAgVHVybmluZyBPRkYgdGhpcyBzZXR0aW5nIGlzIE5PVCByZWNvbW1lbmRlZCEgSWYgaW4g
+ZG91YnQsIHNheSBZLg0KIA0KK2NvbmZpZyBTVVNQRU5EX0hFTFBFUg0KKwlib29sICJVc2Uga3dv
+cmtlciBmb3Igc3VzcGVuZC9yZXN1bWUiDQorCWRlcGVuZHMgb24gU1VTUEVORA0KKwlkZWZhdWx0
+IG4NCisJaGVscA0KKwkgIFVzZSBrd29ya2VyIGZvciBzdXNwZW5kL3Jlc3VtZSBmdW5jdGlvbmFs
+aXR5IHRvIGRlY3JlYXNlDQorCSAgdGhlIHN1c3BlbmQvcmVzdW1lIHRpbWUgd2hlbiB0aGUgY2Fs
+bGVyIGhhcyB1c2VkIHVwIHRvbyBtdWNoDQorCSAgb2YgaXRzIHRpbWUgc2xpY2UgYmVmb3JlIGNh
+bGxpbmcuDQorCSAgVXNlIGt3b3JrZXIgZm9yIHN1c3BlbmQvcmVzdW1lIGZ1bmN0aW9uYWxpdHkg
+dG8gZGVjcmVhc2UNCisJICB0aGUgc3VzcGVuZC9yZXN1bWUgdGltZSB3aGVuIHRoZSBjYWxsZXIg
+aGFzIHVzZWQgdXAgdG9vIG11Y2gNCisJICBvZiBpdHMgdGltZSBzbGljZSBiZWZvcmUgY2FsbGlu
+Zy4NCisNCiBjb25maWcgSElCRVJOQVRFX0NBTExCQUNLUw0KIAlib29sDQogDQpkaWZmIC0tZ2l0
+IGEva2VybmVsL3Bvd2VyL21haW4uYyBiL2tlcm5lbC9wb3dlci9tYWluLmMNCmluZGV4IDg2ZTgx
+NTcuLmU3ODJiODYgMTAwNjQ0DQotLS0gYS9rZXJuZWwvcG93ZXIvbWFpbi5jDQorKysgYi9rZXJu
+ZWwvcG93ZXIvbWFpbi5jDQpAQCAtMTUsNyArMTUsNyBAQA0KICNpbmNsdWRlIDxsaW51eC93b3Jr
+cXVldWUuaD4NCiAjaW5jbHVkZSA8bGludXgvZGVidWdmcy5oPg0KICNpbmNsdWRlIDxsaW51eC9z
+ZXFfZmlsZS5oPg0KLQ0KKyNpbmNsdWRlIDxsaW51eC9jb21wbGV0aW9uLmg+DQogI2luY2x1ZGUg
+InBvd2VyLmgiDQogDQogREVGSU5FX01VVEVYKHBtX211dGV4KTsNCkBAIC0zMzUsOSArMzM1LDMz
+IEBAIHN0YXRpYyBzdXNwZW5kX3N0YXRlX3QgZGVjb2RlX3N0YXRlKGNvbnN0IGNoYXIgKmJ1Ziwg
+c2l6ZV90IG4pDQogCXJldHVybiBQTV9TVVNQRU5EX09OOw0KIH0NCiANCisjaWZkZWYgQ09ORklH
+X1NVU1BFTkRfSEVMUEVSDQorc3RhdGljIHN0cnVjdCB3b3JrcXVldWVfc3RydWN0ICpzdXNwZW5k
+X2hlbHBlcl93cTsNCitzdHJ1Y3Qgc3RhdGVfc3RvcmVfcGFyYW1zIHsNCisJY29uc3QgY2hhciAq
+YnVmOw0KKwlzaXplX3QgbjsNCit9Ow0KKw0KK3N0cnVjdCBzdXNwZW5kX2hlbHBlcl9kYXRhIHsN
+CisJc3RydWN0IHdvcmtfc3RydWN0IHdvcms7DQorCXN0cnVjdCBjb21wbGV0aW9uIGRvbmU7DQor
+CXN0cnVjdCBzdGF0ZV9zdG9yZV9wYXJhbXMgcGFyYW1zOw0KKwlpbnQgcmVzdWx0Ow0KK307DQor
+c3RydWN0IHN1c3BlbmRfaGVscGVyX2RhdGEgc3VzcGVuZF9oZWxwZXJfZGF0YTsNCisNCitzdGF0
+aWMgc3NpemVfdCBzdGF0ZV9zdG9yZV9oZWxwZXIoc3RydWN0IGtvYmplY3QgKmtvYmosDQorCQlz
+dHJ1Y3Qga29ial9hdHRyaWJ1dGUgKmF0dHIsDQorCQljb25zdCBjaGFyICpidWYsIHNpemVfdCBu
+KTsNCisjZW5kaWYNCisNCiBzdGF0aWMgc3NpemVfdCBzdGF0ZV9zdG9yZShzdHJ1Y3Qga29iamVj
+dCAqa29iaiwgc3RydWN0IGtvYmpfYXR0cmlidXRlICphdHRyLA0KIAkJCSAgIGNvbnN0IGNoYXIg
+KmJ1Ziwgc2l6ZV90IG4pDQogew0KKyNpZmRlZiBDT05GSUdfU1VTUEVORF9IRUxQRVINCisJcHJf
+ZGVidWcoIiVzOiBMZXQgb3VyIGhlbHBlciBkbyB0aGUgcmVhbCB3b3JrIVxuIiwgX19mdW5jX18p
+Ow0KKwlyZXR1cm4gc3RhdGVfc3RvcmVfaGVscGVyKGtvYmosIGF0dHIsIGJ1Ziwgbik7DQorI2Vs
+c2UNCiAJc3VzcGVuZF9zdGF0ZV90IHN0YXRlOw0KIAlpbnQgZXJyb3I7DQogDQpAQCAtMzYxLDEw
+ICszODUsMTAyIEBAIHN0YXRpYyBzc2l6ZV90IHN0YXRlX3N0b3JlKHN0cnVjdCBrb2JqZWN0ICpr
+b2JqLCBzdHJ1Y3Qga29ial9hdHRyaWJ1dGUgKmF0dHIsDQogIG91dDoNCiAJcG1fYXV0b3NsZWVw
+X3VubG9jaygpOw0KIAlyZXR1cm4gZXJyb3IgPyBlcnJvciA6IG47DQorI2VuZGlmDQogfQ0KIA0K
+IHBvd2VyX2F0dHIoc3RhdGUpOw0KIA0KKyNpZmRlZiBDT05GSUdfU1VTUEVORF9IRUxQRVINCitz
+dGF0aWMgdm9pZCBzdXNwZW5kX2hlbHBlcihzdHJ1Y3Qgd29ya19zdHJ1Y3QgKndvcmspDQorew0K
+KwlzdHJ1Y3Qgc3VzcGVuZF9oZWxwZXJfZGF0YSAqZGF0YSA9IChzdHJ1Y3Qgc3VzcGVuZF9oZWxw
+ZXJfZGF0YSAqKQ0KKwkJY29udGFpbmVyX29mKHdvcmssIHN0cnVjdCBzdXNwZW5kX2hlbHBlcl9k
+YXRhLCB3b3JrKTsNCisJY29uc3QgY2hhciAqYnVmID0gZGF0YS0+cGFyYW1zLmJ1ZjsNCisJc2l6
+ZV90IG4gPSBkYXRhLT5wYXJhbXMubjsNCisJc3VzcGVuZF9zdGF0ZV90IHN0YXRlOw0KKwlpbnQg
+ZXJyb3IgPSAwOw0KKw0KKwlwcl9kZWJ1ZygiJXM6IHN0YXJ0IVxuIiwgX19mdW5jX18pOw0KKw0K
+KwllcnJvciA9IHBtX2F1dG9zbGVlcF9sb2NrKCk7DQorCWlmIChlcnJvcikNCisJCWdvdG8gb3V0
+X25vbG9jazsNCisNCisJaWYgKHBtX2F1dG9zbGVlcF9zdGF0ZSgpID4gUE1fU1VTUEVORF9PTikg
+ew0KKwkJZXJyb3IgPSAtRUJVU1k7DQorCQlnb3RvIG91dDsNCisJfQ0KKw0KKwlzdGF0ZSA9IGRl
+Y29kZV9zdGF0ZShidWYsIG4pOw0KKwlpZiAoc3RhdGUgPCBQTV9TVVNQRU5EX01BWCkNCisJCWVy
+cm9yID0gcG1fc3VzcGVuZChzdGF0ZSk7DQorCWVsc2UgaWYgKHN0YXRlID09IFBNX1NVU1BFTkRf
+TUFYKQ0KKwkJZXJyb3IgPSBoaWJlcm5hdGUoKTsNCisJZWxzZQ0KKwkJZXJyb3IgPSAtRUlOVkFM
+Ow0KKw0KK291dDoNCisJcG1fYXV0b3NsZWVwX3VubG9jaygpOw0KKw0KK291dF9ub2xvY2s6DQor
+CS8qIHNldCByZXN1bHQgYW5kIG5vdGlmeSBjb21wbGV0aW9uICovDQorCWRhdGEtPnJlc3VsdCA9
+IGVycm9yOw0KKwljb21wbGV0ZSgmZGF0YS0+ZG9uZSk7DQorDQorCXByX2RlYnVnKCIlczogcmVz
+dWx0ID0gJWRcbiIsIF9fZnVuY19fLCBlcnJvcik7DQorfQ0KKw0KK3N0YXRpYyBzc2l6ZV90IHN0
+YXRlX3N0b3JlX2hlbHBlcihzdHJ1Y3Qga29iamVjdCAqa29iaiwNCisJCXN0cnVjdCBrb2JqX2F0
+dHJpYnV0ZSAqYXR0ciwNCisJCWNvbnN0IGNoYXIgKmJ1Ziwgc2l6ZV90IG4pDQorew0KKwlpbnQg
+ZXJyb3I7DQorCWludCBmcmVlemFibGUgPSAwOw0KKw0KKwkvKiB3ZSBkb24ndCBuZWVkIHRvIGZy
+ZWV6ZS4gc28gdGVsbCB0aGUgZnJlZXplciAqLw0KKwlpZiAoIWZyZWV6ZXJfc2hvdWxkX3NraXAo
+Y3VycmVudCkpIHsNCisJCWZyZWV6YWJsZSA9IDE7DQorCQlmcmVlemVyX2RvX25vdF9jb3VudCgp
+Ow0KKwkJcHJfZGVidWcoIiVzOiBmcmVlemVyIHNob3VsZCBza2lwIG1lICglczolZClcbiIsDQor
+CQkJX19mdW5jX18sIGN1cnJlbnQtPmNvbW0sIGN1cnJlbnQtPnBpZCk7DQorCX0NCisNCisJc3Vz
+cGVuZF9oZWxwZXJfZGF0YS5wYXJhbXMuYnVmID0gYnVmOw0KKwlzdXNwZW5kX2hlbHBlcl9kYXRh
+LnBhcmFtcy5uID0gbjsNCisJaW5pdF9jb21wbGV0aW9uKCZzdXNwZW5kX2hlbHBlcl9kYXRhLmRv
+bmUpOw0KKw0KKwkvKiB1c2Uga3dvcmtlciBmb3Igc3VzcGVuZCByZXN1bWUgKi8NCisJcXVldWVf
+d29yayhzdXNwZW5kX2hlbHBlcl93cSwgJnN1c3BlbmRfaGVscGVyX2RhdGEud29yayk7DQorDQor
+CS8qIHdhaXQgZm9yIHN1c3BlbmQvcmVzdW1lIHdvcmsgdG8gYmUgY29tcGxldGUgKi8NCisJd2Fp
+dF9mb3JfY29tcGxldGlvbigmc3VzcGVuZF9oZWxwZXJfZGF0YS5kb25lKTsNCisNCisJaWYgKGZy
+ZWV6YWJsZSkgew0KKwkJLyogc2V0IG91cnNlbGYgYXMgZnJlZXphYmxlICovDQorCQlmcmVlemVy
+X2NvdW50KCk7DQorCX0NCisNCisJZXJyb3IgPSBzdXNwZW5kX2hlbHBlcl9kYXRhLnJlc3VsdDsN
+CisJcHJfZGVidWcoIiVzOiBzdXNwZW5kX2hlbHBlciByZXR1cm5lZCAlZFxuIiwgX19mdW5jX18s
+IGVycm9yKTsNCisNCisJcmV0dXJuIGVycm9yID8gZXJyb3IgOiBuOw0KK30NCisNCitzdGF0aWMg
+aW50IHN1c3BlbmRfaGVscGVyX2luaXQodm9pZCkNCit7DQorCXN1c3BlbmRfaGVscGVyX3dxID0g
+YWxsb2Nfb3JkZXJlZF93b3JrcXVldWUoInN1c3BlbmRfaGVscGVyIiwgMCk7DQorCWlmICghc3Vz
+cGVuZF9oZWxwZXJfd3EpDQorCQlyZXR1cm4gLUVOT01FTTsNCisNCisJSU5JVF9XT1JLKCZzdXNw
+ZW5kX2hlbHBlcl9kYXRhLndvcmssIHN1c3BlbmRfaGVscGVyKTsNCisJaW5pdF9jb21wbGV0aW9u
+KCZzdXNwZW5kX2hlbHBlcl9kYXRhLmRvbmUpOw0KKw0KKwlwcl9kZWJ1ZygiJXM6IGluaXQgZG9u
+ZVxuIiwgX19mdW5jX18pOw0KKw0KKwlyZXR1cm4gMDsNCit9DQorI2VuZGlmIC8qIENPTkZJR19T
+VVNQRU5EX0hFTFBFUiAqLw0KKw0KICNpZmRlZiBDT05GSUdfUE1fU0xFRVANCiAvKg0KICAqIFRo
+ZSAnd2FrZXVwX2NvdW50JyBhdHRyaWJ1dGUsIGFsb25nIHdpdGggdGhlIGZ1bmN0aW9ucyBkZWZp
+bmVkIGluDQpAQCAtNjQwLDYgKzc1Niw5IEBAIHN0YXRpYyBpbnQgX19pbml0IHBtX2luaXQodm9p
+ZCkNCiAJaWYgKGVycm9yKQ0KIAkJcmV0dXJuIGVycm9yOw0KIAlwbV9wcmludF90aW1lc19pbml0
+KCk7DQorI2lmZGVmIENPTkZJR19TVVNQRU5EX0hFTFBFUg0KKwlzdXNwZW5kX2hlbHBlcl9pbml0
+KCk7DQorI2VuZGlmDQogCXJldHVybiBwbV9hdXRvc2xlZXBfaW5pdCgpOw0KIH0NCiANCi0tIA0K
+MS45LjENCg0K
 
-There isn't. That would definitely be better.
 
-
-Thanks Alan,
-
--- 
-heikki
