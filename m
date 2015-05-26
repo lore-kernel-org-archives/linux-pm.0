@@ -1,33 +1,48 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: [PATCH v5 0/6] CPUFreq driver using CPPC methods
-Date: Tue, 26 May 2015 07:29:03 -0400
-Message-ID: <CAJ5Y-eae12n=DvNZFZzFrNXHWxhj3xuWcNuM5VqQ=nRtiqSbBg@mail.gmail.com>
-References: <1432590581-8925-1-git-send-email-ashwin.chaugule@linaro.org>
-	<20150526021233.GE23464@linux>
+From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+Subject: Re: [PATCH v2 3/8] core: platform: wakeup the parent before trying
+ any driver operations
+Date: Tue, 26 May 2015 16:28:14 +0300
+Message-ID: <20150526132814.GA12719@kuha.fi.intel.com>
+References: <1432570172-86963-4-git-send-email-andriy.shevchenko@linux.intel.com>
+ <Pine.LNX.4.44L0.1505251335350.21019-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:35718 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754033AbbEZNRG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 May 2015 09:17:06 -0400
-Received: by obbgf1 with SMTP id gf1so32784977obb.2
-        for <linux-pm@vger.kernel.org>; Tue, 26 May 2015 06:17:05 -0700 (PDT)
-In-Reply-To: <20150526021233.GE23464@linux>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1505251335350.21019-100000@netrider.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Jarkko Nikula <jarkko.nikula@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, Jaswinder Singh <jaswinder.singh@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
 
-On 25 May 2015 at 22:12, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 25-05-15, 17:49, Ashwin Chaugule wrote:
->
-> Generate patches using --thread=shallow option of git, so that we see
-> all patches in a thread.
+On Mon, May 25, 2015 at 01:36:43PM -0400, Alan Stern wrote:
+> On Mon, 25 May 2015, Andy Shevchenko wrote:
+> 
+> > From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+> > 
+> > If the parent is still suspended when a driver probe,
+> > remove or shutdown is attempted, the result may be a
+> > failure.
+> > 
+> > For example, if the parent is a PCI MFD device that has been
+> > suspended when we try to probe our device, any register
+> > reads will return 0xffffffff.
+> > 
+> > To fix the problem, making sure the parent is always awake
+> > before using driver probe, remove or shutdown.
+> > 
+> > Signed-off-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > ---
+> >  drivers/base/platform.c | 21 ++++++++++++++++++++-
+> 
+> Why make the changes here rather than in dd.c?  Is there something 
+> special about platform devices?
 
-Thanks for the tip! I'll do that for the next revision onwards, unless
-folks would prefer this version to be resent. (trying to avoid patch
-traffic)
+There isn't. That would definitely be better.
 
-Thanks,
-Ashwin.
+
+Thanks Alan,
+
+-- 
+heikki
