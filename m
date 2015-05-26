@@ -1,28 +1,39 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 0/6] CPUFreq driver using CPPC methods
-Date: Tue, 26 May 2015 07:42:33 +0530
-Message-ID: <20150526021233.GE23464@linux>
-References: <1432590581-8925-1-git-send-email-ashwin.chaugule@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Sriram Dash <dash.sriram@gmail.com>
+Subject: [PATCH] base: power: domain.c: fixed a typo error
+Date: Tue, 26 May 2015 08:06:51 +0530
+Message-ID: <1432607811-22826-1-git-send-email-dash.sriram@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f179.google.com ([209.85.192.179]:33186 "EHLO
-	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751057AbbEZCMi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 May 2015 22:12:38 -0400
-Received: by pdbqa5 with SMTP id qa5so79494069pdb.0
-        for <linux-pm@vger.kernel.org>; Mon, 25 May 2015 19:12:38 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1432590581-8925-1-git-send-email-ashwin.chaugule@linaro.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:32821 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751057AbbEZChC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 May 2015 22:37:02 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, patches@linaro.org, jaswinder.singh@linaro.org, sudeep.holla@arm.com
+To: rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dashsriram <dash.sriram@gmail.com>
 
-On 25-05-15, 17:49, Ashwin Chaugule wrote:
+From: dashsriram <dash.sriram@gmail.com>
 
-Generate patches using --thread=shallow option of git, so that we see
-all patches in a thread.
+Fixed a typo error in the file
 
+Signed-off-by: Sriram Dash <dash.sriram@gmail.com>
+---
+ drivers/base/power/domain.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 2327613..10aa00c 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -491,7 +491,7 @@ static bool genpd_abort_poweroff(struct generic_pm_domain *genpd)
+ 
+ /**
+  * genpd_queue_power_off_work - Queue up the execution of pm_genpd_poweroff().
+- * @genpd: PM domait to power off.
++ * @genpd: PM domain to power off.
+  *
+  * Queue up the execution of pm_genpd_poweroff() unless it's already been done
+  * before.
 -- 
-viresh
+2.4.1
+
