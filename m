@@ -1,300 +1,54 @@
 From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v2 7/8] dmaengine: add a driver for Intel integrated DMA 64-bit
-Date: Tue, 26 May 2015 09:49:57 +0300
-Message-ID: <CAHp75VeCHMmYsgrb5GThCfsG_TekZjRfy+MsveAk01QDaUR8gQ@mail.gmail.com>
+Subject: Re: [PATCH v2 0/8] mfd: introduce a driver for LPSS devices on SPT
+Date: Tue, 26 May 2015 09:51:37 +0300
+Message-ID: <CAHp75Vej=LZpP3fBBaO56p4D6rN2w2h=8kSUQYW7OO62W5Cw3Q@mail.gmail.com>
 References: <1432570172-86963-1-git-send-email-andriy.shevchenko@linux.intel.com>
-	<1432570172-86963-8-git-send-email-andriy.shevchenko@linux.intel.com>
-	<20150526040651.GP3140@localhost>
+	<20150526035155.GN3140@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f46.google.com ([209.85.215.46]:36293 "EHLO
-	mail-la0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246AbbEZGuA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 May 2015 02:50:00 -0400
-In-Reply-To: <20150526040651.GP3140@localhost>
+Received: from mail-lb0-f181.google.com ([209.85.217.181]:36205 "EHLO
+	mail-lb0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751246AbbEZGvj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 May 2015 02:51:39 -0400
+In-Reply-To: <20150526035155.GN3140@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Vinod Koul <vinod.koul@intel.com>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine <dmaengine@vger.kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>
 
-On Tue, May 26, 2015 at 7:06 AM, Vinod Koul <vinod.koul@intel.com> wrote:
-> On Mon, May 25, 2015 at 07:09:31PM +0300, Andy Shevchenko wrote:
->> Intel integrated DMA (iDMA) 64-bit is a specific IP that is used as a part of
->> LPSS devices such as HSUART or SPI. The iDMA IP is attached for private
->> usage on each host controller independently.
+On Tue, May 26, 2015 at 6:51 AM, Vinod Koul <vinod.koul@intel.com> wrote:
+> On Mon, May 25, 2015 at 07:09:24PM +0300, Andy Shevchenko wrote:
+>> The new coming Intel platforms such as Skylake will contain Sunrisepoint PCH.
 >>
->> While it has similarities with Synopsys DesignWare DMA, the following
->> distinctions doesn't allow to use the existing driver:
->> - 64-bit mode with corresponding changes in Hardware Linked List data structure
->> - many slight differences in the channel registers
+>> The driver is based on MFD framework since the main device, i.e. serial bus
+>> controller, contains register space for itself, DMA part, and an additional
+>> address space (convergence layer).
 >>
->> Moreover this driver is based on the DMA virtual channels framework that helps
->> to make the driver cleaner and easy to understand.
+>> The public specification of the register map is avaiable in [3].
+> or [1]...?
+
+You are correct!
+
+>> This is second generation of the patch series to bring support LPSS devices
+>> found on Intel Sunrisepoint (Intel Skylake PCH). First one can be found here
+>> [2].
 >>
-> Looking at code and iDMA controllers (if this is the same as I have used), we
-> have register compatibility with DW controller, so why new driver and why not
-> use and enhance dw driver ?
-
-Take a look closer. There are many, like I mentioned, slight but not
-least changes in the registers, besides *64-bit mode*:
-- ctl_hi represents bytes, not items
-- 2 bytes of burst is supported (dw has no gap there)
-- shuffling bits between ctl_* and cfg_*
-- new bits with different meaning in ctl_* and cfg_*.
-
-Preliminary we did a patchset for dw_dmac, but above hw changes blows
-up and messes the driver code. I really would prefer to have those two
-separate.
-
-However, the 32-bit iDMA which is used in Baytrail might be driven by dw_dmac.
-
->> @@ -0,0 +1,233 @@
->> +/*
->> + * Driver for the Intel integrated DMA 64-bit
->> + *
->> + * Copyright (C) 2015 Intel Corporation
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 as
->> + * published by the Free Software Foundation.
->> + */
->> +
->> +#ifndef __DMA_IDMA64_H__
->> +#define __DMA_IDMA64_H__
->> +
->> +#include <linux/device.h>
->> +#include <linux/io.h>
->> +#include <linux/spinlock.h>
->> +#include <linux/types.h>
->> +
->> +#include "virt-dma.h"
->> +
->> +/* Channel registers */
->> +
->> +#define IDMA64_CH_SAR                0x00    /* Source Address Register */
->> +#define IDMA64_CH_DAR                0x08    /* Destination Address Register */
->> +#define IDMA64_CH_LLP                0x10    /* Linked List Pointer */
->> +#define IDMA64_CH_CTL_LO     0x18    /* Control Register Low */
->> +#define IDMA64_CH_CTL_HI     0x1c    /* Control Register High */
->> +#define IDMA64_CH_SSTAT              0x20
->> +#define IDMA64_CH_DSTAT              0x28
->> +#define IDMA64_CH_SSTATAR    0x30
->> +#define IDMA64_CH_DSTATAR    0x38
->> +#define IDMA64_CH_CFG_LO     0x40    /* Configuration Register Low */
->> +#define IDMA64_CH_CFG_HI     0x44    /* Configuration Register High */
->> +#define IDMA64_CH_SGR                0x48
->> +#define IDMA64_CH_DSR                0x50
->> +
->> +#define IDMA64_CH_LENGTH     0x58
->> +
->> +/* Bitfields in CTL_LO */
->> +#define IDMA64C_CTLL_INT_EN          (1 << 0)        /* irqs enabled? */
->> +#define IDMA64C_CTLL_DST_WIDTH(x)    ((x) << 1)      /* bytes per element */
->> +#define IDMA64C_CTLL_SRC_WIDTH(x)    ((x) << 4)
->> +#define IDMA64C_CTLL_DST_INC         (0 << 8)        /* DAR update/not */
->> +#define IDMA64C_CTLL_DST_FIX         (1 << 8)
->> +#define IDMA64C_CTLL_SRC_INC         (0 << 10)       /* SAR update/not */
->> +#define IDMA64C_CTLL_SRC_FIX         (1 << 10)
->> +#define IDMA64C_CTLL_DST_MSIZE(x)    ((x) << 11)     /* burst, #elements */
->> +#define IDMA64C_CTLL_SRC_MSIZE(x)    ((x) << 14)
->> +#define IDMA64C_CTLL_FC_M2P          (1 << 20)       /* mem-to-periph */
->> +#define IDMA64C_CTLL_FC_P2M          (2 << 20)       /* periph-to-mem */
->> +#define IDMA64C_CTLL_LLP_D_EN                (1 << 27)       /* dest block chain */
->> +#define IDMA64C_CTLL_LLP_S_EN                (1 << 28)       /* src block chain */
->> +
->> +/* Bitfields in CTL_HI */
->> +#define IDMA64C_CTLH_BLOCK_TS(x)     ((x) & ((1 << 17) - 1))
->> +#define IDMA64C_CTLH_DONE            (1 << 17)
->> +
->> +/* Bitfields in CFG_LO */
->> +#define IDMA64C_CFGL_DST_BURST_ALIGN (1 << 0)        /* dst burst align */
->> +#define IDMA64C_CFGL_SRC_BURST_ALIGN (1 << 1)        /* src burst align */
->> +#define IDMA64C_CFGL_CH_SUSP         (1 << 8)
->> +#define IDMA64C_CFGL_FIFO_EMPTY              (1 << 9)
->> +#define IDMA64C_CFGL_CH_DRAIN                (1 << 10)       /* drain FIFO */
->> +#define IDMA64C_CFGL_DST_OPT_BL              (1 << 20)       /* optimize dst burst length */
->> +#define IDMA64C_CFGL_SRC_OPT_BL              (1 << 21)       /* optimize src burst length */
->> +
->> +/* Bitfields in CFG_HI */
->> +#define IDMA64C_CFGH_SRC_PER(x)              ((x) << 0)      /* src peripheral */
->> +#define IDMA64C_CFGH_DST_PER(x)              ((x) << 4)      /* dst peripheral */
->> +#define IDMA64C_CFGH_RD_ISSUE_THD(x) ((x) << 8)
->> +#define IDMA64C_CFGH_RW_ISSUE_THD(x) ((x) << 18)
->> +
->> +/* Interrupt registers */
->> +
->> +#define IDMA64_INT_XFER              0x00
->> +#define IDMA64_INT_BLOCK     0x08
->> +#define IDMA64_INT_SRC_TRAN  0x10
->> +#define IDMA64_INT_DST_TRAN  0x18
->> +#define IDMA64_INT_ERROR     0x20
->> +
->> +#define IDMA64_RAW(x)                (0x2c0 + IDMA64_INT_##x)        /* r */
->> +#define IDMA64_STATUS(x)     (0x2e8 + IDMA64_INT_##x)        /* r (raw & mask) */
->> +#define IDMA64_MASK(x)               (0x310 + IDMA64_INT_##x)        /* rw (set = irq enabled) */
->> +#define IDMA64_CLEAR(x)              (0x338 + IDMA64_INT_##x)        /* w (ack, affects "raw") */
->> +
->> +/* Common registers */
->> +
->> +#define IDMA64_STATUS_INT    0x360   /* r */
->> +#define IDMA64_CFG           0x398
->> +#define IDMA64_CH_EN         0x3a0
->> +
->> +/* Bitfields in CFG */
->> +#define IDMA64_CFG_DMA_EN            (1 << 0)
->> +
->> +/* Hardware descriptor for Linked LIst transfers */
->> +struct idma64_lli {
->> +     u64             sar;
->> +     u64             dar;
->> +     u64             llp;
->> +     u32             ctllo;
->> +     u32             ctlhi;
->> +     u32             sstat;
->> +     u32             dstat;
->> +};
->> +
->> +struct idma64_hw_desc {
->> +     struct idma64_lli *lli;
->> +     dma_addr_t llp;
->> +     dma_addr_t phys;
->> +     unsigned int len;
->> +};
->> +
->> +struct idma64_desc {
->> +     struct virt_dma_desc vdesc;
->> +     enum dma_transfer_direction direction;
->> +     struct idma64_hw_desc *hw;
->> +     unsigned int ndesc;
->> +     enum dma_status status;
->> +};
->> +
->> +static inline struct idma64_desc *to_idma64_desc(struct virt_dma_desc *vdesc)
->> +{
->> +     return container_of(vdesc, struct idma64_desc, vdesc);
->> +}
->> +
->> +struct idma64_chan {
->> +     struct virt_dma_chan vchan;
->> +
->> +     void __iomem *regs;
->> +     spinlock_t lock;
->> +
->> +     /* hardware configuration */
->> +     enum dma_transfer_direction direction;
->> +     unsigned int mask;
->> +     struct dma_slave_config config;
->> +
->> +     void *pool;
->> +     struct idma64_desc *desc;
->> +};
->> +
->> +static inline struct idma64_chan *to_idma64_chan(struct dma_chan *chan)
->> +{
->> +     return container_of(chan, struct idma64_chan, vchan.chan);
->> +}
->> +
->> +#define channel_set_bit(idma64, reg, mask)   \
->> +     dma_writel(idma64, reg, ((mask) << 8) | (mask))
->> +#define channel_clear_bit(idma64, reg, mask) \
->> +     dma_writel(idma64, reg, ((mask) << 8) | 0)
->> +
->> +static inline u32 idma64c_readl(struct idma64_chan *idma64c, int offset)
->> +{
->> +     return readl(idma64c->regs + offset);
->> +}
->> +
->> +static inline void idma64c_writel(struct idma64_chan *idma64c, int offset,
->> +                               u32 value)
->> +{
->> +     writel(value, idma64c->regs + offset);
->> +}
->> +
->> +#define channel_readl(idma64c, reg)          \
->> +     idma64c_readl(idma64c, IDMA64_CH_##reg)
->> +#define channel_writel(idma64c, reg, value)  \
->> +     idma64c_writel(idma64c, IDMA64_CH_##reg, (value))
->> +
->> +static inline u64 idma64c_readq(struct idma64_chan *idma64c, int offset)
->> +{
->> +     u64 l, h;
->> +
->> +     l = idma64c_readl(idma64c, offset);
->> +     h = idma64c_readl(idma64c, offset + 4);
->> +
->> +     return l | (h << 32);
->> +}
->> +
->> +static inline void idma64c_writeq(struct idma64_chan *idma64c, int offset,
->> +                               u64 value)
->> +{
->> +     idma64c_writel(idma64c, offset, value);
->> +     idma64c_writel(idma64c, offset + 4, value >> 32);
->> +}
->> +
->> +#define channel_readq(idma64c, reg)          \
->> +     idma64c_readq(idma64c, IDMA64_CH_##reg)
->> +#define channel_writeq(idma64c, reg, value)  \
->> +     idma64c_writeq(idma64c, IDMA64_CH_##reg, (value))
->> +
->> +struct idma64 {
->> +     struct dma_device dma;
->> +
->> +     void __iomem *regs;
->> +
->> +     /* channels */
->> +     unsigned short all_chan_mask;
->> +     struct idma64_chan *chan;
->> +};
->> +
->> +static inline struct idma64 *to_idma64(struct dma_device *ddev)
->> +{
->> +     return container_of(ddev, struct idma64, dma);
->> +}
->> +
->> +static inline u32 idma64_readl(struct idma64 *idma64, int offset)
->> +{
->> +     return readl(idma64->regs + offset);
->> +}
->> +
->> +static inline void idma64_writel(struct idma64 *idma64, int offset, u32 value)
->> +{
->> +     writel(value, idma64->regs + offset);
->> +}
->> +
->> +#define dma_readl(idma64, reg)                       \
->> +     idma64_readl(idma64, IDMA64_##reg)
->> +#define dma_writel(idma64, reg, value)               \
->> +     idma64_writel(idma64, IDMA64_##reg, (value))
->> +
->> +/**
->> + * struct idma64_chip - representation of DesignWare DMA controller hardware
->> + * @dev:             struct device of the DMA controller
->> + * @irq:             irq line
->> + * @regs:            memory mapped I/O space
->> + * @idma64:          struct idma64 that is filed by idma64_probe()
->> + */
->> +struct idma64_chip {
->> +     struct device   *dev;
->> +     int             irq;
->> +     void __iomem    *regs;
->> +     struct idma64   *idma64;
->> +};
->> +
->> +#endif /* __DMA_IDMA64_H__ */
->> --
->> 2.1.4
+>> The series has few logical parts:
+>> - patches 1-3 prepares PM core, ACPI, and driver core (PM) to handle our case
+>> - patches 4-6 introduce unregistering platform devices in MFD in reversed
+>>   order
+>> - patch 7 implements iDMA 64-bit driver
+>> - patch 8 introduces an MFD driver for LPSS devices
 >>
->
-> --
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
+>> The patch 8 depends on clkdev_create() helper that has been introduced by
+>> Russel King in [3].
+>>
+>> The driver has been tested with SPI and UART on Intel Skylake PCH.
+>>
+>> [1] https://download.01.org/future-platform-configuration-hub/skylake/register-definitions/332219_001_Final.pdf
+>> [2] https://lkml.org/lkml/2015/3/31/255
+>> [3] https://patchwork.linuxtv.org/patch/28464/
 
 -- 
 With Best Regards,
