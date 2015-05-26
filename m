@@ -1,61 +1,32 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Re: [PATCH V2 5/6] regulator: add mxs on-chip regulator driver
-Date: Tue, 26 May 2015 14:16:55 +0200 (CEST)
-Message-ID: <1290103954.26573.1432642616013.JavaMail.open-xchange@oxbsltgw08.schlund.de>
-References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com>
- <1430346747-28728-6-git-send-email-stefan.wahren@i2se.com>
- <20150504123648.GU15510@sirena.org.uk>
- <1693367404.879766.1430771695242.JavaMail.open-xchange@oxbaltgw08.schlund.de>
- <1875749167.82542.1431023838932.JavaMail.open-xchange@oxbsltgw04.schlund.de>
- <20150507185216.GP22845@sirena.org.uk>
- <535744342.64563.1431026719818.JavaMail.open-xchange@oxbsltgw09.schlund.de>
- <20150507193236.GS22845@sirena.org.uk>
-Reply-To: Stefan Wahren <stefan.wahren@i2se.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 0/6] CPUFreq driver using CPPC methods
+Date: Tue, 26 May 2015 17:26:05 +0530
+Message-ID: <20150526115605.GC16767@linux>
+References: <1432590581-8925-1-git-send-email-ashwin.chaugule@linaro.org>
+ <20150526021233.GE23464@linux>
+ <CAJ5Y-eae12n=DvNZFZzFrNXHWxhj3xuWcNuM5VqQ=nRtiqSbBg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20150507193236.GS22845@sirena.org.uk>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Mark Brown <broonie@kernel.org>
-Cc: fabio.estevam@freescale.com, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Kumar Gala <galak@codeaurora.org>, sebastien.szymanski@armadeus.com, Shawn Guo <shawn.guo@linaro.org>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from [209.85.192.169] ([209.85.192.169]:35878 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752169AbbEZNBs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 May 2015 09:01:48 -0400
+Received: by pdfh10 with SMTP id h10so90316775pdf.3
+        for <linux-pm@vger.kernel.org>; Tue, 26 May 2015 05:58:52 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAJ5Y-eae12n=DvNZFZzFrNXHWxhj3xuWcNuM5VqQ=nRtiqSbBg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, Jaswinder Singh <jaswinder.singh@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
 
+On 26-05-15, 07:29, Ashwin Chaugule wrote:
+> Thanks for the tip! I'll do that for the next revision onwards, unless
+> folks would prefer this version to be resent.
+> traffic)
 
-> Mark Brown <broonie@kernel.org> hat am 7. Mai 2015 um 21:32 geschrieben:
->
->
-> On Thu, May 07, 2015 at 09:25:19PM +0200, Stefan Wahren wrote:
-> > > Mark Brown <broonie@kernel.org> hat am 7. Mai 2015 um 20:52 geschrieben:
->
-> > > > In the bootloader code enabling the DC-DC is critical. There is a known
-> > > > issue
-> > > > which falsely triggers the brownout detection.
->
-> > > Why would the driver not provide these operations?
->
-> > I didn't implement this operation because the suggested workaround for the
-> > hardware issue isn't very nice
-> > (disable brownout detection during enabling DC-DC). I was afraid of the
-> > implementation.
->
-> That doesn't sound too complicated?
->
+Not at all, don't even think of sending them again for this :)
 
-Okay, i think i managed the brownout handling.
-
-Unfortunately i'm stuck at the next step. The DC-DC (3 way output) can supply 3
-LDOs vddd, vdda, vddio. In case of a DC-DC state change the 3 regulators needs
-to be reconfigured before.
-
-I tought of REGULATOR_EVENT_PRE_DISABLE and REGULATOR_EVENT_PRE_ENABLE events,
-but i'm not sure that's the right way to achieve a synchronization between DC-DC
-and consuming LDOs.
+-- 
+viresh
