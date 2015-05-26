@@ -1,127 +1,137 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [RFC PATCH] suspend/resume performance improvement
-Date: Tue, 26 May 2015 20:12:40 +0000
-Message-ID: <1432671048.11262.259.camel@spandruv-DESK3.jf.intel.com>
-References: <1141174354.499851432649147087.JavaMail.weblogic@epmlwas01d>
+From: Al Stone <al.stone@linaro.org>
+Subject: Re: [Linaro-acpi] [PATCH v5 0/6] CPUFreq driver using CPPC methods
+Date: Tue, 26 May 2015 14:21:11 -0600
+Message-ID: <5564D5B7.5000607@linaro.org>
+References: <1432590581-8925-1-git-send-email-ashwin.chaugule@linaro.org>	<5564AC0A.2050501@linaro.org> <CAJ5Y-eaF7trkDV5TuKOs9Dg+adec0FUSjUon0ZdqEXiiHWnBYQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:4869 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751359AbbEZUMm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 26 May 2015 16:12:42 -0400
-In-Reply-To: <1141174354.499851432649147087.JavaMail.weblogic@epmlwas01d>
-Content-Language: en-US
-Content-ID: <93F56E5A9A82394692269C241EF9B067@intel.com>
+Received: from mail-ig0-f178.google.com ([209.85.213.178]:34470 "EHLO
+	mail-ig0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751961AbbEZUVP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 May 2015 16:21:15 -0400
+Received: by igbhj9 with SMTP id hj9so70062462igb.1
+        for <linux-pm@vger.kernel.org>; Tue, 26 May 2015 13:21:14 -0700 (PDT)
+In-Reply-To: <CAJ5Y-eaF7trkDV5TuKOs9Dg+adec0FUSjUon0ZdqEXiiHWnBYQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "eun.taik.lee@samsung.com" <eun.taik.lee@samsung.com>
-Cc: "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Patch Tracking <patches@linaro.org>, Jaswinder Singh <jaswinder.singh@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
 
-T24gVHVlLCAyMDE1LTA1LTI2IGF0IDE0OjA1ICswMDAwLCDsnbTsnYDtg50gd3JvdGU6DQo+IFdo
-ZW4gYSB0YXNrIHRoYXQgY2FsbHMgc3RhdGVfc3RvcmUoKSB0byBzdXNwZW5kDQo+IHRoZSBkZXZp
-Y2UgaGFzIHVzZWQgdXAgbW9zdCBvZiBpdHMgdGltZSBzbGljZSwNCj4gc3VzcGVuZCBzb21ldGlt
-ZXMgdGFrZSB0b28gbG9uZy4gKFVzZXIgbm90aWNlYWJsZSkNCj4gDQo+IFN1c3BlbmQvcmVzdW1l
-IGlzIGEgc3lzdGVtIHdpZGUgb3BlcmF0aW9uLg0KPiBTbywgaW5zdGVhZCBvZiBkZXBlbmRpbmcg
-b24gYSB1c2Vyc3BhY2UgdGFzaydzIHRpbWUNCj4gc2xpY2UsIGxldCBrd29ya2VyIGRvIHRoZSB3
-b3JrIHRvIGF2b2lkIGEgbG9uZyB3YWl0DQo+IG9uIHRoZSBydW5xdWV1ZS4NCj4gDQo+IFNpZ25l
-ZC1vZmYtYnk6IEV1biBUYWlrIExlZSA8ZXVuLnRhaWsubGVlQHNhbXN1bmcuY29tPg0KPiAtLS0N
-Cj4gIGtlcm5lbC9wb3dlci9LY29uZmlnIHwgIDEyICsrKysrDQo+ICBrZXJuZWwvcG93ZXIvbWFp
-bi5jICB8IDEyMSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKy0NCj4gIDIgZmlsZXMgY2hhbmdlZCwgMTMyIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24o
-LSkNCj4gDQo+IGRpZmYgLS1naXQgYS9rZXJuZWwvcG93ZXIvS2NvbmZpZyBiL2tlcm5lbC9wb3dl
-ci9LY29uZmlnDQo+IGluZGV4IDdlMDFmNzguLjdlZWYzMTcgMTAwNjQ0DQo+IC0tLSBhL2tlcm5l
-bC9wb3dlci9LY29uZmlnDQo+ICsrKyBiL2tlcm5lbC9wb3dlci9LY29uZmlnDQo+IEBAIC0xOCw2
-ICsxOCwxOCBAQCBjb25maWcgU1VTUEVORF9GUkVFWkVSDQo+ICANCj4gIAkgIFR1cm5pbmcgT0ZG
-IHRoaXMgc2V0dGluZyBpcyBOT1QgcmVjb21tZW5kZWQhIElmIGluIGRvdWJ0LCBzYXkgWS4NCj4g
-IA0KPiArY29uZmlnIFNVU1BFTkRfSEVMUEVSDQo+ICsJYm9vbCAiVXNlIGt3b3JrZXIgZm9yIHN1
-c3BlbmQvcmVzdW1lIg0KPiArCWRlcGVuZHMgb24gU1VTUEVORA0KPiArCWRlZmF1bHQgbg0KPiAr
-CWhlbHANCj4gKwkgIFVzZSBrd29ya2VyIGZvciBzdXNwZW5kL3Jlc3VtZSBmdW5jdGlvbmFsaXR5
-IHRvIGRlY3JlYXNlDQo+ICsJICB0aGUgc3VzcGVuZC9yZXN1bWUgdGltZSB3aGVuIHRoZSBjYWxs
-ZXIgaGFzIHVzZWQgdXAgdG9vIG11Y2gNCj4gKwkgIG9mIGl0cyB0aW1lIHNsaWNlIGJlZm9yZSBj
-YWxsaW5nLg0KPiArCSAgVXNlIGt3b3JrZXIgZm9yIHN1c3BlbmQvcmVzdW1lIGZ1bmN0aW9uYWxp
-dHkgdG8gZGVjcmVhc2UNCj4gKwkgIHRoZSBzdXNwZW5kL3Jlc3VtZSB0aW1lIHdoZW4gdGhlIGNh
-bGxlciBoYXMgdXNlZCB1cCB0b28gbXVjaA0KPiArCSAgb2YgaXRzIHRpbWUgc2xpY2UgYmVmb3Jl
-IGNhbGxpbmcuDQo+ICsNCj4gIGNvbmZpZyBISUJFUk5BVEVfQ0FMTEJBQ0tTDQo+ICAJYm9vbA0K
-PiAgDQo+IGRpZmYgLS1naXQgYS9rZXJuZWwvcG93ZXIvbWFpbi5jIGIva2VybmVsL3Bvd2VyL21h
-aW4uYw0KPiBpbmRleCA4NmU4MTU3Li5lNzgyYjg2IDEwMDY0NA0KPiAtLS0gYS9rZXJuZWwvcG93
-ZXIvbWFpbi5jDQo+ICsrKyBiL2tlcm5lbC9wb3dlci9tYWluLmMNCj4gQEAgLTE1LDcgKzE1LDcg
-QEANCj4gICNpbmNsdWRlIDxsaW51eC93b3JrcXVldWUuaD4NCj4gICNpbmNsdWRlIDxsaW51eC9k
-ZWJ1Z2ZzLmg+DQo+ICAjaW5jbHVkZSA8bGludXgvc2VxX2ZpbGUuaD4NCj4gLQ0KPiArI2luY2x1
-ZGUgPGxpbnV4L2NvbXBsZXRpb24uaD4NCj4gICNpbmNsdWRlICJwb3dlci5oIg0KPiAgDQo+ICBE
-RUZJTkVfTVVURVgocG1fbXV0ZXgpOw0KPiBAQCAtMzM1LDkgKzMzNSwzMyBAQCBzdGF0aWMgc3Vz
-cGVuZF9zdGF0ZV90IGRlY29kZV9zdGF0ZShjb25zdCBjaGFyICpidWYsIHNpemVfdCBuKQ0KPiAg
-CXJldHVybiBQTV9TVVNQRU5EX09OOw0KPiAgfQ0KPiAgDQo+ICsjaWZkZWYgQ09ORklHX1NVU1BF
-TkRfSEVMUEVSDQo+ICtzdGF0aWMgc3RydWN0IHdvcmtxdWV1ZV9zdHJ1Y3QgKnN1c3BlbmRfaGVs
-cGVyX3dxOw0KPiArc3RydWN0IHN0YXRlX3N0b3JlX3BhcmFtcyB7DQo+ICsJY29uc3QgY2hhciAq
-YnVmOw0KPiArCXNpemVfdCBuOw0KPiArfTsNCj4gKw0KPiArc3RydWN0IHN1c3BlbmRfaGVscGVy
-X2RhdGEgew0KPiArCXN0cnVjdCB3b3JrX3N0cnVjdCB3b3JrOw0KPiArCXN0cnVjdCBjb21wbGV0
-aW9uIGRvbmU7DQo+ICsJc3RydWN0IHN0YXRlX3N0b3JlX3BhcmFtcyBwYXJhbXM7DQo+ICsJaW50
-IHJlc3VsdDsNCj4gK307DQo+ICtzdHJ1Y3Qgc3VzcGVuZF9oZWxwZXJfZGF0YSBzdXNwZW5kX2hl
-bHBlcl9kYXRhOw0KPiArDQo+ICtzdGF0aWMgc3NpemVfdCBzdGF0ZV9zdG9yZV9oZWxwZXIoc3Ry
-dWN0IGtvYmplY3QgKmtvYmosDQo+ICsJCXN0cnVjdCBrb2JqX2F0dHJpYnV0ZSAqYXR0ciwNCj4g
-KwkJY29uc3QgY2hhciAqYnVmLCBzaXplX3Qgbik7DQo+ICsjZW5kaWYNCj4gKw0KPiAgc3RhdGlj
-IHNzaXplX3Qgc3RhdGVfc3RvcmUoc3RydWN0IGtvYmplY3QgKmtvYmosIHN0cnVjdCBrb2JqX2F0
-dHJpYnV0ZSAqYXR0ciwNCj4gIAkJCSAgIGNvbnN0IGNoYXIgKmJ1Ziwgc2l6ZV90IG4pDQo+ICB7
-DQo+ICsjaWZkZWYgQ09ORklHX1NVU1BFTkRfSEVMUEVSDQo+ICsJcHJfZGVidWcoIiVzOiBMZXQg
-b3VyIGhlbHBlciBkbyB0aGUgcmVhbCB3b3JrIVxuIiwgX19mdW5jX18pOw0KPiArCXJldHVybiBz
-dGF0ZV9zdG9yZV9oZWxwZXIoa29iaiwgYXR0ciwgYnVmLCBuKTsNCj4gKyNlbHNlDQo+ICAJc3Vz
-cGVuZF9zdGF0ZV90IHN0YXRlOw0KPiAgCWludCBlcnJvcjsNCj4gIA0KPiBAQCAtMzYxLDEwICsz
-ODUsMTAyIEBAIHN0YXRpYyBzc2l6ZV90IHN0YXRlX3N0b3JlKHN0cnVjdCBrb2JqZWN0ICprb2Jq
-LCBzdHJ1Y3Qga29ial9hdHRyaWJ1dGUgKmF0dHIsDQo+ICAgb3V0Og0KPiAgCXBtX2F1dG9zbGVl
-cF91bmxvY2soKTsNCj4gIAlyZXR1cm4gZXJyb3IgPyBlcnJvciA6IG47DQo+ICsjZW5kaWYNCj4g
-IH0NCj4gIA0KPiAgcG93ZXJfYXR0cihzdGF0ZSk7DQo+ICANCj4gKyNpZmRlZiBDT05GSUdfU1VT
-UEVORF9IRUxQRVINCj4gK3N0YXRpYyB2b2lkIHN1c3BlbmRfaGVscGVyKHN0cnVjdCB3b3JrX3N0
-cnVjdCAqd29yaykNCj4gK3sNCj4gKwlzdHJ1Y3Qgc3VzcGVuZF9oZWxwZXJfZGF0YSAqZGF0YSA9
-IChzdHJ1Y3Qgc3VzcGVuZF9oZWxwZXJfZGF0YSAqKQ0KPiArCQljb250YWluZXJfb2Yod29yaywg
-c3RydWN0IHN1c3BlbmRfaGVscGVyX2RhdGEsIHdvcmspOw0KPiArCWNvbnN0IGNoYXIgKmJ1ZiA9
-IGRhdGEtPnBhcmFtcy5idWY7DQo+ICsJc2l6ZV90IG4gPSBkYXRhLT5wYXJhbXMubjsNCj4gKwlz
-dXNwZW5kX3N0YXRlX3Qgc3RhdGU7DQo+ICsJaW50IGVycm9yID0gMDsNCj4gKw0KPiArCXByX2Rl
-YnVnKCIlczogc3RhcnQhXG4iLCBfX2Z1bmNfXyk7DQo+ICsNCj4gKwllcnJvciA9IHBtX2F1dG9z
-bGVlcF9sb2NrKCk7DQo+ICsJaWYgKGVycm9yKQ0KPiArCQlnb3RvIG91dF9ub2xvY2s7DQo+ICsN
-Cj4gKwlpZiAocG1fYXV0b3NsZWVwX3N0YXRlKCkgPiBQTV9TVVNQRU5EX09OKSB7DQo+ICsJCWVy
-cm9yID0gLUVCVVNZOw0KPiArCQlnb3RvIG91dDsNCj4gKwl9DQo+ICsNCj4gKwlzdGF0ZSA9IGRl
-Y29kZV9zdGF0ZShidWYsIG4pOw0KPiArCWlmIChzdGF0ZSA8IFBNX1NVU1BFTkRfTUFYKQ0KPiAr
-CQllcnJvciA9IHBtX3N1c3BlbmQoc3RhdGUpOw0KPiArCWVsc2UgaWYgKHN0YXRlID09IFBNX1NV
-U1BFTkRfTUFYKQ0KPiArCQllcnJvciA9IGhpYmVybmF0ZSgpOw0KPiArCWVsc2UNCj4gKwkJZXJy
-b3IgPSAtRUlOVkFMOw0KSW5zdGVhZCBvZiByZXBsaWNhdGluZyBjb2RlIGluIHN0YXRlX3N0b3Jl
-IGhlcmUsIGRvZXMgaXQgbWFrZSBzZW5zZSB0bw0KbW92ZSBpbnRvIGEgY29tbW9uIHBhcnQsIHNv
-IHRoYXQgZml4ZXMvb3B0aW1pemF0aW9uIGNhbiBiZSBkb25lIGluIG9uZQ0KcGxhY2U/DQpBbHNv
-IHdoeSBhbm90aGVyIGNvbmZpZz8gSWYgdGhpcyBoYXMgcHJvdmVuIGJlbmVmaXQgdGhlbiBpdCBj
-YW4gYmUNCmRlZmF1bHQgcGF0aC4NCg0KPiArDQo+ICtvdXQ6DQo+ICsJcG1fYXV0b3NsZWVwX3Vu
-bG9jaygpOw0KPiArDQo+ICtvdXRfbm9sb2NrOg0KPiArCS8qIHNldCByZXN1bHQgYW5kIG5vdGlm
-eSBjb21wbGV0aW9uICovDQo+ICsJZGF0YS0+cmVzdWx0ID0gZXJyb3I7DQo+ICsJY29tcGxldGUo
-JmRhdGEtPmRvbmUpOw0KPiArDQo+ICsJcHJfZGVidWcoIiVzOiByZXN1bHQgPSAlZFxuIiwgX19m
-dW5jX18sIGVycm9yKTsNCj4gK30NCj4gKw0KPiArc3RhdGljIHNzaXplX3Qgc3RhdGVfc3RvcmVf
-aGVscGVyKHN0cnVjdCBrb2JqZWN0ICprb2JqLA0KPiArCQlzdHJ1Y3Qga29ial9hdHRyaWJ1dGUg
-KmF0dHIsDQo+ICsJCWNvbnN0IGNoYXIgKmJ1Ziwgc2l6ZV90IG4pDQo+ICt7DQo+ICsJaW50IGVy
-cm9yOw0KPiArCWludCBmcmVlemFibGUgPSAwOw0KPiArDQo+ICsJLyogd2UgZG9uJ3QgbmVlZCB0
-byBmcmVlemUuIHNvIHRlbGwgdGhlIGZyZWV6ZXIgKi8NCj4gKwlpZiAoIWZyZWV6ZXJfc2hvdWxk
-X3NraXAoY3VycmVudCkpIHsNCj4gKwkJZnJlZXphYmxlID0gMTsNCj4gKwkJZnJlZXplcl9kb19u
-b3RfY291bnQoKTsNCj4gKwkJcHJfZGVidWcoIiVzOiBmcmVlemVyIHNob3VsZCBza2lwIG1lICgl
-czolZClcbiIsDQo+ICsJCQlfX2Z1bmNfXywgY3VycmVudC0+Y29tbSwgY3VycmVudC0+cGlkKTsN
-Cj4gKwl9DQo+ICsNCj4gKwlzdXNwZW5kX2hlbHBlcl9kYXRhLnBhcmFtcy5idWYgPSBidWY7DQo+
-ICsJc3VzcGVuZF9oZWxwZXJfZGF0YS5wYXJhbXMubiA9IG47DQo+ICsJaW5pdF9jb21wbGV0aW9u
-KCZzdXNwZW5kX2hlbHBlcl9kYXRhLmRvbmUpOw0KPiArDQo+ICsJLyogdXNlIGt3b3JrZXIgZm9y
-IHN1c3BlbmQgcmVzdW1lICovDQo+ICsJcXVldWVfd29yayhzdXNwZW5kX2hlbHBlcl93cSwgJnN1
-c3BlbmRfaGVscGVyX2RhdGEud29yayk7DQo+ICsNCj4gKwkvKiB3YWl0IGZvciBzdXNwZW5kL3Jl
-c3VtZSB3b3JrIHRvIGJlIGNvbXBsZXRlICovDQo+ICsJd2FpdF9mb3JfY29tcGxldGlvbigmc3Vz
-cGVuZF9oZWxwZXJfZGF0YS5kb25lKTsNCj4gKw0KPiArCWlmIChmcmVlemFibGUpIHsNCj4gKwkJ
-Lyogc2V0IG91cnNlbGYgYXMgZnJlZXphYmxlICovDQo+ICsJCWZyZWV6ZXJfY291bnQoKTsNCj4g
-Kwl9DQo+ICsNCj4gKwllcnJvciA9IHN1c3BlbmRfaGVscGVyX2RhdGEucmVzdWx0Ow0KPiArCXBy
-X2RlYnVnKCIlczogc3VzcGVuZF9oZWxwZXIgcmV0dXJuZWQgJWRcbiIsIF9fZnVuY19fLCBlcnJv
-cik7DQo+ICsNCj4gKwlyZXR1cm4gZXJyb3IgPyBlcnJvciA6IG47DQo+ICt9DQo+ICsNCj4gK3N0
-YXRpYyBpbnQgc3VzcGVuZF9oZWxwZXJfaW5pdCh2b2lkKQ0KPiArew0KPiArCXN1c3BlbmRfaGVs
-cGVyX3dxID0gYWxsb2Nfb3JkZXJlZF93b3JrcXVldWUoInN1c3BlbmRfaGVscGVyIiwgMCk7DQo+
-ICsJaWYgKCFzdXNwZW5kX2hlbHBlcl93cSkNCj4gKwkJcmV0dXJuIC1FTk9NRU07DQo+ICsNCj4g
-KwlJTklUX1dPUksoJnN1c3BlbmRfaGVscGVyX2RhdGEud29yaywgc3VzcGVuZF9oZWxwZXIpOw0K
-PiArCWluaXRfY29tcGxldGlvbigmc3VzcGVuZF9oZWxwZXJfZGF0YS5kb25lKTsNCj4gKw0KPiAr
-CXByX2RlYnVnKCIlczogaW5pdCBkb25lXG4iLCBfX2Z1bmNfXyk7DQo+ICsNCj4gKwlyZXR1cm4g
-MDsNCj4gK30NCj4gKyNlbmRpZiAvKiBDT05GSUdfU1VTUEVORF9IRUxQRVIgKi8NCj4gKw0KPiAg
-I2lmZGVmIENPTkZJR19QTV9TTEVFUA0KPiAgLyoNCj4gICAqIFRoZSAnd2FrZXVwX2NvdW50JyBh
-dHRyaWJ1dGUsIGFsb25nIHdpdGggdGhlIGZ1bmN0aW9ucyBkZWZpbmVkIGluDQo+IEBAIC02NDAs
-NiArNzU2LDkgQEAgc3RhdGljIGludCBfX2luaXQgcG1faW5pdCh2b2lkKQ0KPiAgCWlmIChlcnJv
-cikNCj4gIAkJcmV0dXJuIGVycm9yOw0KPiAgCXBtX3ByaW50X3RpbWVzX2luaXQoKTsNCj4gKyNp
-ZmRlZiBDT05GSUdfU1VTUEVORF9IRUxQRVINCj4gKwlzdXNwZW5kX2hlbHBlcl9pbml0KCk7DQo+
-ICsjZW5kaWYNCj4gIAlyZXR1cm4gcG1fYXV0b3NsZWVwX2luaXQoKTsNCj4gIH0NCj4gIA0KDQo=
+On 05/26/2015 12:32 PM, Ashwin Chaugule wrote:
+> On 26 May 2015 at 13:23, Al Stone <al.stone@linaro.org> wrote:
+>> On 05/25/2015 03:49 PM, Ashwin Chaugule wrote:
+>>> CPPC:
+>>> ====
+>>>
+>>> CPPC (Collaborative Processor Performance Control) is a new way to control CPU
+>>> performance using an abstract continous scale as against a discretized P-state scale
+>>> which is tied to CPU frequency only. It is defined in the ACPI 5.0+ spec. In brief,
+>>> the basic operation involves:
+>>> - OS makes a CPU performance request. (Can provide min and max tolerable bounds)
+>>>
+>>> - Platform (such as BMC) is free to optimize request within requested bounds depending
+>>> on power/thermal budgets etc.
+>>>
+>>> - Platform conveys its decision back to OS
+>>>
+>>> The communication between OS and platform occurs through another medium called (PCC)
+>>> Platform communication Channel. This is a generic mailbox like mechanism which includes
+>>> doorbell semantics to indicate register updates. See drivers/mailbox/pcc.c
+>>>
+>>> This patchset introduces a CPPC based CPUFreq driver that works with existing governors
+>>> such as ondemand. The CPPC table parsing and the CPPC communication semantics are
+>>> abstracted into separate files to allow future CPPC based drivers to implement their
+>>> own governors if required.
+>>>
+>>> Initial patchsets included an adaptation of the PID governor from intel_pstate.c. However
+>>> recent experiments led to extensive modifications of the algorithm to calculate CPU
+>>> busyness. Until it is verified that these changes are worthwhile, the existing governors
+>>> should provide for a good enough starting point for ARM64 servers.
+>>>
+>>> Finer details about the PCC and CPPC spec are available in the latest ACPI 5.1
+>>> specification.[2]
+>>>
+>>> Changes since V4:
+>>> - Misc cleanups. Addressed feedback from Rafael.
+>>> - Made acpi_processor.c independent of C-states, P-states and others.
+>>> - Per CPU scanning for _CPC is now made from acpi_processor.c
+>>> - Added new Kconfig options for legacy C states and P states to enable future
+>>> support for newer alternatives as defined in the ACPI spec 6.0.
+>>>
+>>> Changes since V3:
+>>> - Split CPPC backend methods into separate files.
+>>> - Add frontend driver which plugs into existing CPUfreq governors.
+>>> - Simplify PCC driver by moving communication space mapping and read/write
+>>>       into client drivers.
+>>>
+>>> Changes since V2:
+>>> - Select driver if !X86, since intel_pstate will use HWP extensions instead.
+>>> - Added more comments.
+>>> - Added Freq domain awareness and PSD parsing.
+>>>
+>>> Changes since V1:
+>>> - Create a new driver based on Dirks suggestion.
+>>> - Fold in CPPC backend hooks into main driver.
+>>>
+>>> Changes since V0: [1]
+>>> - Split intel_pstate.c into a generic PID governor and platform specific backend.
+>>> - Add CPPC accessors as PID backend.
+>>>
+>>> [1] - http://lwn.net/Articles/608715/
+>>> [2] - http://www.uefi.org/sites/default/files/resources/ACPI_5_1release.pdf
+>>> [3] - https://patches.linaro.org/40705/
+>>>
+>>>
+>>> Ashwin Chaugule (6):
+>>>   PCC: Initialize PCC Mailbox earlier at boot
+>>>   ACPI: Make ACPI processor driver more extensible
+>>>   ACPI: Introduce CPU performance controls using CPPC
+>>>   CPPC: Add a CPUFreq driver for use with CPPC
+>>>   CPPC: Probe for CPPC tables for each ACPI Processor object
+>>>   PCC: Enable PCC only when needed
+>>>
+>>>  drivers/acpi/Kconfig            |  58 ++-
+>>>  drivers/acpi/Makefile           |   8 +-
+>>>  drivers/acpi/cppc_acpi.c        | 808 ++++++++++++++++++++++++++++++++++++++++
+>>>  drivers/acpi/processor_driver.c |  89 +++--
+>>>  drivers/cpufreq/Kconfig         |   2 +-
+>>>  drivers/cpufreq/Kconfig.arm     |  16 +
+>>>  drivers/cpufreq/Kconfig.x86     |   2 +
+>>>  drivers/cpufreq/Makefile        |   2 +
+>>>  drivers/cpufreq/cppc_cpufreq.c  | 197 ++++++++++
+>>>  drivers/mailbox/Kconfig         |   2 +-
+>>>  drivers/mailbox/pcc.c           |   2 +-
+>>>  include/acpi/cppc_acpi.h        | 137 +++++++
+>>>  include/acpi/processor.h        | 118 +++++-
+>>>  13 files changed, 1380 insertions(+), 61 deletions(-)
+>>>  create mode 100644 drivers/acpi/cppc_acpi.c
+>>>  create mode 100644 drivers/cpufreq/cppc_cpufreq.c
+>>>  create mode 100644 include/acpi/cppc_acpi.h
+>>>
+>>
+>> Apart from how the patches showed up in email :), nice work, Ashwin.
+>>
+>> Can you add a description of how you tested this, too?
+> 
+> This was tested on an SBSA compatible ARMv8 server with CPPCv2
+> firmware running on a remote processor. I verified that each CPUs
+> performance limits were detected and that new performance requests
+> were made by the on-demand governor proportional to the load on each
+> CPU. I also verified that using the acpi_processor driver correctly
+> maps the physical CPU ids to logical CPU ids, which helps in picking
+> up the proper _CPC details from a processor object, in the case where
+> CPU physical ids may not be contiguous.
+
+Excellent.  Thanks, exactly what I was looking for.
+
+-- 
+ciao,
+al
+-----------------------------------
+Al Stone
+Software Engineer
+Linaro Enterprise Group
+al.stone@linaro.org
+-----------------------------------
