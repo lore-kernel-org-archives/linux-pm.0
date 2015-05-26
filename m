@@ -1,128 +1,289 @@
-From: Al Stone <al.stone@linaro.org>
-Subject: Re: [Linaro-acpi] [PATCH v5 0/6] CPUFreq driver using CPPC methods
-Date: Tue, 26 May 2015 11:23:22 -0600
-Message-ID: <5564AC0A.2050501@linaro.org>
-References: <1432590581-8925-1-git-send-email-ashwin.chaugule@linaro.org>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v2 4/9] extcon/input/mfd/power/regulator: max77693: Move
+ state container to common header
+Date: Tue, 26 May 2015 10:46:29 -0700
+Message-ID: <20150526174629.GC10571@dtor-ws>
+References: <1432446213-4886-1-git-send-email-k.kozlowski.k@gmail.com>
+ <1432446213-4886-5-git-send-email-k.kozlowski.k@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f170.google.com ([209.85.213.170]:34886 "EHLO
-	mail-ig0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752631AbbEZRXZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 May 2015 13:23:25 -0400
-Received: by igbyr2 with SMTP id yr2so64147612igb.0
-        for <linux-pm@vger.kernel.org>; Tue, 26 May 2015 10:23:25 -0700 (PDT)
-In-Reply-To: <1432590581-8925-1-git-send-email-ashwin.chaugule@linaro.org>
+Received: from mail-ig0-f175.google.com ([209.85.213.175]:38636 "EHLO
+	mail-ig0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751230AbbEZRqe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 May 2015 13:46:34 -0400
+Content-Disposition: inline
+In-Reply-To: <1432446213-4886-5-git-send-email-k.kozlowski.k@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>, rjw@rjwysocki.net
-Cc: linaro-acpi@lists.linaro.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, patches@linaro.org, jaswinder.singh@linaro.org, sudeep.holla@arm.com
+To: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 05/25/2015 03:49 PM, Ashwin Chaugule wrote:
-> CPPC:
-> ====
+On Sun, May 24, 2015 at 02:43:28PM +0900, Krzysztof Kozlowski wrote:
+> This prepares for merging some of the drivers between max77693 and
+> max77843 so the child MFD driver can be attached to any parent MFD main
+> driver.
 > 
-> CPPC (Collaborative Processor Performance Control) is a new way to control CPU
-> performance using an abstract continous scale as against a discretized P-state scale
-> which is tied to CPU frequency only. It is defined in the ACPI 5.0+ spec. In brief,
-> the basic operation involves:
-> - OS makes a CPU performance request. (Can provide min and max tolerable bounds)
+> Move the state container to common header file. Additionally add
+> consistent 'i2c' prefixes to its members (of 'struct i2c_client' type).
 > 
-> - Platform (such as BMC) is free to optimize request within requested bounds depending
-> on power/thermal budgets etc.
-> 
-> - Platform conveys its decision back to OS
-> 
-> The communication between OS and platform occurs through another medium called (PCC)
-> Platform communication Channel. This is a generic mailbox like mechanism which includes
-> doorbell semantics to indicate register updates. See drivers/mailbox/pcc.c
-> 
-> This patchset introduces a CPPC based CPUFreq driver that works with existing governors
-> such as ondemand. The CPPC table parsing and the CPPC communication semantics are
-> abstracted into separate files to allow future CPPC based drivers to implement their
-> own governors if required.
-> 
-> Initial patchsets included an adaptation of the PID governor from intel_pstate.c. However
-> recent experiments led to extensive modifications of the algorithm to calculate CPU
-> busyness. Until it is verified that these changes are worthwhile, the existing governors
-> should provide for a good enough starting point for ARM64 servers.
-> 
-> Finer details about the PCC and CPPC spec are available in the latest ACPI 5.1
-> specification.[2]
-> 
-> Changes since V4:
-> - Misc cleanups. Addressed feedback from Rafael.
-> - Made acpi_processor.c independent of C-states, P-states and others.
-> - Per CPU scanning for _CPC is now made from acpi_processor.c
-> - Added new Kconfig options for legacy C states and P states to enable future
-> support for newer alternatives as defined in the ACPI spec 6.0.
-> 
-> Changes since V3:
-> - Split CPPC backend methods into separate files.
-> - Add frontend driver which plugs into existing CPUfreq governors.
-> - Simplify PCC driver by moving communication space mapping and read/write
-> 	into client drivers.
-> 
-> Changes since V2:
-> - Select driver if !X86, since intel_pstate will use HWP extensions instead.
-> - Added more comments.
-> - Added Freq domain awareness and PSD parsing.
-> 
-> Changes since V1:
-> - Create a new driver based on Dirks suggestion.
-> - Fold in CPPC backend hooks into main driver.
-> 
-> Changes since V0: [1]
-> - Split intel_pstate.c into a generic PID governor and platform specific backend.
-> - Add CPPC accessors as PID backend.
-> 
-> [1] - http://lwn.net/Articles/608715/
-> [2] - http://www.uefi.org/sites/default/files/resources/ACPI_5_1release.pdf
-> [3] - https://patches.linaro.org/40705/
-> 
-> 
-> Ashwin Chaugule (6):
->   PCC: Initialize PCC Mailbox earlier at boot
->   ACPI: Make ACPI processor driver more extensible
->   ACPI: Introduce CPU performance controls using CPPC
->   CPPC: Add a CPUFreq driver for use with CPPC
->   CPPC: Probe for CPPC tables for each ACPI Processor object
->   PCC: Enable PCC only when needed
-> 
->  drivers/acpi/Kconfig            |  58 ++-
->  drivers/acpi/Makefile           |   8 +-
->  drivers/acpi/cppc_acpi.c        | 808 ++++++++++++++++++++++++++++++++++++++++
->  drivers/acpi/processor_driver.c |  89 +++--
->  drivers/cpufreq/Kconfig         |   2 +-
->  drivers/cpufreq/Kconfig.arm     |  16 +
->  drivers/cpufreq/Kconfig.x86     |   2 +
->  drivers/cpufreq/Makefile        |   2 +
->  drivers/cpufreq/cppc_cpufreq.c  | 197 ++++++++++
->  drivers/mailbox/Kconfig         |   2 +-
->  drivers/mailbox/pcc.c           |   2 +-
->  include/acpi/cppc_acpi.h        | 137 +++++++
->  include/acpi/processor.h        | 118 +++++-
->  13 files changed, 1380 insertions(+), 61 deletions(-)
->  create mode 100644 drivers/acpi/cppc_acpi.c
->  create mode 100644 drivers/cpufreq/cppc_cpufreq.c
->  create mode 100644 include/acpi/cppc_acpi.h
-> 
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+> Acked-by: Sebastian Reichel <sre@kernel.org>
 
-Apart from how the patches showed up in email :), nice work, Ashwin.
+For input:
 
-Can you add a description of how you tested this, too?
+Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Other than that,
-
-Reviewed-by: Al Stone <al.stone@linaro.org>
+> ---
+>  drivers/extcon/extcon-max77693.c     |  3 ++-
+>  drivers/input/misc/max77693-haptic.c |  1 +
+>  drivers/mfd/max77693.c               | 31 +++++++++++++------------
+>  drivers/power/max77693_charger.c     |  1 +
+>  drivers/regulator/max77693.c         |  1 +
+>  include/linux/mfd/max77693-common.h  | 44 ++++++++++++++++++++++++++++++++++++
+>  include/linux/mfd/max77693-private.h | 25 --------------------
+>  7 files changed, 65 insertions(+), 41 deletions(-)
+>  create mode 100644 include/linux/mfd/max77693-common.h
+> 
+> diff --git a/drivers/extcon/extcon-max77693.c b/drivers/extcon/extcon-max77693.c
+> index 78ed8727024f..4ef45f257e6e 100644
+> --- a/drivers/extcon/extcon-max77693.c
+> +++ b/drivers/extcon/extcon-max77693.c
+> @@ -25,6 +25,7 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/mfd/max77693.h>
+>  #include <linux/mfd/max77693-private.h>
+> +#include <linux/mfd/max77693-common.h>
+>  #include <linux/extcon.h>
+>  #include <linux/regmap.h>
+>  #include <linux/irqdomain.h>
+> @@ -1077,7 +1078,7 @@ static int max77693_muic_probe(struct platform_device *pdev)
+>  		dev_dbg(&pdev->dev, "allocate register map\n");
+>  	} else {
+>  		info->max77693->regmap_muic = devm_regmap_init_i2c(
+> -						info->max77693->muic,
+> +						info->max77693->i2c_muic,
+>  						&max77693_muic_regmap_config);
+>  		if (IS_ERR(info->max77693->regmap_muic)) {
+>  			ret = PTR_ERR(info->max77693->regmap_muic);
+> diff --git a/drivers/input/misc/max77693-haptic.c b/drivers/input/misc/max77693-haptic.c
+> index 39e930c10ebb..69a4e401fe24 100644
+> --- a/drivers/input/misc/max77693-haptic.c
+> +++ b/drivers/input/misc/max77693-haptic.c
+> @@ -25,6 +25,7 @@
+>  #include <linux/regulator/consumer.h>
+>  #include <linux/mfd/max77693.h>
+>  #include <linux/mfd/max77693-private.h>
+> +#include <linux/mfd/max77693-common.h>
+>  
+>  #define MAX_MAGNITUDE_SHIFT	16
+>  
+> diff --git a/drivers/mfd/max77693.c b/drivers/mfd/max77693.c
+> index cb14afa97e6f..07fdf35bb9a1 100644
+> --- a/drivers/mfd/max77693.c
+> +++ b/drivers/mfd/max77693.c
+> @@ -34,6 +34,7 @@
+>  #include <linux/mfd/core.h>
+>  #include <linux/mfd/max77693.h>
+>  #include <linux/mfd/max77693-private.h>
+> +#include <linux/mfd/max77693-common.h>
+>  #include <linux/regulator/machine.h>
+>  #include <linux/regmap.h>
+>  
+> @@ -193,22 +194,22 @@ static int max77693_i2c_probe(struct i2c_client *i2c,
+>  	} else
+>  		dev_info(max77693->dev, "device ID: 0x%x\n", reg_data);
+>  
+> -	max77693->muic = i2c_new_dummy(i2c->adapter, I2C_ADDR_MUIC);
+> -	if (!max77693->muic) {
+> +	max77693->i2c_muic = i2c_new_dummy(i2c->adapter, I2C_ADDR_MUIC);
+> +	if (!max77693->i2c_muic) {
+>  		dev_err(max77693->dev, "Failed to allocate I2C device for MUIC\n");
+>  		return -ENODEV;
+>  	}
+> -	i2c_set_clientdata(max77693->muic, max77693);
+> +	i2c_set_clientdata(max77693->i2c_muic, max77693);
+>  
+> -	max77693->haptic = i2c_new_dummy(i2c->adapter, I2C_ADDR_HAPTIC);
+> -	if (!max77693->haptic) {
+> +	max77693->i2c_haptic = i2c_new_dummy(i2c->adapter, I2C_ADDR_HAPTIC);
+> +	if (!max77693->i2c_haptic) {
+>  		dev_err(max77693->dev, "Failed to allocate I2C device for Haptic\n");
+>  		ret = -ENODEV;
+>  		goto err_i2c_haptic;
+>  	}
+> -	i2c_set_clientdata(max77693->haptic, max77693);
+> +	i2c_set_clientdata(max77693->i2c_haptic, max77693);
+>  
+> -	max77693->regmap_haptic = devm_regmap_init_i2c(max77693->haptic,
+> +	max77693->regmap_haptic = devm_regmap_init_i2c(max77693->i2c_haptic,
+>  					&max77693_regmap_haptic_config);
+>  	if (IS_ERR(max77693->regmap_haptic)) {
+>  		ret = PTR_ERR(max77693->regmap_haptic);
+> @@ -222,7 +223,7 @@ static int max77693_i2c_probe(struct i2c_client *i2c,
+>  	 * instance of MUIC device when irq of max77693 is initialized
+>  	 * before call max77693-muic probe() function.
+>  	 */
+> -	max77693->regmap_muic = devm_regmap_init_i2c(max77693->muic,
+> +	max77693->regmap_muic = devm_regmap_init_i2c(max77693->i2c_muic,
+>  					 &max77693_regmap_muic_config);
+>  	if (IS_ERR(max77693->regmap_muic)) {
+>  		ret = PTR_ERR(max77693->regmap_muic);
+> @@ -255,7 +256,7 @@ static int max77693_i2c_probe(struct i2c_client *i2c,
+>  				IRQF_ONESHOT | IRQF_SHARED |
+>  				IRQF_TRIGGER_FALLING, 0,
+>  				&max77693_charger_irq_chip,
+> -				&max77693->irq_data_charger);
+> +				&max77693->irq_data_chg);
+>  	if (ret) {
+>  		dev_err(max77693->dev, "failed to add irq chip: %d\n", ret);
+>  		goto err_irq_charger;
+> @@ -296,15 +297,15 @@ err_mfd:
+>  err_intsrc:
+>  	regmap_del_irq_chip(max77693->irq, max77693->irq_data_muic);
+>  err_irq_muic:
+> -	regmap_del_irq_chip(max77693->irq, max77693->irq_data_charger);
+> +	regmap_del_irq_chip(max77693->irq, max77693->irq_data_chg);
+>  err_irq_charger:
+>  	regmap_del_irq_chip(max77693->irq, max77693->irq_data_topsys);
+>  err_irq_topsys:
+>  	regmap_del_irq_chip(max77693->irq, max77693->irq_data_led);
+>  err_regmap:
+> -	i2c_unregister_device(max77693->haptic);
+> +	i2c_unregister_device(max77693->i2c_haptic);
+>  err_i2c_haptic:
+> -	i2c_unregister_device(max77693->muic);
+> +	i2c_unregister_device(max77693->i2c_muic);
+>  	return ret;
+>  }
+>  
+> @@ -315,12 +316,12 @@ static int max77693_i2c_remove(struct i2c_client *i2c)
+>  	mfd_remove_devices(max77693->dev);
+>  
+>  	regmap_del_irq_chip(max77693->irq, max77693->irq_data_muic);
+> -	regmap_del_irq_chip(max77693->irq, max77693->irq_data_charger);
+> +	regmap_del_irq_chip(max77693->irq, max77693->irq_data_chg);
+>  	regmap_del_irq_chip(max77693->irq, max77693->irq_data_topsys);
+>  	regmap_del_irq_chip(max77693->irq, max77693->irq_data_led);
+>  
+> -	i2c_unregister_device(max77693->muic);
+> -	i2c_unregister_device(max77693->haptic);
+> +	i2c_unregister_device(max77693->i2c_muic);
+> +	i2c_unregister_device(max77693->i2c_haptic);
+>  
+>  	return 0;
+>  }
+> diff --git a/drivers/power/max77693_charger.c b/drivers/power/max77693_charger.c
+> index 754879eb59f6..eb68d0572799 100644
+> --- a/drivers/power/max77693_charger.c
+> +++ b/drivers/power/max77693_charger.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/regmap.h>
+>  #include <linux/mfd/max77693.h>
+>  #include <linux/mfd/max77693-private.h>
+> +#include <linux/mfd/max77693-common.h>
+>  
+>  #define MAX77693_CHARGER_NAME				"max77693-charger"
+>  static const char *max77693_charger_model		= "MAX77693";
+> diff --git a/drivers/regulator/max77693.c b/drivers/regulator/max77693.c
+> index 236851ab575a..5b30dc42679c 100644
+> --- a/drivers/regulator/max77693.c
+> +++ b/drivers/regulator/max77693.c
+> @@ -30,6 +30,7 @@
+>  #include <linux/regulator/machine.h>
+>  #include <linux/mfd/max77693.h>
+>  #include <linux/mfd/max77693-private.h>
+> +#include <linux/mfd/max77693-common.h>
+>  #include <linux/regulator/of_regulator.h>
+>  #include <linux/regmap.h>
+>  
+> diff --git a/include/linux/mfd/max77693-common.h b/include/linux/mfd/max77693-common.h
+> new file mode 100644
+> index 000000000000..7da4cc38e982
+> --- /dev/null
+> +++ b/include/linux/mfd/max77693-common.h
+> @@ -0,0 +1,44 @@
+> +/*
+> + * Common data shared between Maxim 77693 and 77843 drivers
+> + *
+> + * Copyright (C) 2015 Samsung Electronics
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + */
+> +
+> +#ifndef __LINUX_MFD_MAX77693_COMMON_H
+> +#define __LINUX_MFD_MAX77693_COMMON_H
+> +
+> +enum max77693_types {
+> +	TYPE_MAX77693_UNKNOWN,
+> +	TYPE_MAX77693,
+> +};
+> +
+> +/*
+> + * Shared also with max77843.
+> + */
+> +struct max77693_dev {
+> +	struct device *dev;
+> +	struct i2c_client *i2c;		/* 0xCC , PMIC, Charger, Flash LED */
+> +	struct i2c_client *i2c_muic;	/* 0x4A , MUIC */
+> +	struct i2c_client *i2c_haptic;	/* MAX77693: 0x90 , Haptic */
+> +
+> +	enum max77693_types type;
+> +
+> +	struct regmap *regmap;
+> +	struct regmap *regmap_muic;
+> +	struct regmap *regmap_haptic;	/* Only MAX77693 */
+> +
+> +	struct regmap_irq_chip_data *irq_data_led;
+> +	struct regmap_irq_chip_data *irq_data_topsys;
+> +	struct regmap_irq_chip_data *irq_data_chg; /* Only MAX77693 */
+> +	struct regmap_irq_chip_data *irq_data_muic;
+> +
+> +	int irq;
+> +};
+> +
+> +
+> +#endif /*  __LINUX_MFD_MAX77693_COMMON_H */
+> diff --git a/include/linux/mfd/max77693-private.h b/include/linux/mfd/max77693-private.h
+> index e3c0afff38d3..8c4143c0c651 100644
+> --- a/include/linux/mfd/max77693-private.h
+> +++ b/include/linux/mfd/max77693-private.h
+> @@ -529,29 +529,4 @@ enum max77693_irq_muic {
+>  	MAX77693_MUIC_IRQ_NR,
+>  };
+>  
+> -enum max77693_types {
+> -	TYPE_MAX77693_UNKNOWN,
+> -	TYPE_MAX77693,
+> -};
+> -
+> -struct max77693_dev {
+> -	struct device *dev;
+> -	struct i2c_client *i2c;		/* 0xCC , PMIC, Charger, Flash LED */
+> -	struct i2c_client *muic;	/* 0x4A , MUIC */
+> -	struct i2c_client *haptic;	/* 0x90 , Haptic */
+> -
+> -	enum max77693_types type;
+> -
+> -	struct regmap *regmap;
+> -	struct regmap *regmap_muic;
+> -	struct regmap *regmap_haptic;
+> -
+> -	struct regmap_irq_chip_data *irq_data_led;
+> -	struct regmap_irq_chip_data *irq_data_topsys;
+> -	struct regmap_irq_chip_data *irq_data_charger;
+> -	struct regmap_irq_chip_data *irq_data_muic;
+> -
+> -	int irq;
+> -};
+> -
+>  #endif /*  __LINUX_MFD_MAX77693_PRIV_H */
+> -- 
+> 2.1.4
+> 
 
 -- 
-ciao,
-al
------------------------------------
-Al Stone
-Software Engineer
-Linaro Enterprise Group
-al.stone@linaro.org
------------------------------------
+Dmitry
