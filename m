@@ -1,37 +1,36 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC PATCH] suspend/resume performance improvement
-Date: Wed, 27 May 2015 09:50:28 +0200
-Message-ID: <20150527075028.GC1254@amd>
-References: <1141174354.499851432649147087.JavaMail.weblogic@epmlwas01d>
+Subject: Re: [PATCH 5/5] base: power: wakeup.c: Fixed a typo error
+Date: Wed, 27 May 2015 09:52:32 +0200
+Message-ID: <20150527075232.GD1254@amd>
+References: <1432666037-24944-1-git-send-email-dash.sriram@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39205 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752032AbbE0Hwf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2015 03:52:35 -0400
 Content-Disposition: inline
-In-Reply-To: <1141174354.499851432649147087.JavaMail.weblogic@epmlwas01d>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?utf-8?B?7J207J2A7YOd?= <eun.taik.lee@samsung.com>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1432666037-24944-1-git-send-email-dash.sriram@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sriram Dash <dash.sriram@gmail.com>
+Cc: rjw@rjwysocki.net, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, trivial@kernel.org
 
-On Tue 2015-05-26 14:05:47, =EC=9D=B4=EC=9D=80=ED=83=9D wrote:
-> When a task that calls state_store() to suspend
-> the device has used up most of its time slice,
-> suspend sometimes take too long. (User noticeable)
->=20
-> Suspend/resume is a system wide operation.
+On Wed 2015-05-27 00:17:17, Sriram Dash wrote:
+> From: dashsriram <dash.sriram@gmail.com>
+> 
+> Fixed a typo error in the file
 
-It is also root-only.
+You may want to check your [patch x/x] markings. Seems to be x==x in
+too many cases.
 
-> So, instead of depending on a userspace task's time
-> slice, let kworker do the work to avoid a long wait
-> on the runqueue.
+Anyway,
 
-=2E..so if you really want high priority for that operation, just renic=
-e
-yourself to higher priority or something...
-									Pavel
---=20
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+for patches 2-5.
+
+-- 
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
-/blog.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
