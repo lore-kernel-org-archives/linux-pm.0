@@ -1,132 +1,173 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [PATCH v5 2/6] ACPI: Make ACPI processor driver more extensible
-Date: Wed, 27 May 2015 15:22:03 +0000
-Message-ID: <1432740011.11262.288.camel@spandruv-DESK3.jf.intel.com>
-References: <1432590659-9016-1-git-send-email-ashwin.chaugule@linaro.org>
-	 <1432675261.11262.276.camel@spandruv-DESK3.jf.intel.com>
-	 <CAJ5Y-eYdH76TGTGnVK6ShmdBqFFin7=Ty9V6Sb+J3qtj8Bsuag@mail.gmail.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle: Do not use CPUIDLE_DRIVER_STATE_START in cpuidle.c
+Date: Wed, 27 May 2015 21:49:54 +0530
+Message-ID: <5565EEAA.8010900@linux.vnet.ibm.com>
+References: <5494512.JcUbNX5Mxs@vostro.rjw.lan> <5565AB09.8090802@linux.vnet.ibm.com>	<5565B7D7.3000308@linaro.org> <CAJZ5v0hn__7KRqOTpBYAk8EfV28xD54G0MaetaJ6HH5uUE3wQw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:4322 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751600AbbE0PWF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 27 May 2015 11:22:05 -0400
-In-Reply-To: <CAJ5Y-eYdH76TGTGnVK6ShmdBqFFin7=Ty9V6Sb+J3qtj8Bsuag@mail.gmail.com>
-Content-Language: en-US
-Content-ID: <B624FD9DC42B744CA36B6DE866A585C6@intel.com>
+Received: from e33.co.us.ibm.com ([32.97.110.151]:59662 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751476AbbE0QUF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2015 12:20:05 -0400
+Received: from /spool/local
+	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Wed, 27 May 2015 10:20:05 -0600
+In-Reply-To: <CAJZ5v0hn__7KRqOTpBYAk8EfV28xD54G0MaetaJ6HH5uUE3wQw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "ashwin.chaugule@linaro.org" <ashwin.chaugule@linaro.org>
-Cc: "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>
 
-T24gV2VkLCAyMDE1LTA1LTI3IGF0IDEwOjA1IC0wNDAwLCBBc2h3aW4gQ2hhdWd1bGUgd3JvdGU6
-DQo+IE9uIDI2IE1heSAyMDE1IGF0IDE3OjIyLCBQYW5kcnV2YWRhLCBTcmluaXZhcw0KPiA8c3Jp
-bml2YXMucGFuZHJ1dmFkYUBpbnRlbC5jb20+IHdyb3RlOg0KPiA+IE9uIE1vbiwgMjAxNS0wNS0y
-NSBhdCAxNzo1MCAtMDQwMCwgQXNod2luIENoYXVndWxlIHdyb3RlOg0KPiA+PiBUaGUgQUNQSSBw
-cm9jZXNzb3IgZHJpdmVyIGlzIGN1cnJlbnRseSB0aWVkIHRvbyBjbG9zZWx5DQo+ID4+IHRvIHRo
-ZSBBQ1BJIEMtc3RhdGVzIChDU1QpLCBQLXN0YXRlcyAoUFNTKSBhbmQgb3RoZXIgcmVsYXRlZA0K
-PiA+PiBjb25zdHJ1Y3RzIGZvciBjb250cm9sbGluZyBDUFUgaWRsZSBhbmQgQ1BVIHBlcmZvcm1h
-bmNlLg0KPiA+Pg0KPiA+PiBUaGUgbmV3ZXIgQUNQSSBzcGVjaWZpY2F0aW9uICh2NS4xIG9ud2Fy
-ZHMpIGludHJvZHVjZXMNCj4gPj4gYWx0ZXJuYXRpdmUgbWV0aG9kcyB0byBDU1QgYW5kIFBTUy4g
-VGhlc2UgbmV3IG1lY2hhbmlzbXMNCj4gPj4gYXJlIGRlc2NyaWJlZCB3aXRoaW4gZWFjaCBBQ1BJ
-IFByb2Nlc3NvciBvYmplY3QgYW5kIHNvIHRoZXkNCj4gPj4gbmVlZCB0byBiZSBzY2FubmVkIHdo
-ZW5ldmVyIGEgbmV3IFByb2Nlc3NvciBvYmplY3QgaXMgZGV0ZWN0ZWQuDQo+ID4+IFRoaXMgcGF0
-Y2ggaW50cm9kdWNlcyB0d28gbmV3IEtjb25maWcgc3ltYm9scyB0byBhbGxvdyBmb3INCj4gPj4g
-ZmluZXIgY29uZmlndXJhYmlsaXR5IGFtb25nIHRoZSB2YXJpb3VzIG9wdGlvbnMgZm9yIGNvbnRy
-b2xsaW5nDQo+ID4+IENQVSBpZGxlIGFuZCBwZXJmb3JtYW5jZSBzdGF0ZXMuIFRoZXJlIGlzIG5v
-IGNoYW5nZSBpbiBmdW5jdGlvbmFsaXR5DQo+ID4+IGFuZCB0aGVzZSBvcHRpb25zIGFyZSBkZWZh
-dWx0ZWQgdG8gZW5hYmxlZCB0byBtYWludGFpbiBwcmV2aW91cw0KPiA+PiBiZWhhdmlvdXIuDQo+
-ID4+DQo+ID4+IFRoZSBmb2xsb3dpbmcgcGF0Y2h3b3JrIGludHJvZHVjZXMgQ1BQQzogQSBuZXdl
-ciBtZXRob2Qgb2YNCj4gPj4gY29udHJvbGxpbmcgQ1BVIHBlcmZvcm1hbmNlLiBUaGUgT1MgaXMg
-bm90IGV4cGVjdGVkIHRvIHN1cHBvcnQgQ1BQQw0KPiA+PiBhbmQgUFNTIGF0IHJ1bnRpbWUuIFNv
-IHRoZSBrY29uZmlnIG9wdGlvbiBsZXRzIHVzIG1ha2UgdGhlc2UgdHdvDQo+ID4+IG11dHVhbGx5
-IGV4Y2x1c2l2ZSBhdCBjb21waWxlIHRpbWUuDQo+ID4+DQo+ID4+IFNpZ25lZC1vZmYtYnk6IEFz
-aHdpbiBDaGF1Z3VsZSA8YXNod2luLmNoYXVndWxlQGxpbmFyby5vcmc+DQo+ID4+IC0tLQ0KPiA+
-PiAgZHJpdmVycy9hY3BpL0tjb25maWcgICAgICAgICAgICB8ICA0MSArKysrKysrKysrKy0tLS0N
-Cj4gPj4gIGRyaXZlcnMvYWNwaS9NYWtlZmlsZSAgICAgICAgICAgfCAgIDcgKy0tDQo+ID4+ICBk
-cml2ZXJzL2FjcGkvcHJvY2Vzc29yX2RyaXZlci5jIHwgIDg1ICsrKysrKysrKysrKysrKysrKysr
-LS0tLS0tLS0tLS0NCj4gPj4gIGRyaXZlcnMvY3B1ZnJlcS9LY29uZmlnICAgICAgICAgfCAgIDIg
-Ky0NCj4gPj4gIGRyaXZlcnMvY3B1ZnJlcS9LY29uZmlnLng4NiAgICAgfCAgIDIgKw0KPiA+PiAg
-aW5jbHVkZS9hY3BpL3Byb2Nlc3Nvci5oICAgICAgICB8IDEwOSArKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrLS0tLS0tDQo+ID4+ICA2IGZpbGVzIGNoYW5nZWQsIDE4NyBpbnNlcnRp
-b25zKCspLCA1OSBkZWxldGlvbnMoLSkNCj4gPj4NCj4gPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-YWNwaS9LY29uZmlnIGIvZHJpdmVycy9hY3BpL0tjb25maWcNCj4gPj4gaW5kZXggYWIyY2JiNS4u
-ZDk4ZDMwNCAxMDA2NDQNCj4gPj4gLS0tIGEvZHJpdmVycy9hY3BpL0tjb25maWcNCj4gPj4gKysr
-IGIvZHJpdmVycy9hY3BpL0tjb25maWcNCj4gPj4gQEAgLTE2MywyMyArMTYzLDQyIEBAIGNvbmZp
-ZyBBQ1BJX0ZBTg0KPiA+PiAgY29uZmlnIEFDUElfRE9DSw0KPiA+PiAgICAgICBib29sICJEb2Nr
-Ig0KPiA+PiAgICAgICBoZWxwDQo+ID4+IC0gICAgICAgVGhpcyBkcml2ZXIgc3VwcG9ydHMgQUNQ
-SS1jb250cm9sbGVkIGRvY2tpbmcgc3RhdGlvbnMgYW5kIHJlbW92YWJsZQ0KPiA+PiAtICAgICAg
-IGRyaXZlIGJheXMgc3VjaCBhcyB0aGUgSUJNIFVsdHJhYmF5IGFuZCB0aGUgRGVsbCBNb2R1bGUg
-QmF5Lg0KPiA+PiArICAgICBUaGlzIGRyaXZlciBzdXBwb3J0cyBBQ1BJLWNvbnRyb2xsZWQgZG9j
-a2luZyBzdGF0aW9ucyBhbmQgcmVtb3ZhYmxlDQo+ID4+ICsgICAgIGRyaXZlIGJheXMgc3VjaCBh
-cyB0aGUgSUJNIFVsdHJhYmF5IGFuZCB0aGUgRGVsbCBNb2R1bGUgQmF5Lg0KPiA+PiArDQo+ID4g
-VG8gYmUgY29uc2lzdGVudCBhbGlnbiBoZWxwIHRleHQgdG8gbGV0dGVyICJsIiBvZiBoZWxwLg0K
-PiANCj4gT2suDQo+IA0KPiA+IEFsc28gY2hlY2twYXRjaCBlcnJvcnMgaW4gdGhpcyBmaWxlLg0K
-PiANCj4gQXJnLiBJIHJhbiBjaGVja3BhdGNoIGZpcnN0LCB0aGVuIG1hZGUgbW9yZSBtb2RzIGFu
-ZCBmb3Jnb3QgdG8gcnVuIGl0DQo+IGFnYWluLiBXaWxsIG1ha2Ugc3VyZSBpdHMgZG9uZSBiZWZv
-cmUgc2VuZGluZyBvdXQgdGhlIGZpbmFsIHZlcnNpb24uDQo+IA0KPiA+PiAtc3RhdGljIGludCBf
-X2FjcGlfcHJvY2Vzc29yX3N0YXJ0KHN0cnVjdCBhY3BpX2RldmljZSAqZGV2aWNlKQ0KPiA+PiAr
-I2lmZGVmIENPTkZJR19BQ1BJX1BTUw0KPiA+PiArc3RhdGljIGludCBhY3BpX3Bzc19pbml0KHN0
-cnVjdCBhY3BpX3Byb2Nlc3NvciAqcHIsIHN0cnVjdCBhY3BpX2RldmljZSAqZGV2aWNlKQ0KPiA+
-PiAgew0KPiA+IFRoaXMgbmFtZSBzb3VuZHMgdG8gbWUgdGhhdCBpdCBpdCBpbml0aWFsaXppbmcg
-c29tZXRoaW5nIHRvIGRvIHdpdGggX1BTUw0KPiA+IG9ubHkuIEJ1dCB0aGlzIGZ1bmN0aW9uIGRv
-ZXMgbW9yZSB0aGFuIHRoYXQuIExpa2UgaGFuZGxpbmcgcHBjIGNoYW5nZQ0KPiA+IGFuZCBhbHNv
-IHRoZXJtYWwgY2RldiByZWdpc3Rlci4gQ2FuIHdlIGhhdmUgc29tZSBiZXR0ZXIgbmFtZT8NCj4g
-Pg0KPiANCj4gVHJ1ZS4gSSBjb3VsZG4ndCByZWFsbHkgY29tZSB1cCB3aXRoIGFueXRoaW5nIGJl
-dHRlci4gRnJvbSB0aGUgd2F5DQo+IHRoaXMgdGhpbmcgd2FzIHN0cnVjdHVyZWQgb3JpZ2luYWxs
-eSwgZXZlcnl0aGluZyBzZWVtcyBsaW5rZWQgdG8gUFNTDQo+IG9uZSB3YXkgb3IgYW5vdGhlci4g
-KGluY2x1ZGluZyBDU1MgYmFzZWQgaWRsZSkuDQo+IA0KPiBIb3cgYWJvdXQgYWNwaV9sZWdhY3lf
-cGVyZl9pbml0KCkgPw0KSXQgaXMgbm90IHJlYWxseSBsZWdhY3kgaGVyZS4gSWYgeW91IGxpa2Ug
-YWNwaV9wc3NfcGVyZl9pbml0KCkuLg0KPiANCj4gPj4gLSAgICAgc3RydWN0IGFjcGlfcHJvY2Vz
-c29yICpwciA9IGFjcGlfZHJpdmVyX2RhdGEoZGV2aWNlKTsNCj4gPj4gLSAgICAgYWNwaV9zdGF0
-dXMgc3RhdHVzOw0KPiA+PiAgICAgICBpbnQgcmVzdWx0ID0gMDsNCj4gPj4NCj4gPj4gLSAgICAg
-aWYgKCFwcikNCj4gPj4gLSAgICAgICAgICAgICByZXR1cm4gLUVOT0RFVjsNCj4gPj4gLQ0KPiA+
-PiAtICAgICBpZiAocHItPmZsYWdzLm5lZWRfaG90cGx1Z19pbml0KQ0KPiA+PiAtICAgICAgICAg
-ICAgIHJldHVybiAwOw0KPiA+PiAtDQo+ID4+IC0jaWZkZWYgQ09ORklHX0NQVV9GUkVRDQo+ID4+
-ICAgICAgIGFjcGlfcHJvY2Vzc29yX3BwY19oYXNfY2hhbmdlZChwciwgMCk7DQo+ID4+IC0jZW5k
-aWYNCj4gPj4gKw0KPiA+PiAgICAgICBhY3BpX3Byb2Nlc3Nvcl9nZXRfdGhyb3R0bGluZ19pbmZv
-KHByKTsNCj4gPiBXaGVuIENQUEMgaXMgcHJlc2VudCwgeW91IGRvbid0IG5lZWQgc3VwcG9ydCBm
-b3IgX1BUQywgX1RTUyBhbmQgX1RQQz8NCj4gDQo+IE5vcGUuDQo+IA0KPiAtLS0tODwtLS0tDQo+
-IDguNC43LjEuMTAgUmVsYXRpb25zaGlwIHRvIG90aGVyIEFDUEktZGVmaW5lZCBPYmplY3RzIGFu
-ZCBOb3RpZmljYXRpb25zDQo+IElmIF9DUEMgaXMgcHJlc2VudCwgaXRzIHVzZSBzdXBlcnNlZGVz
-IHRoZSB1c2Ugb2YgdGhlIGZvbGxvd2luZw0KPiBleGlzdGluZyBBQ1BJIG9iamVjdHM6DQo+IOKA
-oiBUaGUgUF9CTEsgUF9DTlQgcmVnaXN0ZXINCj4g4oCiIF9QVEMNCj4g4oCiIF9UU1MNCj4g4oCi
-IF9UUEMNCj4g4oCiIF9UU0QNCj4g4oCiIF9UREwNCj4g4oCiIF9QQ1QNCj4g4oCiIF9QU1MNCj4g
-4oCiIF9QUEMNCj4g4oCiIF9QREwNCj4g4oCiIE5vdGlmeSAweDgwIG9uIHRoZSBwcm9jZXNzb3Ig
-ZGV2aWNlDQo+IOKAoiBOb3RpZnkgMHg4MiBvbiB0aGUgcHJvY2Vzc29yIGRldmljZQ0KPiBUaGUg
-X1BTRCBvYmplY3QgbWF5IGJlIHVzZWQgdG8gc3BlY2lmeSBkb21haW4gZGVwZW5kZW5jaWVzIGJl
-dHdlZW4NCj4gcHJvY2Vzc29ycy4gT24gYSBzeXN0ZW0NCj4gd2l0aCBoZXRlcm9nZW5lb3VzIHBy
-b2Nlc3NvcnMsIGFsbCBwcm9jZXNzb3JzIHdpdGhpbiBhIHNpbmdsZSBkb21haW4NCj4gbXVzdCBo
-YXZlIHRoZSBzYW1lDQo+IHBlcmZvcm1hbmNlIGNhcGFiaWxpdGllcy4NCj4gDQo+IC0tLS04PC0t
-LS0NCj4gDQo+ID4NCj4gPj4NCj4gPj4gICAgICAgaWYgKHByLT5mbGFncy50aHJvdHRsaW5nKQ0K
-PiA+PiAgICAgICAgICAgICAgIHByLT5mbGFncy5saW1pdCA9IDE7DQo+ID4+DQo+ID4+IC0gICAg
-IGlmICghY3B1aWRsZV9nZXRfZHJpdmVyKCkgfHwgY3B1aWRsZV9nZXRfZHJpdmVyKCkgPT0gJmFj
-cGlfaWRsZV9kcml2ZXIpDQo+ID4+IC0gICAgICAgICAgICAgYWNwaV9wcm9jZXNzb3JfcG93ZXJf
-aW5pdChwcik7DQo+ID4+IC0NCj4gPj4gICAgICAgcHItPmNkZXYgPSB0aGVybWFsX2Nvb2xpbmdf
-ZGV2aWNlX3JlZ2lzdGVyKCJQcm9jZXNzb3IiLCBkZXZpY2UsDQo+ID4+ICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAmcHJvY2Vzc29yX2Nvb2xpbmdfb3Bz
-KTsNCj4gPj4gICAgICAgaWYgKElTX0VSUihwci0+Y2RldikpIHsNCj4gPj4gICAgICAgICAgICAg
-ICByZXN1bHQgPSBQVFJfRVJSKHByLT5jZGV2KTsNCj4gPj4gLSAgICAgICAgICAgICBnb3RvIGVy
-cl9wb3dlcl9leGl0Ow0KPiA+PiArICAgICAgICAgICAgIHJldHVybiByZXN1bHQ7DQo+ID4+ICAg
-ICAgIH0NCj4gPiBEb24ndCB5b3UgbmVlZCB0aGlzIHRoZXJtYWxfIGNhbGwgZm9yIHdoZW4gY29u
-dHJvbGxpbmcgdmlhIENQUEM/DQo+ID4gSSB0aGluayB5b3Ugc2hvdWxkIG1vdmUgdG8gY29tbW9u
-IHN0YXJ0IGZ1bmN0aW9uLg0KPiANCj4gSSdkIHByZWZlciB0byBrZWVwIHRoZXJtYWwgc3R1ZmYg
-b3V0c2lkZSBvZiBDUFBDIGZvciBub3cuIEV2ZXJ5b25lDQo+IEkndmUgZGlzY3Vzc2VkIHdpdGgg
-aW4gdGhlIEFSTTY0IHNlcnZlciBzcGFjZSBwbGFucyB0byBoYW5kbGUgdGhlcm1hbA0KPiBpbmRl
-cGVuZGVudGx5IG9uIGEgcmVtb3RlIHByb2Nlc3Nvci4gSWYgdGhhdCBjaGFuZ2VzLCB0aGVuIHdl
-J2xsIGNvbWUNCj4gYmFjayB0byB0aGlzLiBBbnl3YXksIGFzIGl0IGlzIHRvZGF5LCB0aGUgdGhl
-cm1hbCBzdHVmZiBpbiBBQ1BJDQo+IGRlcGVuZHMgb24gVFNTLCB3aGljaCB3aWxsIG5lZWQgY2hh
-bmdlcyBmb3IgQ1BQQy4NCk9uIHg4NiB0aGUgY29vbGluZyBkZXZpY2UgcmVnaXN0ZXIgY29udGFp
-biBwYXJ0cywgb25lIGRlcGVuZHMgb24gVFNTIGFuZA0KKHN0YXRlIDQtMTApIGFuZCAwIC0gMyBh
-cmUganVzdCBwZXJmb3JtYW5jZSBzdGF0ZXMsIHdoaWNoIHVzZXMgY3B1ZnJlcQ0KY2FsbHMgdG8g
-aXJyZXNwZWN0aXZlIG9mIHVuZGVybHlpbmcgbWVjaGFuaXNtICh0aGV5IHRyYW5zbGF0ZSB0bw0K
-d2hhdGV2ZXIgbWVjaGFuaXNtIGxpa2UgSW50ZWwgUCBTdGF0ZSBvciBBQ1BJIGNwdWZyZXEgb3Ig
-YW55dGhpbmcgZWxzZSkuDQpCdXQgaGVyZSBzaW5jZSB0aGVybWFsIGNvb2xpbmcgZGV2aWNlIGlz
-IG5vdCBkZXNpcmVkLCBzbyBJIGFtIGZpbmUuDQo+IA0KPiA+DQo+ID4gSSBmZWVsIHRoYXQgYWxs
-IHRoZSBvbGQgZnVuY3Rpb24gZGlkIHdhcyByZWxldmFudCB0byBDUFBDIHN1cHBvcnQgYWxzby4N
-Cj4gPiBleGNlcHQgUFBDIGNoYW5nZS4gU28geW91IG1heSBqdXN0IG5lZWQgdG8gYWRkIGNhbGwg
-dG8NCj4gPiBhY3BpX2NwcGNfcHJvY2Vzc29yX3Byb2JlKCkgZm9yIENQUEMgc3VwcG9ydC4NCj4g
-Pg0KPiANCj4gSSBob3BlIHRoZSBhYm92ZSBleHBsYWlucyB0aGlzLg0KPiANCj4gVGhhbmtzLA0K
-PiBBc2h3aW4uDQoNCg==
+On 05/27/2015 07:27 PM, Rafael J. Wysocki wrote:
+> On Wed, May 27, 2015 at 2:25 PM, Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+>> On 05/27/2015 01:31 PM, Preeti U Murthy wrote:
+>>>
+>>> On 05/27/2015 07:06 AM, Rafael J. Wysocki wrote:
+>>>>
+>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>>
+>>>> The CPUIDLE_DRIVER_STATE_START symbol is defined as 1 only if
+>>>> CONFIG_ARCH_HAS_CPU_RELAX is set, otherwise it is defined as 0.
+>>>> However, if CONFIG_ARCH_HAS_CPU_RELAX is set, the first (index 0)
+>>>> entry in the cpuidle driver's table of states is overwritten with
+>>>> the default "poll" entry by the core.  The "state" defined by the
+>>>> "poll" entry doesn't provide ->enter_dead and ->enter_freeze
+>>>> callbacks and its exit_latency is 0.
+>>>>
+>>>> For this reason, it is not necessary to use CPUIDLE_DRIVER_STATE_START
+>>>> in cpuidle_play_dead() (->enter_dead is NULL, so the "poll state"
+>>>> will be skipped by the loop) and in find_deepest_state() (since
+>>>> exit_latency is 0, the "poll state" will become the default if the
+>>>> "s->exit_latency <= latency_req" check is replaced with
+>>>> "s->exit_latency < latency_req" which may only matter for drivers
+>>>> providing different states with the same exit_latency).
+>>>>
+>>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>> ---
+>>>>   drivers/cpuidle/cpuidle.c |    8 ++++----
+>>>>   1 file changed, 4 insertions(+), 4 deletions(-)
+>>>
+>>> <snip>
+>>>
+>>>>
+>>>> @@ -79,13 +79,13 @@ static int find_deepest_state(struct cpu
+>>>>                               bool freeze)
+>>>>   {
+>>>>         unsigned int latency_req = 0;
+>>>> -       int i, ret = freeze ? -1 : CPUIDLE_DRIVER_STATE_START - 1;
+>>>> +       int i, ret = -ENXIO;
+>>>>
+>>>> -       for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
+>>>> +       for (i = 0; i < drv->state_count; i++) {
+>>>>                 struct cpuidle_state *s = &drv->states[i];
+>>>>                 struct cpuidle_state_usage *su = &dev->states_usage[i];
+>>>>
+>>>> -               if (s->disabled || su->disable || s->exit_latency <=
+>>>> latency_req
+>>>> +               if (s->disabled || su->disable || s->exit_latency <
+>>>> latency_req
+>>>
+>>>
+>>> Prior to this patch,
+>>>
+>>> For drivers on which CPUIDLE_DRIVER_STATE_START takes a value 0 and
+>>> whose first idle state has an exit_latency of 0, find_deepest_state()
+>>> would return -1 if it failed to find a deeper idle state.
+>>> But as an effect of this patch, find_deepest_state() returns 0 in the
+>>> above circumstance.
+>>
+>>
+>> Except I am missing something, with an exit_latency = 0, the state will be
+>> never selected, because of the "s->exit_latency < latency_req" condition
+>> (strictly greater than).
+> 
+> No, this is the condition to skip the state, so previously it wouldn't
+> be selected, but after the patch it will.
+> 
+> So yes, the patch changes behavior for systems with
+> CONFIG_ARCH_HAS_CPU_RELAX unset.
+> 
+>>> My concern is if these drivers do not intend to enter a polling state
+>>> during suspend, this will cause an issue, won't it?
+> 
+> The change in behavior happens for architectures where
+> CONFIG_ARCH_HAS_CPU_RELAX is not set.  In those cases the 0-index
+> state is supposed to be provided by the driver.  Is there a reason to
+> expect that this may not be a genuine idle state?
+
+On PowerPC, we have the 0-index idle state, whose exit_latency is 0 and
+all that the CPU does in this state, is poll on need_resched(), except
+at a lower priority from the hardware's standpoint. Nevertheless, the
+CPU is busy polling. So, I would not consider it a genuine idle state.
+
+On a side note, we do not yet support suspend on Power servers, but we
+may in the future. Hence the concern.
+
+>> Definitively poll can cause thermal issues, especially when suspending. It
+>> is a dangerous state (let's imagine you close your laptop => suspend/poll
+>> and then put it in your bag for a travel).
+> 
+> With ARCH_HAS_CPU_RELAX set the "poll state" is supposed to be thermally safe.
+> 
+>> I don't think with the code above we can reach this situation but I agree
+>> this is something we have to take care carefully.
+>>
+>> Actually, I am in favour of removing poll at all from the cpuidle driver and
+>> poll only when a cpuidle state selection fails under certain condition.
+>>
+>> So I fully agree with your statement below.
+>>
+>>> I would expect the cpus to be in a hardware
+>>> defined idle state.
+> 
+> Well, except for the degenerate case in which all of them are disabled
+> and for the "broadcast timer stopping aviodance" use case for
+> find_deepest_state().
+
+During suspend, the CPUs can very well enter states where the timer
+stops since we stop timer interrupts anyway. So unless the idle states
+are explicitly disabled by the user/hardware for some reason, deeper
+idle states will still be available during suspend as far as I can see.
+
+> 
+> So there are two questions in my view:
+> (1) Should find_deepest_state() ever return states with exit_latency equal to 0?
+
+I would say no, since such an idle state would mostly be polling on a
+wakeup event. Atleast, there is one such case in PowerPC.
+
+> (2) If the answer to (1) is "yes", should the "poll state" be ever
+> returned by find_deepest_state()?
+> 
+> In any case, find_deepest_state() will only return a state with
+> exit_latency equal to 0 if there's no other choice and if it returns
+> nothing, we'll fall back to the architecture idle method.  So the
+> question really is whether or not falling back to arch idle is any
+> better than using any state we have in the table.
+
+My suggestion is to *not* fall back to arch idle code, since that is a
+black box from the core cpuidle's perspective.
+
+> 
+> The patch is based on the assumption that any state from the table
+> will be better than arch idle, including the "polling state".  If that
+> does not hold, we'll need to rethink a couple of other things in my
+> view.
+
+We could fail suspend if a non-polling idle state is not available perhaps ?
+
+Regards
+Preeti U Murthy
+> 
+> Thanks,
+> Rafael
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
