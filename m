@@ -1,90 +1,57 @@
-From: "Chao Xie" <xiechao_mail@163.com>
-Subject: Re:Re: Question about "Make sched entity usage tracking
- scale-invariant"
-Date: Wed, 27 May 2015 09:49:40 +0800 (CST)
-Message-ID: <180595a8.3e55.14d930f9028.Coremail.xiechao_mail@163.com>
-References: <2a0eaec4.2cae.14d88a76c40.Coremail.xiechao_mail@163.com>
- <20150526110535.GG26396@e105550-lin.cambridge.arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] base: power : opp.c: fixed a typo error
+Date: Wed, 27 May 2015 07:50:16 +0530
+Message-ID: <CAOh2x=mu1gbAit8XR_nVOeYtBhnjMac+0qNXzQigtve_Dv8Z5A@mail.gmail.com>
+References: <1432665010-24464-1-git-send-email-dash.sriram@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=GBK
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150526110535.GG26396@e105550-lin.cambridge.arm.com>
+In-Reply-To: <1432665010-24464-1-git-send-email-dash.sriram@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, Dietmar.Eggemann@arm.com, yuyang.du@intel.com, mturquette@linaro.org, preeti@linux.vnet.ibm.com, rjw@rjwysocki.net, Juri.Lelli@arm.com, linux-pm@vger.kernel.org
+To: Sriram Dash <dash.sriram@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jiri Kosina <trivial@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-CkF0IDIwMTUtMDUtMjYgMTk6MDU6MzYsICJNb3J0ZW4gUmFzbXVzc2VuIiA8bW9ydGVuLnJhc211
-c3NlbkBhcm0uY29tPiB3cm90ZToKPkhpLAo+Cj5bQWRkaW5nIG1haW50YWluZXJzIGFuZCBvdGhl
-cnMgdG8gY2NdCj4KPk9uIE1vbiwgTWF5IDI1LCAyMDE1IGF0IDAyOjE5OjQzQU0gKzAxMDAsIENo
-YW8gWGllIHdyb3RlOgo+PiBoaQo+PiBJIHNhdyB0aGUgcGF0Y2ggobBzY2hlZDogTWFrZSBzY2hl
-ZCBlbnRpdHkgdXNhZ2UgdHJhY2tpbmcKPj4gc2NhbGUtaW52YXJpYW50obEgdGhhdCB3aWxsIG1h
-a2UgdGhlIHVzYWdlIHRvIGJlIGZyZXEgc2NhbGVkLgo+PiBTbyBpZiBkZWx0YSBwZXJpb2QgdGhh
-dCB0aGUgY2FsY3VsYXRpb24gb2YgdXNhZ2UgYmFzZWQgb24gY3Jvc3MgYQo+PiBmcmVxdWVuY3kg
-Y2hhbmdlLCBzbyBob3cgY2FuIHlvdSBtYWtlIHN1cmUgdGhlIHVzYWdlIGNhbGN1bGF0aW9uIGlz
-Cj4+IGNvcnJlY3Q/Cj4+IFRoZSBkZWx0YSBwZXJpb2QgbWF5IGxhc3QgaHVuZHJlZHMgb2YgbWlj
-cm9zZWNvbmRzLCBhbmQgZnJlcXVlbmN5Cj4+IGNoYW5nZSB3aW5kb3cgbWF5IGJlIDEwLTIwIG1p
-Y3Jvc2Vjb25kcywgc28gbWFueSBmcmVxdWVuY3kgY2hhbmdlIGNhbgo+PiBoYXBwZW4gZHVyaW5n
-IHRoZSBkZWx0YSBwZXJpb2QuCj4+IEl0IHNlZW1zIHRoZSBwYXRjaCBkb2VzIG5vdCBjb25zaWRl
-ciBhYm91dCBpdCwgYW5kIGl0IGp1c3QgcGljayB1cCB0aGUKPj4gY3VycmVudCBvbmUuCj4+IFNv
-IGhvdyBjYW4geW91IHJlc29sdmUgdGhpcyBpc3N1ZT8KPgo+UmlnaHQuIFdlIGRvbid0IGtub3cg
-aG93IG1hbnkgdGltZXMgdGhlIGZyZXF1ZW5jeSBtYXkgaGF2ZSBjaGFuZ2VkIHNpbmNlCj5sYXN0
-IHRpbWUgd2UgdXBkYXRlZCB0aGUgZW50aXR5IHVzYWdlIHRyYWNraW5nIGZvciB0aGUgcGFydGlj
-dWxhcgo+ZW50aXR5LiBBbGwgd2UgZG8gaXMgdG8gY2FsbCBhcmNoX3NjYWxlX2ZyZXFfY2FwYWNp
-dHkoKSBhbmQgdXNlIHRoYXQKPnNjYWxpbmcgZmFjdG9yIHRvIGNvbXBlbnNhdGUgZm9yIHdoYXRl
-dmVyIGNoYW5nZXMgbWlnaHQgaGF2ZSB0YWtlbgo+cGxhY2UuCj4KPlRoZSBlYXNpZXN0IGltcGxl
-bWVudGF0aW9uIG9mIGFyY2hfc2NhbGVfZnJlcV9jYXBhY2l0eSgpIGZvciBtb3N0Cj5hcmNoaXRl
-Y3R1cmVzIGlzIHRvIGp1c3QgcmV0dXJuIGEgc2NhbGluZyBmYWN0b3IgY29tcHV0ZWQgYmFzZWQg
-b24gdGhlCj5jdXJyZW50IGZyZXF1ZW5jeSBhbmQgaWdub3Jpbmcgd2hlbiBleGFjdGx5IHRoZSBj
-aGFuZ2UgaGFwcGVuZWQgYW5kCj5pZ25vcmluZyBpZiBtdWx0aXBsZSBjaGFuZ2VzIGhhcHBlbmVk
-LiBEZXBlbmRpbmcgb24gaG93IG9mdGVuIHRoZQo+ZnJlcXVlbmN5IG1pZ2h0IGNoYW5nZSB0aGlz
-IG1pZ2h0IGJlIGFuIGFjY2VwdGFibGUgYXBwcm94aW1hdGlvbi4gV2hpbGUKPnRoZSB0YXNrIGlz
-IHJ1bm5pbmcgdGhlIHNjaGVkIHRpY2sgd2lsbCB1cGRhdGUgdGhlIGVudGl0eSB1c2FnZSB0cmFj
-a2luZwo+KGV2ZXJ5IDEwbXMgYnkgZGVmYXVsdCBvbiBtb3N0IEFSTSBzeXN0ZW1zKSwgaGVuY2Ug
-d2Ugc2hvdWxkbid0IGJlIG1vcmUKPnRoYW4gYSB0aWNrIG9mZiBpbiB0ZXJtIG9mIHdoZW4gdGhl
-IGZyZXF1ZW5jeSBjaGFuZ2UgaXMgYWNjb3VudGVkIGZvci4KPlVuZGVyIG5vcm1hbCBjaXJjdW1z
-dGFuY2VzIHRoZSBkZWx0YSBwZXJpb2Qgc2hvdWxkIHRoZXJlZm9yZSBiZSA8MTBtcwo+YW5kIGdl
-bmVyYWxseSBzaG9ydGVyIHRoYW4gdGhhdCBpZiB5b3UgaGF2ZSBtb3JlIHRoYW4gb25lIHRhc2sg
-cnVubmFibGUKPm9uIHRoZSBjcHUgb3IgdGhlIHRhc2socykgYXJlIG5vdCBhbHdheXMtcnVubmlu
-Zy4gSXQgaXMgbm90IHBlcmZlY3QgYnV0Cj5pdCBpcyBhIGxvdCBiZXR0ZXIgdGhhbiB0aGUgdXRp
-bGl6YXRpb24gdHJhY2tpbmcgY3VycmVudGx5IHVzZWQgYnkKPmNwdWZyZXEgZ292ZXJub3JzIGFu
-ZCBiZXR0ZXIgdGhhbiB0aGUgc2NoZWR1bGVyIGJlaW5nIGNvbXBsZXRlbHkgdW5hd2FyZQo+b2Yg
-ZnJlcXVlbmN5IHNjYWxpbmcuCj4KPkZvciBzeXN0ZW1zIHdpdGggdmVyeSBmcmVxdWVudCBmcmVx
-dWVuY3kgY2hhbmdlcywgaS5lLiBmYXN0IGhhcmR3YXJlIGFuZAo+YW4gYWdncmVzc2l2ZSBnb3Zl
-cm5vciBsZWFkaW5nIHRvIG11bHRpcGxlIGNoYW5nZXMgaW4gbGVzcyB0aGFuIDEwbXMsCj50aGUg
-c29sdXRpb24gYWJvdmUgbWlnaHQgbm90IGJlIHN1ZmZpY2llbnQuIEluIHRoYXQgY2FzZSwgSSB0
-aGluayBhCj5iZXR0ZXIgc29sdXRpb24gbWlnaHQgYmUgdG8gdHJhY2sgdGhlIGF2ZXJhZ2UgZnJl
-cXVlbmN5IHVzaW5nIGhhcmR3YXJlCj5jb3VudGVycyBvciB3aGF0ZXZlciB0cmFja2luZyBtZXRy
-aWNzIHRoZSBzeXN0ZW0gbWlnaHQgaGF2ZSB0byBsZXQKPmFyY2hfc2NhbGVfZnJlcV9jYXBhY2l0
-eSgpIHJldHVybiB0aGUgYXZlcmFnZSBwZXJmb3JtYW5jZSBkZWxpdmVyZWQgb3Zlcgo+dGhlIG1v
-c3QgcmVjZW50IHBlcmlvZCBvZiB0aW1lLiBBRkFJSywgeDg2IGFscmVhZHkgaGFzIHBlcmZvcm1h
-bmNlCj5jb3VudGVycyAoQVBFUkYvTVBFUkYpIHRoYXQgY291bGQgYmUgdXNlZCBmb3IgdGhpcyBw
-dXJwb3NlLiBUaGUgZGVsdGEKPnBlcmlvZCBmb3IgZWFjaCBlbnRpdHkgdHJhY2tpbmcgdXBkYXRl
-IGlzbid0IGZpeGVkLCBidXQgaXQgbWlnaHQKPnN1ZmZpY2llbnQgdG8ganVzdCBhdmVyYWdlIG92
-ZXIgc29tZSBmaXhlZCBwZXJpb2Qgb2YgdGltZS4gQWNjdXJhdGUKPnRyYWNraW5nIHdvdWxkIHJl
-cXVpcmUgc29tZSB0aW1lLXN0YW1wIGluZm9ybWF0aW9uIHRvIGJlIHN0b3JlZCBpbiBlYWNoCj5z
-Y2hlZF9lbnRpdHkgZm9yIHRoZSB0cnVlIGF2ZXJhZ2UgdG8gYmUgY29tcHV0ZWQgZm9yIHRoZSBk
-ZWx0YSBwZXJpb2QuCj5UaGF0IHF1aWNrbHkgYmVjb21lcyByYXRoZXIgbWVzc3kgYnV0IG5vdCBp
-bXBvc3NpYmxlLiBJIGRpZCBsb29rIGF0IGl0Cj5icmllZmx5IGEgd2hpbGUgYmFjaywgYnV0IGRl
-Y2lkZWQgbm90IHRvIGdvIGRvd24gdGhhdCByb3V0ZSB1bnRpbCB3ZQo+a25vdyB0aGF0IHVzaW5n
-IGN1cnJlbnQgZnJlcXVlbmN5IG9yIHNvbWUgZml4ZWQgcGVyaW9kIGF2ZXJhZ2UgaXNuJ3QKPmdv
-aW5nIHRvIGJlIHN1ZmZpY2llbnQuIFVzYWdlIG9yIHV0aWxpemF0aW9uIGlzIGFuZCBhdmVyYWdl
-IG9mIHNvbWV0aGluZwo+dGhhdCBtaWdodCBiZSBjb25zdGFudGx5IGNoYW5naW5nIGFueXdheXMs
-IHNvIGl0IG5ldmVyIGdvaW5nIHRvIGJlIHZlcnkKPmFjY3VyYXRlIGFueXdheS4gSWYgaXQgZG9l
-cyB0dXJuIG91dCB0aGF0IHdlIGNhbid0IGdldCB0aGUgb3ZlcmFsbAo+cGljdHVyZSByaWdodCwg
-d2Ugd2lsbCBuZWVkIHRvIGltcHJvdmUgaXQuCj4KPlVwZGF0aW5nIHRoZSBlbnRpdHkgdHJhY2tp
-bmcgZm9yIGVhY2ggZnJlcXVlbmN5IGNoYW5nZSBhZGRzIHRvIG11Y2gKPm92ZXJoZWFkIEkgdGhp
-bmsgYW5kIHNlZW1zIHVubmVjZXNzYXJ5IGlmIHdlIGRvIHdpdGggYW4gYXZlcmFnZSBzY2FsaW5n
-Cj5mYWN0b3IuCj4KPkkgaG9wZSB0aGF0IGFuc3dlcnMgeW91ciBxdWVzdGlvbi4gSGF2ZSB5b3Ug
-b2JzZXJ2ZWQgYW55IHByb2JsZW1zIHdpdGgKPnRoZSB1c2FnZSB0cmFja2luZz8KPgoKVGhhbmtz
-IGZvciB0aGUgZXhwbGFuYXRpb24uCgpJIGFncmVlIHRoYXQgdGhlICJkZWx0YSIgaXMgbGVzcyB0
-aGFuIDEwbXMgYXQgbW9zdCBzaXR1YXRpb24sIGJ1dCBpIHRoaW5rIGF0IGxlYXN0IG9uZSBwZXJp
-b2QKbmVlZCB0byBiZSBjb25zaWRlcmVkLgpJZiB0aGUgZnJlcXVlbmN5IGNoYW5nZSBoYXBwZW5z
-IGp1c3QgYSBsaXR0bGUsIGZvciBleGFtcGxlLCAxMHVzIGJlZm9yZSB0aGUgdGFzayBzdGFydCB0
-bwpjYWxjdWxhdGUgaXRzIHV0aWxpemF0aW9uIHdoaWNoIG1heSBoYXZlIGEgZGVsdGEgb2YgMTBt
-cy4gVGhlIGFsbW9zdCB3aG9sZSBkZWx0YSB3aWxsIGJlIGNhbGN1bGF0ZWQKYmFzZWQgb24gbmV3
-IGZyZXF1ZW5jeSwgbm90IHRoZSBvbGQgb25lLiBUaGUgZnJlcXVlbmN5IGNoYW5nZSBjYW4gYmUg
-ZnJvbSB0aGUgbG93ZXN0IHRvIGhpZ2hlc3QsCnNvIGZvciB0aGlzIHRpbWUgdGhlIGRlbHRhIGNh
-bGN1bGF0aW9uIGhhcyBiaWcgZGV2aWF0aW9uLCBhbmQgdGhpcyBzaXR1YXRpb24gaXMgbm90IHJh
-cmUuCgo+VGhhbmtzLAo+TW9ydGVuCg==
+On Wed, May 27, 2015 at 12:00 AM, Sriram Dash <dash.sriram@gmail.com> wrote:
+> From: dashsriram <dash.sriram@gmail.com>
+>
+> Fixed a typo error in the file
+>
+> Signed-off-by: Sriram Dash <dash.sriram@gmail.com>
+> ---
+>  drivers/base/power/opp.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index 677fb28..300941b 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -675,7 +675,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
+>   * share a common logic which is isolated here.
+>   *
+>   * Return: -EINVAL for bad pointers, -ENOMEM if no memory available for the
+> - * copy operation, returns 0 if no modifcation was done OR modification was
+> + * copy operation, returns 0 if no modification was done OR modification was
+>   * successful.
+>   *
+>   * Locking: The internal device_opp and opp structures are RCU protected.
+> @@ -763,7 +763,7 @@ unlock:
+>   * mutex locking or synchronize_rcu() blocking calls cannot be used.
+>   *
+>   * Return: -EINVAL for bad pointers, -ENOMEM if no memory available for the
+> - * copy operation, returns 0 if no modifcation was done OR modification was
+> + * copy operation, returns 0 if no modification was done OR modification was
+>   * successful.
+>   */
+>  int dev_pm_opp_enable(struct device *dev, unsigned long freq)
+> @@ -789,7 +789,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_enable);
+>   * mutex locking or synchronize_rcu() blocking calls cannot be used.
+>   *
+>   * Return: -EINVAL for bad pointers, -ENOMEM if no memory available for the
+> - * copy operation, returns 0 if no modifcation was done OR modification was
+> + * copy operation, returns 0 if no modification was done OR modification was
+>   * successful.
+>   */
+>  int dev_pm_opp_disable(struct device *dev, unsigned long freq)
+
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
