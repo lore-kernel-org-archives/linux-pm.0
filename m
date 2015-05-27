@@ -1,29 +1,30 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 2/2] turbostat, add set_base_cpu()
-Date: Wed, 27 May 2015 17:54:46 -0400
-Message-ID: <CAJvTdKmpeT5hM-ByFGnQb9p7frXG3TjMZ4zM8L=mEEU-+c6QXw@mail.gmail.com>
-References: <1432557269-10994-1-git-send-email-prarit@redhat.com>
-	<1432557269-10994-3-git-send-email-prarit@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Subject: turbostat patches staged for Linux 4.1-rc5
+Date: Wed, 27 May 2015 18:08:01 -0400
+Message-ID: <1432764486-3517-1-git-send-email-lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f54.google.com ([209.85.215.54]:33628 "EHLO
-	mail-la0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751064AbbE0Vyr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2015 17:54:47 -0400
-In-Reply-To: <1432557269-10994-3-git-send-email-prarit@redhat.com>
+Received: from mail-qc0-f178.google.com ([209.85.216.178]:36817 "EHLO
+	mail-qc0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751055AbbE0WIQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2015 18:08:16 -0400
+Received: by qcxw10 with SMTP id w10so10191992qcx.3
+        for <linux-pm@vger.kernel.org>; Wed, 27 May 2015 15:08:16 -0700 (PDT)
+Received: from z87.localdomain (pool-100-0-21-20.bstnma.fios.verizon.net. [100.0.21.20])
+        by mx.google.com with ESMTPSA id f137sm153827qhc.41.2015.05.27.15.08.14
+        for <linux-pm@vger.kernel.org>
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
+        Wed, 27 May 2015 15:08:14 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Andrey Semin <andrey.semin@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
 
-> +       base_cpu = sched_getcpu();
+A couple of fixes have come in that I'd like to offer to Linux
+for inclusion in 4.1-rc5.
 
-looks good.
-I combined this w/ the previous patch.
-I'll send this with some other patches to linux-pm shortly.
-If no problems, I'll offer the bundle of fixes to Linus for -rc5,
-else we'll get to it in the next merge window.
+Rafael,
+these are on my "turbostat" branch, and I'll push to Linus directly,
+so no need to pull into linux-pm.
 
 thanks,
-Len Brown, Intel Open Source Technology Center
+-Len
+
