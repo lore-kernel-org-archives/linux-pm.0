@@ -1,46 +1,50 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH v2 8/8] mfd: Add support for Intel Sunrisepoint LPSS
- devices
-Date: Wed, 27 May 2015 13:41:02 +0300
-Message-ID: <20150527104102.GF1747@lahna.fi.intel.com>
-References: <1432570172-86963-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <1432570172-86963-9-git-send-email-andriy.shevchenko@linux.intel.com>
- <20150527102241.GC11677@x1>
+From: =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>
+Subject: Re: [PATCH v2 2/9] mfd: max77693: Store I2C device type as enum and
+ add default unknown
+Date: Wed, 27 May 2015 20:13:04 +0900
+Message-ID: <CAJKOXPchv7hqcsE5pDB-_PJknfTqLYUOdNbP=6ExUD_gdRoa3w@mail.gmail.com>
+References: <1432446213-4886-1-git-send-email-k.kozlowski.k@gmail.com>
+	<1432446213-4886-3-git-send-email-k.kozlowski.k@gmail.com>
+	<20150527102334.GD11677@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150527102241.GC11677@x1>
-Sender: linux-acpi-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150527102334.GD11677@x1>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Lee Jones <lee.jones@linaro.org>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 27, 2015 at 11:22:41AM +0100, Lee Jones wrote:
-> > +static int resume_lpss_device(struct device *dev, void *data)
-> > +{
-> > +	pm_runtime_resume(dev);
-> > +	return 0;
-> > +}
-> > +
-> > +int intel_lpss_prepare(struct device *dev)
-> > +{
-> > +	/*
-> > +	 * Resume both child devices before entering system sleep. This
-> > +	 * ensures that they are in proper state before they get suspended.
-> > +	 */
-> > +	device_for_each_child_reverse(dev, NULL, resume_lpss_device);
-> 
-> Why can't you do this in intel_lpss_suspend()?
-> 
-> Then you can get rid of all the hand-rolled nonsense you have in the
-> header file and use SET_SYSTEM_SLEEP_PM_OPS instead.
-> 
-> Does something happen after .prepare() and before .suspend() that
-> prevents this from working?
+2015-05-27 19:23 GMT+09:00 Lee Jones <lee.jones@linaro.org>:
+> On Sun, 24 May 2015, Krzysztof Kozlowski wrote:
+>
+>> Store the device type (obtained from i2c_device_id) as an enum and add a
+>> default type of unknown to distinguish from case when this is not set
+>> at all.
+>>
+>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+>> ---
+>>  include/linux/mfd/max77693-private.h | 11 ++++++-----
+>>  1 file changed, 6 insertions(+), 5 deletions(-)
+>
+> Applied, thanks.
 
-At that time all children are already suspended (to system sleep) so we
-cannot bring them out of runtime suspend anymore.
+Thanks.
 
-.prepare() is executed for all devices before suspend callbacks for
-each device.
+I was thinking about merging everything through one tree because of
+the dependency (successive patches depend on previous) but I don't
+mind choosing different strategy. However if you picked this one maybe
+you can also apply the patch 1/9:
+mfd/extcon: max77693: Remove unused extern declarations and max77693_dev members
+
+It already got ack from Chanwoo.
+
+Other patches depend on these so either everything will go through
+your tree or you will prepare an immutable branch for e.g. Mark (as
+everything is around regulator drivers).
+
+Anyway I need some input from Mark about the patches 4, 5 and 9. Rest
+of them already have his ack.
+
+Best regards,
+Krzysztof
