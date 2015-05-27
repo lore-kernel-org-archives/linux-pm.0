@@ -1,56 +1,55 @@
 From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: [PATCH v5 1/6] PCC: Initialize PCC Mailbox earlier at boot
-Date: Wed, 27 May 2015 09:52:28 -0400
-Message-ID: <CAJ5Y-eb0UyzYjg0j1unKPTo4=0Y+Tw23F_gXvT7H09=ZrKZ17g@mail.gmail.com>
-References: <1432590610-8968-1-git-send-email-ashwin.chaugule@linaro.org>
-	<1597157.KLDqcPxL8N@vostro.rjw.lan>
+Subject: Re: [PATCH v5 6/6] PCC: Enable PCC only when needed
+Date: Wed, 27 May 2015 09:53:21 -0400
+Message-ID: <CAJ5Y-eZe9qtwXTqZ6Kbjv-+POuTRi=LBShCE2pEuaABSeBi0Dg@mail.gmail.com>
+References: <1432590731-9194-1-git-send-email-ashwin.chaugule@linaro.org>
+	<1432676153.11262.278.camel@spandruv-DESK3.jf.intel.com>
+	<2070004.cs8zNmgBiA@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f47.google.com ([209.85.218.47]:35720 "EHLO
-	mail-oi0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752912AbbE0Nw3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2015 09:52:29 -0400
-Received: by oihd6 with SMTP id d6so7738204oih.2
-        for <linux-pm@vger.kernel.org>; Wed, 27 May 2015 06:52:29 -0700 (PDT)
-In-Reply-To: <1597157.KLDqcPxL8N@vostro.rjw.lan>
+Received: from mail-oi0-f53.google.com ([209.85.218.53]:36226 "EHLO
+	mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752105AbbE0NxW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2015 09:53:22 -0400
+Received: by oihb142 with SMTP id b142so7723003oih.3
+        for <linux-pm@vger.kernel.org>; Wed, 27 May 2015 06:53:21 -0700 (PDT)
+In-Reply-To: <2070004.cs8zNmgBiA@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Jaswinder Singh <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+Cc: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 26 May 2015 at 20:50, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Monday, May 25, 2015 05:50:10 PM Ashwin Chaugule wrote:
->> This change initializes the PCC Mailbox earlier than
->> the ACPI processor driver. This enables drivers introduced
->> in follow up patches (e.g. CPPC) to be probed via the ACPI
->> processor driver interface. The CPPC probe requires the PCC
->> channel to be initialized for it to query each CPUs performance
->> capabilites.
->>
->> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
->> ---
->>  drivers/mailbox/pcc.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/mailbox/pcc.c b/drivers/mailbox/pcc.c
->> index 7e91d68..8809587 100644
->> --- a/drivers/mailbox/pcc.c
->> +++ b/drivers/mailbox/pcc.c
->> @@ -352,4 +352,4 @@ static int __init pcc_init(void)
->>
->>       return 0;
->>  }
->> -device_initcall(pcc_init);
->> +postcore_initcall(pcc_init);
+On 26 May 2015 at 20:43, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, May 26, 2015 09:37:45 PM Pandruvada, Srinivas wrote:
+>> On Mon, 2015-05-25 at 17:52 -0400, Ashwin Chaugule wrote:
+>> > CPPC is the first client to make use of the PCC Mailbox channel. So
+>> > enable it only when CPPC is also enabled.
+>> >
+>> > Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+>> > ---
+>> >  drivers/mailbox/Kconfig | 2 +-
+>> >  1 file changed, 1 insertion(+), 1 deletion(-)
+>> >
+>> > diff --git a/drivers/mailbox/Kconfig b/drivers/mailbox/Kconfig
+>> > index 84b0a2d..60c8da6 100644
+>> > --- a/drivers/mailbox/Kconfig
+>> > +++ b/drivers/mailbox/Kconfig
+>> > @@ -45,7 +45,7 @@ config OMAP_MBOX_KFIFO_SIZE
+>> >
+>> >  config PCC
+>> >     bool "Platform Communication Channel Driver"
+>> > -   depends on ACPI
+>> > +   depends on ACPI && ACPI_CPPC
+>> If we add such dependency then we will end up in adding many ..
+>> Is there any specific reason, you want to to do this?
 >
-> If there is an ordering requirement between two components, it's better to
-> make it explicit rather than to change the initcall priorities like that.
+> The reason is that we want PCC to only be enabled if there's any user of it.
 >
-> At least please add a comment why that needs to be postcore_ so people don't
-> have to wonder why it is so.
+> However, it would be better to make (a) PCC default to unset and
+> (b) ACPI_CPPC select PCC for this purpose.
 
-Will do.
+I believe I have (b) already. Will make PCC default to unset.
 
 Thanks,
 Ashwin.
