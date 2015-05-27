@@ -1,420 +1,52 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v2 6/9] mfd/extcon: max77693: Rename defines to allow
- inclusion with max77843
-Date: Wed, 27 May 2015 11:26:42 +0100
-Message-ID: <20150527102642.GG11677@x1>
-References: <1432446213-4886-1-git-send-email-k.kozlowski.k@gmail.com>
- <1432446213-4886-7-git-send-email-k.kozlowski.k@gmail.com>
+From: EunTaik Lee <eun.taik.lee@samsung.com>
+Subject: Re: Re: [RFC PATCH] suspend/resume performance improvement
+Date: Wed, 27 May 2015 10:38:10 +0000 (GMT)
+Message-ID: <2002354124.810441432723088778.JavaMail.weblogic@epmlwas01d>
+Reply-To: eun.taik.lee@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=euc-kr
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:38098 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751263AbbE0K0s (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2015 06:26:48 -0400
-Received: by wizo1 with SMTP id o1so16356474wiz.1
-        for <linux-pm@vger.kernel.org>; Wed, 27 May 2015 03:26:46 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1432446213-4886-7-git-send-email-k.kozlowski.k@gmail.com>
+Received: from mailout2.samsung.com ([203.254.224.25]:15409 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750854AbbE0KiM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2015 06:38:12 -0400
+Received: from epcpsbgr5.samsung.com
+ (u145.gpu120.samsung.co.kr [203.254.230.145])
+ by mailout2.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
+ 64bit (built May  5 2014))
+ with ESMTP id <0NP000HJW87M8V50@mailout2.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 27 May 2015 19:38:10 +0900 (KST)
+MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Sun, 24 May 2015, Krzysztof Kozlowski wrote:
+DQpPbiBUdWUgMjAxNS0wNS0yNyAxNjo1MCAoR01UKzA5OjAwKSwgUGF2ZWwgTWFjaGVrIHdyb3Rl
+Og0KDQo+PiBTbywgaW5zdGVhZCBvZiBkZXBlbmRpbmcgb24gYSB1c2Vyc3BhY2UgdGFzaydzIHRp
+bWUNCj4+IHNsaWNlLCBsZXQga3dvcmtlciBkbyB0aGUgd29yayB0byBhdm9pZCBhIGxvbmcgd2Fp
+dA0KPj4gb24gdGhlIHJ1bnF1ZXVlLg0KPg0KPi4uLnNvIGlmIHlvdSByZWFsbHkgd2FudCBoaWdo
+IHByaW9yaXR5IGZvciB0aGF0IG9wZXJhdGlvbiwganVzdCByZW5pY2UNCj55b3Vyc2VsZiB0byBo
+aWdoZXIgcHJpb3JpdHkgb3Igc29tZXRoaW5nLi4uDQoNClRoZSBwcm9ibGVtIG9jY3VyZWQgb24g
+QW5kcm9pZCBMIHZlcnNpb24uIEtLIGhhZCBhdXRvc3VzcGVuZCBlbmFibGVkDQpidXQgaXQgd2Fz
+IGRpc2FibGVkIGluIEwgdG8gYWxsb3cgdXNlcnNwYWNlIHRvIGNvbGxlY3Qgc3RhdHMuDQoNClRo
+ZSBkZWxheSB3YXMgaW5zaWRlIHRyeV90b19mcmVlemVfdGFza3MgZnVuY3Rpb24gKGF0IHN5c3Rl
+bV9zZXJ2ZXIgdGhyZWFkIG9mIHN5c3RlbV9zZXJ2ZXIgcHJvY2VzcykuDQpzeXN0ZW1fc2VydmVy
+IGdvdCBwcmVlbXB0ZWQgYWZ0ZXIgdW5sb2NraW5nIHRoZSB0YXNrbGlzdF9sb2NrLg0KIDQ2ICAg
+ICAgICAgd2hpbGUgKHRydWUpIHsNCiA0NyAgICAgICAgICAgICAgICAgdG9kbyA9IDA7DQogNDgg
+ICAgICAgICAgICAgICAgIHJlYWRfbG9jaygmdGFza2xpc3RfbG9jayk7DQogNDkgICAgICAgICAg
+ICAgICAgIGZvcl9lYWNoX3Byb2Nlc3NfdGhyZWFkKGcsIHApIHsNCiA1MCAgICAgICAgICAgICAg
+ICAgICAgICAgICBpZiAocCA9PSBjdXJyZW50IHx8ICFmcmVlemVfdGFzayhwKSkNCiA1MSAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIGNvbnRpbnVlOw0KIDUyIA0KIDUzICAgICAgICAg
+ICAgICAgICAgICAgICAgIGlmICghZnJlZXplcl9zaG91bGRfc2tpcChwKSkNCiA1NCAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIHRvZG8rKzsNCiA1NSAgICAgICAgICAgICAgICAgfQ0K
+IDU2ICAgICAgICAgICAgICAgICByZWFkX3VubG9jaygmdGFza2xpc3RfbG9jayk7DQoNCkFsbCBv
+ZiB0aGUgdGhyZWFkcyBvZiBzeXN0ZW1fc2VydmVyIHByb2Nlc3MgdGhhdCB3YXMgb24gdGhlIHJ1
+bnF1ZXVlIGRpZCBub3QgcnVuIGR1cmluZyB0aGlzIHBlcmlvZC4NCkZyZWV6aW5nIG9mIHRhc2tz
+IHJlc3VtZWQgYWZ0ZXIgb3RoZXIgdGFza3Mgd2VudCBvdXQgb2YgdGhlIHJ1bnF1ZXVlLg0KDQpJ
+IGhhdmUgdGVzdGVkIHdpdGggdGhlIGxvd2VzdCBuaWNlIHZhbHVlIGJ1dCB0aGUgcHJvYmxlbSB3
+YXMgc3RpbGwsIGFsdGhvdWdoIGxlc3MsIHJlcHJvZHVjaWJsZS4NCg0KQmVzdCBSZWdhcmRzLA0K
+RXVudGFpayBMZWU=
 
-> Add MAX77693 prefix to some of the defines used in max77693 extcon
-> driver so the max77693-private.h can be included simultaneously with
-> max77843-private.h.
->=20
-> Additionally use BIT() macro in header.
->=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-> ---
->  drivers/extcon/extcon-max77693.c     |  72 +++++++++++++------------
->  include/linux/mfd/max77693-private.h | 102 +++++++++++++++++--------=
-----------
->  2 files changed, 89 insertions(+), 85 deletions(-)
 
-Acked-by: Lee Jones <lee.jones@linaro.org>
-
-> diff --git a/drivers/extcon/extcon-max77693.c b/drivers/extcon/extcon=
--max77693.c
-> index 4ef45f257e6e..96f1545be4ab 100644
-> --- a/drivers/extcon/extcon-max77693.c
-> +++ b/drivers/extcon/extcon-max77693.c
-> @@ -43,7 +43,7 @@ static struct max77693_reg_data default_init_data[]=
- =3D {
->  	{
->  		/* STATUS2 - [3]ChgDetRun */
->  		.addr =3D MAX77693_MUIC_REG_STATUS2,
-> -		.data =3D STATUS2_CHGDETRUN_MASK,
-> +		.data =3D MAX77693_STATUS2_CHGDETRUN_MASK,
->  	}, {
->  		/* INTMASK1 - Unmask [3]ADC1KM,[0]ADCM */
->  		.addr =3D MAX77693_MUIC_REG_INTMASK1,
-> @@ -236,7 +236,7 @@ static int max77693_muic_set_debounce_time(struct=
- max77693_muic_info *info,
->  		 */
->  		ret =3D regmap_write(info->max77693->regmap_muic,
->  				  MAX77693_MUIC_REG_CTRL3,
-> -				  time << CONTROL3_ADCDBSET_SHIFT);
-> +				  time << MAX77693_CONTROL3_ADCDBSET_SHIFT);
->  		if (ret) {
->  			dev_err(info->dev, "failed to set ADC debounce time\n");
->  			return ret;
-> @@ -269,7 +269,7 @@ static int max77693_muic_set_path(struct max77693=
-_muic_info *info,
->  	if (attached)
->  		ctrl1 =3D val;
->  	else
-> -		ctrl1 =3D CONTROL1_SW_OPEN;
-> +		ctrl1 =3D MAX77693_CONTROL1_SW_OPEN;
-> =20
->  	ret =3D regmap_update_bits(info->max77693->regmap_muic,
->  			MAX77693_MUIC_REG_CTRL1, COMP_SW_MASK, ctrl1);
-> @@ -279,13 +279,14 @@ static int max77693_muic_set_path(struct max776=
-93_muic_info *info,
->  	}
-> =20
->  	if (attached)
-> -		ctrl2 |=3D CONTROL2_CPEN_MASK;	/* LowPwr=3D0, CPEn=3D1 */
-> +		ctrl2 |=3D MAX77693_CONTROL2_CPEN_MASK;	/* LowPwr=3D0, CPEn=3D1 */
->  	else
-> -		ctrl2 |=3D CONTROL2_LOWPWR_MASK;	/* LowPwr=3D1, CPEn=3D0 */
-> +		ctrl2 |=3D MAX77693_CONTROL2_LOWPWR_MASK;	/* LowPwr=3D1, CPEn=3D0 =
-*/
-> =20
->  	ret =3D regmap_update_bits(info->max77693->regmap_muic,
->  			MAX77693_MUIC_REG_CTRL2,
-> -			CONTROL2_LOWPWR_MASK | CONTROL2_CPEN_MASK, ctrl2);
-> +			MAX77693_CONTROL2_LOWPWR_MASK | MAX77693_CONTROL2_CPEN_MASK,
-> +			ctrl2);
->  	if (ret < 0) {
->  		dev_err(info->dev, "failed to update MUIC register\n");
->  		return ret;
-> @@ -327,8 +328,8 @@ static int max77693_muic_get_cable_type(struct ma=
-x77693_muic_info *info,
->  		 * Read ADC value to check cable type and decide cable state
->  		 * according to cable type
->  		 */
-> -		adc =3D info->status[0] & STATUS1_ADC_MASK;
-> -		adc >>=3D STATUS1_ADC_SHIFT;
-> +		adc =3D info->status[0] & MAX77693_STATUS1_ADC_MASK;
-> +		adc >>=3D MAX77693_STATUS1_ADC_SHIFT;
-> =20
->  		/*
->  		 * Check current cable state/cable type and store cable type
-> @@ -351,8 +352,8 @@ static int max77693_muic_get_cable_type(struct ma=
-x77693_muic_info *info,
->  		 * Read ADC value to check cable type and decide cable state
->  		 * according to cable type
->  		 */
-> -		adc =3D info->status[0] & STATUS1_ADC_MASK;
-> -		adc >>=3D STATUS1_ADC_SHIFT;
-> +		adc =3D info->status[0] & MAX77693_STATUS1_ADC_MASK;
-> +		adc >>=3D MAX77693_STATUS1_ADC_SHIFT;
-> =20
->  		/*
->  		 * Check current cable state/cable type and store cable type
-> @@ -367,13 +368,13 @@ static int max77693_muic_get_cable_type(struct =
-max77693_muic_info *info,
->  		} else {
->  			*attached =3D true;
-> =20
-> -			adclow =3D info->status[0] & STATUS1_ADCLOW_MASK;
-> -			adclow >>=3D STATUS1_ADCLOW_SHIFT;
-> -			adc1k =3D info->status[0] & STATUS1_ADC1K_MASK;
-> -			adc1k >>=3D STATUS1_ADC1K_SHIFT;
-> +			adclow =3D info->status[0] & MAX77693_STATUS1_ADCLOW_MASK;
-> +			adclow >>=3D MAX77693_STATUS1_ADCLOW_SHIFT;
-> +			adc1k =3D info->status[0] & MAX77693_STATUS1_ADC1K_MASK;
-> +			adc1k >>=3D MAX77693_STATUS1_ADC1K_SHIFT;
-> =20
-> -			vbvolt =3D info->status[1] & STATUS2_VBVOLT_MASK;
-> -			vbvolt >>=3D STATUS2_VBVOLT_SHIFT;
-> +			vbvolt =3D info->status[1] & MAX77693_STATUS2_VBVOLT_MASK;
-> +			vbvolt >>=3D MAX77693_STATUS2_VBVOLT_SHIFT;
-> =20
->  			/**
->  			 * [0x1|VBVolt|ADCLow|ADC1K]
-> @@ -398,8 +399,8 @@ static int max77693_muic_get_cable_type(struct ma=
-x77693_muic_info *info,
->  		 * Read charger type to check cable type and decide cable state
->  		 * according to type of charger cable.
->  		 */
-> -		chg_type =3D info->status[1] & STATUS2_CHGTYP_MASK;
-> -		chg_type >>=3D STATUS2_CHGTYP_SHIFT;
-> +		chg_type =3D info->status[1] & MAX77693_STATUS2_CHGTYP_MASK;
-> +		chg_type >>=3D MAX77693_STATUS2_CHGTYP_SHIFT;
-> =20
->  		if (chg_type =3D=3D MAX77693_CHARGER_TYPE_NONE) {
->  			*attached =3D false;
-> @@ -423,10 +424,10 @@ static int max77693_muic_get_cable_type(struct =
-max77693_muic_info *info,
->  		 * Read ADC value to check cable type and decide cable state
->  		 * according to cable type
->  		 */
-> -		adc =3D info->status[0] & STATUS1_ADC_MASK;
-> -		adc >>=3D STATUS1_ADC_SHIFT;
-> -		chg_type =3D info->status[1] & STATUS2_CHGTYP_MASK;
-> -		chg_type >>=3D STATUS2_CHGTYP_SHIFT;
-> +		adc =3D info->status[0] & MAX77693_STATUS1_ADC_MASK;
-> +		adc >>=3D MAX77693_STATUS1_ADC_SHIFT;
-> +		chg_type =3D info->status[1] & MAX77693_STATUS2_CHGTYP_MASK;
-> +		chg_type >>=3D MAX77693_STATUS2_CHGTYP_SHIFT;
-> =20
->  		if (adc =3D=3D MAX77693_MUIC_ADC_OPEN
->  				&& chg_type =3D=3D MAX77693_CHARGER_TYPE_NONE)
-> @@ -438,8 +439,8 @@ static int max77693_muic_get_cable_type(struct ma=
-x77693_muic_info *info,
->  		 * Read vbvolt field, if vbvolt is 1,
->  		 * this cable is used for charging.
->  		 */
-> -		vbvolt =3D info->status[1] & STATUS2_VBVOLT_MASK;
-> -		vbvolt >>=3D STATUS2_VBVOLT_SHIFT;
-> +		vbvolt =3D info->status[1] & MAX77693_STATUS2_VBVOLT_MASK;
-> +		vbvolt >>=3D MAX77693_STATUS2_VBVOLT_SHIFT;
-> =20
->  		cable_type =3D vbvolt;
->  		break;
-> @@ -521,7 +522,8 @@ static int max77693_muic_dock_handler(struct max7=
-7693_muic_info *info,
->  	}
-> =20
->  	/* Dock-Car/Desk/Audio, PATH:AUDIO */
-> -	ret =3D max77693_muic_set_path(info, CONTROL1_SW_AUDIO, attached);
-> +	ret =3D max77693_muic_set_path(info, MAX77693_CONTROL1_SW_AUDIO,
-> +					attached);
->  	if (ret < 0)
->  		return ret;
->  	extcon_set_cable_state_(info->edev, dock_id, attached);
-> @@ -586,14 +588,16 @@ static int max77693_muic_adc_ground_handler(str=
-uct max77693_muic_info *info)
->  	case MAX77693_MUIC_GND_USB_HOST:
->  	case MAX77693_MUIC_GND_USB_HOST_VB:
->  		/* USB_HOST, PATH: AP_USB */
-> -		ret =3D max77693_muic_set_path(info, CONTROL1_SW_USB, attached);
-> +		ret =3D max77693_muic_set_path(info, MAX77693_CONTROL1_SW_USB,
-> +						attached);
->  		if (ret < 0)
->  			return ret;
->  		extcon_set_cable_state_(info->edev, EXTCON_USB_HOST, attached);
->  		break;
->  	case MAX77693_MUIC_GND_AV_CABLE_LOAD:
->  		/* Audio Video Cable with load, PATH:AUDIO */
-> -		ret =3D max77693_muic_set_path(info, CONTROL1_SW_AUDIO, attached);
-> +		ret =3D max77693_muic_set_path(info, MAX77693_CONTROL1_SW_AUDIO,
-> +						attached);
->  		if (ret < 0)
->  			return ret;
->  		extcon_set_cable_state_(info->edev, EXTCON_USB, attached);
-> @@ -616,7 +620,7 @@ static int max77693_muic_jig_handler(struct max77=
-693_muic_info *info,
->  		int cable_type, bool attached)
->  {
->  	int ret =3D 0;
-> -	u8 path =3D CONTROL1_SW_OPEN;
-> +	u8 path =3D MAX77693_CONTROL1_SW_OPEN;
-> =20
->  	dev_info(info->dev,
->  		"external connector is %s (adc:0x%02x)\n",
-> @@ -626,12 +630,12 @@ static int max77693_muic_jig_handler(struct max=
-77693_muic_info *info,
->  	case MAX77693_MUIC_ADC_FACTORY_MODE_USB_OFF:	/* ADC_JIG_USB_OFF */
->  	case MAX77693_MUIC_ADC_FACTORY_MODE_USB_ON:	/* ADC_JIG_USB_ON */
->  		/* PATH:AP_USB */
-> -		path =3D CONTROL1_SW_USB;
-> +		path =3D MAX77693_CONTROL1_SW_USB;
->  		break;
->  	case MAX77693_MUIC_ADC_FACTORY_MODE_UART_OFF:	/* ADC_JIG_UART_OFF *=
-/
->  	case MAX77693_MUIC_ADC_FACTORY_MODE_UART_ON:	/* ADC_JIG_UART_ON */
->  		/* PATH:AP_UART */
-> -		path =3D CONTROL1_SW_UART;
-> +		path =3D MAX77693_CONTROL1_SW_UART;
->  		break;
->  	default:
->  		dev_err(info->dev, "failed to detect %s jig cable\n",
-> @@ -1181,12 +1185,12 @@ static int max77693_muic_probe(struct platfor=
-m_device *pdev)
->  		if (muic_pdata->path_uart)
->  			info->path_uart =3D muic_pdata->path_uart;
->  		else
-> -			info->path_uart =3D CONTROL1_SW_UART;
-> +			info->path_uart =3D MAX77693_CONTROL1_SW_UART;
-> =20
->  		if (muic_pdata->path_usb)
->  			info->path_usb =3D muic_pdata->path_usb;
->  		else
-> -			info->path_usb =3D CONTROL1_SW_USB;
-> +			info->path_usb =3D MAX77693_CONTROL1_SW_USB;
-> =20
->  		/*
->  		 * Default delay time for detecting cable state
-> @@ -1198,8 +1202,8 @@ static int max77693_muic_probe(struct platform_=
-device *pdev)
->  		else
->  			delay_jiffies =3D msecs_to_jiffies(DELAY_MS_DEFAULT);
->  	} else {
-> -		info->path_usb =3D CONTROL1_SW_USB;
-> -		info->path_uart =3D CONTROL1_SW_UART;
-> +		info->path_usb =3D MAX77693_CONTROL1_SW_USB;
-> +		info->path_uart =3D MAX77693_CONTROL1_SW_UART;
->  		delay_jiffies =3D msecs_to_jiffies(DELAY_MS_DEFAULT);
->  	}
-> =20
-> diff --git a/include/linux/mfd/max77693-private.h b/include/linux/mfd=
-/max77693-private.h
-> index 8c4143c0c651..3c7a63b98ad6 100644
-> --- a/include/linux/mfd/max77693-private.h
-> +++ b/include/linux/mfd/max77693-private.h
-> @@ -310,30 +310,30 @@ enum max77693_muic_reg {
->  #define INTMASK2_CHGTYP_MASK		(1 << INTMASK2_CHGTYP_SHIFT)
-> =20
->  /* MAX77693 MUIC - STATUS1~3 Register */
-> -#define STATUS1_ADC_SHIFT		(0)
-> -#define STATUS1_ADCLOW_SHIFT		(5)
-> -#define STATUS1_ADCERR_SHIFT		(6)
-> -#define STATUS1_ADC1K_SHIFT		(7)
-> -#define STATUS1_ADC_MASK		(0x1f << STATUS1_ADC_SHIFT)
-> -#define STATUS1_ADCLOW_MASK		(0x1 << STATUS1_ADCLOW_SHIFT)
-> -#define STATUS1_ADCERR_MASK		(0x1 << STATUS1_ADCERR_SHIFT)
-> -#define STATUS1_ADC1K_MASK		(0x1 << STATUS1_ADC1K_SHIFT)
-> -
-> -#define STATUS2_CHGTYP_SHIFT		(0)
-> -#define STATUS2_CHGDETRUN_SHIFT		(3)
-> -#define STATUS2_DCDTMR_SHIFT		(4)
-> -#define STATUS2_DXOVP_SHIFT		(5)
-> -#define STATUS2_VBVOLT_SHIFT		(6)
-> -#define STATUS2_VIDRM_SHIFT		(7)
-> -#define STATUS2_CHGTYP_MASK		(0x7 << STATUS2_CHGTYP_SHIFT)
-> -#define STATUS2_CHGDETRUN_MASK		(0x1 << STATUS2_CHGDETRUN_SHIFT)
-> -#define STATUS2_DCDTMR_MASK		(0x1 << STATUS2_DCDTMR_SHIFT)
-> -#define STATUS2_DXOVP_MASK		(0x1 << STATUS2_DXOVP_SHIFT)
-> -#define STATUS2_VBVOLT_MASK		(0x1 << STATUS2_VBVOLT_SHIFT)
-> -#define STATUS2_VIDRM_MASK		(0x1 << STATUS2_VIDRM_SHIFT)
-> -
-> -#define STATUS3_OVP_SHIFT		(2)
-> -#define STATUS3_OVP_MASK		(0x1 << STATUS3_OVP_SHIFT)
-> +#define MAX77693_STATUS1_ADC_SHIFT		0
-> +#define MAX77693_STATUS1_ADCLOW_SHIFT		5
-> +#define MAX77693_STATUS1_ADCERR_SHIFT		6
-> +#define MAX77693_STATUS1_ADC1K_SHIFT		7
-> +#define MAX77693_STATUS1_ADC_MASK		(0x1f << MAX77693_STATUS1_ADC_SHI=
-=46T)
-> +#define MAX77693_STATUS1_ADCLOW_MASK		BIT(MAX77693_STATUS1_ADCLOW_SH=
-IFT)
-> +#define MAX77693_STATUS1_ADCERR_MASK		BIT(MAX77693_STATUS1_ADCERR_SH=
-IFT)
-> +#define MAX77693_STATUS1_ADC1K_MASK		BIT(MAX77693_STATUS1_ADC1K_SHIF=
-T)
-> +
-> +#define MAX77693_STATUS2_CHGTYP_SHIFT		0
-> +#define MAX77693_STATUS2_CHGDETRUN_SHIFT	3
-> +#define MAX77693_STATUS2_DCDTMR_SHIFT		4
-> +#define MAX77693_STATUS2_DXOVP_SHIFT		5
-> +#define MAX77693_STATUS2_VBVOLT_SHIFT		6
-> +#define MAX77693_STATUS2_VIDRM_SHIFT		7
-> +#define MAX77693_STATUS2_CHGTYP_MASK		(0x7 << MAX77693_STATUS2_CHGTY=
-P_SHIFT)
-> +#define MAX77693_STATUS2_CHGDETRUN_MASK		BIT(MAX77693_STATUS2_CHGDET=
-RUN_SHIFT)
-> +#define MAX77693_STATUS2_DCDTMR_MASK		BIT(MAX77693_STATUS2_DCDTMR_SH=
-IFT)
-> +#define MAX77693_STATUS2_DXOVP_MASK		BIT(MAX77693_STATUS2_DXOVP_SHIF=
-T)
-> +#define MAX77693_STATUS2_VBVOLT_MASK		BIT(MAX77693_STATUS2_VBVOLT_SH=
-IFT)
-> +#define MAX77693_STATUS2_VIDRM_MASK		BIT(MAX77693_STATUS2_VIDRM_SHIF=
-T)
-> +
-> +#define MAX77693_STATUS3_OVP_SHIFT		2
-> +#define MAX77693_STATUS3_OVP_MASK		BIT(MAX77693_STATUS3_OVP_SHIFT)
-> =20
->  /* MAX77693 CDETCTRL1~2 register */
->  #define CDETCTRL1_CHGDETEN_SHIFT	(0)
-> @@ -362,38 +362,38 @@ enum max77693_muic_reg {
->  #define COMN1SW_MASK			(0x7 << COMN1SW_SHIFT)
->  #define COMP2SW_MASK			(0x7 << COMP2SW_SHIFT)
->  #define COMP_SW_MASK			(COMP2SW_MASK | COMN1SW_MASK)
-> -#define CONTROL1_SW_USB			((1 << COMP2SW_SHIFT) \
-> +#define MAX77693_CONTROL1_SW_USB	((1 << COMP2SW_SHIFT) \
->  						| (1 << COMN1SW_SHIFT))
-> -#define CONTROL1_SW_AUDIO		((2 << COMP2SW_SHIFT) \
-> +#define MAX77693_CONTROL1_SW_AUDIO	((2 << COMP2SW_SHIFT) \
->  						| (2 << COMN1SW_SHIFT))
-> -#define CONTROL1_SW_UART		((3 << COMP2SW_SHIFT) \
-> +#define MAX77693_CONTROL1_SW_UART	((3 << COMP2SW_SHIFT) \
->  						| (3 << COMN1SW_SHIFT))
-> -#define CONTROL1_SW_OPEN		((0 << COMP2SW_SHIFT) \
-> +#define MAX77693_CONTROL1_SW_OPEN	((0 << COMP2SW_SHIFT) \
->  						| (0 << COMN1SW_SHIFT))
-> =20
-> -#define CONTROL2_LOWPWR_SHIFT		(0)
-> -#define CONTROL2_ADCEN_SHIFT		(1)
-> -#define CONTROL2_CPEN_SHIFT		(2)
-> -#define CONTROL2_SFOUTASRT_SHIFT	(3)
-> -#define CONTROL2_SFOUTORD_SHIFT		(4)
-> -#define CONTROL2_ACCDET_SHIFT		(5)
-> -#define CONTROL2_USBCPINT_SHIFT		(6)
-> -#define CONTROL2_RCPS_SHIFT		(7)
-> -#define CONTROL2_LOWPWR_MASK		(0x1 << CONTROL2_LOWPWR_SHIFT)
-> -#define CONTROL2_ADCEN_MASK		(0x1 << CONTROL2_ADCEN_SHIFT)
-> -#define CONTROL2_CPEN_MASK		(0x1 << CONTROL2_CPEN_SHIFT)
-> -#define CONTROL2_SFOUTASRT_MASK		(0x1 << CONTROL2_SFOUTASRT_SHIFT)
-> -#define CONTROL2_SFOUTORD_MASK		(0x1 << CONTROL2_SFOUTORD_SHIFT)
-> -#define CONTROL2_ACCDET_MASK		(0x1 << CONTROL2_ACCDET_SHIFT)
-> -#define CONTROL2_USBCPINT_MASK		(0x1 << CONTROL2_USBCPINT_SHIFT)
-> -#define CONTROL2_RCPS_MASK		(0x1 << CONTROL2_RCPS_SHIFT)
-> -
-> -#define CONTROL3_JIGSET_SHIFT		(0)
-> -#define CONTROL3_BTLDSET_SHIFT		(2)
-> -#define CONTROL3_ADCDBSET_SHIFT		(4)
-> -#define CONTROL3_JIGSET_MASK		(0x3 << CONTROL3_JIGSET_SHIFT)
-> -#define CONTROL3_BTLDSET_MASK		(0x3 << CONTROL3_BTLDSET_SHIFT)
-> -#define CONTROL3_ADCDBSET_MASK		(0x3 << CONTROL3_ADCDBSET_SHIFT)
-> +#define MAX77693_CONTROL2_LOWPWR_SHIFT		0
-> +#define MAX77693_CONTROL2_ADCEN_SHIFT		1
-> +#define MAX77693_CONTROL2_CPEN_SHIFT		2
-> +#define MAX77693_CONTROL2_SFOUTASRT_SHIFT	3
-> +#define MAX77693_CONTROL2_SFOUTORD_SHIFT	4
-> +#define MAX77693_CONTROL2_ACCDET_SHIFT		5
-> +#define MAX77693_CONTROL2_USBCPINT_SHIFT	6
-> +#define MAX77693_CONTROL2_RCPS_SHIFT		7
-> +#define MAX77693_CONTROL2_LOWPWR_MASK		BIT(MAX77693_CONTROL2_LOWPWR_=
-SHIFT)
-> +#define MAX77693_CONTROL2_ADCEN_MASK		BIT(MAX77693_CONTROL2_ADCEN_SH=
-IFT)
-> +#define MAX77693_CONTROL2_CPEN_MASK		BIT(MAX77693_CONTROL2_CPEN_SHIF=
-T)
-> +#define MAX77693_CONTROL2_SFOUTASRT_MASK	BIT(MAX77693_CONTROL2_SFOUT=
-ASRT_SHIFT)
-> +#define MAX77693_CONTROL2_SFOUTORD_MASK		BIT(MAX77693_CONTROL2_SFOUT=
-ORD_SHIFT)
-> +#define MAX77693_CONTROL2_ACCDET_MASK		BIT(MAX77693_CONTROL2_ACCDET_=
-SHIFT)
-> +#define MAX77693_CONTROL2_USBCPINT_MASK		BIT(MAX77693_CONTROL2_USBCP=
-INT_SHIFT)
-> +#define MAX77693_CONTROL2_RCPS_MASK		BIT(MAX77693_CONTROL2_RCPS_SHIF=
-T)
-> +
-> +#define MAX77693_CONTROL3_JIGSET_SHIFT		0
-> +#define MAX77693_CONTROL3_BTLDSET_SHIFT		2
-> +#define MAX77693_CONTROL3_ADCDBSET_SHIFT	4
-> +#define MAX77693_CONTROL3_JIGSET_MASK		(0x3 << MAX77693_CONTROL3_JIG=
-SET_SHIFT)
-> +#define MAX77693_CONTROL3_BTLDSET_MASK		(0x3 << MAX77693_CONTROL3_BT=
-LDSET_SHIFT)
-> +#define MAX77693_CONTROL3_ADCDBSET_MASK		(0x3 << MAX77693_CONTROL3_A=
-DCDBSET_SHIFT)
-> =20
->  /* Slave addr =3D 0x90: Haptic */
->  enum max77693_haptic_reg {
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
