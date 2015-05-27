@@ -1,57 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] base: power : opp.c: fixed a typo error
-Date: Wed, 27 May 2015 07:50:16 +0530
-Message-ID: <CAOh2x=mu1gbAit8XR_nVOeYtBhnjMac+0qNXzQigtve_Dv8Z5A@mail.gmail.com>
-References: <1432665010-24464-1-git-send-email-dash.sriram@gmail.com>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH V2 3/6] power: mxs_power: add driver for mxs power subsystem
+Date: Wed, 27 May 2015 09:12:48 +0200
+Message-ID: <55656E70.6030906@i2se.com>
+References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com> <1430346747-28728-4-git-send-email-stefan.wahren@i2se.com> <20150523174149.GA16004@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1432665010-24464-1-git-send-email-dash.sriram@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sriram Dash <dash.sriram@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jiri Kosina <trivial@kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.17.13]:64743 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751211AbbE0HNq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2015 03:13:46 -0400
+In-Reply-To: <20150523174149.GA16004@earth>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Shawn Guo <shawn.guo@linaro.org>, Sascha Hauer <kernel@pengutronix.de>, Russell King <linux@arm.linux.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, fabio.estevam@freescale.com, sebastien.szymanski@armadeus.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On Wed, May 27, 2015 at 12:00 AM, Sriram Dash <dash.sriram@gmail.com> wrote:
-> From: dashsriram <dash.sriram@gmail.com>
->
-> Fixed a typo error in the file
->
-> Signed-off-by: Sriram Dash <dash.sriram@gmail.com>
-> ---
->  drivers/base/power/opp.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> index 677fb28..300941b 100644
-> --- a/drivers/base/power/opp.c
-> +++ b/drivers/base/power/opp.c
-> @@ -675,7 +675,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
->   * share a common logic which is isolated here.
->   *
->   * Return: -EINVAL for bad pointers, -ENOMEM if no memory available for the
-> - * copy operation, returns 0 if no modifcation was done OR modification was
-> + * copy operation, returns 0 if no modification was done OR modification was
->   * successful.
->   *
->   * Locking: The internal device_opp and opp structures are RCU protected.
-> @@ -763,7 +763,7 @@ unlock:
->   * mutex locking or synchronize_rcu() blocking calls cannot be used.
->   *
->   * Return: -EINVAL for bad pointers, -ENOMEM if no memory available for the
-> - * copy operation, returns 0 if no modifcation was done OR modification was
-> + * copy operation, returns 0 if no modification was done OR modification was
->   * successful.
->   */
->  int dev_pm_opp_enable(struct device *dev, unsigned long freq)
-> @@ -789,7 +789,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_enable);
->   * mutex locking or synchronize_rcu() blocking calls cannot be used.
->   *
->   * Return: -EINVAL for bad pointers, -ENOMEM if no memory available for the
-> - * copy operation, returns 0 if no modifcation was done OR modification was
-> + * copy operation, returns 0 if no modification was done OR modification was
->   * successful.
->   */
->  int dev_pm_opp_disable(struct device *dev, unsigned long freq)
+Hi Sebastian,
 
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+Am 23.05.2015 um 19:41 schrieb Sebastian Reichel:
+> Hi,
+>
+> On Wed, Apr 29, 2015 at 10:32:24PM +0000, Stefan Wahren wrote:
+>> This patch adds a minimal driver for the Freescale i.MX23, i.MX28
+>> power subsystem. It's required to trigger the probing of the underlying
+>> drivers like on-chip regulators.
+> I'm not sure what you need the power supply class for. I see only
+> one property (ac connected), which is constant. Maybe just drop
+> the power supply stuff?
+
+those SoCs could be powered by 3 different sources:
+- 5V wall
+- USB
+- battery
+
+I choose the first one as a base, because it's the simplest one.
+Unfortunately i don't have the time to implement all of them.
+
+The Freescale downstream kernel (based on 2.6.35) [1] has a driver to
+handle all MXS power sources. But i think a clean implementation from
+the scratch would be necessary for mainline.
+
+> This would leave an almost empty driver, which just sets a single
+> register at probe time and probes more drivers. That would probably
+> be more fitting for the MFD subsystem.
+
+I don't have any problems with fitting the driver to MFD.
+
+> -- Sebastian
+
+[1] -
+http://git.freescale.com/git/cgit.cgi/imx/linux-2.6-imx.git/tree/drivers/power/mxs/linux.c?h=imx_2.6.35_maintain
