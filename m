@@ -1,795 +1,203 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [RFC/PATCH V2] PM / Domains: Remove intermediate states from the power off sequence
-Date: Wed, 27 May 2015 16:10:44 +0200
-Message-ID: <1432735844-21629-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f171.google.com ([209.85.217.171]:34943 "EHLO
-	mail-lb0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbbE0OLL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2015 10:11:11 -0400
-Received: by lbbuc2 with SMTP id uc2so8167688lbb.2
-        for <linux-pm@vger.kernel.org>; Wed, 27 May 2015 07:11:09 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v3 1/5] Documentation: add DT binding for ARM System Control
+ and Power Interface(SCPI) protocol
+Date: Wed, 27 May 2015 15:52:37 +0100
+Message-ID: <5565DA35.8030902@arm.com>
+References: <1432720398-5701-1-git-send-email-sudeep.holla@arm.com> <1432720398-5701-2-git-send-email-sudeep.holla@arm.com> <20150527133700.GK8439@leverpostej>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150527133700.GK8439@leverpostej>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Liviu Dudau <Liviu.Dudau-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi-5wv7dgnIgG8@public.gmane.org>, "Jon Medhurst (Tixy)" <tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
 
-Genpd's ->runtime_suspend() (assigned to pm_genpd_runtime_suspend())
-doesn't immediately walk the hierarchy of ->runtime_suspend() callbacks.
-Instead, pm_genpd_runtime_suspend() calls pm_genpd_poweroff() which
-postpones that until *all* the devices in the genpd are runtime suspended.
+Hi Mark,
 
-When pm_genpd_poweroff() discovers that the last device in the genpd is
-about to be runtime suspended, it calls __pm_genpd_save_device() for *all*
-the devices in the genpd sequentially. Furthermore,
-__pm_genpd_save_device() invokes the ->start() callback, walks the
-hierarchy of the ->runtime_suspend() callbacks and invokes the ->stop()
-callback. This causes a "thundering herd" problem.
+Thanks for the review.
 
-Let's address this issue by having pm_genpd_runtime_suspend() immediately
-walk the hierarchy of the ->runtime_suspend() callbacks, instead of
-postponing that to the power off sequence via pm_genpd_poweroff(). If the
-selected ->runtime_suspend() callback doesn't return an error code, call
-pm_genpd_poweroff() to see if it's feasible to also power off the PM
-domain.
+On 27/05/15 14:37, Mark Rutland wrote:
+> On Wed, May 27, 2015 at 10:53:14AM +0100, Sudeep Holla wrote:
+>> This patch adds devicetree binding for System Control and Power
+>> Interface (SCPI) Message Protocol used between the Application Cores(AP)
+>> and the System Control Processor(SCP). The MHU peripheral provides a
+>> mechanism for inter-processor communication between SCP's M3 processor
+>> and AP.
+>>
+>> SCP offers control and management of the core/cluster power states,
+>> various power domain DVFS including the core/cluster, certain system
+>> clocks configuration, thermal sensors and many others.
+>>
+>> Signed-off-by: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+>> Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>> Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+>> CC: Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+>> Cc: Liviu Dudau <Liviu.Dudau-5wv7dgnIgG8@public.gmane.org>
+>> Cc: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+>> Cc: Jon Medhurst (Tixy) <tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>> ---
+>>   Documentation/devicetree/bindings/arm/arm,scpi.txt | 121 +++++++++++++++++++++
+>>   1 file changed, 121 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/arm/arm,scpi.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/arm/arm,scpi.txt b/Documentation/devicetree/bindings/arm/arm,scpi.txt
+>> new file mode 100644
+>> index 000000000000..5db235f69e54
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/arm/arm,scpi.txt
+>> @@ -0,0 +1,121 @@
+>> +System Control and Power Interface (SCPI) Message Protocol
+>> +----------------------------------------------------------
+>
+> Could we refer to the documentation for SCPI similarly to what we do
+> in the PSCI binding (i.e. give the document number and title so people
+> can search for it)?
+>
 
-Adopting this change enables us to simplify parts of the code in genpd,
-for example the locking mechanism. Additionally, it gives some positive
-side effects, as described below.
+Yes that's the plan but was waiting for a stable URL(currently it's not
+in ARM Infocenter and simple google search for document/title doesn't
+seem to work). For now I will include the URL too and may be remove or
+fix it in future.
 
-i)
-One device's ->runtime_resume() latency is no longer affected by other
-devices' latencies in a genpd.
+>> +
+>> +Required properties:
+>> +
+>> +- compatible : should be "arm,scpi"
+>> +- mboxes: List of phandle and mailbox channel specifiers
+>
+> How many, in which order, and what are they used for?
+>
 
-The complexity genpd has to support the option to abort the power off
-sequence suffers from latency issues. More precisely, a device that is
-requested to be runtime resumed, may end up waiting for
-__pm_genpd_save_device() to complete its operations for *another* device.
-That's because pm_genpd_poweroff() can't confirm an abort request while it
-waits for __pm_genpd_save_device() to return.
+Ok will update.
 
-As this patch removes the intermediate states in pm_genpd_poweroff() while
-powering off the PM domain, we no longer need the ability to abort that
-sequence.
+>> +- shmem : List of phandle pointing to the shared memory(SHM) area between the
+>> +	  processors using these mailboxes for IPC, one for each mailbox
+>
+> When you say "shared memory", what exactly are we referring to? It looks
+> like we refer to SRAM areas?
+>
 
-ii)
-Make pm_runtime[_status]_suspended() reliable when used with genpd.
+It can be any memory reserved for the purpose of this communication via
+MHU between the Application Processors and the remote System Control
+Processor. On most platforms with MHU it happens to be SRAM like in Juno
+and Fijitsu MB86S7X
 
-Until the last device in a genpd becomes idle, pm_genpd_runtime_suspend()
-will return 0 without actually walking the hierarchy of the
-->runtime_suspend() callbacks. However, by returning 0 the runtime PM core
-considers the device as runtime_suspended, so
-pm_runtime[_status]_suspended() will return true, even though the device
-isn't (yet) runtime suspended.
+>> +
+>> +See Documentation/devicetree/bindings/mailbox/mailbox.txt
+>> +for more details about the generic mailbox controller and
+>> +client driver bindings.
+>> +
+>> +Clock bindings for the clocks based on SCPI Message Protocol
+>> +------------------------------------------------------------
+>> +
+>> +This binding uses the common clock binding[1].
+>> +
+>> +Required properties:
+>> +- compatible : shall be one of the following:
+>
+> Nit: s/be/include/
+>
+>> +	"arm,scpi-clocks" - for the container node with all the clocks
+>> +		based on the SCPI protocol
+>
+> Please separate this from the description of its sub-nodes (e.g. have a
+> sub-nodes heading under "arm,scpi-clocks").
+>
 
-After this patch, since pm_genpd_runtime_suspend() immediately walks the
-hierarchy of the ->runtime_suspend() callbacks,
-pm_runtime[_status]_suspended() will accurately reflect the status of the
-device.
+OK, I will update.
 
-iii)
-Enable fine-grained PM through runtime PM callbacks in drivers/subsystems.
+> Is there any reason to have this container if we're only going to place
+> the two clock controllers described below within it? Can't we just place
+> them directly under the SCPI node?
+>
 
-There are currently cases were drivers/subsystems implements runtime PM
-callbacks to deploy fine-grained PM (e.g. gate clocks, move pinctrl to
-power-save state, etc.). While using the genpd, pm_genpd_runtime_suspend()
-postpones invoking these callbacks until *all* the devices in the genpd
-are runtime suspended. In essence, one runtime resumed device prevents
-fine-grained PM for other devices within the same genpd.
+SCP also supports power domains, sensors and other misc features. I
+wanted to avoid parsing through all the nodes in the clock driver once
+they are added. Is that not recommended ?
 
-After this patch, since pm_genpd_runtime_suspend() immediately walks the
-hierarchy of the ->runtime_suspend() callbacks, fine-grained PM is enabled
-throughout all the levels of runtime PM callbacks.
+>> +	"arm,scpi-dvfs" - all the clocks that are variable and index based.
+>> +		These clocks don't provide the full range between the limits
+>> +		but only discrete points within the range. The firmware
+>> +		provides the mapping for each such operating frequency and the
+>> +		index associated with it. The firmware also manages the
+>> +		voltage scaling appropriately with the clock scaling.
+>
+> Could this be "arm,scpi-dvfs-clocks"?
+>
+>> +	"arm,scpi-clk" - all the clocks that are variable and provide full
+>> +		range within the specified range. The firmware provides the
+>> +		supported range for each clock.
+>
+> Likewise "arm,scpi-variable-clocks"?
+>
+> Using "arm,scpi-clk" makes it sound like there's a single clock output.
+>
+>> +
+>> +Required properties for all clocks(all from common clock binding):
+>> +- #clock-cells : should be set to 1 as each of the SCPI clocks have multiple
+>> +	outputs. The clock specifier will be the index to an entry in the list
+>> +	of output clocks.
+>> +- clock-output-names : shall be the corresponding names of the outputs.
+>> +- clock-indices: The identifyng number for the clocks(clock_id) in the node as
+>> +	expected by the firmware. It can be non linear and hence provide the
+>> +	mapping	of identifiers into the clock-output-names array.
+>> +
+>> +[1] Documentation/devicetree/bindings/clock/clock-bindings.txt
+>> +
+>> +Example:
+>> +
+>> +sram: sram@50000000 {
+>> +	compatible = "arm,juno-sram-ns", "mmio-sram";
+>
+> Nit: undocumented compatible string.
+>
+>> +	reg = <0x0 0x50000000 0x0 0x10000>;
+>> +
+>> +	#address-cells = <1>;
+>> +	#size-cells = <1>;
+>> +	ranges = <0 0x0 0x50000000 0x10000>;
+>> +
+>> +	cpu_scp_lpri: scp-shmem@0 {
+>> +		compatible = "arm,juno-scp-shmem";
+>
+> Nit: undocumented compatible string.
+>
 
-Unfortunately this patch also comes with a drawback, as described in the
-summary below.
+Will fix all the above compatible strings and add missing document.
 
-Driver's/subsystem's runtime PM callbacks may be invoked even when the
-genpd hasn't actually powered off the PM domain, potentially introducing
-unnecessary latency.
+[...]
 
-However, in most cases, saving/restoring register contexts for devices are
-typically fast operations or can be optimized in device specific ways
-(e.g. shadow copies of register contents in memory, device-specific checks
-to see if context has been lost before restoring context, etc.).
+>> +cpu@0 {
+>> +	...
+>> +	reg = <0 0>;
+>> +	clocks = <&scpi_dvfs 0>;
+>> +	clock-names = "big";
+>
+> This isn't documented anywhere, and I can't see any code in this series
+> using it. The Juno dts doesn't seem to have CPU clocks, and nothing in
+> this series adds them -- have I missed a series?
+>
 
-Still, in some cases the driver/subsystem may suffer from latency if
-runtime PM is used in a very fine-grained manner (e.g. for each IO request
-or xfer). To prevent that extra overhead, the driver/subsystem may deploy
-the runtime PM autosuspend feature.
+No, you didn't miss anything, I didn't post the DTS changes to avoid
+churn when the binding is still under discussion, will post in the next
+version.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
+> Also, I'm not keen on using software-defined names (e.g. "big") for CPU
+> clocks, as it doesn't stictly relate to the hardware. That said, the set
+> of clocks, their names, and how they related to CPUs is
+> implementation-specific, which is somewhat painful. I'm not sure how
+> we cater for that with generic software.
+>
 
-Changes in v2:
-	Updated the changelog and the commit message header.
-	Header for v1 was "PM / Domains: Minimize latencies by not delaying
-	save/restore".
+Sorry for the confusion, it should be "vbig" in the above example. These
+names are derived from the SCPI document and yes it may vary with platforms.
 
----
- drivers/base/power/domain.c | 345 +++++++-------------------------------------
- include/linux/pm_domain.h   |   7 -
- 2 files changed, 52 insertions(+), 300 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 2327613..72c7e09 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -133,41 +133,6 @@ static void genpd_sd_counter_inc(struct generic_pm_domain *genpd)
- 	smp_mb__after_atomic();
- }
- 
--static void genpd_acquire_lock(struct generic_pm_domain *genpd)
--{
--	DEFINE_WAIT(wait);
--
--	mutex_lock(&genpd->lock);
--	/*
--	 * Wait for the domain to transition into either the active,
--	 * or the power off state.
--	 */
--	for (;;) {
--		prepare_to_wait(&genpd->status_wait_queue, &wait,
--				TASK_UNINTERRUPTIBLE);
--		if (genpd->status == GPD_STATE_ACTIVE
--		    || genpd->status == GPD_STATE_POWER_OFF)
--			break;
--		mutex_unlock(&genpd->lock);
--
--		schedule();
--
--		mutex_lock(&genpd->lock);
--	}
--	finish_wait(&genpd->status_wait_queue, &wait);
--}
--
--static void genpd_release_lock(struct generic_pm_domain *genpd)
--{
--	mutex_unlock(&genpd->lock);
--}
--
--static void genpd_set_active(struct generic_pm_domain *genpd)
--{
--	if (genpd->resume_count == 0)
--		genpd->status = GPD_STATE_ACTIVE;
--}
--
- static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
- {
- 	s64 usecs64;
-@@ -242,35 +207,14 @@ static int genpd_power_off(struct generic_pm_domain *genpd)
-  * resume a device belonging to it.
-  */
- static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
--	__releases(&genpd->lock) __acquires(&genpd->lock)
- {
- 	struct gpd_link *link;
--	DEFINE_WAIT(wait);
- 	int ret = 0;
- 
--	/* If the domain's master is being waited for, we have to wait too. */
--	for (;;) {
--		prepare_to_wait(&genpd->status_wait_queue, &wait,
--				TASK_UNINTERRUPTIBLE);
--		if (genpd->status != GPD_STATE_WAIT_MASTER)
--			break;
--		mutex_unlock(&genpd->lock);
--
--		schedule();
--
--		mutex_lock(&genpd->lock);
--	}
--	finish_wait(&genpd->status_wait_queue, &wait);
--
- 	if (genpd->status == GPD_STATE_ACTIVE
- 	    || (genpd->prepared_count > 0 && genpd->suspend_power_off))
- 		return 0;
- 
--	if (genpd->status != GPD_STATE_POWER_OFF) {
--		genpd_set_active(genpd);
--		return 0;
--	}
--
- 	if (genpd->cpuidle_data) {
- 		cpuidle_pause_and_lock();
- 		genpd->cpuidle_data->idle_state->disabled = true;
-@@ -285,20 +229,8 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
- 	 */
- 	list_for_each_entry(link, &genpd->slave_links, slave_node) {
- 		genpd_sd_counter_inc(link->master);
--		genpd->status = GPD_STATE_WAIT_MASTER;
--
--		mutex_unlock(&genpd->lock);
- 
- 		ret = pm_genpd_poweron(link->master);
--
--		mutex_lock(&genpd->lock);
--
--		/*
--		 * The "wait for parent" status is guaranteed not to change
--		 * while the master is powering on.
--		 */
--		genpd->status = GPD_STATE_POWER_OFF;
--		wake_up_all(&genpd->status_wait_queue);
- 		if (ret) {
- 			genpd_sd_counter_dec(link->master);
- 			goto err;
-@@ -310,14 +242,15 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
- 		goto err;
- 
-  out:
--	genpd_set_active(genpd);
--
-+	genpd->status = GPD_STATE_ACTIVE;
- 	return 0;
- 
-  err:
- 	list_for_each_entry_continue_reverse(link, &genpd->slave_links, slave_node)
- 		genpd_sd_counter_dec(link->master);
- 
-+	/* In case we powered on a master, try to power it off again. */
-+	pm_genpd_poweroff_unused();
- 	return ret;
- }
- 
-@@ -407,89 +340,6 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
- }
- 
- /**
-- * __pm_genpd_save_device - Save the pre-suspend state of a device.
-- * @pdd: Domain data of the device to save the state of.
-- * @genpd: PM domain the device belongs to.
-- */
--static int __pm_genpd_save_device(struct pm_domain_data *pdd,
--				  struct generic_pm_domain *genpd)
--	__releases(&genpd->lock) __acquires(&genpd->lock)
--{
--	struct generic_pm_domain_data *gpd_data = to_gpd_data(pdd);
--	struct device *dev = pdd->dev;
--	int ret = 0;
--
--	if (gpd_data->need_restore > 0)
--		return 0;
--
--	/*
--	 * If the value of the need_restore flag is still unknown at this point,
--	 * we trust that pm_genpd_poweroff() has verified that the device is
--	 * already runtime PM suspended.
--	 */
--	if (gpd_data->need_restore < 0) {
--		gpd_data->need_restore = 1;
--		return 0;
--	}
--
--	mutex_unlock(&genpd->lock);
--
--	genpd_start_dev(genpd, dev);
--	ret = genpd_save_dev(genpd, dev);
--	genpd_stop_dev(genpd, dev);
--
--	mutex_lock(&genpd->lock);
--
--	if (!ret)
--		gpd_data->need_restore = 1;
--
--	return ret;
--}
--
--/**
-- * __pm_genpd_restore_device - Restore the pre-suspend state of a device.
-- * @pdd: Domain data of the device to restore the state of.
-- * @genpd: PM domain the device belongs to.
-- */
--static void __pm_genpd_restore_device(struct pm_domain_data *pdd,
--				      struct generic_pm_domain *genpd)
--	__releases(&genpd->lock) __acquires(&genpd->lock)
--{
--	struct generic_pm_domain_data *gpd_data = to_gpd_data(pdd);
--	struct device *dev = pdd->dev;
--	int need_restore = gpd_data->need_restore;
--
--	gpd_data->need_restore = 0;
--	mutex_unlock(&genpd->lock);
--
--	genpd_start_dev(genpd, dev);
--
--	/*
--	 * Call genpd_restore_dev() for recently added devices too (need_restore
--	 * is negative then).
--	 */
--	if (need_restore)
--		genpd_restore_dev(genpd, dev);
--
--	mutex_lock(&genpd->lock);
--}
--
--/**
-- * genpd_abort_poweroff - Check if a PM domain power off should be aborted.
-- * @genpd: PM domain to check.
-- *
-- * Return true if a PM domain's status changed to GPD_STATE_ACTIVE during
-- * a "power off" operation, which means that a "power on" has occured in the
-- * meantime, or if its resume_count field is different from zero, which means
-- * that one of its devices has been resumed in the meantime.
-- */
--static bool genpd_abort_poweroff(struct generic_pm_domain *genpd)
--{
--	return genpd->status == GPD_STATE_WAIT_MASTER
--		|| genpd->status == GPD_STATE_ACTIVE || genpd->resume_count > 0;
--}
--
--/**
-  * genpd_queue_power_off_work - Queue up the execution of pm_genpd_poweroff().
-  * @genpd: PM domait to power off.
-  *
-@@ -506,34 +356,27 @@ static void genpd_queue_power_off_work(struct generic_pm_domain *genpd)
-  * @genpd: PM domain to power down.
-  *
-  * If all of the @genpd's devices have been suspended and all of its subdomains
-- * have been powered down, run the runtime suspend callbacks provided by all of
-- * the @genpd's devices' drivers and remove power from @genpd.
-+ * have been powered down, remove power from @genpd.
-  */
- static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
--	__releases(&genpd->lock) __acquires(&genpd->lock)
- {
- 	struct pm_domain_data *pdd;
- 	struct gpd_link *link;
--	unsigned int not_suspended;
--	int ret = 0;
-+	unsigned int not_suspended = 0;
- 
-- start:
- 	/*
- 	 * Do not try to power off the domain in the following situations:
- 	 * (1) The domain is already in the "power off" state.
- 	 * (2) The domain is waiting for its master to power up.
--	 * (3) One of the domain's devices is being resumed right now.
--	 * (4) System suspend is in progress.
-+	 * (3) System suspend is in progress.
- 	 */
- 	if (genpd->status == GPD_STATE_POWER_OFF
--	    || genpd->status == GPD_STATE_WAIT_MASTER
--	    || genpd->resume_count > 0 || genpd->prepared_count > 0)
-+	    || genpd->prepared_count > 0)
- 		return 0;
- 
- 	if (atomic_read(&genpd->sd_count) > 0)
- 		return -EBUSY;
- 
--	not_suspended = 0;
- 	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
- 		enum pm_qos_flags_status stat;
- 
-@@ -551,41 +394,11 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 	if (not_suspended > genpd->in_progress)
- 		return -EBUSY;
- 
--	if (genpd->poweroff_task) {
--		/*
--		 * Another instance of pm_genpd_poweroff() is executing
--		 * callbacks, so tell it to start over and return.
--		 */
--		genpd->status = GPD_STATE_REPEAT;
--		return 0;
--	}
--
- 	if (genpd->gov && genpd->gov->power_down_ok) {
- 		if (!genpd->gov->power_down_ok(&genpd->domain))
- 			return -EAGAIN;
- 	}
- 
--	genpd->status = GPD_STATE_BUSY;
--	genpd->poweroff_task = current;
--
--	list_for_each_entry_reverse(pdd, &genpd->dev_list, list_node) {
--		ret = atomic_read(&genpd->sd_count) == 0 ?
--			__pm_genpd_save_device(pdd, genpd) : -EBUSY;
--
--		if (genpd_abort_poweroff(genpd))
--			goto out;
--
--		if (ret) {
--			genpd_set_active(genpd);
--			goto out;
--		}
--
--		if (genpd->status == GPD_STATE_REPEAT) {
--			genpd->poweroff_task = NULL;
--			goto start;
--		}
--	}
--
- 	if (genpd->cpuidle_data) {
- 		/*
- 		 * If cpuidle_data is set, cpuidle should turn the domain off
-@@ -598,14 +411,14 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 		cpuidle_pause_and_lock();
- 		genpd->cpuidle_data->idle_state->disabled = false;
- 		cpuidle_resume_and_unlock();
--		goto out;
-+		return 0;
- 	}
- 
- 	if (genpd->power_off) {
--		if (atomic_read(&genpd->sd_count) > 0) {
--			ret = -EBUSY;
--			goto out;
--		}
-+		int ret;
-+
-+		if (atomic_read(&genpd->sd_count) > 0)
-+			return -EBUSY;
- 
- 		/*
- 		 * If sd_count > 0 at this point, one of the subdomains hasn't
-@@ -616,10 +429,8 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 		 * happen very often).
- 		 */
- 		ret = genpd_power_off(genpd);
--		if (ret == -EBUSY) {
--			genpd_set_active(genpd);
--			goto out;
--		}
-+		if (ret)
-+			return ret;
- 	}
- 
- 	genpd->status = GPD_STATE_POWER_OFF;
-@@ -629,10 +440,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 		genpd_queue_power_off_work(link->master);
- 	}
- 
-- out:
--	genpd->poweroff_task = NULL;
--	wake_up_all(&genpd->status_wait_queue);
--	return ret;
-+	return 0;
- }
- 
- /**
-@@ -645,9 +453,9 @@ static void genpd_power_off_work_fn(struct work_struct *work)
- 
- 	genpd = container_of(work, struct generic_pm_domain, power_off_work);
- 
--	genpd_acquire_lock(genpd);
-+	mutex_lock(&genpd->lock);
- 	pm_genpd_poweroff(genpd);
--	genpd_release_lock(genpd);
-+	mutex_unlock(&genpd->lock);
- }
- 
- /**
-@@ -661,7 +469,6 @@ static void genpd_power_off_work_fn(struct work_struct *work)
- static int pm_genpd_runtime_suspend(struct device *dev)
- {
- 	struct generic_pm_domain *genpd;
--	struct generic_pm_domain_data *gpd_data;
- 	bool (*stop_ok)(struct device *__dev);
- 	int ret;
- 
-@@ -671,32 +478,29 @@ static int pm_genpd_runtime_suspend(struct device *dev)
- 	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
-+	/*
-+	 * We can't allow to power off the PM domain if it holds an irq_safe
-+	 * device. That's because we use mutexes to protect data while power
-+	 * off and on the PM domain, thus we can't execute in atomic context.
-+	 */
-+	if (dev->power.irq_safe)
-+		return -EBUSY;
-+
- 	stop_ok = genpd->gov ? genpd->gov->stop_ok : NULL;
- 	if (stop_ok && !stop_ok(dev))
- 		return -EBUSY;
- 
--	ret = genpd_stop_dev(genpd, dev);
-+	ret = genpd_save_dev(genpd, dev);
- 	if (ret)
- 		return ret;
- 
--	/*
--	 * If power.irq_safe is set, this routine will be run with interrupts
--	 * off, so it can't use mutexes.
--	 */
--	if (dev->power.irq_safe)
--		return 0;
-+	ret = genpd_stop_dev(genpd, dev);
-+	if (ret) {
-+		genpd_restore_dev(genpd, dev);
-+		return ret;
-+	}
- 
- 	mutex_lock(&genpd->lock);
--
--	/*
--	 * If we have an unknown state of the need_restore flag, it means none
--	 * of the runtime PM callbacks has been invoked yet. Let's update the
--	 * flag to reflect that the current state is active.
--	 */
--	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
--	if (gpd_data->need_restore < 0)
--		gpd_data->need_restore = 0;
--
- 	genpd->in_progress++;
- 	pm_genpd_poweroff(genpd);
- 	genpd->in_progress--;
-@@ -716,7 +520,6 @@ static int pm_genpd_runtime_suspend(struct device *dev)
- static int pm_genpd_runtime_resume(struct device *dev)
- {
- 	struct generic_pm_domain *genpd;
--	DEFINE_WAIT(wait);
- 	int ret;
- 
- 	dev_dbg(dev, "%s()\n", __func__);
-@@ -731,34 +534,13 @@ static int pm_genpd_runtime_resume(struct device *dev)
- 
- 	mutex_lock(&genpd->lock);
- 	ret = __pm_genpd_poweron(genpd);
--	if (ret) {
--		mutex_unlock(&genpd->lock);
--		return ret;
--	}
--	genpd->status = GPD_STATE_BUSY;
--	genpd->resume_count++;
--	for (;;) {
--		prepare_to_wait(&genpd->status_wait_queue, &wait,
--				TASK_UNINTERRUPTIBLE);
--		/*
--		 * If current is the powering off task, we have been called
--		 * reentrantly from one of the device callbacks, so we should
--		 * not wait.
--		 */
--		if (!genpd->poweroff_task || genpd->poweroff_task == current)
--			break;
--		mutex_unlock(&genpd->lock);
-+	mutex_unlock(&genpd->lock);
- 
--		schedule();
-+	if (ret)
-+		return ret;
- 
--		mutex_lock(&genpd->lock);
--	}
--	finish_wait(&genpd->status_wait_queue, &wait);
--	__pm_genpd_restore_device(dev->power.subsys_data->domain_data, genpd);
--	genpd->resume_count--;
--	genpd_set_active(genpd);
--	wake_up_all(&genpd->status_wait_queue);
--	mutex_unlock(&genpd->lock);
-+	genpd_start_dev(genpd, dev);
-+	genpd_restore_dev(genpd, dev);
- 
- 	return 0;
- }
-@@ -870,7 +652,7 @@ static void pm_genpd_sync_poweron(struct generic_pm_domain *genpd)
- {
- 	struct gpd_link *link;
- 
--	if (genpd->status != GPD_STATE_POWER_OFF)
-+	if (genpd->status == GPD_STATE_ACTIVE)
- 		return;
- 
- 	list_for_each_entry(link, &genpd->slave_links, slave_node) {
-@@ -947,14 +729,14 @@ static int pm_genpd_prepare(struct device *dev)
- 	if (resume_needed(dev, genpd))
- 		pm_runtime_resume(dev);
- 
--	genpd_acquire_lock(genpd);
-+	mutex_lock(&genpd->lock);
- 
- 	if (genpd->prepared_count++ == 0) {
- 		genpd->suspended_count = 0;
- 		genpd->suspend_power_off = genpd->status == GPD_STATE_POWER_OFF;
- 	}
- 
--	genpd_release_lock(genpd);
-+	mutex_unlock(&genpd->lock);
- 
- 	if (genpd->suspend_power_off) {
- 		pm_runtime_put_noidle(dev);
-@@ -1427,7 +1209,6 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
- 		gpd_data->td = *td;
- 
- 	gpd_data->base.dev = dev;
--	gpd_data->need_restore = -1;
- 	gpd_data->td.constraint_changed = true;
- 	gpd_data->td.effective_constraint_ns = -1;
- 	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
-@@ -1489,7 +1270,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
- 	if (IS_ERR(gpd_data))
- 		return PTR_ERR(gpd_data);
- 
--	genpd_acquire_lock(genpd);
-+	mutex_lock(&genpd->lock);
- 
- 	if (genpd->prepared_count > 0) {
- 		ret = -EAGAIN;
-@@ -1506,7 +1287,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
- 	list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
- 
-  out:
--	genpd_release_lock(genpd);
-+	mutex_unlock(&genpd->lock);
- 
- 	if (ret)
- 		genpd_free_dev_data(dev, gpd_data);
-@@ -1550,7 +1331,7 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
- 	gpd_data = to_gpd_data(pdd);
- 	dev_pm_qos_remove_notifier(dev, &gpd_data->nb);
- 
--	genpd_acquire_lock(genpd);
-+	mutex_lock(&genpd->lock);
- 
- 	if (genpd->prepared_count > 0) {
- 		ret = -EAGAIN;
-@@ -1565,14 +1346,14 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
- 
- 	list_del_init(&pdd->list_node);
- 
--	genpd_release_lock(genpd);
-+	mutex_unlock(&genpd->lock);
- 
- 	genpd_free_dev_data(dev, gpd_data);
- 
- 	return 0;
- 
-  out:
--	genpd_release_lock(genpd);
-+	mutex_unlock(&genpd->lock);
- 	dev_pm_qos_add_notifier(dev, &gpd_data->nb);
- 
- 	return ret;
-@@ -1593,17 +1374,9 @@ int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
- 	    || genpd == subdomain)
- 		return -EINVAL;
- 
-- start:
--	genpd_acquire_lock(genpd);
-+	mutex_lock(&genpd->lock);
- 	mutex_lock_nested(&subdomain->lock, SINGLE_DEPTH_NESTING);
- 
--	if (subdomain->status != GPD_STATE_POWER_OFF
--	    && subdomain->status != GPD_STATE_ACTIVE) {
--		mutex_unlock(&subdomain->lock);
--		genpd_release_lock(genpd);
--		goto start;
--	}
--
- 	if (genpd->status == GPD_STATE_POWER_OFF
- 	    &&  subdomain->status != GPD_STATE_POWER_OFF) {
- 		ret = -EINVAL;
-@@ -1631,7 +1404,7 @@ int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
- 
-  out:
- 	mutex_unlock(&subdomain->lock);
--	genpd_release_lock(genpd);
-+	mutex_unlock(&genpd->lock);
- 
- 	return ret;
- }
-@@ -1679,8 +1452,7 @@ int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- 	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(subdomain))
- 		return -EINVAL;
- 
-- start:
--	genpd_acquire_lock(genpd);
-+	mutex_lock(&genpd->lock);
- 
- 	list_for_each_entry(link, &genpd->master_links, master_node) {
- 		if (link->slave != subdomain)
-@@ -1688,13 +1460,6 @@ int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- 
- 		mutex_lock_nested(&subdomain->lock, SINGLE_DEPTH_NESTING);
- 
--		if (subdomain->status != GPD_STATE_POWER_OFF
--		    && subdomain->status != GPD_STATE_ACTIVE) {
--			mutex_unlock(&subdomain->lock);
--			genpd_release_lock(genpd);
--			goto start;
--		}
--
- 		list_del(&link->master_node);
- 		list_del(&link->slave_node);
- 		kfree(link);
-@@ -1707,7 +1472,7 @@ int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- 		break;
- 	}
- 
--	genpd_release_lock(genpd);
-+	mutex_unlock(&genpd->lock);
- 
- 	return ret;
- }
-@@ -1731,7 +1496,7 @@ int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state)
- 	if (IS_ERR_OR_NULL(genpd) || state < 0)
- 		return -EINVAL;
- 
--	genpd_acquire_lock(genpd);
-+	mutex_lock(&genpd->lock);
- 
- 	if (genpd->cpuidle_data) {
- 		ret = -EEXIST;
-@@ -1762,7 +1527,7 @@ int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state)
- 	genpd_recalc_cpu_exit_latency(genpd);
- 
-  out:
--	genpd_release_lock(genpd);
-+	mutex_unlock(&genpd->lock);
- 	return ret;
- 
-  err:
-@@ -1799,7 +1564,7 @@ int pm_genpd_detach_cpuidle(struct generic_pm_domain *genpd)
- 	if (IS_ERR_OR_NULL(genpd))
- 		return -EINVAL;
- 
--	genpd_acquire_lock(genpd);
-+	mutex_lock(&genpd->lock);
- 
- 	cpuidle_data = genpd->cpuidle_data;
- 	if (!cpuidle_data) {
-@@ -1817,7 +1582,7 @@ int pm_genpd_detach_cpuidle(struct generic_pm_domain *genpd)
- 	kfree(cpuidle_data);
- 
-  out:
--	genpd_release_lock(genpd);
-+	mutex_unlock(&genpd->lock);
- 	return ret;
- }
- 
-@@ -1899,9 +1664,6 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
- 	genpd->in_progress = 0;
- 	atomic_set(&genpd->sd_count, 0);
- 	genpd->status = is_off ? GPD_STATE_POWER_OFF : GPD_STATE_ACTIVE;
--	init_waitqueue_head(&genpd->status_wait_queue);
--	genpd->poweroff_task = NULL;
--	genpd->resume_count = 0;
- 	genpd->device_count = 0;
- 	genpd->max_off_time_ns = -1;
- 	genpd->max_off_time_changed = true;
-@@ -2274,9 +2036,6 @@ static int pm_genpd_summary_one(struct seq_file *s,
- {
- 	static const char * const status_lookup[] = {
- 		[GPD_STATE_ACTIVE] = "on",
--		[GPD_STATE_WAIT_MASTER] = "wait-master",
--		[GPD_STATE_BUSY] = "busy",
--		[GPD_STATE_REPEAT] = "off-in-progress",
- 		[GPD_STATE_POWER_OFF] = "off"
- 	};
- 	struct pm_domain_data *pm_data;
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 681ccb0..b2725e6 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -22,9 +22,6 @@
- 
- enum gpd_status {
- 	GPD_STATE_ACTIVE = 0,	/* PM domain is active */
--	GPD_STATE_WAIT_MASTER,	/* PM domain's master is being waited for */
--	GPD_STATE_BUSY,		/* Something is happening to the PM domain */
--	GPD_STATE_REPEAT,	/* Power off in progress, to be repeated */
- 	GPD_STATE_POWER_OFF,	/* PM domain is off */
- };
- 
-@@ -59,9 +56,6 @@ struct generic_pm_domain {
- 	unsigned int in_progress;	/* Number of devices being suspended now */
- 	atomic_t sd_count;	/* Number of subdomains with power "on" */
- 	enum gpd_status status;	/* Current state of the domain */
--	wait_queue_head_t status_wait_queue;
--	struct task_struct *poweroff_task;	/* Powering off task */
--	unsigned int resume_count;	/* Number of devices being resumed */
- 	unsigned int device_count;	/* Number of devices */
- 	unsigned int suspended_count;	/* System suspend device counter */
- 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
-@@ -113,7 +107,6 @@ struct generic_pm_domain_data {
- 	struct pm_domain_data base;
- 	struct gpd_timing_data td;
- 	struct notifier_block nb;
--	int need_restore;
- };
- 
- #ifdef CONFIG_PM_GENERIC_DOMAINS
--- 
-1.9.1
-
+Regards,
+Sudeep
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
