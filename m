@@ -1,203 +1,132 @@
-From: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v3 1/5] Documentation: add DT binding for ARM System Control
- and Power Interface(SCPI) protocol
-Date: Wed, 27 May 2015 15:52:37 +0100
-Message-ID: <5565DA35.8030902@arm.com>
-References: <1432720398-5701-1-git-send-email-sudeep.holla@arm.com> <1432720398-5701-2-git-send-email-sudeep.holla@arm.com> <20150527133700.GK8439@leverpostej>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [PATCH v5 2/6] ACPI: Make ACPI processor driver more extensible
+Date: Wed, 27 May 2015 15:22:03 +0000
+Message-ID: <1432740011.11262.288.camel@spandruv-DESK3.jf.intel.com>
+References: <1432590659-9016-1-git-send-email-ashwin.chaugule@linaro.org>
+	 <1432675261.11262.276.camel@spandruv-DESK3.jf.intel.com>
+	 <CAJ5Y-eYdH76TGTGnVK6ShmdBqFFin7=Ty9V6Sb+J3qtj8Bsuag@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150527133700.GK8439@leverpostej>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Liviu Dudau <Liviu.Dudau-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi-5wv7dgnIgG8@public.gmane.org>, "Jon Medhurst (Tixy)" <tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:4322 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751600AbbE0PWF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 27 May 2015 11:22:05 -0400
+In-Reply-To: <CAJ5Y-eYdH76TGTGnVK6ShmdBqFFin7=Ty9V6Sb+J3qtj8Bsuag@mail.gmail.com>
+Content-Language: en-US
+Content-ID: <B624FD9DC42B744CA36B6DE866A585C6@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "ashwin.chaugule@linaro.org" <ashwin.chaugule@linaro.org>
+Cc: "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "sudeep.holla@arm.com" <sudeep.holla@arm.com>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>
 
-Hi Mark,
-
-Thanks for the review.
-
-On 27/05/15 14:37, Mark Rutland wrote:
-> On Wed, May 27, 2015 at 10:53:14AM +0100, Sudeep Holla wrote:
->> This patch adds devicetree binding for System Control and Power
->> Interface (SCPI) Message Protocol used between the Application Cores(AP)
->> and the System Control Processor(SCP). The MHU peripheral provides a
->> mechanism for inter-processor communication between SCP's M3 processor
->> and AP.
->>
->> SCP offers control and management of the core/cluster power states,
->> various power domain DVFS including the core/cluster, certain system
->> clocks configuration, thermal sensors and many others.
->>
->> Signed-off-by: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
->> Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->> Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
->> CC: Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
->> Cc: Liviu Dudau <Liviu.Dudau-5wv7dgnIgG8@public.gmane.org>
->> Cc: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
->> Cc: Jon Medhurst (Tixy) <tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->> ---
->>   Documentation/devicetree/bindings/arm/arm,scpi.txt | 121 +++++++++++++++++++++
->>   1 file changed, 121 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/arm/arm,scpi.txt
->>
->> diff --git a/Documentation/devicetree/bindings/arm/arm,scpi.txt b/Documentation/devicetree/bindings/arm/arm,scpi.txt
->> new file mode 100644
->> index 000000000000..5db235f69e54
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/arm/arm,scpi.txt
->> @@ -0,0 +1,121 @@
->> +System Control and Power Interface (SCPI) Message Protocol
->> +----------------------------------------------------------
->
-> Could we refer to the documentation for SCPI similarly to what we do
-> in the PSCI binding (i.e. give the document number and title so people
-> can search for it)?
->
-
-Yes that's the plan but was waiting for a stable URL(currently it's not
-in ARM Infocenter and simple google search for document/title doesn't
-seem to work). For now I will include the URL too and may be remove or
-fix it in future.
-
->> +
->> +Required properties:
->> +
->> +- compatible : should be "arm,scpi"
->> +- mboxes: List of phandle and mailbox channel specifiers
->
-> How many, in which order, and what are they used for?
->
-
-Ok will update.
-
->> +- shmem : List of phandle pointing to the shared memory(SHM) area between the
->> +	  processors using these mailboxes for IPC, one for each mailbox
->
-> When you say "shared memory", what exactly are we referring to? It looks
-> like we refer to SRAM areas?
->
-
-It can be any memory reserved for the purpose of this communication via
-MHU between the Application Processors and the remote System Control
-Processor. On most platforms with MHU it happens to be SRAM like in Juno
-and Fijitsu MB86S7X
-
->> +
->> +See Documentation/devicetree/bindings/mailbox/mailbox.txt
->> +for more details about the generic mailbox controller and
->> +client driver bindings.
->> +
->> +Clock bindings for the clocks based on SCPI Message Protocol
->> +------------------------------------------------------------
->> +
->> +This binding uses the common clock binding[1].
->> +
->> +Required properties:
->> +- compatible : shall be one of the following:
->
-> Nit: s/be/include/
->
->> +	"arm,scpi-clocks" - for the container node with all the clocks
->> +		based on the SCPI protocol
->
-> Please separate this from the description of its sub-nodes (e.g. have a
-> sub-nodes heading under "arm,scpi-clocks").
->
-
-OK, I will update.
-
-> Is there any reason to have this container if we're only going to place
-> the two clock controllers described below within it? Can't we just place
-> them directly under the SCPI node?
->
-
-SCP also supports power domains, sensors and other misc features. I
-wanted to avoid parsing through all the nodes in the clock driver once
-they are added. Is that not recommended ?
-
->> +	"arm,scpi-dvfs" - all the clocks that are variable and index based.
->> +		These clocks don't provide the full range between the limits
->> +		but only discrete points within the range. The firmware
->> +		provides the mapping for each such operating frequency and the
->> +		index associated with it. The firmware also manages the
->> +		voltage scaling appropriately with the clock scaling.
->
-> Could this be "arm,scpi-dvfs-clocks"?
->
->> +	"arm,scpi-clk" - all the clocks that are variable and provide full
->> +		range within the specified range. The firmware provides the
->> +		supported range for each clock.
->
-> Likewise "arm,scpi-variable-clocks"?
->
-> Using "arm,scpi-clk" makes it sound like there's a single clock output.
->
->> +
->> +Required properties for all clocks(all from common clock binding):
->> +- #clock-cells : should be set to 1 as each of the SCPI clocks have multiple
->> +	outputs. The clock specifier will be the index to an entry in the list
->> +	of output clocks.
->> +- clock-output-names : shall be the corresponding names of the outputs.
->> +- clock-indices: The identifyng number for the clocks(clock_id) in the node as
->> +	expected by the firmware. It can be non linear and hence provide the
->> +	mapping	of identifiers into the clock-output-names array.
->> +
->> +[1] Documentation/devicetree/bindings/clock/clock-bindings.txt
->> +
->> +Example:
->> +
->> +sram: sram@50000000 {
->> +	compatible = "arm,juno-sram-ns", "mmio-sram";
->
-> Nit: undocumented compatible string.
->
->> +	reg = <0x0 0x50000000 0x0 0x10000>;
->> +
->> +	#address-cells = <1>;
->> +	#size-cells = <1>;
->> +	ranges = <0 0x0 0x50000000 0x10000>;
->> +
->> +	cpu_scp_lpri: scp-shmem@0 {
->> +		compatible = "arm,juno-scp-shmem";
->
-> Nit: undocumented compatible string.
->
-
-Will fix all the above compatible strings and add missing document.
-
-[...]
-
->> +cpu@0 {
->> +	...
->> +	reg = <0 0>;
->> +	clocks = <&scpi_dvfs 0>;
->> +	clock-names = "big";
->
-> This isn't documented anywhere, and I can't see any code in this series
-> using it. The Juno dts doesn't seem to have CPU clocks, and nothing in
-> this series adds them -- have I missed a series?
->
-
-No, you didn't miss anything, I didn't post the DTS changes to avoid
-churn when the binding is still under discussion, will post in the next
-version.
-
-> Also, I'm not keen on using software-defined names (e.g. "big") for CPU
-> clocks, as it doesn't stictly relate to the hardware. That said, the set
-> of clocks, their names, and how they related to CPUs is
-> implementation-specific, which is somewhat painful. I'm not sure how
-> we cater for that with generic software.
->
-
-Sorry for the confusion, it should be "vbig" in the above example. These
-names are derived from the SCPI document and yes it may vary with platforms.
-
-Regards,
-Sudeep
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+T24gV2VkLCAyMDE1LTA1LTI3IGF0IDEwOjA1IC0wNDAwLCBBc2h3aW4gQ2hhdWd1bGUgd3JvdGU6
+DQo+IE9uIDI2IE1heSAyMDE1IGF0IDE3OjIyLCBQYW5kcnV2YWRhLCBTcmluaXZhcw0KPiA8c3Jp
+bml2YXMucGFuZHJ1dmFkYUBpbnRlbC5jb20+IHdyb3RlOg0KPiA+IE9uIE1vbiwgMjAxNS0wNS0y
+NSBhdCAxNzo1MCAtMDQwMCwgQXNod2luIENoYXVndWxlIHdyb3RlOg0KPiA+PiBUaGUgQUNQSSBw
+cm9jZXNzb3IgZHJpdmVyIGlzIGN1cnJlbnRseSB0aWVkIHRvbyBjbG9zZWx5DQo+ID4+IHRvIHRo
+ZSBBQ1BJIEMtc3RhdGVzIChDU1QpLCBQLXN0YXRlcyAoUFNTKSBhbmQgb3RoZXIgcmVsYXRlZA0K
+PiA+PiBjb25zdHJ1Y3RzIGZvciBjb250cm9sbGluZyBDUFUgaWRsZSBhbmQgQ1BVIHBlcmZvcm1h
+bmNlLg0KPiA+Pg0KPiA+PiBUaGUgbmV3ZXIgQUNQSSBzcGVjaWZpY2F0aW9uICh2NS4xIG9ud2Fy
+ZHMpIGludHJvZHVjZXMNCj4gPj4gYWx0ZXJuYXRpdmUgbWV0aG9kcyB0byBDU1QgYW5kIFBTUy4g
+VGhlc2UgbmV3IG1lY2hhbmlzbXMNCj4gPj4gYXJlIGRlc2NyaWJlZCB3aXRoaW4gZWFjaCBBQ1BJ
+IFByb2Nlc3NvciBvYmplY3QgYW5kIHNvIHRoZXkNCj4gPj4gbmVlZCB0byBiZSBzY2FubmVkIHdo
+ZW5ldmVyIGEgbmV3IFByb2Nlc3NvciBvYmplY3QgaXMgZGV0ZWN0ZWQuDQo+ID4+IFRoaXMgcGF0
+Y2ggaW50cm9kdWNlcyB0d28gbmV3IEtjb25maWcgc3ltYm9scyB0byBhbGxvdyBmb3INCj4gPj4g
+ZmluZXIgY29uZmlndXJhYmlsaXR5IGFtb25nIHRoZSB2YXJpb3VzIG9wdGlvbnMgZm9yIGNvbnRy
+b2xsaW5nDQo+ID4+IENQVSBpZGxlIGFuZCBwZXJmb3JtYW5jZSBzdGF0ZXMuIFRoZXJlIGlzIG5v
+IGNoYW5nZSBpbiBmdW5jdGlvbmFsaXR5DQo+ID4+IGFuZCB0aGVzZSBvcHRpb25zIGFyZSBkZWZh
+dWx0ZWQgdG8gZW5hYmxlZCB0byBtYWludGFpbiBwcmV2aW91cw0KPiA+PiBiZWhhdmlvdXIuDQo+
+ID4+DQo+ID4+IFRoZSBmb2xsb3dpbmcgcGF0Y2h3b3JrIGludHJvZHVjZXMgQ1BQQzogQSBuZXdl
+ciBtZXRob2Qgb2YNCj4gPj4gY29udHJvbGxpbmcgQ1BVIHBlcmZvcm1hbmNlLiBUaGUgT1MgaXMg
+bm90IGV4cGVjdGVkIHRvIHN1cHBvcnQgQ1BQQw0KPiA+PiBhbmQgUFNTIGF0IHJ1bnRpbWUuIFNv
+IHRoZSBrY29uZmlnIG9wdGlvbiBsZXRzIHVzIG1ha2UgdGhlc2UgdHdvDQo+ID4+IG11dHVhbGx5
+IGV4Y2x1c2l2ZSBhdCBjb21waWxlIHRpbWUuDQo+ID4+DQo+ID4+IFNpZ25lZC1vZmYtYnk6IEFz
+aHdpbiBDaGF1Z3VsZSA8YXNod2luLmNoYXVndWxlQGxpbmFyby5vcmc+DQo+ID4+IC0tLQ0KPiA+
+PiAgZHJpdmVycy9hY3BpL0tjb25maWcgICAgICAgICAgICB8ICA0MSArKysrKysrKysrKy0tLS0N
+Cj4gPj4gIGRyaXZlcnMvYWNwaS9NYWtlZmlsZSAgICAgICAgICAgfCAgIDcgKy0tDQo+ID4+ICBk
+cml2ZXJzL2FjcGkvcHJvY2Vzc29yX2RyaXZlci5jIHwgIDg1ICsrKysrKysrKysrKysrKysrKysr
+LS0tLS0tLS0tLS0NCj4gPj4gIGRyaXZlcnMvY3B1ZnJlcS9LY29uZmlnICAgICAgICAgfCAgIDIg
+Ky0NCj4gPj4gIGRyaXZlcnMvY3B1ZnJlcS9LY29uZmlnLng4NiAgICAgfCAgIDIgKw0KPiA+PiAg
+aW5jbHVkZS9hY3BpL3Byb2Nlc3Nvci5oICAgICAgICB8IDEwOSArKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrLS0tLS0tDQo+ID4+ICA2IGZpbGVzIGNoYW5nZWQsIDE4NyBpbnNlcnRp
+b25zKCspLCA1OSBkZWxldGlvbnMoLSkNCj4gPj4NCj4gPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
+YWNwaS9LY29uZmlnIGIvZHJpdmVycy9hY3BpL0tjb25maWcNCj4gPj4gaW5kZXggYWIyY2JiNS4u
+ZDk4ZDMwNCAxMDA2NDQNCj4gPj4gLS0tIGEvZHJpdmVycy9hY3BpL0tjb25maWcNCj4gPj4gKysr
+IGIvZHJpdmVycy9hY3BpL0tjb25maWcNCj4gPj4gQEAgLTE2MywyMyArMTYzLDQyIEBAIGNvbmZp
+ZyBBQ1BJX0ZBTg0KPiA+PiAgY29uZmlnIEFDUElfRE9DSw0KPiA+PiAgICAgICBib29sICJEb2Nr
+Ig0KPiA+PiAgICAgICBoZWxwDQo+ID4+IC0gICAgICAgVGhpcyBkcml2ZXIgc3VwcG9ydHMgQUNQ
+SS1jb250cm9sbGVkIGRvY2tpbmcgc3RhdGlvbnMgYW5kIHJlbW92YWJsZQ0KPiA+PiAtICAgICAg
+IGRyaXZlIGJheXMgc3VjaCBhcyB0aGUgSUJNIFVsdHJhYmF5IGFuZCB0aGUgRGVsbCBNb2R1bGUg
+QmF5Lg0KPiA+PiArICAgICBUaGlzIGRyaXZlciBzdXBwb3J0cyBBQ1BJLWNvbnRyb2xsZWQgZG9j
+a2luZyBzdGF0aW9ucyBhbmQgcmVtb3ZhYmxlDQo+ID4+ICsgICAgIGRyaXZlIGJheXMgc3VjaCBh
+cyB0aGUgSUJNIFVsdHJhYmF5IGFuZCB0aGUgRGVsbCBNb2R1bGUgQmF5Lg0KPiA+PiArDQo+ID4g
+VG8gYmUgY29uc2lzdGVudCBhbGlnbiBoZWxwIHRleHQgdG8gbGV0dGVyICJsIiBvZiBoZWxwLg0K
+PiANCj4gT2suDQo+IA0KPiA+IEFsc28gY2hlY2twYXRjaCBlcnJvcnMgaW4gdGhpcyBmaWxlLg0K
+PiANCj4gQXJnLiBJIHJhbiBjaGVja3BhdGNoIGZpcnN0LCB0aGVuIG1hZGUgbW9yZSBtb2RzIGFu
+ZCBmb3Jnb3QgdG8gcnVuIGl0DQo+IGFnYWluLiBXaWxsIG1ha2Ugc3VyZSBpdHMgZG9uZSBiZWZv
+cmUgc2VuZGluZyBvdXQgdGhlIGZpbmFsIHZlcnNpb24uDQo+IA0KPiA+PiAtc3RhdGljIGludCBf
+X2FjcGlfcHJvY2Vzc29yX3N0YXJ0KHN0cnVjdCBhY3BpX2RldmljZSAqZGV2aWNlKQ0KPiA+PiAr
+I2lmZGVmIENPTkZJR19BQ1BJX1BTUw0KPiA+PiArc3RhdGljIGludCBhY3BpX3Bzc19pbml0KHN0
+cnVjdCBhY3BpX3Byb2Nlc3NvciAqcHIsIHN0cnVjdCBhY3BpX2RldmljZSAqZGV2aWNlKQ0KPiA+
+PiAgew0KPiA+IFRoaXMgbmFtZSBzb3VuZHMgdG8gbWUgdGhhdCBpdCBpdCBpbml0aWFsaXppbmcg
+c29tZXRoaW5nIHRvIGRvIHdpdGggX1BTUw0KPiA+IG9ubHkuIEJ1dCB0aGlzIGZ1bmN0aW9uIGRv
+ZXMgbW9yZSB0aGFuIHRoYXQuIExpa2UgaGFuZGxpbmcgcHBjIGNoYW5nZQ0KPiA+IGFuZCBhbHNv
+IHRoZXJtYWwgY2RldiByZWdpc3Rlci4gQ2FuIHdlIGhhdmUgc29tZSBiZXR0ZXIgbmFtZT8NCj4g
+Pg0KPiANCj4gVHJ1ZS4gSSBjb3VsZG4ndCByZWFsbHkgY29tZSB1cCB3aXRoIGFueXRoaW5nIGJl
+dHRlci4gRnJvbSB0aGUgd2F5DQo+IHRoaXMgdGhpbmcgd2FzIHN0cnVjdHVyZWQgb3JpZ2luYWxs
+eSwgZXZlcnl0aGluZyBzZWVtcyBsaW5rZWQgdG8gUFNTDQo+IG9uZSB3YXkgb3IgYW5vdGhlci4g
+KGluY2x1ZGluZyBDU1MgYmFzZWQgaWRsZSkuDQo+IA0KPiBIb3cgYWJvdXQgYWNwaV9sZWdhY3lf
+cGVyZl9pbml0KCkgPw0KSXQgaXMgbm90IHJlYWxseSBsZWdhY3kgaGVyZS4gSWYgeW91IGxpa2Ug
+YWNwaV9wc3NfcGVyZl9pbml0KCkuLg0KPiANCj4gPj4gLSAgICAgc3RydWN0IGFjcGlfcHJvY2Vz
+c29yICpwciA9IGFjcGlfZHJpdmVyX2RhdGEoZGV2aWNlKTsNCj4gPj4gLSAgICAgYWNwaV9zdGF0
+dXMgc3RhdHVzOw0KPiA+PiAgICAgICBpbnQgcmVzdWx0ID0gMDsNCj4gPj4NCj4gPj4gLSAgICAg
+aWYgKCFwcikNCj4gPj4gLSAgICAgICAgICAgICByZXR1cm4gLUVOT0RFVjsNCj4gPj4gLQ0KPiA+
+PiAtICAgICBpZiAocHItPmZsYWdzLm5lZWRfaG90cGx1Z19pbml0KQ0KPiA+PiAtICAgICAgICAg
+ICAgIHJldHVybiAwOw0KPiA+PiAtDQo+ID4+IC0jaWZkZWYgQ09ORklHX0NQVV9GUkVRDQo+ID4+
+ICAgICAgIGFjcGlfcHJvY2Vzc29yX3BwY19oYXNfY2hhbmdlZChwciwgMCk7DQo+ID4+IC0jZW5k
+aWYNCj4gPj4gKw0KPiA+PiAgICAgICBhY3BpX3Byb2Nlc3Nvcl9nZXRfdGhyb3R0bGluZ19pbmZv
+KHByKTsNCj4gPiBXaGVuIENQUEMgaXMgcHJlc2VudCwgeW91IGRvbid0IG5lZWQgc3VwcG9ydCBm
+b3IgX1BUQywgX1RTUyBhbmQgX1RQQz8NCj4gDQo+IE5vcGUuDQo+IA0KPiAtLS0tODwtLS0tDQo+
+IDguNC43LjEuMTAgUmVsYXRpb25zaGlwIHRvIG90aGVyIEFDUEktZGVmaW5lZCBPYmplY3RzIGFu
+ZCBOb3RpZmljYXRpb25zDQo+IElmIF9DUEMgaXMgcHJlc2VudCwgaXRzIHVzZSBzdXBlcnNlZGVz
+IHRoZSB1c2Ugb2YgdGhlIGZvbGxvd2luZw0KPiBleGlzdGluZyBBQ1BJIG9iamVjdHM6DQo+IOKA
+oiBUaGUgUF9CTEsgUF9DTlQgcmVnaXN0ZXINCj4g4oCiIF9QVEMNCj4g4oCiIF9UU1MNCj4g4oCi
+IF9UUEMNCj4g4oCiIF9UU0QNCj4g4oCiIF9UREwNCj4g4oCiIF9QQ1QNCj4g4oCiIF9QU1MNCj4g
+4oCiIF9QUEMNCj4g4oCiIF9QREwNCj4g4oCiIE5vdGlmeSAweDgwIG9uIHRoZSBwcm9jZXNzb3Ig
+ZGV2aWNlDQo+IOKAoiBOb3RpZnkgMHg4MiBvbiB0aGUgcHJvY2Vzc29yIGRldmljZQ0KPiBUaGUg
+X1BTRCBvYmplY3QgbWF5IGJlIHVzZWQgdG8gc3BlY2lmeSBkb21haW4gZGVwZW5kZW5jaWVzIGJl
+dHdlZW4NCj4gcHJvY2Vzc29ycy4gT24gYSBzeXN0ZW0NCj4gd2l0aCBoZXRlcm9nZW5lb3VzIHBy
+b2Nlc3NvcnMsIGFsbCBwcm9jZXNzb3JzIHdpdGhpbiBhIHNpbmdsZSBkb21haW4NCj4gbXVzdCBo
+YXZlIHRoZSBzYW1lDQo+IHBlcmZvcm1hbmNlIGNhcGFiaWxpdGllcy4NCj4gDQo+IC0tLS04PC0t
+LS0NCj4gDQo+ID4NCj4gPj4NCj4gPj4gICAgICAgaWYgKHByLT5mbGFncy50aHJvdHRsaW5nKQ0K
+PiA+PiAgICAgICAgICAgICAgIHByLT5mbGFncy5saW1pdCA9IDE7DQo+ID4+DQo+ID4+IC0gICAg
+IGlmICghY3B1aWRsZV9nZXRfZHJpdmVyKCkgfHwgY3B1aWRsZV9nZXRfZHJpdmVyKCkgPT0gJmFj
+cGlfaWRsZV9kcml2ZXIpDQo+ID4+IC0gICAgICAgICAgICAgYWNwaV9wcm9jZXNzb3JfcG93ZXJf
+aW5pdChwcik7DQo+ID4+IC0NCj4gPj4gICAgICAgcHItPmNkZXYgPSB0aGVybWFsX2Nvb2xpbmdf
+ZGV2aWNlX3JlZ2lzdGVyKCJQcm9jZXNzb3IiLCBkZXZpY2UsDQo+ID4+ICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAmcHJvY2Vzc29yX2Nvb2xpbmdfb3Bz
+KTsNCj4gPj4gICAgICAgaWYgKElTX0VSUihwci0+Y2RldikpIHsNCj4gPj4gICAgICAgICAgICAg
+ICByZXN1bHQgPSBQVFJfRVJSKHByLT5jZGV2KTsNCj4gPj4gLSAgICAgICAgICAgICBnb3RvIGVy
+cl9wb3dlcl9leGl0Ow0KPiA+PiArICAgICAgICAgICAgIHJldHVybiByZXN1bHQ7DQo+ID4+ICAg
+ICAgIH0NCj4gPiBEb24ndCB5b3UgbmVlZCB0aGlzIHRoZXJtYWxfIGNhbGwgZm9yIHdoZW4gY29u
+dHJvbGxpbmcgdmlhIENQUEM/DQo+ID4gSSB0aGluayB5b3Ugc2hvdWxkIG1vdmUgdG8gY29tbW9u
+IHN0YXJ0IGZ1bmN0aW9uLg0KPiANCj4gSSdkIHByZWZlciB0byBrZWVwIHRoZXJtYWwgc3R1ZmYg
+b3V0c2lkZSBvZiBDUFBDIGZvciBub3cuIEV2ZXJ5b25lDQo+IEkndmUgZGlzY3Vzc2VkIHdpdGgg
+aW4gdGhlIEFSTTY0IHNlcnZlciBzcGFjZSBwbGFucyB0byBoYW5kbGUgdGhlcm1hbA0KPiBpbmRl
+cGVuZGVudGx5IG9uIGEgcmVtb3RlIHByb2Nlc3Nvci4gSWYgdGhhdCBjaGFuZ2VzLCB0aGVuIHdl
+J2xsIGNvbWUNCj4gYmFjayB0byB0aGlzLiBBbnl3YXksIGFzIGl0IGlzIHRvZGF5LCB0aGUgdGhl
+cm1hbCBzdHVmZiBpbiBBQ1BJDQo+IGRlcGVuZHMgb24gVFNTLCB3aGljaCB3aWxsIG5lZWQgY2hh
+bmdlcyBmb3IgQ1BQQy4NCk9uIHg4NiB0aGUgY29vbGluZyBkZXZpY2UgcmVnaXN0ZXIgY29udGFp
+biBwYXJ0cywgb25lIGRlcGVuZHMgb24gVFNTIGFuZA0KKHN0YXRlIDQtMTApIGFuZCAwIC0gMyBh
+cmUganVzdCBwZXJmb3JtYW5jZSBzdGF0ZXMsIHdoaWNoIHVzZXMgY3B1ZnJlcQ0KY2FsbHMgdG8g
+aXJyZXNwZWN0aXZlIG9mIHVuZGVybHlpbmcgbWVjaGFuaXNtICh0aGV5IHRyYW5zbGF0ZSB0bw0K
+d2hhdGV2ZXIgbWVjaGFuaXNtIGxpa2UgSW50ZWwgUCBTdGF0ZSBvciBBQ1BJIGNwdWZyZXEgb3Ig
+YW55dGhpbmcgZWxzZSkuDQpCdXQgaGVyZSBzaW5jZSB0aGVybWFsIGNvb2xpbmcgZGV2aWNlIGlz
+IG5vdCBkZXNpcmVkLCBzbyBJIGFtIGZpbmUuDQo+IA0KPiA+DQo+ID4gSSBmZWVsIHRoYXQgYWxs
+IHRoZSBvbGQgZnVuY3Rpb24gZGlkIHdhcyByZWxldmFudCB0byBDUFBDIHN1cHBvcnQgYWxzby4N
+Cj4gPiBleGNlcHQgUFBDIGNoYW5nZS4gU28geW91IG1heSBqdXN0IG5lZWQgdG8gYWRkIGNhbGwg
+dG8NCj4gPiBhY3BpX2NwcGNfcHJvY2Vzc29yX3Byb2JlKCkgZm9yIENQUEMgc3VwcG9ydC4NCj4g
+Pg0KPiANCj4gSSBob3BlIHRoZSBhYm92ZSBleHBsYWlucyB0aGlzLg0KPiANCj4gVGhhbmtzLA0K
+PiBBc2h3aW4uDQoNCg==
