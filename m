@@ -1,173 +1,62 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle: Do not use CPUIDLE_DRIVER_STATE_START in cpuidle.c
-Date: Wed, 27 May 2015 21:49:54 +0530
-Message-ID: <5565EEAA.8010900@linux.vnet.ibm.com>
-References: <5494512.JcUbNX5Mxs@vostro.rjw.lan> <5565AB09.8090802@linux.vnet.ibm.com>	<5565B7D7.3000308@linaro.org> <CAJZ5v0hn__7KRqOTpBYAk8EfV28xD54G0MaetaJ6HH5uUE3wQw@mail.gmail.com>
+From: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Subject: Re: [PATCH V2 3/6] power: mxs_power: add driver for mxs power subsystem
+Date: Wed, 27 May 2015 18:34:01 +0200
+Message-ID: <5565F1F9.2010801@i2se.com>
+References: <1430346747-28728-1-git-send-email-stefan.wahren@i2se.com> <1430346747-28728-4-git-send-email-stefan.wahren@i2se.com> <20150523174149.GA16004@earth> <55656E70.6030906@i2se.com> <20150527135150.GA9205@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e33.co.us.ibm.com ([32.97.110.151]:59662 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbbE0QUF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2015 12:20:05 -0400
-Received: from /spool/local
-	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Wed, 27 May 2015 10:20:05 -0600
-In-Reply-To: <CAJZ5v0hn__7KRqOTpBYAk8EfV28xD54G0MaetaJ6HH5uUE3wQw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150527135150.GA9205@earth>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Shawn Guo <shawn.guo-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, fabio.estevam-KZfg59tc24xl57MIdRCFDg@public.gmane.org, sebastien.szymanski-d2DlULPkwbNWk0Htik3J/w@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>
 
-On 05/27/2015 07:27 PM, Rafael J. Wysocki wrote:
-> On Wed, May 27, 2015 at 2:25 PM, Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
->> On 05/27/2015 01:31 PM, Preeti U Murthy wrote:
->>>
->>> On 05/27/2015 07:06 AM, Rafael J. Wysocki wrote:
->>>>
->>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>>
->>>> The CPUIDLE_DRIVER_STATE_START symbol is defined as 1 only if
->>>> CONFIG_ARCH_HAS_CPU_RELAX is set, otherwise it is defined as 0.
->>>> However, if CONFIG_ARCH_HAS_CPU_RELAX is set, the first (index 0)
->>>> entry in the cpuidle driver's table of states is overwritten with
->>>> the default "poll" entry by the core.  The "state" defined by the
->>>> "poll" entry doesn't provide ->enter_dead and ->enter_freeze
->>>> callbacks and its exit_latency is 0.
->>>>
->>>> For this reason, it is not necessary to use CPUIDLE_DRIVER_STATE_START
->>>> in cpuidle_play_dead() (->enter_dead is NULL, so the "poll state"
->>>> will be skipped by the loop) and in find_deepest_state() (since
->>>> exit_latency is 0, the "poll state" will become the default if the
->>>> "s->exit_latency <= latency_req" check is replaced with
->>>> "s->exit_latency < latency_req" which may only matter for drivers
->>>> providing different states with the same exit_latency).
->>>>
->>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>> ---
->>>>   drivers/cpuidle/cpuidle.c |    8 ++++----
->>>>   1 file changed, 4 insertions(+), 4 deletions(-)
->>>
->>> <snip>
->>>
->>>>
->>>> @@ -79,13 +79,13 @@ static int find_deepest_state(struct cpu
->>>>                               bool freeze)
->>>>   {
->>>>         unsigned int latency_req = 0;
->>>> -       int i, ret = freeze ? -1 : CPUIDLE_DRIVER_STATE_START - 1;
->>>> +       int i, ret = -ENXIO;
->>>>
->>>> -       for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
->>>> +       for (i = 0; i < drv->state_count; i++) {
->>>>                 struct cpuidle_state *s = &drv->states[i];
->>>>                 struct cpuidle_state_usage *su = &dev->states_usage[i];
->>>>
->>>> -               if (s->disabled || su->disable || s->exit_latency <=
->>>> latency_req
->>>> +               if (s->disabled || su->disable || s->exit_latency <
->>>> latency_req
->>>
->>>
->>> Prior to this patch,
->>>
->>> For drivers on which CPUIDLE_DRIVER_STATE_START takes a value 0 and
->>> whose first idle state has an exit_latency of 0, find_deepest_state()
->>> would return -1 if it failed to find a deeper idle state.
->>> But as an effect of this patch, find_deepest_state() returns 0 in the
->>> above circumstance.
+Hi Sebastian,
+
+Am 27.05.2015 um 15:51 schrieb Sebastian Reichel:
+> Hi Stefan,
+>
+> On Wed, May 27, 2015 at 09:12:48AM +0200, Stefan Wahren wrote:
+>> Am 23.05.2015 um 19:41 schrieb Sebastian Reichel:
+>>> On Wed, Apr 29, 2015 at 10:32:24PM +0000, Stefan Wahren wrote:
+>>>> This patch adds a minimal driver for the Freescale i.MX23, i.MX28
+>>>> power subsystem. It's required to trigger the probing of the underlying
+>>>> drivers like on-chip regulators.
+>>> I'm not sure what you need the power supply class for. I see only
+>>> one property (ac connected), which is constant. Maybe just drop
+>>> the power supply stuff?
+>> those SoCs could be powered by 3 different sources:
+>> - 5V wall
+>> - USB
+>> - battery
 >>
->>
->> Except I am missing something, with an exit_latency = 0, the state will be
->> never selected, because of the "s->exit_latency < latency_req" condition
->> (strictly greater than).
-> 
-> No, this is the condition to skip the state, so previously it wouldn't
-> be selected, but after the patch it will.
-> 
-> So yes, the patch changes behavior for systems with
-> CONFIG_ARCH_HAS_CPU_RELAX unset.
-> 
->>> My concern is if these drivers do not intend to enter a polling state
->>> during suspend, this will cause an issue, won't it?
-> 
-> The change in behavior happens for architectures where
-> CONFIG_ARCH_HAS_CPU_RELAX is not set.  In those cases the 0-index
-> state is supposed to be provided by the driver.  Is there a reason to
-> expect that this may not be a genuine idle state?
+>> I choose the first one as a base, because it's the simplest one.
+>> Unfortunately i don't have the time to implement all of them.
+> From what I can see the driver does not implement the 5V wall
+> charger handling. It simply assumes, that the 5V wall charger
+> is there.
 
-On PowerPC, we have the 0-index idle state, whose exit_latency is 0 and
-all that the CPU does in this state, is poll on need_resched(), except
-at a lower priority from the hardware's standpoint. Nevertheless, the
-CPU is busy polling. So, I would not consider it a genuine idle state.
+the driver consists of multiple files in the mxs sub directory.
+I linked to the main file to reduce search effort. The battery
+handling incl. charging should be implemented in ddi_power_battery.c
 
-On a side note, we do not yet support suspend on Power servers, but we
-may in the future. Hence the concern.
+>From my understanding it's not possible to determine where the 5V
+exactly come from (either 5V wall plug or USB). The driver simply uses
+the USB PHY state.
 
->> Definitively poll can cause thermal issues, especially when suspending. It
->> is a dangerous state (let's imagine you close your laptop => suspend/poll
->> and then put it in your bag for a travel).
-> 
-> With ARCH_HAS_CPU_RELAX set the "poll state" is supposed to be thermally safe.
-> 
->> I don't think with the code above we can reach this situation but I agree
->> this is something we have to take care carefully.
->>
->> Actually, I am in favour of removing poll at all from the cpuidle driver and
->> poll only when a cpuidle state selection fails under certain condition.
->>
->> So I fully agree with your statement below.
->>
->>> I would expect the cpus to be in a hardware
->>> defined idle state.
-> 
-> Well, except for the degenerate case in which all of them are disabled
-> and for the "broadcast timer stopping aviodance" use case for
-> find_deepest_state().
+>
+> While you can skip implementation of battery connection check
+> you should make sure, that AC is actually connected.
 
-During suspend, the CPUs can very well enter states where the timer
-stops since we stop timer interrupts anyway. So unless the idle states
-are explicitly disabled by the user/hardware for some reason, deeper
-idle states will still be available during suspend as far as I can see.
+Do you refer to the right state of property POWER_SUPPLY_PROP_ONLINE or
+driver probing?
 
-> 
-> So there are two questions in my view:
-> (1) Should find_deepest_state() ever return states with exit_latency equal to 0?
+Stefan
 
-I would say no, since such an idle state would mostly be polling on a
-wakeup event. Atleast, there is one such case in PowerPC.
 
-> (2) If the answer to (1) is "yes", should the "poll state" be ever
-> returned by find_deepest_state()?
-> 
-> In any case, find_deepest_state() will only return a state with
-> exit_latency equal to 0 if there's no other choice and if it returns
-> nothing, we'll fall back to the architecture idle method.  So the
-> question really is whether or not falling back to arch idle is any
-> better than using any state we have in the table.
-
-My suggestion is to *not* fall back to arch idle code, since that is a
-black box from the core cpuidle's perspective.
-
-> 
-> The patch is based on the assumption that any state from the table
-> will be better than arch idle, including the "polling state".  If that
-> does not hold, we'll need to rethink a couple of other things in my
-> view.
-
-We could fail suspend if a non-polling idle state is not available perhaps ?
-
-Regards
-Preeti U Murthy
-> 
-> Thanks,
-> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
