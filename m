@@ -1,50 +1,31 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH]Fix for typos in comments
-Date: Tue, 26 May 2015 16:24:43 -0700
-Message-ID: <7h382iq5vo.fsf@deeprootsystems.com>
-References: <CAGgNLB7Riu6sd_fJGK=Zgg2N9b8uFWsUfcX94oTX9k-AW-aqbg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH] suspend/resume performance improvement
+Date: Wed, 27 May 2015 02:24:59 +0200
+Message-ID: <6784182.VyN0PstglH@vostro.rjw.lan>
+References: <1141174354.499851432649147087.JavaMail.weblogic@epmlwas01d>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:36252 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751061AbbEZXYq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 May 2015 19:24:46 -0400
-Received: by paza2 with SMTP id a2so94549397paz.3
-        for <linux-pm@vger.kernel.org>; Tue, 26 May 2015 16:24:46 -0700 (PDT)
-In-Reply-To: <CAGgNLB7Riu6sd_fJGK=Zgg2N9b8uFWsUfcX94oTX9k-AW-aqbg@mail.gmail.com>
-	(sriram dash's message of "Mon, 25 May 2015 07:46:10 +0530")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1141174354.499851432649147087.JavaMail.weblogic@epmlwas01d>
+Sender: linux-kernel-owner@vger.kernel.org
+To: eun.taik.lee@samsung.com
+Cc: pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sriram dash <dash.sriram@gmail.com>
-Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, linux-pm@vger.kernel.org
 
-sriram dash <dash.sriram@gmail.com> writes:
+On Tuesday, May 26, 2015 02:05:48 PM =EC=9D=B4=EC=9D=80=ED=83=9D wrote:
+> When a task that calls state_store() to suspend
+> the device has used up most of its time slice,
+> suspend sometimes take too long. (User noticeable)
+>=20
+> Suspend/resume is a system wide operation.
+> So, instead of depending on a userspace task's time
+> slice, let kworker do the work to avoid a long wait
+> on the runqueue.
 
-> I am a newbie into the Linux kernel and eager to improve my understanding
-> in this field.
+All of that seems to duplicate the existing autosleep.c functionality.
 
-Great, thanks for being willing to contribute!
 
-> Currently, i found the following typo error which i feel could be corrected
-> for the following. Please have a review:
->
-> In the file: /drivers/base/power/domain.c,
->
-> In line 494,
->
->
-> ++ * @genpd: PM domain to power off.
-> -- * @genpd: PM domait to power off.
->
->
-> Please check if the correction is valid.
-
-Please submit your changes in patch form.  Please read
-Documentation/SubmittingPatches.txt in the kernel source directory for
-guidelines on how to correctly submit patches.
-
-Also, I highly recommend using "git format-patch" to create patches
-directly out of your git tree changes.
-
-Kevin
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
