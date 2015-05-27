@@ -1,291 +1,139 @@
-From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [PATCH v2 4/9] extcon/input/mfd/power/regulator: max77693: Move
- state container to common header
-Date: Wed, 27 May 2015 22:55:17 +0900
-Message-ID: <CAGTfZH2jBntc=+pTVaf6cjMzGqoitkv4q8GaWSkoDLKEvy60=w@mail.gmail.com>
-References: <1432446213-4886-1-git-send-email-k.kozlowski.k@gmail.com>
-	<1432446213-4886-5-git-send-email-k.kozlowski.k@gmail.com>
-Reply-To: cw00.choi@samsung.com
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpuidle: Do not use CPUIDLE_DRIVER_STATE_START in cpuidle.c
+Date: Wed, 27 May 2015 15:57:27 +0200
+Message-ID: <CAJZ5v0hn__7KRqOTpBYAk8EfV28xD54G0MaetaJ6HH5uUE3wQw@mail.gmail.com>
+References: <5494512.JcUbNX5Mxs@vostro.rjw.lan>
+	<5565AB09.8090802@linux.vnet.ibm.com>
+	<5565B7D7.3000308@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <1432446213-4886-5-git-send-email-k.kozlowski.k@gmail.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5565B7D7.3000308@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Krzysztof,
+On Wed, May 27, 2015 at 2:25 PM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+> On 05/27/2015 01:31 PM, Preeti U Murthy wrote:
+>>
+>> On 05/27/2015 07:06 AM, Rafael J. Wysocki wrote:
+>>>
+>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>
+>>> The CPUIDLE_DRIVER_STATE_START symbol is defined as 1 only if
+>>> CONFIG_ARCH_HAS_CPU_RELAX is set, otherwise it is defined as 0.
+>>> However, if CONFIG_ARCH_HAS_CPU_RELAX is set, the first (index 0)
+>>> entry in the cpuidle driver's table of states is overwritten with
+>>> the default "poll" entry by the core.  The "state" defined by the
+>>> "poll" entry doesn't provide ->enter_dead and ->enter_freeze
+>>> callbacks and its exit_latency is 0.
+>>>
+>>> For this reason, it is not necessary to use CPUIDLE_DRIVER_STATE_START
+>>> in cpuidle_play_dead() (->enter_dead is NULL, so the "poll state"
+>>> will be skipped by the loop) and in find_deepest_state() (since
+>>> exit_latency is 0, the "poll state" will become the default if the
+>>> "s->exit_latency <= latency_req" check is replaced with
+>>> "s->exit_latency < latency_req" which may only matter for drivers
+>>> providing different states with the same exit_latency).
+>>>
+>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>> ---
+>>>   drivers/cpuidle/cpuidle.c |    8 ++++----
+>>>   1 file changed, 4 insertions(+), 4 deletions(-)
+>>
+>> <snip>
+>>
+>>>
+>>> @@ -79,13 +79,13 @@ static int find_deepest_state(struct cpu
+>>>                               bool freeze)
+>>>   {
+>>>         unsigned int latency_req = 0;
+>>> -       int i, ret = freeze ? -1 : CPUIDLE_DRIVER_STATE_START - 1;
+>>> +       int i, ret = -ENXIO;
+>>>
+>>> -       for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
+>>> +       for (i = 0; i < drv->state_count; i++) {
+>>>                 struct cpuidle_state *s = &drv->states[i];
+>>>                 struct cpuidle_state_usage *su = &dev->states_usage[i];
+>>>
+>>> -               if (s->disabled || su->disable || s->exit_latency <=
+>>> latency_req
+>>> +               if (s->disabled || su->disable || s->exit_latency <
+>>> latency_req
+>>
+>>
+>> Prior to this patch,
+>>
+>> For drivers on which CPUIDLE_DRIVER_STATE_START takes a value 0 and
+>> whose first idle state has an exit_latency of 0, find_deepest_state()
+>> would return -1 if it failed to find a deeper idle state.
+>> But as an effect of this patch, find_deepest_state() returns 0 in the
+>> above circumstance.
+>
+>
+> Except I am missing something, with an exit_latency = 0, the state will be
+> never selected, because of the "s->exit_latency < latency_req" condition
+> (strictly greater than).
 
-I reviewed it and took the kernel build. There are no any build issue.
+No, this is the condition to skip the state, so previously it wouldn't
+be selected, but after the patch it will.
 
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+So yes, the patch changes behavior for systems with
+CONFIG_ARCH_HAS_CPU_RELAX unset.
+
+>> My concern is if these drivers do not intend to enter a polling state
+>> during suspend, this will cause an issue, won't it?
+
+The change in behavior happens for architectures where
+CONFIG_ARCH_HAS_CPU_RELAX is not set.  In those cases the 0-index
+state is supposed to be provided by the driver.  Is there a reason to
+expect that this may not be a genuine idle state?
+
+>> This also gets me
+>> wondering if polling state is an acceptable idle state during suspend,
+>> given that the drivers with ARCH_HAS_CPU_RELAX permit entry into it
+>> during suspend today.
+
+That actually is a good question.
+
+> Definitively poll can cause thermal issues, especially when suspending. It
+> is a dangerous state (let's imagine you close your laptop => suspend/poll
+> and then put it in your bag for a travel).
+
+With ARCH_HAS_CPU_RELAX set the "poll state" is supposed to be thermally safe.
+
+> I don't think with the code above we can reach this situation but I agree
+> this is something we have to take care carefully.
+>
+> Actually, I am in favour of removing poll at all from the cpuidle driver and
+> poll only when a cpuidle state selection fails under certain condition.
+>
+> So I fully agree with your statement below.
+>
+>> I would expect the cpus to be in a hardware
+>> defined idle state.
+
+Well, except for the degenerate case in which all of them are disabled
+and for the "broadcast timer stopping aviodance" use case for
+find_deepest_state().
+
+So there are two questions in my view:
+(1) Should find_deepest_state() ever return states with exit_latency equal to 0?
+(2) If the answer to (1) is "yes", should the "poll state" be ever
+returned by find_deepest_state()?
+
+In any case, find_deepest_state() will only return a state with
+exit_latency equal to 0 if there's no other choice and if it returns
+nothing, we'll fall back to the architecture idle method.  So the
+question really is whether or not falling back to arch idle is any
+better than using any state we have in the table.
+
+The patch is based on the assumption that any state from the table
+will be better than arch idle, including the "polling state".  If that
+does not hold, we'll need to rethink a couple of other things in my
+view.
 
 Thanks,
-Chanwoo Choi
-
-On Sun, May 24, 2015 at 2:43 PM, Krzysztof Kozlowski
-<k.kozlowski.k@gmail.com> wrote:
-> This prepares for merging some of the drivers between max77693 and
-> max77843 so the child MFD driver can be attached to any parent MFD main
-> driver.
->
-> Move the state container to common header file. Additionally add
-> consistent 'i2c' prefixes to its members (of 'struct i2c_client' type).
->
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-> Acked-by: Sebastian Reichel <sre@kernel.org>
-> ---
->  drivers/extcon/extcon-max77693.c     |  3 ++-
->  drivers/input/misc/max77693-haptic.c |  1 +
->  drivers/mfd/max77693.c               | 31 +++++++++++++------------
->  drivers/power/max77693_charger.c     |  1 +
->  drivers/regulator/max77693.c         |  1 +
->  include/linux/mfd/max77693-common.h  | 44 ++++++++++++++++++++++++++++++++++++
->  include/linux/mfd/max77693-private.h | 25 --------------------
->  7 files changed, 65 insertions(+), 41 deletions(-)
->  create mode 100644 include/linux/mfd/max77693-common.h
->
-> diff --git a/drivers/extcon/extcon-max77693.c b/drivers/extcon/extcon-max77693.c
-> index 78ed8727024f..4ef45f257e6e 100644
-> --- a/drivers/extcon/extcon-max77693.c
-> +++ b/drivers/extcon/extcon-max77693.c
-> @@ -25,6 +25,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/mfd/max77693.h>
->  #include <linux/mfd/max77693-private.h>
-> +#include <linux/mfd/max77693-common.h>
->  #include <linux/extcon.h>
->  #include <linux/regmap.h>
->  #include <linux/irqdomain.h>
-> @@ -1077,7 +1078,7 @@ static int max77693_muic_probe(struct platform_device *pdev)
->                 dev_dbg(&pdev->dev, "allocate register map\n");
->         } else {
->                 info->max77693->regmap_muic = devm_regmap_init_i2c(
-> -                                               info->max77693->muic,
-> +                                               info->max77693->i2c_muic,
->                                                 &max77693_muic_regmap_config);
->                 if (IS_ERR(info->max77693->regmap_muic)) {
->                         ret = PTR_ERR(info->max77693->regmap_muic);
-> diff --git a/drivers/input/misc/max77693-haptic.c b/drivers/input/misc/max77693-haptic.c
-> index 39e930c10ebb..69a4e401fe24 100644
-> --- a/drivers/input/misc/max77693-haptic.c
-> +++ b/drivers/input/misc/max77693-haptic.c
-> @@ -25,6 +25,7 @@
->  #include <linux/regulator/consumer.h>
->  #include <linux/mfd/max77693.h>
->  #include <linux/mfd/max77693-private.h>
-> +#include <linux/mfd/max77693-common.h>
->
->  #define MAX_MAGNITUDE_SHIFT    16
->
-> diff --git a/drivers/mfd/max77693.c b/drivers/mfd/max77693.c
-> index cb14afa97e6f..07fdf35bb9a1 100644
-> --- a/drivers/mfd/max77693.c
-> +++ b/drivers/mfd/max77693.c
-> @@ -34,6 +34,7 @@
->  #include <linux/mfd/core.h>
->  #include <linux/mfd/max77693.h>
->  #include <linux/mfd/max77693-private.h>
-> +#include <linux/mfd/max77693-common.h>
->  #include <linux/regulator/machine.h>
->  #include <linux/regmap.h>
->
-> @@ -193,22 +194,22 @@ static int max77693_i2c_probe(struct i2c_client *i2c,
->         } else
->                 dev_info(max77693->dev, "device ID: 0x%x\n", reg_data);
->
-> -       max77693->muic = i2c_new_dummy(i2c->adapter, I2C_ADDR_MUIC);
-> -       if (!max77693->muic) {
-> +       max77693->i2c_muic = i2c_new_dummy(i2c->adapter, I2C_ADDR_MUIC);
-> +       if (!max77693->i2c_muic) {
->                 dev_err(max77693->dev, "Failed to allocate I2C device for MUIC\n");
->                 return -ENODEV;
->         }
-> -       i2c_set_clientdata(max77693->muic, max77693);
-> +       i2c_set_clientdata(max77693->i2c_muic, max77693);
->
-> -       max77693->haptic = i2c_new_dummy(i2c->adapter, I2C_ADDR_HAPTIC);
-> -       if (!max77693->haptic) {
-> +       max77693->i2c_haptic = i2c_new_dummy(i2c->adapter, I2C_ADDR_HAPTIC);
-> +       if (!max77693->i2c_haptic) {
->                 dev_err(max77693->dev, "Failed to allocate I2C device for Haptic\n");
->                 ret = -ENODEV;
->                 goto err_i2c_haptic;
->         }
-> -       i2c_set_clientdata(max77693->haptic, max77693);
-> +       i2c_set_clientdata(max77693->i2c_haptic, max77693);
->
-> -       max77693->regmap_haptic = devm_regmap_init_i2c(max77693->haptic,
-> +       max77693->regmap_haptic = devm_regmap_init_i2c(max77693->i2c_haptic,
->                                         &max77693_regmap_haptic_config);
->         if (IS_ERR(max77693->regmap_haptic)) {
->                 ret = PTR_ERR(max77693->regmap_haptic);
-> @@ -222,7 +223,7 @@ static int max77693_i2c_probe(struct i2c_client *i2c,
->          * instance of MUIC device when irq of max77693 is initialized
->          * before call max77693-muic probe() function.
->          */
-> -       max77693->regmap_muic = devm_regmap_init_i2c(max77693->muic,
-> +       max77693->regmap_muic = devm_regmap_init_i2c(max77693->i2c_muic,
->                                          &max77693_regmap_muic_config);
->         if (IS_ERR(max77693->regmap_muic)) {
->                 ret = PTR_ERR(max77693->regmap_muic);
-> @@ -255,7 +256,7 @@ static int max77693_i2c_probe(struct i2c_client *i2c,
->                                 IRQF_ONESHOT | IRQF_SHARED |
->                                 IRQF_TRIGGER_FALLING, 0,
->                                 &max77693_charger_irq_chip,
-> -                               &max77693->irq_data_charger);
-> +                               &max77693->irq_data_chg);
->         if (ret) {
->                 dev_err(max77693->dev, "failed to add irq chip: %d\n", ret);
->                 goto err_irq_charger;
-> @@ -296,15 +297,15 @@ err_mfd:
->  err_intsrc:
->         regmap_del_irq_chip(max77693->irq, max77693->irq_data_muic);
->  err_irq_muic:
-> -       regmap_del_irq_chip(max77693->irq, max77693->irq_data_charger);
-> +       regmap_del_irq_chip(max77693->irq, max77693->irq_data_chg);
->  err_irq_charger:
->         regmap_del_irq_chip(max77693->irq, max77693->irq_data_topsys);
->  err_irq_topsys:
->         regmap_del_irq_chip(max77693->irq, max77693->irq_data_led);
->  err_regmap:
-> -       i2c_unregister_device(max77693->haptic);
-> +       i2c_unregister_device(max77693->i2c_haptic);
->  err_i2c_haptic:
-> -       i2c_unregister_device(max77693->muic);
-> +       i2c_unregister_device(max77693->i2c_muic);
->         return ret;
->  }
->
-> @@ -315,12 +316,12 @@ static int max77693_i2c_remove(struct i2c_client *i2c)
->         mfd_remove_devices(max77693->dev);
->
->         regmap_del_irq_chip(max77693->irq, max77693->irq_data_muic);
-> -       regmap_del_irq_chip(max77693->irq, max77693->irq_data_charger);
-> +       regmap_del_irq_chip(max77693->irq, max77693->irq_data_chg);
->         regmap_del_irq_chip(max77693->irq, max77693->irq_data_topsys);
->         regmap_del_irq_chip(max77693->irq, max77693->irq_data_led);
->
-> -       i2c_unregister_device(max77693->muic);
-> -       i2c_unregister_device(max77693->haptic);
-> +       i2c_unregister_device(max77693->i2c_muic);
-> +       i2c_unregister_device(max77693->i2c_haptic);
->
->         return 0;
->  }
-> diff --git a/drivers/power/max77693_charger.c b/drivers/power/max77693_charger.c
-> index 754879eb59f6..eb68d0572799 100644
-> --- a/drivers/power/max77693_charger.c
-> +++ b/drivers/power/max77693_charger.c
-> @@ -21,6 +21,7 @@
->  #include <linux/regmap.h>
->  #include <linux/mfd/max77693.h>
->  #include <linux/mfd/max77693-private.h>
-> +#include <linux/mfd/max77693-common.h>
->
->  #define MAX77693_CHARGER_NAME                          "max77693-charger"
->  static const char *max77693_charger_model              = "MAX77693";
-> diff --git a/drivers/regulator/max77693.c b/drivers/regulator/max77693.c
-> index 236851ab575a..5b30dc42679c 100644
-> --- a/drivers/regulator/max77693.c
-> +++ b/drivers/regulator/max77693.c
-> @@ -30,6 +30,7 @@
->  #include <linux/regulator/machine.h>
->  #include <linux/mfd/max77693.h>
->  #include <linux/mfd/max77693-private.h>
-> +#include <linux/mfd/max77693-common.h>
->  #include <linux/regulator/of_regulator.h>
->  #include <linux/regmap.h>
->
-> diff --git a/include/linux/mfd/max77693-common.h b/include/linux/mfd/max77693-common.h
-> new file mode 100644
-> index 000000000000..7da4cc38e982
-> --- /dev/null
-> +++ b/include/linux/mfd/max77693-common.h
-> @@ -0,0 +1,44 @@
-> +/*
-> + * Common data shared between Maxim 77693 and 77843 drivers
-> + *
-> + * Copyright (C) 2015 Samsung Electronics
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + */
-> +
-> +#ifndef __LINUX_MFD_MAX77693_COMMON_H
-> +#define __LINUX_MFD_MAX77693_COMMON_H
-> +
-> +enum max77693_types {
-> +       TYPE_MAX77693_UNKNOWN,
-> +       TYPE_MAX77693,
-> +};
-> +
-> +/*
-> + * Shared also with max77843.
-> + */
-> +struct max77693_dev {
-> +       struct device *dev;
-> +       struct i2c_client *i2c;         /* 0xCC , PMIC, Charger, Flash LED */
-> +       struct i2c_client *i2c_muic;    /* 0x4A , MUIC */
-> +       struct i2c_client *i2c_haptic;  /* MAX77693: 0x90 , Haptic */
-> +
-> +       enum max77693_types type;
-> +
-> +       struct regmap *regmap;
-> +       struct regmap *regmap_muic;
-> +       struct regmap *regmap_haptic;   /* Only MAX77693 */
-> +
-> +       struct regmap_irq_chip_data *irq_data_led;
-> +       struct regmap_irq_chip_data *irq_data_topsys;
-> +       struct regmap_irq_chip_data *irq_data_chg; /* Only MAX77693 */
-> +       struct regmap_irq_chip_data *irq_data_muic;
-> +
-> +       int irq;
-> +};
-> +
-> +
-> +#endif /*  __LINUX_MFD_MAX77693_COMMON_H */
-> diff --git a/include/linux/mfd/max77693-private.h b/include/linux/mfd/max77693-private.h
-> index e3c0afff38d3..8c4143c0c651 100644
-> --- a/include/linux/mfd/max77693-private.h
-> +++ b/include/linux/mfd/max77693-private.h
-> @@ -529,29 +529,4 @@ enum max77693_irq_muic {
->         MAX77693_MUIC_IRQ_NR,
->  };
->
-> -enum max77693_types {
-> -       TYPE_MAX77693_UNKNOWN,
-> -       TYPE_MAX77693,
-> -};
-> -
-> -struct max77693_dev {
-> -       struct device *dev;
-> -       struct i2c_client *i2c;         /* 0xCC , PMIC, Charger, Flash LED */
-> -       struct i2c_client *muic;        /* 0x4A , MUIC */
-> -       struct i2c_client *haptic;      /* 0x90 , Haptic */
-> -
-> -       enum max77693_types type;
-> -
-> -       struct regmap *regmap;
-> -       struct regmap *regmap_muic;
-> -       struct regmap *regmap_haptic;
-> -
-> -       struct regmap_irq_chip_data *irq_data_led;
-> -       struct regmap_irq_chip_data *irq_data_topsys;
-> -       struct regmap_irq_chip_data *irq_data_charger;
-> -       struct regmap_irq_chip_data *irq_data_muic;
-> -
-> -       int irq;
-> -};
-> -
->  #endif /*  __LINUX_MFD_MAX77693_PRIV_H */
-> --
-> 2.1.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-input" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Rafael
