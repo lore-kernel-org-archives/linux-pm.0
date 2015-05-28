@@ -1,18 +1,14 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 06/14] ARM: shmobile: r7s72100 dtsi: Add CPG Clock Domain
-Date: Thu, 28 May 2015 20:53:31 +0200
-Message-ID: <1432839219-475-7-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v2 09/14] ARM: shmobile: r8a7790 dtsi: Add CPG Clock Domain
+Date: Thu, 28 May 2015 20:53:34 +0200
+Message-ID: <1432839219-475-10-git-send-email-geert+renesas@glider.be>
 References: <1432839219-475-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from michel.telenet-ops.be ([195.130.137.88]:36647 "EHLO
-	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754878AbbE1Sx4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 May 2015 14:53:56 -0400
+Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <1432839219-475-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-sh-owner@vger.kernel.org
 To: Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+List-Id: linux-pm@vger.kernel.org
 
 Add an appropriate "#power-domain-cells" property to the cpg_clocks
 device node, to create the CPG Clock Domain.
@@ -20,172 +16,575 @@ device node, to create the CPG Clock Domain.
 Add "power-domains" properties to all device nodes for devices that are
 part of the CPG Clock Domain and can be power-managed through an MSTP
 clock.  This applies to most on-SoC devices, which have a one-to-one
-mapping from SoC device to DT device node.
+mapping from SoC device to DT device node. Notable exceptions are the
+"display" and "sound" nodes, which represent multiple SoC devices, each
+having their own MSTP clocks.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 v2:
-  - New.
+  - Add Reviewed-by,
+  - Add "power-domains" properties to recently introduced USB-DMAC
+    device nodes,
+  - Drop adding "power-domains" properties to the GIC device node, as
+    adding the INTC_SYS clock is postponed.
 ---
- arch/arm/boot/dts/r7s72100.dtsi | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/arm/boot/dts/r8a7790.dtsi | 78 ++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 72 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/boot/dts/r7s72100.dtsi b/arch/arm/boot/dts/r7s72100.dtsi
-index 277e73c110e5d40c..060c32cbd66923ed 100644
---- a/arch/arm/boot/dts/r7s72100.dtsi
-+++ b/arch/arm/boot/dts/r7s72100.dtsi
-@@ -86,6 +86,7 @@
- 			reg = <0xfcfe0000 0x18>;
- 			clocks = <&extal_clk>, <&usb_x1_clk>;
- 			clock-output-names = "pll", "i", "g";
+diff --git a/arch/arm/boot/dts/r8a7790.dtsi b/arch/arm/boot/dts/r8a7790.dtsi
+index 51ab8865ea37dc89..468300fde3f0f124 100644
+--- a/arch/arm/boot/dts/r8a7790.dtsi
++++ b/arch/arm/boot/dts/r8a7790.dtsi
+@@ -134,6 +134,7 @@
+ 		#interrupt-cells = <2>;
+ 		interrupt-controller;
+ 		clocks = <&mstp9_clks R8A7790_CLK_GPIO0>;
++		power-domains = <&cpg_clocks>;
+ 	};
+ 
+ 	gpio1: gpio@e6051000 {
+@@ -146,6 +147,7 @@
+ 		#interrupt-cells = <2>;
+ 		interrupt-controller;
+ 		clocks = <&mstp9_clks R8A7790_CLK_GPIO1>;
++		power-domains = <&cpg_clocks>;
+ 	};
+ 
+ 	gpio2: gpio@e6052000 {
+@@ -158,6 +160,7 @@
+ 		#interrupt-cells = <2>;
+ 		interrupt-controller;
+ 		clocks = <&mstp9_clks R8A7790_CLK_GPIO2>;
++		power-domains = <&cpg_clocks>;
+ 	};
+ 
+ 	gpio3: gpio@e6053000 {
+@@ -170,6 +173,7 @@
+ 		#interrupt-cells = <2>;
+ 		interrupt-controller;
+ 		clocks = <&mstp9_clks R8A7790_CLK_GPIO3>;
++		power-domains = <&cpg_clocks>;
+ 	};
+ 
+ 	gpio4: gpio@e6054000 {
+@@ -182,6 +186,7 @@
+ 		#interrupt-cells = <2>;
+ 		interrupt-controller;
+ 		clocks = <&mstp9_clks R8A7790_CLK_GPIO4>;
++		power-domains = <&cpg_clocks>;
+ 	};
+ 
+ 	gpio5: gpio@e6055000 {
+@@ -194,6 +199,7 @@
+ 		#interrupt-cells = <2>;
+ 		interrupt-controller;
+ 		clocks = <&mstp9_clks R8A7790_CLK_GPIO5>;
++		power-domains = <&cpg_clocks>;
+ 	};
+ 
+ 	thermal@e61f0000 {
+@@ -201,6 +207,7 @@
+ 		reg = <0 0xe61f0000 0 0x14>, <0 0xe61f0100 0 0x38>;
+ 		interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp5_clks R8A7790_CLK_THERMAL>;
++		power-domains = <&cpg_clocks>;
+ 	};
+ 
+ 	timer {
+@@ -218,6 +225,7 @@
+ 			     <0 143 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp1_clks R8A7790_CLK_CMT0>;
+ 		clock-names = "fck";
++		power-domains = <&cpg_clocks>;
+ 
+ 		renesas,channels-mask = <0x60>;
+ 
+@@ -237,6 +245,7 @@
+ 			     <0 127 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7790_CLK_CMT1>;
+ 		clock-names = "fck";
++		power-domains = <&cpg_clocks>;
+ 
+ 		renesas,channels-mask = <0xff>;
+ 
+@@ -253,6 +262,7 @@
+ 			     <0 2 IRQ_TYPE_LEVEL_HIGH>,
+ 			     <0 3 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp4_clks R8A7790_CLK_IRQC>;
++		power-domains = <&cpg_clocks>;
+ 	};
+ 
+ 	dmac0: dma-controller@e6700000 {
+@@ -281,6 +291,7 @@
+ 				"ch12", "ch13", "ch14";
+ 		clocks = <&mstp2_clks R8A7790_CLK_SYS_DMAC0>;
+ 		clock-names = "fck";
++		power-domains = <&cpg_clocks>;
+ 		#dma-cells = <1>;
+ 		dma-channels = <15>;
+ 	};
+@@ -311,6 +322,7 @@
+ 				"ch12", "ch13", "ch14";
+ 		clocks = <&mstp2_clks R8A7790_CLK_SYS_DMAC1>;
+ 		clock-names = "fck";
++		power-domains = <&cpg_clocks>;
+ 		#dma-cells = <1>;
+ 		dma-channels = <15>;
+ 	};
+@@ -339,6 +351,7 @@
+ 				"ch12";
+ 		clocks = <&mstp5_clks R8A7790_CLK_AUDIO_DMAC0>;
+ 		clock-names = "fck";
++		power-domains = <&cpg_clocks>;
+ 		#dma-cells = <1>;
+ 		dma-channels = <13>;
+ 	};
+@@ -367,6 +380,7 @@
+ 				"ch12";
+ 		clocks = <&mstp5_clks R8A7790_CLK_AUDIO_DMAC1>;
+ 		clock-names = "fck";
++		power-domains = <&cpg_clocks>;
+ 		#dma-cells = <1>;
+ 		dma-channels = <13>;
+ 	};
+@@ -378,6 +392,7 @@
+ 			      0 109 IRQ_TYPE_LEVEL_HIGH>;
+ 		interrupt-names = "ch0", "ch1";
+ 		clocks = <&mstp3_clks R8A7790_CLK_USBDMAC0>;
++		power-domains = <&cpg_clocks>;
+ 		#dma-cells = <1>;
+ 		dma-channels = <2>;
+ 	};
+@@ -389,6 +404,7 @@
+ 			      0 110 IRQ_TYPE_LEVEL_HIGH>;
+ 		interrupt-names = "ch0", "ch1";
+ 		clocks = <&mstp3_clks R8A7790_CLK_USBDMAC1>;
++		power-domains = <&cpg_clocks>;
+ 		#dma-cells = <1>;
+ 		dma-channels = <2>;
+ 	};
+@@ -400,6 +416,7 @@
+ 		reg = <0 0xe6508000 0 0x40>;
+ 		interrupts = <0 287 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp9_clks R8A7790_CLK_I2C0>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -410,6 +427,7 @@
+ 		reg = <0 0xe6518000 0 0x40>;
+ 		interrupts = <0 288 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp9_clks R8A7790_CLK_I2C1>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -420,6 +438,7 @@
+ 		reg = <0 0xe6530000 0 0x40>;
+ 		interrupts = <0 286 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp9_clks R8A7790_CLK_I2C2>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -430,6 +449,7 @@
+ 		reg = <0 0xe6540000 0 0x40>;
+ 		interrupts = <0 290 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp9_clks R8A7790_CLK_I2C3>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -440,6 +460,7 @@
+ 		reg = <0 0xe6500000 0 0x425>;
+ 		interrupts = <0 174 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7790_CLK_IIC0>;
++		power-domains = <&cpg_clocks>;
+ 		dmas = <&dmac0 0x61>, <&dmac0 0x62>;
+ 		dma-names = "tx", "rx";
+ 		status = "disabled";
+@@ -452,6 +473,7 @@
+ 		reg = <0 0xe6510000 0 0x425>;
+ 		interrupts = <0 175 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7790_CLK_IIC1>;
++		power-domains = <&cpg_clocks>;
+ 		dmas = <&dmac0 0x65>, <&dmac0 0x66>;
+ 		dma-names = "tx", "rx";
+ 		status = "disabled";
+@@ -464,6 +486,7 @@
+ 		reg = <0 0xe6520000 0 0x425>;
+ 		interrupts = <0 176 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7790_CLK_IIC2>;
++		power-domains = <&cpg_clocks>;
+ 		dmas = <&dmac0 0x69>, <&dmac0 0x6a>;
+ 		dma-names = "tx", "rx";
+ 		status = "disabled";
+@@ -476,6 +499,7 @@
+ 		reg = <0 0xe60b0000 0 0x425>;
+ 		interrupts = <0 173 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp9_clks R8A7790_CLK_IICDVFS>;
++		power-domains = <&cpg_clocks>;
+ 		dmas = <&dmac0 0x77>, <&dmac0 0x78>;
+ 		dma-names = "tx", "rx";
+ 		status = "disabled";
+@@ -486,6 +510,7 @@
+ 		reg = <0 0xee200000 0 0x80>;
+ 		interrupts = <0 169 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7790_CLK_MMCIF0>;
++		power-domains = <&cpg_clocks>;
+ 		dmas = <&dmac0 0xd1>, <&dmac0 0xd2>;
+ 		dma-names = "tx", "rx";
+ 		reg-io-width = <4>;
+@@ -498,6 +523,7 @@
+ 		reg = <0 0xee220000 0 0x80>;
+ 		interrupts = <0 170 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7790_CLK_MMCIF1>;
++		power-domains = <&cpg_clocks>;
+ 		dmas = <&dmac0 0xe1>, <&dmac0 0xe2>;
+ 		dma-names = "tx", "rx";
+ 		reg-io-width = <4>;
+@@ -515,6 +541,7 @@
+ 		reg = <0 0xee100000 0 0x328>;
+ 		interrupts = <0 165 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7790_CLK_SDHI0>;
++		power-domains = <&cpg_clocks>;
+ 		dmas = <&dmac1 0xcd>, <&dmac1 0xce>;
+ 		dma-names = "tx", "rx";
+ 		status = "disabled";
+@@ -525,6 +552,7 @@
+ 		reg = <0 0xee120000 0 0x328>;
+ 		interrupts = <0 166 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7790_CLK_SDHI1>;
++		power-domains = <&cpg_clocks>;
+ 		dmas = <&dmac1 0xc9>, <&dmac1 0xca>;
+ 		dma-names = "tx", "rx";
+ 		status = "disabled";
+@@ -535,6 +563,7 @@
+ 		reg = <0 0xee140000 0 0x100>;
+ 		interrupts = <0 167 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7790_CLK_SDHI2>;
++		power-domains = <&cpg_clocks>;
+ 		dmas = <&dmac1 0xc1>, <&dmac1 0xc2>;
+ 		dma-names = "tx", "rx";
+ 		status = "disabled";
+@@ -545,6 +574,7 @@
+ 		reg = <0 0xee160000 0 0x100>;
+ 		interrupts = <0 168 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7790_CLK_SDHI3>;
++		power-domains = <&cpg_clocks>;
+ 		dmas = <&dmac1 0xd3>, <&dmac1 0xd4>;
+ 		dma-names = "tx", "rx";
+ 		status = "disabled";
+@@ -558,6 +588,7 @@
+ 		clock-names = "sci_ick";
+ 		dmas = <&dmac0 0x21>, <&dmac0 0x22>;
+ 		dma-names = "tx", "rx";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -569,6 +600,7 @@
+ 		clock-names = "sci_ick";
+ 		dmas = <&dmac0 0x25>, <&dmac0 0x26>;
+ 		dma-names = "tx", "rx";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -580,6 +612,7 @@
+ 		clock-names = "sci_ick";
+ 		dmas = <&dmac0 0x27>, <&dmac0 0x28>;
+ 		dma-names = "tx", "rx";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -591,6 +624,7 @@
+ 		clock-names = "sci_ick";
+ 		dmas = <&dmac0 0x3d>, <&dmac0 0x3e>;
+ 		dma-names = "tx", "rx";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -602,6 +636,7 @@
+ 		clock-names = "sci_ick";
+ 		dmas = <&dmac0 0x19>, <&dmac0 0x1a>;
+ 		dma-names = "tx", "rx";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -613,6 +648,7 @@
+ 		clock-names = "sci_ick";
+ 		dmas = <&dmac0 0x1d>, <&dmac0 0x1e>;
+ 		dma-names = "tx", "rx";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -624,6 +660,7 @@
+ 		clock-names = "sci_ick";
+ 		dmas = <&dmac0 0x29>, <&dmac0 0x2a>;
+ 		dma-names = "tx", "rx";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -635,6 +672,7 @@
+ 		clock-names = "sci_ick";
+ 		dmas = <&dmac0 0x2d>, <&dmac0 0x2e>;
+ 		dma-names = "tx", "rx";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -646,6 +684,7 @@
+ 		clock-names = "sci_ick";
+ 		dmas = <&dmac0 0x39>, <&dmac0 0x3a>;
+ 		dma-names = "tx", "rx";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -657,6 +696,7 @@
+ 		clock-names = "sci_ick";
+ 		dmas = <&dmac0 0x4d>, <&dmac0 0x4e>;
+ 		dma-names = "tx", "rx";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -665,6 +705,7 @@
+ 		reg = <0 0xee700000 0 0x400>;
+ 		interrupts = <0 162 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp8_clks R8A7790_CLK_ETHER>;
++		power-domains = <&cpg_clocks>;
+ 		phy-mode = "rmii";
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+@@ -676,6 +717,7 @@
+ 		reg = <0 0xee300000 0 0x2000>;
+ 		interrupts = <0 105 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp8_clks R8A7790_CLK_SATA0>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -684,6 +726,7 @@
+ 		reg = <0 0xee500000 0 0x2000>;
+ 		interrupts = <0 106 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp8_clks R8A7790_CLK_SATA1>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -692,6 +735,7 @@
+ 		reg = <0 0xe6590000 0 0x100>;
+ 		interrupts = <0 107 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp7_clks R8A7790_CLK_HSUSB>;
++		power-domains = <&cpg_clocks>;
+ 		renesas,buswait = <4>;
+ 		phys = <&usb0 1>;
+ 		phy-names = "usb";
+@@ -708,6 +752,7 @@
+ 		#size-cells = <0>;
+ 		clocks = <&mstp7_clks R8A7790_CLK_HSUSB>;
+ 		clock-names = "usbhs";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 
+ 		usb0: usb-channel@0 {
+@@ -722,33 +767,37 @@
+ 
+ 	vin0: video@e6ef0000 {
+ 		compatible = "renesas,vin-r8a7790";
+-		clocks = <&mstp8_clks R8A7790_CLK_VIN0>;
+ 		reg = <0 0xe6ef0000 0 0x1000>;
+ 		interrupts = <0 188 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&mstp8_clks R8A7790_CLK_VIN0>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+ 	vin1: video@e6ef1000 {
+ 		compatible = "renesas,vin-r8a7790";
+-		clocks = <&mstp8_clks R8A7790_CLK_VIN1>;
+ 		reg = <0 0xe6ef1000 0 0x1000>;
+ 		interrupts = <0 189 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&mstp8_clks R8A7790_CLK_VIN1>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+ 	vin2: video@e6ef2000 {
+ 		compatible = "renesas,vin-r8a7790";
+-		clocks = <&mstp8_clks R8A7790_CLK_VIN2>;
+ 		reg = <0 0xe6ef2000 0 0x1000>;
+ 		interrupts = <0 190 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&mstp8_clks R8A7790_CLK_VIN2>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+ 	vin3: video@e6ef3000 {
+ 		compatible = "renesas,vin-r8a7790";
+-		clocks = <&mstp8_clks R8A7790_CLK_VIN3>;
+ 		reg = <0 0xe6ef3000 0 0x1000>;
+ 		interrupts = <0 191 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&mstp8_clks R8A7790_CLK_VIN3>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -757,6 +806,7 @@
+ 		reg = <0 0xfe920000 0 0x8000>;
+ 		interrupts = <0 266 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp1_clks R8A7790_CLK_VSP1_R>;
++		power-domains = <&cpg_clocks>;
+ 
+ 		renesas,has-sru;
+ 		renesas,#rpf = <5>;
+@@ -769,6 +819,7 @@
+ 		reg = <0 0xfe928000 0 0x8000>;
+ 		interrupts = <0 267 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp1_clks R8A7790_CLK_VSP1_S>;
++		power-domains = <&cpg_clocks>;
+ 
+ 		renesas,has-lut;
+ 		renesas,has-sru;
+@@ -782,6 +833,7 @@
+ 		reg = <0 0xfe930000 0 0x8000>;
+ 		interrupts = <0 246 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp1_clks R8A7790_CLK_VSP1_DU0>;
++		power-domains = <&cpg_clocks>;
+ 
+ 		renesas,has-lif;
+ 		renesas,has-lut;
+@@ -795,6 +847,7 @@
+ 		reg = <0 0xfe938000 0 0x8000>;
+ 		interrupts = <0 247 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp1_clks R8A7790_CLK_VSP1_DU1>;
++		power-domains = <&cpg_clocks>;
+ 
+ 		renesas,has-lif;
+ 		renesas,has-lut;
+@@ -849,6 +902,7 @@
+ 		clocks = <&mstp9_clks R8A7790_CLK_RCAN0>,
+ 			 <&cpg_clocks R8A7790_CLK_RCAN>, <&can_clk>;
+ 		clock-names = "clkp1", "clkp2", "can_clk";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -859,6 +913,7 @@
+ 		clocks = <&mstp9_clks R8A7790_CLK_RCAN1>,
+ 			 <&cpg_clocks R8A7790_CLK_RCAN>, <&can_clk>;
+ 		clock-names = "clkp1", "clkp2", "can_clk";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -936,6 +991,7 @@
+ 			clock-output-names = "main", "pll0", "pll1", "pll3",
+ 					     "lb", "qspi", "sdh", "sd0", "sd1",
+ 					     "z", "rcan", "adsp";
 +			#power-domain-cells = <0>;
  		};
  
- 		/* MSTP clocks */
-@@ -157,6 +158,7 @@
- 			     <0 189 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp4_clks R7S72100_CLK_SCIF0>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -169,6 +171,7 @@
- 			     <0 193 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp4_clks R7S72100_CLK_SCIF1>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -181,6 +184,7 @@
- 			     <0 197 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp4_clks R7S72100_CLK_SCIF2>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -193,6 +197,7 @@
- 			     <0 201 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp4_clks R7S72100_CLK_SCIF3>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -205,6 +210,7 @@
- 			     <0 205 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp4_clks R7S72100_CLK_SCIF4>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -217,6 +223,7 @@
- 			     <0 209 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp4_clks R7S72100_CLK_SCIF5>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -229,6 +236,7 @@
- 			     <0 213 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp4_clks R7S72100_CLK_SCIF6>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -241,6 +249,7 @@
- 			     <0 217 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp4_clks R7S72100_CLK_SCIF7>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -252,6 +261,7 @@
- 			     <0 240 IRQ_TYPE_LEVEL_HIGH>;
- 		interrupt-names = "error", "rx", "tx";
- 		clocks = <&mstp10_clks R7S72100_CLK_SPI0>;
+ 		/* Variable factor clocks */
+@@ -1321,6 +1377,7 @@
+ 		clocks = <&mstp9_clks R8A7790_CLK_QSPI_MOD>;
+ 		dmas = <&dmac0 0x17>, <&dmac0 0x18>;
+ 		dma-names = "tx", "rx";
 +		power-domains = <&cpg_clocks>;
  		num-cs = <1>;
  		#address-cells = <1>;
  		#size-cells = <0>;
-@@ -266,6 +276,7 @@
- 			     <0 243 IRQ_TYPE_LEVEL_HIGH>;
- 		interrupt-names = "error", "rx", "tx";
- 		clocks = <&mstp10_clks R7S72100_CLK_SPI1>;
+@@ -1334,6 +1391,7 @@
+ 		clocks = <&mstp0_clks R8A7790_CLK_MSIOF0>;
+ 		dmas = <&dmac0 0x51>, <&dmac0 0x52>;
+ 		dma-names = "tx", "rx";
 +		power-domains = <&cpg_clocks>;
- 		num-cs = <1>;
  		#address-cells = <1>;
  		#size-cells = <0>;
-@@ -280,6 +291,7 @@
- 			     <0 246 IRQ_TYPE_LEVEL_HIGH>;
- 		interrupt-names = "error", "rx", "tx";
- 		clocks = <&mstp10_clks R7S72100_CLK_SPI2>;
+ 		status = "disabled";
+@@ -1346,6 +1404,7 @@
+ 		clocks = <&mstp2_clks R8A7790_CLK_MSIOF1>;
+ 		dmas = <&dmac0 0x55>, <&dmac0 0x56>;
+ 		dma-names = "tx", "rx";
 +		power-domains = <&cpg_clocks>;
- 		num-cs = <1>;
  		#address-cells = <1>;
  		#size-cells = <0>;
-@@ -294,6 +306,7 @@
- 			     <0 249 IRQ_TYPE_LEVEL_HIGH>;
- 		interrupt-names = "error", "rx", "tx";
- 		clocks = <&mstp10_clks R7S72100_CLK_SPI3>;
+ 		status = "disabled";
+@@ -1358,6 +1417,7 @@
+ 		clocks = <&mstp2_clks R8A7790_CLK_MSIOF2>;
+ 		dmas = <&dmac0 0x41>, <&dmac0 0x42>;
+ 		dma-names = "tx", "rx";
 +		power-domains = <&cpg_clocks>;
- 		num-cs = <1>;
  		#address-cells = <1>;
  		#size-cells = <0>;
-@@ -308,6 +321,7 @@
- 			     <0 252 IRQ_TYPE_LEVEL_HIGH>;
- 		interrupt-names = "error", "rx", "tx";
- 		clocks = <&mstp10_clks R7S72100_CLK_SPI4>;
+ 		status = "disabled";
+@@ -1370,6 +1430,7 @@
+ 		clocks = <&mstp2_clks R8A7790_CLK_MSIOF3>;
+ 		dmas = <&dmac0 0x45>, <&dmac0 0x46>;
+ 		dma-names = "tx", "rx";
 +		power-domains = <&cpg_clocks>;
- 		num-cs = <1>;
  		#address-cells = <1>;
  		#size-cells = <0>;
-@@ -338,6 +352,7 @@
- 			     <0 164 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp9_clks R7S72100_CLK_I2C0>;
- 		clock-frequency = <100000>;
+ 		status = "disabled";
+@@ -1380,6 +1441,7 @@
+ 		reg = <0 0xee000000 0 0xc00>;
+ 		interrupts = <0 101 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7790_CLK_SSUSB>;
++		power-domains = <&cpg_clocks>;
+ 		phys = <&usb2 1>;
+ 		phy-names = "usb";
+ 		status = "disabled";
+@@ -1388,10 +1450,11 @@
+ 	pci0: pci@ee090000 {
+ 		compatible = "renesas,pci-r8a7790";
+ 		device_type = "pci";
+-		clocks = <&mstp7_clks R8A7790_CLK_EHCI>;
+ 		reg = <0 0xee090000 0 0xc00>,
+ 		      <0 0xee080000 0 0x1100>;
+ 		interrupts = <0 108 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&mstp7_clks R8A7790_CLK_EHCI>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 
+ 		bus-range = <0 0>;
+@@ -1422,10 +1485,11 @@
+ 	pci1: pci@ee0b0000 {
+ 		compatible = "renesas,pci-r8a7790";
+ 		device_type = "pci";
+-		clocks = <&mstp7_clks R8A7790_CLK_EHCI>;
+ 		reg = <0 0xee0b0000 0 0xc00>,
+ 		      <0 0xee0a0000 0 0x1100>;
+ 		interrupts = <0 112 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&mstp7_clks R8A7790_CLK_EHCI>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 
+ 		bus-range = <1 1>;
+@@ -1443,6 +1507,7 @@
+ 		compatible = "renesas,pci-r8a7790";
+ 		device_type = "pci";
+ 		clocks = <&mstp7_clks R8A7790_CLK_EHCI>;
++		power-domains = <&cpg_clocks>;
+ 		reg = <0 0xee0d0000 0 0xc00>,
+ 		      <0 0xee0c0000 0 0x1100>;
+ 		interrupts = <0 113 IRQ_TYPE_LEVEL_HIGH>;
+@@ -1495,6 +1560,7 @@
+ 		interrupt-map = <0 0 0 0 &gic 0 116 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7790_CLK_PCIEC>, <&pcie_bus_clk>;
+ 		clock-names = "pcie", "pcie_bus";
 +		power-domains = <&cpg_clocks>;
  		status = "disabled";
  	};
  
-@@ -356,6 +371,7 @@
- 			     <0 172 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp9_clks R7S72100_CLK_I2C1>;
- 		clock-frequency = <100000>;
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -374,6 +390,7 @@
- 			     <0 180 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp9_clks R7S72100_CLK_I2C2>;
- 		clock-frequency = <100000>;
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -392,6 +409,7 @@
- 			     <0 188 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp9_clks R7S72100_CLK_I2C3>;
- 		clock-frequency = <100000>;
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -402,6 +420,7 @@
- 		interrupt-names = "tgi0a";
- 		clocks = <&mstp3_clks R7S72100_CLK_MTU2>;
- 		clock-names = "fck";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- };
 -- 
 1.9.1
 
