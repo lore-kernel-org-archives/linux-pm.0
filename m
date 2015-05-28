@@ -1,69 +1,57 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2] cpuidle: Do not use CPUIDLE_DRIVER_STATE_START in cpuidle.c
-Date: Thu, 28 May 2015 04:09:24 +0200
-Message-ID: <5147438.NJg8nCxJVn@vostro.rjw.lan>
-References: <5494512.JcUbNX5Mxs@vostro.rjw.lan>
+Subject: [PATCH] Revert "PCI/PM: Remove pci_pm_complete()"
+Date: Thu, 28 May 2015 04:12:58 +0200
+Message-ID: <2708462.WpN2O508C5@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54030 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751711AbbE1Bnx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2015 21:43:53 -0400
-In-Reply-To: <5494512.JcUbNX5Mxs@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-pci-owner@vger.kernel.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-The CPUIDLE_DRIVER_STATE_START symbol is defined as 1 only if
-CONFIG_ARCH_HAS_CPU_RELAX is set, otherwise it is defined as 0.
-However, if CONFIG_ARCH_HAS_CPU_RELAX is set, the first (index 0)
-entry in the cpuidle driver's table of states is overwritten with
-the default "poll" entry by the core.  The "state" defined by the
-"poll" entry doesn't provide ->enter_dead and ->enter_freeze
-callbacks and its exit_latency is 0.
-
-For this reason, it is not necessary to use CPUIDLE_DRIVER_STATE_START
-in cpuidle_play_dead() (->enter_dead is NULL, so the "poll state"
-will be skipped by the loop).
-
-It also is arguably unuseful to return states with exit_latency
-equal to 0 from find_deepest_state(), so the function can be modified
-to start the loop from index 0 and the "poll state" will be skipped by
-it as a result of the check against latency_req.
-
+    
+Revert commit 84822b158fd3 "PCI/PM: Remove pci_pm_complete()" that
+removed the execution of the device driver's ->complete callback
+from the PCI bus type.
+    
+That was a mistake, because those callbacks are not executed at all
+now even if present.
+    
+Fixes: 84822b158fd3 "PCI/PM: Remove pci_pm_complete()"
+Cc: 3.13+ <stable@vger.kernel.org> # 3.13+
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/cpuidle.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Index: linux-pm/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/cpuidle.c
-+++ linux-pm/drivers/cpuidle/cpuidle.c
-@@ -65,7 +65,7 @@ int cpuidle_play_dead(void)
- 		return -ENODEV;
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index 3cb2210de553..75c6aaec5c9b 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -669,10 +669,18 @@ static int pci_pm_prepare(struct device *dev)
+ 	return pci_dev_keep_suspended(to_pci_dev(dev));
+ }
  
- 	/* Find lowest-power state that supports long-term idle */
--	for (i = drv->state_count - 1; i >= CPUIDLE_DRIVER_STATE_START; i--)
-+	for (i = drv->state_count - 1; i >= 0; i--)
- 		if (drv->states[i].enter_dead)
- 			return drv->states[i].enter_dead(dev, i);
++static void pci_pm_complete(struct device *dev)
++{
++	struct device_driver *drv = dev->driver;
++
++	if (drv && drv->pm && drv->pm->complete)
++		drv->pm->complete(dev);
++}
  
-@@ -79,9 +79,9 @@ static int find_deepest_state(struct cpu
- 			      bool freeze)
- {
- 	unsigned int latency_req = 0;
--	int i, ret = freeze ? -1 : CPUIDLE_DRIVER_STATE_START - 1;
-+	int i, ret = -ENXIO;
+ #else /* !CONFIG_PM_SLEEP */
  
--	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
-+	for (i = 0; i < drv->state_count; i++) {
- 		struct cpuidle_state *s = &drv->states[i];
- 		struct cpuidle_state_usage *su = &dev->states_usage[i];
+ #define pci_pm_prepare	NULL
++#define pci_pm_complete	NULL
  
-
+ #endif /* !CONFIG_PM_SLEEP */
+ 
+@@ -1203,6 +1211,7 @@ static int pci_pm_runtime_idle(struct device *dev)
+ 
+ static const struct dev_pm_ops pci_dev_pm_ops = {
+ 	.prepare = pci_pm_prepare,
++	.complete = pci_pm_complete,
+ 	.suspend = pci_pm_suspend,
+ 	.resume = pci_pm_resume,
+ 	.freeze = pci_pm_freeze,
