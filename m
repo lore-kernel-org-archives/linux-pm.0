@@ -1,84 +1,108 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: randconfig build error with next-20150528, in
- drivers/power/twl4030_charger.c
-Date: Thu, 28 May 2015 13:46:42 -0500
-Message-ID: <20150528184642.GB25787@saruman.tx.rr.com>
-References: <CA+r1ZhjGZqh0ZOdkne3Pf1Ht2Vyf3+HzFPzrqVPDMRfiT6prxA@mail.gmail.com>
- <20150528175700.GB31619@earth>
-Reply-To: <balbi@ti.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="UHN/qo2QbUvPLonB"
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v2 04/14] clk: shmobile: rcar-gen2: Add CPG Clock Domain support
+Date: Thu, 28 May 2015 20:53:29 +0200
+Message-ID: <1432839219-475-5-git-send-email-geert+renesas@glider.be>
+References: <1432839219-475-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:54390 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752130AbbE1StA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 28 May 2015 14:49:00 -0400
-Content-Disposition: inline
-In-Reply-To: <20150528175700.GB31619@earth>
+Received: from xavier.telenet-ops.be ([195.130.132.52]:60771 "EHLO
+	xavier.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754806AbbE1Sxx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 May 2015 14:53:53 -0400
+In-Reply-To: <1432839219-475-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Jim Davis <jim.epost@gmail.com>, NeilBrown <neilb@suse.de>, Stephen Rothwell <sfr@canb.auug.org.au>, linux-next <linux-next@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Felipe Balbi <balbi@ti.com>
+To: Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
---UHN/qo2QbUvPLonB
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Add Clock Domain support to the R-Car Gen2 Clock Pulse Generator (CPG)
+driver using the generic PM Domain.  This allows to power-manage the
+module clocks of SoC devices that are part of the CPG Clock Domain using
+Runtime PM, or for system suspend/resume.
 
-On Thu, May 28, 2015 at 07:57:00PM +0200, Sebastian Reichel wrote:
-> Hi,
->=20
-> [+CC NeilBrown]
-> [+CC Felipe Balbi]
->=20
-> On Thu, May 28, 2015 at 10:05:55AM -0700, Jim Davis wrote:
-> > drivers/power/twl4030_charger.c: In function =E2=80=98twl4030_bci_probe=
-=E2=80=99:
-> > drivers/power/twl4030_charger.c:648:23: error: implicit declaration of =
-function
-> > =E2=80=98devm_usb_get_phy_by_node=E2=80=99 [-Werror=3Dimplicit-function=
--declaration]
-> >     bci->transceiver =3D devm_usb_get_phy_by_node(
-> >                        ^
-> > drivers/power/twl4030_charger.c:648:21: warning: assignment makes point=
-er from i
-> > nteger without a cast [-Wint-conversion]
-> >     bci->transceiver =3D devm_usb_get_phy_by_node(
-> >                      ^
->=20
-> This has been introduced by the following commit from Neil Brown:
->=20
-> power: twl4030_charger: find associated phy by more reliable means.
+SoC devices that are part of the CPG Clock Domain and can be
+power-managed through an MSTP clock should be tagged in DT with a proper
+"power-domains" property.
 
-no, this was introduced by the commit which introduced
-devm_usb_get_phy_by_node() (also by Neil) and has already been fixed by
-Arnd. I have the patch in my 'next' branch and it should show up on
-tomorrow's linux-next.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+v2:
+  - Add Acked-by and Reviewed-by,
+  - Move core CPG Clock Domain code from the R-Car Gen2 driver to the
+    CPG MSTP Clocks driver, as it's generic, and can be used on other
+    Renesas SoCs that have a CPG/MSTP block,
+  - Scan for an MSTP clock instead of using the first clock tied to the
+    device (con_id NULL),
+  - Extract R-Car Gen2 specifics from "[PATCH/RFC 1/5] clk: shmobile:
+    rcar-gen2: Add CPG Clock Domain support" into this patch.
+---
+ .../clock/renesas,rcar-gen2-cpg-clocks.txt         | 26 ++++++++++++++++++++--
+ drivers/clk/shmobile/clk-rcar-gen2.c               |  2 ++
+ 2 files changed, 26 insertions(+), 2 deletions(-)
 
---=20
-balbi
+diff --git a/Documentation/devicetree/bindings/clock/renesas,rcar-gen2-cpg-clocks.txt b/Documentation/devicetree/bindings/clock/renesas,rcar-gen2-cpg-clocks.txt
+index b02944fba9de4f86..aa2b94511f4d9e05 100644
+--- a/Documentation/devicetree/bindings/clock/renesas,rcar-gen2-cpg-clocks.txt
++++ b/Documentation/devicetree/bindings/clock/renesas,rcar-gen2-cpg-clocks.txt
+@@ -2,6 +2,8 @@
+ 
+ The CPG generates core clocks for the R-Car Gen2 SoCs. It includes three PLLs
+ and several fixed ratio dividers.
++The CPG also provides a Clock Domain for SoC devices, in combination with the
++CPG Module Stop (MSTP) Clocks.
+ 
+ Required Properties:
+ 
+@@ -20,10 +22,18 @@ Required Properties:
+   - clock-output-names: The names of the clocks. Supported clocks are "main",
+     "pll0", "pll1", "pll3", "lb", "qspi", "sdh", "sd0", "sd1", "z", "rcan", and
+     "adsp"
++  - #power-domain-cells: Must be 0
+ 
++SoC devices that are part of the CPG Clock Domain and can be power-managed
++through an MSTP clock should refer to the CPG device node in their
++"power-domains" property, as documented by the generic PM domain bindings in
++Documentation/devicetree/bindings/power/power_domain.txt.
+ 
+-Example
+--------
++
++Examples
++--------
++
++  - CPG device node:
+ 
+ 	cpg_clocks: cpg_clocks@e6150000 {
+ 		compatible = "renesas,r8a7790-cpg-clocks",
+@@ -34,4 +44,16 @@ Example
+ 		clock-output-names = "main", "pll0, "pll1", "pll3",
+ 				     "lb", "qspi", "sdh", "sd0", "sd1", "z",
+ 				     "rcan", "adsp";
++		#power-domain-cells = <0>;
++	};
++
++
++  - CPG Clock Domain member device node:
++
++	thermal@e61f0000 {
++		compatible = "renesas,thermal-r8a7790", "renesas,rcar-thermal";
++		reg = <0 0xe61f0000 0 0x14>, <0 0xe61f0100 0 0x38>;
++		interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
++		clocks = <&mstp5_clks R8A7790_CLK_THERMAL>;
++		power-domains = <&cpg_clocks>;
+ 	};
+diff --git a/drivers/clk/shmobile/clk-rcar-gen2.c b/drivers/clk/shmobile/clk-rcar-gen2.c
+index c7fde69d455e38c4..9612e3145b7ea370 100644
+--- a/drivers/clk/shmobile/clk-rcar-gen2.c
++++ b/drivers/clk/shmobile/clk-rcar-gen2.c
+@@ -417,6 +417,8 @@ static void __init rcar_gen2_cpg_clocks_init(struct device_node *np)
+ 	}
+ 
+ 	of_clk_add_provider(np, of_clk_src_onecell_get, &cpg->data);
++
++	cpg_mstp_add_clk_domain(np);
+ }
+ CLK_OF_DECLARE(rcar_gen2_cpg_clks, "renesas,rcar-gen2-cpg-clocks",
+ 	       rcar_gen2_cpg_clocks_init);
+-- 
+1.9.1
 
---UHN/qo2QbUvPLonB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVZ2KSAAoJEIaOsuA1yqRE7bYP/2oQLjpg2NMmlxoCm/9Ly3a4
-+Khb+ulPAR9M6V9refZajybJNtJjFqWvBMCHcfdCuftGzSp7dCs3nPHVdkT3uiSH
-zsWScoE4zxcMGZpx3J48tspKXplqkQEETXgSuDmMh5pm1V8mFKia6+VwpLduuIIK
-tWOlcS7ET/qOLYv2IAyXXblJIjhpzMRXyvqlXu1CXjS7XkSHTNvcDhu+0zXjQ5Ns
-Mckoa+87ou0DJFGEBlp1quCxiD2mkroP63oYe7UXgKrk6xQI9ehcZdxN9QPF5N0/
-msRofYy2a7PTdhhqzEX60oXISwrPoZrv4YibRbcmAgIzq/34VLXH4RTCRgYUVUYM
-pt7SFvNfpVnQTR5VgmDHKxGKonlgXF067WzsFb9NFDqiKJbs9mj7rFIkPq0+hBnp
-oFWR9fyeNIw2FUH/JJBwdUbZkRtv8DtiSR4a9MIAkz7MUd50j6IGetbXQbOLNOg+
-oKwgptm4l/9lhBAcxzgqigZVznkB90yzdMP2TzpdYO39OB2M1tsZjstL7bhvnMO5
-wOctaQasWYiFyzIBfzBJo7Ys2rtdzm56VOpgv1QJHSSUHtymCun+7zId+tl8dbiu
-6r4naBWPSruBLzCmjNwrHJjrHWkjA6m/jthmyzMBJ/llb5f+HQtEAMnVDiPU/ZZl
-bmToSVOmdZKPFuEP1ZQc
-=1Dkj
------END PGP SIGNATURE-----
-
---UHN/qo2QbUvPLonB--
