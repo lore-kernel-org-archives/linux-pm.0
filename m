@@ -1,383 +1,184 @@
-From: =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>
-Subject: Re: [PATCH v2 7/9] mfd/extcon: max77843: Rename defines to allow
- inclusion with max77693
-Date: Thu, 28 May 2015 08:42:34 +0900
-Message-ID: <CAJKOXPeON7dC2+bmKBpVFdvKmr05QMO_mW9Pc6XOFrFzb7_34A@mail.gmail.com>
-References: <1432446213-4886-1-git-send-email-k.kozlowski.k@gmail.com>
-	<1432446213-4886-8-git-send-email-k.kozlowski.k@gmail.com>
-	<CAGTfZH1BeqqP-=7sRrW-AbwiS23VtqipSj4qfujZqg1k-wi3Qg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpuidle: Do not use CPUIDLE_DRIVER_STATE_START in cpuidle.c
+Date: Thu, 28 May 2015 02:51:50 +0200
+Message-ID: <1473245.9TigmpKj4V@vostro.rjw.lan>
+References: <5494512.JcUbNX5Mxs@vostro.rjw.lan> <CAJZ5v0hn__7KRqOTpBYAk8EfV28xD54G0MaetaJ6HH5uUE3wQw@mail.gmail.com> <5565EEAA.8010900@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vn0-f44.google.com ([209.85.216.44]:42898 "EHLO
-	mail-vn0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751197AbbE0Xmg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2015 19:42:36 -0400
-In-Reply-To: <CAGTfZH1BeqqP-=7sRrW-AbwiS23VtqipSj4qfujZqg1k-wi3Qg@mail.gmail.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:65237 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750922AbbE1A0T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2015 20:26:19 -0400
+In-Reply-To: <5565EEAA.8010900@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>
 
-2015-05-27 22:50 GMT+09:00 Chanwoo Choi <cwchoi00@gmail.com>:
-> On Sun, May 24, 2015 at 2:43 PM, Krzysztof Kozlowski
-> <k.kozlowski.k@gmail.com> wrote:
->> Add MAX77843_MUIC prefix to some of the defines used in max77843 extcon
->> driver so the max77693-private.h can be included simultaneously with
->> max77843-private.h.
->>
->> Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
->> Acked-by: Lee Jones <lee.jones@linaro.org>
->> ---
->>  drivers/extcon/extcon-max77843.c     |  49 +++++++----
->>  include/linux/mfd/max77843-private.h | 154 +++++++++++++++++------------------
->>  2 files changed, 109 insertions(+), 94 deletions(-)
->>
->> diff --git a/drivers/extcon/extcon-max77843.c b/drivers/extcon/extcon-max77843.c
->> index 0f5910dcccb7..8a38d4acf026 100644
->> --- a/drivers/extcon/extcon-max77843.c
->> +++ b/drivers/extcon/extcon-max77843.c
->> @@ -206,11 +206,11 @@ static int max77843_muic_set_path(struct max77843_muic_info *info,
->>         if (attached)
->>                 ctrl1 = val;
->>         else
->> -               ctrl1 = CONTROL1_SW_OPEN;
->> +               ctrl1 = MAX77843_MUIC_CONTROL1_SW_OPEN;
->>
->>         ret = regmap_update_bits(max77843->regmap_muic,
->>                         MAX77843_MUIC_REG_CONTROL1,
->> -                       CONTROL1_COM_SW, ctrl1);
->> +                       MAX77843_MUIC_CONTROL1_COM_SW, ctrl1);
->>         if (ret < 0) {
->>                 dev_err(info->dev, "Cannot switch MUIC port\n");
->>                 return ret;
->> @@ -244,7 +244,7 @@ static int max77843_muic_get_cable_type(struct max77843_muic_info *info,
->>
->>         adc = info->status[MAX77843_MUIC_STATUS1] &
->>                         MAX77843_MUIC_STATUS1_ADC_MASK;
->> -       adc >>= STATUS1_ADC_SHIFT;
->> +       adc >>= MAX77843_MUIC_STATUS1_ADC_SHIFT;
->>
->>         switch (group) {
->>         case MAX77843_CABLE_GROUP_ADC:
->> @@ -310,7 +310,7 @@ static int max77843_muic_get_cable_type(struct max77843_muic_info *info,
->>                         /* Get VBVolt register bit */
->>                         gnd_type |= (info->status[MAX77843_MUIC_STATUS2] &
->>                                         MAX77843_MUIC_STATUS2_VBVOLT_MASK);
->> -                       gnd_type >>= STATUS2_VBVOLT_SHIFT;
->> +                       gnd_type >>= MAX77843_MUIC_STATUS2_VBVOLT_SHIFT;
->>
->>                         /* Offset of GND cable */
->>                         gnd_type |= MAX77843_MUIC_GND_USB_HOST;
->> @@ -339,7 +339,9 @@ static int max77843_muic_adc_gnd_handler(struct max77843_muic_info *info)
->>         switch (gnd_cable_type) {
->>         case MAX77843_MUIC_GND_USB_HOST:
->>         case MAX77843_MUIC_GND_USB_HOST_VB:
->> -               ret = max77843_muic_set_path(info, CONTROL1_SW_USB, attached);
->> +               ret = max77843_muic_set_path(info,
->> +                                            MAX77843_MUIC_CONTROL1_SW_USB,
->> +                                            attached);
->>                 if (ret < 0)
->>                         return ret;
->>
->> @@ -347,7 +349,9 @@ static int max77843_muic_adc_gnd_handler(struct max77843_muic_info *info)
->>                 break;
->>         case MAX77843_MUIC_GND_MHL_VB:
->>         case MAX77843_MUIC_GND_MHL:
->> -               ret = max77843_muic_set_path(info, CONTROL1_SW_OPEN, attached);
->> +               ret = max77843_muic_set_path(info,
->> +                                            MAX77843_MUIC_CONTROL1_SW_OPEN,
->> +                                            attached);
->>                 if (ret < 0)
->>                         return ret;
->>
->> @@ -366,7 +370,7 @@ static int max77843_muic_jig_handler(struct max77843_muic_info *info,
->>                 int cable_type, bool attached)
->>  {
->>         int ret;
->> -       u8 path = CONTROL1_SW_OPEN;
->> +       u8 path = MAX77843_MUIC_CONTROL1_SW_OPEN;
->>
->>         dev_dbg(info->dev, "external connector is %s (adc:0x%02x)\n",
->>                         attached ? "attached" : "detached", cable_type);
->> @@ -374,10 +378,10 @@ static int max77843_muic_jig_handler(struct max77843_muic_info *info,
->>         switch (cable_type) {
->>         case MAX77843_MUIC_ADC_FACTORY_MODE_USB_OFF:
->>         case MAX77843_MUIC_ADC_FACTORY_MODE_USB_ON:
->> -               path = CONTROL1_SW_USB;
->> +               path = MAX77843_MUIC_CONTROL1_SW_USB;
->>                 break;
->>         case MAX77843_MUIC_ADC_FACTORY_MODE_UART_OFF:
->> -               path = CONTROL1_SW_UART;
->> +               path = MAX77843_MUIC_CONTROL1_SW_UART;
->>                 break;
->>         default:
->>                 return -EINVAL;
->> @@ -475,14 +479,18 @@ static int max77843_muic_chg_handler(struct max77843_muic_info *info)
->>
->>         switch (chg_type) {
->>         case MAX77843_MUIC_CHG_USB:
->> -               ret = max77843_muic_set_path(info, CONTROL1_SW_USB, attached);
->> +               ret = max77843_muic_set_path(info,
->> +                                            MAX77843_MUIC_CONTROL1_SW_USB,
->> +                                            attached);
->>                 if (ret < 0)
->>                         return ret;
->>
->>                 extcon_set_cable_state_(info->edev, EXTCON_USB, attached);
->>                 break;
->>         case MAX77843_MUIC_CHG_DOWNSTREAM:
->> -               ret = max77843_muic_set_path(info, CONTROL1_SW_OPEN, attached);
->> +               ret = max77843_muic_set_path(info,
->> +                                            MAX77843_MUIC_CONTROL1_SW_OPEN,
->> +                                            attached);
->>                 if (ret < 0)
->>                         return ret;
->>
->> @@ -490,14 +498,18 @@ static int max77843_muic_chg_handler(struct max77843_muic_info *info)
->>                                         attached);
->>                 break;
->>         case MAX77843_MUIC_CHG_DEDICATED:
->> -               ret = max77843_muic_set_path(info, CONTROL1_SW_OPEN, attached);
->> +               ret = max77843_muic_set_path(info,
->> +                                            MAX77843_MUIC_CONTROL1_SW_OPEN,
->> +                                            attached);
->>                 if (ret < 0)
->>                         return ret;
->>
->>                 extcon_set_cable_state_(info->edev, EXTCON_TA, attached);
->>                 break;
->>         case MAX77843_MUIC_CHG_SPECIAL_500MA:
->> -               ret = max77843_muic_set_path(info, CONTROL1_SW_OPEN, attached);
->> +               ret = max77843_muic_set_path(info,
->> +                                            MAX77843_MUIC_CONTROL1_SW_OPEN,
->> +                                            attached);
->>                 if (ret < 0)
->>                         return ret;
->>
->> @@ -505,7 +517,9 @@ static int max77843_muic_chg_handler(struct max77843_muic_info *info)
->>                                         attached);
->>                 break;
->>         case MAX77843_MUIC_CHG_SPECIAL_1A:
->> -               ret = max77843_muic_set_path(info, CONTROL1_SW_OPEN, attached);
->> +               ret = max77843_muic_set_path(info,
->> +                                            MAX77843_MUIC_CONTROL1_SW_OPEN,
->> +                                            attached);
->>                 if (ret < 0)
->>                         return ret;
->>
->> @@ -529,7 +543,8 @@ static int max77843_muic_chg_handler(struct max77843_muic_info *info)
->>                         "failed to detect %s accessory (chg_type:0x%x)\n",
->>                         attached ? "attached" : "detached", chg_type);
->>
->> -               max77843_muic_set_path(info, CONTROL1_SW_OPEN, attached);
->> +               max77843_muic_set_path(info, MAX77843_MUIC_CONTROL1_SW_OPEN,
->> +                                      attached);
->>                 return -EINVAL;
->>         }
->>
->> @@ -668,7 +683,7 @@ static int max77843_muic_set_debounce_time(struct max77843_muic_info *info,
->>                 ret = regmap_update_bits(max77843->regmap_muic,
->>                                 MAX77843_MUIC_REG_CONTROL4,
->>                                 MAX77843_MUIC_CONTROL4_ADCDBSET_MASK,
->> -                               time << CONTROL4_ADCDBSET_SHIFT);
->> +                               time << MAX77843_MUIC_CONTROL4_ADCDBSET_SHIFT);
->>                 if (ret < 0) {
->>                         dev_err(info->dev, "Cannot write MUIC regmap\n");
->>                         return ret;
->> @@ -769,7 +784,7 @@ static int max77843_muic_probe(struct platform_device *pdev)
->>         max77843_muic_set_debounce_time(info, MAX77843_DEBOUNCE_TIME_25MS);
->>
->>         /* Set initial path for UART */
->> -       max77843_muic_set_path(info, CONTROL1_SW_UART, true);
->> +       max77843_muic_set_path(info, MAX77843_MUIC_CONTROL1_SW_UART, true);
->>
->>         /* Check revision number of MUIC device */
->>         ret = regmap_read(max77843->regmap_muic, MAX77843_MUIC_REG_ID, &id);
->> diff --git a/include/linux/mfd/max77843-private.h b/include/linux/mfd/max77843-private.h
->> index 0121d9440340..c19303b0ccfd 100644
->> --- a/include/linux/mfd/max77843-private.h
->> +++ b/include/linux/mfd/max77843-private.h
->> @@ -318,62 +318,62 @@ enum max77843_irq_muic {
->>         MAX77843_INTSRCMASK_SYS_MASK | MAX77843_INTSRCMASK_CHGR_MASK)
->>
->>  /* MAX77843 STATUS register*/
->> -#define STATUS1_ADC_SHIFT                      0
->> -#define STATUS1_ADCERROR_SHIFT                 6
->> -#define STATUS1_ADC1K_SHIFT                    7
->> -#define STATUS2_CHGTYP_SHIFT                   0
->> -#define STATUS2_CHGDETRUN_SHIFT                        3
->> -#define STATUS2_DCDTMR_SHIFT                   4
->> -#define STATUS2_DXOVP_SHIFT                    5
->> -#define STATUS2_VBVOLT_SHIFT                   6
->> -#define STATUS3_VBADC_SHIFT                    0
->> -#define STATUS3_VDNMON_SHIFT                   4
->> -#define STATUS3_DNRES_SHIFT                    5
->> -#define STATUS3_MPNACK_SHIFT                   6
->> -
->> -#define MAX77843_MUIC_STATUS1_ADC_MASK         (0x1f << STATUS1_ADC_SHIFT)
->> -#define MAX77843_MUIC_STATUS1_ADCERROR_MASK    BIT(STATUS1_ADCERROR_SHIFT)
->> -#define MAX77843_MUIC_STATUS1_ADC1K_MASK       BIT(STATUS1_ADC1K_SHIFT)
->> -#define MAX77843_MUIC_STATUS2_CHGTYP_MASK      (0x7 << STATUS2_CHGTYP_SHIFT)
->> -#define MAX77843_MUIC_STATUS2_CHGDETRUN_MASK   BIT(STATUS2_CHGDETRUN_SHIFT)
->> -#define MAX77843_MUIC_STATUS2_DCDTMR_MASK      BIT(STATUS2_DCDTMR_SHIFT)
->> -#define MAX77843_MUIC_STATUS2_DXOVP_MASK       BIT(STATUS2_DXOVP_SHIFT)
->> -#define MAX77843_MUIC_STATUS2_VBVOLT_MASK      BIT(STATUS2_VBVOLT_SHIFT)
->> -#define MAX77843_MUIC_STATUS3_VBADC_MASK       (0xf << STATUS3_VBADC_SHIFT)
->> -#define MAX77843_MUIC_STATUS3_VDNMON_MASK      BIT(STATUS3_VDNMON_SHIFT)
->> -#define MAX77843_MUIC_STATUS3_DNRES_MASK       BIT(STATUS3_DNRES_SHIFT)
->> -#define MAX77843_MUIC_STATUS3_MPNACK_MASK      BIT(STATUS3_MPNACK_SHIFT)
->> +#define MAX77843_MUIC_STATUS1_ADC_SHIFT                0
->> +#define MAX77843_MUIC_STATUS1_ADCERROR_SHIFT   6
->> +#define MAX77843_MUIC_STATUS1_ADC1K_SHIFT      7
->> +#define MAX77843_MUIC_STATUS2_CHGTYP_SHIFT     0
->> +#define MAX77843_MUIC_STATUS2_CHGDETRUN_SHIFT  3
->> +#define MAX77843_MUIC_STATUS2_DCDTMR_SHIFT     4
->> +#define MAX77843_MUIC_STATUS2_DXOVP_SHIFT      5
->> +#define MAX77843_MUIC_STATUS2_VBVOLT_SHIFT     6
->> +#define MAX77843_MUIC_STATUS3_VBADC_SHIFT      0
->> +#define MAX77843_MUIC_STATUS3_VDNMON_SHIFT     4
->> +#define MAX77843_MUIC_STATUS3_DNRES_SHIFT      5
->> +#define MAX77843_MUIC_STATUS3_MPNACK_SHIFT     6
->> +
->> +#define MAX77843_MUIC_STATUS1_ADC_MASK         (0x1f << MAX77843_MUIC_STATUS1_ADC_SHIFT)
->> +#define MAX77843_MUIC_STATUS1_ADCERROR_MASK    BIT(MAX77843_MUIC_STATUS1_ADCERROR_SHIFT)
->> +#define MAX77843_MUIC_STATUS1_ADC1K_MASK       BIT(MAX77843_MUIC_STATUS1_ADC1K_SHIFT)
->> +#define MAX77843_MUIC_STATUS2_CHGTYP_MASK      (0x7 << MAX77843_MUIC_STATUS2_CHGTYP_SHIFT)
->> +#define MAX77843_MUIC_STATUS2_CHGDETRUN_MASK   BIT(MAX77843_MUIC_STATUS2_CHGDETRUN_SHIFT)
->> +#define MAX77843_MUIC_STATUS2_DCDTMR_MASK      BIT(MAX77843_MUIC_STATUS2_DCDTMR_SHIFT)
->> +#define MAX77843_MUIC_STATUS2_DXOVP_MASK       BIT(MAX77843_MUIC_STATUS2_DXOVP_SHIFT)
->> +#define MAX77843_MUIC_STATUS2_VBVOLT_MASK      BIT(MAX77843_MUIC_STATUS2_VBVOLT_SHIFT)
->> +#define MAX77843_MUIC_STATUS3_VBADC_MASK       (0xf << MAX77843_MUIC_STATUS3_VBADC_SHIFT)
->> +#define MAX77843_MUIC_STATUS3_VDNMON_MASK      BIT(MAX77843_MUIC_STATUS3_VDNMON_SHIFT)
->> +#define MAX77843_MUIC_STATUS3_DNRES_MASK       BIT(MAX77843_MUIC_STATUS3_DNRES_SHIFT)
->> +#define MAX77843_MUIC_STATUS3_MPNACK_MASK      BIT(MAX77843_MUIC_STATUS3_MPNACK_SHIFT)
->>
->>  /* MAX77843 CONTROL register */
->> -#define CONTROL1_COMP1SW_SHIFT                 0
->> -#define CONTROL1_COMP2SW_SHIFT                 3
->> -#define CONTROL1_IDBEN_SHIFT                   7
->> -#define CONTROL2_LOWPWR_SHIFT                  0
->> -#define CONTROL2_ADCEN_SHIFT                   1
->> -#define CONTROL2_CPEN_SHIFT                    2
->> -#define CONTROL2_ACC_DET_SHIFT                 5
->> -#define CONTROL2_USBCPINT_SHIFT                        6
->> -#define CONTROL2_RCPS_SHIFT                    7
->> -#define CONTROL3_JIGSET_SHIFT                  0
->> -#define CONTROL4_ADCDBSET_SHIFT                        0
->> -#define CONTROL4_USBAUTO_SHIFT                 4
->> -#define CONTROL4_FCTAUTO_SHIFT                 5
->> -#define CONTROL4_ADCMODE_SHIFT                 6
->> -
->> -#define MAX77843_MUIC_CONTROL1_COMP1SW_MASK    (0x7 << CONTROL1_COMP1SW_SHIFT)
->> -#define MAX77843_MUIC_CONTROL1_COMP2SW_MASK    (0x7 << CONTROL1_COMP2SW_SHIFT)
->> -#define MAX77843_MUIC_CONTROL1_IDBEN_MASK      BIT(CONTROL1_IDBEN_SHIFT)
->> -#define MAX77843_MUIC_CONTROL2_LOWPWR_MASK     BIT(CONTROL2_LOWPWR_SHIFT)
->> -#define MAX77843_MUIC_CONTROL2_ADCEN_MASK      BIT(CONTROL2_ADCEN_SHIFT)
->> -#define MAX77843_MUIC_CONTROL2_CPEN_MASK       BIT(CONTROL2_CPEN_SHIFT)
->> -#define MAX77843_MUIC_CONTROL2_ACC_DET_MASK    BIT(CONTROL2_ACC_DET_SHIFT)
->> -#define MAX77843_MUIC_CONTROL2_USBCPINT_MASK   BIT(CONTROL2_USBCPINT_SHIFT)
->> -#define MAX77843_MUIC_CONTROL2_RCPS_MASK       BIT(CONTROL2_RCPS_SHIFT)
->> -#define MAX77843_MUIC_CONTROL3_JIGSET_MASK     (0x3 << CONTROL3_JIGSET_SHIFT)
->> -#define MAX77843_MUIC_CONTROL4_ADCDBSET_MASK   (0x3 << CONTROL4_ADCDBSET_SHIFT)
->> -#define MAX77843_MUIC_CONTROL4_USBAUTO_MASK    BIT(CONTROL4_USBAUTO_SHIFT)
->> -#define MAX77843_MUIC_CONTROL4_FCTAUTO_MASK    BIT(CONTROL4_FCTAUTO_SHIFT)
->> -#define MAX77843_MUIC_CONTROL4_ADCMODE_MASK    (0x3 << CONTROL4_ADCMODE_SHIFT)
->> +#define MAX77843_MUIC_CONTROL1_COMP1SW_SHIFT   0
->> +#define MAX77843_MUIC_CONTROL1_COMP2SW_SHIFT   3
->> +#define MAX77843_MUIC_CONTROL1_IDBEN_SHIFT     7
->> +#define MAX77843_MUIC_CONTROL2_LOWPWR_SHIFT    0
->> +#define MAX77843_MUIC_CONTROL2_ADCEN_SHIFT     1
->> +#define MAX77843_MUIC_CONTROL2_CPEN_SHIFT      2
->> +#define MAX77843_MUIC_CONTROL2_ACC_DET_SHIFT   5
->> +#define MAX77843_MUIC_CONTROL2_USBCPINT_SHIFT  6
->> +#define MAX77843_MUIC_CONTROL2_RCPS_SHIFT      7
->> +#define MAX77843_MUIC_CONTROL3_JIGSET_SHIFT    0
->> +#define MAX77843_MUIC_CONTROL4_ADCDBSET_SHIFT  0
->> +#define MAX77843_MUIC_CONTROL4_USBAUTO_SHIFT   4
->> +#define MAX77843_MUIC_CONTROL4_FCTAUTO_SHIFT   5
->> +#define MAX77843_MUIC_CONTROL4_ADCMODE_SHIFT   6
->> +
->> +#define MAX77843_MUIC_CONTROL1_COMP1SW_MASK    (0x7 << MAX77843_MUIC_CONTROL1_COMP1SW_SHIFT)
->> +#define MAX77843_MUIC_CONTROL1_COMP2SW_MASK    (0x7 << MAX77843_MUIC_CONTROL1_COMP2SW_SHIFT)
->> +#define MAX77843_MUIC_CONTROL1_IDBEN_MASK      BIT(MAX77843_MUIC_CONTROL1_IDBEN_SHIFT)
->> +#define MAX77843_MUIC_CONTROL2_LOWPWR_MASK     BIT(MAX77843_MUIC_CONTROL2_LOWPWR_SHIFT)
->> +#define MAX77843_MUIC_CONTROL2_ADCEN_MASK      BIT(MAX77843_MUIC_CONTROL2_ADCEN_SHIFT)
->> +#define MAX77843_MUIC_CONTROL2_CPEN_MASK       BIT(MAX77843_MUIC_CONTROL2_CPEN_SHIFT)
->> +#define MAX77843_MUIC_CONTROL2_ACC_DET_MASK    BIT(MAX77843_MUIC_CONTROL2_ACC_DET_SHIFT)
->> +#define MAX77843_MUIC_CONTROL2_USBCPINT_MASK   BIT(MAX77843_MUIC_CONTROL2_USBCPINT_SHIFT)
->> +#define MAX77843_MUIC_CONTROL2_RCPS_MASK       BIT(MAX77843_MUIC_CONTROL2_RCPS_SHIFT)
->> +#define MAX77843_MUIC_CONTROL3_JIGSET_MASK     (0x3 << MAX77843_MUIC_CONTROL3_JIGSET_SHIFT)
->> +#define MAX77843_MUIC_CONTROL4_ADCDBSET_MASK   (0x3 << MAX77843_MUIC_CONTROL4_ADCDBSET_SHIFT)
->> +#define MAX77843_MUIC_CONTROL4_USBAUTO_MASK    BIT(MAX77843_MUIC_CONTROL4_USBAUTO_SHIFT)
->> +#define MAX77843_MUIC_CONTROL4_FCTAUTO_MASK    BIT(MAX77843_MUIC_CONTROL4_FCTAUTO_SHIFT)
->> +#define MAX77843_MUIC_CONTROL4_ADCMODE_MASK    (0x3 << MAX77843_MUIC_CONTROL4_ADCMODE_SHIFT)
->>
->>  /* MAX77843 switch port */
->>  #define COM_OPEN                               0
->> @@ -383,38 +383,38 @@ enum max77843_irq_muic {
->>  #define COM_AUX_USB                            4
->>  #define COM_AUX_UART                           5
->>
->> -#define CONTROL1_COM_SW \
->> +#define MAX77843_MUIC_CONTROL1_COM_SW \
->>         ((MAX77843_MUIC_CONTROL1_COMP1SW_MASK | \
->>          MAX77843_MUIC_CONTROL1_COMP2SW_MASK))
->>
->> -#define CONTROL1_SW_OPEN \
->> -       ((COM_OPEN << CONTROL1_COMP1SW_SHIFT | \
->> -        COM_OPEN << CONTROL1_COMP2SW_SHIFT))
->> -#define CONTROL1_SW_USB \
->> -       ((COM_USB << CONTROL1_COMP1SW_SHIFT | \
->> -        COM_USB << CONTROL1_COMP2SW_SHIFT))
->> -#define CONTROL1_SW_AUDIO \
->> -       ((COM_AUDIO << CONTROL1_COMP1SW_SHIFT | \
->> -        COM_AUDIO << CONTROL1_COMP2SW_SHIFT))
->> -#define CONTROL1_SW_UART \
->> -       ((COM_UART << CONTROL1_COMP1SW_SHIFT | \
->> -        COM_UART << CONTROL1_COMP2SW_SHIFT))
->> -#define CONTROL1_SW_AUX_USB \
->> -       ((COM_AUX_USB << CONTROL1_COMP1SW_SHIFT | \
->> -        COM_AUX_USB << CONTROL1_COMP2SW_SHIFT))
->> -#define CONTROL1_SW_AUX_UART \
->> -       ((COM_AUX_UART << CONTROL1_COMP1SW_SHIFT | \
->> -        COM_AUX_UART << CONTROL1_COMP2SW_SHIFT))
->> +#define MAX77843_MUIC_CONTROL1_SW_OPEN \
->> +       ((COM_OPEN << MAX77843_MUIC_CONTROL1_COMP1SW_SHIFT | \
->> +        COM_OPEN << MAX77843_MUIC_CONTROL1_COMP2SW_SHIFT))
->> +#define MAX77843_MUIC_CONTROL1_SW_USB \
->> +       ((COM_USB << MAX77843_MUIC_CONTROL1_COMP1SW_SHIFT | \
->> +        COM_USB << MAX77843_MUIC_CONTROL1_COMP2SW_SHIFT))
->> +#define MAX77843_MUIC_CONTROL1_SW_AUDIO \
->> +       ((COM_AUDIO << MAX77843_MUIC_CONTROL1_COMP1SW_SHIFT | \
->> +        COM_AUDIO << MAX77843_MUIC_CONTROL1_COMP2SW_SHIFT))
->> +#define MAX77843_MUIC_CONTROL1_SW_UART \
->> +       ((COM_UART << MAX77843_MUIC_CONTROL1_COMP1SW_SHIFT | \
->> +        COM_UART << MAX77843_MUIC_CONTROL1_COMP2SW_SHIFT))
->> +#define MAX77843_MUIC_CONTROL1_SW_AUX_USB \
->> +       ((COM_AUX_USB << MAX77843_MUIC_CONTROL1_COMP1SW_SHIFT | \
->> +        COM_AUX_USB << MAX77843_MUIC_CONTROL1_COMP2SW_SHIFT))
->> +#define MAX77843_MUIC_CONTROL1_SW_AUX_UART \
->> +       ((COM_AUX_UART << MAX77843_MUIC_CONTROL1_COMP1SW_SHIFT | \
->> +        COM_AUX_UART << MAX77843_MUIC_CONTROL1_COMP2SW_SHIFT))
->
-> You add "MAX77843_MUIC_" prefix but, I think that "MUIC_" prefix is
-> not necessary.
-> You don't add the "MUIC_" prefix on similar patch6.
+On Wednesday, May 27, 2015 09:49:54 PM Preeti U Murthy wrote:
+> On 05/27/2015 07:27 PM, Rafael J. Wysocki wrote:
+> > On Wed, May 27, 2015 at 2:25 PM, Daniel Lezcano
+> > <daniel.lezcano@linaro.org> wrote:
+> >> On 05/27/2015 01:31 PM, Preeti U Murthy wrote:
+> >>>
+> >>> On 05/27/2015 07:06 AM, Rafael J. Wysocki wrote:
+> >>>>
+> >>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>>>
+> >>>> The CPUIDLE_DRIVER_STATE_START symbol is defined as 1 only if
+> >>>> CONFIG_ARCH_HAS_CPU_RELAX is set, otherwise it is defined as 0.
+> >>>> However, if CONFIG_ARCH_HAS_CPU_RELAX is set, the first (index 0)
+> >>>> entry in the cpuidle driver's table of states is overwritten with
+> >>>> the default "poll" entry by the core.  The "state" defined by the
+> >>>> "poll" entry doesn't provide ->enter_dead and ->enter_freeze
+> >>>> callbacks and its exit_latency is 0.
+> >>>>
+> >>>> For this reason, it is not necessary to use CPUIDLE_DRIVER_STATE_START
+> >>>> in cpuidle_play_dead() (->enter_dead is NULL, so the "poll state"
+> >>>> will be skipped by the loop) and in find_deepest_state() (since
+> >>>> exit_latency is 0, the "poll state" will become the default if the
+> >>>> "s->exit_latency <= latency_req" check is replaced with
+> >>>> "s->exit_latency < latency_req" which may only matter for drivers
+> >>>> providing different states with the same exit_latency).
+> >>>>
+> >>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>>> ---
+> >>>>   drivers/cpuidle/cpuidle.c |    8 ++++----
+> >>>>   1 file changed, 4 insertions(+), 4 deletions(-)
+> >>>
+> >>> <snip>
+> >>>
+> >>>>
+> >>>> @@ -79,13 +79,13 @@ static int find_deepest_state(struct cpu
+> >>>>                               bool freeze)
+> >>>>   {
+> >>>>         unsigned int latency_req = 0;
+> >>>> -       int i, ret = freeze ? -1 : CPUIDLE_DRIVER_STATE_START - 1;
+> >>>> +       int i, ret = -ENXIO;
+> >>>>
+> >>>> -       for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
+> >>>> +       for (i = 0; i < drv->state_count; i++) {
+> >>>>                 struct cpuidle_state *s = &drv->states[i];
+> >>>>                 struct cpuidle_state_usage *su = &dev->states_usage[i];
+> >>>>
+> >>>> -               if (s->disabled || su->disable || s->exit_latency <=
+> >>>> latency_req
+> >>>> +               if (s->disabled || su->disable || s->exit_latency <
+> >>>> latency_req
+> >>>
+> >>>
+> >>> Prior to this patch,
+> >>>
+> >>> For drivers on which CPUIDLE_DRIVER_STATE_START takes a value 0 and
+> >>> whose first idle state has an exit_latency of 0, find_deepest_state()
+> >>> would return -1 if it failed to find a deeper idle state.
+> >>> But as an effect of this patch, find_deepest_state() returns 0 in the
+> >>> above circumstance.
+> >>
+> >>
+> >> Except I am missing something, with an exit_latency = 0, the state will be
+> >> never selected, because of the "s->exit_latency < latency_req" condition
+> >> (strictly greater than).
+> > 
+> > No, this is the condition to skip the state, so previously it wouldn't
+> > be selected, but after the patch it will.
+> > 
+> > So yes, the patch changes behavior for systems with
+> > CONFIG_ARCH_HAS_CPU_RELAX unset.
+> > 
+> >>> My concern is if these drivers do not intend to enter a polling state
+> >>> during suspend, this will cause an issue, won't it?
+> > 
+> > The change in behavior happens for architectures where
+> > CONFIG_ARCH_HAS_CPU_RELAX is not set.  In those cases the 0-index
+> > state is supposed to be provided by the driver.  Is there a reason to
+> > expect that this may not be a genuine idle state?
+> 
+> On PowerPC, we have the 0-index idle state, whose exit_latency is 0 and
+> all that the CPU does in this state, is poll on need_resched(), except
+> at a lower priority from the hardware's standpoint. Nevertheless, the
+> CPU is busy polling. So, I would not consider it a genuine idle state.
 
-The MAX77843_MUIC_ prefix is already used in that file, e.g.:
-MAX77843_MUIC_STATUS1_ADC_MASK
+OK, that's good to know.
 
-Adding only "MAX77843_" makes sense but it would make the file
-inconsistent. Do you want me to add such inconsistent MAX77843_
-prefix?
+Arguably, then, returning states with exit_latency equal to 0 from
+find_deepest_state() may not be safe in general.
 
-Best regards,
-Krzysztof
+Well, we can make that rule, so I'll send an updated patch with that taken
+into account.
 
->
-> If you remove the "MUIC_" prefix, looks good to me about this patch.
-> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
->
-> Thanks,
-> Chanwoo Choi
+> On a side note, we do not yet support suspend on Power servers, but we
+> may in the future. Hence the concern.
+> 
+> >> Definitively poll can cause thermal issues, especially when suspending. It
+> >> is a dangerous state (let's imagine you close your laptop => suspend/poll
+> >> and then put it in your bag for a travel).
+> > 
+> > With ARCH_HAS_CPU_RELAX set the "poll state" is supposed to be thermally safe.
+> > 
+> >> I don't think with the code above we can reach this situation but I agree
+> >> this is something we have to take care carefully.
+> >>
+> >> Actually, I am in favour of removing poll at all from the cpuidle driver and
+> >> poll only when a cpuidle state selection fails under certain condition.
+> >>
+> >> So I fully agree with your statement below.
+> >>
+> >>> I would expect the cpus to be in a hardware
+> >>> defined idle state.
+> > 
+> > Well, except for the degenerate case in which all of them are disabled
+> > and for the "broadcast timer stopping aviodance" use case for
+> > find_deepest_state().
+> 
+> During suspend, the CPUs can very well enter states where the timer
+> stops since we stop timer interrupts anyway.
+
+That's if you provide ->enter_freeze callbacks, otherwise it works like
+runtime idle.
+
+> So unless the idle states
+> are explicitly disabled by the user/hardware for some reason, deeper
+> idle states will still be available during suspend as far as I can see.
+
+The case at hand is when ->enter_freeze callbacks are not available or
+all states having them are disabled.
+
+> > So there are two questions in my view:
+> > (1) Should find_deepest_state() ever return states with exit_latency equal to 0?
+> 
+> I would say no, since such an idle state would mostly be polling on a
+> wakeup event. Atleast, there is one such case in PowerPC.
+
+OK
+
+> > (2) If the answer to (1) is "yes", should the "poll state" be ever
+> > returned by find_deepest_state()?
+> > 
+> > In any case, find_deepest_state() will only return a state with
+> > exit_latency equal to 0 if there's no other choice and if it returns
+> > nothing, we'll fall back to the architecture idle method.  So the
+> > question really is whether or not falling back to arch idle is any
+> > better than using any state we have in the table.
+> 
+> My suggestion is to *not* fall back to arch idle code, since that is a
+> black box from the core cpuidle's perspective.
+
+Well, we do that today in some cases.
+
+> > The patch is based on the assumption that any state from the table
+> > will be better than arch idle, including the "polling state".  If that
+> > does not hold, we'll need to rethink a couple of other things in my
+> > view.
+> 
+> We could fail suspend if a non-polling idle state is not available perhaps ?
+
+The only thing we can do is to wake up the system immediately if there's
+no "genuine" state to enter.  I can send a (separate) patch for that too.
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
