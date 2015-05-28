@@ -1,139 +1,105 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH 00/21] On-demand device registration
-Date: Wed, 27 May 2015 23:33:34 -0500
-Message-ID: <CAL_Jsq+EWLEJhRudTGAwYsOg4tX2-pGhygeQGHae9RL8rBpMiA@mail.gmail.com>
-References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, =?UTF-8?Q?St=C3=A9phane_Marchesin?= <stephane.marchesin@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Alexander Holler <holler@ahsoftware.de>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Dan Williams <dan.j.williams@intel.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, dmaengine@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, linux-clk@vger.kernel.org, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.or>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH V6 0/3] OPP: Introduce OPP (V2) bindings
+Date: Thu, 28 May 2015 12:59:54 +0530
+Message-ID: <cover.1432797343.git.viresh.kumar@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, rob.herring-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd.bergmann-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mike.turquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org, Sudeep.Holla-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, viswanath.puttagunta-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, ta.omasab-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, kesavan.abhilash-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, May 25, 2015 at 9:53 AM, Tomeu Vizoso
-<tomeu.vizoso@collabora.com> wrote:
-> Hello,
->
-> I have a problem with the panel on my Tegra Chromebook taking longer =
-than
-> expected to be ready during boot (St=C3=A9phane Marchesin reported wh=
-at is
-> basically the same issue in [0]), and have looked into ordered probin=
-g as a
-> better way of solving this than moving nodes around in the DT or play=
-ing with
-> initcall levels.
->
-> While reading the thread [1] that Alexander Holler started with his s=
-eries to
-> make probing order deterministic, it occurred to me that it should be=
- possible
-> to achieve the same by registering devices as they are referenced by =
-other
-> devices.
+Hi,
 
-I like the concept and novel approach.
+V5 got some more review comments, Acks, etc.. and they are all updated
+in V6.
 
-> This basically reuses the information that is already implicit in the=
- probe()
-> implementations, saving us from refactoring existing drivers or addin=
-g
-> information to DTBs.
->
-> Something I'm not completely happy with is that I have had to move th=
-e call to
-> of_platform_populate after all platform drivers have been registered.
-> Otherwise I don't see how I could register drivers on demand as we do=
-n't have
-> yet each driver's compatible strings.
+V5->V6:
+- Acks/RBY from Rob and Nishanth added
+- Lots of rewording suggested by Nishanth
+- OPP Descriptor node is named OPP Table node now and so 'opp' is
+  replaced by 'opp_table' in examples, as suggested by Nishanth.
+- OPP entries are named as 'oppX' instead of 'entry*' as suggested by
+  Nishanth.
+- Phandles to slow and fast OPPs in 2/3 are named appropriately.
 
-Yeah, this is the opposite of what we'd really like. Ideally, we would
-have a solution that works for modules too. However, we're no worse
-off. We pretty much build-in dependencies to avoid module ordering
-problems.
+V4->V5:
+- opp-microamp fixed and rewritten as per Mark's suggestions.
+- shared-opp renamed as opp-shared, as that's the convention for other
+  properties.
+- Dropped "[V4 3/3] OPP: Add 'opp-next' in operating-points-v2 bindings"
+  as that was NAK'd by Mike T..
+- Added [V5 3/3] based on Nishanth's suggestions.
+- Added an example for 2/3, multiple OPP nodes.
+- Other minor formatting..
+- Existing binding: "operating-points" isn't deprecated now as platforms
+  looking for simple bindings should be allowed to use them.
+- opp-khz is changed to opp-hz, examples updated.
+- turbo-mode explained
 
-Perhaps we need to make the probing on-demand rather than simply on
-device<->driver match occurring.
 
-> For machs that don't move of_platform_populate() to a later point, th=
-ese
-> patches shouldn't cause any problems but it's not guaranteed that we'=
-ll avoid
-> all the deferred probes as some drivers may not be registered yet.
+V3->V4:
+- Dropped code changes as we are still concerned about bindings.
+- separated out into three patches, some of which might be NAK'd. :)
+- The first patch presents basic OPP stuff that was reviewed earlier. It
+  also has support for multiple regulators, with values for both current
+  and voltage.
+- Second patch is based on a special concern that Stephen had about
+  multiple OPP tables, one of which the parsing code will select at
+  runtime.
+- Third one separates out 'opp-next' or Intermediate freq support as
+  Mike T. had few concerns over it. He wanted the clock driver to take
+  care of this and so do not want it to be passed by DT and used by
+  cpufreq. Also, there were concerns like the platform may not want to
+  choose intermediate frequency as a target frequency for longer runs,
+  which wasn't prevented in earlier bindings.  And so it is kept
+  separate to be NAK'd quietly, without much disturbances.
 
-Ideally, of_platform_populate is not explicitly called by each
-platform. So I think we need to make this work for the default case.
+  ---------------x-------------------x------------------------
 
-> I have tested this on boards with Tegra, iMX.6 and Exynos SoCs, and t=
-hese
-> patches were enough to eliminate all the deferred probes.
->
-> With this series I get the kernel to output to the panel in 0.5s, ins=
-tead of 2.8s.
+Current OPP (Operating performance point) device tree bindings have been
+insufficient due to the inflexible nature of the original bindings. Over
+time, we have realized that Operating Performance Point definitions and
+usage is varied depending on the SoC and a "single size (just frequency,
+voltage) fits all" model which the original bindings attempted and
+failed.
 
-That's certainly compelling.
+The proposed next generation of the bindings addresses by providing a
+expandable binding for OPPs and introduces the following common
+shortcomings seen with the original bindings:
 
-Rob
+- Getting clock/voltage/current rails sharing information between CPUs.
+  Shared by all cores vs independent clock per core vs shared clock per
+  cluster.
 
->
-> Regards,
->
-> Tomeu
->
-> [0] http://lists.freedesktop.org/archives/dri-devel/2014-August/06652=
-7.html
->
-> [1] https://lkml.org/lkml/2014/5/12/452
->
-> Tomeu Vizoso (21):
->   regulator: core: Reduce critical area in _regulator_get
->   ARM: tegra: Add gpio-ranges property
->   ARM: tegra: Register drivers before devices
->   ARM: EXYNOS: Register drivers before devices
->   ARM i.MX6q: Register drivers before devices
->   of/platform: Add of_platform_device_ensure()
->   of/platform: Ensure device registration on lookup
->   gpio: Probe GPIO drivers on demand
->   gpio: Probe pinctrl devices on demand
->   regulator: core: Probe regulators on demand
->   drm: Probe panels on demand
->   drm/tegra: Probe dpaux devices on demand
->   i2c: core: Probe i2c master devices on demand
->   pwm: Probe PWM chip devices on demand
->   backlight: Probe backlight devices on demand
->   usb: phy: Probe phy devices on demand
->   clk: Probe clk providers on demand
->   pinctrl: Probe pinctrl devices on demand
->   phy: core: Probe phy providers on demand
->   dma: of: Probe DMA controllers on demand
->   power-supply: Probe power supplies on demand
->
->  arch/arm/boot/dts/tegra124.dtsi     |  1 +
->  arch/arm/mach-exynos/exynos.c       |  4 +--
->  arch/arm/mach-imx/mach-imx6q.c      | 12 ++++-----
->  arch/arm/mach-tegra/tegra.c         | 21 ++++++---------
->  drivers/clk/clk.c                   |  3 +++
->  drivers/dma/of-dma.c                |  3 +++
->  drivers/gpio/gpiolib-of.c           |  5 ++++
->  drivers/gpu/drm/drm_panel.c         |  3 +++
->  drivers/gpu/drm/tegra/dpaux.c       |  3 +++
->  drivers/i2c/i2c-core.c              |  3 +++
->  drivers/of/platform.c               | 53 +++++++++++++++++++++++++++=
-++++++++++
->  drivers/phy/phy-core.c              |  3 +++
->  drivers/pinctrl/devicetree.c        |  2 ++
->  drivers/power/power_supply_core.c   |  3 +++
->  drivers/pwm/core.c                  |  3 +++
->  drivers/regulator/core.c            | 45 +++++++++++++++------------=
-----
->  drivers/usb/phy/phy.c               |  3 +++
->  drivers/video/backlight/backlight.c |  3 +++
->  include/linux/of_platform.h         |  2 ++
->  19 files changed, 130 insertions(+), 45 deletions(-)
->
-> --
-> 2.4.1
->
+- Support for specifying current levels along with voltages.
+
+- Support for multiple regulators.
+
+- Support for turbo modes.
+
+- Other per OPP settings: transition latencies, disabled status, etc.?
+
+- Expandability of OPPs in future.
+
+This patchset introduces new bindings "operating-points-v2" to get these
+problems solved. Refer to the bindings for more details.
+
+We now have multiple versions of OPP binding and only one of them should
+be used per device.
+
+
+Viresh Kumar (3):
+  OPP: Add new bindings to address shortcomings of existing bindings
+  OPP: Allow multiple OPP tables to be passed via DT
+  OPP: Add binding for 'opp-suspend'
+
+ Documentation/devicetree/bindings/power/opp.txt | 439 +++++++++++++++++++++++-
+ 1 file changed, 435 insertions(+), 4 deletions(-)
+
+-- 
+2.4.0
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
