@@ -1,97 +1,63 @@
-From: Sebastian Reichel <sre@ring0.de>
-Subject: Re: [PATCH] power: bq24190_charger: Change first_time flag reset
- condition
-Date: Fri, 29 May 2015 04:34:40 +0200
-Message-ID: <20150529023439.GA17735@earth>
-References: <1432803932-5315-1-git-send-email-thomas.elste@imms.de>
- <1432803932-5315-2-git-send-email-thomas.elste@imms.de>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 0/3] Add support for Richtek RT9455 battery charger
+Date: Fri, 29 May 2015 04:42:50 +0200
+Message-ID: <20150529024250.GB17735@earth>
+References: <1432549343-5756-1-git-send-email-anda-maria.nicolae@intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="sm4nu43k4a2Rpi4c"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ring0.de ([5.45.105.125]:33201 "EHLO ring0.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753342AbbE2CfE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 28 May 2015 22:35:04 -0400
+	protocol="application/pgp-signature"; boundary="Bn2rw/3z4jIqBvZU"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1432803932-5315-2-git-send-email-thomas.elste@imms.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1432549343-5756-1-git-send-email-anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Anda-Maria Nicolae <anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Elste <thomas.elste@imms.de>
-Cc: linux-pm@vger.kernel.org
 
 
---sm4nu43k4a2Rpi4c
+--Bn2rw/3z4jIqBvZU
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Anda-Maria,
 
-On Thu, May 28, 2015 at 11:05:32AM +0200, Thomas Elste wrote:
-> The initial register reset of BQ24190 generates a charger status change
-> whose propagation via power_supply_changed is prevented using a flag.
-> This flag gets never reset so all following events are ignored as well
-> leading for example to userspace not detecting charger connects/disconnec=
-ts.
->=20
-> Therefor change the reset condition of first_time flag, so only the
-> propagation of the first charger status change is prevented.
->=20
-> Signed-off-by: Thomas Elste <thomas.elste@imms.de>
-> ---
->  drivers/power/bq24190_charger.c | 11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/power/bq24190_charger.c b/drivers/power/bq24190_char=
-ger.c
-> index 407c4af..052db78 100644
-> --- a/drivers/power/bq24190_charger.c
-> +++ b/drivers/power/bq24190_charger.c
-> @@ -1258,10 +1258,13 @@ static irqreturn_t bq24190_irq_handler_thread(int=
- irq, void *data)
->  	 * register reset so we should ignore that one (the very first
->  	 * interrupt received).
->  	 */
-> -	if (alert_userspace && !bdi->first_time) {
-> -		power_supply_changed(bdi->charger);
-> -		power_supply_changed(bdi->battery);
-> -		bdi->first_time =3D false;
-> +	if (alert_userspace) {
-> +		if (!bdi->first_time) {
-> +			power_supply_changed(bdi->charger);
-> +			power_supply_changed(bdi->battery);
-> +		} else {
-> +			bdi->first_time =3D false;
-> +		}
->  	}
-> =20
->  out:
+On Mon, May 25, 2015 at 01:22:20PM +0300, Anda-Maria Nicolae wrote:
+> The next 3 patches do the following:
+> - first patch adds Richtek Technology Corporation in the vendor-prefixes list
+> - second patch adds device tree binding example for Richtek RT9455 battery charger
+> - third patch adds the driver for Richtek RT9455 battery charger
 
-Thanks, queued for 4.2.
+I don't see a changelog against "[PATCH v5] power_supply: Add support
+for Richtek rt9455 battery charger", but it seems you overlooked all
+of my comments except for the one about splitting the patch (which
+looks fine now).
 
 -- Sebastian
 
---sm4nu43k4a2Rpi4c
+--Bn2rw/3z4jIqBvZU
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJVZ9A8AAoJENju1/PIO/qaq/0P/2Pn0dS0eTMnvBnBoqqhuPBL
-ydXMIawhK7mwjhlSDk2CzriXj5bhvDR/WYVpQWiFEnBcVmr3ctTuD7ZrF5MExhe5
-sPX3hCCYW5fGTBVCT+m3F3t2wTIsDMtxxcAH2bhhHc21FJKP/rXMjaxihULIHQKO
-sQ2cq5co9FVSTEaq3eZIFVfWdAGRZf5avHoljmCNl0GnGm8GCSHk5ZLML2qLIcFZ
-FICYkz9b0tzAkJ5MGgSPjceKbWjDjWJ3MtkbfRnOBWXbnZhHuvsQ62IQr8+OfBeR
-xvWHALPC7+K6vjxKfK5L9/BerhQae6fxVgnkHvTQXZT0nan6LO67fkfvNcbyfD3c
-4UqTNKkfVUICV8PGUdNJ4cxiIg2ALFnb+YcQQq+73rPaN8e3B60GmqHsj77FyxcU
-NlEDVZpIH01zUjcYwFSsTmK6UUQbjU4gP/w24XrdPLhyVeTELu97iNVDvCBCP6ZI
-tZwQIZf7QAxaoSx8KKxnOqoRvQ/YwEnre72xSPFgF+zlcmMrrbhDy5386GUbAJnP
-82LixqC81rlDHiDVvc9vNwzrU5dP6M+h3/TWzWvsSXih0hQRnBdPx1QbA+BVMoTp
-vvmueI7sZgo/TdabWORwiBLEsFm0uKP5WDMk8njCYw9VpatCOT5SPXSs8Gsu/tGz
-J5r5HgqnjJia+giJczO4
-=qIlu
+iQIcBAEBCgAGBQJVZ9IqAAoJENju1/PIO/qaBZwP/1zfPCJYIYUc94IZ6AqmyH4r
+IQ03XDGXjscjSssi7lu3Z53Hen05Co3GxhQAx0AiYvlZCZX1Cwou/yTqSXgTFzjH
+Ff+D7tRCWgRW0vZh71pogTP5wJGT/fD81JoDFp3xNZXiqapfDsgixYxuK0cOTmwG
+93jRlKg8y6EJc4ryZ/E6247CkqS084yZQIv7eTPDF2YSvWgMnJpvmnEygXvPIS0I
+YQNUduK4CVvo2TgZEXt0umBosSKrqWOIiLbqSN4pXtlKqvk0s0qvJxcXGCoWfGES
+jUEb81a+qEnS0HpepTdWC3StWvSruc27VmLphaLOYMkxd96vCxhYjwYCe9ZWD4sw
+KbUFEyZ+9olsPBa81EuHZPPrjZJIHwIqMaww860fYa1gb9JyVccl1bbTHagN8LoZ
+0jEa7bJdukipOvPFIyXGKsy+CJuX2DGv5TbvvkIl2hxKxaglnPmkj6WNXuCo/a5C
+1ri47bZ5mEcWR1DPT7edOhnXd16gsFVyXS+p2piq5EWqJN1jpNEMRsRs/7VTBSGL
+SNRI+7X6cGWeej0LwxWQuHsJUPsWyIi/L4QQ4ETb3T176JIPcH/TWNbYGVFayk3D
+R8cTYA29i7Wl6yc6DG+B6nJ1W3lJTCPEANB/P6ebVwOtrHuFZEg9OjU+SByu2B94
+XeJDJsX7XScPWE2bM8jR
+=3m9z
 -----END PGP SIGNATURE-----
 
---sm4nu43k4a2Rpi4c--
+--Bn2rw/3z4jIqBvZU--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
