@@ -1,57 +1,42 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2] PM / clock_ops: Print acquired clock name in addition to con_id
-Date: Fri, 29 May 2015 18:35:31 +0200
-Message-ID: <1432917331-3285-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from laurent.telenet-ops.be ([195.130.137.89]:55259 "EHLO
-	laurent.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755970AbbE2Qfa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 May 2015 12:35:30 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Tony Lindgren <tony@atomide.com>
+Subject: [PATCH] PM / Wakeirq: Fix typo in prototype for dev_pm_set_dedicated_wake_irq
+Date: Fri, 29 May 2015 09:54:02 -0700
+Message-ID: <1432918442-2043-1-git-send-email-tony@atomide.com>
+Return-path: <linux-omap-owner@vger.kernel.org>
+Sender: linux-omap-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
+Cc: Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Grygorii Strashko <Grygorii.Strashko@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Currently the con_id of the acquired clock is printed for debugging
-purposes.  But in several cases, the con_id is NULL, which doesn't
-provide much debugging information when printed.  These cases are:
-  - When explicitly passing a NULL con_id (which means the first clock
-    tied to the device, if available),
-  - When not using pm_clk_add(), but pm_clk_add_clk() (which takes a
-    "struct clk *" directly).
+Looks like I only built test the dev_pm_set_wake_irq and not the
+dev_pm_set_dedicated_wake_irq case on x86.
 
-Hence print the actual clock name in addition to (and not instead of;
-thanks Grygorii Strashko!) the con_id.
+Turns out there's a typo for the dev_pm_set_dedicated_wake_irq
+prototype that causes a build error if CONFIG_COMPILE_TEST
+and CONFIG_MMC_OMAP_HS are selected.
 
-Note that the clock name is not available with legacy clock frameworks,
-and the hex pointer address will be printed instead.
-
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Reported-by: Jim Davis <jim.epost@gmail.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
-This is v2 of "PM / clock_ops: Print acquired clock name instead of
-con_id".
+ include/linux/pm_wakeirq.h | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-v2:
-  - Print both clock and con_id, as suggested by Grygorii Strashko
-    <grygorii.strashko@linaro.org>.
----
- drivers/base/power/clock_ops.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-index 442ce010559bf531..acef9f9f759a2530 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -68,7 +68,8 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
- 	} else {
- 		clk_prepare(ce->clk);
- 		ce->status = PCE_STATUS_ACQUIRED;
--		dev_dbg(dev, "Clock %s managed by runtime PM.\n", ce->con_id);
-+		dev_dbg(dev, "Clock %pC con_id %s managed by runtime PM.\n",
-+			ce->clk, ce->con_id);
- 	}
+diff --git a/include/linux/pm_wakeirq.h b/include/linux/pm_wakeirq.h
+index 4046fa1..cd5b62d 100644
+--- a/include/linux/pm_wakeirq.h
++++ b/include/linux/pm_wakeirq.h
+@@ -30,8 +30,7 @@ static inline int dev_pm_set_wake_irq(struct device *dev, int irq)
+ 	return 0;
  }
  
+-static inline int dev_pm_set_dedicated__wake_irq(struct device *dev,
+-						 int irq)
++static inline int dev_pm_set_dedicated_wake_irq(struct device *dev, int irq)
+ {
+ 	return 0;
+ }
 -- 
-1.9.1
+2.1.4
 
