@@ -1,232 +1,56 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH v2] PM / Domains: Skip timings during syscore suspend/resume
-Date: Fri, 29 May 2015 17:24:23 +0200
-Message-ID: <1432913063-26691-1-git-send-email-geert@linux-m68k.org>
-Return-path: <linux-sh-owner@vger.kernel.org>
-Sender: linux-sh-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [RFC][PATCH] x86: remove vmalloc.h from asm/io.h
+Date: Sat, 30 May 2015 01:28:03 +1000
+Message-ID: <20150530012803.46ba702e@canb.auug.org.au>
+References: <20150529191847.2d4cb3a7@canb.auug.org.au>
+	<s5h8uc75zbx.wl-tiwai@suse.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/rERSifRt57LCh9w/H0guhpe"; protocol="application/pgp-signature"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <s5h8uc75zbx.wl-tiwai@suse.de>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, David Vrabel <david.vrabel@citrix.com>, Anton Vorontsov <anton@enomsg.org>, Colin Cross <ccross@android.com>, Kees Cook <keescook@chromium.org>, Tony Luck <tony.luck@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Kristen Carlson Accardi <kristen@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vinod Koul <vinod.koul@intel.com>, "K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Hiral Patel <hiralpat@cisco.com>, Suma Ramars <sramars@cisco.com>, Brian Uchino <buchino@cisco.com>, "James E.J. Bottomley" <JBottomley@odin.com>, Jaroslav Kysela <perex@perex.cz>, Andrew Morton <akpm@lin>
 List-Id: linux-pm@vger.kernel.org
 
-From: Geert Uytterhoeven <geert+renesas@glider.be>
+--Sig_/rERSifRt57LCh9w/H0guhpe
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-The PM Domain code uses ktime_get() to perform various latency
-measurements.  However, if ktime_get() is called while timekeeping is
-suspended, the following warning is printed:
+Hi Takashi,
 
-    WARNING: CPU: 0 PID: 1340 at kernel/time/timekeeping.c:576 ktime_get+0x3
+On Fri, 29 May 2015 14:43:14 +0200 Takashi Iwai <tiwai@suse.de> wrote:
+>
+> For the sound bits,
+>   Acked-by: Takashi Iwai <tiwai@suse.de>
 
-This happens when resuming the PM Domain that contains the clock events
-source, which calls pm_genpd_syscore_poweron(). Chain of operations is:
+Thanks, noted.
 
-    timekeeping_resume()
-    {
-	clockevents_resume()
-	    sh_cmt_clock_event_resume()
-		pm_genpd_syscore_poweron()
-		    pm_genpd_sync_poweron()
-			genpd_syscore_switch()
-			    genpd_power_on()
-				ktime_get(), but timekeeping_suspended == 1
-	...
-	timekeeping_suspended = 0;
-    }
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Fix this by adding a "timed" parameter to genpd_power_{on,off}() and
-pm_genpd_sync_power{off,on}(), to indicate whether latency measurements
-are allowed.  This parameter is passed as false in
-genpd_syscore_switch() (i.e. during syscore suspend/resume), and true in
-all other cases.
+--Sig_/rERSifRt57LCh9w/H0guhpe
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-Seen on r8a7791/koelsch with CPG Clock Domain, _and_
-genpd->power_{off,on}() populated for debugging purposes.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-This is v2 of "PM / Domains: Skip latency measurements if timekeeping is
-suspended".
+iQIcBAEBCAAGBQJVaIWIAAoJEMDTa8Ir7ZwVIEoP/1t+zkWzh2piTjp5sJfGDbtx
+KiJXilqI9SfJX8d1uI05Ht5DBdlua71z4IMQ9pX5kJWwFoxpu7VimJOdirOpUiJ8
+dDmAS6PoqgiQtaCXIS85TjGYYJmzdlMOaskrlXeouMKGIp2YoR8cBwdI/gw1tpjB
+e3s4sVRyvp2WAFG87rMUW6u93C4jHRUVNUESqf5j5RvRWE54HDEIMcFDBT2hxI9j
+GjAYIQWWkNksDTH2cGihE6nlFaV0ki9yzLe9QK6tbrGz4gR6XRj1jnoHozaCxAJY
+bR5gkizW5NJpATBAy8ASAGWY04jMePYGYlAkdkrHtfIeyVCGN1i0SXynKb5laht6
+ZZznv2HpbQZZeypYThULDY/UpRblzK1WueZ7mtAQRanvNb0L/WVjHTUE3fLMxJKs
+dDYBLU3OiFMdGnoZnuvc06693WqvZ2Lo4JtQt9XsxQmdf8lkM5yTsxhzWV6Lvjwr
+i1L3Sfr4FikKETHHfXyGVc7p6TrhAZthJQPFeb9HLBWvTTWqeH5SIWBZtyxXrDwE
+38ukU7/qSmHZfVHneqI0OUSnnwpRCfmefi1kCi4SVfeVSDJJCZ3iwBVAZ84d0JUD
+iPhOm4Z0Q87wTTjt5SLjbmB8uY3bzUw+gnKR6mxQiaQf8G7tNIwuEzip+e4SEUY7
+qOMUZeW9GN2bybzYo8AB
+=ai0Y
+-----END PGP SIGNATURE-----
 
-Changes:
-  v2:
-    - Add a "timed" parameter instead of checking the
-      timekeeping_suspended flag, which is supposed to be private to the
-      time subsystem.
----
- drivers/base/power/domain.c | 42 ++++++++++++++++++++++++++----------------
- 1 file changed, 26 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 2327613d453929db..cdd547bd67df8218 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -181,7 +181,7 @@ static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
- 	genpd->cpuidle_data->idle_state->exit_latency = usecs64;
- }
- 
--static int genpd_power_on(struct generic_pm_domain *genpd)
-+static int genpd_power_on(struct generic_pm_domain *genpd, bool timed)
- {
- 	ktime_t time_start;
- 	s64 elapsed_ns;
-@@ -190,6 +190,9 @@ static int genpd_power_on(struct generic_pm_domain *genpd)
- 	if (!genpd->power_on)
- 		return 0;
- 
-+	if (!timed)
-+		return genpd->power_on(genpd);
-+
- 	time_start = ktime_get();
- 	ret = genpd->power_on(genpd);
- 	if (ret)
-@@ -208,7 +211,7 @@ static int genpd_power_on(struct generic_pm_domain *genpd)
- 	return ret;
- }
- 
--static int genpd_power_off(struct generic_pm_domain *genpd)
-+static int genpd_power_off(struct generic_pm_domain *genpd, bool timed)
- {
- 	ktime_t time_start;
- 	s64 elapsed_ns;
-@@ -217,6 +220,9 @@ static int genpd_power_off(struct generic_pm_domain *genpd)
- 	if (!genpd->power_off)
- 		return 0;
- 
-+	if (!timed)
-+		return genpd->power_off(genpd);
-+
- 	time_start = ktime_get();
- 	ret = genpd->power_off(genpd);
- 	if (ret == -EBUSY)
-@@ -305,7 +311,7 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
- 		}
- 	}
- 
--	ret = genpd_power_on(genpd);
-+	ret = genpd_power_on(genpd, true);
- 	if (ret)
- 		goto err;
- 
-@@ -615,7 +621,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 		 * the pm_genpd_poweron() restore power for us (this shouldn't
- 		 * happen very often).
- 		 */
--		ret = genpd_power_off(genpd);
-+		ret = genpd_power_off(genpd, true);
- 		if (ret == -EBUSY) {
- 			genpd_set_active(genpd);
- 			goto out;
-@@ -827,6 +833,7 @@ static bool genpd_dev_active_wakeup(struct generic_pm_domain *genpd,
- /**
-  * pm_genpd_sync_poweroff - Synchronously power off a PM domain and its masters.
-  * @genpd: PM domain to power off, if possible.
-+ * @timed: True if latency measurements are allowed.
-  *
-  * Check if the given PM domain can be powered off (during system suspend or
-  * hibernation) and do that if so.  Also, in that case propagate to its masters.
-@@ -836,7 +843,8 @@ static bool genpd_dev_active_wakeup(struct generic_pm_domain *genpd,
-  * executed sequentially, so it is guaranteed that it will never run twice in
-  * parallel).
-  */
--static void pm_genpd_sync_poweroff(struct generic_pm_domain *genpd)
-+static void pm_genpd_sync_poweroff(struct generic_pm_domain *genpd,
-+				   bool timed)
- {
- 	struct gpd_link *link;
- 
-@@ -847,26 +855,28 @@ static void pm_genpd_sync_poweroff(struct generic_pm_domain *genpd)
- 	    || atomic_read(&genpd->sd_count) > 0)
- 		return;
- 
--	genpd_power_off(genpd);
-+	genpd_power_off(genpd, timed);
- 
- 	genpd->status = GPD_STATE_POWER_OFF;
- 
- 	list_for_each_entry(link, &genpd->slave_links, slave_node) {
- 		genpd_sd_counter_dec(link->master);
--		pm_genpd_sync_poweroff(link->master);
-+		pm_genpd_sync_poweroff(link->master, timed);
- 	}
- }
- 
- /**
-  * pm_genpd_sync_poweron - Synchronously power on a PM domain and its masters.
-  * @genpd: PM domain to power on.
-+ * @timed: True if latency measurements are allowed.
-  *
-  * This function is only called in "noirq" and "syscore" stages of system power
-  * transitions, so it need not acquire locks (all of the "noirq" callbacks are
-  * executed sequentially, so it is guaranteed that it will never run twice in
-  * parallel).
-  */
--static void pm_genpd_sync_poweron(struct generic_pm_domain *genpd)
-+static void pm_genpd_sync_poweron(struct generic_pm_domain *genpd,
-+				  bool timed)
- {
- 	struct gpd_link *link;
- 
-@@ -874,11 +884,11 @@ static void pm_genpd_sync_poweron(struct generic_pm_domain *genpd)
- 		return;
- 
- 	list_for_each_entry(link, &genpd->slave_links, slave_node) {
--		pm_genpd_sync_poweron(link->master);
-+		pm_genpd_sync_poweron(link->master, timed);
- 		genpd_sd_counter_inc(link->master);
- 	}
- 
--	genpd_power_on(genpd);
-+	genpd_power_on(genpd, timed);
- 
- 	genpd->status = GPD_STATE_ACTIVE;
- }
-@@ -1056,7 +1066,7 @@ static int pm_genpd_suspend_noirq(struct device *dev)
- 	 * the same PM domain, so it is not necessary to use locking here.
- 	 */
- 	genpd->suspended_count++;
--	pm_genpd_sync_poweroff(genpd);
-+	pm_genpd_sync_poweroff(genpd, true);
- 
- 	return 0;
- }
-@@ -1086,7 +1096,7 @@ static int pm_genpd_resume_noirq(struct device *dev)
- 	 * guaranteed that this function will never run twice in parallel for
- 	 * the same PM domain, so it is not necessary to use locking here.
- 	 */
--	pm_genpd_sync_poweron(genpd);
-+	pm_genpd_sync_poweron(genpd, true);
- 	genpd->suspended_count--;
- 
- 	return genpd_start_dev(genpd, dev);
-@@ -1300,7 +1310,7 @@ static int pm_genpd_restore_noirq(struct device *dev)
- 			 * If the domain was off before the hibernation, make
- 			 * sure it will be off going forward.
- 			 */
--			genpd_power_off(genpd);
-+			genpd_power_off(genpd, true);
- 
- 			return 0;
- 		}
-@@ -1309,7 +1319,7 @@ static int pm_genpd_restore_noirq(struct device *dev)
- 	if (genpd->suspend_power_off)
- 		return 0;
- 
--	pm_genpd_sync_poweron(genpd);
-+	pm_genpd_sync_poweron(genpd, true);
- 
- 	return genpd_start_dev(genpd, dev);
- }
-@@ -1367,9 +1377,9 @@ static void genpd_syscore_switch(struct device *dev, bool suspend)
- 
- 	if (suspend) {
- 		genpd->suspended_count++;
--		pm_genpd_sync_poweroff(genpd);
-+		pm_genpd_sync_poweroff(genpd, false);
- 	} else {
--		pm_genpd_sync_poweron(genpd);
-+		pm_genpd_sync_poweron(genpd, false);
- 		genpd->suspended_count--;
- 	}
- }
--- 
-1.9.1
-
+--Sig_/rERSifRt57LCh9w/H0guhpe--
