@@ -1,76 +1,30 @@
-From: Anda-Maria Nicolae <anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH 2/3] Documentation: devicetree: Add Richtek RT9455 bindings
-Date: Fri, 29 May 2015 17:25:44 +0300
-Message-ID: <1432909545-31895-3-git-send-email-anda-maria.nicolae@intel.com>
+From: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
+Subject: [PATCH 1/3] of: Add vendor prefix for Richtek Technology Corporation
+Date: Fri, 29 May 2015 17:25:43 +0300
+Message-ID: <1432909545-31895-2-git-send-email-anda-maria.nicolae@intel.com>
 References: <1432909545-31895-1-git-send-email-anda-maria.nicolae@intel.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1432909545-31895-1-git-send-email-anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1432909545-31895-1-git-send-email-anda-maria.nicolae@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: sre@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Anda-Maria Nicolae <anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Signed-off-by: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
 ---
- .../devicetree/bindings/power/rt9455_charger.txt   |   46 ++++++++++++++++++++
- 1 file changed, 46 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/rt9455_charger.txt
+ .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/power/rt9455_charger.txt b/Documentation/devicetree/bindings/power/rt9455_charger.txt
-new file mode 100644
-index 0000000..0580e24
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/rt9455_charger.txt
-@@ -0,0 +1,46 @@
-+Binding for Richtek rt9455 battery charger
-+
-+Required properties:
-+- compatible:				it should contain one of the following:
-+					"richtek,rt9455".
-+- reg:					integer, i2c address of the device.
-+- interrupt-parent:			the phandle for the interrupt controller that
-+ 					services interrupts for this device.
-+- interrupts:				interrupt mapping for GPIO IRQ, it should be
-+					configured with IRQ_TYPE_LEVEL_LOW flag.
-+- richtek,output-charge-current:	integer, output current from the charger to the
-+					battery, in uA.
-+- richtek,end-of-charge-percentage:	integer, percent of the output charge current.
-+					When the current in constant-voltage phase drops
-+					below output_charge_current x end-of-charge-percentage,
-+					charge is terminated.
-+- richtek,battery-regulation-voltage:	integer, maximum battery voltage in uV.
-+- richtek,boost-output-voltage:		integer, maximum voltage provided to consumer
-+					devices, when the charger is in boost mode.
-+
-+Optional properties:
-+- richtek,min-input-voltage-regulation: integer, input voltage level in uA, used to
-+					decrease voltage level when the over current
-+					of the input power source occurs.
-+					This prevents input voltage drop due to insufficient
-+					current provided by the power source.
-+- richtek,avg-input-current-regulation: integer, input current value drained by the
-+					charger from the power source.
-+
-+Example:
-+
-+rt9455@22 {
-+	compatible = "richtek,rt9455";
-+	reg = <0x22>;
-+
-+	interrupt-parent = <&gpio1>;
-+	interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
-+
-+	richtek,output-charge-current	    = <500000>;
-+	richtek,end-of-charge-percentage    = <10>;
-+	richtek,battery-regulation-voltage  = <4200000>;
-+	richtek,boost-output-voltage	    = <5050000>;
-+
-+	richtek,min-input-voltage-regulation = <4500000>;
-+	richtek,avg-input-current-regulation = <500000>;
-+};
+diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
+index 8033919..7b8c129 100644
+--- a/Documentation/devicetree/bindings/vendor-prefixes.txt
++++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
+@@ -161,6 +161,7 @@ ralink	Mediatek/Ralink Technology Corp.
+ ramtron	Ramtron International
+ realtek Realtek Semiconductor Corp.
+ renesas	Renesas Electronics Corporation
++richtek	Richtek Technology Corporation
+ ricoh	Ricoh Co. Ltd.
+ rockchip	Fuzhou Rockchip Electronics Co., Ltd
+ samsung	Samsung Semiconductor
 -- 
 1.7.9.5
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
