@@ -1,42 +1,41 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: [PATCH] PM / Wakeirq: Fix typo in prototype for dev_pm_set_dedicated_wake_irq
-Date: Fri, 29 May 2015 09:54:02 -0700
-Message-ID: <1432918442-2043-1-git-send-email-tony@atomide.com>
-Return-path: <linux-omap-owner@vger.kernel.org>
-Sender: linux-omap-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
-Cc: Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: linux-next: Tree for May 29 (drivers/power/twl4030_charger)
+Date: Fri, 29 May 2015 09:55:27 -0700
+Message-ID: <556899FF.1040705@infradead.org>
+References: <20150529221804.2b8940f3@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:41417 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756347AbbE2Qz2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 May 2015 12:55:28 -0400
+In-Reply-To: <20150529221804.2b8940f3@canb.auug.org.au>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Ignotas <notasas@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-Looks like I only built test the dev_pm_set_wake_irq and not the
-dev_pm_set_dedicated_wake_irq case on x86.
+On 05/29/15 05:18, Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since 20150528:
+> 
 
-Turns out there's a typo for the dev_pm_set_dedicated_wake_irq
-prototype that causes a build error if CONFIG_COMPILE_TEST
-and CONFIG_MMC_OMAP_HS are selected.
+on i386:
+when CONFIG_USB_SUPPORT is not enabled:
 
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Reported-by: Jim Davis <jim.epost@gmail.com>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- include/linux/pm_wakeirq.h | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+../drivers/power/twl4030_charger.c: In function 'twl4030_bci_probe':
+../drivers/power/twl4030_charger.c:648:4: error: implicit declaration of function 'devm_usb_get_phy_by_node' [-Werror=implicit-function-declaration]
+    bci->transceiver = devm_usb_get_phy_by_node(
+    ^
+../drivers/power/twl4030_charger.c:648:21: warning: assignment makes pointer from integer without a cast [enabled by default]
+    bci->transceiver = devm_usb_get_phy_by_node(
+                     ^
 
-diff --git a/include/linux/pm_wakeirq.h b/include/linux/pm_wakeirq.h
-index 4046fa1..cd5b62d 100644
---- a/include/linux/pm_wakeirq.h
-+++ b/include/linux/pm_wakeirq.h
-@@ -30,8 +30,7 @@ static inline int dev_pm_set_wake_irq(struct device *dev, int irq)
- 	return 0;
- }
- 
--static inline int dev_pm_set_dedicated__wake_irq(struct device *dev,
--						 int irq)
-+static inline int dev_pm_set_dedicated_wake_irq(struct device *dev, int irq)
- {
- 	return 0;
- }
+Should this driver depend on USB_SUPPORT?
+
+
 -- 
-2.1.4
-
+~Randy
