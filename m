@@ -1,27 +1,119 @@
-From: Martin Herkt <lachs0r@srsfckn.biz>
-Subject: ASUS PU551LD, fan stuck at full speed after waking up from S3
-Date: Fri, 29 May 2015 13:51:57 +0200
-Message-ID: <1949840.6Csghk90X0@sakuya>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-Cc: linux-acpi@vger.kernel.org, platform-driver-x86@vger.kernel.org, acpi4asus-user@lists.sourceforge.net, linux-pm@vger.kernel.org
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] cpuidle: powernv/pseries: Decrease the snooze residency
+Date: Fri, 29 May 2015 18:02:08 +0530
+Message-ID: <1432902728-31476-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp05.in.ibm.com ([122.248.162.5]:35597 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754566AbbE2Mcj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 May 2015 08:32:39 -0400
+Received: from /spool/local
+	by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+	Fri, 29 May 2015 18:02:36 +0530
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linuxppc-dev@lists.ozlabs.org
+Cc: anton@samba.org, rjw@rjwysocki.net, preeti@linux.vnet.ibm.com, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
-My ASUS PU551LD laptop has a problem with its fan state when resuming from S3. 
-In particular, the fan goes to full speed a second or two after waking up and 
-cannot be reset without turning off the laptop. For example, rebooting to 
-Windows and doing a suspend/resume cycle while the fan is in bad state will 
-not reset it. I have observed this behavior with all kernel versions I have 
-used on this laptop (oldest being 3.16, newest 4.1-rc5).
+The idle cpus which stay in snooze for a long period can degrade the
+perfomance of the sibling cpus. If the cpu stays in snooze for more
+than target residency of the next available idle state, then exit from
+snooze. This gives a chance to the cpuidle governor to re-evaluate the
+last idle state of the cpu to promote it to deeper idle states.
 
-sensors(1) does not show any fans, but asus-nb-wmi exposes 
-/sys/class/hwmon/hwmon2/pwm1, which shows values like 85 during normal 
-operation but goes to the expected 255 when the fan is running at full speed 
-after waking up from S3.
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+ drivers/cpuidle/cpuidle-powernv.c | 12 ++++++++++++
+ drivers/cpuidle/cpuidle-pseries.c | 11 +++++++++++
+ 2 files changed, 23 insertions(+)
 
-acpidump output: https://0x0.st/9Z.out
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 5937207..1e3ef5e 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -29,18 +29,25 @@ struct cpuidle_driver powernv_idle_driver = {
+ 
+ static int max_idle_state;
+ static struct cpuidle_state *cpuidle_state_table;
++static u64 snooze_timeout;
++static bool snooze_timeout_en;
+ 
+ static int snooze_loop(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
+ 			int index)
+ {
++	u64 snooze_exit_time;
++
+ 	local_irq_enable();
+ 	set_thread_flag(TIF_POLLING_NRFLAG);
+ 
++	snooze_exit_time = get_tb() + snooze_timeout;
+ 	ppc64_runlatch_off();
+ 	while (!need_resched()) {
+ 		HMT_low();
+ 		HMT_very_low();
++		if (snooze_timeout_en && get_tb() > snooze_exit_time)
++			break;
+ 	}
+ 
+ 	HMT_medium();
+@@ -252,6 +259,11 @@ static int powernv_idle_probe(void)
+ 		cpuidle_state_table = powernv_states;
+ 		/* Device tree can indicate more idle states */
+ 		max_idle_state = powernv_add_idle_states();
++		if (max_idle_state > 1) {
++			snooze_timeout_en = true;
++			snooze_timeout = powernv_states[1].target_residency *
++					 tb_ticks_per_usec;
++		}
+  	} else
+  		return -ENODEV;
+ 
+diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+index bb9e2b6..07135e0 100644
+--- a/drivers/cpuidle/cpuidle-pseries.c
++++ b/drivers/cpuidle/cpuidle-pseries.c
+@@ -27,6 +27,8 @@ struct cpuidle_driver pseries_idle_driver = {
+ 
+ static int max_idle_state;
+ static struct cpuidle_state *cpuidle_state_table;
++static u64 snooze_timeout;
++static bool snooze_timeout_en;
+ 
+ static inline void idle_loop_prolog(unsigned long *in_purr)
+ {
+@@ -58,14 +60,18 @@ static int snooze_loop(struct cpuidle_device *dev,
+ 			int index)
+ {
+ 	unsigned long in_purr;
++	u64 snooze_exit_time;
+ 
+ 	idle_loop_prolog(&in_purr);
+ 	local_irq_enable();
+ 	set_thread_flag(TIF_POLLING_NRFLAG);
++	snooze_exit_time = get_tb() + snooze_timeout;
+ 
+ 	while (!need_resched()) {
+ 		HMT_low();
+ 		HMT_very_low();
++		if (snooze_timeout_en && get_tb() > snooze_exit_time)
++			break;
+ 	}
+ 
+ 	HMT_medium();
+@@ -244,6 +250,11 @@ static int pseries_idle_probe(void)
+ 	} else
+ 		return -ENODEV;
+ 
++	if (max_idle_state > 1) {
++		snooze_timeout_en = true;
++		snooze_timeout = cpuidle_state_table[1].target_residency *
++				 tb_ticks_per_usec;
++	}
+ 	return 0;
+ }
+ 
+-- 
+1.9.3
 
-Not being a kernel dev (but knowing C), what can I do to help fix this issue?
