@@ -1,63 +1,31 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 0/3] Add support for Richtek RT9455 battery charger
-Date: Fri, 29 May 2015 04:42:50 +0200
-Message-ID: <20150529024250.GB17735@earth>
-References: <1432549343-5756-1-git-send-email-anda-maria.nicolae@intel.com>
+From: Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 8/9] bus: brcmstb_gisb: Honor the "big-endian" and "native-endian"
+ DT properties
+Date: Thu, 28 May 2015 21:01:23 -0700
+Message-ID: <5567E493.80800@gmail.com>
+References: <1416962994-27095-1-git-send-email-cernekee@gmail.com> <1416962994-27095-9-git-send-email-cernekee@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="Bn2rw/3z4jIqBvZU"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1432549343-5756-1-git-send-email-anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+In-Reply-To: <1416962994-27095-9-git-send-email-cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Anda-Maria Nicolae <anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Kevin Cernekee <cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, linux-ci5G2KO2hbZ+pU9mqzGVBQ@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org
+Cc: grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, marc.ceeeee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
+Le 11/25/14 16:49, Kevin Cernekee a =C3=A9crit :
+> On chips strapped for BE, we'll need to use ioread32be/iowrite32be in=
+stead of
+> ioread32/iowrite32.
+>=20
+> Signed-off-by: Kevin Cernekee <cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
---Bn2rw/3z4jIqBvZU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-Hi Anda-Maria,
-
-On Mon, May 25, 2015 at 01:22:20PM +0300, Anda-Maria Nicolae wrote:
-> The next 3 patches do the following:
-> - first patch adds Richtek Technology Corporation in the vendor-prefixes list
-> - second patch adds device tree binding example for Richtek RT9455 battery charger
-> - third patch adds the driver for Richtek RT9455 battery charger
-
-I don't see a changelog against "[PATCH v5] power_supply: Add support
-for Richtek rt9455 battery charger", but it seems you overlooked all
-of my comments except for the one about splitting the patch (which
-looks fine now).
-
--- Sebastian
-
---Bn2rw/3z4jIqBvZU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVZ9IqAAoJENju1/PIO/qaBZwP/1zfPCJYIYUc94IZ6AqmyH4r
-IQ03XDGXjscjSssi7lu3Z53Hen05Co3GxhQAx0AiYvlZCZX1Cwou/yTqSXgTFzjH
-Ff+D7tRCWgRW0vZh71pogTP5wJGT/fD81JoDFp3xNZXiqapfDsgixYxuK0cOTmwG
-93jRlKg8y6EJc4ryZ/E6247CkqS084yZQIv7eTPDF2YSvWgMnJpvmnEygXvPIS0I
-YQNUduK4CVvo2TgZEXt0umBosSKrqWOIiLbqSN4pXtlKqvk0s0qvJxcXGCoWfGES
-jUEb81a+qEnS0HpepTdWC3StWvSruc27VmLphaLOYMkxd96vCxhYjwYCe9ZWD4sw
-KbUFEyZ+9olsPBa81EuHZPPrjZJIHwIqMaww860fYa1gb9JyVccl1bbTHagN8LoZ
-0jEa7bJdukipOvPFIyXGKsy+CJuX2DGv5TbvvkIl2hxKxaglnPmkj6WNXuCo/a5C
-1ri47bZ5mEcWR1DPT7edOhnXd16gsFVyXS+p2piq5EWqJN1jpNEMRsRs/7VTBSGL
-SNRI+7X6cGWeej0LwxWQuHsJUPsWyIi/L4QQ4ETb3T176JIPcH/TWNbYGVFayk3D
-R8cTYA29i7Wl6yc6DG+B6nJ1W3lJTCPEANB/P6ebVwOtrHuFZEg9OjU+SByu2B94
-XeJDJsX7XScPWE2bM8jR
-=3m9z
------END PGP SIGNATURE-----
-
---Bn2rw/3z4jIqBvZU--
+Applied to soc/next, thanks!
+--=20
+=46lorian
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 More majordomo info at  http://vger.kernel.org/majordomo-info.html
