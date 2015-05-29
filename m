@@ -1,56 +1,57 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [RFC][PATCH] x86: remove vmalloc.h from asm/io.h
-Date: Sat, 30 May 2015 01:28:03 +1000
-Message-ID: <20150530012803.46ba702e@canb.auug.org.au>
-References: <20150529191847.2d4cb3a7@canb.auug.org.au>
-	<s5h8uc75zbx.wl-tiwai@suse.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/rERSifRt57LCh9w/H0guhpe"; protocol="application/pgp-signature"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <s5h8uc75zbx.wl-tiwai@suse.de>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, David Vrabel <david.vrabel@citrix.com>, Anton Vorontsov <anton@enomsg.org>, Colin Cross <ccross@android.com>, Kees Cook <keescook@chromium.org>, Tony Luck <tony.luck@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Kristen Carlson Accardi <kristen@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vinod Koul <vinod.koul@intel.com>, "K. Y. Srinivasan" <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Hiral Patel <hiralpat@cisco.com>, Suma Ramars <sramars@cisco.com>, Brian Uchino <buchino@cisco.com>, "James E.J. Bottomley" <JBottomley@odin.com>, Jaroslav Kysela <perex@perex.cz>, Andrew Morton <akpm@lin>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v2] PM / clock_ops: Print acquired clock name in addition to con_id
+Date: Fri, 29 May 2015 18:35:31 +0200
+Message-ID: <1432917331-3285-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from laurent.telenet-ops.be ([195.130.137.89]:55259 "EHLO
+	laurent.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755970AbbE2Qfa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 May 2015 12:35:30 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Grygorii Strashko <Grygorii.Strashko@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
---Sig_/rERSifRt57LCh9w/H0guhpe
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Currently the con_id of the acquired clock is printed for debugging
+purposes.  But in several cases, the con_id is NULL, which doesn't
+provide much debugging information when printed.  These cases are:
+  - When explicitly passing a NULL con_id (which means the first clock
+    tied to the device, if available),
+  - When not using pm_clk_add(), but pm_clk_add_clk() (which takes a
+    "struct clk *" directly).
 
-Hi Takashi,
+Hence print the actual clock name in addition to (and not instead of;
+thanks Grygorii Strashko!) the con_id.
 
-On Fri, 29 May 2015 14:43:14 +0200 Takashi Iwai <tiwai@suse.de> wrote:
->
-> For the sound bits,
->   Acked-by: Takashi Iwai <tiwai@suse.de>
+Note that the clock name is not available with legacy clock frameworks,
+and the hex pointer address will be printed instead.
 
-Thanks, noted.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+This is v2 of "PM / clock_ops: Print acquired clock name instead of
+con_id".
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+v2:
+  - Print both clock and con_id, as suggested by Grygorii Strashko
+    <grygorii.strashko@linaro.org>.
+---
+ drivers/base/power/clock_ops.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---Sig_/rERSifRt57LCh9w/H0guhpe
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+index 442ce010559bf531..acef9f9f759a2530 100644
+--- a/drivers/base/power/clock_ops.c
++++ b/drivers/base/power/clock_ops.c
+@@ -68,7 +68,8 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
+ 	} else {
+ 		clk_prepare(ce->clk);
+ 		ce->status = PCE_STATUS_ACQUIRED;
+-		dev_dbg(dev, "Clock %s managed by runtime PM.\n", ce->con_id);
++		dev_dbg(dev, "Clock %pC con_id %s managed by runtime PM.\n",
++			ce->clk, ce->con_id);
+ 	}
+ }
+ 
+-- 
+1.9.1
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVaIWIAAoJEMDTa8Ir7ZwVIEoP/1t+zkWzh2piTjp5sJfGDbtx
-KiJXilqI9SfJX8d1uI05Ht5DBdlua71z4IMQ9pX5kJWwFoxpu7VimJOdirOpUiJ8
-dDmAS6PoqgiQtaCXIS85TjGYYJmzdlMOaskrlXeouMKGIp2YoR8cBwdI/gw1tpjB
-e3s4sVRyvp2WAFG87rMUW6u93C4jHRUVNUESqf5j5RvRWE54HDEIMcFDBT2hxI9j
-GjAYIQWWkNksDTH2cGihE6nlFaV0ki9yzLe9QK6tbrGz4gR6XRj1jnoHozaCxAJY
-bR5gkizW5NJpATBAy8ASAGWY04jMePYGYlAkdkrHtfIeyVCGN1i0SXynKb5laht6
-ZZznv2HpbQZZeypYThULDY/UpRblzK1WueZ7mtAQRanvNb0L/WVjHTUE3fLMxJKs
-dDYBLU3OiFMdGnoZnuvc06693WqvZ2Lo4JtQt9XsxQmdf8lkM5yTsxhzWV6Lvjwr
-i1L3Sfr4FikKETHHfXyGVc7p6TrhAZthJQPFeb9HLBWvTTWqeH5SIWBZtyxXrDwE
-38ukU7/qSmHZfVHneqI0OUSnnwpRCfmefi1kCi4SVfeVSDJJCZ3iwBVAZ84d0JUD
-iPhOm4Z0Q87wTTjt5SLjbmB8uY3bzUw+gnKR6mxQiaQf8G7tNIwuEzip+e4SEUY7
-qOMUZeW9GN2bybzYo8AB
-=ai0Y
------END PGP SIGNATURE-----
-
---Sig_/rERSifRt57LCh9w/H0guhpe--
