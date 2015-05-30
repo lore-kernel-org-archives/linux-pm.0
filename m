@@ -1,51 +1,38 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle: powernv/pseries: Decrease the snooze residency
-Date: Sat, 30 May 2015 13:30:23 +0530
-Message-ID: <55696E17.2030700@linux.vnet.ibm.com>
-References: <1432902728-31476-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <55686DE5.6010001@linux.vnet.ibm.com> <20150530060141.GA19134@dirshya.in.ibm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: ASUS PU551LD, fan stuck at full speed after waking up from S3
+Date: Sat, 30 May 2015 14:14:06 +0200
+Message-ID: <4235637.TmQrMxa1o1@vostro.rjw.lan>
+References: <1949840.6Csghk90X0@sakuya>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e19.ny.us.ibm.com ([129.33.205.209]:38324 "EHLO
-	e19.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbbE3IAb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 30 May 2015 04:00:31 -0400
-Received: from /spool/local
-	by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Sat, 30 May 2015 04:00:30 -0400
-In-Reply-To: <20150530060141.GA19134@dirshya.in.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1949840.6Csghk90X0@sakuya>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Martin Herkt <lachs0r@srsfckn.biz>
+Cc: linux-acpi@vger.kernel.org, platform-driver-x86@vger.kernel.org, acpi4asus-user@lists.sourceforge.net, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: svaidy@linux.vnet.ibm.com
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, anton@samba.org, linux-pm@vger.kernel.org
 
-On 05/30/2015 11:31 AM, Vaidyanathan Srinivasan wrote:
-> * Preeti U Murthy <preeti@linux.vnet.ibm.com> [2015-05-29 19:17:17]:
+On Friday, May 29, 2015 01:51:57 PM Martin Herkt wrote:
+> My ASUS PU551LD laptop has a problem with its fan state when resuming from S3. 
+> In particular, the fan goes to full speed a second or two after waking up and 
+> cannot be reset without turning off the laptop. For example, rebooting to 
+> Windows and doing a suspend/resume cycle while the fan is in bad state will 
+> not reset it. I have observed this behavior with all kernel versions I have 
+> used on this laptop (oldest being 3.16, newest 4.1-rc5).
 > 
-> [snip]
-> 
->>> +	if (max_idle_state > 1) {
->>> +		snooze_timeout_en = true;
->>> +		snooze_timeout = cpuidle_state_table[1].target_residency *
->>> +				 tb_ticks_per_usec;
->>> +	}
->>
->> Any idea why we don't have snooze defined on the shared lpar configuration ?
-> 
-> In shared lpar case, spinning in guest context may potentially take
-> away cycles from other lpars waiting to run on the same physical cpu.
-> 
-> So the policy in shared lpar case is to let PowerVM hypervisor know
-> immediately that the guest cpu is idle which will allow the hypervisor
-> to use the cycles for other tasks/lpars.
-> 
+> sensors(1) does not show any fans, but asus-nb-wmi exposes 
+> /sys/class/hwmon/hwmon2/pwm1, which shows values like 85 during normal 
+> operation but goes to the expected 255 when the fan is running at full speed 
+> after waking up from S3.
 
-Oh Ok! Thanks for the clarification !
+Can you please check if applying the patch at
 
-Regards
-Preeti U Murthy
-> --Vaidy
-> 
+https://patchwork.kernel.org/patch/6451241/
 
+on top of 4.1-rc5 makes any difference?
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
