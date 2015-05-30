@@ -1,49 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / Wakeirq: Fix typo in prototype for dev_pm_set_dedicated_wake_irq
-Date: Sat, 30 May 2015 03:16:37 +0200
-Message-ID: <7288995.ybnnrBvNmJ@vostro.rjw.lan>
-References: <1432918442-2043-1-git-send-email-tony@atomide.com> <20150529171837.GI2026@saruman.tx.rr.com>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle: powernv/pseries: Decrease the snooze residency
+Date: Sat, 30 May 2015 11:31:41 +0530
+Message-ID: <20150530060141.GA19134@dirshya.in.ibm.com>
+References: <1432902728-31476-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <55686DE5.6010001@linux.vnet.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:48252 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753968AbbE3AvE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 May 2015 20:51:04 -0400
-In-Reply-To: <20150529171837.GI2026@saruman.tx.rr.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+Content-Disposition: inline
+In-Reply-To: <55686DE5.6010001@linux.vnet.ibm.com>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, anton@samba.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
-To: balbi@ti.com
-Cc: Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
 
-On Friday, May 29, 2015 12:18:37 PM Felipe Balbi wrote:
-> 
-> --2fjX3cMESU3XgGmZ
-> Content-Type: text/plain; charset=us-ascii
-> Content-Disposition: inline
-> Content-Transfer-Encoding: quoted-printable
-> 
-> On Fri, May 29, 2015 at 09:54:02AM -0700, Tony Lindgren wrote:
-> > Looks like I only built test the dev_pm_set_wake_irq and not the
-> > dev_pm_set_dedicated_wake_irq case on x86.
-> >=20
-> > Turns out there's a typo for the dev_pm_set_dedicated_wake_irq
-> > prototype that causes a build error if CONFIG_COMPILE_TEST
-> > and CONFIG_MMC_OMAP_HS are selected.
-> >=20
-> > Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-> > Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> > Reported-by: Jim Davis <jim.epost@gmail.com>
-> > Signed-off-by: Tony Lindgren <tony@atomide.com>
-> 
-> cool:
-> 
-> Reviewed-by: Felipe Balbi <balbi@ti.com>
-
-Applied, thanks!
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+KiBQcmVldGkgVSBNdXJ0aHkgPHByZWV0aUBsaW51eC52bmV0LmlibS5jb20+IFsyMDE1LTA1LTI5
+IDE5OjE3OjE3XToKCltzbmlwXQoKPiA+ICsJaWYgKG1heF9pZGxlX3N0YXRlID4gMSkgewo+ID4g
+KwkJc25vb3plX3RpbWVvdXRfZW4gPSB0cnVlOwo+ID4gKwkJc25vb3plX3RpbWVvdXQgPSBjcHVp
+ZGxlX3N0YXRlX3RhYmxlWzFdLnRhcmdldF9yZXNpZGVuY3kgKgo+ID4gKwkJCQkgdGJfdGlja3Nf
+cGVyX3VzZWM7Cj4gPiArCX0KPiAKPiBBbnkgaWRlYSB3aHkgd2UgZG9uJ3QgaGF2ZSBzbm9vemUg
+ZGVmaW5lZCBvbiB0aGUgc2hhcmVkIGxwYXIgY29uZmlndXJhdGlvbiA/CgpJbiBzaGFyZWQgbHBh
+ciBjYXNlLCBzcGlubmluZyBpbiBndWVzdCBjb250ZXh0IG1heSBwb3RlbnRpYWxseSB0YWtlCmF3
+YXkgY3ljbGVzIGZyb20gb3RoZXIgbHBhcnMgd2FpdGluZyB0byBydW4gb24gdGhlIHNhbWUgcGh5
+c2ljYWwgY3B1LgoKU28gdGhlIHBvbGljeSBpbiBzaGFyZWQgbHBhciBjYXNlIGlzIHRvIGxldCBQ
+b3dlclZNIGh5cGVydmlzb3Iga25vdwppbW1lZGlhdGVseSB0aGF0IHRoZSBndWVzdCBjcHUgaXMg
+aWRsZSB3aGljaCB3aWxsIGFsbG93IHRoZSBoeXBlcnZpc29yCnRvIHVzZSB0aGUgY3ljbGVzIGZv
+ciBvdGhlciB0YXNrcy9scGFycy4KCi0tVmFpZHkKCl9fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fCkxpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QKTGludXhwcGMt
+ZGV2QGxpc3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xp
+bnV4cHBjLWRldg==
