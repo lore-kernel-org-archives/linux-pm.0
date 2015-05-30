@@ -1,28 +1,49 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Notice] ACPI core and PM core maintenance in travel mode until June 7
-Date: Sat, 30 May 2015 03:04:47 +0200
-Message-ID: <5472640.IAE0t5Y86B@vostro.rjw.lan>
+Subject: Re: [PATCH] PM / Wakeirq: Fix typo in prototype for dev_pm_set_dedicated_wake_irq
+Date: Sat, 30 May 2015 03:16:37 +0200
+Message-ID: <7288995.ybnnrBvNmJ@vostro.rjw.lan>
+References: <1432918442-2043-1-git-send-email-tony@atomide.com> <20150529171837.GI2026@saruman.tx.rr.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:42974 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:48252 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753750AbbE3AjO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 May 2015 20:39:14 -0400
+	with SMTP id S1753968AbbE3AvE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 May 2015 20:51:04 -0400
+In-Reply-To: <20150529171837.GI2026@saruman.tx.rr.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: balbi@ti.com
+Cc: Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Andreas Fenkart <afenkart@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
 
-Hi All,
+On Friday, May 29, 2015 12:18:37 PM Felipe Balbi wrote:
+> 
+> --2fjX3cMESU3XgGmZ
+> Content-Type: text/plain; charset=us-ascii
+> Content-Disposition: inline
+> Content-Transfer-Encoding: quoted-printable
+> 
+> On Fri, May 29, 2015 at 09:54:02AM -0700, Tony Lindgren wrote:
+> > Looks like I only built test the dev_pm_set_wake_irq and not the
+> > dev_pm_set_dedicated_wake_irq case on x86.
+> >=20
+> > Turns out there's a typo for the dev_pm_set_dedicated_wake_irq
+> > prototype that causes a build error if CONFIG_COMPILE_TEST
+> > and CONFIG_MMC_OMAP_HS are selected.
+> >=20
+> > Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+> > Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> > Reported-by: Jim Davis <jim.epost@gmail.com>
+> > Signed-off-by: Tony Lindgren <tony@atomide.com>
+> 
+> cool:
+> 
+> Reviewed-by: Felipe Balbi <balbi@ti.com>
 
-In the next few days I'll be traveling for LinuxCon Japan starting tomorrow.
+Applied, thanks!
 
-I'll do my best to keep up with the patch flow during that time, but that
-usually is hard for me during conferences, so please be prepared for extra
-delays.
 
-Kind regards,
-Rafael
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
