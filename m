@@ -1,37 +1,53 @@
-From: Martin Herkt <lachs0r@srsfckn.biz>
-Subject: Re: ASUS PU551LD, fan stuck at full speed after waking up from S3
-Date: Sat, 30 May 2015 15:11:49 +0200
-Message-ID: <1782051.buOE1ZNEjm@sakuya>
-References: <1949840.6Csghk90X0@sakuya> <4235637.TmQrMxa1o1@vostro.rjw.lan>
+From: Len Brown <lenb@kernel.org>
+Subject: [GIT PULL] turbostat fixes for Linux 4.1-rc5
+Date: Sat, 30 May 2015 14:17:18 -0400
+Message-ID: <CAJvTdKny+sccSc4-N4+hRN83PyqYcrUFm7D47JVqzBOygzmiXw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <4235637.TmQrMxa1o1@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, platform-driver-x86@vger.kernel.org, acpi4asus-user@lists.sourceforge.net, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f49.google.com ([209.85.215.49]:36676 "EHLO
+	mail-la0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755756AbbE3SRU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 30 May 2015 14:17:20 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Saturday 30 May 2015 14:14:06 Rafael J. Wysocki wrote:
-> On Friday, May 29, 2015 01:51:57 PM Martin Herkt wrote:
-> > My ASUS PU551LD laptop has a problem with its fan state when resuming from
-> > S3. In particular, the fan goes to full speed a second or two after
-> > waking up and cannot be reset without turning off the laptop. For
-> > example, rebooting to Windows and doing a suspend/resume cycle while the
-> > fan is in bad state will not reset it. I have observed this behavior with
-> > all kernel versions I have used on this laptop (oldest being 3.16, newest
-> > 4.1-rc5).
-> > 
-> > sensors(1) does not show any fans, but asus-nb-wmi exposes
-> > /sys/class/hwmon/hwmon2/pwm1, which shows values like 85 during normal
-> > operation but goes to the expected 255 when the fan is running at full
-> > speed after waking up from S3.
-> 
-> Can you please check if applying the patch at
-> 
-> https://patchwork.kernel.org/patch/6451241/
-> 
-> on top of 4.1-rc5 makes any difference?
+Hi Linus,
 
-No, still happens with that patch.
+Please pull these fixes to the turbostat utility.
+
+Just one minor kernel dependency in this batch -- added a #define to msr-index.h
+
+thanks!
+Len Brown, Intel Open Source Technology Center
+
+The following changes since commit ba155e2d21f6bf05de86a78dbe5bfd8757604a65:
+
+  Linux 4.1-rc5 (2015-05-24 18:22:35 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git turbostat
+
+for you to fetch changes up to a68c7c3ff0469d79993ee85e8e0a3a9a568ce350:
+
+  tools/power turbostat: update version number to 4.7 (2015-05-27
+18:04:01 -0400)
+
+----------------------------------------------------------------
+Dasaratharaman Chandramouli (2):
+      tools/power turbostat: correctly display more than 2 threads/core
+      tools/power turbostat: enable turbostat to support Knights Landing (KNL)
+
+Len Brown (2):
+      tools/power turbostat: correctly decode of ENERGY_PERFORMANCE_BIAS
+      tools/power turbostat: update version number to 4.7
+
+Prarit Bhargava (1):
+      tools/power turbostat: allow running without cpu0
+
+ arch/x86/include/uapi/asm/msr-index.h |   1 +
+ tools/power/x86/turbostat/turbostat.c | 224 ++++++++++++++++++++++++++++------
+ 2 files changed, 185 insertions(+), 40 deletions(-)
