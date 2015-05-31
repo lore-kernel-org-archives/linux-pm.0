@@ -1,53 +1,44 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [GIT PULL] turbostat fixes for Linux 4.1-rc5
-Date: Sat, 30 May 2015 14:17:18 -0400
-Message-ID: <CAJvTdKny+sccSc4-N4+hRN83PyqYcrUFm7D47JVqzBOygzmiXw@mail.gmail.com>
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: Re: [PATCH] cpuidle: powernv/pseries: Decrease the snooze residency
+Date: Sat, 30 May 2015 20:38:22 -0500
+Message-ID: <1433036302.4526.15.camel@au1.ibm.com>
+References: <1432902728-31476-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+	 <55686DE5.6010001@linux.vnet.ibm.com>
+	 <20150530060141.GA19134@dirshya.in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f49.google.com ([209.85.215.49]:36676 "EHLO
-	mail-la0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755756AbbE3SRU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 30 May 2015 14:17:20 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:57355 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758072AbbEaBji (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 30 May 2015 21:39:38 -0400
+Received: from /spool/local
+	by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <benh@au1.ibm.com>;
+	Sun, 31 May 2015 11:39:36 +1000
+In-Reply-To: <20150530060141.GA19134@dirshya.in.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: svaidy@linux.vnet.ibm.com
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, anton@samba.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 
-Hi Linus,
+On Sat, 2015-05-30 at 11:31 +0530, Vaidyanathan Srinivasan wrote:
+> In shared lpar case, spinning in guest context may potentially take
+> away cycles from other lpars waiting to run on the same physical cpu.
+> 
+> So the policy in shared lpar case is to let PowerVM hypervisor know
+> immediately that the guest cpu is idle which will allow the hypervisor
+> to use the cycles for other tasks/lpars.
 
-Please pull these fixes to the turbostat utility.
+But that will have negative side effects under KVM no ?
 
-Just one minor kernel dependency in this batch -- added a #define to msr-index.h
+Suresh mentioned something with his new directed interrupts code that we
+had many cases where the interrupts ended up arriving shortly after we
+exited to host for NAP'ing ...
 
-thanks!
-Len Brown, Intel Open Source Technology Center
+Snooze might fix it...
 
-The following changes since commit ba155e2d21f6bf05de86a78dbe5bfd8757604a65:
+Ben.
 
-  Linux 4.1-rc5 (2015-05-24 18:22:35 -0700)
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git turbostat
-
-for you to fetch changes up to a68c7c3ff0469d79993ee85e8e0a3a9a568ce350:
-
-  tools/power turbostat: update version number to 4.7 (2015-05-27
-18:04:01 -0400)
-
-----------------------------------------------------------------
-Dasaratharaman Chandramouli (2):
-      tools/power turbostat: correctly display more than 2 threads/core
-      tools/power turbostat: enable turbostat to support Knights Landing (KNL)
-
-Len Brown (2):
-      tools/power turbostat: correctly decode of ENERGY_PERFORMANCE_BIAS
-      tools/power turbostat: update version number to 4.7
-
-Prarit Bhargava (1):
-      tools/power turbostat: allow running without cpu0
-
- arch/x86/include/uapi/asm/msr-index.h |   1 +
- tools/power/x86/turbostat/turbostat.c | 224 ++++++++++++++++++++++++++++------
- 2 files changed, 185 insertions(+), 40 deletions(-)
