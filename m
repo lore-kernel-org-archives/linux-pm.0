@@ -1,96 +1,98 @@
-From: EunTaik Lee <eun.taik.lee@samsung.com>
-Subject: [RFC PATCH v2] suspend/resume performance improvement
-Date: Sun, 31 May 2015 05:07:42 +0000 (GMT)
-Message-ID: <671217780.313831433048860626.JavaMail.weblogic@epmlwas05b>
-Reply-To: eun.taik.lee@samsung.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 1/1] x86 TSC: set X86_FEATURE_TSC_RELIABLE, per CPUID
+Date: Sun, 31 May 2015 01:44:42 -0400
+Message-ID: <f1643565587e70dd2fe2714e9afa566689211a9a.1433050960.git.len.brown@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:57533 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752183AbbEaFHo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 31 May 2015 01:07:44 -0400
-Received: from epcpsbgr1.samsung.com
- (u141.gpu120.samsung.co.kr [203.254.230.141])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
- 64bit (built May  5 2014))
- with ESMTP id <0NP700HEJ7KU1720@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Sun, 31 May 2015 14:07:42 +0900 (KST)
-MIME-version: 1.0
+Received: from mail-qg0-f42.google.com ([209.85.192.42]:33853 "EHLO
+	mail-qg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750744AbbEaFo7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 31 May 2015 01:44:59 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "pavel@ucw.cz" <pavel@ucw.cz>, "len.brown@intel.com" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>
 
-V2hlbiBhIHRhc2sgdGhhdCBjYWxscyBzdGF0ZV9zdG9yZSgpIHRvIHN1c3BlbmQNCnRoZSBkZXZp
-Y2UgaGFzIHVzZWQgdXAgbW9zdCBvZiBpdHMgdGltZSBzbGljZSwNCnN1c3BlbmQgc29tZXRpbWVz
-IHRha2UgdG9vIGxvbmcuIChVc2VyIG5vdGljZWFibGUpDQoNClN1c3BlbmQvcmVzdW1lIGlzIGEg
-c3lzdGVtIHdpZGUgb3BlcmF0aW9uLg0KU28sIGluc3RlYWQgb2YgZGVwZW5kaW5nIG9uIGEgdXNl
-cnNwYWNlIHRhc2sncyB0aW1lDQpzbGljZSwgbGV0IGt3b3JrZXIgZG8gdGhlIHdvcmsgdG8gYXZv
-aWQgYSBsb25nIHdhaXQNCm9uIHRoZSBydW5xdWV1ZS4NCg0KU2lnbmVkLW9mZi1ieTogRXVuIFRh
-aWsgTGVlIDxldW4udGFpay5sZWVAc2Ftc3VuZy5jb20+DQotLS0NCiBrZXJuZWwvcG93ZXIvbWFp
-bi5jIHwgOTUgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KystLS0NCiAxIGZpbGUgY2hhbmdlZCwgOTAgaW5zZXJ0aW9ucygrKSwgNSBkZWxldGlvbnMoLSkN
-Cg0KZGlmZiAtLWdpdCBhL2tlcm5lbC9wb3dlci9tYWluLmMgYi9rZXJuZWwvcG93ZXIvbWFpbi5j
-DQppbmRleCA4NmU4MTU3Li44NDhiZjJkIDEwMDY0NA0KLS0tIGEva2VybmVsL3Bvd2VyL21haW4u
-Yw0KKysrIGIva2VybmVsL3Bvd2VyL21haW4uYw0KQEAgLTE1LDcgKzE1LDcgQEANCiAjaW5jbHVk
-ZSA8bGludXgvd29ya3F1ZXVlLmg+DQogI2luY2x1ZGUgPGxpbnV4L2RlYnVnZnMuaD4NCiAjaW5j
-bHVkZSA8bGludXgvc2VxX2ZpbGUuaD4NCi0NCisjaW5jbHVkZSA8bGludXgvY29tcGxldGlvbi5o
-Pg0KICNpbmNsdWRlICJwb3dlci5oIg0KIA0KIERFRklORV9NVVRFWChwbV9tdXRleCk7DQpAQCAt
-MzM1LDE1ICszMzUsNDYgQEAgc3RhdGljIHN1c3BlbmRfc3RhdGVfdCBkZWNvZGVfc3RhdGUoY29u
-c3QgY2hhciAqYnVmLCBzaXplX3QgbikNCiAJcmV0dXJuIFBNX1NVU1BFTkRfT047DQogfQ0KIA0K
-K3N0YXRpYyBzdHJ1Y3Qgd29ya3F1ZXVlX3N0cnVjdCAqc3VzcGVuZF9oZWxwZXJfd3E7DQorc3Ry
-dWN0IHN0YXRlX3N0b3JlX3BhcmFtcyB7DQorCWNvbnN0IGNoYXIgKmJ1ZjsNCisJc2l6ZV90IG47
-DQorfTsNCisNCitzdHJ1Y3Qgc3VzcGVuZF9oZWxwZXJfZGF0YSB7DQorCXN0cnVjdCB3b3JrX3N0
-cnVjdCB3b3JrOw0KKwlzdHJ1Y3QgY29tcGxldGlvbiBkb25lOw0KKwlzdHJ1Y3Qgc3RhdGVfc3Rv
-cmVfcGFyYW1zIHBhcmFtczsNCisJaW50IHJlc3VsdDsNCit9Ow0KK3N0cnVjdCBzdXNwZW5kX2hl
-bHBlcl9kYXRhIHN1c3BlbmRfaGVscGVyX2RhdGE7DQorDQorc3RhdGljIHNzaXplX3Qgc3RhdGVf
-c3RvcmVfaGVscGVyKHN0cnVjdCBrb2JqZWN0ICprb2JqLA0KKwkJc3RydWN0IGtvYmpfYXR0cmli
-dXRlICphdHRyLA0KKwkJY29uc3QgY2hhciAqYnVmLCBzaXplX3Qgbik7DQorDQogc3RhdGljIHNz
-aXplX3Qgc3RhdGVfc3RvcmUoc3RydWN0IGtvYmplY3QgKmtvYmosIHN0cnVjdCBrb2JqX2F0dHJp
-YnV0ZSAqYXR0ciwNCiAJCQkgICBjb25zdCBjaGFyICpidWYsIHNpemVfdCBuKQ0KIHsNCisJcmV0
-dXJuIHN0YXRlX3N0b3JlX2hlbHBlcihrb2JqLCBhdHRyLCBidWYsIG4pOw0KK30NCisNCitwb3dl
-cl9hdHRyKHN0YXRlKTsNCisNCitzdGF0aWMgdm9pZCBzdXNwZW5kX2hlbHBlcihzdHJ1Y3Qgd29y
-a19zdHJ1Y3QgKndvcmspDQorew0KKwlzdHJ1Y3Qgc3VzcGVuZF9oZWxwZXJfZGF0YSAqZGF0YSA9
-IChzdHJ1Y3Qgc3VzcGVuZF9oZWxwZXJfZGF0YSAqKQ0KKwkJY29udGFpbmVyX29mKHdvcmssIHN0
-cnVjdCBzdXNwZW5kX2hlbHBlcl9kYXRhLCB3b3JrKTsNCisJY29uc3QgY2hhciAqYnVmID0gZGF0
-YS0+cGFyYW1zLmJ1ZjsNCisJc2l6ZV90IG4gPSBkYXRhLT5wYXJhbXMubjsNCiAJc3VzcGVuZF9z
-dGF0ZV90IHN0YXRlOw0KLQlpbnQgZXJyb3I7DQorCWludCBlcnJvciA9IDA7DQorDQorCXByX2Rl
-YnVnKCIlczogc3RhcnQhXG4iLCBfX2Z1bmNfXyk7DQogDQogCWVycm9yID0gcG1fYXV0b3NsZWVw
-X2xvY2soKTsNCiAJaWYgKGVycm9yKQ0KLQkJcmV0dXJuIGVycm9yOw0KKwkJZ290byBvdXRfbm9s
-b2NrOw0KIA0KIAlpZiAocG1fYXV0b3NsZWVwX3N0YXRlKCkgPiBQTV9TVVNQRU5EX09OKSB7DQog
-CQllcnJvciA9IC1FQlVTWTsNCkBAIC0zNTgsMTIgKzM4OSw2NCBAQCBzdGF0aWMgc3NpemVfdCBz
-dGF0ZV9zdG9yZShzdHJ1Y3Qga29iamVjdCAqa29iaiwgc3RydWN0IGtvYmpfYXR0cmlidXRlICph
-dHRyLA0KIAllbHNlDQogCQllcnJvciA9IC1FSU5WQUw7DQogDQotIG91dDoNCitvdXQ6DQogCXBt
-X2F1dG9zbGVlcF91bmxvY2soKTsNCisNCitvdXRfbm9sb2NrOg0KKwkvKiBzZXQgcmVzdWx0IGFu
-ZCBub3RpZnkgY29tcGxldGlvbiAqLw0KKwlkYXRhLT5yZXN1bHQgPSBlcnJvcjsNCisJY29tcGxl
-dGUoJmRhdGEtPmRvbmUpOw0KKw0KKwlwcl9kZWJ1ZygiJXM6IHJlc3VsdCA9ICVkXG4iLCBfX2Z1
-bmNfXywgZXJyb3IpOw0KK30NCisNCitzdGF0aWMgc3NpemVfdCBzdGF0ZV9zdG9yZV9oZWxwZXIo
-c3RydWN0IGtvYmplY3QgKmtvYmosDQorCQlzdHJ1Y3Qga29ial9hdHRyaWJ1dGUgKmF0dHIsDQor
-CQljb25zdCBjaGFyICpidWYsIHNpemVfdCBuKQ0KK3sNCisJaW50IGVycm9yOw0KKwlpbnQgZnJl
-ZXphYmxlID0gMDsNCisNCisJLyogd2UgZG9uJ3QgbmVlZCB0byBmcmVlemUuIHNvIHRlbGwgdGhl
-IGZyZWV6ZXIgKi8NCisJaWYgKCFmcmVlemVyX3Nob3VsZF9za2lwKGN1cnJlbnQpKSB7DQorCQlm
-cmVlemFibGUgPSAxOw0KKwkJZnJlZXplcl9kb19ub3RfY291bnQoKTsNCisJCXByX2RlYnVnKCIl
-czogZnJlZXplciBzaG91bGQgc2tpcCBtZSAoJXM6JWQpXG4iLA0KKwkJCV9fZnVuY19fLCBjdXJy
-ZW50LT5jb21tLCBjdXJyZW50LT5waWQpOw0KKwl9DQorDQorCXN1c3BlbmRfaGVscGVyX2RhdGEu
-cGFyYW1zLmJ1ZiA9IGJ1ZjsNCisJc3VzcGVuZF9oZWxwZXJfZGF0YS5wYXJhbXMubiA9IG47DQor
-CWluaXRfY29tcGxldGlvbigmc3VzcGVuZF9oZWxwZXJfZGF0YS5kb25lKTsNCisNCisJLyogdXNl
-IGt3b3JrZXIgZm9yIHN1c3BlbmQgcmVzdW1lICovDQorCXF1ZXVlX3dvcmsoc3VzcGVuZF9oZWxw
-ZXJfd3EsICZzdXNwZW5kX2hlbHBlcl9kYXRhLndvcmspOw0KKw0KKwkvKiB3YWl0IGZvciBzdXNw
-ZW5kL3Jlc3VtZSB3b3JrIHRvIGJlIGNvbXBsZXRlICovDQorCXdhaXRfZm9yX2NvbXBsZXRpb24o
-JnN1c3BlbmRfaGVscGVyX2RhdGEuZG9uZSk7DQorDQorCWlmIChmcmVlemFibGUpIHsNCisJCS8q
-IHNldCBvdXJzZWxmIGFzIGZyZWV6YWJsZSAqLw0KKwkJZnJlZXplcl9jb3VudCgpOw0KKwl9DQor
-DQorCWVycm9yID0gc3VzcGVuZF9oZWxwZXJfZGF0YS5yZXN1bHQ7DQorCXByX2RlYnVnKCIlczog
-c3VzcGVuZF9oZWxwZXIgcmV0dXJuZWQgJWRcbiIsIF9fZnVuY19fLCBlcnJvcik7DQorDQogCXJl
-dHVybiBlcnJvciA/IGVycm9yIDogbjsNCiB9DQogDQotcG93ZXJfYXR0cihzdGF0ZSk7DQorc3Rh
-dGljIGludCBzdXNwZW5kX2hlbHBlcl9pbml0KHZvaWQpDQorew0KKwlzdXNwZW5kX2hlbHBlcl93
-cSA9IGFsbG9jX29yZGVyZWRfd29ya3F1ZXVlKCJzdXNwZW5kX2hlbHBlciIsIDApOw0KKwlpZiAo
-IXN1c3BlbmRfaGVscGVyX3dxKQ0KKwkJcmV0dXJuIC1FTk9NRU07DQorDQorCUlOSVRfV09SSygm
-c3VzcGVuZF9oZWxwZXJfZGF0YS53b3JrLCBzdXNwZW5kX2hlbHBlcik7DQorCWluaXRfY29tcGxl
-dGlvbigmc3VzcGVuZF9oZWxwZXJfZGF0YS5kb25lKTsNCisNCisJcmV0dXJuIDA7DQorfQ0KIA0K
-ICNpZmRlZiBDT05GSUdfUE1fU0xFRVANCiAvKg0KQEAgLTY0MCw2ICs3MjMsOCBAQCBzdGF0aWMg
-aW50IF9faW5pdCBwbV9pbml0KHZvaWQpDQogCWlmIChlcnJvcikNCiAJCXJldHVybiBlcnJvcjsN
-CiAJcG1fcHJpbnRfdGltZXNfaW5pdCgpOw0KKwlzdXNwZW5kX2hlbHBlcl9pbml0KCk7DQorDQog
-CXJldHVybiBwbV9hdXRvc2xlZXBfaW5pdCgpOw0KIH0NCiANCi0tIA0KMS45LjENCg0K
+From: Len Brown <len.brown@intel.com>
 
+Speed cpu_up() by believing CPUID's "invariant TSC" flag,
+and skipping the TSC warp test on single socket systems.
+
+On my desktop, cpu_up() duration drops from 4.4ms to 2.4ms.
+That savings is per-CPU, and occurs during boot, online
+and resume from S3.
+
+Originally, this was done for all sized systems, in Feb-2009
+by 83ce40092868 (x86: set X86_FEATURE_TSC_RELIABLE).
+
+But in Dec-2009, it was disabled for all sized systems by
+6c56ccecf05f (x86: Reenable TSC sync check at boot, even with NONSTOP_TSC)
+due to discovery of a TSC time warp on a multi-node system.
+
+Here we re-enable this optimization for single-socket systems.
+
+Multi-node systems will still run the sanity test.
+
+"tsc=reliable" is still available to tell them to not bother.
+
+Perhaps in the future we can up the node count to 2, or perhaps 4,
+using dmi_check_multi[] to workaround bugs, per the original design.
+
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ arch/x86/kernel/cpu/intel.c | 21 +++++++++++++++------
+ arch/x86/kernel/tsc.c       |  2 +-
+ 2 files changed, 16 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
+index 50163fa..aa00390 100644
+--- a/arch/x86/kernel/cpu/intel.c
++++ b/arch/x86/kernel/cpu/intel.c
+@@ -79,17 +79,26 @@ static void early_init_intel(struct cpuinfo_x86 *c)
+ 		c->x86_phys_bits = 36;
+ 
+ 	/*
+-	 * c->x86_power is 8000_0007 edx. Bit 8 is TSC runs at constant rate
+-	 * with P/T states and does not stop in deep C-states.
+-	 *
+-	 * It is also reliable across cores and sockets. (but not across
+-	 * cabinets - we turn it off in that case explicitly.)
++	 * c->x86_power is CPUID(0x80000007).EDX
++	 * Bit 8 describes the "invariant TSC" feature, where the TSC
++	 * continues running at a constant rate across P/T/C states.
++	 * Linux X86_FEATURE_CONSTANT_TSC describes the constant rate.
++	 * Linux X86_FEATURE_NONSTOP_TSC describes not stopping in C-states.
++	 * Linux X86_FEATURE_TSC_RELIABLE means that Linux should skip
++	 * TSC sanity checks because we know the TSC is sufficient for
++	 * clocksource.  This was invented for VMM use, but can also
++	 * be used to skip sanity check cost on bare metal.
++	 * We set it here, but the TSC code currently tests anyway
++	 * on multi-node systems, out of paranoia.
++	 * dmi_check_multi[] can also be used to clear this flag.
+ 	 */
+ 	if (c->x86_power & (1 << 8)) {
+ 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
+ 		set_cpu_cap(c, X86_FEATURE_NONSTOP_TSC);
+-		if (!check_tsc_unstable())
++		if (!check_tsc_unstable()) {
+ 			set_sched_clock_stable();
++			set_cpu_cap(c, X86_FEATURE_TSC_RELIABLE);
++		}
+ 	}
+ 
+ 	/* Penwell and Cloverview have the TSC which doesn't sleep on S3 */
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 5054497..f1a25e5 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -1014,7 +1014,7 @@ static void __init check_system_tsc_reliable(void)
+ 	if (res_low & RTSC_SUSP)
+ 		tsc_clocksource_reliable = 1;
+ #endif
+-	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE))
++	if (boot_cpu_has(X86_FEATURE_TSC_RELIABLE) && (nr_node_ids == 1))
+ 		tsc_clocksource_reliable = 1;
+ }
+ 
+-- 
+2.4.1.314.g9532ead
 
