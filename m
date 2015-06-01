@@ -1,38 +1,64 @@
-From: Andy Lutomirski <luto@kernel.org>
-Subject: Re: [PATCH 1/1] x86 TSC: set X86_FEATURE_TSC_RELIABLE, per CPUID
-Date: Mon, 01 Jun 2015 11:40:04 -0700
-Message-ID: <556CA704.1070000@kernel.org>
-References: <f1643565587e70dd2fe2714e9afa566689211a9a.1433050960.git.len.brown@intel.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 3/5] serial: omap: Switch wake-up interrupt to generic
+ wakeirq
+Date: Mon, 1 Jun 2015 15:05:55 -0700
+Message-ID: <20150601220555.GJ30984@atomide.com>
+References: <1431560196-5722-1-git-send-email-tony@atomide.com>
+ <1431560196-5722-4-git-send-email-tony@atomide.com>
+ <20150528145616.GG30984@atomide.com>
+ <20150531071634.GA9051@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:32865 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753909AbbFASkL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 1 Jun 2015 14:40:11 -0400
-In-Reply-To: <f1643565587e70dd2fe2714e9afa566689211a9a.1433050960.git.len.brown@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-omap-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150531071634.GA9051@kroah.com>
+Sender: linux-omap-owner@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Andreas Fenkart <afenkart@gmail.com>, Felipe Balbi <balbi@ti.com>, Huiquan Zhong <huiquan.zhong@intel.com>, Kevin Hilman <khilman@kernel.org>, NeilBrown <neilb@suse.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, Nishanth Menon <nm@ti.com>, Peter Hurley <peter@hurleysoftware.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Ulf Hansson <ulf.hansson@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, linux-omap@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
 
-On 05/30/2015 10:44 PM, Len Brown wrote:
-> From: Len Brown <len.brown@intel.com>
->
-> Speed cpu_up() by believing CPUID's "invariant TSC" flag,
-> and skipping the TSC warp test on single socket systems.
+* Greg Kroah-Hartman <gregkh@linuxfoundation.org> [150531 00:24]:
+> On Thu, May 28, 2015 at 07:56:16AM -0700, Tony Lindgren wrote:
+> > Hi Greg,
+> > 
+> > * Tony Lindgren <tony@atomide.com> [150513 16:38]:
+> > > We can now use generic wakeirq handling and remove the custom handling
+> > > for the wake-up interrupts.
+> > 
+> > How do you prefer to handle the two omap specific serial driver
+> > changes in this series?
+> > 
+> > There's a dependency to Rafael's pm-wakeirq branch that contains:
+> > 
+> > 4990d4fe327b ("PM / Wakeirq: Add automated device wake IRQ handling")
+> > 56f487c78015 ("PM / Runtime: Update last_busy in rpm_resume")
+> > f6a2fbb903d5 ("PM / runtime: add note about re-calling in during
+> > device probe()")
+> > 
+> > The 8250_omap.c driver change also needs to be merged with:
+> > 
+> > 9e91597f2423 ("serial: 8250_omap: provide complete custom startup &
+> > shutdown callbacks")
+> > 
+> > Not sure if 9e91597f2423 is immutable, but if so then I could:
+> > 
+> > a) Send you a pull request for the two serial driver patches
+> >    based on Rafael's pm-wakeirq branch merged with 9e91597f2423 to
+> >    avoid the merge conflict.
+> > 
+> > b) Apply both serial driver patches into omap-for-v4.2/wakeirq
+> >    based on Rafael's pm-wakeirq branch merged with 9e91597f2423.
+> 
+> That one sounds good to me, feel free to do so and add:
+> 
+> Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> 
+> It's the easiest for everyone involved, right?
 
-I'm typing this email on a "Intel(R) Core(TM) i7-3930K CPU @ 3.20GHz" 
-with a "X79A-GD65 (8D) (MS-7760)" motherboard.  (DO NOT BUY THAT 
-MOTHERBOARD!)
+OK thanks, looks like there's a new commit for the fix as
+9809889c708e, I'll base on that and wait that the commit gets
+merged before sending out any pull request.
 
-The brilliant stock firmware breaks TSC sync on bootup.  Even with the 
-updated firmware I'm using, it's broken on resume from S3.
+Regards,
 
-If you want to make this depend on X86_FEATURE_TSC_ADJUST and confirm 
-that all cores have the same IA32_TSC_ADJUST value, then maybe that 
-would be okay.  Otherwise, please don't underestimate the malice^Wgross 
-incompetence of firmware vendors.
-
---Andy
+Tony
