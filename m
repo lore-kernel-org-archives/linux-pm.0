@@ -1,7 +1,7 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v3 3/8] Driver core: wakeup the parent device before trying probe
-Date: Mon,  1 Jun 2015 17:47:57 +0300
-Message-ID: <1433170082-117462-4-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v3 4/8] klist: implement klist_prev()
+Date: Mon,  1 Jun 2015 17:47:58 +0300
+Message-ID: <1433170082-117462-5-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1433170082-117462-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1433170082-117462-1-git-send-email-andriy.shevchenko@linux.intel.com>
@@ -10,53 +10,80 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+klist_prev() gets the previous element in the list. It is useful to traverse
+through the list in reverse order, for example, to provide LIFO (last in first
+out) variant of access.
 
-If the parent is still suspended when driver probe is
-attempted, the result may be failure.
-
-For example, if the parent is a PCI MFD device that has been
-suspended when we try to probe our device, any register
-reads will return 0xffffffff.
-
-To fix the problem, making sure the parent is always awake
-before attempting driver probe.
-
-Signed-off-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/base/dd.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ include/linux/klist.h |  1 +
+ lib/klist.c           | 41 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 42 insertions(+)
 
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index e843fdb..cfbeff3 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -399,6 +399,8 @@ EXPORT_SYMBOL_GPL(wait_for_device_probe);
-  *
-  * This function must be called with @dev lock held.  When called for a
-  * USB interface, @dev->parent lock must be held as well.
-+ *
-+ * If device has a parent it will be powered on during device's probe().
-  */
- int driver_probe_device(struct device_driver *drv, struct device *dev)
- {
-@@ -410,10 +412,16 @@ int driver_probe_device(struct device_driver *drv, struct device *dev)
- 	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
- 		 drv->bus->name, __func__, dev_name(dev), drv->name);
+diff --git a/include/linux/klist.h b/include/linux/klist.h
+index 61e5b72..953f283 100644
+--- a/include/linux/klist.h
++++ b/include/linux/klist.h
+@@ -63,6 +63,7 @@ extern void klist_iter_init(struct klist *k, struct klist_iter *i);
+ extern void klist_iter_init_node(struct klist *k, struct klist_iter *i,
+ 				 struct klist_node *n);
+ extern void klist_iter_exit(struct klist_iter *i);
++extern struct klist_node *klist_prev(struct klist_iter *i);
+ extern struct klist_node *klist_next(struct klist_iter *i);
  
-+	if (dev->parent)
-+		pm_runtime_get_sync(dev->parent);
-+
- 	pm_runtime_barrier(dev);
- 	ret = really_probe(dev, drv);
- 	pm_request_idle(dev);
- 
-+	if (dev->parent)
-+		pm_runtime_put_sync(dev->parent);
-+
- 	return ret;
+ #endif
+diff --git a/lib/klist.c b/lib/klist.c
+index 89b485a..d74cf7a 100644
+--- a/lib/klist.c
++++ b/lib/klist.c
+@@ -324,6 +324,47 @@ static struct klist_node *to_klist_node(struct list_head *n)
  }
  
+ /**
++ * klist_prev - Ante up prev node in list.
++ * @i: Iterator structure.
++ *
++ * First grab list lock. Decrement the reference count of the previous
++ * node, if there was one. Grab the prev node, increment its reference
++ * count, drop the lock, and return that prev node.
++ */
++struct klist_node *klist_prev(struct klist_iter *i)
++{
++	void (*put)(struct klist_node *) = i->i_klist->put;
++	struct klist_node *last = i->i_cur;
++	struct klist_node *prev;
++
++	spin_lock(&i->i_klist->k_lock);
++
++	if (last) {
++		prev = to_klist_node(last->n_node.prev);
++		if (!klist_dec_and_del(last))
++			put = NULL;
++	} else
++		prev = to_klist_node(i->i_klist->k_list.prev);
++
++	i->i_cur = NULL;
++	while (prev != to_klist_node(&i->i_klist->k_list)) {
++		if (likely(!knode_dead(prev))) {
++			kref_get(&prev->n_ref);
++			i->i_cur = prev;
++			break;
++		}
++		prev = to_klist_node(prev->n_node.prev);
++	}
++
++	spin_unlock(&i->i_klist->k_lock);
++
++	if (put && last)
++		put(last);
++	return i->i_cur;
++}
++EXPORT_SYMBOL_GPL(klist_prev);
++
++/**
+  * klist_next - Ante up next node in list.
+  * @i: Iterator structure.
+  *
 -- 
 2.1.4
