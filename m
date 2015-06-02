@@ -1,64 +1,80 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power_supply: bq25890: make chip_id int
-Date: Tue, 2 Jun 2015 21:28:17 +0200
-Message-ID: <20150602192817.GB13930@earth>
-References: <1433241411-27423-1-git-send-email-laurentiu.palcu@intel.com>
+Subject: Re: [PATCH] power: reset: gpio-restart: increase priority slightly
+Date: Tue, 2 Jun 2015 21:28:51 +0200
+Message-ID: <20150602192850.GC13930@earth>
+References: <4893951.aWdOo6F7tl@diego>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="1LKvkjL3sHcu1TtY"
+	protocol="application/pgp-signature"; boundary="tqI+Z3u+9OQ7kwn0"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:54047 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:54161 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750704AbbFBT2q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Jun 2015 15:28:46 -0400
+	id S1752448AbbFBT3T (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Jun 2015 15:29:19 -0400
 Content-Disposition: inline
-In-Reply-To: <1433241411-27423-1-git-send-email-laurentiu.palcu@intel.com>
+In-Reply-To: <4893951.aWdOo6F7tl@diego>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laurentiu Palcu <laurentiu.palcu@intel.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Guenter Roeck <linux@roeck-us.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---1LKvkjL3sHcu1TtY
-Content-Type: text/plain; charset=us-ascii
+--tqI+Z3u+9OQ7kwn0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Laurentiu,
+Hi Heiko,
 
-On Tue, Jun 02, 2015 at 01:36:51PM +0300, Laurentiu Palcu wrote:
-> Smatch static checker correctly detected an impossible condition because
-> chip_id was declared as u8, instead of int:
+On Tue, Jun 02, 2015 at 04:48:50PM +0200, Heiko St=FCbner wrote:
+> gpio-restart uses a priority of 128 and currently most soc-level restart
+> mechanisms use the same - with some exceptions even using 192.
+> But while the soc-level restarts are provided by the soc itself,
+> gpio-restarts will most of the time be board-specfic and be used
+> when some special board condition makes the soc-level restart
+> only a second choice.
 >=20
-> drivers/power/bq25890_charger.c:843 bq25890_probe()
-> warn: impossible condition '(bq->chip_id < 0) =3D> (0-255 < 0)'
+> The problem at hand manifested itself on the rk3288-veyron devices.
+> While the soc-level restart can sucessfully restart all other rockchip
+> boards I have, the veyron devices use an external restart mechanism that
+> seems to not only reset the soc but also some external needed components.
 >=20
-> Also, while at it, fix the return value too.
+> With both restart handlers having priority 128 in my tests the soc-specif=
+ic
+> variant took precedent in all cases. While it could restart the soc
+> sucessfully in all cases, firmware then got an issue when talking to an
+> external component, resulting in the device being put into recovery mode.
+>=20
+> So, give the board-specific restart handler a slight push and move it
+> to priority 129 to make it more important than the generic soc-specific
+> restart-handler.
+>=20
+> Signed-off-by: Heiko Stuebner <heiko@sntech.de>
 
 Thanks, queued for 4.2.
 
 -- Sebastian
 
---1LKvkjL3sHcu1TtY
+--tqI+Z3u+9OQ7kwn0
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJVbgPRAAoJENju1/PIO/qav5MQAKdCbaJzJyz5cew2N3yHcYV9
-zyHMla+JTEGyCWcQjpj2nJ5Xm50B73p4AC6oyVq79VDDlxpFxxBK/jC5Y/khENCf
-PkAZFjZYYHD89EDl6N6iEK7gtanCkduKOTTxl7oKcxG4IywCcj1Hrs9IACqWrw1w
-ykQSSb0dDsoEHU+sot34EfOEi6UaHr1NR/yE39ozDbGhd8vkWjKpUcDpFdH/LqDf
-6KcAHTIEmWzbcMxHqNZuuzV0xJusohsg65+yvAzXgbe/jE9SCzds6U/VS83/cP9N
-tl0GxVdxrjtXLQS06f9MN4vnILJe4iCmBzOSC2FNsRD92C90NXZ+jbjA5uH/K3IZ
-rmCZ6TL+gJTiwkXXy1lKTYFH7OqApCczSSGT746V6HI2ogifPOkZ33V9szLdD1sk
-PK3dbnMWgi1IdXfe59Z4DErdn6VkdqE97yUBh86QeQrkIzGzBs6rl/K6a4x41M2A
-W2IbiBhqMyXRI0Krgog5bwR7RKr6Bg847LybQ4GEUh/5jFyzZX8zJlwA7ezSD+t0
-Y8FUp9FMPmW4gY9Ej7jKvnLiEvuQe0bMku7N4HMcttoSh3Hl7Qjfy4/5nAJmVyHv
-dEA7rHLb1nMe+ERtIbtvBqSQf3UJzFcnZiWKbYcZ/WCZV+ERiR2nqzDPzi5Ql5i8
-yappjfiKBBTApyPD/sna
-=UkfK
+iQIcBAEBCgAGBQJVbgPyAAoJENju1/PIO/qaxEAQAJl2UaQd5XltMJjWQNQZiiR8
+sNFywdVUj8kHQnqB9uMAQQm5Sh51Z8T6PJqNXl75XpkhKccJnnSfHd2sdgD+uJF7
+US8YsdJ71wGBCtRF9mydunWm+WFKyB69l73KJwNFfSbbrDv0HoLc30Mit98Dz+F/
+uV4RNFFzX69dJhXHhUnJxuZoQuWEqq/FSh/sYVh++zLcaG7Lfm1EsljLIxpqf/uF
+xCy9sDNKjsLmtaJfMODqpoNAngp35rZocFsIz1kCoxVBOzDnx7pXDuc6Ex+M8XjR
+lCli7NO5lIKuUKAPiTqse93eaH9z3tDxTtKbcFG9GlolHrNZfNTYRME+4Hqg+m8h
+sYWzSXCopZkummC7IeHG3SPoz3xqVnicXXpBUFQF1w3XW3YU/Vg8X1VIJzCdFaUs
+o0gzTQhMTW3u0QGSGhyWEzqJoiTlHwPTplFHoSJZAbcRj6WJyhBY9GDob853Tlqn
+GPoQmwoVLYDIXfbd3hIk/xuFVTPbpZlYnAvThv2JiVSlRGi15aQYuPAqWSvAlAYk
+srNB0pG2Dr5yaTL2oBdM1u7uEIallogbGoFslsHuX2mhRYGQ0IAMIWOyw0E3iBhf
+sovAMAjSP5r7ItxpYbcxzTrk4ekVXLuYgEEMOSRBiSxESdD9rozmQG7W84ODwfZM
+77x6XSLa6eC3ZzGk8BTK
+=rS5w
 -----END PGP SIGNATURE-----
 
---1LKvkjL3sHcu1TtY--
+--tqI+Z3u+9OQ7kwn0--
