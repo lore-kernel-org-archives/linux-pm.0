@@ -1,55 +1,101 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 0/6] Support CPR on MSM8916
-Date: Tue, 2 Jun 2015 19:20:59 +0100
-Message-ID: <20150602182059.GD14071@sirena.org.uk>
-References: <1433209679-31389-1-git-send-email-sboyd@codeaurora.org>
- <20150602105328.GJ14071@sirena.org.uk>
- <20150602175654.GA24349@codeaurora.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V6 1/3] OPP: Add new bindings to address shortcomings of
+ existing bindings
+Date: Tue, 2 Jun 2015 11:31:20 -0700
+Message-ID: <20150602183120.GB24349@codeaurora.org>
+References: <cover.1432797343.git.viresh.kumar@linaro.org>
+ <96d49e7e6747c1a65c5f285d70600795126641cc.1432797343.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="FexDM9E/OpjgUmaq"
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150602175654.GA24349@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Andy Gross <agross@codeaurora.org>, linux-pm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
-List-Id: linux-pm@vger.kernel.org
-
-
---FexDM9E/OpjgUmaq
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:38301 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753970AbbFBSbZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jun 2015 14:31:25 -0400
 Content-Disposition: inline
+In-Reply-To: <96d49e7e6747c1a65c5f285d70600795126641cc.1432797343.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mike.turquette@linaro.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-On Tue, Jun 02, 2015 at 10:56:54AM -0700, Stephen Boyd wrote:
-> On 06/02, Mark Brown wrote:
+On 05/28, Viresh Kumar wrote:
+> Current OPP (Operating performance point) device tree bindings have been
+> insufficient due to the inflexible nature of the original bindings. Over
+> time, we have realized that Operating Performance Point definitions and
+> usage is varied depending on the SoC and a "single size (just frequency,
+> voltage) fits all" model which the original bindings attempted and
+> failed.
+> 
+> The proposed next generation of the bindings addresses by providing a
+> expandable binding for OPPs and introduces the following common
+> shortcomings seen with the original bindings:
+> 
+> - Getting clock/voltage/current rails sharing information between CPUs.
+>   Shared by all cores vs independent clock per core vs shared clock per
+>   cluster.
+> 
+> - Support for specifying current levels along with voltages.
+> 
+> - Support for multiple regulators.
+> 
+> - Support for turbo modes.
+> 
+> - Other per OPP settings: transition latencies, disabled status, etc.?
+> 
+> - Expandability of OPPs in future.
+> 
+> This patch introduces new bindings "operating-points-v2" to get these problems
+> solved. Refer to the bindings for more details.
+> 
+> We now have multiple versions of OPP binding and only one of them should
+> be used per device.
+> 
+> Reviewed-by: Rob Herring <robh@kernel.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
-> > These two patches don't seem to be tied to the rest of the series at all
-> > (they certainly trigger already for some systems).
+It looks pretty good. Just one question below on the regulator
+stuff. Also, is there already code written to handle these new
+bindings in the OPP library? If not, it would be good to write
+some to flush out any problems that may be lurking in actual
+implementation.
 
-> The series causes these warning to trigger on devices with CPR
-> and these patches silence them. So it is related, but the patches
-> aren't necessary for compilation. They should go through the
-> regulator tree, if that's what you're asking.
+> +
+> +Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+> +
+> +/ {
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		cpu@0 {
+> +			compatible = "arm,cortex-a9";
+> +			reg = <0>;
+> +			next-level-cache = <&L2>;
+> +			clocks = <&clk_controller 0>;
+> +			clock-names = "cpu";
+> +			opp-supply = <&cpu_supply0>;
 
-I wasn't really asking, more saying that they should not have been sent
-in the same series, especially not a series listing such a complicated
-set of external dependencies.
+opp-supply isn't mentioned anywhere. Is that intentional? Is it
+supposed to be cpu-supply still? It isn't clear to me from the
+previous discussion where this all ended up, but I'm not sure how
+the in-kernel API is going to match up regulators with OPPs. I
+mean, how are we going to ask the OPP library what the
+min/max/target voltage is at a particular frequency when we have
+multiple regulators? Is that some string based interface? 
 
---FexDM9E/OpjgUmaq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+	dev_pm_opp_get_voltage(name, &target, &min, &max);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Or a regulator pointer interface?
 
-iQEcBAEBCAAGBQJVbfQLAAoJECTWi3JdVIfQ6u0H/2oMqMFT2W2mA1UOxtISqtfj
-+DI8fHN9PO40LPNb6WTTIU3Idji4yIvWup6iGa8tFA1w5Na/xSaRLEuK/rKyAZ+v
-IML7V0Zc+v5xQDaaed3erqkyKNFBx2v3ZqAJnDHCOCKZsfrIt+30tzk5oTT4cmt6
-pzyvAiFV8A6+2zlTt3OZ7m+6wGc3TjJI9QX3Sw4hSmy4EVDV01iGutvx+kbnP2Mz
-rVd1StJ0NygFDmPNvhboJGcxJmRggNEtsolh6GAcxljP04wOC+A9MN2zzQ+y8o9D
-EBTtquwiIBCIQERe7b5mH7eh7fP2bh/FKoTsQuDuGBL1IxBzXP/jLakrgMtm/Hg=
-=LH0h
------END PGP SIGNATURE-----
+	dev_pm_opp_get_voltage(regulator, &target, &min, &max);
 
---FexDM9E/OpjgUmaq--
+Or something else? Does this mean the OPP library is going to get
+the CPU device to request the opp-supply from the CPU node?
+Furthermore, why don't we care about opp-clocks? Are clocks
+somehow special?
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
