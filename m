@@ -1,73 +1,67 @@
-From: "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>
-Subject: Re: [PATCH v2] PM / clock_ops: Print acquired clock name in addition
- to con_id
-Date: Tue, 02 Jun 2015 15:31:22 +0300
-Message-ID: <556DA21A.5090902@linaro.org>
-References: <1432917331-3285-1-git-send-email-geert+renesas@glider.be>
+From: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH v2 7/8] dmaengine: add a driver for Intel integrated DMA
+ 64-bit
+Date: Tue, 2 Jun 2015 18:19:03 +0530
+Message-ID: <20150602124903.GR3140@localhost>
+References: <1432570172-86963-1-git-send-email-andriy.shevchenko@linux.intel.com>
+ <1432570172-86963-8-git-send-email-andriy.shevchenko@linux.intel.com>
+ <20150526040651.GP3140@localhost>
+ <CAHp75VeCHMmYsgrb5GThCfsG_TekZjRfy+MsveAk01QDaUR8gQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f182.google.com ([209.85.217.182]:33753 "EHLO
-	mail-lb0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752923AbbFBMb0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jun 2015 08:31:26 -0400
-Received: by lbcue7 with SMTP id ue7so103275792lbc.0
-        for <linux-pm@vger.kernel.org>; Tue, 02 Jun 2015 05:31:24 -0700 (PDT)
-In-Reply-To: <1432917331-3285-1-git-send-email-geert+renesas@glider.be>
+Received: from mga01.intel.com ([192.55.52.88]:33495 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752948AbbFBMru (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Jun 2015 08:47:50 -0400
+Content-Disposition: inline
+In-Reply-To: <CAHp75VeCHMmYsgrb5GThCfsG_TekZjRfy+MsveAk01QDaUR8gQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-clk@vger.kernel.org
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine <dmaengine@vger.kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>
 
-On 05/29/2015 07:35 PM, Geert Uytterhoeven wrote:
-> Currently the con_id of the acquired clock is printed for debugging
-> purposes.  But in several cases, the con_id is NULL, which doesn't
-> provide much debugging information when printed.  These cases are:
->    - When explicitly passing a NULL con_id (which means the first clock
->      tied to the device, if available),
->    - When not using pm_clk_add(), but pm_clk_add_clk() (which takes a
->      "struct clk *" directly).
->
-> Hence print the actual clock name in addition to (and not instead of;
-> thanks Grygorii Strashko!) the con_id.
->
-> Note that the clock name is not available with legacy clock frameworks,
-> and the hex pointer address will be printed instead.
->
+On Tue, May 26, 2015 at 09:49:57AM +0300, Andy Shevchenko wrote:
+> On Tue, May 26, 2015 at 7:06 AM, Vinod Koul <vinod.koul@intel.com> wrote:
+> > On Mon, May 25, 2015 at 07:09:31PM +0300, Andy Shevchenko wrote:
+> >> Intel integrated DMA (iDMA) 64-bit is a specific IP that is used as a part of
+> >> LPSS devices such as HSUART or SPI. The iDMA IP is attached for private
+> >> usage on each host controller independently.
+> >>
+> >> While it has similarities with Synopsys DesignWare DMA, the following
+> >> distinctions doesn't allow to use the existing driver:
+> >> - 64-bit mode with corresponding changes in Hardware Linked List data structure
+> >> - many slight differences in the channel registers
+> >>
+> >> Moreover this driver is based on the DMA virtual channels framework that helps
+> >> to make the driver cleaner and easy to understand.
+> >>
+> > Looking at code and iDMA controllers (if this is the same as I have used), we
+> > have register compatibility with DW controller, so why new driver and why not
+> > use and enhance dw driver ?
+> 
+> Take a look closer. There are many, like I mentioned, slight but not
+> least changes in the registers, besides *64-bit mode*:
+> - ctl_hi represents bytes, not items
+> - 2 bytes of burst is supported (dw has no gap there)
+> - shuffling bits between ctl_* and cfg_*
+> - new bits with different meaning in ctl_* and cfg_*.
+Yes these are the changes which I was thinking and these would impact only
+calculating different values for a descriptor, so based on device probed you
+cna load a specfic operation for calculating, rest of the driver code is
+agnostic
 
-Looks good for me.
-Reviewed-by: Grygorii Strashko <grygorii.strashko@linaro.org>
+> 
+> Preliminary we did a patchset for dw_dmac, but above hw changes blows
+> up and messes the driver code. I really would prefer to have those two
+> separate
+I think it should be doable and reading this patch also doesnt convince me
+for that
 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
-> This is v2 of "PM / clock_ops: Print acquired clock name instead of
-> con_id".
->
-> v2:
->    - Print both clock and con_id, as suggested by Grygorii Strashko
->      <grygorii.strashko@linaro.org>.
-> ---
->   drivers/base/power/clock_ops.c | 3 ++-
->   1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-> index 442ce010559bf531..acef9f9f759a2530 100644
-> --- a/drivers/base/power/clock_ops.c
-> +++ b/drivers/base/power/clock_ops.c
-> @@ -68,7 +68,8 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
->   	} else {
->   		clk_prepare(ce->clk);
->   		ce->status = PCE_STATUS_ACQUIRED;
-> -		dev_dbg(dev, "Clock %s managed by runtime PM.\n", ce->con_id);
-> +		dev_dbg(dev, "Clock %pC con_id %s managed by runtime PM.\n",
-> +			ce->clk, ce->con_id);
->   	}
->   }
->
->
-
+> 
+> However, the 32-bit iDMA which is used in Baytrail might be driven by dw_dmac.
+Also what part here is specfic to *64* bit ?
 
 -- 
-regards,
--grygorii
+~Vinod
+
