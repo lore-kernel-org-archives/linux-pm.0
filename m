@@ -1,77 +1,124 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [RFC/PATCH 4/6] OPP: Allow notifiers to call
- dev_pm_opp_get_{voltage,freq} RCU-free
-Date: Tue, 02 Jun 2015 12:30:49 +0900
-Message-ID: <556D2369.2000603@samsung.com>
-References: <1433209679-31389-1-git-send-email-sboyd@codeaurora.org>
- <1433209679-31389-5-git-send-email-sboyd@codeaurora.org>
+From: Doug Smythies <doug.smythies@gmail.com>
+Subject: [PATCH v2] intel_pstate: Force setting target pstate when required.
+Date: Mon,  1 Jun 2015 21:12:34 -0700
+Message-ID: <1433218354-2607-1-git-send-email-dsmythies@telus.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:45245 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754880AbbFBDaz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Jun 2015 23:30:55 -0400
-In-reply-to: <1433209679-31389-5-git-send-email-sboyd@codeaurora.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:34875 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752243AbbFBEMt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jun 2015 00:12:49 -0400
+Received: by padjw17 with SMTP id jw17so51914320pad.2
+        for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2015 21:12:49 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>, linux-arm-msm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Andy Gross <agross@codeaurora.org>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, David Collins <collinsd@codeaurora.org>
+To: kristen@linux.intel.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org
+Cc: dsmythies@telus.net
 
-On 02.06.2015 10:47, Stephen Boyd wrote:
-> We pass the dev_pm_opp structure to OPP notifiers but the users
-> of the notifier need to surround calls to dev_pm_opp_get_*() with
-> RCU read locks to avoid lockdep warnings. The notifier is already
-> called with the dev_opp's srcu lock held, so it should be safe to
-> assume the devm_pm_opp structure is already protected inside the
-> notifier. Update the lockdep check for this.
-> 
-> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
-> ---
-> 
-> This is probably wrong, but it's what I had to hack up
-> to be able to use the OPP functions from within the notifier
-> to figure out the new values of the OPP without having to take
-> an RCU read lock.
-> 
->  drivers/base/power/opp.c | 19 +++++++++++--------
->  1 file changed, 11 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> index b997a7eabcd4..6d75022c6a0e 100644
-> --- a/drivers/base/power/opp.c
-> +++ b/drivers/base/power/opp.c
-> @@ -108,9 +108,10 @@ static LIST_HEAD(dev_opp_list);
->  /* Lock to allow exclusive modification to the device and opp lists */
->  static DEFINE_MUTEX(dev_opp_list_lock);
->  
-> -#define opp_rcu_lockdep_assert()					\
-> +#define opp_rcu_lockdep_assert(s)					\
->  do {									\
->  	rcu_lockdep_assert(rcu_read_lock_held() ||			\
-> +				(s && srcu_read_lock_held(s)) || 	\
->  				lockdep_is_held(&dev_opp_list_lock),	\
->  			   "Missing rcu_read_lock() or "		\
->  			   "dev_opp_list_lock protection");		\
-> @@ -169,9 +170,10 @@ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
->  	struct dev_pm_opp *tmp_opp;
->  	unsigned long v = 0;
->  
-> -	opp_rcu_lockdep_assert();
-> +	opp_rcu_lockdep_assert(&opp->dev_opp->srcu_head.srcu);
->  
-> -	tmp_opp = rcu_dereference(opp);
-> +	tmp_opp = srcu_dereference_check(opp, &opp->dev_opp->srcu_head.srcu,
-> +					 rcu_read_lock_held());
+During initialization and exit it is possible that the
+target pstate might not actually be set. Furthermore,
+the result can be that the driver and the processor
+are out of synch and, under some conditions, the driver
+might never send the processor the proper target pstate.
 
-It looks strange. The notifier's SRCU is part of device_opp but here we
-want to protect the dev_pm_opp.
+This patch adds a bypass or do_checks flag to the call to
+intel_pstate_set_pstate. If bypass, then specifically
+bypass clamp checks and the do not send if it is the
+same as last time check. If do_checks, then, and as before,
+do the current policy clamp checks, and do not do actual
+send if the new target is the same as the old.
 
-Because of this difference I am not sure that it is safe having around
-this a srcu_read_lock() from notifiers instead of rcu_read_lock().
+Signed-off-by: Doug Smythies <dsmythies@telus.net>
+Reported-by: Marien Zwart <marien.zwart@gmail.com>
+Reported-by: Alex Lochmann <alexander.lochmann@tu-dortmund.de>
+Reported-by: Piotr Ko=C5=82aczkowski <pkolaczk@gmail.com>
+Reported-by: Clemens Eisserer <linuxhippy@gmail.com>
+Tested-by: Marien Zwart <marien.zwart@gmail.com>
+Tested-by: Doug Smythies <dsmythies@telus.net>
+---
+ drivers/cpufreq/intel_pstate.c | 24 ++++++++++++++----------
+ 1 file changed, 14 insertions(+), 10 deletions(-)
 
-Best regards,
-Krzysztof
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pst=
+ate.c
+index 6414661..52c720c 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -33,6 +33,9 @@
+ #include <asm/cpu_device_id.h>
+ #include <asm/cpufeature.h>
+=20
++#define	PSTATE_BYPASS_CHECKS	false
++#define PSTATE_DO_CHECKS	true
++
+ #define BYT_RATIOS		0x66a
+ #define BYT_VIDS		0x66b
+ #define BYT_TURBO_RATIOS	0x66c
+@@ -704,19 +707,20 @@ static void intel_pstate_get_min_max(struct cpuda=
+ta *cpu, int *min, int *max)
+ 	*min =3D clamp_t(int, min_perf, cpu->pstate.min_pstate, max_perf);
+ }
+=20
+-static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
++static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate, b=
+ool mode)
+ {
+ 	int max_perf, min_perf;
+=20
+-	update_turbo_state();
++	if (mode =3D=3D PSTATE_DO_CHECKS) {
++		update_turbo_state();
+=20
+-	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
++		intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
+=20
+-	pstate =3D clamp_t(int, pstate, min_perf, max_perf);
+-
+-	if (pstate =3D=3D cpu->pstate.current_pstate)
+-		return;
++		pstate =3D clamp_t(int, pstate, min_perf, max_perf);
+=20
++		if (pstate =3D=3D cpu->pstate.current_pstate)
++			return;
++	}
+ 	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
+=20
+ 	cpu->pstate.current_pstate =3D pstate;
+@@ -733,7 +737,7 @@ static void intel_pstate_get_cpu_pstates(struct cpu=
+data *cpu)
+=20
+ 	if (pstate_funcs.get_vid)
+ 		pstate_funcs.get_vid(cpu);
+-	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
++	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate, PSTATE_BYPASS_CH=
+ECKS);
+ }
+=20
+ static inline void intel_pstate_calc_busy(struct cpudata *cpu)
+@@ -844,7 +848,7 @@ static inline void intel_pstate_adjust_busy_pstate(=
+struct cpudata *cpu)
+ 	ctl =3D pid_calc(pid, busy_scaled);
+=20
+ 	/* Negative values of ctl increase the pstate and vice versa */
+-	intel_pstate_set_pstate(cpu, cpu->pstate.current_pstate - ctl);
++	intel_pstate_set_pstate(cpu, cpu->pstate.current_pstate - ctl, PSTATE=
+_DO_CHECKS);
+ }
+=20
+ static void intel_hwp_timer_func(unsigned long __data)
+@@ -1007,7 +1011,7 @@ static void intel_pstate_stop_cpu(struct cpufreq_=
+policy *policy)
+ 	if (hwp_active)
+ 		return;
+=20
+-	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
++	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate, PSTATE_BYPASS_CH=
+ECKS);
+ }
+=20
+ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+--=20
+1.9.1
 
