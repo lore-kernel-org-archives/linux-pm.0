@@ -1,53 +1,51 @@
-From: Laurentiu Palcu <laurentiu.palcu@intel.com>
-Subject: [PATCH] power_supply: bq25890: make chip_id int
-Date: Tue,  2 Jun 2015 13:36:51 +0300
-Message-ID: <1433241411-27423-1-git-send-email-laurentiu.palcu@intel.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 0/6] Support CPR on MSM8916
+Date: Tue, 2 Jun 2015 11:53:28 +0100
+Message-ID: <20150602105328.GJ14071@sirena.org.uk>
+References: <1433209679-31389-1-git-send-email-sboyd@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="jtcAeju3WzRmRF+o"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:50492 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754598AbbFBKgr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Jun 2015 06:36:47 -0400
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:38945 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752507AbbFBKxo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jun 2015 06:53:44 -0400
+Content-Disposition: inline
+In-Reply-To: <1433209679-31389-1-git-send-email-sboyd@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Dan Carpenter <dan.carpenter@oracle.com>, Laurentiu Palcu <laurentiu.palcu@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Andy Gross <agross@codeaurora.org>, linux-pm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
 
-Smatch static checker correctly detected an impossible condition because
-chip_id was declared as u8, instead of int:
 
-drivers/power/bq25890_charger.c:843 bq25890_probe()
-warn: impossible condition '(bq->chip_id < 0) => (0-255 < 0)'
+--jtcAeju3WzRmRF+o
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Also, while at it, fix the return value too.
+On Mon, Jun 01, 2015 at 06:47:53PM -0700, Stephen Boyd wrote:
 
-Signed-off-by: Laurentiu Palcu <laurentiu.palcu@intel.com>
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
----
- drivers/power/bq25890_charger.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> Stephen Boyd (6):
+>   regulator: core: Don't spew backtraces on duplicate sysfs
+>   regulator: core: Print at debug level on debugfs creation failure
 
-diff --git a/drivers/power/bq25890_charger.c b/drivers/power/bq25890_charger.c
-index c7b4903..16b7c7bc 100644
---- a/drivers/power/bq25890_charger.c
-+++ b/drivers/power/bq25890_charger.c
-@@ -99,7 +99,7 @@ struct bq25890_device {
- 	struct regmap *rmap;
- 	struct regmap_field *rmap_fields[F_MAX_FIELDS];
- 
--	u8 chip_id;
-+	int chip_id;
- 	struct bq25890_init_data init_data;
- 	struct bq25890_state state;
- 
-@@ -842,7 +842,7 @@ static int bq25890_probe(struct i2c_client *client,
- 	bq->chip_id = bq25890_field_read(bq, F_PN);
- 	if (bq->chip_id < 0) {
- 		dev_err(dev, "Cannot read chip ID.\n");
--		return ret;
-+		return bq->chip_id;
- 	}
- 
- 	if (bq->chip_id != BQ25890_ID) {
--- 
-1.9.1
+These two patches don't seem to be tied to the rest of the series at all
+(they certainly trigger already for some systems).
 
+--jtcAeju3WzRmRF+o
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJVbYsnAAoJECTWi3JdVIfQBa0H/3UrwvOn1Fe+dceWi/11pIps
+PD3pbtrdGO+G4O6X4RmQ5iU/rGVJnIcCeLR2DZll+uv4vE2/Lk0V+LZ1xazc5n9a
+DIgRe0uM+kxKbJyVbiajPksvoTdX73PbegohiQ0WQQ/qlZJsLKYmu/vk9hCwXrFZ
+z0k507FC4oos2cFJOe1R5Z1qPrxZkGsMX0FDqSD42HqOicSNEtJifRiZG8lDj2f3
+2Tgg2Tj+ll+4wlBGRLR6EXxEvVemqHvxcmwVrsh1i2fcxOQOF1xxE2OhkjEx+COG
+DhIeGg0p9+5eDDQawf/NM04/FS4C2Jyqjf1mOL6iJJ43TfVm7Vu7ylKia7D0Qa4=
+=GSLE
+-----END PGP SIGNATURE-----
+
+--jtcAeju3WzRmRF+o--
