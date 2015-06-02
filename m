@@ -1,81 +1,50 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Subject: Re: [PATCH 1/1] x86 TSC: set X86_FEATURE_TSC_RELIABLE, per CPUID
-Date: Mon, 1 Jun 2015 18:12:29 -0700
-Message-ID: <CALCETrWJSqeJsyo7p2cw-cfrt75igQy8FLddvS5adGQ2Wu+8ag@mail.gmail.com>
-References: <f1643565587e70dd2fe2714e9afa566689211a9a.1433050960.git.len.brown@intel.com>
- <556CA704.1070000@kernel.org> <CAJvTdKm8mksFNnhchXepOanjCT4qiYTjmt3BtL81BepuPw+K1w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: [PATCH 0/6] Support CPR on MSM8916
+Date: Mon,  1 Jun 2015 18:47:53 -0700
+Message-ID: <1433209679-31389-1-git-send-email-sboyd@codeaurora.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f177.google.com ([209.85.217.177]:33158 "EHLO
-	mail-lb0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752550AbbFBBMw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Jun 2015 21:12:52 -0400
-Received: by lbcue7 with SMTP id ue7so95007374lbc.0
-        for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2015 18:12:50 -0700 (PDT)
-In-Reply-To: <CAJvTdKm8mksFNnhchXepOanjCT4qiYTjmt3BtL81BepuPw+K1w@mail.gmail.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:57797 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754244AbbFBBsB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Jun 2015 21:48:01 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Andy Lutomirski <luto@kernel.org>, X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+To: linux-arm-msm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Andy Gross <agross@codeaurora.org>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, David Collins <collinsd@codeaurora.org>
 
-On Mon, Jun 1, 2015 at 5:45 PM, Len Brown <lenb@kernel.org> wrote:
-> On Mon, Jun 1, 2015 at 2:40 PM, Andy Lutomirski <luto@kernel.org> wrote:
->> On 05/30/2015 10:44 PM, Len Brown wrote:
->>>
->>> From: Len Brown <len.brown@intel.com>
->>>
->>> Speed cpu_up() by believing CPUID's "invariant TSC" flag,
->>> and skipping the TSC warp test on single socket systems.
->>
->>
->> I'm typing this email on a "Intel(R) Core(TM) i7-3930K CPU @ 3.20GHz" with a
->> "X79A-GD65 (8D) (MS-7760)" motherboard.  (DO NOT BUY THAT MOTHERBOARD!)
->>
->> The brilliant stock firmware breaks TSC sync on bootup.  Even with the
->> updated firmware I'm using, it's broken on resume from S3.
->
-> So the stock firmware broke the TSC on boot _and_ S3.
-> The updated firmware does not break the TSC on boot, but still breaks it on S3?
+This patch series adds support for CPR on MSM8916. It depends on
+a few different patch series to be fully functional. It needs SPMI
+regulator support[1] and secondly it needs the NVMEM framework[2].
+It also needs a patch that provides a "corner" voting mechanism to the
+SMD RPM regulators (and it relies on the SMD RPM regulators to function
+properly). If possible I would like to get rid of that patch entirely.
+Finally it needs CPU clock support to support scaling CPU frequencies.
+Once you have those 4 or 5 patch series in place you can apply these
+patches and enable cpufreq-dt and add the cpufreq-dt device (maybe the
+CPR driver should add the cpufreq-dt device?) and you'll see interrupts
+for CPR and OPP voltage adjustments triggering CPUfreq to modify voltages.
 
-Exactly.
+Stephen Boyd (6):
+  regulator: core: Don't spew backtraces on duplicate sysfs
+  regulator: core: Print at debug level on debugfs creation failure
+  PM / OPP: Support adjusting OPP voltages at runtime
+  OPP: Allow notifiers to call dev_pm_opp_get_{voltage,freq} RCU-free
+  cpufreq-dt: Handle OPP voltage adjust events
+  power: avs: Add support for CPR (Core Power Reduction)
 
->
-> For this board, please send the output from
-> $ dmesg | grep -i tsc
+ drivers/base/power/opp.c     |   96 +-
+ drivers/cpufreq/cpufreq-dt.c |   73 +-
+ drivers/power/avs/Kconfig    |   14 +
+ drivers/power/avs/Makefile   |    1 +
+ drivers/power/avs/qcom-cpr.c | 1983 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/regulator/core.c     |    6 +-
+ include/linux/pm_opp.h       |   10 +
+ 7 files changed, 2166 insertions(+), 17 deletions(-)
+ create mode 100644 drivers/power/avs/qcom-cpr.c
 
-[    0.000000] tsc: Fast TSC calibration using PIT
-[    0.000000] tsc: Detected 3199.952 MHz processor
-[    0.192253] TSC deadline timer enabled
-[    1.712495] tsc: Refined TSC clocksource calibration: 3199.960 MHz
-[    2.712791] Switched to clocksource tsc
+[1]  http://lkml.kernel.org/r/1431466787-32247-1-git-send-email-sboyd@codeaurora.org
+[2]  http://lkml.kernel.org/r/1432226535-8640-1-git-send-email-srinivas.kandagatla@linaro.org
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
 
-... suspend and resume ...
-
-[   61.414518] TSC synchronization [CPU#0 -> CPU#1]:
-[   61.414518] Measured 6137255520 cycles TSC warp between CPUs,
-turning off TS clock.
-[   61.414522] tsc: Marking TSC unstable due to check_tsc_sync_source failed
-
->
-> I would think we could detect this issue much faster than requesting
-> the full 2ms test.
->
->> If you want to make this depend on X86_FEATURE_TSC_ADJUST and confirm that
->> all cores have the same IA32_TSC_ADJUST value, then maybe that would be
->> okay.
->
-> That suggestion sounds reasonable.
->
-> BTW, it also begs the question if Linux could actually *repair* the BIOS damage?
-
-Quite possibly.  Is there such thing as a single-socket CPU that
-claims invariant CPU on which setting TSC_ADJUST to zero on all cores
-won't result in a synchronized TSC?  (This is moot for my CPU.  I
-don't have TSC_ADJUST.)
-
-On a somewhat related note, why are we still calibrating the TSC
-frequency based on the PIT?  intel_pstate appears to know how to read
-it off directly.
-
---Andy
