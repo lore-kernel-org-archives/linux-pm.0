@@ -1,56 +1,35 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH] power: reset: gpio-restart: increase priority slightly
-Date: Tue, 02 Jun 2015 08:25:50 -0700
-Message-ID: <556DCAFE.5050304@roeck-us.net>
-References: <4893951.aWdOo6F7tl@diego>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 0/6] Support CPR on MSM8916
+Date: Tue, 2 Jun 2015 10:56:54 -0700
+Message-ID: <20150602175654.GA24349@codeaurora.org>
+References: <1433209679-31389-1-git-send-email-sboyd@codeaurora.org>
+ <20150602105328.GJ14071@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:55174 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759283AbbFBPZy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jun 2015 11:25:54 -0400
-In-Reply-To: <4893951.aWdOo6F7tl@diego>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150602105328.GJ14071@sirena.org.uk>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Andy Gross <agross@codeaurora.org>, linux-pm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: =?windows-1252?Q?Heiko_St=FCbner?= <heiko@sntech.de>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 06/02/2015 07:48 AM, Heiko St=FCbner wrote:
-> gpio-restart uses a priority of 128 and currently most soc-level rest=
-art
-> mechanisms use the same - with some exceptions even using 192.
-> But while the soc-level restarts are provided by the soc itself,
-> gpio-restarts will most of the time be board-specfic and be used
-> when some special board condition makes the soc-level restart
-> only a second choice.
->
-> The problem at hand manifested itself on the rk3288-veyron devices.
-> While the soc-level restart can sucessfully restart all other rockchi=
-p
-> boards I have, the veyron devices use an external restart mechanism t=
-hat
-> seems to not only reset the soc but also some external needed compone=
-nts.
->
-> With both restart handlers having priority 128 in my tests the soc-sp=
-ecific
-> variant took precedent in all cases. While it could restart the soc
-> sucessfully in all cases, firmware then got an issue when talking to =
-an
-> external component, resulting in the device being put into recovery m=
-ode.
->
-> So, give the board-specific restart handler a slight push and move it
-> to priority 129 to make it more important than the generic soc-specif=
-ic
-> restart-handler.
->
-> Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+On 06/02, Mark Brown wrote:
+> On Mon, Jun 01, 2015 at 06:47:53PM -0700, Stephen Boyd wrote:
+> 
+> > Stephen Boyd (6):
+> >   regulator: core: Don't spew backtraces on duplicate sysfs
+> >   regulator: core: Print at debug level on debugfs creation failure
+> 
+> These two patches don't seem to be tied to the rest of the series at all
+> (they certainly trigger already for some systems).
 
-Makes sense.
 
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+The series causes these warning to trigger on devices with CPR
+and these patches silence them. So it is related, but the patches
+aren't necessary for compilation. They should go through the
+regulator tree, if that's what you're asking.
 
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
