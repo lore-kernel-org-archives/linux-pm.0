@@ -1,124 +1,32 @@
-From: Doug Smythies <doug.smythies@gmail.com>
-Subject: [PATCH v2] intel_pstate: Force setting target pstate when required.
-Date: Mon,  1 Jun 2015 21:12:34 -0700
-Message-ID: <1433218354-2607-1-git-send-email-dsmythies@telus.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 3/6] PM / OPP: Support adjusting OPP voltages at runtime
+Date: Tue, 2 Jun 2015 10:20:26 +0530
+Message-ID: <20150602045026.GC10443@linux>
+References: <1433209679-31389-1-git-send-email-sboyd@codeaurora.org>
+ <1433209679-31389-4-git-send-email-sboyd@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:34875 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752243AbbFBEMt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jun 2015 00:12:49 -0400
-Received: by padjw17 with SMTP id jw17so51914320pad.2
-        for <linux-pm@vger.kernel.org>; Mon, 01 Jun 2015 21:12:49 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1433209679-31389-4-git-send-email-sboyd@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Andy Gross <agross@codeaurora.org>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, David Collins <collinsd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: kristen@linux.intel.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org
-Cc: dsmythies@telus.net
 
-During initialization and exit it is possible that the
-target pstate might not actually be set. Furthermore,
-the result can be that the driver and the processor
-are out of synch and, under some conditions, the driver
-might never send the processor the proper target pstate.
+On 01-06-15, 18:47, Stephen Boyd wrote:
+> +int dev_pm_opp_adjust_voltage(struct device *dev, unsigned long freq,
+> +		   unsigned long u_volt);
 
-This patch adds a bypass or do_checks flag to the call to
-intel_pstate_set_pstate. If bypass, then specifically
-bypass clamp checks and the do not send if it is the
-same as last time check. If do_checks, then, and as before,
-do the current policy clamp checks, and do not do actual
-send if the new target is the same as the old.
+> +static inline int dev_pm_opp_adjust_voltage(struct device *dev,
+> +		unsigned long freq, unsigned long u_volt)
 
-Signed-off-by: Doug Smythies <dsmythies@telus.net>
-Reported-by: Marien Zwart <marien.zwart@gmail.com>
-Reported-by: Alex Lochmann <alexander.lochmann@tu-dortmund.de>
-Reported-by: Piotr Ko=C5=82aczkowski <pkolaczk@gmail.com>
-Reported-by: Clemens Eisserer <linuxhippy@gmail.com>
-Tested-by: Marien Zwart <marien.zwart@gmail.com>
-Tested-by: Doug Smythies <dsmythies@telus.net>
----
- drivers/cpufreq/intel_pstate.c | 24 ++++++++++++++----------
- 1 file changed, 14 insertions(+), 10 deletions(-)
+The 'u' of 'unsigned' isn't aligned to the opening curly brace. Try
+running with checkpatch --strict and you will see some warnings.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pst=
-ate.c
-index 6414661..52c720c 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -33,6 +33,9 @@
- #include <asm/cpu_device_id.h>
- #include <asm/cpufeature.h>
-=20
-+#define	PSTATE_BYPASS_CHECKS	false
-+#define PSTATE_DO_CHECKS	true
-+
- #define BYT_RATIOS		0x66a
- #define BYT_VIDS		0x66b
- #define BYT_TURBO_RATIOS	0x66c
-@@ -704,19 +707,20 @@ static void intel_pstate_get_min_max(struct cpuda=
-ta *cpu, int *min, int *max)
- 	*min =3D clamp_t(int, min_perf, cpu->pstate.min_pstate, max_perf);
- }
-=20
--static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate)
-+static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate, b=
-ool mode)
- {
- 	int max_perf, min_perf;
-=20
--	update_turbo_state();
-+	if (mode =3D=3D PSTATE_DO_CHECKS) {
-+		update_turbo_state();
-=20
--	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
-+		intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
-=20
--	pstate =3D clamp_t(int, pstate, min_perf, max_perf);
--
--	if (pstate =3D=3D cpu->pstate.current_pstate)
--		return;
-+		pstate =3D clamp_t(int, pstate, min_perf, max_perf);
-=20
-+		if (pstate =3D=3D cpu->pstate.current_pstate)
-+			return;
-+	}
- 	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
-=20
- 	cpu->pstate.current_pstate =3D pstate;
-@@ -733,7 +737,7 @@ static void intel_pstate_get_cpu_pstates(struct cpu=
-data *cpu)
-=20
- 	if (pstate_funcs.get_vid)
- 		pstate_funcs.get_vid(cpu);
--	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
-+	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate, PSTATE_BYPASS_CH=
-ECKS);
- }
-=20
- static inline void intel_pstate_calc_busy(struct cpudata *cpu)
-@@ -844,7 +848,7 @@ static inline void intel_pstate_adjust_busy_pstate(=
-struct cpudata *cpu)
- 	ctl =3D pid_calc(pid, busy_scaled);
-=20
- 	/* Negative values of ctl increase the pstate and vice versa */
--	intel_pstate_set_pstate(cpu, cpu->pstate.current_pstate - ctl);
-+	intel_pstate_set_pstate(cpu, cpu->pstate.current_pstate - ctl, PSTATE=
-_DO_CHECKS);
- }
-=20
- static void intel_hwp_timer_func(unsigned long __data)
-@@ -1007,7 +1011,7 @@ static void intel_pstate_stop_cpu(struct cpufreq_=
-policy *policy)
- 	if (hwp_active)
- 		return;
-=20
--	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate);
-+	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate, PSTATE_BYPASS_CH=
-ECKS);
- }
-=20
- static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
---=20
-1.9.1
+Otherwise,
 
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+-- 
+viresh
