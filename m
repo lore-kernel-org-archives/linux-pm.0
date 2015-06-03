@@ -1,81 +1,70 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] sbs-battery: add option to always register battery
-Date: Thu, 4 Jun 2015 00:50:41 +0200
-Message-ID: <20150603225041.GA15243@earth>
-References: <1433250883-32245-1-git-send-email-frans.klaver@xsens.com>
- <20150603135750.GB18181@earth>
- <20150603141035.GO9880@ci00147.xsens-tech.local>
+From: Kukjin Kim <kgene@kernel.org>
+Subject: Re: [PATCH 0/6] cpufreq: use generic cpufreq drivers forExynos4210platform
+Date: Thu, 04 Jun 2015 08:22:05 +0900
+Message-ID: <556F8C1D.9050906@kernel.org>
+References: <'@samsung.com> <1428079429-4252-1-git-send-email-b.zolnierkie@samsung.com> <2036292.PZC6aPyUyX@amdc1976> <55541F92.4020404@kernel.org> <20150514051046.GB9887@linux> <55549E03.6040105@kernel.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="SLDf9lqlvOQaIe6s"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:60821 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752126AbbFCWvK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 3 Jun 2015 18:51:10 -0400
-Content-Disposition: inline
-In-Reply-To: <20150603141035.GO9880@ci00147.xsens-tech.local>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <55549E03.6040105@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kukjin Kim <kgene@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Mike Turquette <mturquette@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Kevin Hilman <khilman@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, linux-arm-kernel@lists.infradead.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Frans Klaver <frans.klaver@xsens.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On 05/14/15 22:07, Kukjin Kim wrote:
+> On 05/14/15 14:10, Viresh Kumar wrote:
+>> On 14-05-15, 13:07, Kukjin Kim wrote:
+>>> On 05/13/15 23:08, Bartlomiej Zolnierkiewicz wrote:
+>>>>
+>>>> Hi,
+>>>>
+>>> Hi Bart,
+>>>
+>>>> On Friday, April 03, 2015 06:43:43 PM Bartlomiej Zolnierkiewicz wrote:
+>>>>> Hi,
+>>>>>
+>>>>> This patch series removes the use of Exynos4210 specific support
+>>>>> from cpufreq-exynos driver and enables the use of cpufreq-dt driver
+>>>>> for this platform.
+>>>>
+>>>> Gentle Ping.  Mike/Kukjin/Viresh could you please review/ack relevant
+>>>> patches (patches #1-3 are for clock subsystem, patches #4-5 for Exynos
+>>>> mach/dts and patch #6 is for cpufreq subsystem)?
+>>
+>> Sorry I thought I already Acked an older version of this set and so
+>> didn't went for it again. Done now.
+>>
+>>> Yes, I totally agreed with this patches for arch side changes and this
+>>> approach when Thomas posted.
+>>>
+>>>> Also what is your
+>>>> preferred way to upstream them (patches are not independent so it would
+>>>> be best to merge them through one tree, otherwise synchronization of
+>>>> git pulls between different subsystem trees will be needed)?
+>>>>
+>>> I can provide topic branch for arch side changes even it is small. I
+>>> think once Viresh and Mike make each topic branch based on -rc or the
+>>> smallest changes from each subsystem then I could handle this series or
+>>> Viresh or Mike need to handle this series with merging each topic
+>>> branches in subsystem. I'm fine either way.
+>>>
+>>> Viresh and Mike, how do you think about that?
+>>
+>> For cpufreq subsystem changes, you can take them in your tree.
+>>
+> Hi Viresh, OK, I will take the cpufreq changes with your ack. Thanks for
+> your confirmation.
+> 
+> Hi Mike and Sylwester,
+> How can we handle this series well without any problems? hmm...
+> 
+Still I need to get clock guys' ack or any comments on this series...
 
---SLDf9lqlvOQaIe6s
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+- Kukjin
 
-Hi,
-
-On Wed, Jun 03, 2015 at 04:10:35PM +0200, Frans Klaver wrote:
-> > While I still think, that the HW design is bad,
->=20
-> I'm still interested in learning how we could improve the HW design in
-> your opinion. Would you say we should be using a non-removable battery?
-
-No I would say the battery should be able to identifiy itself. So if
-the device is not connected, there is no battery device and when you
-connect it the battery is registered. This could be done for example
-using Device Tree overlays. iirc something like that is planned for
-beagle bone capes.
-
-> > I'm basically fine
-> > with this change based upon your comments. I think it's better to
-> > make this into a module parameter, though, since that moves the
-> > decision about this feature from compilation time to module load
-> > time. This will make it possible to use a generic kernel on your
-> > device. Maybe something like this could be used:
-> >=20
-> > module_param(force_load, bool, 0444);
-> > MODULE_PARM_DESC(force_load,
-> > 		 "Attempts to load the driver even if the "
-> > 		 "battery is not connected");
->=20
-> That makes sense. We can work with that.
-
--- Sebastian
-
---SLDf9lqlvOQaIe6s
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVb4S+AAoJENju1/PIO/qaRakP/2QPJVDvdCuag3wUzLvliSfM
-CidayvdSCXCRPMEUYJIPII1VioRUQYLjwvCA76IiIxEHXq9U2kyMdDfqh2TOzcWr
-TOS+Yul2td78yViJAuMmec68Rsy9u4veoRfCeuL9JBeP9yDHBoq9Hj4wF9IMPL94
-TUOm1MKts96ou67FNAPH9P+71RH6vCqziw69kKYNbyM2MwlavPoCOWyFCyVcLI8E
-pSwE5T+hWeiJVwX1RDPNSYgdxs7syUGfOynZeWl7s56z/ZbTrtbKZPerk5ipknaH
-c3I5zhvOYK8stBOgi1Vg7kmu6B+J5NBpDatjSPCX6dKi8Pi2zMVsFc/BNUyTsR6V
-oVC8m9h7NoBwFUAqkTGNwq8q8WH00OO6Skog+ItanvdD6tin6UR50amA7e3SY+8T
-uO1SJuRuVOYaG08k9p6EkwyJBwUpSEIJxwuBVK7gZiKxSZkYax3iJOXGHc+LW8+X
-NMLG52ZypzEgxBsDTmZAyS543r4FXNU0pHaNhdivxtnwN+Ott9zYNbKYPIwcCClA
-wJx+F/tQiy5vQhkg0hGUpq5NmaD6VVLbp6/hccXjodo2r6sjAW1CSafpbCu76z1F
-1qKqXtAgKsL+KMBBcd40YufSzODHV9xTz4QreARyr97Mle/Y0oEQZnaVQIAy3pKE
-hc+XnDmFyGLBLHRnkkan
-=feIm
------END PGP SIGNATURE-----
-
---SLDf9lqlvOQaIe6s--
+>>>> I'm still hoping that this patchset will make it into v4.2 as there are
+>>>> no known issues with it (except minor coding nit for patch #5)...
+>>>>
+>>> Sure, why not :-)
