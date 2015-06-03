@@ -1,304 +1,111 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH RFC 3/3] PM / Domains: Introduce generic PM domain for cpu domain
-Date: Wed, 3 Jun 2015 15:53:49 +0000 (UTC)
-Message-ID: <1433456946-53296-4-git-send-email-lina.iyer@linaro.org>
-References: <1433456946-53296-1-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH RFC 0/3] PM / Domains: Generic PM domains for cpus
+Date: Wed, 3 Jun 2015 15:53:55 +0000 (UTC)
+Message-ID: <1433456946-53296-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:34957 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751950AbbFCPxY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jun 2015 11:53:24 -0400
-Received: by padjw17 with SMTP id jw17so9919431pad.2
-        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2015 08:53:24 -0700 (PDT)
-Date: Thu,  4 Jun 2015 16:29:06 -0600
-In-Reply-To: <1433456946-53296-1-git-send-email-lina.iyer@linaro.org>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:35658 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755224AbbFCPxS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jun 2015 11:53:18 -0400
+Received: by pdbnf5 with SMTP id nf5so10336929pdb.2
+        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2015 08:53:18 -0700 (PDT)
+Date: Thu,  4 Jun 2015 16:29:03 -0600
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@linaro.org
 Cc: mathieu.poirier@linaro.org, galak@codeaurora.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>
 
-Generally cpus are grouped under a power domain in a SoC. When all cpus
-in the domain are in their power off state, the cpu domain can also be
-powered off. Genpd provides the framework for defining cpus as devices
-that are part of a cpu domain.
+This is an attempt to provide a generic PM domain for cpus, so as to allow the
+cpu domain to be powered off, when all the cpus are in power down state during
+cpuidle. The rationale behind the change is that newer SoCs can power down the
+cpus for very short sleep times to save on leakage power. The domain which
+usually has the cpus, a second level cache and some peripheral hardware is
+powered by a rail that can also be turned off when the cpus are not in use.
+Devices for each cpu, L2 and other related blocks could be attached to the
+domain and when there are no uses of these devices (device idle) the domain
+could also be powered off. Generic PM domains provides all the backend needed
+for such an organization.
 
-Introduce support for defining and adding a generic power domain for the
-cpus based on the DT specification of power domain providers and
-consumers.  SoC's that have the cpu domain defined in their DT, can
-setup a genpd with a name and the power_on/power_off callbacks. Calling
-pm_cpu_domain_init() will register the genpd and attach the cpus for
-this domain with the genpd.
+In the first 2 patches, I make genpd usable in atomic context as well. CPUIdle
+runs with irqs disabled and therefore use of mutexes in the current genpd
+implementation is a limitation. But, not all PM domains need to operate in irq
+safe context, those that need to can specify explicitly the irq safe
+requirement of the genpd at init. Devices and sub-domains that attach to an irq
+safe genpd also have to be irq safe.
 
-CPU_PM notifications for are used to pm_runtime_get_sync() and
-pm_runtime_put_sync() for each cpu.  When all cpus are powered off, the
-last cpu going down would call the genpd->power_off(). Correspondingly,
-the first cpu up would call the genpd->power_on() callback before
-resuming from idle.
+The third patch, adds a generic PM domain for the cpus. GenPD provider can be
+specified in the DT and individual cpus that are part of the domain would be
+the domain consumers. A new API pm_cpu_domain_init() has been introduced that
+would initialize the genpd and attach cpus specified as consumers in the DT to
+the domain. When the cpus enter their idle state cpu_pm notifications are sent
+out for that cpu. The last cpu to send cpu_pm notification would trigger the
+domain power_off callback and the first cpu to come up would trigger the genpd
+power_on callback.  Generally, the power_off callback is where the caches are
+flushed in preparation for a power down and the domain hardware configured to
+power down when the cpu finishes execution. In the power_on callback, the
+domain hardware is reset to a state to allow cpus to be active or entire idle
+states individually.
 
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@linaro.org>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
----
+A future addition to this feature, could be a new genpd governor for the
+specific case of the cpu domain.  The governor may look up the time available
+to sleep between the last cpu down and the first cpu up, in determining if it
+would be more efficient to just keep the domain powered on.
+
+This patch is based on Ulf's patch for simplifying domain power down states
+[1], which removes a bunch of complexity in genpd, simplifying atomic genpd.
+
+I have tested this on QCOM 8916, 8084 boards. The dependencies for those
+restrict the addition of the platform code to the series. An example of changes
+needed to add cpu domain could looks like this.
+
+CPU as the domain consumer (only cpu0 is provided as the example here) - 
+
+CPU0: cpu@0 {
+        device_type = "cpu";
+        compatible = "arm,cortex-a53", "arm,armv8";
+        reg = <0x0>;
+        enable-method = "qcom,arm-cortex-acc";
+        qcom,acc = <&acc0>;
+        next-level-cache = <&L2_0>;
+        qcom,saw = <&saw0>;
+        cpu-idle-states = <&CPU_SPC>;
+        power-domains = <&saw_l2>;
+};
+
+Power controller for the L2 Cache is also the domain provider -
+
+saw_l2: power-controller@B012000 {
+        compatible = "qcom,msm8916-saw2-v3.0-l2";
+        reg = <0xB012000 0x1000>, <0xB009000 0x1000>;
+        #power-domain-cells = <0>;
+};
+
+The platform driver for the power-controller -
+
+{
+	...
+	genpd.name = kstrdup("cpu-domain", GFP_KERNEL);
+	genpd.power_on = cpu_pd_power_on;
+	genpd.power_off = cpu_pd_power_off;
+	ret = pm_cpu_domain_init(&genpd, pdev->dev.of_node);
+	...
+}
+
+[1]. https://patches.linaro.org/49014/
+
+Lina Iyer (3):
+  PM / Domains: Allocate memory outside domain locks
+  PM / Domains: Support atomic PM domains
+  PM / Domains: Introduce generic PM domain for cpu domain
+
  drivers/base/power/Makefile     |   1 +
- drivers/base/power/cpu_domain.c | 187 ++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h       |  12 +++
+ drivers/base/power/cpu_domain.c | 187 +++++++++++++++++++++++++++++++++
+ drivers/base/power/domain.c     | 225 +++++++++++++++++++++++++++++-----------
+ include/linux/pm_domain.h       |  23 +++-
  kernel/power/Kconfig            |  12 +++
- 4 files changed, 212 insertions(+)
+ 5 files changed, 388 insertions(+), 60 deletions(-)
  create mode 100644 drivers/base/power/cpu_domain.c
 
-diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
-index 1cb8544..debfc74 100644
---- a/drivers/base/power/Makefile
-+++ b/drivers/base/power/Makefile
-@@ -4,5 +4,6 @@ obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
- obj-$(CONFIG_PM_OPP)	+= opp.o
- obj-$(CONFIG_PM_GENERIC_DOMAINS)	+=  domain.o domain_governor.o
- obj-$(CONFIG_HAVE_CLK)	+= clock_ops.o
-+obj-$(CONFIG_PM_CPU_DOMAIN)	+= cpu_domain.o
- 
- ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
-diff --git a/drivers/base/power/cpu_domain.c b/drivers/base/power/cpu_domain.c
-new file mode 100644
-index 0000000..ee90094
---- /dev/null
-+++ b/drivers/base/power/cpu_domain.c
-@@ -0,0 +1,187 @@
-+/*
-+ * Generic CPU domain runtime power on/off support
-+ *
-+ * Copyright (C) 2015 Linaro Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/cpu.h>
-+#include <linux/cpu_pm.h>
-+#include <linux/device.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/pm_domain.h>
-+#include <linux/pm_runtime.h>
-+
-+static struct cpumask cpus_handled;
-+
-+static void do_cpu(void *unused)
-+{
-+	int cpu = smp_processor_id();
-+	struct device *dev = get_cpu_device(cpu);
-+
-+	pm_runtime_get_sync(dev);
-+}
-+
-+static int cpuidle_genpd_device_init(int cpu)
-+{
-+	struct device *dev = get_cpu_device(cpu);
-+
-+	/*
-+	 * CPU device have to be irq safe for use with cpuidle, which runs
-+	 * with irqs disabled.
-+	 */
-+	pm_runtime_irq_safe(dev);
-+	pm_runtime_enable(dev);
-+
-+	genpd_dev_pm_attach(dev);
-+
-+	/*
-+	 * Execute the below on 'that' cpu to ensure that the reference
-+	 * counting is correct. Its possible that while this code is
-+	 * executed, the cpu may be in idle but we may incorrectly
-+	 * increment the usage. By executing the do_cpu on 'that' cpu,
-+	 * we can ensure that the cpu and the usage count are matched.
-+	 */
-+	return smp_call_function_single(cpu, do_cpu, NULL, true);
-+}
-+
-+static int cpu_state_notifier(struct notifier_block *n,
-+			unsigned long action, void *hcpu)
-+{
-+	int cpu = smp_processor_id();
-+	struct device *dev = get_cpu_device(cpu);
-+
-+	if (!cpumask_test_cpu(cpu, &cpus_handled))
-+		return NOTIFY_DONE;
-+
-+	switch (action) {
-+	case CPU_PM_ENTER:
-+		pm_runtime_put_sync(dev);
-+		break;
-+
-+	case CPU_PM_ENTER_FAILED:
-+	case CPU_PM_EXIT:
-+		pm_runtime_get_sync(dev);
-+		break;
-+
-+	default:
-+		return NOTIFY_DONE;
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static int cpu_online_notifier(struct notifier_block *n,
-+			unsigned long action, void *hcpu)
-+{
-+	int cpu = (unsigned long)hcpu;
-+	struct device *dev = get_cpu_device(cpu);
-+
-+	if (!cpumask_test_cpu(cpu, &cpus_handled))
-+		return NOTIFY_DONE;
-+
-+	switch (action) {
-+	case CPU_STARTING:
-+	case CPU_STARTING_FROZEN:
-+		/*
-+		 * Attach the cpu to its domain if the cpu is coming up
-+		 * for the first time.
-+		 * Called from the cpu that is coming up.
-+		 */
-+		if (!genpd_dev_pm_attach(dev))
-+			do_cpu(NULL);
-+		break;
-+
-+	default:
-+		return NOTIFY_DONE;
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block hotplug_notifier = {
-+	.notifier_call = cpu_online_notifier,
-+};
-+
-+static struct notifier_block cpu_pm_notifier = {
-+	.notifier_call = cpu_state_notifier,
-+};
-+
-+static struct generic_pm_domain *get_cpu_domain(int cpu)
-+{
-+	struct device *dev = get_cpu_device(cpu);
-+	struct of_phandle_args pd_args;
-+	int ret;
-+
-+	/* Make sure we are a domain consumer */
-+	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
-+				"#power-domain-cells", 0, &pd_args);
-+	if (ret)
-+		return ERR_PTR(ret);
-+
-+	/* Attach cpus only for this domain */
-+	return of_genpd_get_from_provider(&pd_args);
-+}
-+
-+int pm_cpu_domain_init(struct generic_pm_domain *genpd, struct device_node *dn)
-+{
-+	int cpu;
-+	int ret;
-+	cpumask_var_t tmpmask;
-+	struct generic_pm_domain *cpupd;
-+
-+	if (!genpd || !dn)
-+		return -EINVAL;
-+
-+	if (!zalloc_cpumask_var(&tmpmask, GFP_KERNEL))
-+		return -ENOMEM;
-+
-+	/* CPU genpds have to operate in IRQ safe mode */
-+	genpd->flags |= GENPD_FLAG_IRQ_SAFE;
-+
-+	pm_genpd_init(genpd, NULL, false);
-+	ret = of_genpd_add_provider_simple(dn, genpd);
-+	if (ret)
-+		return ret;
-+
-+	/* Only add those cpus to whom we are the domain provider */
-+	for_each_online_cpu(cpu) {
-+		cpupd = get_cpu_domain(cpu);
-+
-+		if (IS_ERR(cpupd))
-+			continue;
-+
-+		if (genpd == cpupd) {
-+			cpuidle_genpd_device_init(cpu);
-+			cpumask_set_cpu(cpu, tmpmask);
-+		}
-+	}
-+
-+	if (cpumask_empty(tmpmask))
-+		goto done;
-+
-+	/*
-+	 * Not all cpus may be online at this point. Use the hotplug
-+	 * notifier to be notified of when the cpu comes online, then
-+	 * attach it to the domain.
-+	 *
-+	 * Register hotplug and cpu_pm notification once for all
-+	 * domains.
-+	 */
-+	if (cpumask_empty(&cpus_handled)) {
-+		cpu_pm_register_notifier(&cpu_pm_notifier);
-+		register_cpu_notifier(&hotplug_notifier);
-+	}
-+
-+	cpumask_copy(&cpus_handled, tmpmask);
-+
-+done:
-+	free_cpumask_var(tmpmask);
-+	return 0;
-+}
-+EXPORT_SYMBOL(pm_cpu_domain_init);
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index dc7cb53..fc97ad8 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -280,6 +280,7 @@ struct generic_pm_domain *__of_genpd_xlate_onecell(
- 					void *data);
- 
- int genpd_dev_pm_attach(struct device *dev);
-+
- #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
- static inline int __of_genpd_add_provider(struct device_node *np,
- 					genpd_xlate_t xlate, void *data)
-@@ -325,4 +326,15 @@ static inline int dev_pm_domain_attach(struct device *dev, bool power_on)
- static inline void dev_pm_domain_detach(struct device *dev, bool power_off) {}
- #endif
- 
-+#ifdef CONFIG_PM_CPU_DOMAIN
-+extern int pm_cpu_domain_init(struct generic_pm_domain *genpd,
-+			struct device_node *dn);
-+#else
-+static inline int pm_cpu_domain_init(struct generic_pm_domain *genpd,
-+			struct device_node *dn)
-+{
-+	return -ENODEV;
-+}
-+#endif
-+
- #endif /* _LINUX_PM_DOMAIN_H */
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 7e01f78..55d49f6 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -301,3 +301,15 @@ config PM_GENERIC_DOMAINS_OF
- 
- config CPU_PM
- 	bool
-+
-+config PM_CPU_DOMAIN
-+	def_bool y
-+	depends on PM_GENERIC_DOMAINS_OF && CPU_PM
-+	help
-+	  When cpuidle powers of the cpus in a domain, the domain can also be
-+	  powered off.
-+	  This config option allow for cpus to be registered with the domain
-+	  provider specified in the DT and when the cpu is powered off, calls
-+	  the runtime PM methods to do the reference counting. The last cpu
-+	  going down powers the domain off as well.
-+
 -- 
 2.1.4
 
