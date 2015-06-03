@@ -1,66 +1,58 @@
-From: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
-Subject: [PATCH] power_supply: rt9455_charger: Check if CONFIG_USB_PHY is enabled
-Date: Wed,  3 Jun 2015 11:47:03 +0300
-Message-ID: <1433321223-19442-1-git-send-email-anda-maria.nicolae@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/3] cpufreq: governor: Fix potential races
+Date: Wed,  3 Jun 2015 15:57:10 +0530
+Message-ID: <cover.1433326032.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:61530 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753191AbbFCInu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 3 Jun 2015 04:43:50 -0400
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:33455 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751753AbbFCK1m (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jun 2015 06:27:42 -0400
+Received: by pdbqa5 with SMTP id qa5so4659902pdb.0
+        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2015 03:27:42 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-If CONFIG_USB_PHY is not enabled, struct notifier_block is not defined and
-compilation fails. Therefore, the functions that process USB event
-notifications are defined only if CONFIG_USB_PHY is enabled.
-There is no need to define these functions if CONFIG_USB_PHY is not
-enabled, since no USB notifications are received in this case.
-Also, since rt9455_set_boost_voltage_before_boost_mode() function is
-called only if USB_EVENT_ID notification is received, this function should
-also be defined only if CONFIG_USB_PHY is enabled.
+Hi Rafael,
 
-Signed-off-by: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
----
- drivers/power/rt9455_charger.c |    4 ++++
- 1 file changed, 4 insertions(+)
+Preeti recently highlighted [1] some issues in cpufreq core locking with
+respect to governors. I wanted to solve them after we have simplified
+the hotplug paths in cpufreq core with my latest patches, but now that
+she has poked me, I have done some work in that area.
 
-diff --git a/drivers/power/rt9455_charger.c b/drivers/power/rt9455_charger.c
-index 7c0c1ff..de86913 100644
---- a/drivers/power/rt9455_charger.c
-+++ b/drivers/power/rt9455_charger.c
-@@ -804,6 +804,7 @@ static int rt9455_hw_init(struct rt9455_info *info, u32 ichrg,
- 	return 0;
- }
- 
-+#if IS_ENABLED(CONFIG_USB_PHY)
- /*
-  * Before setting the charger into boost mode, boost output voltage is
-  * set. This is needed because boost output voltage may differ from battery
-@@ -828,6 +829,7 @@ static int rt9455_set_boost_voltage_before_boost_mode(struct rt9455_info *info)
- 
- 	return 0;
- }
-+#endif
- 
- /*
-  * Before setting the charger into charge mode, battery regulation voltage is
-@@ -1241,6 +1243,7 @@ static int rt9455_discover_charger(struct rt9455_info *info, u32 *ichrg,
- 	return 0;
- }
- 
-+#if IS_ENABLED(CONFIG_USB_PHY)
- static int rt9455_usb_event_none(struct rt9455_info *info,
- 				 u8 opa_mode, u8 iaicr)
- {
-@@ -1445,6 +1448,7 @@ static int rt9455_usb_event(struct notifier_block *nb,
- 	}
- 	return NOTIFY_DONE;
- }
-+#endif
- 
- static void rt9455_pwr_rdy_work_callback(struct work_struct *work)
- {
+I am trying to solve only a part of the bigger problem (in a way that I
+feel is the right way ahead). The first patches restructures code to
+make it more readable and the last patch does all the major changes. The
+logs in that one should be good enough to explain why and what I am
+doing.
+
+The first two shouldn't bring any functional change and so can be
+applied early if you are confident about them.
+
+@Preeti: I would like you to test these patches. These should get rid of
+the crashes you were facing but may generate a WARN() from line 447 of
+cpufreq_governor.c, if the sequence is wrong. That has to be fixed
+separately.
+
+Line 447: WARN_ON(!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT))
+
+Rebased over: v4.1-rc6
+Tested-on: ARM dual Cortex -A15 Exynos board.
+
+[1] http://marc.info/?i=20150601064031.2972.59208.stgit%40perfhull-ltc.austin.ibm.com
+
+Viresh Kumar (3):
+  cpufreq: governor: register notifier from cs_init()
+  cpufreq: governor: split cpufreq_governor_dbs()
+  cpufreq: governor: Serialize governor callbacks
+
+ drivers/cpufreq/cpufreq_conservative.c |  28 +--
+ drivers/cpufreq/cpufreq_governor.c     | 340 ++++++++++++++++++---------------
+ drivers/cpufreq/cpufreq_governor.h     |  16 +-
+ drivers/cpufreq/cpufreq_ondemand.c     |   6 +-
+ 4 files changed, 209 insertions(+), 181 deletions(-)
+
 -- 
-1.7.9.5
+2.4.0
 
