@@ -1,78 +1,61 @@
-From: Frans Klaver <frans.klaver@xsens.com>
-Subject: Re: [PATCH] sbs-battery: add option to always register battery
-Date: Wed, 3 Jun 2015 16:10:35 +0200
-Message-ID: <20150603141035.GO9880@ci00147.xsens-tech.local>
-References: <1433250883-32245-1-git-send-email-frans.klaver@xsens.com>
- <20150603135750.GB18181@earth>
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle: powernv/pseries: Decrease the snooze residency
+Date: Wed, 3 Jun 2015 21:05:57 +0530
+Message-ID: <20150603153557.GA5983@dirshya.in.ibm.com>
+References: <1432902728-31476-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <55686DE5.6010001@linux.vnet.ibm.com>
+ <20150530060141.GA19134@dirshya.in.ibm.com>
+ <1433036302.4526.15.camel@au1.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=iso-8859-1
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from filter1.ibarracuda.nl ([83.247.7.10]:56144 "EHLO
-	filter1.ibarracuda.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755206AbbFCOLB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jun 2015 10:11:01 -0400
+Received: from e28smtp09.in.ibm.com ([122.248.162.9]:55831 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752992AbbFCPgP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jun 2015 11:36:15 -0400
+Received: from /spool/local
+	by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <svaidy@linux.vnet.ibm.com>;
+	Wed, 3 Jun 2015 21:06:13 +0530
 Content-Disposition: inline
-In-Reply-To: <20150603135750.GB18181@earth>
+In-Reply-To: <1433036302.4526.15.camel@au1.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, anton@samba.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 
-On Wed, Jun 03, 2015 at 03:57:51PM +0200, Sebastian Reichel wrote:
-> Hi Frans,
+* Benjamin Herrenschmidt <benh@au1.ibm.com> [2015-05-30 20:38:22]:
+
+> On Sat, 2015-05-30 at 11:31 +0530, Vaidyanathan Srinivasan wrote:
+> > In shared lpar case, spinning in guest context may potentially take
+> > away cycles from other lpars waiting to run on the same physical cpu.
+> > 
+> > So the policy in shared lpar case is to let PowerVM hypervisor know
+> > immediately that the guest cpu is idle which will allow the hypervisor
+> > to use the cycles for other tasks/lpars.
 > 
-> On Tue, Jun 02, 2015 at 03:14:43PM +0200, Frans Klaver wrote:
-> > Commit a22b41a31e53 ("sbs-battery: Probe should try talking to the
-> > device") introduced a step in probing the SBS battery, that tries to
-> > talk to the device before actually registering it, saying:
-> > 
-> >     this driver doesn't actually try talking to the device at probe
-> >     time, so if it's incorrectly configured in the device tree or
-> >     platform data (or if the battery has been removed from the system),
-> >     then probe will succeed and every access will sit there and time
-> >     out. The end result is a possibly laggy system that thinks it has a
-> >     battery but can never read status, which isn't very useful.
-> > 
-> > Which is of course reasonable. However, it is also very well possible
-> > for a device to boot up on wall-power and be connected to a battery
-> > later on. The current advice in this situation is to probe the device
-> > from userspace if you expect the battery to come on at some point in the
-> > future. The downside of this approach is that userspace needs to be
-> > aware of the backend of its powersupply, which is inconvenient and going
-> > against the point of hardware abstraction.
-> > 
-> > In some of these cases you do want to register a battery, even if none
-> > are attached at the moment. To facilitate this, add a configuration
-> > option to try to talk to the device, defaulting to y, thus keeping the
-> > current behavior. If unset, the battery will always be registered
-> > without checking the sanity of the connection.
-> > 
-> > Signed-off-by: Frans Klaver <frans.klaver@xsens.com>
-> > ---
-> > If there's a better place to arrange for this all to happen, or to make this
-> > more common across power supplies, I'm perfectly happy to do that work instead.
-> > For now this seems like the logical step to take, especially since using device
-> > tree was (sensibly) shot down last september [0].
+> But that will have negative side effects under KVM no ?
+
+Yes, you have a good point.  If one of the thread in the core goes to
+cede, it can still come back quickly since the KVM guest context is
+not switched yet.  But in single threaded guest, this can force an
+unnecessary exit/context switch overhead.
+
+Now that we have fixed the snooze loop to be bounded and exit
+predictably, KVM guest should actually use snooze state to improve
+latency.
+
+I will test this scenario and enable snooze state for KVM guest.
+ 
+> Suresh mentioned something with his new directed interrupts code that we
+> had many cases where the interrupts ended up arriving shortly after we
+> exited to host for NAP'ing ...
 > 
-> While I still think, that the HW design is bad,
+> Snooze might fix it...
 
-I'm still interested in learning how we could improve the HW design in
-your opinion. Would you say we should be using a non-removable battery?
+Right.  This scenario is worth experimenting and then introduce snooze
+loop for guest.
 
+--Vaidy
 
-> I'm basically fine
-> with this change based upon your comments. I think it's better to
-> make this into a module parameter, though, since that moves the
-> decision about this feature from compilation time to module load
-> time. This will make it possible to use a generic kernel on your
-> device. Maybe something like this could be used:
-> 
-> module_param(force_load, bool, 0444);
-> MODULE_PARM_DESC(force_load,
-> 		 "Attempts to load the driver even if the "
-> 		 "battery is not connected");
-
-That makes sense. We can work with that.
-
-Thanks,
-Frans
