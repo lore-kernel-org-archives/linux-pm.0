@@ -1,194 +1,142 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 12/15] ARM: shmobile: r8a7790 dtsi: Add SYSC PM domains
-Date: Thu,  4 Jun 2015 20:53:38 +0200
-Message-ID: <1433444021-22167-13-git-send-email-geert+renesas@glider.be>
-References: <1433444021-22167-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1433444021-22167-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v3 3/5] clk: add support for clocks provided by
+ SCP(System Control Processor)
+Date: Thu, 4 Jun 2015 13:20:09 -0700
+Message-ID: <20150604202009.GI676@codeaurora.org>
+References: <1432720398-5701-1-git-send-email-sudeep.holla@arm.com>
+ <1432720398-5701-4-git-send-email-sudeep.holla@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:56589 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753487AbbFDUUL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jun 2015 16:20:11 -0400
+Content-Disposition: inline
+In-Reply-To: <1432720398-5701-4-git-send-email-sudeep.holla@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@linaro.org>
 
-Add a device node for the System Controller, with subnodes that
-represent the hardware power area hierarchy.
-Hook up the Cortex-A15 and Cortex-A7 CPU cores and L2 caches/SCUs to
-their respective PM domains.
+On 05/27, Sudeep Holla wrote:
+> +
+> +#include <linux/clk-provider.h>
+> +#include <linux/device.h>
+> +#include <linux/err.h>
+> +#include <linux/of.h>
+> +#include <linux/module.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/scpi_protocol.h>
+> +
+> +struct scpi_clk {
+> +	u32 id;
+> +	const char *name;
+> +	struct clk_hw hw;
+> +	struct scpi_dvfs_info *info;
+> +	unsigned long rate_min;
+> +	unsigned long rate_max;
+> +};
+> +
+> +#define to_scpi_clk(clk) container_of(clk, struct scpi_clk, hw)
+> +
+> +static struct scpi_ops *scpi_ops;
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- arch/arm/boot/dts/r8a7790.dtsi | 89 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 89 insertions(+)
+Why do we need this singleton? Can we put this pointer into scpi_clk?
 
-diff --git a/arch/arm/boot/dts/r8a7790.dtsi b/arch/arm/boot/dts/r8a7790.dtsi
-index bc98bb6cff635ae5..ccae1e6d4b12ecc5 100644
---- a/arch/arm/boot/dts/r8a7790.dtsi
-+++ b/arch/arm/boot/dts/r8a7790.dtsi
-@@ -52,6 +52,7 @@
- 			voltage-tolerance = <1>; /* 1% */
- 			clocks = <&cpg_clocks R8A7790_CLK_Z>;
- 			clock-latency = <300000>; /* 300 us */
-+			power-domains = <&pd_ca15_cpu0>;
- 
- 			i-cache-size = <0x8000>;
- 			i-cache-sets = <512>;
-@@ -77,6 +78,7 @@
- 			compatible = "arm,cortex-a15";
- 			reg = <1>;
- 			clock-frequency = <1300000000>;
-+			power-domains = <&pd_ca15_cpu1>;
- 
- 			i-cache-size = <0x8000>;
- 			i-cache-sets = <512>;
-@@ -94,6 +96,7 @@
- 			compatible = "arm,cortex-a15";
- 			reg = <2>;
- 			clock-frequency = <1300000000>;
-+			power-domains = <&pd_ca15_cpu2>;
- 
- 			i-cache-size = <0x8000>;
- 			i-cache-sets = <512>;
-@@ -111,6 +114,7 @@
- 			compatible = "arm,cortex-a15";
- 			reg = <3>;
- 			clock-frequency = <1300000000>;
-+			power-domains = <&pd_ca15_cpu3>;
- 
- 			i-cache-size = <0x8000>;
- 			i-cache-sets = <512>;
-@@ -128,6 +132,7 @@
- 			compatible = "arm,cortex-a7";
- 			reg = <0x100>;
- 			clock-frequency = <780000000>;
-+			power-domains = <&pd_ca7_cpu0>;
- 
- 			i-cache-size = <0x8000>;
- 			i-cache-sets = <512>;
-@@ -145,6 +150,7 @@
- 			compatible = "arm,cortex-a7";
- 			reg = <0x101>;
- 			clock-frequency = <780000000>;
-+			power-domains = <&pd_ca7_cpu1>;
- 
- 			i-cache-size = <0x8000>;
- 			i-cache-sets = <512>;
-@@ -162,6 +168,7 @@
- 			compatible = "arm,cortex-a7";
- 			reg = <0x102>;
- 			clock-frequency = <780000000>;
-+			power-domains = <&pd_ca7_cpu2>;
- 
- 			i-cache-size = <0x8000>;
- 			i-cache-sets = <512>;
-@@ -179,6 +186,7 @@
- 			compatible = "arm,cortex-a7";
- 			reg = <0x103>;
- 			clock-frequency = <780000000>;
-+			power-domains = <&pd_ca7_cpu3>;
- 
- 			i-cache-size = <0x8000>;
- 			i-cache-sets = <512>;
-@@ -194,6 +202,7 @@
- 
- 	L2_CA15: cache-controller@0 {
- 		compatible = "cache";
-+		power-domains = <&pd_ca15_scu>;
- 
- 		arm,data-latency = <4 4 1>;
- 		arm,tag-latency = <3 3 3>;
-@@ -207,6 +216,7 @@
- 
- 	L2_CA7: cache-controller@1 {
- 		compatible = "cache";
-+		power-domains = <&pd_ca7_scu>;
- 
- 		cache-unified;
- 		cache-level = <2>;
-@@ -1476,6 +1486,85 @@
- 		};
- 	};
- 
-+	sysc: system-controller@e6180000 {
-+		compatible = "renesas,sysc-r8a7790", "renesas,sysc-rcar";
-+		reg = <0 0xe6180000 0 0x0200>;
-+
-+		pm-domains {
-+			#address-cells = <2>;
-+			#size-cells = <0>;
-+
-+			pd_ca15_scu: scu@12 {
-+				reg = <12 0x180>;
-+				#address-cells = <2>;
-+				#size-cells = <0>;
-+				#power-domain-cells = <0>;
-+
-+				pd_ca15_cpu0: cpu@0 {
-+					reg = <0 0x40>;
-+					#power-domain-cells = <0>;
-+				};
-+
-+				pd_ca15_cpu1: cpu@1 {
-+					reg = <1 0x41>;
-+					#power-domain-cells = <0>;
-+				};
-+
-+				pd_ca15_cpu2: cpu@2 {
-+					reg = <2 0x42>;
-+					#power-domain-cells = <0>;
-+				};
-+
-+				pd_ca15_cpu3: cpu@3 {
-+					reg = <3 0x43>;
-+					#power-domain-cells = <0>;
-+				};
-+			};
-+
-+			pd_ca7_scu: scu@21 {
-+				reg = <21 0x100>;
-+				#address-cells = <2>;
-+				#size-cells = <0>;
-+				#power-domain-cells = <0>;
-+
-+				pd_ca7_cpu0: cpu@5 {
-+					reg = <5 0x1c0>;
-+					#power-domain-cells = <0>;
-+				};
-+
-+				pd_ca7_cpu1: cpu@6 {
-+					reg = <6 0x1c1>;
-+					#power-domain-cells = <0>;
-+				};
-+
-+				pd_ca7_cpu2: cpu@7 {
-+					reg = <7 0x1c2>;
-+					#power-domain-cells = <0>;
-+				};
-+
-+				pd_ca7_cpu3: cpu@8 {
-+					reg = <8 0x1c3>;
-+					#power-domain-cells = <0>;
-+				};
-+			};
-+
-+			pd_sh: sh@16 {
-+				reg = <16 0x80>;
-+				#power-domain-cells = <0>;
-+			};
-+
-+			pd_rgx: rgx@20 {
-+				reg = <20 0xc0>;
-+				#power-domain-cells = <0>;
-+			};
-+
-+			pd_imp: imp@24 {
-+				reg = <24 0x140>;
-+				#power-domain-cells = <0>;
-+			};
-+		};
-+	};
-+
- 	qspi: spi@e6b10000 {
- 		compatible = "renesas,qspi-r8a7790", "renesas,qspi";
- 		reg = <0 0xe6b10000 0 0x2c>;
+> +
+> +static unsigned long scpi_clk_recalc_rate(struct clk_hw *hw,
+> +					  unsigned long parent_rate)
+> +{
+> +	struct scpi_clk *clk = to_scpi_clk(hw);
+> +
+> +	return scpi_ops->clk_get_val(clk->id);
+> +}
+> +
+> +static long scpi_clk_round_rate(struct clk_hw *hw, unsigned long rate,
+> +				unsigned long *parent_rate)
+> +{
+> +	struct scpi_clk *clk = to_scpi_clk(hw);
+> +
+> +	if (WARN_ON(clk->rate_min && rate < clk->rate_min))
+> +		rate = clk->rate_min;
+> +	if (WARN_ON(clk->rate_max && rate > clk->rate_max))
+> +		rate = clk->rate_max;
+> +
+> +	return rate;
+> +}
+
+Hm.. this seems really generic. It might be better to support a
+way to tell the framework to limit the min/max rate that's
+accepted for a clk. That could be done later though.
+
+> +
+> +static int scpi_clk_set_rate(struct clk_hw *hw, unsigned long rate,
+> +			     unsigned long parent_rate)
+> +{
+> +	struct scpi_clk *clk = to_scpi_clk(hw);
+> +
+> +	return scpi_ops->clk_set_val(clk->id, rate);
+> +}
+> +
+[..]
+> +
+> +static int scpi_clk_add(struct device *dev, struct device_node *np)
+> +{
+> +	struct clk **clks;
+> +	int idx, count;
+> +	struct clk_onecell_data *clk_data;
+> +
+> +	count = of_property_count_strings(np, "clock-output-names");
+> +	if (count < 0) {
+> +		dev_err(dev, "%s: invalid clock output count\n", np->name);
+> +		return -EINVAL;
+> +	}
+> +
+> +	clk_data = devm_kmalloc(dev, sizeof(*clk_data), GFP_KERNEL);
+> +	if (!clk_data)
+> +		return -ENOMEM;
+> +
+> +	clks = devm_kcalloc(dev, count, sizeof(*clks), GFP_KERNEL);
+> +	if (!clks)
+> +		return -ENOMEM;
+> +
+> +	for (idx = 0; idx < count; idx++) {
+> +		struct scpi_clk *sclk;
+> +		u32 val;
+> +
+> +		sclk = devm_kzalloc(dev, sizeof(*sclk), GFP_KERNEL);
+> +		if (!sclk)
+> +			return -ENOMEM;
+> +
+> +		if (of_property_read_string_index(np, "clock-output-names",
+> +						  idx, &sclk->name)) {
+> +			dev_err(dev, "invalid clock name @ %s\n", np->name);
+> +			return -EINVAL;
+> +		}
+> +
+> +		if (of_property_read_u32_index(np, "clock-indices",
+> +					       idx, &val)) {
+> +			dev_err(dev, "invalid clock index @ %s\n", np->name);
+> +			return -EINVAL;
+> +		}
+> +
+> +		sclk->id = val;
+> +
+> +		clks[idx] = scpi_clk_ops_init(dev, np, sclk);
+> +		if (IS_ERR_OR_NULL(clks[idx]))
+> +			dev_err(dev, "failed to register clock '%s'\n",
+> +				sclk->name);
+> +		else
+> +			dev_dbg(dev, "Registered clock '%s'\n", sclk->name);
+> +	}
+> +
+> +	clk_data->clks = clks;
+> +	clk_data->clk_num = idx;
+> +	of_clk_add_provider(np, of_clk_src_onecell_get, clk_data);
+
+And if of_clk_add_provider() fails?
+
 -- 
-1.9.1
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
