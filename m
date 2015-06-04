@@ -1,41 +1,65 @@
-From: Joe Perches <joe@perches.com>
-Subject: [PATCH 1/6] power: hibernate: Use separate messages for "Syncing filesystems"
-Date: Thu,  4 Jun 2015 11:36:44 -0700
-Message-ID: <1664a8ea72b34db4bef860004166875ab70898ee.1433442778.git.joe@perches.com>
-References: <cover.1433442778.git.joe@perches.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1433442778.git.joe@perches.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V7 1/3] OPP: Add new bindings to address shortcomings of
+ existing bindings
+Date: Thu, 4 Jun 2015 11:37:52 -0700
+Message-ID: <20150604183752.GI490@codeaurora.org>
+References: <cover.1433434659.git.viresh.kumar@linaro.org>
+ <d83c0b6b1768c7229384216329b607d13886aa02.1433434659.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:49194 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932335AbbFDShy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jun 2015 14:37:54 -0400
+Content-Disposition: inline
+In-Reply-To: <d83c0b6b1768c7229384216329b607d13886aa02.1433434659.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mike.turquette@linaro.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-Add the ability to see how long it takes to sync the filesystems
-via the printk time mechanism.
+On 06/04, Viresh Kumar wrote:
+> Current OPP (Operating performance point) device tree bindings have been
+> insufficient due to the inflexible nature of the original bindings. Over
+> time, we have realized that Operating Performance Point definitions and
+> usage is varied depending on the SoC and a "single size (just frequency,
+> voltage) fits all" model which the original bindings attempted and
+> failed.
+> 
+> The proposed next generation of the bindings addresses by providing a
+> expandable binding for OPPs and introduces the following common
+> shortcomings seen with the original bindings:
+> 
+> - Getting clock/voltage/current rails sharing information between CPUs.
+>   Shared by all cores vs independent clock per core vs shared clock per
+>   cluster.
+> 
+> - Support for specifying current levels along with voltages.
+> 
+> - Support for multiple regulators.
+> 
+> - Support for turbo modes.
+> 
+> - Other per OPP settings: transition latencies, disabled status, etc.?
+> 
+> - Expandability of OPPs in future.
+> 
+> This patch introduces new bindings "operating-points-v2" to get these problems
+> solved. Refer to the bindings for more details.
+> 
+> We now have multiple versions of OPP binding and only one of them should
+> be used per device.
+> 
+> Reviewed-by: Rob Herring <robh@kernel.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Start to standardize the printk "PM: doing something...done"
-messages on two separate lines.
+Ok. I'm still interested to see if this binding will have to
+change to support how multiple regulators will be matched up with
+the device using the OPP. But for now,
 
-Signed-off-by: Joe Perches <joe@perches.com>
----
- kernel/power/hibernate.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 2329daa..2466d78 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -663,9 +663,9 @@ int hibernate(void)
- 	if (error)
- 		goto Exit;
- 
--	printk(KERN_INFO "PM: Syncing filesystems ... ");
-+	printk(KERN_INFO "PM: Syncing filesystems ...\n");
- 	sys_sync();
--	printk("done.\n");
-+	printk(KERN_INFO "PM: Syncing filesystems: done\n");
- 
- 	error = freeze_processes();
- 	if (error)
 -- 
-2.1.2
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
