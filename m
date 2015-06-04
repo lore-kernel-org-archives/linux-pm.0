@@ -1,185 +1,137 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH 00/21] On-demand device registration
-Date: Thu, 4 Jun 2015 10:39:30 +0200
-Message-ID: <CAAObsKAFQrm-maqzadCELi2JVt5jd+yoqCbDpu5OP7gkSk8gcA@mail.gmail.com>
-References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>
- <CAL_Jsq+EWLEJhRudTGAwYsOg4tX2-pGhygeQGHae9RL8rBpMiA@mail.gmail.com>
- <556F5C24.1030101@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: PM / Domains: Infinite loop during reboot
+Date: Thu, 4 Jun 2015 11:13:32 +0200
+Message-ID: <CAPDyKFpD6XMOjveqJ79_ivj4++=b7z4ST2=wgQoix40HO6mvxQ@mail.gmail.com>
+References: <CAMuHMdVAnZ5mH7EwJKVeKWSDqCxn+TSH1VOHoK3B2=b8oByoHg@mail.gmail.com>
+	<CAMuHMdUTirgF7Qk2uMPYnejCOa14Khi=Sn8-y23TsRyJrFT-6A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <556F5C24.1030101@linaro.org>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: "Grygorii.Strashko@linaro.org" <grygorii.strashko@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Alexander Holler <holler@ahsoftware.de>, linux-clk@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, Linux PWM List <linux-pwm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Dan Williams <dan.j.williams@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>Linux USB List <linux->
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdUTirgF7Qk2uMPYnejCOa14Khi=Sn8-y23TsRyJrFT-6A@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMyBKdW5lIDIwMTUgYXQgMjE6NTcsIEdyeWdvcmlpLlN0cmFzaGtvQGxpbmFyby5vcmcKPGdy
-eWdvcmlpLnN0cmFzaGtvQGxpbmFyby5vcmc+IHdyb3RlOgo+IEhpIFRvbWV1LAo+Cj4gT24gMDUv
-MjgvMjAxNSAwNzozMyBBTSwgUm9iIEhlcnJpbmcgd3JvdGU6Cj4+IE9uIE1vbiwgTWF5IDI1LCAy
-MDE1IGF0IDk6NTMgQU0sIFRvbWV1IFZpem9zbyA8dG9tZXUudml6b3NvQGNvbGxhYm9yYS5jb20+
-IHdyb3RlOgo+Pj4gSSBoYXZlIGEgcHJvYmxlbSB3aXRoIHRoZSBwYW5lbCBvbiBteSBUZWdyYSBD
-aHJvbWVib29rIHRha2luZyBsb25nZXIgdGhhbgo+Pj4gZXhwZWN0ZWQgdG8gYmUgcmVhZHkgZHVy
-aW5nIGJvb3QgKFN0w6lwaGFuZSBNYXJjaGVzaW4gcmVwb3J0ZWQgd2hhdCBpcwo+Pj4gYmFzaWNh
-bGx5IHRoZSBzYW1lIGlzc3VlIGluIFswXSksIGFuZCBoYXZlIGxvb2tlZCBpbnRvIG9yZGVyZWQg
-cHJvYmluZyBhcyBhCj4+PiBiZXR0ZXIgd2F5IG9mIHNvbHZpbmcgdGhpcyB0aGFuIG1vdmluZyBu
-b2RlcyBhcm91bmQgaW4gdGhlIERUIG9yIHBsYXlpbmcgd2l0aAo+Pj4gaW5pdGNhbGwgbGV2ZWxz
-Lgo+Pj4KPj4+IFdoaWxlIHJlYWRpbmcgdGhlIHRocmVhZCBbMV0gdGhhdCBBbGV4YW5kZXIgSG9s
-bGVyIHN0YXJ0ZWQgd2l0aCBoaXMgc2VyaWVzIHRvCj4+PiBtYWtlIHByb2Jpbmcgb3JkZXIgZGV0
-ZXJtaW5pc3RpYywgaXQgb2NjdXJyZWQgdG8gbWUgdGhhdCBpdCBzaG91bGQgYmUgcG9zc2libGUK
-Pj4+IHRvIGFjaGlldmUgdGhlIHNhbWUgYnkgcmVnaXN0ZXJpbmcgZGV2aWNlcyBhcyB0aGV5IGFy
-ZSByZWZlcmVuY2VkIGJ5IG90aGVyCj4+PiBkZXZpY2VzLgo+Pgo+PiBJIGxpa2UgdGhlIGNvbmNl
-cHQgYW5kIG5vdmVsIGFwcHJvYWNoLgo+Pgo+Pj4gVGhpcyBiYXNpY2FsbHkgcmV1c2VzIHRoZSBp
-bmZvcm1hdGlvbiB0aGF0IGlzIGFscmVhZHkgaW1wbGljaXQgaW4gdGhlIHByb2JlKCkKPj4+IGlt
-cGxlbWVudGF0aW9ucywgc2F2aW5nIHVzIGZyb20gcmVmYWN0b3JpbmcgZXhpc3RpbmcgZHJpdmVy
-cyBvciBhZGRpbmcKPj4+IGluZm9ybWF0aW9uIHRvIERUQnMuCj4+Pgo+Pj4gU29tZXRoaW5nIEkn
-bSBub3QgY29tcGxldGVseSBoYXBweSB3aXRoIGlzIHRoYXQgSSBoYXZlIGhhZCB0byBtb3ZlIHRo
-ZSBjYWxsIHRvCj4+PiBvZl9wbGF0Zm9ybV9wb3B1bGF0ZSBhZnRlciBhbGwgcGxhdGZvcm0gZHJp
-dmVycyBoYXZlIGJlZW4gcmVnaXN0ZXJlZC4KPj4+IE90aGVyd2lzZSBJIGRvbid0IHNlZSBob3cg
-SSBjb3VsZCByZWdpc3RlciBkcml2ZXJzIG9uIGRlbWFuZCBhcyB3ZSBkb24ndCBoYXZlCj4+PiB5
-ZXQgZWFjaCBkcml2ZXIncyBjb21wYXRpYmxlIHN0cmluZ3MuCj4+Cj4+IFllYWgsIHRoaXMgaXMg
-dGhlIG9wcG9zaXRlIG9mIHdoYXQgd2UnZCByZWFsbHkgbGlrZS4gSWRlYWxseSwgd2Ugd291bGQK
-Pj4gaGF2ZSBhIHNvbHV0aW9uIHRoYXQgd29ya3MgZm9yIG1vZHVsZXMgdG9vLiBIb3dldmVyLCB3
-ZSdyZSBubyB3b3JzZQo+PiBvZmYuIFdlIHByZXR0eSBtdWNoIGJ1aWxkLWluIGRlcGVuZGVuY2ll
-cyB0byBhdm9pZCBtb2R1bGUgb3JkZXJpbmcKPj4gcHJvYmxlbXMuCj4+Cj4+IFBlcmhhcHMgd2Ug
-bmVlZCB0byBtYWtlIHRoZSBwcm9iaW5nIG9uLWRlbWFuZCByYXRoZXIgdGhhbiBzaW1wbHkgb24K
-Pj4gZGV2aWNlPC0+ZHJpdmVyIG1hdGNoIG9jY3VycmluZy4KPj4KPj4+IEZvciBtYWNocyB0aGF0
-IGRvbid0IG1vdmUgb2ZfcGxhdGZvcm1fcG9wdWxhdGUoKSB0byBhIGxhdGVyIHBvaW50LCB0aGVz
-ZQo+Pj4gcGF0Y2hlcyBzaG91bGRuJ3QgY2F1c2UgYW55IHByb2JsZW1zIGJ1dCBpdCdzIG5vdCBn
-dWFyYW50ZWVkIHRoYXQgd2UnbGwgYXZvaWQKPj4+IGFsbCB0aGUgZGVmZXJyZWQgcHJvYmVzIGFz
-IHNvbWUgZHJpdmVycyBtYXkgbm90IGJlIHJlZ2lzdGVyZWQgeWV0Lgo+Pgo+PiBJZGVhbGx5LCBv
-Zl9wbGF0Zm9ybV9wb3B1bGF0ZSBpcyBub3QgZXhwbGljaXRseSBjYWxsZWQgYnkgZWFjaAo+PiBw
-bGF0Zm9ybS4gU28gSSB0aGluayB3ZSBuZWVkIHRvIG1ha2UgdGhpcyB3b3JrIGZvciB0aGUgZGVm
-YXVsdCBjYXNlLgo+Pgo+Pj4gSSBoYXZlIHRlc3RlZCB0aGlzIG9uIGJvYXJkcyB3aXRoIFRlZ3Jh
-LCBpTVguNiBhbmQgRXh5bm9zIFNvQ3MsIGFuZCB0aGVzZQo+Pj4gcGF0Y2hlcyB3ZXJlIGVub3Vn
-aCB0byBlbGltaW5hdGUgYWxsIHRoZSBkZWZlcnJlZCBwcm9iZXMuCj4+Pgo+Pj4gV2l0aCB0aGlz
-IHNlcmllcyBJIGdldCB0aGUga2VybmVsIHRvIG91dHB1dCB0byB0aGUgcGFuZWwgaW4gMC41cywg
-aW5zdGVhZCBvZiAyLjhzLgo+Pgo+PiBUaGF0J3MgY2VydGFpbmx5IGNvbXBlbGxpbmcuCj4KPiBJ
-J3ZlIGZvdW5kIHlvdXIgaWRlYSBhYm91dCBtb3ZpbmcgZGV2aWNlIHJlZ2lzdHJhdGlvbiBsYXRl
-ciBkdXJpbmcgU3lzdGVtIGJvb3QKPiB2ZXJ5IGludGVyZXN0aW5nIHNvIEkndmUgZGVjaWRlZCB0
-byB0cnkgaXQgb24gZHJhNy1ldmVtIChUSSkgOikuCj4gSXQncyBnb29kIHRvIGtub3cgdGltZSBk
-dXJpbmcgS2VybmVsIGJvb3Qgd2hlbiB3ZSBjYW4gYXNzdW1lIHRoYXQgYWxsIGRyaXZlcnMgYXJl
-Cj4gcmVhZHkgZm9yIHByb2JpbmcsIHNvIHRoZXJlIGFyZSBtb3JlIHdheXMgdG8gY29udHJvbCBw
-cm9iaW5nIG9yZGVyLgoKVGhhbmtzLCB0aG91Z2ggcmlnaHQgbm93IEknbSBmb2xsb3dpbmcgUm9i
-J3Mgc3VnZ2VzdGlvbiBhbmQgb25seSBkZWxheQpwcm9iaW5nLCBub3QgcmVnaXN0cmF0aW9uLiBU
-aGUgcGF0Y2ggaXMgcmVhbGx5IHNpbXBsZSAoYXBwbGllcyBvbgpsaW51eC1uZXh0LCB3aXRoIGFz
-eW5jIHByb2JpbmcpOgoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvYmFzZS9kZC5jIGIvZHJpdmVycy9i
-YXNlL2RkLmMKaW5kZXggOGRhOGUwNy4uN2U2YjFlMSAxMDA2NDQKLS0tIGEvZHJpdmVycy9iYXNl
-L2RkLmMKKysrIGIvZHJpdmVycy9iYXNlL2RkLmMKQEAgLTQwNyw2ICs0MDcsMTEgQEAgaW50IGRy
-aXZlcl9wcm9iZV9kZXZpY2Uoc3RydWN0IGRldmljZV9kcml2ZXIKKmRydiwgc3RydWN0IGRldmlj
-ZSAqZGV2KQogICAgICAgIGlmICghZGV2aWNlX2lzX3JlZ2lzdGVyZWQoZGV2KSkKICAgICAgICAg
-ICAgICAgIHJldHVybiAtRU5PREVWOwoKKyAgICAgICBpZiAoIWRyaXZlcl9kZWZlcnJlZF9wcm9i
-ZV9lbmFibGUpIHsKKyAgICAgICAgICAgICAgIGRyaXZlcl9kZWZlcnJlZF9wcm9iZV9hZGQoZGV2
-KTsKKyAgICAgICAgICAgICAgIHJldHVybiAwOworICAgICAgIH0KKwogICAgICAgIHByX2RlYnVn
-KCJidXM6ICclcyc6ICVzOiBtYXRjaGVkIGRldmljZSAlcyB3aXRoIGRyaXZlciAlc1xuIiwKICAg
-ICAgICAgICAgICAgICBkcnYtPmJ1cy0+bmFtZSwgX19mdW5jX18sIGRldl9uYW1lKGRldiksIGRy
-di0+bmFtZSk7CgpAQCAtNTg1LDcgKzU5MCw3IEBAIEVYUE9SVF9TWU1CT0xfR1BMKGRldmljZV9h
-dHRhY2gpOwoKIHZvaWQgZGV2aWNlX2luaXRpYWxfcHJvYmUoc3RydWN0IGRldmljZSAqZGV2KQog
-ewotICAgICAgIF9fZGV2aWNlX2F0dGFjaChkZXYsIHRydWUpOworICAgICAgIF9fZGV2aWNlX2F0
-dGFjaChkZXYsIGRyaXZlcl9kZWZlcnJlZF9wcm9iZV9lbmFibGUpOwogfQoKIHN0YXRpYyBpbnQg
-X19kcml2ZXJfYXR0YWNoKHN0cnVjdCBkZXZpY2UgKmRldiwgdm9pZCAqZGF0YSkKCj4gUGxzLCBO
-b3RlIGhlcmUgdGhhdCBUSSBPTUFQMisgbWFjaCBpcyBub3QgcHVyZSBEVCBtYWNoIC0gaXQncyBj
-b21iaW5hdGlvbiBvZgo+IERUIGFuZCBub3QgRFQgZGV2aWNlcy9kcml2ZXJzLgo+Cj4gT2suIFNv
-IFdoYXQgd2FzIGRvbmUuLi4KPgo+IExLTUwgTGludXggNC4xLXJjMyAoYSBzaW1wbGUgY2FzZSkK
-PiAxKSB1c2UgeW91ciBwYXRjaGVzIDMvNCBhcyByZWZlcmVuY2UgKG9ubHkgdGhlc2UgdHdvIHBh
-dGNoZXMgOikKPiAyKSBtb3ZlIG9mX3BsYXRmb3JtX3BvcHVsYXRlIGxhdGVyIGF0IGRldmljZV9p
-bml0Y2FsbF9zeW5jIHRpbWUKPiBCb290IHRpbWUgcmVkdWN0aW9uIH4wLjQgc2VjCgpJJ20gYSBi
-aXQgc3VycHJpc2VkIGF0IHN1Y2ggYSBiaWcgaW1wcm92ZW1lbnQuIE1heSBJIGFzayBob3cgeW91
-IGFyZQptZWFzdXJpbmcgaXQ/Cgo+IFRJIEFuZHJvaWQgS2VybmVsIDMuMTQgKE5PVCBhIHNpbXBs
-ZSBjYXNlKQo+IDEpIHVzZSB5b3VyIHBhdGNoZXMgMy80IGFzIHJlZmVyZW5jZSAob25seSB0aGVz
-ZSB0d28gcGF0Y2hlcyA6KQo+IDIpIG1vdmUgb2ZfcGxhdGZvcm1fcG9wdWxhdGUgbGF0ZXIgYXQg
-ZGV2aWNlX2luaXRjYWxsX3N5bmMgdGltZQo+IDMpIG1ha2UgaXQgdG8gYm9vdCAobm90IHN1cmUg
-SSd2ZSBmaXhlZCBhbGwgaXNzdWVzLCBidXQgdGhvc2Ugd2hpY2gKPiAgICBicmVhayB0aGUgU3lz
-dGVtIGJvb3QpOgo+ICAtIHNwbGl0IG5vbi1EVCBhbmQgRFQgZGV2aWNlcyByZWdpc3RyYXRpb24g
-aW4gcGxhdGZvcm0gY29kZTsKPiAgLSBrZWVwIG5vbi1EVCBkZXZpY2VzIHJlZ2lzdHJhdGlvbiBm
-cm9tIC5pbml0X21hY2hpbmUoKSBbYXJjaF9pbml0Y2FsbF0KPiAgLSBtb3ZlIERULWRldmljZXMg
-cmVnaXN0cmF0aW9uIGF0IGRldmljZV9pbml0Y2FsbF9zeW5jIHRpbWUKPiAgLSBmaXggZHJpdmVy
-cyB3aGljaCB1c2UgcGxhdGZvcm1fZHJpdmVyX3Byb2JlKCkuCj4gICAgTm90ZS4gTm93IHRoZXJl
-IGFyZSBhdCBhYm91dCB+MTkwIG9jY3VycmVuY2VzIG9mIHRoaXMgbWFjcm8gaW4gS2VybmVsLgo+
-ICAtIHJlLW9yZGVyIGZldyBkZXZpY2VzIGluIERUICg0IGRldmljZXMpCj4gIC0gZml4IG9uZSBk
-cml2ZXIgd2hpY2ggdXNlcyBvZl9maW5kX2RldmljZV9ieV9ub2RlKCkgd3JvbmdseQo+ICAgIE5v
-dGUuIFRoaXMgQVBJIGlzIHVzZWQgc29tZSB0aW1lcyB3aXRoIGFzc3VtcHRpb24gdGhhdAo+ICAg
-IHJlcXVlc3RlZCBkZXYgaGFzIGJlZW4gcHJvYmVkIGFscmVhZHkuCj4gQm9vdCB0aW1lIHJlZHVj
-dGlvbiB+MC4zIHNlYy4gUHJvYmluZyBvZiBzb21lIGRldmljZXMgYXJlIHN0aWxsIGRlZmVycmVk
-LgoKSSBnb3Qgbm8gZGVmZXJyZWQgcHJvYmVzIG9uIGEgcGFuZGFib2FyZCB3aXRoIGp1c3QgdGhl
-c2UgY2hhbmdlczoKCmh0dHBzOi8vZ2l0LmNvbGxhYm9yYS5jb20vY2dpdC91c2VyL3RvbWV1L2xp
-bnV4LmdpdC9jb21taXQvP2lkPTE1ODZjNmY1MGIzZDNjNjVkYzIxOWEzY2RjMzMyN2Q3OThjYWJj
-YTYKCj4gVEkgQW5kcm9pZCBLZXJuZWwgMy4xNCArIG9mX3BsYXRmb3JtX2RldmljZV9lbnN1cmUK
-PiAxKSBiYWNrcG9ydCBvZl9wbGF0Zm9ybV9kZXZpY2VfZW5zdXJlKCkgKGFsc28gbmVlZCBwYXRj
-aGVzCj4gICAgIm9mOiBJbnRyb2R1Y2UgZGV2aWNlIHRyZWUgbm9kZSBmbGFnIGhlbHBlcnMiIGFu
-ZAo+ICAgICJvZjogS2VlcCB0cmFjayBvZiBwb3B1bGF0ZWQgcGxhdGZvcm0gZGV2aWNlcyIpCj4g
-MikgYmFjay1wb3J0IGFsbCB5b3VyIHBhdGNoZXMgd2hpY2ggdXNlcyBvZl9wbGF0Zm9ybV9kZXZp
-Y2VfZW5zdXJlKCkKPiAzKSBtYWtlIGl0IHRvIGJvb3Q6Cj4gICAgLSBkcm9wIHBhdGNoIGRtYTog
-b2Y6IFByb2JlIERNQSBjb250cm9sbGVycyBvbiBkZW1hbmQKPiAgICAtIGZpeCBkZWFkbG9jayBp
-biByZWd1bGF0b3IgY29yZToKPiAgICByZWd1bGF0b3JfZGV2X2xvb2t1cCgpIGNhbGxlZCBmcm9t
-IHJlZ3VsYXRvcl9yZWdpc3RlcigpIGluIEszLjE0Cj4gNCkgZ2V0IHJpZCBvZiBkZWZlcnJlZCBw
-cm9iZXMgLSBhZGQgb2ZfcGxhdGZvcm1fZGV2aWNlX2Vuc3VyZSgpIGNhbGxzIGluOgo+ICAgIC0g
-ZHJpdmVycy92aWRlby9mYmRldi9vbWFwMi9kc3Mvb3V0cHV0LmMKPiAgICAtIGRyaXZlcnMvZXh0
-Y29uL2V4dGNvbi1jbGFzcy5jCj4KPiAgQm9vdCB0aW1lIHJlZHVjdGlvbjogTk9ORSAhPwo+Cj4g
-U28gZmV3IGNvbW1lbnRzIGZyb20gYWJvdmU6Cj4gLSByZWdpc3RlcmluZyBkZXZpY2VzIGxhdGVy
-IGR1cmluZyB0aGUgU3lzdGVtIGJvb3QgbWF5IGltcHJvdmUgYm9vdCB0aW1lLgo+ICAgQnV0IHJl
-c29sdmluZyBvZiBhbGwgZGVmZXJyZWQgcHJvYmVzIG1heSBOT1QgaW1wcm92ZSBib290IHRpbWUg
-OykKPiAgIEhhdmUgeW91IHNlZW4gc210aCBsaWtlIHRoaXM/CgpZZWFoLCBJIGRvbid0IHJlYWxs
-eSBleHBlY3QgZm9yIG9uLWRlbWFuZCBwcm9iaW5nIHRvIGltcHJvdmUgYm9vdCB0aW1lCm11Y2gg
-aW4gdGhlIGdlbmVyYWwgY2FzZSwgYXMgZHJpdmVycyB0ZW5kIHRvIGZpcnN0IGFjcXVpcmUgcmVz
-b3VyY2VzCihhbmQgZGVmZXIgcHJvYmUgaWYgbmVlZGVkKSBhbmQgb25seSB0aGVuIGFjY2VzcyBo
-YXJkd2FyZSBhbmQgd2FpdCBmb3IKc3R1ZmYgdG8gaGFwcGVuLgoKVGhlIG1haW4gYWR2YW50YWdl
-IG9mIG9yZGVyZWQvb25kZW1hbmQgcHJvYmluZyBpcyB0aGF0IGl0IGlzIG11Y2gKZWFzaWVyIHRv
-IHNlZSB0aGUgb3JkZXIgaW4gd2hpY2ggZGV2aWNlcyB3aWxsIGJlIGJvdW5kLiBJbiBteSBjYXNl
-CnRoaXMgaXMgdXNlZnVsIGJlY2F1c2Ugb25lIGNvdWxkIGdldCBvbmUgZGV2aWNlIChlZy4gdGhl
-IGRybSBwYW5lbCkgdG8KcHJvYmUgdmVyeSBlYXJseSBieSBqdXN0IG1vdmluZyB0aGF0IG5vZGUg
-dG8gdGhlIGJlZ2lubmluZyBvZiB0aGUgRFQuCldpdGggZGVmZXJyZWQgcHJvYmUsIG9uZSB3b3Vs
-ZCBoYXZlIHRvIGZpZ3VyZSBvdXQgYWxsIHRoZSBkZXBlbmRlbmNpZXMKYW5kIHNodWZmbGUgdGhl
-bSBhcm91bmQgaW4gdGhlIERULgoKQW5vdGhlciBhZHZhbnRhZ2UgKGJ1dCBub3QgdGhlIG9uZSB3
-aHkgSSdtIGRvaW5nIHRoaXMgd29yaykgaXMgdGhhdCBpbgpnZW5lcmFsIGEgZHJpdmVyJ3MgcHJv
-YmUgd2lsbCBiZSBjYWxsZWQgb25seSBvbmNlIHBlciBkZXZpY2UsIGFuZCBpZgppdCBmYWlscyB0
-aGVuIHdlIGNhbiBiZSBhbG1vc3QgY2VydGFpbiB0aGF0IHNvbWV0aGluZyBpcyB3cm9uZy4gVGhp
-cwpzaG91bGQgYWlkIGluIGRlYnVnZ2luZyBhcyByaWdodCBub3cgb25lIGhhcyB0byB0YWtlIGlu
-dG8gYWNjb3VudCB0aGUKc2V2ZXJhbCByZWFzb25zIHdoeSBhIGRldmljZSBtaWdodCBkZWZlciBp
-dHMgcHJvYmUuCgpEZXBlbmRpbmcgb24gd2hhdCB3b3JrIHlvdXIgZHJpdmVycyBkbyBpbiB5b3Vy
-IHBsYXRmb3JtLCBlbmFibGluZwphc3luYyBwcm9iaW5nIGZvciBhbGwgb2YgdGhlbSBtYXkgaGF2
-ZSBhIG5vdGljZWFibGUgaW1wYWN0IHRob3VnaC4KCj4gLSB1c2FnZSBvZiBvZl9wbGF0Zm9ybV9k
-ZXZpY2VfZW5zdXJlKCkgd2lsbCByZXF1aXJlIGNvbnRpbnVvdXMgZml4aW5nIG9mIEtlcm5lbCA6
-KAoKWW91IG1lYW4gYWRkaW5nIHRob3NlIGNhbGxzIHRvIG1vcmUgc3Vic3lzdGVtcz8KCj4gLSBs
-YXRlX2luaXRjYWxsIGlzIG5vdCAoYXMgZm9yIG1lIG5vdCBzYWZlKSBhIGdvb2QgdGltZSB0byBy
-ZWdpc3RlciBkZXZpY2VzLiBBIGxvdAo+ICAgb2YgcGxhdGZvcm1zL3N1YnN5c3RlbXMvZnJhbWV3
-b3JrcyBwZXJmb3JtIHRoZWlyIGZpbmFsIGluaXRpYWxpemF0aW9uIG9yIGNsZWFuLXVwCj4gICBz
-dGVwcywgd2l0aCBhc3N1bXB0aW9uIHRoYXQgU3lzdGVtIG1vc3RseSByZWFkeSB0byB3b3JrLiBG
-b3IgZXhhbXBsZSwgQ1BVSWRsZS9DUFVGcmVxCj4gICBhcmUgYWxsb3dlZCBhbmQgb3RoZXIgUE0g
-c3RhZmYuIENQVUlkbGUgYW5kIGRyaXZlcidzIHByb2JpbmcgYXJlIG5vdCBmcmllbmRzLgoKWWVh
-aCwgSSB3YXMgZXhwZWN0aW5nIHRvIGZpbmQgbW9yZSBwcm9ibGVtcyBkdWUgdG8gdGhpcywgYnV0
-IHRoZQpwbGF0Zm9ybXMgSSB0ZXN0ZWQgb24gZGlkbid0IHNob3cgYW55LiBEbyB5b3UgaGF2ZSBw
-b2ludGVycyB0bwpjb25jcmV0ZSBpc3N1ZXM/Cgo+IFdoYXQgd291bGQgYmUgbmljZSB0byBoYXZl
-IGZvciBub3cgaW4gbXkgb3BpbmlvbjoKPiAtIHNvbWUgdXNlZnVsIHBsYWNlIHRvIG1vdmUgZGV2
-aWNlIHBvcHVsYXRpb24gY29kZS4KPiAgIE1heSBiZSBtYWNoaW5lX2Rlc2MtPmluaXRfZGV2aWNl
-X3N5bmMoKSBjYWxsYmFjay4KCkknbSBsb29raW5nIGF0IGxlYXZlIGRldmljZSByZWdpc3RyYXRp
-b24gd2hlcmUgaXQgY3VycmVudGx5IGlzIGFuZApqdXN0IGFkZCBkZXZpY2VzIHRvIHRoZSBkZWZl
-cnJlZCBsaXN0IHVudGlsIHdlIGdldCB0byBsYXRlX2luaXRjYWxsLAp3aGVyZSB3ZSB3b3VsZCBz
-dGFydCB0byBhY3R1YWxseSBwcm9iZSB0aGVtLiBTZWVtcyBwcm9taXNpbmcgZm9yIG5vdy4KCj4g
-LSBzb21lIG9wdGlvbmFsIGZlYXR1cmUgaW4gRFRDIHdoaWNoIHdpbGwgYWxsb3cgdG8gcmUtYXJy
-YW5nZSBEVCBub2RlcyBmb3IgbGV2ZWxzIDAocm9vdCkKPiAgIGFuZCAxKHNpbXBsZS1idXMpIHVz
-aW5nIHN0YW5kYXJkIG9yIHdpZGVseSB1c2VkIGJpbmRpbmdzIChncGlvLCByZWd1bGF0b3JzLCBj
-bG9ja3MsIGRtYSwKPiAgIHBpbmN0cmwsIGlycXMpLgoKQ291bGQgeW91IGV4dGVuZCBvbiB0aGlz
-LCBwbGVhc2U/Cgo+IEFkZGl0aW9uYWwgbm90ZToKPiAtIENoYW5naW5nIGRldmljZSdzIHJlZ2lz
-dHJhdGlvbiBvcmRlciB3aWxsIGNoYW5nZSBkZXZpY2VzJ3Mgb3JkZXIgaW4KPiAgZHBtX2xpc3Qg
-KGRyaXZlcnMvYmFzZS9wb3dlci9tYWluLmMpIGFuZCBkZXZpY2VzX2tzZXQgbGlzdAo+ICAoZHJp
-dmVycy9iYXNlL2NvcmUuYykuIFRoaXMgbWlnaHQgcG90ZW50aWFsbHkgYWZmZWN0IG9uIHN1c3Bl
-bmQgWzFdIGFuZCBzaHV0ZG93bi4KClllYWgsIEkgZG9uJ3QgcGxhbiB0byBjaGFuZ2UgcmVnaXN0
-cmF0aW9uIG9yZGVyLCBidXQgcHJvYmluZyBjZXJ0YWlubHkgd2lsbC4KCj4gWzFdIGh0dHBzOi8v
-bGttbC5vcmcvbGttbC8yMDE0LzEyLzEyLzMyNAoKVGhhbmtzLAoKVG9tZXUKCj4KPiAtLQo+IHJl
-Z2FyZHMsCj4gLWdyeWdvcmlpCj4KPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXwo+IGxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0Cj4gbGludXgtYXJt
-LWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCj4gaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcv
-bWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCl9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCmRyaS1kZXZlbCBtYWlsaW5nIGxpc3QKZHJpLWRldmVs
-QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxt
-YW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+On 5 May 2015 at 15:49, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Mon, Apr 13, 2015 at 2:18 PM, Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+>> Sometimes reboot doesn't work on r8a7791/koelsch with the CPG clock domain.
+>> With additional debug messages, you can see it hangs in an infinite loop:
+>>
+>> rcar-dmac ec720000.dma-controller: removing from PM domain cpg_clocks
+>> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+>> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+>> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+>> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+>> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+>> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+>> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+>> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+>> pm_genpd_remove_device: Remove ec720000.dma-controller from cpg_clocks
+>> [...]
+>>
+>> Presumably this is this loop in genpd_dev_pm_detach():
+>>
+>>         while (1) {
+>>                 ret = pm_genpd_remove_device(pd, dev);
+>>                 if (ret != -EAGAIN)
+>>                         break;
+>>                 cond_resched();
+>>         }
+>>
+>> which is retried because genpd->prepared_count > 0 in pm_genpd_remove_device().
+>> This looks a bit strange, as no suspend is in progress, so prepared_count
+>> should be zero?
+>>
+>> I'm adding more debugging code to verify this, but it's not 100% reproducable.
+>>
+>> [...]
+>>
+>> Confirmed: prepared_count turns out to be 1 at reboot time if at least one
+>> s2ram cycle happened before. Additional s2ram cycles don't seem to increase
+>> prepared_count any further.
+>
+> This seems to be caused by the sh_cmt driver's sh_cmt_enable() calling
+> dev_pm_syscore_device(..., true).
+>
+> If dev->power.syscore is set, device_prepare(), device_complete() et al.
+> skip further operation.
+>
+> Hence during an s2ram+resume cycle, the following happens:
+>
+>     PM: Syncing filesystems ... done.
+>     PM: Preparing system for mem sleep
+>     Freezing user space processes ... (elapsed 0.001 seconds) done.
+>     Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
+>     PM: Entering mem sleep
+>     Suspending console(s) (use no_console_suspend to debug)
+>
+>     [ pm_genpd_prepare() is called for all devices (incl. sh_cmt), ]
+>     [ increasing prepared_count ]
+>
+>     PM: suspend of devices complete after 36.472 msecs
+>     PM: late suspend of devices complete after 7.569 msecs
+>     PM: noirq suspend of devices complete after 8.035 msecs
+>     Disabling non-boot CPUs ...
+>     CPU1: shutdown
+>
+>     [ sh_cmt_enable() is called, and power.syscore becomes true ]
+>
+>     Enabling non-boot CPUs ...
+>     CPU1 is up
+>     PM: noirq resume of devices complete after 4.724 msecs
+>     PM: early resume of devices complete after 5.100 msecs
+>     PM: resume of devices complete after 84.156 msecs
+>
+>     [ pm_genpd_complete() is called for all devices (except for sh_cmt!, ]
+>     [ as its power.syscore is now true!), decreasing prepared_count ]
+>
+>     [ prepared_count is now 1 instead of 0! ]
+>
+>     PM: Finishing wakeup.
+>     Restarting tasks ...
+>
+> During subsequent s2ram+resume cycles, the prepared_count imbalance doesn't
+> increase, as pm_genpd_prepare() is no longer called for sh_cmt due to
+> power.syscore still being set.
+>
+> During reboot/halt, platform_drv_shutdown() is called for any platform device
+> that has a driver with a .shutdown() method (on R-Car Gen2, that's just the
+> rcar-dmac driver). platform_drv_shutdown() calls dev_pm_domain_detach(),
+> which enters an infinite loop, due to the prepared_count imbalance.
+>
+> On R-Mobile, the imbalance also happens. But there it doesn't cause any issues
+> as sh_cmt is part of a PM domain that doesn't contain any devices with drivers
+> that have .shutdown() methods.
+>
+> I see two ways to fix this:
+>   1. Fix the prepared_count imbalance.
+>      Anyone with a clue?
+
+Hi Geert,
+
+Sorry for the delayed answer. I don't have an idea for 1), yet.
+
+>   2. Fix the infinite loop.
+>        a. Limit the loop to a fixed number of retries (e.g. 20),
+>        b. Remove the call to dev_pm_domain_detach() from
+>           platform_drv_shutdown(). Others buses (amba, i2c, spi) do not call
+>           it from their .shutdown() method, only from .remove().
+
+The reason why I added dev_pm_domain_detach() in that path was because
+of the call to acpi_dev_pm_detach() that existed there already.
+
+acpi_dev_pm_detach was added by Rafael in commit
+94d76d5de38d7502c3e78fcd6bf50da95e3e0361 (platform / ACPI:
+Attach/detach ACPI PM during probe/remove/shutdown).
+
+>From genpd point of view, I think it safe to remove the call to
+dev_pm_domain_detach() from platform_drv_shutdown(), but I can't tell
+from ACPI point of view.
+
+Moreover, we still need to looking into 1), as it's probably causing
+other issues as well.
+
+Kind regards
+Uffe
