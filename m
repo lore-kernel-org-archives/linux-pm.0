@@ -1,65 +1,55 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V7 1/3] OPP: Add new bindings to address shortcomings of
- existing bindings
-Date: Thu, 4 Jun 2015 11:37:52 -0700
-Message-ID: <20150604183752.GI490@codeaurora.org>
-References: <cover.1433434659.git.viresh.kumar@linaro.org>
- <d83c0b6b1768c7229384216329b607d13886aa02.1433434659.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:49194 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932335AbbFDShy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jun 2015 14:37:54 -0400
-Content-Disposition: inline
-In-Reply-To: <d83c0b6b1768c7229384216329b607d13886aa02.1433434659.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Joe Perches <joe@perches.com>
+Subject: [PATCH 4/6] power: swap: Standardize "Image <loading/saving>" messages
+Date: Thu,  4 Jun 2015 11:36:47 -0700
+Message-ID: <21562844eb3bcbce4b7619098a69d0c342b879a3.1433442778.git.joe@perches.com>
+References: <cover.1433442778.git.joe@perches.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1433442778.git.joe@perches.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mike.turquette@linaro.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-On 06/04, Viresh Kumar wrote:
-> Current OPP (Operating performance point) device tree bindings have been
-> insufficient due to the inflexible nature of the original bindings. Over
-> time, we have realized that Operating Performance Point definitions and
-> usage is varied depending on the SoC and a "single size (just frequency,
-> voltage) fits all" model which the original bindings attempted and
-> failed.
-> 
-> The proposed next generation of the bindings addresses by providing a
-> expandable binding for OPPs and introduces the following common
-> shortcomings seen with the original bindings:
-> 
-> - Getting clock/voltage/current rails sharing information between CPUs.
->   Shared by all cores vs independent clock per core vs shared clock per
->   cluster.
-> 
-> - Support for specifying current levels along with voltages.
-> 
-> - Support for multiple regulators.
-> 
-> - Support for turbo modes.
-> 
-> - Other per OPP settings: transition latencies, disabled status, etc.?
-> 
-> - Expandability of OPPs in future.
-> 
-> This patch introduces new bindings "operating-points-v2" to get these problems
-> solved. Refer to the bindings for more details.
-> 
-> We now have multiple versions of OPP binding and only one of them should
-> be used per device.
-> 
-> Reviewed-by: Rob Herring <robh@kernel.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Standardize "Image <...>" messages
 
-Ok. I'm still interested to see if this binding will have to
-change to support how multiple regulators will be matched up with
-the device using the OPP. But for now,
+Always emit the "Image <loading/saving>" messages on 2 separate lines so
+that these messages can't be interleaved.
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ kernel/power/swap.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 2f30ca9..7aa2635 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -552,7 +552,7 @@ static int save_image(struct swap_map_handle *handle,
+ 	if (!ret)
+ 		ret = err2;
+ 	if (!ret)
+-		printk(KERN_INFO "PM: Image saving done.\n");
++		printk(KERN_INFO "PM: Image saving: done\n");
+ 	swsusp_show_speed(start, stop, nr_to_write, "Wrote");
+ 	return ret;
+ }
+@@ -843,7 +843,7 @@ out_finish:
+ 	if (!ret)
+ 		ret = err2;
+ 	if (!ret)
+-		printk(KERN_INFO "PM: Image saving done.\n");
++		printk(KERN_INFO "PM: Image saving: done\n");
+ 	swsusp_show_speed(start, stop, nr_to_write, "Wrote");
+ out_clean:
+ 	if (crc) {
+@@ -1081,7 +1081,7 @@ static int load_image(struct swap_map_handle *handle,
+ 	if (!ret)
+ 		ret = err2;
+ 	if (!ret) {
+-		printk(KERN_INFO "PM: Image loading done.\n");
++		printk(KERN_INFO "PM: Image loading: done\n");
+ 		snapshot_write_finalize(snapshot);
+ 		if (!snapshot_image_loaded(snapshot))
+ 			ret = -ENODATA;
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.1.2
