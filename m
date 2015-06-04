@@ -1,139 +1,40 @@
-From: <Yuantian.Tang@freescale.com>
-Subject: [PATCH] cpufreq: qoriq: optimize the CPU frequency switching time
-Date: Thu, 4 Jun 2015 14:25:42 +0800
-Message-ID: <1433399142-18324-1-git-send-email-Yuantian.Tang@freescale.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: qoriq: optimize the CPU frequency switching time
+Date: Thu, 4 Jun 2015 12:06:36 +0530
+Message-ID: <20150604063636.GH11325@linux>
+References: <1433399142-18324-1-git-send-email-Yuantian.Tang@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1on0117.outbound.protection.outlook.com ([157.56.110.117]:21964
-	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751142AbbFDG3y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 4 Jun 2015 02:29:54 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <cpufreq-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1433399142-18324-1-git-send-email-Yuantian.Tang@freescale.com>
+Sender: cpufreq-owner@vger.kernel.org
+To: Yuantian.Tang@freescale.com
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Tang Yuantian <Yuantian.Tang@freescale.com>
 
-From: Tang Yuantian <Yuantian.Tang@freescale.com>
+On 04-06-15, 14:25, Yuantian.Tang@freescale.com wrote:
+> From: Tang Yuantian <Yuantian.Tang@freescale.com>
+> 
+> Each time the CPU switches its frequency, the clock nodes in
+> DTS are walked through to find proper clock source. This is
+> very time-consuming, for example, it is up to 500+ us on T4240.
+> Besides, switching time varies from clock to clock.
+> To optimize this, each input clock of CPU is buffered, so that
+> it can be picked up instantly when needed.
+> 
+> Since for each CPU each input clock is stored in a pointer
+> which takes 4 or 8 bytes memory and normally there are several
+> input clocks per CPU, that will not take much memory as well.
 
-Each time the CPU switches its frequency, the clock nodes in
-DTS are walked through to find proper clock source. This is
-very time-consuming, for example, it is up to 500+ us on T4240.
-Besides, switching time varies from clock to clock.
-To optimize this, each input clock of CPU is buffered, so that
-it can be picked up instantly when needed.
+Not sure how it got included in this form in the first place. :)
 
-Since for each CPU each input clock is stored in a pointer
-which takes 4 or 8 bytes memory and normally there are several
-input clocks per CPU, that will not take much memory as well.
+> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> ---
+>  drivers/cpufreq/qoriq-cpufreq.c | 32 +++++++++++++++++++++-----------
+>  1 file changed, 21 insertions(+), 11 deletions(-)
 
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
----
- drivers/cpufreq/qoriq-cpufreq.c | 32 +++++++++++++++++++++-----------
- 1 file changed, 21 insertions(+), 11 deletions(-)
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-index 88b21ae..358f075 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -27,11 +27,11 @@
- 
- /**
-  * struct cpu_data
-- * @parent: the parent node of cpu clock
-+ * @pclk: the parent clock of cpu
-  * @table: frequency table
-  */
- struct cpu_data {
--	struct device_node *parent;
-+	struct clk **pclk;
- 	struct cpufreq_frequency_table *table;
- };
- 
-@@ -196,7 +196,7 @@ static void freq_table_sort(struct cpufreq_frequency_table *freq_table,
- 
- static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
--	struct device_node *np;
-+	struct device_node *np, *pnode;
- 	int i, count, ret;
- 	u32 freq, mask;
- 	struct clk *clk;
-@@ -219,17 +219,23 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		goto err_nomem2;
- 	}
- 
--	data->parent = of_parse_phandle(np, "clocks", 0);
--	if (!data->parent) {
-+	pnode = of_parse_phandle(np, "clocks", 0);
-+	if (!pnode) {
- 		pr_err("%s: could not get clock information\n", __func__);
- 		goto err_nomem2;
- 	}
- 
--	count = of_property_count_strings(data->parent, "clock-names");
-+	count = of_property_count_strings(pnode, "clock-names");
-+	data->pclk = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
-+	if (!data->pclk) {
-+		pr_err("%s: no memory\n", __func__);
-+		goto err_node;
-+	}
-+
- 	table = kcalloc(count + 1, sizeof(*table), GFP_KERNEL);
- 	if (!table) {
- 		pr_err("%s: no memory\n", __func__);
--		goto err_node;
-+		goto err_pclk;
- 	}
- 
- 	if (fmask)
-@@ -238,7 +244,8 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		mask = 0x0;
- 
- 	for (i = 0; i < count; i++) {
--		clk = of_clk_get(data->parent, i);
-+		clk = of_clk_get(pnode, i);
-+		data->pclk[i] = clk;
- 		freq = clk_get_rate(clk);
- 		/*
- 		 * the clock is valid if its frequency is not masked
-@@ -273,13 +280,16 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = u64temp + 1;
- 
- 	of_node_put(np);
-+	of_node_put(pnode);
- 
- 	return 0;
- 
- err_nomem1:
- 	kfree(table);
-+err_pclk:
-+	kfree(data->pclk);
- err_node:
--	of_node_put(data->parent);
-+	of_node_put(pnode);
- err_nomem2:
- 	policy->driver_data = NULL;
- 	kfree(data);
-@@ -293,7 +303,7 @@ static int __exit qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
- 	struct cpu_data *data = policy->driver_data;
- 
--	of_node_put(data->parent);
-+	kfree(data->pclk);
- 	kfree(data->table);
- 	kfree(data);
- 	policy->driver_data = NULL;
-@@ -307,7 +317,7 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
- 	struct clk *parent;
- 	struct cpu_data *data = policy->driver_data;
- 
--	parent = of_clk_get(data->parent, data->table[index].driver_data);
-+	parent = data->pclk[data->table[index].driver_data];
- 	return clk_set_parent(policy->clk, parent);
- }
- 
 -- 
-2.1.0.27.g96db324
-
+viresh
