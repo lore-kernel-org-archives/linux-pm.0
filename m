@@ -1,56 +1,139 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/3] cpufreq: governor: Fix potential races
-Date: Thu, 4 Jun 2015 11:41:28 +0530
-Message-ID: <20150604061128.GF11325@linux>
-References: <cover.1433326032.git.viresh.kumar@linaro.org>
- <556FDEA8.6090801@linux.vnet.ibm.com>
- <556FEB4B.1010601@linux.vnet.ibm.com>
+From: <Yuantian.Tang@freescale.com>
+Subject: [PATCH] cpufreq: qoriq: optimize the CPU frequency switching time
+Date: Thu, 4 Jun 2015 14:25:42 +0800
+Message-ID: <1433399142-18324-1-git-send-email-Yuantian.Tang@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f175.google.com ([209.85.192.175]:34361 "EHLO
-	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751336AbbFDGLd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jun 2015 02:11:33 -0400
-Received: by pdbki1 with SMTP id ki1so23713860pdb.1
-        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2015 23:11:33 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <556FEB4B.1010601@linux.vnet.ibm.com>
+Received: from mail-bn1on0117.outbound.protection.outlook.com ([157.56.110.117]:21964
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751142AbbFDG3y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 4 Jun 2015 02:29:54 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
+To: rjw@rjwysocki.net
+Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org, cpufreq@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Tang Yuantian <Yuantian.Tang@freescale.com>
 
-On 04-06-15, 11:38, Preeti U Murthy wrote:
-> And a crash at the cpufreq worker thread again due to data access
-> exception when I change governors in parallel on a single core.
-> 
-> cpu 0x3: Vector: 300 (Data Access) at [c000000fedb538f0]
->     pc: c000000000856750: od_dbs_timer+0x60/0x1e0
->     lr: c0000000000f489c: process_one_work+0x24c/0x910
->     sp: c000000fedb53b70
->    msr: 9000000100009033
->    dar: 10
->  dsisr: 40000000
->   current = 0xc000000fe3d128e0
->   paca    = 0xc000000007da1c80	 softe: 0	 irq_happened: 0x01
->     pid   = 17227, comm = kworker/3:1
-> 
-> With the backtrace being:
-> 
-> [c000000fedb53be0] c0000000000f489c process_one_work+0x24c/0x910
-> [c000000fedb53c90] c0000000000f50dc worker_thread+0x17c/0x540
-> [c000000fedb53d20] c0000000000fed70 kthread+0x120/0x140
-> [c000000fedb53e30] c000000000009678 ret_from_kernel_thread+0x5c/0x64
-> 
-> But the kernel stays sane longer than before with the patchset. The
-> above crash happens around 15 seconds after the test begins, while
-> earlier it wouldn't survive 2 seconds even.
+From: Tang Yuantian <Yuantian.Tang@freescale.com>
 
-I haven't attempted to solve the race between the worker threads and
-governor-callbacks yet. What I have tried to solve is the race between
-different callbacks. And you shouldn't see a race there for now. For
-example a race between INIT/EXIT/START/STOP/LIMITS.
+Each time the CPU switches its frequency, the clock nodes in
+DTS are walked through to find proper clock source. This is
+very time-consuming, for example, it is up to 500+ us on T4240.
+Besides, switching time varies from clock to clock.
+To optimize this, each input clock of CPU is buffered, so that
+it can be picked up instantly when needed.
 
+Since for each CPU each input clock is stored in a pointer
+which takes 4 or 8 bytes memory and normally there are several
+input clocks per CPU, that will not take much memory as well.
+
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+---
+ drivers/cpufreq/qoriq-cpufreq.c | 32 +++++++++++++++++++++-----------
+ 1 file changed, 21 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+index 88b21ae..358f075 100644
+--- a/drivers/cpufreq/qoriq-cpufreq.c
++++ b/drivers/cpufreq/qoriq-cpufreq.c
+@@ -27,11 +27,11 @@
+ 
+ /**
+  * struct cpu_data
+- * @parent: the parent node of cpu clock
++ * @pclk: the parent clock of cpu
+  * @table: frequency table
+  */
+ struct cpu_data {
+-	struct device_node *parent;
++	struct clk **pclk;
+ 	struct cpufreq_frequency_table *table;
+ };
+ 
+@@ -196,7 +196,7 @@ static void freq_table_sort(struct cpufreq_frequency_table *freq_table,
+ 
+ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	struct device_node *np;
++	struct device_node *np, *pnode;
+ 	int i, count, ret;
+ 	u32 freq, mask;
+ 	struct clk *clk;
+@@ -219,17 +219,23 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		goto err_nomem2;
+ 	}
+ 
+-	data->parent = of_parse_phandle(np, "clocks", 0);
+-	if (!data->parent) {
++	pnode = of_parse_phandle(np, "clocks", 0);
++	if (!pnode) {
+ 		pr_err("%s: could not get clock information\n", __func__);
+ 		goto err_nomem2;
+ 	}
+ 
+-	count = of_property_count_strings(data->parent, "clock-names");
++	count = of_property_count_strings(pnode, "clock-names");
++	data->pclk = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
++	if (!data->pclk) {
++		pr_err("%s: no memory\n", __func__);
++		goto err_node;
++	}
++
+ 	table = kcalloc(count + 1, sizeof(*table), GFP_KERNEL);
+ 	if (!table) {
+ 		pr_err("%s: no memory\n", __func__);
+-		goto err_node;
++		goto err_pclk;
+ 	}
+ 
+ 	if (fmask)
+@@ -238,7 +244,8 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		mask = 0x0;
+ 
+ 	for (i = 0; i < count; i++) {
+-		clk = of_clk_get(data->parent, i);
++		clk = of_clk_get(pnode, i);
++		data->pclk[i] = clk;
+ 		freq = clk_get_rate(clk);
+ 		/*
+ 		 * the clock is valid if its frequency is not masked
+@@ -273,13 +280,16 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.transition_latency = u64temp + 1;
+ 
+ 	of_node_put(np);
++	of_node_put(pnode);
+ 
+ 	return 0;
+ 
+ err_nomem1:
+ 	kfree(table);
++err_pclk:
++	kfree(data->pclk);
+ err_node:
+-	of_node_put(data->parent);
++	of_node_put(pnode);
+ err_nomem2:
+ 	policy->driver_data = NULL;
+ 	kfree(data);
+@@ -293,7 +303,7 @@ static int __exit qoriq_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+ {
+ 	struct cpu_data *data = policy->driver_data;
+ 
+-	of_node_put(data->parent);
++	kfree(data->pclk);
+ 	kfree(data->table);
+ 	kfree(data);
+ 	policy->driver_data = NULL;
+@@ -307,7 +317,7 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
+ 	struct clk *parent;
+ 	struct cpu_data *data = policy->driver_data;
+ 
+-	parent = of_clk_get(data->parent, data->table[index].driver_data);
++	parent = data->pclk[data->table[index].driver_data];
+ 	return clk_set_parent(policy->clk, parent);
+ }
+ 
 -- 
-viresh
+2.1.0.27.g96db324
+
