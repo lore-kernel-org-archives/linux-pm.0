@@ -1,74 +1,98 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2] PM / clock_ops: Print acquired clock name in addition
- to con_id
-Date: Thu, 4 Jun 2015 11:27:01 +0200
-Message-ID: <CAPDyKFrXNOCKg0qsbzCbVnk5d37wBGw-A_Yo1ejv1KjPOVkNcg@mail.gmail.com>
-References: <1432917331-3285-1-git-send-email-geert+renesas@glider.be>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/3] cpufreq: governor: split cpufreq_governor_dbs()
+Date: Thu, 04 Jun 2015 15:34:15 +0530
+Message-ID: <5570229F.3080808@linux.vnet.ibm.com>
+References: <cover.1433326032.git.viresh.kumar@linaro.org> <6880bd7b6e6e7968f008d6328ab15353d99ccd57.1433326032.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-6
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f41.google.com ([209.85.192.41]:33682 "EHLO
-	mail-qg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751878AbbFDJ1C (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jun 2015 05:27:02 -0400
-Received: by qgfa63 with SMTP id a63so14724959qgf.0
-        for <linux-pm@vger.kernel.org>; Thu, 04 Jun 2015 02:27:02 -0700 (PDT)
-In-Reply-To: <1432917331-3285-1-git-send-email-geert+renesas@glider.be>
+Received: from e19.ny.us.ibm.com ([129.33.205.209]:44650 "EHLO
+	e19.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbbFDKEc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jun 2015 06:04:32 -0400
+Received: from /spool/local
+	by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Thu, 4 Jun 2015 06:04:31 -0400
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com [9.57.198.23])
+	by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 73D85C9003C
+	for <linux-pm@vger.kernel.org>; Thu,  4 Jun 2015 05:55:36 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id t54A4Tm749741978
+	for <linux-pm@vger.kernel.org>; Thu, 4 Jun 2015 10:04:29 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+	by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id t54A4RuT025718
+	for <linux-pm@vger.kernel.org>; Thu, 4 Jun 2015 06:04:28 -0400
+In-Reply-To: <6880bd7b6e6e7968f008d6328ab15353d99ccd57.1433326032.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Grygorii Strashko <Grygorii.Strashko@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-clk@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
 
-On 29 May 2015 at 18:35, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> Currently the con_id of the acquired clock is printed for debugging
-> purposes.  But in several cases, the con_id is NULL, which doesn't
-> provide much debugging information when printed.  These cases are:
->   - When explicitly passing a NULL con_id (which means the first clock
->     tied to the device, if available),
->   - When not using pm_clk_add(), but pm_clk_add_clk() (which takes a
->     "struct clk *" directly).
->
-> Hence print the actual clock name in addition to (and not instead of;
-> thanks Grygorii Strashko!) the con_id.
->
-> Note that the clock name is not available with legacy clock frameworks,
-> and the hex pointer address will be printed instead.
->
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-
+On 06/03/2015 03:57 PM, Viresh Kumar wrote:
+> cpufreq_governor_dbs() is hardly readable, it is just too big and
+> complicated. Lets make it more readable by splitting out event specific
+> routines.
+> 
+> Order of statements is changed at few places, but that shouldn't bring
+> any functional change.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
-> This is v2 of "PM / clock_ops: Print acquired clock name instead of
-> con_id".
->
-> v2:
->   - Print both clock and con_id, as suggested by Grygorii Strashko
->     <grygorii.strashko@linaro.org>.
-> ---
->  drivers/base/power/clock_ops.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-> index 442ce010559bf531..acef9f9f759a2530 100644
-> --- a/drivers/base/power/clock_ops.c
-> +++ b/drivers/base/power/clock_ops.c
-> @@ -68,7 +68,8 @@ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *ce)
->         } else {
->                 clk_prepare(ce->clk);
->                 ce->status = PCE_STATUS_ACQUIRED;
-> -               dev_dbg(dev, "Clock %s managed by runtime PM.\n", ce->con_id);
-> +               dev_dbg(dev, "Clock %pC con_id %s managed by runtime PM.\n",
-
-Oh, I didn't know "%pC" handle the clock name printing. Cool! :-)
-
-> +                       ce->clk, ce->con_id);
->         }
+> Best way to verify the changes here is to keep both copies of code side
+> by side and comparing it event wise.
+> 
+>  drivers/cpufreq/cpufreq_governor.c | 326 +++++++++++++++++++++----------------
+>  1 file changed, 185 insertions(+), 141 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index d64a82e6481a..dc382a5a2158 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -239,195 +239,239 @@ static void set_sampling_rate(struct dbs_data *dbs_data,
+>  	}
 >  }
->
-> --
-> 1.9.1
->
+> 
+> -int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+> -		struct common_dbs_data *cdata, unsigned int event)
+> +static int cpufreq_governor_init(struct cpufreq_policy *policy,
+> +				 struct dbs_data *dbs_data,
+> +				 struct common_dbs_data *cdata)
+>  {
+> -	struct dbs_data *dbs_data;
+> -	struct od_cpu_dbs_info_s *od_dbs_info = NULL;
+> -	struct cs_cpu_dbs_info_s *cs_dbs_info = NULL;
+> -	struct od_ops *od_ops = NULL;
+> -	struct od_dbs_tuners *od_tuners = NULL;
+> -	struct cs_dbs_tuners *cs_tuners = NULL;
+> -	struct cpu_dbs_common_info *cpu_cdbs;
+> -	unsigned int sampling_rate, latency, ignore_nice, j, cpu = policy->cpu;
+> -	int io_busy = 0;
+> -	int rc;
+> +	unsigned int latency;
+> +	int ret;
+> 
+> -	if (have_governor_per_policy())
+> -		dbs_data = policy->governor_data;
+> -	else
+> -		dbs_data = cdata->gdbs_data;
+> +	if (dbs_data) {
+> +		WARN_ON(have_governor_per_policy());
 
-Kind regards
-Uffe
+Shouldn't this be outside this loop ? We warn here and allocate dbs_dta
+freshly in the current code for the case where governor is per policy.
+
+> +		dbs_data->usage_count++;
+
+Besides, in the case where a governor exists per policy, we will end up
+incrementing the usage_count to more than 1 under this condition, which
+does not make sense.
+
+> +		policy->governor_data = dbs_data;
+> +		return 0;
+> +	}
+
+Regards
+Preeti U Murthy
+
