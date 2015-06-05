@@ -1,59 +1,65 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: Implement userspace RAPL bits in cpupower
-Date: Fri, 05 Jun 2015 18:21:22 +0200
-Message-ID: <5571CC82.5090804@linaro.org>
-References: <1499120.6h7ZWas8bA@skinner>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v3 3/5] clk: add support for clocks provided by SCP(System
+ Control Processor)
+Date: Fri, 05 Jun 2015 18:10:13 +0100
+Message-ID: <5571D7F5.1030405@arm.com>
+References: <1432720398-5701-1-git-send-email-sudeep.holla@arm.com> <1432720398-5701-4-git-send-email-sudeep.holla@arm.com> <20150604202009.GI676@codeaurora.org> <55716DA4.2090003@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f180.google.com ([209.85.212.180]:33569 "EHLO
-	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752139AbbFEQVV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jun 2015 12:21:21 -0400
-Received: by wiwd19 with SMTP id d19so26305230wiw.0
-        for <linux-pm@vger.kernel.org>; Fri, 05 Jun 2015 09:21:20 -0700 (PDT)
-In-Reply-To: <1499120.6h7ZWas8bA@skinner>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <55716DA4.2090003@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Sudeep Holla <Sudeep.Holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>, linux-pm@vger.kernel.org
-Cc: rafael.j.wysocki@intel.com, Len Brown <lenb@kernel.org>, jacob.jun.pan@linux.intel.com
 
-On 06/05/2015 04:39 PM, Thomas Renninger wrote:
-> Hi,
->
-> I'd like to ask whether there already exist userspace bits
-> for the powercap/rapl drivers?
->
-> Afaik there is some "read-only"/monitor code in turbostat,
-> but it is not intended to add any modifying code in there?
->
-> I would like to avoid yet another (Intel) CPU specific
-> userspace tool, like:
-> tools/power/x86/x86_energy_perf_policy
-> tools/power/x86/turbostat
->
-> and it would be great if userspace bits could be added to
-> cpupower utility
-> tools/power/cpupower
->
-> I searched for rapl and powercap in the MAINTAINERS list,
-> but there wasn't any match. Is there a candidate (Jacob?) who
-> might be the right one or who volunteers for this?
->
-> Thanks for any hints and any discussion input,
 
-I began to write a small test suite using the RAPL register to measure=20
-the energy consumed by each test. If someone is interested by that I ca=
-n=20
-put it somewhere in a git tree, so you can access the RAPL code.
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+On 05/06/15 10:36, Sudeep Holla wrote:
+>
+>
+> On 04/06/15 21:20, Stephen Boyd wrote:
+>> On 05/27, Sudeep Holla wrote:
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+[...]
 
+>>> +
+>>> +static unsigned long scpi_clk_recalc_rate(struct clk_hw *hw,
+>>> +					  unsigned long parent_rate)
+>>> +{
+>>> +	struct scpi_clk *clk = to_scpi_clk(hw);
+>>> +
+>>> +	return scpi_ops->clk_get_val(clk->id);
+>>> +}
+>>> +
+>>> +static long scpi_clk_round_rate(struct clk_hw *hw, unsigned long rate,
+>>> +				unsigned long *parent_rate)
+>>> +{
+>>> +	struct scpi_clk *clk = to_scpi_clk(hw);
+>>> +
+>>> +	if (WARN_ON(clk->rate_min && rate < clk->rate_min))
+>>> +		rate = clk->rate_min;
+>>> +	if (WARN_ON(clk->rate_max && rate > clk->rate_max))
+>>> +		rate = clk->rate_max;
+>>> +
+>>> +	return rate;
+>>> +}
+>>
+>> Hm.. this seems really generic. It might be better to support a
+>> way to tell the framework to limit the min/max rate that's
+>> accepted for a clk. That could be done later though.
+>>
+>
+> True, framework have some boundary checks in place. I will check if
+> I can use it with minimum changes to the core. If not, we can take this
+> up later as you suggested.
+>
+
+I found that the framework already provides clk_set_rate_range for this
+purpose. Sorry for missing this earlier(seems like that's added quite
+recently in v4.0). I think I still need to retain round_rate as the core
+framework insists.
+
+Regards,
+Sudeep
