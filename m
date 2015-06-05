@@ -1,50 +1,52 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: Getting rid of i7300_idle's idle notifier?
-Date: Fri, 5 Jun 2015 08:52:19 +0200
-Message-ID: <20150605065219.GA19628@gmail.com>
-References: <CALCETrVGefbgXzvjC3bTm9DgSr2UkpsPn6P_QwKm1cogZ0AVkQ@mail.gmail.com>
- <CALCETrUb6yhLAZ5P3J86h7DVR-vq0aVD9EHTc3YRPU2E735ETg@mail.gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v3 4/5] clk: scpi: add support for cpufreq virtual device
+Date: Fri, 05 Jun 2015 10:13:16 +0100
+Message-ID: <5571682C.4040908@arm.com>
+References: <1432720398-5701-1-git-send-email-sudeep.holla@arm.com> <1432720398-5701-5-git-send-email-sudeep.holla@arm.com> <20150604211904.GO676@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CALCETrUb6yhLAZ5P3J86h7DVR-vq0aVD9EHTc3YRPU2E735ETg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: Andy Lutomirski <luto@kernel.org>, Andy Henroid <andrew.d.henroid@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, X86 ML <x86@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:43895 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754283AbbFEJNU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 5 Jun 2015 05:13:20 -0400
+In-Reply-To: <20150604211904.GO676@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@linaro.org>
 
 
-* Andy Lutomirski <luto@amacapital.net> wrote:
 
-> On Thu, Jun 4, 2015 at 4:32 PM, Andy Lutomirski <luto@kernel.org> wrote:
+On 04/06/15 22:19, Stephen Boyd wrote:
+> On 05/27, Sudeep Holla wrote:
+>> The clocks for the CPUs are provided by SCP and are managed by this
+>> clock driver. So the cpufreq device needs to be added only after the
+>> clock get registered and removed when this driver is unloaded.
+>>
+>> This patch manages the cpufreq virtual device based on the clock
+>> availability.
+>>
+>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+>> Cc: Mike Turquette <mturquette@linaro.org>
+>> Cc: Stephen Boyd <sboyd@codeaurora.org>
+>> Cc: Liviu Dudau <Liviu.Dudau@arm.com>
+>> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>> Cc: Jon Medhurst (Tixy) <tixy@linaro.org>
+>> Cc: linux-clk@vger.kernel.org
+>> ---
 >
-> > AFAICT the sole purpose for the hideous x86_64 idle_notifier mess is to 
-> > support i7300_idle.  IMO this junk does not belong in IRQ handling, etc.  Can 
-> > we redo this to work in some kind of generic way?
-> >
-> > I have no idea why it makes sense to twiddle I/O AT registers in the beginning 
-> > of whatever IRQ wakes up the CPU.
-> >
-> > Note that, if absolutely necessary, the ECX bit 0 MWAIT extension can be used 
-> > to reliably execute code before handling interrupts that wake us from idle.  
-> > That is, there could be a real cpuidle driver for that chip that does:
-> >
-> > cli;
-> > poke ioat;
-> > mwait(ecx = 1);
-> > poke ioat;
-> > sti;
-> >
-> > Or we could delete the driver entirely.
-> 
-> It's even easier than that.  Just shove the hooks into acpi_idle_do_entry or 
-> similar and remove them from every other exit_idle call site in the kernel.
+> Acked-by: Stephen Boyd <sboyd@codeaurora.org>
+>
+>
 
-Yes!
+Thanks
 
-Interested in doing a patch?
+> I guess there's no better place for this right now.
+>
 
-Thanks,
+True
 
-	Ingo
+Regards,
+Sudeep
