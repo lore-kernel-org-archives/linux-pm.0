@@ -1,65 +1,52 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v3 3/5] clk: add support for clocks provided by SCP(System
- Control Processor)
-Date: Fri, 05 Jun 2015 18:10:13 +0100
-Message-ID: <5571D7F5.1030405@arm.com>
-References: <1432720398-5701-1-git-send-email-sudeep.holla@arm.com> <1432720398-5701-4-git-send-email-sudeep.holla@arm.com> <20150604202009.GI676@codeaurora.org> <55716DA4.2090003@arm.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [RFC 1/7] thermal: qcom: tsens: Add a skeletal tsens drivers
+Date: Fri, 05 Jun 2015 16:49:08 -0700
+Message-ID: <7hpp59zpfv.fsf@deeprootsystems.com>
+References: <1429796773-7151-1-git-send-email-rnayak@codeaurora.org>
+	<1429796773-7151-2-git-send-email-rnayak@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <55716DA4.2090003@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Sudeep Holla <Sudeep.Holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@linaro.org>
+Content-Type: text/plain
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1429796773-7151-2-git-send-email-rnayak@codeaurora.org>
+	(Rajendra Nayak's message of "Thu, 23 Apr 2015 19:16:07 +0530")
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Rajendra,
 
+Rajendra Nayak <rnayak@codeaurora.org> writes:
 
-On 05/06/15 10:36, Sudeep Holla wrote:
+> tsens is qualcomms' thermal temperature sensor device. It
+> supports reading temperatures from multiple thermal sensors
+> present on various QCOM SoCs.
+> Calibration data is generally read from a eeprom device.
 >
+> Add a skeleton driver with all the necessary abstractions so
+> a variety of qcom device families which support tsens can
+> add driver extensions.
 >
-> On 04/06/15 21:20, Stephen Boyd wrote:
->> On 05/27, Sudeep Holla wrote:
+> Also add the required device tree bindings which can be used
+> to descibe the tsens device in DT.
+>
+> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 
 [...]
 
->>> +
->>> +static unsigned long scpi_clk_recalc_rate(struct clk_hw *hw,
->>> +					  unsigned long parent_rate)
->>> +{
->>> +	struct scpi_clk *clk = to_scpi_clk(hw);
->>> +
->>> +	return scpi_ops->clk_get_val(clk->id);
->>> +}
->>> +
->>> +static long scpi_clk_round_rate(struct clk_hw *hw, unsigned long rate,
->>> +				unsigned long *parent_rate)
->>> +{
->>> +	struct scpi_clk *clk = to_scpi_clk(hw);
->>> +
->>> +	if (WARN_ON(clk->rate_min && rate < clk->rate_min))
->>> +		rate = clk->rate_min;
->>> +	if (WARN_ON(clk->rate_max && rate > clk->rate_max))
->>> +		rate = clk->rate_max;
->>> +
->>> +	return rate;
->>> +}
->>
->> Hm.. this seems really generic. It might be better to support a
->> way to tell the framework to limit the min/max rate that's
->> accepted for a clk. That could be done later though.
->>
->
-> True, framework have some boundary checks in place. I will check if
-> I can use it with minimum changes to the core. If not, we can take this
-> up later as you suggested.
->
+> +	ret = tmdev->ops->calibrate(tmdev);
+> +	if (ret < 0) {
+> +		dev_err(&pdev->dev, "tsens calibration failed\n");
+> +		return ret;
+> +	}
 
-I found that the framework already provides clk_set_rate_range for this
-purpose. Sorry for missing this earlier(seems like that's added quite
-recently in v4.0). I think I still need to retain round_rate as the core
-framework insists.
+I was trying this series on linux-next with Srini's eeprom v4 and my
+first attempt was to build the eeprom, qfprom and tsens drivers as
+built-in.  Unfortunately, the tsens driver probed before the
+eeprom/qfprom driver so failed here with the "calibration failed"
+message.
 
-Regards,
-Sudeep
+Building things as modules worked better, but you might want to take a
+look at possibly using -EPROBE_DEFER here?
+
+Kevin
