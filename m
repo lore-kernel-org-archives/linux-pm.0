@@ -1,40 +1,42 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Subject: Re: Getting rid of i7300_idle's idle notifier?
-Date: Thu, 4 Jun 2015 17:31:27 -0700
-Message-ID: <CALCETrUb6yhLAZ5P3J86h7DVR-vq0aVD9EHTc3YRPU2E735ETg@mail.gmail.com>
-References: <CALCETrVGefbgXzvjC3bTm9DgSr2UkpsPn6P_QwKm1cogZ0AVkQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V7 1/3] OPP: Add new bindings to address shortcomings of
+ existing bindings
+Date: Fri, 5 Jun 2015 08:11:24 +0530
+Message-ID: <20150605024124.GA9448@linux>
+References: <cover.1433434659.git.viresh.kumar@linaro.org>
+ <d83c0b6b1768c7229384216329b607d13886aa02.1433434659.git.viresh.kumar@linaro.org>
+ <20150604183752.GI490@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CALCETrVGefbgXzvjC3bTm9DgSr2UkpsPn6P_QwKm1cogZ0AVkQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Lutomirski <luto@kernel.org>
-Cc: Andy Henroid <andrew.d.henroid@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, X86 ML <x86@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f175.google.com ([209.85.192.175]:36770 "EHLO
+	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752074AbbFECl3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jun 2015 22:41:29 -0400
+Received: by pdjm12 with SMTP id m12so43162980pdj.3
+        for <linux-pm@vger.kernel.org>; Thu, 04 Jun 2015 19:41:29 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20150604183752.GI490@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mike.turquette@linaro.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-On Thu, Jun 4, 2015 at 4:32 PM, Andy Lutomirski <luto@kernel.org> wrote:
-> AFAICT the sole purpose for the hideous x86_64 idle_notifier mess is
-> to support i7300_idle.  IMO this junk does not belong in IRQ handling,
-> etc.  Can we redo this to work in some kind of generic way?
->
-> I have no idea why it makes sense to twiddle I/O AT registers in the
-> beginning of whatever IRQ wakes up the CPU.
->
-> Note that, if absolutely necessary, the ECX bit 0 MWAIT extension can
-> be used to reliably execute code before handling interrupts that wake
-> us from idle.  That is, there could be a real cpuidle driver for that
-> chip that does:
->
-> cli;
-> poke ioat;
-> mwait(ecx = 1);
-> poke ioat;
-> sti;
->
-> Or we could delete the driver entirely.
+On 04-06-15, 11:37, Stephen Boyd wrote:
+> Ok. I'm still interested to see if this binding will have to
+> change to support how multiple regulators will be matched up with
+> the device using the OPP.
 
-It's even easier than that.  Just shove the hooks into
-acpi_idle_do_entry or similar and remove them from every other
-exit_idle call site in the kernel.
+I can understand your concern here, but getting everything working
+on the first attempt would be difficult to write/review.. There will at
+least be 5-7 patches just for getting the very basic v2 bindings
+coded. And so we can get all that coded slowly and steadily.
 
---Andy
+> But for now,
+> 
+> Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+
+Thanks. Finally :)
+
+-- 
+viresh
