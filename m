@@ -1,34 +1,34 @@
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 Subject: Re: [PATCH 0/3] cpufreq: governor: Fix potential races
-Date: Fri, 05 Jun 2015 08:34:53 +0530
-Message-ID: <557111D5.6030709@linux.vnet.ibm.com>
+Date: Fri, 05 Jun 2015 09:35:21 +0530
+Message-ID: <55712001.8070905@linux.vnet.ibm.com>
 References: <cover.1433326032.git.viresh.kumar@linaro.org> <556FDEA8.6090801@linux.vnet.ibm.com> <20150605030028.GB13999@linux>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e17.ny.us.ibm.com ([129.33.205.207]:34512 "EHLO
-	e17.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753504AbbFEDFD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jun 2015 23:05:03 -0400
+Received: from e39.co.us.ibm.com ([32.97.110.160]:34150 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750705AbbFEEFb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jun 2015 00:05:31 -0400
 Received: from /spool/local
-	by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Thu, 4 Jun 2015 23:05:03 -0400
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com [9.57.198.23])
-	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 5F1BD38C804A
-	for <linux-pm@vger.kernel.org>; Thu,  4 Jun 2015 23:05:01 -0400 (EDT)
+	Thu, 4 Jun 2015 22:05:30 -0600
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com [9.57.198.25])
+	by d01dlp03.pok.ibm.com (Postfix) with ESMTP id B0C49C9003C
+	for <linux-pm@vger.kernel.org>; Thu,  4 Jun 2015 23:56:35 -0400 (EDT)
 Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id t553515V59048060
-	for <linux-pm@vger.kernel.org>; Fri, 5 Jun 2015 03:05:01 GMT
+	by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id t5545SHt45416488
+	for <linux-pm@vger.kernel.org>; Fri, 5 Jun 2015 04:05:28 GMT
 Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
-	by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id t5534xNE020899
-	for <linux-pm@vger.kernel.org>; Thu, 4 Jun 2015 23:05:00 -0400
+	by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id t5545Rff007027
+	for <linux-pm@vger.kernel.org>; Fri, 5 Jun 2015 00:05:28 -0400
 In-Reply-To: <20150605030028.GB13999@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
 
 On 06/05/2015 08:30 AM, Viresh Kumar wrote:
 > On 04-06-15, 10:44, Preeti U Murthy wrote:
@@ -62,10 +62,16 @@ On 06/05/2015 08:30 AM, Viresh Kumar wrote:
 > That is just to confirm it hasn't broken things any further and that
 > we haven't seen any crashes in races between
 > INIT/EXIT/START/STOP/LIMITS.
-> 
 
-Let me run a fair bit of tests today and confirm this.
+I realize that I am not currently hitting the races on my machine that
+this patchset is trying to solve. The races that I am hitting have been
+conveyed on this thread and we should be fixing that separately as
+Viresh pointed out. I can therefore provide only by Reviewed-bys to this
+patchset.
+
+Thanks
 
 Regards
 Preeti U Murthy
+> 
 
