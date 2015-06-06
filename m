@@ -1,62 +1,56 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 5/6] power: user: Standardize "Syncing filesystems ..."
- message
-Date: Sat, 6 Jun 2015 15:36:46 +0200
-Message-ID: <20150606133646.GB29050@amd>
-References: <cover.1433442778.git.joe@perches.com>
- <06fdc51c7d2ab639729107a137b947704fd7d161.1433442778.git.joe@perches.com>
- <20150605103727.GA6054@amd>
- <1433516858.2658.44.camel@perches.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Subject: Re: Getting rid of i7300_idle's idle notifier?
+Date: Sat, 6 Jun 2015 09:06:09 -0700
+Message-ID: <CALCETrXZ7tSdeDBOSoJ1u06oUgj9tnSE48V1LQWi+XTJQ3pnzg@mail.gmail.com>
+References: <CALCETrVGefbgXzvjC3bTm9DgSr2UkpsPn6P_QwKm1cogZ0AVkQ@mail.gmail.com>
+ <CALCETrUb6yhLAZ5P3J86h7DVR-vq0aVD9EHTc3YRPU2E735ETg@mail.gmail.com> <20150605065219.GA19628@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51425 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751528AbbFFNgt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 6 Jun 2015 09:36:49 -0400
-Content-Disposition: inline
-In-Reply-To: <1433516858.2658.44.camel@perches.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150605065219.GA19628@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Andy Lutomirski <luto@kernel.org>, Andy Henroid <andrew.d.henroid@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, X86 ML <x86@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
 
-On Fri 2015-06-05 08:07:38, Joe Perches wrote:
-> On Fri, 2015-06-05 at 12:37 +0200, Pavel Machek wrote:
-> > On Thu 2015-06-04 11:36:48, Joe Perches wrote:
-> > > Instead of a two individual printks that would generally be
-> > > emitted on a single line, emit 2 lines to make the start
-> > > and end of the synchronization more easily timeable.
-> []
-> > > diff --git a/kernel/power/user.c b/kernel/power/user.c
-> []
-> > > @@ -221,9 +221,9 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
-> > >  		if (data->frozen)
-> > >  			break;
-> > >  
-> > > -		printk("Syncing filesystems ... ");
-> > > +		printk("Syncing filesystems ...\n");
-> > >  		sys_sync();
-> > > -		printk("done.\n");
-> > > +		printk("Syncing filesystems: done\n");
-> > 
-> > You converted " ..." -> "..." elsewhere, so why not here?
-> 
-> Missed that one. 
-> 
-> > Is splitting message to two lines a good idea?
-> 
-> I think the "done" is unnecessary actually.
+On Thu, Jun 4, 2015 at 11:52 PM, Ingo Molnar <mingo@kernel.org> wrote:
+>
+> * Andy Lutomirski <luto@amacapital.net> wrote:
+>
+>> On Thu, Jun 4, 2015 at 4:32 PM, Andy Lutomirski <luto@kernel.org> wrote:
+>>
+>> > AFAICT the sole purpose for the hideous x86_64 idle_notifier mess is to
+>> > support i7300_idle.  IMO this junk does not belong in IRQ handling, etc.  Can
+>> > we redo this to work in some kind of generic way?
+>> >
+>> > I have no idea why it makes sense to twiddle I/O AT registers in the beginning
+>> > of whatever IRQ wakes up the CPU.
+>> >
+>> > Note that, if absolutely necessary, the ECX bit 0 MWAIT extension can be used
+>> > to reliably execute code before handling interrupts that wake us from idle.
+>> > That is, there could be a real cpuidle driver for that chip that does:
+>> >
+>> > cli;
+>> > poke ioat;
+>> > mwait(ecx = 1);
+>> > poke ioat;
+>> > sti;
+>> >
+>> > Or we could delete the driver entirely.
+>>
+>> It's even easier than that.  Just shove the hooks into acpi_idle_do_entry or
+>> similar and remove them from every other exit_idle call site in the kernel.
+>
+> Yes!
+>
+> Interested in doing a patch?
+>
 
-Well... if it is not neccessary for timing, this change can be safely
-dropped, as timing will be provided for existing code, too.
+Barely.  I don't have the hardware, I have no idea what the registers
+that i7300_idle pokes are for, and I have no particular desire to
+start reading the datasheet.  I'm not even really sure that i7300
+machines use acpi's processor_idle instead of intel_idle.
 
-> As there's no newline on the first, printk is
-> async and can be interleaved by other threads.
+I'm happy to give the driver maintainers a few days to respond.  Andy?
 
-...which will probably never happen here, due to feezer.
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--Andy
