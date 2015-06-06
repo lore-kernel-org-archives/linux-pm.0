@@ -1,78 +1,59 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v3 3/5] clk: add support for clocks provided by
- SCP(System Control Processor)
-Date: Fri, 5 Jun 2015 18:12:25 -0700
-Message-ID: <20150606011225.GF29237@codeaurora.org>
-References: <1432720398-5701-1-git-send-email-sudeep.holla@arm.com>
- <1432720398-5701-4-git-send-email-sudeep.holla@arm.com>
- <20150604202009.GI676@codeaurora.org>
- <55716DA4.2090003@arm.com>
- <5571D7F5.1030405@arm.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: Implement userspace RAPL bits in cpupower
+Date: Fri, 05 Jun 2015 19:33:54 -0700
+Message-ID: <55725C12.2040604@linux.intel.com>
+References: <1499120.6h7ZWas8bA@skinner>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:51955 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751429AbbFFBM1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jun 2015 21:12:27 -0400
-Content-Disposition: inline
-In-Reply-To: <5571D7F5.1030405@arm.com>
+Received: from mga11.intel.com ([192.55.52.93]:11664 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751327AbbFFCeA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 5 Jun 2015 22:34:00 -0400
+In-Reply-To: <1499120.6h7ZWas8bA@skinner>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@linaro.org>
+To: Thomas Renninger <trenn@suse.de>, linux-pm@vger.kernel.org
+Cc: rafael.j.wysocki@intel.com, Len Brown <lenb@kernel.org>, jacob.jun.pan@linux.intel.com
 
-On 06/05, Sudeep Holla wrote:
-> 
-> 
-> On 05/06/15 10:36, Sudeep Holla wrote:
-> >
-> >
-> >On 04/06/15 21:20, Stephen Boyd wrote:
-> >>On 05/27, Sudeep Holla wrote:
-> 
-> [...]
-> 
-> >>>+
-> >>>+static unsigned long scpi_clk_recalc_rate(struct clk_hw *hw,
-> >>>+					  unsigned long parent_rate)
-> >>>+{
-> >>>+	struct scpi_clk *clk = to_scpi_clk(hw);
-> >>>+
-> >>>+	return scpi_ops->clk_get_val(clk->id);
-> >>>+}
-> >>>+
-> >>>+static long scpi_clk_round_rate(struct clk_hw *hw, unsigned long rate,
-> >>>+				unsigned long *parent_rate)
-> >>>+{
-> >>>+	struct scpi_clk *clk = to_scpi_clk(hw);
-> >>>+
-> >>>+	if (WARN_ON(clk->rate_min && rate < clk->rate_min))
-> >>>+		rate = clk->rate_min;
-> >>>+	if (WARN_ON(clk->rate_max && rate > clk->rate_max))
-> >>>+		rate = clk->rate_max;
-> >>>+
-> >>>+	return rate;
-> >>>+}
-> >>
-> >>Hm.. this seems really generic. It might be better to support a
-> >>way to tell the framework to limit the min/max rate that's
-> >>accepted for a clk. That could be done later though.
-> >>
-> >
-> >True, framework have some boundary checks in place. I will check if
-> >I can use it with minimum changes to the core. If not, we can take this
-> >up later as you suggested.
-> >
-> 
-> I found that the framework already provides clk_set_rate_range for this
-> purpose. Sorry for missing this earlier(seems like that's added quite
-> recently in v4.0). I think I still need to retain round_rate as the core
-> framework insists.
 
-Sure, or use determine_rate if you want to limit the min/max from
-the clk provider itself.
+On 06/05/2015 07:39 AM, Thomas Renninger wrote:
+> Hi,
+Hi,
+> I'd like to ask whether there already exist userspace bits
+> for the powercap/rapl drivers?
+This is used in user space for Android for power saver mode and Linux 
+thermal daemon,.
+Also there is a powermeter at 
+https://github.com/spandruvada/rapl_power_meter
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+>
+> Afaik there is some "read-only"/monitor code in turbostat,
+> but it is not intended to add any modifying code in there?
+>
+> I would like to avoid yet another (Intel) CPU specific
+> userspace tool, like:
+> tools/power/x86/x86_energy_perf_policy
+> tools/power/x86/turbostat
+>
+> and it would be great if userspace bits could be added to
+> cpupower utility
+> tools/power/cpupower
+> I searched for rapl and powercap in the MAINTAINERS list,
+> but there wasn't any match. Is there a candidate (Jacob?) who
+> might be the right one or who volunteers for this?
+This is maintained by Rafael. Jacob and me are the authors/developers 
+for power capping and RAPL drivers.
+
+Thanks,
+Srinivas
+> Thanks for any hints and any discussion input,
+>
+>        Thomas
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+
