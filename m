@@ -1,110 +1,268 @@
-From: Liviu Dudau <Liviu.Dudau@arm.com>
-Subject: Re: [PATCH v4 6/8] arm64: dts: add SRAM, MHU mailbox and SCPI
- support on Juno
-Date: Mon, 8 Jun 2015 15:35:13 +0100
-Message-ID: <20150608143513.GI12807@e106497-lin.cambridge.arm.com>
-References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com>
- <1433760002-24120-7-git-send-email-sudeep.holla@arm.com>
- <1433771479.2882.44.camel@linaro.org>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: [RFC PATCH] PM / hibernate: fix kernel crash in alloc_highmem_pages
+Date: Mon, 8 Jun 2015 18:22:05 +0300
+Message-ID: <1433776925-24662-1-git-send-email-grygorii.strashko@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eu-smtp-delivery-143.mimecast.com ([207.82.80.143]:6683 "EHLO
-	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752372AbbFHOfR convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 8 Jun 2015 10:35:17 -0400
-In-Reply-To: <1433771479.2882.44.camel@linaro.org>
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <owner-linux-mm@kvack.org>
+Sender: owner-linux-mm@kvack.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, illia.smyrnov@globallogic.com, Grygorii Strashko <grygorii.strashko@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Jon Medhurst (Tixy)" <tixy@linaro.org>
-Cc: Sudeep Holla <Sudeep.Holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>
 
-On Mon, Jun 08, 2015 at 02:51:19PM +0100, Jon Medhurst (Tixy) wrote:
-> On Mon, 2015-06-08 at 11:40 +0100, Sudeep Holla wrote:
-> [...]
-> > +
-> > +	scpi {
-> > +		compatible =3D "arm,scpi";
-> > +		mboxes =3D <&mailbox 1>;
-> > +		shmem =3D <&cpu_scp_hpri>;
-> > +
-> > +		clocks {
-> > +			compatible =3D "arm,scpi-clocks";
-> > +
-> > +			scpi_dvfs: scpi_clocks@0 {
-> > +				compatible =3D "arm,scpi-dvfs-clocks";
-> > +				#clock-cells =3D <1>;
-> > +				clock-indices =3D <0>, <1>, <2>;
-> > +				clock-output-names =3D "vbig", "vlittle", "vgpu";
->=20
-> From where do the clock names derive? They look more like names for
-> voltage domains rather than clocks. My (admittedly very old) Juno doc=
-s,
-> have the clocks as ATLCLK, APLCLK and GPUCLK.
->=20
-> > +			};
-> > +			scpi_clk: scpi_clocks@3 {
-> > +				compatible =3D "arm,scpi-variable-clocks";
-> > +				#clock-cells =3D <1>;
-> > +				clock-indices =3D <3>, <4>;
-> > +				clock-output-names =3D "pxlclk0", "pxlclk1";
->=20
-> Can we also have clock index 5, name 'i2s_clk', for used by audio?
-> (I don't know what other clocks the SCP currently supports, but audio=
- is
-> one being currently used by the out-of-tree code).
->=20
-> Also, I believe that both display outputs share the same clock, and s=
-o
-> pxlclk0 and pxlclk1 can't be controlled independently. But I guess th=
-ese
-> device-tree entries are for the interface to the SCP firmware, not th=
-e
-> hardware, and if that pretends the clocks are independent...
+Now Kernel crashes under some circumstances in swsusp_alloc()
+because it hits BUG() in memory_bm_set_bit().
 
-Actually, they can be independent, but the other source for clock gener=
-ation
-can only be used to drive a VGA resolution.
+Kernel: Linux 4.1-rc3
+HW: TI dra7-evm board, 2xARM Cortex-A15, 1.5G RAM
+Swap: 2G swap partition on SD-card
 
-We were just debating with Sudeep on how to expose this: at the moment =
-the SCP
-is configured so that the request for a clock frequency always succeeds=
- even
-if the other user of the clock is active. That means that if you have 2=
- monitors
-connected that have different resolutions or pixel clocks then one of t=
-he
-monitor will get out of sync (unless it is a VGA monitor). On the other=
- hand the
-HDLCD driver (or more corectly the DRM KMS one) will default to 640x480=
- if no
-monitor is connected to an HDMI output, meaning the clock could already=
- be used
-but by a driver that should really be inactive. It is very hard to dete=
-ct in
-which situation we are, so the usual fix is "plug the monitor into the =
-other
-HDMI output if you have problems with single monitors".
+Steps to reproduce:
+- reserve 500M memory for CMA from command line: "cma=500M"
+- configure image_size
+  # echo 1073741824 > sys/power/image_size
+- enable swap
+  # swapon /dev/<swap partition>
+- run memtester
+  # memtester 460M &
+- [optional] disable console suspend
+  # echo 0 > sys/module/printk/parameters/console_suspend
+- perform suspend to disk
+  # echo disk > sys/power/state
 
-Best regards,
-Liviu
+Crash report:
+-----------[ cut here ]------------
+Kernel BUG at c0097394 [verbose debug info unavailable]
+Internal error: Oops - BUG: 0 [#1] SMP ARM
+Modules linked in:
+CPU: 0 PID: 68 Comm: sh Not tainted 4.1.0-rc3-00190-ga96463d-dirty #138
+Hardware name: Generic DRA74X (Flattened Device Tree)
+task: ee3b2fc0 ti: ee6e8000 task.ti: ee6e8000
+PC is at memory_bm_set_bit+0x30/0x34
+LR is at 0x80000
+pc : [<c0097394>]    lr : [<00080000>]    psr: a00000d3
+sp : ee6e9de4  ip : c111f714  fp : 00000000
+r10: 000128e2  r9 : c111f6f8  r8 : 00028658
+r7 : c114ef00  r6 : c08bad04  r5 : 00027849  r4 : 00012b59
+r3 : ee6e9de8  r2 : ee6e9de4  r1 : 8ebc3c00  r0 : fffffff2
+Flags: NzCv  IRQs off  FIQs off  Mode SVC_32  ISA ARM  Segment user
+Control: 10c5387d  Table: ae6dc06a  DAC: 00000015
+Process sh (pid: 68, stack limit = 0xee6e8218)
+Stack: (0xee6e9de4 to 0xee6ea000)
+9de0:          00000000 c0097690 00012b59 c0099148 00000030 ee6e9e4c 00000000
+9e00: 00000007 0000000f c096b624 c08b78d4 c001452c 00000030 c00141b0 ae0d0000
+9e20: ee6e9e4c 80021ae0 00000000 001fc4c0 001fc4c0 00000015 8000406a 10c5387d
+9e40: 00000040 00f00000 00000000 00000000 ee6f4c00 00000000 c08b6800 c0773a60
+9e60: c096b624 c096dbe8 00000000 c001435c ee3b2fc0 00000000 c096b624 c00966a8
+9e80: c08f9710 00000000 c111f5c8 00200660 c08f9644 00000005 00000000 c0096ef0
+9ea0: ee6470c0 00000005 00000004 00200660 ee6a6300 c00944cc 00000005 ee6470c0
+9ec0: 00000005 ee6a6300 00200660 ee6470cc ee6e9f88 c01dc688 00000000 00000000
+9ee0: 20000013 ee6f76c0 00000005 00200660 ee6e9f88 c000f6a4 ee6e8000 00000000
+9f00: 00000002 c016beec c08b87bc c016e32c 00000020 00000000 c016c830 ee3b2fb8
+9f20: c016c830 ee652ae4 ee6f76c0 00000000 00000000 c016c51c 00000000 00000003
+9f40: 00000000 ee6f76c0 00000005 00200660 ee6f76c0 00000005 00200660 ee6e9f88
+9f60: c000f6a4 c016c784 00000000 00000000 ee6f76c0 ee6f76c0 00200660 00000005
+9f80: c000f6a4 c016cfb0 00000000 00000000 00200660 001fc4e0 00000005 00200660
+9fa0: 00000004 c000f4e0 001fc4e0 00000005 00000001 00200660 00000005 001fbc18
+9fc0: 001fc4e0 00000005 00200660 00000004 001fd264 001fcfc8 00000000 00000002
+9fe0: 00000001 bee87618 0000c55c 0000921c 60000010 00000001 00000000 00000000
+[<c0097394>] (memory_bm_set_bit) from [<c0099148>] (swsusp_save+0x3f0/0x440)
+[<c0099148>] (swsusp_save) from [<c001452c>] (arch_save_image+0x8/0x2c)
+[<c001452c>] (arch_save_image) from [<c00141b0>] (cpu_suspend_abort+0x0/0x30)
+[<c00141b0>] (cpu_suspend_abort) from [<00000000>] (  (null))
+Code: e59d0004 eb0ae150 e28dd00c e49df004 (e7f001f2)
+---[ end trace 61e3b86f908e4d7f ]---
 
->=20
-> --=20
-> Tixy
->=20
->=20
+As was investigated, the issue depends on following things:
+1) Hibernation should follow through the below code path in
+   hibernate_preallocate_memory():
 
---=20
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-| I would like to |
-| fix the world,  |
-| but they're not |
-| giving me the   |
- \ source code!  /
-  ---------------
-    =C2=AF\_(=E3=83=84)_/=C2=AF
+int hibernate_preallocate_memory(void)
+{
+	[...]
+	/*
+	 * If the desired number of image pages is at least as large as the
+	 * current number of saveable pages in memory, allocate page frames for
+	 * the image and we're done.
+	 */
+	if (size >= saveable) {
+		pages = preallocate_image_highmem(save_highmem);
+		pages += preallocate_image_memory(saveable - pages, avail_normal);
+		goto out;
+	}
 
+2) Amount of memory reserved for CMA purposes. CMA memory reported as free
+   by MM, but Hibernation core can't use it. As result, All memory checks
+   are passed and system reaches later Hibernation stages, tries to create
+   Hibernation immage and, finally crashes in swsusp_alloc():
+	swsusp_alloc()
+	|- alloc_highmem_pages()
+	   |- alloc_image_page(__GFP_HIGHMEM)
+	   -- >"sh: page allocation failure: order:0, mode:0x2"
+	   |- memory_bm_set_bit
+		|- BUG_ON(error)
+
+3) alloc_page(__GFP_HIGHMEM) doesn't return Highmem pages always, instead
+   MM allocates pages from all available zones evenly. For example:
+
+	saveable pages 167191 = hmem 80400 + normal 86791
+	request hmem 80400
+	- alloc hmem 204
+	- alloc normal 161
+	- alloc hmem 442
+	...
+	- alloc normal 38615
+	- alloc hmem 41785
+  Such behaviour is not always handled properly. As result, swsusp_alloc(),
+  (from above example) will try to allocate (80400 - 41785) additional Highmem pages
+  without taking into account that those pages were allocated already,
+  but from Normal zone.
+
+In this patch it is proposed to fix issue by rewriting swsusp_alloc()
+in the following way:
+  - allocate Highmem buffer
+  - check if we need to allocate any memory at all
+	alloc_normal + alloc_highmem < nr_normal + nr_highmem
+  - calculate number of pages which still need to be allocated
+	nr_pages = nr_normal + nr_highmem - alloc_normal - alloc_highmem
+  - try to allocate Highmem first, but no more than nr_pages
+  - try to get rest from Normal memory
+  - abort if not all pages were allocated
+
+And also use preallocate_image_pages() instead of alloc_highmem_pages() and
+alloc_image_page(). This way, allocated pages will be accounted properly
+in alloc_highmem and alloc_normal counters.
+
+alloc_highmem_pages() isn't used any more after this patch and so removed.
+
+Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+---
+Hi All,
+
+I've tested this patch with both CONFIG_HIGHMEM=y/n.
+
+This patch marked as RFC, because:
+- I'm not expert in MM, so there could be other, more simple ways
+  to fix it. Also, I'm not sure that I've described Item 2 correctly.
+  (fair zone allocator policy?!)
+- preallocate_image_highmem() and preallocate_image_memory()
+  could be used instead of preallocate_image_pages(), potentially.
+
+Thanks for any comments.
+
+ kernel/power/snapshot.c | 82 ++++++++++++++++++++++---------------------------
+ 1 file changed, 37 insertions(+), 45 deletions(-)
+
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 5235dd4..6ee8790 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -1761,34 +1761,9 @@ static inline int get_highmem_buffer(int safe_needed)
+ 	return buffer ? 0 : -ENOMEM;
+ }
+ 
+-/**
+- *	alloc_highmem_image_pages - allocate some highmem pages for the image.
+- *	Try to allocate as many pages as needed, but if the number of free
+- *	highmem pages is lesser than that, allocate them all.
+- */
+-
+-static inline unsigned int
+-alloc_highmem_pages(struct memory_bitmap *bm, unsigned int nr_highmem)
+-{
+-	unsigned int to_alloc = count_free_highmem_pages();
+-
+-	if (to_alloc > nr_highmem)
+-		to_alloc = nr_highmem;
+-
+-	nr_highmem -= to_alloc;
+-	while (to_alloc-- > 0) {
+-		struct page *page;
+-
+-		page = alloc_image_page(__GFP_HIGHMEM);
+-		memory_bm_set_bit(bm, page_to_pfn(page));
+-	}
+-	return nr_highmem;
+-}
+ #else
+ static inline int get_highmem_buffer(int safe_needed) { return 0; }
+ 
+-static inline unsigned int
+-alloc_highmem_pages(struct memory_bitmap *bm, unsigned int n) { return 0; }
+ #endif /* CONFIG_HIGHMEM */
+ 
+ /**
+@@ -1805,28 +1780,45 @@ alloc_highmem_pages(struct memory_bitmap *bm, unsigned int n) { return 0; }
+ 
+ static int
+ swsusp_alloc(struct memory_bitmap *orig_bm, struct memory_bitmap *copy_bm,
+-		unsigned int nr_pages, unsigned int nr_highmem)
++		unsigned int nr_normal, unsigned int nr_highmem)
+ {
+-	if (nr_highmem > 0) {
+-		if (get_highmem_buffer(PG_ANY))
+-			goto err_out;
+-		if (nr_highmem > alloc_highmem) {
+-			nr_highmem -= alloc_highmem;
+-			nr_pages += alloc_highmem_pages(copy_bm, nr_highmem);
+-		}
+-	}
+-	if (nr_pages > alloc_normal) {
+-		nr_pages -= alloc_normal;
+-		while (nr_pages-- > 0) {
+-			struct page *page;
+-
+-			page = alloc_image_page(GFP_ATOMIC | __GFP_COLD);
+-			if (!page)
+-				goto err_out;
+-			memory_bm_set_bit(copy_bm, page_to_pfn(page));
+-		}
+-	}
++	unsigned int nr_pages;
++	/*
++	 * Additional input data:
++	 *  alloc_highmem - number of allocated Highmem pages
++	 *  alloc_normal - number of allocated Normal pages
++	 */
++
++	/* allocate Highmem buffer */
++	if ((nr_highmem > 0) && get_highmem_buffer(PG_ANY))
++		goto err_out;
++
++	/*
++	 * check if we need to allocate any memory at all
++	 *	alloc_normal + alloc_highmem < nr_normal + nr_highmem
++	 * and calculate number of pages which still need to be allocated
++	 *     nr_pages = nr_normal + nr_highmem - alloc_normal - alloc_highmem
++	 */
++	nr_pages = nr_normal + nr_highmem;
++	if (nr_pages > alloc_normal + alloc_highmem)
++		nr_pages -= alloc_normal + alloc_highmem;
++	else
++		goto out;
++
++	/* try to allocate Highmem first, but no more than nr_pages */
++	if (nr_highmem > 0)
++		nr_pages -= preallocate_image_pages(nr_pages,  __GFP_HIGHMEM);
+ 
++	/* try to get rest from Normal memory */
++	if (nr_pages)
++		nr_pages -= preallocate_image_pages(nr_pages,
++						    GFP_ATOMIC | __GFP_COLD);
++
++	/* abort if not all pages were allocated */
++	if (nr_pages)
++		goto err_out;
++
++out:
+ 	return 0;
+ 
+  err_out:
+-- 
+1.9.1
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
