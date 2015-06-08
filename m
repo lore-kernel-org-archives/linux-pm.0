@@ -1,294 +1,104 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH] PM / hibernate: fix kernel crash in alloc_highmem_pages
-Date: Tue, 09 Jun 2015 01:14:37 +0200
-Message-ID: <5743565.2B66qaKcGE@vostro.rjw.lan>
-References: <1433776925-24662-1-git-send-email-grygorii.strashko@ti.com>
+Subject: Re: [PATCH V7 0/6] cpufreq: Don't loose cpufreq history on CPU hotplug
+Date: Tue, 09 Jun 2015 01:17:16 +0200
+Message-ID: <5222181.qP6uXoXqc5@vostro.rjw.lan>
+References: <cover.1433767914.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1433776925-24662-1-git-send-email-grygorii.strashko@ti.com>
-Sender: owner-linux-mm@kvack.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, illia.smyrnov@globallogic.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:58637 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752601AbbFHWv3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Jun 2015 18:51:29 -0400
+In-Reply-To: <cover.1433767914.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, skannan@codeaurora.org, Srivatsa Bhat <srivatsa@mit.edu>
 
-On Monday, June 08, 2015 06:22:05 PM Grygorii Strashko wrote:
-> Now Kernel crashes under some circumstances in swsusp_alloc()
-> because it hits BUG() in memory_bm_set_bit().
+On Monday, June 08, 2015 06:25:26 PM Viresh Kumar wrote:
+> Hi Rafael,
 > 
-> Kernel: Linux 4.1-rc3
-> HW: TI dra7-evm board, 2xARM Cortex-A15, 1.5G RAM
-> Swap: 2G swap partition on SD-card
+> The aim of this series is to stop managing cpufreq sysfs directories on CPU
+> hotplug.
 > 
-> Steps to reproduce:
-> - reserve 500M memory for CMA from command line: "cma=500M"
-> - configure image_size
->   # echo 1073741824 > sys/power/image_size
-> - enable swap
->   # swapon /dev/<swap partition>
-> - run memtester
->   # memtester 460M &
-> - [optional] disable console suspend
->   # echo 0 > sys/module/printk/parameters/console_suspend
-> - perform suspend to disk
->   # echo disk > sys/power/state
+> Currently on removal of a 'cpu != policy->cpu', we remove its sysfs directories
+> by removing the soft-link. And on removal of policy->cpu, we migrate the sysfs
+> directories to the next cpu in policy. But if policy->cpu was the last CPU, we
+> remove the policy completely and allocate it again once the CPUs come back.
 > 
-> Crash report:
-> -----------[ cut here ]------------
-> Kernel BUG at c0097394 [verbose debug info unavailable]
-> Internal error: Oops - BUG: 0 [#1] SMP ARM
-> Modules linked in:
-> CPU: 0 PID: 68 Comm: sh Not tainted 4.1.0-rc3-00190-ga96463d-dirty #138
-> Hardware name: Generic DRA74X (Flattened Device Tree)
-> task: ee3b2fc0 ti: ee6e8000 task.ti: ee6e8000
-> PC is at memory_bm_set_bit+0x30/0x34
-> LR is at 0x80000
-> pc : [<c0097394>]    lr : [<00080000>]    psr: a00000d3
-> sp : ee6e9de4  ip : c111f714  fp : 00000000
-> r10: 000128e2  r9 : c111f6f8  r8 : 00028658
-> r7 : c114ef00  r6 : c08bad04  r5 : 00027849  r4 : 00012b59
-> r3 : ee6e9de8  r2 : ee6e9de4  r1 : 8ebc3c00  r0 : fffffff2
-> Flags: NzCv  IRQs off  FIQs off  Mode SVC_32  ISA ARM  Segment user
-> Control: 10c5387d  Table: ae6dc06a  DAC: 00000015
-> Process sh (pid: 68, stack limit = 0xee6e8218)
-> Stack: (0xee6e9de4 to 0xee6ea000)
-> 9de0:          00000000 c0097690 00012b59 c0099148 00000030 ee6e9e4c 00000000
-> 9e00: 00000007 0000000f c096b624 c08b78d4 c001452c 00000030 c00141b0 ae0d0000
-> 9e20: ee6e9e4c 80021ae0 00000000 001fc4c0 001fc4c0 00000015 8000406a 10c5387d
-> 9e40: 00000040 00f00000 00000000 00000000 ee6f4c00 00000000 c08b6800 c0773a60
-> 9e60: c096b624 c096dbe8 00000000 c001435c ee3b2fc0 00000000 c096b624 c00966a8
-> 9e80: c08f9710 00000000 c111f5c8 00200660 c08f9644 00000005 00000000 c0096ef0
-> 9ea0: ee6470c0 00000005 00000004 00200660 ee6a6300 c00944cc 00000005 ee6470c0
-> 9ec0: 00000005 ee6a6300 00200660 ee6470cc ee6e9f88 c01dc688 00000000 00000000
-> 9ee0: 20000013 ee6f76c0 00000005 00200660 ee6e9f88 c000f6a4 ee6e8000 00000000
-> 9f00: 00000002 c016beec c08b87bc c016e32c 00000020 00000000 c016c830 ee3b2fb8
-> 9f20: c016c830 ee652ae4 ee6f76c0 00000000 00000000 c016c51c 00000000 00000003
-> 9f40: 00000000 ee6f76c0 00000005 00200660 ee6f76c0 00000005 00200660 ee6e9f88
-> 9f60: c000f6a4 c016c784 00000000 00000000 ee6f76c0 ee6f76c0 00200660 00000005
-> 9f80: c000f6a4 c016cfb0 00000000 00000000 00200660 001fc4e0 00000005 00200660
-> 9fa0: 00000004 c000f4e0 001fc4e0 00000005 00000001 00200660 00000005 001fbc18
-> 9fc0: 001fc4e0 00000005 00200660 00000004 001fd264 001fcfc8 00000000 00000002
-> 9fe0: 00000001 bee87618 0000c55c 0000921c 60000010 00000001 00000000 00000000
-> [<c0097394>] (memory_bm_set_bit) from [<c0099148>] (swsusp_save+0x3f0/0x440)
-> [<c0099148>] (swsusp_save) from [<c001452c>] (arch_save_image+0x8/0x2c)
-> [<c001452c>] (arch_save_image) from [<c00141b0>] (cpu_suspend_abort+0x0/0x30)
-> [<c00141b0>] (cpu_suspend_abort) from [<00000000>] (  (null))
-> Code: e59d0004 eb0ae150 e28dd00c e49df004 (e7f001f2)
-> ---[ end trace 61e3b86f908e4d7f ]---
+> This has shortcomings:
 > 
-> As was investigated, the issue depends on following things:
-> 1) Hibernation should follow through the below code path in
->    hibernate_preallocate_memory():
+> - Code Complexity
+> - Slower hotplug
+> - sysfs file permissions are reset after all policy->cpus are offlined
+> - CPUFreq stats history lost after all policy->cpus are offlined
+> - Special management of sysfs stuff during suspend/resume
 > 
-> int hibernate_preallocate_memory(void)
-> {
-> 	[...]
-> 	/*
-> 	 * If the desired number of image pages is at least as large as the
-> 	 * current number of saveable pages in memory, allocate page frames for
-> 	 * the image and we're done.
-> 	 */
-> 	if (size >= saveable) {
-> 		pages = preallocate_image_highmem(save_highmem);
-> 		pages += preallocate_image_memory(saveable - pages, avail_normal);
-> 		goto out;
-> 	}
 > 
-> 2) Amount of memory reserved for CMA purposes. CMA memory reported as free
->    by MM, but Hibernation core can't use it. As result, All memory checks
->    are passed and system reaches later Hibernation stages, tries to create
->    Hibernation immage and, finally crashes in swsusp_alloc():
-> 	swsusp_alloc()
-> 	|- alloc_highmem_pages()
-> 	   |- alloc_image_page(__GFP_HIGHMEM)
-> 	   -- >"sh: page allocation failure: order:0, mode:0x2"
-> 	   |- memory_bm_set_bit
-> 		|- BUG_ON(error)
+> To make things simple we can stop playing with sysfs files unless the driver is
+> getting removed. Also the policy can be kept intact to be used later.
 > 
-> 3) alloc_page(__GFP_HIGHMEM) doesn't return Highmem pages always, instead
->    MM allocates pages from all available zones evenly. For example:
+> First few patches provide a clean base for others *more important* patches.
 > 
-> 	saveable pages 167191 = hmem 80400 + normal 86791
-> 	request hmem 80400
-> 	- alloc hmem 204
-> 	- alloc normal 161
-> 	- alloc hmem 442
-> 	...
-> 	- alloc normal 38615
-> 	- alloc hmem 41785
->   Such behaviour is not always handled properly. As result, swsusp_alloc(),
->   (from above example) will try to allocate (80400 - 41785) additional Highmem pages
->   without taking into account that those pages were allocated already,
->   but from Normal zone.
+> V6->V7:
+> - Change the order of patches, "cpufreq: Remove cpufreq_update_policy"
+>   is moved to the end of the series and updated its changelog.
 > 
-> In this patch it is proposed to fix issue by rewriting swsusp_alloc()
-> in the following way:
->   - allocate Highmem buffer
->   - check if we need to allocate any memory at all
-> 	alloc_normal + alloc_highmem < nr_normal + nr_highmem
->   - calculate number of pages which still need to be allocated
-> 	nr_pages = nr_normal + nr_highmem - alloc_normal - alloc_highmem
->   - try to allocate Highmem first, but no more than nr_pages
->   - try to get rest from Normal memory
->   - abort if not all pages were allocated
+> V5-V6:
+> - Merged v4 9/14 into 10/14 after some updates.
+> - Keep separate routines to add/remove symlinks.
+> - Only updated one patch in this version
 > 
-> And also use preallocate_image_pages() instead of alloc_highmem_pages() and
-> alloc_image_page(). This way, allocated pages will be accounted properly
-> in alloc_highmem and alloc_normal counters.
+> V4-V5:
+> - Sending all patches again
+> - Fixed comments in one of the patches as suggested by you
+> - Merged the last commit about "physical hotplug of CPUs" with "cpufreq: Stop
+>   migrating sysfs files on hotplug".
+> - A new patch (content is old, just separated out into its own patch) "cpufreq:
+>   add/remove sysfs links via cpufreq_add_remove_dev_symlink()"
 > 
-> alloc_highmem_pages() isn't used any more after this patch and so removed.
+> V3-V4:
+> - Only four patches sent this time:
+>   - [PATCH V4 01/14] cpufreq: Create for_each_{in}active_policy()
+>   - [PATCH V4 04/14] cpufreq: Don't traverse all active policies to find
+>   - [PATCH V4 05/14] cpufreq: Manage governor usage history with
+>   - [PATCH V4 06/14] cpufreq: Mark policy->governor = NULL for inactive
+> - Remove __temp from the arguments of for_each_[in]active_policies.
+> - Simplified macros/next_policy, etc.
 > 
-> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
-> ---
-> Hi All,
+> V2->V3:
+> - First five are already applied by you and the 7th one was sent separately as a
+>   fix earlier and got applied. So, V2 had 20 patches and V3 has 14.
+> - Dropped while(1) and used do/while.
+> - policy->governor marked as NULL only while removing the governor and not when
+>   policy becomes inactive.
+> - Commit logs/comments updated
+> - Applied Acks from Saravan
 > 
-> I've tested this patch with both CONFIG_HIGHMEM=y/n.
+> v1->V2:
+> - Dropped the idea of using policy-lists for getting policy for any cpu
+> - Also dropped fallback list and its per-cpu variable
+> - Stopped cleaning cpufreq_cpu_data and doing list_del(policy) on logical
+>   hotplug.
+> - Added support for physical hotplug of CPUs (Untested).
 > 
-> This patch marked as RFC, because:
-> - I'm not expert in MM, so there could be other, more simple ways
->   to fix it. Also, I'm not sure that I've described Item 2 correctly.
->   (fair zone allocator policy?!)
-> - preallocate_image_highmem() and preallocate_image_memory()
->   could be used instead of preallocate_image_pages(), potentially.
+> Viresh Kumar (6):
+>   cpufreq: Don't allow updating inactive policies from sysfs
+>   cpufreq: Stop migrating sysfs files on hotplug
+>   cpufreq: Initialize policy->kobj while allocating policy
+>   cpufreq: Call cpufreq_policy_put_kobj() from cpufreq_policy_free()
+>   cpufreq: Restart governor as soon as possible
+>   cpufreq: Remove cpufreq_update_policy()
 > 
-> Thanks for any comments.
+>  drivers/cpufreq/cpufreq.c | 303 +++++++++++++++++++++++++---------------------
+>  1 file changed, 168 insertions(+), 135 deletions(-)
 
-The assumption the original code was written with was that a copy of a highmem
-page could be stored either in highmem or in normal memory, while a copy of a
-normal memory page could only be stored in normal memory.
+Overall, this looks good to me.  There are some nitpicks here and there, though
+(please see replies to individual patches for details).
 
-IOW, the number of allocated normal pages must always be greater than or equal
-to the number of pages in normal memory to make copies of.
-
-Does that still hold after your patch?
-
->  kernel/power/snapshot.c | 82 ++++++++++++++++++++++---------------------------
->  1 file changed, 37 insertions(+), 45 deletions(-)
-> 
-> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> index 5235dd4..6ee8790 100644
-> --- a/kernel/power/snapshot.c
-> +++ b/kernel/power/snapshot.c
-> @@ -1761,34 +1761,9 @@ static inline int get_highmem_buffer(int safe_needed)
->  	return buffer ? 0 : -ENOMEM;
->  }
->  
-> -/**
-> - *	alloc_highmem_image_pages - allocate some highmem pages for the image.
-> - *	Try to allocate as many pages as needed, but if the number of free
-> - *	highmem pages is lesser than that, allocate them all.
-> - */
-> -
-> -static inline unsigned int
-> -alloc_highmem_pages(struct memory_bitmap *bm, unsigned int nr_highmem)
-> -{
-> -	unsigned int to_alloc = count_free_highmem_pages();
-> -
-> -	if (to_alloc > nr_highmem)
-> -		to_alloc = nr_highmem;
-> -
-> -	nr_highmem -= to_alloc;
-> -	while (to_alloc-- > 0) {
-> -		struct page *page;
-> -
-> -		page = alloc_image_page(__GFP_HIGHMEM);
-> -		memory_bm_set_bit(bm, page_to_pfn(page));
-> -	}
-> -	return nr_highmem;
-> -}
->  #else
->  static inline int get_highmem_buffer(int safe_needed) { return 0; }
->  
-> -static inline unsigned int
-> -alloc_highmem_pages(struct memory_bitmap *bm, unsigned int n) { return 0; }
->  #endif /* CONFIG_HIGHMEM */
->  
->  /**
-> @@ -1805,28 +1780,45 @@ alloc_highmem_pages(struct memory_bitmap *bm, unsigned int n) { return 0; }
->  
->  static int
->  swsusp_alloc(struct memory_bitmap *orig_bm, struct memory_bitmap *copy_bm,
-> -		unsigned int nr_pages, unsigned int nr_highmem)
-> +		unsigned int nr_normal, unsigned int nr_highmem)
->  {
-> -	if (nr_highmem > 0) {
-> -		if (get_highmem_buffer(PG_ANY))
-> -			goto err_out;
-> -		if (nr_highmem > alloc_highmem) {
-> -			nr_highmem -= alloc_highmem;
-> -			nr_pages += alloc_highmem_pages(copy_bm, nr_highmem);
-> -		}
-> -	}
-> -	if (nr_pages > alloc_normal) {
-> -		nr_pages -= alloc_normal;
-> -		while (nr_pages-- > 0) {
-> -			struct page *page;
-> -
-> -			page = alloc_image_page(GFP_ATOMIC | __GFP_COLD);
-> -			if (!page)
-> -				goto err_out;
-> -			memory_bm_set_bit(copy_bm, page_to_pfn(page));
-> -		}
-> -	}
-> +	unsigned int nr_pages;
-> +	/*
-> +	 * Additional input data:
-> +	 *  alloc_highmem - number of allocated Highmem pages
-> +	 *  alloc_normal - number of allocated Normal pages
-> +	 */
-> +
-> +	/* allocate Highmem buffer */
-> +	if ((nr_highmem > 0) && get_highmem_buffer(PG_ANY))
-> +		goto err_out;
-> +
-> +	/*
-> +	 * check if we need to allocate any memory at all
-> +	 *	alloc_normal + alloc_highmem < nr_normal + nr_highmem
-> +	 * and calculate number of pages which still need to be allocated
-> +	 *     nr_pages = nr_normal + nr_highmem - alloc_normal - alloc_highmem
-> +	 */
-> +	nr_pages = nr_normal + nr_highmem;
-> +	if (nr_pages > alloc_normal + alloc_highmem)
-> +		nr_pages -= alloc_normal + alloc_highmem;
-> +	else
-> +		goto out;
-
-Please do not jump to return statements.  Use them directly instead (ie. return
-0 from here).
-
-> +
-> +	/* try to allocate Highmem first, but no more than nr_pages */
-> +	if (nr_highmem > 0)
-> +		nr_pages -= preallocate_image_pages(nr_pages,  __GFP_HIGHMEM);
->  
-> +	/* try to get rest from Normal memory */
-> +	if (nr_pages)
-> +		nr_pages -= preallocate_image_pages(nr_pages,
-> +						    GFP_ATOMIC | __GFP_COLD);
-> +
-> +	/* abort if not all pages were allocated */
-> +	if (nr_pages)
-> +		goto err_out;
-
-This can be
-
-	if (!nr_pages)
-		return 0;
-
-> +
-> +out:
->  	return 0;
->  
->   err_out:
-> 
 
 -- 
 I speak only for myself.
 Rafael J. Wysocki, Intel Open Source Technology Center.
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
