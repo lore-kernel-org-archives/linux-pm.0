@@ -1,68 +1,83 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH v4] Thermal cleanups and hardware trip points
-Date: Mon, 8 Jun 2015 08:56:57 +0200
-Message-ID: <20150608065657.GL26575@pengutronix.de>
-References: <1432128046-12921-1-git-send-email-s.hauer@pengutronix.de>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH] cpufreq:exynos-cpufreq - Fix for memory leak in case SOC
+ name does not match.
+Date: Mon, 08 Jun 2015 10:31:00 +0200
+Message-ID: <20150608103100.57f0473b@amdc2363>
+References: <1432519780-2910-1-git-send-email-shailendra.capricorn@gmail.com>
+ <20150525073149.GF9992@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:37360 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752022AbbFHG5E (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Jun 2015 02:57:04 -0400
-Content-Disposition: inline
-In-Reply-To: <1432128046-12921-1-git-send-email-s.hauer@pengutronix.de>
+Received: from mailout3.samsung.com ([203.254.224.33]:33155 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751133AbbFHIbJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Jun 2015 04:31:09 -0400
+In-reply-to: <20150525073149.GF9992@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, linux-kernel@vger.kernel.org, Mikko Perttunen <mikko.perttunen@kapsi.fi>, linux-mediatek@lists.infradead.org, kernel@pengutronix.de, Brian Norris <computersforpeace@gmail.com>, linux-arm-kernel@lists.infradead.org
+To: Shailendra Verma <shailendra.capricorn@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Eduardo, Rui,
+Hi Viresh,
 
-Any feedback to this series?
+> On 25-05-15, 07:39, Shailendra Verma wrote:
+> > During probe free the memory allocated to "exynos_info" in case of
+> > unknown SOC type.
+> > 
+> > Signed-off-by: Shailendra Verma <shailendra.capricorn@gmail.com>
+> > ---
+> >  drivers/cpufreq/exynos-cpufreq.c |    6 ++++--
+> >  1 file changed, 4 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/cpufreq/exynos-cpufreq.c
+> > b/drivers/cpufreq/exynos-cpufreq.c index 82d2fbb..8682378 100644
+> > --- a/drivers/cpufreq/exynos-cpufreq.c
+> > +++ b/drivers/cpufreq/exynos-cpufreq.c
+> > @@ -182,7 +182,7 @@ static int exynos_cpufreq_probe(struct
+> > platform_device *pdev) ret = exynos5250_cpufreq_init(exynos_info);
+> >  	} else {
+> >  		pr_err("%s: Unknown SoC type\n", __func__);
+> > -		return -ENODEV;
+> > +		ret = -ENODEV;
+> >  	}
+> >  
+> >  	if (ret)
+> > @@ -190,12 +190,14 @@ static int exynos_cpufreq_probe(struct
+> > platform_device *pdev) 
+> >  	if (exynos_info->set_freq == NULL) {
+> >  		dev_err(&pdev->dev, "No set_freq function
+> > (ERR)\n");
+> > +		ret = -EINVAL;
+> >  		goto err_vdd_arm;
+> >  	}
+> >  
+> >  	arm_regulator = regulator_get(NULL, "vdd_arm");
+> >  	if (IS_ERR(arm_regulator)) {
+> >  		dev_err(&pdev->dev, "failed to get resource
+> > vdd_arm\n");
+> > +		ret = -EINVAL;
+> >  		goto err_vdd_arm;
+> >  	}
+> >  
+> > @@ -227,7 +229,7 @@ err_cpufreq_reg:
+> >  	regulator_put(arm_regulator);
+> >  err_vdd_arm:
+> >  	kfree(exynos_info);
+> > -	return -EINVAL;
+> > +	return ret;
+> >  }
+> >  
+> >  static struct platform_driver exynos_cpufreq_platdrv = {
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
 
-Thanks
-  Sascha
-
-On Wed, May 20, 2015 at 03:20:30PM +0200, Sascha Hauer wrote:
-> This series adds support for hardware trip points. It picks up earlier
-> work from Mikko Perttunen. Mikko implemented hardware trip points as part
-> of the device tree support. It was suggested back then to move the
-> functionality to the thermal core instead of putting more code into the
-> device tree support. This series does exactly that.
-> 
-> The majority of the patches are cleanups and fixes. Patch 11 introduces
-> hardware tracked trip points and finally a driver for the Mediatek
-> thermal controller is introduced as the first user.
-> 
-> All comments welcome
-> 
-> Changes since v3:
-> - Fix some missing function type changes in int3400_thermal.c,
->   processor_thermal_device.c, kirkwood_thermal.c and exynos_tmu.c
-> - Add better description for set_trips callback
-> - update the interrupt triggers also when the trip points change
-> - Add missing MODULE_* tags
-> - Broaden temperature range in the Mediatek driver so that we can be sure
->   the measured temperatures are really out of the desired range
-> 
-> Changes since v2:
-> - Add Mediatek thermal controller driver as first user for hardware trip
->   points
-> 
-> Changes since v1:
-> - Use int instead of unsigned long consistently for temperatures
-> - Instead of misfixing the emulation code add a comment how the
->   code is meant
-> - Add doc entry for .set_trips callback
-> - initialize prev_low_trip/prev_high_trip properly
-> - get tz->lock before calling thermal_zone_set_trips()
-> 
-> 
-> 
+Acked-by: Lukasz Majewski <l.majewski@samsung.com>
 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
