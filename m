@@ -1,81 +1,67 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq:exynos-cpufreq - Fix for memory leak in case SOC name does not match.
-Date: Tue, 09 Jun 2015 01:30:35 +0200
-Message-ID: <8344426.BL3KyufMos@vostro.rjw.lan>
-References: <1432519780-2910-1-git-send-email-shailendra.capricorn@gmail.com> <20150525073149.GF9992@linux> <20150608103100.57f0473b@amdc2363>
+Subject: Re: [PATCH 1/6] power: hibernate: Use separate messages for "Syncing filesystems"
+Date: Tue, 09 Jun 2015 01:35:24 +0200
+Message-ID: <5609150.OAJVFt04xE@vostro.rjw.lan>
+References: <cover.1433442778.git.joe@perches.com> <1664a8ea72b34db4bef860004166875ab70898ee.1433442778.git.joe@perches.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:45104 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:60231 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751888AbbFHXEs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Jun 2015 19:04:48 -0400
-In-Reply-To: <20150608103100.57f0473b@amdc2363>
+	with SMTP id S1752713AbbFHXJh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Jun 2015 19:09:37 -0400
+In-Reply-To: <1664a8ea72b34db4bef860004166875ab70898ee.1433442778.git.joe@perches.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: Shailendra Verma <shailendra.capricorn@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Joe Perches <joe@perches.com>
+Cc: linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
 
-On Monday, June 08, 2015 10:31:00 AM Lukasz Majewski wrote:
-> Hi Viresh,
+On Thursday, June 04, 2015 11:36:44 AM Joe Perches wrote:
+> Add the ability to see how long it takes to sync the filesystems
+> via the printk time mechanism.
 > 
-> > On 25-05-15, 07:39, Shailendra Verma wrote:
-> > > During probe free the memory allocated to "exynos_info" in case of
-> > > unknown SOC type.
-> > > 
-> > > Signed-off-by: Shailendra Verma <shailendra.capricorn@gmail.com>
-> > > ---
-> > >  drivers/cpufreq/exynos-cpufreq.c |    6 ++++--
-> > >  1 file changed, 4 insertions(+), 2 deletions(-)
-> > > 
-> > > diff --git a/drivers/cpufreq/exynos-cpufreq.c
-> > > b/drivers/cpufreq/exynos-cpufreq.c index 82d2fbb..8682378 100644
-> > > --- a/drivers/cpufreq/exynos-cpufreq.c
-> > > +++ b/drivers/cpufreq/exynos-cpufreq.c
-> > > @@ -182,7 +182,7 @@ static int exynos_cpufreq_probe(struct
-> > > platform_device *pdev) ret = exynos5250_cpufreq_init(exynos_info);
-> > >  	} else {
-> > >  		pr_err("%s: Unknown SoC type\n", __func__);
-> > > -		return -ENODEV;
-> > > +		ret = -ENODEV;
-> > >  	}
-> > >  
-> > >  	if (ret)
-> > > @@ -190,12 +190,14 @@ static int exynos_cpufreq_probe(struct
-> > > platform_device *pdev) 
-> > >  	if (exynos_info->set_freq == NULL) {
-> > >  		dev_err(&pdev->dev, "No set_freq function
-> > > (ERR)\n");
-> > > +		ret = -EINVAL;
-> > >  		goto err_vdd_arm;
-> > >  	}
-> > >  
-> > >  	arm_regulator = regulator_get(NULL, "vdd_arm");
-> > >  	if (IS_ERR(arm_regulator)) {
-> > >  		dev_err(&pdev->dev, "failed to get resource
-> > > vdd_arm\n");
-> > > +		ret = -EINVAL;
-> > >  		goto err_vdd_arm;
-> > >  	}
-> > >  
-> > > @@ -227,7 +229,7 @@ err_cpufreq_reg:
-> > >  	regulator_put(arm_regulator);
-> > >  err_vdd_arm:
-> > >  	kfree(exynos_info);
-> > > -	return -EINVAL;
-> > > +	return ret;
-> > >  }
-> > >  
-> > >  static struct platform_driver exynos_cpufreq_platdrv = {
-> > 
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > 
+> Start to standardize the printk "PM: doing something...done"
+> messages on two separate lines.
+
+Well, it would be good to say what problem this is attempting to fix.
+
+And while I understand the underlying concern, there is a merit in keeping
+each of these messages in one line (if everything goes well), so I'm wondering
+what about printing each of them in one go after the operation with a tail
+depending on the result?  Like
+
+printk(KERN_INFO "PM: Syncing filesystems ... done\n");
+
+on success or
+
+printk(KERN_INFO "PM: Syncing filesystems ... failed\n");
+
+on failure?
+
+
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  kernel/power/hibernate.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> Acked-by: Lukasz Majewski <l.majewski@samsung.com>
-
-I'm assuming that it will go it through the Samsung tree.
-
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index 2329daa..2466d78 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -663,9 +663,9 @@ int hibernate(void)
+>  	if (error)
+>  		goto Exit;
+>  
+> -	printk(KERN_INFO "PM: Syncing filesystems ... ");
+> +	printk(KERN_INFO "PM: Syncing filesystems ...\n");
+>  	sys_sync();
+> -	printk("done.\n");
+> +	printk(KERN_INFO "PM: Syncing filesystems: done\n");
+>  
+>  	error = freeze_processes();
+>  	if (error)
+> 
 
 -- 
 I speak only for myself.
