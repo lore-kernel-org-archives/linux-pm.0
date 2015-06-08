@@ -1,49 +1,48 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [RFC 0/7] qcom: Add support for tsens driver
-Date: Mon, 08 Jun 2015 09:59:27 +0530
-Message-ID: <55751A27.6030306@codeaurora.org>
-References: <1429796773-7151-1-git-send-email-rnayak@codeaurora.org> <7hvbf1y974.fsf@deeprootsystems.com>
+From: Javier Martinez Canillas <javier@dowhile0.org>
+Subject: Re: [PATCH] thermal: exynos: Disable the regulator on probe failure
+Date: Mon, 8 Jun 2015 08:54:44 +0200
+Message-ID: <CABxcv=me__Nor+grdD+GaGJNZT5hRt6Tq7VBN1=yNzj+qw-zww@mail.gmail.com>
+References: <1433727349-23330-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <7hvbf1y974.fsf@deeprootsystems.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, javi.merino@arm.com, punit.agrawal@arm.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1433727349-23330-1-git-send-email-k.kozlowski@samsung.com>
+Sender: stable-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Kevin,
+Hello Krzysztof,
 
-> Curious how are you testing this?  with which thermal governor?
-
-I have been mostly testing this with step wise on the db410c target
-board.
-
+On Mon, Jun 8, 2015 at 3:35 AM, Krzysztof Kozlowski
+<k.kozlowski@samsung.com> wrote:
+> During probe the regulator (if present) was enabled but not disabled in
+> case of failure. So an unsuccessful probe lead to enabling the
+> regulator which was actually not needed because the device was not
+> enabled.
 >
-> I'm experimenting with the new thermal power_allocator governor
-> currently in linux-next, and was hoping to use this to test it, but I'm
-> noticing it doesn't work with the power_allocator governor.
+> Additionally each deferred probe lead to increase of regulator enable
+> count so it would not be effectively disabled during removal of the
+> device.
 >
-> The first thing is that the power_allator goveror expects each thermal
-> zone to have a sustainable-power property in the DT, which this series
-> doesn't provide.  Hacking some dummy values in there to see what happens
-> next, I then hit the "thermal zone cpu-thermal0 has wrong trip setup for
-> power allocator" error from the power_allocator driver.
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Fixes: 498d22f616f6 ("thermal: exynos: Support for TMU regulator defined at device tree")
+> Cc: <stable@vger.kernel.org>
+>
 
-Right, the RFC I posted wasn't tested with IPA and hence does not have
-some of the additional properties in DT which IPA expects.
-The wrong trip setup error that you are seeing is because IPA expects
-2 passive trip points, a "switch on" trip point and a "desired
-temperature" trip point and the dts I posted with the RFC had
-just one passive trip point.
+Reviewed-by: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
 
-I am in the process of testing this with IPA myself (on db410c mainly,
-but will also test on db8074 and IFC6410/6540 as well) and will repost
-in a few days with updated dts entries and a few other minor fixes
-to the driver itself. Let me know what target board you are
-interested to get this working on and I will make sure I test on it
-before I repost.
+> ---
+>
+> I am not entirely convinced that this should go to stable. Leaving a
+> regulator enabled in case of probe failure (no exynos TMU device) or
+> after deferred probe (regulator won't be disabled during device removal)
+> is not a critical issue, just leaks power.
 
-regards,
-Rajendra
+
+Yes, as you said leaving the regulator enabled is not critical but
+OTOH is a very small patch and is fixing a very evident bug so I think
+it's OK.
+
+Best regards,
+Javier
