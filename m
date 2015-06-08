@@ -1,268 +1,193 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: [RFC PATCH] PM / hibernate: fix kernel crash in alloc_highmem_pages
-Date: Mon, 8 Jun 2015 18:22:05 +0300
-Message-ID: <1433776925-24662-1-git-send-email-grygorii.strashko@ti.com>
+From: Denis Kirjanov <kda@linux-powerpc.org>
+Subject: [lockdep] cpufreq/ppc: possible circular locking dependency detected
+Date: Mon, 8 Jun 2015 18:45:49 +0300
+Message-ID: <CAOJe8K3Mtj9UMOYwjAuh7DYQxHR-ZLbEBAQJ+t3oSDphwu5+Hg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <owner-linux-mm@kvack.org>
-Sender: owner-linux-mm@kvack.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, illia.smyrnov@globallogic.com, Grygorii Strashko <grygorii.strashko@ti.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yh0-f43.google.com ([209.85.213.43]:36564 "EHLO
+	mail-yh0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751570AbbFHPpu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Jun 2015 11:45:50 -0400
+Received: by yhan67 with SMTP id n67so41717580yha.3
+        for <linux-pm@vger.kernel.org>; Mon, 08 Jun 2015 08:45:49 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, benh@kernel.crashing.org
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-Now Kernel crashes under some circumstances in swsusp_alloc()
-because it hits BUG() in memory_bm_set_bit().
+Hi,
 
-Kernel: Linux 4.1-rc3
-HW: TI dra7-evm board, 2xARM Cortex-A15, 1.5G RAM
-Swap: 2G swap partition on SD-card
+I see the following lockdep splat on my RackMac machine on boot:
 
-Steps to reproduce:
-- reserve 500M memory for CMA from command line: "cma=500M"
-- configure image_size
-  # echo 1073741824 > sys/power/image_size
-- enable swap
-  # swapon /dev/<swap partition>
-- run memtester
-  # memtester 460M &
-- [optional] disable console suspend
-  # echo 0 > sys/module/printk/parameters/console_suspend
-- perform suspend to disk
-  # echo disk > sys/power/state
+[    6.002593] Registering G5 CPU frequency driver
+[    6.011288] Frequency method: i2c/pfunc, Voltage method: i2c/pfunc
+[    6.023605] Low: 1800 Mhz, High: 2300 Mhz, Cur: 1800 MHz
 
-Crash report:
------------[ cut here ]------------
-Kernel BUG at c0097394 [verbose debug info unavailable]
-Internal error: Oops - BUG: 0 [#1] SMP ARM
-Modules linked in:
-CPU: 0 PID: 68 Comm: sh Not tainted 4.1.0-rc3-00190-ga96463d-dirty #138
-Hardware name: Generic DRA74X (Flattened Device Tree)
-task: ee3b2fc0 ti: ee6e8000 task.ti: ee6e8000
-PC is at memory_bm_set_bit+0x30/0x34
-LR is at 0x80000
-pc : [<c0097394>]    lr : [<00080000>]    psr: a00000d3
-sp : ee6e9de4  ip : c111f714  fp : 00000000
-r10: 000128e2  r9 : c111f6f8  r8 : 00028658
-r7 : c114ef00  r6 : c08bad04  r5 : 00027849  r4 : 00012b59
-r3 : ee6e9de8  r2 : ee6e9de4  r1 : 8ebc3c00  r0 : fffffff2
-Flags: NzCv  IRQs off  FIQs off  Mode SVC_32  ISA ARM  Segment user
-Control: 10c5387d  Table: ae6dc06a  DAC: 00000015
-Process sh (pid: 68, stack limit = 0xee6e8218)
-Stack: (0xee6e9de4 to 0xee6ea000)
-9de0:          00000000 c0097690 00012b59 c0099148 00000030 ee6e9e4c 00000000
-9e00: 00000007 0000000f c096b624 c08b78d4 c001452c 00000030 c00141b0 ae0d0000
-9e20: ee6e9e4c 80021ae0 00000000 001fc4c0 001fc4c0 00000015 8000406a 10c5387d
-9e40: 00000040 00f00000 00000000 00000000 ee6f4c00 00000000 c08b6800 c0773a60
-9e60: c096b624 c096dbe8 00000000 c001435c ee3b2fc0 00000000 c096b624 c00966a8
-9e80: c08f9710 00000000 c111f5c8 00200660 c08f9644 00000005 00000000 c0096ef0
-9ea0: ee6470c0 00000005 00000004 00200660 ee6a6300 c00944cc 00000005 ee6470c0
-9ec0: 00000005 ee6a6300 00200660 ee6470cc ee6e9f88 c01dc688 00000000 00000000
-9ee0: 20000013 ee6f76c0 00000005 00200660 ee6e9f88 c000f6a4 ee6e8000 00000000
-9f00: 00000002 c016beec c08b87bc c016e32c 00000020 00000000 c016c830 ee3b2fb8
-9f20: c016c830 ee652ae4 ee6f76c0 00000000 00000000 c016c51c 00000000 00000003
-9f40: 00000000 ee6f76c0 00000005 00200660 ee6f76c0 00000005 00200660 ee6e9f88
-9f60: c000f6a4 c016c784 00000000 00000000 ee6f76c0 ee6f76c0 00200660 00000005
-9f80: c000f6a4 c016cfb0 00000000 00000000 00200660 001fc4e0 00000005 00200660
-9fa0: 00000004 c000f4e0 001fc4e0 00000005 00000001 00200660 00000005 001fbc18
-9fc0: 001fc4e0 00000005 00200660 00000004 001fd264 001fcfc8 00000000 00000002
-9fe0: 00000001 bee87618 0000c55c 0000921c 60000010 00000001 00000000 00000000
-[<c0097394>] (memory_bm_set_bit) from [<c0099148>] (swsusp_save+0x3f0/0x440)
-[<c0099148>] (swsusp_save) from [<c001452c>] (arch_save_image+0x8/0x2c)
-[<c001452c>] (arch_save_image) from [<c00141b0>] (cpu_suspend_abort+0x0/0x30)
-[<c00141b0>] (cpu_suspend_abort) from [<00000000>] (  (null))
-Code: e59d0004 eb0ae150 e28dd00c e49df004 (e7f001f2)
----[ end trace 61e3b86f908e4d7f ]---
+[    6.038022] ======================================================
+[    6.042080] windfarm: CPUs control loops started.
+[    6.042084] wf_rm31: Backside control loop started.
+[    6.042086] wf_rm31: Slots control loop started.
+[    6.078644] [ INFO: possible circular locking dependency detected ]
+[    6.091149] 4.1.0-rc6-01265-g908e80d-dirty #15 Not tainted
+[    6.102083] -------------------------------------------------------
+[    6.114586] swapper/0/1 is trying to acquire lock:
+[    6.124136]  (&bus->mutex){+.+.+.}, at: [<c00000000004d450>]
+.pmac_i2c_open+0x30/0x100
+[    6.139933]
+but task is already holding lock:
+[    6.151569]  (&policy->rwsem){+.+.+.}, at: [<c000000000620bbc>]
+.__cpufreq_add_dev.isra.29+0x34c/0xad0
+[    6.170143]
+which lock already depends on the new lock.
 
-As was investigated, the issue depends on following things:
-1) Hibernation should follow through the below code path in
-   hibernate_preallocate_memory():
+[    6.186464]
+the existing dependency chain (in reverse order) is:
+[    6.201401]
+-> #4 (&policy->rwsem){+.+.+.}:
+[    6.210077]        [<c0000000000d6380>] .lock_acquire+0x80/0x100
+[    6.222061]        [<c0000000007a411c>] .down_write+0x6c/0x110
+[    6.233690]        [<c000000000620bbc>]
+.__cpufreq_add_dev.isra.29+0x34c/0xad0
+[    6.248104]        [<c000000000489dd8>] .subsys_interface_register+0xc8/0x120
+[    6.262336]        [<c0000000006215f8>] .cpufreq_register_driver+0x138/0x310
+[    6.276404]        [<c000000000adeca8>] .g5_cpufreq_init+0x9cc/0xa28
+[    6.289079]        [<c00000000000a714>] .do_one_initcall+0xd4/0x270
+[    6.301577]        [<c000000000aaa778>] .kernel_init_freeable+0x190/0x270
+[    6.315120]        [<c00000000000b17c>] .kernel_init+0x1c/0x120
+[    6.326928]        [<c0000000000095b4>] .ret_from_kernel_thread+0x58/0xa4
+[    6.340467]
+-> #3 (subsys mutex#2){+.+.+.}:
+[    6.349149]        [<c0000000000d6380>] .lock_acquire+0x80/0x100
+[    6.361130]        [<c0000000007a0ccc>] .mutex_lock_nested+0xac/0x5a0
+[    6.373980]        [<c00000000048aff4>] .bus_probe_device+0x44/0xf0
+[    6.386477]        [<c000000000488318>] .device_add+0x508/0x730
+[    6.398284]        [<c00000000048fb8c>] .register_cpu+0xfc/0x150
+[    6.410266]        [<c000000000aaf27c>] .topology_init+0x108/0x1c0
+[    6.422595]        [<c00000000000a714>] .do_one_initcall+0xd4/0x270
+[    6.435092]        [<c000000000aaa778>] .kernel_init_freeable+0x190/0x270
+[    6.448637]        [<c00000000000b17c>] .kernel_init+0x1c/0x120
+[    6.460444]        [<c0000000000095b4>] .ret_from_kernel_thread+0x58/0xa4
+[    6.473983]
+-> #2 (cpu_add_remove_lock){+.+.+.}:
+[    6.483536]        [<c0000000000d6380>] .lock_acquire+0x80/0x100
+[    6.495517]        [<c0000000007a0ccc>] .mutex_lock_nested+0xac/0x5a0
+[    6.508361]        [<c0000000000781ac>] .cpu_maps_update_begin+0x1c/0x30
+[    6.521732]        [<c000000000070220>] .register_power_pmu+0xa0/0x128
+[    6.534752]        [<c000000000abed50>] .init_ppc970_pmu+0x6c/0x8c
+[    6.547081]        [<c00000000000a714>] .do_one_initcall+0xd4/0x270
+[    6.559578]        [<c000000000aaa698>] .kernel_init_freeable+0xb0/0x270
+[    6.572950]        [<c00000000000b17c>] .kernel_init+0x1c/0x120
+[    6.584758]        [<c0000000000095b4>] .ret_from_kernel_thread+0x58/0xa4
+[    6.598297]
+-> #1 (&host->mutex){+.+.+.}:
+[    6.606633]        [<c0000000000d6380>] .lock_acquire+0x80/0x100
+[    6.618615]        [<c0000000007a0ccc>] .mutex_lock_nested+0xac/0x5a0
+[    6.631458]        [<c00000000004d408>] .kw_i2c_open+0x18/0x30
+[    6.643092]        [<c00000000004d4b4>] .pmac_i2c_open+0x94/0x100
+[    6.655247]        [<c000000000abb174>] .smp_core99_probe+0x260/0x410
+[    6.668097]        [<c000000000ab2f94>] .smp_prepare_cpus+0x1ec/0x220
+[    6.680941]        [<c000000000aaa670>] .kernel_init_freeable+0x88/0x270
+[    6.694313]        [<c00000000000b17c>] .kernel_init+0x1c/0x120
+[    6.706121]        [<c0000000000095b4>] .ret_from_kernel_thread+0x58/0xa4
+[    6.719660]
+-> #0 (&bus->mutex){+.+.+.}:
+[    6.727822]        [<c0000000000d5304>] .__lock_acquire+0x1194/0x1b70
+[    6.740672]        [<c0000000000d6380>] .lock_acquire+0x80/0x100
+[    6.752647]        [<c0000000007a0ccc>] .mutex_lock_nested+0xac/0x5a0
+[    6.765497]        [<c00000000004d450>] .pmac_i2c_open+0x30/0x100
+[    6.777652]        [<c00000000004da34>] .pmac_i2c_do_begin+0x34/0x120
+[    6.790501]        [<c0000000000517e0>] .pmf_call_one+0x50/0xd0
+[    6.802302]        [<c0000000006265ec>] .g5_pfunc_switch_volt+0x2c/0xc0
+[    6.815501]        [<c00000000062659c>] .g5_pfunc_switch_freq+0x1cc/0x1f0
+[    6.829040]        [<c0000000006262fc>] .g5_cpufreq_target+0x2c/0x40
+[    6.841716]        [<c00000000061de40>] .__cpufreq_driver_target+0x230/0x400
+[    6.855783]        [<c000000000622bec>]
+.cpufreq_governor_performance+0x3c/0x60
+[    6.870364]        [<c00000000061f0d0>] .__cpufreq_governor+0xc0/0x390
+[    6.883389]        [<c00000000061f9fc>] .cpufreq_set_policy+0x25c/0x2c0
+[    6.896581]        [<c0000000006206d4>] .cpufreq_init_policy+0x84/0xe0
+[    6.909605]        [<c0000000006212ec>]
+.__cpufreq_add_dev.isra.29+0xa7c/0xad0
+[    6.924013]        [<c000000000489dd8>] .subsys_interface_register+0xc8/0x120
+[    6.938253]        [<c0000000006215f8>] .cpufreq_register_driver+0x138/0x310
+[    6.952314]        [<c000000000adeca8>] .g5_cpufreq_init+0x9cc/0xa28
+[    6.964991]        [<c00000000000a714>] .do_one_initcall+0xd4/0x270
+[    6.977488]        [<c000000000aaa778>] .kernel_init_freeable+0x190/0x270
+[    6.991033]        [<c00000000000b17c>] .kernel_init+0x1c/0x120
+[    7.002841]        [<c0000000000095b4>] .ret_from_kernel_thread+0x58/0xa4
+[    7.016380]
+other info that might help us debug this:
 
-int hibernate_preallocate_memory(void)
-{
-	[...]
-	/*
-	 * If the desired number of image pages is at least as large as the
-	 * current number of saveable pages in memory, allocate page frames for
-	 * the image and we're done.
-	 */
-	if (size >= saveable) {
-		pages = preallocate_image_highmem(save_highmem);
-		pages += preallocate_image_memory(saveable - pages, avail_normal);
-		goto out;
-	}
+[    7.032354] Chain exists of:
+  &bus->mutex --> subsys mutex#2 --> &policy->rwsem
 
-2) Amount of memory reserved for CMA purposes. CMA memory reported as free
-   by MM, but Hibernation core can't use it. As result, All memory checks
-   are passed and system reaches later Hibernation stages, tries to create
-   Hibernation immage and, finally crashes in swsusp_alloc():
-	swsusp_alloc()
-	|- alloc_highmem_pages()
-	   |- alloc_image_page(__GFP_HIGHMEM)
-	   -- >"sh: page allocation failure: order:0, mode:0x2"
-	   |- memory_bm_set_bit
-		|- BUG_ON(error)
+[    7.047635]  Possible unsafe locking scenario:
 
-3) alloc_page(__GFP_HIGHMEM) doesn't return Highmem pages always, instead
-   MM allocates pages from all available zones evenly. For example:
+[    7.059439]        CPU0                    CPU1
+[    7.068467]        ----                    ----
+[    7.077495]   lock(&policy->rwsem);
+[    7.084440]                                lock(subsys mutex#2);
+[    7.096422]                                lock(&policy->rwsem);
+[    7.108400]   lock(&bus->mutex);
+[    7.114829]
+ *** DEADLOCK ***
 
-	saveable pages 167191 = hmem 80400 + normal 86791
-	request hmem 80400
-	- alloc hmem 204
-	- alloc normal 161
-	- alloc hmem 442
-	...
-	- alloc normal 38615
-	- alloc hmem 41785
-  Such behaviour is not always handled properly. As result, swsusp_alloc(),
-  (from above example) will try to allocate (80400 - 41785) additional Highmem pages
-  without taking into account that those pages were allocated already,
-  but from Normal zone.
+[    7.126633] 3 locks held by swapper/0/1:
+[    7.134445]  #0:  (subsys mutex#2){+.+.+.}, at:
+[<c000000000489d60>] .subsys_interface_register+0x50/0x120
+[    7.153719]  #1:  (cpufreq_rwsem){.+.+.+}, at: [<c00000000062093c>]
+.__cpufreq_add_dev.isra.29+0xcc/0xad0
+[    7.172817]  #2:  (&policy->rwsem){+.+.+.}, at:
+[<c000000000620bbc>] .__cpufreq_add_dev.isra.29+0x34c/0xad0
+[    7.192261]
+stack backtrace:
+[    7.200945] CPU: 1 PID: 1 Comm: swapper/0 Not tainted
+4.1.0-rc6-01265-g908e80d-dirty #15
+[    7.217091] Call Trace:
+[    7.221953] [c0000000790beab0] [c0000000007ad48c]
+.dump_stack+0x98/0xd4 (unreliable)
+[    7.237407] [c0000000790beb30] [c0000000007a9094]
+.print_circular_bug+0x364/0x39c
+[    7.252336] [c0000000790bebe0] [c0000000000d0e40] .check_prev_add+0x8d0/0x8e0
+[    7.266575] [c0000000790becf0] [c0000000000d5304]
+.__lock_acquire+0x1194/0x1b70
+[    7.281156] [c0000000790bee20] [c0000000000d6380] .lock_acquire+0x80/0x100
+[    7.294874] [c0000000790beef0] [c0000000007a0ccc]
+.mutex_lock_nested+0xac/0x5a0
+[    7.309456] [c0000000790bf010] [c00000000004d450] .pmac_i2c_open+0x30/0x100
+[    7.323349] [c0000000790bf0a0] [c00000000004da34]
+.pmac_i2c_do_begin+0x34/0x120
+[    7.337931] [c0000000790bf130] [c0000000000517e0] .pmf_call_one+0x50/0xd0
+[    7.351477] [c0000000790bf1c0] [c0000000006265ec]
+.g5_pfunc_switch_volt+0x2c/0xc0
+[    7.366405] [c0000000790bf230] [c00000000062659c]
+.g5_pfunc_switch_freq+0x1cc/0x1f0
+[    7.381688] [c0000000790bf300] [c0000000006262fc]
+.g5_cpufreq_target+0x2c/0x40
+[    7.396096] [c0000000790bf370] [c00000000061de40]
+.__cpufreq_driver_target+0x230/0x400
+[    7.411893] [c0000000790bf430] [c000000000622bec]
+.cpufreq_governor_performance+0x3c/0x60
+[    7.428219] [c0000000790bf4a0] [c00000000061f0d0]
+.__cpufreq_governor+0xc0/0x390
+[    7.442975] [c0000000790bf530] [c00000000061f9fc]
+.cpufreq_set_policy+0x25c/0x2c0
+[    7.457904] [c0000000790bf5c0] [c0000000006206d4]
+.cpufreq_init_policy+0x84/0xe0
+[    7.472666] [c0000000790bf920] [c0000000006212ec]
+.__cpufreq_add_dev.isra.29+0xa7c/0xad0
+[    7.488810] [c0000000790bfa10] [c000000000489dd8]
+.subsys_interface_register+0xc8/0x120
+[    7.504782] [c0000000790bfab0] [c0000000006215f8]
+.cpufreq_register_driver+0x138/0x310
+[    7.520586] [c0000000790bfb50] [c000000000adeca8]
+.g5_cpufreq_init+0x9cc/0xa28
+[    7.534993] [c0000000790bfc10] [c00000000000a714] .do_one_initcall+0xd4/0x270
+[    7.549233] [c0000000790bfd00] [c000000000aaa778]
+.kernel_init_freeable+0x190/0x270
+[    7.564510] [c0000000790bfdb0] [c00000000000b17c] .kernel_init+0x1c/0x120
+[    7.578056] [c0000000790bfe30] [c0000000000095b4]
+.ret_from_kernel_thread+0x58/0xa4
 
-In this patch it is proposed to fix issue by rewriting swsusp_alloc()
-in the following way:
-  - allocate Highmem buffer
-  - check if we need to allocate any memory at all
-	alloc_normal + alloc_highmem < nr_normal + nr_highmem
-  - calculate number of pages which still need to be allocated
-	nr_pages = nr_normal + nr_highmem - alloc_normal - alloc_highmem
-  - try to allocate Highmem first, but no more than nr_pages
-  - try to get rest from Normal memory
-  - abort if not all pages were allocated
-
-And also use preallocate_image_pages() instead of alloc_highmem_pages() and
-alloc_image_page(). This way, allocated pages will be accounted properly
-in alloc_highmem and alloc_normal counters.
-
-alloc_highmem_pages() isn't used any more after this patch and so removed.
-
-Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
----
-Hi All,
-
-I've tested this patch with both CONFIG_HIGHMEM=y/n.
-
-This patch marked as RFC, because:
-- I'm not expert in MM, so there could be other, more simple ways
-  to fix it. Also, I'm not sure that I've described Item 2 correctly.
-  (fair zone allocator policy?!)
-- preallocate_image_highmem() and preallocate_image_memory()
-  could be used instead of preallocate_image_pages(), potentially.
-
-Thanks for any comments.
-
- kernel/power/snapshot.c | 82 ++++++++++++++++++++++---------------------------
- 1 file changed, 37 insertions(+), 45 deletions(-)
-
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 5235dd4..6ee8790 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1761,34 +1761,9 @@ static inline int get_highmem_buffer(int safe_needed)
- 	return buffer ? 0 : -ENOMEM;
- }
- 
--/**
-- *	alloc_highmem_image_pages - allocate some highmem pages for the image.
-- *	Try to allocate as many pages as needed, but if the number of free
-- *	highmem pages is lesser than that, allocate them all.
-- */
--
--static inline unsigned int
--alloc_highmem_pages(struct memory_bitmap *bm, unsigned int nr_highmem)
--{
--	unsigned int to_alloc = count_free_highmem_pages();
--
--	if (to_alloc > nr_highmem)
--		to_alloc = nr_highmem;
--
--	nr_highmem -= to_alloc;
--	while (to_alloc-- > 0) {
--		struct page *page;
--
--		page = alloc_image_page(__GFP_HIGHMEM);
--		memory_bm_set_bit(bm, page_to_pfn(page));
--	}
--	return nr_highmem;
--}
- #else
- static inline int get_highmem_buffer(int safe_needed) { return 0; }
- 
--static inline unsigned int
--alloc_highmem_pages(struct memory_bitmap *bm, unsigned int n) { return 0; }
- #endif /* CONFIG_HIGHMEM */
- 
- /**
-@@ -1805,28 +1780,45 @@ alloc_highmem_pages(struct memory_bitmap *bm, unsigned int n) { return 0; }
- 
- static int
- swsusp_alloc(struct memory_bitmap *orig_bm, struct memory_bitmap *copy_bm,
--		unsigned int nr_pages, unsigned int nr_highmem)
-+		unsigned int nr_normal, unsigned int nr_highmem)
- {
--	if (nr_highmem > 0) {
--		if (get_highmem_buffer(PG_ANY))
--			goto err_out;
--		if (nr_highmem > alloc_highmem) {
--			nr_highmem -= alloc_highmem;
--			nr_pages += alloc_highmem_pages(copy_bm, nr_highmem);
--		}
--	}
--	if (nr_pages > alloc_normal) {
--		nr_pages -= alloc_normal;
--		while (nr_pages-- > 0) {
--			struct page *page;
--
--			page = alloc_image_page(GFP_ATOMIC | __GFP_COLD);
--			if (!page)
--				goto err_out;
--			memory_bm_set_bit(copy_bm, page_to_pfn(page));
--		}
--	}
-+	unsigned int nr_pages;
-+	/*
-+	 * Additional input data:
-+	 *  alloc_highmem - number of allocated Highmem pages
-+	 *  alloc_normal - number of allocated Normal pages
-+	 */
-+
-+	/* allocate Highmem buffer */
-+	if ((nr_highmem > 0) && get_highmem_buffer(PG_ANY))
-+		goto err_out;
-+
-+	/*
-+	 * check if we need to allocate any memory at all
-+	 *	alloc_normal + alloc_highmem < nr_normal + nr_highmem
-+	 * and calculate number of pages which still need to be allocated
-+	 *     nr_pages = nr_normal + nr_highmem - alloc_normal - alloc_highmem
-+	 */
-+	nr_pages = nr_normal + nr_highmem;
-+	if (nr_pages > alloc_normal + alloc_highmem)
-+		nr_pages -= alloc_normal + alloc_highmem;
-+	else
-+		goto out;
-+
-+	/* try to allocate Highmem first, but no more than nr_pages */
-+	if (nr_highmem > 0)
-+		nr_pages -= preallocate_image_pages(nr_pages,  __GFP_HIGHMEM);
- 
-+	/* try to get rest from Normal memory */
-+	if (nr_pages)
-+		nr_pages -= preallocate_image_pages(nr_pages,
-+						    GFP_ATOMIC | __GFP_COLD);
-+
-+	/* abort if not all pages were allocated */
-+	if (nr_pages)
-+		goto err_out;
-+
-+out:
- 	return 0;
- 
-  err_out:
--- 
-1.9.1
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Thanks.
