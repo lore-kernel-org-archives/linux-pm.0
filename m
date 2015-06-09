@@ -1,37 +1,40 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/1] x86 TSC: set X86_FEATURE_TSC_RELIABLE, per CPUID
-Date: Tue, 9 Jun 2015 10:15:31 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1506091014180.4133@nanos>
-References: <f1643565587e70dd2fe2714e9afa566689211a9a.1433050960.git.len.brown@intel.com> <556CA704.1070000@kernel.org> <CAJvTdKm8mksFNnhchXepOanjCT4qiYTjmt3BtL81BepuPw+K1w@mail.gmail.com> <CALCETrWJSqeJsyo7p2cw-cfrt75igQy8FLddvS5adGQ2Wu+8ag@mail.gmail.com>
- <CAJvTdKmnzaOEi-j4J-yA2VP+EFT014gBKX7sEPrP2cz1v02avg@mail.gmail.com> <CALCETrUvkBLQZXQYKs2nNTgUeBQvP1jntFPEkh0m6r_-CQt3-w@mail.gmail.com>
+From: Paul Bolle <pebolle-IWqWACnzNjzz+pZb47iToQ@public.gmane.org>
+Subject: Re: [PATCH 2/2] cpufreq: mediatek: Add MT8173 cpufreq driver
+Date: Tue, 09 Jun 2015 11:17:29 +0200
+Message-ID: <1433841449.16887.58.camel@x220>
+References: <1433766561-1330-1-git-send-email-pi-cheng.chen@linaro.org>
+	 <1433766561-1330-3-git-send-email-pi-cheng.chen@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:45000 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751073AbbFIIP3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jun 2015 04:15:29 -0400
-In-Reply-To: <CALCETrUvkBLQZXQYKs2nNTgUeBQvP1jntFPEkh0m6r_-CQt3-w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1433766561-1330-3-git-send-email-pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: Len Brown <lenb@kernel.org>, Andy Lutomirski <luto@kernel.org>, X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-On Mon, 8 Jun 2015, Andy Lutomirski wrote:
-> On Wed, Jun 3, 2015 at 12:03 PM, Len Brown <lenb@kernel.org> wrote:
-> > If you boot this machine with "tsc=reliable", to disable the cpu_up
-> > check_tsc_sync,
-> > what happens?  Does the run-time clocksource code detect the bogus TSC values?
-> > If yes, how long does that take?
-> 
-> They didn't detect it in the time I watched it.
+On Mon, 2015-06-08 at 20:29 +0800, Pi-Cheng Chen wrote:
+> --- /dev/null
+> +++ b/drivers/cpufreq/mt8173-cpufreq.c
 
-Which is not surprising as the run-time check is disabled with the
-reliable flag as well.
+> +#include <linux/module.h>
 
-        if (tsc_clocksource_reliable)
-                clocksource_tsc.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
+Weren't you going to drop this include?
+
+> +module_init(mt8173_cpufreq_driver_init);
+
+For built-in code this is equivalent to, speaking from memory:
+    device_initcall(mt8173_cpufreq_driver_init);
+
+Why don't you just use that directly?
 
 Thanks,
 
-	tglx
+
+Paul Bolle
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
