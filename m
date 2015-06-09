@@ -1,82 +1,81 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 8/8] ARM: dts: sun7i: Enable USB DRC on Bananapi
-Date: Tue,  9 Jun 2015 23:38:01 +0200
-Message-ID: <1433885881-19809-9-git-send-email-hdegoede@redhat.com>
-References: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH V7 1/6] cpufreq: Don't allow updating inactive policies
+ from sysfs
+Date: Tue, 09 Jun 2015 14:50:53 -0700
+Message-ID: <55775FBD.4030708@codeaurora.org>
+References: <cover.1433767914.git.viresh.kumar@linaro.org> <243ddd967eebe1cafeda824a5ab5c67885d3653d.1433767914.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:49181 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753866AbbFIVik (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 9 Jun 2015 17:38:40 -0400
-In-Reply-To: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:60991 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752100AbbFIVuz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jun 2015 17:50:55 -0400
+In-Reply-To: <243ddd967eebe1cafeda824a5ab5c67885d3653d.1433767914.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Kishon Vijay Abraham I <kishon@ti.com>, Felipe Balbi <balbi@ti.com>, Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: =?UTF-8?q?Bruno=20Pr=C3=A9mont?= <bonbons@linux-vserver.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree <devicetree@vger.kernel.org>, linux-sunxi@googlegroups.com, Hans de Goede <hdegoede@redhat.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, Srivatsa Bhat <srivatsa@mit.edu>
 
-Enable the otg/drc usb controller on the Bananapi.
+On 06/08/2015 05:55 AM, Viresh Kumar wrote:
+> Later commits would change the way policies are managed today. Policies
+> wouldn't be freed on cpu hotplug (currently they aren't freed only for
+> suspend), and while the CPU is offline, the sysfs cpufreq files would
+> still be present.
+>
+> User may accidentally try to update the sysfs files in following
+> directory: '/sys/devices/system/cpu/cpuX/cpufreq/'. And that would
+> result in undefined behavior as policy wouldn't be active then.
+>
+> Apart from updating the store() routine, we also update __cpufreq_get()
+> which can call cpufreq_out_of_sync(). The later routine tries to update
+> policy->cur and starts notifying kernel about it.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>   drivers/cpufreq/cpufreq.c | 11 +++++++++++
+>   1 file changed, 11 insertions(+)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 5d780ff5a10a..7eeff892c0a6 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -875,11 +875,18 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
+>
+>   	down_write(&policy->rwsem);
+>
+> +	/* Updating inactive policies is invalid, so avoid doing that. */
+> +	if (unlikely(policy_is_inactive(policy))) {
+> +		ret = -EPERM;
+> +		goto unlock_policy_rwsem;
+> +	}
+> +
+>   	if (fattr->store)
+>   		ret = fattr->store(policy, buf, count);
+>   	else
+>   		ret = -EIO;
+>
+> +unlock_policy_rwsem:
+>   	up_write(&policy->rwsem);
+>
+>   	up_read(&cpufreq_rwsem);
+> @@ -1610,6 +1617,10 @@ static unsigned int __cpufreq_get(struct cpufreq_policy *policy)
+>
+>   	ret_freq = cpufreq_driver->get(policy->cpu);
+>
+> +	/* Updating inactive policies is invalid, so avoid doing that. */
+> +	if (unlikely(policy_is_inactive(policy)))
+> +		return ret_freq;
+> +
+>   	if (ret_freq && policy->cur &&
+>   		!(cpufreq_driver->flags & CPUFREQ_CONST_LOOPS)) {
+>   		/* verify no discrepancy between actual and
+>
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- arch/arm/boot/dts/sun7i-a20-bananapi.dts | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+Acked-by: Saravana Kannan <skannan@codeaurora.org>
 
-diff --git a/arch/arm/boot/dts/sun7i-a20-bananapi.dts b/arch/arm/boot/dts/sun7i-a20-bananapi.dts
-index 2a1188102..d268c78 100644
---- a/arch/arm/boot/dts/sun7i-a20-bananapi.dts
-+++ b/arch/arm/boot/dts/sun7i-a20-bananapi.dts
-@@ -161,7 +161,18 @@
- 	status = "okay";
- };
- 
-+&otg_sram {
-+	status = "okay";
-+};
-+
- &pio {
-+	usb0_id_detect_pin: usb0_id_detect_pin@0 {
-+		allwinner,pins = "PH4";
-+		allwinner,function = "gpio_in";
-+		allwinner,drive = <SUN4I_PINCTRL_10_MA>;
-+		allwinner,pull = <SUN4I_PINCTRL_PULL_UP>;
-+	};
-+
- 	mmc0_cd_pin_bananapi: mmc0_cd_pin@0 {
- 		allwinner,pins = "PH10";
- 		allwinner,function = "gpio_in";
-@@ -209,6 +220,10 @@
- 	regulator-name = "avcc";
- };
- 
-+&reg_usb0_vbus {
-+	status = "okay";
-+};
-+
- &reg_usb1_vbus {
- 	status = "okay";
- };
-@@ -243,11 +258,21 @@
- 	status = "okay";
- };
- 
-+&usb_otg {
-+	dr_mode = "otg";
-+	status = "okay";
-+};
-+
- &usb_power_supply {
- 	status = "okay";
- };
- 
- &usbphy {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&usb0_id_detect_pin>;
-+	usb0_id_det-gpio = <&pio 7 4 GPIO_ACTIVE_HIGH>; /* PH4 */
-+	usb0_vbus_power-supply = <&usb_power_supply>;
-+	usb0_vbus-supply = <&reg_usb0_vbus>;
- 	usb1_vbus-supply = <&reg_usb1_vbus>;
- 	usb2_vbus-supply = <&reg_usb2_vbus>;
- 	status = "okay";
 -- 
-2.3.6
-
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
