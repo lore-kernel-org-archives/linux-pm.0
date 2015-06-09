@@ -1,160 +1,50 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] Thermal-SoC management updates for v4.2-rc1
-Date: Tue, 9 Jun 2015 15:36:21 -0700
-Message-ID: <20150609223619.GA10847@localhost.localdomain>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: [PATCH 0/8] mfd/power/phy: Add support for otg vbus detection via axp pmic
+Date: Tue,  9 Jun 2015 23:37:53 +0200
+Message-ID: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="7AUc2qLy4jB3hD7Z"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:55845 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751748AbbFIViS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 9 Jun 2015 17:38:18 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Kishon Vijay Abraham I <kishon@ti.com>, Felipe Balbi <balbi@ti.com>, Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: =?UTF-8?q?Bruno=20Pr=C3=A9mont?= <bonbons@linux-vserver.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree <devicetree@vger.kernel.org>, linux-sunxi@googlegroups.com
 
+Hi All,
 
---7AUc2qLy4jB3hD7Z
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Here is a series which adds the beginning of power-supply support to
+the axp20x pmic code. My primary reason for working on this is to
+enable the use of the usb power-supply bits in the pmic to for vbus
+detection on boards which do not have a vbus-det gpio, and instead
+rely on the pmic for vbus detection.
 
-Hello Rui,
+After I had written most of the vbus power-supply driver code I
+became aware of Bruno Pr=C3=A9mont's (in the CC) previous work on this
+our drivers are mostly the same, and I've borrowed some code from
+his driver to add support for min-volt / max-curr properties.
 
-Please pull from
+The big difference between our 2 drivers is that mine driver uses
+a devicetree child node / mfd cell per power-supply, so one for
+each of the usb-power, ac-power / battery-charger and rtc-backup-bat-ch=
+arger
+bits.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
+Depending on the board each of those must be enabled / disabled separat=
+ely
+in devicetree as most boards do not use all 4. So in dt each one needs =
+its
+own child-node of the axp20x node. Another reason for using separate ch=
+ild
+nodes for each is so that other devicetree nodes can have a power-suppl=
+y
+property with a phandle referencing a node representing a single
+power-supply.
 
-to receive Thermal-SoC Management updates for v4.2-rc1 with top-most
+Regards,
 
-9a5238a9c6c33dd31525f2bba4aa1af4f8374ae1:
-
-  thermal: hisilicon: add new hisilicon thermal sensor driver (2015-06-03 15:58:52 -0700)
-
-on top of commit 5ebe6afaf0057ac3eaeb98defd5456894b446d22:
-
-  Linux 4.1-rc2 (2015-05-03 19:22:23 -0700)
-
-Specifics:
-- Exynos thermal driver learns how to handle Exynos5433 TMU. Thanks to Chanwoo C.;
-- Thermal Framework now supports QPNP PMIC temperature alarm as a new thermal
-  driver. Thanks to Ivan T. I.;
-- TI thermal driver now has a better implementation for EOCZ bit. Thanks to Pavel M.;
-- New thermal driver for Hisilicon hi6220;
-- Thermal Framework now has learned several new capabilities:
-  . use power estimates
-  . compute weights with relative integers instead of percentages
-  . allow governors to have private data in thermal zones
-  . export thermal zone parameters through sysfs
-  Thanks to the ARM thermal team (Javi, Punit, KP).
-- Thermal Framework earns a new thermal governor: power allocator. First in kernel
-  closed loop PI(D) controller for thermal control. Thanks to ARM thermal team.
-- OF thermal now allows thermal zones to have sustainable power HW specification.
-  Thanks to Punit.
-- Thermal zones now have representations of slope and offset constants for
-hotspot extrapolation linear equations. For now, supports only per sensor
-extrapolation.
-
-
-BR,
-
-Eduardo Valentin
-----------------------------------------------------------------
-Chanwoo Choi (1):
-      thermal: exynos: Add the support for Exynos5433 TMU
-
-Eduardo Valentin (2):
-      thermal: support slope and offset coefficients
-      thermal: of-thermal: add support for reading coefficients property
-
-Ivan T. Ivanov (1):
-      thermal: Add QPNP PMIC temperature alarm driver
-
-Javi Merino (14):
-      thermal: fair_share: use the weight from the thermal instance
-      thermal: fair_share: fix typo
-      thermal: export weight to sysfs
-      thermal: fair_share: generalize the weight concept
-      thermal: let governors have private data for each thermal zone
-      thermal: extend the cooling device API to include power information
-      thermal: cpu_cooling: implement the power cooling device API
-      thermal: introduce the Power Allocator governor
-      thermal: add trace events to the power allocator governor
-      thermal: x86_pkg_temp: drop const for thermal_zone_parameters
-      thermal: remove stale THERMAL_POWER_ACTOR select
-      thermal: cpu_cooling: Check memory allocation of power_table
-      thermal: export thermal_zone_parameters to sysfs
-      thermal: power_allocator: round the division when divvying up power
-
-Kapileshwar Singh (3):
-      thermal: of: fix cooling device weights in device tree
-      thermal: cpu_cooling: Remove cpu_dev update on policy CPU update
-      thermal: cpu_cooling: Fix power calculation when CPUs are offline
-
-Pavel Machek (3):
-      cleanup ti-soc-thermal
-      ti-soc-thermal: implement eocz bit to make driver useful on omap3
-      ti-soc-thermal: request temperature periodically if hw can't do that itself
-
-Punit Agrawal (3):
-      of: thermal: Introduce sustainable power for a thermal zone
-      thermal: core: Add Kconfig option to enable writable trips
-      thermal: Default OF created trip points to writable
-
-kongxinwei (2):
-      dt-bindings: Document the hi6220 thermal sensor bindings
-      thermal: hisilicon: add new hisilicon thermal sensor driver
-
- .../bindings/thermal/hisilicon-thermal.txt         |  23 +
- .../bindings/thermal/qcom-spmi-temp-alarm.txt      |  57 ++
- .../devicetree/bindings/thermal/thermal.txt        |   9 +
- Documentation/thermal/cpu-cooling-api.txt          | 156 +++++-
- Documentation/thermal/power_allocator.txt          | 247 +++++++++
- Documentation/thermal/sysfs-api.txt                |  99 +++-
- drivers/acpi/thermal.c                             |   9 +-
- drivers/platform/x86/acerhdf.c                     |   3 +-
- drivers/thermal/Kconfig                            |  44 ++
- drivers/thermal/Makefile                           |   3 +
- drivers/thermal/cpu_cooling.c                      | 585 ++++++++++++++++++++-
- drivers/thermal/db8500_thermal.c                   |   2 +-
- drivers/thermal/fair_share.c                       |  41 +-
- drivers/thermal/hisi_thermal.c                     | 421 +++++++++++++++
- drivers/thermal/imx_thermal.c                      |   3 +-
- drivers/thermal/of-thermal.c                       |  41 +-
- drivers/thermal/power_allocator.c                  | 539 +++++++++++++++++++
- drivers/thermal/qcom-spmi-temp-alarm.c             | 309 +++++++++++
- drivers/thermal/samsung/exynos_tmu.c               | 187 ++++++-
- drivers/thermal/samsung/exynos_tmu.h               |   1 +
- drivers/thermal/thermal_core.c                     | 314 ++++++++++-
- drivers/thermal/thermal_core.h                     |  11 +
- drivers/thermal/ti-soc-thermal/ti-bandgap.c        | 104 ++--
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   5 +-
- drivers/thermal/x86_pkg_temp_thermal.c             |   2 +-
- include/linux/cpu_cooling.h                        |  39 ++
- include/linux/thermal.h                            |  97 +++-
- include/trace/events/thermal.h                     |  58 ++
- include/trace/events/thermal_power_allocator.h     |  87 +++
- 29 files changed, 3359 insertions(+), 137 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
- create mode 100644 Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
- create mode 100644 Documentation/thermal/power_allocator.txt
- create mode 100644 drivers/thermal/hisi_thermal.c
- create mode 100644 drivers/thermal/power_allocator.c
- create mode 100644 drivers/thermal/qcom-spmi-temp-alarm.c
- create mode 100644 include/trace/events/thermal_power_allocator.h
-
---7AUc2qLy4jB3hD7Z
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQEcBAEBAgAGBQJVd2pcAAoJEMLUO4d9pOJWu94H/iSvJvWsQl6LRNH0FwALWz7e
-/s3tUpgLbrtaFGBQlig9d+j+vcRw827oZxOFs5voY1VcBsYwBZXRuLzUE1eStnKQ
-gWyRVKyTsfPeZIryxrqgTDzDIOzdfFwPKYglv1ElbSOnnDbS97JYGpbWeMJOEs5p
-OBIpdzNfvJSFxT1GHQeRBSbT+5s7uC9g36to+GHW5UT8zW536bURfnKBXR5f7ohI
-OD+A5AIgkKZq5RhNe51euKhmKWuFi++rg4jIxyAuGxBLW21kGRArQmCBcf4WQJFq
-LJaQzEiLaudCLBM+zOocHJvFhXid5LdFgyVUW/EkZD2iYbyY5rPoby+hkOO/3Xc=
-=stZ4
------END PGP SIGNATURE-----
-
---7AUc2qLy4jB3hD7Z--
+Hans
