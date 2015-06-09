@@ -1,90 +1,37 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH] cpufreq:exynos-cpufreq - Fix for memory leak in case SOC
- name does not match.
-Date: Tue, 09 Jun 2015 16:23:25 +0900
-Message-ID: <5576946D.2070909@samsung.com>
-References: <1432519780-2910-1-git-send-email-shailendra.capricorn@gmail.com>
- <20150525073149.GF9992@linux> <20150608103100.57f0473b@amdc2363>
- <8344426.BL3KyufMos@vostro.rjw.lan> <20150609090722.43965fa0@amdc2363>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/1] x86 TSC: set X86_FEATURE_TSC_RELIABLE, per CPUID
+Date: Tue, 9 Jun 2015 10:15:31 +0200 (CEST)
+Message-ID: <alpine.DEB.2.11.1506091014180.4133@nanos>
+References: <f1643565587e70dd2fe2714e9afa566689211a9a.1433050960.git.len.brown@intel.com> <556CA704.1070000@kernel.org> <CAJvTdKm8mksFNnhchXepOanjCT4qiYTjmt3BtL81BepuPw+K1w@mail.gmail.com> <CALCETrWJSqeJsyo7p2cw-cfrt75igQy8FLddvS5adGQ2Wu+8ag@mail.gmail.com>
+ <CAJvTdKmnzaOEi-j4J-yA2VP+EFT014gBKX7sEPrP2cz1v02avg@mail.gmail.com> <CALCETrUvkBLQZXQYKs2nNTgUeBQvP1jntFPEkh0m6r_-CQt3-w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20150609090722.43965fa0@amdc2363>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Shailendra Verma <shailendra.capricorn@gmail.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:45000 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751073AbbFIIP3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jun 2015 04:15:29 -0400
+In-Reply-To: <CALCETrUvkBLQZXQYKs2nNTgUeBQvP1jntFPEkh0m6r_-CQt3-w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Lutomirski <luto@amacapital.net>
+Cc: Len Brown <lenb@kernel.org>, Andy Lutomirski <luto@kernel.org>, X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-On 09.06.2015 16:07, Lukasz Majewski wrote:
-> Hi Rafael,
+On Mon, 8 Jun 2015, Andy Lutomirski wrote:
+> On Wed, Jun 3, 2015 at 12:03 PM, Len Brown <lenb@kernel.org> wrote:
+> > If you boot this machine with "tsc=reliable", to disable the cpu_up
+> > check_tsc_sync,
+> > what happens?  Does the run-time clocksource code detect the bogus TSC values?
+> > If yes, how long does that take?
 > 
->> On Monday, June 08, 2015 10:31:00 AM Lukasz Majewski wrote:
->>> Hi Viresh,
->>>
->>>> On 25-05-15, 07:39, Shailendra Verma wrote:
->>>>> During probe free the memory allocated to "exynos_info" in case
->>>>> of unknown SOC type.
->>>>>
->>>>> Signed-off-by: Shailendra Verma <shailendra.capricorn@gmail.com>
->>>>> ---
->>>>>  drivers/cpufreq/exynos-cpufreq.c |    6 ++++--
->>>>>  1 file changed, 4 insertions(+), 2 deletions(-)
->>>>>
->>>>> diff --git a/drivers/cpufreq/exynos-cpufreq.c
->>>>> b/drivers/cpufreq/exynos-cpufreq.c index 82d2fbb..8682378 100644
->>>>> --- a/drivers/cpufreq/exynos-cpufreq.c
->>>>> +++ b/drivers/cpufreq/exynos-cpufreq.c
->>>>> @@ -182,7 +182,7 @@ static int exynos_cpufreq_probe(struct
->>>>> platform_device *pdev) ret =
->>>>> exynos5250_cpufreq_init(exynos_info); } else {
->>>>>  		pr_err("%s: Unknown SoC type\n", __func__);
->>>>> -		return -ENODEV;
->>>>> +		ret = -ENODEV;
->>>>>  	}
->>>>>  
->>>>>  	if (ret)
->>>>> @@ -190,12 +190,14 @@ static int exynos_cpufreq_probe(struct
->>>>> platform_device *pdev) 
->>>>>  	if (exynos_info->set_freq == NULL) {
->>>>>  		dev_err(&pdev->dev, "No set_freq function
->>>>> (ERR)\n");
->>>>> +		ret = -EINVAL;
->>>>>  		goto err_vdd_arm;
->>>>>  	}
->>>>>  
->>>>>  	arm_regulator = regulator_get(NULL, "vdd_arm");
->>>>>  	if (IS_ERR(arm_regulator)) {
->>>>>  		dev_err(&pdev->dev, "failed to get resource
->>>>> vdd_arm\n");
->>>>> +		ret = -EINVAL;
->>>>>  		goto err_vdd_arm;
->>>>>  	}
->>>>>  
->>>>> @@ -227,7 +229,7 @@ err_cpufreq_reg:
->>>>>  	regulator_put(arm_regulator);
->>>>>  err_vdd_arm:
->>>>>  	kfree(exynos_info);
->>>>> -	return -EINVAL;
->>>>> +	return ret;
->>>>>  }
->>>>>  
->>>>>  static struct platform_driver exynos_cpufreq_platdrv = {
->>>>
->>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>>>
->>>
->>> Acked-by: Lukasz Majewski <l.majewski@samsung.com>
->>
->> I'm assuming that it will go it through the Samsung tree.
->>
->>
-> 
-> That would be the easiest way to proceed. 
-> 
-> Krzystof would you like to grab this patch?
+> They didn't detect it in the time I watched it.
 
-Sure, I'll take it.
+Which is not surprising as the run-time check is disabled with the
+reliable flag as well.
 
-Best regards,
-Krzysztof
+        if (tsc_clocksource_reliable)
+                clocksource_tsc.flags &= ~CLOCK_SOURCE_MUST_VERIFY;
+
+Thanks,
+
+	tglx
