@@ -1,123 +1,67 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 4/8] power: Add an axp20x-usb-power driver
-Date: Wed, 10 Jun 2015 08:29:57 +0100
-Message-ID: <20150610072957.GV2982@x1>
-References: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
- <1433885881-19809-5-git-send-email-hdegoede@redhat.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 00/21] On-demand device registration
+Date: Wed, 10 Jun 2015 09:30:32 +0200
+Message-ID: <CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>
+References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>
+ <CACRpkdasLwMfEHGMRd1X3K_DU7NMPreE8TMwqqDTg8k9wj=wJQ@mail.gmail.com>
+ <CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:36011 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932982AbbFJHaD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 03:30:03 -0400
-Received: by wigg3 with SMTP id g3so38661340wig.1
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2015 00:30:02 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1433885881-19809-5-git-send-email-hdegoede@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, dmaengine@vger.kernel.org, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>, linux-clk@vger.kernel.org, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "open list:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, Grant Likely <grant.likely@linaro.org>, Alexander Holler <holler@ahsoftware.de>, Dan Williams <dan.j.williams@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.o>
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Kishon Vijay Abraham I <kishon@ti.com>, Felipe Balbi <balbi@ti.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree <devicetree@vger.kernel.org>, linux-sunxi@googlegroups.com
 
-On Tue, 09 Jun 2015, Hans de Goede wrote:
-
-> This adds a driver for the usb power_supply bits of the axp20x PMICs.
->=20
-> I initially started writing my own driver, before coming aware of
-> Bruno Pr=C3=A9mont's excellent earlier RFC with a driver for this.
->=20
-> My driver was lacking CURRENT_MAX and VOLTAGE_MIN support Bruno's
-> drvier has, so I've copied the code for those from his driver.
->=20
-> Note that the AC-power-supply and battery charger bits will need sepa=
-rate
-> drivers. Each one needs its own devictree child-node so that other
-> devicetree nodes can reference the right power-supply, and thus each =
-one
-> will get its own mfd-cell / platform_device and platform-driver.
->=20
-> Cc: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> ---
->  .../bindings/power_supply/axp20x_usb_power.txt     |  34 +++
-
-This needs to be submitted in a seperate patch.
-
->  drivers/power/Kconfig                              |   7 +
->  drivers/power/Makefile                             |   1 +
->  drivers/power/axp20x_usb_power.c                   | 241 +++++++++++=
-++++++++++
->  include/linux/mfd/axp20x.h                         |  24 ++
->  5 files changed, 307 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power_supply/ax=
-p20x_usb_power.txt
->  create mode 100644 drivers/power/axp20x_usb_power.c
-
-[...]
-
-> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-> index f4290ae..d7adb2e 100644
-> --- a/include/linux/mfd/axp20x.h
-> +++ b/include/linux/mfd/axp20x.h
-> @@ -11,6 +11,8 @@
->  #ifndef __LINUX_MFD_AXP20X_H
->  #define __LINUX_MFD_AXP20X_H
-> =20
-> +#include <linux/regmap.h>
-> +
->  enum {
->  	AXP202_ID =3D 0,
->  	AXP209_ID,
-> @@ -366,4 +368,26 @@ struct axp20x_fg_pdata {
->  	int thermistor_curve[MAX_THERM_CURVE_SIZE][2];
->  };
-> =20
-> +/* generic helper function for reading 9-16 bit wide regs */
-> +static inline int axp20x_read_16bit(struct regmap *regmap,
-
-This is only used twice and only in one file.
-
-Do you know of any other uses of this call that will be upstreamed
-shortly?
-
-> +				    unsigned int reg, unsigned int width)
-
-The function name is a bit misleading.
-
-> +{
-> +	unsigned int v, raw;
-> +	int r;
-
-'v' and 'r' are not good variable names.
-
-> +	r =3D regmap_read(regmap, reg, &v);
-> +	if (r)
-> +		return r;
-> +
-> +	raw =3D v << (width - 8);
-
-So 'reg' is expected to be top end loaded?
-
-E.g A value of say 0x0101 (257) in 9 bits will look like this:
-
-reg          reg + 1
-1000 0000b   0000 0001b
-
-> +	r =3D regmap_read(regmap, reg + 1, &v);
-> +	if (r)
-> +		return r;
-> +
-> +	raw |=3D v;
-> +
-> +	return raw;
-> +}
-> +
->  #endif /* __LINUX_MFD_AXP20X_H */
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+T24gVHVlLCBKdW4gMiwgMjAxNSBhdCAxMjoxNCBQTSwgVG9tZXUgVml6b3NvCjx0b21ldS52aXpv
+c29AY29sbGFib3JhLmNvbT4gd3JvdGU6Cj4gT24gMiBKdW5lIDIwMTUgYXQgMTA6NDgsIExpbnVz
+IFdhbGxlaWogPGxpbnVzLndhbGxlaWpAbGluYXJvLm9yZz4gd3JvdGU6Cgo+PiBUaGlzIGlzIHdo
+YXQgc3lzdGVtZCBpcyBkb2luZyBpbiB1c2Vyc3BhY2UgZm9yIHN0YXJ0aW5nIHNlcnZpY2VzOgo+
+PiBhc2sgZm9yIHlvdXIgZGVwZW5kZW5jaWVzIGFuZCB3YWl0IGZvciB0aGVtIGlmIHRoZXkgYXJl
+IG5vdAo+PiB0aGVyZS4gU28gZHJpdmVycyBhc2sgZm9yIHJlc291cmNlcyBhbmQgd2FpdCBmb3Ig
+dGhlbS4gSXQgYWxzbwo+PiBuZWVkcyB0byBiZSBhYnN0cmFjdCwgc28gZm9yIGV4YW1wbGUgd2Ug
+bmVlZCB0byBiZSBhYmxlIHRvCj4+IGhhbmcgb24gcmVndWxhdG9yX2dldCgpIHVudGlsIHRoZSBk
+cml2ZXIgaXMgdXAgYW5kIHByb3ZpZGluZyB0aGF0Cj4+IHJlZ3VsYXRvciwgYW5kIGFzIGxvbmcg
+YXMgZXZlcnl0aGluZyBpcyBpbiBzbG93cGF0aCBpdCBzaG91bGQKPj4gYmUgT0suIChBbmQgdmlj
+ZSB2ZXJzYSBtdXRhdGlzIG11dGFuZGlzIGZvciBjbGssIGdwaW8sIHBpbgo+PiBjb250cm9sLCBp
+bnRlcnJ1cHRzICghKSBhbmQgRE1BIGNoYW5uZWxzIGZvciBleGFtcGxlLikKPgo+IEkgdW5kZXJz
+dG9vZCBhYm92ZSB0aGF0IHlvdSBwcm9wb3NlIHByb2JpbmcgZGV2aWNlcyBpbiBvcmRlciwgYnV0
+IG5vdwo+IHlvdSBtZW50aW9uIHRoYXQgcmVzb3VyY2UgZ2V0dGVycyB3b3VsZCBibG9jayB1bnRp
+bCB0aGUgZGVwZW5kZW5jeSBpcwo+IGZ1bGZpbGxlZCB3aGljaCBjb25mdXNlcyBtZSBiZWNhdXNl
+IGlmIHdlIGFyZSBwcm9iaW5nIGluIG9yZGVyIHRoZW4KPiBhbGwgZGVwZW5kZW5jaWVzIHdvdWxk
+IGJlIGZ1bGZpbGxlZCBiZWZvcmUgdGhlIGRldmljZSBpbiBxdWVzdGlvbiBnZXRzCj4gcHJvYmVk
+LgoKU29ycnksIHRoZSBwcm9ibGVtIHNwYWNlIGlzIGEgYml0IGNvbnZvbHV0ZWQgc28gdGhlIGFu
+c3dlcnMKZ2V0IGEgYml0IGNvbnZvbHV0ZWQuIE1heWJlIEknbSB0aGlua2luZyBhbG91ZCBhbmQg
+YWx0ZXJpbmcgdGhlIGNvdXJzZQpvZiBteSB0aG91Z2h0cyBhcyBJIHR5cGUuLi4KCkkgZ3Vlc3Mg
+dGhlcmUgY2FuIGJlIGV4cGxpY2l0IGRlcGVuZGVuY2llcyBmb3IgcmVzb3VyY2VzIGxpa2UgdGhp
+cwpwYXRjaCBkb2VzLCBidXQgYW5vdGhlciB3YXkgd291bGQgYmUgZm9yIGFsbCByZXNvdXJjZSBm
+ZXRjaCBmdW5jdGlvbnMKdG8gYmUgaW5zdHJ1bWVudGVkLCBzbyB0aGF0IHlvdSBkbyBub3QgYmxv
+Y2sgdW50aWwgeW91IHRyeSB0byB0YWtlCmEgcmVzb3VyY2UgdGhhdCBpcyBub3QgeWV0IHRoZXJl
+LCBlLmcuOgoKcmVndWxhdG9yX2dldCguLi4pIC0+IG5vdCBhdmFpbGFibGUsIHNvOgotIGlkZW50
+aWZ5IHRhcmdldCByZWd1bGF0b3IgcHJvdmlkZXIgLSB0aGlzIHdpbGwgbmVlZCBpbnN0cnVtZW50
+YXRpb24KLSBwcm9iZSBpdAoKSXQgdGhlbiB0dXJucyBvdXQgdGhlIHJlZ3VsYXRvciBkcml2ZXIg
+aXMgb24gdGhlIGkyYyBidXMsIHNvIHdlCm5lZWQgdG8gcHJvYmUgdGhlIGkyYyBkcml2ZXI6Ci0g
+aWRlbnRpZnkgdGFyZ2V0IGkyYyBob3N0IGZvciB0aGUgcmVndWxhdG9yIGRyaXZlciAtIHRoaXMg
+d2lsbCBuZWVkCiAgaW5zdHJ1bWVudGF0aW9uCi0gcHJvYmUgdGhlIGkyYyBob3N0IGRyaXZlcgoK
+aTJjIGhvc3QgY29tZXMgb3V0LCBwcm9iZXMgdGhlIHJlZ3VsYXRvciBkcml2ZXIsIHJlZ3VsYXRv
+ciBkcml2ZXIKcHJvYmVzIGFuZCB0aGVuIHRoZSByZWd1bGF0b3JfZ2V0KCkgY2FsbCByZXR1cm5z
+LgoKVGhpcyByZXF1aXJlcyBpbnN0cnVtZW50YXRpb24gb24gYW55dGhpbmcgcHJvdmlkaW5nIGEg
+cmVzb3VyY2UKdG8gYW5vdGhlciBkcml2ZXIgbGlrZSB0aG9zZSBJIG1lbnRpb25lZCBhbmQgYSBs
+b3Qgb2Ygb3ZlcmhlYWQKaW5mcmFzdHJ1Y3R1cmUsIGJ1dCBJIHRoaW5rIGl0J3MgdGhlIHJpZ2h0
+IGFwcHJvYWNoLiBIb3dldmVyIEkgZG9uJ3QKa25vdyBpZiBJIHdvdWxkIGV2ZXIgYmUgYWJsZSB0
+byBwdWxsIHRoYXQgb2ZmIG15c2VsZiwgSSBrbm93IHRhbGsKaXMgY2hlYXAgYW5kIEkgc2hvdWxk
+IHNob3cgdGhlIGNvZGUgaW5zdGVhZC4KCkRlZXBlc3QgcmVzcGVjdCBmb3IgeW91ciBlZmZvcnRz
+IQoKWW91cnMsCkxpbnVzIFdhbGxlaWoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJl
+ZWRlc2t0b3Aub3JnCmh0dHA6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5m
+by9kcmktZGV2ZWwK
