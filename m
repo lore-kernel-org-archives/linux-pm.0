@@ -1,59 +1,75 @@
-From: Frans Klaver <frans.klaver@xsens.com>
-Subject: Re: [PATCH v3] sbs-battery: add option to always register battery
-Date: Wed, 10 Jun 2015 16:57:42 +0200
-Message-ID: <20150610145741.GA23387@ci00147.xsens_som155.lan>
-References: <1433938616-18503-1-git-send-email-frans.klaver@xsens.com>
- <20150610145205.GE11618@earth>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: re: thermal: cpu_cooling: Use cpufreq_dev->freq_table for finding
+ level/freq
+Date: Wed, 10 Jun 2015 18:02:12 +0300
+Message-ID: <20150610150211.GA30208@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from filter1.ibarracuda.nl ([83.247.7.10]:55936 "EHLO
-	filter1.ibarracuda.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933051AbbFJO57 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 10:57:59 -0400
+Received: from userp1040.oracle.com ([156.151.31.81]:48786 "EHLO
+	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932309AbbFJPCZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 11:02:25 -0400
 Content-Disposition: inline
-In-Reply-To: <20150610145205.GE11618@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org
 
-On Wed, Jun 10, 2015 at 04:52:05PM +0200, Sebastian Reichel wrote:
-> Hi Frans,
-> 
-> On Wed, Jun 10, 2015 at 02:16:56PM +0200, Frans Klaver wrote:
-> > Commit a22b41a31e53 ("sbs-battery: Probe should try talking to the
-> > device") introduced a step in probing the SBS battery, that tries to
-> > talk to the device before actually registering it, saying:
-> > 
-> >     this driver doesn't actually try talking to the device at probe
-> >     time, so if it's incorrectly configured in the device tree or
-> >     platform data (or if the battery has been removed from the system),
-> >     then probe will succeed and every access will sit there and time
-> >     out. The end result is a possibly laggy system that thinks it has a
-> >     battery but can never read status, which isn't very useful.
-> > 
-> > Which is of course reasonable. However, it is also very well possible
-> > for a device to boot up on wall-power and be connected to a battery
-> > later on. This is a scenario that the driver supported before said patch
-> > was applied, and even easily achieved by booting up with the battery
-> > attached and removing it later on. sbs-battery's 'present' sysfs file
-> > can be used to determine if the device is available or not.
-> > 
-> > So with automated device detection lacking for now, in some cases it is
-> > possible that one wants to register a battery, even if none are attached
-> > at the moment. To facilitate this, add a module parameter that can be
-> > used to configure forced loading module loading time. If set, the battery
-> > will always be registered without checking the sanity of the connection.
-> 
-> Thanks, queued.
+Hello Viresh Kumar,
 
-Thanks.
+The patch 4843c4a19049: "thermal: cpu_cooling: Use
+cpufreq_dev->freq_table for finding level/freq" from Dec 4, 2014,
+leads to the following static checker warning:
 
-> Please make sure to send patches based upon the correct branches
-> though. Your branch did not yet contain 297d716.
+	drivers/thermal/cpu_cooling.c:163 get_level()
+	warn: potential off by one 'cpufreq_dev->freq_table[]' limit 'cpufreq_dev->max_level'
 
-Ouch, sorry about that.
+drivers/thermal/cpu_cooling.c
+   157  static unsigned long get_level(struct cpufreq_cooling_device *cpufreq_dev,
+   158                                 unsigned int freq)
+   159  {
+   160          unsigned long level;
+   161  
+   162          for (level = 0; level <= cpufreq_dev->max_level; level++) {
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   163                  if (freq == cpufreq_dev->freq_table[level])
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Reading beyond the end of the array.
 
-Thanks,
-Frans
+   164                          return level;
+   165  
+   166                  if (freq > cpufreq_dev->freq_table[level])
+   167                          break;
+   168          }
+   169  
+   170          return THERMAL_CSTATE_INVALID;
+   171  }
+
+The truth is that I have lots of checks that I can't publish, like for
+example, if you use something with the word "size" or "max" as an index.
+Obviously, it looks like <= should probably be < but just because it
+looks wrong doesn't mean it is wrong.  I searched for ->max_level and
+read the documentation:
+
+  * @max_level: maximum cooling level. One less than total number of valid
+  *     cpufreq frequencies.
+
+The documentation is very clear that this loop is correct.  It also
+turns out that it used consistently almost throughout.  But when I see
+these unusual limits, I know it is often difficult to be 100%
+consistent so I kept looking.  It turns out there is off by one mistake
+when we allocate the buffer.
+
+        cpufreq_dev->freq_table = kmalloc(sizeof(*cpufreq_dev->freq_table) *
+                                          cpufreq_dev->max_level, GFP_KERNEL);
+
+It should be allocating:
+
+	sizeof(*cpufreq_dev->freq_table) * (cpufreq_dev->max_level + 1)
+
+We could just change the allocation, but really this kind of unusual
+limit is just going to cause more headaches in the future...
+
+regards,
+dan carpenter
