@@ -1,65 +1,60 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 1/2] power_supply: max17042: Add OF support for setting
- thresholds
-Date: Wed, 10 Jun 2015 16:46:48 +0200
-Message-ID: <20150610144648.GC11618@earth>
-References: <1433725899-13849-1-git-send-email-k.kozlowski@samsung.com>
+Subject: Re: [PATCH 3/8] power: Add devm_power_supply_get_by_phandle() helper
+ function
+Date: Wed, 10 Jun 2015 16:49:02 +0200
+Message-ID: <20150610144902.GD11618@earth>
+References: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
+ <1433885881-19809-4-git-send-email-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="QRj9sO5tAVLaXnSD"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="wULyF7TL5taEdwHz"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:52905 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754278AbbFJOtH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 10 Jun 2015 10:49:07 -0400
 Content-Disposition: inline
-In-Reply-To: <1433725899-13849-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+In-Reply-To: <1433885881-19809-4-git-send-email-hdegoede@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Kishon Vijay Abraham I <kishon@ti.com>, Felipe Balbi <balbi@ti.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree <devicetree@vger.kernel.org>, linux-sunxi@googlegroups.com
 
 
---QRj9sO5tAVLaXnSD
+--wULyF7TL5taEdwHz
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Jun 08, 2015 at 10:11:38AM +0900, Krzysztof Kozlowski wrote:
-> The commit edd4ab055931 ("power: max17042_battery: add HEALTH and TEMP_*
-> properties support") added support for setting voltage and temperature
-> thresholds with platform data. For DeviceTree default of 0 was always
-> used.
->=20
-> This caused reporting battery health always as over voltage or
-> over heated.
->=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Fixes: edd4ab055931 ("power: max17042_battery: add HEALTH and TEMP_* prop=
-erties support")
+On Tue, Jun 09, 2015 at 11:37:56PM +0200, Hans de Goede wrote:
+> This commit adds a resource-managed version of the
+> power_supply_get_by_phandle() function.
 
 Thanks, queued.
 
 -- Sebastian
 
---QRj9sO5tAVLaXnSD
+--wULyF7TL5taEdwHz
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJVeE3YAAoJENju1/PIO/qaZTEP/RIvjxtyyEeKMRqNFOpRINN2
-iBIDYkjkwZ78PSnMy4GX27N4LLavS/O472tRkM5m/+qW74Qv0G4L2fiCfQVAUltb
-IFzKcvQpPNH+enfhKUe4M2W8+xLnli2FvVVgyfMHt2ShICJgZfalB7a5S8LYUCRi
-1aWsd6Ufnk7nupkhyacraOC4FcO30WbHgOs7KMShc9nisz4BdaBAz/faGxe8iTQT
-awZa6vcg1mL8lqwP8C7Ej0hpm65BQ3kn6/JmDU1chQnVzU5ygERsp23nfkzX23eE
-IeVG9YJCjRKqIAMo+Gz0f0I2GvGRUyWjGC6vN8ivJhOAmZeSKry9CiX5YIXmqpGj
-bfW8toQlrroKu5y19mCoftBjeaOa96i+DZss0UFUKQamcXvzbxpCVDmmiW3CSJiX
-TBgv7eoEyPy1ldbSbYM4sv1QyXisCd2S2L4AyQ0hEhGkypmKpKEn+XgoSdpl7enZ
-d1jARwduBdSy5x8KsmNWDCLrSqnX0s+CeVnGXj5K9ditZF6in6FqLSOB8/4+ktgw
-04SOWJWyFyzYOD/2nWv9z5ZtX5DT+1ESfm48Nnm/t1PJ3tu2SfnVa+0EWhptbude
-uDgLAATUDhy9wU77PaRNn8pn9aZ3QxrkSLTrhhr76tOLVEBk+L6/N6mE/l1ne+Z2
-RPlWW8YVWrI7z5bJsguP
-=pwbv
+iQIcBAEBCgAGBQJVeE5eAAoJENju1/PIO/qahjQQAI2sxsXDey13qkHTP95/hX9w
+B7ug/FWXbVSIjwFSsSVcFSQDMyvsjT2OBOyxm4YoTaN76cHj9ZZDpKIzm6qKtxur
+z+Pb9tME+ExqjcKUsiH8zGs/de9eg1UMUHXSsFn8/GoYRMppzCYrkljkad0RvXtQ
+J3SxYZmjP4LgpStRm1kmnY0dd08KSgberO6yNgtQ30qExGF2salShZswhPsPQmZF
+jwzvlDWp265ksmyYdo3S4zX/GistcZHnkfRpBaRgLRtGhgO9YqI9jgM2CfQhEc2w
+gcc1f/DbIKM8Af37P6k0fzJ46+ZSCzD7nqEVDKQz4AjADZaGxSkcN7PtX8hy4m/V
+eH9x7csCtWlAQkVtHSKwOZZC0YCDX7KF0mjjUqVnvtvQ/Rf2ATaDfvGtzIPO7hTB
+Nop9RbK77nMNQn1gx3w/Y+hHlPXt3pIKvfkJnlX36tvVYnYxJ7Nl7CtQvbpBfkqR
+d7Hw0xcfRAp3tzAKcpPJ52mGO5IvCJ1XNKHybNuiqJweJbILWrQi67m+ahfvlCG1
+JgVJJDe0uyEltO9wYKstg+sLAZvwE1+I4zam0jZ6PCX2vBnai7mmeV1upmq62mDX
+Zt0fi3Vn3RpIoKCq7GCx5oM4yLBdp+wxNpHcbVKyzMz+APDA2WUCoe4aWEdWlC6B
+jzlV6Gtg3YS9QpveRn86
+=LU5i
 -----END PGP SIGNATURE-----
 
---QRj9sO5tAVLaXnSD--
+--wULyF7TL5taEdwHz--
