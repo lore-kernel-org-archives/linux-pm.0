@@ -1,125 +1,71 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH RFC 3/3] PM / Domains: Introduce generic PM domain for cpu
- domain
-Date: Thu, 11 Jun 2015 09:27:34 +0900
-Message-ID: <5578D5F6.8000000@samsung.com>
-References: <1433456946-53296-1-git-send-email-lina.iyer@linaro.org>
- <1433456946-53296-4-git-send-email-lina.iyer@linaro.org>
- <5574121F.2000806@samsung.com> <20150610165742.GB4497@linaro.org>
+From: Alexander Holler <holler@ahsoftware.de>
+Subject: Re: [PATCH 00/21] On-demand device registration
+Date: Wed, 10 Jun 2015 10:28:35 +0200
+Message-ID: <5577F533.1060007@ahsoftware.de>
+References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>	<CACRpkdasLwMfEHGMRd1X3K_DU7NMPreE8TMwqqDTg8k9wj=wJQ@mail.gmail.com>	<CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com>
+ <CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:59964 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbbFKA1g (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 20:27:36 -0400
-Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout3.w1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0NPR00KV27XX5830@mailout3.w1.samsung.com> for
- linux-pm@vger.kernel.org; Thu, 11 Jun 2015 01:27:33 +0100 (BST)
-In-reply-to: <20150610165742.GB4497@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Linus Walleij <linus.walleij@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, open@wandq.ahsoftware, dmaengine@vger.kernel.org, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>, linux-clk@vger.kernel.org, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, list@wandq.ahsoftware, Rob Herring <robh+dt@kernel.org>, DRM PANEL DRIVERS <dri-devel@lists.freedesktop.org>, Grant Likely <grant.likely@linaro.org>, Dan Williams <dan.j.williams@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>l
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@linaro.org, mathieu.poirier@linaro.org, linux-pm@vger.kernel.org, galak@codeaurora.org, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-kernel@lists.infradead.org
 
-On 11.06.2015 01:57, Lina Iyer wrote:
-> On Sun, Jun 07 2015 at 03:43 -0600, Krzysztof Kozlowski wrote:
->> W dniu 05.06.2015 o 07:29, Lina Iyer pisze:
->>> Generally cpus are grouped under a power domain in a SoC. When all cpus
->>> in the domain are in their power off state,
->>
->> What do you exactly mean here by "CPU in power off state"? How does it
->> map to kernel understanding of CPU device (hotplug? cpuidle?)?
->>
-> Both cpuidle and hotplug could end with with core being powered down at
-> the platform driver or at PSCI (on V8). It does not matter which of
-> these two frameworks resulted in the cpu being powered off. But, if all
-> cpus in the domain are powered off, then the domain could be powered off
-> as well. This is the premise of this change. It is probably easier to
-> power off the domain when the cores in that domain/cluster have been
-> hotplugged off. It saves power to turn off the domain at that time, but
-> more power savings can be achieved if the domain could also be powered
-> off during cpuidle. Hotplug is not a common occurance, while cpuidle is.
-
-OK, it answers my questions, thanks.
-
-> 
->>> the cpu domain can also be
->>> powered off. Genpd provides the framework for defining cpus as devices
->>> that are part of a cpu domain.
->>
->> The problem which is solved looks to me like the same problem which
->> coupled cpuidle tried to solve: a certain deep sleep mode (e.g. power
->> off) can be entered when whole cluster is idle or other CPUs in cluster
->> are powered off completely.
->>
->> It seems a little like duplicating the effort around coupled cpuidle.
->>
-> I see where are you are going with this, but genpd solution is not
-> exactly a duplicate of the solution.
-> 
-> Couple state is used to put the cpus in a deeper sleep state, which
-> could also result in powering off the domain. Coupled cpuidle is a
-> cpuidle mechanism for choosing a deeper sleep mode on certain hardware
-> that can only enter such a mode when all cpus cooperate.
-> 
-> This patch attempts to describe the backend of a cpu domain. CPUs are
-> responsible for individual cpuidle states, cpus do enter their
-> recommended deepest idle state at the time of no activity. A cpu-domain
-> could be comprised of cpus, and other devices like GIC, busses etc, that
-> all need to idle before the domain can be powered off. This patch does
-> not dictate which idle state any those devices should enter, or
-> coordinate the idle states between devices. But, if cpus, choose to
-> power down, then this patch recognizes that and reduces the reference
-> usage count on the domain. Only when all devices in the domain remove
-> their usage count, will the domain be powered off.
-
-It would be nice to see the usage of this patch in cpuidle driver or
-platform code but I think I get the idea.
-
-Actually I like the approach.
-I am thinking how to utilize it to replace coupled cpuidle for our case.
-In our case we use coupled cpuidle because the SoC can be put in low
-power mode only if non-boot CPUs are powered down.
-
-However in our case:
-1. Some other devices (buses, clocks) also should be idle. This would
-perfectly match with this patch and with runtime PM.
-
-2. Some non-boot idle CPU could power itself down but it cannot wake up.
-Only the alive CPU can wake others. This probably means that we cannot
-provide a cpuidle driver which will power off unused cores and then, if
-boot CPU is idle, disable the CPU power domain by entering to low power
-mode.
-
-Anyway, as I said, I like the approach.
-
-
-> There are two things this patch provides -
-> 
-> i. A generic way to initialize a genpd specifically for cpus. (The
-> platform specifies the relation between a cpu and its domain in the DT
-> and provides the memory for the genpd structure)
-> 
-> ii. On behalf of a platform, we track when the cpus power up and down
-> and use runtime_get and runtime_put on the genpd.
-> 
-> Unlike coupled cpuidle, individual cpu idle state is not manipulated.
-> Coupled cpuidle does not care if the domain is powered off, it is used
-> to allow a certain C-state for the cpu, based on the idleness of other
-> cpus in that cluster. The focus of the series is powering down the
-> domain when the devices (cpus included) are powered off. You could see
-> this patch as a cpu-pm and runtime-pm interface layer.
-> 
-> Hope that helps.
-> 
-> Thanks,
-> Lina
-> 
-
-Best regards,
-Krzysztof
-
+QW0gMTAuMDYuMjAxNSB1bSAwOTozMCBzY2hyaWViIExpbnVzIFdhbGxlaWo6Cj4gT24gVHVlLCBK
+dW4gMiwgMjAxNSBhdCAxMjoxNCBQTSwgVG9tZXUgVml6b3NvCj4gPHRvbWV1LnZpem9zb0Bjb2xs
+YWJvcmEuY29tPiB3cm90ZToKPj4gT24gMiBKdW5lIDIwMTUgYXQgMTA6NDgsIExpbnVzIFdhbGxl
+aWogPGxpbnVzLndhbGxlaWpAbGluYXJvLm9yZz4gd3JvdGU6Cj4KPj4+IFRoaXMgaXMgd2hhdCBz
+eXN0ZW1kIGlzIGRvaW5nIGluIHVzZXJzcGFjZSBmb3Igc3RhcnRpbmcgc2VydmljZXM6Cj4+PiBh
+c2sgZm9yIHlvdXIgZGVwZW5kZW5jaWVzIGFuZCB3YWl0IGZvciB0aGVtIGlmIHRoZXkgYXJlIG5v
+dAo+Pj4gdGhlcmUuIFNvIGRyaXZlcnMgYXNrIGZvciByZXNvdXJjZXMgYW5kIHdhaXQgZm9yIHRo
+ZW0uIEl0IGFsc28KPj4+IG5lZWRzIHRvIGJlIGFic3RyYWN0LCBzbyBmb3IgZXhhbXBsZSB3ZSBu
+ZWVkIHRvIGJlIGFibGUgdG8KPj4+IGhhbmcgb24gcmVndWxhdG9yX2dldCgpIHVudGlsIHRoZSBk
+cml2ZXIgaXMgdXAgYW5kIHByb3ZpZGluZyB0aGF0Cj4+PiByZWd1bGF0b3IsIGFuZCBhcyBsb25n
+IGFzIGV2ZXJ5dGhpbmcgaXMgaW4gc2xvd3BhdGggaXQgc2hvdWxkCj4+PiBiZSBPSy4gKEFuZCB2
+aWNlIHZlcnNhIG11dGF0aXMgbXV0YW5kaXMgZm9yIGNsaywgZ3BpbywgcGluCj4+PiBjb250cm9s
+LCBpbnRlcnJ1cHRzICghKSBhbmQgRE1BIGNoYW5uZWxzIGZvciBleGFtcGxlLikKPj4KPj4gSSB1
+bmRlcnN0b29kIGFib3ZlIHRoYXQgeW91IHByb3Bvc2UgcHJvYmluZyBkZXZpY2VzIGluIG9yZGVy
+LCBidXQgbm93Cj4+IHlvdSBtZW50aW9uIHRoYXQgcmVzb3VyY2UgZ2V0dGVycyB3b3VsZCBibG9j
+ayB1bnRpbCB0aGUgZGVwZW5kZW5jeSBpcwo+PiBmdWxmaWxsZWQgd2hpY2ggY29uZnVzZXMgbWUg
+YmVjYXVzZSBpZiB3ZSBhcmUgcHJvYmluZyBpbiBvcmRlciB0aGVuCj4+IGFsbCBkZXBlbmRlbmNp
+ZXMgd291bGQgYmUgZnVsZmlsbGVkIGJlZm9yZSB0aGUgZGV2aWNlIGluIHF1ZXN0aW9uIGdldHMK
+Pj4gcHJvYmVkLgo+Cj4gU29ycnksIHRoZSBwcm9ibGVtIHNwYWNlIGlzIGEgYml0IGNvbnZvbHV0
+ZWQgc28gdGhlIGFuc3dlcnMKPiBnZXQgYSBiaXQgY29udm9sdXRlZC4gTWF5YmUgSSdtIHRoaW5r
+aW5nIGFsb3VkIGFuZCBhbHRlcmluZyB0aGUgY291cnNlCj4gb2YgbXkgdGhvdWdodHMgYXMgSSB0
+eXBlLi4uCj4KPiBJIGd1ZXNzIHRoZXJlIGNhbiBiZSBleHBsaWNpdCBkZXBlbmRlbmNpZXMgZm9y
+IHJlc291cmNlcyBsaWtlIHRoaXMKPiBwYXRjaCBkb2VzLCBidXQgYW5vdGhlciB3YXkgd291bGQg
+YmUgZm9yIGFsbCByZXNvdXJjZSBmZXRjaCBmdW5jdGlvbnMKPiB0byBiZSBpbnN0cnVtZW50ZWQs
+IHNvIHRoYXQgeW91IGRvIG5vdCBibG9jayB1bnRpbCB5b3UgdHJ5IHRvIHRha2UKPiBhIHJlc291
+cmNlIHRoYXQgaXMgbm90IHlldCB0aGVyZSwgZS5nLjoKPgo+IHJlZ3VsYXRvcl9nZXQoLi4uKSAt
+PiBub3QgYXZhaWxhYmxlLCBzbzoKPiAtIGlkZW50aWZ5IHRhcmdldCByZWd1bGF0b3IgcHJvdmlk
+ZXIgLSB0aGlzIHdpbGwgbmVlZCBpbnN0cnVtZW50YXRpb24KPiAtIHByb2JlIGl0Cj4KPiBJdCB0
+aGVuIHR1cm5zIG91dCB0aGUgcmVndWxhdG9yIGRyaXZlciBpcyBvbiB0aGUgaTJjIGJ1cywgc28g
+d2UKPiBuZWVkIHRvIHByb2JlIHRoZSBpMmMgZHJpdmVyOgo+IC0gaWRlbnRpZnkgdGFyZ2V0IGky
+YyBob3N0IGZvciB0aGUgcmVndWxhdG9yIGRyaXZlciAtIHRoaXMgd2lsbCBuZWVkCj4gICAgaW5z
+dHJ1bWVudGF0aW9uCj4gLSBwcm9iZSB0aGUgaTJjIGhvc3QgZHJpdmVyCj4KPiBpMmMgaG9zdCBj
+b21lcyBvdXQsIHByb2JlcyB0aGUgcmVndWxhdG9yIGRyaXZlciwgcmVndWxhdG9yIGRyaXZlcgo+
+IHByb2JlcyBhbmQgdGhlbiB0aGUgcmVndWxhdG9yX2dldCgpIGNhbGwgcmV0dXJucy4KPgo+IFRo
+aXMgcmVxdWlyZXMgaW5zdHJ1bWVudGF0aW9uIG9uIGFueXRoaW5nIHByb3ZpZGluZyBhIHJlc291
+cmNlCj4gdG8gYW5vdGhlciBkcml2ZXIgbGlrZSB0aG9zZSBJIG1lbnRpb25lZCBhbmQgYSBsb3Qg
+b2Ygb3ZlcmhlYWQKPiBpbmZyYXN0cnVjdHVyZSwgYnV0IEkgdGhpbmsgaXQncyB0aGUgcmlnaHQg
+YXBwcm9hY2guIEhvd2V2ZXIgSSBkb24ndAo+IGtub3cgaWYgSSB3b3VsZCBldmVyIGJlIGFibGUg
+dG8gcHVsbCB0aGF0IG9mZiBteXNlbGYsIEkga25vdyB0YWxrCj4gaXMgY2hlYXAgYW5kIEkgc2hv
+dWxkIHNob3cgdGhlIGNvZGUgaW5zdGVhZC4KCllvdSB3b3VsZCBlbmQgdXAgd2l0aCB0aGUgc2Ft
+ZSBwcm9ibGVtIG9mIGRlYWRsb2NrcyBhcyBjdXJyZW50bHksIGFuZCAKeW91IHdvdWxkIHN0aWxs
+IG5lZWQgc29tZXRoaW5nIHVnbHkgbGlrZSB0aGUgZGVmZXJlZCBwcm9iZSBicnV0Zm9yY2UgdG8g
+CmF2b2lkIHRoZW0uIFNvIHdoYXQgd291bGQgeW91IHdpbiB3aXRoIHRoYXQgaW5zdHJ1bWVudGF0
+aW9uPwoKQWxleGFuZGVyIEhvbGxlcgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBsaXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVl
+ZGVza3RvcC5vcmcKaHR0cDovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZv
+L2RyaS1kZXZlbAo=
