@@ -1,135 +1,94 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v3 3/8] Driver core: wakeup the parent device before
- trying probe
-Date: Wed, 10 Jun 2015 12:43:15 +0300
-Message-ID: <1433929395.26331.116.camel@linux.intel.com>
-References: <1433170082-117462-1-git-send-email-andriy.shevchenko@linux.intel.com>
-	 <1433170082-117462-4-git-send-email-andriy.shevchenko@linux.intel.com>
-	 <6646339.jahMH2QKDR@vostro.rjw.lan> <3252449.XN2pzxrAPQ@vostro.rjw.lan>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: Re: [PATCH 00/21] On-demand device registration
+Date: Wed, 10 Jun 2015 12:19:49 +0200
+Message-ID: <CAAObsKD97nEARO5eZYA2g8+z_MrazBy-m8PV_kSyj19ya72mAw@mail.gmail.com>
+References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>
+ <CACRpkdasLwMfEHGMRd1X3K_DU7NMPreE8TMwqqDTg8k9wj=wJQ@mail.gmail.com>
+ <CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com> <CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:35826 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752639AbbFJJnV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 10 Jun 2015 05:43:21 -0400
-In-Reply-To: <3252449.XN2pzxrAPQ@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, dmaengine@vger.kernel.org, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>, linux-clk@vger.kernel.org, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "open list:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, Grant Likely <grant.likely@linaro.org>, Alexander Holler <holler@ahsoftware.de>, Dan Williams <dan.j.williams@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.o>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@linaro.org>
 
-On Wed, 2015-06-10 at 02:08 +0200, Rafael J. Wysocki wrote:
-> On Tuesday, June 09, 2015 01:42:00 AM Rafael J. Wysocki wrote:
-> > On Monday, June 01, 2015 05:47:57 PM Andy Shevchenko wrote:
-> > > From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-> > > 
-> > > If the parent is still suspended when driver probe is
-> > > attempted, the result may be failure.
-> > > 
-> > > For example, if the parent is a PCI MFD device that has been
-> > > suspended when we try to probe our device, any register
-> > > reads will return 0xffffffff.
-> > > 
-> > > To fix the problem, making sure the parent is always awake
-> > > before attempting driver probe.
-> > > 
-> > > Signed-off-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
-> > > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> > > ---
-> > >  drivers/base/dd.c | 8 ++++++++
-> > >  1 file changed, 8 insertions(+)
-> > > 
-> > > diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> > > index e843fdb..cfbeff3 100644
-> > > --- a/drivers/base/dd.c
-> > > +++ b/drivers/base/dd.c
-> > > @@ -399,6 +399,8 @@ EXPORT_SYMBOL_GPL(wait_for_device_probe);
-> > >   *
-> > >   * This function must be called with @dev lock held.  When called for a
-> > >   * USB interface, @dev->parent lock must be held as well.
-> > > + *
-> > > + * If device has a parent it will be powered on during device's probe().
-> > >   */
-> > >  int driver_probe_device(struct device_driver *drv, struct device *dev)
-> > >  {
-> > > @@ -410,10 +412,16 @@ int driver_probe_device(struct device_driver *drv, struct device *dev)
-> > >  	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
-> > >  		 drv->bus->name, __func__, dev_name(dev), drv->name);
-> > >  
-> > > +	if (dev->parent)
-> > > +		pm_runtime_get_sync(dev->parent);
-> > > +
-> > 
-> > For some bus types that will resume and suspend the parent for many times in
-> > a row in device_attach() until an appropriate driver is found.  Would it be
-> > more efficient to call it once before the bus_for_each_drv() loop in there?
-> 
-> Actually, something like the below should work too (the bumping up of the
-> parent's usage counter before the loop will keep it in the runtime-active
-> state throughout the loop).
-> 
+On 10 June 2015 at 09:30, Linus Walleij <linus.walleij@linaro.org> wrote:
+> On Tue, Jun 2, 2015 at 12:14 PM, Tomeu Vizoso
+> <tomeu.vizoso@collabora.com> wrote:
+>> On 2 June 2015 at 10:48, Linus Walleij <linus.walleij@linaro.org> wrote:
+>
+>>> This is what systemd is doing in userspace for starting services:
+>>> ask for your dependencies and wait for them if they are not
+>>> there. So drivers ask for resources and wait for them. It also
+>>> needs to be abstract, so for example we need to be able to
+>>> hang on regulator_get() until the driver is up and providing that
+>>> regulator, and as long as everything is in slowpath it should
+>>> be OK. (And vice versa mutatis mutandis for clk, gpio, pin
+>>> control, interrupts (!) and DMA channels for example.)
+>>
+>> I understood above that you propose probing devices in order, but now
+>> you mention that resource getters would block until the dependency is
+>> fulfilled which confuses me because if we are probing in order then
+>> all dependencies would be fulfilled before the device in question gets
+>> probed.
+>
+> Sorry, the problem space is a bit convoluted so the answers
+> get a bit convoluted. Maybe I'm thinking aloud and altering the course
+> of my thoughts as I type...
+>
+> I guess there can be explicit dependencies for resources like this
+> patch does, but another way would be for all resource fetch functions
+> to be instrumented, so that you do not block until you try to take
+> a resource that is not yet there, e.g.:
+>
+> regulator_get(...) -> not available, so:
+> - identify target regulator provider - this will need instrumentation
+> - probe it
+>
+> It then turns out the regulator driver is on the i2c bus, so we
+> need to probe the i2c driver:
+> - identify target i2c host for the regulator driver - this will need
+>   instrumentation
+> - probe the i2c host driver
+>
+> i2c host comes out, probes the regulator driver, regulator driver
+> probes and then the regulator_get() call returns.
 
-Thanks for the patch! We are going to test this soon.
+Hmm, if I understand correctly what you say, this is exactly what this
+particular series does:
 
-By the way, can you give your Ack for patches 1 and 2 if there is no
-objection?
+regulator_get -> of_platform_device_ensure -> probe() on the platform
+device that encloses the requested device node (i2c host) -> i2c slave
+gets probed and the regulator registered -> regulator_get returns the
+requested resource
 
+The downside I'm currently looking at is that an explicit dependency
+graph would be useful to have for other purposes. For example to print
+a neat warning when a dependency cannot be fulfilled. Or to refuse to
+unbind a device which other devices depend on, or to automatically
+unbind the devices that depend on it, or to print a warning if a
+device is hotplugged off and other devices depend on it.
 
-> ---
->  drivers/base/dd.c |   14 ++++++++++++++
->  1 file changed, 14 insertions(+)
-> 
-> Index: linux-pm/drivers/base/dd.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/dd.c
-> +++ linux-pm/drivers/base/dd.c
-> @@ -399,6 +399,8 @@ EXPORT_SYMBOL_GPL(wait_for_device_probe)
->   *
->   * This function must be called with @dev lock held.  When called for a
->   * USB interface, @dev->parent lock must be held as well.
-> + *
-> + * If the device has a parent, runtime-resume the parent before driver probing.
->   */
->  int driver_probe_device(struct device_driver *drv, struct device *dev)
->  {
-> @@ -410,10 +412,16 @@ int driver_probe_device(struct device_dr
->  	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
->  		 drv->bus->name, __func__, dev_name(dev), drv->name);
->  
-> +	if (dev->parent)
-> +		pm_runtime_get_sync(dev->parent);
-> +
->  	pm_runtime_barrier(dev);
->  	ret = really_probe(dev, drv);
->  	pm_request_idle(dev);
->  
-> +	if (dev->parent)
-> +		pm_runtime_put(dev->parent);
-> +
->  	return ret;
->  }
->  
-> @@ -459,8 +467,14 @@ int device_attach(struct device *dev)
->  			ret = 0;
->  		}
->  	} else {
-> +		if (dev->parent)
-> +			pm_runtime_get_sync(dev->parent);
-> +
->  		ret = bus_for_each_drv(dev->bus, NULL, dev, __device_attach);
->  		pm_request_idle(dev);
-> +
-> +		if (dev->parent)
-> +			pm_runtime_put(dev->parent);
->  	}
->  out_unlock:
->  	device_unlock(dev);
-> 
+> This requires instrumentation on anything providing a resource
+> to another driver like those I mentioned and a lot of overhead
+> infrastructure, but I think it's the right approach. However I don't
+> know if I would ever be able to pull that off myself, I know talk
+> is cheap and I should show the code instead.
 
+Yeah, if you can give it a second look and say if it matches what you
+wrote above, it would be very much appreciated.
 
--- 
-Andy Shevchenko <andriy.shevchenko@intel.com>
-Intel Finland Oy
+> Deepest respect for your efforts!
 
+Thanks!
+
+Tomeu
+
+> Yours,
+> Linus Walleij
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> http://lists.freedesktop.org/mailman/listinfo/dri-devel
