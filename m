@@ -1,71 +1,108 @@
-From: Priit Laes <plaes-q/aMd4JkU83YtjvyW6yDsg@public.gmane.org>
-Subject: Re: [PATCH 0/8] mfd/power/phy: Add support for otg vbus
- detection via axp pmic
-Date: Wed, 10 Jun 2015 09:15:46 +0300
-Message-ID: <1433916946.6086.9.camel@plaes.org>
-References: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
-Reply-To: plaes-q/aMd4JkU83YtjvyW6yDsg@public.gmane.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [Query]: delayed wq not killed completely with
+ cancel_delayed_work_sync()
+Date: Wed, 10 Jun 2015 11:50:19 +0530
+Message-ID: <20150610062019.GA24662@linux>
+References: <CAKohpon4Fj3YFgEmGtKH9ePscgiuvq0_PfMMsEboQsaGxaTPfw@mail.gmail.com>
+ <20150609111811.GA17763@linux>
+ <20150609112627.GA27004@linux>
+ <20150610050353.GK11955@mtj.duckdns.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDJLTBEBXENBBTFN36VQKGQER7GAYPQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-In-Reply-To: <1433885881-19809-1-git-send-email-hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <http://groups.google.com/group/linux-sunxi
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <http://groups.google.com/group/linux-sunxi/subscribe>
-To: hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Bruno =?ISO-8859-1?Q?Pr=E9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:33896 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752115AbbFJGUY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 02:20:24 -0400
+Received: by payr10 with SMTP id r10so28286232pay.1
+        for <linux-pm@vger.kernel.org>; Tue, 09 Jun 2015 23:20:24 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20150610050353.GK11955@mtj.duckdns.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, 2015-06-09 at 23:37 +0200, Hans de Goede wrote:
-> Hi All,
->=20
-> Here is a series which adds the beginning of power-supply support to
-> the axp20x pmic code. My primary reason for working on this is to
-> enable the use of the usb power-supply bits in the pmic to for vbus
-> detection on boards which do not have a vbus-det gpio, and instead
-> rely on the pmic for vbus detection.
->=20
-> After I had written most of the vbus power-supply driver code I
-> became aware of Bruno Pr=C3=A9mont's (in the CC) previous work on this
-> our drivers are mostly the same, and I've borrowed some code from
-> his driver to add support for min-volt / max-curr properties.
+Hi Tejun,
 
-This is one of the reasons why we try to keep our Mainlining Effort
-page up-to-date:
-http://linux-sunxi.org/Linux_mainlining_effort
+Thanks for your response :)
 
+On 10-06-15, 14:03, Tejun Heo wrote:
+> cancel_delayed_work_sync() can reliably shoot down a self-requeueing
+> delayed work item but it doesn't do anything about queueings which
+> aren't from the work item itself, so, to shutdown a recurring work
+> item, you'd need to first block external queueing and then do
+> cancel_delayed_work_sync().
 
->=20
-> The big difference between our 2 drivers is that mine driver uses
-> a devicetree child node / mfd cell per power-supply, so one for
-> each of the usb-power, ac-power / battery-charger and rtc-backup-bat
-> -charger
-> bits.
->=20
-> Depending on the board each of those must be enabled / disabled=20
-> separately
-> in devicetree as most boards do not use all 4. So in dt each one=20
-> needs its
-> own child-node of the axp20x node. Another reason for using separate=20
-> child
-> nodes for each is so that other devicetree nodes can have a power
-> -supply
-> property with a phandle referencing a node representing a single
-> power-supply.
->=20
-> Regards,
->=20
-> Hans
->=20
+Fair enough.
 
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+> If you're already doing this but still
+
+Fingers crossed :)
+
+> seeing the work item executing afterwards, it's a workqueue bug but
+> the code in that area has been stable for years, so I'd be surprised
+> if there's a bug like that but you never know.
+
+I really believe/hope I am doing this properly. But will crosscheck
+that again.
+
+> This does get tricky and I've been thinking about adding something
+> like kill_delayed_work() which cancels and disables the work item till
+> it gets reinitialized.  Hmmm...
+
+I think its a good idea to get rid of such races. If you have
+something in mind and can code it quickly enough, I would be happy to
+test it for you. That will also help in my use case.
+
+> > And another query:
+> > 
+> > Do we have support for this kind of scenarios in wq framework ?
+> > 
+> > - Enqueue a single delayed work for a group of CPUs (and should fire
+> >   on any one of them). We are doing this per-cpu today in cpufreq.
+> > - It has to be a deffered one, so that if none of the CPUs from that
+> >   group are online, we don't fire it.
+
+Urg, s/online/not-idle. IOW, the work shouldn't wake up CPUs from idle
+state.
+
+> > - As the per-cpu workqueue thing is unnecessary burden on CPUs.
+> 
+> I'm not sure I'm following
+
+Above correction might make it better :)
+
+> but shouldn't you be able to do the above
+> from cpu hotplug callbacks?
+
+Sorry it wasn't about online CPUs. My fault.
+
+> Or are you asking whether wq already has
+> something which would help implementing the above?
+
+Okay, lemme explain a bit and then you can tell me what to do.
+
+A group of CPUs which switch their DVFS (Dynamic voltage/frequency
+scaling) state together (or which share their clock rails) are
+considered specially in cpufreq. As changing frequency for any one of
+them will affect all others.
+
+Today's governors (of course badly designed, and people are working on
+getting scheduler involved) run background work at regular intervals
+to find the per-cpu load for this group of CPUs. Any cpu can run the
+algorithm for the entire group. Earlier we were running this
+background work on only one CPU, but because its a deffered work it
+was missing cycles if that CPU was idle. And so we ended up adding the
+work per-cpu to fix that. We do check on the per-cpu handler if any
+other CPU had run the algo recently and in that case we return early
+from the handler.
+
+What I was thinking was to get some kind of support for these requests
+from the wq core. So that we can ask the workqueue core to run a
+work-handler on any non-idle CPU from a group of CPUs.
+
+Hope I made it more clear this time around.
+
+-- 
+viresh
