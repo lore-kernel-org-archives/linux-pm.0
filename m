@@ -1,52 +1,80 @@
-From: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/2] cpufreq: mediatek: Add MT8173 cpufreq driver
-Date: Wed, 10 Jun 2015 11:37:52 +0800
-Message-ID: <CALx668WP6Z-bU3_ZX1Ujb=MV_QGA6HdTg8ycUYTqWJ1xtp-Hiw@mail.gmail.com>
-References: <1433766561-1330-1-git-send-email-pi-cheng.chen@linaro.org>
-	<1433766561-1330-3-git-send-email-pi-cheng.chen@linaro.org>
-	<1433841449.16887.58.camel@x220>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [Query]: delayed wq not killed completely with
+ cancel_delayed_work_sync()
+Date: Wed, 10 Jun 2015 14:03:53 +0900
+Message-ID: <20150610050353.GK11955@mtj.duckdns.org>
+References: <CAKohpon4Fj3YFgEmGtKH9ePscgiuvq0_PfMMsEboQsaGxaTPfw@mail.gmail.com>
+ <20150609111811.GA17763@linux>
+ <20150609112627.GA27004@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1433841449.16887.58.camel@x220>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Paul Bolle <pebolle-IWqWACnzNjzz+pZb47iToQ@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:34646 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751386AbbFJFEC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 01:04:02 -0400
+Received: by payr10 with SMTP id r10so27085289pay.1
+        for <linux-pm@vger.kernel.org>; Tue, 09 Jun 2015 22:04:01 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20150609112627.GA27004@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, Jun 9, 2015 at 5:17 PM, Paul Bolle <pebolle-IWqWACnzNjzz+pZb47iToQ@public.gmane.org> wrote:
-> On Mon, 2015-06-08 at 20:29 +0800, Pi-Cheng Chen wrote:
->> --- /dev/null
->> +++ b/drivers/cpufreq/mt8173-cpufreq.c
->
->> +#include <linux/module.h>
->
-> Weren't you going to drop this include?
+Hey, Viresh.
 
-Sorry I forget to merge that part of fix into this patch.
-Will fix it.
+On Tue, Jun 09, 2015 at 04:56:27PM +0530, Viresh Kumar wrote:
+> On 09-06-15, 16:48, Viresh Kumar wrote:
+> > On 09-06-15, 16:43, Viresh Kumar wrote:
+> > > HI Tejun,
+> > >
+> > > We had few races in cpufreq core for some time now and we
+> > > are looking to fix them.
+> > >
+> > > Briefly, we run a delayed_work on each cpu at a fixed interval
+> > > (sampling rate) and when that expires that take a look at system
+> > > load and adjust frequency accordingly. We also requeue the
+> > > delayed-works from these handlers.
+> > >
+> > > The problem we are facing is NULL pointer dereference from
+> > > work handler..
+> > >
+> > > Before we set the pointers to NULL and free resource (for which
+> > > we are seeing the crashes), we cancel the delayed works with
+> > > cancel_delayed_work_sync(&dwork);
+> > >
+> > > We expect the work to not fire at all once this returns, but it
+> > > looks like the work handler does get called..
 
->
->> +module_init(mt8173_cpufreq_driver_init);
->
-> For built-in code this is equivalent to, speaking from memory:
->     device_initcall(mt8173_cpufreq_driver_init);
->
-> Why don't you just use that directly?
+cancel_delayed_work_sync() can reliably shoot down a self-requeueing
+delayed work item but it doesn't do anything about queueings which
+aren't from the work item itself, so, to shutdown a recurring work
+item, you'd need to first block external queueing and then do
+cancel_delayed_work_sync().  If you're already doing this but still
+seeing the work item executing afterwards, it's a workqueue bug but
+the code in that area has been stable for years, so I'd be surprised
+if there's a bug like that but you never know.
 
-Yes. Will do it.
-Thanks for reviewing.
+This does get tricky and I've been thinking about adding something
+like kill_delayed_work() which cancels and disables the work item till
+it gets reinitialized.  Hmmm...
 
-Best Regards,
-Pi-Cheng
+> And another query:
+> 
+> Do we have support for this kind of scenarios in wq framework ?
+> 
+> - Enqueue a single delayed work for a group of CPUs (and should fire
+>   on any one of them). We are doing this per-cpu today in cpufreq.
+> - It has to be a deffered one, so that if none of the CPUs from that
+>   group are online, we don't fire it.
+> - As the per-cpu workqueue thing is unnecessary burden on CPUs.
 
->
-> Thanks,
->
->
-> Paul Bolle
->
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I'm not sure I'm following but shouldn't you be able to do the above
+from cpu hotplug callbacks?  Or are you asking whether wq already has
+something which would help implementing the above?
+
+Thanks.
+
+-- 
+tejun
