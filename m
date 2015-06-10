@@ -1,15 +1,15 @@
 From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 Subject: Re: [PATCH 2/8] mfd: axp20x: Add a cell for the usb
  power_supply part of the axp20x PMICs
-Date: Wed, 10 Jun 2015 08:35:14 +0100
-Message-ID: <20150610073514.GW2982@x1>
+Date: Wed, 10 Jun 2015 08:36:23 +0100
+Message-ID: <20150610073623.GX2982@x1>
 References: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
  <1433885881-19809-3-git-send-email-hdegoede@redhat.com>
 Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDA7X7F2WUEBBNWR36VQKGQETWXMRKI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBDA7X7F2WUEBB66R36VQKGQEXM5V3FQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Content-Disposition: inline
 In-Reply-To: <1433885881-19809-3-git-send-email-hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
@@ -81,10 +81,7 @@ d
 > +		.flags	=3D IORESOURCE_IRQ,
 > +	},
 > +};
-
-Can you take a look at the DEFINE_RES_* macros in
-include/linux/ioport.h please?
-
+> +
 >  static struct resource axp22x_pek_resources[] =3D {
 >  	{
 >  		.name   =3D "PEK_DBR",
@@ -95,6 +92,9 @@ g =3D {
 >  	.volatile_table	=3D &axp20x_volatile_table,
 > -	.max_register	=3D AXP20X_FG_RES,
 > +	.max_register	=3D AXP20X_OCV(15),
+
+Please define 15, as MAX_WHATEVER_REG or something.
+
 >  	.cache_type	=3D REGCACHE_RBTREE,
 >  };
 > =20
@@ -107,10 +107,6 @@ g =3D {
 > +		.of_compatible		=3D "x-powers,axp202-usb-power-supply",
 > +		.num_resources		=3D
 > +				ARRAY_SIZE(axp20x_usb_power_supply_resources),
-
-This wrap is only necessary due to the extreme tabbing used to line up
-the '=3D'.  Please do something about that instead.
-
 > +		.resources		=3D axp20x_usb_power_supply_resources,
 >  	},
 >  };
