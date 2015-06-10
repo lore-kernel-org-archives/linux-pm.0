@@ -1,62 +1,123 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Query]: delayed wq not killed completely with
- cancel_delayed_work_sync()
-Date: Wed, 10 Jun 2015 12:49:21 +0530
-Message-ID: <20150610071921.GB24662@linux>
-References: <CAKohpon4Fj3YFgEmGtKH9ePscgiuvq0_PfMMsEboQsaGxaTPfw@mail.gmail.com>
- <20150609111811.GA17763@linux>
- <20150609112627.GA27004@linux>
- <20150610050353.GK11955@mtj.duckdns.org>
- <20150610062019.GA24662@linux>
- <20150610070747.GL11955@mtj.duckdns.org>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 4/8] power: Add an axp20x-usb-power driver
+Date: Wed, 10 Jun 2015 08:29:57 +0100
+Message-ID: <20150610072957.GV2982@x1>
+References: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
+ <1433885881-19809-5-git-send-email-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:34418 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933207AbbFJHT0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 03:19:26 -0400
-Received: by payr10 with SMTP id r10so29274123pay.1
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2015 00:19:25 -0700 (PDT)
+Received: from mail-wi0-f182.google.com ([209.85.212.182]:36011 "EHLO
+	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932982AbbFJHaD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 03:30:03 -0400
+Received: by wigg3 with SMTP id g3so38661340wig.1
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2015 00:30:02 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20150610070747.GL11955@mtj.duckdns.org>
+In-Reply-To: <1433885881-19809-5-git-send-email-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Kishon Vijay Abraham I <kishon@ti.com>, Felipe Balbi <balbi@ti.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree <devicetree@vger.kernel.org>, linux-sunxi@googlegroups.com
 
-On 10-06-15, 16:07, Tejun Heo wrote:
-> It's not a race per-se.  It's just that cancel[_delayed]_work_sync()
-> doesn't disable the work item after it got cancelled and the work item
-> can be reused afterwards by queueing it again.  If you don't shut down
-> somebody queueing it again (excluding the work itself), the work item
-> is being simply being reactivated after being cancelled.
+On Tue, 09 Jun 2015, Hans de Goede wrote:
 
-Right, it might be wrong in my case to use any such routines. As the
-call sites need to fix this problem, a race or whatever.
+> This adds a driver for the usb power_supply bits of the axp20x PMICs.
+>=20
+> I initially started writing my own driver, before coming aware of
+> Bruno Pr=C3=A9mont's excellent earlier RFC with a driver for this.
+>=20
+> My driver was lacking CURRENT_MAX and VOLTAGE_MIN support Bruno's
+> drvier has, so I've copied the code for those from his driver.
+>=20
+> Note that the AC-power-supply and battery charger bits will need sepa=
+rate
+> drivers. Each one needs its own devictree child-node so that other
+> devicetree nodes can reference the right power-supply, and thus each =
+one
+> will get its own mfd-cell / platform_device and platform-driver.
+>=20
+> Cc: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+>  .../bindings/power_supply/axp20x_usb_power.txt     |  34 +++
 
-> This fits some use cases and even for full shut down cases, plugging
-> the external queueing source is often necessary no matter what, so I'm
-> a bit torn about introuding another cancel function.  Regardless,
-> let's first debug this one properly.
+This needs to be submitted in a seperate patch.
 
-Got it.
+>  drivers/power/Kconfig                              |   7 +
+>  drivers/power/Makefile                             |   1 +
+>  drivers/power/axp20x_usb_power.c                   | 241 +++++++++++=
+++++++++++
+>  include/linux/mfd/axp20x.h                         |  24 ++
+>  5 files changed, 307 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power_supply/ax=
+p20x_usb_power.txt
+>  create mode 100644 drivers/power/axp20x_usb_power.c
 
-> Hmmm.... that's pretty specific.  The deferring is implemented from
-> the timer side, so as long as timer doesn't provide a mechanism to do
-> collective deferring (ie. deferring across multiple cpus), I don't
-> think it makes sense for wq to try to implement that.  :(
+[...]
 
-Fair enough. And it would be difficult to have something like this in
-timers AFAICT. With timers, we choose the target CPU when the timer is
-enqueued and so a single timer for a group of CPUs wouldn't work.
+> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+> index f4290ae..d7adb2e 100644
+> --- a/include/linux/mfd/axp20x.h
+> +++ b/include/linux/mfd/axp20x.h
+> @@ -11,6 +11,8 @@
+>  #ifndef __LINUX_MFD_AXP20X_H
+>  #define __LINUX_MFD_AXP20X_H
+> =20
+> +#include <linux/regmap.h>
+> +
+>  enum {
+>  	AXP202_ID =3D 0,
+>  	AXP209_ID,
+> @@ -366,4 +368,26 @@ struct axp20x_fg_pdata {
+>  	int thermistor_curve[MAX_THERM_CURVE_SIZE][2];
+>  };
+> =20
+> +/* generic helper function for reading 9-16 bit wide regs */
+> +static inline int axp20x_read_16bit(struct regmap *regmap,
 
-What I can do right away, is stop using per-cpu delayed work and use
-per-cpu timers instead. And keep a single work which can be queued
-from any of these CPUs. That will avoid queuing per-cpu works (might
-be less racy). Might be worth giving a try.
+This is only used twice and only in one file.
 
-Anyway, thanks for patience :)
+Do you know of any other uses of this call that will be upstreamed
+shortly?
 
--- 
-viresh
+> +				    unsigned int reg, unsigned int width)
+
+The function name is a bit misleading.
+
+> +{
+> +	unsigned int v, raw;
+> +	int r;
+
+'v' and 'r' are not good variable names.
+
+> +	r =3D regmap_read(regmap, reg, &v);
+> +	if (r)
+> +		return r;
+> +
+> +	raw =3D v << (width - 8);
+
+So 'reg' is expected to be top end loaded?
+
+E.g A value of say 0x0101 (257) in 9 bits will look like this:
+
+reg          reg + 1
+1000 0000b   0000 0001b
+
+> +	r =3D regmap_read(regmap, reg + 1, &v);
+> +	if (r)
+> +		return r;
+> +
+> +	raw |=3D v;
+> +
+> +	return raw;
+> +}
+> +
+>  #endif /* __LINUX_MFD_AXP20X_H */
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
