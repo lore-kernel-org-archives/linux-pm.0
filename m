@@ -1,77 +1,52 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V7 2/6] cpufreq: Stop migrating sysfs files on hotplug
-Date: Wed, 10 Jun 2015 07:49:12 +0530
-Message-ID: <20150610021912.GA26105@linux>
-References: <cover.1433767914.git.viresh.kumar@linaro.org>
- <6922a02c439f353c7c2bc3f09f7eae6dfbc3ea25.1433767914.git.viresh.kumar@linaro.org>
- <557782C5.2030305@codeaurora.org>
+From: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 2/2] cpufreq: mediatek: Add MT8173 cpufreq driver
+Date: Wed, 10 Jun 2015 11:37:52 +0800
+Message-ID: <CALx668WP6Z-bU3_ZX1Ujb=MV_QGA6HdTg8ycUYTqWJ1xtp-Hiw@mail.gmail.com>
+References: <1433766561-1330-1-git-send-email-pi-cheng.chen@linaro.org>
+	<1433766561-1330-3-git-send-email-pi-cheng.chen@linaro.org>
+	<1433841449.16887.58.camel@x220>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:35699 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752671AbbFJCTR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jun 2015 22:19:17 -0400
-Received: by pdbnf5 with SMTP id nf5so26772966pdb.2
-        for <linux-pm@vger.kernel.org>; Tue, 09 Jun 2015 19:19:17 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <557782C5.2030305@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1433841449.16887.58.camel@x220>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Paul Bolle <pebolle-IWqWACnzNjzz+pZb47iToQ@public.gmane.org>
+Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, prarit@redhat.com, Srivatsa Bhat <srivatsa@mit.edu>
 
-On 09-06-15, 17:20, Saravana Kannan wrote:
-> >[ Something similar attempted by Saravana earlier ]
-> Full name and email would be nice.
+On Tue, Jun 9, 2015 at 5:17 PM, Paul Bolle <pebolle-IWqWACnzNjzz+pZb47iToQ@public.gmane.org> wrote:
+> On Mon, 2015-06-08 at 20:29 +0800, Pi-Cheng Chen wrote:
+>> --- /dev/null
+>> +++ b/drivers/cpufreq/mt8173-cpufreq.c
+>
+>> +#include <linux/module.h>
+>
+> Weren't you going to drop this include?
 
-Sure. @Rafael can you please hand edit this in case I am not required
-to resend the patch ?
+Sorry I forget to merge that part of fix into this patch.
+Will fix it.
 
-[ Something similar attempted by Saravana Kannan <skannan@codeaurora.org> earlier ]
+>
+>> +module_init(mt8173_cpufreq_driver_init);
+>
+> For built-in code this is equivalent to, speaking from memory:
+>     device_initcall(mt8173_cpufreq_driver_init);
+>
+> Why don't you just use that directly?
 
-> >+static void update_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
-> >  {
-> >-	int ret;
-> >-
-> >  	if (WARN_ON(cpu == policy->cpu))
-> Can you remind me again why this is a warning? Would we still need
-> this check?
+Yes. Will do it.
+Thanks for reviewing.
 
-Its removed in a later commit. Its a warning because we are updating
-policy->cpu here and that must have been done only if policy->cpu !=
-cpu.
+Best Regards,
+Pi-Cheng
 
-> >+	bool recover_policy = !sif;
-> The policy is always going to be there, so calling it
-> "recover_policy" is kinda confusing. But I can't suggest a better
-> name now.
-
-Not always. Its created as well sometimes :)
-
-> >
-> >  	pr_debug("adding CPU %u\n", cpu);
-> >
-> >+	/*
-> >+	 * Only possible if 'cpu' wasn't physically present earlier and we are
-> >+	 * here from subsys_interface add callback. A hotplug notifier will
-> >+	 * follow and we will handle it like logical CPU hotplug then. For now,
-> >+	 * just create the sysfs link.
-> >+	 */
-> >+	if (cpu_is_offline(cpu)) {
-> My changes were on an older code base, so things might have changed
-> by now. But at this location, there was definitely a case where I
-> had to check for "sif" before creating symlinks. I need to think a
-
-cpu will be offline here only for sif==true.
-
-> bit more to remember what that reason was and see if you have to do
-> it too.
-> 
-> I'll try to respond more later. But I just wanted to send out what I
-> could when I have little time to review this.
-
-Okay. Good to see you again.
-
--- 
-viresh
+>
+> Thanks,
+>
+>
+> Paul Bolle
+>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
