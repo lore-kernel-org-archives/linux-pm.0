@@ -1,102 +1,195 @@
-From: Frans Klaver <frans.klaver@xsens.com>
-Subject: [PATCH v3] sbs-battery: add option to always register battery
-Date: Wed, 10 Jun 2015 14:16:56 +0200
-Message-ID: <1433938616-18503-1-git-send-email-frans.klaver@xsens.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Frans Klaver <frans.klaver@xsens.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: [PATCH] cpufreq, Fix overflow in busy_scaled due to long delay
+Date: Wed, 10 Jun 2015 09:18:45 -0400
+Message-ID: <1433942325-6610-1-git-send-email-prarit@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:55893 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932809AbbFJNSu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 10 Jun 2015 09:18:50 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Prarit Bhargava <prarit@redhat.com>, Kristen Carlson Accardi <kristen@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-Commit a22b41a31e53 ("sbs-battery: Probe should try talking to the
-device") introduced a step in probing the SBS battery, that tries to
-talk to the device before actually registering it, saying:
+I looked into switching to div64_s64() instead of the 32-bit version in
+div_fp(), however, this would result in sample_ratio and core_busy returning
+0 which is something we don't want.
 
-    this driver doesn't actually try talking to the device at probe
-    time, so if it's incorrectly configured in the device tree or
-    platform data (or if the battery has been removed from the system),
-    then probe will succeed and every access will sit there and time
-    out. The end result is a possibly laggy system that thinks it has a
-    battery but can never read status, which isn't very useful.
+P.
 
-Which is of course reasonable. However, it is also very well possible
-for a device to boot up on wall-power and be connected to a battery
-later on. This is a scenario that the driver supported before said patch
-was applied, and even easily achieved by booting up with the battery
-attached and removing it later on. sbs-battery's 'present' sysfs file
-can be used to determine if the device is available or not.
+---8<---
 
-So with automated device detection lacking for now, in some cases it is
-possible that one wants to register a battery, even if none are attached
-at the moment. To facilitate this, add a module parameter that can be
-used to configure forced loading module loading time. If set, the battery
-will always be registered without checking the sanity of the connection.
+The kernel may delay interrupts for a long time which can result in timers
+being delayed.  If this occurs the intel_pstate driver will crash with
+a divide by zero error:
 
-Signed-off-by: Frans Klaver <frans.klaver@xsens.com>
+divide error: 0000 [#1] SMP
+Modules linked in: btrfs zlib_deflate raid6_pq xor msdos ext4 mbcache jbd2 binfmt_misc arc4 md4 nls_utf8 cifs dns_resolver tcp_lp bnep bluetooth rfkill fuse dm_service_time iscsi_tcp libiscsi_tcp libiscsi scsi_transport_iscsi nf_conntrack_netbios_ns nf_conntrack_broadcast nf_conntrack_ftp ip6t_rpfilter ip6t_REJECT ipt_REJECT xt_conntrack ebtable_nat ebtable_broute bridge stp llc ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw iptable_filter ip_tables intel_powerclamp coretemp vfat fat kvm_intel iTCO_wdt iTCO_vendor_support ipmi_devintf sr_mod kvm crct10dif_pclmul
+ crc32_pclmul crc32c_intel ghash_clmulni_intel aesni_intel cdc_ether lrw usbnet cdrom mii gf128mul glue_helper ablk_helper cryptd lpc_ich mfd_core pcspkr sb_edac edac_core ipmi_si ipmi_msghandler ioatdma wmi shpchp acpi_pad nfsd auth_rpcgss nfs_acl lockd uinput dm_multipath sunrpc xfs libcrc32c usb_storage sd_mod crc_t10dif crct10dif_common ixgbe mgag200 syscopyarea sysfillrect sysimgblt mdio drm_kms_helper ttm igb drm ptp pps_core dca i2c_algo_bit megaraid_sas i2c_core dm_mirror dm_region_hash dm_log dm_mod
+CPU: 113 PID: 0 Comm: swapper/113 Tainted: G        W   --------------   3.10.0-229.1.2.el7.x86_64 #1
+Hardware name: IBM x3950 X6 -[3837AC2]-/00FN827, BIOS -[A8E112BUS-1.00]- 08/27/2014
+task: ffff880fe8abe660 ti: ffff880fe8ae4000 task.ti: ffff880fe8ae4000
+RIP: 0010:[<ffffffff814a9279>]  [<ffffffff814a9279>] intel_pstate_timer_func+0x179/0x3d0
+RSP: 0018:ffff883fff4e3db8  EFLAGS: 00010206
+RAX: 0000000027100000 RBX: ffff883fe6965100 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: 0000000000000010 RDI: 000000002e53632d
+RBP: ffff883fff4e3e20 R08: 000e6f69a5a125c0 R09: ffff883fe84ec001
+R10: 0000000000000002 R11: 0000000000000005 R12: 00000000000049f5
+R13: 0000000000271000 R14: 00000000000049f5 R15: 0000000000000246
+FS:  0000000000000000(0000) GS:ffff883fff4e0000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 00007f7668601000 CR3: 000000000190a000 CR4: 00000000001407e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Stack:
+ ffff883fff4e3e58 ffffffff81099dc1 0000000000000086 0000000000000071
+ ffff883fff4f3680 0000000000000071 fbdc8a965e33afee ffffffff810b69dd
+ ffff883fe84ec000 ffff883fe6965108 0000000000000100 ffffffff814a9100
+Call Trace:
+ <IRQ>
+
+ [<ffffffff81099dc1>] ? run_posix_cpu_timers+0x51/0x840
+ [<ffffffff810b69dd>] ? trigger_load_balance+0x5d/0x200
+ [<ffffffff814a9100>] ? pid_param_set+0x130/0x130
+ [<ffffffff8107df56>] call_timer_fn+0x36/0x110
+ [<ffffffff814a9100>] ? pid_param_set+0x130/0x130
+ [<ffffffff8107fdcf>] run_timer_softirq+0x21f/0x320
+ [<ffffffff81077b2f>] __do_softirq+0xef/0x280
+ [<ffffffff816156dc>] call_softirq+0x1c/0x30
+ [<ffffffff81015d95>] do_softirq+0x65/0xa0
+ [<ffffffff81077ec5>] irq_exit+0x115/0x120
+ [<ffffffff81616355>] smp_apic_timer_interrupt+0x45/0x60
+ [<ffffffff81614a1d>] apic_timer_interrupt+0x6d/0x80
+ <EOI>
+
+ [<ffffffff814a9c32>] ? cpuidle_enter_state+0x52/0xc0
+ [<ffffffff814a9c28>] ? cpuidle_enter_state+0x48/0xc0
+ [<ffffffff814a9d65>] cpuidle_idle_call+0xc5/0x200
+ [<ffffffff8101d14e>] arch_cpu_idle+0xe/0x30
+ [<ffffffff810c67c1>] cpu_startup_entry+0xf1/0x290
+ [<ffffffff8104228a>] start_secondary+0x1ba/0x230
+Code: 42 0f 00 45 89 e6 48 01 c2 43 8d 44 6d 00 39 d0 73 26 49 c1 e5 08 89 d2 4d 63 f4 49 63 c5 48 c1 e2 08 48 c1 e0 08 48 63 ca 48 99 <48> f7 f9 48 98 4c 0f af f0 49 c1 ee 08 8b 43 78 c1 e0 08 44 29
+RIP  [<ffffffff814a9279>] intel_pstate_timer_func+0x179/0x3d0
+ RSP <ffff883fff4e3db8>
+
+The kernel values for cpudata for CPU 113 were:
+
+struct cpudata {
+  cpu = 113,
+  timer = {
+    entry = {
+      next = 0x0,
+      prev = 0xdead000000200200
+    },
+    expires = 8357799745,
+    base = 0xffff883fe84ec001,
+    function = 0xffffffff814a9100 <intel_pstate_timer_func>,
+    data = 18446612406765768960,
+<snip>
+    i_gain = 0,
+    d_gain = 0,
+    deadband = 0,
+    last_err = 22489
+  },
+  last_sample_time = {
+    tv64 = 4063132438017305
+  },
+  prev_aperf = 287326796397463,
+  prev_mperf = 251427432090198,
+  sample = {
+    core_pct_busy = 23081,
+    aperf = 2937407,
+    mperf = 3257884,
+    freq = 2524484,
+    time = {
+      tv64 = 4063149215234118
+    }
+  }
+}
+
+which results in the time between samples = last_sample_time - sample.time
+= 4063149215234118 - 4063132438017305 = 16777216813 which is 16.777 seconds.
+
+The duration between reads of the APERF and MPERF registers overflowed a s32
+sized integer in intel_pstate_get_scaled_busy()'s call to div_fp().  The result
+is that int_tofp(duration_us) == 0, and the kernel attempts to divide by 0.
+
+While the kernel shouldn't be delaying for a long time, it can and does
+happen, and the intel_pstate driver should not panic in this situation.  This
+patch checks for an overflow and ignores the current calculation cycle by
+returning -EINVAL.  Since intel_pstate_sample() has been called, subsequent
+timer function calls will then again pick up the correct calculations and the
+system will continue functioning properly.
+
+Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
+
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 ---
-v2..v3
- - Switch from Kconfig to module parameter approach
- - Move entire sanity check into if () clause, rather than using 'rc = 0'
+ drivers/cpufreq/intel_pstate.c |   14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
-v1..v2
-  device tree -> Kconfig
-
- drivers/power/sbs-battery.c | 21 +++++++++++++++------
- 1 file changed, 15 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/power/sbs-battery.c b/drivers/power/sbs-battery.c
-index c7b7b4018df3..3ccd3f172130 100644
---- a/drivers/power/sbs-battery.c
-+++ b/drivers/power/sbs-battery.c
-@@ -28,6 +28,7 @@
- #include <linux/interrupt.h>
- #include <linux/gpio.h>
- #include <linux/of.h>
-+#include <linux/stat.h>
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 6414661..6a145e5 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -823,6 +823,9 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
+ 	sample_time = pid_params.sample_rate_ms  * USEC_PER_MSEC;
+ 	duration_us = (u32) ktime_us_delta(cpu->sample.time,
+ 					   cpu->last_sample_time);
++	if (duration_us > S32_MAX)
++		return -EINVAL;
++
+ 	if (duration_us > sample_time * 3) {
+ 		sample_ratio = div_fp(int_tofp(sample_time),
+ 				      int_tofp(duration_us));
+@@ -832,7 +835,7 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
+ 	return core_busy;
+ }
  
- #include <linux/power/sbs-battery.h>
- 
-@@ -170,6 +171,7 @@ struct sbs_info {
- 
- static char model_name[I2C_SMBUS_BLOCK_MAX + 1];
- static char manufacturer[I2C_SMBUS_BLOCK_MAX + 1];
-+static bool force_load;
- 
- static int sbs_read_word_data(struct i2c_client *client, u8 address)
+-static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
++static inline int32_t intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
  {
-@@ -882,14 +884,17 @@ static int sbs_probe(struct i2c_client *client,
+ 	int32_t busy_scaled;
+ 	struct _pid *pid;
+@@ -840,11 +843,15 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
  
- skip_gpio:
- 	/*
--	 * Before we register, we need to make sure we can actually talk
-+	 * Before we register, we might need to make sure we can actually talk
- 	 * to the battery.
- 	 */
--	rc = sbs_read_word_data(client, sbs_data[REG_STATUS].addr);
--	if (rc < 0) {
--		dev_err(&client->dev, "%s: Failed to get device status\n",
--			__func__);
--		goto exit_psupply;
-+	if (!force_load) {
-+		rc = sbs_read_word_data(client, sbs_data[REG_STATUS].addr);
+ 	pid = &cpu->pid;
+ 	busy_scaled = intel_pstate_get_scaled_busy(cpu);
++	if (busy_scaled < 0)
++		return S32_MAX;
+ 
+ 	ctl = pid_calc(pid, busy_scaled);
+ 
+ 	/* Negative values of ctl increase the pstate and vice versa */
+ 	intel_pstate_set_pstate(cpu, cpu->pstate.current_pstate - ctl);
 +
-+		if (rc < 0) {
-+			dev_err(&client->dev, "%s: Failed to get device status\n",
-+				__func__);
-+			goto exit_psupply;
-+		}
- 	}
++	return busy_scaled;
+ }
  
- 	rc = power_supply_register(&client->dev, &chip->power_supply);
-@@ -990,3 +995,7 @@ module_i2c_driver(sbs_battery_driver);
+ static void intel_hwp_timer_func(unsigned long __data)
+@@ -859,15 +866,16 @@ static void intel_pstate_timer_func(unsigned long __data)
+ {
+ 	struct cpudata *cpu = (struct cpudata *) __data;
+ 	struct sample *sample;
++	int32_t busy_scaled;
  
- MODULE_DESCRIPTION("SBS battery monitor driver");
- MODULE_LICENSE("GPL");
-+
-+module_param(force_load, bool, S_IRUSR | S_IRGRP | S_IROTH);
-+MODULE_PARM_DESC(force_load,
-+		 "Attempt to load the driver even if no battery is connected");
+ 	intel_pstate_sample(cpu);
+ 
+ 	sample = &cpu->sample;
+ 
+-	intel_pstate_adjust_busy_pstate(cpu);
++	busy_scaled = intel_pstate_adjust_busy_pstate(cpu);
+ 
+ 	trace_pstate_sample(fp_toint(sample->core_pct_busy),
+-			fp_toint(intel_pstate_get_scaled_busy(cpu)),
++			fp_toint(busy_scaled),
+ 			cpu->pstate.current_pstate,
+ 			sample->mperf,
+ 			sample->aperf,
 -- 
-2.3.4
+1.7.9.3
+
