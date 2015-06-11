@@ -1,72 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: thermal: cpu_cooling: Use cpufreq_dev->freq_table for finding
- level/freq
-Date: Thu, 11 Jun 2015 08:35:42 +0530
-Message-ID: <20150611030542.GM24662@linux>
-References: <20150610150211.GA30208@mwanda>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v5 07/10] x86/asm/acpi: Fix asmvalidate warnings for
+ wakeup_64.S
+Date: Thu, 11 Jun 2015 08:13:28 +0200
+Message-ID: <20150611061328.GC30720@gmail.com>
+References: <cover.1433937132.git.jpoimboe@redhat.com>
+ <2817f5690aa760a601a614b738545fd60b087bbb.1433937132.git.jpoimboe@redhat.com>
+ <20150610132135.GB25572@amd>
+ <20150610141354.GB25848@treble.redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:36645 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbbFKDFr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 23:05:47 -0400
-Received: by pdjm12 with SMTP id m12so49014882pdj.3
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2015 20:05:47 -0700 (PDT)
+Received: from mail-wi0-f179.google.com ([209.85.212.179]:36983 "EHLO
+	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750737AbbFKGNe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jun 2015 02:13:34 -0400
 Content-Disposition: inline
-In-Reply-To: <20150610150211.GA30208@mwanda>
+In-Reply-To: <20150610141354.GB25848@treble.redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: linux-pm@vger.kernel.org
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Michal Marek <mmarek@suse.cz>, Peter Zijlstra <peterz@infradead.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <andi@firstfloor.org>, x86@kernel.org, live-patching@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 
-Hi Dan,
 
-On 10-06-15, 18:02, Dan Carpenter wrote:
-> The documentation is very clear that this loop is correct.  It also
-> turns out that it used consistently almost throughout.
+* Josh Poimboeuf <jpoimboe@redhat.com> wrote:
 
-Right.
-
-> But when I see
-> these unusual limits, I know it is often difficult to be 100%
-> consistent so I kept looking.  It turns out there is off by one mistake
-> when we allocate the buffer.
+> On Wed, Jun 10, 2015 at 03:21:35PM +0200, Pavel Machek wrote:
+> > On Wed 2015-06-10 07:06:15, Josh Poimboeuf wrote:
+> > > Fix the following asmvalidate warnings:
+> > > 
+> > >    asmvalidate: arch/x86/kernel/acpi/wakeup_64.o: wakeup_long64()+0x15: unsupported jump to outside of function
+> > >    asmvalidate: arch/x86/kernel/acpi/wakeup_64.o: wakeup_long64()+0x55: unsupported jump to outside of function
+> > >    asmvalidate: arch/x86/kernel/acpi/wakeup_64.o: wakeup_long64(): unsupported fallthrough at end of function
+> > >    asmvalidate: arch/x86/kernel/acpi/wakeup_64.o: do_suspend_lowlevel()+0x9a: unsupported jump to outside of function
+> > >    asmvalidate: arch/x86/kernel/acpi/wakeup_64.o: do_suspend_lowlevel()+0x116: unsupported jump to outside of function
+> > >    asmvalidate: arch/x86/kernel/acpi/wakeup_64.o: do_suspend_lowlevel(): unsupported fallthrough at end of function
+> > >    asmvalidate: arch/x86/kernel/acpi/wakeup_64.o: do_suspend_lowlevel(): missing FP_SAVE/RESTORE macros
+> > >
+> > 
+> > Actually first things first. Purpose of warnings is to pinpoint
+> > errors. Do you believe there are some errors in wakeup_64.S?
 > 
->         cpufreq_dev->freq_table = kmalloc(sizeof(*cpufreq_dev->freq_table) *
->                                           cpufreq_dev->max_level, GFP_KERNEL);
-> 
-> It should be allocating:
-> 
-> 	sizeof(*cpufreq_dev->freq_table) * (cpufreq_dev->max_level + 1)
+> The "errors" are that it doesn't conform with the guidelines outlined in
+> the cover letter.  Specifically, wakeup_long64() is improperly
+> annotated, and do_suspend_lowlevel() doesn't honor CONFIG_FRAME_POINTER.
 
-Not really. This is how the code looks:
+Please create a file for this in Documentation/x86/, outlining the common cases of 
+such .S debug info problems and the effects this has on the stack backtrace 
+output.
 
-	/* Find max levels */
-	cpufreq_for_each_valid_entry(pos, table)
-		cpufreq_dev->max_level++;
+Thanks,
 
-	cpufreq_dev->freq_table = kmalloc(sizeof(*cpufreq_dev->freq_table) *
-					  cpufreq_dev->max_level, GFP_KERNEL);
-	if (!cpufreq_dev->freq_table) {
-		cool_dev = ERR_PTR(-ENOMEM);
-		goto free_cdev;
-	}
-
-	/* max_level is an index, not a counter */
-	cpufreq_dev->max_level--;
-
-
-So when the block was allocated, max_level was total number of levels
-and was reduced later only.
-
-> We could just change the allocation, but really this kind of unusual
-> limit is just going to cause more headaches in the future...
-
-I understand your concern, but it all happened because of the way
-thermal layer expects the state. It wants state to be the index or
-level of the cooling state. And that corresponds to the index in
-cpufreq table. And so was kept this way.
-
--- 
-viresh
+	Ingo
