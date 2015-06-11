@@ -1,21 +1,17 @@
 From: Prarit Bhargava <prarit@redhat.com>
 Subject: Re: [PATCH] cpufreq, Fix overflow in busy_scaled due to long delay
-Date: Thu, 11 Jun 2015 10:58:13 -0400
-Message-ID: <5579A205.3090101@redhat.com>
+Date: Thu, 11 Jun 2015 11:00:43 -0400
+Message-ID: <5579A29B.8050304@redhat.com>
 References: <1433942325-6610-1-git-send-email-prarit@redhat.com> <2049134.oxrPdGJl10@vostro.rjw.lan> <000301d0a456$09333d00$1b99b700$@net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:50640 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752507AbbFKO6O (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 11 Jun 2015 10:58:14 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <000301d0a456$09333d00$1b99b700$@net>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Doug Smythies <dsmythies@telus.net>
 Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, 'Kristen Carlson Accardi' <kristen@linux.intel.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 
 
@@ -31,8 +27,18 @@ On 06/11/2015 10:51 AM, Doug Smythies wrote:
 > Due to a great many overflow related issues, div_fp() was changed to div64_s64()
 > a long time ago.
 
-/me scratches head ... Perhaps I was looking at the wrong tree (RHEL vs
-linux.git) but I'll go back & double check.
+Doug,
+
+Nope -- in a linux.git tree (up-to-date as of 7:00AM ET this AM)
+
+static inline int32_t div_fp(int32_t x, int32_t y)
+{
+        return div_s64((int64_t)x << FRAC_BITS, y);
+}
+
+If we do want this to be div64_s64, I can make that change, however, I feel that
+a long delay like this should be ignored in the performance calculations in the
+driver and that's why I chose to go the direction I did.
 
 P.
 
