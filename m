@@ -1,87 +1,84 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH RFC 3/3] PM / Domains: Introduce generic PM domain for
- cpu domain
-Date: Thu, 11 Jun 2015 08:56:49 -0600
-Message-ID: <20150611145649.GC1103@linaro.org>
-References: <1433456946-53296-1-git-send-email-lina.iyer@linaro.org>
- <1433456946-53296-4-git-send-email-lina.iyer@linaro.org>
- <7hmw07meh6.fsf@deeprootsystems.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] cpufreq, Fix overflow in busy_scaled due to long delay
+Date: Thu, 11 Jun 2015 10:58:13 -0400
+Message-ID: <5579A205.3090101@redhat.com>
+References: <1433942325-6610-1-git-send-email-prarit@redhat.com> <2049134.oxrPdGJl10@vostro.rjw.lan> <000301d0a456$09333d00$1b99b700$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:34369 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751905AbbFKO4t (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jun 2015 10:56:49 -0400
-Received: by payr10 with SMTP id r10so5308830pay.1
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2015 07:56:49 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <7hmw07meh6.fsf@deeprootsystems.com>
+Received: from mx1.redhat.com ([209.132.183.28]:50640 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752507AbbFKO6O (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 11 Jun 2015 10:58:14 -0400
+In-Reply-To: <000301d0a456$09333d00$1b99b700$@net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, mathieu.poirier@linaro.org, galak@codeaurora.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, 'Kristen Carlson Accardi' <kristen@linux.intel.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-On Wed, Jun 10 2015 at 15:38 -0600, Kevin Hilman wrote:
->Lina Iyer <lina.iyer@linaro.org> writes:
->
->> Generally cpus are grouped under a power domain in a SoC. When all cpus
->> in the domain are in their power off state, the cpu domain can also be
->> powered off.
->
->How does this relate to a cluster, and why aren't you using that terminolgy?
->
->> Genpd provides the framework for defining cpus as devices
->> that are part of a cpu domain.
+
+
+On 06/11/2015 10:51 AM, Doug Smythies wrote:
+> 
+> On 2015.06.10 16:46 Rafael J. Wysocki wrote:
+>> On Wednesday, June 10, 2015 09:18:45 AM Prarit Bhargava wrote:
+>>> I looked into switching to div64_s64() instead of the 32-bit version in
+>>> div_fp(), however, this would result in sample_ratio and core_busy returning
+>>> 0 which is something we don't want.
+> 
+> ???
+> Due to a great many overflow related issues, div_fp() was changed to div64_s64()
+> a long time ago.
+
+/me scratches head ... Perhaps I was looking at the wrong tree (RHEL vs
+linux.git) but I'll go back & double check.
+
+P.
+
+> 
+> I have not found the actual commit to reference, but it was about a year ago.
+> And the math in general was all changed to 64 bit, over a few commits.
+> 
 >>
->> Introduce support for defining and adding a generic power domain for the
->> cpus based on the DT specification of power domain providers and
->> consumers.  SoC's that have the cpu domain defined in their DT, can
->> setup a genpd with a name and the power_on/power_off callbacks. Calling
->> pm_cpu_domain_init() will register the genpd and attach the cpus for
->> this domain with the genpd.
+>> P.
 >>
->> CPU_PM notifications for are used to pm_runtime_get_sync() and
->> pm_runtime_put_sync() for each cpu.  When all cpus are powered off, the
->> last cpu going down would call the genpd->power_off(). Correspondingly,
->> the first cpu up would call the genpd->power_on() callback before
->> resuming from idle.
->
->Other patches also mention this genpd being useful to gate power to
->non-CPU peripherals on the same power rail.  How are those devices to be
->added?
->
-I am not investigating DT nodes to figure out which node is a consumer
-for this domain provider. That could be a good way to do it, but
-practically speaking, there may be platform dependencies and specifics
-that may need to be met, before the device can be added to the CPU
-genpd.
-
-So that is not generalized here. I didn't see a better way to do that,
-generically. Do you have ideas on that?
-
-The platform is the owner of the genpd and therefore can add those
-non-cpu devices to the genpd as and when appropritate.
-
-In this regard, I also have a question, who initializes the genpd. My
-assumption is that CPUs will get probed before most other devices and
-therefore the domain provider could be initialized by this file. But, I
-could be wrong here.
-
-
-
-
->Without seeing the DTs and the init code that might call
->pm_cpu_domain_init(), it's hard for me to see how this is intended to be
->used.  Could you also include a patch that shows how this is initialized
->and the DT additions?  Ideally, it should also show how a non-CPU device
->would be included.
->
-I am sorry, you are right. This is better explained with the patches for
-platform driver. I will add them in the next spin. I thought the
-examples provided in the cover letter is pretty close to the genpd
-related changes that I made in my platform coder. But I agree, it doesnt
-give the complete picture.
-
-Thanks,
-Lina
+>> ---8<---
+>>
+>> The kernel may delay interrupts for a long time which can result in timers
+>> being delayed.  If this occurs the intel_pstate driver will crash with
+>> a divide by zero error:
+> 
+> More recent versions will not crash.
+> Long timer delays are extremely common, and this is a fundamental flaw
+> in the duration method. Patch sets have been submitting dealing with this,
+> and other, issues.
+> 
+>>>
+>>> which results in the time between samples = last_sample_time - sample.time
+>>> = 4063149215234118 - 4063132438017305 = 16777216813 which is 16.777 seconds.
+> 
+> I have never seen anything over 4 seconds before, and I study this stuff
+> (with respect to the intel_pstate driver operation) a lot. Due to help
+> from others, I have data from a variety of processors.
+> 4 seconds not unusual, even under load.
+> 
+>>>
+>>> The duration between reads of the APERF and MPERF registers overflowed a s32
+>>> sized integer in intel_pstate_get_scaled_busy()'s call to div_fp().  The result
+>>> is that int_tofp(duration_us) == 0, and the kernel attempts to divide by 0.
+>>>
+>>> While the kernel shouldn't be delaying for a long time, it can and does
+>>> happen, and the intel_pstate driver should not panic in this situation.  This
+>>> patch checks for an overflow and ignores the current calculation cycle by
+>>> returning -EINVAL.  Since intel_pstate_sample() has been called, subsequent
+>>> timer function calls will then again pick up the correct calculations and the
+>>> system will continue functioning properly.
+> 
+> That would run the risk that the correct calculation would never be done.
+> It is fairly easy (I do it all the time) to create a scenario where
+> there is high load on a CPU, but also a very very high duration value,
+> for each and every duration. (and O.K., in that scenario the calculation is always
+> wrong anyhow, due to the long duration check engaging.)
+> 
+> 
