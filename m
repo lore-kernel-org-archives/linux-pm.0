@@ -1,207 +1,402 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq, Fix overflow in busy_scaled due to long delay
-Date: Thu, 11 Jun 2015 01:45:31 +0200
-Message-ID: <2049134.oxrPdGJl10@vostro.rjw.lan>
-References: <1433942325-6610-1-git-send-email-prarit@redhat.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH RFC 2/3] PM / Domains: Support atomic PM domains
+Date: Thu, 11 Jun 2015 09:13:07 +0900
+Message-ID: <5578D293.9050809@samsung.com>
+References: <1433456946-53296-1-git-send-email-lina.iyer@linaro.org>
+ <1433456946-53296-3-git-send-email-lina.iyer@linaro.org>
+ <55740D00.1030203@samsung.com> <20150610161323.GA4497@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55511 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751727AbbFJXTm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 19:19:42 -0400
-In-Reply-To: <1433942325-6610-1-git-send-email-prarit@redhat.com>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:60573 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751725AbbFKANL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 20:13:11 -0400
+Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
+ by mailout2.w1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0NPR00ESC79U3V30@mailout2.w1.samsung.com> for
+ linux-pm@vger.kernel.org; Thu, 11 Jun 2015 01:13:07 +0100 (BST)
+In-reply-to: <20150610161323.GA4497@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Kristen Carlson Accardi <kristen@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@linaro.org, mathieu.poirier@linaro.org, linux-pm@vger.kernel.org, galak@codeaurora.org, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-kernel@lists.infradead.org
 
-On Wednesday, June 10, 2015 09:18:45 AM Prarit Bhargava wrote:
-> I looked into switching to div64_s64() instead of the 32-bit version in
-> div_fp(), however, this would result in sample_ratio and core_busy returning
-> 0 which is something we don't want.
+On 11.06.2015 01:13, Lina Iyer wrote:
+> On Sun, Jun 07 2015 at 03:21 -0600, Krzysztof Kozlowski wrote:
+>> W dniu 05.06.2015 o 07:29, Lina Iyer pisze:
+>>> Power Domains currently support turning on/off only in process context.
+>>> This restricts the usage of PM domains to devices and domains that
+>>> could be powered on/off in irq disabled contexts as the mutexes used in
+>>> GenPD allows for cpu sleep while waiting for locks.
+>>
+>> I can find also other use case: currently the power domain with irq_safe
+>> devices is always powered on. With the patch it could be powered off (of
+>> course if the driver/mach code is irq-safe).
+>>
+> Yes, absolutely.
 > 
-> P.
-> 
-> ---8<---
-> 
-> The kernel may delay interrupts for a long time which can result in timers
-> being delayed.  If this occurs the intel_pstate driver will crash with
-> a divide by zero error:
-> 
-> divide error: 0000 [#1] SMP
-> Modules linked in: btrfs zlib_deflate raid6_pq xor msdos ext4 mbcache jbd2 binfmt_misc arc4 md4 nls_utf8 cifs dns_resolver tcp_lp bnep bluetooth rfkill fuse dm_service_time iscsi_tcp libiscsi_tcp libiscsi scsi_transport_iscsi nf_conntrack_netbios_ns nf_conntrack_broadcast nf_conntrack_ftp ip6t_rpfilter ip6t_REJECT ipt_REJECT xt_conntrack ebtable_nat ebtable_broute bridge stp llc ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw iptable_filter ip_tables intel_powerclamp coretemp vfat fat kvm_intel iTCO_wdt iTCO_vendor_support ipmi_devintf sr_mod kvm crct10dif_pclmul
- 
->  crc32_pclmul crc32c_intel ghash_clmulni_intel aesni_intel cdc_ether lrw usbnet cdrom mii gf128mul glue_helper ablk_helper cryptd lpc_ich mfd_core pcspkr sb_edac edac_core ipmi_si ipmi_msghandler ioatdma wmi shpchp acpi_pad nfsd auth_rpcgss nfs_acl lockd uinput dm_multipath sunrpc xfs libcrc32c usb_storage sd_mod crc_t10dif crct10dif_common ixgbe mgag200 syscopyarea sysfillrect sysimgblt mdio drm_kms_helper ttm igb drm ptp pps_core dca i2c_algo_bit megaraid_sas i2c_core dm_mirror dm_region_hash dm_log dm_mod
-> CPU: 113 PID: 0 Comm: swapper/113 Tainted: G        W   --------------   3.10.0-229.1.2.el7.x86_64 #1
-> Hardware name: IBM x3950 X6 -[3837AC2]-/00FN827, BIOS -[A8E112BUS-1.00]- 08/27/2014
-> task: ffff880fe8abe660 ti: ffff880fe8ae4000 task.ti: ffff880fe8ae4000
-> RIP: 0010:[<ffffffff814a9279>]  [<ffffffff814a9279>] intel_pstate_timer_func+0x179/0x3d0
-> RSP: 0018:ffff883fff4e3db8  EFLAGS: 00010206
-> RAX: 0000000027100000 RBX: ffff883fe6965100 RCX: 0000000000000000
-> RDX: 0000000000000000 RSI: 0000000000000010 RDI: 000000002e53632d
-> RBP: ffff883fff4e3e20 R08: 000e6f69a5a125c0 R09: ffff883fe84ec001
-> R10: 0000000000000002 R11: 0000000000000005 R12: 00000000000049f5
-> R13: 0000000000271000 R14: 00000000000049f5 R15: 0000000000000246
-> FS:  0000000000000000(0000) GS:ffff883fff4e0000(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> CR2: 00007f7668601000 CR3: 000000000190a000 CR4: 00000000001407e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Stack:
->  ffff883fff4e3e58 ffffffff81099dc1 0000000000000086 0000000000000071
->  ffff883fff4f3680 0000000000000071 fbdc8a965e33afee ffffffff810b69dd
->  ffff883fe84ec000 ffff883fe6965108 0000000000000100 ffffffff814a9100
-> Call Trace:
->  <IRQ>
-> 
->  [<ffffffff81099dc1>] ? run_posix_cpu_timers+0x51/0x840
->  [<ffffffff810b69dd>] ? trigger_load_balance+0x5d/0x200
->  [<ffffffff814a9100>] ? pid_param_set+0x130/0x130
->  [<ffffffff8107df56>] call_timer_fn+0x36/0x110
->  [<ffffffff814a9100>] ? pid_param_set+0x130/0x130
->  [<ffffffff8107fdcf>] run_timer_softirq+0x21f/0x320
->  [<ffffffff81077b2f>] __do_softirq+0xef/0x280
->  [<ffffffff816156dc>] call_softirq+0x1c/0x30
->  [<ffffffff81015d95>] do_softirq+0x65/0xa0
->  [<ffffffff81077ec5>] irq_exit+0x115/0x120
->  [<ffffffff81616355>] smp_apic_timer_interrupt+0x45/0x60
->  [<ffffffff81614a1d>] apic_timer_interrupt+0x6d/0x80
->  <EOI>
-> 
->  [<ffffffff814a9c32>] ? cpuidle_enter_state+0x52/0xc0
->  [<ffffffff814a9c28>] ? cpuidle_enter_state+0x48/0xc0
->  [<ffffffff814a9d65>] cpuidle_idle_call+0xc5/0x200
->  [<ffffffff8101d14e>] arch_cpu_idle+0xe/0x30
->  [<ffffffff810c67c1>] cpu_startup_entry+0xf1/0x290
->  [<ffffffff8104228a>] start_secondary+0x1ba/0x230
-> Code: 42 0f 00 45 89 e6 48 01 c2 43 8d 44 6d 00 39 d0 73 26 49 c1 e5 08 89 d2 4d 63 f4 49 63 c5 48 c1 e2 08 48 c1 e0 08 48 63 ca 48 99 <48> f7 f9 48 98 4c 0f af f0 49 c1 ee 08 8b 43 78 c1 e0 08 44 29
-> RIP  [<ffffffff814a9279>] intel_pstate_timer_func+0x179/0x3d0
->  RSP <ffff883fff4e3db8>
-> 
-> The kernel values for cpudata for CPU 113 were:
-> 
-> struct cpudata {
->   cpu = 113,
->   timer = {
->     entry = {
->       next = 0x0,
->       prev = 0xdead000000200200
->     },
->     expires = 8357799745,
->     base = 0xffff883fe84ec001,
->     function = 0xffffffff814a9100 <intel_pstate_timer_func>,
->     data = 18446612406765768960,
-> <snip>
->     i_gain = 0,
->     d_gain = 0,
->     deadband = 0,
->     last_err = 22489
->   },
->   last_sample_time = {
->     tv64 = 4063132438017305
->   },
->   prev_aperf = 287326796397463,
->   prev_mperf = 251427432090198,
->   sample = {
->     core_pct_busy = 23081,
->     aperf = 2937407,
->     mperf = 3257884,
->     freq = 2524484,
->     time = {
->       tv64 = 4063149215234118
->     }
->   }
-> }
-> 
-> which results in the time between samples = last_sample_time - sample.time
-> = 4063149215234118 - 4063132438017305 = 16777216813 which is 16.777 seconds.
-> 
-> The duration between reads of the APERF and MPERF registers overflowed a s32
-> sized integer in intel_pstate_get_scaled_busy()'s call to div_fp().  The result
-> is that int_tofp(duration_us) == 0, and the kernel attempts to divide by 0.
-> 
-> While the kernel shouldn't be delaying for a long time, it can and does
-> happen, and the intel_pstate driver should not panic in this situation.  This
-> patch checks for an overflow and ignores the current calculation cycle by
-> returning -EINVAL.  Since intel_pstate_sample() has been called, subsequent
-> timer function calls will then again pick up the correct calculations and the
-> system will continue functioning properly.
-> 
-> Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> 
-> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+>>>
+>>> Genpd inherently provides support for devices, domain hierarchy and can
+>>> be used to represent cpu clusters like in ARM's big.Little, where, each
+>>> cpu cluster is in its domain, with supporting caches and other
+>>> peripheral hardware. Multiple such domains could be part of another
+>>> domain. Because mutexes are used to protect and synchronize domain
+>>> operations and cpu idle operations are inherently atomic, the use of
+>>> genpd is not possible for runtime suspend and resume of the pm domain.
+>>> Replacing the locks to spinlocks would allow cpu domain to be be powered
+>>> off to save power, when all the cpus are powered off.
+>>>
+>>> However, not all domains can operate in irq-safe contexts and usually
+>>> would need to sleep during domain operations. So genpd has to support
+>>> both the cases, where the domain is or is not irq-safe. The irq-safe
+>>> attribute is therefore domain specific.
+>>>
+>>> To achieve domain specific locking, set the GENPD_FLAG_IRQ_SAFE flag
+>>> while defining the domain. This determines if the domain should use a
+>>> spinlock instead of a mutex. Locking is abstracted through
+>>> genpd_lock_domain() and genpd_unlock_domain() functions that use the
+>>> flag to determine the locking to be used for this domain.
+>>>
+>>> The restriction this imposes on the domain hierarchy is that subdomains
+>>> and all devices in the hierarchy also be irq-safe. Non irq-safe domains
+>>> may continue to have irq-safe devices, but not the other way around.
+>>
+>> So an irq-safe device can be put in irq-safe subdomain which can be a
+>> child of non-irq-safe topdomain?
+>>
+> Yes, the container need not be irq-safe but the contained need to be
+> irqsafe.
 
-Looks OK to me, but I need Kristen to review it too.
+I had doubts about possibility of grabbing any lock from irq-safe
+subdomain before grabbing lock from non-irq-safe parent. That would mean
+that spin_lock is acquired and then mutex. But now after giving some
+more thoughts I can't find such case so it seems fine.
 
-> ---
->  drivers/cpufreq/intel_pstate.c |   14 +++++++++++---
->  1 file changed, 11 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 6414661..6a145e5 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -823,6 +823,9 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
->  	sample_time = pid_params.sample_rate_ms  * USEC_PER_MSEC;
->  	duration_us = (u32) ktime_us_delta(cpu->sample.time,
->  					   cpu->last_sample_time);
-> +	if (duration_us > S32_MAX)
-> +		return -EINVAL;
-> +
->  	if (duration_us > sample_time * 3) {
->  		sample_ratio = div_fp(int_tofp(sample_time),
->  				      int_tofp(duration_us));
-> @@ -832,7 +835,7 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
->  	return core_busy;
->  }
->  
-> -static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
-> +static inline int32_t intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
->  {
->  	int32_t busy_scaled;
->  	struct _pid *pid;
-> @@ -840,11 +843,15 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
->  
->  	pid = &cpu->pid;
->  	busy_scaled = intel_pstate_get_scaled_busy(cpu);
-> +	if (busy_scaled < 0)
-> +		return S32_MAX;
->  
->  	ctl = pid_calc(pid, busy_scaled);
->  
->  	/* Negative values of ctl increase the pstate and vice versa */
->  	intel_pstate_set_pstate(cpu, cpu->pstate.current_pstate - ctl);
-> +
-> +	return busy_scaled;
->  }
->  
->  static void intel_hwp_timer_func(unsigned long __data)
-> @@ -859,15 +866,16 @@ static void intel_pstate_timer_func(unsigned long __data)
->  {
->  	struct cpudata *cpu = (struct cpudata *) __data;
->  	struct sample *sample;
-> +	int32_t busy_scaled;
->  
->  	intel_pstate_sample(cpu);
->  
->  	sample = &cpu->sample;
->  
-> -	intel_pstate_adjust_busy_pstate(cpu);
-> +	busy_scaled = intel_pstate_adjust_busy_pstate(cpu);
->  
->  	trace_pstate_sample(fp_toint(sample->core_pct_busy),
-> -			fp_toint(intel_pstate_get_scaled_busy(cpu)),
-> +			fp_toint(busy_scaled),
->  			cpu->pstate.current_pstate,
->  			sample->mperf,
->  			sample->aperf,
-> 
+Thanks for explanation.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> 
+>>>
+>>> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+>>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>>> Cc: Kevin Hilman <khilman@linaro.org>
+>>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>>> ---
+>>>  drivers/base/power/domain.c | 200
+>>> ++++++++++++++++++++++++++++++++++----------
+>>>  include/linux/pm_domain.h   |  11 ++-
+>>
+>> Documentation should also be reflected.
+>>
+> Yes, will add.
+> 
+>>>  2 files changed, 164 insertions(+), 47 deletions(-)
+>>>
+>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>>> index dfd7595..8b89d15 100644
+>>> --- a/drivers/base/power/domain.c
+>>> +++ b/drivers/base/power/domain.c
+>>> @@ -50,6 +50,71 @@
+>>>  static LIST_HEAD(gpd_list);
+>>>  static DEFINE_MUTEX(gpd_list_lock);
+>>>
+>>> +static inline int genpd_lock_domain_noirq(struct generic_pm_domain
+>>> *genpd,
+>>> +                    unsigned int subclass)
+>>> +    __acquires(&genpd->slock)
+>>> +{
+>>> +    unsigned long flags;
+>>> +
+>>> +    if (unlikely(subclass > 0))
+>>> +        spin_lock_irqsave_nested(&genpd->slock, flags, subclass);
+>>> +    else
+>>> +        spin_lock_irqsave(&genpd->slock, flags);
+>>> +
+>>> +    genpd->flags = flags;
+>>> +
+>>> +    return 0;
+>>> +}
+>>> +
+>>> +static inline int genpd_unlock_domain_noirq(struct generic_pm_domain
+>>> *genpd)
+>>> +    __releases(&genpd->slock)
+>>> +{
+>>> +    spin_unlock_irqrestore(&genpd->slock, genpd->lock_flags);
+>>> +    return 0;
+>>> +}
+>>> +
+>>> +static inline int genpd_lock_domain_irq(struct generic_pm_domain
+>>> *genpd,
+>>> +                    unsigned int subclass)
+>>> +    __acquires(&genpd->mlock)
+>>> +{
+>>> +    if (unlikely(subclass > 0))
+>>> +        mutex_lock_nested(&genpd->mlock, subclass);
+>>> +    else
+>>> +        mutex_lock(&genpd->mlock);
+>>> +
+>>> +    return 0;
+>>> +}
+>>> +
+>>> +static inline int genpd_lock_domain_interruptible_irq(
+>>> +                struct generic_pm_domain *genpd)
+>>> +    __acquires(&genpd->mlock)
+>>> +{
+>>> +    return mutex_lock_interruptible(&genpd->mlock);
+>>> +}
+>>> +
+>>> +static inline int genpd_unlock_domain_irq(struct generic_pm_domain
+>>> *genpd)
+>>> +    __releases(&genpd->mlock)
+>>> +{
+>>> +    mutex_unlock(&genpd->mlock);
+>>> +    return 0;
+>>> +}
+>>> +
+>>> +#define genpd_lock_domain(genpd)                \
+>>> +    (genpd->irq_safe ? genpd_lock_domain_noirq(genpd, 0)    \
+>>> +            : genpd_lock_domain_irq(genpd, 0))
+>>> +
+>>> +#define genpd_lock_domain_nested(genpd)                \
+>>> +    (genpd->irq_safe ? genpd_lock_domain_noirq(genpd,
+>>> SINGLE_DEPTH_NESTING)\
+>>> +            : genpd_lock_domain_irq(genpd, SINGLE_DEPTH_NESTING))
+>>> +
+>>> +#define genpd_unlock_domain(genpd)                \
+>>> +    (genpd->irq_safe ? genpd_unlock_domain_noirq(genpd)    \
+>>> +            : genpd_unlock_domain_irq(genpd))
+>>> +
+>>> +#define genpd_lock_domain_interruptible(genpd)            \
+>>> +    (genpd->irq_safe ? genpd_lock_domain_noirq(genpd, 0)    \
+>>> +            : genpd_lock_domain_interruptible_irq(genpd))
+>>
+>> Why macros? You are not using here benefits of a macro and they are
+>> called just like ordinary functions.
+>>
+> Well, I didnt see a need for a function that might show up in the stack.
+> But I have no strong preference either way.
+
+That is actually a valid reason. It is just my personal dislike of
+macros so I am fine with your idea.
+
+> 
+>> You added "domain" prefix but genpd already contains this. genod_lock(),
+>> genpd_lock_nested() etc. should be sufficient, unless there is a
+>> conflict, similar name planned or you plan to lock something else
+>> (genpd_lock_device?).
+>>
+> Sigh. Yes, you are right. Its redundant. Will remove.
+> 
+>>
+>>> +
+>>>  static struct generic_pm_domain *pm_genpd_lookup_name(const char
+>>> *domain_name)
+>>>  {
+>>>      struct generic_pm_domain *genpd = NULL, *gpd;
+>>> @@ -262,9 +327,9 @@ int pm_genpd_poweron(struct generic_pm_domain
+>>> *genpd)
+>>>  {
+>>>      int ret;
+>>>
+>>> -    mutex_lock(&genpd->lock);
+>>> +    genpd_lock_domain(genpd);
+>>>      ret = __pm_genpd_poweron(genpd);
+>>> -    mutex_unlock(&genpd->lock);
+>>> +    genpd_unlock_domain(genpd);
+>>>      return ret;
+>>>  }
+>>>
+>>> @@ -326,9 +391,9 @@ static int genpd_dev_pm_qos_notifier(struct
+>>> notifier_block *nb,
+>>>          spin_unlock_irq(&dev->power.lock);
+>>>
+>>>          if (!IS_ERR(genpd)) {
+>>> -            mutex_lock(&genpd->lock);
+>>> +            genpd_lock_domain(genpd);
+>>>              genpd->max_off_time_changed = true;
+>>> -            mutex_unlock(&genpd->lock);
+>>> +            genpd_unlock_domain(genpd);
+>>>          }
+>>>
+>>>          dev = dev->parent;
+>>> @@ -387,7 +452,7 @@ static int pm_genpd_poweroff(struct
+>>> generic_pm_domain *genpd)
+>>>              return -EBUSY;
+>>>
+>>>          if (pdd->dev->driver && (!pm_runtime_suspended(pdd->dev)
+>>> -            || pdd->dev->power.irq_safe))
+>>> +            || (pdd->dev->power.irq_safe && !genpd->irq_safe)))
+>>>              not_suspended++;
+>>>      }
+>>>
+>>> @@ -453,9 +518,9 @@ static void genpd_power_off_work_fn(struct
+>>> work_struct *work)
+>>>
+>>>      genpd = container_of(work, struct generic_pm_domain,
+>>> power_off_work);
+>>>
+>>> -    mutex_lock(&genpd->lock);
+>>> +    genpd_lock_domain(genpd);
+>>>      pm_genpd_poweroff(genpd);
+>>
+>> Ipm_genpd_poweroff() calls __pm_genpd_save_device() which grabs mutex.
+>> At least in next-20150604 but maybe the patches, which this depends on,
+>> changed it?
+>>
+> Yes. Ulf's patch remvoed that call.
+
+OK, thanks.
+
+> 
+>>
+>>> -    mutex_unlock(&genpd->lock);
+>>> +    genpd_unlock_domain(genpd);
+>>>  }
+>>>
+>>>  /**
+>>> @@ -478,12 +543,8 @@ static int pm_genpd_runtime_suspend(struct
+>>> device *dev)
+>>>      if (IS_ERR(genpd))
+>>>          return -EINVAL;
+>>>
+>>> -    /*
+>>> -     * We can't allow to power off the PM domain if it holds an
+>>> irq_safe
+>>> -     * device. That's beacuse we use mutexes to protect data while
+>>> power
+>>> -     * off and on the PM domain, thus we can't execute in atomic
+>>> context.
+>>> -     */
+>>> -    if (dev->power.irq_safe)
+>>> +    /* We can't allow to power off a domain that is also not irq
+>>> safe. */
+>>> +    if (dev->power.irq_safe && !genpd->irq_safe)
+>>>          return -EBUSY;
+>>>
+>>>      stop_ok = genpd->gov ? genpd->gov->stop_ok : NULL;
+>>> @@ -500,11 +561,19 @@ static int pm_genpd_runtime_suspend(struct
+>>> device *dev)
+>>>          return ret;
+>>>      }
+>>>
+>>> -    mutex_lock(&genpd->lock);
+>>> +    /*
+>>> +     * If power.irq_safe is set, this routine will be run with
+>>> interrupts
+>>> +     * off, so suspend only if the power domain is irq_safe.
+>>> +     */
+>>> +    if (dev->power.irq_safe && !genpd->irq_safe)
+>>> +        return 0;
+>>> +
+>>> +    genpd_lock_domain(genpd);
+>>> +
+>>>      genpd->in_progress++;
+>>>      pm_genpd_poweroff(genpd);
+>>>      genpd->in_progress--;
+>>> -    mutex_unlock(&genpd->lock);
+>>> +    genpd_unlock_domain(genpd);
+>>>
+>>>      return 0;
+>>>  }
+>>> @@ -528,13 +597,16 @@ static int pm_genpd_runtime_resume(struct
+>>> device *dev)
+>>>      if (IS_ERR(genpd))
+>>>          return -EINVAL;
+>>>
+>>> -    /* If power.irq_safe, the PM domain is never powered off. */
+>>> -    if (dev->power.irq_safe)
+>>> +    /*
+>>> +     * If power.irq_safe and domain is not, then
+>>> +     * the PM domain is never powered off.
+>>> +     */
+>>> +    if (dev->power.irq_safe && !genpd->irq_safe)
+>>>          return genpd_start_dev_no_timing(genpd, dev);
+>>>
+>>> -    mutex_lock(&genpd->lock);
+>>> +    genpd_lock_domain(genpd);
+>>>      ret = __pm_genpd_poweron(genpd);
+>>> -    mutex_unlock(&genpd->lock);
+>>> +    genpd_unlock_domain(genpd);
+>>>
+>>>      if (ret)
+>>>          return ret;
+>>> @@ -729,14 +801,14 @@ static int pm_genpd_prepare(struct device *dev)
+>>>      if (resume_needed(dev, genpd))
+>>>          pm_runtime_resume(dev);
+>>>
+>>> -    mutex_lock(&genpd->lock);
+>>> +    genpd_lock_domain(genpd);
+>>>
+>>>      if (genpd->prepared_count++ == 0) {
+>>>          genpd->suspended_count = 0;
+>>>          genpd->suspend_power_off = genpd->status ==
+>>> GPD_STATE_POWER_OFF;
+>>>      }
+>>>
+>>> -    mutex_unlock(&genpd->lock);
+>>> +    genpd_unlock_domain(genpd);
+>>>
+>>>      if (genpd->suspend_power_off) {
+>>>          pm_runtime_put_noidle(dev);
+>>> @@ -754,12 +826,12 @@ static int pm_genpd_prepare(struct device *dev)
+>>>
+>>>      ret = pm_generic_prepare(dev);
+>>>      if (ret) {
+>>> -        mutex_lock(&genpd->lock);
+>>> +        genpd_lock_domain(genpd);
+>>>
+>>>          if (--genpd->prepared_count == 0)
+>>>              genpd->suspend_power_off = false;
+>>>
+>>> -        mutex_unlock(&genpd->lock);
+>>> +        genpd_unlock_domain(genpd);
+>>>          pm_runtime_enable(dev);
+>>>      }
+>>>
+>>> @@ -1116,13 +1188,13 @@ static void pm_genpd_complete(struct device
+>>> *dev)
+>>>      if (IS_ERR(genpd))
+>>>          return;
+>>>
+>>> -    mutex_lock(&genpd->lock);
+>>> +    genpd_lock_domain(genpd);
+>>>
+>>>      run_complete = !genpd->suspend_power_off;
+>>>      if (--genpd->prepared_count == 0)
+>>>          genpd->suspend_power_off = false;
+>>>
+>>> -    mutex_unlock(&genpd->lock);
+>>> +    genpd_unlock_domain(genpd);
+>>>
+>>>      if (run_complete) {
+>>>          pm_generic_complete(dev);
+>>> @@ -1266,11 +1338,18 @@ int __pm_genpd_add_device(struct
+>>> generic_pm_domain *genpd, struct device *dev,
+>>>      if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(dev))
+>>>          return -EINVAL;
+>>>
+>>> +    /* Devices in an IRQ safe PM Domain have to be irq safe too */
+>>
+>> Why? Can you add this information here? Previously there was a reason in
+>> case of irq_safe devices which you removed leaving only policy.
+>>
+> Sorry, your question is not clear to me.
+> I believe this is a new requirement that enforces the contained devices
+> of an irq-safe domain to be irq-safe as well.
+
+What I wanted to say is that it would be nice if comment explained why
+domain have to be IRQ safe too. Without this "WHY" answer the comment is
+quite redundant - the "if" statement is obvious. But the "WHY" is not
+such obvious.
+
+Previous comments in few places mentioned the answer:
+/*
+ * We can't allow to power off the PM domain if it holds an irq_safe
+ * device. That's beacuse we use mutexes to protect data while power
+ * off and on the PM domain, thus we can't execute in atomic context.
+ */
+
+Best regards,
+Krzysztof
