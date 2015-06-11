@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 02/12] cpufreq: governor: Drop unused field 'cpu'
-Date: Thu, 11 Jun 2015 16:21:45 +0530
-Message-ID: <df4228bfaeed49925a0aca4528852de2d1b3c44f.1434019473.git.viresh.kumar@linaro.org>
+Subject: [PATCH 01/12] cpufreq: governor: Name delayed-work as dwork
+Date: Thu, 11 Jun 2015 16:21:44 +0530
+Message-ID: <1d96358b20ff457e322cbb6cbf975c34ee5ea77a.1434019473.git.viresh.kumar@linaro.org>
 References: <cover.1434019473.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f182.google.com ([209.85.192.182]:35027 "EHLO
-	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751754AbbFKKwS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jun 2015 06:52:18 -0400
-Received: by pdbnf5 with SMTP id nf5so2453217pdb.2
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2015 03:52:18 -0700 (PDT)
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:34971 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751754AbbFKKwO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jun 2015 06:52:14 -0400
+Received: by pacyx8 with SMTP id yx8so2265154pac.2
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2015 03:52:13 -0700 (PDT)
 In-Reply-To: <cover.1434019473.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1434019473.git.viresh.kumar@linaro.org>
 References: <cover.1434019473.git.viresh.kumar@linaro.org>
@@ -18,38 +18,109 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, ke.wang@spreadtrum.com
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Its not used at all, drop it.
+Delayed work was named as 'work' and to access work within it we do
+work.work. Not much readable. Rename delayed_work as 'dwork'.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq_governor.c | 1 -
- drivers/cpufreq/cpufreq_governor.h | 1 -
- 2 files changed, 2 deletions(-)
+ drivers/cpufreq/cpufreq_conservative.c | 2 +-
+ drivers/cpufreq/cpufreq_governor.c     | 6 +++---
+ drivers/cpufreq/cpufreq_governor.h     | 2 +-
+ drivers/cpufreq/cpufreq_ondemand.c     | 8 ++++----
+ 4 files changed, 9 insertions(+), 9 deletions(-)
 
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index c86a10c30912..0e3ec1d968d9 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -105,7 +105,7 @@ static void cs_check_cpu(int cpu, unsigned int load)
+ static void cs_dbs_timer(struct work_struct *work)
+ {
+ 	struct cs_cpu_dbs_info_s *dbs_info = container_of(work,
+-			struct cs_cpu_dbs_info_s, cdbs.work.work);
++			struct cs_cpu_dbs_info_s, cdbs.dwork.work);
+ 	unsigned int cpu = dbs_info->cdbs.cur_policy->cpu;
+ 	struct cs_cpu_dbs_info_s *core_dbs_info = &per_cpu(cs_cpu_dbs_info,
+ 			cpu);
 diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 6024bbc782c0..2149ba7d32a8 100644
+index 57a39f8a92b7..6024bbc782c0 100644
 --- a/drivers/cpufreq/cpufreq_governor.c
 +++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -353,7 +353,6 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
- 		struct cpu_dbs_common_info *j_cdbs = cdata->get_cpu_cdbs(j);
- 		unsigned int prev_load;
+@@ -165,7 +165,7 @@ static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
+ {
+ 	struct cpu_dbs_common_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
  
--		j_cdbs->cpu = j;
- 		j_cdbs->cur_policy = policy;
- 		j_cdbs->prev_cpu_idle =
- 			get_cpu_idle_time(j, &j_cdbs->prev_cpu_wall, io_busy);
+-	mod_delayed_work_on(cpu, system_wq, &cdbs->work, delay);
++	mod_delayed_work_on(cpu, system_wq, &cdbs->dwork, delay);
+ }
+ 
+ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+@@ -204,7 +204,7 @@ static inline void gov_cancel_work(struct dbs_data *dbs_data,
+ 
+ 	for_each_cpu(i, policy->cpus) {
+ 		cdbs = dbs_data->cdata->get_cpu_cdbs(i);
+-		cancel_delayed_work_sync(&cdbs->work);
++		cancel_delayed_work_sync(&cdbs->dwork);
+ 	}
+ }
+ 
+@@ -367,7 +367,7 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
+ 			j_cdbs->prev_cpu_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+ 
+ 		mutex_init(&j_cdbs->timer_mutex);
+-		INIT_DEFERRABLE_WORK(&j_cdbs->work, cdata->gov_dbs_timer);
++		INIT_DEFERRABLE_WORK(&j_cdbs->dwork, cdata->gov_dbs_timer);
+ 	}
+ 
+ 	if (cdata->governor == GOV_CONSERVATIVE) {
 diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index 352eecaae789..1bbf8c87fdd5 100644
+index 34736f5e869d..352eecaae789 100644
 --- a/drivers/cpufreq/cpufreq_governor.h
 +++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -130,7 +130,6 @@ static void *get_cpu_dbs_info_s(int cpu)				\
+@@ -142,7 +142,7 @@ struct cpu_dbs_common_info {
+ 	 */
+ 	unsigned int prev_load;
+ 	struct cpufreq_policy *cur_policy;
+-	struct delayed_work work;
++	struct delayed_work dwork;
+ 	/*
+ 	 * percpu mutex that serializes governor limit change with gov_dbs_timer
+ 	 * invocation. We do not want gov_dbs_timer to run when user is changing
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 3c1e10f2304c..830aef1db8c3 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -194,7 +194,7 @@ static void od_check_cpu(int cpu, unsigned int load)
+ static void od_dbs_timer(struct work_struct *work)
+ {
+ 	struct od_cpu_dbs_info_s *dbs_info =
+-		container_of(work, struct od_cpu_dbs_info_s, cdbs.work.work);
++		container_of(work, struct od_cpu_dbs_info_s, cdbs.dwork.work);
+ 	unsigned int cpu = dbs_info->cdbs.cur_policy->cpu;
+ 	struct od_cpu_dbs_info_s *core_dbs_info = &per_cpu(od_cpu_dbs_info,
+ 			cpu);
+@@ -275,18 +275,18 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
  
- /* Per cpu structures */
- struct cpu_dbs_common_info {
--	int cpu;
- 	u64 prev_cpu_idle;
- 	u64 prev_cpu_wall;
- 	u64 prev_cpu_nice;
+ 		mutex_lock(&dbs_info->cdbs.timer_mutex);
+ 
+-		if (!delayed_work_pending(&dbs_info->cdbs.work)) {
++		if (!delayed_work_pending(&dbs_info->cdbs.dwork)) {
+ 			mutex_unlock(&dbs_info->cdbs.timer_mutex);
+ 			continue;
+ 		}
+ 
+ 		next_sampling = jiffies + usecs_to_jiffies(new_rate);
+-		appointed_at = dbs_info->cdbs.work.timer.expires;
++		appointed_at = dbs_info->cdbs.dwork.timer.expires;
+ 
+ 		if (time_before(next_sampling, appointed_at)) {
+ 
+ 			mutex_unlock(&dbs_info->cdbs.timer_mutex);
+-			cancel_delayed_work_sync(&dbs_info->cdbs.work);
++			cancel_delayed_work_sync(&dbs_info->cdbs.dwork);
+ 			mutex_lock(&dbs_info->cdbs.timer_mutex);
+ 
+ 			gov_queue_work(dbs_data, dbs_info->cdbs.cur_policy,
 -- 
 2.4.0
 
