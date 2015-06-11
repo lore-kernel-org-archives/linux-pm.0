@@ -1,66 +1,62 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v4 2/8] firmware: add support for ARM System Control and
- Power Interface(SCPI) protocol
-Date: Thu, 11 Jun 2015 14:23:48 +0100
-Message-ID: <55798BE4.2000604@arm.com>
-References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com>	<1433760002-24120-3-git-send-email-sudeep.holla@arm.com> <CAJe_ZheUknLZuMg-02V-AqyjxX8Nx4oK3O2HapqfCLkkXjngAg@mail.gmail.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH RFC 2/3] PM / Domains: Support atomic PM domains
+Date: Thu, 11 Jun 2015 08:33:54 -0600
+Message-ID: <20150611143354.GA1103@linaro.org>
+References: <1433456946-53296-1-git-send-email-lina.iyer@linaro.org>
+ <1433456946-53296-3-git-send-email-lina.iyer@linaro.org>
+ <55740D00.1030203@samsung.com>
+ <20150610161323.GA4497@linaro.org>
+ <5578D293.9050809@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:56247 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752647AbbFKNXx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 11 Jun 2015 09:23:53 -0400
-In-Reply-To: <CAJe_ZheUknLZuMg-02V-AqyjxX8Nx4oK3O2HapqfCLkkXjngAg@mail.gmail.com>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:35984 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752606AbbFKOdy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jun 2015 10:33:54 -0400
+Received: by pabqy3 with SMTP id qy3so4927291pab.3
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2015 07:33:53 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <5578D293.9050809@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jassi Brar <jaswinder.singh@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, lkml <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Jassi Brar <jassisinghbrar@gmail.com>, Liviu Dudau <Liviu.Dudau@arm.com>, Olof Johansson <olof@lixom.net>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@linaro.org, mathieu.poirier@linaro.org, linux-pm@vger.kernel.org, galak@codeaurora.org, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-kernel@lists.infradead.org
 
+On Thu, Jun 11 2015 at 18:13 -0600, Krzysztof Kozlowski wrote:
+>On 11.06.2015 01:13, Lina Iyer wrote:
+>> On Sun, Jun 07 2015 at 03:21 -0600, Krzysztof Kozlowski wrote:
+>>> W dniu 05.06.2015 o 07:29, Lina Iyer pisze:
 
+...
 
-On 11/06/15 12:54, Jassi Brar wrote:
-> On 8 June 2015 at 16:09, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> ...
->> +
->> +static void scpi_process_cmd(struct scpi_chan *ch, u32 cmd)
->> +{
->> +       unsigned long flags;
->> +       struct scpi_xfer *t, *match = NULL;
->> +
->> +       spin_lock_irqsave(&ch->rx_lock, flags);
->> +       if (list_empty(&ch->rx_pending)) {
->> +               spin_unlock_irqrestore(&ch->rx_lock, flags);
->> +               return;
->> +       }
->> +
->> +       list_for_each_entry(t, &ch->rx_pending, node)
->> +               if (CMD_XTRACT_UNIQ(t->cmd) == CMD_XTRACT_UNIQ(cmd)) {
->> +                       list_del(&t->node);
->> +                       match = t;
->> +                       break;
->> +               }
->> +       /* check if wait_for_completion is in progress or timed-out */
->> +       if (match && !completion_done(&match->done)) {
->> +               struct scpi_shared_mem *mem = ch->rx_payload;
->> +               unsigned int len = min(match->rx_len, CMD_SIZE(cmd));
->> +
->> +               match->status = le32_to_cpu(mem->status);
->> +               memcpy_fromio(match->rx_buf, mem->payload, len);
->> +               if (match->rx_len > len)
->> +                       memset(match->rx_buf + len, 0, match->rx_len - len);
->> +               complete(&match->done);
->> +       }
->> +       spin_unlock_irqrestore(&ch->rx_lock, flags);
->> +}
-> There doesn't seem to be support for commands sent by remote?
-> Something like when remote is the thermal master and it needs to send
-> sensor readings crossing thresholds.
+>>>> @@ -1266,11 +1338,18 @@ int __pm_genpd_add_device(struct
+>>>> generic_pm_domain *genpd, struct device *dev,
+>>>>      if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(dev))
+>>>>          return -EINVAL;
+>>>>
+>>>> +    /* Devices in an IRQ safe PM Domain have to be irq safe too */
+>>>
+>>> Why? Can you add this information here? Previously there was a reason in
+>>> case of irq_safe devices which you removed leaving only policy.
+>>>
+>> Sorry, your question is not clear to me.
+>> I believe this is a new requirement that enforces the contained devices
+>> of an irq-safe domain to be irq-safe as well.
 >
+>What I wanted to say is that it would be nice if comment explained why
+>domain have to be IRQ safe too. Without this "WHY" answer the comment is
+>quite redundant - the "if" statement is obvious. But the "WHY" is not
+>such obvious.
+>
+>Previous comments in few places mentioned the answer:
+>/*
+> * We can't allow to power off the PM domain if it holds an irq_safe
+> * device. That's beacuse we use mutexes to protect data while power
+> * off and on the PM domain, thus we can't execute in atomic context.
+> */
+>
+Oh, yes. Will fix it.
 
-SCP firmware claims to support that but never tested on Juno platform.
-So I would like to add it when there's first user for that.
-
-Regards,
-Sudeep
+Thanks,
+Lina
