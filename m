@@ -1,69 +1,72 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH RFC 3/3] PM / Domains: Introduce generic PM domain for cpu
- domain
-Date: Thu, 11 Jun 2015 09:35:44 +0900
-Message-ID: <5578D7E0.8020305@samsung.com>
-References: <1433456946-53296-1-git-send-email-lina.iyer@linaro.org>
- <1433456946-53296-4-git-send-email-lina.iyer@linaro.org>
- <5574121F.2000806@samsung.com> <7hbngnpkfd.fsf@deeprootsystems.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: thermal: cpu_cooling: Use cpufreq_dev->freq_table for finding
+ level/freq
+Date: Thu, 11 Jun 2015 08:35:42 +0530
+Message-ID: <20150611030542.GM24662@linux>
+References: <20150610150211.GA30208@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:60747 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750761AbbFKAfr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 20:35:47 -0400
-Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout2.w1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0NPR00EXM8BKCG30@mailout2.w1.samsung.com> for
- linux-pm@vger.kernel.org; Thu, 11 Jun 2015 01:35:45 +0100 (BST)
-In-reply-to: <7hbngnpkfd.fsf@deeprootsystems.com>
+Received: from mail-pd0-f172.google.com ([209.85.192.172]:36645 "EHLO
+	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751350AbbFKDFr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 23:05:47 -0400
+Received: by pdjm12 with SMTP id m12so49014882pdj.3
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jun 2015 20:05:47 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20150610150211.GA30208@mwanda>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Lina Iyer <lina.iyer@linaro.org>, rjw@rjwysocki.net, ulf.hansson@linaro.org, mathieu.poirier@linaro.org, linux-pm@vger.kernel.org, galak@codeaurora.org, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-kernel@lists.infradead.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: linux-pm@vger.kernel.org
 
-On 11.06.2015 02:01, Kevin Hilman wrote:
-> Krzysztof Kozlowski <k.kozlowski@samsung.com> writes:
-> 
->> W dniu 05.06.2015 o 07:29, Lina Iyer pisze:
->>> Generally cpus are grouped under a power domain in a SoC. When all cpus
->>> in the domain are in their power off state,
->>
->> What do you exactly mean here by "CPU in power off state"? How does it
->> map to kernel understanding of CPU device (hotplug? cpuidle?)?
->>
->>> the cpu domain can also be
->>> powered off. Genpd provides the framework for defining cpus as devices
->>> that are part of a cpu domain.
->>
->> The problem which is solved looks to me like the same problem which
->> coupled cpuidle tried to solve: a certain deep sleep mode (e.g. power
->> off) can be entered when whole cluster is idle or other CPUs in cluster
->> are powered off completely.
->>
->> It seems a little like duplicating the effort around coupled cpuidle.
-> 
-> Yes, it duplicates some aspects of coupled idle states, but coupled
-> states have their own limitations:
-> 
-> - only handles CPUs, not other devices sharing a power rail (e.g. L2$,
->   GIC, floating point unit, CoreSight, etc. etc.)
-> 
-> - not scaling well past 2 CPUs
-> 
-> - doesn't handle clusters: While this series only addresses CPUs
->   currently, the approach can be extended.  Because genpd handles nested
->   domains, the could be used to model clusters as well.
+Hi Dan,
 
-Right. I agree with your explanation. I am just thinking how to utilize
-this for Exynos deep sleep modes which now we implement using coupled
-cpuidle.
+On 10-06-15, 18:02, Dan Carpenter wrote:
+> The documentation is very clear that this loop is correct.  It also
+> turns out that it used consistently almost throughout.
 
-Anyway I like the idea!
+Right.
 
-Best regards,
-Krzysztof
+> But when I see
+> these unusual limits, I know it is often difficult to be 100%
+> consistent so I kept looking.  It turns out there is off by one mistake
+> when we allocate the buffer.
+> 
+>         cpufreq_dev->freq_table = kmalloc(sizeof(*cpufreq_dev->freq_table) *
+>                                           cpufreq_dev->max_level, GFP_KERNEL);
+> 
+> It should be allocating:
+> 
+> 	sizeof(*cpufreq_dev->freq_table) * (cpufreq_dev->max_level + 1)
 
+Not really. This is how the code looks:
+
+	/* Find max levels */
+	cpufreq_for_each_valid_entry(pos, table)
+		cpufreq_dev->max_level++;
+
+	cpufreq_dev->freq_table = kmalloc(sizeof(*cpufreq_dev->freq_table) *
+					  cpufreq_dev->max_level, GFP_KERNEL);
+	if (!cpufreq_dev->freq_table) {
+		cool_dev = ERR_PTR(-ENOMEM);
+		goto free_cdev;
+	}
+
+	/* max_level is an index, not a counter */
+	cpufreq_dev->max_level--;
+
+
+So when the block was allocated, max_level was total number of levels
+and was reduced later only.
+
+> We could just change the allocation, but really this kind of unusual
+> limit is just going to cause more headaches in the future...
+
+I understand your concern, but it all happened because of the way
+thermal layer expects the state. It wants state to be the index or
+level of the cooling state. And that corresponds to the index in
+cpufreq table. And so was kept this way.
+
+-- 
+viresh
