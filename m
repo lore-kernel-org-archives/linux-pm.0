@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 07/12] cpufreq: governor: split out common part of {cs|od}_dbs_timer()
-Date: Thu, 11 Jun 2015 16:21:50 +0530
-Message-ID: <d3b9ae6a7645e39fa5883e7843278ddbd88c2653.1434019473.git.viresh.kumar@linaro.org>
+Subject: [PATCH 09/12] cpufreq: governor: Avoid invalid states with additional checks
+Date: Thu, 11 Jun 2015 16:21:52 +0530
+Message-ID: <280186b68a8b906365316876a7b6d9eafb28296b.1434019473.git.viresh.kumar@linaro.org>
 References: <cover.1434019473.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:33048 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752286AbbFKKwk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jun 2015 06:52:40 -0400
-Received: by pdjn11 with SMTP id n11so2509593pdj.0
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2015 03:52:40 -0700 (PDT)
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:32872 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752680AbbFKKws (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jun 2015 06:52:48 -0400
+Received: by padev16 with SMTP id ev16so2330755pad.0
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2015 03:52:48 -0700 (PDT)
 In-Reply-To: <cover.1434019473.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1434019473.git.viresh.kumar@linaro.org>
 References: <cover.1434019473.git.viresh.kumar@linaro.org>
@@ -18,227 +18,196 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, ke.wang@spreadtrum.com
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Some part of cs_dbs_timer() and od_dbs_timer() is exactly same and is
-unnecessarily duplicated.
+There can be races where the request has come to a wrong state. For
+example INIT followed by STOP (instead of START) or START followed by
+EXIT (instead of STOP).
 
-Create the real work-handler in cpufreq_governor.c and put the common
-code in this routine (dbs_timer()).
-
-Shouldn't make any functional change.
+Also make sure, once we have started canceling queued works, we don't
+queue any new works. That can lead to the case where the work-handler
+finds many data structures are freed and so NULL pointer exceptions.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq_conservative.c | 27 +++++++-----------------
- drivers/cpufreq/cpufreq_governor.c     | 38 ++++++++++++++++++++++++++++++----
- drivers/cpufreq/cpufreq_governor.h     | 10 ++++-----
- drivers/cpufreq/cpufreq_ondemand.c     | 36 +++++++++++++-------------------
- 4 files changed, 60 insertions(+), 51 deletions(-)
+ drivers/cpufreq/cpufreq_governor.c | 56 ++++++++++++++++++++++++++++++--------
+ drivers/cpufreq/cpufreq_governor.h |  1 +
+ 2 files changed, 45 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 5b5c01ca556c..0e4154e584bf 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -102,28 +102,15 @@ static void cs_check_cpu(int cpu, unsigned int load)
- 	}
- }
- 
--static void cs_dbs_timer(struct work_struct *work)
-+static unsigned int cs_dbs_timer(struct cpu_dbs_info *cdbs,
-+				 struct dbs_data *dbs_data, bool modify_all)
- {
--	struct cs_cpu_dbs_info_s *dbs_info = container_of(work,
--			struct cs_cpu_dbs_info_s, cdbs.dwork.work);
--	struct cpufreq_policy *policy = dbs_info->cdbs.ccdbs->policy;
--	unsigned int cpu = policy->cpu;
--	struct cs_cpu_dbs_info_s *core_dbs_info = &per_cpu(cs_cpu_dbs_info,
--			cpu);
--	struct dbs_data *dbs_data = policy->governor_data;
- 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
--	int delay = delay_for_sampling_rate(cs_tuners->sampling_rate);
--	bool modify_all = true;
--
--	mutex_lock(&core_dbs_info->cdbs.ccdbs->timer_mutex);
--	if (!need_load_eval(core_dbs_info->cdbs.ccdbs,
--			    cs_tuners->sampling_rate))
--		modify_all = false;
--	else
--		dbs_check_cpu(dbs_data, cpu);
--
--	gov_queue_work(dbs_data, policy, delay, modify_all);
--	mutex_unlock(&core_dbs_info->cdbs.ccdbs->timer_mutex);
-+
-+	if (modify_all)
-+		dbs_check_cpu(dbs_data, cdbs->ccdbs->policy->cpu);
-+
-+	return delay_for_sampling_rate(cs_tuners->sampling_rate);
- }
- 
- static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
 diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 0ebff6fd0a0b..08bb67225b85 100644
+index aa24aa9a9eb3..ee2e19a1218a 100644
 --- a/drivers/cpufreq/cpufreq_governor.c
 +++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -207,8 +207,8 @@ static inline void gov_cancel_work(struct dbs_data *dbs_data,
- }
- 
- /* Will return if we need to evaluate cpu load again or not */
--bool need_load_eval(struct cpu_common_dbs_info *ccdbs,
--		    unsigned int sampling_rate)
-+static bool need_load_eval(struct cpu_common_dbs_info *ccdbs,
-+			   unsigned int sampling_rate)
+@@ -169,8 +169,12 @@ static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
+ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+ 		unsigned int delay, bool all_cpus)
  {
- 	if (policy_is_shared(ccdbs->policy)) {
- 		ktime_t time_now = ktime_get();
-@@ -223,7 +223,37 @@ bool need_load_eval(struct cpu_common_dbs_info *ccdbs,
++	struct cpu_dbs_info *cdbs = dbs_data->cdata->get_cpu_cdbs(policy->cpu);
+ 	int i;
  
- 	return true;
++	if (!cdbs->ccdbs->enabled)
++		return;
++
+ 	mutex_lock(&cpufreq_governor_lock);
+ 	if (!policy->governor_enabled)
+ 		goto out_unlock;
+@@ -234,6 +238,8 @@ static void dbs_timer(struct work_struct *work)
+ 	bool modify_all = true;
+ 
+ 	mutex_lock(&dbs_data->cdata->mutex);
++	if (!cdbs->ccdbs->enabled)
++		goto unlock;
+ 
+ 	if (dbs_data->cdata->governor == GOV_CONSERVATIVE) {
+ 		struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
+@@ -251,6 +257,7 @@ static void dbs_timer(struct work_struct *work)
+ 	delay = dbs_data->cdata->gov_dbs_timer(cdbs, dbs_data, modify_all);
+ 	gov_queue_work(dbs_data, policy, delay, modify_all);
+ 
++unlock:
+ 	mutex_unlock(&dbs_data->cdata->mutex);
  }
--EXPORT_SYMBOL_GPL(need_load_eval);
-+
-+static void dbs_timer(struct work_struct *work)
-+{
-+	struct cpu_dbs_info *cdbs = container_of(work, struct cpu_dbs_info,
-+						 dwork.work);
-+	struct cpu_common_dbs_info *ccdbs = cdbs->ccdbs;
-+	struct cpufreq_policy *policy = ccdbs->policy;
-+	struct dbs_data *dbs_data = policy->governor_data;
-+	unsigned int sampling_rate, delay;
-+	bool modify_all = true;
-+
-+	mutex_lock(&ccdbs->timer_mutex);
-+
-+	if (dbs_data->cdata->governor == GOV_CONSERVATIVE) {
-+		struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
-+
-+		sampling_rate = cs_tuners->sampling_rate;
-+	} else {
-+		struct od_dbs_tuners *od_tuners = dbs_data->tuners;
-+
-+		sampling_rate = od_tuners->sampling_rate;
-+	}
-+
-+	if (!need_load_eval(cdbs->ccdbs, sampling_rate))
-+		modify_all = false;
-+
-+	delay = dbs_data->cdata->gov_dbs_timer(cdbs, dbs_data, modify_all);
-+	gov_queue_work(dbs_data, policy, delay, modify_all);
-+
-+	mutex_unlock(&ccdbs->timer_mutex);
-+}
  
- static void set_sampling_rate(struct dbs_data *dbs_data,
- 		unsigned int sampling_rate)
-@@ -411,7 +441,7 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
- 		if (ignore_nice)
- 			j_cdbs->prev_cpu_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+@@ -376,10 +383,15 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy,
+ 	return ret;
+ }
  
--		INIT_DEFERRABLE_WORK(&j_cdbs->dwork, cdata->gov_dbs_timer);
-+		INIT_DEFERRABLE_WORK(&j_cdbs->dwork, dbs_timer);
+-static void cpufreq_governor_exit(struct cpufreq_policy *policy,
+-				  struct dbs_data *dbs_data)
++static int cpufreq_governor_exit(struct cpufreq_policy *policy,
++				 struct dbs_data *dbs_data)
+ {
+ 	struct common_dbs_data *cdata = dbs_data->cdata;
++	struct cpu_dbs_info *cdbs = cdata->get_cpu_cdbs(policy->cpu);
++
++	/* STOP should have been called by now */
++	if (cdbs->ccdbs->enabled)
++		return -EBUSY;
+ 
+ 	policy->governor_data = NULL;
+ 	if (!--dbs_data->usage_count) {
+@@ -395,6 +407,8 @@ static void cpufreq_governor_exit(struct cpufreq_policy *policy,
+ 		free_ccdbs(policy, cdata);
+ 		kfree(dbs_data);
  	}
++
++	return 0;
+ }
+ 
+ static int cpufreq_governor_start(struct cpufreq_policy *policy,
+@@ -409,6 +423,10 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
+ 	if (!policy->cur)
+ 		return -EINVAL;
+ 
++	/* START shouldn't be already called */
++	if (ccdbs->enabled)
++		return -EBUSY;
++
+ 	if (cdata->governor == GOV_CONSERVATIVE) {
+ 		struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
+ 
+@@ -458,17 +476,25 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
+ 		od_ops->powersave_bias_init_cpu(cpu);
+ 	}
+ 
++	ccdbs->enabled = true;
+ 	gov_queue_work(dbs_data, policy, delay_for_sampling_rate(sampling_rate),
+ 		       true);
+ 	return 0;
+ }
+ 
+-static void cpufreq_governor_stop(struct cpufreq_policy *policy,
+-				  struct dbs_data *dbs_data)
++static int cpufreq_governor_stop(struct cpufreq_policy *policy,
++				 struct dbs_data *dbs_data)
+ {
+ 	struct common_dbs_data *cdata = dbs_data->cdata;
+ 	unsigned int cpu = policy->cpu;
++	struct cpu_dbs_info *cdbs = cdata->get_cpu_cdbs(cpu);
++	struct cpu_common_dbs_info *ccdbs = cdbs->ccdbs;
++
++	/* Shouldn't be already stopped */
++	if (!ccdbs->enabled)
++		return -EBUSY;
+ 
++	ccdbs->enabled = false;
+ 	gov_cancel_work(dbs_data, policy);
  
  	if (cdata->governor == GOV_CONSERVATIVE) {
+@@ -477,17 +503,19 @@ static void cpufreq_governor_stop(struct cpufreq_policy *policy,
+ 
+ 		cs_dbs_info->enable = 0;
+ 	}
++
++	return 0;
+ }
+ 
+-static void cpufreq_governor_limits(struct cpufreq_policy *policy,
+-				    struct dbs_data *dbs_data)
++static int cpufreq_governor_limits(struct cpufreq_policy *policy,
++				   struct dbs_data *dbs_data)
+ {
+ 	struct common_dbs_data *cdata = dbs_data->cdata;
+ 	unsigned int cpu = policy->cpu;
+ 	struct cpu_dbs_info *cdbs = cdata->get_cpu_cdbs(cpu);
+ 
+-	if (!cdbs->ccdbs)
+-		return;
++	if (!cdbs->ccdbs->enabled)
++		return -EBUSY;
+ 
+ 	if (policy->max < cdbs->ccdbs->policy->cur)
+ 		__cpufreq_driver_target(cdbs->ccdbs->policy, policy->max,
+@@ -496,13 +524,15 @@ static void cpufreq_governor_limits(struct cpufreq_policy *policy,
+ 		__cpufreq_driver_target(cdbs->ccdbs->policy, policy->min,
+ 					CPUFREQ_RELATION_L);
+ 	dbs_check_cpu(dbs_data, cpu);
++
++	return 0;
+ }
+ 
+ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 			 struct common_dbs_data *cdata, unsigned int event)
+ {
+ 	struct dbs_data *dbs_data;
+-	int ret = 0;
++	int ret;
+ 
+ 	/* Lock governor to block concurrent initialization of governor */
+ 	mutex_lock(&cdata->mutex);
+@@ -522,17 +552,19 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+ 		ret = cpufreq_governor_init(policy, dbs_data, cdata);
+ 		break;
+ 	case CPUFREQ_GOV_POLICY_EXIT:
+-		cpufreq_governor_exit(policy, dbs_data);
++		ret = cpufreq_governor_exit(policy, dbs_data);
+ 		break;
+ 	case CPUFREQ_GOV_START:
+ 		ret = cpufreq_governor_start(policy, dbs_data);
+ 		break;
+ 	case CPUFREQ_GOV_STOP:
+-		cpufreq_governor_stop(policy, dbs_data);
++		ret = cpufreq_governor_stop(policy, dbs_data);
+ 		break;
+ 	case CPUFREQ_GOV_LIMITS:
+-		cpufreq_governor_limits(policy, dbs_data);
++		ret = cpufreq_governor_limits(policy, dbs_data);
+ 		break;
++	default:
++		ret = -EINVAL;
+ 	}
+ 
+ unlock:
 diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index 153412cafb05..2125c299c602 100644
+index 2b2884f91fe7..7da5aedb8174 100644
 --- a/drivers/cpufreq/cpufreq_governor.h
 +++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -132,8 +132,8 @@ static void *get_cpu_dbs_info_s(int cpu)				\
+@@ -130,6 +130,7 @@ static void *get_cpu_dbs_info_s(int cpu)				\
+ 
+ /* Common to all CPUs of a policy */
  struct cpu_common_dbs_info {
++	bool enabled;
  	struct cpufreq_policy *policy;
- 	/*
--	 * percpu mutex that serializes governor limit change with gov_dbs_timer
--	 * invocation. We do not want gov_dbs_timer to run when user is changing
-+	 * percpu mutex that serializes governor limit change with dbs_timer
-+	 * invocation. We do not want dbs_timer to run when user is changing
- 	 * the governor or limits.
- 	 */
- 	struct mutex timer_mutex;
-@@ -210,7 +210,9 @@ struct common_dbs_data {
- 
- 	struct cpu_dbs_info *(*get_cpu_cdbs)(int cpu);
- 	void *(*get_cpu_dbs_info_s)(int cpu);
--	void (*gov_dbs_timer)(struct work_struct *work);
-+	unsigned int (*gov_dbs_timer)(struct cpu_dbs_info *cdbs,
-+				      struct dbs_data *dbs_data,
-+				      bool modify_all);
- 	void (*gov_check_cpu)(int cpu, unsigned int load);
- 	int (*init)(struct dbs_data *dbs_data, bool notify);
- 	void (*exit)(struct dbs_data *dbs_data, bool notify);
-@@ -269,8 +271,6 @@ static ssize_t show_sampling_rate_min_gov_pol				\
- extern struct mutex cpufreq_governor_lock;
- 
- void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
--bool need_load_eval(struct cpu_common_dbs_info *ccdbs,
--		    unsigned int sampling_rate);
- int cpufreq_governor_dbs(struct cpufreq_policy *policy,
- 		struct common_dbs_data *cdata, unsigned int event);
- void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 651677cfa581..11db20079fc6 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -191,48 +191,40 @@ static void od_check_cpu(int cpu, unsigned int load)
- 	}
- }
- 
--static void od_dbs_timer(struct work_struct *work)
-+static unsigned int od_dbs_timer(struct cpu_dbs_info *cdbs,
-+				 struct dbs_data *dbs_data, bool modify_all)
- {
--	struct od_cpu_dbs_info_s *dbs_info =
--		container_of(work, struct od_cpu_dbs_info_s, cdbs.dwork.work);
--	struct cpufreq_policy *policy = dbs_info->cdbs.ccdbs->policy;
-+	struct cpufreq_policy *policy = cdbs->ccdbs->policy;
- 	unsigned int cpu = policy->cpu;
--	struct od_cpu_dbs_info_s *core_dbs_info = &per_cpu(od_cpu_dbs_info,
-+	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info,
- 			cpu);
--	struct dbs_data *dbs_data = policy->governor_data;
- 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
--	int delay = 0, sample_type = core_dbs_info->sample_type;
--	bool modify_all = true;
-+	int delay = 0, sample_type = dbs_info->sample_type;
- 
--	mutex_lock(&core_dbs_info->cdbs.ccdbs->timer_mutex);
--	if (!need_load_eval(core_dbs_info->cdbs.ccdbs,
--			    od_tuners->sampling_rate)) {
--		modify_all = false;
-+	if (!modify_all)
- 		goto max_delay;
--	}
- 
- 	/* Common NORMAL_SAMPLE setup */
--	core_dbs_info->sample_type = OD_NORMAL_SAMPLE;
-+	dbs_info->sample_type = OD_NORMAL_SAMPLE;
- 	if (sample_type == OD_SUB_SAMPLE) {
--		delay = core_dbs_info->freq_lo_jiffies;
--		__cpufreq_driver_target(policy, core_dbs_info->freq_lo,
-+		delay = dbs_info->freq_lo_jiffies;
-+		__cpufreq_driver_target(policy, dbs_info->freq_lo,
- 					CPUFREQ_RELATION_H);
- 	} else {
- 		dbs_check_cpu(dbs_data, cpu);
--		if (core_dbs_info->freq_lo) {
-+		if (dbs_info->freq_lo) {
- 			/* Setup timer for SUB_SAMPLE */
--			core_dbs_info->sample_type = OD_SUB_SAMPLE;
--			delay = core_dbs_info->freq_hi_jiffies;
-+			dbs_info->sample_type = OD_SUB_SAMPLE;
-+			delay = dbs_info->freq_hi_jiffies;
- 		}
- 	}
- 
- max_delay:
- 	if (!delay)
- 		delay = delay_for_sampling_rate(od_tuners->sampling_rate
--				* core_dbs_info->rate_mult);
-+				* dbs_info->rate_mult);
- 
--	gov_queue_work(dbs_data, policy, delay, modify_all);
--	mutex_unlock(&core_dbs_info->cdbs.ccdbs->timer_mutex);
-+	return delay;
- }
- 
- /************************** sysfs interface ************************/
+ 	ktime_t time_stamp;
+ };
 -- 
 2.4.0
 
