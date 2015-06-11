@@ -1,49 +1,70 @@
-From: Alexander Holler <holler@ahsoftware.de>
-Subject: Re: [PATCH 00/21] On-demand device registration
-Date: Thu, 11 Jun 2015 12:17:19 +0200
-Message-ID: <5579602F.1070801@ahsoftware.de>
-References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>	<CACRpkdasLwMfEHGMRd1X3K_DU7NMPreE8TMwqqDTg8k9wj=wJQ@mail.gmail.com>	<CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com>	<CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>	<5577F533.1060007@ahsoftware.de> <CACRpkdYF5K7ckGbgvZc6qRzGFJTQ4WqXdu_7Tcqczn2LkFbn3A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <CACRpkdYF5K7ckGbgvZc6qRzGFJTQ4WqXdu_7Tcqczn2LkFbn3A@mail.gmail.com>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Grant Likely <grant.likely@linaro.org>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>, open@wandq.ahsoftware, "list@wandq.ahsoftware:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, dmaengine@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, "linux-usb@vger.kernel.org" <linux-i2c@vg>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 00/12] cpufreq: Fix governor races - part 2
+Date: Thu, 11 Jun 2015 16:21:43 +0530
+Message-ID: <cover.1434019473.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:34917 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751555AbbFKKwJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jun 2015 06:52:09 -0400
+Received: by pacyx8 with SMTP id yx8so2264007pac.2
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2015 03:52:09 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, ke.wang@spreadtrum.com
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Am 11.06.2015 um 10:12 schrieb Linus Walleij:
-> On Wed, Jun 10, 2015 at 10:28 AM, Alexander Holler <holler@ahsoftware.de> wrote:
->> Am 10.06.2015 um 09:30 schrieb Linus Walleij:
->
->>> i2c host comes out, probes the regulator driver, regulator driver
->>> probes and then the regulator_get() call returns.
->>>
->>> This requires instrumentation on anything providing a resource
->>> to another driver like those I mentioned and a lot of overhead
->>> infrastructure, but I think it's the right approach. However I don't
->>> know if I would ever be able to pull that off myself, I know talk
->>> is cheap and I should show the code instead.
->>
->> You would end up with the same problem of deadlocks as currently, and you
->> would still need something ugly like the defered probe brutforce to avoid
->> them.
->
-> Sorry I don't get that. Care to elaborate on why?
+Hi,
 
-Because loading/initializing on demand doesn't give you any solved order 
-of drivers to initialize. And it can't because it has no idea about the 
-requirements of other drivers. The reason why it might work better in 
-the case of the tegra is that it might give you another initialization 
-order than the one which is currently choosen, which, by luck, might be 
-a better one.
+This is a next step of the earlier work I have posted [1].
 
-But maybe I missed something, I haven't looked at the patches at all. 
-But just loading on demand, can't magically give you a working order of 
-drivers to initialize. E.g. how do you choose the first driver to 
-initialize?
+The first 5 patches are minor cleanups, 6th & 7th try to optimize few
+things to make code less complex.
 
-Regards,
+Patches 8-11 actually solve (or try to solve :)) the synchronization
+problems, or the crashes I was getting.
 
-Alexander Holler
+And the last one again optimizes code a bit.
+
+I don't get the crashes anymore and want others to try. At least Preeti
+and Ke Wang (Sorry if I haven't spelled it properly :( ), as you two
+have reported the issues to me.
+
+This patchset should be rebased over the earlier one [1].
+
+To make things simple, all these patches are pushed here [2] and are
+rebased over pm/bleeeding-edge because of some recent important changes
+there:
+
+
+[1] http://marc.info/?i=cover.1433326032.git.viresh.kumar%40linaro.org
+[2] ssh://git@git.linaro.org/people/viresh.kumar/linux.git cpufreq/gov-locking
+
+--
+viresh
+
+Viresh Kumar (12):
+  cpufreq: governor: Name delayed-work as dwork
+  cpufreq: governor: Drop unused field 'cpu'
+  cpufreq: governor: Rename 'cpu_dbs_common_info' to 'cpu_dbs_info'
+  cpufreq: governor: name pointer to cpu_dbs_info as 'cdbs'
+  cpufreq: governor: rename cur_policy as policy
+  cpufreq: governor: Keep single copy of information common to
+    policy->cpus
+  cpufreq: governor: split out common part of {cs|od}_dbs_timer()
+  cpufreq: governor: synchronize work-handler with governor callbacks
+  cpufreq: governor: Avoid invalid states with additional checks
+  cpufreq: governor: Don't WARN on invalid states
+  cpufreq: propagate errors returned from __cpufreq_governor()
+  cpufreq: conservative: remove 'enable' field
+
+ drivers/cpufreq/cpufreq.c              |  22 ++--
+ drivers/cpufreq/cpufreq_conservative.c |  35 ++----
+ drivers/cpufreq/cpufreq_governor.c     | 200 +++++++++++++++++++++++----------
+ drivers/cpufreq/cpufreq_governor.h     |  36 +++---
+ drivers/cpufreq/cpufreq_ondemand.c     |  68 +++++------
+ 5 files changed, 214 insertions(+), 147 deletions(-)
+
+-- 
+2.4.0
+
