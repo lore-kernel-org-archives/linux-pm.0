@@ -1,57 +1,68 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH] cpufreq, Fix overflow in busy_scaled due to long delay
-Date: Thu, 11 Jun 2015 09:17:38 -0700
-Message-ID: <000901d0a462$239b6080$6ad22180$@net>
-References: <1433942325-6610-1-git-send-email-prarit@redhat.com> <2049134.oxrPdGJl10@vostro.rjw.lan> <000301d0a456$09333d00$1b99b700$@net> <5579A29B.8050304@redhat.com>
+From: Alexander Holler <holler@ahsoftware.de>
+Subject: Re: [PATCH 00/21] On-demand device registration
+Date: Thu, 11 Jun 2015 18:40:08 +0200
+Message-ID: <5579B9E8.9040609@ahsoftware.de>
+References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>	<CACRpkdasLwMfEHGMRd1X3K_DU7NMPreE8TMwqqDTg8k9wj=wJQ@mail.gmail.com>	<CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com>	<CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>	<5577F533.1060007@ahsoftware.de>	<CACRpkdYF5K7ckGbgvZc6qRzGFJTQ4WqXdu_7Tcqczn2LkFbn3A@mail.gmail.com>	<5579602F.1070801@ahsoftware.de> <CACRpkdaZgBR5rHwrEYqcm5K4w3y8MXG8a0k=Y+oQY+jukHfuyw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta16.telus.net ([209.171.16.89]:40249 "EHLO cmta16.telus.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752914AbbFKQRo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 11 Jun 2015 12:17:44 -0400
-In-Reply-To: <5579A29B.8050304@redhat.com>
-Content-Language: en-ca
+Received: from h1446028.stratoserver.net ([85.214.92.142]:41865 "EHLO
+	mail.ahsoftware.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752236AbbFKQkW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jun 2015 12:40:22 -0400
+In-Reply-To: <CACRpkdaZgBR5rHwrEYqcm5K4w3y8MXG8a0k=Y+oQY+jukHfuyw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Prarit Bhargava' <prarit@redhat.com>
-Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, 'Kristen Carlson Accardi' <kristen@linux.intel.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Grant Likely <grant.likely@linaro.org>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>, "list@wandq.ahsoftware:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, dmaengine@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, "linux-usb@vger.kernel.org" <linux-i2c@vger.kernel.org>
 
-
-On 2015.06.11 08:01 Prarit Bhargava wrote:
-> On 06/11/2015 10:51 AM, Doug Smythies wrote:
->> 
->> On 2015.06.10 16:46 Rafael J. Wysocki wrote:
->>> On Wednesday, June 10, 2015 09:18:45 AM Prarit Bhargava wrote:
->>>> I looked into switching to div64_s64() instead of the 32-bit version in
->>>> div_fp(), however, this would result in sample_ratio and core_busy returning
->>>> 0 which is something we don't want.
->> 
->> ???
->> Due to a great many overflow related issues, div_fp() was changed to div64_s64()
->> a long time ago.
-
-> Doug,
+Am 11.06.2015 um 14:30 schrieb Linus Walleij:
+> On Thu, Jun 11, 2015 at 12:17 PM, Alexander Holler <holler@ahsoftware.de> wrote:
+>> Am 11.06.2015 um 10:12 schrieb Linus Walleij:
+>>> On Wed, Jun 10, 2015 at 10:28 AM, Alexander Holler <holler@ahsoftware.de>
+>>> wrote:
 >
-> Nope -- in a linux.git tree (up-to-date as of 7:00AM ET this AM)
+>>>> You would end up with the same problem of deadlocks as currently, and you
+>>>> would still need something ugly like the defered probe brutforce to avoid
+>>>> them.
+>>>
+>>>
+>>> Sorry I don't get that. Care to elaborate on why?
+>>
+>>
+>> Because loading/initializing on demand doesn't give you any solved order of
+>> drivers to initialize. And it can't because it has no idea about the
+>> requirements of other drivers. The reason why it might work better in the
+>> case of the tegra is that it might give you another initialization order
+>> than the one which is currently choosen, which, by luck, might be a better
+>> one.
+>>
+>> But maybe I missed something, I haven't looked at the patches at all. But
+>> just loading on demand, can't magically give you a working order of drivers
+>> to initialize. E.g. how do you choose the first driver to initialize?
 >
-> static inline int32_t div_fp(int32_t x, int32_t y)
-> {
->        return div_s64((int64_t)x << FRAC_BITS, y);
-> }
+> So the current patch set introduces dependencies (just for device tree)
+> and Tomeu is working on a more generic dependency approach for
+> any HW description.
+>
+> The first driver to initialize will be as usual the first one in the list for
+> that initlevel, then walking up the initilevels.
+>
+> However if any driver runs into a resource roadblock it will postpone
+> and wait for dependencies to probe first.
+>
+> Certainly it is possible to create deadlocks in this scenario, but the
+> scope is not to create an ubreakable system.
 
-> If we do want this to be div64_s64, I can make that change, however, I feel that
-> a long delay like this should be ignored in the performance calculations in the
-> driver and that's why I chose to go the direction I did.
+IAnd what happens if you run into a deadlock? Do you print "you've lost, 
+try changing your kernel config" in some output hidden by a 
+splash-screen? ;)
 
-Prarit,
+That sounds like the fun with duck typed languages where you have to 
+test any and every possible screnario (something which is almost 
+impossible) in order to not run into something unexpected.
 
-Apologies to you and the list for the distraction. I mis-read "div_s64" as "div64_s64".
-Your suggestion is a good one.
+Anyway, have fun, good luck.
 
-I do maintain that my point about the duration method being flawed is valid.
-I proposed a fix for that some time ago.
-
-
+Alexander Holler
