@@ -1,85 +1,58 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / Domains: Try power off masters in error path of __pm_genpd_poweron()
-Date: Thu, 11 Jun 2015 13:51:51 +0200
-Message-ID: <1434023511-4263-1-git-send-email-ulf.hansson@linaro.org>
+From: Jassi Brar <jaswinder.singh@linaro.org>
+Subject: Re: [PATCH v4 2/8] firmware: add support for ARM System Control and
+ Power Interface(SCPI) protocol
+Date: Thu, 11 Jun 2015 17:24:19 +0530
+Message-ID: <CAJe_ZheUknLZuMg-02V-AqyjxX8Nx4oK3O2HapqfCLkkXjngAg@mail.gmail.com>
+References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com>
+	<1433760002-24120-3-git-send-email-sudeep.holla@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f54.google.com ([209.85.215.54]:35155 "EHLO
-	mail-la0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbbFKLwC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jun 2015 07:52:02 -0400
-Received: by labko7 with SMTP id ko7so3107495lab.2
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2015 04:52:00 -0700 (PDT)
+Received: from mail-vn0-f41.google.com ([209.85.216.41]:32972 "EHLO
+	mail-vn0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751688AbbFKLyU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jun 2015 07:54:20 -0400
+Received: by vnbf190 with SMTP id f190so671003vnb.0
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2015 04:54:19 -0700 (PDT)
+In-Reply-To: <1433760002-24120-3-git-send-email-sudeep.holla@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Jassi Brar <jassisinghbrar@gmail.com>, Liviu Dudau <Liviu.Dudau@arm.com>, Olof Johansson <olof@lixom.net>
 
-While powering up a genpd, its domain masters are first being powered up.
-In the error path of __pm_genpd_poweron(), we didn't care to try power off
-these domain masters. Let's deal with that to avoid leaving unused PM
-domains powered.
-
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain.c | 30 +++++++++++++++++-------------
- 1 file changed, 17 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 2327613..32dcb80 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -235,6 +235,18 @@ static int genpd_power_off(struct generic_pm_domain *genpd)
- }
- 
- /**
-+ * genpd_queue_power_off_work - Queue up the execution of pm_genpd_poweroff().
-+ * @genpd: PM domait to power off.
-+ *
-+ * Queue up the execution of pm_genpd_poweroff() unless it's already been done
-+ * before.
-+ */
-+static void genpd_queue_power_off_work(struct generic_pm_domain *genpd)
-+{
-+	queue_work(pm_wq, &genpd->power_off_work);
-+}
-+
-+/**
-  * __pm_genpd_poweron - Restore power to a given PM domain and its masters.
-  * @genpd: PM domain to power up.
-  *
-@@ -315,8 +327,12 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
- 	return 0;
- 
-  err:
--	list_for_each_entry_continue_reverse(link, &genpd->slave_links, slave_node)
-+	list_for_each_entry_continue_reverse(link,
-+					&genpd->slave_links,
-+					slave_node) {
- 		genpd_sd_counter_dec(link->master);
-+		genpd_queue_power_off_work(link->master);
-+	}
- 
- 	return ret;
- }
-@@ -490,18 +506,6 @@ static bool genpd_abort_poweroff(struct generic_pm_domain *genpd)
- }
- 
- /**
-- * genpd_queue_power_off_work - Queue up the execution of pm_genpd_poweroff().
-- * @genpd: PM domait to power off.
-- *
-- * Queue up the execution of pm_genpd_poweroff() unless it's already been done
-- * before.
-- */
--static void genpd_queue_power_off_work(struct generic_pm_domain *genpd)
--{
--	queue_work(pm_wq, &genpd->power_off_work);
--}
--
--/**
-  * pm_genpd_poweroff - Remove power from a given PM domain.
-  * @genpd: PM domain to power down.
-  *
--- 
-1.9.1
-
+On 8 June 2015 at 16:09, Sudeep Holla <sudeep.holla@arm.com> wrote:
+...
+> +
+> +static void scpi_process_cmd(struct scpi_chan *ch, u32 cmd)
+> +{
+> +       unsigned long flags;
+> +       struct scpi_xfer *t, *match = NULL;
+> +
+> +       spin_lock_irqsave(&ch->rx_lock, flags);
+> +       if (list_empty(&ch->rx_pending)) {
+> +               spin_unlock_irqrestore(&ch->rx_lock, flags);
+> +               return;
+> +       }
+> +
+> +       list_for_each_entry(t, &ch->rx_pending, node)
+> +               if (CMD_XTRACT_UNIQ(t->cmd) == CMD_XTRACT_UNIQ(cmd)) {
+> +                       list_del(&t->node);
+> +                       match = t;
+> +                       break;
+> +               }
+> +       /* check if wait_for_completion is in progress or timed-out */
+> +       if (match && !completion_done(&match->done)) {
+> +               struct scpi_shared_mem *mem = ch->rx_payload;
+> +               unsigned int len = min(match->rx_len, CMD_SIZE(cmd));
+> +
+> +               match->status = le32_to_cpu(mem->status);
+> +               memcpy_fromio(match->rx_buf, mem->payload, len);
+> +               if (match->rx_len > len)
+> +                       memset(match->rx_buf + len, 0, match->rx_len - len);
+> +               complete(&match->done);
+> +       }
+> +       spin_unlock_irqrestore(&ch->rx_lock, flags);
+> +}
+There doesn't seem to be support for commands sent by remote?
+Something like when remote is the thermal master and it needs to send
+sensor readings crossing thresholds.
