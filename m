@@ -1,402 +1,125 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH RFC 2/3] PM / Domains: Support atomic PM domains
-Date: Thu, 11 Jun 2015 09:13:07 +0900
-Message-ID: <5578D293.9050809@samsung.com>
+Subject: Re: [PATCH RFC 3/3] PM / Domains: Introduce generic PM domain for cpu
+ domain
+Date: Thu, 11 Jun 2015 09:27:34 +0900
+Message-ID: <5578D5F6.8000000@samsung.com>
 References: <1433456946-53296-1-git-send-email-lina.iyer@linaro.org>
- <1433456946-53296-3-git-send-email-lina.iyer@linaro.org>
- <55740D00.1030203@samsung.com> <20150610161323.GA4497@linaro.org>
+ <1433456946-53296-4-git-send-email-lina.iyer@linaro.org>
+ <5574121F.2000806@samsung.com> <20150610165742.GB4497@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:60573 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751725AbbFKANL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 20:13:11 -0400
-Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
- by mailout2.w1.samsung.com
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:59964 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750761AbbFKA1g (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jun 2015 20:27:36 -0400
+Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
+ by mailout3.w1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0NPR00ESC79U3V30@mailout2.w1.samsung.com> for
- linux-pm@vger.kernel.org; Thu, 11 Jun 2015 01:13:07 +0100 (BST)
-In-reply-to: <20150610161323.GA4497@linaro.org>
+ with ESMTP id <0NPR00KV27XX5830@mailout3.w1.samsung.com> for
+ linux-pm@vger.kernel.org; Thu, 11 Jun 2015 01:27:33 +0100 (BST)
+In-reply-to: <20150610165742.GB4497@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Lina Iyer <lina.iyer@linaro.org>
 Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@linaro.org, mathieu.poirier@linaro.org, linux-pm@vger.kernel.org, galak@codeaurora.org, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-kernel@lists.infradead.org
 
-On 11.06.2015 01:13, Lina Iyer wrote:
-> On Sun, Jun 07 2015 at 03:21 -0600, Krzysztof Kozlowski wrote:
+On 11.06.2015 01:57, Lina Iyer wrote:
+> On Sun, Jun 07 2015 at 03:43 -0600, Krzysztof Kozlowski wrote:
 >> W dniu 05.06.2015 o 07:29, Lina Iyer pisze:
->>> Power Domains currently support turning on/off only in process context.
->>> This restricts the usage of PM domains to devices and domains that
->>> could be powered on/off in irq disabled contexts as the mutexes used in
->>> GenPD allows for cpu sleep while waiting for locks.
+>>> Generally cpus are grouped under a power domain in a SoC. When all cpus
+>>> in the domain are in their power off state,
 >>
->> I can find also other use case: currently the power domain with irq_safe
->> devices is always powered on. With the patch it could be powered off (of
->> course if the driver/mach code is irq-safe).
+>> What do you exactly mean here by "CPU in power off state"? How does it
+>> map to kernel understanding of CPU device (hotplug? cpuidle?)?
 >>
-> Yes, absolutely.
-> 
->>>
->>> Genpd inherently provides support for devices, domain hierarchy and can
->>> be used to represent cpu clusters like in ARM's big.Little, where, each
->>> cpu cluster is in its domain, with supporting caches and other
->>> peripheral hardware. Multiple such domains could be part of another
->>> domain. Because mutexes are used to protect and synchronize domain
->>> operations and cpu idle operations are inherently atomic, the use of
->>> genpd is not possible for runtime suspend and resume of the pm domain.
->>> Replacing the locks to spinlocks would allow cpu domain to be be powered
->>> off to save power, when all the cpus are powered off.
->>>
->>> However, not all domains can operate in irq-safe contexts and usually
->>> would need to sleep during domain operations. So genpd has to support
->>> both the cases, where the domain is or is not irq-safe. The irq-safe
->>> attribute is therefore domain specific.
->>>
->>> To achieve domain specific locking, set the GENPD_FLAG_IRQ_SAFE flag
->>> while defining the domain. This determines if the domain should use a
->>> spinlock instead of a mutex. Locking is abstracted through
->>> genpd_lock_domain() and genpd_unlock_domain() functions that use the
->>> flag to determine the locking to be used for this domain.
->>>
->>> The restriction this imposes on the domain hierarchy is that subdomains
->>> and all devices in the hierarchy also be irq-safe. Non irq-safe domains
->>> may continue to have irq-safe devices, but not the other way around.
->>
->> So an irq-safe device can be put in irq-safe subdomain which can be a
->> child of non-irq-safe topdomain?
->>
-> Yes, the container need not be irq-safe but the contained need to be
-> irqsafe.
+> Both cpuidle and hotplug could end with with core being powered down at
+> the platform driver or at PSCI (on V8). It does not matter which of
+> these two frameworks resulted in the cpu being powered off. But, if all
+> cpus in the domain are powered off, then the domain could be powered off
+> as well. This is the premise of this change. It is probably easier to
+> power off the domain when the cores in that domain/cluster have been
+> hotplugged off. It saves power to turn off the domain at that time, but
+> more power savings can be achieved if the domain could also be powered
+> off during cpuidle. Hotplug is not a common occurance, while cpuidle is.
 
-I had doubts about possibility of grabbing any lock from irq-safe
-subdomain before grabbing lock from non-irq-safe parent. That would mean
-that spin_lock is acquired and then mutex. But now after giving some
-more thoughts I can't find such case so it seems fine.
-
-Thanks for explanation.
+OK, it answers my questions, thanks.
 
 > 
->>>
->>> Cc: Ulf Hansson <ulf.hansson@linaro.org>
->>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
->>> Cc: Kevin Hilman <khilman@linaro.org>
->>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->>> ---
->>>  drivers/base/power/domain.c | 200
->>> ++++++++++++++++++++++++++++++++++----------
->>>  include/linux/pm_domain.h   |  11 ++-
+>>> the cpu domain can also be
+>>> powered off. Genpd provides the framework for defining cpus as devices
+>>> that are part of a cpu domain.
 >>
->> Documentation should also be reflected.
+>> The problem which is solved looks to me like the same problem which
+>> coupled cpuidle tried to solve: a certain deep sleep mode (e.g. power
+>> off) can be entered when whole cluster is idle or other CPUs in cluster
+>> are powered off completely.
 >>
-> Yes, will add.
+>> It seems a little like duplicating the effort around coupled cpuidle.
+>>
+> I see where are you are going with this, but genpd solution is not
+> exactly a duplicate of the solution.
 > 
->>>  2 files changed, 164 insertions(+), 47 deletions(-)
->>>
->>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->>> index dfd7595..8b89d15 100644
->>> --- a/drivers/base/power/domain.c
->>> +++ b/drivers/base/power/domain.c
->>> @@ -50,6 +50,71 @@
->>>  static LIST_HEAD(gpd_list);
->>>  static DEFINE_MUTEX(gpd_list_lock);
->>>
->>> +static inline int genpd_lock_domain_noirq(struct generic_pm_domain
->>> *genpd,
->>> +                    unsigned int subclass)
->>> +    __acquires(&genpd->slock)
->>> +{
->>> +    unsigned long flags;
->>> +
->>> +    if (unlikely(subclass > 0))
->>> +        spin_lock_irqsave_nested(&genpd->slock, flags, subclass);
->>> +    else
->>> +        spin_lock_irqsave(&genpd->slock, flags);
->>> +
->>> +    genpd->flags = flags;
->>> +
->>> +    return 0;
->>> +}
->>> +
->>> +static inline int genpd_unlock_domain_noirq(struct generic_pm_domain
->>> *genpd)
->>> +    __releases(&genpd->slock)
->>> +{
->>> +    spin_unlock_irqrestore(&genpd->slock, genpd->lock_flags);
->>> +    return 0;
->>> +}
->>> +
->>> +static inline int genpd_lock_domain_irq(struct generic_pm_domain
->>> *genpd,
->>> +                    unsigned int subclass)
->>> +    __acquires(&genpd->mlock)
->>> +{
->>> +    if (unlikely(subclass > 0))
->>> +        mutex_lock_nested(&genpd->mlock, subclass);
->>> +    else
->>> +        mutex_lock(&genpd->mlock);
->>> +
->>> +    return 0;
->>> +}
->>> +
->>> +static inline int genpd_lock_domain_interruptible_irq(
->>> +                struct generic_pm_domain *genpd)
->>> +    __acquires(&genpd->mlock)
->>> +{
->>> +    return mutex_lock_interruptible(&genpd->mlock);
->>> +}
->>> +
->>> +static inline int genpd_unlock_domain_irq(struct generic_pm_domain
->>> *genpd)
->>> +    __releases(&genpd->mlock)
->>> +{
->>> +    mutex_unlock(&genpd->mlock);
->>> +    return 0;
->>> +}
->>> +
->>> +#define genpd_lock_domain(genpd)                \
->>> +    (genpd->irq_safe ? genpd_lock_domain_noirq(genpd, 0)    \
->>> +            : genpd_lock_domain_irq(genpd, 0))
->>> +
->>> +#define genpd_lock_domain_nested(genpd)                \
->>> +    (genpd->irq_safe ? genpd_lock_domain_noirq(genpd,
->>> SINGLE_DEPTH_NESTING)\
->>> +            : genpd_lock_domain_irq(genpd, SINGLE_DEPTH_NESTING))
->>> +
->>> +#define genpd_unlock_domain(genpd)                \
->>> +    (genpd->irq_safe ? genpd_unlock_domain_noirq(genpd)    \
->>> +            : genpd_unlock_domain_irq(genpd))
->>> +
->>> +#define genpd_lock_domain_interruptible(genpd)            \
->>> +    (genpd->irq_safe ? genpd_lock_domain_noirq(genpd, 0)    \
->>> +            : genpd_lock_domain_interruptible_irq(genpd))
->>
->> Why macros? You are not using here benefits of a macro and they are
->> called just like ordinary functions.
->>
-> Well, I didnt see a need for a function that might show up in the stack.
-> But I have no strong preference either way.
-
-That is actually a valid reason. It is just my personal dislike of
-macros so I am fine with your idea.
-
+> Couple state is used to put the cpus in a deeper sleep state, which
+> could also result in powering off the domain. Coupled cpuidle is a
+> cpuidle mechanism for choosing a deeper sleep mode on certain hardware
+> that can only enter such a mode when all cpus cooperate.
 > 
->> You added "domain" prefix but genpd already contains this. genod_lock(),
->> genpd_lock_nested() etc. should be sufficient, unless there is a
->> conflict, similar name planned or you plan to lock something else
->> (genpd_lock_device?).
->>
-> Sigh. Yes, you are right. Its redundant. Will remove.
+> This patch attempts to describe the backend of a cpu domain. CPUs are
+> responsible for individual cpuidle states, cpus do enter their
+> recommended deepest idle state at the time of no activity. A cpu-domain
+> could be comprised of cpus, and other devices like GIC, busses etc, that
+> all need to idle before the domain can be powered off. This patch does
+> not dictate which idle state any those devices should enter, or
+> coordinate the idle states between devices. But, if cpus, choose to
+> power down, then this patch recognizes that and reduces the reference
+> usage count on the domain. Only when all devices in the domain remove
+> their usage count, will the domain be powered off.
+
+It would be nice to see the usage of this patch in cpuidle driver or
+platform code but I think I get the idea.
+
+Actually I like the approach.
+I am thinking how to utilize it to replace coupled cpuidle for our case.
+In our case we use coupled cpuidle because the SoC can be put in low
+power mode only if non-boot CPUs are powered down.
+
+However in our case:
+1. Some other devices (buses, clocks) also should be idle. This would
+perfectly match with this patch and with runtime PM.
+
+2. Some non-boot idle CPU could power itself down but it cannot wake up.
+Only the alive CPU can wake others. This probably means that we cannot
+provide a cpuidle driver which will power off unused cores and then, if
+boot CPU is idle, disable the CPU power domain by entering to low power
+mode.
+
+Anyway, as I said, I like the approach.
+
+
+> There are two things this patch provides -
 > 
->>
->>> +
->>>  static struct generic_pm_domain *pm_genpd_lookup_name(const char
->>> *domain_name)
->>>  {
->>>      struct generic_pm_domain *genpd = NULL, *gpd;
->>> @@ -262,9 +327,9 @@ int pm_genpd_poweron(struct generic_pm_domain
->>> *genpd)
->>>  {
->>>      int ret;
->>>
->>> -    mutex_lock(&genpd->lock);
->>> +    genpd_lock_domain(genpd);
->>>      ret = __pm_genpd_poweron(genpd);
->>> -    mutex_unlock(&genpd->lock);
->>> +    genpd_unlock_domain(genpd);
->>>      return ret;
->>>  }
->>>
->>> @@ -326,9 +391,9 @@ static int genpd_dev_pm_qos_notifier(struct
->>> notifier_block *nb,
->>>          spin_unlock_irq(&dev->power.lock);
->>>
->>>          if (!IS_ERR(genpd)) {
->>> -            mutex_lock(&genpd->lock);
->>> +            genpd_lock_domain(genpd);
->>>              genpd->max_off_time_changed = true;
->>> -            mutex_unlock(&genpd->lock);
->>> +            genpd_unlock_domain(genpd);
->>>          }
->>>
->>>          dev = dev->parent;
->>> @@ -387,7 +452,7 @@ static int pm_genpd_poweroff(struct
->>> generic_pm_domain *genpd)
->>>              return -EBUSY;
->>>
->>>          if (pdd->dev->driver && (!pm_runtime_suspended(pdd->dev)
->>> -            || pdd->dev->power.irq_safe))
->>> +            || (pdd->dev->power.irq_safe && !genpd->irq_safe)))
->>>              not_suspended++;
->>>      }
->>>
->>> @@ -453,9 +518,9 @@ static void genpd_power_off_work_fn(struct
->>> work_struct *work)
->>>
->>>      genpd = container_of(work, struct generic_pm_domain,
->>> power_off_work);
->>>
->>> -    mutex_lock(&genpd->lock);
->>> +    genpd_lock_domain(genpd);
->>>      pm_genpd_poweroff(genpd);
->>
->> Ipm_genpd_poweroff() calls __pm_genpd_save_device() which grabs mutex.
->> At least in next-20150604 but maybe the patches, which this depends on,
->> changed it?
->>
-> Yes. Ulf's patch remvoed that call.
-
-OK, thanks.
-
+> i. A generic way to initialize a genpd specifically for cpus. (The
+> platform specifies the relation between a cpu and its domain in the DT
+> and provides the memory for the genpd structure)
 > 
->>
->>> -    mutex_unlock(&genpd->lock);
->>> +    genpd_unlock_domain(genpd);
->>>  }
->>>
->>>  /**
->>> @@ -478,12 +543,8 @@ static int pm_genpd_runtime_suspend(struct
->>> device *dev)
->>>      if (IS_ERR(genpd))
->>>          return -EINVAL;
->>>
->>> -    /*
->>> -     * We can't allow to power off the PM domain if it holds an
->>> irq_safe
->>> -     * device. That's beacuse we use mutexes to protect data while
->>> power
->>> -     * off and on the PM domain, thus we can't execute in atomic
->>> context.
->>> -     */
->>> -    if (dev->power.irq_safe)
->>> +    /* We can't allow to power off a domain that is also not irq
->>> safe. */
->>> +    if (dev->power.irq_safe && !genpd->irq_safe)
->>>          return -EBUSY;
->>>
->>>      stop_ok = genpd->gov ? genpd->gov->stop_ok : NULL;
->>> @@ -500,11 +561,19 @@ static int pm_genpd_runtime_suspend(struct
->>> device *dev)
->>>          return ret;
->>>      }
->>>
->>> -    mutex_lock(&genpd->lock);
->>> +    /*
->>> +     * If power.irq_safe is set, this routine will be run with
->>> interrupts
->>> +     * off, so suspend only if the power domain is irq_safe.
->>> +     */
->>> +    if (dev->power.irq_safe && !genpd->irq_safe)
->>> +        return 0;
->>> +
->>> +    genpd_lock_domain(genpd);
->>> +
->>>      genpd->in_progress++;
->>>      pm_genpd_poweroff(genpd);
->>>      genpd->in_progress--;
->>> -    mutex_unlock(&genpd->lock);
->>> +    genpd_unlock_domain(genpd);
->>>
->>>      return 0;
->>>  }
->>> @@ -528,13 +597,16 @@ static int pm_genpd_runtime_resume(struct
->>> device *dev)
->>>      if (IS_ERR(genpd))
->>>          return -EINVAL;
->>>
->>> -    /* If power.irq_safe, the PM domain is never powered off. */
->>> -    if (dev->power.irq_safe)
->>> +    /*
->>> +     * If power.irq_safe and domain is not, then
->>> +     * the PM domain is never powered off.
->>> +     */
->>> +    if (dev->power.irq_safe && !genpd->irq_safe)
->>>          return genpd_start_dev_no_timing(genpd, dev);
->>>
->>> -    mutex_lock(&genpd->lock);
->>> +    genpd_lock_domain(genpd);
->>>      ret = __pm_genpd_poweron(genpd);
->>> -    mutex_unlock(&genpd->lock);
->>> +    genpd_unlock_domain(genpd);
->>>
->>>      if (ret)
->>>          return ret;
->>> @@ -729,14 +801,14 @@ static int pm_genpd_prepare(struct device *dev)
->>>      if (resume_needed(dev, genpd))
->>>          pm_runtime_resume(dev);
->>>
->>> -    mutex_lock(&genpd->lock);
->>> +    genpd_lock_domain(genpd);
->>>
->>>      if (genpd->prepared_count++ == 0) {
->>>          genpd->suspended_count = 0;
->>>          genpd->suspend_power_off = genpd->status ==
->>> GPD_STATE_POWER_OFF;
->>>      }
->>>
->>> -    mutex_unlock(&genpd->lock);
->>> +    genpd_unlock_domain(genpd);
->>>
->>>      if (genpd->suspend_power_off) {
->>>          pm_runtime_put_noidle(dev);
->>> @@ -754,12 +826,12 @@ static int pm_genpd_prepare(struct device *dev)
->>>
->>>      ret = pm_generic_prepare(dev);
->>>      if (ret) {
->>> -        mutex_lock(&genpd->lock);
->>> +        genpd_lock_domain(genpd);
->>>
->>>          if (--genpd->prepared_count == 0)
->>>              genpd->suspend_power_off = false;
->>>
->>> -        mutex_unlock(&genpd->lock);
->>> +        genpd_unlock_domain(genpd);
->>>          pm_runtime_enable(dev);
->>>      }
->>>
->>> @@ -1116,13 +1188,13 @@ static void pm_genpd_complete(struct device
->>> *dev)
->>>      if (IS_ERR(genpd))
->>>          return;
->>>
->>> -    mutex_lock(&genpd->lock);
->>> +    genpd_lock_domain(genpd);
->>>
->>>      run_complete = !genpd->suspend_power_off;
->>>      if (--genpd->prepared_count == 0)
->>>          genpd->suspend_power_off = false;
->>>
->>> -    mutex_unlock(&genpd->lock);
->>> +    genpd_unlock_domain(genpd);
->>>
->>>      if (run_complete) {
->>>          pm_generic_complete(dev);
->>> @@ -1266,11 +1338,18 @@ int __pm_genpd_add_device(struct
->>> generic_pm_domain *genpd, struct device *dev,
->>>      if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(dev))
->>>          return -EINVAL;
->>>
->>> +    /* Devices in an IRQ safe PM Domain have to be irq safe too */
->>
->> Why? Can you add this information here? Previously there was a reason in
->> case of irq_safe devices which you removed leaving only policy.
->>
-> Sorry, your question is not clear to me.
-> I believe this is a new requirement that enforces the contained devices
-> of an irq-safe domain to be irq-safe as well.
-
-What I wanted to say is that it would be nice if comment explained why
-domain have to be IRQ safe too. Without this "WHY" answer the comment is
-quite redundant - the "if" statement is obvious. But the "WHY" is not
-such obvious.
-
-Previous comments in few places mentioned the answer:
-/*
- * We can't allow to power off the PM domain if it holds an irq_safe
- * device. That's beacuse we use mutexes to protect data while power
- * off and on the PM domain, thus we can't execute in atomic context.
- */
+> ii. On behalf of a platform, we track when the cpus power up and down
+> and use runtime_get and runtime_put on the genpd.
+> 
+> Unlike coupled cpuidle, individual cpu idle state is not manipulated.
+> Coupled cpuidle does not care if the domain is powered off, it is used
+> to allow a certain C-state for the cpu, based on the idleness of other
+> cpus in that cluster. The focus of the series is powering down the
+> domain when the devices (cpus included) are powered off. You could see
+> this patch as a cpu-pm and runtime-pm interface layer.
+> 
+> Hope that helps.
+> 
+> Thanks,
+> Lina
+> 
 
 Best regards,
 Krzysztof
+
