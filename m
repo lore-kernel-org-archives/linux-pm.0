@@ -1,120 +1,131 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC/PATCH V2] PM / Domains: Remove intermediate states from the
- power off sequence
-Date: Thu, 11 Jun 2015 12:53:01 +0200
-Message-ID: <CAPDyKFqSctMriniQpHxTgpDknxv0woG7ezQO3xBJPnLhpUoCDg@mail.gmail.com>
-References: <1432735844-21629-1-git-send-email-ulf.hansson@linaro.org>
-	<20150603183859.GR32700@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 12/12] cpufreq: conservative: remove 'enable' field
+Date: Thu, 11 Jun 2015 16:21:55 +0530
+Message-ID: <3af78d993ca7cea8c0b1dec4c7e4714ef21e09ce.1434019473.git.viresh.kumar@linaro.org>
+References: <cover.1434019473.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f174.google.com ([209.85.216.174]:35691 "EHLO
-	mail-qc0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752286AbbFKKxC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jun 2015 06:53:02 -0400
-Received: by qchs1 with SMTP id s1so944327qch.2
-        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2015 03:53:01 -0700 (PDT)
-In-Reply-To: <20150603183859.GR32700@linaro.org>
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:34659 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752288AbbFKKxA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Jun 2015 06:53:00 -0400
+Received: by payr10 with SMTP id r10so2311943pay.1
+        for <linux-pm@vger.kernel.org>; Thu, 11 Jun 2015 03:52:59 -0700 (PDT)
+In-Reply-To: <cover.1434019473.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1434019473.git.viresh.kumar@linaro.org>
+References: <cover.1434019473.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, ke.wang@spreadtrum.com
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-[...]
+Conservative governor has its own 'enable' field to check in notifier if
+notification is required or not. The same functionality can now be
+achieved with 'ccdbs->enabled instead'. Lets get rid of 'enable'.
 
->> static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
->> -       __releases(&genpd->lock) __acquires(&genpd->lock)
->> {
->>         struct gpd_link *link;
->> -       DEFINE_WAIT(wait);
->>         int ret = 0;
->>
->> -       /* If the domain's master is being waited for, we have to wait
->> too. */
->> -       for (;;) {
->> -               prepare_to_wait(&genpd->status_wait_queue, &wait,
->> -                               TASK_UNINTERRUPTIBLE);
->> -               if (genpd->status != GPD_STATE_WAIT_MASTER)
->> -                       break;
->> -               mutex_unlock(&genpd->lock);
->> -
->> -               schedule();
->> -
->> -               mutex_lock(&genpd->lock);
->> -       }
->> -       finish_wait(&genpd->status_wait_queue, &wait);
->> -
->>         if (genpd->status == GPD_STATE_ACTIVE
->>             || (genpd->prepared_count > 0 && genpd->suspend_power_off))
->>                 return 0;
->>
->> -       if (genpd->status != GPD_STATE_POWER_OFF) {
->> -               genpd_set_active(genpd);
->> -               return 0;
->> -       }
->> -
->>         if (genpd->cpuidle_data) {
->>                 cpuidle_pause_and_lock();
->>                 genpd->cpuidle_data->idle_state->disabled = true;
->> @@ -285,20 +229,8 @@ static int __pm_genpd_poweron(struct
->> generic_pm_domain *genpd)
->>          */
->>         list_for_each_entry(link, &genpd->slave_links, slave_node) {
->>                 genpd_sd_counter_inc(link->master);
->> -               genpd->status = GPD_STATE_WAIT_MASTER;
->> -
->> -               mutex_unlock(&genpd->lock);
->>
->>                 ret = pm_genpd_poweron(link->master);
->> -
->> -               mutex_lock(&genpd->lock);
->> -
->> -               /*
->> -                * The "wait for parent" status is guaranteed not to
->> change
->> -                * while the master is powering on.
->> -                */
->> -               genpd->status = GPD_STATE_POWER_OFF;
->> -               wake_up_all(&genpd->status_wait_queue);
->>                 if (ret) {
->>                         genpd_sd_counter_dec(link->master);
->>                         goto err;
->> @@ -310,14 +242,15 @@ static int __pm_genpd_poweron(struct
->> generic_pm_domain *genpd)
->>                 goto err;
->>
->>  out:
->> -       genpd_set_active(genpd);
->> -
->> +       genpd->status = GPD_STATE_ACTIVE;
->>         return 0;
->>
->>  err:
->>         list_for_each_entry_continue_reverse(link, &genpd->slave_links,
->> slave_node)
->>                 genpd_sd_counter_dec(link->master);
->>
->> +       /* In case we powered on a master, try to power it off again. */
->> +       pm_genpd_poweroff_unused();
->>
-> This is an expensive operation, it locks the list and for each domain
-> tries to power off the domain. You probably only need to traverse up the
-> hierarchy of this domain to ensure that the parents domains do not
-> remain unnecessarily powered on in this error clause.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq_conservative.c | 12 ++++++------
+ drivers/cpufreq/cpufreq_governor.c     | 13 +------------
+ drivers/cpufreq/cpufreq_governor.h     |  1 -
+ 3 files changed, 7 insertions(+), 19 deletions(-)
 
-You're right!
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 0e4154e584bf..e0b49729307d 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -21,6 +21,7 @@
+ #define DEF_SAMPLING_DOWN_FACTOR		(1)
+ #define MAX_SAMPLING_DOWN_FACTOR		(10)
+ 
++static struct common_dbs_data cs_dbs_cdata;
+ static DEFINE_PER_CPU(struct cs_cpu_dbs_info_s, cs_cpu_dbs_info);
+ 
+ static inline unsigned int get_freq_target(struct cs_dbs_tuners *cs_tuners,
+@@ -119,13 +120,13 @@ static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+ 	struct cpufreq_freqs *freq = data;
+ 	struct cs_cpu_dbs_info_s *dbs_info =
+ 					&per_cpu(cs_cpu_dbs_info, freq->cpu);
+-	struct cpufreq_policy *policy;
++	struct cpu_common_dbs_info *ccdbs = dbs_info->cdbs.ccdbs;
++	struct cpufreq_policy *policy = ccdbs->policy;
+ 
+-	if (!dbs_info->enable)
++	mutex_lock(&cs_dbs_cdata.mutex);
++	if (!ccdbs->enabled)
+ 		return 0;
+ 
+-	policy = dbs_info->cdbs.ccdbs->policy;
+-
+ 	/*
+ 	 * we only care if our internally tracked freq moves outside the 'valid'
+ 	 * ranges of frequency available to us otherwise we do not change it
+@@ -133,6 +134,7 @@ static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+ 	if (dbs_info->requested_freq > policy->max
+ 			|| dbs_info->requested_freq < policy->min)
+ 		dbs_info->requested_freq = freq->new;
++	mutex_unlock(&cs_dbs_cdata.mutex);
+ 
+ 	return 0;
+ }
+@@ -142,8 +144,6 @@ static struct notifier_block cs_cpufreq_notifier_block = {
+ };
+ 
+ /************************** sysfs interface ************************/
+-static struct common_dbs_data cs_dbs_cdata;
+-
+ static ssize_t store_sampling_down_factor(struct dbs_data *dbs_data,
+ 		const char *buf, size_t count)
+ {
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index c26f535d3d91..7f348c3a4782 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -465,7 +465,6 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
+ 			cdata->get_cpu_dbs_info_s(cpu);
+ 
+ 		cs_dbs_info->down_skip = 0;
+-		cs_dbs_info->enable = 1;
+ 		cs_dbs_info->requested_freq = policy->cur;
+ 	} else {
+ 		struct od_ops *od_ops = cdata->gov_ops;
+@@ -485,9 +484,7 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
+ static int cpufreq_governor_stop(struct cpufreq_policy *policy,
+ 				 struct dbs_data *dbs_data)
+ {
+-	struct common_dbs_data *cdata = dbs_data->cdata;
+-	unsigned int cpu = policy->cpu;
+-	struct cpu_dbs_info *cdbs = cdata->get_cpu_cdbs(cpu);
++	struct cpu_dbs_info *cdbs = dbs_data->cdata->get_cpu_cdbs(policy->cpu);
+ 	struct cpu_common_dbs_info *ccdbs = cdbs->ccdbs;
+ 
+ 	/* Shouldn't be already stopped */
+@@ -496,14 +493,6 @@ static int cpufreq_governor_stop(struct cpufreq_policy *policy,
+ 
+ 	ccdbs->enabled = false;
+ 	gov_cancel_work(dbs_data, policy);
+-
+-	if (cdata->governor == GOV_CONSERVATIVE) {
+-		struct cs_cpu_dbs_info_s *cs_dbs_info =
+-			cdata->get_cpu_dbs_info_s(cpu);
+-
+-		cs_dbs_info->enable = 0;
+-	}
+-
+ 	return 0;
+ }
+ 
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index 7da5aedb8174..7f651bdf43ae 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -165,7 +165,6 @@ struct cs_cpu_dbs_info_s {
+ 	struct cpu_dbs_info cdbs;
+ 	unsigned int down_skip;
+ 	unsigned int requested_freq;
+-	unsigned int enable:1;
+ };
+ 
+ /* Per policy Governors sysfs tunables */
+-- 
+2.4.0
 
-Although I now realize that this particular change shall not be part
-of $subject patch, as this is more of a separate bug-fix to the
-earlier behaviour. Let me cook a patch to deal with this, I will base
-it on top of $subject patch.
-
->
-> Also, the function uses mutex_locks to lock the genpd list. In the
-> atomic genpd that I am proposing [1], we cannot call this function when
-> the domain power_on fails.
-
-That's another good reason, thanks for letting me know!
-
-Kind regards
-Uffe
