@@ -1,75 +1,49 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+From: Alexander Holler <holler@ahsoftware.de>
 Subject: Re: [PATCH 00/21] On-demand device registration
-Date: Thu, 11 Jun 2015 11:56:26 +0200
-Message-ID: <55795B4A.6030008@collabora.com>
-References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>	<CACRpkdasLwMfEHGMRd1X3K_DU7NMPreE8TMwqqDTg8k9wj=wJQ@mail.gmail.com>	<CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com>	<CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>	<CAAObsKD97nEARO5eZYA2g8+z_MrazBy-m8PV_kSyj19ya72mAw@mail.gmail.com>
- <CACRpkdYyvXVm=UBVH9Lwp8nQbuxQL07MLspNfQSHtc-yT2C_0g@mail.gmail.com>
+Date: Thu, 11 Jun 2015 12:17:19 +0200
+Message-ID: <5579602F.1070801@ahsoftware.de>
+References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>	<CACRpkdasLwMfEHGMRd1X3K_DU7NMPreE8TMwqqDTg8k9wj=wJQ@mail.gmail.com>	<CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com>	<CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>	<5577F533.1060007@ahsoftware.de> <CACRpkdYF5K7ckGbgvZc6qRzGFJTQ4WqXdu_7Tcqczn2LkFbn3A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <CACRpkdYyvXVm=UBVH9Lwp8nQbuxQL07MLspNfQSHtc-yT2C_0g@mail.gmail.com>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <CACRpkdYF5K7ckGbgvZc6qRzGFJTQ4WqXdu_7Tcqczn2LkFbn3A@mail.gmail.com>
+Sender: linux-gpio-owner@vger.kernel.org
 To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, DRM PANEL DRIVERS <dri-devel@lists.freedesktop.org>, dmaengine@vger.kernel.org, Alexander Holler <holler@ahsoftware.de>, Dan Williams <dan.j.williams@intel.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, linux-clk@vger.ker
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Grant Likely <grant.likely@linaro.org>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>, open@wandq.ahsoftware, "list@wandq.ahsoftware:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, dmaengine@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, "linux-usb@vger.kernel.org" <linux-i2c@vg>
 List-Id: linux-pm@vger.kernel.org
 
-T24gMDYvMTEvMjAxNSAxMDoxNSBBTSwgTGludXMgV2FsbGVpaiB3cm90ZToKPiBPbiBXZWQsIEp1
-biAxMCwgMjAxNSBhdCAxMjoxOSBQTSwgVG9tZXUgVml6b3NvCj4gPHRvbWV1LnZpem9zb0Bjb2xs
-YWJvcmEuY29tPiB3cm90ZToKPj4gT24gMTAgSnVuZSAyMDE1IGF0IDA5OjMwLCBMaW51cyBXYWxs
-ZWlqIDxsaW51cy53YWxsZWlqQGxpbmFyby5vcmc+IHdyb3RlOgo+IAo+Pj4gcmVndWxhdG9yX2dl
-dCguLi4pIC0+IG5vdCBhdmFpbGFibGUsIHNvOgo+Pj4gLSBpZGVudGlmeSB0YXJnZXQgcmVndWxh
-dG9yIHByb3ZpZGVyIC0gdGhpcyB3aWxsIG5lZWQgaW5zdHJ1bWVudGF0aW9uCj4+PiAtIHByb2Jl
-IGl0Cj4+Pgo+Pj4gSXQgdGhlbiB0dXJucyBvdXQgdGhlIHJlZ3VsYXRvciBkcml2ZXIgaXMgb24g
-dGhlIGkyYyBidXMsIHNvIHdlCj4+PiBuZWVkIHRvIHByb2JlIHRoZSBpMmMgZHJpdmVyOgo+Pj4g
-LSBpZGVudGlmeSB0YXJnZXQgaTJjIGhvc3QgZm9yIHRoZSByZWd1bGF0b3IgZHJpdmVyIC0gdGhp
-cyB3aWxsIG5lZWQKPj4+ICAgaW5zdHJ1bWVudGF0aW9uCj4+PiAtIHByb2JlIHRoZSBpMmMgaG9z
-dCBkcml2ZXIKPj4+Cj4+PiBpMmMgaG9zdCBjb21lcyBvdXQsIHByb2JlcyB0aGUgcmVndWxhdG9y
-IGRyaXZlciwgcmVndWxhdG9yIGRyaXZlcgo+Pj4gcHJvYmVzIGFuZCB0aGVuIHRoZSByZWd1bGF0
-b3JfZ2V0KCkgY2FsbCByZXR1cm5zLgo+Pgo+PiBIbW0sIGlmIEkgdW5kZXJzdGFuZCBjb3JyZWN0
-bHkgd2hhdCB5b3Ugc2F5LCB0aGlzIGlzIGV4YWN0bHkgd2hhdCB0aGlzCj4+IHBhcnRpY3VsYXIg
-c2VyaWVzIGRvZXM6Cj4+Cj4+IHJlZ3VsYXRvcl9nZXQgLT4gb2ZfcGxhdGZvcm1fZGV2aWNlX2Vu
-c3VyZSAtPiBwcm9iZSgpIG9uIHRoZSBwbGF0Zm9ybQo+PiBkZXZpY2UgdGhhdCBlbmNsb3NlcyB0
-aGUgcmVxdWVzdGVkIGRldmljZSBub2RlIChpMmMgaG9zdCkgLT4gaTJjIHNsYXZlCj4+IGdldHMg
-cHJvYmVkIGFuZCB0aGUgcmVndWxhdG9yIHJlZ2lzdGVyZWQgLT4gcmVndWxhdG9yX2dldCByZXR1
-cm5zIHRoZQo+PiByZXF1ZXN0ZWQgcmVzb3VyY2UKPiAKPiBZZXMuIEJ1dCBvbmx5IGZvciBkZXZp
-Y2UgdHJlZS4KPiAKPj4gVGhlIGRvd25zaWRlIEknbSBjdXJyZW50bHkgbG9va2luZyBhdCBpcyB0
-aGF0IGFuIGV4cGxpY2l0IGRlcGVuZGVuY3kKPj4gZ3JhcGggd291bGQgYmUgdXNlZnVsIHRvIGhh
-dmUgZm9yIG90aGVyIHB1cnBvc2VzLiBGb3IgZXhhbXBsZSB0byBwcmludAo+PiBhIG5lYXQgd2Fy
-bmluZyB3aGVuIGEgZGVwZW5kZW5jeSBjYW5ub3QgYmUgZnVsZmlsbGVkLiBPciB0byByZWZ1c2Ug
-dG8KPj4gdW5iaW5kIGEgZGV2aWNlIHdoaWNoIG90aGVyIGRldmljZXMgZGVwZW5kIG9uLCBvciB0
-byBhdXRvbWF0aWNhbGx5Cj4+IHVuYmluZCB0aGUgZGV2aWNlcyB0aGF0IGRlcGVuZCBvbiBpdCwg
-b3IgdG8gcHJpbnQgYSB3YXJuaW5nIGlmIGEKPj4gZGV2aWNlIGlzIGhvdHBsdWdnZWQgb2ZmIGFu
-ZCBvdGhlciBkZXZpY2VzIGRlcGVuZCBvbiBpdC4KPiAKPiBVbmJpbmQvcmVtb3ZlKCkgY2FsbHMg
-YXJlIHRoZSBpbnZlcnNlIHVzdWFsbHkgeWVzLgo+IAo+IEJ1dCBhbHNvIHRoZSBbcnVudGltZV0g
-cG93ZXIgdXAvZG93biBzZXF1ZW5jZXMgZm9yIHRoZQo+IGRldmljZXMgdGVuZCB0byBkZXBlbmQg
-b24gYSBzaW1pbGFyIG9yZGVyaW5nIG9yIG1vc3RseQo+IHRoZSBzYW1lLiAoTWVudGlvbmVkIHRo
-aXMgYmVmb3JlIEkgdGhpbmsuKQo+IAo+Pj4gVGhpcyByZXF1aXJlcyBpbnN0cnVtZW50YXRpb24g
-b24gYW55dGhpbmcgcHJvdmlkaW5nIGEgcmVzb3VyY2UKPj4+IHRvIGFub3RoZXIgZHJpdmVyIGxp
-a2UgdGhvc2UgSSBtZW50aW9uZWQgYW5kIGEgbG90IG9mIG92ZXJoZWFkCj4+PiBpbmZyYXN0cnVj
-dHVyZSwgYnV0IEkgdGhpbmsgaXQncyB0aGUgcmlnaHQgYXBwcm9hY2guIEhvd2V2ZXIgSSBkb24n
-dAo+Pj4ga25vdyBpZiBJIHdvdWxkIGV2ZXIgYmUgYWJsZSB0byBwdWxsIHRoYXQgb2ZmIG15c2Vs
-ZiwgSSBrbm93IHRhbGsKPj4+IGlzIGNoZWFwIGFuZCBJIHNob3VsZCBzaG93IHRoZSBjb2RlIGlu
-c3RlYWQuCj4+Cj4+IFllYWgsIGlmIHlvdSBjYW4gZ2l2ZSBpdCBhIHNlY29uZCBsb29rIGFuZCBz
-YXkgaWYgaXQgbWF0Y2hlcyB3aGF0IHlvdQo+PiB3cm90ZSBhYm92ZSwgaXQgd291bGQgYmUgdmVy
-eSBtdWNoIGFwcHJlY2lhdGVkLgo+IAo+IFllcyB5b3UgYXJlIHJpZ2h0LiBCdXQgd2hhdCBhYm91
-dCBBQ1BJLCBib2FyZCBmaWxlcywKPiBTaW1wbGUgRmlybXdhcmUgYW5kIGZ1dHVyZSBoYXJkd2Fy
-ZSBkZXNjcmlwdGlvbiBsYW5ndWFnZXMuLi4KCkFoIG9rLCBnb3QgaXQgbm93LiBXaXRoIGZ3bm9k
-ZSBhbmQgYnkgbW92aW5nIGEgYml0IG9mIGNvZGUgYXJvdW5kIHRoYXQKc2hvdWxkbid0IGJlIGEg
-cHJvYmxlbS4KCkknbSBhY3R1YWxseSBub3cgaW1wbGVtZW50aW5nIHRoZSBhbHRlcm5hdGl2ZSBh
-cHByb2FjaCBpbiB3aGljaApkZXBlbmRlbmNpZXMgYXJlIGRpc2NvdmVyZWQgYmVmb3JlIHRoZSBk
-ZXZpY2UgaXMgcHJvYmVkLCB0aGVuIHByb2JlZCBpbgp0dXJuIHVudGlsIGFsbCBhcmUgYXZhaWxh
-YmxlLiBTbyBmdW5jdGlvbmFsbHkgaXMgdmVyeSBzaW1pbGFyIGJ1dCBJCmV4cGVjdCB0byBmaW5k
-IGJpZyBkaWZmZXJlbmNlcyBpbiBob3cgdGhlIGNvZGViYXNlIGlzIGltcGFjdGVkLgoKUmVnYXJk
-cywKClRvbWV1Cgo+IFlvdXJzLAo+IExpbnVzIFdhbGxlaWoKPiAKCl9fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmRyaS1kZXZlbCBtYWlsaW5nIGxpc3QKZHJp
-LWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
-L21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+Am 11.06.2015 um 10:12 schrieb Linus Walleij:
+> On Wed, Jun 10, 2015 at 10:28 AM, Alexander Holler <holler@ahsoftware.de> wrote:
+>> Am 10.06.2015 um 09:30 schrieb Linus Walleij:
+>
+>>> i2c host comes out, probes the regulator driver, regulator driver
+>>> probes and then the regulator_get() call returns.
+>>>
+>>> This requires instrumentation on anything providing a resource
+>>> to another driver like those I mentioned and a lot of overhead
+>>> infrastructure, but I think it's the right approach. However I don't
+>>> know if I would ever be able to pull that off myself, I know talk
+>>> is cheap and I should show the code instead.
+>>
+>> You would end up with the same problem of deadlocks as currently, and you
+>> would still need something ugly like the defered probe brutforce to avoid
+>> them.
+>
+> Sorry I don't get that. Care to elaborate on why?
+
+Because loading/initializing on demand doesn't give you any solved order 
+of drivers to initialize. And it can't because it has no idea about the 
+requirements of other drivers. The reason why it might work better in 
+the case of the tegra is that it might give you another initialization 
+order than the one which is currently choosen, which, by luck, might be 
+a better one.
+
+But maybe I missed something, I haven't looked at the patches at all. 
+But just loading on demand, can't magically give you a working order of 
+drivers to initialize. E.g. how do you choose the first driver to 
+initialize?
+
+Regards,
+
+Alexander Holler
