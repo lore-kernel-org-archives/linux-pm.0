@@ -1,88 +1,38 @@
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=
-	<u.kleine-koenig@pengutronix.de>
-Subject: [PATCH] power_supply: bq24257: use flags argument of devm_gpiod_get
-Date: Fri, 12 Jun 2015 09:24:42 +0200
-Message-ID: <1434093882-31795-1-git-send-email-u.kleine-koenig@pengutronix.de>
+From: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 00/21] On-demand device registration
+Date: Fri, 12 Jun 2015 09:25:53 +0200
+Message-ID: <CACRpkdbDSS0yw=q_cR17Bvg+kgTfU3Vcd2gSjx1p4V-CzOZ_SA@mail.gmail.com>
+References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>
+	<CACRpkdasLwMfEHGMRd1X3K_DU7NMPreE8TMwqqDTg8k9wj=wJQ@mail.gmail.com>
+	<CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com>
+	<CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>
+	<5577F533.1060007@ahsoftware.de>
+	<CACRpkdYF5K7ckGbgvZc6qRzGFJTQ4WqXdu_7Tcqczn2LkFbn3A@mail.gmail.com>
+	<5579602F.1070801@ahsoftware.de>
+	<CACRpkdaZgBR5rHwrEYqcm5K4w3y8MXG8a0k=Y+oQY+jukHfuyw@mail.gmail.com>
+	<5579B9E8.9040609@ahsoftware.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:52890 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754647AbbFLHYt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jun 2015 03:24:49 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <5579B9E8.9040609-SXC+2es9fhnfWeYVQQPykw@public.gmane.org>
+Sender: linux-i2c-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alexander Holler <holler-SXC+2es9fhnfWeYVQQPykw@public.gmane.org>
+Cc: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-samsung-soc <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "list-7NY9aMYB+ISttCpgsWEBFg@public.gmane.org:DRM PANEL DRIVERS" <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, dmaengine-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, kernel@pengutronix.de, Alexandre Courbot <gnurou@gmail.com>, Kishon Vijay Abraham I <kishon@ti.com>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 
-Since 39b2bbe3d715 (gpio: add flags argument to gpiod_get*() functions)
-which appeared in v3.17-rc1, the gpiod_get* functions take an additiona=
-l
-parameter that allows to specify direction and initial value for output=
-=2E
+On Thu, Jun 11, 2015 at 6:40 PM, Alexander Holler <holler-SXC+2es9fhnfWeYVQQPykw@public.gmane.org> wrote:
+> Am 11.06.2015 um 14:30 schrieb Linus Walleij:
 
-Simplify driver accordingly. Furthermore this is one caller less that
-stops us making the flags argument to gpiod_get*() mandatory.
+>> Certainly it is possible to create deadlocks in this scenario, but the
+>> scope is not to create an ubreakable system.
+>
+> IAnd what happens if you run into a deadlock? Do you print "you've lost, try
+> changing your kernel config" in some output hidden by a splash-screen? ;)
 
-Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
----
-Hello,
+Sorry it sounds like a blanket argument, the fact that there are
+mutexes in the kernel makes it possible to deadlock, it doesn't
+mean we don't use mutexes. Some programming problems are
+just like such.
 
-this patch applies to next and is only necessary on top of 2219a935963e
-(power_supply: Add TI BQ24257 charger driver).
-
-Note I plan to make the flags parameter mandatory for 4.3. So unless
-this change gets into 4.2, would it be ok to let it go in via the gpio
-tree?
-
-Best regards
-Uwe
-
- drivers/power/bq24257_charger.c | 12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_ch=
-arger.c
-index ce7f5bbfd5e3..d072f1838526 100644
---- a/drivers/power/bq24257_charger.c
-+++ b/drivers/power/bq24257_charger.c
-@@ -611,28 +611,24 @@ static int bq24257_irq_probe(struct bq24257_devic=
-e *bq)
- 	int ret;
- 	struct gpio_desc *stat_irq;
-=20
--	stat_irq =3D devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0);
-+	stat_irq =3D devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0, GPIOD=
-_IN);
- 	if (IS_ERR(stat_irq)) {
- 		dev_err(bq->dev, "could not probe stat_irq pin\n");
- 		return PTR_ERR(stat_irq);
- 	}
-=20
--	ret =3D gpiod_direction_input(stat_irq);
--	if (ret < 0)
--		return ret;
--
- 	return gpiod_to_irq(stat_irq);
- }
-=20
- static int bq24257_pg_gpio_probe(struct bq24257_device *bq)
- {
--	bq->pg =3D devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0);
--	if (IS_ERR(bq->pg)) {
-+	bq->pg =3D devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0, GPIOD_IN=
-);
-+	if (IS_ERR(bq->pg))
- 		dev_err(bq->dev, "could not probe PG pin\n");
- 		return PTR_ERR(bq->pg);
- 	}
-=20
--	return gpiod_direction_input(bq->pg);
-+	return 0;
- }
-=20
- static int bq24257_fw_probe(struct bq24257_device *bq)
---=20
-2.1.4
-
+Yours,
+Linus Walleij
