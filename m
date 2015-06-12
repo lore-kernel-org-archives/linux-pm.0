@@ -1,46 +1,49 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: [PATCH RESEND] PM / AVS: rockchip-io: depend on CONFIG_POWER_AVS
-Date: Fri, 12 Jun 2015 20:59:53 +0200
-Message-ID: <2264276.IR62hmqflk@diego>
+From: Denys Vlasenko <vda.linux@googlemail.com>
+Subject: Re: [PATCH] x86: General protection fault after STR (32 bit systems only)
+Date: Sat, 13 Jun 2015 00:45:29 +0200
+Message-ID: <CAK1hOcPvst1+vT_3_m0t7HZF_fz9zjDd_azyWj6n0Ma-qY3ZQQ@mail.gmail.com>
+References: <1434066338-6619-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <20150612060747.GA25024@gmail.com> <CALCETrUfrbLeJoOeNQU2vK+jAmNBazB5rmfD5M11tv6NVeppmg@mail.gmail.com>
+ <20150612075013.GA8759@gmail.com> <A58C5D0E-A557-4406-9317-442D78E4700B@zytor.com>
+ <20150612083625.GA22760@gmail.com> <CAMzpN2gHpsW9ZMBdOR8+VuMNkYyi_THVeX5W4JLukmFK95GjZQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>, Nishanth Menon <nm@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, dianders@chromium.org, amstan@chromium.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f177.google.com ([209.85.220.177]:34707 "EHLO
+	mail-qk0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755171AbbFLWpu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jun 2015 18:45:50 -0400
+In-Reply-To: <CAMzpN2gHpsW9ZMBdOR8+VuMNkYyi_THVeX5W4JLukmFK95GjZQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Brian Gerst <brgerst@gmail.com>
+Cc: Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@amacapital.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, X86 ML <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Denys Vlasenko <dvlasenk@redhat.com>, Borislav Petkov <bp@alien8.de>, Linus Torvalds <torvalds@linux-foundation.org>
 
-The rockchip io-domain driver currently only depends on ARCH_ROCKCHIP
-itself. This makes it possible to select the power-domain driver, but
-not the POWER_AVS class and results in the iodomain-driver not getting
-build in this case.
+On Fri, Jun 12, 2015 at 5:48 PM, Brian Gerst <brgerst@gmail.com> wrote:
+> If you follow the convoluted flow of the calls in this file,
+> ...
 
-So add the additional dependency, which also results in the driver
-config option now being placed nicely into the AVS submenu.
+Speaking of which. It is indeed quite bad.
 
-Fixes: 662a958638bd ("PM / AVS: rockchip-io: add driver handling Rockchip io domains")
-Signed-off-by: Heiko Stuebner <heiko@sntech.de>
-Acked-by: Kevin Hilman <khilman@linaro.org>
----
-Kevin wrote when he Acked the patch: "Rafael, feel free to queue this
-up as a fix.  I don't have any other drivers/power/avs stuff queued up."
+For one, saved_eip is only ever set to point to ret_point:
 
- drivers/power/avs/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ENTRY(saved_eip)        .long   0
+...
 
-diff --git a/drivers/power/avs/Kconfig b/drivers/power/avs/Kconfig
-index 7f3d389..a67eeac 100644
---- a/drivers/power/avs/Kconfig
-+++ b/drivers/power/avs/Kconfig
-@@ -13,7 +13,7 @@ menuconfig POWER_AVS
- 
- config ROCKCHIP_IODOMAIN
-         tristate "Rockchip IO domain support"
--        depends on ARCH_ROCKCHIP && OF
-+        depends on POWER_AVS && ARCH_ROCKCHIP && OF
-         help
-           Say y here to enable support io domains on Rockchip SoCs. It is
-           necessary for the io domain setting of the SoC to match the
--- 
-2.1.4
+        movl    $ret_point, saved_eip
+
+and it has just a single user, where an indirect jump
+through it is performed:
+
+        # jump to place where we left off
+        movl    saved_eip, %eax
+        jmp     *%eax
+
+No comments why it is so.
+
+All this seems to be equivalent to trivial
+
+        # jump to place where we left off
+        jmp     ret_point
+
+Am I missing something?
