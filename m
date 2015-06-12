@@ -1,203 +1,81 @@
-From: Alexandra Yates <alexandra.yates@linux.intel.com>
-Subject: [PATCH V2] Report interrupt(s) that caused system wakeup
-Date: Fri, 12 Jun 2015 10:58:55 -0700
-Message-ID: <1434131935-7015-2-git-send-email-alexandra.yates@linux.intel.com>
-References: <1434131935-7015-1-git-send-email-alexandra.yates@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:43513 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754307AbbFLSAL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 12 Jun 2015 14:00:11 -0400
-In-Reply-To: <1434131935-7015-1-git-send-email-alexandra.yates@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Andy Lutomirski <luto@amacapital.net>
+Subject: Re: [PATCH] x86: General protection fault after STR (32 bit systems only)
+Date: Fri, 12 Jun 2015 11:11:34 -0700
+Message-ID: <CALCETrVqMRRXjx9wu-k+TejseeWG0aTXBdJbCK3B-RrUZN-T5g@mail.gmail.com>
+References: <1434066338-6619-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <20150612060747.GA25024@gmail.com> <CALCETrUfrbLeJoOeNQU2vK+jAmNBazB5rmfD5M11tv6NVeppmg@mail.gmail.com>
+ <20150612075013.GA8759@gmail.com> <A58C5D0E-A557-4406-9317-442D78E4700B@zytor.com>
+ <20150612083625.GA22760@gmail.com> <CAMzpN2gHpsW9ZMBdOR8+VuMNkYyi_THVeX5W4JLukmFK95GjZQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAMzpN2gHpsW9ZMBdOR8+VuMNkYyi_THVeX5W4JLukmFK95GjZQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Brian Gerst <brgerst@gmail.com>
+Cc: Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, X86 ML <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Denys Vlasenko <dvlasenk@redhat.com>, Borislav Petkov <bp@alien8.de>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: tglx@linutronix.de, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org, peterz@infradead.org, Alexandra Yates <alexandra.yates@linux.intel.com>
 
-Add a new IRQ flag named IRQD_WAKEUP_TRIGGERED.  This flag is set
-when a given IRQ fires after it has been armed for system wakeup.
-The flag is cleared before arming the IRQ for system wakeup
-during the next system suspend. This feature makes possible to
-check which IRQs might have woken the system up from sleep last
-time it was suspended.
+On Fri, Jun 12, 2015 at 8:48 AM, Brian Gerst <brgerst@gmail.com> wrote:
+> On Fri, Jun 12, 2015 at 4:36 AM, Ingo Molnar <mingo@kernel.org> wrote:
+>>
+>> * H. Peter Anvin <hpa@zytor.com> wrote:
+>>
+>>> %es is used implicitly by string instructions.
+>>
+>> Ok, so we are probably better off reloading ES as well early, right
+>> when we return from the firmware, just in case something does
+>> a copy before we hit the ES restore in restore_processor_state(),
+>> which is a generic C function?
+>>
+>> Something like the patch below?
+>>
+>> I also added FS/GS/SS reloading to make it complete. If this (or a variant
+>> thereof, it's still totally untested) works then we can remove the segment
+>> save/restore layer in __save/restore_processor_state().
+>>
+>> Thanks,
+>>
+>>         Ingo
+>>
+>> ===========>
+>>  arch/x86/kernel/acpi/wakeup_32.S | 13 +++++++++++++
+>>  1 file changed, 13 insertions(+)
+>>
+>> diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
+>> index 665c6b7d2ea9..1376a7fc21b7 100644
+>> --- a/arch/x86/kernel/acpi/wakeup_32.S
+>> +++ b/arch/x86/kernel/acpi/wakeup_32.S
+>> @@ -61,6 +61,19 @@ ENTRY(wakeup_pmode_return)
+>>
+>>
+>>  restore_registers:
+>> +       /*
+>> +        * In case the BIOS corrupted our segment descriptors,
+>> +        * reload them to clear out any shadow descriptor
+>> +        * state:
+>> +        */
+>> +       movl    $__USER_DS, %eax
+>> +       movl    %eax, %ds
+>> +       movl    %eax, %es
+>> +       movl    %eax, %fs
+>> +       movl    %eax, %gs
+>> +       movl    $__KERNEL_DS, %eax
+>> +       movl    %eax, %ss
+>> +
+>>         movl    saved_context_ebp, %ebp
+>>         movl    saved_context_ebx, %ebx
+>>         movl    saved_context_esi, %esi
+>
+> If you follow the convoluted flow of the calls in this file,
+> wakeup_pmode_return is the first thing called from the trampoline on
+> resume, and that loads the data segments with __KERNEL_DS.  The better
+> fix would be to set ds/es to __USER_DS there.  Also since we are in
+> the kernel, fs is fixed at __KERNEL_PERCPU, and gs is either
+> __KERNEL_STACK_CANARY or user's gs.
 
-Add a new sysfs attribute under /sys/power/ named:pm_last_wakeup_irqs
-when read, will return a list of IRQs with the new flag set.  That
-will be useful for system wakeup diagnostics.
+So why is this issue rare?  Is it just that the first entry to
+userspace after resume is only very rarely via SYSEXIT?  Or is there
+some other code path that usually, but not quite always, fixes up the
+segment registers?
 
-Signed-off-by: Alexandra Yates <alexandra.yates@linux.intel.com>
----
- Documentation/ABI/testing/sysfs-power | 11 +++++++++++
- drivers/base/power/wakeup.c           | 27 +++++++++++++++++++++++++++
- include/linux/irq.h                   |  9 +++++++++
- include/linux/suspend.h               |  1 +
- kernel/irq/pm.c                       |  6 ++++++
- kernel/power/main.c                   | 23 +++++++++++++++++++++++
- 6 files changed, 77 insertions(+)
-
-diff --git a/Documentation/ABI/testing/sysfs-power b/Documentation/ABI/testing/sysfs-power
-index f455181..a28b155 100644
---- a/Documentation/ABI/testing/sysfs-power
-+++ b/Documentation/ABI/testing/sysfs-power
-@@ -256,3 +256,14 @@ Description:
- 		Writing a "1" enables this printing while writing a "0"
- 		disables it.  The default value is "0".  Reading from this file
- 		will display the current value.
-+
-+What:		/sys/power/pm_last_wakeup_irqs
-+Date:		April 2015
-+Contact:	Alexandra Yates <alexandra.yates@linux.intel.org>
-+Description:
-+		The /sys/power/pm_last_wakeup_irqs file allows user space
-+		to identify and report the IRQs responsible from waking the
-+		system up from sleep. The IRQD_WAKEUP_TRIGGERED flag is set and
-+		reported when the given IRQ fires after it has been armed for
-+		system wakeup. This output is useful for system wakeup
-+		diagnostics.
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 7726200..38635c4 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -737,6 +737,33 @@ void pm_wakeup_clear(void)
- 	pm_abort_suspend = false;
- }
- 
-+#ifdef CONFIG_PM_SLEEP_DEBUG
-+/*
-+ * pm_get_last_wakeup_irqs - Parses interrupts to identify which one
-+ * caused the system to wake up from suspend-to-idle.
-+ * @buf: keeps track of the irqs that casued the system to wakeup
-+ */
-+ssize_t pm_get_last_wakeup_irqs(char *buf, size_t size)
-+{
-+	struct irq_desc *desc;
-+	int irq;
-+	char *str = buf;
-+	char *end = buf + size;
-+
-+	if (pm_abort_suspend) {
-+		for_each_irq_desc(irq, desc)
-+			if (irqd_triggered_wakeup(&desc->irq_data))
-+				str += scnprintf(str, end - str, "%d ", irq);
-+
-+		if (str != buf)
-+			str--;
-+
-+		return (str - buf);
-+	}
-+	return 0;
-+}
-+#endif /* CONFIG_PM_SLEEP_DEBUG */
-+
- /**
-  * pm_get_wakeup_count - Read the number of registered wakeup events.
-  * @count: Address to store the value at.
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 62c6901..de23803 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -182,6 +182,7 @@ struct irq_data {
-  * IRQD_IRQ_MASKED		- Masked state of the interrupt
-  * IRQD_IRQ_INPROGRESS		- In progress state of the interrupt
-  * IRQD_WAKEUP_ARMED		- Wakeup mode armed
-+ * IRQD_WAKEUP_TRIGGERED	- Triggered system wakeup
-  */
- enum {
- 	IRQD_TRIGGER_MASK		= 0xf,
-@@ -196,8 +197,16 @@ enum {
- 	IRQD_IRQ_MASKED			= (1 << 17),
- 	IRQD_IRQ_INPROGRESS		= (1 << 18),
- 	IRQD_WAKEUP_ARMED		= (1 << 19),
-+	IRQD_WAKEUP_TRIGGERED		= (1 << 20),
- };
- 
-+#ifdef CONFIG_PM_SLEEP_DEBUG
-+static inline bool irqd_triggered_wakeup(struct irq_data *d)
-+{
-+	return d->state_use_accessors & IRQD_WAKEUP_TRIGGERED;
-+}
-+#endif
-+
- static inline bool irqd_is_setaffinity_pending(struct irq_data *d)
- {
- 	return d->state_use_accessors & IRQD_SETAFFINITY_PENDING;
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 5efe743..7cadded 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -378,6 +378,7 @@ void restore_processor_state(void);
- /* kernel/power/main.c */
- extern int register_pm_notifier(struct notifier_block *nb);
- extern int unregister_pm_notifier(struct notifier_block *nb);
-+extern ssize_t pm_get_last_wakeup_irqs(char *buf, size_t size);
- 
- #define pm_notifier(fn, pri) {				\
- 	static struct notifier_block fn##_nb =			\
-diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-index 5204a6d..5601a42 100644
---- a/kernel/irq/pm.c
-+++ b/kernel/irq/pm.c
-@@ -22,6 +22,9 @@ bool irq_pm_check_wakeup(struct irq_desc *desc)
- 		desc->depth++;
- 		irq_disable(desc);
- 		pm_system_wakeup();
-+#ifdef CONFIG_PM_SLEEP_DEBUG
-+		irqd_set(&desc->irq_data, IRQD_WAKEUP_TRIGGERED);i
-+#endif
- 		return true;
- 	}
- 	return false;
-@@ -73,6 +76,9 @@ static bool suspend_device_irq(struct irq_desc *desc, int irq)
- 	if (!desc->action || desc->no_suspend_depth)
- 		return false;
- 
-+#ifdef CONFIG_PM_SLEEP_DEBUG
-+	irqd_clear(&desc->irq_data, IRQD_WAKEUP_TRIGGERED);
-+#endif
- 	if (irqd_is_wakeup_set(&desc->irq_data)) {
- 		irqd_set(&desc->irq_data, IRQD_WAKEUP_ARMED);
- 		/*
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 86e8157..77b46d8 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -272,6 +272,28 @@ static inline void pm_print_times_init(void)
- {
- 	pm_print_times_enabled = !!initcall_debug;
- }
-+
-+static ssize_t pm_last_wakeup_irqs_show(struct kobject *kobj,
-+					struct kobj_attribute *attr,
-+					char *buf)
-+{
-+	size_t ret;
-+
-+	ret = pm_get_last_wakeup_irqs(buf, PAGE_SIZE);
-+	if (ret)
-+		buf[ret++] = '\n';
-+
-+	return ret;
-+}
-+
-+static ssize_t pm_last_wakeup_irqs_store(struct kobject *kobj,
-+					struct kobj_attribute *attr,
-+					const char *buf, size_t n)
-+{
-+	return -EINVAL;
-+}
-+power_attr(pm_last_wakeup_irqs);
-+
- #else /* !CONFIG_PP_SLEEP_DEBUG */
- static inline void pm_print_times_init(void) {}
- #endif /* CONFIG_PM_SLEEP_DEBUG */
-@@ -604,6 +626,7 @@ static struct attribute * g[] = {
- #endif
- #ifdef CONFIG_PM_SLEEP_DEBUG
- 	&pm_print_times_attr.attr,
-+	&pm_last_wakeup_irqs_attr.attr,
- #endif
- #endif
- #ifdef CONFIG_FREEZER
--- 
-1.9.1
-
+--Andy
