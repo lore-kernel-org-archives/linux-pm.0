@@ -1,85 +1,112 @@
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=
-	<u.kleine-koenig@pengutronix.de>
-Subject: [PATCH v2] power_supply: bq24257: use flags argument of devm_gpiod_get
-Date: Fri, 12 Jun 2015 10:54:04 +0200
-Message-ID: <1434099244-28202-1-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <1434093882-31795-1-git-send-email-u.kleine-koenig@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Javi Merino <javi.merino@arm.com>
+Subject: [PATCH] thermal: power_allocator: trace the real requested power
+Date: Fri, 12 Jun 2015 10:34:09 +0100
+Message-ID: <1434101649-12681-1-git-send-email-javi.merino@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:53969 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752323AbbFLIyL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jun 2015 04:54:11 -0400
-In-Reply-To: <1434093882-31795-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Received: from foss.arm.com ([217.140.101.70]:58245 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754996AbbFLJed (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 12 Jun 2015 05:34:33 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, kernel@pengutronix.de, Alexandre Courbot <gnurou@gmail.com>, Kishon Vijay Abraham I <kishon@ti.com>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: punit.agrawal@arm.com, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-Since 39b2bbe3d715 (gpio: add flags argument to gpiod_get*() functions)
-which appeared in v3.17-rc1, the gpiod_get* functions take an additiona=
-l
-parameter that allows to specify direction and initial value for output=
-=2E
+The power allocator governor uses ftrace to output a bunch of internal
+data for debugging and tuning.  Currently, the requested power it
+outputs is the "weighted" requested power, that is, what each cooling
+device has requested multiplied by the cooling device weight.  It is
+more useful to trace the real request, without any weight being
+applied.
 
-Simplify driver accordingly. Furthermore this is one caller less that
-stops us making the flags argument to gpiod_get*() mandatory.
+This commit only affects the data traced, there is no functional change.
 
-Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
 ---
-Changes since (implicit) v1, sent with Message-Id: 1434093882-31795-1-g=
-it-send-email-u.kleine-koenig@pengutronix.de:
+This patch is against the linus branch in Eduardo's linux-soc-thermal tree
 
- - make it compilable
+ drivers/thermal/power_allocator.c | 26 ++++++++++++++++----------
+ 1 file changed, 16 insertions(+), 10 deletions(-)
 
- drivers/power/bq24257_charger.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_ch=
-arger.c
-index ce7f5bbfd5e3..5859bc7c1616 100644
---- a/drivers/power/bq24257_charger.c
-+++ b/drivers/power/bq24257_charger.c
-@@ -608,31 +608,26 @@ static int bq24257_power_supply_init(struct bq242=
-57_device *bq)
-=20
- static int bq24257_irq_probe(struct bq24257_device *bq)
- {
--	int ret;
- 	struct gpio_desc *stat_irq;
-=20
--	stat_irq =3D devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0);
-+	stat_irq =3D devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0, GPIOD=
-_IN);
- 	if (IS_ERR(stat_irq)) {
- 		dev_err(bq->dev, "could not probe stat_irq pin\n");
- 		return PTR_ERR(stat_irq);
+diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
+index 4672250b329f..63a448f9d93b 100644
+--- a/drivers/thermal/power_allocator.c
++++ b/drivers/thermal/power_allocator.c
+@@ -229,7 +229,8 @@ static int allocate_power(struct thermal_zone_device *tz,
+ 	struct thermal_instance *instance;
+ 	struct power_allocator_params *params = tz->governor_data;
+ 	u32 *req_power, *max_power, *granted_power, *extra_actor_power;
+-	u32 total_req_power, max_allocatable_power;
++	u32 *weighted_req_power;
++	u32 total_req_power, max_allocatable_power, total_weighted_req_power;
+ 	u32 total_granted_power, power_range;
+ 	int i, num_actors, total_weight, ret = 0;
+ 	int trip_max_desired_temperature = params->trip_max_desired_temperature;
+@@ -247,16 +248,17 @@ static int allocate_power(struct thermal_zone_device *tz,
  	}
-=20
--	ret =3D gpiod_direction_input(stat_irq);
--	if (ret < 0)
--		return ret;
--
- 	return gpiod_to_irq(stat_irq);
- }
-=20
- static int bq24257_pg_gpio_probe(struct bq24257_device *bq)
- {
--	bq->pg =3D devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0);
-+	bq->pg =3D devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0, GPIOD_IN=
-);
- 	if (IS_ERR(bq->pg)) {
- 		dev_err(bq->dev, "could not probe PG pin\n");
- 		return PTR_ERR(bq->pg);
+ 
+ 	/*
+-	 * We need to allocate three arrays of the same size:
+-	 * req_power, max_power and granted_power.  They are going to
+-	 * be needed until this function returns.  Allocate them all
+-	 * in one go to simplify the allocation and deallocation
+-	 * logic.
++	 * We need to allocate five arrays of the same size:
++	 * req_power, max_power, granted_power, extra_actor_power and
++	 * weighted_req_power.  They are going to be needed until this
++	 * function returns.  Allocate them all in one go to simplify
++	 * the allocation and deallocation logic.
+ 	 */
+ 	BUILD_BUG_ON(sizeof(*req_power) != sizeof(*max_power));
+ 	BUILD_BUG_ON(sizeof(*req_power) != sizeof(*granted_power));
+ 	BUILD_BUG_ON(sizeof(*req_power) != sizeof(*extra_actor_power));
+-	req_power = devm_kcalloc(&tz->device, num_actors * 4,
++	BUILD_BUG_ON(sizeof(*req_power) != sizeof(*weighted_req_power));
++	req_power = devm_kcalloc(&tz->device, num_actors * 5,
+ 				 sizeof(*req_power), GFP_KERNEL);
+ 	if (!req_power) {
+ 		ret = -ENOMEM;
+@@ -266,8 +268,10 @@ static int allocate_power(struct thermal_zone_device *tz,
+ 	max_power = &req_power[num_actors];
+ 	granted_power = &req_power[2 * num_actors];
+ 	extra_actor_power = &req_power[3 * num_actors];
++	weighted_req_power = &req_power[4 * num_actors];
+ 
+ 	i = 0;
++	total_weighted_req_power = 0;
+ 	total_req_power = 0;
+ 	max_allocatable_power = 0;
+ 
+@@ -289,13 +293,14 @@ static int allocate_power(struct thermal_zone_device *tz,
+ 		else
+ 			weight = instance->weight;
+ 
+-		req_power[i] = frac_to_int(weight * req_power[i]);
++		weighted_req_power[i] = frac_to_int(weight * req_power[i]);
+ 
+ 		if (power_actor_get_max_power(cdev, tz, &max_power[i]))
+ 			continue;
+ 
+ 		total_req_power += req_power[i];
+ 		max_allocatable_power += max_power[i];
++		total_weighted_req_power += weighted_req_power[i];
+ 
+ 		i++;
  	}
-=20
--	return gpiod_direction_input(bq->pg);
-+	return 0;
- }
-=20
- static int bq24257_fw_probe(struct bq24257_device *bq)
---=20
-2.1.4
+@@ -303,8 +308,9 @@ static int allocate_power(struct thermal_zone_device *tz,
+ 	power_range = pid_controller(tz, current_temp, control_temp,
+ 				     max_allocatable_power);
+ 
+-	divvy_up_power(req_power, max_power, num_actors, total_req_power,
+-		       power_range, granted_power, extra_actor_power);
++	divvy_up_power(weighted_req_power, max_power, num_actors,
++		       total_weighted_req_power, power_range, granted_power,
++		       extra_actor_power);
+ 
+ 	total_granted_power = 0;
+ 	i = 0;
+-- 
+1.9.1
 
