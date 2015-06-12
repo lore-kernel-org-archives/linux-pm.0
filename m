@@ -1,68 +1,85 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH] x86: General protection fault after STR (32 bit systems
- only)
-Date: Fri, 12 Jun 2015 10:36:25 +0200
-Message-ID: <20150612083625.GA22760@gmail.com>
-References: <1434066338-6619-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <20150612060747.GA25024@gmail.com>
- <CALCETrUfrbLeJoOeNQU2vK+jAmNBazB5rmfD5M11tv6NVeppmg@mail.gmail.com>
- <20150612075013.GA8759@gmail.com>
- <A58C5D0E-A557-4406-9317-442D78E4700B@zytor.com>
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=
+	<u.kleine-koenig@pengutronix.de>
+Subject: [PATCH v2] power_supply: bq24257: use flags argument of devm_gpiod_get
+Date: Fri, 12 Jun 2015 10:54:04 +0200
+Message-ID: <1434099244-28202-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1434093882-31795-1-git-send-email-u.kleine-koenig@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <A58C5D0E-A557-4406-9317-442D78E4700B@zytor.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andy Lutomirski <luto@amacapital.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, X86 ML <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Denys Vlasenko <dvlasenk@redhat.com>, Borislav Petkov <bp@alien8.de>, Brian Gerst <brgerst@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:53969 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752323AbbFLIyL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jun 2015 04:54:11 -0400
+In-Reply-To: <1434093882-31795-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, kernel@pengutronix.de, Alexandre Courbot <gnurou@gmail.com>, Kishon Vijay Abraham I <kishon@ti.com>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 
+Since 39b2bbe3d715 (gpio: add flags argument to gpiod_get*() functions)
+which appeared in v3.17-rc1, the gpiod_get* functions take an additiona=
+l
+parameter that allows to specify direction and initial value for output=
+=2E
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+Simplify driver accordingly. Furthermore this is one caller less that
+stops us making the flags argument to gpiod_get*() mandatory.
 
-> %es is used implicitly by string instructions.
+Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+---
+Changes since (implicit) v1, sent with Message-Id: 1434093882-31795-1-g=
+it-send-email-u.kleine-koenig@pengutronix.de:
 
-Ok, so we are probably better off reloading ES as well early, right
-when we return from the firmware, just in case something does
-a copy before we hit the ES restore in restore_processor_state(),
-which is a generic C function?
+ - make it compilable
 
-Something like the patch below?
+ drivers/power/bq24257_charger.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
-I also added FS/GS/SS reloading to make it complete. If this (or a variant 
-thereof, it's still totally untested) works then we can remove the segment 
-save/restore layer in __save/restore_processor_state().
+diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_ch=
+arger.c
+index ce7f5bbfd5e3..5859bc7c1616 100644
+--- a/drivers/power/bq24257_charger.c
++++ b/drivers/power/bq24257_charger.c
+@@ -608,31 +608,26 @@ static int bq24257_power_supply_init(struct bq242=
+57_device *bq)
+=20
+ static int bq24257_irq_probe(struct bq24257_device *bq)
+ {
+-	int ret;
+ 	struct gpio_desc *stat_irq;
+=20
+-	stat_irq =3D devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0);
++	stat_irq =3D devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0, GPIOD=
+_IN);
+ 	if (IS_ERR(stat_irq)) {
+ 		dev_err(bq->dev, "could not probe stat_irq pin\n");
+ 		return PTR_ERR(stat_irq);
+ 	}
+=20
+-	ret =3D gpiod_direction_input(stat_irq);
+-	if (ret < 0)
+-		return ret;
+-
+ 	return gpiod_to_irq(stat_irq);
+ }
+=20
+ static int bq24257_pg_gpio_probe(struct bq24257_device *bq)
+ {
+-	bq->pg =3D devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0);
++	bq->pg =3D devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0, GPIOD_IN=
+);
+ 	if (IS_ERR(bq->pg)) {
+ 		dev_err(bq->dev, "could not probe PG pin\n");
+ 		return PTR_ERR(bq->pg);
+ 	}
+=20
+-	return gpiod_direction_input(bq->pg);
++	return 0;
+ }
+=20
+ static int bq24257_fw_probe(struct bq24257_device *bq)
+--=20
+2.1.4
 
-Thanks,
-
-	Ingo
-
-===========>
- arch/x86/kernel/acpi/wakeup_32.S | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
-index 665c6b7d2ea9..1376a7fc21b7 100644
---- a/arch/x86/kernel/acpi/wakeup_32.S
-+++ b/arch/x86/kernel/acpi/wakeup_32.S
-@@ -61,6 +61,19 @@ ENTRY(wakeup_pmode_return)
- 
- 
- restore_registers:
-+	/*
-+	 * In case the BIOS corrupted our segment descriptors,
-+	 * reload them to clear out any shadow descriptor
-+	 * state:
-+	 */
-+	movl	$__USER_DS, %eax
-+	movl	%eax, %ds
-+	movl	%eax, %es
-+	movl	%eax, %fs
-+	movl	%eax, %gs
-+	movl	$__KERNEL_DS, %eax
-+	movl	%eax, %ss
-+
- 	movl	saved_context_ebp, %ebp
- 	movl	saved_context_ebx, %ebx
- 	movl	saved_context_esi, %esi
