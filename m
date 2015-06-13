@@ -1,106 +1,113 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: [PATCH, DEBUG] x86/32: Add small delay after resume
-Date: Sat, 13 Jun 2015 09:15:47 +0200
-Message-ID: <20150613071547.GA27446@gmail.com>
-References: <1434066338-6619-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <20150612060747.GA25024@gmail.com>
- <1434125724.2353.19.camel@spandruv-DESK3.jf.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V7 3/3] OPP: Add binding for 'opp-suspend'
+Date: Sat, 13 Jun 2015 14:10:23 +0530
+Message-ID: <20150613084023.GA4203@linux>
+References: <cover.1433434659.git.viresh.kumar@linaro.org>
+ <dedf8c02fdd9dbf169f43de74ead4c1434d89b45.1433434659.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f170.google.com ([209.85.212.170]:33659 "EHLO
-	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbbFMHP7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 13 Jun 2015 03:15:59 -0400
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:36087 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751127AbbFMIk3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 13 Jun 2015 04:40:29 -0400
+Received: by pabqy3 with SMTP id qy3so35064006pab.3
+        for <linux-pm@vger.kernel.org>; Sat, 13 Jun 2015 01:40:28 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1434125724.2353.19.camel@spandruv-DESK3.jf.intel.com>
+In-Reply-To: <dedf8c02fdd9dbf169f43de74ead4c1434d89b45.1433434659.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, pavel@ucw.cz, rjw@rjwysocki.net, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Denys Vlasenko <dvlasenk@redhat.com>, Andy Lutomirski <luto@amacapital.net>, Borislav Petkov <bp@alien8.de>, Brian Gerst <brgerst@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Kleen, Andi" <andi.kleen@intel.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mike.turquette@linaro.org, sboyd@codeaurora.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
+On 04-06-15, 21:50, Viresh Kumar wrote:
+> +		opp-suspend = <&suspend_opp>;
 
-* Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> wrote:
+> -		opp00 {
+> +		suspend-opp: opp00 {
 
-> >  Also, could you please describe how the failure triggers in your system: how 
-> > many times do you have to suspend/resume to trigger the segfaults, and is 
-> > there anything that makes the failures less or more likely?
->
-> It is very random. Sometimes only few hundred trys reproduce this issue. Some 
-> other times it requires thousands of trys (sometimes not reproducible at all for 
-> days) It is very time sensitive.
+Minor nit, s/suspend-opp/suspend_opp
 
-So the very same kernel image will produce different crash patterns depending on 
-the time of day? That suggests heat/hardware problems.
+and here is updated patch
 
-> [...] A small delay or some debug code in resume path prevents this to crash.
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Wed, 20 May 2015 08:27:49 +0530
+Subject: [PATCH V8] OPP: Add binding for 'opp-suspend'
 
-Fun...
+On few platforms, for power efficiency, we want the device to be
+configured for a specific OPP while we put the device in suspend state.
 
-> The BIOS folks created special version to check if they are corrupting any DS, 
-> but they were not able to catch any corruption. [...]
+Add an optional property in operating-points-v2 bindings for that.
 
-So is it true that we always execute wakeup_pmode_return first after we return 
-from the BIOS?
+Acked-by: Nishanth Menon <nm@ti.com>
+Suggested-by: Nishanth Menon <nm@ti.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ Documentation/devicetree/bindings/power/opp.txt | 14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
-If so then the BIOS touching DS cannot be an issue, as we re-initialize all 
-segment selectors, which reloads the descriptors:
-
-ENTRY(wakeup_pmode_return)
-wakeup_pmode_return:
-        movw    $__KERNEL_DS, %ax
-        movw    %ax, %ss
-        movw    %ax, %ds
-        movw    %ax, %es
-        movw    %ax, %fs
-        movw    %ax, %gs
-
-        # reload the gdt, as we need the full 32 bit address
-        lidt    saved_idt
-        lldt    saved_ldt
-        ljmp    $(__KERNEL_CS), $1f
-
-> [...] Since these are special deployed systems running critical application, 
-> need to request the tests again with your changes. May take long time.
-
-So my second patch is clearly broken as per Brian Gerst's comments.
-
-What I would suggest is to try a patch that adds just 100 NOPs or so - attached 
-below. This patch will add a small delay without any side effects (other than 
-changing the kernel image layout).
-
-If that makes the crash go away, then I'd say the likelihood that it's hardware 
-related increases substantially: maybe a PLL has not stabilized yet sufficiently 
-after resume, or there's some latent heat sensitivity and the fan has not started 
-up yet, etc.
-
-( You can then use this simple delay generating patch in production systems as 
-  well, to work around the problem. Maybe convince the BIOS folks to add a delay 
-  like this to their resume path before they call Linux. )
-
-Thanks,
-
-	Ingo
-
-=================>
-
- arch/x86/kernel/acpi/wakeup_32.S | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
-index 665c6b7d2ea9..ef26999da80a 100644
---- a/arch/x86/kernel/acpi/wakeup_32.S
-+++ b/arch/x86/kernel/acpi/wakeup_32.S
-@@ -10,6 +10,12 @@
+diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
+index 2938c52dbf84..29f115d26f7d 100644
+--- a/Documentation/devicetree/bindings/power/opp.txt
++++ b/Documentation/devicetree/bindings/power/opp.txt
+@@ -74,6 +74,8 @@ This describes the OPPs belonging to a device. This node can have following
+   Missing property means devices have independent clock/voltage/current lines,
+   but they share OPP tables.
  
- ENTRY(wakeup_pmode_return)
- wakeup_pmode_return:
++- opp-suspend: Phandle of the OPP to set while device is suspended.
 +
-+	/* Timing delay of a few dozen cycles: give the hardware some time to recover */
-+	.rept 100
-+	nop
-+	.endr
-+
- 	movw	$__KERNEL_DS, %ax
- 	movw	%ax, %ss
- 	movw	%ax, %ds
+ 
+ * OPP Node
+ 
+@@ -145,9 +147,10 @@ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+ 
+ 	cpu0_opp_table: opp_table0 {
+ 		compatible = "operating-points-v2";
++		opp-suspend = <&suspend_opp>;
+ 		opp-shared;
+ 
+-		opp00 {
++		suspend_opp: opp00 {
+ 			opp-hz = <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>;
+ 			opp-microamp = <70000>;
+@@ -219,13 +222,14 @@ independently.
+ 
+ 	cpu_opp_table: opp_table {
+ 		compatible = "operating-points-v2";
++		opp-suspend = <&suspend_opp>;
+ 
+ 		/*
+ 		 * Missing opp-shared property means CPUs switch DVFS states
+ 		 * independently.
+ 		 */
+ 
+-		opp00 {
++		suspend_opp: opp00 {
+ 			opp-hz = <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>;
+ 			opp-microamp = <70000>;
+@@ -298,9 +302,10 @@ DVFS state together.
+ 
+ 	cluster0_opp: opp_table0 {
+ 		compatible = "operating-points-v2";
++		opp-suspend = <&suspend_opp0>;
+ 		opp-shared;
+ 
+-		opp00 {
++		suspend_opp: opp00 {
+ 			opp-hz = <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>;
+ 			opp-microamp = <70000>;
+@@ -323,9 +328,10 @@ DVFS state together.
+ 
+ 	cluster1_opp: opp_table1 {
+ 		compatible = "operating-points-v2";
++		opp-suspend = <&suspend_opp1>;
+ 		opp-shared;
+ 
+-		opp10 {
++		suspend_opp: opp10 {
+ 			opp-hz = <1300000000>;
+ 			opp-microvolt = <1045000 1050000 1055000>;
+ 			opp-microamp = <95000>;
