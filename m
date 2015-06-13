@@ -1,64 +1,62 @@
-From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH 2/8] mfd: axp20x: Add a cell for the usb
- power_supply part of the axp20x PMICs
-Date: Sat, 13 Jun 2015 15:50:55 +0200
-Message-ID: <20150613135055.GQ19653@lukather>
-References: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
- <1433885881-19809-3-git-send-email-hdegoede@redhat.com>
- <CAGb2v652W+i6L1k5-CnHtXZXdJjFswkcyFGromhWSYaXtitW_w@mail.gmail.com>
- <5577EDD9.8020900@redhat.com>
-Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] x86: General protection fault after STR (32 bit systems
+ only)
+Date: Sat, 13 Jun 2015 16:20:05 +0200
+Message-ID: <20150613142005.GA29207@amd>
+References: <1434066338-6619-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <20150612060747.GA25024@gmail.com>
+ <CALCETrUfrbLeJoOeNQU2vK+jAmNBazB5rmfD5M11tv6NVeppmg@mail.gmail.com>
+ <20150612075013.GA8759@gmail.com>
+ <A58C5D0E-A557-4406-9317-442D78E4700B@zytor.com>
+ <20150612083625.GA22760@gmail.com>
+ <CAMzpN2gHpsW9ZMBdOR8+VuMNkYyi_THVeX5W4JLukmFK95GjZQ@mail.gmail.com>
+ <CAK1hOcPvst1+vT_3_m0t7HZF_fz9zjDd_azyWj6n0Ma-qY3ZQQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="o/5eNASeIIpuMggS"
-Return-path: <linux-sunxi+bncBD2ZNBF5VYJRBOHM6CVQKGQE7NWUBJI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <5577EDD9.8020900-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <http://groups.google.com/group/linux-sunxi
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <http://groups.google.com/group/linux-sunxi/subscribe>
-To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Cc: wens-jdAy2FN1RRM@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+In-Reply-To: <CAK1hOcPvst1+vT_3_m0t7HZF_fz9zjDd_azyWj6n0Ma-qY3ZQQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: Brian Gerst <brgerst@gmail.com>, Ingo Molnar <mingo@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@amacapital.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, X86 ML <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Denys Vlasenko <dvlasenk@redhat.com>, Borislav Petkov <bp@alien8.de>, Linus Torvalds <torvalds@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
 
---o/5eNASeIIpuMggS
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
+On Sat 2015-06-13 00:45:29, Denys Vlasenko wrote:
+> On Fri, Jun 12, 2015 at 5:48 PM, Brian Gerst <brgerst@gmail.com> wrote:
+> > If you follow the convoluted flow of the calls in this file,
+> > ...
+> 
+> Speaking of which. It is indeed quite bad.
+> 
+> For one, saved_eip is only ever set to point to ret_point:
+> 
+> ENTRY(saved_eip)        .long   0
+> ...
+> 
+>         movl    $ret_point, saved_eip
+> 
+> and it has just a single user, where an indirect jump
+> through it is performed:
+> 
+>         # jump to place where we left off
+>         movl    saved_eip, %eax
+>         jmp     *%eax
+> 
+> No comments why it is so.
+> 
+> All this seems to be equivalent to trivial
+> 
+>         # jump to place where we left off
+>         jmp     ret_point
+> 
+> Am I missing something?
 
-On Wed, Jun 10, 2015 at 09:57:13AM +0200, Hans de Goede wrote:
-> >>@@ -368,6 +392,12 @@ static struct mfd_cell axp20x_cells[] = {
-> >>                 .resources              = axp20x_pek_resources,
-> >>         }, {
-> >>                 .name                   = "axp20x-regulator",
-> >>+       }, {
-> >>+               .name                   = "axp20x-usb-power-supply",
-> >
-> >Could we use either "vbus-power-supply" to match the AXP datasheets,
-> >or "otg-power-supply" which is slightly more obvious to board owners?
-> 
-> I do not like the vbus name, since it does not indicate which bus
-> it is, OTOH you are right that is what it is called in the datasheet.
-> 
-> As for using otg, I think that usb is better then.
-> 
-> All in all I believe that the current usb name is best, but if others
-> disagree I'm open to renaming this.
-> 
-> So anyone else have an opinion on what would be a good name for the
-> cell and the compatible ?
+I don't think so. Its just that slowdown was not bad enough tofix it.
 
-I usually prefer to use the name mentionned in the datasheet, but if
-that doesn't make sense, feel free to use an alternative like this
-one.
-
-Maxime
+...patch would be welcome, and even better if you could check the issue
+on 64-bit kernel, too...
+									Pavel
 
 -- 
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
---o/5eNASeIIpuMggS--
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
