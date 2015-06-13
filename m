@@ -1,59 +1,110 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power_supply: rt9455_charger: Fix error reported by
- static analysis tool
-Date: Sat, 13 Jun 2015 04:40:32 +0200
-Message-ID: <20150613024032.GD17513@earth>
-References: <1434111951-9378-1-git-send-email-anda-maria.nicolae@intel.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH] x86: General protection fault after STR (32 bit systems
+ only)
+Date: Sat, 13 Jun 2015 09:00:46 +0200
+Message-ID: <20150613070046.GA26502@gmail.com>
+References: <1434066338-6619-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <20150612060747.GA25024@gmail.com>
+ <CALCETrUfrbLeJoOeNQU2vK+jAmNBazB5rmfD5M11tv6NVeppmg@mail.gmail.com>
+ <20150612075013.GA8759@gmail.com>
+ <A58C5D0E-A557-4406-9317-442D78E4700B@zytor.com>
+ <20150612083625.GA22760@gmail.com>
+ <CAMzpN2gHpsW9ZMBdOR8+VuMNkYyi_THVeX5W4JLukmFK95GjZQ@mail.gmail.com>
+ <CALCETrVqMRRXjx9wu-k+TejseeWG0aTXBdJbCK3B-RrUZN-T5g@mail.gmail.com>
+ <1434133883.2353.25.camel@spandruv-DESK3.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="OROCMA9jn6tkzFBc"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:50430 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755767AbbFMCkh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 12 Jun 2015 22:40:37 -0400
+Received: from mail-wi0-f182.google.com ([209.85.212.182]:35078 "EHLO
+	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751406AbbFMHAz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 13 Jun 2015 03:00:55 -0400
 Content-Disposition: inline
-In-Reply-To: <1434111951-9378-1-git-send-email-anda-maria.nicolae@intel.com>
+In-Reply-To: <1434133883.2353.25.camel@spandruv-DESK3.jf.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Andy Lutomirski <luto@amacapital.net>, Brian Gerst <brgerst@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, X86 ML <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Denys Vlasenko <dvlasenk@redhat.com>, Borislav Petkov <bp@alien8.de>, Linus Torvalds <torvalds@linux-foundation.org>
 
 
---OROCMA9jn6tkzFBc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+* Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> wrote:
 
-Hi,
+> On Fri, 2015-06-12 at 11:11 -0700, Andy Lutomirski wrote:
+> > On Fri, Jun 12, 2015 at 8:48 AM, Brian Gerst <brgerst@gmail.com> wrote:
+> > > On Fri, Jun 12, 2015 at 4:36 AM, Ingo Molnar <mingo@kernel.org> wrote:
+> > >>
+> > >> * H. Peter Anvin <hpa@zytor.com> wrote:
+> > >>
+> > >>> %es is used implicitly by string instructions.
+> > >>
+> > >> Ok, so we are probably better off reloading ES as well early, right
+> > >> when we return from the firmware, just in case something does
+> > >> a copy before we hit the ES restore in restore_processor_state(),
+> > >> which is a generic C function?
+> > >>
+> > >> Something like the patch below?
+> > >>
+> > >> I also added FS/GS/SS reloading to make it complete. If this (or a variant
+> > >> thereof, it's still totally untested) works then we can remove the segment
+> > >> save/restore layer in __save/restore_processor_state().
+> > >>
+> > >> Thanks,
+> > >>
+> > >>         Ingo
+> > >>
+> > >> ===========>
+> > >>  arch/x86/kernel/acpi/wakeup_32.S | 13 +++++++++++++
+> > >>  1 file changed, 13 insertions(+)
+> > >>
+> > >> diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
+> > >> index 665c6b7d2ea9..1376a7fc21b7 100644
+> > >> --- a/arch/x86/kernel/acpi/wakeup_32.S
+> > >> +++ b/arch/x86/kernel/acpi/wakeup_32.S
+> > >> @@ -61,6 +61,19 @@ ENTRY(wakeup_pmode_return)
+> > >>
+> > >>
+> > >>  restore_registers:
+> > >> +       /*
+> > >> +        * In case the BIOS corrupted our segment descriptors,
+> > >> +        * reload them to clear out any shadow descriptor
+> > >> +        * state:
+> > >> +        */
+> > >> +       movl    $__USER_DS, %eax
+> > >> +       movl    %eax, %ds
+> > >> +       movl    %eax, %es
+> > >> +       movl    %eax, %fs
+> > >> +       movl    %eax, %gs
+> > >> +       movl    $__KERNEL_DS, %eax
+> > >> +       movl    %eax, %ss
+> > >> +
+> > >>         movl    saved_context_ebp, %ebp
+> > >>         movl    saved_context_ebx, %ebx
+> > >>         movl    saved_context_esi, %esi
+> > >
+> > > If you follow the convoluted flow of the calls in this file,
+> > > wakeup_pmode_return is the first thing called from the trampoline on
+> > > resume, and that loads the data segments with __KERNEL_DS.  The better
+> > > fix would be to set ds/es to __USER_DS there.  Also since we are in
+> > > the kernel, fs is fixed at __KERNEL_PERCPU, and gs is either
+> > > __KERNEL_STACK_CANARY or user's gs.
+> > 
+> > So why is this issue rare?  Is it just that the first entry to
+> > userspace after resume is only very rarely via SYSEXIT?  Or is there
+> > some other code path that usually, but not quite always, fixes up the
+> > segment registers?
+>
+> We spent a quite a bit of time debugging this. Any small debug code or printk 
+> causes problem to disappear. We noticed that we can reproduce this more 
+> frequently when the we run just one user space application to just do 
+> suspend/resume test, which supports yours theory.
 
-On Fri, Jun 12, 2015 at 03:25:51PM +0300, Anda-Maria Nicolae wrote:
-> The result of container_of macro cannot be NULL, so there is no need to
-> check whether info is NULL.
+So what happens if you add a couple of CPUID (or NOP) calls? If it's timing 
+related, not segment register related, then that might 'fix' the bug too.
 
-Thanks, queued for 4.2.
+Which would suggest that it might be some hardware problem, or a race with 
+something (which could not really be on the Linux side, as we are the only thread 
+of execution at this point)?
 
--- Sebastian
+Thanks,
 
---OROCMA9jn6tkzFBc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVe5ggAAoJENju1/PIO/qaEKoP/32p3nujIy1UKhB0aYaqmRnw
-i3UP40Yo8F8kDtxWfHtcSWxZVaK5TtR3c0kwWsKkt/bjryilpiCjMmu3VQn74SlX
-CrwgZr1cZalnkhxROaJrbJD99Q0UBabJWUgCvC9Ves0U+J7A+Prah03HU6zCeCWo
-nl4ZenSY52Hdi4iM7GW75vlKAM4Budopx7c/3wR0JwU492hcMzzcXEWCSEVTUAuH
-Z0UglsxNItyKsSxvxTuIdjeSlrZ1xbIhv11glaCoDrdURuInjK46cEbqGdDbzhol
-oyPu83tNYMP4q/BWG5j1iWvhxfn+7PJjqiXT/qjIB7+TW4azMAXnmNzfO3UB40o3
-yx2sAahC2KMKnqKpUULF2ZvxO9sTB8BgzaO3X60nXe54VkFpZbFa/X3q4BpkI46m
-daEAoMK4CUMEzHxHNRXLR0kEdfrnF4qTDnQPczcrX8o8V45xTLh9HoVFs6DkRRlQ
-yF2XgZjkV1V0ivWWAVgOkyegHhcr6TmoCZ+k4DxSnfcLhLTjKWx2N1wsWdXGV6s5
-3SeUgztfwAxrEf2IlTh4OTPcI9z1jPRq6/b0oC41UJWDLuRQHMgVEne1Dz1Wh82P
-MkvAMZbt+DZXkyMocjg6Nz3zmXgRpHCiokFuXk4n8UwxmC+C+LkkkonXwNqhv7KV
-yjWR+o7nKUxeiKNFNjAb
-=vNjQ
------END PGP SIGNATURE-----
-
---OROCMA9jn6tkzFBc--
+	Ingo
