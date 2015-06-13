@@ -1,113 +1,64 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V7 3/3] OPP: Add binding for 'opp-suspend'
-Date: Sat, 13 Jun 2015 14:10:23 +0530
-Message-ID: <20150613084023.GA4203@linux>
-References: <cover.1433434659.git.viresh.kumar@linaro.org>
- <dedf8c02fdd9dbf169f43de74ead4c1434d89b45.1433434659.git.viresh.kumar@linaro.org>
+From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH 2/8] mfd: axp20x: Add a cell for the usb
+ power_supply part of the axp20x PMICs
+Date: Sat, 13 Jun 2015 15:50:55 +0200
+Message-ID: <20150613135055.GQ19653@lukather>
+References: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
+ <1433885881-19809-3-git-send-email-hdegoede@redhat.com>
+ <CAGb2v652W+i6L1k5-CnHtXZXdJjFswkcyFGromhWSYaXtitW_w@mail.gmail.com>
+ <5577EDD9.8020900@redhat.com>
+Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:36087 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751127AbbFMIk3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 13 Jun 2015 04:40:29 -0400
-Received: by pabqy3 with SMTP id qy3so35064006pab.3
-        for <linux-pm@vger.kernel.org>; Sat, 13 Jun 2015 01:40:28 -0700 (PDT)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="o/5eNASeIIpuMggS"
+Return-path: <linux-sunxi+bncBD2ZNBF5VYJRBOHM6CVQKGQE7NWUBJI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <dedf8c02fdd9dbf169f43de74ead4c1434d89b45.1433434659.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <5577EDD9.8020900-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Cc: wens-jdAy2FN1RRM@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mike.turquette@linaro.org, sboyd@codeaurora.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-On 04-06-15, 21:50, Viresh Kumar wrote:
-> +		opp-suspend = <&suspend_opp>;
+--o/5eNASeIIpuMggS
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 
-> -		opp00 {
-> +		suspend-opp: opp00 {
+On Wed, Jun 10, 2015 at 09:57:13AM +0200, Hans de Goede wrote:
+> >>@@ -368,6 +392,12 @@ static struct mfd_cell axp20x_cells[] = {
+> >>                 .resources              = axp20x_pek_resources,
+> >>         }, {
+> >>                 .name                   = "axp20x-regulator",
+> >>+       }, {
+> >>+               .name                   = "axp20x-usb-power-supply",
+> >
+> >Could we use either "vbus-power-supply" to match the AXP datasheets,
+> >or "otg-power-supply" which is slightly more obvious to board owners?
+> 
+> I do not like the vbus name, since it does not indicate which bus
+> it is, OTOH you are right that is what it is called in the datasheet.
+> 
+> As for using otg, I think that usb is better then.
+> 
+> All in all I believe that the current usb name is best, but if others
+> disagree I'm open to renaming this.
+> 
+> So anyone else have an opinion on what would be a good name for the
+> cell and the compatible ?
 
-Minor nit, s/suspend-opp/suspend_opp
+I usually prefer to use the name mentionned in the datasheet, but if
+that doesn't make sense, feel free to use an alternative like this
+one.
 
-and here is updated patch
+Maxime
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Wed, 20 May 2015 08:27:49 +0530
-Subject: [PATCH V8] OPP: Add binding for 'opp-suspend'
-
-On few platforms, for power efficiency, we want the device to be
-configured for a specific OPP while we put the device in suspend state.
-
-Add an optional property in operating-points-v2 bindings for that.
-
-Acked-by: Nishanth Menon <nm@ti.com>
-Suggested-by: Nishanth Menon <nm@ti.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- Documentation/devicetree/bindings/power/opp.txt | 14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
-index 2938c52dbf84..29f115d26f7d 100644
---- a/Documentation/devicetree/bindings/power/opp.txt
-+++ b/Documentation/devicetree/bindings/power/opp.txt
-@@ -74,6 +74,8 @@ This describes the OPPs belonging to a device. This node can have following
-   Missing property means devices have independent clock/voltage/current lines,
-   but they share OPP tables.
- 
-+- opp-suspend: Phandle of the OPP to set while device is suspended.
-+
- 
- * OPP Node
- 
-@@ -145,9 +147,10 @@ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
- 
- 	cpu0_opp_table: opp_table0 {
- 		compatible = "operating-points-v2";
-+		opp-suspend = <&suspend_opp>;
- 		opp-shared;
- 
--		opp00 {
-+		suspend_opp: opp00 {
- 			opp-hz = <1000000000>;
- 			opp-microvolt = <970000 975000 985000>;
- 			opp-microamp = <70000>;
-@@ -219,13 +222,14 @@ independently.
- 
- 	cpu_opp_table: opp_table {
- 		compatible = "operating-points-v2";
-+		opp-suspend = <&suspend_opp>;
- 
- 		/*
- 		 * Missing opp-shared property means CPUs switch DVFS states
- 		 * independently.
- 		 */
- 
--		opp00 {
-+		suspend_opp: opp00 {
- 			opp-hz = <1000000000>;
- 			opp-microvolt = <970000 975000 985000>;
- 			opp-microamp = <70000>;
-@@ -298,9 +302,10 @@ DVFS state together.
- 
- 	cluster0_opp: opp_table0 {
- 		compatible = "operating-points-v2";
-+		opp-suspend = <&suspend_opp0>;
- 		opp-shared;
- 
--		opp00 {
-+		suspend_opp: opp00 {
- 			opp-hz = <1000000000>;
- 			opp-microvolt = <970000 975000 985000>;
- 			opp-microamp = <70000>;
-@@ -323,9 +328,10 @@ DVFS state together.
- 
- 	cluster1_opp: opp_table1 {
- 		compatible = "operating-points-v2";
-+		opp-suspend = <&suspend_opp1>;
- 		opp-shared;
- 
--		opp10 {
-+		suspend_opp: opp10 {
- 			opp-hz = <1300000000>;
- 			opp-microvolt = <1045000 1050000 1055000>;
- 			opp-microamp = <95000>;
+-- 
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
+--o/5eNASeIIpuMggS--
