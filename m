@@ -1,62 +1,78 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 2/6] ACPI: Make ACPI processor driver more extensible
-Date: Sat, 13 Jun 2015 03:06:22 +0200
-Message-ID: <7281162.f7BYVWdGtd@vostro.rjw.lan>
-References: <1432590659-9016-1-git-send-email-ashwin.chaugule@linaro.org> <CAJ5Y-eZDmfhRpzeEv_+oxEc8L2EvqPiJRJG455tW8D9a1TgV2g@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power_supply: bq25890: use flags argument of
+ devm_gpiod_get
+Date: Sat, 13 Jun 2015 04:38:40 +0200
+Message-ID: <20150613023840.GB17513@earth>
+References: <1434093574-22456-1-git-send-email-u.kleine-koenig@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="3uo+9/B/ebqu+fSQ"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54025 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753559AbbFMAka (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Jun 2015 20:40:30 -0400
-In-Reply-To: <CAJ5Y-eZDmfhRpzeEv_+oxEc8L2EvqPiJRJG455tW8D9a1TgV2g@mail.gmail.com>
+Received: from mail.kernel.org ([198.145.29.136]:50243 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751330AbbFMCip (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 12 Jun 2015 22:38:45 -0400
+Content-Disposition: inline
+In-Reply-To: <1434093574-22456-1-git-send-email-u.kleine-koenig@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, Jaswinder Singh <jaswinder.singh@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
-
-On Friday, June 12, 2015 01:53:36 PM Ashwin Chaugule wrote:
-> On 25 May 2015 at 17:50, Ashwin Chaugule <ashwin.chaugule@linaro.org> wrote:
-> > The ACPI processor driver is currently tied too closely
-> > to the ACPI C-states (CST), P-states (PSS) and other related
-> > constructs for controlling CPU idle and CPU performance.
-> >
-> > The newer ACPI specification (v5.1 onwards) introduces
-> > alternative methods to CST and PSS. These new mechanisms
-> > are described within each ACPI Processor object and so they
-> > need to be scanned whenever a new Processor object is detected.
-> > This patch introduces two new Kconfig symbols to allow for
-> > finer configurability among the various options for controlling
-> > CPU idle and performance states. There is no change in functionality
-> > and these options are defaulted to enabled to maintain previous
-> > behaviour.
-> >
-> > The following patchwork introduces CPPC: A newer method of
-> > controlling CPU performance. The OS is not expected to support CPPC
-> > and PSS at runtime. So the kconfig option lets us make these two
-> > mutually exclusive at compile time.
-> >
-> > Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-> > ---
-> >  drivers/acpi/Kconfig            |  41 +++++++++++----
-> >  drivers/acpi/Makefile           |   7 +--
-> >  drivers/acpi/processor_driver.c |  85 ++++++++++++++++++++-----------
-> >  drivers/cpufreq/Kconfig         |   2 +-
-> >  drivers/cpufreq/Kconfig.x86     |   2 +
-> >  include/acpi/processor.h        | 109 ++++++++++++++++++++++++++++++++++------
-> >  6 files changed, 187 insertions(+), 59 deletions(-)
-> 
-> 
-> Gentle reminder.. I'll address the function name as Srinivas
-> suggested. Any other comments here and the other patches in this
-> series?
-
-Can you please resend the patches with CCs to linux-acpi too, just in case the
-people on that list have any comments?
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, kernel@pengutronix.de, Alexandre Courbot <gnurou@gmail.com>, Kishon Vijay Abraham I <kishon@ti.com>
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+--3uo+9/B/ebqu+fSQ
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Fri, Jun 12, 2015 at 09:19:34AM +0200, Uwe Kleine-K=F6nig wrote:
+> Since 39b2bbe3d715 (gpio: add flags argument to gpiod_get*() functions)
+> which appeared in v3.17-rc1, the gpiod_get* functions take an additional
+> parameter that allows to specify direction and initial value for output.
+>=20
+> Simplify driver accordingly. Furthermore this is one caller less that
+> stops us making the flags argument to gpiod_get*() mandatory.
+>=20
+> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+> ---
+> Hello,
+>=20
+> this patch applies to next and is only necessary on top of 4aeae9cb0dad
+> (power_supply: Add support for TI BQ25890 charger chip).
+>=20
+> Note I plan to make the flags parameter mandatory for 4.3. So unless
+> this change gets into 4.2, would it be ok to let it go in via the gpio
+> tree?
+>=20
+> Best regards
+> Uwe
+
+Thanks, queued for 4.2.
+
+-- Sebastian
+
+--3uo+9/B/ebqu+fSQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVe5etAAoJENju1/PIO/qamLsP/RUD9FtrcZkkI6iHDpk70WJR
+7/N7OqMyHG9QtkFNGwi/q1yLep+GEfQGcI2IqZl0yLPzuYdWHHt83S19bbr6Meh0
+JVtnTtE6EICTAotz7emXrTf4Z8tXks/HvKrnxT47NZJdziDjxv6MFSPLiM9DZYza
+5dEMGhMdtnzhpU5yhOgjtvzd2kuT5eog66e+A8tiBiXhmmZAOooyWH0cAgoi7YKg
+AyfldKufaPpInHc3VYgBKMctjGX2DFpgp1Y0quDWWsDIhsMWbxcyADYr6Lr6ZKfQ
+D7ddp6bl/9c24H0P/fFqww7WnuDggDG3P5LbfyqMFyw4g25DRcanfd1mv3nW3KG1
+Sgf9w8Ft6HUp6fAC39u2NGz+n39roTpN/r4+84AXUHJzhfSYFYqaHNe+EWGv6g/h
+NhrPBvXL/aL+VL44kp4M4pfA1jhvsTjH0Q0miwgF1X4mquu7QLiN804iBacaQTWM
+lp8kBfmZ+9J8w3dJCsXDiFZBw8bds8gopFGx/1rC0M3Vp0z0KtzylAxQ6qM0oDj5
+KADzPcaa79qBNjrL6pQ8R2BBOPPZCJXvpt9PB7/FU/ij1snalWo4VET0R2BN7xaP
+LRzW4yYPN7SwPR9hzZy7Q+qJtA81gQqKGYwJogWvXSVsOzffYenHzV/JVud6dVFX
+bwi2PLTYHto4+4VnbLel
+=VRID
+-----END PGP SIGNATURE-----
+
+--3uo+9/B/ebqu+fSQ--
