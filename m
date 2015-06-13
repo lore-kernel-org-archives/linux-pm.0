@@ -1,72 +1,59 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2] power_supply: bq24257: use flags argument of
- devm_gpiod_get
-Date: Sat, 13 Jun 2015 04:39:16 +0200
-Message-ID: <20150613023916.GC17513@earth>
-References: <1434093882-31795-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <1434099244-28202-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH] power_supply: rt9455_charger: Fix error reported by
+ static analysis tool
+Date: Sat, 13 Jun 2015 04:40:32 +0200
+Message-ID: <20150613024032.GD17513@earth>
+References: <1434111951-9378-1-git-send-email-anda-maria.nicolae@intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="PuGuTyElPB9bOcsM"
+	protocol="application/pgp-signature"; boundary="OROCMA9jn6tkzFBc"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:50284 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:50430 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755367AbbFMCjU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 12 Jun 2015 22:39:20 -0400
+	id S1755767AbbFMCkh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 12 Jun 2015 22:40:37 -0400
 Content-Disposition: inline
-In-Reply-To: <1434099244-28202-1-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1434111951-9378-1-git-send-email-anda-maria.nicolae@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, kernel@pengutronix.de, Alexandre Courbot <gnurou@gmail.com>, Kishon Vijay Abraham I <kishon@ti.com>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+To: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
 
---PuGuTyElPB9bOcsM
-Content-Type: text/plain; charset=iso-8859-1
+--OROCMA9jn6tkzFBc
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Jun 12, 2015 at 10:54:04AM +0200, Uwe Kleine-K=F6nig wrote:
-> Since 39b2bbe3d715 (gpio: add flags argument to gpiod_get*() functions)
-> which appeared in v3.17-rc1, the gpiod_get* functions take an additional
-> parameter that allows to specify direction and initial value for output.
->=20
-> Simplify driver accordingly. Furthermore this is one caller less that
-> stops us making the flags argument to gpiod_get*() mandatory.
->=20
-> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-> ---
-> Changes since (implicit) v1, sent with Message-Id: 1434093882-31795-1-git=
--send-email-u.kleine-koenig@pengutronix.de:
->=20
->  - make it compilable
+On Fri, Jun 12, 2015 at 03:25:51PM +0300, Anda-Maria Nicolae wrote:
+> The result of container_of macro cannot be NULL, so there is no need to
+> check whether info is NULL.
 
 Thanks, queued for 4.2.
 
 -- Sebastian
 
---PuGuTyElPB9bOcsM
+--OROCMA9jn6tkzFBc
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJVe5fUAAoJENju1/PIO/qatXAP/iHSO4804z3gEB7gkZbw2dOi
-MmFm/L8dlblvwOKLR5hlzYDClw2iNaj4P1HzpBeEHA+kC+hTpIuIN+XxyC/IXwS1
-lryDX3azvSpI7hJcNIpwMwXU3qpmbSMDog2/j66S1ad9tN35hHxLxLcdAJrJAxec
-Xkig5wiPuB241mwMDW33k/ta8CqsbgQ95oUDzFIvDtNZdseLNntn58UL5bSb1ynO
-GW/T8pQ9FCnnuthPaZo+RDJlZT3REBzPR4Jph14Mfx4/dxVON5AVSzEg/ic5FEhM
-28fGdsYpR/dTMlGu++T24IKqE+/oPt4rXbgZwuxIIehF+C2Tyg8lpnfnXlAGg93Y
-ko5WO0d0sq158MlSIpjeGso6+RzaR/LYTl2fw8IhL30r9byJTuGRh7G5zXLgOs3t
-/jH1eoVmcPVlHKMgrOmE+20MgwXKCjwDzYEr6ciqn1pUACnovJM7Bgz0JdmI/zJE
-5BaIWDs2b0X9xSQXBAkapDitaHi8r7j8AT7EdvPgEjb9A3psg5jl6VgH7UHPNybz
-xxBhlm7ZiLKu1Jkbrj7D1euATrJ+nI0Y2zcATknHzltzxsvXBkaUFowi0UiqRcK/
-q4PED47ePPME/KE5tr8EKKxiyHSy7nHlEUNjYO8HL3c/drcKkIEAhVUnnYy2iTI0
-H1excl1yu6rI/eGEdhBI
-=JbSW
+iQIcBAEBCgAGBQJVe5ggAAoJENju1/PIO/qaEKoP/32p3nujIy1UKhB0aYaqmRnw
+i3UP40Yo8F8kDtxWfHtcSWxZVaK5TtR3c0kwWsKkt/bjryilpiCjMmu3VQn74SlX
+CrwgZr1cZalnkhxROaJrbJD99Q0UBabJWUgCvC9Ves0U+J7A+Prah03HU6zCeCWo
+nl4ZenSY52Hdi4iM7GW75vlKAM4Budopx7c/3wR0JwU492hcMzzcXEWCSEVTUAuH
+Z0UglsxNItyKsSxvxTuIdjeSlrZ1xbIhv11glaCoDrdURuInjK46cEbqGdDbzhol
+oyPu83tNYMP4q/BWG5j1iWvhxfn+7PJjqiXT/qjIB7+TW4azMAXnmNzfO3UB40o3
+yx2sAahC2KMKnqKpUULF2ZvxO9sTB8BgzaO3X60nXe54VkFpZbFa/X3q4BpkI46m
+daEAoMK4CUMEzHxHNRXLR0kEdfrnF4qTDnQPczcrX8o8V45xTLh9HoVFs6DkRRlQ
+yF2XgZjkV1V0ivWWAVgOkyegHhcr6TmoCZ+k4DxSnfcLhLTjKWx2N1wsWdXGV6s5
+3SeUgztfwAxrEf2IlTh4OTPcI9z1jPRq6/b0oC41UJWDLuRQHMgVEne1Dz1Wh82P
+MkvAMZbt+DZXkyMocjg6Nz3zmXgRpHCiokFuXk4n8UwxmC+C+LkkkonXwNqhv7KV
+yjWR+o7nKUxeiKNFNjAb
+=vNjQ
 -----END PGP SIGNATURE-----
 
---PuGuTyElPB9bOcsM--
+--OROCMA9jn6tkzFBc--
