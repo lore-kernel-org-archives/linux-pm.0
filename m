@@ -1,81 +1,40 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2] x86: Load __USER_DS into DS/ES after resume
-Date: Sun, 14 Jun 2015 10:57:35 +0200
-Message-ID: <20150614085735.GA22174@amd>
-References: <20150612075013.GA8759@gmail.com>
- <A58C5D0E-A557-4406-9317-442D78E4700B@zytor.com>
- <20150612083625.GA22760@gmail.com>
- <CAMzpN2gHpsW9ZMBdOR8+VuMNkYyi_THVeX5W4JLukmFK95GjZQ@mail.gmail.com>
- <20150613070359.GB26502@gmail.com>
- <CALCETrX_goAyqMVdkZTnJwDCJgfz2osVVsNAt8Gv3ZqZMX85ZQ@mail.gmail.com>
- <CAMzpN2jyQWTEWd4sZosfkocDabu=CxiEVncp94+P+vHYjpicTw@mail.gmail.com>
- <20150614065635.GA5294@gmail.com>
- <CA+55aFzB9dYidEf_7Hs47FOF7WPPJnJQwj_RiwL--c5Gb1uqyw@mail.gmail.com>
- <20150614074922.GA30290@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Takeshi Yoshimura <yos@sslab.ics.keio.ac.jp>
+Subject: [PATCH 1/1] wm831x_power: Fix off-by-one at free_irq()
+Date: Sun, 14 Jun 2015 20:55:18 +0900
+Message-ID: <1434282918-6980-1-git-send-email-yos@sslab.ics.keio.ac.jp>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49778 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbbFNI5i (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 14 Jun 2015 04:57:38 -0400
-Content-Disposition: inline
-In-Reply-To: <20150614074922.GA30290@gmail.com>
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:33892 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751853AbbFNL6f (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 14 Jun 2015 07:58:35 -0400
+Received: by pacgb13 with SMTP id gb13so17971309pac.1
+        for <linux-pm@vger.kernel.org>; Sun, 14 Jun 2015 04:58:35 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Denys Vlasenko <dvlasenk@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, the arch/x86 maintainers <x86@kernel.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@amacapital.net>, Brian Gerst <brgerst@gmail.com>, Peter Anvin <hpa@zytor.com>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Takeshi Yoshimura <yos@sslab.ics.keio.ac.jp>
 
-On Sun 2015-06-14 09:49:22, Ingo Molnar wrote:
-> 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > On Jun 13, 2015 8:56 PM, "Ingo Molnar" <mingo@kernel.org> wrote:
-> > >
-> > > Ok, so something like the patch below, right?
-> > >
-> > >         movw    $__KERNEL_DS, %ax
-> > >         movw    %ax, %ss
-> > > -       movw    %ax, %ds
-> > > -       movw    %ax, %es
-> > >         movw    %ax, %fs
-> > >         movw    %ax, %gs
-> > >
-> > > +       movw    $__KERNEL_DS, %ax
-> > > +       movw    %ax, %ds
-> > > +       movw    %ax, %es
-> > 
-> > .. except with less cut-and-paste bugs.
-> > 
-> > That second KERNEL should be USER.
-> 
-> Yeah, doh :-/ Updated patch below.
+An error handling in wm831x_power_probe() mistakenly frees a failed-to-
+request irq as well as other irqs. I added missing decrement of the loop
+counter.
 
-Do we want similar patch for 64-bit, too?
+Signed-off-by: Takeshi Yoshimura <yos@sslab.ics.keio.ac.jp>
+---
+ drivers/power/wm831x_power.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
-
-diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
-index ae693b5..2ac2bc7 100644
---- a/arch/x86/kernel/acpi/wakeup_64.S
-+++ b/arch/x86/kernel/acpi/wakeup_64.S
-@@ -18,10 +18,12 @@ ENTRY(wakeup_long64)
- 	cmpq	%rdx, %rax
- 	jne	bogus_64_magic
+diff --git a/drivers/power/wm831x_power.c b/drivers/power/wm831x_power.c
+index 0161bda..db11ae6 100644
+--- a/drivers/power/wm831x_power.c
++++ b/drivers/power/wm831x_power.c
+@@ -609,6 +609,7 @@ static int wm831x_power_probe(struct platform_device *pdev)
+ 	return ret;
  
--	movw	$__KERNEL_DS, %ax
--	movw	%ax, %ss	
-+	movw	$__USER_DS, %ax
- 	movw	%ax, %ds
- 	movw	%ax, %es
-+
-+	movw	$__KERNEL_DS, %ax
-+	movw	%ax, %ss	
- 	movw	%ax, %fs
- 	movw	%ax, %gs
- 	movq	saved_rsp, %rsp
-
-
+ err_bat_irq:
++	--i;
+ 	for (; i >= 0; i--) {
+ 		irq = platform_get_irq_byname(pdev, wm831x_bat_irqs[i]);
+ 		free_irq(irq, power);
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.9.1
+
