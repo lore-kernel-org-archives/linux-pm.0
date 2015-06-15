@@ -1,100 +1,79 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v4 5/8] driver core: implement device_for_each_child_reverse()
-Date: Mon, 15 Jun 2015 12:57:33 +0300
-Message-ID: <1434362256-239992-6-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v4 3/8] Driver core: wakeup the parent device before trying probe
+Date: Mon, 15 Jun 2015 12:57:31 +0300
+Message-ID: <1434362256-239992-4-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1434362256-239992-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1434362256-239992-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@linaro.org>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The new function device_for_each_child_reverse() is helpful to traverse the
-registered devices in a reversed order, e.g. in the case when an operation on
-each device should be done first on the last added device, then on one before
-last and so on.
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
+If the parent is still suspended when driver probe is
+attempted, the result may be failure.
+
+For example, if the parent is a PCI MFD device that has been
+suspended when we try to probe our device, any register
+reads will return 0xffffffff.
+
+To fix the problem, making sure the parent is always awake
+before attempting driver probe.
+
+Signed-off-by: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+Signed-off-by: Rafael J. Wysocki <rjw@rjwysocki.net>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/base/core.c    | 43 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/device.h |  2 ++
- 2 files changed, 45 insertions(+)
+ drivers/base/dd.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 21d1303..69b2acc 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -1252,6 +1252,19 @@ void device_unregister(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(device_unregister);
- 
-+static struct device *prev_device(struct klist_iter *i)
-+{
-+	struct klist_node *n = klist_prev(i);
-+	struct device *dev = NULL;
-+	struct device_private *p;
-+
-+	if (n) {
-+		p = to_device_private_parent(n);
-+		dev = p->device;
-+	}
-+	return dev;
-+}
-+
- static struct device *next_device(struct klist_iter *i)
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index e843fdb..c4c1eaf 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -399,6 +399,8 @@ EXPORT_SYMBOL_GPL(wait_for_device_probe);
+  *
+  * This function must be called with @dev lock held.  When called for a
+  * USB interface, @dev->parent lock must be held as well.
++ *
++ * If the device has a parent, runtime-resume the parent before driver probing.
+  */
+ int driver_probe_device(struct device_driver *drv, struct device *dev)
  {
- 	struct klist_node *n = klist_next(i);
-@@ -1342,6 +1355,36 @@ int device_for_each_child(struct device *parent, void *data,
- EXPORT_SYMBOL_GPL(device_for_each_child);
+@@ -410,10 +412,16 @@ int driver_probe_device(struct device_driver *drv, struct device *dev)
+ 	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
+ 		 drv->bus->name, __func__, dev_name(dev), drv->name);
  
- /**
-+ * device_for_each_child_reverse - device child iterator in reversed order.
-+ * @parent: parent struct device.
-+ * @fn: function to be called for each device.
-+ * @data: data for the callback.
-+ *
-+ * Iterate over @parent's child devices, and call @fn for each,
-+ * passing it @data.
-+ *
-+ * We check the return of @fn each time. If it returns anything
-+ * other than 0, we break out and return that value.
-+ */
-+int device_for_each_child_reverse(struct device *parent, void *data,
-+				  int (*fn)(struct device *dev, void *data))
-+{
-+	struct klist_iter i;
-+	struct device *child;
-+	int error = 0;
++	if (dev->parent)
++		pm_runtime_get_sync(dev->parent);
 +
-+	if (!parent->p)
-+		return 0;
+ 	pm_runtime_barrier(dev);
+ 	ret = really_probe(dev, drv);
+ 	pm_request_idle(dev);
+ 
++	if (dev->parent)
++		pm_runtime_put(dev->parent);
 +
-+	klist_iter_init(&parent->p->klist_children, &i);
-+	while ((child = prev_device(&i)) && !error)
-+		error = fn(child, data);
-+	klist_iter_exit(&i);
-+	return error;
-+}
-+EXPORT_SYMBOL_GPL(device_for_each_child_reverse);
+ 	return ret;
+ }
+ 
+@@ -459,8 +467,14 @@ int device_attach(struct device *dev)
+ 			ret = 0;
+ 		}
+ 	} else {
++		if (dev->parent)
++			pm_runtime_get_sync(dev->parent);
 +
-+/**
-  * device_find_child - device iterator for locating a particular device.
-  * @parent: parent struct device
-  * @match: Callback function to check device
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 6558af9..cf404a0 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -928,6 +928,8 @@ extern int __must_check device_add(struct device *dev);
- extern void device_del(struct device *dev);
- extern int device_for_each_child(struct device *dev, void *data,
- 		     int (*fn)(struct device *dev, void *data));
-+extern int device_for_each_child_reverse(struct device *dev, void *data,
-+		     int (*fn)(struct device *dev, void *data));
- extern struct device *device_find_child(struct device *dev, void *data,
- 				int (*match)(struct device *dev, void *data));
- extern int device_rename(struct device *dev, const char *new_name);
+ 		ret = bus_for_each_drv(dev->bus, NULL, dev, __device_attach);
+ 		pm_request_idle(dev);
++
++		if (dev->parent)
++			pm_runtime_put(dev->parent);
+ 	}
+ out_unlock:
+ 	device_unlock(dev);
 -- 
 2.1.4
+
