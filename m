@@ -1,105 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 06/12] cpufreq: governor: Keep single copy of information
- common to policy->cpus
-Date: Mon, 15 Jun 2015 12:16:24 +0530
-Message-ID: <20150615064624.GK30078@linux>
-References: <cover.1434019473.git.viresh.kumar@linaro.org>
- <ca16538aebad3c886092c11dc3cc22e1385f2415.1434019473.git.viresh.kumar@linaro.org>
- <557E6D6E.1070200@linux.vnet.ibm.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH 07/12] cpufreq: governor: split out common part of {cs|od}_dbs_timer()
+Date: Mon, 15 Jun 2015 12:33:08 +0530
+Message-ID: <557E78AC.3070507@linux.vnet.ibm.com>
+References: <cover.1434019473.git.viresh.kumar@linaro.org> <d3b9ae6a7645e39fa5883e7843278ddbd88c2653.1434019473.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-6
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:36506 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752759AbbFOGqc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 02:46:32 -0400
-Received: by pabqy3 with SMTP id qy3so59401637pab.3
-        for <linux-pm@vger.kernel.org>; Sun, 14 Jun 2015 23:46:31 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <557E6D6E.1070200@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com ([32.97.110.160]:41429 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753524AbbFOHDS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 03:03:18 -0400
+Received: from /spool/local
+	by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Mon, 15 Jun 2015 01:03:17 -0600
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com [9.57.198.27])
+	by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 1B8F6C90043
+	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2015 02:54:22 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id t5F73FXA53411904
+	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2015 07:03:15 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id t5F73DOT001056
+	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2015 03:03:14 -0400
+In-Reply-To: <d3b9ae6a7645e39fa5883e7843278ddbd88c2653.1434019473.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, ke.wang@spreadtrum.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, ke.wang@spreadtrum.com
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
 
-On 15-06-15, 11:45, Preeti U Murthy wrote:
-> On 06/11/2015 04:21 PM, Viresh Kumar wrote:
-> > @@ -320,6 +363,7 @@ static void cpufreq_governor_exit(struct cpufreq_policy *policy,
-> >  		}
-> > 
-> >  		cdata->exit(dbs_data, policy->governor->initialized == 1);
-> > +		free_ccdbs(policy, cdata);
+On 06/11/2015 04:21 PM, Viresh Kumar wrote:
+> Some part of cs_dbs_timer() and od_dbs_timer() is exactly same and is
+> unnecessarily duplicated.
 > 
-> This is a per-policy data structure, so why free it only when all the
-> users of the governor are gone ? We should be freeing it when a policy
-> is asked to exit, which is independent of references to this governor by
-> other policy cpus. This would mean freeing it outside this if condition.
-
-Right.
-
-> > @@ -348,11 +393,13 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
-> >  		io_busy = od_tuners->io_is_busy;
-> >  	}
-> > 
-> > +	ccdbs->time_stamp = ktime_get();
-> > +	mutex_init(&ccdbs->timer_mutex);
-> > +
-> >  	for_each_cpu(j, policy->cpus) {
-> >  		struct cpu_dbs_info *j_cdbs = cdata->get_cpu_cdbs(j);
-> >  		unsigned int prev_load;
-> > 
-> > -		j_cdbs->policy = policy;
+> Create the real work-handler in cpufreq_governor.c and put the common
+> code in this routine (dbs_timer()).
 > 
-> This is not convincing. INIT and EXIT should be typically used to
-> initiate and free 'governor' specific data structures. START and STOP
-> should be used for 'policy wide/cpu wide' initialization and making
-> NULL. Atleast thats how the current code appears to be designed.
+> Shouldn't make any functional change.
 > 
-> Now, ccdbs is a policy wide data structure. We can perhaps allocate and
-> free ccdbs during INIT and EXIT, but initiating the values and making
-> them NULL must be done in START and STOP respectively. You initiate the
-> time_stamp and timer_mutex in START, why not initialize policy also
-> here? This will help maintain consistency in code too.
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
-I don't think it was done to use it early and so moving it to
-START/STOP should be fine.
- 
-> > @@ -406,10 +452,7 @@ static void cpufreq_governor_stop(struct cpufreq_policy *policy,
-> >  		cs_dbs_info->enable = 0;
-> >  	}
-> > 
-> > -	gov_cancel_work(dbs_data, policy);
-> > -
-> > -	mutex_destroy(&cdbs->timer_mutex);
-> > -	cdbs->policy = NULL;
-> 
-> Same here. For the same reason as above, the value for policy must be
-> nullified in STOP. Besides, policy is initiated a value explicitly in
-> INIT, but invalidated in EXIT by freeing ccdbs in this patch. There is
-> lack of consistency.
-> 
-> There is another consequence. Freeing a data structure does not
-> necessarily mean setting it to NULL. It can be some random address. This
-> will break places which check for NULL policy.
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-If we are freeing ccdbs, then using ccdbs->policy isn't valid anymore.
-And so while freeing ccdbs, we don't really need to set its fields to
-NULL.
-
-> > +	mutex_destroy(&ccdbs->timer_mutex);
-> 
-> Another point which you may have taken care of in the subsequent
-> patches. I will mention here nevertheless.
-> 
-> The timer_mutex is destroyed, but the cdbs->policy is not NULL until we
-> call EXIT. So when cpufreq_governor_limits() is called, it checks for
-> the existence of ccdbs, which succeeds. But when it tries to take the
-> timer_mutex it dereferences NULL.
-
-Hmm, so I should keep checking for cdbs->ccdbs->policy instead and
-make it NULL in STOP..
-
-Nice work Preeti. Thanks.
-
--- 
-viresh
