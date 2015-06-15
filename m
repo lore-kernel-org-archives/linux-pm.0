@@ -1,7 +1,7 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v4 4/8] klist: implement klist_prev()
-Date: Mon, 15 Jun 2015 12:57:32 +0300
-Message-ID: <1434362256-239992-5-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v4 2/8] ACPI / PM: Attach ACPI power domain only once
+Date: Mon, 15 Jun 2015 12:57:30 +0300
+Message-ID: <1434362256-239992-3-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1434362256-239992-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1434362256-239992-1-git-send-email-andriy.shevchenko@linux.intel.com>
@@ -10,81 +10,130 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-klist_prev() gets the previous element in the list. It is useful to traverse
-through the list in reverse order, for example, to provide LIFO (last in first
-out) variant of access.
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
 
+Some devices, like MFD subdevices, share a single ACPI companion device so
+that they are able to access their resources and children. However,
+currently all these subdevices are attached to the ACPI power domain and
+this might cause that the power methods for the companion device get called
+more than once.
+
+In order to solve this we attach the ACPI power domain only to the first
+physical device that is bound to the ACPI companion device. In case of MFD
+devices, this is the parent MFD device itself.
+
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- include/linux/klist.h |  1 +
- lib/klist.c           | 41 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 42 insertions(+)
+ drivers/acpi/device_pm.c |  8 ++++++++
+ drivers/acpi/internal.h  |  2 ++
+ drivers/acpi/scan.c      | 46 ++++++++++++++++++++++++++++++----------------
+ 3 files changed, 40 insertions(+), 16 deletions(-)
 
-diff --git a/include/linux/klist.h b/include/linux/klist.h
-index 61e5b72..953f283 100644
---- a/include/linux/klist.h
-+++ b/include/linux/klist.h
-@@ -63,6 +63,7 @@ extern void klist_iter_init(struct klist *k, struct klist_iter *i);
- extern void klist_iter_init_node(struct klist *k, struct klist_iter *i,
- 				 struct klist_node *n);
- extern void klist_iter_exit(struct klist_iter *i);
-+extern struct klist_node *klist_prev(struct klist_iter *i);
- extern struct klist_node *klist_next(struct klist_iter *i);
+diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
+index 735db11..7d0c7e9 100644
+--- a/drivers/acpi/device_pm.c
++++ b/drivers/acpi/device_pm.c
+@@ -1103,6 +1103,14 @@ int acpi_dev_pm_attach(struct device *dev, bool power_on)
+ 	if (dev->pm_domain)
+ 		return -EEXIST;
  
- #endif
-diff --git a/lib/klist.c b/lib/klist.c
-index 89b485a..d74cf7a 100644
---- a/lib/klist.c
-+++ b/lib/klist.c
-@@ -324,6 +324,47 @@ static struct klist_node *to_klist_node(struct list_head *n)
++	/*
++	 * Only attach the power domain to the first device if the
++	 * companion is shared by multiple. This is to prevent doing power
++	 * management twice.
++	 */
++	if (!acpi_device_is_first_physical_node(adev, dev))
++		return -EBUSY;
++
+ 	acpi_add_pm_notifier(adev, dev, acpi_pm_notify_work_func);
+ 	dev->pm_domain = &acpi_general_pm_domain;
+ 	if (power_on) {
+diff --git a/drivers/acpi/internal.h b/drivers/acpi/internal.h
+index ba4a61e..c26a951 100644
+--- a/drivers/acpi/internal.h
++++ b/drivers/acpi/internal.h
+@@ -96,6 +96,8 @@ void acpi_device_add_finalize(struct acpi_device *device);
+ void acpi_free_pnp_ids(struct acpi_device_pnp *pnp);
+ bool acpi_device_is_present(struct acpi_device *adev);
+ bool acpi_device_is_battery(struct acpi_device *adev);
++bool acpi_device_is_first_physical_node(struct acpi_device *adev,
++					const struct device *dev);
+ 
+ /* --------------------------------------------------------------------------
+                                   Power Resource
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index 03141aa..37f8f74 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -223,6 +223,35 @@ static int create_of_modalias(struct acpi_device *acpi_dev, char *modalias,
+ 	return len;
  }
  
- /**
-+ * klist_prev - Ante up prev node in list.
-+ * @i: Iterator structure.
-+ *
-+ * First grab list lock. Decrement the reference count of the previous
-+ * node, if there was one. Grab the prev node, increment its reference
-+ * count, drop the lock, and return that prev node.
-+ */
-+struct klist_node *klist_prev(struct klist_iter *i)
-+{
-+	void (*put)(struct klist_node *) = i->i_klist->put;
-+	struct klist_node *last = i->i_cur;
-+	struct klist_node *prev;
-+
-+	spin_lock(&i->i_klist->k_lock);
-+
-+	if (last) {
-+		prev = to_klist_node(last->n_node.prev);
-+		if (!klist_dec_and_del(last))
-+			put = NULL;
-+	} else
-+		prev = to_klist_node(i->i_klist->k_list.prev);
-+
-+	i->i_cur = NULL;
-+	while (prev != to_klist_node(&i->i_klist->k_list)) {
-+		if (likely(!knode_dead(prev))) {
-+			kref_get(&prev->n_ref);
-+			i->i_cur = prev;
-+			break;
-+		}
-+		prev = to_klist_node(prev->n_node.prev);
-+	}
-+
-+	spin_unlock(&i->i_klist->k_lock);
-+
-+	if (put && last)
-+		put(last);
-+	return i->i_cur;
-+}
-+EXPORT_SYMBOL_GPL(klist_prev);
-+
 +/**
-  * klist_next - Ante up next node in list.
-  * @i: Iterator structure.
-  *
++ * acpi_device_is_first_physical_node - Is given dev first physical node
++ * @adev: ACPI companion device
++ * @dev: Physical device to check
++ *
++ * Function checks if given @dev is the first physical devices attached to
++ * the ACPI companion device. This distinction is needed in some cases
++ * where the same companion device is shared between many physical devices.
++ *
++ * Note that the caller have to provide valid @adev pointer.
++ */
++bool acpi_device_is_first_physical_node(struct acpi_device *adev,
++					const struct device *dev)
++{
++	bool ret = false;
++
++	mutex_lock(&adev->physical_node_lock);
++	if (!list_empty(&adev->physical_node_list)) {
++		const struct acpi_device_physical_node *node;
++
++		node = list_first_entry(&adev->physical_node_list,
++					struct acpi_device_physical_node, node);
++		ret = node->dev == dev;
++	}
++	mutex_unlock(&adev->physical_node_lock);
++
++	return ret;
++}
++
+ /*
+  * acpi_companion_match() - Can we match via ACPI companion device
+  * @dev: Device in question
+@@ -247,7 +276,6 @@ static int create_of_modalias(struct acpi_device *acpi_dev, char *modalias,
+ static struct acpi_device *acpi_companion_match(const struct device *dev)
+ {
+ 	struct acpi_device *adev;
+-	struct mutex *physical_node_lock;
+ 
+ 	adev = ACPI_COMPANION(dev);
+ 	if (!adev)
+@@ -256,21 +284,7 @@ static struct acpi_device *acpi_companion_match(const struct device *dev)
+ 	if (list_empty(&adev->pnp.ids))
+ 		return NULL;
+ 
+-	physical_node_lock = &adev->physical_node_lock;
+-	mutex_lock(physical_node_lock);
+-	if (list_empty(&adev->physical_node_list)) {
+-		adev = NULL;
+-	} else {
+-		const struct acpi_device_physical_node *node;
+-
+-		node = list_first_entry(&adev->physical_node_list,
+-					struct acpi_device_physical_node, node);
+-		if (node->dev != dev)
+-			adev = NULL;
+-	}
+-	mutex_unlock(physical_node_lock);
+-
+-	return adev;
++	return acpi_device_is_first_physical_node(adev, dev) ? adev : NULL;
+ }
+ 
+ static int __acpi_device_uevent_modalias(struct acpi_device *adev,
 -- 
 2.1.4
 
