@@ -1,66 +1,119 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: [PATCH v5 2/6] ACPI: Make ACPI processor driver more extensible
-Date: Mon, 15 Jun 2015 11:23:14 -0400
-Message-ID: <CAJ5Y-eYaNiWdcnJn90oH3pusfXtJf=+Q0w1BKb+rxsWGx_YqiA@mail.gmail.com>
-References: <1432590659-9016-1-git-send-email-ashwin.chaugule@linaro.org>
-	<CAJ5Y-eZDmfhRpzeEv_+oxEc8L2EvqPiJRJG455tW8D9a1TgV2g@mail.gmail.com>
-	<7281162.f7BYVWdGtd@vostro.rjw.lan>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH, DEBUG] x86/32: Add small delay after resume
+Date: Mon, 15 Jun 2015 09:10:27 -0700
+Message-ID: <1434384627.2353.47.camel@spandruv-DESK3.jf.intel.com>
+References: <1434066338-6619-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <20150612060747.GA25024@gmail.com>
+	 <1434125724.2353.19.camel@spandruv-DESK3.jf.intel.com>
+	 <20150613071547.GA27446@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f45.google.com ([209.85.218.45]:33484 "EHLO
-	mail-oi0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754161AbbFOPXP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 11:23:15 -0400
-Received: by oiha141 with SMTP id a141so61311840oih.0
-        for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2015 08:23:14 -0700 (PDT)
-In-Reply-To: <7281162.f7BYVWdGtd@vostro.rjw.lan>
+Received: from mga11.intel.com ([192.55.52.93]:21232 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754052AbbFOQMc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Jun 2015 12:12:32 -0400
+In-Reply-To: <20150613071547.GA27446@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, Jaswinder Singh <jaswinder.singh@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, pavel@ucw.cz, rjw@rjwysocki.net, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Denys Vlasenko <dvlasenk@redhat.com>, Andy Lutomirski <luto@amacapital.net>, Borislav Petkov <bp@alien8.de>, Brian Gerst <brgerst@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Kleen, Andi" <andi.kleen@intel.com>
 
-On 12 June 2015 at 21:06, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Friday, June 12, 2015 01:53:36 PM Ashwin Chaugule wrote:
->> On 25 May 2015 at 17:50, Ashwin Chaugule <ashwin.chaugule@linaro.org> wrote:
->> > The ACPI processor driver is currently tied too closely
->> > to the ACPI C-states (CST), P-states (PSS) and other related
->> > constructs for controlling CPU idle and CPU performance.
->> >
->> > The newer ACPI specification (v5.1 onwards) introduces
->> > alternative methods to CST and PSS. These new mechanisms
->> > are described within each ACPI Processor object and so they
->> > need to be scanned whenever a new Processor object is detected.
->> > This patch introduces two new Kconfig symbols to allow for
->> > finer configurability among the various options for controlling
->> > CPU idle and performance states. There is no change in functionality
->> > and these options are defaulted to enabled to maintain previous
->> > behaviour.
->> >
->> > The following patchwork introduces CPPC: A newer method of
->> > controlling CPU performance. The OS is not expected to support CPPC
->> > and PSS at runtime. So the kconfig option lets us make these two
->> > mutually exclusive at compile time.
->> >
->> > Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
->> > ---
->> >  drivers/acpi/Kconfig            |  41 +++++++++++----
->> >  drivers/acpi/Makefile           |   7 +--
->> >  drivers/acpi/processor_driver.c |  85 ++++++++++++++++++++-----------
->> >  drivers/cpufreq/Kconfig         |   2 +-
->> >  drivers/cpufreq/Kconfig.x86     |   2 +
->> >  include/acpi/processor.h        | 109 ++++++++++++++++++++++++++++++++++------
->> >  6 files changed, 187 insertions(+), 59 deletions(-)
->>
->>
->> Gentle reminder.. I'll address the function name as Srinivas
->> suggested. Any other comments here and the other patches in this
->> series?
->
-> Can you please resend the patches with CCs to linux-acpi too, just in case the
-> people on that list have any comments?
+On Sat, 2015-06-13 at 09:15 +0200, Ingo Molnar wrote:
+> * Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> wrote:
+> 
+> > >  Also, could you please describe how the failure triggers in your system: how 
+> > > many times do you have to suspend/resume to trigger the segfaults, and is 
+> > > there anything that makes the failures less or more likely?
+> >
+> > It is very random. Sometimes only few hundred trys reproduce this issue. Some 
+> > other times it requires thousands of trys (sometimes not reproducible at all for 
+> > days) It is very time sensitive.
+> 
+> So the very same kernel image will produce different crash patterns depending on 
+> the time of day? That suggests heat/hardware problems.
+> 
+> > [...] A small delay or some debug code in resume path prevents this to crash.
+> 
+> Fun...
+> 
+> > The BIOS folks created special version to check if they are corrupting any DS, 
+> > but they were not able to catch any corruption. [...]
+> 
+> So is it true that we always execute wakeup_pmode_return first after we return 
+> from the BIOS?
+> 
+> If so then the BIOS touching DS cannot be an issue, as we re-initialize all 
+> segment selectors, which reloads the descriptors:
+> 
+> ENTRY(wakeup_pmode_return)
+> wakeup_pmode_return:
+>         movw    $__KERNEL_DS, %ax
+>         movw    %ax, %ss
+>         movw    %ax, %ds
+>         movw    %ax, %es
+>         movw    %ax, %fs
+>         movw    %ax, %gs
+> 
+>         # reload the gdt, as we need the full 32 bit address
+>         lidt    saved_idt
+>         lldt    saved_ldt
+>         ljmp    $(__KERNEL_CS), $1f
+> 
+> > [...] Since these are special deployed systems running critical application, 
+> > need to request the tests again with your changes. May take long time.
+> 
+> So my second patch is clearly broken as per Brian Gerst's comments.
+> 
+> What I would suggest is to try a patch that adds just 100 NOPs or so - attached 
+> below. This patch will add a small delay without any side effects (other than 
+> changing the kernel image layout).
+> 
+> If that makes the crash go away, then I'd say the likelihood that it's hardware 
+> related increases substantially: maybe a PLL has not stabilized yet sufficiently 
+> after resume, or there's some latent heat sensitivity and the fan has not started 
+> up yet, etc.
 
-Sure. Will do.
+> ( You can then use this simple delay generating patch in production systems as 
+>   well, to work around the problem. Maybe convince the BIOS folks to add a delay 
+>   like this to their resume path before they call Linux. )
+This was already experimented. They added delay in BIOS before handing
+over to OS, the crash still occurred.
+We were thinking that BIOS SMI handler responsible for suspend/wake up
+corrupted the DS even after control passed over to OS. But couldn't
+prove it.
+Thanks for your valuable debugging suggestions.
 
 Thanks,
-Ashwin.
+Srinivas
+ 
+> 
+> Thanks,
+> 
+> 	Ingo
+> 
+> =================>
+> 
+>  arch/x86/kernel/acpi/wakeup_32.S | 6 ++++++
+>  1 file changed, 6 insertions(+)
+> 
+> diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
+> index 665c6b7d2ea9..ef26999da80a 100644
+> --- a/arch/x86/kernel/acpi/wakeup_32.S
+> +++ b/arch/x86/kernel/acpi/wakeup_32.S
+> @@ -10,6 +10,12 @@
+>  
+>  ENTRY(wakeup_pmode_return)
+>  wakeup_pmode_return:
+> +
+> +	/* Timing delay of a few dozen cycles: give the hardware some time to recover */
+> +	.rept 100
+> +	nop
+> +	.endr
+> +
+>  	movw	$__KERNEL_DS, %ax
+>  	movw	%ax, %ss
+>  	movw	%ax, %ds
+
+
