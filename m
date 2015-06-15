@@ -1,94 +1,53 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: commit 70fea60d888d caused s2ram regression with WD disk
-Date: Tue, 16 Jun 2015 01:07:52 +0200
-Message-ID: <4618053.DJx4o6Y2Ql@vostro.rjw.lan>
-References: <20150615025536.GA26473@aaronlu.sh.intel.com> <s5hoakhgqdj.wl-tiwai@suse.de>
+Subject: Re: [PATCH 00/12] cpufreq: Fix governor races - part 2
+Date: Tue, 16 Jun 2015 01:29:15 +0200
+Message-ID: <2124579.Ezk09YdVq9@vostro.rjw.lan>
+References: <cover.1434019473.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:42861 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:48488 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754355AbbFOWl4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 18:41:56 -0400
-In-Reply-To: <s5hoakhgqdj.wl-tiwai@suse.de>
+	with SMTP id S1752116AbbFOXDT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 19:03:19 -0400
+In-Reply-To: <cover.1434019473.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Aaron Lu <aaron.lu@intel.com>, linux-pm@vger.kernel.org, Mark Scott <markcscott@talktalk.net>, Benoit Goby <benoit@android.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, ke.wang@spreadtrum.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
 
-On Monday, June 15, 2015 01:31:04 PM Takashi Iwai wrote:
-> At Mon, 15 Jun 2015 10:55:36 +0800,
-> Aaron Lu wrote:
-> > 
-> > Hi,
-> > 
-> > As explained by Takashi:
-> > "
-> > So this looks like the cause.  The recent kernel has a watchdog for
-> > async resume workers, and if it expires, it panics.  This explains why
-> > 3.12 worked; the watchdog was introduced since 3.13.
-> > 
-> > The timeout length is unfortunately fixed in Kconfig, set to 12 as
-> > default.  And this seems too short.  We should extend this to at least a
-> > minute, I suppose.  Also, it'd be better to be dynamically
-> > configuratble.
-> > "
-> > https://bugzilla.opensuse.org/show_bug.cgi?id=934397#c5
-> > 
-> > The upstream bug page is here:
-> > https://bugzilla.kernel.org/show_bug.cgi?id=91921
-> > Since Benoit isn't registered there, I write the email for discussion.
+On Thursday, June 11, 2015 04:21:43 PM Viresh Kumar wrote:
+> Hi,
 > 
-> Thanks Aaron for starting a thread.
+> This is a next step of the earlier work I have posted [1].
 > 
-> Below is a patch to make the default value a bit safer.
+> The first 5 patches are minor cleanups, 6th & 7th try to optimize few
+> things to make code less complex.
 > 
-> I can submit another patch to add a boot option to change the timeout
-> value, too, if anyone thinks it's worth.  Just let me know.
+> Patches 8-11 actually solve (or try to solve :)) the synchronization
+> problems, or the crashes I was getting.
+> 
+> And the last one again optimizes code a bit.
+> 
+> I don't get the crashes anymore and want others to try. At least Preeti
+> and Ke Wang (Sorry if I haven't spelled it properly :( ), as you two
+> have reported the issues to me.
+> 
+> This patchset should be rebased over the earlier one [1].
+> 
+> To make things simple, all these patches are pushed here [2] and are
+> rebased over pm/bleeeding-edge because of some recent important changes
+> there:
 > 
 > 
-> thanks,
-> 
-> Takashi
-> 
-> -- 8< --
-> From: Takashi Iwai <tiwai@suse.de>
-> Subject: [PATCH] PM: Increase default DPM watchdog timeout to 60
-> 
-> Many harddisks (mostly WD ones) have firmware problems and take too
-> long, more than 10 seconds, to resume from suspend.  And this often
-> exceeds the default DPM watchdog timeout (12 seconds), resulting in a
-> kernel panic out of sudden.
-> 
-> Since most distros just take the default as is, we should give a bit
-> more safer value.  This patch increases the default value from 12
-> seconds to one minute, which has been confirmed to be long enough for
-> such problematic disks.
+> [1] http://marc.info/?i=cover.1433326032.git.viresh.kumar%40linaro.org
+> [2] ssh://git@git.linaro.org/people/viresh.kumar/linux.git cpufreq/gov-locking
 
-That's totally fine by me, so I can apply the patch unless somebody has a
-better idea about how to address the issue at hand.
+Given the Preeti's comments on these patches I don't think they are quite
+ready and the 4.2 merge window is next week.  I don't think this series is
+4.2 material, so please target it at the next one.
 
-> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=91921
-> Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> ---
->  kernel/power/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> index 7e01f78f0417..9e302315e33d 100644
-> --- a/kernel/power/Kconfig
-> +++ b/kernel/power/Kconfig
-> @@ -187,7 +187,7 @@ config DPM_WATCHDOG
->  config DPM_WATCHDOG_TIMEOUT
->  	int "Watchdog timeout in seconds"
->  	range 1 120
-> -	default 12
-> +	default 60
->  	depends on DPM_WATCHDOG
->  
->  config PM_TRACE
-> 
 
 -- 
 I speak only for myself.
