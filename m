@@ -1,108 +1,181 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH V7 3/3] OPP: Add binding for 'opp-suspend'
-Date: Mon, 15 Jun 2015 18:35:22 -0500
-Message-ID: <CAL_JsqJb4P2Z2esgm5ffjWV37MU2KUF4gBdUpwSV8+21iTD1Bg@mail.gmail.com>
-References: <cover.1433434659.git.viresh.kumar@linaro.org> <dedf8c02fdd9dbf169f43de74ead4c1434d89b45.1433434659.git.viresh.kumar@linaro.org>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH V3] PM / Domains: Remove intermediate states from the power off sequence
+Date: Mon, 15 Jun 2015 16:49:16 -0700
+Message-ID: <7ha8w01qir.fsf@deeprootsystems.com>
+References: <1434020737-13354-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f52.google.com ([209.85.213.52]:32945 "EHLO
-	mail-yh0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755740AbbFOXfo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 19:35:44 -0400
-In-Reply-To: <dedf8c02fdd9dbf169f43de74ead4c1434d89b45.1433434659.git.viresh.kumar@linaro.org>
+Received: from mail-pd0-f182.google.com ([209.85.192.182]:36832 "EHLO
+	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751132AbbFOXtT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 19:49:19 -0400
+Received: by pdjm12 with SMTP id m12so753678pdj.3
+        for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2015 16:49:19 -0700 (PDT)
+In-Reply-To: <1434020737-13354-1-git-send-email-ulf.hansson@linaro.org> (Ulf
+	Hansson's message of "Thu, 11 Jun 2015 13:05:37 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Nishanth Menon <nm@ti.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Olof Johansson <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, Santosh
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
 
-On Thu, Jun 4, 2015 at 11:20 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On few platforms, for power efficiency, we want the device to be
-> configured for a specific OPP while we put the device in suspend state.
->
-> Add an optional property in operating-points-v2 bindings for that.
->
-> Acked-by: Nishanth Menon <nm@ti.com>
-> Suggested-by: Nishanth Menon <nm@ti.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  Documentation/devicetree/bindings/power/opp.txt | 14 ++++++++++----
->  1 file changed, 10 insertions(+), 4 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
-> index 2938c52dbf84..6c245d87dd50 100644
-> --- a/Documentation/devicetree/bindings/power/opp.txt
-> +++ b/Documentation/devicetree/bindings/power/opp.txt
-> @@ -74,6 +74,8 @@ This describes the OPPs belonging to a device. This node can have following
->    Missing property means devices have independent clock/voltage/current lines,
->    but they share OPP tables.
->
-> +- opp-suspend: Phandle of the OPP to set while device is suspended.
-> +
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-I would just do a bool property in the OPP you want.
+> Genpd's ->runtime_suspend() (assigned to pm_genpd_runtime_suspend())
+> doesn't immediately walk the hierarchy of ->runtime_suspend() callbacks.
+> Instead, pm_genpd_runtime_suspend() calls pm_genpd_poweroff() which
+> postpones that until *all* the devices in the genpd are runtime suspended.
+>
+> When pm_genpd_poweroff() discovers that the last device in the genpd is
+> about to be runtime suspended, it calls __pm_genpd_save_device() for *all*
+> the devices in the genpd sequentially. Furthermore,
+> __pm_genpd_save_device() invokes the ->start() callback, walks the
+> hierarchy of the ->runtime_suspend() callbacks and invokes the ->stop()
+> callback. This causes a "thundering herd" problem.
+>
+> Let's address this issue by having pm_genpd_runtime_suspend() immediately
+> walk the hierarchy of the ->runtime_suspend() callbacks, instead of
+> postponing that to the power off sequence via pm_genpd_poweroff(). If the
+> selected ->runtime_suspend() callback doesn't return an error code, call
+> pm_genpd_poweroff() to see if it's feasible to also power off the PM
+> domain.
+>
+> Adopting this change enables us to simplify parts of the code in genpd,
+> for example the locking mechanism. Additionally, it gives some positive
+> side effects, as described below.
+>
+> i)
+> One device's ->runtime_resume() latency is no longer affected by other
+> devices' latencies in a genpd.
+>
+> The complexity genpd has to support the option to abort the power off
+> sequence suffers from latency issues. More precisely, a device that is
+> requested to be runtime resumed, may end up waiting for
+> __pm_genpd_save_device() to complete its operations for *another* device.
+> That's because pm_genpd_poweroff() can't confirm an abort request while it
+> waits for __pm_genpd_save_device() to return.
+>
+> As this patch removes the intermediate states in pm_genpd_poweroff() while
+> powering off the PM domain, we no longer need the ability to abort that
+> sequence.
+>
+> ii)
+> Make pm_runtime[_status]_suspended() reliable when used with genpd.
+>
+> Until the last device in a genpd becomes idle, pm_genpd_runtime_suspend()
+> will return 0 without actually walking the hierarchy of the
+> ->runtime_suspend() callbacks. However, by returning 0 the runtime PM core
+> considers the device as runtime_suspended, so
+> pm_runtime[_status]_suspended() will return true, even though the device
+> isn't (yet) runtime suspended.
+>
+> After this patch, since pm_genpd_runtime_suspend() immediately walks the
+> hierarchy of the ->runtime_suspend() callbacks,
+> pm_runtime[_status]_suspended() will accurately reflect the status of the
+> device.
+>
+> iii)
+> Enable fine-grained PM through runtime PM callbacks in drivers/subsystems.
+>
+> There are currently cases were drivers/subsystems implements runtime PM
+> callbacks to deploy fine-grained PM (e.g. gate clocks, move pinctrl to
+> power-save state, etc.). While using the genpd, pm_genpd_runtime_suspend()
+> postpones invoking these callbacks until *all* the devices in the genpd
+> are runtime suspended. In essence, one runtime resumed device prevents
+> fine-grained PM for other devices within the same genpd.
+>
+> After this patch, since pm_genpd_runtime_suspend() immediately walks the
+> hierarchy of the ->runtime_suspend() callbacks, fine-grained PM is enabled
+> throughout all the levels of runtime PM callbacks.
+>
+> Unfortunately this patch also comes with a drawback, as described in the
+> summary below.
+>
+> Driver's/subsystem's runtime PM callbacks may be invoked even when the
+> genpd hasn't actually powered off the PM domain, potentially introducing
+> unnecessary latency.
+>
+> However, in most cases, saving/restoring register contexts for devices are
+> typically fast operations or can be optimized in device specific ways
+> (e.g. shadow copies of register contents in memory, device-specific checks
+> to see if context has been lost before restoring context, etc.).
+>
+> Still, in some cases the driver/subsystem may suffer from latency if
+> runtime PM is used in a very fine-grained manner (e.g. for each IO request
+> or xfer). To prevent that extra overhead, the driver/subsystem may deploy
+> the runtime PM autosuspend feature.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Rob
+Really like the updated changelog.  Very well described, and IMO you
+make a very strong case for this change, which I completely agree is the
+right way to go forward.  IMO, it greatly simplifies understanding this
+code as well.
 
->
->  * OPP Node
->
-> @@ -145,9 +147,10 @@ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
->
->         cpu0_opp_table: opp_table0 {
->                 compatible = "operating-points-v2";
-> +               opp-suspend = <&suspend_opp>;
->                 opp-shared;
->
-> -               opp00 {
-> +               suspend-opp: opp00 {
->                         opp-hz = <1000000000>;
->                         opp-microvolt = <970000 975000 985000>;
->                         opp-microamp = <70000>;
-> @@ -219,13 +222,14 @@ independently.
->
->         cpu_opp_table: opp_table {
->                 compatible = "operating-points-v2";
-> +               opp-suspend = <&suspend_opp>;
->
->                 /*
->                  * Missing opp-shared property means CPUs switch DVFS states
->                  * independently.
->                  */
->
-> -               opp00 {
-> +               suspend-opp: opp00 {
->                         opp-hz = <1000000000>;
->                         opp-microvolt = <970000 975000 985000>;
->                         opp-microamp = <70000>;
-> @@ -298,9 +302,10 @@ DVFS state together.
->
->         cluster0_opp: opp_table0 {
->                 compatible = "operating-points-v2";
-> +               opp-suspend = <&suspend_opp0>;
->                 opp-shared;
->
-> -               opp00 {
-> +               suspend-opp: opp00 {
->                         opp-hz = <1000000000>;
->                         opp-microvolt = <970000 975000 985000>;
->                         opp-microamp = <70000>;
-> @@ -323,9 +328,10 @@ DVFS state together.
->
->         cluster1_opp: opp_table1 {
->                 compatible = "operating-points-v2";
-> +               opp-suspend = <&suspend_opp1>;
->                 opp-shared;
->
-> -               opp10 {
-> +               suspend-opp: opp10 {
->                         opp-hz = <1300000000>;
->                         opp-microvolt = <1045000 1050000 1055000>;
->                         opp-microamp = <95000>;
-> --
-> 2.4.0
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I have some minor nits below, but overall really like this approach and
+would like to see this hit -next early in the v4.3 cycle so it gets good
+test exposure.
+
+I know Lina has been testing this (or an earlier version) on qcom
+hardware so would be nice to get a tested-by from her, and would also be
+nice to see if Geert has a chance to take this for a spin on his Renesas
+hardware and anyone can take this for a spin on Exynos.
+
+[...]
+
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 2327613..2e03f68 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -133,41 +133,6 @@ static void genpd_sd_counter_inc(struct generic_pm_domain *genpd)
+>  	smp_mb__after_atomic();
+>  }
+>  
+> -static void genpd_acquire_lock(struct generic_pm_domain *genpd)
+> -{
+> -	DEFINE_WAIT(wait);
+> -
+> -	mutex_lock(&genpd->lock);
+> -	/*
+> -	 * Wait for the domain to transition into either the active,
+> -	 * or the power off state.
+> -	 */
+> -	for (;;) {
+> -		prepare_to_wait(&genpd->status_wait_queue, &wait,
+> -				TASK_UNINTERRUPTIBLE);
+> -		if (genpd->status == GPD_STATE_ACTIVE
+> -		    || genpd->status == GPD_STATE_POWER_OFF)
+> -			break;
+> -		mutex_unlock(&genpd->lock);
+> -
+> -		schedule();
+> -
+> -		mutex_lock(&genpd->lock);
+> -	}
+> -	finish_wait(&genpd->status_wait_queue, &wait);
+> -}
+> -
+> -static void genpd_release_lock(struct generic_pm_domain *genpd)
+> -{
+> -	mutex_unlock(&genpd->lock);
+> -}
+> -
+> -static void genpd_set_active(struct generic_pm_domain *genpd)
+> -{
+> -	if (genpd->resume_count == 0)
+> -		genpd->status = GPD_STATE_ACTIVE;
+> -}
+
+Minor nit: I think you should leave these 3 helpers and just simplify
+them.  It will make the changes below easier to read as well.
+
+Also, for the locking, Lina will be adding these locking functions back
+anyways, so let's just avoid the extra churn.
+
+Otherwise, I think this version is looking really good.
+
+With the above tweaks, feel free to add 
+
+Reviewed-by: Kevin Hilman <khilman@linaro.org>
+
+Kevin
