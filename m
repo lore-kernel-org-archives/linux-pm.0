@@ -1,60 +1,128 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2 12/14] drivers: sh: Stop using pm_runtime.c for
- multi-platform shmobile with genpd
-Date: Mon, 15 Jun 2015 21:44:47 +0200
-Message-ID: <CAMuHMdWfqXZKUShiSqi0RmGpfkqgsL-5We__Vnou1aj5OHYPmA@mail.gmail.com>
-References: <1432839219-475-1-git-send-email-geert+renesas@glider.be>
-	<1432839219-475-13-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1432839219-475-13-git-send-email-geert+renesas@glider.be>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-clk@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: [PATCH v6 0/7] CPUFreq driver using CPPC methods
+Date: Mon, 15 Jun 2015 16:09:04 -0400
+Message-ID: <cover.1434398373.git.ashwin.chaugule@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:35790 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754671AbbFOUJU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 16:09:20 -0400
+Received: by pacyx8 with SMTP id yx8so71978091pac.2
+        for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2015 13:09:20 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, jaswinder.singh@linaro.org
+Cc: linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, patches@linaro.org, linux-acpi@vger.kernel.org, viresh.kumar@linaro.org, sudeep.holla@arm.com, Ashwin Chaugule <ashwin.chaugule@linaro.org>
 
-On Thu, May 28, 2015 at 8:53 PM, Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
-> Now most multi-platform ARM shmobile platforms (SH-Mobile, R-Mobile,
-> R-Car, RZ) use the CPG Clock Domain to take care of PM runtime
-> management of the module clocks, we no longer need the legacy default PM
-> domain hack, which also prevented registering the real PM domain.
->
-> EMMA Mobile EV2 doesn't have MSTP clocks and doesn't use the CPG Clock
-> Domain. But all its device drivers manage clocks explicitly, without
-> relying on Runtime PM, so it doesn't need the legacy default PM hack
-> neither.
->
-> Hence do not compile it when running an ARM multi-platform kernel with
-> genpd support.
->
-> The default PM domain is still needed:
->   - for legacy SuperH,
->   - for legacy (non-DT) ARM/shmobile platforms
->       - without genpd support (r8a7778, r8a7779),
->       - with genpd support, for devices in the "C5" always-on power
->         area (r8a7740, sh73a0),
->   - for the CONFIG_PM=n case.
->
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
-> v2:
->   - Add Reviewed-by,
->   - Just stop compiling pm_runtime.c instead of using a runtime check,
->     as no multi-platform ARM platforms need this anymore.
+CPPC:
+====
 
-The runtime check must stay for the ARM multiplatform CONFIG_PM=n case,
-to prevent the code from running on non-shmobile machines. Will fix.
+CPPC (Collaborative Processor Performance Control) is a new way to control CPU
+performance using an abstract continous scale as against a discretized P-state scale
+which is tied to CPU frequency only. It is defined in the ACPI 5.0+ spec. In brief,
+the basic operation involves:
+- OS makes a CPU performance request. (Can provide min and max tolerable bounds)
 
-Gr{oetje,eeting}s,
+- Platform (such as BMC) is free to optimize request within requested bounds depending
+on power/thermal budgets etc.
 
-                        Geert
+- Platform conveys its decision back to OS
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+The communication between OS and platform occurs through another medium called (PCC)
+Platform communication Channel. This is a generic mailbox like mechanism which includes
+doorbell semantics to indicate register updates. See drivers/mailbox/pcc.c
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+This patchset introduces a CPPC based CPUFreq driver that works with existing governors
+such as ondemand. The CPPC table parsing and the CPPC communication semantics are
+abstracted into separate files to allow future CPPC based drivers to implement their
+own governors if required.
+
+Initial patchsets included an adaptation of the PID governor from intel_pstate.c. However
+recent experiments led to extensive modifications of the algorithm to calculate CPU
+busyness. Until it is verified that these changes are worthwhile, the existing governors
+should provide for a good enough starting point for ARM64 servers.
+
+Finer details about the PCC and CPPC spec are available in the latest ACPI 5.1
+specification.[2]
+
+Testing:
+=======
+
+This was tested on an SBSA compatible ARMv8 server with CPPCv2
+firmware running on a remote processor. I verified that each CPUs
+performance limits were detected and that new performance requests
+were made by the on-demand governor proportional to the load on each
+CPU. I also verified that using the acpi_processor driver correctly
+maps the physical CPU ids to logical CPU ids, which helps in picking
+up the proper _CPC details from a processor object, in the case where
+CPU physical ids may not be contiguous.
+
+Changes since V5:
+- Checkpatch cleanups.
+- Change pss_init to pss_perf_init. Rec by Srinivas Pandruvada.
+- Explicit comment explaining why postcore_initcall to pcc mailbox.
+- Fold acpi_processor_syscore_init/exit into CONFIG_ACPI_CST.
+- Added patch with dummy functions used by ACPI_HOTPLUG_CPU.
+
+Changes since V4:
+- Misc cleanups. Addressed feedback from Rafael.
+- Made acpi_processor.c independent of C-states, P-states and others.
+- Per CPU scanning for _CPC is now made from acpi_processor.c
+- Added new Kconfig options for legacy C states and P states to enable future
+support for newer alternatives as defined in the ACPI spec 6.0.
+
+Changes since V3:
+- Split CPPC backend methods into separate files.
+- Add frontend driver which plugs into existing CPUfreq governors.
+- Simplify PCC driver by moving communication space mapping and read/write
+	into client drivers.
+
+Changes since V2:
+- Select driver if !X86, since intel_pstate will use HWP extensions instead.
+- Added more comments.
+- Added Freq domain awareness and PSD parsing.
+
+Changes since V1:
+- Create a new driver based on Dirks suggestion.
+- Fold in CPPC backend hooks into main driver.
+
+Changes since V0: [1]
+- Split intel_pstate.c into a generic PID governor and platform specific backend.
+- Add CPPC accessors as PID backend.
+
+[1] - http://lwn.net/Articles/608715/
+[2] - http://www.uefi.org/sites/default/files/resources/ACPI_5_1release.pdf
+[3] - https://patches.linaro.org/40705/
+
+
+Ashwin Chaugule (7):
+  PCC: Initialize PCC Mailbox earlier at boot
+  ACPI: Make ACPI processor driver more extensible
+  ACPI: Introduce CPU performance controls using CPPC
+  CPPC: Add a CPUFreq driver for use with CPPC
+  CPPC: Probe for CPPC tables for each ACPI Processor object
+  PCC: Enable PCC only when needed
+  ACPI: Add weak routines for ACPI CPU Hotplug
+
+ drivers/acpi/Kconfig            |  48 ++-
+ drivers/acpi/Makefile           |   8 +-
+ drivers/acpi/acpi_processor.c   |  18 +
+ drivers/acpi/cppc_acpi.c        | 812 ++++++++++++++++++++++++++++++++++++++++
+ drivers/acpi/processor_driver.c |  90 +++--
+ drivers/cpufreq/Kconfig         |   2 +-
+ drivers/cpufreq/Kconfig.arm     |  16 +
+ drivers/cpufreq/Kconfig.x86     |   2 +
+ drivers/cpufreq/Makefile        |   2 +
+ drivers/cpufreq/cppc_cpufreq.c  | 197 ++++++++++
+ drivers/mailbox/Kconfig         |   2 +-
+ drivers/mailbox/pcc.c           |   8 +-
+ include/acpi/cppc_acpi.h        | 137 +++++++
+ include/acpi/processor.h        | 129 +++++--
+ 14 files changed, 1397 insertions(+), 74 deletions(-)
+ create mode 100644 drivers/acpi/cppc_acpi.c
+ create mode 100644 drivers/cpufreq/cppc_cpufreq.c
+ create mode 100644 include/acpi/cppc_acpi.h
+
+-- 
+1.9.1
+
