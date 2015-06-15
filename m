@@ -1,1042 +1,483 @@
 From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: [PATCH v6 3/7] ACPI: Introduce CPU performance controls using CPPC
-Date: Mon, 15 Jun 2015 16:09:07 -0400
-Message-ID: <40dc525f18ec336ab133faf784e4afeb2deba930.1434398373.git.ashwin.chaugule@linaro.org>
+Subject: [PATCH v6 2/7] ACPI: Make ACPI processor driver more extensible
+Date: Mon, 15 Jun 2015 16:09:06 -0400
+Message-ID: <9e352cbe2feac01158a21511bac5c544dc2f29e2.1434398373.git.ashwin.chaugule@linaro.org>
 References: <cover.1434398373.git.ashwin.chaugule@linaro.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f171.google.com ([209.85.192.171]:35279 "EHLO
+	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754453AbbFOUJZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 16:09:25 -0400
+Received: by pdbnf5 with SMTP id nf5so80258443pdb.2
+        for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2015 13:09:24 -0700 (PDT)
 In-Reply-To: <cover.1434398373.git.ashwin.chaugule@linaro.org>
 In-Reply-To: <cover.1434398373.git.ashwin.chaugule@linaro.org>
 References: <cover.1434398373.git.ashwin.chaugule@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rjw@rjwysocki.net, jaswinder.singh@linaro.org
 Cc: linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, patches@linaro.org, linux-acpi@vger.kernel.org, viresh.kumar@linaro.org, sudeep.holla@arm.com, Ashwin Chaugule <ashwin.chaugule@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-CPPC stands for Collaborative Processor Performance Controls
-and is defined in the ACPI v5.0+ spec. It describes CPU
-performance controls on an abstract and continuous scale
-allowing the platform (e.g. remote power processor) to flexibly
-optimize CPU performance with its knowledge of power budgets
-and other architecture specific knowledge.
+The ACPI processor driver is currently tied too closely
+to the ACPI C-states (CST), P-states (PSS) and other related
+constructs for controlling CPU idle and CPU performance.
 
-This patch adds a shim which exports commonly used functions
-to get and set CPPC specific controls for each CPU. This enables
-CPUFreq drivers to gather per CPU performance data and use
-with exisiting governors or even allows for customized governors
-which are implemented inside CPUFreq drivers.
+The newer ACPI specification (v5.1 onwards) introduces
+alternative methods to CST and PSS. These new mechanisms
+are described within each ACPI Processor object and so they
+need to be scanned whenever a new Processor object is detected.
+This patch introduces two new Kconfig symbols to allow for
+finer configurability among the various options for controlling
+CPU idle and performance states. There is no change in functionality
+and these options are defaulted to enabled to maintain previous
+behaviour.
+
+The following patchwork introduces CPPC: A newer method of
+controlling CPU performance. The OS is not expected to support CPPC
+and PSS at runtime. So the kconfig option lets us make these two
+mutually exclusive at compile time.
 
 Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
 Reviewed-by: Al Stone <al.stone@linaro.org>
 ---
- drivers/acpi/Kconfig     |  17 +
- drivers/acpi/Makefile    |   1 +
- drivers/acpi/cppc_acpi.c | 812 +++++++++++++++++++++++++++++++++++++++++++++++
- include/acpi/cppc_acpi.h | 137 ++++++++
- 4 files changed, 967 insertions(+)
- create mode 100644 drivers/acpi/cppc_acpi.c
- create mode 100644 include/acpi/cppc_acpi.h
+ drivers/acpi/Kconfig            |  31 +++++++++--
+ drivers/acpi/Makefile           |   7 ++-
+ drivers/acpi/processor_driver.c |  86 ++++++++++++++++++----------
+ drivers/cpufreq/Kconfig         |   2 +-
+ drivers/cpufreq/Kconfig.x86     |   2 +
+ include/acpi/processor.h        | 120 ++++++++++++++++++++++++++++------------
+ 6 files changed, 176 insertions(+), 72 deletions(-)
 
 diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-index 5942754..937c7f0 100644
+index ab2cbb5..5942754 100644
 --- a/drivers/acpi/Kconfig
 +++ b/drivers/acpi/Kconfig
-@@ -190,6 +190,23 @@ config ACPI_PSS
- 	  monitoring. It is required by several flavors of cpufreq
+@@ -166,18 +166,39 @@ config ACPI_DOCK
+ 	  This driver supports ACPI-controlled docking stations and removable
+ 	  drive bays such as the IBM Ultrabay and the Dell Module Bay.
+ 
+-config ACPI_PROCESSOR
+-	tristate "Processor"
+-	select THERMAL
+-	select CPU_IDLE
++config ACPI_CST
++	bool "ACPI C states (CST) driver"
++	depends on ACPI_PROCESSOR
+ 	depends on X86 || IA64
++	select CPU_IDLE
+ 	default y
+ 	help
+ 	  This driver installs ACPI as the idle handler for Linux and uses
+ 	  ACPI C2 and C3 processor states to save power on systems that
+-	  support it.  It is required by several flavors of cpufreq
++	  support it.
++
++config ACPI_PSS
++	bool "ACPI P States (PSS) driver"
++	depends on ACPI_PROCESSOR
++	depends on X86 || IA64
++	select THERMAL
++	default y
++	help
++	  This driver implements ACPI methods for controlling CPU performance
++	  using PSS methods as described in the ACPI spec. It also enables support
++	  for ACPI based performance throttling (TSS) and ACPI based thermal
++	  monitoring. It is required by several flavors of cpufreq
  	  performance-state drivers.
  
-+config ACPI_CPPC
-+	bool "Common ACPI CPPC routines for CPU performance"
-+	depends on ARM64 && ACPI_PROCESSOR
-+	depends on !ACPI_PSS
-+	select MAILBOX
-+	select PCC
-+	default n
++config ACPI_PROCESSOR
++	tristate "Processor"
++	depends on X86 || IA64
++	default y
 +	help
-+	  This file implements common functionality to parse
-+	  CPPC tables as described in the ACPI 5.1+ spec. The
-+	  routines implemented are meant to be used by other
-+	  drivers to control CPU performance using CPPC semantics.
-+	  If your platform does not support CPPC in firmware,
-+	  leave this option disabled.
++	  This driver adds support for the ACPI Processor package. It is required
++	  by several flavors of cpufreq performance-state, thermal, throttling and
++	  idle drivers.
 +
-+	  If in doubt, say N.
-+
- config ACPI_PROCESSOR
- 	tristate "Processor"
- 	depends on X86 || IA64
+ 	  To compile this driver as a module, choose M here:
+ 	  the module will be called processor.
+ 
 diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
-index 30b2bfc..93ff805 100644
+index 8a063e2..30b2bfc 100644
 --- a/drivers/acpi/Makefile
 +++ b/drivers/acpi/Makefile
-@@ -80,6 +80,7 @@ obj-$(CONFIG_ACPI_HED)		+= hed.o
- obj-$(CONFIG_ACPI_EC_DEBUGFS)	+= ec_sys.o
- obj-$(CONFIG_ACPI_CUSTOM_METHOD)+= custom_method.o
+@@ -82,9 +82,10 @@ obj-$(CONFIG_ACPI_CUSTOM_METHOD)+= custom_method.o
  obj-$(CONFIG_ACPI_BGRT)		+= bgrt.o
-+obj-$(CONFIG_ACPI_CPPC)		+= cppc_acpi.o
  
  # processor has its own "processor." module_param namespace
- processor-y			:= processor_driver.o
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-new file mode 100644
-index 0000000..439a1ec
---- /dev/null
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -0,0 +1,812 @@
-+/*
-+ * CPPC (Collaborative Processor Performance Control) methods used
-+ * by CPUfreq drivers.
-+ *
-+ * (C) Copyright 2014 Linaro Ltd.
-+ * Author: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2
-+ * of the License.
-+ *
-+ * CPPC describes a few methods for controlling CPU performance using
-+ * information from a per CPU table called CPC. This table is described in
-+ * the ACPI v5.0+ specification. The table consists of a list of
-+ * registers which may be memory mapped or hardware registers and also may
-+ * include some static integer values.
-+ *
-+ * CPU performance is on an abstract continuous scale as against a discretized
-+ * P-state scale which is tied to CPU frequency only. In brief, the basic
-+ * operation involves:
-+ *
-+ * - OS makes a CPU performance request. (Can provide min and max bounds)
-+ *
-+ * - Platform (such as BMC) is free to optimize request within requested bounds
-+ *   depending on power/thermal budgets etc.
-+ *
-+ * - Platform conveys its decision back to OS
-+ *
-+ * The communication between OS and platform occurs through another medium
-+ * called (PCC) Platform Communication Channel. This is a generic mailbox like
-+ * mechanism which includes doorbell semantics to indicate register updates.
-+ * See drivers/mailbox/pcc.c for details on PCC.
-+ *
-+ * Finer details about the PCC and CPPC spec are available in the latest
-+ * ACPI 5.1 specification.
-+ */
+-processor-y			:= processor_driver.o processor_throttling.o
+-processor-y			+= processor_idle.o processor_thermal.o
+-processor-$(CONFIG_CPU_FREQ)	+= processor_perflib.o
++processor-y			:= processor_driver.o
++processor-$(CONFIG_ACPI_CST)	+= processor_idle.o
++processor-$(CONFIG_ACPI_PSS)	+= processor_perflib.o	\
++	processor_throttling.o processor_thermal.o
+ 
+ obj-$(CONFIG_ACPI_PROCESSOR_AGGREGATOR) += acpi_pad.o
+ 
+diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
+index d9f7158..64aa638 100644
+--- a/drivers/acpi/processor_driver.c
++++ b/drivers/acpi/processor_driver.c
+@@ -163,34 +163,24 @@ static struct notifier_block __refdata acpi_cpu_notifier = {
+ 	    .notifier_call = acpi_cpu_soft_notify,
+ };
+ 
+-static int __acpi_processor_start(struct acpi_device *device)
++#ifdef CONFIG_ACPI_PSS
++static int acpi_pss_perf_init(struct acpi_processor *pr,
++		struct acpi_device *device)
+ {
+-	struct acpi_processor *pr = acpi_driver_data(device);
+-	acpi_status status;
+ 	int result = 0;
+ 
+-	if (!pr)
+-		return -ENODEV;
+-
+-	if (pr->flags.need_hotplug_init)
+-		return 0;
+-
+-#ifdef CONFIG_CPU_FREQ
+ 	acpi_processor_ppc_has_changed(pr, 0);
+-#endif
 +
-+#define pr_fmt(fmt)	"ACPI CPPC: " fmt
+ 	acpi_processor_get_throttling_info(pr);
+ 
+ 	if (pr->flags.throttling)
+ 		pr->flags.limit = 1;
+ 
+-	if (!cpuidle_get_driver() || cpuidle_get_driver() == &acpi_idle_driver)
+-		acpi_processor_power_init(pr);
+-
+ 	pr->cdev = thermal_cooling_device_register("Processor", device,
+ 						   &processor_cooling_ops);
+ 	if (IS_ERR(pr->cdev)) {
+ 		result = PTR_ERR(pr->cdev);
+-		goto err_power_exit;
++		return result;
+ 	}
+ 
+ 	dev_dbg(&device->dev, "registered as cooling_device%d\n",
+@@ -204,6 +194,7 @@ static int __acpi_processor_start(struct acpi_device *device)
+ 			"Failed to create sysfs link 'thermal_cooling'\n");
+ 		goto err_thermal_unregister;
+ 	}
 +
-+#include <linux/cpufreq.h>
-+#include <linux/delay.h>
+ 	result = sysfs_create_link(&pr->cdev->device.kobj,
+ 				   &device->dev.kobj,
+ 				   "device");
+@@ -213,17 +204,61 @@ static int __acpi_processor_start(struct acpi_device *device)
+ 		goto err_remove_sysfs_thermal;
+ 	}
+ 
+-	status = acpi_install_notify_handler(device->handle, ACPI_DEVICE_NOTIFY,
+-					     acpi_processor_notify, device);
+-	if (ACPI_SUCCESS(status))
+-		return 0;
+-
+ 	sysfs_remove_link(&pr->cdev->device.kobj, "device");
+  err_remove_sysfs_thermal:
+ 	sysfs_remove_link(&device->dev.kobj, "thermal_cooling");
+  err_thermal_unregister:
+ 	thermal_cooling_device_unregister(pr->cdev);
+- err_power_exit:
 +
-+#include <acpi/cppc_acpi.h>
-+/*
-+ * Lock to provide mutually exclusive access to the PCC
-+ * channel. e.g. When the remote updates the shared region
-+ * with new data, the reader needs to be protected from
-+ * other CPUs activity on the same channel.
-+ */
-+static DEFINE_SPINLOCK(pcc_lock);
-+
-+static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
-+
-+/* This layer handles all the PCC specifics for CPPC. */
-+static struct mbox_chan *pcc_channel;
-+static void __iomem *pcc_comm_addr;
-+static u64 comm_base_addr;
-+static int pcc_subspace_idx = -1;
-+static u16 pcc_cmd_delay;
-+static int pcc_channel_acquired;
-+
-+#define NUM_RETRIES 500
-+
-+static int send_pcc_cmd(u16 cmd)
-+{
-+	int err, result = 0;
-+	int retries = NUM_RETRIES;
-+	struct acpi_pcct_hw_reduced *pcct_ss = pcc_channel->con_priv;
-+	struct acpi_pcct_shared_memory *generic_comm_base =
-+		(struct acpi_pcct_shared_memory *) pcc_comm_addr;
-+	u32 cmd_latency = pcct_ss->latency;
-+
-+	/* Write to the shared comm region. */
-+	writew(cmd, &generic_comm_base->command);
-+
-+	/* Flip CMD COMPLETE bit */
-+	writew(0, &generic_comm_base->status);
-+
-+	err = mbox_send_message(pcc_channel, &cmd);
-+	if (err < 0) {
-+		pr_err("Err sending PCC mbox message. cmd:%d, ret:%d\n",
-+				cmd, err);
-+		return err;
-+	}
-+
-+	/* Wait for a nominal time to let platform processes command. */
-+	udelay(cmd_latency);
-+
-+	/* Retry in case the remote processor was too slow to catch up. */
-+	while (retries--) {
-+		result = readw_relaxed(&generic_comm_base->status)
-+			& PCC_CMD_COMPLETE ? 0 : -EIO;
-+		if (!result) {
-+			/* Success. */
-+			retries = NUM_RETRIES;
-+			break;
-+		}
-+	}
-+
-+	mbox_client_txdone(pcc_channel, result);
 +	return result;
 +}
 +
-+static void cppc_chan_tx_done(struct mbox_client *cl, void *mssg, int ret)
++static void acpi_pss_perf_exit(struct acpi_processor *pr,
++		struct acpi_device *device)
 +{
-+	if (ret)
-+		pr_debug("TX did not complete: CMD sent:%x, ret:%d\n",
-+				*(u16 *)mssg, ret);
-+	else
-+		pr_debug("TX completed. CMD sent:%x, ret:%d\n",
-+				*(u16 *)mssg, ret);
++	if (pr->cdev) {
++		sysfs_remove_link(&device->dev.kobj, "thermal_cooling");
++		sysfs_remove_link(&pr->cdev->device.kobj, "device");
++		thermal_cooling_device_unregister(pr->cdev);
++		pr->cdev = NULL;
++	}
++}
++#else
++static inline int acpi_pss_perf_init(struct acpi_processor *pr,
++		struct acpi_device *device)
++{
++	return 0;
 +}
 +
-+struct mbox_client cppc_mbox_cl = {
-+	.tx_done = cppc_chan_tx_done,
-+	.knows_txdone = true,
-+};
++static inline void acpi_pss_perf_exit(struct acpi_processor *pr,
++		struct acpi_device *device) {}
++#endif /* CONFIG_ACPI_PSS */
 +
-+static int acpi_get_psd(struct cpc_desc *cpc_ptr, acpi_handle handle)
++static int __acpi_processor_start(struct acpi_device *device)
 +{
++	struct acpi_processor *pr = acpi_driver_data(device);
++	acpi_status status;
 +	int result = 0;
-+	acpi_status status = AE_OK;
-+	struct acpi_buffer buffer = {ACPI_ALLOCATE_BUFFER, NULL};
-+	struct acpi_buffer format = {sizeof("NNNNN"), "NNNNN"};
-+	struct acpi_buffer state = {0, NULL};
-+	union acpi_object  *psd = NULL;
-+	struct acpi_psd_package *pdomain;
 +
-+	status = acpi_evaluate_object(handle, "_PSD", NULL, &buffer);
-+	if (ACPI_FAILURE(status))
++	if (!pr)
 +		return -ENODEV;
 +
-+	psd = buffer.pointer;
-+	if (!psd || (psd->type != ACPI_TYPE_PACKAGE)) {
-+		pr_err("Invalid _PSD data\n");
-+		result = -ENODATA;
-+		goto end;
-+	}
++	if (pr->flags.need_hotplug_init)
++		return 0;
 +
-+	if (psd->package.count != 1) {
-+		pr_err("Invalid _PSD data\n");
-+		result = -ENODATA;
-+		goto end;
-+	}
++	if (!cpuidle_get_driver() || cpuidle_get_driver() == &acpi_idle_driver)
++		acpi_processor_power_init(pr);
 +
-+	pdomain = &(cpc_ptr->domain_info);
++	result = acpi_pss_perf_init(pr, device);
++	if (result)
++		goto err_power_exit;
 +
-+	state.length = sizeof(struct acpi_psd_package);
-+	state.pointer = pdomain;
++	status = acpi_install_notify_handler(device->handle, ACPI_DEVICE_NOTIFY,
++					     acpi_processor_notify, device);
++	if (ACPI_SUCCESS(status))
++		return 0;
 +
-+	status = acpi_extract_package(&(psd->package.elements[0]),
-+		&format, &state);
-+	if (ACPI_FAILURE(status)) {
-+		pr_err("Invalid _PSD data\n");
-+		result = -ENODATA;
-+		goto end;
-+	}
++err_power_exit:
+ 	acpi_processor_power_exit(pr);
+ 	return result;
+ }
+@@ -252,15 +287,10 @@ static int acpi_processor_stop(struct device *dev)
+ 	pr = acpi_driver_data(device);
+ 	if (!pr)
+ 		return 0;
+-
+ 	acpi_processor_power_exit(pr);
+ 
+-	if (pr->cdev) {
+-		sysfs_remove_link(&device->dev.kobj, "thermal_cooling");
+-		sysfs_remove_link(&pr->cdev->device.kobj, "device");
+-		thermal_cooling_device_unregister(pr->cdev);
+-		pr->cdev = NULL;
+-	}
++	acpi_pss_perf_exit(pr, device);
 +
-+	if (pdomain->num_entries != ACPI_PSD_REV0_ENTRIES) {
-+		pr_err("Unknown _PSD:num_entries\n");
-+		result = -ENODATA;
-+		goto end;
-+	}
+ 	return 0;
+ }
+ 
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 659879a..2f36e2a 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -223,7 +223,7 @@ endif
+ if IA64
+ config IA64_ACPI_CPUFREQ
+ 	tristate "ACPI Processor P-States driver"
+-	depends on ACPI_PROCESSOR
++	depends on ACPI_PROCESSOR && ACPI_PSS && ACPI_CST
+ 	help
+ 	This driver adds a CPUFreq driver which utilizes the ACPI
+ 	Processor Performance States.
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index c59bdcb..ee285a8 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -18,6 +18,7 @@ config X86_INTEL_PSTATE
+ config X86_PCC_CPUFREQ
+ 	tristate "Processor Clocking Control interface driver"
+ 	depends on ACPI && ACPI_PROCESSOR
++	depends on ACPI_PSS && ACPI_CST
+ 	help
+ 	  This driver adds support for the PCC interface.
+ 
+@@ -32,6 +33,7 @@ config X86_PCC_CPUFREQ
+ config X86_ACPI_CPUFREQ
+ 	tristate "ACPI Processor P-States driver"
+ 	depends on ACPI_PROCESSOR
++	depends on ACPI_PSS && ACPI_CST
+ 	help
+ 	  This driver adds a CPUFreq driver which utilizes the ACPI
+ 	  Processor Performance States.
+diff --git a/include/acpi/processor.h b/include/acpi/processor.h
+index 4188a4d..b76d05b 100644
+--- a/include/acpi/processor.h
++++ b/include/acpi/processor.h
+@@ -222,16 +222,6 @@ struct acpi_processor_errata {
+ 	} piix4;
+ };
+ 
+-extern int acpi_processor_preregister_performance(struct
+-						  acpi_processor_performance
+-						  __percpu *performance);
+-
+-extern int acpi_processor_register_performance(struct acpi_processor_performance
+-					       *performance, unsigned int cpu);
+-extern void acpi_processor_unregister_performance(struct
+-						  acpi_processor_performance
+-						  *performance,
+-						  unsigned int cpu);
+ 
+ /* note: this locks both the calling module and the processor module
+          if a _PPC object exists, rmmod is disallowed then */
+@@ -267,28 +257,52 @@ static inline int acpi_processor_ffh_cstate_probe(unsigned int cpu,
+ 	return -1;
+ }
+ static inline void acpi_processor_ffh_cstate_enter(struct acpi_processor_cx
+-						   *cstate)
+-{
+-	return;
+-}
++						   *cstate) {}
+ #endif
+ 
+ /* in processor_perflib.c */
+ 
+-#ifdef CONFIG_CPU_FREQ
++#ifdef CONFIG_ACPI_PSS
++extern int acpi_processor_preregister_performance(struct
++						  acpi_processor_performance
++						  __percpu *performance);
 +
-+	if (pdomain->revision != ACPI_PSD_REV0_REVISION) {
-+		pr_err("Unknown _PSD:revision\n");
-+		result = -ENODATA;
-+		goto end;
-+	}
++extern int acpi_processor_register_performance(struct acpi_processor_performance
++					       *performance, unsigned int cpu);
++extern void acpi_processor_unregister_performance(struct
++						  acpi_processor_performance
++						  *performance,
++						  unsigned int cpu);
+ void acpi_processor_ppc_init(void);
+ void acpi_processor_ppc_exit(void);
+ int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag);
+ extern int acpi_processor_get_bios_limit(int cpu, unsigned int *limit);
+ #else
+-static inline void acpi_processor_ppc_init(void)
++static inline int acpi_processor_preregister_performance(struct
++		acpi_processor_performance
++		__percpu *performance)
+ {
+-	return;
++	return -ENODEV;
 +
-+	if (pdomain->coord_type != DOMAIN_COORD_TYPE_SW_ALL &&
-+	    pdomain->coord_type != DOMAIN_COORD_TYPE_SW_ANY &&
-+	    pdomain->coord_type != DOMAIN_COORD_TYPE_HW_ALL) {
-+		pr_err("Invalid _PSD:coord_type\n");
-+		result = -ENODATA;
-+		goto end;
-+	}
-+end:
-+	kfree(buffer.pointer);
-+	return result;
-+}
+ }
+-static inline void acpi_processor_ppc_exit(void)
 +
-+int acpi_get_psd_map(struct cpudata **all_cpu_data)
++static inline int acpi_processor_register_performance(struct
++		acpi_processor_performance
++		*performance, unsigned int cpu)
+ {
+-	return;
++	return -ENODEV;
++
+ }
++
++static inline void acpi_processor_unregister_performance(struct
++		acpi_processor_performance
++		*performance,
++		unsigned int cpu) {}
++
++static inline void acpi_processor_ppc_init(void) {}
++
++static inline void acpi_processor_ppc_exit(void) {}
++
+ static inline int acpi_processor_ppc_has_changed(struct acpi_processor *pr,
+ 								int event_flag)
+ {
+@@ -302,12 +316,12 @@ static inline int acpi_processor_ppc_has_changed(struct acpi_processor *pr,
+ 	}
+ 	return 0;
+ }
++
+ static inline int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
+ {
+ 	return -ENODEV;
+ }
+-
+-#endif				/* CONFIG_CPU_FREQ */
++#endif				/* CONFIG_ACPI_PSS */
+ 
+ /* in processor_core.c */
+ phys_cpuid_t acpi_get_phys_id(acpi_handle, int type, u32 acpi_id);
+@@ -318,6 +332,7 @@ int acpi_get_cpuid(acpi_handle, int type, u32 acpi_id);
+ void acpi_processor_set_pdc(acpi_handle handle);
+ 
+ /* in processor_throttling.c */
++#ifdef CONFIG_ACPI_PSS
+ int acpi_processor_tstate_has_changed(struct acpi_processor *pr);
+ int acpi_processor_get_throttling_info(struct acpi_processor *pr);
+ extern int acpi_processor_set_throttling(struct acpi_processor *pr,
+@@ -330,36 +345,71 @@ extern void acpi_processor_reevaluate_tstate(struct acpi_processor *pr,
+ 			unsigned long action);
+ extern const struct file_operations acpi_processor_throttling_fops;
+ extern void acpi_processor_throttling_init(void);
++#else
++static inline int acpi_processor_tstate_has_changed(struct acpi_processor *pr)
 +{
-+	int count_target;
-+	int retval = 0;
-+	unsigned int i, j;
-+	cpumask_var_t covered_cpus;
-+	struct cpudata *pr, *match_pr;
-+	struct acpi_psd_package *pdomain;
-+	struct acpi_psd_package *match_pdomain;
-+	struct cpc_desc *cpc_ptr, *match_cpc_ptr;
-+
-+	if (!zalloc_cpumask_var(&covered_cpus, GFP_KERNEL))
-+		return -ENOMEM;
-+
-+	/*
-+	 * Now that we have _PSD data from all CPUs, lets setup P-state
-+	 * domain info.
-+	 */
-+	for_each_possible_cpu(i) {
-+		pr = all_cpu_data[i];
-+		if (!pr)
-+			continue;
-+
-+		if (cpumask_test_cpu(i, covered_cpus))
-+			continue;
-+
-+		cpc_ptr = per_cpu(cpc_desc_ptr, i);
-+		if (!cpc_ptr)
-+			continue;
-+
-+		pdomain = &(cpc_ptr->domain_info);
-+		cpumask_set_cpu(i, pr->shared_cpu_map);
-+		cpumask_set_cpu(i, covered_cpus);
-+		if (pdomain->num_processors <= 1)
-+			continue;
-+
-+		/* Validate the Domain info */
-+		count_target = pdomain->num_processors;
-+		if (pdomain->coord_type == DOMAIN_COORD_TYPE_SW_ALL)
-+			pr->shared_type = CPUFREQ_SHARED_TYPE_ALL;
-+		else if (pdomain->coord_type == DOMAIN_COORD_TYPE_HW_ALL)
-+			pr->shared_type = CPUFREQ_SHARED_TYPE_HW;
-+		else if (pdomain->coord_type == DOMAIN_COORD_TYPE_SW_ANY)
-+			pr->shared_type = CPUFREQ_SHARED_TYPE_ANY;
-+
-+		for_each_possible_cpu(j) {
-+			if (i == j)
-+				continue;
-+
-+			match_cpc_ptr = per_cpu(cpc_desc_ptr, j);
-+			if (!match_cpc_ptr)
-+				continue;
-+
-+			match_pdomain = &(match_cpc_ptr->domain_info);
-+			if (match_pdomain->domain != pdomain->domain)
-+				continue;
-+
-+			/* Here i and j are in the same domain */
-+
-+			if (match_pdomain->num_processors != count_target) {
-+				retval = -EINVAL;
-+				goto err_ret;
-+			}
-+
-+			if (pdomain->coord_type != match_pdomain->coord_type) {
-+				retval = -EINVAL;
-+				goto err_ret;
-+			}
-+
-+			cpumask_set_cpu(j, covered_cpus);
-+			cpumask_set_cpu(j, pr->shared_cpu_map);
-+		}
-+
-+		for_each_possible_cpu(j) {
-+			if (i == j)
-+				continue;
-+
-+			match_pr = all_cpu_data[j];
-+			if (!match_pr)
-+				continue;
-+
-+			match_cpc_ptr = per_cpu(cpc_desc_ptr, j);
-+			if (!match_cpc_ptr)
-+				continue;
-+
-+			match_pdomain = &(match_cpc_ptr->domain_info);
-+			if (match_pdomain->domain != pdomain->domain)
-+				continue;
-+
-+			match_pr->shared_type = pr->shared_type;
-+			cpumask_copy(match_pr->shared_cpu_map,
-+				     pr->shared_cpu_map);
-+		}
-+	}
-+
-+err_ret:
-+	for_each_possible_cpu(i) {
-+		pr = all_cpu_data[i];
-+		if (!pr)
-+			continue;
-+
-+		/* Assume no coordination on any error parsing domain info */
-+		if (retval) {
-+			cpumask_clear(pr->shared_cpu_map);
-+			cpumask_set_cpu(i, pr->shared_cpu_map);
-+			pr->shared_type = CPUFREQ_SHARED_TYPE_ALL;
-+		}
-+	}
-+
-+	free_cpumask_var(covered_cpus);
-+	return retval;
-+}
-+EXPORT_SYMBOL_GPL(acpi_get_psd_map);
-+
-+static int register_pcc_channel(unsigned pcc_subspace_idx)
-+{
-+	struct acpi_pcct_subspace *cppc_ss;
-+	unsigned int len;
-+
-+	if (pcc_subspace_idx >= 0) {
-+		pcc_channel = pcc_mbox_request_channel(&cppc_mbox_cl,
-+				pcc_subspace_idx);
-+
-+		if (IS_ERR(pcc_channel)) {
-+			pr_err("No PCC communication channel found\n");
-+			return -ENODEV;
-+		}
-+
-+		/*
-+		 * The PCC mailbox controller driver should
-+		 * have parsed the PCCT (global table of all
-+		 * PCC channels) and stored pointers to the
-+		 * subspace communication region in con_priv.
-+		 */
-+		cppc_ss = pcc_channel->con_priv;
-+
-+		if (!cppc_ss) {
-+			pr_err("No PCC subspace found for CPPC\n");
-+			return -ENODEV;
-+		}
-+
-+		/*
-+		 * This is the shared communication region
-+		 * for the OS and Platform to communicate over.
-+		 */
-+		comm_base_addr = cppc_ss->base_address;
-+		len = cppc_ss->length;
-+		pcc_cmd_delay = cppc_ss->min_turnaround_time;
-+
-+		pcc_comm_addr = ioremap(comm_base_addr, len);
-+		if (!pcc_comm_addr) {
-+			pr_err("Failed to ioremap PCC comm region mem\n");
-+			return -ENOMEM;
-+		}
-+
-+		/* Set flag so that we dont come here for each CPU. */
-+		pcc_channel_acquired = 1;
-+
-+	} else
-+		/*
-+		 * For the case where registers are not defined as PCC regs.
-+		 * Assuming all regs are FFH / SystemIO.
-+		 */
-+		pr_debug("No PCC subspace detected in any CPC entries.\n");
-+
 +	return 0;
 +}
 +
-+/**
-+ * acpi_cppc_processor_probe - The _CPC table is a per CPU table
-+ * which a bunch of entries which may be registers or integers.
-+ * An example table looks like the following.
-+ *
-+ *	Name(_CPC, Package()
-+ *			{
-+ *			17,
-+ *			NumEntries
-+ *			1,
-+ *			// Revision
-+ *			ResourceTemplate(){Register(PCC, 32, 0, 0x120, 2)},
-+ *			// Highest Performance
-+ *			ResourceTemplate(){Register(PCC, 32, 0, 0x124, 2)},
-+ *			// Nominal Performance
-+ *			ResourceTemplate(){Register(PCC, 32, 0, 0x128, 2)},
-+ *			// Lowest Nonlinear Performance
-+ *			ResourceTemplate(){Register(PCC, 32, 0, 0x12C, 2)},
-+ *			// Lowest Performance
-+ *			ResourceTemplate(){Register(PCC, 32, 0, 0x130, 2)},
-+ *			// Guaranteed Performance Register
-+ *			ResourceTemplate(){Register(PCC, 32, 0, 0x110, 2)},
-+ *			// Desired Performance Register
-+ *			ResourceTemplate(){Register(SystemMemory, 0, 0, 0, 0)},
-+ *			..
-+ *			..
-+ *			..
-+ *
-+ *		}
-+ * Each Register() encodes how to access that specific register.
-+ * e.g. a sample PCC entry has the following encoding:
-+ *
-+ *	Register (
-+ *		PCC,
-+ *		AddressSpaceKeyword
-+ *		8,
-+ *		//RegisterBitWidth
-+ *		8,
-+ *		//RegisterBitOffset
-+ *		0x30,
-+ *		//RegisterAddress
-+ *		9
-+ *		//AccessSize (subspace ID)
-+ *		0
-+ *		)
-+ *		}
-+ *
-+ *	This function walks through all the per CPU _CPC entries and extracts
-+ *	the Register details.
-+ *
-+ *	Return: 0 for success or negative value for err.
-+ */
-+int acpi_cppc_processor_probe(struct acpi_processor *pr)
++static inline int acpi_processor_get_throttling_info(struct acpi_processor *pr)
 +{
-+	struct acpi_buffer output = {ACPI_ALLOCATE_BUFFER, NULL};
-+	union acpi_object *out_obj, *cpc_obj;
-+	struct cpc_desc *cpc_ptr;
-+	struct cpc_reg *gas_t;
-+	acpi_handle handle = pr->handle;
-+	unsigned int num_ent, i, cpc_rev, ret = 0;
-+	acpi_status status;
-+
-+	/* Parse the ACPI _CPC table for this cpu. */
-+	if (!acpi_has_method(handle, "_CPC")) {
-+		pr_debug("_CPC table not found\n");
-+		ret = -ENODEV;
-+		goto out_buf_free;
-+	}
-+
-+	status = acpi_evaluate_object(handle, "_CPC", NULL, &output);
-+	if (ACPI_FAILURE(status)) {
-+		ret = -ENODEV;
-+		goto out_buf_free;
-+	}
-+
-+	out_obj = (union acpi_object *) output.pointer;
-+	if (out_obj->type != ACPI_TYPE_PACKAGE) {
-+		ret = -ENODEV;
-+		goto out_buf_free;
-+	}
-+
-+	cpc_ptr = kzalloc(sizeof(struct cpc_desc), GFP_KERNEL);
-+	if (!cpc_ptr)
-+		return -ENOMEM;
-+
-+	/* First entry is NumEntries. */
-+	cpc_obj = &out_obj->package.elements[0];
-+	if (cpc_obj->type == ACPI_TYPE_INTEGER)	{
-+		num_ent = cpc_obj->integer.value;
-+	} else {
-+		pr_debug("Unexpected entry type(%d) for NumEntries\n",
-+				cpc_obj->type);
-+		goto out_free;
-+	}
-+
-+	/* Only support CPPCv2. Bail otherwise. */
-+	if (num_ent != CPPC_NUM_ENT) {
-+		pr_err("Firmware exports %d entries. Expected: %d\n",
-+				num_ent, CPPC_NUM_ENT);
-+		ret = -EINVAL;
-+		goto out_free;
-+	}
-+
-+	/* Second entry should be revision. */
-+	cpc_obj = &out_obj->package.elements[1];
-+	if (cpc_obj->type == ACPI_TYPE_INTEGER)	{
-+		cpc_rev = cpc_obj->integer.value;
-+	} else {
-+		pr_debug("Unexpected entry type(%d) for Revision\n",
-+				cpc_obj->type);
-+		goto out_free;
-+	}
-+
-+	if (cpc_rev != CPPC_REV) {
-+		pr_err("Firmware exports revision:%d. Expected:%d\n",
-+				cpc_rev, CPPC_REV);
-+		goto out_free;
-+	}
-+
-+	/* Iterate through remaining entries in _CPC */
-+	for (i = 2; i < num_ent; i++) {
-+		cpc_obj = &out_obj->package.elements[i];
-+
-+		if (cpc_obj->type == ACPI_TYPE_INTEGER)	{
-+			cpc_ptr->cpc_regs[i-2].type =
-+				ACPI_TYPE_INTEGER;
-+			cpc_ptr->cpc_regs[i-2].cpc_entry.int_value =
-+				cpc_obj->integer.value;
-+		} else if (cpc_obj->type == ACPI_TYPE_BUFFER) {
-+			gas_t = (struct cpc_reg *)
-+				cpc_obj->buffer.pointer;
-+
-+			/*
-+			 * The PCC Subspace index is encoded inside
-+			 * the CPC table entries. The same PCC index
-+			 * will be used for all the PCC entries,
-+			 * so extract it only once.
-+			 */
-+			if (gas_t->space_id ==
-+					ACPI_ADR_SPACE_PLATFORM_COMM) {
-+				if (pcc_subspace_idx < 0)
-+					pcc_subspace_idx =
-+						gas_t->access_width;
-+				else if (pcc_subspace_idx !=
-+						gas_t->access_width) {
-+					/*
-+					 * Mismatched PCC id detected.
-+					 * Firmware bug.
-+					 */
-+					goto out_free;
-+				}
-+			}
-+
-+			cpc_ptr->cpc_regs[i-2].type =
-+				ACPI_TYPE_BUFFER;
-+			cpc_ptr->cpc_regs[i-2].cpc_entry.reg =
-+				(struct cpc_reg) {
-+					.space_id = gas_t->space_id,
-+					.length	= gas_t->length,
-+					.bit_width = gas_t->bit_width,
-+					.bit_offset = gas_t->bit_offset,
-+					.address = gas_t->address,
-+					.access_width =
-+						gas_t->access_width,
-+				};
-+		} else {
-+			pr_debug("Error in entry:%d in CPC table.\n", i);
-+			ret = -EINVAL;
-+			goto out_free;
-+		}
-+	}
-+
-+	/* Plug it into this CPUs CPC descriptor. */
-+	per_cpu(cpc_desc_ptr, pr->id) = cpc_ptr;
-+
-+	/* Parse PSD data for this CPU */
-+	ret = acpi_get_psd(cpc_ptr, handle);
-+	if (ret)
-+		goto out_free;
-+
-+	/* Register PCC channel once for all CPUs. */
-+	if (!pcc_channel_acquired) {
-+		ret = register_pcc_channel(pcc_subspace_idx);
-+		if (ret)
-+			goto out_free;
-+	}
-+
-+	/* Everything looks okay */
-+	pr_info("Successfully parsed CPC struct for CPU: %d\n", pr->id);
-+
-+	kfree(output.pointer);
-+	return 0;
-+
-+out_free:
-+	cpc_ptr = per_cpu(cpc_desc_ptr, pr->id);
-+	kfree(cpc_ptr);
-+
-+out_buf_free:
-+	kfree(output.pointer);
 +	return -ENODEV;
 +}
-+EXPORT_SYMBOL_GPL(acpi_cppc_processor_probe);
 +
-+static u64 cpc_trans(struct cpc_register_resource *reg, int cmd, u64 write_val,
-+		bool is_pcc)
++static inline int acpi_processor_set_throttling(struct acpi_processor *pr,
++					 int state, bool force)
 +{
-+	u64 addr;
-+	u64 read_val = 0;
-+
-+	/* PCC communication addr space begins at byte offset 0x8. */
-+	addr = is_pcc ? (u64)pcc_comm_addr + 0x8 + reg->cpc_entry.reg.address :
-+		reg->cpc_entry.reg.address;
-+
-+	if (reg->type == ACPI_TYPE_BUFFER) {
-+		switch (reg->cpc_entry.reg.bit_width) {
-+		case 8:
-+			if (cmd == CMD_READ)
-+				read_val = readb((void *) (addr));
-+			else if (cmd == CMD_WRITE)
-+				writeb(write_val, (void *)(addr));
-+			else
-+				pr_debug("Unsupported cmd type: %d\n", cmd);
-+			break;
-+		case 16:
-+			if (cmd == CMD_READ)
-+				read_val = readw((void *) (addr));
-+			else if (cmd == CMD_WRITE)
-+				writew(write_val, (void *)(addr));
-+			else
-+				pr_debug("Unsupported cmd type: %d\n", cmd);
-+			break;
-+		case 32:
-+			if (cmd == CMD_READ)
-+				read_val = readl((void *) (addr));
-+			else if (cmd == CMD_WRITE)
-+				writel(write_val, (void *)(addr));
-+			else
-+				pr_debug("Unsupported cmd type: %d\n", cmd);
-+			break;
-+		case 64:
-+			if (cmd == CMD_READ)
-+				read_val = readq((void *) (addr));
-+			else if (cmd == CMD_WRITE)
-+				writeq(write_val, (void *)(addr));
-+			else
-+				pr_debug("Unsupported cmd type: %d\n", cmd);
-+			break;
-+		default:
-+			pr_debug("Unsupported bit width for CPC cmd:%d\n",
-+					cmd);
-+			break;
-+		}
-+	} else if (reg->type == ACPI_TYPE_INTEGER) {
-+		if (cmd == CMD_READ)
-+			read_val = reg->cpc_entry.int_value;
-+		else if (cmd == CMD_WRITE)
-+			reg->cpc_entry.int_value = write_val;
-+		else
-+			pr_debug("Unsupported cmd type: %d\n", cmd);
-+	} else
-+		pr_debug("Unsupported CPC entry type:%d\n", reg->type);
-+
-+	return read_val;
++	return -ENODEV;
 +}
 +
-+/**
-+ * cppc_get_perf_caps - Get a CPUs performance capabilities.
-+ * @cpunum: CPU from which to get capabilities info.
-+ * @perf_caps: ptr to cppc_perf_caps. See cppc_acpi.h
-+ *
-+ * Return - 0 for success with perf_caps populated else
-+ *	-ERRNO.
-+ */
-+int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
++static inline void acpi_processor_reevaluate_tstate(struct acpi_processor *pr,
++			unsigned long action) {}
++
++static inline void acpi_processor_throttling_init(void) {}
++#endif	/* CONFIG_ACPI_PSS */
++
+ /* in processor_idle.c */
++extern struct cpuidle_driver acpi_idle_driver;
++#ifdef CONFIG_ACPI_CST
+ int acpi_processor_power_init(struct acpi_processor *pr);
+ int acpi_processor_power_exit(struct acpi_processor *pr);
+ int acpi_processor_cst_has_changed(struct acpi_processor *pr);
+ int acpi_processor_hotplug(struct acpi_processor *pr);
+-extern struct cpuidle_driver acpi_idle_driver;
+-
+-#ifdef CONFIG_PM_SLEEP
+ void acpi_processor_syscore_init(void);
+ void acpi_processor_syscore_exit(void);
+ #else
++static inline int acpi_processor_power_init(struct acpi_processor *pr)
 +{
-+	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
-+	struct cpc_register_resource *highest_reg, *lowest_reg, *ref_perf,
-+				     *nom_perf;
-+	u64 min, max, ref, nom;
-+	bool is_pcc = false;
-+	int ret;
-+
-+	if (!cpc_desc) {
-+		pr_debug("No CPC descriptor for CPU:%d\n", cpunum);
-+		return -ENODEV;
-+	}
-+
-+	highest_reg = &cpc_desc->cpc_regs[HIGHEST_PERF];
-+	lowest_reg = &cpc_desc->cpc_regs[LOWEST_PERF];
-+	ref_perf = &cpc_desc->cpc_regs[REFERENCE_PERF];
-+	nom_perf = &cpc_desc->cpc_regs[NOMINAL_PERF];
-+
-+	spin_lock(&pcc_lock);
-+
-+	/* Are any of the regs PCC ?*/
-+	if ((highest_reg->cpc_entry.reg.space_id ==
-+				ACPI_ADR_SPACE_PLATFORM_COMM) ||
-+			(lowest_reg->cpc_entry.reg.space_id ==
-+			 ACPI_ADR_SPACE_PLATFORM_COMM) ||
-+			(ref_perf->cpc_entry.reg.space_id ==
-+			 ACPI_ADR_SPACE_PLATFORM_COMM) ||
-+			(nom_perf->cpc_entry.reg.space_id ==
-+			 ACPI_ADR_SPACE_PLATFORM_COMM))
-+		is_pcc = true;
-+
-+	if (is_pcc) {
-+		/*
-+		 * Min time OS should wait before sending
-+		 * next command.
-+		 */
-+		udelay(pcc_cmd_delay);
-+		/* Ring doorbell */
-+		ret = send_pcc_cmd(CMD_READ);
-+		if (ret) {
-+			spin_unlock(&pcc_lock);
-+			return -EIO;
-+		}
-+	}
-+
-+	max = cpc_trans(highest_reg, CMD_READ, 0, is_pcc);
-+	perf_caps->highest_perf = max;
-+
-+	min = cpc_trans(lowest_reg, CMD_READ, 0, is_pcc);
-+	perf_caps->lowest_perf = min;
-+
-+	ref = cpc_trans(ref_perf, CMD_READ, 0, is_pcc);
-+	perf_caps->reference_perf = ref;
-+
-+	nom = cpc_trans(nom_perf, CMD_READ, 0, is_pcc);
-+	perf_caps->nominal_perf = nom;
-+
-+	if (!ref)
-+		perf_caps->reference_perf = perf_caps->nominal_perf;
-+
-+	spin_unlock(&pcc_lock);
-+
-+	if (!perf_caps->highest_perf ||
-+			!perf_caps->lowest_perf ||
-+			!perf_caps->reference_perf ||
-+			!perf_caps->nominal_perf) {
-+		return -EINVAL;
-+	}
-+
-+	return 0;
++	return -ENODEV;
 +}
-+EXPORT_SYMBOL_GPL(cppc_get_perf_caps);
 +
-+/**
-+ * cppc_get_perf_ctrs - Read a CPUs performance feedback counters.
-+ * @cpunum: CPU from which to read counters.
-+ * @perf_fb_ctrs: ptr to cppc_perf_fb_ctrs. See cppc_acpi.h
-+ *
-+ * Return - 0 for success with perf_fb_ctrs populated else
-+ *	-ERRNO.
-+ */
-+int cppc_get_perf_ctrs(int cpunum, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
++static inline int acpi_processor_power_exit(struct acpi_processor *pr)
 +{
-+	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
-+	struct cpc_register_resource *delivered_reg, *reference_reg;
-+	u64 delivered, reference;
-+	bool is_pcc = false;
-+	int ret;
-+
-+	if (!cpc_desc) {
-+		pr_debug("No CPC descriptor for CPU:%d\n", cpunum);
-+		return -ENODEV;
-+	}
-+
-+	delivered_reg = &cpc_desc->cpc_regs[DELIVERED_CTR];
-+	reference_reg = &cpc_desc->cpc_regs[REFERENCE_CTR];
-+
-+	spin_lock(&pcc_lock);
-+
-+	/* Are any of the regs PCC ?*/
-+	if ((delivered_reg->cpc_entry.reg.space_id ==
-+				ACPI_ADR_SPACE_PLATFORM_COMM) ||
-+			(reference_reg->cpc_entry.reg.space_id ==
-+			 ACPI_ADR_SPACE_PLATFORM_COMM))
-+		is_pcc = true;
-+
-+	if (is_pcc) {
-+		/*
-+		 * Min time OS should wait before sending
-+		 * next command.
-+		 */
-+		udelay(pcc_cmd_delay);
-+		/* Ring doorbell */
-+		ret = send_pcc_cmd(CMD_READ);
-+		if (ret) {
-+			spin_unlock(&pcc_lock);
-+			return -EIO;
-+		}
-+	}
-+
-+	delivered = cpc_trans(delivered_reg, CMD_READ, 0, is_pcc);
-+	reference = cpc_trans(reference_reg, CMD_READ, 0, is_pcc);
-+
-+	spin_unlock(&pcc_lock);
-+
-+	if (!delivered || !reference)
-+		return -EINVAL;
-+
-+	perf_fb_ctrs->delivered = delivered;
-+	perf_fb_ctrs->reference = reference;
-+
-+	perf_fb_ctrs->delivered -= perf_fb_ctrs->prev_delivered;
-+	perf_fb_ctrs->reference -= perf_fb_ctrs->prev_reference;
-+
-+	perf_fb_ctrs->prev_delivered = delivered;
-+	perf_fb_ctrs->prev_reference = reference;
-+
-+	return 0;
++	return -ENODEV;
 +}
-+EXPORT_SYMBOL_GPL(cppc_get_perf_ctrs);
 +
-+/**
-+ * cppc_set_perf - Set a CPUs performance controls.
-+ * @cpu: CPU for which to set performance controls.
-+ * @perf_ctrls: ptr to cppc_perf_ctrls. See cppc_acpi.h
-+ *
-+ * Return: 0 for success, -ERRNO otherwise.
-+ */
-+int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
++static inline int acpi_processor_cst_has_changed(struct acpi_processor *pr)
 +{
-+	struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpu);
-+	struct cpc_register_resource *desired_reg;
-+	int ret = 0;
-+	bool is_pcc = false;
-+
-+	if (!cpc_desc) {
-+		pr_debug("No CPC descriptor for CPU:%d\n", cpu);
-+		return -ENODEV;
-+	}
-+
-+	desired_reg = &cpc_desc->cpc_regs[DESIRED_PERF];
-+
-+	spin_lock(&pcc_lock);
-+
-+	/* Is this a PCC reg ?*/
-+	if (desired_reg->cpc_entry.reg.space_id ==
-+			ACPI_ADR_SPACE_PLATFORM_COMM)
-+		is_pcc = true;
-+
-+	cpc_trans(desired_reg, CMD_WRITE,
-+			perf_ctrls->desired_perf, is_pcc);
-+
-+	if (is_pcc) {
-+		/*
-+		 * Min time OS should wait before sending
-+		 * next command.
-+		 */
-+		udelay(pcc_cmd_delay);
-+		/* Ring doorbell */
-+		ret = send_pcc_cmd(CMD_READ);
-+	}
-+
-+	spin_unlock(&pcc_lock);
-+
-+	return ret;
++	return -ENODEV;
 +}
-+EXPORT_SYMBOL_GPL(cppc_set_perf);
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-new file mode 100644
-index 0000000..440f8a0
---- /dev/null
-+++ b/include/acpi/cppc_acpi.h
-@@ -0,0 +1,137 @@
-+/*
-+ * CPPC (Collaborative Processor Performance Control) methods used
-+ * by CPUfreq drivers.
-+ *
-+ * (C) Copyright 2014 Linaro Ltd.
-+ * Author: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2
-+ * of the License.
-+ */
 +
-+#ifndef _CPPC_ACPI_H
-+#define _CPPC_ACPI_H
-+
-+#include <linux/acpi.h>
-+#include <linux/mailbox_controller.h>
-+#include <linux/mailbox_client.h>
-+#include <linux/types.h>
-+
-+#include <acpi/processor.h>
-+
-+/* Only support CPPCv2 for now. */
-+#define CPPC_NUM_ENT	21
-+#define CPPC_REV	2
-+
-+#define PCC_CMD_COMPLETE 1
-+#define MAX_CPC_REG_ENT 19
-+
-+/* CPPC specific PCC commands. */
-+#define	CMD_READ 0
-+#define	CMD_WRITE 1
-+
-+/* Each register has the folowing format. */
-+struct cpc_reg {
-+	u8 descriptor;
-+	u16 length;
-+	u8 space_id;
-+	u8 bit_width;
-+	u8 bit_offset;
-+	u8 access_width;
-+	u64 __iomem address;
-+} __packed;
-+
-+/*
-+ * Each entry in the CPC table is either
-+ * of type ACPI_TYPE_BUFFER or
-+ * ACPI_TYPE_INTEGER.
-+ */
-+struct cpc_register_resource {
-+	acpi_object_type type;
-+	union {
-+		struct cpc_reg reg;
-+		u64 int_value;
-+	} cpc_entry;
-+};
-+
-+/* Container to hold the CPC details for each CPU */
-+struct cpc_desc {
-+	int num_entries;
-+	int version;
-+	struct cpc_register_resource cpc_regs[MAX_CPC_REG_ENT];
-+	struct acpi_psd_package domain_info;
-+};
-+
-+/* These are indexes into the per-cpu cpc_regs[]. Order is important. */
-+enum cppc_regs {
-+	HIGHEST_PERF,
-+	NOMINAL_PERF,
-+	LOW_NON_LINEAR_PERF,
-+	LOWEST_PERF,
-+	GUARANTEED_PERF,
-+	DESIRED_PERF,
-+	MIN_PERF,
-+	MAX_PERF,
-+	PERF_REDUC_TOLERANCE,
-+	TIME_WINDOW,
-+	CTR_WRAP_TIME,
-+	REFERENCE_CTR,
-+	DELIVERED_CTR,
-+	PERF_LIMITED,
-+	ENABLE,
-+	AUTO_SEL_ENABLE,
-+	AUTO_ACT_WINDOW,
-+	ENERGY_PERF,
-+	REFERENCE_PERF,
-+};
-+
-+/*
-+ * Categorization of registers as described
-+ * in the ACPI v.5.1 spec.
-+ * XXX: Only filling up ones which are used by governors
-+ * today.
-+ */
-+struct cppc_perf_caps {
-+	u32 highest_perf;
-+	u32 nominal_perf;
-+	u32 reference_perf;
-+	u32 lowest_perf;
-+};
-+
-+struct cppc_perf_ctrls {
-+	u32 max_perf;
-+	u32 min_perf;
-+	u32 desired_perf;
-+};
-+
-+struct cppc_perf_fb_ctrs {
-+	u64 reference;
-+	u64 prev_reference;
-+	u64 delivered;
-+	u64 prev_delivered;
-+};
-+
-+/* Per CPU container for runtime CPPC management. */
-+struct cpudata {
-+	int cpu;
-+	struct cppc_perf_caps perf_caps;
-+	struct cppc_perf_ctrls perf_ctrls;
-+	struct cppc_perf_fb_ctrs perf_fb_ctrs;
-+	struct cpufreq_policy *cur_policy;
-+	unsigned int shared_type;
-+	cpumask_var_t shared_cpu_map;
-+};
-+
-+extern int cppc_get_perf_ctrs(int cpu, struct cppc_perf_fb_ctrs *perf_fb_ctrs);
-+extern int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls);
-+extern int cppc_get_perf_caps(int cpu, struct cppc_perf_caps *caps);
-+extern int acpi_get_psd_map(struct cpudata **);
-+
-+/* Methods to interact with the PCC mailbox controller. */
-+extern struct mbox_chan *
-+	pcc_mbox_request_channel(struct mbox_client *, unsigned int);
-+extern int mbox_send_message(struct mbox_chan *chan, void *mssg);
-+
-+#endif /* _CPPC_ACPI_H*/
++static inline int acpi_processor_hotplug(struct acpi_processor *pr)
++{
++	return -ENODEV;
++}
+ static inline void acpi_processor_syscore_init(void) {}
+ static inline void acpi_processor_syscore_exit(void) {}
+-#endif
++#endif	/* CONFIG_ACPI_CST */
+ 
+ /* in processor_thermal.c */
+ int acpi_processor_get_limit_info(struct acpi_processor *pr);
++#ifdef CONFIG_ACPI_PSS
+ extern const struct thermal_cooling_device_ops processor_cooling_ops;
+-#ifdef CONFIG_CPU_FREQ
+ void acpi_thermal_cpufreq_init(void);
+ void acpi_thermal_cpufreq_exit(void);
+ #else
+-static inline void acpi_thermal_cpufreq_init(void)
+-{
+-	return;
+-}
+-static inline void acpi_thermal_cpufreq_exit(void)
+-{
+-	return;
+-}
+-#endif
++static inline void acpi_thermal_cpufreq_init(void) {}
++static inline void acpi_thermal_cpufreq_exit(void) {}
++#endif	/* CONFIG_ACPI_PSS */
+ 
+ #endif
 -- 
 1.9.1
 
