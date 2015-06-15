@@ -1,105 +1,78 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 09/12] cpufreq: governor: Avoid invalid states with
- additional checks
-Date: Mon, 15 Jun 2015 14:42:27 +0530
-Message-ID: <20150615091227.GD27654@linux>
-References: <cover.1434019473.git.viresh.kumar@linaro.org>
- <280186b68a8b906365316876a7b6d9eafb28296b.1434019473.git.viresh.kumar@linaro.org>
- <557E93E5.3030604@linux.vnet.ibm.com>
+From: Alexander Holler <holler-SXC+2es9fhnfWeYVQQPykw@public.gmane.org>
+Subject: Re: [PATCH 00/21] On-demand device registration
+Date: Mon, 15 Jun 2015 11:42:50 +0200
+Message-ID: <557E9E1A.7060000@ahsoftware.de>
+References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>	<CACRpkdasLwMfEHGMRd1X3K_DU7NMPreE8TMwqqDTg8k9wj=wJQ@mail.gmail.com>	<CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com>	<CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>	<5577F533.1060007@ahsoftware.de>	<CACRpkdYF5K7ckGbgvZc6qRzGFJTQ4WqXdu_7Tcqczn2LkFbn3A@mail.gmail.com>	<5579602F.1070801@ahsoftware.de>	<CACRpkdaZgBR5rHwrEYqcm5K4w3y8MXG8a0k=Y+oQY+jukHfuyw@mail.gmail.com>	<5579B9E8.9040609@ahsoftware.de>	<CACRpkdbDSS0yw=q_cR17Bvg+kgTfU3Vcd2gSjx1p4V-CzOZ_SA@mail.gmail.com>	<557AC040.40803@ahsoftware.de>	<557AC437.9000607@ahsoftware.de>	<557C7609.30400@ahsoftware.de> <CACRpkdaVZmq_w_qgEgTP5oqfH3K1+80O7z7o7CJx-dhivUGhDQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:36649 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755992AbbFOJMc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 05:12:32 -0400
-Received: by pdjm12 with SMTP id m12so68615284pdj.3
-        for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2015 02:12:31 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <557E93E5.3030604@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CACRpkdaVZmq_w_qgEgTP5oqfH3K1+80O7z7o7CJx-dhivUGhDQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-samsung-soc <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, DRM PANEL DRIVERS <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, dmaengine-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>"linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linu>
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, ke.wang@spreadtrum.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
 
-On 15-06-15, 14:29, Preeti U Murthy wrote:
-> On 06/11/2015 04:21 PM, Viresh Kumar wrote:
-> > @@ -169,8 +169,12 @@ static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
-> >  void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
-> >  		unsigned int delay, bool all_cpus)
-> >  {
-> > +	struct cpu_dbs_info *cdbs = dbs_data->cdata->get_cpu_cdbs(policy->cpu);
-> >  	int i;
-> > 
-> > +	if (!cdbs->ccdbs->enabled)
-> > +		return;
-> 
-> policy->governor_enabled is already doing this job. Why this additional
-> check ?
+Am 15.06.2015 um 10:58 schrieb Linus Walleij:
+> On Sat, Jun 13, 2015 at 8:27 PM, Alexander Holler <holler-SXC+2es9fhnfWeYVQQPykw@public.gmane.org> wrote:
+>
+>> And because you've said that "problem space is a bit convoluted" and I
+>> disagree, here's a summary from my point of view:
+>>
+>> 1. All the necessary information (dependencies between drivers) already
+>> exists at compile time. The set of dependencies between drivers might become
+>> smaller by configuration, but will not become larger. So there should be NO
+>> need to collect them at runtime, e.g. by instrumenting function calls.
+>
+> I think you arrived at the core of the crux here.
 
-That can be removed after this series. The idea was to get/set this
-information from within the governor instead of cpufreq core. And all
-those checks from __cpufreq_governor() should die as well.
+I've hoped so, that's why I've written it.
 
-> > +
-> >  	mutex_lock(&cpufreq_governor_lock);
-> >  	if (!policy->governor_enabled)
-> >  		goto out_unlock;
-> > @@ -234,6 +238,8 @@ static void dbs_timer(struct work_struct *work)
-> >  	bool modify_all = true;
-> > 
-> >  	mutex_lock(&dbs_data->cdata->mutex);
-> > +	if (!cdbs->ccdbs->enabled)
-> > +		goto unlock;
-> 
-> This should not trigger at all if we get the entries into
-> cpufreq_governor_dbs() fixed. I don't like the idea of adding
-> checks/locks in places where it can be avoided.
+> I guess your suggested approach then need to introduce a special
+> build tool to order the initcalls accordingly.
+>
+> Again this will fall short if you don't know at compile time exactly
+> *which* board file will be executed.
 
-We will get the order of events get fixed in cpufreq.c, but this is
-about the sanity of the governor.
+I've just tried to describe the facts in order to make the problem space 
+more clear, because, as said, I don't think it's convoluted.
 
-> > -static void cpufreq_governor_exit(struct cpufreq_policy *policy,
-> > -				  struct dbs_data *dbs_data)
-> > +static int cpufreq_governor_exit(struct cpufreq_policy *policy,
-> > +				 struct dbs_data *dbs_data)
-> >  {
-> >  	struct common_dbs_data *cdata = dbs_data->cdata;
-> > +	struct cpu_dbs_info *cdbs = cdata->get_cpu_cdbs(policy->cpu);
-> > +
-> > +	/* STOP should have been called by now */
-> 
-> This is not true, atleast in the races that I have seen. The problem is
-> not about STOP not being called before an EXIT. It is about a START
-> being called after a STOP and before an EXIT. The comment should ideally
-> be "The policy is active, stop it before exit" or similar.
-> 
-> > +	if (cdbs->ccdbs->enabled)
-> > +		return -EBUSY;
-> 
-> And.. in such a scenario, we must not be aborting EXIT; rather it must
-> cancel the queued work and successfully exit the policy. An EXIT is a
-> more urgent operation than START, given its call sites. Also an EXIT
-> will not leave the cpufreq governors in a limbo state, it is bound to
-> restart a new policy or quit a policy if the last cpu goes down. A
-> racing START operation however is typically from a call site referencing
-> an older policy. Its better to abort this than the EXIT operation.
-> 
-> It may mean a user is trying to switch governors, and the exit operation
-> is quitting the old governor as a result. A START from a
-> cpufreq_remove_dev_finish() racing in just before this is no reason to
-> prevent switching governors.
+Besides that, I didn't want to suggest anything else other than what 
+I've already posted working patches for. What I've mentioned as possible 
+other solutions above is stuff which might be possible too in order to 
+give some starting points for people which are searching another 
+solution. But I wouldn't have written my patches as they are, if I would 
+think there is another more easier solution.
 
-We can't decide the priority of events here. All we can do is to make
-sure that the governor doesn't end up going into a bad state.
+And of course, there is still a bit to resolve at runtime, even in the 
+DT case (look at the "compatible" attribute). But there is already a 
+runtime solution to find the right driver (in case of DT) and I haven't 
+mentioned it in order to no confuse people again. Mentioning every 
+little detail doesn't make sense if you want to describe something 
+understandable (which is what I've tried).
 
-So, if the sequence is STOP followed by START and then EXIT. Because
-START has started the wqs, EXIT can't just EXIT. And pushing the
-wq-cancel part into EXIT is absolutely wrong.
+> So the only practical way to solve this at compile time is to predict
+> an initcall ordering sequence for all possible boot paths, compile in
+> all of them, and choose the right one at boot. But the number of boot
+> paths is equal to the number of device trees / ACPI tables or
+> board files supported, and that space is uncontrolled and ordered
+> infinite.
 
-What we need to prevent is the START to interfere with the sequence of
-STOP, EXIT. We will do that separately, we are just making sure here
-that a user code isn't following wrong sequence of events.
+You just need one working ordered sequence which includes all options. 
+This one will work for all others too.
 
--- 
-viresh
+> Basically I think the root problem with your approach is that you
+> assume we know what hardware we will boot on at compile time. We
+
+Totally wrong. If you assume that I assume this, than either I was 
+totally unable to describe something clearly, or you were unable or 
+unwilling to understand what I've written. And as the result is the 
+same, we don't need to find out which was reason.
+
+Anyway, have fun. I'm quitting the discussion here as I don't have any 
+business with the kernel and already decided some time again to not post 
+patches anymore as it seems to be a waste of my (and maybe others) time.
+
+Regards,
+
+Alexander Holler
