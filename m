@@ -1,78 +1,77 @@
-From: Alexander Holler <holler-SXC+2es9fhnfWeYVQQPykw@public.gmane.org>
-Subject: Re: [PATCH 00/21] On-demand device registration
-Date: Mon, 15 Jun 2015 11:42:50 +0200
-Message-ID: <557E9E1A.7060000@ahsoftware.de>
-References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>	<CACRpkdasLwMfEHGMRd1X3K_DU7NMPreE8TMwqqDTg8k9wj=wJQ@mail.gmail.com>	<CAAObsKCP-C+TY8Wkk6bQzxZeGYL9X01trtjxfaYp--ZnH07C+w@mail.gmail.com>	<CACRpkdZuSj+S2x1yz6n5PgcRK=3ZCcq_To124b2Y+Oj54aydpg@mail.gmail.com>	<5577F533.1060007@ahsoftware.de>	<CACRpkdYF5K7ckGbgvZc6qRzGFJTQ4WqXdu_7Tcqczn2LkFbn3A@mail.gmail.com>	<5579602F.1070801@ahsoftware.de>	<CACRpkdaZgBR5rHwrEYqcm5K4w3y8MXG8a0k=Y+oQY+jukHfuyw@mail.gmail.com>	<5579B9E8.9040609@ahsoftware.de>	<CACRpkdbDSS0yw=q_cR17Bvg+kgTfU3Vcd2gSjx1p4V-CzOZ_SA@mail.gmail.com>	<557AC040.40803@ahsoftware.de>	<557AC437.9000607@ahsoftware.de>	<557C7609.30400@ahsoftware.de> <CACRpkdaVZmq_w_qgEgTP5oqfH3K1+80O7z7o7CJx-dhivUGhDQ@mail.gmail.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH 10/12] cpufreq: governor: Don't WARN on invalid states
+Date: Mon, 15 Jun 2015 15:22:44 +0530
+Message-ID: <557EA06C.6030207@linux.vnet.ibm.com>
+References: <cover.1434019473.git.viresh.kumar@linaro.org> <70b94233535af5a1fa391f3199ef8915b40fb7b7.1434019473.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-6
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CACRpkdaVZmq_w_qgEgTP5oqfH3K1+80O7z7o7CJx-dhivUGhDQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-samsung-soc <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, DRM PANEL DRIVERS <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, dmaengine-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>"linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linu>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e19.ny.us.ibm.com ([129.33.205.209]:59407 "EHLO
+	e19.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755287AbbFOJwy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 05:52:54 -0400
+Received: from /spool/local
+	by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Mon, 15 Jun 2015 05:52:53 -0400
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com [9.57.198.25])
+	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 32B8D6E803F
+	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2015 05:44:37 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id t5F9qoox57213148
+	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2015 09:52:50 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id t5F9qmu4007433
+	for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2015 05:52:50 -0400
+In-Reply-To: <70b94233535af5a1fa391f3199ef8915b40fb7b7.1434019473.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, ke.wang@spreadtrum.com
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
 
-Am 15.06.2015 um 10:58 schrieb Linus Walleij:
-> On Sat, Jun 13, 2015 at 8:27 PM, Alexander Holler <holler-SXC+2es9fhnfWeYVQQPykw@public.gmane.org> wrote:
->
->> And because you've said that "problem space is a bit convoluted" and I
->> disagree, here's a summary from my point of view:
->>
->> 1. All the necessary information (dependencies between drivers) already
->> exists at compile time. The set of dependencies between drivers might become
->> smaller by configuration, but will not become larger. So there should be NO
->> need to collect them at runtime, e.g. by instrumenting function calls.
->
-> I think you arrived at the core of the crux here.
+On 06/11/2015 04:21 PM, Viresh Kumar wrote:
+> The last commit returned errors on invalid state requests for a
+> governor. But we are already issuing a WARN for an invalid state in
+> cpufreq_governor_dbs().
+> 
+> Lets stop warning on that until the time cpufreq core is fixed to
+> serialize state changes of the governor.
 
-I've hoped so, that's why I've written it.
+The way I see it is that if this patch series manages to capture invalid
+states right, we don't need to necessarily serialize state changes in
+the cpufreq core to get rid of the race conditions. So getting a START
+after an EXIT will not be fatal(WARN_ON() will trigger then), if it is
+identified as an invalid operation at that point and prevented.
 
-> I guess your suggested approach then need to introduce a special
-> build tool to order the initcalls accordingly.
->
-> Again this will fall short if you don't know at compile time exactly
-> *which* board file will be executed.
+So yes, we must get rid of the WARN_ON() not because we want to
+reintroduce it later when all races are fixed but because the condition
+that it is warning on can happen even if we get this fixed right making
+it essentially a false positive.
 
-I've just tried to describe the facts in order to make the problem space 
-more clear, because, as said, I don't think it's convoluted.
+And its ok to get rid of the WARN_ON() now rather than waiting till all
+races are fixed, because anyway we are bound to crash the moment we hit
+the warning today and we will know anyway that things went out of hand :P
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq_governor.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index ee2e19a1218a..c26f535d3d91 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -542,7 +542,7 @@ int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  	else
+>  		dbs_data = cdata->gdbs_data;
+> 
+> -	if (WARN_ON(!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT))) {
+> +	if (!dbs_data && (event != CPUFREQ_GOV_POLICY_INIT)) {
+>  		ret = -EINVAL;
+>  		goto unlock;
+>  	}
+> 
 
-Besides that, I didn't want to suggest anything else other than what 
-I've already posted working patches for. What I've mentioned as possible 
-other solutions above is stuff which might be possible too in order to 
-give some starting points for people which are searching another 
-solution. But I wouldn't have written my patches as they are, if I would 
-think there is another more easier solution.
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-And of course, there is still a bit to resolve at runtime, even in the 
-DT case (look at the "compatible" attribute). But there is already a 
-runtime solution to find the right driver (in case of DT) and I haven't 
-mentioned it in order to no confuse people again. Mentioning every 
-little detail doesn't make sense if you want to describe something 
-understandable (which is what I've tried).
-
-> So the only practical way to solve this at compile time is to predict
-> an initcall ordering sequence for all possible boot paths, compile in
-> all of them, and choose the right one at boot. But the number of boot
-> paths is equal to the number of device trees / ACPI tables or
-> board files supported, and that space is uncontrolled and ordered
-> infinite.
-
-You just need one working ordered sequence which includes all options. 
-This one will work for all others too.
-
-> Basically I think the root problem with your approach is that you
-> assume we know what hardware we will boot on at compile time. We
-
-Totally wrong. If you assume that I assume this, than either I was 
-totally unable to describe something clearly, or you were unable or 
-unwilling to understand what I've written. And as the result is the 
-same, we don't need to find out which was reason.
-
-Anyway, have fun. I'm quitting the discussion here as I don't have any 
-business with the kernel and already decided some time again to not post 
-patches anymore as it seems to be a waste of my (and maybe others) time.
-
-Regards,
-
-Alexander Holler
