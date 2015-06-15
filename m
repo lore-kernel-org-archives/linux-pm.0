@@ -1,166 +1,174 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH] cpufreq, Fix overflow in busy_scaled due to long delay [v2]
-Date: Mon, 15 Jun 2015 13:43:29 -0400
-Message-ID: <1434390209-23256-1-git-send-email-prarit@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:34316 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750917AbbFORnf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 15 Jun 2015 13:43:35 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH v2 00/14] ARM: shmobile: Add CPG Clock Domains
+Date: Mon, 15 Jun 2015 11:39:45 -0700
+Message-ID: <7htwu86cjy.fsf@deeprootsystems.com>
+References: <1432839219-475-1-git-send-email-geert+renesas@glider.be>
+	<CAMuHMdXntR6c4-uUNGVGx7D7941e8hvnmtVBvDu2+iUsNHQ=Qw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdXntR6c4-uUNGVGx7D7941e8hvnmtVBvDu2+iUsNHQ=Qw@mail.gmail.com>
+	(Geert Uytterhoeven's message of "Mon, 15 Jun 2015 18:15:04 +0200")
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Magnus Damm <magnus.damm@gmail.com>, Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, linux-clk@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Prarit Bhargava <prarit@redhat.com>, Kristen Carlson Accardi <kristen@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Doug Smythies <dsmythies@telus.net>, linux-pm@vger.kernel.org
 
-The kernel may delay interrupts for a long time which can result in timers
-being delayed. If this occurs the intel_pstate driver will crash with a
-divide by zero error:
+Geert Uytterhoeven <geert@linux-m68k.org> writes:
 
-divide error: 0000 [#1] SMP
-Modules linked in: btrfs zlib_deflate raid6_pq xor msdos ext4 mbcache jbd2 binfmt_misc arc4 md4 nls_utf8 cifs dns_resolver tcp_lp bnep bluetooth rfkill fuse dm_service_time iscsi_tcp libiscsi_tcp libiscsi scsi_transport_iscsi nf_conntrack_netbios_ns nf_conntrack_broadcast nf_conntrack_ftp ip6t_rpfilter ip6t_REJECT ipt_REJECT xt_conntrack ebtable_nat ebtable_broute bridge stp llc ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw iptable_filter ip_tables intel_powerclamp coretemp vfat fat kvm_intel iTCO_wdt iTCO_vendor_support ipmi_devintf sr_mod kvm crct10dif_pclmul
- crc32_pclmul crc32c_intel ghash_clmulni_intel aesni_intel cdc_ether lrw usbnet cdrom mii gf128mul glue_helper ablk_helper cryptd lpc_ich mfd_core pcspkr sb_edac edac_core ipmi_si ipmi_msghandler ioatdma wmi shpchp acpi_pad nfsd auth_rpcgss nfs_acl lockd uinput dm_multipath sunrpc xfs libcrc32c usb_storage sd_mod crc_t10dif crct10dif_common ixgbe mgag200 syscopyarea sysfillrect sysimgblt mdio drm_kms_helper ttm igb drm ptp pps_core dca i2c_algo_bit megaraid_sas i2c_core dm_mirror dm_region_hash dm_log dm_mod
-CPU: 113 PID: 0 Comm: swapper/113 Tainted: G        W   --------------   3.10.0-229.1.2.el7.x86_64 #1
-Hardware name: IBM x3950 X6 -[3837AC2]-/00FN827, BIOS -[A8E112BUS-1.00]- 08/27/2014
-task: ffff880fe8abe660 ti: ffff880fe8ae4000 task.ti: ffff880fe8ae4000
-RIP: 0010:[<ffffffff814a9279>]  [<ffffffff814a9279>] intel_pstate_timer_func+0x179/0x3d0
-RSP: 0018:ffff883fff4e3db8  EFLAGS: 00010206
-RAX: 0000000027100000 RBX: ffff883fe6965100 RCX: 0000000000000000
-RDX: 0000000000000000 RSI: 0000000000000010 RDI: 000000002e53632d
-RBP: ffff883fff4e3e20 R08: 000e6f69a5a125c0 R09: ffff883fe84ec001
-R10: 0000000000000002 R11: 0000000000000005 R12: 00000000000049f5
-R13: 0000000000271000 R14: 00000000000049f5 R15: 0000000000000246
-FS:  0000000000000000(0000) GS:ffff883fff4e0000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 00007f7668601000 CR3: 000000000190a000 CR4: 00000000001407e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Stack:
- ffff883fff4e3e58 ffffffff81099dc1 0000000000000086 0000000000000071
- ffff883fff4f3680 0000000000000071 fbdc8a965e33afee ffffffff810b69dd
- ffff883fe84ec000 ffff883fe6965108 0000000000000100 ffffffff814a9100
-Call Trace:
- <IRQ>
+> On Thu, May 28, 2015 at 8:53 PM, Geert Uytterhoeven
+> <geert+renesas@glider.be> wrote:
+>>         Hi all,
+>>
+>> This patch series adds Clock Domain support to the Clock Pulse Generator
+>> (CPG) Module Stop (MSTP) Clocks driver using the generic PM Domain, to
+>> be used on shmobile SoCs without device power domains (R-Car Gen1 and
+>> Gen2, RZ).  This allows to power-manage the module clocks of SoC devices
+>> that are part of the CPG Clock Domain using Runtime PM, or for system
+>> suspend/resume, similar to SoCs with device power domains (SH-Mobile and
+>> R-Mobile).
+>>
+>> SoC devices that are part of the CPG Clock Domain and can be
+>> power-managed through an MSTP clock are tagged in DT with a proper
+>> "power-domains" property. This applies to most on-SoC devices, which
+>> have a one-to-one mapping from SoC device to DT device node.
+>> Notable exceptions are "display" and "sound" device nodes, which
+>> represent multiple SoC devices, each having their own MSTP clocks. Hence
+>> drivers for such devices still have to manage their (multiple module)
+>> clocks themselves.
+>>
+>> The (MSTP) clock to use for power-management is found by scanning for
+>> clocks that are compatible with "renesas,cpg-mstp-clocks".
+>> Before, the "first" clock tied to each device (con_id NULL) was used,
+>> being a bit ad-hoc. It was suggested to use the "fck" clock instead,
+>> but this may conflict with DT bindings for devices we don't control
+>> (e.g. GIC-400 plans to mandate "clk" for the clk-name of its single
+>> clock). Looking for real MSTP clocks avoids this problem.
+>>
+>> Logically, the CPG Clock Domain operates on the SoC CPG/MSTP block.
+>> As there's no single device node in DT representing this block (there
+>> are separate device nodes for the CPG and for the individual MSTP
+>> clocks), I bound the logic to the CPG device node.
+>> Perhaps this is something we should change for future SoCs?
+>
+> Inside Renesas, we've been discussing this face-to-face, but haven't
+> reached a conclusion yet.
+>
+> In Linux terminology, "PM domain" is a higher-level abstraction than
+> just (hardware) "power domain" (sometimes called "power area").
+> A "PM domain" is any collection of devices that are power-managed
+> similarly. As such it covers not only hardware power domains, but also
+> clock domains, and even firmware controlled devices (e.g. as used by the
+> Linux ACPI subsystem).
+>
+> I find it a bit unfortunate this was not reflected in the DT bindings
+> for Generic PM domains, which use "power-domains" properties, making
+> believe people this is about hardware power domains only.
+>
+> One other point of confusion is that there are multiple kernel
+> subsystems that can (or seem to be able to) be used for the same
+> purpose. Both regulators and power domains are used to "control power".
+> The same is true for clocks vs. clock domains.
+> My point of view is that the regulator and clock subsystems are more
+> about the properties of regulators (voltage, current) resp. clocks
+> (frequencies), while power/clock domains are about being active or
+> inactive.
+>
+> On Renesas SoCs (SH/R-Mobile, R-Car, RZ), the MSTP (Module Standby and
+> Software Reset) block is very intimately tied to the CPG (Clock Pulse
+> Generator) block.
+>
+> The MSTP block provides two functions:
+>   1. Module Standby: "Clock supply to specified modules is stopped by
+>      setting the module stop control register bits."
+>      However, the clock supply to a module is not stopped until all CPUs
+>      in the SoC agree.  Indeed, there are separate MSTP registers for
+>      application (Cortex-A) and real-time (SH and/or Cortex-R) cores.
+>   2. Reset control. to perform a software reset of a specific module.
+>
+> Given the second function, perhaps the MSTP bits shouldn't have been
+> moduled as clocks, but it made sense at the time of introduction, and
+> IMHO it still does.
+>
+> However, due to the module standby function, all connected devices are
+> grouped into a collection of devices that are power-managed similarly,
+> by controlling the clock supply to the individual modules. So this
+> warrants the use of a PM domain.
 
- [<ffffffff81099dc1>] ? run_posix_cpu_timers+0x51/0x840
- [<ffffffff810b69dd>] ? trigger_load_balance+0x5d/0x200
- [<ffffffff814a9100>] ? pid_param_set+0x130/0x130
- [<ffffffff8107df56>] call_timer_fn+0x36/0x110
- [<ffffffff814a9100>] ? pid_param_set+0x130/0x130
- [<ffffffff8107fdcf>] run_timer_softirq+0x21f/0x320
- [<ffffffff81077b2f>] __do_softirq+0xef/0x280
- [<ffffffff816156dc>] call_softirq+0x1c/0x30
- [<ffffffff81015d95>] do_softirq+0x65/0xa0
- [<ffffffff81077ec5>] irq_exit+0x115/0x120
- [<ffffffff81616355>] smp_apic_timer_interrupt+0x45/0x60
- [<ffffffff81614a1d>] apic_timer_interrupt+0x6d/0x80
- <EOI>
+Agreed.
 
- [<ffffffff814a9c32>] ? cpuidle_enter_state+0x52/0xc0
- [<ffffffff814a9c28>] ? cpuidle_enter_state+0x48/0xc0
- [<ffffffff814a9d65>] cpuidle_idle_call+0xc5/0x200
- [<ffffffff8101d14e>] arch_cpu_idle+0xe/0x30
- [<ffffffff810c67c1>] cpu_startup_entry+0xf1/0x290
- [<ffffffff8104228a>] start_secondary+0x1ba/0x230
-Code: 42 0f 00 45 89 e6 48 01 c2 43 8d 44 6d 00 39 d0 73 26 49 c1 e5 08 89 d2 4d 63 f4 49 63 c5 48 c1 e2 08 48 c1 e0 08 48 63 ca 48 99 <48> f7 f9 48 98 4c 0f af f0 49 c1 ee 08 8b 43 78 c1 e0 08 44 29
-RIP  [<ffffffff814a9279>] intel_pstate_timer_func+0x179/0x3d0
- RSP <ffff883fff4e3db8>
+So,  what is the main objection to using PM domains for this?  Is it
+only a terminology issue?
 
-The kernel values for cpudata for CPU 113 were:
+> Alternative solutions that have been proposed are:
+>
+>   1. | Explicit opt-in in drivers (from Laurent)
+>      | As the driver knows best which clock it wants to manage, the
+>      | driver could tell runtime PM if/when which clock to use.
+>
+>      My rebuttal here is twofold:
+>        - Does the driver know best? It may know it may need to enable a
+>          clock. But the clock may be optional: on some SoCs, the same IP
+>          core may be present without the Module Standby feature (e.g.
+>          the GPIO blocks on R-Car Gen1 are not documented to have MSTP
+>          bits, while they do on R-Car Gen2). Why would the driver have
+>          to care?
+>
+>          The hardware documentation clearly states the purpose of the
+>          MSTP clocks: when a module is not in use, its module clock can
+>          be stopped to reduce power consumption.  All of this should be
+>          described in DT. We already have the clocks in DT. If a module
+>          has an MSTP clock, it means the module can be put in standby
+>          mode. This is the same for all modules, hence for all drivers.
+>
+>        - The idea is to reduce the amount of boilerplate code, not to
+>          increase it. The more code we can move into platform code, the
+>          less drivers have to care.
+>
+>          This is the real power behind the abstraction of runtime PM.
+>          The driver only has to tell runtime PM when it wants to "use"
+>          the hardware module, using pm_runtime_{get_sync,put}().
+>          It doesn't have to know this involves enabling clocks and/or
+>          power domains, or parent devices. All of this is taken care of
+>          by a small piece of platform code, and the generic code.
 
-struct cpudata {
-  cpu = 113,
-  timer = {
-    entry = {
-      next = 0x0,
-      prev = 0xdead000000200200
-    },
-    expires = 8357799745,
-    base = 0xffff883fe84ec001,
-    function = 0xffffffff814a9100 <intel_pstate_timer_func>,
-    data = 18446612406765768960,
-<snip>
-    i_gain = 0,
-    d_gain = 0,
-    deadband = 0,
-    last_err = 22489
-  },
-  last_sample_time = {
-    tv64 = 4063132438017305
-  },
-  prev_aperf = 287326796397463,
-  prev_mperf = 251427432090198,
-  sample = {
-    core_pct_busy = 23081,
-    aperf = 2937407,
-    mperf = 3257884,
-    freq = 2524484,
-    time = {
-      tv64 = 4063149215234118
-    }
-  }
-}
+Exactly, this is real power of this abstraction when used fully.
 
-which results in the time between samples = last_sample_time - sample.time
-= 4063149215234118 - 4063132438017305 = 16777216813 which is 16.777 seconds.
+>          As not all drivers are runtime PM-aware yet, calls to
+>          pm_runtime_*() functions may have to be added, though. But
+>          that's it.
+>
+>      Side note: Laurent has been mostly involved with multimedia devices.
+>      And let display and sound be the two exceptions where there's no
+>      one-to-one mapping from SoC devices to DT device nodes...
+>      Hence the multimedia drivers would have to manage the (multiple)
+>      module clocks anyway.
+>
+>      Perhaps the display and sound bindings can be reworked, to better
+>      describe the hardware structure, and expose a one-to-one mapping
+>      between MSTP clocks and hardware modules, too?
+>
+>   2. | Handling MSTP clocks automatically in a similar way that the current
+>      | code handles the first clock, without requiring usage of a
+>      | power-domain property in DT (from Magnus)
+>      | As there are already "clocks = <...>" links from device nodes to MSTP
+>      | clocks in DT, we can just scan for those, without requiring
+>      | (superfluous) "power-domains = <...>" properties in DT.
+>
+>      Indeed, given the presence of a link to an MSTP clock in a device
+>      node, we know the module can be put in standby mode.
+>      But without the standard "power-domains" property, we would need
+>      our own specialized code to scan all nodes for MSTP clocks (through
+>      a platform_bus notifier again?), and add the corresponding devices
+>      to the clock domain.  Hence the "power-domains" properties allow to
+>      use the generic code, and thus share more code with other SoCs.
 
-The duration between reads of the APERF and MPERF registers overflowed a s32
-sized integer in intel_pstate_get_scaled_busy()'s call to div_fp().  The result
-is that int_tofp(duration_us) == 0, and the kernel attempts to divide by 0.
+IMO, a clear win.
 
-While the kernel shouldn't be delaying for a long time, it can and does
-happen and the intel_pstate driver should not panic in this situation.  This
-patch changes the div_fp() function to use div64_s64() to allow for "long"
-division.  This will avoid the overflow condition on long delays.
+>      In addition, a "power-domains" property gives a strong clue to
+>      people not familiar with Renesas SoCs and their MSTP clocks.
 
-[v2]: use div64_s64() in div_fp()
+As a regular reviewer of PM code for SoCs that I'm not familiar with,
+this is another big win from my perspective.
 
-Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Doug Smythies <dsmythies@telus.net>
-Cc: linux-pm@vger.kernel.org
-
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
----
- drivers/cpufreq/intel_pstate.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 6414661..b153d86 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -48,9 +48,9 @@ static inline int32_t mul_fp(int32_t x, int32_t y)
- 	return ((int64_t)x * (int64_t)y) >> FRAC_BITS;
- }
- 
--static inline int32_t div_fp(int32_t x, int32_t y)
-+static inline int32_t div_fp(s64 x, s64 y)
- {
--	return div_s64((int64_t)x << FRAC_BITS, y);
-+	return div64_s64((int64_t)x << FRAC_BITS, y);
- }
- 
- static inline int ceiling_fp(int32_t x)
-@@ -794,7 +794,7 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
- static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
- {
- 	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
--	u32 duration_us;
-+	s64 duration_us;
- 	u32 sample_time;
- 
- 	/*
-@@ -821,8 +821,8 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
- 	 * to adjust our busyness.
- 	 */
- 	sample_time = pid_params.sample_rate_ms  * USEC_PER_MSEC;
--	duration_us = (u32) ktime_us_delta(cpu->sample.time,
--					   cpu->last_sample_time);
-+	duration_us = ktime_us_delta(cpu->sample.time,
-+				     cpu->last_sample_time);
- 	if (duration_us > sample_time * 3) {
- 		sample_ratio = div_fp(int_tofp(sample_time),
- 				      int_tofp(duration_us));
--- 
-1.7.9.3
-
+Kevin
