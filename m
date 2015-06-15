@@ -1,79 +1,45 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH RFC 3/3] PM / Domains: Introduce generic PM domain for cpu domain
-Date: Mon, 15 Jun 2015 11:43:53 -0700
-Message-ID: <7hioao6cd2.fsf@deeprootsystems.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH RFC 3/3] PM / Domains: Introduce generic PM domain for
+ cpu domain
+Date: Mon, 15 Jun 2015 13:14:34 -0600
+Message-ID: <20150615191434.GA14311@linaro.org>
 References: <1433456946-53296-1-git-send-email-lina.iyer@linaro.org>
-	<1433456946-53296-4-git-send-email-lina.iyer@linaro.org>
-	<7hmw07meh6.fsf@deeprootsystems.com>
-	<20150611145649.GC1103@linaro.org>
+ <1433456946-53296-4-git-send-email-lina.iyer@linaro.org>
+ <7hmw07meh6.fsf@deeprootsystems.com>
+ <20150611145649.GC1103@linaro.org>
+ <7hioao6cd2.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f173.google.com ([209.85.192.173]:33197 "EHLO
-	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754322AbbFOSn5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 14:43:57 -0400
-Received: by pdjn11 with SMTP id n11so78725815pdj.0
-        for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2015 11:43:56 -0700 (PDT)
-In-Reply-To: <20150611145649.GC1103@linaro.org> (Lina Iyer's message of "Thu,
-	11 Jun 2015 08:56:49 -0600")
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:35653 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752742AbbFOTOc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 15:14:32 -0400
+Received: by pacyx8 with SMTP id yx8so71202223pac.2
+        for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2015 12:14:31 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <7hioao6cd2.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
+To: Kevin Hilman <khilman@kernel.org>
 Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, mathieu.poirier@linaro.org, galak@codeaurora.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org
 
-Lina Iyer <lina.iyer@linaro.org> writes:
-
-> On Wed, Jun 10 2015 at 15:38 -0600, Kevin Hilman wrote:
->>Lina Iyer <lina.iyer@linaro.org> writes:
->>
->>> Generally cpus are grouped under a power domain in a SoC. When all cpus
->>> in the domain are in their power off state, the cpu domain can also be
->>> powered off.
->>
->>How does this relate to a cluster, and why aren't you using that terminolgy?
->>
->>> Genpd provides the framework for defining cpus as devices
->>> that are part of a cpu domain.
->>>
->>> Introduce support for defining and adding a generic power domain for the
->>> cpus based on the DT specification of power domain providers and
->>> consumers.  SoC's that have the cpu domain defined in their DT, can
->>> setup a genpd with a name and the power_on/power_off callbacks. Calling
->>> pm_cpu_domain_init() will register the genpd and attach the cpus for
->>> this domain with the genpd.
->>>
->>> CPU_PM notifications for are used to pm_runtime_get_sync() and
->>> pm_runtime_put_sync() for each cpu.  When all cpus are powered off, the
->>> last cpu going down would call the genpd->power_off(). Correspondingly,
->>> the first cpu up would call the genpd->power_on() callback before
->>> resuming from idle.
->>
->>Other patches also mention this genpd being useful to gate power to
->>non-CPU peripherals on the same power rail.  How are those devices to be
->>added?
->>
-> I am not investigating DT nodes to figure out which node is a consumer
-> for this domain provider. That could be a good way to do it, but
-> practically speaking, there may be platform dependencies and specifics
-> that may need to be met, before the device can be added to the CPU
-> genpd.
+On Mon, Jun 15 2015 at 12:43 -0600, Kevin Hilman wrote:
+>Lina Iyer <lina.iyer@linaro.org> writes:
 >
-> So that is not generalized here. I didn't see a better way to do that,
-> generically. Do you have ideas on that?
+>> On Wed, Jun 10 2015 at 15:38 -0600, Kevin Hilman wrote:
+>>>Lina Iyer <lina.iyer@linaro.org> writes:
+
+
+>I'm pretty sure the generic code will already add devices to genpds if
+>the genpd is using the of_genpd_* stuff.  That is why I'm wondering why
+>the extra stuff for CPUs is needed.
 >
-> The platform is the owner of the genpd and therefore can add those
-> non-cpu devices to the genpd as and when appropritate.
+I dont see that automatically happening. When I attach a device, it
+finds the corresponding genpd provider and attaches the device.  But I
+dont see in any code that creates genpd and find the related device
+nodes and adds them to the genpd.
 
-I'm pretty sure the generic code will already add devices to genpds if
-the genpd is using the of_genpd_* stuff.  That is why I'm wondering why
-the extra stuff for CPUs is needed.
+May be I am missing something.
 
-> In this regard, I also have a question, who initializes the genpd. My
-> assumption is that CPUs will get probed before most other devices and
-> therefore the domain provider could be initialized by this file. But, I
-> could be wrong here.
-
-Initializing it in this driver seems OK to me.
-
-Kevin
+-- Lina
