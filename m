@@ -1,85 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] trace_device_pm_callback coverage in dpm_prepare/dpm_complete
-Date: Tue, 16 Jun 2015 01:38:34 +0200
-Message-ID: <3051263.zCQIuDcxsO@vostro.rjw.lan>
-References: <1432842953-2391-1-git-send-email-todd.e.brandt@linux.intel.com>
+Subject: Re: [PATCH v2] PM / clock_ops: Print acquired clock name in addition to con_id
+Date: Tue, 16 Jun 2015 01:40:26 +0200
+Message-ID: <1705343.tpqJERUjcf@vostro.rjw.lan>
+References: <1432917331-3285-1-git-send-email-geert+renesas@glider.be> <CAPDyKFrXNOCKg0qsbzCbVnk5d37wBGw-A_Yo1ejv1KjPOVkNcg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:43986 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:56363 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751202AbbFOXMh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 19:12:37 -0400
-In-Reply-To: <1432842953-2391-1-git-send-email-todd.e.brandt@linux.intel.com>
+	with SMTP id S1751084AbbFOXO3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 19:14:29 -0400
+In-Reply-To: <CAPDyKFrXNOCKg0qsbzCbVnk5d37wBGw-A_Yo1ejv1KjPOVkNcg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Todd Brandt <todd.e.brandt@linux.intel.com>
-Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, todd.e.brandt@intel.com
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Grygorii Strashko <Grygorii.Strashko@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-clk@vger.kernel.org
 
-On Thursday, May 28, 2015 12:55:53 PM Todd Brandt wrote:
-> Moved the trace_device_pm_callback locations for dpm_prepare and dpm_complete
-> to encompass the attempt to capture the device mutex prior to callback. This
-> is needed by analyze_suspend to identify gaps in the trace output caused by
-> the delay in locking the mutex for a device.
+On Thursday, June 04, 2015 11:27:01 AM Ulf Hansson wrote:
+> On 29 May 2015 at 18:35, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> > Currently the con_id of the acquired clock is printed for debugging
+> > purposes.  But in several cases, the con_id is NULL, which doesn't
+> > provide much debugging information when printed.  These cases are:
+> >   - When explicitly passing a NULL con_id (which means the first clock
+> >     tied to the device, if available),
+> >   - When not using pm_clk_add(), but pm_clk_add_clk() (which takes a
+> >     "struct clk *" directly).
+> >
+> > Hence print the actual clock name in addition to (and not instead of;
+> > thanks Grygorii Strashko!) the con_id.
+> >
+> > Note that the clock name is not available with legacy clock frameworks,
+> > and the hex pointer address will be printed instead.
+> >
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > 
-> Signed-off-by: Todd Brandt <todd.e.brandt@linux.intel.com>
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 Queued up for 4.2, thanks!
 
-
-> ---
->  drivers/base/power/main.c | 11 +++++------
->  1 file changed, 5 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 3d874ec..5528e59 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -920,9 +920,7 @@ static void device_complete(struct device *dev, pm_message_t state)
->  
->  	if (callback) {
->  		pm_dev_dbg(dev, state, info);
-> -		trace_device_pm_callback_start(dev, info, state.event);
->  		callback(dev);
-> -		trace_device_pm_callback_end(dev, 0);
->  	}
->  
->  	device_unlock(dev);
-> @@ -954,7 +952,9 @@ void dpm_complete(pm_message_t state)
->  		list_move(&dev->power.entry, &list);
->  		mutex_unlock(&dpm_list_mtx);
->  
-> +		trace_device_pm_callback_start(dev, "", state.event);
->  		device_complete(dev, state);
-> +		trace_device_pm_callback_end(dev, 0);
->  
->  		mutex_lock(&dpm_list_mtx);
->  		put_device(dev);
-> @@ -1585,11 +1585,8 @@ static int device_prepare(struct device *dev, pm_message_t state)
->  		callback = dev->driver->pm->prepare;
->  	}
->  
-> -	if (callback) {
-> -		trace_device_pm_callback_start(dev, info, state.event);
-> +	if (callback)
->  		ret = callback(dev);
-> -		trace_device_pm_callback_end(dev, ret);
-> -	}
->  
->  	device_unlock(dev);
->  
-> @@ -1631,7 +1628,9 @@ int dpm_prepare(pm_message_t state)
->  		get_device(dev);
->  		mutex_unlock(&dpm_list_mtx);
->  
-> +		trace_device_pm_callback_start(dev, "", state.event);
->  		error = device_prepare(dev, state);
-> +		trace_device_pm_callback_end(dev, error);
->  
->  		mutex_lock(&dpm_list_mtx);
->  		if (error) {
-> 
 
 -- 
 I speak only for myself.
