@@ -1,52 +1,95 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / sleep: cancel the synchronous restriction of pm-trace
-Date: Tue, 16 Jun 2015 01:05:54 +0200
-Message-ID: <2891939.OHrpPqfymO@vostro.rjw.lan>
-References: <554A297C.2040305@linux.intel.com> <556729A9.7010105@linux.intel.com> <557E6350.6080207@linux.intel.com>
+Subject: Re: commit 70fea60d888d caused s2ram regression with WD disk
+Date: Tue, 16 Jun 2015 01:07:52 +0200
+Message-ID: <4618053.DJx4o6Y2Ql@vostro.rjw.lan>
+References: <20150615025536.GA26473@aaronlu.sh.intel.com> <s5hoakhgqdj.wl-tiwai@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:65452 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:42861 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750826AbbFOWj5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 18:39:57 -0400
-In-Reply-To: <557E6350.6080207@linux.intel.com>
+	with SMTP id S1754355AbbFOWl4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 18:41:56 -0400
+In-Reply-To: <s5hoakhgqdj.wl-tiwai@suse.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Fu, Zhonghui" <zhonghui.fu@linux.intel.com>
-Cc: len.brown@intel.com, pavel@ucw.cz, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Aaron Lu <aaron.lu@intel.com>, linux-pm@vger.kernel.org, Mark Scott <markcscott@talktalk.net>, Benoit Goby <benoit@android.com>
 
-On Monday, June 15, 2015 01:32:00 PM Fu, Zhonghui wrote:
+On Monday, June 15, 2015 01:31:04 PM Takashi Iwai wrote:
+> At Mon, 15 Jun 2015 10:55:36 +0800,
+> Aaron Lu wrote:
+> > 
+> > Hi,
+> > 
+> > As explained by Takashi:
+> > "
+> > So this looks like the cause.  The recent kernel has a watchdog for
+> > async resume workers, and if it expires, it panics.  This explains why
+> > 3.12 worked; the watchdog was introduced since 3.13.
+> > 
+> > The timeout length is unfortunately fixed in Kconfig, set to 12 as
+> > default.  And this seems too short.  We should extend this to at least a
+> > minute, I suppose.  Also, it'd be better to be dynamically
+> > configuratble.
+> > "
+> > https://bugzilla.opensuse.org/show_bug.cgi?id=934397#c5
+> > 
+> > The upstream bug page is here:
+> > https://bugzilla.kernel.org/show_bug.cgi?id=91921
+> > Since Benoit isn't registered there, I write the email for discussion.
 > 
-> On 2015/5/28 22:43, Fu, Zhonghui wrote:
-> >
-> > On 2015/5/21 9:16, Rafael J. Wysocki wrote:
-> >> On Wednesday, May 20, 2015 04:50:13 PM Fu, Zhonghui wrote:
-> >>> On 2015/5/16 8:45, Rafael J. Wysocki wrote:
-
-[cut]
-
-> >>>> Won't this serialize the whole thing again?
-> >>> Yes, this mutex lock will ultimately serialize all PM operations. But, all device's PM operations are asynchronous each other at first. So, the PM operation order of all devices will vary in multiple suspend/resume. This can be similar to real to an extreme, and helpful to debugging.
-> >> I see.  You're saying that callbacks will be serialized, but if they originally
-> >> would be asynchronous with respect to each other (they may run in parallel IOW),
-> >> their respective ordering may vary between suspend-resume cycles.
-> >>
-> >> The class of bugs you can catch this way is quite limited and the change is
-> >> rather intrusive, so I'm with Pavel on that.
-> > Sorry for late reply.
-> >
-> > Although the improvement to PM-trace is limited, I still think it is helpful for debugging some special suspend/resume bugs.
+> Thanks Aaron for starting a thread.
 > 
-> Hi Rafael,
+> Below is a patch to make the default value a bit safer.
 > 
-> This patch will not be merged into mainline kernel, right?
+> I can submit another patch to add a boot option to change the timeout
+> value, too, if anyone thinks it's worth.  Just let me know.
+> 
+> 
+> thanks,
+> 
+> Takashi
+> 
+> -- 8< --
+> From: Takashi Iwai <tiwai@suse.de>
+> Subject: [PATCH] PM: Increase default DPM watchdog timeout to 60
+> 
+> Many harddisks (mostly WD ones) have firmware problems and take too
+> long, more than 10 seconds, to resume from suspend.  And this often
+> exceeds the default DPM watchdog timeout (12 seconds), resulting in a
+> kernel panic out of sudden.
+> 
+> Since most distros just take the default as is, we should give a bit
+> more safer value.  This patch increases the default value from 12
+> seconds to one minute, which has been confirmed to be long enough for
+> such problematic disks.
 
-No, it won't.
+That's totally fine by me, so I can apply the patch unless somebody has a
+better idea about how to address the issue at hand.
 
-At least for now, the case for it is not convincing enough.
+> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=91921
+> Signed-off-by: Takashi Iwai <tiwai@suse.de>
+> ---
+>  kernel/power/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+> index 7e01f78f0417..9e302315e33d 100644
+> --- a/kernel/power/Kconfig
+> +++ b/kernel/power/Kconfig
+> @@ -187,7 +187,7 @@ config DPM_WATCHDOG
+>  config DPM_WATCHDOG_TIMEOUT
+>  	int "Watchdog timeout in seconds"
+>  	range 1 120
+> -	default 12
+> +	default 60
+>  	depends on DPM_WATCHDOG
+>  
+>  config PM_TRACE
+> 
 
-Thanks,
-Rafael
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
