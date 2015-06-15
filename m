@@ -1,41 +1,50 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PM / clock_ops: Print acquired clock name in addition to con_id
-Date: Tue, 16 Jun 2015 01:40:26 +0200
-Message-ID: <1705343.tpqJERUjcf@vostro.rjw.lan>
-References: <1432917331-3285-1-git-send-email-geert+renesas@glider.be> <CAPDyKFrXNOCKg0qsbzCbVnk5d37wBGw-A_Yo1ejv1KjPOVkNcg@mail.gmail.com>
+Subject: Re: [PATCH v2] PM / Domains: Skip timings during syscore suspend/resume
+Date: Tue, 16 Jun 2015 01:41:05 +0200
+Message-ID: <3117326.C9gLKzzTZ1@vostro.rjw.lan>
+References: <1432913063-26691-1-git-send-email-geert@linux-m68k.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56363 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751084AbbFOXO3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 19:14:29 -0400
-In-Reply-To: <CAPDyKFrXNOCKg0qsbzCbVnk5d37wBGw-A_Yo1ejv1KjPOVkNcg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1432913063-26691-1-git-send-email-geert@linux-m68k.org>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Grygorii Strashko <Grygorii.Strashko@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-clk@vger.kernel.org
 
-On Thursday, June 04, 2015 11:27:01 AM Ulf Hansson wrote:
-> On 29 May 2015 at 18:35, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> > Currently the con_id of the acquired clock is printed for debugging
-> > purposes.  But in several cases, the con_id is NULL, which doesn't
-> > provide much debugging information when printed.  These cases are:
-> >   - When explicitly passing a NULL con_id (which means the first clock
-> >     tied to the device, if available),
-> >   - When not using pm_clk_add(), but pm_clk_add_clk() (which takes a
-> >     "struct clk *" directly).
-> >
-> > Hence print the actual clock name in addition to (and not instead of;
-> > thanks Grygorii Strashko!) the con_id.
-> >
-> > Note that the clock name is not available with legacy clock frameworks,
-> > and the hex pointer address will be printed instead.
-> >
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+On Friday, May 29, 2015 05:24:23 PM Geert Uytterhoeven wrote:
+> From: Geert Uytterhoeven <geert+renesas@glider.be>
 > 
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> The PM Domain code uses ktime_get() to perform various latency
+> measurements.  However, if ktime_get() is called while timekeeping is
+> suspended, the following warning is printed:
+> 
+>     WARNING: CPU: 0 PID: 1340 at kernel/time/timekeeping.c:576 ktime_get+0x3
+> 
+> This happens when resuming the PM Domain that contains the clock events
+> source, which calls pm_genpd_syscore_poweron(). Chain of operations is:
+> 
+>     timekeeping_resume()
+>     {
+> 	clockevents_resume()
+> 	    sh_cmt_clock_event_resume()
+> 		pm_genpd_syscore_poweron()
+> 		    pm_genpd_sync_poweron()
+> 			genpd_syscore_switch()
+> 			    genpd_power_on()
+> 				ktime_get(), but timekeeping_suspended == 1
+> 	...
+> 	timekeeping_suspended = 0;
+>     }
+> 
+> Fix this by adding a "timed" parameter to genpd_power_{on,off}() and
+> pm_genpd_sync_power{off,on}(), to indicate whether latency measurements
+> are allowed.  This parameter is passed as false in
+> genpd_syscore_switch() (i.e. during syscore suspend/resume), and true in
+> all other cases.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
 Queued up for 4.2, thanks!
 
