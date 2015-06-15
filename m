@@ -1,52 +1,50 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 00/12] cpufreq: Fix governor races - part 2
-Date: Tue, 16 Jun 2015 01:29:15 +0200
-Message-ID: <2124579.Ezk09YdVq9@vostro.rjw.lan>
-References: <cover.1434019473.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq:cpufreq-nforce2 - Fix typo in comment to function nforce2_init().
+Date: Tue, 16 Jun 2015 01:37:10 +0200
+Message-ID: <3504368.GjVHUm5yDP@vostro.rjw.lan>
+References: <1432357578-4069-1-git-send-email-shailendra.capricorn@gmail.com> <20150525072039.GA9992@linux>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:48488 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:58970 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752116AbbFOXDT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 19:03:19 -0400
-In-Reply-To: <cover.1434019473.git.viresh.kumar@linaro.org>
+	with SMTP id S1750842AbbFOXLO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 19:11:14 -0400
+In-Reply-To: <20150525072039.GA9992@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, ke.wang@spreadtrum.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
+Cc: Shailendra Verma <shailendra.capricorn@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thursday, June 11, 2015 04:21:43 PM Viresh Kumar wrote:
-> Hi,
+On Monday, May 25, 2015 12:50:39 PM Viresh Kumar wrote:
+> On 23-05-15, 10:36, Shailendra Verma wrote:
 > 
-> This is a next step of the earlier work I have posted [1].
+> Always mention something here on why this is required. Even if the
+> subject is good enough :)
 > 
-> The first 5 patches are minor cleanups, 6th & 7th try to optimize few
-> things to make code less complex.
+> > Signed-off-by: Shailendra Verma <shailendra.capricorn@gmail.com>
+> > ---
+> >  drivers/cpufreq/cpufreq-nforce2.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq-nforce2.c b/drivers/cpufreq/cpufreq-nforce2.c
+> > index a225809..db69eeb 100644
+> > --- a/drivers/cpufreq/cpufreq-nforce2.c
+> > +++ b/drivers/cpufreq/cpufreq-nforce2.c
+> > @@ -414,7 +414,7 @@ static int nforce2_detect_chipset(void)
+> >   * nforce2_init - initializes the nForce2 CPUFreq driver
+> >   *
+> >   * Initializes the nForce2 FSB support. Returns -ENODEV on unsupported
+> > - * devices, -EINVAL on problems during initiatization, and zero on
+> > + * devices, -EINVAL on problems during initialization, and zero on
+> >   * success.
+> >   */
+> >  static int __init nforce2_init(void)
 > 
-> Patches 8-11 actually solve (or try to solve :)) the synchronization
-> problems, or the crashes I was getting.
-> 
-> And the last one again optimizes code a bit.
-> 
-> I don't get the crashes anymore and want others to try. At least Preeti
-> and Ke Wang (Sorry if I haven't spelled it properly :( ), as you two
-> have reported the issues to me.
-> 
-> This patchset should be rebased over the earlier one [1].
-> 
-> To make things simple, all these patches are pushed here [2] and are
-> rebased over pm/bleeeding-edge because of some recent important changes
-> there:
-> 
-> 
-> [1] http://marc.info/?i=cover.1433326032.git.viresh.kumar%40linaro.org
-> [2] ssh://git@git.linaro.org/people/viresh.kumar/linux.git cpufreq/gov-locking
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Given the Preeti's comments on these patches I don't think they are quite
-ready and the 4.2 merge window is next week.  I don't think this series is
-4.2 material, so please target it at the next one.
+Queued up for 4.2, thanks!
 
 
 -- 
