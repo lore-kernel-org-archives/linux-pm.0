@@ -1,123 +1,182 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V7 3/3] OPP: Add binding for 'opp-suspend'
-Date: Tue, 16 Jun 2015 00:30:17 +0200
-Message-ID: <2801919.LhyMzJckqR@vostro.rjw.lan>
-References: <cover.1433434659.git.viresh.kumar@linaro.org> <dedf8c02fdd9dbf169f43de74ead4c1434d89b45.1433434659.git.viresh.kumar@linaro.org> <20150613084023.GA4203@linux>
+From: Kristen Carlson Accardi <kristen@linux.intel.com>
+Subject: Re: [PATCH] cpufreq, Fix overflow in busy_scaled due to long delay
+ [v2]
+Date: Mon, 15 Jun 2015 15:12:24 -0700
+Message-ID: <20150615151224.46f88cb9@kcaccard-desk.amr.corp.intel.com>
+References: <1434390209-23256-1-git-send-email-prarit@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:41974 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752274AbbFOWEV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 18:04:21 -0400
-In-Reply-To: <20150613084023.GA4203@linux>
+Received: from mga02.intel.com ([134.134.136.20]:8770 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751633AbbFOWM2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Jun 2015 18:12:28 -0400
+In-Reply-To: <1434390209-23256-1-git-send-email-prarit@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rob.herring@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mike.turquette@linaro.org, sboyd@codeaurora.org, grant.likely@linaro.org, olof@lixom.net, Sudeep.Holla@arm.com, devicetree@vger.kernel.org, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Doug Smythies <dsmythies@telus.net>, linux-pm@vger.kernel.org
 
-On Saturday, June 13, 2015 02:10:23 PM Viresh Kumar wrote:
-> On 04-06-15, 21:50, Viresh Kumar wrote:
-> > +		opp-suspend = <&suspend_opp>;
-> 
-> > -		opp00 {
-> > +		suspend-opp: opp00 {
-> 
-> Minor nit, s/suspend-opp/suspend_opp
-> 
-> and here is updated patch
-> 
-> From: Viresh Kumar <viresh.kumar@linaro.org>
-> Date: Wed, 20 May 2015 08:27:49 +0530
-> Subject: [PATCH V8] OPP: Add binding for 'opp-suspend'
-> 
-> On few platforms, for power efficiency, we want the device to be
-> configured for a specific OPP while we put the device in suspend state.
-> 
-> Add an optional property in operating-points-v2 bindings for that.
-> 
-> Acked-by: Nishanth Menon <nm@ti.com>
-> Suggested-by: Nishanth Menon <nm@ti.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Mon, 15 Jun 2015 13:43:29 -0400
+Prarit Bhargava <prarit@redhat.com> wrote:
 
-Well, I'm kind of wondering what else has been overlooked here.
+> The kernel may delay interrupts for a long time which can result in timers
+> being delayed. If this occurs the intel_pstate driver will crash with a
+> divide by zero error:
+> 
+> divide error: 0000 [#1] SMP
+> Modules linked in: btrfs zlib_deflate raid6_pq xor msdos ext4 mbcache jbd2 binfmt_misc arc4 md4 nls_utf8 cifs dns_resolver tcp_lp bnep bluetooth rfkill fuse dm_service_time iscsi_tcp libiscsi_tcp libiscsi scsi_transport_iscsi nf_conntrack_netbios_ns nf_conntrack_broadcast nf_conntrack_ftp ip6t_rpfilter ip6t_REJECT ipt_REJECT xt_conntrack ebtable_nat ebtable_broute bridge stp llc ebtable_filter ebtables ip6table_nat nf_conntrack_ipv6 nf_defrag_ipv6 nf_nat_ipv6 ip6table_mangle ip6table_security ip6table_raw ip6table_filter ip6_tables iptable_nat nf_conntrack_ipv4 nf_defrag_ipv4 nf_nat_ipv4 nf_nat nf_conntrack iptable_mangle iptable_security iptable_raw iptable_filter ip_tables intel_powerclamp coretemp vfat fat kvm_intel iTCO_wdt iTCO_vendor_support ipmi_devintf sr_mod kvm crct10dif_pclmul
+ 
+>  crc32_pclmul crc32c_intel ghash_clmulni_intel aesni_intel cdc_ether lrw usbnet cdrom mii gf128mul glue_helper ablk_helper cryptd lpc_ich mfd_core pcspkr sb_edac edac_core ipmi_si ipmi_msghandler ioatdma wmi shpchp acpi_pad nfsd auth_rpcgss nfs_acl lockd uinput dm_multipath sunrpc xfs libcrc32c usb_storage sd_mod crc_t10dif crct10dif_common ixgbe mgag200 syscopyarea sysfillrect sysimgblt mdio drm_kms_helper ttm igb drm ptp pps_core dca i2c_algo_bit megaraid_sas i2c_core dm_mirror dm_region_hash dm_log dm_mod
+> CPU: 113 PID: 0 Comm: swapper/113 Tainted: G        W   --------------   3.10.0-229.1.2.el7.x86_64 #1
+> Hardware name: IBM x3950 X6 -[3837AC2]-/00FN827, BIOS -[A8E112BUS-1.00]- 08/27/2014
+> task: ffff880fe8abe660 ti: ffff880fe8ae4000 task.ti: ffff880fe8ae4000
+> RIP: 0010:[<ffffffff814a9279>]  [<ffffffff814a9279>] intel_pstate_timer_func+0x179/0x3d0
+> RSP: 0018:ffff883fff4e3db8  EFLAGS: 00010206
+> RAX: 0000000027100000 RBX: ffff883fe6965100 RCX: 0000000000000000
+> RDX: 0000000000000000 RSI: 0000000000000010 RDI: 000000002e53632d
+> RBP: ffff883fff4e3e20 R08: 000e6f69a5a125c0 R09: ffff883fe84ec001
+> R10: 0000000000000002 R11: 0000000000000005 R12: 00000000000049f5
+> R13: 0000000000271000 R14: 00000000000049f5 R15: 0000000000000246
+> FS:  0000000000000000(0000) GS:ffff883fff4e0000(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> CR2: 00007f7668601000 CR3: 000000000190a000 CR4: 00000000001407e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Stack:
+>  ffff883fff4e3e58 ffffffff81099dc1 0000000000000086 0000000000000071
+>  ffff883fff4f3680 0000000000000071 fbdc8a965e33afee ffffffff810b69dd
+>  ffff883fe84ec000 ffff883fe6965108 0000000000000100 ffffffff814a9100
+> Call Trace:
+>  <IRQ>
+> 
+>  [<ffffffff81099dc1>] ? run_posix_cpu_timers+0x51/0x840
+>  [<ffffffff810b69dd>] ? trigger_load_balance+0x5d/0x200
+>  [<ffffffff814a9100>] ? pid_param_set+0x130/0x130
+>  [<ffffffff8107df56>] call_timer_fn+0x36/0x110
+>  [<ffffffff814a9100>] ? pid_param_set+0x130/0x130
+>  [<ffffffff8107fdcf>] run_timer_softirq+0x21f/0x320
+>  [<ffffffff81077b2f>] __do_softirq+0xef/0x280
+>  [<ffffffff816156dc>] call_softirq+0x1c/0x30
+>  [<ffffffff81015d95>] do_softirq+0x65/0xa0
+>  [<ffffffff81077ec5>] irq_exit+0x115/0x120
+>  [<ffffffff81616355>] smp_apic_timer_interrupt+0x45/0x60
+>  [<ffffffff81614a1d>] apic_timer_interrupt+0x6d/0x80
+>  <EOI>
+> 
+>  [<ffffffff814a9c32>] ? cpuidle_enter_state+0x52/0xc0
+>  [<ffffffff814a9c28>] ? cpuidle_enter_state+0x48/0xc0
+>  [<ffffffff814a9d65>] cpuidle_idle_call+0xc5/0x200
+>  [<ffffffff8101d14e>] arch_cpu_idle+0xe/0x30
+>  [<ffffffff810c67c1>] cpu_startup_entry+0xf1/0x290
+>  [<ffffffff8104228a>] start_secondary+0x1ba/0x230
+> Code: 42 0f 00 45 89 e6 48 01 c2 43 8d 44 6d 00 39 d0 73 26 49 c1 e5 08 89 d2 4d 63 f4 49 63 c5 48 c1 e2 08 48 c1 e0 08 48 63 ca 48 99 <48> f7 f9 48 98 4c 0f af f0 49 c1 ee 08 8b 43 78 c1 e0 08 44 29
+> RIP  [<ffffffff814a9279>] intel_pstate_timer_func+0x179/0x3d0
+>  RSP <ffff883fff4e3db8>
+> 
+> The kernel values for cpudata for CPU 113 were:
+> 
+> struct cpudata {
+>   cpu = 113,
+>   timer = {
+>     entry = {
+>       next = 0x0,
+>       prev = 0xdead000000200200
+>     },
+>     expires = 8357799745,
+>     base = 0xffff883fe84ec001,
+>     function = 0xffffffff814a9100 <intel_pstate_timer_func>,
+>     data = 18446612406765768960,
+> <snip>
+>     i_gain = 0,
+>     d_gain = 0,
+>     deadband = 0,
+>     last_err = 22489
+>   },
+>   last_sample_time = {
+>     tv64 = 4063132438017305
+>   },
+>   prev_aperf = 287326796397463,
+>   prev_mperf = 251427432090198,
+>   sample = {
+>     core_pct_busy = 23081,
+>     aperf = 2937407,
+>     mperf = 3257884,
+>     freq = 2524484,
+>     time = {
+>       tv64 = 4063149215234118
+>     }
+>   }
+> }
+> 
+> which results in the time between samples = last_sample_time - sample.time
+> = 4063149215234118 - 4063132438017305 = 16777216813 which is 16.777 seconds.
+> 
+> The duration between reads of the APERF and MPERF registers overflowed a s32
+> sized integer in intel_pstate_get_scaled_busy()'s call to div_fp().  The result
+> is that int_tofp(duration_us) == 0, and the kernel attempts to divide by 0.
+> 
+> While the kernel shouldn't be delaying for a long time, it can and does
+> happen and the intel_pstate driver should not panic in this situation.  This
+> patch changes the div_fp() function to use div64_s64() to allow for "long"
+> division.  This will avoid the overflow condition on long delays.
+> 
+> [v2]: use div64_s64() in div_fp()
 
-Anyway, if I'm supposed to apply this series, I need an ACK from at least
-one person listed as an "OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS"
-maintainer.  Preferably from Rob.
+Were you able to resolve your original concerns with doing this?  I
+thought you mentioned that you'd tested it and it gave you some
+negative side effects?
 
+Thanks,
+Kristen
 
+> 
+> Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Doug Smythies <dsmythies@telus.net>
+> Cc: linux-pm@vger.kernel.org
+> 
+> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 > ---
->  Documentation/devicetree/bindings/power/opp.txt | 14 ++++++++++----
->  1 file changed, 10 insertions(+), 4 deletions(-)
+>  drivers/cpufreq/intel_pstate.c |   10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
 > 
-> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
-> index 2938c52dbf84..29f115d26f7d 100644
-> --- a/Documentation/devicetree/bindings/power/opp.txt
-> +++ b/Documentation/devicetree/bindings/power/opp.txt
-> @@ -74,6 +74,8 @@ This describes the OPPs belonging to a device. This node can have following
->    Missing property means devices have independent clock/voltage/current lines,
->    but they share OPP tables.
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 6414661..b153d86 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -48,9 +48,9 @@ static inline int32_t mul_fp(int32_t x, int32_t y)
+>  	return ((int64_t)x * (int64_t)y) >> FRAC_BITS;
+>  }
 >  
-> +- opp-suspend: Phandle of the OPP to set while device is suspended.
-> +
+> -static inline int32_t div_fp(int32_t x, int32_t y)
+> +static inline int32_t div_fp(s64 x, s64 y)
+>  {
+> -	return div_s64((int64_t)x << FRAC_BITS, y);
+> +	return div64_s64((int64_t)x << FRAC_BITS, y);
+>  }
 >  
->  * OPP Node
+>  static inline int ceiling_fp(int32_t x)
+> @@ -794,7 +794,7 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
+>  static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
+>  {
+>  	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
+> -	u32 duration_us;
+> +	s64 duration_us;
+>  	u32 sample_time;
 >  
-> @@ -145,9 +147,10 @@ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
->  
->  	cpu0_opp_table: opp_table0 {
->  		compatible = "operating-points-v2";
-> +		opp-suspend = <&suspend_opp>;
->  		opp-shared;
->  
-> -		opp00 {
-> +		suspend_opp: opp00 {
->  			opp-hz = <1000000000>;
->  			opp-microvolt = <970000 975000 985000>;
->  			opp-microamp = <70000>;
-> @@ -219,13 +222,14 @@ independently.
->  
->  	cpu_opp_table: opp_table {
->  		compatible = "operating-points-v2";
-> +		opp-suspend = <&suspend_opp>;
->  
->  		/*
->  		 * Missing opp-shared property means CPUs switch DVFS states
->  		 * independently.
->  		 */
->  
-> -		opp00 {
-> +		suspend_opp: opp00 {
->  			opp-hz = <1000000000>;
->  			opp-microvolt = <970000 975000 985000>;
->  			opp-microamp = <70000>;
-> @@ -298,9 +302,10 @@ DVFS state together.
->  
->  	cluster0_opp: opp_table0 {
->  		compatible = "operating-points-v2";
-> +		opp-suspend = <&suspend_opp0>;
->  		opp-shared;
->  
-> -		opp00 {
-> +		suspend_opp: opp00 {
->  			opp-hz = <1000000000>;
->  			opp-microvolt = <970000 975000 985000>;
->  			opp-microamp = <70000>;
-> @@ -323,9 +328,10 @@ DVFS state together.
->  
->  	cluster1_opp: opp_table1 {
->  		compatible = "operating-points-v2";
-> +		opp-suspend = <&suspend_opp1>;
->  		opp-shared;
->  
-> -		opp10 {
-> +		suspend_opp: opp10 {
->  			opp-hz = <1300000000>;
->  			opp-microvolt = <1045000 1050000 1055000>;
->  			opp-microamp = <95000>;
+>  	/*
+> @@ -821,8 +821,8 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
+>  	 * to adjust our busyness.
+>  	 */
+>  	sample_time = pid_params.sample_rate_ms  * USEC_PER_MSEC;
+> -	duration_us = (u32) ktime_us_delta(cpu->sample.time,
+> -					   cpu->last_sample_time);
+> +	duration_us = ktime_us_delta(cpu->sample.time,
+> +				     cpu->last_sample_time);
+>  	if (duration_us > sample_time * 3) {
+>  		sample_ratio = div_fp(int_tofp(sample_time),
+>  				      int_tofp(duration_us));
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
