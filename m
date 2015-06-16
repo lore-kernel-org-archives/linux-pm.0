@@ -1,71 +1,70 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH] drivers/cpufreq: include <module.h> for modular
- exynos-cpufreq.c code
-Date: Mon, 15 Jun 2015 23:28:13 -0400
-Message-ID: <CAP=VYLpWLUbuq0C6hAKhhpRr8Kv4jv1EgAwKvsuxHmFKFHQw3w@mail.gmail.com>
-References: <1430444867-22342-1-git-send-email-paul.gortmaker@windriver.com>
- <1433366298-30016-1-git-send-email-paul.gortmaker@windriver.com>
- <5110473.q5rJrrjs9a@vostro.rjw.lan> <557F6567.1070901@samsung.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2] x86: Load __USER_DS into DS/ES after resume
+Date: Tue, 16 Jun 2015 11:13:33 +0200
+Message-ID: <20150616091333.GA6448@amd>
+References: <20150612075013.GA8759@gmail.com>
+ <A58C5D0E-A557-4406-9317-442D78E4700B@zytor.com>
+ <20150612083625.GA22760@gmail.com>
+ <CAMzpN2gHpsW9ZMBdOR8+VuMNkYyi_THVeX5W4JLukmFK95GjZQ@mail.gmail.com>
+ <20150613070359.GB26502@gmail.com>
+ <CALCETrX_goAyqMVdkZTnJwDCJgfz2osVVsNAt8Gv3ZqZMX85ZQ@mail.gmail.com>
+ <CAMzpN2jyQWTEWd4sZosfkocDabu=CxiEVncp94+P+vHYjpicTw@mail.gmail.com>
+ <20150614065635.GA5294@gmail.com>
+ <CA+55aFzB9dYidEf_7Hs47FOF7WPPJnJQwj_RiwL--c5Gb1uqyw@mail.gmail.com>
+ <20150614074922.GA30290@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <557F6567.1070901@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Kukjin Kim <kgene@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49359 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933075AbbFPJNg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jun 2015 05:13:36 -0400
+Content-Disposition: inline
+In-Reply-To: <20150614074922.GA30290@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Denys Vlasenko <dvlasenk@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, the arch/x86 maintainers <x86@kernel.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@amacapital.net>, Brian Gerst <brgerst@gmail.com>, Peter Anvin <hpa@zytor.com>
 
-On Mon, Jun 15, 2015 at 7:53 PM, Krzysztof Kozlowski
-<k.kozlowski@samsung.com> wrote:
-> On 16.06.2015 08:47, Rafael J. Wysocki wrote:
->> On Wednesday, June 03, 2015 05:18:18 PM Paul Gortmaker wrote:
->>> This file is built off of a tristate Kconfig option ("ARM_EXYNOS_CPUFREQ")
->>> and also contains modular function calls so it should explicitly include
->>> module.h to avoid compile breakage during pending header shuffles.
->>>
->>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->>> Cc: Kukjin Kim <kgene@kernel.org>
->>> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->>> Cc: linux-pm@vger.kernel.org
->>> Cc: linux-arm-kernel@lists.infradead.org
->>> Cc: linux-samsung-soc@vger.kernel.org
->>> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
->>
->> I'm assuming that this will go in via the Samsung tree.
->>
->>
->>> ---
->>>
->>> [ patch will be appended to the implicit include fixup series, see:
->>>   https://lkml.kernel.org/r/1430444867-22342-1-git-send-email-paul.gortmaker@windriver.com
->>>   for the original series posting.]
->
-> Paul, will you handle the patch or should it go through Samsung tree?
+> > That second KERNEL should be USER.
+> 
+> Yeah, doh :-/ Updated patch below.
+> 
+> Thanks,
+> 
+> 	Ingo
 
-My fault for not explicitly stating the obvious...  If I don't keep the
-patch locally (or at least a version of it) then we can introduce a
-compile bisection fail.  So I will keep all patches locally unless there
-is a rebase where I can (also) rebase and drop said pach since it
-has become common history of the shared baseline...
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Tested-by: Pavel Machek <pavel@ucw.cz>
 
-Paul.
---
+[of course, it worked for me before, so I only tested it also works
+with the patch.]
 
->
-> Best regards,
-> Krzysztof
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Rafael, can you apply it?
+									Pavel
+
+
+> diff --git a/arch/x86/kernel/acpi/wakeup_32.S b/arch/x86/kernel/acpi/wakeup_32.S
+> index 665c6b7d2ea9..0c26b1b44e51 100644
+> --- a/arch/x86/kernel/acpi/wakeup_32.S
+> +++ b/arch/x86/kernel/acpi/wakeup_32.S
+> @@ -12,11 +12,13 @@ ENTRY(wakeup_pmode_return)
+>  wakeup_pmode_return:
+>  	movw	$__KERNEL_DS, %ax
+>  	movw	%ax, %ss
+> -	movw	%ax, %ds
+> -	movw	%ax, %es
+>  	movw	%ax, %fs
+>  	movw	%ax, %gs
+>  
+> +	movw	$__USER_DS, %ax
+> +	movw	%ax, %ds
+> +	movw	%ax, %es
+> +
+>  	# reload the gdt, as we need the full 32 bit address
+>  	lidt	saved_idt
+>  	lldt	saved_ldt
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
