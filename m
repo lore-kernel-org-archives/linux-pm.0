@@ -1,106 +1,71 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V7 3/3] OPP: Add binding for 'opp-suspend'
-Date: Tue, 16 Jun 2015 08:24:25 +0530
-Message-ID: <20150616025425.GB26592@linux>
-References: <cover.1433434659.git.viresh.kumar@linaro.org>
- <dedf8c02fdd9dbf169f43de74ead4c1434d89b45.1433434659.git.viresh.kumar@linaro.org>
- <CAL_JsqJb4P2Z2esgm5ffjWV37MU2KUF4gBdUpwSV8+21iTD1Bg@mail.gmail.com>
- <CAKohpomTT6i0dbboK901eguCbQiBdCT6gvLvTY24ajDdY__2fg@mail.gmail.com>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH] drivers/cpufreq: include <module.h> for modular
+ exynos-cpufreq.c code
+Date: Mon, 15 Jun 2015 23:28:13 -0400
+Message-ID: <CAP=VYLpWLUbuq0C6hAKhhpRr8Kv4jv1EgAwKvsuxHmFKFHQw3w@mail.gmail.com>
+References: <1430444867-22342-1-git-send-email-paul.gortmaker@windriver.com>
+ <1433366298-30016-1-git-send-email-paul.gortmaker@windriver.com>
+ <5110473.q5rJrrjs9a@vostro.rjw.lan> <557F6567.1070901@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:34979 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752067AbbFPCy3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2015 22:54:29 -0400
-Received: by pacyx8 with SMTP id yx8so3272599pac.2
-        for <linux-pm@vger.kernel.org>; Mon, 15 Jun 2015 19:54:29 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAKohpomTT6i0dbboK901eguCbQiBdCT6gvLvTY24ajDdY__2fg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <557F6567.1070901@samsung.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: linux-samsung-soc@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Kukjin Kim <kgene@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Nishanth Menon <nm@ti.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Grant Likely <grant.likely@linaro.org>, Olof Johansson <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, Santosh
 
-On 16-06-15, 06:01, Viresh Kumar wrote:
-> On 16 June 2015 at 05:05, Rob Herring <robherring2@gmail.com> wrote:
-> >> +- opp-suspend: Phandle of the OPP to set while device is suspended.
-> >> +
-> >
-> > I would just do a bool property in the OPP you want.
-> 
-> I will do that if you want, no big deal.
+On Mon, Jun 15, 2015 at 7:53 PM, Krzysztof Kozlowski
+<k.kozlowski@samsung.com> wrote:
+> On 16.06.2015 08:47, Rafael J. Wysocki wrote:
+>> On Wednesday, June 03, 2015 05:18:18 PM Paul Gortmaker wrote:
+>>> This file is built off of a tristate Kconfig option ("ARM_EXYNOS_CPUFREQ")
+>>> and also contains modular function calls so it should explicitly include
+>>> module.h to avoid compile breakage during pending header shuffles.
+>>>
+>>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>>> Cc: Kukjin Kim <kgene@kernel.org>
+>>> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>>> Cc: linux-pm@vger.kernel.org
+>>> Cc: linux-arm-kernel@lists.infradead.org
+>>> Cc: linux-samsung-soc@vger.kernel.org
+>>> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+>>
+>> I'm assuming that this will go in via the Samsung tree.
+>>
+>>
+>>> ---
+>>>
+>>> [ patch will be appended to the implicit include fixup series, see:
+>>>   https://lkml.kernel.org/r/1430444867-22342-1-git-send-email-paul.gortmaker@windriver.com
+>>>   for the original series posting.]
+>
+> Paul, will you handle the patch or should it go through Samsung tree?
 
-In order to not waste any time, here is the change you suggested. Ack
-the one (original change or this one) you like :)
+My fault for not explicitly stating the obvious...  If I don't keep the
+patch locally (or at least a version of it) then we can introduce a
+compile bisection fail.  So I will keep all patches locally unless there
+is a rebase where I can (also) rebase and drop said pach since it
+has become common history of the shared baseline...
 
-------------------8<----------------------
+Paul.
+--
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Wed, 20 May 2015 08:27:49 +0530
-Subject: [PATCH V8] OPP: Add binding for 'opp-suspend'
-
-On few platforms, for power efficiency, we want the device to be
-configured for a specific OPP while we put the device in suspend state.
-
-Add an optional property in operating-points-v2 bindings for that.
-
-Acked-by: Nishanth Menon <nm@ti.com>
-Suggested-by: Nishanth Menon <nm@ti.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V7->V8:
-- opp-suspend is moved to OPPs instead of the table, and is bool now.
-
- Documentation/devicetree/bindings/power/opp.txt | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
-index 2938c52dbf84..2d4291127003 100644
---- a/Documentation/devicetree/bindings/power/opp.txt
-+++ b/Documentation/devicetree/bindings/power/opp.txt
-@@ -113,6 +113,9 @@ properties.
-   frequency for a short duration of time limited by the device's power, current
-   and thermal limits.
- 
-+- opp-suspend: Marks the OPP to be used during device suspend. Only one OPP in
-+  the table should have this.
-+
- - status: Marks the node enabled/disabled.
- 
- Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
-@@ -152,6 +155,7 @@ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
- 			opp-microvolt = <970000 975000 985000>;
- 			opp-microamp = <70000>;
- 			clock-latency-ns = <300000>;
-+			opp-suspend;
- 		};
- 		opp01 {
- 			opp-hz = <1100000000>;
-@@ -230,6 +234,7 @@ independently.
- 			opp-microvolt = <970000 975000 985000>;
- 			opp-microamp = <70000>;
- 			clock-latency-ns = <300000>;
-+			opp-suspend;
- 		};
- 		opp01 {
- 			opp-hz = <1100000000>;
-@@ -305,6 +310,7 @@ DVFS state together.
- 			opp-microvolt = <970000 975000 985000>;
- 			opp-microamp = <70000>;
- 			clock-latency-ns = <300000>;
-+			opp-suspend;
- 		};
- 		opp01 {
- 			opp-hz = <1100000000>;
-@@ -330,6 +336,7 @@ DVFS state together.
- 			opp-microvolt = <1045000 1050000 1055000>;
- 			opp-microamp = <95000>;
- 			clock-latency-ns = <400000>;
-+			opp-suspend;
- 		};
- 		opp11 {
- 			opp-hz = <1400000000>;
--- 
-2.4.0
-
+>
+> Best regards,
+> Krzysztof
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
