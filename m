@@ -1,42 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] x86: Load __USER_DS into DS/ES after resume
-Date: Tue, 16 Jun 2015 23:40:08 +0200
-Message-ID: <49474860.PXIRr69qmi@vostro.rjw.lan>
-References: <20150612075013.GA8759@gmail.com> <20150614074922.GA30290@gmail.com> <20150616091333.GA6448@amd>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH, DEBUG] x86/32: Add small delay after resume
+Date: Tue, 16 Jun 2015 14:33:10 -0700
+Message-ID: <55809616.80204@zytor.com>
+References: <1434066338-6619-1-git-send-email-srinivas.pandruvada@linux.intel.com>	 <20150612060747.GA25024@gmail.com>	 <1434125724.2353.19.camel@spandruv-DESK3.jf.intel.com>	 <20150613071547.GA27446@gmail.com> <1434384627.2353.47.camel@spandruv-DESK3.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64569 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753155AbbFPVOK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jun 2015 17:14:10 -0400
-In-Reply-To: <20150616091333.GA6448@amd>
+Received: from terminus.zytor.com ([198.137.202.10]:35076 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757352AbbFPVdu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Jun 2015 17:33:50 -0400
+In-Reply-To: <1434384627.2353.47.camel@spandruv-DESK3.jf.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Denys Vlasenko <dvlasenk@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, the arch/x86 maintainers <x86@kernel.org>, linux-pm@vger.kernel.org, Andy Lutomirski <luto@amacapital.net>, Brian Gerst <brgerst@gmail.com>, Peter Anvin <hpa@zytor.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Ingo Molnar <mingo@kernel.org>
+Cc: mingo@redhat.com, tglx@linutronix.de, pavel@ucw.cz, rjw@rjwysocki.net, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Denys Vlasenko <dvlasenk@redhat.com>, Andy Lutomirski <luto@amacapital.net>, Borislav Petkov <bp@alien8.de>, Brian Gerst <brgerst@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Kleen, Andi" <andi.kleen@intel.com>
 
-On Tuesday, June 16, 2015 11:13:33 AM Pavel Machek wrote:
-> > > That second KERNEL should be USER.
-> > 
-> > Yeah, doh :-/ Updated patch below.
-> > 
-> > Thanks,
-> > 
-> > 	Ingo
-> 
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> Tested-by: Pavel Machek <pavel@ucw.cz>
-> 
-> [of course, it worked for me before, so I only tested it also works
-> with the patch.]
-> 
-> Rafael, can you apply it?
+On 06/15/2015 09:10 AM, Srinivas Pandruvada wrote:
+>>
+>> So is it true that we always execute wakeup_pmode_return first after we return 
+>> from the BIOS?
+>>
+>> If so then the BIOS touching DS cannot be an issue, as we re-initialize all 
+>> segment selectors, which reloads the descriptors:
+>>
+>> ENTRY(wakeup_pmode_return)
+>> wakeup_pmode_return:
+>>         movw    $__KERNEL_DS, %ax
+>>         movw    %ax, %ss
+>>         movw    %ax, %ds
+>>         movw    %ax, %es
+>>         movw    %ax, %fs
+>>         movw    %ax, %gs
+>>
+>>         # reload the gdt, as we need the full 32 bit address
+>>         lidt    saved_idt
+>>         lldt    saved_ldt
+>>         ljmp    $(__KERNEL_CS), $1f
+>>
 
-Yes, I can, but I thought Ingo would take it into the tip tree.
+Where does the GDT get initialized?
 
-Ingo, what's your plan regarding this one?
+	-hpa
 
-Rafael
 
