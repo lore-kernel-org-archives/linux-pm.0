@@ -1,50 +1,55 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH v2] drivers/cpufreq: Convert non-modular s5pv210-cpufreq.c
- to use builtin_platform_driver
-Date: Tue, 16 Jun 2015 11:37:27 -0400
-Message-ID: <558042B7.5090409@windriver.com>
-References: <20150512070444.GE32300@linux> <1433365966-29850-1-git-send-email-paul.gortmaker@windriver.com> <2052041.toNogcAkWs@vostro.rjw.lan>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH RFC 3/3] PM / Domains: Introduce generic PM domain for cpu domain
+Date: Tue, 16 Jun 2015 08:50:19 -0700
+Message-ID: <7h381rzm84.fsf@deeprootsystems.com>
+References: <1433456946-53296-1-git-send-email-lina.iyer@linaro.org>
+	<1433456946-53296-4-git-send-email-lina.iyer@linaro.org>
+	<7hmw07meh6.fsf@deeprootsystems.com>
+	<20150611145649.GC1103@linaro.org>
+	<7hioao6cd2.fsf@deeprootsystems.com>
+	<20150615191434.GA14311@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.windriver.com ([147.11.146.13]:46114 "EHLO
-	mail1.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753033AbbFPPhz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jun 2015 11:37:55 -0400
-In-Reply-To: <2052041.toNogcAkWs@vostro.rjw.lan>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:34504 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751994AbbFPPuW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jun 2015 11:50:22 -0400
+Received: by pacgb13 with SMTP id gb13so15276040pac.1
+        for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2015 08:50:22 -0700 (PDT)
+In-Reply-To: <20150615191434.GA14311@linaro.org> (Lina Iyer's message of "Mon,
+	15 Jun 2015 13:14:34 -0600")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene@kernel.org>, linux-arm-kernel@lists.infradead.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, mathieu.poirier@linaro.org, galak@codeaurora.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org
 
-On 15-06-15 07:50 PM, Rafael J. Wysocki wrote:
-> On Wednesday, June 03, 2015 05:12:46 PM Paul Gortmaker wrote:
->> This file depends on a Kconfig option which is a bool, so
->> we use the appropriate registration function, which avoids us
->> relying on an implicit inclusion of <module.h> which we are
->> doing currently.
+Lina Iyer <lina.iyer@linaro.org> writes:
+
+> On Mon, Jun 15 2015 at 12:43 -0600, Kevin Hilman wrote:
+>>Lina Iyer <lina.iyer@linaro.org> writes:
 >>
->> While this currently works, we really don't want to be including
->> the module.h header in non-modular code, which we'd be forced
->> to do, pending some upcoming code relocation from init.h into
->> module.h.  So we fix it now by using the non-modular equivalent.
+>>> On Wed, Jun 10 2015 at 15:38 -0600, Kevin Hilman wrote:
+>>>>Lina Iyer <lina.iyer@linaro.org> writes:
+>
+>
+>>I'm pretty sure the generic code will already add devices to genpds if
+>>the genpd is using the of_genpd_* stuff.  That is why I'm wondering why
+>>the extra stuff for CPUs is needed.
 >>
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: Kukjin Kim <kgene@kernel.org>
->> Cc: linux-pm@vger.kernel.org
->> Cc: linux-arm-kernel@lists.infradead.org
->> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> 
-> I'm assuming that this will go in via the Samsung tree.
+> I dont see that automatically happening. When I attach a device, it
+> finds the corresponding genpd provider and attaches the device.  But I
+> dont see in any code that creates genpd and find the related device
+> nodes and adds them to the genpd.
 
-Per other patch, I'll have to keep a copy in my branch to
-avoid introducing bisect compile fails into the git history.
+[summary from our IRC discussion]
 
-Thanks,
-Paul.
+You still need to create the genpd, but it's dev_pm_domain_attach()
+called by the platform device probe path that will automaticaly try to
+attach a device with a power-domains property to the correct PM domain.
 
+Note that this assumes that the genpds are created before the devices
+are probed.
 
-> 
-> 
+Kevin
+
