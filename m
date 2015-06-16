@@ -1,203 +1,106 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH V3] PM / Domains: Remove intermediate states from the power off sequence
-Date: Tue, 16 Jun 2015 08:56:12 -0700
-Message-ID: <7hpp4vy7dv.fsf@deeprootsystems.com>
-References: <1434020737-13354-1-git-send-email-ulf.hansson@linaro.org>
-	<7ha8w01qir.fsf@deeprootsystems.com>
-	<20150615235619.GC14311@linaro.org>
+From: Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V7 3/3] OPP: Add binding for 'opp-suspend'
+Date: Tue, 16 Jun 2015 14:23:23 -0500
+Message-ID: <CAL_JsqJ2gCJvtrZqDWWoY6Gv4Ag7xLV93wLbT5b37jO=oWo+MQ@mail.gmail.com>
+References: <cover.1433434659.git.viresh.kumar@linaro.org> <dedf8c02fdd9dbf169f43de74ead4c1434d89b45.1433434659.git.viresh.kumar@linaro.org>
+ <CAL_JsqJb4P2Z2esgm5ffjWV37MU2KUF4gBdUpwSV8+21iTD1Bg@mail.gmail.com>
+ <CAKohpomTT6i0dbboK901eguCbQiBdCT6gvLvTY24ajDdY__2fg@mail.gmail.com> <20150616025425.GB26592@linux>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:36690 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753728AbbFPP4Q (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jun 2015 11:56:16 -0400
-Received: by pabqy3 with SMTP id qy3so15246789pab.3
-        for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2015 08:56:15 -0700 (PDT)
-In-Reply-To: <20150615235619.GC14311@linaro.org> (Lina Iyer's message of "Mon,
-	15 Jun 2015 17:56:19 -0600")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150616025425.GB26592@linux>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Arnd Bergmann <arnd.bergmann-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mike Turquette <mike.turquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Sudeep Holla <Sudeep.Holla-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Viswanath Puttagunta <viswanath.puttagunta-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Thomas Abraham <ta.omasab-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Abhilash Kesavan <kesavan.abhilash-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Santosh
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
 
-Lina Iyer <lina.iyer@linaro.org> writes:
-
-> On Mon, Jun 15 2015 at 17:49 -0600, Kevin Hilman wrote:
->>Ulf Hansson <ulf.hansson@linaro.org> writes:
+On Mon, Jun 15, 2015 at 9:54 PM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> On 16-06-15, 06:01, Viresh Kumar wrote:
+>> On 16 June 2015 at 05:05, Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+>> >> +- opp-suspend: Phandle of the OPP to set while device is suspended.
+>> >> +
+>> >
+>> > I would just do a bool property in the OPP you want.
 >>
->>> Genpd's ->runtime_suspend() (assigned to pm_genpd_runtime_suspend())
->>> doesn't immediately walk the hierarchy of ->runtime_suspend() callbacks.
->>> Instead, pm_genpd_runtime_suspend() calls pm_genpd_poweroff() which
->>> postpones that until *all* the devices in the genpd are runtime suspended.
->>>
->>> When pm_genpd_poweroff() discovers that the last device in the genpd is
->>> about to be runtime suspended, it calls __pm_genpd_save_device() for *all*
->>> the devices in the genpd sequentially. Furthermore,
->>> __pm_genpd_save_device() invokes the ->start() callback, walks the
->>> hierarchy of the ->runtime_suspend() callbacks and invokes the ->stop()
->>> callback. This causes a "thundering herd" problem.
->>>
->>> Let's address this issue by having pm_genpd_runtime_suspend() immediately
->>> walk the hierarchy of the ->runtime_suspend() callbacks, instead of
->>> postponing that to the power off sequence via pm_genpd_poweroff(). If the
->>> selected ->runtime_suspend() callback doesn't return an error code, call
->>> pm_genpd_poweroff() to see if it's feasible to also power off the PM
->>> domain.
->>>
->>> Adopting this change enables us to simplify parts of the code in genpd,
->>> for example the locking mechanism. Additionally, it gives some positive
->>> side effects, as described below.
->>>
->>> i)
->>> One device's ->runtime_resume() latency is no longer affected by other
->>> devices' latencies in a genpd.
->>>
->>> The complexity genpd has to support the option to abort the power off
->>> sequence suffers from latency issues. More precisely, a device that is
->>> requested to be runtime resumed, may end up waiting for
->>> __pm_genpd_save_device() to complete its operations for *another* device.
->>> That's because pm_genpd_poweroff() can't confirm an abort request while it
->>> waits for __pm_genpd_save_device() to return.
->>>
->>> As this patch removes the intermediate states in pm_genpd_poweroff() while
->>> powering off the PM domain, we no longer need the ability to abort that
->>> sequence.
->>>
->>> ii)
->>> Make pm_runtime[_status]_suspended() reliable when used with genpd.
->>>
->>> Until the last device in a genpd becomes idle, pm_genpd_runtime_suspend()
->>> will return 0 without actually walking the hierarchy of the
->>> ->runtime_suspend() callbacks. However, by returning 0 the runtime PM core
->>> considers the device as runtime_suspended, so
->>> pm_runtime[_status]_suspended() will return true, even though the device
->>> isn't (yet) runtime suspended.
->>>
->>> After this patch, since pm_genpd_runtime_suspend() immediately walks the
->>> hierarchy of the ->runtime_suspend() callbacks,
->>> pm_runtime[_status]_suspended() will accurately reflect the status of the
->>> device.
->>>
->>> iii)
->>> Enable fine-grained PM through runtime PM callbacks in drivers/subsystems.
->>>
->>> There are currently cases were drivers/subsystems implements runtime PM
->>> callbacks to deploy fine-grained PM (e.g. gate clocks, move pinctrl to
->>> power-save state, etc.). While using the genpd, pm_genpd_runtime_suspend()
->>> postpones invoking these callbacks until *all* the devices in the genpd
->>> are runtime suspended. In essence, one runtime resumed device prevents
->>> fine-grained PM for other devices within the same genpd.
->>>
->>> After this patch, since pm_genpd_runtime_suspend() immediately walks the
->>> hierarchy of the ->runtime_suspend() callbacks, fine-grained PM is enabled
->>> throughout all the levels of runtime PM callbacks.
->>>
->>> Unfortunately this patch also comes with a drawback, as described in the
->>> summary below.
->>>
->>> Driver's/subsystem's runtime PM callbacks may be invoked even when the
->>> genpd hasn't actually powered off the PM domain, potentially introducing
->>> unnecessary latency.
->>>
->>> However, in most cases, saving/restoring register contexts for devices are
->>> typically fast operations or can be optimized in device specific ways
->>> (e.g. shadow copies of register contents in memory, device-specific checks
->>> to see if context has been lost before restoring context, etc.).
->>>
->>> Still, in some cases the driver/subsystem may suffer from latency if
->>> runtime PM is used in a very fine-grained manner (e.g. for each IO request
->>> or xfer). To prevent that extra overhead, the driver/subsystem may deploy
->>> the runtime PM autosuspend feature.
->>>
->>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>
->>Really like the updated changelog.  Very well described, and IMO you
->>make a very strong case for this change, which I completely agree is the
->>right way to go forward.  IMO, it greatly simplifies understanding this
->>code as well.
->>
->>I have some minor nits below, but overall really like this approach and
->>would like to see this hit -next early in the v4.3 cycle so it gets good
->>test exposure.
->>
->>I know Lina has been testing this (or an earlier version) on qcom
->>hardware so would be nice to get a tested-by from her, and would also be
->>nice to see if Geert has a chance to take this for a spin on his Renesas
->>hardware and anyone can take this for a spin on Exynos.
->>
-> Will do.
+>> I will do that if you want, no big deal.
 >
->>[...]
->>
->>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->>> index 2327613..2e03f68 100644
->>> --- a/drivers/base/power/domain.c
->>> +++ b/drivers/base/power/domain.c
->>> @@ -133,41 +133,6 @@ static void genpd_sd_counter_inc(struct generic_pm_domain *genpd)
->>>  	smp_mb__after_atomic();
->>>  }
->>>
->>> -static void genpd_acquire_lock(struct generic_pm_domain *genpd)
->>> -{
->>> -	DEFINE_WAIT(wait);
->>> -
->>> -	mutex_lock(&genpd->lock);
->>> -	/*
->>> -	 * Wait for the domain to transition into either the active,
->>> -	 * or the power off state.
->>> -	 */
->>> -	for (;;) {
->>> -		prepare_to_wait(&genpd->status_wait_queue, &wait,
->>> -				TASK_UNINTERRUPTIBLE);
->>> -		if (genpd->status == GPD_STATE_ACTIVE
->>> -		    || genpd->status == GPD_STATE_POWER_OFF)
->>> -			break;
->>> -		mutex_unlock(&genpd->lock);
->>> -
->>> -		schedule();
->>> -
->>> -		mutex_lock(&genpd->lock);
->>> -	}
->>> -	finish_wait(&genpd->status_wait_queue, &wait);
->>> -}
->>> -
->>> -static void genpd_release_lock(struct generic_pm_domain *genpd)
->>> -{
->>> -	mutex_unlock(&genpd->lock);
->>> -}
->>> -
->>> -static void genpd_set_active(struct generic_pm_domain *genpd)
->>> -{
->>> -	if (genpd->resume_count == 0)
->>> -		genpd->status = GPD_STATE_ACTIVE;
->>> -}
->>
->>Minor nit: I think you should leave these 3 helpers and just simplify
->>them.  It will make the changes below easier to read as well.
->>
->>Also, for the locking, Lina will be adding these locking functions back
->>anyways, so let's just avoid the extra churn.
->>
+> In order to not waste any time, here is the change you suggested. Ack
+> the one (original change or this one) you like :)
 >
-> Actually, these locks are no longer useful after this patch and can
-> be removed as part of this series. Will make a clean cut to overlay my
-> patch.
+> ------------------8<----------------------
+>
+> From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Date: Wed, 20 May 2015 08:27:49 +0530
+> Subject: [PATCH V8] OPP: Add binding for 'opp-suspend'
+>
+> On few platforms, for power efficiency, we want the device to be
+> configured for a specific OPP while we put the device in suspend state.
+>
+> Add an optional property in operating-points-v2 bindings for that.
+>
+> Acked-by: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+> Suggested-by: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+> V7->V8:
+> - opp-suspend is moved to OPPs instead of the table, and is bool now.
 
-Today: genpd_acquire_lock()
-
-Ulf: mutex_lock()
-
-Yours: genpd_lock_domain()
-
-What I'm suggesting is we just leave the genpd_acquire_lock() function
-*name* alone, and just change it's implementation over the series.
-IMO, that makes the locking changes much easier to review because it's
-then clear that the users of the lock are not change, just the
-implemention of the lock is changing.
-
-Kevin
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 
 
-
-
+>  Documentation/devicetree/bindings/power/opp.txt | 7 +++++++
+>  1 file changed, 7 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
+> index 2938c52dbf84..2d4291127003 100644
+> --- a/Documentation/devicetree/bindings/power/opp.txt
+> +++ b/Documentation/devicetree/bindings/power/opp.txt
+> @@ -113,6 +113,9 @@ properties.
+>    frequency for a short duration of time limited by the device's power, current
+>    and thermal limits.
+>
+> +- opp-suspend: Marks the OPP to be used during device suspend. Only one OPP in
+> +  the table should have this.
+> +
+>  - status: Marks the node enabled/disabled.
+>
+>  Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+> @@ -152,6 +155,7 @@ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+>                         opp-microvolt = <970000 975000 985000>;
+>                         opp-microamp = <70000>;
+>                         clock-latency-ns = <300000>;
+> +                       opp-suspend;
+>                 };
+>                 opp01 {
+>                         opp-hz = <1100000000>;
+> @@ -230,6 +234,7 @@ independently.
+>                         opp-microvolt = <970000 975000 985000>;
+>                         opp-microamp = <70000>;
+>                         clock-latency-ns = <300000>;
+> +                       opp-suspend;
+>                 };
+>                 opp01 {
+>                         opp-hz = <1100000000>;
+> @@ -305,6 +310,7 @@ DVFS state together.
+>                         opp-microvolt = <970000 975000 985000>;
+>                         opp-microamp = <70000>;
+>                         clock-latency-ns = <300000>;
+> +                       opp-suspend;
+>                 };
+>                 opp01 {
+>                         opp-hz = <1100000000>;
+> @@ -330,6 +336,7 @@ DVFS state together.
+>                         opp-microvolt = <1045000 1050000 1055000>;
+>                         opp-microamp = <95000>;
+>                         clock-latency-ns = <400000>;
+> +                       opp-suspend;
+>                 };
+>                 opp11 {
+>                         opp-hz = <1400000000>;
+> --
+> 2.4.0
+>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
