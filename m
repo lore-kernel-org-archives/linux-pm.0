@@ -1,61 +1,74 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: 4.1-rc7, thinkpad X60: platform mode hibernation does very
- wrongthing
-Date: Wed, 17 Jun 2015 15:16:08 +0200
-Message-ID: <20150617131608.GA24030@amd>
-References: <20150617121352.GA20553@amd>
- <7336539.OpACL0uN6J@vostro.rjw.lan>
- <20150617123333.GA21389@amd>
- <2490787.R6LzZId8tR@vostro.rjw.lan>
+Subject: Re: 4.1-rc7: Xorg broken after resume on thinkpad T40p, radeon
+ problem?
+Date: Wed, 17 Jun 2015 15:21:21 +0200
+Message-ID: <20150617132121.GA24634@amd>
+References: <20150617124347.GA22879@amd>
+ <20150617124949.GA22953@amd>
+ <5581711D.6030707@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38570 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754644AbbFQNVX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jun 2015 09:21:23 -0400
 Content-Disposition: inline
-In-Reply-To: <2490787.R6LzZId8tR@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linus <linus_torvalds@foxmail.com>, lenb <lenb@kernel.org>, kernel list <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>
+In-Reply-To: <5581711D.6030707@amd.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>
+Cc: dri-devel@lists.freedesktop.org, alexander.deucher@amd.com, rjw@rjwysocki.net, lenb@kernel.org, kernel list <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed 2015-06-17 15:14:02, Rafael J. Wysocki wrote:
-> On Wednesday, June 17, 2015 02:33:33 PM Pavel Machek wrote:
-> > Hi!
-> > 
-> > > On Wednesday, June 17, 2015 08:19:37 PM linus wrote:
-> > > > there might be something wrong with driver, can you provide serial log with no_console_suspend? or using rtctrace
-> > > >
-> > 
-> > Who are you?
-> > 
-> > The hibernation image is stored successfully, that means drivers work ok.
-> 
-> Well, not entirely necessarily.  We execute the ->poweroff callback for all
-> of them in the last step, maybe one of these hangs.
+On Wed 2015-06-17 15:07:41, Christian K=F6nig wrote:
+> On 17.06.2015 14:49, Pavel Machek wrote:
+> >On Wed 2015-06-17 14:43:47, Pavel Machek wrote:
+> >>Hi!
+> >>
+> >>Video is broken on thinkpad T40p after resume from suspend. (In X
+> >>only, text console still works.)
+> >>
+> >>Maybe this is related?
+> >>
+> >>[ 5430.193071] radeon 0000:01:00.0: putting AGP V2 device into 4x m=
+ode
+> >>[ 5430.193107] radeon 0000:01:00.0: GTT: 256M 0xD0000000 - 0xDFFFFF=
+=46F
+> >>[ 5430.214670] radeon 0000:01:00.0: WB disabled
+> >>[ 5430.214675] radeon 0000:01:00.0: fence driver on ring 0 use gpu =
+addr 0x00000000d0000000 and cpu addr 0xf841a000
+> >>[ 5430.214721] [drm] radeon: ring at 0x00000000D0001000
+> >>[ 5430.370867] [drm:r100_ring_test] *ERROR* radeon: ring test faile=
+d (scratch(0x15E8)=3D0xCAFEDEAD)
+> >>[ 5430.370869] [drm:r100_cp_init] *ERROR* radeon: cp isn't working =
+(-22).
+> >>[ 5430.370872] radeon 0000:01:00.0: failed initializing CP (-22).
+> >>
+> >>Hibernation works well here, including X. (Which has small glitch w=
+ith
+> >>mouse cursor being corrupted until it is changed by application).
+> >>
+> >3.16.0-4-686-pae Debian 3.16.7-cktt11-1 kernel seems to have same
+> >problem, with same scratch(0x15E8)=3D0xCAFEDEAD message... so this i=
+s
+> >not "new" problem...
+> >
 
-shutdown mode works ok, that's why I think driver problem is not too
-likely.
+> Looks like CP init doesn't work. Well is there any kernel where that =
+did
+> worked?
 
-> > Yes, and it was broken there, too. It is possible that 4.0 is broken,
-> > too, I did not use hibernation for some time.
-> > 
-> > 3.14 kernel works ok. I'm trying v3.19 now.
-> 
-> I see.
-> 
-> OK, it would be good to narrow down the time frame when it broke.
+Unfortunately, not as far as I know.
 
-3.19 is broken. Some kind of strange 3.17 works ok.
+> If yes it might be a good idea to bisect to narrow down the problem.
 
-(On an additional note, x60 fails to boot when "hot" halting at
+No such luck. I may try something like "3.0" if we are really
+desperate (2.6.X kernels probably won't won't boot with recent
+userland), but I suspect it just never worked.
 
-"ACPI: All ACPI Tables successfully acquired"
-
-That was happening before, but it is really annoying for debugging. As
-you do two reboots, machine gets hot enough, and you have to wait to
-cool it down. Any ideas what to do there?)
-
-I tried no_console_suspend=1, but it still suspended the console.
 								Pavel
--- 
+--=20
 (english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
+/blog.html
