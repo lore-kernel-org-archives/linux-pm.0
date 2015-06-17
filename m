@@ -1,47 +1,56 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V7 2/3] OPP: Allow multiple OPP tables to be passed via DT
-Date: Wed, 17 Jun 2015 20:12:23 +0530
-Message-ID: <20150617144223.GC15153@linux>
-References: <cover.1433434659.git.viresh.kumar@linaro.org>
- <263c128844f5a3c9280c8be71f6c9eb1869a5188.1433434659.git.viresh.kumar@linaro.org>
- <CAL_Jsq+EOOeQw42wZi+H82ovLn8LcQUuK9HGT+FvewdhTf7Q1w@mail.gmail.com>
- <20150617133314.GB15153@linux>
- <CAL_Jsq+SdgAf7=Yq7Jk_1d9jTpAOLCEuEDCZvD=-h=2MWsNfFw@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: da2bc1b9db3351addd293e5b82757efe1f77ed1d breaks hibernation was Re:
+ 4.1-rc7, thinkpad X60: platform mode hibernation does very wrongthing
+Date: Wed, 17 Jun 2015 17:18:00 +0200
+Message-ID: <20150617151800.GA12312@amd>
+References: <20150617121352.GA20553@amd>
+ <7336539.OpACL0uN6J@vostro.rjw.lan>
+ <20150617123333.GA21389@amd>
+ <2490787.R6LzZId8tR@vostro.rjw.lan>
+ <20150617131608.GA24030@amd>
+ <1434549754.2400.5.camel@x220>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:34638 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755531AbbFQOm1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jun 2015 10:42:27 -0400
-Received: by pacgb13 with SMTP id gb13so37623491pac.1
-        for <linux-pm@vger.kernel.org>; Wed, 17 Jun 2015 07:42:27 -0700 (PDT)
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAL_Jsq+SdgAf7=Yq7Jk_1d9jTpAOLCEuEDCZvD=-h=2MWsNfFw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1434549754.2400.5.camel@x220>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Paul Bolle <pebolle@tiscali.nl>, imre.deak@intel.com, ville.syrjala@linux.intel.com, daniel.vetter@ffwll.ch, Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linus <linus_torvalds@foxmail.com>, lenb <lenb@kernel.org>, kernel list <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Nishanth Menon <nm@ti.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Grant Likely <grant.likely@linaro.org>, Olof Johansson <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, Santosh
 
-On 17-06-15, 08:47, Rob Herring wrote:
-> Defined order is a key part of DT bindings. We solve the variable
-> length problem with name lists associated with variable length
-> property like:
-> 
-> operating-point-names = "slow", "fast";
+Hi!
 
-I agree that we should have used this..
+> And this all reminded me of https://lkml.org/lkml/2015/3/18/133 . So I
+> think that's another system not covered by commit ab3be73fa7b4
+> ("drm/i915: gen4: work around hang during hibernation").
 
-> I'm not a fan of doing this if we can avoid it, but we should at least
-> follow the same pattern. Don't send me a patch with that yet, I want
-> to hear from Stephen.
+Yes, another system broken by
 
-Good that you told me to stop :)
+commit da2bc1b9db3351addd293e5b82757efe1f77ed1d
+Author: Imre Deak <imre.deak@intel.com>
+Date:   Thu Oct 23 19:23:26 2014 +0300
 
-> You can also use "status" to disable specific tables rather than
-> removing from the list.
+    drm/i915: add poweroff_late handler
 
-Hmmm, right. That's far better.
+    The suspend_late handler saves some registers and powers off the
+    device,
+        so it doesn't have a big overhead. Calling it at S4
+    poweroff_late time
+        makes the power off handling identical to the S3 suspend and
+    S4 freeze
+        handling, so do this for consistency.
+	
+
+And no, adding another system to the "blacklist" is a not good idea,
+because we know there are other broken systems out there. Can we
+revert da2bc1b9db3351addd293e5b82757efe1f77ed1d, please? Consistency
+is nice, but not having regressions is even nicer.
+									Pavel
+									
+PS: Now I have real Linus and fake Linus on the Cc list. Or maybe two
+real Linuses, its hard to tell.
 
 -- 
-viresh
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
