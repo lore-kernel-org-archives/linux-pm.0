@@ -1,56 +1,84 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: da2bc1b9db3351addd293e5b82757efe1f77ed1d breaks hibernation was Re:
- 4.1-rc7, thinkpad X60: platform mode hibernation does very wrongthing
-Date: Wed, 17 Jun 2015 17:18:00 +0200
-Message-ID: <20150617151800.GA12312@amd>
-References: <20150617121352.GA20553@amd>
- <7336539.OpACL0uN6J@vostro.rjw.lan>
- <20150617123333.GA21389@amd>
- <2490787.R6LzZId8tR@vostro.rjw.lan>
- <20150617131608.GA24030@amd>
- <1434549754.2400.5.camel@x220>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1434549754.2400.5.camel@x220>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Paul Bolle <pebolle@tiscali.nl>, imre.deak@intel.com, ville.syrjala@linux.intel.com, daniel.vetter@ffwll.ch, Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linus <linus_torvalds@foxmail.com>, lenb <lenb@kernel.org>, kernel list <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>
+From: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
+Subject: [PATCH] power_supply: rt9455_charger: Properly notify userspace about charging events
+Date: Wed, 17 Jun 2015 19:28:59 +0300
+Message-ID: <1434558539-30591-1-git-send-email-anda-maria.nicolae@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:34713 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755239AbbFQQZa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 17 Jun 2015 12:25:30 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-Hi!
+Do not call power_supply_changed() when CHRVPI interrupt has occurred.
+CHRVPI interrupt occurs when the charger is connected to or disconnected
+from the power source. Call power_supply_changed() after PWR_RDY bit is
+read, to distinguish between connection to or disconnection from the power
+source.
+Also, call power_supply_changed() after the battery is reconnected to the
+charger, to notify userspace that the battery is no longer absent.
 
-> And this all reminded me of https://lkml.org/lkml/2015/3/18/133 . So I
-> think that's another system not covered by commit ab3be73fa7b4
-> ("drm/i915: gen4: work around hang during hibernation").
+Signed-off-by: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
+---
+ drivers/power/rt9455_charger.c |   16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
-Yes, another system broken by
-
-commit da2bc1b9db3351addd293e5b82757efe1f77ed1d
-Author: Imre Deak <imre.deak@intel.com>
-Date:   Thu Oct 23 19:23:26 2014 +0300
-
-    drm/i915: add poweroff_late handler
-
-    The suspend_late handler saves some registers and powers off the
-    device,
-        so it doesn't have a big overhead. Calling it at S4
-    poweroff_late time
-        makes the power off handling identical to the S3 suspend and
-    S4 freeze
-        handling, so do this for consistency.
-	
-
-And no, adding another system to the "blacklist" is a not good idea,
-because we know there are other broken systems out there. Can we
-revert da2bc1b9db3351addd293e5b82757efe1f77ed1d, please? Consistency
-is nice, but not having regressions is even nicer.
-									Pavel
-									
-PS: Now I have real Linus and fake Linus on the Cc list. Or maybe two
-real Linuses, its hard to tell.
-
+diff --git a/drivers/power/rt9455_charger.c b/drivers/power/rt9455_charger.c
+index 08baac6..a49a9d4 100644
+--- a/drivers/power/rt9455_charger.c
++++ b/drivers/power/rt9455_charger.c
+@@ -973,7 +973,6 @@ static int rt9455_irq_handler_check_irq2_register(struct rt9455_info *info,
+ 
+ 	if (irq2 & GET_MASK(F_CHRVPI)) {
+ 		dev_dbg(dev, "Charger fault occurred\n");
+-		alert_userspace = true;
+ 		/*
+ 		 * CHRVPI bit is set in 2 cases:
+ 		 * 1. when the power source is connected to the charger.
+@@ -981,6 +980,9 @@ static int rt9455_irq_handler_check_irq2_register(struct rt9455_info *info,
+ 		 * To identify the case, PWR_RDY bit is checked. Because
+ 		 * PWR_RDY bit is set / cleared after CHRVPI interrupt is
+ 		 * triggered, it is used delayed_work to later read PWR_RDY bit.
++		 * Also, do not set to true alert_userspace, because there is no
++		 * need to notify userspace when CHRVPI interrupt has occurred.
++		 * Userspace will be notified after PWR_RDY bit is read.
+ 		 */
+ 		queue_delayed_work(system_power_efficient_wq,
+ 				   &info->pwr_rdy_work,
+@@ -1178,7 +1180,7 @@ static irqreturn_t rt9455_irq_handler_thread(int irq, void *data)
+ 		/*
+ 		 * Sometimes, an interrupt occurs while rt9455_probe() function
+ 		 * is executing and power_supply_register() is not yet called.
+-		 * Do not call power_supply_charged() in this case.
++		 * Do not call power_supply_changed() in this case.
+ 		 */
+ 		if (info->charger)
+ 			power_supply_changed(info->charger);
+@@ -1478,6 +1480,11 @@ static void rt9455_pwr_rdy_work_callback(struct work_struct *work)
+ 				   RT9455_MAX_CHARGING_TIME * HZ);
+ 		break;
+ 	}
++	/*
++	 * Notify userspace that the charger has been either connected to or
++	 * disconnected from the power source.
++	 */
++	power_supply_changed(info->charger);
+ }
+ 
+ static void rt9455_max_charging_time_work_callback(struct work_struct *work)
+@@ -1533,6 +1540,11 @@ static void rt9455_batt_presence_work_callback(struct work_struct *work)
+ 			if (ret)
+ 				dev_err(dev, "Failed to unmask BATAB interrupt\n");
+ 		}
++		/*
++		 * Notify userspace that the battery is now connected to the
++		 * charger.
++		 */
++		power_supply_changed(info->charger);
+ 	}
+ }
+ 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.7.9.5
+
