@@ -1,8 +1,8 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 7/7] ARM: shmobile: armadillo800eva dts: Add pinctrl and
- gpio-hog for lcdc0
-Date: Wed, 17 Jun 2015 10:38:56 +0200
-Message-ID: <1434530336-15073-8-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v2 6/7] staging: board: armadillo800eva: Board staging for
+ sh_mobile_lcdc_fb
+Date: Wed, 17 Jun 2015 10:38:55 +0200
+Message-ID: <1434530336-15073-7-git-send-email-geert+renesas@glider.be>
 References: <1434530336-15073-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,47 +22,149 @@ To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Simon Horman <horms+renesas
 Cc: devel@driverdev.osuosl.org, devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, linux-sh@vger.kernel.org, Marc Zyngier <marc.zyngier@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Configure pinctrl and a GPIO-controller board mux for LCD use.
-This allows the armadillo800eva board staging code to enable lcdc0.
+Add staging board support for the r8a7740-based armadillo800eva board
+and add platform devices to allow in-tree continuous development of the
+drivers on the armadillo800eva board.
+
+When DT bindings are ready for theses drivers then the platform devices
+in the armadillo800eva staging board code can easily be removed. Until
+then we use platform devices to continuously improve the driver and
+integrate code.
+
+Added platform devices:
+  - sh_mobile_lcdc_fb for the on-board LCD.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 v2:
-  - New.
+  - Drop pinctrl and configured GPIOs, these are now configured from DT,
+  - Update for changed function names,
+  - Drop RFC status.
 ---
- arch/arm/boot/dts/r8a7740-armadillo800eva.dts | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/staging/board/Makefile          |   3 +-
+ drivers/staging/board/armadillo800eva.c | 105 ++++++++++++++++++++++++++++++++
+ 2 files changed, 107 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/staging/board/armadillo800eva.c
 
-diff --git a/arch/arm/boot/dts/r8a7740-armadillo800eva.dts b/arch/arm/boot/dts/r8a7740-armadillo800eva.dts
-index 2e31d8c01cbf6a74..105d9c95de4af611 100644
---- a/arch/arm/boot/dts/r8a7740-armadillo800eva.dts
-+++ b/arch/arm/boot/dts/r8a7740-armadillo800eva.dts
-@@ -224,6 +224,9 @@
- };
- 
- &pfc {
-+	pinctrl-0 = <&lcd0_pins>;
-+	pinctrl-names = "default";
+diff --git a/drivers/staging/board/Makefile b/drivers/staging/board/Makefile
+index 65d39ecfad63bbf4..6842745feb9404f8 100644
+--- a/drivers/staging/board/Makefile
++++ b/drivers/staging/board/Makefile
+@@ -1,2 +1,3 @@
+ obj-y	:= board.o
+-obj-$(CONFIG_ARCH_EMEV2)      += kzm9d.o
++obj-$(CONFIG_ARCH_EMEV2)	+= kzm9d.o
++obj-$(CONFIG_ARCH_R8A7740)	+= armadillo800eva.o
+diff --git a/drivers/staging/board/armadillo800eva.c b/drivers/staging/board/armadillo800eva.c
+new file mode 100644
+index 0000000000000000..81df77bd55cc9868
+--- /dev/null
++++ b/drivers/staging/board/armadillo800eva.c
+@@ -0,0 +1,105 @@
++/*
++ * Staging board support for Armadillo 800 eva.
++ * Enable not-yet-DT-capable devices here.
++ *
++ * Based on board-armadillo800eva.c
++ *
++ * Copyright (C) 2012 Renesas Solutions Corp.
++ * Copyright (C) 2012 Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; version 2 of the License.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
 +
- 	ether_pins: ether {
- 		renesas,groups = "gether_mii", "gether_int";
- 		renesas,function = "gether";
-@@ -259,6 +262,16 @@
- 				 "fsia_data_in_1", "fsia_data_out_0";
- 		renesas,function = "fsia";
- 	};
++#include <linux/dma-mapping.h>
++#include <linux/fb.h>
++#include <linux/kernel.h>
++#include <linux/platform_device.h>
++#include <linux/videodev2.h>
 +
-+	lcd0_pins: lcd0 {
-+		renesas,groups = "lcd0_data24_0", "lcd0_lclk_1", "lcd0_sync";
-+		renesas,function = "lcd0";
++#include <video/sh_mobile_lcdc.h>
 +
-+		/* DBGMD/LCDC0/FSIA MUX */
-+		gpio-hog;
-+		gpios = <176 0>;
-+		output-high;
-+	};
- };
- 
- &tpu {
++#include "board.h"
++
++
++static struct fb_videomode lcdc0_mode = {
++	.name		= "AMPIER/AM-800480",
++	.xres		= 800,
++	.yres		= 480,
++	.left_margin	= 88,
++	.right_margin	= 40,
++	.hsync_len	= 128,
++	.upper_margin	= 20,
++	.lower_margin	= 5,
++	.vsync_len	= 5,
++	.sync		= 0,
++};
++
++static struct sh_mobile_lcdc_info lcdc0_info = {
++	.clock_source	= LCDC_CLK_BUS,
++	.ch[0] = {
++		.chan		= LCDC_CHAN_MAINLCD,
++		.fourcc		= V4L2_PIX_FMT_RGB565,
++		.interface_type	= RGB24,
++		.clock_divider	= 5,
++		.flags		= 0,
++		.lcd_modes	= &lcdc0_mode,
++		.num_modes	= 1,
++		.panel_cfg = {
++			.width	= 111,
++			.height = 68,
++		},
++	},
++};
++
++static struct resource lcdc0_resources[] = {
++	[0] = {
++		.name	= "LCD0",
++		.start	= 0xfe940000,
++		.end	= 0xfe943fff,
++		.flags	= IORESOURCE_MEM,
++	},
++	[1] = {
++		.start	= 177 + 32,
++		.flags	= IORESOURCE_IRQ,
++	},
++};
++
++static struct platform_device lcdc0_device = {
++	.name		= "sh_mobile_lcdc_fb",
++	.num_resources	= ARRAY_SIZE(lcdc0_resources),
++	.resource	= lcdc0_resources,
++	.id		= 0,
++	.dev	= {
++		.platform_data	= &lcdc0_info,
++		.coherent_dma_mask = DMA_BIT_MASK(32),
++	},
++};
++
++static const struct board_staging_clk lcdc0_clocks[] __initconst = {
++	{ "lcdc0", NULL, "sh_mobile_lcdc_fb.0" },
++};
++
++static const struct board_staging_dev armadillo800eva_devices[] __initconst = {
++	{
++		.pdev		= &lcdc0_device,
++		.clocks		= lcdc0_clocks,
++		.nclocks	= ARRAY_SIZE(lcdc0_clocks),
++		.domain		= "a4lc",
++	},
++};
++
++static void __init armadillo800eva_init(void)
++{
++	board_staging_gic_setup_xlate("arm,cortex-a9-gic", 32);
++	board_staging_register_devices(armadillo800eva_devices,
++				       ARRAY_SIZE(armadillo800eva_devices));
++}
++
++board_staging("renesas,armadillo800eva", armadillo800eva_init);
 -- 
 1.9.1
