@@ -1,40 +1,44 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Subject: Re: 4.1-rc7, thinkpad X60: platform mode hibernation does very
- wrongthing
-Date: Wed, 17 Jun 2015 16:02:34 +0200
-Message-ID: <1434549754.2400.5.camel@x220>
-References: <20150617121352.GA20553@amd> <7336539.OpACL0uN6J@vostro.rjw.lan>
-	 <20150617123333.GA21389@amd> <2490787.R6LzZId8tR@vostro.rjw.lan>
-	 <20150617131608.GA24030@amd>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: 4.1-rc7: Xorg broken after resume on thinkpad T40p, radeon
+ problem?
+Date: Wed, 17 Jun 2015 16:10:52 +0200
+Message-ID: <20150617141052.GA30910@amd>
+References: <20150617124347.GA22879@amd>
+ <20150617124949.GA22953@amd>
+ <5581711D.6030707@amd.com>
+ <20150617132121.GA24634@amd>
+ <1434549017.2400.3.camel@x220>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20150617131608.GA24030@amd>
+Content-Disposition: inline
+In-Reply-To: <1434549017.2400.3.camel@x220>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linus <linus_torvalds@foxmail.com>, lenb <lenb@kernel.org>, kernel list <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>
+To: Paul Bolle <pebolle@tiscali.nl>
+Cc: Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>, dri-devel@lists.freedesktop.org, alexander.deucher@amd.com, rjw@rjwysocki.net, lenb@kernel.org, kernel list <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2015-06-17 at 15:16 +0200, Pavel Machek wrote:
-> 3.19 is broken. Some kind of strange 3.17 works ok.
+Hi!
+
+> > Unfortunately, not as far as I know.
+> > 
+> > > If yes it might be a good idea to bisect to narrow down the problem.
+> > 
+> > No such luck. I may try something like "3.0" if we are really
+> > desperate (2.6.X kernels probably won't won't boot with recent
+> > userland), but I suspect it just never worked.
 > 
-> (On an additional note, x60 fails to boot when "hot" halting at
+> The above looks very much like the issue that made me write commit
+> 45171002b01b ("radeon: add AGPMode 1 quirk for RV250"). See
+> https://bugzilla.redhat.com/show_bug.cgi?id=531825 for a lot of
+> background.
 > 
-> "ACPI: All ACPI Tables successfully acquired"
-> 
-> That was happening before, but it is really annoying for debugging. As
-> you do two reboots, machine gets hot enough, and you have to wait to
-> cool it down. Any ideas what to do there?)
-> 
-> I tried no_console_suspend=1, but it still suspended the console.
+> Does booting with radeon.agpmode=1 survive a suspend and resume cycle?
 
-And this all reminded me of https://lkml.org/lkml/2015/3/18/133 . So I
-think that's another system not covered by commit ab3be73fa7b4
-("drm/i915: gen4: work around hang during hibernation").
+Yes, that option helps. Thanks!
 
-Hope this helps,
+								Pavel
 
-
-Paul Bolle
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
