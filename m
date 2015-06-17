@@ -1,62 +1,44 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: 4.1-rc7, thinkpad X60: platform mode hibernation does very wrongthing
-Date: Wed, 17 Jun 2015 15:14:02 +0200
-Message-ID: <2490787.R6LzZId8tR@vostro.rjw.lan>
-References: <20150617121352.GA20553@amd> <7336539.OpACL0uN6J@vostro.rjw.lan> <20150617123333.GA21389@amd>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: 4.1-rc7: Xorg broken after resume on thinkpad T40p, radeon
+ problem?
+Date: Wed, 17 Jun 2015 14:49:49 +0200
+Message-ID: <20150617124949.GA22953@amd>
+References: <20150617124347.GA22879@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20150617123333.GA21389@amd>
+Content-Disposition: inline
+In-Reply-To: <20150617124347.GA22879@amd>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linus <linus_torvalds@foxmail.com>, lenb <lenb@kernel.org>, kernel list <linux-kernel@vger.kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>, linux-pm <linux-pm@vger.kernel.org>
+To: dri-devel@lists.freedesktop.org, christian.koenig@amd.com, alexander.deucher@amd.com, rjw@rjwysocki.net, lenb@kernel.org, kernel list <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, June 17, 2015 02:33:33 PM Pavel Machek wrote:
+On Wed 2015-06-17 14:43:47, Pavel Machek wrote:
 > Hi!
 > 
-> > On Wednesday, June 17, 2015 08:19:37 PM linus wrote:
-> > > there might be something wrong with driver, can you provide serial log with no_console_suspend? or using rtctrace
-> > >
+> Video is broken on thinkpad T40p after resume from suspend. (In X
+> only, text console still works.)
 > 
-> Who are you?
+> Maybe this is related?
 > 
-> The hibernation image is stored successfully, that means drivers work ok.
-
-Well, not entirely necessarily.  We execute the ->poweroff callback for all
-of them in the last step, maybe one of these hangs.
-
-You can verify that by adding a reboot trigger after the dpm_suspend_end()
-invocation in hibernation_platform_enter().  If it triggers 100% of the time,
-drivers are OK.
-
-> Serial console... might be fun to set up, but might help, right.
+> [ 5430.193071] radeon 0000:01:00.0: putting AGP V2 device into 4x mode
+> [ 5430.193107] radeon 0000:01:00.0: GTT: 256M 0xD0000000 - 0xDFFFFFFF
+> [ 5430.214670] radeon 0000:01:00.0: WB disabled
+> [ 5430.214675] radeon 0000:01:00.0: fence driver on ring 0 use gpu addr 0x00000000d0000000 and cpu addr 0xf841a000
+> [ 5430.214721] [drm] radeon: ring at 0x00000000D0001000
+> [ 5430.370867] [drm:r100_ring_test] *ERROR* radeon: ring test failed (scratch(0x15E8)=0xCAFEDEAD)
+> [ 5430.370869] [drm:r100_cp_init] *ERROR* radeon: cp isn't working (-22).
+> [ 5430.370872] radeon 0000:01:00.0: failed initializing CP (-22).
 > 
-> > > Hi!
-> > > 
-> > > On thinkpad X60, if I hibernate in platform mode, it does not power
-> > > down, but I get black screen, moon icon blinking, and CPU fan running
-> > > (CPU probably too).
-> > > 
-> > > I can hold the power button down to force powerdown... if I notice
-> > > what is going on before the battery is empty.
-> > > 
-> > > Any ideas what could be wrong there?
-> > 
-> > Not right away.
-> > 
-> > Have you tried any previous 4.1-rc kernels?
-> 
-> Yes, and it was broken there, too. It is possible that 4.0 is broken,
-> too, I did not use hibernation for some time.
-> 
-> 3.14 kernel works ok. I'm trying v3.19 now.
+> Hibernation works well here, including X. (Which has small glitch with
+> mouse cursor being corrupted until it is changed by application).
+>
 
-I see.
+3.16.0-4-686-pae Debian 3.16.7-cktt11-1 kernel seems to have same
+problem, with same scratch(0x15E8)=0xCAFEDEAD message... so this is
+not "new" problem...
 
-OK, it would be good to narrow down the time frame when it broke.
-
-Thanks,
-Rafael
-
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
