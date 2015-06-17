@@ -1,63 +1,64 @@
-From: =?windows-1252?Q?Christian_K=F6nig?= <christian.koenig@amd.com>
-Subject: Re: 4.1-rc7: Xorg broken after resume on thinkpad T40p,
- radeon problem?
-Date: Wed, 17 Jun 2015 15:31:34 +0200
-Message-ID: <558176B6.9010607@amd.com>
-References: <20150617124347.GA22879@amd> <20150617124949.GA22953@amd>
- <5581711D.6030707@amd.com> <20150617132121.GA24634@amd>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH V7 2/3] OPP: Allow multiple OPP tables to be passed via DT
+Date: Wed, 17 Jun 2015 08:47:35 -0500
+Message-ID: <CAL_Jsq+SdgAf7=Yq7Jk_1d9jTpAOLCEuEDCZvD=-h=2MWsNfFw@mail.gmail.com>
+References: <cover.1433434659.git.viresh.kumar@linaro.org> <263c128844f5a3c9280c8be71f6c9eb1869a5188.1433434659.git.viresh.kumar@linaro.org>
+ <CAL_Jsq+EOOeQw42wZi+H82ovLn8LcQUuK9HGT+FvewdhTf7Q1w@mail.gmail.com> <20150617133314.GB15153@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <20150617132121.GA24634@amd>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, kernel list <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, alexander.deucher@amd.com, lenb@kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yk0-f172.google.com ([209.85.160.172]:34013 "EHLO
+	mail-yk0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932494AbbFQNr4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jun 2015 09:47:56 -0400
+In-Reply-To: <20150617133314.GB15153@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Nishanth Menon <nm@ti.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Grant Likely <grant.likely@linaro.org>, Olof Johansson <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <santosh.shilimkar@oracle.com>
 
-T24gMTcuMDYuMjAxNSAxNToyMSwgUGF2ZWwgTWFjaGVrIHdyb3RlOgo+IE9uIFdlZCAyMDE1LTA2
-LTE3IDE1OjA3OjQxLCBDaHJpc3RpYW4gS8O2bmlnIHdyb3RlOgo+PiBPbiAxNy4wNi4yMDE1IDE0
-OjQ5LCBQYXZlbCBNYWNoZWsgd3JvdGU6Cj4+PiBPbiBXZWQgMjAxNS0wNi0xNyAxNDo0Mzo0Nywg
-UGF2ZWwgTWFjaGVrIHdyb3RlOgo+Pj4+IEhpIQo+Pj4+Cj4+Pj4gVmlkZW8gaXMgYnJva2VuIG9u
-IHRoaW5rcGFkIFQ0MHAgYWZ0ZXIgcmVzdW1lIGZyb20gc3VzcGVuZC4gKEluIFgKPj4+PiBvbmx5
-LCB0ZXh0IGNvbnNvbGUgc3RpbGwgd29ya3MuKQo+Pj4+Cj4+Pj4gTWF5YmUgdGhpcyBpcyByZWxh
-dGVkPwo+Pj4+Cj4+Pj4gWyA1NDMwLjE5MzA3MV0gcmFkZW9uIDAwMDA6MDE6MDAuMDogcHV0dGlu
-ZyBBR1AgVjIgZGV2aWNlIGludG8gNHggbW9kZQo+Pj4+IFsgNTQzMC4xOTMxMDddIHJhZGVvbiAw
-MDAwOjAxOjAwLjA6IEdUVDogMjU2TSAweEQwMDAwMDAwIC0gMHhERkZGRkZGRgo+Pj4+IFsgNTQz
-MC4yMTQ2NzBdIHJhZGVvbiAwMDAwOjAxOjAwLjA6IFdCIGRpc2FibGVkCj4+Pj4gWyA1NDMwLjIx
-NDY3NV0gcmFkZW9uIDAwMDA6MDE6MDAuMDogZmVuY2UgZHJpdmVyIG9uIHJpbmcgMCB1c2UgZ3B1
-IGFkZHIgMHgwMDAwMDAwMGQwMDAwMDAwIGFuZCBjcHUgYWRkciAweGY4NDFhMDAwCj4+Pj4gWyA1
-NDMwLjIxNDcyMV0gW2RybV0gcmFkZW9uOiByaW5nIGF0IDB4MDAwMDAwMDBEMDAwMTAwMAo+Pj4+
-IFsgNTQzMC4zNzA4NjddIFtkcm06cjEwMF9yaW5nX3Rlc3RdICpFUlJPUiogcmFkZW9uOiByaW5n
-IHRlc3QgZmFpbGVkIChzY3JhdGNoKDB4MTVFOCk9MHhDQUZFREVBRCkKPj4+PiBbIDU0MzAuMzcw
-ODY5XSBbZHJtOnIxMDBfY3BfaW5pdF0gKkVSUk9SKiByYWRlb246IGNwIGlzbid0IHdvcmtpbmcg
-KC0yMikuCj4+Pj4gWyA1NDMwLjM3MDg3Ml0gcmFkZW9uIDAwMDA6MDE6MDAuMDogZmFpbGVkIGlu
-aXRpYWxpemluZyBDUCAoLTIyKS4KPj4+Pgo+Pj4+IEhpYmVybmF0aW9uIHdvcmtzIHdlbGwgaGVy
-ZSwgaW5jbHVkaW5nIFguIChXaGljaCBoYXMgc21hbGwgZ2xpdGNoIHdpdGgKPj4+PiBtb3VzZSBj
-dXJzb3IgYmVpbmcgY29ycnVwdGVkIHVudGlsIGl0IGlzIGNoYW5nZWQgYnkgYXBwbGljYXRpb24p
-Lgo+Pj4+Cj4+PiAzLjE2LjAtNC02ODYtcGFlIERlYmlhbiAzLjE2LjctY2t0dDExLTEga2VybmVs
-IHNlZW1zIHRvIGhhdmUgc2FtZQo+Pj4gcHJvYmxlbSwgd2l0aCBzYW1lIHNjcmF0Y2goMHgxNUU4
-KT0weENBRkVERUFEIG1lc3NhZ2UuLi4gc28gdGhpcyBpcwo+Pj4gbm90ICJuZXciIHByb2JsZW0u
-Li4KPj4+Cj4+IExvb2tzIGxpa2UgQ1AgaW5pdCBkb2Vzbid0IHdvcmsuIFdlbGwgaXMgdGhlcmUg
-YW55IGtlcm5lbCB3aGVyZSB0aGF0IGRpZAo+PiB3b3JrZWQ/Cj4gVW5mb3J0dW5hdGVseSwgbm90
-IGFzIGZhciBhcyBJIGtub3cuCgpJbiB0aGlzIGNhc2Ugd2UgcHJvYmFibHkgY2FuJ3QgaGVscCBp
-biBhbnkgd2F5LCBpdCdzIG1vc3QgbGlrZWx5IHNvbWUgCnNwZWNpYWwgaGFuZGxpbmcgcmVxdWly
-ZWQgZm9yIGV4YWN0bHkgdGhpcyBjb25maWd1cmF0aW9uIHRoYXQgaXNuJ3QgCmRvY3VtZW50IGFu
-eW1vcmUgYW55d2hlcmUgKFdlbGwsIHdlIGFyZSB0YWxraW5nIGFib3V0IGhhcmR3YXJlIHRoYXQg
-aXMgCm1vcmUgdGhhbiBhIGRlY2FkZSBvbGQpLgoKU29ycnkgdGhhdCBJIGRvbid0IGhhdmUgYW55
-IGJldHRlciBuZXdzLApDaHJpc3RpYW4uCgo+Cj4+IElmIHllcyBpdCBtaWdodCBiZSBhIGdvb2Qg
-aWRlYSB0byBiaXNlY3QgdG8gbmFycm93IGRvd24gdGhlIHByb2JsZW0uCj4gTm8gc3VjaCBsdWNr
-LiBJIG1heSB0cnkgc29tZXRoaW5nIGxpa2UgIjMuMCIgaWYgd2UgYXJlIHJlYWxseQo+IGRlc3Bl
-cmF0ZSAoMi42Llgga2VybmVscyBwcm9iYWJseSB3b24ndCB3b24ndCBib290IHdpdGggcmVjZW50
-Cj4gdXNlcmxhbmQpLCBidXQgSSBzdXNwZWN0IGl0IGp1c3QgbmV2ZXIgd29ya2VkLgo+Cj4gCQkJ
-CQkJCQlQYXZlbAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
-Cmh0dHA6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcmktZGV2ZWwK
+On Wed, Jun 17, 2015 at 8:33 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 17-06-15, 08:23, Rob Herring wrote:
+>> > +                       operating-points-v2 = <&cpu0_opp_table_slow>, <&cpu0_opp_table_fast>;
+>>
+>> You've made a fundamental change here in that this can now be a list
+>> of phandles. There should be some description on what a list means
+>> (merge the tables?, select one?).
+>
+> Did you miss the description I wrote few lines earlier or are you
+> asking for something else? This is what I wrote earlier:
+>
+>> > +Devices may want to choose OPP tables at runtime and so can provide a list of
+>> > +phandles here. But only *one* of them should be chosen at runtime.
+>
+> So, clearly only ONE of the tables should be used.
+
+Yes, never mind.
+
+>
+>> I think this needs to have a defined order and the platform should
+>> know what that is. For example, if you read the efuses and decide you
+>> need the "slow" table, you know to pick the first entry. Then you
+>> don't need opp-name. Does that work for QCom?
+>
+> Why forcing on the order here? For example, consider a case where the
+> platform can have four tables, A B C D. Now DT is free to pass all
+> four or just a subset of those. Like, for some boards table B doesn't
+> stand valid. And so it may wanna pass just A C D. And so keeping these
+> tables in order is going to break for sure. Flexibility is probably
+> better in this case.
+
+Defined order is a key part of DT bindings. We solve the variable
+length problem with name lists associated with variable length
+property like:
+
+operating-point-names = "slow", "fast";
+
+I'm not a fan of doing this if we can avoid it, but we should at least
+follow the same pattern. Don't send me a patch with that yet, I want
+to hear from Stephen.
+
+You can also use "status" to disable specific tables rather than
+removing from the list.
+
+Rob
