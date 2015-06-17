@@ -1,64 +1,83 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH V7 2/3] OPP: Allow multiple OPP tables to be passed via DT
-Date: Wed, 17 Jun 2015 08:47:35 -0500
-Message-ID: <CAL_Jsq+SdgAf7=Yq7Jk_1d9jTpAOLCEuEDCZvD=-h=2MWsNfFw@mail.gmail.com>
-References: <cover.1433434659.git.viresh.kumar@linaro.org> <263c128844f5a3c9280c8be71f6c9eb1869a5188.1433434659.git.viresh.kumar@linaro.org>
- <CAL_Jsq+EOOeQw42wZi+H82ovLn8LcQUuK9HGT+FvewdhTf7Q1w@mail.gmail.com> <20150617133314.GB15153@linux>
+From: Paul Bolle <pebolle@tiscali.nl>
+Subject: Re: 4.1-rc7: Xorg broken after resume on thinkpad T40p, radeon
+ problem?
+Date: Wed, 17 Jun 2015 15:50:17 +0200
+Message-ID: <1434549017.2400.3.camel@x220>
+References: <20150617124347.GA22879@amd> <20150617124949.GA22953@amd>
+	 <5581711D.6030707@amd.com> <20150617132121.GA24634@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f172.google.com ([209.85.160.172]:34013 "EHLO
-	mail-yk0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932494AbbFQNr4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jun 2015 09:47:56 -0400
-In-Reply-To: <20150617133314.GB15153@linux>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20150617132121.GA24634@amd>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Christian =?ISO-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>, dri-devel@lists.freedesktop.org, alexander.deucher@amd.com, rjw@rjwysocki.net, lenb@kernel.org, kernel list <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Nishanth Menon <nm@ti.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Grant Likely <grant.likely@linaro.org>, Olof Johansson <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <santosh.shilimkar@oracle.com>
 
-On Wed, Jun 17, 2015 at 8:33 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 17-06-15, 08:23, Rob Herring wrote:
->> > +                       operating-points-v2 = <&cpu0_opp_table_slow>, <&cpu0_opp_table_fast>;
->>
->> You've made a fundamental change here in that this can now be a list
->> of phandles. There should be some description on what a list means
->> (merge the tables?, select one?).
->
-> Did you miss the description I wrote few lines earlier or are you
-> asking for something else? This is what I wrote earlier:
->
->> > +Devices may want to choose OPP tables at runtime and so can provide a list of
->> > +phandles here. But only *one* of them should be chosen at runtime.
->
-> So, clearly only ONE of the tables should be used.
+On Wed, 2015-06-17 at 15:21 +0200, Pavel Machek wrote:
+> On Wed 2015-06-17 15:07:41, Christian K=C3=B6nig wrote:
+> > On 17.06.2015 14:49, Pavel Machek wrote:
+> > >On Wed 2015-06-17 14:43:47, Pavel Machek wrote:
+> > >>Hi!
+> > >>
+> > >>Video is broken on thinkpad T40p after resume from suspend. (In X
+> > >>only, text console still works.)
+> > >>
+> > >>Maybe this is related?
+> > >>
+> > >>[ 5430.193071] radeon 0000:01:00.0: putting AGP V2 device into 4x=
+ mode
+> > >>[ 5430.193107] radeon 0000:01:00.0: GTT: 256M 0xD0000000 - 0xDFFF=
+=46FFF
+> > >>[ 5430.214670] radeon 0000:01:00.0: WB disabled
+> > >>[ 5430.214675] radeon 0000:01:00.0: fence driver on ring 0 use gp=
+u addr 0x00000000d0000000 and cpu addr 0xf841a000
+> > >>[ 5430.214721] [drm] radeon: ring at 0x00000000D0001000
+> > >>[ 5430.370867] [drm:r100_ring_test] *ERROR* radeon: ring test fai=
+led (scratch(0x15E8)=3D0xCAFEDEAD)
+> > >>[ 5430.370869] [drm:r100_cp_init] *ERROR* radeon: cp isn't workin=
+g (-22).
+> > >>[ 5430.370872] radeon 0000:01:00.0: failed initializing CP (-22).
+> > >>
+> > >>Hibernation works well here, including X. (Which has small glitch=
+ with
+> > >>mouse cursor being corrupted until it is changed by application).
+> > >>
+> > >3.16.0-4-686-pae Debian 3.16.7-cktt11-1 kernel seems to have same
+> > >problem, with same scratch(0x15E8)=3D0xCAFEDEAD message... so this=
+ is
+> > >not "new" problem...
+> > >
+>=20
+> > Looks like CP init doesn't work. Well is there any kernel where tha=
+t did
+> > worked?
+>=20
+> Unfortunately, not as far as I know.
+>=20
+> > If yes it might be a good idea to bisect to narrow down the problem=
+=2E
+>=20
+> No such luck. I may try something like "3.0" if we are really
+> desperate (2.6.X kernels probably won't won't boot with recent
+> userland), but I suspect it just never worked.
 
-Yes, never mind.
+The above looks very much like the issue that made me write commit
+45171002b01b ("radeon: add AGPMode 1 quirk for RV250"). See
+https://bugzilla.redhat.com/show_bug.cgi?id=3D531825 for a lot of
+background.
 
->
->> I think this needs to have a defined order and the platform should
->> know what that is. For example, if you read the efuses and decide you
->> need the "slow" table, you know to pick the first entry. Then you
->> don't need opp-name. Does that work for QCom?
->
-> Why forcing on the order here? For example, consider a case where the
-> platform can have four tables, A B C D. Now DT is free to pass all
-> four or just a subset of those. Like, for some boards table B doesn't
-> stand valid. And so it may wanna pass just A C D. And so keeping these
-> tables in order is going to break for sure. Flexibility is probably
-> better in this case.
+Does booting with radeon.agpmode=3D1 survive a suspend and resume cycle=
+?
 
-Defined order is a key part of DT bindings. We solve the variable
-length problem with name lists associated with variable length
-property like:
+Hope this helps,
 
-operating-point-names = "slow", "fast";
 
-I'm not a fan of doing this if we can avoid it, but we should at least
-follow the same pattern. Don't send me a patch with that yet, I want
-to hear from Stephen.
+Paul Bolle
 
-You can also use "status" to disable specific tables rather than
-removing from the list.
-
-Rob
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
