@@ -1,52 +1,40 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 2/7] staging: board: Initialize staging board code earlier
-Date: Wed, 17 Jun 2015 10:38:51 +0200
-Message-ID: <1434530336-15073-3-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v2 1/7] Revert "staging: board: disable as it breaks the build"
+Date: Wed, 17 Jun 2015 10:38:50 +0200
+Message-ID: <1434530336-15073-2-git-send-email-geert+renesas@glider.be>
 References: <1434530336-15073-1-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1434530336-15073-1-git-send-email-geert+renesas@glider.be>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <damm+renesas@opensource.se>
-Cc: devel@driverdev.osuosl.org, devicetree@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, linux-sh@vger.kernel.org, Marc Zyngier <marc.zyngier@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-arm-kernel@lists.infradead.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Marc Zyngier <marc.zyngier@arm.com>, devel@driverdev.osuosl.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Currently the staging board code is initialized from a late_initcall().
-However, unused PM domains are also disabled from a late_initcall(),
-which happens before due to link order.
+This reverts commit d13778d537a0ed6115d2a79a942af999cfb8eec6.
 
-Change the initialization of staging board code from using
-late_initcall() to device_initcall() to fix this.
+Commit 13c11072536f2613 ("staging:board: remove unnecessary function")
+fixed the build of drivers/staging/board/board.c.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
 ---
 v2:
-  - Drop RFC status.
+  - Add Reviewed-by.
 ---
- drivers/staging/board/board.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/board/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/staging/board/board.h b/drivers/staging/board/board.h
-index 2390ed6c31a42f2f..e9c914985d4acb36 100644
---- a/drivers/staging/board/board.h
-+++ b/drivers/staging/board/board.h
-@@ -15,6 +15,6 @@ static int __init runtime_board_check(void)	\
- 	return 0;				\
- }						\
- 						\
--late_initcall(runtime_board_check)
-+device_initcall(runtime_board_check)
+diff --git a/drivers/staging/board/Kconfig b/drivers/staging/board/Kconfig
+index 0a89ad16371f7ded..b8ee81840666ad35 100644
+--- a/drivers/staging/board/Kconfig
++++ b/drivers/staging/board/Kconfig
+@@ -1,7 +1,6 @@
+ config STAGING_BOARD
+ 	bool "Staging Board Support"
+ 	depends on OF_ADDRESS
+-	depends on BROKEN
+ 	help
+ 	  Select to enable per-board staging support code.
  
- #endif /* __BOARD_H__ */
 -- 
 1.9.1
