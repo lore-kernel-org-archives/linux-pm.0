@@ -1,83 +1,66 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V7 2/3] OPP: Allow multiple OPP tables to be passed via
- DT
-Date: Wed, 17 Jun 2015 18:30:24 -0700
-Message-ID: <55821F30.2090802@codeaurora.org>
-References: <cover.1433434659.git.viresh.kumar@linaro.org> <263c128844f5a3c9280c8be71f6c9eb1869a5188.1433434659.git.viresh.kumar@linaro.org> <CAL_Jsq+EOOeQw42wZi+H82ovLn8LcQUuK9HGT+FvewdhTf7Q1w@mail.gmail.com> <20150617133314.GB15153@linux> <CAL_Jsq+SdgAf7=Yq7Jk_1d9jTpAOLCEuEDCZvD=-h=2MWsNfFw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V7 2/3] OPP: Allow multiple OPP tables to be passed via DT
+Date: Thu, 18 Jun 2015 07:55:43 +0530
+Message-ID: <20150618022543.GA28820@linux>
+References: <cover.1433434659.git.viresh.kumar@linaro.org>
+ <263c128844f5a3c9280c8be71f6c9eb1869a5188.1433434659.git.viresh.kumar@linaro.org>
+ <CAL_Jsq+EOOeQw42wZi+H82ovLn8LcQUuK9HGT+FvewdhTf7Q1w@mail.gmail.com>
+ <20150617133314.GB15153@linux>
+ <CAL_Jsq+SdgAf7=Yq7Jk_1d9jTpAOLCEuEDCZvD=-h=2MWsNfFw@mail.gmail.com>
+ <55821F30.2090802@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:40352 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753281AbbFRBa3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jun 2015 21:30:29 -0400
-In-Reply-To: <CAL_Jsq+SdgAf7=Yq7Jk_1d9jTpAOLCEuEDCZvD=-h=2MWsNfFw@mail.gmail.com>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:36167 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750840AbbFRCZt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jun 2015 22:25:49 -0400
+Received: by paceq1 with SMTP id eq1so25437500pac.3
+        for <linux-pm@vger.kernel.org>; Wed, 17 Jun 2015 19:25:48 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <55821F30.2090802@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Nishanth Menon <nm@ti.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Grant Likely <grant.likely@linaro.org>, Olof Johansson <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <santosh.shilimkar@oracle.com>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rob Herring <robherring2@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Nishanth Menon <nm@ti.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Grant Likely <grant.likely@linaro.org>, Olof Johansson <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, Santosh
 
-On 06/17/2015 06:47 AM, Rob Herring wrote:
-> On Wed, Jun 17, 2015 at 8:33 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 17-06-15, 08:23, Rob Herring wrote:
->>>> +                       operating-points-v2 = <&cpu0_opp_table_slow>, <&cpu0_opp_table_fast>;
->>> You've made a fundamental change here in that this can now be a list
->>> of phandles. There should be some description on what a list means
->>> (merge the tables?, select one?).
->> Did you miss the description I wrote few lines earlier or are you
->> asking for something else? This is what I wrote earlier:
->>
->>>> +Devices may want to choose OPP tables at runtime and so can provide a list of
->>>> +phandles here. But only *one* of them should be chosen at runtime.
->> So, clearly only ONE of the tables should be used.
-> Yes, never mind.
->
->>> I think this needs to have a defined order and the platform should
->>> know what that is. For example, if you read the efuses and decide you
->>> need the "slow" table, you know to pick the first entry. Then you
->>> don't need opp-name. Does that work for QCom?
->> Why forcing on the order here? For example, consider a case where the
->> platform can have four tables, A B C D. Now DT is free to pass all
->> four or just a subset of those. Like, for some boards table B doesn't
->> stand valid. And so it may wanna pass just A C D. And so keeping these
->> tables in order is going to break for sure. Flexibility is probably
->> better in this case.
-> Defined order is a key part of DT bindings. We solve the variable
-> length problem with name lists associated with variable length
-> property like:
->
-> operating-point-names = "slow", "fast";
->
-> I'm not a fan of doing this if we can avoid it, but we should at least
-> follow the same pattern. Don't send me a patch with that yet, I want
-> to hear from Stephen.
->
-> You can also use "status" to disable specific tables rather than
-> removing from the list.
->
+On 17-06-15, 18:30, Stephen Boyd wrote:
+> An operating-point(s?)-names property seems ok... but doesn't that mean
+> that every CPU that uses the OPP has to have the same list of
+> operating-point-names?
 
-An operating-point(s?)-names property seems ok... but doesn't that mean
-that every CPU that uses the OPP has to have the same list of
-operating-point-names? It would make sense to me if the operating points
-were called something different depending on *which* CPU is using them,
-but in this case the only name for the operating point is "slow" or
-"fast", etc.
+Why do you think so? For me the operating-points-v2-names property
+will be present in CPU node (as there is no OPP node which can have
+it) and so every CPU is free to choose what it wants to.
 
-In reality we've assigned them names like speedX-binY-vZ so that we know
-which speed bin, voltage bin, and version they're part of. Maybe OPP
-node properties like qcom,speed-bin = <u32>, qcom,pvs-bin = <u32>, etc.
-would be better? It would make the parsing code slightly more
-complicated because it needs to look for 2 or 3 properties instead of a
-name property though. Or would having different node names be
-acceptable? That would avoid this list of strings.
+> It would make sense to me if the operating points
+> were called something different depending on *which* CPU is using them,
+> but in this case the only name for the operating point is "slow" or
+> "fast", etc.
 
-At the least, operating-points-names will be required on qcom platforms.
-A fixed ordering known to the platform would mean that we know exactly
-how many voltage bins and speed bins and how many voltage bins per speed
-bin are used for a particular SoC, which we've avoided knowing so far.
+I am completely confused now. :)
+
+The problem you stated now was there with the current state of
+bindings. The name is embedded into the OPP table node and so is fixed
+for all the CPUs. Moving it to the CPU node will give all CPUs a
+chance to name it whatever they want to. And the same list has to be
+replicated to all CPUs sharing the clock rails.
+
+> In reality we've assigned them names like speedX-binY-vZ so that we know
+> which speed bin, voltage bin, and version they're part of. Maybe OPP
+> node properties like qcom,speed-bin = <u32>, qcom,pvs-bin = <u32>, etc.
+> would be better?
+
+Lets see, only if we can't get the generic stuff for this.
+
+> At the least, operating-points-names will be required on qcom platforms.
+> A fixed ordering known to the platform would mean that we know exactly
+> how many voltage bins and speed bins and how many voltage bins per speed
+> bin are used for a particular SoC, which we've avoided knowing so far.
+
+What are we referring to fixed ordering? If we have both a list of
+phandles to OPP tables and a list of names, they can be rearranged in
+whatever fashion we want. Isn't it?
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+viresh
