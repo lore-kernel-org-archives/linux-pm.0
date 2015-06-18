@@ -1,43 +1,67 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH 03/12] cpufreq: governor: Rename 'cpu_dbs_common_info'
- to 'cpu_dbs_info'
-Date: Thu, 18 Jun 2015 12:22:52 +0530
-Message-ID: <55826AC4.4060207@linux.vnet.ibm.com>
-References: <cover.1434019473.git.viresh.kumar@linaro.org> <09b68d7545c05abf8f1fb485ddb0f4b2cd5a821f.1434019473.git.viresh.kumar@linaro.org>
+From: Frans Klaver <fransklaver@gmail.com>
+Subject: Re: [PATCH 01/44] kernel: Add support for poweroff handler call chain
+Date: Thu, 18 Jun 2015 08:53:50 +0200
+Message-ID: <CAH6sp9P7rq2y_hiQPHKUP85CwnEmp87yC7Psh4=29h-pYnb_yw@mail.gmail.com>
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-2-git-send-email-linux@roeck-us.net>
+ <55821936.4040704@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-6
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e17.ny.us.ibm.com ([129.33.205.207]:48977 "EHLO
-	e17.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752734AbbFRGxE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jun 2015 02:53:04 -0400
-Received: from /spool/local
-	by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Thu, 18 Jun 2015 02:53:03 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com [9.57.198.29])
-	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 9188D6E803F
-	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2015 02:44:45 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id t5I6qw6Z62914814
-	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2015 06:52:58 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id t5I6qvAM006245
-	for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2015 02:52:58 -0400
-In-Reply-To: <09b68d7545c05abf8f1fb485ddb0f4b2cd5a821f.1434019473.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <55821936.4040704@codeaurora.org>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, linux-sh@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, lguest@lists.ozlabs.org, linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, Alexander Graf <agraf@suse.de>, linux-acpi <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, xen-devel@lists.xenproject.org, Guenter Roeck <linux@roeck-us.net>, Len Brown <len.brown@intel.com>, user-mode-linux-devel@lists.sourceforge.net, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-xtensa@linux-xtensa.org, adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com, linux-tegra@vger.kernel.or
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, ke.wang@spreadtrum.com
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
 
-On 06/11/2015 04:21 PM, Viresh Kumar wrote:
-> Its not common info to all CPUs, but a structure representing common
-> type of cpu info to both governor types. Lets drop 'common_' from its
-> name.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
+On Thu, Jun 18, 2015 at 3:04 AM, Stephen Boyd <sboyd@codeaurora.org> wrote:
+> On 10/06/2014 10:28 PM, Guenter Roeck wrote:
+>> Various drivers implement architecture and/or device specific means to
+>> remove power from the system.  For the most part, those drivers set the
+>> global variable pm_power_off to point to a function within the driver.
+>>
+>> This mechanism has a number of drawbacks.  Typically only one scheme
+>> to remove power is supported (at least if pm_power_off is used).
+>> At least in theory there can be multiple means remove power, some of
+>> which may be less desirable. For example, some mechanisms may only
+>> power off the CPU or the CPU card, while another may power off the
+>> entire system.  Others may really just execute a restart sequence
+>> or drop into the ROM monitor. Using pm_power_off can also be racy
+>> if the function pointer is set from a driver built as module, as the
+>> driver may be in the process of being unloaded when pm_power_off is
+>> called. If there are multiple poweroff handlers in the system, removing
+>> a module with such a handler may inadvertently reset the pointer to
+>> pm_power_off to NULL, leaving the system with no means to remove power.
+>>
+>> Introduce a system poweroff handler call chain to solve the described
+>> problems.  This call chain is expected to be executed from the
+>> architecture specific machine_power_off() function.  Drivers providing
+>> system poweroff functionality are expected to register with this call chain.
+>> By using the priority field in the notifier block, callers can control
+>> poweroff handler execution sequence and thus ensure that the poweroff
+>> handler with the optimal capabilities to remove power for a given system
+>> is called first.
+>
+> What happened to this series? I want to add shutdown support to my
+> platform and I need to write a register on the PMIC in one driver to
+> configure it for shutdown instead of restart and then write an MMIO
+> register to tell the PMIC to actually do the shutdown in another driver.
+> It seems that the notifier solves this case for me, albeit with the
+> slight complication that I need to order the two with some priority.
 
-Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+I was wondering the same thing. I did find out that things kind of
+stalled after Linus cast doubt on the chosen path [1]. I'm not sure
+there's any consensus on what would be best to do instead.
 
+Frans
+
+[1] https://lkml.org/lkml/2014/11/6/641
