@@ -1,118 +1,113 @@
-From: Sebastian Parschauer <sebastian.riemer@profitbricks.com>
-Subject: Re: cpuidle: Kernel panics with AMD Opteron 6300 entering C2 - clock
- related
-Date: Thu, 18 Jun 2015 13:21:44 +0200
-Message-ID: <5582A9C8.8050200@profitbricks.com>
-References: <55814696.1050803@profitbricks.com> <55828DBD.5000109@linaro.org> <5582A2DC.7060001@profitbricks.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f47.google.com ([74.125.82.47]:35140 "EHLO
-	mail-wg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbbFRLVr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jun 2015 07:21:47 -0400
-Received: by wgbhy7 with SMTP id hy7so60937124wgb.2
-        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2015 04:21:46 -0700 (PDT)
-In-Reply-To: <5582A2DC.7060001@profitbricks.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v2] cpuidle: powernv/pseries: Auto-promotion of snooze to deeper idle state
+Date: Thu, 18 Jun 2015 16:53:11 +0530
+Message-ID: <1434626591-14509-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: preeti@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, linuxppc-dev@lists.ozlabs.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org
 
-On 18.06.2015 12:52, Sebastian Parschauer wrote:
-> On 18.06.2015 11:22, Daniel Lezcano wrote:
->> On 06/17/2015 12:06 PM, Sebastian Parschauer wrote:
->>> Hi cpuidle maintainers,
->>>
->>> we notice kernel panics with CPUs from the AMD Opteron 6300 series and
->>> kernel 3.12 when entering C2. In that C-state the clock is shut down but
->>> the flag CPUIDLE_FLAG_TIMER_STOP isn't set. We use the TSC clock source
->>> for performance as our servers host KVM VMs. During the panics
->>> interrupts are enabled again and the timer interrupt corrupts the
->>> instruction pointer and/or the stack pointer.
->>>
->>> Would it help to set the flag CPUIDLE_FLAG_TIMER_STOP for C2?
->>> Or how to fix this?
->>
->> Did you try the flag ? Does it fix it ?
-> 
-> Thanks for your reply. Unfortunately we can't roll out new kernels fast
-> (VMs have to be migrated). But we've disabled the C2 state via sysfs for
-> all CPU cores and all servers and had one more kernel panic with the
-> same call trace although C2 was (or should have been) disabled. We use
-> the menu governor and a v3.12.40 kernel.
-> 
-> It's strange to me coming into the same code path with state index 2 as
-> parameter again. I think I'll prepare a kernel with some debug messages
-> when transitioning from one state to another and deploy it to a test system.
-> 
-> Is there any better method to debug the cpuidle driver?
-> 
-> How do you guys test it?
-> 
-> Can we provide any missing additional information?
-> 
-> Maybe something else corrupts the memory in an interrupt and the cpuidle
-> driver is just the one noticing an unrelated problem.
+The idle cpus which stay in snooze for a long period can degrade the
+perfomance of the sibling cpus. If the cpu stays in snooze for more
+than target residency of the next available idle state, then exit from
+snooze. This gives a chance to the cpuidle governor to re-evaluate the
+last idle state of the cpu to promote it to deeper idle states.
 
-Sorry, I had a closer look at the most recent crash again. It happened
-at entering C1 with disabled C2. So maybe our problem is not cpuidle
-related.
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+Changes from v1:
+-Modified commit message
 
-> 
->>> ==========
->>> Additional debug info:
->>>
->>> BUG: unable to handle kernel NULL pointer dereference at           (null)
->>> IP: [<          (null)>]           (null)
->>> ...
->>> Call trace:
->>> [<ffffffff815af9b5>] cpuidle_idle_call+0xc5/0x150
->>> [<ffffffff8100b529>] arch_cpu_idle+0x9/0x20
->>> [<ffffffff81092e6f>] cpu_startup_entry+0xaf/0x240
->>> [<ffffffff8102df4b>] start_secondary+0x1db/0x240
->>>
->>> The CPUs provide three C-states:
->>> 0: POLL
->>> 1: C1
->>> 2: C2
->>>
->>> C2 information from the crash dump:
->>>
->>>> {
->>>>        name = "C2\000\000\000\000\000\000\000\000\000\000\000\000\000",
->>>>        desc = "ACPI IOPORT
->>>> 0x815\000\000\000\000\000\000\000\000\000\000\000\000\000\000",
->>>>        flags = 1,
->>>>        exit_latency = 100,
->>>>        power_usage = 0,
->>>>        target_residency = 200,
->>>>        disabled = false,
->>>>        enter = 0xffffffffa00ab026 <acpi_idle_enter_simple>,
->>>>        enter_dead = 0xffffffffa00aa39c <acpi_idle_play_dead>
->>>> }
->>>
->>> Assembly level analysis:
->>>
->>>> RDX: 0000000225c17d03
->>>
->>> So EDX is 00000002 and that's the entered state C2.
->>>
->>>> RDI: ffffffff81c15540
->>>> ..
->>>> crash> info symbol 0xffffffff81c15540
->>>> clocksource_tsc in section .data
->>>>
->>>> crash> disassemble cpuidle_enter_state
->>>> ...
->>>>     0xffffffff815af5fc <+60>:    callq  0xffffffff8109b360 <ktime_get>
->>>>     0xffffffff815af601 <+65>:    sti
->>>>     0xffffffff815af602 <+66>:    sub    %r13,%rax <- here rdi still
->>>> points to clocksource_tsc
->>>>     0xffffffff815af605 <+69>:    mov    %rax,%rdi <- rdi is
->>>> overwritten by the ktime_get return address
->>
->>
-> 
+ drivers/cpuidle/cpuidle-powernv.c | 12 ++++++++++++
+ drivers/cpuidle/cpuidle-pseries.c | 11 +++++++++++
+ 2 files changed, 23 insertions(+)
 
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 5937207..1e3ef5e 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -29,18 +29,25 @@ struct cpuidle_driver powernv_idle_driver = {
+ 
+ static int max_idle_state;
+ static struct cpuidle_state *cpuidle_state_table;
++static u64 snooze_timeout;
++static bool snooze_timeout_en;
+ 
+ static int snooze_loop(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
+ 			int index)
+ {
++	u64 snooze_exit_time;
++
+ 	local_irq_enable();
+ 	set_thread_flag(TIF_POLLING_NRFLAG);
+ 
++	snooze_exit_time = get_tb() + snooze_timeout;
+ 	ppc64_runlatch_off();
+ 	while (!need_resched()) {
+ 		HMT_low();
+ 		HMT_very_low();
++		if (snooze_timeout_en && get_tb() > snooze_exit_time)
++			break;
+ 	}
+ 
+ 	HMT_medium();
+@@ -252,6 +259,11 @@ static int powernv_idle_probe(void)
+ 		cpuidle_state_table = powernv_states;
+ 		/* Device tree can indicate more idle states */
+ 		max_idle_state = powernv_add_idle_states();
++		if (max_idle_state > 1) {
++			snooze_timeout_en = true;
++			snooze_timeout = powernv_states[1].target_residency *
++					 tb_ticks_per_usec;
++		}
+  	} else
+  		return -ENODEV;
+ 
+diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+index bb9e2b6..07135e0 100644
+--- a/drivers/cpuidle/cpuidle-pseries.c
++++ b/drivers/cpuidle/cpuidle-pseries.c
+@@ -27,6 +27,8 @@ struct cpuidle_driver pseries_idle_driver = {
+ 
+ static int max_idle_state;
+ static struct cpuidle_state *cpuidle_state_table;
++static u64 snooze_timeout;
++static bool snooze_timeout_en;
+ 
+ static inline void idle_loop_prolog(unsigned long *in_purr)
+ {
+@@ -58,14 +60,18 @@ static int snooze_loop(struct cpuidle_device *dev,
+ 			int index)
+ {
+ 	unsigned long in_purr;
++	u64 snooze_exit_time;
+ 
+ 	idle_loop_prolog(&in_purr);
+ 	local_irq_enable();
+ 	set_thread_flag(TIF_POLLING_NRFLAG);
++	snooze_exit_time = get_tb() + snooze_timeout;
+ 
+ 	while (!need_resched()) {
+ 		HMT_low();
+ 		HMT_very_low();
++		if (snooze_timeout_en && get_tb() > snooze_exit_time)
++			break;
+ 	}
+ 
+ 	HMT_medium();
+@@ -244,6 +250,11 @@ static int pseries_idle_probe(void)
+ 	} else
+ 		return -ENODEV;
+ 
++	if (max_idle_state > 1) {
++		snooze_timeout_en = true;
++		snooze_timeout = cpuidle_state_table[1].target_residency *
++				 tb_ticks_per_usec;
++	}
+ 	return 0;
+ }
+ 
+-- 
+1.9.3
