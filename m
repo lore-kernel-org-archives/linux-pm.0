@@ -1,57 +1,33 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 1/2] clocksource: sh_cmt: Only perform clocksource
- suspend/resume if enabled
-Date: Thu, 18 Jun 2015 16:19:25 +0200
-Message-ID: <CAMuHMdUiDVVY1YE1Pt3gsFfNrTRAHgLdQ_F8CXOKG5aKW1TeFQ@mail.gmail.com>
-References: <1434622954-26747-1-git-send-email-geert+renesas@glider.be>
-	<1434622954-26747-2-git-send-email-geert+renesas@glider.be>
-	<1829815.c8lIHLtv9K@avalon>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH 01/44] kernel: Add support for poweroff handler call chain
+Date: Thu, 18 Jun 2015 08:30:03 -0700
+Message-ID: <20150618153003.GA19224@roeck-us.net>
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
+ <1412659726-29957-2-git-send-email-linux@roeck-us.net>
+ <55821936.4040704@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f45.google.com ([209.85.218.45]:34477 "EHLO
-	mail-oi0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753183AbbFROT0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jun 2015 10:19:26 -0400
-In-Reply-To: <1829815.c8lIHLtv9K@avalon>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-ia64-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <55821936.4040704@codeaurora.org>
+Sender: linux-ia64-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-kernel@vger.kernel.org, linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, Len Brown <len.brown@intel.com>, linux-xtensa@linux-xtensa.org, Pavel Machek <pavel@ucw.cz>, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, lguest@lists.ozlabs.org, linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, Alexander Graf <agraf@suse.de>, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, xen-devel@lists.xenproject.org, devicetree@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com, linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.orgli
 List-Id: linux-pm@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM list <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Magnus Damm <damm@opensource.se>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Laurent,
+On Wed, Jun 17, 2015 at 06:04:54PM -0700, Stephen Boyd wrote:
+[ ... ]
+> 
+> What happened to this series? I want to add shutdown support to my
+> platform and I need to write a register on the PMIC in one driver to
+> configure it for shutdown instead of restart and then write an MMIO
+> register to tell the PMIC to actually do the shutdown in another driver.
+> It seems that the notifier solves this case for me, albeit with the
+> slight complication that I need to order the two with some priority.
+> 
+Can you use the .shutdown driver callback instead ?
 
-On Thu, Jun 18, 2015 at 4:14 PM, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
-> On Thursday 18 June 2015 12:22:33 Geert Uytterhoeven wrote:
->> Currently the sh_cmt clocksource timer is disabled or enabled
->> unconditionally on clocksource suspend resp. resume, even if a better
->> clocksource is present (e.g. arch_sys_counter) and the sh_cmt
->> clocksource is not enabled.
+I see other drivers use that, and check for system_state == SYSTEM_POWER_OFF
+to power off the hardware.
 
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->
-> Good catch. The patch looks good to me.
-
-While the solution was simple, it was hard to catch (engineers and
-lightbulbs... euh timers ;-)
-
-> Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-
-Thanks!
-
-> I've quickly checked the MTU2 and TMU timer drivers and they should be immune
-> to the issue, but I'd appreciate if you could confirm that.
-
-I had concluded the same, thanks for verifying!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Guenter
