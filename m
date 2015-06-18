@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 1/2] clocksource: sh_cmt: Only perform clocksource suspend/resume if enabled
-Date: Thu, 18 Jun 2015 12:22:33 +0200
-Message-ID: <1434622954-26747-2-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH 2/2] PM / Domains: Avoid infinite loops in attach/detach code
+Date: Thu, 18 Jun 2015 12:22:34 +0200
+Message-ID: <1434622954-26747-3-git-send-email-geert+renesas@glider.be>
 References: <1434622954-26747-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <1434622954-26747-1-git-send-email-geert+renesas@glider.be>
@@ -10,86 +10,82 @@ To: Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix
 Cc: Magnus Damm <damm@opensource.se>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Currently the sh_cmt clocksource timer is disabled or enabled
-unconditionally on clocksource suspend resp. resume, even if a better
-clocksource is present (e.g. arch_sys_counter) and the sh_cmt
-clocksource is not enabled.
+If pm_genpd_{add,remove}_device() keeps on failing with -EAGAIN, we end
+up with an infinite loop in genpd_dev_pm_{at,de}tach().
 
-As sh_cmt is a syscore device when its timer is enabled, this may lead
-to a genpd.prepared_count imbalance in the presence of PM Domains, which
-may cause a lock up during reboot after s2ram.
+This may happen due to a genpd.prepared_count imbalance.  This is a bug
+elsewhere, but it will result in a system lock up, possibly during
+reboot of an otherwise functioning system.
 
-During suspend:
-  - pm_genpd_prepare() is called for all non-syscore devices (incl.
-    sh_cmt), increasing genpd.prepared_count for each device,
-  - clocksource.suspend() is called for all clocksource devices,
-  - sh_cmt_clocksource_suspend() calls sh_cmt_stop(), which is a no-op
-    as the clocksource was not enabled.
-
-During resume:
-  - clocksource.resume() is called for all clocksource devices,
-  - sh_cmt_clocksource_resume() calls sh_cmt_start(), which enables the
-    clocksource timer, and turns sh_cmt into a syscore device,
-  - pm_genpd_complete() is called for all non-syscore devices (excl.
-    sh_cmt now!), decreasing genpd.prepared_count for each device but
-    sh_cmt.
-
-Now genpd.prepared_count of the PM Domain containing sh_cmt is still 1
-instead of zero.  On subsequent suspend/resume cycles, sh_cmt is still a
-syscore device, hence it's skipped for pm_genpd_{prepare,complete}(),
-keeping the imbalance of genpd.prepared_count at 1.
-
-During reboot:
-  - platform_drv_shutdown() is called for any platform device that has
-    a driver with a .shutdown() method (only rcar-dmac on R-Car Gen2),
-  - platform_drv_shutdown() calls dev_pm_domain_detach(), which
-    calls genpd_dev_pm_detach(),
-  - genpd_dev_pm_detach() keeps calling pm_genpd_remove_device() until
-    it doesn't return -EAGAIN,
-  - If the device is part of the same PM Domain as sh_cmt,
-    pm_genpd_remove_device() always fails with -EAGAIN due to
-    genpd.prepared_count > 0.
-  - Infinite loop in genpd_dev_pm_detach().
-
-To fix this, only disable or enable the clocksource timer on clocksource
-suspend resp. resume if the clocksource was enabled.
-
-This was tested on r8a7791/koelsch with the CPG Clock Domain:
-  - using arch_sys_counter as the clocksource, which is the default, and
-    which showed the problem,
-  - using sh_cmt as a clocksource ("echo ffca0000.timer > \
-    /sys/devices/system/clocksource/clocksource0/current_clocksource"),
-    which behaves the same as before.
+To avoid this, put a limit on the maximum number of loop iterations,
+including a simple back-off mechanism.  If the limit is reached, the
+operation will just fail.  An error message is already printed.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/clocksource/sh_cmt.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/base/power/domain.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/clocksource/sh_cmt.c b/drivers/clocksource/sh_cmt.c
-index b8ff3c64cc452a16..c96de14036a0adeb 100644
---- a/drivers/clocksource/sh_cmt.c
-+++ b/drivers/clocksource/sh_cmt.c
-@@ -661,6 +661,9 @@ static void sh_cmt_clocksource_suspend(struct clocksource *cs)
- {
- 	struct sh_cmt_channel *ch = cs_to_sh_cmt(cs);
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index cdd547bd67df8218..aa06f60b98b8af35 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -6,6 +6,7 @@
+  * This file is released under the GPLv2.
+  */
  
-+	if (!ch->cs_enabled)
-+		return;
-+
- 	sh_cmt_stop(ch, FLAG_CLOCKSOURCE);
- 	pm_genpd_syscore_poweroff(&ch->cmt->pdev->dev);
- }
-@@ -669,6 +672,9 @@ static void sh_cmt_clocksource_resume(struct clocksource *cs)
- {
- 	struct sh_cmt_channel *ch = cs_to_sh_cmt(cs);
++#include <linux/delay.h>
+ #include <linux/kernel.h>
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
+@@ -19,6 +20,9 @@
+ #include <linux/suspend.h>
+ #include <linux/export.h>
  
-+	if (!ch->cs_enabled)
-+		return;
++#define GENPD_RETRIES	20
++#define GENPD_DELAY_US	10
 +
- 	pm_genpd_syscore_poweron(&ch->cmt->pdev->dev);
- 	sh_cmt_start(ch, FLAG_CLOCKSOURCE);
- }
+ #define GENPD_DEV_CALLBACK(genpd, type, callback, dev)		\
+ ({								\
+ 	type (*__routine)(struct device *__d); 			\
+@@ -2131,6 +2135,7 @@ EXPORT_SYMBOL_GPL(of_genpd_get_from_provider);
+ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
+ {
+ 	struct generic_pm_domain *pd;
++	unsigned int i;
+ 	int ret = 0;
+ 
+ 	pd = pm_genpd_lookup_dev(dev);
+@@ -2139,10 +2144,13 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
+ 
+ 	dev_dbg(dev, "removing from PM domain %s\n", pd->name);
+ 
+-	while (1) {
++	for (i = 0; i < GENPD_RETRIES; i++) {
+ 		ret = pm_genpd_remove_device(pd, dev);
+ 		if (ret != -EAGAIN)
+ 			break;
++
++		if (i > GENPD_RETRIES / 2)
++			udelay(GENPD_DELAY_US);
+ 		cond_resched();
+ 	}
+ 
+@@ -2218,10 +2226,13 @@ int genpd_dev_pm_attach(struct device *dev)
+ 
+ 	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
+ 
+-	while (1) {
++	for (i = 0; i < GENPD_RETRIES; i++) {
+ 		ret = pm_genpd_add_device(pd, dev);
+ 		if (ret != -EAGAIN)
+ 			break;
++
++		if (i > GENPD_RETRIES / 2)
++			udelay(GENPD_DELAY_US);
+ 		cond_resched();
+ 	}
+ 
 -- 
 1.9.1
 
