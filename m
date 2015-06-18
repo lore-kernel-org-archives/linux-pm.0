@@ -1,209 +1,95 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V3] PM / Domains: Remove intermediate states from the
- power off sequence
-Date: Thu, 18 Jun 2015 12:14:28 +0200
-Message-ID: <CAPDyKFqvNp0PcjikZqj4XapfbrNqAUW=ZBFQvvzQZLPMcpS1oQ@mail.gmail.com>
-References: <1434020737-13354-1-git-send-email-ulf.hansson@linaro.org>
-	<7ha8w01qir.fsf@deeprootsystems.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f172.google.com ([209.85.216.172]:33256 "EHLO
-	mail-qc0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753667AbbFRKO3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jun 2015 06:14:29 -0400
-Received: by qcbfz6 with SMTP id fz6so21929394qcb.0
-        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2015 03:14:28 -0700 (PDT)
-In-Reply-To: <7ha8w01qir.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH 1/2] clocksource: sh_cmt: Only perform clocksource suspend/resume if enabled
+Date: Thu, 18 Jun 2015 12:22:33 +0200
+Message-ID: <1434622954-26747-2-git-send-email-geert+renesas@glider.be>
+References: <1434622954-26747-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1434622954-26747-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Magnus Damm <damm@opensource.se>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 16 June 2015 at 01:49, Kevin Hilman <khilman@kernel.org> wrote:
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
->
->> Genpd's ->runtime_suspend() (assigned to pm_genpd_runtime_suspend())
->> doesn't immediately walk the hierarchy of ->runtime_suspend() callbacks.
->> Instead, pm_genpd_runtime_suspend() calls pm_genpd_poweroff() which
->> postpones that until *all* the devices in the genpd are runtime suspended.
->>
->> When pm_genpd_poweroff() discovers that the last device in the genpd is
->> about to be runtime suspended, it calls __pm_genpd_save_device() for *all*
->> the devices in the genpd sequentially. Furthermore,
->> __pm_genpd_save_device() invokes the ->start() callback, walks the
->> hierarchy of the ->runtime_suspend() callbacks and invokes the ->stop()
->> callback. This causes a "thundering herd" problem.
->>
->> Let's address this issue by having pm_genpd_runtime_suspend() immediately
->> walk the hierarchy of the ->runtime_suspend() callbacks, instead of
->> postponing that to the power off sequence via pm_genpd_poweroff(). If the
->> selected ->runtime_suspend() callback doesn't return an error code, call
->> pm_genpd_poweroff() to see if it's feasible to also power off the PM
->> domain.
->>
->> Adopting this change enables us to simplify parts of the code in genpd,
->> for example the locking mechanism. Additionally, it gives some positive
->> side effects, as described below.
->>
->> i)
->> One device's ->runtime_resume() latency is no longer affected by other
->> devices' latencies in a genpd.
->>
->> The complexity genpd has to support the option to abort the power off
->> sequence suffers from latency issues. More precisely, a device that is
->> requested to be runtime resumed, may end up waiting for
->> __pm_genpd_save_device() to complete its operations for *another* device.
->> That's because pm_genpd_poweroff() can't confirm an abort request while it
->> waits for __pm_genpd_save_device() to return.
->>
->> As this patch removes the intermediate states in pm_genpd_poweroff() while
->> powering off the PM domain, we no longer need the ability to abort that
->> sequence.
->>
->> ii)
->> Make pm_runtime[_status]_suspended() reliable when used with genpd.
->>
->> Until the last device in a genpd becomes idle, pm_genpd_runtime_suspend()
->> will return 0 without actually walking the hierarchy of the
->> ->runtime_suspend() callbacks. However, by returning 0 the runtime PM core
->> considers the device as runtime_suspended, so
->> pm_runtime[_status]_suspended() will return true, even though the device
->> isn't (yet) runtime suspended.
->>
->> After this patch, since pm_genpd_runtime_suspend() immediately walks the
->> hierarchy of the ->runtime_suspend() callbacks,
->> pm_runtime[_status]_suspended() will accurately reflect the status of the
->> device.
->>
->> iii)
->> Enable fine-grained PM through runtime PM callbacks in drivers/subsystems.
->>
->> There are currently cases were drivers/subsystems implements runtime PM
->> callbacks to deploy fine-grained PM (e.g. gate clocks, move pinctrl to
->> power-save state, etc.). While using the genpd, pm_genpd_runtime_suspend()
->> postpones invoking these callbacks until *all* the devices in the genpd
->> are runtime suspended. In essence, one runtime resumed device prevents
->> fine-grained PM for other devices within the same genpd.
->>
->> After this patch, since pm_genpd_runtime_suspend() immediately walks the
->> hierarchy of the ->runtime_suspend() callbacks, fine-grained PM is enabled
->> throughout all the levels of runtime PM callbacks.
->>
->> Unfortunately this patch also comes with a drawback, as described in the
->> summary below.
->>
->> Driver's/subsystem's runtime PM callbacks may be invoked even when the
->> genpd hasn't actually powered off the PM domain, potentially introducing
->> unnecessary latency.
->>
->> However, in most cases, saving/restoring register contexts for devices are
->> typically fast operations or can be optimized in device specific ways
->> (e.g. shadow copies of register contents in memory, device-specific checks
->> to see if context has been lost before restoring context, etc.).
->>
->> Still, in some cases the driver/subsystem may suffer from latency if
->> runtime PM is used in a very fine-grained manner (e.g. for each IO request
->> or xfer). To prevent that extra overhead, the driver/subsystem may deploy
->> the runtime PM autosuspend feature.
->>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->
-> Really like the updated changelog.  Very well described, and IMO you
-> make a very strong case for this change, which I completely agree is the
-> right way to go forward.  IMO, it greatly simplifies understanding this
-> code as well.
->
-> I have some minor nits below, but overall really like this approach and
-> would like to see this hit -next early in the v4.3 cycle so it gets good
-> test exposure.
->
-> I know Lina has been testing this (or an earlier version) on qcom
-> hardware so would be nice to get a tested-by from her, and would also be
-> nice to see if Geert has a chance to take this for a spin on his Renesas
-> hardware and anyone can take this for a spin on Exynos.
->
-> [...]
->
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index 2327613..2e03f68 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -133,41 +133,6 @@ static void genpd_sd_counter_inc(struct generic_pm_domain *genpd)
->>       smp_mb__after_atomic();
->>  }
->>
->> -static void genpd_acquire_lock(struct generic_pm_domain *genpd)
->> -{
->> -     DEFINE_WAIT(wait);
->> -
->> -     mutex_lock(&genpd->lock);
->> -     /*
->> -      * Wait for the domain to transition into either the active,
->> -      * or the power off state.
->> -      */
->> -     for (;;) {
->> -             prepare_to_wait(&genpd->status_wait_queue, &wait,
->> -                             TASK_UNINTERRUPTIBLE);
->> -             if (genpd->status == GPD_STATE_ACTIVE
->> -                 || genpd->status == GPD_STATE_POWER_OFF)
->> -                     break;
->> -             mutex_unlock(&genpd->lock);
->> -
->> -             schedule();
->> -
->> -             mutex_lock(&genpd->lock);
->> -     }
->> -     finish_wait(&genpd->status_wait_queue, &wait);
->> -}
->> -
->> -static void genpd_release_lock(struct generic_pm_domain *genpd)
->> -{
->> -     mutex_unlock(&genpd->lock);
->> -}
->> -
->> -static void genpd_set_active(struct generic_pm_domain *genpd)
->> -{
->> -     if (genpd->resume_count == 0)
->> -             genpd->status = GPD_STATE_ACTIVE;
->> -}
->
-> Minor nit: I think you should leave these 3 helpers and just simplify
-> them.  It will make the changes below easier to read as well.
+Currently the sh_cmt clocksource timer is disabled or enabled
+unconditionally on clocksource suspend resp. resume, even if a better
+clocksource is present (e.g. arch_sys_counter) and the sh_cmt
+clocksource is not enabled.
 
-I would rather like to remove them. The reason is to create consistency.
+As sh_cmt is a syscore device when its timer is enabled, this may lead
+to a genpd.prepared_count imbalance in the presence of PM Domains, which
+may cause a lock up during reboot after s2ram.
 
-For the locking part, there are currently mixtures of
-mutex_lock|unlock() and genpd_acquire|release_lock(). Following your
-suggestion will leave around 6-7 places where mutex_lock() will remain
-used (additionally for mutex_unlock()). So removing the helper
-functions creates a consistent behaviour.
+During suspend:
+  - pm_genpd_prepare() is called for all non-syscore devices (incl.
+    sh_cmt), increasing genpd.prepared_count for each device,
+  - clocksource.suspend() is called for all clocksource devices,
+  - sh_cmt_clocksource_suspend() calls sh_cmt_stop(), which is a no-op
+    as the clocksource was not enabled.
 
-For the genpd->status, it's currently being assigned at various places
-without using a helper function. Again I wanted to create a consistent
-behaviour and make the code more readable.
+During resume:
+  - clocksource.resume() is called for all clocksource devices,
+  - sh_cmt_clocksource_resume() calls sh_cmt_start(), which enables the
+    clocksource timer, and turns sh_cmt into a syscore device,
+  - pm_genpd_complete() is called for all non-syscore devices (excl.
+    sh_cmt now!), decreasing genpd.prepared_count for each device but
+    sh_cmt.
 
->
-> Also, for the locking, Lina will be adding these locking functions back
-> anyways, so let's just avoid the extra churn.
+Now genpd.prepared_count of the PM Domain containing sh_cmt is still 1
+instead of zero.  On subsequent suspend/resume cycles, sh_cmt is still a
+syscore device, hence it's skipped for pm_genpd_{prepare,complete}(),
+keeping the imbalance of genpd.prepared_count at 1.
 
-Actually I think it becomes more evident what Lina's patchset does if
-she re-introduces an API to deal with the locking. Moreover we can
-"force" that patchset to not break consistently around the locking.
+During reboot:
+  - platform_drv_shutdown() is called for any platform device that has
+    a driver with a .shutdown() method (only rcar-dmac on R-Car Gen2),
+  - platform_drv_shutdown() calls dev_pm_domain_detach(), which
+    calls genpd_dev_pm_detach(),
+  - genpd_dev_pm_detach() keeps calling pm_genpd_remove_device() until
+    it doesn't return -EAGAIN,
+  - If the device is part of the same PM Domain as sh_cmt,
+    pm_genpd_remove_device() always fails with -EAGAIN due to
+    genpd.prepared_count > 0.
+  - Infinite loop in genpd_dev_pm_detach().
 
->
-> Otherwise, I think this version is looking really good.
->
-> With the above tweaks, feel free to add
->
-> Reviewed-by: Kevin Hilman <khilman@linaro.org>
->
-> Kevin
+To fix this, only disable or enable the clocksource timer on clocksource
+suspend resp. resume if the clocksource was enabled.
 
-Thanks a lot for reviewing!
+This was tested on r8a7791/koelsch with the CPG Clock Domain:
+  - using arch_sys_counter as the clocksource, which is the default, and
+    which showed the problem,
+  - using sh_cmt as a clocksource ("echo ffca0000.timer > \
+    /sys/devices/system/clocksource/clocksource0/current_clocksource"),
+    which behaves the same as before.
 
-If you have a strong opinion about your suggestions, I will happily
-adapt to them, please let me know.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/clocksource/sh_cmt.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Kind regards
-Uffe
+diff --git a/drivers/clocksource/sh_cmt.c b/drivers/clocksource/sh_cmt.c
+index b8ff3c64cc452a16..c96de14036a0adeb 100644
+--- a/drivers/clocksource/sh_cmt.c
++++ b/drivers/clocksource/sh_cmt.c
+@@ -661,6 +661,9 @@ static void sh_cmt_clocksource_suspend(struct clocksource *cs)
+ {
+ 	struct sh_cmt_channel *ch = cs_to_sh_cmt(cs);
+ 
++	if (!ch->cs_enabled)
++		return;
++
+ 	sh_cmt_stop(ch, FLAG_CLOCKSOURCE);
+ 	pm_genpd_syscore_poweroff(&ch->cmt->pdev->dev);
+ }
+@@ -669,6 +672,9 @@ static void sh_cmt_clocksource_resume(struct clocksource *cs)
+ {
+ 	struct sh_cmt_channel *ch = cs_to_sh_cmt(cs);
+ 
++	if (!ch->cs_enabled)
++		return;
++
+ 	pm_genpd_syscore_poweron(&ch->cmt->pdev->dev);
+ 	sh_cmt_start(ch, FLAG_CLOCKSOURCE);
+ }
+-- 
+1.9.1
+
