@@ -1,105 +1,209 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: cpuidle: Kernel panics with AMD Opteron 6300 entering C2 - clock
- related
-Date: Thu, 18 Jun 2015 11:22:05 +0200
-Message-ID: <55828DBD.5000109@linaro.org>
-References: <55814696.1050803@profitbricks.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V3] PM / Domains: Remove intermediate states from the
+ power off sequence
+Date: Thu, 18 Jun 2015 12:14:28 +0200
+Message-ID: <CAPDyKFqvNp0PcjikZqj4XapfbrNqAUW=ZBFQvvzQZLPMcpS1oQ@mail.gmail.com>
+References: <1434020737-13354-1-git-send-email-ulf.hansson@linaro.org>
+	<7ha8w01qir.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:33991 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752421AbbFRJWD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jun 2015 05:22:03 -0400
-Received: by wicnd19 with SMTP id nd19so16452031wic.1
-        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2015 02:22:02 -0700 (PDT)
-In-Reply-To: <55814696.1050803@profitbricks.com>
+Received: from mail-qc0-f172.google.com ([209.85.216.172]:33256 "EHLO
+	mail-qc0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753667AbbFRKO3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jun 2015 06:14:29 -0400
+Received: by qcbfz6 with SMTP id fz6so21929394qcb.0
+        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2015 03:14:28 -0700 (PDT)
+In-Reply-To: <7ha8w01qir.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Parschauer <sebastian.riemer@profitbricks.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 06/17/2015 12:06 PM, Sebastian Parschauer wrote:
-> Hi cpuidle maintainers,
+On 16 June 2015 at 01:49, Kevin Hilman <khilman@kernel.org> wrote:
+> Ulf Hansson <ulf.hansson@linaro.org> writes:
 >
-> we notice kernel panics with CPUs from the AMD Opteron 6300 series an=
-d
-> kernel 3.12 when entering C2. In that C-state the clock is shut down =
-but
-> the flag CPUIDLE_FLAG_TIMER_STOP isn't set. We use the TSC clock sour=
-ce
-> for performance as our servers host KVM VMs. During the panics
-> interrupts are enabled again and the timer interrupt corrupts the
-> instruction pointer and/or the stack pointer.
->
-> Would it help to set the flag CPUIDLE_FLAG_TIMER_STOP for C2?
-> Or how to fix this?
-
-Did you try the flag ? Does it fix it ?
-
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> Additional debug info:
->
-> BUG: unable to handle kernel NULL pointer dereference at           (n=
-ull)
-> IP: [<          (null)>]           (null)
-> ...
-> Call trace:
-> [<ffffffff815af9b5>] cpuidle_idle_call+0xc5/0x150
-> [<ffffffff8100b529>] arch_cpu_idle+0x9/0x20
-> [<ffffffff81092e6f>] cpu_startup_entry+0xaf/0x240
-> [<ffffffff8102df4b>] start_secondary+0x1db/0x240
->
-> The CPUs provide three C-states:
-> 0: POLL
-> 1: C1
-> 2: C2
->
-> C2 information from the crash dump:
->
->> {
->>        name =3D "C2\000\000\000\000\000\000\000\000\000\000\000\000\=
-000",
->>        desc =3D "ACPI IOPORT 0x815\000\000\000\000\000\000\000\000\0=
-00\000\000\000\000\000",
->>        flags =3D 1,
->>        exit_latency =3D 100,
->>        power_usage =3D 0,
->>        target_residency =3D 200,
->>        disabled =3D false,
->>        enter =3D 0xffffffffa00ab026 <acpi_idle_enter_simple>,
->>        enter_dead =3D 0xffffffffa00aa39c <acpi_idle_play_dead>
->> }
->
-> Assembly level analysis:
->
->> RDX: 0000000225c17d03
->
-> So EDX is 00000002 and that's the entered state C2.
->
->> RDI: ffffffff81c15540
->> ..
->> crash> info symbol 0xffffffff81c15540
->> clocksource_tsc in section .data
+>> Genpd's ->runtime_suspend() (assigned to pm_genpd_runtime_suspend())
+>> doesn't immediately walk the hierarchy of ->runtime_suspend() callbacks.
+>> Instead, pm_genpd_runtime_suspend() calls pm_genpd_poweroff() which
+>> postpones that until *all* the devices in the genpd are runtime suspended.
 >>
->> crash> disassemble cpuidle_enter_state
->> ...
->>     0xffffffff815af5fc <+60>:    callq  0xffffffff8109b360 <ktime_ge=
-t>
->>     0xffffffff815af601 <+65>:    sti
->>     0xffffffff815af602 <+66>:    sub    %r13,%rax <- here rdi still =
-points to clocksource_tsc
->>     0xffffffff815af605 <+69>:    mov    %rax,%rdi <- rdi is overwrit=
-ten by the ktime_get return address
+>> When pm_genpd_poweroff() discovers that the last device in the genpd is
+>> about to be runtime suspended, it calls __pm_genpd_save_device() for *all*
+>> the devices in the genpd sequentially. Furthermore,
+>> __pm_genpd_save_device() invokes the ->start() callback, walks the
+>> hierarchy of the ->runtime_suspend() callbacks and invokes the ->stop()
+>> callback. This causes a "thundering herd" problem.
+>>
+>> Let's address this issue by having pm_genpd_runtime_suspend() immediately
+>> walk the hierarchy of the ->runtime_suspend() callbacks, instead of
+>> postponing that to the power off sequence via pm_genpd_poweroff(). If the
+>> selected ->runtime_suspend() callback doesn't return an error code, call
+>> pm_genpd_poweroff() to see if it's feasible to also power off the PM
+>> domain.
+>>
+>> Adopting this change enables us to simplify parts of the code in genpd,
+>> for example the locking mechanism. Additionally, it gives some positive
+>> side effects, as described below.
+>>
+>> i)
+>> One device's ->runtime_resume() latency is no longer affected by other
+>> devices' latencies in a genpd.
+>>
+>> The complexity genpd has to support the option to abort the power off
+>> sequence suffers from latency issues. More precisely, a device that is
+>> requested to be runtime resumed, may end up waiting for
+>> __pm_genpd_save_device() to complete its operations for *another* device.
+>> That's because pm_genpd_poweroff() can't confirm an abort request while it
+>> waits for __pm_genpd_save_device() to return.
+>>
+>> As this patch removes the intermediate states in pm_genpd_poweroff() while
+>> powering off the PM domain, we no longer need the ability to abort that
+>> sequence.
+>>
+>> ii)
+>> Make pm_runtime[_status]_suspended() reliable when used with genpd.
+>>
+>> Until the last device in a genpd becomes idle, pm_genpd_runtime_suspend()
+>> will return 0 without actually walking the hierarchy of the
+>> ->runtime_suspend() callbacks. However, by returning 0 the runtime PM core
+>> considers the device as runtime_suspended, so
+>> pm_runtime[_status]_suspended() will return true, even though the device
+>> isn't (yet) runtime suspended.
+>>
+>> After this patch, since pm_genpd_runtime_suspend() immediately walks the
+>> hierarchy of the ->runtime_suspend() callbacks,
+>> pm_runtime[_status]_suspended() will accurately reflect the status of the
+>> device.
+>>
+>> iii)
+>> Enable fine-grained PM through runtime PM callbacks in drivers/subsystems.
+>>
+>> There are currently cases were drivers/subsystems implements runtime PM
+>> callbacks to deploy fine-grained PM (e.g. gate clocks, move pinctrl to
+>> power-save state, etc.). While using the genpd, pm_genpd_runtime_suspend()
+>> postpones invoking these callbacks until *all* the devices in the genpd
+>> are runtime suspended. In essence, one runtime resumed device prevents
+>> fine-grained PM for other devices within the same genpd.
+>>
+>> After this patch, since pm_genpd_runtime_suspend() immediately walks the
+>> hierarchy of the ->runtime_suspend() callbacks, fine-grained PM is enabled
+>> throughout all the levels of runtime PM callbacks.
+>>
+>> Unfortunately this patch also comes with a drawback, as described in the
+>> summary below.
+>>
+>> Driver's/subsystem's runtime PM callbacks may be invoked even when the
+>> genpd hasn't actually powered off the PM domain, potentially introducing
+>> unnecessary latency.
+>>
+>> However, in most cases, saving/restoring register contexts for devices are
+>> typically fast operations or can be optimized in device specific ways
+>> (e.g. shadow copies of register contents in memory, device-specific checks
+>> to see if context has been lost before restoring context, etc.).
+>>
+>> Still, in some cases the driver/subsystem may suffer from latency if
+>> runtime PM is used in a very fine-grained manner (e.g. for each IO request
+>> or xfer). To prevent that extra overhead, the driver/subsystem may deploy
+>> the runtime PM autosuspend feature.
+>>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>
+> Really like the updated changelog.  Very well described, and IMO you
+> make a very strong case for this change, which I completely agree is the
+> right way to go forward.  IMO, it greatly simplifies understanding this
+> code as well.
+>
+> I have some minor nits below, but overall really like this approach and
+> would like to see this hit -next early in the v4.3 cycle so it gets good
+> test exposure.
+>
+> I know Lina has been testing this (or an earlier version) on qcom
+> hardware so would be nice to get a tested-by from her, and would also be
+> nice to see if Geert has a chance to take this for a spin on his Renesas
+> hardware and anyone can take this for a spin on Exynos.
+>
+> [...]
+>
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index 2327613..2e03f68 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -133,41 +133,6 @@ static void genpd_sd_counter_inc(struct generic_pm_domain *genpd)
+>>       smp_mb__after_atomic();
+>>  }
+>>
+>> -static void genpd_acquire_lock(struct generic_pm_domain *genpd)
+>> -{
+>> -     DEFINE_WAIT(wait);
+>> -
+>> -     mutex_lock(&genpd->lock);
+>> -     /*
+>> -      * Wait for the domain to transition into either the active,
+>> -      * or the power off state.
+>> -      */
+>> -     for (;;) {
+>> -             prepare_to_wait(&genpd->status_wait_queue, &wait,
+>> -                             TASK_UNINTERRUPTIBLE);
+>> -             if (genpd->status == GPD_STATE_ACTIVE
+>> -                 || genpd->status == GPD_STATE_POWER_OFF)
+>> -                     break;
+>> -             mutex_unlock(&genpd->lock);
+>> -
+>> -             schedule();
+>> -
+>> -             mutex_lock(&genpd->lock);
+>> -     }
+>> -     finish_wait(&genpd->status_wait_queue, &wait);
+>> -}
+>> -
+>> -static void genpd_release_lock(struct generic_pm_domain *genpd)
+>> -{
+>> -     mutex_unlock(&genpd->lock);
+>> -}
+>> -
+>> -static void genpd_set_active(struct generic_pm_domain *genpd)
+>> -{
+>> -     if (genpd->resume_count == 0)
+>> -             genpd->status = GPD_STATE_ACTIVE;
+>> -}
+>
+> Minor nit: I think you should leave these 3 helpers and just simplify
+> them.  It will make the changes below easier to read as well.
 
+I would rather like to remove them. The reason is to create consistency.
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+For the locking part, there are currently mixtures of
+mutex_lock|unlock() and genpd_acquire|release_lock(). Following your
+suggestion will leave around 6-7 places where mutex_lock() will remain
+used (additionally for mutex_unlock()). So removing the helper
+functions creates a consistent behaviour.
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+For the genpd->status, it's currently being assigned at various places
+without using a helper function. Again I wanted to create a consistent
+behaviour and make the code more readable.
 
+>
+> Also, for the locking, Lina will be adding these locking functions back
+> anyways, so let's just avoid the extra churn.
+
+Actually I think it becomes more evident what Lina's patchset does if
+she re-introduces an API to deal with the locking. Moreover we can
+"force" that patchset to not break consistently around the locking.
+
+>
+> Otherwise, I think this version is looking really good.
+>
+> With the above tweaks, feel free to add
+>
+> Reviewed-by: Kevin Hilman <khilman@linaro.org>
+>
+> Kevin
+
+Thanks a lot for reviewing!
+
+If you have a strong opinion about your suggestions, I will happily
+adapt to them, please let me know.
+
+Kind regards
+Uffe
