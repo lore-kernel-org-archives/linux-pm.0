@@ -1,79 +1,60 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [pm:bleeding-edge 182/211] warning: (DRM_PS8622 && ..) selects
- BACKLIGHT_CLASS_DEVICE which has unmet direct dependencies (HAS_IOMEM && ..)
-Date: Thu, 18 Jun 2015 01:13:43 +0200
-Message-ID: <CAJZ5v0j+oULP9DdzSbH0Xj8cxa3p6pzFsXWtJDYcr6oTqWFvMw@mail.gmail.com>
-References: <201506170557.YRNvzGlT%fengguang.wu@intel.com>
-	<558120D6.3020509@redhat.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 01/44] kernel: Add support for poweroff handler call chain
+Date: Wed, 17 Jun 2015 18:04:54 -0700
+Message-ID: <55821936.4040704@codeaurora.org>
+References: <1412659726-29957-1-git-send-email-linux@roeck-us.net> <1412659726-29957-2-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f181.google.com ([209.85.212.181]:37615 "EHLO
-	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754204AbbFQXNo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jun 2015 19:13:44 -0400
-Received: by wifx6 with SMTP id x6so69597184wif.0
-        for <linux-pm@vger.kernel.org>; Wed, 17 Jun 2015 16:13:43 -0700 (PDT)
-In-Reply-To: <558120D6.3020509@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-hexagon-owner@vger.kernel.org>
+In-Reply-To: <1412659726-29957-2-git-send-email-linux@roeck-us.net>
+Sender: linux-hexagon-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>, linux-kernel@vger.kernel.org
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, Len Brown <len.brown@intel.com>, linux-xtensa@linux-xtensa.org, Pavel Machek <pavel@ucw.cz>, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, lguest@lists.ozlabs.org, linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, Alexander Graf <agraf@suse.de>, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, xen-devel@lists.xenproject.org, devicetree@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com, linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.org, linux-arm-kernel@lists.infradead
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: kbuild test robot <fengguang.wu@intel.com>, kbuild-all@01.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, Jun 17, 2015 at 9:25 AM, Hans de Goede <hdegoede@redhat.com> wrote:
-> Hi,
+On 10/06/2014 10:28 PM, Guenter Roeck wrote:
+> Various drivers implement architecture and/or device specific means to
+> remove power from the system.  For the most part, those drivers set the
+> global variable pm_power_off to point to a function within the driver.
 >
-> On 16-06-15 23:32, kbuild test robot wrote:
->>
->> tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
->> bleeding-edge
->> head:   51fdad2e85fb18646ffc208535c9fa0e15ed8293
->> commit: e6d42ec784d38a2fb70164c2ba6ae1c11e418668 [182/211]
->> acpi-video-detect: video: Make video_detect code part of the video module
->> config: ia64-defconfig (attached as .config)
->> reproduce:
->>    wget
->> https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross
->> -O ~/bin/make.cross
->>    chmod +x ~/bin/make.cross
->>    git checkout e6d42ec784d38a2fb70164c2ba6ae1c11e418668
->>    # save the attached .config to linux build tree
->>    make.cross ARCH=ia64
->>
->> All warnings (new ones prefixed by >>):
->>
->> warning: (DRM_PS8622 && DRM_RADEON && DRM_NOUVEAU && DRM_I915 &&
->> DRM_GMA500 && DRM_SHMOBILE && DRM_TILCDC && FB_BACKLIGHT && FB_MX3 &&
->> USB_APPLEDISPLAY && FB_OLPC_DCON && ACPI_CMPC && SAMSUNG_Q10) selects
->> BACKLIGHT_CLASS_DEVICE which has unmet direct dependencies (HAS_IOMEM &&
->> BACKLIGHT_LCD_SUPPORT)
+> This mechanism has a number of drawbacks.  Typically only one scheme
+> to remove power is supported (at least if pm_power_off is used).
+> At least in theory there can be multiple means remove power, some of
+> which may be less desirable. For example, some mechanisms may only
+> power off the CPU or the CPU card, while another may power off the
+> entire system.  Others may really just execute a restart sequence
+> or drop into the ROM monitor. Using pm_power_off can also be racy
+> if the function pointer is set from a driver built as module, as the
+> driver may be in the process of being unloaded when pm_power_off is
+> called. If there are multiple poweroff handlers in the system, removing
+> a module with such a handler may inadvertently reset the pointer to
+> pm_power_off to NULL, leaving the system with no means to remove power.
 >
->
-> Ugh, it is not clear to me how this patch triggers this warning, it actually
-> contains Kconfig fixes
-> for various other drivers to avoid this problem.
+> Introduce a system poweroff handler call chain to solve the described
+> problems.  This call chain is expected to be executed from the
+> architecture specific machine_power_off() function.  Drivers providing
+> system poweroff functionality are expected to register with this call chain.
+> By using the priority field in the notifier block, callers can control
+> poweroff handler execution sequence and thus ensure that the poweroff
+> handler with the optimal capabilities to remove power for a given system
+> is called first.
 
-It may just modify a file where the problem is already present.
+What happened to this series? I want to add shutdown support to my
+platform and I need to write a register on the PMIC in one driver to
+configure it for shutdown instead of restart and then write an MMIO
+register to tell the PMIC to actually do the shutdown in another driver.
+It seems that the notifier solves this case for me, albeit with the
+slight complication that I need to order the two with some priority.
 
-> Anyways we will need to fix this, we can either go the intel 915 drm driver
-> way (although that seems to
-> cause the warning too?) :
->
->         # i915 depends on ACPI_VIDEO when ACPI is enabled
->         # but for select to work, need to select ACPI_VIDEO's dependencies,
-> ick
->         select BACKLIGHT_LCD_SUPPORT if ACPI
->         select BACKLIGHT_CLASS_DEVICE if ACPI
->         select INPUT if ACPI
->         select ACPI_VIDEO if ACPI
->         select ACPI_BUTTON if ACPI
->
-> Or, which seems a better fix to me, we could make BACKLIGHT_CLASS_DEVICE
-> not fall under the BACKLIGHT_LCD_SUPPORT menu enable variable, since as
-> a class driver it is used in cases when there are no lcd-backlight drivers
-> too.
+I'm also considering putting the PMIC configuration part into the reboot
+notifier chain, because it only does things to change the configuration
+and not actually any shutdown/restart itself. That removes any
+requirement to get the priority of notifiers right. This series will
+still be useful for the MMIO register that needs to be toggled though.
+Right now I have to assign pm_power_off or hook the reboot notifier with
+a different priority to make this work.
 
-That sounds good to me.
-
-Thanks,
-Rafael
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
