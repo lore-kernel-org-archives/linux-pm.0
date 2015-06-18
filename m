@@ -1,33 +1,55 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 01/44] kernel: Add support for poweroff handler call chain
-Date: Thu, 18 Jun 2015 08:30:03 -0700
-Message-ID: <20150618153003.GA19224@roeck-us.net>
-References: <1412659726-29957-1-git-send-email-linux@roeck-us.net>
- <1412659726-29957-2-git-send-email-linux@roeck-us.net>
- <55821936.4040704@codeaurora.org>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH 2/4] mfd: da9150: Update DT bindings for Fuel-Gauge support
+Date: Thu, 18 Jun 2015 17:06:36 +0100
+Message-ID: <c2059088c648e3356a0c6f35db8f3f1116a68ffd.1434643491.git.Adam.Thomson.Opensource@diasemi.com>
+References: <cover.1434643491.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-ia64-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <55821936.4040704@codeaurora.org>
-Sender: linux-ia64-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: linux-kernel@vger.kernel.org, linux-m32r-ja@ml.linux-m32r.org, linux-mips@linux-mips.org, linux-efi@vger.kernel.org, linux-ia64@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, Len Brown <len.brown@intel.com>, linux-xtensa@linux-xtensa.org, Pavel Machek <pavel@ucw.cz>, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, lguest@lists.ozlabs.org, linux-c6x-dev@linux-c6x.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, Alexander Graf <agraf@suse.de>, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, xen-devel@lists.xenproject.org, devicetree@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, linux-pm@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-m68k@lists.linux-m68k.org, linux-am33-list@redhat.com, linux-tegra@vger.kernel.org, openipmi-developer@lists.sourceforge.net, linux-metag@vger.kernel.orgli
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail1.bemta3.messagelabs.com ([195.245.230.164]:29354 "EHLO
+	mail1.bemta3.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756400AbbFRQNd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jun 2015 12:13:33 -0400
+In-Reply-To: <cover.1434643491.git.Adam.Thomson.Opensource@diasemi.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
 
-On Wed, Jun 17, 2015 at 06:04:54PM -0700, Stephen Boyd wrote:
-[ ... ]
-> 
-> What happened to this series? I want to add shutdown support to my
-> platform and I need to write a register on the PMIC in one driver to
-> configure it for shutdown instead of restart and then write an MMIO
-> register to tell the PMIC to actually do the shutdown in another driver.
-> It seems that the notifier solves this case for me, albeit with the
-> slight complication that I need to order the two with some priority.
-> 
-Can you use the .shutdown driver callback instead ?
+Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+---
+ Documentation/devicetree/bindings/mfd/da9150.txt | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-I see other drivers use that, and check for system_state == SYSTEM_POWER_OFF
-to power off the hardware.
+diff --git a/Documentation/devicetree/bindings/mfd/da9150.txt b/Documentation/devicetree/bindings/mfd/da9150.txt
+index d0588ea..8bf1a20 100644
+--- a/Documentation/devicetree/bindings/mfd/da9150.txt
++++ b/Documentation/devicetree/bindings/mfd/da9150.txt
+@@ -6,6 +6,7 @@ Device			 Description
+ ------			 -----------
+ da9150-gpadc		: General Purpose ADC
+ da9150-charger		: Battery Charger
++da9150-fg		: Battery Fuel-Gauge
+ 
+ ======
+ 
+@@ -22,6 +23,7 @@ Required properties:
+ Sub-devices:
+ - da9150-gpadc: See Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
+ - da9150-charger: See Documentation/devicetree/bindings/power/da9150-charger.txt
++- da9150-fg: See Documentation/devicetree/bindings/power/da9150-fg.txt
+ 
+ 
+ Example:
+@@ -40,4 +42,8 @@ Example:
+ 		da9150-charger {
+ 			...
+ 		};
++
++		da9150-fg {
++			...
++		};
+ 	};
+-- 
+1.9.3
 
-Guenter
