@@ -1,91 +1,49 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 2/2] PM / Domains: Avoid infinite loops in attach/detach code
-Date: Thu, 18 Jun 2015 12:22:34 +0200
-Message-ID: <1434622954-26747-3-git-send-email-geert+renesas@glider.be>
-References: <1434622954-26747-1-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH 0/2] PM / Domains: Infinite loop during reboot
+Date: Thu, 18 Jun 2015 12:22:32 +0200
+Message-ID: <1434622954-26747-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1434622954-26747-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-sh-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 Cc: Magnus Damm <damm@opensource.se>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-If pm_genpd_{add,remove}_device() keeps on failing with -EAGAIN, we end
-up with an infinite loop in genpd_dev_pm_{at,de}tach().
+	Hi all,
 
-This may happen due to a genpd.prepared_count imbalance.  This is a bug
-elsewhere, but it will result in a system lock up, possibly during
-reboot of an otherwise functioning system.
+This patch series fixes an infinite loop during reboot after s2ram, as
+seen on r8a7791/koelsch with the CPG Clock Domain:
+  - Patch 1 fixes the cause in the sh_cmt driver,
+  - Patch 2 hardens the PM Domain core code against infinite loops.
 
-To avoid this, put a limit on the maximum number of loop iterations,
-including a simple back-off mechanism.  If the limit is reached, the
-operation will just fail.  An error message is already printed.
+Both patches individually fix the symptom (lock up during reboot), but
+only the first one fixes the root cause.
+Patches are against next-20150618.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- drivers/base/power/domain.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+The discussion thread where the problem was originally reported is "PM /
+Domains: Infinite loop during reboot"
+(http://permalink.gmane.org/gmane.linux.ports.sh.devel/45249).
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index cdd547bd67df8218..aa06f60b98b8af35 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -6,6 +6,7 @@
-  * This file is released under the GPLv2.
-  */
- 
-+#include <linux/delay.h>
- #include <linux/kernel.h>
- #include <linux/io.h>
- #include <linux/platform_device.h>
-@@ -19,6 +20,9 @@
- #include <linux/suspend.h>
- #include <linux/export.h>
- 
-+#define GENPD_RETRIES	20
-+#define GENPD_DELAY_US	10
-+
- #define GENPD_DEV_CALLBACK(genpd, type, callback, dev)		\
- ({								\
- 	type (*__routine)(struct device *__d); 			\
-@@ -2131,6 +2135,7 @@ EXPORT_SYMBOL_GPL(of_genpd_get_from_provider);
- static void genpd_dev_pm_detach(struct device *dev, bool power_off)
- {
- 	struct generic_pm_domain *pd;
-+	unsigned int i;
- 	int ret = 0;
- 
- 	pd = pm_genpd_lookup_dev(dev);
-@@ -2139,10 +2144,13 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
- 
- 	dev_dbg(dev, "removing from PM domain %s\n", pd->name);
- 
--	while (1) {
-+	for (i = 0; i < GENPD_RETRIES; i++) {
- 		ret = pm_genpd_remove_device(pd, dev);
- 		if (ret != -EAGAIN)
- 			break;
-+
-+		if (i > GENPD_RETRIES / 2)
-+			udelay(GENPD_DELAY_US);
- 		cond_resched();
- 	}
- 
-@@ -2218,10 +2226,13 @@ int genpd_dev_pm_attach(struct device *dev)
- 
- 	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
- 
--	while (1) {
-+	for (i = 0; i < GENPD_RETRIES; i++) {
- 		ret = pm_genpd_add_device(pd, dev);
- 		if (ret != -EAGAIN)
- 			break;
-+
-+		if (i > GENPD_RETRIES / 2)
-+			udelay(GENPD_DELAY_US);
- 		cond_resched();
- 	}
- 
+Thanks!
+
+Geert Uytterhoeven (2):
+  clocksource: sh_cmt: Only perform clocksource suspend/resume if
+    enabled
+  PM / Domains: Avoid infinite loops in attach/detach code
+
+ drivers/base/power/domain.c  | 15 +++++++++++++--
+ drivers/clocksource/sh_cmt.c |  6 ++++++
+ 2 files changed, 19 insertions(+), 2 deletions(-)
+
 -- 
 1.9.1
 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
