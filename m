@@ -1,74 +1,45 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V3] PM / Domains: Remove intermediate states from the
- power off sequence
-Date: Thu, 18 Jun 2015 09:02:10 +0200
-Message-ID: <CAPDyKFp4Bh2C5PNNJS3bUqDLADS6MKTfH8UCzbm3c-ofbVOWow@mail.gmail.com>
-References: <1434020737-13354-1-git-send-email-ulf.hansson@linaro.org>
-	<20150617200346.GC23268@linaro.org>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: Re: [PATCH v3] ARM: tegra: cpuidle: implement cpuidle_state.enter_freeze()
+Date: Thu, 18 Jun 2015 09:09:29 +0200
+Message-ID: <CAAObsKCURyo-ujcA7r+UYqSw6ie-aBxKiYEdTKwe-HrL14RkBw@mail.gmail.com>
+References: <1432046953-12945-1-git-send-email-tomeu.vizoso@collabora.com> <1773599.T1QStsTFTH@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f175.google.com ([209.85.216.175]:34345 "EHLO
-	mail-qc0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372AbbFRHCL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jun 2015 03:02:11 -0400
-Received: by qcwx2 with SMTP id x2so21027776qcw.1
-        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2015 00:02:10 -0700 (PDT)
-In-Reply-To: <20150617200346.GC23268@linaro.org>
+Received: from mail-wi0-f182.google.com ([209.85.212.182]:37941 "EHLO
+	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752079AbbFRHJy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jun 2015 03:09:54 -0400
+In-Reply-To: <1773599.T1QStsTFTH@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Russell King <linux@arm.linux.org.uk>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Ingo Molnar <mingo@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-[...]
-
->> @@ -671,32 +475,29 @@ static int pm_genpd_runtime_suspend(struct device
->> *dev)
->>         if (IS_ERR(genpd))
->>                 return -EINVAL;
+On 21 May 2015 at 03:02, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, May 19, 2015 04:49:12 PM Tomeu Vizoso wrote:
+>> This callback is expected to do the same as enter() but it has to
+>> guarantee that interrupts aren't enabled at any point in its execution,
+>> as the tick is frozen.
 >>
->> +       /*
->> +        * We can't allow to power off the PM domain if it holds an
->> irq_safe
->> +        * device. That's because we use mutexes to protect data while
->> power
->> +        * off and on the PM domain, thus we can't execute in atomic
->> context.
->> +        */
->> +       if (dev->power.irq_safe)
->> +               return -EBUSY;
->> +
+>> It will be called when the system goes to suspend-to-idle and will
+>> reduce power usage because CPUs won't be awaken for unnecessary IRQs.
+>>
+>> By setting the CPUIDLE_FLAG_TIMER_STOP flag, we can reuse the same code
+>> for both the enter() and enter_freeze() callbacks.
+>>
+>> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+>> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> This check will prevent the device from being saved/stopped. This should
-> be allowed. Its the mutex_lock(&genpd->lock) below that would be a
-> problem, if the device is IRQ safe. But that happens only after the
-> device is stopped.
+> Makes sense to me, but I suppose it should go in via arm-soc.
 
-Yes, as we discussed around your patch in [1].
+Hi Thierry,
 
-Earlier we could invoke the ->stop|start() callbacks for an IRQ
-safe device. This version of $subject patch prevents that.
+what's the plan regarding merging of this patch?
 
-I am working on a v4, that brings back that functionality, but we can
-actually do more. As from the changes in $subject patch, we don't need
-to hold the mutex while invoking the runtime PM callbacks for a
-device. This enables us to invoke them for IRQ safe devices, yet
-another positive side effect.
+It needs df8d9ee ("cpuidle: Run tick_broadcast_exit() with disabled
+interrupts") so it doesn't break boot.
 
->
-> I am inclined to think that the existing check below is the correct
-> place to check. Let me know if I am missing something.
->
+Thanks,
 
-You are correct.
-
-Still, as I intend to invoke the runtime PM callbacks for IRQ safe
-devices some minor change is also needed in pm_genpd_runtime_resume().
-
-[...]
-
-Kind regards
-Uffe
-
-[1]
-http://www.spinics.net/lists/arm-kernel/msg425162.html
+Tomeu
