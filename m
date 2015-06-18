@@ -1,201 +1,83 @@
-From: Alexandra Yates <alexandra.yates@linux.intel.com>
-Subject: [PATCH V4] Report interrupt(s) that caused system wakeup
-Date: Wed, 17 Jun 2015 18:08:41 -0700
-Message-ID: <1434589721-15018-2-git-send-email-alexandra.yates@linux.intel.com>
-References: <1434589721-15018-1-git-send-email-alexandra.yates@linux.intel.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V7 2/3] OPP: Allow multiple OPP tables to be passed via
+ DT
+Date: Wed, 17 Jun 2015 18:30:24 -0700
+Message-ID: <55821F30.2090802@codeaurora.org>
+References: <cover.1433434659.git.viresh.kumar@linaro.org> <263c128844f5a3c9280c8be71f6c9eb1869a5188.1433434659.git.viresh.kumar@linaro.org> <CAL_Jsq+EOOeQw42wZi+H82ovLn8LcQUuK9HGT+FvewdhTf7Q1w@mail.gmail.com> <20150617133314.GB15153@linux> <CAL_Jsq+SdgAf7=Yq7Jk_1d9jTpAOLCEuEDCZvD=-h=2MWsNfFw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:30715 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751567AbbFRBHk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 17 Jun 2015 21:07:40 -0400
-In-Reply-To: <1434589721-15018-1-git-send-email-alexandra.yates@linux.intel.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:40352 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753281AbbFRBa3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Jun 2015 21:30:29 -0400
+In-Reply-To: <CAL_Jsq+SdgAf7=Yq7Jk_1d9jTpAOLCEuEDCZvD=-h=2MWsNfFw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: tglx@linutronix.de, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org, peterz@infradead.org, Alexandra Yates <alexandra.yates@linux.intel.com>
+To: Rob Herring <robherring2@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Nishanth Menon <nm@ti.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Grant Likely <grant.likely@linaro.org>, Olof Johansson <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, Santosh Shilimkar <santosh.shilimkar@oracle.com>
 
-Add a new IRQ flag named IRQD_WAKEUP_TRIGGERED.  This flag is set
-when a given IRQ fires after it has been armed for system wakeup.
-The flag is cleared before arming the IRQ for system wakeup
-during the next system suspend. This feature makes possible to
-check which IRQs might have woken the system up from sleep last
-time it was suspended.
+On 06/17/2015 06:47 AM, Rob Herring wrote:
+> On Wed, Jun 17, 2015 at 8:33 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 17-06-15, 08:23, Rob Herring wrote:
+>>>> +                       operating-points-v2 = <&cpu0_opp_table_slow>, <&cpu0_opp_table_fast>;
+>>> You've made a fundamental change here in that this can now be a list
+>>> of phandles. There should be some description on what a list means
+>>> (merge the tables?, select one?).
+>> Did you miss the description I wrote few lines earlier or are you
+>> asking for something else? This is what I wrote earlier:
+>>
+>>>> +Devices may want to choose OPP tables at runtime and so can provide a list of
+>>>> +phandles here. But only *one* of them should be chosen at runtime.
+>> So, clearly only ONE of the tables should be used.
+> Yes, never mind.
+>
+>>> I think this needs to have a defined order and the platform should
+>>> know what that is. For example, if you read the efuses and decide you
+>>> need the "slow" table, you know to pick the first entry. Then you
+>>> don't need opp-name. Does that work for QCom?
+>> Why forcing on the order here? For example, consider a case where the
+>> platform can have four tables, A B C D. Now DT is free to pass all
+>> four or just a subset of those. Like, for some boards table B doesn't
+>> stand valid. And so it may wanna pass just A C D. And so keeping these
+>> tables in order is going to break for sure. Flexibility is probably
+>> better in this case.
+> Defined order is a key part of DT bindings. We solve the variable
+> length problem with name lists associated with variable length
+> property like:
+>
+> operating-point-names = "slow", "fast";
+>
+> I'm not a fan of doing this if we can avoid it, but we should at least
+> follow the same pattern. Don't send me a patch with that yet, I want
+> to hear from Stephen.
+>
+> You can also use "status" to disable specific tables rather than
+> removing from the list.
+>
 
-Add a new sysfs attribute under /sys/power/ named:pm_last_wakeup_irqs
-when read, will return a list of IRQs with the new flag set.  That
-will be useful for system wakeup diagnostics.
+An operating-point(s?)-names property seems ok... but doesn't that mean
+that every CPU that uses the OPP has to have the same list of
+operating-point-names? It would make sense to me if the operating points
+were called something different depending on *which* CPU is using them,
+but in this case the only name for the operating point is "slow" or
+"fast", etc.
 
-Signed-off-by: Alexandra Yates <alexandra.yates@linux.intel.com>
----
- Documentation/ABI/testing/sysfs-power | 11 +++++++++++
- drivers/base/power/wakeup.c           | 31 +++++++++++++++++++++++++++++++
- include/linux/irq.h                   |  7 +++++++
- include/linux/suspend.h               |  1 +
- kernel/irq/pm.c                       |  2 ++
- kernel/power/main.c                   | 23 +++++++++++++++++++++++
- 6 files changed, 75 insertions(+)
+In reality we've assigned them names like speedX-binY-vZ so that we know
+which speed bin, voltage bin, and version they're part of. Maybe OPP
+node properties like qcom,speed-bin = <u32>, qcom,pvs-bin = <u32>, etc.
+would be better? It would make the parsing code slightly more
+complicated because it needs to look for 2 or 3 properties instead of a
+name property though. Or would having different node names be
+acceptable? That would avoid this list of strings.
 
-diff --git a/Documentation/ABI/testing/sysfs-power b/Documentation/ABI/testing/sysfs-power
-index f455181..4f9cc3a 100644
---- a/Documentation/ABI/testing/sysfs-power
-+++ b/Documentation/ABI/testing/sysfs-power
-@@ -256,3 +256,14 @@ Description:
- 		Writing a "1" enables this printing while writing a "0"
- 		disables it.  The default value is "0".  Reading from this file
- 		will display the current value.
-+
-+What:		/sys/power/pm_last_wakeup_irqs
-+Date:		April 2015
-+Contact:	Alexandra Yates <alexandra.yates@linux.intel.org>
-+Description:
-+		The /sys/power/pm_last_wakeup_irqs file allows user space
-+		to identify and report the IRQs responsible for waking the
-+		system up from sleep. The IRQD_WAKEUP_TRIGGERED flag is set and
-+		reported when the given IRQ fires after it has been armed for
-+		system wakeup. This output is useful for system wakeup
-+		diagnostics.
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 7726200..1f15863 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -737,6 +737,37 @@ void pm_wakeup_clear(void)
- 	pm_abort_suspend = false;
- }
- 
-+#ifdef CONFIG_PM_SLEEP_DEBUG
-+/*
-+ * pm_get_last_wakeup_irqs - Parses interrupts to identify which one
-+ * caused the system to wake up from suspend-to-idle.
-+ * @buf: keeps track of the irqs that casued the system to wakeup
-+ */
-+ssize_t pm_get_last_wakeup_irqs(char *buf, size_t size)
-+{
-+	struct irq_desc *desc;
-+	int irq;
-+	char *str = buf;
-+	char *end = buf + size;
-+
-+	if (!pm_abort_suspend)
-+		return 0;
-+
-+	/* If pm_abort_suspend is not set, the previous suspend was aborted
-+	 * before arming the wakeup IRQs, so avoid printing stale information
-+	 * in that case.
-+	 */
-+	for_each_irq_desc(irq, desc)
-+		if (irqd_triggered_wakeup(&desc->irq_data))
-+			str += scnprintf(str, end - str, "%d ", irq);
-+
-+	if (str != buf)
-+		str--;
-+
-+	return (str - buf);
-+}
-+#endif /* CONFIG_PM_SLEEP_DEBUG */
-+
- /**
-  * pm_get_wakeup_count - Read the number of registered wakeup events.
-  * @count: Address to store the value at.
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 62c6901..9b1a31f 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -182,6 +182,7 @@ struct irq_data {
-  * IRQD_IRQ_MASKED		- Masked state of the interrupt
-  * IRQD_IRQ_INPROGRESS		- In progress state of the interrupt
-  * IRQD_WAKEUP_ARMED		- Wakeup mode armed
-+ * IRQD_WAKEUP_TRIGGERED	- Triggered system wakeup
-  */
- enum {
- 	IRQD_TRIGGER_MASK		= 0xf,
-@@ -196,8 +197,14 @@ enum {
- 	IRQD_IRQ_MASKED			= (1 << 17),
- 	IRQD_IRQ_INPROGRESS		= (1 << 18),
- 	IRQD_WAKEUP_ARMED		= (1 << 19),
-+	IRQD_WAKEUP_TRIGGERED		= (1 << 20),
- };
- 
-+static inline bool irqd_triggered_wakeup(struct irq_data *d)
-+{
-+	return d->state_use_accessors & IRQD_WAKEUP_TRIGGERED;
-+}
-+
- static inline bool irqd_is_setaffinity_pending(struct irq_data *d)
- {
- 	return d->state_use_accessors & IRQD_SETAFFINITY_PENDING;
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 5efe743..7cadded 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -378,6 +378,7 @@ void restore_processor_state(void);
- /* kernel/power/main.c */
- extern int register_pm_notifier(struct notifier_block *nb);
- extern int unregister_pm_notifier(struct notifier_block *nb);
-+extern ssize_t pm_get_last_wakeup_irqs(char *buf, size_t size);
- 
- #define pm_notifier(fn, pri) {				\
- 	static struct notifier_block fn##_nb =			\
-diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-index 5204a6d..52dc34c 100644
---- a/kernel/irq/pm.c
-+++ b/kernel/irq/pm.c
-@@ -22,6 +22,7 @@ bool irq_pm_check_wakeup(struct irq_desc *desc)
- 		desc->depth++;
- 		irq_disable(desc);
- 		pm_system_wakeup();
-+		irqd_set(&desc->irq_data, IRQD_WAKEUP_TRIGGERED);
- 		return true;
- 	}
- 	return false;
-@@ -73,6 +74,7 @@ static bool suspend_device_irq(struct irq_desc *desc, int irq)
- 	if (!desc->action || desc->no_suspend_depth)
- 		return false;
- 
-+	irqd_clear(&desc->irq_data, IRQD_WAKEUP_TRIGGERED);
- 	if (irqd_is_wakeup_set(&desc->irq_data)) {
- 		irqd_set(&desc->irq_data, IRQD_WAKEUP_ARMED);
- 		/*
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 86e8157..77b46d8 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -272,6 +272,28 @@ static inline void pm_print_times_init(void)
- {
- 	pm_print_times_enabled = !!initcall_debug;
- }
-+
-+static ssize_t pm_last_wakeup_irqs_show(struct kobject *kobj,
-+					struct kobj_attribute *attr,
-+					char *buf)
-+{
-+	size_t ret;
-+
-+	ret = pm_get_last_wakeup_irqs(buf, PAGE_SIZE);
-+	if (ret)
-+		buf[ret++] = '\n';
-+
-+	return ret;
-+}
-+
-+static ssize_t pm_last_wakeup_irqs_store(struct kobject *kobj,
-+					struct kobj_attribute *attr,
-+					const char *buf, size_t n)
-+{
-+	return -EINVAL;
-+}
-+power_attr(pm_last_wakeup_irqs);
-+
- #else /* !CONFIG_PP_SLEEP_DEBUG */
- static inline void pm_print_times_init(void) {}
- #endif /* CONFIG_PM_SLEEP_DEBUG */
-@@ -604,6 +626,7 @@ static struct attribute * g[] = {
- #endif
- #ifdef CONFIG_PM_SLEEP_DEBUG
- 	&pm_print_times_attr.attr,
-+	&pm_last_wakeup_irqs_attr.attr,
- #endif
- #endif
- #ifdef CONFIG_FREEZER
+At the least, operating-points-names will be required on qcom platforms.
+A fixed ordering known to the platform would mean that we know exactly
+how many voltage bins and speed bins and how many voltage bins per speed
+bin are used for a particular SoC, which we've avoided knowing so far.
+
 -- 
-1.9.1
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
 
