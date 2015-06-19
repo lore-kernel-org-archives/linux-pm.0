@@ -1,49 +1,84 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 10/10] cpufreq: propagate errors returned from __cpufreq_governor()
-Date: Fri, 19 Jun 2015 23:39:52 +0530
-Message-ID: <55845AF0.1070706@linux.vnet.ibm.com>
-References: <cover.1434713657.git.viresh.kumar@linaro.org> <46b51eea20399c927fb1f16839773f618133ae09.1434713657.git.viresh.kumar@linaro.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V7 2/3] OPP: Allow multiple OPP tables to be passed via DT
+Date: Fri, 19 Jun 2015 11:44:03 -0700
+Message-ID: <20150619184403.GC22132@codeaurora.org>
+References: <cover.1433434659.git.viresh.kumar@linaro.org>
+ <263c128844f5a3c9280c8be71f6c9eb1869a5188.1433434659.git.viresh.kumar@linaro.org>
+ <CAL_Jsq+EOOeQw42wZi+H82ovLn8LcQUuK9HGT+FvewdhTf7Q1w@mail.gmail.com>
+ <20150617133314.GB15153@linux>
+ <CAL_Jsq+SdgAf7=Yq7Jk_1d9jTpAOLCEuEDCZvD=-h=2MWsNfFw@mail.gmail.com>
+ <55821F30.2090802@codeaurora.org>
+ <20150618022543.GA28820@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-6
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e18.ny.us.ibm.com ([129.33.205.208]:43186 "EHLO
-	e18.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753330AbbFSSK0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jun 2015 14:10:26 -0400
-Received: from /spool/local
-	by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Fri, 19 Jun 2015 14:10:25 -0400
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com [9.57.198.25])
-	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id A5BC06E804D
-	for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2015 14:02:06 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id t5JIAJrO58523692
-	for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2015 18:10:20 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
-	by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id t5JIAHm4023186
-	for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2015 14:10:19 -0400
-In-Reply-To: <46b51eea20399c927fb1f16839773f618133ae09.1434713657.git.viresh.kumar@linaro.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:43425 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752303AbbFSSoG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jun 2015 14:44:06 -0400
+Content-Disposition: inline
+In-Reply-To: <20150618022543.GA28820@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, ke.wang@spreadtrum.com
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rob Herring <robherring2@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Nishanth Menon <nm@ti.com>, Mark Brown <broonie@kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Grant Likely <grant.likely@linaro.org>, Olof Johansson <olof@lixom.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, Santosh
 
-On 06/19/2015 05:18 PM, Viresh Kumar wrote:
-> Return codes aren't honored properly in cpufreq_set_policy(). This can
-> lead to two problems:
-> - wrong errors propagated to sysfs
-> - we try to do next state-change even if the previous one failed
+On 06/18, Viresh Kumar wrote:
+> On 17-06-15, 18:30, Stephen Boyd wrote:
+> > An operating-point(s?)-names property seems ok... but doesn't that mean
+> > that every CPU that uses the OPP has to have the same list of
+> > operating-point-names?
 > 
-> cpufreq_governor_dbs() now returns proper errors on all invalid
-> state-transition requests and this code should honor that.
+> Why do you think so? For me the operating-points-v2-names property
+> will be present in CPU node (as there is no OPP node which can have
+> it) and so every CPU is free to choose what it wants to.
+
+Yes.
+
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > It would make sense to me if the operating points
+> > were called something different depending on *which* CPU is using them,
+> > but in this case the only name for the operating point is "slow" or
+> > "fast", etc.
+> 
+> I am completely confused now. :)
+> 
 
-Incorporating the nit in my previous reply to this patch would mean,
+As am I.
 
-Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> The problem you stated now was there with the current state of
+> bindings. The name is embedded into the OPP table node and so is fixed
+> for all the CPUs. Moving it to the CPU node will give all CPUs a
+> chance to name it whatever they want to. And the same list has to be
+> replicated to all CPUs sharing the clock rails.
+> 
 
+Yes I don't see how the name will be different for any CPU, hence
+my complaint/question about duplicate names in each CPU. I guess
+it isn't any worse than clock-names though so I'm fine with it.
+
+> > In reality we've assigned them names like speedX-binY-vZ so that we know
+> > which speed bin, voltage bin, and version they're part of. Maybe OPP
+> > node properties like qcom,speed-bin = <u32>, qcom,pvs-bin = <u32>, etc.
+> > would be better?
+> 
+> Lets see, only if we can't get the generic stuff for this.
+> 
+> > At the least, operating-points-names will be required on qcom platforms.
+> > A fixed ordering known to the platform would mean that we know exactly
+> > how many voltage bins and speed bins and how many voltage bins per speed
+> > bin are used for a particular SoC, which we've avoided knowing so far.
+> 
+> What are we referring to fixed ordering? If we have both a list of
+> phandles to OPP tables and a list of names, they can be rearranged in
+> whatever fashion we want. Isn't it?
+> 
+
+This is a reply to Rob's question about fixed ordering without a
+names property. That's unlikely to work out for qcom chips.
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
 --
 To unsubscribe from this list: send the line "unsubscribe linux-pm" in
