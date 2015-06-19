@@ -1,1206 +1,495 @@
-From: Scott Wood <scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Subject: [RFC PATCH 4/8] clk: qoriq: Move chip-specific knowledge into driver
-Date: Thu, 18 Jun 2015 21:49:14 -0500
-Message-ID: <1434682158-7243-5-git-send-email-scottwood@freescale.com>
-References: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH 06/12] cpufreq: governor: Keep single copy of information
+ common to policy->cpus
+Date: Fri, 19 Jun 2015 09:43:24 +0530
+Message-ID: <558396E4.5040004@linux.vnet.ibm.com>
+References: <cover.1434019473.git.viresh.kumar@linaro.org> <ca16538aebad3c886092c11dc3cc22e1385f2415.1434019473.git.viresh.kumar@linaro.org> <557E6D6E.1070200@linux.vnet.ibm.com> <20150618055941.GA3410@linux>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1434682158-7243-1-git-send-email-scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Tang Yuantian <Yuantian.Tang-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Liberman Igal-B31950 <Igal.Liberman-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Bucur Madalin-Cristian-B32716 <madalin.bucur-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Scott Wood <scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e39.co.us.ibm.com ([32.97.110.160]:59565 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751283AbbFSENf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jun 2015 00:13:35 -0400
+Received: from /spool/local
+	by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Thu, 18 Jun 2015 22:13:34 -0600
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com [9.57.198.26])
+	by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 80CCD6E804A
+	for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2015 00:05:17 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id t5J4DUpd45023398
+	for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2015 04:13:30 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+	by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id t5J4DSt2021671
+	for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2015 00:13:30 -0400
+In-Reply-To: <20150618055941.GA3410@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, ke.wang@spreadtrum.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
 
-The device tree should describe the chips (or chip-like subblocks) in
-the system, but it generally does not describe individual registers --
-it should identify, rather than describe, a programming interface.
+On 06/18/2015 11:29 AM, Viresh Kumar wrote:
+> From: Viresh Kumar <viresh.kumar@linaro.org>
+> Date: Fri, 5 Jun 2015 13:09:45 +0530
+> Subject: [PATCH] cpufreq: governor: Keep single copy of information common to
+>  policy->cpus
+> 
+> Some information is common to all CPUs belonging to a policy, but are
+> kept on per-cpu basis. Lets keep that in another structure common to all
+> policy->cpus. That will make updates/reads to that less complex and less
+> error prone.
+> 
+> The memory for ccdbs is allocated/freed at INIT/EXIT, so that it we
+> don't reallocate it for STOP/START sequence. It will be also be used (in
+> next patch) while the governor is stopped and so must not be freed that
+> early.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-This has not been the case with the QorIQ clockgen nodes.  The
-knowledge of what each bit setting of CLKCnCSR means is encoded in
-three places (binding, pll node, and mux node), and the last also needs
-to know which options are valid on a particular chip.  All three of
-these locations are considered stable ABI, making it difficult to fix
-mistakes (of which I have found several), much less refactor the
-abstraction to be able to address problems, limitations, or new chips.
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> ---
+>  drivers/cpufreq/cpufreq_conservative.c | 18 ++++---
+>  drivers/cpufreq/cpufreq_governor.c     | 92 +++++++++++++++++++++++++---------
+>  drivers/cpufreq/cpufreq_governor.h     | 24 +++++----
+>  drivers/cpufreq/cpufreq_ondemand.c     | 38 +++++++-------
+>  4 files changed, 114 insertions(+), 58 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index af47d322679e..5b5c01ca556c 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -47,7 +47,7 @@ static inline unsigned int get_freq_target(struct cs_dbs_tuners *cs_tuners,
+>  static void cs_check_cpu(int cpu, unsigned int load)
+>  {
+>  	struct cs_cpu_dbs_info_s *dbs_info = &per_cpu(cs_cpu_dbs_info, cpu);
+> -	struct cpufreq_policy *policy = dbs_info->cdbs.policy;
+> +	struct cpufreq_policy *policy = dbs_info->cdbs.ccdbs->policy;
+>  	struct dbs_data *dbs_data = policy->governor_data;
+>  	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
+> 
+> @@ -106,22 +106,24 @@ static void cs_dbs_timer(struct work_struct *work)
+>  {
+>  	struct cs_cpu_dbs_info_s *dbs_info = container_of(work,
+>  			struct cs_cpu_dbs_info_s, cdbs.dwork.work);
+> -	unsigned int cpu = dbs_info->cdbs.policy->cpu;
+> +	struct cpufreq_policy *policy = dbs_info->cdbs.ccdbs->policy;
+> +	unsigned int cpu = policy->cpu;
+>  	struct cs_cpu_dbs_info_s *core_dbs_info = &per_cpu(cs_cpu_dbs_info,
+>  			cpu);
+> -	struct dbs_data *dbs_data = dbs_info->cdbs.policy->governor_data;
+> +	struct dbs_data *dbs_data = policy->governor_data;
+>  	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
+>  	int delay = delay_for_sampling_rate(cs_tuners->sampling_rate);
+>  	bool modify_all = true;
+> 
+> -	mutex_lock(&core_dbs_info->cdbs.timer_mutex);
+> -	if (!need_load_eval(&core_dbs_info->cdbs, cs_tuners->sampling_rate))
+> +	mutex_lock(&core_dbs_info->cdbs.ccdbs->timer_mutex);
+> +	if (!need_load_eval(core_dbs_info->cdbs.ccdbs,
+> +			    cs_tuners->sampling_rate))
+>  		modify_all = false;
+>  	else
+>  		dbs_check_cpu(dbs_data, cpu);
+> 
+> -	gov_queue_work(dbs_data, dbs_info->cdbs.policy, delay, modify_all);
+> -	mutex_unlock(&core_dbs_info->cdbs.timer_mutex);
+> +	gov_queue_work(dbs_data, policy, delay, modify_all);
+> +	mutex_unlock(&core_dbs_info->cdbs.ccdbs->timer_mutex);
+>  }
+> 
+>  static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+> @@ -135,7 +137,7 @@ static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+>  	if (!dbs_info->enable)
+>  		return 0;
+> 
+> -	policy = dbs_info->cdbs.policy;
+> +	policy = dbs_info->cdbs.ccdbs->policy;
+> 
+>  	/*
+>  	 * we only care if our internally tracked freq moves outside the 'valid'
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index c0566f86caed..72a92fa71ba5 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -35,7 +35,7 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+>  	struct cpu_dbs_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
+>  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
+>  	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
+> -	struct cpufreq_policy *policy;
+> +	struct cpufreq_policy *policy = cdbs->ccdbs->policy;
+>  	unsigned int sampling_rate;
+>  	unsigned int max_load = 0;
+>  	unsigned int ignore_nice;
+> @@ -60,8 +60,6 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+>  		ignore_nice = cs_tuners->ignore_nice_load;
+>  	}
+> 
+> -	policy = cdbs->policy;
+> -
+>  	/* Get Absolute Load */
+>  	for_each_cpu(j, policy->cpus) {
+>  		struct cpu_dbs_info *j_cdbs;
+> @@ -209,17 +207,18 @@ static inline void gov_cancel_work(struct dbs_data *dbs_data,
+>  }
+> 
+>  /* Will return if we need to evaluate cpu load again or not */
+> -bool need_load_eval(struct cpu_dbs_info *cdbs, unsigned int sampling_rate)
+> +bool need_load_eval(struct cpu_common_dbs_info *ccdbs,
+> +		    unsigned int sampling_rate)
+>  {
+> -	if (policy_is_shared(cdbs->policy)) {
+> +	if (policy_is_shared(ccdbs->policy)) {
+>  		ktime_t time_now = ktime_get();
+> -		s64 delta_us = ktime_us_delta(time_now, cdbs->time_stamp);
+> +		s64 delta_us = ktime_us_delta(time_now, ccdbs->time_stamp);
+> 
+>  		/* Do nothing if we recently have sampled */
+>  		if (delta_us < (s64)(sampling_rate / 2))
+>  			return false;
+>  		else
+> -			cdbs->time_stamp = time_now;
+> +			ccdbs->time_stamp = time_now;
+>  	}
+> 
+>  	return true;
+> @@ -238,6 +237,37 @@ static void set_sampling_rate(struct dbs_data *dbs_data,
+>  	}
+>  }
+> 
+> +static int alloc_ccdbs(struct cpufreq_policy *policy,
+> +		       struct common_dbs_data *cdata)
+> +{
+> +	struct cpu_common_dbs_info *ccdbs;
+> +	int j;
+> +
+> +	/* Allocate memory for the common information for policy->cpus */
+> +	ccdbs = kzalloc(sizeof(*ccdbs), GFP_KERNEL);
+> +	if (!ccdbs)
+> +		return -ENOMEM;
+> +
+> +	/* Set ccdbs for all CPUs, online+offline */
+> +	for_each_cpu(j, policy->related_cpus)
+> +		cdata->get_cpu_cdbs(j)->ccdbs = ccdbs;
+> +
+> +	return 0;
+> +}
+> +
+> +static void free_ccdbs(struct cpufreq_policy *policy,
+> +		       struct common_dbs_data *cdata)
+> +{
+> +	struct cpu_dbs_info *cdbs = cdata->get_cpu_cdbs(policy->cpu);
+> +	struct cpu_common_dbs_info *ccdbs = cdbs->ccdbs;
+> +	int j;
+> +
+> +	for_each_cpu(j, policy->cpus)
+> +		cdata->get_cpu_cdbs(j)->ccdbs = NULL;
+> +
+> +	kfree(ccdbs);
+> +}
+> +
+>  static int cpufreq_governor_init(struct cpufreq_policy *policy,
+>  				 struct dbs_data *dbs_data,
+>  				 struct common_dbs_data *cdata)
+> @@ -248,6 +278,11 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy,
+>  	if (dbs_data) {
+>  		if (WARN_ON(have_governor_per_policy()))
+>  			return -EINVAL;
+> +
+> +		ret = alloc_ccdbs(policy, cdata);
+> +		if (ret)
+> +			return ret;
+> +
+>  		dbs_data->usage_count++;
+>  		policy->governor_data = dbs_data;
+>  		return 0;
+> @@ -257,12 +292,16 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy,
+>  	if (!dbs_data)
+>  		return -ENOMEM;
+> 
+> +	ret = alloc_ccdbs(policy, cdata);
+> +	if (ret)
+> +		goto free_dbs_data;
+> +
+>  	dbs_data->cdata = cdata;
+>  	dbs_data->usage_count = 1;
+> 
+>  	ret = cdata->init(dbs_data, !policy->governor->initialized);
+>  	if (ret)
+> -		goto free_dbs_data;
+> +		goto free_ccdbs;
+> 
+>  	/* policy latency is in ns. Convert it to us first */
+>  	latency = policy->cpuinfo.transition_latency / 1000;
+> @@ -299,6 +338,8 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy,
+>  	}
+>  cdata_exit:
+>  	cdata->exit(dbs_data, !policy->governor->initialized);
+> +free_ccdbs:
+> +	free_ccdbs(policy, cdata);
+>  free_dbs_data:
+>  	kfree(dbs_data);
+>  	return ret;
+> @@ -322,6 +363,8 @@ static void cpufreq_governor_exit(struct cpufreq_policy *policy,
+>  		cdata->exit(dbs_data, policy->governor->initialized == 1);
+>  		kfree(dbs_data);
+>  	}
+> +
+> +	free_ccdbs(policy, cdata);
+>  }
+> 
+>  static int cpufreq_governor_start(struct cpufreq_policy *policy,
+> @@ -330,6 +373,7 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
+>  	struct common_dbs_data *cdata = dbs_data->cdata;
+>  	unsigned int sampling_rate, ignore_nice, j, cpu = policy->cpu;
+>  	struct cpu_dbs_info *cdbs = cdata->get_cpu_cdbs(cpu);
+> +	struct cpu_common_dbs_info *ccdbs = cdbs->ccdbs;
+>  	int io_busy = 0;
+> 
+>  	if (!policy->cur)
+> @@ -348,11 +392,14 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
+>  		io_busy = od_tuners->io_is_busy;
+>  	}
+> 
+> +	ccdbs->policy = policy;
+> +	ccdbs->time_stamp = ktime_get();
+> +	mutex_init(&ccdbs->timer_mutex);
+> +
+>  	for_each_cpu(j, policy->cpus) {
+>  		struct cpu_dbs_info *j_cdbs = cdata->get_cpu_cdbs(j);
+>  		unsigned int prev_load;
+> 
+> -		j_cdbs->policy = policy;
+>  		j_cdbs->prev_cpu_idle =
+>  			get_cpu_idle_time(j, &j_cdbs->prev_cpu_wall, io_busy);
+> 
+> @@ -364,7 +411,6 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
+>  		if (ignore_nice)
+>  			j_cdbs->prev_cpu_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
+> 
+> -		mutex_init(&j_cdbs->timer_mutex);
+>  		INIT_DEFERRABLE_WORK(&j_cdbs->dwork, cdata->gov_dbs_timer);
+>  	}
+> 
+> @@ -384,9 +430,6 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
+>  		od_ops->powersave_bias_init_cpu(cpu);
+>  	}
+> 
+> -	/* Initiate timer time stamp */
+> -	cdbs->time_stamp = ktime_get();
+> -
+>  	gov_queue_work(dbs_data, policy, delay_for_sampling_rate(sampling_rate),
+>  		       true);
+>  	return 0;
+> @@ -398,6 +441,9 @@ static void cpufreq_governor_stop(struct cpufreq_policy *policy,
+>  	struct common_dbs_data *cdata = dbs_data->cdata;
+>  	unsigned int cpu = policy->cpu;
+>  	struct cpu_dbs_info *cdbs = cdata->get_cpu_cdbs(cpu);
+> +	struct cpu_common_dbs_info *ccdbs = cdbs->ccdbs;
+> +
+> +	gov_cancel_work(dbs_data, policy);
+> 
+>  	if (cdata->governor == GOV_CONSERVATIVE) {
+>  		struct cs_cpu_dbs_info_s *cs_dbs_info =
+> @@ -406,10 +452,8 @@ static void cpufreq_governor_stop(struct cpufreq_policy *policy,
+>  		cs_dbs_info->enable = 0;
+>  	}
+> 
+> -	gov_cancel_work(dbs_data, policy);
+> -
+> -	mutex_destroy(&cdbs->timer_mutex);
+> -	cdbs->policy = NULL;
+> +	ccdbs->policy = NULL;
+> +	mutex_destroy(&ccdbs->timer_mutex);
+>  }
+> 
+>  static void cpufreq_governor_limits(struct cpufreq_policy *policy,
+> @@ -419,18 +463,18 @@ static void cpufreq_governor_limits(struct cpufreq_policy *policy,
+>  	unsigned int cpu = policy->cpu;
+>  	struct cpu_dbs_info *cdbs = cdata->get_cpu_cdbs(cpu);
+> 
+> -	if (!cdbs->policy)
+> +	if (!cdbs->ccdbs || !cdbs->ccdbs->policy)
+>  		return;
+> 
+> -	mutex_lock(&cdbs->timer_mutex);
+> -	if (policy->max < cdbs->policy->cur)
+> -		__cpufreq_driver_target(cdbs->policy, policy->max,
+> +	mutex_lock(&cdbs->ccdbs->timer_mutex);
+> +	if (policy->max < cdbs->ccdbs->policy->cur)
+> +		__cpufreq_driver_target(cdbs->ccdbs->policy, policy->max,
+>  					CPUFREQ_RELATION_H);
+> -	else if (policy->min > cdbs->policy->cur)
+> -		__cpufreq_driver_target(cdbs->policy, policy->min,
+> +	else if (policy->min > cdbs->ccdbs->policy->cur)
+> +		__cpufreq_driver_target(cdbs->ccdbs->policy, policy->min,
+>  					CPUFREQ_RELATION_L);
+>  	dbs_check_cpu(dbs_data, cpu);
+> -	mutex_unlock(&cdbs->timer_mutex);
+> +	mutex_unlock(&cdbs->ccdbs->timer_mutex);
+>  }
+> 
+>  int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+> index a0f8eb79ee6d..153412cafb05 100644
+> --- a/drivers/cpufreq/cpufreq_governor.h
+> +++ b/drivers/cpufreq/cpufreq_governor.h
+> @@ -128,6 +128,18 @@ static void *get_cpu_dbs_info_s(int cpu)				\
+>   * cs_*: Conservative governor
+>   */
+> 
+> +/* Common to all CPUs of a policy */
+> +struct cpu_common_dbs_info {
+> +	struct cpufreq_policy *policy;
+> +	/*
+> +	 * percpu mutex that serializes governor limit change with gov_dbs_timer
+> +	 * invocation. We do not want gov_dbs_timer to run when user is changing
+> +	 * the governor or limits.
+> +	 */
+> +	struct mutex timer_mutex;
+> +	ktime_t time_stamp;
+> +};
+> +
+>  /* Per cpu structures */
+>  struct cpu_dbs_info {
+>  	u64 prev_cpu_idle;
+> @@ -140,15 +152,8 @@ struct cpu_dbs_info {
+>  	 * wake-up from idle.
+>  	 */
+>  	unsigned int prev_load;
+> -	struct cpufreq_policy *policy;
+>  	struct delayed_work dwork;
+> -	/*
+> -	 * percpu mutex that serializes governor limit change with gov_dbs_timer
+> -	 * invocation. We do not want gov_dbs_timer to run when user is changing
+> -	 * the governor or limits.
+> -	 */
+> -	struct mutex timer_mutex;
+> -	ktime_t time_stamp;
+> +	struct cpu_common_dbs_info *ccdbs;
+>  };
+> 
+>  struct od_cpu_dbs_info_s {
+> @@ -264,7 +269,8 @@ static ssize_t show_sampling_rate_min_gov_pol				\
+>  extern struct mutex cpufreq_governor_lock;
+> 
+>  void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
+> -bool need_load_eval(struct cpu_dbs_info *cdbs, unsigned int sampling_rate);
+> +bool need_load_eval(struct cpu_common_dbs_info *ccdbs,
+> +		    unsigned int sampling_rate);
+>  int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+>  		struct common_dbs_data *cdata, unsigned int event);
+>  void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index d29c6f9c6e3e..651677cfa581 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -155,7 +155,7 @@ static void dbs_freq_increase(struct cpufreq_policy *policy, unsigned int freq)
+>  static void od_check_cpu(int cpu, unsigned int load)
+>  {
+>  	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+> -	struct cpufreq_policy *policy = dbs_info->cdbs.policy;
+> +	struct cpufreq_policy *policy = dbs_info->cdbs.ccdbs->policy;
+>  	struct dbs_data *dbs_data = policy->governor_data;
+>  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
+> 
+> @@ -195,16 +195,18 @@ static void od_dbs_timer(struct work_struct *work)
+>  {
+>  	struct od_cpu_dbs_info_s *dbs_info =
+>  		container_of(work, struct od_cpu_dbs_info_s, cdbs.dwork.work);
+> -	unsigned int cpu = dbs_info->cdbs.policy->cpu;
+> +	struct cpufreq_policy *policy = dbs_info->cdbs.ccdbs->policy;
+> +	unsigned int cpu = policy->cpu;
+>  	struct od_cpu_dbs_info_s *core_dbs_info = &per_cpu(od_cpu_dbs_info,
+>  			cpu);
+> -	struct dbs_data *dbs_data = dbs_info->cdbs.policy->governor_data;
+> +	struct dbs_data *dbs_data = policy->governor_data;
+>  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
+>  	int delay = 0, sample_type = core_dbs_info->sample_type;
+>  	bool modify_all = true;
+> 
+> -	mutex_lock(&core_dbs_info->cdbs.timer_mutex);
+> -	if (!need_load_eval(&core_dbs_info->cdbs, od_tuners->sampling_rate)) {
+> +	mutex_lock(&core_dbs_info->cdbs.ccdbs->timer_mutex);
+> +	if (!need_load_eval(core_dbs_info->cdbs.ccdbs,
+> +			    od_tuners->sampling_rate)) {
+>  		modify_all = false;
+>  		goto max_delay;
+>  	}
+> @@ -213,8 +215,7 @@ static void od_dbs_timer(struct work_struct *work)
+>  	core_dbs_info->sample_type = OD_NORMAL_SAMPLE;
+>  	if (sample_type == OD_SUB_SAMPLE) {
+>  		delay = core_dbs_info->freq_lo_jiffies;
+> -		__cpufreq_driver_target(core_dbs_info->cdbs.policy,
+> -					core_dbs_info->freq_lo,
+> +		__cpufreq_driver_target(policy, core_dbs_info->freq_lo,
+>  					CPUFREQ_RELATION_H);
+>  	} else {
+>  		dbs_check_cpu(dbs_data, cpu);
+> @@ -230,8 +231,8 @@ static void od_dbs_timer(struct work_struct *work)
+>  		delay = delay_for_sampling_rate(od_tuners->sampling_rate
+>  				* core_dbs_info->rate_mult);
+> 
+> -	gov_queue_work(dbs_data, dbs_info->cdbs.policy, delay, modify_all);
+> -	mutex_unlock(&core_dbs_info->cdbs.timer_mutex);
+> +	gov_queue_work(dbs_data, policy, delay, modify_all);
+> +	mutex_unlock(&core_dbs_info->cdbs.ccdbs->timer_mutex);
+>  }
+> 
+>  /************************** sysfs interface ************************/
+> @@ -274,10 +275,10 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
+>  		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+>  		cpufreq_cpu_put(policy);
+> 
+> -		mutex_lock(&dbs_info->cdbs.timer_mutex);
+> +		mutex_lock(&dbs_info->cdbs.ccdbs->timer_mutex);
+> 
+>  		if (!delayed_work_pending(&dbs_info->cdbs.dwork)) {
+> -			mutex_unlock(&dbs_info->cdbs.timer_mutex);
+> +			mutex_unlock(&dbs_info->cdbs.ccdbs->timer_mutex);
+>  			continue;
+>  		}
+> 
+> @@ -286,15 +287,15 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
+> 
+>  		if (time_before(next_sampling, appointed_at)) {
+> 
+> -			mutex_unlock(&dbs_info->cdbs.timer_mutex);
+> +			mutex_unlock(&dbs_info->cdbs.ccdbs->timer_mutex);
+>  			cancel_delayed_work_sync(&dbs_info->cdbs.dwork);
+> -			mutex_lock(&dbs_info->cdbs.timer_mutex);
+> +			mutex_lock(&dbs_info->cdbs.ccdbs->timer_mutex);
+> 
+> -			gov_queue_work(dbs_data, dbs_info->cdbs.policy,
+> +			gov_queue_work(dbs_data, policy,
+>  				       usecs_to_jiffies(new_rate), true);
+> 
+>  		}
+> -		mutex_unlock(&dbs_info->cdbs.timer_mutex);
+> +		mutex_unlock(&dbs_info->cdbs.ccdbs->timer_mutex);
+>  	}
+>  }
+> 
+> @@ -557,13 +558,16 @@ static void od_set_powersave_bias(unsigned int powersave_bias)
+> 
+>  	get_online_cpus();
+>  	for_each_online_cpu(cpu) {
+> +		struct cpu_common_dbs_info *ccdbs;
+> +
+>  		if (cpumask_test_cpu(cpu, &done))
+>  			continue;
+> 
+> -		policy = per_cpu(od_cpu_dbs_info, cpu).cdbs.policy;
+> -		if (!policy)
+> +		ccdbs = per_cpu(od_cpu_dbs_info, cpu).cdbs.ccdbs;
+> +		if (!ccdbs)
+>  			continue;
+> 
+> +		policy = ccdbs->policy;
+>  		cpumask_or(&done, &done, policy->cpus);
+> 
+>  		if (policy->governor != &cpufreq_gov_ondemand)
+> 
 
-Under the current binding, a pll clock specifier of 2 means that the
-PLL is divided by 4 -- and the driver implements this, unless there
-happen to be four clock-output-names rather than 3, in which case it
-interprets it as PLL divided by 3.  This does not appear in the binding
-documentation at all.  That hack is now considered stable ABI.
-
-The current device tree nodes contain errors, such as saying that
-T1040 can set a core clock to PLL/4 when only PLL and PLL/2 are options.
-The current binding also ignores some restrictions on clock selection,
-such as p5020's requirement that if a core uses the "wrong" PLL, that
-PLL must be clocked lower than the "correct" PLL and be at most 80% of
-the rated CPU frequency.
-
-Possibly because of the lack of the ability to express such nuance in
-the binding, some valid options are omitted from the device trees, such
-as the ability on p4080 to run cores 0-3 from PLL3 and cores 4-7 from
-PLL1 (again, only if they are at most 80% of rated CPU frequency).
-This omission, combined with excessive caution in the cpufreq driver
-(addressed in a subsequent patch), means that currently on a 1500 MHz
-p4080 with typical PLL configuration, cpufreq can lower the frequency
-to 1200 MHz on half the CPUs and do nothing on the others.  With this
-patchset, all CPUs can be lowered to 1200 MHz on a rev2 p4080, and on a
-rev3 p4080 half can be lowered to 750 MHz and the other half to 600
-MHz.
-
-The current binding only deals with CPU clocks.  To describe FMan in
-the device tree, we need to describe its clock.  Some chips have
-additional muxes that work like the CPU muxes, but are not described in
-the device tree.  Others require inspecting the Reset Control Word to
-determine which PLL is used.  Rather than continue to extend this mess,
-replace it.  Have the driver bind to the chip-specific clockgen
-compatible, and keep the detailed description of quirky chip variations
-in the driver, where it can be easily fixed, refactored, and extended.
-
-Older device trees will continue to work.  This patch does not remove
-the code for handling the old nodes.  A subsequent patch removes that
-code, but still binds against those nodes and redirects clock lookups
-to the clocks generated by the new code.
-
-Signed-off-by: Scott Wood <scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
----
- .../devicetree/bindings/clock/qoriq-clock.txt      |  57 +-
- drivers/clk/clk-qoriq.c                            | 950 ++++++++++++++++++++-
- 2 files changed, 986 insertions(+), 21 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/clock/qoriq-clock.txt b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
-index df4a259..c48a04d 100644
---- a/Documentation/devicetree/bindings/clock/qoriq-clock.txt
-+++ b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
-@@ -18,9 +18,11 @@ Chassis Version		Example Chips
- 1. Clock Block Binding
- 
- Required properties:
--- compatible: Should contain a specific clock block compatible string
--	and a single chassis clock compatible string.
--	Clock block strings include, but not limited to, one of the:
-+- compatible: Should contain a chip-specific clock block compatible
-+	string and (if applicable) may contain a chassis-version clock
-+	compatible string.
-+
-+	Chip-specific strings are of the form "fsl,<chip>-clockgen", such as:
- 	* "fsl,p2041-clockgen"
- 	* "fsl,p3041-clockgen"
- 	* "fsl,p4080-clockgen"
-@@ -30,15 +32,14 @@ Required properties:
- 	* "fsl,b4420-clockgen"
- 	* "fsl,b4860-clockgen"
- 	* "fsl,ls1021a-clockgen"
--	Chassis clock strings include:
-+	Chassis-version clock strings include:
- 	* "fsl,qoriq-clockgen-1.0": for chassis 1.0 clocks
- 	* "fsl,qoriq-clockgen-2.0": for chassis 2.0 clocks
- - reg: Describes the address of the device's resources within the
- 	address space defined by its parent bus, and resource zero
- 	represents the clock register set
--- clock-frequency: Input system clock frequency
- 
--Recommended properties:
-+Optional properties:
- - ranges: Allows valid translation between child's address space and
- 	parent's. Must be present if the device has sub-nodes.
- - #address-cells: Specifies the number of cells used to represent
-@@ -47,8 +48,46 @@ Recommended properties:
- - #size-cells: Specifies the number of cells used to represent
- 	the size of an address. Must be present if the device has
- 	sub-nodes and set to 1 if present
-+- clock-frequency: Input system clock frequency (SYSCLK)
-+- clocks: If clock-frequency is not specified, sysclk may be provided
-+	as an input clock.  Either clock-frequency or clocks must be
-+	provided.
-+
-+2. Clock Provider
-+
-+The clockgen node should act as a clock provider, though in older device
-+trees the children of the clockgen node are the clock providers.
-+
-+When the clockgen node is a clock provider, #clock-cells = <2>.
-+The first cell of the clock specifier is the clock type, and the
-+second cell is the clock index for the specified type.
-+
-+	Type#	Name		Index Cell
-+	0	sysclk		must be 0
-+	1	cmux		index (n in CLKCnCSR)
-+	2	hwaccel		index (n in CLKCGnHWACSR)
-+	3	fman		0 for fm1, 1 for fm2
-+	4	platform pll	0=pll, 1=pll/2, 2=pll/3, 3=pll/4
-+
-+3. Example
-+
-+	clockgen: global-utilities@e1000 {
-+		compatible = "fsl,p5020-clockgen", "fsl,qoriq-clockgen-1.0";
-+		clock-frequency = <133333333>;
-+		reg = <0xe1000 0x1000>;
-+		#clock-cells = <2>;
-+	};
-+
-+	fman@400000 {
-+		...
-+		clocks = <&clockgen 3 0>;
-+		...
-+	};
-+}
-+4. Legacy Child Nodes
- 
--2. Clock Provider/Consumer Binding
-+NOTE: These nodes are deprecated.  Kernels should continue to support
-+device trees with these nodes, but new device trees should not use them.
- 
- Most of the bindings are from the common clock binding[1].
-  [1] Documentation/devicetree/bindings/clock/clock-bindings.txt
-@@ -82,7 +121,7 @@ Recommended properties:
- - reg: Should be the offset and length of clock block base address.
- 	The length should be 4.
- 
--Example for clock block and clock provider:
-+Legacy Example:
- / {
- 	clockgen: global-utilities@e1000 {
- 		compatible = "fsl,p5020-clockgen", "fsl,qoriq-clockgen-1.0";
-@@ -142,7 +181,7 @@ Example for clock block and clock provider:
- 	};
- };
- 
--Example for clock consumer:
-+Example for legacy clock consumer:
- 
- / {
- 	cpu0: PowerPC,e5500@0 {
-diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index cda90a9..b94dc2f 100644
---- a/drivers/clk/clk-qoriq.c
-+++ b/drivers/clk/clk-qoriq.c
-@@ -11,6 +11,7 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/clk-provider.h>
-+#include <linux/fsl/guts.h>
- #include <linux/io.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
-@@ -19,6 +20,749 @@
- #include <linux/of.h>
- #include <linux/slab.h>
- 
-+#define PLL_DIV1	0
-+#define PLL_DIV2	1
-+#define PLL_DIV3	2
-+#define PLL_DIV4	3
-+
-+#define PLATFORM_PLL	0
-+#define CGA_PLL1	1
-+#define CGA_PLL2	2
-+#define CGA_PLL3	3
-+#define CGA_PLL4	4	/* only on clockgen-1.0, which lacks CGB */
-+#define CGB_PLL1	4
-+#define CGB_PLL2	5
-+
-+struct clockgen_pll_div {
-+	struct clk *clk;
-+	char name[32];
-+};
-+
-+struct clockgen_pll {
-+	struct clockgen_pll_div div[4];
-+};
-+
-+#define CLKSEL_VALID	1
-+#define CLKSEL_80PCT	2	/* Only allowed if PLL <= 80% of max cpu freq */
-+
-+struct clockgen_sourceinfo {
-+	u32 flags;	/* CLKSEL_xxx */
-+	int pll;	/* CGx_PLLn */
-+	int div;	/* PLL_DIVn */
-+};
-+
-+#define NUM_MUX_PARENTS	16
-+
-+struct clockgen_muxinfo {
-+	struct clockgen_sourceinfo clksel[NUM_MUX_PARENTS];
-+};
-+
-+#define NUM_HWACCEL	5
-+#define NUM_CMUX	8
-+
-+struct clockgen;
-+
-+/*
-+ * cmux freq must be >= platform pll.
-+ * If not set, cmux freq must be >= platform pll/2
-+ */
-+#define CG_CMUX_GE_PLAT		1
-+#define CG_PLL_8BIT		2	/* PLLCnGSR[CFG] is 8 bits, not 6 */
-+
-+struct clockgen_chipinfo {
-+	const char *compat, *guts_compat;
-+	const struct clockgen_muxinfo *cmux_groups[2];
-+	const struct clockgen_muxinfo *hwaccel[NUM_HWACCEL];
-+	void (*init_periph)(struct clockgen *cg);
-+	int cmux_to_group[NUM_CMUX]; /* -1 terminates if fewer than NUM_CMUX */
-+	u32 pll_mask;	/* 1 << n bit set if PLL n is valid */
-+	u32 flags;	/* CG_xxx */
-+};
-+
-+struct clockgen {
-+	struct device_node *node;
-+	void __iomem *regs;
-+	struct clockgen_chipinfo info; /* mutable copy */
-+	struct clk *sysclk;
-+	struct clockgen_pll pll[6];
-+	struct clk *cmux[NUM_CMUX];
-+	struct clk *hwaccel[NUM_HWACCEL];
-+	struct clk *fman[2];
-+	struct ccsr_guts __iomem *guts;
-+};
-+
-+static struct clockgen clockgen;
-+
-+static const struct clockgen_muxinfo p2041_cmux_grp1 = {
-+	{
-+		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
-+		[1] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
-+		[4] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
-+	}
-+};
-+
-+static const struct clockgen_muxinfo p2041_cmux_grp2 = {
-+	{
-+		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
-+		[4] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
-+		[5] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
-+	}
-+};
-+
-+static const struct clockgen_muxinfo p5020_cmux_grp1 = {
-+	{
-+		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
-+		[1] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
-+		[4] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL2, PLL_DIV1 },
-+	}
-+};
-+
-+static const struct clockgen_muxinfo p5020_cmux_grp2 = {
-+	{
-+		[0] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL1, PLL_DIV1 },
-+		[4] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
-+		[5] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
-+	}
-+};
-+
-+static const struct clockgen_muxinfo p5040_cmux_grp1 = {
-+	{
-+		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
-+		[1] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
-+		[4] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL2, PLL_DIV1 },
-+		[5] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL2, PLL_DIV2 },
-+	}
-+};
-+
-+static const struct clockgen_muxinfo p5040_cmux_grp2 = {
-+	{
-+		[0] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL1, PLL_DIV1 },
-+		[1] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL1, PLL_DIV2 },
-+		[4] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
-+		[5] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
-+	}
-+};
-+
-+static const struct clockgen_muxinfo p4080_cmux_grp1 = {
-+	{
-+		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
-+		[1] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
-+		[4] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
-+		[5] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
-+		[8] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL3, PLL_DIV1 },
-+	}
-+};
-+
-+static const struct clockgen_muxinfo p4080_cmux_grp2 = {
-+	{
-+		[0] = { CLKSEL_VALID | CLKSEL_80PCT, CGA_PLL1, PLL_DIV1 },
-+		[8] = { CLKSEL_VALID, CGA_PLL3, PLL_DIV1 },
-+		[9] = { CLKSEL_VALID, CGA_PLL3, PLL_DIV2 },
-+		[12] = { CLKSEL_VALID, CGA_PLL4, PLL_DIV1 },
-+		[13] = { CLKSEL_VALID, CGA_PLL4, PLL_DIV2 },
-+	}
-+};
-+
-+static const struct clockgen_muxinfo t1023_cmux = {
-+	{
-+		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
-+		[1] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
-+	}
-+};
-+
-+static const struct clockgen_muxinfo t1040_cmux = {
-+	{
-+		[0] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
-+		[1] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
-+		[4] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
-+		[5] = { CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
-+	}
-+};
-+
-+
-+static const struct clockgen_muxinfo clockgen2_cmux_cga = {
-+	{
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV4 },
-+		{},
-+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
-+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV4 },
-+		{},
-+		{ CLKSEL_VALID, CGA_PLL3, PLL_DIV1 },
-+		{ CLKSEL_VALID, CGA_PLL3, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGA_PLL3, PLL_DIV4 },
-+	},
-+};
-+
-+static const struct clockgen_muxinfo clockgen2_cmux_cga12 = {
-+	{
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV4 },
-+		{},
-+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
-+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV4 },
-+	},
-+};
-+
-+static const struct clockgen_muxinfo clockgen2_cmux_cgb = {
-+	{
-+		{ CLKSEL_VALID, CGB_PLL1, PLL_DIV1 },
-+		{ CLKSEL_VALID, CGB_PLL1, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGB_PLL1, PLL_DIV4 },
-+		{},
-+		{ CLKSEL_VALID, CGB_PLL2, PLL_DIV1 },
-+		{ CLKSEL_VALID, CGB_PLL2, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGB_PLL2, PLL_DIV4 },
-+	},
-+};
-+
-+static const struct clockgen_muxinfo t1023_hwa1 = {
-+	{
-+		{},
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV3 },
-+	},
-+};
-+
-+static const struct clockgen_muxinfo t1023_hwa2 = {
-+	{
-+		[6] = { CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
-+	},
-+};
-+
-+static const struct clockgen_muxinfo t2080_hwa1 = {
-+	{
-+		{},
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV3 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV4 },
-+		{ CLKSEL_VALID, PLATFORM_PLL, PLL_DIV1 },
-+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV3 },
-+	},
-+};
-+
-+static const struct clockgen_muxinfo t2080_hwa2 = {
-+	{
-+		{},
-+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV1 },
-+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV3 },
-+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV4 },
-+		{ CLKSEL_VALID, PLATFORM_PLL, PLL_DIV1 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV3 },
-+	},
-+};
-+
-+static const struct clockgen_muxinfo t4240_hwa1 = {
-+	{
-+		{ CLKSEL_VALID, PLATFORM_PLL, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV1 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV3 },
-+		{ CLKSEL_VALID, CGA_PLL1, PLL_DIV4 },
-+		{},
-+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV2 },
-+		{ CLKSEL_VALID, CGA_PLL2, PLL_DIV3 },
-+	},
-+};
-+
-+static const struct clockgen_muxinfo t4240_hwa4 = {
-+	{
-+		[2] = { CLKSEL_VALID, CGB_PLL1, PLL_DIV2 },
-+		[3] = { CLKSEL_VALID, CGB_PLL1, PLL_DIV3 },
-+		[4] = { CLKSEL_VALID, CGB_PLL1, PLL_DIV4 },
-+		[5] = { CLKSEL_VALID, PLATFORM_PLL, PLL_DIV1 },
-+		[6] = { CLKSEL_VALID, CGB_PLL2, PLL_DIV2 },
-+	},
-+};
-+
-+static const struct clockgen_muxinfo t4240_hwa5 = {
-+	{
-+		[2] = { CLKSEL_VALID, CGB_PLL2, PLL_DIV2 },
-+		[3] = { CLKSEL_VALID, CGB_PLL2, PLL_DIV3 },
-+		[4] = { CLKSEL_VALID, CGB_PLL2, PLL_DIV4 },
-+		[5] = { CLKSEL_VALID, PLATFORM_PLL, PLL_DIV1 },
-+		[6] = { CLKSEL_VALID, CGB_PLL1, PLL_DIV2 },
-+		[7] = { CLKSEL_VALID, CGB_PLL1, PLL_DIV3 },
-+	},
-+};
-+
-+#define RCWSR7_FM1_CLK_SEL	0x40000000
-+#define RCWSR7_FM2_CLK_SEL	0x20000000
-+#define RCWSR7_HWA_ASYNC_DIV	0x04000000
-+
-+static void __init p2041_init_periph(struct clockgen *cg)
-+{
-+	u32 reg;
-+
-+	reg = ioread32be(&cg->guts->rcwsr[7]);
-+
-+	if (reg & RCWSR7_FM1_CLK_SEL)
-+		cg->fman[0] = cg->pll[CGA_PLL2].div[PLL_DIV2].clk;
-+	else
-+		cg->fman[0] = cg->pll[PLATFORM_PLL].div[PLL_DIV2].clk;
-+}
-+
-+static void __init p4080_init_periph(struct clockgen *cg)
-+{
-+	u32 reg;
-+
-+	reg = ioread32be(&cg->guts->rcwsr[7]);
-+
-+	if (reg & RCWSR7_FM1_CLK_SEL)
-+		cg->fman[0] = cg->pll[CGA_PLL3].div[PLL_DIV2].clk;
-+	else
-+		cg->fman[0] = cg->pll[PLATFORM_PLL].div[PLL_DIV2].clk;
-+
-+	if (reg & RCWSR7_FM2_CLK_SEL)
-+		cg->fman[1] = cg->pll[CGA_PLL3].div[PLL_DIV2].clk;
-+	else
-+		cg->fman[1] = cg->pll[PLATFORM_PLL].div[PLL_DIV2].clk;
-+}
-+
-+static void __init p5020_init_periph(struct clockgen *cg)
-+{
-+	u32 reg;
-+	int div = PLL_DIV2;
-+
-+	reg = ioread32be(&cg->guts->rcwsr[7]);
-+	if (reg & RCWSR7_HWA_ASYNC_DIV)
-+		div = PLL_DIV4;
-+
-+	if (reg & RCWSR7_FM1_CLK_SEL)
-+		cg->fman[0] = cg->pll[CGA_PLL2].div[div].clk;
-+	else
-+		cg->fman[0] = cg->pll[PLATFORM_PLL].div[PLL_DIV2].clk;
-+}
-+
-+static void __init p5040_init_periph(struct clockgen *cg)
-+{
-+	u32 reg;
-+	int div = PLL_DIV2;
-+
-+	reg = ioread32be(&cg->guts->rcwsr[7]);
-+	if (reg & RCWSR7_HWA_ASYNC_DIV)
-+		div = PLL_DIV4;
-+
-+	if (reg & RCWSR7_FM1_CLK_SEL)
-+		cg->fman[0] = cg->pll[CGA_PLL3].div[div].clk;
-+	else
-+		cg->fman[0] = cg->pll[PLATFORM_PLL].div[PLL_DIV2].clk;
-+
-+	if (reg & RCWSR7_FM2_CLK_SEL)
-+		cg->fman[1] = cg->pll[CGA_PLL3].div[div].clk;
-+	else
-+		cg->fman[1] = cg->pll[PLATFORM_PLL].div[PLL_DIV2].clk;
-+}
-+
-+static void __init t1023_init_periph(struct clockgen *cg)
-+{
-+	cg->fman[0] = cg->hwaccel[1];
-+}
-+
-+static void __init t1040_init_periph(struct clockgen *cg)
-+{
-+	cg->fman[0] = cg->pll[PLATFORM_PLL].div[PLL_DIV1].clk;
-+}
-+
-+static void __init t2080_init_periph(struct clockgen *cg)
-+{
-+	cg->fman[0] = cg->hwaccel[0];
-+}
-+
-+static void __init t4240_init_periph(struct clockgen *cg)
-+{
-+	cg->fman[0] = cg->hwaccel[3];
-+	cg->fman[1] = cg->hwaccel[4];
-+}
-+
-+static const struct clockgen_chipinfo chipinfo[] = {
-+	{
-+		.compat = "fsl,b4420-clockgen",
-+		.guts_compat = "fsl,b4860-device-config",
-+		.init_periph = t2080_init_periph,
-+		.cmux_groups = {
-+			&clockgen2_cmux_cga12, &clockgen2_cmux_cgb
-+		},
-+		.hwaccel = {
-+			&t2080_hwa1
-+		},
-+		.cmux_to_group = {
-+			0, 1, 1, 1, -1
-+		},
-+		.pll_mask = 0x3f,
-+		.flags = CG_PLL_8BIT,
-+	},
-+	{
-+		.compat = "fsl,b4860-clockgen",
-+		.guts_compat = "fsl,b4860-device-config",
-+		.init_periph = t2080_init_periph,
-+		.cmux_groups = {
-+			&clockgen2_cmux_cga12, &clockgen2_cmux_cgb
-+		},
-+		.hwaccel = {
-+			&t2080_hwa1
-+		},
-+		.cmux_to_group = {
-+			0, 1, 1, 1, -1
-+		},
-+		.pll_mask = 0x3f,
-+		.flags = CG_PLL_8BIT,
-+	},
-+	{
-+		.compat = "fsl,ls1201a-clockgen",
-+		.cmux_groups = {
-+			&t1023_cmux
-+		},
-+		.cmux_to_group = {
-+			0, -1
-+		},
-+		.pll_mask = 0x03,
-+	},
-+	{
-+		.compat = "fsl,p2041-clockgen",
-+		.guts_compat = "fsl,qoriq-device-config-1.0",
-+		.init_periph = p2041_init_periph,
-+		.cmux_groups = {
-+			&p2041_cmux_grp1, &p2041_cmux_grp2
-+		},
-+		.cmux_to_group = {
-+			0, 0, 1, 1, -1
-+		},
-+		.pll_mask = 0x07,
-+	},
-+	{
-+		.compat = "fsl,p3041-clockgen",
-+		.guts_compat = "fsl,qoriq-device-config-1.0",
-+		.init_periph = p2041_init_periph,
-+		.cmux_groups = {
-+			&p2041_cmux_grp1, &p2041_cmux_grp2
-+		},
-+		.cmux_to_group = {
-+			0, 0, 1, 1, -1
-+		},
-+		.pll_mask = 0x07,
-+	},
-+	{
-+		.compat = "fsl,p4080-clockgen",
-+		.guts_compat = "fsl,qoriq-device-config-1.0",
-+		.init_periph = p4080_init_periph,
-+		.cmux_groups = {
-+			&p4080_cmux_grp1, &p4080_cmux_grp2
-+		},
-+		.cmux_to_group = {
-+			0, 0, 0, 0, 1, 1, 1, 1
-+		},
-+		.pll_mask = 0x1f,
-+	},
-+	{
-+		.compat = "fsl,p5020-clockgen",
-+		.guts_compat = "fsl,qoriq-device-config-1.0",
-+		.init_periph = p5020_init_periph,
-+		.cmux_groups = {
-+			&p2041_cmux_grp1, &p2041_cmux_grp2
-+		},
-+		.cmux_to_group = {
-+			0, 1, -1
-+		},
-+		.pll_mask = 0x07,
-+	},
-+	{
-+		.compat = "fsl,p5040-clockgen",
-+		.guts_compat = "fsl,p5040-device-config",
-+		.init_periph = p5040_init_periph,
-+		.cmux_groups = {
-+			&p5040_cmux_grp1, &p5040_cmux_grp2
-+		},
-+		.cmux_to_group = {
-+			0, 0, 1, 1, -1
-+		},
-+		.pll_mask = 0x0f,
-+	},
-+	{
-+		.compat = "fsl,t1023-clockgen",
-+		.guts_compat = "fsl,t1023-device-config",
-+		.init_periph = t1023_init_periph,
-+		.cmux_groups = {
-+			&t1023_cmux
-+		},
-+		.hwaccel = {
-+			&t1023_hwa1, &t1023_hwa2
-+		},
-+		.cmux_to_group = {
-+			0, 0, -1
-+		},
-+		.pll_mask = 0x03,
-+		.flags = CG_PLL_8BIT,
-+	},
-+	{
-+		.compat = "fsl,t1040-clockgen",
-+		.guts_compat = "fsl,t1040-device-config",
-+		.init_periph = t1040_init_periph,
-+		.cmux_groups = {
-+			&t1040_cmux
-+		},
-+		.cmux_to_group = {
-+			0, 0, 0, 0, -1
-+		},
-+		.pll_mask = 0x07,
-+		.flags = CG_PLL_8BIT,
-+	},
-+	{
-+		.compat = "fsl,t2080-clockgen",
-+		.guts_compat = "fsl,t2080-device-config",
-+		.init_periph = t2080_init_periph,
-+		.cmux_groups = {
-+			&clockgen2_cmux_cga12
-+		},
-+		.hwaccel = {
-+			&t2080_hwa1, &t2080_hwa2
-+		},
-+		.cmux_to_group = {
-+			0, -1
-+		},
-+		.pll_mask = 0x07,
-+		.flags = CG_PLL_8BIT,
-+	},
-+	{
-+		.compat = "fsl,t4240-clockgen",
-+		.guts_compat = "fsl,t4240-device-config",
-+		.init_periph = t4240_init_periph,
-+		.cmux_groups = {
-+			&clockgen2_cmux_cga, &clockgen2_cmux_cgb
-+		},
-+		.hwaccel = {
-+			&t4240_hwa1, NULL, NULL, &t4240_hwa4, &t4240_hwa5
-+		},
-+		.cmux_to_group = {
-+			0, 0, 1, -1
-+		},
-+		.pll_mask = 0x3f,
-+		.flags = CG_PLL_8BIT,
-+	},
-+	{},
-+};
-+
-+struct mux_hwclock {
-+	struct clk_hw hw;
-+	struct clockgen *cg;
-+	const struct clockgen_muxinfo *info;
-+	u32 __iomem *reg;
-+	u8 parent_to_clksel[NUM_MUX_PARENTS];
-+	s8 clksel_to_parent[NUM_MUX_PARENTS];
-+	int num_parents;
-+};
-+
-+#define to_mux_hwclock(p)	container_of(p, struct mux_hwclock, hw)
-+#define CLKSEL_MASK		0x78000000
-+#define	CLKSEL_SHIFT		27
-+
-+static int mux_set_parent(struct clk_hw *hw, u8 idx)
-+{
-+	struct mux_hwclock *hwc = to_mux_hwclock(hw);
-+	u32 clksel;
-+
-+	if (idx >= hwc->num_parents)
-+		return -EINVAL;
-+
-+	clksel = hwc->parent_to_clksel[idx];
-+	iowrite32be((clksel << CLKSEL_SHIFT) & CLKSEL_MASK, hwc->reg);
-+
-+	return 0;
-+}
-+
-+static u8 mux_get_parent(struct clk_hw *hw)
-+{
-+	struct mux_hwclock *hwc = to_mux_hwclock(hw);
-+	u32 clksel;
-+	s8 ret;
-+
-+	clksel = (ioread32be(hwc->reg) & CLKSEL_MASK) >> CLKSEL_SHIFT;
-+
-+	ret = hwc->clksel_to_parent[clksel];
-+	if (ret < 0) {
-+		pr_err("%s: mux at %p has bad clksel\n", __func__, hwc->reg);
-+		return 0;
-+	}
-+
-+	return ret;
-+}
-+
-+static const struct clk_ops cmux_ops = {
-+	.get_parent = mux_get_parent,
-+	.set_parent = mux_set_parent,
-+};
-+
-+/*
-+ * Don't allow setting for now, as the clock options haven't been
-+ * sanitized for additional restrictions.
-+ */
-+static const struct clk_ops hwaccel_ops = {
-+	.get_parent = mux_get_parent,
-+};
-+
-+static const struct clockgen_pll_div *get_pll_div(struct clockgen *cg,
-+						  struct mux_hwclock *hwc,
-+						  int idx)
-+{
-+	int pll, div;
-+
-+	if (!(hwc->info->clksel[idx].flags & CLKSEL_VALID))
-+		return NULL;
-+
-+	pll = hwc->info->clksel[idx].pll;
-+	div = hwc->info->clksel[idx].div;
-+
-+	return &cg->pll[pll].div[div];
-+}
-+
-+static struct clk * __init create_mux_common(struct clockgen *cg,
-+					     struct mux_hwclock *hwc,
-+					     const struct clk_ops *ops,
-+					     unsigned long min_rate,
-+					     unsigned long pct80_rate,
-+					     const char *fmt, int idx)
-+{
-+	struct clk_init_data init = {};
-+	struct clk *clk;
-+	const struct clockgen_pll_div *div;
-+	const char *parent_names[NUM_MUX_PARENTS];
-+	char name[32];
-+	int i, j;
-+
-+	snprintf(name, sizeof(name), fmt, idx);
-+
-+	for (i = 0, j = 0; i < NUM_MUX_PARENTS; i++) {
-+		unsigned long rate;
-+
-+		hwc->clksel_to_parent[i] = -1;
-+
-+		div = get_pll_div(cg, hwc, i);
-+		if (!div)
-+			continue;
-+
-+		rate = clk_get_rate(div->clk);
-+
-+		if (hwc->info->clksel[i].flags & CLKSEL_80PCT &&
-+		    rate > pct80_rate)
-+			continue;
-+		if (rate < min_rate)
-+			continue;
-+
-+		parent_names[j] = div->name;
-+		hwc->parent_to_clksel[j] = i;
-+		hwc->clksel_to_parent[i] = j;
-+		j++;
-+	}
-+
-+	init.name = name;
-+	init.ops = ops;
-+	init.parent_names = parent_names;
-+	init.num_parents = hwc->num_parents = j;
-+	init.flags = 0;
-+	hwc->hw.init = &init;
-+
-+	clk = clk_register(NULL, &hwc->hw);
-+	if (IS_ERR(clk)) {
-+		pr_err("%s: Couldn't register %s: %ld\n", __func__, name,
-+		       PTR_ERR(clk));
-+		kfree(hwc);
-+		return NULL;
-+	}
-+
-+	return clk;
-+}
-+
-+static struct clk * __init create_one_cmux(struct clockgen *cg, int idx)
-+{
-+	struct mux_hwclock *hwc;
-+	const struct clockgen_pll_div *div;
-+	unsigned long plat_rate, min_rate;
-+	u64 pct80_rate;
-+	u32 clksel;
-+
-+	hwc = kzalloc(sizeof(*hwc), GFP_KERNEL);
-+	if (!hwc)
-+		return NULL;
-+
-+	hwc->reg = cg->regs + 0x20 * idx;
-+	hwc->info = cg->info.cmux_groups[cg->info.cmux_to_group[idx]];
-+
-+	/*
-+	 * Find the rate for the default clksel, and treat it as the
-+	 * maximum rated core frequency.  If this is an incorrect
-+	 * assumption, certain clock options (possibly including the
-+	 * default clksel) may be inappropriately excluded on certain
-+	 * chips.
-+	 */
-+	clksel = (ioread32be(hwc->reg) & CLKSEL_MASK) >> CLKSEL_SHIFT;
-+	div = get_pll_div(cg, hwc, clksel);
-+	if (!div)
-+		return NULL;
-+
-+	pct80_rate = clk_get_rate(div->clk);
-+	pct80_rate *= 8;
-+	do_div(pct80_rate, 10);
-+
-+	plat_rate = clk_get_rate(cg->pll[PLATFORM_PLL].div[PLL_DIV1].clk);
-+
-+	if (cg->info.flags & CG_CMUX_GE_PLAT)
-+		min_rate = plat_rate;
-+	else
-+		min_rate = plat_rate / 2;
-+
-+	return create_mux_common(cg, hwc, &cmux_ops, min_rate,
-+				 pct80_rate, "cg-cmux%d", idx);
-+}
-+
-+static struct clk * __init create_one_hwaccel(struct clockgen *cg, int idx)
-+{
-+	struct mux_hwclock *hwc;
-+
-+	hwc = kzalloc(sizeof(*hwc), GFP_KERNEL);
-+	if (!hwc)
-+		return NULL;
-+
-+	hwc->reg = cg->regs + 0x20 * idx + 0x10;
-+	hwc->info = cg->info.hwaccel[idx];
-+
-+	return create_mux_common(cg, hwc, &hwaccel_ops, 0, 0,
-+				 "cg-hwaccel%d", idx);
-+}
-+
-+static void __init create_muxes(struct clockgen *cg)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(cg->cmux); i++) {
-+		if (cg->info.cmux_to_group[i] < 0)
-+			break;
-+		if (cg->info.cmux_to_group[i] >=
-+		    ARRAY_SIZE(cg->info.cmux_groups)) {
-+			WARN_ON_ONCE(1);
-+			continue;
-+		}
-+
-+		cg->cmux[i] = create_one_cmux(cg, i);
-+	}
-+
-+	for (i = 0; i < ARRAY_SIZE(cg->hwaccel); i++) {
-+		if (!cg->info.hwaccel[i])
-+			continue;
-+
-+		cg->hwaccel[i] = create_one_hwaccel(cg, i);
-+	}
-+}
-+
-+/* Legacy node */
- struct cmux_clk {
- 	struct clk_hw hw;
- 	void __iomem *reg;
-@@ -27,7 +771,6 @@ struct cmux_clk {
- };
- 
- #define PLL_KILL			BIT(31)
--#define	CLKSEL_SHIFT		27
- #define CLKSEL_ADJUST		BIT(0)
- #define to_cmux_clk(p)		container_of(p, struct cmux_clk, hw)
- 
-@@ -59,7 +802,7 @@ static u8 cmux_get_parent(struct clk_hw *hw)
- 	return clksel;
- }
- 
--static const struct clk_ops cmux_ops = {
-+static const struct clk_ops legacy_cmux_ops = {
- 	.get_parent = cmux_get_parent,
- 	.set_parent = cmux_set_parent,
- };
-@@ -128,7 +871,7 @@ static void __init core_mux_init(struct device_node *np)
- 	}
- 
- 	init.name = clk_name;
--	init.ops = &cmux_ops;
-+	init.ops = &legacy_cmux_ops;
- 	init.parent_names = parent_names;
- 	init.num_parents = count;
- 	init.flags = 0;
-@@ -155,6 +898,7 @@ err_name:
- 	kfree(parent_names);
- }
- 
-+/* Legacy node */
- static void __init core_pll_init(struct device_node *np)
- {
- 	u32 mult;
-@@ -248,30 +992,112 @@ err_map:
- 	iounmap(base);
- }
- 
--static void __init sysclk_init(struct device_node *node)
-+static struct clk * __init create_sysclk(struct device_node *clockgen,
-+					 const char *name)
- {
- 	struct clk *clk;
--	const char *clk_name = node->name;
--	struct device_node *np = of_get_parent(node);
- 	u32 rate;
- 
-+	if (!of_property_read_u32(clockgen, "clock-frequency", &rate)) {
-+		clk = clk_register_fixed_rate(NULL, name, NULL,
-+					      CLK_IS_ROOT, rate);
-+	} else {
-+		const char *parent_name;
-+
-+		clk = of_clk_get(clockgen, 0);
-+		if (IS_ERR(clk)) {
-+			pr_err("%s: No input clock: %ld\n", __func__,
-+			       PTR_ERR(clk));
-+			return NULL;
-+		}
-+
-+		/* Register the input clock under the desired name. */
-+		parent_name = __clk_get_name(clk);
-+		clk = clk_register_fixed_factor(NULL, name, parent_name,
-+						0, 1, 1);
-+	}
-+
-+	if (IS_ERR(clk))
-+		pr_err("%s: Couldn't register %s: %ld\n", __func__, name,
-+		       PTR_ERR(clk));
-+
-+	return clk;
-+}
-+
-+/* Legacy node */
-+static void __init sysclk_init(struct device_node *node)
-+{
-+	struct device_node *np = of_get_parent(node);
-+	struct clk *clk;
-+
- 	if (!np) {
- 		pr_err("could not get parent node\n");
- 		return;
- 	}
- 
--	if (of_property_read_u32(np, "clock-frequency", &rate)) {
--		of_node_put(node);
-+	clk = create_sysclk(np, "sysclk");
-+	of_node_put(np);
-+
-+	if (!IS_ERR(clk))
-+		of_clk_add_provider(node, of_clk_src_simple_get, clk);
-+}
-+
-+static void __init create_one_pll(struct clockgen *cg, int idx)
-+{
-+	u32 __iomem *reg;
-+	u32 mult;
-+	struct clockgen_pll *pll = &cg->pll[idx];
-+	int i;
-+
-+	if (!(cg->info.pll_mask & (1 << idx)))
-+		return;
-+
-+	if (idx == PLATFORM_PLL)
-+		reg = cg->regs + 0xc00;
-+	else
-+		reg = cg->regs + 0x800 + 0x20 * (idx - 1);
-+
-+	/* Get the multiple of PLL */
-+	mult = ioread32be(reg);
-+
-+	/* Check if this PLL is disabled */
-+	if (mult & PLL_KILL) {
-+		pr_debug("%s(): pll %p disabled\n", __func__, reg);
- 		return;
- 	}
- 
--	of_property_read_string(np, "clock-output-names", &clk_name);
-+	if ((cg->info.flags & CG_PLL_8BIT) && idx != PLATFORM_PLL)
-+		mult = (mult & GENMASK(8, 1)) >> 1;
-+	else
-+		mult = (mult & GENMASK(6, 1)) >> 1;
- 
--	clk = clk_register_fixed_rate(NULL, clk_name, NULL, CLK_IS_ROOT, rate);
--	if (!IS_ERR(clk))
--		of_clk_add_provider(np, of_clk_src_simple_get, clk);
-+	for (i = 0; i < ARRAY_SIZE(pll->div); i++) {
-+		struct clk *clk;
-+
-+		snprintf(pll->div[i].name, sizeof(pll->div[i].name),
-+			 "cg-pll%d-div%d", idx, i + 1);
-+
-+		clk = clk_register_fixed_factor(NULL,
-+				pll->div[i].name, "cg-sysclk", 0, mult, i + 1);
-+		if (IS_ERR(clk)) {
-+			pr_err("%s: %s: register failed %ld\n",
-+			       __func__, pll->div[i].name, PTR_ERR(clk));
-+			continue;
-+		}
-+
-+		pll->div[i].clk = clk;
-+	}
-+}
-+
-+static void __init create_plls(struct clockgen *cg)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(cg->pll); i++)
-+		create_one_pll(cg, i);
- }
- 
-+/* Legacy node */
- static void __init pltfrm_pll_init(struct device_node *np)
- {
- 	void __iomem *base;
-@@ -352,6 +1178,106 @@ return_clk_unregister:
- 	kfree(cod);
- }
- 
-+#ifdef CONFIG_PPC
-+#include <asm/mpc85xx.h>
-+
-+static const u32 a4510_svrs[] __initconst = {
-+	(SVR_P2040 << 8) | 0x10,	/* P2040 1.0 */
-+	(SVR_P2040 << 8) | 0x11,	/* P2040 1.1 */
-+	(SVR_P2041 << 8) | 0x10,	/* P2041 1.0 */
-+	(SVR_P2041 << 8) | 0x11,	/* P2041 1.1 */
-+	(SVR_P3041 << 8) | 0x10,	/* P3041 1.0 */
-+	(SVR_P3041 << 8) | 0x11,	/* P3041 1.1 */
-+	(SVR_P4040 << 8) | 0x20,	/* P4040 2.0 */
-+	(SVR_P4080 << 8) | 0x20,	/* P4080 2.0 */
-+	(SVR_P5010 << 8) | 0x10,	/* P5010 1.0 */
-+	(SVR_P5010 << 8) | 0x20,	/* P5010 2.0 */
-+	(SVR_P5020 << 8) | 0x10,	/* P5020 1.0 */
-+	(SVR_P5021 << 8) | 0x10,	/* P5021 1.0 */
-+	(SVR_P5040 << 8) | 0x10,	/* P5040 1.0 */
-+};
-+
-+#define SVR_SECURITY	0x80000	/* The Security (E) bit */
-+
-+static bool __init has_erratum_a4510(void)
-+{
-+	u32 svr = mfspr(SPRN_SVR);
-+	int i;
-+
-+	svr &= ~SVR_SECURITY;
-+
-+	for (i = 0; i < ARRAY_SIZE(a4510_svrs); i++) {
-+		if (svr == a4510_svrs[i])
-+			return true;
-+	}
-+
-+	return false;
-+}
-+#else
-+static bool __init has_erratum_a4510(void)
-+{
-+	return false;
-+}
-+#endif
-+
-+static void __init clockgen_init(struct device_node *np)
-+{
-+	int i;
-+
-+	clockgen.node = np;
-+	clockgen.regs = of_iomap(np, 0);
-+	if (!clockgen.regs) {
-+		pr_err("%s(): %s: of_iomap() failed\n", __func__, np->name);
-+		return;
-+	}
-+
-+	for (i = 0; i < ARRAY_SIZE(chipinfo); i++) {
-+		if (of_device_is_compatible(np, chipinfo[i].compat))
-+			break;
-+	}
-+
-+	if (i == ARRAY_SIZE(chipinfo)) {
-+		pr_err("%s: unknown clockgen node %s\n", __func__,
-+		       np->full_name);
-+		goto err;
-+	}
-+	clockgen.info = chipinfo[i];
-+
-+	if (clockgen.info.guts_compat) {
-+		struct device_node *guts;
-+
-+		guts = of_find_compatible_node(NULL, NULL,
-+					       clockgen.info.guts_compat);
-+		if (guts) {
-+			clockgen.guts = of_iomap(guts, 0);
-+			if (!clockgen.guts) {
-+				pr_err("%s: Couldn't map %s regs\n", __func__,
-+				       guts->full_name);
-+			}
-+		}
-+
-+	}
-+
-+	if (has_erratum_a4510())
-+		clockgen.info.flags |= CG_CMUX_GE_PLAT;
-+
-+	clockgen.sysclk = create_sysclk(np, "cg-sysclk");
-+	create_plls(&clockgen);
-+	create_muxes(&clockgen);
-+
-+	if (clockgen.info.init_periph)
-+		clockgen.info.init_periph(&clockgen);
-+
-+	return;
-+err:
-+	iounmap(clockgen.regs);
-+	clockgen.regs = NULL;
-+}
-+
-+CLK_OF_DECLARE(qoriq_clockgen_1, "fsl,qoriq-clockgen-1.0", clockgen_init);
-+CLK_OF_DECLARE(qoriq_clockgen_2, "fsl,qoriq-clockgen-2.0", clockgen_init);
-+
-+/* Legacy nodes */
- CLK_OF_DECLARE(qoriq_sysclk_1, "fsl,qoriq-sysclk-1.0", sysclk_init);
- CLK_OF_DECLARE(qoriq_sysclk_2, "fsl,qoriq-sysclk-2.0", sysclk_init);
- CLK_OF_DECLARE(qoriq_core_pll_1, "fsl,qoriq-core-pll-1.0", core_pll_init);
--- 
-2.1.4
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
