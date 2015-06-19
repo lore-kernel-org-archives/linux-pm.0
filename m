@@ -1,41 +1,48 @@
 From: Paul Bolle <pebolle@tiscali.nl>
-Subject: Re: [PATCH 3/4] power: Add support for DA9150 Fuel-Gauge
-Date: Fri, 19 Jun 2015 18:51:56 +0200
-Message-ID: <1434732716.2385.166.camel@x220>
-References: <cover.1434643491.git.Adam.Thomson.Opensource@diasemi.com>
-	 <b1f1574e717d393b036bd7d01933d4d0b0ade408.1434643491.git.Adam.Thomson.Opensource@diasemi.com>
+Subject: Re: [PATCH 3/4] power: Add Qualcomm SMBB driver
+Date: Fri, 19 Jun 2015 19:01:28 +0200
+Message-ID: <1434733288.2385.173.camel@x220>
+References: <1434662025-9485-1-git-send-email-bjorn.andersson@sonymobile.com>
+	 <1434662025-9485-4-git-send-email-bjorn.andersson@sonymobile.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lb1-smtp-cloud6.xs4all.net ([194.109.24.24]:41172 "EHLO
-	lb1-smtp-cloud6.xs4all.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752015AbbFSQv7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jun 2015 12:51:59 -0400
-In-Reply-To: <b1f1574e717d393b036bd7d01933d4d0b0ade408.1434643491.git.Adam.Thomson.Opensource@diasemi.com>
+Received: from lb2-smtp-cloud6.xs4all.net ([194.109.24.28]:55501 "EHLO
+	lb2-smtp-cloud6.xs4all.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752303AbbFSRBf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jun 2015 13:01:35 -0400
+In-Reply-To: <1434662025-9485-4-git-send-email-bjorn.andersson@sonymobile.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
+To: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Courtney Cavin <courtney.cavin@sonymobile.com>
 
-On Thu, 2015-06-18 at 17:06 +0100, Adam Thomson wrote:
+On Thu, 2015-06-18 at 14:13 -0700, Bjorn Andersson wrote:
 > --- /dev/null
-> +++ b/drivers/power/da9150-fg.c
+> +++ b/drivers/power/qcom_smbb.c
 
-> +/* Register external function to give battery temperature */
-> +void da9150_fg_register_temp_cb(struct power_supply *psy, da9150_read_temp_t cb,
-> +				void *cb_context)
-> +{
-> +	struct da9150_fg *fg = dev_get_drvdata(psy->dev.parent);
-> +
-> +	fg->read_bat_temp = cb;
-> +	fg->bat_temp_context = cb_context;
-> +}
-> +EXPORT_SYMBOL_GPL(da9150_fg_register_temp_cb);
+> +MODULE_ALIAS("platform:qcom_smbb");
 
-This series doesn't add a user of this export. Actually, it doesn't even
-add a local caller of this function. Is a patch that adds a user of this
-function queued somewhere?
+(The day before yesterday and yesterday I had a, well, lively
+conversation regarding this macro. The interesting bits start at
+https://lkml.org/lkml/2015/6/17/383 . 
+
+But in a converstaion today things were rather silent. See
+https://lkml.org/lkml/2015/6/19/68 and the reply, of sorts, in
+https://lkml.org/lkml/2015/6/19/117. Let's see what happens here.)
+
+As I understand it, this alias is only useful if there's a corresponding
+struct platform_device, somewhere. Ie, this alias implies a
+platform_device that will fire of a "MODALIAS=platform:qcom_smbb" uevent
+when it's created. That would be a platform_device using a "qcom_smbb"
+name.
+
+If that's correct, then I think this MODULE_ALIAS macro isn't needed
+here, as I couldn't find a platform_device using that name. (But perhaps
+a patch that adds it is pending, somewhere.)
+
+Thanks,
 
 
 Paul Bolle
