@@ -1,7 +1,7 @@
 From: Scott Wood <scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Subject: [RFC PATCH 3/8] powerpc/fsl: Move fsl_guts.h out of arch/powerpc
-Date: Thu, 18 Jun 2015 21:49:13 -0500
-Message-ID: <1434682158-7243-4-git-send-email-scottwood@freescale.com>
+Subject: [RFC PATCH 5/8] clk: qoriq: Redirect legacy clock nodes to new clocks
+Date: Thu, 18 Jun 2015 21:49:15 -0500
+Message-ID: <1434682158-7243-6-git-send-email-scottwood@freescale.com>
 References: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,259 +12,420 @@ To: Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Tang Yu
 Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Liberman Igal-B31950 <Igal.Liberman-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Bucur Madalin-Cristian-B32716 <madalin.bucur-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Scott Wood <scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Freescale's Layerscape ARM chips use the same structure.
+Having multiple clock implementations pointing at the same hardware is
+asking for trouble if both get used -- for example, cached values will be
+incorrect.  Point the legacy nodes at the new clocks, before anything
+starts using the new clocks.  The pll/mux details in old device trees
+will be ignored, but "clocks" properties pointing at the old nodes will
+still work.
+
+This also lets us get rid of most of the legacy code.
 
 Signed-off-by: Scott Wood <scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
 ---
- arch/powerpc/platforms/85xx/mpc85xx_mds.c                       | 2 +-
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c                       | 2 +-
- arch/powerpc/platforms/85xx/p1022_ds.c                          | 2 +-
- arch/powerpc/platforms/85xx/p1022_rdk.c                         | 2 +-
- arch/powerpc/platforms/85xx/smp.c                               | 2 +-
- arch/powerpc/platforms/85xx/twr_p102x.c                         | 2 +-
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c                      | 2 +-
- drivers/iommu/fsl_pamu.c                                        | 2 +-
- arch/powerpc/include/asm/fsl_guts.h => include/linux/fsl/guts.h | 6 ++----
- sound/soc/fsl/mpc8610_hpcd.c                                    | 2 +-
- sound/soc/fsl/p1022_ds.c                                        | 2 +-
- sound/soc/fsl/p1022_rdk.c                                       | 2 +-
- 12 files changed, 13 insertions(+), 15 deletions(-)
- rename arch/powerpc/include/asm/fsl_guts.h => include/linux/fsl/guts.h (98%)
+ drivers/clk/clk-qoriq.c | 348 ++++++++----------------------------------------
+ 1 file changed, 54 insertions(+), 294 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index a392e94..f0be439 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -34,6 +34,7 @@
- #include <linux/of_device.h>
- #include <linux/phy.h>
- #include <linux/memblock.h>
-+#include <linux/fsl/guts.h>
+diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
+index b94dc2f..f6aa106 100644
+--- a/drivers/clk/clk-qoriq.c
++++ b/drivers/clk/clk-qoriq.c
+@@ -763,233 +763,24 @@ static void __init create_muxes(struct clockgen *cg)
+ }
  
- #include <linux/atomic.h>
- #include <asm/time.h>
-@@ -51,7 +52,6 @@
- #include <asm/qe_ic.h>
- #include <asm/mpic.h>
- #include <asm/swiotlb.h>
--#include <asm/fsl_guts.h>
- #include "smp.h"
+ /* Legacy node */
+-struct cmux_clk {
+-	struct clk_hw hw;
+-	void __iomem *reg;
+-	unsigned int clk_per_pll;
+-	u32 flags;
+-};
+-
+-#define PLL_KILL			BIT(31)
+-#define CLKSEL_ADJUST		BIT(0)
+-#define to_cmux_clk(p)		container_of(p, struct cmux_clk, hw)
+-
+-static int cmux_set_parent(struct clk_hw *hw, u8 idx)
+-{
+-	struct cmux_clk *clk = to_cmux_clk(hw);
+-	u32 clksel;
+-
+-	clksel = ((idx / clk->clk_per_pll) << 2) + idx % clk->clk_per_pll;
+-	if (clk->flags & CLKSEL_ADJUST)
+-		clksel += 8;
+-	clksel = (clksel & 0xf) << CLKSEL_SHIFT;
+-	iowrite32be(clksel, clk->reg);
+-
+-	return 0;
+-}
+-
+-static u8 cmux_get_parent(struct clk_hw *hw)
+-{
+-	struct cmux_clk *clk = to_cmux_clk(hw);
+-	u32 clksel;
+-
+-	clksel = ioread32be(clk->reg);
+-	clksel = (clksel >> CLKSEL_SHIFT) & 0xf;
+-	if (clk->flags & CLKSEL_ADJUST)
+-		clksel -= 8;
+-	clksel = (clksel >> 2) * clk->clk_per_pll + clksel % 4;
+-
+-	return clksel;
+-}
+-
+-static const struct clk_ops legacy_cmux_ops = {
+-	.get_parent = cmux_get_parent,
+-	.set_parent = cmux_set_parent,
+-};
+-
+ static void __init core_mux_init(struct device_node *np)
+ {
+ 	struct clk *clk;
+-	struct clk_init_data init;
+-	struct cmux_clk *cmux_clk;
+-	struct device_node *node;
+-	int rc, count, i;
+-	u32	offset;
+-	const char *clk_name;
+-	const char **parent_names;
+-	struct of_phandle_args clkspec;
++	struct resource res;
++	int idx, rc;
  
- #include "mpc85xx.h"
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index e358bed..50dcc00 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -17,6 +17,7 @@
- #include <linux/seq_file.h>
- #include <linux/interrupt.h>
- #include <linux/of_platform.h>
-+#include <linux/fsl/guts.h>
+-	rc = of_property_read_u32(np, "reg", &offset);
+-	if (rc) {
+-		pr_err("%s: could not get reg property\n", np->name);
++	if (of_address_to_resource(np, 0, &res))
+ 		return;
+-	}
+-
+-	/* get the input clock source count */
+-	count = of_property_count_strings(np, "clock-names");
+-	if (count < 0) {
+-		pr_err("%s: get clock count error\n", np->name);
+-		return;
+-	}
+-	parent_names = kcalloc(count, sizeof(char *), GFP_KERNEL);
+-	if (!parent_names)
+-		return;
+-
+-	for (i = 0; i < count; i++)
+-		parent_names[i] = of_clk_get_parent_name(np, i);
+-
+-	cmux_clk = kzalloc(sizeof(*cmux_clk), GFP_KERNEL);
+-	if (!cmux_clk)
+-		goto err_name;
  
- #include <asm/time.h>
- #include <asm/machdep.h>
-@@ -27,7 +28,6 @@
- #include <asm/mpic.h>
- #include <asm/qe.h>
- #include <asm/qe_ic.h>
--#include <asm/fsl_guts.h>
+-	cmux_clk->reg = of_iomap(np, 0);
+-	if (!cmux_clk->reg) {
+-		pr_err("%s: could not map register\n", __func__);
+-		goto err_clk;
+-	}
+-
+-	rc = of_parse_phandle_with_args(np, "clocks", "#clock-cells", 0,
+-					&clkspec);
+-	if (rc) {
+-		pr_err("%s: parse clock node error\n", __func__);
+-		goto err_clk;
+-	}
+-
+-	cmux_clk->clk_per_pll = of_property_count_strings(clkspec.np,
+-			"clock-output-names");
+-	of_node_put(clkspec.np);
+-
+-	node = of_find_compatible_node(NULL, NULL, "fsl,p4080-clockgen");
+-	if (node && (offset >= 0x80))
+-		cmux_clk->flags = CLKSEL_ADJUST;
+-
+-	rc = of_property_read_string_index(np, "clock-output-names",
+-					   0, &clk_name);
+-	if (rc) {
+-		pr_err("%s: read clock names error\n", np->name);
+-		goto err_clk;
+-	}
+-
+-	init.name = clk_name;
+-	init.ops = &legacy_cmux_ops;
+-	init.parent_names = parent_names;
+-	init.num_parents = count;
+-	init.flags = 0;
+-	cmux_clk->hw.init = &init;
+-
+-	clk = clk_register(NULL, &cmux_clk->hw);
+-	if (IS_ERR(clk)) {
+-		pr_err("%s: could not register clock\n", clk_name);
+-		goto err_clk;
+-	}
++	idx = (res.start & 0xf0) >> 5;
++	clk = clockgen.cmux[idx];
  
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index 6ac986d3..371df82 100644
---- a/arch/powerpc/platforms/85xx/p1022_ds.c
-+++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -16,6 +16,7 @@
-  * kind, whether express or implied.
-  */
+ 	rc = of_clk_add_provider(np, of_clk_src_simple_get, clk);
+ 	if (rc) {
+-		pr_err("Could not register clock provider for node:%s\n",
+-		       np->name);
+-		goto err_clk;
+-	}
+-	goto err_name;
+-
+-err_clk:
+-	kfree(cmux_clk);
+-err_name:
+-	/* free *_names because they are reallocated when registered */
+-	kfree(parent_names);
+-}
+-
+-/* Legacy node */
+-static void __init core_pll_init(struct device_node *np)
+-{
+-	u32 mult;
+-	int i, rc, count;
+-	const char *clk_name, *parent_name;
+-	struct clk_onecell_data *onecell_data;
+-	struct clk      **subclks;
+-	void __iomem *base;
+-
+-	base = of_iomap(np, 0);
+-	if (!base) {
+-		pr_err("iomap error\n");
++		pr_err("%s: Couldn't register clk provider for node %s: %d\n",
++		       __func__, np->name, rc);
+ 		return;
+ 	}
+-
+-	/* get the multiple of PLL */
+-	mult = ioread32be(base);
+-
+-	/* check if this PLL is disabled */
+-	if (mult & PLL_KILL) {
+-		pr_debug("PLL:%s is disabled\n", np->name);
+-		goto err_map;
+-	}
+-	mult = (mult >> 1) & 0x3f;
+-
+-	parent_name = of_clk_get_parent_name(np, 0);
+-	if (!parent_name) {
+-		pr_err("PLL: %s must have a parent\n", np->name);
+-		goto err_map;
+-	}
+-
+-	count = of_property_count_strings(np, "clock-output-names");
+-	if (count < 0 || count > 4) {
+-		pr_err("%s: clock is not supported\n", np->name);
+-		goto err_map;
+-	}
+-
+-	subclks = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
+-	if (!subclks)
+-		goto err_map;
+-
+-	onecell_data = kmalloc(sizeof(*onecell_data), GFP_KERNEL);
+-	if (!onecell_data)
+-		goto err_clks;
+-
+-	for (i = 0; i < count; i++) {
+-		rc = of_property_read_string_index(np, "clock-output-names",
+-						   i, &clk_name);
+-		if (rc) {
+-			pr_err("%s: could not get clock names\n", np->name);
+-			goto err_cell;
+-		}
+-
+-		/*
+-		 * when count == 4, there are 4 output clocks:
+-		 * /1, /2, /3, /4 respectively
+-		 * when count < 4, there are at least 2 output clocks:
+-		 * /1, /2, (/4, if count == 3) respectively.
+-		 */
+-		if (count == 4)
+-			subclks[i] = clk_register_fixed_factor(NULL, clk_name,
+-					parent_name, 0, mult, 1 + i);
+-		else
+-
+-			subclks[i] = clk_register_fixed_factor(NULL, clk_name,
+-					parent_name, 0, mult, 1 << i);
+-
+-		if (IS_ERR(subclks[i])) {
+-			pr_err("%s: could not register clock\n", clk_name);
+-			goto err_cell;
+-		}
+-	}
+-
+-	onecell_data->clks = subclks;
+-	onecell_data->clk_num = count;
+-
+-	rc = of_clk_add_provider(np, of_clk_src_onecell_get, onecell_data);
+-	if (rc) {
+-		pr_err("Could not register clk provider for node:%s\n",
+-		       np->name);
+-		goto err_cell;
+-	}
+-
+-	iounmap(base);
+-	return;
+-err_cell:
+-	kfree(onecell_data);
+-err_clks:
+-	kfree(subclks);
+-err_map:
+-	iounmap(base);
+ }
  
-+#include <linux/fsl/guts.h>
- #include <linux/pci.h>
- #include <linux/of_platform.h>
- #include <asm/div64.h>
-@@ -25,7 +26,6 @@
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- #include <asm/udbg.h>
--#include <asm/fsl_guts.h>
- #include <asm/fsl_lbc.h>
- #include "smp.h"
+ static struct clk * __init create_sysclk(struct device_node *clockgen,
+@@ -1027,21 +818,14 @@ static struct clk * __init create_sysclk(struct device_node *clockgen,
+ /* Legacy node */
+ static void __init sysclk_init(struct device_node *node)
+ {
+-	struct device_node *np = of_get_parent(node);
+-	struct clk *clk;
++	struct clk *clk = clockgen.sysclk;
  
-diff --git a/arch/powerpc/platforms/85xx/p1022_rdk.c b/arch/powerpc/platforms/85xx/p1022_rdk.c
-index 680232d..5087bec 100644
---- a/arch/powerpc/platforms/85xx/p1022_rdk.c
-+++ b/arch/powerpc/platforms/85xx/p1022_rdk.c
-@@ -12,6 +12,7 @@
-  * kind, whether express or implied.
-  */
+-	if (!np) {
+-		pr_err("could not get parent node\n");
+-		return;
+-	}
+-
+-	clk = create_sysclk(np, "sysclk");
+-	of_node_put(np);
+-
+-	if (!IS_ERR(clk))
++	if (clk)
+ 		of_clk_add_provider(node, of_clk_src_simple_get, clk);
+ }
  
-+#include <linux/fsl/guts.h>
- #include <linux/pci.h>
- #include <linux/of_platform.h>
- #include <asm/div64.h>
-@@ -21,7 +22,6 @@
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- #include <asm/udbg.h>
--#include <asm/fsl_guts.h>
- #include "smp.h"
++#define PLL_KILL BIT(31)
++
+ static void __init create_one_pll(struct clockgen *cg, int idx)
+ {
+ 	u32 __iomem *reg;
+@@ -1097,85 +881,61 @@ static void __init create_plls(struct clockgen *cg)
+ 		create_one_pll(cg, i);
+ }
  
- #include "mpc85xx.h"
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index b8b8216..6ac7786 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -19,6 +19,7 @@
- #include <linux/kexec.h>
- #include <linux/highmem.h>
- #include <linux/cpu.h>
-+#include <linux/fsl/guts.h>
+-/* Legacy node */
+-static void __init pltfrm_pll_init(struct device_node *np)
++static void __init legacy_pll_init(struct device_node *np, int idx)
+ {
+-	void __iomem *base;
+-	uint32_t mult;
+-	const char *parent_name, *clk_name;
+-	int i, _errno;
+-	struct clk_onecell_data *cod;
+-
+-	base = of_iomap(np, 0);
+-	if (!base) {
+-		pr_err("%s(): %s: of_iomap() failed\n", __func__, np->name);
+-		return;
+-	}
+-
+-	/* Get the multiple of PLL */
+-	mult = ioread32be(base);
+-
+-	iounmap(base);
++	struct clockgen_pll *pll;
++	struct clk_onecell_data *onecell_data;
++	struct clk **subclks;
++	int count, rc, i;
  
- #include <asm/machdep.h>
- #include <asm/pgtable.h>
-@@ -26,7 +27,6 @@
- #include <asm/mpic.h>
- #include <asm/cacheflush.h>
- #include <asm/dbell.h>
--#include <asm/fsl_guts.h>
- #include <asm/code-patching.h>
- #include <asm/cputhreads.h>
+-	/* Check if this PLL is disabled */
+-	if (mult & PLL_KILL) {
+-		pr_debug("%s(): %s: Disabled\n", __func__, np->name);
+-		return;
+-	}
+-	mult = (mult & GENMASK(6, 1)) >> 1;
++	pll = &clockgen.pll[idx];
++	count = ARRAY_SIZE(pll->div);
  
-diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
-index 30e002f..892e613 100644
---- a/arch/powerpc/platforms/85xx/twr_p102x.c
-+++ b/arch/powerpc/platforms/85xx/twr_p102x.c
-@@ -15,6 +15,7 @@
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/errno.h>
-+#include <linux/fsl/guts.h>
- #include <linux/pci.h>
- #include <linux/of_platform.h>
+-	parent_name = of_clk_get_parent_name(np, 0);
+-	if (!parent_name) {
+-		pr_err("%s(): %s: of_clk_get_parent_name() failed\n",
+-		       __func__, np->name);
++	subclks = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
++	if (!subclks)
+ 		return;
+-	}
  
-@@ -23,7 +24,6 @@
- #include <asm/mpic.h>
- #include <asm/qe.h>
- #include <asm/qe_ic.h>
--#include <asm/fsl_guts.h>
+-	i = of_property_count_strings(np, "clock-output-names");
+-	if (i < 0) {
+-		pr_err("%s(): %s: of_property_count_strings(clock-output-names) = %d\n",
+-		       __func__, np->name, i);
+-		return;
+-	}
++	onecell_data = kmalloc(sizeof(*onecell_data), GFP_KERNEL);
++	if (!onecell_data)
++		goto err_clks;
  
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
-diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-index 55413a5..437a9c3 100644
---- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-+++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-@@ -24,6 +24,7 @@
- #include <linux/delay.h>
- #include <linux/seq_file.h>
- #include <linux/of.h>
-+#include <linux/fsl/guts.h>
+-	cod = kmalloc(sizeof(*cod) + i * sizeof(struct clk *), GFP_KERNEL);
+-	if (!cod)
+-		return;
+-	cod->clks = (struct clk **)(cod + 1);
+-	cod->clk_num = i;
+-
+-	for (i = 0; i < cod->clk_num; i++) {
+-		_errno = of_property_read_string_index(np, "clock-output-names",
+-						       i, &clk_name);
+-		if (_errno < 0) {
+-			pr_err("%s(): %s: of_property_read_string_index(clock-output-names) = %d\n",
+-			       __func__, np->name, _errno);
+-			goto return_clk_unregister;
+-		}
++	for (i = 0; i < count; i++)
++		subclks[i] = pll->div[i].clk;
  
- #include <asm/time.h>
- #include <asm/machdep.h>
-@@ -38,7 +39,6 @@
- #include <sysdev/fsl_pci.h>
- #include <sysdev/fsl_soc.h>
- #include <sysdev/simple_gpio.h>
--#include <asm/fsl_guts.h>
+-		cod->clks[i] = clk_register_fixed_factor(NULL, clk_name,
+-					       parent_name, 0, mult, 1 + i);
+-		if (IS_ERR(cod->clks[i])) {
+-			pr_err("%s(): %s: clk_register_fixed_factor(%s) = %ld\n",
+-			       __func__, np->name,
+-			       clk_name, PTR_ERR(cod->clks[i]));
+-			goto return_clk_unregister;
+-		}
+-	}
++	onecell_data->clks = subclks;
++	onecell_data->clk_num = count;
  
- #include "mpc86xx.h"
+-	_errno = of_clk_add_provider(np, of_clk_src_onecell_get, cod);
+-	if (_errno < 0) {
+-		pr_err("%s(): %s: of_clk_add_provider() = %d\n",
+-		       __func__, np->name, _errno);
+-		goto return_clk_unregister;
++	rc = of_clk_add_provider(np, of_clk_src_onecell_get, onecell_data);
++	if (rc) {
++		pr_err("%s: Couldn't register clk provider for node %s: %d\n",
++		       __func__, np->name, rc);
++		goto err_cell;
+ 	}
  
-diff --git a/drivers/iommu/fsl_pamu.c b/drivers/iommu/fsl_pamu.c
-index abeedc9..24705c2 100644
---- a/drivers/iommu/fsl_pamu.c
-+++ b/drivers/iommu/fsl_pamu.c
-@@ -20,11 +20,11 @@
+ 	return;
++err_cell:
++	kfree(onecell_data);
++err_clks:
++	kfree(subclks);
++}
  
- #include "fsl_pamu.h"
+-return_clk_unregister:
+-	while (--i >= 0)
+-		clk_unregister(cod->clks[i]);
+-	kfree(cod);
++/* Legacy node */
++static void __init core_pll_init(struct device_node *np)
++{
++	struct resource res;
++	int idx;
++
++	if (of_address_to_resource(np, 0, &res))
++		return;
++
++	idx = (res.start & 0xf0) >> 5;
++	legacy_pll_init(np, CGA_PLL1 + idx);
++}
++
++/* Legacy node */
++static void __init pltfrm_pll_init(struct device_node *np)
++{
++	legacy_pll_init(np, PLATFORM_PLL);
+ }
  
-+#include <linux/fsl/guts.h>
- #include <linux/interrupt.h>
- #include <linux/genalloc.h>
- 
- #include <asm/mpc85xx.h>
--#include <asm/fsl_guts.h>
- 
- /* define indexes for each operation mapping scenario */
- #define OMI_QMAN        0x00
-diff --git a/arch/powerpc/include/asm/fsl_guts.h b/include/linux/fsl/guts.h
-similarity index 98%
-rename from arch/powerpc/include/asm/fsl_guts.h
-rename to include/linux/fsl/guts.h
-index 43b6bb1..3acf613 100644
---- a/arch/powerpc/include/asm/fsl_guts.h
-+++ b/include/linux/fsl/guts.h
-@@ -12,9 +12,8 @@
-  * option) any later version.
-  */
- 
--#ifndef __ASM_POWERPC_FSL_GUTS_H__
--#define __ASM_POWERPC_FSL_GUTS_H__
--#ifdef __KERNEL__
-+#ifndef __FSL_GUTS_H__
-+#define __FSL_GUTS_H__
- 
- /**
-  * Global Utility Registers.
-@@ -189,4 +188,3 @@ static inline void guts_set_pmuxcr_dma(struct ccsr_guts __iomem *guts,
- #endif
- 
- #endif
--#endif
-diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
-index 9621b91..6f236f1 100644
---- a/sound/soc/fsl/mpc8610_hpcd.c
-+++ b/sound/soc/fsl/mpc8610_hpcd.c
-@@ -12,11 +12,11 @@
- 
- #include <linux/module.h>
- #include <linux/interrupt.h>
-+#include <linux/fsl/guts.h>
- #include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/slab.h>
- #include <sound/soc.h>
--#include <asm/fsl_guts.h>
- 
- #include "fsl_dma.h"
- #include "fsl_ssi.h"
-diff --git a/sound/soc/fsl/p1022_ds.c b/sound/soc/fsl/p1022_ds.c
-index 71c1a7d..747aab0 100644
---- a/sound/soc/fsl/p1022_ds.c
-+++ b/sound/soc/fsl/p1022_ds.c
-@@ -11,12 +11,12 @@
-  */
- 
- #include <linux/module.h>
-+#include <linux/fsl/guts.h>
- #include <linux/interrupt.h>
- #include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/slab.h>
- #include <sound/soc.h>
--#include <asm/fsl_guts.h>
- 
- #include "fsl_dma.h"
- #include "fsl_ssi.h"
-diff --git a/sound/soc/fsl/p1022_rdk.c b/sound/soc/fsl/p1022_rdk.c
-index ee29048..1dd49e5 100644
---- a/sound/soc/fsl/p1022_rdk.c
-+++ b/sound/soc/fsl/p1022_rdk.c
-@@ -18,12 +18,12 @@
-  */
- 
- #include <linux/module.h>
-+#include <linux/fsl/guts.h>
- #include <linux/interrupt.h>
- #include <linux/of_address.h>
- #include <linux/of_device.h>
- #include <linux/slab.h>
- #include <sound/soc.h>
--#include <asm/fsl_guts.h>
- 
- #include "fsl_dma.h"
- #include "fsl_ssi.h"
+ #ifdef CONFIG_PPC
 -- 
 2.1.4
 
