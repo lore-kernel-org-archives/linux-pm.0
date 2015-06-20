@@ -1,158 +1,88 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 10/10] cpufreq: propagate errors returned from
- __cpufreq_governor()
-Date: Sat, 20 Jun 2015 08:42:07 +0530
-Message-ID: <20150620031207.GE1955@linux>
-References: <cover.1434713657.git.viresh.kumar@linaro.org>
- <46b51eea20399c927fb1f16839773f618133ae09.1434713657.git.viresh.kumar@linaro.org>
- <55845930.7020503@linux.vnet.ibm.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Sat, 20 Jun 2015 01:26:22 -0400
+Message-ID: <CAJvTdKn1kJ=2knUnXgO+6iK6m7Ns6q1aLT2RCeERU5+gJnzmqw@mail.gmail.com>
+References: <3798672.EXej90jOp1@vostro.rjw.lan>
+	<CACVXFVMEwOSeP8FM89E4XZPUhDsP6bfeCGmJDK1i5kKs-3MCDg@mail.gmail.com>
+	<CAJZ5v0gvDCwXWc5aAU7dGDsC=8ZbGBhQHgPkP92W=+Z7-v_2wA@mail.gmail.com>
+	<20150515113557.54ef930b@lxorguk.ukuu.org.uk>
+	<20150518115727.72439610@notabene.brown>
+	<CAJvTdKn_0EZ0ZuqO2e4+ExD8kFWcy78fse4zHr3uFZODOroXEg@mail.gmail.com>
+	<20150619010955.GL20262@dastard>
+	<CAJvTdKkJoSFUpBvCG0kEaTWti7EpPmficUxXZg49cb0QJD3A6w@mail.gmail.com>
+	<20150619043147.GA16870@dastard>
+	<CAJvTdKm15=+S4Y0mR+rzm8FOi2sfwGSqz9yiSh+GNcgMf85NxQ@mail.gmail.com>
+	<20150619230720.GB16870@dastard>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f179.google.com ([209.85.192.179]:35392 "EHLO
-	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753535AbbFTDMM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jun 2015 23:12:12 -0400
-Received: by pdbci14 with SMTP id ci14so43661672pdb.2
-        for <linux-pm@vger.kernel.org>; Fri, 19 Jun 2015 20:12:11 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <55845930.7020503@linux.vnet.ibm.com>
+Received: from mail-la0-f53.google.com ([209.85.215.53]:33175 "EHLO
+	mail-la0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751492AbbFTF0X (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 20 Jun 2015 01:26:23 -0400
+In-Reply-To: <20150619230720.GB16870@dastard>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, ke.wang@spreadtrum.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
+To: Dave Chinner <david@fromorbit.com>
+Cc: NeilBrown <neilb@suse.de>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, "Rafael J. Wysocki" <rafael@kernel.org>, Ming Lei <tom.leiming@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-On 19-06-15, 23:32, Preeti U Murthy wrote:
-> If INIT itself fails, we need to set policy->governor to NULL. I
-> included this in the testing of the patchset.
+>> Putting a function trace on sys_sync and executing sync manually,
+>> I was able to see it take 100ms,
+>> though function trace itself could be contributing to that...
+>
+> It would seem that way - you need to get the traces to dump to
+> something that has no sync overhead....
 
-Diff from earlier patch:
+I don't think that ftrace buffers have sync overhead --
+at least not until they are copied into files.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index da672b910760..59fa0c1b7922 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2284,14 +2284,23 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 	old_gov = policy->governor;
- 	/* end old governor */
- 	if (old_gov) {
--		if(!(ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP))) {
-+		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-+		if (ret) {
-+			/* This can happen due to race with other operations */
-+			pr_debug("%s: Failed to Stop Governor: %s (%d)\n",
-+				 __func__, old_gov->name, ret);
-+			return ret;
-+		} else {
- 			up_write(&policy->rwsem);
- 			ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
- 			down_write(&policy->rwsem);
--		}
- 
--		if (ret)
--			return ret;
-+			if (ret) {
-+				pr_err("%s: Failed to Exit Governor: %s (%d)\n",
-+				       __func__, old_gov->name, ret);
-+				return ret;
-+			}
-+		}
- 	}
- 
- 	/* start new governor */
-@@ -2309,7 +2318,9 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 	pr_debug("starting governor %s failed\n", policy->governor->name);
- 	if (old_gov) {
- 		policy->governor = old_gov;
--		if (!__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT))
-+		if (__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT))
-+			policy->governor = NULL;
-+		else
- 			__cpufreq_governor(policy, CPUFREQ_GOV_START);
- 	}
- 
+>> Curiously, in another run, sync ran at 15ms, but sd suspend exploded to 300ms.
+>> I've seen that in some other results.  Sometimes sync if fast, but sd
+>> then more than makes up for it by being slow:-(
+>
+> Oh, I see that too. Normally That's because the filesystem hasn't
+> been told to enter an idle state and so is doing metadata writeback
+> IO after the sync. When that happens the sd suspend has wait for
+> request queues to drain, IO to complete and device caches to flush.
+> This simply cannot be avoided because suspend never tells the
+> filesytems to enter an idle state....
 
-New-patch:
+I captured a trace of a slow sd suspend.
+Apparently, it does two operations -- first  a sync_cache,
+then a stop operation.  The sync was fast.   The stop command
+was where all the time went.
 
---------------8<-------------------
+I'll look at a more modern drive on the same system next week,
+just for comparison.
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Thu, 11 Sep 2014 10:50:48 +0530
-Subject: [PATCH] cpufreq: propagate errors returned from __cpufreq_governor()
+> i.e. remember what I said initially in this thread about suspend
+> actually needing to freeze filesystems, not just sync them?
 
-Return codes aren't honored properly in cpufreq_set_policy(). This can
-lead to two problems:
-- wrong errors propagated to sysfs
-- we try to do next state-change even if the previous one failed
+I think with the complexity of file systems and the underlying
+devices, yes, we need to think about how to efficiently
+and safely suspend/resume them.
 
-cpufreq_governor_dbs() now returns proper errors on all invalid
-state-transition requests and this code should honor that.
+But sys_sync is too expensive to have hard-coded in the kernel suspend path.
+Some machines can suspend and resume in under 10ms -- they
+absolutely do not want sys_sync() hard-coded in the suspend path.
 
-Reviewed-and-Tested-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 33 ++++++++++++++++++++++++---------
- 1 file changed, 24 insertions(+), 9 deletions(-)
+>> FYI,
+>> I ran analyze_suspend.py -x2
+>> from current directory /tmp, which is mounted on tmpfs,
+>> but still found the 2nd sync was very slow -- 200ms
+>> vs 6 - 20 ms for the sync preceding the 1st suspend.
+>
+> So where did that time go? As I pointed out previously, function
+> trace will only tell us if the delay is data writeback or not. We
+> seem to have confirmed that the delay is, indeed, writeback of dirty
+> data. Now we need to identify what the dirty data belongs to: we
+> need to trace individual writeback events to see what dirty inodes
+> are actually being written.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b612411655f9..59fa0c1b7922 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2284,16 +2284,29 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 	old_gov = policy->governor;
- 	/* end old governor */
- 	if (old_gov) {
--		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
--		up_write(&policy->rwsem);
--		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
--		down_write(&policy->rwsem);
-+		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-+		if (ret) {
-+			/* This can happen due to race with other operations */
-+			pr_debug("%s: Failed to Stop Governor: %s (%d)\n",
-+				 __func__, old_gov->name, ret);
-+			return ret;
-+		} else {
-+			up_write(&policy->rwsem);
-+			ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
-+			down_write(&policy->rwsem);
-+
-+			if (ret) {
-+				pr_err("%s: Failed to Exit Governor: %s (%d)\n",
-+				       __func__, old_gov->name, ret);
-+				return ret;
-+			}
-+		}
- 	}
- 
- 	/* start new governor */
- 	policy->governor = new_policy->governor;
--	if (!__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT)) {
--		if (!__cpufreq_governor(policy, CPUFREQ_GOV_START))
-+	if (!(ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT))) {
-+		if (!(ret = __cpufreq_governor(policy, CPUFREQ_GOV_START)))
- 			goto out;
- 
- 		up_write(&policy->rwsem);
-@@ -2305,11 +2318,13 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 	pr_debug("starting governor %s failed\n", policy->governor->name);
- 	if (old_gov) {
- 		policy->governor = old_gov;
--		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT);
--		__cpufreq_governor(policy, CPUFREQ_GOV_START);
-+		if (__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT))
-+			policy->governor = NULL;
-+		else
-+			__cpufreq_governor(policy, CPUFREQ_GOV_START);
- 	}
- 
--	return -EINVAL;
-+	return ret;
- 
-  out:
- 	pr_debug("governor: change or update limits\n");
+I expect that analyze_suspend.py is moving data around between
+the back-to-back suspends when the -x2 option is used -- will look into it.
 
--- 
-viresh
+thanks,
+Len Brown, Intel Open Source Technology Center
 --
 To unsubscribe from this list: send the line "unsubscribe linux-pm" in
