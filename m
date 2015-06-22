@@ -1,88 +1,75 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH v4] Thermal cleanups and hardware trip points
-Date: Mon, 22 Jun 2015 08:38:32 +0200
-Message-ID: <20150622063832.GS26575@pengutronix.de>
-References: <1432128046-12921-1-git-send-email-s.hauer@pengutronix.de>
- <20150608065657.GL26575@pengutronix.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 2/2] PM / Domains: Avoid infinite loops in attach/detach code
+Date: Mon, 22 Jun 2015 09:30:20 +0200
+Message-ID: <CAMuHMdVoHM=K-hgide0-2gpuAZgTkEqLAzhCGuGLHtEMtpAgyw@mail.gmail.com>
+References: <1434622954-26747-1-git-send-email-geert+renesas@glider.be>
+	<1434622954-26747-3-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:35652 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753795AbbFVGij (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2015 02:38:39 -0400
-Content-Disposition: inline
-In-Reply-To: <20150608065657.GL26575@pengutronix.de>
+Received: from mail-oi0-f41.google.com ([209.85.218.41]:34644 "EHLO
+	mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753591AbbFVHaV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2015 03:30:21 -0400
+In-Reply-To: <1434622954-26747-3-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Mikko Perttunen <mikko.perttunen@kapsi.fi>, linux-mediatek@lists.infradead.org, kernel@pengutronix.de, Brian Norris <computersforpeace@gmail.com>, linux-arm-kernel@lists.infradead.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Magnus Damm <damm@opensource.se>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Eduardo, Rui,
+On Thu, Jun 18, 2015 at 12:22 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> If pm_genpd_{add,remove}_device() keeps on failing with -EAGAIN, we end
+> up with an infinite loop in genpd_dev_pm_{at,de}tach().
+>
+> This may happen due to a genpd.prepared_count imbalance.  This is a bug
+> elsewhere, but it will result in a system lock up, possibly during
+> reboot of an otherwise functioning system.
+>
+> To avoid this, put a limit on the maximum number of loop iterations,
+> including a simple back-off mechanism.  If the limit is reached, the
+> operation will just fail.  An error message is already printed.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>  drivers/base/power/domain.c | 15 +++++++++++++--
+>  1 file changed, 13 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index cdd547bd67df8218..aa06f60b98b8af35 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
 
-Is there anything I can do to get this series forward? Should I split it
-up more into separate topics? Is there anything that I should drop from
-this series to get at least the rest mainline?
+> @@ -2218,10 +2226,13 @@ int genpd_dev_pm_attach(struct device *dev)
+>
+>         dev_dbg(dev, "adding to PM domain %s\n", pd->name);
+>
+> -       while (1) {
+> +       for (i = 0; i < GENPD_RETRIES; i++) {
 
-Sascha
+Sorry, there's a declaration of "i" missing.
 
-On Mon, Jun 08, 2015 at 08:56:57AM +0200, Sascha Hauer wrote:
-> Eduardo, Rui,
-> 
-> Any feedback to this series?
-> 
-> Thanks
->   Sascha
-> 
-> On Wed, May 20, 2015 at 03:20:30PM +0200, Sascha Hauer wrote:
-> > This series adds support for hardware trip points. It picks up earlier
-> > work from Mikko Perttunen. Mikko implemented hardware trip points as part
-> > of the device tree support. It was suggested back then to move the
-> > functionality to the thermal core instead of putting more code into the
-> > device tree support. This series does exactly that.
-> > 
-> > The majority of the patches are cleanups and fixes. Patch 11 introduces
-> > hardware tracked trip points and finally a driver for the Mediatek
-> > thermal controller is introduced as the first user.
-> > 
-> > All comments welcome
-> > 
-> > Changes since v3:
-> > - Fix some missing function type changes in int3400_thermal.c,
-> >   processor_thermal_device.c, kirkwood_thermal.c and exynos_tmu.c
-> > - Add better description for set_trips callback
-> > - update the interrupt triggers also when the trip points change
-> > - Add missing MODULE_* tags
-> > - Broaden temperature range in the Mediatek driver so that we can be sure
-> >   the measured temperatures are really out of the desired range
-> > 
-> > Changes since v2:
-> > - Add Mediatek thermal controller driver as first user for hardware trip
-> >   points
-> > 
-> > Changes since v1:
-> > - Use int instead of unsigned long consistently for temperatures
-> > - Instead of misfixing the emulation code add a comment how the
-> >   code is meant
-> > - Add doc entry for .set_trips callback
-> > - initialize prev_low_trip/prev_high_trip properly
-> > - get tz->lock before calling thermal_zone_set_trips()
-> > 
-> > 
-> > 
-> 
-> -- 
-> Pengutronix e.K.                           |                             |
-> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
-> 
-> 
+>                 ret = pm_genpd_add_device(pd, dev);
+>                 if (ret != -EAGAIN)
+>                         break;
+> +
+> +               if (i > GENPD_RETRIES / 2)
+> +                       udelay(GENPD_DELAY_US);
+>                 cond_resched();
+>         }
+>
+> --
+> 1.9.1
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
 --
 To unsubscribe from this list: send the line "unsubscribe linux-pm" in
