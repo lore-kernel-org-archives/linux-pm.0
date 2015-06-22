@@ -1,54 +1,77 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] x86: Load __USER_DS into DS/ES after resume
-Date: Mon, 22 Jun 2015 16:06:48 +0200
-Message-ID: <2087839.xQcnh0uO8K@vostro.rjw.lan>
-References: <20150612075013.GA8759@gmail.com> <49474860.PXIRr69qmi@vostro.rjw.lan> <20150618091358.GA23135@gmail.com>
+From: Michael Turquette <mturquette@baylibre.com>
+Subject: RE: [PATCH 4/6] ARM: dts: Exynos4210: add CPU OPP and regulator supply
+ property
+Date: Mon, 22 Jun 2015 08:04:21 -0700
+Message-ID: <20150622150421.9112.96812@quantum>
+References: <'@samsung.com> <1428079429-4252-1-git-send-email-b.zolnierkie@samsung.com>
+ <1428079429-4252-5-git-send-email-b.zolnierkie@samsung.com>
+ <CAJKOXPfR5JS546YS3M-8orxO7+SxnzE06h2cyesExyt8Y9fVKw@mail.gmail.com>
+ <CAJKOXPfdXV8qxR3AQEzQJTf6MojUN7Z=06ikxF8u5BuMihDfJQ@mail.gmail.com>
+ <00f801d0ac8c$344dfeb0$9ce9fc10$@kernel.org> <558767FC.4090405@samsung.com>
+ <011f01d0ac8d$40a25110$c1e6f330$@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:44470 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754400AbbFVNkn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2015 09:40:43 -0400
-In-Reply-To: <20150618091358.GA23135@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <011f01d0ac8d$40a25110$c1e6f330$@kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kukjin Kim <kgene@kernel.org>, 'Krzysztof Kozlowski' <k.kozlowski@samsung.com>'Kukjin Kim' <kgene@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, 'Lukasz Majewski' <l.majewski@samsung.com>, 'Heiko Stuebner' <heiko@sntech.de>, 'Kevin Hilman' <khilman@linaro.org>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Sachin Kamat' <sachin.kamat@linaro.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 'Tomasz Figa' <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Andreas Faerber' <afaerber@suse.de>, 'Doug Anderson' <dianders@chromium.org>, 'Javier Martinez Canillas' <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Linus Torvalds <torvalds@linux-foundation.org>, Denys Vlasenko <dvlasenk@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, the arch/x86 maintainers <x86@kernel.org>, linux-pm@vger.kernel.org, Andy Lutomirski <luto@amacapital.net>, Brian Gerst <brgerst@gmail.com>, Peter Anvin <hpa@zytor.com>
 
-On Thursday, June 18, 2015 11:13:58 AM Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> 
-> > On Tuesday, June 16, 2015 11:13:33 AM Pavel Machek wrote:
-> > > > > That second KERNEL should be USER.
-> > > > 
-> > > > Yeah, doh :-/ Updated patch below.
-> > > > 
-> > > > Thanks,
-> > > > 
-> > > > 	Ingo
-> > > 
-> > > Acked-by: Pavel Machek <pavel@ucw.cz>
-> > > Tested-by: Pavel Machek <pavel@ucw.cz>
-> > > 
-> > > [of course, it worked for me before, so I only tested it also works
-> > > with the patch.]
-> > > 
-> > > Rafael, can you apply it?
+Quoting Kukjin Kim (2015-06-21 18:46:26)
+> Krzysztof Kozlowski wrote:
 > > 
-> > Yes, I can, but I thought Ingo would take it into the tip tree.
+> > On 22.06.2015 10:38, Kukjin Kim wrote:
+> > > Krzysztof Kozlowski wrote:
+> > >> 2015-05-08 9:18 GMT+09:00 Krzysztof Kozlowski <k.kozlowski@samsung.com>:
+> > >>> 2015-04-04 1:43 GMT+09:00 Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>:
+> > >>>> From: Thomas Abraham <thomas.ab@samsung.com>
+> > >>>>
+> > >>>> For Exynos4210 platforms, add CPU operating points and CPU
+> > >>>> regulator supply properties for migrating from Exynos specific
+> > >>>> cpufreq driver to using generic cpufreq driver.
+> > >>>>
+> > >>>> Changes by Bartlomiej:
+> > >>>> - removed Exynos5250 and Exynos5420 support for now
+> > >>>>
+> > >>>> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> > >>>> Cc: Doug Anderson <dianders@chromium.org>
+> > >>>> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+> > >>>> Cc: Andreas Faerber <afaerber@suse.de>
+> > >>>> Cc: Sachin Kamat <sachin.kamat@linaro.org>
+> > >>>> Cc: Andreas Farber <afaerber@suse.de>
+> > >>>> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+> > >>>> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+> > >>>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > >>>
+> > >>> Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > >>
+> > >> Rebased and applied to my tree, I'll sent it later to Kukjin unless he
+> > >> picks it by himself from LKML.
+> > >>
+> > > Hi, as far as I know, this is for v4.2 not v4.1 so it will be applied based on
+> > > v4.2-rc1 after v4.2-rc1 release.
 > > 
-> > Ingo, what's your plan regarding this one?
+> > You mean it is for v4.3, not v4.2?
+> > 
+> Oops, yes v4.3.
 > 
-> Feel free to push it!
+> Thanks for the correction.
+
+Kukjin & Krzysztof,
+
+I'm confused on this point. I was planning to take patches 1, 2, 3, 5
+and 6 towards 4.2 (e.g. in the pull request that I'll send out this
+week).
+
+Is patch 4 going out for 4.2 or 4.3?
+
+Regards,
+Mike
+
+> Kukjin
 > 
-> Acked-by: Ingo Molnar <mingo@kernel.org>
-
-OK, applied, thanks!
-
-Rafael
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> Please read the FAQ at  http://www.tux.org/lkml/
