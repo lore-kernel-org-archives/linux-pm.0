@@ -1,108 +1,88 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 10/10] cpufreq: propagate errors returned from
- __cpufreq_governor()
-Date: Mon, 22 Jun 2015 10:51:06 +0530
-Message-ID: <20150622052106.GA3878@linux>
-References: <cover.1434713657.git.viresh.kumar@linaro.org>
- <46b51eea20399c927fb1f16839773f618133ae09.1434713657.git.viresh.kumar@linaro.org>
- <55845930.7020503@linux.vnet.ibm.com>
- <20150620031207.GE1955@linux>
- <55879214.2070809@linux.vnet.ibm.com>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH v4] Thermal cleanups and hardware trip points
+Date: Mon, 22 Jun 2015 08:38:32 +0200
+Message-ID: <20150622063832.GS26575@pengutronix.de>
+References: <1432128046-12921-1-git-send-email-s.hauer@pengutronix.de>
+ <20150608065657.GL26575@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:34757 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753914AbbFVFVT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2015 01:21:19 -0400
-Received: by pabvl15 with SMTP id vl15so80066372pab.1
-        for <linux-pm@vger.kernel.org>; Sun, 21 Jun 2015 22:21:18 -0700 (PDT)
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:35652 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753795AbbFVGij (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2015 02:38:39 -0400
 Content-Disposition: inline
-In-Reply-To: <55879214.2070809@linux.vnet.ibm.com>
+In-Reply-To: <20150608065657.GL26575@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, ke.wang@spreadtrum.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
+To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Stephen Warren <swarren@wwwdotorg.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Mikko Perttunen <mikko.perttunen@kapsi.fi>, linux-mediatek@lists.infradead.org, kernel@pengutronix.de, Brian Norris <computersforpeace@gmail.com>, linux-arm-kernel@lists.infradead.org
 
-On 22-06-15, 10:11, Preeti U Murthy wrote:
-> There are some checkpatch errors on this patch.
+Eduardo, Rui,
 
---------------8<------------------
+Is there anything I can do to get this series forward? Should I split it
+up more into separate topics? Is there anything that I should drop from
+this series to get at least the rest mainline?
 
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Thu, 11 Sep 2014 10:50:48 +0530
-Subject: [PATCH] cpufreq: propagate errors returned from __cpufreq_governor()
+Sascha
 
-Return codes aren't honored properly in cpufreq_set_policy(). This can
-lead to two problems:
-- wrong errors propagated to sysfs
-- we try to do next state-change even if the previous one failed
+On Mon, Jun 08, 2015 at 08:56:57AM +0200, Sascha Hauer wrote:
+> Eduardo, Rui,
+> 
+> Any feedback to this series?
+> 
+> Thanks
+>   Sascha
+> 
+> On Wed, May 20, 2015 at 03:20:30PM +0200, Sascha Hauer wrote:
+> > This series adds support for hardware trip points. It picks up earlier
+> > work from Mikko Perttunen. Mikko implemented hardware trip points as part
+> > of the device tree support. It was suggested back then to move the
+> > functionality to the thermal core instead of putting more code into the
+> > device tree support. This series does exactly that.
+> > 
+> > The majority of the patches are cleanups and fixes. Patch 11 introduces
+> > hardware tracked trip points and finally a driver for the Mediatek
+> > thermal controller is introduced as the first user.
+> > 
+> > All comments welcome
+> > 
+> > Changes since v3:
+> > - Fix some missing function type changes in int3400_thermal.c,
+> >   processor_thermal_device.c, kirkwood_thermal.c and exynos_tmu.c
+> > - Add better description for set_trips callback
+> > - update the interrupt triggers also when the trip points change
+> > - Add missing MODULE_* tags
+> > - Broaden temperature range in the Mediatek driver so that we can be sure
+> >   the measured temperatures are really out of the desired range
+> > 
+> > Changes since v2:
+> > - Add Mediatek thermal controller driver as first user for hardware trip
+> >   points
+> > 
+> > Changes since v1:
+> > - Use int instead of unsigned long consistently for temperatures
+> > - Instead of misfixing the emulation code add a comment how the
+> >   code is meant
+> > - Add doc entry for .set_trips callback
+> > - initialize prev_low_trip/prev_high_trip properly
+> > - get tz->lock before calling thermal_zone_set_trips()
+> > 
+> > 
+> > 
+> 
+> -- 
+> Pengutronix e.K.                           |                             |
+> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+> 
+> 
 
-cpufreq_governor_dbs() now returns proper errors on all invalid
-state-transition requests and this code should honor that.
-
-Reviewed-and-tested-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 31 ++++++++++++++++++++++++-------
- 1 file changed, 24 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b612411655f9..0b3c60861bdf 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2284,16 +2284,31 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 	old_gov = policy->governor;
- 	/* end old governor */
- 	if (old_gov) {
--		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-+		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-+		if (ret) {
-+			/* This can happen due to race with other operations */
-+			pr_debug("%s: Failed to Stop Governor: %s (%d)\n",
-+				 __func__, old_gov->name, ret);
-+			return ret;
-+		}
-+
- 		up_write(&policy->rwsem);
--		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
-+		ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
- 		down_write(&policy->rwsem);
-+
-+		if (ret) {
-+			pr_err("%s: Failed to Exit Governor: %s (%d)\n",
-+			       __func__, old_gov->name, ret);
-+			return ret;
-+		}
- 	}
- 
- 	/* start new governor */
- 	policy->governor = new_policy->governor;
--	if (!__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT)) {
--		if (!__cpufreq_governor(policy, CPUFREQ_GOV_START))
-+	ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT);
-+	if (!ret) {
-+		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
-+		if (!ret)
- 			goto out;
- 
- 		up_write(&policy->rwsem);
-@@ -2305,11 +2320,13 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 	pr_debug("starting governor %s failed\n", policy->governor->name);
- 	if (old_gov) {
- 		policy->governor = old_gov;
--		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT);
--		__cpufreq_governor(policy, CPUFREQ_GOV_START);
-+		if (__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT))
-+			policy->governor = NULL;
-+		else
-+			__cpufreq_governor(policy, CPUFREQ_GOV_START);
- 	}
- 
--	return -EINVAL;
-+	return ret;
- 
-  out:
- 	pr_debug("governor: change or update limits\n");
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
 --
 To unsubscribe from this list: send the line "unsubscribe linux-pm" in
