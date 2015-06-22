@@ -1,77 +1,134 @@
-From: Michael Turquette <mturquette@baylibre.com>
-Subject: RE: [PATCH 4/6] ARM: dts: Exynos4210: add CPU OPP and regulator supply
- property
-Date: Mon, 22 Jun 2015 08:04:21 -0700
-Message-ID: <20150622150421.9112.96812@quantum>
-References: <'@samsung.com> <1428079429-4252-1-git-send-email-b.zolnierkie@samsung.com>
- <1428079429-4252-5-git-send-email-b.zolnierkie@samsung.com>
- <CAJKOXPfR5JS546YS3M-8orxO7+SxnzE06h2cyesExyt8Y9fVKw@mail.gmail.com>
- <CAJKOXPfdXV8qxR3AQEzQJTf6MojUN7Z=06ikxF8u5BuMihDfJQ@mail.gmail.com>
- <00f801d0ac8c$344dfeb0$9ce9fc10$@kernel.org> <558767FC.4090405@samsung.com>
- <011f01d0ac8d$40a25110$c1e6f330$@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v2 01/14] clk: shmobile: Add CPG Clock Domain support
+Date: Mon, 22 Jun 2015 17:07:23 +0200
+Message-ID: <CAMuHMdUuQkz9oiKdntd9KhMM9NGy1gMkiJ9jVZvkHA2yQNWBTg@mail.gmail.com>
+References: <1432839219-475-1-git-send-email-geert+renesas@glider.be>
+	<1432839219-475-2-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <011f01d0ac8d$40a25110$c1e6f330$@kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kukjin Kim <kgene@kernel.org>, 'Krzysztof Kozlowski' <k.kozlowski@samsung.com>'Kukjin Kim' <kgene@kernel.org>
-Cc: linux-arm-kernel@lists.infradead.org, 'Lukasz Majewski' <l.majewski@samsung.com>, 'Heiko Stuebner' <heiko@sntech.de>, 'Kevin Hilman' <khilman@linaro.org>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Sachin Kamat' <sachin.kamat@linaro.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 'Tomasz Figa' <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Andreas Faerber' <afaerber@suse.de>, 'Doug Anderson' <dianders@chromium.org>, 'Javier Martinez Canillas' <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1432839219-475-2-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-clk@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Kukjin Kim (2015-06-21 18:46:26)
-> Krzysztof Kozlowski wrote:
-> > 
-> > On 22.06.2015 10:38, Kukjin Kim wrote:
-> > > Krzysztof Kozlowski wrote:
-> > >> 2015-05-08 9:18 GMT+09:00 Krzysztof Kozlowski <k.kozlowski@samsung.com>:
-> > >>> 2015-04-04 1:43 GMT+09:00 Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>:
-> > >>>> From: Thomas Abraham <thomas.ab@samsung.com>
-> > >>>>
-> > >>>> For Exynos4210 platforms, add CPU operating points and CPU
-> > >>>> regulator supply properties for migrating from Exynos specific
-> > >>>> cpufreq driver to using generic cpufreq driver.
-> > >>>>
-> > >>>> Changes by Bartlomiej:
-> > >>>> - removed Exynos5250 and Exynos5420 support for now
-> > >>>>
-> > >>>> Cc: Kukjin Kim <kgene.kim@samsung.com>
-> > >>>> Cc: Doug Anderson <dianders@chromium.org>
-> > >>>> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-> > >>>> Cc: Andreas Faerber <afaerber@suse.de>
-> > >>>> Cc: Sachin Kamat <sachin.kamat@linaro.org>
-> > >>>> Cc: Andreas Farber <afaerber@suse.de>
-> > >>>> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-> > >>>> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-> > >>>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > >>>
-> > >>> Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > >>
-> > >> Rebased and applied to my tree, I'll sent it later to Kukjin unless he
-> > >> picks it by himself from LKML.
-> > >>
-> > > Hi, as far as I know, this is for v4.2 not v4.1 so it will be applied based on
-> > > v4.2-rc1 after v4.2-rc1 release.
-> > 
-> > You mean it is for v4.3, not v4.2?
-> > 
-> Oops, yes v4.3.
-> 
-> Thanks for the correction.
+On Thu, May 28, 2015 at 8:53 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> Add Clock Domain support to the Clock Pulse Generator (CPG) Module Stop
+> (MSTP) Clocks driver using the generic PM Domain.  This allows to
+> power-manage the module clocks of SoC devices that are part of the CPG
+> Clock Domain using Runtime PM, or for system suspend/resume.
+>
+> SoC devices that are part of a CPG Clock Domain and can be
+> power-managed through an MSTP clock should be tagged in DT with a
+> proper "power-domains" property.
+>
+> The CPG Clock Domain code will scan such devices for clocks that are
+> suitable for power-managing the device, by looking for a clock that is
+> compatible with "renesas,cpg-mstp-clocks".
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Reviewed-by: Kevin Hilman <khilman@linaro.org>
+> ---
+> v2:
+>   - Add Acked-by and Reviewed-by,
+>   - Move core CPG Clock Domain code from the R-Car Gen2 driver to the
+>     CPG MSTP Clocks driver, as it's generic, and can be used on other
+>     Renesas SoCs that have a CPG/MSTP block,
+>   - Scan for an MSTP clock instead of using the first clock tied to the
+>     device (con_id NULL),
+>   - Extract R-Car Gen2 specifics to a separate patch.
+> ---
+>  drivers/clk/shmobile/clk-mstp.c      | 86 ++++++++++++++++++++++++++++++++++++
+>  drivers/clk/shmobile/clk-rcar-gen2.c |  2 +
+>  include/linux/clk/shmobile.h         | 12 +++++
+>  3 files changed, 100 insertions(+)
+>
+> diff --git a/drivers/clk/shmobile/clk-mstp.c b/drivers/clk/shmobile/clk-mstp.c
+> index 2d2fe773ac8168f9..619f3eccefd4884f 100644
+> --- a/drivers/clk/shmobile/clk-mstp.c
+> +++ b/drivers/clk/shmobile/clk-mstp.c
 
-Kukjin & Krzysztof,
+> @@ -236,3 +241,84 @@ static void __init cpg_mstp_clocks_init(struct device_node *np)
+>         of_clk_add_provider(np, of_clk_src_onecell_get, &group->data);
+>  }
+>  CLK_OF_DECLARE(cpg_mstp_clks, "renesas,cpg-mstp-clocks", cpg_mstp_clocks_init);
+> +
+> +
+> +#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+> +int cpg_mstp_attach_dev(struct generic_pm_domain *domain, struct device *dev)
+> +{
+> +       struct device_node *np = dev->of_node;
+> +       struct of_phandle_args clkspec;
+> +       struct clk *clk;
+> +       int i = 0;
+> +       int error;
+> +
+> +       while (!of_parse_phandle_with_args(np, "clocks", "#clock-cells", i,
+> +                                          &clkspec)) {
+> +               if (of_device_is_compatible(clkspec.np,
+> +                                           "renesas,cpg-mstp-clocks"))
+> +                       goto found;
+> +
+> +               of_node_put(clkspec.np);
+> +               i++;
+> +       }
+> +
+> +       return 0;
+> +
+> +found:
+> +       clk = of_clk_get_from_provider(&clkspec);
+> +       of_node_put(clkspec.np);
+> +
+> +       if (IS_ERR(clk))
+> +               return PTR_ERR(clk);
+> +
+> +       error = pm_clk_create(dev);
+> +       if (error) {
+> +               dev_err(dev, "pm_clk_create failed %d\n", error);
+> +               goto fail_put;
+> +       }
+> +
+> +       error = pm_clk_add_clk(dev, clk);
+> +       if (error) {
+> +               dev_err(dev, "pm_clk_add_clk %pC failed %d\n", clk, error);
+> +               goto fail_destroy;
+> +       }
+> +
+> +       return 0;
+> +
+> +fail_destroy:
+> +       pm_clk_destroy(dev);
+> +fail_put:
+> +       clk_put(clk);
+> +       return error;
+> +}
+> +
+> +void cpg_mstp_detach_dev(struct generic_pm_domain *domain, struct device *dev)
+> +{
+> +       pm_clk_destroy(dev);
 
-I'm confused on this point. I was planning to take patches 1, 2, 3, 5
-and 6 towards 4.2 (e.g. in the pull request that I'll send out this
-week).
+This should only be done if cpg_mstp_attach_dev() actually added a clock, i.e.
 
-Is patch 4 going out for 4.2 or 4.3?
+        if (!list_empty(&dev->power.subsys_data->clock_list))
+                pm_clk_destroy(dev);
 
-Regards,
-Mike
+Else it will free the subsys_data allocated by genpd_alloc_dev_data()
+prematurely, and genpd_free_dev_data() will crash when dereferencing
+dev->power.subsys_data.
 
-> Kukjin
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> Please read the FAQ at  http://www.tux.org/lkml/
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
+--
+To unsubscribe from this list: send the line "unsubscribe linux-sh" in
