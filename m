@@ -1,171 +1,64 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 10/10] cpufreq: propagate errors returned from __cpufreq_governor()
-Date: Mon, 22 Jun 2015 10:11:56 +0530
-Message-ID: <55879214.2070809@linux.vnet.ibm.com>
-References: <cover.1434713657.git.viresh.kumar@linaro.org> <46b51eea20399c927fb1f16839773f618133ae09.1434713657.git.viresh.kumar@linaro.org> <55845930.7020503@linux.vnet.ibm.com> <20150620031207.GE1955@linux>
+From: Bjorn Andersson <bjorn@kryo.se>
+Subject: Re: [PATCH 3/4] power: Add Qualcomm SMBB driver
+Date: Sun, 21 Jun 2015 22:06:16 -0700
+Message-ID: <CAJAp7OiB+y_-s0tRJFhPq7MMwvfFiT-h0bqfXQR5GYU9Em4VBQ@mail.gmail.com>
+References: <1434662025-9485-1-git-send-email-bjorn.andersson@sonymobile.com>
+	<1434662025-9485-4-git-send-email-bjorn.andersson@sonymobile.com>
+	<1434733288.2385.173.camel@x220>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e18.ny.us.ibm.com ([129.33.205.208]:34212 "EHLO
-	e18.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750907AbbFVEmF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2015 00:42:05 -0400
-Received: from /spool/local
-	by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Mon, 22 Jun 2015 00:42:04 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com [9.57.198.24])
-	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id D0E4238C8041
-	for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2015 00:42:02 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id t5M4g28458654770
-	for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2015 04:42:02 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
-	by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id t5M4g0Mk012312
-	for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2015 00:42:02 -0400
-In-Reply-To: <20150620031207.GE1955@linux>
+Received: from mail-lb0-f177.google.com ([209.85.217.177]:35632 "EHLO
+	mail-lb0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751275AbbFVFGS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2015 01:06:18 -0400
+Received: by lbbwc1 with SMTP id wc1so101726218lbb.2
+        for <linux-pm@vger.kernel.org>; Sun, 21 Jun 2015 22:06:16 -0700 (PDT)
+In-Reply-To: <1434733288.2385.173.camel@x220>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, ke.wang@spreadtrum.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
+To: Paul Bolle <pebolle@tiscali.nl>
+Cc: Bjorn Andersson <bjorn.andersson@sonymobile.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Courtney Cavin <courtney.cavin@sonymobile.com>
 
-On 06/20/2015 08:42 AM, Viresh Kumar wrote:
-> On 19-06-15, 23:32, Preeti U Murthy wrote:
->> If INIT itself fails, we need to set policy->governor to NULL. I
->> included this in the testing of the patchset.
-> 
-> Diff from earlier patch:
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index da672b910760..59fa0c1b7922 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2284,14 +2284,23 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
->  	old_gov = policy->governor;
->  	/* end old governor */
->  	if (old_gov) {
-> -		if(!(ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP))) {
-> +		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> +		if (ret) {
-> +			/* This can happen due to race with other operations */
-> +			pr_debug("%s: Failed to Stop Governor: %s (%d)\n",
-> +				 __func__, old_gov->name, ret);
-> +			return ret;
-> +		} else {
->  			up_write(&policy->rwsem);
->  			ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
->  			down_write(&policy->rwsem);
-> -		}
-> 
-> -		if (ret)
-> -			return ret;
-> +			if (ret) {
-> +				pr_err("%s: Failed to Exit Governor: %s (%d)\n",
-> +				       __func__, old_gov->name, ret);
-> +				return ret;
-> +			}
-> +		}
->  	}
-> 
->  	/* start new governor */
-> @@ -2309,7 +2318,9 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
->  	pr_debug("starting governor %s failed\n", policy->governor->name);
->  	if (old_gov) {
->  		policy->governor = old_gov;
-> -		if (!__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT))
-> +		if (__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT))
-> +			policy->governor = NULL;
-> +		else
->  			__cpufreq_governor(policy, CPUFREQ_GOV_START);
->  	}
-> 
-> 
-> New-patch:
-> 
-> --------------8<-------------------
-> 
-> From: Viresh Kumar <viresh.kumar@linaro.org>
-> Date: Thu, 11 Sep 2014 10:50:48 +0530
-> Subject: [PATCH] cpufreq: propagate errors returned from __cpufreq_governor()
-> 
-> Return codes aren't honored properly in cpufreq_set_policy(). This can
-> lead to two problems:
-> - wrong errors propagated to sysfs
-> - we try to do next state-change even if the previous one failed
-> 
-> cpufreq_governor_dbs() now returns proper errors on all invalid
-> state-transition requests and this code should honor that.
-> 
-> Reviewed-and-Tested-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c | 33 ++++++++++++++++++++++++---------
->  1 file changed, 24 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index b612411655f9..59fa0c1b7922 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2284,16 +2284,29 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
->  	old_gov = policy->governor;
->  	/* end old governor */
->  	if (old_gov) {
-> -		__cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> -		up_write(&policy->rwsem);
-> -		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
-> -		down_write(&policy->rwsem);
-> +		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> +		if (ret) {
-> +			/* This can happen due to race with other operations */
-> +			pr_debug("%s: Failed to Stop Governor: %s (%d)\n",
-> +				 __func__, old_gov->name, ret);
-> +			return ret;
-> +		} else {
-> +			up_write(&policy->rwsem);
-> +			ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
-> +			down_write(&policy->rwsem);
-> +
-> +			if (ret) {
-> +				pr_err("%s: Failed to Exit Governor: %s (%d)\n",
-> +				       __func__, old_gov->name, ret);
-> +				return ret;
-> +			}
-> +		}
->  	}
-> 
->  	/* start new governor */
->  	policy->governor = new_policy->governor;
-> -	if (!__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT)) {
-> -		if (!__cpufreq_governor(policy, CPUFREQ_GOV_START))
-> +	if (!(ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT))) {
-> +		if (!(ret = __cpufreq_governor(policy, CPUFREQ_GOV_START)))
->  			goto out;
-> 
->  		up_write(&policy->rwsem);
-> @@ -2305,11 +2318,13 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
->  	pr_debug("starting governor %s failed\n", policy->governor->name);
->  	if (old_gov) {
->  		policy->governor = old_gov;
-> -		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT);
-> -		__cpufreq_governor(policy, CPUFREQ_GOV_START);
-> +		if (__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_INIT))
-> +			policy->governor = NULL;
-> +		else
-> +			__cpufreq_governor(policy, CPUFREQ_GOV_START);
->  	}
-> 
-> -	return -EINVAL;
-> +	return ret;
-> 
->   out:
->  	pr_debug("governor: change or update limits\n");
-> 
+On Fri, Jun 19, 2015 at 10:01 AM, Paul Bolle <pebolle@tiscali.nl> wrote:
+> On Thu, 2015-06-18 at 14:13 -0700, Bjorn Andersson wrote:
+>> --- /dev/null
+>> +++ b/drivers/power/qcom_smbb.c
+>
+>> +MODULE_ALIAS("platform:qcom_smbb");
+>
+> (The day before yesterday and yesterday I had a, well, lively
+> conversation regarding this macro. The interesting bits start at
+> https://lkml.org/lkml/2015/6/17/383 .
+>
+> But in a converstaion today things were rather silent. See
+> https://lkml.org/lkml/2015/6/19/68 and the reply, of sorts, in
+> https://lkml.org/lkml/2015/6/19/117. Let's see what happens here.)
+>
+> As I understand it, this alias is only useful if there's a corresponding
+> struct platform_device, somewhere. Ie, this alias implies a
+> platform_device that will fire of a "MODALIAS=platform:qcom_smbb" uevent
+> when it's created. That would be a platform_device using a "qcom_smbb"
+> name.
+>
 
-There are some checkpatch errors on this patch.
+As far as I could see the uevents, including MODALIAS, is sent when
+the device is added or removed; but the content comes from the device
+tree alias, not the MODULE_ALIAS.
 
-Regards
-Preeti U Murthy
+The MODULE_ALIAS seems to add an alias to the kernel module
+information, which can be used to find this driver during modprobe; in
+addition to the actual name of the module.
 
+> If that's correct, then I think this MODULE_ALIAS macro isn't needed
+> here, as I couldn't find a platform_device using that name. (But perhaps
+> a patch that adds it is pending, somewhere.)
+>
+
+I don't see any reason for keeping the MODULE_ALIAS, so I think it
+should be removed for v2.
+
+Regards,
+Bjorn
 --
 To unsubscribe from this list: send the line "unsubscribe linux-pm" in
