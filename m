@@ -1,41 +1,63 @@
-From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
-Subject: RE: [PATCH 1/4] mfd: da9150: Add support for Fuel-Gauge
-Date: Mon, 22 Jun 2015 10:24:33 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337AB555F28@SW-EX-MBX01.diasemi.com>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/4] mfd: da9150: Add support for Fuel-Gauge
+Date: Mon, 22 Jun 2015 12:16:24 +0100
+Message-ID: <20150622111624.GF19061@x1>
 References: <cover.1434643491.git.Adam.Thomson.Opensource@diasemi.com>
-	 <8d8f583fee9313f261efa96a038874e552995c17.1434643491.git.Adam.Thomson.Opensource@diasemi.com>
+ <8d8f583fee9313f261efa96a038874e552995c17.1434643491.git.Adam.Thomson.Opensource@diasemi.com>
  <1434732461.2385.162.camel@x220>
+ <2E89032DDAA8B9408CB92943514A0337AB555F28@SW-EX-MBX01.diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.bemta3.messagelabs.com ([195.245.230.162]:44276 "EHLO
-	mail1.bemta3.messagelabs.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756163AbbFVKYn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2015 06:24:43 -0400
-In-Reply-To: <1434732461.2385.162.camel@x220>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <2E89032DDAA8B9408CB92943514A0337AB555F28-68WUHU125fLLPO1uwJ3ImwLouzNaz+3S@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Cc: Paul Bolle <pebolle-IWqWACnzNjzz+pZb47iToQ@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Paul Bolle <pebolle@tiscali.nl>, "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 
-T24gSnVuZSAxOSwgMjAxNSAxNzo0OCwgUGF1bCBCb2xsZSB3cm90ZToNCg0KPiBPbiBUaHUsIDIw
-MTUtMDYtMTggYXQgMTc6MDYgKzAxMDAsIEFkYW0gVGhvbXNvbiB3cm90ZToNCj4gPiAtLS0gL2Rl
-di9udWxsDQo+ID4gKysrIGIvaW5jbHVkZS9saW51eC9tZmQvZGE5MTUwL2ZnLmgNCj4gDQo+ID4g
-Ky8qDQo+ID4gKyAqIEZ1bmN0aW9uIHRlbXBsYXRlIHRvIHByb3ZpZGUgYmF0dGVyeSB0ZW1wZXJh
-dHVyZS4gU2hvdWxkIHByb3ZpZGUNCj4gPiArICogMC4xIGRlZ3JlZXMgQyByZXNvbHV0aW9uIHJl
-dHVybiB2YWx1ZXMuDQo+ID4gKyAqLw0KPiA+ICt0eXBlZGVmIGludCAoKmRhOTE1MF9yZWFkX3Rl
-bXBfdCkodm9pZCAqY29udGV4dCk7DQo+ID4gKw0KPiA+ICsvKiBSZWdpc3RlciB0ZW1wIGNhbGxi
-YWNrIGZ1bmN0aW9uICovDQo+ID4gK3ZvaWQgZGE5MTUwX2ZnX3JlZ2lzdGVyX3RlbXBfY2Ioc3Ry
-dWN0IHBvd2VyX3N1cHBseSAqcHN5LA0KPiBkYTkxNTBfcmVhZF90ZW1wX3QgY2IsDQo+ID4gKwkJ
-CQl2b2lkICpjYl9jb250ZXh0KTsNCj4gDQo+IFRoZSBwZWRhbnQgaW4gbWUgbm90aWNlZCB0aGF0
-IHRoaXMgZnVuY3Rpb24gaXMgYWN0dWFsbHkgYWRkZWQgaW4gMy80LiBTbw0KPiB0aGlzIGNodW5r
-IG1pZ2h0IGJlIG1vdmVkIHRvIDMvNCwgaWYgeW91IGxpa2UgdG8gZW50ZXJ0YWluIHBlZGFudHJ5
-IGxpa2UNCj4gdGhhdCwgdGhhdCBpcy4gKEJ1dCBzZWUgbXkgcmVtYXJrIG9uIDMvNCB0b28uKQ0K
-DQpUaGlzIGlzIHRydWUsIGJ1dCBhcyB0aGUgaGVhZGVyIGlzIHBhcnQgb2YgTUZELCBJIGluY2x1
-ZGVkIGl0IGFzIHBhcnQgb2YgdGhhdA0KcGF0Y2ggYXMgSSB0aG91Z2h0IHRoaXMgbWFkZSBtb3Jl
-IHNlbnNlLiBJIGd1ZXNzIExlZSB3aWxsIGNvbW1lbnQgYXMgdG8gd2hldGhlcg0KdGhhdCB3YXMg
-Y29ycmVjdCBvciBub3QuIDopDQo=
+On Mon, 22 Jun 2015, Opensource [Adam Thomson] wrote:
+
+> On June 19, 2015 17:48, Paul Bolle wrote:
+>=20
+> > On Thu, 2015-06-18 at 17:06 +0100, Adam Thomson wrote:
+> > > --- /dev/null
+> > > +++ b/include/linux/mfd/da9150/fg.h
+> >=20
+> > > +/*
+> > > + * Function template to provide battery temperature. Should prov=
+ide
+> > > + * 0.1 degrees C resolution return values.
+> > > + */
+> > > +typedef int (*da9150_read_temp_t)(void *context);
+> > > +
+> > > +/* Register temp callback function */
+> > > +void da9150_fg_register_temp_cb(struct power_supply *psy,
+> > da9150_read_temp_t cb,
+> > > +				void *cb_context);
+> >=20
+> > The pedant in me noticed that this function is actually added in 3/=
+4. So
+> > this chunk might be moved to 3/4, if you like to entertain pedantry=
+ like
+> > that, that is. (But see my remark on 3/4 too.)
+>=20
+> This is true, but as the header is part of MFD, I included it as part=
+ of that
+> patch as I thought this made more sense. I guess Lee will comment as =
+to whether
+> that was correct or not. :)
+
+Glanced over this (as I still have 240 unread emails to attend to).
+If the question is whether to submit the prototype at the same time as
+the associated function, the answer is yes.
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
 --
-To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
