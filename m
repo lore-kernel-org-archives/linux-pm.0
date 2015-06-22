@@ -1,181 +1,54 @@
-From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Subject: Re: [PATCH 2/2] power_supply: bq2415x_charger: Add ACPI support
-Date: Mon, 22 Jun 2015 14:56:08 +0200
-Message-ID: <20150622125607.GB26143@xo-6d-61-c0.localdomain>
-References: <1431421893-18816-1-git-send-email-anda-maria.nicolae@intel.com>
- <1431421893-18816-3-git-send-email-anda-maria.nicolae@intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] x86: Load __USER_DS into DS/ES after resume
+Date: Mon, 22 Jun 2015 16:06:48 +0200
+Message-ID: <2087839.xQcnh0uO8K@vostro.rjw.lan>
+References: <20150612075013.GA8759@gmail.com> <49474860.PXIRr69qmi@vostro.rjw.lan> <20150618091358.GA23135@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1431421893-18816-3-git-send-email-anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Anda-Maria Nicolae <anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:44470 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754400AbbFVNkn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2015 09:40:43 -0400
+In-Reply-To: <20150618091358.GA23135@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Linus Torvalds <torvalds@linux-foundation.org>, Denys Vlasenko <dvlasenk@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, the arch/x86 maintainers <x86@kernel.org>, linux-pm@vger.kernel.org, Andy Lutomirski <luto@amacapital.net>, Brian Gerst <brgerst@gmail.com>, Peter Anvin <hpa@zytor.com>
 
-On Tue 2015-05-12 12:11:33, Anda-Maria Nicolae wrote:
-> Replace of_property_read_u32() with device_property_read_u32(), which is a
-> wrapper over ACPI and device tree enumeration methods.
-> When ACPI enumeration is used, automode is not supported. Therefore,
-> bq2415x_charger does not update its input current automatically, depending
-> on the USB port type that is connected to. Input current may be updated via
-> sysfs.
+On Thursday, June 18, 2015 11:13:58 AM Ingo Molnar wrote:
 > 
-> Signed-off-by: Anda-Maria Nicolae <anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> ---
->  drivers/power/bq2415x_charger.c |   73 +++++++++++++++++++++++++++++----------
->  1 file changed, 55 insertions(+), 18 deletions(-)
+> * Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 > 
-> diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_charger.c
-> index 2cf8ec7..e98dcb6 100644
-> --- a/drivers/power/bq2415x_charger.c
-> +++ b/drivers/power/bq2415x_charger.c
-> @@ -35,6 +35,7 @@
->  #include <linux/idr.h>
->  #include <linux/i2c.h>
->  #include <linux/slab.h>
-> +#include <linux/acpi.h>
->  
->  #include <linux/power/bq2415x_charger.h>
->  
-> @@ -1530,13 +1531,14 @@ static int bq2415x_probe(struct i2c_client *client,
->  {
->  	int ret;
->  	int num;
-> -	char *name;
-> +	char *name = NULL;
->  	struct bq2415x_device *bq;
-Why?
-
-> @@ -1547,7 +1549,14 @@ static int bq2415x_probe(struct i2c_client *client,
->  	if (num < 0)
->  		return num;
->  
-> -	name = kasprintf(GFP_KERNEL, "%s-%d", id->name, num);
-> +	if (id) {
-> +		name = kasprintf(GFP_KERNEL, "%s-%d", id->name, num);
-> +	} else if (ACPI_HANDLE(&client->dev)) {
-> +		acpi_id =
-> +			acpi_match_device(client->dev.driver->acpi_match_table,
-> +					  &client->dev);
-> +		name = kasprintf(GFP_KERNEL, "%s-%d", acpi_id->id, num);
-> +	}
-
-You have both branches covered.
-									Pavel
-
->  	if (!name) {
->  		dev_err(&client->dev, "failed to allocate device name\n");
->  		ret = -ENOMEM;
-> @@ -1573,7 +1582,7 @@ static int bq2415x_probe(struct i2c_client *client,
->  			ret = -EPROBE_DEFER;
->  			goto error_2;
->  		}
-> -	} else if (pdata->notify_device) {
-> +	} else if (pdata && pdata->notify_device) {
->  		bq->notify_psy = power_supply_get_by_name(pdata->notify_device);
->  	} else {
->  		bq->notify_psy = NULL;
-> @@ -1583,36 +1592,45 @@ static int bq2415x_probe(struct i2c_client *client,
->  
->  	bq->id = num;
->  	bq->dev = &client->dev;
-> -	bq->chip = id->driver_data;
-> +	if (id)
-> +		bq->chip = id->driver_data;
-> +	else if (ACPI_HANDLE(bq->dev))
-> +		bq->chip = acpi_id->driver_data;
->  	bq->name = name;
->  	bq->mode = BQ2415X_MODE_OFF;
->  	bq->reported_mode = BQ2415X_MODE_OFF;
->  	bq->autotimer = 0;
->  	bq->automode = 0;
->  
-> -	if (np) {
-> -		ret = of_property_read_u32(np, "ti,current-limit",
-> -					   &bq->init_data.current_limit);
-> +	if (np || ACPI_HANDLE(bq->dev)) {
-> +		ret = device_property_read_u32(bq->dev,
-> +					       "ti,current-limit",
-> +					       &bq->init_data.current_limit);
->  		if (ret)
->  			goto error_3;
-> -		ret = of_property_read_u32(np, "ti,weak-battery-voltage",
-> -					   &bq->init_data.weak_battery_voltage);
-> +		ret = device_property_read_u32(bq->dev,
-> +					"ti,weak-battery-voltage",
-> +					&bq->init_data.weak_battery_voltage);
->  		if (ret)
->  			goto error_3;
-> -		ret = of_property_read_u32(np, "ti,battery-regulation-voltage",
-> +		ret = device_property_read_u32(bq->dev,
-> +				"ti,battery-regulation-voltage",
->  				&bq->init_data.battery_regulation_voltage);
->  		if (ret)
->  			goto error_3;
-> -		ret = of_property_read_u32(np, "ti,charge-current",
-> -					   &bq->init_data.charge_current);
-> +		ret = device_property_read_u32(bq->dev,
-> +					       "ti,charge-current",
-> +					       &bq->init_data.charge_current);
->  		if (ret)
->  			goto error_3;
-> -		ret = of_property_read_u32(np, "ti,termination-current",
-> -					   &bq->init_data.termination_current);
-> +		ret = device_property_read_u32(bq->dev,
-> +				"ti,termination-current",
-> +				&bq->init_data.termination_current);
->  		if (ret)
->  			goto error_3;
-> -		ret = of_property_read_u32(np, "ti,resistor-sense",
-> -					   &bq->init_data.resistor_sense);
-> +		ret = device_property_read_u32(bq->dev,
-> +					       "ti,resistor-sense",
-> +					       &bq->init_data.resistor_sense);
->  		if (ret)
->  			goto error_3;
->  	} else {
-> @@ -1728,9 +1746,28 @@ static const struct i2c_device_id bq2415x_i2c_id_table[] = {
->  };
->  MODULE_DEVICE_TABLE(i2c, bq2415x_i2c_id_table);
->  
-> +static const struct acpi_device_id bq2415x_i2c_acpi_match[] = {
-> +	{ "BQ2415X", BQUNKNOWN },
-> +	{ "BQ241500", BQ24150 },
-> +	{ "BQA24150", BQ24150A },
-> +	{ "BQ241510", BQ24151 },
-> +	{ "BQA24151", BQ24151A },
-> +	{ "BQ241520", BQ24152 },
-> +	{ "BQ241530", BQ24153 },
-> +	{ "BQA24153", BQ24153A },
-> +	{ "BQ241550", BQ24155 },
-> +	{ "BQ241560", BQ24156 },
-> +	{ "BQA24156", BQ24156A },
-> +	{ "BQS24157", BQ24157S },
-> +	{ "BQ241580", BQ24158 },
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(acpi, bq2415x_i2c_acpi_match);
-> +
->  static struct i2c_driver bq2415x_driver = {
->  	.driver = {
->  		.name = "bq2415x-charger",
-> +		.acpi_match_table = ACPI_PTR(bq2415x_i2c_acpi_match),
->  	},
->  	.probe = bq2415x_probe,
->  	.remove = bq2415x_remove,
-> -- 
-> 1.7.9.5
+> > On Tuesday, June 16, 2015 11:13:33 AM Pavel Machek wrote:
+> > > > > That second KERNEL should be USER.
+> > > > 
+> > > > Yeah, doh :-/ Updated patch below.
+> > > > 
+> > > > Thanks,
+> > > > 
+> > > > 	Ingo
+> > > 
+> > > Acked-by: Pavel Machek <pavel@ucw.cz>
+> > > Tested-by: Pavel Machek <pavel@ucw.cz>
+> > > 
+> > > [of course, it worked for me before, so I only tested it also works
+> > > with the patch.]
+> > > 
+> > > Rafael, can you apply it?
+> > 
+> > Yes, I can, but I thought Ingo would take it into the tip tree.
+> > 
+> > Ingo, what's your plan regarding this one?
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Feel free to push it!
+> 
+> Acked-by: Ingo Molnar <mingo@kernel.org>
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+OK, applied, thanks!
+
+Rafael
+
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
+To unsubscribe from this list: send the line "unsubscribe linux-pm" in
