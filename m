@@ -1,383 +1,174 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: mediatek: Add MT8173 cpufreq driver
-Date: Mon, 22 Jun 2015 17:15:11 +0530
-Message-ID: <20150622114511.GA28340@linux>
-References: <1433766561-1330-1-git-send-email-pi-cheng.chen@linaro.org>
- <1433766561-1330-3-git-send-email-pi-cheng.chen@linaro.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/2] power_supply: bq2415x_charger: Fix coding style
+ issues
+Date: Mon, 22 Jun 2015 14:55:24 +0200
+Message-ID: <20150622125524.GA26143@xo-6d-61-c0.localdomain>
+References: <1431421893-18816-1-git-send-email-anda-maria.nicolae@intel.com>
+ <1431421893-18816-2-git-send-email-anda-maria.nicolae@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f175.google.com ([209.85.192.175]:35070 "EHLO
-	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754297AbbFVLpR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2015 07:45:17 -0400
-Received: by pdbci14 with SMTP id ci14so78689516pdb.2
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2015 04:45:17 -0700 (PDT)
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51046 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933397AbbFVMz2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2015 08:55:28 -0400
 Content-Disposition: inline
-In-Reply-To: <1433766561-1330-3-git-send-email-pi-cheng.chen@linaro.org>
+In-Reply-To: <1431421893-18816-2-git-send-email-anda-maria.nicolae@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Cc: Mike Turquette <mturquette@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-mediatek@lists.infradead.org
+To: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
+Cc: sre@kernel.org, dbaryshkov@gmail.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-On 08-06-15, 20:29, Pi-Cheng Chen wrote:
+On Tue 2015-05-12 12:11:32, Anda-Maria Nicolae wrote:
+> This patch fixes the following issues reported by checkpatch.pl:
+> - use -EINVAL instead of -ENOSYS, to fix warning message:
+>   "ENOSYS means 'invalid syscall nr' and nothing else"
 
-Sorry for the delay, I have been quite busy recently.
 
-> +++ b/drivers/cpufreq/mt8173-cpufreq.c
-> +static LIST_HEAD(cpu_dvfs_info_list);
-> +
-> +static inline struct mtk_cpu_dvfs_info *to_mtk_cpu_dvfs_info(
-> +			struct list_head *list)
-> +{
-> +	return list_entry(list, struct mtk_cpu_dvfs_info, node);
-> +}
-> +
-> +static inline void mtk_cpu_dvfs_info_add(struct mtk_cpu_dvfs_info *info)
-> +{
-> +	list_add(&info->node, &cpu_dvfs_info_list);
-> +}
+So you change the ABI? Just like that? With changelog saying "cleanup checkpatch"?
 
-No stupid wrappers please. Doesn't make anything better.
+Maybe it is ok to change the ABI... but you should say so clearly in the changelog...
 
-> +
-> +static struct mtk_cpu_dvfs_info *mtk_cpu_dvfs_info_get(int cpu)
+									Pavel
 
-A very bad name to a routine with very specific functionality.
-
-> +{
-> +	struct mtk_cpu_dvfs_info *info;
-> +	struct list_head *list;
-> +
-> +	list_for_each(list, &cpu_dvfs_info_list) {
-> +		info = to_mtk_cpu_dvfs_info(list);
-> +
-> +		if (cpumask_test_cpu(cpu, info->cpus))
-> +			return info;
+> diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_charger.c
+> index 6c534dc..2cf8ec7 100644
+> --- a/drivers/power/bq2415x_charger.c
+> +++ b/drivers/power/bq2415x_charger.c
+> @@ -631,7 +631,7 @@ static int bq2415x_set_charge_current(struct bq2415x_device *bq, int mA)
+>  	int val;
+>  
+>  	if (bq->init_data.resistor_sense <= 0)
+> -		return -ENOSYS;
+> +		return -EINVAL;
+>  
+>  	val = (mA * bq->init_data.resistor_sense - 37400) / 6800;
+>  	if (val < 0)
+> @@ -650,7 +650,7 @@ static int bq2415x_get_charge_current(struct bq2415x_device *bq)
+>  	int ret;
+>  
+>  	if (bq->init_data.resistor_sense <= 0)
+> -		return -ENOSYS;
+> +		return -EINVAL;
+>  
+>  	ret = bq2415x_i2c_read_mask(bq, BQ2415X_REG_CURRENT,
+>  			BQ2415X_MASK_VI_CHRG, BQ2415X_SHIFT_VI_CHRG);
+> @@ -665,7 +665,7 @@ static int bq2415x_set_termination_current(struct bq2415x_device *bq, int mA)
+>  	int val;
+>  
+>  	if (bq->init_data.resistor_sense <= 0)
+> -		return -ENOSYS;
+> +		return -EINVAL;
+>  
+>  	val = (mA * bq->init_data.resistor_sense - 3400) / 3400;
+>  	if (val < 0)
+> @@ -684,7 +684,7 @@ static int bq2415x_get_termination_current(struct bq2415x_device *bq)
+>  	int ret;
+>  
+>  	if (bq->init_data.resistor_sense <= 0)
+> -		return -ENOSYS;
+> +		return -EINVAL;
+>  
+>  	ret = bq2415x_i2c_read_mask(bq, BQ2415X_REG_CURRENT,
+>  			BQ2415X_MASK_VI_TERM, BQ2415X_SHIFT_VI_TERM);
+> @@ -1166,7 +1166,7 @@ static ssize_t bq2415x_sysfs_set_mode(struct device *dev,
+>  
+>  	if (strncmp(buf, "auto", 4) == 0) {
+>  		if (bq->automode < 0)
+> -			return -ENOSYS;
+> +			return -EINVAL;
+>  		bq->automode = 1;
+>  		mode = bq->reported_mode;
+>  	} else if (strncmp(buf, "off", 3) == 0) {
+> @@ -1556,28 +1556,28 @@ static int bq2415x_probe(struct i2c_client *client,
+>  
+>  	bq = devm_kzalloc(&client->dev, sizeof(*bq), GFP_KERNEL);
+>  	if (!bq) {
+> -		dev_err(&client->dev, "failed to allocate device data\n");
+>  		ret = -ENOMEM;
+>  		goto error_2;
+>  	}
+>  
+>  	if (np) {
+> -		bq->notify_psy = power_supply_get_by_phandle(np, "ti,usb-charger-detection");
+> +		bq->notify_psy = power_supply_get_by_phandle(np,
+> +						"ti,usb-charger-detection");
+>  
+>  		if (IS_ERR(bq->notify_psy)) {
+>  			dev_info(&client->dev,
+> -				"no 'ti,usb-charger-detection' property (err=%ld)\n",
+> +				 "no 'ti,usb-charger-detection' property (err=%ld)\n",
+>  				PTR_ERR(bq->notify_psy));
+>  			bq->notify_psy = NULL;
+>  		} else if (!bq->notify_psy) {
+>  			ret = -EPROBE_DEFER;
+>  			goto error_2;
+>  		}
+> -	}
+> -	else if (pdata->notify_device)
+> +	} else if (pdata->notify_device) {
+>  		bq->notify_psy = power_supply_get_by_name(pdata->notify_device);
+> -	else
+> +	} else {
+>  		bq->notify_psy = NULL;
 > +	}
-> +
-> +	return NULL;
-> +}
-> +
-> +static void mtk_cpu_dvfs_info_release(void)
-> +{
-> +	struct list_head *list, *tmp;
-> +	struct mtk_cpu_dvfs_info *info;
-> +
-> +	list_for_each_safe(list, tmp, &cpu_dvfs_info_list) {
-> +		info = to_mtk_cpu_dvfs_info(list);
-> +
-> +		dev_pm_opp_free_cpufreq_table(info->cpu_dev,
-> +					      &info->freq_table);
-> +
-> +		if (!IS_ERR(info->proc_reg))
-> +			regulator_put(info->proc_reg);
-> +		if (!IS_ERR(info->sram_reg))
-> +			regulator_put(info->sram_reg);
-> +		if (!IS_ERR(info->cpu_clk))
-> +			clk_put(info->cpu_clk);
-> +		if (!IS_ERR(info->inter_clk))
-> +			clk_put(info->inter_clk);
-> +
-> +		of_free_opp_table(info->cpu_dev);
-> +
-> +		list_del(list);
-> +		kfree(info);
-> +	}
-> +}
-> +
-> +#define MIN(a, b) ((a) < (b) ? (a) : (b))
-> +#define MAX(a, b) ((a) > (b) ? (a) : (b))
-
-Look for these in kernel.h
-
-> +static int mtk_cpufreq_set_voltage(struct mtk_cpu_dvfs_info *info, int vproc)
-> +{
-> +	if (info->need_voltage_trace)
-> +		return mtk_cpufreq_voltage_trace(info, vproc);
-> +	else
-> +		return regulator_set_voltage(info->proc_reg, vproc,
-> +					     vproc + VOLT_TOL);
-> +}
-> +
-> +static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
-> +				  unsigned int index)
-> +{
-> +	struct cpufreq_frequency_table *freq_table = policy->freq_table;
-> +	struct clk *cpu_clk = policy->clk;
-> +	struct clk *armpll = clk_get_parent(cpu_clk);
-> +	struct mtk_cpu_dvfs_info *info = policy->driver_data;
-> +	struct device *cpu_dev = info->cpu_dev;
-> +	struct dev_pm_opp *opp;
-> +	long freq_hz, old_freq_hz;
-> +	int vproc, old_vproc, inter_vproc, target_vproc, ret;
-> +
-> +	inter_vproc = info->intermediate_voltage;
-> +
-> +	old_freq_hz = clk_get_rate(cpu_clk);
-> +	old_vproc = regulator_get_voltage(info->proc_reg);
-> +
-> +	freq_hz = freq_table[index].frequency * 1000;
-
-A blank line here.
-
-> +	rcu_read_lock();
-> +	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &freq_hz);
-> +	if (IS_ERR(opp)) {
-> +		rcu_read_unlock();
-> +		pr_err("cpu%d: failed to find OPP for %ld\n",
-> +		       policy->cpu, freq_hz);
-> +		return PTR_ERR(opp);
-> +	}
-> +	vproc = dev_pm_opp_get_voltage(opp);
-> +	rcu_read_unlock();
-> +
-> +	/*
-> +	 * If the new voltage or the intermediate voltage is higher than the
-> +	 * current voltage, scale up voltage first.
-> +	 */
-> +	target_vproc = (inter_vproc > vproc) ? inter_vproc : vproc;
-> +	if (old_vproc < target_vproc) {
-> +		ret = mtk_cpufreq_set_voltage(info, target_vproc);
-> +		if (ret) {
-> +			pr_err("cpu%d: failed to scale up voltage!\n",
-> +			       policy->cpu);
-> +			mtk_cpufreq_set_voltage(info, old_vproc);
-> +			return ret;
-> +		}
-> +	}
-> +
-> +	/* Reparent the CPU clock to intermediate clock. */
-> +	ret = clk_set_parent(cpu_clk, info->inter_clk);
-> +	if (ret) {
-> +		pr_err("cpu%d: failed to re-parent cpu clock!\n",
-> +		       policy->cpu);
-> +		mtk_cpufreq_set_voltage(info, old_vproc);
-> +		WARN_ON(1);
-> +		return ret;
-> +	}
-> +
-> +	/* Set the original PLL to target rate. */
-> +	ret = clk_set_rate(armpll, freq_hz);
-> +	if (ret) {
-> +		pr_err("cpu%d: failed to scale cpu clock rate!\n",
-> +		       policy->cpu);
-> +		clk_set_parent(cpu_clk, armpll);
-> +		mtk_cpufreq_set_voltage(info, old_vproc);
-> +		return ret;
-> +	}
-> +
-> +	/* Set parent of CPU clock back to the original PLL. */
-> +	ret = clk_set_parent(cpu_clk, armpll);
-> +	if (ret) {
-> +		pr_err("cpu%d: failed to re-parent cpu clock!\n",
-> +		       policy->cpu);
-> +		mtk_cpufreq_set_voltage(info, inter_vproc);
-> +		WARN_ON(1);
-> +		return ret;
-> +	}
-> +
-> +	/*
-> +	 * If the new voltage is lower than the intermediate voltage or the
-> +	 * original voltage, scale down to the new voltage.
-> +	 */
-> +	if (vproc < inter_vproc || vproc < old_vproc) {
-> +		ret = mtk_cpufreq_set_voltage(info, vproc);
-> +		if (ret) {
-> +			pr_err("cpu%d: failed to scale down voltage!\n",
-> +			       policy->cpu);
-> +			clk_set_parent(cpu_clk, info->inter_clk);
-> +			clk_set_rate(armpll, old_freq_hz);
-> +			clk_set_parent(cpu_clk, armpll);
-> +			return ret;
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int mtk_cpufreq_init(struct cpufreq_policy *policy)
-> +{
-> +	struct mtk_cpu_dvfs_info *info;
-> +	int ret;
-> +
-> +	info = mtk_cpu_dvfs_info_get(policy->cpu);
-> +	if (!info) {
-> +		pr_err("%s: mtk cpu dvfs info for cpu%d is not initialized\n",
-> +		       __func__, policy->cpu);
-> +		return -ENODEV;
-> +	}
-> +
-> +	ret = cpufreq_table_validate_and_show(policy, info->freq_table);
-> +	if (ret) {
-> +		pr_err("%s: invalid frequency table: %d\n", __func__, ret);
-> +		return ret;
-> +	}
-> +
-> +	cpumask_copy(policy->cpus, info->cpus);
-> +	policy->driver_data = info;
-> +	policy->clk = info->cpu_clk;
-> +
-> +	return 0;
-> +}
-> +
-> +static struct cpufreq_driver mt8173_cpufreq_driver = {
-> +	.flags = CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-> +	.verify = cpufreq_generic_frequency_table_verify,
-> +	.target_index = mtk_cpufreq_set_target,
-> +	.get = cpufreq_generic_get,
-> +	.init = mtk_cpufreq_init,
-> +	.name = "mtk-cpufreq",
-> +	.attr = cpufreq_generic_attr,
-> +};
-> +
-> +static int mtk_cpu_dvfs_info_init(int cpu)
-> +{
-> +	struct device *cpu_dev;
-> +	struct regulator *proc_reg = ERR_PTR(-ENODEV);
-> +	struct regulator *sram_reg = ERR_PTR(-ENODEV);
-> +	struct clk *cpu_clk = ERR_PTR(-ENODEV);
-> +	struct clk *inter_clk = ERR_PTR(-ENODEV);
-> +	struct mtk_cpu_dvfs_info *info;
-> +	struct cpufreq_frequency_table *freq_table;
-> +	struct dev_pm_opp *opp;
-> +	unsigned long rate;
-> +	int ret;
-> +
-> +	cpu_dev = get_cpu_device(cpu);
-> +	if (!cpu_dev) {
-> +		pr_err("failed to get cpu%d device\n", cpu);
-> +		return -ENODEV;
-> +	}
-> +
-> +	ret = of_init_opp_table(cpu_dev);
-> +	if (ret) {
-> +		pr_warn("no OPP table for cpu%d\n", cpu);
-> +		return ret;
-> +	}
-> +
-> +	cpu_clk = clk_get(cpu_dev, "cpu");
-> +	if (IS_ERR(cpu_clk)) {
-> +		if (PTR_ERR(cpu_clk) == -EPROBE_DEFER)
-> +			pr_warn("cpu clk for cpu%d not ready, retry.\n", cpu);
-> +		else
-> +			pr_err("failed to get cpu clk for cpu%d\n", cpu);
-> +
-> +		ret = PTR_ERR(cpu_clk);
-> +		goto out_free_opp_table;
-> +	}
-> +
-> +	inter_clk = clk_get(cpu_dev, "intermediate");
-> +	if (IS_ERR(inter_clk)) {
-> +		if (PTR_ERR(inter_clk) == -EPROBE_DEFER)
-> +			pr_warn("intermediate clk for cpu%d not ready, retry.\n",
-> +				cpu);
-> +		else
-> +			pr_err("failed to get intermediate clk for cpu%d\n",
-> +			       cpu);
-> +
-> +		ret = PTR_ERR(cpu_clk);
-> +		goto out_free_resources;
-> +	}
-> +
-> +	proc_reg = regulator_get_exclusive(cpu_dev, "proc");
-> +	if (IS_ERR(proc_reg)) {
-> +		if (PTR_ERR(proc_reg) == -EPROBE_DEFER)
-> +			pr_warn("proc regulator for cpu%d not ready, retry.\n",
-> +				cpu);
-> +		else
-> +			pr_err("failed to get proc regulator for cpu%d\n",
-> +			       cpu);
-> +
-> +		ret = PTR_ERR(proc_reg);
-> +		goto out_free_resources;
-> +	}
-> +
-> +	/* Both presence and absence of sram regulator are valid cases. */
-> +	sram_reg = regulator_get_exclusive(cpu_dev, "sram");
-> +
-> +	info = kzalloc(sizeof(*info), GFP_KERNEL);
-> +	if (!info) {
-> +		ret = -ENOMEM;
-> +		goto out_free_resources;
-> +	}
-> +
-> +	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
-> +	if (ret) {
-> +		pr_err("failed to init cpufreq table for cpu%d: %d\n",
-> +		       cpu, ret);
-> +		goto out_free_mtk_cpu_dvfs_info;
-> +	}
-> +
-> +	if (!alloc_cpumask_var(&info->cpus, GFP_KERNEL))
-
-Why getting into such trouble? What about just saving policy's pointer
-in info and use it for freq_table, cpus mask, etc ?
-
-> +		goto out_free_cpufreq_table;
-> +
-
-> +}
-> +
-> +static int mt8173_cpufreq_probe(struct platform_device *pdev)
-> +{
-> +	int cpu, ret;
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		/*
-> +		 * If the struct mtk_cpu_dvfs_info for the cpu power domain
-> +		 * is already initialized, skip this CPU.
-> +		 */
-> +		if (!mtk_cpu_dvfs_info_get(cpu)) {
-> +			ret = mtk_cpu_dvfs_info_init(cpu);
-> +			if (ret) {
-> +				if (ret != -EPROBE_DEFER)
-> +					pr_err("%s probe fail\n", __func__);
-> +
-> +				mtk_cpu_dvfs_info_release();
-> +				return ret;
-> +			}
-> +		}
-> +	}
-> +
-> +	ret = cpufreq_register_driver(&mt8173_cpufreq_driver);
-> +	if (ret) {
-> +		pr_err("failed to register mtk cpufreq driver\n");
-> +		mtk_cpu_dvfs_info_release();
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +static struct platform_driver mt8173_cpufreq_platdrv = {
-> +	.driver = {
-> +		.name	= "mt8173-cpufreq",
-> +	},
-> +	.probe		= mt8173_cpufreq_probe,
-> +};
-> +module_platform_driver(mt8173_cpufreq_platdrv);
-> +
-> +static int mt8173_cpufreq_driver_init(void)
-> +{
-> +	struct platform_device *pdev;
-> +
-> +	if (!of_machine_is_compatible("mediatek,mt8173"))
-> +		return -ENODEV;
-> +
-> +	pdev = platform_device_register_simple("mt8173-cpufreq", -1, NULL, 0);
-> +	if (IS_ERR(pdev)) {
-> +		pr_err("failed to register mtk-cpufreq platform device\n");
-> +		return PTR_ERR(pdev);
-> +	}
-> +
-> +	return 0;
-> +}
-> +module_init(mt8173_cpufreq_driver_init);
-
-Can this driver be built as module? Why this module* crap all over the
-place?
+>  
+>  	i2c_set_clientdata(client, bq);
+>  
+> @@ -1592,11 +1592,11 @@ static int bq2415x_probe(struct i2c_client *client,
+>  
+>  	if (np) {
+>  		ret = of_property_read_u32(np, "ti,current-limit",
+> -				&bq->init_data.current_limit);
+> +					   &bq->init_data.current_limit);
+>  		if (ret)
+>  			goto error_3;
+>  		ret = of_property_read_u32(np, "ti,weak-battery-voltage",
+> -				&bq->init_data.weak_battery_voltage);
+> +					   &bq->init_data.weak_battery_voltage);
+>  		if (ret)
+>  			goto error_3;
+>  		ret = of_property_read_u32(np, "ti,battery-regulation-voltage",
+> @@ -1604,15 +1604,15 @@ static int bq2415x_probe(struct i2c_client *client,
+>  		if (ret)
+>  			goto error_3;
+>  		ret = of_property_read_u32(np, "ti,charge-current",
+> -				&bq->init_data.charge_current);
+> +					   &bq->init_data.charge_current);
+>  		if (ret)
+>  			goto error_3;
+>  		ret = of_property_read_u32(np, "ti,termination-current",
+> -				&bq->init_data.termination_current);
+> +					   &bq->init_data.termination_current);
+>  		if (ret)
+>  			goto error_3;
+>  		ret = of_property_read_u32(np, "ti,resistor-sense",
+> -				&bq->init_data.resistor_sense);
+> +					   &bq->init_data.resistor_sense);
+>  		if (ret)
+>  			goto error_3;
+>  	} else {
+> @@ -1648,7 +1648,8 @@ static int bq2415x_probe(struct i2c_client *client,
+>  		}
+>  
+>  		/* Query for initial reported_mode and set it */
+> -		bq2415x_notifier_call(&bq->nb, PSY_EVENT_PROP_CHANGED, bq->notify_psy);
+> +		bq2415x_notifier_call(&bq->nb, PSY_EVENT_PROP_CHANGED,
+> +				      bq->notify_psy);
+>  		bq2415x_set_mode(bq, bq->reported_mode);
+>  
+>  		bq->automode = 1;
+> -- 
+> 1.7.9.5
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
 -- 
-viresh
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 --
 To unsubscribe from this list: send the line "unsubscribe linux-pm" in
