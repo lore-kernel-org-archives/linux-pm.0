@@ -1,61 +1,68 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: [PATCH 1/8] ARM: STi: STiH407: Provide generic (safe) DVFS configuration
-Date: Mon, 22 Jun 2015 16:43:50 +0100
-Message-ID: <1434987837-24212-2-git-send-email-lee.jones@linaro.org>
-References: <1434987837-24212-1-git-send-email-lee.jones@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f173.google.com ([209.85.212.173]:38808 "EHLO
-	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753989AbbFVPoG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2015 11:44:06 -0400
-Received: by wibdq8 with SMTP id dq8so79447322wib.1
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2015 08:44:05 -0700 (PDT)
-In-Reply-To: <1434987837-24212-1-git-send-email-lee.jones@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Chandramouli, Dasaratharaman"
+	<dasaratharaman.chandramouli@intel.com>
+Subject: RE: [PATCH] intel powerclamp: support Knights Landing
+Date: Mon, 22 Jun 2015 16:51:13 +0000
+Message-ID: <56FD0D4EC3679746A2BD9228E7E608363E2A974D@ORSMSX114.amr.corp.intel.com>
+References: <1429309866-63063-1-git-send-email-dasaratharaman.chandramouli@intel.com>
+	<1429896814.16073.4.camel@localhost> <20150424145835.53888d75@ultegra>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150424145835.53888d75@ultegra>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Pan, Jacob jun" <jacob.jun.pan@intel.com>, "Rao, Nikhil" <nikhil.rao@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: kernel@stlinux.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, ajitpal.singh@st.com, Lee Jones <lee.jones@linaro.org>
 
-You'll notice that the voltage cell is populated with 0's.  Voltage
-information is very platform specific, even depends on 'cut' and
-'substrate' versions.  Thus it is left blank for a generic (safe)
-implementation.  If other nodes/properties are provided by the
-bootloader, the ST CPUFreq driver will over-ride these generic
-values.
+Can we make this patch available for 4.2
 
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
----
- arch/arm/boot/dts/stih407-family.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-diff --git a/arch/arm/boot/dts/stih407-family.dtsi b/arch/arm/boot/dts/stih407-family.dtsi
-index be201aa..2680ac7 100644
---- a/arch/arm/boot/dts/stih407-family.dtsi
-+++ b/arch/arm/boot/dts/stih407-family.dtsi
-@@ -22,11 +22,21 @@
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a9";
- 			reg = <0>;
-+					 /* kHz     uV   */
-+			operating-points = <1500000 0
-+					    1200000 0
-+					    800000  0
-+					    500000  0>;
- 		};
- 		cpu@1 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a9";
- 			reg = <1>;
-+					 /* kHz     uV   */
-+			operating-points = <1500000 0
-+					    1200000 0
-+					    800000  0
-+					    500000  0>;
- 		};
- 	};
- 
--- 
-1.9.1
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> -----Original Message-----
+> From: Jacob Pan [mailto:jacob.jun.pan@linux.intel.com]
+> Sent: Friday, April 24, 2015 2:59 PM
+> To: Chandramouli, Dasaratharaman
+> Cc: Zhang, Rui; Eduardo Valentin; linux-pm@vger.kernel.org; linux-
+> kernel@vger.kernel.org; Pan, Jacob jun; Rao, Nikhil
+> Subject: Re: [PATCH] intel powerclamp: support Knights Landing
+> 
+> On Fri, 24 Apr 2015 10:33:34 -0700
+> Dasaratharaman Chandramouli <dasaratharaman.chandramouli@intel.com>
+> wrote:
+> 
+> > Adding Jacob Pan
+> >
+> > On Fri, 2015-04-17 at 15:31 -0700, Dasaratharaman Chandramouli wrote:
+> > > This patch enables intel_powerclamp driver to run on the
+> > > next-generation Intel(R) Xeon Phi Microarchitecture code named
+> > > "Knights Landing"
+> > >
+> looks good.
+> 
+> Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+> 
+> > > Signed-off-by: Dasaratharaman Chandramouli
+> > > <dasaratharaman.chandramouli@intel.com> ---
+> > > drivers/thermal/intel_powerclamp.c | 1 +
+> > >  1 file changed, 1 insertion(+)
+> > >
+> > > diff --git a/drivers/thermal/intel_powerclamp.c
+> > > b/drivers/thermal/intel_powerclamp.c index 12623bc..e34ccd5 100644
+> > > --- a/drivers/thermal/intel_powerclamp.c
+> > > +++ b/drivers/thermal/intel_powerclamp.c
+> > > @@ -690,6 +690,7 @@ static const struct x86_cpu_id
+> > > intel_powerclamp_ids[] = { { X86_VENDOR_INTEL, 6, 0x4c},
+> > >  	{ X86_VENDOR_INTEL, 6, 0x4d},
+> > >  	{ X86_VENDOR_INTEL, 6, 0x56},
+> > > +	{ X86_VENDOR_INTEL, 6, 0x57},
+> > >  	{}
+> > >  };
+> > >  MODULE_DEVICE_TABLE(x86cpu, intel_powerclamp_ids);
+> >
+> >
+> 
+> 
+> 
+> 
+> --
+> Jacob Pan
