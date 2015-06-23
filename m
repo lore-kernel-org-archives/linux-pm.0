@@ -1,70 +1,88 @@
-From: Paul Bolle <pebolle@tiscali.nl>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 Subject: Re: [PATCH 7/8] cpufreq: st: Provide runtime initialised driver for
  ST's platforms
-Date: Tue, 23 Jun 2015 10:00:11 +0200
-Message-ID: <1435046411.4528.6.camel@tiscali.nl>
+Date: Tue, 23 Jun 2015 13:33:09 +0530
+Message-ID: <20150623080309.GI16776@linux>
 References: <1434987837-24212-1-git-send-email-lee.jones@linaro.org>
-	 <1434987837-24212-8-git-send-email-lee.jones@linaro.org>
+ <1434987837-24212-8-git-send-email-lee.jones@linaro.org>
+ <20150623025031.GD16776@linux>
+ <20150623071647.GD3245@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lb3-smtp-cloud6.xs4all.net ([194.109.24.31]:49891 "EHLO
-	lb3-smtp-cloud6.xs4all.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752477AbbFWIAZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2015 04:00:25 -0400
-In-Reply-To: <1434987837-24212-8-git-send-email-lee.jones@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20150623071647.GD3245@x1>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-F5mvAk5X5gdBDgjK7y7TUQ@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ajitpal.singh-qxv4g6HH51o@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: kernel@stlinux.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, ajitpal.singh@st.com
 
-On Mon, 2015-06-22 at 16:43 +0100, Lee Jones wrote:
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
- 
-> +config ARM_ST_CPUFREQ
-> +> 	> bool "ST CPUFreq support"
-> +> 	> depends on SOC_STIH407
-> +> 	> help
-> +> 	>   OPP list for cpufreq-dt driver can be provided through DT or can be
-> +> 	>   created at runtime.  Select this if you want create OPP list at runtime.
+On 23-06-15, 08:16, Lee Jones wrote:
+> Thanks for your timely review Viresh.
 
+Your welcome Lee :)
 
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-
-> +obj-$(CONFIG_ARM_ST_CPUFREQ)		+= st-cpufreq.o
-
-> --- /dev/null
-> +++ b/drivers/cpufreq/st-cpufreq.c
-
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-
-> +#include <linux/module.h>
-
-> +MODULE_DEVICE_TABLE(of, sti_cpufreq_of_match);
+> On Tue, 23 Jun 2015, Viresh Kumar wrote:
+> > On 22-06-15, 16:43, Lee Jones wrote:
+> > > +config ARM_ST_CPUFREQ
+> > > +	bool "ST CPUFreq support"
+> > 
+> > Isn't using ST just too generic? There are multiple SoCs ST has been
+> > involved with, I have worked on a completely different series.
+> > Probably a more relative string is required here, like stih407 ?
 > 
-> +module_platform_driver(sti_cpufreq);
+> This is ST's only CPUFreq implementation and is pretty board
+> agnostic.  This particular driver only currently supports the STiH407
+> family, but internally it supports some others too.  I'll have a chat
+> and see if we can make it more specific somehow.
 
+So, SPEAr is also from ST. And it already have a driver for itself.
+
+> > > +	if (!ddata->dvfs_tab_count) {
+> > > +		dev_err(&pdev->dev, "No suitable AVS table found\n");
+> > 
+> > Why is this an error? I thought in this case you will go ahead with
+> > the normal OPP-table.
 > 
-> +MODULE_AUTHOR("Ajitpal Singh <ajitpal.singh@st.com>");
-> +MODULE_DESCRIPTION("Creates an OPP list for cpufreq-cpu0 at runtime");
-> +MODULE_LICENSE("GPL v2");
+> I've written it so it's an error within this function, as it makes the
+> function fail, but is downgraded by the caller to a warning and
+> gracefully bypassed to still allow frequency scaling.
 
+Not that, I was asking about the print. I thought we will still try to
+find OPP from the CPU node and a warning or a error might not be the
+right choice. You can surely add a debug print. Currently you are
+doing a dev_err() here, followed by a dev_warn() I think..
 
-(There's a mismatch between the license used in the comment at the top
-of this file and the ident used in the MODULE_LICENSE() macro. See
-include/linux/module.h.)
+> > So you have added new OPPs here, but cpufreq-dt will try to add old
+> > OPPs. You must be getting lots of warnings ?
+> 
+> Yes, we recieve the 'duplicate OPPs detected' warning, but there is
+> nothing we can do about that.
 
-st-cpufreq.o can only be built-in. But the code contains of few lines
-that are only useful if the code can be modular. Was ARM_ST_CPUFREQ
-perhaps meant to be tristate?
+:)
 
-Thanks,
+OPP-v2 will get that solved too..
 
+> > > +	if (ddata->substrate < 0)
+> > > +		goto set_default;
+> > 
+> > Maybe:
+> > 
+> > 	if (ddata->substrate >= 0)
+> >                 return;
+> 
+> 0 is a valid substrate value.
 
-Paul Bolle
+I had >= in the comparison. Wasn't that right?
+And I was just suggesting that a single return can be used instead of
+
+if (xyz)
+        goto set_default;
+return;
+
+-- 
+viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
