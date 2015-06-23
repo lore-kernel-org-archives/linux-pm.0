@@ -1,138 +1,124 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH V3] PM / Domains: Remove intermediate states from the
- power off sequence
-Date: Tue, 23 Jun 2015 12:57:36 +0200
-Message-ID: <CAMuHMdWCo+U26x9Z5vUu+5ZVSpSOFF1LDO7jkezuXzVR2mC6qA@mail.gmail.com>
-References: <1434020737-13354-1-git-send-email-ulf.hansson@linaro.org>
-	<7ha8w01qir.fsf@deeprootsystems.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 2/2] PM / Domains: Avoid infinite loops in attach/detach code
+Date: Tue, 23 Jun 2015 14:50:45 +0200
+Message-ID: <CAPDyKFpRMrJZxZPv8w+jLEGAHu8U+AGSeG3LaJMXGW9zn__o+g@mail.gmail.com>
+References: <1434622954-26747-3-git-send-email-geert+renesas@glider.be>
+	<1434958282-27376-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f46.google.com ([209.85.218.46]:35493 "EHLO
-	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753437AbbFWK5h (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2015 06:57:37 -0400
-Received: by oiax193 with SMTP id x193so4092694oia.2
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2015 03:57:37 -0700 (PDT)
-In-Reply-To: <7ha8w01qir.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1434958282-27376-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Magnus Damm <damm@opensource.se>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Tue, Jun 16, 2015 at 1:49 AM, Kevin Hilman <khilman@kernel.org> wrote:
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
+On 22 June 2015 at 09:31, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> If pm_genpd_{add,remove}_device() keeps on failing with -EAGAIN, we end
+> up with an infinite loop in genpd_dev_pm_{at,de}tach().
 >
->> Genpd's ->runtime_suspend() (assigned to pm_genpd_runtime_suspend())
->> doesn't immediately walk the hierarchy of ->runtime_suspend() callbacks.
->> Instead, pm_genpd_runtime_suspend() calls pm_genpd_poweroff() which
->> postpones that until *all* the devices in the genpd are runtime suspended.
->>
->> When pm_genpd_poweroff() discovers that the last device in the genpd is
->> about to be runtime suspended, it calls __pm_genpd_save_device() for *all*
->> the devices in the genpd sequentially. Furthermore,
->> __pm_genpd_save_device() invokes the ->start() callback, walks the
->> hierarchy of the ->runtime_suspend() callbacks and invokes the ->stop()
->> callback. This causes a "thundering herd" problem.
->>
->> Let's address this issue by having pm_genpd_runtime_suspend() immediately
->> walk the hierarchy of the ->runtime_suspend() callbacks, instead of
->> postponing that to the power off sequence via pm_genpd_poweroff(). If the
->> selected ->runtime_suspend() callback doesn't return an error code, call
->> pm_genpd_poweroff() to see if it's feasible to also power off the PM
->> domain.
->>
->> Adopting this change enables us to simplify parts of the code in genpd,
->> for example the locking mechanism. Additionally, it gives some positive
->> side effects, as described below.
->>
->> i)
->> One device's ->runtime_resume() latency is no longer affected by other
->> devices' latencies in a genpd.
->>
->> The complexity genpd has to support the option to abort the power off
->> sequence suffers from latency issues. More precisely, a device that is
->> requested to be runtime resumed, may end up waiting for
->> __pm_genpd_save_device() to complete its operations for *another* device.
->> That's because pm_genpd_poweroff() can't confirm an abort request while it
->> waits for __pm_genpd_save_device() to return.
->>
->> As this patch removes the intermediate states in pm_genpd_poweroff() while
->> powering off the PM domain, we no longer need the ability to abort that
->> sequence.
->>
->> ii)
->> Make pm_runtime[_status]_suspended() reliable when used with genpd.
->>
->> Until the last device in a genpd becomes idle, pm_genpd_runtime_suspend()
->> will return 0 without actually walking the hierarchy of the
->> ->runtime_suspend() callbacks. However, by returning 0 the runtime PM core
->> considers the device as runtime_suspended, so
->> pm_runtime[_status]_suspended() will return true, even though the device
->> isn't (yet) runtime suspended.
->>
->> After this patch, since pm_genpd_runtime_suspend() immediately walks the
->> hierarchy of the ->runtime_suspend() callbacks,
->> pm_runtime[_status]_suspended() will accurately reflect the status of the
->> device.
->>
->> iii)
->> Enable fine-grained PM through runtime PM callbacks in drivers/subsystems.
->>
->> There are currently cases were drivers/subsystems implements runtime PM
->> callbacks to deploy fine-grained PM (e.g. gate clocks, move pinctrl to
->> power-save state, etc.). While using the genpd, pm_genpd_runtime_suspend()
->> postpones invoking these callbacks until *all* the devices in the genpd
->> are runtime suspended. In essence, one runtime resumed device prevents
->> fine-grained PM for other devices within the same genpd.
->>
->> After this patch, since pm_genpd_runtime_suspend() immediately walks the
->> hierarchy of the ->runtime_suspend() callbacks, fine-grained PM is enabled
->> throughout all the levels of runtime PM callbacks.
->>
->> Unfortunately this patch also comes with a drawback, as described in the
->> summary below.
->>
->> Driver's/subsystem's runtime PM callbacks may be invoked even when the
->> genpd hasn't actually powered off the PM domain, potentially introducing
->> unnecessary latency.
->>
->> However, in most cases, saving/restoring register contexts for devices are
->> typically fast operations or can be optimized in device specific ways
->> (e.g. shadow copies of register contents in memory, device-specific checks
->> to see if context has been lost before restoring context, etc.).
->>
->> Still, in some cases the driver/subsystem may suffer from latency if
->> runtime PM is used in a very fine-grained manner (e.g. for each IO request
->> or xfer). To prevent that extra overhead, the driver/subsystem may deploy
->> the runtime PM autosuspend feature.
->>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> This may happen due to a genpd.prepared_count imbalance.  This is a bug
+> elsewhere, but it will result in a system lock up, possibly during
+> reboot of an otherwise functioning system.
+>
+> To avoid this, put a limit on the maximum number of loop iterations,
+> including a simple back-off mechanism.  If the limit is reached, the
+> operation will just fail.  An error message is already printed.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+>  drivers/base/power/domain.c | 16 ++++++++++++++--
+>  1 file changed, 14 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index cdd547bd67df8218..60e0309dd8dd0264 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -6,6 +6,7 @@
+>   * This file is released under the GPLv2.
+>   */
+>
+> +#include <linux/delay.h>
+>  #include <linux/kernel.h>
+>  #include <linux/io.h>
+>  #include <linux/platform_device.h>
+> @@ -19,6 +20,9 @@
+>  #include <linux/suspend.h>
+>  #include <linux/export.h>
+>
+> +#define GENPD_RETRIES  20
+> +#define GENPD_DELAY_US 10
+> +
+>  #define GENPD_DEV_CALLBACK(genpd, type, callback, dev)         \
+>  ({                                                             \
+>         type (*__routine)(struct device *__d);                  \
+> @@ -2131,6 +2135,7 @@ EXPORT_SYMBOL_GPL(of_genpd_get_from_provider);
+>  static void genpd_dev_pm_detach(struct device *dev, bool power_off)
+>  {
+>         struct generic_pm_domain *pd;
+> +       unsigned int i;
+>         int ret = 0;
+>
+>         pd = pm_genpd_lookup_dev(dev);
+> @@ -2139,10 +2144,13 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
+>
+>         dev_dbg(dev, "removing from PM domain %s\n", pd->name);
+>
+> -       while (1) {
+> +       for (i = 0; i < GENPD_RETRIES; i++) {
+>                 ret = pm_genpd_remove_device(pd, dev);
+>                 if (ret != -EAGAIN)
+>                         break;
+> +
+> +               if (i > GENPD_RETRIES / 2)
+> +                       udelay(GENPD_DELAY_US);
+>                 cond_resched();
+>         }
+>
+> @@ -2183,6 +2191,7 @@ int genpd_dev_pm_attach(struct device *dev)
+>  {
+>         struct of_phandle_args pd_args;
+>         struct generic_pm_domain *pd;
+> +       unsigned int i;
+>         int ret;
+>
+>         if (!dev->of_node)
+> @@ -2218,10 +2227,13 @@ int genpd_dev_pm_attach(struct device *dev)
+>
+>         dev_dbg(dev, "adding to PM domain %s\n", pd->name);
+>
+> -       while (1) {
+> +       for (i = 0; i < GENPD_RETRIES; i++) {
+>                 ret = pm_genpd_add_device(pd, dev);
+>                 if (ret != -EAGAIN)
+>                         break;
+> +
+> +               if (i > GENPD_RETRIES / 2)
+> +                       udelay(GENPD_DELAY_US);
 
-Thanks!
+In this execution path, we retry when getting -EAGAIN while believing
+the reason to the error are only *temporary* as we are soon waiting
+for all devices in the genpd to be system PM resumed. At least that's
+my understanding to why we want to deal with -EAGAIN here, but I might
+be wrong.
 
-> I know Lina has been testing this (or an earlier version) on qcom
-> hardware so would be nice to get a tested-by from her, and would also be
-> nice to see if Geert has a chance to take this for a spin on his Renesas
-> hardware and anyone can take this for a spin on Exynos.
+In this regards, I wonder whether it could be better to re-try only a
+few times but with a far longer interval time than a couple us. What
+do you think?
 
-I needed some athletics to make this apply to my current tree, but I did
-manage to test it on:
-  - sh73a0/kzm9g (SYSC PM Domain/pm-rmobile),
-  - r8a7740/armadillo (SYSC PM Domain/pm-rmobile),
-  - r8a73a4/ape6evm (SYSC PM Domain/pm-rmobile),
-  - r8a7791/koelsch (CPG Clock Domain + SYSC PM Domain/pm-rcar).
-I didn't notice any regressions or other oddities.
+However, what if the reason to why we get -EAGAIN isn't *temporary*,
+because we are about to enter system PM suspend state. Then the caller
+of this function which comes via some bus' ->probe(), will hang until
+the a system PM resume is completed. Is that really going to work? So,
+for this case your limited re-try approach will affect this scenario
+as well, have you considered that?
 
-Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>                 cond_resched();
+>         }
+>
+> --
+> 1.9.1
+>
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Kind regards
+Uffe
