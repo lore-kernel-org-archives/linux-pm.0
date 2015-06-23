@@ -1,40 +1,80 @@
-From: Maxime Coquelin <maxime.coquelin@st.com>
-Subject: Re: [STLinux Kernel] [PATCH 7/8] cpufreq: st: Provide runtime initialised
- driver for ST's platforms
-Date: Tue, 23 Jun 2015 09:31:24 +0200
-Message-ID: <55890B4C.5000406@st.com>
-References: <1434987837-24212-1-git-send-email-lee.jones@linaro.org>	<1434987837-24212-8-git-send-email-lee.jones@linaro.org>	<20150623025031.GD16776@linux> <20150623071647.GD3245@x1>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 8/8] dt: cpufreq: st: Provide bindings for ST's CPUFreq
+ implementation
+Date: Tue, 23 Jun 2015 13:25:09 +0530
+Message-ID: <20150623075509.GF16776@linux>
+References: <1434987837-24212-1-git-send-email-lee.jones@linaro.org>
+ <1434987837-24212-9-git-send-email-lee.jones@linaro.org>
+ <20150623023458.GC16776@linux>
+ <20150623070651.GA3245@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx07-00178001.pphosted.com ([62.209.51.94]:59206 "EHLO
-	mx07-00178001.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751055AbbFWHcB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2015 03:32:01 -0400
-In-Reply-To: <20150623071647.GD3245@x1>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:34463 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752524AbbFWHzO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2015 03:55:14 -0400
+Received: by pabvl15 with SMTP id vl15so1819749pab.1
+        for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2015 00:55:14 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20150623070651.GA3245@x1>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: devicetree@vger.kernel.org, kernel@stlinux.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: robh@kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, ajitpal.singh@st.com
 
+On 23-06-15, 08:06, Lee Jones wrote:
+> > [Adding Rob]
+> 
+> Rob is not the only DT Maintainer, there are many of them.  The DT
+> list was CC'ed, which they are all part of.  Adding them all
+> separately is not required IMO.
 
+I didn't Cc him because you missed him, but because we have been
+discussing opp-v2 bindings recently and this was somehow related to
+that. :)
 
-On 06/23/2015 09:16 AM, Lee Jones wrote:
-> Thanks for your timely review Viresh.
->
-> On Tue, 23 Jun 2015, Viresh Kumar wrote:
->> On 22-06-15, 16:43, Lee Jones wrote:
->>> +config ARM_ST_CPUFREQ
->>> +	bool "ST CPUFreq support"
->> Isn't using ST just too generic? There are multiple SoCs ST has been
->> involved with, I have worked on a completely different series.
->> Probably a more relative string is required here, like stih407 ?
-> This is ST's only CPUFreq implementation and is pretty board
-> agnostic.  This particular driver only currently supports the STiH407
-> family, but internally it supports some others too.  I'll have a chat
-> and see if we can make it more specific somehow.
-I think you can use STI instead.
+> > On 22-06-15, 16:43, Lee Jones wrote:
+> > 
+> > At least some description was required here on why you need additional
+> > bindings are what are they.
+> 
+> Sure, I can do that.
+> 
+> > Over that, this patch should have been present before any other
+> > patches using these bindings.
+> 
+> I've never heard that one before, but it's easy to re-order the set.
 
-Regards,
-Maxime
+I don't know, but it seems obvious to me: Bindings first and then the
+code.
+
+> > > +Required properties:
+> > > +-------------------
+> > > +- compatible		: Supported values are:
+> > > +				"st,stih407-cpufreq"
+> > 
+> > Nodes for virtual devices aren't allowed in DT.
+> 
+> Then why do Exynos, Spear, HREF and Snowball have CPUFreq nodes?
+> 
+> One rule for one ... ?
+
+Not really, but I got a bit confused now with your reply.
+
+So, what I meant when I wrote: "Nodes for virtual devices aren't
+allowed in DT", was that we aren't supposed to do something like:
+
+cpufreq {
+ ...
+}
+
+in DT as cpufreq isn't a device here. A CPU is a device and that can
+contain whatever property we feel is reasonable.
+
+What SPEAr and Exyons did was putting something in the cpu-node. Not a
+node for cpufreq device itself. Couldn't find HREF and snowball's
+bindings though..
+
+-- 
+viresh
