@@ -1,87 +1,75 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 8/8] dt: cpufreq: st: Provide bindings for ST's CPUFreq
- implementation
-Date: Tue, 23 Jun 2015 09:59:06 +0100
-Message-ID: <20150623085906.GI3245@x1>
-References: <1434987837-24212-1-git-send-email-lee.jones@linaro.org>
- <1434987837-24212-9-git-send-email-lee.jones@linaro.org>
- <20150623023458.GC16776@linux>
- <20150623070651.GA3245@x1>
- <20150623075509.GF16776@linux>
- <20150623083856.GH3245@x1>
- <CABxcv=nRiPkC8wXt02LhFF+0CGjAMKusNWGQLbL+RrvsFS1iMw@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v2 00/14] ARM: shmobile: Add CPG Clock Domains
+Date: Tue, 23 Jun 2015 10:59:15 +0200
+Message-ID: <CAMuHMdXsnKZjMe1FVr5etz6EakBxw9VONWa=UhC5uqa-TZWC_Q@mail.gmail.com>
+References: <1432839219-475-1-git-send-email-geert+renesas@glider.be>
+	<CAMuHMdXntR6c4-uUNGVGx7D7941e8hvnmtVBvDu2+iUsNHQ=Qw@mail.gmail.com>
+	<20150622204617.9112.71054@quantum>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f49.google.com ([74.125.82.49]:35341 "EHLO
-	mail-wg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754292AbbFWI7L (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2015 04:59:11 -0400
-Received: by wgbhy7 with SMTP id hy7so3467503wgb.2
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2015 01:59:10 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CABxcv=nRiPkC8wXt02LhFF+0CGjAMKusNWGQLbL+RrvsFS1iMw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <20150622204617.9112.71054@quantum>
+Sender: linux-sh-owner@vger.kernel.org
+To: Michael Turquette <mturquette@linaro.org>, Michael Turquette <mturquette@baylibre.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Magnus Damm <magnus.damm@gmail.com>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-clk@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Javier Martinez Canillas <javier@dowhile0.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, ajitpal.singh@st.com, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Tue, 23 Jun 2015, Javier Martinez Canillas wrote:
+Hi Mike,
 
-> Hello Lee and Viresh,
->=20
-> On Tue, Jun 23, 2015 at 10:38 AM, Lee Jones <lee.jones@linaro.org> wr=
-ote:
-> > On Tue, 23 Jun 2015, Viresh Kumar wrote:
-> >> On 23-06-15, 08:06, Lee Jones wrote:
-> >> >
-> >> > > Over that, this patch should have been present before any othe=
-r
-> >> > > patches using these bindings.
-> >> >
-> >> > I've never heard that one before, but it's easy to re-order the =
-set.
-> >>
-> >> I don't know, but it seems obvious to me: Bindings first and then =
-the
-> >> code.
-> >
-> > Do you always write your documentation before implementing a
-> > feature?
-> >
-> > Surely it goes;
-> >   Requirements Gathering
-> >   Plan and Prepare
-> >   Implement
-> >   Test
-> >   Document
-> >   Deliver
-> >
-> > ;)
-> >
-> > ... but as I say, I can re-order if required.  It's really not a pr=
-oblem.
-> >
->=20
-> This is actually documented in
-> Documentation/devicetree/bindings/submitting-patches.txt:
-> ...
->=20
->   3) The Documentation/ portion of the patch should come in the serie=
-s before
->      the code implementing the binding.
->=20
-> ....
->=20
-> The rationale AFAIU is that it is easier to review the implementation
-> of a binding after reading the DT binding doc since then you can see
-> if the code matches what the DT binding describes.
+On Mon, Jun 22, 2015 at 10:46 PM, Michael Turquette
+<mturquette@linaro.org> wrote:
+>> The MSTP block provides two functions:
+>>   1. Module Standby: "Clock supply to specified modules is stopped by
+>>      setting the module stop control register bits."
+>>      However, the clock supply to a module is not stopped until all CPUs
+>>      in the SoC agree.  Indeed, there are separate MSTP registers for
+>>      application (Cortex-A) and real-time (SH and/or Cortex-R) cores.
+>>   2. Reset control. to perform a software reset of a specific module.
+>>
+>> Given the second function, perhaps the MSTP bits shouldn't have been
+>> moduled as clocks, but it made sense at the time of introduction, and
+>> IMHO it still does.
+>
+> Does the clk.enable_count refcount for an MSTP "clock" mirror your
+> statement, "the clock supply to a module is not stopped until all CPUs
+> in the SoC agree"? Put another way, is it possble in a shmobile system
+> for an MSTP "clock" to have an enable_count of zero, but still by
+> physically enabled in hardware?
 
-=46air enough.  Can't argue with that. :)
+Yes. The enable_count only matches the bit in the application core MSTP
+control register. The real-time core MSTP control register may still have the
+same module clock enabled (i.e. module not put in standby).
+On some SoCs (e.g. R-Mobile APE6) there can be 3 sets of control registers
+(for application, real-time, and baseband core).
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Most (not all) module clocks have a status register to check if the module
+clock is actually enabled or not. This shows that the module clock is stopped
+iff all cores agree to stop it.
+
+However, I found a few module clocks that never can be stopped, according to
+the status register. Perhaps there's another set of control registers for an
+undocumented core...
+
+In addition, there are many undocumented bits in the MSTP control registers,
+which may represent existing but undocumented clocks. Disabling such bits
+may lock up the system.
+
+As Linux doesn't touch the control registers for other CPU cores (they're
+not described in DT), a module clock may be enabled (read: not stopped) in
+a control registers meant for another CPU core, depending on reset state or
+on the boot loader. Or by another OS running on another CPU core.
+I've been running for quite some time with extra code that disables all module
+clocks (for all cores) at early boot time, which let me find lots of drivers
+that relied on implicit module clocks. Most got fixed, the only major
+offender left is the module clock for the GIC ;-)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
