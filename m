@@ -1,54 +1,71 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v2] power: max17042_battery: add HEALTH and TEMP_*
- properties support
-Date: Tue, 23 Jun 2015 09:58:41 +0900
-Message-ID: <CAJKOXPepZ9gKtnKk7Z4BFjUk=_kv6j010dZWhhu9bf_OuVmrgQ@mail.gmail.com>
-References: <1432438918-31002-1-git-send-email-ramakrishna.pallala@intel.com>
-	<CAJKOXPeUvdC5LwRLgsFfxz2=SZwkjq2soGius+j6kb76Ea940A@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/6] cpufreq: use generic cpufreq drivers for Exynos4x12
+ platform
+Date: Tue, 23 Jun 2015 07:35:05 +0530
+Message-ID: <20150623020505.GA408@linux>
+References: <1428688742-15578-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vn0-f51.google.com ([209.85.216.51]:33459 "EHLO
-	mail-vn0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751309AbbFWA6m (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2015 20:58:42 -0400
-In-Reply-To: <CAJKOXPeUvdC5LwRLgsFfxz2=SZwkjq2soGius+j6kb76Ea940A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1428688742-15578-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, rob.herring@linaro.org
+Cc: Thomas Abraham <thomas.ab@samsung.com>, rjw@rjwysocki.net, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-2015-06-08 10:22 GMT+09:00 Krzysztof Kozlowski <k.kozlowski@samsung.com>:
-> 2015-05-24 12:41 GMT+09:00 Ramakrishna Pallala <ramakrishna.pallala@intel.com>:
->> This patch adds the support for following battery properties
->> to max17042 fuel gauge driver.
->>
->> POWER_SUPPLY_PROP_TEMP_ALERT_MIN
->> POWER_SUPPLY_PROP_TEMP_ALERT_MAX
->> POWER_SUPPLY_PROP_TEMP_MIN
->> POWER_SUPPLY_PROP_TEMP_MAX
->> POWER_SUPPLY_PROP_HEALTH
->
-> I wonder, have you tested the patch? After booting on Trats2 device
-> (max77693 which identifies itself as 17047-like) the values are:
-> POWER_SUPPLY_TEMP_ALERT_MIN=1280
-> POWER_SUPPLY_TEMP_ALERT_MAX=1270
-> POWER_SUPPLY_TEMP=257
-> This is okay, datasheet says that register after booting will have
-> value of 0x7f80.
->
-> However setting them to some value which should trigger interrupts
-> (like 300 for MIN or 200 for MAX) does not trigger the interrupt. I
-> added a printk in max17042_thread_handler().
->
-> Is the temperature alert feature working?
+Hi Bartlomiej,
 
-Dear Ramakrishna Pallala,
+[Adding Rafael & Rob to cc list. Please don't forget for any PM
+specific patches :)]
 
-Can you reply to my question above?
-If this feature is not working, then it should be removed.
+First of all, really sorry for missing this mail thread. Don't know
+how I missed it though. And please please please, do send a ping
+reminder (to me at least), if you think the mail thread is
+missed/ignored by the Maintainers.
 
-Best regards,
-Krzysztof
---
-To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+Its been two months, and not a single reminder :).. And I wouldn't
+have seen this email if you wouldn't have pinged me on IRC ..
+
+On 10-04-15, 19:58, Bartlomiej Zolnierkiewicz wrote:
+> This patch series removes the use of Exynos4x12 specific support
+> from cpufreq-exynos driver and enables the use of cpufreq-dt driver
+> for this platform.
+
+Excellent.
+
+> In order to preserve support for Exynos4x12 'boost' mode cpufreq-dt
+> driver is made aware of 'boost' mode frequencies and boost-opps
+> binding is provided.
+
+That's good too..
+
+> boost-opps binding is currently limited to cpufreq-dt but once there is
+> a need for cpufreq wide and/or generic Linux device support for 'boost'
+> mode cpufreq-dt can be updated to handle the new code without changing
+> the binding itself.
+
+You already know that operating-points-v2 bindings are already
+accepted and applied by Rafael. Its not that the earlier bindings are
+discarded or obsolete now, but are only present for simple use cases.
+
+There are NO plans for extending the earlier OPP bindings Unless its
+really required. And what you are trying to do in cpufreq-dt's
+bindings, really belongs to OPP bindings.
+
+As the new bindings will be present in 4.2, getting the code (at least
+the basic code) for them into 4.3 wouldn't be that difficult. Anyway,
+your stuff isn't going out in 4.2 either and so you *shall* adopt
+to opp-v2 bindings in your next version.
+
+Migrating platforms to opp-v2 wouldn't be that difficult, mostly
+changes required only in dts files, unless you are using a driver of
+your own.
+
+I would be updating cpufreq-dt at the earlier to support basic
+features of opp-v2 for 4.3. Some code is already posted:
+
+http://permalink.gmane.org/gmane.linux.power-management.general/61326
+
+-- 
+viresh
