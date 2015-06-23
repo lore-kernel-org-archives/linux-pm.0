@@ -1,172 +1,61 @@
-From: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Subject: Re: [PATCH 1/2] dt-bindings: mediatek: Add MT8173 cpufreq driver binding
-Date: Tue, 23 Jun 2015 23:31:33 +0800
-Message-ID: <CALx668UShfd3HW1ptzHnMr9xAUVyLGt=q2CmYHn3vqASZug6kw@mail.gmail.com>
-References: <1433766561-1330-1-git-send-email-pi-cheng.chen@linaro.org>
-	<1433766561-1330-2-git-send-email-pi-cheng.chen@linaro.org>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH 01/10] cpufreq: Use __func__ to print function's name
+Date: Tue, 23 Jun 2015 21:09:27 +0530
+Message-ID: <55897DAF.1010804@linux.vnet.ibm.com>
+References: <cover.1434959517.git.viresh.kumar@linaro.org> <e836441d6e1ad1ba8c136dc301ee2ad9df08fa72.1434959517.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-6
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f182.google.com ([209.85.160.182]:35506 "EHLO
-	mail-yk0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932771AbbFWPbf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2015 11:31:35 -0400
-Received: by ykdy1 with SMTP id y1so7448548ykd.2
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2015 08:31:34 -0700 (PDT)
-In-Reply-To: <1433766561-1330-2-git-send-email-pi-cheng.chen@linaro.org>
+Received: from e19.ny.us.ibm.com ([129.33.205.209]:35870 "EHLO
+	e19.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932675AbbFWPjh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2015 11:39:37 -0400
+Received: from /spool/local
+	by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Tue, 23 Jun 2015 11:39:36 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com [9.57.198.24])
+	by d01dlp01.pok.ibm.com (Postfix) with ESMTP id D27F738C805E
+	for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2015 11:39:34 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id t5NFdYkj43319368
+	for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2015 15:39:34 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+	by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id t5NFdX7a014520
+	for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2015 11:39:34 -0400
+In-Reply-To: <e836441d6e1ad1ba8c136dc301ee2ad9df08fa72.1434959517.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Mike Turquette <mturquette@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Mark Rutland <mark.rutland@arm.com>
-Cc: "pi-cheng.chen" <pi-cheng.chen@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, linux-mediatek@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 
-Hi,
+On 06/22/2015 01:32 PM, Viresh Kumar wrote:
+> Its better to use __func__ to print functions name instead of writing
+> the name in the print statement. This also has the advantage that a
+> change in function's name doesn't force us to change the print message
+> as well.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-May I get some comments for this patch to get this series proceeding?
-
-Pi-Cheng
-
-On Mon, Jun 8, 2015 at 8:29 PM, Pi-Cheng Chen <pi-cheng.chen@linaro.org> wrote:
-> This patch adds device tree binding document for MT8173 cpufreq driver.
->
-> Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 > ---
->  .../devicetree/bindings/cpufreq/cpufreq-mt8173.txt | 127 +++++++++++++++++++++
->  1 file changed, 127 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt
->
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt
-> new file mode 100644
-> index 0000000..7708a65
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt
-> @@ -0,0 +1,127 @@
-> +
-> +Mediatek MT8173 cpufreq driver
-> +-------------------
-> +
-> +Mediatek MT8173 cpufreq driver for CPU frequency scaling.
-> +
-> +Required properties:
-> +- clocks: A list of phandle + clock-specifier pairs for the clocks listed in clock names.
-> +- clock-names: Should contain the following:
-> +       "cpu"           - The multiplexer for clock input of CPU cluster.
-> +       "intermediate"  - A parent of "cpu" clock which is used as "intermediate" clock
-> +                         source (usually MAINPLL) when the original CPU PLL is under
-> +                         transition and not stable yet.
-> +- operating-points: Table of frequencies and voltage CPU could be transitioned into,
-> +                   Frequency should be in KHz units and voltage should be in microvolts.
-> +- proc-supply: Regulator for Vproc of CPU cluster.
-> +
-> +Optional properties:
-> +- sram-supply: Regulator for Vsram of CPU cluster. When present, the cpufreq driver
-> +              needs to do "voltage trace" to step by step scale up/down Vproc and
-> +              Vsram to fit SoC specific needs. When absent, the voltage scaling
-> +              flow is handled by hardware, hence no software "voltage trace" is
-> +              needed.
-> +
-> +Example:
-> +--------
-> +       cpu0: cpu@0 {
-> +               device_type = "cpu";
-> +               compatible = "arm,cortex-a53";
-> +               reg = <0x000>;
-> +               enable-method = "psci";
-> +               cpu-idle-states = <&CPU_SLEEP_0>;
-> +               clocks = <&infracfg CLK_INFRA_CA53SEL>,
-> +                        <&apmixedsys CLK_APMIXED_MAINPLL>;
-> +               clock-names = "cpu", "intermediate";
-> +               operating-points = <
-> +                       507000  859000
-> +                       702000  908000
-> +                       1001000 983000
-> +                       1105000 1009000
-> +                       1183000 1028000
-> +                       1404000 1083000
-> +                       1508000 1109000
-> +                       1573000 1125000
-> +               >;
-> +       };
-> +
-> +       cpu1: cpu@1 {
-> +               device_type = "cpu";
-> +               compatible = "arm,cortex-a53";
-> +               reg = <0x001>;
-> +               enable-method = "psci";
-> +               cpu-idle-states = <&CPU_SLEEP_0>;
-> +               clocks = <&infracfg CLK_INFRA_CA53SEL>,
-> +                        <&apmixedsys CLK_APMIXED_MAINPLL>;
-> +               clock-names = "cpu", "intermediate";
-> +               operating-points = <
-> +                       507000  859000
-> +                       702000  908000
-> +                       1001000 983000
-> +                       1105000 1009000
-> +                       1183000 1028000
-> +                       1404000 1083000
-> +                       1508000 1109000
-> +                       1573000 1125000
-> +               >;
-> +       };
-> +
-> +       cpu2: cpu@100 {
-> +               device_type = "cpu";
-> +               compatible = "arm,cortex-a57";
-> +               reg = <0x100>;
-> +               enable-method = "psci";
-> +               cpu-idle-states = <&CPU_SLEEP_0>;
-> +               clocks = <&infracfg CLK_INFRA_CA57SEL>,
-> +                        <&apmixedsys CLK_APMIXED_MAINPLL>;
-> +               clock-names = "cpu", "intermediate";
-> +               operating-points = <
-> +                       507000  828000
-> +                       702000  867000
-> +                       1001000 927000
-> +                       1209000 968000
-> +                       1404000 1007000
-> +                       1612000 1049000
-> +                       1807000 1089000
-> +                       1989000 1125000
-> +               >;
-> +       };
-> +
-> +       cpu3: cpu@101 {
-> +               device_type = "cpu";
-> +               compatible = "arm,cortex-a57";
-> +               reg = <0x101>;
-> +               enable-method = "psci";
-> +               cpu-idle-states = <&CPU_SLEEP_0>;
-> +               clocks = <&infracfg CLK_INFRA_CA57SEL>,
-> +                        <&apmixedsys CLK_APMIXED_MAINPLL>;
-> +               clock-names = "cpu", "intermediate";
-> +               operating-points = <
-> +                       507000  828000
-> +                       702000  867000
-> +                       1001000 927000
-> +                       1209000 968000
-> +                       1404000 1007000
-> +                       1612000 1049000
-> +                       1807000 1089000
-> +                       1989000 1125000
-> +               >;
-> +       };
-> +
-> +       &cpu0 {
-> +               proc-supply = <&mt6397_vpca15_reg>;
-> +       };
-> +
-> +       &cpu1 {
-> +               proc-supply = <&mt6397_vpca15_reg>;
-> +       };
-> +
-> +       &cpu2 {
-> +               proc-supply = <&da9211_vcpu_reg>;
-> +               sram-supply = <&mt6397_vsramca7_reg>;
-> +       };
-> +
-> +       &cpu3 {
-> +               proc-supply = <&da9211_vcpu_reg>;
-> +               sram-supply = <&mt6397_vsramca7_reg>;
-> +       };
-> --
-> 1.9.1
->
+>  drivers/cpufreq/cpufreq.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 0b3c60861bdf..5863db9213aa 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -2097,8 +2097,7 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+>  		if (!try_module_get(policy->governor->owner))
+>  			return -EINVAL;
+> 
+> -	pr_debug("__cpufreq_governor for CPU %u, event %u\n",
+> -		 policy->cpu, event);
+> +	pr_debug("%s: for CPU %u, event %u\n", __func__, policy->cpu, event);
+> 
+>  	mutex_lock(&cpufreq_governor_lock);
+>  	if ((policy->governor_enabled && event == CPUFREQ_GOV_START)
+> 
+
