@@ -1,86 +1,143 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 4/6] ARM: dts: Exynos4210: add CPU OPP and regulator supply
- property
-Date: Tue, 23 Jun 2015 08:46:33 +0900
-Message-ID: <55889E59.1070001@samsung.com>
-References: <'@samsung.com>
- <1428079429-4252-1-git-send-email-b.zolnierkie@samsung.com>
- <1428079429-4252-5-git-send-email-b.zolnierkie@samsung.com>
- <CAJKOXPfR5JS546YS3M-8orxO7+SxnzE06h2cyesExyt8Y9fVKw@mail.gmail.com>
- <CAJKOXPfdXV8qxR3AQEzQJTf6MojUN7Z=06ikxF8u5BuMihDfJQ@mail.gmail.com>
- <00f801d0ac8c$344dfeb0$9ce9fc10$@kernel.org> <558767FC.4090405@samsung.com>
- <011f01d0ac8d$40a25110$c1e6f330$@kernel.org>
- <20150622150421.9112.96812@quantum>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH 00/21] On-demand device registration
+Date: Mon, 22 Jun 2015 19:01:32 -0500
+Message-ID: <CAL_JsqKAWs2McpAP-47UwDMtuBoR+0xkJYvu8+-7yOQwiUfvpw@mail.gmail.com>
+References: <1432565608-26036-1-git-send-email-tomeu.vizoso@collabora.com>
+ <CAL_Jsq+EWLEJhRudTGAwYsOg4tX2-pGhygeQGHae9RL8rBpMiA@mail.gmail.com> <CAAObsKCdv_X+YPFacO7NjbRMnvuDisAmiQOWE-Xb3xFFrn6Qog@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20150622150421.9112.96812@quantum>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene@kernel.org>
-Cc: linux-arm-kernel@lists.infradead.org, 'Lukasz Majewski' <l.majewski@samsung.com>, 'Heiko Stuebner' <heiko@sntech.de>, 'Kevin Hilman' <khilman@linaro.org>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Sachin Kamat' <sachin.kamat@linaro.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, 'Tomasz Figa' <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Andreas Faerber' <afaerber@suse.de>, 'Doug Anderson' <dianders@chromium.org>, 'Javier Martinez Canillas' <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <CAAObsKCdv_X+YPFacO7NjbRMnvuDisAmiQOWE-Xb3xFFrn6Qog@mail.gmail.com>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, =?UTF-8?Q?St=C3=A9phane_Marchesin?= <stephane.marchesin@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Alexander Holler <holler@ahsoftware.de>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Dan Williams <dan.j.williams@intel.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, dmaengine@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, linux-clk@vger.kernel.org, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.or>
 List-Id: linux-pm@vger.kernel.org
 
-On 23.06.2015 00:04, Michael Turquette wrote:
-> Quoting Kukjin Kim (2015-06-21 18:46:26)
->> Krzysztof Kozlowski wrote:
+On Mon, Jun 22, 2015 at 10:23 AM, Tomeu Vizoso
+<tomeu.vizoso@collabora.com> wrote:
+> On 28 May 2015 at 06:33, Rob Herring <robherring2@gmail.com> wrote:
+>> On Mon, May 25, 2015 at 9:53 AM, Tomeu Vizoso
+>> <tomeu.vizoso@collabora.com> wrote:
+>>> Hello,
 >>>
->>> On 22.06.2015 10:38, Kukjin Kim wrote:
->>>> Krzysztof Kozlowski wrote:
->>>>> 2015-05-08 9:18 GMT+09:00 Krzysztof Kozlowski <k.kozlowski@samsung.com>:
->>>>>> 2015-04-04 1:43 GMT+09:00 Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>:
->>>>>>> From: Thomas Abraham <thomas.ab@samsung.com>
->>>>>>>
->>>>>>> For Exynos4210 platforms, add CPU operating points and CPU
->>>>>>> regulator supply properties for migrating from Exynos specific
->>>>>>> cpufreq driver to using generic cpufreq driver.
->>>>>>>
->>>>>>> Changes by Bartlomiej:
->>>>>>> - removed Exynos5250 and Exynos5420 support for now
->>>>>>>
->>>>>>> Cc: Kukjin Kim <kgene.kim@samsung.com>
->>>>>>> Cc: Doug Anderson <dianders@chromium.org>
->>>>>>> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
->>>>>>> Cc: Andreas Faerber <afaerber@suse.de>
->>>>>>> Cc: Sachin Kamat <sachin.kamat@linaro.org>
->>>>>>> Cc: Andreas Farber <afaerber@suse.de>
->>>>>>> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
->>>>>>> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
->>>>>>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->>>>>>
->>>>>> Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->>>>>
->>>>> Rebased and applied to my tree, I'll sent it later to Kukjin unless he
->>>>> picks it by himself from LKML.
->>>>>
->>>> Hi, as far as I know, this is for v4.2 not v4.1 so it will be applied based on
->>>> v4.2-rc1 after v4.2-rc1 release.
+>>> I have a problem with the panel on my Tegra Chromebook taking longe=
+r than
+>>> expected to be ready during boot (St=C3=A9phane Marchesin reported =
+what is
+>>> basically the same issue in [0]), and have looked into ordered prob=
+ing as a
+>>> better way of solving this than moving nodes around in the DT or pl=
+aying with
+>>> initcall levels.
 >>>
->>> You mean it is for v4.3, not v4.2?
->>>
->> Oops, yes v4.3.
+>>> While reading the thread [1] that Alexander Holler started with his=
+ series to
+>>> make probing order deterministic, it occurred to me that it should =
+be possible
+>>> to achieve the same by registering devices as they are referenced b=
+y other
+>>> devices.
 >>
->> Thanks for the correction.
-> 
-> Kukjin & Krzysztof,
-> 
-> I'm confused on this point. I was planning to take patches 1, 2, 3, 5
-> and 6 towards 4.2 (e.g. in the pull request that I'll send out this
-> week).
-> 
-> Is patch 4 going out for 4.2 or 4.3?
+>> I like the concept and novel approach.
+>>
+>>> This basically reuses the information that is already implicit in t=
+he probe()
+>>> implementations, saving us from refactoring existing drivers or add=
+ing
+>>> information to DTBs.
+>>>
+>>> Something I'm not completely happy with is that I have had to move =
+the call to
+>>> of_platform_populate after all platform drivers have been registere=
+d.
+>>> Otherwise I don't see how I could register drivers on demand as we =
+don't have
+>>> yet each driver's compatible strings.
+>>
+>> Yeah, this is the opposite of what we'd really like.
+>
+> Can you elaborate on the reasons why we would like to have devices
+> registered before built-in drivers finish registering, even if we
+> don't probe them yet?
 
-It is quite late for sending pull request to arm-soc for 4.2.
-For example SoCFPGA pull request from last week was rejected:
-http://comments.gmane.org/gmane.linux.ports.arm.kernel/417980
+My main thought was for modules we will almost always have devices
+appearing first. More generally, we can have devices and drivers
+coming or going at any point in time and should not put restrictions
+on ordering.
 
-If you want to take it for 4.2 then I am fine with it but this will
-cause some easy but annoying conflicts. There aren't difficult - just
-most of nodes in board DTS changed their place.
+Also, I think all the probe ordering and dependency tracking should be
+done within the driver core (i.e. dependencies are a list of struct
+devices). At some level it has to become firmware specific, but we
+want to minimize that part. I could be convinced otherwise and you
+have put more thought into this problem than I have.
 
-Example of resolution (target file after merge, with cpu nodes reordered
-alphabetically):
-https://github.com/krzk/linux/commit/2cec3cb48abaf44848c62f1c0836b772eb4680dd
+>> Ideally, we would
+>> have a solution that works for modules too. However, we're no worse
+>> off. We pretty much build-in dependencies to avoid module ordering
+>> problems.
+>
+> Nod, I haven't looked yet at requesting modules on-demand, but I gues=
+s
+> it should be doable. Modules that have dependencies described in the
+> firmware should get them probed automatically already though.
+>
+>> Perhaps we need to make the probing on-demand rather than simply on
+>> device<->driver match occurring.
+>
+> I'm afraid that too much old code depends on that. For example, Rafae=
+l
+> pointed out to the PNP subsystem, which registers a driver that will
+> probe devices with the EISA ID PNP0c02 to reserve memory regions for
+> devices that will be probed later.
+>
+> http://lxr.free-electrons.com/source/drivers/pnp/system.c
+>
+> My understanding is that probing of PNP0c02 devices must happen befor=
+e
+> the actual devices that depend on those regions are probed, so if we
+> decoupled the probing from the driver/device registration, we would b=
+e
+> breaking that assumption.
 
-Best regards,
-Krzysztof
+That shouldn't matter as PNP matching is PNP specific. We already have
+different ways of matching with device/driver name or of_match_table
+for example. Changing how and when OF matching occurs would not affect
+PNP matching. We do matching on device and driver add currently. For
+the "when" part, we would need to add what I'll call async matching or
+deferred matching which in addition to matching on the of_match_table
+also matches on the dependency list having probed. Your last series
+essentially does this, but the difference is yours is not OF specific
+and I think it needs to be. I mean it is OF specific only in the
+aspect that matching already is. From a driver and subsystem
+standpoint, it should not be OF specific much like deferred probe is
+not OF specific, but in reality only occurs (currently) on OF probed
+drivers.
+
+>>> For machs that don't move of_platform_populate() to a later point, =
+these
+>>> patches shouldn't cause any problems but it's not guaranteed that w=
+e'll avoid
+>>> all the deferred probes as some drivers may not be registered yet.
+>>
+>> Ideally, of_platform_populate is not explicitly called by each
+>> platform. So I think we need to make this work for the default case.
+>
+> The problem is that some platforms will need fixing because some
+> initcalls assume that some devices will have been registered already,
+> or even probed. I think removing those assumptions shouldn't be
+> problematic because I haven't had much trouble with this on the four
+> platforms I have tested with, but I cannot test every board that is
+> supported upstream.
+>
+> I can ask though the KernelCI folks to boot my branch in all their
+> boards and make sure that those work when of_platform_populate is
+> called in late_initcall.
+
+I'd imagine Kevin would be happy to. That is still a subset of h/w, so
+we'd need a way to disable any solution.
+
+Rob
+--
+To unsubscribe from this list: send the line "unsubscribe linux-gpio" i=
+n
