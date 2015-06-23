@@ -1,42 +1,30 @@
-From: Paul Bolle <pebolle@tiscali.nl>
-Subject: Re: [PATCH 7/8] cpufreq: st: Provide runtime initialised driver for
- ST's platforms
-Date: Tue, 23 Jun 2015 22:03:16 +0200
-Message-ID: <1435089796.4528.53.camel@tiscali.nl>
-References: <1434987837-24212-1-git-send-email-lee.jones@linaro.org>
-	 <1434987837-24212-8-git-send-email-lee.jones@linaro.org>
-	 <1435046411.4528.6.camel@tiscali.nl> <20150623082857.GG3245@x1>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL] power supply changes for 4.2
+Date: Tue, 23 Jun 2015 16:13:34 -0700
+Message-ID: <CA+55aFx_X2pj=b6qzx5HcGByLmucKSRrbyCpVmZjo_fQ+yiYxg@mail.gmail.com>
+References: <20150623005302.GB24028@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lb2-smtp-cloud3.xs4all.net ([194.109.24.26]:40082 "EHLO
-	lb2-smtp-cloud3.xs4all.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754988AbbFWUDZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2015 16:03:25 -0400
-In-Reply-To: <20150623082857.GG3245@x1>
+Received: from mail-ig0-f169.google.com ([209.85.213.169]:35075 "EHLO
+	mail-ig0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754950AbbFWXNf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2015 19:13:35 -0400
+In-Reply-To: <20150623005302.GB24028@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, ajitpal.singh@st.com
+To: Sebastian Reichel <sre@ring0.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, 2015-06-23 at 09:28 +0100, Lee Jones wrote:
-> BTW, do you have a script that does this now, or are you still
-> hand-rolling these?
+On Mon, Jun 22, 2015 at 5:53 PM, Sebastian Reichel <sre@ring0.de> wrote:
+>
+>   git://git.infradead.org/battery-2.6.git tags/for-4.2
 
-There was a script detecting Kconfig problems that is basically
-retired. (The messages I sent were always manually written.) That
-script's function is now performed, much better, by the undertaker
--checkpatch bot (courtesy of a group of people apparently all
-affiliated with the university of Erlangen, Germany). We're in virtual
-contact but that group is doing fine so I'm basically not contributing.
+So I started wondering. Why do you use infradead for one of your
+trees, but git.kernel.org for the other (the HSI one)? That just looks
+odd to me.
 
-Anyhow, my reply to your patch was the result of a manual scan for a
-small set of common (and mostly trivial) mistakes in patches that I try
-to do regularly. All pretty basic stuff, otherwise I wouldn't been able
-to spot these mistakes.
+Also, something in your HSI pull request made gmail unhappy, and it
+marked it as spam. Do you send the emails differently too?
 
-Does this answer your question?
-
-
-Paul Bolle
+                Linus
