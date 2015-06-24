@@ -1,62 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] PM / Domains: Avoid infinite loops in attach/detach code
-Date: Wed, 24 Jun 2015 16:10:17 +0200
-Message-ID: <10339007.ODJxqcfmHy@vostro.rjw.lan>
-References: <1434622954-26747-3-git-send-email-geert+renesas@glider.be> <CAJZ5v0j2RkjsWQkDkjZOf8mx12CvLzOzmLG3yRT-04naa9==HQ@mail.gmail.com> <CAMuHMdU8sHuAKrRvVF1pV7FOCLYrdi1xfAiqb50tfJWhKK3jDQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdU8sHuAKrRvVF1pV7FOCLYrdi1xfAiqb50tfJWhKK3jDQ@mail.gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Kevin Hilman <khilman@kernel.org>, Magnus Damm <damm@opensource.se>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH v2 0/9] cpufreq: Introduce support for ST's cpufreq functionality
+Date: Wed, 24 Jun 2015 14:58:59 +0100
+Message-ID: <1435154348-28840-1-git-send-email-lee.jones@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: kernel-F5mvAk5X5gdBDgjK7y7TUQ@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ajitpal.singh-qxv4g6HH51o@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, June 23, 2015 03:45:43 PM Geert Uytterhoeven wrote:
-> Hi Rafael,
-> 
-> On Tue, Jun 23, 2015 at 3:38 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >>>> @@ -2218,10 +2227,13 @@ int genpd_dev_pm_attach(struct device *dev)
-> >>>>
-> >>>>         dev_dbg(dev, "adding to PM domain %s\n", pd->name);
-> >>>>
-> >>>> -       while (1) {
-> >>>> +       for (i = 0; i < GENPD_RETRIES; i++) {
-> >>>>                 ret = pm_genpd_add_device(pd, dev);
-> >>>>                 if (ret != -EAGAIN)
-> >>>>                         break;
-> >>>> +
-> >>>> +               if (i > GENPD_RETRIES / 2)
-> >>>> +                       udelay(GENPD_DELAY_US);
-> >>>
-> >>> In this execution path, we retry when getting -EAGAIN while believing
-> >>> the reason to the error are only *temporary* as we are soon waiting
-> >>> for all devices in the genpd to be system PM resumed. At least that's
-> >>> my understanding to why we want to deal with -EAGAIN here, but I might
-> >>> be wrong.
-> >>>
-> >>> In this regards, I wonder whether it could be better to re-try only a
-> >>> few times but with a far longer interval time than a couple us. What
-> >>> do you think?
-> >>
-> >> That's indeed viable. I have no idea for how long this temporary state can
-> >> extend.
-> >
-> > A usual approach to this kind of thing is to use exponential fallback
-> > where you increase the delay twice with respect to the previous one
-> > every time.
-> 
-> Right, but when do you give up?
+This driver reads very platform specific information in from Device Tree
+and translates it into frequency tables.  The generic drivers then use the
+tables to conduct frequency and voltage scaling in the normal way.
 
-Well, I guess you know what a reasonable timeout should be?
+There are 'ARM' patches in the set which are not necessarily related to CPUFreq,
+but are required to get it to work.  Anyone who is not interested in general STi
+DT changes can safely ignore these.
 
-> Note that udelay() is a busy loop. Should it fall back to msleep() after
-> a while?
+v1 => v2:
+ - CPUFreq is no longer it's own device in DT; instead:
+   - It is probed from the platform area
+   - Key properties have been moved into the CPU's node
+ - Driver is less generic [ST => STI]
+ - Documentation has been updated
+   - Point one (above) has been accounted for
+   - Example of bootloader supplied node has been provided
+ - GPL licensing has been updated to reflected the header
+ - Kconfig disparity has been rectified [bool => tristate]
 
-If we can't fall back to msleep() at one point, you may as well simply poll
-periodically as you did originally.
+Lee Jones (9):
+  ARM: STi: STiH407: Provide generic (safe) DVFS configuration
+  ARM: STi: STiH407: Provide CPU with clocking information
+  ARM: STi: STiH407: Link CPU with its voltage supply
+  ARM: STi: STiH407: Provide CPU with a means to look-up Major number
+  ARM: STi: Register CPUFreq device
+  ARM: STi: STiH407: Move PWM nodes STiH407 => STiH407-family
+  ARM: multi_v7_defconfig: Enable support for PWM Regulators
+  dt: cpufreq: st: Provide bindings for ST's CPUFreq implementation
+  cpufreq: st: Provide runtime initialised driver for ST's platforms
 
-Thanks,
-Rafael
+ .../devicetree/bindings/cpufreq/cpufreq-st.txt     |  72 ++++
+ arch/arm/boot/dts/stih407-family.dtsi              |  45 +++
+ arch/arm/boot/dts/stih407.dtsi                     |  28 --
+ arch/arm/configs/multi_v7_defconfig                |   1 +
+ arch/arm/mach-sti/Makefile                         |   2 +-
+ arch/arm/mach-sti/board-dt.c                       |   3 +-
+ arch/arm/mach-sti/{platsmp.c => cpu.c}             |  17 +-
+ arch/arm/mach-sti/{smp.h => cpu.h}                 |   2 +
+ drivers/cpufreq/Kconfig.arm                        |   7 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/sti-cpufreq.c                      | 447 +++++++++++++++++++++
+ 11 files changed, 593 insertions(+), 32 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
+ rename arch/arm/mach-sti/{platsmp.c => cpu.c} (91%)
+ rename arch/arm/mach-sti/{smp.h => cpu.h} (92%)
+ create mode 100644 drivers/cpufreq/sti-cpufreq.c
 
+-- 
+1.9.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
