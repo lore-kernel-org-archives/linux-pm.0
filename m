@@ -1,17 +1,17 @@
 From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 2/4] mfd: axp20x: Add missing registers,
- and mark more registers volatile
-Date: Wed, 24 Jun 2015 12:19:04 +0100
-Message-ID: <20150624111904.GG15013@x1>
+Subject: Re: [PATCH v2 3/4] mfd: axp20x: Add a cell for the usb
+ power_supply part of the axp20x PMICs
+Date: Wed, 24 Jun 2015 12:23:33 +0100
+Message-ID: <20150624112333.GH15013@x1>
 References: <1434211748-25572-1-git-send-email-hdegoede@redhat.com>
- <1434211748-25572-3-git-send-email-hdegoede@redhat.com>
+ <1434211748-25572-4-git-send-email-hdegoede@redhat.com>
 Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDA7X7F2WUEBBLFEVKWAKGQEIMY5W2A-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBDA7X7F2WUEBBOVGVKWAKGQEE3ZMWIA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1434211748-25572-3-git-send-email-hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+In-Reply-To: <1434211748-25572-4-git-send-email-hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Archive: <http://groups.google.com/group/linux-sunxi
@@ -23,73 +23,86 @@ To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 13 Jun 2015, Hans de Goede wrote:
+> Add a cell for the usb power_supply part of the axp20x PMICs.
 
-> From: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
+Why are you duplicating the subject line?
+
+> Note that this cell is only for the usb power_supply part and not the
+> ac-power / battery-charger / rtc-backup-bat-charger bits.
 >=20
-> Add an extra set of registers which is necessary tu support the PMICs
-> battery charger function, and mark registers which contain status bits,
-> gpio status, and adc readings as volatile.
+> Depending on the board each of those must be enabled / disabled separatel=
+y
+> in devicetree as most boards do not use all 4. So in dt each one needs it=
+s
+> own child-node of the axp20x node. Another reason for using separate chil=
+d
+> nodes for each is so that other devicetree nodes can have a power-supply
+> property with a phandle referencing a node representing a single
+> power-supply.
 >=20
+> The decision to use a separate devicetree node for each is reflected on
+> the kernel side by each getting its own mfd-cell / platform_device and
+> platform-driver.
+
+You don't really need to say any of this, as this is the 'norm'.
+
+What you didn't mention however, is that you're taking the opportunity
+to fix some formatting issues and that there are no functional changes
+in these lines.
+
 > Cc: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
 > Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 > ---
 > Changes in v2:
-> -Add a AXP20X_OCV_MAX define
+> -Use DEFINE_RES_IRQ_NAMED
+> -Change indentation of axp20x_cells initializers to avoid line wrapping
 > ---
->  drivers/mfd/axp20x.c       | 8 +++++++-
->  include/linux/mfd/axp20x.h | 6 ++++++
->  2 files changed, 13 insertions(+), 1 deletion(-)
+>  drivers/mfd/axp20x.c | 20 ++++++++++++++++----
+>  1 file changed, 16 insertions(+), 4 deletions(-)
 
-Patch looks good, but you're missing Bruno's SoB.
+Patch looks okay however:
+
+Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
 > diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-> index 6df9155..f9a3c2d 100644
+> index f9a3c2d..ca4a604 100644
 > --- a/drivers/mfd/axp20x.c
 > +++ b/drivers/mfd/axp20x.c
-> @@ -39,10 +39,16 @@ static const char * const axp20x_model_names[] =3D {
->  static const struct regmap_range axp20x_writeable_ranges[] =3D {
->  	regmap_reg_range(AXP20X_DATACACHE(0), AXP20X_IRQ5_STATE),
->  	regmap_reg_range(AXP20X_DCDC_MODE, AXP20X_FG_RES),
-> +	regmap_reg_range(AXP20X_RDC_H, AXP20X_OCV(15)),
+> @@ -113,6 +113,13 @@ static struct resource axp20x_pek_resources[] =3D {
+>  	},
 >  };
 > =20
->  static const struct regmap_range axp20x_volatile_ranges[] =3D {
-> +	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_USB_OTG_STATUS),
-> +	regmap_reg_range(AXP20X_CHRG_CTRL1, AXP20X_CHRG_CTRL2),
->  	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IRQ5_STATE),
-> +	regmap_reg_range(AXP20X_ACIN_V_ADC_H, AXP20X_IPSOUT_V_HIGH_L),
-> +	regmap_reg_range(AXP20X_GPIO20_SS, AXP20X_GPIO3_CTRL),
-> +	regmap_reg_range(AXP20X_FG_RES, AXP20X_RDC_L),
->  };
-> =20
->  static const struct regmap_access_table axp20x_writeable_table =3D {
-> @@ -159,7 +165,7 @@ static const struct regmap_config axp20x_regmap_confi=
-g =3D {
->  	.val_bits	=3D 8,
->  	.wr_table	=3D &axp20x_writeable_table,
->  	.volatile_table	=3D &axp20x_volatile_table,
-> -	.max_register	=3D AXP20X_FG_RES,
-> +	.max_register	=3D AXP20X_OCV(AXP20X_OCV_MAX),
->  	.cache_type	=3D REGCACHE_RBTREE,
->  };
-> =20
-> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-> index 5275423..6d8b39a 100644
-> --- a/include/linux/mfd/axp20x.h
-> +++ b/include/linux/mfd/axp20x.h
-> @@ -151,6 +151,12 @@ enum {
->  #define AXP20X_CC_CTRL			0xb8
->  #define AXP20X_FG_RES			0xb9
-> =20
-> +/* OCV */
-> +#define AXP20X_RDC_H			0xba
-> +#define AXP20X_RDC_L			0xbb
-> +#define AXP20X_OCV(m)			(0xc0 + (m))
-> +#define AXP20X_OCV_MAX			0xf
+> +static struct resource axp20x_usb_power_supply_resources[] =3D {
+> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
+> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
+> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_VALID, "VBUS_VALID"),
+> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_NOT_VALID, "VBUS_NOT_VALID"),
+> +};
 > +
->  /* AXP22X specific registers */
->  #define AXP22X_BATLOW_THRES1		0xe6
+>  static struct resource axp22x_pek_resources[] =3D {
+>  	{
+>  		.name   =3D "PEK_DBR",
+> @@ -363,11 +370,16 @@ static const struct regmap_irq_chip axp288_regmap_i=
+rq_chip =3D {
+> =20
+>  static struct mfd_cell axp20x_cells[] =3D {
+>  	{
+> -		.name			=3D "axp20x-pek",
+> -		.num_resources		=3D ARRAY_SIZE(axp20x_pek_resources),
+> -		.resources		=3D axp20x_pek_resources,
+> +		.name		=3D "axp20x-pek",
+> +		.num_resources	=3D ARRAY_SIZE(axp20x_pek_resources),
+> +		.resources	=3D axp20x_pek_resources,
+>  	}, {
+> -		.name			=3D "axp20x-regulator",
+> +		.name		=3D "axp20x-regulator",
+> +	}, {
+> +		.name		=3D "axp20x-usb-power-supply",
+> +		.of_compatible	=3D "x-powers,axp202-usb-power-supply",
+> +		.num_resources	=3D ARRAY_SIZE(axp20x_usb_power_supply_resources),
+> +		.resources	=3D axp20x_usb_power_supply_resources,
+>  	},
+>  };
 > =20
 
 --=20
