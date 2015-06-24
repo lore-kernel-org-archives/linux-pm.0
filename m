@@ -1,63 +1,107 @@
-From: Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH 2/2] power_supply: Add support for TI BQ25890 charger chip
-Date: Wed, 24 Jun 2015 12:20:50 +0300
-Message-ID: <20150624092050.GE10146@lpalcu-linux>
-References: <1431698778-29462-1-git-send-email-laurentiu.palcu@intel.com>
- <1431698778-29462-3-git-send-email-laurentiu.palcu@intel.com>
- <20150502145933.GA1331@xo-6d-61-c0.localdomain>
- <20150624073254.GD10146@lpalcu-linux>
- <20150624083058.GA17732@amd>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC][PATCH] PM / Domains: Return -EPROBE_DEFER if we fail to
+ init or turn-on domain
+Date: Wed, 24 Jun 2015 12:18:36 +0200
+Message-ID: <CAPDyKFrH_LFcLm_nbuu9z0=Q6eEV2SRF82nXKUPpF-CZgmR81Q@mail.gmail.com>
+References: <1434649967-21135-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20150624083058.GA17732@amd>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f177.google.com ([209.85.220.177]:34459 "EHLO
+	mail-qk0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751950AbbFXKSh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2015 06:18:37 -0400
+Received: by qkeo142 with SMTP id o142so19241326qke.1
+        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2015 03:18:36 -0700 (PDT)
+In-Reply-To: <1434649967-21135-1-git-send-email-jonathanh@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, Jun 24, 2015 at 10:30:58AM +0200, Pavel Machek wrote:
-> On Wed 2015-06-24 10:32:54, Laurentiu Palcu wrote:
-> > On Sat, May 02, 2015 at 04:59:34PM +0200, Pavel Machek wrote:
-> > > 
-> > > Should this link....
-> > > 
-> > > > More details about the chip can be found here:
-> > > > http://www.ti.com/product/bq25890
-> > > 
-> > > > @@ -0,0 +1,998 @@
-> > > > +/*
-> > > > + * TI BQ25890 charger driver
-> > > > + *
-> > > > + * Copyright (C) 2015 Intel Corporation
-> > > > + *
-> > > > + * This program is free software; you can redistribute it and/or modify
-> > > > + * it under the terms of the GNU General Public License as published by
-> > > > + * the Free Software Foundation; either version 2 of the License, or
-> > > > + * (at your option) any later version.
-> > > > + *
-> > > > + * This program is distributed in the hope that it will be useful,
-> > > > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> > > > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> > > > + * GNU General Public License for more details.
-> > > 
-> > > > + *
-> > > > + */
-> > > 
-> > > Go here?
-> > Where exactly? Was 'here' supposed to be a hyperlink that, for some
-> > reason, is missing? Anyway, if you're asking why the link I provided
-> 
-> 
-> Put the link to the comment at top of the driver, not into the
-> changelog.
-I see now what you meant. :) I'll do that once the documentation is
-public.
+On 18 June 2015 at 19:52, Jon Hunter <jonathanh@nvidia.com> wrote:
+> When a device is probed, the function dev_pm_domain_attach() is called
+> to see if there is a power-domain that is associated with the device and
+> needs to be turned on. If dev_pm_domain_attach() does not return
+> -EPROBE_DEFER then the device will be probed.
+>
+> For devices using genpd, dev_pm_domain_attach() will call
+> genpd_dev_pm_attach(). If genpd_dev_pm_attach() does not find a power
+> domain associated with the device then it returns an error code not
+> equal to -EPROBE_DEFER to allow the device to be probed. However, if
+> genpd_dev_pm_attach() does find a power-domain that is associated with
+> the device, then it does not return -EPROBE_DEFER on failure and hence
+> the device will still be probed. Furthermore, genpd_dev_pm_attach() does
+> not check the error code returned by pm_genpd_poweron() to see if the
+> power-domain was turned on successfully.
+>
+> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
 
-laurentiu
+This is a clear improvement for genpd and as a short-term solution I
+am fine with this!
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+The long term solution should be to implement the
+pm_domain->activate|dismiss() callbacks, but that requires a bigger
+effort.
+
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
+
+> ---
+> FWICT, it seems to me that we would not want to probe the device if
+> there is a power-domain associated but we fail to initialise it or
+> it fails to turn on. Of course I could be wrong here and so please
+> let me know if my interpretation is utterly flawed in someway ;-)
+>
+>  drivers/base/power/domain.c | 14 +++++++++-----
+>  1 file changed, 9 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index cdd547bd67df..c69e87ccb150 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -2177,7 +2177,10 @@ static void genpd_dev_pm_sync(struct device *dev)
+>   * Both generic and legacy Samsung-specific DT bindings are supported to keep
+>   * backwards compatibility with existing DTBs.
+>   *
+> - * Returns 0 on successfully attached PM domain or negative error code.
+> + * Returns 0 on successfully attached PM domain or negative error code. Note
+> + * that if a power-domain exists for the device, but it cannot be found or
+> + * turned on, then return -EPROBE_DEFER to ensure that the device is not
+> + * probed and to re-try again later.
+>   */
+>  int genpd_dev_pm_attach(struct device *dev)
+>  {
+> @@ -2213,7 +2216,7 @@ int genpd_dev_pm_attach(struct device *dev)
+>                 dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
+>                         __func__, PTR_ERR(pd));
+>                 of_node_put(dev->of_node);
+> -               return PTR_ERR(pd);
+> +               return -EPROBE_DEFER;
+>         }
+>
+>         dev_dbg(dev, "adding to PM domain %s\n", pd->name);
+> @@ -2229,14 +2232,15 @@ int genpd_dev_pm_attach(struct device *dev)
+>                 dev_err(dev, "failed to add to PM domain %s: %d",
+>                         pd->name, ret);
+>                 of_node_put(dev->of_node);
+> -               return ret;
+> +               goto out;
+>         }
+>
+>         dev->pm_domain->detach = genpd_dev_pm_detach;
+>         dev->pm_domain->sync = genpd_dev_pm_sync;
+> -       pm_genpd_poweron(pd);
+> +       ret = pm_genpd_poweron(pd);
+>
+> -       return 0;
+> +out:
+> +       return ret ? -EPROBE_DEFER : 0;
+>  }
+>  EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+>  #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
+> --
+> 2.1.4
+>
