@@ -1,132 +1,53 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: [PATCH v2 5/9] ARM: STi: Register CPUFreq device
-Date: Wed, 24 Jun 2015 14:59:04 +0100
-Message-ID: <1435154348-28840-6-git-send-email-lee.jones@linaro.org>
-References: <1435154348-28840-1-git-send-email-lee.jones@linaro.org>
+From: Vitaly Kuznetsov <vkuznets@redhat.com>
+Subject: [PATCH] PM / hibernate: re-enable nonboot cpus on disable_nonboot_cpus() failure
+Date: Wed, 24 Jun 2015 16:02:06 +0200
+Message-ID: <1435154526-9023-1-git-send-email-vkuznets@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f50.google.com ([74.125.82.50]:34296 "EHLO
-	mail-wg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752796AbbFXN7Z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2015 09:59:25 -0400
-Received: by wgqq4 with SMTP id q4so37160952wgq.1
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2015 06:59:24 -0700 (PDT)
-In-Reply-To: <1435154348-28840-1-git-send-email-lee.jones@linaro.org>
+Received: from mx1.redhat.com ([209.132.183.28]:45758 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753039AbbFXOCK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 24 Jun 2015 10:02:10 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: kernel@stlinux.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, ajitpal.singh@st.com, Lee Jones <lee.jones@linaro.org>
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
 
-DT will not allow pseudo-devices.  Only devices which represent real
-hardware are permitted.  So we have to register the CPUFreq driver
-from platform code instead.
+When disable_nonboot_cpus() fails on some cpu it doesn't bring back all
+cpus it managed to offline, a consequent call to enable_nonboot_cpus() is
+expected. In hibernation_platform_enter() we don't call
+enable_nonboot_cpus() on error so cpus stay offlined.
 
-Rather than create a new file, we're bundling this in with the SMP
-functionality and renaming it from 'smp' to the more generic 'cpu'.
+create_image() and resume_target_kernel() functions handle
+disable_nonboot_cpus() faults correctly, hibernation_platform_enter()
+is the only one which is doing it wrong.
 
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
 ---
- arch/arm/mach-sti/Makefile             |  2 +-
- arch/arm/mach-sti/board-dt.c           |  3 ++-
- arch/arm/mach-sti/{platsmp.c => cpu.c} | 17 +++++++++++++++--
- arch/arm/mach-sti/{smp.h => cpu.h}     |  2 ++
- 4 files changed, 20 insertions(+), 4 deletions(-)
- rename arch/arm/mach-sti/{platsmp.c => cpu.c} (91%)
- rename arch/arm/mach-sti/{smp.h => cpu.h} (92%)
+ kernel/power/hibernate.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-sti/Makefile b/arch/arm/mach-sti/Makefile
-index acb3309..caaeeaa 100644
---- a/arch/arm/mach-sti/Makefile
-+++ b/arch/arm/mach-sti/Makefile
-@@ -1,2 +1,2 @@
--obj-$(CONFIG_SMP)		+= platsmp.o headsmp.o
-+obj-$(CONFIG_SMP)		+= cpu.o headsmp.o
- obj-$(CONFIG_ARCH_STI) 		+= board-dt.o
-diff --git a/arch/arm/mach-sti/board-dt.c b/arch/arm/mach-sti/board-dt.c
-index b373aca..482159f 100644
---- a/arch/arm/mach-sti/board-dt.c
-+++ b/arch/arm/mach-sti/board-dt.c
-@@ -12,7 +12,7 @@
- #include <asm/hardware/cache-l2x0.h>
- #include <asm/mach/arch.h>
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 2329daa..690f78f 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -552,7 +552,7 @@ int hibernation_platform_enter(void)
  
--#include "smp.h"
-+#include "cpu.h"
+ 	error = disable_nonboot_cpus();
+ 	if (error)
+-		goto Platform_finish;
++		goto Enable_cpus;
  
- static const char *stih41x_dt_match[] __initdata = {
- 	"st,stih415",
-@@ -31,4 +31,5 @@ DT_MACHINE_START(STM, "STiH415/416 SoC with Flattened Device Tree")
- 			  L2C_AUX_CTRL_WAY_SIZE(4),
- 	.l2c_aux_mask	= 0xc0000fff,
- 	.smp		= smp_ops(sti_smp_ops),
-+	.init_late	= init_cpufreq,
- MACHINE_END
-diff --git a/arch/arm/mach-sti/platsmp.c b/arch/arm/mach-sti/cpu.c
-similarity index 91%
-rename from arch/arm/mach-sti/platsmp.c
-rename to arch/arm/mach-sti/cpu.c
-index d4b624f..283cb30 100644
---- a/arch/arm/mach-sti/platsmp.c
-+++ b/arch/arm/mach-sti/cpu.c
-@@ -1,5 +1,5 @@
- /*
-- *  arch/arm/mach-sti/platsmp.c
-+ * arch/arm/mach-sti/cpu.c
-  *
-  * Copyright (C) 2013 STMicroelectronics (R&D) Limited.
-  *		http://www.st.com
-@@ -13,6 +13,7 @@
-  * it under the terms of the GNU General Public License version 2 as
-  * published by the Free Software Foundation.
-  */
+ 	local_irq_disable();
+ 	syscore_suspend();
+@@ -568,6 +568,8 @@ int hibernation_platform_enter(void)
+  Power_up:
+ 	syscore_resume();
+ 	local_irq_enable();
 +
- #include <linux/init.h>
- #include <linux/errno.h>
- #include <linux/delay.h>
-@@ -20,13 +21,17 @@
- #include <linux/io.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
-+#include <linux/platform_device.h>
++ Enable_cpus:
+ 	enable_nonboot_cpus();
  
- #include <asm/cacheflush.h>
- #include <asm/smp_plat.h>
- #include <asm/smp_scu.h>
- 
--#include "smp.h"
-+#include "cpu.h"
- 
-+/**
-+ * SMP Operations
-+ */
- static void write_pen_release(int val)
- {
- 	pen_release = val;
-@@ -114,3 +119,11 @@ struct smp_operations __initdata sti_smp_ops = {
- 	.smp_secondary_init	= sti_secondary_init,
- 	.smp_boot_secondary	= sti_boot_secondary,
- };
-+
-+/**
-+ * CPUFreq Registration
-+ */
-+void init_cpufreq(void)
-+{
-+	platform_device_register_simple("sti-cpufreq", -1, NULL, 0);
-+}
-diff --git a/arch/arm/mach-sti/smp.h b/arch/arm/mach-sti/cpu.h
-similarity index 92%
-rename from arch/arm/mach-sti/smp.h
-rename to arch/arm/mach-sti/cpu.h
-index 1871b72..39e05ff 100644
---- a/arch/arm/mach-sti/smp.h
-+++ b/arch/arm/mach-sti/cpu.h
-@@ -14,4 +14,6 @@
- 
- extern struct smp_operations	sti_smp_ops;
- 
-+extern void init_cpufreq(void);
-+
- #endif
+  Platform_finish:
 -- 
-1.9.1
+2.4.2
 
