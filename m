@@ -1,182 +1,168 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: mediatek: Add MT8173 cpufreq driver
-Date: Wed, 24 Jun 2015 06:27:59 +0530
-Message-ID: <20150624005759.GA6424@linux>
+Subject: Re: [PATCH 1/2] dt-bindings: mediatek: Add MT8173 cpufreq driver
+ binding
+Date: Wed, 24 Jun 2015 06:36:21 +0530
+Message-ID: <20150624010621.GB6424@linux>
 References: <1433766561-1330-1-git-send-email-pi-cheng.chen@linaro.org>
- <1433766561-1330-3-git-send-email-pi-cheng.chen@linaro.org>
- <20150622114511.GA28340@linux>
- <CALx668VmT+90y712QO4JQCh-nTCxStWYY+ygJ_1KiVN7VnmmpQ@mail.gmail.com>
+ <1433766561-1330-2-git-send-email-pi-cheng.chen@linaro.org>
+ <CALx668UShfd3HW1ptzHnMr9xAUVyLGt=q2CmYHn3vqASZug6kw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f175.google.com ([209.85.192.175]:34621 "EHLO
-	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932233AbbFXA6F (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2015 20:58:05 -0400
-Received: by pdbki1 with SMTP id ki1so18240717pdb.1
-        for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2015 17:58:05 -0700 (PDT)
+Received: from mail-pd0-f172.google.com ([209.85.192.172]:36715 "EHLO
+	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754179AbbFXBGZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2015 21:06:25 -0400
+Received: by pdcu2 with SMTP id u2so18346651pdc.3
+        for <linux-pm@vger.kernel.org>; Tue, 23 Jun 2015 18:06:24 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <CALx668VmT+90y712QO4JQCh-nTCxStWYY+ygJ_1KiVN7VnmmpQ@mail.gmail.com>
+In-Reply-To: <CALx668UShfd3HW1ptzHnMr9xAUVyLGt=q2CmYHn3vqASZug6kw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>, mturquette@baylibre.com
 Cc: Mike Turquette <mturquette@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, linux-mediatek@lists.infradead.org
 
-On 23-06-15, 23:25, Pi-Cheng Chen wrote:
-> On Mon, Jun 22, 2015 at 7:45 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> +static struct mtk_cpu_dvfs_info *mtk_cpu_dvfs_info_get(int cpu)
+Adding Mike's new email address..
+
+On 23-06-15, 23:31, Pi-Cheng Chen wrote:
+> On Mon, Jun 8, 2015 at 8:29 PM, Pi-Cheng Chen <pi-cheng.chen@linaro.org> wrote:
+> > This patch adds device tree binding document for MT8173 cpufreq driver.
 > >
-> > A very bad name to a routine with very specific functionality.
-> 
-> Would get_mtk_cpu_dvfs_info() or cpu_to_mtk_cpu_dvfs_info() be better?
-> 
+> > Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+> > ---
+> >  .../devicetree/bindings/cpufreq/cpufreq-mt8173.txt | 127 +++++++++++++++++++++
+> >  1 file changed, 127 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt
 > >
-> >> +{
-> >> +     struct mtk_cpu_dvfs_info *info;
-> >> +     struct list_head *list;
-> >> +
-> >> +     list_for_each(list, &cpu_dvfs_info_list) {
-> >> +             info = to_mtk_cpu_dvfs_info(list);
-> >> +
-> >> +             if (cpumask_test_cpu(cpu, info->cpus))
-> >> +                     return info;
-> >> +     }
+> > diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt
+> > new file mode 100644
+> > index 0000000..7708a65
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt
+> > @@ -0,0 +1,127 @@
+> > +
+> > +Mediatek MT8173 cpufreq driver
+> > +-------------------
 
-Firstly there is no need of extra long name for static routines. Just
-keep them simple. i.e. no need of mtk_cpu_.
+Few more ---- required.
 
-And then I was a bit confused about the functionality earlier and your
-initial name wasn't that bad. Sorry :(
+> > +
+> > +Mediatek MT8173 cpufreq driver for CPU frequency scaling.
+> > +
+> > +Required properties:
+> > +- clocks: A list of phandle + clock-specifier pairs for the clocks listed in clock names.
+> > +- clock-names: Should contain the following:
+> > +       "cpu"           - The multiplexer for clock input of CPU cluster.
+> > +       "intermediate"  - A parent of "cpu" clock which is used as "intermediate" clock
+> > +                         source (usually MAINPLL) when the original CPU PLL is under
+> > +                         transition and not stable yet.
 
-So maybe just, get_dvfs_info().
+These belong to Mike.
 
-> >> +     freq_hz = freq_table[index].frequency * 1000;
-> >
-> > A blank line here.
-> 
-> Will remove it.
-> 
+> > +- operating-points: Table of frequencies and voltage CPU could be transitioned into,
+> > +                   Frequency should be in KHz units and voltage should be in microvolts.
 
-I was asking you to add it :)
+That's not complete. You should just mention the path to opp bindings
+here. And that's it.
 
-> >> +     rcu_read_lock();
+> > +- proc-supply: Regulator for Vproc of CPU cluster.
+> > +
+> > +Optional properties:
+> > +- sram-supply: Regulator for Vsram of CPU cluster. When present, the cpufreq driver
+> > +              needs to do "voltage trace" to step by step scale up/down Vproc and
+> > +              Vsram to fit SoC specific needs. When absent, the voltage scaling
+> > +              flow is handled by hardware, hence no software "voltage trace" is
+> > +              needed.
+> > +
+> > +Example:
+> > +--------
+> > +       cpu0: cpu@0 {
+> > +               device_type = "cpu";
+> > +               compatible = "arm,cortex-a53";
+> > +               reg = <0x000>;
+> > +               enable-method = "psci";
+> > +               cpu-idle-states = <&CPU_SLEEP_0>;
+> > +               clocks = <&infracfg CLK_INFRA_CA53SEL>,
+> > +                        <&apmixedsys CLK_APMIXED_MAINPLL>;
+> > +               clock-names = "cpu", "intermediate";
+> > +               operating-points = <
+> > +                       507000  859000
+> > +                       702000  908000
+> > +                       1001000 983000
+> > +                       1105000 1009000
+> > +                       1183000 1028000
+> > +                       1404000 1083000
+> > +                       1508000 1109000
+> > +                       1573000 1125000
+> > +               >;
+> > +       };
+> > +
+> > +       cpu1: cpu@1 {
+> > +               device_type = "cpu";
+> > +               compatible = "arm,cortex-a53";
+> > +               reg = <0x001>;
+> > +               enable-method = "psci";
+> > +               cpu-idle-states = <&CPU_SLEEP_0>;
+> > +               clocks = <&infracfg CLK_INFRA_CA53SEL>,
+> > +                        <&apmixedsys CLK_APMIXED_MAINPLL>;
+> > +               clock-names = "cpu", "intermediate";
+> > +               operating-points = <
+> > +                       507000  859000
+> > +                       702000  908000
+> > +                       1001000 983000
+> > +                       1105000 1009000
+> > +                       1183000 1028000
+> > +                       1404000 1083000
+> > +                       1508000 1109000
+> > +                       1573000 1125000
+> > +               >;
+> > +       };
+> > +
+> > +       cpu2: cpu@100 {
+> > +               device_type = "cpu";
+> > +               compatible = "arm,cortex-a57";
+> > +               reg = <0x100>;
+> > +               enable-method = "psci";
+> > +               cpu-idle-states = <&CPU_SLEEP_0>;
+> > +               clocks = <&infracfg CLK_INFRA_CA57SEL>,
+> > +                        <&apmixedsys CLK_APMIXED_MAINPLL>;
+> > +               clock-names = "cpu", "intermediate";
+> > +               operating-points = <
+> > +                       507000  828000
+> > +                       702000  867000
+> > +                       1001000 927000
+> > +                       1209000 968000
+> > +                       1404000 1007000
+> > +                       1612000 1049000
+> > +                       1807000 1089000
+> > +                       1989000 1125000
+> > +               >;
+> > +       };
+> > +
+> > +       cpu3: cpu@101 {
+> > +               device_type = "cpu";
+> > +               compatible = "arm,cortex-a57";
+> > +               reg = <0x101>;
+> > +               enable-method = "psci";
+> > +               cpu-idle-states = <&CPU_SLEEP_0>;
+> > +               clocks = <&infracfg CLK_INFRA_CA57SEL>,
+> > +                        <&apmixedsys CLK_APMIXED_MAINPLL>;
+> > +               clock-names = "cpu", "intermediate";
+> > +               operating-points = <
+> > +                       507000  828000
+> > +                       702000  867000
+> > +                       1001000 927000
+> > +                       1209000 968000
+> > +                       1404000 1007000
+> > +                       1612000 1049000
+> > +                       1807000 1089000
+> > +                       1989000 1125000
+> > +               >;
+> > +       };
 
-
-> >> +static int mtk_cpu_dvfs_info_init(int cpu)
-> >> +{
-> >> +     struct device *cpu_dev;
-> >> +     struct regulator *proc_reg = ERR_PTR(-ENODEV);
-> >> +     struct regulator *sram_reg = ERR_PTR(-ENODEV);
-> >> +     struct clk *cpu_clk = ERR_PTR(-ENODEV);
-> >> +     struct clk *inter_clk = ERR_PTR(-ENODEV);
-> >> +     struct mtk_cpu_dvfs_info *info;
-> >> +     struct cpufreq_frequency_table *freq_table;
-> >> +     struct dev_pm_opp *opp;
-> >> +     unsigned long rate;
-> >> +     int ret;
-> >> +
-> >> +     cpu_dev = get_cpu_device(cpu);
-> >> +     if (!cpu_dev) {
-> >> +             pr_err("failed to get cpu%d device\n", cpu);
-> >> +             return -ENODEV;
-> >> +     }
-> >> +
-> >> +     ret = of_init_opp_table(cpu_dev);
-> >> +     if (ret) {
-> >> +             pr_warn("no OPP table for cpu%d\n", cpu);
-> >> +             return ret;
-> >> +     }
-> >> +
-> >> +     cpu_clk = clk_get(cpu_dev, "cpu");
-> >> +     if (IS_ERR(cpu_clk)) {
-> >> +             if (PTR_ERR(cpu_clk) == -EPROBE_DEFER)
-> >> +                     pr_warn("cpu clk for cpu%d not ready, retry.\n", cpu);
-> >> +             else
-> >> +                     pr_err("failed to get cpu clk for cpu%d\n", cpu);
-> >> +
-> >> +             ret = PTR_ERR(cpu_clk);
-> >> +             goto out_free_opp_table;
-> >> +     }
-> >> +
-> >> +     inter_clk = clk_get(cpu_dev, "intermediate");
-> >> +     if (IS_ERR(inter_clk)) {
-> >> +             if (PTR_ERR(inter_clk) == -EPROBE_DEFER)
-> >> +                     pr_warn("intermediate clk for cpu%d not ready, retry.\n",
-> >> +                             cpu);
-> >> +             else
-> >> +                     pr_err("failed to get intermediate clk for cpu%d\n",
-> >> +                            cpu);
-> >> +
-> >> +             ret = PTR_ERR(cpu_clk);
-> >> +             goto out_free_resources;
-> >> +     }
-> >> +
-> >> +     proc_reg = regulator_get_exclusive(cpu_dev, "proc");
-> >> +     if (IS_ERR(proc_reg)) {
-> >> +             if (PTR_ERR(proc_reg) == -EPROBE_DEFER)
-> >> +                     pr_warn("proc regulator for cpu%d not ready, retry.\n",
-> >> +                             cpu);
-> >> +             else
-> >> +                     pr_err("failed to get proc regulator for cpu%d\n",
-> >> +                            cpu);
-> >> +
-> >> +             ret = PTR_ERR(proc_reg);
-> >> +             goto out_free_resources;
-> >> +     }
-> >> +
-> >> +     /* Both presence and absence of sram regulator are valid cases. */
-> >> +     sram_reg = regulator_get_exclusive(cpu_dev, "sram");
-> >> +
-> >> +     info = kzalloc(sizeof(*info), GFP_KERNEL);
-> >> +     if (!info) {
-> >> +             ret = -ENOMEM;
-> >> +             goto out_free_resources;
-> >> +     }
-> >> +
-> >> +     ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
-> >> +     if (ret) {
-> >> +             pr_err("failed to init cpufreq table for cpu%d: %d\n",
-> >> +                    cpu, ret);
-> >> +             goto out_free_mtk_cpu_dvfs_info;
-> >> +     }
-> >> +
-> >> +     if (!alloc_cpumask_var(&info->cpus, GFP_KERNEL))
-> >
-> > Why getting into such trouble? What about just saving policy's pointer
-> > in info and use it for freq_table, cpus mask, etc ?
-> 
-> This function is called from driver probe function. At this moment, cpufreq
-> driver is not yet registered and the policy struct for each cluster is not yet
-> allocated.
-
-This should be called from ->init() callback of the cpufreq driver.
-
-> Also, the mtk_cpu_dvfs_info structs for all clusters are stored in a list
-> after probe done. cpus mask is used to find out the proper info struct
-> for corresponding cpu.
-
-Yeah, but this will be exactly same to policy->related_cpus, just use
-that. Why allocate another mask for same purpose?
-
-> For freq_table, I simply don't want to free and allocate the table
-> every time when cpu is unplugged and plugged so I just allocate it
-> in the probe function call path, and cache it in the info struct.
-
-->exit() will be called only when all the CPUs from a policy are
-hotplugged out. Not on every hotplug. So you probably have 4 big and 4
-little cores. So policy for big cluster will be removed only when all
-the CPUs are down. And so no point storing things from probe.
-
-Or is there anything special with your usecase?
-
-> But for module_platform_driver(mt8173_cpufreq_platdrv), I saw many
-> built-in drivers in kernel call module_platform_driver() also so I use it.
-
-That was wrong for them as well :)
-
-> Would it be better to use platform_driver_register() instead?
-
-Hmm.. 
+I remember Mark Rutland asking you about the replicated stuff for all
+CPUs, but happened to his comments later on ? Were you asked to put
+these for all the CPUs ?
 
 -- 
 viresh
