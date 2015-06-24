@@ -1,73 +1,64 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH V3] PM / Domains: Remove intermediate states from the power off sequence
-Date: Wed, 24 Jun 2015 10:57:01 -0700
-Message-ID: <7hy4j9q9aq.fsf@deeprootsystems.com>
-References: <1434020737-13354-1-git-send-email-ulf.hansson@linaro.org>
-	<7ha8w01qir.fsf@deeprootsystems.com>
-	<CAPDyKFqvNp0PcjikZqj4XapfbrNqAUW=ZBFQvvzQZLPMcpS1oQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / hibernate: re-enable nonboot cpus on disable_nonboot_cpus() failure
+Date: Thu, 25 Jun 2015 00:15:36 +0200
+Message-ID: <6366580.JOe80DM3WH@vostro.rjw.lan>
+References: <1435154526-9023-1-git-send-email-vkuznets@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:36854 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752950AbbFXR5H (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2015 13:57:07 -0400
-Received: by pdcu2 with SMTP id u2so35284737pdc.3
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2015 10:57:05 -0700 (PDT)
-In-Reply-To: <CAPDyKFqvNp0PcjikZqj4XapfbrNqAUW=ZBFQvvzQZLPMcpS1oQ@mail.gmail.com>
-	(Ulf Hansson's message of "Thu, 18 Jun 2015 12:14:28 +0200")
+Received: from v094114.home.net.pl ([79.96.170.134]:54532 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750933AbbFXVt2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2015 17:49:28 -0400
+In-Reply-To: <1435154526-9023-1-git-send-email-vkuznets@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Vitaly Kuznetsov <vkuznets@redhat.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+On Wednesday, June 24, 2015 04:02:06 PM Vitaly Kuznetsov wrote:
+> When disable_nonboot_cpus() fails on some cpu it doesn't bring back all
+> cpus it managed to offline, a consequent call to enable_nonboot_cpus() is
+> expected. In hibernation_platform_enter() we don't call
+> enable_nonboot_cpus() on error so cpus stay offlined.
+> 
+> create_image() and resume_target_kernel() functions handle
+> disable_nonboot_cpus() faults correctly, hibernation_platform_enter()
+> is the only one which is doing it wrong.
+> 
+> Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
 
-[...]
+Applied, thanks!
 
->> Minor nit: I think you should leave these 3 helpers and just simplify
->> them.  It will make the changes below easier to read as well.
->
-> I would rather like to remove them. The reason is to create consistency.
->
-> For the locking part, there are currently mixtures of
-> mutex_lock|unlock() and genpd_acquire|release_lock(). Following your
-> suggestion will leave around 6-7 places where mutex_lock() will remain
-> used (additionally for mutex_unlock()). So removing the helper
-> functions creates a consistent behaviour.
+> ---
+>  kernel/power/hibernate.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index 2329daa..690f78f 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -552,7 +552,7 @@ int hibernation_platform_enter(void)
+>  
+>  	error = disable_nonboot_cpus();
+>  	if (error)
+> -		goto Platform_finish;
+> +		goto Enable_cpus;
+>  
+>  	local_irq_disable();
+>  	syscore_suspend();
+> @@ -568,6 +568,8 @@ int hibernation_platform_enter(void)
+>   Power_up:
+>  	syscore_resume();
+>  	local_irq_enable();
+> +
+> + Enable_cpus:
+>  	enable_nonboot_cpus();
+>  
+>   Platform_finish:
+> 
 
-OK, that makes more sense.
-
-> For the genpd->status, it's currently being assigned at various places
-> without using a helper function. Again I wanted to create a consistent
-> behaviour and make the code more readable.
->
->>
->> Also, for the locking, Lina will be adding these locking functions back
->> anyways, so let's just avoid the extra churn.
->
-> Actually I think it becomes more evident what Lina's patchset does if
-> she re-introduces an API to deal with the locking. Moreover we can
-> "force" that patchset to not break consistently around the locking.
->
->>
->> Otherwise, I think this version is looking really good.
->>
->> With the above tweaks, feel free to add
->>
->> Reviewed-by: Kevin Hilman <khilman@linaro.org>
->>
->> Kevin
->
-> Thanks a lot for reviewing!
->
-> If you have a strong opinion about your suggestions, I will happily
-> adapt to them, please let me know.
-
-No strong option, you convinced me your way will actually make things
-more consistent, and Lina prefers them gone as well, so I'm fine with
-them gone (as you've done in V4).
-
-Kevin
-
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
