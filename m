@@ -1,138 +1,73 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [linux-sunxi] Re: [PATCH v2 3/4] mfd: axp20x: Add a cell for the
- usb power_supply part of the axp20x PMICs
-Date: Wed, 24 Jun 2015 17:04:28 +0200
-Message-ID: <558AC6FC.1050603@redhat.com>
-References: <1434211748-25572-1-git-send-email-hdegoede@redhat.com>
- <1434211748-25572-4-git-send-email-hdegoede@redhat.com>
- <20150624112333.GH15013@x1>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH V3] PM / Domains: Remove intermediate states from the power off sequence
+Date: Wed, 24 Jun 2015 10:57:01 -0700
+Message-ID: <7hy4j9q9aq.fsf@deeprootsystems.com>
+References: <1434020737-13354-1-git-send-email-ulf.hansson@linaro.org>
+	<7ha8w01qir.fsf@deeprootsystems.com>
+	<CAPDyKFqvNp0PcjikZqj4XapfbrNqAUW=ZBFQvvzQZLPMcpS1oQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:37514 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752937AbbFXPEc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 24 Jun 2015 11:04:32 -0400
-In-Reply-To: <20150624112333.GH15013@x1>
+Received: from mail-pd0-f172.google.com ([209.85.192.172]:36854 "EHLO
+	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752950AbbFXR5H (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2015 13:57:07 -0400
+Received: by pdcu2 with SMTP id u2so35284737pdc.3
+        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2015 10:57:05 -0700 (PDT)
+In-Reply-To: <CAPDyKFqvNp0PcjikZqj4XapfbrNqAUW=ZBFQvvzQZLPMcpS1oQ@mail.gmail.com>
+	(Ulf Hansson's message of "Thu, 18 Jun 2015 12:14:28 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons@linux-vserver.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree <devicetree@vger.kernel.org>, linux-sunxi@googlegroups.com
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hi,
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-On 24-06-15 13:23, Lee Jones wrote:
->> Add a cell for the usb power_supply part of the axp20x PMICs.
+[...]
+
+>> Minor nit: I think you should leave these 3 helpers and just simplify
+>> them.  It will make the changes below easier to read as well.
 >
-> Why are you duplicating the subject line?
+> I would rather like to remove them. The reason is to create consistency.
+>
+> For the locking part, there are currently mixtures of
+> mutex_lock|unlock() and genpd_acquire|release_lock(). Following your
+> suggestion will leave around 6-7 places where mutex_lock() will remain
+> used (additionally for mutex_unlock()). So removing the helper
+> functions creates a consistent behaviour.
 
-Heh, because some maintainers insist that the main-body part of the
-commit message must stand by itself, without needing the subject to be
-understandable...
+OK, that makes more sense.
 
->> Note that this cell is only for the usb power_supply part and not th=
-e
->> ac-power / battery-charger / rtc-backup-bat-charger bits.
+> For the genpd->status, it's currently being assigned at various places
+> without using a helper function. Again I wanted to create a consistent
+> behaviour and make the code more readable.
+>
 >>
->> Depending on the board each of those must be enabled / disabled sepa=
-rately
->> in devicetree as most boards do not use all 4. So in dt each one nee=
-ds its
->> own child-node of the axp20x node. Another reason for using separate=
- child
->> nodes for each is so that other devicetree nodes can have a power-su=
-pply
->> property with a phandle referencing a node representing a single
->> power-supply.
+>> Also, for the locking, Lina will be adding these locking functions back
+>> anyways, so let's just avoid the extra churn.
+>
+> Actually I think it becomes more evident what Lina's patchset does if
+> she re-introduces an API to deal with the locking. Moreover we can
+> "force" that patchset to not break consistently around the locking.
+>
 >>
->> The decision to use a separate devicetree node for each is reflected=
- on
->> the kernel side by each getting its own mfd-cell / platform_device a=
-nd
->> platform-driver.
->
-> You don't really need to say any of this, as this is the 'norm'.
-
-I agree it should be the norm, but I'm not sure if it actually is, whil=
-e
-working on this I've seen several drivers which instantiate multiple
-power-supply class devices from a single mfd-cell. And this is what
-Bruno's original patches did, so I would prefer to keep this
-
-> What you didn't mention however, is that you're taking the opportunit=
-y
-> to fix some formatting issues and that there are no functional change=
-s
-> in these lines.
-
-That is the end result of your request to change the indentation to
-avoid line-wrapping :)
-
->
->> Cc: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->> ---
->> Changes in v2:
->> -Use DEFINE_RES_IRQ_NAMED
->> -Change indentation of axp20x_cells initializers to avoid line wrapp=
-ing
->> ---
->>   drivers/mfd/axp20x.c | 20 ++++++++++++++++----
->>   1 file changed, 16 insertions(+), 4 deletions(-)
->
-> Patch looks okay however:
->
-> Acked-by: Lee Jones <lee.jones@linaro.org>
-
-Thanks.
-
-Regards,
-
-Hans
-
-
->
->> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
->> index f9a3c2d..ca4a604 100644
->> --- a/drivers/mfd/axp20x.c
->> +++ b/drivers/mfd/axp20x.c
->> @@ -113,6 +113,13 @@ static struct resource axp20x_pek_resources[] =3D=
- {
->>   	},
->>   };
+>> Otherwise, I think this version is looking really good.
 >>
->> +static struct resource axp20x_usb_power_supply_resources[] =3D {
->> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
->> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
->> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_VALID, "VBUS_VALID"),
->> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_NOT_VALID, "VBUS_NOT_VALID"),
->> +};
->> +
->>   static struct resource axp22x_pek_resources[] =3D {
->>   	{
->>   		.name   =3D "PEK_DBR",
->> @@ -363,11 +370,16 @@ static const struct regmap_irq_chip axp288_reg=
-map_irq_chip =3D {
+>> With the above tweaks, feel free to add
 >>
->>   static struct mfd_cell axp20x_cells[] =3D {
->>   	{
->> -		.name			=3D "axp20x-pek",
->> -		.num_resources		=3D ARRAY_SIZE(axp20x_pek_resources),
->> -		.resources		=3D axp20x_pek_resources,
->> +		.name		=3D "axp20x-pek",
->> +		.num_resources	=3D ARRAY_SIZE(axp20x_pek_resources),
->> +		.resources	=3D axp20x_pek_resources,
->>   	}, {
->> -		.name			=3D "axp20x-regulator",
->> +		.name		=3D "axp20x-regulator",
->> +	}, {
->> +		.name		=3D "axp20x-usb-power-supply",
->> +		.of_compatible	=3D "x-powers,axp202-usb-power-supply",
->> +		.num_resources	=3D ARRAY_SIZE(axp20x_usb_power_supply_resources),
->> +		.resources	=3D axp20x_usb_power_supply_resources,
->>   	},
->>   };
+>> Reviewed-by: Kevin Hilman <khilman@linaro.org>
 >>
+>> Kevin
 >
+> Thanks a lot for reviewing!
+>
+> If you have a strong opinion about your suggestions, I will happily
+> adapt to them, please let me know.
+
+No strong option, you convinced me your way will actually make things
+more consistent, and Lina prefers them gone as well, so I'm fine with
+them gone (as you've done in V4).
+
+Kevin
+
+
