@@ -1,109 +1,62 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] tick/idle/powerpc: Do not register idle states with CPUIDLE_FLAG_TIMER_STOP set in periodic mode
-Date: Wed, 24 Jun 2015 15:50:40 +0200
-Message-ID: <1700583.a34yOllUuC@vostro.rjw.lan>
-References: <20150624064801.30680.3246.stgit@perfhull-ltc.austin.ibm.com>
+Subject: Re: [PATCH 2/2] PM / Domains: Avoid infinite loops in attach/detach code
+Date: Wed, 24 Jun 2015 16:10:17 +0200
+Message-ID: <10339007.ODJxqcfmHy@vostro.rjw.lan>
+References: <1434622954-26747-3-git-send-email-geert+renesas@glider.be> <CAJZ5v0j2RkjsWQkDkjZOf8mx12CvLzOzmLG3yRT-04naa9==HQ@mail.gmail.com> <CAMuHMdU8sHuAKrRvVF1pV7FOCLYrdi1xfAiqb50tfJWhKK3jDQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64717 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752063AbbFXNYc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2015 09:24:32 -0400
-In-Reply-To: <20150624064801.30680.3246.stgit@perfhull-ltc.austin.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdU8sHuAKrRvVF1pV7FOCLYrdi1xfAiqb50tfJWhKK3jDQ@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Kevin Hilman <khilman@kernel.org>, Magnus Damm <damm@opensource.se>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: benh@kernel.crashing.org, daniel.lezcano@linaro.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org, mpe@ellerman.id.au, will.deacon@arm.com, linux-kernel@vger.kernel.org, shreyas@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
-On Wednesday, June 24, 2015 01:48:01 AM Preeti U Murthy wrote:
-> On some archs, the local clockevent device stops in deep cpuidle states.
-> The broadcast framework is used to wakeup cpus in these idle states, in
-> which either an external clockevent device is used to send wakeup ipis
-> or the hrtimer broadcast framework kicks in in the absence of such a
-> device. One cpu is nominated as the broadcast cpu and this cpu sends
-> wakeup ipis to sleeping cpus at the appropriate time. This is the
-> implementation in the oneshot mode of broadcast.
+On Tuesday, June 23, 2015 03:45:43 PM Geert Uytterhoeven wrote:
+> Hi Rafael,
 > 
-> In periodic mode of broadcast however, the presence of such cpuidle
-> states results in the cpuidle driver calling tick_broadcast_enable()
-> which shuts down the local clockevent devices of all the cpus and
-> appoints the tick broadcast device as the clockevent device for each of
-> them. This works on those archs where the tick broadcast device is a
-> real clockevent device.  But on archs which depend on the hrtimer mode
-> of broadcast, the tick broadcast device hapens to be a pseudo device.
-> The consequence is that the local clockevent devices of all cpus are
-> shutdown and the kernel hangs at boot time in periodic mode.
+> On Tue, Jun 23, 2015 at 3:38 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >>>> @@ -2218,10 +2227,13 @@ int genpd_dev_pm_attach(struct device *dev)
+> >>>>
+> >>>>         dev_dbg(dev, "adding to PM domain %s\n", pd->name);
+> >>>>
+> >>>> -       while (1) {
+> >>>> +       for (i = 0; i < GENPD_RETRIES; i++) {
+> >>>>                 ret = pm_genpd_add_device(pd, dev);
+> >>>>                 if (ret != -EAGAIN)
+> >>>>                         break;
+> >>>> +
+> >>>> +               if (i > GENPD_RETRIES / 2)
+> >>>> +                       udelay(GENPD_DELAY_US);
+> >>>
+> >>> In this execution path, we retry when getting -EAGAIN while believing
+> >>> the reason to the error are only *temporary* as we are soon waiting
+> >>> for all devices in the genpd to be system PM resumed. At least that's
+> >>> my understanding to why we want to deal with -EAGAIN here, but I might
+> >>> be wrong.
+> >>>
+> >>> In this regards, I wonder whether it could be better to re-try only a
+> >>> few times but with a far longer interval time than a couple us. What
+> >>> do you think?
+> >>
+> >> That's indeed viable. I have no idea for how long this temporary state can
+> >> extend.
+> >
+> > A usual approach to this kind of thing is to use exponential fallback
+> > where you increase the delay twice with respect to the previous one
+> > every time.
 > 
-> Let us thus not register the cpuidle states which have
-> CPUIDLE_FLAG_TIMER_STOP flag set, on archs which depend on the hrtimer
-> mode of broadcast in periodic mode. This patch takes care of doing this
-> on powerpc. The cpus would not have entered into such deep cpuidle
-> states in periodic mode on powerpc anyway. So there is no loss here.
-> 
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> Right, but when do you give up?
 
-4.2 material I suppose?
+Well, I guess you know what a reasonable timeout should be?
 
-> ---
->  drivers/cpuidle/cpuidle-powernv.c |   15 ++++++++++++---
->  1 file changed, 12 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index 5937207..3442764 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -60,6 +60,8 @@ static int nap_loop(struct cpuidle_device *dev,
->  	return index;
->  }
->  
-> +/* Register for fastsleep only in oneshot mode of broadcast */
-> +#ifdef CONFIG_TICK_ONESHOT
->  static int fastsleep_loop(struct cpuidle_device *dev,
->  				struct cpuidle_driver *drv,
->  				int index)
-> @@ -83,7 +85,7 @@ static int fastsleep_loop(struct cpuidle_device *dev,
->  
->  	return index;
->  }
-> -
-> +#endif
->  /*
->   * States for dedicated partition case.
->   */
-> @@ -209,7 +211,14 @@ static int powernv_add_idle_states(void)
->  			powernv_states[nr_idle_states].flags = 0;
->  			powernv_states[nr_idle_states].target_residency = 100;
->  			powernv_states[nr_idle_states].enter = &nap_loop;
-> -		} else if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
-> +		}
-> +
-> +		/*
-> +		 * All cpuidle states with CPUIDLE_FLAG_TIMER_STOP set must come
-> +		 * within this config dependency check.
-> +		 */
-> +#ifdef CONFIG_TICK_ONESHOT
-> +		if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
->  			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
->  			/* Add FASTSLEEP state */
->  			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
-> @@ -218,7 +227,7 @@ static int powernv_add_idle_states(void)
->  			powernv_states[nr_idle_states].target_residency = 300000;
->  			powernv_states[nr_idle_states].enter = &fastsleep_loop;
->  		}
-> -
-> +#endif
->  		powernv_states[nr_idle_states].exit_latency =
->  				((unsigned int)latency_ns[i]) / 1000;
->  
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Note that udelay() is a busy loop. Should it fall back to msleep() after
+> a while?
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+If we can't fall back to msleep() at one point, you may as well simply poll
+periodically as you did originally.
+
+Thanks,
+Rafael
+
