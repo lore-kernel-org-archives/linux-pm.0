@@ -1,64 +1,63 @@
-From: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: mediatek: Add MT8173 cpufreq driver
-Date: Wed, 24 Jun 2015 17:09:49 +0800
-Message-ID: <CALx668Ug6Ox_2jf3Ad7zvW1Q=L61oE-P-yXdadG_eJ20W2qN9A@mail.gmail.com>
-References: <1433766561-1330-1-git-send-email-pi-cheng.chen@linaro.org>
-	<1433766561-1330-3-git-send-email-pi-cheng.chen@linaro.org>
-	<20150622114511.GA28340@linux>
-	<CALx668VmT+90y712QO4JQCh-nTCxStWYY+ygJ_1KiVN7VnmmpQ@mail.gmail.com>
-	<20150624005759.GA6424@linux>
-	<CALx668UUUCzswiXyM9e4v9fhu6PTXq5DLu_O3swTPhJUjJPBFg@mail.gmail.com>
-	<20150624085658.GF27188@linux>
+From: Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 2/2] power_supply: Add support for TI BQ25890 charger chip
+Date: Wed, 24 Jun 2015 12:20:50 +0300
+Message-ID: <20150624092050.GE10146@lpalcu-linux>
+References: <1431698778-29462-1-git-send-email-laurentiu.palcu@intel.com>
+ <1431698778-29462-3-git-send-email-laurentiu.palcu@intel.com>
+ <20150502145933.GA1331@xo-6d-61-c0.localdomain>
+ <20150624073254.GD10146@lpalcu-linux>
+ <20150624083058.GA17732@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yh0-f51.google.com ([209.85.213.51]:34402 "EHLO
-	mail-yh0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750787AbbFXJJt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2015 05:09:49 -0400
-Received: by yhnv31 with SMTP id v31so14185092yhn.1
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2015 02:09:49 -0700 (PDT)
-In-Reply-To: <20150624085658.GF27188@linux>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20150624083058.GA17732@amd>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mike Turquette <mturquette@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, linux-mediatek@lists.infradead.org
 
-On Wed, Jun 24, 2015 at 4:56 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 24-06-15, 16:44, Pi-Cheng Chen wrote:
->> One reason to put those initialization and resource allocation in probe is
->> that it's easier to handle the return value -PROBE_DEFER from clock
->> and regulator framework when trying to get clocks and regulators
->> consumed by cpufreq driver.
->
-> This is the sequence of events if you move these things to ->init().
->
-> - your driver's probe()
->   -> cpufreq_register_driver()
->     -> init()
->       -> clk/reg get, failed, return -EPROBE_DEFER
->
-> And the failure here will be propagated to probe(). So, it should
-> work IMHO.
+On Wed, Jun 24, 2015 at 10:30:58AM +0200, Pavel Machek wrote:
+> On Wed 2015-06-24 10:32:54, Laurentiu Palcu wrote:
+> > On Sat, May 02, 2015 at 04:59:34PM +0200, Pavel Machek wrote:
+> > > 
+> > > Should this link....
+> > > 
+> > > > More details about the chip can be found here:
+> > > > http://www.ti.com/product/bq25890
+> > > 
+> > > > @@ -0,0 +1,998 @@
+> > > > +/*
+> > > > + * TI BQ25890 charger driver
+> > > > + *
+> > > > + * Copyright (C) 2015 Intel Corporation
+> > > > + *
+> > > > + * This program is free software; you can redistribute it and/or modify
+> > > > + * it under the terms of the GNU General Public License as published by
+> > > > + * the Free Software Foundation; either version 2 of the License, or
+> > > > + * (at your option) any later version.
+> > > > + *
+> > > > + * This program is distributed in the hope that it will be useful,
+> > > > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > > > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > > > + * GNU General Public License for more details.
+> > > 
+> > > > + *
+> > > > + */
+> > > 
+> > > Go here?
+> > Where exactly? Was 'here' supposed to be a hyperlink that, for some
+> > reason, is missing? Anyway, if you're asking why the link I provided
+> 
+> 
+> Put the link to the comment at top of the driver, not into the
+> changelog.
+I see now what you meant. :) I'll do that once the documentation is
+public.
 
-I will try it.
+laurentiu
 
->
->> The other reason is when the whole system is resuming from suspend,
->> the other subsystem e.g. i2c on which cpufreq driver depends might not
->> ready yet during cpufreq driver initialization. In this case, the cpufreq
->> driver will be blocked when trying to get resources e.g. regulator on i2c
->> bus, and the whole system will stuck for seconds.
->
-> That's something else you must investigate on. This dependency should
-> be resolved in some other way, I thought DT might have taken care of
-> such dependencies.
-
-I will check if it could be solved in some other way.
-Thanks.
-
-Pi-Cheng
-
->
-> --
-> viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
