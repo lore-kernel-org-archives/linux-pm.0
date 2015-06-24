@@ -1,74 +1,99 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [GIT PULL] power supply changes for 4.2
-Date: Wed, 24 Jun 2015 06:48:28 +0200
-Message-ID: <20150624044828.GA27303@earth>
-References: <20150623005302.GB24028@earth>
- <CA+55aFx_X2pj=b6qzx5HcGByLmucKSRrbyCpVmZjo_fQ+yiYxg@mail.gmail.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: [PATCH] tick/idle/powerpc: Do not register idle states with
+ CPUIDLE_FLAG_TIMER_STOP set in periodic mode
+Date: Wed, 24 Jun 2015 01:48:01 -0500
+Message-ID: <20150624064801.30680.3246.stgit@perfhull-ltc.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="9jxsPFA5p3P2qPhR"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:42563 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750879AbbFXEsd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 24 Jun 2015 00:48:33 -0400
-Content-Disposition: inline
-In-Reply-To: <CA+55aFx_X2pj=b6qzx5HcGByLmucKSRrbyCpVmZjo_fQ+yiYxg@mail.gmail.com>
+Received: from e19.ny.us.ibm.com ([129.33.205.209]:56950 "EHLO
+	e19.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750766AbbFXGto (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2015 02:49:44 -0400
+Received: from /spool/local
+	by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Wed, 24 Jun 2015 02:49:43 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: benh@kernel.crashing.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net
+Cc: mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org, mpe@ellerman.id.au, will.deacon@arm.com, linux-kernel@vger.kernel.org, shreyas@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
+On some archs, the local clockevent device stops in deep cpuidle states.
+The broadcast framework is used to wakeup cpus in these idle states, in
+which either an external clockevent device is used to send wakeup ipis
+or the hrtimer broadcast framework kicks in in the absence of such a
+device. One cpu is nominated as the broadcast cpu and this cpu sends
+wakeup ipis to sleeping cpus at the appropriate time. This is the
+implementation in the oneshot mode of broadcast.
 
---9jxsPFA5p3P2qPhR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In periodic mode of broadcast however, the presence of such cpuidle
+states results in the cpuidle driver calling tick_broadcast_enable()
+which shuts down the local clockevent devices of all the cpus and
+appoints the tick broadcast device as the clockevent device for each of
+them. This works on those archs where the tick broadcast device is a
+real clockevent device.  But on archs which depend on the hrtimer mode
+of broadcast, the tick broadcast device hapens to be a pseudo device.
+The consequence is that the local clockevent devices of all cpus are
+shutdown and the kernel hangs at boot time in periodic mode.
 
-Hi,
+Let us thus not register the cpuidle states which have
+CPUIDLE_FLAG_TIMER_STOP flag set, on archs which depend on the hrtimer
+mode of broadcast in periodic mode. This patch takes care of doing this
+on powerpc. The cpus would not have entered into such deep cpuidle
+states in periodic mode on powerpc anyway. So there is no loss here.
 
-On Tue, Jun 23, 2015 at 04:13:34PM -0700, Linus Torvalds wrote:
-> On Mon, Jun 22, 2015 at 5:53 PM, Sebastian Reichel <sre@ring0.de> wrote:
-> >
-> >   git://git.infradead.org/battery-2.6.git tags/for-4.2
->=20
-> So I started wondering. Why do you use infradead for one of your
-> trees, but git.kernel.org for the other (the HSI one)?
->
-> That just looks odd to me.
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+---
+ drivers/cpuidle/cpuidle-powernv.c |   15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-Since I simply took over the existing repository for the power
-supply subsystem (commit ad8464a2f31a54560b17d5fc6b1cca5fa68de83d).
-This was not possible for the HSI subsystem, so I used
-git.kernel.org infrastructure.
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 5937207..3442764 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -60,6 +60,8 @@ static int nap_loop(struct cpuidle_device *dev,
+ 	return index;
+ }
+ 
++/* Register for fastsleep only in oneshot mode of broadcast */
++#ifdef CONFIG_TICK_ONESHOT
+ static int fastsleep_loop(struct cpuidle_device *dev,
+ 				struct cpuidle_driver *drv,
+ 				int index)
+@@ -83,7 +85,7 @@ static int fastsleep_loop(struct cpuidle_device *dev,
+ 
+ 	return index;
+ }
+-
++#endif
+ /*
+  * States for dedicated partition case.
+  */
+@@ -209,7 +211,14 @@ static int powernv_add_idle_states(void)
+ 			powernv_states[nr_idle_states].flags = 0;
+ 			powernv_states[nr_idle_states].target_residency = 100;
+ 			powernv_states[nr_idle_states].enter = &nap_loop;
+-		} else if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
++		}
++
++		/*
++		 * All cpuidle states with CPUIDLE_FLAG_TIMER_STOP set must come
++		 * within this config dependency check.
++		 */
++#ifdef CONFIG_TICK_ONESHOT
++		if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
+ 			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
+ 			/* Add FASTSLEEP state */
+ 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
+@@ -218,7 +227,7 @@ static int powernv_add_idle_states(void)
+ 			powernv_states[nr_idle_states].target_residency = 300000;
+ 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
+ 		}
+-
++#endif
+ 		powernv_states[nr_idle_states].exit_latency =
+ 				((unsigned int)latency_ns[i]) / 1000;
+ 
 
-> Also, something in your HSI pull request made gmail unhappy, and
-> it marked it as spam. Do you send the emails differently too?
-
-No, both mails were sent in the same way.
-
--- Sebastian
-
---9jxsPFA5p3P2qPhR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVijaYAAoJENju1/PIO/qaEOAP/3BXXHYfaBkwGfFkIoJPsPmm
-rudPTT/9eAzq73l8pOsBvyg8VWlpXfahaxMSaS2wUD+Gx0wEeMj8QzXbPY0Teom7
-T+3Cm4Gxef9t5gwvo88FdV6N4T079PxVo61sVf1vevpG8aNDcd9h6muXzxTRZIBd
-Nkc4+BHHJjlteuw/mS2lQGFvlJrXPDNeqRuifLWEhtDmavvwLWD9Arpj01SeZN+L
-UkwvsGz0cY1CaasNNrktr73dR8JugI4C4R7m1HZGL2+maMKnKz8oLAaPzWmVcqtW
-3gt/LyCxqo8syNwzdOv4u0+EqFdtnI1rXosAB6MFAztlr6uH5qnOMRs+jwmh8gni
-WZAw7q//vhEjW9ejWt+2G/ixOSYwqNjiVVktGZeYUZmJEJ4YkhOyxFsAIr8/GSah
-m6ORWJ7Yqz91WuNZSPiKhOvCyFWhiDbt0crho9B2jxBBp4dmIK4zX98Tz0cRr0Fn
-fCKZYY7QLz7Oc8XdaQg1HWbpA/awHkRH/01MgpKddVp+A0Ebr7L6PwAf4lauW5B0
-3YfzLE2pgqsbJNjRAUOC8Q9Tuw3vADuTsiFMUqtp0MAmUO1kPtlXaCxGPg+MI2lY
-eV20h3p/zm6nU/qLLbmfXo7pu2QJ5Tbax1mNiJo+LdkU3QCmWxCY42q1pcbfH4Qs
-z3kgkNX54fWpjX9pIZc9
-=w/nH
------END PGP SIGNATURE-----
-
---9jxsPFA5p3P2qPhR--
