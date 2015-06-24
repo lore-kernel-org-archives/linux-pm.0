@@ -1,64 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / hibernate: re-enable nonboot cpus on disable_nonboot_cpus() failure
-Date: Thu, 25 Jun 2015 00:15:36 +0200
-Message-ID: <6366580.JOe80DM3WH@vostro.rjw.lan>
-References: <1435154526-9023-1-git-send-email-vkuznets@redhat.com>
+From: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] tick/idle/powerpc: Do not register idle states with CPUIDLE_FLAG_TIMER_STOP set in periodic mode
+Date: Thu, 25 Jun 2015 08:10:34 +1000
+Message-ID: <B790257D-E96F-43CA-8461-158B82270682@ellerman.id.au>
+References: <20150624064801.30680.3246.stgit@perfhull-ltc.austin.ibm.com> <1700583.a34yOllUuC@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain;
+ charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54532 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750933AbbFXVt2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2015 17:49:28 -0400
-In-Reply-To: <1435154526-9023-1-git-send-email-vkuznets@redhat.com>
+Received: from ozlabs.org ([103.22.144.67]:39667 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750941AbbFXWKm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 24 Jun 2015 18:10:42 -0400
+In-Reply-To: <1700583.a34yOllUuC@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vitaly Kuznetsov <vkuznets@redhat.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, daniel.lezcano@linaro.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org, mpe@ellerman.id.au, will.deacon@arm.com, linux-kernel@vger.kernel.org, shreyas@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
-On Wednesday, June 24, 2015 04:02:06 PM Vitaly Kuznetsov wrote:
-> When disable_nonboot_cpus() fails on some cpu it doesn't bring back all
-> cpus it managed to offline, a consequent call to enable_nonboot_cpus() is
-> expected. In hibernation_platform_enter() we don't call
-> enable_nonboot_cpus() on error so cpus stay offlined.
-> 
-> create_image() and resume_target_kernel() functions handle
-> disable_nonboot_cpus() faults correctly, hibernation_platform_enter()
-> is the only one which is doing it wrong.
-> 
-> Signed-off-by: Vitaly Kuznetsov <vkuznets@redhat.com>
 
-Applied, thanks!
 
-> ---
->  kernel/power/hibernate.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index 2329daa..690f78f 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -552,7 +552,7 @@ int hibernation_platform_enter(void)
->  
->  	error = disable_nonboot_cpus();
->  	if (error)
-> -		goto Platform_finish;
-> +		goto Enable_cpus;
->  
->  	local_irq_disable();
->  	syscore_suspend();
-> @@ -568,6 +568,8 @@ int hibernation_platform_enter(void)
->   Power_up:
->  	syscore_resume();
->  	local_irq_enable();
-> +
-> + Enable_cpus:
->  	enable_nonboot_cpus();
->  
->   Platform_finish:
-> 
+On 24 June 2015 23:50:40 GMT+10:00, "Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+>On Wednesday, June 24, 2015 01:48:01 AM Preeti U Murthy wrote:
+>> On some archs, the local clockevent device stops in deep cpuidle
+>states.
+>> The broadcast framework is used to wakeup cpus in these idle states,
+>in
+>> which either an external clockevent device is used to send wakeup
+>ipis
+>> or the hrtimer broadcast framework kicks in in the absence of such a
+>> device. One cpu is nominated as the broadcast cpu and this cpu sends
+>> wakeup ipis to sleeping cpus at the appropriate time. This is the
+>> implementation in the oneshot mode of broadcast.
+>> 
+>> In periodic mode of broadcast however, the presence of such cpuidle
+>> states results in the cpuidle driver calling tick_broadcast_enable()
+>> which shuts down the local clockevent devices of all the cpus and
+>> appoints the tick broadcast device as the clockevent device for each
+>of
+>> them. This works on those archs where the tick broadcast device is a
+>> real clockevent device.  But on archs which depend on the hrtimer
+>mode
+>> of broadcast, the tick broadcast device hapens to be a pseudo device.
+>> The consequence is that the local clockevent devices of all cpus are
+>> shutdown and the kernel hangs at boot time in periodic mode.
+>> 
+>> Let us thus not register the cpuidle states which have
+>> CPUIDLE_FLAG_TIMER_STOP flag set, on archs which depend on the
+>hrtimer
+>> mode of broadcast in periodic mode. This patch takes care of doing
+>this
+>> on powerpc. The cpus would not have entered into such deep cpuidle
+>> states in periodic mode on powerpc anyway. So there is no loss here.
+>> 
+>> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>
+>4.2 material I suppose?
 
+Yes please, in fact it should be marked for stable too.
+
+cheers
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Sent from my Android phone with K-9 Mail. Please excuse my brevity.
