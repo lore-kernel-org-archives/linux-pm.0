@@ -1,77 +1,109 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] PM / Domains: Avoid infinite loops in attach/detach code
-Date: Wed, 24 Jun 2015 15:48:12 +0200
-Message-ID: <1472640.FZpH0ugFKI@vostro.rjw.lan>
-References: <1434622954-26747-3-git-send-email-geert+renesas@glider.be> <CAPDyKFqeYN2bWaQr=a8p7gPuFJtXEVr9k7+vuN_psyPgp90-rg@mail.gmail.com> <CAMuHMdUzj_jZXw8OdsH89fVmrK-hQZx-wQR7cVbo9d3QJ8JJVg@mail.gmail.com>
+Subject: Re: [PATCH] tick/idle/powerpc: Do not register idle states with CPUIDLE_FLAG_TIMER_STOP set in periodic mode
+Date: Wed, 24 Jun 2015 15:50:40 +0200
+Message-ID: <1700583.a34yOllUuC@vostro.rjw.lan>
+References: <20150624064801.30680.3246.stgit@perfhull-ltc.austin.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdUzj_jZXw8OdsH89fVmrK-hQZx-wQR7cVbo9d3QJ8JJVg@mail.gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Kevin Hilman <khilman@kernel.org>, Magnus Damm <damm@opensource.se>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:64717 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752063AbbFXNYc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2015 09:24:32 -0400
+In-Reply-To: <20150624064801.30680.3246.stgit@perfhull-ltc.austin.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, daniel.lezcano@linaro.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org, mpe@ellerman.id.au, will.deacon@arm.com, linux-kernel@vger.kernel.org, shreyas@linux.vnet.ibm.com, svaidy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 
-On Wednesday, June 24, 2015 10:35:44 AM Geert Uytterhoeven wrote:
-> On Wed, Jun 24, 2015 at 10:33 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > [...]
-> >
-> >>>>
-> >>>> @@ -2183,6 +2191,7 @@ int genpd_dev_pm_attach(struct device *dev)
-> >>>>  {
-> >>>>         struct of_phandle_args pd_args;
-> >>>>         struct generic_pm_domain *pd;
-> >>>> +       unsigned int i;
-> >>>>         int ret;
-> >>>>
-> >>>>         if (!dev->of_node)
-> >>>> @@ -2218,10 +2227,13 @@ int genpd_dev_pm_attach(struct device *dev)
-> >>>>
-> >>>>         dev_dbg(dev, "adding to PM domain %s\n", pd->name);
-> >>>>
-> >>>> -       while (1) {
-> >>>> +       for (i = 0; i < GENPD_RETRIES; i++) {
-> >>>>                 ret = pm_genpd_add_device(pd, dev);
-> >>>>                 if (ret != -EAGAIN)
-> >>>>                         break;
-> >>>> +
-> >>>> +               if (i > GENPD_RETRIES / 2)
-> >>>> +                       udelay(GENPD_DELAY_US);
-> >>>
-> >>> In this execution path, we retry when getting -EAGAIN while believing
-> >>> the reason to the error are only *temporary* as we are soon waiting
-> >>> for all devices in the genpd to be system PM resumed. At least that's
-> >>> my understanding to why we want to deal with -EAGAIN here, but I might
-> >>> be wrong.
-> >>>
-> >>> In this regards, I wonder whether it could be better to re-try only a
-> >>> few times but with a far longer interval time than a couple us. What
-> >>> do you think?
-> >>
-> >> That's indeed viable. I have no idea for how long this temporary state can
-> >> extend.
-> >
-> > That will depend on the system PM resume time for the devices residing
-> > in the genpd. So, I guess we need a guestimate then. How about a total
-> > sleep time of a few seconds?
-> >
-> >>
-> >>> However, what if the reason to why we get -EAGAIN isn't *temporary*,
-> >>> because we are about to enter system PM suspend state. Then the caller
-> >>> of this function which comes via some bus' ->probe(), will hang until
-> >>> the a system PM resume is completed. Is that really going to work? So,
-> >>> for this case your limited re-try approach will affect this scenario
-> >>> as well, have you considered that?
-> >>
-> >> There's a limit on the number of retries, so it won't hang indefinitely.
-> >
-> > What happens with the timer functions (like msleep()) during the
-> > system PM suspend transition?
+On Wednesday, June 24, 2015 01:48:01 AM Preeti U Murthy wrote:
+> On some archs, the local clockevent device stops in deep cpuidle states.
+> The broadcast framework is used to wakeup cpus in these idle states, in
+> which either an external clockevent device is used to send wakeup ipis
+> or the hrtimer broadcast framework kicks in in the absence of such a
+> device. One cpu is nominated as the broadcast cpu and this cpu sends
+> wakeup ipis to sleeping cpus at the appropriate time. This is the
+> implementation in the oneshot mode of broadcast.
 > 
-> I guess we can no longer call msleep() after syscore suspend?
+> In periodic mode of broadcast however, the presence of such cpuidle
+> states results in the cpuidle driver calling tick_broadcast_enable()
+> which shuts down the local clockevent devices of all the cpus and
+> appoints the tick broadcast device as the clockevent device for each of
+> them. This works on those archs where the tick broadcast device is a
+> real clockevent device.  But on archs which depend on the hrtimer mode
+> of broadcast, the tick broadcast device hapens to be a pseudo device.
+> The consequence is that the local clockevent devices of all cpus are
+> shutdown and the kernel hangs at boot time in periodic mode.
+> 
+> Let us thus not register the cpuidle states which have
+> CPUIDLE_FLAG_TIMER_STOP flag set, on archs which depend on the hrtimer
+> mode of broadcast in periodic mode. This patch takes care of doing this
+> on powerpc. The cpus would not have entered into such deep cpuidle
+> states in periodic mode on powerpc anyway. So there is no loss here.
+> 
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-That's correct.  Time is effectively frozen at that point.
+4.2 material I suppose?
 
-Rafael
+> ---
+>  drivers/cpuidle/cpuidle-powernv.c |   15 ++++++++++++---
+>  1 file changed, 12 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index 5937207..3442764 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -60,6 +60,8 @@ static int nap_loop(struct cpuidle_device *dev,
+>  	return index;
+>  }
+>  
+> +/* Register for fastsleep only in oneshot mode of broadcast */
+> +#ifdef CONFIG_TICK_ONESHOT
+>  static int fastsleep_loop(struct cpuidle_device *dev,
+>  				struct cpuidle_driver *drv,
+>  				int index)
+> @@ -83,7 +85,7 @@ static int fastsleep_loop(struct cpuidle_device *dev,
+>  
+>  	return index;
+>  }
+> -
+> +#endif
+>  /*
+>   * States for dedicated partition case.
+>   */
+> @@ -209,7 +211,14 @@ static int powernv_add_idle_states(void)
+>  			powernv_states[nr_idle_states].flags = 0;
+>  			powernv_states[nr_idle_states].target_residency = 100;
+>  			powernv_states[nr_idle_states].enter = &nap_loop;
+> -		} else if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
+> +		}
+> +
+> +		/*
+> +		 * All cpuidle states with CPUIDLE_FLAG_TIMER_STOP set must come
+> +		 * within this config dependency check.
+> +		 */
+> +#ifdef CONFIG_TICK_ONESHOT
+> +		if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
+>  			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
+>  			/* Add FASTSLEEP state */
+>  			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
+> @@ -218,7 +227,7 @@ static int powernv_add_idle_states(void)
+>  			powernv_states[nr_idle_states].target_residency = 300000;
+>  			powernv_states[nr_idle_states].enter = &fastsleep_loop;
+>  		}
+> -
+> +#endif
+>  		powernv_states[nr_idle_states].exit_latency =
+>  				((unsigned int)latency_ns[i]) / 1000;
+>  
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
