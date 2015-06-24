@@ -1,68 +1,61 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 6/8] mfd: make mfd_remove_devices() iterate in reverse
- order
-Date: Wed, 24 Jun 2015 12:31:44 +0100
-Message-ID: <20150624113144.GL15013@x1>
-References: <1434362256-239992-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <1434362256-239992-7-git-send-email-andriy.shevchenko@linux.intel.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH/RFC 02/15] ARM: shmobile: R-Car: Add DT support for PM domains
+Date: Wed, 24 Jun 2015 14:11:26 +0200
+Message-ID: <CAMuHMdUfRBkBEU4CyTPVZ7BW=xk-6jn9BYwzL7-F_VMUwJC0YQ@mail.gmail.com>
+References: <1433444021-22167-1-git-send-email-geert+renesas@glider.be>
+	<1433444021-22167-3-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f54.google.com ([74.125.82.54]:35080 "EHLO
-	mail-wg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752175AbbFXLbt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2015 07:31:49 -0400
-Received: by wgbhy7 with SMTP id hy7so33622514wgb.2
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2015 04:31:48 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1434362256-239992-7-git-send-email-andriy.shevchenko@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1433444021-22167-3-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@linaro.org>
 
-On Mon, 15 Jun 2015, Andy Shevchenko wrote:
+On Thu, Jun 4, 2015 at 8:53 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> --- a/arch/arm/mach-shmobile/pm-rcar.c
+> +++ b/arch/arm/mach-shmobile/pm-rcar.c
 
-> The newly introduced device_for_each_child_reverse() would be used wh=
-en MFD
-> core removes the device.
->=20
-> After this patch applied the devices will be removed in a reversed or=
-der. This
-> behaviour is useful when devices have implicit dependency on order, i=
-=2Ee.
-> consider MFD device with serial bus controller, such as SPI, and DMA =
-IP that is
-> attached to serial bus controller: before remove the DMA driver we ha=
-ve to be
-> ensured that no DMA transfers is ongoing and the requested channel ar=
-e unused.
->=20
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
->  drivers/mfd/mfd-core.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-
-Applied, thanks.
-
-> diff --git a/drivers/mfd/mfd-core.c b/drivers/mfd/mfd-core.c
-> index 1aed3b7..79eeaa5 100644
-> --- a/drivers/mfd/mfd-core.c
-> +++ b/drivers/mfd/mfd-core.c
-> @@ -300,7 +300,7 @@ void mfd_remove_devices(struct device *parent)
+> @@ -51,11 +54,29 @@
+>  static void __iomem *rcar_sysc_base;
+>  static DEFINE_SPINLOCK(rcar_sysc_lock); /* SMP CPUs + I/O devices */
+>
+> +static unsigned int rcar_gen;
+> +
+>  static int rcar_sysc_pwr_on_off(const struct rcar_sysc_ch *sysc_ch, bool on)
 >  {
->  	atomic_t *cnts =3D NULL;
-> =20
-> -	device_for_each_child(parent, &cnts, mfd_remove_devices_fn);
-> +	device_for_each_child_reverse(parent, &cnts, mfd_remove_devices_fn)=
-;
->  	kfree(cnts);
->  }
->  EXPORT_SYMBOL(mfd_remove_devices);
+>         unsigned int sr_bit, reg_offs;
+>         int k;
+>
+> +       /*
+> +        * Only R-Car H1 can control power to CPUs
+> +        * Use WFI to power off, CPG/APMU to resume ARM cores on later R-Car
+> +        * Generations
+> +        */
+> +       switch (rcar_gen) {
+> +       case 2:
+> +               /* FIXME Check rcar_pm_domain.cpu instead? */
+> +               switch (sysc_ch->chan_offs) {
+> +               case SYSC_PWR_CA15_CPU:
+> +               case SYSC_PWR_CA7_CPU:
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Woops, this patch lacked:
+
++/*
++ * SYSC Power Control Register Base Addresses (R-Car Gen2)
++ */
++#define SYSC_PWR_CA15_CPU      0x40    /* CA15 cores (incl. L1C) (H2/M2/V2H) */
++#define SYSC_PWR_CA7_CPU       0x1c0   /* CA7 cores (incl. L1C) (H2/E2) */
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
