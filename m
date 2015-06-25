@@ -1,174 +1,187 @@
-From: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/2] dt-bindings: mediatek: Add MT8173 cpufreq driver binding
-Date: Thu, 25 Jun 2015 14:20:58 +0800
-Message-ID: <CALx668V-M+9c78K56j7rt=R5FP-2k-y1RUSp2=6q7wM9TyQgxg@mail.gmail.com>
-References: <1433766561-1330-1-git-send-email-pi-cheng.chen@linaro.org>
-	<1433766561-1330-2-git-send-email-pi-cheng.chen@linaro.org>
-	<CALx668UShfd3HW1ptzHnMr9xAUVyLGt=q2CmYHn3vqASZug6kw@mail.gmail.com>
-	<20150624010621.GB6424@linux>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal management updates for v4.2-rc1
+Date: Thu, 25 Jun 2015 15:40:38 +0800
+Message-ID: <1435218038.2913.20.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150624010621.GB6424@linux>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:13093 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751006AbbFYHkl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 25 Jun 2015 03:40:41 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-Hi Matthias and Mark,
+Hi, Linus,
 
-May I have some review comments for this patch from you to get this
-series moving forwards?
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-Thanks.
-Pi-Cheng
+to receive the latest Thermal Management updates for 4.2-rc1 with
+top-most commit 111b23cf895b5cbcdc1b2c6580be1bb78a577d05:
 
-On Wed, Jun 24, 2015 at 9:06 AM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> Adding Mike's new email address..
->
-> On 23-06-15, 23:31, Pi-Cheng Chen wrote:
->> On Mon, Jun 8, 2015 at 8:29 PM, Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
->> > This patch adds device tree binding document for MT8173 cpufreq driver.
->> >
->> > Signed-off-by: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->> > ---
->> >  .../devicetree/bindings/cpufreq/cpufreq-mt8173.txt | 127 +++++++++++++++++++++
->> >  1 file changed, 127 insertions(+)
->> >  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt
->> >
->> > diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt
->> > new file mode 100644
->> > index 0000000..7708a65
->> > --- /dev/null
->> > +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt
->> > @@ -0,0 +1,127 @@
->> > +
->> > +Mediatek MT8173 cpufreq driver
->> > +-------------------
->
-> Few more ---- required.
->
->> > +
->> > +Mediatek MT8173 cpufreq driver for CPU frequency scaling.
->> > +
->> > +Required properties:
->> > +- clocks: A list of phandle + clock-specifier pairs for the clocks listed in clock names.
->> > +- clock-names: Should contain the following:
->> > +       "cpu"           - The multiplexer for clock input of CPU cluster.
->> > +       "intermediate"  - A parent of "cpu" clock which is used as "intermediate" clock
->> > +                         source (usually MAINPLL) when the original CPU PLL is under
->> > +                         transition and not stable yet.
->
-> These belong to Mike.
->
->> > +- operating-points: Table of frequencies and voltage CPU could be transitioned into,
->> > +                   Frequency should be in KHz units and voltage should be in microvolts.
->
-> That's not complete. You should just mention the path to opp bindings
-> here. And that's it.
->
->> > +- proc-supply: Regulator for Vproc of CPU cluster.
->> > +
->> > +Optional properties:
->> > +- sram-supply: Regulator for Vsram of CPU cluster. When present, the cpufreq driver
->> > +              needs to do "voltage trace" to step by step scale up/down Vproc and
->> > +              Vsram to fit SoC specific needs. When absent, the voltage scaling
->> > +              flow is handled by hardware, hence no software "voltage trace" is
->> > +              needed.
->> > +
->> > +Example:
->> > +--------
->> > +       cpu0: cpu@0 {
->> > +               device_type = "cpu";
->> > +               compatible = "arm,cortex-a53";
->> > +               reg = <0x000>;
->> > +               enable-method = "psci";
->> > +               cpu-idle-states = <&CPU_SLEEP_0>;
->> > +               clocks = <&infracfg CLK_INFRA_CA53SEL>,
->> > +                        <&apmixedsys CLK_APMIXED_MAINPLL>;
->> > +               clock-names = "cpu", "intermediate";
->> > +               operating-points = <
->> > +                       507000  859000
->> > +                       702000  908000
->> > +                       1001000 983000
->> > +                       1105000 1009000
->> > +                       1183000 1028000
->> > +                       1404000 1083000
->> > +                       1508000 1109000
->> > +                       1573000 1125000
->> > +               >;
->> > +       };
->> > +
->> > +       cpu1: cpu@1 {
->> > +               device_type = "cpu";
->> > +               compatible = "arm,cortex-a53";
->> > +               reg = <0x001>;
->> > +               enable-method = "psci";
->> > +               cpu-idle-states = <&CPU_SLEEP_0>;
->> > +               clocks = <&infracfg CLK_INFRA_CA53SEL>,
->> > +                        <&apmixedsys CLK_APMIXED_MAINPLL>;
->> > +               clock-names = "cpu", "intermediate";
->> > +               operating-points = <
->> > +                       507000  859000
->> > +                       702000  908000
->> > +                       1001000 983000
->> > +                       1105000 1009000
->> > +                       1183000 1028000
->> > +                       1404000 1083000
->> > +                       1508000 1109000
->> > +                       1573000 1125000
->> > +               >;
->> > +       };
->> > +
->> > +       cpu2: cpu@100 {
->> > +               device_type = "cpu";
->> > +               compatible = "arm,cortex-a57";
->> > +               reg = <0x100>;
->> > +               enable-method = "psci";
->> > +               cpu-idle-states = <&CPU_SLEEP_0>;
->> > +               clocks = <&infracfg CLK_INFRA_CA57SEL>,
->> > +                        <&apmixedsys CLK_APMIXED_MAINPLL>;
->> > +               clock-names = "cpu", "intermediate";
->> > +               operating-points = <
->> > +                       507000  828000
->> > +                       702000  867000
->> > +                       1001000 927000
->> > +                       1209000 968000
->> > +                       1404000 1007000
->> > +                       1612000 1049000
->> > +                       1807000 1089000
->> > +                       1989000 1125000
->> > +               >;
->> > +       };
->> > +
->> > +       cpu3: cpu@101 {
->> > +               device_type = "cpu";
->> > +               compatible = "arm,cortex-a57";
->> > +               reg = <0x101>;
->> > +               enable-method = "psci";
->> > +               cpu-idle-states = <&CPU_SLEEP_0>;
->> > +               clocks = <&infracfg CLK_INFRA_CA57SEL>,
->> > +                        <&apmixedsys CLK_APMIXED_MAINPLL>;
->> > +               clock-names = "cpu", "intermediate";
->> > +               operating-points = <
->> > +                       507000  828000
->> > +                       702000  867000
->> > +                       1001000 927000
->> > +                       1209000 968000
->> > +                       1404000 1007000
->> > +                       1612000 1049000
->> > +                       1807000 1089000
->> > +                       1989000 1125000
->> > +               >;
->> > +       };
->
-> I remember Mark Rutland asking you about the replicated stuff for all
-> CPUs, but happened to his comments later on ? Were you asked to put
-> these for all the CPUs ?
->
-> --
-> viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+  Merge branches 'release' and 'thermal-soc' of .git into next 
+
+on top of commit e26081808edadfd257c6c9d81014e3b25e9a6118:
+
+  Linux 4.1-rc4 (2015-05-18 10:13:47 -0700)
+
+Specifics:
+
+- Enhance Thermal Framework with several new capabilities:
+  . use power estimates
+  . compute weights with relative integers instead of percentages
+  . allow governors to have private data in thermal zones
+  . export thermal zone parameters through sysfs
+  Thanks to the ARM thermal team (Javi, Punit, KP).
+- Introduce a new thermal governor: power allocator. First in kernel
+closed loop PI(D) controller for thermal control. Thanks to ARM thermal
+team.
+- Enhance OF thermal to allow thermal zones to have sustainable power HW
+specification. Thanks to Punit.
+- Introduce thermal driver for Intel Quark SoC x1000platform. Thanks to
+Ong, Boon Leong.
+- Introduce QPNP PMIC temperature alarm driver. Thanks to Ivan T. I.
+- Introduce thermal driver for Hisilicon hi6220. Thanks to kongxinwei.
+- Enhance Exynos thermal driver to handle Exynos5433 TMU. Thanks to
+Chanwoo C.
+- TI thermal driver now has a better implementation for EOCZ bit. From
+Pavel M.
+- Add id for Skylake processors in int340x processor thermal driver.
+- a couple of small fixes and cleanups.
+
+thanks,
+rui
+----------------------------------------------------------------
+
+Brian Bian (1):
+      int340x_thermal/processor_thermal_device: add support to Skylake
+processors
+
+Chanwoo Choi (1):
+      thermal: exynos: Add the support for Exynos5433 TMU
+
+Dasaratharaman Chandramouli (1):
+      intel powerclamp: support Knights Landing
+
+Eduardo Valentin (2):
+      thermal: support slope and offset coefficients
+      thermal: of-thermal: add support for reading coefficients property
+
+Ivan T. Ivanov (1):
+      thermal: Add QPNP PMIC temperature alarm driver
+
+Javi Merino (14):
+      thermal: fair_share: use the weight from the thermal instance
+      thermal: fair_share: fix typo
+      thermal: export weight to sysfs
+      thermal: fair_share: generalize the weight concept
+      thermal: let governors have private data for each thermal zone
+      thermal: extend the cooling device API to include power
+information
+      thermal: cpu_cooling: implement the power cooling device API
+      thermal: introduce the Power Allocator governor
+      thermal: add trace events to the power allocator governor
+      thermal: x86_pkg_temp: drop const for thermal_zone_parameters
+      thermal: remove stale THERMAL_POWER_ACTOR select
+      thermal: cpu_cooling: Check memory allocation of power_table
+      thermal: export thermal_zone_parameters to sysfs
+      thermal: power_allocator: round the division when divvying up
+power
+
+Kapileshwar Singh (3):
+      thermal: of: fix cooling device weights in device tree
+      thermal: cpu_cooling: Remove cpu_dev update on policy CPU update
+      thermal: cpu_cooling: Fix power calculation when CPUs are offline
+
+Ong, Boon Leong (1):
+      thermal: intel Quark SoC X1000 DTS thermal driver
+
+Pavel Machek (3):
+      cleanup ti-soc-thermal
+      ti-soc-thermal: implement eocz bit to make driver useful on omap3
+      ti-soc-thermal: request temperature periodically if hw can't do
+that itself
+
+Punit Agrawal (3):
+      of: thermal: Introduce sustainable power for a thermal zone
+      thermal: core: Add Kconfig option to enable writable trips
+      thermal: Default OF created trip points to writable
+
+Srinivas Pandruvada (3):
+      Thermal: Intel SoC: DTS thermal IOSF core
+      Thermal: Intel SoC: DTS thermal use common APIs
+      Thermal/int340x/processor_thermal: Enable auxiliary DTS for
+Braswell
+
+Wu Fengguang (1):
+      Thermal: Intel SoC: fix simple_return.cocci warnings
+
+Zhang Rui (2):
+      Merge branch 'linus' of
+git://git.kernel.org/.../evalenti/linux-soc-thermal into thermal-soc
+      Merge branches 'release' and 'thermal-soc' of .git into next
+
+kongxinwei (2):
+      dt-bindings: Document the hi6220 thermal sensor bindings
+      thermal: hisilicon: add new hisilicon thermal sensor driver
+
+ .../bindings/thermal/hisilicon-thermal.txt         |  23 +
+ .../bindings/thermal/qcom-spmi-temp-alarm.txt      |  57 ++
+ .../devicetree/bindings/thermal/thermal.txt        |   9 +
+ Documentation/thermal/cpu-cooling-api.txt          | 156 +++++-
+ Documentation/thermal/power_allocator.txt          | 247 +++++++++
+ Documentation/thermal/sysfs-api.txt                |  99 +++-
+ drivers/acpi/thermal.c                             |   9 +-
+ drivers/platform/x86/acerhdf.c                     |   3 +-
+ drivers/thermal/Kconfig                            |  68 ++-
+ drivers/thermal/Makefile                           |   5 +
+ drivers/thermal/cpu_cooling.c                      | 585
+++++++++++++++++++++-
+ drivers/thermal/db8500_thermal.c                   |   2 +-
+ drivers/thermal/fair_share.c                       |  41 +-
+ drivers/thermal/hisi_thermal.c                     | 421
++++++++++++++++
+ drivers/thermal/imx_thermal.c                      |   3 +-
+ .../int340x_thermal/processor_thermal_device.c     |  59 ++-
+ drivers/thermal/intel_powerclamp.c                 |   1 +
+ drivers/thermal/intel_quark_dts_thermal.c          | 473
++++++++++++++++++
+ drivers/thermal/intel_soc_dts_iosf.c               | 478
++++++++++++++++++
+ drivers/thermal/intel_soc_dts_iosf.h               |  62 +++
+ drivers/thermal/intel_soc_dts_thermal.c            | 430
++--------------
+ drivers/thermal/of-thermal.c                       |  41 +-
+ drivers/thermal/power_allocator.c                  | 539
++++++++++++++++++++
+ drivers/thermal/qcom-spmi-temp-alarm.c             | 309 +++++++++++
+ drivers/thermal/samsung/exynos_tmu.c               | 187 ++++++-
+ drivers/thermal/samsung/exynos_tmu.h               |   1 +
+ drivers/thermal/thermal_core.c                     | 314 ++++++++++-
+ drivers/thermal/thermal_core.h                     |  11 +
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c        | 104 ++--
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   5 +-
+ drivers/thermal/x86_pkg_temp_thermal.c             |   2 +-
+ include/linux/cpu_cooling.h                        |  39 ++
+ include/linux/thermal.h                            |  97 +++-
+ include/trace/events/thermal.h                     |  58 ++
+ include/trace/events/thermal_power_allocator.h     |  87 +++
+ 35 files changed, 4477 insertions(+), 548 deletions(-)
+ create mode 100644
+Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+ create mode 100644
+Documentation/devicetree/bindings/thermal/qcom-spmi-temp-alarm.txt
+ create mode 100644 Documentation/thermal/power_allocator.txt
+ create mode 100644 drivers/thermal/hisi_thermal.c
+ create mode 100644 drivers/thermal/intel_quark_dts_thermal.c
+ create mode 100644 drivers/thermal/intel_soc_dts_iosf.c
+ create mode 100644 drivers/thermal/intel_soc_dts_iosf.h
+ create mode 100644 drivers/thermal/power_allocator.c
+ create mode 100644 drivers/thermal/qcom-spmi-temp-alarm.c
+ create mode 100644 include/trace/events/thermal_power_allocator.h
+
+
