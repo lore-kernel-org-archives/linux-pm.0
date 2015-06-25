@@ -1,42 +1,95 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: [PATCH] thermal: Switch mode to enabled once the cooling device is bound
-Date: Thu, 25 Jun 2015 18:20:35 +0530
-Message-ID: <1435236635-20830-1-git-send-email-j-keerthy@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:34488 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751817AbbFYMuu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jun 2015 08:50:50 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] gpio: rcar: Fine-grained Runtime PM support
+Date: Thu, 25 Jun 2015 16:45:57 +0200
+Message-ID: <1435243557-7050-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-gpio-owner@vger.kernel.org>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com
-Cc: linux-omap@vger.kernel.org, rui.zhang@intel.com, t-kristo@ti.com, j-keerthy@ti.com, linux-pm@vger.kernel.org
 
-Currently mode is still disabled even after the cooling device is bound
-to the appropriate device. Hence changing the mode to enabled as soon as
-the cooling device is registered successfully.
+Currently gpio modules are runtime-resumed at probe time. This means the
+gpio module will be active all the time (except during system suspend,
+if not configured as a wake-up source).
 
-Signed-off-by: Keerthy <j-keerthy@ti.com>
+While an R-Car Gen2 gpio module retains pins configured for output at
+the requested level while put in standby mode, gpio registercannot be
+accessed while suspended.  Unfortunately pm_runtime_get_sync() cannot be
+called from all contexts where gpio register access is needed. Hence
+move the Runtime PM handling from probe/remove time to gpio request/free
+time, which is probably the best we can do.
+
+On r8a7791/koelsch, gpio modules 0, 1, 3, and 4 are now suspended during
+normal use (gpio2 is used for LEDs and regulators, gpio5 for keys, gpio6
+for SD-Card CD & WP, gpio7 for keys and regulators).
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/thermal/of-thermal.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/gpio/gpio-rcar.c | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index 04b1be7..bc84485 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -163,6 +163,9 @@ static int of_thermal_bind(struct thermal_zone_device *thermal,
- 		}
- 	}
+diff --git a/drivers/gpio/gpio-rcar.c b/drivers/gpio/gpio-rcar.c
+index 29089ef6969fd33f..099a6f508f867821 100644
+--- a/drivers/gpio/gpio-rcar.c
++++ b/drivers/gpio/gpio-rcar.c
+@@ -251,17 +251,32 @@ static void gpio_rcar_config_general_input_output_mode(struct gpio_chip *chip,
  
-+	/* Now that cooling device is bound enable the thermal device*/
-+	data->mode = THERMAL_DEVICE_ENABLED;
+ static int gpio_rcar_request(struct gpio_chip *chip, unsigned offset)
+ {
+-	return pinctrl_request_gpio(chip->base + offset);
++	struct gpio_rcar_priv *p = gpio_to_priv(chip);
++	int error;
 +
- 	return 0;
++	error = pm_runtime_get_sync(&p->pdev->dev);
++	if (error < 0)
++		return error;
++
++	error = pinctrl_request_gpio(chip->base + offset);
++	if (error)
++		pm_runtime_put(&p->pdev->dev);
++
++	return error;
  }
  
+ static void gpio_rcar_free(struct gpio_chip *chip, unsigned offset)
+ {
++	struct gpio_rcar_priv *p = gpio_to_priv(chip);
++
+ 	pinctrl_free_gpio(chip->base + offset);
+ 
+ 	/* Set the GPIO as an input to ensure that the next GPIO request won't
+ 	 * drive the GPIO pin as an output.
+ 	 */
+ 	gpio_rcar_config_general_input_output_mode(chip, offset, false);
++
++	pm_runtime_put(&p->pdev->dev);
+ }
+ 
+ static int gpio_rcar_direction_input(struct gpio_chip *chip, unsigned offset)
+@@ -405,7 +420,6 @@ static int gpio_rcar_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	pm_runtime_enable(dev);
+-	pm_runtime_get_sync(dev);
+ 
+ 	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+@@ -488,7 +502,6 @@ static int gpio_rcar_probe(struct platform_device *pdev)
+ err1:
+ 	gpiochip_remove(gpio_chip);
+ err0:
+-	pm_runtime_put(dev);
+ 	pm_runtime_disable(dev);
+ 	return ret;
+ }
+@@ -499,7 +512,6 @@ static int gpio_rcar_remove(struct platform_device *pdev)
+ 
+ 	gpiochip_remove(&p->gpio_chip);
+ 
+-	pm_runtime_put(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+ 	return 0;
+ }
 -- 
 1.9.1
 
