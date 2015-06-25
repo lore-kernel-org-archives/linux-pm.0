@@ -1,95 +1,67 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] gpio: rcar: Fine-grained Runtime PM support
-Date: Thu, 25 Jun 2015 16:45:57 +0200
-Message-ID: <1435243557-7050-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-gpio-owner@vger.kernel.org>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>
-Cc: Magnus Damm <magnus.damm@gmail.com>, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/4] mfd: da9150: Add support for Fuel-Gauge
+Date: Thu, 25 Jun 2015 15:55:35 +0100
+Message-ID: <20150625145535.GD23990@x1>
+References: <cover.1434643491.git.Adam.Thomson.Opensource@diasemi.com>
+ <8d8f583fee9313f261efa96a038874e552995c17.1434643491.git.Adam.Thomson.Opensource@diasemi.com>
+ <1434732461.2385.162.camel@x220>
+ <2E89032DDAA8B9408CB92943514A0337AB555F28@SW-EX-MBX01.diasemi.com>
+ <20150622111624.GF19061@x1>
+ <2E89032DDAA8B9408CB92943514A0337AB557CA1@SW-EX-MBX01.diasemi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <2E89032DDAA8B9408CB92943514A0337AB557CA1-68WUHU125fLLPO1uwJ3ImwLouzNaz+3S@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Cc: Paul Bolle <pebolle-IWqWACnzNjzz+pZb47iToQ@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Currently gpio modules are runtime-resumed at probe time. This means the
-gpio module will be active all the time (except during system suspend,
-if not configured as a wake-up source).
+On Thu, 25 Jun 2015, Opensource [Adam Thomson] wrote:
 
-While an R-Car Gen2 gpio module retains pins configured for output at
-the requested level while put in standby mode, gpio registercannot be
-accessed while suspended.  Unfortunately pm_runtime_get_sync() cannot be
-called from all contexts where gpio register access is needed. Hence
-move the Runtime PM handling from probe/remove time to gpio request/free
-time, which is probably the best we can do.
+> On June 22, 2015 17:48, Lee Jones wrote:
+>=20
+> > > > The pedant in me noticed that this function is actually added i=
+n 3/4. So
+> > > > this chunk might be moved to 3/4, if you like to entertain peda=
+ntry like
+> > > > that, that is. (But see my remark on 3/4 too.)
+> > >
+> > > This is true, but as the header is part of MFD, I included it as =
+part of that
+> > > patch as I thought this made more sense. I guess Lee will comment=
+ as to whether
+> > > that was correct or not. :)
+> >=20
+> > Glanced over this (as I still have 240 unread emails to attend to).
+> > If the question is whether to submit the prototype at the same time=
+ as
+> > the associated function, the answer is yes.
+>=20
+> Hope you've managed to trawl through the e-mails.
+>=20
+> The question was whether or not the function and prototype should be =
+submitted
+> as part of the same individual patch file. Both are submitted as part=
+ of the
+> patch set but the prototype resides in the MFD patch, and the functio=
+n in the
+> power (fuel-gauge) patch. Personally, this seems fine to me but I'm n=
+ot a
+> maintainer.
 
-On r8a7791/koelsch, gpio modules 0, 1, 3, and 4 are now suspended during
-normal use (gpio2 is used for LEDs and regulators, gpio5 for keys, gpio6
-for SD-Card CD & WP, gpio7 for keys and regulators).
+Please move the prototype into the same patch that introduced the funct=
+ion.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- drivers/gpio/gpio-rcar.c | 20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/gpio/gpio-rcar.c b/drivers/gpio/gpio-rcar.c
-index 29089ef6969fd33f..099a6f508f867821 100644
---- a/drivers/gpio/gpio-rcar.c
-+++ b/drivers/gpio/gpio-rcar.c
-@@ -251,17 +251,32 @@ static void gpio_rcar_config_general_input_output_mode(struct gpio_chip *chip,
- 
- static int gpio_rcar_request(struct gpio_chip *chip, unsigned offset)
- {
--	return pinctrl_request_gpio(chip->base + offset);
-+	struct gpio_rcar_priv *p = gpio_to_priv(chip);
-+	int error;
-+
-+	error = pm_runtime_get_sync(&p->pdev->dev);
-+	if (error < 0)
-+		return error;
-+
-+	error = pinctrl_request_gpio(chip->base + offset);
-+	if (error)
-+		pm_runtime_put(&p->pdev->dev);
-+
-+	return error;
- }
- 
- static void gpio_rcar_free(struct gpio_chip *chip, unsigned offset)
- {
-+	struct gpio_rcar_priv *p = gpio_to_priv(chip);
-+
- 	pinctrl_free_gpio(chip->base + offset);
- 
- 	/* Set the GPIO as an input to ensure that the next GPIO request won't
- 	 * drive the GPIO pin as an output.
- 	 */
- 	gpio_rcar_config_general_input_output_mode(chip, offset, false);
-+
-+	pm_runtime_put(&p->pdev->dev);
- }
- 
- static int gpio_rcar_direction_input(struct gpio_chip *chip, unsigned offset)
-@@ -405,7 +420,6 @@ static int gpio_rcar_probe(struct platform_device *pdev)
- 	}
- 
- 	pm_runtime_enable(dev);
--	pm_runtime_get_sync(dev);
- 
- 	io = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-@@ -488,7 +502,6 @@ static int gpio_rcar_probe(struct platform_device *pdev)
- err1:
- 	gpiochip_remove(gpio_chip);
- err0:
--	pm_runtime_put(dev);
- 	pm_runtime_disable(dev);
- 	return ret;
- }
-@@ -499,7 +512,6 @@ static int gpio_rcar_remove(struct platform_device *pdev)
- 
- 	gpiochip_remove(&p->gpio_chip);
- 
--	pm_runtime_put(&pdev->dev);
- 	pm_runtime_disable(&pdev->dev);
- 	return 0;
- }
--- 
-1.9.1
-
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
