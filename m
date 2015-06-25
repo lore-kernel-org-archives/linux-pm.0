@@ -1,88 +1,99 @@
-From: Javier Martinez Canillas <javier@dowhile0.org>
-Subject: Re: [PATCH v2 7/9] ARM: multi_v7_defconfig: Enable support for PWM Regulators
-Date: Thu, 25 Jun 2015 18:29:52 +0200
-Message-ID: <CABxcv==dWX_J_+zhqjn61QXGtxCKmK62_HEj4R7wsMAWcC=H=Q@mail.gmail.com>
-References: <1435154348-28840-1-git-send-email-lee.jones@linaro.org>
-	<1435154348-28840-8-git-send-email-lee.jones@linaro.org>
-	<CABxcv==J2hi0y+=s3nK_U=-jkjTW3L9jCC2JfebnWwRfpDGLAQ@mail.gmail.com>
-	<20150625084204.GW15013@x1>
-	<CABxcv==_YZ7BCCzfbLXYxwUL_kKLtBxOVTCvcUnvGVnrD4bVpg@mail.gmail.com>
-	<20150625150255.GE23990@x1>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Thu, 25 Jun 2015 14:11:58 -0300
+Message-ID: <20150625171158.GB27230@khazad-dum.debian.net>
+References: <4290667.ZqInAykFGS@vostro.rjw.lan>
+ <Pine.LNX.4.44L0.1505091556001.5397-100000@netrider.rowland.org>
+ <20150509202518.GB20282@khazad-dum.debian.net>
+ <CAJvTdKmGFPHtO-rOwXWJr6bPDS4PuEo+g7H-uQhuMc_+kh4CuA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f182.google.com ([209.85.160.182]:34516 "EHLO
-	mail-yk0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751441AbbFYQ3x (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jun 2015 12:29:53 -0400
-Received: by ykfy125 with SMTP id y125so43396973ykf.1
-        for <linux-pm@vger.kernel.org>; Thu, 25 Jun 2015 09:29:52 -0700 (PDT)
-In-Reply-To: <20150625150255.GE23990@x1>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJvTdKmGFPHtO-rOwXWJr6bPDS4PuEo+g7H-uQhuMc_+kh4CuA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ajit Pal Singh <ajitpal.singh@st.com>
 
-Hello Lee,
+On Mon, 11 May 2015, Len Brown wrote:
+> On Sat, May 9, 2015 at 4:25 PM, Henrique de Moraes Holschuh
+> <hmh@hmh.eng.br> wrote:
+> > On Sat, 09 May 2015, Alan Stern wrote:
+> >> On Fri, 8 May 2015, Rafael J. Wysocki wrote:
+> >> > My current view on that is that whether or not to do a sync() before suspending
+> >> > ultimately is a policy decision and should belong to user space as such (modulo
+> >> > the autosleep situation when user space may not know when the suspend is going
+> >> > to happen).
+> >> >
+> >> > Moreover, user space is free to do as many sync()s before suspending as it
+> >> > wants to and the question here is whether or not the *kernel* should sync()
+> >> > in the suspend code path.
+> >> >
+> >> > Since we pretty much can demonstrate that having just one sync() in there is
+> >> > not sufficient in general, should we put two of them in there?  Or just
+> >> > remove the existing one and leave it to user space entirely?
+> >>
+> >> I don't know about the advantages of one sync over two.  But how about
+> >> adding a "syncs_before_suspend" (or just "syncs") sysfs attribute that
+> >> takes a small numeric value?  The default can be 0, and the user could
+> >> set it to 1 or 2 (or higher).
+> >
+> > IMO it would be much safer to both have that knob, and to set it to keep the
+> > current behavior as the default.  Userspace will adapt and change that knob
+> > to whatever is sufficient based on what it does before signaling the kernel
+> > to suspend.
+> >
+> > A regression in sync-before-suspend is sure to cause data loss episodes,
+> > after all.  And, as far as bikeshedding goes, IMHO syncs_before_suspend is
+> > self-explanatory, which would be a very good reason to use it instead of the
+> > shorter requires-you-to-know-what-it-is-about "syncs".
+> 
+> When I first thought about this, I had a similar view:
+> https://lkml.org/lkml/2014/1/23/45
+> 
+> But upon reflection, I do not believe that the kernel is adding value
+> here, instead it is imposing a policy, and that policy decision is
+> sometimes prohibitively expensive.  User-space can do this for itself (and
+> in the case of desktop distros, already does), and so the kernel should
+> butt-out.
 
-On Thu, Jun 25, 2015 at 5:02 PM, Lee Jones <lee.jones@linaro.org> wrote:
-> On Thu, 25 Jun 2015, Javier Martinez Canillas wrote:
->> On Thu, Jun 25, 2015 at 10:42 AM, Lee Jones <lee.jones@linaro.org> wrote:
->> > On Wed, 24 Jun 2015, Javier Martinez Canillas wrote:
->>
->> [...]
->>
->> >> > diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
->> >> > index f632af0..6666973 100644
->> >> > --- a/arch/arm/configs/multi_v7_defconfig
->> >> > +++ b/arch/arm/configs/multi_v7_defconfig
->> >> > @@ -365,6 +365,7 @@ CONFIG_REGULATOR_MAX8907=y
->> >> >  CONFIG_REGULATOR_MAX8973=y
->> >> >  CONFIG_REGULATOR_MAX77686=y
->> >> >  CONFIG_REGULATOR_PALMAS=y
->> >> > +CONFIG_REGULATOR_PWM=y
->> >>
->> >> The current policy is to build as much as possible as a module in
->> >> multi_v7_defconfig. Since this is a tristate Kconfig symbol, could you
->> >> please change it to =m ?
->> >
->> > I would prefer that it stays built-in.
->> >
->>
->> Ok, I've no strong opinion on this. I was just mentioning what arm-soc
->> maintainers prefer nowadays.
->>
->> May I ask what's the rationale for leaving this option built-in?
->
-> My view is that multi_v7 is used for prototyping, testing and to
-> ensure all of the vendors are playing nice together.  Hopefully
-> vendors aren't actually releasing kernels built with this defconfig!
+There is a lot of added value in my filesystems not being trashed by
+sleep/resume issues on laptops, IMHO, and the reason why we need the kernel
+itself to take care of syncing and freezing filesystems has been explained
+elsewhere in this thread.
 
-Agreed and same for the per SoC family defconfigs, vendors should ship
-kernels with a customized defconfig.
+I thoght for a while before replying, and I think the real issue behind this
+thread is the want of a change of expected-but-implied semanthics and
+behavior for the system-wide sleep-to-memory trigger, to adequate it to a
+new reality for newer classes of devices.
 
-> During testing/prototyping time; installing and messing around with
-> modules is an over-head I can do without.
->
+Entering "mem" suspend mode through sysfs currently has the implied meaning
+of "prepare the *entire* system to stay on a powered down state for
+pontentially a _long_ time", where long means "certainly more than 10
+seconds" ;-) This is unlikely to be written anywhere, of course, that's just
+how it was used by the vast majority for years, at least on traditional
+server/desktop/laptop platforms such as x86.
 
-Right but my question wasn't whether multi_v7 should have the options
-as built-in or as modules. That has already been decided by the
-arm-soc maintainers who want to have as much as possible as modules.
-In fact, there have been patches posted recently to change the current
-multi_v7 options from built-in to modules.
+On those platforms, we have to assume the user might plug/unplug devices,
+that the power supply might shut down while we're sleeping, that the entire
+process is not painless and has a reasonable chance of misbehaving (crashes
+on sleep/resume are _really_ common), etc.
 
-Instead my question was what makes this driver special to not follow
-the current convention.
+What is the safe and proper thing to do in that situation is not necessarily
+the best way to go about it when you actually want a somewhat different
+behavior, i.e. to "prepare the system to stay on a powered down state for a
+short while, and be very fast because this could happen at a very high
+frequency"...
 
-I agree that there is a trade off between having options as built-in
-or modules and I believe that is why most SoC specific defconfigs have
-the opposite policy,  that is to enable everything as built-in so one
-doesn't have to mess with modules as you said.
+IMO, we would actually benefit from *adding* new system-wide sleep/suspend
+modes that are optimized for oportunistic, short-lived system-wide sleep
+cycles (aka "catnap") that is fast to enter and exit from, and which will be
+triggered very frequently, instead of trying to change the assumptions and
+expected behavior of the current "deep-sleep" mode...
 
-But again, I don't have a strong opinion on this. What I think though
-is that this should be documented somewhere so the options are enabled
-following a documented rule instead of just whatever fits in someone
-workflow.
-
-Best regards,
-Javier
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
