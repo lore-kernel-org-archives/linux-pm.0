@@ -1,215 +1,88 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] cap11xx: add runtime PM support
-Date: Thu, 25 Jun 2015 17:46:24 +0200
-Message-ID: <CAPDyKFqy0=+C5HUYAQV0f1-n7dfgBc7a_v0eueJHKk=80-gJGQ@mail.gmail.com>
-References: <1435203465-11592-1-git-send-email-mranostay@gmail.com>
-	<1435203465-11592-2-git-send-email-mranostay@gmail.com>
+From: Javier Martinez Canillas <javier@dowhile0.org>
+Subject: Re: [PATCH v2 7/9] ARM: multi_v7_defconfig: Enable support for PWM Regulators
+Date: Thu, 25 Jun 2015 18:29:52 +0200
+Message-ID: <CABxcv==dWX_J_+zhqjn61QXGtxCKmK62_HEj4R7wsMAWcC=H=Q@mail.gmail.com>
+References: <1435154348-28840-1-git-send-email-lee.jones@linaro.org>
+	<1435154348-28840-8-git-send-email-lee.jones@linaro.org>
+	<CABxcv==J2hi0y+=s3nK_U=-jkjTW3L9jCC2JfebnWwRfpDGLAQ@mail.gmail.com>
+	<20150625084204.GW15013@x1>
+	<CABxcv==_YZ7BCCzfbLXYxwUL_kKLtBxOVTCvcUnvGVnrD4bVpg@mail.gmail.com>
+	<20150625150255.GE23990@x1>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qc0-f172.google.com ([209.85.216.172]:35305 "EHLO
-	mail-qc0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751902AbbFYPq1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jun 2015 11:46:27 -0400
-Received: by qcmc1 with SMTP id c1so21975807qcm.2
-        for <linux-pm@vger.kernel.org>; Thu, 25 Jun 2015 08:46:26 -0700 (PDT)
-In-Reply-To: <1435203465-11592-2-git-send-email-mranostay@gmail.com>
+Received: from mail-yk0-f182.google.com ([209.85.160.182]:34516 "EHLO
+	mail-yk0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751441AbbFYQ3x (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jun 2015 12:29:53 -0400
+Received: by ykfy125 with SMTP id y125so43396973ykf.1
+        for <linux-pm@vger.kernel.org>; Thu, 25 Jun 2015 09:29:52 -0700 (PDT)
+In-Reply-To: <20150625150255.GE23990@x1>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Matt Ranostay <mranostay@gmail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Lee Jones <lee.jones@linaro.org>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ajit Pal Singh <ajitpal.singh@st.com>
 
-On 25 June 2015 at 05:37, Matt Ranostay <mranostay@gmail.com> wrote:
-> Puts device into DEEP SLEEP when no LEDs are in in the on-state, and no
-> input_handlers are in use. Also uses *_autosuspend to prevent a LED
-> trigger from constantly suspending and resuming device.
+Hello Lee,
+
+On Thu, Jun 25, 2015 at 5:02 PM, Lee Jones <lee.jones@linaro.org> wrote:
+> On Thu, 25 Jun 2015, Javier Martinez Canillas wrote:
+>> On Thu, Jun 25, 2015 at 10:42 AM, Lee Jones <lee.jones@linaro.org> wrote:
+>> > On Wed, 24 Jun 2015, Javier Martinez Canillas wrote:
+>>
+>> [...]
+>>
+>> >> > diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+>> >> > index f632af0..6666973 100644
+>> >> > --- a/arch/arm/configs/multi_v7_defconfig
+>> >> > +++ b/arch/arm/configs/multi_v7_defconfig
+>> >> > @@ -365,6 +365,7 @@ CONFIG_REGULATOR_MAX8907=y
+>> >> >  CONFIG_REGULATOR_MAX8973=y
+>> >> >  CONFIG_REGULATOR_MAX77686=y
+>> >> >  CONFIG_REGULATOR_PALMAS=y
+>> >> > +CONFIG_REGULATOR_PWM=y
+>> >>
+>> >> The current policy is to build as much as possible as a module in
+>> >> multi_v7_defconfig. Since this is a tristate Kconfig symbol, could you
+>> >> please change it to =m ?
+>> >
+>> > I would prefer that it stays built-in.
+>> >
+>>
+>> Ok, I've no strong opinion on this. I was just mentioning what arm-soc
+>> maintainers prefer nowadays.
+>>
+>> May I ask what's the rationale for leaving this option built-in?
 >
-> Signed-off-by: Matt Ranostay <mranostay@gmail.com>
-> ---
->  drivers/input/keyboard/cap11xx.c | 75 ++++++++++++++++++++++++++++++----------
->  1 file changed, 57 insertions(+), 18 deletions(-)
->
-> diff --git a/drivers/input/keyboard/cap11xx.c b/drivers/input/keyboard/cap11xx.c
-> index b983b5a..4dc7690 100644
-> --- a/drivers/input/keyboard/cap11xx.c
-> +++ b/drivers/input/keyboard/cap11xx.c
-> @@ -14,6 +14,7 @@
->  #include <linux/input.h>
->  #include <linux/leds.h>
->  #include <linux/of_irq.h>
-> +#include <linux/pm_runtime.h>
->  #include <linux/regmap.h>
->  #include <linux/i2c.h>
->  #include <linux/gpio/consumer.h>
-> @@ -84,9 +85,9 @@ struct cap11xx_led {
->  struct cap11xx_priv {
->         struct regmap *regmap;
->         struct input_dev *idev;
-> +       struct i2c_client *i2c_client;
->
->         struct cap11xx_led *leds;
-> -       int num_leds;
->
->         /* config */
->         u32 keycodes[];
-> @@ -207,13 +208,6 @@ out:
->
->  static int cap11xx_set_sleep(struct cap11xx_priv *priv, bool sleep)
->  {
-> -#ifdef CONFIG_LEDS_CLASS
-> -       /*
-> -        * DLSEEP mode will turn off all LEDS, prevent this
-> -        */
-> -       if (priv->num_leds)
-> -               return 0;
-> -#endif
->         return regmap_update_bits(priv->regmap, CAP11XX_REG_MAIN_CONTROL,
->                                   CAP11XX_REG_MAIN_CONTROL_DLSEEP,
->                                   sleep ? CAP11XX_REG_MAIN_CONTROL_DLSEEP : 0);
-> @@ -223,14 +217,16 @@ static int cap11xx_input_open(struct input_dev *idev)
->  {
->         struct cap11xx_priv *priv = input_get_drvdata(idev);
->
-> -       return cap11xx_set_sleep(priv, false);
-> +       pm_runtime_get(&priv->i2c_client->dev);
-> +
-> +       return 0;
->  }
->
->  static void cap11xx_input_close(struct input_dev *idev)
->  {
->         struct cap11xx_priv *priv = input_get_drvdata(idev);
->
-> -       cap11xx_set_sleep(priv, true);
-> +       pm_runtime_put_autosuspend(&priv->i2c_client->dev);
->  }
->
->  #ifdef CONFIG_LEDS_CLASS
-> @@ -252,10 +248,16 @@ static void cap11xx_led_set(struct led_classdev *cdev,
->                            enum led_brightness value)
->  {
->         struct cap11xx_led *led = container_of(cdev, struct cap11xx_led, cdev);
-> +       struct cap11xx_priv *priv = led->priv;
->
->         if (led->new_brightness == value)
->                 return;
->
-> +       if (value)
-> +               pm_runtime_get(&priv->i2c_client->dev);
-> +       else
-> +               pm_runtime_put_autosuspend(&priv->i2c_client->dev);
-> +
->         led->new_brightness = value;
->         schedule_work(&led->work);
->  }
-> @@ -312,7 +314,6 @@ static int cap11xx_init_leds(struct device *dev,
->                 error = devm_led_classdev_register(dev, &led->cdev);
->                 if (error < 0)
->                         return -EINVAL;
-> -               priv->num_leds++;
->                 led++;
->         };
->
-> @@ -446,17 +447,23 @@ static int cap11xx_i2c_probe(struct i2c_client *i2c_client,
->         priv->idev->open = cap11xx_input_open;
->         priv->idev->close = cap11xx_input_close;
->
-> -       error = cap11xx_init_leds(dev, priv, cap->num_leds);
-> +       error = cap11xx_set_sleep(priv, true);
->         if (error)
->                 return error;
->
-> -       input_set_drvdata(priv->idev, priv);
-> +       error = pm_runtime_set_active(dev);
-> +       if (error)
-> +               return error;
->
-> -       /*
-> -        * Put the device in deep sleep mode for now.
-> -        * ->open() will bring it back once the it is actually needed.
-> -        */
-> -       cap11xx_set_sleep(priv, true);
-> +       pm_runtime_enable(dev);
-> +       pm_runtime_set_autosuspend_delay(dev, 1000);
-> +       pm_runtime_use_autosuspend(dev);
-> +
-> +       error = cap11xx_init_leds(dev, priv, cap->num_leds);
-> +       if (error)
-> +               return error;
-> +       priv->i2c_client = i2c_client;
-> +       input_set_drvdata(priv->idev, priv);
->
->         error = input_register_device(priv->idev);
->         if (error)
-> @@ -476,6 +483,17 @@ static int cap11xx_i2c_probe(struct i2c_client *i2c_client,
->         return 0;
->  }
->
-> +static int cap11xx_i2c_remove(struct i2c_client *i2c_client)
-> +{
-> +       struct cap11xx_priv *priv = i2c_get_clientdata(i2c_client);
-> +
-> +       pm_runtime_disable(&i2c_client->dev);
-> +       pm_runtime_set_suspended(&i2c_client->dev);
-> +       cap11xx_set_sleep(priv, true);
-> +
-> +       return 0;
-> +}
-> +
->  static const struct of_device_id cap11xx_dt_ids[] = {
->         { .compatible = "microchip,cap1106", },
->         { .compatible = "microchip,cap1126", },
-> @@ -492,14 +510,35 @@ static const struct i2c_device_id cap11xx_i2c_ids[] = {
->  };
->  MODULE_DEVICE_TABLE(i2c, cap11xx_i2c_ids);
+> My view is that multi_v7 is used for prototyping, testing and to
+> ensure all of the vendors are playing nice together.  Hopefully
+> vendors aren't actually releasing kernels built with this defconfig!
+
+Agreed and same for the per SoC family defconfigs, vendors should ship
+kernels with a customized defconfig.
+
+> During testing/prototyping time; installing and messing around with
+> modules is an over-head I can do without.
 >
 
-You should add:
+Right but my question wasn't whether multi_v7 should have the options
+as built-in or as modules. That has already been decided by the
+arm-soc maintainers who want to have as much as possible as modules.
+In fact, there have been patches posted recently to change the current
+multi_v7 options from built-in to modules.
 
-#ifdef CONFIG_PM
+Instead my question was what makes this driver special to not follow
+the current convention.
 
-around the runtime PM callbacks. It will prevent compiler warnings
-about unused functions when building with CONFIG_PM unset.
+I agree that there is a trade off between having options as built-in
+or modules and I believe that is why most SoC specific defconfigs have
+the opposite policy,  that is to enable everything as built-in so one
+doesn't have to mess with modules as you said.
 
-> +static int cap11xx_runtime_suspend(struct device *dev)
-> +{
-> +       struct cap11xx_priv *priv = i2c_get_clientdata(to_i2c_client(dev));
-> +
-> +       return cap11xx_set_sleep(priv, true);
-> +}
-> +
-> +static int cap11xx_runtime_resume(struct device *dev)
-> +{
-> +       struct cap11xx_priv *priv = i2c_get_clientdata(to_i2c_client(dev));
-> +
-> +       return cap11xx_set_sleep(priv, false);
-> +}
-> +
-> +static const struct dev_pm_ops cap11xx_pm_ops = {
-> +       SET_RUNTIME_PM_OPS(cap11xx_runtime_suspend,
-> +                          cap11xx_runtime_resume, NULL)
-> +};
-> +
->  static struct i2c_driver cap11xx_i2c_driver = {
->         .driver = {
->                 .name   = "cap11xx",
->                 .owner  = THIS_MODULE,
->                 .of_match_table = cap11xx_dt_ids,
-> +               .pm     = &cap11xx_pm_ops,
->         },
->         .id_table       = cap11xx_i2c_ids,
->         .probe          = cap11xx_i2c_probe,
-> +       .remove         = cap11xx_i2c_remove,
->  };
->
->  module_i2c_driver(cap11xx_i2c_driver);
-> --
-> 1.9.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+But again, I don't have a strong opinion on this. What I think though
+is that this should be documented somewhere so the options are enabled
+following a documented rule instead of just whatever fits in someone
+workflow.
 
-Kind regards
-Uffe
+Best regards,
+Javier
