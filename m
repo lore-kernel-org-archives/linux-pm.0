@@ -1,201 +1,94 @@
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH 04/10] cpufreq: ondemand: only queue canceled works from
- update_sampling_rate()
-Date: Fri, 26 Jun 2015 12:20:47 +0530
-Message-ID: <558CF647.4020308@linux.vnet.ibm.com>
-References: <cover.1434959517.git.viresh.kumar@linaro.org> <4a478b21805d9454ce48e115ab1b7bc61f06cabb.1434959517.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 05/10] cpufreq: governor: Drop __gov_queue_work()
+Date: Fri, 26 Jun 2015 12:33:14 +0530
+Message-ID: <558CF932.4070409@linux.vnet.ibm.com>
+References: <cover.1434959517.git.viresh.kumar@linaro.org> <c4dfd8121fd454a04a8d700a5a0f8b7858f7aed3.1434959517.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-6
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e36.co.us.ibm.com ([32.97.110.154]:51106 "EHLO
+Received: from e36.co.us.ibm.com ([32.97.110.154]:59613 "EHLO
 	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751878AbbFZGvD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jun 2015 02:51:03 -0400
+	with ESMTP id S1751677AbbFZHDv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jun 2015 03:03:51 -0400
 Received: from /spool/local
 	by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Fri, 26 Jun 2015 00:51:03 -0600
+	Fri, 26 Jun 2015 01:03:51 -0600
 Received: from b03cxnp08027.gho.boulder.ibm.com (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
-	by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 35FF63E4003B
-	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2015 00:50:59 -0600 (MDT)
+	by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 322FA19D803E
+	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2015 00:54:48 -0600 (MDT)
 Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
-	by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id t5Q6oxrg41484398
-	for <linux-pm@vger.kernel.org>; Thu, 25 Jun 2015 23:50:59 -0700
+	by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id t5Q73m1743778186
+	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2015 00:03:48 -0700
 Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
-	by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id t5Q6owMZ011609
-	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2015 00:50:58 -0600
-In-Reply-To: <4a478b21805d9454ce48e115ab1b7bc61f06cabb.1434959517.git.viresh.kumar@linaro.org>
+	by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id t5Q73llD015123
+	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2015 01:03:47 -0600
+In-Reply-To: <c4dfd8121fd454a04a8d700a5a0f8b7858f7aed3.1434959517.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 
 On 06/22/2015 01:32 PM, Viresh Kumar wrote:
-> The sampling rate is updated with a call to update_sampling_rate(), and
-> we process CPUs one by one here. While the work is canceled on per-cpu
-> basis, it is getting enqueued (by mistake) for all policy->cpus.
+> __gov_queue_work() isn't required anymore and can be merged with
+> gov_queue_work(). Do it.
 > 
-> That would result in wasting cpu cycles for queuing works which are
-> already queued and never canceled.
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq_governor.c | 17 ++++++-----------
+>  1 file changed, 6 insertions(+), 11 deletions(-)
 > 
-> This patch is about queuing work only on the cpu for which it was
-> canceled earlier.
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 416a8c5665dd..ac288f0efb06 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -158,25 +158,20 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
+>  }
+>  EXPORT_SYMBOL_GPL(dbs_check_cpu);
 > 
-> gov_queue_work() was missing the CPU parameter and it's better to club
-> 'modify_all' and the new 'cpu' parameter to a 'cpus' mask. And so this
-> patch also changes the prototype of gov_queue_work() and fixes its
-> caller sites.
+> -static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
+> -		unsigned int delay)
+> -{
+> -	struct cpu_dbs_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
+> -
+> -	mod_delayed_work_on(cpu, system_wq, &cdbs->dwork, delay);
+> -}
 
-This looks good, except I did not understand the motivation to change
-the 'modify_all' to 'load_eval'. Neither is saying the purpose better
-than the other.
+Looking at this patch I feel now that, you can simply make the above
+function non static and call the same from update_sampling_rate() in
+patch[04/10] It already gives scope to pass in the cpu parameter, if not
+the mask. Anyway you want to pass in a single cpu from
+update_sampling_rate(). This will avoid having to change the other call
+sites of gov_queue_work().
+
+I also see elsewhere in the kernel where a fn() and __fn() are sometimes
+both non-static, with __fn() giving you the additional benefit of
+passing a critical parameter. Eg:
+__hrtimer_start_range_ns() and hrtimer_start_range_ns().
 
 Regards
 Preeti U Murthy
-> 
-> Fixes: 031299b3be30 ("cpufreq: governors: Avoid unnecessary per cpu
-> timer interrupts")
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq_conservative.c |  4 ++--
->  drivers/cpufreq/cpufreq_governor.c     | 30 ++++++++++--------------------
->  drivers/cpufreq/cpufreq_governor.h     |  2 +-
->  drivers/cpufreq/cpufreq_ondemand.c     |  7 ++++---
->  4 files changed, 17 insertions(+), 26 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index f53719e5bed9..2ab53d96c078 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -116,11 +116,11 @@ static void cs_check_cpu(int cpu, unsigned int load)
->  }
-> 
->  static unsigned int cs_dbs_timer(struct cpu_dbs_info *cdbs,
-> -				 struct dbs_data *dbs_data, bool modify_all)
-> +				 struct dbs_data *dbs_data, bool load_eval)
->  {
->  	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
-> 
-> -	if (modify_all)
-> +	if (load_eval)
->  		dbs_check_cpu(dbs_data, cdbs->ccdbs->policy->cpu);
-> 
->  	return delay_for_sampling_rate(cs_tuners->sampling_rate);
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 836aefd03c1b..416a8c5665dd 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -167,7 +167,7 @@ static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
->  }
-> 
+> -
 >  void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
-> -		unsigned int delay, bool all_cpus)
-> +		    unsigned int delay, const struct cpumask *cpus)
+>  		    unsigned int delay, const struct cpumask *cpus)
 >  {
->  	int i;
+> -	int i;
+> +	struct cpu_dbs_info *cdbs;
+> +	int cpu;
 > 
-> @@ -175,19 +175,8 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
+>  	mutex_lock(&cpufreq_governor_lock);
 >  	if (!policy->governor_enabled)
 >  		goto out_unlock;
 > 
-> -	if (!all_cpus) {
-> -		/*
-> -		 * Use raw_smp_processor_id() to avoid preemptible warnings.
-> -		 * We know that this is only called with all_cpus == false from
-> -		 * works that have been queued with *_work_on() functions and
-> -		 * those works are canceled during CPU_DOWN_PREPARE so they
-> -		 * can't possibly run on any other CPU.
-> -		 */
-> -		__gov_queue_work(raw_smp_processor_id(), dbs_data, delay);
-> -	} else {
-> -		for_each_cpu(i, policy->cpus)
-> -			__gov_queue_work(i, dbs_data, delay);
-> -	}
-> +	for_each_cpu(i, cpus)
-> +		__gov_queue_work(i, dbs_data, delay);
+> -	for_each_cpu(i, cpus)
+> -		__gov_queue_work(i, dbs_data, delay);
+> +	for_each_cpu(cpu, cpus) {
+> +		cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
+> +		mod_delayed_work_on(cpu, system_wq, &cdbs->dwork, delay);
+> +	}
 > 
 >  out_unlock:
 >  	mutex_unlock(&cpufreq_governor_lock);
-> @@ -232,7 +221,8 @@ static void dbs_timer(struct work_struct *work)
->  	struct cpufreq_policy *policy = ccdbs->policy;
->  	struct dbs_data *dbs_data = policy->governor_data;
->  	unsigned int sampling_rate, delay;
-> -	bool modify_all = true;
-> +	const struct cpumask *cpus;
-> +	bool load_eval;
-> 
->  	mutex_lock(&ccdbs->timer_mutex);
-> 
-> @@ -246,11 +236,11 @@ static void dbs_timer(struct work_struct *work)
->  		sampling_rate = od_tuners->sampling_rate;
->  	}
-> 
-> -	if (!need_load_eval(cdbs->ccdbs, sampling_rate))
-> -		modify_all = false;
-> +	load_eval = need_load_eval(cdbs->ccdbs, sampling_rate);
-> +	cpus = load_eval ? policy->cpus : cpumask_of(raw_smp_processor_id());
-> 
-> -	delay = dbs_data->cdata->gov_dbs_timer(cdbs, dbs_data, modify_all);
-> -	gov_queue_work(dbs_data, policy, delay, modify_all);
-> +	delay = dbs_data->cdata->gov_dbs_timer(cdbs, dbs_data, load_eval);
-> +	gov_queue_work(dbs_data, policy, delay, cpus);
-> 
->  	mutex_unlock(&ccdbs->timer_mutex);
->  }
-> @@ -474,7 +464,7 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
->  	}
-> 
->  	gov_queue_work(dbs_data, policy, delay_for_sampling_rate(sampling_rate),
-> -		       true);
-> +		       policy->cpus);
->  	return 0;
->  }
-> 
-> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-> index a0d24149f18c..dc2ad8a427f3 100644
-> --- a/drivers/cpufreq/cpufreq_governor.h
-> +++ b/drivers/cpufreq/cpufreq_governor.h
-> @@ -273,7 +273,7 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
->  int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  		struct common_dbs_data *cdata, unsigned int event);
->  void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
-> -		unsigned int delay, bool all_cpus);
-> +		    unsigned int delay, const struct cpumask *cpus);
->  void od_register_powersave_bias_handler(unsigned int (*f)
->  		(struct cpufreq_policy *, unsigned int, unsigned int),
->  		unsigned int powersave_bias);
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index 11db20079fc6..774bbddae2c9 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -192,7 +192,7 @@ static void od_check_cpu(int cpu, unsigned int load)
->  }
-> 
->  static unsigned int od_dbs_timer(struct cpu_dbs_info *cdbs,
-> -				 struct dbs_data *dbs_data, bool modify_all)
-> +				 struct dbs_data *dbs_data, bool load_eval)
->  {
->  	struct cpufreq_policy *policy = cdbs->ccdbs->policy;
->  	unsigned int cpu = policy->cpu;
-> @@ -201,7 +201,7 @@ static unsigned int od_dbs_timer(struct cpu_dbs_info *cdbs,
->  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
->  	int delay = 0, sample_type = dbs_info->sample_type;
-> 
-> -	if (!modify_all)
-> +	if (!load_eval)
->  		goto max_delay;
-> 
->  	/* Common NORMAL_SAMPLE setup */
-> @@ -284,7 +284,8 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
->  			mutex_lock(&dbs_info->cdbs.ccdbs->timer_mutex);
-> 
->  			gov_queue_work(dbs_data, policy,
-> -				       usecs_to_jiffies(new_rate), true);
-> +				       usecs_to_jiffies(new_rate),
-> +				       cpumask_of(cpu));
-> 
->  		}
->  		mutex_unlock(&dbs_info->cdbs.ccdbs->timer_mutex);
 > 
 
