@@ -1,175 +1,471 @@
 From: Michael Turquette <mturquette@baylibre.com>
-Subject: [PATCH v3 1/4] arm: Frequency invariant scheduler load-tracking support
-Date: Fri, 26 Jun 2015 16:53:41 -0700
-Message-ID: <1435362824-26734-2-git-send-email-mturquette@linaro.org>
+Subject: [PATCH v3 3/4] sched: scheduler-driven cpu frequency selection
+Date: Fri, 26 Jun 2015 16:53:43 -0700
+Message-ID: <1435362824-26734-4-git-send-email-mturquette@linaro.org>
 References: <1435362824-26734-1-git-send-email-mturquette@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:33061 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752006AbbFZXyI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jun 2015 19:54:08 -0400
-Received: by padev16 with SMTP id ev16so75747836pad.0
-        for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2015 16:54:07 -0700 (PDT)
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:34797 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755220AbbFZXyM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jun 2015 19:54:12 -0400
+Received: by pdbep18 with SMTP id ep18so61248230pdb.1
+        for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2015 16:54:11 -0700 (PDT)
 In-Reply-To: <1435362824-26734-1-git-send-email-mturquette@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@kernel.org
-Cc: linux-kernel@vger.kernel.org, preeti@linux.vnet.ibm.com, Morten.Rasmussen@arm.com, riel@redhat.com, efault@gmx.de, nicolas.pitre@linaro.org, daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, amit.kucheria@linaro.org, juri.lelli@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, alex.shi@linaro.org, linux-pm@vger.kernel.org, abelvesa@gmail.com, pebolle@tiscali.nl, Russell King <linux@arm.linux.org.uk>, Morten Rasmussen <morten.rasmussen@arm.com>, Michael Turquette <mturquette@baylibre.com>
+Cc: linux-kernel@vger.kernel.org, preeti@linux.vnet.ibm.com, Morten.Rasmussen@arm.com, riel@redhat.com, efault@gmx.de, nicolas.pitre@linaro.org, daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, amit.kucheria@linaro.org, juri.lelli@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, alex.shi@linaro.org, linux-pm@vger.kernel.org, abelvesa@gmail.com, pebolle@tiscali.nl, Michael Turquette <mturquette@baylibre.com>
 
-From: Morten Rasmussen <Morten.Rasmussen@arm.com>
+From: Michael Turquette <mturquette@baylibre.com>
 
-Implements arch-specific function to provide the scheduler with a
-frequency scaling correction factor for more accurate load-tracking. The
-factor is:
+Scheduler-driven cpu frequency selection is desirable as part of the
+on-going effort to make the scheduler better aware of energy
+consumption.  No piece of the Linux kernel has a better view of the
+factors that affect a cpu frequency selection policy than the
+scheduler[0], and this patch is an attempt to converge on an initial
+solution.
 
-	current_freq(cpu) << SCHED_CAPACITY_SHIFT / max_freq(cpu)
+This patch implements a simple shim layer between the Linux scheduler
+and the cpufreq subsystem. This interface accepts a capacity request
+from the Completely Fair Scheduler and honors the max request from all
+cpus in the same frequency domain.
 
-This implementation only provides frequency invariance. No
-micro-architecture invariance yet.
+The policy magic comes from choosing the cpu capacity request from cfs
+and is not contained in this cpufreq governor. This code is
+intentionally dumb.
 
-Cc: Russell King <linux@arm.linux.org.uk>
+Note that this "governor" is event-driven. There is no polling loop to
+check cpu idle time nor any other method which is unsynchronized with
+the scheduler.
 
-Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
+Thanks to Juri Lelli <juri.lelli@arm.com> for contributing design ideas,
+code and test results.
+
+[0] http://article.gmane.org/gmane.linux.kernel/1499836
+
 Signed-off-by: Michael Turquette <mturquette@baylibre.com>
+Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
- arch/arm/include/asm/topology.h |  7 ++++++
- arch/arm/kernel/smp.c           | 53 +++++++++++++++++++++++++++++++++++++++--
- arch/arm/kernel/topology.c      | 17 +++++++++++++
- 3 files changed, 75 insertions(+), 2 deletions(-)
+Changes in v3:
+Removed all policy bits
+Renamed from cpufreq_cfs to cpufreq_sched
+Bug fixes
+Support non-blocking frequency transitions
+License fix (thanks Paul)
 
-diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
-index 2fe85ff..4b985dc 100644
---- a/arch/arm/include/asm/topology.h
-+++ b/arch/arm/include/asm/topology.h
-@@ -24,6 +24,13 @@ void init_cpu_topology(void);
- void store_cpu_topology(unsigned int cpuid);
- const struct cpumask *cpu_coregroup_mask(int cpu);
+ drivers/cpufreq/Kconfig      |  24 ++++
+ include/linux/cpufreq.h      |   3 +
+ kernel/sched/Makefile        |   1 +
+ kernel/sched/cpufreq_sched.c | 308 +++++++++++++++++++++++++++++++++++++++++++
+ kernel/sched/sched.h         |   8 ++
+ 5 files changed, 344 insertions(+)
+ create mode 100644 kernel/sched/cpufreq_sched.c
+
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index a171fef..0206889 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -102,6 +102,15 @@ config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
+ 	  Be aware that not all cpufreq drivers support the conservative
+ 	  governor. If unsure have a look at the help section of the
+ 	  driver. Fallback governor will be the performance governor.
++
++config CPU_FREQ_DEFAULT_GOV_SCHED
++	bool "sched"
++	select CPU_FREQ_GOV_SCHED
++	select CPU_FREQ_GOV_PERFORMANCE
++	help
++	  Use the CPUfreq governor 'sched' as default. This scales
++	  cpu frequency from the scheduler as per-entity load tracking
++	  statistics are updated.
+ endchoice
  
-+#define arch_scale_freq_capacity arm_arch_scale_freq_capacity
-+struct sched_domain;
-+extern
-+unsigned long arm_arch_scale_freq_capacity(struct sched_domain *sd, int cpu);
-+
-+DECLARE_PER_CPU(atomic_long_t, cpu_freq_capacity);
-+
- #else
+ config CPU_FREQ_GOV_PERFORMANCE
+@@ -183,6 +192,21 @@ config CPU_FREQ_GOV_CONSERVATIVE
  
- static inline void init_cpu_topology(void) { }
-diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
-index 86ef244..297ce1b 100644
---- a/arch/arm/kernel/smp.c
-+++ b/arch/arm/kernel/smp.c
-@@ -672,12 +672,34 @@ static DEFINE_PER_CPU(unsigned long, l_p_j_ref);
- static DEFINE_PER_CPU(unsigned long, l_p_j_ref_freq);
- static unsigned long global_l_p_j_ref;
- static unsigned long global_l_p_j_ref_freq;
-+static DEFINE_PER_CPU(atomic_long_t, cpu_max_freq);
-+DEFINE_PER_CPU(atomic_long_t, cpu_freq_capacity);
+ 	  If in doubt, say N.
+ 
++config CPU_FREQ_GOV_SCHED
++	tristate "'sched' cpufreq governor"
++	depends on CPU_FREQ
++	select CPU_FREQ_GOV_COMMON
++	help
++	  'sched' - this governor scales cpu frequency from the
++	  scheduler as a function of cpu capacity utilization. It does
++	  not evaluate utilization on a periodic basis (as ondemand
++	  does) but instead is invoked from the completely fair
++	  scheduler when updating per-entity load tracking statistics.
++	  Latency to respond to changes in load is improved over polling
++	  governors due to its event-driven design.
 +
++	  If in doubt, say N.
++
+ comment "CPU frequency scaling drivers"
+ 
+ config CPUFREQ_DT
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 1f2c9a1..30241c9 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -494,6 +494,9 @@ extern struct cpufreq_governor cpufreq_gov_ondemand;
+ #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE)
+ extern struct cpufreq_governor cpufreq_gov_conservative;
+ #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_conservative)
++#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_SCHED_GOV)
++extern struct cpufreq_governor cpufreq_gov_sched_gov;
++#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_sched)
+ #endif
+ 
+ /*********************************************************************
+diff --git a/kernel/sched/Makefile b/kernel/sched/Makefile
+index 46be870..f04386c 100644
+--- a/kernel/sched/Makefile
++++ b/kernel/sched/Makefile
+@@ -19,3 +19,4 @@ obj-$(CONFIG_SCHED_AUTOGROUP) += auto_group.o
+ obj-$(CONFIG_SCHEDSTATS) += stats.o
+ obj-$(CONFIG_SCHED_DEBUG) += debug.o
+ obj-$(CONFIG_CGROUP_CPUACCT) += cpuacct.o
++obj-$(CONFIG_CPU_FREQ_GOV_SCHED) += cpufreq_sched.o
+diff --git a/kernel/sched/cpufreq_sched.c b/kernel/sched/cpufreq_sched.c
+new file mode 100644
+index 0000000..5020f24
+--- /dev/null
++++ b/kernel/sched/cpufreq_sched.c
+@@ -0,0 +1,308 @@
 +/*
-+ * Scheduler load-tracking scale-invariance
++ *  Copyright (C)  2015 Michael Turquette <mturquette@linaro.org>
 + *
-+ * Provides the scheduler with a scale-invariance correction factor that
-+ * compensates for frequency scaling through arch_scale_freq_capacity()
-+ * (implemented in topology.c).
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + */
-+static inline
-+void scale_freq_capacity(int cpu, unsigned long curr, unsigned long max)
-+{
-+	unsigned long capacity;
 +
-+	if (!max)
-+		return;
++#include <linux/cpufreq.h>
++#include <linux/module.h>
++#include <linux/kthread.h>
++#include <linux/percpu.h>
++#include <linux/irq_work.h>
 +
-+	capacity = (curr << SCHED_CAPACITY_SHIFT) / max;
-+	atomic_long_set(&per_cpu(cpu_freq_capacity, cpu), capacity);
-+}
- 
- static int cpufreq_callback(struct notifier_block *nb,
- 					unsigned long val, void *data)
- {
- 	struct cpufreq_freqs *freq = data;
- 	int cpu = freq->cpu;
-+	unsigned long max = atomic_long_read(&per_cpu(cpu_max_freq, cpu));
- 
- 	if (freq->flags & CPUFREQ_CONST_LOOPS)
- 		return NOTIFY_OK;
-@@ -702,6 +724,9 @@ static int cpufreq_callback(struct notifier_block *nb,
- 					per_cpu(l_p_j_ref_freq, cpu),
- 					freq->new);
- 	}
++#include "sched.h"
 +
-+	scale_freq_capacity(cpu, freq->new, max);
++#define THROTTLE_NSEC		50000000 /* 50ms default */
 +
- 	return NOTIFY_OK;
- }
- 
-@@ -709,11 +734,35 @@ static struct notifier_block cpufreq_notifier = {
- 	.notifier_call  = cpufreq_callback,
- };
- 
-+static int cpufreq_policy_callback(struct notifier_block *nb,
-+						unsigned long val, void *data)
-+{
-+	struct cpufreq_policy *policy = data;
-+	int i;
++static DEFINE_PER_CPU(unsigned long, pcpu_capacity);
++static DEFINE_PER_CPU(struct cpufreq_policy *, pcpu_policy);
 +
-+	for_each_cpu(i, policy->cpus) {
-+		scale_freq_capacity(i, policy->cur, policy->max);
-+		atomic_long_set(&per_cpu(cpu_max_freq, i), policy->max);
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block cpufreq_policy_notifier = {
-+	.notifier_call	= cpufreq_policy_callback,
++/**
++ * gov_data - per-policy data internal to the governor
++ * @throttle: next throttling period expiry. Derived from throttle_nsec
++ * @throttle_nsec: throttle period length in nanoseconds
++ * @task: worker thread for dvfs transition that may block/sleep
++ * @irq_work: callback used to wake up worker thread
++ * @freq: new frequency stored in *_sched_update_cpu and used in *_sched_thread
++ *
++ * struct gov_data is the per-policy cpufreq_sched-specific data structure. A
++ * per-policy instance of it is created when the cpufreq_sched governor receives
++ * the CPUFREQ_GOV_START condition and a pointer to it exists in the gov_data
++ * member of struct cpufreq_policy.
++ *
++ * Readers of this data must call down_read(policy->rwsem). Writers must
++ * call down_write(policy->rwsem).
++ */
++struct gov_data {
++	ktime_t throttle;
++	unsigned int throttle_nsec;
++	struct task_struct *task;
++	struct irq_work irq_work;
++	struct cpufreq_policy *policy;
++	unsigned int freq;
 +};
 +
- static int __init register_cpufreq_notifier(void)
- {
--	return cpufreq_register_notifier(&cpufreq_notifier,
-+	int ret;
-+
-+	ret = cpufreq_register_notifier(&cpufreq_notifier,
- 						CPUFREQ_TRANSITION_NOTIFIER);
-+	if (ret)
-+		return ret;
-+
-+	return cpufreq_register_notifier(&cpufreq_policy_notifier,
-+						CPUFREQ_POLICY_NOTIFIER);
- }
- core_initcall(register_cpufreq_notifier);
--
- #endif
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index 08b7847..9c09e6e 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -169,6 +169,23 @@ static void update_cpu_capacity(unsigned int cpu)
- 		cpu, arch_scale_cpu_capacity(NULL, cpu));
- }
- 
-+/*
-+ * Scheduler load-tracking scale-invariance
-+ *
-+ * Provides the scheduler with a scale-invariance correction factor that
-+ * compensates for frequency scaling (arch_scale_freq_capacity()). The scaling
-+ * factor is updated in smp.c
-+ */
-+unsigned long arm_arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
++static void cpufreq_sched_try_driver_target(struct cpufreq_policy *policy, unsigned int freq)
 +{
-+	unsigned long curr = atomic_long_read(&per_cpu(cpu_freq_capacity, cpu));
++	struct gov_data *gd = policy->governor_data;
 +
-+	if (!curr)
-+		return SCHED_CAPACITY_SCALE;
++	/* avoid race with cpufreq_sched_stop */
++	if (!down_write_trylock(&policy->rwsem))
++		return;
 +
-+	return curr;
++	__cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
++
++	gd->throttle = ktime_add_ns(ktime_get(), gd->throttle_nsec);
++	up_write(&policy->rwsem);
 +}
 +
++/*
++ * we pass in struct cpufreq_policy. This is safe because changing out the
++ * policy requires a call to __cpufreq_governor(policy, CPUFREQ_GOV_STOP),
++ * which tears down all of the data structures and __cpufreq_governor(policy,
++ * CPUFREQ_GOV_START) will do a full rebuild, including this kthread with the
++ * new policy pointer
++ */
++static int cpufreq_sched_thread(void *data)
++{
++	struct sched_param param;
++	struct cpufreq_policy *policy;
++	struct gov_data *gd;
++	int ret;
++
++	policy = (struct cpufreq_policy *) data;
++	if (!policy) {
++		pr_warn("%s: missing policy\n", __func__);
++		do_exit(-EINVAL);
++	}
++
++	gd = policy->governor_data;
++	if (!gd) {
++		pr_warn("%s: missing governor data\n", __func__);
++		do_exit(-EINVAL);
++	}
++
++	param.sched_priority = 50;
++	ret = sched_setscheduler_nocheck(gd->task, SCHED_FIFO, &param);
++	if (ret) {
++		pr_warn("%s: failed to set SCHED_FIFO\n", __func__);
++		do_exit(-EINVAL);
++	} else {
++		pr_debug("%s: kthread (%d) set to SCHED_FIFO\n",
++				__func__, gd->task->pid);
++	}
++
++	ret = set_cpus_allowed_ptr(gd->task, policy->related_cpus);
++	if (ret) {
++		pr_warn("%s: failed to set allowed ptr\n", __func__);
++		do_exit(-EINVAL);
++	}
++
++	/* main loop of the per-policy kthread */
++	do {
++		set_current_state(TASK_INTERRUPTIBLE);
++		schedule();
++		if (kthread_should_stop())
++			break;
++
++		cpufreq_sched_try_driver_target(policy, gd->freq);
++	} while (!kthread_should_stop());
++
++	do_exit(0);
++}
++
++static void cpufreq_sched_irq_work(struct irq_work *irq_work)
++{
++	struct gov_data *gd;
++
++	gd = container_of(irq_work, struct gov_data, irq_work);
++	if (!gd) {
++		return;
++	}
++
++	wake_up_process(gd->task);
++}
++
++/**
++ * cpufreq_sched_set_capacity - interface to scheduler for changing capacity values
++ * @cpu: cpu whose capacity utilization has recently changed
++ * @capacity: the new capacity requested by cpu
++ *
++ * cpufreq_sched_sched_capacity is an interface exposed to the scheduler so
++ * that the scheduler may inform the governor of updates to capacity
++ * utilization and make changes to cpu frequency. Currently this interface is
++ * designed around PELT values in CFS. It can be expanded to other scheduling
++ * classes in the future if needed.
++ *
++ * cpufreq_sched_set_capacity raises an IPI. The irq_work handler for that IPI
++ * wakes up the thread that does the actual work, cpufreq_sched_thread.
++ *
++ * This functions bails out early if either condition is true:
++ * 1) this cpu did not the new maximum capacity for its frequency domain
++ * 2) no change in cpu frequency is necessary to meet the new capacity request
++ */
++void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
++{
++	unsigned int freq_new, cpu_tmp;
++	struct cpufreq_policy *policy;
++	struct gov_data *gd;
++	unsigned long capacity_max = 0;
++
++	/* update per-cpu capacity request */
++	__this_cpu_write(pcpu_capacity, capacity);
++
++	policy = cpufreq_cpu_get(cpu);
++	if (IS_ERR_OR_NULL(policy)) {
++		return;
++	}
++
++	if (!policy->governor_data)
++		goto out;
++
++	gd = policy->governor_data;
++
++	/* bail early if we are throttled */
++	if (ktime_before(ktime_get(), gd->throttle))
++		goto out;
++
++	/* find max capacity requested by cpus in this policy */
++	for_each_cpu(cpu_tmp, policy->cpus)
++		capacity_max = max(capacity_max, per_cpu(pcpu_capacity, cpu_tmp));
++
++	/*
++	 * We only change frequency if this cpu's capacity request represents a
++	 * new max. If another cpu has requested a capacity greater than the
++	 * previous max then we rely on that cpu to hit this code path and make
++	 * the change. IOW, the cpu with the new max capacity is responsible
++	 * for setting the new capacity/frequency.
++	 *
++	 * If this cpu is not the new maximum then bail
++	 */
++	if (capacity_max > capacity)
++		goto out;
++
++	/* Convert the new maximum capacity request into a cpu frequency */
++	freq_new = capacity * policy->max >> SCHED_CAPACITY_SHIFT;
++
++	/* No change in frequency? Bail and return current capacity. */
++	if (freq_new == policy->cur)
++		goto out;
++
++	/* store the new frequency and perform the transition */
++	gd->freq = freq_new;
++
++	if (cpufreq_driver_might_sleep())
++		irq_work_queue_on(&gd->irq_work, cpu);
++	else
++		cpufreq_sched_try_driver_target(policy, freq_new);
++
++out:
++	cpufreq_cpu_put(policy);
++	return;
++}
++
++static int cpufreq_sched_start(struct cpufreq_policy *policy)
++{
++	struct gov_data *gd;
++	int cpu;
++
++	/* prepare per-policy private data */
++	gd = kzalloc(sizeof(*gd), GFP_KERNEL);
++	if (!gd) {
++		pr_debug("%s: failed to allocate private data\n", __func__);
++		return -ENOMEM;
++	}
++
++	/* initialize per-cpu data */
++	for_each_cpu(cpu, policy->cpus) {
++		per_cpu(pcpu_capacity, cpu) = 0;
++		per_cpu(pcpu_policy, cpu) = policy;
++	}
++
++	/*
++	 * Don't ask for freq changes at an higher rate than what
++	 * the driver advertises as transition latency.
++	 */
++	gd->throttle_nsec = policy->cpuinfo.transition_latency ?
++			    policy->cpuinfo.transition_latency :
++			    THROTTLE_NSEC;
++	pr_debug("%s: throttle threshold = %u [ns]\n",
++		  __func__, gd->throttle_nsec);
++
++	if (cpufreq_driver_might_sleep()) {
++		/* init per-policy kthread */
++		gd->task = kthread_run(cpufreq_sched_thread, policy, "kcpufreq_sched_task");
++		if (IS_ERR_OR_NULL(gd->task)) {
++			pr_err("%s: failed to create kcpufreq_sched_task thread\n", __func__);
++			goto err;
++		}
++		init_irq_work(&gd->irq_work, cpufreq_sched_irq_work);
++	}
++
++	policy->governor_data = gd;
++	gd->policy = policy;
++	return 0;
++
++err:
++	kfree(gd);
++	return -ENOMEM;
++}
++
++static int cpufreq_sched_stop(struct cpufreq_policy *policy)
++{
++	struct gov_data *gd = policy->governor_data;
++
++	if (cpufreq_driver_might_sleep()) {
++		kthread_stop(gd->task);
++	}
++
++	policy->governor_data = NULL;
++
++	/* FIXME replace with devm counterparts? */
++	kfree(gd);
++	return 0;
++}
++
++static int cpufreq_sched_setup(struct cpufreq_policy *policy, unsigned int event)
++{
++	switch (event) {
++		case CPUFREQ_GOV_START:
++			/* Start managing the frequency */
++			return cpufreq_sched_start(policy);
++
++		case CPUFREQ_GOV_STOP:
++			return cpufreq_sched_stop(policy);
++
++		case CPUFREQ_GOV_LIMITS:	/* unused */
++		case CPUFREQ_GOV_POLICY_INIT:	/* unused */
++		case CPUFREQ_GOV_POLICY_EXIT:	/* unused */
++			break;
++	}
++	return 0;
++}
++
++#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_SCHED
++static
++#endif
++struct cpufreq_governor cpufreq_gov_sched = {
++	.name			= "sched",
++	.governor		= cpufreq_sched_setup,
++	.owner			= THIS_MODULE,
++};
++
++static int __init cpufreq_sched_init(void)
++{
++	return cpufreq_register_governor(&cpufreq_gov_sched);
++}
++
++static void __exit cpufreq_sched_exit(void)
++{
++	cpufreq_unregister_governor(&cpufreq_gov_sched);
++}
++
++/* Try to make this the default governor */
++fs_initcall(cpufreq_sched_init);
++
++MODULE_LICENSE("GPL v2");
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index e0e1299..25a1b85 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -1396,6 +1396,13 @@ unsigned long arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
+ }
+ #endif
+ 
++#ifdef CONFIG_CPU_FREQ_GOV_SCHED
++void cpufreq_sched_set_cap(int cpu, unsigned long util);
++#else
++static inline void cpufreq_sched_set_cap(int cpu, unsigned long util)
++{ }
++#endif
++
+ static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta)
+ {
+ 	rq->rt_avg += rt_delta * arch_scale_freq_capacity(NULL, cpu_of(rq));
+@@ -1404,6 +1411,7 @@ static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta)
  #else
- static inline void parse_dt_topology(void) {}
- static inline void update_cpu_capacity(unsigned int cpuid) {}
+ static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta) { }
+ static inline void sched_avg_update(struct rq *rq) { }
++static inline void gov_cfs_update_cpu(int cpu) {}
+ #endif
+ 
+ extern void start_bandwidth_timer(struct hrtimer *period_timer, ktime_t period);
 -- 
 1.9.1
 
