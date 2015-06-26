@@ -1,125 +1,355 @@
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH 07/10] cpufreq: ondemand: queue work for policy->cpus
- together
-Date: Fri, 26 Jun 2015 13:58:34 +0530
-Message-ID: <558D0D32.7060001@linux.vnet.ibm.com>
-References: <cover.1434959517.git.viresh.kumar@linaro.org> <66980e2b51a83bf34f6fd18ee55155b6c667aa6a.1434959517.git.viresh.kumar@linaro.org>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v2 1/4] mfd: da9150: Add support for Fuel-Gauge
+Date: Fri, 26 Jun 2015 09:47:47 +0100
+Message-ID: <11b930c87ee9728ce8911896aa673e2ad1dedf40.1435308209.git.Adam.Thomson.Opensource@diasemi.com>
+References: <cover.1435308209.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-6
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e33.co.us.ibm.com ([32.97.110.151]:47543 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751317AbbFZI2k (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jun 2015 04:28:40 -0400
-Received: from /spool/local
-	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
-	Fri, 26 Jun 2015 02:28:39 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
-	by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 92EB51FF0046
-	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2015 02:19:47 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
-	by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id t5Q8RuSt59113496
-	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2015 01:27:56 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
-	by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id t5Q8Sb3O007384
-	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2015 02:28:37 -0600
-In-Reply-To: <66980e2b51a83bf34f6fd18ee55155b6c667aa6a.1434959517.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1435308209.git.Adam.Thomson.Opensource@diasemi.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 
-On 06/22/2015 01:32 PM, Viresh Kumar wrote:
-> Currently update_sampling_rate() runs over each online CPU and
-> cancels/queues work on it. Its very inefficient for the case where a
-> single policy manages multiple CPUs, as they can be processed together.
-> 
-> Also drop the unnecessary cancel_delayed_work_sync() as we are doing a
-> mod_delayed_work_on() in gov_queue_work(), which will take care of
-> pending works for us.
+Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+---
+ drivers/mfd/da9150-core.c       | 162 ++++++++++++++++++++++++++++++++++++++--
+ include/linux/mfd/da9150/core.h |  19 +++++
+ include/linux/mfd/da9150/fg.h   |  29 +++++++
+ 3 files changed, 202 insertions(+), 8 deletions(-)
+ create mode 100644 include/linux/mfd/da9150/fg.h
 
-This looks fine, except for one point. See below:
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq_ondemand.c | 32 ++++++++++++++++++++------------
->  1 file changed, 20 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index 841e1fa96ee7..cfecd3b67cb3 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -247,40 +247,48 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
->  		unsigned int new_rate)
->  {
->  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
-> +	struct cpufreq_policy *policy;
-> +	struct od_cpu_dbs_info_s *dbs_info;
-> +	unsigned long next_sampling, appointed_at;
-> +	struct cpumask cpumask;
->  	int cpu;
-> 
-> +	cpumask_copy(&cpumask, cpu_online_mask);
-> +
->  	od_tuners->sampling_rate = new_rate = max(new_rate,
->  			dbs_data->min_sampling_rate);
-> 
-> -	for_each_online_cpu(cpu) {
-> -		struct cpufreq_policy *policy;
-> -		struct od_cpu_dbs_info_s *dbs_info;
-> -		unsigned long next_sampling, appointed_at;
-> -
-> +	for_each_cpu(cpu, &cpumask) {
->  		policy = cpufreq_cpu_get(cpu);
->  		if (!policy)
->  			continue;
-> +
-> +		/* clear all CPUs of this policy */
-> +		cpumask_andnot(&cpumask, &cpumask, policy->cpus);
-> +
->  		if (policy->governor != &cpufreq_gov_ondemand) {
->  			cpufreq_cpu_put(policy);
->  			continue;
->  		}
-> +
->  		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
->  		cpufreq_cpu_put(policy);
-> 
-> +		/*
-> +		 * Checking this for any CPU of the policy is fine. As either
-> +		 * all would have queued work or none.
+diff --git a/drivers/mfd/da9150-core.c b/drivers/mfd/da9150-core.c
+index 5549817..8feb75d 100644
+--- a/drivers/mfd/da9150-core.c
++++ b/drivers/mfd/da9150-core.c
+@@ -21,8 +21,80 @@
+ #include <linux/interrupt.h>
+ #include <linux/mfd/core.h>
+ #include <linux/mfd/da9150/core.h>
++#include <linux/mfd/da9150/fg.h>
+ #include <linux/mfd/da9150/registers.h>
 
-Are you sure that the state of the work will be the same across all
-policy cpus ? 'Pending' only refers to twork awaiting for the timer to
-fire and then queue itself on the runqueue right ? On some of the
-policy->cpus, timers may be yet to fire, while on others it might
-already have ?
++/* Raw device access, used for QIF */
++static int da9150_i2c_read_device(struct i2c_client *client, u8 addr, int count,
++				  u8 *buf)
++{
++	struct i2c_msg xfer;
++	int ret;
++
++	/*
++	 * Read is split into two transfers as device expects STOP/START rather
++	 * than repeated start to carry out this kind of access.
++	 */
++
++	/* Write address */
++	xfer.addr = client->addr;
++	xfer.flags = 0;
++	xfer.len = 1;
++	xfer.buf = &addr;
++
++	ret = i2c_transfer(client->adapter, &xfer, 1);
++	if (ret != 1) {
++		if (ret < 0)
++			return ret;
++		else
++			return -EIO;
++	}
++
++	/* Read data */
++	xfer.addr = client->addr;
++	xfer.flags = I2C_M_RD;
++	xfer.len = count;
++	xfer.buf = buf;
++
++	ret = i2c_transfer(client->adapter, &xfer, 1);
++	if (ret == 1)
++		return 0;
++	else if (ret < 0)
++		return ret;
++	else
++		return -EIO;
++}
++
++static int da9150_i2c_write_device(struct i2c_client *client, u8 addr,
++				   int count, const u8 *buf)
++{
++	struct i2c_msg xfer;
++	u8 *reg_data;
++	int ret;
++
++	reg_data = kzalloc(1 + count, GFP_KERNEL);
++	if (!reg_data)
++		return -ENOMEM;
++
++	reg_data[0] = addr;
++	memcpy(&reg_data[1], buf, count);
++
++	/* Write address & data */
++	xfer.addr = client->addr;
++	xfer.flags = 0;
++	xfer.len = 1 + count;
++	xfer.buf = reg_data;
++
++	ret = i2c_transfer(client->adapter, &xfer, 1);
++	kfree(reg_data);
++	if (ret == 1)
++		return 0;
++	else if (ret < 0)
++		return ret;
++	else
++		return -EIO;
++}
++
+ static bool da9150_volatile_reg(struct device *dev, unsigned int reg)
+ {
+ 	switch (reg) {
+@@ -107,6 +179,28 @@ static const struct regmap_config da9150_regmap_config = {
+ 	.volatile_reg = da9150_volatile_reg,
+ };
 
-> +		 */
->  		if (!delayed_work_pending(&dbs_info->cdbs.dwork))
->  			continue;
-> 
->  		next_sampling = jiffies + usecs_to_jiffies(new_rate);
->  		appointed_at = dbs_info->cdbs.dwork.timer.expires;
-> 
-> -		if (time_before(next_sampling, appointed_at)) {
-> -			cancel_delayed_work_sync(&dbs_info->cdbs.dwork);
-> -
-> -			gov_queue_work(dbs_data, policy,
-> -				       usecs_to_jiffies(new_rate),
-> -				       cpumask_of(cpu));
-> +		if (!time_before(next_sampling, appointed_at))
-> +			continue;
-> 
-> -		}
-> +		gov_queue_work(dbs_data, policy, usecs_to_jiffies(new_rate),
-> +			       policy->cpus);
->  	}
->  }
-> 
++void da9150_read_qif(struct da9150 *da9150, u8 addr, int count, u8 *buf)
++{
++	int ret;
++
++	ret = da9150->read_dev(da9150->core_qif, addr, count, buf);
++	if (ret < 0)
++		dev_err(da9150->dev, "Failed to read from QIF 0x%x: %d\n",
++			addr, ret);
++}
++EXPORT_SYMBOL_GPL(da9150_read_qif);
++
++void da9150_write_qif(struct da9150 *da9150, u8 addr, int count, const u8 *buf)
++{
++	int ret;
++
++	ret = da9150->write_dev(da9150->core_qif, addr, count, buf);
++	if (ret < 0)
++		dev_err(da9150->dev, "Failed to write to QIF 0x%x: %d\n",
++			addr, ret);
++}
++EXPORT_SYMBOL_GPL(da9150_write_qif);
++
+ u8 da9150_reg_read(struct da9150 *da9150, u16 reg)
+ {
+ 	int val, ret;
+@@ -297,6 +391,15 @@ static struct resource da9150_charger_resources[] = {
+ 	},
+ };
 
-Regards
-Preeti U Murthy
++static struct resource da9150_fg_resources[] = {
++	{
++		.name = "FG",
++		.start = DA9150_IRQ_FG,
++		.end = DA9150_IRQ_FG,
++		.flags = IORESOURCE_IRQ,
++	},
++};
++
+ static struct mfd_cell da9150_devs[] = {
+ 	{
+ 		.name = "da9150-gpadc",
+@@ -310,6 +413,12 @@ static struct mfd_cell da9150_devs[] = {
+ 		.resources = da9150_charger_resources,
+ 		.num_resources = ARRAY_SIZE(da9150_charger_resources),
+ 	},
++	{
++		.name = "da9150-fuelgauge",
++		.of_compatible = "dlg,da9150-fg",
++		.resources = da9150_fg_resources,
++		.num_resources = ARRAY_SIZE(da9150_fg_resources),
++	},
+ };
 
+ static int da9150_probe(struct i2c_client *client,
+@@ -317,11 +426,14 @@ static int da9150_probe(struct i2c_client *client,
+ {
+ 	struct da9150 *da9150;
+ 	struct da9150_pdata *pdata = dev_get_platdata(&client->dev);
++	int qif_addr;
+ 	int ret;
+
+ 	da9150 = devm_kzalloc(&client->dev, sizeof(*da9150), GFP_KERNEL);
+-	if (!da9150)
+-		return -ENOMEM;
++	if (!da9150) {
++		ret = -ENOMEM;
++		goto fail;
++	}
+
+ 	da9150->dev = &client->dev;
+ 	da9150->irq = client->irq;
+@@ -332,19 +444,46 @@ static int da9150_probe(struct i2c_client *client,
+ 		ret = PTR_ERR(da9150->regmap);
+ 		dev_err(da9150->dev, "Failed to allocate register map: %d\n",
+ 			ret);
+-		return ret;
++		goto fail;
++	}
++
++	/* Setup secondary I2C interface for QIF access */
++	qif_addr = da9150_reg_read(da9150, DA9150_CORE2WIRE_CTRL_A);
++	qif_addr = (qif_addr & DA9150_CORE_BASE_ADDR_MASK) >> 1;
++	qif_addr |= DA9150_QIF_I2C_ADDR_LSB;
++	da9150->core_qif = i2c_new_dummy(client->adapter, qif_addr);
++	if (!da9150->core_qif) {
++		dev_err(da9150->dev, "Failed to attach QIF client\n");
++		ret = -ENODEV;
++		goto fail;
+ 	}
+
+-	da9150->irq_base = pdata ? pdata->irq_base : -1;
++	i2c_set_clientdata(da9150->core_qif, da9150);
++	da9150->read_dev = (read_dev_t) da9150_i2c_read_device;
++	da9150->write_dev = (write_dev_t) da9150_i2c_write_device;
++
++	if (pdata) {
++		da9150->irq_base = pdata->irq_base;
++
++		da9150_devs[2].platform_data = pdata->fg_pdata;
++		da9150_devs[2].pdata_size = sizeof(struct da9150_fg_pdata);
++	} else {
++		da9150->irq_base = -1;
++	}
+
+ 	ret = regmap_add_irq_chip(da9150->regmap, da9150->irq,
+ 				  IRQF_TRIGGER_LOW | IRQF_ONESHOT,
+ 				  da9150->irq_base, &da9150_regmap_irq_chip,
+ 				  &da9150->regmap_irq_data);
+-	if (ret)
+-		return ret;
++	if (ret) {
++		dev_err(da9150->dev, "Failed to add regmap irq chip: %d\n",
++			ret);
++		goto regmap_irq_fail;
++	}
++
+
+ 	da9150->irq_base = regmap_irq_chip_get_base(da9150->regmap_irq_data);
++
+ 	enable_irq_wake(da9150->irq);
+
+ 	ret = mfd_add_devices(da9150->dev, -1, da9150_devs,
+@@ -352,11 +491,17 @@ static int da9150_probe(struct i2c_client *client,
+ 			      da9150->irq_base, NULL);
+ 	if (ret) {
+ 		dev_err(da9150->dev, "Failed to add child devices: %d\n", ret);
+-		regmap_del_irq_chip(da9150->irq, da9150->regmap_irq_data);
+-		return ret;
++		goto mfd_fail;
+ 	}
+
+ 	return 0;
++
++mfd_fail:
++	regmap_del_irq_chip(da9150->irq, da9150->regmap_irq_data);
++regmap_irq_fail:
++	i2c_unregister_device(da9150->core_qif);
++fail:
++	return ret;
+ }
+
+ static int da9150_remove(struct i2c_client *client)
+@@ -365,6 +510,7 @@ static int da9150_remove(struct i2c_client *client)
+
+ 	regmap_del_irq_chip(da9150->irq, da9150->regmap_irq_data);
+ 	mfd_remove_devices(da9150->dev);
++	i2c_unregister_device(da9150->core_qif);
+
+ 	return 0;
+ }
+diff --git a/include/linux/mfd/da9150/core.h b/include/linux/mfd/da9150/core.h
+index 76e6689..98ecfea 100644
+--- a/include/linux/mfd/da9150/core.h
++++ b/include/linux/mfd/da9150/core.h
+@@ -15,9 +15,11 @@
+ #define __DA9150_CORE_H
+
+ #include <linux/device.h>
++#include <linux/i2c.h>
+ #include <linux/interrupt.h>
+ #include <linux/regmap.h>
+
++
+ /* I2C address paging */
+ #define DA9150_REG_PAGE_SHIFT	8
+ #define DA9150_REG_PAGE_MASK	0xFF
+@@ -46,23 +48,40 @@
+ #define DA9150_IRQ_GPADC	19
+ #define DA9150_IRQ_WKUP		20
+
++/* Platform Data */
++struct da9150_fg_pdata;
++
+ struct da9150_pdata {
+ 	int irq_base;
++	struct da9150_fg_pdata *fg_pdata;
+ };
+
++/* I/O function typedefs for raw access */
++typedef int (*read_dev_t)(void *client, u8 addr, int count, u8 *buf);
++typedef int (*write_dev_t)(void *client, u8 addr, int count, const u8 *buf);
++
+ struct da9150 {
+ 	struct device *dev;
+ 	struct regmap *regmap;
++	struct i2c_client *core_qif;
++
++	read_dev_t read_dev;
++	write_dev_t write_dev;
++
+ 	struct regmap_irq_chip_data *regmap_irq_data;
+ 	int irq;
+ 	int irq_base;
+ };
+
+ /* Device I/O */
++void da9150_read_qif(struct da9150 *da9150, u8 addr, int count, u8 *buf);
++void da9150_write_qif(struct da9150 *da9150, u8 addr, int count, const u8 *buf);
++
+ u8 da9150_reg_read(struct da9150 *da9150, u16 reg);
+ void da9150_reg_write(struct da9150 *da9150, u16 reg, u8 val);
+ void da9150_set_bits(struct da9150 *da9150, u16 reg, u8 mask, u8 val);
+
+ void da9150_bulk_read(struct da9150 *da9150, u16 reg, int count, u8 *buf);
+ void da9150_bulk_write(struct da9150 *da9150, u16 reg, int count, const u8 *buf);
++
+ #endif /* __DA9150_CORE_H */
+diff --git a/include/linux/mfd/da9150/fg.h b/include/linux/mfd/da9150/fg.h
+new file mode 100644
+index 0000000..0ff52ab
+--- /dev/null
++++ b/include/linux/mfd/da9150/fg.h
+@@ -0,0 +1,29 @@
++/*
++ * DA9150 MFD Driver - Fuel Gauge Data
++ *
++ * Copyright (c) 2015 Dialog Semiconductor
++ *
++ * Author: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#ifndef __DA9150_FG_H
++#define __DA9150_FG_H
++
++#include <linux/power_supply.h>
++
++/* I2C sub-device address */
++#define DA9150_QIF_I2C_ADDR_LSB		0x5
++
++/* Platform data */
++struct da9150_fg_pdata {
++	u32 update_interval;	/* msecs */
++	u8 warn_soc_lvl;	/* % value */
++	u8 crit_soc_lvl;	/* % value */
++};
++
++#endif /* __DA9150_FG_H */
+--
+1.9.3
