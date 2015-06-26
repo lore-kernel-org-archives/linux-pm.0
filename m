@@ -1,53 +1,85 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] thermal: Switch mode to enabled once the cooling device
- is bound
-Date: Thu, 25 Jun 2015 12:35:30 -0500
-Message-ID: <558C3BE2.9020508@ti.com>
-References: <1435236635-20830-1-git-send-email-j-keerthy@ti.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH] PM / Domains: Try power off masters in error path of __pm_genpd_poweron()
+Date: Fri, 26 Jun 2015 09:10:37 +0900
+Message-ID: <CAJKOXPcSpPk7krHiv2J1ZCfYyg6NDb2-HqnU1UJPVpMzz0DMWg@mail.gmail.com>
+References: <1434023511-4263-1-git-send-email-ulf.hansson@linaro.org>
+	<55798031.50205@gmail.com>
+	<CAPDyKFo7OarmJpc7teHjOkxgoEToa_SJaRMRW-_cfSmJ-5MLtw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:33344 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751561AbbFYRfd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 25 Jun 2015 13:35:33 -0400
-In-Reply-To: <1435236635-20830-1-git-send-email-j-keerthy@ti.com>
+Received: from mail-vn0-f44.google.com ([209.85.216.44]:40454 "EHLO
+	mail-vn0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751720AbbFZAKi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 25 Jun 2015 20:10:38 -0400
+Received: by vnbf7 with SMTP id f7so13428196vnb.7
+        for <linux-pm@vger.kernel.org>; Thu, 25 Jun 2015 17:10:37 -0700 (PDT)
+In-Reply-To: <CAPDyKFo7OarmJpc7teHjOkxgoEToa_SJaRMRW-_cfSmJ-5MLtw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>, edubezval@gmail.com
-Cc: linux-omap@vger.kernel.org, rui.zhang@intel.com, t-kristo@ti.com, linux-pm@vger.kernel.org, Ravikumar Kattekola <rk@ti.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Russell King <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 06/25/2015 07:50 AM, Keerthy wrote:
-> Currently mode is still disabled even after the cooling device is bound
-> to the appropriate device. Hence changing the mode to enabled as soon as
-> the cooling device is registered successfully.
-> 
-> Signed-off-by: Keerthy <j-keerthy@ti.com>
-> ---
->  drivers/thermal/of-thermal.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 04b1be7..bc84485 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -163,6 +163,9 @@ static int of_thermal_bind(struct thermal_zone_device *thermal,
->  		}
->  	}
->  
-> +	/* Now that cooling device is bound enable the thermal device*/
-> +	data->mode = THERMAL_DEVICE_ENABLED;
-> +
->  	return 0;
->  }
->  
-> 
-This makes sense to me rather than waiting for userspace to enable the
-zone -(by which time we might have hit catastrophic thermal events
-which may have been prevented if we had the zones enabled and cooling
-devices functional.
+2015-06-25 20:17 GMT+09:00 Ulf Hansson <ulf.hansson@linaro.org>:
+> On 11 June 2015 at 14:33, Krzysztof Kozlowski <k.kozlowski.k@gmail.com> wrote:
+>> W dniu 11.06.2015 o 20:51, Ulf Hansson pisze:
+>>> While powering up a genpd, its domain masters are first being powered up.
+>>> In the error path of __pm_genpd_poweron(), we didn't care to try power off
+>>> these domain masters. Let's deal with that to avoid leaving unused PM
+>>> domains powered.
+>>>
+>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>> ---
+>>>  drivers/base/power/domain.c | 30 +++++++++++++++++-------------
+>>>  1 file changed, 17 insertions(+), 13 deletions(-)
+>>>
+>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>>> index 2327613..32dcb80 100644
+>>> --- a/drivers/base/power/domain.c
+>>> +++ b/drivers/base/power/domain.c
+>>> @@ -235,6 +235,18 @@ static int genpd_power_off(struct generic_pm_domain *genpd)
+>>>  }
+>>>
+>>>  /**
+>>> + * genpd_queue_power_off_work - Queue up the execution of pm_genpd_poweroff().
+>>> + * @genpd: PM domait to power off.
+>>> + *
+>>> + * Queue up the execution of pm_genpd_poweroff() unless it's already been done
+>>> + * before.
+>>> + */
+>>> +static void genpd_queue_power_off_work(struct generic_pm_domain *genpd)
+>>> +{
+>>> +     queue_work(pm_wq, &genpd->power_off_work);
+>>> +}
+>>> +
+>>> +/**
+>>>   * __pm_genpd_poweron - Restore power to a given PM domain and its masters.
+>>>   * @genpd: PM domain to power up.
+>>>   *
+>>> @@ -315,8 +327,12 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
+>>>       return 0;
+>>>
+>>>   err:
+>>> -     list_for_each_entry_continue_reverse(link, &genpd->slave_links, slave_node)
+>>> +     list_for_each_entry_continue_reverse(link,
+>>> +                                     &genpd->slave_links,
+>>> +                                     slave_node) {
+>>>               genpd_sd_counter_dec(link->master);
+>>> +             genpd_queue_power_off_work(link->master);
+>>
+>> It looks sensible to revert work already done however I wonder if this
+>> is necessary for each slave. The first successful call to
+>> pm_genpd_poweroff() will also walk through slave_links and queue the work.
+>>
+>
+> For the current genpd, each slave link represents that the current
+> genpd is a subdomain to another genpd. The corresponding master for
+> each link is the "link->master". As genpds are allowed to have several
+> masters, we can't just try to power off one of them.
 
--- 
-Regards,
-Nishanth Menon
+Right, makes sense.
+
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+
+Best regards,
+Krzysztof
