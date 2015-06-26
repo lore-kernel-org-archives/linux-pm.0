@@ -1,70 +1,125 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 05/10] cpufreq: governor: Drop __gov_queue_work()
-Date: Fri, 26 Jun 2015 13:02:01 +0530
-Message-ID: <20150626073201.GF16275@linux>
-References: <cover.1434959517.git.viresh.kumar@linaro.org>
- <c4dfd8121fd454a04a8d700a5a0f8b7858f7aed3.1434959517.git.viresh.kumar@linaro.org>
- <558CF932.4070409@linux.vnet.ibm.com>
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH 07/10] cpufreq: ondemand: queue work for policy->cpus
+ together
+Date: Fri, 26 Jun 2015 13:58:34 +0530
+Message-ID: <558D0D32.7060001@linux.vnet.ibm.com>
+References: <cover.1434959517.git.viresh.kumar@linaro.org> <66980e2b51a83bf34f6fd18ee55155b6c667aa6a.1434959517.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-6
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f173.google.com ([209.85.192.173]:34859 "EHLO
-	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752045AbbFZHcI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jun 2015 03:32:08 -0400
-Received: by pdbci14 with SMTP id ci14so69956140pdb.2
-        for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2015 00:32:07 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <558CF932.4070409@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com ([32.97.110.151]:47543 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751317AbbFZI2k (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jun 2015 04:28:40 -0400
+Received: from /spool/local
+	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <preeti@linux.vnet.ibm.com>;
+	Fri, 26 Jun 2015 02:28:39 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+	by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 92EB51FF0046
+	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2015 02:19:47 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+	by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id t5Q8RuSt59113496
+	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2015 01:27:56 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+	by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id t5Q8Sb3O007384
+	for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2015 02:28:37 -0600
+In-Reply-To: <66980e2b51a83bf34f6fd18ee55155b6c667aa6a.1434959517.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 
-On 26-06-15, 12:33, Preeti U Murthy wrote:
-> On 06/22/2015 01:32 PM, Viresh Kumar wrote:
-> > __gov_queue_work() isn't required anymore and can be merged with
-> > gov_queue_work(). Do it.
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  drivers/cpufreq/cpufreq_governor.c | 17 ++++++-----------
-> >  1 file changed, 6 insertions(+), 11 deletions(-)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> > index 416a8c5665dd..ac288f0efb06 100644
-> > --- a/drivers/cpufreq/cpufreq_governor.c
-> > +++ b/drivers/cpufreq/cpufreq_governor.c
-> > @@ -158,25 +158,20 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
-> >  }
-> >  EXPORT_SYMBOL_GPL(dbs_check_cpu);
-> > 
-> > -static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
-> > -		unsigned int delay)
-> > -{
-> > -	struct cpu_dbs_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
-> > -
-> > -	mod_delayed_work_on(cpu, system_wq, &cdbs->dwork, delay);
-> > -}
+On 06/22/2015 01:32 PM, Viresh Kumar wrote:
+> Currently update_sampling_rate() runs over each online CPU and
+> cancels/queues work on it. Its very inefficient for the case where a
+> single policy manages multiple CPUs, as they can be processed together.
 > 
-> Looking at this patch I feel now that, you can simply make the above
-> function non static and call the same from update_sampling_rate() in
-> patch[04/10] It already gives scope to pass in the cpu parameter, if not
-> the mask. Anyway you want to pass in a single cpu from
-> update_sampling_rate(). This will avoid having to change the other call
-> sites of gov_queue_work().
+> Also drop the unnecessary cancel_delayed_work_sync() as we are doing a
+> mod_delayed_work_on() in gov_queue_work(), which will take care of
+> pending works for us.
+
+This looks fine, except for one point. See below:
 > 
-> I also see elsewhere in the kernel where a fn() and __fn() are sometimes
-> both non-static, with __fn() giving you the additional benefit of
-> passing a critical parameter. Eg:
-> __hrtimer_start_range_ns() and hrtimer_start_range_ns().
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq_ondemand.c | 32 ++++++++++++++++++++------------
+>  1 file changed, 20 insertions(+), 12 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index 841e1fa96ee7..cfecd3b67cb3 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -247,40 +247,48 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
+>  		unsigned int new_rate)
+>  {
+>  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
+> +	struct cpufreq_policy *policy;
+> +	struct od_cpu_dbs_info_s *dbs_info;
+> +	unsigned long next_sampling, appointed_at;
+> +	struct cpumask cpumask;
+>  	int cpu;
+> 
+> +	cpumask_copy(&cpumask, cpu_online_mask);
+> +
+>  	od_tuners->sampling_rate = new_rate = max(new_rate,
+>  			dbs_data->min_sampling_rate);
+> 
+> -	for_each_online_cpu(cpu) {
+> -		struct cpufreq_policy *policy;
+> -		struct od_cpu_dbs_info_s *dbs_info;
+> -		unsigned long next_sampling, appointed_at;
+> -
+> +	for_each_cpu(cpu, &cpumask) {
+>  		policy = cpufreq_cpu_get(cpu);
+>  		if (!policy)
+>  			continue;
+> +
+> +		/* clear all CPUs of this policy */
+> +		cpumask_andnot(&cpumask, &cpumask, policy->cpus);
+> +
+>  		if (policy->governor != &cpufreq_gov_ondemand) {
+>  			cpufreq_cpu_put(policy);
+>  			continue;
+>  		}
+> +
+>  		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+>  		cpufreq_cpu_put(policy);
+> 
+> +		/*
+> +		 * Checking this for any CPU of the policy is fine. As either
+> +		 * all would have queued work or none.
 
-Keeping two functions that way isn't a problem and is beneficial many
-a times. But that doesn't fit here.
+Are you sure that the state of the work will be the same across all
+policy cpus ? 'Pending' only refers to twork awaiting for the timer to
+fire and then queue itself on the runqueue right ? On some of the
+policy->cpus, timers may be yet to fire, while on others it might
+already have ?
 
-The above function doesn't have the necessary lock and so was never
-used directly. And there is no need to keep two routines now that only
-one is sufficient.
+> +		 */
+>  		if (!delayed_work_pending(&dbs_info->cdbs.dwork))
+>  			continue;
+> 
+>  		next_sampling = jiffies + usecs_to_jiffies(new_rate);
+>  		appointed_at = dbs_info->cdbs.dwork.timer.expires;
+> 
+> -		if (time_before(next_sampling, appointed_at)) {
+> -			cancel_delayed_work_sync(&dbs_info->cdbs.dwork);
+> -
+> -			gov_queue_work(dbs_data, policy,
+> -				       usecs_to_jiffies(new_rate),
+> -				       cpumask_of(cpu));
+> +		if (!time_before(next_sampling, appointed_at))
+> +			continue;
+> 
+> -		}
+> +		gov_queue_work(dbs_data, policy, usecs_to_jiffies(new_rate),
+> +			       policy->cpus);
+>  	}
+>  }
+> 
 
--- 
-viresh
+Regards
+Preeti U Murthy
+
