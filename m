@@ -1,68 +1,36 @@
-From: Keerthy <a0393675@ti.com>
-Subject: Re: [PATCH] thermal: Switch mode to enabled once the cooling device
- is bound
-Date: Fri, 26 Jun 2015 17:19:33 +0530
-Message-ID: <558D3C4D.2080803@ti.com>
-References: <1435236635-20830-1-git-send-email-j-keerthy@ti.com> <20150626111720.GB2673@e104805>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] tick/idle/powerpc: Do not register idle states with CPUIDLE_FLAG_TIMER_STOP set in periodic mode
+Date: Fri, 26 Jun 2015 16:23:57 +0200
+Message-ID: <2128915.HHL0NLglLy@vostro.rjw.lan>
+References: <20150624064801.30680.3246.stgit@perfhull-ltc.austin.ibm.com> <CAJZ5v0hiKVN7Nvc4w3BP9uWmvdUkX6T+DUGh6OSZWPTrpwcyjA@mail.gmail.com> <558B7715.1060802@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:40602 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751726AbbFZLtr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 26 Jun 2015 07:49:47 -0400
-In-Reply-To: <20150626111720.GB2673@e104805>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <558B7715.1060802@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, shreyas@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>, Keerthy <j-keerthy@ti.com>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "t-kristo@ti.com" <t-kristo@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lukasz Majewski <l.majewski@samsung.com>
+
+On Thursday, June 25, 2015 09:05:49 AM Preeti U Murthy wrote:
+> On 06/25/2015 05:36 AM, Rafael J. Wysocki wrote:
+> > On Thu, Jun 25, 2015 at 12:06 AM, Benjamin Herrenschmidt
+> > <benh@kernel.crashing.org> wrote:
+> >> On Wed, 2015-06-24 at 15:50 +0200, Rafael J. Wysocki wrote:
+> >>> 4.2 material I suppose?
+> >>
+> >> And stable. Without this, if you configure without TICK_ONESHOT, the
+> >> machine will hang.
+> > 
+> > OK, which -stable?  All of them or any specific series?
+> 
+> This needs to go into stable/linux-3.19.y,
+> stable/linux-4.0.y, stable/linux-4.1.y.
+
+So essentially 3.19+.  OK, thanks!
 
 
-
-On Friday 26 June 2015 04:47 PM, Javi Merino wrote:
-> On Thu, Jun 25, 2015 at 01:50:35PM +0100, Keerthy wrote:
->> Currently mode is still disabled even after the cooling device is bound
->> to the appropriate device. Hence changing the mode to enabled as soon as
->> the cooling device is registered successfully.
->
-> This should have been fixed by 528012c1f437 ("thermal: of: Enable
-> thermal_zoneX when sensor is correctly added"), which was merged in
-> 4.0.  With this, the thermal zone is enabled when it is registered.
-> Can you elaborate on why is this needed?
-
-Thanks for pointing out. This takes care of enabling by default.
-
-Cheers,
-Keerthy
->
-> Cheers,
-> Javi
->
->> Signed-off-by: Keerthy <j-keerthy@ti.com>
->> ---
->>   drivers/thermal/of-thermal.c | 3 +++
->>   1 file changed, 3 insertions(+)
->>
->> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
->> index 04b1be7..bc84485 100644
->> --- a/drivers/thermal/of-thermal.c
->> +++ b/drivers/thermal/of-thermal.c
->> @@ -163,6 +163,9 @@ static int of_thermal_bind(struct thermal_zone_device *thermal,
->>   		}
->>   	}
->>
->> +	/* Now that cooling device is bound enable the thermal device*/
->> +	data->mode = THERMAL_DEVICE_ENABLED;
->> +
->>   	return 0;
->>   }
->>
->> --
->> 1.9.1
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
