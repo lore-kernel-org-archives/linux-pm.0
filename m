@@ -1,125 +1,104 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] bus: subsys: propagate errors from subsys interface's ->add_dev()
-Date: Fri, 26 Jun 2015 14:32:47 +0530
-Message-ID: <aff842c23841a8e61ac17e58fc27c99e052e338b.1435308918.git.viresh.kumar@linaro.org>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: gregkh@linuxfoundation.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, pi-cheng.chen@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, "3.3+" <stable@vger.kernel.org>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v3] PM / Domains: Avoid infinite loops in attach/detach code
+Date: Fri, 26 Jun 2015 11:14:14 +0200
+Message-ID: <1435310054-15585-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-sh-owner@vger.kernel.org>
+Sender: linux-sh-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-->add_dev() may fail and the error returned from it can be useful for
-the caller.
+If pm_genpd_{add,remove}_device() keeps on failing with -EAGAIN, we end
+up with an infinite loop in genpd_dev_pm_{at,de}tach().
 
-For example, if some of the resources aren't ready yet and -EPROBE_DEFER
-is returned from ->add_dev(), then the owner of 'struct
-subsys_interface' may want to try probing again at a later point of
-time. And that requires a proper return value from ->add_dev().
+This may happen due to a genpd.prepared_count imbalance.  This is a bug
+elsewhere, but it will result in a system lock up, possibly during
+reboot of an otherwise functioning system.
 
-Also, if we hit an error while registering subsys_interface, then we
-should stop proceeding further and rollback whatever has been done until
-then. Break part of subsys_interface_unregister() into another routine,
-which lets us call ->remove_dev() for all devices for which ->add_dev()
-is already called.
+To avoid this, put a limit on the maximum number of loop iterations,
+using an exponential back-off mechanism.  If the limit is reached, the
+operation will just fail.  An error message is already printed.
 
-Cc: 3.3+ <stable@vger.kernel.org> # 3.3+
-Fixes: ca22e56debc5 ("driver-core: implement 'sysdev' functionality for regular devices and buses")
-Reported-and-tested-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
+v3:
+  - Increase maximum timeout to ca. 250 ms (delay time only, i.e. not
+    including actual processing time),
+  - use mdelay() instead of udelay(), as the former is limited to 2 ms,
+  - Use exponential back-off, busy waiting for 1 to 128 ms in each
+    iteration, up to 255 ms in total,
 
- drivers/base/bus.c | 55 ++++++++++++++++++++++++++++++++++--------------------
- 1 file changed, 35 insertions(+), 20 deletions(-)
+v2:
+  - Add missing declaration of "i" in genpd_dev_pm_attach().
+---
+ drivers/base/power/domain.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 79bc203f51ef..d92dc109ba51 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -1112,11 +1112,36 @@ void subsys_dev_iter_exit(struct subsys_dev_iter *iter)
- }
- EXPORT_SYMBOL_GPL(subsys_dev_iter_exit);
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index cdd547bd67df8218..0ee43c1056e045bd 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -6,6 +6,7 @@
+  * This file is released under the GPLv2.
+  */
  
-+static void __subsys_interface_unregister(struct subsys_interface *sif,
-+					  struct device *lastdev)
-+{
-+	struct bus_type *subsys = sif->subsys;
-+	struct subsys_dev_iter iter;
-+	struct device *dev;
++#include <linux/delay.h>
+ #include <linux/kernel.h>
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
+@@ -19,6 +20,8 @@
+ #include <linux/suspend.h>
+ #include <linux/export.h>
+ 
++#define GENPD_RETRY_MAX_MS	250		/* Approximate */
 +
-+	mutex_lock(&subsys->p->mutex);
-+	list_del_init(&sif->node);
-+	if (sif->remove_dev) {
-+		subsys_dev_iter_init(&iter, subsys, NULL, NULL);
-+		while ((dev = subsys_dev_iter_next(&iter))) {
-+			if (dev == lastdev)
-+				break;
-+
-+			sif->remove_dev(dev, sif);
-+		}
-+		subsys_dev_iter_exit(&iter);
-+	}
-+	mutex_unlock(&subsys->p->mutex);
-+
-+	bus_put(subsys);
-+}
-+
- int subsys_interface_register(struct subsys_interface *sif)
+ #define GENPD_DEV_CALLBACK(genpd, type, callback, dev)		\
+ ({								\
+ 	type (*__routine)(struct device *__d); 			\
+@@ -2131,6 +2134,7 @@ EXPORT_SYMBOL_GPL(of_genpd_get_from_provider);
+ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
  {
- 	struct bus_type *subsys;
- 	struct subsys_dev_iter iter;
- 	struct device *dev;
-+	int ret = 0;
+ 	struct generic_pm_domain *pd;
++	unsigned int i;
+ 	int ret = 0;
  
- 	if (!sif || !sif->subsys)
- 		return -ENODEV;
-@@ -1129,38 +1154,28 @@ int subsys_interface_register(struct subsys_interface *sif)
- 	list_add_tail(&sif->node, &subsys->p->interfaces);
- 	if (sif->add_dev) {
- 		subsys_dev_iter_init(&iter, subsys, NULL, NULL);
--		while ((dev = subsys_dev_iter_next(&iter)))
--			sif->add_dev(dev, sif);
-+		while ((dev = subsys_dev_iter_next(&iter))) {
-+			ret = sif->add_dev(dev, sif);
-+			if (ret)
-+				break;
-+		}
- 		subsys_dev_iter_exit(&iter);
+ 	pd = pm_genpd_lookup_dev(dev);
+@@ -2139,10 +2143,12 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
+ 
+ 	dev_dbg(dev, "removing from PM domain %s\n", pd->name);
+ 
+-	while (1) {
++	for (i = 1; i < GENPD_RETRY_MAX_MS; i <<= 1) {
+ 		ret = pm_genpd_remove_device(pd, dev);
+ 		if (ret != -EAGAIN)
+ 			break;
++
++		mdelay(i);
+ 		cond_resched();
  	}
- 	mutex_unlock(&subsys->p->mutex);
  
--	return 0;
-+	if (ret)
-+		__subsys_interface_unregister(sif, dev);
-+
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(subsys_interface_register);
- 
- void subsys_interface_unregister(struct subsys_interface *sif)
+@@ -2183,6 +2189,7 @@ int genpd_dev_pm_attach(struct device *dev)
  {
--	struct bus_type *subsys;
--	struct subsys_dev_iter iter;
--	struct device *dev;
--
- 	if (!sif || !sif->subsys)
- 		return;
+ 	struct of_phandle_args pd_args;
+ 	struct generic_pm_domain *pd;
++	unsigned int i;
+ 	int ret;
  
--	subsys = sif->subsys;
--
--	mutex_lock(&subsys->p->mutex);
--	list_del_init(&sif->node);
--	if (sif->remove_dev) {
--		subsys_dev_iter_init(&iter, subsys, NULL, NULL);
--		while ((dev = subsys_dev_iter_next(&iter)))
--			sif->remove_dev(dev, sif);
--		subsys_dev_iter_exit(&iter);
--	}
--	mutex_unlock(&subsys->p->mutex);
--
--	bus_put(subsys);
-+	__subsys_interface_unregister(sif, NULL);
- }
- EXPORT_SYMBOL_GPL(subsys_interface_unregister);
+ 	if (!dev->of_node)
+@@ -2218,10 +2225,12 @@ int genpd_dev_pm_attach(struct device *dev)
+ 
+ 	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
+ 
+-	while (1) {
++	for (i = 1; i < GENPD_RETRY_MAX_MS; i <<= 1) {
+ 		ret = pm_genpd_add_device(pd, dev);
+ 		if (ret != -EAGAIN)
+ 			break;
++
++		mdelay(i);
+ 		cond_resched();
+ 	}
  
 -- 
-2.4.0
+1.9.1
+
