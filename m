@@ -1,36 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] tick/idle/powerpc: Do not register idle states with CPUIDLE_FLAG_TIMER_STOP set in periodic mode
-Date: Fri, 26 Jun 2015 16:23:57 +0200
-Message-ID: <2128915.HHL0NLglLy@vostro.rjw.lan>
-References: <20150624064801.30680.3246.stgit@perfhull-ltc.austin.ibm.com> <CAJZ5v0hiKVN7Nvc4w3BP9uWmvdUkX6T+DUGh6OSZWPTrpwcyjA@mail.gmail.com> <558B7715.1060802@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Michael Turquette <mturquette@baylibre.com>
+Subject: [PATCH v3 0/4] scheduler-driven cpu frequency selection
+Date: Fri, 26 Jun 2015 16:53:40 -0700
+Message-ID: <1435362824-26734-1-git-send-email-mturquette@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <558B7715.1060802@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, shreyas@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+To: peterz@infradead.org, mingo@kernel.org
+Cc: linux-kernel@vger.kernel.org, preeti@linux.vnet.ibm.com, Morten.Rasmussen@arm.com, riel@redhat.com, efault@gmx.de, nicolas.pitre@linaro.org, daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, amit.kucheria@linaro.org, juri.lelli@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, alex.shi@linaro.org, linux-pm@vger.kernel.org, abelvesa@gmail.com, pebolle@tiscali.nl, Michael Turquette <mturquette@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, June 25, 2015 09:05:49 AM Preeti U Murthy wrote:
-> On 06/25/2015 05:36 AM, Rafael J. Wysocki wrote:
-> > On Thu, Jun 25, 2015 at 12:06 AM, Benjamin Herrenschmidt
-> > <benh@kernel.crashing.org> wrote:
-> >> On Wed, 2015-06-24 at 15:50 +0200, Rafael J. Wysocki wrote:
-> >>> 4.2 material I suppose?
-> >>
-> >> And stable. Without this, if you configure without TICK_ONESHOT, the
-> >> machine will hang.
-> > 
-> > OK, which -stable?  All of them or any specific series?
-> 
-> This needs to go into stable/linux-3.19.y,
-> stable/linux-4.0.y, stable/linux-4.1.y.
+This series addresses the comments from v2 and rearranges the code to
+separate the bits that are safe to merge from the bits that are not. In
+particular the simplified governor no longer implements any policy of
+its own. That code is migrated to fair.c and marked as RFC. The
+capacity-selection code in fair.c (patch #4) is a placeholder and can be
+replaced by something more sophisticated, and it illustrates the use of
+the new governor api's for anyone that wants to play around with
+crafting a new policy.
 
-So essentially 3.19+.  OK, thanks!
+Patch #1 is a re-post from Morten, as it is the only dependency these
+patches have on his EAS series. Please consider merging patches #2 and
+#3 if they do not appear too controversial. Without enabling the feature
+in Kconfig will be no impact on existing code.
 
+Michael Turquette (3):
+  cpufreq: introduce cpufreq_driver_might_sleep
+  sched: scheduler-driven cpu frequency selection
+  [RFC] sched: cfs: cpu frequency scaling policy
+
+Morten Rasmussen (1):
+  arm: Frequency invariant scheduler load-tracking support
+
+ arch/arm/include/asm/topology.h |   7 +
+ arch/arm/kernel/smp.c           |  53 ++++++-
+ arch/arm/kernel/topology.c      |  17 +++
+ drivers/cpufreq/Kconfig         |  24 ++++
+ drivers/cpufreq/cpufreq.c       |   6 +
+ include/linux/cpufreq.h         |  12 ++
+ kernel/sched/Makefile           |   1 +
+ kernel/sched/cpufreq_sched.c    | 308 ++++++++++++++++++++++++++++++++++++++++
+ kernel/sched/fair.c             |  41 ++++++
+ kernel/sched/sched.h            |   8 ++
+ 10 files changed, 475 insertions(+), 2 deletions(-)
+ create mode 100644 kernel/sched/cpufreq_sched.c
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.9.1
