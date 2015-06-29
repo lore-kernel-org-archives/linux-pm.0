@@ -1,82 +1,114 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH] clk: samsung: fix cpu clock's flags checking
-Date: Mon, 29 Jun 2015 19:29:38 +0200
-Message-ID: <1435598978-21800-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:56721 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752429AbbF2Rbl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2015 13:31:41 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCHv2 1/1] kernel/power/autosleep.c: check for pm_suspend() return before queueing suspend again
+Date: Mon, 29 Jun 2015 21:56:18 +0200
+Message-ID: <13445304.liFVyNdj8p@vostro.rjw.lan>
+References: <1435581297-20271-1-git-send-email-nitish.a@samsung.com> <1435604054-29711-1-git-send-email-nitish.a@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1435604054-29711-1-git-send-email-nitish.a@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nitish Ambastha <nitish.a@samsung.com>
+Cc: pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpgs@samsung.com, nits.ambastha@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 
-CLK_CPU_HAS_DIV1 and CLK_CPU_NEEDS_DEBUG_ALT_DIV masks were
-incorrectly used as a bit numbers.  Fix it.
+On Tuesday, June 30, 2015 12:24:14 AM Nitish Ambastha wrote:
+> Prevent tight loop for suspend-resume when some
+> devices failed to suspend
+> If some devices failed to suspend, we monitor this
+> error in try_to_suspend(). pm_suspend() is already
+> an 'int' returning function, how about checking return
+> from pm_suspend() before queueing suspend again?
+> 
+> For devices which do not register for pending events,
+> this will prevent tight loop for suspend-resume in
+> suspend abort scenarios due to device suspend failures
+> 
+> Signed-off-by: Nitish Ambastha <nitish.a@samsung.com>
+> ---
+> v2: Rearranged code to make wait entry shared with
+>     existing one as suggested by Pavel Machek <pavel@ucw.cz>
+>     Corrected log level from pr_info to pr_err for failure log
+>     Added return check for hibernate()
+> 
+>  kernel/power/autosleep.c |   23 ++++++++++++++++-------
+>  1 file changed, 16 insertions(+), 7 deletions(-)
+> 
+> diff --git a/kernel/power/autosleep.c b/kernel/power/autosleep.c
+> index 9012ecf..1a86698 100644
+> --- a/kernel/power/autosleep.c
+> +++ b/kernel/power/autosleep.c
+> @@ -26,6 +26,7 @@ static struct wakeup_source *autosleep_ws;
+>  static void try_to_suspend(struct work_struct *work)
+>  {
+>  	unsigned int initial_count, final_count;
+> +	int error = 0;
 
-Tested on Exynos4210 based Origen board and on Exynos5250 based
-Arndale board.
+The initial value is not needed.
 
-Cc: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: Michael Turquette <mturquette@baylibre.com>
-Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-Cc: Thomas Abraham <thomas.ab@samsung.com>
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- drivers/clk/samsung/clk-cpu.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+>  
+>  	if (!pm_get_wakeup_count(&initial_count, true))
+>  		goto out;
+> @@ -43,22 +44,30 @@ static void try_to_suspend(struct work_struct *work)
+>  		return;
+>  	}
+>  	if (autosleep_state >= PM_SUSPEND_MAX)
+> -		hibernate();
+> +		error = hibernate();
+>  	else
+> -		pm_suspend(autosleep_state);
+> +		error = pm_suspend(autosleep_state);
 
-diff --git a/drivers/clk/samsung/clk-cpu.c b/drivers/clk/samsung/clk-cpu.c
-index 3a1fe07..dd02356 100644
---- a/drivers/clk/samsung/clk-cpu.c
-+++ b/drivers/clk/samsung/clk-cpu.c
-@@ -161,7 +161,7 @@ static int exynos_cpuclk_pre_rate_change(struct clk_notifier_data *ndata,
- 	 * the values for DIV_COPY and DIV_HPM dividers need not be set.
- 	 */
- 	div0 = cfg_data->div0;
--	if (test_bit(CLK_CPU_HAS_DIV1, &cpuclk->flags)) {
-+	if (cpuclk->flags & CLK_CPU_HAS_DIV1) {
- 		div1 = cfg_data->div1;
- 		if (readl(base + E4210_SRC_CPU) & E4210_MUX_HPM_MASK)
- 			div1 = readl(base + E4210_DIV_CPU1) &
-@@ -182,7 +182,7 @@ static int exynos_cpuclk_pre_rate_change(struct clk_notifier_data *ndata,
- 		alt_div = DIV_ROUND_UP(alt_prate, tmp_rate) - 1;
- 		WARN_ON(alt_div >= MAX_DIV);
- 
--		if (test_bit(CLK_CPU_NEEDS_DEBUG_ALT_DIV, &cpuclk->flags)) {
-+		if (cpuclk->flags & CLK_CPU_NEEDS_DEBUG_ALT_DIV) {
- 			/*
- 			 * In Exynos4210, ATB clock parent is also mout_core. So
- 			 * ATB clock also needs to be mantained at safe speed.
-@@ -203,7 +203,7 @@ static int exynos_cpuclk_pre_rate_change(struct clk_notifier_data *ndata,
- 	writel(div0, base + E4210_DIV_CPU0);
- 	wait_until_divider_stable(base + E4210_DIV_STAT_CPU0, DIV_MASK_ALL);
- 
--	if (test_bit(CLK_CPU_HAS_DIV1, &cpuclk->flags)) {
-+	if (cpuclk->flags & CLK_CPU_HAS_DIV1) {
- 		writel(div1, base + E4210_DIV_CPU1);
- 		wait_until_divider_stable(base + E4210_DIV_STAT_CPU1,
- 				DIV_MASK_ALL);
-@@ -222,7 +222,7 @@ static int exynos_cpuclk_post_rate_change(struct clk_notifier_data *ndata,
- 	unsigned long mux_reg;
- 
- 	/* find out the divider values to use for clock data */
--	if (test_bit(CLK_CPU_NEEDS_DEBUG_ALT_DIV, &cpuclk->flags)) {
-+	if (cpuclk->flags & CLK_CPU_NEEDS_DEBUG_ALT_DIV) {
- 		while ((cfg_data->prate * 1000) != ndata->new_rate) {
- 			if (cfg_data->prate == 0)
- 				return -EINVAL;
-@@ -237,7 +237,7 @@ static int exynos_cpuclk_post_rate_change(struct clk_notifier_data *ndata,
- 	writel(mux_reg & ~(1 << 16), base + E4210_SRC_CPU);
- 	wait_until_mux_stable(base + E4210_STAT_CPU, 16, 1);
- 
--	if (test_bit(CLK_CPU_NEEDS_DEBUG_ALT_DIV, &cpuclk->flags)) {
-+	if (cpuclk->flags & CLK_CPU_NEEDS_DEBUG_ALT_DIV) {
- 		div |= (cfg_data->div0 & E4210_DIV0_ATB_MASK);
- 		div_mask |= E4210_DIV0_ATB_MASK;
- 	}
+I'd prefer to write that as
+
+	error = autosleep_state < PM_SUSPEND_MAX ?
+		pm_suspend(autosleep_state) : hibernate();
+
+>  
+>  	mutex_unlock(&autosleep_lock);
+>  
+> +	if (error) {
+> +		pr_err("PM: suspend returned (%d)\n", error);
+
+There is a debug message printed for that in the device suspend code, do we
+need one more here?
+
+> +		goto wait;
+> +	}
+> +
+>  	if (!pm_get_wakeup_count(&final_count, false))
+>  		goto out;
+>  
+> +	if (final_count != initial_count)
+> +		goto out;
+> +
+> + wait:
+>  	/*
+> -	 * If the wakeup occured for an unknown reason, wait to prevent the
+> -	 * system from trying to suspend and waking up in a tight loop.
+> +	 * If some devices failed to suspend or if the wakeup ocurred
+> +	 * for an unknown reason, wait to prevent the system from
+> +	 * trying to suspend and waking up in a tight loop.
+>  	 */
+> -	if (final_count == initial_count)
+> -		schedule_timeout_uninterruptible(HZ / 2);
+> -
+> +	schedule_timeout_uninterruptible(HZ / 2);
+>   out:
+>  	queue_up_suspend_work();
+
+I'd arrange it this way:
+
+	if (error || pm_get_wakeup_count(&final_count, false)
+	    || final_count == initial_count)
+		schedule_timeout_uninterruptible(HZ / 2);
+
+ out:
+  	queue_up_suspend_work();
+>  }
+> 
+
 -- 
-1.9.1
-
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
