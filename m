@@ -1,110 +1,113 @@
-From: Michael Turquette <mturquette@baylibre.com>
-Subject: Re: [PATCH v3 2/4] cpufreq: introduce cpufreq_driver_might_sleep
-Date: Mon, 29 Jun 2015 10:10:15 -0700
-Message-ID: <CAEG3pNCS-xhg7dF86jqNUH=CB9+MaLG-CSSeDP1DuSeAy7gqbw@mail.gmail.com>
-References: <1435362824-26734-1-git-send-email-mturquette@linaro.org>
- <1435362824-26734-3-git-send-email-mturquette@linaro.org> <20150627004831.GB19347@saruman.tx.rr.com>
- <20150629162621.9112.4040@quantum> <20150629163944.GA32758@saruman.tx.rr.com>
- <CAEG3pNCDWeOhRDZNQfH4QHj3KWUM829C8C0=CULns3gJwy57sQ@mail.gmail.com> <20150629170323.GC32758@saruman.tx.rr.com>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: [PATCH v6 0/7] CPUFreq driver using CPPC methods
+Date: Mon, 29 Jun 2015 13:23:18 -0400
+Message-ID: <CAJ5Y-eba+r-aM=9iYZt7SEQvnK-eVxt34u-8NqjMHnnaE4jU5w@mail.gmail.com>
+References: <cover.1434398373.git.ashwin.chaugule@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150629170323.GC32758@saruman.tx.rr.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@ti.com>
-Cc: peterz@infradead.org, mingo@kernel.org, linux-kernel@vger.kernel.org, preeti@linux.vnet.ibm.com, Morten Rasmussen <Morten.Rasmussen@arm.com>, riel@redhat.com, efault@gmx.de, Nicolas Pitre <nicolas.pitre@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, dietmar.eggemann@arm.com, Vincent Guittot <vincent.guittot@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>, Juri Lelli <juri.lelli@arm.com>, rjw@rjwysocki.net, Viresh Kumar <viresh.kumar@linaro.org>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, Alex Shi <alex.shi@linaro.org>, linux-pm@vger.kernel.org, Abel Vesa <abelvesa@gmail.com>, pebolle@tiscali.nl, "Rafael J. Wysocki" <rafael@kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <cover.1434398373.git.ashwin.chaugule@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jaswinder Singh <jaswinder.singh@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, linux acpi <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 29, 2015 at 10:03 AM, Felipe Balbi <balbi@ti.com> wrote:
-> Hi,
+Hi Rafael,
+
+On 15 June 2015 at 16:09, Ashwin Chaugule <ashwin.chaugule@linaro.org> wrote:
+> CPPC:
+> ====
 >
-> On Mon, Jun 29, 2015 at 09:56:55AM -0700, Michael Turquette wrote:
->> > > > > @@ -112,6 +112,12 @@ bool have_governor_per_policy(void)
->> > > > >  }
->> > > > >  EXPORT_SYMBOL_GPL(have_governor_per_policy);
->> > > > >
->> > > > > +bool cpufreq_driver_might_sleep(void)
->> > > > > +{
->> > > > > +     return !(cpufreq_driver->flags & CPUFREQ_DRIVER_WILL_NOT_SLEEP);
->> > > > > +}
->> > > > > +EXPORT_SYMBOL_GPL(cpufreq_driver_might_sleep);
->> > > > > +
->> > > > >  struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy)
->> > > > >  {
->> > > > >       if (have_governor_per_policy())
->> > > > > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
->> > > > > index 2ee4888..1f2c9a1 100644
->> > > > > --- a/include/linux/cpufreq.h
->> > > > > +++ b/include/linux/cpufreq.h
->> > > > > @@ -157,6 +157,7 @@ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
->> > > > >  int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
->> > > > >  int cpufreq_update_policy(unsigned int cpu);
->> > > > >  bool have_governor_per_policy(void);
->> > > > > +bool cpufreq_driver_might_sleep(void);
->> > > > >  struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
->> > > > >  #else
->> > > > >  static inline unsigned int cpufreq_get(unsigned int cpu)
->> > > > > @@ -314,6 +315,14 @@ struct cpufreq_driver {
->> > > > >   */
->> > > > >  #define CPUFREQ_NEED_INITIAL_FREQ_CHECK      (1 << 5)
->> > > > >
->> > > > > +/*
->> > > > > + * Set by drivers that will never block or sleep during their frequency
->> > > > > + * transition. Used to indicate when it is safe to call cpufreq_driver_target
->> > > > > + * from non-interruptable context. Drivers must opt-in to this flag, as the
->> > > > > + * safe default is that they might sleep.
->> > > > > + */
->> > > > > +#define CPUFREQ_DRIVER_WILL_NOT_SLEEP        (1 << 6)
->> > > >
->> > > > don't you need to update current drivers and pass this flag where
->> > > > necessary ?
->> > >
->> > > Felipe,
->> > >
->> > > Thanks for the review.
->> > >
->> > > Setting the flag can be done, but it is an opt-in feature. First, none
->> > > of the legacy cpufreq governors would actually make use of this flag.
->> > > Everything they do is in process context. The first potential user of it
->> > > is in patch #3.
->> > >
->> > > Secondly, the governor in patch #3 will work without this flag set for a
->> > > cpufreq driver. It will just defer the dvfs transition to a kthread
->> > > instead of performing it in the hot path of the scheduler.
->> > >
->> > > Finally, the only hardware I am aware of that can make use of this flag
->> > > is Intel hardware. I know nothing about it and am happy for someone more
->> > > knowledgeable than myself submit a patch enabling this flag for that
->> > > architecture.
->> >
->> > the follow-up question would be: then why introduce the flag at all ?
->> > :-p
->>
->> I included it at Rafael's request:
->>
->> http://lkml.kernel.org/r/<49407954.UBSF2FlX46@vostro.rjw.lan>
+> CPPC (Collaborative Processor Performance Control) is a new way to control CPU
+> performance using an abstract continous scale as against a discretized P-state scale
+> which is tied to CPU frequency only. It is defined in the ACPI 5.0+ spec. In brief,
+> the basic operation involves:
+> - OS makes a CPU performance request. (Can provide min and max tolerable bounds)
 >
-> Fair enough, just think it might be an unused code path for a while,
-> since the flag isn't enabled anywhere :-s
-
-The point of the series isn't to provide the final word on
-scheduler-driven dvfs. The policy needs to be experimented with (see
-patch #4) and part of that experimentation is to test on lots of
-hardware. Having the flag ready to go will help those that are
-experimenting on Intel hardware, or any other platform that has an
-async/fast interface to kick off cpu dvfs transitions.
-
-Regards,
-Mike
-
+> - Platform (such as BMC) is free to optimize request within requested bounds depending
+> on power/thermal budgets etc.
 >
-> --
-> balbi
+> - Platform conveys its decision back to OS
+>
+> The communication between OS and platform occurs through another medium called (PCC)
+> Platform communication Channel. This is a generic mailbox like mechanism which includes
+> doorbell semantics to indicate register updates. See drivers/mailbox/pcc.c
+>
+> This patchset introduces a CPPC based CPUFreq driver that works with existing governors
+> such as ondemand. The CPPC table parsing and the CPPC communication semantics are
+> abstracted into separate files to allow future CPPC based drivers to implement their
+> own governors if required.
+>
+> Initial patchsets included an adaptation of the PID governor from intel_pstate.c. However
+> recent experiments led to extensive modifications of the algorithm to calculate CPU
+> busyness. Until it is verified that these changes are worthwhile, the existing governors
+> should provide for a good enough starting point for ARM64 servers.
+>
+> Finer details about the PCC and CPPC spec are available in the latest ACPI 5.1
+> specification.[2]
+>
+> Testing:
+> =======
+>
+> This was tested on an SBSA compatible ARMv8 server with CPPCv2
+> firmware running on a remote processor. I verified that each CPUs
+> performance limits were detected and that new performance requests
+> were made by the on-demand governor proportional to the load on each
+> CPU. I also verified that using the acpi_processor driver correctly
+> maps the physical CPU ids to logical CPU ids, which helps in picking
+> up the proper _CPC details from a processor object, in the case where
+> CPU physical ids may not be contiguous.
+>
+> Changes since V5:
+> - Checkpatch cleanups.
+> - Change pss_init to pss_perf_init. Rec by Srinivas Pandruvada.
+> - Explicit comment explaining why postcore_initcall to pcc mailbox.
+> - Fold acpi_processor_syscore_init/exit into CONFIG_ACPI_CST.
+> - Added patch with dummy functions used by ACPI_HOTPLUG_CPU.
+>
+> Changes since V4:
+> - Misc cleanups. Addressed feedback from Rafael.
+> - Made acpi_processor.c independent of C-states, P-states and others.
+> - Per CPU scanning for _CPC is now made from acpi_processor.c
+> - Added new Kconfig options for legacy C states and P states to enable future
+> support for newer alternatives as defined in the ACPI spec 6.0.
+>
+> Changes since V3:
+> - Split CPPC backend methods into separate files.
+> - Add frontend driver which plugs into existing CPUfreq governors.
+> - Simplify PCC driver by moving communication space mapping and read/write
+>         into client drivers.
+>
+> Changes since V2:
+> - Select driver if !X86, since intel_pstate will use HWP extensions instead.
+> - Added more comments.
+> - Added Freq domain awareness and PSD parsing.
+>
+> Changes since V1:
+> - Create a new driver based on Dirks suggestion.
+> - Fold in CPPC backend hooks into main driver.
+>
+> Changes since V0: [1]
+> - Split intel_pstate.c into a generic PID governor and platform specific backend.
+> - Add CPPC accessors as PID backend.
+>
+> [1] - http://lwn.net/Articles/608715/
+> [2] - http://www.uefi.org/sites/default/files/resources/ACPI_5_1release.pdf
+> [3] - https://patches.linaro.org/40705/
+>
+>
+> Ashwin Chaugule (7):
+>   PCC: Initialize PCC Mailbox earlier at boot
+>   ACPI: Make ACPI processor driver more extensible
+>   ACPI: Introduce CPU performance controls using CPPC
+>   CPPC: Add a CPUFreq driver for use with CPPC
+>   CPPC: Probe for CPPC tables for each ACPI Processor object
+>   PCC: Enable PCC only when needed
+>   ACPI: Add weak routines for ACPI CPU Hotplug
+>
 
+Any further comments/suggestions for these patches? Can they be picked
+up for merging in the next cycle?
 
-
--- 
-Michael Turquette
-CEO
-BayLibre - At the Heart of Embedded Linux
-http://baylibre.com/
+Thanks,
+Ashwin.
