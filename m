@@ -1,134 +1,191 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: [PATCH v3 2/4] cpufreq: introduce cpufreq_driver_might_sleep
-Date: Mon, 29 Jun 2015 11:39:44 -0500
-Message-ID: <20150629163944.GA32758@saruman.tx.rr.com>
-References: <1435362824-26734-1-git-send-email-mturquette@linaro.org>
- <1435362824-26734-3-git-send-email-mturquette@linaro.org>
- <20150627004831.GB19347@saruman.tx.rr.com>
- <20150629162621.9112.4040@quantum>
-Reply-To: <balbi@ti.com>
+From: Michael Turquette <mturquette@linaro.org>
+Subject: Re: [PATCH RFC v2 4/4] sched: cpufreq_cfs: pelt-based cpu frequency scaling
+Date: Mon, 29 Jun 2015 09:51:41 -0700
+Message-ID: <20150629165141.9112.30682@quantum>
+References: <1431396795-32439-1-git-send-email-mturquette@linaro.org>
+ <1431396795-32439-5-git-send-email-mturquette@linaro.org>
+ <555A1666.30306@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="mYCpIKhGyMATD0i+"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:46948 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752513AbbF2Qkc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 29 Jun 2015 12:40:32 -0400
-Content-Disposition: inline
-In-Reply-To: <20150629162621.9112.4040@quantum>
+Received: from mail-pd0-f173.google.com ([209.85.192.173]:36441 "EHLO
+	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752078AbbF2Qv6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2015 12:51:58 -0400
+Received: by pdcu2 with SMTP id u2so119748047pdc.3
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2015 09:51:58 -0700 (PDT)
+In-Reply-To: <555A1666.30306@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: balbi@ti.com, peterz@infradead.org, mingo@kernel.org, linux-kernel@vger.kernel.org, preeti@linux.vnet.ibm.com, Morten.Rasmussen@arm.com, riel@redhat.com, efault@gmx.de, nicolas.pitre@linaro.org, daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, amit.kucheria@linaro.org, juri.lelli@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, alex.shi@linaro.org, linux-pm@vger.kernel.org, abelvesa@gmail.com, pebolle@tiscali.nl, "Rafael J. Wysocki" <rafael@kernel.org>
+To: Juri Lelli <juri.lelli@arm.com>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "riel@redhat.com" <riel@redhat.com>, "efault@gmx.de" <efault@gmx.de>, "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "amit.kucheria@linaro.org" <amit.kucheria@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "ashwin.chaugule@linaro.org" <ashwin.chaugule@linaro.org>, "alex.shi@linaro.org" <alex.shi@linaro.org>, "abelvesa@gmail.com" <abelvesa@gmail.com>
 
---mYCpIKhGyMATD0i+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Juri,
 
-Hi,
+Quoting Juri Lelli (2015-05-18 09:42:14)
+> On 12/05/15 03:13, Michael Turquette wrote:
+> > +#define MARGIN_PCT             125 /* taken from imbalance_pct = 125 */
+> 
+> You don't use this anymore, right? But see also my comment below
+> on this.
 
-On Mon, Jun 29, 2015 at 09:26:21AM -0700, Michael Turquette wrote:
-> Quoting Felipe Balbi (2015-06-26 17:48:31)
-> > Hi,
-> >=20
-> > On Fri, Jun 26, 2015 at 04:53:42PM -0700, Michael Turquette wrote:
-> > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > > index 28e59a4..e5296c0 100644
-> > > --- a/drivers/cpufreq/cpufreq.c
-> > > +++ b/drivers/cpufreq/cpufreq.c
-> > > @@ -112,6 +112,12 @@ bool have_governor_per_policy(void)
-> > >  }
-> > >  EXPORT_SYMBOL_GPL(have_governor_per_policy);
-> > > =20
-> > > +bool cpufreq_driver_might_sleep(void)
-> > > +{
-> > > +     return !(cpufreq_driver->flags & CPUFREQ_DRIVER_WILL_NOT_SLEEP);
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(cpufreq_driver_might_sleep);
-> > > +
-> > >  struct kobject *get_governor_parent_kobj(struct cpufreq_policy *poli=
-cy)
-> > >  {
-> > >       if (have_governor_per_policy())
-> > > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> > > index 2ee4888..1f2c9a1 100644
-> > > --- a/include/linux/cpufreq.h
-> > > +++ b/include/linux/cpufreq.h
-> > > @@ -157,6 +157,7 @@ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall=
-, int io_busy);
-> > >  int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int c=
-pu);
-> > >  int cpufreq_update_policy(unsigned int cpu);
-> > >  bool have_governor_per_policy(void);
-> > > +bool cpufreq_driver_might_sleep(void);
-> > >  struct kobject *get_governor_parent_kobj(struct cpufreq_policy *poli=
-cy);
-> > >  #else
-> > >  static inline unsigned int cpufreq_get(unsigned int cpu)
-> > > @@ -314,6 +315,14 @@ struct cpufreq_driver {
-> > >   */
-> > >  #define CPUFREQ_NEED_INITIAL_FREQ_CHECK      (1 << 5)
-> > > =20
-> > > +/*
-> > > + * Set by drivers that will never block or sleep during their freque=
-ncy
-> > > + * transition. Used to indicate when it is safe to call cpufreq_driv=
-er_target
-> > > + * from non-interruptable context. Drivers must opt-in to this flag,=
- as the
-> > > + * safe default is that they might sleep.
-> > > + */
-> > > +#define CPUFREQ_DRIVER_WILL_NOT_SLEEP        (1 << 6)
-> >=20
-> > don't you need to update current drivers and pass this flag where
-> > necessary ?
->=20
-> Felipe,
->=20
-> Thanks for the review.
->=20
-> Setting the flag can be done, but it is an opt-in feature. First, none
-> of the legacy cpufreq governors would actually make use of this flag.
-> Everything they do is in process context. The first potential user of it
-> is in patch #3.
->=20
-> Secondly, the governor in patch #3 will work without this flag set for a
-> cpufreq driver. It will just defer the dvfs transition to a kthread
-> instead of performing it in the hot path of the scheduler.
->=20
-> Finally, the only hardware I am aware of that can make use of this flag
-> is Intel hardware. I know nothing about it and am happy for someone more
-> knowledgeable than myself submit a patch enabling this flag for that
-> architecture.
+Right. And in the new version I'll move this out to fair.c. I want to
+move that sort of policy into cfs and make this governor even more
+"dumb".
 
-the follow-up question would be: then why introduce the flag at all ?
-:-p
+> > + * Returns the newly chosen capacity. Note that this may not reflect reality if
+> > + * the hardware fails to transition to this new capacity state.
+> > + */
+> > +unsigned long cpufreq_cfs_update_cpu(int cpu, unsigned long util)
+> 
+> Is anybody consuming the return value? Did you have in mind some
+> possible usage of it?
 
---=20
-balbi
+I did have in mind that the scheduling class could do something useful
+with this value. But this somewhat duplicates the
+arch_scale_freq_capacity stuff so I can remove it.
 
---mYCpIKhGyMATD0i+
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+> 
+> > +{
+> > +       unsigned long util_new, util_old, util_max, capacity_new;
+> > +       unsigned int freq_new, freq_tmp, cpu_tmp;
+> > +       struct cpufreq_policy *policy;
+> > +       struct gov_data *gd;
+> > +       struct cpufreq_frequency_table *pos;
+> > +
+> > +       /* handle rounding errors */
+> > +       util_new = util > SCHED_LOAD_SCALE ? SCHED_LOAD_SCALE : util;
+> > +
+> > +       /* update per-cpu utilization */
+> > +       util_old = __this_cpu_read(pcpu_util);
+> > +       __this_cpu_write(pcpu_util, util_new);
+> > +
+> > +       /* avoid locking policy for now; accessing .cpus only */
+> > +       policy = per_cpu(pcpu_policy, cpu);
+> > +
+> > +       /* find max utilization of cpus in this policy */
+> > +       util_max = 0;
+> > +       for_each_cpu(cpu_tmp, policy->cpus)
+> > +               util_max = max(util_max, per_cpu(pcpu_util, cpu_tmp));
+> > +
+> > +       /*
+> > +        * We only change frequency if this cpu's utilization represents a new
+> > +        * max. If another cpu has increased its utilization beyond the
+> > +        * previous max then we rely on that cpu to hit this code path and make
+> > +        * the change. IOW, the cpu with the new max utilization is responsible
+> > +        * for setting the new capacity/frequency.
+> > +        *
+> > +        * If this cpu is not the new maximum then bail, returning the current
+> > +        * capacity.
+> > +        */
+> > +       if (util_max > util_new)
+> > +               return capacity_of(cpu);
+> 
+> Here and below you probably want to return arch_scale_freq_capacity(NULL, cpu),
+> as capacity_of() returns the remaining capacity (w.r.t. capacity_orig) for CFS
+> tasks after RT tasks contribution is removed.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+In fact I wanted to return the capacity that reflects only cfs, but
+since I'm going to remove the return value it is moot.
 
-iQIcBAEBAgAGBQJVkXTQAAoJEIaOsuA1yqRERWAP/A5k4Hhy5902XTiDnGHdMZHW
-ztLPGDk02X8hpV+qoQ2zNDnP7PxBVYXwUj9cdiDNossUF5qdPcbCpEGg8FNJLfe5
-m8Nd1QMyc/J4j4AjmQjkpZiepQ0QwutfsE2whdTvX4aU4Q7AVp2ZEtnPgjuBSol7
-qP8qbLQ70C6g0Sh/Etpm1x8c6SvzL2+zv3bzL5cH9V6sghNjdAXIGJlwvEQxlyf3
-i0icsrmjzjMyekCePLN4NL07q1A3DPBQy5WsuTDaWKpjBmM4IE5zL0gV/sYrZLQ8
-6gbH/hpFeehOZueqKbfuIq1lqrHW3MvnBazOiRcZSc5OmKbRluMUcIeA4QoCzxcP
-GHRQlZjkGfFCZM6DH7hqAvfMahPgQz53JKyELANaz4/MM5u6Q2jFlLrLr2Rtzqhx
-kuxIhrw4WLYfrhUelSNpJwC49k1PsV0w4qxaYoAYjaE5urC3TmKfMxnTyqbALF4r
-yQlHNA5Z2Cy+y6Mkhjybv6UYE0IT7SOucEMegAp4lq5Zyh5N/Kl2LqWPFCGr1nic
-Bdl7xAo79SgESOdOOy58U8DP4AAOk6iCXItlNtPRVeXRl/zbg/beHmTcbVGOCi0O
-5VpkhDn7K2WTM/Cb2ZsArngq13a8CWgWIXI6u+7Ufc+R6kkAbiAgIr/gYaXRjXal
-kyfCn7OqsbZzgu9cRFjh
-=Ajji
------END PGP SIGNATURE-----
+> 
+> > +
+> > +       /*
+> > +        * We are going to request a new capacity, which might result in a new
+> > +        * cpu frequency. From here on we need to serialize access to the
+> > +        * policy and the governor private data.
+> > +        */
+> > +       policy = cpufreq_cpu_get(cpu);
+> > +       if (IS_ERR_OR_NULL(policy)) {
+> > +               return capacity_of(cpu);
+> > +       }
+> 
+> Shouldn't this be removed now that we have pcpu_policy?
+> Also the cpufreq_put_cpu() below.
 
---mYCpIKhGyMATD0i+--
+We must still 'get' the policy in order to call the cpufreq apis below.
+This involves holding locks that are managed for us in
+cpufreq_cpu_{get,put}. In fact the pcu_policy thing is a gross hack to
+avoid holding the locks and it is probably unsafe. I've removed it in
+the new version.
+
+> 
+> > +
+> > +       capacity_new = capacity_of(cpu);
+> > +       if (!policy->governor_data) {
+> > +               goto out;
+> > +       }
+> > +
+> > +       gd = policy->governor_data;
+> > +
+> > +       /* bail early if we are throttled */
+> > +       if (ktime_before(ktime_get(), gd->throttle)) {
+> > +               goto out;
+> > +       }
+> > +
+> > +       /*
+> > +        * Convert the new maximum capacity utilization into a cpu frequency
+> > +        *
+> > +        * It is possible to convert capacity utilization directly into a
+> > +        * frequency, but that implies that we would be 100% utilized. Instead,
+> > +        * first add a margin (default 25% capacity increase) to the new
+> > +        * capacity request. This provides some head room if load increases.
+> > +        */
+> > +       capacity_new = util_new + (SCHED_CAPACITY_SCALE >> 2);
+> 
+> Here you introduce this 25% margin w.r.t. SCHED_CAPACITY_SCALE.
+> Shouldn't the margin be related to util_new instead (using MARGIN_PCT
+> maybe)?
+
+Maybe?!?! I'm moving this type of policy into fair.c in the new version.
+Figuring out this policy is going to be a long road, with lots of
+testing and competing requirements. Getting infrastructure merged
+upstream is a different task compared to finding the best cpu frequency
+scaling policy. Some testing already shows that for certain workloads
+using the PELT curve in the way that I use it results in very slow
+frequency transition times.
+
+Thus I would prefer that this simple governor not be gated on figuring
+out all of that stuff first. There are some good reasons for this:
+
+1) it makes it easier for you to use this work with your EAS series if
+the governor does not implement any policy of its own
+
+2) it can hopefully get merged by removing the controversial policy
+stuff
+
+TL;DR, I'm no longer trying to solve the policy problem in this series.
+
+> 
+> > +       freq_new = capacity_new * policy->max >> SCHED_CAPACITY_SHIFT;
+> > +
+> > +       /*
+> > +        * If a frequency table is available then find the frequency
+> > +        * corresponding to freq_new.
+> > +        *
+> > +        * For cpufreq drivers without a frequency table, use the frequency
+> > +        * directly computed from capacity_new + 25% margin.
+> > +        */
+> > +       if (policy->freq_table) {
+> > +               freq_tmp = policy->max;
+> > +               cpufreq_for_each_entry(pos, policy->freq_table) {
+> > +                       if (pos->frequency >= freq_new &&
+> > +                                       pos->frequency < freq_tmp)
+> > +                               freq_tmp = pos->frequency;
+> > +               }
+> > +               freq_new = freq_tmp;
+> > +               capacity_new = (freq_new << SCHED_CAPACITY_SHIFT) / policy->max;
+> > +       }
+> 
+> Do we really need to do this here? Doesn't __cpufreq_driver_target()
+> do the same for us?
+
+Yes it does, but I was trying to get an accurate capacity target to
+return to cfs. Since I'm removing that in the next version then I can
+remove this as well.
+
+Thanks as always for your review!
+
+Best regards,
+Mike
