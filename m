@@ -1,51 +1,53 @@
 From: Uwe Geuder <linuxkernel2015-ugeuder@snkmail.com>
-Subject: Re: resume from swap partition under LVM
-Date: Mon, 29 Jun 2015 23:26:04 +0300
-Message-ID: <87mvzip8gz.fsf@e6510-131.site>
+Subject: [PATCH] PM / hibernate/resume: clarify documentation
+Date: Mon, 29 Jun 2015 23:35:05 +0300
+Message-ID: <87lhf2p81y.fsf@e6510-131.site>
 References: <87pp4gq0bl.fsf@e6510-131.site>
+ <87mvzip8gz.fsf@e6510-131.site>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gw01.mail.saunalahti.fi ([195.197.172.115]:47425 "EHLO
-	gw01.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753473AbbF2U0M (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2015 16:26:12 -0400
-In-Reply-To: <87pp4gq0bl.fsf@e6510-131.site>
+Received: from gw03.mail.saunalahti.fi ([195.197.172.111]:38933 "EHLO
+	gw03.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753490AbbF2UfM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2015 16:35:12 -0400
+In-Reply-To: <87mvzip8gz.fsf@e6510-131.site>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 
-On 28 June 2015 at 00:59, Uwe Geuder
-<linuxkernel2015-ugeuder@snkmail.com> wrote: 
+it was not the whole truth that kernel mode cannot be used with swap on LVM
 
-> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/power/swsusp.txt?id=refs/tags/v4.1#n411
-> reads:
->
->> Q: Can I suspend-to-disk using a swap partition under LVM?
->>
->> A: No. You can suspend successfully, but you'll not be able to
->> resume. uswsusp should be able to work with LVM. See suspend.sf.net.
->
-> Is that information still up to date?
+Signed-off-by: Uwe Geuder <linuxkernel2015-ugeuder@snkmail.com>
+---
+ Documentation/power/swsusp.txt | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-I guess I can reply myself. The "No" answer probably refers to the
-kernel resuming itself just with the help of the command line
-parameters. Of course that is not possible. I did not even think about
-that possibility, because I have used LUKS encrypted disks longer than
-hibernate/resume...
-
-What I meant is 
-
-echo -n "$major:$minor" > /sys/power/resume
-
-I guess that should work just fine with LVM, shouldn't it.
-
-I'll send a patch to clarify the answer in the FAQ.
-
-Regards,
-
-Uwe Geuder
+diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
+index f732a83..8cc17ca 100644
+--- a/Documentation/power/swsusp.txt
++++ b/Documentation/power/swsusp.txt
+@@ -410,8 +410,17 @@ Documentation/usb/persist.txt.
+ 
+ Q: Can I suspend-to-disk using a swap partition under LVM?
+ 
+-A: No. You can suspend successfully, but you'll not be able to
+-resume. uswsusp should be able to work with LVM. See suspend.sf.net.
++A: Yes and No.  You can suspend successfully, but the kernel will not be able
++to resume on its own.  You need an initramfs that can recognize the resume
++situation, activate the logical volume containing the swap volume (but not
++touch any filesystems!), and eventually call
++
++echo -n "$major:$minor" > /sys/power/resume
++
++where $major and $minor are the respective major and minor device numbers of
++the swap volume.
++
++uswsusp works with LVM, too.  See http://suspend.sourceforge.net/
+ 
+ Q: I upgraded the kernel from 2.6.15 to 2.6.16. Both kernels were
+ compiled with the similar configuration files. Anyway I found that
 -- 
-Nomovok Ltd.
-Tampere, Finland
-uwe.gxuder@nomovok.com (bot test: humans correct 1 obvious spelling error)
+1.8.4.5
+
+
