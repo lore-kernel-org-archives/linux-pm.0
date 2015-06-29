@@ -1,128 +1,51 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCHv2 1/1] kernel/power/autosleep.c: check for pm_suspend() return before queueing suspend again
-Date: Mon, 29 Jun 2015 22:07:52 +0200
-Message-ID: <2619760.zM2C8Nu9I9@vostro.rjw.lan>
-References: <1435581297-20271-1-git-send-email-nitish.a@samsung.com> <1435604054-29711-1-git-send-email-nitish.a@samsung.com> <13445304.liFVyNdj8p@vostro.rjw.lan>
+From: Uwe Geuder <linuxkernel2015-ugeuder@snkmail.com>
+Subject: Re: resume from swap partition under LVM
+Date: Mon, 29 Jun 2015 23:26:04 +0300
+Message-ID: <87mvzip8gz.fsf@e6510-131.site>
+References: <87pp4gq0bl.fsf@e6510-131.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:43570 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753467AbbF2Tlh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2015 15:41:37 -0400
-In-Reply-To: <13445304.liFVyNdj8p@vostro.rjw.lan>
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115]:47425 "EHLO
+	gw01.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753473AbbF2U0M (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2015 16:26:12 -0400
+In-Reply-To: <87pp4gq0bl.fsf@e6510-131.site>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nitish Ambastha <nitish.a@samsung.com>
-Cc: pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpgs@samsung.com, nits.ambastha@gmail.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 
-On Monday, June 29, 2015 09:56:18 PM Rafael J. Wysocki wrote:
-> On Tuesday, June 30, 2015 12:24:14 AM Nitish Ambastha wrote:
-> > Prevent tight loop for suspend-resume when some
-> > devices failed to suspend
-> > If some devices failed to suspend, we monitor this
-> > error in try_to_suspend(). pm_suspend() is already
-> > an 'int' returning function, how about checking return
-> > from pm_suspend() before queueing suspend again?
-> > 
-> > For devices which do not register for pending events,
-> > this will prevent tight loop for suspend-resume in
-> > suspend abort scenarios due to device suspend failures
+On 28 June 2015 at 00:59, Uwe Geuder
+<linuxkernel2015-ugeuder@snkmail.com> wrote: 
 
-Having said the below I'm not sure why the current code doesn't cover this
-for you?
+> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/power/swsusp.txt?id=refs/tags/v4.1#n411
+> reads:
+>
+>> Q: Can I suspend-to-disk using a swap partition under LVM?
+>>
+>> A: No. You can suspend successfully, but you'll not be able to
+>> resume. uswsusp should be able to work with LVM. See suspend.sf.net.
+>
+> Is that information still up to date?
 
-That would be the final_count == initial_count case, no?
+I guess I can reply myself. The "No" answer probably refers to the
+kernel resuming itself just with the help of the command line
+parameters. Of course that is not possible. I did not even think about
+that possibility, because I have used LUKS encrypted disks longer than
+hibernate/resume...
 
+What I meant is 
 
-> > 
-> > Signed-off-by: Nitish Ambastha <nitish.a@samsung.com>
-> > ---
-> > v2: Rearranged code to make wait entry shared with
-> >     existing one as suggested by Pavel Machek <pavel@ucw.cz>
-> >     Corrected log level from pr_info to pr_err for failure log
-> >     Added return check for hibernate()
-> > 
-> >  kernel/power/autosleep.c |   23 ++++++++++++++++-------
-> >  1 file changed, 16 insertions(+), 7 deletions(-)
-> > 
-> > diff --git a/kernel/power/autosleep.c b/kernel/power/autosleep.c
-> > index 9012ecf..1a86698 100644
-> > --- a/kernel/power/autosleep.c
-> > +++ b/kernel/power/autosleep.c
-> > @@ -26,6 +26,7 @@ static struct wakeup_source *autosleep_ws;
-> >  static void try_to_suspend(struct work_struct *work)
-> >  {
-> >  	unsigned int initial_count, final_count;
-> > +	int error = 0;
-> 
-> The initial value is not needed.
-> 
-> >  
-> >  	if (!pm_get_wakeup_count(&initial_count, true))
-> >  		goto out;
-> > @@ -43,22 +44,30 @@ static void try_to_suspend(struct work_struct *work)
-> >  		return;
-> >  	}
-> >  	if (autosleep_state >= PM_SUSPEND_MAX)
-> > -		hibernate();
-> > +		error = hibernate();
-> >  	else
-> > -		pm_suspend(autosleep_state);
-> > +		error = pm_suspend(autosleep_state);
-> 
-> I'd prefer to write that as
-> 
-> 	error = autosleep_state < PM_SUSPEND_MAX ?
-> 		pm_suspend(autosleep_state) : hibernate();
-> 
-> >  
-> >  	mutex_unlock(&autosleep_lock);
-> >  
-> > +	if (error) {
-> > +		pr_err("PM: suspend returned (%d)\n", error);
-> 
-> There is a debug message printed for that in the device suspend code, do we
-> need one more here?
-> 
-> > +		goto wait;
-> > +	}
-> > +
-> >  	if (!pm_get_wakeup_count(&final_count, false))
-> >  		goto out;
-> >  
-> > +	if (final_count != initial_count)
-> > +		goto out;
-> > +
-> > + wait:
-> >  	/*
-> > -	 * If the wakeup occured for an unknown reason, wait to prevent the
-> > -	 * system from trying to suspend and waking up in a tight loop.
-> > +	 * If some devices failed to suspend or if the wakeup ocurred
-> > +	 * for an unknown reason, wait to prevent the system from
-> > +	 * trying to suspend and waking up in a tight loop.
-> >  	 */
-> > -	if (final_count == initial_count)
-> > -		schedule_timeout_uninterruptible(HZ / 2);
-> > -
-> > +	schedule_timeout_uninterruptible(HZ / 2);
-> >   out:
-> >  	queue_up_suspend_work();
-> 
-> I'd arrange it this way:
-> 
-> 	if (error || pm_get_wakeup_count(&final_count, false)
-> 	    || final_count == initial_count)
-> 		schedule_timeout_uninterruptible(HZ / 2);
-> 
->  out:
->   	queue_up_suspend_work();
-> >  }
-> > 
-> 
-> 
+echo -n "$major:$minor" > /sys/power/resume
 
+I guess that should work just fine with LVM, shouldn't it.
+
+I'll send a patch to clarify the answer in the FAQ.
+
+Regards,
+
+Uwe Geuder
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Nomovok Ltd.
+Tampere, Finland
+uwe.gxuder@nomovok.com (bot test: humans correct 1 obvious spelling error)
