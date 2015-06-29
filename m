@@ -1,82 +1,68 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] power: axp288_charger: Fix broken extcon API calls
-Date: Mon, 29 Jun 2015 10:49:31 +0900
-Message-ID: <5590A42B.6050207@samsung.com>
-References: <1435367564-12900-1-git-send-email-linux@roeck-us.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: Nitish Ambastha <nitish.a@samsung.com>
+Subject: [PATCH 1/1] kernel/power/autosleep.c: check for pm_suspend() return
+ before queueing suspend again
+Date: Mon, 29 Jun 2015 18:04:57 +0530
+Message-ID: <1435581297-20271-1-git-send-email-nitish.a@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:39111 "EHLO
+Received: from mailout2.samsung.com ([203.254.224.25]:50514 "EHLO
 	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752894AbbF2Bte (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 28 Jun 2015 21:49:34 -0400
-In-reply-to: <1435367564-12900-1-git-send-email-linux@roeck-us.net>
+	with ESMTP id S1750872AbbF2HBY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2015 03:01:24 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ramakrishna Pallala <ramakrishna.pallala@intel.com>
+To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: cpgs@samsung.com, nitish.a@samsung.com, nits.ambastha@gmail.com
 
-Hi Guenter,
+Prevent tight loop for suspend-resume when some
+devices failed to suspend
+If some devices failed to suspend, we monitor this
+error in try_to_suspend(). pm_suspend() is already
+an 'int' returning function, how about checking return
+from pm_suspend() before queueing suspend again?
 
-The similar patch[1] was already merged.
+For devices which do not register for pending events,
+this will prevent tight loop for suspend-resume in
+suspend abort scenarios due to device suspend failures
 
-[1] http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=4b703b1d4c46ca4a00109ca1a391943ec21991b3
+Signed-off-by: Nitish Ambastha <nitish.a@samsung.com>
+---
+ kernel/power/autosleep.c |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-Thanks,
-Chanwoo Choi
-
-On 06/27/2015 10:12 AM, Guenter Roeck wrote:
-> The extcon API calls have been changed to add an additional argument.
-> This causes build errors such as
-> 
-> drivers/power/axp288_charger.c:851:2: error:
-> 	too few arguments to function 'extcon_register_notifier'
-> 
-> Fixes: 73b6ecdb93e8 ("extcon: Redefine the unique id of supported
-> 	external connectors without 'enum extcon' type")
-> Fixes: 046050f6e623 ("extcon: Update the prototype of
-> 	extcon_register_notifier() with enum extcon")
-> Cc: Chanwoo Choi <cw00.choi@samsung.com>
-> Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-> ---
->  drivers/power/axp288_charger.c | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/power/axp288_charger.c b/drivers/power/axp288_charger.c
-> index 5680317f4823..0aa6e7fd25d4 100644
-> --- a/drivers/power/axp288_charger.c
-> +++ b/drivers/power/axp288_charger.c
-> @@ -848,7 +848,8 @@ static int axp288_charger_probe(struct platform_device *pdev)
->  	/* Register for extcon notification */
->  	INIT_WORK(&info->cable.work, axp288_charger_extcon_evt_worker);
->  	info->cable.nb.notifier_call = axp288_charger_handle_cable_evt;
-> -	ret = extcon_register_notifier(info->cable.edev, &info->cable.nb);
-> +	ret = extcon_register_notifier(info->cable.edev, EXTCON_NONE,
-> +				       &info->cable.nb);
->  	if (ret) {
->  		dev_err(&info->pdev->dev,
->  			"failed to register extcon notifier %d\n", ret);
-> @@ -909,7 +910,8 @@ intr_reg_failed:
->  		extcon_unregister_interest(&info->otg.cable);
->  	power_supply_unregister(info->psy_usb);
->  psy_reg_failed:
-> -	extcon_unregister_notifier(info->cable.edev, &info->cable.nb);
-> +	extcon_unregister_notifier(info->cable.edev, EXTCON_NONE,
-> +				   &info->cable.nb);
->  	return ret;
->  }
->  
-> @@ -920,7 +922,8 @@ static int axp288_charger_remove(struct platform_device *pdev)
->  	if (info->otg.cable.edev)
->  		extcon_unregister_interest(&info->otg.cable);
->  
-> -	extcon_unregister_notifier(info->cable.edev, &info->cable.nb);
-> +	extcon_unregister_notifier(info->cable.edev, EXTCON_NONE,
-> +				   &info->cable.nb);
->  	power_supply_unregister(info->psy_usb);
->  
->  	return 0;
-> 
+diff --git a/kernel/power/autosleep.c b/kernel/power/autosleep.c
+index 9012ecf..3923148 100644
+--- a/kernel/power/autosleep.c
++++ b/kernel/power/autosleep.c
+@@ -26,6 +26,7 @@ static struct wakeup_source *autosleep_ws;
+ static void try_to_suspend(struct work_struct *work)
+ {
+ 	unsigned int initial_count, final_count;
++	int error = 0;
+ 
+ 	if (!pm_get_wakeup_count(&initial_count, true))
+ 		goto out;
+@@ -45,10 +46,20 @@ static void try_to_suspend(struct work_struct *work)
+ 	if (autosleep_state >= PM_SUSPEND_MAX)
+ 		hibernate();
+ 	else
+-		pm_suspend(autosleep_state);
++		error = pm_suspend(autosleep_state);
+ 
+ 	mutex_unlock(&autosleep_lock);
+ 
++	if (error) {
++		/*
++		 * If some devices failed to suspend, its better to wait
++		 * to prevent system from trying to suspend in tight loop
++		 */
++		pr_info("PM: suspend returned (%d)\n", error);
++		schedule_timeout_uninterruptible(HZ / 2);
++		goto out;
++	}
++
+ 	if (!pm_get_wakeup_count(&final_count, false))
+ 		goto out;
+ 
+-- 
+1.7.9.5
 
