@@ -1,129 +1,134 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH RFC v2 01/16] PM / Domains: Allocate memory outside
- domain locks
-Date: Mon, 29 Jun 2015 10:36:45 -0600
-Message-ID: <20150629163645.GB1524@linaro.org>
-References: <1435374156-19214-1-git-send-email-lina.iyer@linaro.org>
- <1435374156-19214-2-git-send-email-lina.iyer@linaro.org>
- <559090B3.4040502@samsung.com>
+From: Felipe Balbi <balbi@ti.com>
+Subject: Re: [PATCH v3 2/4] cpufreq: introduce cpufreq_driver_might_sleep
+Date: Mon, 29 Jun 2015 11:39:44 -0500
+Message-ID: <20150629163944.GA32758@saruman.tx.rr.com>
+References: <1435362824-26734-1-git-send-email-mturquette@linaro.org>
+ <1435362824-26734-3-git-send-email-mturquette@linaro.org>
+ <20150627004831.GB19347@saruman.tx.rr.com>
+ <20150629162621.9112.4040@quantum>
+Reply-To: <balbi@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="mYCpIKhGyMATD0i+"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:32850 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750849AbbF2Qgs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2015 12:36:48 -0400
-Received: by pdjn11 with SMTP id n11so119959216pdj.0
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2015 09:36:47 -0700 (PDT)
+Received: from comal.ext.ti.com ([198.47.26.152]:46948 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752513AbbF2Qkc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 29 Jun 2015 12:40:32 -0400
 Content-Disposition: inline
-In-Reply-To: <559090B3.4040502@samsung.com>
+In-Reply-To: <20150629162621.9112.4040@quantum>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@linaro.org, geert@linux-m68k.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org
+To: Michael Turquette <mturquette@baylibre.com>
+Cc: balbi@ti.com, peterz@infradead.org, mingo@kernel.org, linux-kernel@vger.kernel.org, preeti@linux.vnet.ibm.com, Morten.Rasmussen@arm.com, riel@redhat.com, efault@gmx.de, nicolas.pitre@linaro.org, daniel.lezcano@linaro.org, dietmar.eggemann@arm.com, vincent.guittot@linaro.org, amit.kucheria@linaro.org, juri.lelli@arm.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, alex.shi@linaro.org, linux-pm@vger.kernel.org, abelvesa@gmail.com, pebolle@tiscali.nl, "Rafael J. Wysocki" <rafael@kernel.org>
 
-On Mon, Jun 29 2015 at 18:26 -0600, Krzysztof Kozlowski wrote:
->On 27.06.2015 12:02, Lina Iyer wrote:
->> In preparation for supporting IRQ-safe domains, allocate domain data
->> outside the domain locks. These functions are not called in an atomic
->> context, so we can always allocate memory using GFP_KERNEL. By
->> allocating memory before the locks, we can safely lock the domain using
->> spinlocks instead of mutexes.
->>
->> Cc: Ulf Hansson <ulf.hansson@linaro.org>
->> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
->> Cc: Kevin Hilman <khilman@linaro.org>
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->> ---
->> Changes in v2:
->> 	- Modify commit text
->> ---
->>  drivers/base/power/domain.c | 27 +++++++++++++--------------
->>  1 file changed, 13 insertions(+), 14 deletions(-)
->>
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index 87d405a..44af889 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -1379,13 +1379,17 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
->>  int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
->>  			   struct generic_pm_domain *subdomain)
->>  {
->> -	struct gpd_link *link;
->> +	struct gpd_link *link, *itr;
->>  	int ret = 0;
->>
->>  	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(subdomain)
->>  	    || genpd == subdomain)
->>  		return -EINVAL;
->>
->> +	link = kzalloc(sizeof(*link), GFP_KERNEL);
->> +	if (!link)
->> +		return -ENOMEM;
->> +
->>  	mutex_lock(&genpd->lock);
->>  	mutex_lock_nested(&subdomain->lock, SINGLE_DEPTH_NESTING);
->>
->> @@ -1395,18 +1399,13 @@ int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
->>  		goto out;
->>  	}
->>
->> -	list_for_each_entry(link, &genpd->master_links, master_node) {
->> -		if (link->slave == subdomain && link->master == genpd) {
->> +	list_for_each_entry(itr, &genpd->master_links, master_node) {
->> +		if (itr->slave == subdomain && itr->master == genpd) {
->>  			ret = -EINVAL;
->>  			goto out;
->
->The same comment as in previous version - where is the kfree()? You
->moved the allocation so all error paths have to be checked and adjusted.
->Not just one that I pointed in previous review.
->
-Sorry, didnt notice that, will fix this. I seem to have addressed the
-other fone.
->>  		}
->>  	}
->>
->> -	link = kzalloc(sizeof(*link), GFP_KERNEL);
->> -	if (!link) {
->> -		ret = -ENOMEM;
->> -		goto out;
->> -	}
->>  	link->master = genpd;
->>  	list_add_tail(&link->master_node, &genpd->master_links);
->>  	link->slave = subdomain;
->> @@ -1508,17 +1507,17 @@ int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state)
->>  	if (IS_ERR_OR_NULL(genpd) || state < 0)
->>  		return -EINVAL;
->>
->> +	cpuidle_data = kzalloc(sizeof(*cpuidle_data), GFP_KERNEL);
->> +	if (!cpuidle_data)
->> +		return -ENOMEM;
->> +
->>  	mutex_lock(&genpd->lock);
->>
->>  	if (genpd->cpuidle_data) {
->>  		ret = -EEXIST;
->> -		goto out;
->> -	}
->> -	cpuidle_data = kzalloc(sizeof(*cpuidle_data), GFP_KERNEL);
->> -	if (!cpuidle_data) {
->> -		ret = -ENOMEM;
->> -		goto out;
->> +		goto err_drv;
->
->Is the mutex freed in this exit path?
->
-Yes, err_drv jumps to out, which frees the mutex.
+--mYCpIKhGyMATD0i+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thank you so much for the review.
+Hi,
 
--- Lina
+On Mon, Jun 29, 2015 at 09:26:21AM -0700, Michael Turquette wrote:
+> Quoting Felipe Balbi (2015-06-26 17:48:31)
+> > Hi,
+> >=20
+> > On Fri, Jun 26, 2015 at 04:53:42PM -0700, Michael Turquette wrote:
+> > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > > index 28e59a4..e5296c0 100644
+> > > --- a/drivers/cpufreq/cpufreq.c
+> > > +++ b/drivers/cpufreq/cpufreq.c
+> > > @@ -112,6 +112,12 @@ bool have_governor_per_policy(void)
+> > >  }
+> > >  EXPORT_SYMBOL_GPL(have_governor_per_policy);
+> > > =20
+> > > +bool cpufreq_driver_might_sleep(void)
+> > > +{
+> > > +     return !(cpufreq_driver->flags & CPUFREQ_DRIVER_WILL_NOT_SLEEP);
+> > > +}
+> > > +EXPORT_SYMBOL_GPL(cpufreq_driver_might_sleep);
+> > > +
+> > >  struct kobject *get_governor_parent_kobj(struct cpufreq_policy *poli=
+cy)
+> > >  {
+> > >       if (have_governor_per_policy())
+> > > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> > > index 2ee4888..1f2c9a1 100644
+> > > --- a/include/linux/cpufreq.h
+> > > +++ b/include/linux/cpufreq.h
+> > > @@ -157,6 +157,7 @@ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall=
+, int io_busy);
+> > >  int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int c=
+pu);
+> > >  int cpufreq_update_policy(unsigned int cpu);
+> > >  bool have_governor_per_policy(void);
+> > > +bool cpufreq_driver_might_sleep(void);
+> > >  struct kobject *get_governor_parent_kobj(struct cpufreq_policy *poli=
+cy);
+> > >  #else
+> > >  static inline unsigned int cpufreq_get(unsigned int cpu)
+> > > @@ -314,6 +315,14 @@ struct cpufreq_driver {
+> > >   */
+> > >  #define CPUFREQ_NEED_INITIAL_FREQ_CHECK      (1 << 5)
+> > > =20
+> > > +/*
+> > > + * Set by drivers that will never block or sleep during their freque=
+ncy
+> > > + * transition. Used to indicate when it is safe to call cpufreq_driv=
+er_target
+> > > + * from non-interruptable context. Drivers must opt-in to this flag,=
+ as the
+> > > + * safe default is that they might sleep.
+> > > + */
+> > > +#define CPUFREQ_DRIVER_WILL_NOT_SLEEP        (1 << 6)
+> >=20
+> > don't you need to update current drivers and pass this flag where
+> > necessary ?
+>=20
+> Felipe,
+>=20
+> Thanks for the review.
+>=20
+> Setting the flag can be done, but it is an opt-in feature. First, none
+> of the legacy cpufreq governors would actually make use of this flag.
+> Everything they do is in process context. The first potential user of it
+> is in patch #3.
+>=20
+> Secondly, the governor in patch #3 will work without this flag set for a
+> cpufreq driver. It will just defer the dvfs transition to a kthread
+> instead of performing it in the hot path of the scheduler.
+>=20
+> Finally, the only hardware I am aware of that can make use of this flag
+> is Intel hardware. I know nothing about it and am happy for someone more
+> knowledgeable than myself submit a patch enabling this flag for that
+> architecture.
 
->>  	}
->> +
->>  	cpuidle_drv = cpuidle_driver_ref();
->>  	if (!cpuidle_drv) {
->>  		ret = -ENODEV;
->>
->
+the follow-up question would be: then why introduce the flag at all ?
+:-p
+
+--=20
+balbi
+
+--mYCpIKhGyMATD0i+
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVkXTQAAoJEIaOsuA1yqRERWAP/A5k4Hhy5902XTiDnGHdMZHW
+ztLPGDk02X8hpV+qoQ2zNDnP7PxBVYXwUj9cdiDNossUF5qdPcbCpEGg8FNJLfe5
+m8Nd1QMyc/J4j4AjmQjkpZiepQ0QwutfsE2whdTvX4aU4Q7AVp2ZEtnPgjuBSol7
+qP8qbLQ70C6g0Sh/Etpm1x8c6SvzL2+zv3bzL5cH9V6sghNjdAXIGJlwvEQxlyf3
+i0icsrmjzjMyekCePLN4NL07q1A3DPBQy5WsuTDaWKpjBmM4IE5zL0gV/sYrZLQ8
+6gbH/hpFeehOZueqKbfuIq1lqrHW3MvnBazOiRcZSc5OmKbRluMUcIeA4QoCzxcP
+GHRQlZjkGfFCZM6DH7hqAvfMahPgQz53JKyELANaz4/MM5u6Q2jFlLrLr2Rtzqhx
+kuxIhrw4WLYfrhUelSNpJwC49k1PsV0w4qxaYoAYjaE5urC3TmKfMxnTyqbALF4r
+yQlHNA5Z2Cy+y6Mkhjybv6UYE0IT7SOucEMegAp4lq5Zyh5N/Kl2LqWPFCGr1nic
+Bdl7xAo79SgESOdOOy58U8DP4AAOk6iCXItlNtPRVeXRl/zbg/beHmTcbVGOCi0O
+5VpkhDn7K2WTM/Cb2ZsArngq13a8CWgWIXI6u+7Ufc+R6kkAbiAgIr/gYaXRjXal
+kyfCn7OqsbZzgu9cRFjh
+=Ajji
+-----END PGP SIGNATURE-----
+
+--mYCpIKhGyMATD0i+--
