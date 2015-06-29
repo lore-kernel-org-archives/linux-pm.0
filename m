@@ -1,113 +1,108 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: [PATCH v6 0/7] CPUFreq driver using CPPC methods
-Date: Mon, 29 Jun 2015 13:23:18 -0400
-Message-ID: <CAJ5Y-eba+r-aM=9iYZt7SEQvnK-eVxt34u-8NqjMHnnaE4jU5w@mail.gmail.com>
-References: <cover.1434398373.git.ashwin.chaugule@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <cover.1434398373.git.ashwin.chaugule@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jaswinder Singh <jaswinder.singh@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, linux acpi <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v2 1/4] clk: samsung: exynos5250: add cpu clock configuration
+ data and instantiate cpu clock
+Date: Mon, 29 Jun 2015 19:26:09 +0200
+Message-ID: <1435598772-21708-2-git-send-email-b.zolnierkie@samsung.com>
+References: <1435598772-21708-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:46749 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751464AbbF2R2K (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2015 13:28:10 -0400
+In-reply-to: <1435598772-21708-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, Mike Turquette <mturquette@linaro.org>
 
-Hi Rafael,
+From: Thomas Abraham <thomas.ab@samsung.com>
 
-On 15 June 2015 at 16:09, Ashwin Chaugule <ashwin.chaugule@linaro.org> wrote:
-> CPPC:
-> ====
->
-> CPPC (Collaborative Processor Performance Control) is a new way to control CPU
-> performance using an abstract continous scale as against a discretized P-state scale
-> which is tied to CPU frequency only. It is defined in the ACPI 5.0+ spec. In brief,
-> the basic operation involves:
-> - OS makes a CPU performance request. (Can provide min and max tolerable bounds)
->
-> - Platform (such as BMC) is free to optimize request within requested bounds depending
-> on power/thermal budgets etc.
->
-> - Platform conveys its decision back to OS
->
-> The communication between OS and platform occurs through another medium called (PCC)
-> Platform communication Channel. This is a generic mailbox like mechanism which includes
-> doorbell semantics to indicate register updates. See drivers/mailbox/pcc.c
->
-> This patchset introduces a CPPC based CPUFreq driver that works with existing governors
-> such as ondemand. The CPPC table parsing and the CPPC communication semantics are
-> abstracted into separate files to allow future CPPC based drivers to implement their
-> own governors if required.
->
-> Initial patchsets included an adaptation of the PID governor from intel_pstate.c. However
-> recent experiments led to extensive modifications of the algorithm to calculate CPU
-> busyness. Until it is verified that these changes are worthwhile, the existing governors
-> should provide for a good enough starting point for ARM64 servers.
->
-> Finer details about the PCC and CPPC spec are available in the latest ACPI 5.1
-> specification.[2]
->
-> Testing:
-> =======
->
-> This was tested on an SBSA compatible ARMv8 server with CPPCv2
-> firmware running on a remote processor. I verified that each CPUs
-> performance limits were detected and that new performance requests
-> were made by the on-demand governor proportional to the load on each
-> CPU. I also verified that using the acpi_processor driver correctly
-> maps the physical CPU ids to logical CPU ids, which helps in picking
-> up the proper _CPC details from a processor object, in the case where
-> CPU physical ids may not be contiguous.
->
-> Changes since V5:
-> - Checkpatch cleanups.
-> - Change pss_init to pss_perf_init. Rec by Srinivas Pandruvada.
-> - Explicit comment explaining why postcore_initcall to pcc mailbox.
-> - Fold acpi_processor_syscore_init/exit into CONFIG_ACPI_CST.
-> - Added patch with dummy functions used by ACPI_HOTPLUG_CPU.
->
-> Changes since V4:
-> - Misc cleanups. Addressed feedback from Rafael.
-> - Made acpi_processor.c independent of C-states, P-states and others.
-> - Per CPU scanning for _CPC is now made from acpi_processor.c
-> - Added new Kconfig options for legacy C states and P states to enable future
-> support for newer alternatives as defined in the ACPI spec 6.0.
->
-> Changes since V3:
-> - Split CPPC backend methods into separate files.
-> - Add frontend driver which plugs into existing CPUfreq governors.
-> - Simplify PCC driver by moving communication space mapping and read/write
->         into client drivers.
->
-> Changes since V2:
-> - Select driver if !X86, since intel_pstate will use HWP extensions instead.
-> - Added more comments.
-> - Added Freq domain awareness and PSD parsing.
->
-> Changes since V1:
-> - Create a new driver based on Dirks suggestion.
-> - Fold in CPPC backend hooks into main driver.
->
-> Changes since V0: [1]
-> - Split intel_pstate.c into a generic PID governor and platform specific backend.
-> - Add CPPC accessors as PID backend.
->
-> [1] - http://lwn.net/Articles/608715/
-> [2] - http://www.uefi.org/sites/default/files/resources/ACPI_5_1release.pdf
-> [3] - https://patches.linaro.org/40705/
->
->
-> Ashwin Chaugule (7):
->   PCC: Initialize PCC Mailbox earlier at boot
->   ACPI: Make ACPI processor driver more extensible
->   ACPI: Introduce CPU performance controls using CPPC
->   CPPC: Add a CPUFreq driver for use with CPPC
->   CPPC: Probe for CPPC tables for each ACPI Processor object
->   PCC: Enable PCC only when needed
->   ACPI: Add weak routines for ACPI CPU Hotplug
->
+With the addition of the new Samsung specific cpu-clock type, the
+arm clock can be represented as a cpu-clock type. Add the CPU clock
+configuration data and instantiate the CPU clock type for Exynos5250.
 
-Any further comments/suggestions for these patches? Can they be picked
-up for merging in the next cycle?
+Changes by Bartlomiej:
+- split Exynos5250 support from the original patch
+- moved E5250_CPU_DIV[0,1]() macros to clk-exynos5250.c
 
-Thanks,
-Ashwin.
+Cc: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Mike Turquette <mturquette@linaro.org>
+Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/clk/samsung/clk-exynos5250.c   | 31 +++++++++++++++++++++++++++++++
+ include/dt-bindings/clock/exynos5250.h |  1 +
+ 2 files changed, 32 insertions(+)
+
+diff --git a/drivers/clk/samsung/clk-exynos5250.c b/drivers/clk/samsung/clk-exynos5250.c
+index 70ec3d2..d87f34d 100644
+--- a/drivers/clk/samsung/clk-exynos5250.c
++++ b/drivers/clk/samsung/clk-exynos5250.c
+@@ -19,6 +19,7 @@
+ #include <linux/syscore_ops.h>
+ 
+ #include "clk.h"
++#include "clk-cpu.h"
+ 
+ #define APLL_LOCK		0x0
+ #define APLL_CON0		0x100
+@@ -748,6 +749,32 @@ static struct samsung_pll_clock exynos5250_plls[nr_plls] __initdata = {
+ 		VPLL_LOCK, VPLL_CON0, NULL),
+ };
+ 
++#define E5250_CPU_DIV0(apll, pclk_dbg, atb, periph, acp, cpud)		\
++		((((apll) << 24) | ((pclk_dbg) << 20) | ((atb) << 16) |	\
++		 ((periph) << 12) | ((acp) << 8) | ((cpud) << 4)))
++#define E5250_CPU_DIV1(hpm, copy)					\
++		(((hpm) << 4) | (copy))
++
++static const struct exynos_cpuclk_cfg_data exynos5250_armclk_d[] __initconst = {
++	{ 1700000, E5250_CPU_DIV0(5, 3, 7, 7, 7, 3), E5250_CPU_DIV1(2, 0), },
++	{ 1600000, E5250_CPU_DIV0(4, 1, 7, 7, 7, 3), E5250_CPU_DIV1(2, 0), },
++	{ 1500000, E5250_CPU_DIV0(4, 1, 7, 7, 7, 2), E5250_CPU_DIV1(2, 0), },
++	{ 1400000, E5250_CPU_DIV0(4, 1, 6, 7, 7, 2), E5250_CPU_DIV1(2, 0), },
++	{ 1300000, E5250_CPU_DIV0(3, 1, 6, 7, 7, 2), E5250_CPU_DIV1(2, 0), },
++	{ 1200000, E5250_CPU_DIV0(3, 1, 5, 7, 7, 2), E5250_CPU_DIV1(2, 0), },
++	{ 1100000, E5250_CPU_DIV0(3, 1, 5, 7, 7, 3), E5250_CPU_DIV1(2, 0), },
++	{ 1000000, E5250_CPU_DIV0(2, 1, 4, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
++	{  900000, E5250_CPU_DIV0(2, 1, 4, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
++	{  800000, E5250_CPU_DIV0(2, 1, 4, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
++	{  700000, E5250_CPU_DIV0(1, 1, 3, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
++	{  600000, E5250_CPU_DIV0(1, 1, 3, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
++	{  500000, E5250_CPU_DIV0(1, 1, 2, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
++	{  400000, E5250_CPU_DIV0(1, 1, 2, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
++	{  300000, E5250_CPU_DIV0(1, 1, 1, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
++	{  200000, E5250_CPU_DIV0(1, 1, 1, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
++	{  0 },
++};
++
+ static const struct of_device_id ext_clk_match[] __initconst = {
+ 	{ .compatible = "samsung,clock-xxti", .data = (void *)0, },
+ 	{ },
+@@ -797,6 +824,10 @@ static void __init exynos5250_clk_init(struct device_node *np)
+ 			ARRAY_SIZE(exynos5250_div_clks));
+ 	samsung_clk_register_gate(ctx, exynos5250_gate_clks,
+ 			ARRAY_SIZE(exynos5250_gate_clks));
++	exynos_register_cpu_clock(ctx, CLK_ARM_CLK, "armclk",
++			mout_cpu_p[0], mout_cpu_p[1], 0x200,
++			exynos5250_armclk_d, ARRAY_SIZE(exynos5250_armclk_d),
++			CLK_CPU_HAS_DIV1);
+ 
+ 	/*
+ 	 * Enable arm clock down (in idle) and set arm divider
+diff --git a/include/dt-bindings/clock/exynos5250.h b/include/dt-bindings/clock/exynos5250.h
+index 4273891d..8183d1c 100644
+--- a/include/dt-bindings/clock/exynos5250.h
++++ b/include/dt-bindings/clock/exynos5250.h
+@@ -21,6 +21,7 @@
+ #define CLK_FOUT_CPLL		6
+ #define CLK_FOUT_EPLL		7
+ #define CLK_FOUT_VPLL		8
++#define CLK_ARM_CLK		9
+ 
+ /* gate for special clocks (sclk) */
+ #define CLK_SCLK_CAM_BAYER	128
+-- 
+1.9.1
+
