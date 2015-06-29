@@ -1,133 +1,125 @@
-From: Abel Vesa <abelvesa@linux.com>
-Subject: Re: [RFCv4 PATCH 00/34] sched: Energy cost model for energy-aware scheduling
-Date: Sun, 28 Jun 2015 23:26:31 +0300
-Message-ID: <CAEZQSscFKoang2X4E82xSXddcij=Ym5wyLGDLZwiwy5czJqAZg@mail.gmail.com>
-References: <1431459549-18343-1-git-send-email-morten.rasmussen@arm.com>
-	<5552799E.2060507@nvidia.com>
-	<20150513134753.GA26396@e105550-lin.cambridge.arm.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH RFC v2 01/16] PM / Domains: Allocate memory outside domain
+ locks
+Date: Mon, 29 Jun 2015 09:26:27 +0900
+Message-ID: <559090B3.4040502@samsung.com>
+References: <1435374156-19214-1-git-send-email-lina.iyer@linaro.org>
+ <1435374156-19214-2-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f48.google.com ([209.85.215.48]:36809 "EHLO
-	mail-la0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752429AbbF1U0f (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 28 Jun 2015 16:26:35 -0400
-In-Reply-To: <20150513134753.GA26396@e105550-lin.cambridge.arm.com>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:27476 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752503AbbF2A0e (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 28 Jun 2015 20:26:34 -0400
+Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
+ by mailout2.w1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0NQO00M2UJW7GF20@mailout2.w1.samsung.com> for
+ linux-pm@vger.kernel.org; Mon, 29 Jun 2015 01:26:31 +0100 (BST)
+In-reply-to: <1435374156-19214-2-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Sai Gurrappadi <sgurrappadi@nvidia.com>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, "mturquette@linaro.org" <mturquette@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Juri Lelli <Juri.Lelli@arm.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Boonstoppel <pboonstoppel@nvidia.com>
+To: Lina Iyer <lina.iyer@linaro.org>, rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@linaro.org
+Cc: geert@linux-m68k.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org
 
-Hi,
+On 27.06.2015 12:02, Lina Iyer wrote:
+> In preparation for supporting IRQ-safe domains, allocate domain data
+> outside the domain locks. These functions are not called in an atomic
+> context, so we can always allocate memory using GFP_KERNEL. By
+> allocating memory before the locks, we can safely lock the domain using
+> spinlocks instead of mutexes.
+> 
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> ---
+> Changes in v2:
+> 	- Modify commit text
+> ---
+>  drivers/base/power/domain.c | 27 +++++++++++++--------------
+>  1 file changed, 13 insertions(+), 14 deletions(-)
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 87d405a..44af889 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1379,13 +1379,17 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+>  int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
+>  			   struct generic_pm_domain *subdomain)
+>  {
+> -	struct gpd_link *link;
+> +	struct gpd_link *link, *itr;
+>  	int ret = 0;
+>  
+>  	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(subdomain)
+>  	    || genpd == subdomain)
+>  		return -EINVAL;
+>  
+> +	link = kzalloc(sizeof(*link), GFP_KERNEL);
+> +	if (!link)
+> +		return -ENOMEM;
+> +
+>  	mutex_lock(&genpd->lock);
+>  	mutex_lock_nested(&subdomain->lock, SINGLE_DEPTH_NESTING);
+>  
+> @@ -1395,18 +1399,13 @@ int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
+>  		goto out;
+>  	}
+>  
+> -	list_for_each_entry(link, &genpd->master_links, master_node) {
+> -		if (link->slave == subdomain && link->master == genpd) {
+> +	list_for_each_entry(itr, &genpd->master_links, master_node) {
+> +		if (itr->slave == subdomain && itr->master == genpd) {
+>  			ret = -EINVAL;
+>  			goto out;
 
-So I tried to play around a little bit with this patchset. I did a
-checkout from:
+The same comment as in previous version - where is the kfree()? You
+moved the allocation so all error paths have to be checked and adjusted.
+Not just one that I pointed in previous review.
 
-git://linux-arm.org/linux-power.git energy_model_rfc_v4
+>  		}
+>  	}
+>  
+> -	link = kzalloc(sizeof(*link), GFP_KERNEL);
+> -	if (!link) {
+> -		ret = -ENOMEM;
+> -		goto out;
+> -	}
+>  	link->master = genpd;
+>  	list_add_tail(&link->master_node, &genpd->master_links);
+>  	link->slave = subdomain;
+> @@ -1508,17 +1507,17 @@ int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state)
+>  	if (IS_ERR_OR_NULL(genpd) || state < 0)
+>  		return -EINVAL;
+>  
+> +	cpuidle_data = kzalloc(sizeof(*cpuidle_data), GFP_KERNEL);
+> +	if (!cpuidle_data)
+> +		return -ENOMEM;
+> +
+>  	mutex_lock(&genpd->lock);
+>  
+>  	if (genpd->cpuidle_data) {
+>  		ret = -EEXIST;
+> -		goto out;
+> -	}
+> -	cpuidle_data = kzalloc(sizeof(*cpuidle_data), GFP_KERNEL);
+> -	if (!cpuidle_data) {
+> -		ret = -ENOMEM;
+> -		goto out;
+> +		goto err_drv;
 
-and then, when I tried to enable the ENERGY_AWARE from sysfs inside
-qemu (x86_64) and I got this:
+Is the mutex freed in this exit path?
 
-[69452.750245] BUG: unable to handle kernel paging request at ffff88009d3fb958
-[69452.750245] IP: [<ffffffff8107b8b5>] try_to_wake_up+0x125/0x310
-[69452.750245] PGD 2155067 PUD 0
-[69452.750245] Oops: 0000 [#1] SMP
-[69452.750245] Modules linked in:
-[69452.750245] CPU: 0 PID: 1007 Comm: sh Not tainted 4.1.0-rc2+ #8
-[69452.750245] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996),
-BIOS 1.8.1-20150318_183358- 04/01/2014
-[69452.750245] task: ffff88007c9e5aa0 ti: ffff88007be0c000 task.ti:
-ffff88007be0c000
-[69452.750245] RIP: 0010:[<ffffffff8107b8b5>]  [<ffffffff8107b8b5>]
-try_to_wake_up+0x125/0x310
-[69452.750245] RSP: 0000:ffff88007fc03d78  EFLAGS: 00000092
-[69452.750245] RAX: 00000000ffffffff RBX: 00000000ffffffff RCX: 0000000000015a40
-[69452.750245] RDX: 0000000000000001 RSI: 0000000000000000 RDI: ffff88007d005000
-[69452.750245] RBP: ffff88007fc03dc8 R08: 0000000000000400 R09: 0000000000000000
-[69452.750245] R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000015a40
-[69452.750245] R13: ffff88007d3fbdaa R14: 0000000000000000 R15: ffff88007d3fb660
-[69452.750245] FS:  00007f8a3c9f0700(0000) GS:ffff88007fc00000(0000)
-knlGS:0000000000000000
-[69452.750245] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[69452.750245] CR2: ffff88009d3fb958 CR3: 000000007c32c000 CR4: 00000000000006f0
-[69452.750245] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[69452.750245] DR3: 0000000000000000 DR6: 0000000000000000 DR7: 0000000000000000
-[69452.750245] Stack:
-[69452.750245]  ffff88007fc15aa8 ffff88007c9e5b08 ffff88007fc15aa8
-0000000000000046
-[69452.750245]  ffff88007fc03e08 ffff88007c83fe60 ffffffff81e3c8a8
-ffffffff81e3c890
-[69452.750245]  0000000000000000 0000000000000003 ffff88007fc03dd8
-ffffffff8107bb8d
-[69452.750245] Call Trace:
-[69452.750245]  <IRQ>
-[69452.750245]  [<ffffffff8107bb8d>] default_wake_function+0xd/0x10
-[69452.750245]  [<ffffffff8108ed21>] autoremove_wake_function+0x11/0x40
-[69452.750245]  [<ffffffff8108e6b5>] __wake_up_common+0x55/0x90
-[69452.750245]  [<ffffffff8108e728>] __wake_up+0x38/0x60
-[69452.750245]  [<ffffffff810ab062>] rcu_gp_kthread_wake+0x42/0x50
-[69452.750245]  [<ffffffff810acd9f>] rcu_process_callbacks+0x2ef/0x5e0
-[69452.750245]  [<ffffffff81056e0f>] __do_softirq+0x9f/0x280
-[69452.750245]  [<ffffffff81057145>] irq_exit+0xa5/0xb0
-[69452.750245]  [<ffffffff81038bd1>] smp_apic_timer_interrupt+0x41/0x50
-[69452.750245]  [<ffffffff818ae5bb>] apic_timer_interrupt+0x6b/0x70
-[69452.750245]  <EOI>
-[69452.750245] Code: 4c 89 ff ff d0 41 83 bf f8 02 00 00 01 41 8b 5f
-48 7e 16 49 8b 47 60 89 de 44 89 f1 ba 10 00 00 00 4c 89 ff ff 50 40
-89 c3 89 d8 <49> 0f a3 87 00 03 00 00 19 d2 85 d2 0f 84 59 01 00 00 48
-8b 15
-[69452.750245] RIP  [<ffffffff8107b8b5>] try_to_wake_up+0x125/0x310
-[69452.750245]  RSP <ffff88007fc03d78>
-[69452.750245] CR2: ffff88009d3fb958
-[69452.750245] ---[ end trace 9b4570a93c243e98 ]---
-[69452.750245] Kernel panic - not syncing: Fatal exception in interrupt
-[69452.750245] Kernel Offset: disabled
-[69452.750245] ---[ end Kernel panic - not syncing: Fatal exception in interrupt
+Best regards,
+Krzysztof
 
-and then I did a disassable from kgdb and I got this:
+>  	}
+> +
+>  	cpuidle_drv = cpuidle_driver_ref();
+>  	if (!cpuidle_drv) {
+>  		ret = -ENODEV;
+> 
 
-0xffffffff8107b8ae <+286>:   callq  *0x40(%rax)
-0xffffffff8107b8b1 <+289>:   mov    %eax,%ebx
-0xffffffff8107b8b3 <+291>:   mov    %ebx,%eax
-0xffffffff8107b8b5 <+293>:   bt     %rax,0x300(%r15)
-0xffffffff8107b8bd <+301>:   sbb    %edx,%edx
-
-and then I did a objdump and got this:
-
-static inline
-int select_task_rq(struct task_struct *p, int cpu, int sd_flags, int wake_flags)
-{
-        if (p->nr_cpus_allowed > 1)
-    7dcb:       7e 16                   jle    7de3 <try_to_wake_up+0x123>
-                cpu = p->sched_class->select_task_rq(p, cpu, sd_flags,
-wake_flags);
-    7dcd:       49 8b 47 60             mov    0x60(%r15),%rax
-    7dd1:       89 de                   mov    %ebx,%esi
-    7dd3:       44 89 f1                mov    %r14d,%ecx
-    7dd6:       ba 10 00 00 00          mov    $0x10,%edx
-    7ddb:       4c 89 ff                mov    %r15,%rdi
-    7dde:       ff 50 40                callq  *0x40(%rax)
-    7de1:       89 c3                   mov    %eax,%ebx
-    7de3:       89 d8                   mov    %ebx,%eax
-    7de5:       49 0f a3 87 00 03 00    bt     %rax,0x300(%r15)
-    7dec:       00
-    7ded:       19 d2                   sbb    %edx,%edx
-         * Since this is common to all placement strategies, this lives here.
-         *
-         * [ this allows ->select_task() to simply return task_cpu(p) and
-         *   not worry about this generic constraint ]
-         */
-        if (unlikely(!cpumask_test_cpu(cpu, tsk_cpus_allowed(p)) ||
-    7def:       85 d2                   test   %edx,%edx
-
-I wasn't able to determine the cause from the line:
-
-7de5:       49 0f a3 87 00 03 00    bt     %rax,0x300(%r15)
-
-Finally, the question I have is: Could this happen because I'm running
-it from qemu?
-
-I hope all this info helps.
-
-Thanks,
-Abel.
