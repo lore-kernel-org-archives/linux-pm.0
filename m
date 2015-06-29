@@ -1,62 +1,82 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH RFC v2 02/16] PM / Domains: Remove dev->driver check for
- runtime PM
-Date: Mon, 29 Jun 2015 09:40:12 +0900
-Message-ID: <559093EC.8050002@samsung.com>
-References: <1435374156-19214-1-git-send-email-lina.iyer@linaro.org>
- <1435374156-19214-3-git-send-email-lina.iyer@linaro.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] power: axp288_charger: Fix broken extcon API calls
+Date: Mon, 29 Jun 2015 10:49:31 +0900
+Message-ID: <5590A42B.6050207@samsung.com>
+References: <1435367564-12900-1-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:31815 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752996AbbF2AkS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 28 Jun 2015 20:40:18 -0400
-Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
- by mailout3.w1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0NQO00189KJ4VR20@mailout3.w1.samsung.com> for
- linux-pm@vger.kernel.org; Mon, 29 Jun 2015 01:40:16 +0100 (BST)
-In-reply-to: <1435374156-19214-3-git-send-email-lina.iyer@linaro.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:39111 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752894AbbF2Bte (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 28 Jun 2015 21:49:34 -0400
+In-reply-to: <1435367564-12900-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>, rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@linaro.org
-Cc: geert@linux-m68k.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ramakrishna Pallala <ramakrishna.pallala@intel.com>
 
-On 27.06.2015 12:02, Lina Iyer wrote:
-> Remove check for driver of a device, for runtime PM. Device may be
-> suspended without an explicit driver. This check seems to be vestigial
-> and incorrect in the current context.
+Hi Guenter,
+
+The similar patch[1] was already merged.
+
+[1] http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=4b703b1d4c46ca4a00109ca1a391943ec21991b3
+
+Thanks,
+Chanwoo Choi
+
+On 06/27/2015 10:12 AM, Guenter Roeck wrote:
+> The extcon API calls have been changed to add an additional argument.
+> This causes build errors such as
 > 
-> Signed-off-by: Kevin Hilman <khilman@linaro.org>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> drivers/power/axp288_charger.c:851:2: error:
+> 	too few arguments to function 'extcon_register_notifier'
+> 
+> Fixes: 73b6ecdb93e8 ("extcon: Redefine the unique id of supported
+> 	external connectors without 'enum extcon' type")
+> Fixes: 046050f6e623 ("extcon: Update the prototype of
+> 	extcon_register_notifier() with enum extcon")
+> Cc: Chanwoo Choi <cw00.choi@samsung.com>
+> Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 > ---
->  drivers/base/power/domain.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-
-
-Makes sense,
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-
-
-Best regards,
-Krzysztof
-
+>  drivers/power/axp288_charger.c | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 44af889..e9b7cfb 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -391,8 +391,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
->  		if (stat > PM_QOS_FLAGS_NONE)
->  			return -EBUSY;
+> diff --git a/drivers/power/axp288_charger.c b/drivers/power/axp288_charger.c
+> index 5680317f4823..0aa6e7fd25d4 100644
+> --- a/drivers/power/axp288_charger.c
+> +++ b/drivers/power/axp288_charger.c
+> @@ -848,7 +848,8 @@ static int axp288_charger_probe(struct platform_device *pdev)
+>  	/* Register for extcon notification */
+>  	INIT_WORK(&info->cable.work, axp288_charger_extcon_evt_worker);
+>  	info->cable.nb.notifier_call = axp288_charger_handle_cable_evt;
+> -	ret = extcon_register_notifier(info->cable.edev, &info->cable.nb);
+> +	ret = extcon_register_notifier(info->cable.edev, EXTCON_NONE,
+> +				       &info->cable.nb);
+>  	if (ret) {
+>  		dev_err(&info->pdev->dev,
+>  			"failed to register extcon notifier %d\n", ret);
+> @@ -909,7 +910,8 @@ intr_reg_failed:
+>  		extcon_unregister_interest(&info->otg.cable);
+>  	power_supply_unregister(info->psy_usb);
+>  psy_reg_failed:
+> -	extcon_unregister_notifier(info->cable.edev, &info->cable.nb);
+> +	extcon_unregister_notifier(info->cable.edev, EXTCON_NONE,
+> +				   &info->cable.nb);
+>  	return ret;
+>  }
 >  
-> -		if (pdd->dev->driver && (!pm_runtime_suspended(pdd->dev)
-> -		    || pdd->dev->power.irq_safe))
-> +		if (!pm_runtime_suspended(pdd->dev) || pdd->dev->power.irq_safe)
->  			not_suspended++;
->  	}
+> @@ -920,7 +922,8 @@ static int axp288_charger_remove(struct platform_device *pdev)
+>  	if (info->otg.cable.edev)
+>  		extcon_unregister_interest(&info->otg.cable);
 >  
+> -	extcon_unregister_notifier(info->cable.edev, &info->cable.nb);
+> +	extcon_unregister_notifier(info->cable.edev, EXTCON_NONE,
+> +				   &info->cable.nb);
+>  	power_supply_unregister(info->psy_usb);
+>  
+>  	return 0;
 > 
 
