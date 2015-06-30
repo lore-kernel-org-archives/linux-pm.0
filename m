@@ -1,94 +1,40 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management and ACPI fixes for v4.2-rc1
-Date: Tue, 30 Jun 2015 18:09:03 +0200
-Message-ID: <CAJZ5v0haq+JQumnW42neguDPZHJRqKd_9VJ+-UTpWetMEODQ2Q@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 00/10] OPP: Add code to support operating-points-v2 bindings
+Date: Tue, 30 Jun 2015 22:14:17 +0530
+Message-ID: <CAKohpokaiCq8kq5xALyW-q1QXvUJo2uv2ZbbFYfVFMT0XAqdzA@mail.gmail.com>
+References: <cover.1434369079.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vn0-f41.google.com ([209.85.216.41]:37674 "EHLO
+	mail-vn0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753499AbbF3QoS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jun 2015 12:44:18 -0400
+Received: by vnbf129 with SMTP id f129so2468319vnb.4
+        for <linux-pm@vger.kernel.org>; Tue, 30 Jun 2015 09:44:17 -0700 (PDT)
+In-Reply-To: <cover.1434369079.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>, Nishanth Menon <nm@ti.com>
+Cc: Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Mark Brown <broonie@kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, santosh shilimkar <santosh.shilimkar@oracle.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi Linus,
+On 15 June 2015 at 17:27, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Hi Guys,
+>
+> This adds code to support operating-points-v2 bindings. Not everything
+> is supported yet, but most of the basic stuff is.
+>
+> Tested with: Exynos 5250, dual cortex A15 board. With both old and new
+> bindings.
+>
+> Bindings are already frozen:
+> http://marc.info/?i=cover.1433434659.git.viresh.kumar%40linaro.org
+>
+> Pushed here as well for reference:
+> ssh://git@git.linaro.org/people/viresh.kumar/linux.git opp/v2
 
-Please pull from
+I am really hoping to get all basic stuff pushed in for 4.3, can we have
+some review of the code please?
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-4.2-rc1-2
-
-to receive power management and ACPI fixes for v4.2-rc1 with
-top-most commit 132c242d95063f0c362597e74ee6759403a3f700
-
- Merge branches 'acpi-video', 'device-properties', 'pm-sleep' and 'pm-cpuidle'
-
-on top of commit 43c9fad942b5afb9e03801c0721d83160fa5b0dd
-
- Merge tag 'pm+acpi-4.2-rc1' of
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
-
-These are fixes that didn't make it to the previous PM+ACPI pull
-request or are fixing issues introduced by it.
-
-Specifics:
-
- - Fix a recently added memory leak in an error path in the ACPI
-   resources management code (Dan Carpenter).
-
- - Fix a build warning triggered by an ACPI video header function
-   that should be static inline (Borislav Petkov).
-
- - Change names of helper function converting struct fwnode_handle
-   pointers to either struct device_node or struct acpi_device
-   pointers so they don't conflict with local variable names
-   (Alexander Sverdlin).
-
- - Make the hibernate core re-enable nonboot CPUs on failures to
-   disable them as expected (Vitaly Kuznetsov).
-
- - Increase the default timeout of the device suspend watchdog to
-   prevent it from triggering too early on some systems (Takashi Iwai).
-
- - Prevent the cpuidle powernv driver from registering idle
-   states with CPUIDLE_FLAG_TIMER_STOP set if CONFIG_TICK_ONESHOT
-   is unset which leads to boot hangs (Preeti U Murthy).
-
-Thanks!
-
-
----------------
-
-Alexander Sverdlin (1):
-      ACPI / OF: Rename of_node() and acpi_node() to to_of_node() and
-to_acpi_node()
-
-Borislav Petkov (1):
-      ACPI / video: Inline acpi_video_set_dmi_backlight_type
-
-Dan Carpenter (1):
-      ACPI / resources: free memory on error in add_region_before()
-
-Preeti U Murthy (1):
-      tick/idle/powerpc: Do not register idle states with
-CPUIDLE_FLAG_TIMER_STOP set in periodic mode
-
-Takashi Iwai (1):
-      PM / sleep: Increase default DPM watchdog timeout to 60
-
-Vitaly Kuznetsov (1):
-      PM / hibernate: re-enable nonboot cpus on disable_nonboot_cpus() failure
-
----------------
-
- drivers/acpi/resource.c           |  4 +++-
- drivers/base/property.c           | 26 +++++++++++++-------------
- drivers/cpuidle/cpuidle-powernv.c | 15 ++++++++++++---
- drivers/gpio/gpiolib.c            |  4 ++--
- drivers/leds/leds-gpio.c          |  2 +-
- include/acpi/acpi_bus.h           |  2 +-
- include/acpi/video.h              |  2 +-
- include/linux/acpi.h              |  4 ++--
- include/linux/of.h                |  4 ++--
- kernel/power/Kconfig              |  2 +-
- kernel/power/hibernate.c          |  4 +++-
- 11 files changed, 41 insertions(+), 28 deletions(-)
+--
+viresh
