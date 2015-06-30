@@ -1,60 +1,65 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] clk: samsung: fix cpu clock's flags checking
-Date: Tue, 30 Jun 2015 19:17:51 +0200
-Message-ID: <7416838.2ZUPGjSqFp@amdc1976>
-References: <1435598978-21800-1-git-send-email-b.zolnierkie@samsung.com>
- <5591DD9B.4030507@samsung.com>
- <CABxcv=kVL94rdFgNKcxx2JOi9WRFnvhMWrpjEDcEmx7q7cEsgQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: [PATCH v2 0/4] Add standby support for the recent mvebu SoCs
+Date: Tue, 30 Jun 2015 19:18:56 +0200
+Message-ID: <1435684740-24912-1-git-send-email-gregory.clement@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:35245 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750821AbbF3RTK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jun 2015 13:19:10 -0400
-In-reply-to: <CABxcv=kVL94rdFgNKcxx2JOi9WRFnvhMWrpjEDcEmx7q7cEsgQ@mail.gmail.com>
+Received: from down.free-electrons.com ([37.187.137.238]:50927 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750821AbbF3RUb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jun 2015 13:20:31 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javier Martinez Canillas <javier@dowhile0.org>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Dan Carpenter <dan.carpenter@oracle.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-clk@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>
-
+To: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 Hi,
 
-On Tuesday, June 30, 2015 08:27:36 AM Javier Martinez Canillas wrote:
-> On Tue, Jun 30, 2015 at 2:06 AM, Krzysztof Kozlowski
-> <k.kozlowski@samsung.com> wrote:
-> > On 30.06.2015 02:29, Bartlomiej Zolnierkiewicz wrote:
-> >> CLK_CPU_HAS_DIV1 and CLK_CPU_NEEDS_DEBUG_ALT_DIV masks were
-> >> incorrectly used as a bit numbers.  Fix it.
-> >>
-> >> Tested on Exynos4210 based Origen board and on Exynos5250 based
-> >> Arndale board.
-> >>
-> >> Cc: Tomasz Figa <tomasz.figa@gmail.com>
-> >> Cc: Michael Turquette <mturquette@baylibre.com>
-> >> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-> >> Cc: Thomas Abraham <thomas.ab@samsung.com>
-> >> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> >> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> >> ---
-> >>  drivers/clk/samsung/clk-cpu.c | 10 +++++-----
-> >>  1 file changed, 5 insertions(+), 5 deletions(-)
-> >
-> > Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> >
-> 
-> Looks good to me as well.
-> 
-> Reviewed-by: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+Until now only few mvebu v7 based board supported suspend to ram. This
+suspend to ram mode was unusual because it involved shutting down the
+SoC and relied on a PIC to wake up the system.
 
-Krzysztof has noted that I should use your @dowhile0.org e-mail address
-instead of @collabora.co.uk one, is this right?
+However, most of the recent mvebu SoCs can support the standby
+mode. Unlike for the suspend to ram, nothing special have to be done
+for these SoCs. In this mode the SoCs go in idle mode (but they remain
+powered up) and the devices enter in suspend mode. The support itself
+was added in the patch 2.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+In order to wake-up the interrupt controller driver have been
+updated. As in standby mode the interrupt controller is not shutdown,
+any interrupt can be a wake-up source. So the GIC (patch 3) now used
+the flags IRQCHIP_SKIP_SET_WAKE and IRQCHIP_MASK_ON_SUSPEND.
+
+A wake up source is supposed to work in suspend _and_ in standby mode
+but for the mvebu SoCs, no interrupt can wake up the system. The last
+patch warns the user about it.
+
+The first patch is a clean-up found while working on this series
+
+This series was applied on top of Thomas' series "ARM: mvebu: add
+suspend to RAM support for Armada 38x":
+http://thread.gmane.org/gmane.linux.ports.arm.kernel/420458
+
+It has been either using rtcwake or by setting the serial line as a
+wake-up source through the sysfs interface.
+
+Thanks,
+
+Gregory
+
+
+Gregory CLEMENT (4):
+  ARM: mvebu: Use __init for the PM initialization functions
+  ARM: mvebu: Add standby support
+  ARM: mvebu: Allow using the GIC for wakeup in standby mode
+  ARM: mvebu: Warn about the wake-up sources not taken into account in
+    suspend
+
+ arch/arm/mach-mvebu/board-v7.c |  7 +++++
+ arch/arm/mach-mvebu/common.h   |  5 ++--
+ arch/arm/mach-mvebu/pm-board.c | 19 +++++++++-----
+ arch/arm/mach-mvebu/pm.c       | 58 +++++++++++++++++++++++++++++++++++++-----
+ 4 files changed, 73 insertions(+), 16 deletions(-)
+
+-- 
+2.1.0
 
