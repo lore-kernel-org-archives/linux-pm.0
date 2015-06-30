@@ -1,72 +1,152 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH] clk: samsung: fix cpu clock's flags checking
-Date: Tue, 30 Jun 2015 19:51:32 +0200
-Message-ID: <4447533.YDhQZeS4fK@amdc1976>
-References: <1435598978-21800-1-git-send-email-b.zolnierkie@samsung.com>
- <7416838.2ZUPGjSqFp@amdc1976> <5592D5AB.2020802@collabora.co.uk>
+From: Nitish Ambastha <nits.ambastha@gmail.com>
+Subject: Re: [PATCHv2 1/1] kernel/power/autosleep.c: check for pm_suspend()
+ return before queueing suspend again
+Date: Wed, 1 Jul 2015 00:52:43 +0530
+Message-ID: <CAHWDpXg=t9R1zZgfVb+M41pxifVOEhCvMB=EBw=C0pWTe19+ZQ@mail.gmail.com>
+References: <1435581297-20271-1-git-send-email-nitish.a@samsung.com>
+	<1435604054-29711-1-git-send-email-nitish.a@samsung.com>
+	<13445304.liFVyNdj8p@vostro.rjw.lan>
+	<2619760.zM2C8Nu9I9@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:45567 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751591AbbF3Rwv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jun 2015 13:52:51 -0400
-In-reply-to: <5592D5AB.2020802@collabora.co.uk>
+Received: from mail-ig0-f175.google.com ([209.85.213.175]:36455 "EHLO
+	mail-ig0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751374AbbF3TWo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jun 2015 15:22:44 -0400
+In-Reply-To: <2619760.zM2C8Nu9I9@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-Cc: Javier Martinez Canillas <javier@dowhile0.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Dan Carpenter <dan.carpenter@oracle.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-clk@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Nitish Ambastha <nitish.a@samsung.com>, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpgs@samsung.com
 
-On Tuesday, June 30, 2015 07:45:15 PM Javier Martinez Canillas wrote:
-> Hello Bartlomiej,
-> 
-> On 06/30/2015 07:17 PM, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > Hi,
-> > 
-> > On Tuesday, June 30, 2015 08:27:36 AM Javier Martinez Canillas wrote:
-> >> On Tue, Jun 30, 2015 at 2:06 AM, Krzysztof Kozlowski
-> >> <k.kozlowski@samsung.com> wrote:
-> >> > On 30.06.2015 02:29, Bartlomiej Zolnierkiewicz wrote:
-> >> >> CLK_CPU_HAS_DIV1 and CLK_CPU_NEEDS_DEBUG_ALT_DIV masks were
-> >> >> incorrectly used as a bit numbers.  Fix it.
-> >> >>
-> >> >> Tested on Exynos4210 based Origen board and on Exynos5250 based
-> >> >> Arndale board.
-> >> >>
-> >> >> Cc: Tomasz Figa <tomasz.figa@gmail.com>
-> >> >> Cc: Michael Turquette <mturquette@baylibre.com>
-> >> >> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-> >> >> Cc: Thomas Abraham <thomas.ab@samsung.com>
-> >> >> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> >> >> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> >> >> ---
-> >> >>  drivers/clk/samsung/clk-cpu.c | 10 +++++-----
-> >> >>  1 file changed, 5 insertions(+), 5 deletions(-)
-> >> >
-> >> > Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> >> >
-> >> 
-> >> Looks good to me as well.
-> >> 
-> >> Reviewed-by: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-> > 
-> > Krzysztof has noted that I should use your @dowhile0.org e-mail address
-> > instead of @collabora.co.uk one, is this right?
-> >
-> 
-> I don't know what is the policy for tags but Krzysztof is correct that
-> this email address is going away this week so for future patches please
-> use my personal @dowhile0.org address instead.
+Hi Rafael
 
-OK, I'll update my patches & scripts then.
+Thanks for your feedback
 
-Thank you for review.
+On Tue, Jun 30, 2015 at 1:37 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, June 29, 2015 09:56:18 PM Rafael J. Wysocki wrote:
+>> On Tuesday, June 30, 2015 12:24:14 AM Nitish Ambastha wrote:
+>> > Prevent tight loop for suspend-resume when some
+>> > devices failed to suspend
+>> > If some devices failed to suspend, we monitor this
+>> > error in try_to_suspend(). pm_suspend() is already
+>> > an 'int' returning function, how about checking return
+>> > from pm_suspend() before queueing suspend again?
+>> >
+>> > For devices which do not register for pending events,
+>> > this will prevent tight loop for suspend-resume in
+>> > suspend abort scenarios due to device suspend failures
+>
+> Having said the below I'm not sure why the current code doesn't cover this
+> for you?
+>
+> That would be the final_count == initial_count case, no?
+>
+Agree, this should cover most of the cases, however there are some
+cases where final_count may not match initial_count here
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+A couple of such scenario I came across is
+1) when tasks are restarted again due to suspend failure, sometimes
+battery kernel thread acquires lock for battery monitoring resulting
+in either pm_get_wakeup_count() returning false or increment in
+final_count from initial_count
+2) In some platforms, power transitions are carried from User space
+(power manager), these power-manager tries to hold some wake lock
+after being restarted on resume
 
+It seems to me that we can identify the error in suspend through
+return values earlier and may not need to go ahead and check
+final_count to catch the same later
+
+>
+>> >
+>> > Signed-off-by: Nitish Ambastha <nitish.a@samsung.com>
+>> > ---
+>> > v2: Rearranged code to make wait entry shared with
+>> >     existing one as suggested by Pavel Machek <pavel@ucw.cz>
+>> >     Corrected log level from pr_info to pr_err for failure log
+>> >     Added return check for hibernate()
+>> >
+>> >  kernel/power/autosleep.c |   23 ++++++++++++++++-------
+>> >  1 file changed, 16 insertions(+), 7 deletions(-)
+>> >
+>> > diff --git a/kernel/power/autosleep.c b/kernel/power/autosleep.c
+>> > index 9012ecf..1a86698 100644
+>> > --- a/kernel/power/autosleep.c
+>> > +++ b/kernel/power/autosleep.c
+>> > @@ -26,6 +26,7 @@ static struct wakeup_source *autosleep_ws;
+>> >  static void try_to_suspend(struct work_struct *work)
+>> >  {
+>> >     unsigned int initial_count, final_count;
+>> > +   int error = 0;
+>>
+>> The initial value is not needed.
+>>
+>> >
+>> >     if (!pm_get_wakeup_count(&initial_count, true))
+>> >             goto out;
+>> > @@ -43,22 +44,30 @@ static void try_to_suspend(struct work_struct *work)
+>> >             return;
+>> >     }
+>> >     if (autosleep_state >= PM_SUSPEND_MAX)
+>> > -           hibernate();
+>> > +           error = hibernate();
+>> >     else
+>> > -           pm_suspend(autosleep_state);
+>> > +           error = pm_suspend(autosleep_state);
+>>
+>> I'd prefer to write that as
+>>
+>>       error = autosleep_state < PM_SUSPEND_MAX ?
+>>               pm_suspend(autosleep_state) : hibernate();
+>>
+>> >
+>> >     mutex_unlock(&autosleep_lock);
+>> >
+>> > +   if (error) {
+>> > +           pr_err("PM: suspend returned (%d)\n", error);
+>>
+>> There is a debug message printed for that in the device suspend code, do we
+>> need one more here?
+>>
+>> > +           goto wait;
+>> > +   }
+>> > +
+>> >     if (!pm_get_wakeup_count(&final_count, false))
+>> >             goto out;
+>> >
+>> > +   if (final_count != initial_count)
+>> > +           goto out;
+>> > +
+>> > + wait:
+>> >     /*
+>> > -    * If the wakeup occured for an unknown reason, wait to prevent the
+>> > -    * system from trying to suspend and waking up in a tight loop.
+>> > +    * If some devices failed to suspend or if the wakeup ocurred
+>> > +    * for an unknown reason, wait to prevent the system from
+>> > +    * trying to suspend and waking up in a tight loop.
+>> >      */
+>> > -   if (final_count == initial_count)
+>> > -           schedule_timeout_uninterruptible(HZ / 2);
+>> > -
+>> > +   schedule_timeout_uninterruptible(HZ / 2);
+>> >   out:
+>> >     queue_up_suspend_work();
+>>
+>> I'd arrange it this way:
+>>
+>>       if (error || pm_get_wakeup_count(&final_count, false)
+>>           || final_count == initial_count)
+>>               schedule_timeout_uninterruptible(HZ / 2);
+>>
+>>  out:
+>>       queue_up_suspend_work();
+>> >  }
+>> >
+>>
+>>
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
