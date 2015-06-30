@@ -1,53 +1,89 @@
-From: Javier Martinez Canillas <javier@dowhile0.org>
-Subject: Re: [PATCH] clk: samsung: fix cpu clock's flags checking
-Date: Tue, 30 Jun 2015 08:27:36 +0200
-Message-ID: <CABxcv=kVL94rdFgNKcxx2JOi9WRFnvhMWrpjEDcEmx7q7cEsgQ@mail.gmail.com>
-References: <1435598978-21800-1-git-send-email-b.zolnierkie@samsung.com>
-	<5591DD9B.4030507@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: "cleaeye.kim" <cleaneye.kim@lge.com>
+Subject: [PATCH] PM / Sleep: Use workqueue for user space wakeup sources garbage collector
+Date: Tue, 30 Jun 2015 17:12:27 +0900
+Message-ID: <1435651947-31683-1-git-send-email-cleaneye.kim@lge.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f176.google.com ([209.85.160.176]:36688 "EHLO
-	mail-yk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752950AbbF3G1h (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jun 2015 02:27:37 -0400
-Received: by ykdr198 with SMTP id r198so277214ykd.3
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2015 23:27:37 -0700 (PDT)
-In-Reply-To: <5591DD9B.4030507@samsung.com>
+Received: from lgeamrelo04.lge.com ([156.147.1.127]:57161 "EHLO
+	lgeamrelo04.lge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750708AbbF3INE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jun 2015 04:13:04 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Dan Carpenter <dan.carpenter@oracle.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier.martinez@collabora.co.uk>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-clk@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>
+To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com
+Cc: linux-pm@vger.kernel.org, "cleaeye.kim" <cleaneye.kim@lge.com>
 
-On Tue, Jun 30, 2015 at 2:06 AM, Krzysztof Kozlowski
-<k.kozlowski@samsung.com> wrote:
-> On 30.06.2015 02:29, Bartlomiej Zolnierkiewicz wrote:
->> CLK_CPU_HAS_DIV1 and CLK_CPU_NEEDS_DEBUG_ALT_DIV masks were
->> incorrectly used as a bit numbers.  Fix it.
->>
->> Tested on Exynos4210 based Origen board and on Exynos5250 based
->> Arndale board.
->>
->> Cc: Tomasz Figa <tomasz.figa@gmail.com>
->> Cc: Michael Turquette <mturquette@baylibre.com>
->> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
->> Cc: Thomas Abraham <thomas.ab@samsung.com>
->> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->> ---
->>  drivers/clk/samsung/clk-cpu.c | 10 +++++-----
->>  1 file changed, 5 insertions(+), 5 deletions(-)
->
-> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->
+From: "cleaeye.kim" <cleaneye.kim@lge.com>
 
-Looks good to me as well.
+The synchronous synchronize_rcu in wakeup_source_remove makes user process
+which writes to /sys/kernel/wake_unlock blocked sometimes.
 
-Reviewed-by: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
+For example, when android eventhub tries to release wakelock,
+this blocking process can occur, and eventhub can't get input event
+for a while.
 
-> Best regards,
-> Krzysztof
->
+Using workqueue instead of direct function call at pm_wake_unlock
+can prevent this unnecessary delay of an user space process.
 
-Best regards,
-Javier
+Signed-off-by: cleaeye.kim <cleaneye.kim@lge.com>
+---
+ kernel/power/wakelock.c |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/kernel/power/wakelock.c b/kernel/power/wakelock.c
+index 019069c..ea10baa 100644
+--- a/kernel/power/wakelock.c
++++ b/kernel/power/wakelock.c
+@@ -17,6 +17,7 @@
+ #include <linux/list.h>
+ #include <linux/rbtree.h>
+ #include <linux/slab.h>
++#include <linux/workqueue.h>
+ 
+ #include "power.h"
+ 
+@@ -96,7 +97,7 @@ static inline void wakelocks_lru_most_recent(struct wakelock *wl)
+ 	list_move(&wl->lru, &wakelocks_lru_list);
+ }
+ 
+-static void wakelocks_gc(void)
++static void wakelocks_gc(struct work_struct *work)
+ {
+ 	struct wakelock *wl, *aux;
+ 	ktime_t now;
+@@ -105,6 +106,7 @@ static void wakelocks_gc(void)
+ 		return;
+ 
+ 	now = ktime_get();
++	mutex_lock(&wakelocks_lock);
+ 	list_for_each_entry_safe_reverse(wl, aux, &wakelocks_lru_list, lru) {
+ 		u64 idle_time_ns;
+ 		bool active;
+@@ -126,12 +128,15 @@ static void wakelocks_gc(void)
+ 			decrement_wakelocks_number();
+ 		}
+ 	}
++	mutex_unlock(&wakelocks_lock);
+ 	wakelocks_gc_count = 0;
+ }
++
++static DECLARE_WORK(wakelock_work, wakelocks_gc);
+ #else /* !CONFIG_PM_WAKELOCKS_GC */
+ static inline void wakelocks_lru_add(struct wakelock *wl) {}
+ static inline void wakelocks_lru_most_recent(struct wakelock *wl) {}
+-static inline void wakelocks_gc(void) {}
++static void wakelocks_gc(struct worksturct) {}
+ #endif /* !CONFIG_PM_WAKELOCKS_GC */
+ 
+ static struct wakelock *wakelock_lookup_add(const char *name, size_t len,
+@@ -260,7 +265,7 @@ int pm_wake_unlock(const char *buf)
+ 	__pm_relax(&wl->ws);
+ 
+ 	wakelocks_lru_most_recent(wl);
+-	wakelocks_gc();
++	schedule_work(&wakelock_work);
+ 
+  out:
+ 	mutex_unlock(&wakelocks_lock);
+-- 
+1.7.9.5
+
