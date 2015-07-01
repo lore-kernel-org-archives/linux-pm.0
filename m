@@ -1,90 +1,66 @@
-From: SungEun Kim <cleaneye.kim@lge.com>
-Subject: [PATCH v2] PM / Sleep: Use workqueue for user space wakeup sources garbage collector
-Date: Wed,  1 Jul 2015 17:28:48 +0900
-Message-ID: <1435739328-17021-1-git-send-email-cleaneye.kim@lge.com>
-References: <1435718938-19088-1-git-send-email-cleaneye.kim@lge.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM / hibernate/resume: clarify documentation
+Date: Wed, 1 Jul 2015 10:46:11 +0200
+Message-ID: <20150701084611.GB6946@amd>
+References: <87pp4gq0bl.fsf@e6510-131.site>
+ <87mvzip8gz.fsf@e6510-131.site>
+ <87lhf2p81y.fsf@e6510-131.site>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from LGEMRELSE6Q.lge.com ([156.147.1.121]:57315 "EHLO
-	lgemrelse6q.lge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753014AbbGAI3m (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2015 04:29:42 -0400
-In-Reply-To: <1435718938-19088-1-git-send-email-cleaneye.kim@lge.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49097 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751075AbbGAIqN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2015 04:46:13 -0400
+Content-Disposition: inline
+In-Reply-To: <87lhf2p81y.fsf@e6510-131.site>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, SungEun Kim <cleaneye.kim@lge.com>
+To: Uwe Geuder <linuxkernel2015-ugeuder@snkmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 
-From: "SungEun Kim" <cleaneye.kim@lge.com>
+On Mon 2015-06-29 23:35:05, Uwe Geuder wrote:
+> it was not the whole truth that kernel mode cannot be used with swap on LVM
+> 
+> Signed-off-by: Uwe Geuder <linuxkernel2015-ugeuder@snkmail.com>
 
-The synchronous synchronize_rcu in wakeup_source_remove makes user process
-which writes to /sys/kernel/wake_unlock blocked sometimes.
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-For example, when android eventhub tries to release wakelock,
-this blocking process can occur, and eventhub can't get input event
-for a while.
+Thanks for clarifying this.
 
-Using workqueue instead of direct function call at pm_wake_unlock
-can prevent this unnecessary delay of an user space process.
+(Hmm, and I guess we shoudl rename swsusp.txt -> hibernation.txt one
+day :-).
 
-Signed-off-by: SungEun Kim <cleaneye.kim@lge.com>
----
- kernel/power/wakelock.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+									Pavel
+> ---
+>  Documentation/power/swsusp.txt | 13 +++++++++++--
+>  1 file changed, 11 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
+> index f732a83..8cc17ca 100644
+> --- a/Documentation/power/swsusp.txt
+> +++ b/Documentation/power/swsusp.txt
+> @@ -410,8 +410,17 @@ Documentation/usb/persist.txt.
+>  
+>  Q: Can I suspend-to-disk using a swap partition under LVM?
+>  
+> -A: No. You can suspend successfully, but you'll not be able to
+> -resume. uswsusp should be able to work with LVM. See suspend.sf.net.
+> +A: Yes and No.  You can suspend successfully, but the kernel will not be able
+> +to resume on its own.  You need an initramfs that can recognize the resume
+> +situation, activate the logical volume containing the swap volume (but not
+> +touch any filesystems!), and eventually call
+> +
+> +echo -n "$major:$minor" > /sys/power/resume
+> +
+> +where $major and $minor are the respective major and minor device numbers of
+> +the swap volume.
+> +
+> +uswsusp works with LVM, too.  See http://suspend.sourceforge.net/
+>  
+>  Q: I upgraded the kernel from 2.6.15 to 2.6.16. Both kernels were
+>  compiled with the similar configuration files. Anyway I found that
 
-diff --git a/kernel/power/wakelock.c b/kernel/power/wakelock.c
-index 019069c..5df6aa2 100644
---- a/kernel/power/wakelock.c
-+++ b/kernel/power/wakelock.c
-@@ -17,6 +17,7 @@
- #include <linux/list.h>
- #include <linux/rbtree.h>
- #include <linux/slab.h>
-+#include <linux/workqueue.h>
- 
- #include "power.h"
- 
-@@ -83,7 +84,9 @@ static inline void decrement_wakelocks_number(void) {}
- #define WL_GC_COUNT_MAX	100
- #define WL_GC_TIME_SEC	300
- 
-+static void __wakelocks_gc(struct work_struct *work);
- static LIST_HEAD(wakelocks_lru_list);
-+static DECLARE_WORK(wakelock_work, __wakelocks_gc);
- static unsigned int wakelocks_gc_count;
- 
- static inline void wakelocks_lru_add(struct wakelock *wl)
-@@ -96,7 +99,7 @@ static inline void wakelocks_lru_most_recent(struct wakelock *wl)
- 	list_move(&wl->lru, &wakelocks_lru_list);
- }
- 
--static void wakelocks_gc(void)
-+static void __wakelocks_gc(struct work_struct *work)
- {
- 	struct wakelock *wl, *aux;
- 	ktime_t now;
-@@ -105,6 +108,7 @@ static void wakelocks_gc(void)
- 		return;
- 
- 	now = ktime_get();
-+	mutex_lock(&wakelocks_lock);
- 	list_for_each_entry_safe_reverse(wl, aux, &wakelocks_lru_list, lru) {
- 		u64 idle_time_ns;
- 		bool active;
-@@ -126,8 +130,14 @@ static void wakelocks_gc(void)
- 			decrement_wakelocks_number();
- 		}
- 	}
-+	mutex_unlock(&wakelocks_lock);
- 	wakelocks_gc_count = 0;
- }
-+
-+static void wakelocks_gc(void)
-+{
-+	schedule_work(&wakelock_work);
-+}
- #else /* !CONFIG_PM_WAKELOCKS_GC */
- static inline void wakelocks_lru_add(struct wakelock *wl) {}
- static inline void wakelocks_lru_most_recent(struct wakelock *wl) {}
 -- 
-1.7.9.5
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
