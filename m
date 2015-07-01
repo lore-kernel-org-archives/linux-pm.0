@@ -1,13 +1,13 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 07/16] ARM: shmobile: r8a7778 dtsi: Add CPG/MSTP Clock Domain
-Date: Wed,  1 Jul 2015 17:58:01 +0200
-Message-ID: <1435766290-3005-8-git-send-email-geert+renesas@glider.be>
+From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Subject: [PATCH v3 11/16] ARM: shmobile: r8a7793 dtsi: Add CPG/MSTP Clock Domain
+Date: Wed,  1 Jul 2015 17:58:05 +0200
+Message-ID: <1435766290-3005-12-git-send-email-geert+renesas@glider.be>
 References: <1435766290-3005-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1435766290-3005-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1435766290-3005-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Laurent Pinchart <Laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 Add an appropriate "#power-domain-cells" property to the cpg_clocks
@@ -16,201 +16,80 @@ device node, to create the CPG/MSTP Clock Domain.
 Add "power-domains" properties to all device nodes for devices that are
 part of the CPG/MSTP Clock Domain and can be power-managed through an
 MSTP clock.  This applies to most on-SoC devices, which have a
-one-to-one mapping from SoC device to DT device node.  A notable
-exception is the "sound" node, which represents multiple SoC devices,
-each having their own MSTP clocks.
+one-to-one mapping from SoC device to DT device node.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 ---
 v3:
-  - Use "CPG/MSTP Clock Domain" instead of "CPG Clock Domain",
-
-v2:
   - New.
 ---
- arch/arm/boot/dts/r8a7778.dtsi | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ arch/arm/boot/dts/r8a7793.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/arm/boot/dts/r8a7778.dtsi b/arch/arm/boot/dts/r8a7778.dtsi
-index 7ce9f5fd586504f2..4b1fa9f42ad5457b 100644
---- a/arch/arm/boot/dts/r8a7778.dtsi
-+++ b/arch/arm/boot/dts/r8a7778.dtsi
-@@ -53,6 +53,7 @@
- 		reg = <0xfde00000 0x400>;
- 		interrupts = <0 105 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp1_clks R8A7778_CLK_ETHER>;
+diff --git a/arch/arm/boot/dts/r8a7793.dtsi b/arch/arm/boot/dts/r8a7793.dtsi
+index 3355c487d108360f..c4654047e684ff09 100644
+--- a/arch/arm/boot/dts/r8a7793.dtsi
++++ b/arch/arm/boot/dts/r8a7793.dtsi
+@@ -68,6 +68,7 @@
+ 			     <0 143 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp1_clks R8A7793_CLK_CMT0>;
+ 		clock-names = "fck";
++		power-domains = <&cpg_clocks>;
+ 
+ 		renesas,channels-mask = <0x60>;
+ 
+@@ -87,6 +88,7 @@
+ 			     <0 127 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7793_CLK_CMT1>;
+ 		clock-names = "fck";
++		power-domains = <&cpg_clocks>;
+ 
+ 		renesas,channels-mask = <0xff>;
+ 
+@@ -109,6 +111,7 @@
+ 			     <0 16 IRQ_TYPE_LEVEL_HIGH>,
+ 			     <0 17 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp4_clks R8A7793_CLK_IRQC>;
++		power-domains = <&cpg_clocks>;
+ 	};
+ 
+ 	scif0: serial@e6e60000 {
+@@ -117,6 +120,7 @@
+ 		interrupts = <0 152 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp7_clks R8A7793_CLK_SCIF0>;
+ 		clock-names = "sci_ick";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -126,6 +130,7 @@
+ 		interrupts = <0 153 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp7_clks R8A7793_CLK_SCIF1>;
+ 		clock-names = "sci_ick";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -134,6 +139,7 @@
+ 		reg = <0 0xee700000 0 0x400>;
+ 		interrupts = <0 162 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp8_clks R8A7793_CLK_ETHER>;
 +		power-domains = <&cpg_clocks>;
  		phy-mode = "rmii";
  		#address-cells = <1>;
  		#size-cells = <0>;
-@@ -152,6 +153,7 @@
- 		reg = <0xffc70000 0x1000>;
- 		interrupts = <0 67 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_I2C0>;
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -162,6 +164,7 @@
- 		reg = <0xffc71000 0x1000>;
- 		interrupts = <0 78 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_I2C1>;
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -172,6 +175,7 @@
- 		reg = <0xffc72000 0x1000>;
- 		interrupts = <0 76 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_I2C2>;
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -182,6 +186,7 @@
- 		reg = <0xffc73000 0x1000>;
- 		interrupts = <0 77 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_I2C3>;
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -193,6 +198,7 @@
- 			     <0 34 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_TMU0>;
- 		clock-names = "fck";
-+		power-domains = <&cpg_clocks>;
- 
- 		#renesas,channels = <3>;
- 
-@@ -207,6 +213,7 @@
- 			     <0 38 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_TMU1>;
- 		clock-names = "fck";
-+		power-domains = <&cpg_clocks>;
- 
- 		#renesas,channels = <3>;
- 
-@@ -221,6 +228,7 @@
- 			     <0 42 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_TMU2>;
- 		clock-names = "fck";
-+		power-domains = <&cpg_clocks>;
- 
- 		#renesas,channels = <3>;
- 
-@@ -288,6 +296,7 @@
- 		interrupts = <0 70 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_SCIF0>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -297,6 +306,7 @@
- 		interrupts = <0 71 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_SCIF1>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -306,6 +316,7 @@
- 		interrupts = <0 72 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_SCIF2>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -315,6 +326,7 @@
- 		interrupts = <0 73 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_SCIF3>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -324,6 +336,7 @@
- 		interrupts = <0 74 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_SCIF4>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -333,6 +346,7 @@
- 		interrupts = <0 75 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_SCIF5>;
- 		clock-names = "sci_ick";
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -341,6 +355,7 @@
- 		reg = <0xffe4e000 0x100>;
- 		interrupts = <0 61 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7778_CLK_MMC>;
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -349,6 +364,7 @@
- 		reg = <0xffe4c000 0x100>;
- 		interrupts = <0 87 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7778_CLK_SDHI0>;
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -357,6 +373,7 @@
- 		reg = <0xffe4d000 0x100>;
- 		interrupts = <0 88 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7778_CLK_SDHI1>;
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -365,6 +382,7 @@
- 		reg = <0xffe4f000 0x100>;
- 		interrupts = <0 86 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp3_clks R8A7778_CLK_SDHI2>;
-+		power-domains = <&cpg_clocks>;
- 		status = "disabled";
- 	};
- 
-@@ -373,6 +391,7 @@
- 		reg = <0xfffc7000 0x18>;
- 		interrupts = <0 63 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_HSPI>;
-+		power-domains = <&cpg_clocks>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		status = "disabled";
-@@ -383,6 +402,7 @@
- 		reg = <0xfffc8000 0x18>;
- 		interrupts = <0 84 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_HSPI>;
-+		power-domains = <&cpg_clocks>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		status = "disabled";
-@@ -393,6 +413,7 @@
- 		reg = <0xfffc6000 0x18>;
- 		interrupts = <0 85 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&mstp0_clks R8A7778_CLK_HSPI>;
-+		power-domains = <&cpg_clocks>;
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 		status = "disabled";
-@@ -419,6 +440,7 @@
- 			clocks = <&extal_clk>;
- 			clock-output-names = "plla", "pllb", "b",
- 					     "out", "p", "s", "s1";
+@@ -164,6 +170,7 @@
+ 			clock-output-names = "main", "pll0", "pll1", "pll3",
+ 					     "lb", "qspi", "sdh", "sd0", "z",
+ 					     "rcan", "adsp";
 +			#power-domain-cells = <0>;
  		};
  
- 		/* Audio clocks; frequencies are set by boards if applicable. */
+ 		/* Variable factor clocks */
 -- 
 1.9.1
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
