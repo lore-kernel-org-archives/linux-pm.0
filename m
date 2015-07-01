@@ -1,16 +1,16 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+From: =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>
 Subject: Re: [PATCH] PM / Sleep: Use workqueue for user space wakeup sources
  garbage collector
-Date: Wed, 1 Jul 2015 12:51:47 +0900
-Message-ID: <CAJKOXPcENx5_uHQTzEnUg6nJgpeqqR8+Ra7JxFaB-Jk_b9vF2g@mail.gmail.com>
+Date: Wed, 1 Jul 2015 12:54:23 +0900
+Message-ID: <CAJKOXPfjeDj42422ZpsacJjEMVS77DwpKze5tz1XbCzVd0OoMQ@mail.gmail.com>
 References: <1435718938-19088-1-git-send-email-cleaneye.kim@lge.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vn0-f43.google.com ([209.85.216.43]:40562 "EHLO
+Received: from mail-vn0-f43.google.com ([209.85.216.43]:46802 "EHLO
 	mail-vn0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751643AbbGADvs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jun 2015 23:51:48 -0400
+	with ESMTP id S1751862AbbGADyX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 30 Jun 2015 23:54:23 -0400
 In-Reply-To: <1435718938-19088-1-git-send-email-cleaneye.kim@lge.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -35,9 +35,11 @@ Cc: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.o
 Hi,
 
 You send this patch for third time, without changelog and any
-versioning. The signed-off and from fields look incorrect (no real
-name?). What is more important I have doubts that it even compiles
-(see below).
+versioning. Please put proper vesion indicating what have changed. Do
+not resend continuously (unless you encountered some SMTP problems?).
+
+The signed-off and from fields look incorrect (no real name?). What is
+more important I have doubts that it even compiles (see below).
 
 Could you follow the Documentation/SubmittingPatches?
 
