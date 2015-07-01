@@ -1,194 +1,216 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 01/16] clk: shmobile: Add CPG/MSTP Clock Domain support
-Date: Wed,  1 Jul 2015 17:57:55 +0200
-Message-ID: <1435766290-3005-2-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v3 07/16] ARM: shmobile: r8a7778 dtsi: Add CPG/MSTP Clock Domain
+Date: Wed,  1 Jul 2015 17:58:01 +0200
+Message-ID: <1435766290-3005-8-git-send-email-geert+renesas@glider.be>
 References: <1435766290-3005-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from laurent.telenet-ops.be ([195.130.137.89]:47101 "EHLO
-	laurent.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754309AbbGAP61 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2015 11:58:27 -0400
+Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <1435766290-3005-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-sh-owner@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+List-Id: linux-pm@vger.kernel.org
 
-Add Clock Domain support to the Clock Pulse Generator (CPG) Module Stop
-(MSTP) Clocks driver using the generic PM Domain.  This allows to
-power-manage the module clocks of SoC devices that are part of the
-CPG/MSTP Clock Domain using Runtime PM, or for system suspend/resume.
+Add an appropriate "#power-domain-cells" property to the cpg_clocks
+device node, to create the CPG/MSTP Clock Domain.
 
-SoC devices that are part of the CPG/MSTP Clock Domain and can be
-power-managed through an MSTP clock should be tagged in DT with a
-proper "power-domains" property.
-
-The CPG/MSTP Clock Domain code will scan such devices for clocks that
-are suitable for power-managing the device, by looking for a clock that
-is compatible with "renesas,cpg-mstp-clocks".
+Add "power-domains" properties to all device nodes for devices that are
+part of the CPG/MSTP Clock Domain and can be power-managed through an
+MSTP clock.  This applies to most on-SoC devices, which have a
+one-to-one mapping from SoC device to DT device node.  A notable
+exception is the "sound" node, which represents multiple SoC devices,
+each having their own MSTP clocks.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Acked-by: Stephen Boyd <sboyd@codeaurora.org>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Reviewed-by: Kevin Hilman <khilman@linaro.org>
 ---
 v3:
-  - Add Acked-by,
   - Use "CPG/MSTP Clock Domain" instead of "CPG Clock Domain",
-  - Drop bogus addition of #includes to clk-rcar-gen2.c,
-  - Call pm_clk_destroy() from cpg_mstp_detach_dev() only if
-    cpg_mstp_attach_dev() actually added a clock,
 
 v2:
-  - Add Acked-by and Reviewed-by,
-  - Move core CPG Clock Domain code from the R-Car Gen2 driver to the
-    CPG MSTP Clock driver, as it's generic, and can be used on other
-    Renesas SoCs that have a CPG/MSTP block,
-  - Scan for an MSTP clock instead of using the first clock tied to the
-    device (con_id NULL),
-  - Extract R-Car Gen2 specifics to a separate patch.
+  - New.
 ---
- drivers/clk/shmobile/clk-mstp.c | 86 +++++++++++++++++++++++++++++++++++++++++
- include/linux/clk/shmobile.h    | 12 ++++++
- 2 files changed, 98 insertions(+)
+ arch/arm/boot/dts/r8a7778.dtsi | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-diff --git a/drivers/clk/shmobile/clk-mstp.c b/drivers/clk/shmobile/clk-mstp.c
-index 2d2fe773ac8168f9..9b4451304f5732d4 100644
---- a/drivers/clk/shmobile/clk-mstp.c
-+++ b/drivers/clk/shmobile/clk-mstp.c
-@@ -2,6 +2,7 @@
-  * R-Car MSTP clocks
-  *
-  * Copyright (C) 2013 Ideas On Board SPRL
-+ * Copyright (C) 2015 Glider bvba
-  *
-  * Contact: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-  *
-@@ -12,9 +13,13 @@
+diff --git a/arch/arm/boot/dts/r8a7778.dtsi b/arch/arm/boot/dts/r8a7778.dtsi
+index 7ce9f5fd586504f2..4b1fa9f42ad5457b 100644
+--- a/arch/arm/boot/dts/r8a7778.dtsi
++++ b/arch/arm/boot/dts/r8a7778.dtsi
+@@ -53,6 +53,7 @@
+ 		reg = <0xfde00000 0x400>;
+ 		interrupts = <0 105 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp1_clks R8A7778_CLK_ETHER>;
++		power-domains = <&cpg_clocks>;
+ 		phy-mode = "rmii";
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+@@ -152,6 +153,7 @@
+ 		reg = <0xffc70000 0x1000>;
+ 		interrupts = <0 67 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_I2C0>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
  
- #include <linux/clk-provider.h>
- #include <linux/clkdev.h>
-+#include <linux/clk/shmobile.h>
-+#include <linux/device.h>
- #include <linux/io.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
-+#include <linux/pm_clock.h>
-+#include <linux/pm_domain.h>
- #include <linux/spinlock.h>
+@@ -162,6 +164,7 @@
+ 		reg = <0xffc71000 0x1000>;
+ 		interrupts = <0 78 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_I2C1>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
  
- /*
-@@ -236,3 +241,84 @@ static void __init cpg_mstp_clocks_init(struct device_node *np)
- 	of_clk_add_provider(np, of_clk_src_onecell_get, &group->data);
- }
- CLK_OF_DECLARE(cpg_mstp_clks, "renesas,cpg-mstp-clocks", cpg_mstp_clocks_init);
-+
-+
-+#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
-+int cpg_mstp_attach_dev(struct generic_pm_domain *domain, struct device *dev)
-+{
-+	struct device_node *np = dev->of_node;
-+	struct of_phandle_args clkspec;
-+	struct clk *clk;
-+	int i = 0;
-+	int error;
-+
-+	while (!of_parse_phandle_with_args(np, "clocks", "#clock-cells", i,
-+					   &clkspec)) {
-+		if (of_device_is_compatible(clkspec.np,
-+					    "renesas,cpg-mstp-clocks"))
-+			goto found;
-+
-+		of_node_put(clkspec.np);
-+		i++;
-+	}
-+
-+	return 0;
-+
-+found:
-+	clk = of_clk_get_from_provider(&clkspec);
-+	of_node_put(clkspec.np);
-+
-+	if (IS_ERR(clk))
-+		return PTR_ERR(clk);
-+
-+	error = pm_clk_create(dev);
-+	if (error) {
-+		dev_err(dev, "pm_clk_create failed %d\n", error);
-+		goto fail_put;
-+	}
-+
-+	error = pm_clk_add_clk(dev, clk);
-+	if (error) {
-+		dev_err(dev, "pm_clk_add_clk %pC failed %d\n", clk, error);
-+		goto fail_destroy;
-+	}
-+
-+	return 0;
-+
-+fail_destroy:
-+	pm_clk_destroy(dev);
-+fail_put:
-+	clk_put(clk);
-+	return error;
-+}
-+
-+void cpg_mstp_detach_dev(struct generic_pm_domain *domain, struct device *dev)
-+{
-+	if (!list_empty(&dev->power.subsys_data->clock_list))
-+		pm_clk_destroy(dev);
-+}
-+
-+void __init cpg_mstp_add_clk_domain(struct device_node *np)
-+{
-+	struct generic_pm_domain *pd;
-+	u32 ncells;
-+
-+	if (of_property_read_u32(np, "#power-domain-cells", &ncells)) {
-+		pr_warn("%s lacks #power-domain-cells\n", np->full_name);
-+		return;
-+	}
-+
-+	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
-+	if (!pd)
-+		return;
-+
-+	pd->name = np->name;
-+
-+	pd->flags = GENPD_FLAG_PM_CLK;
-+	pm_genpd_init(pd, &simple_qos_governor, false);
-+	pd->attach_dev = cpg_mstp_attach_dev;
-+	pd->detach_dev = cpg_mstp_detach_dev;
-+
-+	of_genpd_add_provider_simple(np, pd);
-+}
-+#endif /* !CONFIG_PM_GENERIC_DOMAINS_OF */
-diff --git a/include/linux/clk/shmobile.h b/include/linux/clk/shmobile.h
-index 63a8159c4e64153d..cb19cc1865ca5cfb 100644
---- a/include/linux/clk/shmobile.h
-+++ b/include/linux/clk/shmobile.h
-@@ -16,8 +16,20 @@
+@@ -172,6 +175,7 @@
+ 		reg = <0xffc72000 0x1000>;
+ 		interrupts = <0 76 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_I2C2>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
  
- #include <linux/types.h>
+@@ -182,6 +186,7 @@
+ 		reg = <0xffc73000 0x1000>;
+ 		interrupts = <0 77 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_I2C3>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
  
-+struct device;
-+struct device_node;
-+struct generic_pm_domain;
-+
- void r8a7778_clocks_init(u32 mode);
- void r8a7779_clocks_init(u32 mode);
- void rcar_gen2_clocks_init(u32 mode);
+@@ -193,6 +198,7 @@
+ 			     <0 34 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_TMU0>;
+ 		clock-names = "fck";
++		power-domains = <&cpg_clocks>;
  
-+#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
-+void cpg_mstp_add_clk_domain(struct device_node *np);
-+int cpg_mstp_attach_dev(struct generic_pm_domain *domain, struct device *dev);
-+void cpg_mstp_detach_dev(struct generic_pm_domain *domain, struct device *dev);
-+#else
-+static inline void cpg_mstp_add_clk_domain(struct device_node *np) {}
-+#endif
-+
- #endif
+ 		#renesas,channels = <3>;
+ 
+@@ -207,6 +213,7 @@
+ 			     <0 38 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_TMU1>;
+ 		clock-names = "fck";
++		power-domains = <&cpg_clocks>;
+ 
+ 		#renesas,channels = <3>;
+ 
+@@ -221,6 +228,7 @@
+ 			     <0 42 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_TMU2>;
+ 		clock-names = "fck";
++		power-domains = <&cpg_clocks>;
+ 
+ 		#renesas,channels = <3>;
+ 
+@@ -288,6 +296,7 @@
+ 		interrupts = <0 70 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_SCIF0>;
+ 		clock-names = "sci_ick";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -297,6 +306,7 @@
+ 		interrupts = <0 71 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_SCIF1>;
+ 		clock-names = "sci_ick";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -306,6 +316,7 @@
+ 		interrupts = <0 72 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_SCIF2>;
+ 		clock-names = "sci_ick";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -315,6 +326,7 @@
+ 		interrupts = <0 73 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_SCIF3>;
+ 		clock-names = "sci_ick";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -324,6 +336,7 @@
+ 		interrupts = <0 74 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_SCIF4>;
+ 		clock-names = "sci_ick";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -333,6 +346,7 @@
+ 		interrupts = <0 75 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_SCIF5>;
+ 		clock-names = "sci_ick";
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -341,6 +355,7 @@
+ 		reg = <0xffe4e000 0x100>;
+ 		interrupts = <0 61 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7778_CLK_MMC>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -349,6 +364,7 @@
+ 		reg = <0xffe4c000 0x100>;
+ 		interrupts = <0 87 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7778_CLK_SDHI0>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -357,6 +373,7 @@
+ 		reg = <0xffe4d000 0x100>;
+ 		interrupts = <0 88 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7778_CLK_SDHI1>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -365,6 +382,7 @@
+ 		reg = <0xffe4f000 0x100>;
+ 		interrupts = <0 86 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp3_clks R8A7778_CLK_SDHI2>;
++		power-domains = <&cpg_clocks>;
+ 		status = "disabled";
+ 	};
+ 
+@@ -373,6 +391,7 @@
+ 		reg = <0xfffc7000 0x18>;
+ 		interrupts = <0 63 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_HSPI>;
++		power-domains = <&cpg_clocks>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 		status = "disabled";
+@@ -383,6 +402,7 @@
+ 		reg = <0xfffc8000 0x18>;
+ 		interrupts = <0 84 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_HSPI>;
++		power-domains = <&cpg_clocks>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 		status = "disabled";
+@@ -393,6 +413,7 @@
+ 		reg = <0xfffc6000 0x18>;
+ 		interrupts = <0 85 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&mstp0_clks R8A7778_CLK_HSPI>;
++		power-domains = <&cpg_clocks>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 		status = "disabled";
+@@ -419,6 +440,7 @@
+ 			clocks = <&extal_clk>;
+ 			clock-output-names = "plla", "pllb", "b",
+ 					     "out", "p", "s", "s1";
++			#power-domain-cells = <0>;
+ 		};
+ 
+ 		/* Audio clocks; frequencies are set by boards if applicable. */
 -- 
 1.9.1
 
