@@ -1,12 +1,12 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 03/16] clk: shmobile: r8a7779: Add CPG/MSTP Clock Domain support
-Date: Wed,  1 Jul 2015 17:57:57 +0200
-Message-ID: <1435766290-3005-4-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v3 14/16] drivers: sh: Disable PM runtime for multi-platform ARM with genpd
+Date: Wed,  1 Jul 2015 17:58:08 +0200
+Message-ID: <1435766290-3005-15-git-send-email-geert+renesas@glider.be>
 References: <1435766290-3005-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from michel.telenet-ops.be ([195.130.137.88]:53236 "EHLO
+Received: from michel.telenet-ops.be ([195.130.137.88]:53249 "EHLO
 	michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754647AbbGAP61 (ORCPT
+	with ESMTP id S1754657AbbGAP61 (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2015 11:58:27 -0400
 In-Reply-To: <1435766290-3005-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
@@ -14,100 +14,79 @@ List-Id: linux-pm@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Add Clock Domain support to the R-Car H1 Clock Pulse Generator (CPG)
-driver using the generic PM Domain.  This allows to power-manage the
-module clocks of SoC devices that are part of the CPG/MSTP Clock Domain
-using Runtime PM, or for system suspend/resume.
+If the default PM Domain using PM_CLK is used for PM runtime, the real
+Clock Domain cannot be registered from DT later.
 
-SoC devices that are part of the CPG/MSTP Clock Domain and can be
-power-managed through an MSTP clock should be tagged in DT with a proper
-"power-domains" property.
+Hence do not enable it when running a multi-platform kernel with genpd
+support on R-Car or RZ.  The CPG/MSTP Clock Domain driver will take care
+of PM runtime management of the module clocks.
 
-Also update the reg property in the DT binding doc example to match the
-actual dtsi, which uses #address-cells and #size-cells == 1, not 2.
+Now most multi-platform ARM shmobile platforms (SH-Mobile, R-Mobile,
+R-Car, RZ) use DT-based PM Domains to take care of PM runtime management
+of the module clocks, simplify the platform logic by replacing the
+explicit SoC checks by a single check for the presence of MSTP clocks in
+DT.
+
+Backwards-compatiblity with old DTs (mainly for R-Car Gen2) is provided
+by checking for the presence of a "#power-domain-cells" property in DT.
+
+The default PM Domain is still needed for:
+  - backwards-compatibility with old DTs that lack PM Domain properties,
+  - the CONFIG_PM=n case,
+  - legacy (non-DT) ARM/shmobile platforms without genpd support
+    (r8a7778, r8a7779),
+  - legacy SuperH.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Stephen Boyd <sboyd@codeaurora.org>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 v3:
-  - Add Acked-by,
-  - Use "CPG/MSTP Clock Domain" instead of "CPG Clock Domain",
+  - The runtime check must stay for the ARM multiplatform CONFIG_PM=n
+    case, to prevent the code from running on non-shmobile machines,
+  - Provide backwards-compatibility with old DTs,
+  - Extract EMMA Mobile EV2 removal into a separate patch,
+  - Replace explicit platform checks by a check for the presence of MSTP
+    clocks,
+  - Drop references to legacy r8a7740/sh73a0, which are gone,
+  - Rephrase description,
 
 v2:
-  - New.
+  - Add Reviewed-by,
+  - Just stop compiling pm_runtime.c instead of using a runtime check,
+    as no multi-platform ARM platforms need this anymore.
 ---
- .../bindings/clock/renesas,r8a7779-cpg-clocks.txt  | 30 +++++++++++++++++++---
- drivers/clk/shmobile/clk-r8a7779.c                 |  2 ++
- 2 files changed, 28 insertions(+), 4 deletions(-)
+ drivers/sh/pm_runtime.c | 18 +++++-------------
+ 1 file changed, 5 insertions(+), 13 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/clock/renesas,r8a7779-cpg-clocks.txt b/Documentation/devicetree/bindings/clock/renesas,r8a7779-cpg-clocks.txt
-index ed3c8cb12f4eb699..8c81547c29f568e8 100644
---- a/Documentation/devicetree/bindings/clock/renesas,r8a7779-cpg-clocks.txt
-+++ b/Documentation/devicetree/bindings/clock/renesas,r8a7779-cpg-clocks.txt
-@@ -1,7 +1,9 @@
- * Renesas R8A7779 Clock Pulse Generator (CPG)
- 
- The CPG generates core clocks for the R8A7779. It includes one PLL and
--several fixed ratio dividers
-+several fixed ratio dividers.
-+The CPG also provides a Clock Domain for SoC devices, in combination with the
-+CPG Module Stop (MSTP) Clocks.
- 
- Required Properties:
- 
-@@ -12,16 +14,36 @@ Required Properties:
-   - #clock-cells: Must be 1
-   - clock-output-names: The names of the clocks. Supported clocks are "plla",
-     "z", "zs", "s", "s1", "p", "b", "out".
-+  - #power-domain-cells: Must be 0
- 
-+SoC devices that are part of the CPG/MSTP Clock Domain and can be power-managed
-+through an MSTP clock should refer to the CPG device node in their
-+"power-domains" property, as documented by the generic PM domain bindings in
-+Documentation/devicetree/bindings/power/power_domain.txt.
- 
--Example
---------
-+
-+Examples
-+--------
-+
-+  - CPG device node:
- 
- 	cpg_clocks: cpg_clocks@ffc80000 {
- 		compatible = "renesas,r8a7779-cpg-clocks";
--		reg = <0 0xffc80000 0 0x30>;
-+		reg = <0xffc80000 0x30>;
- 		clocks = <&extal_clk>;
- 		#clock-cells = <1>;
- 		clock-output-names = "plla", "z", "zs", "s", "s1", "p",
- 		                     "b", "out";
-+		#power-domain-cells = <0>;
-+	};
-+
-+
-+  - CPG/MSTP Clock Domain member device node:
-+
-+	sata: sata@fc600000 {
-+		compatible = "renesas,sata-r8a7779", "renesas,rcar-sata";
-+		reg = <0xfc600000 0x2000>;
-+		interrupts = <0 100 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&mstp1_clks R8A7779_CLK_SATA>;
-+		power-domains = <&cpg_clocks>;
- 	};
-diff --git a/drivers/clk/shmobile/clk-r8a7779.c b/drivers/clk/shmobile/clk-r8a7779.c
-index 652ecacb6daf7922..e42a63a2ad251de2 100644
---- a/drivers/clk/shmobile/clk-r8a7779.c
-+++ b/drivers/clk/shmobile/clk-r8a7779.c
-@@ -168,6 +168,8 @@ static void __init r8a7779_cpg_clocks_init(struct device_node *np)
+diff --git a/drivers/sh/pm_runtime.c b/drivers/sh/pm_runtime.c
+index ad9188138ed56ffb..25abd4eb7d102113 100644
+--- a/drivers/sh/pm_runtime.c
++++ b/drivers/sh/pm_runtime.c
+@@ -35,19 +35,11 @@ static struct pm_clk_notifier_block platform_bus_notifier = {
+ static int __init sh_pm_runtime_init(void)
+ {
+ 	if (IS_ENABLED(CONFIG_ARCH_SHMOBILE_MULTI)) {
+-		if (!of_machine_is_compatible("renesas,r7s72100") &&
+-#ifndef CONFIG_PM_GENERIC_DOMAINS_OF
+-		    !of_machine_is_compatible("renesas,r8a73a4") &&
+-		    !of_machine_is_compatible("renesas,r8a7740") &&
+-		    !of_machine_is_compatible("renesas,sh73a0") &&
+-#endif
+-		    !of_machine_is_compatible("renesas,r8a7778") &&
+-		    !of_machine_is_compatible("renesas,r8a7779") &&
+-		    !of_machine_is_compatible("renesas,r8a7790") &&
+-		    !of_machine_is_compatible("renesas,r8a7791") &&
+-		    !of_machine_is_compatible("renesas,r8a7792") &&
+-		    !of_machine_is_compatible("renesas,r8a7793") &&
+-		    !of_machine_is_compatible("renesas,r8a7794"))
++		if (!of_find_compatible_node(NULL, NULL,
++					     "renesas,cpg-mstp-clocks"))
++			return 0;
++		if (IS_ENABLED(CONFIG_PM_GENERIC_DOMAINS_OF) &&
++		    of_find_node_with_property(NULL, "#power-domain-cells"))
+ 			return 0;
  	}
  
- 	of_clk_add_provider(np, of_clk_src_onecell_get, &cpg->data);
-+
-+	cpg_mstp_add_clk_domain(np);
- }
- CLK_OF_DECLARE(r8a7779_cpg_clks, "renesas,r8a7779-cpg-clocks",
- 	       r8a7779_cpg_clocks_init);
 -- 
 1.9.1
 
