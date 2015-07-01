@@ -1,122 +1,69 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v2 7/9] ARM: multi_v7_defconfig: Enable support for PWM
- Regulators
-Date: Wed, 1 Jul 2015 13:31:46 +0100
-Message-ID: <20150701123146.GK3210@x1>
-References: <1435154348-28840-1-git-send-email-lee.jones@linaro.org>
- <1435154348-28840-8-git-send-email-lee.jones@linaro.org>
- <CABxcv==J2hi0y+=s3nK_U=-jkjTW3L9jCC2JfebnWwRfpDGLAQ@mail.gmail.com>
- <20150625084204.GW15013@x1>
- <CABxcv==_YZ7BCCzfbLXYxwUL_kKLtBxOVTCvcUnvGVnrD4bVpg@mail.gmail.com>
- <20150625150255.GE23990@x1>
- <CABxcv==dWX_J_+zhqjn61QXGtxCKmK62_HEj4R7wsMAWcC=H=Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f41.google.com ([74.125.82.41]:33599 "EHLO
-	mail-wg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751889AbbGAMbv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2015 08:31:51 -0400
-Received: by wgck11 with SMTP id k11so35559189wgc.0
-        for <linux-pm@vger.kernel.org>; Wed, 01 Jul 2015 05:31:50 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CABxcv==dWX_J_+zhqjn61QXGtxCKmK62_HEj4R7wsMAWcC=H=Q@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v3 0/4] cpufreq: use generic cpufreq drivers for Exynos5250
+ platform
+Date: Wed, 01 Jul 2015 15:10:34 +0200
+Message-ID: <1435756238-845-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Javier Martinez Canillas <javier@dowhile0.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ajit Pal Singh <ajitpal.singh@st.com>
 
-On Thu, 25 Jun 2015, Javier Martinez Canillas wrote:
-> On Thu, Jun 25, 2015 at 5:02 PM, Lee Jones <lee.jones@linaro.org> wro=
-te:
-> > On Thu, 25 Jun 2015, Javier Martinez Canillas wrote:
-> >> On Thu, Jun 25, 2015 at 10:42 AM, Lee Jones <lee.jones@linaro.org>=
- wrote:
-> >> > On Wed, 24 Jun 2015, Javier Martinez Canillas wrote:
-> >>
-> >> [...]
-> >>
-> >> >> > diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/c=
-onfigs/multi_v7_defconfig
-> >> >> > index f632af0..6666973 100644
-> >> >> > --- a/arch/arm/configs/multi_v7_defconfig
-> >> >> > +++ b/arch/arm/configs/multi_v7_defconfig
-> >> >> > @@ -365,6 +365,7 @@ CONFIG_REGULATOR_MAX8907=3Dy
-> >> >> >  CONFIG_REGULATOR_MAX8973=3Dy
-> >> >> >  CONFIG_REGULATOR_MAX77686=3Dy
-> >> >> >  CONFIG_REGULATOR_PALMAS=3Dy
-> >> >> > +CONFIG_REGULATOR_PWM=3Dy
-> >> >>
-> >> >> The current policy is to build as much as possible as a module =
-in
-> >> >> multi_v7_defconfig. Since this is a tristate Kconfig symbol, co=
-uld you
-> >> >> please change it to =3Dm ?
-> >> >
-> >> > I would prefer that it stays built-in.
-> >> >
-> >>
-> >> Ok, I've no strong opinion on this. I was just mentioning what arm=
--soc
-> >> maintainers prefer nowadays.
-> >>
-> >> May I ask what's the rationale for leaving this option built-in?
-> >
-> > My view is that multi_v7 is used for prototyping, testing and to
-> > ensure all of the vendors are playing nice together.  Hopefully
-> > vendors aren't actually releasing kernels built with this defconfig=
-!
->=20
-> Agreed and same for the per SoC family defconfigs, vendors should shi=
-p
-> kernels with a customized defconfig.
+Hi,
 
-Right.
+This patch series removes the use of Exynos5250 specific support
+from cpufreq-exynos driver and enables the use of cpufreq-dt driver
+for this platform.
 
-> > During testing/prototyping time; installing and messing around with
-> > modules is an over-head I can do without.
->=20
-> Right but my question wasn't whether multi_v7 should have the options
-> as built-in or as modules. That has already been decided by the
-> arm-soc maintainers who want to have as much as possible as modules.
-> In fact, there have been patches posted recently to change the curren=
-t
-> multi_v7 options from built-in to modules.
+This patch series has been tested on Exynos5250 based Arndale board.
 
-Then I need to either stop using multi_v7 or write a pre-build script
-to turn it into something useful I guess.
+Changes since v1 (http://lkml.org/lkml/2015/4/13/611):
+- rebased on top of next-20150629 branch of linux-next kernel tree
+- dropped dependency on "[PATCH 0/6] cpufreq: use generic cpufreq
+  drivers for Exynos4x12 platform" patch series as it needs more
+  work (Viresh has requested porting of cpufreq-dt's boost mode
+  support over opp-v2 patches)
 
-Thanks for the heads-up.
+Changes since v2 (http://lkml.org/lkml/2015/6/29/361):
+- put the new cpu nodes in alphabetical order
+- updated Javier's and Mike's e-mail adresses
+- removed Cc: tag with stale Sachin's e-mail adress
+- added Reviewed-by: tag from Krzysztof to patches #3 and #4
 
-> Instead my question was what makes this driver special to not follow
-> the current convention.
+Depends on:
+- next-20150629 branch of linux-next kernel tree
 
-There is nothing special about this particular driver to warrant that.
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-> I agree that there is a trade off between having options as built-in
-> or modules and I believe that is why most SoC specific defconfigs hav=
-e
-> the opposite policy,  that is to enable everything as built-in so one
-> doesn't have to mess with modules as you said.
 
-Precisely.
+Bartlomiej Zolnierkiewicz (1):
+  cpufreq: exynos: remove Exynos5250 specific cpufreq driver support
 
-> But again, I don't have a strong opinion on this. What I think though
-> is that this should be documented somewhere so the options are enable=
-d
-> following a documented rule instead of just whatever fits in someone
-> workflow.
+Thomas Abraham (3):
+  clk: samsung: exynos5250: add cpu clock configuration data and
+    instantiate cpu clock
+  ARM: dts: Exynos5250: add CPU OPP and regulator supply property
+  ARM: Exynos: switch to using generic cpufreq driver for Exynos5250
 
-News of this new convention is new to me.  As I said, this driver
-isn't in any way "special".  I was merely enabling it to make it
-useful to everyone, rather than only people who are currently
-supporting module support in their builds.  Which as a low-level guy,
-I currently have no requirement for -- it just adds time, complexity
-and more things to debug.
+ arch/arm/boot/dts/exynos5250-arndale.dts  |   4 +
+ arch/arm/boot/dts/exynos5250-smdk5250.dts |   4 +
+ arch/arm/boot/dts/exynos5250-snow.dts     |   4 +
+ arch/arm/boot/dts/exynos5250-spring.dts   |   4 +
+ arch/arm/boot/dts/exynos5250.dtsi         |  22 ++++
+ arch/arm/mach-exynos/exynos.c             |   1 +
+ drivers/clk/samsung/clk-exynos5250.c      |  31 +++++
+ drivers/cpufreq/Kconfig.arm               |  11 --
+ drivers/cpufreq/Makefile                  |   1 -
+ drivers/cpufreq/exynos-cpufreq.c          |   3 -
+ drivers/cpufreq/exynos-cpufreq.h          |  17 ---
+ drivers/cpufreq/exynos5250-cpufreq.c      | 210 ------------------------------
+ include/dt-bindings/clock/exynos5250.h    |   1 +
+ 13 files changed, 71 insertions(+), 242 deletions(-)
+ delete mode 100644 drivers/cpufreq/exynos5250-cpufreq.c
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+-- 
+1.9.1
