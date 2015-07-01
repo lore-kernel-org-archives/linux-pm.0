@@ -1,66 +1,156 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / hibernate/resume: clarify documentation
-Date: Wed, 1 Jul 2015 10:46:11 +0200
-Message-ID: <20150701084611.GB6946@amd>
-References: <87pp4gq0bl.fsf@e6510-131.site>
- <87mvzip8gz.fsf@e6510-131.site>
- <87lhf2p81y.fsf@e6510-131.site>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49097 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751075AbbGAIqN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2015 04:46:13 -0400
-Content-Disposition: inline
-In-Reply-To: <87lhf2p81y.fsf@e6510-131.site>
-Sender: linux-pm-owner@vger.kernel.org
+From: Mike Looijmans <mike.looijmans@topic.nl>
+Subject: [PATCH] power/ltc2941-battery-gauge.c: Use the devicetree node name as supply name
+Date: Wed,  1 Jul 2015 11:40:53 +0200
+Message-ID: <1435743653-13967-1-git-send-email-mike.looijmans@topic.nl>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: sre@kernel.org, linux-kernel@vger.kernel.org, mike.looijmans@topic.nl
 List-Id: linux-pm@vger.kernel.org
-To: Uwe Geuder <linuxkernel2015-ugeuder@snkmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 
-On Mon 2015-06-29 23:35:05, Uwe Geuder wrote:
-> it was not the whole truth that kernel mode cannot be used with swap on LVM
-> 
-> Signed-off-by: Uwe Geuder <linuxkernel2015-ugeuder@snkmail.com>
+Make it possible to set the name of the supply from the devicetree.
+Like other power supply drivers just use the node name. This makes
+the code smaller as well, as it doesn't need to allocate memory to
+hold the name and allocate a unique ID.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Functionally tested on 4.0 kernel, only compile-tested on mainline.
 
-Thanks for clarifying this.
+Signed-off-by: Mike Looijmans <mike.looijmans@topic.nl>
+---
+ drivers/power/ltc2941-battery-gauge.c | 54 ++++++-----------------------------
+ 1 file changed, 8 insertions(+), 46 deletions(-)
 
-(Hmm, and I guess we shoudl rename swsusp.txt -> hibernation.txt one
-day :-).
-
-									Pavel
-> ---
->  Documentation/power/swsusp.txt | 13 +++++++++++--
->  1 file changed, 11 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/power/swsusp.txt b/Documentation/power/swsusp.txt
-> index f732a83..8cc17ca 100644
-> --- a/Documentation/power/swsusp.txt
-> +++ b/Documentation/power/swsusp.txt
-> @@ -410,8 +410,17 @@ Documentation/usb/persist.txt.
->  
->  Q: Can I suspend-to-disk using a swap partition under LVM?
->  
-> -A: No. You can suspend successfully, but you'll not be able to
-> -resume. uswsusp should be able to work with LVM. See suspend.sf.net.
-> +A: Yes and No.  You can suspend successfully, but the kernel will not be able
-> +to resume on its own.  You need an initramfs that can recognize the resume
-> +situation, activate the logical volume containing the swap volume (but not
-> +touch any filesystems!), and eventually call
-> +
-> +echo -n "$major:$minor" > /sys/power/resume
-> +
-> +where $major and $minor are the respective major and minor device numbers of
-> +the swap volume.
-> +
-> +uswsusp works with LVM, too.  See http://suspend.sourceforge.net/
->  
->  Q: I upgraded the kernel from 2.6.15 to 2.6.16. Both kernels were
->  compiled with the similar configuration files. Anyway I found that
-
+diff --git a/drivers/power/ltc2941-battery-gauge.c b/drivers/power/ltc2941-battery-gauge.c
+index daeb086..4adf2ba 100644
+--- a/drivers/power/ltc2941-battery-gauge.c
++++ b/drivers/power/ltc2941-battery-gauge.c
+@@ -14,7 +14,6 @@
+ #include <linux/swab.h>
+ #include <linux/i2c.h>
+ #include <linux/delay.h>
+-#include <linux/idr.h>
+ #include <linux/power_supply.h>
+ #include <linux/slab.h>
+ 
+@@ -63,15 +62,11 @@ struct ltc294x_info {
+ 	struct power_supply_desc supply_desc;	/* Supply description */
+ 	struct delayed_work work;	/* Work scheduler */
+ 	int num_regs;	/* Number of registers (chip type) */
+-	int id;		/* Identifier of ltc294x chip */
+ 	int charge;	/* Last charge register content */
+ 	int r_sense;	/* mOhm */
+ 	int Qlsb;	/* nAh */
+ };
+ 
+-static DEFINE_IDR(ltc294x_id);
+-static DEFINE_MUTEX(ltc294x_lock);
+-
+ static inline int convert_bin_to_uAh(
+ 	const struct ltc294x_info *info, int Q)
+ {
+@@ -371,10 +366,6 @@ static int ltc294x_i2c_remove(struct i2c_client *client)
+ 
+ 	cancel_delayed_work(&info->work);
+ 	power_supply_unregister(info->supply);
+-	kfree(info->supply_desc.name);
+-	mutex_lock(&ltc294x_lock);
+-	idr_remove(&ltc294x_id, info->id);
+-	mutex_unlock(&ltc294x_lock);
+ 	return 0;
+ }
+ 
+@@ -384,44 +375,28 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
+ 	struct power_supply_config psy_cfg = {};
+ 	struct ltc294x_info *info;
+ 	int ret;
+-	int num;
+ 	u32 prescaler_exp;
+ 	s32 r_sense;
+ 	struct device_node *np;
+ 
+-	mutex_lock(&ltc294x_lock);
+-	ret = idr_alloc(&ltc294x_id, client, 0, 0, GFP_KERNEL);
+-	mutex_unlock(&ltc294x_lock);
+-	if (ret < 0)
+-		goto fail_id;
+-
+-	num = ret;
+-
+ 	info = devm_kzalloc(&client->dev, sizeof(*info), GFP_KERNEL);
+-	if (info == NULL) {
+-		ret = -ENOMEM;
+-		goto fail_info;
+-	}
++	if (info == NULL)
++		return -ENOMEM;
+ 
+ 	i2c_set_clientdata(client, info);
+ 
+-	info->num_regs = id->driver_data;
+-	info->supply_desc.name = kasprintf(GFP_KERNEL, "%s-%d", client->name,
+-					   num);
+-	if (!info->supply_desc.name) {
+-		ret = -ENOMEM;
+-		goto fail_name;
+-	}
+-
+ 	np = of_node_get(client->dev.of_node);
+ 
++	info->num_regs = id->driver_data;
++	info->supply_desc.name = np->name;
++
+ 	/* r_sense can be negative, when sense+ is connected to the battery
+ 	 * instead of the sense-. This results in reversed measurements. */
+ 	ret = of_property_read_u32(np, "lltc,resistor-sense", &r_sense);
+ 	if (ret < 0) {
+ 		dev_err(&client->dev,
+ 			"Could not find lltc,resistor-sense in devicetree\n");
+-		goto fail_name;
++		return ret;
+ 	}
+ 	info->r_sense = r_sense;
+ 
+@@ -446,7 +421,6 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
+ 	}
+ 
+ 	info->client = client;
+-	info->id = num;
+ 	info->supply_desc.type = POWER_SUPPLY_TYPE_BATTERY;
+ 	info->supply_desc.properties = ltc294x_properties;
+ 	if (info->num_regs >= LTC294X_REG_TEMPERATURE_LSB)
+@@ -473,31 +447,19 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
+ 	ret = ltc294x_reset(info, prescaler_exp);
+ 	if (ret < 0) {
+ 		dev_err(&client->dev, "Communication with chip failed\n");
+-		goto fail_comm;
++		return ret;
+ 	}
+ 
+ 	info->supply = power_supply_register(&client->dev, &info->supply_desc,
+ 					     &psy_cfg);
+ 	if (IS_ERR(info->supply)) {
+ 		dev_err(&client->dev, "failed to register ltc2941\n");
+-		ret = PTR_ERR(info->supply);
+-		goto fail_register;
++		return PTR_ERR(info->supply);
+ 	} else {
+ 		schedule_delayed_work(&info->work, LTC294X_WORK_DELAY * HZ);
+ 	}
+ 
+ 	return 0;
+-
+-fail_register:
+-	kfree(info->supply_desc.name);
+-fail_comm:
+-fail_name:
+-fail_info:
+-	mutex_lock(&ltc294x_lock);
+-	idr_remove(&ltc294x_id, num);
+-	mutex_unlock(&ltc294x_lock);
+-fail_id:
+-	return ret;
+ }
+ 
+ #ifdef CONFIG_PM_SLEEP
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.9.1
