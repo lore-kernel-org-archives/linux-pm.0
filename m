@@ -1,91 +1,122 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Wed, 01 Jul 2015 09:21:46 -0300
-Message-ID: <1435753306.1134542.312471953.3DCB0D87@webmail.messagingengine.com>
-References: <4290667.ZqInAykFGS@vostro.rjw.lan>
- <Pine.LNX.4.44L0.1505091556001.5397-100000@netrider.rowland.org>
- <20150509202518.GB20282@khazad-dum.debian.net>
- <CAJvTdKmGFPHtO-rOwXWJr6bPDS4PuEo+g7H-uQhuMc_+kh4CuA@mail.gmail.com>
- <20150625171158.GB27230@khazad-dum.debian.net>
- <CAJvTdKmscv8andz=T4zPjhgtqHq4+k6iB3Lm+_14eqnah=Fdcw@mail.gmail.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v2 7/9] ARM: multi_v7_defconfig: Enable support for PWM
+ Regulators
+Date: Wed, 1 Jul 2015 13:31:46 +0100
+Message-ID: <20150701123146.GK3210@x1>
+References: <1435154348-28840-1-git-send-email-lee.jones@linaro.org>
+ <1435154348-28840-8-git-send-email-lee.jones@linaro.org>
+ <CABxcv==J2hi0y+=s3nK_U=-jkjTW3L9jCC2JfebnWwRfpDGLAQ@mail.gmail.com>
+ <20150625084204.GW15013@x1>
+ <CABxcv==_YZ7BCCzfbLXYxwUL_kKLtBxOVTCvcUnvGVnrD4bVpg@mail.gmail.com>
+ <20150625150255.GE23990@x1>
+ <CABxcv==dWX_J_+zhqjn61QXGtxCKmK62_HEj4R7wsMAWcC=H=Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from out4-smtp.messagingengine.com ([66.111.4.28]:52703 "EHLO
-	out4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752797AbbGAMVs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2015 08:21:48 -0400
-Received: from compute5.internal (compute5.nyi.internal [10.202.2.45])
-	by mailout.nyi.internal (Postfix) with ESMTP id 8EAF420D35
-	for <linux-pm@vger.kernel.org>; Wed,  1 Jul 2015 08:21:47 -0400 (EDT)
-In-Reply-To: <CAJvTdKmscv8andz=T4zPjhgtqHq4+k6iB3Lm+_14eqnah=Fdcw@mail.gmail.com>
+Received: from mail-wg0-f41.google.com ([74.125.82.41]:33599 "EHLO
+	mail-wg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751889AbbGAMbv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2015 08:31:51 -0400
+Received: by wgck11 with SMTP id k11so35559189wgc.0
+        for <linux-pm@vger.kernel.org>; Wed, 01 Jul 2015 05:31:50 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CABxcv==dWX_J_+zhqjn61QXGtxCKmK62_HEj4R7wsMAWcC=H=Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+To: Javier Martinez Canillas <javier@dowhile0.org>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ajit Pal Singh <ajitpal.singh@st.com>
 
-On Tue, Jun 30, 2015, at 17:04, Len Brown wrote:
-> > Entering "mem" suspend mode through sysfs currently has the implied meaning
-> > of "prepare the *entire* system to stay on a powered down state for
-> > pontentially a _long_ time", where long means "certainly more than 10
-> > seconds" ;-) This is unlikely to be written anywhere, of course, that's just
-> > how it was used by the vast majority for years, at least on traditional
-> > server/desktop/laptop platforms such as x86.
-> 
-> The _vast_ majority of systems using Linux suspend today are under
-> an Android user-space.  Android has no assumption that that suspend to
-> mem will necessarily stay suspended for a long time.
+On Thu, 25 Jun 2015, Javier Martinez Canillas wrote:
+> On Thu, Jun 25, 2015 at 5:02 PM, Lee Jones <lee.jones@linaro.org> wro=
+te:
+> > On Thu, 25 Jun 2015, Javier Martinez Canillas wrote:
+> >> On Thu, Jun 25, 2015 at 10:42 AM, Lee Jones <lee.jones@linaro.org>=
+ wrote:
+> >> > On Wed, 24 Jun 2015, Javier Martinez Canillas wrote:
+> >>
+> >> [...]
+> >>
+> >> >> > diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/c=
+onfigs/multi_v7_defconfig
+> >> >> > index f632af0..6666973 100644
+> >> >> > --- a/arch/arm/configs/multi_v7_defconfig
+> >> >> > +++ b/arch/arm/configs/multi_v7_defconfig
+> >> >> > @@ -365,6 +365,7 @@ CONFIG_REGULATOR_MAX8907=3Dy
+> >> >> >  CONFIG_REGULATOR_MAX8973=3Dy
+> >> >> >  CONFIG_REGULATOR_MAX77686=3Dy
+> >> >> >  CONFIG_REGULATOR_PALMAS=3Dy
+> >> >> > +CONFIG_REGULATOR_PWM=3Dy
+> >> >>
+> >> >> The current policy is to build as much as possible as a module =
+in
+> >> >> multi_v7_defconfig. Since this is a tristate Kconfig symbol, co=
+uld you
+> >> >> please change it to =3Dm ?
+> >> >
+> >> > I would prefer that it stays built-in.
+> >> >
+> >>
+> >> Ok, I've no strong opinion on this. I was just mentioning what arm=
+-soc
+> >> maintainers prefer nowadays.
+> >>
+> >> May I ask what's the rationale for leaving this option built-in?
+> >
+> > My view is that multi_v7 is used for prototyping, testing and to
+> > ensure all of the vendors are playing nice together.  Hopefully
+> > vendors aren't actually releasing kernels built with this defconfig=
+!
+>=20
+> Agreed and same for the per SoC family defconfigs, vendors should shi=
+p
+> kernels with a customized defconfig.
 
-Indeed, however your change was not android-specific, and it is not
-"comfortable" on x86-style hardware and usage patterns.
+Right.
 
-> > IMO, we would actually benefit from *adding* new system-wide sleep/suspend
-> > modes that are optimized for oportunistic, short-lived system-wide sleep
-> > cycles (aka "catnap") that is fast to enter and exit from, and which will be
-> > triggered very frequently, instead of trying to change the assumptions and
-> > expected behavior of the current "deep-sleep" mode...
-> 
-> Thank you for sharing your opinion.
-> 
-> I am going to give up trying to change your mind, and those who share
-> your view.  I plan to revive my patch from 2014 which
-> makes sys_sync() optional.  That will not change the historic behavior,
-> and will still allow everybody to do what they want.
-> Rafael has said that he can live with the resulting kernel clutter.
+> > During testing/prototyping time; installing and messing around with
+> > modules is an over-head I can do without.
+>=20
+> Right but my question wasn't whether multi_v7 should have the options
+> as built-in or as modules. That has already been decided by the
+> arm-soc maintainers who want to have as much as possible as modules.
+> In fact, there have been patches posted recently to change the curren=
+t
+> multi_v7 options from built-in to modules.
 
-...
+Then I need to either stop using multi_v7 or write a pre-build script
+to turn it into something useful I guess.
 
-> BTW. the answer does not appear to be creating a new system sleep state.
-> Android invokes "mem", and they don't seem excited about teaching
-> user-space that runs on multiple platforms that  what used to be a "mem" and no
-> "freeze" could be a "mem" plus a "freeze", or a "freeze" and no "mem".
+Thanks for the heads-up.
 
-Hmm, maybe we could:
+> Instead my question was what makes this driver special to not follow
+> the current convention.
 
-1. Make the behavior of "mem" configurable (select default at compile
-time, allow it to be changed at runtime).
+There is nothing special about this particular driver to warrant that.
 
-2. Add a way to always enter the "heavyweight" (x86-style) mem sleep in
-platforms where it exists.
+> I agree that there is a trade off between having options as built-in
+> or modules and I believe that is why most SoC specific defconfigs hav=
+e
+> the opposite policy,  that is to enable everything as built-in so one
+> doesn't have to mess with modules as you said.
 
-3. Add a way to always enter the "light" (android-style) mem sleep in
-platforms where it exists.
+Precisely.
 
-And make (2) and (3) optional (as in: you can compile out the clutter). 
-That at least provides a way forward for userspace, at the price of more
-gunk on the kernel side.
+> But again, I don't have a strong opinion on this. What I think though
+> is that this should be documented somewhere so the options are enable=
+d
+> following a documented rule instead of just whatever fits in someone
+> workflow.
 
-We already have a lot of stuff that works that way (idle and freq
-governors, io elevators, etc).
+News of this new convention is new to me.  As I said, this driver
+isn't in any way "special".  I was merely enabling it to make it
+useful to everyone, rather than only people who are currently
+supporting module support in their builds.  Which as a low-level guy,
+I currently have no requirement for -- it just adds time, complexity
+and more things to debug.
 
-That said, as long as x86 will still try to safeguard my data during mem
-sleep/resume as it does today, I have no strong feelings about
-light/heavy-weight "mem" sleep being strictly a compile-time selectable
-thing, or a more flexible runtime-selectable behavior.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
