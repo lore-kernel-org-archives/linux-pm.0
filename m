@@ -1,67 +1,84 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
-Date: Thu, 2 Jul 2015 11:21:17 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1507021054160.1320-100000@iolanthe.rowland.org>
-References: <CAAObsKAWgp3mL5Z2WJDMdMZpe7ORZJRPf607KLj98eAf6-_AtQ@mail.gmail.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 05/10] opp: Add support to parse "operating-points-v2"
+ bindings
+Date: Thu, 02 Jul 2015 09:07:14 -0700
+Message-ID: <559561B2.8010902@codeaurora.org>
+References: <cover.1434369079.git.viresh.kumar@linaro.org> <1b5a393f2162752cbb773956dff15739e7525a1d.1434369079.git.viresh.kumar@linaro.org> <55949037.80305@codeaurora.org> <20150702063820.GE31684@linux>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:41217 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752670AbbGBPVS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jul 2015 11:21:18 -0400
-In-Reply-To: <CAAObsKAWgp3mL5Z2WJDMdMZpe7ORZJRPf607KLj98eAf6-_AtQ@mail.gmail.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:36210 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753324AbbGBQHR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jul 2015 12:07:17 -0400
+In-Reply-To: <20150702063820.GE31684@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, broonie@kernel.org, mike.turquette@linaro.org, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-On Thu, 2 Jul 2015, Tomeu Vizoso wrote:
+On 07/01/2015 11:38 PM, Viresh Kumar wrote:
+> On 01-07-15, 18:13, Stephen Boyd wrote:
+>> On 06/15/2015 04:57 AM, Viresh Kumar wrote:
+>>> ---
+>>>  drivers/base/power/opp.c | 238 ++++++++++++++++++++++++++++++++++++++++++-----
+>>>  1 file changed, 213 insertions(+), 25 deletions(-)
+>>>
+>>> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+>>> index 2ac48ff9c1ef..3198c3e77224 100644
+>>> --- a/drivers/base/power/opp.c
+>>> +++ b/drivers/base/power/opp.c
+>>> @@ -49,12 +49,17 @@
+>>>   *		are protected by the dev_opp_list_lock for integrity.
+>>>   *		IMPORTANT: the opp nodes should be maintained in increasing
+>>>   *		order.
+>>> - * @dynamic:	not-created from static DT entries.
+>>>   * @available:	true/false - marks if this OPP as available or not
+>>> + * @dynamic:	not-created from static DT entries.
+>> Why move dynamic?
+> To match its position, as it is present in the struct below. Yes it
+> could have been done in a separate patch, but its also fine to fix
+> such silly mistakes in another patch :)
+>
+>
 
-> > Just because these sub-devices are virtual, it doesn't mean you can
-> > ignore the way they interact with runtime PM.
-> 
-> Fair enough, but then, how are we expected to be able to use the
-> direct_complete facility if the core bails out if a descendant doesn't
-> have runtime PM enabled?
-> 
-> > In the case of ep_87 this doesn't matter.  Endpoint devices (like all
-> > devices) are in the SUSPENDED state by default when they are created,
-> > and they never leave that state.
-> 
-> I don't see why it doesn't matter for endpoints or the others. They
-> don't have runtime PM enabled, so no ancestor will be able to do
-> direct_complete.
+Oh I thought kernel-doc didn't care what order things were documented
+in, so moving it around doesn't really help unless someone cares that
+they match the struct ordering.
 
-Ah, you're concerned about these lines near the start of
-__device_suspend():
+>>> +
+>>> +	new_opp->np = np;
+>>> +	new_opp->dynamic = false;
+>>> +	new_opp->available = true;
+>>> +
+>>> +	/*
+>>> +	 * TODO: Support multiple regulators
+>>> +	 *
+>>> +	 * read opp-microvolt array
+>>> +	 */
+>>> +	ret = of_property_count_u32_elems(np, "opp-microvolt");
+>>> +	if (ret == 1 || ret == 3) {
+>>> +		/* There can be one or three elements here */
+>>> +		ret = of_property_read_u32_array(np, "opp-microvolt",
+>>> +						 (u32 *)&new_opp->u_volt, ret);
+>> It seems fragile to rely on the struct packing here. Maybe the same
+>> comment in the struct should be copied here, and possibly some better
+>> way of doing this so the code can't be subtly broken?
+> Any example of how things will break? Aren't these guaranteed to be
+> present at 3 consecutive 32 bit positions ?
 
-	if (dev->power.direct_complete) {
-		if (pm_runtime_status_suspended(dev)) {
-			pm_runtime_disable(dev);
-			if (pm_runtime_suspended_if_enabled(dev))
-				goto Complete;
+I'm mostly worried about someone jumbling fields in the struct. Maybe
+I'm too paranoid... Maybe we can have some sort of BUILD_BUG_ON() check
+here?
 
-			pm_runtime_enable(dev);
-		}
-		dev->power.direct_complete = false;
-	}
+BUILD_BUG_ON(offsetof(struct dev_pm_opp, u_volt_max) - offsetof(struct
+dev_pm_opp, u_volt) != sizeof(u32) * 3);
 
-Perhaps the pm_runtime_suspended_if_enabled() test should be changed to
-pm_runtime_status_suspended().  Then it won't matter whether the
-descendant devices are enabled for runtime PM.
+Have you tried compiling that on 64-bit? sizeof(unsigned long) !=
+sizeof(u32).
 
-> > A possible way around the problem is to use pm_suspend_ignore_children
-> > on the uvcvideo interface.  But I'm not sure that would be the right
-> > thing to do.
-> 
-> Would that mean that if a device has ignore_children then it could
-> still do direct_complete even if its descendants weren't able to?
-
-I think we could justify that.  The ignore_children flag means we can 
-communicate with the children even when the device is in runtime 
-suspend, so there's no reason to force the device to leave runtime 
-suspend during a system sleep.
-
-Alan Stern
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
 
