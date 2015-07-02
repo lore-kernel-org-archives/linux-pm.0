@@ -1,108 +1,68 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH RFC v2 09/16] arm: domain: Add platform callbacks for
- domain power on/off
-Date: Thu, 2 Jul 2015 13:38:26 -0600
-Message-ID: <20150702193826.GA885@linaro.org>
-References: <1435374156-19214-1-git-send-email-lina.iyer@linaro.org>
- <1435374156-19214-10-git-send-email-lina.iyer@linaro.org>
- <CAMuHMdULThWEZmyLEK_9WeK6DSNhrQdiZQLWNhi1Q6dwZTkkMg@mail.gmail.com>
- <20150629163201.GA1524@linaro.org>
- <CAMuHMdWL09Loe2EFUMc-kRML7Ckn7a6G1_hvPnaqkDYnhkXjog@mail.gmail.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 03/10] OPP: Allocate dev_opp from _add_device_opp()
+Date: Thu, 02 Jul 2015 16:46:48 -0700
+Message-ID: <5595CD68.9040701@codeaurora.org>
+References: <cover.1434369079.git.viresh.kumar@linaro.org> <83bd3b9837b30bab62f41aed3dd2cdf52cc21688.1434369079.git.viresh.kumar@linaro.org> <55948DB0.8060500@codeaurora.org> <20150702062455.GD31684@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f181.google.com ([209.85.192.181]:36495 "EHLO
-	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754039AbbGBTi3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jul 2015 15:38:29 -0400
-Received: by pdcu2 with SMTP id u2so50999881pdc.3
-        for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2015 12:38:29 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdWL09Loe2EFUMc-kRML7Ckn7a6G1_hvPnaqkDYnhkXjog@mail.gmail.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:54810 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754185AbbGBXqv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jul 2015 19:46:51 -0400
+In-Reply-To: <20150702062455.GD31684@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, msivasub@codeaurora.org, agross@codeaurora.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, broonie@kernel.org, mike.turquette@linaro.org, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-On Tue, Jun 30 2015 at 09:10 -0600, Geert Uytterhoeven wrote:
->Hi Lina,
+On 07/01/2015 11:24 PM, Viresh Kumar wrote:
+> On 01-07-15, 18:02, Stephen Boyd wrote:
+>> On 06/15/2015 04:57 AM, Viresh Kumar wrote:
+>>>  	/* Duplicate OPPs ? */
+>>> -	if (new_opp->rate == opp->rate) {
+>>> +	if (opp && new_opp->rate == opp->rate) {
+>> Isn't opp always non-NULL at this point? Maybe this if statement should
+>> be moved into the list_for_each_entry_rcu() loop.
+> when the dev_opp was getting created for the first time, before this
+> patch, we used to do a 'goto list_add'. And so control never reached
+> here, but now we might find a empty list of OPPs and so 'opp' can be
+> NULL here.
+
+Yes, but doesn't list_for_each_entry_rcu() always assign opp to be at
+least &dev_opp->opp_list->next which will be pointing at
+&dev_opp->opp_list if the list is empty (modulo ->member)?
+
+> Not sure about moving this to the loop, as we are already taking
+> 'dev_opp_list_lock' in this routine.
+
+Sorry, I lost you here. How does that matter? I was suggesting moving
+the duplicate OPP check into the list_for_each_entry_rcu() loop so that
+this NULL check doesn't matter.
+
 >
->On Mon, Jun 29, 2015 at 6:32 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
->> On Mon, Jun 29 2015 at 07:36 -0600, Geert Uytterhoeven wrote:
-
->Perhaps the generic one can be optional, and provide helpers for common
->CPU operations? Then the platform-specific driver can handle all PM domains,
->and delegate to the generic CPU helpers where appropriate.
+>>> +remove_dev_opp:
+>>> +	_remove_device_opp(dev_opp);
+>> Doesn't this just return early because dev_opp has something in it?
+> Hmm, it isn't required probably.
 >
->Does that make sense?
+> ---------------------8<-----------------------
 >
-Well it does. Thanks Geert. My RFC v1 [1] did exacly that. But, it didnt
-fit into the big picture of things well.
+> Message-Id: <b13057f196330d0e08f3c517676cc3116b1be4ae.1435818265.git.viresh.kumar@linaro.org>
+> From: Viresh Kumar <viresh.kumar@linaro.org>
+> Date: Fri, 12 Jun 2015 12:43:14 +0530
+> Subject: [PATCH] OPP: Allocate dev_opp from _add_device_opp()
+>
+> There is no need to complicate _opp_add_dynamic() with allocation of
+> dev_opp as well. Allocate it from _add_device_opp() instead.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
 
-Here is where we wanted to head towards, in the long run. Today, we have
-CPU_PM for CPU runtime and we have runtime PM for others, we want to
-unify and move to a generic runtime PM for the CPUs as well. To that
-effort, we want to bring in generic code all into the fold of CPU
-runtime PM and CPU domain runtime PM. A generic CPU PM domain with its
-own genpd callback for ->power_on() and ->power_off() would help handle
-the common power on/off stuff there and possibly call into GIC and
-others that currently use CPU_PM from there.  So the common node needs
-to be the handle of power on/off callbacks from the genpd, when all the
-CPUs are entering idle or resuming.
+Looking better.
 
-With what you have suggested, the platform driver creates the genpd and
-would pass the CPU genpd to the common code for common operations. (This
-was what was done in [1]). The platform driver would set the power_on()
-and power_off() callbacks and that would have to be overriden in order
-handle common CPU domain suspend/resume activities. Overwriting members
-of an object allocated by the platform driver, is something we should
-avoid.
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
 
-Or instead of allocating the memory in your platform driver for the CPU
-genpd, you could query and get the genpd and then add your additions on
-top. You could add other flags like GENPD_FLAG_PM_CLK, but *not*
-overwrite the power on/off callbacks in the genpd. They still have to be
-registered separately like in this patch. Again, not every elegant, IMO.
-
-Another option, that might be cleaner, is that we could have a PM domain
-for CPUs that would set up the compatibility flag to "arm,pd" and you
-could nest that domain inside pd_a2sl and pd_a2kl.
-
-pd_c4: c4@0 {
-	[...]
-	pd_a3sm: a3sm@20 {
-		[...]
-		pd_a2sl: a2sl@21 {
-			reg = <21>;
-			#power-domain-cells = <0>;
-			pd_cpu_sl: pd1 { <-- Virtual PM domain
-				#power-domain-cells = <0>;
-			};
-		};
-	};
-};
-
-cpus {
-	cpu0: cpu@0 {
-		compatible = "arm,cortex-a15";
-		power-domains = <&pd_cpu_sl>; <-- here we refer to the
-						  virtual PM domain
-		next-level-cache = <&L2_CA15>;
-        };
-	[...]
-};
-
-This the common code would get its own callbacks and when that genpd
-powers off, the platform genpd would power down. But no new code is
-needed in your platform driver. The benefit is that platform code and
-generic CPU domain code may exist and act in parallel and may only be
-related if specified in the DT and the problem with that approach is
-that this virtual PM domain is not a h/w domain, hence specifying in DT
-is questionable.
-
-What do you think?
-
-Thanks,
-Lina
-
-[1]. http://www.spinics.net/lists/arm-kernel/msg423430.html
