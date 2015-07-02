@@ -1,105 +1,138 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH] power_supply: rt9455_charger: Properly notify userspace
- about charging events
-Date: Thu, 2 Jul 2015 09:49:46 +0900
-Message-ID: <CAJKOXPcbGLo9BvU_7+OdMZ_PcMp6+ZaUWh46APxgMg3nyZ-SdQ@mail.gmail.com>
-References: <1434558539-30591-1-git-send-email-anda-maria.nicolae@intel.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 03/10] OPP: Allocate dev_opp from _add_device_opp()
+Date: Wed, 01 Jul 2015 18:02:40 -0700
+Message-ID: <55948DB0.8060500@codeaurora.org>
+References: <cover.1434369079.git.viresh.kumar@linaro.org> <83bd3b9837b30bab62f41aed3dd2cdf52cc21688.1434369079.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vn0-f47.google.com ([209.85.216.47]:43528 "EHLO
-	mail-vn0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752072AbbGBAtr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2015 20:49:47 -0400
-In-Reply-To: <1434558539-30591-1-git-send-email-anda-maria.nicolae@intel.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:49408 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751675AbbGBBCn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2015 21:02:43 -0400
+In-Reply-To: <83bd3b9837b30bab62f41aed3dd2cdf52cc21688.1434369079.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
-Cc: sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, broonie@kernel.org, mike.turquette@linaro.org, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-2015-06-18 1:28 GMT+09:00 Anda-Maria Nicolae <anda-maria.nicolae@intel.com>:
-> Do not call power_supply_changed() when CHRVPI interrupt has occurred.
-
-What I cannot find here is the answer to: why? I am not familiar with
-the driver so this is just guessing that you wanted to notify
-userspace about connected/disconnected charger. In both cases (before
-and after the patch) this is achieved, isn't it?
-
-Best regards,
-Krzysztof
-
-
-> CHRVPI interrupt occurs when the charger is connected to or disconnected
-> from the power source. Call power_supply_changed() after PWR_RDY bit is
-> read, to distinguish between connection to or disconnection from the power
-> source.
-> Also, call power_supply_changed() after the battery is reconnected to the
-> charger, to notify userspace that the battery is no longer absent.
+On 06/15/2015 04:57 AM, Viresh Kumar wrote:
+> There is no need to complicate _opp_add_dynamic() with allocation of
+> dev_opp as well. Allocate it from _add_device_opp() instead.
 >
-> Signed-off-by: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/power/rt9455_charger.c |   16 ++++++++++++++--
->  1 file changed, 14 insertions(+), 2 deletions(-)
+>  drivers/base/power/opp.c | 39 +++++++++++++++++++--------------------
+>  1 file changed, 19 insertions(+), 20 deletions(-)
 >
-> diff --git a/drivers/power/rt9455_charger.c b/drivers/power/rt9455_charger.c
-> index 08baac6..a49a9d4 100644
-> --- a/drivers/power/rt9455_charger.c
-> +++ b/drivers/power/rt9455_charger.c
-> @@ -973,7 +973,6 @@ static int rt9455_irq_handler_check_irq2_register(struct rt9455_info *info,
->
->         if (irq2 & GET_MASK(F_CHRVPI)) {
->                 dev_dbg(dev, "Charger fault occurred\n");
-> -               alert_userspace = true;
->                 /*
->                  * CHRVPI bit is set in 2 cases:
->                  * 1. when the power source is connected to the charger.
-> @@ -981,6 +980,9 @@ static int rt9455_irq_handler_check_irq2_register(struct rt9455_info *info,
->                  * To identify the case, PWR_RDY bit is checked. Because
->                  * PWR_RDY bit is set / cleared after CHRVPI interrupt is
->                  * triggered, it is used delayed_work to later read PWR_RDY bit.
-> +                * Also, do not set to true alert_userspace, because there is no
-> +                * need to notify userspace when CHRVPI interrupt has occurred.
-> +                * Userspace will be notified after PWR_RDY bit is read.
->                  */
->                 queue_delayed_work(system_power_efficient_wq,
->                                    &info->pwr_rdy_work,
-> @@ -1178,7 +1180,7 @@ static irqreturn_t rt9455_irq_handler_thread(int irq, void *data)
->                 /*
->                  * Sometimes, an interrupt occurs while rt9455_probe() function
->                  * is executing and power_supply_register() is not yet called.
-> -                * Do not call power_supply_charged() in this case.
-> +                * Do not call power_supply_changed() in this case.
->                  */
->                 if (info->charger)
->                         power_supply_changed(info->charger);
-> @@ -1478,6 +1480,11 @@ static void rt9455_pwr_rdy_work_callback(struct work_struct *work)
->                                    RT9455_MAX_CHARGING_TIME * HZ);
->                 break;
->         }
-> +       /*
-> +        * Notify userspace that the charger has been either connected to or
-> +        * disconnected from the power source.
-> +        */
-> +       power_supply_changed(info->charger);
->  }
->
->  static void rt9455_max_charging_time_work_callback(struct work_struct *work)
-> @@ -1533,6 +1540,11 @@ static void rt9455_batt_presence_work_callback(struct work_struct *work)
->                         if (ret)
->                                 dev_err(dev, "Failed to unmask BATAB interrupt\n");
->                 }
-> +               /*
-> +                * Notify userspace that the battery is now connected to the
-> +                * charger.
-> +                */
-> +               power_supply_changed(info->charger);
->         }
->  }
->
-> --
-> 1.7.9.5
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index 7895fdd64192..4b646f36f252 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -408,11 +408,11 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
+>  
+>  /**
+> - * _add_device_opp() - Allocate a new device OPP table
+> + * _add_device_opp() - Returns device OPP table
+
+Find device OPP table, or allocate a new one?
+
+>   * @dev:	device for which we do this operation
+>   *
+> - * New device node which uses OPPs - used when multiple devices with OPP tables
+> - * are maintained.
+> + * It tries to find an existing table first, if it couldn't find one, it
+> + * allocates a new OPP table and returns that.
+>   *
+>   * Return: valid device_opp pointer if success, else NULL.
+>   */
+> @@ -420,6 +420,11 @@ static struct device_opp *_add_device_opp(struct device *dev)
+>  {
+>  	struct device_opp *dev_opp;
+>  
+> +	/* Check for existing list for 'dev' first */
+> +	dev_opp = _find_device_opp(dev);
+> +	if (!IS_ERR(dev_opp))
+> +		return dev_opp;
+> +
+>  	/*
+>  	 * Allocate a new device OPP table. In the infrequent case where a new
+>  	 * device is needed to be added, we pay this penalty.
+> @@ -575,8 +580,8 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
+>  static int _opp_add_dynamic(struct device *dev, unsigned long freq,
+>  			    long u_volt, bool dynamic)
+>  {
+> -	struct device_opp *dev_opp = NULL;
+> -	struct dev_pm_opp *opp, *new_opp;
+> +	struct device_opp *dev_opp;
+> +	struct dev_pm_opp *opp = NULL, *new_opp;
+
+Hm...
+
+>  	struct list_head *head;
+>  	int ret;
+>  
+> @@ -592,19 +597,11 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
+>  	new_opp->rate = freq;
+>  	new_opp->u_volt = u_volt;
+>  	new_opp->available = true;
+> -	new_opp->dynamic = dynamic;
+>  
+> -	/* Check for existing list for 'dev' */
+> -	dev_opp = _find_device_opp(dev);
+> -	if (IS_ERR(dev_opp)) {
+> -		dev_opp = _add_device_opp(dev);
+> -		if (!dev_opp) {
+> -			ret = -ENOMEM;
+> -			goto free_opp;
+> -		}
+> -
+> -		head = &dev_opp->opp_list;
+> -		goto list_add;
+> +	dev_opp = _add_device_opp(dev);
+> +	if (!dev_opp) {
+> +		ret = -ENOMEM;
+> +		goto free_opp;
+>  	}
+>  
+>  	/*
+> @@ -620,17 +617,17 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
+>  	}
+>  
+>  	/* Duplicate OPPs ? */
+> -	if (new_opp->rate == opp->rate) {
+> +	if (opp && new_opp->rate == opp->rate) {
+
+Isn't opp always non-NULL at this point? Maybe this if statement should
+be moved into the list_for_each_entry_rcu() loop.
+
+>  		ret = opp->available && new_opp->u_volt == opp->u_volt ?
+>  			0 : -EEXIST;
+>  
+>  		dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
+>  			 __func__, opp->rate, opp->u_volt, opp->available,
+>  			 new_opp->rate, new_opp->u_volt, new_opp->available);
+> -		goto free_opp;
+> +		goto remove_dev_opp;
+>  	}
+>  
+> -list_add:
+> +	new_opp->dynamic = dynamic;
+>  	new_opp->dev_opp = dev_opp;
+>  	list_add_rcu(&new_opp->node, head);
+>  	mutex_unlock(&dev_opp_list_lock);
+> @@ -642,6 +639,8 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
+>  	srcu_notifier_call_chain(&dev_opp->srcu_head, OPP_EVENT_ADD, new_opp);
+>  	return 0;
+>  
+> +remove_dev_opp:
+> +	_remove_device_opp(dev_opp);
+
+Doesn't this just return early because dev_opp has something in it?
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
+
