@@ -1,60 +1,52 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Wed, 1 Jul 2015 23:07:29 -0400
-Message-ID: <CAJvTdKn71W0+js3D4OwK5Tx4z5KdA8hb-FyRMTuw0rdyQj9pRw@mail.gmail.com>
-References: <4290667.ZqInAykFGS@vostro.rjw.lan>
-	<Pine.LNX.4.44L0.1505091556001.5397-100000@netrider.rowland.org>
-	<20150509202518.GB20282@khazad-dum.debian.net>
-	<CAJvTdKmGFPHtO-rOwXWJr6bPDS4PuEo+g7H-uQhuMc_+kh4CuA@mail.gmail.com>
-	<20150625171158.GB27230@khazad-dum.debian.net>
-	<CAJvTdKmscv8andz=T4zPjhgtqHq4+k6iB3Lm+_14eqnah=Fdcw@mail.gmail.com>
-	<1435753306.1134542.312471953.3DCB0D87@webmail.messagingengine.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [RFC PATCH] PM / hibernate: make sure each resuming page is in
+ current memory zones
+Date: Thu, 2 Jul 2015 14:19:35 +0800
+Message-ID: <20150702061935.GA19010@linux-rxt1.site>
+References: <1435679668-13806-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f52.google.com ([209.85.215.52]:34360 "EHLO
-	mail-la0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753059AbbGBDHb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2015 23:07:31 -0400
-In-Reply-To: <1435753306.1134542.312471953.3DCB0D87@webmail.messagingengine.com>
+Received: from smtp.nue.novell.com ([195.135.221.5]:40394 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752897AbbGBGTz (ORCPT
+	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+	Thu, 2 Jul 2015 02:19:55 -0400
+Content-Disposition: inline
+In-Reply-To: <1435679668-13806-1-git-send-email-yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, rui.zhang@intel.com, len.brown@intel.com, aaron.lu@intel.com
 
->> The _vast_ majority of systems using Linux suspend today are under
->> an Android user-space.  Android has no assumption that that suspend to
->> mem will necessarily stay suspended for a long time.
->
-> Indeed, however your change was not android-specific, and it is not
-> "comfortable" on x86-style hardware and usage patterns.
+Hi Chen Yu, 
 
-"comfortable on x86-style and usage patterns"?
-If you mean "traditional" instead of "comfortable",
-where "tradition" is based on 10-year old systems, then sure.
+On Tue, Jun 30, 2015 at 11:54:28PM +0800, Chen Yu wrote:
+> Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820 reserved
+> regions") was reverted, because this patch makes resume from hibernation
+> on Lenovo x230 unreliable. But reverting may bring back the kernel
+> exception firstly reported in former patch. In general, there are three
+> problems in current code when resuming from hibernation:
+> 
+> 1.Resuming page may also be in second kernel's e820 reserved region.
+> BIOS-e820: [mem 0x0000000069d4f000-0x0000000069e12fff] reserved
+> this causes kernel exception described in Commit 84c91b7ae07c
+> ("PM / hibernate: avoid unsafe pages in e820 reserved regions")
+> 
+> 2.If Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820
+> reserved regions") is applied to fix problem 1, and if E820_RESERVED_KERN
+> regions causes some regions at e820 table not page aligned,
+> e820_mark_nosave_regions will misjudgment the non-page aligned space to
+> be "hole" space and add to nosave regions, this causes resuming failed.
+> Refer to https://bugzilla.kernel.org/show_bug.cgi?id=96111 for detail.
+> 
 
-But today, my x86 Android tablet is quite "comfortable"
-without a sys_sync() in the kernel suspend path.
+Sorry for I am not fully understand why checking pfn_valid could avoid
+the above 2. issue?
 
-No, this isn't Android specific, Android is just the highest-volume demand,
-making it an obvious example.
+Per my understood should waiting Yinghai Lu's patches for killing
+E820_RESERVED_KERN to avoid the aligned problem.
 
-Chrome is the #1 selling "x86-style" clamshell laptop.
-Chrome is not only "comfortable" with fast suspend/resume,
-the Chrome developers demand it.
 
-> That said, as long as x86 will still try to safeguard my data during mem
-> sleep/resume as it does today, I have no strong feelings about
-> light/heavy-weight "mem" sleep being strictly a compile-time selectable
-> thing, or a more flexible runtime-selectable behavior.
-
-The observation here is that the kernel should not force every system
-to sys_sync() on every suspend.  The only question is how to best
-implement that.  The obvious solution was to delete this forced policy
-from the kernel, and let user-space handle it.
-Rafael has not agreed to push that obvious, though less-than-gentle
-solution upstream, and so I'll re-send the historic patch
-that allows distros to still sync like it is 1999, if they want to:-)
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+Thanks a lot!
+Joey Lee
