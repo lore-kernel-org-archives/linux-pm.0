@@ -1,135 +1,192 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH 4/4] devfreq_cooling: add trace information
-Date: Fri,  3 Jul 2015 13:58:30 +0100
-Message-ID: <1435928310-15938-5-git-send-email-javi.merino@arm.com>
-References: <1435928310-15938-1-git-send-email-javi.merino@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:53249 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755341AbbGCM70 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 3 Jul 2015 08:59:26 -0400
-In-Reply-To: <1435928310-15938-1-git-send-email-javi.merino@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Pintu Kumar <pintu.k@samsung.com>
+Subject: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory feature
+Date: Fri, 03 Jul 2015 18:50:07 +0530
+Message-ID: <1435929607-3435-1-git-send-email-pintu.k@samsung.com>
+Return-path: <owner-linux-mm@kvack.org>
+Sender: owner-linux-mm@kvack.org
+To: corbet@lwn.net, akpm@linux-foundation.org, vbabka@suse.cz, gorcunov@openvz.org, pintu.k@samsung.com, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, mgorman@suse.de, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org
+Cc: cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>
 
-Tracing is useful for debugging and performance tuning.  Add similar
-traces to what's present in the cpu cooling device.
+This patch provides 2 things:
+1. Add new control called shrink_memory in /proc/sys/vm/.
+This control can be used to aggressively reclaim memory system-wide
+in one shot from the user space. A value of 1 will instruct the
+kernel to reclaim as much as totalram_pages in the system.
+Example: echo 1 > /proc/sys/vm/shrink_memory
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
+2. Enable shrink_all_memory API in kernel with new CONFIG_SHRINK_MEMORY.
+Currently, shrink_all_memory function is used only during hibernation.
+With the new config we can make use of this API for non-hibernation case
+also without disturbing the hibernation case.
+
+The detailed paper was presented in Embedded Linux Conference, Mar-2015
+http://events.linuxfoundation.org/sites/events/files/slides/
+%5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
+
+Scenarios were this can be used and helpful are:
+1) Can be invoked just after system boot-up is finished.
+2) Can be invoked just before entering entire system suspend.
+3) Can be invoked from kernel when order-4 pages starts failing.
+4) Can be helpful to completely avoid or delay the kerenl OOM condition.
+5) Can be developed as a system-tool to quickly defragment entire system
+   from user space, without the need to kill any application.
+
+Signed-off-by: Pintu Kumar <pintu.k@samsung.com>
 ---
- drivers/thermal/devfreq_cooling.c |  9 ++++++-
- include/trace/events/thermal.h    | 51 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 59 insertions(+), 1 deletion(-)
+ Documentation/sysctl/vm.txt |   16 ++++++++++++++++
+ include/linux/swap.h        |    7 +++++++
+ kernel/sysctl.c             |    9 +++++++++
+ mm/Kconfig                  |    8 ++++++++
+ mm/vmscan.c                 |   23 +++++++++++++++++++++--
+ 5 files changed, 61 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index ee7b84ecd0c0..30b9e7f6556d 100644
---- a/drivers/thermal/devfreq_cooling.c
-+++ b/drivers/thermal/devfreq_cooling.c
-@@ -21,6 +21,8 @@
- #include <linux/pm_opp.h>
- #include <linux/thermal.h>
+diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
+index 9832ec5..a959ad1 100644
+--- a/Documentation/sysctl/vm.txt
++++ b/Documentation/sysctl/vm.txt
+@@ -54,6 +54,7 @@ Currently, these files are in /proc/sys/vm:
+ - page-cluster
+ - panic_on_oom
+ - percpu_pagelist_fraction
++- shrink_memory
+ - stat_interval
+ - swappiness
+ - user_reserve_kbytes
+@@ -718,6 +719,21 @@ sysctl, it will revert to this default behavior.
  
-+#include <trace/events/thermal.h>
+ ==============================================================
+ 
++shrink_memory
 +
- static int devfreq_cooling_get_max_state(struct thermal_cooling_device *cdev,
- 					 unsigned long *state)
- {
-@@ -127,7 +129,7 @@ static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cd
- 	struct devfreq_dev_status *status = &df->last_status;
- 	unsigned long state;
- 	unsigned long freq = status->current_frequency;
--	u32 dyn_power, static_power;
-+	u32 load, dyn_power, static_power;
- 
- 	/* Get dynamic power for state */
- 	state = freq_get_state(df, freq);
-@@ -142,6 +144,10 @@ static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cd
- 	/* Get static power */
- 	static_power = get_static_power(dfc, freq);
- 
-+	load = (100 * status->busy_time) / status->total_time;
-+	trace_thermal_power_devfreq_get_power(cdev, freq, load, dyn_power,
-+					      static_power);
++This control is available only when CONFIG_SHRINK_MEMORY is set. This control
++can be used to aggressively reclaim memory system-wide in one shot. A value of
++1 will instruct the kernel to reclaim as much as totalram_pages in the system.
++For example, to reclaim all memory system-wide we can do:
++# echo 1 > /proc/sys/vm/shrink_memory
 +
- 	*power = dyn_power + static_power;
++For more information about this control, please visit the following
++presentation in embedded linux conference, 2015.
++http://events.linuxfoundation.org/sites/events/files/slides/
++%5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
++
++==============================================================
++
+ stat_interval
  
- 	return 0;
-@@ -195,6 +201,7 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
- 			break;
+ The time interval between which vm statistics are updated.  The default
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 9a7adfb..6505b0b 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -333,6 +333,13 @@ extern int vm_swappiness;
+ extern int remove_mapping(struct address_space *mapping, struct page *page);
+ extern unsigned long vm_total_pages;
  
- 	*state = i;
-+	trace_thermal_power_devfreq_limit(cdev, freq, *state, power);
- 	return 0;
++#ifdef CONFIG_SHRINK_MEMORY
++extern int sysctl_shrink_memory;
++extern int sysctl_shrinkmem_handler(struct ctl_table *table, int write,
++		void __user *buffer, size_t *length, loff_t *ppos);
++#endif
++
++
+ #ifdef CONFIG_NUMA
+ extern int zone_reclaim_mode;
+ extern int sysctl_min_unmapped_ratio;
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index c566b56..2895099 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1351,6 +1351,15 @@ static struct ctl_table vm_table[] = {
+ 	},
+ 
+ #endif /* CONFIG_COMPACTION */
++#ifdef CONFIG_SHRINK_MEMORY
++	{
++		.procname	= "shrink_memory",
++		.data		= &sysctl_shrink_memory,
++		.maxlen		= sizeof(int),
++		.mode		= 0200,
++		.proc_handler	= sysctl_shrinkmem_handler,
++	},
++#endif
+ 	{
+ 		.procname	= "min_free_kbytes",
+ 		.data		= &min_free_kbytes,
+diff --git a/mm/Kconfig b/mm/Kconfig
+index b3a60ee..8e04bd9 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -657,3 +657,11 @@ config DEFERRED_STRUCT_PAGE_INIT
+ 	  when kswapd starts. This has a potential performance impact on
+ 	  processes running early in the lifetime of the systemm until kswapd
+ 	  finishes the initialisation.
++
++config SHRINK_MEMORY
++	bool "Allow for system-wide shrinking of memory"
++	default n
++	depends on MMU
++	help
++	  It enables support for system-wide memory reclaim in one shot using
++	  echo 1 > /proc/sys/vm/shrink_memory.
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index c8d8282..837b88d 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -3557,7 +3557,7 @@ void wakeup_kswapd(struct zone *zone, int order, enum zone_type classzone_idx)
+ 	wake_up_interruptible(&pgdat->kswapd_wait);
  }
  
-diff --git a/include/trace/events/thermal.h b/include/trace/events/thermal.h
-index 8b1f80682b80..ffa870c0d2d2 100644
---- a/include/trace/events/thermal.h
-+++ b/include/trace/events/thermal.h
-@@ -135,6 +135,57 @@ TRACE_EVENT(thermal_power_cpu_limit,
- 		__entry->power)
- );
+-#ifdef CONFIG_HIBERNATION
++#if defined CONFIG_HIBERNATION || CONFIG_SHRINK_MEMORY
+ /*
+  * Try to free `nr_to_reclaim' of memory, system-wide, and return the number of
+  * freed pages.
+@@ -3571,12 +3571,17 @@ unsigned long shrink_all_memory(unsigned long nr_to_reclaim)
+ 	struct reclaim_state reclaim_state;
+ 	struct scan_control sc = {
+ 		.nr_to_reclaim = nr_to_reclaim,
++#ifdef CONFIG_SHRINK_MEMORY
++		.gfp_mask = (GFP_HIGHUSER_MOVABLE | GFP_RECLAIM_MASK),
++		.hibernation_mode = 0,
++#else
+ 		.gfp_mask = GFP_HIGHUSER_MOVABLE,
++		.hibernation_mode = 1,
++#endif
+ 		.priority = DEF_PRIORITY,
+ 		.may_writepage = 1,
+ 		.may_unmap = 1,
+ 		.may_swap = 1,
+-		.hibernation_mode = 1,
+ 	};
+ 	struct zonelist *zonelist = node_zonelist(numa_node_id(), sc.gfp_mask);
+ 	struct task_struct *p = current;
+@@ -3597,6 +3602,20 @@ unsigned long shrink_all_memory(unsigned long nr_to_reclaim)
+ }
+ #endif /* CONFIG_HIBERNATION */
  
-+TRACE_EVENT(thermal_power_devfreq_get_power,
-+	TP_PROTO(struct thermal_cooling_device *cdev, unsigned long freq,
-+		u32 load, u32 dynamic_power, u32 static_power),
++#ifdef CONFIG_SHRINK_MEMORY
++int sysctl_shrink_memory;
++/* This is the entry point for system-wide shrink memory
+++via /proc/sys/vm/shrink_memory */
++int sysctl_shrinkmem_handler(struct ctl_table *table, int write,
++		void __user *buffer, size_t *length, loff_t *ppos)
++{
++	if (write)
++		shrink_all_memory(totalram_pages);
 +
-+	TP_ARGS(cdev, freq, load, dynamic_power, static_power),
++	return 0;
++}
++#endif
 +
-+	TP_STRUCT__entry(
-+		__string(type,         cdev->type    )
-+		__field(unsigned long, freq          )
-+		__field(u32,           load          )
-+		__field(u32,           dynamic_power )
-+		__field(u32,           static_power  )
-+	),
-+
-+	TP_fast_assign(
-+		__assign_str(type, cdev->type);
-+		__entry->freq = freq;
-+		__entry->load = load;
-+		__entry->dynamic_power = dynamic_power;
-+		__entry->static_power = static_power;
-+	),
-+
-+	TP_printk("type=%s freq=%lu load=%u dynamic_power=%u static_power=%u",
-+		__get_str(type), __entry->freq,
-+		__entry->load, __entry->dynamic_power, __entry->static_power)
-+);
-+
-+TRACE_EVENT(thermal_power_devfreq_limit,
-+	TP_PROTO(struct thermal_cooling_device *cdev, unsigned long freq,
-+		unsigned long cdev_state, u32 power),
-+
-+	TP_ARGS(cdev, freq, cdev_state, power),
-+
-+	TP_STRUCT__entry(
-+		__string(type,         cdev->type)
-+		__field(unsigned int,  freq      )
-+		__field(unsigned long, cdev_state)
-+		__field(u32,           power     )
-+	),
-+
-+	TP_fast_assign(
-+		__assign_str(type, cdev->type);
-+		__entry->freq = freq;
-+		__entry->cdev_state = cdev_state;
-+		__entry->power = power;
-+	),
-+
-+	TP_printk("type=%s freq=%u cdev_state=%lu power=%u",
-+		__get_str(type), __entry->freq, __entry->cdev_state,
-+		__entry->power)
-+);
- #endif /* _TRACE_THERMAL_H */
- 
- /* This part must be outside protection */
+ /* It's optimal to keep kswapds on the same CPUs as their memory, but
+    not required for correctness.  So if the last cpu in a node goes
+    away, we get changed to run anywhere: as the first one comes back,
 -- 
-1.9.1
+1.7.9.5
 
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
