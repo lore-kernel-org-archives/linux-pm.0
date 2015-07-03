@@ -1,95 +1,88 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
-Date: Fri, 3 Jul 2015 10:16:19 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1507031007230.19910-100000@netrider.rowland.org>
-References: <CAAObsKADoP4hhjoHD4xM0OZ9io93C9u=roC=d_-_KrGfGqYW7Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: [PATCH] idle: move latency tracing stop/start calls deeper inside the idle loop
+Date: Fri,  3 Jul 2015 16:19:40 +0200
+Message-ID: <1435933180-5660-1-git-send-email-l.stach@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:41849 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754979AbbGCOQU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 10:16:20 -0400
-In-Reply-To: <CAAObsKADoP4hhjoHD4xM0OZ9io93C9u=roC=d_-_KrGfGqYW7Q@mail.gmail.com>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:49461 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755385AbbGCOTq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 10:19:46 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de, patchwork-lst@pengutronix.de
 
-On Fri, 3 Jul 2015, Tomeu Vizoso wrote:
+Make sure to stop tracing only once we are past a point where all
+latency tracing events have been processed (irqs are not enabled
+again). This has the slight advantage of capturing more latency
+related events in the idle path, but most importantly it makes sure
+that latency tracing doesn't get re-enabled inadvertently when
+new events are coming in.
 
-> On 2 July 2015 at 17:21, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Thu, 2 Jul 2015, Tomeu Vizoso wrote:
-> >
-> >> > Just because these sub-devices are virtual, it doesn't mean you can
-> >> > ignore the way they interact with runtime PM.
-> >>
-> >> Fair enough, but then, how are we expected to be able to use the
-> >> direct_complete facility if the core bails out if a descendant doesn't
-> >> have runtime PM enabled?
-> >>
-> >> > In the case of ep_87 this doesn't matter.  Endpoint devices (like all
-> >> > devices) are in the SUSPENDED state by default when they are created,
-> >> > and they never leave that state.
-> >>
-> >> I don't see why it doesn't matter for endpoints or the others. They
-> >> don't have runtime PM enabled, so no ancestor will be able to do
-> >> direct_complete.
-> >
-> > Ah, you're concerned about these lines near the start of
-> > __device_suspend():
-> >
-> >         if (dev->power.direct_complete) {
-> >                 if (pm_runtime_status_suspended(dev)) {
-> >                         pm_runtime_disable(dev);
-> >                         if (pm_runtime_suspended_if_enabled(dev))
-> >                                 goto Complete;
-> >
-> >                         pm_runtime_enable(dev);
-> >                 }
-> >                 dev->power.direct_complete = false;
-> >         }
-> >
-> > Perhaps the pm_runtime_suspended_if_enabled() test should be changed to
-> > pm_runtime_status_suspended().  Then it won't matter whether the
-> > descendant devices are enabled for runtime PM.
-> 
-> Yeah, that would remove the need for messing with the runtime PM
-> enable status of descendant devices, but I wonder why Rafael went that
-> way initially.
+This makes the irqsoff latency tracer useful again, as we stop
+capturing CPU sleep time as IRQ latency.
 
-I forget the details.  Probably it was just to be safe.  We probably 
-thought that if a device was disabled for runtime PM then its runtime 
-PM status might not be accurate.  But if direct_complete is set then it 
-may be reasonable to assume that the runtime PM status _is_ accurate.
+Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+---
+ drivers/cpuidle/cpuidle.c |  2 ++
+ kernel/sched/idle.c       | 14 +++++---------
+ 2 files changed, 7 insertions(+), 9 deletions(-)
 
-> >> > A possible way around the problem is to use pm_suspend_ignore_children
-> >> > on the uvcvideo interface.  But I'm not sure that would be the right
-> >> > thing to do.
-> >>
-> >> Would that mean that if a device has ignore_children then it could
-> >> still do direct_complete even if its descendants weren't able to?
-> >
-> > I think we could justify that.  The ignore_children flag means we can
-> > communicate with the children even when the device is in runtime
-> > suspend, so there's no reason to force the device to leave runtime
-> > suspend during a system sleep.
-> 
-> IIUIC, what you are proposing is to use ignore_children in a way
-> similar to how force_direct_complete was used in this patch?
-> 
-> http://thread.gmane.org/gmane.linux.power-management.general/60198/focus=60292
-
-That message doesn't contain a patch.
-
-> That should work as well, but Rafael raised some objections and thus I
-> went with the present direct_complete_default, which should work if we
-> can relax the check as discussed above.
-
-Rafael and I briefly discussed ignore_children while the original 
-direct_complete patch was being designed.  We didn't come to any 
-definite conclusion and decided to forget about it for the time being.  
-Maybe now would be a good time to reconsider it.
-
-Alan Stern
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 61c417b9e53f..d78514ac3f5d 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -173,7 +173,9 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	trace_cpu_idle_rcuidle(index, dev->cpu);
+ 	time_start = ktime_get();
+ 
++	stop_critical_timings();
+ 	entered_state = target_state->enter(dev, drv, index);
++	start_critical_timings();
+ 
+ 	time_end = ktime_get();
+ 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index fefcb1fa5160..30b799bfc3c6 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -93,12 +93,6 @@ static void cpuidle_idle_call(void)
+ 	}
+ 
+ 	/*
+-	 * During the idle period, stop measuring the disabled irqs
+-	 * critical sections latencies
+-	 */
+-	stop_critical_timings();
+-
+-	/*
+ 	 * Tell the RCU framework we are entering an idle section,
+ 	 * so no more rcu read side critical sections and one more
+ 	 * step to the grace period
+@@ -181,7 +175,6 @@ exit_idle:
+ 		local_irq_enable();
+ 
+ 	rcu_idle_exit();
+-	start_critical_timings();
+ 	return;
+ 
+ use_default:
+@@ -189,10 +182,13 @@ use_default:
+ 	 * We can't use the cpuidle framework, let's use the default
+ 	 * idle routine.
+ 	 */
+-	if (current_clr_polling_and_test())
++	if (current_clr_polling_and_test()) {
+ 		local_irq_enable();
+-	else
++	} else {
++		stop_critical_timings();
+ 		arch_cpu_idle();
++		start_critical_timings();
++	}
+ 
+ 	goto exit_idle;
+ }
+-- 
+2.1.4
 
