@@ -1,91 +1,80 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
-Date: Fri, 3 Jul 2015 10:11:14 +0200
-Message-ID: <CAAObsKADoP4hhjoHD4xM0OZ9io93C9u=roC=d_-_KrGfGqYW7Q@mail.gmail.com>
-References: <CAAObsKAWgp3mL5Z2WJDMdMZpe7ORZJRPf607KLj98eAf6-_AtQ@mail.gmail.com>
- <Pine.LNX.4.44L0.1507021054160.1320-100000@iolanthe.rowland.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] acpi-cpufreq: use same acpi_cpufreq_data if policy is
+ shared
+Date: Fri, 3 Jul 2015 14:16:57 +0530
+Message-ID: <20150703084657.GB23297@linux>
+References: <5596414C.4090106@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f43.google.com ([74.125.82.43]:35877 "EHLO
-	mail-wg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754746AbbGCILf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 04:11:35 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1507021054160.1320-100000@iolanthe.rowland.org>
+Received: from mail-pd0-f172.google.com ([209.85.192.172]:36188 "EHLO
+	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752162AbbGCIrD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 04:47:03 -0400
+Received: by pdcu2 with SMTP id u2so61348405pdc.3
+        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2015 01:47:02 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <5596414C.4090106@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Pan Xinhui <xinhuix.pan@intel.com>
+Cc: linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, rjw@rjwysocki.net, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
 
-On 2 July 2015 at 17:21, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Thu, 2 Jul 2015, Tomeu Vizoso wrote:
->
->> > Just because these sub-devices are virtual, it doesn't mean you can
->> > ignore the way they interact with runtime PM.
->>
->> Fair enough, but then, how are we expected to be able to use the
->> direct_complete facility if the core bails out if a descendant doesn't
->> have runtime PM enabled?
->>
->> > In the case of ep_87 this doesn't matter.  Endpoint devices (like all
->> > devices) are in the SUSPENDED state by default when they are created,
->> > and they never leave that state.
->>
->> I don't see why it doesn't matter for endpoints or the others. They
->> don't have runtime PM enabled, so no ancestor will be able to do
->> direct_complete.
->
-> Ah, you're concerned about these lines near the start of
-> __device_suspend():
->
->         if (dev->power.direct_complete) {
->                 if (pm_runtime_status_suspended(dev)) {
->                         pm_runtime_disable(dev);
->                         if (pm_runtime_suspended_if_enabled(dev))
->                                 goto Complete;
->
->                         pm_runtime_enable(dev);
->                 }
->                 dev->power.direct_complete = false;
->         }
->
-> Perhaps the pm_runtime_suspended_if_enabled() test should be changed to
-> pm_runtime_status_suspended().  Then it won't matter whether the
-> descendant devices are enabled for runtime PM.
+On 03-07-15, 16:01, Pan Xinhui wrote:
+> 
+> cpufreq core will mark all cpus in policy->cpus as initialized
+> by setting percpu cpufreq_cpu_data = policy.
+> However in acpi-cpufreq, we did not set percpu acpi_cpufreq_data for
+> all cpus in policy->cpus.
+> That will cause a issue that when we call get_cur_freq_on_cpu for a
+> cpu, it returns zero instead of a correct value.
+> 
+> So we shared acpi_cpufreq_data for all those cpus in policy->cpus.
+> 
+> Signed-off-by: xinhuix.pan <xinhuix.pan@intel.com>
+> ---
+>  drivers/cpufreq/acpi-cpufreq.c | 14 ++++++++++++--
+>  1 file changed, 12 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> index 0136dfc..6c6dc97 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -673,6 +673,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  	}
+>  
+>  	data->acpi_data = per_cpu_ptr(acpi_perf_data, cpu);
+> +	cpumask_copy(policy->cpus, cpumask_of(cpu));
 
-Yeah, that would remove the need for messing with the runtime PM
-enable status of descendant devices, but I wonder why Rafael went that
-way initially.
+This is already done by cpufreq-core before calling ->init() and so
+isn't required.
 
->> > A possible way around the problem is to use pm_suspend_ignore_children
->> > on the uvcvideo interface.  But I'm not sure that would be the right
->> > thing to do.
->>
->> Would that mean that if a device has ignore_children then it could
->> still do direct_complete even if its descendants weren't able to?
->
-> I think we could justify that.  The ignore_children flag means we can
-> communicate with the children even when the device is in runtime
-> suspend, so there's no reason to force the device to leave runtime
-> suspend during a system sleep.
+>  	per_cpu(acfreq_data, cpu) = data;
+>  
+>  	if (cpu_has(c, X86_FEATURE_CONSTANT_TSC))
+> @@ -712,6 +713,10 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  	}
+>  #endif
+>  
+> +	for_each_cpu(i, policy->cpus) {
+> +		per_cpu(acfreq_data, i) = data;
+> +	}
+> +
+>  	/* capability check */
+>  	if (perf->state_count <= 1) {
+>  		pr_debug("No P-States\n");
+> @@ -843,7 +848,9 @@ err_free_mask:
+>  	free_cpumask_var(data->freqdomain_cpus);
+>  err_free:
+>  	kfree(data);
+> -	per_cpu(acfreq_data, cpu) = NULL;
+> +	for_each_cpu(i, policy->cpus) {
+> +		per_cpu(acfreq_data, i) = NULL;
+> +	}
 
-IIUIC, what you are proposing is to use ignore_children in a way
-similar to how force_direct_complete was used in this patch?
+The per-cpu thing is basically wrong to start with. cpufreq-policy has
+a field: 'driver_data', which can be used to replace this acfreq_data.
+Probably use that and things will get fixed by themselves.
 
-http://thread.gmane.org/gmane.linux.power-management.general/60198/focus=60292
-
-That should work as well, but Rafael raised some objections and thus I
-went with the present direct_complete_default, which should work if we
-can relax the check as discussed above.
-
-Thanks,
-
-Tomeu
-
-> Alan Stern
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+viresh
