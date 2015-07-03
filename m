@@ -1,91 +1,63 @@
-From: SungEun Kim <cleaneye.kim@vger.kernel.org>
-Subject: [PATCH v3] PM / Sleep: Use workqueue for user space wakeup sources garbage collector
-Date: Fri,  3 Jul 2015 15:57:20 +0900
-Message-ID: <1435906640-27641-1-git-send-email-cleaneye.kim@lge.com>
-References: <1435739328-17021-1-git-send-email-cleaneye.kim@lge.com>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH v2 3/4] ARM: mvebu: Allow using the GIC for wakeup in
+ standby mode
+Date: Fri, 03 Jul 2015 09:18:48 +0200
+Message-ID: <55963758.30200@free-electrons.com>
+References: <1435684740-24912-1-git-send-email-gregory.clement@free-electrons.com>	<1435684740-24912-4-git-send-email-gregory.clement@free-electrons.com> <20150701175436.7dff0754@free-electrons.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from LGEMRELSE7Q.lge.com ([156.147.1.151]:50145 "EHLO
-	lgemrelse7q.lge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754402AbbGCG5q (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 02:57:46 -0400
-In-Reply-To: <1435739328-17021-1-git-send-email-cleaneye.kim@lge.com>
+Received: from down.free-electrons.com ([37.187.137.238]:56575 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754554AbbGCHSv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 03:18:51 -0400
+In-Reply-To: <20150701175436.7dff0754@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "cleaeye.kim" <cleaneye.kim@lge.com>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: "cleaeye.kim" <cleaneye.kim@lge.com>
+Hi Thomas,
 
-The synchronous synchronize_rcu in wakeup_source_remove makes user process
-which writes to /sys/kernel/wake_unlock blocked sometimes.
+On 01/07/2015 17:54, Thomas Petazzoni wrote:
+> Dear Gregory CLEMENT,
+> 
+> On Tue, 30 Jun 2015 19:18:59 +0200, Gregory CLEMENT wrote:
+> 
+>>  static void __init mvebu_init_irq(void)
+>>  {
+>> +	if (of_machine_is_compatible("marvell,armada375") ||
+>> +	    of_machine_is_compatible("marvell,armada380") ||
+>> +	    of_machine_is_compatible("marvell,armada390"))
+> 
+> What we really want to know is if we're using the GIC, so what about
+> instead:
+> 
+> 	np = of_find_compatible_node(NULL, NULL, "arm,cortex-a9-gic");
+> 	if (np)
+> 		gic_set_irqchip_flags(IRQCHIP_SKIP_SET_WAKE |
+> 				      IRQCHIP_MASK_ON_SUSPEND);
+> 	of_node_put(np);
+> 
+> (Not even compile-tested).
 
-For example, when android eventhub tries to release wakelock,
-this blocking process can occur, and eventhub can't get input event
-for a while.
+Indeed it is better. I will make the change.
 
-Using workqueue instead of direct function call at pm_wake_unlock
-can prevent this unnecessary delay of an user space process.
+Thanks,
 
-Signed-off-by: SungEun Kim <cleaneye.kim@lge.com>
----
- kernel/power/wakelock.c |   18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+Gregory
 
-diff --git a/kernel/power/wakelock.c b/kernel/power/wakelock.c
-index 019069c..1896386 100644
---- a/kernel/power/wakelock.c
-+++ b/kernel/power/wakelock.c
-@@ -17,6 +17,7 @@
- #include <linux/list.h>
- #include <linux/rbtree.h>
- #include <linux/slab.h>
-+#include <linux/workqueue.h>
- 
- #include "power.h"
- 
-@@ -83,7 +84,9 @@ static inline void decrement_wakelocks_number(void) {}
- #define WL_GC_COUNT_MAX	100
- #define WL_GC_TIME_SEC	300
- 
-+static void __wakelocks_gc(struct work_struct *work);
- static LIST_HEAD(wakelocks_lru_list);
-+static DECLARE_WORK(wakelock_work, __wakelocks_gc);
- static unsigned int wakelocks_gc_count;
- 
- static inline void wakelocks_lru_add(struct wakelock *wl)
-@@ -96,13 +99,12 @@ static inline void wakelocks_lru_most_recent(struct wakelock *wl)
- 	list_move(&wl->lru, &wakelocks_lru_list);
- }
- 
--static void wakelocks_gc(void)
-+static void __wakelocks_gc(struct work_struct *work)
- {
- 	struct wakelock *wl, *aux;
- 	ktime_t now;
- 
--	if (++wakelocks_gc_count <= WL_GC_COUNT_MAX)
--		return;
-+	mutex_lock(&wakelocks_lock);
- 
- 	now = ktime_get();
- 	list_for_each_entry_safe_reverse(wl, aux, &wakelocks_lru_list, lru) {
-@@ -127,6 +129,16 @@ static void wakelocks_gc(void)
- 		}
- 	}
- 	wakelocks_gc_count = 0;
-+
-+	mutex_unlock(&wakelocks_lock);
-+}
-+
-+static void wakelocks_gc(void)
-+{
-+	if (++wakelocks_gc_count <= WL_GC_COUNT_MAX)
-+		return;
-+
-+	schedule_work(&wakelock_work);
- }
- #else /* !CONFIG_PM_WAKELOCKS_GC */
- static inline void wakelocks_lru_add(struct wakelock *wl) {}
+
+> 
+> Thanks,
+> 
+> Thomas
+> 
+
+
 -- 
-1.7.9.5
-
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
