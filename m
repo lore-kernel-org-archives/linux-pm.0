@@ -1,150 +1,91 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 03/10] OPP: Allocate dev_opp from _add_device_opp()
-Date: Fri, 3 Jul 2015 12:15:54 +0530
-Message-ID: <20150703064554.GB4564@linux>
-References: <cover.1434369079.git.viresh.kumar@linaro.org>
- <83bd3b9837b30bab62f41aed3dd2cdf52cc21688.1434369079.git.viresh.kumar@linaro.org>
- <55948DB0.8060500@codeaurora.org>
- <20150702062455.GD31684@linux>
- <5595CD68.9040701@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: SungEun Kim <cleaneye.kim@vger.kernel.org>
+Subject: [PATCH v3] PM / Sleep: Use workqueue for user space wakeup sources garbage collector
+Date: Fri,  3 Jul 2015 15:57:20 +0900
+Message-ID: <1435906640-27641-1-git-send-email-cleaneye.kim@lge.com>
+References: <1435739328-17021-1-git-send-email-cleaneye.kim@lge.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:35335 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751621AbbGCGqC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 02:46:02 -0400
-Received: by pactm7 with SMTP id tm7so52588971pac.2
-        for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2015 23:46:02 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <5595CD68.9040701@codeaurora.org>
+Received: from LGEMRELSE7Q.lge.com ([156.147.1.151]:50145 "EHLO
+	lgemrelse7q.lge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754402AbbGCG5q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 02:57:46 -0400
+In-Reply-To: <1435739328-17021-1-git-send-email-cleaneye.kim@lge.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, broonie@kernel.org, mike.turquette@linaro.org, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
+To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "cleaeye.kim" <cleaneye.kim@lge.com>
 
-On 02-07-15, 16:46, Stephen Boyd wrote:
-> Looking better.
+From: "cleaeye.kim" <cleaneye.kim@lge.com>
 
-And does this look perfect ? :)
+The synchronous synchronize_rcu in wakeup_source_remove makes user process
+which writes to /sys/kernel/wake_unlock blocked sometimes.
 
-------------------8<----------------
+For example, when android eventhub tries to release wakelock,
+this blocking process can occur, and eventhub can't get input event
+for a while.
 
-Message-Id: <7c23b93b6b328e0b14b5c5096c3c3322e3d8ee4b.1435905782.git.viresh.kumar@linaro.org>
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Fri, 12 Jun 2015 12:43:14 +0530
-Subject: [PATCH] OPP: Allocate dev_opp from _add_device_opp()
+Using workqueue instead of direct function call at pm_wake_unlock
+can prevent this unnecessary delay of an user space process.
 
-There is no need to complicate _opp_add_dynamic() with allocation of
-dev_opp as well. Allocate it from _add_device_opp() instead.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: SungEun Kim <cleaneye.kim@lge.com>
 ---
- drivers/base/power/opp.c | 60 +++++++++++++++++++++++-------------------------
- 1 file changed, 29 insertions(+), 31 deletions(-)
+ kernel/power/wakelock.c |   18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 7895fdd64192..5869a8524244 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -408,11 +408,11 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
- EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
+diff --git a/kernel/power/wakelock.c b/kernel/power/wakelock.c
+index 019069c..1896386 100644
+--- a/kernel/power/wakelock.c
++++ b/kernel/power/wakelock.c
+@@ -17,6 +17,7 @@
+ #include <linux/list.h>
+ #include <linux/rbtree.h>
+ #include <linux/slab.h>
++#include <linux/workqueue.h>
  
- /**
-- * _add_device_opp() - Allocate a new device OPP table
-+ * _add_device_opp() - Find device OPP table or allocate a new one
-  * @dev:	device for which we do this operation
-  *
-- * New device node which uses OPPs - used when multiple devices with OPP tables
-- * are maintained.
-+ * It tries to find an existing table first, if it couldn't find one, it
-+ * allocates a new OPP table and returns that.
-  *
-  * Return: valid device_opp pointer if success, else NULL.
-  */
-@@ -420,6 +420,11 @@ static struct device_opp *_add_device_opp(struct device *dev)
+ #include "power.h"
+ 
+@@ -83,7 +84,9 @@ static inline void decrement_wakelocks_number(void) {}
+ #define WL_GC_COUNT_MAX	100
+ #define WL_GC_TIME_SEC	300
+ 
++static void __wakelocks_gc(struct work_struct *work);
+ static LIST_HEAD(wakelocks_lru_list);
++static DECLARE_WORK(wakelock_work, __wakelocks_gc);
+ static unsigned int wakelocks_gc_count;
+ 
+ static inline void wakelocks_lru_add(struct wakelock *wl)
+@@ -96,13 +99,12 @@ static inline void wakelocks_lru_most_recent(struct wakelock *wl)
+ 	list_move(&wl->lru, &wakelocks_lru_list);
+ }
+ 
+-static void wakelocks_gc(void)
++static void __wakelocks_gc(struct work_struct *work)
  {
- 	struct device_opp *dev_opp;
+ 	struct wakelock *wl, *aux;
+ 	ktime_t now;
  
-+	/* Check for existing list for 'dev' first */
-+	dev_opp = _find_device_opp(dev);
-+	if (!IS_ERR(dev_opp))
-+		return dev_opp;
-+
- 	/*
- 	 * Allocate a new device OPP table. In the infrequent case where a new
- 	 * device is needed to be added, we pay this penalty.
-@@ -575,7 +580,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
- static int _opp_add_dynamic(struct device *dev, unsigned long freq,
- 			    long u_volt, bool dynamic)
- {
--	struct device_opp *dev_opp = NULL;
-+	struct device_opp *dev_opp;
- 	struct dev_pm_opp *opp, *new_opp;
- 	struct list_head *head;
- 	int ret;
-@@ -592,19 +597,11 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
- 	new_opp->rate = freq;
- 	new_opp->u_volt = u_volt;
- 	new_opp->available = true;
--	new_opp->dynamic = dynamic;
--
--	/* Check for existing list for 'dev' */
--	dev_opp = _find_device_opp(dev);
--	if (IS_ERR(dev_opp)) {
--		dev_opp = _add_device_opp(dev);
--		if (!dev_opp) {
--			ret = -ENOMEM;
--			goto free_opp;
--		}
+-	if (++wakelocks_gc_count <= WL_GC_COUNT_MAX)
+-		return;
++	mutex_lock(&wakelocks_lock);
  
--		head = &dev_opp->opp_list;
--		goto list_add;
-+	dev_opp = _add_device_opp(dev);
-+	if (!dev_opp) {
-+		ret = -ENOMEM;
-+		goto free_opp;
+ 	now = ktime_get();
+ 	list_for_each_entry_safe_reverse(wl, aux, &wakelocks_lru_list, lru) {
+@@ -127,6 +129,16 @@ static void wakelocks_gc(void)
+ 		}
  	}
- 
- 	/*
-@@ -613,24 +610,25 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
- 	 */
- 	head = &dev_opp->opp_list;
- 	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
--		if (new_opp->rate <= opp->rate)
--			break;
--		else
-+		if (new_opp->rate > opp->rate) {
- 			head = &opp->node;
-+		} else if (new_opp->rate < opp->rate) {
-+			break;
-+		} else {
-+			/* Duplicate OPPs */
-+			ret = opp->available && new_opp->u_volt == opp->u_volt ?
-+				0 : -EEXIST;
+ 	wakelocks_gc_count = 0;
 +
-+			dev_warn(dev,
-+				 "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
-+				 __func__, opp->rate, opp->u_volt,
-+				 opp->available, new_opp->rate, new_opp->u_volt,
-+				 new_opp->available);
-+			goto free_opp;
-+		}
- 	}
- 
--	/* Duplicate OPPs ? */
--	if (new_opp->rate == opp->rate) {
--		ret = opp->available && new_opp->u_volt == opp->u_volt ?
--			0 : -EEXIST;
--
--		dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
--			 __func__, opp->rate, opp->u_volt, opp->available,
--			 new_opp->rate, new_opp->u_volt, new_opp->available);
--		goto free_opp;
--	}
--
--list_add:
-+	new_opp->dynamic = dynamic;
- 	new_opp->dev_opp = dev_opp;
- 	list_add_rcu(&new_opp->node, head);
- 	mutex_unlock(&dev_opp_list_lock);
++	mutex_unlock(&wakelocks_lock);
++}
++
++static void wakelocks_gc(void)
++{
++	if (++wakelocks_gc_count <= WL_GC_COUNT_MAX)
++		return;
++
++	schedule_work(&wakelock_work);
+ }
+ #else /* !CONFIG_PM_WAKELOCKS_GC */
+ static inline void wakelocks_lru_add(struct wakelock *wl) {}
+-- 
+1.7.9.5
+
