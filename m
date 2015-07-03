@@ -1,173 +1,95 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH RFC 2/5] ARM: mvebu: Use shorter register definition in
- pmsu.c
-Date: Fri, 3 Jul 2015 16:02:06 +0200
-Message-ID: <20150703140206.GJ13481@lunn.ch>
-References: <1435903917-20486-1-git-send-email-gregory.clement@free-electrons.com>
- <1435903917-20486-3-git-send-email-gregory.clement@free-electrons.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
+Date: Fri, 3 Jul 2015 10:16:19 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1507031007230.19910-100000@netrider.rowland.org>
+References: <CAAObsKADoP4hhjoHD4xM0OZ9io93C9u=roC=d_-_KrGfGqYW7Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from vps0.lunn.ch ([178.209.37.122]:33624 "EHLO vps0.lunn.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754079AbbGCOIp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 3 Jul 2015 10:08:45 -0400
-Content-Disposition: inline
-In-Reply-To: <1435903917-20486-3-git-send-email-gregory.clement@free-electrons.com>
+Received: from netrider.rowland.org ([192.131.102.5]:41849 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754979AbbGCOQU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 10:16:20 -0400
+In-Reply-To: <CAAObsKADoP4hhjoHD4xM0OZ9io93C9u=roC=d_-_KrGfGqYW7Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Jason Cooper <jason@lakedaemon.net>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Mike Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Fri, Jul 03, 2015 at 08:11:54AM +0200, Gregory CLEMENT wrote:
-> The register definition were too verbose. Shorten them in order to
-> have something more readable and avoiding having most of the
-> instruction on two lines.
+On Fri, 3 Jul 2015, Tomeu Vizoso wrote:
 
-Hi Gregory
-
-You say to avoid having most of the instructions on two lines, but if
-you look at the diff, you don't actually achieve any line count
-savings.
-
-> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> ---
->  arch/arm/mach-mvebu/pmsu.c | 102 +++++++++++++++++++++++----------------------
->  1 file changed, 52 insertions(+), 50 deletions(-)
+> On 2 July 2015 at 17:21, Alan Stern <stern@rowland.harvard.edu> wrote:
+> > On Thu, 2 Jul 2015, Tomeu Vizoso wrote:
+> >
+> >> > Just because these sub-devices are virtual, it doesn't mean you can
+> >> > ignore the way they interact with runtime PM.
+> >>
+> >> Fair enough, but then, how are we expected to be able to use the
+> >> direct_complete facility if the core bails out if a descendant doesn't
+> >> have runtime PM enabled?
+> >>
+> >> > In the case of ep_87 this doesn't matter.  Endpoint devices (like all
+> >> > devices) are in the SUSPENDED state by default when they are created,
+> >> > and they never leave that state.
+> >>
+> >> I don't see why it doesn't matter for endpoints or the others. They
+> >> don't have runtime PM enabled, so no ancestor will be able to do
+> >> direct_complete.
+> >
+> > Ah, you're concerned about these lines near the start of
+> > __device_suspend():
+> >
+> >         if (dev->power.direct_complete) {
+> >                 if (pm_runtime_status_suspended(dev)) {
+> >                         pm_runtime_disable(dev);
+> >                         if (pm_runtime_suspended_if_enabled(dev))
+> >                                 goto Complete;
+> >
+> >                         pm_runtime_enable(dev);
+> >                 }
+> >                 dev->power.direct_complete = false;
+> >         }
+> >
+> > Perhaps the pm_runtime_suspended_if_enabled() test should be changed to
+> > pm_runtime_status_suspended().  Then it won't matter whether the
+> > descendant devices are enabled for runtime PM.
 > 
-> diff --git a/arch/arm/mach-mvebu/pmsu.c b/arch/arm/mach-mvebu/pmsu.c
-> index 4f4e22206ae5..d207f5fc13a6 100644
-> --- a/arch/arm/mach-mvebu/pmsu.c
-> +++ b/arch/arm/mach-mvebu/pmsu.c
-> @@ -46,27 +46,29 @@
->  #define PMSU_REG_SIZE	    0x1000
->  
->  /* PMSU MP registers */
-> -#define PMSU_CONTROL_AND_CONFIG(cpu)	    ((cpu * 0x100) + 0x104)
-> -#define PMSU_CONTROL_AND_CONFIG_DFS_REQ		BIT(18)
-> -#define PMSU_CONTROL_AND_CONFIG_PWDDN_REQ	BIT(16)
-> -#define PMSU_CONTROL_AND_CONFIG_L2_PWDDN	BIT(20)
-> +#define PMSU_CTL_CFG(cpu)		((cpu * 0x100) + 0x104)
-> +#define PMSU_CTL_CFG_CPU0_FRQ_ID_SFT		4
-> +#define PMSU_CTL_CFG_CPU0_FRQ_ID_MSK		0xF
-> +#define PMSU_CTL_CFG_DFS_REQ			BIT(18)
-> +#define PMSU_CTL_CFG_PWDDN_REQ			BIT(16)
-> +#define PMSU_CTL_CFG_L2_PWDDN			BIT(20)
->  
->  #define PMSU_CPU_POWER_DOWN_CONTROL(cpu)    ((cpu * 0x100) + 0x108)
->  
->  #define PMSU_CPU_POWER_DOWN_DIS_SNP_Q_SKIP	BIT(0)
->  
-> -#define PMSU_STATUS_AND_MASK(cpu)	    ((cpu * 0x100) + 0x10c)
-> -#define PMSU_STATUS_AND_MASK_CPU_IDLE_WAIT	BIT(16)
-> -#define PMSU_STATUS_AND_MASK_SNP_Q_EMPTY_WAIT	BIT(17)
-> -#define PMSU_STATUS_AND_MASK_IRQ_WAKEUP		BIT(20)
-> -#define PMSU_STATUS_AND_MASK_FIQ_WAKEUP		BIT(21)
-> -#define PMSU_STATUS_AND_MASK_DBG_WAKEUP		BIT(22)
-> -#define PMSU_STATUS_AND_MASK_IRQ_MASK		BIT(24)
-> -#define PMSU_STATUS_AND_MASK_FIQ_MASK		BIT(25)
-> +#define PMSU_STATUS_MSK(cpu)	    ((cpu * 0x100) + 0x10c)
-> +#define PMSU_STATUS_MSK_CPU_IDLE_WAIT		BIT(16)
-> +#define PMSU_STATUS_MSK_SNP_Q_EMPTY_WAIT	BIT(17)
-> +#define PMSU_STATUS_MSK_IRQ_WAKEUP		BIT(20)
-> +#define PMSU_STATUS_MSK_FIQ_WAKEUP		BIT(21)
-> +#define PMSU_STATUS_MSK_DBG_WAKEUP		BIT(22)
-> +#define PMSU_STATUS_MSK_IRQ_MASK		BIT(24)
-> +#define PMSU_STATUS_MSK_FIQ_MASK		BIT(25)
->  
-> -#define PMSU_EVENT_STATUS_AND_MASK(cpu)     ((cpu * 0x100) + 0x120)
-> -#define PMSU_EVENT_STATUS_AND_MASK_DFS_DONE        BIT(1)
-> -#define PMSU_EVENT_STATUS_AND_MASK_DFS_DONE_MASK   BIT(17)
-> +#define PMSU_EVENT_STATUS_MSK(cpu)     ((cpu * 0x100) + 0x120)
-> +#define PMSU_EVENT_STATUS_MSK_DFS_DONE        BIT(1)
-> +#define PMSU_EVENT_STATUS_MSK_DFS_DONE_MASK   BIT(17)
->  
->  #define PMSU_BOOT_ADDR_REDIRECT_OFFSET(cpu) ((cpu * 0x100) + 0x124)
->  
-> @@ -238,23 +240,23 @@ static int mvebu_v7_pmsu_idle_prepare(unsigned long flags)
->  	 * IRQ and FIQ as wakeup events, set wait for snoop queue empty
->  	 * indication and mask IRQ and FIQ from CPU
->  	 */
-> -	reg = readl(pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
-> -	reg |= PMSU_STATUS_AND_MASK_CPU_IDLE_WAIT    |
-> -	       PMSU_STATUS_AND_MASK_IRQ_WAKEUP       |
-> -	       PMSU_STATUS_AND_MASK_FIQ_WAKEUP       |
-> -	       PMSU_STATUS_AND_MASK_SNP_Q_EMPTY_WAIT |
-> -	       PMSU_STATUS_AND_MASK_IRQ_MASK         |
-> -	       PMSU_STATUS_AND_MASK_FIQ_MASK;
-> -	writel(reg, pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
-> -
-> -	reg = readl(pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
-> +	reg = readl(pmsu_mp_base + PMSU_STATUS_MSK(hw_cpu));
-> +	reg |= PMSU_STATUS_MSK_CPU_IDLE_WAIT    |
-> +	       PMSU_STATUS_MSK_IRQ_WAKEUP       |
-> +	       PMSU_STATUS_MSK_FIQ_WAKEUP       |
-> +	       PMSU_STATUS_MSK_SNP_Q_EMPTY_WAIT |
-> +	       PMSU_STATUS_MSK_IRQ_MASK         |
-> +	       PMSU_STATUS_MSK_FIQ_MASK;
+> Yeah, that would remove the need for messing with the runtime PM
+> enable status of descendant devices, but I wonder why Rafael went that
+> way initially.
 
-You can probably get two per line here?
+I forget the details.  Probably it was just to be safe.  We probably 
+thought that if a device was disabled for runtime PM then its runtime 
+PM status might not be accurate.  But if direct_complete is set then it 
+may be reasonable to assume that the runtime PM status _is_ accurate.
 
-> +	writel(reg, pmsu_mp_base + PMSU_STATUS_MSK(hw_cpu));
-> +
-> +	reg = readl(pmsu_mp_base + PMSU_CTL_CFG(hw_cpu));
->  	/* ask HW to power down the L2 Cache if needed */
->  	if (flags & PMSU_PREPARE_DEEP_IDLE)
-> -		reg |= PMSU_CONTROL_AND_CONFIG_L2_PWDDN;
-> +		reg |= PMSU_CTL_CFG_L2_PWDDN;
->  
->  	/* request power down */
-> -	reg |= PMSU_CONTROL_AND_CONFIG_PWDDN_REQ;
-> -	writel(reg, pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
-> +	reg |= PMSU_CTL_CFG_PWDDN_REQ;
-> +	writel(reg, pmsu_mp_base + PMSU_CTL_CFG(hw_cpu));
->  
->  	if (flags & PMSU_PREPARE_SNOOP_DISABLE) {
->  		/* Disable snoop disable by HW - SW is taking care of it */
-> @@ -347,17 +349,17 @@ void mvebu_v7_pmsu_idle_exit(void)
->  	if (pmsu_mp_base == NULL)
->  		return;
->  	/* cancel ask HW to power down the L2 Cache if possible */
-> -	reg = readl(pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
-> -	reg &= ~PMSU_CONTROL_AND_CONFIG_L2_PWDDN;
-> -	writel(reg, pmsu_mp_base + PMSU_CONTROL_AND_CONFIG(hw_cpu));
-> +	reg = readl(pmsu_mp_base + PMSU_CTL_CFG(hw_cpu));
-> +	reg &= ~PMSU_CTL_CFG_L2_PWDDN;
-> +	writel(reg, pmsu_mp_base + PMSU_CTL_CFG(hw_cpu));
->  
->  	/* cancel Enable wakeup events and mask interrupts */
-> -	reg = readl(pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
-> -	reg &= ~(PMSU_STATUS_AND_MASK_IRQ_WAKEUP | PMSU_STATUS_AND_MASK_FIQ_WAKEUP);
-> -	reg &= ~PMSU_STATUS_AND_MASK_CPU_IDLE_WAIT;
-> -	reg &= ~PMSU_STATUS_AND_MASK_SNP_Q_EMPTY_WAIT;
-> -	reg &= ~(PMSU_STATUS_AND_MASK_IRQ_MASK | PMSU_STATUS_AND_MASK_FIQ_MASK);
-> -	writel(reg, pmsu_mp_base + PMSU_STATUS_AND_MASK(hw_cpu));
-> +	reg = readl(pmsu_mp_base + PMSU_STATUS_MSK(hw_cpu));
-> +	reg &= ~(PMSU_STATUS_MSK_IRQ_WAKEUP | PMSU_STATUS_MSK_FIQ_WAKEUP);
-> +	reg &= ~PMSU_STATUS_MSK_CPU_IDLE_WAIT;
-> +	reg &= ~PMSU_STATUS_MSK_SNP_Q_EMPTY_WAIT;
+> >> > A possible way around the problem is to use pm_suspend_ignore_children
+> >> > on the uvcvideo interface.  But I'm not sure that would be the right
+> >> > thing to do.
+> >>
+> >> Would that mean that if a device has ignore_children then it could
+> >> still do direct_complete even if its descendants weren't able to?
+> >
+> > I think we could justify that.  The ignore_children flag means we can
+> > communicate with the children even when the device is in runtime
+> > suspend, so there's no reason to force the device to leave runtime
+> > suspend during a system sleep.
+> 
+> IIUIC, what you are proposing is to use ignore_children in a way
+> similar to how force_direct_complete was used in this patch?
+> 
+> http://thread.gmane.org/gmane.linux.power-management.general/60198/focus=60292
 
-Can these two be combined?
+That message doesn't contain a patch.
 
-> +	reg &= ~(PMSU_STATUS_MSK_IRQ_MASK | PMSU_STATUS_MSK_FIQ_MASK);
-> +	writel(reg, pmsu_mp_base + PMSU_STATUS_MSK(hw_cpu));
->  }
->  
->  static int mvebu_v7_cpu_pm_notify(struct notifier_block *self,
-> @@ -521,16 +523,16 @@ static void mvebu_pmsu_dfs_request_local(void *data)
->  	local_irq_save(flags);
->  
->  	/* Prepare to enter idle */
-> -	reg = readl(pmsu_mp_base + PMSU_STATUS_AND_MASK(cpu));
-> -	reg |= PMSU_STATUS_AND_MASK_CPU_IDLE_WAIT |
-> -	       PMSU_STATUS_AND_MASK_IRQ_MASK     |
-> -	       PMSU_STATUS_AND_MASK_FIQ_MASK;
-> -	writel(reg, pmsu_mp_base + PMSU_STATUS_AND_MASK(cpu));
-> +	reg = readl(pmsu_mp_base + PMSU_STATUS_MSK(cpu));
-> +	reg |= PMSU_STATUS_MSK_CPU_IDLE_WAIT |
-> +	       PMSU_STATUS_MSK_IRQ_MASK     |
-> +	       PMSU_STATUS_MSK_FIQ_MASK;
+> That should work as well, but Rafael raised some objections and thus I
+> went with the present direct_complete_default, which should work if we
+> can relax the check as discussed above.
 
-Combine these?
+Rafael and I briefly discussed ignore_children while the original 
+direct_complete patch was being designed.  We didn't come to any 
+definite conclusion and decided to forget about it for the time being.  
+Maybe now would be a good time to reconsider it.
 
-	Andrew
+Alan Stern
+
