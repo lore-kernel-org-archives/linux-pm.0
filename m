@@ -1,117 +1,156 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
-Date: Fri, 3 Jul 2015 16:22:02 +0200
-Message-ID: <CAAObsKD1AbpkWytnA0=uwzUih-g4p-kXU8zSv-csnihCjvvteg@mail.gmail.com>
-References: <CAAObsKADoP4hhjoHD4xM0OZ9io93C9u=roC=d_-_KrGfGqYW7Q@mail.gmail.com>
- <Pine.LNX.4.44L0.1507031007230.19910-100000@netrider.rowland.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v4 3/8] clk: add support for clocks provided by SCP(System
+ Control Processor)
+Date: Fri, 03 Jul 2015 15:52:38 +0100
+Message-ID: <5596A1B6.8020307@arm.com>
+References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com> <1433760002-24120-4-git-send-email-sudeep.holla@arm.com> <20150702172310.GF4301@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f169.google.com ([209.85.212.169]:36065 "EHLO
-	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755083AbbGCOWX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 10:22:23 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1507031007230.19910-100000@netrider.rowland.org>
+Received: from foss.arm.com ([217.140.101.70]:53655 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755443AbbGCOwn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 3 Jul 2015 10:52:43 -0400
+In-Reply-To: <20150702172310.GF4301@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@linaro.org>
 
-On 3 July 2015 at 16:16, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Fri, 3 Jul 2015, Tomeu Vizoso wrote:
->
->> On 2 July 2015 at 17:21, Alan Stern <stern@rowland.harvard.edu> wrote:
->> > On Thu, 2 Jul 2015, Tomeu Vizoso wrote:
->> >
->> >> > Just because these sub-devices are virtual, it doesn't mean you can
->> >> > ignore the way they interact with runtime PM.
->> >>
->> >> Fair enough, but then, how are we expected to be able to use the
->> >> direct_complete facility if the core bails out if a descendant doesn't
->> >> have runtime PM enabled?
->> >>
->> >> > In the case of ep_87 this doesn't matter.  Endpoint devices (like all
->> >> > devices) are in the SUSPENDED state by default when they are created,
->> >> > and they never leave that state.
->> >>
->> >> I don't see why it doesn't matter for endpoints or the others. They
->> >> don't have runtime PM enabled, so no ancestor will be able to do
->> >> direct_complete.
->> >
->> > Ah, you're concerned about these lines near the start of
->> > __device_suspend():
->> >
->> >         if (dev->power.direct_complete) {
->> >                 if (pm_runtime_status_suspended(dev)) {
->> >                         pm_runtime_disable(dev);
->> >                         if (pm_runtime_suspended_if_enabled(dev))
->> >                                 goto Complete;
->> >
->> >                         pm_runtime_enable(dev);
->> >                 }
->> >                 dev->power.direct_complete = false;
->> >         }
->> >
->> > Perhaps the pm_runtime_suspended_if_enabled() test should be changed to
->> > pm_runtime_status_suspended().  Then it won't matter whether the
->> > descendant devices are enabled for runtime PM.
+Hi Stephen,
+
+
+Thanks for the review.
+
+On 02/07/15 18:23, Stephen Boyd wrote:
+> On 06/08, Sudeep Holla wrote:
+>> diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
+>> index 9897f353bf1a..0fe8daefc105 100644
+>> --- a/drivers/clk/Kconfig
+>> +++ b/drivers/clk/Kconfig
+>> @@ -59,6 +59,16 @@ config COMMON_CLK_RK808
+>>   	  clocked at 32KHz each. Clkout1 is always on, Clkout2 can off
+>>   	  by control register.
 >>
->> Yeah, that would remove the need for messing with the runtime PM
->> enable status of descendant devices, but I wonder why Rafael went that
->> way initially.
+>> +config COMMON_CLK_SCPI
+>> +        tristate "Clock driver controlled via SCPI interface"
+>> +        depends on ARM_SCPI_PROTOCOL || COMPILE_TEST
+>> +        ---help---
+>> +          This driver provides support for clocks that are controlled
+>> +          by firmware that implements the SCPI interface.
+>> +
+>> +	  This driver uses SCPI Message Protocol to interact with the
+>> +	  firmware providing all the clock controls.
 >
-> I forget the details.  Probably it was just to be safe.  We probably
-> thought that if a device was disabled for runtime PM then its runtime
-> PM status might not be accurate.  But if direct_complete is set then it
-> may be reasonable to assume that the runtime PM status _is_ accurate.
-
-Cool.
-
->> >> > A possible way around the problem is to use pm_suspend_ignore_children
->> >> > on the uvcvideo interface.  But I'm not sure that would be the right
->> >> > thing to do.
->> >>
->> >> Would that mean that if a device has ignore_children then it could
->> >> still do direct_complete even if its descendants weren't able to?
->> >
->> > I think we could justify that.  The ignore_children flag means we can
->> > communicate with the children even when the device is in runtime
->> > suspend, so there's no reason to force the device to leave runtime
->> > suspend during a system sleep.
->>
->> IIUIC, what you are proposing is to use ignore_children in a way
->> similar to how force_direct_complete was used in this patch?
->>
->> http://thread.gmane.org/gmane.linux.power-management.general/60198/focus=60292
+> The tabbing is weird here. Both paragraphs should have the same
+> alignment.
 >
-> That message doesn't contain a patch.
 
-The patch is at the top of the thread:
+Indeed, sorry for that, fixed now.
 
-http://thread.gmane.org/gmane.linux.power-management.general/60198/focus=60292
-
->> That should work as well, but Rafael raised some objections and thus I
->> went with the present direct_complete_default, which should work if we
->> can relax the check as discussed above.
+>> diff --git a/drivers/clk/clk-scpi.c b/drivers/clk/clk-scpi.c
+>> new file mode 100644
+>> index 000000000000..707b3430c55f
+>> --- /dev/null
+>> +++ b/drivers/clk/clk-scpi.c
+>> +
+>> +#include <linux/clk-provider.h>
+>> +#include <linux/device.h>
+>> +#include <linux/err.h>
+>> +#include <linux/of.h>
+>> +#include <linux/module.h>
+>> +#include <linux/of_platform.h>
+>> +#include <linux/scpi_protocol.h>
 >
-> Rafael and I briefly discussed ignore_children while the original
-> direct_complete patch was being designed.  We didn't come to any
-> definite conclusion and decided to forget about it for the time being.
-> Maybe now would be a good time to reconsider it.
-
-I would prefer to have ignore_children ignore whether the children of
-a device were able to do direct_complete, rather than having a
-direct_complete_default flag (plus not requiring that all its
-descendants have runtime PM enabled).
-
-Thanks,
-
-Tomeu
-
-> Alan Stern
+> Please include <linux/platform_device.h> as well.
 >
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
+Added now, didn't bother as of_platform.h includes it.
+
+>> +
+>> +struct scpi_clk {
+>> +	u32 id;
+>> +	const char *name;
+>
+> Do you need this? Or can you just use __clk_get_name() in places
+> where the name is used?
+>
+
+Not used, so removed it.
+
+
+[...]
+
+>> +static long scpi_clk_round_rate(struct clk_hw *hw, unsigned long rate,
+>> +				unsigned long *parent_rate)
+>> +{
+>
+> Maybe a comment here like:
+>
+> /*
+>   * We can't figure out what rate it will be, so just return the rate
+>   * back to the caller. scpi_clk_recalc_rate() will be called
+>   * after the rate is set and we'll know what rate the clock is
+>   * running at then.
+>   */
+>
+
+Done
+
+>> +	return rate;
+>> +}
+>> +
+>> +static int scpi_clk_set_rate(struct clk_hw *hw, unsigned long rate,
+>> +			     unsigned long parent_rate)
+>> +{
+>> +	struct scpi_clk *clk = to_scpi_clk(hw);
+>> +
+>> +	return clk->scpi_ops->clk_set_val(clk->id, rate);
+>> +}
+>> +
+>> +static void scpi_clk_disable(struct clk_hw *hw)
+>> +{
+>> +	scpi_clk_set_rate(hw, 0, 0);
+>
+> Does this mean you have to set a rate to enable the clock? Are
+> you relying on drivers to call clk_set_rate() to implicitly
+> enable the clock? If so, it would be better to cache the rate of
+> the clock in set_rate if the clock isn't enabled in software and
+> then send the cached rate during enable.
+>
+
+Agreed, I have asked the firmware/SCPI specification guys about
+more details on what to expect from firmware. Once they get back,
+will update the code considering your feedback.
+
+[...]
+
+>> +static int __scpi_find_dvfs_index(struct scpi_clk *clk, unsigned long rate)
+>> +{
+>> +	int idx, max_opp = clk->info->count;
+>> +	struct scpi_opp *opp = clk->info->opps;
+>
+> const?
+>
+
+All the 3 above fixed now.
+
+[...]
+
+>> +
+>> +	clk = devm_clk_register(dev, &sclk->hw);
+>> +	if (!IS_ERR(clk) && max)
+>> +		clk_set_rate_range(clk, min, max);
+>
+> Hm.. we're planning to make clk_register() return a struct
+> clk_hw, so this will block that. We need some sort of clk_hw API
+> that allows us to setup min/max limits on the clock from the
+> provider side. Care to add that?
+>
+
+Can you provide pointer to the patches or the tree containing those
+changes ? Are they targeted for v4.3 ?
+
+Regards,
+Sudeep
