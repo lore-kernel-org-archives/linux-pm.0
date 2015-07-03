@@ -1,145 +1,209 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH RFC v2 09/16] arm: domain: Add platform callbacks for
- domain power on/off
-Date: Fri, 3 Jul 2015 13:36:22 +0200
-Message-ID: <CAMuHMdWQRy2RMfyeyNz=6AgTDem67a1VogN3RWSJ1Y+9yNFx6g@mail.gmail.com>
-References: <1435374156-19214-1-git-send-email-lina.iyer@linaro.org>
-	<1435374156-19214-10-git-send-email-lina.iyer@linaro.org>
-	<CAMuHMdULThWEZmyLEK_9WeK6DSNhrQdiZQLWNhi1Q6dwZTkkMg@mail.gmail.com>
-	<20150629163201.GA1524@linaro.org>
-	<CAMuHMdWL09Loe2EFUMc-kRML7Ckn7a6G1_hvPnaqkDYnhkXjog@mail.gmail.com>
-	<20150702193826.GA885@linaro.org>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH v2 2/4] ARM: mvebu: Add standby support
+Date: Fri, 03 Jul 2015 13:39:49 +0200
+Message-ID: <55967485.2010607@free-electrons.com>
+References: <1435684740-24912-1-git-send-email-gregory.clement@free-electrons.com>	<1435684740-24912-3-git-send-email-gregory.clement@free-electrons.com> <20150701174709.2d55007d@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f53.google.com ([209.85.218.53]:35571 "EHLO
-	mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754858AbbGCLgW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 07:36:22 -0400
-Received: by oihr66 with SMTP id r66so20431483oih.2
-        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2015 04:36:22 -0700 (PDT)
-In-Reply-To: <20150702193826.GA885@linaro.org>
+Received: from down.free-electrons.com ([37.187.137.238]:34442 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754689AbbGCLjw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 07:39:52 -0400
+In-Reply-To: <20150701174709.2d55007d@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Lina,
+Hi Thomas,
 
-On Thu, Jul 2, 2015 at 9:38 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
-> On Tue, Jun 30 2015 at 09:10 -0600, Geert Uytterhoeven wrote:
->> On Mon, Jun 29, 2015 at 6:32 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
->>> On Mon, Jun 29 2015 at 07:36 -0600, Geert Uytterhoeven wrote:
->
->> Perhaps the generic one can be optional, and provide helpers for common
->> CPU operations? Then the platform-specific driver can handle all PM
->> domains,
->> and delegate to the generic CPU helpers where appropriate.
+On 01/07/2015 17:47, Thomas Petazzoni wrote:
+> Dear Gregory CLEMENT,
+> 
+> On Tue, 30 Jun 2015 19:18:58 +0200, Gregory CLEMENT wrote:
+>> Until now only one Armada XP and one Armada 388 based board supported
+>> suspend to ram. However, most of the recent mvebu SoCs can support the
+>> standby mode. Unlike for the suspend to ram, nothing special have to
+> 
+> have -> has
+> 
+>> be done for these SoCs. This patch allows the system to use the
+>> standby mode on Armada 370, 38x, 39x and XP SoCs. There are issues
+>> with the Armada 375, and the support would be added (if possible) in a
+> 
+> would -> might
+> 
+>> future patch.
 >>
->> Does that make sense?
->>
-> Well it does. Thanks Geert. My RFC v1 [1] did exacly that. But, it didnt
-> fit into the big picture of things well.
->
-> Here is where we wanted to head towards, in the long run. Today, we have
-> CPU_PM for CPU runtime and we have runtime PM for others, we want to
-> unify and move to a generic runtime PM for the CPUs as well. To that
-> effort, we want to bring in generic code all into the fold of CPU
-> runtime PM and CPU domain runtime PM. A generic CPU PM domain with its
-> own genpd callback for ->power_on() and ->power_off() would help handle
-> the common power on/off stuff there and possibly call into GIC and
-> others that currently use CPU_PM from there.  So the common node needs
-> to be the handle of power on/off callbacks from the genpd, when all the
-> CPUs are entering idle or resuming.
+>> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+>> ---
+>>  arch/arm/mach-mvebu/common.h   |  5 ++--
+>>  arch/arm/mach-mvebu/pm-board.c | 17 ++++++++-----
+>>  arch/arm/mach-mvebu/pm.c       | 57 ++++++++++++++++++++++++++++++++++++------
+>>  3 files changed, 64 insertions(+), 15 deletions(-)
+> 
+> On the implementation side, this is much more complicated that it needs
+> to be I believe. You don't need this mechanism to register the
+> board-specific hook. Just make pm.c register the suspend_ops in a
+> late_initcall(), and the pm-board.c register the board specific hook in
+> a late_initcall(), and have pm.c say that it supports suspend to RAM
+> only if the board-specific hook has been registered.
 
-Agreed.
+Having 2 initcall does not work because, there is a dependency between these
+2 calls. And actually the suspend_ops is registered before the board specific
+hook. As soon as the suspend_ops is registered, mvebu_pm_valid() is called but
+at this point mvebu_board_pm_enter is NULL so PM_SUSPEND_MEM is not available.
 
-> With what you have suggested, the platform driver creates the genpd and
-> would pass the CPU genpd to the common code for common operations. (This
-> was what was done in [1]). The platform driver would set the power_on()
-> and power_off() callbacks and that would have to be overriden in order
-> handle common CPU domain suspend/resume activities. Overwriting members
-> of an object allocated by the platform driver, is something we should
-> avoid.
+All the complexity of the original patch was to allow registering a handler
+without needed to get the resource(gpio device) that are not available when using
+arch_initcall(). However the device_initcall_sync comes latter enough to
+get all the devices registered but it still happens before the late_initcall,
+so I will use this one and I will add a comment around it.
 
-Instead of letting the generic code override the .power_{on,off}() callbacks,
-the platform code could call the generic CPU-related methods from its own
-.power_{on,off}() callbacks?
+Thanks,
 
-struct rmobile_pm_domain already has .suspend() and .resume() methods.
-The former is used to e.g. prevent the PM domains containing CPUs to be
-powered down (in the absence of cpuidle integration). That requires scanning
-the DT for CPUs, and it would indeed be good to have that scanning support
-in generic code.
-The latter became unused after the removal of sh7372 support, which did have
-some cpuidle integration.
+Gregory
 
-> Or instead of allocating the memory in your platform driver for the CPU
-> genpd, you could query and get the genpd and then add your additions on
-> top. You could add other flags like GENPD_FLAG_PM_CLK, but *not*
-> overwrite the power on/off callbacks in the genpd. They still have to be
-> registered separately like in this patch. Again, not every elegant, IMO.
 
-Just wondering, can I set up the .attach_dev() and .detach_dev()?
+> 
+> Something like the below (only compile tested, not runtime tested) :
+> 
+> commit 0b74c5b2916cb4be216bd2c607faf5c10a482284
+> Author: Gregory CLEMENT <gregory.clement@free-electrons.com>
+> Date:   Tue Jun 30 19:18:58 2015 +0200
+> 
+>     ARM: mvebu: Add standby support
+>     
+>     Until now only one Armada XP and one Armada 388 based board supported
+>     suspend to ram. However, most of the recent mvebu SoCs can support the
+>     standby mode. Unlike for the suspend to ram, nothing special have to
+>     be done for these SoCs. This patch allows the system to use the
+>     standby mode on Armada 370, 38x, 39x and XP SoCs. There are issues
+>     with the Armada 375, and the support would be added (if possible) in a
+>     future patch.
+>     
+>     Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+> 
+> diff --git a/arch/arm/mach-mvebu/common.h b/arch/arm/mach-mvebu/common.h
+> index 3e0aca1..6b77549 100644
+> --- a/arch/arm/mach-mvebu/common.h
+> +++ b/arch/arm/mach-mvebu/common.h
+> @@ -25,6 +25,6 @@ int mvebu_system_controller_get_soc_id(u32 *dev, u32 *rev);
+>  
+>  void __iomem *mvebu_get_scu_base(void);
+>  
+> -int mvebu_pm_init(void (*board_pm_enter)(void __iomem *sdram_reg, u32 srcmd));
+> -
+> +int mvebu_pm_suspend_init(void (*board_pm_enter)(void __iomem *sdram_reg,
+> +							u32 srcmd));
+>  #endif
+> diff --git a/arch/arm/mach-mvebu/pm-board.c b/arch/arm/mach-mvebu/pm-board.c
+> index acc69e3..4dccc64 100644
+> --- a/arch/arm/mach-mvebu/pm-board.c
+> +++ b/arch/arm/mach-mvebu/pm-board.c
+> @@ -135,7 +135,7 @@ static int __init mvebu_armada_pm_init(void)
+>  	if (!gpio_ctrl)
+>  		return -ENOMEM;
+>  
+> -	mvebu_pm_init(mvebu_armada_pm_enter);
+> +	mvebu_pm_suspend_init(mvebu_armada_pm_enter);
+>  
+>  out:
+>  	of_node_put(np);
+> diff --git a/arch/arm/mach-mvebu/pm.c b/arch/arm/mach-mvebu/pm.c
+> index f249c8e..db31cbb 100644
+> --- a/arch/arm/mach-mvebu/pm.c
+> +++ b/arch/arm/mach-mvebu/pm.c
+> @@ -204,13 +204,10 @@ static int mvebu_pm_store_bootinfo(void)
+>  	return 0;
+>  }
+>  
+> -static int mvebu_pm_enter(suspend_state_t state)
+> +static int mvebu_enter_suspend(void)
+>  {
+>  	int ret;
+>  
+> -	if (state != PM_SUSPEND_MEM)
+> -		return -EINVAL;
+> -
+>  	ret = mvebu_pm_store_bootinfo();
+>  	if (ret)
+>  		return ret;
+> @@ -226,16 +223,57 @@ static int mvebu_pm_enter(suspend_state_t state)
+>  	set_cpu_coherent();
+>  
+>  	cpu_pm_exit();
+> +	return 0;
+> +}
+> +
+> +static int mvebu_pm_enter(suspend_state_t state)
+> +{
+> +	switch (state) {
+> +	case PM_SUSPEND_STANDBY:
+> +		cpu_do_idle();
+> +		break;
+> +	case PM_SUSPEND_MEM:
+> +		return mvebu_enter_suspend();
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int mvebu_pm_valid(suspend_state_t state)
+> +{
+> +	if (state == PM_SUSPEND_STANDBY)
+> +		return 1;
+> +
+> +	if (state == PM_SUSPEND_MEM && mvebu_board_pm_enter != NULL)
+> +		return 1;
+>  
+>  	return 0;
+>  }
+>  
+>  static const struct platform_suspend_ops mvebu_pm_ops = {
+>  	.enter = mvebu_pm_enter,
+> -	.valid = suspend_valid_only_mem,
+> +	.valid = mvebu_pm_valid,
+>  };
+>  
+> -int __init mvebu_pm_init(void (*board_pm_enter)(void __iomem *sdram_reg, u32 srcmd))
+> +static int __init mvebu_pm_init(void)
+> +{
+> +	if (!of_machine_is_compatible("marvell,armadaxp") &&
+> +	    !of_machine_is_compatible("marvell,armada370") &&
+> +	    !of_machine_is_compatible("marvell,armada380") &&
+> +	    !of_machine_is_compatible("marvell,armada390"))
+> +		return -ENODEV;
+> +
+> +	suspend_set_ops(&mvebu_pm_ops);
+> +
+> +	return 0;
+> +}
+> +
+> +
+> +late_initcall(mvebu_pm_init);
+> +
+> +int __init mvebu_pm_suspend_init(void (*board_pm_enter)(void __iomem *sdram_reg,
+> +							u32 srcmd))
+>  {
+>  	struct device_node *np;
+>  	struct resource res;
+> @@ -267,7 +305,5 @@ int __init mvebu_pm_init(void (*board_pm_enter)(void __iomem *sdram_reg, u32 src
+>  
+>  	mvebu_board_pm_enter = board_pm_enter;
+>  
+> -	suspend_set_ops(&mvebu_pm_ops);
+> -
+>  	return 0;
+>  }
+> 
 
-Actually, for R-Mobile hardware I don't have a need to set GENPD_FLAG_PM_CLK
-or .attach_dev() and .detach_dev() for CPU PM domains, as they are only
-needed for devices with MSTP clocks. CPU and L2 cache don't have these,
-and there are no other devices in e.g. a3sm and a2sl.
 
-The GIC has an MSTP clock, but it's part of a different power domain.
-
-> Another option, that might be cleaner, is that we could have a PM domain
-> for CPUs that would set up the compatibility flag to "arm,pd" and you
-> could nest that domain inside pd_a2sl and pd_a2kl.
->
-> pd_c4: c4@0 {
->         [...]
->         pd_a3sm: a3sm@20 {
->                 [...]
->                 pd_a2sl: a2sl@21 {
->                         reg = <21>;
->                         #power-domain-cells = <0>;
->                         pd_cpu_sl: pd1 { <-- Virtual PM domain
->                                 #power-domain-cells = <0>;
->                         };
->                 };
->         };
-> };
->
-> cpus {
->         cpu0: cpu@0 {
->                 compatible = "arm,cortex-a15";
->                 power-domains = <&pd_cpu_sl>; <-- here we refer to the
->                                                   virtual PM domain
->                 next-level-cache = <&L2_CA15>;
->        };
->         [...]
-> };
->
-> This the common code would get its own callbacks and when that genpd
-> powers off, the platform genpd would power down. But no new code is
-> needed in your platform driver. The benefit is that platform code and
-> generic CPU domain code may exist and act in parallel and may only be
-> related if specified in the DT and the problem with that approach is
-> that this virtual PM domain is not a h/w domain, hence specifying in DT
-> is questionable.
-
-Indeed, I don't like this option, as the DT would no longer describe HW,
-but the Linux implementation.
-
-So let's continue with your approach, and see how it turns out. We can
-always change and improvide code, while changing DT is more complicated.
-
-Thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
