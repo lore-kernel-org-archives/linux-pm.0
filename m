@@ -1,201 +1,147 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH 2/4] PM / devfreq: cache the last call to get_dev_status()
-Date: Sat, 4 Jul 2015 12:15:51 +0900
-Message-ID: <CAJ0PZbQV7t7DL3WYojPKwUc3B36juHZiv0kGANawhZYQ0VoH3g@mail.gmail.com>
-References: <1435928310-15938-1-git-send-email-javi.merino@arm.com> <1435928310-15938-3-git-send-email-javi.merino@arm.com>
-Reply-To: myungjoo.ham@gmail.com
+From: PINTU KUMAR <pintu_agarwal@yahoo.com>
+Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
+ feature
+Date: Sat, 4 Jul 2015 06:04:37 +0000 (UTC)
+Message-ID: <1643824843.2299688.1435989877460.JavaMail.yahoo@mail.yahoo.com>
+References: <20150703183809.GA6781@cmpxchg.org>
+Reply-To: PINTU KUMAR <pintu_agarwal@yahoo.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f169.google.com ([209.85.223.169]:36863 "EHLO
-	mail-ie0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755346AbbGDDQG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 23:16:06 -0400
-Received: by iecvh10 with SMTP id vh10so85765402iec.3
-        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2015 20:16:06 -0700 (PDT)
-In-Reply-To: <1435928310-15938-3-git-send-email-javi.merino@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20150703183809.GA6781@cmpxchg.org>
+Sender: owner-linux-mm@kvack.org
+To: Johannes Weiner <hannes@cmpxchg.org>, Pintu Kumar <pintu.k@samsung.com>
+Cc: "corbet@lwn.net" <corbet@lwn.net>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "vbabka@suse.cz" <vbabka@suse.cz>, "gorcunov@openvz.org" <gorcunov@openvz.org>, "mhocko@suse.cz" <mhocko@suse.cz>, "emunson@akamai.com" <emunson@akamai.com>, "kirill.shutemov@linux.intel.com" <kirill.shutemov@linux.intel.com>, "standby24x7@gmail.com" <standby24x7@gmail.com>, "vdavydov@parallels.com" <vdavydov@parallels.com>, "hughd@google.com" <hughd@google.com>, "minchan@kernel.org" <minchan@kernel.org>, "tj@kernel.org" <tj@kernel.org>, "rientjes@google.com" <rientjes@google.com>, "xypron.glpk@gmx.de" <xypron.glpk@gmx.de>, "dzickus@redhat.com" <dzickus@redhat.com>, "prarit@redhat.com" <prarit@redhat.com>, "ebiederm@xmission.com" <ebiederm@xmission.com>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "uobergfe@redhat.com" <uobergfe@redhat.com>, paulmck@linu
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>
 
-On Fri, Jul 3, 2015 at 9:58 PM, Javi Merino <javi.merino@arm.com> wrote:
-> The return value of get_dev_status() can be reused.  Cache it so that
-> other parts of the kernel can reuse it instead of having to call the
-> same function again.
+Hi,
+
+Thanks for reviewing the patch.
+Please find my comments inline.
+
+>________________________________
+> From: Johannes Weiner <hannes@cmpxchg.org>
+>To: Pintu Kumar <pintu.k@samsung.com> 
+>Cc: corbet@lwn.net; akpm@linux-foundation.org; vbabka@suse.cz; gorcunov@openvz.org; mhocko@suse.cz; emunson@akamai.com; kirill.shutemov@linux.intel.com; standby24x7@gmail.com; vdavydov@parallels.com; hughd@google.com; minchan@kernel.org; tj@kernel.org; rientjes@google.com; xypron.glpk@gmx.de; dzickus@redhat.com; prarit@redhat.com; ebiederm@xmission.com; rostedt@goodmis.org; uobergfe@redhat.com; paulmck@linux.vnet.ibm.com; iamjoonsoo.kim@lge.com; ddstreet@ieee.org; sasha.levin@oracle.com; koct9i@gmail.com; mgorman@suse.de; cj@linux.com; opensource.ganesh@gmail.com; vinmenon@codeaurora.org; linux-doc@vger.kernel.org; linux-kernel@vger.kernel.org; linux-mm@kvack.org; linux-pm@vger.kernel.org; cpgs@samsung.com; pintu_agarwal@yahoo.com; vishnu.ps@samsung.com; rohit.kr@samsung.com; iqbal.ams@sa
+ msung.com 
+>Sent: Saturday, 4 July 2015 12:08 AM
+>Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory feature
+> 
 >
-> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Cc: Kyungmin Park <kyungmin.park@samsung.com>
-> Signed-off-by: Javi Merino <javi.merino@arm.com>
-> ---
->  drivers/devfreq/devfreq.c                 |  5 +++++
->  drivers/devfreq/governor_simpleondemand.c | 33 +++++++++++++++++--------------
->  include/linux/devfreq.h                   |  7 +++++++
->  3 files changed, 30 insertions(+), 15 deletions(-)
+>On Fri, Jul 03, 2015 at 06:50:07PM +0530, Pintu Kumar wrote:
+>> This patch provides 2 things:
+>> 1. Add new control called shrink_memory in /proc/sys/vm/.
+>> This control can be used to aggressively reclaim memory system-wide
+>> in one shot from the user space. A value of 1 will instruct the
+>> kernel to reclaim as much as totalram_pages in the system.
+>> Example: echo 1 > /proc/sys/vm/shrink_memory
+>> 
+>> 2. Enable shrink_all_memory API in kernel with new CONFIG_SHRINK_MEMORY.
+>> Currently, shrink_all_memory function is used only during hibernation.
+>> With the new config we can make use of this API for non-hibernation case
+>> also without disturbing the hibernation case.
+>> 
+>> The detailed paper was presented in Embedded Linux Conference, Mar-2015
+>> http://events.linuxfoundation.org/sites/events/files/slides/
+>> %5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
+>> 
+>> Scenarios were this can be used and helpful are:
+>> 1) Can be invoked just after system boot-up is finished.
+>
+>The allocator automatically reclaims when memory is needed, that's why
+>the metrics quoted in those slides, free pages and fragmentation level,
+>don't really mean much.  We don't care how much memory is free or how
+>fragmented it is UNTIL somebody actually asks for it.  The only metric
+>that counts is the allocation success ratio (and possibly the latency).
+
 >
 
-What if there are two entities using the stat at the same time? If you
-are going to have the status at a shared object (struct devfreq), you
-need to consider racing conditions as well: two threads accessing
-last_status at the same time, resulting in calling
-devfreq_update_stats() while the other has called it beforehand and
-using the variables in the stat struct. By doing it locally (having
-stat as struct devfreq_dev_status, not a pointer), we can avoid such
-problems. The object (struct devfreq_dev_status) it not guaranteed to
-be accessed by the governor only.
+Yes, the allocator automatically reclaims memory but in the slowpath. Also it reclaims only to satisfy the current allocation needs. That means for all future higher-order allocations the system will be entering slowpath again and again. Over a point of time (with multiple application launch), the higher-orders (2^4 and above) will be gone. The system entering slowpath means that the first allocation attempt has already failed. Then in slowpath the sequence is: kswapd -> compaction -> then direct reclaim. Thus entering slowpath again and again will be a costly operation. 
 
+Thus keeping free memory ready in higher-order pages will be helpful for succeeding first allocation attempt.
 
-Or do you intend to share the stat value with another entity, with the
-assumption that only one will be calling devfreq_update_stats() ?
-In that case, what if the one who's supposed to call
-devfreq_update_stats() is paused? For example, what if the user has
-switched the governor from simpleondemand to userspace or performance?
+This is important at least in the embedded world with IOMMU (order 8,4,0) allocation.
+For example: in the Android ION system-heap driver.
+I will cover this example in the next patch set.
 
+For now, it is just about implementing a command, in user space.
+# echo 1 > /proc/sys/vm/shrink_memory
 
-Cheers,
-MyungJoo.
-
-
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 6390d5db6816..d253a73f2b86 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -810,6 +810,11 @@ unlock:
->  }
->  EXPORT_SYMBOL(devfreq_qos_set_min);
->
-> +int devfreq_update_stats(struct devfreq *df)
-> +{
-> +       return df->profile->get_dev_status(df->dev.parent, &df->last_status);
-> +}
-> +
->  static ssize_t governor_show(struct device *dev,
->                              struct device_attribute *attr, char *buf)
->  {
-> diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
-> index 0720ba84ca92..ae72ba5e78df 100644
-> --- a/drivers/devfreq/governor_simpleondemand.c
-> +++ b/drivers/devfreq/governor_simpleondemand.c
-> @@ -21,17 +21,20 @@
->  static int devfreq_simple_ondemand_func(struct devfreq *df,
->                                         unsigned long *freq)
->  {
-> -       struct devfreq_dev_status stat;
-> -       int err = df->profile->get_dev_status(df->dev.parent, &stat);
-> +       int err;
-> +       struct devfreq_dev_status *stat;
->         unsigned long long a, b;
->         unsigned int dfso_upthreshold = DFSO_UPTHRESHOLD;
->         unsigned int dfso_downdifferential = DFSO_DOWNDIFFERENCTIAL;
->         struct devfreq_simple_ondemand_data *data = df->data;
->         unsigned long max = (df->max_freq) ? df->max_freq : UINT_MAX;
->
-> +       err = devfreq_update_stats(df);
->         if (err)
->                 return err;
->
-> +       stat = &df->last_status;
-> +
->         if (data) {
->                 if (data->upthreshold)
->                         dfso_upthreshold = data->upthreshold;
-> @@ -43,41 +46,41 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
->                 return -EINVAL;
->
->         /* Assume MAX if it is going to be divided by zero */
-> -       if (stat.total_time == 0) {
-> +       if (stat->total_time == 0) {
->                 *freq = max;
->                 return 0;
->         }
->
->         /* Prevent overflow */
-> -       if (stat.busy_time >= (1 << 24) || stat.total_time >= (1 << 24)) {
-> -               stat.busy_time >>= 7;
-> -               stat.total_time >>= 7;
-> +       if (stat->busy_time >= (1 << 24) || stat->total_time >= (1 << 24)) {
-> +               stat->busy_time >>= 7;
-> +               stat->total_time >>= 7;
->         }
->
->         /* Set MAX if it's busy enough */
-> -       if (stat.busy_time * 100 >
-> -           stat.total_time * dfso_upthreshold) {
-> +       if (stat->busy_time * 100 >
-> +           stat->total_time * dfso_upthreshold) {
->                 *freq = max;
->                 return 0;
->         }
->
->         /* Set MAX if we do not know the initial frequency */
-> -       if (stat.current_frequency == 0) {
-> +       if (stat->current_frequency == 0) {
->                 *freq = max;
->                 return 0;
->         }
->
->         /* Keep the current frequency */
-> -       if (stat.busy_time * 100 >
-> -           stat.total_time * (dfso_upthreshold - dfso_downdifferential)) {
-> -               *freq = stat.current_frequency;
-> +       if (stat->busy_time * 100 >
-> +           stat->total_time * (dfso_upthreshold - dfso_downdifferential)) {
-> +               *freq = stat->current_frequency;
->                 return 0;
->         }
->
->         /* Set the desired frequency based on the load */
-> -       a = stat.busy_time;
-> -       a *= stat.current_frequency;
-> -       b = div_u64(a, stat.total_time);
-> +       a = stat->busy_time;
-> +       a *= stat->current_frequency;
-> +       b = div_u64(a, stat->total_time);
->         b *= 100;
->         b = div_u64(b, (dfso_upthreshold - dfso_downdifferential / 2));
->         *freq = (unsigned long) b;
-> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-> index ffbe1f62ec2c..be351cfacec8 100644
-> --- a/include/linux/devfreq.h
-> +++ b/include/linux/devfreq.h
-> @@ -161,6 +161,7 @@ struct devfreq {
->         struct delayed_work work;
->
->         unsigned long previous_freq;
-> +       struct devfreq_dev_status last_status;
->
->         void *data; /* private data for governors */
->
-> @@ -206,6 +207,7 @@ extern void devm_devfreq_unregister_opp_notifier(struct device *dev,
->
->  int devfreq_qos_set_min(struct devfreq *df, unsigned long value);
->  int devfreq_qos_set_max(struct devfreq *df, unsigned long value);
-> +int devfreq_update_stats(struct devfreq *df);
->
->  #if IS_ENABLED(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)
->  /**
-> @@ -302,6 +304,11 @@ static inline int devfreq_qos_set_max(struct devfreq *df, unsigned long value)
->  {
->         return -EINVAL;
->  }
-> +
-> +static inline int devfreq_update_stats(struct devfreq *df)
-> +{
-> +       return -EINVAL;
-> +}
->  #endif /* CONFIG_PM_DEVFREQ */
->
->  #endif /* __LINUX_DEVFREQ_H__ */
-> --
-> 1.9.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+If somebody interested they can use it by enabling CONFIG_SHRINK_MEMORY.
 
 
+The scenario that is discussed here is about:
+Invoking shrink_memory from user space, as soon as the system boot is finished.
+Because as per my observation, the buffer+caches that is accumulated during boot-up is not very helpful for the system for later application launch.
+Thus reclaiming all memory in shot after the boot-up will help grab higher-order pages and freeing lots of memory. Also the reclaimed memory stays in as actual free memory. The cached that gets accumulated after the application launch will be having more hits.
+It is like a little advanced version of drop_caches.
 
--- 
-MyungJoo Ham, Ph.D.
-Frontier CS Lab, S/W Center, Samsung Electronics
+>> 2) Can be invoked just before entering entire system suspend.
+>
+>Why is that?  Suspend already allocates as much as it needs to create
+
+>the system image.
+
+Sorry, but I think you got it wrong here. We are not talking about snapshot image creation part that comes under hibernation.
+We are talking about the mobile world, where the system gets suspended when it is kept idle for longer time. The hibernation part does not comes here.
+The idea is that the shrink_memory can be best utilized when the system is not doing any useful stuffs and going from idle to suspend. In this scenario, we can check the state of free memory and perform the system-wide reclaim if necessary. Thus when the system resume again, it will have enough memory as free.
+Again, this is mainly for embedded world where hibernation is not enabled.
+For normal world, it already does it during hibernation snapshot image creation.
+
+Anyways, its an idea that people can utilize it if required and not always enabled.
+
+>
+>> 3) Can be invoked from kernel when order-4 pages starts failing.
+>
+>We have compaction for that, and compaction invokes page reclaim
+
+>automatically to satisfy its need for free pages.
+
+It is not always true. Compaction may not be always successful. Again it is related to slowpath. When order-4 starts failing very often that means all higher-orders becomes 0. Thus system will be entering slowpath again and again, doing swap, compaction, reclaim most of the time.
+And even for compaction, there is a knob in user space to call compaction from user space:
+#echo 1 > /proc/sys/vm/compact_memory
+
+
+Similarly, we can have an interface for direct reclaim from user space.
+>
+>> 4) Can be helpful to completely avoid or delay the kerenl OOM condition.
+>
+>That's not how OOM works.  An OOM is triggered when there is demand for
+>memory but no more pages to reclaim, telling the kernel to look harder
+>will not change that.
+
+>
+Yes, I know this. I am not talking about calling shrink_memory after OOM. 
+
+Rather much before OOM when the first attempt of higher-order starts failing.
+This will delay the OOM to a much later stage.
+
+Already explained above.
+>
+>> 5) Can be developed as a system-tool to quickly defragment entire system
+>>    from user space, without the need to kill any application.
+>
+>Again, the kernel automatically reclaims and compacts memory on demand.
+>If the existing mechanisms don't do this properly, and you have actual
+>problems with them, they should be reported and fixed, not bypassed.
+>But the metrics you seem to base this change on are not representative
+
+>of something that should matter in practice.
+
+It is not always guaranteed that compaction/reclaim _did_some_progress_ always yield some results on the fly. It takes sometime to get sync with the free memory.
+Thus keeping the free list ready before hand will be much more helpful.
+
+Anyways, the use case here is to develop a system utility which can perform compaction/reclaim/compaction aggressively.
+Its an additional idea that somebody interested can develop.
+
+>
+>
+>
+>
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
