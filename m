@@ -1,99 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Sat, 04 Jul 2015 03:03:46 +0200
-Message-ID: <1496051.AgsebokWnB@vostro.rjw.lan>
-References: <4290667.ZqInAykFGS@vostro.rjw.lan> <CAJvTdKn71W0+js3D4OwK5Tx4z5KdA8hb-FyRMTuw0rdyQj9pRw@mail.gmail.com> <20150703014250.GM7943@dastard>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH 1/4] PM / devfreq: Add function to set max/min frequency
+Date: Sat, 4 Jul 2015 11:44:08 +0900
+Message-ID: <CAJ0PZbQgW3hPuk-PXWqUrVfYhM1MWHDrRDOQE9vGxkS1Wb=AGQ@mail.gmail.com>
+References: <1435928310-15938-1-git-send-email-javi.merino@arm.com> <1435928310-15938-2-git-send-email-javi.merino@arm.com>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150703014250.GM7943@dastard>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dave Chinner <david@fromorbit.com>
-Cc: Len Brown <lenb@kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Alan Stern <stern@rowland.harvard.edu>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f170.google.com ([209.85.213.170]:37832 "EHLO
+	mail-ig0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751014AbbGDCoX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 22:44:23 -0400
+Received: by igblr2 with SMTP id lr2so85927929igb.0
+        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2015 19:44:23 -0700 (PDT)
+In-Reply-To: <1435928310-15938-2-git-send-email-javi.merino@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, =?UTF-8?Q?=C3=98rjan_Eide?= <orjan.eide@arm.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-On Friday, July 03, 2015 11:42:50 AM Dave Chinner wrote:
-> On Wed, Jul 01, 2015 at 11:07:29PM -0400, Len Brown wrote:
-> > >> The _vast_ majority of systems using Linux suspend today are under
-> > >> an Android user-space.  Android has no assumption that that suspend to
-> > >> mem will necessarily stay suspended for a long time.
-> > >
-> > > Indeed, however your change was not android-specific, and it is not
-> > > "comfortable" on x86-style hardware and usage patterns.
-> > 
-> > "comfortable on x86-style and usage patterns"?
-> > If you mean "traditional" instead of "comfortable",
-> > where "tradition" is based on 10-year old systems, then sure.
-> 
-> Even if this were true(*) we don't break things that currently work
-> just because something different is "just around the corner". e.g.
-> if you shut the lid on your laptop and it suspends to RAM, you can
-> pull the USB drive out that you just copied stuff to and plug it
-> into another machine and find all the data you copied there is
-> present.
-> 
-> Remove the sync() from the freeze code, and this isn't guaranteed to
-> work anymore. It is now dependent on userspace implementations for
-> this to work, and we know what userspace developers will choose in
-> this situation. i.e. fast and "works for me", not "safe for
-> everyone".
-> 
-> (*) Which it clearly isn't true because, as this example shows, my
-> shiny new laptop still has exactly the same data integrity
-> requirements as the laptop I was using 10 years ago.
-> 
-> Just because there are lots of Android or Chrome out there it
-> doesn't mean we can just ignore the requirements of everything
-> else...
-> 
-> > > That said, as long as x86 will still try to safeguard my data during mem
-> > > sleep/resume as it does today, I have no strong feelings about
-> > > light/heavy-weight "mem" sleep being strictly a compile-time selectable
-> > > thing, or a more flexible runtime-selectable behavior.
-> > 
-> > The observation here is that the kernel should not force every system
-> > to sys_sync() on every suspend.  The only question is how to best
-> > implement that.
-> 
-> No, your observation was that "sync is slow". Your *solution* is "we
-> need to remove sync".
+On Fri, Jul 3, 2015 at 9:58 PM, Javi Merino <javi.merino@arm.com> wrote=
+:
+> From: =C3=98rjan Eide <orjan.eide@arm.com>
+>
+> Factor out the logic to set minimum and maximum frequency for the dev=
+ice
+> so that it can be used by other parts of the kernel.
+>
+> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Cc: Kyungmin Park <kyungmin.park@samsung.com>
+> Signed-off-by: =C3=98rjan Eide <orjan.eide@arm.com>
 
-Not only slow, but pointless too.  The argument goes: "It is slow and
-pointless and so it may be dropped."
+Dear Javi,
 
-Now, I can agree that it wasn't clearly demonstrated that the unconditional
-sys_sync() in the suspend code path was pointless, but it also has never
-been clearly shown why it is not pointless on systems that suspend and resume
-reliably.
 
-[The argument that the user can pull removable storage devices out of the
-system while suspended doesn't hold any water to me, because the user can
-pull them out of the system when not suspended just as well and cause the
-same kind of damage to happen.]
 
-When we were adding it, the thinking was along the lines of "Well, suspend
-isn't too reliable, so let's put sys_sync() in there to possibly reduce the
-damage from suspend/resume crashes and suspend is slow anyway, so the possible
-effect on performance from that shouldn't be noticeable".  Clearly, the world
-has changed since then and suspend is far more reliable than it used to be in
-general and it is not that slow too at least on some systems (especially the
-suspend-to-idle flavor).
+Is there reasons to name the function "devfreq_qos_set_[min|max]"? not
+"devfreq_set_[min|max]"? The functions may be used by non-PM-qos
+components as well (e.g., thermal).
 
-The only argument against dropping sys_sync() from the suspend code path
-I've seen in this thread that I entirely agree with is that it may lead to
-regressions, because we've done it practically forever and it may hide latent
-bugs somewhere in block drivers etc.  Dropping it, though, is the only way
-to see those bugs, if any, and if we want to ever fix them, we need to see
-them.  That's why I think that it may be a good idea to allow people to
-drop it if they are willing to accept some extra risk (via the kernel
-command line, for example).
 
-Moreover, question is if we really need to carry out the sync on *every*
-suspend even if it is not pointless overall.  That shouldn't really be
-necessary if we suspend and resume often enough or if we resume only for
-a while and then suspend again.  Maybe it should be rate limited somehow
-at least?
+And I like the idea of using devfreq devices as cooling devices. :)
 
-Thanks,
-Rafael
+
+Cheers,
+MyungJoo.
+
+
+ps. I will be on a trip starting hours later for 8 days and then in a
+military training for 3 days. Please expect that my responses during
+the next 11-12 days will be very slow.
+
+
+
+--=20
+MyungJoo Ham, Ph.D.
+=46rontier CS Lab, S/W Center, Samsung Electronics
