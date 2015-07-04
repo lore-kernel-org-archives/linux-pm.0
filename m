@@ -1,71 +1,54 @@
-From: PINTU KUMAR <pintu_agarwal@yahoo.com>
-Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
- feature
-Date: Sun, 5 Jul 2015 08:20:16 +0000 (UTC)
-Message-ID: <122973238.2709954.1436084416779.JavaMail.yahoo@mail.yahoo.com>
-References: <169308.1436040527@turing-police.cc.vt.edu>
-Reply-To: PINTU KUMAR <pintu_agarwal@yahoo.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Sat, 4 Jul 2015 10:19:55 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1507041011510.19175-100000@netrider.rowland.org>
+References: <1496051.AgsebokWnB@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <169308.1436040527@turing-police.cc.vt.edu>
-Sender: owner-linux-mm@kvack.org
-To: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>, Pintu Kumar <pintu.k@samsung.com>
-Cc: "corbet@lwn.net" <corbet@lwn.net>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "vbabka@suse.cz" <vbabka@suse.cz>, "gorcunov@openvz.org" <gorcunov@openvz.org>, "mhocko@suse.cz" <mhocko@suse.cz>, "emunson@akamai.com" <emunson@akamai.com>, "kirill.shutemov@linux.intel.com" <kirill.shutemov@linux.intel.com>, "standby24x7@gmail.com" <standby24x7@gmail.com>, "hannes@cmpxchg.org" <hannes@cmpxchg.org>, "vdavydov@parallels.com" <vdavydov@parallels.com>, "hughd@google.com" <hughd@google.com>, "minchan@kernel.org" <minchan@kernel.org>, "tj@kernel.org" <tj@kernel.org>, "rientjes@google.com" <rientjes@google.com>, "xypron.glpk@gmx.de" <xypron.glpk@gmx.de>, "dzickus@redhat.com" <dzickus@redhat.com>, "prarit@redhat.com" <prarit@redhat.com>, "ebiederm@xmission.com" <ebiederm@xmission.com>, "rostedt@goodmis.org" <rostedt@goodmis.org>, uobergfe@redha
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from netrider.rowland.org ([192.131.102.5]:57612 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754598AbbGEJGi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jul 2015 05:06:38 -0400
+In-Reply-To: <1496051.AgsebokWnB@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dave Chinner <david@fromorbit.com>, Len Brown <lenb@kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
+On Sat, 4 Jul 2015, Rafael J. Wysocki wrote:
 
+> The only argument against dropping sys_sync() from the suspend code path
+> I've seen in this thread that I entirely agree with is that it may lead to
+> regressions, because we've done it practically forever and it may hide latent
+> bugs somewhere in block drivers etc.  Dropping it, though, is the only way
+> to see those bugs, if any, and if we want to ever fix them, we need to see
+> them.  That's why I think that it may be a good idea to allow people to
+> drop it if they are willing to accept some extra risk (via the kernel
+> command line, for example).
 
+I'd be perfectly happy to have the sync selectable at runtime, one way 
+or another.  The three most reasonable options seem to be:
 
+	kernel command line
 
------ Original Message -----
-> From: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
-> To: Pintu Kumar <pintu.k@samsung.com>
-> Cc: corbet@lwn.net; akpm@linux-foundation.org; vbabka@suse.cz; gorcunov@openvz.org; mhocko@suse.cz; emunson@akamai.com; kirill.shutemov@linux.intel.com; standby24x7@gmail.com; hannes@cmpxchg.org; vdavydov@parallels.com; hughd@google.com; minchan@kernel.org; tj@kernel.org; rientjes@google.com; xypron.glpk@gmx.de; dzickus@redhat.com; prarit@redhat.com; ebiederm@xmission.com; rostedt@goodmis.org; uobergfe@redhat.com; paulmck@linux.vnet.ibm.com; iamjoonsoo.kim@lge.com; ddstreet@ieee.org; sasha.levin@oracle.com; koct9i@gmail.com; mgorman@suse.de; cj@linux.com; opensource.ganesh@gmail.com; vinmenon@codeaurora.org; linux-doc@vger.kernel.org; linux-kernel@vger.kernel.org; linux-mm@kvack.org; linux-pm@vger.kernel.org; cpgs@samsung.com; pintu_agarwal@yahoo.com; vishnu.ps@samsung.com; rohit.kr@sams
- ung.com; iqbal.ams@samsung.com
-> Sent: Sunday, 5 July 2015 1:38 AM
-> Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory feature
-> 
-> On Fri, 03 Jul 2015 18:50:07 +0530, Pintu Kumar said:
-> 
->>  This patch provides 2 things:
-> 
->>  2. Enable shrink_all_memory API in kernel with new CONFIG_SHRINK_MEMORY.
->>  Currently, shrink_all_memory function is used only during hibernation.
->>  With the new config we can make use of this API for non-hibernation case
->>  also without disturbing the hibernation case.
-> 
->>  --- a/mm/vmscan.c
->>  +++ b/mm/vmscan.c
-> 
->>  @@ -3571,12 +3571,17 @@ unsigned long shrink_all_memory(unsigned long 
-> nr_to_reclaim)
->>       struct reclaim_state reclaim_state;
->>       struct scan_control sc = {
->>           .nr_to_reclaim = nr_to_reclaim,
->>  +#ifdef CONFIG_SHRINK_MEMORY
->>  +        .gfp_mask = (GFP_HIGHUSER_MOVABLE | GFP_RECLAIM_MASK),
->>  +        .hibernation_mode = 0,
->>  +#else
->>           .gfp_mask = GFP_HIGHUSER_MOVABLE,
->>  +        .hibernation_mode = 1,
->>  +#endif
-> 
-> 
-> That looks like a bug just waiting to happen.  What happens if we
-> call an actual hibernation mode in a SHRINK_MEMORY=y kernel, and it finds
-> an extra gfp mask bit set, and hibernation_mode set to an unexpected value?
+	sysfs file
 
-> 
+	sysctl setting
 
+The command line is less flexible (it can't be changed after booting).  
+Either of the other two would be fine with me.
 
-Ok, got it. Thanks for pointing this out.
-I will handle HIBERNATION & SHRINK_MEMORY case and send again.
-Do you have any special suggestions on how this can be handled?
+> Moreover, question is if we really need to carry out the sync on *every*
+> suspend even if it is not pointless overall.  That shouldn't really be
+> necessary if we suspend and resume often enough or if we resume only for
+> a while and then suspend again.  Maybe it should be rate limited somehow
+> at least?
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+For example, skip the sync if the system has been awake for < 100 ms?  
+The cutoff time could also be controlled by the sysfs file: -1 =>
+never sync, 0 => always sync, > 0 => sync if the system has been awake 
+longer than the value.
+
+Alan Stern
+
