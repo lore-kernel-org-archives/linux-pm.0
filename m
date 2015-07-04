@@ -1,8 +1,8 @@
 From: PINTU KUMAR <pintu_agarwal@yahoo.com>
 Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
  feature
-Date: Sat, 4 Jul 2015 06:04:37 +0000 (UTC)
-Message-ID: <1643824843.2299688.1435989877460.JavaMail.yahoo@mail.yahoo.com>
+Date: Sat, 4 Jul 2015 08:05:30 +0000 (UTC)
+Message-ID: <1492667856.2385879.1435997130547.JavaMail.yahoo@mail.yahoo.com>
 References: <20150703183809.GA6781@cmpxchg.org>
 Reply-To: PINTU KUMAR <pintu_agarwal@yahoo.com>
 Mime-Version: 1.0
@@ -11,9 +11,11 @@ Content-Transfer-Encoding: 7bit
 Return-path: <owner-linux-mm@kvack.org>
 In-Reply-To: <20150703183809.GA6781@cmpxchg.org>
 Sender: owner-linux-mm@kvack.org
-To: Johannes Weiner <hannes@cmpxchg.org>, Pintu Kumar <pintu.k@samsung.com>
+To: Johannes Weiner <hannes@cmpxchg.org>, Pintu Kumar <pintu.k@samsung.com>, Pintu Kumar <pintu_agarwal@yahoo.com>
 Cc: "corbet@lwn.net" <corbet@lwn.net>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "vbabka@suse.cz" <vbabka@suse.cz>, "gorcunov@openvz.org" <gorcunov@openvz.org>, "mhocko@suse.cz" <mhocko@suse.cz>, "emunson@akamai.com" <emunson@akamai.com>, "kirill.shutemov@linux.intel.com" <kirill.shutemov@linux.intel.com>, "standby24x7@gmail.com" <standby24x7@gmail.com>, "vdavydov@parallels.com" <vdavydov@parallels.com>, "hughd@google.com" <hughd@google.com>, "minchan@kernel.org" <minchan@kernel.org>, "tj@kernel.org" <tj@kernel.org>, "rientjes@google.com" <rientjes@google.com>, "xypron.glpk@gmx.de" <xypron.glpk@gmx.de>, "dzickus@redhat.com" <dzickus@redhat.com>, "prarit@redhat.com" <prarit@redhat.com>, "ebiederm@xmission.com" <ebiederm@xmission.com>, "rostedt@goodmis.org" <rostedt@goodmis.org>, "uobergfe@redhat.com" <uobergfe@redhat.com>, paulmck@linu
 List-Id: linux-pm@vger.kernel.org
+
+
 
 Hi,
 
@@ -22,12 +24,12 @@ Please find my comments inline.
 
 >________________________________
 > From: Johannes Weiner <hannes@cmpxchg.org>
->To: Pintu Kumar <pintu.k@samsung.com> 
+>To: Pintu Kumar <pintu.k@samsung.com>
 >Cc: corbet@lwn.net; akpm@linux-foundation.org; vbabka@suse.cz; gorcunov@openvz.org; mhocko@suse.cz; emunson@akamai.com; kirill.shutemov@linux.intel.com; standby24x7@gmail.com; vdavydov@parallels.com; hughd@google.com; minchan@kernel.org; tj@kernel.org; rientjes@google.com; xypron.glpk@gmx.de; dzickus@redhat.com; prarit@redhat.com; ebiederm@xmission.com; rostedt@goodmis.org; uobergfe@redhat.com; paulmck@linux.vnet.ibm.com; iamjoonsoo.kim@lge.com; ddstreet@ieee.org; sasha.levin@oracle.com; koct9i@gmail.com; mgorman@suse.de; cj@linux.com; opensource.ganesh@gmail.com; vinmenon@codeaurora.org; linux-doc@vger.kernel.org; linux-kernel@vger.kernel.org; linux-mm@kvack.org; linux-pm@vger.kernel.org; cpgs@samsung.com; pintu_agarwal@yahoo.com; vishnu.ps@samsung.com; rohit.kr@samsung.com; iqbal.ams@sa
- msung.com 
+ msung.com
 >Sent: Saturday, 4 July 2015 12:08 AM
 >Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory feature
-> 
+>
 >
 >On Fri, Jul 03, 2015 at 06:50:07PM +0530, Pintu Kumar wrote:
 >> This patch provides 2 things:
@@ -36,16 +38,16 @@ Please find my comments inline.
 >> in one shot from the user space. A value of 1 will instruct the
 >> kernel to reclaim as much as totalram_pages in the system.
 >> Example: echo 1 > /proc/sys/vm/shrink_memory
->> 
+>>
 >> 2. Enable shrink_all_memory API in kernel with new CONFIG_SHRINK_MEMORY.
 >> Currently, shrink_all_memory function is used only during hibernation.
 >> With the new config we can make use of this API for non-hibernation case
 >> also without disturbing the hibernation case.
->> 
+>>
 >> The detailed paper was presented in Embedded Linux Conference, Mar-2015
 >> http://events.linuxfoundation.org/sites/events/files/slides/
 >> %5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
->> 
+>>
 >> Scenarios were this can be used and helpful are:
 >> 1) Can be invoked just after system boot-up is finished.
 >
@@ -57,7 +59,7 @@ Please find my comments inline.
 
 >
 
-Yes, the allocator automatically reclaims memory but in the slowpath. Also it reclaims only to satisfy the current allocation needs. That means for all future higher-order allocations the system will be entering slowpath again and again. Over a point of time (with multiple application launch), the higher-orders (2^4 and above) will be gone. The system entering slowpath means that the first allocation attempt has already failed. Then in slowpath the sequence is: kswapd -> compaction -> then direct reclaim. Thus entering slowpath again and again will be a costly operation. 
+Yes, the allocator automatically reclaims memory but in the slowpath. Also it reclaims only to satisfy the current allocation needs. That means for all future higher-order allocations the system will be entering slowpath again and again. Over a point of time (with multiple application launch), the higher-orders (2^4 and above) will be gone. The system entering slowpath means that the first allocation attempt has already failed. Then in slowpath the sequence is: kswapd -> compaction -> then direct reclaim. Thus entering slowpath again and again will be a costly operation.
 
 Thus keeping free memory ready in higher-order pages will be helpful for succeeding first allocation attempt.
 
@@ -112,12 +114,13 @@ Similarly, we can have an interface for direct reclaim from user space.
 >will not change that.
 
 >
-Yes, I know this. I am not talking about calling shrink_memory after OOM. 
+Yes, I know this. I am not talking about calling shrink_memory after OOM.
 
 Rather much before OOM when the first attempt of higher-order starts failing.
 This will delay the OOM to a much later stage.
 
 Already explained above.
+
 >
 >> 5) Can be developed as a system-tool to quickly defragment entire system
 >>    from user space, without the need to kill any application.
@@ -134,6 +137,7 @@ Thus keeping the free list ready before hand will be much more helpful.
 
 Anyways, the use case here is to develop a system utility which can perform compaction/reclaim/compaction aggressively.
 Its an additional idea that somebody interested can develop.
+
 
 >
 >
