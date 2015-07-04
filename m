@@ -1,67 +1,94 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
-Date: Sat, 4 Jul 2015 10:37:55 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1507041021080.19175-100000@netrider.rowland.org>
-References: <1564143.gqjAhPtVFo@vostro.rjw.lan>
+From: Nitish Ambastha <nits.ambastha@gmail.com>
+Subject: Re: [PATCHv2 1/1] kernel/power/autosleep.c: check for pm_suspend()
+ return before queueing suspend again
+Date: Sat, 4 Jul 2015 23:36:52 +0530
+Message-ID: <CAHWDpXhP=hgU8cNczzrvbFf0MW8DsGzg+GVdZ8K-hRJ5P+niaQ@mail.gmail.com>
+References: <1435581297-20271-1-git-send-email-nitish.a@samsung.com>
+	<2619760.zM2C8Nu9I9@vostro.rjw.lan>
+	<CAHWDpXg=t9R1zZgfVb+M41pxifVOEhCvMB=EBw=C0pWTe19+ZQ@mail.gmail.com>
+	<3120244.uQuxSPo26i@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:55149 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751778AbbGEJYh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jul 2015 05:24:37 -0400
-In-Reply-To: <1564143.gqjAhPtVFo@vostro.rjw.lan>
+Received: from mail-ie0-f182.google.com ([209.85.223.182]:33543 "EHLO
+	mail-ie0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755184AbbGEJed (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jul 2015 05:34:33 -0400
+In-Reply-To: <3120244.uQuxSPo26i@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Nitish Ambastha <nitish.a@samsung.com>, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpgs@samsung.com
 
-On Sat, 4 Jul 2015, Rafael J. Wysocki wrote:
-
-> > >> > Perhaps the pm_runtime_suspended_if_enabled() test should be changed to
-> > >> > pm_runtime_status_suspended().  Then it won't matter whether the
-> > >> > descendant devices are enabled for runtime PM.
-> > >>
-> > >> Yeah, that would remove the need for messing with the runtime PM
-> > >> enable status of descendant devices, but I wonder why Rafael went that
-> > >> way initially.
+On Wed, Jul 1, 2015 at 1:31 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> On Wednesday, July 01, 2015 12:52:43 AM Nitish Ambastha wrote:
+> > Hi Rafael
+> >
+> > Thanks for your feedback
+> >
+> > On Tue, Jun 30, 2015 at 1:37 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > > On Monday, June 29, 2015 09:56:18 PM Rafael J. Wysocki wrote:
+> > >> On Tuesday, June 30, 2015 12:24:14 AM Nitish Ambastha wrote:
+> > >> > Prevent tight loop for suspend-resume when some
+> > >> > devices failed to suspend
+> > >> > If some devices failed to suspend, we monitor this
+> > >> > error in try_to_suspend(). pm_suspend() is already
+> > >> > an 'int' returning function, how about checking return
+> > >> > from pm_suspend() before queueing suspend again?
+> > >> >
+> > >> > For devices which do not register for pending events,
+> > >> > this will prevent tight loop for suspend-resume in
+> > >> > suspend abort scenarios due to device suspend failures
 > > >
-> > > I forget the details.  Probably it was just to be safe.  We probably
-> > > thought that if a device was disabled for runtime PM then its runtime
-> > > PM status might not be accurate.  But if direct_complete is set then it
-> > > may be reasonable to assume that the runtime PM status _is_ accurate.
-> > 
-> > Cool.
-> 
-> We're walking a grey area here.  What exactly does power.direct_complete mean
-> for devices whose runtime PM is disabled?
+> > > Having said the below I'm not sure why the current code doesn't cover this
+> > > for you?
+> > >
+> > > That would be the final_count == initial_count case, no?
+> > >
+> > Agree, this should cover most of the cases, however there are some
+> > cases where final_count may not match initial_count here
+> >
+> > A couple of such scenario I came across is
+> > 1) when tasks are restarted again due to suspend failure, sometimes
+> > battery kernel thread acquires lock for battery monitoring resulting
+> > in either pm_get_wakeup_count() returning false or increment in
+> > final_count from initial_count
+>
+> Locks should not have any effect on the return value of pm_get_wakeup_count()
+> and if false is returned by it, a wakeup event was being processed when it
+> was called.
+>
+'lock' was not a correct term used, sorry about it.
+By 'lock', I actually meant battery monitoring acquiring 'wake lock' here
+i.e pm_wakeup_event/pm_stay_awake().
 
-> > Let's see what Rafael thinks about these two issues.  It seems to me
-> > that the hardest part is dealing with drivers/subsystems that have no
-> > runtime PM support.  In such cases, we have to be very careful not to
-> > use direct_complete unless we know that the device does no power
-> > management at all.
-> 
-> Precisely.
+when battery kernel thread calls pm_stay_awake() or pm_wakeup_event()
+momentarily and then pm_relax(), after being restarted on suspend failure,
+this affects the wakeup event count
 
-All right, we can make a decision and document it.  The following seems
-reasonable to me:
+> In turn, if pm_get_wakeup_count() returns false or final_count != initial_count,
+> this means that *somebody* called pm_wakeup_event() or equivalent in the meantime
+> and there *was* a valid wakeup event (regardless of or in addition to the driver
+> error).
+>
+ok, as I understand, if some driver failed to suspend, and during resume
+if *somebody* called pm_stay_awake() or pm_wakeup_event() meantime,
+and then pm_relax(), final_count and initial_count will not be
+same in try_to_suspend(), and it will be considered as a *valid wakeup*
+event, though the actual reason of resume was suspend failure.
+In this condition, it will again try to queue suspend
 
-	If dev->power.direct_complete is set then the PM core will
-	assume that dev->power.rpm_status is accurate even when
-	dev->power.disable_depth > 0.  The core will obey the
-	.direct_complete setting regardless of .disable_depth.
+Will it be a reasonable idea to wait in this case, before queueing
+suspend as some drivers failed to suspend in the current attempt?
 
-	As a consequence, devices that support system sleep but don't 
-	support runtime PM must _never_ have .direct_complete set.
-
-	On the other hand, if a device (such as a "virtual" device)
-	requires no callbacks for either system sleep or runtime PM, 
-	then there is no harm in setting .direct_complete.  Indeed,
-	doing so may help speed up an ancestor device's sleep
-	transition.
-
-How does that sound?
-
-Alan Stern
-
+> > 2) In some platforms, power transitions are carried from User space
+> > (power manager), these power-manager tries to hold some wake lock
+> > after being restarted on resume
+>
+> And what exactly is the failing scenario in that case?
+>
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
