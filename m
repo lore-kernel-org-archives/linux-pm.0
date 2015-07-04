@@ -1,66 +1,102 @@
-From: Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
- feature
-Date: Fri, 3 Jul 2015 14:38:09 -0400
-Message-ID: <20150703183809.GA6781@cmpxchg.org>
-References: <1435929607-3435-1-git-send-email-pintu.k@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] idle: move latency tracing stop/start calls deeper inside the idle loop
+Date: Sat, 04 Jul 2015 02:08:54 +0200
+Message-ID: <5187102.4yxZOPaqsB@vostro.rjw.lan>
+References: <1435933180-5660-1-git-send-email-l.stach@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-doc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1435929607-3435-1-git-send-email-pintu.k@samsung.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Pintu Kumar <pintu.k@samsung.com>
-Cc: corbet@lwn.net, akpm@linux-foundation.org, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, mgorman@suse.de, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:43319 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755571AbbGCXmd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2015 19:42:33 -0400
+In-Reply-To: <1435933180-5660-1-git-send-email-l.stach@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lucas Stach <l.stach@pengutronix.de>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de, patchwork-lst@pengutronix.de
 
-On Fri, Jul 03, 2015 at 06:50:07PM +0530, Pintu Kumar wrote:
-> This patch provides 2 things:
-> 1. Add new control called shrink_memory in /proc/sys/vm/.
-> This control can be used to aggressively reclaim memory system-wide
-> in one shot from the user space. A value of 1 will instruct the
-> kernel to reclaim as much as totalram_pages in the system.
-> Example: echo 1 > /proc/sys/vm/shrink_memory
+On Friday, July 03, 2015 04:19:40 PM Lucas Stach wrote:
+> Make sure to stop tracing only once we are past a point where all
+> latency tracing events have been processed (irqs are not enabled
+> again). This has the slight advantage of capturing more latency
+> related events in the idle path, but most importantly it makes sure
+> that latency tracing doesn't get re-enabled inadvertently when
+> new events are coming in.
 > 
-> 2. Enable shrink_all_memory API in kernel with new CONFIG_SHRINK_MEMORY.
-> Currently, shrink_all_memory function is used only during hibernation.
-> With the new config we can make use of this API for non-hibernation case
-> also without disturbing the hibernation case.
+> This makes the irqsoff latency tracer useful again, as we stop
+> capturing CPU sleep time as IRQ latency.
 > 
-> The detailed paper was presented in Embedded Linux Conference, Mar-2015
-> http://events.linuxfoundation.org/sites/events/files/slides/
-> %5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
+> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+> ---
+>  drivers/cpuidle/cpuidle.c |  2 ++
+>  kernel/sched/idle.c       | 14 +++++---------
+>  2 files changed, 7 insertions(+), 9 deletions(-)
 > 
-> Scenarios were this can be used and helpful are:
-> 1) Can be invoked just after system boot-up is finished.
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index 61c417b9e53f..d78514ac3f5d 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -173,7 +173,9 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>  	trace_cpu_idle_rcuidle(index, dev->cpu);
+>  	time_start = ktime_get();
+>  
+> +	stop_critical_timings();
+>  	entered_state = target_state->enter(dev, drv, index);
+> +	start_critical_timings();
+>  
+>  	time_end = ktime_get();
+>  	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> index fefcb1fa5160..30b799bfc3c6 100644
+> --- a/kernel/sched/idle.c
+> +++ b/kernel/sched/idle.c
+> @@ -93,12 +93,6 @@ static void cpuidle_idle_call(void)
+>  	}
+>  
+>  	/*
+> -	 * During the idle period, stop measuring the disabled irqs
+> -	 * critical sections latencies
+> -	 */
+> -	stop_critical_timings();
+> -
+> -	/*
+>  	 * Tell the RCU framework we are entering an idle section,
+>  	 * so no more rcu read side critical sections and one more
+>  	 * step to the grace period
+> @@ -181,7 +175,6 @@ exit_idle:
+>  		local_irq_enable();
+>  
+>  	rcu_idle_exit();
+> -	start_critical_timings();
 
-The allocator automatically reclaims when memory is needed, that's why
-the metrics quoted in those slides, free pages and fragmentation level,
-don't really mean much.  We don't care how much memory is free or how
-fragmented it is UNTIL somebody actually asks for it.  The only metric
-that counts is the allocation success ratio (and possibly the latency).
+Are you sure we can safely reorder stop/start_critical_timings() with respect
+to rcu_idle_enter/exit()?
 
-> 2) Can be invoked just before entering entire system suspend.
+>  	return;
+>  
+>  use_default:
+> @@ -189,10 +182,13 @@ use_default:
+>  	 * We can't use the cpuidle framework, let's use the default
+>  	 * idle routine.
+>  	 */
+> -	if (current_clr_polling_and_test())
+> +	if (current_clr_polling_and_test()) {
+>  		local_irq_enable();
+> -	else
+> +	} else {
+> +		stop_critical_timings();
+>  		arch_cpu_idle();
+> +		start_critical_timings();
+> +	}
+>  
+>  	goto exit_idle;
+>  }
 
-Why is that?  Suspend already allocates as much as it needs to create
-the system image.
+And what about enter_freeze_proper()?  Don't we need those in there too?
 
-> 3) Can be invoked from kernel when order-4 pages starts failing.
 
-We have compaction for that, and compaction invokes page reclaim
-automatically to satisfy its need for free pages.
-
-> 4) Can be helpful to completely avoid or delay the kerenl OOM condition.
-
-That's not how OOM works.  An OOM is triggered when there is demand for
-memory but no more pages to reclaim, telling the kernel to look harder
-will not change that.
-
-> 5) Can be developed as a system-tool to quickly defragment entire system
->    from user space, without the need to kill any application.
-
-Again, the kernel automatically reclaims and compacts memory on demand.
-If the existing mechanisms don't do this properly, and you have actual
-problems with them, they should be reported and fixed, not bypassed.
-But the metrics you seem to base this change on are not representative
-of something that should matter in practice.
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
