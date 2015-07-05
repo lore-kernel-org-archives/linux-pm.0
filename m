@@ -1,8 +1,8 @@
 From: PINTU KUMAR <pintu_agarwal@yahoo.com>
 Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
  feature
-Date: Sun, 5 Jul 2015 02:15:06 +0000 (UTC)
-Message-ID: <32721799.2647113.1436062506299.JavaMail.yahoo@mail.yahoo.com>
+Date: Sun, 5 Jul 2015 08:20:16 +0000 (UTC)
+Message-ID: <122973238.2709954.1436084416779.JavaMail.yahoo@mail.yahoo.com>
 References: <169308.1436040527@turing-police.cc.vt.edu>
 Reply-To: PINTU KUMAR <pintu_agarwal@yahoo.com>
 Mime-Version: 1.0
@@ -62,6 +62,7 @@ List-Id: linux-pm@vger.kernel.org
 
 Ok, got it. Thanks for pointing this out.
 I will handle HIBERNATION & SHRINK_MEMORY case and send again.
+Do you have any special suggestions on how this can be handled?
 
 --
 To unsubscribe, send a message with 'unsubscribe linux-mm' in
