@@ -1,64 +1,78 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Mon, 06 Jul 2015 01:28:20 +0200
-Message-ID: <2293886.L6VJGgjdDp@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1507041011510.19175-100000@netrider.rowland.org>
+Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
+Date: Mon, 06 Jul 2015 01:36:46 +0200
+Message-ID: <1714292.iHVMDeHUzi@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1507041021080.19175-100000@netrider.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:44980 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:60608 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751311AbbGEXB4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jul 2015 19:01:56 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1507041011510.19175-100000@netrider.rowland.org>
+	with SMTP id S1752799AbbGEXKW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jul 2015 19:10:22 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1507041021080.19175-100000@netrider.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Dave Chinner <david@fromorbit.com>, Len Brown <lenb@kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Saturday, July 04, 2015 10:19:55 AM Alan Stern wrote:
+On Saturday, July 04, 2015 10:37:55 AM Alan Stern wrote:
 > On Sat, 4 Jul 2015, Rafael J. Wysocki wrote:
 > 
-> > The only argument against dropping sys_sync() from the suspend code path
-> > I've seen in this thread that I entirely agree with is that it may lead to
-> > regressions, because we've done it practically forever and it may hide latent
-> > bugs somewhere in block drivers etc.  Dropping it, though, is the only way
-> > to see those bugs, if any, and if we want to ever fix them, we need to see
-> > them.  That's why I think that it may be a good idea to allow people to
-> > drop it if they are willing to accept some extra risk (via the kernel
-> > command line, for example).
+> > > >> > Perhaps the pm_runtime_suspended_if_enabled() test should be changed to
+> > > >> > pm_runtime_status_suspended().  Then it won't matter whether the
+> > > >> > descendant devices are enabled for runtime PM.
+> > > >>
+> > > >> Yeah, that would remove the need for messing with the runtime PM
+> > > >> enable status of descendant devices, but I wonder why Rafael went that
+> > > >> way initially.
+> > > >
+> > > > I forget the details.  Probably it was just to be safe.  We probably
+> > > > thought that if a device was disabled for runtime PM then its runtime
+> > > > PM status might not be accurate.  But if direct_complete is set then it
+> > > > may be reasonable to assume that the runtime PM status _is_ accurate.
+> > > 
+> > > Cool.
+> > 
+> > We're walking a grey area here.  What exactly does power.direct_complete mean
+> > for devices whose runtime PM is disabled?
 > 
-> I'd be perfectly happy to have the sync selectable at runtime, one way 
-> or another.  The three most reasonable options seem to be:
+> > > Let's see what Rafael thinks about these two issues.  It seems to me
+> > > that the hardest part is dealing with drivers/subsystems that have no
+> > > runtime PM support.  In such cases, we have to be very careful not to
+> > > use direct_complete unless we know that the device does no power
+> > > management at all.
+> > 
+> > Precisely.
 > 
-> 	kernel command line
+> All right, we can make a decision and document it.  The following seems
+> reasonable to me:
 > 
-> 	sysfs file
+> 	If dev->power.direct_complete is set then the PM core will
+> 	assume that dev->power.rpm_status is accurate even when
+> 	dev->power.disable_depth > 0.  The core will obey the
+> 	.direct_complete setting regardless of .disable_depth.
 > 
-> 	sysctl setting
+> 	As a consequence, devices that support system sleep but don't 
+> 	support runtime PM must _never_ have .direct_complete set.
 > 
-> The command line is less flexible (it can't be changed after booting).  
-> Either of the other two would be fine with me.
+> 	On the other hand, if a device (such as a "virtual" device)
+> 	requires no callbacks for either system sleep or runtime PM, 
+> 	then there is no harm in setting .direct_complete.  Indeed,
+> 	doing so may help speed up an ancestor device's sleep
+> 	transition.
+> 
+> How does that sound?
 
-We'll probably use a sysfs file (possibly plus a Kconfig option to set the
-boot time default).
+It would be workable I think, but I'd prefer the core to be told directly
+about devices whose runtime PM status doesn't matter (because nothing changes
+between "suspended" and "active"), so they may be treated in a special way
+safely.
 
-> > Moreover, question is if we really need to carry out the sync on *every*
-> > suspend even if it is not pointless overall.  That shouldn't really be
-> > necessary if we suspend and resume often enough or if we resume only for
-> > a while and then suspend again.  Maybe it should be rate limited somehow
-> > at least?
-> 
-> For example, skip the sync if the system has been awake for < 100 ms?
-
-Yes, something like that.
-
-> The cutoff time could also be controlled by the sysfs file: -1 =>
-> never sync, 0 => always sync, > 0 => sync if the system has been awake 
-> longer than the value.
-
-That sounds like a good idea to me.
+If we had that information, no special rules other than "that is a device
+whose runtime PM status doesn't matter, so treat it accordingly" would be
+necessary.
 
 Thanks,
 Rafael
