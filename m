@@ -1,94 +1,42 @@
-From: Nitish Ambastha <nits.ambastha@gmail.com>
-Subject: Re: [PATCHv2 1/1] kernel/power/autosleep.c: check for pm_suspend()
- return before queueing suspend again
-Date: Sat, 4 Jul 2015 23:36:52 +0530
-Message-ID: <CAHWDpXhP=hgU8cNczzrvbFf0MW8DsGzg+GVdZ8K-hRJ5P+niaQ@mail.gmail.com>
-References: <1435581297-20271-1-git-send-email-nitish.a@samsung.com>
-	<2619760.zM2C8Nu9I9@vostro.rjw.lan>
-	<CAHWDpXg=t9R1zZgfVb+M41pxifVOEhCvMB=EBw=C0pWTe19+ZQ@mail.gmail.com>
-	<3120244.uQuxSPo26i@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Mon, 06 Jul 2015 01:25:35 +0200
+Message-ID: <3178110.trcxC53OR0@vostro.rjw.lan>
+References: <4290667.ZqInAykFGS@vostro.rjw.lan> <1496051.AgsebokWnB@vostro.rjw.lan> <CAMuHMdUXJ_fobDSiDgRhovjHOE0wcKEXVvJWP5ExFs7+vOKsdA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f182.google.com ([209.85.223.182]:33543 "EHLO
-	mail-ie0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755184AbbGEJed (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jul 2015 05:34:33 -0400
-In-Reply-To: <3120244.uQuxSPo26i@vostro.rjw.lan>
+Received: from v094114.home.net.pl ([79.96.170.134]:44864 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751509AbbGEW7M (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jul 2015 18:59:12 -0400
+In-Reply-To: <CAMuHMdUXJ_fobDSiDgRhovjHOE0wcKEXVvJWP5ExFs7+vOKsdA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Nitish Ambastha <nitish.a@samsung.com>, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpgs@samsung.com
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Dave Chinner <david@fromorbit.com>, Len Brown <lenb@kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Alan Stern <stern@rowland.harvard.edu>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-On Wed, Jul 1, 2015 at 1:31 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> On Wednesday, July 01, 2015 12:52:43 AM Nitish Ambastha wrote:
-> > Hi Rafael
-> >
-> > Thanks for your feedback
-> >
-> > On Tue, Jun 30, 2015 at 1:37 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > On Monday, June 29, 2015 09:56:18 PM Rafael J. Wysocki wrote:
-> > >> On Tuesday, June 30, 2015 12:24:14 AM Nitish Ambastha wrote:
-> > >> > Prevent tight loop for suspend-resume when some
-> > >> > devices failed to suspend
-> > >> > If some devices failed to suspend, we monitor this
-> > >> > error in try_to_suspend(). pm_suspend() is already
-> > >> > an 'int' returning function, how about checking return
-> > >> > from pm_suspend() before queueing suspend again?
-> > >> >
-> > >> > For devices which do not register for pending events,
-> > >> > this will prevent tight loop for suspend-resume in
-> > >> > suspend abort scenarios due to device suspend failures
-> > >
-> > > Having said the below I'm not sure why the current code doesn't cover this
-> > > for you?
-> > >
-> > > That would be the final_count == initial_count case, no?
-> > >
-> > Agree, this should cover most of the cases, however there are some
-> > cases where final_count may not match initial_count here
-> >
-> > A couple of such scenario I came across is
-> > 1) when tasks are restarted again due to suspend failure, sometimes
-> > battery kernel thread acquires lock for battery monitoring resulting
-> > in either pm_get_wakeup_count() returning false or increment in
-> > final_count from initial_count
->
-> Locks should not have any effect on the return value of pm_get_wakeup_count()
-> and if false is returned by it, a wakeup event was being processed when it
-> was called.
->
-'lock' was not a correct term used, sorry about it.
-By 'lock', I actually meant battery monitoring acquiring 'wake lock' here
-i.e pm_wakeup_event/pm_stay_awake().
+On Saturday, July 04, 2015 10:50:36 AM Geert Uytterhoeven wrote:
+> On Sat, Jul 4, 2015 at 3:03 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > [The argument that the user can pull removable storage devices out of the
+> > system while suspended doesn't hold any water to me, because the user can
+> > pull them out of the system when not suspended just as well and cause the
+> > same kind of damage to happen.]
+> 
+> The user may not notice the difference between a suspended and powered
+> off machine, and thus think it's safe to unplug the USB memory stick while
+> the machine appears off.
+> 
+> If that's considered a valid use case, this would be a regression.
 
-when battery kernel thread calls pm_stay_awake() or pm_wakeup_event()
-momentarily and then pm_relax(), after being restarted on suspend failure,
-this affects the wakeup event count
+Well, if user space configures the system to use suspend as a "power off
+flavor" and doesn't even try to ensure the filesystems to be synced before
+suspending (in that mode), that's on the edge of insanity.
 
-> In turn, if pm_get_wakeup_count() returns false or final_count != initial_count,
-> this means that *somebody* called pm_wakeup_event() or equivalent in the meantime
-> and there *was* a valid wakeup event (regardless of or in addition to the driver
-> error).
->
-ok, as I understand, if some driver failed to suspend, and during resume
-if *somebody* called pm_stay_awake() or pm_wakeup_event() meantime,
-and then pm_relax(), final_count and initial_count will not be
-same in try_to_suspend(), and it will be considered as a *valid wakeup*
-event, though the actual reason of resume was suspend failure.
-In this condition, it will again try to queue suspend
+And it falls into the "latent bugs that may be there because we've always
+synced before suspending" category in my view.
 
-Will it be a reasonable idea to wait in this case, before queueing
-suspend as some drivers failed to suspend in the current attempt?
+Thanks,
+Rafael
 
-> > 2) In some platforms, power transitions are carried from User space
-> > (power manager), these power-manager tries to hold some wake lock
-> > after being restarted on resume
->
-> And what exactly is the failing scenario in that case?
->
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
