@@ -1,87 +1,76 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 6/8] mfd: make mfd_remove_devices() iterate in reverse
- order
-Date: Mon, 6 Jul 2015 17:05:29 +0100
-Message-ID: <20150706160529.GC3182@x1>
-References: <1434362256-239992-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <1434362256-239992-7-git-send-email-andriy.shevchenko@linux.intel.com>
- <20150624113144.GL15013@x1>
- <1436173803.8279.1.camel@linux.intel.com>
- <CAMuHMdUhuC-8vfXKNLmONexnQeokX4xFLNR=MVXFOSWE1O3Hsg@mail.gmail.com>
- <1436175018.8279.4.camel@linux.intel.com>
- <20150706145039.GB3182@x1>
- <CAHp75VdGyfyfYV6q9vdqK5nYBMpPWFxr32eiXXn2ruUj4pg6BA@mail.gmail.com>
+From: PINTU KUMAR <pintu_agarwal@yahoo.com>
+Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
+ feature
+Date: Mon, 6 Jul 2015 16:51:02 +0000 (UTC)
+Message-ID: <1325035100.3484364.1436201462637.JavaMail.yahoo@mail.yahoo.com>
+References: <169308.1436040527@turing-police.cc.vt.edu>
+Reply-To: PINTU KUMAR <pintu_agarwal@yahoo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f178.google.com ([209.85.212.178]:38647 "EHLO
-	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751644AbbGFQFg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 12:05:36 -0400
-Received: by wibdq8 with SMTP id dq8so158077910wib.1
-        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2015 09:05:35 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAHp75VdGyfyfYV6q9vdqK5nYBMpPWFxr32eiXXn2ruUj4pg6BA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <169308.1436040527@turing-police.cc.vt.edu>
+Sender: owner-linux-mm@kvack.org
+To: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>, Pintu Kumar <pintu.k@samsung.com>
+Cc: "corbet@lwn.net" <corbet@lwn.net>, "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "vbabka@suse.cz" <vbabka@suse.cz>, "gorcunov@openvz.org" <gorcunov@openvz.org>, "mhocko@suse.cz" <mhocko@suse.cz>, "emunson@akamai.com" <emunson@akamai.com>, "kirill.shutemov@linux.intel.com" <kirill.shutemov@linux.intel.com>, "standby24x7@gmail.com" <standby24x7@gmail.com>, "hannes@cmpxchg.org" <hannes@cmpxchg.org>, "vdavydov@parallels.com" <vdavydov@parallels.com>, "hughd@google.com" <hughd@google.com>, "minchan@kernel.org" <minchan@kernel.org>, "tj@kernel.org" <tj@kernel.org>, "rientjes@google.com" <rientjes@google.com>, "xypron.glpk@gmx.de" <xypron.glpk@gmx.de>, "dzickus@redhat.com" <dzickus@redhat.com>, "prarit@redhat.com" <prarit@redhat.com>, "ebiederm@xmission.com" <ebiederm@xmission.com>, "rostedt@goodmis.org" <rostedt@goodmis.org>, uobergfe@redha
 List-Id: linux-pm@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine <dmaengine@vger.kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@linaro.org>
 
-On Mon, 06 Jul 2015, Andy Shevchenko wrote:
+Hi,
 
-> On Mon, Jul 6, 2015 at 5:50 PM, Lee Jones <lee.jones@linaro.org> wrot=
-e:
-> > On Mon, 06 Jul 2015, Andy Shevchenko wrote:
-> >
-> >> On Mon, 2015-07-06 at 11:24 +0200, Geert Uytterhoeven wrote:
-> >> > On Mon, Jul 6, 2015 at 11:10 AM, Andy Shevchenko
-> >> > <andriy.shevchenko@linux.intel.com> wrote:
-> >> > > On Wed, 2015-06-24 at 12:31 +0100, Lee Jones wrote:
-> >> > > > On Mon, 15 Jun 2015, Andy Shevchenko wrote:
->=20
-> []
->=20
-> >> > > > Applied, thanks.
-> >> > >
-> >> > > Hmm=E2=80=A6 Seems kinda mistake. I can't see this applied (an=
-d required
-> >> > > previous patches 4 and 5) to any of your branch neither in
-> >> > > (today's)
-> >> > > linux-next.
-> >> >
-> >> > New stuff applied after v4.1 couldn't show up in -next before v4=
-=2E2
-> >> > -rc1 was
-> >> > released (which just happened last night)?
-> >>
-> >> Might be, I would like to resend new version of my series and that=
-'s
-> >> why I would like to have a branch to check what is already applied=
-=2E So,
-> >> if I can't see it does it mean it is brewed in the private reposit=
-ory?
-> >
-> > If you have patches that depend on this, they either need to come
-> > through my tree, or you have to wait until the next kernel version
-> > (which you probably don't want, right?).
-> >
-> > The alternative is that I unapply this patch and the whole lot can =
-be
-> > sucked up by the most appropriate subsystem.
->=20
-> I resent a new version for other comments(still with all patches
-> included). Meanwhile the patches 4-6 (from v4 or v5, where they are
-> the same) could be applied in the first place. Can you clarify what
-> exactly you have applied? The idea is to put the rest via your
-> subsystem since it's most appropriate for this series.
+Looks like last message did not reach to all. So replying again.
 
-Easiest thing for me to do is unapply.
+Please check my comments below.
 
-We can take the whole series when all the Acks have been accrued.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+
+
+----- Original Message -----
+> From: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>
+> To: Pintu Kumar <pintu.k@samsung.com>
+> Cc: corbet@lwn.net; akpm@linux-foundation.org; vbabka@suse.cz; gorcunov@openvz.org; mhocko@suse.cz; emunson@akamai.com; kirill.shutemov@linux.intel.com; standby24x7@gmail.com; hannes@cmpxchg.org; vdavydov@parallels.com; hughd@google.com; minchan@kernel.org; tj@kernel.org; rientjes@google.com; xypron.glpk@gmx.de; dzickus@redhat.com; prarit@redhat.com; ebiederm@xmission.com; rostedt@goodmis.org; uobergfe@redhat.com; paulmck@linux.vnet.ibm.com; iamjoonsoo.kim@lge.com; ddstreet@ieee.org; sasha.levin@oracle.com; koct9i@gmail.com; mgorman@suse.de; cj@linux.com; opensource.ganesh@gmail.com; vinmenon@codeaurora.org; linux-doc@vger.kernel.org; linux-kernel@vger.kernel.org; linux-mm@kvack.org; linux-pm@vger.kernel.org; cpgs@samsung.com; pintu_agarwal@yahoo.com; vishnu.ps@samsung.com; rohit.kr@sams
+ ung.com; iqbal.ams@samsung.com
+> Sent: Sunday, 5 July 2015 1:38 AM
+> Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory feature
+> 
+> On Fri, 03 Jul 2015 18:50:07 +0530, Pintu Kumar said:
+> 
+>>  This patch provides 2 things:
+> 
+>>  2. Enable shrink_all_memory API in kernel with new CONFIG_SHRINK_MEMORY.
+>>  Currently, shrink_all_memory function is used only during hibernation.
+>>  With the new config we can make use of this API for non-hibernation case
+>>  also without disturbing the hibernation case.
+> 
+>>  --- a/mm/vmscan.c
+>>  +++ b/mm/vmscan.c
+> 
+>>  @@ -3571,12 +3571,17 @@ unsigned long shrink_all_memory(unsigned long 
+> nr_to_reclaim)
+>>       struct reclaim_state reclaim_state;
+>>       struct scan_control sc = {
+>>           .nr_to_reclaim = nr_to_reclaim,
+>>  +#ifdef CONFIG_SHRINK_MEMORY
+>>  +        .gfp_mask = (GFP_HIGHUSER_MOVABLE | GFP_RECLAIM_MASK),
+>>  +        .hibernation_mode = 0,
+>>  +#else
+>>           .gfp_mask = GFP_HIGHUSER_MOVABLE,
+>>  +        .hibernation_mode = 1,
+>>  +#endif
+> 
+> 
+> That looks like a bug just waiting to happen.  What happens if we
+> call an actual hibernation mode in a SHRINK_MEMORY=y kernel, and it finds
+> an extra gfp mask bit set, and hibernation_mode set to an unexpected value?
+
+> 
+
+Ok, got it. Thanks for pointing this out.
+I will handle HIBERNATION & SHRINK_MEMORY case and send again.
+I will try to handle it using ifdefs. Do you have any special suggestions on how this can be handled?
+I verified only for the ARM case without hibernation. But, it is likely that this feature can be enabled in laptop mode also. So we should handle it.
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
