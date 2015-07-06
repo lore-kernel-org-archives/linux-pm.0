@@ -1,33 +1,173 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 03/10] OPP: Allocate dev_opp from _add_device_opp()
-Date: Mon, 06 Jul 2015 15:31:46 -0700
-Message-ID: <559B01D2.9070805@codeaurora.org>
-References: <cover.1434369079.git.viresh.kumar@linaro.org> <83bd3b9837b30bab62f41aed3dd2cdf52cc21688.1434369079.git.viresh.kumar@linaro.org> <55948DB0.8060500@codeaurora.org> <20150702062455.GD31684@linux> <5595CD68.9040701@codeaurora.org> <20150703064554.GB4564@linux>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] base: power: wakeirq: don't leak dev->power.wakeirq
+Date: Tue, 07 Jul 2015 01:13:21 +0200
+Message-ID: <2783932.o7RC7vMDHB@vostro.rjw.lan>
+References: <1436205678-31640-1-git-send-email-balbi@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:56070 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbbGFWbu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 18:31:50 -0400
-In-Reply-To: <20150703064554.GB4564@linux>
+Received: from v094114.home.net.pl ([79.96.170.134]:52865 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754873AbbGFWqz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 18:46:55 -0400
+In-Reply-To: <1436205678-31640-1-git-send-email-balbi@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, broonie@kernel.org, mike.turquette@linaro.org, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
+To: Felipe Balbi <balbi@ti.com>
+Cc: linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tony Lindgren <tmlind@atomide.com>
 
-On 07/02/2015 11:45 PM, Viresh Kumar wrote:
-> On 02-07-15, 16:46, Stephen Boyd wrote:
->> Looking better.
-> And does this look perfect ? :)
->
+On Monday, July 06, 2015 01:01:18 PM Felipe Balbi wrote:
+> on a first call to dev_pm_attach_wake_irq(), if it
+> fails, it will leave dev->power.wakeirq set to a
+> dangling pointer. Instead, let's clear it to make
+> sure a subsequent call to dev_pm_attach_wake_irq()
+> has chance to succeed.
+> 
+> Cc: Tony Lindgren <tmlind@atomide.com>
+> Signed-off-by: Felipe Balbi <balbi@ti.com>
+> ---
+>  drivers/base/power/wakeirq.c | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
+> index 7470004ca810..394d250a1ad8 100644
+> --- a/drivers/base/power/wakeirq.c
+> +++ b/drivers/base/power/wakeirq.c
+> @@ -50,9 +50,16 @@ static int dev_pm_attach_wake_irq(struct device *dev, int irq,
+>  
+>  	err = device_wakeup_attach_irq(dev, wirq);
+>  	if (err)
+> -		return err;
+> +		goto err_cleanup;
+>  
+>  	return 0;
+> +
+> +err_cleanup:
+> +	spin_lock_irqsave(&dev->power.lock, flags);
+> +	dev->power.wakeirq = NULL;
+> +	spin_unlock_irqrestore(&dev->power.lock, flags);
+> +
+> +	return err;
+>  }
 
-Yep.
+Too many labels for me and the fact that acquiring of the lock again in the error
+patch doesn't look good.
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+However, we can do the entire device_wakeup_attach_irq() under the lock (after
+removing the locking from it), because we're its only caller.
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+So what about the below instead (build-tested only)?
+
+Rafael
+
+
+---
+ drivers/base/power/wakeirq.c |   12 +++++-------
+ drivers/base/power/wakeup.c  |   31 ++++++++++---------------------
+ 2 files changed, 15 insertions(+), 28 deletions(-)
+
+Index: linux-pm/drivers/base/power/wakeirq.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/wakeirq.c
++++ linux-pm/drivers/base/power/wakeirq.c
+@@ -45,14 +45,12 @@ static int dev_pm_attach_wake_irq(struct
+ 		return -EEXIST;
+ 	}
+ 
+-	dev->power.wakeirq = wirq;
+-	spin_unlock_irqrestore(&dev->power.lock, flags);
+-
+ 	err = device_wakeup_attach_irq(dev, wirq);
+-	if (err)
+-		return err;
++	if (!err)
++		dev->power.wakeirq = wirq;
+ 
+-	return 0;
++	spin_unlock_irqrestore(&dev->power.lock, flags);
++	return err;
+ }
+ 
+ /**
+@@ -105,10 +103,10 @@ void dev_pm_clear_wake_irq(struct device
+ 		return;
+ 
+ 	spin_lock_irqsave(&dev->power.lock, flags);
++	device_wakeup_detach_irq(dev);
+ 	dev->power.wakeirq = NULL;
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
+ 
+-	device_wakeup_detach_irq(dev);
+ 	if (wirq->dedicated_irq)
+ 		free_irq(wirq->irq, wirq);
+ 	kfree(wirq);
+Index: linux-pm/drivers/base/power/wakeup.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/wakeup.c
++++ linux-pm/drivers/base/power/wakeup.c
+@@ -281,32 +281,25 @@ EXPORT_SYMBOL_GPL(device_wakeup_enable);
+  * Attach a device wakeirq to the wakeup source so the device
+  * wake IRQ can be configured automatically for suspend and
+  * resume.
++ *
++ * Call under the device's power.lock lock.
+  */
+ int device_wakeup_attach_irq(struct device *dev,
+ 			     struct wake_irq *wakeirq)
+ {
+ 	struct wakeup_source *ws;
+-	int ret = 0;
+ 
+-	spin_lock_irq(&dev->power.lock);
+ 	ws = dev->power.wakeup;
+ 	if (!ws) {
+ 		dev_err(dev, "forgot to call call device_init_wakeup?\n");
+-		ret = -EINVAL;
+-		goto unlock;
++		return -EINVAL;
+ 	}
+ 
+-	if (ws->wakeirq) {
+-		ret = -EEXIST;
+-		goto unlock;
+-	}
++	if (ws->wakeirq)
++		return -EEXIST;
+ 
+ 	ws->wakeirq = wakeirq;
+-
+-unlock:
+-	spin_unlock_irq(&dev->power.lock);
+-
+-	return ret;
++	return 0;
+ }
+ 
+ /**
+@@ -314,20 +307,16 @@ unlock:
+  * @dev: Device to handle
+  *
+  * Removes a device wakeirq from the wakeup source.
++ *
++ * Call under the device's power.lock lock.
+  */
+ void device_wakeup_detach_irq(struct device *dev)
+ {
+ 	struct wakeup_source *ws;
+ 
+-	spin_lock_irq(&dev->power.lock);
+ 	ws = dev->power.wakeup;
+-	if (!ws)
+-		goto unlock;
+-
+-	ws->wakeirq = NULL;
+-
+-unlock:
+-	spin_unlock_irq(&dev->power.lock);
++	if (ws)
++		ws->wakeirq = NULL;
+ }
+ 
+ /**
 
