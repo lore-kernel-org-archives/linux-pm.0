@@ -1,81 +1,115 @@
-From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v3 2/4] mfd: axp20x: Add missing registers,
- and mark more registers volatile
-Date: Mon, 6 Jul 2015 12:21:21 +0200
-Message-ID: <20150706102121.GG3269@lukather>
-References: <1435316357-26606-1-git-send-email-hdegoede@redhat.com>
- <1435316357-26606-2-git-send-email-hdegoede@redhat.com>
-Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+From: Jean Delvare <jdelvare@suse.de>
+Subject: Re: [PATCH] thermal: consistently use int for temperatures
+Date: Mon, 6 Jul 2015 12:25:15 +0200
+Message-ID: <20150706122515.4580521c@endymion.delvare>
+References: <1436167189-29835-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Qf1oXS95uex85X0R"
-Return-path: <linux-sunxi+bncBD2ZNBF5VYJRBBFP5GWAKGQEM2XFNTY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1435316357-26606-2-git-send-email-hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <http://groups.google.com/group/linux-sunxi
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <http://groups.google.com/group/linux-sunxi/subscribe>
-To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1436167189-29835-1-git-send-email-s.hauer@pengutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Peter Feuerer <peter@piie.net>, Heiko Stuebner <heiko@sntech.de>, Lukasz Majewski <l.majewski@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, linux-acpi@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Ripard <maxime.ripard@free-electrons.com>, Darren Hart <dvhart@infradead.org>, lm-sensors@lm-sensors.org
 List-Id: linux-pm@vger.kernel.org
 
---Qf1oXS95uex85X0R
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Jun 26, 2015 at 12:59:15PM +0200, Hans de Goede wrote:
-> From: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
+On Mon,  6 Jul 2015 09:19:49 +0200, Sascha Hauer wrote:
+> The thermal code uses int, long and unsigned long for temperatures
+> in different places.
 >=20
-> Add an extra set of registers which is necessary tu support the PMICs
-> battery charger function, and mark registers which contain status bits,
-> gpio status, and adc readings as volatile.
+> Using an unsigned type limits the thermal framework to positive
+> temperatures without need. Also several drivers currently will report
+> temperatures near UINT_MAX for temperatures below 0=C2=B0C. This will=
+ probably
+> immediately shut the machine down due to overtemperature if started b=
+elow
+> 0=C2=B0C.
 >=20
-> Cc: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
-> Signed-off-by: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
-> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+> 'long' is 64bit on several architectures. This is not needed since IN=
+T_MAX =C2=B0mC
+> is above the melting point of all known materials.
+>=20
+> Consistently use a plain 'int' for temperatures throughout the therma=
+l code and
+> the drivers. This only changes the places in the drivers where the te=
+mperature
+> is passed around as pointer, when drivers internally use another type=
+ this is
+> not changed.
+>=20
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: Jean Delvare <jdelvare@suse.de>
+> Cc: Peter Feuerer <peter@piie.net>
+> Cc: Heiko Stuebner <heiko@sntech.de>
+> Cc: Lukasz Majewski <l.majewski@samsung.com>
+> Cc: Stephen Warren <swarren@wwwdotorg.org>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Cc: linux-acpi@vger.kernel.org
+> Cc: platform-driver-x86@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-omap@vger.kernel.org
+> Cc: linux-samsung-soc@vger.kernel.org
+> Cc: Guenter Roeck <linux@roeck-us.net>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
+> Cc: Darren Hart <dvhart@infradead.org>
+> Cc: lm-sensors@lm-sensors.org
+> ---
+>  drivers/acpi/thermal.c                             | 12 +++++-----
+>  drivers/hwmon/lm75.c                               |  2 +-
+>  drivers/hwmon/ntc_thermistor.c                     |  2 +-
+>  drivers/hwmon/tmp102.c                             |  2 +-
+>  drivers/input/touchscreen/sun4i-ts.c               |  8 +++----
+>  drivers/platform/x86/acerhdf.c                     |  9 ++++----
+>  drivers/platform/x86/intel_mid_thermal.c           |  9 ++++----
+>  drivers/power/power_supply_core.c                  |  2 +-
+>  drivers/thermal/armada_thermal.c                   |  2 +-
+>  drivers/thermal/db8500_thermal.c                   |  7 +++---
+>  drivers/thermal/dove_thermal.c                     |  2 +-
+>  drivers/thermal/fair_share.c                       |  2 +-
+>  drivers/thermal/gov_bang_bang.c                    |  5 ++--
+>  drivers/thermal/hisi_thermal.c                     |  4 ++--
+>  drivers/thermal/imx_thermal.c                      | 27 +++++++++++-=
+----------
+>  drivers/thermal/int340x_thermal/int3400_thermal.c  |  2 +-
+>  .../thermal/int340x_thermal/int340x_thermal_zone.c | 10 ++++----
+>  .../thermal/int340x_thermal/int340x_thermal_zone.h |  8 +++----
+>  .../int340x_thermal/processor_thermal_device.c     |  4 ++--
+>  drivers/thermal/intel_quark_dts_thermal.c          | 13 +++++------
+>  drivers/thermal/intel_soc_dts_iosf.c               |  8 +++----
+>  drivers/thermal/kirkwood_thermal.c                 |  2 +-
+>  drivers/thermal/of-thermal.c                       | 14 +++++------
+>  drivers/thermal/power_allocator.c                  | 16 ++++++------=
+-
+>  drivers/thermal/qcom-spmi-temp-alarm.c             |  2 +-
+>  drivers/thermal/rcar_thermal.c                     |  7 +++---
+>  drivers/thermal/rockchip_thermal.c                 | 10 ++++----
+>  drivers/thermal/samsung/exynos_tmu.c               | 23 +++++++++---=
+------
+>  drivers/thermal/spear_thermal.c                    |  2 +-
+>  drivers/thermal/st/st_thermal.c                    |  5 ++--
+>  drivers/thermal/step_wise.c                        |  4 ++--
+>  drivers/thermal/tegra_soctherm.c                   |  4 ++--
+>  drivers/thermal/thermal_core.c                     | 26 ++++++++++--=
+---------
+>  drivers/thermal/thermal_hwmon.c                    | 10 ++++----
+>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 10 ++++----
+>  drivers/thermal/x86_pkg_temp_thermal.c             | 10 ++++----
+>  include/linux/thermal.h                            | 26 +++++++++---=
+---------
+>  37 files changed, 148 insertions(+), 163 deletions(-)
+> (...)
 
-Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+No objection from me.
 
-Thanks!
-Maxime
+=46or the hwmon parts:
+
+Reviewed-by: Jean Delvare <jdelvare@suse.de>
 
 --=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
-
---Qf1oXS95uex85X0R
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVmlahAAoJEBx+YmzsjxAgu1IP/Aw24HZwaq2BP4EeKLyXRQSR
-ju6kHrdjKhM05mCBfTwjiKPUBw1lVQnSCtDiQGointHdRKzOGDjLUYEgBj19eMo3
-4pYX3PI+RMaA/2iRr5I5lCZzH5YaVuk7KvKEQ4dkJhm24j4IddiKs9HiJGGThQ0s
-R1Hpfc2h/dkcNWL/MulPuLzeQXU4D9jlJlMrDbCYq8tAzaL2rFCNpSbdmdCsIcYv
-2H27EYpULi0JuDFLzQzo5EOkOAWEl6rB/YdLNJZrQPw5qp+7KZlzmmHd/lDzK4BI
-VoS0FM3ilbAlRHWCjGXDCSjO/OkOZpVpMUmm0IKyo8sXyu/pXHTgcn9BUIe+/LTG
-njFi5Spcp/00Hzf6i462V3fwS9GeLufy0eoDl6wOBsXAXNihFcYsuvCp4ooCLLaz
-wK8i9zoRw/wFv25QykpQN35LhlsQ0kgtjw9VYv9JkpiBgRSciJX92cKmEkNLFzWb
-MDo7fLu75ZulSolHaxl210++NsTrvKMx5+8ZpUrp4C1dww+QpXMg0BT7mKg2PUwr
-ohtfGRmPh/8oQ8K1u7ZwND1x9B4VcjUpV+79/tOoPeYNeBCIZDvAY6o60eRenhxJ
-Zz9oc6ufyq8YDG9+zXoDRlRyYTLkY7Gt/kHl+GdXefVlld79nKszh2srrbq7xMeq
-Rs45tPYuxQJJu+t1QP+C
-=g717
------END PGP SIGNATURE-----
-
---Qf1oXS95uex85X0R--
+Jean Delvare
+SUSE L3 Support
