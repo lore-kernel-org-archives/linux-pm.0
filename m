@@ -1,90 +1,139 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v5 4/8] klist: implement klist_prev()
-Date: Mon,  6 Jul 2015 15:22:10 +0300
-Message-ID: <1436185334-34275-5-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v5 1/8] PM / QoS: Make it possible to expose device latency tolerance to userspace
+Date: Mon,  6 Jul 2015 15:22:07 +0300
+Message-ID: <1436185334-34275-2-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1436185334-34275-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1436185334-34275-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, mturquette@baylibre.com
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-klist_prev() gets the previous element in the list. It is useful to traverse
-through the list in reverse order, for example, to provide LIFO (last in first
-out) variant of access.
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
 
+Typically when a device is created the bus core it belongs to (for example
+PCI) does not know if the device supports things like latency tolerance.
+This is left to the driver that binds to the device in question. However,
+at that time the device has already been created and there is no way to set
+its dev->power.set_latency_tolerance anymore.
+
+So follow what has been done for other PM QoS attributes as well and allow
+drivers to expose and hide latency tolerance from userspace, if the device
+supports it.
+
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- include/linux/klist.h |  1 +
- lib/klist.c           | 41 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 42 insertions(+)
+ drivers/base/power/power.h |  2 ++
+ drivers/base/power/qos.c   | 37 +++++++++++++++++++++++++++++++++++++
+ drivers/base/power/sysfs.c | 11 +++++++++++
+ include/linux/pm_qos.h     |  5 +++++
+ 4 files changed, 55 insertions(+)
 
-diff --git a/include/linux/klist.h b/include/linux/klist.h
-index 61e5b72..953f283 100644
---- a/include/linux/klist.h
-+++ b/include/linux/klist.h
-@@ -63,6 +63,7 @@ extern void klist_iter_init(struct klist *k, struct klist_iter *i);
- extern void klist_iter_init_node(struct klist *k, struct klist_iter *i,
- 				 struct klist_node *n);
- extern void klist_iter_exit(struct klist_iter *i);
-+extern struct klist_node *klist_prev(struct klist_iter *i);
- extern struct klist_node *klist_next(struct klist_iter *i);
+diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
+index f1a5d95..998fa6b 100644
+--- a/drivers/base/power/power.h
++++ b/drivers/base/power/power.h
+@@ -73,6 +73,8 @@ extern int pm_qos_sysfs_add_resume_latency(struct device *dev);
+ extern void pm_qos_sysfs_remove_resume_latency(struct device *dev);
+ extern int pm_qos_sysfs_add_flags(struct device *dev);
+ extern void pm_qos_sysfs_remove_flags(struct device *dev);
++extern int pm_qos_sysfs_add_latency_tolerance(struct device *dev);
++extern void pm_qos_sysfs_remove_latency_tolerance(struct device *dev);
  
- #endif
-diff --git a/lib/klist.c b/lib/klist.c
-index 89b485a..d74cf7a 100644
---- a/lib/klist.c
-+++ b/lib/klist.c
-@@ -324,6 +324,47 @@ static struct klist_node *to_klist_node(struct list_head *n)
+ #else /* CONFIG_PM */
+ 
+diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+index e56d538..7f3646e 100644
+--- a/drivers/base/power/qos.c
++++ b/drivers/base/power/qos.c
+@@ -883,3 +883,40 @@ int dev_pm_qos_update_user_latency_tolerance(struct device *dev, s32 val)
+ 	mutex_unlock(&dev_pm_qos_mtx);
+ 	return ret;
  }
- 
- /**
-+ * klist_prev - Ante up prev node in list.
-+ * @i: Iterator structure.
-+ *
-+ * First grab list lock. Decrement the reference count of the previous
-+ * node, if there was one. Grab the prev node, increment its reference
-+ * count, drop the lock, and return that prev node.
-+ */
-+struct klist_node *klist_prev(struct klist_iter *i)
-+{
-+	void (*put)(struct klist_node *) = i->i_klist->put;
-+	struct klist_node *last = i->i_cur;
-+	struct klist_node *prev;
-+
-+	spin_lock(&i->i_klist->k_lock);
-+
-+	if (last) {
-+		prev = to_klist_node(last->n_node.prev);
-+		if (!klist_dec_and_del(last))
-+			put = NULL;
-+	} else
-+		prev = to_klist_node(i->i_klist->k_list.prev);
-+
-+	i->i_cur = NULL;
-+	while (prev != to_klist_node(&i->i_klist->k_list)) {
-+		if (likely(!knode_dead(prev))) {
-+			kref_get(&prev->n_ref);
-+			i->i_cur = prev;
-+			break;
-+		}
-+		prev = to_klist_node(prev->n_node.prev);
-+	}
-+
-+	spin_unlock(&i->i_klist->k_lock);
-+
-+	if (put && last)
-+		put(last);
-+	return i->i_cur;
-+}
-+EXPORT_SYMBOL_GPL(klist_prev);
 +
 +/**
-  * klist_next - Ante up next node in list.
-  * @i: Iterator structure.
-  *
++ * dev_pm_qos_expose_latency_tolerance - Expose latency tolerance to userspace
++ * @dev: Device whose latency tolerance to expose
++ */
++int dev_pm_qos_expose_latency_tolerance(struct device *dev)
++{
++	int ret;
++
++	if (!dev->power.set_latency_tolerance)
++		return -EINVAL;
++
++	mutex_lock(&dev_pm_qos_sysfs_mtx);
++	ret = pm_qos_sysfs_add_latency_tolerance(dev);
++	mutex_unlock(&dev_pm_qos_sysfs_mtx);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dev_pm_qos_expose_latency_tolerance);
++
++/**
++ * dev_pm_qos_hide_latency_tolerance - Hide latency tolerance from userspace
++ * @dev: Device whose latency tolerance to hide
++ */
++void dev_pm_qos_hide_latency_tolerance(struct device *dev)
++{
++	mutex_lock(&dev_pm_qos_sysfs_mtx);
++	pm_qos_sysfs_remove_latency_tolerance(dev);
++	mutex_unlock(&dev_pm_qos_sysfs_mtx);
++
++	/* Remove the request from user space now */
++	pm_runtime_get_sync(dev);
++	dev_pm_qos_update_user_latency_tolerance(dev,
++		PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT);
++	pm_runtime_put(dev);
++}
++EXPORT_SYMBOL_GPL(dev_pm_qos_hide_latency_tolerance);
+diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+index d2be3f9..a7b4679 100644
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -738,6 +738,17 @@ void pm_qos_sysfs_remove_flags(struct device *dev)
+ 	sysfs_unmerge_group(&dev->kobj, &pm_qos_flags_attr_group);
+ }
+ 
++int pm_qos_sysfs_add_latency_tolerance(struct device *dev)
++{
++	return sysfs_merge_group(&dev->kobj,
++				 &pm_qos_latency_tolerance_attr_group);
++}
++
++void pm_qos_sysfs_remove_latency_tolerance(struct device *dev)
++{
++	sysfs_unmerge_group(&dev->kobj, &pm_qos_latency_tolerance_attr_group);
++}
++
+ void rpm_sysfs_remove(struct device *dev)
+ {
+ 	sysfs_unmerge_group(&dev->kobj, &pm_runtime_attr_group);
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index 7b3ae0c..0f65d36 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -161,6 +161,8 @@ void dev_pm_qos_hide_flags(struct device *dev);
+ int dev_pm_qos_update_flags(struct device *dev, s32 mask, bool set);
+ s32 dev_pm_qos_get_user_latency_tolerance(struct device *dev);
+ int dev_pm_qos_update_user_latency_tolerance(struct device *dev, s32 val);
++int dev_pm_qos_expose_latency_tolerance(struct device *dev);
++void dev_pm_qos_hide_latency_tolerance(struct device *dev);
+ 
+ static inline s32 dev_pm_qos_requested_resume_latency(struct device *dev)
+ {
+@@ -229,6 +231,9 @@ static inline s32 dev_pm_qos_get_user_latency_tolerance(struct device *dev)
+ 			{ return PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT; }
+ static inline int dev_pm_qos_update_user_latency_tolerance(struct device *dev, s32 val)
+ 			{ return 0; }
++static inline int dev_pm_qos_expose_latency_tolerance(struct device *dev)
++			{ return 0; }
++static inline void dev_pm_qos_hide_latency_tolerance(struct device *dev) {}
+ 
+ static inline s32 dev_pm_qos_requested_resume_latency(struct device *dev) { return 0; }
+ static inline s32 dev_pm_qos_requested_flags(struct device *dev) { return 0; }
 -- 
 2.1.4
-
