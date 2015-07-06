@@ -1,39 +1,95 @@
-From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
-Subject: RE: [PATCH v2 3/4] power: Add support for DA9150 Fuel-Gauge
-Date: Mon, 6 Jul 2015 14:27:28 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337AB55C839@SW-EX-MBX01.diasemi.com>
-References: <cover.1435308209.git.Adam.Thomson.Opensource@diasemi.com>
- <596f44407759e2047a02594367116f9c92afee56.1435308209.git.Adam.Thomson.Opensource@diasemi.com>
- <20150703152217.GC10500@x1>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v4 6/8] mfd: make mfd_remove_devices() iterate in reverse
+ order
+Date: Mon, 6 Jul 2015 15:50:39 +0100
+Message-ID: <20150706145039.GB3182@x1>
+References: <1434362256-239992-1-git-send-email-andriy.shevchenko@linux.intel.com>
+ <1434362256-239992-7-git-send-email-andriy.shevchenko@linux.intel.com>
+ <20150624113144.GL15013@x1>
+ <1436173803.8279.1.camel@linux.intel.com>
+ <CAMuHMdUhuC-8vfXKNLmONexnQeokX4xFLNR=MVXFOSWE1O3Hsg@mail.gmail.com>
+ <1436175018.8279.4.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150703152217.GC10500@x1>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f176.google.com ([209.85.212.176]:34245 "EHLO
+	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751726AbbGFOup (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 10:50:45 -0400
+Received: by wifm2 with SMTP id m2so32252043wif.1
+        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2015 07:50:44 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1436175018.8279.4.camel@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@linaro.org>
 
-T24gSnVseSAzLCAyMDE1IDE2OjIyLCBMZWUgSm9uZXMgd3JvdGU6DQoNCj4gPiArLyoNCj4gPiAr
-ICogRnVuY3Rpb24gdGVtcGxhdGUgdG8gcHJvdmlkZSBiYXR0ZXJ5IHRlbXBlcmF0dXJlLiBTaG91
-bGQgcHJvdmlkZQ0KPiA+ICsgKiAwLjEgZGVncmVlcyBDIHJlc29sdXRpb24gcmV0dXJuIHZhbHVl
-cy4NCj4gPiArICovDQo+ID4gK3R5cGVkZWYgaW50ICgqZGE5MTUwX3JlYWRfdGVtcF90KSh2b2lk
-ICpjb250ZXh0KTsNCj4gPiArDQo+ID4gKy8qIFJlZ2lzdGVyIHRlbXAgY2FsbGJhY2sgZnVuY3Rp
-b24gKi8NCj4gPiArdm9pZCBkYTkxNTBfZmdfcmVnaXN0ZXJfdGVtcF9jYihzdHJ1Y3QgcG93ZXJf
-c3VwcGx5ICpwc3ksDQo+IGRhOTE1MF9yZWFkX3RlbXBfdCBjYiwNCj4gPiArCQkJCXZvaWQgKmNi
-X2NvbnRleHQpOw0KPiA+ICsNCj4gPiAgI2VuZGlmIC8qIF9fREE5MTUwX0ZHX0ggKi8NCj4gDQo+
-IEkgc3RpbGwgZG9uJ3QgZ2V0IHdoeSB5b3UgdGhpbmsgcG9pbnRlcnMgYXJlIGJldHRlciB0aGFu
-IGp1c3QgY2FsbGluZw0KPiB0aGUgZnVuY3Rpb24gZGlyZWN0bHkuICBDYW4gdGhlICpmbigpIGV2
-ZXIgcG9pbnQgdG8gZGlmZmVyZW50IGZ1bmN0aW9ucz8NCg0KSGVyZSwgdGhlIGludGVudGlvbiBp
-cyB0byBjb3ZlciB0aGUgc2NlbmFyaW8gd2hlcmUgYSBiYXR0ZXJ5IGhhcyBubyBpbnRlcm5hbA0K
-dGhlcm1pc3RvciwgYW5kIGNhbm5vdCBwcm92aWRlIHRlbXBlcmF0dXJlIHJlYWRpbmdzIHRvIHRo
-ZSBEQTkxNTAgZGV2aWNlLiBJbg0KdGhhdCBzY2VuYXJpbyBJJ3ZlIGFsbG93ZWQgZm9yIHRoZSBv
-cHRpb24gb2YgcHJvdmlkaW5nIGFuIGV4dGVybmFsIGZ1bmN0aW9uDQp3aGljaCBjYW4gZ2l2ZSB0
-aGUgdGVtcGVyYXR1cmUgcmVhZGluZyBpbnN0ZWFkIGFzIERBOTE1MCB3aWxsIG5vdCBiZSBhYmxl
-IHRvDQpwcm92aWRlIGEgY29ycmVjdCByZWFkaW5nIGluIHRoYXQgc2NlbmFyaW8uIFRoaXMgd291
-bGQgYmUgcGxhdGZvcm0gZGVwZW5kZW50IGFuZA0Kc3VjaCBhIHBsYXRmb3JtIHVzaW5nIGEgYmF0
-dGVyeSBub3QgZW1wbG95aW5nIGFuIE5UQyBpbiB0aGVpciBiYXR0ZXJ5IGNhbg0KcmVnaXN0ZXIg
-aXRzIG93biBjYWxsLWJhY2sgZnVuY3Rpb24gdG8gcHJvdmlkZSBiYXR0ZXJ5IHRlbXBlcmF0dXJl
-IGluc3RlYWQuDQoNClNvLCBpbiBhbnN3ZXIgdG8geW91ciBxdWVzdGlvbiwgeWVzLg0K
+On Mon, 06 Jul 2015, Andy Shevchenko wrote:
+
+> On Mon, 2015-07-06 at 11:24 +0200, Geert Uytterhoeven wrote:
+> > On Mon, Jul 6, 2015 at 11:10 AM, Andy Shevchenko
+> > <andriy.shevchenko@linux.intel.com> wrote:
+> > > On Wed, 2015-06-24 at 12:31 +0100, Lee Jones wrote:
+> > > > On Mon, 15 Jun 2015, Andy Shevchenko wrote:
+> > > >=20
+> > > > > The newly introduced device_for_each_child_reverse() would be=
+=20
+> > > > > used
+> > > > > when MFD
+> > > > > core removes the device.
+> > > > >=20
+> > > > > After this patch applied the devices will be removed in a=20
+> > > > > reversed
+> > > > > order. This
+> > > > > behaviour is useful when devices have implicit dependency on=20
+> > > > > order,
+> > > > > i.e.
+> > > > > consider MFD device with serial bus controller, such as SPI,=20
+> > > > > and
+> > > > > DMA IP that is
+> > > > > attached to serial bus controller: before remove the DMA driv=
+er=20
+> > > > > we
+> > > > > have to be
+> > > > > ensured that no DMA transfers is ongoing and the requested=20
+> > > > > channel
+> > > > > are unused.
+> > > > >=20
+> > > > > Signed-off-by: Andy Shevchenko <
+> > > > > andriy.shevchenko@linux.intel.com>
+> > > > > ---
+> > > > >  drivers/mfd/mfd-core.c | 2 +-
+> > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > >=20
+> > > > Applied, thanks.
+> > >=20
+> > > Hmm=E2=80=A6 Seems kinda mistake. I can't see this applied (and r=
+equired
+> > > previous patches 4 and 5) to any of your branch neither in=20
+> > > (today's)
+> > > linux-next.
+> >=20
+> > New stuff applied after v4.1 couldn't show up in -next before v4.2
+> > -rc1 was
+> > released (which just happened last night)?
+>=20
+> Might be, I would like to resend new version of my series and that's
+> why I would like to have a branch to check what is already applied. S=
+o,
+> if I can't see it does it mean it is brewed in the private repository=
+?
+
+If you have patches that depend on this, they either need to come
+through my tree, or you have to wait until the next kernel version
+(which you probably don't want, right?).
+
+The alternative is that I unapply this patch and the whole lot can be
+sucked up by the most appropriate subsystem.
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
