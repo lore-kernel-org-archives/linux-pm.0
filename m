@@ -1,169 +1,87 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v4 3/8] clk: add support for clocks provided by SCP(System
- Control Processor)
-Date: Mon, 06 Jul 2015 12:52:52 -0700
-Message-ID: <559ADC94.4080505@codeaurora.org>
-References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com> <1433760002-24120-4-git-send-email-sudeep.holla@arm.com> <20150702172310.GF4301@codeaurora.org> <5596A1B6.8020307@arm.com>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [PATCH v3 3/4] sched: scheduler-driven cpu frequency selection
+Date: Mon, 06 Jul 2015 21:06:38 +0100
+Message-ID: <559ADFCE.3050103@arm.com>
+References: <1435362824-26734-1-git-send-email-mturquette@linaro.org> <1435362824-26734-4-git-send-email-mturquette@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:46545 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754604AbbGFTw4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 15:52:56 -0400
-In-Reply-To: <5596A1B6.8020307@arm.com>
+Received: from eu-smtp-delivery-143.mimecast.com ([146.101.78.143]:27838 "EHLO
+	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754441AbbGFUGl convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 6 Jul 2015 16:06:41 -0400
+In-Reply-To: <1435362824-26734-4-git-send-email-mturquette@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@linaro.org>
+To: Michael Turquette <mturquette@baylibre.com>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "riel@redhat.com" <riel@redhat.com>, "efault@gmx.de" <efault@gmx.de>, "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "amit.kucheria@linaro.org" <amit.kucheria@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "ashwin.chaugule@linaro.org" <ashwin.chaugule@linaro.org>, "alex.shi@linaro.org" <alex.shi@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "abelvesa@gmail.com" <abelvesa@gmail.com>, "pebolle@tiscali.nl" <pebolle@tiscali.nl>
 
-On 07/03/2015 07:52 AM, Sudeep Holla wrote:
-> Hi Stephen,
->
->
-> Thanks for the review.
->
-> On 02/07/15 18:23, Stephen Boyd wrote:
->> On 06/08, Sudeep Holla wrote:
->>> diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
->>> index 9897f353bf1a..0fe8daefc105 100644
->>> --- a/drivers/clk/Kconfig
->>> +++ b/drivers/clk/Kconfig
->>> @@ -59,6 +59,16 @@ config COMMON_CLK_RK808
->>>         clocked at 32KHz each. Clkout1 is always on, Clkout2 can off
->>>         by control register.
->>>
->>> +config COMMON_CLK_SCPI
->>> +        tristate "Clock driver controlled via SCPI interface"
->>> +        depends on ARM_SCPI_PROTOCOL || COMPILE_TEST
->>> +        ---help---
->>> +          This driver provides support for clocks that are controlled
->>> +          by firmware that implements the SCPI interface.
->>> +
->>> +      This driver uses SCPI Message Protocol to interact with the
->>> +      firmware providing all the clock controls.
->>
->> The tabbing is weird here. Both paragraphs should have the same
->> alignment.
->>
->
-> Indeed, sorry for that, fixed now.
->
->>> diff --git a/drivers/clk/clk-scpi.c b/drivers/clk/clk-scpi.c
->>> new file mode 100644
->>> index 000000000000..707b3430c55f
->>> --- /dev/null
->>> +++ b/drivers/clk/clk-scpi.c
->>> +
->>> +#include <linux/clk-provider.h>
->>> +#include <linux/device.h>
->>> +#include <linux/err.h>
->>> +#include <linux/of.h>
->>> +#include <linux/module.h>
->>> +#include <linux/of_platform.h>
->>> +#include <linux/scpi_protocol.h>
->>
->> Please include <linux/platform_device.h> as well.
->>
->
-> Added now, didn't bother as of_platform.h includes it.
->
->>> +
->>> +struct scpi_clk {
->>> +    u32 id;
->>> +    const char *name;
->>
->> Do you need this? Or can you just use __clk_get_name() in places
->> where the name is used?
->>
->
-> Not used, so removed it.
->
->
-> [...]
->
->>> +static long scpi_clk_round_rate(struct clk_hw *hw, unsigned long rate,
->>> +                unsigned long *parent_rate)
->>> +{
->>
->> Maybe a comment here like:
->>
->> /*
->>   * We can't figure out what rate it will be, so just return the rate
->>   * back to the caller. scpi_clk_recalc_rate() will be called
->>   * after the rate is set and we'll know what rate the clock is
->>   * running at then.
->>   */
->>
->
-> Done
->
->>> +    return rate;
->>> +}
->>> +
->>> +static int scpi_clk_set_rate(struct clk_hw *hw, unsigned long rate,
->>> +                 unsigned long parent_rate)
->>> +{
->>> +    struct scpi_clk *clk = to_scpi_clk(hw);
->>> +
->>> +    return clk->scpi_ops->clk_set_val(clk->id, rate);
->>> +}
->>> +
->>> +static void scpi_clk_disable(struct clk_hw *hw)
->>> +{
->>> +    scpi_clk_set_rate(hw, 0, 0);
->>
->> Does this mean you have to set a rate to enable the clock? Are
->> you relying on drivers to call clk_set_rate() to implicitly
->> enable the clock? If so, it would be better to cache the rate of
->> the clock in set_rate if the clock isn't enabled in software and
->> then send the cached rate during enable.
->>
->
-> Agreed, I have asked the firmware/SCPI specification guys about
-> more details on what to expect from firmware. Once they get back,
-> will update the code considering your feedback.
->
-> [...]
->
->>> +static int __scpi_find_dvfs_index(struct scpi_clk *clk, unsigned
->>> long rate)
->>> +{
->>> +    int idx, max_opp = clk->info->count;
->>> +    struct scpi_opp *opp = clk->info->opps;
->>
->> const?
->>
->
-> All the 3 above fixed now.
->
-> [...]
->
->>> +
->>> +    clk = devm_clk_register(dev, &sclk->hw);
->>> +    if (!IS_ERR(clk) && max)
->>> +        clk_set_rate_range(clk, min, max);
->>
->> Hm.. we're planning to make clk_register() return a struct
->> clk_hw, so this will block that. We need some sort of clk_hw API
->> that allows us to setup min/max limits on the clock from the
->> provider side. Care to add that?
->>
->
-> Can you provide pointer to the patches or the tree containing those
-> changes ? Are they targeted for v4.3 ?
->
+Hi Mike,
 
-If I have time I may try to start doing the clk_register() conversion,
-but it will take a while so I doubt it will be in v4.3. I'm asking if
-you can add a clk_hw based API that does something like
-clk_set_rate_range() without requiring a struct clk pointer. i.e.
-clk_hw_set_rate_range(struct clk_hw *hw, min, max) that constraints the
-min/max rate of the clock. This way, the driver is only using clk
-provider APIs and not clk consumer APIs.
+On 27/06/15 00:53, Michael Turquette wrote:
+> From: Michael Turquette <mturquette@baylibre.com>
+> 
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+[...]
+
+>  comment "CPU frequency scaling drivers"
+> 
+>  config CPUFREQ_DT
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 1f2c9a1..30241c9 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -494,6 +494,9 @@ extern struct cpufreq_governor cpufreq_gov_ondemand;
+>  #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE)
+>  extern struct cpufreq_governor cpufreq_gov_conservative;
+>  #define CPUFREQ_DEFAULT_GOVERNOR       (&cpufreq_gov_conservative)
+> +#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_SCHED_GOV)
+> +extern struct cpufreq_governor cpufreq_gov_sched_gov;
+
+To get it building with CONFIG_CPU_FREQ_DEFAULT_GOV_SCHED=y .
+
+-#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_SCHED_GOV)
+-extern struct cpufreq_governor cpufreq_gov_sched_gov;
++#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_SCHED)
++extern struct cpufreq_governor cpufreq_gov_sched;
+
+> +#define CPUFREQ_DEFAULT_GOVERNOR       (&cpufreq_gov_sched)
+>  #endif
+
+> +
+> +/**
+> + * cpufreq_sched_set_capacity - interface to scheduler for changing capacity values
+
+[...]
+
+minor nit:
+
+s/cpufreq_sched_set_capacity/cpufreq_sched_set_cap
+
+> + * @cpu: cpu whose capacity utilization has recently changed
+> + * @capacity: the new capacity requested by cpu
+> + *
+> + * cpufreq_sched_sched_capacity is an interface exposed to the scheduler so
+> + * that the scheduler may inform the governor of updates to capacity
+> + * utilization and make changes to cpu frequency. Currently this interface is
+> + * designed around PELT values in CFS. It can be expanded to other scheduling
+> + * classes in the future if needed.
+> + *
+> + * cpufreq_sched_set_capacity raises an IPI. The irq_work handler for that IPI
+> + * wakes up the thread that does the actual work, cpufreq_sched_thread.
+> + *
+> + * This functions bails out early if either condition is true:
+> + * 1) this cpu did not the new maximum capacity for its frequency domain
+> + * 2) no change in cpu frequency is necessary to meet the new capacity request
+> + */
+> +void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
+> +{
+> +       unsigned int freq_new, cpu_tmp;
+> +       struct cpufreq_policy *policy;
+> +       struct gov_data *gd;
+> +       unsigned long capacity_max = 0;
+
+[...]
 
