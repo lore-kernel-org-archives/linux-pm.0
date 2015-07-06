@@ -1,82 +1,71 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH] thermal: exynos: Disable the regulator on probe failure
-Date: Mon, 06 Jul 2015 17:05:03 +0200
-Message-ID: <20150706170503.58b9dcd1@amdc2363>
-References: <1433727349-23330-1-git-send-email-k.kozlowski@samsung.com>
- <20150608181459.454c9067@amdc2363>
- <CAJKOXPfwSB03YQZA2HZHJLebxq7WTK2fObxHNegdYO+3MM_pfw@mail.gmail.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH v4 6/8] mfd: make mfd_remove_devices() iterate in reverse order
+Date: Mon, 6 Jul 2015 18:10:51 +0300
+Message-ID: <CAHp75VdGyfyfYV6q9vdqK5nYBMpPWFxr32eiXXn2ruUj4pg6BA@mail.gmail.com>
+References: <1434362256-239992-1-git-send-email-andriy.shevchenko@linux.intel.com>
+	<1434362256-239992-7-git-send-email-andriy.shevchenko@linux.intel.com>
+	<20150624113144.GL15013@x1>
+	<1436173803.8279.1.camel@linux.intel.com>
+	<CAMuHMdUhuC-8vfXKNLmONexnQeokX4xFLNR=MVXFOSWE1O3Hsg@mail.gmail.com>
+	<1436175018.8279.4.camel@linux.intel.com>
+	<20150706145039.GB3182@x1>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <stable-owner@vger.kernel.org>
-In-reply-to: <CAJKOXPfwSB03YQZA2HZHJLebxq7WTK2fObxHNegdYO+3MM_pfw@mail.gmail.com>
-Sender: stable-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20150706145039.GB3182@x1>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine <dmaengine@vger.kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Krzysztof,
+On Mon, Jul 6, 2015 at 5:50 PM, Lee Jones <lee.jones@linaro.org> wrote:
+> On Mon, 06 Jul 2015, Andy Shevchenko wrote:
+>
+>> On Mon, 2015-07-06 at 11:24 +0200, Geert Uytterhoeven wrote:
+>> > On Mon, Jul 6, 2015 at 11:10 AM, Andy Shevchenko
+>> > <andriy.shevchenko@linux.intel.com> wrote:
+>> > > On Wed, 2015-06-24 at 12:31 +0100, Lee Jones wrote:
+>> > > > On Mon, 15 Jun 2015, Andy Shevchenko wrote:
 
-> 2015-06-09 1:14 GMT+09:00 Lukasz Majewski <l.majewski@samsung.com>:
-> > Hi Krzysztof,
-> >
-> >> During probe the regulator (if present) was enabled but not
-> >> disabled in case of failure. So an unsuccessful probe lead to
-> >> enabling the regulator which was actually not needed because the
-> >> device was not enabled.
-> >>
-> >> Additionally each deferred probe lead to increase of regulator
-> >> enable count so it would not be effectively disabled during
-> >> removal of the device.
-> >
-> > Thanks for catching this.
-> >
-> >>
-> >> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> >> Fixes: 498d22f616f6 ("thermal: exynos: Support for TMU regulator
-> >> defined at device tree") Cc: <stable@vger.kernel.org>
-> >>
-> >> ---
-> >>
-> >> I am not entirely convinced that this should go to stable. Leaving
-> >> a regulator enabled in case of probe failure (no exynos TMU
-> >> device) or after deferred probe (regulator won't be disabled
-> >> during device removal) is not a critical issue, just leaks power.
-> >> ---
-> >>  drivers/thermal/samsung/exynos_tmu.c | 2 ++
-> >>  1 file changed, 2 insertions(+)
-> >>
-> >> diff --git a/drivers/thermal/samsung/exynos_tmu.c
-> >> b/drivers/thermal/samsung/exynos_tmu.c index
-> >> 531f4b179871..13c3aceed19d 100644 ---
-> >> a/drivers/thermal/samsung/exynos_tmu.c +++
-> >> b/drivers/thermal/samsung/exynos_tmu.c @@ -1392,6 +1392,8 @@
-> >> err_clk_sec: if (!IS_ERR(data->clk_sec))
-> >>               clk_unprepare(data->clk_sec);
-> >>  err_sensor:
-> >> +     if (!IS_ERR_OR_NULL(data->regulator))
-> >> +             regulator_disable(data->regulator);
-> >>       thermal_zone_of_sensor_unregister(&pdev->dev, data->tzd);
-> >>
-> >>       return ret;
-> >
-> > Acked-by: Lukasz Majewski <l.majewski@samsung.com>
-> >
-> > I will test it and afterwards add to samsung-thermal tree.
->=20
-> Hi =C5=81ukasz,
->=20
-> I can't find this patch in v4.2-rc1 or your tree. What happened?
->=20
-> Best regards,
-> Krzysztof
+[]
 
-Applied to linux-samsung-thermal.git
+>> > > > Applied, thanks.
+>> > >
+>> > > Hmm=E2=80=A6 Seems kinda mistake. I can't see this applied (and =
+required
+>> > > previous patches 4 and 5) to any of your branch neither in
+>> > > (today's)
+>> > > linux-next.
+>> >
+>> > New stuff applied after v4.1 couldn't show up in -next before v4.2
+>> > -rc1 was
+>> > released (which just happened last night)?
+>>
+>> Might be, I would like to resend new version of my series and that's
+>> why I would like to have a branch to check what is already applied. =
+So,
+>> if I can't see it does it mean it is brewed in the private repositor=
+y?
+>
+> If you have patches that depend on this, they either need to come
+> through my tree, or you have to wait until the next kernel version
+> (which you probably don't want, right?).
+>
+> The alternative is that I unapply this patch and the whole lot can be
+> sucked up by the most appropriate subsystem.
 
-Thanks for fix and sorry for the delay.
+I resent a new version for other comments(still with all patches
+included). Meanwhile the patches 4-6 (from v4 or v5, where they are
+the same) could be applied in the first place. Can you clarify what
+exactly you have applied? The idea is to put the rest via your
+subsystem since it's most appropriate for this series.
+
 --=20
-Best regards,
-
-Lukasz Majewski
-
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+With Best Regards,
+Andy Shevchenko
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
