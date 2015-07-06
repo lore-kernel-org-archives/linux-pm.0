@@ -1,121 +1,144 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] thermal: consistently use int for temperatures
-Date: Mon, 6 Jul 2015 10:34:48 +0200
-Message-ID: <CAMuHMdV0rHrNMt1kUg0CwoJ0etQ7sK0jF_My1qLRJLz0z958rA@mail.gmail.com>
-References: <1436167189-29835-1-git-send-email-s.hauer@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Jun Nie <jun.nie@linaro.org>
+Subject: [PATCH v2] power/reset: zx: Register restart handler
+Date: Mon,  6 Jul 2015 16:35:30 +0800
+Message-ID: <1436171730-21175-1-git-send-email-jun.nie@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f174.google.com ([209.85.214.174]:32850 "EHLO
-	mail-ob0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753930AbbGFIet convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 04:34:49 -0400
-In-Reply-To: <1436167189-29835-1-git-send-email-s.hauer@pengutronix.de>
+Received: from mail-pd0-f173.google.com ([209.85.192.173]:34656 "EHLO
+	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237AbbGFIfs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 04:35:48 -0400
+Received: by pdbep18 with SMTP id ep18so102112966pdb.1
+        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2015 01:35:47 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jean Delvare <jdelvare@suse.de>, Peter Feuerer <peter@piie.net>, Heiko Stuebner <heiko@sntech.de>, Lukasz Majewski <l.majewski@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, platform-driver-x86@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Ripard <maxime.ripard@free-electrons.com>, Darren Hart <dvhart@infradead.org>, lm-sen
+To: sre@kernel.org, haojian.zhuang@linaro.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: linux-pm@vger.kernel.org, shawn.guo@linaro.org, wan.zhijun@zte.com.cn, jason.liu@linaro.org, Jun Nie <jun.nie@linaro.org>
 
-On Mon, Jul 6, 2015 at 9:19 AM, Sascha Hauer <s.hauer@pengutronix.de> w=
-rote:
-> The thermal code uses int, long and unsigned long for temperatures
-> in different places.
->
-> Using an unsigned type limits the thermal framework to positive
-> temperatures without need. Also several drivers currently will report
-> temperatures near UINT_MAX for temperatures below 0=C2=B0C. This will=
- probably
-> immediately shut the machine down due to overtemperature if started b=
-elow
-> 0=C2=B0C.
->
-> 'long' is 64bit on several architectures. This is not needed since IN=
-T_MAX =C2=B0mC
-> is above the melting point of all known materials.
->
-> Consistently use a plain 'int' for temperatures throughout the therma=
-l code and
-> the drivers. This only changes the places in the drivers where the te=
-mperature
-> is passed around as pointer, when drivers internally use another type=
- this is
-> not changed.
->
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: Jean Delvare <jdelvare@suse.de>
-> Cc: Peter Feuerer <peter@piie.net>
-> Cc: Heiko Stuebner <heiko@sntech.de>
-> Cc: Lukasz Majewski <l.majewski@samsung.com>
-> Cc: Stephen Warren <swarren@wwwdotorg.org>
-> Cc: Thierry Reding <thierry.reding@gmail.com>
-> Cc: linux-acpi@vger.kernel.org
-> Cc: platform-driver-x86@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-omap@vger.kernel.org
-> Cc: linux-samsung-soc@vger.kernel.org
-> Cc: Guenter Roeck <linux@roeck-us.net>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
-> Cc: Darren Hart <dvhart@infradead.org>
-> Cc: lm-sensors@lm-sensors.org
+Register with kernel restart handler instead of setting arm_pm_restart
+directly.
 
-=46or rcar-thermal:
-Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Jun Nie <jun.nie@linaro.org>
+---
+ drivers/power/reset/Kconfig     |  7 ++++
+ drivers/power/reset/Makefile    |  1 +
+ drivers/power/reset/zx-reboot.c | 82 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 90 insertions(+)
+ create mode 100644 drivers/power/reset/zx-reboot.c
 
-> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_th=
-ermal.c
-> index fe4e767..5d4ae7d 100644
-> --- a/drivers/thermal/rcar_thermal.c
-> +++ b/drivers/thermal/rcar_thermal.c
-> @@ -200,8 +200,7 @@ err_out_unlock:
->         return ret;
->  }
->
-> -static int rcar_thermal_get_temp(struct thermal_zone_device *zone,
-> -                                unsigned long *temp)
-> +static int rcar_thermal_get_temp(struct thermal_zone_device *zone, i=
-nt *temp)
->  {
->         struct rcar_thermal_priv *priv =3D rcar_zone_to_priv(zone);
->
-> @@ -235,7 +234,7 @@ static int rcar_thermal_get_trip_type(struct ther=
-mal_zone_device *zone,
->  }
->
->  static int rcar_thermal_get_trip_temp(struct thermal_zone_device *zo=
-ne,
-> -                                     int trip, unsigned long *temp)
-> +                                     int trip, int *temp)
->  {
->         struct rcar_thermal_priv *priv =3D rcar_zone_to_priv(zone);
->         struct device *dev =3D rcar_priv_to_dev(priv);
-> @@ -299,7 +298,7 @@ static void _rcar_thermal_irq_ctrl(struct rcar_th=
-ermal_priv *priv, int enable)
->  static void rcar_thermal_work(struct work_struct *work)
->  {
->         struct rcar_thermal_priv *priv;
-> -       unsigned long cctemp, nctemp;
-> +       int cctemp, nctemp;
->
->         priv =3D container_of(work, struct rcar_thermal_priv, work.wo=
-rk);
->
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index aad9c33..4ed90f3 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -165,5 +165,12 @@ config POWER_RESET_RMOBILE
+ 	help
+ 	  Reboot support for Renesas R-Mobile and SH-Mobile SoCs.
+ 
++config POWER_RESET_ZX
++	tristate "ZTE SoCs reset driver"
++	depends on ARCH_ZX || COMPILE_TEST
++	depends on HAS_IOMEM
++	help
++	  Reboot support for ZTE SoCs.
++
+ endif
+ 
+diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+index dbe06c3..096fa67 100644
+--- a/drivers/power/reset/Makefile
++++ b/drivers/power/reset/Makefile
+@@ -19,3 +19,4 @@ obj-$(CONFIG_POWER_RESET_KEYSTONE) += keystone-reset.o
+ obj-$(CONFIG_POWER_RESET_SYSCON) += syscon-reboot.o
+ obj-$(CONFIG_POWER_RESET_SYSCON_POWEROFF) += syscon-poweroff.o
+ obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
++obj-$(CONFIG_POWER_RESET_ZX) += zx-reboot.o
+diff --git a/drivers/power/reset/zx-reboot.c b/drivers/power/reset/zx-reboot.c
+new file mode 100644
+index 0000000..e930a44
+--- /dev/null
++++ b/drivers/power/reset/zx-reboot.c
+@@ -0,0 +1,82 @@
++/*
++ * ZTE zx296702 SoC reset code
++ *
++ * Copyright (c) 2015 Linaro Ltd.
++ *
++ * Author: Jun Nie <jun.nie@linaro.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/delay.h>
++#include <linux/io.h>
++#include <linux/module.h>
++#include <linux/notifier.h>
++#include <linux/of_address.h>
++#include <linux/platform_device.h>
++#include <linux/reboot.h>
++
++#include <asm/proc-fns.h>
++
++static void __iomem *base;
++static void __iomem *pcu_base;
++
++static int zx_restart_handler(struct notifier_block *this,
++			      unsigned long mode, void *cmd)
++{
++	writel_relaxed(1, base + 0xb0);
++	writel_relaxed(1, pcu_base + 0x34);
++
++	while (1)
++		cpu_do_idle();
++
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block zx_restart_nb = {
++	.notifier_call = zx_restart_handler,
++	.priority = 128,
++};
++
++static int zx_reboot_probe(struct platform_device *pdev)
++{
++	struct device_node *np = pdev->dev.of_node;
++	int err;
++
++	base = of_iomap(np, 0);
++	if (!base) {
++		WARN(1, "failed to map base address");
++		return -ENODEV;
++	}
++
++	np = of_find_compatible_node(NULL, NULL, "zte,zx296702-pcu");
++	pcu_base = of_iomap(np, 0);
++	if (!pcu_base) {
++		iounmap(base);
++		WARN(1, "failed to map pcu_base address");
++		return -ENODEV;
++	}
++
++	err = register_restart_handler(&zx_restart_nb);
++	if (err)
++		dev_err(&pdev->dev, "Register restart handler failed(err=%d)\n",
++			err);
++
++	return err;
++}
++
++static const struct of_device_id zx_reboot_of_match[] = {
++	{ .compatible = "zte,sysctrl" },
++	{}
++};
++
++static struct platform_driver zx_reboot_driver = {
++	.probe = zx_reboot_probe,
++	.driver = {
++		.name = "zx-reboot",
++		.of_match_table = zx_reboot_of_match,
++	},
++};
++module_platform_driver(zx_reboot_driver);
+-- 
+1.9.1
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-=
-m68k.org
-
-In personal conversations with technical people, I call myself a hacker=
-=2E But
-when I'm talking to journalists I just say "programmer" or something li=
-ke that.
-                                -- Linus Torvalds
