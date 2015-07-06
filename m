@@ -1,144 +1,112 @@
-From: Jun Nie <jun.nie@linaro.org>
-Subject: [PATCH v2] power/reset: zx: Register restart handler
-Date: Mon,  6 Jul 2015 16:35:30 +0800
-Message-ID: <1436171730-21175-1-git-send-email-jun.nie@linaro.org>
+From: joeyli <jlee@suse.com>
+Subject: Re: [RFC PATCH] PM / hibernate: make sure each resuming page is in
+ current memory zones
+Date: Mon, 6 Jul 2015 16:37:39 +0800
+Message-ID: <20150706083739.GA29021@linux-rxt1.site>
+References: <1435679668-13806-1-git-send-email-yu.c.chen@intel.com>
+ <20150702061935.GA19010@linux-rxt1.site>
+ <5594EFAA.1000905@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f173.google.com ([209.85.192.173]:34656 "EHLO
-	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751237AbbGFIfs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 04:35:48 -0400
-Received: by pdbep18 with SMTP id ep18so102112966pdb.1
-        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2015 01:35:47 -0700 (PDT)
+Received: from smtp.nue.novell.com ([195.135.221.5]:60112 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751454AbbGFIh4 (ORCPT
+	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+	Mon, 6 Jul 2015 04:37:56 -0400
+Content-Disposition: inline
+In-Reply-To: <5594EFAA.1000905@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org, haojian.zhuang@linaro.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: linux-pm@vger.kernel.org, shawn.guo@linaro.org, wan.zhijun@zte.com.cn, jason.liu@linaro.org, Jun Nie <jun.nie@linaro.org>
+To: chenyu5 <yu.c.chen@intel.com>
+Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, rui.zhang@intel.com, len.brown@intel.com, aaron.lu@intel.com, ying.huang@intel.com
 
-Register with kernel restart handler instead of setting arm_pm_restart
-directly.
+Hi Chen Yu,=20
 
-Signed-off-by: Jun Nie <jun.nie@linaro.org>
----
- drivers/power/reset/Kconfig     |  7 ++++
- drivers/power/reset/Makefile    |  1 +
- drivers/power/reset/zx-reboot.c | 82 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 90 insertions(+)
- create mode 100644 drivers/power/reset/zx-reboot.c
+On Thu, Jul 02, 2015 at 04:00:42PM +0800, chenyu5 wrote:
+> Hi, Joey
+> thanks for your reply,
+>=20
+> On 2015=E5=B9=B407=E6=9C=8802=E6=97=A5 14:19, joeyli wrote:
+> >Hi Chen Yu,
+> >
+> >On Tue, Jun 30, 2015 at 11:54:28PM +0800, Chen Yu wrote:
+> >>Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820 re=
+served
+> >>regions") was reverted, because this patch makes resume from hibern=
+ation
+> >>on Lenovo x230 unreliable. But reverting may bring back the kernel
+> >>exception firstly reported in former patch. In general, there are t=
+hree
+> >>problems in current code when resuming from hibernation:
+> >>
+> >>1.Resuming page may also be in second kernel's e820 reserved region=
+=2E
+> >>BIOS-e820: [mem 0x0000000069d4f000-0x0000000069e12fff] reserved
+> >>this causes kernel exception described in Commit 84c91b7ae07c
+> >>("PM / hibernate: avoid unsafe pages in e820 reserved regions")
+> >>
+> >>2.If Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e8=
+20
+> >>reserved regions") is applied to fix problem 1, and if E820_RESERVE=
+D_KERN
+> >>regions causes some regions at e820 table not page aligned,
+> >>e820_mark_nosave_regions will misjudgment the non-page aligned spac=
+e to
+> >>be "hole" space and add to nosave regions, this causes resuming fai=
+led.
+> >>Refer to https://bugzilla.kernel.org/show_bug.cgi?id=3D96111 for de=
+tail.
+> >>
+> >
+> >Sorry for I am not fully understand why checking pfn_valid could avo=
+id
+> >the above 2. issue?
+> >
+> [Yu] According to e820_mark_nosave_regions, two kinds of e820
+> regions will be regarded as nosave:
+> a.e820.map holes between each e820entry
+> b.e820entry with (!E820_RAM && !E820_RESERVED_KERN)
+> dmesg in
+> https://bugzilla.kernel.org/show_bug.cgi?id=3D96111
+> shows that:
+>=20
+> BIOS-e820: [mem 0x000000005baff000-0x00000000d684ffff] usable
+> reserve setup_data: [mem 0x000000009d3e0018-0x000000009d3f0057] usabl=
+e
+> PM: Registered nosave memory: [mem 0x9d3e0000-0x9d3e0fff]
+>=20
+> e820 map was changed by situation a, but it should not be added to
+> nosave list, right?
+>=20
+> and according to saveable_page, only pages in the zone will be saved:
+> if (page_zone(page_ !=3D zone)
+> 	return NULL;
+>=20
+> The function of is_valid_orig_page in this patch treats setup_data as
+> valid page, so I think this workaround issue 2.
+>=20
+>=20
+> >Per my understood should waiting Yinghai Lu's patches for killing
+> >E820_RESERVED_KERN to avoid the aligned problem.
+> [Yu] yes, it is a graceful solution, but I don't see that in 4.1? And
+> we encountered problem 3 in our testing enviroment, so I wrote a patc=
+h
+> to deal with it first.
+> >
+> >
+> >Thanks a lot!
+> >Joey Lee
+> >
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index aad9c33..4ed90f3 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -165,5 +165,12 @@ config POWER_RESET_RMOBILE
- 	help
- 	  Reboot support for Renesas R-Mobile and SH-Mobile SoCs.
- 
-+config POWER_RESET_ZX
-+	tristate "ZTE SoCs reset driver"
-+	depends on ARCH_ZX || COMPILE_TEST
-+	depends on HAS_IOMEM
-+	help
-+	  Reboot support for ZTE SoCs.
-+
- endif
- 
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index dbe06c3..096fa67 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -19,3 +19,4 @@ obj-$(CONFIG_POWER_RESET_KEYSTONE) += keystone-reset.o
- obj-$(CONFIG_POWER_RESET_SYSCON) += syscon-reboot.o
- obj-$(CONFIG_POWER_RESET_SYSCON_POWEROFF) += syscon-poweroff.o
- obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
-+obj-$(CONFIG_POWER_RESET_ZX) += zx-reboot.o
-diff --git a/drivers/power/reset/zx-reboot.c b/drivers/power/reset/zx-reboot.c
-new file mode 100644
-index 0000000..e930a44
---- /dev/null
-+++ b/drivers/power/reset/zx-reboot.c
-@@ -0,0 +1,82 @@
-+/*
-+ * ZTE zx296702 SoC reset code
-+ *
-+ * Copyright (c) 2015 Linaro Ltd.
-+ *
-+ * Author: Jun Nie <jun.nie@linaro.org>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/delay.h>
-+#include <linux/io.h>
-+#include <linux/module.h>
-+#include <linux/notifier.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+#include <linux/reboot.h>
-+
-+#include <asm/proc-fns.h>
-+
-+static void __iomem *base;
-+static void __iomem *pcu_base;
-+
-+static int zx_restart_handler(struct notifier_block *this,
-+			      unsigned long mode, void *cmd)
-+{
-+	writel_relaxed(1, base + 0xb0);
-+	writel_relaxed(1, pcu_base + 0x34);
-+
-+	while (1)
-+		cpu_do_idle();
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block zx_restart_nb = {
-+	.notifier_call = zx_restart_handler,
-+	.priority = 128,
-+};
-+
-+static int zx_reboot_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	int err;
-+
-+	base = of_iomap(np, 0);
-+	if (!base) {
-+		WARN(1, "failed to map base address");
-+		return -ENODEV;
-+	}
-+
-+	np = of_find_compatible_node(NULL, NULL, "zte,zx296702-pcu");
-+	pcu_base = of_iomap(np, 0);
-+	if (!pcu_base) {
-+		iounmap(base);
-+		WARN(1, "failed to map pcu_base address");
-+		return -ENODEV;
-+	}
-+
-+	err = register_restart_handler(&zx_restart_nb);
-+	if (err)
-+		dev_err(&pdev->dev, "Register restart handler failed(err=%d)\n",
-+			err);
-+
-+	return err;
-+}
-+
-+static const struct of_device_id zx_reboot_of_match[] = {
-+	{ .compatible = "zte,sysctrl" },
-+	{}
-+};
-+
-+static struct platform_driver zx_reboot_driver = {
-+	.probe = zx_reboot_probe,
-+	.driver = {
-+		.name = "zx-reboot",
-+		.of_match_table = zx_reboot_of_match,
-+	},
-+};
-+module_platform_driver(zx_reboot_driver);
--- 
-1.9.1
+Thanks for your explanation, then your patch makes sense to me.
+
+Please feel free to add tag:
+
+Reviewed-by: Lee, Chun-Yi <joeyli.kernel@gmail.com>
+
+
+Thanks a lot!
+Joey Lee
 
