@@ -1,72 +1,169 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH] thermal: consistently use int for temperatures
-Date: Mon, 06 Jul 2015 21:07:49 +0200
-Message-ID: <14808775.AMIXvBTC8g@diego>
-References: <1436167189-29835-1-git-send-email-s.hauer@pengutronix.de>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v4 3/8] clk: add support for clocks provided by SCP(System
+ Control Processor)
+Date: Mon, 06 Jul 2015 12:52:52 -0700
+Message-ID: <559ADC94.4080505@codeaurora.org>
+References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com> <1433760002-24120-4-git-send-email-sudeep.holla@arm.com> <20150702172310.GF4301@codeaurora.org> <5596A1B6.8020307@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1436167189-29835-1-git-send-email-s.hauer@pengutronix.de>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Jean Delvare <jdelvare@suse.de>, Peter Feuerer <peter@piie.net>, Lukasz Majewski <l.majewski@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, linux-acpi@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Ripard <maxime.ripard@free-electrons.com>, Darren Hart <dvhart@infradead.org>, lm-sensors@lm-sensors.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:46545 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754604AbbGFTw4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 15:52:56 -0400
+In-Reply-To: <5596A1B6.8020307@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@linaro.org>
 
-Am Montag, 6. Juli 2015, 09:19:49 schrieb Sascha Hauer:
-> The thermal code uses int, long and unsigned long for temperatures
-> in different places.
->=20
-> Using an unsigned type limits the thermal framework to positive
-> temperatures without need. Also several drivers currently will report
-> temperatures near UINT_MAX for temperatures below 0=B0C. This will pr=
-obably
-> immediately shut the machine down due to overtemperature if started b=
-elow
-> 0=B0C.
->=20
-> 'long' is 64bit on several architectures. This is not needed since IN=
-T_MAX
-> =B0mC is above the melting point of all known materials.
->=20
-> Consistently use a plain 'int' for temperatures throughout the therma=
-l code
-> and the drivers. This only changes the places in the drivers where th=
-e
-> temperature is passed around as pointer, when drivers internally use
-> another type this is not changed.
->=20
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: Jean Delvare <jdelvare@suse.de>
-> Cc: Peter Feuerer <peter@piie.net>
-> Cc: Heiko Stuebner <heiko@sntech.de>
-> Cc: Lukasz Majewski <l.majewski@samsung.com>
-> Cc: Stephen Warren <swarren@wwwdotorg.org>
-> Cc: Thierry Reding <thierry.reding@gmail.com>
-> Cc: linux-acpi@vger.kernel.org
-> Cc: platform-driver-x86@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-omap@vger.kernel.org
-> Cc: linux-samsung-soc@vger.kernel.org
-> Cc: Guenter Roeck <linux@roeck-us.net>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
-> Cc: Darren Hart <dvhart@infradead.org>
-> Cc: lm-sensors@lm-sensors.org
-> ---
+On 07/03/2015 07:52 AM, Sudeep Holla wrote:
+> Hi Stephen,
+>
+>
+> Thanks for the review.
+>
+> On 02/07/15 18:23, Stephen Boyd wrote:
+>> On 06/08, Sudeep Holla wrote:
+>>> diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
+>>> index 9897f353bf1a..0fe8daefc105 100644
+>>> --- a/drivers/clk/Kconfig
+>>> +++ b/drivers/clk/Kconfig
+>>> @@ -59,6 +59,16 @@ config COMMON_CLK_RK808
+>>>         clocked at 32KHz each. Clkout1 is always on, Clkout2 can off
+>>>         by control register.
+>>>
+>>> +config COMMON_CLK_SCPI
+>>> +        tristate "Clock driver controlled via SCPI interface"
+>>> +        depends on ARM_SCPI_PROTOCOL || COMPILE_TEST
+>>> +        ---help---
+>>> +          This driver provides support for clocks that are controlled
+>>> +          by firmware that implements the SCPI interface.
+>>> +
+>>> +      This driver uses SCPI Message Protocol to interact with the
+>>> +      firmware providing all the clock controls.
+>>
+>> The tabbing is weird here. Both paragraphs should have the same
+>> alignment.
+>>
+>
+> Indeed, sorry for that, fixed now.
+>
+>>> diff --git a/drivers/clk/clk-scpi.c b/drivers/clk/clk-scpi.c
+>>> new file mode 100644
+>>> index 000000000000..707b3430c55f
+>>> --- /dev/null
+>>> +++ b/drivers/clk/clk-scpi.c
+>>> +
+>>> +#include <linux/clk-provider.h>
+>>> +#include <linux/device.h>
+>>> +#include <linux/err.h>
+>>> +#include <linux/of.h>
+>>> +#include <linux/module.h>
+>>> +#include <linux/of_platform.h>
+>>> +#include <linux/scpi_protocol.h>
+>>
+>> Please include <linux/platform_device.h> as well.
+>>
+>
+> Added now, didn't bother as of_platform.h includes it.
+>
+>>> +
+>>> +struct scpi_clk {
+>>> +    u32 id;
+>>> +    const char *name;
+>>
+>> Do you need this? Or can you just use __clk_get_name() in places
+>> where the name is used?
+>>
+>
+> Not used, so removed it.
+>
+>
+> [...]
+>
+>>> +static long scpi_clk_round_rate(struct clk_hw *hw, unsigned long rate,
+>>> +                unsigned long *parent_rate)
+>>> +{
+>>
+>> Maybe a comment here like:
+>>
+>> /*
+>>   * We can't figure out what rate it will be, so just return the rate
+>>   * back to the caller. scpi_clk_recalc_rate() will be called
+>>   * after the rate is set and we'll know what rate the clock is
+>>   * running at then.
+>>   */
+>>
+>
+> Done
+>
+>>> +    return rate;
+>>> +}
+>>> +
+>>> +static int scpi_clk_set_rate(struct clk_hw *hw, unsigned long rate,
+>>> +                 unsigned long parent_rate)
+>>> +{
+>>> +    struct scpi_clk *clk = to_scpi_clk(hw);
+>>> +
+>>> +    return clk->scpi_ops->clk_set_val(clk->id, rate);
+>>> +}
+>>> +
+>>> +static void scpi_clk_disable(struct clk_hw *hw)
+>>> +{
+>>> +    scpi_clk_set_rate(hw, 0, 0);
+>>
+>> Does this mean you have to set a rate to enable the clock? Are
+>> you relying on drivers to call clk_set_rate() to implicitly
+>> enable the clock? If so, it would be better to cache the rate of
+>> the clock in set_rate if the clock isn't enabled in software and
+>> then send the cached rate during enable.
+>>
+>
+> Agreed, I have asked the firmware/SCPI specification guys about
+> more details on what to expect from firmware. Once they get back,
+> will update the code considering your feedback.
+>
+> [...]
+>
+>>> +static int __scpi_find_dvfs_index(struct scpi_clk *clk, unsigned
+>>> long rate)
+>>> +{
+>>> +    int idx, max_opp = clk->info->count;
+>>> +    struct scpi_opp *opp = clk->info->opps;
+>>
+>> const?
+>>
+>
+> All the 3 above fixed now.
+>
+> [...]
+>
+>>> +
+>>> +    clk = devm_clk_register(dev, &sclk->hw);
+>>> +    if (!IS_ERR(clk) && max)
+>>> +        clk_set_rate_range(clk, min, max);
+>>
+>> Hm.. we're planning to make clk_register() return a struct
+>> clk_hw, so this will block that. We need some sort of clk_hw API
+>> that allows us to setup min/max limits on the clock from the
+>> provider side. Care to add that?
+>>
+>
+> Can you provide pointer to the patches or the tree containing those
+> changes ? Are they targeted for v4.3 ?
+>
 
-=46or
+If I have time I may try to start doing the clk_register() conversion,
+but it will take a while so I doubt it will be in v4.3. I'm asking if
+you can add a clk_hw based API that does something like
+clk_set_rate_range() without requiring a struct clk pointer. i.e.
+clk_hw_set_rate_range(struct clk_hw *hw, min, max) that constraints the
+min/max rate of the clock. This way, the driver is only using clk
+provider APIs and not clk consumer APIs.
 
->  drivers/thermal/rockchip_thermal.c                 | 10 ++++----
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
 
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
