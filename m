@@ -1,257 +1,132 @@
-From: PINTU KUMAR <pintu.k@samsung.com>
-Subject: RE: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory feature
-Date: Mon, 06 Jul 2015 19:22:47 +0530
-Message-ID: <0ffd01d0b7f3$6bf5a120$43e0e360$@samsung.com>
-References: <1435929607-3435-1-git-send-email-pintu.k@samsung.com>
- <5596C48F.8050800@gmx.de>
+From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v2 1/4] mfd: da9150: Add support for Fuel-Gauge
+Date: Mon, 6 Jul 2015 14:03:10 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337AB55C7ED@SW-EX-MBX01.diasemi.com>
+References: <cover.1435308209.git.Adam.Thomson.Opensource@diasemi.com>
+ <11b930c87ee9728ce8911896aa673e2ad1dedf40.1435308209.git.Adam.Thomson.Opensource@diasemi.com>
+ <20150703151608.GA10500@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:38144 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754496AbbGFN4F (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 09:56:05 -0400
-In-reply-to: <5596C48F.8050800@gmx.de>
-Content-language: en-us
+Received: from mail1.bemta5.messagelabs.com ([195.245.231.140]:37061 "EHLO
+	mail1.bemta5.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754907AbbGFODe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 10:03:34 -0400
+In-Reply-To: <20150703151608.GA10500@x1>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Heinrich Schuchardt' <xypron.glpk@gmx.de>, corbet@lwn.net, akpm@linux-foundation.org, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, mgorman@suse.de, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org
-Cc: cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com, pintu.agarwal@gmail.com
+To: Lee Jones <lee.jones@linaro.org>, "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 
-
-> -----Original Message-----
-> From: Heinrich Schuchardt [mailto:xypron.glpk@gmx.de]
-> Sent: Friday, July 03, 2015 10:51 PM
-> To: Pintu Kumar; corbet@lwn.net; akpm@linux-foundation.org; vbabka@suse.cz;
-> gorcunov@openvz.org; mhocko@suse.cz; emunson@akamai.com;
-> kirill.shutemov@linux.intel.com; standby24x7@gmail.com;
-> hannes@cmpxchg.org; vdavydov@parallels.com; hughd@google.com;
-> minchan@kernel.org; tj@kernel.org; rientjes@google.com;
-> dzickus@redhat.com; prarit@redhat.com; ebiederm@xmission.com;
-> rostedt@goodmis.org; uobergfe@redhat.com; paulmck@linux.vnet.ibm.com;
-> iamjoonsoo.kim@lge.com; ddstreet@ieee.org; sasha.levin@oracle.com;
-> koct9i@gmail.com; mgorman@suse.de; cj@linux.com;
-> opensource.ganesh@gmail.com; vinmenon@codeaurora.org; linux-
-> doc@vger.kernel.org; linux-kernel@vger.kernel.org; linux-mm@kvack.org; linux-
-> pm@vger.kernel.org
-> Cc: cpgs@samsung.com; pintu_agarwal@yahoo.com; vishnu.ps@samsung.com;
-> rohit.kr@samsung.com; iqbal.ams@samsung.com
-> Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
-> feature
-> 
-> On 03.07.2015 15:20, Pintu Kumar wrote:
-> > This patch provides 2 things:
-> > 1. Add new control called shrink_memory in /proc/sys/vm/.
-> > This control can be used to aggressively reclaim memory system-wide in
-> > one shot from the user space. A value of 1 will instruct the kernel to
-> > reclaim as much as totalram_pages in the system.
-> > Example: echo 1 > /proc/sys/vm/shrink_memory
-> >
-> > 2. Enable shrink_all_memory API in kernel with new
-> CONFIG_SHRINK_MEMORY.
-> > Currently, shrink_all_memory function is used only during hibernation.
-> > With the new config we can make use of this API for non-hibernation
-> > case also without disturbing the hibernation case.
-> >
-> > The detailed paper was presented in Embedded Linux Conference,
-> > Mar-2015 http://events.linuxfoundation.org/sites/events/files/slides/
-> > %5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
-> >
-> > Scenarios were this can be used and helpful are:
-> > 1) Can be invoked just after system boot-up is finished.
-> > 2) Can be invoked just before entering entire system suspend.
-> > 3) Can be invoked from kernel when order-4 pages starts failing.
-> > 4) Can be helpful to completely avoid or delay the kerenl OOM condition.
-> > 5) Can be developed as a system-tool to quickly defragment entire system
-> >    from user space, without the need to kill any application.
-> >
-> > Signed-off-by: Pintu Kumar <pintu.k@samsung.com>
-> > ---
-> >  Documentation/sysctl/vm.txt |   16 ++++++++++++++++
-> >  include/linux/swap.h        |    7 +++++++
-> >  kernel/sysctl.c             |    9 +++++++++
-> >  mm/Kconfig                  |    8 ++++++++
-> >  mm/vmscan.c                 |   23 +++++++++++++++++++++--
-> >  5 files changed, 61 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
-> > index 9832ec5..a959ad1 100644
-> > --- a/Documentation/sysctl/vm.txt
-> > +++ b/Documentation/sysctl/vm.txt
-> > @@ -54,6 +54,7 @@ Currently, these files are in /proc/sys/vm:
-> >  - page-cluster
-> >  - panic_on_oom
-> >  - percpu_pagelist_fraction
-> > +- shrink_memory
-> >  - stat_interval
-> >  - swappiness
-> >  - user_reserve_kbytes
-> > @@ -718,6 +719,21 @@ sysctl, it will revert to this default behavior.
-> >
-> >  ==============================================================
-> >
-> > +shrink_memory
-> > +
-> > +This control is available only when CONFIG_SHRINK_MEMORY is set. This
-> > +control can be used to aggressively reclaim memory system-wide in one
-> > +shot. A value of
-> > +1 will instruct the kernel to reclaim as much as totalram_pages in the
-system.
-> > +For example, to reclaim all memory system-wide we can do:
-> > +# echo 1 > /proc/sys/vm/shrink_memory
-> 
-> The API should be as restrictive as possible to allow for extensibility.
-> 
-> You describe "1" as the only used value. So, please add here:
-> 
-> "If any other value than 1 is written to shrink_memory an error EINVAL
-occurs."
-> 
-
-Ok, I will handle this error case in next patch set.
-Actual, I did exactly like compact_memory, so I made this way.
-
-> > +
-> > +For more information about this control, please visit the following
-> > +presentation in embedded linux conference, 2015.
-> > +http://events.linuxfoundation.org/sites/events/files/slides/
-> > +%5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
-> > +
-> > +==============================================================
-> > +
-> >  stat_interval
-> >
-> >  The time interval between which vm statistics are updated.  The
-> > default diff --git a/include/linux/swap.h b/include/linux/swap.h index
-> > 9a7adfb..6505b0b 100644
-> > --- a/include/linux/swap.h
-> > +++ b/include/linux/swap.h
-> > @@ -333,6 +333,13 @@ extern int vm_swappiness;  extern int
-> > remove_mapping(struct address_space *mapping, struct page *page);
-> > extern unsigned long vm_total_pages;
-> >
-> > +#ifdef CONFIG_SHRINK_MEMORY
-> > +extern int sysctl_shrink_memory;
-> > +extern int sysctl_shrinkmem_handler(struct ctl_table *table, int write,
-> > +		void __user *buffer, size_t *length, loff_t *ppos); #endif
-> > +
-> > +
-> >  #ifdef CONFIG_NUMA
-> >  extern int zone_reclaim_mode;
-> >  extern int sysctl_min_unmapped_ratio; diff --git a/kernel/sysctl.c
-> > b/kernel/sysctl.c index c566b56..2895099 100644
-> > --- a/kernel/sysctl.c
-> > +++ b/kernel/sysctl.c
-> > @@ -1351,6 +1351,15 @@ static struct ctl_table vm_table[] = {
-> >  	},
-> >
-> >  #endif /* CONFIG_COMPACTION */
-> > +#ifdef CONFIG_SHRINK_MEMORY
-> > +	{
-> > +		.procname	= "shrink_memory",
-> > +		.data		= &sysctl_shrink_memory,
-> > +		.maxlen		= sizeof(int),
-> > +		.mode		= 0200,
-> > +		.proc_handler	= sysctl_shrinkmem_handler,
-> 
-> Supply the value limits.
-> 
-> int min_shrink_memory = 1;
-> int max_shrink_memory = 1;
-> 
-> .extra1 = &min_shrink_memory,
-> .extra2 = &max_shrink_memory,
-> 
-Ok, I will include this value as well in the new patch set.
-
-> > +	},
-> > +#endif
-> >  	{
-> >  		.procname	= "min_free_kbytes",
-> >  		.data		= &min_free_kbytes,
-> > diff --git a/mm/Kconfig b/mm/Kconfig
-> > index b3a60ee..8e04bd9 100644
-> > --- a/mm/Kconfig
-> > +++ b/mm/Kconfig
-> > @@ -657,3 +657,11 @@ config DEFERRED_STRUCT_PAGE_INIT
-> >  	  when kswapd starts. This has a potential performance impact on
-> >  	  processes running early in the lifetime of the systemm until kswapd
-> >  	  finishes the initialisation.
-> > +
-> > +config SHRINK_MEMORY
-> > +	bool "Allow for system-wide shrinking of memory"
-> > +	default n
-> > +	depends on MMU
-> > +	help
-> > +	  It enables support for system-wide memory reclaim in one shot using
-> > +	  echo 1 > /proc/sys/vm/shrink_memory.
-> > diff --git a/mm/vmscan.c b/mm/vmscan.c index c8d8282..837b88d 100644
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -3557,7 +3557,7 @@ void wakeup_kswapd(struct zone *zone, int order,
-> enum zone_type classzone_idx)
-> >  	wake_up_interruptible(&pgdat->kswapd_wait);
-> >  }
-> >
-> > -#ifdef CONFIG_HIBERNATION
-> > +#if defined CONFIG_HIBERNATION || CONFIG_SHRINK_MEMORY
-> >  /*
-> >   * Try to free `nr_to_reclaim' of memory, system-wide, and return the
-number
-> of
-> >   * freed pages.
-> > @@ -3571,12 +3571,17 @@ unsigned long shrink_all_memory(unsigned long
-> nr_to_reclaim)
-> >  	struct reclaim_state reclaim_state;
-> >  	struct scan_control sc = {
-> >  		.nr_to_reclaim = nr_to_reclaim,
-> > +#ifdef CONFIG_SHRINK_MEMORY
-> > +		.gfp_mask = (GFP_HIGHUSER_MOVABLE | GFP_RECLAIM_MASK),
-> > +		.hibernation_mode = 0,
-> > +#else
-> >  		.gfp_mask = GFP_HIGHUSER_MOVABLE,
-> > +		.hibernation_mode = 1,
-> > +#endif
-> >  		.priority = DEF_PRIORITY,
-> >  		.may_writepage = 1,
-> >  		.may_unmap = 1,
-> >  		.may_swap = 1,
-> > -		.hibernation_mode = 1,
-> >  	};
-> >  	struct zonelist *zonelist = node_zonelist(numa_node_id(), sc.gfp_mask);
-> >  	struct task_struct *p = current;
-> > @@ -3597,6 +3602,20 @@ unsigned long shrink_all_memory(unsigned long
-> > nr_to_reclaim)  }  #endif /* CONFIG_HIBERNATION */
-> >
-> > +#ifdef CONFIG_SHRINK_MEMORY
-> > +int sysctl_shrink_memory;
-> > +/* This is the entry point for system-wide shrink memory
-> > ++via /proc/sys/vm/shrink_memory */
-> > +int sysctl_shrinkmem_handler(struct ctl_table *table, int write,
-> > +		void __user *buffer, size_t *length, loff_t *ppos) {
-> 
-> Check if *buffer contains "1". If the value is not "1" return -EINVAL.
-> 
-> The check can be done using function proc_dointvec_minmax().
-> 
-
-Ok, I will include this case also in the new patch set.
-Thanks for the review and suggestions.
-
-> Best regards
-> 
-> Heinrich Schuchardt
-> 
-> > +	if (write)
-> > +		shrink_all_memory(totalram_pages);
-> > +
-> > +	return 0;
-> > +}
-> > +#endif
-> > +
-> >  /* It's optimal to keep kswapds on the same CPUs as their memory, but
-> >     not required for correctness.  So if the last cpu in a node goes
-> >     away, we get changed to run anywhere: as the first one comes back,
-> >
-
+T24gSnVseSAzLCAyMDE1IDE2OjE2LCBMZWUgSm9uZXMgd3JvdGU6DQoNCj4gDQo+IENoYW5nZWxv
+ZyB2MSA9PiB2Mj8NCg0KSXMgZGVzY3JpYmVkIGluIHRoZSBjb3ZlciBsZXR0ZXIsIGJ1dCBjYW4g
+bW92ZSB0aGF0IGluZm9ybWF0aW9uIHRvIHRoZSBpbmRpdmlkdWFsDQpwYXRjaGVzIGluIHRoZSBm
+dXR1cmUsIGlmIHRoYXQgaGVscHMuDQoNCj4gPg0KPiA+ICtzdGF0aWMgc3RydWN0IHJlc291cmNl
+IGRhOTE1MF9mZ19yZXNvdXJjZXNbXSA9IHsNCj4gPiArCXsNCj4gPiArCQkubmFtZSA9ICJGRyIs
+DQo+ID4gKwkJLnN0YXJ0ID0gREE5MTUwX0lSUV9GRywNCj4gPiArCQkuZW5kID0gREE5MTUwX0lS
+UV9GRywNCj4gPiArCQkuZmxhZ3MgPSBJT1JFU09VUkNFX0lSUSwNCj4gDQo+IENhbiB5b3UgdXNl
+IHRoZSBERUZJTkVfUkVTXyogaGVscGVycz8NCg0KSGFkbid0IHNwb3R0ZWQgdGhvc2UgYmVmb3Jl
+LiBXaWxsIHVzZSB0aG9zZSBpbnN0ZWFkLg0KDQo+ID4gLQlpZiAoIWRhOTE1MCkNCj4gPiAtCQly
+ZXR1cm4gLUVOT01FTTsNCj4gPiArCWlmICghZGE5MTUwKSB7DQo+ID4gKwkJcmV0ID0gLUVOT01F
+TTsNCj4gPiArCQlnb3RvIGZhaWw7DQo+IA0KPiBEb24ndCBkbyB0aGlzLiAgJ2ZhaWwnIGRvZXNu
+J3QgZG8gYW55dGhpbmcsIGp1c3QgcmV0dXJuIGhlcmUuDQoNCk9rLiBJIHdhcyBvcHRpbmcgZm9y
+IGNob29zaW5nIG9uZSBjb25zaXN0ZW50IG1ldGhvZCBvZiBoYW5kbGluZyBmYWlsdXJlLCByYXRo
+ZXINCnRoYW4gYSBjb21iaW5hdGlvbiBvZiBnb3RvcyBhbmQgaW1tZWRpYXRlIHJldHVybnMsIGJ1
+dCB3aWxsIGNoYW5nZS4NCg0KPiANCj4gPiArCX0NCj4gPg0KPiA+ICAJZGE5MTUwLT5kZXYgPSAm
+Y2xpZW50LT5kZXY7DQo+ID4gIAlkYTkxNTAtPmlycSA9IGNsaWVudC0+aXJxOw0KPiA+IEBAIC0z
+MzIsMTkgKzQ0NCw0NiBAQCBzdGF0aWMgaW50IGRhOTE1MF9wcm9iZShzdHJ1Y3QgaTJjX2NsaWVu
+dCAqY2xpZW50LA0KPiA+ICAJCXJldCA9IFBUUl9FUlIoZGE5MTUwLT5yZWdtYXApOw0KPiA+ICAJ
+CWRldl9lcnIoZGE5MTUwLT5kZXYsICJGYWlsZWQgdG8gYWxsb2NhdGUgcmVnaXN0ZXIgbWFwOiAl
+ZFxuIiwNCj4gPiAgCQkJcmV0KTsNCj4gPiAtCQlyZXR1cm4gcmV0Ow0KPiA+ICsJCWdvdG8gZmFp
+bDsNCj4gDQo+IEl0IHdhcyBiZXR0ZXIgYmVmb3JlLg0KDQpPaw0KDQo+IA0KPiA+ICsJfQ0KPiA+
+ICsNCj4gPiArCS8qIFNldHVwIHNlY29uZGFyeSBJMkMgaW50ZXJmYWNlIGZvciBRSUYgYWNjZXNz
+ICovDQo+ID4gKwlxaWZfYWRkciA9IGRhOTE1MF9yZWdfcmVhZChkYTkxNTAsIERBOTE1MF9DT1JF
+MldJUkVfQ1RSTF9BKTsNCj4gPiArCXFpZl9hZGRyID0gKHFpZl9hZGRyICYgREE5MTUwX0NPUkVf
+QkFTRV9BRERSX01BU0spID4+IDE7DQo+ID4gKwlxaWZfYWRkciB8PSBEQTkxNTBfUUlGX0kyQ19B
+RERSX0xTQjsNCj4gPiArCWRhOTE1MC0+Y29yZV9xaWYgPSBpMmNfbmV3X2R1bW15KGNsaWVudC0+
+YWRhcHRlciwgcWlmX2FkZHIpOw0KPiA+ICsJaWYgKCFkYTkxNTAtPmNvcmVfcWlmKSB7DQo+ID4g
+KwkJZGV2X2VycihkYTkxNTAtPmRldiwgIkZhaWxlZCB0byBhdHRhY2ggUUlGIGNsaWVudFxuIik7
+DQo+ID4gKwkJcmV0ID0gLUVOT0RFVjsNCj4gPiArCQlnb3RvIGZhaWw7DQo+IA0KPiBTYW1lLg0K
+DQpPaw0KDQo+IA0KPiA+ICAJfQ0KPiA+DQo+ID4gLQlkYTkxNTAtPmlycV9iYXNlID0gcGRhdGEg
+PyBwZGF0YS0+aXJxX2Jhc2UgOiAtMTsNCj4gPiArCWkyY19zZXRfY2xpZW50ZGF0YShkYTkxNTAt
+PmNvcmVfcWlmLCBkYTkxNTApOw0KPiA+ICsJZGE5MTUwLT5yZWFkX2RldiA9IChyZWFkX2Rldl90
+KSBkYTkxNTBfaTJjX3JlYWRfZGV2aWNlOw0KPiA+ICsJZGE5MTUwLT53cml0ZV9kZXYgPSAod3Jp
+dGVfZGV2X3QpIGRhOTE1MF9pMmNfd3JpdGVfZGV2aWNlOw0KPiANCj4gSXMgaXQgcG9zc2libGUg
+Zm9yIHJlYWRfZGV2IHRvIGJlIHNldCB0byBhbnl0aGluZyBvdGhlciB0aGFuDQo+IGRhOTE1MF9p
+MmNfcmVhZF9kZXZpY2U/DQoNClJpZ2h0IG5vdyB0aGVyZSBpcyBubyBTUEkgc3VwcG9ydCBpbiB0
+aGUgZHJpdmVyIHNvIG5vLiBHaXZlbiB0aGUgY29tbWVudCBmdXJ0aGVyDQpkb3duLCBJJ2xsIHJl
+bW92ZSB0aGVzZSBmdW5jdGlvbiBwb2ludGVycyBmb3Igbm93LCBhbmQgZGlyZWN0bHkgY2FsbCB0
+aGUgSTJDDQpyZWxhdGVkIGZ1bmN0aW9ucy4NCg0KPiANCj4gPiArCWlmIChwZGF0YSkgew0KPiA+
+ICsJCWRhOTE1MC0+aXJxX2Jhc2UgPSBwZGF0YS0+aXJxX2Jhc2U7DQo+ID4gKw0KPiA+ICsJCWRh
+OTE1MF9kZXZzWzJdLnBsYXRmb3JtX2RhdGEgPSBwZGF0YS0+ZmdfcGRhdGE7DQo+ID4gKwkJZGE5
+MTUwX2RldnNbMl0ucGRhdGFfc2l6ZSA9IHNpemVvZihzdHJ1Y3QgZGE5MTUwX2ZnX3BkYXRhKTsN
+Cj4gDQo+IFRoaXMgaXMgZnJhZ2lsZS4NCj4gDQo+IElmIGFub3RoZXIgZGV2aWNlIGdldHMgaW5z
+ZXJ0ZWQgYWJvdmUgdGhlIEZHLCB0aGlzIHdpbGwgYnJlYWsuDQo+IA0KDQpJdCBpcyB1bmxpa2Vs
+eSwgYnV0IHlvdSBhcmUgcmlnaHQuIFdpbGwgZml4IHRoaXMuDQoNCj4gPiBkaWZmIC0tZ2l0IGEv
+aW5jbHVkZS9saW51eC9tZmQvZGE5MTUwL2NvcmUuaCBiL2luY2x1ZGUvbGludXgvbWZkL2RhOTE1
+MC9jb3JlLmgNCj4gPiBpbmRleCA3NmU2Njg5Li45OGVjZmVhIDEwMDY0NA0KPiA+IC0tLSBhL2lu
+Y2x1ZGUvbGludXgvbWZkL2RhOTE1MC9jb3JlLmgNCj4gPiArKysgYi9pbmNsdWRlL2xpbnV4L21m
+ZC9kYTkxNTAvY29yZS5oDQo+ID4gQEAgLTE1LDkgKzE1LDExIEBADQo+ID4gICNkZWZpbmUgX19E
+QTkxNTBfQ09SRV9IDQo+ID4NCj4gPiAgI2luY2x1ZGUgPGxpbnV4L2RldmljZS5oPg0KPiA+ICsj
+aW5jbHVkZSA8bGludXgvaTJjLmg+DQo+ID4gICNpbmNsdWRlIDxsaW51eC9pbnRlcnJ1cHQuaD4N
+Cj4gPiAgI2luY2x1ZGUgPGxpbnV4L3JlZ21hcC5oPg0KPiA+DQo+ID4gKw0KPiANCj4gUGxlYXNl
+IHJlbW92ZSB0aGlzLg0KDQpZZXAuDQoNCj4gDQo+ID4gIC8qIEkyQyBhZGRyZXNzIHBhZ2luZyAq
+Lw0KPiA+ICAjZGVmaW5lIERBOTE1MF9SRUdfUEFHRV9TSElGVAk4DQo+ID4gICNkZWZpbmUgREE5
+MTUwX1JFR19QQUdFX01BU0sJMHhGRg0KPiA+IEBAIC00NiwyMyArNDgsNDAgQEANCj4gPiAgI2Rl
+ZmluZSBEQTkxNTBfSVJRX0dQQURDCTE5DQo+ID4gICNkZWZpbmUgREE5MTUwX0lSUV9XS1VQCQky
+MA0KPiA+DQo+ID4gKy8qIFBsYXRmb3JtIERhdGEgKi8NCj4gDQo+IE5vIG5lZWQgZm9yIHRoaXMg
+Y29tbWVudC4gIFRoZSBwZGF0YSBpbiB0aGUgbmFtZSBnaXZlIGl0IGF3YXkuDQoNCkZpbmUuDQoN
+Cj4gDQo+ID4gK3N0cnVjdCBkYTkxNTBfZmdfcGRhdGE7DQo+IA0KPiBXaHkgY2FuJ3QgeW91IGp1
+c3QgcHV0IHRoZSBzdHJ1Y3QgZGVmaW5pdGlvbiBpbiBoZXJlPw0KPiANCg0KV2FzIGEgZGVzaWdu
+IGNob2ljZSBhcyBJIHdhcyBwcm92aWRpbmcgYSBoZWFkZXIgZm9yIEZHIHRvIGV4cG9zZSB0aGUg
+dGVtcA0KcmVhZGluZyBjYWxsYmFjayBmdW5jdGlvbiBhbmQgZmlndXJlZCBpdCBtYWRlIHNlbnNl
+IHRvIGtlZXAgb3RoZXIgRkcgcmVsYXRlZA0KaXRlbXMgaW4gdGhlcmUgYXMgd2VsbC4gQ2FuIGZv
+bGQgdGhlbSBhbGwgaW50byB0aGUgY29yZS5oIHRob3VnaCBpZiB0aGF0J3MgdGhlDQpwcmVmZXJy
+ZWQgbWV0aG9kLg0KDQo+ID4gIHN0cnVjdCBkYTkxNTBfcGRhdGEgew0KPiA+ICAJaW50IGlycV9i
+YXNlOw0KPiA+ICsJc3RydWN0IGRhOTE1MF9mZ19wZGF0YSAqZmdfcGRhdGE7DQo+ID4gIH07DQo+
+ID4NCj4gPiArLyogSS9PIGZ1bmN0aW9uIHR5cGVkZWZzIGZvciByYXcgYWNjZXNzICovDQo+ID4g
+K3R5cGVkZWYgaW50ICgqcmVhZF9kZXZfdCkodm9pZCAqY2xpZW50LCB1OCBhZGRyLCBpbnQgY291
+bnQsIHU4ICpidWYpOw0KPiA+ICt0eXBlZGVmIGludCAoKndyaXRlX2Rldl90KSh2b2lkICpjbGll
+bnQsIHU4IGFkZHIsIGludCBjb3VudCwgY29uc3QgdTggKmJ1Zik7DQo+IA0KPiBObyBuZWVkIHRv
+IHR5cGVkZWYsIGp1c3QgcG9wIHRoZW0gZGlyZWN0bHkgaW50byB0aGUgc3RydWN0LiAgQWx0aG91
+Z2gNCj4gSSdtIG5vdCBjb252aW5jZWQgdGhhdCBuZWVkIHRoZW0gYXQgYWxsIHJlYWxseS4NCg0K
+V2lsbCByZW1vdmUgdXNlIG9mIHRoaXMgZm9yIG5vdywgYXMgd2l0aG91dCBTUEkgc3VwcG9ydCwg
+dGhleSBkb24ndCBhZGQNCmFueXRoaW5nLg0KDQo+IA0KPiA+ICBzdHJ1Y3QgZGE5MTUwIHsNCj4g
+PiAgCXN0cnVjdCBkZXZpY2UgKmRldjsNCj4gPiAgCXN0cnVjdCByZWdtYXAgKnJlZ21hcDsNCj4g
+PiArCXN0cnVjdCBpMmNfY2xpZW50ICpjb3JlX3FpZjsNCj4gPiArDQo+ID4gKwlyZWFkX2Rldl90
+IHJlYWRfZGV2Ow0KPiA+ICsJd3JpdGVfZGV2X3Qgd3JpdGVfZGV2Ow0KPiA+ICsNCj4gPiAgCXN0
+cnVjdCByZWdtYXBfaXJxX2NoaXBfZGF0YSAqcmVnbWFwX2lycV9kYXRhOw0KPiA+ICAJaW50IGly
+cTsNCj4gPiAgCWludCBpcnFfYmFzZTsNCj4gDQo+IFdoeSBhcmUgdGhlcmUgMiBpcnFfYmFzZXM/
+ICBUaGF0IGNvdWxkIGdldCBwcmV0dHkgY29uZnVzaW5nLg0KPiANCj4gV2h5IGlzIGl0IGJlaW5n
+IHN0b3JlZD8NCj4gDQo+IFNhbWUgd2l0aCBpcnEuDQoNCk5vdCAyIElSUSBiYXNlcy4gJ2lycScg
+aXMgdGhlIGNoaXAgSVJRLiBTYW1lIGFzIGlzIGRvbmUgaW4gYSBudW1iZXIgb2Ygb3RoZXINCk1G
+RCBkcml2ZXJzLiBUZWNobmljYWxseSB0aG91Z2ggdGhleSBkb24ndCBuZWVkIHN0b3Jpbmcgd2l0
+aGluIHRoZSBwcml2YXRlIGRhdGEsDQphbmQgd2FzIGRvbmUgYXMgYSBjb252ZW5pZW5jZS4gSSBj
+YW4gYWRkIGEgZm9sbG93IHVwIHBhdGNoIHRvIHJlbW92ZSB0aGlzLCBpZg0KaXQncyB3YW50ZWQg
+dGhvdWdoLg0KDQo+IA0KPiA+ICB9Ow0KPiA+DQo+ID4gIC8qIERldmljZSBJL08gKi8NCj4gPiAr
+dm9pZCBkYTkxNTBfcmVhZF9xaWYoc3RydWN0IGRhOTE1MCAqZGE5MTUwLCB1OCBhZGRyLCBpbnQg
+Y291bnQsIHU4ICpidWYpOw0KPiA+ICt2b2lkIGRhOTE1MF93cml0ZV9xaWYoc3RydWN0IGRhOTE1
+MCAqZGE5MTUwLCB1OCBhZGRyLCBpbnQgY291bnQsIGNvbnN0IHU4ICpidWYpOw0KPiANCj4gV2hh
+dCBpcyBxaWY/ICBUaGUgbmFtaW5nIGNvbnZlbnRpb24gaXNuJ3QgdmVyeSB0cmFuc3BhcmVudC4N
+Cg0KVGhpcyBpcyBhbiBpbnRlcmZhY2Ugd2hpY2ggaXMgc3BlY2lmaWMgdG8gdGhlIGRldmljZSAo
+UXVlcnkgSW50ZXJmYWNlKSwgYW5kIGlzDQp1c2VkIHRvIGFjY2VzcyBkYXRhIGZyb20gdGhlIGZ1
+ZWwtZ2F1Z2UuIElzIGRvY3VtZW50ZWQgaW4gdGhlIGRldmljZQ0KZGF0YXNoZWV0LCBidXQgY2Fu
+IGFkZCBjb21tZW50cyBoZXJlIGp1c3QgdG8gY2xhcmlmeS4gDQoNCj4gDQo+ID4gIHU4IGRhOTE1
+MF9yZWdfcmVhZChzdHJ1Y3QgZGE5MTUwICpkYTkxNTAsIHUxNiByZWcpOw0KPiA+ICB2b2lkIGRh
+OTE1MF9yZWdfd3JpdGUoc3RydWN0IGRhOTE1MCAqZGE5MTUwLCB1MTYgcmVnLCB1OCB2YWwpOw0K
+PiA+ICB2b2lkIGRhOTE1MF9zZXRfYml0cyhzdHJ1Y3QgZGE5MTUwICpkYTkxNTAsIHUxNiByZWcs
+IHU4IG1hc2ssIHU4IHZhbCk7DQo+ID4NCj4gPiAgdm9pZCBkYTkxNTBfYnVsa19yZWFkKHN0cnVj
+dCBkYTkxNTAgKmRhOTE1MCwgdTE2IHJlZywgaW50IGNvdW50LCB1OCAqYnVmKTsNCj4gPiAgdm9p
+ZCBkYTkxNTBfYnVsa193cml0ZShzdHJ1Y3QgZGE5MTUwICpkYTkxNTAsIHUxNiByZWcsIGludCBj
+b3VudCwgY29uc3QgdTgNCj4gKmJ1Zik7DQo+ID4gKw0KPiA+ICAjZW5kaWYgLyogX19EQTkxNTBf
+Q09SRV9IICovDQo+ID4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvbWZkL2RhOTE1MC9mZy5o
+IGIvaW5jbHVkZS9saW51eC9tZmQvZGE5MTUwL2ZnLmgNCj4gPiBuZXcgZmlsZSBtb2RlIDEwMDY0
+NA0KPiA+IGluZGV4IDAwMDAwMDAuLjBmZjUyYWINCj4gPiAtLS0gL2Rldi9udWxsDQo+ID4gKysr
+IGIvaW5jbHVkZS9saW51eC9tZmQvZGE5MTUwL2ZnLmgNCj4gPiBAQCAtMCwwICsxLDI5IEBADQo+
+ID4gKy8qDQo+ID4gKyAqIERBOTE1MCBNRkQgRHJpdmVyIC0gRnVlbCBHYXVnZSBEYXRhDQo+IA0K
+PiBEb2VzIGl0IHJlYWxseSByZXF1aXJlIGl0J3MgdmVyeSBvd24gaGVhZGVyIGZpbGU/DQoNCldp
+bGwgZm9sZCB0aGlzIGludG8gdGhlIG1haW4gaGVhZGVyLCBpZiB5b3UgZG9uJ3Qgd2FudCB0byBz
+ZXBhcmF0ZSBvdXQgdGhlIEZHDQpyZWxhdGVkIGRhdGEgYW5kIHRlbXAgY2FsbGJhY2sgcmVsYXRl
+ZCBkZWZpbmVzLg0K
