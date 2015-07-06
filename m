@@ -1,120 +1,72 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 4/4] devfreq_cooling: add trace information
-Date: Mon, 6 Jul 2015 14:58:43 -0400
-Message-ID: <20150706145843.7f475472@gandalf.local.home>
-References: <1435928310-15938-1-git-send-email-javi.merino@arm.com>
-	<1435928310-15938-5-git-send-email-javi.merino@arm.com>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH] thermal: consistently use int for temperatures
+Date: Mon, 06 Jul 2015 21:07:49 +0200
+Message-ID: <14808775.AMIXvBTC8g@diego>
+References: <1436167189-29835-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtprelay0040.hostedemail.com ([216.40.44.40]:39099 "EHLO
-	smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751860AbbGFTH1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 15:07:27 -0400
-Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com [10.5.19.251])
-	by smtpgrave07.hostedemail.com (Postfix) with ESMTP id CF42D11AD79
-	for <linux-pm@vger.kernel.org>; Mon,  6 Jul 2015 18:58:46 +0000 (UTC)
-In-Reply-To: <1435928310-15938-5-git-send-email-javi.merino@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1436167189-29835-1-git-send-email-s.hauer@pengutronix.de>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Jean Delvare <jdelvare@suse.de>, Peter Feuerer <peter@piie.net>, Lukasz Majewski <l.majewski@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, linux-acpi@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Ripard <maxime.ripard@free-electrons.com>, Darren Hart <dvhart@infradead.org>, lm-sensors@lm-sensors.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Ingo Molnar <mingo@redhat.com>
 
-On Fri,  3 Jul 2015 13:58:30 +0100
-Javi Merino <javi.merino@arm.com> wrote:
+Am Montag, 6. Juli 2015, 09:19:49 schrieb Sascha Hauer:
+> The thermal code uses int, long and unsigned long for temperatures
+> in different places.
+>=20
+> Using an unsigned type limits the thermal framework to positive
+> temperatures without need. Also several drivers currently will report
+> temperatures near UINT_MAX for temperatures below 0=B0C. This will pr=
+obably
+> immediately shut the machine down due to overtemperature if started b=
+elow
+> 0=B0C.
+>=20
+> 'long' is 64bit on several architectures. This is not needed since IN=
+T_MAX
+> =B0mC is above the melting point of all known materials.
+>=20
+> Consistently use a plain 'int' for temperatures throughout the therma=
+l code
+> and the drivers. This only changes the places in the drivers where th=
+e
+> temperature is passed around as pointer, when drivers internally use
+> another type this is not changed.
+>=20
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: Jean Delvare <jdelvare@suse.de>
+> Cc: Peter Feuerer <peter@piie.net>
+> Cc: Heiko Stuebner <heiko@sntech.de>
+> Cc: Lukasz Majewski <l.majewski@samsung.com>
+> Cc: Stephen Warren <swarren@wwwdotorg.org>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Cc: linux-acpi@vger.kernel.org
+> Cc: platform-driver-x86@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-omap@vger.kernel.org
+> Cc: linux-samsung-soc@vger.kernel.org
+> Cc: Guenter Roeck <linux@roeck-us.net>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
+> Cc: Darren Hart <dvhart@infradead.org>
+> Cc: lm-sensors@lm-sensors.org
+> ---
 
+=46or
 
-> @@ -142,6 +144,10 @@ static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cd
->  	/* Get static power */
->  	static_power = get_static_power(dfc, freq);
->  
-> +	load = (100 * status->busy_time) / status->total_time;
+>  drivers/thermal/rockchip_thermal.c                 | 10 ++++----
 
-When tracing is disabled, this division will still be done.
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 
-Why not just pass in status, and have the load calculated in the
-tracepoint TP_fast_assign() ?
-
-> +	trace_thermal_power_devfreq_get_power(cdev, freq, load, dyn_power,
-> +					      static_power);
-> +
->  	*power = dyn_power + static_power;
->  
->  	return 0;
-> @@ -195,6 +201,7 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
->  			break;
->  
->  	*state = i;
-> +	trace_thermal_power_devfreq_limit(cdev, freq, *state, power);
->  	return 0;
->  }
->  
-> diff --git a/include/trace/events/thermal.h b/include/trace/events/thermal.h
-> index 8b1f80682b80..ffa870c0d2d2 100644
-> --- a/include/trace/events/thermal.h
-> +++ b/include/trace/events/thermal.h
-> @@ -135,6 +135,57 @@ TRACE_EVENT(thermal_power_cpu_limit,
->  		__entry->power)
->  );
->  
-> +TRACE_EVENT(thermal_power_devfreq_get_power,
-> +	TP_PROTO(struct thermal_cooling_device *cdev, unsigned long freq,
-> +		u32 load, u32 dynamic_power, u32 static_power),
-> +
-> +	TP_ARGS(cdev, freq, load, dynamic_power, static_power),
-> +
-> +	TP_STRUCT__entry(
-> +		__string(type,         cdev->type    )
-> +		__field(unsigned long, freq          )
-> +		__field(u32,           load          )
-> +		__field(u32,           dynamic_power )
-> +		__field(u32,           static_power  )
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__assign_str(type, cdev->type);
-> +		__entry->freq = freq;
-> +		__entry->load = load;
-
- __entry->load = (100 * status->busy_time) / status->total_time;
-
--- Steve
-
-> +		__entry->dynamic_power = dynamic_power;
-> +		__entry->static_power = static_power;
-> +	),
-> +
-> +	TP_printk("type=%s freq=%lu load=%u dynamic_power=%u static_power=%u",
-> +		__get_str(type), __entry->freq,
-> +		__entry->load, __entry->dynamic_power, __entry->static_power)
-> +);
-> +
-> +TRACE_EVENT(thermal_power_devfreq_limit,
-> +	TP_PROTO(struct thermal_cooling_device *cdev, unsigned long freq,
-> +		unsigned long cdev_state, u32 power),
-> +
-> +	TP_ARGS(cdev, freq, cdev_state, power),
-> +
-> +	TP_STRUCT__entry(
-> +		__string(type,         cdev->type)
-> +		__field(unsigned int,  freq      )
-> +		__field(unsigned long, cdev_state)
-> +		__field(u32,           power     )
-> +	),
-> +
-> +	TP_fast_assign(
-> +		__assign_str(type, cdev->type);
-> +		__entry->freq = freq;
-> +		__entry->cdev_state = cdev_state;
-> +		__entry->power = power;
-> +	),
-> +
-> +	TP_printk("type=%s freq=%u cdev_state=%lu power=%u",
-> +		__get_str(type), __entry->freq, __entry->cdev_state,
-> +		__entry->power)
-> +);
->  #endif /* _TRACE_THERMAL_H */
->  
->  /* This part must be outside protection */
-
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
