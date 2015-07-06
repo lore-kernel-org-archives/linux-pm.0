@@ -1,105 +1,42 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v5 5/8] driver core: implement device_for_each_child_reverse()
-Date: Mon,  6 Jul 2015 15:22:11 +0300
-Message-ID: <1436185334-34275-6-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v5 6/8] mfd: make mfd_remove_devices() iterate in reverse order
+Date: Mon,  6 Jul 2015 15:22:12 +0300
+Message-ID: <1436185334-34275-7-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1436185334-34275-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:2068 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755237AbbGFMWr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 6 Jul 2015 08:22:47 -0400
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1436185334-34275-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, mturquette@baylibre.com
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-The new function device_for_each_child_reverse() is helpful to traverse the
-registered devices in a reversed order, e.g. in the case when an operation on
-each device should be done first on the last added device, then on one before
-last and so on.
+The newly introduced device_for_each_child_reverse() would be used when MFD
+core removes the device.
+
+After this patch applied the devices will be removed in a reversed order. This
+behaviour is useful when devices have implicit dependency on order, i.e.
+consider MFD device with serial bus controller, such as SPI, and DMA IP that is
+attached to serial bus controller: before remove the DMA driver we have to be
+ensured that no DMA transfers is ongoing and the requested channel are unused.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/base/core.c    | 43 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/device.h |  2 ++
- 2 files changed, 45 insertions(+)
+ drivers/mfd/mfd-core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index dafae6d..7d62795 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -1252,6 +1252,19 @@ void device_unregister(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(device_unregister);
- 
-+static struct device *prev_device(struct klist_iter *i)
-+{
-+	struct klist_node *n = klist_prev(i);
-+	struct device *dev = NULL;
-+	struct device_private *p;
-+
-+	if (n) {
-+		p = to_device_private_parent(n);
-+		dev = p->device;
-+	}
-+	return dev;
-+}
-+
- static struct device *next_device(struct klist_iter *i)
+diff --git a/drivers/mfd/mfd-core.c b/drivers/mfd/mfd-core.c
+index 14fd5cb..c17635d 100644
+--- a/drivers/mfd/mfd-core.c
++++ b/drivers/mfd/mfd-core.c
+@@ -302,7 +302,7 @@ void mfd_remove_devices(struct device *parent)
  {
- 	struct klist_node *n = klist_next(i);
-@@ -1341,6 +1354,36 @@ int device_for_each_child(struct device *parent, void *data,
- EXPORT_SYMBOL_GPL(device_for_each_child);
+ 	atomic_t *cnts = NULL;
  
- /**
-+ * device_for_each_child_reverse - device child iterator in reversed order.
-+ * @parent: parent struct device.
-+ * @fn: function to be called for each device.
-+ * @data: data for the callback.
-+ *
-+ * Iterate over @parent's child devices, and call @fn for each,
-+ * passing it @data.
-+ *
-+ * We check the return of @fn each time. If it returns anything
-+ * other than 0, we break out and return that value.
-+ */
-+int device_for_each_child_reverse(struct device *parent, void *data,
-+				  int (*fn)(struct device *dev, void *data))
-+{
-+	struct klist_iter i;
-+	struct device *child;
-+	int error = 0;
-+
-+	if (!parent->p)
-+		return 0;
-+
-+	klist_iter_init(&parent->p->klist_children, &i);
-+	while ((child = prev_device(&i)) && !error)
-+		error = fn(child, data);
-+	klist_iter_exit(&i);
-+	return error;
-+}
-+EXPORT_SYMBOL_GPL(device_for_each_child_reverse);
-+
-+/**
-  * device_find_child - device iterator for locating a particular device.
-  * @parent: parent struct device
-  * @match: Callback function to check device
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 5a31bf3..af6fbc3 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -958,6 +958,8 @@ extern int __must_check device_add(struct device *dev);
- extern void device_del(struct device *dev);
- extern int device_for_each_child(struct device *dev, void *data,
- 		     int (*fn)(struct device *dev, void *data));
-+extern int device_for_each_child_reverse(struct device *dev, void *data,
-+		     int (*fn)(struct device *dev, void *data));
- extern struct device *device_find_child(struct device *dev, void *data,
- 				int (*match)(struct device *dev, void *data));
- extern int device_rename(struct device *dev, const char *new_name);
+-	device_for_each_child(parent, &cnts, mfd_remove_devices_fn);
++	device_for_each_child_reverse(parent, &cnts, mfd_remove_devices_fn);
+ 	kfree(cnts);
+ }
+ EXPORT_SYMBOL(mfd_remove_devices);
 -- 
 2.1.4
 
