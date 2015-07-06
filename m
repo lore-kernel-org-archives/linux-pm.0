@@ -1,71 +1,115 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v4 6/8] mfd: make mfd_remove_devices() iterate in reverse order
-Date: Mon, 6 Jul 2015 18:10:51 +0300
-Message-ID: <CAHp75VdGyfyfYV6q9vdqK5nYBMpPWFxr32eiXXn2ruUj4pg6BA@mail.gmail.com>
-References: <1434362256-239992-1-git-send-email-andriy.shevchenko@linux.intel.com>
-	<1434362256-239992-7-git-send-email-andriy.shevchenko@linux.intel.com>
-	<20150624113144.GL15013@x1>
-	<1436173803.8279.1.camel@linux.intel.com>
-	<CAMuHMdUhuC-8vfXKNLmONexnQeokX4xFLNR=MVXFOSWE1O3Hsg@mail.gmail.com>
-	<1436175018.8279.4.camel@linux.intel.com>
-	<20150706145039.GB3182@x1>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH RFC v2 09/16] arm: domain: Add platform callbacks for
+ domain power on/off
+Date: Mon, 6 Jul 2015 09:18:53 -0600
+Message-ID: <20150706151853.GA1018@linaro.org>
+References: <1435374156-19214-1-git-send-email-lina.iyer@linaro.org>
+ <1435374156-19214-10-git-send-email-lina.iyer@linaro.org>
+ <CAMuHMdULThWEZmyLEK_9WeK6DSNhrQdiZQLWNhi1Q6dwZTkkMg@mail.gmail.com>
+ <20150629163201.GA1524@linaro.org>
+ <CAMuHMdWL09Loe2EFUMc-kRML7Ckn7a6G1_hvPnaqkDYnhkXjog@mail.gmail.com>
+ <20150702193826.GA885@linaro.org>
+ <CAMuHMdWQRy2RMfyeyNz=6AgTDem67a1VogN3RWSJ1Y+9yNFx6g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20150706145039.GB3182@x1>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine <dmaengine@vger.kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@linaro.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:34420 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750816AbbGFPSv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 11:18:51 -0400
+Received: by pabvl15 with SMTP id vl15so97063893pab.1
+        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2015 08:18:51 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdWQRy2RMfyeyNz=6AgTDem67a1VogN3RWSJ1Y+9yNFx6g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Kevin Hilman <khilman@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>
 
-On Mon, Jul 6, 2015 at 5:50 PM, Lee Jones <lee.jones@linaro.org> wrote:
-> On Mon, 06 Jul 2015, Andy Shevchenko wrote:
+On Fri, Jul 03 2015 at 05:36 -0600, Geert Uytterhoeven wrote:
+>Hi Lina,
 >
->> On Mon, 2015-07-06 at 11:24 +0200, Geert Uytterhoeven wrote:
->> > On Mon, Jul 6, 2015 at 11:10 AM, Andy Shevchenko
->> > <andriy.shevchenko@linux.intel.com> wrote:
->> > > On Wed, 2015-06-24 at 12:31 +0100, Lee Jones wrote:
->> > > > On Mon, 15 Jun 2015, Andy Shevchenko wrote:
+>On Thu, Jul 2, 2015 at 9:38 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> On Tue, Jun 30 2015 at 09:10 -0600, Geert Uytterhoeven wrote:
+>>> On Mon, Jun 29, 2015 at 6:32 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>>>> On Mon, Jun 29 2015 at 07:36 -0600, Geert Uytterhoeven wrote:
 
-[]
+[...]
 
->> > > > Applied, thanks.
->> > >
->> > > Hmm=E2=80=A6 Seems kinda mistake. I can't see this applied (and =
-required
->> > > previous patches 4 and 5) to any of your branch neither in
->> > > (today's)
->> > > linux-next.
->> >
->> > New stuff applied after v4.1 couldn't show up in -next before v4.2
->> > -rc1 was
->> > released (which just happened last night)?
->>
->> Might be, I would like to resend new version of my series and that's
->> why I would like to have a branch to check what is already applied. =
-So,
->> if I can't see it does it mean it is brewed in the private repositor=
-y?
+>> With what you have suggested, the platform driver creates the genpd and
+>> would pass the CPU genpd to the common code for common operations. (This
+>> was what was done in [1]). The platform driver would set the power_on()
+>> and power_off() callbacks and that would have to be overriden in order
+>> handle common CPU domain suspend/resume activities. Overwriting members
+>> of an object allocated by the platform driver, is something we should
+>> avoid.
 >
-> If you have patches that depend on this, they either need to come
-> through my tree, or you have to wait until the next kernel version
-> (which you probably don't want, right?).
+>Instead of letting the generic code override the .power_{on,off}() callbacks,
+>the platform code could call the generic CPU-related methods from its own
+>.power_{on,off}() callbacks?
 >
-> The alternative is that I unapply this patch and the whole lot can be
-> sucked up by the most appropriate subsystem.
+We dont want to impose on platform drivers to call back into the CPU
+domain core code to do common domain power down activities. On a generic
+ARM CPU domain, we may not even need a platform specific domain
+callbacks. IMHO, this is not desirable.
 
-I resent a new version for other comments(still with all patches
-included). Meanwhile the patches 4-6 (from v4 or v5, where they are
-the same) could be applied in the first place. Can you clarify what
-exactly you have applied? The idea is to put the rest via your
-subsystem since it's most appropriate for this series.
+>struct rmobile_pm_domain already has .suspend() and .resume() methods.
+>The former is used to e.g. prevent the PM domains containing CPUs to be
+>powered down (in the absence of cpuidle integration). That requires scanning
+>the DT for CPUs, and it would indeed be good to have that scanning support
+>in generic code.
+>The latter became unused after the removal of sh7372 support, which did have
+>some cpuidle integration.
+>
+The CPUs may still be attached to domain, even if they are not powered
+off by CPUIdle. The code increases the reference count for every online
+CPU and any CPUs that may come online. The reference count, only goes
+down when the CPU powers down through CPUIdle or hotplug. So, if a CPU
+is not integrated with CPUIdle, it would remain in use (unless powered
+off by hotplug) and the domain would not be powered down.
 
---=20
-With Best Regards,
-Andy Shevchenko
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Or instead of allocating the memory in your platform driver for the CPU
+>> genpd, you could query and get the genpd and then add your additions on
+>> top. You could add other flags like GENPD_FLAG_PM_CLK, but *not*
+>> overwrite the power on/off callbacks in the genpd. They still have to be
+>> registered separately like in this patch. Again, not every elegant, IMO.
+>
+>Just wondering, can I set up the .attach_dev() and .detach_dev()?
+>
+I am presuming, you are concerned with the fore mentioned case of CPUs
+not participating in CPUIdle. With pm_runtime_put_sync() not happening
+for CPUs that do not power down, you should not have to worry about the
+domain being powered down.
+
+Please correct me if I misunderstood your point.
+
+>Actually, for R-Mobile hardware I don't have a need to set GENPD_FLAG_PM_CLK
+>or .attach_dev() and .detach_dev() for CPU PM domains, as they are only
+>needed for devices with MSTP clocks. CPU and L2 cache don't have these,
+>and there are no other devices in e.g. a3sm and a2sl.
+>
+>The GIC has an MSTP clock, but it's part of a different power domain.
+>
+Okay.
+
+[...]
+
+>> This the common code would get its own callbacks and when that genpd
+>> powers off, the platform genpd would power down. But no new code is
+>> needed in your platform driver. The benefit is that platform code and
+>> generic CPU domain code may exist and act in parallel and may only be
+>> related if specified in the DT and the problem with that approach is
+>> that this virtual PM domain is not a h/w domain, hence specifying in DT
+>> is questionable.
+>
+>Indeed, I don't like this option, as the DT would no longer describe HW,
+>but the Linux implementation.
+>
+>So let's continue with your approach, and see how it turns out. We can
+>always change and improvide code, while changing DT is more complicated.
+>
+Agreed.
+
+Thanks for your time, Geert.
+
+-- Lina
