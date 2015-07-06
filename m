@@ -1,53 +1,139 @@
-From: Xishi Qiu <qiuxishi@huawei.com>
-Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory feature
-Date: Mon, 6 Jul 2015 18:22:53 +0800
-Message-ID: <559A56FD.6010701@huawei.com>
-References: <1435929607-3435-1-git-send-email-pintu.k@samsung.com>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 3/4] thermal: Use IS_ENABLED instead of #ifdef
+Date: Mon, 06 Jul 2015 12:24:26 +0200
+Message-ID: <20150706122426.326f72f4@amdc2363>
+References: <1436168777-10463-1-git-send-email-s.hauer@pengutronix.de>
+ <1436168777-10463-4-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga02-in.huawei.com ([119.145.14.65]:54542 "EHLO
-	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754011AbbGFKX7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 06:23:59 -0400
-In-Reply-To: <1435929607-3435-1-git-send-email-pintu.k@samsung.com>
+Received: from mailout2.samsung.com ([203.254.224.25]:51202 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750985AbbGFKYe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 06:24:34 -0400
+In-reply-to: <1436168777-10463-4-git-send-email-s.hauer@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pintu Kumar <pintu.k@samsung.com>
-Cc: corbet@lwn.net, akpm@linux-foundation.org, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, mgorman@suse.de, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqb
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>
 
-On 2015/7/3 21:20, Pintu Kumar wrote:
+Hi Sascha,
 
-> This patch provides 2 things:
-> 1. Add new control called shrink_memory in /proc/sys/vm/.
-> This control can be used to aggressively reclaim memory system-wide
-> in one shot from the user space. A value of 1 will instruct the
-> kernel to reclaim as much as totalram_pages in the system.
-> Example: echo 1 > /proc/sys/vm/shrink_memory
+> Use IS_ENABLED(CONFIG_THERMAL_EMULATION) to make the code more
+> readable and to get rid of the addtional #ifdef around the variable
+> definitions in thermal_zone_get_temp().
+
+Reviewed-by: Lukasz Majewski <l.majewski@samsung.com>
+
 > 
-> 2. Enable shrink_all_memory API in kernel with new CONFIG_SHRINK_MEMORY.
-> Currently, shrink_all_memory function is used only during hibernation.
-> With the new config we can make use of this API for non-hibernation case
-> also without disturbing the hibernation case.
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> ---
+>  drivers/thermal/thermal_core.c | 45
+> ++++++++++++++++++------------------------ 1 file changed, 19
+> insertions(+), 26 deletions(-)
 > 
-> The detailed paper was presented in Embedded Linux Conference, Mar-2015
-> http://events.linuxfoundation.org/sites/events/files/slides/
-> %5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
-> 
-> Scenarios were this can be used and helpful are:
-> 1) Can be invoked just after system boot-up is finished.
-> 2) Can be invoked just before entering entire system suspend.
-> 3) Can be invoked from kernel when order-4 pages starts failing.
-> 4) Can be helpful to completely avoid or delay the kerenl OOM condition.
-> 5) Can be developed as a system-tool to quickly defragment entire system
->    from user space, without the need to kill any application.
-> 
+> diff --git a/drivers/thermal/thermal_core.c
+> b/drivers/thermal/thermal_core.c index aa0a661..67296da 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -477,11 +477,9 @@ static void handle_thermal_trip(struct
+> thermal_zone_device *tz, int trip) int thermal_zone_get_temp(struct
+> thermal_zone_device *tz, unsigned long *temp) {
+>  	int ret = -EINVAL;
+> -#ifdef CONFIG_THERMAL_EMULATION
+>  	int count;
+>  	unsigned long crit_temp = -1UL;
+>  	enum thermal_trip_type type;
+> -#endif
+>  
+>  	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
+>  		goto exit;
+> @@ -489,25 +487,21 @@ int thermal_zone_get_temp(struct
+> thermal_zone_device *tz, unsigned long *temp) mutex_lock(&tz->lock);
+>  
+>  	ret = tz->ops->get_temp(tz, temp);
+> -#ifdef CONFIG_THERMAL_EMULATION
+> -	if (!tz->emul_temperature)
+> -		goto skip_emul;
+> -
+> -	for (count = 0; count < tz->trips; count++) {
+> -		ret = tz->ops->get_trip_type(tz, count, &type);
+> -		if (!ret && type == THERMAL_TRIP_CRITICAL) {
+> -			ret = tz->ops->get_trip_temp(tz, count,
+> &crit_temp);
+> -			break;
+> -		}
+> -	}
+>  
+> -	if (ret)
+> -		goto skip_emul;
+> +	if (IS_ENABLED(CONFIG_THERMAL_EMULATION) &&
+> tz->emul_temperature) {
+> +		for (count = 0; count < tz->trips; count++) {
+> +			ret = tz->ops->get_trip_type(tz, count,
+> &type);
+> +			if (!ret && type == THERMAL_TRIP_CRITICAL) {
+> +				ret = tz->ops->get_trip_temp(tz,
+> count,
+> +						&crit_temp);
+> +				break;
+> +			}
+> +		}
+>  
+> -	if (*temp < crit_temp)
+> -		*temp = tz->emul_temperature;
+> -skip_emul:
+> -#endif
+> +		if (!ret && *temp < crit_temp)
+> +			*temp = tz->emul_temperature;
+> +	}
+> + 
+>  	mutex_unlock(&tz->lock);
+>  exit:
+>  	return ret;
+> @@ -847,7 +841,6 @@ policy_show(struct device *dev, struct
+> device_attribute *devattr, char *buf) return sprintf(buf, "%s\n",
+> tz->governor->name); }
+>  
+> -#ifdef CONFIG_THERMAL_EMULATION
+>  static ssize_t
+>  emul_temp_store(struct device *dev, struct device_attribute *attr,
+>  		     const char *buf, size_t count)
+> @@ -873,7 +866,6 @@ emul_temp_store(struct device *dev, struct
+> device_attribute *attr, return ret ? ret : count;
+>  }
+>  static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
+> -#endif/*CONFIG_THERMAL_EMULATION*/
+>  
+>  static ssize_t
+>  sustainable_power_show(struct device *dev, struct device_attribute
+> *devattr, @@ -1802,11 +1794,12 @@ struct thermal_zone_device
+> *thermal_zone_device_register(const char *type, goto unregister;
+>  	}
+>  
+> -#ifdef CONFIG_THERMAL_EMULATION
+> -	result = device_create_file(&tz->device,
+> &dev_attr_emul_temp);
+> -	if (result)
+> -		goto unregister;
+> -#endif
+> +	if (IS_ENABLED(CONFIG_THERMAL_EMULATION)) {
+> +		result = device_create_file(&tz->device,
+> &dev_attr_emul_temp);
+> +		if (result)
+> +			goto unregister;
+> +	}
+> +
+>  	/* Create policy attribute */
+>  	result = device_create_file(&tz->device, &dev_attr_policy);
+>  	if (result)
 
-Hi Pintu,
 
-How about increase min_free_kbytes and Android lowmemorykiller's level?
 
-Thanks,
-Xishi Qiu
+-- 
+Best regards,
 
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
