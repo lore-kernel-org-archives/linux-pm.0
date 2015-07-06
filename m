@@ -1,87 +1,78 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v3 3/4] sched: scheduler-driven cpu frequency selection
-Date: Mon, 06 Jul 2015 21:06:38 +0100
-Message-ID: <559ADFCE.3050103@arm.com>
-References: <1435362824-26734-1-git-send-email-mturquette@linaro.org> <1435362824-26734-4-git-send-email-mturquette@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v4 6/8] mfd: make mfd_remove_devices() iterate in reverse order
+Date: Tue, 07 Jul 2015 00:23:28 +0200
+Message-ID: <3134535.L6At3I31FS@vostro.rjw.lan>
+References: <1434362256-239992-1-git-send-email-andriy.shevchenko@linux.intel.com> <CAHp75VdGyfyfYV6q9vdqK5nYBMpPWFxr32eiXXn2ruUj4pg6BA@mail.gmail.com> <20150706160529.GC3182@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eu-smtp-delivery-143.mimecast.com ([146.101.78.143]:27838 "EHLO
-	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754441AbbGFUGl convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 6 Jul 2015 16:06:41 -0400
-In-Reply-To: <1435362824-26734-4-git-send-email-mturquette@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20150706160529.GC3182@x1>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine <dmaengine@vger.kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@kernel.org" <mingo@kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "preeti@linux.vnet.ibm.com" <preeti@linux.vnet.ibm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "riel@redhat.com" <riel@redhat.com>, "efault@gmx.de" <efault@gmx.de>, "nicolas.pitre@linaro.org" <nicolas.pitre@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "amit.kucheria@linaro.org" <amit.kucheria@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "ashwin.chaugule@linaro.org" <ashwin.chaugule@linaro.org>, "alex.shi@linaro.org" <alex.shi@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "abelvesa@gmail.com" <abelvesa@gmail.com>, "pebolle@tiscali.nl" <pebolle@tiscali.nl>
 
-Hi Mike,
+On Monday, July 06, 2015 05:05:29 PM Lee Jones wrote:
+> On Mon, 06 Jul 2015, Andy Shevchenko wrote:
+>=20
+> > On Mon, Jul 6, 2015 at 5:50 PM, Lee Jones <lee.jones@linaro.org> wr=
+ote:
+> > > On Mon, 06 Jul 2015, Andy Shevchenko wrote:
+> > >
+> > >> On Mon, 2015-07-06 at 11:24 +0200, Geert Uytterhoeven wrote:
+> > >> > On Mon, Jul 6, 2015 at 11:10 AM, Andy Shevchenko
+> > >> > <andriy.shevchenko@linux.intel.com> wrote:
+> > >> > > On Wed, 2015-06-24 at 12:31 +0100, Lee Jones wrote:
+> > >> > > > On Mon, 15 Jun 2015, Andy Shevchenko wrote:
+> >=20
+> > []
+> >=20
+> > >> > > > Applied, thanks.
+> > >> > >
+> > >> > > Hmm=E2=80=A6 Seems kinda mistake. I can't see this applied (=
+and required
+> > >> > > previous patches 4 and 5) to any of your branch neither in
+> > >> > > (today's)
+> > >> > > linux-next.
+> > >> >
+> > >> > New stuff applied after v4.1 couldn't show up in -next before =
+v4.2
+> > >> > -rc1 was
+> > >> > released (which just happened last night)?
+> > >>
+> > >> Might be, I would like to resend new version of my series and th=
+at's
+> > >> why I would like to have a branch to check what is already appli=
+ed. So,
+> > >> if I can't see it does it mean it is brewed in the private repos=
+itory?
+> > >
+> > > If you have patches that depend on this, they either need to come
+> > > through my tree, or you have to wait until the next kernel versio=
+n
+> > > (which you probably don't want, right?).
+> > >
+> > > The alternative is that I unapply this patch and the whole lot ca=
+n be
+> > > sucked up by the most appropriate subsystem.
+> >=20
+> > I resent a new version for other comments(still with all patches
+> > included). Meanwhile the patches 4-6 (from v4 or v5, where they are
+> > the same) could be applied in the first place. Can you clarify what
+> > exactly you have applied? The idea is to put the rest via your
+> > subsystem since it's most appropriate for this series.
+>=20
+> Easiest thing for me to do is unapply.
+>=20
+> We can take the whole series when all the Acks have been accrued.
 
-On 27/06/15 00:53, Michael Turquette wrote:
-> From: Michael Turquette <mturquette@baylibre.com>
-> 
+So are there any ACKs missing from the last series posted by Andy?
 
-[...]
+Rafael
 
->  comment "CPU frequency scaling drivers"
-> 
->  config CPUFREQ_DT
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 1f2c9a1..30241c9 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -494,6 +494,9 @@ extern struct cpufreq_governor cpufreq_gov_ondemand;
->  #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE)
->  extern struct cpufreq_governor cpufreq_gov_conservative;
->  #define CPUFREQ_DEFAULT_GOVERNOR       (&cpufreq_gov_conservative)
-> +#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_SCHED_GOV)
-> +extern struct cpufreq_governor cpufreq_gov_sched_gov;
-
-To get it building with CONFIG_CPU_FREQ_DEFAULT_GOV_SCHED=y .
-
--#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_SCHED_GOV)
--extern struct cpufreq_governor cpufreq_gov_sched_gov;
-+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_SCHED)
-+extern struct cpufreq_governor cpufreq_gov_sched;
-
-> +#define CPUFREQ_DEFAULT_GOVERNOR       (&cpufreq_gov_sched)
->  #endif
-
-> +
-> +/**
-> + * cpufreq_sched_set_capacity - interface to scheduler for changing capacity values
-
-[...]
-
-minor nit:
-
-s/cpufreq_sched_set_capacity/cpufreq_sched_set_cap
-
-> + * @cpu: cpu whose capacity utilization has recently changed
-> + * @capacity: the new capacity requested by cpu
-> + *
-> + * cpufreq_sched_sched_capacity is an interface exposed to the scheduler so
-> + * that the scheduler may inform the governor of updates to capacity
-> + * utilization and make changes to cpu frequency. Currently this interface is
-> + * designed around PELT values in CFS. It can be expanded to other scheduling
-> + * classes in the future if needed.
-> + *
-> + * cpufreq_sched_set_capacity raises an IPI. The irq_work handler for that IPI
-> + * wakes up the thread that does the actual work, cpufreq_sched_thread.
-> + *
-> + * This functions bails out early if either condition is true:
-> + * 1) this cpu did not the new maximum capacity for its frequency domain
-> + * 2) no change in cpu frequency is necessary to meet the new capacity request
-> + */
-> +void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
-> +{
-> +       unsigned int freq_new, cpu_tmp;
-> +       struct cpufreq_policy *policy;
-> +       struct gov_data *gd;
-> +       unsigned long capacity_max = 0;
-
-[...]
-
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
