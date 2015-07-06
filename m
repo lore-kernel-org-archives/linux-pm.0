@@ -1,112 +1,56 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [RFC PATCH] PM / hibernate: make sure each resuming page is in
- current memory zones
-Date: Mon, 6 Jul 2015 16:37:39 +0800
-Message-ID: <20150706083739.GA29021@linux-rxt1.site>
-References: <1435679668-13806-1-git-send-email-yu.c.chen@intel.com>
- <20150702061935.GA19010@linux-rxt1.site>
- <5594EFAA.1000905@intel.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH 1/4] PM / devfreq: Add function to set max/min frequency
+Date: Mon, 6 Jul 2015 09:47:36 +0100
+Message-ID: <20150706084736.GA2772@e104805>
+References: <1435928310-15938-1-git-send-email-javi.merino@arm.com>
+ <1435928310-15938-2-git-send-email-javi.merino@arm.com>
+ <CAJ0PZbQgW3hPuk-PXWqUrVfYhM1MWHDrRDOQE9vGxkS1Wb=AGQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.nue.novell.com ([195.135.221.5]:60112 "EHLO
-	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751454AbbGFIh4 (ORCPT
-	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
-	Mon, 6 Jul 2015 04:37:56 -0400
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:46268 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751563AbbGFIro (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 04:47:44 -0400
 Content-Disposition: inline
-In-Reply-To: <5594EFAA.1000905@intel.com>
+In-Reply-To: <CAJ0PZbQgW3hPuk-PXWqUrVfYhM1MWHDrRDOQE9vGxkS1Wb=AGQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: chenyu5 <yu.c.chen@intel.com>
-Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, rui.zhang@intel.com, len.brown@intel.com, aaron.lu@intel.com, ying.huang@intel.com
+To: "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, =?utf-8?B?w5hyamFu?= Eide <Orjan.Eide@arm.com>, Kyungmin Park <kyungmin.park@samsung.com>
 
-Hi Chen Yu,=20
-
-On Thu, Jul 02, 2015 at 04:00:42PM +0800, chenyu5 wrote:
-> Hi, Joey
-> thanks for your reply,
->=20
-> On 2015=E5=B9=B407=E6=9C=8802=E6=97=A5 14:19, joeyli wrote:
-> >Hi Chen Yu,
+On Sat, Jul 04, 2015 at 03:44:08AM +0100, MyungJoo Ham wrote:
+> On Fri, Jul 3, 2015 at 9:58 PM, Javi Merino <javi.merino@arm.com> wro=
+te:
+> > From: =C3=98rjan Eide <orjan.eide@arm.com>
 > >
-> >On Tue, Jun 30, 2015 at 11:54:28PM +0800, Chen Yu wrote:
-> >>Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820 re=
-served
-> >>regions") was reverted, because this patch makes resume from hibern=
-ation
-> >>on Lenovo x230 unreliable. But reverting may bring back the kernel
-> >>exception firstly reported in former patch. In general, there are t=
-hree
-> >>problems in current code when resuming from hibernation:
-> >>
-> >>1.Resuming page may also be in second kernel's e820 reserved region=
-=2E
-> >>BIOS-e820: [mem 0x0000000069d4f000-0x0000000069e12fff] reserved
-> >>this causes kernel exception described in Commit 84c91b7ae07c
-> >>("PM / hibernate: avoid unsafe pages in e820 reserved regions")
-> >>
-> >>2.If Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e8=
-20
-> >>reserved regions") is applied to fix problem 1, and if E820_RESERVE=
-D_KERN
-> >>regions causes some regions at e820 table not page aligned,
-> >>e820_mark_nosave_regions will misjudgment the non-page aligned spac=
-e to
-> >>be "hole" space and add to nosave regions, this causes resuming fai=
-led.
-> >>Refer to https://bugzilla.kernel.org/show_bug.cgi?id=3D96111 for de=
-tail.
-> >>
+> > Factor out the logic to set minimum and maximum frequency for the d=
+evice
+> > so that it can be used by other parts of the kernel.
 > >
-> >Sorry for I am not fully understand why checking pfn_valid could avo=
-id
-> >the above 2. issue?
-> >
-> [Yu] According to e820_mark_nosave_regions, two kinds of e820
-> regions will be regarded as nosave:
-> a.e820.map holes between each e820entry
-> b.e820entry with (!E820_RAM && !E820_RESERVED_KERN)
-> dmesg in
-> https://bugzilla.kernel.org/show_bug.cgi?id=3D96111
-> shows that:
+> > Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+> > Cc: Kyungmin Park <kyungmin.park@samsung.com>
+> > Signed-off-by: =C3=98rjan Eide <orjan.eide@arm.com>
 >=20
-> BIOS-e820: [mem 0x000000005baff000-0x00000000d684ffff] usable
-> reserve setup_data: [mem 0x000000009d3e0018-0x000000009d3f0057] usabl=
-e
-> PM: Registered nosave memory: [mem 0x9d3e0000-0x9d3e0fff]
+> Dear Javi,
 >=20
-> e820 map was changed by situation a, but it should not be added to
-> nosave list, right?
->=20
-> and according to saveable_page, only pages in the zone will be saved:
-> if (page_zone(page_ !=3D zone)
-> 	return NULL;
->=20
-> The function of is_valid_orig_page in this patch treats setup_data as
-> valid page, so I think this workaround issue 2.
->=20
->=20
-> >Per my understood should waiting Yinghai Lu's patches for killing
-> >E820_RESERVED_KERN to avoid the aligned problem.
-> [Yu] yes, it is a graceful solution, but I don't see that in 4.1? And
-> we encountered problem 3 in our testing enviroment, so I wrote a patc=
-h
-> to deal with it first.
-> >
-> >
-> >Thanks a lot!
-> >Joey Lee
-> >
+> Is there reasons to name the function "devfreq_qos_set_[min|max]"? no=
+t
+> "devfreq_set_[min|max]"? The functions may be used by non-PM-qos
+> components as well (e.g., thermal).
 
-Thanks for your explanation, then your patch makes sense to me.
+No, there are no reasons for those names.  I'll rename them to
+devfreq_set_[min|max]
 
-Please feel free to add tag:
+> And I like the idea of using devfreq devices as cooling devices. :)
 
-Reviewed-by: Lee, Chun-Yi <joeyli.kernel@gmail.com>
+Yes, we would like to be able to use them as passive cooling devices,
+like what we do with cpufreq for the cpus.=20
 
+> ps. I will be on a trip starting hours later for 8 days and then in a
+> military training for 3 days. Please expect that my responses during
+> the next 11-12 days will be very slow.
 
-Thanks a lot!
-Joey Lee
-
+No worries.  Thanks,
+Javi
