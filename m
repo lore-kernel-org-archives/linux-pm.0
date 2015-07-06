@@ -1,90 +1,53 @@
-From: Ming Lei <tom.leiming@gmail.com>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Mon, 6 Jul 2015 18:15:01 +0800
-Message-ID: <CACVXFVN5dQ6jfhTKTi-b2iiWx4EEdsW-iQRFjwEXD-07yWVqog@mail.gmail.com>
-References: <4290667.ZqInAykFGS@vostro.rjw.lan>
-	<CAJvTdKn71W0+js3D4OwK5Tx4z5KdA8hb-FyRMTuw0rdyQj9pRw@mail.gmail.com>
-	<20150703014250.GM7943@dastard>
-	<1496051.AgsebokWnB@vostro.rjw.lan>
+From: Xishi Qiu <qiuxishi@huawei.com>
+Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory feature
+Date: Mon, 6 Jul 2015 18:22:53 +0800
+Message-ID: <559A56FD.6010701@huawei.com>
+References: <1435929607-3435-1-git-send-email-pintu.k@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1496051.AgsebokWnB@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dave Chinner <david@fromorbit.com>, Len Brown <lenb@kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Alan Stern <stern@rowland.harvard.edu>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from szxga02-in.huawei.com ([119.145.14.65]:54542 "EHLO
+	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754011AbbGFKX7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 06:23:59 -0400
+In-Reply-To: <1435929607-3435-1-git-send-email-pintu.k@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pintu Kumar <pintu.k@samsung.com>
+Cc: corbet@lwn.net, akpm@linux-foundation.org, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, mgorman@suse.de, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqb
 
-On Sat, Jul 4, 2015 at 9:03 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Friday, July 03, 2015 11:42:50 AM Dave Chinner wrote:
->> On Wed, Jul 01, 2015 at 11:07:29PM -0400, Len Brown wrote:
->> > >> The _vast_ majority of systems using Linux suspend today are under
->> > >> an Android user-space.  Android has no assumption that that suspend to
->> > >> mem will necessarily stay suspended for a long time.
->> > >
->> > > Indeed, however your change was not android-specific, and it is not
->> > > "comfortable" on x86-style hardware and usage patterns.
->> >
->> > "comfortable on x86-style and usage patterns"?
->> > If you mean "traditional" instead of "comfortable",
->> > where "tradition" is based on 10-year old systems, then sure.
->>
->> Even if this were true(*) we don't break things that currently work
->> just because something different is "just around the corner". e.g.
->> if you shut the lid on your laptop and it suspends to RAM, you can
->> pull the USB drive out that you just copied stuff to and plug it
->> into another machine and find all the data you copied there is
->> present.
->>
->> Remove the sync() from the freeze code, and this isn't guaranteed to
->> work anymore. It is now dependent on userspace implementations for
->> this to work, and we know what userspace developers will choose in
->> this situation. i.e. fast and "works for me", not "safe for
->> everyone".
->>
->> (*) Which it clearly isn't true because, as this example shows, my
->> shiny new laptop still has exactly the same data integrity
->> requirements as the laptop I was using 10 years ago.
->>
->> Just because there are lots of Android or Chrome out there it
->> doesn't mean we can just ignore the requirements of everything
->> else...
->>
->> > > That said, as long as x86 will still try to safeguard my data during mem
->> > > sleep/resume as it does today, I have no strong feelings about
->> > > light/heavy-weight "mem" sleep being strictly a compile-time selectable
->> > > thing, or a more flexible runtime-selectable behavior.
->> >
->> > The observation here is that the kernel should not force every system
->> > to sys_sync() on every suspend.  The only question is how to best
->> > implement that.
->>
->> No, your observation was that "sync is slow". Your *solution* is "we
->> need to remove sync".
->
-> Not only slow, but pointless too.  The argument goes: "It is slow and
-> pointless and so it may be dropped."
->
-> Now, I can agree that it wasn't clearly demonstrated that the unconditional
-> sys_sync() in the suspend code path was pointless, but it also has never
-> been clearly shown why it is not pointless on systems that suspend and resume
-> reliably.
->
-> [The argument that the user can pull removable storage devices out of the
-> system while suspended doesn't hold any water to me, because the user can
-> pull them out of the system when not suspended just as well and cause the
-> same kind of damage to happen.]
+On 2015/7/3 21:20, Pintu Kumar wrote:
 
-I think common users do understand the difference between
-suspend and running, don't they?  So they may not complain
-anyone if they plug off USB disk when system is running, but they
-will complain the patch and the regression if their data is lost because
-doing that during suspend. Not to mention, it is very common to
-plug off USB disk after suspend laptop.
+> This patch provides 2 things:
+> 1. Add new control called shrink_memory in /proc/sys/vm/.
+> This control can be used to aggressively reclaim memory system-wide
+> in one shot from the user space. A value of 1 will instruct the
+> kernel to reclaim as much as totalram_pages in the system.
+> Example: echo 1 > /proc/sys/vm/shrink_memory
+> 
+> 2. Enable shrink_all_memory API in kernel with new CONFIG_SHRINK_MEMORY.
+> Currently, shrink_all_memory function is used only during hibernation.
+> With the new config we can make use of this API for non-hibernation case
+> also without disturbing the hibernation case.
+> 
+> The detailed paper was presented in Embedded Linux Conference, Mar-2015
+> http://events.linuxfoundation.org/sites/events/files/slides/
+> %5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
+> 
+> Scenarios were this can be used and helpful are:
+> 1) Can be invoked just after system boot-up is finished.
+> 2) Can be invoked just before entering entire system suspend.
+> 3) Can be invoked from kernel when order-4 pages starts failing.
+> 4) Can be helpful to completely avoid or delay the kerenl OOM condition.
+> 5) Can be developed as a system-tool to quickly defragment entire system
+>    from user space, without the need to kill any application.
+> 
 
-Also there are network based storage(iSCSI, NBD, ...), NFS/CIFS, and
-is it safe for these cases?
+Hi Pintu,
 
+How about increase min_free_kbytes and Android lowmemorykiller's level?
 
--- 
-Ming Lei
+Thanks,
+Xishi Qiu
+
