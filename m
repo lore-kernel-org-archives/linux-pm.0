@@ -1,105 +1,91 @@
-From: Pan Xinhui <xinhuix.pan@intel.com>
-Subject: Re: [PATCH] acpi-cpufreq.c: fix a memory leak in acpi_cpufreq_cpu_exit
-Date: Tue, 07 Jul 2015 17:31:52 +0800
-Message-ID: <559B9C88.4000909@intel.com>
-References: <559A2073.1000301@intel.com> <20150707065449.GD14598@linux> <559B8537.5010309@intel.com> <20150707085342.GF14598@linux>
+From: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Subject: Re: Re: [PATCH v3 3/4] mfd: axp20x: Add a cell for the
+ usb power_supply part of the axp20x PMICs
+Date: Tue, 7 Jul 2015 11:49:48 +0200
+Message-ID: <559BA0BC.9060409@redhat.com>
+References: <1435316357-26606-1-git-send-email-hdegoede@redhat.com>
+ <1435316357-26606-3-git-send-email-hdegoede@redhat.com>
+ <20150707070128.GI3182@x1>
+Reply-To: hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:8383 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753353AbbGGJeY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 05:34:24 -0400
-In-Reply-To: <20150707085342.GF14598@linux>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-sunxi+bncBDRZXY4CYYORBQOB52WAKGQE2ZKCPGI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+In-Reply-To: <20150707070128.GI3182@x1>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, rjw@rjwysocki.net, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>, "mnipxh@163.com" <mnipxh@163.com>
 
-hi, Viresh
-	thanks for your quick reply :)
+Hi,
 
-On 2015=E5=B9=B407=E6=9C=8807=E6=97=A5 16:53, Viresh Kumar wrote:
-> On 07-07-15, 15:52, Pan Xinhui wrote:
->> I have latest codes.
->> codes in cpufreq.c are below.
->> 1436     down_write(&policy->rwsem);
->> 1437     cpumask_clear_cpu(cpu, policy->cpus);
->> 1438=20
->> 1439     if (policy_is_inactive(policy)) {
->> 1440         if (has_target())
->> 1441             strncpy(policy->last_governor, policy->governor->na=
-me,
->> 1442                 CPUFREQ_NAME_LEN);
->> 1443     } else if (cpu =3D=3D policy->cpu) {
->> 1444         /* Nominate new CPU */
->> 1445         policy->cpu =3D cpumask_any(policy->cpus);
->> 1446     }
->> 1447     up_write(&policy->rwsem);
->=20
-> Sigh. Too bad. So what has changed is that the sysfs directory is
-> allocated to policy->cpu during init and never changed. But
-> policy->cpu can surely change.
->=20
-> Sorry for that.
->=20
-
-That's OKay. You are very busy reviewing codes written by still fresh g=
-uys like me.
-
->> back to my previous patch, you suggest me to use policy->driver_data=
- to *store* data and don't need use per_cpu anymore.
->> codes in acpi-cpufreq.c are below.
->>  365 static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
->>  366 {
->>  367     struct acpi_cpufreq_data *data =3D per_cpu(acfreq_data, cpu=
-);
->>  368     unsigned int freq;
->>  369     unsigned int cached_freq;
->> =20
->> we get *data* through per_cpu for now, as the parameter is cpu only.
->> If we store *data* in policy->driver_data, we need call
->> struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu) to get poli=
-cy.
->> We do a full codes review, and find there should be deadlock if we d=
-oing so.
->=20
-> Why?
->=20
-sorry, after double check. it's not caused by cpufreq_cpu_get.
-I am working on several branches, these codes are little different, it'=
-s OKay here.
-Sorry for mistakes.
-
->> But as cpufreq code offers
->> 238 /* Only for cpufreq core internal use */
->> 239 struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
->>
->> I have a small question,if we can use *cpufreq_cpu_get_raw* in ->get=
- callback, which is already lock hold,
->> But the comment(line 238) is... hmm.
->=20
-> That is more internal to the core. Better don't use it.
+On 07-07-15 09:01, Lee Jones wrote:
+> On Fri, 26 Jun 2015, Hans de Goede wrote:
 >
+>> Add a cell for the usb power_supply part of the axp20x PMICs.
+>>
+>> Note that this cell is only for the usb power_supply part and not the
+>> ac-power / battery-charger / rtc-backup-bat-charger bits.
+>>
+>> Depending on the board each of those must be enabled / disabled separate=
+ly
+>> in devicetree as most boards do not use all 4. So in dt each one needs i=
+ts
+>> own child-node of the axp20x node. Another reason for using separate chi=
+ld
+>> nodes for each is so that other devicetree nodes can have a power-supply
+>> property with a phandle referencing a node representing a single
+>> power-supply.
+>>
+>> The decision to use a separate devicetree node for each is reflected on
+>> the kernel side by each getting its own mfd-cell / platform_device and
+>> platform-driver.
+>>
+>> Note this commit also makes some whitespace changes to the intialization
+>> of existing cells in axp20x_cells, these are pure whitespace changes,
+>> functionally nothing changes.
+>>
+>> Cc: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
+>> Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> Signed-off-by: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
+>> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+>> ---
+>> Changes in v2:
+>> -Use DEFINE_RES_IRQ_NAMED
+>> -Change indentation of axp20x_cells initializers to avoid line wrapping
+>> Changes in v3:
+>> -Improve commit message
+>> -Add Bruno's S-o-b
+>> ---
+>>   drivers/mfd/axp20x.c | 20 ++++++++++++++++----
+>>   1 file changed, 16 insertions(+), 4 deletions(-)
+>
+> For my own reference:
+>    Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>
+> Are these two patches tied to any other in the set, or can I apply
+> them separately?
 
-yes, *cpufreq_cpu_get* is OKay. thanks.
-=20
->> thanks for your kind reply. any advices or comments are welcome.
->=20
-> Anyway, your patch is far from complete. You have just fixed a single
-> place where per-cpu data is accessed with policy->cpu. What about res=
-t
-> of the code? Like target() :)
->=20
-I have generated one patch which replacing all per_cpu with *driver_dat=
-a*, it works well in our Intel's branch for at least 2 days.
-Let me do more codes review and tests before sending to LKML. :)
-thanks for your advices :) it's really good.
+You can apply them seperately, thanks.
 
-thanks
-xinhui
+I'm wondering who will take care of upstreaming the first patch of this
+set: "ARM: dts: Add binding documentation for AXP20x pmic usb power supply"
 
-> --
-> viresh
->=20
+If you can take that one too that would be great.
+
+Regards,
+
+Hans
+
+--=20
+You received this message because you are subscribed to the Google Groups "=
+linux-sunxi" group.
+To unsubscribe from this group and stop receiving emails from it, send an e=
+mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
