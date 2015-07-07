@@ -1,97 +1,86 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 39/46] sched/cpufreq_sched: use static key for cpu frequency selection
-Date: Tue,  7 Jul 2015 19:24:22 +0100
-Message-ID: <1436293469-25707-40-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 37/46] cpufreq: introduce cpufreq_driver_might_sleep
+Date: Tue,  7 Jul 2015 19:24:20 +0100
+Message-ID: <1436293469-25707-38-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:37677 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932956AbbGGSXf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Jul 2015 14:23:35 -0400
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: peterz@infradead.org, mingo@redhat.com
-Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri Lelli <juri.lelli@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: peterz@infradead.org, mingo@redhat.com
+Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-From: Juri Lelli <juri.lelli@arm.com>
+From: Michael Turquette <mturquette@baylibre.com>
 
-Introduce a static key to only affect scheduler hot paths when sched
-governor is enabled.
+Some architectures and platforms perform CPU frequency transitions
+through a non-blocking method, while some might block or sleep. This
+distinction is important when trying to change frequency from interrupt
+context or in any other non-interruptable context, such as from the
+Linux scheduler.
 
-cc: Ingo Molnar <mingo@redhat.com>
-cc: Peter Zijlstra <peterz@infradead.org>
+Describe this distinction with a cpufreq driver flag,
+CPUFREQ_DRIVER_WILL_NOT_SLEEP. The default is to not have this flag set,
+thus erring on the side of caution.
 
-Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+cpufreq_driver_might_sleep() is also introduced in this patch. Setting
+the above flag will allow this function to return false.
+
+Cc: Rafael J. Wysocki <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Michael Turquette <mturquette@baylibre.com>
 ---
- kernel/sched/cpufreq_sched.c | 14 ++++++++++++++
- kernel/sched/fair.c          |  1 +
- kernel/sched/sched.h         |  6 ++++++
- 3 files changed, 21 insertions(+)
+ drivers/cpufreq/cpufreq.c | 6 ++++++
+ include/linux/cpufreq.h   | 9 +++++++++
+ 2 files changed, 15 insertions(+)
 
-diff --git a/kernel/sched/cpufreq_sched.c b/kernel/sched/cpufreq_sched.c
-index 5020f24..2968f3a 100644
---- a/kernel/sched/cpufreq_sched.c
-+++ b/kernel/sched/cpufreq_sched.c
-@@ -203,6 +203,18 @@ void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
- 	return;
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 8ae655c..5753cb6 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -112,6 +112,12 @@ bool have_governor_per_policy(void)
  }
+ EXPORT_SYMBOL_GPL(have_governor_per_policy);
  
-+static inline void set_sched_energy_freq(void)
++bool cpufreq_driver_might_sleep(void)
 +{
-+	if (!sched_energy_freq())
-+		static_key_slow_inc(&__sched_energy_freq);
++	return !(cpufreq_driver->flags & CPUFREQ_DRIVER_WILL_NOT_SLEEP);
 +}
++EXPORT_SYMBOL_GPL(cpufreq_driver_might_sleep);
 +
-+static inline void clear_sched_energy_freq(void)
-+{
-+	if (sched_energy_freq())
-+		static_key_slow_dec(&__sched_energy_freq);
-+}
-+
- static int cpufreq_sched_start(struct cpufreq_policy *policy)
+ struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy)
  {
- 	struct gov_data *gd;
-@@ -243,6 +255,7 @@ static int cpufreq_sched_start(struct cpufreq_policy *policy)
- 
- 	policy->governor_data = gd;
- 	gd->policy = policy;
-+	set_sched_energy_freq();
- 	return 0;
- 
- err:
-@@ -254,6 +267,7 @@ static int cpufreq_sched_stop(struct cpufreq_policy *policy)
- {
- 	struct gov_data *gd = policy->governor_data;
- 
-+	clear_sched_energy_freq();
- 	if (cpufreq_driver_might_sleep()) {
- 		kthread_stop(gd->task);
- 	}
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index f7cb6c9..d395bc9 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -4282,6 +4282,7 @@ static inline void hrtick_update(struct rq *rq)
- #endif
- 
- static bool cpu_overutilized(int cpu);
-+struct static_key __sched_energy_freq __read_mostly = STATIC_KEY_INIT_FALSE;
- 
- /*
-  * The enqueue_task method is called before nr_running is
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 30aa0c4..b5e27d9 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -1476,6 +1476,12 @@ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
- }
- #endif
- 
-+extern struct static_key __sched_energy_freq;
-+static inline bool sched_energy_freq(void)
-+{
-+	return static_key_false(&__sched_energy_freq);
-+}
-+
- #ifdef CONFIG_CPU_FREQ_GOV_SCHED
- void cpufreq_sched_set_cap(int cpu, unsigned long util);
+ 	if (have_governor_per_policy())
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 2ee4888..1f2c9a1 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -157,6 +157,7 @@ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
+ int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
+ int cpufreq_update_policy(unsigned int cpu);
+ bool have_governor_per_policy(void);
++bool cpufreq_driver_might_sleep(void);
+ struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
  #else
+ static inline unsigned int cpufreq_get(unsigned int cpu)
+@@ -314,6 +315,14 @@ struct cpufreq_driver {
+  */
+ #define CPUFREQ_NEED_INITIAL_FREQ_CHECK	(1 << 5)
+ 
++/*
++ * Set by drivers that will never block or sleep during their frequency
++ * transition. Used to indicate when it is safe to call cpufreq_driver_target
++ * from non-interruptable context. Drivers must opt-in to this flag, as the
++ * safe default is that they might sleep.
++ */
++#define CPUFREQ_DRIVER_WILL_NOT_SLEEP	(1 << 6)
++
+ int cpufreq_register_driver(struct cpufreq_driver *driver_data);
+ int cpufreq_unregister_driver(struct cpufreq_driver *driver_data);
+ 
 -- 
 1.9.1
+
