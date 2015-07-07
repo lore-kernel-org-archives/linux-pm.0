@@ -1,124 +1,161 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3 3/4] mfd: axp20x: Add a cell for the usb
- power_supply part of the axp20x PMICs
-Date: Tue, 7 Jul 2015 08:01:28 +0100
-Message-ID: <20150707070128.GI3182@x1>
-References: <1435316357-26606-1-git-send-email-hdegoede@redhat.com>
- <1435316357-26606-3-git-send-email-hdegoede@redhat.com>
-Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+From: PINTU KUMAR <pintu.k@samsung.com>
+Subject: RE: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory feature
+Date: Tue, 07 Jul 2015 12:30:39 +0530
+Message-ID: <10f201d0b882$c9dc9480$5d95bd80$@samsung.com>
+References: <1435929607-3435-1-git-send-email-pintu.k@samsung.com>
+ <559A56FD.6010701@huawei.com> <0ffe01d0b7f4$dd2706d0$97751470$@samsung.com>
+ <559B2D89.2070802@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDA7X7F2WUEBBTHS5WWAKGQEMB3ZC7I-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1435316357-26606-3-git-send-email-hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <http://groups.google.com/group/linux-sunxi
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <http://groups.google.com/group/linux-sunxi/subscribe>
-To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-reply-to: <559B2D89.2070802@huawei.com>
+Content-language: en-us
+Sender: owner-linux-mm@kvack.org
+To: 'Xishi Qiu' <qiuxishi@huawei.com>
+Cc: corbet@lwn.net, akpm@linux-foundation.org, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, mgorman@suse.de, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com, pintu.ping@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 26 Jun 2015, Hans de Goede wrote:
+Hi,
 
-> Add a cell for the usb power_supply part of the axp20x PMICs.
->=20
-> Note that this cell is only for the usb power_supply part and not the
-> ac-power / battery-charger / rtc-backup-bat-charger bits.
->=20
-> Depending on the board each of those must be enabled / disabled separatel=
-y
-> in devicetree as most boards do not use all 4. So in dt each one needs it=
-s
-> own child-node of the axp20x node. Another reason for using separate chil=
-d
-> nodes for each is so that other devicetree nodes can have a power-supply
-> property with a phandle referencing a node representing a single
-> power-supply.
->=20
-> The decision to use a separate devicetree node for each is reflected on
-> the kernel side by each getting its own mfd-cell / platform_device and
-> platform-driver.
->=20
-> Note this commit also makes some whitespace changes to the intialization
-> of existing cells in axp20x_cells, these are pure whitespace changes,
-> functionally nothing changes.
->=20
-> Cc: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
-> Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Signed-off-by: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
-> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-> ---
-> Changes in v2:
-> -Use DEFINE_RES_IRQ_NAMED
-> -Change indentation of axp20x_cells initializers to avoid line wrapping
-> Changes in v3:
-> -Improve commit message
-> -Add Bruno's S-o-b
-> ---
->  drivers/mfd/axp20x.c | 20 ++++++++++++++++----
->  1 file changed, 16 insertions(+), 4 deletions(-)
+> -----Original Message-----
+> From: Xishi Qiu [mailto:qiuxishi@huawei.com]
+> Sent: Tuesday, July 07, 2015 7:08 AM
+> To: PINTU KUMAR
+> Cc: corbet@lwn.net; akpm@linux-foundation.org; vbabka@suse.cz;
+> gorcunov@openvz.org; mhocko@suse.cz; emunson@akamai.com;
+> kirill.shutemov@linux.intel.com; standby24x7@gmail.com;
+> hannes@cmpxchg.org; vdavydov@parallels.com; hughd@google.com;
+> minchan@kernel.org; tj@kernel.org; rientjes@google.com;
+> xypron.glpk@gmx.de; dzickus@redhat.com; prarit@redhat.com;
+> ebiederm@xmission.com; rostedt@goodmis.org; uobergfe@redhat.com;
+> paulmck@linux.vnet.ibm.com; iamjoonsoo.kim@lge.com; ddstreet@ieee.org;
+> sasha.levin@oracle.com; koct9i@gmail.com; mgorman@suse.de; cj@linux.com;
+> opensource.ganesh@gmail.com; vinmenon@codeaurora.org; linux-
+> doc@vger.kernel.org; linux-kernel@vger.kernel.org; linux-mm@kvack.org; linux-
+> pm@vger.kernel.org; cpgs@samsung.com; pintu_agarwal@yahoo.com;
+> vishnu.ps@samsung.com; rohit.kr@samsung.com; iqbal.ams@samsung.com
+> Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
+> feature
+> 
+> On 2015/7/6 22:03, PINTU KUMAR wrote:
+> 
+> > Hi,
+> >
+> >> -----Original Message-----
+> >> From: Xishi Qiu [mailto:qiuxishi@huawei.com]
+> >> Sent: Monday, July 06, 2015 3:53 PM
+> >> To: Pintu Kumar
+> >> Cc: corbet@lwn.net; akpm@linux-foundation.org; vbabka@suse.cz;
+> >> gorcunov@openvz.org; mhocko@suse.cz; emunson@akamai.com;
+> >> kirill.shutemov@linux.intel.com; standby24x7@gmail.com;
+> >> hannes@cmpxchg.org; vdavydov@parallels.com; hughd@google.com;
+> >> minchan@kernel.org; tj@kernel.org; rientjes@google.com;
+> >> xypron.glpk@gmx.de; dzickus@redhat.com; prarit@redhat.com;
+> >> ebiederm@xmission.com; rostedt@goodmis.org; uobergfe@redhat.com;
+> >> paulmck@linux.vnet.ibm.com; iamjoonsoo.kim@lge.com;
+> >> ddstreet@ieee.org; sasha.levin@oracle.com; koct9i@gmail.com;
+> >> mgorman@suse.de; cj@linux.com; opensource.ganesh@gmail.com;
+> >> vinmenon@codeaurora.org; linux- doc@vger.kernel.org;
+> >> linux-kernel@vger.kernel.org; linux-mm@kvack.org; linux-
+> >> pm@vger.kernel.org; cpgs@samsung.com; pintu_agarwal@yahoo.com;
+> >> vishnu.ps@samsung.com; rohit.kr@samsung.com; iqbal.ams@samsung.com
+> >> Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add
+> >> /proc/sys/vm/shrink_memory feature
+> >>
+> >> On 2015/7/3 21:20, Pintu Kumar wrote:
+> >>
+> >>> This patch provides 2 things:
+> >>> 1. Add new control called shrink_memory in /proc/sys/vm/.
+> >>> This control can be used to aggressively reclaim memory system-wide
+> >>> in one shot from the user space. A value of 1 will instruct the
+> >>> kernel to reclaim as much as totalram_pages in the system.
+> >>> Example: echo 1 > /proc/sys/vm/shrink_memory
+> >>>
+> >>> 2. Enable shrink_all_memory API in kernel with new
+> >> CONFIG_SHRINK_MEMORY.
+> >>> Currently, shrink_all_memory function is used only during hibernation.
+> >>> With the new config we can make use of this API for non-hibernation
+> >>> case also without disturbing the hibernation case.
+> >>>
+> >>> The detailed paper was presented in Embedded Linux Conference,
+> >>> Mar-2015
+> >>> http://events.linuxfoundation.org/sites/events/files/slides/
+> >>> %5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
+> >>>
+> >>> Scenarios were this can be used and helpful are:
+> >>> 1) Can be invoked just after system boot-up is finished.
+> >>> 2) Can be invoked just before entering entire system suspend.
+> >>> 3) Can be invoked from kernel when order-4 pages starts failing.
+> >>> 4) Can be helpful to completely avoid or delay the kerenl OOM condition.
+> >>> 5) Can be developed as a system-tool to quickly defragment entire system
+> >>>    from user space, without the need to kill any application.
+> >>>
+> >>
+> >> Hi Pintu,
+> >>
+> >> How about increase min_free_kbytes and Android lowmemorykiller's level?
+> >>
+> > Thanks for the review.
+> > Actually in Tizen, we don't use Android LMK and we wanted to delay the
+> > LMK with aggressive direct_reclaim offline.
+> > And increasing min_free value also may not help much.
+> > Currently, in our case free memory never falls below 10MB, with 512MB
+> > RAM configuration.
+> >
+> 
+> How about the performance as you reclaim so much memory?
+> (e.g. shrink page cache, use zram, ksm, compaction...) When launching the same
+> app next time, it may be slow, right?
+> 
+Yes, obviously, there will be slight degrade in performance for relaunch of
+application.
+But, it will be better that the first launch.
+Please check the following data:
+Browser Launch:
+01-01 12:06:26.550
+01-01 12:06:28.340
+Time taken: 1790 ms
 
-For my own reference:
-  Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Relaunch:
+01-01 12:09:08.130
+01-01 12:09:08.380
+Time: 250ms
 
-Are these two patches tied to any other in the set, or can I apply
-them separately?
+After shrink_memory again:
+01-01 12:12:17.280
+01-01 12:12:17.770
+Time: 490ms
 
-> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-> index f9a3c2d..ca4a604 100644
-> --- a/drivers/mfd/axp20x.c
-> +++ b/drivers/mfd/axp20x.c
-> @@ -113,6 +113,13 @@ static struct resource axp20x_pek_resources[] =3D {
->  	},
->  };
-> =20
-> +static struct resource axp20x_usb_power_supply_resources[] =3D {
-> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
-> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
-> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_VALID, "VBUS_VALID"),
-> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_NOT_VALID, "VBUS_NOT_VALID"),
-> +};
-> +
->  static struct resource axp22x_pek_resources[] =3D {
->  	{
->  		.name   =3D "PEK_DBR",
-> @@ -363,11 +370,16 @@ static const struct regmap_irq_chip axp288_regmap_i=
-rq_chip =3D {
-> =20
->  static struct mfd_cell axp20x_cells[] =3D {
->  	{
-> -		.name			=3D "axp20x-pek",
-> -		.num_resources		=3D ARRAY_SIZE(axp20x_pek_resources),
-> -		.resources		=3D axp20x_pek_resources,
-> +		.name		=3D "axp20x-pek",
-> +		.num_resources	=3D ARRAY_SIZE(axp20x_pek_resources),
-> +		.resources	=3D axp20x_pek_resources,
->  	}, {
-> -		.name			=3D "axp20x-regulator",
-> +		.name		=3D "axp20x-regulator",
-> +	}, {
-> +		.name		=3D "axp20x-usb-power-supply",
-> +		.of_compatible	=3D "x-powers,axp202-usb-power-supply",
-> +		.num_resources	=3D ARRAY_SIZE(axp20x_usb_power_supply_resources),
-> +		.resources	=3D axp20x_usb_power_supply_resources,
->  	},
->  };
-> =20
+The main point here is that the killing is avoided and application data is
+retained.
+Also, when the memory pressure situation arises leading to slowpath again and
+again, 
+We will be already in the performance degraded state.
+Instead of continuous performance degradation, a one time is better.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+> How about use cgroup to manage the apps, but I don't know how to do the
+> detail.
+> 
+Yes, we already use cgroups, vmpressure, to manage memory threshold for reclaim,
+swap and kill.
+Even cgroup also have a similar force_reclaim mechanism, to reclaim pages within
+groups for a particular threshold.
+But, that is at a later stages and also it does not care about order of the
+pages.
+It does not perform system-wide reclaim.
 
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+
+> Thanks,
+> Xishi Qiu
+> 
+> >
+> >
+> 
+
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
