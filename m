@@ -1,97 +1,48 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 6/8] mfd: make mfd_remove_devices() iterate in reverse
- order
-Date: Tue, 7 Jul 2015 07:51:17 +0100
-Message-ID: <20150707065117.GE3182@x1>
-References: <1434362256-239992-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <CAHp75VdGyfyfYV6q9vdqK5nYBMpPWFxr32eiXXn2ruUj4pg6BA@mail.gmail.com>
- <20150706160529.GC3182@x1>
- <3134535.L6At3I31FS@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] acpi-cpufreq.c: fix a memory leak in
+ acpi_cpufreq_cpu_exit
+Date: Tue, 7 Jul 2015 12:24:49 +0530
+Message-ID: <20150707065449.GD14598@linux>
+References: <559A2073.1000301@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:34084 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751566AbbGGGy5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 02:54:57 -0400
+Received: by pabvl15 with SMTP id vl15so108309410pab.1
+        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2015 23:54:57 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <3134535.L6At3I31FS@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine <dmaengine@vger.kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@linaro.org>, sboyd@codeaurora.org
+In-Reply-To: <559A2073.1000301@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pan Xinhui <xinhuix.pan@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, rjw@rjwysocki.net, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>, "mnipxh@163.com" <mnipxh@163.com>
 
-On Tue, 07 Jul 2015, Rafael J. Wysocki wrote:
-> On Monday, July 06, 2015 05:05:29 PM Lee Jones wrote:
-> > On Mon, 06 Jul 2015, Andy Shevchenko wrote:
-> >=20
-> > > On Mon, Jul 6, 2015 at 5:50 PM, Lee Jones <lee.jones@linaro.org> =
-wrote:
-> > > > On Mon, 06 Jul 2015, Andy Shevchenko wrote:
-> > > >
-> > > >> On Mon, 2015-07-06 at 11:24 +0200, Geert Uytterhoeven wrote:
-> > > >> > On Mon, Jul 6, 2015 at 11:10 AM, Andy Shevchenko
-> > > >> > <andriy.shevchenko@linux.intel.com> wrote:
-> > > >> > > On Wed, 2015-06-24 at 12:31 +0100, Lee Jones wrote:
-> > > >> > > > On Mon, 15 Jun 2015, Andy Shevchenko wrote:
-> > >=20
-> > > []
-> > >=20
-> > > >> > > > Applied, thanks.
-> > > >> > >
-> > > >> > > Hmm=E2=80=A6 Seems kinda mistake. I can't see this applied=
- (and required
-> > > >> > > previous patches 4 and 5) to any of your branch neither in
-> > > >> > > (today's)
-> > > >> > > linux-next.
-> > > >> >
-> > > >> > New stuff applied after v4.1 couldn't show up in -next befor=
-e v4.2
-> > > >> > -rc1 was
-> > > >> > released (which just happened last night)?
-> > > >>
-> > > >> Might be, I would like to resend new version of my series and =
-that's
-> > > >> why I would like to have a branch to check what is already app=
-lied. So,
-> > > >> if I can't see it does it mean it is brewed in the private rep=
-ository?
-> > > >
-> > > > If you have patches that depend on this, they either need to co=
-me
-> > > > through my tree, or you have to wait until the next kernel vers=
-ion
-> > > > (which you probably don't want, right?).
-> > > >
-> > > > The alternative is that I unapply this patch and the whole lot =
-can be
-> > > > sucked up by the most appropriate subsystem.
-> > >=20
-> > > I resent a new version for other comments(still with all patches
-> > > included). Meanwhile the patches 4-6 (from v4 or v5, where they a=
-re
-> > > the same) could be applied in the first place. Can you clarify wh=
-at
-> > > exactly you have applied? The idea is to put the rest via your
-> > > subsystem since it's most appropriate for this series.
-> >=20
-> > Easiest thing for me to do is unapply.
-> >=20
-> > We can take the whole series when all the Acks have been accrued.
->=20
-> So are there any ACKs missing from the last series posted by Andy?
+On 06-07-15, 14:30, Pan Xinhui wrote:
+> 
+> policy->cpu in acpi_cpufreq_cpu_init/exit is the same cpu in most cases.
+> However during cpu hotplug,
+> cpufreq core might nominate a new cpu for policy->cpu.
 
-Yes, I have requested a Clk Ack, as there are some, lets say
-interesting code in the MFD driver which I am unsure about.  However,
-we have caught Mike at an awkward time, as he is in the middle of
-transitioning jobs.
+Why aren't above lines well aligned? A simple trick to share for vim
+users:
 
-Perhaps Stephen Boyd (now Cc'ed) might have a look.
+- Select lines you want to auto-align with shift+v and up-down keys
+- press gq
+- That's it and vim will do it for you. You need to set vim's
+  'textwidth' to 72 or 80, based on what you are editing, so that vim
+  knows where you need to break the line. I have this in vimrc
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+        set textwidth=80
+        au FileType gitcommit set textwidth=72
+
+
+
+Back to the real stuff. Few core changes have gone into v4.2-rc1 and
+policy->cpu doesn't change any longer on hotplug (unless its a
+physical hotplug). So you shouldn't see any issues.
+
+-- 
+viresh
