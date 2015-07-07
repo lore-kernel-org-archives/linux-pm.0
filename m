@@ -1,90 +1,97 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 29/46] sched: Determine the current sched_group idle-state
-Date: Tue,  7 Jul 2015 19:24:12 +0100
-Message-ID: <1436293469-25707-30-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 28/46] sched: Count number of shallower idle-states in struct sched_group_energy
+Date: Tue,  7 Jul 2015 19:24:11 +0100
+Message-ID: <1436293469-25707-29-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37599 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:37591 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932913AbbGGSXO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 14:23:14 -0400
+	id S932905AbbGGSXL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Jul 2015 14:23:11 -0400
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
-Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+cpuidle associates all idle-states with each cpu while the energy model
+associates them with the sched_group covering the cpus coordinating
+entry to the idle-state. To look up the idle-state power consumption in
+the energy model it is therefore necessary to translate from cpuidle
+idle-state index to energy model index. For this purpose it is helpful
+to know how many idle-states that are listed in lower level sched_groups
+(in struct sched_group_energy).
 
-To estimate the energy consumption of a sched_group in
-sched_group_energy() it is necessary to know which idle-state the group
-is in when it is idle. For now, it is assumed that this is the current
-idle-state (though it might be wrong). Based on the individual cpu
-idle-states group_idle_state() finds the group idle-state.
+Example: ARMv8 big.LITTLE JUNO (Cortex A57, A53) idle-states:
+Idle-state              cpuidle         Energy model table indices
+                        index           per-cpu sg      per-cluster sg
+WFI                     0               0               (0)
+Core power-down         1               1               0*
+Cluster power-down      2               (1)             1
+
+For per-cpu sgs no translation is required. If cpuidle reports state
+index 0 or 1, the cpu is in WFI or core power-down, respectively. We can
+look the idle-power up directly in the sg energy model table. Idle-state
+cluster power-down, is represented in the per-cluster sg energy model
+table as index 1. Index 0* is reserved for cluster power consumption
+when the cpus all are in state 0 or 1, but cpuidle decided not to go for
+cluster power-down. Given the index from cpuidle we can compute the
+correct index in the energy model tables for the sgs at each level if we
+know how many states are in the tables in the child sgs. The actual
+translation is implemented in a later patch.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
-Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- kernel/sched/fair.c | 27 +++++++++++++++++++++++----
- 1 file changed, 23 insertions(+), 4 deletions(-)
+ include/linux/sched.h |  1 +
+ kernel/sched/core.c   | 12 ++++++++++++
+ 2 files changed, 13 insertions(+)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 99e43ee..a134028 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -4966,6 +4966,22 @@ static bool cpu_overutilized(int cpu)
- 				(get_cpu_usage(cpu) * capacity_margin);
- }
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 8ac2db8..6b5e44d 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1031,6 +1031,7 @@ struct sched_group_energy {
+ 	atomic_t ref;
+ 	unsigned int nr_idle_states;	/* number of idle states */
+ 	struct idle_state *idle_states;	/* ptr to idle state array */
++	unsigned int nr_idle_states_below; /* number idle states in lower groups */
+ 	unsigned int nr_cap_states;	/* number of capacity states */
+ 	struct capacity_state *cap_states; /* ptr to capacity state array */
+ };
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index fe4b361..c13fa9c 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6117,6 +6117,7 @@ static void init_sched_energy(int cpu, struct sched_domain *sd,
+ 	struct sched_group_energy *sge = sg->sge;
+ 	sched_domain_energy_f fn = tl->energy;
+ 	struct cpumask *mask = sched_group_cpus(sg);
++	int nr_idle_states_below = 0;
  
-+static int group_idle_state(struct sched_group *sg)
-+{
-+	int i, state = INT_MAX;
+ 	if (fn && sd->child && !sd->child->groups->sge) {
+ 		pr_err("BUG: EAS setup broken for CPU%d\n", cpu);
+@@ -6140,7 +6141,18 @@ static void init_sched_energy(int cpu, struct sched_domain *sd,
+ 	if (cpumask_weight(mask) > 1)
+ 		check_sched_energy_data(cpu, fn, mask);
+ 
++	/* Figure out the number of true cpuidle states below current group */
++	sd = sd->child;
++	for_each_lower_domain(sd) {
++		nr_idle_states_below += sd->groups->sge->nr_idle_states;
 +
-+	/* Find the shallowest idle state in the sched group. */
-+	for_each_cpu(i, sched_group_cpus(sg))
-+		state = min(state, idle_get_state_idx(cpu_rq(i)));
++		/* Disregard non-cpuidle 'active' idle states */
++		if (sd->child)
++			nr_idle_states_below--;
++	}
 +
-+	/* Transform system into sched domain idle state. */
-+	if (sg->sge->nr_idle_states_below > 1)
-+		state -= sg->sge->nr_idle_states_below - 1;
-+
-+	/* Clamp state to the range of sched domain idle states. */
-+	return clamp_t(int, state, 0, sg->sge->nr_idle_states - 1);
-+}
-+
- /*
-  * sched_group_energy(): Returns absolute energy consumption of cpus belonging
-  * to the sched_group including shared resources shared only by members of the
-@@ -5008,7 +5024,8 @@ static unsigned int sched_group_energy(struct energy_env *eenv)
- 
- 			do {
- 				unsigned long group_util;
--				int sg_busy_energy, sg_idle_energy, cap_idx;
-+				int sg_busy_energy, sg_idle_energy;
-+				int cap_idx, idle_idx;
- 
- 				if (sg_shared_cap && sg_shared_cap->group_weight >= sg->group_weight)
- 					eenv->sg_cap = sg_shared_cap;
-@@ -5016,11 +5033,13 @@ static unsigned int sched_group_energy(struct energy_env *eenv)
- 					eenv->sg_cap = sg;
- 
- 				cap_idx = find_new_capacity(eenv, sg->sge);
-+				idle_idx = group_idle_state(sg);
- 				group_util = group_norm_usage(eenv, sg);
- 				sg_busy_energy = (group_util * sg->sge->cap_states[cap_idx].power)
--										>> SCHED_CAPACITY_SHIFT;
--				sg_idle_energy = ((SCHED_LOAD_SCALE-group_util) * sg->sge->idle_states[0].power)
--										>> SCHED_CAPACITY_SHIFT;
-+								>> SCHED_CAPACITY_SHIFT;
-+				sg_idle_energy = ((SCHED_LOAD_SCALE-group_util)
-+								* sg->sge->idle_states[idle_idx].power)
-+								>> SCHED_CAPACITY_SHIFT;
- 
- 				total_energy += sg_busy_energy + sg_idle_energy;
- 
+ 	sge->nr_idle_states = fn(cpu)->nr_idle_states;
++	sge->nr_idle_states_below = nr_idle_states_below;
+ 	sge->nr_cap_states = fn(cpu)->nr_cap_states;
+ 	sge->idle_states = (struct idle_state *)
+ 			   ((void *)&sge->cap_states +
 -- 
 1.9.1
 
