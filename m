@@ -1,42 +1,51 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Tue, 07 Jul 2015 16:32:08 +0200
-Message-ID: <1527037.PaGp0dsCau@vostro.rjw.lan>
-References: <4290667.ZqInAykFGS@vostro.rjw.lan> <1652992.e7VOEWpWyZ@vostro.rjw.lan> <1436275008.4460.18.camel@suse.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] acpi-cpufreq: replace per_cpu with driver_data of
+ policy
+Date: Tue, 7 Jul 2015 20:04:43 +0530
+Message-ID: <20150707143443.GT14598@linux>
+References: <559BC96E.8020804@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1436275008.4460.18.camel@suse.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.com>
-Cc: Dave Chinner <david@fromorbit.com>, Len Brown <lenb@kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Alan Stern <stern@rowland.harvard.edu>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f177.google.com ([209.85.192.177]:32885 "EHLO
+	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757580AbbGGOet (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 10:34:49 -0400
+Received: by pdbdz6 with SMTP id dz6so32159849pdb.0
+        for <linux-pm@vger.kernel.org>; Tue, 07 Jul 2015 07:34:49 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <559BC96E.8020804@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pan Xinhui <xinhuix.pan@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, rjw@rjwysocki.net, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
 
-On Tuesday, July 07, 2015 03:16:48 PM Oliver Neukum wrote:
-> On Tue, 2015-07-07 at 14:14 +0200, Rafael J. Wysocki wrote:
-> > For example, on desktop systems I use user space syncs filesystems
-> > before
-> > writing to /sys/power/state, so the additional sys_sync() in the
-> > kernel doesn't
-> > seem to serve any purpose.
+On 07-07-15, 20:43, Pan Xinhui wrote:
 > 
-> There is a race you cannot close in user space.
+> Drivers can store their internal per-policy information in
+> policy->driver_data, lets use it.
+> 
+> we have benefits after this replacing.
+> 1) memory saving.
+> 2) policy is shared by several cpus, per_cpu seems not correct. using
+> *driver_data* is more reasonable.
+> 3) fix a memory leak in acpi_cpufreq_cpu_exit. as policy->cpu might
+> change during cpu hotplug. So sometimes we cant't free *data*, use
+> *driver_data* to fix it.
+> 4) fix a zero return value of get_cur_freq_on_cpu. Only per_cpu of
+> policy->cpu is set to *data*, if we try to get cpufreq on other cpus, we
+> get zero instead of correct values. Use *driver_data* to fix it.
+> 
+> Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
+> ---
+> Changes from V1:
+> 	codes style fix, comments update
+> 	move cpufreq_cpu_put(policy) after we get *driver_data*
+> ---
+>  drivers/cpufreq/acpi-cpufreq.c | 40 ++++++++++++++++++++++------------------
+>  1 file changed, 22 insertions(+), 18 deletions(-)
 
-Yes, there is, but I'm not sure how much of a help the sync in the kernel
-provides here anyway.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Say this happens.  There is a process writing to a file running in parallel
-with the suspend process.  Suspend starts and that process is frozen.  The
-sync is called and causes all of the outstanding data to be written back.
-The user doesn't realize that the write is technically still in progress, so
-he (or she) pulls the storage device out of the system, moves it to another
-system, makes changes (say removes the file written to by the process above,
-so the blocks previously occupied by that file are now used for some metadata)
-and moves the storage back to the suspended system.  The system is resumed
-and the writing process continues writing possibly to the wrong blocks and
-corrupts the filesystem.
-
-Is this possible?  If not, why not?
-
-Rafael
+-- 
+viresh
