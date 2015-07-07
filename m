@@ -1,82 +1,97 @@
-From: Dave Chinner <david@fromorbit.com>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Tue, 7 Jul 2015 11:17:56 +1000
-Message-ID: <20150707011756.GC3902@dastard>
-References: <4290667.ZqInAykFGS@vostro.rjw.lan>
- <1496051.AgsebokWnB@vostro.rjw.lan>
- <20150706000614.GB3902@dastard>
- <1595559.BsCkcDEfNB@vostro.rjw.lan>
+From: Xishi Qiu <qiuxishi@huawei.com>
+Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory feature
+Date: Tue, 7 Jul 2015 09:38:17 +0800
+Message-ID: <559B2D89.2070802@huawei.com>
+References: <1435929607-3435-1-git-send-email-pintu.k@samsung.com> <559A56FD.6010701@huawei.com> <0ffe01d0b7f4$dd2706d0$97751470$@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ipmail06.adl6.internode.on.net ([150.101.137.145]:1794 "EHLO
-	ipmail06.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751993AbbGGBSQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 21:18:16 -0400
-Content-Disposition: inline
-In-Reply-To: <1595559.BsCkcDEfNB@vostro.rjw.lan>
+Received: from szxga02-in.huawei.com ([119.145.14.65]:37101 "EHLO
+	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755860AbbGGBjd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 21:39:33 -0400
+In-Reply-To: <0ffe01d0b7f4$dd2706d0$97751470$@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <lenb@kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Alan Stern <stern@rowland.harvard.edu>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+To: PINTU KUMAR <pintu.k@samsung.com>
+Cc: corbet@lwn.net, akpm@linux-foundation.org, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, mgorman@suse.de, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqb
 
-On Mon, Jul 06, 2015 at 03:52:25PM +0200, Rafael J. Wysocki wrote:
-> On Monday, July 06, 2015 10:06:14 AM Dave Chinner wrote:
-> > On Sat, Jul 04, 2015 at 03:03:46AM +0200, Rafael J. Wysocki wrote:
-> > > > No, your observation was that "sync is slow". Your *solution* is "we
-> > > > need to remove sync".
-> > > 
-> > > Not only slow, but pointless too.  The argument goes: "It is slow and
-> > > pointless and so it may be dropped."
-> > > 
-> > > Now, I can agree that it wasn't clearly demonstrated that the unconditional
-> > > sys_sync() in the suspend code path was pointless, but it also has never
-> > > been clearly shown why it is not pointless on systems that suspend and resume
-> > > reliably.
-> > 
-> > I just gave you an example of why sync is needed: Suspend, pull out
-> > USB drive when putting laptop in bag.
+On 2015/7/6 22:03, PINTU KUMAR wrote:
+
+> Hi,
 > 
-> Exactly the same thing can happen while not suspended.  What does make suspend
-> special with respect to that?
-
-Stop being obtuse. If you remember that you need to pull the USB
-stick before you suspend, then you damn well remember to "safely
-eject" the USB stick and that syncs, unmounts and flushes the drive
-caches before telling you it is safe to pull the stick.
-
-> > > Moreover, question is if we really need to carry out the sync on *every*
-> > > suspend even if it is not pointless overall.  That shouldn't really be
-> > > necessary if we suspend and resume often enough or if we resume only for
-> > > a while and then suspend again.  Maybe it should be rate limited somehow
-> > > at least?
-> > 
-> > If you suspend and resume frequently, then the cost of the sync
-> > shoul dbe negliable because the amount of data dirtied between
-> > resume/suspend shoul dbe negliable. hence my questions about where
-> > sync is spending too much time, and whether we've actually fixed
-> > those problems or not. If sync speed on clean filesystems is a
-> > problem then we need to fix sync, not work around it.
+>> -----Original Message-----
+>> From: Xishi Qiu [mailto:qiuxishi@huawei.com]
+>> Sent: Monday, July 06, 2015 3:53 PM
+>> To: Pintu Kumar
+>> Cc: corbet@lwn.net; akpm@linux-foundation.org; vbabka@suse.cz;
+>> gorcunov@openvz.org; mhocko@suse.cz; emunson@akamai.com;
+>> kirill.shutemov@linux.intel.com; standby24x7@gmail.com;
+>> hannes@cmpxchg.org; vdavydov@parallels.com; hughd@google.com;
+>> minchan@kernel.org; tj@kernel.org; rientjes@google.com;
+>> xypron.glpk@gmx.de; dzickus@redhat.com; prarit@redhat.com;
+>> ebiederm@xmission.com; rostedt@goodmis.org; uobergfe@redhat.com;
+>> paulmck@linux.vnet.ibm.com; iamjoonsoo.kim@lge.com; ddstreet@ieee.org;
+>> sasha.levin@oracle.com; koct9i@gmail.com; mgorman@suse.de; cj@linux.com;
+>> opensource.ganesh@gmail.com; vinmenon@codeaurora.org; linux-
+>> doc@vger.kernel.org; linux-kernel@vger.kernel.org; linux-mm@kvack.org; linux-
+>> pm@vger.kernel.org; cpgs@samsung.com; pintu_agarwal@yahoo.com;
+>> vishnu.ps@samsung.com; rohit.kr@samsung.com; iqbal.ams@samsung.com
+>> Subject: Re: [PATCH 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
+>> feature
+>>
+>> On 2015/7/3 21:20, Pintu Kumar wrote:
+>>
+>>> This patch provides 2 things:
+>>> 1. Add new control called shrink_memory in /proc/sys/vm/.
+>>> This control can be used to aggressively reclaim memory system-wide in
+>>> one shot from the user space. A value of 1 will instruct the kernel to
+>>> reclaim as much as totalram_pages in the system.
+>>> Example: echo 1 > /proc/sys/vm/shrink_memory
+>>>
+>>> 2. Enable shrink_all_memory API in kernel with new
+>> CONFIG_SHRINK_MEMORY.
+>>> Currently, shrink_all_memory function is used only during hibernation.
+>>> With the new config we can make use of this API for non-hibernation
+>>> case also without disturbing the hibernation case.
+>>>
+>>> The detailed paper was presented in Embedded Linux Conference,
+>>> Mar-2015 http://events.linuxfoundation.org/sites/events/files/slides/
+>>> %5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
+>>>
+>>> Scenarios were this can be used and helpful are:
+>>> 1) Can be invoked just after system boot-up is finished.
+>>> 2) Can be invoked just before entering entire system suspend.
+>>> 3) Can be invoked from kernel when order-4 pages starts failing.
+>>> 4) Can be helpful to completely avoid or delay the kerenl OOM condition.
+>>> 5) Can be developed as a system-tool to quickly defragment entire system
+>>>    from user space, without the need to kill any application.
+>>>
+>>
+>> Hi Pintu,
+>>
+>> How about increase min_free_kbytes and Android lowmemorykiller's level?
+>>
+> Thanks for the review.
+> Actually in Tizen, we don't use Android LMK and we wanted to delay the LMK with
+> aggressive direct_reclaim offline.
+> And increasing min_free value also may not help much.
+> Currently, in our case free memory never falls below 10MB, with 512MB RAM
+> configuration.
 > 
-> Well, say you never suspend, but you also only shut down the system when you
-> need to replace the kernel on it.  How often would you invoke global sync on
-> that system?
 
-Never, because:
+How about the performance as you reclaim so much memory?
+(e.g. shrink page cache, use zram, ksm, compaction...)
+When launching the same app next time, it may be slow, right?
 
-	- the kernel does background writeback of dirty data so you
-	  don't need to run sync while the system is running; and
-	- unmount during shutdown runs sync_filesystem() internally
-	  (just like sys_sync does) to ensure the filesystem is
-	  clean and no data is lost.
+How about use cgroup to manage the apps, but I don't know how to do the detail.
 
-Seriously, stop being making ignorant arguments to justify removing
-sys_sync(). *If* there's a problem sys_sync() we need to *fix it*,
-not ignore it.
+Thanks,
+Xishi Qiu
 
-Cheers,
+> 
+> 
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+
+
