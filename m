@@ -1,101 +1,72 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 31/46] sched: Consider spare cpu capacity at task wake-up
-Date: Tue,  7 Jul 2015 19:24:14 +0100
-Message-ID: <1436293469-25707-32-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 36/46] sched: Prevent unnecessary active balance of single task in sched group
+Date: Tue,  7 Jul 2015 19:24:19 +0100
+Message-ID: <1436293469-25707-37-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37618 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:37667 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932925AbbGGSXT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 14:23:19 -0400
+	id S932944AbbGGSXc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Jul 2015 14:23:32 -0400
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-In mainline find_idlest_group() selects the wake-up target group purely
-based on group load which leads to suboptimal choices in low load
-scenarios. An idle group with reduced capacity (due to RT tasks or
-different cpu type) isn't necessarily a better target than a lightly
-loaded group with higher capacity.
+Scenarios with the busiest group having just one task and the local
+being idle on topologies with sched groups with different numbers of
+cpus manage to dodge all load-balance bailout conditions resulting the
+nr_balance_failed counter to be incremented. This eventually causes an
+pointless active migration of the task. This patch prevents this by not
+incrementing the counter when the busiest group only has one task.
+ASYM_PACKING migrations and migrations due to reduced capacity should
+still take place as these are explicitly captured by
+need_active_balance().
 
-The patch adds spare capacity as an additional group selection
-parameter. The target group is now selected based on the following
-criteria listed by highest priority first:
-
-1. If energy-aware scheduling is enabled the group with the lowest
-capacity containing a cpu with enough spare capacity to accommodate the
-task (with a bit to spare) is selected if such exists.
-
-2. Return the group with the cpu with most spare capacity and this
-capacity is significant if such group exists. Significant spare capacity
-is currently at least 20% to spare.
-
-3. Return the group with the lowest load, unless it is the local group
-in which case NULL is returned and the search is continued at the next
-(lower) level.
+A better solution would be to not attempt the load-balance in the first
+place, but that requires significant changes to the order of bailout
+conditions and statistics gathering.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- kernel/sched/fair.c | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ kernel/sched/fair.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index b0294f0..0f7dbda4 100644
+index 8e0cbd4..f7cb6c9 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -5247,9 +5247,10 @@ find_idlest_group(struct sched_domain *sd, struct task_struct *p,
- 		  int this_cpu, int sd_flag)
- {
- 	struct sched_group *idlest = NULL, *group = sd->groups;
--	struct sched_group *fit_group = NULL;
-+	struct sched_group *fit_group = NULL, *spare_group = NULL;
- 	unsigned long min_load = ULONG_MAX, this_load = 0;
- 	unsigned long fit_capacity = ULONG_MAX;
-+	unsigned long max_spare_capacity = capacity_margin - SCHED_LOAD_SCALE;
- 	int load_idx = sd->forkexec_idx;
- 	int imbalance = 100 + (sd->imbalance_pct-100)/2;
+@@ -6127,6 +6127,7 @@ struct lb_env {
+ 	int			new_dst_cpu;
+ 	enum cpu_idle_type	idle;
+ 	long			imbalance;
++	unsigned int		src_grp_nr_running;
+ 	/* The set of CPUs under consideration for load-balancing */
+ 	struct cpumask		*cpus;
  
-@@ -5257,7 +5258,7 @@ find_idlest_group(struct sched_domain *sd, struct task_struct *p,
- 		load_idx = sd->wake_idx;
+@@ -7150,6 +7151,8 @@ static inline void update_sd_lb_stats(struct lb_env *env, struct sd_lb_stats *sd
+ 	if (env->sd->flags & SD_NUMA)
+ 		env->fbq_type = fbq_classify_group(&sds->busiest_stat);
  
- 	do {
--		unsigned long load, avg_load;
-+		unsigned long load, avg_load, spare_capacity;
- 		int local_group;
- 		int i;
- 
-@@ -5290,6 +5291,16 @@ find_idlest_group(struct sched_domain *sd, struct task_struct *p,
- 				fit_capacity = capacity_of(i);
- 				fit_group = group;
- 			}
++	env->src_grp_nr_running = sds->busiest_stat.sum_nr_running;
 +
-+			/*
-+			 * Look for group which has most spare capacity on a
-+			 * single cpu.
-+			 */
-+			spare_capacity = capacity_of(i) - get_cpu_usage(i);
-+			if (spare_capacity > max_spare_capacity) {
-+				max_spare_capacity = spare_capacity;
-+				spare_group = group;
-+			}
- 		}
+ 	if (!env->sd->parent) {
+ 		/* update overload indicator if we are at root domain */
+ 		if (env->dst_rq->rd->overload != overload)
+@@ -7788,7 +7791,8 @@ static int load_balance(int this_cpu, struct rq *this_rq,
+ 		 * excessive cache_hot migrations and active balances.
+ 		 */
+ 		if (idle != CPU_NEWLY_IDLE)
+-			sd->nr_balance_failed++;
++			if (env.src_grp_nr_running > 1)
++				sd->nr_balance_failed++;
  
- 		/* Adjust by relative CPU capacity of the group */
-@@ -5306,6 +5317,9 @@ find_idlest_group(struct sched_domain *sd, struct task_struct *p,
- 	if (fit_group)
- 		return fit_group;
- 
-+	if (spare_group)
-+		return spare_group;
-+
- 	if (!idlest || 100*this_load < imbalance*min_load)
- 		return NULL;
- 	return idlest;
+ 		if (need_active_balance(&env)) {
+ 			raw_spin_lock_irqsave(&busiest->lock, flags);
 -- 
 1.9.1
 
