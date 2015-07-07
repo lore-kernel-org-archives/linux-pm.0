@@ -1,59 +1,82 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [pm:bleeding-edge 2/10] drivers/acpi/scan.c:2131:25: error: 'struct acpi_device_info' has no member named 'cls'
-Date: Tue, 07 Jul 2015 02:25:21 +0200
-Message-ID: <3013609.yTOAvZudGY@vostro.rjw.lan>
-References: <201507070754.hc2CSuL4%fengguang.wu@intel.com>
+From: Dave Chinner <david@fromorbit.com>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Tue, 7 Jul 2015 11:17:56 +1000
+Message-ID: <20150707011756.GC3902@dastard>
+References: <4290667.ZqInAykFGS@vostro.rjw.lan>
+ <1496051.AgsebokWnB@vostro.rjw.lan>
+ <20150706000614.GB3902@dastard>
+ <1595559.BsCkcDEfNB@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56241 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756114AbbGFX6z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 19:58:55 -0400
-In-Reply-To: <201507070754.hc2CSuL4%fengguang.wu@intel.com>
+Received: from ipmail06.adl6.internode.on.net ([150.101.137.145]:1794 "EHLO
+	ipmail06.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751993AbbGGBSQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 21:18:16 -0400
+Content-Disposition: inline
+In-Reply-To: <1595559.BsCkcDEfNB@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Suthikulpanit, Suravee" <Suravee.Suthikulpanit@amd.com>
-Cc: kbuild test robot <fengguang.wu@intel.com>, kbuild-all@01.org, Hanjun Guo <hanjun.guo@linaro.org>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <lenb@kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Alan Stern <stern@rowland.harvard.edu>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-On Tuesday, July 07, 2015 07:47:55 AM kbuild test robot wrote:
-> tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-> head:   e3b3968310369aadfa5c1f7baca68ef37bfd1d38
-> commit: 1f9cda6095d7073ae96c27b1dbfd8d3fa71a85d3 [2/10] ACPI / scan: Add support for ACPI _CLS device matching
-> config: x86_64-lkp (attached as .config)
-> reproduce:
->   git checkout 1f9cda6095d7073ae96c27b1dbfd8d3fa71a85d3
->   # save the attached .config to linux build tree
->   make ARCH=x86_64 
+On Mon, Jul 06, 2015 at 03:52:25PM +0200, Rafael J. Wysocki wrote:
+> On Monday, July 06, 2015 10:06:14 AM Dave Chinner wrote:
+> > On Sat, Jul 04, 2015 at 03:03:46AM +0200, Rafael J. Wysocki wrote:
+> > > > No, your observation was that "sync is slow". Your *solution* is "we
+> > > > need to remove sync".
+> > > 
+> > > Not only slow, but pointless too.  The argument goes: "It is slow and
+> > > pointless and so it may be dropped."
+> > > 
+> > > Now, I can agree that it wasn't clearly demonstrated that the unconditional
+> > > sys_sync() in the suspend code path was pointless, but it also has never
+> > > been clearly shown why it is not pointless on systems that suspend and resume
+> > > reliably.
+> > 
+> > I just gave you an example of why sync is needed: Suspend, pull out
+> > USB drive when putting laptop in bag.
 > 
-> All error/warnings (new ones prefixed by >>):
+> Exactly the same thing can happen while not suspended.  What does make suspend
+> special with respect to that?
+
+Stop being obtuse. If you remember that you need to pull the USB
+stick before you suspend, then you damn well remember to "safely
+eject" the USB stick and that syncs, unmounts and flushes the drive
+caches before telling you it is safe to pull the stick.
+
+> > > Moreover, question is if we really need to carry out the sync on *every*
+> > > suspend even if it is not pointless overall.  That shouldn't really be
+> > > necessary if we suspend and resume often enough or if we resume only for
+> > > a while and then suspend again.  Maybe it should be rate limited somehow
+> > > at least?
+> > 
+> > If you suspend and resume frequently, then the cost of the sync
+> > shoul dbe negliable because the amount of data dirtied between
+> > resume/suspend shoul dbe negliable. hence my questions about where
+> > sync is spending too much time, and whether we've actually fixed
+> > those problems or not. If sync speed on clean filesystems is a
+> > problem then we need to fix sync, not work around it.
 > 
->    drivers/acpi/scan.c: In function 'acpi_set_pnp_ids':
-> >> drivers/acpi/scan.c:2131:25: error: 'struct acpi_device_info' has no member named 'cls'
->        acpi_add_id(pnp, info->cls.string);
->                             ^
+> Well, say you never suspend, but you also only shut down the system when you
+> need to replace the kernel on it.  How often would you invoke global sync on
+> that system?
 
-ACPICA chose a different name for this field.  It should be fixed up in my tree now.
+Never, because:
 
+	- the kernel does background writeback of dirty data so you
+	  don't need to run sync while the system is running; and
+	- unmount during shutdown runs sync_filesystem() internally
+	  (just like sys_sync does) to ensure the filesystem is
+	  clean and no data is lost.
 
-> vim +2131 drivers/acpi/scan.c
-> 
->   2125				pnp->type.bus_address = 1;
->   2126			}
->   2127			if (info->valid & ACPI_VALID_UID)
->   2128				pnp->unique_id = kstrdup(info->unique_id.string,
->   2129								GFP_KERNEL);
->   2130			if (info->valid & ACPI_VALID_CLS)
-> > 2131				acpi_add_id(pnp, info->cls.string);
->   2132	
->   2133			kfree(info);
->   2134	
-> 
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Seriously, stop being making ignorant arguments to justify removing
+sys_sync(). *If* there's a problem sys_sync() we need to *fix it*,
+not ignore it.
 
+Cheers,
+
+Dave.
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Dave Chinner
+david@fromorbit.com
