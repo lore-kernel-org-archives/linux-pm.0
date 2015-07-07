@@ -1,184 +1,111 @@
-From: Pan Xinhui <xinhuix.pan@intel.com>
-Subject: [PATCH] acpi-cpufreq: replace per_cpu with driver_data of policy
-Date: Tue, 07 Jul 2015 18:29:19 +0800
-Message-ID: <559BA9FF.7050702@intel.com>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: Re: [PATCH v3 3/4] mfd: axp20x: Add a cell for the
+ usb power_supply part of the axp20x PMICs
+Date: Tue, 7 Jul 2015 11:42:25 +0100
+Message-ID: <20150707104225.GS3182@x1>
+References: <1435316357-26606-1-git-send-email-hdegoede@redhat.com>
+ <1435316357-26606-3-git-send-email-hdegoede@redhat.com>
+ <20150707070128.GI3182@x1>
+ <559BA0BC.9060409@redhat.com>
+Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:50825 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756773AbbGGKbw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 06:31:52 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-sunxi+bncBDA7X7F2WUEBBFW252WAKGQEX7IFZ3I-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <559BA0BC.9060409-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
 
+On Tue, 07 Jul 2015, Hans de Goede wrote:
+> On 07-07-15 09:01, Lee Jones wrote:
+> >On Fri, 26 Jun 2015, Hans de Goede wrote:
+> >
+> >>Add a cell for the usb power_supply part of the axp20x PMICs.
+> >>
+> >>Note that this cell is only for the usb power_supply part and not the
+> >>ac-power / battery-charger / rtc-backup-bat-charger bits.
+> >>
+> >>Depending on the board each of those must be enabled / disabled separat=
+ely
+> >>in devicetree as most boards do not use all 4. So in dt each one needs =
+its
+> >>own child-node of the axp20x node. Another reason for using separate ch=
+ild
+> >>nodes for each is so that other devicetree nodes can have a power-suppl=
+y
+> >>property with a phandle referencing a node representing a single
+> >>power-supply.
+> >>
+> >>The decision to use a separate devicetree node for each is reflected on
+> >>the kernel side by each getting its own mfd-cell / platform_device and
+> >>platform-driver.
+> >>
+> >>Note this commit also makes some whitespace changes to the intializatio=
+n
+> >>of existing cells in axp20x_cells, these are pure whitespace changes,
+> >>functionally nothing changes.
+> >>
+> >>Cc: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
+> >>Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> >>Signed-off-by: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
+> >>Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+> >>---
+> >>Changes in v2:
+> >>-Use DEFINE_RES_IRQ_NAMED
+> >>-Change indentation of axp20x_cells initializers to avoid line wrapping
+> >>Changes in v3:
+> >>-Improve commit message
+> >>-Add Bruno's S-o-b
+> >>---
+> >>  drivers/mfd/axp20x.c | 20 ++++++++++++++++----
+> >>  1 file changed, 16 insertions(+), 4 deletions(-)
+> >
+> >For my own reference:
+> >   Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> >
+> >Are these two patches tied to any other in the set, or can I apply
+> >them separately?
+>=20
+> You can apply them seperately, thanks.
+>=20
+> I'm wondering who will take care of upstreaming the first patch of this
+> set: "ARM: dts: Add binding documentation for AXP20x pmic usb power suppl=
+y"
+>=20
+> If you can take that one too that would be great.
 
-Now policy has field of driver_data, we can use it to get rid of per_cpu
-acpi_cpufreq_data.
+I can do, but I need an Ack from these guys:
 
-we have benefits after this replacing.  1) memory saving.  2) policy is
-shared by several cpus, per_cpu seems not correct.  useing *driver_data*
-is more reasonable.  3) fix a memory leak in acpi_cpufreq_cpu_exit.  as
-policy->cpu might change after cpu hotplug. So sometimes we cant't free
-*data*, use *driver_data* to fix it.  4) fix a zero return value of
-get_cur_freq_on_cpu.  Only per_cpu(policy->cpu) is set to *data*, if we
-try to get cpufreq on other cpus, we get zero instead of correct values.
-Use *driver_data* to fix it.
+POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS
+M:      Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+M:      Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+M:      David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+L:      linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+T:      git git://git.infradead.org/battery-2.6.git
+S:      Maintained
+F:      include/linux/power_supply.h
+F:      drivers/power/
 
-Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
----
- drivers/cpufreq/acpi-cpufreq.c | 38 +++++++++++++++++++++++---------------
- 1 file changed, 23 insertions(+), 15 deletions(-)
+... failing that, they should take it.
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 0136dfc..7f662dd 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -72,8 +72,6 @@ struct acpi_cpufreq_data {
- 	cpumask_var_t freqdomain_cpus;
- };
- 
--static DEFINE_PER_CPU(struct acpi_cpufreq_data *, acfreq_data);
--
- /* acpi_perf_data is a pointer to percpu data. */
- static struct acpi_processor_performance __percpu *acpi_perf_data;
- 
-@@ -144,7 +142,7 @@ static int _store_boost(int val)
- 
- static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
- {
--	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
-+	struct acpi_cpufreq_data *data = policy->driver_data;
- 
- 	return cpufreq_show_cpus(data->freqdomain_cpus, buf);
- }
-@@ -327,7 +325,8 @@ static void drv_write(struct drv_cmd *cmd)
- 	put_cpu();
- }
- 
--static u32 get_cur_val(const struct cpumask *mask)
-+static u32 get_cur_val(const struct cpumask *mask,
-+				struct acpi_cpufreq_data *data)
- {
- 	struct acpi_processor_performance *perf;
- 	struct drv_cmd cmd;
-@@ -335,7 +334,7 @@ static u32 get_cur_val(const struct cpumask *mask)
- 	if (unlikely(cpumask_empty(mask)))
- 		return 0;
- 
--	switch (per_cpu(acfreq_data, cpumask_first(mask))->cpu_feature) {
-+	switch (data->cpu_feature) {
- 	case SYSTEM_INTEL_MSR_CAPABLE:
- 		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
- 		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
-@@ -346,7 +345,7 @@ static u32 get_cur_val(const struct cpumask *mask)
- 		break;
- 	case SYSTEM_IO_CAPABLE:
- 		cmd.type = SYSTEM_IO_CAPABLE;
--		perf = per_cpu(acfreq_data, cpumask_first(mask))->acpi_data;
-+		perf = data->acpi_data;
- 		cmd.addr.io.port = perf->control_register.address;
- 		cmd.addr.io.bit_width = perf->control_register.bit_width;
- 		break;
-@@ -364,19 +363,26 @@ static u32 get_cur_val(const struct cpumask *mask)
- 
- static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
- {
--	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, cpu);
-+	struct acpi_cpufreq_data *data;
-+	struct cpufreq_policy *policy;
- 	unsigned int freq;
- 	unsigned int cached_freq;
- 
- 	pr_debug("get_cur_freq_on_cpu (%d)\n", cpu);
- 
-+	policy = cpufreq_cpu_get(cpu);
-+	if (unlikely(!policy))
-+		return 0;
-+
-+	data = policy->driver_data;
- 	if (unlikely(data == NULL ||
- 		     data->acpi_data == NULL || data->freq_table == NULL)) {
-+		cpufreq_cpu_put(policy);
- 		return 0;
- 	}
- 
- 	cached_freq = data->freq_table[data->acpi_data->state].frequency;
--	freq = extract_freq(get_cur_val(cpumask_of(cpu)), data);
-+	freq = extract_freq(get_cur_val(cpumask_of(cpu), data), data);
- 	if (freq != cached_freq) {
- 		/*
- 		 * The dreaded BIOS frequency change behind our back.
-@@ -385,6 +391,8 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
- 		data->resume = 1;
- 	}
- 
-+	cpufreq_cpu_put(policy);
-+
- 	pr_debug("cur freq = %u\n", freq);
- 
- 	return freq;
-@@ -397,7 +405,7 @@ static unsigned int check_freqs(const struct cpumask *mask, unsigned int freq,
- 	unsigned int i;
- 
- 	for (i = 0; i < 100; i++) {
--		cur_freq = extract_freq(get_cur_val(mask), data);
-+		cur_freq = extract_freq(get_cur_val(mask, data), data);
- 		if (cur_freq == freq)
- 			return 1;
- 		udelay(10);
-@@ -408,7 +416,7 @@ static unsigned int check_freqs(const struct cpumask *mask, unsigned int freq,
- static int acpi_cpufreq_target(struct cpufreq_policy *policy,
- 			       unsigned int index)
- {
--	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
-+	struct acpi_cpufreq_data *data = policy->driver_data;
- 	struct acpi_processor_performance *perf;
- 	struct drv_cmd cmd;
- 	unsigned int next_perf_state = 0; /* Index into perf table */
-@@ -673,7 +681,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	}
- 
- 	data->acpi_data = per_cpu_ptr(acpi_perf_data, cpu);
--	per_cpu(acfreq_data, cpu) = data;
-+	policy->driver_data = data;
- 
- 	if (cpu_has(c, X86_FEATURE_CONSTANT_TSC))
- 		acpi_cpufreq_driver.flags |= CPUFREQ_CONST_LOOPS;
-@@ -843,19 +851,19 @@ err_free_mask:
- 	free_cpumask_var(data->freqdomain_cpus);
- err_free:
- 	kfree(data);
--	per_cpu(acfreq_data, cpu) = NULL;
-+	policy->driver_data = NULL;
- 
- 	return result;
- }
- 
- static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
--	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
-+	struct acpi_cpufreq_data *data = policy->driver_data;
- 
- 	pr_debug("acpi_cpufreq_cpu_exit\n");
- 
- 	if (data) {
--		per_cpu(acfreq_data, policy->cpu) = NULL;
-+		policy->driver_data = NULL;
- 		acpi_processor_unregister_performance(data->acpi_data,
- 						      policy->cpu);
- 		free_cpumask_var(data->freqdomain_cpus);
-@@ -868,7 +876,7 @@ static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- 
- static int acpi_cpufreq_resume(struct cpufreq_policy *policy)
- {
--	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
-+	struct acpi_cpufreq_data *data = policy->driver_data;
- 
- 	pr_debug("acpi_cpufreq_resume\n");
- 
--- 
-1.9.1
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
+
+--=20
+You received this message because you are subscribed to the Google Groups "=
+linux-sunxi" group.
+To unsubscribe from this group and stop receiving emails from it, send an e=
+mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
