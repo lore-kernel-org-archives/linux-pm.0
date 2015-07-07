@@ -1,64 +1,49 @@
 From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
-Date: Tue, 7 Jul 2015 10:55:59 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1507071028480.1692-100000@iolanthe.rowland.org>
-References: <14963352.fDKd3nIddf@vostro.rjw.lan>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Tue, 7 Jul 2015 11:03:20 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1507071058000.1692-100000@iolanthe.rowland.org>
+References: <1436279906.2658.4.camel@suse.de>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <14963352.fDKd3nIddf@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:33405 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932360AbbGGPDV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 11:03:21 -0400
+In-Reply-To: <1436279906.2658.4.camel@suse.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dave Chinner <david@fromorbit.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, 7 Jul 2015, Rafael J. Wysocki wrote:
+On Tue, 7 Jul 2015, Oliver Neukum wrote:
 
-> > > All right, we can make a decision and document it.  The following seems
-> > > reasonable to me:
-> > > 
-> > > 	If dev->power.direct_complete is set then the PM core will
-> > > 	assume that dev->power.rpm_status is accurate even when
-> > > 	dev->power.disable_depth > 0.  The core will obey the
-> > > 	.direct_complete setting regardless of .disable_depth.
-> > > 
-> > > 	As a consequence, devices that support system sleep but don't 
-> > > 	support runtime PM must _never_ have .direct_complete set.
-> > > 
-> > > 	On the other hand, if a device (such as a "virtual" device)
-> > > 	requires no callbacks for either system sleep or runtime PM, 
-> > > 	then there is no harm in setting .direct_complete.  Indeed,
-> > > 	doing so may help speed up an ancestor device's sleep
-> > > 	transition.
-> > > 
-> > > How does that sound?
-> > 
-> > It would be workable I think, but I'd prefer the core to be told directly
-> > about devices whose runtime PM status doesn't matter (because nothing changes
-> > between "suspended" and "active"), so they may be treated in a special way
-> > safely.
-> > 
-> > If we had that information, no special rules other than "that is a device
-> > whose runtime PM status doesn't matter, so treat it accordingly" would be
-> > necessary.
+> > he (or she) pulls the storage device out of the system, moves it to another
+> > system, makes changes (say removes the file written to by the process above,
+> > so the blocks previously occupied by that file are now used for some metadata)
+> > and moves the storage back to the suspended system.  The system is resumed
+> > and the writing process continues writing possibly to the wrong blocks and
+> > corrupts the filesystem.
 > 
-> That said, a situation to consider is when device X is just a software device,
-> but it has children that correspond to physical hardware.  If that is the case,
-> the usual parent-children rules should apply to X and its children (ie. X should
-> only be marked as "suspended" if all of its children are suspended) and I see
-> no reason why the parent-children rules for direct_resume should not apply here.
+> That is a tough nut. But that's not a reason to make it worse.
+> I'd say there's no reason not to use a secondary interface to
+> suspend without syncing or to extend or introduce such an interface
+> if the API is deficient.
 
-Yes, this illustrates that in some ways we must not treat "virtual" or 
-"software" devices specially.  Being "virtual" is not the same as 
-having the ignore_children flag set.
+Indeed, the problem Rafael outlined always exists whether or not the
+kernel does a sync.  Even if no I/O is in progress when the system goes
+to sleep, if the user moves a portable storage device with a mounted
+filesystem to another computer and updates it before waking the system
+up, corruption is highly likely.
 
-The change I'm proposing is not related to whether a device is 
-"virtual".  I'm just suggesting that the normal direct_complete rules 
-should apply even when devices are runtime-PM-disabled.
+In principle this could be solved by adding suspend/resume callbacks to
+filesystems.  For example, the resume callback could verify that the
+superblock had not been changed since the suspend occurred.  Or there 
+could be some other simple way of determining that the filesystem had 
+not been remounted and changed.
 
-This doesn't mean that their runtime PM status doesn't matter.  Just
-the opposite, in fact -- it means that the PM core should pay attention
-to the runtime PM status during a sleep transition even though
-disabled_depth > 0.
+Either way, this is irrelevant to the question of whether the kernel 
+should issue a sync when suspending.
 
 Alan Stern
+
