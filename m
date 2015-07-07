@@ -1,99 +1,124 @@
-From: Pan Xinhui <xinhuix.pan@intel.com>
-Subject: Re: [PATCH] acpi-cpufreq.c: fix a memory leak in acpi_cpufreq_cpu_exit
-Date: Tue, 07 Jul 2015 15:52:23 +0800
-Message-ID: <559B8537.5010309@intel.com>
-References: <559A2073.1000301@intel.com> <20150707065449.GD14598@linux>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH 4/4] devfreq_cooling: add trace information
+Date: Tue, 7 Jul 2015 08:56:51 +0100
+Message-ID: <20150707075651.GB2817@e104805>
+References: <1435928310-15938-1-git-send-email-javi.merino@arm.com>
+ <1435928310-15938-5-git-send-email-javi.merino@arm.com>
+ <20150706145843.7f475472@gandalf.local.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:49060 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751036AbbGGHy4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 03:54:56 -0400
-In-Reply-To: <20150707065449.GD14598@linux>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:43760 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754218AbbGGH5D (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 03:57:03 -0400
+Content-Disposition: inline
+In-Reply-To: <20150706145843.7f475472@gandalf.local.home>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, rjw@rjwysocki.net, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>, "mnipxh@163.com" <mnipxh@163.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Ingo Molnar <mingo@redhat.com>
 
-hi, Viresh
-	thanks for your reply.
+On Mon, Jul 06, 2015 at 07:58:43PM +0100, Steven Rostedt wrote:
+> On Fri,  3 Jul 2015 13:58:30 +0100
+> Javi Merino <javi.merino@arm.com> wrote:
+> 
+> 
+> > @@ -142,6 +144,10 @@ static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cd
+> >  	/* Get static power */
+> >  	static_power = get_static_power(dfc, freq);
+> >  
+> > +	load = (100 * status->busy_time) / status->total_time;
+> 
+> When tracing is disabled, this division will still be done.
+> 
+> Why not just pass in status, and have the load calculated in the
+> tracepoint TP_fast_assign() ?
 
-On 2015=E5=B9=B407=E6=9C=8807=E6=97=A5 14:54, Viresh Kumar wrote:
-> On 06-07-15, 14:30, Pan Xinhui wrote:
->>
->> policy->cpu in acpi_cpufreq_cpu_init/exit is the same cpu in most ca=
-ses.
->> However during cpu hotplug,
->> cpufreq core might nominate a new cpu for policy->cpu.
->=20
-> Why aren't above lines well aligned? A simple trick to share for vim
-> users:
->=20
-> - Select lines you want to auto-align with shift+v and up-down keys
-> - press gq
-> - That's it and vim will do it for you. You need to set vim's
->   'textwidth' to 72 or 80, based on what you are editing, so that vim
->   knows where you need to break the line. I have this in vimrc
->=20
->         set textwidth=3D80
->         au FileType gitcommit set textwidth=3D72
->=20
+Yes, no point doing it here.  I'll move it to the tracepoint's code.
 
-thanks, that will save me time.
+Thanks for the review,
+Javi
 
->=20
->=20
-> Back to the real stuff. Few core changes have gone into v4.2-rc1 and
-> policy->cpu doesn't change any longer on hotplug (unless its a
-> physical hotplug). So you shouldn't see any issues.
->=20
-I have latest codes.
-codes in cpufreq.c are below.
-1436     down_write(&policy->rwsem);
-1437     cpumask_clear_cpu(cpu, policy->cpus);
-1438=20
-1439     if (policy_is_inactive(policy)) {
-1440         if (has_target())
-1441             strncpy(policy->last_governor, policy->governor->name,
-1442                 CPUFREQ_NAME_LEN);
-1443     } else if (cpu =3D=3D policy->cpu) {
-1444         /* Nominate new CPU */
-1445         policy->cpu =3D cpumask_any(policy->cpus);
-1446     }
-1447     up_write(&policy->rwsem);
-
-line 1445 will change the policy->cpu.
-for example, cpu2,3 has same policy, and policy->cpu is 2 at beginning.
-If we disable cpu2, policy->cpu is 3.
-yes, at most time, cpu0,1,2,3,,etc share the same policy, and policy->c=
-pu is 0 which can't be offline.
-So no memory leak. it is just lucky. :)
-
-back to my previous patch, you suggest me to use policy->driver_data to=
- *store* data and don't need use per_cpu anymore.
-codes in acpi-cpufreq.c are below.
- 365 static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
- 366 {
- 367     struct acpi_cpufreq_data *data =3D per_cpu(acfreq_data, cpu);
- 368     unsigned int freq;
- 369     unsigned int cached_freq;
-=20
-we get *data* through per_cpu for now, as the parameter is cpu only.
-If we store *data* in policy->driver_data, we need call
-struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu) to get policy.
-We do a full codes review, and find there should be deadlock if we doin=
-g so.
-But as cpufreq code offers
-238 /* Only for cpufreq core internal use */
-239 struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
-
-I have a small question,if we can use *cpufreq_cpu_get_raw* in ->get ca=
-llback, which is already lock hold,
-But the comment(line 238) is... hmm.
-
-thanks for your kind reply. any advices or comments are welcome.
-
-thanks
-xinhui
+> > +	trace_thermal_power_devfreq_get_power(cdev, freq, load, dyn_power,
+> > +					      static_power);
+> > +
+> >  	*power = dyn_power + static_power;
+> >  
+> >  	return 0;
+> > @@ -195,6 +201,7 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
+> >  			break;
+> >  
+> >  	*state = i;
+> > +	trace_thermal_power_devfreq_limit(cdev, freq, *state, power);
+> >  	return 0;
+> >  }
+> >  
+> > diff --git a/include/trace/events/thermal.h b/include/trace/events/thermal.h
+> > index 8b1f80682b80..ffa870c0d2d2 100644
+> > --- a/include/trace/events/thermal.h
+> > +++ b/include/trace/events/thermal.h
+> > @@ -135,6 +135,57 @@ TRACE_EVENT(thermal_power_cpu_limit,
+> >  		__entry->power)
+> >  );
+> >  
+> > +TRACE_EVENT(thermal_power_devfreq_get_power,
+> > +	TP_PROTO(struct thermal_cooling_device *cdev, unsigned long freq,
+> > +		u32 load, u32 dynamic_power, u32 static_power),
+> > +
+> > +	TP_ARGS(cdev, freq, load, dynamic_power, static_power),
+> > +
+> > +	TP_STRUCT__entry(
+> > +		__string(type,         cdev->type    )
+> > +		__field(unsigned long, freq          )
+> > +		__field(u32,           load          )
+> > +		__field(u32,           dynamic_power )
+> > +		__field(u32,           static_power  )
+> > +	),
+> > +
+> > +	TP_fast_assign(
+> > +		__assign_str(type, cdev->type);
+> > +		__entry->freq = freq;
+> > +		__entry->load = load;
+> 
+>  __entry->load = (100 * status->busy_time) / status->total_time;
+> 
+> -- Steve
+> 
+> > +		__entry->dynamic_power = dynamic_power;
+> > +		__entry->static_power = static_power;
+> > +	),
+> > +
+> > +	TP_printk("type=%s freq=%lu load=%u dynamic_power=%u static_power=%u",
+> > +		__get_str(type), __entry->freq,
+> > +		__entry->load, __entry->dynamic_power, __entry->static_power)
+> > +);
+> > +
+> > +TRACE_EVENT(thermal_power_devfreq_limit,
+> > +	TP_PROTO(struct thermal_cooling_device *cdev, unsigned long freq,
+> > +		unsigned long cdev_state, u32 power),
+> > +
+> > +	TP_ARGS(cdev, freq, cdev_state, power),
+> > +
+> > +	TP_STRUCT__entry(
+> > +		__string(type,         cdev->type)
+> > +		__field(unsigned int,  freq      )
+> > +		__field(unsigned long, cdev_state)
+> > +		__field(u32,           power     )
+> > +	),
+> > +
+> > +	TP_fast_assign(
+> > +		__assign_str(type, cdev->type);
+> > +		__entry->freq = freq;
+> > +		__entry->cdev_state = cdev_state;
+> > +		__entry->power = power;
+> > +	),
+> > +
+> > +	TP_printk("type=%s freq=%u cdev_state=%lu power=%u",
+> > +		__get_str(type), __entry->freq, __entry->cdev_state,
+> > +		__entry->power)
+> > +);
+> >  #endif /* _TRACE_THERMAL_H */
+> >  
+> >  /* This part must be outside protection */
+> 
