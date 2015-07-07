@@ -1,231 +1,75 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] acpi-cpufreq: replace per_cpu with driver_data of policy
-Date: Tue, 7 Jul 2015 16:15:53 +0530
-Message-ID: <20150707104553.GN14598@linux>
-References: <559BA9FF.7050702@intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] base: power: wakeirq: don't leak dev->power.wakeirq
+Date: Tue, 7 Jul 2015 13:11:28 +0200
+Message-ID: <CAJZ5v0jRaoTzLbCpgLoag0BvcQWCMc+Do9M=ajkM6+sGJRVE7A@mail.gmail.com>
+References: <1436205678-31640-1-git-send-email-balbi@ti.com>
+	<2783932.o7RC7vMDHB@vostro.rjw.lan>
+	<20150707074053.GO10705@atomide.com>
+	<20150707081120.GA15545@saruman.tx.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:33991 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751757AbbGGKp7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 06:45:59 -0400
-Received: by pabvl15 with SMTP id vl15so111473731pab.1
-        for <linux-pm@vger.kernel.org>; Tue, 07 Jul 2015 03:45:58 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <559BA9FF.7050702@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150707081120.GA15545@saruman.tx.rr.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Felipe Balbi <balbi@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Pan Xinhui <xinhuix.pan@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, rjw@rjwysocki.net, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
 
-On 07-07-15, 18:29, Pan Xinhui wrote:
-> 
-> Now policy has field of driver_data, we can use it to get rid of per_cpu
-> acpi_cpufreq_data.
+On Tue, Jul 7, 2015 at 10:11 AM, Felipe Balbi <balbi@ti.com> wrote:
+> On Tue, Jul 07, 2015 at 12:40:53AM -0700, Tony Lindgren wrote:
+>> * Rafael J. Wysocki <rjw@rjwysocki.net> [150706 15:49]:
+>> > On Monday, July 06, 2015 01:01:18 PM Felipe Balbi wrote:
+>> > > on a first call to dev_pm_attach_wake_irq(), if it
+>> > > fails, it will leave dev->power.wakeirq set to a
+>> > > dangling pointer. Instead, let's clear it to make
+>> > > sure a subsequent call to dev_pm_attach_wake_irq()
+>> > > has chance to succeed.
+>> > >
+>> > > Cc: Tony Lindgren <tmlind@atomide.com>
+>> > > Signed-off-by: Felipe Balbi <balbi@ti.com>
+>> > > ---
+>> > >  drivers/base/power/wakeirq.c | 9 ++++++++-
+>> > >  1 file changed, 8 insertions(+), 1 deletion(-)
+>> > >
+>> > > diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
+>> > > index 7470004ca810..394d250a1ad8 100644
+>> > > --- a/drivers/base/power/wakeirq.c
+>> > > +++ b/drivers/base/power/wakeirq.c
+>> > > @@ -50,9 +50,16 @@ static int dev_pm_attach_wake_irq(struct device *dev, int irq,
+>> > >
+>> > >   err = device_wakeup_attach_irq(dev, wirq);
+>> > >   if (err)
+>> > > -         return err;
+>> > > +         goto err_cleanup;
+>> > >
+>> > >   return 0;
+>> > > +
+>> > > +err_cleanup:
+>> > > + spin_lock_irqsave(&dev->power.lock, flags);
+>> > > + dev->power.wakeirq = NULL;
+>> > > + spin_unlock_irqrestore(&dev->power.lock, flags);
+>> > > +
+>> > > + return err;
+>> > >  }
+>> >
+>> > Too many labels for me and the fact that acquiring of the lock again in the error
+>> > patch doesn't look good.
+>> >
+>> > However, we can do the entire device_wakeup_attach_irq() under the lock (after
+>> > removing the locking from it), because we're its only caller.
+>> >
+>> > So what about the below instead (build-tested only)?
+>>
+>> Nice, still works for me and simplifies things:
+>>
+>> Tested-by: Tony Lindgren <tony@atomide.com>
+>
+> Cool, thanks for testing Tony. Rafael, I'm fine with your version too.
+> FWIW:
+>
+> Reported-by: Felipe Balbi <balbi@ti.com>
 
-Instead:
-"Drivers can store their internal per-policy information in
-policy->driver_data, lets use it."
+OK, applied.
 
-> we have benefits after this replacing.  1) memory saving.  2) policy is
-
-s/we/We
-
-Also these points can be kept in separate lines :)
-
-> shared by several cpus, per_cpu seems not correct.  useing *driver_data*
-
-                                                      using
-
-> is more reasonable.  3) fix a memory leak in acpi_cpufreq_cpu_exit.
-
-Not just that. You are also fixing NULL pointer dereferences if wrong
-or uninitialized per-cpu data is used, because of a recent hotplug of
-policy->cpu.
-
-> as
-> policy->cpu might change after cpu hotplug. So sometimes we cant't free
-> *data*, use *driver_data* to fix it.  4) fix a zero return value of
-> get_cur_freq_on_cpu.  Only per_cpu(policy->cpu) is set to *data*, if we
-> try to get cpufreq on other cpus, we get zero instead of correct values.
-> Use *driver_data* to fix it.
-> 
-> Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
-> ---
->  drivers/cpufreq/acpi-cpufreq.c | 38 +++++++++++++++++++++++---------------
->  1 file changed, 23 insertions(+), 15 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-> index 0136dfc..7f662dd 100644
-> --- a/drivers/cpufreq/acpi-cpufreq.c
-> +++ b/drivers/cpufreq/acpi-cpufreq.c
-> @@ -72,8 +72,6 @@ struct acpi_cpufreq_data {
->  	cpumask_var_t freqdomain_cpus;
->  };
->  
-> -static DEFINE_PER_CPU(struct acpi_cpufreq_data *, acfreq_data);
-> -
->  /* acpi_perf_data is a pointer to percpu data. */
->  static struct acpi_processor_performance __percpu *acpi_perf_data;
->  
-> @@ -144,7 +142,7 @@ static int _store_boost(int val)
->  
->  static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
->  {
-> -	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
-> +	struct acpi_cpufreq_data *data = policy->driver_data;
->  
->  	return cpufreq_show_cpus(data->freqdomain_cpus, buf);
->  }
-> @@ -327,7 +325,8 @@ static void drv_write(struct drv_cmd *cmd)
->  	put_cpu();
->  }
->  
-> -static u32 get_cur_val(const struct cpumask *mask)
-> +static u32 get_cur_val(const struct cpumask *mask,
-> +				struct acpi_cpufreq_data *data)
-
-Run checkpatch --strict to see some alignment warnings here..
-
->  {
->  	struct acpi_processor_performance *perf;
->  	struct drv_cmd cmd;
-> @@ -335,7 +334,7 @@ static u32 get_cur_val(const struct cpumask *mask)
->  	if (unlikely(cpumask_empty(mask)))
->  		return 0;
->  
-> -	switch (per_cpu(acfreq_data, cpumask_first(mask))->cpu_feature) {
-> +	switch (data->cpu_feature) {
->  	case SYSTEM_INTEL_MSR_CAPABLE:
->  		cmd.type = SYSTEM_INTEL_MSR_CAPABLE;
->  		cmd.addr.msr.reg = MSR_IA32_PERF_CTL;
-> @@ -346,7 +345,7 @@ static u32 get_cur_val(const struct cpumask *mask)
->  		break;
->  	case SYSTEM_IO_CAPABLE:
->  		cmd.type = SYSTEM_IO_CAPABLE;
-> -		perf = per_cpu(acfreq_data, cpumask_first(mask))->acpi_data;
-> +		perf = data->acpi_data;
->  		cmd.addr.io.port = perf->control_register.address;
->  		cmd.addr.io.bit_width = perf->control_register.bit_width;
->  		break;
-> @@ -364,19 +363,26 @@ static u32 get_cur_val(const struct cpumask *mask)
->  
->  static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
->  {
-> -	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, cpu);
-> +	struct acpi_cpufreq_data *data;
-> +	struct cpufreq_policy *policy;
->  	unsigned int freq;
->  	unsigned int cached_freq;
->  
->  	pr_debug("get_cur_freq_on_cpu (%d)\n", cpu);
->  
-> +	policy = cpufreq_cpu_get(cpu);
-> +	if (unlikely(!policy))
-> +		return 0;
-> +
-> +	data = policy->driver_data;
-
-Do
-
-+		cpufreq_cpu_put(policy);
-
-right here. No need of doing this towards the end.
-
->  	if (unlikely(data == NULL ||
->  		     data->acpi_data == NULL || data->freq_table == NULL)) {
-
-Maybe this if you like:
-
-  	if (unlikely(! data || !data->acpi_data || !data->freq_table))
-                return 0;
-
-> +		cpufreq_cpu_put(policy);
->  		return 0;
->  	}
->  
->  	cached_freq = data->freq_table[data->acpi_data->state].frequency;
-
-And this freq_table thing gives you opportunity to write another
-patch :)
-
-policy already have: policy->freq_table :)
-
-> -	freq = extract_freq(get_cur_val(cpumask_of(cpu)), data);
-> +	freq = extract_freq(get_cur_val(cpumask_of(cpu), data), data);
->  	if (freq != cached_freq) {
->  		/*
->  		 * The dreaded BIOS frequency change behind our back.
-> @@ -385,6 +391,8 @@ static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
->  		data->resume = 1;
->  	}
->  
-> +	cpufreq_cpu_put(policy);
-> +
->  	pr_debug("cur freq = %u\n", freq);
->  
->  	return freq;
-> @@ -397,7 +405,7 @@ static unsigned int check_freqs(const struct cpumask *mask, unsigned int freq,
->  	unsigned int i;
->  
->  	for (i = 0; i < 100; i++) {
-> -		cur_freq = extract_freq(get_cur_val(mask), data);
-> +		cur_freq = extract_freq(get_cur_val(mask, data), data);
->  		if (cur_freq == freq)
->  			return 1;
->  		udelay(10);
-> @@ -408,7 +416,7 @@ static unsigned int check_freqs(const struct cpumask *mask, unsigned int freq,
->  static int acpi_cpufreq_target(struct cpufreq_policy *policy,
->  			       unsigned int index)
->  {
-> -	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
-> +	struct acpi_cpufreq_data *data = policy->driver_data;
->  	struct acpi_processor_performance *perf;
->  	struct drv_cmd cmd;
->  	unsigned int next_perf_state = 0; /* Index into perf table */
-> @@ -673,7 +681,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	}
->  
->  	data->acpi_data = per_cpu_ptr(acpi_perf_data, cpu);
-> -	per_cpu(acfreq_data, cpu) = data;
-> +	policy->driver_data = data;
->  
->  	if (cpu_has(c, X86_FEATURE_CONSTANT_TSC))
->  		acpi_cpufreq_driver.flags |= CPUFREQ_CONST_LOOPS;
-> @@ -843,19 +851,19 @@ err_free_mask:
->  	free_cpumask_var(data->freqdomain_cpus);
->  err_free:
->  	kfree(data);
-> -	per_cpu(acfreq_data, cpu) = NULL;
-> +	policy->driver_data = NULL;
->  
->  	return result;
->  }
->  
->  static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
->  {
-> -	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
-> +	struct acpi_cpufreq_data *data = policy->driver_data;
->  
->  	pr_debug("acpi_cpufreq_cpu_exit\n");
->  
->  	if (data) {
-> -		per_cpu(acfreq_data, policy->cpu) = NULL;
-> +		policy->driver_data = NULL;
->  		acpi_processor_unregister_performance(data->acpi_data,
->  						      policy->cpu);
->  		free_cpumask_var(data->freqdomain_cpus);
-> @@ -868,7 +876,7 @@ static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
->  
->  static int acpi_cpufreq_resume(struct cpufreq_policy *policy)
->  {
-> -	struct acpi_cpufreq_data *data = per_cpu(acfreq_data, policy->cpu);
-> +	struct acpi_cpufreq_data *data = policy->driver_data;
->  
->  	pr_debug("acpi_cpufreq_resume\n");
-
-Rest looks fine.
-
--- 
-viresh
+Thanks,
+Rafael
