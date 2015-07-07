@@ -1,107 +1,71 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 17/46] sched: Introduce SD_SHARE_CAP_STATES sched_domain flag
-Date: Tue,  7 Jul 2015 19:24:00 +0100
-Message-ID: <1436293469-25707-18-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 14/46] sched: Make energy awareness a sched feature
+Date: Tue,  7 Jul 2015 19:23:57 +0100
+Message-ID: <1436293469-25707-15-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37480 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932814AbbGGSWo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 14:22:44 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
-Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Russell King <linux@arm.linux.org.uk>
+Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-cpufreq is currently keeping it a secret which cpus are sharing
-clock source. The scheduler needs to know about clock domains as well
-to become more energy aware. The SD_SHARE_CAP_STATES domain flag
-indicates whether cpus belonging to the sched_domain share capacity
-states (P-states).
+This patch introduces the ENERGY_AWARE sched feature, which is
+implemented using jump labels when SCHED_DEBUG is defined. It is
+statically set false when SCHED_DEBUG is not defined. Hence this doesn't
+allow energy awareness to be enabled without SCHED_DEBUG. This
+sched_feature knob will be replaced later with a more appropriate
+control knob when things have matured a bit.
 
-There is no connection with cpufreq (yet). The flag must be set by
-the arch specific topology code.
+ENERGY_AWARE is based on per-entity load-tracking hence FAIR_GROUP_SCHED
+must be enable. This dependency isn't checked at compile time yet.
 
-cc: Russell King <linux@arm.linux.org.uk>
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- arch/arm/kernel/topology.c |  3 ++-
- include/linux/sched.h      |  1 +
- kernel/sched/core.c        | 10 +++++++---
- 3 files changed, 10 insertions(+), 4 deletions(-)
+ kernel/sched/fair.c     | 6 ++++++
+ kernel/sched/features.h | 6 ++++++
+ 2 files changed, 12 insertions(+)
 
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index 5867587..b35d3e5 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -276,7 +276,8 @@ void store_cpu_topology(unsigned int cpuid)
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index d0df937..a95dad9 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -4781,6 +4781,7 @@ static long effective_load(struct task_group *tg, int cpu, long wl, long wg)
  
- static inline int cpu_corepower_flags(void)
- {
--	return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN;
-+	return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN | \
-+	       SD_SHARE_CAP_STATES;
+ 	return wl;
  }
++
+ #else
  
- static struct sched_domain_topology_level arm_topology[] = {
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index c4d0e88..8ac2db8 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -985,6 +985,7 @@ extern void wake_up_q(struct wake_q_head *head);
- #define SD_PREFER_SIBLING	0x1000	/* Prefer to place tasks in a sibling domain */
- #define SD_OVERLAP		0x2000	/* sched_domains of this level overlap */
- #define SD_NUMA			0x4000	/* cross-node balancing */
-+#define SD_SHARE_CAP_STATES	0x8000  /* Domain members share capacity state */
+ static long effective_load(struct task_group *tg, int cpu, long wl, long wg)
+@@ -4790,6 +4791,11 @@ static long effective_load(struct task_group *tg, int cpu, long wl, long wg)
  
- #ifdef CONFIG_SCHED_SMT
- static inline int cpu_smt_flags(void)
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index e09ded5..b70a5a7 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -5563,7 +5563,8 @@ static int sd_degenerate(struct sched_domain *sd)
- 			 SD_BALANCE_EXEC |
- 			 SD_SHARE_CPUCAPACITY |
- 			 SD_SHARE_PKG_RESOURCES |
--			 SD_SHARE_POWERDOMAIN)) {
-+			 SD_SHARE_POWERDOMAIN |
-+			 SD_SHARE_CAP_STATES)) {
- 		if (sd->groups != sd->groups->next)
- 			return 0;
- 	}
-@@ -5595,7 +5596,8 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
- 				SD_SHARE_CPUCAPACITY |
- 				SD_SHARE_PKG_RESOURCES |
- 				SD_PREFER_SIBLING |
--				SD_SHARE_POWERDOMAIN);
-+				SD_SHARE_POWERDOMAIN |
-+				SD_SHARE_CAP_STATES);
- 		if (nr_node_ids == 1)
- 			pflags &= ~SD_SERIALIZE;
- 	}
-@@ -6256,6 +6258,7 @@ static int sched_domains_curr_level;
-  * SD_SHARE_PKG_RESOURCES - describes shared caches
-  * SD_NUMA                - describes NUMA topologies
-  * SD_SHARE_POWERDOMAIN   - describes shared power domain
-+ * SD_SHARE_CAP_STATES    - describes shared capacity states
-  *
-  * Odd one out:
-  * SD_ASYM_PACKING        - describes SMT quirks
-@@ -6265,7 +6268,8 @@ static int sched_domains_curr_level;
- 	 SD_SHARE_PKG_RESOURCES |	\
- 	 SD_NUMA |			\
- 	 SD_ASYM_PACKING |		\
--	 SD_SHARE_POWERDOMAIN)
-+	 SD_SHARE_POWERDOMAIN |		\
-+	 SD_SHARE_CAP_STATES)
+ #endif
  
- static struct sched_domain *
- sd_init(struct sched_domain_topology_level *tl, int cpu)
++static inline bool energy_aware(void)
++{
++	return sched_feat(ENERGY_AWARE);
++}
++
+ static int wake_wide(struct task_struct *p)
+ {
+ 	int factor = this_cpu_read(sd_llc_size);
+diff --git a/kernel/sched/features.h b/kernel/sched/features.h
+index 03d8072..92bc36e 100644
+--- a/kernel/sched/features.h
++++ b/kernel/sched/features.h
+@@ -91,3 +91,9 @@ SCHED_FEAT(NUMA_FAVOUR_HIGHER, true)
+  */
+ SCHED_FEAT(NUMA_RESIST_LOWER, false)
+ #endif
++
++/*
++ * Energy aware scheduling. Use platform energy model to guide scheduling
++ * decisions optimizing for energy efficiency.
++ */
++SCHED_FEAT(ENERGY_AWARE, false)
 -- 
 1.9.1
-
