@@ -1,105 +1,90 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Tue, 07 Jul 2015 14:14:44 +0200
-Message-ID: <1652992.e7VOEWpWyZ@vostro.rjw.lan>
-References: <4290667.ZqInAykFGS@vostro.rjw.lan> <1595559.BsCkcDEfNB@vostro.rjw.lan> <20150707011756.GC3902@dastard>
+Date: Tue, 07 Jul 2015 14:22:07 +0200
+Message-ID: <1632426.Ho6HuulePs@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1507041011510.19175-100000@netrider.rowland.org> <4932758.cYVny4lmZN@vostro.rjw.lan> <20150707102507.GA13811@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55934 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752926AbbGGLsT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 07:48:19 -0400
-In-Reply-To: <20150707011756.GC3902@dastard>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150707102507.GA13811@amd>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Dave Chinner <david@fromorbit.com>, Len Brown <lenb@kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Dave Chinner <david@fromorbit.com>
-Cc: Len Brown <lenb@kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Alan Stern <stern@rowland.harvard.edu>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-On Tuesday, July 07, 2015 11:17:56 AM Dave Chinner wrote:
-> On Mon, Jul 06, 2015 at 03:52:25PM +0200, Rafael J. Wysocki wrote:
-> > On Monday, July 06, 2015 10:06:14 AM Dave Chinner wrote:
-> > > On Sat, Jul 04, 2015 at 03:03:46AM +0200, Rafael J. Wysocki wrote:
-> > > > > No, your observation was that "sync is slow". Your *solution* is "we
-> > > > > need to remove sync".
+On Tuesday, July 07, 2015 12:25:07 PM Pavel Machek wrote:
+> On Mon 2015-07-06 15:59:15, Rafael J. Wysocki wrote:
+> > On Monday, July 06, 2015 01:06:45 PM Pavel Machek wrote:
+> > > On Mon 2015-07-06 01:28:20, Rafael J. Wysocki wrote:
+> > > > On Saturday, July 04, 2015 10:19:55 AM Alan Stern wrote:
+> > > > > On Sat, 4 Jul 2015, Rafael J. Wysocki wrote:
+> > > > > 
+> > > > > > The only argument against dropping sys_sync() from the suspend code path
+> > > > > > I've seen in this thread that I entirely agree with is that it may lead to
+> > > > > > regressions, because we've done it practically forever and it may hide latent
+> > > > > > bugs somewhere in block drivers etc.  Dropping it, though, is the only way
+> > > > > > to see those bugs, if any, and if we want to ever fix them, we need to see
+> > > > > > them.  That's why I think that it may be a good idea to allow people to
+> > > > > > drop it if they are willing to accept some extra risk (via the kernel
+> > > > > > command line, for example).
+> > > > > 
+> > > > > I'd be perfectly happy to have the sync selectable at runtime, one way 
+> > > > > or another.  The three most reasonable options seem to be:
+> > > > > 
+> > > > > 	kernel command line
+> > > > > 
+> > > > > 	sysfs file
+> > > > > 
+> > > > > 	sysctl setting
+> > > > > 
+> > > > > The command line is less flexible (it can't be changed after booting).  
+> > > > > Either of the other two would be fine with me.
 > > > > 
-> > > > Not only slow, but pointless too.  The argument goes: "It is slow and
-> > > > pointless and so it may be dropped."
-> > > > 
-> > > > Now, I can agree that it wasn't clearly demonstrated that the unconditional
-> > > > sys_sync() in the suspend code path was pointless, but it also has never
-> > > > been clearly shown why it is not pointless on systems that suspend and resume
-> > > > reliably.
+> > > > We'll probably use a sysfs file (possibly plus a Kconfig option to set the
+> > > > boot time default).
 > > > 
-> > > I just gave you an example of why sync is needed: Suspend, pull out
-> > > USB drive when putting laptop in bag.
-> > 
-> > Exactly the same thing can happen while not suspended.  What does make suspend
-> > special with respect to that?
-> 
-> Stop being obtuse.
-
-Stop being rude.
-
-> If you remember that you need to pull the USB
-> stick before you suspend, then you damn well remember to "safely
-> eject" the USB stick and that syncs, unmounts and flushes the drive
-> caches before telling you it is safe to pull the stick.
-
-All of that only means "the kernel needs to protect users from consequences
-of silly mistakes" which I'm not sure I agree with.
-
-For example, on desktop systems I use user space syncs filesystems before
-writing to /sys/power/state, so the additional sys_sync() in the kernel doesn't
-seem to serve any purpose.
-
-> > > > Moreover, question is if we really need to carry out the sync on *every*
-> > > > suspend even if it is not pointless overall.  That shouldn't really be
-> > > > necessary if we suspend and resume often enough or if we resume only for
-> > > > a while and then suspend again.  Maybe it should be rate limited somehow
-> > > > at least?
+> > > Android people can already do sync-less s2ram using existing
+> > > interface. IMO they should just do it.
 > > > 
-> > > If you suspend and resume frequently, then the cost of the sync
-> > > shoul dbe negliable because the amount of data dirtied between
-> > > resume/suspend shoul dbe negliable. hence my questions about where
-> > > sync is spending too much time, and whether we've actually fixed
-> > > those problems or not. If sync speed on clean filesystems is a
-> > > problem then we need to fix sync, not work around it.
+> > > In any case, sysfs file + Kconfig is an overkill. We already have too
+> > > many Kconfig options.
 > > 
-> > Well, say you never suspend, but you also only shut down the system when you
-> > need to replace the kernel on it.  How often would you invoke global sync on
-> > that system?
+> > I don't think we can reach a general agreement on what's the *right* approach
+> > with respect to the sys_sync() in the suspend code path, so the only way out
+> > of this situation I can see is to make it configurable.
 > 
-> Never, because:
+> So first: not having general agreement does not mean we should
+> introduce Kconfig + sysfs file. Second: your proposal of "lets sync if
+> runtime was shorter than xxx" is over complex, but at least should not
+> need Kconfig support...
+
+The Kconfig part is only about setting the default at compile time, so I'm
+not sure why you have any problems with it.
+
+
+> Third: we have ioctl() based interface, and I guess android should use that
+> one; it already has "s2ram without sync" method.
+
+And that is tied to hibernation and therefore useless to people who don't
+build that in.
+
+
+> > > There's not a single Android phone supported by mainline
+> > > kernel. I'm sure they have bigger problems than Android setting
+> > > default sysfs values...
+> > 
+> > But perhaps we'd like to change that?
 > 
-> 	- the kernel does background writeback of dirty data so you
-> 	  don't need to run sync while the system is running; and
+> We'd like to, but lets start with the real hard stuff (merging support
+> for Qualcomm chipsets) that is 1000000 LoC+, not with trivial tweaks
+> that would be 1-line change, but we pollute code with Kconfig+sysfs
+> making it 100..
 
-OK, and that surely happens between suspend-resume cycles too, so why does
-the sync in the suspend code path make a difference, really (except for
-avoiding the consequences of possible user mistakes)?
+It is suboptimal, but this is the only way I can see allowing us to make
+any forward progress here.
 
-> 	- unmount during shutdown runs sync_filesystem() internally
-> 	  (just like sys_sync does) to ensure the filesystem is
-> 	  clean and no data is lost.
-
-And that still will be the case regardless of whether or not suspend is used.
-
-> Seriously, stop being making ignorant arguments to justify removing
-> sys_sync(). *If* there's a problem sys_sync() we need to *fix it*,
-> not ignore it.
-
-I'm not advocating for dropping the sys_sync().  I'd just have applied the Len's
-patch had I thought that had been the way to go.
-
-I'm not agreeing with your argumentation about why the sync is needed, though
-(except for the one point that removing it might uncover some latent bugs).
-
-For now, I've seen two arguments: the one about the possible latent bug (that
-I agree with) and the one about how users may be hurt if they unplug storage
-devices holding unmounted filesystems while suspended (which may be addressed
-by a sync in user space just fine).  Are there any other reasons?
+Evidently, some people are not happy with the status quo and they also should
+be able to cover their use cases with the mainline kernel, shouldn't they?
 
 Rafael
-
