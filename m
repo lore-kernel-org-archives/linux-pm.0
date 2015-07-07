@@ -1,231 +1,93 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 23/46] sched: Extend sched_group_energy to test load-balancing decisions
-Date: Tue,  7 Jul 2015 19:24:06 +0100
-Message-ID: <1436293469-25707-24-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 24/46] sched: Estimate energy impact of scheduling decisions
+Date: Tue,  7 Jul 2015 19:24:07 +0100
+Message-ID: <1436293469-25707-25-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37541 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:37552 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932864AbbGGSXA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 14:23:00 -0400
+	id S932873AbbGGSXC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Jul 2015 14:23:02 -0400
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Extended sched_group_energy() to support energy prediction with usage
-(tasks) added/removed from a specific cpu or migrated between a pair of
-cpus. Useful for load-balancing decision making.
+Adds a generic energy-aware helper function, energy_diff(), that
+calculates energy impact of adding, removing, and migrating utilization
+in the system.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- kernel/sched/fair.c | 86 +++++++++++++++++++++++++++++++++++++----------------
- 1 file changed, 60 insertions(+), 26 deletions(-)
+ kernel/sched/fair.c | 51 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 51 insertions(+)
 
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index bd0be9d..362e33b 100644
+index 362e33b..bf1d34c 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -4825,15 +4825,17 @@ static unsigned long capacity_curr_of(int cpu)
-  * capacity_curr (but not capacity_orig) as it useful for predicting the
-  * capacity required after task migrations (scheduler-driven DVFS).
-  */
--
--static unsigned long get_cpu_usage(int cpu)
-+static unsigned long __get_cpu_usage(int cpu, int delta)
- {
- 	int sum;
- 	unsigned long usage = cpu_rq(cpu)->cfs.utilization_load_avg;
- 	unsigned long blocked = cpu_rq(cpu)->cfs.utilization_blocked_avg;
- 	unsigned long capacity_orig = capacity_orig_of(cpu);
- 
--	sum = usage + blocked;
-+	sum = usage + blocked + delta;
-+
-+	if (sum < 0)
-+		return 0;
- 
- 	if (sum >= capacity_orig)
- 		return capacity_orig;
-@@ -4841,13 +4843,28 @@ static unsigned long get_cpu_usage(int cpu)
- 	return sum;
- }
- 
-+static unsigned long get_cpu_usage(int cpu)
-+{
-+	return __get_cpu_usage(cpu, 0);
-+}
-+
- static inline bool energy_aware(void)
- {
- 	return sched_feat(ENERGY_AWARE);
- }
- 
-+struct energy_env {
-+	struct sched_group	*sg_top;
-+	struct sched_group	*sg_cap;
-+	int			cap_idx;
-+	int			usage_delta;
-+	int			src_cpu;
-+	int			dst_cpu;
-+	int			energy;
-+};
-+
- /*
-- * cpu_norm_usage() returns the cpu usage relative to a specific capacity,
-+ * __cpu_norm_usage() returns the cpu usage relative to a specific capacity,
-  * i.e. it's busy ratio, in the range [0..SCHED_LOAD_SCALE] which is useful for
-  * energy calculations. Using the scale-invariant usage returned by
-  * get_cpu_usage() and approximating scale-invariant usage by:
-@@ -4860,9 +4877,9 @@ static inline bool energy_aware(void)
-  *
-  *   norm_usage = running_time/time ~ usage/capacity
-  */
--static unsigned long cpu_norm_usage(int cpu, unsigned long capacity)
-+static unsigned long __cpu_norm_usage(int cpu, unsigned long capacity, int delta)
- {
--	int usage = __get_cpu_usage(cpu);
-+	int usage = __get_cpu_usage(cpu, delta);
- 
- 	if (usage >= capacity)
- 		return SCHED_CAPACITY_SCALE;
-@@ -4870,13 +4887,25 @@ static unsigned long cpu_norm_usage(int cpu, unsigned long capacity)
- 	return (usage << SCHED_CAPACITY_SHIFT)/capacity;
- }
- 
--static unsigned long group_max_usage(struct sched_group *sg)
-+static int calc_usage_delta(struct energy_env *eenv, int cpu)
- {
--	int i;
-+	if (cpu == eenv->src_cpu)
-+		return -eenv->usage_delta;
-+	if (cpu == eenv->dst_cpu)
-+		return eenv->usage_delta;
-+	return 0;
-+}
-+
-+static
-+unsigned long group_max_usage(struct energy_env *eenv)
-+{
-+	int i, delta;
- 	unsigned long max_usage = 0;
- 
--	for_each_cpu(i, sched_group_cpus(sg))
--		max_usage = max(max_usage, get_cpu_usage(i));
-+	for_each_cpu(i, sched_group_cpus(eenv->sg_cap)) {
-+		delta = calc_usage_delta(eenv, i);
-+		max_usage = max(max_usage, __get_cpu_usage(i, delta));
-+	}
- 
- 	return max_usage;
- }
-@@ -4890,31 +4919,36 @@ static unsigned long group_max_usage(struct sched_group *sg)
-  * latter is used as the estimate as it leads to a more pessimistic energy
-  * estimate (more busy).
-  */
--static unsigned long group_norm_usage(struct sched_group *sg, int cap_idx)
-+static unsigned
-+long group_norm_usage(struct energy_env *eenv, struct sched_group *sg)
- {
--	int i;
-+	int i, delta;
- 	unsigned long usage_sum = 0;
--	unsigned long capacity = sg->sge->cap_states[cap_idx].cap;
-+	unsigned long capacity = sg->sge->cap_states[eenv->cap_idx].cap;
- 
--	for_each_cpu(i, sched_group_cpus(sg))
--		usage_sum += cpu_norm_usage(i, capacity);
-+	for_each_cpu(i, sched_group_cpus(sg)) {
-+		delta = calc_usage_delta(eenv, i);
-+		usage_sum += __cpu_norm_usage(i, capacity, delta);
-+	}
- 
- 	if (usage_sum > SCHED_CAPACITY_SCALE)
- 		return SCHED_CAPACITY_SCALE;
- 	return usage_sum;
- }
- 
--static int find_new_capacity(struct sched_group *sg,
-+static int find_new_capacity(struct energy_env *eenv,
- 		struct sched_group_energy *sge)
- {
- 	int idx;
--	unsigned long util = group_max_usage(sg);
-+	unsigned long util = group_max_usage(eenv);
- 
- 	for (idx = 0; idx < sge->nr_cap_states; idx++) {
- 		if (sge->cap_states[idx].cap >= util)
- 			return idx;
- 	}
- 
-+	eenv->cap_idx = idx;
-+
- 	return idx;
- }
- 
-@@ -4927,16 +4961,16 @@ static int find_new_capacity(struct sched_group *sg,
-  * gather the same usage statistics multiple times. This can probably be done in
-  * a faster but more complex way.
-  */
--static unsigned int sched_group_energy(struct sched_group *sg_top)
-+static unsigned int sched_group_energy(struct energy_env *eenv)
- {
- 	struct sched_domain *sd;
- 	int cpu, total_energy = 0;
- 	struct cpumask visit_cpus;
- 	struct sched_group *sg;
- 
--	WARN_ON(!sg_top->sge);
-+	WARN_ON(!eenv->sg_top->sge);
- 
--	cpumask_copy(&visit_cpus, sched_group_cpus(sg_top));
-+	cpumask_copy(&visit_cpus, sched_group_cpus(eenv->sg_top));
- 
- 	while (!cpumask_empty(&visit_cpus)) {
- 		struct sched_group *sg_shared_cap = NULL;
-@@ -4959,17 +4993,16 @@ static unsigned int sched_group_energy(struct sched_group *sg_top)
- 				break;
- 
- 			do {
--				struct sched_group *sg_cap_util;
- 				unsigned long group_util;
- 				int sg_busy_energy, sg_idle_energy, cap_idx;
- 
- 				if (sg_shared_cap && sg_shared_cap->group_weight >= sg->group_weight)
--					sg_cap_util = sg_shared_cap;
-+					eenv->sg_cap = sg_shared_cap;
- 				else
--					sg_cap_util = sg;
-+					eenv->sg_cap = sg;
- 
--				cap_idx = find_new_capacity(sg_cap_util, sg->sge);
--				group_util = group_norm_usage(sg, cap_idx);
-+				cap_idx = find_new_capacity(eenv, sg->sge);
-+				group_util = group_norm_usage(eenv, sg);
- 				sg_busy_energy = (group_util * sg->sge->cap_states[cap_idx].power)
- 										>> SCHED_CAPACITY_SHIFT;
- 				sg_idle_energy = ((SCHED_LOAD_SCALE-group_util) * sg->sge->idle_states[0].power)
-@@ -4980,7 +5013,7 @@ static unsigned int sched_group_energy(struct sched_group *sg_top)
- 				if (!sd->child)
- 					cpumask_xor(&visit_cpus, &visit_cpus, sched_group_cpus(sg));
- 
--				if (cpumask_equal(sched_group_cpus(sg), sched_group_cpus(sg_top)))
-+				if (cpumask_equal(sched_group_cpus(sg), sched_group_cpus(eenv->sg_top)))
- 					goto next_cpu;
- 
- 			} while (sg = sg->next, sg != sd->groups);
-@@ -4989,6 +5022,7 @@ static unsigned int sched_group_energy(struct sched_group *sg_top)
- 		continue;
- 	}
- 
-+	eenv->energy = total_energy;
+@@ -5026,6 +5026,57 @@ static unsigned int sched_group_energy(struct energy_env *eenv)
  	return total_energy;
  }
  
++/*
++ * energy_diff(): Estimate the energy impact of changing the utilization
++ * distribution. eenv specifies the change: utilisation amount, source, and
++ * destination cpu. Source or destination cpu may be -1 in which case the
++ * utilization is removed from or added to the system (e.g. task wake-up). If
++ * both are specified, the utilization is migrated.
++ */
++static int energy_diff(struct energy_env *eenv)
++{
++	struct sched_domain *sd;
++	struct sched_group *sg;
++	int sd_cpu = -1, energy_before = 0, energy_after = 0;
++
++	struct energy_env eenv_before = {
++		.usage_delta	= 0,
++		.src_cpu	= eenv->src_cpu,
++		.dst_cpu	= eenv->dst_cpu,
++	};
++
++	if (eenv->src_cpu == eenv->dst_cpu)
++		return 0;
++
++	sd_cpu = (eenv->src_cpu != -1) ? eenv->src_cpu : eenv->dst_cpu;
++	sd = rcu_dereference(per_cpu(sd_ea, sd_cpu));
++
++	if (!sd)
++		return 0; /* Error */
++
++	sg = sd->groups;
++	do {
++		if (eenv->src_cpu != -1 && cpumask_test_cpu(eenv->src_cpu,
++							sched_group_cpus(sg))) {
++			eenv_before.sg_top = eenv->sg_top = sg;
++			energy_before += sched_group_energy(&eenv_before);
++			energy_after += sched_group_energy(eenv);
++
++			/* src_cpu and dst_cpu may belong to the same group */
++			continue;
++		}
++
++		if (eenv->dst_cpu != -1	&& cpumask_test_cpu(eenv->dst_cpu,
++							sched_group_cpus(sg))) {
++			eenv_before.sg_top = eenv->sg_top = sg;
++			energy_before += sched_group_energy(&eenv_before);
++			energy_after += sched_group_energy(eenv);
++		}
++	} while (sg = sg->next, sg != sd->groups);
++
++	return energy_after-energy_before;
++}
++
+ static int wake_wide(struct task_struct *p)
+ {
+ 	int factor = this_cpu_read(sd_llc_size);
 -- 
 1.9.1
 
