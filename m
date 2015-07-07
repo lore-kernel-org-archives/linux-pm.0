@@ -1,7 +1,7 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 10/46] sched: Include blocked utilization in usage tracking
-Date: Tue,  7 Jul 2015 19:23:53 +0100
-Message-ID: <1436293469-25707-11-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 12/46] sched: Initialize CFS task load and usage before placing task on rq
+Date: Tue,  7 Jul 2015 19:23:55 +0100
+Message-ID: <1436293469-25707-13-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
@@ -10,57 +10,64 @@ To: peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add the blocked utilization contribution to group sched_entity
-utilization (se->avg.utilization_avg_contrib) and to get_cpu_usage().
-With this change cpu usage now includes recent usage by currently
-non-runnable tasks, hence it provides a more stable view of the cpu
-usage. It does, however, also mean that the meaning of usage is changed:
-A cpu may be momentarily idle while usage is >0. It can no longer be
-assumed that cpu usage >0 implies runnable tasks on the rq.
-cfs_rq->utilization_load_avg or nr_running should be used instead to get
-the current rq status.
+Task load or usage is not currently considered in select_task_rq_fair(),
+but if we want that in the future we should make sure it is not zero for
+new tasks.
+
+The load-tracking sums are currently initialized using sched_slice(),
+that won't work before the task has been assigned a rq. Initialization
+is therefore changed to another semi-arbitrary value, sched_latency,
+instead.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- kernel/sched/fair.c | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ kernel/sched/core.c | 4 ++--
+ kernel/sched/fair.c | 7 +++----
+ 2 files changed, 5 insertions(+), 6 deletions(-)
 
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 10338ce..6a06fe5 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -2126,6 +2126,8 @@ void wake_up_new_task(struct task_struct *p)
+ 	struct rq *rq;
+ 
+ 	raw_spin_lock_irqsave(&p->pi_lock, flags);
++	/* Initialize new task's runnable average */
++	init_task_runnable_average(p);
+ #ifdef CONFIG_SMP
+ 	/*
+ 	 * Fork balancing, do it here and not earlier because:
+@@ -2135,8 +2137,6 @@ void wake_up_new_task(struct task_struct *p)
+ 	set_task_cpu(p, select_task_rq(p, task_cpu(p), SD_BALANCE_FORK, 0));
+ #endif
+ 
+-	/* Initialize new task's runnable average */
+-	init_task_runnable_average(p);
+ 	rq = __task_rq_lock(p);
+ 	activate_task(rq, p, 0);
+ 	p->on_rq = TASK_ON_RQ_QUEUED;
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index c26980f..775b0c7 100644
+index fa12ce5..d0df937 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -2804,7 +2804,8 @@ static long __update_entity_utilization_avg_contrib(struct sched_entity *se)
- 		__update_task_entity_utilization(se);
- 	else
- 		se->avg.utilization_avg_contrib =
--					group_cfs_rq(se)->utilization_load_avg;
-+				group_cfs_rq(se)->utilization_load_avg +
-+				group_cfs_rq(se)->utilization_blocked_avg;
- 
- 	return se->avg.utilization_avg_contrib - old_contrib;
- }
-@@ -5061,13 +5062,17 @@ static int select_idle_sibling(struct task_struct *p, int target)
- 
- static int get_cpu_usage(int cpu)
+@@ -675,11 +675,10 @@ static inline void __update_task_entity_utilization(struct sched_entity *se);
+ /* Give new task start runnable values to heavy its load in infant time */
+ void init_task_runnable_average(struct task_struct *p)
  {
-+	int sum;
- 	unsigned long usage = cpu_rq(cpu)->cfs.utilization_load_avg;
-+	unsigned long blocked = cpu_rq(cpu)->cfs.utilization_blocked_avg;
- 	unsigned long capacity_orig = capacity_orig_of(cpu);
+-	u32 slice;
++	u32 start_load = sysctl_sched_latency >> 10;
  
--	if (usage >= capacity_orig)
-+	sum = usage + blocked;
-+
-+	if (sum >= capacity_orig)
- 		return capacity_orig;
- 
--	return usage;
-+	return sum;
+-	slice = sched_slice(task_cfs_rq(p), &p->se) >> 10;
+-	p->se.avg.runnable_avg_sum = p->se.avg.running_avg_sum = slice;
+-	p->se.avg.avg_period = slice;
++	p->se.avg.runnable_avg_sum = p->se.avg.running_avg_sum = start_load;
++	p->se.avg.avg_period = start_load;
+ 	__update_task_entity_contrib(&p->se);
+ 	__update_task_entity_utilization(&p->se);
  }
- 
- /*
 -- 
 1.9.1
