@@ -1,83 +1,64 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v3 6/6] mfd: da9150: Use DEFINE_RES_IRQ_NAMED() help macro for
- IRQ resource
-Date: Tue, 7 Jul 2015 17:34:25 +0100
-Message-ID: <a1175fd84a1f803b5ea3d9d3e5541fd59fd569b0.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
+From: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v3 4/6] power: da9150: Add DT bindings documentation for
+ Fuel-Gauge
+Date: Tue, 7 Jul 2015 17:34:21 +0100
+Message-ID: <3f9095a583c26cdb4a6dd7b749d7f6b33c87b8f7.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
 References: <cover.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.bemta14.messagelabs.com ([193.109.254.118]:8884 "EHLO
-	mail1.bemta14.messagelabs.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757995AbbGGQei (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 12:34:38 -0400
-In-Reply-To: <cover.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1436284659.git.Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Support Opensource <support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
 
-Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Signed-off-by: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
 ---
 
 Changes in v3:
- - Initial version.
+ - N/A
 
 Changes in v2:
  - N/A
 
- drivers/mfd/da9150-core.c | 35 +++++------------------------------
- 1 file changed, 5 insertions(+), 30 deletions(-)
+ .../devicetree/bindings/power/da9150-fg.txt        | 23 ++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/da9150-fg.txt
 
-diff --git a/drivers/mfd/da9150-core.c b/drivers/mfd/da9150-core.c
-index fccd4d5..dd4cb9b 100644
---- a/drivers/mfd/da9150-core.c
-+++ b/drivers/mfd/da9150-core.c
-@@ -355,39 +355,14 @@ static const struct regmap_irq_chip da9150_regmap_irq_chip = {
- };
-
- static struct resource da9150_gpadc_resources[] = {
--	{
--		.name = "GPADC",
--		.start = DA9150_IRQ_GPADC,
--		.end = DA9150_IRQ_GPADC,
--		.flags = IORESOURCE_IRQ,
--	},
-+	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_GPADC, "GPADC"),
- };
-
- static struct resource da9150_charger_resources[] = {
--	{
--		.name = "CHG_STATUS",
--		.start = DA9150_IRQ_CHG,
--		.end = DA9150_IRQ_CHG,
--		.flags = IORESOURCE_IRQ,
--	},
--	{
--		.name = "CHG_TJUNC",
--		.start = DA9150_IRQ_TJUNC,
--		.end = DA9150_IRQ_TJUNC,
--		.flags = IORESOURCE_IRQ,
--	},
--	{
--		.name = "CHG_VFAULT",
--		.start = DA9150_IRQ_VFAULT,
--		.end = DA9150_IRQ_VFAULT,
--		.flags = IORESOURCE_IRQ,
--	},
--	{
--		.name = "CHG_VBUS",
--		.start = DA9150_IRQ_VBUS,
--		.end = DA9150_IRQ_VBUS,
--		.flags = IORESOURCE_IRQ,
--	},
-+	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_CHG, "CHG_STATUS"),
-+	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_TJUNC, "CHG_TJUNC"),
-+	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_VFAULT, "CHG_VFAULT"),
-+	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_VBUS, "CHG_VBUS"),
- };
-
- static struct resource da9150_fg_resources[] = {
+diff --git a/Documentation/devicetree/bindings/power/da9150-fg.txt b/Documentation/devicetree/bindings/power/da9150-fg.txt
+new file mode 100644
+index 0000000..c3c76eb
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/da9150-fg.txt
+@@ -0,0 +1,23 @@
++Dialog Semiconductor DA9150 Fuel-Gauge Power Supply bindings
++
++Required properties:
++- compatible: "dlg,da9150-fg" for DA9150 Fuel-Gauge Power Supply
++
++Optional properties:
++- dlg,update-interval: Interval time (milliseconds) between battery level checks.
++- dlg,warn-soc-level: Battery discharge level (%) where warning event raised.
++      [1 - 100]
++- dlg,crit-soc-level: Battery discharge level (%) where critical event raised.
++  This value should be lower than the warning level.
++      [1 - 100]
++
++
++Example:
++
++	da9150-fg {
++		compatible = "dlg,da9150-fg";
++
++		dlg,update-interval = <10000>;
++		dlg,warn-soc-level = /bits/ 8 <15>;
++		dlg,crit-soc-level = /bits/ 8 <5>;
++	};
 --
 1.9.3
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
