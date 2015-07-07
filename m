@@ -1,62 +1,64 @@
-From: Oliver Neukum <oneukum@suse.de>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Tue, 07 Jul 2015 16:38:26 +0200
-Message-ID: <1436279906.2658.4.camel@suse.de>
-References: <4290667.ZqInAykFGS@vostro.rjw.lan>
-	 <1652992.e7VOEWpWyZ@vostro.rjw.lan> <1436275008.4460.18.camel@suse.com>
-	 <1527037.PaGp0dsCau@vostro.rjw.lan>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
+Date: Tue, 7 Jul 2015 10:55:59 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1507071028480.1692-100000@iolanthe.rowland.org>
+References: <14963352.fDKd3nIddf@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:43611 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757597AbbGGOja (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 10:39:30 -0400
-In-Reply-To: <1527037.PaGp0dsCau@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <14963352.fDKd3nIddf@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dave Chinner <david@fromorbit.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Alan Stern <stern@rowland.harvard.edu>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2015-07-07 at 16:32 +0200, Rafael J. Wysocki wrote:
-> On Tuesday, July 07, 2015 03:16:48 PM Oliver Neukum wrote:
-> > On Tue, 2015-07-07 at 14:14 +0200, Rafael J. Wysocki wrote:
-> > > For example, on desktop systems I use user space syncs filesystems
-> > > before
-> > > writing to /sys/power/state, so the additional sys_sync() in the
-> > > kernel doesn't
-> > > seem to serve any purpose.
+On Tue, 7 Jul 2015, Rafael J. Wysocki wrote:
+
+> > > All right, we can make a decision and document it.  The following seems
+> > > reasonable to me:
+> > > 
+> > > 	If dev->power.direct_complete is set then the PM core will
+> > > 	assume that dev->power.rpm_status is accurate even when
+> > > 	dev->power.disable_depth > 0.  The core will obey the
+> > > 	.direct_complete setting regardless of .disable_depth.
+> > > 
+> > > 	As a consequence, devices that support system sleep but don't 
+> > > 	support runtime PM must _never_ have .direct_complete set.
+> > > 
+> > > 	On the other hand, if a device (such as a "virtual" device)
+> > > 	requires no callbacks for either system sleep or runtime PM, 
+> > > 	then there is no harm in setting .direct_complete.  Indeed,
+> > > 	doing so may help speed up an ancestor device's sleep
+> > > 	transition.
+> > > 
+> > > How does that sound?
 > > 
-> > There is a race you cannot close in user space.
+> > It would be workable I think, but I'd prefer the core to be told directly
+> > about devices whose runtime PM status doesn't matter (because nothing changes
+> > between "suspended" and "active"), so they may be treated in a special way
+> > safely.
+> > 
+> > If we had that information, no special rules other than "that is a device
+> > whose runtime PM status doesn't matter, so treat it accordingly" would be
+> > necessary.
 > 
-> Yes, there is, but I'm not sure how much of a help the sync in the kernel
-> provides here anyway.
-> 
-> Say this happens.  There is a process writing to a file running in parallel
-> with the suspend process.  Suspend starts and that process is frozen.  The
-> sync is called and causes all of the outstanding data to be written back.
-> The user doesn't realize that the write is technically still in progress, so
+> That said, a situation to consider is when device X is just a software device,
+> but it has children that correspond to physical hardware.  If that is the case,
+> the usual parent-children rules should apply to X and its children (ie. X should
+> only be marked as "suspended" if all of its children are suspended) and I see
+> no reason why the parent-children rules for direct_resume should not apply here.
 
-Well, in that case the user never got the feedback that the write is
-finished. That is a race that always exists, like sending SIGKILL to a
-running task.
-What you describe is in principle unsolvable every time under
-any circumstances.
+Yes, this illustrates that in some ways we must not treat "virtual" or 
+"software" devices specially.  Being "virtual" is not the same as 
+having the ignore_children flag set.
 
-> he (or she) pulls the storage device out of the system, moves it to another
-> system, makes changes (say removes the file written to by the process above,
-> so the blocks previously occupied by that file are now used for some metadata)
-> and moves the storage back to the suspended system.  The system is resumed
-> and the writing process continues writing possibly to the wrong blocks and
-> corrupts the filesystem.
+The change I'm proposing is not related to whether a device is 
+"virtual".  I'm just suggesting that the normal direct_complete rules 
+should apply even when devices are runtime-PM-disabled.
 
-That is a tough nut. But that's not a reason to make it worse.
-I'd say there's no reason not to use a secondary interface to
-suspend without syncing or to extend or introduce such an interface
-if the API is deficient.
+This doesn't mean that their runtime PM status doesn't matter.  Just
+the opposite, in fact -- it means that the PM core should pay attention
+to the runtime PM status during a sleep transition even though
+disabled_depth > 0.
 
-	Regards
-		Oliver
-
-
+Alan Stern
