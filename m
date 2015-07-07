@@ -1,84 +1,75 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Tue, 7 Jul 2015 12:25:07 +0200
-Message-ID: <20150707102507.GA13811@amd>
-References: <Pine.LNX.4.44L0.1507041011510.19175-100000@netrider.rowland.org>
- <2293886.L6VJGgjdDp@vostro.rjw.lan>
- <20150706110645.GC381@amd>
- <4932758.cYVny4lmZN@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] thermal: cpu_cooling: Iterate over all CPUs in clip_cpu
+ mask to get frequency table
+Date: Tue, 7 Jul 2015 15:57:44 +0530
+Message-ID: <20150707102744.GK14598@linux>
+References: <1435723647-3354-1-git-send-email-pi-cheng.chen@linaro.org>
+ <1435723994-3882-1-git-send-email-pi-cheng.chen@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37569 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756712AbbGGKZK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 06:25:10 -0400
+Received: from mail-pd0-f178.google.com ([209.85.192.178]:35462 "EHLO
+	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756737AbbGGK1t (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 06:27:49 -0400
+Received: by pdbci14 with SMTP id ci14so123549302pdb.2
+        for <linux-pm@vger.kernel.org>; Tue, 07 Jul 2015 03:27:49 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <4932758.cYVny4lmZN@vostro.rjw.lan>
+In-Reply-To: <1435723994-3882-1-git-send-email-pi-cheng.chen@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Dave Chinner <david@fromorbit.com>, Len Brown <lenb@kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linaro-kernel@lists.linaro.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On Mon 2015-07-06 15:59:15, Rafael J. Wysocki wrote:
-> On Monday, July 06, 2015 01:06:45 PM Pavel Machek wrote:
-> > On Mon 2015-07-06 01:28:20, Rafael J. Wysocki wrote:
-> > > On Saturday, July 04, 2015 10:19:55 AM Alan Stern wrote:
-> > > > On Sat, 4 Jul 2015, Rafael J. Wysocki wrote:
-> > > > 
-> > > > > The only argument against dropping sys_sync() from the suspend code path
-> > > > > I've seen in this thread that I entirely agree with is that it may lead to
-> > > > > regressions, because we've done it practically forever and it may hide latent
-> > > > > bugs somewhere in block drivers etc.  Dropping it, though, is the only way
-> > > > > to see those bugs, if any, and if we want to ever fix them, we need to see
-> > > > > them.  That's why I think that it may be a good idea to allow people to
-> > > > > drop it if they are willing to accept some extra risk (via the kernel
-> > > > > command line, for example).
-> > > > 
-> > > > I'd be perfectly happy to have the sync selectable at runtime, one way 
-> > > > or another.  The three most reasonable options seem to be:
-> > > > 
-> > > > 	kernel command line
-> > > > 
-> > > > 	sysfs file
-> > > > 
-> > > > 	sysctl setting
-> > > > 
-> > > > The command line is less flexible (it can't be changed after booting).  
-> > > > Either of the other two would be fine with me.
-> > > 
-> > > We'll probably use a sysfs file (possibly plus a Kconfig option to set the
-> > > boot time default).
-> > 
-> > Android people can already do sync-less s2ram using existing
-> > interface. IMO they should just do it.
-> > 
-> > In any case, sysfs file + Kconfig is an overkill. We already have too
-> > many Kconfig options.
+On 01-07-15, 12:13, Pi-Cheng Chen wrote:
+> Sorry for the mistake I made when cherry-picking the patch. Fix and resend
+> again.
+
+You really want above to show up in git logs ?
+
+Any comments like this should be present:
+- in cover-letter
+- OR after the three dashes below ---
+- OR must be followed with a scissors line, like this:
+  --------------8<--------
+
+> __cpufreq_cooling_register() might fail if some CPU other than first one in
+> clip_cpu mask is present earlier e.g. CPU hotplug. Iterate all CPUs in the mask
+> to handle this case.
 > 
-> I don't think we can reach a general agreement on what's the *right* approach
-> with respect to the sys_sync() in the suspend code path, so the only way out
-> of this situation I can see is to make it configurable.
-
-So first: not having general agreement does not mean we should
-introduce Kconfig + sysfs file. Second: your proposal of "lets sync if
-runtime was shorter than xxx" is over complex, but at least should not
-need Kconfig support... Third: we have ioctl() based interface, and I
-guess android should use that one; it already has "s2ram without sync"
-method.
-
-> > There's not a single Android phone supported by mainline
-> > kernel. I'm sure they have bigger problems than Android setting
-> > default sysfs values...
+> Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+> ---
+>  drivers/thermal/cpu_cooling.c | 9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
 > 
-> But perhaps we'd like to change that?
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 6509c61..5e90eb6 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -776,9 +776,14 @@ __cpufreq_cooling_register(struct device_node *np,
+>  	char dev_name[THERMAL_NAME_LENGTH];
+>  	struct cpufreq_frequency_table *pos, *table;
+>  	unsigned int freq, i, num_cpus;
+> -	int ret;
+> +	int ret, cpu;
+> +
+> +	for_each_cpu(cpu, clip_cpus) {
+> +		table = cpufreq_frequency_get_table(cpu);
+> +		if (table)
+> +			break;
+> +	}
+>  
+> -	table = cpufreq_frequency_get_table(cpumask_first(clip_cpus));
 
-We'd like to, but lets start with the real hard stuff (merging support
-for Qualcomm chipsets) that is 1000000 LoC+, not with trivial tweaks
-that would be 1-line change, but we pollute code with Kconfig+sysfs
-making it 100..
+Nah, that's wrong. I hope that's a hypothetical problem and not a real
+one. Would have been better if cpufreq maintainers were cc'd as they
+can provide more insight into this :)
 
-									Pavel
+cpufreq_frequency_get_table() does: policy->freq_table and so it
+doesn't matter if the cpu is online or not.
+
+cpufreq_cpu_data was getting unset earlier on hotplug, but that's not
+the case anymore. So nothing to worry about :)
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+viresh
