@@ -1,15 +1,15 @@
 From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v3 3/6] power: Add support for DA9150 Fuel-Gauge
-Date: Tue, 7 Jul 2015 17:34:19 +0100
-Message-ID: <d122a6ffc20fca836847016895e5181f5d2248e7.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v3 1/6] mfd: da9150: Add support for Fuel-Gauge
+Date: Tue, 7 Jul 2015 17:34:16 +0100
+Message-ID: <46a243df95c9fd30606e5d101f928c45a2a65810.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
 References: <cover.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.bemta3.messagelabs.com ([195.245.230.162]:51584 "EHLO
-	mail1.bemta3.messagelabs.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757765AbbGGQeZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 12:34:25 -0400
+Received: from mail1.bemta5.messagelabs.com ([195.245.231.146]:26019 "EHLO
+	mail1.bemta5.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757941AbbGGQe1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 12:34:27 -0400
 In-Reply-To: <cover.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -20,633 +20,306 @@ Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
 ---
 
 Changes in v3:
- - Removed use of temp callback function, at request of Lee Jones.
- - Comment added to clarify limitation of temperature reading functionality
-   that remains.
+ - Use DEFINE_RES_IRQ_NAMED() helper for defining FG IRQ resource.
+ - Unwanted new line & comments removed.
+ - Remove gotos which can be replaced with straight forward return calls.
+ - Add enum for indexing MFD cells list, which is used to assign pdata for FG
+   sub-device.
+ - Remove use of function pointers for QIF related read/write functions as
+   currently only I2C supported, so call I2C functions directly.
+ - Fold fg.h contents into core.h.
 
 Changes in v2:
  - Moved temp callback function prototype to be part of power fuel-gauge patch,
-   rather than MFD, as requested by Lee Jones.
+   as requested by Lee Jones.
 
- drivers/power/Kconfig     |  10 +
- drivers/power/Makefile    |   1 +
- drivers/power/da9150-fg.c | 574 ++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 585 insertions(+)
- create mode 100644 drivers/power/da9150-fg.c
+ drivers/mfd/da9150-core.c       | 156 ++++++++++++++++++++++++++++++++++++++--
+ include/linux/mfd/da9150/core.h |  19 ++++-
+ 2 files changed, 167 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 08beeed..5773b87 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -204,6 +204,16 @@ config CHARGER_DA9150
- 	  This driver can also be built as a module. If so, the module will be
- 	  called da9150-charger.
+diff --git a/drivers/mfd/da9150-core.c b/drivers/mfd/da9150-core.c
+index 94b9bbd..fccd4d5 100644
+--- a/drivers/mfd/da9150-core.c
++++ b/drivers/mfd/da9150-core.c
+@@ -23,6 +23,77 @@
+ #include <linux/mfd/da9150/core.h>
+ #include <linux/mfd/da9150/registers.h>
 
-+config FG_DA9150
-+	tristate "Dialog Semiconductor DA9150 Fuel Gauge support"
-+	depends on CHARGER_DA9150
-+	help
-+	  Say Y here to enable support for the Fuel-Gauge unit of the DA9150
-+	  Integrated Charger & Fuel-Gauge IC
-+
-+	  This driver can also be built as a module. If so, the module will be
-+	  called da9150-fg.
-+
- config AXP288_CHARGER
- 	tristate "X-Powers AXP288 Charger"
- 	depends on MFD_AXP20X && EXTCON_AXP288
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index 5752ce8..25be564 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -33,6 +33,7 @@ obj-$(CONFIG_BATTERY_BQ27x00)	+= bq27x00_battery.o
- obj-$(CONFIG_BATTERY_DA9030)	+= da9030_battery.o
- obj-$(CONFIG_BATTERY_DA9052)	+= da9052-battery.o
- obj-$(CONFIG_CHARGER_DA9150)	+= da9150-charger.o
-+obj-$(CONFIG_FG_DA9150)		+= da9150-fg.o
- obj-$(CONFIG_BATTERY_MAX17040)	+= max17040_battery.o
- obj-$(CONFIG_BATTERY_MAX17042)	+= max17042_battery.o
- obj-$(CONFIG_BATTERY_Z2)	+= z2_battery.o
-diff --git a/drivers/power/da9150-fg.c b/drivers/power/da9150-fg.c
-new file mode 100644
-index 0000000..09dad57
---- /dev/null
-+++ b/drivers/power/da9150-fg.c
-@@ -0,0 +1,574 @@
-+/*
-+ * DA9150 Fuel-Gauge Driver
-+ *
-+ * Copyright (c) 2015 Dialog Semiconductor
-+ *
-+ * Author: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+#include <linux/slab.h>
-+#include <linux/interrupt.h>
-+#include <linux/delay.h>
-+#include <linux/power_supply.h>
-+#include <linux/list.h>
-+#include <asm/div64.h>
-+#include <linux/mfd/da9150/core.h>
-+#include <linux/mfd/da9150/registers.h>
-+
-+/* Core2Wire */
-+#define DA9150_QIF_READ		(0x0 << 7)
-+#define DA9150_QIF_WRITE	(0x1 << 7)
-+#define DA9150_QIF_CODE_MASK	0x7F
-+
-+#define DA9150_QIF_BYTE_SIZE	8
-+#define DA9150_QIF_BYTE_MASK	0xFF
-+#define DA9150_QIF_SHORT_SIZE	2
-+#define DA9150_QIF_LONG_SIZE	4
-+
-+/* QIF Codes */
-+#define DA9150_QIF_UAVG			6
-+#define DA9150_QIF_UAVG_SIZE		DA9150_QIF_LONG_SIZE
-+#define DA9150_QIF_IAVG			8
-+#define DA9150_QIF_IAVG_SIZE		DA9150_QIF_LONG_SIZE
-+#define DA9150_QIF_NTCAVG		12
-+#define DA9150_QIF_NTCAVG_SIZE		DA9150_QIF_LONG_SIZE
-+#define DA9150_QIF_SHUNT_VAL		36
-+#define DA9150_QIF_SHUNT_VAL_SIZE	DA9150_QIF_SHORT_SIZE
-+#define DA9150_QIF_SD_GAIN		38
-+#define DA9150_QIF_SD_GAIN_SIZE		DA9150_QIF_LONG_SIZE
-+#define DA9150_QIF_FCC_MAH		40
-+#define DA9150_QIF_FCC_MAH_SIZE		DA9150_QIF_SHORT_SIZE
-+#define DA9150_QIF_SOC_PCT		43
-+#define DA9150_QIF_SOC_PCT_SIZE		DA9150_QIF_SHORT_SIZE
-+#define DA9150_QIF_CHARGE_LIMIT		44
-+#define DA9150_QIF_CHARGE_LIMIT_SIZE	DA9150_QIF_SHORT_SIZE
-+#define DA9150_QIF_DISCHARGE_LIMIT	45
-+#define DA9150_QIF_DISCHARGE_LIMIT_SIZE	DA9150_QIF_SHORT_SIZE
-+#define DA9150_QIF_FW_MAIN_VER		118
-+#define DA9150_QIF_FW_MAIN_VER_SIZE	DA9150_QIF_SHORT_SIZE
-+#define DA9150_QIF_E_FG_STATUS		126
-+#define DA9150_QIF_E_FG_STATUS_SIZE	DA9150_QIF_SHORT_SIZE
-+#define DA9150_QIF_SYNC			127
-+#define DA9150_QIF_SYNC_SIZE		DA9150_QIF_SHORT_SIZE
-+#define DA9150_QIF_MAX_CODES		128
-+
-+/* QIF Sync Timeout */
-+#define DA9150_QIF_SYNC_TIMEOUT		1000
-+#define DA9150_QIF_SYNC_RETRIES		10
-+
-+/* QIF E_FG_STATUS */
-+#define DA9150_FG_IRQ_LOW_SOC_MASK	(1 << 0)
-+#define DA9150_FG_IRQ_HIGH_SOC_MASK	(1 << 1)
-+
-+/* Private data */
-+struct da9150_fg {
-+	struct da9150 *da9150;
-+	struct device *dev;
-+
-+	struct mutex io_lock;
-+
-+	struct power_supply *battery;
-+	struct delayed_work work;
-+	u32 interval;
-+
-+	int warn_soc;
-+	int crit_soc;
-+	int soc;
-+};
-+
-+/* Battery Properties */
-+static u32 da9150_fg_read_attr(struct da9150_fg *fg, u8 code, u8 size)
-+
++/* Raw device access, used for QIF */
++static int da9150_i2c_read_device(struct i2c_client *client, u8 addr, int count,
++				  u8 *buf)
 +{
-+	u8 buf[size];
-+	u8 read_addr;
-+	u32 res = 0;
-+	int i;
-+
-+	/* Set QIF code (READ mode) */
-+	read_addr = (code & DA9150_QIF_CODE_MASK) | DA9150_QIF_READ;
-+
-+	da9150_read_qif(fg->da9150, read_addr, size, buf);
-+	for (i = 0; i < size; ++i)
-+		res |= (buf[i] << (i * DA9150_QIF_BYTE_SIZE));
-+
-+	return res;
-+}
-+
-+static void da9150_fg_write_attr(struct da9150_fg *fg, u8 code, u8 size,
-+				 u32 val)
-+
-+{
-+	u8 buf[size];
-+	u8 write_addr;
-+	int i;
-+
-+	/* Set QIF code (WRITE mode) */
-+	write_addr = (code & DA9150_QIF_CODE_MASK) | DA9150_QIF_WRITE;
-+
-+	for (i = 0; i < size; ++i) {
-+		buf[i] = (val >> (i * DA9150_QIF_BYTE_SIZE)) &
-+			 DA9150_QIF_BYTE_MASK;
-+	}
-+	da9150_write_qif(fg->da9150, write_addr, size, buf);
-+}
-+
-+/* Trigger QIF Sync to update QIF readable data */
-+static void da9150_fg_read_sync_start(struct da9150_fg *fg)
-+{
-+	int i = 0;
-+	u32 res = 0;
-+
-+	mutex_lock(&fg->io_lock);
-+
-+	/* Check if QIF sync already requested, and write to sync if not */
-+	res = da9150_fg_read_attr(fg, DA9150_QIF_SYNC,
-+				  DA9150_QIF_SYNC_SIZE);
-+	if (res > 0)
-+		da9150_fg_write_attr(fg, DA9150_QIF_SYNC,
-+				     DA9150_QIF_SYNC_SIZE, 0);
-+
-+	/* Wait for sync to complete */
-+	res = 0;
-+	while ((res == 0) && (i++ < DA9150_QIF_SYNC_RETRIES)) {
-+		usleep_range(DA9150_QIF_SYNC_TIMEOUT,
-+			     DA9150_QIF_SYNC_TIMEOUT * 2);
-+		res = da9150_fg_read_attr(fg, DA9150_QIF_SYNC,
-+					  DA9150_QIF_SYNC_SIZE);
-+	}
-+
-+	/* Check if sync completed */
-+	if (res == 0)
-+		dev_err(fg->dev, "Failed to perform QIF read sync!\n");
-+}
-+
-+/*
-+ * Should always be called after QIF sync read has been performed, and all
-+ * attributes required have been accessed.
-+ */
-+static inline void da9150_fg_read_sync_end(struct da9150_fg *fg)
-+{
-+	mutex_unlock(&fg->io_lock);
-+}
-+
-+/* Wait for QIF Sync, write QIF data and wait for ack */
-+static void da9150_fg_write_attr_sync(struct da9150_fg *fg, u8 code, u8 size,
-+				      u32 val)
-+{
-+	int i = 0;
-+	u32 res = 0, sync_val;
-+
-+	mutex_lock(&fg->io_lock);
-+
-+	/* Check if QIF sync already requested */
-+	res = da9150_fg_read_attr(fg, DA9150_QIF_SYNC,
-+				  DA9150_QIF_SYNC_SIZE);
-+
-+	/* Wait for an existing sync to complete */
-+	while ((res == 0) && (i++ < DA9150_QIF_SYNC_RETRIES)) {
-+		usleep_range(DA9150_QIF_SYNC_TIMEOUT,
-+			     DA9150_QIF_SYNC_TIMEOUT * 2);
-+		res = da9150_fg_read_attr(fg, DA9150_QIF_SYNC,
-+					  DA9150_QIF_SYNC_SIZE);
-+	}
-+
-+	if (res == 0) {
-+		dev_err(fg->dev, "Timeout waiting for existing QIF sync!\n");
-+		mutex_unlock(&fg->io_lock);
-+		return;
-+	}
-+
-+	/* Write value for QIF code */
-+	da9150_fg_write_attr(fg, code, size, val);
-+
-+	/* Wait for write acknowledgment */
-+	i = 0;
-+	sync_val = res;
-+	while ((res == sync_val) && (i++ < DA9150_QIF_SYNC_RETRIES)) {
-+		usleep_range(DA9150_QIF_SYNC_TIMEOUT,
-+			     DA9150_QIF_SYNC_TIMEOUT * 2);
-+		res = da9150_fg_read_attr(fg, DA9150_QIF_SYNC,
-+					  DA9150_QIF_SYNC_SIZE);
-+	}
-+
-+	mutex_unlock(&fg->io_lock);
-+
-+	/* Check write was actually successful */
-+	if (res != (sync_val + 1))
-+		dev_err(fg->dev, "Error performing QIF sync write for code %d\n",
-+			code);
-+}
-+
-+/* Power Supply attributes */
-+static int da9150_fg_capacity(struct da9150_fg *fg,
-+			      union power_supply_propval *val)
-+{
-+	da9150_fg_read_sync_start(fg);
-+	val->intval = da9150_fg_read_attr(fg, DA9150_QIF_SOC_PCT,
-+					  DA9150_QIF_SOC_PCT_SIZE);
-+	da9150_fg_read_sync_end(fg);
-+
-+	if (val->intval > 100)
-+		val->intval = 100;
-+
-+	return 0;
-+}
-+
-+static int da9150_fg_current_avg(struct da9150_fg *fg,
-+				 union power_supply_propval *val)
-+{
-+	u32 iavg, sd_gain, shunt_val;
-+	u64 div, res;
-+
-+	da9150_fg_read_sync_start(fg);
-+	iavg = da9150_fg_read_attr(fg, DA9150_QIF_IAVG,
-+				   DA9150_QIF_IAVG_SIZE);
-+	shunt_val = da9150_fg_read_attr(fg, DA9150_QIF_SHUNT_VAL,
-+					DA9150_QIF_SHUNT_VAL_SIZE);
-+	sd_gain = da9150_fg_read_attr(fg, DA9150_QIF_SD_GAIN,
-+				      DA9150_QIF_SD_GAIN_SIZE);
-+	da9150_fg_read_sync_end(fg);
-+
-+	div = (u64) (sd_gain * shunt_val * 65536ULL);
-+	do_div(div, 1000000);
-+	res = (u64) (iavg * 1000000ULL);
-+	do_div(res, div);
-+
-+	val->intval = (int) res;
-+
-+	return 0;
-+}
-+
-+static int da9150_fg_voltage_avg(struct da9150_fg *fg,
-+				 union power_supply_propval *val)
-+{
-+	u64 res;
-+
-+	da9150_fg_read_sync_start(fg);
-+	val->intval = da9150_fg_read_attr(fg, DA9150_QIF_UAVG,
-+					  DA9150_QIF_UAVG_SIZE);
-+	da9150_fg_read_sync_end(fg);
-+
-+	res = (u64) (val->intval * 186ULL);
-+	do_div(res, 10000);
-+	val->intval = (int) res;
-+
-+	return 0;
-+}
-+
-+static int da9150_fg_charge_full(struct da9150_fg *fg,
-+				 union power_supply_propval *val)
-+{
-+	da9150_fg_read_sync_start(fg);
-+	val->intval = da9150_fg_read_attr(fg, DA9150_QIF_FCC_MAH,
-+					  DA9150_QIF_FCC_MAH_SIZE);
-+	da9150_fg_read_sync_end(fg);
-+
-+	val->intval = val->intval * 1000;
-+
-+	return 0;
-+}
-+
-+/*
-+ * Temperature reading from device is only valid if battery/system provides
-+ * valid NTC to associated pin of DA9150 chip.
-+ */
-+static int da9150_fg_temp(struct da9150_fg *fg,
-+			  union power_supply_propval *val)
-+{
-+	da9150_fg_read_sync_start(fg);
-+	val->intval = da9150_fg_read_attr(fg, DA9150_QIF_NTCAVG,
-+					  DA9150_QIF_NTCAVG_SIZE);
-+	da9150_fg_read_sync_end(fg);
-+
-+	val->intval = (val->intval * 10) / 1048576;
-+
-+	return 0;
-+}
-+
-+static enum power_supply_property da9150_fg_props[] = {
-+	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_CURRENT_AVG,
-+	POWER_SUPPLY_PROP_VOLTAGE_AVG,
-+	POWER_SUPPLY_PROP_CHARGE_FULL,
-+	POWER_SUPPLY_PROP_TEMP,
-+};
-+
-+static int da9150_fg_get_prop(struct power_supply *psy,
-+			      enum power_supply_property psp,
-+			      union power_supply_propval *val)
-+{
-+	struct da9150_fg *fg = dev_get_drvdata(psy->dev.parent);
++	struct i2c_msg xfer;
 +	int ret;
 +
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CAPACITY:
-+		ret = da9150_fg_capacity(fg, val);
-+		break;
-+	case POWER_SUPPLY_PROP_CURRENT_AVG:
-+		ret = da9150_fg_current_avg(fg, val);
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
-+		ret = da9150_fg_voltage_avg(fg, val);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_FULL:
-+		ret = da9150_fg_charge_full(fg, val);
-+		break;
-+	case POWER_SUPPLY_PROP_TEMP:
-+		ret = da9150_fg_temp(fg, val);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+		break;
++	/*
++	 * Read is split into two transfers as device expects STOP/START rather
++	 * than repeated start to carry out this kind of access.
++	 */
++
++	/* Write address */
++	xfer.addr = client->addr;
++	xfer.flags = 0;
++	xfer.len = 1;
++	xfer.buf = &addr;
++
++	ret = i2c_transfer(client->adapter, &xfer, 1);
++	if (ret != 1) {
++		if (ret < 0)
++			return ret;
++		else
++			return -EIO;
 +	}
 +
-+	return ret;
++	/* Read data */
++	xfer.addr = client->addr;
++	xfer.flags = I2C_M_RD;
++	xfer.len = count;
++	xfer.buf = buf;
++
++	ret = i2c_transfer(client->adapter, &xfer, 1);
++	if (ret == 1)
++		return 0;
++	else if (ret < 0)
++		return ret;
++	else
++		return -EIO;
 +}
 +
-+/* Repeated SOC check */
-+static bool da9150_fg_soc_changed(struct da9150_fg *fg)
++static int da9150_i2c_write_device(struct i2c_client *client, u8 addr,
++				   int count, const u8 *buf)
 +{
-+	union power_supply_propval val;
++	struct i2c_msg xfer;
++	u8 *reg_data;
++	int ret;
 +
-+	da9150_fg_capacity(fg, &val);
-+	if (val.intval != fg->soc) {
-+		fg->soc = val.intval;
-+		return true;
-+	}
-+
-+	return false;
-+}
-+
-+static void da9150_fg_work(struct work_struct *work)
-+{
-+	struct da9150_fg *fg = container_of(work, struct da9150_fg, work.work);
-+
-+	/* Report if SOC has changed */
-+	if (da9150_fg_soc_changed(fg))
-+		power_supply_changed(fg->battery);
-+
-+	schedule_delayed_work(&fg->work, msecs_to_jiffies(fg->interval));
-+}
-+
-+/* SOC level event configuration */
-+static void da9150_fg_soc_event_config(struct da9150_fg *fg)
-+{
-+	int soc;
-+
-+	da9150_fg_read_sync_start(fg);
-+	soc = da9150_fg_read_attr(fg, DA9150_QIF_SOC_PCT,
-+				  DA9150_QIF_SOC_PCT_SIZE);
-+	da9150_fg_read_sync_end(fg);
-+
-+	if (soc > fg->warn_soc) {
-+		/* If SOC > warn level, set discharge warn level event */
-+		da9150_fg_write_attr_sync(fg, DA9150_QIF_DISCHARGE_LIMIT,
-+					  DA9150_QIF_DISCHARGE_LIMIT_SIZE,
-+					  fg->warn_soc + 1);
-+	} else if ((soc <= fg->warn_soc) && (soc > fg->crit_soc)) {
-+		/*
-+		 * If SOC <= warn level, set discharge crit level event,
-+		 * and set charge warn level event.
-+		 */
-+		da9150_fg_write_attr_sync(fg, DA9150_QIF_DISCHARGE_LIMIT,
-+					  DA9150_QIF_DISCHARGE_LIMIT_SIZE,
-+					  fg->crit_soc + 1);
-+
-+		da9150_fg_write_attr_sync(fg, DA9150_QIF_CHARGE_LIMIT,
-+					  DA9150_QIF_CHARGE_LIMIT_SIZE,
-+					  fg->warn_soc);
-+	} else if (soc <= fg->crit_soc) {
-+		/* If SOC <= crit level, set charge crit level event */
-+		da9150_fg_write_attr_sync(fg, DA9150_QIF_CHARGE_LIMIT,
-+					  DA9150_QIF_CHARGE_LIMIT_SIZE,
-+					  fg->crit_soc);
-+	}
-+}
-+
-+static irqreturn_t da9150_fg_irq(int irq, void *data)
-+{
-+	struct da9150_fg *fg = data;
-+	u32 e_fg_status;
-+
-+	/* Read FG IRQ status info */
-+	e_fg_status = da9150_fg_read_attr(fg, DA9150_QIF_E_FG_STATUS,
-+					  DA9150_QIF_E_FG_STATUS_SIZE);
-+
-+	/* Handle warning/critical threhold events */
-+	if ((DA9150_FG_IRQ_LOW_SOC_MASK | DA9150_FG_IRQ_HIGH_SOC_MASK) &
-+	    e_fg_status)
-+		da9150_fg_soc_event_config(fg);
-+
-+	/* Clear any FG IRQs */
-+	da9150_fg_write_attr(fg, DA9150_QIF_E_FG_STATUS,
-+			     DA9150_QIF_E_FG_STATUS_SIZE, e_fg_status);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static struct da9150_fg_pdata *da9150_fg_dt_pdata(struct device *dev)
-+{
-+	struct device_node *fg_node = dev->of_node;
-+	struct da9150_fg_pdata *pdata;
-+
-+	pdata = devm_kzalloc(dev, sizeof(struct da9150_fg_pdata), GFP_KERNEL);
-+	if (!pdata)
-+		return NULL;
-+
-+	of_property_read_u32(fg_node, "dlg,update-interval",
-+			     &pdata->update_interval);
-+	of_property_read_u8(fg_node, "dlg,warn-soc-level",
-+			    &pdata->warn_soc_lvl);
-+	of_property_read_u8(fg_node, "dlg,crit-soc-level",
-+			    &pdata->crit_soc_lvl);
-+
-+	return pdata;
-+}
-+
-+static const struct power_supply_desc fg_desc = {
-+	.name		= "da9150-fg",
-+	.type		= POWER_SUPPLY_TYPE_BATTERY,
-+	.properties	= da9150_fg_props,
-+	.num_properties	= ARRAY_SIZE(da9150_fg_props),
-+	.get_property	= da9150_fg_get_prop,
-+};
-+
-+static int da9150_fg_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct da9150 *da9150 = dev_get_drvdata(dev->parent);
-+	struct da9150_fg_pdata *fg_pdata = dev_get_platdata(dev);
-+	struct da9150_fg *fg;
-+	int ver, irq, ret;
-+
-+	fg = devm_kzalloc(dev, sizeof(*fg), GFP_KERNEL);
-+	if (fg == NULL)
++	reg_data = kzalloc(1 + count, GFP_KERNEL);
++	if (!reg_data)
 +		return -ENOMEM;
 +
-+	platform_set_drvdata(pdev, fg);
-+	fg->da9150 = da9150;
-+	fg->dev = dev;
++	reg_data[0] = addr;
++	memcpy(&reg_data[1], buf, count);
 +
-+	mutex_init(&fg->io_lock);
++	/* Write address & data */
++	xfer.addr = client->addr;
++	xfer.flags = 0;
++	xfer.len = 1 + count;
++	xfer.buf = reg_data;
 +
-+	/* Enable QIF */
-+	da9150_set_bits(da9150, DA9150_CORE2WIRE_CTRL_A, DA9150_FG_QIF_EN_MASK,
-+			DA9150_FG_QIF_EN_MASK);
-+
-+	fg->battery = power_supply_register(dev, &fg_desc, NULL);
-+	if (IS_ERR(fg->battery)) {
-+		ret = PTR_ERR(fg->battery);
++	ret = i2c_transfer(client->adapter, &xfer, 1);
++	kfree(reg_data);
++	if (ret == 1)
++		return 0;
++	else if (ret < 0)
 +		return ret;
-+	}
-+
-+	ver = da9150_fg_read_attr(fg, DA9150_QIF_FW_MAIN_VER,
-+				  DA9150_QIF_FW_MAIN_VER_SIZE);
-+	dev_info(dev, "Version: 0x%x\n", ver);
-+
-+	/* Handle DT data if provided */
-+	if (dev->of_node) {
-+		fg_pdata = da9150_fg_dt_pdata(dev);
-+		dev->platform_data = fg_pdata;
-+	}
-+
-+	/* Handle any pdata provided */
-+	if (fg_pdata) {
-+		fg->interval = fg_pdata->update_interval;
-+
-+		if (fg_pdata->warn_soc_lvl > 100)
-+			dev_warn(dev, "Invalid SOC warning level provided, Ignoring");
-+		else
-+			fg->warn_soc = fg_pdata->warn_soc_lvl;
-+
-+		if ((fg_pdata->crit_soc_lvl > 100) ||
-+		    (fg_pdata->crit_soc_lvl >= fg_pdata->warn_soc_lvl))
-+			dev_warn(dev, "Invalid SOC critical level provided, Ignoring");
-+		else
-+			fg->crit_soc = fg_pdata->crit_soc_lvl;
-+
-+
-+	}
-+
-+	/* Configure initial SOC level events */
-+	da9150_fg_soc_event_config(fg);
-+
-+	/*
-+	 * If an interval period has been provided then setup repeating
-+	 * work for reporting data updates.
-+	 */
-+	if (fg->interval) {
-+		INIT_DELAYED_WORK(&fg->work, da9150_fg_work);
-+		schedule_delayed_work(&fg->work,
-+				      msecs_to_jiffies(fg->interval));
-+	}
-+
-+	/* Register IRQ */
-+	irq = platform_get_irq_byname(pdev, "FG");
-+	ret = request_threaded_irq(irq, NULL, da9150_fg_irq, IRQF_ONESHOT, "FG",
-+				   fg);
-+	if (ret)
-+		goto irq_fail;
-+
-+	return ret;
-+
-+irq_fail:
-+	cancel_delayed_work(&fg->work);
-+	power_supply_unregister(fg->battery);
-+
-+	return ret;
++	else
++		return -EIO;
 +}
 +
-+static int da9150_fg_remove(struct platform_device *pdev)
+ static bool da9150_volatile_reg(struct device *dev, unsigned int reg)
+ {
+ 	switch (reg) {
+@@ -107,6 +178,28 @@ static const struct regmap_config da9150_regmap_config = {
+ 	.volatile_reg = da9150_volatile_reg,
+ };
+
++void da9150_read_qif(struct da9150 *da9150, u8 addr, int count, u8 *buf)
 +{
-+	struct da9150_fg *fg = platform_get_drvdata(pdev);
-+	int irq;
++	int ret;
 +
-+	irq = platform_get_irq_byname(pdev, "FG");
-+	free_irq(irq, fg);
-+
-+	if (fg->interval)
-+		cancel_delayed_work(&fg->work);
-+
-+	power_supply_unregister(fg->battery);
-+
-+	return 0;
++	ret = da9150_i2c_read_device(da9150->core_qif, addr, count, buf);
++	if (ret < 0)
++		dev_err(da9150->dev, "Failed to read from QIF 0x%x: %d\n",
++			addr, ret);
 +}
++EXPORT_SYMBOL_GPL(da9150_read_qif);
 +
-+static int da9150_fg_resume(struct platform_device *pdev)
++void da9150_write_qif(struct da9150 *da9150, u8 addr, int count, const u8 *buf)
 +{
-+	struct da9150_fg *fg = platform_get_drvdata(pdev);
++	int ret;
 +
-+	/*
-+	 * Trigger SOC check to happen now so as to indicate any value change
-+	 * since last check before suspend.
-+	 */
-+	if (fg->interval)
-+		flush_delayed_work(&fg->work);
-+
-+	return 0;
++	ret = da9150_i2c_write_device(da9150->core_qif, addr, count, buf);
++	if (ret < 0)
++		dev_err(da9150->dev, "Failed to write to QIF 0x%x: %d\n",
++			addr, ret);
 +}
++EXPORT_SYMBOL_GPL(da9150_write_qif);
 +
-+static struct platform_driver da9150_fg_driver = {
-+	.driver = {
-+		.name = "da9150-fuelgauge",
-+	},
-+	.probe = da9150_fg_probe,
-+	.remove = da9150_fg_remove,
-+	.resume = da9150_fg_resume,
+ u8 da9150_reg_read(struct da9150 *da9150, u16 reg)
+ {
+ 	int val, ret;
+@@ -297,19 +390,35 @@ static struct resource da9150_charger_resources[] = {
+ 	},
+ };
+
++static struct resource da9150_fg_resources[] = {
++	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_FG, "FG"),
 +};
 +
-+module_platform_driver(da9150_fg_driver);
++enum da9150_dev_idx {
++	DA9150_GPADC_IDX = 0,
++	DA9150_CHARGER_IDX,
++	DA9150_FG_IDX,
++};
 +
-+MODULE_DESCRIPTION("Fuel-Gauge Driver for DA9150");
-+MODULE_AUTHOR("Adam Thomson <Adam.Thomson.Opensource@diasemi.com>");
-+MODULE_LICENSE("GPL");
+ static struct mfd_cell da9150_devs[] = {
+-	{
++	[DA9150_GPADC_IDX] = {
+ 		.name = "da9150-gpadc",
+ 		.of_compatible = "dlg,da9150-gpadc",
+ 		.resources = da9150_gpadc_resources,
+ 		.num_resources = ARRAY_SIZE(da9150_gpadc_resources),
+ 	},
+-	{
++	[DA9150_CHARGER_IDX] = {
+ 		.name = "da9150-charger",
+ 		.of_compatible = "dlg,da9150-charger",
+ 		.resources = da9150_charger_resources,
+ 		.num_resources = ARRAY_SIZE(da9150_charger_resources),
+ 	},
++	[DA9150_FG_IDX] = {
++		.name = "da9150-fuelgauge",
++		.of_compatible = "dlg,da9150-fg",
++		.resources = da9150_fg_resources,
++		.num_resources = ARRAY_SIZE(da9150_fg_resources),
++	},
+ };
+
+ static int da9150_probe(struct i2c_client *client,
+@@ -317,6 +426,7 @@ static int da9150_probe(struct i2c_client *client,
+ {
+ 	struct da9150 *da9150;
+ 	struct da9150_pdata *pdata = dev_get_platdata(&client->dev);
++	int qif_addr;
+ 	int ret;
+
+ 	da9150 = devm_kzalloc(&client->dev, sizeof(*da9150), GFP_KERNEL);
+@@ -335,16 +445,41 @@ static int da9150_probe(struct i2c_client *client,
+ 		return ret;
+ 	}
+
+-	da9150->irq_base = pdata ? pdata->irq_base : -1;
++	/* Setup secondary I2C interface for QIF access */
++	qif_addr = da9150_reg_read(da9150, DA9150_CORE2WIRE_CTRL_A);
++	qif_addr = (qif_addr & DA9150_CORE_BASE_ADDR_MASK) >> 1;
++	qif_addr |= DA9150_QIF_I2C_ADDR_LSB;
++	da9150->core_qif = i2c_new_dummy(client->adapter, qif_addr);
++	if (!da9150->core_qif) {
++		dev_err(da9150->dev, "Failed to attach QIF client\n");
++		return -ENODEV;
++	}
++
++	i2c_set_clientdata(da9150->core_qif, da9150);
++
++	if (pdata) {
++		da9150->irq_base = pdata->irq_base;
++
++		da9150_devs[DA9150_FG_IDX].platform_data = pdata->fg_pdata;
++		da9150_devs[DA9150_FG_IDX].pdata_size =
++			sizeof(struct da9150_fg_pdata);
++	} else {
++		da9150->irq_base = -1;
++	}
+
+ 	ret = regmap_add_irq_chip(da9150->regmap, da9150->irq,
+ 				  IRQF_TRIGGER_LOW | IRQF_ONESHOT,
+ 				  da9150->irq_base, &da9150_regmap_irq_chip,
+ 				  &da9150->regmap_irq_data);
+-	if (ret)
+-		return ret;
++	if (ret) {
++		dev_err(da9150->dev, "Failed to add regmap irq chip: %d\n",
++			ret);
++		goto regmap_irq_fail;
++	}
++
+
+ 	da9150->irq_base = regmap_irq_chip_get_base(da9150->regmap_irq_data);
++
+ 	enable_irq_wake(da9150->irq);
+
+ 	ret = mfd_add_devices(da9150->dev, -1, da9150_devs,
+@@ -352,11 +487,17 @@ static int da9150_probe(struct i2c_client *client,
+ 			      da9150->irq_base, NULL);
+ 	if (ret) {
+ 		dev_err(da9150->dev, "Failed to add child devices: %d\n", ret);
+-		regmap_del_irq_chip(da9150->irq, da9150->regmap_irq_data);
+-		return ret;
++		goto mfd_fail;
+ 	}
+
+ 	return 0;
++
++mfd_fail:
++	regmap_del_irq_chip(da9150->irq, da9150->regmap_irq_data);
++regmap_irq_fail:
++	i2c_unregister_device(da9150->core_qif);
++
++	return ret;
+ }
+
+ static int da9150_remove(struct i2c_client *client)
+@@ -365,6 +506,7 @@ static int da9150_remove(struct i2c_client *client)
+
+ 	regmap_del_irq_chip(da9150->irq, da9150->regmap_irq_data);
+ 	mfd_remove_devices(da9150->dev);
++	i2c_unregister_device(da9150->core_qif);
+
+ 	return 0;
+ }
+diff --git a/include/linux/mfd/da9150/core.h b/include/linux/mfd/da9150/core.h
+index 76e6689..1bf50ca 100644
+--- a/include/linux/mfd/da9150/core.h
++++ b/include/linux/mfd/da9150/core.h
+@@ -15,6 +15,7 @@
+ #define __DA9150_CORE_H
+
+ #include <linux/device.h>
++#include <linux/i2c.h>
+ #include <linux/interrupt.h>
+ #include <linux/regmap.h>
+
+@@ -46,23 +47,39 @@
+ #define DA9150_IRQ_GPADC	19
+ #define DA9150_IRQ_WKUP		20
+
++/* I2C sub-device address */
++#define DA9150_QIF_I2C_ADDR_LSB		0x5
++
++struct da9150_fg_pdata {
++	u32 update_interval;	/* msecs */
++	u8 warn_soc_lvl;	/* % value */
++	u8 crit_soc_lvl;	/* % value */
++};
++
+ struct da9150_pdata {
+ 	int irq_base;
++	struct da9150_fg_pdata *fg_pdata;
+ };
+
+ struct da9150 {
+ 	struct device *dev;
+ 	struct regmap *regmap;
++	struct i2c_client *core_qif;
++
+ 	struct regmap_irq_chip_data *regmap_irq_data;
+ 	int irq;
+ 	int irq_base;
+ };
+
+-/* Device I/O */
++/* Device I/O - Query Interface for FG and standard register access */
++void da9150_read_qif(struct da9150 *da9150, u8 addr, int count, u8 *buf);
++void da9150_write_qif(struct da9150 *da9150, u8 addr, int count, const u8 *buf);
++
+ u8 da9150_reg_read(struct da9150 *da9150, u16 reg);
+ void da9150_reg_write(struct da9150 *da9150, u16 reg, u8 val);
+ void da9150_set_bits(struct da9150 *da9150, u16 reg, u8 mask, u8 val);
+
+ void da9150_bulk_read(struct da9150 *da9150, u16 reg, int count, u8 *buf);
+ void da9150_bulk_write(struct da9150 *da9150, u16 reg, int count, const u8 *buf);
++
+ #endif /* __DA9150_CORE_H */
 --
 1.9.3
 
