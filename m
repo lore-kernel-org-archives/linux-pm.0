@@ -1,7 +1,7 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 42/46] sched/{core,fair}: trigger OPP change request on fork()
-Date: Tue,  7 Jul 2015 19:24:25 +0100
-Message-ID: <1436293469-25707-43-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 41/46] sched/fair: add triggers for OPP change requests
+Date: Tue,  7 Jul 2015 19:24:24 +0100
+Message-ID: <1436293469-25707-42-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
@@ -12,82 +12,94 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Juri Lelli <juri.lelli@arm.com>
 
-Patch "sched/fair: add triggers for OPP change requests" introduced OPP
-change triggers for enqueue_task_fair(), but the trigger was operating only
-for wakeups. Fact is that it makes sense to consider wakeup_new also (i.e.,
-fork()), as we don't know anything about a newly created task and thus we
-most certainly want to jump to max OPP to not harm performance too much.
-
-However, it is not currently possible (or at least it wasn't evident to me
-how to do so :/) to tell new wakeups from other (non wakeup) operations.
-
-This patch introduces an additional flag in sched.h that is only set at
-fork() time and it is then consumed in enqueue_task_fair() for our purpose.
+Each time a task is {en,de}queued we might need to adapt the current
+frequency to the new usage. Add triggers on {en,de}queue_task_fair() for
+this purpose.  Only trigger a freq request if we are effectively waking up
+or going to sleep.  Filter out load balancing related calls to reduce the
+number of triggers.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
- kernel/sched/core.c  | 2 +-
- kernel/sched/fair.c  | 8 +++-----
- kernel/sched/sched.h | 1 +
- 3 files changed, 5 insertions(+), 6 deletions(-)
+ kernel/sched/fair.c | 42 ++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 40 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index a41bb32..57c9eb5 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -2138,7 +2138,7 @@ void wake_up_new_task(struct task_struct *p)
- #endif
- 
- 	rq = __task_rq_lock(p);
--	activate_task(rq, p, 0);
-+	activate_task(rq, p, ENQUEUE_WAKEUP_NEW);
- 	p->on_rq = TASK_ON_RQ_QUEUED;
- 	trace_sched_wakeup_new(p, true);
- 	check_preempt_curr(rq, p, WF_FORK);
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index b8627c6..bb49499 100644
+index f74e9d2..b8627c6 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -4297,7 +4297,8 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- {
- 	struct cfs_rq *cfs_rq;
- 	struct sched_entity *se = &p->se;
--	int task_new = !(flags & ENQUEUE_WAKEUP);
-+	int task_new = flags & ENQUEUE_WAKEUP_NEW;
-+	int task_wakeup = flags & ENQUEUE_WAKEUP;
- 
- 	for_each_sched_entity(se) {
- 		if (se->on_rq)
-@@ -4341,14 +4342,11 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- 		 * load balancing, but in these cases it seems wise to trigger
- 		 * as single request after load balancing is done.
- 		 *
--		 * XXX: how about fork()? Do we need a special flag/something
--		 *      to tell if we are here after a fork() (wakeup_task_new)?
--		 *
- 		 * Also, we add a margin (same ~20% used for the tipping point)
- 		 * to our request to provide some head room if p's utilization
- 		 * further increases.
- 		 */
--		if (sched_energy_freq() && !task_new) {
-+		if (sched_energy_freq() && (task_new || task_wakeup)) {
- 			unsigned long req_cap = get_cpu_usage(cpu_of(rq));
- 
- 			req_cap = req_cap * capacity_margin
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 1327dc7..85be5d8 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -1206,6 +1206,7 @@ static const u32 prio_to_wmult[40] = {
- #define ENQUEUE_WAKING		0
+@@ -4281,7 +4281,10 @@ static inline void hrtick_update(struct rq *rq)
+ }
  #endif
- #define ENQUEUE_REPLENISH	8
-+#define ENQUEUE_WAKEUP_NEW	16
  
- #define DEQUEUE_SLEEP		1
++static unsigned int capacity_margin = 1280; /* ~20% margin */
++
+ static bool cpu_overutilized(int cpu);
++static unsigned long get_cpu_usage(int cpu);
+ struct static_key __sched_energy_freq __read_mostly = STATIC_KEY_INIT_FALSE;
  
+ /*
+@@ -4332,6 +4335,26 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 		if (!task_new && !rq->rd->overutilized &&
+ 		    cpu_overutilized(rq->cpu))
+ 			rq->rd->overutilized = true;
++		/*
++		 * We want to trigger a freq switch request only for tasks that
++		 * are waking up; this is because we get here also during
++		 * load balancing, but in these cases it seems wise to trigger
++		 * as single request after load balancing is done.
++		 *
++		 * XXX: how about fork()? Do we need a special flag/something
++		 *      to tell if we are here after a fork() (wakeup_task_new)?
++		 *
++		 * Also, we add a margin (same ~20% used for the tipping point)
++		 * to our request to provide some head room if p's utilization
++		 * further increases.
++		 */
++		if (sched_energy_freq() && !task_new) {
++			unsigned long req_cap = get_cpu_usage(cpu_of(rq));
++
++			req_cap = req_cap * capacity_margin
++					>> SCHED_CAPACITY_SHIFT;
++			cpufreq_sched_set_cap(cpu_of(rq), req_cap);
++		}
+ 	}
+ 	hrtick_update(rq);
+ }
+@@ -4393,6 +4416,23 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 	if (!se) {
+ 		sub_nr_running(rq, 1);
+ 		update_rq_runnable_avg(rq, 1);
++		/*
++		 * We want to trigger a freq switch request only for tasks that
++		 * are going to sleep; this is because we get here also during
++		 * load balancing, but in these cases it seems wise to trigger
++		 * as single request after load balancing is done.
++		 *
++		 * Also, we add a margin (same ~20% used for the tipping point)
++		 * to our request to provide some head room if p's utilization
++		 * further increases.
++		 */
++		if (sched_energy_freq() && task_sleep) {
++			unsigned long req_cap = get_cpu_usage(cpu_of(rq));
++
++			req_cap = req_cap * capacity_margin
++					>> SCHED_CAPACITY_SHIFT;
++			cpufreq_sched_set_cap(cpu_of(rq), req_cap);
++		}
+ 	}
+ 	hrtick_update(rq);
+ }
+@@ -4959,8 +4999,6 @@ static int find_new_capacity(struct energy_env *eenv,
+ 	return idx;
+ }
+ 
+-static unsigned int capacity_margin = 1280; /* ~20% margin */
+-
+ static bool cpu_overutilized(int cpu)
+ {
+ 	return (capacity_of(cpu) * 1024) <
 -- 
 1.9.1
