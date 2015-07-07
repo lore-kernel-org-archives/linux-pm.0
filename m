@@ -1,13 +1,13 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 08/46] sched: Get rid of scaling usage by cpu_capacity_orig
-Date: Tue,  7 Jul 2015 19:23:51 +0100
-Message-ID: <1436293469-25707-9-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 16/46] sched: Allocate and initialize energy data structures
+Date: Tue,  7 Jul 2015 19:23:59 +0100
+Message-ID: <1436293469-25707-17-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37381 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:37466 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932286AbbGGSWW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 14:22:22 -0400
+	id S932628AbbGGSWm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Jul 2015 14:22:42 -0400
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -16,78 +16,260 @@ Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Die
 
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-Since now we have besides frequency invariant also cpu (uarch plus max
-system frequency) invariant cfs_rq::utilization_load_avg both, frequency
-and cpu scaling happens as part of the load tracking.
-So cfs_rq::utilization_load_avg does not have to be scaled by the original
-capacity of the cpu again.
+The per sched group sched_group_energy structure plus the related
+idle_state and capacity_state arrays are allocated like the other sched
+domain (sd) hierarchy data structures. This includes the freeing of
+sched_group_energy structures which are not used.
 
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
+Energy-aware scheduling allows that a system only has energy model data
+up to a certain sd level (so called highest energy aware balancing sd
+level). A check in init_sched_energy enforces that all sd's below this
+sd level contain energy model data.
+
+One problem is that the number of elements of the idle_state and the
+capacity_state arrays is not fixed and has to be retrieved in
+__sdt_alloc() to allocate memory for the sched_group_energy structure and
+the two arrays in one chunk. The array pointers (idle_states and
+cap_states) are initialized here to point to the correct place inside the
+memory chunk.
+
+The new function init_sched_energy() initializes the sched_group_energy
+structure and the two arrays in case the sd topology level contains energy
+information.
+
+This patch has been tested with scheduler feature flag FORCE_SD_OVERLAP
+enabled as well.
+
+cc: Ingo Molnar <mingo@redhat.com>
+cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- kernel/sched/fair.c | 34 +++++++++++++++++++++-------------
- 1 file changed, 21 insertions(+), 13 deletions(-)
+ kernel/sched/core.c  | 89 +++++++++++++++++++++++++++++++++++++++++++++++++++-
+ kernel/sched/sched.h | 33 +++++++++++++++++++
+ 2 files changed, 121 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 39871a4..0c08cff 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -5013,32 +5013,40 @@ static int select_idle_sibling(struct task_struct *p, int target)
- done:
- 	return target;
- }
-+
- /*
-  * get_cpu_usage returns the amount of capacity of a CPU that is used by CFS
-  * tasks. The unit of the return value must be the one of capacity so we can
-  * compare the usage with the capacity of the CPU that is available for CFS
-  * task (ie cpu_capacity).
-+ *
-  * cfs.utilization_load_avg is the sum of running time of runnable tasks on a
-  * CPU. It represents the amount of utilization of a CPU in the range
-- * [0..SCHED_LOAD_SCALE].  The usage of a CPU can't be higher than the full
-- * capacity of the CPU because it's about the running time on this CPU.
-- * Nevertheless, cfs.utilization_load_avg can be higher than SCHED_LOAD_SCALE
-- * because of unfortunate rounding in avg_period and running_load_avg or just
-- * after migrating tasks until the average stabilizes with the new running
-- * time. So we need to check that the usage stays into the range
-- * [0..cpu_capacity_orig] and cap if necessary.
-- * Without capping the usage, a group could be seen as overloaded (CPU0 usage
-- * at 121% + CPU1 usage at 80%) whereas CPU1 has 20% of available capacity
-+ * [0..capacity_orig] where capacity_orig is the cpu_capacity available at the
-+ * highest frequency (arch_scale_freq_capacity()). The usage of a CPU converges
-+ * towards a sum equal to or less than the current capacity (capacity_curr <=
-+ * capacity_orig) of the CPU because it is the running time on this CPU scaled
-+ * by capacity_curr. Nevertheless, cfs.utilization_load_avg can be higher than
-+ * capacity_curr or even higher than capacity_orig because of unfortunate
-+ * rounding in avg_period and running_load_avg or just after migrating tasks
-+ * (and new task wakeups) until the average stabilizes with the new running
-+ * time. We need to check that the usage stays into the range
-+ * [0..capacity_orig] and cap if necessary. Without capping the usage, a group
-+ * could be seen as overloaded (CPU0 usage at 121% + CPU1 usage at 80%) whereas
-+ * CPU1 has 20% of available capacity. We allow usage to overshoot
-+ * capacity_curr (but not capacity_orig) as it useful for predicting the
-+ * capacity required after task migrations (scheduler-driven DVFS).
-  */
-+
- static int get_cpu_usage(int cpu)
- {
- 	unsigned long usage = cpu_rq(cpu)->cfs.utilization_load_avg;
--	unsigned long capacity = capacity_orig_of(cpu);
-+	unsigned long capacity_orig = capacity_orig_of(cpu);
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 6a06fe5..e09ded5 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -5731,6 +5731,9 @@ static void free_sched_groups(struct sched_group *sg, int free_sgc)
+ 		if (free_sgc && atomic_dec_and_test(&sg->sgc->ref))
+ 			kfree(sg->sgc);
  
--	if (usage >= SCHED_LOAD_SCALE)
--		return capacity;
-+	if (usage >= capacity_orig)
-+		return capacity_orig;
++		if (free_sgc && atomic_dec_and_test(&sg->sge->ref))
++			kfree(sg->sge);
++
+ 		kfree(sg);
+ 		sg = tmp;
+ 	} while (sg != first);
+@@ -5748,6 +5751,7 @@ static void free_sched_domain(struct rcu_head *rcu)
+ 		free_sched_groups(sd->groups, 1);
+ 	} else if (atomic_dec_and_test(&sd->groups->ref)) {
+ 		kfree(sd->groups->sgc);
++		kfree(sd->groups->sge);
+ 		kfree(sd->groups);
+ 	}
+ 	kfree(sd);
+@@ -5965,6 +5969,8 @@ build_overlap_sched_groups(struct sched_domain *sd, int cpu)
+ 		 */
+ 		sg->sgc->capacity = SCHED_CAPACITY_SCALE * cpumask_weight(sg_span);
  
--	return (usage * capacity) >> SCHED_LOAD_SHIFT;
-+	return usage;
++		sg->sge = *per_cpu_ptr(sdd->sge, i);
++
+ 		/*
+ 		 * Make sure the first group of this domain contains the
+ 		 * canonical balance cpu. Otherwise the sched_domain iteration
+@@ -6003,6 +6009,7 @@ static int get_group(int cpu, struct sd_data *sdd, struct sched_group **sg)
+ 		*sg = *per_cpu_ptr(sdd->sg, cpu);
+ 		(*sg)->sgc = *per_cpu_ptr(sdd->sgc, cpu);
+ 		atomic_set(&(*sg)->sgc->ref, 1); /* for claim_allocations */
++		(*sg)->sge = *per_cpu_ptr(sdd->sge, cpu);
+ 	}
+ 
+ 	return cpu;
+@@ -6092,6 +6099,52 @@ static void init_sched_groups_capacity(int cpu, struct sched_domain *sd)
+ 	atomic_set(&sg->sgc->nr_busy_cpus, sg->group_weight);
  }
  
++static void init_sched_energy(int cpu, struct sched_domain *sd,
++			      struct sched_domain_topology_level *tl)
++{
++	struct sched_group *sg = sd->groups;
++	struct sched_group_energy *sge = sg->sge;
++	sched_domain_energy_f fn = tl->energy;
++	struct cpumask *mask = sched_group_cpus(sg);
++
++	if (fn && sd->child && !sd->child->groups->sge) {
++		pr_err("BUG: EAS setup broken for CPU%d\n", cpu);
++#ifdef CONFIG_SCHED_DEBUG
++		pr_err("     energy data on %s but not on %s domain\n",
++			sd->name, sd->child->name);
++#endif
++		return;
++	}
++
++	if (cpu != group_balance_cpu(sg))
++		return;
++
++	if (!fn || !fn(cpu)) {
++		sg->sge = NULL;
++		return;
++	}
++
++	atomic_set(&sg->sge->ref, 1); /* for claim_allocations */
++
++	if (cpumask_weight(mask) > 1)
++		check_sched_energy_data(cpu, fn, mask);
++
++	sge->nr_idle_states = fn(cpu)->nr_idle_states;
++	sge->nr_cap_states = fn(cpu)->nr_cap_states;
++	sge->idle_states = (struct idle_state *)
++			   ((void *)&sge->cap_states +
++			    sizeof(sge->cap_states));
++	sge->cap_states = (struct capacity_state *)
++			  ((void *)&sge->cap_states +
++			   sizeof(sge->cap_states) +
++			   sge->nr_idle_states *
++			   sizeof(struct idle_state));
++	memcpy(sge->idle_states, fn(cpu)->idle_states,
++	       sge->nr_idle_states*sizeof(struct idle_state));
++	memcpy(sge->cap_states, fn(cpu)->cap_states,
++	       sge->nr_cap_states*sizeof(struct capacity_state));
++}
++
  /*
+  * Initializers for schedule domains
+  * Non-inlined to reduce accumulated stack pressure in build_sched_domains()
+@@ -6182,6 +6235,9 @@ static void claim_allocations(int cpu, struct sched_domain *sd)
+ 
+ 	if (atomic_read(&(*per_cpu_ptr(sdd->sgc, cpu))->ref))
+ 		*per_cpu_ptr(sdd->sgc, cpu) = NULL;
++
++	if (atomic_read(&(*per_cpu_ptr(sdd->sge, cpu))->ref))
++		*per_cpu_ptr(sdd->sge, cpu) = NULL;
+ }
+ 
+ #ifdef CONFIG_NUMA
+@@ -6647,10 +6703,24 @@ static int __sdt_alloc(const struct cpumask *cpu_map)
+ 		if (!sdd->sgc)
+ 			return -ENOMEM;
+ 
++		sdd->sge = alloc_percpu(struct sched_group_energy *);
++		if (!sdd->sge)
++			return -ENOMEM;
++
+ 		for_each_cpu(j, cpu_map) {
+ 			struct sched_domain *sd;
+ 			struct sched_group *sg;
+ 			struct sched_group_capacity *sgc;
++			struct sched_group_energy *sge;
++			sched_domain_energy_f fn = tl->energy;
++			unsigned int nr_idle_states = 0;
++			unsigned int nr_cap_states = 0;
++
++			if (fn && fn(j)) {
++				nr_idle_states = fn(j)->nr_idle_states;
++				nr_cap_states = fn(j)->nr_cap_states;
++				BUG_ON(!nr_idle_states || !nr_cap_states);
++			}
+ 
+ 		       	sd = kzalloc_node(sizeof(struct sched_domain) + cpumask_size(),
+ 					GFP_KERNEL, cpu_to_node(j));
+@@ -6674,6 +6744,16 @@ static int __sdt_alloc(const struct cpumask *cpu_map)
+ 				return -ENOMEM;
+ 
+ 			*per_cpu_ptr(sdd->sgc, j) = sgc;
++
++			sge = kzalloc_node(sizeof(struct sched_group_energy) +
++				nr_idle_states*sizeof(struct idle_state) +
++				nr_cap_states*sizeof(struct capacity_state),
++				GFP_KERNEL, cpu_to_node(j));
++
++			if (!sge)
++				return -ENOMEM;
++
++			*per_cpu_ptr(sdd->sge, j) = sge;
+ 		}
+ 	}
+ 
+@@ -6702,6 +6782,8 @@ static void __sdt_free(const struct cpumask *cpu_map)
+ 				kfree(*per_cpu_ptr(sdd->sg, j));
+ 			if (sdd->sgc)
+ 				kfree(*per_cpu_ptr(sdd->sgc, j));
++			if (sdd->sge)
++				kfree(*per_cpu_ptr(sdd->sge, j));
+ 		}
+ 		free_percpu(sdd->sd);
+ 		sdd->sd = NULL;
+@@ -6709,6 +6791,8 @@ static void __sdt_free(const struct cpumask *cpu_map)
+ 		sdd->sg = NULL;
+ 		free_percpu(sdd->sgc);
+ 		sdd->sgc = NULL;
++		free_percpu(sdd->sge);
++		sdd->sge = NULL;
+ 	}
+ }
+ 
+@@ -6794,10 +6878,13 @@ static int build_sched_domains(const struct cpumask *cpu_map,
+ 
+ 	/* Calculate CPU capacity for physical packages and nodes */
+ 	for (i = nr_cpumask_bits-1; i >= 0; i--) {
++		struct sched_domain_topology_level *tl = sched_domain_topology;
++
+ 		if (!cpumask_test_cpu(i, cpu_map))
+ 			continue;
+ 
+-		for (sd = *per_cpu_ptr(d.sd, i); sd; sd = sd->parent) {
++		for (sd = *per_cpu_ptr(d.sd, i); sd; sd = sd->parent, tl++) {
++			init_sched_energy(i, sd, tl);
+ 			claim_allocations(i, sd);
+ 			init_sched_groups_capacity(i, sd);
+ 		}
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 7b687c6..b9d7057 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -890,6 +890,39 @@ static inline unsigned int group_first_cpu(struct sched_group *group)
+ 
+ extern int group_balance_cpu(struct sched_group *sg);
+ 
++/*
++ * Check that the per-cpu provided sd energy data is consistent for all cpus
++ * within the mask.
++ */
++static inline void check_sched_energy_data(int cpu, sched_domain_energy_f fn,
++					   const struct cpumask *cpumask)
++{
++	struct cpumask mask;
++	int i;
++
++	cpumask_xor(&mask, cpumask, get_cpu_mask(cpu));
++
++	for_each_cpu(i, &mask) {
++		int y;
++
++		BUG_ON(fn(i)->nr_idle_states != fn(cpu)->nr_idle_states);
++
++		for (y = 0; y < (fn(i)->nr_idle_states); y++) {
++			BUG_ON(fn(i)->idle_states[y].power !=
++					fn(cpu)->idle_states[y].power);
++		}
++
++		BUG_ON(fn(i)->nr_cap_states != fn(cpu)->nr_cap_states);
++
++		for (y = 0; y < (fn(i)->nr_cap_states); y++) {
++			BUG_ON(fn(i)->cap_states[y].cap !=
++					fn(cpu)->cap_states[y].cap);
++			BUG_ON(fn(i)->cap_states[y].power !=
++					fn(cpu)->cap_states[y].power);
++		}
++	}
++}
++
+ #else
+ 
+ static inline void sched_ttwu_pending(void) { }
 -- 
 1.9.1
 
