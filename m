@@ -1,7 +1,7 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 27/46] sched, cpuidle: Track cpuidle state index in the scheduler
-Date: Tue,  7 Jul 2015 19:24:10 +0100
-Message-ID: <1436293469-25707-28-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 35/46] sched: Disable energy-unfriendly nohz kicks
+Date: Tue,  7 Jul 2015 19:24:18 +0100
+Message-ID: <1436293469-25707-36-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
@@ -10,86 +10,39 @@ To: peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The idle-state of each cpu is currently pointed to by rq->idle_state but
-there isn't any information in the struct cpuidle_state that can used to
-look up the idle-state energy model data stored in struct
-sched_group_energy. For this purpose is necessary to store the idle
-state index as well. Ideally, the idle-state data should be unified.
+With energy-aware scheduling enabled nohz_kick_needed() generates many
+nohz idle-balance kicks which lead to nothing when multiple tasks get
+packed on a single cpu to save energy. This causes unnecessary wake-ups
+and hence wastes energy. Make these conditions depend on !energy_aware()
+for now until the energy-aware nohz story gets sorted out.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- kernel/sched/idle.c  |  2 ++
- kernel/sched/sched.h | 21 +++++++++++++++++++++
- 2 files changed, 23 insertions(+)
+ kernel/sched/fair.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index fefcb1f..6832fa1 100644
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -151,6 +151,7 @@ static void cpuidle_idle_call(void)
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 97eb83e..8e0cbd4 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -8424,12 +8424,13 @@ static inline bool nohz_kick_needed(struct rq *rq)
+ 	if (time_before(now, nohz.next_balance))
+ 		return false;
  
- 	/* Take note of the planned idle state. */
- 	idle_set_state(this_rq(), &drv->states[next_state]);
-+	idle_set_state_idx(this_rq(), next_state);
+-	if (rq->nr_running >= 2)
++	if (rq->nr_running >= 2 &&
++	    (!energy_aware() || cpu_overutilized(cpu)))
+ 		return true;
  
- 	/*
- 	 * Enter the idle state previously returned by the governor decision.
-@@ -161,6 +162,7 @@ static void cpuidle_idle_call(void)
+ 	rcu_read_lock();
+ 	sd = rcu_dereference(per_cpu(sd_busy, cpu));
+-	if (sd) {
++	if (sd && !energy_aware()) {
+ 		sgc = sd->groups->sgc;
+ 		nr_busy = atomic_read(&sgc->nr_busy_cpus);
  
- 	/* The cpu is no longer idle or about to enter idle. */
- 	idle_set_state(this_rq(), NULL);
-+	idle_set_state_idx(this_rq(), -1);
- 
- 	if (entered_state == -EBUSY)
- 		goto use_default;
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 9589d9e..c395559 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -701,6 +701,7 @@ struct rq {
- #ifdef CONFIG_CPU_IDLE
- 	/* Must be inspected within a rcu lock section */
- 	struct cpuidle_state *idle_state;
-+	int idle_state_idx;
- #endif
- };
- 
-@@ -1316,6 +1317,17 @@ static inline struct cpuidle_state *idle_get_state(struct rq *rq)
- 	WARN_ON(!rcu_read_lock_held());
- 	return rq->idle_state;
- }
-+
-+static inline void idle_set_state_idx(struct rq *rq, int idle_state_idx)
-+{
-+	rq->idle_state_idx = idle_state_idx;
-+}
-+
-+static inline int idle_get_state_idx(struct rq *rq)
-+{
-+	WARN_ON(!rcu_read_lock_held());
-+	return rq->idle_state_idx;
-+}
- #else
- static inline void idle_set_state(struct rq *rq,
- 				  struct cpuidle_state *idle_state)
-@@ -1326,6 +1338,15 @@ static inline struct cpuidle_state *idle_get_state(struct rq *rq)
- {
- 	return NULL;
- }
-+
-+static inline void idle_set_state_idx(struct rq *rq, int idle_state_idx)
-+{
-+}
-+
-+static inline int idle_get_state_idx(struct rq *rq)
-+{
-+	return -1;
-+}
- #endif
- 
- extern void sysrq_sched_debug_show(void);
 -- 
 1.9.1
