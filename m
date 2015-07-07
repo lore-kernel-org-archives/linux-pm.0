@@ -1,111 +1,78 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: [PATCH] base: power: wakeirq: don't leak dev->power.wakeirq
-Date: Tue, 7 Jul 2015 03:11:20 -0500
-Message-ID: <20150707081120.GA15545@saruman.tx.rr.com>
-References: <1436205678-31640-1-git-send-email-balbi@ti.com>
- <2783932.o7RC7vMDHB@vostro.rjw.lan>
- <20150707074053.GO10705@atomide.com>
-Reply-To: <balbi@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] acpi-cpufreq.c: fix a memory leak in
+ acpi_cpufreq_cpu_exit
+Date: Tue, 7 Jul 2015 14:23:42 +0530
+Message-ID: <20150707085342.GF14598@linux>
+References: <559A2073.1000301@intel.com>
+ <20150707065449.GD14598@linux>
+ <559B8537.5010309@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="oyUTqETQ0mS9luUI"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:47853 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752983AbbGGIMg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 04:12:36 -0400
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:33828 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752619AbbGGIxu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 04:53:50 -0400
+Received: by pabvl15 with SMTP id vl15so109981472pab.1
+        for <linux-pm@vger.kernel.org>; Tue, 07 Jul 2015 01:53:49 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20150707074053.GO10705@atomide.com>
+In-Reply-To: <559B8537.5010309@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Felipe Balbi <balbi@ti.com>, linux-pm@vger.kernel.org, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Pan Xinhui <xinhuix.pan@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, rjw@rjwysocki.net, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>, "mnipxh@163.com" <mnipxh@163.com>
 
---oyUTqETQ0mS9luUI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 07-07-15, 15:52, Pan Xinhui wrote:
+> I have latest codes.
+> codes in cpufreq.c are below.
+> 1436     down_write(&policy->rwsem);
+> 1437     cpumask_clear_cpu(cpu, policy->cpus);
+> 1438 
+> 1439     if (policy_is_inactive(policy)) {
+> 1440         if (has_target())
+> 1441             strncpy(policy->last_governor, policy->governor->name,
+> 1442                 CPUFREQ_NAME_LEN);
+> 1443     } else if (cpu == policy->cpu) {
+> 1444         /* Nominate new CPU */
+> 1445         policy->cpu = cpumask_any(policy->cpus);
+> 1446     }
+> 1447     up_write(&policy->rwsem);
 
-On Tue, Jul 07, 2015 at 12:40:53AM -0700, Tony Lindgren wrote:
-> * Rafael J. Wysocki <rjw@rjwysocki.net> [150706 15:49]:
-> > On Monday, July 06, 2015 01:01:18 PM Felipe Balbi wrote:
-> > > on a first call to dev_pm_attach_wake_irq(), if it
-> > > fails, it will leave dev->power.wakeirq set to a
-> > > dangling pointer. Instead, let's clear it to make
-> > > sure a subsequent call to dev_pm_attach_wake_irq()
-> > > has chance to succeed.
-> > >=20
-> > > Cc: Tony Lindgren <tmlind@atomide.com>
-> > > Signed-off-by: Felipe Balbi <balbi@ti.com>
-> > > ---
-> > >  drivers/base/power/wakeirq.c | 9 ++++++++-
-> > >  1 file changed, 8 insertions(+), 1 deletion(-)
-> > >=20
-> > > diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeir=
-q.c
-> > > index 7470004ca810..394d250a1ad8 100644
-> > > --- a/drivers/base/power/wakeirq.c
-> > > +++ b/drivers/base/power/wakeirq.c
-> > > @@ -50,9 +50,16 @@ static int dev_pm_attach_wake_irq(struct device *d=
-ev, int irq,
-> > > =20
-> > >  	err =3D device_wakeup_attach_irq(dev, wirq);
-> > >  	if (err)
-> > > -		return err;
-> > > +		goto err_cleanup;
-> > > =20
-> > >  	return 0;
-> > > +
-> > > +err_cleanup:
-> > > +	spin_lock_irqsave(&dev->power.lock, flags);
-> > > +	dev->power.wakeirq =3D NULL;
-> > > +	spin_unlock_irqrestore(&dev->power.lock, flags);
-> > > +
-> > > +	return err;
-> > >  }
-> >=20
-> > Too many labels for me and the fact that acquiring of the lock again in=
- the error
-> > patch doesn't look good.
-> >=20
-> > However, we can do the entire device_wakeup_attach_irq() under the lock=
- (after
-> > removing the locking from it), because we're its only caller.
-> >=20
-> > So what about the below instead (build-tested only)?
->=20
-> Nice, still works for me and simplifies things:
->=20
-> Tested-by: Tony Lindgren <tony@atomide.com>
+Sigh. Too bad. So what has changed is that the sysfs directory is
+allocated to policy->cpu during init and never changed. But
+policy->cpu can surely change.
 
-Cool, thanks for testing Tony. Rafael, I'm fine with your version too.
-FWIW:
+Sorry for that.
 
-Reported-by: Felipe Balbi <balbi@ti.com>
+> back to my previous patch, you suggest me to use policy->driver_data to *store* data and don't need use per_cpu anymore.
+> codes in acpi-cpufreq.c are below.
+>  365 static unsigned int get_cur_freq_on_cpu(unsigned int cpu)
+>  366 {
+>  367     struct acpi_cpufreq_data *data = per_cpu(acfreq_data, cpu);
+>  368     unsigned int freq;
+>  369     unsigned int cached_freq;
+>  
+> we get *data* through per_cpu for now, as the parameter is cpu only.
+> If we store *data* in policy->driver_data, we need call
+> struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu) to get policy.
+> We do a full codes review, and find there should be deadlock if we doing so.
 
---=20
-balbi
+Why?
 
---oyUTqETQ0mS9luUI
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+> But as cpufreq code offers
+> 238 /* Only for cpufreq core internal use */
+> 239 struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
+> 
+> I have a small question,if we can use *cpufreq_cpu_get_raw* in ->get callback, which is already lock hold,
+> But the comment(line 238) is... hmm.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+That is more internal to the core. Better don't use it.
 
-iQIcBAEBAgAGBQJVm4moAAoJEIaOsuA1yqRE2fEP+wZSTM0+SihTwWshSY5MpV8T
-IQ7Elo6Ympip6QUq40Q7yLHFCtBDS0tv1wsBG9dJb1N8BH0cH4r1rSB85i+Yczpe
-rAn6Lp0s2omprqRyCjO1Mu7EY1gIYnyuyfA/U5F+9ObItv5Bj9OoR7kBT1Qn4Vfp
-rqKgYC1Oh/E+nSy2cod5rssnclL03kDCkSVvPlqGEO6yH9EAdC6BUx5qlxEsAS96
-u6eRkITA+01zVuk9DbRiJzZvk0aofoktox/ggtH3a42TWsnmrI6F26VbMNXZwRPJ
-nTK8RGw6MZu8/jBbPjVVNUW5jZdBTWqUFXPvqSo3Qa+3LgEbfqfEZqYW/5gX9AlG
-ihbHAEUdKbND3WH9AL1NYXqTf6+Yzl2woCb9fASzoMd8PCz2ywXbRl/JiDPjK9Xh
-ctJBEIqMrZaGau9V8zfrxwbSVJRKtd+s19Biy/CuUnU75+e9njErbbKBZOsHTyIc
-FBJH7pZsx5hjLePgKRGY3hbgmuSJmVZ97mSqq7RVZUwPOBiVnpCGcB46pdvxlMYN
-syBHa3mXWC0EY7MAolUrAssXzRfBwXC3bxavavAxLLiGCVuml/svhihwH0hFqOpd
-/EQoxMq5THV34JVZJ6JvgK2E0atxki/idVshcFP0bVGkDa0Bg23biiMRNtCkT8EY
-0KCAYmgAawhJfNw5vOwA
-=Oira
------END PGP SIGNATURE-----
+> thanks for your kind reply. any advices or comments are welcome.
 
---oyUTqETQ0mS9luUI--
+Anyway, your patch is far from complete. You have just fixed a single
+place where per-cpu data is accessed with policy->cpu. What about rest
+of the code? Like target() :)
+
+--
+viresh
