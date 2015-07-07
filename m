@@ -1,81 +1,97 @@
-From: Michael Trimarchi <michael@amarulasolutions.com>
-Subject: Re: [PATCH] base: power: wakeirq: don't leak dev->power.wakeirq
-Date: Tue, 7 Jul 2015 06:17:07 +0200
-Message-ID: <CAOf5uwkwe0PudVVKGs_6-DNuYDqS=p5EOA4=5uVQSTK0BhinWw@mail.gmail.com>
-References: <1436205678-31640-1-git-send-email-balbi@ti.com>
-	<CAOf5uwnj=0m99E96k-+AYu68yE_UnX1WVU-=6y7OvJnfXKh8+g@mail.gmail.com>
-	<20150706180921.GF20779@saruman.tx.rr.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v4 6/8] mfd: make mfd_remove_devices() iterate in reverse
+ order
+Date: Tue, 7 Jul 2015 07:51:17 +0100
+Message-ID: <20150707065117.GE3182@x1>
+References: <1434362256-239992-1-git-send-email-andriy.shevchenko@linux.intel.com>
+ <CAHp75VdGyfyfYV6q9vdqK5nYBMpPWFxr32eiXXn2ruUj4pg6BA@mail.gmail.com>
+ <20150706160529.GC3182@x1>
+ <3134535.L6At3I31FS@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f178.google.com ([209.85.223.178]:35139 "EHLO
-	mail-ie0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751154AbbGGERI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 00:17:08 -0400
-Received: by iecuq6 with SMTP id uq6so126796334iec.2
-        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2015 21:17:07 -0700 (PDT)
-In-Reply-To: <20150706180921.GF20779@saruman.tx.rr.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <3134535.L6At3I31FS@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine <dmaengine@vger.kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@linaro.org>, sboyd@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
-To: Felipe Balbi <balbi@ti.com>
-Cc: linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, rjw@rjwysocki.net, Tony Lindgren <tmlind@atomide.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Tony Lindgren <tony@atomide.com>
 
-Hi
+On Tue, 07 Jul 2015, Rafael J. Wysocki wrote:
+> On Monday, July 06, 2015 05:05:29 PM Lee Jones wrote:
+> > On Mon, 06 Jul 2015, Andy Shevchenko wrote:
+> >=20
+> > > On Mon, Jul 6, 2015 at 5:50 PM, Lee Jones <lee.jones@linaro.org> =
+wrote:
+> > > > On Mon, 06 Jul 2015, Andy Shevchenko wrote:
+> > > >
+> > > >> On Mon, 2015-07-06 at 11:24 +0200, Geert Uytterhoeven wrote:
+> > > >> > On Mon, Jul 6, 2015 at 11:10 AM, Andy Shevchenko
+> > > >> > <andriy.shevchenko@linux.intel.com> wrote:
+> > > >> > > On Wed, 2015-06-24 at 12:31 +0100, Lee Jones wrote:
+> > > >> > > > On Mon, 15 Jun 2015, Andy Shevchenko wrote:
+> > >=20
+> > > []
+> > >=20
+> > > >> > > > Applied, thanks.
+> > > >> > >
+> > > >> > > Hmm=E2=80=A6 Seems kinda mistake. I can't see this applied=
+ (and required
+> > > >> > > previous patches 4 and 5) to any of your branch neither in
+> > > >> > > (today's)
+> > > >> > > linux-next.
+> > > >> >
+> > > >> > New stuff applied after v4.1 couldn't show up in -next befor=
+e v4.2
+> > > >> > -rc1 was
+> > > >> > released (which just happened last night)?
+> > > >>
+> > > >> Might be, I would like to resend new version of my series and =
+that's
+> > > >> why I would like to have a branch to check what is already app=
+lied. So,
+> > > >> if I can't see it does it mean it is brewed in the private rep=
+ository?
+> > > >
+> > > > If you have patches that depend on this, they either need to co=
+me
+> > > > through my tree, or you have to wait until the next kernel vers=
+ion
+> > > > (which you probably don't want, right?).
+> > > >
+> > > > The alternative is that I unapply this patch and the whole lot =
+can be
+> > > > sucked up by the most appropriate subsystem.
+> > >=20
+> > > I resent a new version for other comments(still with all patches
+> > > included). Meanwhile the patches 4-6 (from v4 or v5, where they a=
+re
+> > > the same) could be applied in the first place. Can you clarify wh=
+at
+> > > exactly you have applied? The idea is to put the rest via your
+> > > subsystem since it's most appropriate for this series.
+> >=20
+> > Easiest thing for me to do is unapply.
+> >=20
+> > We can take the whole series when all the Acks have been accrued.
+>=20
+> So are there any ACKs missing from the last series posted by Andy?
 
-On Mon, Jul 6, 2015 at 8:09 PM, Felipe Balbi <balbi@ti.com> wrote:
-> On Mon, Jul 06, 2015 at 08:06:17PM +0200, Michael Trimarchi wrote:
->> Hi
->>
->> On Jul 6, 2015 8:01 PM, "Felipe Balbi" <balbi@ti.com> wrote:
->> >
->> > on a first call to dev_pm_attach_wake_irq(), if it
->> > fails, it will leave dev->power.wakeirq set to a
->> > dangling pointer. Instead, let's clear it to make
->> > sure a subsequent call to dev_pm_attach_wake_irq()
->> > has chance to succeed.
->> >
->> > Cc: Tony Lindgren <tmlind@atomide.com>
->> > Signed-off-by: Felipe Balbi <balbi@ti.com>
->> > ---
->> >  drivers/base/power/wakeirq.c | 9 ++++++++-
->> >  1 file changed, 8 insertions(+), 1 deletion(-)
->> >
->> > diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
->> > index 7470004ca810..394d250a1ad8 100644
->> > --- a/drivers/base/power/wakeirq.c
->> > +++ b/drivers/base/power/wakeirq.c
->> > @@ -50,9 +50,16 @@ static int dev_pm_attach_wake_irq(struct device *dev,
->> int irq,
->> >
->> >         err = device_wakeup_attach_irq(dev, wirq);
->> >         if (err)
->> > -               return err;
->> > +               goto err_cleanup;
->> >
->> >         return 0;
->> > +
->> > +err_cleanup:
->> > +       spin_lock_irqsave(&dev->power.lock, flags);
->> > +       dev->power.wakeirq = NULL;
->> > +       spin_unlock_irqrestore(&dev->power.lock, flags);
->> > +
->>
->> Why here and not in the fuction that return the error?
->
-> because the field was set here, why would I clear it elsewhere ?
->
+Yes, I have requested a Clk Ack, as there are some, lets say
+interesting code in the MFD driver which I am unsure about.  However,
+we have caught Mike at an awkward time, as he is in the middle of
+transitioning jobs.
 
-Clear now and even more from the other patch proposal.
+Perhaps Stephen Boyd (now Cc'ed) might have a look.
 
-Michael
-
-> --
-> balbi
-
-
-
--- 
-| Michael Nazzareno Trimarchi                     Amarula Solutions BV |
-| COO  -  Founder                                      Cruquiuskade 47 |
-| +31(0)851119172                                 Amsterdam 1018 AM NL |
-|                  [`as] http://www.amarulasolutions.com               |
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
