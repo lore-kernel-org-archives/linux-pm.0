@@ -1,173 +1,86 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] base: power: wakeirq: don't leak dev->power.wakeirq
-Date: Tue, 07 Jul 2015 01:13:21 +0200
-Message-ID: <2783932.o7RC7vMDHB@vostro.rjw.lan>
-References: <1436205678-31640-1-git-send-email-balbi@ti.com>
+Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
+Date: Tue, 07 Jul 2015 02:07:47 +0200
+Message-ID: <14963352.fDKd3nIddf@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1507041021080.19175-100000@netrider.rowland.org> <1714292.iHVMDeHUzi@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52865 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:56548 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754873AbbGFWqz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 18:46:55 -0400
-In-Reply-To: <1436205678-31640-1-git-send-email-balbi@ti.com>
+	with SMTP id S1756229AbbGFXlX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2015 19:41:23 -0400
+In-Reply-To: <1714292.iHVMDeHUzi@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Felipe Balbi <balbi@ti.com>
-Cc: linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tony Lindgren <tmlind@atomide.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Monday, July 06, 2015 01:01:18 PM Felipe Balbi wrote:
-> on a first call to dev_pm_attach_wake_irq(), if it
-> fails, it will leave dev->power.wakeirq set to a
-> dangling pointer. Instead, let's clear it to make
-> sure a subsequent call to dev_pm_attach_wake_irq()
-> has chance to succeed.
+On Monday, July 06, 2015 01:36:46 AM Rafael J. Wysocki wrote:
+> On Saturday, July 04, 2015 10:37:55 AM Alan Stern wrote:
+> > On Sat, 4 Jul 2015, Rafael J. Wysocki wrote:
+> > 
+> > > > >> > Perhaps the pm_runtime_suspended_if_enabled() test should be changed to
+> > > > >> > pm_runtime_status_suspended().  Then it won't matter whether the
+> > > > >> > descendant devices are enabled for runtime PM.
+> > > > >>
+> > > > >> Yeah, that would remove the need for messing with the runtime PM
+> > > > >> enable status of descendant devices, but I wonder why Rafael went that
+> > > > >> way initially.
+> > > > >
+> > > > > I forget the details.  Probably it was just to be safe.  We probably
+> > > > > thought that if a device was disabled for runtime PM then its runtime
+> > > > > PM status might not be accurate.  But if direct_complete is set then it
+> > > > > may be reasonable to assume that the runtime PM status _is_ accurate.
+> > > > 
+> > > > Cool.
+> > > 
+> > > We're walking a grey area here.  What exactly does power.direct_complete mean
+> > > for devices whose runtime PM is disabled?
+> > 
+> > > > Let's see what Rafael thinks about these two issues.  It seems to me
+> > > > that the hardest part is dealing with drivers/subsystems that have no
+> > > > runtime PM support.  In such cases, we have to be very careful not to
+> > > > use direct_complete unless we know that the device does no power
+> > > > management at all.
+> > > 
+> > > Precisely.
+> > 
+> > All right, we can make a decision and document it.  The following seems
+> > reasonable to me:
+> > 
+> > 	If dev->power.direct_complete is set then the PM core will
+> > 	assume that dev->power.rpm_status is accurate even when
+> > 	dev->power.disable_depth > 0.  The core will obey the
+> > 	.direct_complete setting regardless of .disable_depth.
+> > 
+> > 	As a consequence, devices that support system sleep but don't 
+> > 	support runtime PM must _never_ have .direct_complete set.
+> > 
+> > 	On the other hand, if a device (such as a "virtual" device)
+> > 	requires no callbacks for either system sleep or runtime PM, 
+> > 	then there is no harm in setting .direct_complete.  Indeed,
+> > 	doing so may help speed up an ancestor device's sleep
+> > 	transition.
+> > 
+> > How does that sound?
 > 
-> Cc: Tony Lindgren <tmlind@atomide.com>
-> Signed-off-by: Felipe Balbi <balbi@ti.com>
-> ---
->  drivers/base/power/wakeirq.c | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
+> It would be workable I think, but I'd prefer the core to be told directly
+> about devices whose runtime PM status doesn't matter (because nothing changes
+> between "suspended" and "active"), so they may be treated in a special way
+> safely.
 > 
-> diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
-> index 7470004ca810..394d250a1ad8 100644
-> --- a/drivers/base/power/wakeirq.c
-> +++ b/drivers/base/power/wakeirq.c
-> @@ -50,9 +50,16 @@ static int dev_pm_attach_wake_irq(struct device *dev, int irq,
->  
->  	err = device_wakeup_attach_irq(dev, wirq);
->  	if (err)
-> -		return err;
-> +		goto err_cleanup;
->  
->  	return 0;
-> +
-> +err_cleanup:
-> +	spin_lock_irqsave(&dev->power.lock, flags);
-> +	dev->power.wakeirq = NULL;
-> +	spin_unlock_irqrestore(&dev->power.lock, flags);
-> +
-> +	return err;
->  }
+> If we had that information, no special rules other than "that is a device
+> whose runtime PM status doesn't matter, so treat it accordingly" would be
+> necessary.
 
-Too many labels for me and the fact that acquiring of the lock again in the error
-patch doesn't look good.
+That said, a situation to consider is when device X is just a software device,
+but it has children that correspond to physical hardware.  If that is the case,
+the usual parent-children rules should apply to X and its children (ie. X should
+only be marked as "suspended" if all of its children are suspended) and I see
+no reason why the parent-children rules for direct_resume should not apply here.
 
-However, we can do the entire device_wakeup_attach_irq() under the lock (after
-removing the locking from it), because we're its only caller.
-
-So what about the below instead (build-tested only)?
-
+Thanks,
 Rafael
-
-
----
- drivers/base/power/wakeirq.c |   12 +++++-------
- drivers/base/power/wakeup.c  |   31 ++++++++++---------------------
- 2 files changed, 15 insertions(+), 28 deletions(-)
-
-Index: linux-pm/drivers/base/power/wakeirq.c
-===================================================================
---- linux-pm.orig/drivers/base/power/wakeirq.c
-+++ linux-pm/drivers/base/power/wakeirq.c
-@@ -45,14 +45,12 @@ static int dev_pm_attach_wake_irq(struct
- 		return -EEXIST;
- 	}
- 
--	dev->power.wakeirq = wirq;
--	spin_unlock_irqrestore(&dev->power.lock, flags);
--
- 	err = device_wakeup_attach_irq(dev, wirq);
--	if (err)
--		return err;
-+	if (!err)
-+		dev->power.wakeirq = wirq;
- 
--	return 0;
-+	spin_unlock_irqrestore(&dev->power.lock, flags);
-+	return err;
- }
- 
- /**
-@@ -105,10 +103,10 @@ void dev_pm_clear_wake_irq(struct device
- 		return;
- 
- 	spin_lock_irqsave(&dev->power.lock, flags);
-+	device_wakeup_detach_irq(dev);
- 	dev->power.wakeirq = NULL;
- 	spin_unlock_irqrestore(&dev->power.lock, flags);
- 
--	device_wakeup_detach_irq(dev);
- 	if (wirq->dedicated_irq)
- 		free_irq(wirq->irq, wirq);
- 	kfree(wirq);
-Index: linux-pm/drivers/base/power/wakeup.c
-===================================================================
---- linux-pm.orig/drivers/base/power/wakeup.c
-+++ linux-pm/drivers/base/power/wakeup.c
-@@ -281,32 +281,25 @@ EXPORT_SYMBOL_GPL(device_wakeup_enable);
-  * Attach a device wakeirq to the wakeup source so the device
-  * wake IRQ can be configured automatically for suspend and
-  * resume.
-+ *
-+ * Call under the device's power.lock lock.
-  */
- int device_wakeup_attach_irq(struct device *dev,
- 			     struct wake_irq *wakeirq)
- {
- 	struct wakeup_source *ws;
--	int ret = 0;
- 
--	spin_lock_irq(&dev->power.lock);
- 	ws = dev->power.wakeup;
- 	if (!ws) {
- 		dev_err(dev, "forgot to call call device_init_wakeup?\n");
--		ret = -EINVAL;
--		goto unlock;
-+		return -EINVAL;
- 	}
- 
--	if (ws->wakeirq) {
--		ret = -EEXIST;
--		goto unlock;
--	}
-+	if (ws->wakeirq)
-+		return -EEXIST;
- 
- 	ws->wakeirq = wakeirq;
--
--unlock:
--	spin_unlock_irq(&dev->power.lock);
--
--	return ret;
-+	return 0;
- }
- 
- /**
-@@ -314,20 +307,16 @@ unlock:
-  * @dev: Device to handle
-  *
-  * Removes a device wakeirq from the wakeup source.
-+ *
-+ * Call under the device's power.lock lock.
-  */
- void device_wakeup_detach_irq(struct device *dev)
- {
- 	struct wakeup_source *ws;
- 
--	spin_lock_irq(&dev->power.lock);
- 	ws = dev->power.wakeup;
--	if (!ws)
--		goto unlock;
--
--	ws->wakeirq = NULL;
--
--unlock:
--	spin_unlock_irq(&dev->power.lock);
-+	if (ws)
-+		ws->wakeirq = NULL;
- }
- 
- /**
 
