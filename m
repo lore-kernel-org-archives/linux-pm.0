@@ -1,104 +1,171 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 02/46] sched: Make load tracking frequency scale-invariant
-Date: Tue,  7 Jul 2015 19:23:45 +0100
-Message-ID: <1436293469-25707-3-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 01/46] arm: Frequency invariant scheduler load-tracking support
+Date: Tue,  7 Jul 2015 19:23:44 +0100
+Message-ID: <1436293469-25707-2-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
-Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Morten Rasmussen <Morten.Rasmussen@arm.com>, Russell King <linux@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+From: Morten Rasmussen <Morten.Rasmussen@arm.com>
 
-Apply frequency scale-invariance correction factor to load tracking.
-Each segment of the sched_avg::runnable_avg_sum geometric series is now
-scaled by the current frequency so the sched_avg::load_avg_contrib of each
-entity will be invariant with frequency scaling. As a result,
-cfs_rq::runnable_load_avg which is the sum of sched_avg::load_avg_contrib,
-becomes invariant too. So the load level that is returned by
-weighted_cpuload, stays relative to the max frequency of the cpu.
+Implements arch-specific function to provide the scheduler with a
+frequency scaling correction factor for more accurate load-tracking.
+The factor is:
 
-Then, we want the keep the load tracking values in a 32bits type, which
-implies that the max value of sched_avg::{runnable|running}_avg_sum must
-be lower than 2^32/88761=48388 (88761 is the max weight of a task). As
-LOAD_AVG_MAX = 47742, arch_scale_freq_capacity must return a value less
-than (48388/47742) << SCHED_CAPACITY_SHIFT = 1037 (SCHED_SCALE_CAPACITY =
-1024). So we define the range to [0..SCHED_SCALE_CAPACITY] in order to
-avoid overflow.
+	current_freq(cpu) << SCHED_CAPACITY_SHIFT / max_freq(cpu)
 
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
+This implementation only provides frequency invariance. No cpu
+invariance yet.
 
-Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+
+Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- kernel/sched/fair.c | 28 ++++++++++++++++------------
- 1 file changed, 16 insertions(+), 12 deletions(-)
+ arch/arm/include/asm/topology.h |  7 +++++
+ arch/arm/kernel/smp.c           | 57 +++++++++++++++++++++++++++++++++++++++--
+ arch/arm/kernel/topology.c      | 17 ++++++++++++
+ 3 files changed, 79 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 4b6e5f6..376ec75 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -2551,9 +2551,9 @@ static __always_inline int __update_entity_runnable_avg(u64 now, int cpu,
- 							int runnable,
- 							int running)
+diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
+index 370f7a7..c31096f 100644
+--- a/arch/arm/include/asm/topology.h
++++ b/arch/arm/include/asm/topology.h
+@@ -24,6 +24,13 @@ void init_cpu_topology(void);
+ void store_cpu_topology(unsigned int cpuid);
+ const struct cpumask *cpu_coregroup_mask(int cpu);
+ 
++#define arch_scale_freq_capacity arm_arch_scale_freq_capacity
++struct sched_domain;
++extern
++unsigned long arm_arch_scale_freq_capacity(struct sched_domain *sd, int cpu);
++
++DECLARE_PER_CPU(atomic_long_t, cpu_freq_capacity);
++
+ #else
+ 
+ static inline void init_cpu_topology(void) { }
+diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
+index cca5b87..a32539c 100644
+--- a/arch/arm/kernel/smp.c
++++ b/arch/arm/kernel/smp.c
+@@ -677,12 +677,34 @@ static DEFINE_PER_CPU(unsigned long, l_p_j_ref);
+ static DEFINE_PER_CPU(unsigned long, l_p_j_ref_freq);
+ static unsigned long global_l_p_j_ref;
+ static unsigned long global_l_p_j_ref_freq;
++static DEFINE_PER_CPU(atomic_long_t, cpu_max_freq);
++DEFINE_PER_CPU(atomic_long_t, cpu_freq_capacity);
++
++/*
++ * Scheduler load-tracking scale-invariance
++ *
++ * Provides the scheduler with a scale-invariance correction factor that
++ * compensates for frequency scaling through arch_scale_freq_capacity()
++ * (implemented in topology.c).
++ */
++static inline
++void scale_freq_capacity(int cpu, unsigned long curr, unsigned long max)
++{
++	unsigned long capacity;
++
++	if (!max)
++		return;
++
++	capacity = (curr << SCHED_CAPACITY_SHIFT) / max;
++	atomic_long_set(&per_cpu(cpu_freq_capacity, cpu), capacity);
++}
+ 
+ static int cpufreq_callback(struct notifier_block *nb,
+ 					unsigned long val, void *data)
  {
--	u64 delta, periods;
--	u32 runnable_contrib;
--	int delta_w, decayed = 0;
-+	u64 delta, scaled_delta, periods;
-+	u32 runnable_contrib, scaled_runnable_contrib;
-+	int delta_w, scaled_delta_w, decayed = 0;
- 	unsigned long scale_freq = arch_scale_freq_capacity(NULL, cpu);
+ 	struct cpufreq_freqs *freq = data;
+ 	int cpu = freq->cpu;
++	unsigned long max = atomic_long_read(&per_cpu(cpu_max_freq, cpu));
  
- 	delta = now - sa->last_runnable_update;
-@@ -2587,11 +2587,12 @@ static __always_inline int __update_entity_runnable_avg(u64 now, int cpu,
- 		 * period and accrue it.
- 		 */
- 		delta_w = 1024 - delta_w;
-+		scaled_delta_w = (delta_w * scale_freq) >> SCHED_CAPACITY_SHIFT;
-+
- 		if (runnable)
--			sa->runnable_avg_sum += delta_w;
-+			sa->runnable_avg_sum += scaled_delta_w;
- 		if (running)
--			sa->running_avg_sum += delta_w * scale_freq
--				>> SCHED_CAPACITY_SHIFT;
-+			sa->running_avg_sum += scaled_delta_w;
- 		sa->avg_period += delta_w;
- 
- 		delta -= delta_w;
-@@ -2609,20 +2610,23 @@ static __always_inline int __update_entity_runnable_avg(u64 now, int cpu,
- 
- 		/* Efficiently calculate \sum (1..n_period) 1024*y^i */
- 		runnable_contrib = __compute_runnable_contrib(periods);
-+		scaled_runnable_contrib = (runnable_contrib * scale_freq)
-+						>> SCHED_CAPACITY_SHIFT;
-+
- 		if (runnable)
--			sa->runnable_avg_sum += runnable_contrib;
-+			sa->runnable_avg_sum += scaled_runnable_contrib;
- 		if (running)
--			sa->running_avg_sum += runnable_contrib * scale_freq
--				>> SCHED_CAPACITY_SHIFT;
-+			sa->running_avg_sum += scaled_runnable_contrib;
- 		sa->avg_period += runnable_contrib;
+ 	if (freq->flags & CPUFREQ_CONST_LOOPS)
+ 		return NOTIFY_OK;
+@@ -707,6 +729,10 @@ static int cpufreq_callback(struct notifier_block *nb,
+ 					per_cpu(l_p_j_ref_freq, cpu),
+ 					freq->new);
  	}
- 
- 	/* Remainder of delta accrued against u_0` */
-+	scaled_delta = (delta * scale_freq) >> SCHED_CAPACITY_SHIFT;
 +
- 	if (runnable)
--		sa->runnable_avg_sum += delta;
-+		sa->runnable_avg_sum += scaled_delta;
- 	if (running)
--		sa->running_avg_sum += delta * scale_freq
--			>> SCHED_CAPACITY_SHIFT;
-+		sa->running_avg_sum += scaled_delta;
- 	sa->avg_period += delta;
++	if (val == CPUFREQ_PRECHANGE)
++		scale_freq_capacity(cpu, freq->new, max);
++
+ 	return NOTIFY_OK;
+ }
  
- 	return decayed;
+@@ -714,11 +740,38 @@ static struct notifier_block cpufreq_notifier = {
+ 	.notifier_call  = cpufreq_callback,
+ };
+ 
++static int cpufreq_policy_callback(struct notifier_block *nb,
++						unsigned long val, void *data)
++{
++	struct cpufreq_policy *policy = data;
++	int i;
++
++	if (val != CPUFREQ_NOTIFY)
++		return NOTIFY_OK;
++
++	for_each_cpu(i, policy->cpus) {
++		scale_freq_capacity(i, policy->cur, policy->max);
++		atomic_long_set(&per_cpu(cpu_max_freq, i), policy->max);
++	}
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block cpufreq_policy_notifier = {
++	.notifier_call	= cpufreq_policy_callback,
++};
++
+ static int __init register_cpufreq_notifier(void)
+ {
+-	return cpufreq_register_notifier(&cpufreq_notifier,
++	int ret;
++
++	ret = cpufreq_register_notifier(&cpufreq_notifier,
+ 						CPUFREQ_TRANSITION_NOTIFIER);
++	if (ret)
++		return ret;
++
++	return cpufreq_register_notifier(&cpufreq_policy_notifier,
++						CPUFREQ_POLICY_NOTIFIER);
+ }
+ core_initcall(register_cpufreq_notifier);
+-
+ #endif
+diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+index 08b7847..9c09e6e 100644
+--- a/arch/arm/kernel/topology.c
++++ b/arch/arm/kernel/topology.c
+@@ -169,6 +169,23 @@ static void update_cpu_capacity(unsigned int cpu)
+ 		cpu, arch_scale_cpu_capacity(NULL, cpu));
+ }
+ 
++/*
++ * Scheduler load-tracking scale-invariance
++ *
++ * Provides the scheduler with a scale-invariance correction factor that
++ * compensates for frequency scaling (arch_scale_freq_capacity()). The scaling
++ * factor is updated in smp.c
++ */
++unsigned long arm_arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
++{
++	unsigned long curr = atomic_long_read(&per_cpu(cpu_freq_capacity, cpu));
++
++	if (!curr)
++		return SCHED_CAPACITY_SCALE;
++
++	return curr;
++}
++
+ #else
+ static inline void parse_dt_topology(void) {}
+ static inline void update_cpu_capacity(unsigned int cpuid) {}
 -- 
 1.9.1
