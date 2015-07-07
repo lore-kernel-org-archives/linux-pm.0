@@ -1,175 +1,157 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 07/46] arm: Cpu invariant scheduler load-tracking support
-Date: Tue,  7 Jul 2015 19:23:50 +0100
-Message-ID: <1436293469-25707-8-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 09/46] sched: Track blocked utilization contributions
+Date: Tue,  7 Jul 2015 19:23:52 +0100
+Message-ID: <1436293469-25707-10-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37372 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932722AbbGGSWT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 14:22:19 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
-Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Dietmar Eggemann <dietmar.eggemann@arm.com>, Russell King <linux@arm.linux.org.uk>
+Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Introduces the blocked utilization, the utilization counter-part to
+cfs_rq->blocked_load_avg. It is the sum of sched_entity utilization
+contributions of entities that were recently on the cfs_rq and are
+currently blocked. Combined with the sum of utilization of entities
+currently on the cfs_rq or currently running
+(cfs_rq->utilization_load_avg) this provides a more stable average
+view of the cpu usage.
 
-Reuses the existing infrastructure for cpu_scale to provide the scheduler
-with a cpu scaling correction factor for more accurate load-tracking.
-This factor comprises a micro-architectural part, which is based on the
-cpu efficiency value of a cpu as well as a platform-wide max frequency
-part, which relates to the dtb property clock-frequency of a cpu node.
+cc: Ingo Molnar <mingo@redhat.com>
+cc: Peter Zijlstra <peterz@infradead.org>
 
-The calculation of cpu_scale, return value of arch_scale_cpu_capacity,
-changes from
-
-    capacity / middle_capacity
-
-    with capacity = (clock_frequency >> 20) * cpu_efficiency
-
-to
-
-    SCHED_CAPACITY_SCALE * cpu_perf / max_cpu_perf
-
-The range of the cpu_scale value changes from
-[0..3*SCHED_CAPACITY_SCALE/2] to [0..SCHED_CAPACITY_SCALE].
-
-The functionality to calculate the middle_capacity which corresponds to an
-'average' cpu has been taken out since the scaling is now done
-differently.
-
-In the case that either the cpu efficiency or the clock-frequency value
-for a cpu is missing, no cpu scaling is done for any cpu.
-
-The platform-wide max frequency part of the factor should not be confused
-with the frequency invariant scheduler load-tracking support which deals
-with frequency related scaling due to DFVS functionality on a cpu.
-
-Cc: Russell King <linux@arm.linux.org.uk>
-
-Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- arch/arm/kernel/topology.c | 64 +++++++++++++++++-----------------------------
- 1 file changed, 23 insertions(+), 41 deletions(-)
+ kernel/sched/fair.c  | 30 +++++++++++++++++++++++++++++-
+ kernel/sched/sched.h |  8 ++++++--
+ 2 files changed, 35 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index bad267c..5867587 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -62,9 +62,7 @@ struct cpu_efficiency {
-  * Table of relative efficiency of each processors
-  * The efficiency value must fit in 20bit and the final
-  * cpu_scale value must be in the range
-- *   0 < cpu_scale < 3*SCHED_CAPACITY_SCALE/2
-- * in order to return at most 1 when DIV_ROUND_CLOSEST
-- * is used to compute the capacity of a CPU.
-+ *   0 < cpu_scale < SCHED_CAPACITY_SCALE.
-  * Processors that are not defined in the table,
-  * use the default SCHED_CAPACITY_SCALE value for cpu_scale.
-  */
-@@ -77,24 +75,18 @@ static const struct cpu_efficiency table_efficiency[] = {
- static unsigned long *__cpu_capacity;
- #define cpu_capacity(cpu)	__cpu_capacity[cpu]
- 
--static unsigned long middle_capacity = 1;
-+static unsigned long max_cpu_perf;
- 
- /*
-  * Iterate all CPUs' descriptor in DT and compute the efficiency
-- * (as per table_efficiency). Also calculate a middle efficiency
-- * as close as possible to  (max{eff_i} - min{eff_i}) / 2
-- * This is later used to scale the cpu_capacity field such that an
-- * 'average' CPU is of middle capacity. Also see the comments near
-- * table_efficiency[] and update_cpu_capacity().
-+ * (as per table_efficiency). Calculate the max cpu performance too.
-  */
-+
- static void __init parse_dt_topology(void)
- {
- 	const struct cpu_efficiency *cpu_eff;
- 	struct device_node *cn = NULL;
--	unsigned long min_capacity = ULONG_MAX;
--	unsigned long max_capacity = 0;
--	unsigned long capacity = 0;
--	int cpu = 0;
-+	int cpu = 0, i = 0;
- 
- 	__cpu_capacity = kcalloc(nr_cpu_ids, sizeof(*__cpu_capacity),
- 				 GFP_NOWAIT);
-@@ -102,6 +94,7 @@ static void __init parse_dt_topology(void)
- 	for_each_possible_cpu(cpu) {
- 		const u32 *rate;
- 		int len;
-+		unsigned long cpu_perf;
- 
- 		/* too early to use cpu->of_node */
- 		cn = of_get_cpu_node(cpu, NULL);
-@@ -124,46 +117,35 @@ static void __init parse_dt_topology(void)
- 			continue;
- 		}
- 
--		capacity = ((be32_to_cpup(rate)) >> 20) * cpu_eff->efficiency;
--
--		/* Save min capacity of the system */
--		if (capacity < min_capacity)
--			min_capacity = capacity;
--
--		/* Save max capacity of the system */
--		if (capacity > max_capacity)
--			max_capacity = capacity;
--
--		cpu_capacity(cpu) = capacity;
-+		cpu_perf = ((be32_to_cpup(rate)) >> 20) * cpu_eff->efficiency;
-+		cpu_capacity(cpu) = cpu_perf;
-+		max_cpu_perf = max(max_cpu_perf, cpu_perf);
-+		i++;
- 	}
- 
--	/* If min and max capacities are equals, we bypass the update of the
--	 * cpu_scale because all CPUs have the same capacity. Otherwise, we
--	 * compute a middle_capacity factor that will ensure that the capacity
--	 * of an 'average' CPU of the system will be as close as possible to
--	 * SCHED_CAPACITY_SCALE, which is the default value, but with the
--	 * constraint explained near table_efficiency[].
--	 */
--	if (4*max_capacity < (3*(max_capacity + min_capacity)))
--		middle_capacity = (min_capacity + max_capacity)
--				>> (SCHED_CAPACITY_SHIFT+1);
--	else
--		middle_capacity = ((max_capacity / 3)
--				>> (SCHED_CAPACITY_SHIFT-1)) + 1;
--
-+	if (i < num_possible_cpus())
-+		max_cpu_perf = 0;
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 0c08cff..c26980f 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -2818,6 +2818,15 @@ static inline void subtract_blocked_load_contrib(struct cfs_rq *cfs_rq,
+ 		cfs_rq->blocked_load_avg = 0;
  }
  
- /*
-  * Look for a customed capacity of a CPU in the cpu_capacity table during the
-  * boot. The update of all CPUs is in O(n^2) for heteregeneous system but the
-- * function returns directly for SMP system.
-+ * function returns directly for SMP systems or if there is no complete set
-+ * of cpu efficiency, clock frequency data for each cpu.
-  */
- static void update_cpu_capacity(unsigned int cpu)
- {
--	if (!cpu_capacity(cpu))
-+	unsigned long capacity = cpu_capacity(cpu);
++static inline void subtract_utilization_blocked_contrib(struct cfs_rq *cfs_rq,
++						long utilization_contrib)
++{
++	if (likely(utilization_contrib < cfs_rq->utilization_blocked_avg))
++		cfs_rq->utilization_blocked_avg -= utilization_contrib;
++	else
++		cfs_rq->utilization_blocked_avg = 0;
++}
 +
-+	if (!capacity || !max_cpu_perf) {
-+		cpu_capacity(cpu) = 0;
+ static inline u64 cfs_rq_clock_task(struct cfs_rq *cfs_rq);
+ 
+ /* Update a sched_entity's runnable average */
+@@ -2853,6 +2862,8 @@ static inline void update_entity_load_avg(struct sched_entity *se,
+ 		cfs_rq->utilization_load_avg += utilization_delta;
+ 	} else {
+ 		subtract_blocked_load_contrib(cfs_rq, -contrib_delta);
++		subtract_utilization_blocked_contrib(cfs_rq,
++							-utilization_delta);
+ 	}
+ }
+ 
+@@ -2870,14 +2881,20 @@ static void update_cfs_rq_blocked_load(struct cfs_rq *cfs_rq, int force_update)
  		return;
-+	}
-+
-+	capacity *= SCHED_CAPACITY_SCALE;
-+	capacity /= max_cpu_perf;
  
--	set_capacity_scale(cpu, cpu_capacity(cpu) / middle_capacity);
-+	set_capacity_scale(cpu, capacity);
+ 	if (atomic_long_read(&cfs_rq->removed_load)) {
+-		unsigned long removed_load;
++		unsigned long removed_load, removed_utilization;
+ 		removed_load = atomic_long_xchg(&cfs_rq->removed_load, 0);
++		removed_utilization =
++			atomic_long_xchg(&cfs_rq->removed_utilization, 0);
+ 		subtract_blocked_load_contrib(cfs_rq, removed_load);
++		subtract_utilization_blocked_contrib(cfs_rq,
++							removed_utilization);
+ 	}
  
- 	pr_info("CPU%u: update cpu_capacity %lu\n",
- 		cpu, arch_scale_cpu_capacity(NULL, cpu));
+ 	if (decays) {
+ 		cfs_rq->blocked_load_avg = decay_load(cfs_rq->blocked_load_avg,
+ 						      decays);
++		cfs_rq->utilization_blocked_avg =
++			decay_load(cfs_rq->utilization_blocked_avg, decays);
+ 		atomic64_add(decays, &cfs_rq->decay_counter);
+ 		cfs_rq->last_decay = now;
+ 	}
+@@ -2924,6 +2941,8 @@ static inline void enqueue_entity_load_avg(struct cfs_rq *cfs_rq,
+ 	/* migrated tasks did not contribute to our blocked load */
+ 	if (wakeup) {
+ 		subtract_blocked_load_contrib(cfs_rq, se->avg.load_avg_contrib);
++		subtract_utilization_blocked_contrib(cfs_rq,
++					se->avg.utilization_avg_contrib);
+ 		update_entity_load_avg(se, 0);
+ 	}
+ 
+@@ -2950,6 +2969,8 @@ static inline void dequeue_entity_load_avg(struct cfs_rq *cfs_rq,
+ 	cfs_rq->utilization_load_avg -= se->avg.utilization_avg_contrib;
+ 	if (sleep) {
+ 		cfs_rq->blocked_load_avg += se->avg.load_avg_contrib;
++		cfs_rq->utilization_blocked_avg +=
++						se->avg.utilization_avg_contrib;
+ 		se->avg.decay_count = atomic64_read(&cfs_rq->decay_counter);
+ 	} /* migrations, e.g. sleep=0 leave decay_count == 0 */
+ }
+@@ -5162,6 +5183,8 @@ migrate_task_rq_fair(struct task_struct *p, int next_cpu)
+ 		se->avg.decay_count = -__synchronize_entity_decay(se);
+ 		atomic_long_add(se->avg.load_avg_contrib,
+ 						&cfs_rq->removed_load);
++		atomic_long_add(se->avg.utilization_avg_contrib,
++					&cfs_rq->removed_utilization);
+ 	}
+ 
+ 	/* We have migrated, no longer consider this task hot */
+@@ -8153,6 +8176,8 @@ static void switched_from_fair(struct rq *rq, struct task_struct *p)
+ 	if (se->avg.decay_count) {
+ 		__synchronize_entity_decay(se);
+ 		subtract_blocked_load_contrib(cfs_rq, se->avg.load_avg_contrib);
++		subtract_utilization_blocked_contrib(cfs_rq,
++					se->avg.utilization_avg_contrib);
+ 	}
+ #endif
+ }
+@@ -8212,6 +8237,7 @@ void init_cfs_rq(struct cfs_rq *cfs_rq)
+ #ifdef CONFIG_SMP
+ 	atomic64_set(&cfs_rq->decay_counter, 1);
+ 	atomic_long_set(&cfs_rq->removed_load, 0);
++	atomic_long_set(&cfs_rq->removed_utilization, 0);
+ #endif
+ }
+ 
+@@ -8264,6 +8290,8 @@ static void task_move_group_fair(struct task_struct *p, int queued)
+ 		 */
+ 		se->avg.decay_count = atomic64_read(&cfs_rq->decay_counter);
+ 		cfs_rq->blocked_load_avg += se->avg.load_avg_contrib;
++		cfs_rq->utilization_blocked_avg +=
++						se->avg.utilization_avg_contrib;
+ #endif
+ 	}
+ }
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 4e7bce7..a22cf89 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -375,11 +375,15 @@ struct cfs_rq {
+ 	 * the blocked sched_entities on the rq.
+ 	 * utilization_load_avg is the sum of the average running time of the
+ 	 * sched_entities on the rq.
++	 * utilization_blocked_avg is the utilization equivalent of
++	 * blocked_load_avg, i.e. the sum of running contributions of blocked
++	 * sched_entities associated with the rq.
+ 	 */
+-	unsigned long runnable_load_avg, blocked_load_avg, utilization_load_avg;
++	unsigned long runnable_load_avg, blocked_load_avg;
++	unsigned long utilization_load_avg, utilization_blocked_avg;
+ 	atomic64_t decay_counter;
+ 	u64 last_decay;
+-	atomic_long_t removed_load;
++	atomic_long_t removed_load, removed_utilization;
+ 
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 	/* Required to track per-cpu representation of a task_group */
 -- 
 1.9.1
-
