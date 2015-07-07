@@ -1,178 +1,123 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 18/46] arm: topology: Define TC2 energy and provide it to the scheduler
-Date: Tue,  7 Jul 2015 19:24:01 +0100
-Message-ID: <1436293469-25707-19-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 20/46] sched: Relocated get_cpu_usage() and change return type
+Date: Tue,  7 Jul 2015 19:24:03 +0100
+Message-ID: <1436293469-25707-21-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
-Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Dietmar Eggemann <dietmar.eggemann@arm.com>, Russell King <linux@arm.linux.org.uk>
+Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Move get_cpu_usage() to an earlier position in fair.c and change return
+type to unsigned long as negative usage doesn't make much sense. All
+other load and capacity related functions use unsigned long including
+the caller of get_cpu_usage().
 
-This patch is only here to be able to test provisioning of energy related
-data from an arch topology shim layer to the scheduler. Since there is no
-code today which deals with extracting energy related data from the dtb or
-acpi, and process it in the topology shim layer, the content of the
-sched_group_energy structures as well as the idle_state and capacity_state
-arrays are hard-coded here.
+cc: Ingo Molnar <mingo@redhat.com>
+cc: Peter Zijlstra <peterz@infradead.org>
 
-This patch defines the sched_group_energy structure as well as the
-idle_state and capacity_state array for the cluster (relates to sched
-groups (sgs) in DIE sched domain level) and for the core (relates to sgs
-in MC sd level) for a Cortex A7 as well as for a Cortex A15.
-It further provides related implementations of the sched_domain_energy_f
-functions (cpu_cluster_energy() and cpu_core_energy()).
-
-To be able to propagate this information from the topology shim layer to
-the scheduler, the elements of the arm_topology[] table have been
-provisioned with the appropriate sched_domain_energy_f functions.
-
-cc: Russell King <linux@arm.linux.org.uk>
-
-Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- arch/arm/kernel/topology.c | 118 +++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 115 insertions(+), 3 deletions(-)
+ kernel/sched/fair.c | 78 ++++++++++++++++++++++++++---------------------------
+ 1 file changed, 39 insertions(+), 39 deletions(-)
 
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index b35d3e5..bbe20c7 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -274,6 +274,119 @@ void store_cpu_topology(unsigned int cpuid)
- 		cpu_topology[cpuid].socket_id, mpidr);
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 70f81fc..78d3081 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -4802,6 +4802,45 @@ static unsigned long capacity_curr_of(int cpu)
+ 	       >> SCHED_CAPACITY_SHIFT;
  }
  
 +/*
-+ * ARM TC2 specific energy cost model data. There are no unit requirements for
-+ * the data. Data can be normalized to any reference point, but the
-+ * normalization must be consistent. That is, one bogo-joule/watt must be the
-+ * same quantity for all data, but we don't care what it is.
++ * get_cpu_usage returns the amount of capacity of a CPU that is used by CFS
++ * tasks. The unit of the return value must be the one of capacity so we can
++ * compare the usage with the capacity of the CPU that is available for CFS
++ * task (ie cpu_capacity).
++ *
++ * cfs.utilization_load_avg is the sum of running time of runnable tasks on a
++ * CPU. It represents the amount of utilization of a CPU in the range
++ * [0..capacity_orig] where capacity_orig is the cpu_capacity available at the
++ * highest frequency (arch_scale_freq_capacity()). The usage of a CPU converges
++ * towards a sum equal to or less than the current capacity (capacity_curr <=
++ * capacity_orig) of the CPU because it is the running time on this CPU scaled
++ * by capacity_curr. Nevertheless, cfs.utilization_load_avg can be higher than
++ * capacity_curr or even higher than capacity_orig because of unfortunate
++ * rounding in avg_period and running_load_avg or just after migrating tasks
++ * (and new task wakeups) until the average stabilizes with the new running
++ * time. We need to check that the usage stays into the range
++ * [0..capacity_orig] and cap if necessary. Without capping the usage, a group
++ * could be seen as overloaded (CPU0 usage at 121% + CPU1 usage at 80%) whereas
++ * CPU1 has 20% of available capacity. We allow usage to overshoot
++ * capacity_curr (but not capacity_orig) as it useful for predicting the
++ * capacity required after task migrations (scheduler-driven DVFS).
 + */
-+static struct idle_state idle_states_cluster_a7[] = {
-+	 { .power = 25 }, /* WFI */
-+	 { .power = 10 }, /* cluster-sleep-l */
-+	};
 +
-+static struct idle_state idle_states_cluster_a15[] = {
-+	 { .power = 70 }, /* WFI */
-+	 { .power = 25 }, /* cluster-sleep-b */
-+	};
-+
-+static struct capacity_state cap_states_cluster_a7[] = {
-+	/* Cluster only power */
-+	 { .cap =  150, .power = 2967, }, /*  350 MHz */
-+	 { .cap =  172, .power = 2792, }, /*  400 MHz */
-+	 { .cap =  215, .power = 2810, }, /*  500 MHz */
-+	 { .cap =  258, .power = 2815, }, /*  600 MHz */
-+	 { .cap =  301, .power = 2919, }, /*  700 MHz */
-+	 { .cap =  344, .power = 2847, }, /*  800 MHz */
-+	 { .cap =  387, .power = 3917, }, /*  900 MHz */
-+	 { .cap =  430, .power = 4905, }, /* 1000 MHz */
-+	};
-+
-+static struct capacity_state cap_states_cluster_a15[] = {
-+	/* Cluster only power */
-+	 { .cap =  426, .power =  7920, }, /*  500 MHz */
-+	 { .cap =  512, .power =  8165, }, /*  600 MHz */
-+	 { .cap =  597, .power =  8172, }, /*  700 MHz */
-+	 { .cap =  682, .power =  8195, }, /*  800 MHz */
-+	 { .cap =  768, .power =  8265, }, /*  900 MHz */
-+	 { .cap =  853, .power =  8446, }, /* 1000 MHz */
-+	 { .cap =  938, .power = 11426, }, /* 1100 MHz */
-+	 { .cap = 1024, .power = 15200, }, /* 1200 MHz */
-+	};
-+
-+static struct sched_group_energy energy_cluster_a7 = {
-+	  .nr_idle_states = ARRAY_SIZE(idle_states_cluster_a7),
-+	  .idle_states    = idle_states_cluster_a7,
-+	  .nr_cap_states  = ARRAY_SIZE(cap_states_cluster_a7),
-+	  .cap_states     = cap_states_cluster_a7,
-+};
-+
-+static struct sched_group_energy energy_cluster_a15 = {
-+	  .nr_idle_states = ARRAY_SIZE(idle_states_cluster_a15),
-+	  .idle_states    = idle_states_cluster_a15,
-+	  .nr_cap_states  = ARRAY_SIZE(cap_states_cluster_a15),
-+	  .cap_states     = cap_states_cluster_a15,
-+};
-+
-+static struct idle_state idle_states_core_a7[] = {
-+	 { .power = 0 }, /* WFI */
-+	};
-+
-+static struct idle_state idle_states_core_a15[] = {
-+	 { .power = 0 }, /* WFI */
-+	};
-+
-+static struct capacity_state cap_states_core_a7[] = {
-+	/* Power per cpu */
-+	 { .cap =  150, .power =  187, }, /*  350 MHz */
-+	 { .cap =  172, .power =  275, }, /*  400 MHz */
-+	 { .cap =  215, .power =  334, }, /*  500 MHz */
-+	 { .cap =  258, .power =  407, }, /*  600 MHz */
-+	 { .cap =  301, .power =  447, }, /*  700 MHz */
-+	 { .cap =  344, .power =  549, }, /*  800 MHz */
-+	 { .cap =  387, .power =  761, }, /*  900 MHz */
-+	 { .cap =  430, .power = 1024, }, /* 1000 MHz */
-+	};
-+
-+static struct capacity_state cap_states_core_a15[] = {
-+	/* Power per cpu */
-+	 { .cap =  426, .power = 2021, }, /*  500 MHz */
-+	 { .cap =  512, .power = 2312, }, /*  600 MHz */
-+	 { .cap =  597, .power = 2756, }, /*  700 MHz */
-+	 { .cap =  682, .power = 3125, }, /*  800 MHz */
-+	 { .cap =  768, .power = 3524, }, /*  900 MHz */
-+	 { .cap =  853, .power = 3846, }, /* 1000 MHz */
-+	 { .cap =  938, .power = 5177, }, /* 1100 MHz */
-+	 { .cap = 1024, .power = 6997, }, /* 1200 MHz */
-+	};
-+
-+static struct sched_group_energy energy_core_a7 = {
-+	  .nr_idle_states = ARRAY_SIZE(idle_states_core_a7),
-+	  .idle_states    = idle_states_core_a7,
-+	  .nr_cap_states  = ARRAY_SIZE(cap_states_core_a7),
-+	  .cap_states     = cap_states_core_a7,
-+};
-+
-+static struct sched_group_energy energy_core_a15 = {
-+	  .nr_idle_states = ARRAY_SIZE(idle_states_core_a15),
-+	  .idle_states    = idle_states_core_a15,
-+	  .nr_cap_states  = ARRAY_SIZE(cap_states_core_a15),
-+	  .cap_states     = cap_states_core_a15,
-+};
-+
-+/* sd energy functions */
-+static inline const struct sched_group_energy *cpu_cluster_energy(int cpu)
++static unsigned long get_cpu_usage(int cpu)
 +{
-+	return cpu_topology[cpu].socket_id ? &energy_cluster_a7 :
-+			&energy_cluster_a15;
++	int sum;
++	unsigned long usage = cpu_rq(cpu)->cfs.utilization_load_avg;
++	unsigned long blocked = cpu_rq(cpu)->cfs.utilization_blocked_avg;
++	unsigned long capacity_orig = capacity_orig_of(cpu);
++
++	sum = usage + blocked;
++
++	if (sum >= capacity_orig)
++		return capacity_orig;
++
++	return sum;
 +}
 +
-+static inline const struct sched_group_energy *cpu_core_energy(int cpu)
-+{
-+	return cpu_topology[cpu].socket_id ? &energy_core_a7 :
-+			&energy_core_a15;
-+}
-+
- static inline int cpu_corepower_flags(void)
+ static inline bool energy_aware(void)
  {
- 	return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN | \
-@@ -282,10 +395,9 @@ static inline int cpu_corepower_flags(void)
+ 	return sched_feat(ENERGY_AWARE);
+@@ -5055,45 +5094,6 @@ static int select_idle_sibling(struct task_struct *p, int target)
+ }
  
- static struct sched_domain_topology_level arm_topology[] = {
- #ifdef CONFIG_SCHED_MC
--	{ cpu_corepower_mask, cpu_corepower_flags, SD_INIT_NAME(GMC) },
--	{ cpu_coregroup_mask, cpu_core_flags, SD_INIT_NAME(MC) },
-+	{ cpu_coregroup_mask, cpu_corepower_flags, cpu_core_energy, SD_INIT_NAME(MC) },
- #endif
--	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
-+	{ cpu_cpu_mask, 0, cpu_cluster_energy, SD_INIT_NAME(DIE) },
- 	{ NULL, },
- };
- 
+ /*
+- * get_cpu_usage returns the amount of capacity of a CPU that is used by CFS
+- * tasks. The unit of the return value must be the one of capacity so we can
+- * compare the usage with the capacity of the CPU that is available for CFS
+- * task (ie cpu_capacity).
+- *
+- * cfs.utilization_load_avg is the sum of running time of runnable tasks on a
+- * CPU. It represents the amount of utilization of a CPU in the range
+- * [0..capacity_orig] where capacity_orig is the cpu_capacity available at the
+- * highest frequency (arch_scale_freq_capacity()). The usage of a CPU converges
+- * towards a sum equal to or less than the current capacity (capacity_curr <=
+- * capacity_orig) of the CPU because it is the running time on this CPU scaled
+- * by capacity_curr. Nevertheless, cfs.utilization_load_avg can be higher than
+- * capacity_curr or even higher than capacity_orig because of unfortunate
+- * rounding in avg_period and running_load_avg or just after migrating tasks
+- * (and new task wakeups) until the average stabilizes with the new running
+- * time. We need to check that the usage stays into the range
+- * [0..capacity_orig] and cap if necessary. Without capping the usage, a group
+- * could be seen as overloaded (CPU0 usage at 121% + CPU1 usage at 80%) whereas
+- * CPU1 has 20% of available capacity. We allow usage to overshoot
+- * capacity_curr (but not capacity_orig) as it useful for predicting the
+- * capacity required after task migrations (scheduler-driven DVFS).
+- */
+-
+-static int get_cpu_usage(int cpu)
+-{
+-	int sum;
+-	unsigned long usage = cpu_rq(cpu)->cfs.utilization_load_avg;
+-	unsigned long blocked = cpu_rq(cpu)->cfs.utilization_blocked_avg;
+-	unsigned long capacity_orig = capacity_orig_of(cpu);
+-
+-	sum = usage + blocked;
+-
+-	if (sum >= capacity_orig)
+-		return capacity_orig;
+-
+-	return sum;
+-}
+-
+-/*
+  * select_task_rq_fair: Select target runqueue for the waking task in domains
+  * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
+  * SD_BALANCE_FORK, or SD_BALANCE_EXEC.
 -- 
 1.9.1
