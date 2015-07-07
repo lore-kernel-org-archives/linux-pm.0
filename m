@@ -1,60 +1,41 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Wed, 08 Jul 2015 00:20:05 +0200
-Message-ID: <8185914.90oAZWnb5N@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1507071058000.1692-100000@iolanthe.rowland.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v4 6/8] mfd: make mfd_remove_devices() iterate in reverse
+ order
+Date: Tue, 07 Jul 2015 15:26:09 -0700
+Message-ID: <559C5201.7080605@codeaurora.org>
+References: <1434362256-239992-1-git-send-email-andriy.shevchenko@linux.intel.com> <CAHp75VdGyfyfYV6q9vdqK5nYBMpPWFxr32eiXXn2ruUj4pg6BA@mail.gmail.com> <20150706160529.GC3182@x1> <3134535.L6At3I31FS@vostro.rjw.lan> <20150707065117.GE3182@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51204 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758068AbbGGVxi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 17:53:38 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1507071058000.1692-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20150707065117.GE3182@x1>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine <dmaengine@vger.kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oneukum@suse.de>, Dave Chinner <david@fromorbit.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tuesday, July 07, 2015 11:03:20 AM Alan Stern wrote:
-> On Tue, 7 Jul 2015, Oliver Neukum wrote:
-> 
-> > > he (or she) pulls the storage device out of the system, moves it to another
-> > > system, makes changes (say removes the file written to by the process above,
-> > > so the blocks previously occupied by that file are now used for some metadata)
-> > > and moves the storage back to the suspended system.  The system is resumed
-> > > and the writing process continues writing possibly to the wrong blocks and
-> > > corrupts the filesystem.
-> > 
-> > That is a tough nut. But that's not a reason to make it worse.
-> > I'd say there's no reason not to use a secondary interface to
-> > suspend without syncing or to extend or introduce such an interface
-> > if the API is deficient.
-> 
-> Indeed, the problem Rafael outlined always exists whether or not the
-> kernel does a sync.  Even if no I/O is in progress when the system goes
-> to sleep, if the user moves a portable storage device with a mounted
-> filesystem to another computer and updates it before waking the system
-> up, corruption is highly likely.
-> 
-> In principle this could be solved by adding suspend/resume callbacks to
-> filesystems.  For example, the resume callback could verify that the
-> superblock had not been changed since the suspend occurred.  Or there 
-> could be some other simple way of determining that the filesystem had 
-> not been remounted and changed.
-> 
-> Either way, this is irrelevant to the question of whether the kernel 
-> should issue a sync when suspending.
+On 07/06/2015 11:51 PM, Lee Jones wrote:
+> On Tue, 07 Jul 2015, Rafael J. Wysocki wrote:
+>> So are there any ACKs missing from the last series posted by Andy?
+> Yes, I have requested a Clk Ack, as there are some, lets say
+> interesting code in the MFD driver which I am unsure about.  However,
+> we have caught Mike at an awkward time, as he is in the middle of
+> transitioning jobs.
+>
+> Perhaps Stephen Boyd (now Cc'ed) might have a look.
+>
 
-well, that depends on what the purpose of the sync is supposed to be.
+Context? I found the cover letter.
 
-If it is there to prevent users from corrupting their filesystems as a result
-of a mistake, it is insufficient.  If it's there for other reasons, I'm wondering
-what those reasons are (on systems that suspend and resume reliably, because the
-original reason to put it in there was to reduce the damage from suspend/resume
-crashes).
+clkdev is maintained by Russell. You could get his ack for the usage of
+the clkdev_create() API, but I'm not sure why it's needed. The API was
+merged into Linus' tree so I think you have everything you need.
 
-Thanks,
-Rafael
+$ git tag -l --contains 2568999835d7797afce3dcc3a3f368051ffcaf1f v4*
+v4.2-rc1
+
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
 
