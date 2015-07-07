@@ -1,77 +1,113 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v2 3/4] power: Add support for DA9150 Fuel-Gauge
-Date: Tue, 7 Jul 2015 07:58:01 +0100
-Message-ID: <20150707065801.GG3182@x1>
-References: <cover.1435308209.git.Adam.Thomson.Opensource@diasemi.com>
- <596f44407759e2047a02594367116f9c92afee56.1435308209.git.Adam.Thomson.Opensource@diasemi.com>
- <20150703152217.GC10500@x1>
- <2E89032DDAA8B9408CB92943514A0337AB55C839@SW-EX-MBX01.diasemi.com>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3 2/4] mfd: axp20x: Add missing registers,
+ and mark more registers volatile
+Date: Tue, 7 Jul 2015 08:01:13 +0100
+Message-ID: <20150707070113.GH3182@x1>
+References: <1435316357-26606-1-git-send-email-hdegoede@redhat.com>
+ <1435316357-26606-2-git-send-email-hdegoede@redhat.com>
+Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:36603 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751705AbbGGG6G (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 02:58:06 -0400
-Received: by widjy10 with SMTP id jy10so179580416wid.1
-        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2015 23:58:05 -0700 (PDT)
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-sunxi+bncBDA7X7F2WUEBBPPS5WWAKGQERS6NXTQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <2E89032DDAA8B9408CB92943514A0337AB55C839@SW-EX-MBX01.diasemi.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1435316357-26606-2-git-send-email-hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, jic23@cam.ac.uk
 
-On Mon, 06 Jul 2015, Opensource [Adam Thomson] wrote:
+On Fri, 26 Jun 2015, Hans de Goede wrote:
 
-> On July 3, 2015 16:22, Lee Jones wrote:
+> From: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
 >=20
-> > > +/*
-> > > + * Function template to provide battery temperature. Should prov=
-ide
-> > > + * 0.1 degrees C resolution return values.
-> > > + */
-> > > +typedef int (*da9150_read_temp_t)(void *context);
-> > > +
-> > > +/* Register temp callback function */
-> > > +void da9150_fg_register_temp_cb(struct power_supply *psy,
-> > da9150_read_temp_t cb,
-> > > +				void *cb_context);
-> > > +
-> > >  #endif /* __DA9150_FG_H */
-> >=20
-> > I still don't get why you think pointers are better than just calli=
-ng
-> > the function directly.  Can the *fn() ever point to different funct=
-ions?
+> Add an extra set of registers which is necessary tu support the PMICs
+> battery charger function, and mark registers which contain status bits,
+> gpio status, and adc readings as volatile.
 >=20
-> Here, the intention is to cover the scenario where a battery has no i=
-nternal
-> thermistor, and cannot provide temperature readings to the DA9150 dev=
-ice. In
-> that scenario I've allowed for the option of providing an external fu=
-nction
-> which can give the temperature reading instead as DA9150 will not be =
-able to
-> provide a correct reading in that scenario. This would be platform de=
-pendent and
-> such a platform using a battery not employing an NTC in their battery=
- can
-> register its own call-back function to provide battery temperature in=
-stead.
->=20
-> So, in answer to your question, yes.
+> Cc: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
+> Signed-off-by: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
+> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+> ---
+> Changes in v2:
+> -Add a AXP20X_OCV_MAX define
+> Changes in v3:
+> -Add Bruno's S-o-b
+> ---
+>  drivers/mfd/axp20x.c       | 8 +++++++-
+>  include/linux/mfd/axp20x.h | 6 ++++++
+>  2 files changed, 13 insertions(+), 1 deletion(-)
 
-Before you add this scenario, I would like to see the code which
-utilises it.  I'm not a fan of coding-up 'just-in-case's.  Please
-re-submit when you have a user in the same patch-set.
+For my own reference:
+  Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-This whole idea will need a discussion with Jonathan (the IIO
-Maintainer), now CC'ed.
+Are these two patches tied to any other in the set, or can I apply
+them separately?
+
+> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+> index 6df9155..f9a3c2d 100644
+> --- a/drivers/mfd/axp20x.c
+> +++ b/drivers/mfd/axp20x.c
+> @@ -39,10 +39,16 @@ static const char * const axp20x_model_names[] =3D {
+>  static const struct regmap_range axp20x_writeable_ranges[] =3D {
+>  	regmap_reg_range(AXP20X_DATACACHE(0), AXP20X_IRQ5_STATE),
+>  	regmap_reg_range(AXP20X_DCDC_MODE, AXP20X_FG_RES),
+> +	regmap_reg_range(AXP20X_RDC_H, AXP20X_OCV(15)),
+>  };
+> =20
+>  static const struct regmap_range axp20x_volatile_ranges[] =3D {
+> +	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_USB_OTG_STATUS),
+> +	regmap_reg_range(AXP20X_CHRG_CTRL1, AXP20X_CHRG_CTRL2),
+>  	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IRQ5_STATE),
+> +	regmap_reg_range(AXP20X_ACIN_V_ADC_H, AXP20X_IPSOUT_V_HIGH_L),
+> +	regmap_reg_range(AXP20X_GPIO20_SS, AXP20X_GPIO3_CTRL),
+> +	regmap_reg_range(AXP20X_FG_RES, AXP20X_RDC_L),
+>  };
+> =20
+>  static const struct regmap_access_table axp20x_writeable_table =3D {
+> @@ -159,7 +165,7 @@ static const struct regmap_config axp20x_regmap_confi=
+g =3D {
+>  	.val_bits	=3D 8,
+>  	.wr_table	=3D &axp20x_writeable_table,
+>  	.volatile_table	=3D &axp20x_volatile_table,
+> -	.max_register	=3D AXP20X_FG_RES,
+> +	.max_register	=3D AXP20X_OCV(AXP20X_OCV_MAX),
+>  	.cache_type	=3D REGCACHE_RBTREE,
+>  };
+> =20
+> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+> index 5275423..6d8b39a 100644
+> --- a/include/linux/mfd/axp20x.h
+> +++ b/include/linux/mfd/axp20x.h
+> @@ -151,6 +151,12 @@ enum {
+>  #define AXP20X_CC_CTRL			0xb8
+>  #define AXP20X_FG_RES			0xb9
+> =20
+> +/* OCV */
+> +#define AXP20X_RDC_H			0xba
+> +#define AXP20X_RDC_L			0xbb
+> +#define AXP20X_OCV(m)			(0xc0 + (m))
+> +#define AXP20X_OCV_MAX			0xf
+> +
+>  /* AXP22X specific registers */
+>  #define AXP22X_BATLOW_THRES1		0xe6
+> =20
 
 --=20
 Lee Jones
 Linaro STMicroelectronics Landing Team Lead
 Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Follow Linaro: Facebook | Twitter | Blog
+
+--=20
+You received this message because you are subscribed to the Google Groups "=
+linux-sunxi" group.
+To unsubscribe from this group and stop receiving emails from it, send an e=
+mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
