@@ -1,66 +1,141 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 34/46] sched: Enable idle balance to pull single task towards cpu with higher capacity
-Date: Tue,  7 Jul 2015 19:24:17 +0100
-Message-ID: <1436293469-25707-35-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 32/46] sched: Energy-aware wake-up task placement
+Date: Tue,  7 Jul 2015 19:24:15 +0100
+Message-ID: <1436293469-25707-33-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37647 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:37628 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932942AbbGGSX1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 14:23:27 -0400
+	id S932931AbbGGSXV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Jul 2015 14:23:21 -0400
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
-Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Let available compute capacity and estimated energy impact select
+wake-up target cpu when energy-aware scheduling is enabled and the
+system in not over-utilized (above the tipping point).
 
-We do not want to miss out on the ability to pull a single remaining
-task from a potential source cpu towards an idle destination cpu if the
-energy aware system operates above the tipping point.
-
-Add an extra criteria to need_active_balance() to kick off active load
-balance if the source cpu is over-utilized and has lower capacity than
-the destination cpu.
+energy_aware_wake_cpu() attempts to find group of cpus with sufficient
+compute capacity to accommodate the task and find a cpu with enough spare
+capacity to handle the task within that group. Preference is given to
+cpus with enough spare capacity at the current OPP. Finally, the energy
+impact of the new target and the previous task cpu is compared to select
+the wake-up target cpu.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
-Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- kernel/sched/fair.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ kernel/sched/fair.c | 85 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 84 insertions(+), 1 deletion(-)
 
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 48ecf02..97eb83e 100644
+index 0f7dbda4..01f7337 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -7569,6 +7569,13 @@ static int need_active_balance(struct lb_env *env)
- 			return 1;
- 	}
- 
-+	if ((capacity_of(env->src_cpu) < capacity_of(env->dst_cpu)) &&
-+				env->src_rq->cfs.h_nr_running == 1 &&
-+				cpu_overutilized(env->src_cpu) &&
-+				!cpu_overutilized(env->dst_cpu)) {
-+			return 1;
-+	}
-+
- 	return unlikely(sd->nr_balance_failed > sd->cache_nice_tries+2);
+@@ -5427,6 +5427,86 @@ static int select_idle_sibling(struct task_struct *p, int target)
+ 	return target;
  }
  
-@@ -7923,7 +7930,8 @@ static int idle_balance(struct rq *this_rq)
- 	this_rq->idle_stamp = rq_clock(this_rq);
++static int energy_aware_wake_cpu(struct task_struct *p, int target)
++{
++	struct sched_domain *sd;
++	struct sched_group *sg, *sg_target;
++	int target_max_cap = INT_MAX;
++	int target_cpu = task_cpu(p);
++	int i;
++
++	sd = rcu_dereference(per_cpu(sd_ea, task_cpu(p)));
++
++	if (!sd)
++		return target;
++
++	sg = sd->groups;
++	sg_target = sg;
++
++	/*
++	 * Find group with sufficient capacity. We only get here if no cpu is
++	 * overutilized. We may end up overutilizing a cpu by adding the task,
++	 * but that should not be any worse than select_idle_sibling().
++	 * load_balance() should sort it out later as we get above the tipping
++	 * point.
++	 */
++	do {
++		/* Assuming all cpus are the same in group */
++		int max_cap_cpu = group_first_cpu(sg);
++
++		/*
++		 * Assume smaller max capacity means more energy-efficient.
++		 * Ideally we should query the energy model for the right
++		 * answer but it easily ends up in an exhaustive search.
++		 */
++		if (capacity_of(max_cap_cpu) < target_max_cap &&
++		    task_fits_capacity(p, max_cap_cpu)) {
++			sg_target = sg;
++			target_max_cap = capacity_of(max_cap_cpu);
++		}
++	} while (sg = sg->next, sg != sd->groups);
++
++	/* Find cpu with sufficient capacity */
++	for_each_cpu_and(i, tsk_cpus_allowed(p), sched_group_cpus(sg_target)) {
++		/*
++		 * p's blocked utilization is still accounted for on prev_cpu
++		 * so prev_cpu will receive a negative bias due the double
++		 * accouting. However, the blocked utilization may be zero.
++		 */
++		int new_usage = get_cpu_usage(i) + task_utilization(p);
++
++		if (new_usage >	capacity_orig_of(i))
++			continue;
++
++		if (new_usage <	capacity_curr_of(i)) {
++			target_cpu = i;
++			if (cpu_rq(i)->nr_running)
++				break;
++		}
++
++		/* cpu has capacity at higher OPP, keep it as fallback */
++		if (target_cpu == task_cpu(p))
++			target_cpu = i;
++	}
++
++	if (target_cpu != task_cpu(p)) {
++		struct energy_env eenv = {
++			.usage_delta	= task_utilization(p),
++			.src_cpu	= task_cpu(p),
++			.dst_cpu	= target_cpu,
++		};
++
++		/* Not enough spare capacity on previous cpu */
++		if (cpu_overutilized(task_cpu(p)))
++			return target_cpu;
++
++		if (energy_diff(&eenv) >= 0)
++			return task_cpu(p);
++	}
++
++	return target_cpu;
++}
++
+ /*
+  * select_task_rq_fair: Select target runqueue for the waking task in domains
+  * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
+@@ -5479,7 +5559,10 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
+ 		prev_cpu = cpu;
  
- 	if (this_rq->avg_idle < sysctl_sched_migration_cost ||
--	    !this_rq->rd->overload) {
-+	    (!energy_aware() && !this_rq->rd->overload) ||
-+	    (energy_aware() && !this_rq->rd->overutilized)) {
- 		rcu_read_lock();
- 		sd = rcu_dereference_check_sched_domain(this_rq->sd);
- 		if (sd)
+ 	if (sd_flag & SD_BALANCE_WAKE && want_sibling) {
+-		new_cpu = select_idle_sibling(p, prev_cpu);
++		if (energy_aware() && !cpu_rq(cpu)->rd->overutilized)
++			new_cpu = energy_aware_wake_cpu(p, prev_cpu);
++		else
++			new_cpu = select_idle_sibling(p, prev_cpu);
+ 		goto unlock;
+ 	}
+ 
 -- 
 1.9.1
 
