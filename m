@@ -1,13 +1,13 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 40/46] sched/cpufreq_sched: compute freq_new based on capacity_orig_of()
-Date: Tue,  7 Jul 2015 19:24:23 +0100
-Message-ID: <1436293469-25707-41-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 44/46] sched/fair: jump to max OPP when crossing UP threshold
+Date: Tue,  7 Jul 2015 19:24:27 +0100
+Message-ID: <1436293469-25707-45-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37719 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:37762 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932973AbbGGSXn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 14:23:43 -0400
+	id S933004AbbGGSXy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Jul 2015 14:23:54 -0400
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -16,62 +16,50 @@ Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Die
 
 From: Juri Lelli <juri.lelli@arm.com>
 
-capacity is both cpu and freq scaled with EAS. We thus need to compute
-freq_new using capacity_orig_of(), so that we properly scale back the thing
-on heterogeneous architectures. In fact, capacity_orig_of() returns only
-the cpu scaled part of capacity (see update_cpu_capacity()). So, to scale
-freq_new correctly, we multiply policy->max by capacity/capacity_orig_of()
-instead of capacity/1024.
+Since the true utilization of a long running task is not detectable while
+it is running and might be bigger than the current cpu capacity, create the
+maximum cpu capacity head room by requesting the maximum cpu capacity once
+the cpu usage plus the capacity margin exceeds the current capacity. This
+is also done to try to harm the performance of a task the least.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
- kernel/sched/cpufreq_sched.c | 2 +-
- kernel/sched/fair.c          | 2 +-
- kernel/sched/sched.h         | 2 ++
- 3 files changed, 4 insertions(+), 2 deletions(-)
+ kernel/sched/fair.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/kernel/sched/cpufreq_sched.c b/kernel/sched/cpufreq_sched.c
-index 2968f3a..7071528 100644
---- a/kernel/sched/cpufreq_sched.c
-+++ b/kernel/sched/cpufreq_sched.c
-@@ -184,7 +184,7 @@ void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
- 		goto out;
- 
- 	/* Convert the new maximum capacity request into a cpu frequency */
--	freq_new = capacity * policy->max >> SCHED_CAPACITY_SHIFT;
-+	freq_new = (capacity * policy->max) / capacity_orig_of(cpu);
- 
- 	/* No change in frequency? Bail and return current capacity. */
- 	if (freq_new == policy->cur)
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index d395bc9..f74e9d2 100644
+index 323331f..c2d6de4 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -4625,7 +4625,7 @@ static unsigned long capacity_of(int cpu)
- 	return cpu_rq(cpu)->cpu_capacity;
- }
+@@ -8586,6 +8586,25 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
  
--static unsigned long capacity_orig_of(int cpu)
-+unsigned long capacity_orig_of(int cpu)
- {
- 	return cpu_rq(cpu)->cpu_capacity_orig;
- }
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index b5e27d9..1327dc7 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -1476,6 +1476,8 @@ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
- }
- #endif
- 
-+unsigned long capacity_orig_of(int cpu);
+ 	if (!rq->rd->overutilized && cpu_overutilized(task_cpu(curr)))
+ 		rq->rd->overutilized = true;
 +
- extern struct static_key __sched_energy_freq;
- static inline bool sched_energy_freq(void)
- {
++	/*
++	 * To make free room for a task that is building up its "real"
++	 * utilization and to harm its performance the least, request a
++	 * jump to max OPP as soon as get_cpu_usage() crosses the UP
++	 * threshold. The UP threshold is built relative to the current
++	 * capacity (OPP), by using same margin used to tell if a cpu
++	 * is overutilized (capacity_margin).
++	 */
++	if (sched_energy_freq()) {
++		int cpu = cpu_of(rq);
++		unsigned long capacity_orig = capacity_orig_of(cpu);
++		unsigned long capacity_curr = capacity_curr_of(cpu);
++
++		if (capacity_curr < capacity_orig &&
++		    (capacity_curr * SCHED_LOAD_SCALE) <
++		    (get_cpu_usage(cpu) * capacity_margin))
++			cpufreq_sched_set_cap(cpu, capacity_orig);
++	}
+ }
+ 
+ /*
 -- 
 1.9.1
 
