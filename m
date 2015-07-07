@@ -1,49 +1,76 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Tue, 7 Jul 2015 11:03:20 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1507071058000.1692-100000@iolanthe.rowland.org>
-References: <1436279906.2658.4.camel@suse.de>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v4 3/8] clk: add support for clocks provided by SCP(System
+ Control Processor)
+Date: Tue, 07 Jul 2015 17:03:36 +0100
+Message-ID: <559BF858.1020301@arm.com>
+References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com> <1433760002-24120-4-git-send-email-sudeep.holla@arm.com> <20150702172310.GF4301@codeaurora.org> <5596A1B6.8020307@arm.com> <559ADC94.4080505@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:33405 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932360AbbGGPDV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 11:03:21 -0400
-In-Reply-To: <1436279906.2658.4.camel@suse.de>
+Received: from foss.arm.com ([217.140.101.70]:36568 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752916AbbGGQDk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Jul 2015 12:03:40 -0400
+In-Reply-To: <559ADC94.4080505@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dave Chinner <david@fromorbit.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@linaro.org>
 
-On Tue, 7 Jul 2015, Oliver Neukum wrote:
 
-> > he (or she) pulls the storage device out of the system, moves it to another
-> > system, makes changes (say removes the file written to by the process above,
-> > so the blocks previously occupied by that file are now used for some metadata)
-> > and moves the storage back to the suspended system.  The system is resumed
-> > and the writing process continues writing possibly to the wrong blocks and
-> > corrupts the filesystem.
-> 
-> That is a tough nut. But that's not a reason to make it worse.
-> I'd say there's no reason not to use a secondary interface to
-> suspend without syncing or to extend or introduce such an interface
-> if the API is deficient.
 
-Indeed, the problem Rafael outlined always exists whether or not the
-kernel does a sync.  Even if no I/O is in progress when the system goes
-to sleep, if the user moves a portable storage device with a mounted
-filesystem to another computer and updates it before waking the system
-up, corruption is highly likely.
+On 06/07/15 20:52, Stephen Boyd wrote:
+> On 07/03/2015 07:52 AM, Sudeep Holla wrote:
+>> Hi Stephen,
+>>
+>>
+>> Thanks for the review.
+>>
+>> On 02/07/15 18:23, Stephen Boyd wrote:
+>>> On 06/08, Sudeep Holla wrote:
 
-In principle this could be solved by adding suspend/resume callbacks to
-filesystems.  For example, the resume callback could verify that the
-superblock had not been changed since the suspend occurred.  Or there 
-could be some other simple way of determining that the filesystem had 
-not been remounted and changed.
+[...]
 
-Either way, this is irrelevant to the question of whether the kernel 
-should issue a sync when suspending.
+>>>> +
+>>>> +    clk = devm_clk_register(dev, &sclk->hw);
+>>>> +    if (!IS_ERR(clk) && max)
+>>>> +        clk_set_rate_range(clk, min, max);
+>>>
+>>> Hm.. we're planning to make clk_register() return a struct
+>>> clk_hw, so this will block that. We need some sort of clk_hw API
+>>> that allows us to setup min/max limits on the clock from the
+>>> provider side. Care to add that?
+>>>
+>>
+>> Can you provide pointer to the patches or the tree containing those
+>> changes ? Are they targeted for v4.3 ?
+>>
+>
+> If I have time I may try to start doing the clk_register() conversion,
+> but it will take a while so I doubt it will be in v4.3. I'm asking if
+> you can add a clk_hw based API that does something like
+> clk_set_rate_range() without requiring a struct clk pointer. i.e.
+> clk_hw_set_rate_range(struct clk_hw *hw, min, max) that constraints the
+> min/max rate of the clock. This way, the driver is only using clk
+> provider APIs and not clk consumer APIs.
+>
 
-Alan Stern
+I understand the intention of separating clk provider helpers/APIs
+and clk consumer APIs. Since {min,max}_rate are part of struct clk
+itself, I was thinking that you would have moved it to struct clk_core
+as part of the rework you mentioned and hence asked about the patches.
 
+IIUC, if {min,max}_rate remain part of struct clk, then how are we
+restricting that operation to just the clk providers ? clk consumer
+can still directly modify or use clk_set_rate_range.
+
+Do we continue to provide that feature for both provider and consumer ?
+If so I assume {min,max}_rate range requested by consumer should be
+within the limits set by provider and do we maintain both the limits ?
+
+Sorry if I am missing something fundamental since I don't have much
+knowledge of clk layer internals.
+
+Regards,
+Sudeep
