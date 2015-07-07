@@ -1,13 +1,13 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 33/46] sched: Consider a not over-utilized energy-aware system as balanced
-Date: Tue,  7 Jul 2015 19:24:16 +0100
-Message-ID: <1436293469-25707-34-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 34/46] sched: Enable idle balance to pull single task towards cpu with higher capacity
+Date: Tue,  7 Jul 2015 19:24:17 +0100
+Message-ID: <1436293469-25707-35-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37637 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:37647 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932937AbbGGSXY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 14:23:24 -0400
+	id S932942AbbGGSX1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Jul 2015 14:23:27 -0400
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -16,44 +16,51 @@ Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Die
 
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-In case the system operates below the tipping point indicator,
-introduced in ("sched: Add over-utilization/tipping point
-indicator"), bail out in find_busiest_group after the dst and src
-group statistics have been checked.
+We do not want to miss out on the ability to pull a single remaining
+task from a potential source cpu towards an idle destination cpu if the
+energy aware system operates above the tipping point.
 
-There is simply no need to move usage around because all involved
-cpus still have spare cycles available.
+Add an extra criteria to need_active_balance() to kick off active load
+balance if the source cpu is over-utilized and has lower capacity than
+the destination cpu.
 
-For an energy-aware system below its tipping point,  we rely on the
-task placement of the wakeup path. This works well for short running
-tasks.
+cc: Ingo Molnar <mingo@redhat.com>
+cc: Peter Zijlstra <peterz@infradead.org>
 
-The existence of long running tasks on one of the involved cpus lets
-the system operate over its tipping point. To be able to move such
-a task (whose load can't be used to average the load among the cpus)
-from a src cpu with lower capacity than the dst_cpu, an additional
-rule has to be implemented in need_active_balance.
-
+Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- kernel/sched/fair.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ kernel/sched/fair.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 01f7337..48ecf02 100644
+index 48ecf02..97eb83e 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -7382,6 +7382,10 @@ static struct sched_group *find_busiest_group(struct lb_env *env)
- 	 * this level.
- 	 */
- 	update_sd_lb_stats(env, &sds);
-+
-+	if (energy_aware() && !env->dst_rq->rd->overutilized)
-+		goto out_balanced;
-+
- 	local = &sds.local_stat;
- 	busiest = &sds.busiest_stat;
+@@ -7569,6 +7569,13 @@ static int need_active_balance(struct lb_env *env)
+ 			return 1;
+ 	}
  
++	if ((capacity_of(env->src_cpu) < capacity_of(env->dst_cpu)) &&
++				env->src_rq->cfs.h_nr_running == 1 &&
++				cpu_overutilized(env->src_cpu) &&
++				!cpu_overutilized(env->dst_cpu)) {
++			return 1;
++	}
++
+ 	return unlikely(sd->nr_balance_failed > sd->cache_nice_tries+2);
+ }
+ 
+@@ -7923,7 +7930,8 @@ static int idle_balance(struct rq *this_rq)
+ 	this_rq->idle_stamp = rq_clock(this_rq);
+ 
+ 	if (this_rq->avg_idle < sysctl_sched_migration_cost ||
+-	    !this_rq->rd->overload) {
++	    (!energy_aware() && !this_rq->rd->overload) ||
++	    (energy_aware() && !this_rq->rd->overutilized)) {
+ 		rcu_read_lock();
+ 		sd = rcu_dereference_check_sched_domain(this_rq->sd);
+ 		if (sd)
 -- 
 1.9.1
 
