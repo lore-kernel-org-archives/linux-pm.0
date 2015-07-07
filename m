@@ -1,205 +1,90 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 30/46] sched: Add cpu capacity awareness to wakeup balancing
-Date: Tue,  7 Jul 2015 19:24:13 +0100
-Message-ID: <1436293469-25707-31-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 29/46] sched: Determine the current sched_group idle-state
+Date: Tue,  7 Jul 2015 19:24:12 +0100
+Message-ID: <1436293469-25707-30-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37608 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:37599 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932286AbbGGSXQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 14:23:16 -0400
+	id S932913AbbGGSXO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Jul 2015 14:23:14 -0400
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com
-Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-Wakeup balancing is completely unaware of cpu capacity, cpu usage and
-task utilization. The task is preferably placed on a cpu which is idle
-in the instant the wakeup happens. New tasks (SD_BALANCE_{FORK,EXEC} are
-placed on an idle cpu in the idlest group if such can be found, otherwise
-it goes on the least loaded one. Existing tasks (SD_BALANCE_WAKE) are
-placed on the previous cpu or an idle cpu sharing the same last level
-cache. Hence existing tasks don't get a chance to migrate to a different
-group at wakeup in case the current one has reduced cpu capacity (due
-RT/IRQ pressure or different uarch e.g. ARM big.LITTLE). They may
-eventually get pulled by other cpus doing periodic/idle/nohz_idle
-balance, but it may take quite a while before it happens.
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 
-This patch adds capacity awareness to find_idlest_{group,queue} (used by
-SD_BALANCE_{FORK,EXEC}) such that groups/cpus that can accommodate the
-waking task based on task utilization are preferred. In addition, wakeup
-of existing tasks (SD_BALANCE_WAKE) is sent through
-find_idlest_{group,queue} if the task doesn't fit the capacity of the
-previous cpu to allow it to escape (override wake_affine) when
-necessary instead of relying on periodic/idle/nohz_idle balance to
-eventually sort it out.
-
-The patch doesn't depend on any energy model infrastructure, but it is
-kept behind the energy_aware() static key despite being primarily a
-performance optimization as it may increase scheduler overhead slightly.
+To estimate the energy consumption of a sched_group in
+sched_group_energy() it is necessary to know which idle-state the group
+is in when it is idle. For now, it is assumed that this is the current
+idle-state (though it might be wrong). Based on the individual cpu
+idle-states group_idle_state() finds the group idle-state.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
+Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 ---
- kernel/sched/core.c |  2 +-
- kernel/sched/fair.c | 69 +++++++++++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 66 insertions(+), 5 deletions(-)
+ kernel/sched/fair.c | 27 +++++++++++++++++++++++----
+ 1 file changed, 23 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index c13fa9c..a41bb32 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -6330,7 +6330,7 @@ sd_init(struct sched_domain_topology_level *tl, int cpu)
- 					| 1*SD_BALANCE_NEWIDLE
- 					| 1*SD_BALANCE_EXEC
- 					| 1*SD_BALANCE_FORK
--					| 0*SD_BALANCE_WAKE
-+					| 1*SD_BALANCE_WAKE
- 					| 1*SD_WAKE_AFFINE
- 					| 0*SD_SHARE_CPUCAPACITY
- 					| 0*SD_SHARE_PKG_RESOURCES
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index a134028..b0294f0 100644
+index 99e43ee..a134028 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -5205,6 +5205,39 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p, int sync)
- 	return 1;
+@@ -4966,6 +4966,22 @@ static bool cpu_overutilized(int cpu)
+ 				(get_cpu_usage(cpu) * capacity_margin);
  }
  
-+static inline unsigned long task_utilization(struct task_struct *p)
++static int group_idle_state(struct sched_group *sg)
 +{
-+	return p->se.avg.utilization_avg_contrib;
-+}
++	int i, state = INT_MAX;
 +
-+static inline bool __task_fits(struct task_struct *p, int cpu, int usage)
-+{
-+	unsigned long capacity = capacity_of(cpu);
++	/* Find the shallowest idle state in the sched group. */
++	for_each_cpu(i, sched_group_cpus(sg))
++		state = min(state, idle_get_state_idx(cpu_rq(i)));
 +
-+	usage += task_utilization(p);
++	/* Transform system into sched domain idle state. */
++	if (sg->sge->nr_idle_states_below > 1)
++		state -= sg->sge->nr_idle_states_below - 1;
 +
-+	return (capacity * 1024) > (usage * capacity_margin);
-+}
-+
-+static inline bool task_fits_capacity(struct task_struct *p, int cpu)
-+{
-+	unsigned long capacity = capacity_of(cpu);
-+	unsigned long max_capacity = cpu_rq(cpu)->rd->max_cpu_capacity;
-+
-+	if (capacity == max_capacity)
-+		return true;
-+
-+	if (capacity * capacity_margin > max_capacity * 1024)
-+		return true;
-+
-+	return __task_fits(p, cpu, 0);
-+}
-+
-+static inline bool task_fits_cpu(struct task_struct *p, int cpu)
-+{
-+	return __task_fits(p, cpu, get_cpu_usage(cpu));
++	/* Clamp state to the range of sched domain idle states. */
++	return clamp_t(int, state, 0, sg->sge->nr_idle_states - 1);
 +}
 +
  /*
-  * find_idlest_group finds and returns the least busy CPU group within the
-  * domain.
-@@ -5214,7 +5247,9 @@ find_idlest_group(struct sched_domain *sd, struct task_struct *p,
- 		  int this_cpu, int sd_flag)
- {
- 	struct sched_group *idlest = NULL, *group = sd->groups;
-+	struct sched_group *fit_group = NULL;
- 	unsigned long min_load = ULONG_MAX, this_load = 0;
-+	unsigned long fit_capacity = ULONG_MAX;
- 	int load_idx = sd->forkexec_idx;
- 	int imbalance = 100 + (sd->imbalance_pct-100)/2;
+  * sched_group_energy(): Returns absolute energy consumption of cpus belonging
+  * to the sched_group including shared resources shared only by members of the
+@@ -5008,7 +5024,8 @@ static unsigned int sched_group_energy(struct energy_env *eenv)
  
-@@ -5245,6 +5280,16 @@ find_idlest_group(struct sched_domain *sd, struct task_struct *p,
- 				load = target_load(i, load_idx);
+ 			do {
+ 				unsigned long group_util;
+-				int sg_busy_energy, sg_idle_energy, cap_idx;
++				int sg_busy_energy, sg_idle_energy;
++				int cap_idx, idle_idx;
  
- 			avg_load += load;
-+
-+			/*
-+			 * Look for most energy-efficient group that can fit
-+			 * that can fit the task.
-+			 */
-+			if (energy_aware() && capacity_of(i) < fit_capacity &&
-+			    task_fits_cpu(p, i)) {
-+				fit_capacity = capacity_of(i);
-+				fit_group = group;
-+			}
- 		}
+ 				if (sg_shared_cap && sg_shared_cap->group_weight >= sg->group_weight)
+ 					eenv->sg_cap = sg_shared_cap;
+@@ -5016,11 +5033,13 @@ static unsigned int sched_group_energy(struct energy_env *eenv)
+ 					eenv->sg_cap = sg;
  
- 		/* Adjust by relative CPU capacity of the group */
-@@ -5258,6 +5303,9 @@ find_idlest_group(struct sched_domain *sd, struct task_struct *p,
- 		}
- 	} while (group = group->next, group != sd->groups);
+ 				cap_idx = find_new_capacity(eenv, sg->sge);
++				idle_idx = group_idle_state(sg);
+ 				group_util = group_norm_usage(eenv, sg);
+ 				sg_busy_energy = (group_util * sg->sge->cap_states[cap_idx].power)
+-										>> SCHED_CAPACITY_SHIFT;
+-				sg_idle_energy = ((SCHED_LOAD_SCALE-group_util) * sg->sge->idle_states[0].power)
+-										>> SCHED_CAPACITY_SHIFT;
++								>> SCHED_CAPACITY_SHIFT;
++				sg_idle_energy = ((SCHED_LOAD_SCALE-group_util)
++								* sg->sge->idle_states[idle_idx].power)
++								>> SCHED_CAPACITY_SHIFT;
  
-+	if (fit_group)
-+		return fit_group;
-+
- 	if (!idlest || 100*this_load < imbalance*min_load)
- 		return NULL;
- 	return idlest;
-@@ -5278,7 +5326,7 @@ find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
+ 				total_energy += sg_busy_energy + sg_idle_energy;
  
- 	/* Traverse only the allowed CPUs */
- 	for_each_cpu_and(i, sched_group_cpus(group), tsk_cpus_allowed(p)) {
--		if (idle_cpu(i)) {
-+		if (task_fits_cpu(p, i)) {
- 			struct rq *rq = cpu_rq(i);
- 			struct cpuidle_state *idle = idle_get_state(rq);
- 			if (idle && idle->exit_latency < min_exit_latency) {
-@@ -5290,7 +5338,8 @@ find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
- 				min_exit_latency = idle->exit_latency;
- 				latest_idle_timestamp = rq->idle_stamp;
- 				shallowest_idle_cpu = i;
--			} else if ((!idle || idle->exit_latency == min_exit_latency) &&
-+			} else if (idle_cpu(i) &&
-+				   (!idle || idle->exit_latency == min_exit_latency) &&
- 				   rq->idle_stamp > latest_idle_timestamp) {
- 				/*
- 				 * If equal or no active idle state, then
-@@ -5299,6 +5348,13 @@ find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
- 				 */
- 				latest_idle_timestamp = rq->idle_stamp;
- 				shallowest_idle_cpu = i;
-+			} else if (shallowest_idle_cpu == -1) {
-+				/*
-+				 * If we haven't found an idle CPU yet
-+				 * pick a non-idle one that can fit the task as
-+				 * fallback.
-+				 */
-+				shallowest_idle_cpu = i;
- 			}
- 		} else if (shallowest_idle_cpu == -1) {
- 			load = weighted_cpuload(i);
-@@ -5376,9 +5432,14 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
- 	int cpu = smp_processor_id();
- 	int new_cpu = cpu;
- 	int want_affine = 0;
-+	int want_sibling = true;
- 	int sync = wake_flags & WF_SYNC;
- 
--	if (sd_flag & SD_BALANCE_WAKE)
-+	/* Check if prev_cpu can fit us ignoring its current usage */
-+	if (energy_aware() && !task_fits_capacity(p, prev_cpu))
-+		want_sibling = false;
-+
-+	if (sd_flag & SD_BALANCE_WAKE && want_sibling)
- 		want_affine = cpumask_test_cpu(cpu, tsk_cpus_allowed(p));
- 
- 	rcu_read_lock();
-@@ -5403,7 +5464,7 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
- 	if (affine_sd && cpu != prev_cpu && wake_affine(affine_sd, p, sync))
- 		prev_cpu = cpu;
- 
--	if (sd_flag & SD_BALANCE_WAKE) {
-+	if (sd_flag & SD_BALANCE_WAKE && want_sibling) {
- 		new_cpu = select_idle_sibling(p, prev_cpu);
- 		goto unlock;
- 	}
 -- 
 1.9.1
 
