@@ -1,66 +1,69 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH] base: power: wakeirq: don't leak dev->power.wakeirq
-Date: Tue, 7 Jul 2015 00:40:53 -0700
-Message-ID: <20150707074053.GO10705@atomide.com>
-References: <1436205678-31640-1-git-send-email-balbi@ti.com>
- <2783932.o7RC7vMDHB@vostro.rjw.lan>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH] thermal: cpu_cooling: Iterate over all CPUs in clip_cpu
+ mask to get frequency table
+Date: Tue, 7 Jul 2015 08:52:20 +0100
+Message-ID: <20150707075220.GA2817@e104805>
+References: <1435723647-3354-1-git-send-email-pi-cheng.chen@linaro.org>
+ <1435723994-3882-1-git-send-email-pi-cheng.chen@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:33524 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751060AbbGGHk5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jul 2015 03:40:57 -0400
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:46521 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751036AbbGGHxt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 03:53:49 -0400
 Content-Disposition: inline
-In-Reply-To: <2783932.o7RC7vMDHB@vostro.rjw.lan>
+In-Reply-To: <1435723994-3882-1-git-send-email-pi-cheng.chen@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Felipe Balbi <balbi@ti.com>, linux-pm@vger.kernel.org, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-* Rafael J. Wysocki <rjw@rjwysocki.net> [150706 15:49]:
-> On Monday, July 06, 2015 01:01:18 PM Felipe Balbi wrote:
-> > on a first call to dev_pm_attach_wake_irq(), if it
-> > fails, it will leave dev->power.wakeirq set to a
-> > dangling pointer. Instead, let's clear it to make
-> > sure a subsequent call to dev_pm_attach_wake_irq()
-> > has chance to succeed.
-> > 
-> > Cc: Tony Lindgren <tmlind@atomide.com>
-> > Signed-off-by: Felipe Balbi <balbi@ti.com>
-> > ---
-> >  drivers/base/power/wakeirq.c | 9 ++++++++-
-> >  1 file changed, 8 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
-> > index 7470004ca810..394d250a1ad8 100644
-> > --- a/drivers/base/power/wakeirq.c
-> > +++ b/drivers/base/power/wakeirq.c
-> > @@ -50,9 +50,16 @@ static int dev_pm_attach_wake_irq(struct device *dev, int irq,
-> >  
-> >  	err = device_wakeup_attach_irq(dev, wirq);
-> >  	if (err)
-> > -		return err;
-> > +		goto err_cleanup;
-> >  
-> >  	return 0;
-> > +
-> > +err_cleanup:
-> > +	spin_lock_irqsave(&dev->power.lock, flags);
-> > +	dev->power.wakeirq = NULL;
-> > +	spin_unlock_irqrestore(&dev->power.lock, flags);
-> > +
-> > +	return err;
-> >  }
+On Wed, Jul 01, 2015 at 05:13:14AM +0100, Pi-Cheng Chen wrote:
+> Sorry for the mistake I made when cherry-picking the patch. Fix and resend
+> again.
 > 
-> Too many labels for me and the fact that acquiring of the lock again in the error
-> patch doesn't look good.
+> __cpufreq_cooling_register() might fail if some CPU other than first one in
+> clip_cpu mask is present earlier e.g. CPU hotplug. Iterate all CPUs in the mask
+> to handle this case.
 > 
-> However, we can do the entire device_wakeup_attach_irq() under the lock (after
-> removing the locking from it), because we're its only caller.
-> 
-> So what about the below instead (build-tested only)?
+> Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
 
-Nice, still works for me and simplifies things:
+Looks good to me.  FWIW,
 
-Tested-by: Tony Lindgren <tony@atomide.com>
+Acked-by: Javi Merino <javi.merino@arm.com>
+
+> ---
+>  drivers/thermal/cpu_cooling.c | 9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 6509c61..5e90eb6 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -776,9 +776,14 @@ __cpufreq_cooling_register(struct device_node *np,
+>  	char dev_name[THERMAL_NAME_LENGTH];
+>  	struct cpufreq_frequency_table *pos, *table;
+>  	unsigned int freq, i, num_cpus;
+> -	int ret;
+> +	int ret, cpu;
+> +
+> +	for_each_cpu(cpu, clip_cpus) {
+> +		table = cpufreq_frequency_get_table(cpu);
+> +		if (table)
+> +			break;
+> +	}
+>  
+> -	table = cpufreq_frequency_get_table(cpumask_first(clip_cpus));
+>  	if (!table) {
+>  		pr_debug("%s: CPUFreq table not found\n", __func__);
+>  		return ERR_PTR(-EPROBE_DEFER);
+> -- 
+> 1.9.1
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> 
