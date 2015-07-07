@@ -1,7 +1,7 @@
 From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: [RFCv5 PATCH 20/46] sched: Relocated get_cpu_usage() and change return type
-Date: Tue,  7 Jul 2015 19:24:03 +0100
-Message-ID: <1436293469-25707-21-git-send-email-morten.rasmussen@arm.com>
+Subject: [RFCv5 PATCH 21/46] sched: Highest energy aware balancing sched_domain level pointer
+Date: Tue,  7 Jul 2015 19:24:04 +0100
+Message-ID: <1436293469-25707-22-git-send-email-morten.rasmussen@arm.com>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
@@ -10,114 +10,71 @@ To: peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Move get_cpu_usage() to an earlier position in fair.c and change return
-type to unsigned long as negative usage doesn't make much sense. All
-other load and capacity related functions use unsigned long including
-the caller of get_cpu_usage().
+Add another member to the family of per-cpu sched_domain shortcut
+pointers. This one, sd_ea, points to the highest level at which energy
+model is provided. At this level and all levels below all sched_groups
+have energy model data attached.
+
+Partial energy model information is possible but restricted to providing
+energy model data for lower level sched_domains (sd_ea and below) and
+leaving load-balancing on levels above to non-energy-aware
+load-balancing. For example, it is possible to apply energy-aware
+scheduling within each socket on a multi-socket system and let normal
+scheduling handle load-balancing between sockets.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 
 Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
 ---
- kernel/sched/fair.c | 78 ++++++++++++++++++++++++++---------------------------
- 1 file changed, 39 insertions(+), 39 deletions(-)
+ kernel/sched/core.c  | 11 ++++++++++-
+ kernel/sched/sched.h |  1 +
+ 2 files changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 70f81fc..78d3081 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -4802,6 +4802,45 @@ static unsigned long capacity_curr_of(int cpu)
- 	       >> SCHED_CAPACITY_SHIFT;
- }
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index b70a5a7..c7fdd07 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -5785,11 +5785,12 @@ DEFINE_PER_CPU(int, sd_llc_id);
+ DEFINE_PER_CPU(struct sched_domain *, sd_numa);
+ DEFINE_PER_CPU(struct sched_domain *, sd_busy);
+ DEFINE_PER_CPU(struct sched_domain *, sd_asym);
++DEFINE_PER_CPU(struct sched_domain *, sd_ea);
  
-+/*
-+ * get_cpu_usage returns the amount of capacity of a CPU that is used by CFS
-+ * tasks. The unit of the return value must be the one of capacity so we can
-+ * compare the usage with the capacity of the CPU that is available for CFS
-+ * task (ie cpu_capacity).
-+ *
-+ * cfs.utilization_load_avg is the sum of running time of runnable tasks on a
-+ * CPU. It represents the amount of utilization of a CPU in the range
-+ * [0..capacity_orig] where capacity_orig is the cpu_capacity available at the
-+ * highest frequency (arch_scale_freq_capacity()). The usage of a CPU converges
-+ * towards a sum equal to or less than the current capacity (capacity_curr <=
-+ * capacity_orig) of the CPU because it is the running time on this CPU scaled
-+ * by capacity_curr. Nevertheless, cfs.utilization_load_avg can be higher than
-+ * capacity_curr or even higher than capacity_orig because of unfortunate
-+ * rounding in avg_period and running_load_avg or just after migrating tasks
-+ * (and new task wakeups) until the average stabilizes with the new running
-+ * time. We need to check that the usage stays into the range
-+ * [0..capacity_orig] and cap if necessary. Without capping the usage, a group
-+ * could be seen as overloaded (CPU0 usage at 121% + CPU1 usage at 80%) whereas
-+ * CPU1 has 20% of available capacity. We allow usage to overshoot
-+ * capacity_curr (but not capacity_orig) as it useful for predicting the
-+ * capacity required after task migrations (scheduler-driven DVFS).
-+ */
-+
-+static unsigned long get_cpu_usage(int cpu)
-+{
-+	int sum;
-+	unsigned long usage = cpu_rq(cpu)->cfs.utilization_load_avg;
-+	unsigned long blocked = cpu_rq(cpu)->cfs.utilization_blocked_avg;
-+	unsigned long capacity_orig = capacity_orig_of(cpu);
-+
-+	sum = usage + blocked;
-+
-+	if (sum >= capacity_orig)
-+		return capacity_orig;
-+
-+	return sum;
-+}
-+
- static inline bool energy_aware(void)
+ static void update_top_cache_domain(int cpu)
  {
- 	return sched_feat(ENERGY_AWARE);
-@@ -5055,45 +5094,6 @@ static int select_idle_sibling(struct task_struct *p, int target)
+ 	struct sched_domain *sd;
+-	struct sched_domain *busy_sd = NULL;
++	struct sched_domain *busy_sd = NULL, *ea_sd = NULL;
+ 	int id = cpu;
+ 	int size = 1;
+ 
+@@ -5810,6 +5811,14 @@ static void update_top_cache_domain(int cpu)
+ 
+ 	sd = highest_flag_domain(cpu, SD_ASYM_PACKING);
+ 	rcu_assign_pointer(per_cpu(sd_asym, cpu), sd);
++
++	for_each_domain(cpu, sd) {
++		if (sd->groups->sge)
++			ea_sd = sd;
++		else
++			break;
++	}
++	rcu_assign_pointer(per_cpu(sd_ea, cpu), ea_sd);
  }
  
  /*
-- * get_cpu_usage returns the amount of capacity of a CPU that is used by CFS
-- * tasks. The unit of the return value must be the one of capacity so we can
-- * compare the usage with the capacity of the CPU that is available for CFS
-- * task (ie cpu_capacity).
-- *
-- * cfs.utilization_load_avg is the sum of running time of runnable tasks on a
-- * CPU. It represents the amount of utilization of a CPU in the range
-- * [0..capacity_orig] where capacity_orig is the cpu_capacity available at the
-- * highest frequency (arch_scale_freq_capacity()). The usage of a CPU converges
-- * towards a sum equal to or less than the current capacity (capacity_curr <=
-- * capacity_orig) of the CPU because it is the running time on this CPU scaled
-- * by capacity_curr. Nevertheless, cfs.utilization_load_avg can be higher than
-- * capacity_curr or even higher than capacity_orig because of unfortunate
-- * rounding in avg_period and running_load_avg or just after migrating tasks
-- * (and new task wakeups) until the average stabilizes with the new running
-- * time. We need to check that the usage stays into the range
-- * [0..capacity_orig] and cap if necessary. Without capping the usage, a group
-- * could be seen as overloaded (CPU0 usage at 121% + CPU1 usage at 80%) whereas
-- * CPU1 has 20% of available capacity. We allow usage to overshoot
-- * capacity_curr (but not capacity_orig) as it useful for predicting the
-- * capacity required after task migrations (scheduler-driven DVFS).
-- */
--
--static int get_cpu_usage(int cpu)
--{
--	int sum;
--	unsigned long usage = cpu_rq(cpu)->cfs.utilization_load_avg;
--	unsigned long blocked = cpu_rq(cpu)->cfs.utilization_blocked_avg;
--	unsigned long capacity_orig = capacity_orig_of(cpu);
--
--	sum = usage + blocked;
--
--	if (sum >= capacity_orig)
--		return capacity_orig;
--
--	return sum;
--}
--
--/*
-  * select_task_rq_fair: Select target runqueue for the waking task in domains
-  * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
-  * SD_BALANCE_FORK, or SD_BALANCE_EXEC.
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index b9d7057..8a51692 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -829,6 +829,7 @@ DECLARE_PER_CPU(int, sd_llc_id);
+ DECLARE_PER_CPU(struct sched_domain *, sd_numa);
+ DECLARE_PER_CPU(struct sched_domain *, sd_busy);
+ DECLARE_PER_CPU(struct sched_domain *, sd_asym);
++DECLARE_PER_CPU(struct sched_domain *, sd_ea);
+ 
+ struct sched_group_capacity {
+ 	atomic_t ref;
 -- 
 1.9.1
