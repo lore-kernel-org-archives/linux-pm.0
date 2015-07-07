@@ -1,75 +1,105 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] base: power: wakeirq: don't leak dev->power.wakeirq
-Date: Tue, 7 Jul 2015 13:11:28 +0200
-Message-ID: <CAJZ5v0jRaoTzLbCpgLoag0BvcQWCMc+Do9M=ajkM6+sGJRVE7A@mail.gmail.com>
-References: <1436205678-31640-1-git-send-email-balbi@ti.com>
-	<2783932.o7RC7vMDHB@vostro.rjw.lan>
-	<20150707074053.GO10705@atomide.com>
-	<20150707081120.GA15545@saruman.tx.rr.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Tue, 07 Jul 2015 14:14:44 +0200
+Message-ID: <1652992.e7VOEWpWyZ@vostro.rjw.lan>
+References: <4290667.ZqInAykFGS@vostro.rjw.lan> <1595559.BsCkcDEfNB@vostro.rjw.lan> <20150707011756.GC3902@dastard>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150707081120.GA15545@saruman.tx.rr.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux ARM Kernel Mailing List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:55934 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752926AbbGGLsT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 07:48:19 -0400
+In-Reply-To: <20150707011756.GC3902@dastard>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dave Chinner <david@fromorbit.com>
+Cc: Len Brown <lenb@kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Alan Stern <stern@rowland.harvard.edu>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-On Tue, Jul 7, 2015 at 10:11 AM, Felipe Balbi <balbi@ti.com> wrote:
-> On Tue, Jul 07, 2015 at 12:40:53AM -0700, Tony Lindgren wrote:
->> * Rafael J. Wysocki <rjw@rjwysocki.net> [150706 15:49]:
->> > On Monday, July 06, 2015 01:01:18 PM Felipe Balbi wrote:
->> > > on a first call to dev_pm_attach_wake_irq(), if it
->> > > fails, it will leave dev->power.wakeirq set to a
->> > > dangling pointer. Instead, let's clear it to make
->> > > sure a subsequent call to dev_pm_attach_wake_irq()
->> > > has chance to succeed.
->> > >
->> > > Cc: Tony Lindgren <tmlind@atomide.com>
->> > > Signed-off-by: Felipe Balbi <balbi@ti.com>
->> > > ---
->> > >  drivers/base/power/wakeirq.c | 9 ++++++++-
->> > >  1 file changed, 8 insertions(+), 1 deletion(-)
->> > >
->> > > diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
->> > > index 7470004ca810..394d250a1ad8 100644
->> > > --- a/drivers/base/power/wakeirq.c
->> > > +++ b/drivers/base/power/wakeirq.c
->> > > @@ -50,9 +50,16 @@ static int dev_pm_attach_wake_irq(struct device *dev, int irq,
->> > >
->> > >   err = device_wakeup_attach_irq(dev, wirq);
->> > >   if (err)
->> > > -         return err;
->> > > +         goto err_cleanup;
->> > >
->> > >   return 0;
->> > > +
->> > > +err_cleanup:
->> > > + spin_lock_irqsave(&dev->power.lock, flags);
->> > > + dev->power.wakeirq = NULL;
->> > > + spin_unlock_irqrestore(&dev->power.lock, flags);
->> > > +
->> > > + return err;
->> > >  }
->> >
->> > Too many labels for me and the fact that acquiring of the lock again in the error
->> > patch doesn't look good.
->> >
->> > However, we can do the entire device_wakeup_attach_irq() under the lock (after
->> > removing the locking from it), because we're its only caller.
->> >
->> > So what about the below instead (build-tested only)?
->>
->> Nice, still works for me and simplifies things:
->>
->> Tested-by: Tony Lindgren <tony@atomide.com>
->
-> Cool, thanks for testing Tony. Rafael, I'm fine with your version too.
-> FWIW:
->
-> Reported-by: Felipe Balbi <balbi@ti.com>
+On Tuesday, July 07, 2015 11:17:56 AM Dave Chinner wrote:
+> On Mon, Jul 06, 2015 at 03:52:25PM +0200, Rafael J. Wysocki wrote:
+> > On Monday, July 06, 2015 10:06:14 AM Dave Chinner wrote:
+> > > On Sat, Jul 04, 2015 at 03:03:46AM +0200, Rafael J. Wysocki wrote:
+> > > > > No, your observation was that "sync is slow". Your *solution* is "we
+> > > > > need to remove sync".
+> > > > 
+> > > > Not only slow, but pointless too.  The argument goes: "It is slow and
+> > > > pointless and so it may be dropped."
+> > > > 
+> > > > Now, I can agree that it wasn't clearly demonstrated that the unconditional
+> > > > sys_sync() in the suspend code path was pointless, but it also has never
+> > > > been clearly shown why it is not pointless on systems that suspend and resume
+> > > > reliably.
+> > > 
+> > > I just gave you an example of why sync is needed: Suspend, pull out
+> > > USB drive when putting laptop in bag.
+> > 
+> > Exactly the same thing can happen while not suspended.  What does make suspend
+> > special with respect to that?
+> 
+> Stop being obtuse.
 
-OK, applied.
+Stop being rude.
 
-Thanks,
+> If you remember that you need to pull the USB
+> stick before you suspend, then you damn well remember to "safely
+> eject" the USB stick and that syncs, unmounts and flushes the drive
+> caches before telling you it is safe to pull the stick.
+
+All of that only means "the kernel needs to protect users from consequences
+of silly mistakes" which I'm not sure I agree with.
+
+For example, on desktop systems I use user space syncs filesystems before
+writing to /sys/power/state, so the additional sys_sync() in the kernel doesn't
+seem to serve any purpose.
+
+> > > > Moreover, question is if we really need to carry out the sync on *every*
+> > > > suspend even if it is not pointless overall.  That shouldn't really be
+> > > > necessary if we suspend and resume often enough or if we resume only for
+> > > > a while and then suspend again.  Maybe it should be rate limited somehow
+> > > > at least?
+> > > 
+> > > If you suspend and resume frequently, then the cost of the sync
+> > > shoul dbe negliable because the amount of data dirtied between
+> > > resume/suspend shoul dbe negliable. hence my questions about where
+> > > sync is spending too much time, and whether we've actually fixed
+> > > those problems or not. If sync speed on clean filesystems is a
+> > > problem then we need to fix sync, not work around it.
+> > 
+> > Well, say you never suspend, but you also only shut down the system when you
+> > need to replace the kernel on it.  How often would you invoke global sync on
+> > that system?
+> 
+> Never, because:
+> 
+> 	- the kernel does background writeback of dirty data so you
+> 	  don't need to run sync while the system is running; and
+
+OK, and that surely happens between suspend-resume cycles too, so why does
+the sync in the suspend code path make a difference, really (except for
+avoiding the consequences of possible user mistakes)?
+
+> 	- unmount during shutdown runs sync_filesystem() internally
+> 	  (just like sys_sync does) to ensure the filesystem is
+> 	  clean and no data is lost.
+
+And that still will be the case regardless of whether or not suspend is used.
+
+> Seriously, stop being making ignorant arguments to justify removing
+> sys_sync(). *If* there's a problem sys_sync() we need to *fix it*,
+> not ignore it.
+
+I'm not advocating for dropping the sys_sync().  I'd just have applied the Len's
+patch had I thought that had been the way to go.
+
+I'm not agreeing with your argumentation about why the sync is needed, though
+(except for the one point that removing it might uncover some latent bugs).
+
+For now, I've seen two arguments: the one about the possible latent bug (that
+I agree with) and the one about how users may be hurt if they unplug storage
+devices holding unmounted filesystems while suspended (which may be addressed
+by a sync in user space just fine).  Are there any other reasons?
+
 Rafael
+
