@@ -1,91 +1,84 @@
-From: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Subject: Re: Re: [PATCH v3 3/4] mfd: axp20x: Add a cell for the
- usb power_supply part of the axp20x PMICs
-Date: Tue, 7 Jul 2015 11:49:48 +0200
-Message-ID: <559BA0BC.9060409@redhat.com>
-References: <1435316357-26606-1-git-send-email-hdegoede@redhat.com>
- <1435316357-26606-3-git-send-email-hdegoede@redhat.com>
- <20150707070128.GI3182@x1>
-Reply-To: hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Tue, 7 Jul 2015 12:25:07 +0200
+Message-ID: <20150707102507.GA13811@amd>
+References: <Pine.LNX.4.44L0.1507041011510.19175-100000@netrider.rowland.org>
+ <2293886.L6VJGgjdDp@vostro.rjw.lan>
+ <20150706110645.GC381@amd>
+ <4932758.cYVny4lmZN@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDRZXY4CYYORBQOB52WAKGQE2ZKCPGI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-In-Reply-To: <20150707070128.GI3182@x1>
-List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <http://groups.google.com/group/linux-sunxi
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <http://groups.google.com/group/linux-sunxi/subscribe>
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37569 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756712AbbGGKZK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 06:25:10 -0400
+Content-Disposition: inline
+In-Reply-To: <4932758.cYVny4lmZN@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Dave Chinner <david@fromorbit.com>, Len Brown <lenb@kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 
-Hi,
+On Mon 2015-07-06 15:59:15, Rafael J. Wysocki wrote:
+> On Monday, July 06, 2015 01:06:45 PM Pavel Machek wrote:
+> > On Mon 2015-07-06 01:28:20, Rafael J. Wysocki wrote:
+> > > On Saturday, July 04, 2015 10:19:55 AM Alan Stern wrote:
+> > > > On Sat, 4 Jul 2015, Rafael J. Wysocki wrote:
+> > > > 
+> > > > > The only argument against dropping sys_sync() from the suspend code path
+> > > > > I've seen in this thread that I entirely agree with is that it may lead to
+> > > > > regressions, because we've done it practically forever and it may hide latent
+> > > > > bugs somewhere in block drivers etc.  Dropping it, though, is the only way
+> > > > > to see those bugs, if any, and if we want to ever fix them, we need to see
+> > > > > them.  That's why I think that it may be a good idea to allow people to
+> > > > > drop it if they are willing to accept some extra risk (via the kernel
+> > > > > command line, for example).
+> > > > 
+> > > > I'd be perfectly happy to have the sync selectable at runtime, one way 
+> > > > or another.  The three most reasonable options seem to be:
+> > > > 
+> > > > 	kernel command line
+> > > > 
+> > > > 	sysfs file
+> > > > 
+> > > > 	sysctl setting
+> > > > 
+> > > > The command line is less flexible (it can't be changed after booting).  
+> > > > Either of the other two would be fine with me.
+> > > 
+> > > We'll probably use a sysfs file (possibly plus a Kconfig option to set the
+> > > boot time default).
+> > 
+> > Android people can already do sync-less s2ram using existing
+> > interface. IMO they should just do it.
+> > 
+> > In any case, sysfs file + Kconfig is an overkill. We already have too
+> > many Kconfig options.
+> 
+> I don't think we can reach a general agreement on what's the *right* approach
+> with respect to the sys_sync() in the suspend code path, so the only way out
+> of this situation I can see is to make it configurable.
 
-On 07-07-15 09:01, Lee Jones wrote:
-> On Fri, 26 Jun 2015, Hans de Goede wrote:
->
->> Add a cell for the usb power_supply part of the axp20x PMICs.
->>
->> Note that this cell is only for the usb power_supply part and not the
->> ac-power / battery-charger / rtc-backup-bat-charger bits.
->>
->> Depending on the board each of those must be enabled / disabled separate=
-ly
->> in devicetree as most boards do not use all 4. So in dt each one needs i=
-ts
->> own child-node of the axp20x node. Another reason for using separate chi=
-ld
->> nodes for each is so that other devicetree nodes can have a power-supply
->> property with a phandle referencing a node representing a single
->> power-supply.
->>
->> The decision to use a separate devicetree node for each is reflected on
->> the kernel side by each getting its own mfd-cell / platform_device and
->> platform-driver.
->>
->> Note this commit also makes some whitespace changes to the intialization
->> of existing cells in axp20x_cells, these are pure whitespace changes,
->> functionally nothing changes.
->>
->> Cc: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
->> Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->> Signed-off-by: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
->> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
->> ---
->> Changes in v2:
->> -Use DEFINE_RES_IRQ_NAMED
->> -Change indentation of axp20x_cells initializers to avoid line wrapping
->> Changes in v3:
->> -Improve commit message
->> -Add Bruno's S-o-b
->> ---
->>   drivers/mfd/axp20x.c | 20 ++++++++++++++++----
->>   1 file changed, 16 insertions(+), 4 deletions(-)
->
-> For my own reference:
->    Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->
-> Are these two patches tied to any other in the set, or can I apply
-> them separately?
+So first: not having general agreement does not mean we should
+introduce Kconfig + sysfs file. Second: your proposal of "lets sync if
+runtime was shorter than xxx" is over complex, but at least should not
+need Kconfig support... Third: we have ioctl() based interface, and I
+guess android should use that one; it already has "s2ram without sync"
+method.
 
-You can apply them seperately, thanks.
+> > There's not a single Android phone supported by mainline
+> > kernel. I'm sure they have bigger problems than Android setting
+> > default sysfs values...
+> 
+> But perhaps we'd like to change that?
 
-I'm wondering who will take care of upstreaming the first patch of this
-set: "ARM: dts: Add binding documentation for AXP20x pmic usb power supply"
+We'd like to, but lets start with the real hard stuff (merging support
+for Qualcomm chipsets) that is 1000000 LoC+, not with trivial tweaks
+that would be 1-line change, but we pollute code with Kconfig+sysfs
+making it 100..
 
-If you can take that one too that would be great.
-
-Regards,
-
-Hans
-
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
