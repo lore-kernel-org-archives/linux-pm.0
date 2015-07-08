@@ -1,146 +1,117 @@
-From: Michael Turquette <mturquette@baylibre.com>
-Subject: Re: [RFCv5 PATCH 41/46] sched/fair: add triggers for OPP change requests
-Date: Wed, 08 Jul 2015 08:42:15 -0700
-Message-ID: <20150708154215.9112.98060@quantum>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-42-git-send-email-morten.rasmussen@arm.com>
+From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
+Subject: Re: [PATCH] power: bq27x00_battery: Destroy battery_id IDR on module exit
+Date: Wed, 8 Jul 2015 18:10:14 +0200
+Message-ID: <201507081810.14511@pali>
+References: <1436368700-30852-1-git-send-email-jthumshirn@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1436293469-25707-42-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>, peterz@infradead.org, mingo@redhat.com
-Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri Lelli <juri.lelli@arm.com>
+Content-Type: multipart/signed;
+  boundary="nextPart2696556.BqSSm5ePSW";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f180.google.com ([209.85.212.180]:33441 "EHLO
+	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758225AbbGHQKS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 12:10:18 -0400
+In-Reply-To: <1436368700-30852-1-git-send-email-jthumshirn@suse.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Johannes Thumshirn <jthumshirn@suse.de>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Juri,
+--nextPart2696556.BqSSm5ePSW
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-Quoting Morten Rasmussen (2015-07-07 11:24:24)
-> From: Juri Lelli <juri.lelli@arm.com>
-> 
-> Each time a task is {en,de}queued we might need to adapt the current
-> frequency to the new usage. Add triggers on {en,de}queue_task_fair() for
-> this purpose.  Only trigger a freq request if we are effectively waking up
-> or going to sleep.  Filter out load balancing related calls to reduce the
-> number of triggers.
-> 
-> cc: Ingo Molnar <mingo@redhat.com>
-> cc: Peter Zijlstra <peterz@infradead.org>
-> 
-> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+On Wednesday 08 July 2015 17:18:20 Johannes Thumshirn wrote:
+> Destroy battery_id IDR on module exit, reclaiming the allocated
+> memory.
+>=20
+> This was detected by the following semantic patch (written by Luis
+> Rodriguez <mcgrof@suse.com>)
+> <SmPL>
+> @ defines_module_init @
+> declarer name module_init, module_exit;
+> declarer name DEFINE_IDR;
+> identifier init;
+> @@
+>=20
+> module_init(init);
+>=20
+> @ defines_module_exit @
+> identifier exit;
+> @@
+>=20
+> module_exit(exit);
+>=20
+> @ declares_idr depends on defines_module_init && defines_module_exit
+> @ identifier idr;
+> @@
+>=20
+> DEFINE_IDR(idr);
+>=20
+> @ on_exit_calls_destroy depends on declares_idr &&
+> defines_module_exit @ identifier declares_idr.idr,
+> defines_module_exit.exit;
+> @@
+>=20
+> exit(void)
+> {
+>  ...
+>  idr_destroy(&idr);
+>  ...
+> }
+>=20
+> @ missing_module_idr_destroy depends on declares_idr &&
+> defines_module_exit && !on_exit_calls_destroy @ identifier
+> declares_idr.idr, defines_module_exit.exit;
+> @@
+>=20
+> exit(void)
+> {
+>  ...
+>  +idr_destroy(&idr);
+> }
+> </SmPL>
+>=20
+> Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
 > ---
->  kernel/sched/fair.c | 42 ++++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 40 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index f74e9d2..b8627c6 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -4281,7 +4281,10 @@ static inline void hrtick_update(struct rq *rq)
->  }
->  #endif
->  
-> +static unsigned int capacity_margin = 1280; /* ~20% margin */
-
-This is a 25% margin. Calling it ~20% is a bit misleading :)
-
-Should margin be scaled for cpus that do not have max capacity == 1024?
-In other words, should margin be dynamically calculated to be 20% of
-*this* cpu's max capacity?
-
-I'm imagining a corner case where a heterogeneous cpu system is set up
-in such a way that adding margin that is hard-coded to 25% of 1024
-almost always puts req_cap to the highest frequency, skipping some
-reasonable capacity states in between.
-
-> +
->  static bool cpu_overutilized(int cpu);
-> +static unsigned long get_cpu_usage(int cpu);
->  struct static_key __sched_energy_freq __read_mostly = STATIC_KEY_INIT_FALSE;
->  
->  /*
-> @@ -4332,6 +4335,26 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
->                 if (!task_new && !rq->rd->overutilized &&
->                     cpu_overutilized(rq->cpu))
->                         rq->rd->overutilized = true;
-> +               /*
-> +                * We want to trigger a freq switch request only for tasks that
-> +                * are waking up; this is because we get here also during
-> +                * load balancing, but in these cases it seems wise to trigger
-> +                * as single request after load balancing is done.
-> +                *
-> +                * XXX: how about fork()? Do we need a special flag/something
-> +                *      to tell if we are here after a fork() (wakeup_task_new)?
-> +                *
-> +                * Also, we add a margin (same ~20% used for the tipping point)
-> +                * to our request to provide some head room if p's utilization
-> +                * further increases.
-> +                */
-> +               if (sched_energy_freq() && !task_new) {
-> +                       unsigned long req_cap = get_cpu_usage(cpu_of(rq));
-> +
-> +                       req_cap = req_cap * capacity_margin
-> +                                       >> SCHED_CAPACITY_SHIFT;
-
-Probably a dumb question:
-
-Can we "cheat" here and just assume that capacity and load use the same
-units? That would avoid the multiplication and change your code to the
-following:
-
-	#define capacity_margin SCHED_CAPACITY_SCALE >> 2; /* 25% */
-	req_cap += SCHED_CAPACITY_SCALE;
-
-> +                       cpufreq_sched_set_cap(cpu_of(rq), req_cap);
-> +               }
->         }
->         hrtick_update(rq);
->  }
-> @@ -4393,6 +4416,23 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
->         if (!se) {
->                 sub_nr_running(rq, 1);
->                 update_rq_runnable_avg(rq, 1);
-> +               /*
-> +                * We want to trigger a freq switch request only for tasks that
-> +                * are going to sleep; this is because we get here also during
-> +                * load balancing, but in these cases it seems wise to trigger
-> +                * as single request after load balancing is done.
-> +                *
-> +                * Also, we add a margin (same ~20% used for the tipping point)
-> +                * to our request to provide some head room if p's utilization
-> +                * further increases.
-> +                */
-> +               if (sched_energy_freq() && task_sleep) {
-> +                       unsigned long req_cap = get_cpu_usage(cpu_of(rq));
-> +
-> +                       req_cap = req_cap * capacity_margin
-> +                                       >> SCHED_CAPACITY_SHIFT;
-> +                       cpufreq_sched_set_cap(cpu_of(rq), req_cap);
-
-Filtering out the load_balance bits is neat.
-
-Regards,
-Mike
-
-> +               }
->         }
->         hrtick_update(rq);
->  }
-> @@ -4959,8 +4999,6 @@ static int find_new_capacity(struct energy_env *eenv,
->         return idx;
->  }
->  
-> -static unsigned int capacity_margin = 1280; /* ~20% margin */
-> -
->  static bool cpu_overutilized(int cpu)
+>  drivers/power/bq27x00_battery.c | 1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> diff --git a/drivers/power/bq27x00_battery.c
+> b/drivers/power/bq27x00_battery.c index b6b9837..99180d2 100644
+> --- a/drivers/power/bq27x00_battery.c
+> +++ b/drivers/power/bq27x00_battery.c
+> @@ -1106,6 +1106,7 @@ static void __exit bq27x00_battery_exit(void)
 >  {
->         return (capacity_of(cpu) * 1024) <
-> -- 
-> 1.9.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>  	bq27x00_battery_platform_exit();
+>  	bq27x00_battery_i2c_exit();
+> +	idr_destroy(&battery_id);
+>  }
+>  module_exit(bq27x00_battery_exit);
+
+Hello, I see that none power supply kernel driver is calling=20
+idr_destroy() at module exit time. So if this patch is needed for=20
+bq27x00_battery module, then it is needed also for other charger/battery=20
+modules...
+
+=2D-=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
+
+--nextPart2696556.BqSSm5ePSW
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iEYEABECAAYFAlWdS2YACgkQi/DJPQPkQ1LfSACdHYWWSFFnJkoHABA2nK0RC+cS
+NAAAoJ7QfjGwb/H0zAd9QLtyBLuoZUu2
+=q5+K
+-----END PGP SIGNATURE-----
+
+--nextPart2696556.BqSSm5ePSW--
