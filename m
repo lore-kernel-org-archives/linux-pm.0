@@ -1,42 +1,114 @@
-From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
-Subject: Re: [RFCv5 PATCH 03/46] arm: vexpress: Add CPU clock-frequencies to
- TC2 device-tree
-Date: Wed, 08 Jul 2015 13:36:15 +0100
-Message-ID: <1436358975.2844.30.camel@linaro.org>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
-	 <1436293469-25707-4-git-send-email-morten.rasmussen@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v6 2/7] ACPI: Make ACPI processor driver more extensible
+Date: Wed, 8 Jul 2015 15:34:36 +0200
+Message-ID: <CAJZ5v0gKW7bR66trxvuhd_Gb=ZMBbec++u+V+T4mroCZMtO+vg@mail.gmail.com>
+References: <cover.1434398373.git.ashwin.chaugule@linaro.org>
+	<9e352cbe2feac01158a21511bac5c544dc2f29e2.1434398373.git.ashwin.chaugule@linaro.org>
+	<2138469.Io9yItSdst@vostro.rjw.lan>
+	<CAJ5Y-eZBYb551T=kBdbjM4YQ1f_hwYBgkVk4wJsDHSib00XfrA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smarthost01d.mail.zen.net.uk ([212.23.1.7]:41041 "EHLO
-	smarthost01d.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753768AbbGHMgf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 08:36:35 -0400
-In-Reply-To: <1436293469-25707-4-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJ5Y-eZBYb551T=kBdbjM4YQ1f_hwYBgkVk4wJsDHSib00XfrA@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jaswinder Singh <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, linux acpi <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Russell King <linux@arm.linux.org.uk>
 
-On Tue, 2015-07-07 at 19:23 +0100, Morten Rasmussen wrote:
-> From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> 
-> To enable the parsing of clock frequency and cpu efficiency values
-> inside parse_dt_topology [arch/arm/kernel/topology.c] to scale the
-> relative capacity of the cpus, this property has to be provided within
-> the cpu nodes of the dts file.
-> 
-> The patch is a copy of commit 8f15973ef8c3 ("ARM: vexpress: Add CPU
-> clock-frequencies to TC2 device-tree") taken from Linaro Stable Kernel
-> (LSK) massaged into mainline.
+Hi Ashwin,
 
-Not sure you really need to mention commit hashes from outside of the
-mainline Linux tree and the values I added to that commit were probably
-copied from some patch originating from ARM or elsewhere anyway. So the
-second paragraph is this commit message is probably superfluous. But
-this is nitpicking I guess :-)
+On Wed, Jul 8, 2015 at 3:27 AM, Ashwin Chaugule
+<ashwin.chaugule@linaro.org> wrote:
+> On 7 July 2015 at 21:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Monday, June 15, 2015 04:09:06 PM Ashwin Chaugule wrote:
+>>> The ACPI processor driver is currently tied too closely
+>>> to the ACPI C-states (CST), P-states (PSS) and other related
+>>> constructs for controlling CPU idle and CPU performance.
+>>>
+>>> The newer ACPI specification (v5.1 onwards) introduces
+>>> alternative methods to CST and PSS. These new mechanisms
+>>> are described within each ACPI Processor object and so they
+>>> need to be scanned whenever a new Processor object is detected.
+>>> This patch introduces two new Kconfig symbols to allow for
+>>> finer configurability among the various options for controlling
+>>> CPU idle and performance states. There is no change in functionality
+>>> and these options are defaulted to enabled to maintain previous
+>>> behaviour.
+>>>
+>>> The following patchwork introduces CPPC: A newer method of
+>>> controlling CPU performance. The OS is not expected to support CPPC
+>>> and PSS at runtime. So the kconfig option lets us make these two
+>>> mutually exclusive at compile time.
+>>>
+>>> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+>>> Reviewed-by: Al Stone <al.stone@linaro.org>
+>>> ---
+>>>  drivers/acpi/Kconfig            |  31 +++++++++--
+>>>  drivers/acpi/Makefile           |   7 ++-
+>>>  drivers/acpi/processor_driver.c |  86 ++++++++++++++++++----------
+>>>  drivers/cpufreq/Kconfig         |   2 +-
+>>>  drivers/cpufreq/Kconfig.x86     |   2 +
+>>>  include/acpi/processor.h        | 120 ++++++++++++++++++++++++++++------------
+>>>  6 files changed, 176 insertions(+), 72 deletions(-)
+>>>
+>>> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+>>> index ab2cbb5..5942754 100644
+>>> --- a/drivers/acpi/Kconfig
+>>> +++ b/drivers/acpi/Kconfig
+>>> @@ -166,18 +166,39 @@ config ACPI_DOCK
+>>>         This driver supports ACPI-controlled docking stations and removable
+>>>         drive bays such as the IBM Ultrabay and the Dell Module Bay.
+>>>
+>>> -config ACPI_PROCESSOR
+>>> -     tristate "Processor"
+>>> -     select THERMAL
+>>> -     select CPU_IDLE
+>>> +config ACPI_CST
+>>> +     bool "ACPI C states (CST) driver"
+>>> +     depends on ACPI_PROCESSOR
+>>>       depends on X86 || IA64
+>>> +     select CPU_IDLE
+>>>       default y
+>>>       help
+>>>         This driver installs ACPI as the idle handler for Linux and uses
+>>>         ACPI C2 and C3 processor states to save power on systems that
+>>> -       support it.  It is required by several flavors of cpufreq
+>>> +       support it.
+>>> +
+>>> +config ACPI_PSS
+>>> +     bool "ACPI P States (PSS) driver"
+>>> +     depends on ACPI_PROCESSOR
+>>> +     depends on X86 || IA64
+>>> +     select THERMAL
+>>> +     default y
+>>> +     help
+>>> +       This driver implements ACPI methods for controlling CPU performance
+>>> +       using PSS methods as described in the ACPI spec. It also enables support
+>>> +       for ACPI based performance throttling (TSS) and ACPI based thermal
+>>> +       monitoring. It is required by several flavors of cpufreq
+>>>         performance-state drivers.
+>>
+>> For starters, I don't like these new Kconfig options.
+>>
+>> Isn't there a way to implement what you need without adding them?
+>
+> We need to use the ACPI Processor driver for CPPC without including
+> all its current dependencies. (i.e. PSS, TSS, CSS etc.). The upcoming
+> LPI work from Sudeep will also face the same issue. I considered the
+> alternative of adding a probe routine which matches
+> ACPI_PROCESSOR_OBJECT/DEVICE_HID to each driver, but this seemed like
+> a better option. Do you have any other ideas?
 
--- 
-Tixy
+First of all, I don't see what _CST has to do with CPPC.
 
+Second, it looks like the problem is that x86 probably won't use CPPC,
+while arm64 probably won't use _PSS.
+
+That can be addressed by adding Kconfig options, but those options
+should not be user-selectable (because quite honestly users don't have
+to know what those things are and they don't care *and* things break
+if they make a wrong choice).  Instead, I'd make architecture Kconfigs
+select those options automatically.
+
+Thanks,
+Rafael
