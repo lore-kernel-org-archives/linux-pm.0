@@ -1,90 +1,90 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v4 3/8] clk: add support for clocks provided by
- SCP(System Control Processor)
-Date: Tue, 7 Jul 2015 18:46:06 -0700
-Message-ID: <20150708014606.GH30412@codeaurora.org>
-References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com>
- <1433760002-24120-4-git-send-email-sudeep.holla@arm.com>
- <20150702172310.GF4301@codeaurora.org>
- <5596A1B6.8020307@arm.com>
- <559ADC94.4080505@codeaurora.org>
- <559BF858.1020301@arm.com>
+From: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Subject: Re: [PATCH] thermal: cpu_cooling: Iterate over all CPUs in clip_cpu
+ mask to get frequency table
+Date: Wed, 8 Jul 2015 09:50:56 +0800
+Message-ID: <CALx668WePBThqxtoDU+z-nbfkoXMRbve2gFAX2MNqtW10BeocA@mail.gmail.com>
+References: <1435723647-3354-1-git-send-email-pi-cheng.chen@linaro.org>
+	<1435723994-3882-1-git-send-email-pi-cheng.chen@linaro.org>
+	<20150707102744.GK14598@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:33740 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755460AbbGHBqI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 21:46:08 -0400
-Content-Disposition: inline
-In-Reply-To: <559BF858.1020301@arm.com>
+Received: from mail-yk0-f175.google.com ([209.85.160.175]:36059 "EHLO
+	mail-yk0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755533AbbGHBu5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 21:50:57 -0400
+Received: by ykdr198 with SMTP id r198so194750251ykd.3
+        for <linux-pm@vger.kernel.org>; Tue, 07 Jul 2015 18:50:56 -0700 (PDT)
+In-Reply-To: <20150707102744.GK14598@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 07/07, Sudeep Holla wrote:
-> 
-> 
-> On 06/07/15 20:52, Stephen Boyd wrote:
-> >>
-> >
-> >If I have time I may try to start doing the clk_register() conversion,
-> >but it will take a while so I doubt it will be in v4.3. I'm asking if
-> >you can add a clk_hw based API that does something like
-> >clk_set_rate_range() without requiring a struct clk pointer. i.e.
-> >clk_hw_set_rate_range(struct clk_hw *hw, min, max) that constraints the
-> >min/max rate of the clock. This way, the driver is only using clk
-> >provider APIs and not clk consumer APIs.
-> >
-> 
-> I understand the intention of separating clk provider helpers/APIs
-> and clk consumer APIs. Since {min,max}_rate are part of struct clk
-> itself, I was thinking that you would have moved it to struct clk_core
-> as part of the rework you mentioned and hence asked about the patches.
-> 
-> IIUC, if {min,max}_rate remain part of struct clk, then how are we
-> restricting that operation to just the clk providers ? clk consumer
-> can still directly modify or use clk_set_rate_range.
-> 
-> Do we continue to provide that feature for both provider and consumer ?
-> If so I assume {min,max}_rate range requested by consumer should be
-> within the limits set by provider and do we maintain both the limits ?
-> 
-> Sorry if I am missing something fundamental since I don't have much
-> knowledge of clk layer internals.
-> 
+Hi Viresh,
 
-Yes struct clk would have min/max, and struct clk_core would have
-min/max. Then some sort of provider API (or possibly even
-clk_init_data) would take the min/max fields and copy them over
-to struct clk_core. Then during set_rate operations we would
-aggregate the constraints from struct clk like we already do and
-add in the constrains in struct clk_core.
+On Tue, Jul 7, 2015 at 6:27 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 01-07-15, 12:13, Pi-Cheng Chen wrote:
+>> Sorry for the mistake I made when cherry-picking the patch. Fix and resend
+>> again.
+>
+> You really want above to show up in git logs ?
+>
+> Any comments like this should be present:
+> - in cover-letter
+> - OR after the three dashes below ---
+> - OR must be followed with a scissors line, like this:
+>   --------------8<--------
 
-One downside to adding new fields to clk_init_data is that there
-are drivers out there that aren't initializing that structure to
-0, and they're putting it on the stack, so stack junk can come
-through. Furthermore, min/max would mean that every driver needs
-to specify some large number for max or we have to special case
-min == max == 0 and ignore it. Somehow it needs to be opt-in. If
-we want to go down the clk_init_data route then perhaps we need
-some sort of rate_constraint struct pointer in there that drivers
-can optionally setup.
+Thanks for the lesson. :)
 
-	struct clk_rate_constraint {
-		unsigned long min;
-		unsigned long max;
-	};
+>
+>> __cpufreq_cooling_register() might fail if some CPU other than first one in
+>> clip_cpu mask is present earlier e.g. CPU hotplug. Iterate all CPUs in the mask
+>> to handle this case.
+>>
+>> Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+>> ---
+>>  drivers/thermal/cpu_cooling.c | 9 +++++++--
+>>  1 file changed, 7 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+>> index 6509c61..5e90eb6 100644
+>> --- a/drivers/thermal/cpu_cooling.c
+>> +++ b/drivers/thermal/cpu_cooling.c
+>> @@ -776,9 +776,14 @@ __cpufreq_cooling_register(struct device_node *np,
+>>       char dev_name[THERMAL_NAME_LENGTH];
+>>       struct cpufreq_frequency_table *pos, *table;
+>>       unsigned int freq, i, num_cpus;
+>> -     int ret;
+>> +     int ret, cpu;
+>> +
+>> +     for_each_cpu(cpu, clip_cpus) {
+>> +             table = cpufreq_frequency_get_table(cpu);
+>> +             if (table)
+>> +                     break;
+>> +     }
+>>
+>> -     table = cpufreq_frequency_get_table(cpumask_first(clip_cpus));
+>
+> Nah, that's wrong. I hope that's a hypothetical problem and not a real
+> one. Would have been better if cpufreq maintainers were cc'd as they
+> can provide more insight into this :)
+>
+> cpufreq_frequency_get_table() does: policy->freq_table and so it
+> doesn't matter if the cpu is online or not.
+>
+> cpufreq_cpu_data was getting unset earlier on hotplug, but that's not
+> the case anymore. So nothing to worry about :)
 
-	struct clk_init_data {
-		...
-		struct clk_rate_constraint *rate_constraint;
-	};
+Yes. This is based on the case before 4.2-rc1 which policy of cpu will
+be destroy after all cpus in a cluster are unplugged (right?). Since it
+is not the case anymore now, this patch is not needed at all.
+Thanks.
 
-I haven't thought it through completely, but I can probably write
-up some patch tomorrow after I sleep on it.
+Best Regards,
+Pi-Cheng
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+>
+> --
+> viresh
