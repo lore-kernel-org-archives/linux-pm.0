@@ -1,97 +1,60 @@
-From: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Subject: Re: [PATCH] cpufreq: Allow accessing freq_table for offline CPUs
-Date: Wed, 8 Jul 2015 16:05:12 +0800
-Message-ID: <CALx668UNG=q1vkvjOD9cZ2C1un8YitjDN2KoaFCkUSrMgD9J5w@mail.gmail.com>
-References: <c07ccbe7f415d20e055c9d1ba025a71b902e6b0f.1436340899.git.viresh.kumar@linaro.org>
+From: Peter Feuerer <peter@piie.net>
+Subject: Re: [PATCH] thermal: consistently use int for temperatures
+Date: Wed, 08 Jul 2015 10:11:24 +0200
+Message-ID: <cone.1436343084.787318.20214.1000@mups>
+References: <1436167189-29835-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f179.google.com ([209.85.160.179]:34707 "EHLO
-	mail-yk0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932472AbbGHIFO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 04:05:14 -0400
-Received: by ykcp133 with SMTP id p133so13845826ykc.1
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2015 01:05:12 -0700 (PDT)
-In-Reply-To: <c07ccbe7f415d20e055c9d1ba025a71b902e6b0f.1436340899.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, linux-samsung-soc@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, Stephen Warren <swarren@wwwdotorg.org>, Rafael =?UTF-8?B?Si4=?= Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, linux-acpi@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Guenter Roeck <linux@roeck-us.net>, linux-arm-kernel@lists.infradead.org, Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>, linux-omap@vger.kernel.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Jean Delvare <jdelvare@suse.de>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, javi.merino@arm.com, open list <linux-kernel@vger.kernel.org>
 
-On Wed, Jul 8, 2015 at 3:38 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Users of freq table may want to access it for any CPU from
-> policy->related_cpus mask. One such user is cpu-cooling layer. It gets a
-> list of 'clip_cpus' (equivalent to policy->related_cpus) during
-> registration and tries to get freq_table for the first CPU of this mask.
->
-> If the CPU, for which it tries to fetch freq_table, is offline,
-> cpufreq_frequency_get_table() fails. This happens because it relies on
-> cpufreq_cpu_get_raw() for its functioning which returns policy only for
-> online CPUs.
->
-> Fix this by considering offline CPUs, but with a restriction that the
-> policy is active at that time.
->
-> Because we will be using 'cpufreq_cpu_data' now, which is internal to
-> cpufreq-core, lets also move cpufreq_frequency_get_table() to cpufreq.c
-> file.
->
-> Reported-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-Tested-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-
-Thanks.
-
-> ---
-> This was recently tried by Pi cheng but in a completely different way:
-> http://marc.info/?l=linux-pm&m=143572367402758&w=2
->
-> Its not broken by any stuff in 4.2, but would be good if we can push
-> this for 4.2 as well.
->
->  drivers/cpufreq/cpufreq.c    | 9 +++++++++
->  drivers/cpufreq/freq_table.c | 7 -------
->  2 files changed, 9 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 2c22e3902e72..26063afb3eba 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -169,6 +169,15 @@ struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy)
->  }
->  EXPORT_SYMBOL_GPL(get_governor_parent_kobj);
->
-> +struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu)
-> +{
-> +       struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
-> +
-> +       return policy && !policy_is_inactive(policy) ?
-> +               policy->freq_table : NULL;
-> +}
-> +EXPORT_SYMBOL_GPL(cpufreq_frequency_get_table);
-> +
->  static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
->  {
->         u64 idle_time;
-> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-> index df14766a8e06..7551f01e8536 100644
-> --- a/drivers/cpufreq/freq_table.c
-> +++ b/drivers/cpufreq/freq_table.c
-> @@ -299,13 +299,6 @@ EXPORT_SYMBOL_GPL(cpufreq_table_validate_and_show);
->
->  struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu);
->
-> -struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu)
-> -{
-> -       struct cpufreq_policy *policy = cpufreq_cpu_get_raw(cpu);
-> -       return policy ? policy->freq_table : NULL;
-> -}
-> -EXPORT_SYMBOL_GPL(cpufreq_frequency_get_table);
-> -
->  MODULE_AUTHOR("Dominik Brodowski <linux@brodo.de>");
->  MODULE_DESCRIPTION("CPUfreq frequency table helpers");
->  MODULE_LICENSE("GPL");
-> --
-> 2.4.0
->
+U2FzY2hhIEhhdWVyIHdyaXRlczoKCj4gVGhlIHRoZXJtYWwgY29kZSB1c2VzIGludCwgbG9uZyBh
+bmQgdW5zaWduZWQgbG9uZyBmb3IgdGVtcGVyYXR1cmVzCj4gaW4gZGlmZmVyZW50IHBsYWNlcy4K
+PiAKPiBVc2luZyBhbiB1bnNpZ25lZCB0eXBlIGxpbWl0cyB0aGUgdGhlcm1hbCBmcmFtZXdvcmsg
+dG8gcG9zaXRpdmUKPiB0ZW1wZXJhdHVyZXMgd2l0aG91dCBuZWVkLiBBbHNvIHNldmVyYWwgZHJp
+dmVycyBjdXJyZW50bHkgd2lsbCByZXBvcnQKPiB0ZW1wZXJhdHVyZXMgbmVhciBVSU5UX01BWCBm
+b3IgdGVtcGVyYXR1cmVzIGJlbG93IDDCsEMuIFRoaXMgd2lsbCBwcm9iYWJseQo+IGltbWVkaWF0
+ZWx5IHNodXQgdGhlIG1hY2hpbmUgZG93biBkdWUgdG8gb3ZlcnRlbXBlcmF0dXJlIGlmIHN0YXJ0
+ZWQgYmVsb3cKPiAwwrBDLgo+IAo+ICdsb25nJyBpcyA2NGJpdCBvbiBzZXZlcmFsIGFyY2hpdGVj
+dHVyZXMuIFRoaXMgaXMgbm90IG5lZWRlZCBzaW5jZSBJTlRfTUFYIMKwbUMKPiBpcyBhYm92ZSB0
+aGUgbWVsdGluZyBwb2ludCBvZiBhbGwga25vd24gbWF0ZXJpYWxzLgo+IAo+IENvbnNpc3RlbnRs
+eSB1c2UgYSBwbGFpbiAnaW50JyBmb3IgdGVtcGVyYXR1cmVzIHRocm91Z2hvdXQgdGhlIHRoZXJt
+YWwgY29kZSBhbmQKPiB0aGUgZHJpdmVycy4gVGhpcyBvbmx5IGNoYW5nZXMgdGhlIHBsYWNlcyBp
+biB0aGUgZHJpdmVycyB3aGVyZSB0aGUgdGVtcGVyYXR1cmUKPiBpcyBwYXNzZWQgYXJvdW5kIGFz
+IHBvaW50ZXIsIHdoZW4gZHJpdmVycyBpbnRlcm5hbGx5IHVzZSBhbm90aGVyIHR5cGUgdGhpcyBp
+cwo+IG5vdCBjaGFuZ2VkLgo+IAo+IFNpZ25lZC1vZmYtYnk6IFNhc2NoYSBIYXVlciA8cy5oYXVl
+ckBwZW5ndXRyb25peC5kZT4KPiBDYzogWmhhbmcgUnVpIDxydWkuemhhbmdAaW50ZWwuY29tPgo+
+IENjOiBFZHVhcmRvIFZhbGVudGluIDxlZHViZXp2YWxAZ21haWwuY29tPgo+IENjOiBsaW51eC1w
+bUB2Z2VyLmtlcm5lbC5vcmcKPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZwo+IENj
+OiBKZWFuIERlbHZhcmUgPGpkZWx2YXJlQHN1c2UuZGU+Cj4gQ2M6IFBldGVyIEZldWVyZXIgPHBl
+dGVyQHBpaWUubmV0Pgo+IENjOiBIZWlrbyBTdHVlYm5lciA8aGVpa29Ac250ZWNoLmRlPgo+IENj
+OiBMdWthc3ogTWFqZXdza2kgPGwubWFqZXdza2lAc2Ftc3VuZy5jb20+Cj4gQ2M6IFN0ZXBoZW4g
+V2FycmVuIDxzd2FycmVuQHd3d2RvdG9yZy5vcmc+Cj4gQ2M6IFRoaWVycnkgUmVkaW5nIDx0aGll
+cnJ5LnJlZGluZ0BnbWFpbC5jb20+Cj4gQ2M6IGxpbnV4LWFjcGlAdmdlci5rZXJuZWwub3JnCj4g
+Q2M6IHBsYXRmb3JtLWRyaXZlci14ODZAdmdlci5rZXJuZWwub3JnCj4gQ2M6IGxpbnV4LWFybS1r
+ZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwo+IENjOiBsaW51eC1vbWFwQHZnZXIua2VybmVsLm9y
+Zwo+IENjOiBsaW51eC1zYW1zdW5nLXNvY0B2Z2VyLmtlcm5lbC5vcmcKPiBDYzogR3VlbnRlciBS
+b2VjayA8bGludXhAcm9lY2stdXMubmV0Pgo+IENjOiBSYWZhZWwgSi4gV3lzb2NraSA8cmp3QHJq
+d3lzb2NraS5uZXQ+Cj4gQ2M6IE1heGltZSBSaXBhcmQgPG1heGltZS5yaXBhcmRAZnJlZS1lbGVj
+dHJvbnMuY29tPgo+IENjOiBEYXJyZW4gSGFydCA8ZHZoYXJ0QGluZnJhZGVhZC5vcmc+Cj4gQ2M6
+IGxtLXNlbnNvcnNAbG0tc2Vuc29ycy5vcmcKPiAtLS0KClsuLi5dCgpGb3I6Cgo+ICBkcml2ZXJz
+L3BsYXRmb3JtL3g4Ni9hY2VyaGRmLmMgICAgICAgICAgICAgICAgICAgICB8ICA5ICsrKystLS0t
+Cj4gIGRyaXZlcnMvdGhlcm1hbC9nb3ZfYmFuZ19iYW5nLmMgICAgICAgICAgICAgICAgICAgIHwg
+IDUgKystLQoKUmV2aWV3ZWQtYnk6IFBldGVyIEZldWVyZXIgPHBldGVyQHBpaWUubmV0PgoKWy4u
+Ll0KCgotLSAKLS1wZXRlcjsKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxA
+bGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xp
+c3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
