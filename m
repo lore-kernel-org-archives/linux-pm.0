@@ -1,87 +1,67 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2] cpufreq: Allow accessing freq_table for offline CPUs
-Date: Wed,  8 Jul 2015 14:38:41 +0530
-Message-ID: <5b275fbf85738095a6045ddd7d470cc99a795664.1436346340.git.viresh.kumar@linaro.org>
-References: <20150708090144.GB2647@e104805>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: Re: [PATCH] cpufreq: Initialize the governor again while restoring
+ policy
+Date: Wed, 08 Jul 2015 10:27:09 +0100
+Message-ID: <1436347629.2844.12.camel@linaro.org>
+References: <f428ecb0927075b25cf7e2ea5fb00eab3d254fdd.1436333568.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f169.google.com ([209.85.192.169]:36708 "EHLO
-	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933962AbbGHJIx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 05:08:53 -0400
-Received: by pddu5 with SMTP id u5so54899299pdd.3
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2015 02:08:52 -0700 (PDT)
-In-Reply-To: <20150708090144.GB2647@e104805>
+Received: from queue01c.mail.zen.net.uk ([212.23.3.237]:56115 "EHLO
+	queue01c.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932710AbbGHJ1P (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 05:27:15 -0400
+In-Reply-To: <f428ecb0927075b25cf7e2ea5fb00eab3d254fdd.1436333568.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, javi.merino@arm.com, pi-cheng.chen@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Pi-Cheng Chen <pi-cheng.chen@linaro.org>, open list <linux-kernel@vger.kernel.org>
 
-Users of freq table may want to access it for any CPU from
-policy->related_cpus mask. One such user is cpu-cooling layer. It gets a
-list of 'clip_cpus' (equivalent to policy->related_cpus) during
-registration and tries to get freq_table for the first CPU of this mask.
+On Wed, 2015-07-08 at 11:23 +0530, Viresh Kumar wrote:
+> When all CPUs of a policy are hot-unplugged, we EXIT the governor but
+> don't mark policy->governor as NULL. This was done in order to keep last
+> used governor's information intact in sysfs, while the CPUs are offline.
+> 
+> We also missed marking policy->governor as NULL while restoring the
+> policy. Because of that, we call __cpufreq_governor(CPUFREQ_GOV_LIMITS)
+> for an uninitialized policy. Which eventually returns -EBUSY.
+> 
+> Fix this by setting policy->governor to NULL while restoring the policy.
+> 
+> Reported-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+> Reported-by: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+> Fixes: 18bf3a124ef8 ("cpufreq: Mark policy->governor = NULL for inactive policies")
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
-If the CPU, for which it tries to fetch freq_table, is offline,
-cpufreq_frequency_get_table() fails. This happens because it relies on
-cpufreq_cpu_get_raw() for its functioning which returns policy only for
-online CPUs.
+Tested-by: Jon Medhurst <tixy@linaro.org>
 
-Fix this by considering offline CPUs, but with a restriction that the
-policy is active at that time.
+Thanks for that.
 
-Because we will be using 'cpufreq_cpu_data' now, which is internal to
-cpufreq-core, lets also move cpufreq_frequency_get_table() to cpufreq.c
-file.
+I believe this also fixes the other issue I mentioned (nullptr deref in
+in arm_big_little driver). To test that, after applying this patch, I
+modified the code to force __cpufreq_governor to still return an error
+when a cpu is hotpluged back in. Now the arm_big_little driver doesn't
+get called when I manually poke scaling_setspeed, presumably because
+policy->governor==NULL prevents that from reaching the driver?
 
-Reported-and-tested-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V2: Get rid of cpufreq_cpu_data()'s declaration as well.. Thanks Javi.
+> For 4.2-rc
+> 
+>  drivers/cpufreq/cpufreq.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index b612411655f9..2c22e3902e72 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1132,6 +1132,7 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
+>  
+>  		down_write(&policy->rwsem);
+>  		policy->cpu = cpu;
+> +		policy->governor = NULL;
+>  		up_write(&policy->rwsem);
+>  	}
+>  
 
- drivers/cpufreq/cpufreq.c    | 9 +++++++++
- drivers/cpufreq/freq_table.c | 9 ---------
- 2 files changed, 9 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 2c22e3902e72..26063afb3eba 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -169,6 +169,15 @@ struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy)
- }
- EXPORT_SYMBOL_GPL(get_governor_parent_kobj);
- 
-+struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu)
-+{
-+	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
-+
-+	return policy && !policy_is_inactive(policy) ?
-+		policy->freq_table : NULL;
-+}
-+EXPORT_SYMBOL_GPL(cpufreq_frequency_get_table);
-+
- static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu, u64 *wall)
- {
- 	u64 idle_time;
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index df14766a8e06..dfbbf981ed56 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -297,15 +297,6 @@ int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
- }
- EXPORT_SYMBOL_GPL(cpufreq_table_validate_and_show);
- 
--struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu);
--
--struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu)
--{
--	struct cpufreq_policy *policy = cpufreq_cpu_get_raw(cpu);
--	return policy ? policy->freq_table : NULL;
--}
--EXPORT_SYMBOL_GPL(cpufreq_frequency_get_table);
--
- MODULE_AUTHOR("Dominik Brodowski <linux@brodo.de>");
- MODULE_DESCRIPTION("CPUfreq frequency table helpers");
- MODULE_LICENSE("GPL");
--- 
-2.4.0
 
