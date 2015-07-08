@@ -1,7 +1,7 @@
 From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
 Subject: Re: [PATCH v6 2/7] ACPI: Make ACPI processor driver more extensible
-Date: Wed, 8 Jul 2015 16:05:37 -0400
-Message-ID: <CAJ5Y-eYwnaDzyL78CyJDmo35CFTNoQrYfEcO3VYnpaZkSVPdcw@mail.gmail.com>
+Date: Wed, 8 Jul 2015 16:28:32 -0400
+Message-ID: <CAJ5Y-eaGmF6pRKuapzQo8ruMt0FX4kVrdyu-os6maVaS7WO-Pw@mail.gmail.com>
 References: <cover.1434398373.git.ashwin.chaugule@linaro.org>
 	<9e352cbe2feac01158a21511bac5c544dc2f29e2.1434398373.git.ashwin.chaugule@linaro.org>
 	<2138469.Io9yItSdst@vostro.rjw.lan>
@@ -9,409 +9,142 @@ References: <cover.1434398373.git.ashwin.chaugule@linaro.org>
 	<CAJZ5v0gKW7bR66trxvuhd_Gb=ZMBbec++u+V+T4mroCZMtO+vg@mail.gmail.com>
 	<CAJ5Y-ebW3aCSSs4UQFLpLFSfo7d9zPVfigoROjN80uXzG1sZLw@mail.gmail.com>
 	<CAJZ5v0h24-YAeqW79Se8kRr+_+RknwNfLwS_74-sN+W0_wBaZg@mail.gmail.com>
+	<CAJ5Y-eYwnaDzyL78CyJDmo35CFTNoQrYfEcO3VYnpaZkSVPdcw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=089e015382b6972d42051a62a9cb
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0h24-YAeqW79Se8kRr+_+RknwNfLwS_74-sN+W0_wBaZg@mail.gmail.com>
+In-Reply-To: <CAJ5Y-eYwnaDzyL78CyJDmo35CFTNoQrYfEcO3VYnpaZkSVPdcw@mail.gmail.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jaswinder Singh <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, linux acpi <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
---089e015382b6972d42051a62a9cb
-Content-Type: text/plain; charset=UTF-8
-
-On 8 July 2015 at 15:55, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> Hi Ashwin,
->
-> On Wed, Jul 8, 2015 at 9:16 PM, Ashwin Chaugule
-> <ashwin.chaugule@linaro.org> wrote:
->> Hi Rafael,
+On 8 July 2015 at 16:05, Ashwin Chaugule <ashwin.chaugule@linaro.org> wrote:
+> On 8 July 2015 at 15:55, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> Hi Ashwin,
 >>
->> On 8 July 2015 at 09:34, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>> Hi Ashwin,
+>> On Wed, Jul 8, 2015 at 9:16 PM, Ashwin Chaugule
+>> <ashwin.chaugule@linaro.org> wrote:
+>>> Hi Rafael,
 >>>
->>> On Wed, Jul 8, 2015 at 3:27 AM, Ashwin Chaugule
->>> <ashwin.chaugule@linaro.org> wrote:
->>>> On 7 July 2015 at 21:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>>>> On Monday, June 15, 2015 04:09:06 PM Ashwin Chaugule wrote:
->>>>>> The ACPI processor driver is currently tied too closely
->>>>>> to the ACPI C-states (CST), P-states (PSS) and other related
->>>>>> constructs for controlling CPU idle and CPU performance.
->>>>>>
->>>>>> The newer ACPI specification (v5.1 onwards) introduces
->>>>>> alternative methods to CST and PSS. These new mechanisms
->>>>>> are described within each ACPI Processor object and so they
->>>>>> need to be scanned whenever a new Processor object is detected.
->>>>>> This patch introduces two new Kconfig symbols to allow for
->>>>>> finer configurability among the various options for controlling
->>>>>> CPU idle and performance states. There is no change in functionality
->>>>>> and these options are defaulted to enabled to maintain previous
->>>>>> behaviour.
->>>>>>
->>>>>> The following patchwork introduces CPPC: A newer method of
->>>>>> controlling CPU performance. The OS is not expected to support CPPC
->>>>>> and PSS at runtime. So the kconfig option lets us make these two
->>>>>> mutually exclusive at compile time.
->>>>>>
->>>>>> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
->>>>>> Reviewed-by: Al Stone <al.stone@linaro.org>
->>>>>> ---
->>>>>>  drivers/acpi/Kconfig            |  31 +++++++++--
->>>>>>  drivers/acpi/Makefile           |   7 ++-
->>>>>>  drivers/acpi/processor_driver.c |  86 ++++++++++++++++++----------
->>>>>>  drivers/cpufreq/Kconfig         |   2 +-
->>>>>>  drivers/cpufreq/Kconfig.x86     |   2 +
->>>>>>  include/acpi/processor.h        | 120 ++++++++++++++++++++++++++++------------
->>>>>>  6 files changed, 176 insertions(+), 72 deletions(-)
->>>>>>
->>>>>> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
->>>>>> index ab2cbb5..5942754 100644
->>>>>> --- a/drivers/acpi/Kconfig
->>>>>> +++ b/drivers/acpi/Kconfig
->>>>>> @@ -166,18 +166,39 @@ config ACPI_DOCK
->>>>>>         This driver supports ACPI-controlled docking stations and removable
->>>>>>         drive bays such as the IBM Ultrabay and the Dell Module Bay.
->>>>>>
->>>>>> -config ACPI_PROCESSOR
->>>>>> -     tristate "Processor"
->>>>>> -     select THERMAL
->>>>>> -     select CPU_IDLE
->>>>>> +config ACPI_CST
->>>>>> +     bool "ACPI C states (CST) driver"
->>>>>> +     depends on ACPI_PROCESSOR
->>>>>>       depends on X86 || IA64
->>>>>> +     select CPU_IDLE
->>>>>>       default y
->>>>>>       help
->>>>>>         This driver installs ACPI as the idle handler for Linux and uses
->>>>>>         ACPI C2 and C3 processor states to save power on systems that
->>>>>> -       support it.  It is required by several flavors of cpufreq
->>>>>> +       support it.
->>>>>> +
->>>>>> +config ACPI_PSS
->>>>>> +     bool "ACPI P States (PSS) driver"
->>>>>> +     depends on ACPI_PROCESSOR
->>>>>> +     depends on X86 || IA64
->>>>>> +     select THERMAL
->>>>>> +     default y
->>>>>> +     help
->>>>>> +       This driver implements ACPI methods for controlling CPU performance
->>>>>> +       using PSS methods as described in the ACPI spec. It also enables support
->>>>>> +       for ACPI based performance throttling (TSS) and ACPI based thermal
->>>>>> +       monitoring. It is required by several flavors of cpufreq
->>>>>>         performance-state drivers.
->>>>>
->>>>> For starters, I don't like these new Kconfig options.
->>>>>
->>>>> Isn't there a way to implement what you need without adding them?
+>>> On 8 July 2015 at 09:34, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>>> Hi Ashwin,
 >>>>
->>>> We need to use the ACPI Processor driver for CPPC without including
->>>> all its current dependencies. (i.e. PSS, TSS, CSS etc.). The upcoming
->>>> LPI work from Sudeep will also face the same issue. I considered the
->>>> alternative of adding a probe routine which matches
->>>> ACPI_PROCESSOR_OBJECT/DEVICE_HID to each driver, but this seemed like
->>>> a better option. Do you have any other ideas?
+>>>> On Wed, Jul 8, 2015 at 3:27 AM, Ashwin Chaugule
+>>>> <ashwin.chaugule@linaro.org> wrote:
+>>>>> On 7 July 2015 at 21:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>>>>> On Monday, June 15, 2015 04:09:06 PM Ashwin Chaugule wrote:
+>>>>>>> The ACPI processor driver is currently tied too closely
+>>>>>>> to the ACPI C-states (CST), P-states (PSS) and other related
+>>>>>>> constructs for controlling CPU idle and CPU performance.
+>>>>>>>
+>>>>>>> The newer ACPI specification (v5.1 onwards) introduces
+>>>>>>> alternative methods to CST and PSS. These new mechanisms
+>>>>>>> are described within each ACPI Processor object and so they
+>>>>>>> need to be scanned whenever a new Processor object is detected.
+>>>>>>> This patch introduces two new Kconfig symbols to allow for
+>>>>>>> finer configurability among the various options for controlling
+>>>>>>> CPU idle and performance states. There is no change in functionality
+>>>>>>> and these options are defaulted to enabled to maintain previous
+>>>>>>> behaviour.
+>>>>>>>
+>>>>>>> The following patchwork introduces CPPC: A newer method of
+>>>>>>> controlling CPU performance. The OS is not expected to support CPPC
+>>>>>>> and PSS at runtime. So the kconfig option lets us make these two
+>>>>>>> mutually exclusive at compile time.
+>>>>>>>
+>>>>>>> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+>>>>>>> Reviewed-by: Al Stone <al.stone@linaro.org>
+>>>>>>> ---
+>>>>>>>  drivers/acpi/Kconfig            |  31 +++++++++--
+>>>>>>>  drivers/acpi/Makefile           |   7 ++-
+>>>>>>>  drivers/acpi/processor_driver.c |  86 ++++++++++++++++++----------
+>>>>>>>  drivers/cpufreq/Kconfig         |   2 +-
+>>>>>>>  drivers/cpufreq/Kconfig.x86     |   2 +
+>>>>>>>  include/acpi/processor.h        | 120 ++++++++++++++++++++++++++++------------
+>>>>>>>  6 files changed, 176 insertions(+), 72 deletions(-)
+>>>>>>>
+>>>>>>> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+>>>>>>> index ab2cbb5..5942754 100644
+>>>>>>> --- a/drivers/acpi/Kconfig
+>>>>>>> +++ b/drivers/acpi/Kconfig
+>>>>>>> @@ -166,18 +166,39 @@ config ACPI_DOCK
+>>>>>>>         This driver supports ACPI-controlled docking stations and removable
+>>>>>>>         drive bays such as the IBM Ultrabay and the Dell Module Bay.
+>>>>>>>
+>>>>>>> -config ACPI_PROCESSOR
+>>>>>>> -     tristate "Processor"
+>>>>>>> -     select THERMAL
+>>>>>>> -     select CPU_IDLE
+>>>>>>> +config ACPI_CST
+>>>>>>> +     bool "ACPI C states (CST) driver"
+>>>>>>> +     depends on ACPI_PROCESSOR
+>>>>>>>       depends on X86 || IA64
+>>>>>>> +     select CPU_IDLE
+>>>>>>>       default y
+>>>>>>>       help
+>>>>>>>         This driver installs ACPI as the idle handler for Linux and uses
+>>>>>>>         ACPI C2 and C3 processor states to save power on systems that
+>>>>>>> -       support it.  It is required by several flavors of cpufreq
+>>>>>>> +       support it.
+>>>>>>> +
+>>>>>>> +config ACPI_PSS
+>>>>>>> +     bool "ACPI P States (PSS) driver"
+>>>>>>> +     depends on ACPI_PROCESSOR
+>>>>>>> +     depends on X86 || IA64
+>>>>>>> +     select THERMAL
+>>>>>>> +     default y
+>>>>>>> +     help
+>>>>>>> +       This driver implements ACPI methods for controlling CPU performance
+>>>>>>> +       using PSS methods as described in the ACPI spec. It also enables support
+>>>>>>> +       for ACPI based performance throttling (TSS) and ACPI based thermal
+>>>>>>> +       monitoring. It is required by several flavors of cpufreq
+>>>>>>>         performance-state drivers.
+>>>>>>
+>>>>>> For starters, I don't like these new Kconfig options.
+>>>>>>
+>>>>>> Isn't there a way to implement what you need without adding them?
+>>>>>
+>>>>> We need to use the ACPI Processor driver for CPPC without including
+>>>>> all its current dependencies. (i.e. PSS, TSS, CSS etc.). The upcoming
+>>>>> LPI work from Sudeep will also face the same issue. I considered the
+>>>>> alternative of adding a probe routine which matches
+>>>>> ACPI_PROCESSOR_OBJECT/DEVICE_HID to each driver, but this seemed like
+>>>>> a better option. Do you have any other ideas?
+>>>>
+>>>> First of all, I don't see what _CST has to do with CPPC.
+>>>>
+>>>> Second, it looks like the problem is that x86 probably won't use CPPC,
+>>>> while arm64 probably won't use _PSS.
+>>>>
+>>>> That can be addressed by adding Kconfig options, but those options
+>>>> should not be user-selectable (because quite honestly users don't have
+>>>> to know what those things are and they don't care *and* things break
+>>>> if they make a wrong choice).  Instead, I'd make architecture Kconfigs
+>>>> select those options automatically.
+>>>>
 >>>
->>> First of all, I don't see what _CST has to do with CPPC.
->>>
->>> Second, it looks like the problem is that x86 probably won't use CPPC,
->>> while arm64 probably won't use _PSS.
->>>
->>> That can be addressed by adding Kconfig options, but those options
->>> should not be user-selectable (because quite honestly users don't have
->>> to know what those things are and they don't care *and* things break
->>> if they make a wrong choice).  Instead, I'd make architecture Kconfigs
->>> select those options automatically.
->>>
+>>> I've made changes locally. Basically s/ACPI_PSS/HAVE_ACPI_PSS/ and in
+>>> arch/x86/Kconfig; select HAVE_ACPI_PSS if ACPI. Similarly for CST.
+>>> Just wanted to check if there were any other comments before sending
+>>> out v7.
 >>
->> I've made changes locally. Basically s/ACPI_PSS/HAVE_ACPI_PSS/ and in
->> arch/x86/Kconfig; select HAVE_ACPI_PSS if ACPI. Similarly for CST.
->> Just wanted to check if there were any other comments before sending
->> out v7.
+>> Can you please just send the new version of the $subject patch alone for now?
 >
-> Can you please just send the new version of the $subject patch alone for now?
-
-Attached below. (hope that worked.)
-
+> Attached below. (hope that worked.)
 >
-> Also I'm still unsure what the connection between _CST and CPPC is.
+>>
+>> Also I'm still unsure what the connection between _CST and CPPC is.
+>>
 >
+> There isnt. But I'm missing where I've implied the dependency?
 
-There isnt. But I'm missing where I've implied the dependency?
+Perhaps the confusion is coming from the introduction of ACPI_CST in
+this file. I could leave it as it is and just separate out the
+ACPI_PSS bits. But I figured, while I'm at it, I'd introduce ACPI_CST,
+since we know the LPI stuff is coming up soon as a CST alternative
+anyway. So if you prefer, I can drop the CST bits and maybe Sudeep can
+address that as part of his LPI patchset?
 
 Thanks,
 Ashwin.
-
---089e015382b6972d42051a62a9cb
-Content-Type: text/x-patch; charset=US-ASCII;
-	name="0002-ACPI-Make-ACPI-processor-driver-more-extensible.patch"
-Content-Disposition: attachment;
-	filename="0002-ACPI-Make-ACPI-processor-driver-more-extensible.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ibv6yici0
-
-RnJvbSBjZDQ4OTg3YTY4MWQ2ZjZmY2JkZmU0ZGE0YTdiNDU2YWJmNWRhYTA1IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBBc2h3aW4gQ2hhdWd1bGUgPGFzaHdpbi5jaGF1Z3VsZUBsaW5h
-cm8ub3JnPgpEYXRlOiBGcmksIDIyIE1heSAyMDE1IDE0OjU1OjMwIC0wNDAwClN1YmplY3Q6IFtQ
-QVRDSCAyLzddIEFDUEk6IE1ha2UgQUNQSSBwcm9jZXNzb3IgZHJpdmVyIG1vcmUgZXh0ZW5zaWJs
-ZQoKVGhlIEFDUEkgcHJvY2Vzc29yIGRyaXZlciBpcyBjdXJyZW50bHkgdGllZCB0b28gY2xvc2Vs
-eQp0byB0aGUgQUNQSSBDLXN0YXRlcyAoQ1NUKSwgUC1zdGF0ZXMgKFBTUykgYW5kIG90aGVyIHJl
-bGF0ZWQKY29uc3RydWN0cyBmb3IgY29udHJvbGxpbmcgQ1BVIGlkbGUgYW5kIENQVSBwZXJmb3Jt
-YW5jZS4KClRoZSBuZXdlciBBQ1BJIHNwZWNpZmljYXRpb24gKHY1LjEgb253YXJkcykgaW50cm9k
-dWNlcwphbHRlcm5hdGl2ZSBtZXRob2RzIHRvIENTVCBhbmQgUFNTLiBUaGVzZSBuZXcgbWVjaGFu
-aXNtcwphcmUgZGVzY3JpYmVkIHdpdGhpbiBlYWNoIEFDUEkgUHJvY2Vzc29yIG9iamVjdCBhbmQg
-c28gdGhleQpuZWVkIHRvIGJlIHNjYW5uZWQgd2hlbmV2ZXIgYSBuZXcgUHJvY2Vzc29yIG9iamVj
-dCBpcyBkZXRlY3RlZC4KVGhpcyBwYXRjaCBpbnRyb2R1Y2VzIHR3byBuZXcgS2NvbmZpZyBzeW1i
-b2xzIHRvIGFsbG93IGZvcgpmaW5lciBjb25maWd1cmFiaWxpdHkgYW1vbmcgdGhlIHZhcmlvdXMg
-b3B0aW9ucyBmb3IgY29udHJvbGxpbmcKQ1BVIGlkbGUgYW5kIHBlcmZvcm1hbmNlIHN0YXRlcy4g
-VGhlcmUgaXMgbm8gY2hhbmdlIGluIGZ1bmN0aW9uYWxpdHkKYW5kIHRoZSBvcHRpb25zIGFyZSBh
-dXRvLXNlbGVjdGVkIGJ5IHRoZSBhcmNoaXRlY3R1cmUgS2NvbmZpZyBmaWxlcy4KClRoZSBmb2xs
-b3dpbmcgcGF0Y2h3b3JrIGludHJvZHVjZXMgQ1BQQzogQSBuZXdlciBtZXRob2Qgb2YKY29udHJv
-bGxpbmcgQ1BVIHBlcmZvcm1hbmNlLiBUaGUgT1MgaXMgbm90IGV4cGVjdGVkIHRvIHN1cHBvcnQg
-Q1BQQwphbmQgUFNTIGF0IHJ1bnRpbWUuIFNvIHRoZSBrY29uZmlnIG9wdGlvbnMgbGV0cyB1cyBt
-YWtlIHRoZXNlIHR3bwptdXR1YWxseSBleGNsdXNpdmUgYXQgY29tcGlsZSB0aW1lLgoKU2lnbmVk
-LW9mZi1ieTogQXNod2luIENoYXVndWxlIDxhc2h3aW4uY2hhdWd1bGVAbGluYXJvLm9yZz4KLS0t
-CiBhcmNoL3g4Ni9LY29uZmlnICAgICAgICAgICAgICAgIHwgICAyICsKIGRyaXZlcnMvYWNwaS9L
-Y29uZmlnICAgICAgICAgICAgfCAgMzEgKysrKysrKystLQogZHJpdmVycy9hY3BpL01ha2VmaWxl
-ICAgICAgICAgICB8ICAgNyArKy0KIGRyaXZlcnMvYWNwaS9wcm9jZXNzb3JfZHJpdmVyLmMgfCAg
-ODYgKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLQogZHJpdmVycy9jcHVmcmVxL0tjb25maWcg
-ICAgICAgICB8ICAgMiArLQogZHJpdmVycy9jcHVmcmVxL0tjb25maWcueDg2ICAgICB8ICAgMiAr
-CiBpbmNsdWRlL2FjcGkvcHJvY2Vzc29yLmggICAgICAgIHwgMTIyICsrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrLS0tLS0tLS0tLS0KIDcgZmlsZXMgY2hhbmdlZCwgMTgwIGluc2VydGlvbnMo
-KyksIDcyIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2FyY2gveDg2L0tjb25maWcgYi9hcmNo
-L3g4Ni9LY29uZmlnCmluZGV4IDIyNmQ1NjkuLmE2YTA3NDAgMTAwNjQ0Ci0tLSBhL2FyY2gveDg2
-L0tjb25maWcKKysrIGIvYXJjaC94ODYvS2NvbmZpZwpAQCAtMTQzLDYgKzE0Myw4IEBAIGNvbmZp
-ZyBYODYKIAlzZWxlY3QgQUNQSV9MRUdBQ1lfVEFCTEVTX0xPT0tVUCBpZiBBQ1BJCiAJc2VsZWN0
-IFg4Nl9GRUFUVVJFX05BTUVTIGlmIFBST0NfRlMKIAlzZWxlY3QgU1JDVQorCXNlbGVjdCBIQVZF
-X0FDUElfQ1NUIGlmIEFDUEkKKwlzZWxlY3QgSEFWRV9BQ1BJX1BTUyBpZiBBQ1BJCiAKIGNvbmZp
-ZyBJTlNUUlVDVElPTl9ERUNPREVSCiAJZGVmX2Jvb2wgeQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9h
-Y3BpL0tjb25maWcgYi9kcml2ZXJzL2FjcGkvS2NvbmZpZwppbmRleCBhYjJjYmI1Li43ZWJiNjcz
-IDEwMDY0NAotLS0gYS9kcml2ZXJzL2FjcGkvS2NvbmZpZworKysgYi9kcml2ZXJzL2FjcGkvS2Nv
-bmZpZwpAQCAtMTY2LDE4ICsxNjYsMzcgQEAgY29uZmlnIEFDUElfRE9DSwogCSAgVGhpcyBkcml2
-ZXIgc3VwcG9ydHMgQUNQSS1jb250cm9sbGVkIGRvY2tpbmcgc3RhdGlvbnMgYW5kIHJlbW92YWJs
-ZQogCSAgZHJpdmUgYmF5cyBzdWNoIGFzIHRoZSBJQk0gVWx0cmFiYXkgYW5kIHRoZSBEZWxsIE1v
-ZHVsZSBCYXkuCiAKLWNvbmZpZyBBQ1BJX1BST0NFU1NPUgotCXRyaXN0YXRlICJQcm9jZXNzb3Ii
-Ci0Jc2VsZWN0IFRIRVJNQUwKLQlzZWxlY3QgQ1BVX0lETEUKK2NvbmZpZyBIQVZFX0FDUElfQ1NU
-CisJYm9vbAorCWRlcGVuZHMgb24gQUNQSV9QUk9DRVNTT1IKIAlkZXBlbmRzIG9uIFg4NiB8fCBJ
-QTY0Ci0JZGVmYXVsdCB5CisJc2VsZWN0IENQVV9JRExFCiAJaGVscAogCSAgVGhpcyBkcml2ZXIg
-aW5zdGFsbHMgQUNQSSBhcyB0aGUgaWRsZSBoYW5kbGVyIGZvciBMaW51eCBhbmQgdXNlcwogCSAg
-QUNQSSBDMiBhbmQgQzMgcHJvY2Vzc29yIHN0YXRlcyB0byBzYXZlIHBvd2VyIG9uIHN5c3RlbXMg
-dGhhdAotCSAgc3VwcG9ydCBpdC4gIEl0IGlzIHJlcXVpcmVkIGJ5IHNldmVyYWwgZmxhdm9ycyBv
-ZiBjcHVmcmVxCisJICBzdXBwb3J0IGl0LgorCitjb25maWcgSEFWRV9BQ1BJX1BTUworCWJvb2wK
-KwlkZXBlbmRzIG9uIEFDUElfUFJPQ0VTU09SCisJZGVwZW5kcyBvbiBYODYgfHwgSUE2NAorCXNl
-bGVjdCBUSEVSTUFMCisJaGVscAorCSAgVGhpcyBkcml2ZXIgaW1wbGVtZW50cyBBQ1BJIG1ldGhv
-ZHMgZm9yIGNvbnRyb2xsaW5nIENQVSBwZXJmb3JtYW5jZQorCSAgdXNpbmcgUFNTIG1ldGhvZHMg
-YXMgZGVzY3JpYmVkIGluIHRoZSBBQ1BJIHNwZWMuIEl0IGFsc28gZW5hYmxlcyBzdXBwb3J0CisJ
-ICBmb3IgQUNQSSBiYXNlZCBwZXJmb3JtYW5jZSB0aHJvdHRsaW5nIChUU1MpIGFuZCBBQ1BJIGJh
-c2VkIHRoZXJtYWwKKwkgIG1vbml0b3JpbmcuIEl0IGlzIHJlcXVpcmVkIGJ5IHNldmVyYWwgZmxh
-dm9ycyBvZiBjcHVmcmVxCiAJICBwZXJmb3JtYW5jZS1zdGF0ZSBkcml2ZXJzLgogCitjb25maWcg
-QUNQSV9QUk9DRVNTT1IKKwl0cmlzdGF0ZSAiUHJvY2Vzc29yIgorCWRlcGVuZHMgb24gWDg2IHx8
-IElBNjQKKwlkZWZhdWx0IHkKKwloZWxwCisJICBUaGlzIGRyaXZlciBhZGRzIHN1cHBvcnQgZm9y
-IHRoZSBBQ1BJIFByb2Nlc3NvciBwYWNrYWdlLiBJdCBpcyByZXF1aXJlZAorCSAgYnkgc2V2ZXJh
-bCBmbGF2b3JzIG9mIGNwdWZyZXEgcGVyZm9ybWFuY2Utc3RhdGUsIHRoZXJtYWwsIHRocm90dGxp
-bmcgYW5kCisJICBpZGxlIGRyaXZlcnMuCisKIAkgIFRvIGNvbXBpbGUgdGhpcyBkcml2ZXIgYXMg
-YSBtb2R1bGUsIGNob29zZSBNIGhlcmU6CiAJICB0aGUgbW9kdWxlIHdpbGwgYmUgY2FsbGVkIHBy
-b2Nlc3Nvci4KIApkaWZmIC0tZ2l0IGEvZHJpdmVycy9hY3BpL01ha2VmaWxlIGIvZHJpdmVycy9h
-Y3BpL01ha2VmaWxlCmluZGV4IDhhMDYzZTIuLjM3MjY3MjUgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMv
-YWNwaS9NYWtlZmlsZQorKysgYi9kcml2ZXJzL2FjcGkvTWFrZWZpbGUKQEAgLTgyLDkgKzgyLDEw
-IEBAIG9iai0kKENPTkZJR19BQ1BJX0NVU1RPTV9NRVRIT0QpKz0gY3VzdG9tX21ldGhvZC5vCiBv
-YmotJChDT05GSUdfQUNQSV9CR1JUKQkJKz0gYmdydC5vCiAKICMgcHJvY2Vzc29yIGhhcyBpdHMg
-b3duICJwcm9jZXNzb3IuIiBtb2R1bGVfcGFyYW0gbmFtZXNwYWNlCi1wcm9jZXNzb3IteQkJCTo9
-IHByb2Nlc3Nvcl9kcml2ZXIubyBwcm9jZXNzb3JfdGhyb3R0bGluZy5vCi1wcm9jZXNzb3IteQkJ
-CSs9IHByb2Nlc3Nvcl9pZGxlLm8gcHJvY2Vzc29yX3RoZXJtYWwubwotcHJvY2Vzc29yLSQoQ09O
-RklHX0NQVV9GUkVRKQkrPSBwcm9jZXNzb3JfcGVyZmxpYi5vCitwcm9jZXNzb3IteQkJCTo9IHBy
-b2Nlc3Nvcl9kcml2ZXIubworcHJvY2Vzc29yLSQoQ09ORklHX0hBVkVfQUNQSV9DU1QpCSs9IHBy
-b2Nlc3Nvcl9pZGxlLm8KK3Byb2Nlc3Nvci0kKENPTkZJR19IQVZFX0FDUElfUFNTKQkrPSBwcm9j
-ZXNzb3JfcGVyZmxpYi5vCVwKKwlwcm9jZXNzb3JfdGhyb3R0bGluZy5vIHByb2Nlc3Nvcl90aGVy
-bWFsLm8KIAogb2JqLSQoQ09ORklHX0FDUElfUFJPQ0VTU09SX0FHR1JFR0FUT1IpICs9IGFjcGlf
-cGFkLm8KIApkaWZmIC0tZ2l0IGEvZHJpdmVycy9hY3BpL3Byb2Nlc3Nvcl9kcml2ZXIuYyBiL2Ry
-aXZlcnMvYWNwaS9wcm9jZXNzb3JfZHJpdmVyLmMKaW5kZXggZDlmNzE1OC4uODE3ZmVjNSAxMDA2
-NDQKLS0tIGEvZHJpdmVycy9hY3BpL3Byb2Nlc3Nvcl9kcml2ZXIuYworKysgYi9kcml2ZXJzL2Fj
-cGkvcHJvY2Vzc29yX2RyaXZlci5jCkBAIC0xNjMsMzQgKzE2MywyNCBAQCBzdGF0aWMgc3RydWN0
-IG5vdGlmaWVyX2Jsb2NrIF9fcmVmZGF0YSBhY3BpX2NwdV9ub3RpZmllciA9IHsKIAkgICAgLm5v
-dGlmaWVyX2NhbGwgPSBhY3BpX2NwdV9zb2Z0X25vdGlmeSwKIH07CiAKLXN0YXRpYyBpbnQgX19h
-Y3BpX3Byb2Nlc3Nvcl9zdGFydChzdHJ1Y3QgYWNwaV9kZXZpY2UgKmRldmljZSkKKyNpZmRlZiBD
-T05GSUdfSEFWRV9BQ1BJX1BTUworc3RhdGljIGludCBhY3BpX3Bzc19wZXJmX2luaXQoc3RydWN0
-IGFjcGlfcHJvY2Vzc29yICpwciwKKwkJc3RydWN0IGFjcGlfZGV2aWNlICpkZXZpY2UpCiB7Ci0J
-c3RydWN0IGFjcGlfcHJvY2Vzc29yICpwciA9IGFjcGlfZHJpdmVyX2RhdGEoZGV2aWNlKTsKLQlh
-Y3BpX3N0YXR1cyBzdGF0dXM7CiAJaW50IHJlc3VsdCA9IDA7CiAKLQlpZiAoIXByKQotCQlyZXR1
-cm4gLUVOT0RFVjsKLQotCWlmIChwci0+ZmxhZ3MubmVlZF9ob3RwbHVnX2luaXQpCi0JCXJldHVy
-biAwOwotCi0jaWZkZWYgQ09ORklHX0NQVV9GUkVRCiAJYWNwaV9wcm9jZXNzb3JfcHBjX2hhc19j
-aGFuZ2VkKHByLCAwKTsKLSNlbmRpZgorCiAJYWNwaV9wcm9jZXNzb3JfZ2V0X3Rocm90dGxpbmdf
-aW5mbyhwcik7CiAKIAlpZiAocHItPmZsYWdzLnRocm90dGxpbmcpCiAJCXByLT5mbGFncy5saW1p
-dCA9IDE7CiAKLQlpZiAoIWNwdWlkbGVfZ2V0X2RyaXZlcigpIHx8IGNwdWlkbGVfZ2V0X2RyaXZl
-cigpID09ICZhY3BpX2lkbGVfZHJpdmVyKQotCQlhY3BpX3Byb2Nlc3Nvcl9wb3dlcl9pbml0KHBy
-KTsKLQogCXByLT5jZGV2ID0gdGhlcm1hbF9jb29saW5nX2RldmljZV9yZWdpc3RlcigiUHJvY2Vz
-c29yIiwgZGV2aWNlLAogCQkJCQkJICAgJnByb2Nlc3Nvcl9jb29saW5nX29wcyk7CiAJaWYgKElT
-X0VSUihwci0+Y2RldikpIHsKIAkJcmVzdWx0ID0gUFRSX0VSUihwci0+Y2Rldik7Ci0JCWdvdG8g
-ZXJyX3Bvd2VyX2V4aXQ7CisJCXJldHVybiByZXN1bHQ7CiAJfQogCiAJZGV2X2RiZygmZGV2aWNl
-LT5kZXYsICJyZWdpc3RlcmVkIGFzIGNvb2xpbmdfZGV2aWNlJWRcbiIsCkBAIC0yMDQsNiArMTk0
-LDcgQEAgc3RhdGljIGludCBfX2FjcGlfcHJvY2Vzc29yX3N0YXJ0KHN0cnVjdCBhY3BpX2Rldmlj
-ZSAqZGV2aWNlKQogCQkJIkZhaWxlZCB0byBjcmVhdGUgc3lzZnMgbGluayAndGhlcm1hbF9jb29s
-aW5nJ1xuIik7CiAJCWdvdG8gZXJyX3RoZXJtYWxfdW5yZWdpc3RlcjsKIAl9CisKIAlyZXN1bHQg
-PSBzeXNmc19jcmVhdGVfbGluaygmcHItPmNkZXYtPmRldmljZS5rb2JqLAogCQkJCSAgICZkZXZp
-Y2UtPmRldi5rb2JqLAogCQkJCSAgICJkZXZpY2UiKTsKQEAgLTIxMywxNyArMjA0LDYxIEBAIHN0
-YXRpYyBpbnQgX19hY3BpX3Byb2Nlc3Nvcl9zdGFydChzdHJ1Y3QgYWNwaV9kZXZpY2UgKmRldmlj
-ZSkKIAkJZ290byBlcnJfcmVtb3ZlX3N5c2ZzX3RoZXJtYWw7CiAJfQogCi0Jc3RhdHVzID0gYWNw
-aV9pbnN0YWxsX25vdGlmeV9oYW5kbGVyKGRldmljZS0+aGFuZGxlLCBBQ1BJX0RFVklDRV9OT1RJ
-RlksCi0JCQkJCSAgICAgYWNwaV9wcm9jZXNzb3Jfbm90aWZ5LCBkZXZpY2UpOwotCWlmIChBQ1BJ
-X1NVQ0NFU1Moc3RhdHVzKSkKLQkJcmV0dXJuIDA7Ci0KIAlzeXNmc19yZW1vdmVfbGluaygmcHIt
-PmNkZXYtPmRldmljZS5rb2JqLCAiZGV2aWNlIik7CiAgZXJyX3JlbW92ZV9zeXNmc190aGVybWFs
-OgogCXN5c2ZzX3JlbW92ZV9saW5rKCZkZXZpY2UtPmRldi5rb2JqLCAidGhlcm1hbF9jb29saW5n
-Iik7CiAgZXJyX3RoZXJtYWxfdW5yZWdpc3RlcjoKIAl0aGVybWFsX2Nvb2xpbmdfZGV2aWNlX3Vu
-cmVnaXN0ZXIocHItPmNkZXYpOwotIGVycl9wb3dlcl9leGl0OgorCisJcmV0dXJuIHJlc3VsdDsK
-K30KKworc3RhdGljIHZvaWQgYWNwaV9wc3NfcGVyZl9leGl0KHN0cnVjdCBhY3BpX3Byb2Nlc3Nv
-ciAqcHIsCisJCXN0cnVjdCBhY3BpX2RldmljZSAqZGV2aWNlKQoreworCWlmIChwci0+Y2Rldikg
-eworCQlzeXNmc19yZW1vdmVfbGluaygmZGV2aWNlLT5kZXYua29iaiwgInRoZXJtYWxfY29vbGlu
-ZyIpOworCQlzeXNmc19yZW1vdmVfbGluaygmcHItPmNkZXYtPmRldmljZS5rb2JqLCAiZGV2aWNl
-Iik7CisJCXRoZXJtYWxfY29vbGluZ19kZXZpY2VfdW5yZWdpc3Rlcihwci0+Y2Rldik7CisJCXBy
-LT5jZGV2ID0gTlVMTDsKKwl9Cit9CisjZWxzZQorc3RhdGljIGlubGluZSBpbnQgYWNwaV9wc3Nf
-cGVyZl9pbml0KHN0cnVjdCBhY3BpX3Byb2Nlc3NvciAqcHIsCisJCXN0cnVjdCBhY3BpX2Rldmlj
-ZSAqZGV2aWNlKQoreworCXJldHVybiAwOworfQorCitzdGF0aWMgaW5saW5lIHZvaWQgYWNwaV9w
-c3NfcGVyZl9leGl0KHN0cnVjdCBhY3BpX3Byb2Nlc3NvciAqcHIsCisJCXN0cnVjdCBhY3BpX2Rl
-dmljZSAqZGV2aWNlKSB7fQorI2VuZGlmIC8qIENPTkZJR19IQVZFX0FDUElfUFNTICovCisKK3N0
-YXRpYyBpbnQgX19hY3BpX3Byb2Nlc3Nvcl9zdGFydChzdHJ1Y3QgYWNwaV9kZXZpY2UgKmRldmlj
-ZSkKK3sKKwlzdHJ1Y3QgYWNwaV9wcm9jZXNzb3IgKnByID0gYWNwaV9kcml2ZXJfZGF0YShkZXZp
-Y2UpOworCWFjcGlfc3RhdHVzIHN0YXR1czsKKwlpbnQgcmVzdWx0ID0gMDsKKworCWlmICghcHIp
-CisJCXJldHVybiAtRU5PREVWOworCisJaWYgKHByLT5mbGFncy5uZWVkX2hvdHBsdWdfaW5pdCkK
-KwkJcmV0dXJuIDA7CisKKwlpZiAoIWNwdWlkbGVfZ2V0X2RyaXZlcigpIHx8IGNwdWlkbGVfZ2V0
-X2RyaXZlcigpID09ICZhY3BpX2lkbGVfZHJpdmVyKQorCQlhY3BpX3Byb2Nlc3Nvcl9wb3dlcl9p
-bml0KHByKTsKKworCXJlc3VsdCA9IGFjcGlfcHNzX3BlcmZfaW5pdChwciwgZGV2aWNlKTsKKwlp
-ZiAocmVzdWx0KQorCQlnb3RvIGVycl9wb3dlcl9leGl0OworCisJc3RhdHVzID0gYWNwaV9pbnN0
-YWxsX25vdGlmeV9oYW5kbGVyKGRldmljZS0+aGFuZGxlLCBBQ1BJX0RFVklDRV9OT1RJRlksCisJ
-CQkJCSAgICAgYWNwaV9wcm9jZXNzb3Jfbm90aWZ5LCBkZXZpY2UpOworCWlmIChBQ1BJX1NVQ0NF
-U1Moc3RhdHVzKSkKKwkJcmV0dXJuIDA7CisKK2Vycl9wb3dlcl9leGl0OgogCWFjcGlfcHJvY2Vz
-c29yX3Bvd2VyX2V4aXQocHIpOwogCXJldHVybiByZXN1bHQ7CiB9CkBAIC0yNTIsMTUgKzI4Nywx
-MCBAQCBzdGF0aWMgaW50IGFjcGlfcHJvY2Vzc29yX3N0b3Aoc3RydWN0IGRldmljZSAqZGV2KQog
-CXByID0gYWNwaV9kcml2ZXJfZGF0YShkZXZpY2UpOwogCWlmICghcHIpCiAJCXJldHVybiAwOwot
-CiAJYWNwaV9wcm9jZXNzb3JfcG93ZXJfZXhpdChwcik7CiAKLQlpZiAocHItPmNkZXYpIHsKLQkJ
-c3lzZnNfcmVtb3ZlX2xpbmsoJmRldmljZS0+ZGV2LmtvYmosICJ0aGVybWFsX2Nvb2xpbmciKTsK
-LQkJc3lzZnNfcmVtb3ZlX2xpbmsoJnByLT5jZGV2LT5kZXZpY2Uua29iaiwgImRldmljZSIpOwot
-CQl0aGVybWFsX2Nvb2xpbmdfZGV2aWNlX3VucmVnaXN0ZXIocHItPmNkZXYpOwotCQlwci0+Y2Rl
-diA9IE5VTEw7Ci0JfQorCWFjcGlfcHNzX3BlcmZfZXhpdChwciwgZGV2aWNlKTsKKwogCXJldHVy
-biAwOwogfQogCmRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvS2NvbmZpZyBiL2RyaXZlcnMv
-Y3B1ZnJlcS9LY29uZmlnCmluZGV4IDY1OTg3OWEuLmQwNzk0NGMgMTAwNjQ0Ci0tLSBhL2RyaXZl
-cnMvY3B1ZnJlcS9LY29uZmlnCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9LY29uZmlnCkBAIC0yMjMs
-NyArMjIzLDcgQEAgZW5kaWYKIGlmIElBNjQKIGNvbmZpZyBJQTY0X0FDUElfQ1BVRlJFUQogCXRy
-aXN0YXRlICJBQ1BJIFByb2Nlc3NvciBQLVN0YXRlcyBkcml2ZXIiCi0JZGVwZW5kcyBvbiBBQ1BJ
-X1BST0NFU1NPUgorCWRlcGVuZHMgb24gQUNQSV9QUk9DRVNTT1IgJiYgSEFWRV9BQ1BJX1BTUyAm
-JiBIQVZFX0FDUElfQ1NUCiAJaGVscAogCVRoaXMgZHJpdmVyIGFkZHMgYSBDUFVGcmVxIGRyaXZl
-ciB3aGljaCB1dGlsaXplcyB0aGUgQUNQSQogCVByb2Nlc3NvciBQZXJmb3JtYW5jZSBTdGF0ZXMu
-CmRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvS2NvbmZpZy54ODYgYi9kcml2ZXJzL2NwdWZy
-ZXEvS2NvbmZpZy54ODYKaW5kZXggYzU5YmRjYi4uNzZkZDQ1NCAxMDA2NDQKLS0tIGEvZHJpdmVy
-cy9jcHVmcmVxL0tjb25maWcueDg2CisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9LY29uZmlnLng4NgpA
-QCAtMTgsNiArMTgsNyBAQCBjb25maWcgWDg2X0lOVEVMX1BTVEFURQogY29uZmlnIFg4Nl9QQ0Nf
-Q1BVRlJFUQogCXRyaXN0YXRlICJQcm9jZXNzb3IgQ2xvY2tpbmcgQ29udHJvbCBpbnRlcmZhY2Ug
-ZHJpdmVyIgogCWRlcGVuZHMgb24gQUNQSSAmJiBBQ1BJX1BST0NFU1NPUgorCWRlcGVuZHMgb24g
-SEFWRV9BQ1BJX1BTUyAmJiBIQVZFX0FDUElfQ1NUCiAJaGVscAogCSAgVGhpcyBkcml2ZXIgYWRk
-cyBzdXBwb3J0IGZvciB0aGUgUENDIGludGVyZmFjZS4KIApAQCAtMzIsNiArMzMsNyBAQCBjb25m
-aWcgWDg2X1BDQ19DUFVGUkVRCiBjb25maWcgWDg2X0FDUElfQ1BVRlJFUQogCXRyaXN0YXRlICJB
-Q1BJIFByb2Nlc3NvciBQLVN0YXRlcyBkcml2ZXIiCiAJZGVwZW5kcyBvbiBBQ1BJX1BST0NFU1NP
-UgorCWRlcGVuZHMgb24gSEFWRV9BQ1BJX1BTUyAmJiBIQVZFX0FDUElfQ1NUCiAJaGVscAogCSAg
-VGhpcyBkcml2ZXIgYWRkcyBhIENQVUZyZXEgZHJpdmVyIHdoaWNoIHV0aWxpemVzIHRoZSBBQ1BJ
-CiAJICBQcm9jZXNzb3IgUGVyZm9ybWFuY2UgU3RhdGVzLgpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9h
-Y3BpL3Byb2Nlc3Nvci5oIGIvaW5jbHVkZS9hY3BpL3Byb2Nlc3Nvci5oCmluZGV4IDQxODhhNGQu
-LjcxZWNmNjUgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvYWNwaS9wcm9jZXNzb3IuaAorKysgYi9pbmNs
-dWRlL2FjcGkvcHJvY2Vzc29yLmgKQEAgLTIyMiwxNiArMjIyLDYgQEAgc3RydWN0IGFjcGlfcHJv
-Y2Vzc29yX2VycmF0YSB7CiAJfSBwaWl4NDsKIH07CiAKLWV4dGVybiBpbnQgYWNwaV9wcm9jZXNz
-b3JfcHJlcmVnaXN0ZXJfcGVyZm9ybWFuY2Uoc3RydWN0Ci0JCQkJCQkgIGFjcGlfcHJvY2Vzc29y
-X3BlcmZvcm1hbmNlCi0JCQkJCQkgIF9fcGVyY3B1ICpwZXJmb3JtYW5jZSk7Ci0KLWV4dGVybiBp
-bnQgYWNwaV9wcm9jZXNzb3JfcmVnaXN0ZXJfcGVyZm9ybWFuY2Uoc3RydWN0IGFjcGlfcHJvY2Vz
-c29yX3BlcmZvcm1hbmNlCi0JCQkJCSAgICAgICAqcGVyZm9ybWFuY2UsIHVuc2lnbmVkIGludCBj
-cHUpOwotZXh0ZXJuIHZvaWQgYWNwaV9wcm9jZXNzb3JfdW5yZWdpc3Rlcl9wZXJmb3JtYW5jZShz
-dHJ1Y3QKLQkJCQkJCSAgYWNwaV9wcm9jZXNzb3JfcGVyZm9ybWFuY2UKLQkJCQkJCSAgKnBlcmZv
-cm1hbmNlLAotCQkJCQkJICB1bnNpZ25lZCBpbnQgY3B1KTsKIAogLyogbm90ZTogdGhpcyBsb2Nr
-cyBib3RoIHRoZSBjYWxsaW5nIG1vZHVsZSBhbmQgdGhlIHByb2Nlc3NvciBtb2R1bGUKICAgICAg
-ICAgIGlmIGEgX1BQQyBvYmplY3QgZXhpc3RzLCBybW1vZCBpcyBkaXNhbGxvd2VkIHRoZW4gKi8K
-QEAgLTI2NywyOCArMjU3LDUyIEBAIHN0YXRpYyBpbmxpbmUgaW50IGFjcGlfcHJvY2Vzc29yX2Zm
-aF9jc3RhdGVfcHJvYmUodW5zaWduZWQgaW50IGNwdSwKIAlyZXR1cm4gLTE7CiB9CiBzdGF0aWMg
-aW5saW5lIHZvaWQgYWNwaV9wcm9jZXNzb3JfZmZoX2NzdGF0ZV9lbnRlcihzdHJ1Y3QgYWNwaV9w
-cm9jZXNzb3JfY3gKLQkJCQkJCSAgICpjc3RhdGUpCi17Ci0JcmV0dXJuOwotfQorCQkJCQkJICAg
-KmNzdGF0ZSkge30KICNlbmRpZgogCiAvKiBpbiBwcm9jZXNzb3JfcGVyZmxpYi5jICovCiAKLSNp
-ZmRlZiBDT05GSUdfQ1BVX0ZSRVEKKyNpZmRlZiBDT05GSUdfSEFWRV9BQ1BJX1BTUworZXh0ZXJu
-IGludCBhY3BpX3Byb2Nlc3Nvcl9wcmVyZWdpc3Rlcl9wZXJmb3JtYW5jZShzdHJ1Y3QKKwkJCQkJ
-CSAgYWNwaV9wcm9jZXNzb3JfcGVyZm9ybWFuY2UKKwkJCQkJCSAgX19wZXJjcHUgKnBlcmZvcm1h
-bmNlKTsKKworZXh0ZXJuIGludCBhY3BpX3Byb2Nlc3Nvcl9yZWdpc3Rlcl9wZXJmb3JtYW5jZShz
-dHJ1Y3QgYWNwaV9wcm9jZXNzb3JfcGVyZm9ybWFuY2UKKwkJCQkJICAgICAgICpwZXJmb3JtYW5j
-ZSwgdW5zaWduZWQgaW50IGNwdSk7CitleHRlcm4gdm9pZCBhY3BpX3Byb2Nlc3Nvcl91bnJlZ2lz
-dGVyX3BlcmZvcm1hbmNlKHN0cnVjdAorCQkJCQkJICBhY3BpX3Byb2Nlc3Nvcl9wZXJmb3JtYW5j
-ZQorCQkJCQkJICAqcGVyZm9ybWFuY2UsCisJCQkJCQkgIHVuc2lnbmVkIGludCBjcHUpOwogdm9p
-ZCBhY3BpX3Byb2Nlc3Nvcl9wcGNfaW5pdCh2b2lkKTsKIHZvaWQgYWNwaV9wcm9jZXNzb3JfcHBj
-X2V4aXQodm9pZCk7CiBpbnQgYWNwaV9wcm9jZXNzb3JfcHBjX2hhc19jaGFuZ2VkKHN0cnVjdCBh
-Y3BpX3Byb2Nlc3NvciAqcHIsIGludCBldmVudF9mbGFnKTsKIGV4dGVybiBpbnQgYWNwaV9wcm9j
-ZXNzb3JfZ2V0X2Jpb3NfbGltaXQoaW50IGNwdSwgdW5zaWduZWQgaW50ICpsaW1pdCk7CiAjZWxz
-ZQotc3RhdGljIGlubGluZSB2b2lkIGFjcGlfcHJvY2Vzc29yX3BwY19pbml0KHZvaWQpCitzdGF0
-aWMgaW5saW5lIGludCBhY3BpX3Byb2Nlc3Nvcl9wcmVyZWdpc3Rlcl9wZXJmb3JtYW5jZShzdHJ1
-Y3QKKwkJYWNwaV9wcm9jZXNzb3JfcGVyZm9ybWFuY2UKKwkJX19wZXJjcHUgKnBlcmZvcm1hbmNl
-KQogewotCXJldHVybjsKKwlyZXR1cm4gLUVOT0RFVjsKKwogfQotc3RhdGljIGlubGluZSB2b2lk
-IGFjcGlfcHJvY2Vzc29yX3BwY19leGl0KHZvaWQpCisKK3N0YXRpYyBpbmxpbmUgaW50IGFjcGlf
-cHJvY2Vzc29yX3JlZ2lzdGVyX3BlcmZvcm1hbmNlKHN0cnVjdAorCQlhY3BpX3Byb2Nlc3Nvcl9w
-ZXJmb3JtYW5jZQorCQkqcGVyZm9ybWFuY2UsIHVuc2lnbmVkIGludCBjcHUpCiB7Ci0JcmV0dXJu
-OworCXJldHVybiAtRU5PREVWOworCiB9CisKK3N0YXRpYyBpbmxpbmUgdm9pZCBhY3BpX3Byb2Nl
-c3Nvcl91bnJlZ2lzdGVyX3BlcmZvcm1hbmNlKHN0cnVjdAorCQlhY3BpX3Byb2Nlc3Nvcl9wZXJm
-b3JtYW5jZQorCQkqcGVyZm9ybWFuY2UsCisJCXVuc2lnbmVkIGludCBjcHUpIHt9CisKK3N0YXRp
-YyBpbmxpbmUgdm9pZCBhY3BpX3Byb2Nlc3Nvcl9wcGNfaW5pdCh2b2lkKSB7fQorCitzdGF0aWMg
-aW5saW5lIHZvaWQgYWNwaV9wcm9jZXNzb3JfcHBjX2V4aXQodm9pZCkge30KKwogc3RhdGljIGlu
-bGluZSBpbnQgYWNwaV9wcm9jZXNzb3JfcHBjX2hhc19jaGFuZ2VkKHN0cnVjdCBhY3BpX3Byb2Nl
-c3NvciAqcHIsCiAJCQkJCQkJCWludCBldmVudF9mbGFnKQogewpAQCAtMzAyLDEyICszMTYsMTIg
-QEAgc3RhdGljIGlubGluZSBpbnQgYWNwaV9wcm9jZXNzb3JfcHBjX2hhc19jaGFuZ2VkKHN0cnVj
-dCBhY3BpX3Byb2Nlc3NvciAqcHIsCiAJfQogCXJldHVybiAwOwogfQorCiBzdGF0aWMgaW5saW5l
-IGludCBhY3BpX3Byb2Nlc3Nvcl9nZXRfYmlvc19saW1pdChpbnQgY3B1LCB1bnNpZ25lZCBpbnQg
-KmxpbWl0KQogewogCXJldHVybiAtRU5PREVWOwogfQotCi0jZW5kaWYJCQkJLyogQ09ORklHX0NQ
-VV9GUkVRICovCisjZW5kaWYJCQkJLyogQ09ORklHX0hBVkVfQUNQSV9QU1MgKi8KIAogLyogaW4g
-cHJvY2Vzc29yX2NvcmUuYyAqLwogcGh5c19jcHVpZF90IGFjcGlfZ2V0X3BoeXNfaWQoYWNwaV9o
-YW5kbGUsIGludCB0eXBlLCB1MzIgYWNwaV9pZCk7CkBAIC0zMTgsNiArMzMyLDcgQEAgaW50IGFj
-cGlfZ2V0X2NwdWlkKGFjcGlfaGFuZGxlLCBpbnQgdHlwZSwgdTMyIGFjcGlfaWQpOwogdm9pZCBh
-Y3BpX3Byb2Nlc3Nvcl9zZXRfcGRjKGFjcGlfaGFuZGxlIGhhbmRsZSk7CiAKIC8qIGluIHByb2Nl
-c3Nvcl90aHJvdHRsaW5nLmMgKi8KKyNpZmRlZiBDT05GSUdfSEFWRV9BQ1BJX1BTUwogaW50IGFj
-cGlfcHJvY2Vzc29yX3RzdGF0ZV9oYXNfY2hhbmdlZChzdHJ1Y3QgYWNwaV9wcm9jZXNzb3IgKnBy
-KTsKIGludCBhY3BpX3Byb2Nlc3Nvcl9nZXRfdGhyb3R0bGluZ19pbmZvKHN0cnVjdCBhY3BpX3By
-b2Nlc3NvciAqcHIpOwogZXh0ZXJuIGludCBhY3BpX3Byb2Nlc3Nvcl9zZXRfdGhyb3R0bGluZyhz
-dHJ1Y3QgYWNwaV9wcm9jZXNzb3IgKnByLApAQCAtMzMwLDM2ICszNDUsNzUgQEAgZXh0ZXJuIHZv
-aWQgYWNwaV9wcm9jZXNzb3JfcmVldmFsdWF0ZV90c3RhdGUoc3RydWN0IGFjcGlfcHJvY2Vzc29y
-ICpwciwKIAkJCXVuc2lnbmVkIGxvbmcgYWN0aW9uKTsKIGV4dGVybiBjb25zdCBzdHJ1Y3QgZmls
-ZV9vcGVyYXRpb25zIGFjcGlfcHJvY2Vzc29yX3Rocm90dGxpbmdfZm9wczsKIGV4dGVybiB2b2lk
-IGFjcGlfcHJvY2Vzc29yX3Rocm90dGxpbmdfaW5pdCh2b2lkKTsKKyNlbHNlCitzdGF0aWMgaW5s
-aW5lIGludCBhY3BpX3Byb2Nlc3Nvcl90c3RhdGVfaGFzX2NoYW5nZWQoc3RydWN0IGFjcGlfcHJv
-Y2Vzc29yICpwcikKK3sKKwlyZXR1cm4gMDsKK30KKworc3RhdGljIGlubGluZSBpbnQgYWNwaV9w
-cm9jZXNzb3JfZ2V0X3Rocm90dGxpbmdfaW5mbyhzdHJ1Y3QgYWNwaV9wcm9jZXNzb3IgKnByKQor
-eworCXJldHVybiAtRU5PREVWOworfQorCitzdGF0aWMgaW5saW5lIGludCBhY3BpX3Byb2Nlc3Nv
-cl9zZXRfdGhyb3R0bGluZyhzdHJ1Y3QgYWNwaV9wcm9jZXNzb3IgKnByLAorCQkJCQkgaW50IHN0
-YXRlLCBib29sIGZvcmNlKQoreworCXJldHVybiAtRU5PREVWOworfQorCitzdGF0aWMgaW5saW5l
-IHZvaWQgYWNwaV9wcm9jZXNzb3JfcmVldmFsdWF0ZV90c3RhdGUoc3RydWN0IGFjcGlfcHJvY2Vz
-c29yICpwciwKKwkJCXVuc2lnbmVkIGxvbmcgYWN0aW9uKSB7fQorCitzdGF0aWMgaW5saW5lIHZv
-aWQgYWNwaV9wcm9jZXNzb3JfdGhyb3R0bGluZ19pbml0KHZvaWQpIHt9CisjZW5kaWYJLyogQ09O
-RklHX0hBVkVfQUNQSV9QU1MgKi8KKwogLyogaW4gcHJvY2Vzc29yX2lkbGUuYyAqLworZXh0ZXJu
-IHN0cnVjdCBjcHVpZGxlX2RyaXZlciBhY3BpX2lkbGVfZHJpdmVyOworI2lmZGVmIENPTkZJR19I
-QVZFX0FDUElfQ1NUCiBpbnQgYWNwaV9wcm9jZXNzb3JfcG93ZXJfaW5pdChzdHJ1Y3QgYWNwaV9w
-cm9jZXNzb3IgKnByKTsKIGludCBhY3BpX3Byb2Nlc3Nvcl9wb3dlcl9leGl0KHN0cnVjdCBhY3Bp
-X3Byb2Nlc3NvciAqcHIpOwogaW50IGFjcGlfcHJvY2Vzc29yX2NzdF9oYXNfY2hhbmdlZChzdHJ1
-Y3QgYWNwaV9wcm9jZXNzb3IgKnByKTsKIGludCBhY3BpX3Byb2Nlc3Nvcl9ob3RwbHVnKHN0cnVj
-dCBhY3BpX3Byb2Nlc3NvciAqcHIpOwotZXh0ZXJuIHN0cnVjdCBjcHVpZGxlX2RyaXZlciBhY3Bp
-X2lkbGVfZHJpdmVyOworI2Vsc2UKK3N0YXRpYyBpbmxpbmUgaW50IGFjcGlfcHJvY2Vzc29yX3Bv
-d2VyX2luaXQoc3RydWN0IGFjcGlfcHJvY2Vzc29yICpwcikKK3sKKwlyZXR1cm4gLUVOT0RFVjsK
-K30KKworc3RhdGljIGlubGluZSBpbnQgYWNwaV9wcm9jZXNzb3JfcG93ZXJfZXhpdChzdHJ1Y3Qg
-YWNwaV9wcm9jZXNzb3IgKnByKQoreworCXJldHVybiAtRU5PREVWOworfQorCitzdGF0aWMgaW5s
-aW5lIGludCBhY3BpX3Byb2Nlc3Nvcl9jc3RfaGFzX2NoYW5nZWQoc3RydWN0IGFjcGlfcHJvY2Vz
-c29yICpwcikKK3sKKwlyZXR1cm4gLUVOT0RFVjsKK30KIAotI2lmZGVmIENPTkZJR19QTV9TTEVF
-UAorc3RhdGljIGlubGluZSBpbnQgYWNwaV9wcm9jZXNzb3JfaG90cGx1ZyhzdHJ1Y3QgYWNwaV9w
-cm9jZXNzb3IgKnByKQoreworCXJldHVybiAtRU5PREVWOworfQorI2VuZGlmCS8qIENPTkZJR19I
-QVZFX0FDUElfQ1NUICovCisKKyNpZiBkZWZpbmVkKENPTkZJR19IQVZFX0FDUElfQ1NUKSAmIGRl
-ZmluZWQoQ09ORklHX1BNX1NMRUVQKQogdm9pZCBhY3BpX3Byb2Nlc3Nvcl9zeXNjb3JlX2luaXQo
-dm9pZCk7CiB2b2lkIGFjcGlfcHJvY2Vzc29yX3N5c2NvcmVfZXhpdCh2b2lkKTsKICNlbHNlCiBz
-dGF0aWMgaW5saW5lIHZvaWQgYWNwaV9wcm9jZXNzb3Jfc3lzY29yZV9pbml0KHZvaWQpIHt9CiBz
-dGF0aWMgaW5saW5lIHZvaWQgYWNwaV9wcm9jZXNzb3Jfc3lzY29yZV9leGl0KHZvaWQpIHt9Ci0j
-ZW5kaWYKKyNlbmRpZiAvKiBDT05GSUdfSEFWRV9BQ1BJX0NTVCAqLwogCiAvKiBpbiBwcm9jZXNz
-b3JfdGhlcm1hbC5jICovCiBpbnQgYWNwaV9wcm9jZXNzb3JfZ2V0X2xpbWl0X2luZm8oc3RydWN0
-IGFjcGlfcHJvY2Vzc29yICpwcik7CisjaWZkZWYgQ09ORklHX0hBVkVfQUNQSV9QU1MKIGV4dGVy
-biBjb25zdCBzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZV9vcHMgcHJvY2Vzc29yX2Nvb2xp
-bmdfb3BzOwotI2lmZGVmIENPTkZJR19DUFVfRlJFUQogdm9pZCBhY3BpX3RoZXJtYWxfY3B1ZnJl
-cV9pbml0KHZvaWQpOwogdm9pZCBhY3BpX3RoZXJtYWxfY3B1ZnJlcV9leGl0KHZvaWQpOwogI2Vs
-c2UKLXN0YXRpYyBpbmxpbmUgdm9pZCBhY3BpX3RoZXJtYWxfY3B1ZnJlcV9pbml0KHZvaWQpCi17
-Ci0JcmV0dXJuOwotfQotc3RhdGljIGlubGluZSB2b2lkIGFjcGlfdGhlcm1hbF9jcHVmcmVxX2V4
-aXQodm9pZCkKLXsKLQlyZXR1cm47Ci19Ci0jZW5kaWYKK3N0YXRpYyBpbmxpbmUgdm9pZCBhY3Bp
-X3RoZXJtYWxfY3B1ZnJlcV9pbml0KHZvaWQpIHt9CitzdGF0aWMgaW5saW5lIHZvaWQgYWNwaV90
-aGVybWFsX2NwdWZyZXFfZXhpdCh2b2lkKSB7fQorI2VuZGlmCS8qIENPTkZJR19IQVZFX0FDUElf
-UFNTICovCiAKICNlbmRpZgotLSAKMS45LjEKCg==
---089e015382b6972d42051a62a9cb--
