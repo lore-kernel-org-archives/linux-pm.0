@@ -1,89 +1,93 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: sysfs charge thresholds for ThinkPads (and possibly others),
- preparation for second try
-Date: Wed, 8 Jul 2015 01:51:10 +0200
-Message-ID: <20150707235110.GA19748@earth>
-References: <20150707210728.GA7524@jak-x230>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v6 2/7] ACPI: Make ACPI processor driver more extensible
+Date: Wed, 08 Jul 2015 03:07:15 +0200
+Message-ID: <2138469.Io9yItSdst@vostro.rjw.lan>
+References: <cover.1434398373.git.ashwin.chaugule@linaro.org> <9e352cbe2feac01158a21511bac5c544dc2f29e2.1434398373.git.ashwin.chaugule@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="GvXjxJ+pjyke8COw"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150707210728.GA7524@jak-x230>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Julian Andres Klode <jak@jak-linux.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, ibm-acpi-devel@lists.sourceforge.net, platform-driver-x86@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, evgeni@debian.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:62886 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753055AbbGHAks (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 20:40:48 -0400
+In-Reply-To: <9e352cbe2feac01158a21511bac5c544dc2f29e2.1434398373.git.ashwin.chaugule@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Cc: jaswinder.singh@linaro.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, patches@linaro.org, linux-acpi@vger.kernel.org, viresh.kumar@linaro.org, sudeep.holla@arm.com
 
+On Monday, June 15, 2015 04:09:06 PM Ashwin Chaugule wrote:
+> The ACPI processor driver is currently tied too closely
+> to the ACPI C-states (CST), P-states (PSS) and other related
+> constructs for controlling CPU idle and CPU performance.
+> 
+> The newer ACPI specification (v5.1 onwards) introduces
+> alternative methods to CST and PSS. These new mechanisms
+> are described within each ACPI Processor object and so they
+> need to be scanned whenever a new Processor object is detected.
+> This patch introduces two new Kconfig symbols to allow for
+> finer configurability among the various options for controlling
+> CPU idle and performance states. There is no change in functionality
+> and these options are defaulted to enabled to maintain previous
+> behaviour.
+> 
+> The following patchwork introduces CPPC: A newer method of
+> controlling CPU performance. The OS is not expected to support CPPC
+> and PSS at runtime. So the kconfig option lets us make these two
+> mutually exclusive at compile time.
+> 
+> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+> Reviewed-by: Al Stone <al.stone@linaro.org>
+> ---
+>  drivers/acpi/Kconfig            |  31 +++++++++--
+>  drivers/acpi/Makefile           |   7 ++-
+>  drivers/acpi/processor_driver.c |  86 ++++++++++++++++++----------
+>  drivers/cpufreq/Kconfig         |   2 +-
+>  drivers/cpufreq/Kconfig.x86     |   2 +
+>  include/acpi/processor.h        | 120 ++++++++++++++++++++++++++++------------
+>  6 files changed, 176 insertions(+), 72 deletions(-)
+> 
+> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+> index ab2cbb5..5942754 100644
+> --- a/drivers/acpi/Kconfig
+> +++ b/drivers/acpi/Kconfig
+> @@ -166,18 +166,39 @@ config ACPI_DOCK
+>  	  This driver supports ACPI-controlled docking stations and removable
+>  	  drive bays such as the IBM Ultrabay and the Dell Module Bay.
+>  
+> -config ACPI_PROCESSOR
+> -	tristate "Processor"
+> -	select THERMAL
+> -	select CPU_IDLE
+> +config ACPI_CST
+> +	bool "ACPI C states (CST) driver"
+> +	depends on ACPI_PROCESSOR
+>  	depends on X86 || IA64
+> +	select CPU_IDLE
+>  	default y
+>  	help
+>  	  This driver installs ACPI as the idle handler for Linux and uses
+>  	  ACPI C2 and C3 processor states to save power on systems that
+> -	  support it.  It is required by several flavors of cpufreq
+> +	  support it.
+> +
+> +config ACPI_PSS
+> +	bool "ACPI P States (PSS) driver"
+> +	depends on ACPI_PROCESSOR
+> +	depends on X86 || IA64
+> +	select THERMAL
+> +	default y
+> +	help
+> +	  This driver implements ACPI methods for controlling CPU performance
+> +	  using PSS methods as described in the ACPI spec. It also enables support
+> +	  for ACPI based performance throttling (TSS) and ACPI based thermal
+> +	  monitoring. It is required by several flavors of cpufreq
+>  	  performance-state drivers.
 
---GvXjxJ+pjyke8COw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+For starters, I don't like these new Kconfig options.
 
-Hi,
+Isn't there a way to implement what you need without adding them?
 
-On Tue, Jul 07, 2015 at 11:07:28PM +0200, Julian Andres Klode wrote:
-> Hi everyone (Thinkpad-ACPI, ACPI, and Power supply maintainers),
->=20
-> some might know that I presented a patch set adding support for
-> charge thresholds to thinkpad_acpi about 1.5 years ago.=20
+Rafael
 
-Can you provide a link to the patch set?
-
-> Back then, one of the major rejections was that the functionality
-> for setting charge thresholds should be integrated into the
-> power supply stack somehow. I did not know who to contact back
-> then, but know I re-read MAINTAINERS and found all your addresses,
-> so I give it a second try.
->=20
-> One issue with just integrating it in the current battery
-> directories would be that ThinkPads are able to set charge
-> thresholds for batteries that are currently not inserted.
-
-So the power supply device should be kept with
-POWER_SUPPLY_PROP_PRESENT being disabled (and most properties
-returning -ENODATA). The ACPI SBS driver seems to implement
-POWER_SUPPLY_PROP_PRESENT, but I didn't test it.
-
-> Back then I wrote:
-> > The next step is to integrate this properly with power supply
-> > and/or acpi battery. One way would be to add additional power
-> > supply properties and then add get/set_property() pointers to
-> > the acpi battery which it can fall back to if it does not support
-> > a requested property (and we would locate the ACPI battery and
-> > set those pointers to new thinkpad_acpi functions).
->=20
-> If you, the ACPI and power supply people, have any preferred
-> way (or any idea at all how) to proceed, that would be useful,
-> so I don't start working on it again, and then somebody does
-> not like it.
-
-Adding charging thresholds as power_supply_property sounds
-fine to me.
-
--- Sebastian
-
---GvXjxJ+pjyke8COw
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVnGXrAAoJENju1/PIO/qaRkAP/R3PgbPDriyUHIG8HYOmMtqG
-UJ/DczwgzBcDrqTMkYP/h6Fb8MNq+YjMdAAn2kgGcETTOUXStOCVQGfVsrwm1lae
-xoluqLCtLLAv+j09b1AKjaMpL74YwOddUOX0j8mAJuyIvi8YHIUs8f3lEA7bdffN
-GxSsHP5eBvTUEuHCpysaD7hihQ9LLRKTeTb8nUGvEv0HwBkQV/hdE8SM9wPZvISF
-rVb9ZK8tcoFqs/MwFcpzDTm2QnCputBCngiJTtY2Jy6q0vTyL0SKjJ1s1W09fisy
-fkTqOkNVGuPNab/AJlPfKDn6Pgu0ArWkwGsrhfWceDcLJdZPQDm1QUX3E4CASau4
-cVPqVeytdQldgbZ5PPUQVPdiwuAUhnquFDrS4opz02d/7HD2OU7Bn8LJQ4UhZlZC
-eazYtqlNF+vDbXMESPzuK5BWykdS1L7cqnLlHyep2q0x/DDPAeCyCxtyscR8Gg66
-8j8AO0G0PfSHLjS0ns8wqE8OAYBB95BISx0CHRveR1HHCrxx4Kq/nn78viS3/oPV
-hUhUfx3CUhhozo+gy4g/LgXbsmUnocuM2Pbh4AAShzRi6LVzU9KuOXX3pnUppW79
-GpOM+RqQOxf958lqXmNdxvQw555n1w4dBP2GDtWqiE8pVvVJyLyIsCAcZOfsQjNf
-RNXH8fzVOva83OCToN42
-=FLtA
------END PGP SIGNATURE-----
-
---GvXjxJ+pjyke8COw--
