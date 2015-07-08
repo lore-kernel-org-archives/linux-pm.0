@@ -1,133 +1,129 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 2/7] ACPI: Make ACPI processor driver more extensible
-Date: Wed, 8 Jul 2015 21:55:12 +0200
-Message-ID: <CAJZ5v0h24-YAeqW79Se8kRr+_+RknwNfLwS_74-sN+W0_wBaZg@mail.gmail.com>
-References: <cover.1434398373.git.ashwin.chaugule@linaro.org>
-	<9e352cbe2feac01158a21511bac5c544dc2f29e2.1434398373.git.ashwin.chaugule@linaro.org>
-	<2138469.Io9yItSdst@vostro.rjw.lan>
-	<CAJ5Y-eZBYb551T=kBdbjM4YQ1f_hwYBgkVk4wJsDHSib00XfrA@mail.gmail.com>
-	<CAJZ5v0gKW7bR66trxvuhd_Gb=ZMBbec++u+V+T4mroCZMtO+vg@mail.gmail.com>
-	<CAJ5Y-ebW3aCSSs4UQFLpLFSfo7d9zPVfigoROjN80uXzG1sZLw@mail.gmail.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH V4] PM / Domains: Remove intermediate states from the power off sequence
+Date: Wed, 08 Jul 2015 12:56:18 -0700
+Message-ID: <7htwtee84d.fsf@deeprootsystems.com>
+References: <1434633473-12908-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJ5Y-ebW3aCSSs4UQFLpLFSfo7d9zPVfigoROjN80uXzG1sZLw@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jaswinder Singh <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, linux acpi <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f170.google.com ([209.85.192.170]:33383 "EHLO
+	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932772AbbGHT4W (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 15:56:22 -0400
+Received: by pdbqm3 with SMTP id qm3so7561609pdb.0
+        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2015 12:56:22 -0700 (PDT)
+In-Reply-To: <1434633473-12908-1-git-send-email-ulf.hansson@linaro.org> (Ulf
+	Hansson's message of "Thu, 18 Jun 2015 15:17:53 +0200")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
 
-Hi Ashwin,
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-On Wed, Jul 8, 2015 at 9:16 PM, Ashwin Chaugule
-<ashwin.chaugule@linaro.org> wrote:
-> Hi Rafael,
+> Genpd's ->runtime_suspend() (assigned to pm_genpd_runtime_suspend())
+> doesn't immediately walk the hierarchy of ->runtime_suspend() callbacks.
+> Instead, pm_genpd_runtime_suspend() calls pm_genpd_poweroff() which
+> postpones that until *all* the devices in the genpd are runtime suspended.
 >
-> On 8 July 2015 at 09:34, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> Hi Ashwin,
->>
->> On Wed, Jul 8, 2015 at 3:27 AM, Ashwin Chaugule
->> <ashwin.chaugule@linaro.org> wrote:
->>> On 7 July 2015 at 21:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>>> On Monday, June 15, 2015 04:09:06 PM Ashwin Chaugule wrote:
->>>>> The ACPI processor driver is currently tied too closely
->>>>> to the ACPI C-states (CST), P-states (PSS) and other related
->>>>> constructs for controlling CPU idle and CPU performance.
->>>>>
->>>>> The newer ACPI specification (v5.1 onwards) introduces
->>>>> alternative methods to CST and PSS. These new mechanisms
->>>>> are described within each ACPI Processor object and so they
->>>>> need to be scanned whenever a new Processor object is detected.
->>>>> This patch introduces two new Kconfig symbols to allow for
->>>>> finer configurability among the various options for controlling
->>>>> CPU idle and performance states. There is no change in functionality
->>>>> and these options are defaulted to enabled to maintain previous
->>>>> behaviour.
->>>>>
->>>>> The following patchwork introduces CPPC: A newer method of
->>>>> controlling CPU performance. The OS is not expected to support CPPC
->>>>> and PSS at runtime. So the kconfig option lets us make these two
->>>>> mutually exclusive at compile time.
->>>>>
->>>>> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
->>>>> Reviewed-by: Al Stone <al.stone@linaro.org>
->>>>> ---
->>>>>  drivers/acpi/Kconfig            |  31 +++++++++--
->>>>>  drivers/acpi/Makefile           |   7 ++-
->>>>>  drivers/acpi/processor_driver.c |  86 ++++++++++++++++++----------
->>>>>  drivers/cpufreq/Kconfig         |   2 +-
->>>>>  drivers/cpufreq/Kconfig.x86     |   2 +
->>>>>  include/acpi/processor.h        | 120 ++++++++++++++++++++++++++++------------
->>>>>  6 files changed, 176 insertions(+), 72 deletions(-)
->>>>>
->>>>> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
->>>>> index ab2cbb5..5942754 100644
->>>>> --- a/drivers/acpi/Kconfig
->>>>> +++ b/drivers/acpi/Kconfig
->>>>> @@ -166,18 +166,39 @@ config ACPI_DOCK
->>>>>         This driver supports ACPI-controlled docking stations and removable
->>>>>         drive bays such as the IBM Ultrabay and the Dell Module Bay.
->>>>>
->>>>> -config ACPI_PROCESSOR
->>>>> -     tristate "Processor"
->>>>> -     select THERMAL
->>>>> -     select CPU_IDLE
->>>>> +config ACPI_CST
->>>>> +     bool "ACPI C states (CST) driver"
->>>>> +     depends on ACPI_PROCESSOR
->>>>>       depends on X86 || IA64
->>>>> +     select CPU_IDLE
->>>>>       default y
->>>>>       help
->>>>>         This driver installs ACPI as the idle handler for Linux and uses
->>>>>         ACPI C2 and C3 processor states to save power on systems that
->>>>> -       support it.  It is required by several flavors of cpufreq
->>>>> +       support it.
->>>>> +
->>>>> +config ACPI_PSS
->>>>> +     bool "ACPI P States (PSS) driver"
->>>>> +     depends on ACPI_PROCESSOR
->>>>> +     depends on X86 || IA64
->>>>> +     select THERMAL
->>>>> +     default y
->>>>> +     help
->>>>> +       This driver implements ACPI methods for controlling CPU performance
->>>>> +       using PSS methods as described in the ACPI spec. It also enables support
->>>>> +       for ACPI based performance throttling (TSS) and ACPI based thermal
->>>>> +       monitoring. It is required by several flavors of cpufreq
->>>>>         performance-state drivers.
->>>>
->>>> For starters, I don't like these new Kconfig options.
->>>>
->>>> Isn't there a way to implement what you need without adding them?
->>>
->>> We need to use the ACPI Processor driver for CPPC without including
->>> all its current dependencies. (i.e. PSS, TSS, CSS etc.). The upcoming
->>> LPI work from Sudeep will also face the same issue. I considered the
->>> alternative of adding a probe routine which matches
->>> ACPI_PROCESSOR_OBJECT/DEVICE_HID to each driver, but this seemed like
->>> a better option. Do you have any other ideas?
->>
->> First of all, I don't see what _CST has to do with CPPC.
->>
->> Second, it looks like the problem is that x86 probably won't use CPPC,
->> while arm64 probably won't use _PSS.
->>
->> That can be addressed by adding Kconfig options, but those options
->> should not be user-selectable (because quite honestly users don't have
->> to know what those things are and they don't care *and* things break
->> if they make a wrong choice).  Instead, I'd make architecture Kconfigs
->> select those options automatically.
->>
+> When pm_genpd_poweroff() discovers that the last device in the genpd is
+> about to be runtime suspended, it calls __pm_genpd_save_device() for *all*
+> the devices in the genpd sequentially. Furthermore,
+> __pm_genpd_save_device() invokes the ->start() callback, walks the
+> hierarchy of the ->runtime_suspend() callbacks and invokes the ->stop()
+> callback. This causes a "thundering herd" problem.
 >
-> I've made changes locally. Basically s/ACPI_PSS/HAVE_ACPI_PSS/ and in
-> arch/x86/Kconfig; select HAVE_ACPI_PSS if ACPI. Similarly for CST.
-> Just wanted to check if there were any other comments before sending
-> out v7.
+> Let's address this issue by having pm_genpd_runtime_suspend() immediately
+> walk the hierarchy of the ->runtime_suspend() callbacks, instead of
+> postponing that to the power off sequence via pm_genpd_poweroff(). If the
+> selected ->runtime_suspend() callback doesn't return an error code, call
+> pm_genpd_poweroff() to see if it's feasible to also power off the PM
+> domain.
+>
+> Adopting this change enables us to simplify parts of the code in genpd,
+> for example the locking mechanism. Additionally, it gives some positive
+> side effects, as described below.
+>
+> i)
+> One device's ->runtime_resume() latency is no longer affected by other
+> devices' latencies in a genpd.
+>
+> The complexity genpd has to support the option to abort the power off
+> sequence suffers from latency issues. More precisely, a device that is
+> requested to be runtime resumed, may end up waiting for
+> __pm_genpd_save_device() to complete its operations for *another* device.
+> That's because pm_genpd_poweroff() can't confirm an abort request while it
+> waits for __pm_genpd_save_device() to return.
+>
+> As this patch removes the intermediate states in pm_genpd_poweroff() while
+> powering off the PM domain, we no longer need the ability to abort that
+> sequence.
+>
+> ii)
+> Make pm_runtime[_status]_suspended() reliable when used with genpd.
+>
+> Until the last device in a genpd becomes idle, pm_genpd_runtime_suspend()
+> will return 0 without actually walking the hierarchy of the
+> ->runtime_suspend() callbacks. However, by returning 0 the runtime PM core
+> considers the device as runtime_suspended, so
+> pm_runtime[_status]_suspended() will return true, even though the device
+> isn't (yet) runtime suspended.
+>
+> After this patch, since pm_genpd_runtime_suspend() immediately walks the
+> hierarchy of the ->runtime_suspend() callbacks,
+> pm_runtime[_status]_suspended() will accurately reflect the status of the
+> device.
+>
+> iii)
+> Enable fine-grained PM through runtime PM callbacks in drivers/subsystems.
+>
+> There are currently cases were drivers/subsystems implements runtime PM
+> callbacks to deploy fine-grained PM (e.g. gate clocks, move pinctrl to
+> power-save state, etc.). While using the genpd, pm_genpd_runtime_suspend()
+> postpones invoking these callbacks until *all* the devices in the genpd
+> are runtime suspended. In essence, one runtime resumed device prevents
+> fine-grained PM for other devices within the same genpd.
+>
+> After this patch, since pm_genpd_runtime_suspend() immediately walks the
+> hierarchy of the ->runtime_suspend() callbacks, fine-grained PM is enabled
+> throughout all the levels of runtime PM callbacks.
+>
+> iiii)
+> Enable fine-grained PM for IRQ safe devices
+>
+> Per the definition for an IRQ safe device, its runtime PM callbacks must
+> be able to execute in atomic context. In the path while genpd walks the
+> hierarchy of the ->runtime_suspend() callbacks for the device, it uses a
+> mutex. Therefore, genpd prevents that path to be executed for IRQ safe
+> devices.
+>
+> As this patch changes pm_genpd_runtime_suspend() to immediately walk the
+> hierarchy of the ->runtime_suspend() callbacks and without needing to use
+> a mutex, fine-grained PM is enabled throughout all the levels of runtime
+> PM callbacks for IRQ safe devices.
+>
+> Unfortunately this patch also comes with a drawback, as described in the
+> summary below.
+>
+> Driver's/subsystem's runtime PM callbacks may be invoked even when the
+> genpd hasn't actually powered off the PM domain, potentially introducing
+> unnecessary latency.
+>
+> However, in most cases, saving/restoring register contexts for devices are
+> typically fast operations or can be optimized in device specific ways
+> (e.g. shadow copies of register contents in memory, device-specific checks
+> to see if context has been lost before restoring context, etc.).
+>
+> Still, in some cases the driver/subsystem may suffer from latency if
+> runtime PM is used in a very fine-grained manner (e.g. for each IO request
+> or xfer). To prevent that extra overhead, the driver/subsystem may deploy
+> the runtime PM autosuspend feature.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Can you please just send the new version of the $subject patch alone for now?
+Reviewed-by: Kevin Hilman <khilman@linaro.org>
 
-Also I'm still unsure what the connection between _CST and CPPC is.
+I believe Geert and Lina have both tested earlier versions, but would be
+nice to see their Tested-by for this one.
 
-Thanks,
-Rafael
+Kevin
