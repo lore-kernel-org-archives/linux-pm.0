@@ -1,150 +1,128 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: [PATCH v6 2/7] ACPI: Make ACPI processor driver more extensible
-Date: Wed, 8 Jul 2015 16:28:32 -0400
-Message-ID: <CAJ5Y-eaGmF6pRKuapzQo8ruMt0FX4kVrdyu-os6maVaS7WO-Pw@mail.gmail.com>
-References: <cover.1434398373.git.ashwin.chaugule@linaro.org>
-	<9e352cbe2feac01158a21511bac5c544dc2f29e2.1434398373.git.ashwin.chaugule@linaro.org>
-	<2138469.Io9yItSdst@vostro.rjw.lan>
-	<CAJ5Y-eZBYb551T=kBdbjM4YQ1f_hwYBgkVk4wJsDHSib00XfrA@mail.gmail.com>
-	<CAJZ5v0gKW7bR66trxvuhd_Gb=ZMBbec++u+V+T4mroCZMtO+vg@mail.gmail.com>
-	<CAJ5Y-ebW3aCSSs4UQFLpLFSfo7d9zPVfigoROjN80uXzG1sZLw@mail.gmail.com>
-	<CAJZ5v0h24-YAeqW79Se8kRr+_+RknwNfLwS_74-sN+W0_wBaZg@mail.gmail.com>
-	<CAJ5Y-eYwnaDzyL78CyJDmo35CFTNoQrYfEcO3VYnpaZkSVPdcw@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
+Date: Wed, 8 Jul 2015 16:31:41 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1507081617200.2243-100000@iolanthe.rowland.org>
+References: <9291571.JSDgNsKidJ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJ5Y-eYwnaDzyL78CyJDmo35CFTNoQrYfEcO3VYnpaZkSVPdcw@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jaswinder Singh <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, linux acpi <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:56222 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755529AbbGHUbm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 16:31:42 -0400
+In-Reply-To: <9291571.JSDgNsKidJ@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 8 July 2015 at 16:05, Ashwin Chaugule <ashwin.chaugule@linaro.org> wrote:
-> On 8 July 2015 at 15:55, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> Hi Ashwin,
->>
->> On Wed, Jul 8, 2015 at 9:16 PM, Ashwin Chaugule
->> <ashwin.chaugule@linaro.org> wrote:
->>> Hi Rafael,
->>>
->>> On 8 July 2015 at 09:34, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>>> Hi Ashwin,
->>>>
->>>> On Wed, Jul 8, 2015 at 3:27 AM, Ashwin Chaugule
->>>> <ashwin.chaugule@linaro.org> wrote:
->>>>> On 7 July 2015 at 21:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>>>>> On Monday, June 15, 2015 04:09:06 PM Ashwin Chaugule wrote:
->>>>>>> The ACPI processor driver is currently tied too closely
->>>>>>> to the ACPI C-states (CST), P-states (PSS) and other related
->>>>>>> constructs for controlling CPU idle and CPU performance.
->>>>>>>
->>>>>>> The newer ACPI specification (v5.1 onwards) introduces
->>>>>>> alternative methods to CST and PSS. These new mechanisms
->>>>>>> are described within each ACPI Processor object and so they
->>>>>>> need to be scanned whenever a new Processor object is detected.
->>>>>>> This patch introduces two new Kconfig symbols to allow for
->>>>>>> finer configurability among the various options for controlling
->>>>>>> CPU idle and performance states. There is no change in functionality
->>>>>>> and these options are defaulted to enabled to maintain previous
->>>>>>> behaviour.
->>>>>>>
->>>>>>> The following patchwork introduces CPPC: A newer method of
->>>>>>> controlling CPU performance. The OS is not expected to support CPPC
->>>>>>> and PSS at runtime. So the kconfig option lets us make these two
->>>>>>> mutually exclusive at compile time.
->>>>>>>
->>>>>>> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
->>>>>>> Reviewed-by: Al Stone <al.stone@linaro.org>
->>>>>>> ---
->>>>>>>  drivers/acpi/Kconfig            |  31 +++++++++--
->>>>>>>  drivers/acpi/Makefile           |   7 ++-
->>>>>>>  drivers/acpi/processor_driver.c |  86 ++++++++++++++++++----------
->>>>>>>  drivers/cpufreq/Kconfig         |   2 +-
->>>>>>>  drivers/cpufreq/Kconfig.x86     |   2 +
->>>>>>>  include/acpi/processor.h        | 120 ++++++++++++++++++++++++++++------------
->>>>>>>  6 files changed, 176 insertions(+), 72 deletions(-)
->>>>>>>
->>>>>>> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
->>>>>>> index ab2cbb5..5942754 100644
->>>>>>> --- a/drivers/acpi/Kconfig
->>>>>>> +++ b/drivers/acpi/Kconfig
->>>>>>> @@ -166,18 +166,39 @@ config ACPI_DOCK
->>>>>>>         This driver supports ACPI-controlled docking stations and removable
->>>>>>>         drive bays such as the IBM Ultrabay and the Dell Module Bay.
->>>>>>>
->>>>>>> -config ACPI_PROCESSOR
->>>>>>> -     tristate "Processor"
->>>>>>> -     select THERMAL
->>>>>>> -     select CPU_IDLE
->>>>>>> +config ACPI_CST
->>>>>>> +     bool "ACPI C states (CST) driver"
->>>>>>> +     depends on ACPI_PROCESSOR
->>>>>>>       depends on X86 || IA64
->>>>>>> +     select CPU_IDLE
->>>>>>>       default y
->>>>>>>       help
->>>>>>>         This driver installs ACPI as the idle handler for Linux and uses
->>>>>>>         ACPI C2 and C3 processor states to save power on systems that
->>>>>>> -       support it.  It is required by several flavors of cpufreq
->>>>>>> +       support it.
->>>>>>> +
->>>>>>> +config ACPI_PSS
->>>>>>> +     bool "ACPI P States (PSS) driver"
->>>>>>> +     depends on ACPI_PROCESSOR
->>>>>>> +     depends on X86 || IA64
->>>>>>> +     select THERMAL
->>>>>>> +     default y
->>>>>>> +     help
->>>>>>> +       This driver implements ACPI methods for controlling CPU performance
->>>>>>> +       using PSS methods as described in the ACPI spec. It also enables support
->>>>>>> +       for ACPI based performance throttling (TSS) and ACPI based thermal
->>>>>>> +       monitoring. It is required by several flavors of cpufreq
->>>>>>>         performance-state drivers.
->>>>>>
->>>>>> For starters, I don't like these new Kconfig options.
->>>>>>
->>>>>> Isn't there a way to implement what you need without adding them?
->>>>>
->>>>> We need to use the ACPI Processor driver for CPPC without including
->>>>> all its current dependencies. (i.e. PSS, TSS, CSS etc.). The upcoming
->>>>> LPI work from Sudeep will also face the same issue. I considered the
->>>>> alternative of adding a probe routine which matches
->>>>> ACPI_PROCESSOR_OBJECT/DEVICE_HID to each driver, but this seemed like
->>>>> a better option. Do you have any other ideas?
->>>>
->>>> First of all, I don't see what _CST has to do with CPPC.
->>>>
->>>> Second, it looks like the problem is that x86 probably won't use CPPC,
->>>> while arm64 probably won't use _PSS.
->>>>
->>>> That can be addressed by adding Kconfig options, but those options
->>>> should not be user-selectable (because quite honestly users don't have
->>>> to know what those things are and they don't care *and* things break
->>>> if they make a wrong choice).  Instead, I'd make architecture Kconfigs
->>>> select those options automatically.
->>>>
->>>
->>> I've made changes locally. Basically s/ACPI_PSS/HAVE_ACPI_PSS/ and in
->>> arch/x86/Kconfig; select HAVE_ACPI_PSS if ACPI. Similarly for CST.
->>> Just wanted to check if there were any other comments before sending
->>> out v7.
->>
->> Can you please just send the new version of the $subject patch alone for now?
->
-> Attached below. (hope that worked.)
->
->>
->> Also I'm still unsure what the connection between _CST and CPPC is.
->>
->
-> There isnt. But I'm missing where I've implied the dependency?
+On Wed, 8 Jul 2015, Rafael J. Wysocki wrote:
 
-Perhaps the confusion is coming from the introduction of ACPI_CST in
-this file. I could leave it as it is and just separate out the
-ACPI_PSS bits. But I figured, while I'm at it, I'd introduce ACPI_CST,
-since we know the LPI stuff is coming up soon as a CST alternative
-anyway. So if you prefer, I can drop the CST bits and maybe Sudeep can
-address that as part of his LPI patchset?
+> I seem to have lost the context here, sorry about that.
+> 
+> The idea seems to be to rely on the fact that the RPM status for all devices
+> is initially RPM_SUSPENDED and that never changes if runtime PM is never
+> enabled for the device, so in that particular case it would be OK to treat
+> the "power.direct_complete set + RPM status == RPM_SUSPENDED" combination
+> as valid even though runtime PM has never been enabled for the device in
+> question (provided that power.direct_complete will never be set for "real"
+> devices that don't support runtime PM).  Is that correct?
 
-Thanks,
-Ashwin.
+I would have expressed it slightly differently, but yes, that's correct.
+
+> That seems to be fragile, but I have no strong opinion.
+
+In itself it's not all that bad, I think.  In the presence of Tomeu's
+new direct_complete_default flag, however, it does seem quite fragile.  
+
+We may want to do the direct_complete_default thing in a different way.  
+For example, the PM core could automatically set the direct_complete
+flag if a device has _none_ of the system suspend callbacks (i.e., no
+prepare, suspend, suspend_late, suspend_noirq, resume_noirq,
+resume_early, resume, or complete).  Although it would be a little
+awkward to check this, it would be safer than inheriting
+direct_complete_default from the parent and it ought to solve Tomeu's
+problem just as well.
+
+> Let's do that change if it allows us to make forward progress here.  Please
+> feel free to submit a documentation patch along the lines you've suggested.
+
+Here's a proposed patch to illustrate what I have in mind.  Since it 
+removes the only usage of pm_runtime_suspended_if_enabled(), it also 
+removes the definition of that function.
+
+Alan Stern
+
+
+
+Index: usb-4.1/drivers/base/power/main.c
+===================================================================
+--- usb-4.1.orig/drivers/base/power/main.c
++++ usb-4.1/drivers/base/power/main.c
+@@ -1374,7 +1374,7 @@ static int __device_suspend(struct devic
+ 	if (dev->power.direct_complete) {
+ 		if (pm_runtime_status_suspended(dev)) {
+ 			pm_runtime_disable(dev);
+-			if (pm_runtime_suspended_if_enabled(dev))
++			if (pm_runtime_status_suspended(dev))
+ 				goto Complete;
+ 
+ 			pm_runtime_enable(dev);
+Index: usb-4.1/Documentation/power/devices.txt
+===================================================================
+--- usb-4.1.orig/Documentation/power/devices.txt
++++ usb-4.1/Documentation/power/devices.txt
+@@ -341,6 +341,13 @@ the phases are:
+ 	and is entirely responsible for bringing the device back to the
+ 	functional state as appropriate.
+ 
++	Note that this direct-complete procedure applies even if the device is
++	disabled for runtime PM; only the runtime-PM status matters.  It follows
++	that if a device has system-sleep callbacks but does not support runtime
++	PM, then its prepare callback must never return a positive value.  This
++	is because all devices are initially set to runtime-suspended with
++	runtime PM disabled.
++
+     2.	The suspend methods should quiesce the device to stop it from performing
+ 	I/O.  They also may save the device registers and put it into the
+ 	appropriate low-power state, depending on the bus type the device is on,
+Index: usb-4.1/Documentation/power/runtime_pm.txt
+===================================================================
+--- usb-4.1.orig/Documentation/power/runtime_pm.txt
++++ usb-4.1/Documentation/power/runtime_pm.txt
+@@ -445,10 +445,6 @@ drivers/base/power/runtime.c and include
+   bool pm_runtime_status_suspended(struct device *dev);
+     - return true if the device's runtime PM status is 'suspended'
+ 
+-  bool pm_runtime_suspended_if_enabled(struct device *dev);
+-    - return true if the device's runtime PM status is 'suspended' and its
+-      'power.disable_depth' field is equal to 1
+-
+   void pm_runtime_allow(struct device *dev);
+     - set the power.runtime_auto flag for the device and decrease its usage
+       counter (used by the /sys/devices/.../power/control interface to
+Index: usb-4.1/include/linux/pm_runtime.h
+===================================================================
+--- usb-4.1.orig/include/linux/pm_runtime.h
++++ usb-4.1/include/linux/pm_runtime.h
+@@ -98,11 +98,6 @@ static inline bool pm_runtime_status_sus
+ 	return dev->power.runtime_status == RPM_SUSPENDED;
+ }
+ 
+-static inline bool pm_runtime_suspended_if_enabled(struct device *dev)
+-{
+-	return pm_runtime_status_suspended(dev) && dev->power.disable_depth == 1;
+-}
+-
+ static inline bool pm_runtime_enabled(struct device *dev)
+ {
+ 	return !dev->power.disable_depth;
+@@ -164,7 +159,6 @@ static inline void device_set_run_wake(s
+ static inline bool pm_runtime_suspended(struct device *dev) { return false; }
+ static inline bool pm_runtime_active(struct device *dev) { return true; }
+ static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
+-static inline bool pm_runtime_suspended_if_enabled(struct device *dev) { return false; }
+ static inline bool pm_runtime_enabled(struct device *dev) { return false; }
+ 
+ static inline void pm_runtime_no_callbacks(struct device *dev) {}
+
