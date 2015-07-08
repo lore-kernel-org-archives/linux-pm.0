@@ -1,7 +1,7 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH 3/9] thermal: qcom: tsens-8974: Add support for 8974 family of SoCs
-Date: Wed,  8 Jul 2015 15:17:12 +0530
-Message-ID: <1436348838-22671-4-git-send-email-rnayak@codeaurora.org>
+Subject: [PATCH 4/9] thermal: qcom: tsens-8960: Add support for 8960 family of SoCs
+Date: Wed,  8 Jul 2015 15:17:13 +0530
+Message-ID: <1436348838-22671-5-git-send-email-rnayak@codeaurora.org>
 References: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org>
@@ -10,33 +10,45 @@ To: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-p
 Cc: sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, Rajendra Nayak <rnayak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add .calibrate support for 8974 family as part of tsens_ops.
+8960 family of SoCs have the TSENS device as part of a domain
+thats not always ON. Hence add .suspend and .resume hooks to
+save and restore some of the inited register context.
 
-Based on the original code by Siddartha Mohanadoss and Stephen Boyd.
+8960 family has TSENS as part of GCC, hence reuse the GCC
+regmap. Also 8960 family had some of the TSENS init sequence thats
+required to be done by the HLOS driver (some later versions of TSENS
+do not export these registers to non-secure world, and hence need
+these initializations to be done by secure bootloaders)
+
+8660 from the same family has just one sensor and hence some register
+offset/layout differences which need special handling in the driver.
+
+Based on the original code from Siddartha Mohanadoss, Stephen Boyd and
+Narendran Rajan.
 
 Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 ---
  drivers/thermal/qcom/Makefile     |   2 +-
- drivers/thermal/qcom/tsens-8974.c | 239 ++++++++++++++++++++++++++++++++++++++
+ drivers/thermal/qcom/tsens-8960.c | 291 ++++++++++++++++++++++++++++++++++++++
  drivers/thermal/qcom/tsens.c      |   1 +
  drivers/thermal/qcom/tsens.h      |   2 +-
- 4 files changed, 242 insertions(+), 2 deletions(-)
- create mode 100644 drivers/thermal/qcom/tsens-8974.c
+ 4 files changed, 294 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/thermal/qcom/tsens-8960.c
 
 diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
-index 05c98e4..a471100 100644
+index a471100..f3cefd1 100644
 --- a/drivers/thermal/qcom/Makefile
 +++ b/drivers/thermal/qcom/Makefile
 @@ -1,2 +1,2 @@
  obj-$(CONFIG_QCOM_TSENS)	+= qcom_tsens.o
--qcom_tsens-y			+= tsens.o tsens-common.o tsens-8916.o
-+qcom_tsens-y			+= tsens.o tsens-common.o tsens-8916.o tsens-8974.o
-diff --git a/drivers/thermal/qcom/tsens-8974.c b/drivers/thermal/qcom/tsens-8974.c
+-qcom_tsens-y			+= tsens.o tsens-common.o tsens-8916.o tsens-8974.o
++qcom_tsens-y			+= tsens.o tsens-common.o tsens-8916.o tsens-8974.o tsens-8960.o
+diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
 new file mode 100644
-index 0000000..19d9258
+index 0000000..1b98e22
 --- /dev/null
-+++ b/drivers/thermal/qcom/tsens-8974.c
-@@ -0,0 +1,239 @@
++++ b/drivers/thermal/qcom/tsens-8960.c
+@@ -0,0 +1,291 @@
 +/*
 + * Copyright (c) 2015, The Linux Foundation. All rights reserved.
 + *
@@ -52,252 +64,304 @@ index 0000000..19d9258
 + */
 +
 +#include <linux/platform_device.h>
++#include <linux/delay.h>
++#include <linux/bitops.h>
++#include <linux/regmap.h>
 +#include "tsens.h"
 +
-+/* eeprom layout data for 8974 */
-+#define BASE1_MASK		0xff
-+#define S0_P1_MASK		0x3f00
-+#define S1_P1_MASK		0xfc000
-+#define S2_P1_MASK		0x3f00000
-+#define S3_P1_MASK		0xfc000000
-+#define S4_P1_MASK		0x3f
-+#define S5_P1_MASK		0xfc0
-+#define S6_P1_MASK		0x3f000
-+#define S7_P1_MASK		0xfc0000
-+#define S8_P1_MASK		0x3f000000
-+#define S8_P1_MASK_BKP		0x3f
-+#define S9_P1_MASK		0x3f
-+#define S9_P1_MASK_BKP		0xfc0
-+#define S10_P1_MASK		0xfc0
-+#define S10_P1_MASK_BKP		0x3f000
-+#define CAL_SEL_0_1		0xc0000000
-+#define CAL_SEL_2		0x40000000
-+#define CAL_SEL_SHIFT		30
-+#define CAL_SEL_SHIFT_2		28
++#define CAL_MDEGC		30000
 +
-+#define S0_P1_SHIFT		8
-+#define S1_P1_SHIFT		14
-+#define S2_P1_SHIFT		20
-+#define S3_P1_SHIFT		26
-+#define S5_P1_SHIFT		6
-+#define S6_P1_SHIFT		12
-+#define S7_P1_SHIFT		18
-+#define S8_P1_SHIFT		24
-+#define S9_P1_BKP_SHIFT		6
-+#define S10_P1_SHIFT		6
-+#define S10_P1_BKP_SHIFT	12
++#define CONFIG_ADDR		0x3640
++#define CONFIG_ADDR_8660	0x3620
++/* CONFIG_ADDR bitmasks */
++#define CONFIG			0x9b
++#define CONFIG_MASK		0xf
++#define CONFIG_8660		1
++#define CONFIG_SHIFT_8660	28
++#define CONFIG_MASK_8660	(3 << CONFIG_SHIFT_8660)
 +
-+#define BASE2_SHIFT		12
-+#define BASE2_BKP_SHIFT		18
-+#define S0_P2_SHIFT		20
-+#define S0_P2_BKP_SHIFT		26
-+#define S1_P2_SHIFT		26
-+#define S2_P2_BKP_SHIFT		6
-+#define S3_P2_SHIFT		6
-+#define S3_P2_BKP_SHIFT		12
-+#define S4_P2_SHIFT		12
-+#define S4_P2_BKP_SHIFT		18
-+#define S5_P2_SHIFT		18
-+#define S5_P2_BKP_SHIFT		24
-+#define S6_P2_SHIFT		24
-+#define S7_P2_BKP_SHIFT		6
-+#define S8_P2_SHIFT		6
-+#define S8_P2_BKP_SHIFT		12
-+#define S9_P2_SHIFT		12
-+#define S9_P2_BKP_SHIFT		18
-+#define S10_P2_SHIFT		18
-+#define S10_P2_BKP_SHIFT	24
++#define STATUS_CNTL_ADDR_8064	0x3660
++#define CNTL_ADDR		0x3620
++/* CNTL_ADDR bitmasks */
++#define EN			BIT(0)
++#define SW_RST			BIT(1)
++#define SENSOR0_EN		BIT(3)
++#define SLP_CLK_ENA		BIT(26)
++#define SLP_CLK_ENA_8660	BIT(24)
++#define MEASURE_PERIOD		1
++#define SENSOR0_SHIFT		3
 +
-+#define BASE2_MASK		0xff000
-+#define BASE2_BKP_MASK		0xfc0000
-+#define S0_P2_MASK		0x3f00000
-+#define S0_P2_BKP_MASK		0xfc000000
-+#define S1_P2_MASK		0xfc000000
-+#define S1_P2_BKP_MASK		0x3f
-+#define S2_P2_MASK		0x3f
-+#define S2_P2_BKP_MASK		0xfc0
-+#define S3_P2_MASK		0xfc0
-+#define S3_P2_BKP_MASK		0x3f000
-+#define S4_P2_MASK		0x3f000
-+#define S4_P2_BKP_MASK		0xfc0000
-+#define S5_P2_MASK		0xfc0000
-+#define S5_P2_BKP_MASK		0x3f000000
-+#define S6_P2_MASK		0x3f000000
-+#define S6_P2_BKP_MASK		0x3f
-+#define S7_P2_MASK		0x3f
-+#define S7_P2_BKP_MASK		0xfc0
-+#define S8_P2_MASK		0xfc0
-+#define S8_P2_BKP_MASK		0x3f000
-+#define S9_P2_MASK		0x3f000
-+#define S9_P2_BKP_MASK		0xfc0000
-+#define S10_P2_MASK		0xfc0000
-+#define S10_P2_BKP_MASK		0x3f000000
++/* INT_STATUS_ADDR bitmasks */
++#define MIN_STATUS_MASK		BIT(0)
++#define LOWER_STATUS_CLR	BIT(1)
++#define UPPER_STATUS_CLR	BIT(2)
++#define MAX_STATUS_MASK		BIT(3)
 +
-+#define BKP_SEL			0x3
-+#define BKP_REDUN_SEL		0xe0000000
-+#define BKP_REDUN_SHIFT		29
++#define THRESHOLD_ADDR		0x3624
++/* THRESHOLD_ADDR bitmasks */
++#define THRESHOLD_MAX_LIMIT_SHIFT	24
++#define THRESHOLD_MIN_LIMIT_SHIFT	16
++#define THRESHOLD_UPPER_LIMIT_SHIFT	8
++#define THRESHOLD_LOWER_LIMIT_SHIFT	0
 +
-+#define BIT_APPEND		0x3
++/* Initial temperature threshold values */
++#define LOWER_LIMIT_TH		0x50
++#define UPPER_LIMIT_TH		0xdf
++#define MIN_LIMIT_TH		0x0
++#define MAX_LIMIT_TH		0xff
 +
-+static int calibrate_8974(struct tsens_device *tmdev)
++#define S0_STATUS_ADDR		0x3628
++#define INT_STATUS_ADDR		0x363c
++#define TRDY_MASK		BIT(7)
++
++static int suspend_8960(struct tsens_device *tmdev)
 +{
-+	int base1 = 0, base2 = 0, i;
-+	u32 p1[11], p2[11];
-+	int mode = 0;
-+	u32 *calib, *bkp;
-+	u32 calib_redun_sel;
++	int ret;
++	unsigned int mask;
++	struct regmap *map = tmdev->map;
 +
-+	calib = (u32 *)qfprom_read(tmdev->dev, "calib");
-+	if (IS_ERR(calib))
-+		return PTR_ERR(calib);
++	ret = regmap_read(map, THRESHOLD_ADDR, &tmdev->ctx.threshold);
++	if (ret)
++		return ret;
 +
-+	bkp = (u32 *)qfprom_read(tmdev->dev, "calib_backup");
-+	if (IS_ERR(bkp))
-+		return PTR_ERR(bkp);
++	ret = regmap_read(map, CNTL_ADDR, &tmdev->ctx.control);
++	if (ret)
++		return ret;
 +
-+	calib_redun_sel =  bkp[1] & BKP_REDUN_SEL;
-+	calib_redun_sel >>= BKP_REDUN_SHIFT;
++	if (tmdev->num_sensors > 1)
++		mask = SLP_CLK_ENA | EN;
++	else
++		mask = SLP_CLK_ENA_8660 | EN;
 +
-+	if (calib_redun_sel == BKP_SEL) {
-+		mode = (calib[4] & CAL_SEL_0_1) >> CAL_SEL_SHIFT;
-+		mode |= (calib[5] & CAL_SEL_2) >> CAL_SEL_SHIFT_2;
++	ret = regmap_update_bits(map, CNTL_ADDR, mask, 0);
++	if (ret)
++		return ret;
 +
-+		switch (mode) {
-+		case TWO_PT_CALIB:
-+			base2 = (bkp[2] & BASE2_BKP_MASK) >> BASE2_BKP_SHIFT;
-+			p2[0] = (bkp[2] & S0_P2_BKP_MASK) >> S0_P2_BKP_SHIFT;
-+			p2[1] = (bkp[3] & S1_P2_BKP_MASK);
-+			p2[2] = (bkp[3] & S2_P2_BKP_MASK) >> S2_P2_BKP_SHIFT;
-+			p2[3] = (bkp[3] & S3_P2_BKP_MASK) >> S3_P2_BKP_SHIFT;
-+			p2[4] = (bkp[3] & S4_P2_BKP_MASK) >> S4_P2_BKP_SHIFT;
-+			p2[5] = (calib[4] & S5_P2_BKP_MASK) >> S5_P2_BKP_SHIFT;
-+			p2[6] = (calib[5] & S6_P2_BKP_MASK);
-+			p2[7] = (calib[5] & S7_P2_BKP_MASK) >> S7_P2_BKP_SHIFT;
-+			p2[8] = (calib[5] & S8_P2_BKP_MASK) >> S8_P2_BKP_SHIFT;
-+			p2[9] = (calib[5] & S9_P2_BKP_MASK) >> S9_P2_BKP_SHIFT;
-+			p2[10] = (calib[5] & S10_P2_BKP_MASK) >> S10_P2_BKP_SHIFT;
-+			/* Fall through */
-+		case ONE_PT_CALIB:
-+		case ONE_PT_CALIB2:
-+			base1 = bkp[0] & BASE1_MASK;
-+			p1[0] = (bkp[0] & S0_P1_MASK) >> S0_P1_SHIFT;
-+			p1[1] = (bkp[0] & S1_P1_MASK) >> S1_P1_SHIFT;
-+			p1[2] = (bkp[0] & S2_P1_MASK) >> S2_P1_SHIFT;
-+			p1[3] = (bkp[0] & S3_P1_MASK) >> S3_P1_SHIFT;
-+			p1[4] = (bkp[1] & S4_P1_MASK);
-+			p1[5] = (bkp[1] & S5_P1_MASK) >> S5_P1_SHIFT;
-+			p1[6] = (bkp[1] & S6_P1_MASK) >> S6_P1_SHIFT;
-+			p1[7] = (bkp[1] & S7_P1_MASK) >> S7_P1_SHIFT;
-+			p1[8] = (bkp[2] & S8_P1_MASK_BKP) >> S8_P1_SHIFT;
-+			p1[9] = (bkp[2] & S9_P1_MASK_BKP) >> S9_P1_BKP_SHIFT;
-+			p1[10] = (bkp[2] & S10_P1_MASK_BKP) >> S10_P1_BKP_SHIFT;
-+			break;
-+		}
-+	} else {
-+		mode = (calib[1] & CAL_SEL_0_1) >> CAL_SEL_SHIFT;
-+		mode |= (calib[3] & CAL_SEL_2) >> CAL_SEL_SHIFT_2;
-+
-+		switch (mode) {
-+		case TWO_PT_CALIB:
-+			base2 = (calib[2] & BASE2_MASK) >> BASE2_SHIFT;
-+			p2[0] = (calib[2] & S0_P2_MASK) >> S0_P2_SHIFT;
-+			p2[1] = (calib[2] & S1_P2_MASK) >> S1_P2_SHIFT;
-+			p2[2] = (calib[3] & S2_P2_MASK);
-+			p2[3] = (calib[3] & S3_P2_MASK) >> S3_P2_SHIFT;
-+			p2[4] = (calib[3] & S4_P2_MASK) >> S4_P2_SHIFT;
-+			p2[5] = (calib[3] & S5_P2_MASK) >> S5_P2_SHIFT;
-+			p2[6] = (calib[3] & S6_P2_MASK) >> S6_P2_SHIFT;
-+			p2[7] = (calib[4] & S7_P2_MASK);
-+			p2[8] = (calib[4] & S8_P2_MASK) >> S8_P2_SHIFT;
-+			p2[9] = (calib[4] & S9_P2_MASK) >> S9_P2_SHIFT;
-+			p2[10] = (calib[4] & S10_P2_MASK) >> S10_P2_SHIFT;
-+			/* Fall through */
-+		case ONE_PT_CALIB:
-+		case ONE_PT_CALIB2:
-+			base1 = calib[0] & BASE1_MASK;
-+			p1[0] = (calib[0] & S0_P1_MASK) >> S0_P1_SHIFT;
-+			p1[1] = (calib[0] & S1_P1_MASK) >> S1_P1_SHIFT;
-+			p1[2] = (calib[0] & S2_P1_MASK) >> S2_P1_SHIFT;
-+			p1[3] = (calib[0] & S3_P1_MASK) >> S3_P1_SHIFT;
-+			p1[4] = (calib[1] & S4_P1_MASK);
-+			p1[5] = (calib[1] & S5_P1_MASK) >> S5_P1_SHIFT;
-+			p1[6] = (calib[1] & S6_P1_MASK) >> S6_P1_SHIFT;
-+			p1[7] = (calib[1] & S7_P1_MASK) >> S7_P1_SHIFT;
-+			p1[8] = (calib[1] & S8_P1_MASK) >> S8_P1_SHIFT;
-+			p1[9] = (calib[2] & S9_P1_MASK);
-+			p1[10] = (calib[2] & S10_P1_MASK) >> S10_P1_SHIFT;
-+			break;
-+		}
-+	}
-+
-+	switch (mode) {
-+	case ONE_PT_CALIB:
-+		for (i = 0; i < tmdev->num_sensors; i++)
-+			p1[i] += (base1 << 2) | BIT_APPEND;
-+		break;
-+	case TWO_PT_CALIB:
-+		for (i = 0; i < tmdev->num_sensors; i++) {
-+			p2[i] += base2;
-+			p2[i] <<= 2;
-+			p2[i] |= BIT_APPEND;
-+		}
-+		/* Fall through */
-+	case ONE_PT_CALIB2:
-+		for (i = 0; i < tmdev->num_sensors; i++) {
-+			p1[i] += base1;
-+			p1[i] <<= 2;
-+			p1[i] |= BIT_APPEND;
-+		}
-+		break;
-+	default:
-+		for (i = 0; i < tmdev->num_sensors; i++)
-+			p2[i] = 780;
-+		p1[0] = 502;
-+		p1[1] = 509;
-+		p1[2] = 503;
-+		p1[3] = 509;
-+		p1[4] = 505;
-+		p1[5] = 509;
-+		p1[6] = 507;
-+		p1[7] = 510;
-+		p1[8] = 508;
-+		p1[9] = 509;
-+		p1[10] = 508;
-+		break;
-+	}
-+
-+	compute_intercept_slope(tmdev, p1, p2, mode);
++	tmdev->trdy = false;
 +
 +	return 0;
 +}
 +
-+const struct tsens_ops ops_8974 = {
-+	.init		= init_common,
-+	.calibrate	= calibrate_8974,
-+	.get_temp	= get_temp_common,
++static int resume_8960(struct tsens_device *tmdev)
++{
++	int ret;
++	unsigned long reg_cntl;
++	struct regmap *map = tmdev->map;
++
++	ret = regmap_update_bits(map, CNTL_ADDR, SW_RST, SW_RST);
++	if (ret)
++		return ret;
++
++	/*
++	 * Separate CONFIG restore is not needed only for 8660 as
++	 * config is part of CTRL Addr and its restored as such
++	 */
++	if (tmdev->num_sensors > 1) {
++		ret = regmap_update_bits(map, CONFIG_ADDR, CONFIG_MASK, CONFIG);
++		if (ret)
++			return ret;
++	}
++
++	ret = regmap_write(map, THRESHOLD_ADDR, tmdev->ctx.threshold);
++	if (ret)
++		return ret;
++
++	ret = regmap_write(map, CNTL_ADDR, tmdev->ctx.control);
++	if (ret)
++		return ret;
++
++	reg_cntl = tmdev->ctx.control;
++	reg_cntl >>= SENSOR0_SHIFT;
++
++	return 0;
++}
++
++static int enable_8960(struct tsens_device *tmdev, int id)
++{
++	int ret;
++	u32 reg, mask;
++
++	ret = regmap_read(tmdev->map, CNTL_ADDR, &reg);
++	if (ret)
++		return ret;
++
++	mask = BIT(id + SENSOR0_SHIFT);
++	ret = regmap_write(tmdev->map, CNTL_ADDR, reg | SW_RST);
++	if (ret)
++		return ret;
++
++	if (tmdev->num_sensors > 1)
++		reg |= mask | SLP_CLK_ENA | EN;
++	else
++		reg |= mask | SLP_CLK_ENA_8660 | EN;
++
++	tmdev->trdy = false;
++	ret = regmap_write(tmdev->map, CNTL_ADDR, reg);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++static void disable_8960(struct tsens_device *tmdev)
++{
++	int ret;
++	u32 reg_cntl;
++	u32 mask;
++
++	mask = GENMASK(tmdev->num_sensors - 1, 0);
++	mask <<= SENSOR0_SHIFT;
++	mask |= EN;
++
++	ret = regmap_read(tmdev->map, CNTL_ADDR, &reg_cntl);
++	if (ret)
++		return;
++
++	reg_cntl &= ~mask;
++
++	if (tmdev->num_sensors > 1)
++		reg_cntl &= ~SLP_CLK_ENA;
++	else
++		reg_cntl &= ~SLP_CLK_ENA_8660;
++
++	regmap_write(tmdev->map, CNTL_ADDR, reg_cntl);
++}
++
++static int init_8960(struct tsens_device *tmdev)
++{
++	int ret, i;
++	u32 reg_cntl;
++
++	tmdev->map = dev_get_regmap(tmdev->dev->parent, NULL);
++	if (!tmdev->map)
++		return -ENODEV;
++
++	/*
++	 * The status registers for each sensor are discontiguous
++	 * because some SoCs have 5 sensors while others have more
++	 * but the control registers stay in the same place, i.e
++	 * directly after the first 5 status registers.
++	 */
++	for (i = 0; i < tmdev->num_sensors; i++) {
++		if (i >= 5)
++			tmdev->sensor[i].status = S0_STATUS_ADDR + 40;
++		tmdev->sensor[i].status += i * 4;
++	}
++
++	reg_cntl = SW_RST;
++	ret = regmap_update_bits(tmdev->map, CNTL_ADDR, SW_RST, reg_cntl);
++	if (ret)
++		return ret;
++
++	if (tmdev->num_sensors > 1) {
++		reg_cntl |= SLP_CLK_ENA | (MEASURE_PERIOD << 18);
++		reg_cntl &= ~SW_RST;
++		ret = regmap_update_bits(tmdev->map, CONFIG_ADDR,
++					 CONFIG_MASK, CONFIG);
++	} else {
++		reg_cntl |= SLP_CLK_ENA_8660 | (MEASURE_PERIOD << 16);
++		reg_cntl &= ~CONFIG_MASK_8660;
++		reg_cntl |= CONFIG_8660 << CONFIG_SHIFT_8660;
++	}
++
++	reg_cntl |= GENMASK(tmdev->num_sensors - 1, 0) << SENSOR0_SHIFT;
++	ret = regmap_write(tmdev->map, CNTL_ADDR, reg_cntl);
++	if (ret)
++		return ret;
++
++	reg_cntl |= EN;
++	ret = regmap_write(tmdev->map, CNTL_ADDR, reg_cntl);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++
++static int calibrate_8960(struct tsens_device *tmdev)
++{
++	int i;
++	char *data;
++
++	ssize_t num_read = tmdev->num_sensors;
++	struct tsens_sensor *s = tmdev->sensor;
++
++	data = qfprom_read(tmdev->dev, "calib");
++	if (IS_ERR(data))
++		data = qfprom_read(tmdev->dev, "calib_backup");
++	if (IS_ERR(data))
++		return PTR_ERR(data);
++
++	for (i = 0; i < num_read; i++, s++)
++		s->offset = CAL_MDEGC - s->slope * data[i];
++
++	return 0;
++}
++
++/* Temperature on y axis and ADC-code on x-axis */
++static inline int code_to_mdegC(u32 adc_code, const struct tsens_sensor *s)
++{
++	return adc_code * s->slope + s->offset;
++}
++
++static int get_temp_8960(struct tsens_device *tmdev, int id, long *temp)
++{
++	int ret;
++	u32 code, trdy;
++	const struct tsens_sensor *s = &tmdev->sensor[id];
++
++	if (!tmdev->trdy) {
++		ret = regmap_read(tmdev->map, INT_STATUS_ADDR, &trdy);
++		if (ret)
++			return ret;
++		while (!(trdy & TRDY_MASK)) {
++			usleep_range(1000, 1100);
++			regmap_read(tmdev->map, INT_STATUS_ADDR, &trdy);
++		}
++		tmdev->trdy = true;
++	}
++
++	ret = regmap_read(tmdev->map, s->status, &code);
++	if (ret)
++		return ret;
++
++	*temp = code_to_mdegC(code, s);
++
++	dev_dbg(tmdev->dev, "Sensor%d temp is: %ld", id, *temp);
++
++	return 0;
++}
++
++const struct tsens_ops ops_8960 = {
++	.init		= init_8960,
++	.calibrate	= calibrate_8960,
++	.get_temp	= get_temp_8960,
++	.enable		= enable_8960,
++	.disable	= disable_8960,
++	.suspend	= suspend_8960,
++	.resume		= resume_8960,
 +};
 diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index d32d278..4d65a42 100644
+index 4d65a42..8d938d4 100644
 --- a/drivers/thermal/qcom/tsens.c
 +++ b/drivers/thermal/qcom/tsens.c
-@@ -76,6 +76,7 @@ static const struct of_device_id tsens_table[] = {
- 		.data = &ops_8916,
+@@ -71,6 +71,7 @@ static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
+ static const struct of_device_id tsens_table[] = {
+ 	{
+ 		.compatible = "qcom,msm8960-tsens",
++		.data = &ops_8960,
  	}, {
- 		.compatible = "qcom,msm8974-tsens",
-+		.data = &ops_8974,
- 	},
- 	{}
- };
+ 		.compatible = "qcom,msm8916-tsens",
+ 		.data = &ops_8916,
 diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index 81c5efb..9ee0319 100644
+index 9ee0319..f659806 100644
 --- a/drivers/thermal/qcom/tsens.h
 +++ b/drivers/thermal/qcom/tsens.h
 @@ -64,6 +64,6 @@ void compute_intercept_slope(struct tsens_device *, u32 *, u32 *, u32);
  int init_common(struct tsens_device *);
  int get_temp_common(struct tsens_device *, int, long *);
  
--extern const struct tsens_ops ops_8916;
-+extern const struct tsens_ops ops_8916, ops_8974;
+-extern const struct tsens_ops ops_8916, ops_8974;
++extern const struct tsens_ops ops_8960, ops_8916, ops_8974;
  
  #endif /* __QCOM_TSENS_H__ */
 -- 
