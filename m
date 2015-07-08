@@ -1,89 +1,124 @@
-From: Michael Turquette <mturquette@baylibre.com>
-Subject: Re: [RFCv5 PATCH 44/46] sched/fair: jump to max OPP when crossing UP
- threshold
-Date: Wed, 08 Jul 2015 09:47:44 -0700
-Message-ID: <20150708164744.9112.6023@quantum>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-45-git-send-email-morten.rasmussen@arm.com>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: [PATCH v6 2/7] ACPI: Make ACPI processor driver more extensible
+Date: Wed, 8 Jul 2015 15:16:36 -0400
+Message-ID: <CAJ5Y-ebW3aCSSs4UQFLpLFSfo7d9zPVfigoROjN80uXzG1sZLw@mail.gmail.com>
+References: <cover.1434398373.git.ashwin.chaugule@linaro.org>
+	<9e352cbe2feac01158a21511bac5c544dc2f29e2.1434398373.git.ashwin.chaugule@linaro.org>
+	<2138469.Io9yItSdst@vostro.rjw.lan>
+	<CAJ5Y-eZBYb551T=kBdbjM4YQ1f_hwYBgkVk4wJsDHSib00XfrA@mail.gmail.com>
+	<CAJZ5v0gKW7bR66trxvuhd_Gb=ZMBbec++u+V+T4mroCZMtO+vg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f182.google.com ([209.85.192.182]:36587 "EHLO
-	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932574AbbGHQsE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 12:48:04 -0400
-Received: by pddu5 with SMTP id u5so61181998pdd.3
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2015 09:48:03 -0700 (PDT)
-In-Reply-To: <1436293469-25707-45-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0gKW7bR66trxvuhd_Gb=ZMBbec++u+V+T4mroCZMtO+vg@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jaswinder Singh <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, linux acpi <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>, peterz@infradead.org, mingo@redhat.com
-Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri Lelli <juri.lelli@arm.com>
 
-Quoting Morten Rasmussen (2015-07-07 11:24:27)
-> From: Juri Lelli <juri.lelli@arm.com>
-> 
-> Since the true utilization of a long running task is not detectable while
-> it is running and might be bigger than the current cpu capacity, create the
-> maximum cpu capacity head room by requesting the maximum cpu capacity once
-> the cpu usage plus the capacity margin exceeds the current capacity. This
-> is also done to try to harm the performance of a task the least.
-> 
-> cc: Ingo Molnar <mingo@redhat.com>
-> cc: Peter Zijlstra <peterz@infradead.org>
-> 
-> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> ---
->  kernel/sched/fair.c | 19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
-> 
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 323331f..c2d6de4 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -8586,6 +8586,25 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
->  
->         if (!rq->rd->overutilized && cpu_overutilized(task_cpu(curr)))
->                 rq->rd->overutilized = true;
-> +
-> +       /*
-> +        * To make free room for a task that is building up its "real"
-> +        * utilization and to harm its performance the least, request a
-> +        * jump to max OPP as soon as get_cpu_usage() crosses the UP
-> +        * threshold. The UP threshold is built relative to the current
-> +        * capacity (OPP), by using same margin used to tell if a cpu
-> +        * is overutilized (capacity_margin).
-> +        */
-> +       if (sched_energy_freq()) {
-> +               int cpu = cpu_of(rq);
-> +               unsigned long capacity_orig = capacity_orig_of(cpu);
-> +               unsigned long capacity_curr = capacity_curr_of(cpu);
-> +
-> +               if (capacity_curr < capacity_orig &&
-> +                   (capacity_curr * SCHED_LOAD_SCALE) <
-> +                   (get_cpu_usage(cpu) * capacity_margin))
-> +                       cpufreq_sched_set_cap(cpu, capacity_orig);
+Hi Rafael,
 
-I'm sure that at some point the Product People are going to want to tune
-the capacity value that is requested. Hard-coding the max
-capacity/frequency in is a reasonable start, but at some point it would
-be nice to fetch an intermediate capacity defined by the cpufreq driver
-for this particular cpu. We have already seen that a lot in Android
-devices using the interactive governor and it could be done from
-cpufreq_sched_start().
+On 8 July 2015 at 09:34, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> Hi Ashwin,
+>
+> On Wed, Jul 8, 2015 at 3:27 AM, Ashwin Chaugule
+> <ashwin.chaugule@linaro.org> wrote:
+>> On 7 July 2015 at 21:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>> On Monday, June 15, 2015 04:09:06 PM Ashwin Chaugule wrote:
+>>>> The ACPI processor driver is currently tied too closely
+>>>> to the ACPI C-states (CST), P-states (PSS) and other related
+>>>> constructs for controlling CPU idle and CPU performance.
+>>>>
+>>>> The newer ACPI specification (v5.1 onwards) introduces
+>>>> alternative methods to CST and PSS. These new mechanisms
+>>>> are described within each ACPI Processor object and so they
+>>>> need to be scanned whenever a new Processor object is detected.
+>>>> This patch introduces two new Kconfig symbols to allow for
+>>>> finer configurability among the various options for controlling
+>>>> CPU idle and performance states. There is no change in functionality
+>>>> and these options are defaulted to enabled to maintain previous
+>>>> behaviour.
+>>>>
+>>>> The following patchwork introduces CPPC: A newer method of
+>>>> controlling CPU performance. The OS is not expected to support CPPC
+>>>> and PSS at runtime. So the kconfig option lets us make these two
+>>>> mutually exclusive at compile time.
+>>>>
+>>>> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+>>>> Reviewed-by: Al Stone <al.stone@linaro.org>
+>>>> ---
+>>>>  drivers/acpi/Kconfig            |  31 +++++++++--
+>>>>  drivers/acpi/Makefile           |   7 ++-
+>>>>  drivers/acpi/processor_driver.c |  86 ++++++++++++++++++----------
+>>>>  drivers/cpufreq/Kconfig         |   2 +-
+>>>>  drivers/cpufreq/Kconfig.x86     |   2 +
+>>>>  include/acpi/processor.h        | 120 ++++++++++++++++++++++++++++------------
+>>>>  6 files changed, 176 insertions(+), 72 deletions(-)
+>>>>
+>>>> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+>>>> index ab2cbb5..5942754 100644
+>>>> --- a/drivers/acpi/Kconfig
+>>>> +++ b/drivers/acpi/Kconfig
+>>>> @@ -166,18 +166,39 @@ config ACPI_DOCK
+>>>>         This driver supports ACPI-controlled docking stations and removable
+>>>>         drive bays such as the IBM Ultrabay and the Dell Module Bay.
+>>>>
+>>>> -config ACPI_PROCESSOR
+>>>> -     tristate "Processor"
+>>>> -     select THERMAL
+>>>> -     select CPU_IDLE
+>>>> +config ACPI_CST
+>>>> +     bool "ACPI C states (CST) driver"
+>>>> +     depends on ACPI_PROCESSOR
+>>>>       depends on X86 || IA64
+>>>> +     select CPU_IDLE
+>>>>       default y
+>>>>       help
+>>>>         This driver installs ACPI as the idle handler for Linux and uses
+>>>>         ACPI C2 and C3 processor states to save power on systems that
+>>>> -       support it.  It is required by several flavors of cpufreq
+>>>> +       support it.
+>>>> +
+>>>> +config ACPI_PSS
+>>>> +     bool "ACPI P States (PSS) driver"
+>>>> +     depends on ACPI_PROCESSOR
+>>>> +     depends on X86 || IA64
+>>>> +     select THERMAL
+>>>> +     default y
+>>>> +     help
+>>>> +       This driver implements ACPI methods for controlling CPU performance
+>>>> +       using PSS methods as described in the ACPI spec. It also enables support
+>>>> +       for ACPI based performance throttling (TSS) and ACPI based thermal
+>>>> +       monitoring. It is required by several flavors of cpufreq
+>>>>         performance-state drivers.
+>>>
+>>> For starters, I don't like these new Kconfig options.
+>>>
+>>> Isn't there a way to implement what you need without adding them?
+>>
+>> We need to use the ACPI Processor driver for CPPC without including
+>> all its current dependencies. (i.e. PSS, TSS, CSS etc.). The upcoming
+>> LPI work from Sudeep will also face the same issue. I considered the
+>> alternative of adding a probe routine which matches
+>> ACPI_PROCESSOR_OBJECT/DEVICE_HID to each driver, but this seemed like
+>> a better option. Do you have any other ideas?
+>
+> First of all, I don't see what _CST has to do with CPPC.
+>
+> Second, it looks like the problem is that x86 probably won't use CPPC,
+> while arm64 probably won't use _PSS.
+>
+> That can be addressed by adding Kconfig options, but those options
+> should not be user-selectable (because quite honestly users don't have
+> to know what those things are and they don't care *and* things break
+> if they make a wrong choice).  Instead, I'd make architecture Kconfigs
+> select those options automatically.
+>
 
-Regards,
-Mike
+I've made changes locally. Basically s/ACPI_PSS/HAVE_ACPI_PSS/ and in
+arch/x86/Kconfig; select HAVE_ACPI_PSS if ACPI. Similarly for CST.
+Just wanted to check if there were any other comments before sending
+out v7.
 
-> +       }
->  }
->  
->  /*
-> -- 
-> 1.9.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Ashwin.
