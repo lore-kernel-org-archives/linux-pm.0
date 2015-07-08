@@ -1,38 +1,82 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Initialize the governor again while restoring
- policy
-Date: Wed, 8 Jul 2015 14:59:15 +0530
-Message-ID: <20150708092915.GA24289@linux>
-References: <f428ecb0927075b25cf7e2ea5fb00eab3d254fdd.1436333568.git.viresh.kumar@linaro.org>
- <1436347629.2844.12.camel@linaro.org>
+From: Julian Andres Klode <jak@jak-linux.org>
+Subject: Re: sysfs charge thresholds for ThinkPads (and possibly others),
+ preparation for second try
+Date: Wed, 8 Jul 2015 11:40:00 +0200
+Message-ID: <20150708113624.GA25015@debian.org>
+References: <20150707210728.GA7524@jak-x230>
+ <20150707235110.GA19748@earth>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f174.google.com ([209.85.192.174]:36756 "EHLO
-	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933047AbbGHJ3V (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 05:29:21 -0400
-Received: by pddu5 with SMTP id u5so55207010pdd.3
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2015 02:29:20 -0700 (PDT)
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1436347629.2844.12.camel@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20150707235110.GA19748@earth>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, ibm-acpi-devel@lists.sourceforge.net, platform-driver-x86@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, evgeni@debian.org
 List-Id: linux-pm@vger.kernel.org
-To: "Jon Medhurst (Tixy)" <tixy@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Pi-Cheng Chen <pi-cheng.chen@linaro.org>, open list <linux-kernel@vger.kernel.org>
 
-On 08-07-15, 10:27, Jon Medhurst (Tixy) wrote:
-> I believe this also fixes the other issue I mentioned (nullptr deref in
-> in arm_big_little driver). To test that, after applying this patch, I
-> modified the code to force __cpufreq_governor to still return an error
-> when a cpu is hotpluged back in. Now the arm_big_little driver doesn't
-> get called when I manually poke scaling_setspeed, presumably because
-> policy->governor==NULL prevents that from reaching the driver?
+On Wed, Jul 08, 2015 at 01:51:10AM +0200, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Tue, Jul 07, 2015 at 11:07:28PM +0200, Julian Andres Klode wrote:
+> > Hi everyone (Thinkpad-ACPI, ACPI, and Power supply maintainers),
+> > 
+> > some might know that I presented a patch set adding support for
+> > charge thresholds to thinkpad_acpi about 1.5 years ago. 
+> 
+> Can you provide a link to the patch set?
 
-I would like to fix that issue without using this patch as we aren't
-cleaning up things properly on errors today. I am almost done with the
-patches, and will send them to you shortly. Please give them a try
-without this patch.
+Sure:
+http://thread.gmane.org/gmane.linux.acpi.ibm-acpi.devel/3175
+
+(it was not on the ACPI and Power MLs back then)
+
+> 
+> > Back then, one of the major rejections was that the functionality
+> > for setting charge thresholds should be integrated into the
+> > power supply stack somehow. I did not know who to contact back
+> > then, but know I re-read MAINTAINERS and found all your addresses,
+> > so I give it a second try.
+> > 
+> > One issue with just integrating it in the current battery
+> > directories would be that ThinkPads are able to set charge
+> > thresholds for batteries that are currently not inserted.
+> 
+> So the power supply device should be kept with
+> POWER_SUPPLY_PROP_PRESENT being disabled (and most properties
+> returning -ENODATA). The ACPI SBS driver seems to implement
+> POWER_SUPPLY_PROP_PRESENT, but I didn't test it.
+
+Yes, indeed.
+
+> 
+> > Back then I wrote:
+> > > The next step is to integrate this properly with power supply
+> > > and/or acpi battery. One way would be to add additional power
+> > > supply properties and then add get/set_property() pointers to
+> > > the acpi battery which it can fall back to if it does not support
+> > > a requested property (and we would locate the ACPI battery and
+> > > set those pointers to new thinkpad_acpi functions).
+> > 
+> > If you, the ACPI and power supply people, have any preferred
+> > way (or any idea at all how) to proceed, that would be useful,
+> > so I don't start working on it again, and then somebody does
+> > not like it.
+> 
+> Adding charging thresholds as power_supply_property sounds
+> fine to me.
+> 
+
+Right, it gets a bit more complicated though: Since the code is
+platform-specific, it should live in the platform driver, so a
+way is needed to extend the existing device with new properties
+from the platform driver.
 
 -- 
-viresh
+Julian Andres Klode  - Debian Developer, Ubuntu Member
+
+See http://wiki.debian.org/JulianAndresKlode and http://jak-linux.org/.
+
+Be friendly, do not top-post, and follow RFC 1855 "Netiquette".
+    - If you don't I might ignore you.
