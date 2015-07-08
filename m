@@ -1,128 +1,58 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
-Date: Wed, 8 Jul 2015 16:31:41 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1507081617200.2243-100000@iolanthe.rowland.org>
-References: <9291571.JSDgNsKidJ@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v6 2/7] ACPI: Make ACPI processor driver more extensible
+Date: Wed, 8 Jul 2015 22:46:25 +0200
+Message-ID: <CAJZ5v0iGGgvzdcvAfS9ZiQTWMhqF9GWfZ7Fx6_rF1BGZmACpXw@mail.gmail.com>
+References: <cover.1434398373.git.ashwin.chaugule@linaro.org>
+	<9e352cbe2feac01158a21511bac5c544dc2f29e2.1434398373.git.ashwin.chaugule@linaro.org>
+	<2138469.Io9yItSdst@vostro.rjw.lan>
+	<CAJ5Y-eZBYb551T=kBdbjM4YQ1f_hwYBgkVk4wJsDHSib00XfrA@mail.gmail.com>
+	<CAJZ5v0gKW7bR66trxvuhd_Gb=ZMBbec++u+V+T4mroCZMtO+vg@mail.gmail.com>
+	<CAJ5Y-ebW3aCSSs4UQFLpLFSfo7d9zPVfigoROjN80uXzG1sZLw@mail.gmail.com>
+	<CAJZ5v0h24-YAeqW79Se8kRr+_+RknwNfLwS_74-sN+W0_wBaZg@mail.gmail.com>
+	<CAJ5Y-eYwnaDzyL78CyJDmo35CFTNoQrYfEcO3VYnpaZkSVPdcw@mail.gmail.com>
+	<CAJ5Y-eaGmF6pRKuapzQo8ruMt0FX4kVrdyu-os6maVaS7WO-Pw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:56222 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755529AbbGHUbm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 16:31:42 -0400
-In-Reply-To: <9291571.JSDgNsKidJ@vostro.rjw.lan>
+Received: from mail-wg0-f50.google.com ([74.125.82.50]:33715 "EHLO
+	mail-wg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754001AbbGHUq0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 16:46:26 -0400
+In-Reply-To: <CAJ5Y-eaGmF6pRKuapzQo8ruMt0FX4kVrdyu-os6maVaS7WO-Pw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jaswinder Singh <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, linux acpi <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
 
-On Wed, 8 Jul 2015, Rafael J. Wysocki wrote:
+Hi Ashwin,
 
-> I seem to have lost the context here, sorry about that.
-> 
-> The idea seems to be to rely on the fact that the RPM status for all devices
-> is initially RPM_SUSPENDED and that never changes if runtime PM is never
-> enabled for the device, so in that particular case it would be OK to treat
-> the "power.direct_complete set + RPM status == RPM_SUSPENDED" combination
-> as valid even though runtime PM has never been enabled for the device in
-> question (provided that power.direct_complete will never be set for "real"
-> devices that don't support runtime PM).  Is that correct?
+On Wed, Jul 8, 2015 at 10:28 PM, Ashwin Chaugule
+<ashwin.chaugule@linaro.org> wrote:
+> On 8 July 2015 at 16:05, Ashwin Chaugule <ashwin.chaugule@linaro.org> wrote:
+>> On 8 July 2015 at 15:55, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>> Hi Ashwin,
+>>>
+>>> On Wed, Jul 8, 2015 at 9:16 PM, Ashwin Chaugule
+>>> <ashwin.chaugule@linaro.org> wrote:
+>>>> Hi Rafael,
+>>>>
 
-I would have expressed it slightly differently, but yes, that's correct.
+[cut]
 
-> That seems to be fragile, but I have no strong opinion.
+>>>
+>>> Also I'm still unsure what the connection between _CST and CPPC is.
+>>>
+>>
+>> There isnt. But I'm missing where I've implied the dependency?
+>
+> Perhaps the confusion is coming from the introduction of ACPI_CST in
+> this file. I could leave it as it is and just separate out the
+> ACPI_PSS bits. But I figured, while I'm at it, I'd introduce ACPI_CST,
+> since we know the LPI stuff is coming up soon as a CST alternative
+> anyway. So if you prefer, I can drop the CST bits and maybe Sudeep can
+> address that as part of his LPI patchset?
 
-In itself it's not all that bad, I think.  In the presence of Tomeu's
-new direct_complete_default flag, however, it does seem quite fragile.  
+Yes, please.  That would be much less confusing.
 
-We may want to do the direct_complete_default thing in a different way.  
-For example, the PM core could automatically set the direct_complete
-flag if a device has _none_ of the system suspend callbacks (i.e., no
-prepare, suspend, suspend_late, suspend_noirq, resume_noirq,
-resume_early, resume, or complete).  Although it would be a little
-awkward to check this, it would be safer than inheriting
-direct_complete_default from the parent and it ought to solve Tomeu's
-problem just as well.
-
-> Let's do that change if it allows us to make forward progress here.  Please
-> feel free to submit a documentation patch along the lines you've suggested.
-
-Here's a proposed patch to illustrate what I have in mind.  Since it 
-removes the only usage of pm_runtime_suspended_if_enabled(), it also 
-removes the definition of that function.
-
-Alan Stern
-
-
-
-Index: usb-4.1/drivers/base/power/main.c
-===================================================================
---- usb-4.1.orig/drivers/base/power/main.c
-+++ usb-4.1/drivers/base/power/main.c
-@@ -1374,7 +1374,7 @@ static int __device_suspend(struct devic
- 	if (dev->power.direct_complete) {
- 		if (pm_runtime_status_suspended(dev)) {
- 			pm_runtime_disable(dev);
--			if (pm_runtime_suspended_if_enabled(dev))
-+			if (pm_runtime_status_suspended(dev))
- 				goto Complete;
- 
- 			pm_runtime_enable(dev);
-Index: usb-4.1/Documentation/power/devices.txt
-===================================================================
---- usb-4.1.orig/Documentation/power/devices.txt
-+++ usb-4.1/Documentation/power/devices.txt
-@@ -341,6 +341,13 @@ the phases are:
- 	and is entirely responsible for bringing the device back to the
- 	functional state as appropriate.
- 
-+	Note that this direct-complete procedure applies even if the device is
-+	disabled for runtime PM; only the runtime-PM status matters.  It follows
-+	that if a device has system-sleep callbacks but does not support runtime
-+	PM, then its prepare callback must never return a positive value.  This
-+	is because all devices are initially set to runtime-suspended with
-+	runtime PM disabled.
-+
-     2.	The suspend methods should quiesce the device to stop it from performing
- 	I/O.  They also may save the device registers and put it into the
- 	appropriate low-power state, depending on the bus type the device is on,
-Index: usb-4.1/Documentation/power/runtime_pm.txt
-===================================================================
---- usb-4.1.orig/Documentation/power/runtime_pm.txt
-+++ usb-4.1/Documentation/power/runtime_pm.txt
-@@ -445,10 +445,6 @@ drivers/base/power/runtime.c and include
-   bool pm_runtime_status_suspended(struct device *dev);
-     - return true if the device's runtime PM status is 'suspended'
- 
--  bool pm_runtime_suspended_if_enabled(struct device *dev);
--    - return true if the device's runtime PM status is 'suspended' and its
--      'power.disable_depth' field is equal to 1
--
-   void pm_runtime_allow(struct device *dev);
-     - set the power.runtime_auto flag for the device and decrease its usage
-       counter (used by the /sys/devices/.../power/control interface to
-Index: usb-4.1/include/linux/pm_runtime.h
-===================================================================
---- usb-4.1.orig/include/linux/pm_runtime.h
-+++ usb-4.1/include/linux/pm_runtime.h
-@@ -98,11 +98,6 @@ static inline bool pm_runtime_status_sus
- 	return dev->power.runtime_status == RPM_SUSPENDED;
- }
- 
--static inline bool pm_runtime_suspended_if_enabled(struct device *dev)
--{
--	return pm_runtime_status_suspended(dev) && dev->power.disable_depth == 1;
--}
--
- static inline bool pm_runtime_enabled(struct device *dev)
- {
- 	return !dev->power.disable_depth;
-@@ -164,7 +159,6 @@ static inline void device_set_run_wake(s
- static inline bool pm_runtime_suspended(struct device *dev) { return false; }
- static inline bool pm_runtime_active(struct device *dev) { return true; }
- static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
--static inline bool pm_runtime_suspended_if_enabled(struct device *dev) { return false; }
- static inline bool pm_runtime_enabled(struct device *dev) { return false; }
- 
- static inline void pm_runtime_no_callbacks(struct device *dev) {}
-
+Thanks,
+Rafael
