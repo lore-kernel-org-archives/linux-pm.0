@@ -1,88 +1,80 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 1/2] cpufreq: cpufreq_add_dev: name goto labels based on what they do
-Date: Wed,  8 Jul 2015 15:12:15 +0530
-Message-ID: <276debea91831d86c34079f6a40d773ce258a62c.1436348436.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, tixy@linaro.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: [PATCH 0/9] qcom: Add support for TSENS driver
+Date: Wed,  8 Jul 2015 15:17:09 +0530
+Message-ID: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, Rajendra Nayak <rnayak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-These labels are are named in two ways normally:
-- Based on what caused to jump to such labels
-- Based on what we do under such labels
+Changes since RFC:
+* Added support for 8916 and 8084
+* Based off the latest nvmem framework patches [1]
+* Minor review fixes for comments mostly from Lina
 
-We follow the first naming convention today and that leads to multiple
-labels for doing the same work. Fix it by switching to the second way of
-naming them.
+** I have also added irq support using the hardware
+trip point support series [2]. Will post that
+out seperately.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Hi Rafael,
+This is an attempt to have a single TSENS driver for
+the different versions of the TSENS IP that exist, on
+different qcom msm/apq SoCs'
+Support is added for msm8916, msm8960 and msm8974 families.
+Based on top of the latest nvmem framework patches [2]
 
-These can go in 4.3, I don't really mind :)
+A lot of the work is based of original code from Stephen Boyd
+and Siddartha Mohanadoss. I have also picked some of what
+Narendran Rajan did in his attempt to upstream the support
+for 8960 family. I could not keep the original authorship on
+any of the patches because I ended up moving the code around
+quite a bit in an effort to have a single driver for the
+various devices. I would be glad to change the authorship
+for any of the patches if needed.
 
- drivers/cpufreq/cpufreq.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+[1] https://lkml.org/lkml/2015/6/22/609
+[2] https://lkml.org/lkml/2015/5/20/472
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b612411655f9..b7aac8eec525 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1278,7 +1278,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 		recover_policy = false;
- 		policy = cpufreq_policy_alloc(dev);
- 		if (!policy)
--			goto nomem_out;
-+			goto out_release_rwsem;
- 	}
- 
- 	cpumask_copy(policy->cpus, cpumask_of(cpu));
-@@ -1289,7 +1289,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 	ret = cpufreq_driver->init(policy);
- 	if (ret) {
- 		pr_debug("initialization failed\n");
--		goto err_set_policy_cpu;
-+		goto out_free_policy;
- 	}
- 
- 	down_write(&policy->rwsem);
-@@ -1317,7 +1317,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 		policy->cur = cpufreq_driver->get(policy->cpu);
- 		if (!policy->cur) {
- 			pr_err("%s: ->get() failed\n", __func__);
--			goto err_get_freq;
-+			goto out_exit_policy;
- 		}
- 	}
- 
-@@ -1367,7 +1367,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 	if (!recover_policy) {
- 		ret = cpufreq_add_dev_interface(policy, dev);
- 		if (ret)
--			goto err_out_unregister;
-+			goto out_exit_policy;
- 		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
- 				CPUFREQ_CREATE_POLICY, policy);
- 
-@@ -1396,15 +1396,14 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 
- 	return 0;
- 
--err_out_unregister:
--err_get_freq:
-+out_exit_policy:
- 	up_write(&policy->rwsem);
- 
- 	if (cpufreq_driver->exit)
- 		cpufreq_driver->exit(policy);
--err_set_policy_cpu:
-+out_free_policy:
- 	cpufreq_policy_free(policy, recover_policy);
--nomem_out:
-+out_release_rwsem:
- 	up_read(&cpufreq_rwsem);
- 
- 	return ret;
+Rajendra Nayak (8):
+  thermal: qcom: tsens: Add a skeletal TSENS drivers
+  thermal: qcom: tsens-8916: Add support for 8916 family of SoCs
+  thermal: qcom: tsens-8974: Add support for 8974 family of SoCs
+  thermal: qcom: tsens-8960: Add support for 8960 family of SoCs
+  arm: dts: msm8974: Add thermal zones, tsens and eeprom nodes
+  arm: dts: apq8064: Add thermal zones, tsens and eeprom nodes
+  arm: dts: apq8084: Add thermal zones, tsens and eeprom nodes
+  arm64: dts: msm8916: Add thermal zones, tsens and eeprom nodes
+
+Srinivas Kandagatla (1):
+  clk: qcom: gcc-msm8960: add child devices support.
+
+ .../devicetree/bindings/thermal/qcom-tsens.txt     |  37 +++
+ arch/arm/boot/dts/qcom-apq8064.dtsi                | 108 ++++++++
+ arch/arm/boot/dts/qcom-apq8084.dtsi                | 105 ++++++++
+ arch/arm/boot/dts/qcom-msm8974.dtsi                | 105 ++++++++
+ arch/arm64/boot/dts/qcom/msm8916.dtsi              |  66 +++++
+ drivers/clk/qcom/gcc-msm8960.c                     |   4 +-
+ drivers/thermal/Kconfig                            |   5 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/qcom/Kconfig                       |  10 +
+ drivers/thermal/qcom/Makefile                      |   2 +
+ drivers/thermal/qcom/tsens-8916.c                  | 107 ++++++++
+ drivers/thermal/qcom/tsens-8960.c                  | 291 +++++++++++++++++++++
+ drivers/thermal/qcom/tsens-8974.c                  | 239 +++++++++++++++++
+ drivers/thermal/qcom/tsens-common.c                | 128 +++++++++
+ drivers/thermal/qcom/tsens.c                       | 209 +++++++++++++++
+ drivers/thermal/qcom/tsens.h                       |  69 +++++
+ 16 files changed, 1485 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+ create mode 100644 drivers/thermal/qcom/Kconfig
+ create mode 100644 drivers/thermal/qcom/Makefile
+ create mode 100644 drivers/thermal/qcom/tsens-8916.c
+ create mode 100644 drivers/thermal/qcom/tsens-8960.c
+ create mode 100644 drivers/thermal/qcom/tsens-8974.c
+ create mode 100644 drivers/thermal/qcom/tsens-common.c
+ create mode 100644 drivers/thermal/qcom/tsens.c
+ create mode 100644 drivers/thermal/qcom/tsens.h
+
 -- 
-2.4.0
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
