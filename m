@@ -1,62 +1,45 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 6/8] mfd: make mfd_remove_devices() iterate in reverse
- order
-Date: Wed, 8 Jul 2015 08:46:46 +0100
-Message-ID: <20150708074646.GN3182@x1>
-References: <1434362256-239992-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <CAHp75VdGyfyfYV6q9vdqK5nYBMpPWFxr32eiXXn2ruUj4pg6BA@mail.gmail.com>
- <20150706160529.GC3182@x1>
- <3134535.L6At3I31FS@vostro.rjw.lan>
- <20150707065117.GE3182@x1>
- <559C5201.7080605@codeaurora.org>
+From: Oliver Neukum <oneukum@suse.com>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Wed, 08 Jul 2015 09:51:13 +0200
+Message-ID: <1436341873.5636.5.camel@suse.com>
+References: <4290667.ZqInAykFGS@vostro.rjw.lan>
+	 <1527037.PaGp0dsCau@vostro.rjw.lan> <1436279906.2658.4.camel@suse.de>
+	 <1522789.fQO6RUUx40@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <559C5201.7080605@codeaurora.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andy.shevchenko@gmail.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine <dmaengine@vger.kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Mike Turquette <mturquette@baylibre.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cantor2.suse.de ([195.135.220.15]:59376 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933250AbbGHHwS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 8 Jul 2015 03:52:18 -0400
+In-Reply-To: <1522789.fQO6RUUx40@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dave Chinner <david@fromorbit.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Alan Stern <stern@rowland.harvard.edu>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, 07 Jul 2015, Stephen Boyd wrote:
-> On 07/06/2015 11:51 PM, Lee Jones wrote:
-> > On Tue, 07 Jul 2015, Rafael J. Wysocki wrote:
-> >> So are there any ACKs missing from the last series posted by Andy?
-> > Yes, I have requested a Clk Ack, as there are some, lets say
-> > interesting code in the MFD driver which I am unsure about.  Howeve=
-r,
-> > we have caught Mike at an awkward time, as he is in the middle of
-> > transitioning jobs.
-> >
-> > Perhaps Stephen Boyd (now Cc'ed) might have a look.
-> >
->=20
-> Context? I found the cover letter.
->=20
-> clkdev is maintained by Russell. You could get his ack for the usage =
-of
-> the clkdev_create() API, but I'm not sure why it's needed. The API wa=
-s
-> merged into Linus' tree so I think you have everything you need.
->=20
-> $ git tag -l --contains 2568999835d7797afce3dcc3a3f368051ffcaf1f v4*
-> v4.2-rc1
+On Wed, 2015-07-08 at 00:11 +0200, Rafael J. Wysocki wrote:
+> On Tuesday, July 07, 2015 04:38:26 PM Oliver Neukum wrote:
+>  
+> > That is a tough nut. But that's not a reason to make it worse.
+> > I'd say there's no reason not to use a secondary interface to
+> > suspend without syncing or to extend or introduce such an interface
+> > if the API is deficient.
+> 
+> Well, the point here is that the sync we have doesn't prevent all potentially
+> possible bad things from happening.  It's a partial measure at best in that
+> respect.
 
-mfd: Add support for Intel Sunrisepoint LPSS devices
+Well, removed hardware doesn't work. That is a very basic limitation.
+But can we guarantee that any returned syscall actually wrote to disk?
+Yes, but it must be done in kernel space. So doing a sync has a true
+benefit.
+I don't see why you would want to generally remove it. What is wrong
+with an interface allowing a selection there to those who don't care
+about additional guarantees?
 
-I also just bounced the original patch submission to you.  I'm
-particularly concerned with the use of IDA to match clocks by name.
+	Regards
+		Oliver
 
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
