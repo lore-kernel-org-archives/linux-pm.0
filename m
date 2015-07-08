@@ -1,90 +1,146 @@
 From: Michael Turquette <mturquette@baylibre.com>
-Subject: Re: [RFCv5 PATCH 40/46] sched/cpufreq_sched: compute freq_new based on
- capacity_orig_of()
-Date: Wed, 08 Jul 2015 08:22:21 -0700
-Message-ID: <20150708152221.9112.2951@quantum>
+Subject: Re: [RFCv5 PATCH 41/46] sched/fair: add triggers for OPP change requests
+Date: Wed, 08 Jul 2015 08:42:15 -0700
+Message-ID: <20150708154215.9112.98060@quantum>
 References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-41-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-42-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1436293469-25707-41-git-send-email-morten.rasmussen@arm.com>
+In-Reply-To: <1436293469-25707-42-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Morten Rasmussen <morten.rasmussen@arm.com>, peterz@infradead.org, mingo@redhat.com
 Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri Lelli <juri.lelli@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Quoting Morten Rasmussen (2015-07-07 11:24:23)
+Hi Juri,
+
+Quoting Morten Rasmussen (2015-07-07 11:24:24)
 > From: Juri Lelli <juri.lelli@arm.com>
 > 
-> capacity is both cpu and freq scaled with EAS. We thus need to compute
-> freq_new using capacity_orig_of(), so that we properly scale back the thing
-> on heterogeneous architectures. In fact, capacity_orig_of() returns only
-> the cpu scaled part of capacity (see update_cpu_capacity()). So, to scale
-> freq_new correctly, we multiply policy->max by capacity/capacity_orig_of()
-> instead of capacity/1024.
+> Each time a task is {en,de}queued we might need to adapt the current
+> frequency to the new usage. Add triggers on {en,de}queue_task_fair() for
+> this purpose.  Only trigger a freq request if we are effectively waking up
+> or going to sleep.  Filter out load balancing related calls to reduce the
+> number of triggers.
 > 
 > cc: Ingo Molnar <mingo@redhat.com>
 > cc: Peter Zijlstra <peterz@infradead.org>
 > 
 > Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> ---
+>  kernel/sched/fair.c | 42 ++++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 40 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index f74e9d2..b8627c6 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -4281,7 +4281,10 @@ static inline void hrtick_update(struct rq *rq)
+>  }
+>  #endif
+>  
+> +static unsigned int capacity_margin = 1280; /* ~20% margin */
 
-Looks good to me. Please feel free to add my Reviewed-by or Acked-by as
-appropriate.
+This is a 25% margin. Calling it ~20% is a bit misleading :)
+
+Should margin be scaled for cpus that do not have max capacity == 1024?
+In other words, should margin be dynamically calculated to be 20% of
+*this* cpu's max capacity?
+
+I'm imagining a corner case where a heterogeneous cpu system is set up
+in such a way that adding margin that is hard-coded to 25% of 1024
+almost always puts req_cap to the highest frequency, skipping some
+reasonable capacity states in between.
+
+> +
+>  static bool cpu_overutilized(int cpu);
+> +static unsigned long get_cpu_usage(int cpu);
+>  struct static_key __sched_energy_freq __read_mostly = STATIC_KEY_INIT_FALSE;
+>  
+>  /*
+> @@ -4332,6 +4335,26 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+>                 if (!task_new && !rq->rd->overutilized &&
+>                     cpu_overutilized(rq->cpu))
+>                         rq->rd->overutilized = true;
+> +               /*
+> +                * We want to trigger a freq switch request only for tasks that
+> +                * are waking up; this is because we get here also during
+> +                * load balancing, but in these cases it seems wise to trigger
+> +                * as single request after load balancing is done.
+> +                *
+> +                * XXX: how about fork()? Do we need a special flag/something
+> +                *      to tell if we are here after a fork() (wakeup_task_new)?
+> +                *
+> +                * Also, we add a margin (same ~20% used for the tipping point)
+> +                * to our request to provide some head room if p's utilization
+> +                * further increases.
+> +                */
+> +               if (sched_energy_freq() && !task_new) {
+> +                       unsigned long req_cap = get_cpu_usage(cpu_of(rq));
+> +
+> +                       req_cap = req_cap * capacity_margin
+> +                                       >> SCHED_CAPACITY_SHIFT;
+
+Probably a dumb question:
+
+Can we "cheat" here and just assume that capacity and load use the same
+units? That would avoid the multiplication and change your code to the
+following:
+
+	#define capacity_margin SCHED_CAPACITY_SCALE >> 2; /* 25% */
+	req_cap += SCHED_CAPACITY_SCALE;
+
+> +                       cpufreq_sched_set_cap(cpu_of(rq), req_cap);
+> +               }
+>         }
+>         hrtick_update(rq);
+>  }
+> @@ -4393,6 +4416,23 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+>         if (!se) {
+>                 sub_nr_running(rq, 1);
+>                 update_rq_runnable_avg(rq, 1);
+> +               /*
+> +                * We want to trigger a freq switch request only for tasks that
+> +                * are going to sleep; this is because we get here also during
+> +                * load balancing, but in these cases it seems wise to trigger
+> +                * as single request after load balancing is done.
+> +                *
+> +                * Also, we add a margin (same ~20% used for the tipping point)
+> +                * to our request to provide some head room if p's utilization
+> +                * further increases.
+> +                */
+> +               if (sched_energy_freq() && task_sleep) {
+> +                       unsigned long req_cap = get_cpu_usage(cpu_of(rq));
+> +
+> +                       req_cap = req_cap * capacity_margin
+> +                                       >> SCHED_CAPACITY_SHIFT;
+> +                       cpufreq_sched_set_cap(cpu_of(rq), req_cap);
+
+Filtering out the load_balance bits is neat.
 
 Regards,
 Mike
 
-> ---
->  kernel/sched/cpufreq_sched.c | 2 +-
->  kernel/sched/fair.c          | 2 +-
->  kernel/sched/sched.h         | 2 ++
->  3 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/sched/cpufreq_sched.c b/kernel/sched/cpufreq_sched.c
-> index 2968f3a..7071528 100644
-> --- a/kernel/sched/cpufreq_sched.c
-> +++ b/kernel/sched/cpufreq_sched.c
-> @@ -184,7 +184,7 @@ void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
->                 goto out;
->  
->         /* Convert the new maximum capacity request into a cpu frequency */
-> -       freq_new = capacity * policy->max >> SCHED_CAPACITY_SHIFT;
-> +       freq_new = (capacity * policy->max) / capacity_orig_of(cpu);
->  
->         /* No change in frequency? Bail and return current capacity. */
->         if (freq_new == policy->cur)
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index d395bc9..f74e9d2 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -4625,7 +4625,7 @@ static unsigned long capacity_of(int cpu)
->         return cpu_rq(cpu)->cpu_capacity;
+> +               }
+>         }
+>         hrtick_update(rq);
+>  }
+> @@ -4959,8 +4999,6 @@ static int find_new_capacity(struct energy_env *eenv,
+>         return idx;
 >  }
 >  
-> -static unsigned long capacity_orig_of(int cpu)
-> +unsigned long capacity_orig_of(int cpu)
+> -static unsigned int capacity_margin = 1280; /* ~20% margin */
+> -
+>  static bool cpu_overutilized(int cpu)
 >  {
->         return cpu_rq(cpu)->cpu_capacity_orig;
->  }
-> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> index b5e27d9..1327dc7 100644
-> --- a/kernel/sched/sched.h
-> +++ b/kernel/sched/sched.h
-> @@ -1476,6 +1476,8 @@ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
->  }
->  #endif
->  
-> +unsigned long capacity_orig_of(int cpu);
-> +
->  extern struct static_key __sched_energy_freq;
->  static inline bool sched_energy_freq(void)
->  {
+>         return (capacity_of(cpu) * 1024) <
 > -- 
 > 1.9.1
 > 
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
