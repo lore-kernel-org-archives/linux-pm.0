@@ -1,69 +1,117 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Wed, 8 Jul 2015 13:20:41 +0200
-Message-ID: <20150708112041.GB29356@amd>
-References: <Pine.LNX.4.44L0.1507071058000.1692-100000@iolanthe.rowland.org>
- <8185914.90oAZWnb5N@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 2/2] cpufreq: mediatek: Add MT8173 cpufreq driver
+Date: Wed, 8 Jul 2015 17:04:55 +0530
+Message-ID: <20150708113455.GF1805@linux>
+References: <1435717005-20012-1-git-send-email-pi-cheng.chen@linaro.org>
+ <1435717005-20012-3-git-send-email-pi-cheng.chen@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f171.google.com ([209.85.192.171]:34409 "EHLO
+	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934757AbbGHLfB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 07:35:01 -0400
+Received: by pdbep18 with SMTP id ep18so144364617pdb.1
+        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2015 04:35:01 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <8185914.90oAZWnb5N@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oneukum@suse.de>, Dave Chinner <david@fromorbit.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+In-Reply-To: <1435717005-20012-3-git-send-email-pi-cheng.chen@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Cc: Michael Turquette <mturquette@baylibre.com>, Matthias Brugger <matthias.bgg@gmail.com>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-mediatek@lists.infradead.org
 
-On Wed 2015-07-08 00:20:05, Rafael J. Wysocki wrote:
-> On Tuesday, July 07, 2015 11:03:20 AM Alan Stern wrote:
-> > On Tue, 7 Jul 2015, Oliver Neukum wrote:
-> > 
-> > > > he (or she) pulls the storage device out of the system, moves it to another
-> > > > system, makes changes (say removes the file written to by the process above,
-> > > > so the blocks previously occupied by that file are now used for some metadata)
-> > > > and moves the storage back to the suspended system.  The system is resumed
-> > > > and the writing process continues writing possibly to the wrong blocks and
-> > > > corrupts the filesystem.
-> > > 
-> > > That is a tough nut. But that's not a reason to make it worse.
-> > > I'd say there's no reason not to use a secondary interface to
-> > > suspend without syncing or to extend or introduce such an interface
-> > > if the API is deficient.
-> > 
-> > Indeed, the problem Rafael outlined always exists whether or not the
-> > kernel does a sync.  Even if no I/O is in progress when the system goes
-> > to sleep, if the user moves a portable storage device with a mounted
-> > filesystem to another computer and updates it before waking the system
-> > up, corruption is highly likely.
-> > 
-> > In principle this could be solved by adding suspend/resume callbacks to
-> > filesystems.  For example, the resume callback could verify that the
-> > superblock had not been changed since the suspend occurred.  Or there 
-> > could be some other simple way of determining that the filesystem had 
-> > not been remounted and changed.
-> > 
-> > Either way, this is irrelevant to the question of whether the kernel 
-> > should issue a sync when suspending.
-> 
-> well, that depends on what the purpose of the sync is supposed to be.
-> 
-> If it is there to prevent users from corrupting their filesystems as a result
-> of a mistake, it is insufficient.  If it's there for other reasons, I'm wondering
-> what those reasons are (on systems that suspend and resume reliably, because the
-> original reason to put it in there was to reduce the damage from suspend/resume
-> crashes).
+On 01-07-15, 10:16, Pi-Cheng Chen wrote:
+> This patch implements MT8173 cpufreq driver.
 
-I put it there, and there were more reasons than "crashes" to put it
-there.
+Now that you are going to resend this patchset, a few more comments.
 
-1) crashes.
+Please describe your SoC a bit here, so that reviewers know what are
+we going to implement.
 
-2) battery is quite likely to run out in suspended machine.
+> +static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
+> +{
+> +	struct device *cpu_dev;
+> +	struct regulator *proc_reg = ERR_PTR(-ENODEV);
+> +	struct regulator *sram_reg = ERR_PTR(-ENODEV);
+> +	struct clk *cpu_clk = ERR_PTR(-ENODEV);
+> +	struct clk *inter_clk = ERR_PTR(-ENODEV);
+> +	struct dev_pm_opp *opp;
+> +	unsigned long rate;
+> +	int ret;
+> +
+> +	cpu_dev = get_cpu_device(cpu);
+> +	if (!cpu_dev) {
+> +		pr_err("failed to get cpu%d device\n", cpu);
+> +		return -ENODEV;
+> +	}
+> +
+> +	ret = of_init_opp_table(cpu_dev);
+> +	if (ret) {
+> +		pr_warn("no OPP table for cpu%d\n", cpu);
+> +		return ret;
+> +	}
 
-3) if someone pulls the stick and puts it in other machine, I wanted
-consistent filesystem at least after journal replay.
+Initialize opp table only when you know other resources are available.
+i.e. we aren't going to abort due to EPROBE_DEFER.
 
-									Pavel
+> +	cpu_clk = clk_get(cpu_dev, "cpu");
+> +	if (IS_ERR(cpu_clk)) {
+> +		if (PTR_ERR(cpu_clk) == -EPROBE_DEFER)
+> +			pr_warn("cpu clk for cpu%d not ready, retry.\n", cpu);
+> +		else
+> +			pr_err("failed to get cpu clk for cpu%d\n", cpu);
+> +
+> +		ret = PTR_ERR(cpu_clk);
+> +		goto out_free_opp_table;
+> +	}
+> +}
+
+
+> +static int mt8173_cpufreq_probe(struct platform_device *pdev)
+> +{
+> +	int ret;
+> +
+> +	ret = cpufreq_register_driver(&mt8173_cpufreq_driver);
+> +	if (ret)
+> +		pr_err("failed to register mtk cpufreq driver\n");
+> +
+> +	return ret;
+> +}
+> +
+> +static struct platform_driver mt8173_cpufreq_platdrv = {
+> +	.driver = {
+> +		.name	= "mt8173-cpufreq",
+> +	},
+> +	.probe		= mt8173_cpufreq_probe,
+> +};
+> +
+> +static int mt8173_cpufreq_driver_init(void)
+> +{
+> +	struct platform_device *pdev;
+> +	int err;
+> +
+> +	if (!of_machine_is_compatible("mediatek,mt8173"))
+> +		return -ENODEV;
+
+Why do you need to check this ? Its going to be the right SoC, others
+can't even compile it.
+
+> +	err = platform_driver_register(&mt8173_cpufreq_platdrv);
+> +	if (err)
+> +		return err;
+> +
+> +	pdev = platform_device_register_simple("mt8173-cpufreq", -1, NULL, 0);
+> +	if (IS_ERR(pdev)) {
+> +		pr_err("failed to register mtk-cpufreq platform device\n");
+> +		return PTR_ERR(pdev);
+> +	}
+
+This is simply crap. You register the driver and then its device from
+the same function. If you are so sure that this driver is required,
+then why to get into the shit of device-driver model ?
+
+Just call cpufreq_register_driver() from here :), no device/driver
+required.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+viresh
