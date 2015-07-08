@@ -1,93 +1,56 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v6 2/7] ACPI: Make ACPI processor driver more extensible
-Date: Wed, 08 Jul 2015 03:07:15 +0200
-Message-ID: <2138469.Io9yItSdst@vostro.rjw.lan>
-References: <cover.1434398373.git.ashwin.chaugule@linaro.org> <9e352cbe2feac01158a21511bac5c544dc2f29e2.1434398373.git.ashwin.chaugule@linaro.org>
+From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v2] power_supply: rt9455_charger: Properly notify
+ userspace about charging events
+Date: Wed, 8 Jul 2015 10:18:36 +0900
+Message-ID: <CAJKOXPfqiQuKvPSWaYQPA06onGSoVhajXW+Q1aEds0MJKpn9Tw@mail.gmail.com>
+References: <1436271953-24564-1-git-send-email-anda-maria.nicolae@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62886 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753055AbbGHAks (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2015 20:40:48 -0400
-In-Reply-To: <9e352cbe2feac01158a21511bac5c544dc2f29e2.1434398373.git.ashwin.chaugule@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1436271953-24564-1-git-send-email-anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Anda-Maria Nicolae <anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: jaswinder.singh@linaro.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, patches@linaro.org, linux-acpi@vger.kernel.org, viresh.kumar@linaro.org, sudeep.holla@arm.com
 
-On Monday, June 15, 2015 04:09:06 PM Ashwin Chaugule wrote:
-> The ACPI processor driver is currently tied too closely
-> to the ACPI C-states (CST), P-states (PSS) and other related
-> constructs for controlling CPU idle and CPU performance.
-> 
-> The newer ACPI specification (v5.1 onwards) introduces
-> alternative methods to CST and PSS. These new mechanisms
-> are described within each ACPI Processor object and so they
-> need to be scanned whenever a new Processor object is detected.
-> This patch introduces two new Kconfig symbols to allow for
-> finer configurability among the various options for controlling
-> CPU idle and performance states. There is no change in functionality
-> and these options are defaulted to enabled to maintain previous
-> behaviour.
-> 
-> The following patchwork introduces CPPC: A newer method of
-> controlling CPU performance. The OS is not expected to support CPPC
-> and PSS at runtime. So the kconfig option lets us make these two
-> mutually exclusive at compile time.
-> 
-> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-> Reviewed-by: Al Stone <al.stone@linaro.org>
+2015-07-07 21:25 GMT+09:00 Anda-Maria Nicolae <anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>:
+> Charging events this patch refers to are:
+> - charger is connected to/disconnected from the power source
+> - battery is reconnected to the charger, after it was absent.
+>
+> When the charger is connected to/disconnected from the power source, CHRVPI
+> interrupt occurs and PWR_RDY bit is either set or cleared. PWR_RDY bit is
+> updated after 1-2 seconds CHRVPI interrupt has occurred.
+> power_supply_changed() should be called after PWR_RDY bit is updated.
+> /sys/class/power_supply/rt9455-charger/online file displays the value of
+> PWR_RDY bit.
+> This way, if the userspace is notified that a charging event has occurred
+> and the userspace reads /sys/class/power_supply/rt9455-charger/online file,
+> this file is properly updated when the userspace reads it.
+> This is the reason why power_supply_changed() is called in
+> rt9455_pwr_rdy_work_callback(), instead of being called in interrupt
+> handler.
+>
+> Since no interrupt is triggered when the battery is reconnected to the
+> charger, the userspace is never notified that the battery is reconnected.
+> This is why power_supply_changed() is called in
+> rt9455_max_charging_time_work_callback(), so that the userspace is notified
+> that the battery is reconnected.
+>
+> Signed-off-by: Anda-Maria Nicolae <anda-maria.nicolae-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 > ---
->  drivers/acpi/Kconfig            |  31 +++++++++--
->  drivers/acpi/Makefile           |   7 ++-
->  drivers/acpi/processor_driver.c |  86 ++++++++++++++++++----------
->  drivers/cpufreq/Kconfig         |   2 +-
->  drivers/cpufreq/Kconfig.x86     |   2 +
->  include/acpi/processor.h        | 120 ++++++++++++++++++++++++++++------------
->  6 files changed, 176 insertions(+), 72 deletions(-)
-> 
-> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-> index ab2cbb5..5942754 100644
-> --- a/drivers/acpi/Kconfig
-> +++ b/drivers/acpi/Kconfig
-> @@ -166,18 +166,39 @@ config ACPI_DOCK
->  	  This driver supports ACPI-controlled docking stations and removable
->  	  drive bays such as the IBM Ultrabay and the Dell Module Bay.
->  
-> -config ACPI_PROCESSOR
-> -	tristate "Processor"
-> -	select THERMAL
-> -	select CPU_IDLE
-> +config ACPI_CST
-> +	bool "ACPI C states (CST) driver"
-> +	depends on ACPI_PROCESSOR
->  	depends on X86 || IA64
-> +	select CPU_IDLE
->  	default y
->  	help
->  	  This driver installs ACPI as the idle handler for Linux and uses
->  	  ACPI C2 and C3 processor states to save power on systems that
-> -	  support it.  It is required by several flavors of cpufreq
-> +	  support it.
-> +
-> +config ACPI_PSS
-> +	bool "ACPI P States (PSS) driver"
-> +	depends on ACPI_PROCESSOR
-> +	depends on X86 || IA64
-> +	select THERMAL
-> +	default y
-> +	help
-> +	  This driver implements ACPI methods for controlling CPU performance
-> +	  using PSS methods as described in the ACPI spec. It also enables support
-> +	  for ACPI based performance throttling (TSS) and ACPI based thermal
-> +	  monitoring. It is required by several flavors of cpufreq
->  	  performance-state drivers.
+>
+> Updates from v1 version:
+> - I have followed Kzrysztof's suggestion and I have added explanations in
+> the commit message so that the change is more clear
+> - Code is the same as in v1
 
-For starters, I don't like these new Kconfig options.
+Thanks, FWIW:
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 
-Isn't there a way to implement what you need without adding them?
-
-Rafael
-
+Best regards,
+Krzysztof
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
