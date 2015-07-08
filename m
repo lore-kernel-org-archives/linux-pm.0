@@ -1,57 +1,59 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
-Date: Thu, 09 Jul 2015 00:03:05 +0200
-Message-ID: <1850836.6zSgANe26P@vostro.rjw.lan>
-References: <4290667.ZqInAykFGS@vostro.rjw.lan> <1522789.fQO6RUUx40@vostro.rjw.lan> <1436341873.5636.5.camel@suse.com>
+Date: Thu, 09 Jul 2015 00:04:43 +0200
+Message-ID: <2508991.dbxJnzl9vM@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1507081032170.2243-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57937 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755602AbbGHVgh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 17:36:37 -0400
-In-Reply-To: <1436341873.5636.5.camel@suse.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1507081032170.2243-100000@iolanthe.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Pavel Machek <pavel@ucw.cz>, Oliver Neukum <oneukum@suse.de>, Dave Chinner <david@fromorbit.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.com>
-Cc: Dave Chinner <david@fromorbit.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Alan Stern <stern@rowland.harvard.edu>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Wednesday, July 08, 2015 09:51:13 AM Oliver Neukum wrote:
-> On Wed, 2015-07-08 at 00:11 +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, July 07, 2015 04:38:26 PM Oliver Neukum wrote:
-> >  
-> > > That is a tough nut. But that's not a reason to make it worse.
-> > > I'd say there's no reason not to use a secondary interface to
-> > > suspend without syncing or to extend or introduce such an interface
-> > > if the API is deficient.
-> > 
-> > Well, the point here is that the sync we have doesn't prevent all potentially
-> > possible bad things from happening.  It's a partial measure at best in that
-> > respect.
+On Wednesday, July 08, 2015 10:40:00 AM Alan Stern wrote:
+> On Wed, 8 Jul 2015, Pavel Machek wrote:
 > 
-> Well, removed hardware doesn't work. That is a very basic limitation.
-> But can we guarantee that any returned syscall actually wrote to disk?
-> Yes, but it must be done in kernel space. So doing a sync has a true
-> benefit.
-> I don't see why you would want to generally remove it. What is wrong
-> with an interface allowing a selection there to those who don't care
-> about additional guarantees?
+> > > well, that depends on what the purpose of the sync is supposed to be.
+> > > 
+> > > If it is there to prevent users from corrupting their filesystems as a result
+> > > of a mistake, it is insufficient.  If it's there for other reasons, I'm wondering
+> > > what those reasons are (on systems that suspend and resume reliably, because the
+> > > original reason to put it in there was to reduce the damage from suspend/resume
+> > > crashes).
+> > 
+> > I put it there, and there were more reasons than "crashes" to put it
+> > there.
+> > 
+> > 1) crashes.
+> > 
+> > 2) battery is quite likely to run out in suspended machine.
+> > 
+> > 3) if someone pulls the stick and puts it in other machine, I wanted
+> > consistent filesystem at least after journal replay.
+> 
+> I was going to make the same points.
+> 
+> From my point of view, whether to issue a sync is a tradeoff.  I can't
+> remember any time in the last several years where lack of a sync would
+> have caused a problem for my computers, but the possibility still
+> exists.
+> 
+> So on one hand, issuing the sync can help prevent a low-probability 
+> problem.  On the other hand, issuing the sync takes a small amount of 
+> time (negligible for my purposes but not negligible for Len and 
+> others).
+> 
+> I prefer to pay a very small cost to prevent a low-probability problem.  
+> Others may not want to pay, because to them the cost is larger or the 
+> probability is lower.
+> 
+> _That_ is the justification for not eliminating the sync completely but 
+> making it optional.
 
-Nothing and I'm not discussing that (I've said that already at least once in
-this thread).
-
-What I'm questioning is the "why" of calling sys_sync() from the kernel.
-
-If we had a good answer to why we do that to start with, the whole discussion
-wouldn't be necessary.
-
-So the answer I'm getting from this thread so far is something like "It is a
-safety measure to prevent users from losing data if they pull removable storage
-out of the system while suspended".
-
-Your point about the returned syscall guaranees is a good one, but still.
+Agreed.
 
 Thanks,
 Rafael
-
