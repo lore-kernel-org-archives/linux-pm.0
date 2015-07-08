@@ -1,58 +1,57 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 2/7] ACPI: Make ACPI processor driver more extensible
-Date: Wed, 8 Jul 2015 22:46:25 +0200
-Message-ID: <CAJZ5v0iGGgvzdcvAfS9ZiQTWMhqF9GWfZ7Fx6_rF1BGZmACpXw@mail.gmail.com>
-References: <cover.1434398373.git.ashwin.chaugule@linaro.org>
-	<9e352cbe2feac01158a21511bac5c544dc2f29e2.1434398373.git.ashwin.chaugule@linaro.org>
-	<2138469.Io9yItSdst@vostro.rjw.lan>
-	<CAJ5Y-eZBYb551T=kBdbjM4YQ1f_hwYBgkVk4wJsDHSib00XfrA@mail.gmail.com>
-	<CAJZ5v0gKW7bR66trxvuhd_Gb=ZMBbec++u+V+T4mroCZMtO+vg@mail.gmail.com>
-	<CAJ5Y-ebW3aCSSs4UQFLpLFSfo7d9zPVfigoROjN80uXzG1sZLw@mail.gmail.com>
-	<CAJZ5v0h24-YAeqW79Se8kRr+_+RknwNfLwS_74-sN+W0_wBaZg@mail.gmail.com>
-	<CAJ5Y-eYwnaDzyL78CyJDmo35CFTNoQrYfEcO3VYnpaZkSVPdcw@mail.gmail.com>
-	<CAJ5Y-eaGmF6pRKuapzQo8ruMt0FX4kVrdyu-os6maVaS7WO-Pw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/1] suspend: delete sys_sync()
+Date: Thu, 09 Jul 2015 00:03:05 +0200
+Message-ID: <1850836.6zSgANe26P@vostro.rjw.lan>
+References: <4290667.ZqInAykFGS@vostro.rjw.lan> <1522789.fQO6RUUx40@vostro.rjw.lan> <1436341873.5636.5.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f50.google.com ([74.125.82.50]:33715 "EHLO
-	mail-wg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754001AbbGHUq0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 16:46:26 -0400
-In-Reply-To: <CAJ5Y-eaGmF6pRKuapzQo8ruMt0FX4kVrdyu-os6maVaS7WO-Pw@mail.gmail.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:57937 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755602AbbGHVgh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 17:36:37 -0400
+In-Reply-To: <1436341873.5636.5.camel@suse.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jaswinder Singh <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, linux acpi <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+To: Oliver Neukum <oneukum@suse.com>
+Cc: Dave Chinner <david@fromorbit.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Len Brown <len.brown@intel.com>, Len Brown <lenb@kernel.org>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Alan Stern <stern@rowland.harvard.edu>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Ashwin,
+On Wednesday, July 08, 2015 09:51:13 AM Oliver Neukum wrote:
+> On Wed, 2015-07-08 at 00:11 +0200, Rafael J. Wysocki wrote:
+> > On Tuesday, July 07, 2015 04:38:26 PM Oliver Neukum wrote:
+> >  
+> > > That is a tough nut. But that's not a reason to make it worse.
+> > > I'd say there's no reason not to use a secondary interface to
+> > > suspend without syncing or to extend or introduce such an interface
+> > > if the API is deficient.
+> > 
+> > Well, the point here is that the sync we have doesn't prevent all potentially
+> > possible bad things from happening.  It's a partial measure at best in that
+> > respect.
+> 
+> Well, removed hardware doesn't work. That is a very basic limitation.
+> But can we guarantee that any returned syscall actually wrote to disk?
+> Yes, but it must be done in kernel space. So doing a sync has a true
+> benefit.
+> I don't see why you would want to generally remove it. What is wrong
+> with an interface allowing a selection there to those who don't care
+> about additional guarantees?
 
-On Wed, Jul 8, 2015 at 10:28 PM, Ashwin Chaugule
-<ashwin.chaugule@linaro.org> wrote:
-> On 8 July 2015 at 16:05, Ashwin Chaugule <ashwin.chaugule@linaro.org> wrote:
->> On 8 July 2015 at 15:55, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>> Hi Ashwin,
->>>
->>> On Wed, Jul 8, 2015 at 9:16 PM, Ashwin Chaugule
->>> <ashwin.chaugule@linaro.org> wrote:
->>>> Hi Rafael,
->>>>
+Nothing and I'm not discussing that (I've said that already at least once in
+this thread).
 
-[cut]
+What I'm questioning is the "why" of calling sys_sync() from the kernel.
 
->>>
->>> Also I'm still unsure what the connection between _CST and CPPC is.
->>>
->>
->> There isnt. But I'm missing where I've implied the dependency?
->
-> Perhaps the confusion is coming from the introduction of ACPI_CST in
-> this file. I could leave it as it is and just separate out the
-> ACPI_PSS bits. But I figured, while I'm at it, I'd introduce ACPI_CST,
-> since we know the LPI stuff is coming up soon as a CST alternative
-> anyway. So if you prefer, I can drop the CST bits and maybe Sudeep can
-> address that as part of his LPI patchset?
+If we had a good answer to why we do that to start with, the whole discussion
+wouldn't be necessary.
 
-Yes, please.  That would be much less confusing.
+So the answer I'm getting from this thread so far is something like "It is a
+safety measure to prevent users from losing data if they pull removable storage
+out of the system while suspended".
+
+Your point about the returned syscall guaranees is a good one, but still.
 
 Thanks,
 Rafael
+
