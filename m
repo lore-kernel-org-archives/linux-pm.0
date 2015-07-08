@@ -1,114 +1,114 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 2/7] ACPI: Make ACPI processor driver more extensible
-Date: Wed, 8 Jul 2015 15:34:36 +0200
-Message-ID: <CAJZ5v0gKW7bR66trxvuhd_Gb=ZMBbec++u+V+T4mroCZMtO+vg@mail.gmail.com>
-References: <cover.1434398373.git.ashwin.chaugule@linaro.org>
-	<9e352cbe2feac01158a21511bac5c544dc2f29e2.1434398373.git.ashwin.chaugule@linaro.org>
-	<2138469.Io9yItSdst@vostro.rjw.lan>
-	<CAJ5Y-eZBYb551T=kBdbjM4YQ1f_hwYBgkVk4wJsDHSib00XfrA@mail.gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 05/10] opp: Add support to parse "operating-points-v2"
+ bindings
+Date: Wed, 08 Jul 2015 15:41:34 +0200
+Message-ID: <2910042.ys2zsBBKt2@amdc1976>
+References: <cover.1434369079.git.viresh.kumar@linaro.org>
+ <1b5a393f2162752cbb773956dff15739e7525a1d.1434369079.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJ5Y-eZBYb551T=kBdbjM4YQ1f_hwYBgkVk4wJsDHSib00XfrA@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jaswinder Singh <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, linux acpi <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:46078 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758585AbbGHNlp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 09:41:45 -0400
+Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
+ by mailout3.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0NR602P4O8PJ6990@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 08 Jul 2015 22:41:43 +0900 (KST)
+In-reply-to: <1b5a393f2162752cbb773956dff15739e7525a1d.1434369079.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, broonie@kernel.org, mike.turquette@linaro.org, sboyd@codeaurora.org, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-Hi Ashwin,
 
-On Wed, Jul 8, 2015 at 3:27 AM, Ashwin Chaugule
-<ashwin.chaugule@linaro.org> wrote:
-> On 7 July 2015 at 21:07, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Monday, June 15, 2015 04:09:06 PM Ashwin Chaugule wrote:
->>> The ACPI processor driver is currently tied too closely
->>> to the ACPI C-states (CST), P-states (PSS) and other related
->>> constructs for controlling CPU idle and CPU performance.
->>>
->>> The newer ACPI specification (v5.1 onwards) introduces
->>> alternative methods to CST and PSS. These new mechanisms
->>> are described within each ACPI Processor object and so they
->>> need to be scanned whenever a new Processor object is detected.
->>> This patch introduces two new Kconfig symbols to allow for
->>> finer configurability among the various options for controlling
->>> CPU idle and performance states. There is no change in functionality
->>> and these options are defaulted to enabled to maintain previous
->>> behaviour.
->>>
->>> The following patchwork introduces CPPC: A newer method of
->>> controlling CPU performance. The OS is not expected to support CPPC
->>> and PSS at runtime. So the kconfig option lets us make these two
->>> mutually exclusive at compile time.
->>>
->>> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
->>> Reviewed-by: Al Stone <al.stone@linaro.org>
->>> ---
->>>  drivers/acpi/Kconfig            |  31 +++++++++--
->>>  drivers/acpi/Makefile           |   7 ++-
->>>  drivers/acpi/processor_driver.c |  86 ++++++++++++++++++----------
->>>  drivers/cpufreq/Kconfig         |   2 +-
->>>  drivers/cpufreq/Kconfig.x86     |   2 +
->>>  include/acpi/processor.h        | 120 ++++++++++++++++++++++++++++------------
->>>  6 files changed, 176 insertions(+), 72 deletions(-)
->>>
->>> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
->>> index ab2cbb5..5942754 100644
->>> --- a/drivers/acpi/Kconfig
->>> +++ b/drivers/acpi/Kconfig
->>> @@ -166,18 +166,39 @@ config ACPI_DOCK
->>>         This driver supports ACPI-controlled docking stations and removable
->>>         drive bays such as the IBM Ultrabay and the Dell Module Bay.
->>>
->>> -config ACPI_PROCESSOR
->>> -     tristate "Processor"
->>> -     select THERMAL
->>> -     select CPU_IDLE
->>> +config ACPI_CST
->>> +     bool "ACPI C states (CST) driver"
->>> +     depends on ACPI_PROCESSOR
->>>       depends on X86 || IA64
->>> +     select CPU_IDLE
->>>       default y
->>>       help
->>>         This driver installs ACPI as the idle handler for Linux and uses
->>>         ACPI C2 and C3 processor states to save power on systems that
->>> -       support it.  It is required by several flavors of cpufreq
->>> +       support it.
->>> +
->>> +config ACPI_PSS
->>> +     bool "ACPI P States (PSS) driver"
->>> +     depends on ACPI_PROCESSOR
->>> +     depends on X86 || IA64
->>> +     select THERMAL
->>> +     default y
->>> +     help
->>> +       This driver implements ACPI methods for controlling CPU performance
->>> +       using PSS methods as described in the ACPI spec. It also enables support
->>> +       for ACPI based performance throttling (TSS) and ACPI based thermal
->>> +       monitoring. It is required by several flavors of cpufreq
->>>         performance-state drivers.
->>
->> For starters, I don't like these new Kconfig options.
->>
->> Isn't there a way to implement what you need without adding them?
->
-> We need to use the ACPI Processor driver for CPPC without including
-> all its current dependencies. (i.e. PSS, TSS, CSS etc.). The upcoming
-> LPI work from Sudeep will also face the same issue. I considered the
-> alternative of adding a probe routine which matches
-> ACPI_PROCESSOR_OBJECT/DEVICE_HID to each driver, but this seemed like
-> a better option. Do you have any other ideas?
+Hi,
 
-First of all, I don't see what _CST has to do with CPPC.
+On Monday, June 15, 2015 05:27:31 PM Viresh Kumar wrote:
+> This adds support in OPP library to parse and create list of OPPs from
+> operating-points-v2 bindings. It takes care of most of the properties of
+> new bindings (except shared-opp, which will be handled separately).
+> 
+> For backward compatibility, we keep supporting earlier bindings. We try
+> to search for the new bindings first, in case they aren't present we
+> look for the old deprecated ones.
+> 
+> There are few things marked as TODO:
+> - Support for multiple OPP tables
+> - Support for multiple regulators
+> 
+> They should be fixed separately.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/base/power/opp.c | 238 ++++++++++++++++++++++++++++++++++++++++++-----
+>  1 file changed, 213 insertions(+), 25 deletions(-)
+> 
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index 2ac48ff9c1ef..3198c3e77224 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
 
-Second, it looks like the problem is that x86 probably won't use CPPC,
-while arm64 probably won't use _PSS.
+[...]
 
-That can be addressed by adding Kconfig options, but those options
-should not be user-selectable (because quite honestly users don't have
-to know what those things are and they don't care *and* things break
-if they make a wrong choice).  Instead, I'd make architecture Kconfigs
-select those options automatically.
+> @@ -675,6 +692,100 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
+>  }
+>  
+>  /**
+> + * _opp_add_static_v2() - Allocate static OPPs (As per 'v2' DT bindings)
+> + * @dev:	device for which we do this operation
+> + * @np:		device node
+> + *
+> + * This function adds an opp definition to the opp list and returns status. The
+> + * opp can be controlled using dev_pm_opp_enable/disable functions and may be
+> + * removed by dev_pm_opp_remove.
+> + *
+> + * Locking: The internal device_opp and opp structures are RCU protected.
+> + * Hence this function internally uses RCU updater strategy with mutex locks
+> + * to keep the integrity of the internal data structures. Callers should ensure
+> + * that this function is *NOT* called under RCU protection or in contexts where
+> + * mutex cannot be locked.
+> + *
+> + * Return:
+> + * 0		On success OR
+> + *		Duplicate OPPs (both freq and volt are same) and opp->available
+> + * -EEXIST	Freq are same and volt are different OR
+> + *		Duplicate OPPs (both freq and volt are same) and !opp->available
+> + * -ENOMEM	Memory allocation failure
+> + * -EINVAL	Failed parsing the OPP node
+> + */
+> +static int _opp_add_static_v2(struct device *dev, struct device_node *np)
+> +{
+> +	struct device_opp *dev_opp;
+> +	struct dev_pm_opp *new_opp;
+> +	int ret;
+> +
+> +	/* Hold our list modification lock here */
+> +	mutex_lock(&dev_opp_list_lock);
+> +
+> +	new_opp = _allocate_opp(dev, &dev_opp);
+> +	if (!new_opp) {
+> +		ret = -ENOMEM;
+> +		goto unlock;
+> +	}
+> +
+> +	ret = of_property_read_u32(np, "opp-hz", (u32 *)&new_opp->rate);
+> +	if (ret < 0) {
+> +		dev_err(dev, "%s: opp-hz not found\n", __func__);
+> +		goto free_opp;
+> +	}
 
-Thanks,
-Rafael
+Isn't using u32 for storing frequency (in Hz) too small by today's
+standards?
+
+[ Please note that the old v1 binding uses kHz not Hz. ]
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
