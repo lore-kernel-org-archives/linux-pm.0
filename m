@@ -1,41 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] acpi-cpufreq: replace per_cpu with driver_data of
- policy
-Date: Wed, 8 Jul 2015 10:21:03 +0530
-Message-ID: <20150708045103.GA19130@linux>
-References: <559BC96E.8020804@intel.com>
- <20150707171126.GB12491@dtor-ws>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH] cpufreq: Initialize the governor again while restoring policy
+Date: Wed,  8 Jul 2015 11:23:58 +0530
+Message-ID: <f428ecb0927075b25cf7e2ea5fb00eab3d254fdd.1436333568.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:34597 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753301AbbGHEvV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 00:51:21 -0400
-Received: by pabvl15 with SMTP id vl15so124741616pab.1
-        for <linux-pm@vger.kernel.org>; Tue, 07 Jul 2015 21:51:21 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20150707171126.GB12491@dtor-ws>
+Received: from mail-pd0-f170.google.com ([209.85.192.170]:35502 "EHLO
+	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752910AbbGHFyE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 01:54:04 -0400
+Received: by pdrg1 with SMTP id g1so7897997pdr.2
+        for <linux-pm@vger.kernel.org>; Tue, 07 Jul 2015 22:54:04 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Pan Xinhui <xinhuix.pan@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, rjw@rjwysocki.net, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Pi-Cheng Chen <pi-cheng.chen@linaro.org>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, open list <linux-kernel@vger.kernel.org>
 
-Hi Dmitry,
+When all CPUs of a policy are hot-unplugged, we EXIT the governor but
+don't mark policy->governor as NULL. This was done in order to keep last
+used governor's information intact in sysfs, while the CPUs are offline.
 
-On 07-07-15, 10:11, Dmitry Torokhov wrote:
-> > +	data = policy->driver_data;
-> > +	cpufreq_cpu_put(policy);
-> 
-> If we put policy here can we guarantee that memory pointed to by data
-> stays valid? Shoudln't we issue cpufreq_cpu_put(policy) after we done
-> assessing the pointer?
+We also missed marking policy->governor as NULL while restoring the
+policy. Because of that, we call __cpufreq_governor(CPUFREQ_GOV_LIMITS)
+for an uninitialized policy. Which eventually returns -EBUSY.
 
-Ideally yes, you are right. But this was a special case as a callback
-of the cpufreq-driver is being called and any such issues must be
-handled at the core level, it at all they are relevant.
+Fix this by setting policy->governor to NULL while restoring the policy.
 
-So probably we can do cpufreq_cpu_put() as soon as we have used it.
+Reported-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Reported-by: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Fixes: 18bf3a124ef8 ("cpufreq: Mark policy->governor = NULL for inactive policies")
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+For 4.2-rc
 
+ drivers/cpufreq/cpufreq.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b612411655f9..2c22e3902e72 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1132,6 +1132,7 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
+ 
+ 		down_write(&policy->rwsem);
+ 		policy->cpu = cpu;
++		policy->governor = NULL;
+ 		up_write(&policy->rwsem);
+ 	}
+ 
 -- 
-viresh
+2.4.0
+
