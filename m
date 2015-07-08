@@ -1,76 +1,133 @@
-From: Johannes Thumshirn <jthumshirn@suse.de>
-Subject: [PATCH] power: bq27x00_battery: Destroy battery_id IDR on module exit
-Date: Wed,  8 Jul 2015 17:18:20 +0200
-Message-ID: <1436368700-30852-1-git-send-email-jthumshirn@suse.de>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Johannes Thumshirn <jthumshirn@suse.de>
+From: Michael Turquette <mturquette@baylibre.com>
+Subject: Re: [RFCv5 PATCH 39/46] sched/cpufreq_sched: use static key for cpu
+ frequency selection
+Date: Wed, 08 Jul 2015 08:19:56 -0700
+Message-ID: <20150708151956.9112.52403@quantum>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-40-git-send-email-morten.rasmussen@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:33505 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933622AbbGHPUP convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 11:20:15 -0400
+Received: by pacws9 with SMTP id ws9so134822396pac.0
+        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2015 08:20:15 -0700 (PDT)
+In-Reply-To: <1436293469-25707-40-git-send-email-morten.rasmussen@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>, peterz@infradead.org, mingo@redhat.com
+Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Juri Lelli <juri.lelli@arm.com>
 
-Destroy battery_id IDR on module exit, reclaiming the allocated memory.
+Quoting Morten Rasmussen (2015-07-07 11:24:22)
+> From: Juri Lelli <juri.lelli@arm.com>
+> 
+> Introduce a static key to only affect scheduler hot paths when sched
+> governor is enabled.
+> 
+> cc: Ingo Molnar <mingo@redhat.com>
+> cc: Peter Zijlstra <peterz@infradead.org>
+> 
+> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> ---
+>  kernel/sched/cpufreq_sched.c | 14 ++++++++++++++
+>  kernel/sched/fair.c          |  1 +
+>  kernel/sched/sched.h         |  6 ++++++
+>  3 files changed, 21 insertions(+)
+> 
+> diff --git a/kernel/sched/cpufreq_sched.c b/kernel/sched/cpufreq_sched.c
+> index 5020f24..2968f3a 100644
+> --- a/kernel/sched/cpufreq_sched.c
+> +++ b/kernel/sched/cpufreq_sched.c
+> @@ -203,6 +203,18 @@ void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
+>         return;
+>  }
+>  
+> +static inline void set_sched_energy_freq(void)
+> +{
+> +       if (!sched_energy_freq())
+> +               static_key_slow_inc(&__sched_energy_freq);
+> +}
+> +
+> +static inline void clear_sched_energy_freq(void)
+> +{
+> +       if (sched_energy_freq())
+> +               static_key_slow_dec(&__sched_energy_freq);
+> +}
+> +
+>  static int cpufreq_sched_start(struct cpufreq_policy *policy)
+>  {
+>         struct gov_data *gd;
+> @@ -243,6 +255,7 @@ static int cpufreq_sched_start(struct cpufreq_policy *policy)
+>  
+>         policy->governor_data = gd;
+>         gd->policy = policy;
+> +       set_sched_energy_freq();
+>         return 0;
+>  
+>  err:
+> @@ -254,6 +267,7 @@ static int cpufreq_sched_stop(struct cpufreq_policy *policy)
+>  {
+>         struct gov_data *gd = policy->governor_data;
+>  
+> +       clear_sched_energy_freq();
 
-This was detected by the following semantic patch (written by Luis Rodriguez
-<mcgrof@suse.com>)
-<SmPL>
-@ defines_module_init @
-declarer name module_init, module_exit;
-declarer name DEFINE_IDR;
-identifier init;
-@@
+<paranoia>
 
-module_init(init);
+These controls are exposed to userspace via cpufreq sysfs knobs. Should
+we use a struct static_key_deferred and static_key_slow_dec_deferred()
+instead? This helps avoid a possible attack vector for slowing down the
+system.
 
-@ defines_module_exit @
-identifier exit;
-@@
+</paranoia>
 
-module_exit(exit);
+I don't really know what a sane default rate limit would be in that case
+though.  Otherwise feel free to add:
 
-@ declares_idr depends on defines_module_init && defines_module_exit @
-identifier idr;
-@@
+Reviewed-by: Michael Turquette <mturquette@baylibre.com>
 
-DEFINE_IDR(idr);
+Regards,
+Mike
 
-@ on_exit_calls_destroy depends on declares_idr && defines_module_exit @
-identifier declares_idr.idr, defines_module_exit.exit;
-@@
-
-exit(void)
-{
- ...
- idr_destroy(&idr);
- ...
-}
-
-@ missing_module_idr_destroy depends on declares_idr && defines_module_exit && !on_exit_calls_destroy @
-identifier declares_idr.idr, defines_module_exit.exit;
-@@
-
-exit(void)
-{
- ...
- +idr_destroy(&idr);
-}
-</SmPL>
-
-Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
----
- drivers/power/bq27x00_battery.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_battery.c
-index b6b9837..99180d2 100644
---- a/drivers/power/bq27x00_battery.c
-+++ b/drivers/power/bq27x00_battery.c
-@@ -1106,6 +1106,7 @@ static void __exit bq27x00_battery_exit(void)
- {
- 	bq27x00_battery_platform_exit();
- 	bq27x00_battery_i2c_exit();
-+	idr_destroy(&battery_id);
- }
- module_exit(bq27x00_battery_exit);
- 
--- 
-2.4.3
+>         if (cpufreq_driver_might_sleep()) {
+>                 kthread_stop(gd->task);
+>         }
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index f7cb6c9..d395bc9 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -4282,6 +4282,7 @@ static inline void hrtick_update(struct rq *rq)
+>  #endif
+>  
+>  static bool cpu_overutilized(int cpu);
+> +struct static_key __sched_energy_freq __read_mostly = STATIC_KEY_INIT_FALSE;
+>  
+>  /*
+>   * The enqueue_task method is called before nr_running is
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index 30aa0c4..b5e27d9 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -1476,6 +1476,12 @@ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
+>  }
+>  #endif
+>  
+> +extern struct static_key __sched_energy_freq;
+> +static inline bool sched_energy_freq(void)
+> +{
+> +       return static_key_false(&__sched_energy_freq);
+> +}
+> +
+>  #ifdef CONFIG_CPU_FREQ_GOV_SCHED
+>  void cpufreq_sched_set_cap(int cpu, unsigned long util);
+>  #else
+> -- 
+> 1.9.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
