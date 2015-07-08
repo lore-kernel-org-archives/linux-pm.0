@@ -1,82 +1,89 @@
-From: Julian Andres Klode <jak@jak-linux.org>
-Subject: Re: sysfs charge thresholds for ThinkPads (and possibly others),
- preparation for second try
-Date: Wed, 8 Jul 2015 11:40:00 +0200
-Message-ID: <20150708113624.GA25015@debian.org>
-References: <20150707210728.GA7524@jak-x230>
- <20150707235110.GA19748@earth>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150707235110.GA19748@earth>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, ibm-acpi-devel@lists.sourceforge.net, platform-driver-x86@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, evgeni@debian.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 2/2] cpufreq: Properly handle errors from cpufreq_init_policy()
+Date: Wed,  8 Jul 2015 15:12:16 +0530
+Message-ID: <043703bd1914d52340653c3cc31207e505df6139.1436348436.git.viresh.kumar@linaro.org>
+References: <276debea91831d86c34079f6a40d773ce258a62c.1436348436.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:35793 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934620AbbGHJme (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 05:42:34 -0400
+Received: by pdrg1 with SMTP id g1so11451861pdr.2
+        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2015 02:42:34 -0700 (PDT)
+In-Reply-To: <276debea91831d86c34079f6a40d773ce258a62c.1436348436.git.viresh.kumar@linaro.org>
+In-Reply-To: <276debea91831d86c34079f6a40d773ce258a62c.1436348436.git.viresh.kumar@linaro.org>
+References: <276debea91831d86c34079f6a40d773ce258a62c.1436348436.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, tixy@linaro.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
 
-On Wed, Jul 08, 2015 at 01:51:10AM +0200, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Tue, Jul 07, 2015 at 11:07:28PM +0200, Julian Andres Klode wrote:
-> > Hi everyone (Thinkpad-ACPI, ACPI, and Power supply maintainers),
-> > 
-> > some might know that I presented a patch set adding support for
-> > charge thresholds to thinkpad_acpi about 1.5 years ago. 
-> 
-> Can you provide a link to the patch set?
+cpufreq_init_policy() can fail, and we don't do anything except a call
+to ->exit() on that. The policy should be freed if this happens.
 
-Sure:
-http://thread.gmane.org/gmane.linux.acpi.ibm-acpi.devel/3175
+Lets do it properly.
 
-(it was not on the ACPI and Power MLs back then)
+Reported-by: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
 
-> 
-> > Back then, one of the major rejections was that the functionality
-> > for setting charge thresholds should be integrated into the
-> > power supply stack somehow. I did not know who to contact back
-> > then, but know I re-read MAINTAINERS and found all your addresses,
-> > so I give it a second try.
-> > 
-> > One issue with just integrating it in the current battery
-> > directories would be that ThinkPads are able to set charge
-> > thresholds for batteries that are currently not inserted.
-> 
-> So the power supply device should be kept with
-> POWER_SUPPLY_PROP_PRESENT being disabled (and most properties
-> returning -ENODATA). The ACPI SBS driver seems to implement
-> POWER_SUPPLY_PROP_PRESENT, but I didn't test it.
-
-Yes, indeed.
-
-> 
-> > Back then I wrote:
-> > > The next step is to integrate this properly with power supply
-> > > and/or acpi battery. One way would be to add additional power
-> > > supply properties and then add get/set_property() pointers to
-> > > the acpi battery which it can fall back to if it does not support
-> > > a requested property (and we would locate the ACPI battery and
-> > > set those pointers to new thinkpad_acpi functions).
-> > 
-> > If you, the ACPI and power supply people, have any preferred
-> > way (or any idea at all how) to proceed, that would be useful,
-> > so I don't start working on it again, and then somebody does
-> > not like it.
-> 
-> Adding charging thresholds as power_supply_property sounds
-> fine to me.
-> 
-
-Right, it gets a bit more complicated though: Since the code is
-platform-specific, it should live in the platform driver, so a
-way is needed to extend the existing device with new properties
-from the platform driver.
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b7aac8eec525..006299214d2e 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1051,11 +1051,10 @@ static int cpufreq_add_dev_interface(struct cpufreq_policy *policy,
+ 	return cpufreq_add_dev_symlink(policy);
+ }
+ 
+-static void cpufreq_init_policy(struct cpufreq_policy *policy)
++static int cpufreq_init_policy(struct cpufreq_policy *policy)
+ {
+ 	struct cpufreq_governor *gov = NULL;
+ 	struct cpufreq_policy new_policy;
+-	int ret = 0;
+ 
+ 	memcpy(&new_policy, policy, sizeof(*policy));
+ 
+@@ -1074,12 +1073,7 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
+ 		cpufreq_parse_governor(gov->name, &new_policy.policy, NULL);
+ 
+ 	/* set default policy */
+-	ret = cpufreq_set_policy(policy, &new_policy);
+-	if (ret) {
+-		pr_debug("setting policy failed\n");
+-		if (cpufreq_driver->exit)
+-			cpufreq_driver->exit(policy);
+-	}
++	return cpufreq_set_policy(policy, &new_policy);
+ }
+ 
+ static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
+@@ -1376,7 +1370,12 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 	}
+ 
+-	cpufreq_init_policy(policy);
++	ret = cpufreq_init_policy(policy);
++	if (ret) {
++		pr_err("%s: Failed to initialize policy for cpu: %d (%d)\n",
++		       __func__, cpu, ret);
++		goto out_remove_policy_notify;
++	}
+ 
+ 	if (!recover_policy) {
+ 		policy->user_policy.policy = policy->policy;
+@@ -1396,6 +1395,9 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 
+ 	return 0;
+ 
++out_remove_policy_notify:
++	/* cpufreq_policy_free() will notify based on this */
++	recover_policy = true;
+ out_exit_policy:
+ 	up_write(&policy->rwsem);
+ 
 -- 
-Julian Andres Klode  - Debian Developer, Ubuntu Member
+2.4.0
 
-See http://wiki.debian.org/JulianAndresKlode and http://jak-linux.org/.
-
-Be friendly, do not top-post, and follow RFC 1855 "Netiquette".
-    - If you don't I might ignore you.
