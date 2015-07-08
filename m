@@ -1,89 +1,88 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] cpufreq: Properly handle errors from cpufreq_init_policy()
-Date: Wed,  8 Jul 2015 15:12:16 +0530
-Message-ID: <043703bd1914d52340653c3cc31207e505df6139.1436348436.git.viresh.kumar@linaro.org>
-References: <276debea91831d86c34079f6a40d773ce258a62c.1436348436.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f176.google.com ([209.85.192.176]:35793 "EHLO
-	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934620AbbGHJme (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 05:42:34 -0400
-Received: by pdrg1 with SMTP id g1so11451861pdr.2
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2015 02:42:34 -0700 (PDT)
-In-Reply-To: <276debea91831d86c34079f6a40d773ce258a62c.1436348436.git.viresh.kumar@linaro.org>
-In-Reply-To: <276debea91831d86c34079f6a40d773ce258a62c.1436348436.git.viresh.kumar@linaro.org>
-References: <276debea91831d86c34079f6a40d773ce258a62c.1436348436.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 1/2] cpufreq: cpufreq_add_dev: name goto labels based on what they do
+Date: Wed,  8 Jul 2015 15:12:15 +0530
+Message-ID: <276debea91831d86c34079f6a40d773ce258a62c.1436348436.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, tixy@linaro.org
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-cpufreq_init_policy() can fail, and we don't do anything except a call
-to ->exit() on that. The policy should be freed if this happens.
+These labels are are named in two ways normally:
+- Based on what caused to jump to such labels
+- Based on what we do under such labels
 
-Lets do it properly.
+We follow the first naming convention today and that leads to multiple
+labels for doing the same work. Fix it by switching to the second way of
+naming them.
 
-Reported-by: "Jon Medhurst (Tixy)" <tixy@linaro.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 20 +++++++++++---------
- 1 file changed, 11 insertions(+), 9 deletions(-)
+Hi Rafael,
+
+These can go in 4.3, I don't really mind :)
+
+ drivers/cpufreq/cpufreq.c | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b7aac8eec525..006299214d2e 100644
+index b612411655f9..b7aac8eec525 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1051,11 +1051,10 @@ static int cpufreq_add_dev_interface(struct cpufreq_policy *policy,
- 	return cpufreq_add_dev_symlink(policy);
- }
- 
--static void cpufreq_init_policy(struct cpufreq_policy *policy)
-+static int cpufreq_init_policy(struct cpufreq_policy *policy)
- {
- 	struct cpufreq_governor *gov = NULL;
- 	struct cpufreq_policy new_policy;
--	int ret = 0;
- 
- 	memcpy(&new_policy, policy, sizeof(*policy));
- 
-@@ -1074,12 +1073,7 @@ static void cpufreq_init_policy(struct cpufreq_policy *policy)
- 		cpufreq_parse_governor(gov->name, &new_policy.policy, NULL);
- 
- 	/* set default policy */
--	ret = cpufreq_set_policy(policy, &new_policy);
--	if (ret) {
--		pr_debug("setting policy failed\n");
--		if (cpufreq_driver->exit)
--			cpufreq_driver->exit(policy);
--	}
-+	return cpufreq_set_policy(policy, &new_policy);
- }
- 
- static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy,
-@@ -1376,7 +1370,12 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
- 		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+@@ -1278,7 +1278,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 		recover_policy = false;
+ 		policy = cpufreq_policy_alloc(dev);
+ 		if (!policy)
+-			goto nomem_out;
++			goto out_release_rwsem;
  	}
  
--	cpufreq_init_policy(policy);
-+	ret = cpufreq_init_policy(policy);
-+	if (ret) {
-+		pr_err("%s: Failed to initialize policy for cpu: %d (%d)\n",
-+		       __func__, cpu, ret);
-+		goto out_remove_policy_notify;
-+	}
+ 	cpumask_copy(policy->cpus, cpumask_of(cpu));
+@@ -1289,7 +1289,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 	ret = cpufreq_driver->init(policy);
+ 	if (ret) {
+ 		pr_debug("initialization failed\n");
+-		goto err_set_policy_cpu;
++		goto out_free_policy;
+ 	}
  
+ 	down_write(&policy->rwsem);
+@@ -1317,7 +1317,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 		policy->cur = cpufreq_driver->get(policy->cpu);
+ 		if (!policy->cur) {
+ 			pr_err("%s: ->get() failed\n", __func__);
+-			goto err_get_freq;
++			goto out_exit_policy;
+ 		}
+ 	}
+ 
+@@ -1367,7 +1367,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
  	if (!recover_policy) {
- 		policy->user_policy.policy = policy->policy;
-@@ -1396,6 +1395,9 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ 		ret = cpufreq_add_dev_interface(policy, dev);
+ 		if (ret)
+-			goto err_out_unregister;
++			goto out_exit_policy;
+ 		blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+ 				CPUFREQ_CREATE_POLICY, policy);
+ 
+@@ -1396,15 +1396,14 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
  
  	return 0;
  
-+out_remove_policy_notify:
-+	/* cpufreq_policy_free() will notify based on this */
-+	recover_policy = true;
- out_exit_policy:
+-err_out_unregister:
+-err_get_freq:
++out_exit_policy:
  	up_write(&policy->rwsem);
  
+ 	if (cpufreq_driver->exit)
+ 		cpufreq_driver->exit(policy);
+-err_set_policy_cpu:
++out_free_policy:
+ 	cpufreq_policy_free(policy, recover_policy);
+-nomem_out:
++out_release_rwsem:
+ 	up_read(&cpufreq_rwsem);
+ 
+ 	return ret;
 -- 
 2.4.0
-
