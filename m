@@ -1,53 +1,60 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2] acpi-cpufreq: replace per_cpu with driver_data of policy
-Date: Thu, 09 Jul 2015 02:20:56 +0200
-Message-ID: <12074796.mAD950pclu@vostro.rjw.lan>
-References: <559BC96E.8020804@intel.com> <20150707143443.GT14598@linux>
+Subject: Re: [PATCH] cpufreq: Initialize the governor again while restoring policy
+Date: Thu, 09 Jul 2015 02:33:54 +0200
+Message-ID: <3814282.YWYCHNROVv@vostro.rjw.lan>
+References: <f428ecb0927075b25cf7e2ea5fb00eab3d254fdd.1436333568.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58208 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:65396 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751082AbbGHXy2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 19:54:28 -0400
-In-Reply-To: <20150707143443.GT14598@linux>
+	with SMTP id S1750814AbbGIAH0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 20:07:26 -0400
+In-Reply-To: <f428ecb0927075b25cf7e2ea5fb00eab3d254fdd.1436333568.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Pan Xinhui <xinhuix.pan@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Pi-Cheng Chen <pi-cheng.chen@linaro.org>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, open list <linux-kernel@vger.kernel.org>
 
-On Tuesday, July 07, 2015 08:04:43 PM Viresh Kumar wrote:
-> On 07-07-15, 20:43, Pan Xinhui wrote:
-> > 
-> > Drivers can store their internal per-policy information in
-> > policy->driver_data, lets use it.
-> > 
-> > we have benefits after this replacing.
-> > 1) memory saving.
-> > 2) policy is shared by several cpus, per_cpu seems not correct. using
-> > *driver_data* is more reasonable.
-> > 3) fix a memory leak in acpi_cpufreq_cpu_exit. as policy->cpu might
-> > change during cpu hotplug. So sometimes we cant't free *data*, use
-> > *driver_data* to fix it.
-> > 4) fix a zero return value of get_cur_freq_on_cpu. Only per_cpu of
-> > policy->cpu is set to *data*, if we try to get cpufreq on other cpus, we
-> > get zero instead of correct values. Use *driver_data* to fix it.
-> > 
-> > Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
-> > ---
-> > Changes from V1:
-> > 	codes style fix, comments update
-> > 	move cpufreq_cpu_put(policy) after we get *driver_data*
-> > ---
-> >  drivers/cpufreq/acpi-cpufreq.c | 40 ++++++++++++++++++++++------------------
-> >  1 file changed, 22 insertions(+), 18 deletions(-)
+On Wednesday, July 08, 2015 11:23:58 AM Viresh Kumar wrote:
+> When all CPUs of a policy are hot-unplugged, we EXIT the governor but
+> don't mark policy->governor as NULL. This was done in order to keep last
+> used governor's information intact in sysfs, while the CPUs are offline.
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> We also missed marking policy->governor as NULL while restoring the
+> policy. Because of that, we call __cpufreq_governor(CPUFREQ_GOV_LIMITS)
 
-OK
+How exactly does that happen?
 
-Does it fix any recent regressions or is it just an old bug?
+> for an uninitialized policy. Which eventually returns -EBUSY.
+> 
+> Fix this by setting policy->governor to NULL while restoring the policy.
+> 
+> Reported-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+> Reported-by: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+> Fixes: 18bf3a124ef8 ("cpufreq: Mark policy->governor = NULL for inactive policies")
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> For 4.2-rc
+> 
+>  drivers/cpufreq/cpufreq.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index b612411655f9..2c22e3902e72 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1132,6 +1132,7 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
+>  
+>  		down_write(&policy->rwsem);
+>  		policy->cpu = cpu;
+> +		policy->governor = NULL;
+>  		up_write(&policy->rwsem);
+>  	}
+>  
+> 
 
-Rafael
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
