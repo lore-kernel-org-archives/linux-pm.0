@@ -1,100 +1,89 @@
-From: Michael Turquette <mturquette@baylibre.com>
-Subject: Re: [PATCH v5 1/2] dt-bindings: mediatek: Add MT8173 cpufreq driver binding
-Date: Thu, 09 Jul 2015 08:04:13 -0700
-Message-ID: <20150709150413.9112.90660@quantum>
-References: <1435717005-20012-1-git-send-email-pi-cheng.chen@linaro.org>
- <1435717005-20012-2-git-send-email-pi-cheng.chen@linaro.org>
- <20150708111900.GD1805@linux>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f180.google.com ([209.85.192.180]:36571 "EHLO
-	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751164AbbGIPEc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 11:04:32 -0400
-Received: by pdjr16 with SMTP id r16so5562371pdj.3
-        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2015 08:04:32 -0700 (PDT)
-In-Reply-To: <20150708111900.GD1805@linux>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v2 0/7] cpufreq: use generic cpufreq drivers for Exynos4x12
+ platform
+Date: Thu, 09 Jul 2015 17:43:34 +0200
+Message-ID: <1436456621-29839-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Cc: Matthias Brugger <matthias.bgg@gmail.com>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-mediatek@lists.infradead.org
 
-Quoting Viresh Kumar (2015-07-08 04:19:00)
-> On 01-07-15, 10:16, Pi-Cheng Chen wrote:
-> > This patch adds device tree binding document for MT8173 cpufreq driver.
-> > 
-> > Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-> > Reviewed-by: Michael Turquette <mturquette@baylibre.com>
-> > ---
-> >  .../devicetree/bindings/cpufreq/cpufreq-mt8173.txt | 145 +++++++++++++++++++++
-> >  1 file changed, 145 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt
-> > 
-> > diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt
-> > new file mode 100644
-> > index 0000000..65701c5
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt
-> > @@ -0,0 +1,145 @@
-> > +
-> > +Mediatek MT8173 cpufreq driver
-> > +------------------------------
-> > +
-> > +Mediatek MT8173 cpufreq driver for CPU frequency scaling.
-> > +
-> > +Required properties:
-> > +- clocks: A list of phandle + clock-specifier pairs for the clocks listed in clock names.
-> > +- clock-names: Should contain the following:
-> > +     "cpu"           - The multiplexer for clock input of CPU cluster.
-> > +     "intermediate"  - A parent of "cpu" clock which is used as "intermediate" clock
-> > +                       source (usually MAINPLL) when the original CPU PLL is under
-> > +                       transition and not stable yet.
-> > +     Please refer to Documentation/devicetree/bindings/clk/clock-bindings.txt for
-> > +     generic clock consumer properties.
-> 
-> Don't have any intentions to halt this series anymore, I have
-> irritated you enough already :)
-> 
-> But, what about moving these bindings in something like a clock
-> driver?
-> 
-> @Mike: ?
+Hi,
 
-Viresh,
+This patch series removes the use of Exynos4x12 specific support
+from cpufreq-exynos driver and enables the use of cpufreq-dt driver
+for this platform.
 
-Pi-Cheng is using the consumer portion of the clock binding, and he is
-using it correctly. You can see this type of thing sprinkled all over.
-For instance, many I/O controller do this exact same thing.
+In order to preserve support for Exynos4x12 'boost' mode cpufreq-dt
+driver is made aware of cpufreq 'boost' mode infrastructure.  Once
+it is done (+ turbo modes handling is fixed, please see below for
+details) the driver starts to use turbo mode frequencies (defined
+using opp-v2 bindings) as 'boost' mode frequecies.
 
-> 
-> I am asking because these really belong to the clock driver, as I
-> understood it from Mike. And clearly asked me to not take care of such
-> things in cpufreq core/drivers.
+Patches #1-2 are needed to fix handling of turbo modes in cpufreq
+core and without them cpufreq-dt treats turbo modes as normal modes
+(IOW they are used by default as normal modes even if they are defined
+in DTS file as turbo modes).  Ideally these patches should be added
+into "[PATCH 00/10] OPP: Add code to support operating-points-v2
+bindings" patch series before patch #10 ("[PATCH 10/10] cpufreq-dt:
+Add support for operating-points-v2 bindings").
 
-The clock driver is the "provider" and it is separate. This binding is
-the "consumer".
+This patch series has been tested on Exynos4412 based Odroid-U3 and
+Trats2 boards.
 
-> 
-> Another reason is that, later you will kill this driver one day and
-> use cpufreq-dt. And then you will be required to move these bindings
-> to a clock driver, as these will stay.
+Depends on:
+- next-20150629 branch of linux-next kernel tree
+- "[PATCH v3 0/4] cpufreq: use generic cpufreq drivers for Exynos5250
+  platform" (http://lkml.org/lkml/2015/7/1/311)
+- "PATCH 00/10] OPP: Add code to support operating-points-v2 bindings"
+  (http://www.spinics.net/lists/arm-kernel/msg425517.html)
 
-I'm not sure I follow. Again, the use of the consumer side of the clock
-binding is absolutely correct.
+Changes since v1
+(http://thread.gmane.org/gmane.linux.kernel.samsung-soc/44361):
+- rebased on top of next-20150629 branch of linux-next kernel tree
+- rebased on top of Exynos5250 cpufreq-dt support patch series
+- fixed if-statement in exynos4_clk_init() (noticed by Tobias Jakobi)
+- ported over opp-v2 bindings (requested by Viresh Kumar)
 
-Take a quick look at clock-bindings.txt and search for  the section
-titled, "==Clock consumers==" for more info.
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-Regards,
-Mike
 
-> 
-> -- 
-> viresh
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Bartlomiej Zolnierkiewicz (7):
+  opp: add dev_pm_opp_get_turbo_mode_setting() helper
+  cpufreq: opp: fix handling of turbo modes
+  cpufreq-dt: add turbo modes support
+  clk: samsung: exynos4x12: add cpu clock configuration data and
+    instantiate cpu clock
+  ARM: dts: Exynos4x12: add CPU OPP and regulator supply property
+  ARM: Exynos: switch to using generic cpufreq driver for Exynos4x12
+  cpufreq: exynos: remove Exynos4x12 specific cpufreq driver support
+
+ arch/arm/boot/dts/exynos4212.dtsi               |  81 ++++++++
+ arch/arm/boot/dts/exynos4412-odroid-common.dtsi |   4 +
+ arch/arm/boot/dts/exynos4412-origen.dts         |   5 +
+ arch/arm/boot/dts/exynos4412-trats2.dts         |   5 +
+ arch/arm/boot/dts/exynos4412.dtsi               |  83 +++++++++
+ arch/arm/mach-exynos/exynos.c                   |  14 ++
+ drivers/base/power/opp.c                        |  31 ++++
+ drivers/clk/samsung/clk-exynos4.c               |  50 +++++
+ drivers/cpufreq/Kconfig.arm                     |  25 +--
+ drivers/cpufreq/Makefile                        |   2 -
+ drivers/cpufreq/cpufreq-dt.c                    |   7 +-
+ drivers/cpufreq/cpufreq_opp.c                   |   2 +
+ drivers/cpufreq/exynos-cpufreq.c                | 234 -----------------------
+ drivers/cpufreq/exynos-cpufreq.h                |  72 --------
+ drivers/cpufreq/exynos4x12-cpufreq.c            | 236 ------------------------
+ include/linux/cpufreq-dt.h                      |   1 +
+ include/linux/pm_opp.h                          |   7 +
+ 17 files changed, 290 insertions(+), 569 deletions(-)
+ delete mode 100644 drivers/cpufreq/exynos-cpufreq.c
+ delete mode 100644 drivers/cpufreq/exynos-cpufreq.h
+ delete mode 100644 drivers/cpufreq/exynos4x12-cpufreq.c
+
+-- 
+1.9.1
