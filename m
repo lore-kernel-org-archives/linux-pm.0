@@ -1,103 +1,47 @@
-From: Johannes Thumshirn <jthumshirn@suse.de>
-Subject: Re: [PATCH] power: bq27x00_battery: Destroy battery_id IDR on module exit
-Date: Thu, 09 Jul 2015 09:07:40 +0200
-Message-ID: <mqdwpy9stab.fsf@c203.arch.suse.de>
-References: <1436368700-30852-1-git-send-email-jthumshirn@suse.de>
-	<201507081810.14511@pali>
+From: Suravee Suthikulpanit <Suravee.Suthikulpanit@amd.com>
+Subject: Re: [pm:bleeding-edge 2/10] drivers/acpi/scan.c:2131:25: error: 'struct
+ acpi_device_info' has no member named 'cls'
+Date: Thu, 9 Jul 2015 14:02:18 +0700
+Message-ID: <559E1C7A.1020300@amd.com>
+References: <201507070754.hc2CSuL4%fengguang.wu@intel.com>
+ <3013609.yTOAvZudGY@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <201507081810.14511@pali> ("Pali \=\?utf-8\?Q\?Roh\=C3\=A1r\=22's\?\=
- message of "Wed, 8 Jul
-	2015 18:10:14 +0200")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pali =?utf-8?Q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Johannes Thumshirn <jthumshirn@suse.de>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bl2on0116.outbound.protection.outlook.com ([65.55.169.116]:12512
+	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750833AbbGIHQl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 9 Jul 2015 03:16:41 -0400
+In-Reply-To: <3013609.yTOAvZudGY@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: kbuild test robot <fengguang.wu@intel.com>, kbuild-all@01.org, Hanjun Guo <hanjun.guo@linaro.org>, linux-pm@vger.kernel.org
 
-Pali Roh=C3=A1r <pali.rohar@gmail.com> writes:
 
-> On Wednesday 08 July 2015 17:18:20 Johannes Thumshirn wrote:
->> Destroy battery_id IDR on module exit, reclaiming the allocated
->> memory.
->>=20
->> This was detected by the following semantic patch (written by Luis
->> Rodriguez <mcgrof@suse.com>)
->> <SmPL>
->> @ defines_module_init @
->> declarer name module_init, module_exit;
->> declarer name DEFINE_IDR;
->> identifier init;
->> @@
->>=20
->> module_init(init);
->>=20
->> @ defines_module_exit @
->> identifier exit;
->> @@
->>=20
->> module_exit(exit);
->>=20
->> @ declares_idr depends on defines_module_init && defines_module_exit
->> @ identifier idr;
->> @@
->>=20
->> DEFINE_IDR(idr);
->>=20
->> @ on_exit_calls_destroy depends on declares_idr &&
->> defines_module_exit @ identifier declares_idr.idr,
->> defines_module_exit.exit;
->> @@
->>=20
->> exit(void)
->> {
->>  ...
->>  idr_destroy(&idr);
->>  ...
->> }
->>=20
->> @ missing_module_idr_destroy depends on declares_idr &&
->> defines_module_exit && !on_exit_calls_destroy @ identifier
->> declares_idr.idr, defines_module_exit.exit;
->> @@
->>=20
->> exit(void)
->> {
->>  ...
->>  +idr_destroy(&idr);
->> }
->> </SmPL>
->>=20
->> Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
->> ---
->>  drivers/power/bq27x00_battery.c | 1 +
->>  1 file changed, 1 insertion(+)
->>=20
->> diff --git a/drivers/power/bq27x00_battery.c
->> b/drivers/power/bq27x00_battery.c index b6b9837..99180d2 100644
->> --- a/drivers/power/bq27x00_battery.c
->> +++ b/drivers/power/bq27x00_battery.c
->> @@ -1106,6 +1106,7 @@ static void __exit bq27x00_battery_exit(void)
->>  {
->>  	bq27x00_battery_platform_exit();
->>  	bq27x00_battery_i2c_exit();
->> +	idr_destroy(&battery_id);
->>  }
->>  module_exit(bq27x00_battery_exit);
+
+On 7/7/15 07:25, Rafael J. Wysocki wrote:
+> On Tuesday, July 07, 2015 07:47:55 AM kbuild test robot wrote:
+>> tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+>> head:   e3b3968310369aadfa5c1f7baca68ef37bfd1d38
+>> commit: 1f9cda6095d7073ae96c27b1dbfd8d3fa71a85d3 [2/10] ACPI / scan: Add support for ACPI _CLS device matching
+>> config: x86_64-lkp (attached as .config)
+>> reproduce:
+>>    git checkout 1f9cda6095d7073ae96c27b1dbfd8d3fa71a85d3
+>>    # save the attached .config to linux build tree
+>>    make ARCH=x86_64
+>>
+>> All error/warnings (new ones prefixed by >>):
+>>
+>>     drivers/acpi/scan.c: In function 'acpi_set_pnp_ids':
+>>>> drivers/acpi/scan.c:2131:25: error: 'struct acpi_device_info' has no member named 'cls'
+>>         acpi_add_id(pnp, info->cls.string);
+>>                              ^
 >
-> Hello, I see that none power supply kernel driver is calling=20
-> idr_destroy() at module exit time. So if this patch is needed for=20
-> bq27x00_battery module, then it is needed also for other charger/batt=
-ery=20
-> modules...
+> ACPICA chose a different name for this field.  It should be fixed up in my tree now.
 
-You're right. I'll post a follow up for this with (this time hopefully)
-all battery drivers included.
+Thanks,
 
---=20
-Johannes Thumshirn                                       Storage
-jthumshirn@suse.de                             +49 911 74053 689
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 N=C3=BCrnberg
-GF: F. Imend=C3=B6rffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
-HRB 21284 (AG N=C3=BCrnberg)
+Suravee
