@@ -1,33 +1,34 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 2/2] cpufreq: mediatek: Add MT8173 cpufreq driver
-Date: Thu, 9 Jul 2015 10:47:04 +0530
-Message-ID: <20150709051704.GL1805@linux>
-References: <1435717005-20012-1-git-send-email-pi-cheng.chen@linaro.org>
- <1435717005-20012-3-git-send-email-pi-cheng.chen@linaro.org>
- <20150708113455.GF1805@linux>
- <CALx668Xp051A-BBGwwNxpiQCt318Bh5fnA5jcAXBg-9vPcqpvg@mail.gmail.com>
+Subject: Re: [PATCH 05/10] opp: Add support to parse "operating-points-v2"
+ bindings
+Date: Thu, 9 Jul 2015 10:48:46 +0530
+Message-ID: <20150709051845.GM1805@linux>
+References: <cover.1434369079.git.viresh.kumar@linaro.org>
+ <1b5a393f2162752cbb773956dff15739e7525a1d.1434369079.git.viresh.kumar@linaro.org>
+ <2910042.ys2zsBBKt2@amdc1976>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f169.google.com ([209.85.192.169]:35366 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751918AbbGIFSv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 01:18:51 -0400
+Received: by pdrg1 with SMTP id g1so26769061pdr.2
+        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2015 22:18:50 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <CALx668Xp051A-BBGwwNxpiQCt318Bh5fnA5jcAXBg-9vPcqpvg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Cc: Michael Turquette <mturquette@baylibre.com>, Matthias Brugger <matthias.bgg@gmail.com>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, linux-mediatek@lists.infradead.org
+In-Reply-To: <2910042.ys2zsBBKt2@amdc1976>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, broonie@kernel.org, mike.turquette@linaro.org, sboyd@codeaurora.org, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-On 09-07-15, 09:55, Pi-Cheng Chen wrote:
-> That's what I did in previous version. But the reason I use the device-
-> driver model is to handle the defer probing issue. Since there's no
-> arch/arm64/mach-mediatek/ directory to hold the device registration
-> code anymore, no device tree way to match cpufreq driver
-> (please correct me if there's any), and initcall seems not handle
-> defer probing either, therefore I put both device and driver
-> registration in this function. I know it's crappy. :(
-> Do you have any suggestion to do it right and handle defer probing
-> properly?
+On 08-07-15, 15:41, Bartlomiej Zolnierkiewicz wrote:
+> Isn't using u32 for storing frequency (in Hz) too small by today's
+> standards?
+> 
+> [ Please note that the old v1 binding uses kHz not Hz. ]
 
-Sounds reasonable. Just add proper comment in code to explain that.
+Hmm, probably yes we need it to be u64. Thanks for pointing out.
 
 -- 
 viresh
