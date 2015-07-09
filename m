@@ -1,144 +1,103 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH V4] PM / Domains: Remove intermediate states from the
- power off sequence
-Date: Thu, 9 Jul 2015 09:05:08 +0200
-Message-ID: <CAMuHMdWKgfQP3Pkzibqy3UG33+gKjxu3T4kSDNw8Zj-bEx76cA@mail.gmail.com>
-References: <1434633473-12908-1-git-send-email-ulf.hansson@linaro.org>
-	<7htwtee84d.fsf@deeprootsystems.com>
+From: Johannes Thumshirn <jthumshirn@suse.de>
+Subject: Re: [PATCH] power: bq27x00_battery: Destroy battery_id IDR on module exit
+Date: Thu, 09 Jul 2015 09:07:40 +0200
+Message-ID: <mqdwpy9stab.fsf@c203.arch.suse.de>
+References: <1436368700-30852-1-git-send-email-jthumshirn@suse.de>
+	<201507081810.14511@pali>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f51.google.com ([209.85.218.51]:33300 "EHLO
-	mail-oi0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751993AbbGIHFJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 03:05:09 -0400
-Received: by oiyy130 with SMTP id y130so183263020oiy.0
-        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2015 00:05:08 -0700 (PDT)
-In-Reply-To: <7htwtee84d.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <201507081810.14511@pali> ("Pali \=\?utf-8\?Q\?Roh\=C3\=A1r\=22's\?\=
+ message of "Wed, 8 Jul
+	2015 18:10:14 +0200")
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pali =?utf-8?Q?Roh=C3=A1r?= <pali.rohar@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Johannes Thumshirn <jthumshirn@suse.de>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <linux@arm.linux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Jul 8, 2015 at 9:56 PM, Kevin Hilman <khilman@kernel.org> wrote:
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
+Pali Roh=C3=A1r <pali.rohar@gmail.com> writes:
+
+> On Wednesday 08 July 2015 17:18:20 Johannes Thumshirn wrote:
+>> Destroy battery_id IDR on module exit, reclaiming the allocated
+>> memory.
+>>=20
+>> This was detected by the following semantic patch (written by Luis
+>> Rodriguez <mcgrof@suse.com>)
+>> <SmPL>
+>> @ defines_module_init @
+>> declarer name module_init, module_exit;
+>> declarer name DEFINE_IDR;
+>> identifier init;
+>> @@
+>>=20
+>> module_init(init);
+>>=20
+>> @ defines_module_exit @
+>> identifier exit;
+>> @@
+>>=20
+>> module_exit(exit);
+>>=20
+>> @ declares_idr depends on defines_module_init && defines_module_exit
+>> @ identifier idr;
+>> @@
+>>=20
+>> DEFINE_IDR(idr);
+>>=20
+>> @ on_exit_calls_destroy depends on declares_idr &&
+>> defines_module_exit @ identifier declares_idr.idr,
+>> defines_module_exit.exit;
+>> @@
+>>=20
+>> exit(void)
+>> {
+>>  ...
+>>  idr_destroy(&idr);
+>>  ...
+>> }
+>>=20
+>> @ missing_module_idr_destroy depends on declares_idr &&
+>> defines_module_exit && !on_exit_calls_destroy @ identifier
+>> declares_idr.idr, defines_module_exit.exit;
+>> @@
+>>=20
+>> exit(void)
+>> {
+>>  ...
+>>  +idr_destroy(&idr);
+>> }
+>> </SmPL>
+>>=20
+>> Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
+>> ---
+>>  drivers/power/bq27x00_battery.c | 1 +
+>>  1 file changed, 1 insertion(+)
+>>=20
+>> diff --git a/drivers/power/bq27x00_battery.c
+>> b/drivers/power/bq27x00_battery.c index b6b9837..99180d2 100644
+>> --- a/drivers/power/bq27x00_battery.c
+>> +++ b/drivers/power/bq27x00_battery.c
+>> @@ -1106,6 +1106,7 @@ static void __exit bq27x00_battery_exit(void)
+>>  {
+>>  	bq27x00_battery_platform_exit();
+>>  	bq27x00_battery_i2c_exit();
+>> +	idr_destroy(&battery_id);
+>>  }
+>>  module_exit(bq27x00_battery_exit);
 >
->> Genpd's ->runtime_suspend() (assigned to pm_genpd_runtime_suspend())
->> doesn't immediately walk the hierarchy of ->runtime_suspend() callbacks.
->> Instead, pm_genpd_runtime_suspend() calls pm_genpd_poweroff() which
->> postpones that until *all* the devices in the genpd are runtime suspended.
->>
->> When pm_genpd_poweroff() discovers that the last device in the genpd is
->> about to be runtime suspended, it calls __pm_genpd_save_device() for *all*
->> the devices in the genpd sequentially. Furthermore,
->> __pm_genpd_save_device() invokes the ->start() callback, walks the
->> hierarchy of the ->runtime_suspend() callbacks and invokes the ->stop()
->> callback. This causes a "thundering herd" problem.
->>
->> Let's address this issue by having pm_genpd_runtime_suspend() immediately
->> walk the hierarchy of the ->runtime_suspend() callbacks, instead of
->> postponing that to the power off sequence via pm_genpd_poweroff(). If the
->> selected ->runtime_suspend() callback doesn't return an error code, call
->> pm_genpd_poweroff() to see if it's feasible to also power off the PM
->> domain.
->>
->> Adopting this change enables us to simplify parts of the code in genpd,
->> for example the locking mechanism. Additionally, it gives some positive
->> side effects, as described below.
->>
->> i)
->> One device's ->runtime_resume() latency is no longer affected by other
->> devices' latencies in a genpd.
->>
->> The complexity genpd has to support the option to abort the power off
->> sequence suffers from latency issues. More precisely, a device that is
->> requested to be runtime resumed, may end up waiting for
->> __pm_genpd_save_device() to complete its operations for *another* device.
->> That's because pm_genpd_poweroff() can't confirm an abort request while it
->> waits for __pm_genpd_save_device() to return.
->>
->> As this patch removes the intermediate states in pm_genpd_poweroff() while
->> powering off the PM domain, we no longer need the ability to abort that
->> sequence.
->>
->> ii)
->> Make pm_runtime[_status]_suspended() reliable when used with genpd.
->>
->> Until the last device in a genpd becomes idle, pm_genpd_runtime_suspend()
->> will return 0 without actually walking the hierarchy of the
->> ->runtime_suspend() callbacks. However, by returning 0 the runtime PM core
->> considers the device as runtime_suspended, so
->> pm_runtime[_status]_suspended() will return true, even though the device
->> isn't (yet) runtime suspended.
->>
->> After this patch, since pm_genpd_runtime_suspend() immediately walks the
->> hierarchy of the ->runtime_suspend() callbacks,
->> pm_runtime[_status]_suspended() will accurately reflect the status of the
->> device.
->>
->> iii)
->> Enable fine-grained PM through runtime PM callbacks in drivers/subsystems.
->>
->> There are currently cases were drivers/subsystems implements runtime PM
->> callbacks to deploy fine-grained PM (e.g. gate clocks, move pinctrl to
->> power-save state, etc.). While using the genpd, pm_genpd_runtime_suspend()
->> postpones invoking these callbacks until *all* the devices in the genpd
->> are runtime suspended. In essence, one runtime resumed device prevents
->> fine-grained PM for other devices within the same genpd.
->>
->> After this patch, since pm_genpd_runtime_suspend() immediately walks the
->> hierarchy of the ->runtime_suspend() callbacks, fine-grained PM is enabled
->> throughout all the levels of runtime PM callbacks.
->>
->> iiii)
->> Enable fine-grained PM for IRQ safe devices
->>
->> Per the definition for an IRQ safe device, its runtime PM callbacks must
->> be able to execute in atomic context. In the path while genpd walks the
->> hierarchy of the ->runtime_suspend() callbacks for the device, it uses a
->> mutex. Therefore, genpd prevents that path to be executed for IRQ safe
->> devices.
->>
->> As this patch changes pm_genpd_runtime_suspend() to immediately walk the
->> hierarchy of the ->runtime_suspend() callbacks and without needing to use
->> a mutex, fine-grained PM is enabled throughout all the levels of runtime
->> PM callbacks for IRQ safe devices.
->>
->> Unfortunately this patch also comes with a drawback, as described in the
->> summary below.
->>
->> Driver's/subsystem's runtime PM callbacks may be invoked even when the
->> genpd hasn't actually powered off the PM domain, potentially introducing
->> unnecessary latency.
->>
->> However, in most cases, saving/restoring register contexts for devices are
->> typically fast operations or can be optimized in device specific ways
->> (e.g. shadow copies of register contents in memory, device-specific checks
->> to see if context has been lost before restoring context, etc.).
->>
->> Still, in some cases the driver/subsystem may suffer from latency if
->> runtime PM is used in a very fine-grained manner (e.g. for each IO request
->> or xfer). To prevent that extra overhead, the driver/subsystem may deploy
->> the runtime PM autosuspend feature.
->>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->
-> Reviewed-by: Kevin Hilman <khilman@linaro.org>
->
-> I believe Geert and Lina have both tested earlier versions, but would be
-> nice to see their Tested-by for this one.
+> Hello, I see that none power supply kernel driver is calling=20
+> idr_destroy() at module exit time. So if this patch is needed for=20
+> bq27x00_battery module, then it is needed also for other charger/batt=
+ery=20
+> modules...
 
-I had tested both v2 and v4
+You're right. I'll post a follow up for this with (this time hopefully)
+all battery drivers included.
 
-Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--=20
+Johannes Thumshirn                                       Storage
+jthumshirn@suse.de                             +49 911 74053 689
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 N=C3=BCrnberg
+GF: F. Imend=C3=B6rffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
+HRB 21284 (AG N=C3=BCrnberg)
