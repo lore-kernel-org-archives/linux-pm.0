@@ -1,110 +1,67 @@
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-Subject: Re: [PATCH 1/2] power: reset: at91: add sama5d3 reset function
-Date: Thu, 9 Jul 2015 14:46:40 +0200
-Message-ID: <559E6D30.701@atmel.com>
-References: <1436436947-11210-1-git-send-email-josh.wu@atmel.com> <20150709120335.GW28632@lukather>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v6 2/7] ACPI: Make ACPI processor driver more extensible
+Date: Thu, 09 Jul 2015 14:18:24 +0100
+Message-ID: <559E74A0.4050600@arm.com>
+References: <cover.1434398373.git.ashwin.chaugule@linaro.org>	<9e352cbe2feac01158a21511bac5c544dc2f29e2.1434398373.git.ashwin.chaugule@linaro.org>	<2138469.Io9yItSdst@vostro.rjw.lan>	<CAJ5Y-eZBYb551T=kBdbjM4YQ1f_hwYBgkVk4wJsDHSib00XfrA@mail.gmail.com>	<CAJZ5v0gKW7bR66trxvuhd_Gb=ZMBbec++u+V+T4mroCZMtO+vg@mail.gmail.com>	<CAJ5Y-ebW3aCSSs4UQFLpLFSfo7d9zPVfigoROjN80uXzG1sZLw@mail.gmail.com>	<CAJZ5v0h24-YAeqW79Se8kRr+_+RknwNfLwS_74-sN+W0_wBaZg@mail.gmail.com>	<CAJ5Y-eYwnaDzyL78CyJDmo35CFTNoQrYfEcO3VYnpaZkSVPdcw@mail.gmail.com>	<CAJ5Y-eaGmF6pRKuapzQo8ruMt0FX4kVrdyu-os6maVaS7WO-Pw@mail.gmail.com>	<559E399A.7000003@arm.com> <CAJ5Y-ebjN=EmN-nruz5sT75_WvYjYBrLBPoVhwPpHhJ3kmjL3g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eusmtp01.atmel.com ([212.144.249.243]:7832 "EHLO
-	eusmtp01.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753875AbbGIMrx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 08:47:53 -0400
-In-Reply-To: <20150709120335.GW28632@lukather>
+Received: from foss.arm.com ([217.140.101.70]:46159 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753904AbbGINS2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 9 Jul 2015 09:18:28 -0400
+In-Reply-To: <CAJ5Y-ebjN=EmN-nruz5sT75_WvYjYBrLBPoVhwPpHhJ3kmjL3g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@free-electrons.com>, Josh Wu <josh.wu@atmel.com>
-Cc: linux-arm-kernel@lists.infradead.org, Guenter Roeck <linux@roeck-us.net>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Ben Dooks <ben.dooks@codethink.co.uk>, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Fabian Frederick <fabf@skynet.be>, linux-pm@vger.kernel.org
+To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jaswinder Singh <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, linux acpi <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-Le 09/07/2015 14:03, Maxime Ripard a =E9crit :
-> Hi,
->=20
-> On Thu, Jul 09, 2015 at 06:15:46PM +0800, Josh Wu wrote:
->> As since sama5d3, to reset the chip, we don't need to shutdown the d=
-dr
->> controller.
->>
->> So add a new compatible string and new restart function for sama5d3 =
-and
->> later chips. As we don't use sama5d3 ddr controller, so remove it as
->> well.
->>
->> Signed-off-by: Josh Wu <josh.wu@atmel.com>
->> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
->> ---
->>
->>  drivers/power/reset/at91-reset.c | 30 +++++++++++++++++++++--------=
--
->>  1 file changed, 21 insertions(+), 9 deletions(-)
->>
->> diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/=
-at91-reset.c
->> index 36dc52f..8944b63 100644
->> --- a/drivers/power/reset/at91-reset.c
->> +++ b/drivers/power/reset/at91-reset.c
->> @@ -123,6 +123,14 @@ static int at91sam9g45_restart(struct notifier_=
-block *this, unsigned long mode,
->>  	return NOTIFY_DONE;
->>  }
->> =20
->> +static int sama5d3_restart(struct notifier_block *this, unsigned lo=
-ng mode,
->> +			void *cmd)
->> +{
->> +	writel(cpu_to_le32(AT91_RSTC_KEY | AT91_RSTC_PERRST | AT91_RSTC_PR=
-OCRST),
->> +				at91_rstc_base);
->> +	return NOTIFY_DONE;
->> +}
->> +
->>  static void __init at91_reset_status(struct platform_device *pdev)
->>  {
->>  	u32 reg =3D readl(at91_rstc_base + AT91_RSTC_SR);
->> @@ -155,13 +163,13 @@ static void __init at91_reset_status(struct pl=
-atform_device *pdev)
->>  static const struct of_device_id at91_ramc_of_match[] =3D {
->>  	{ .compatible =3D "atmel,at91sam9260-sdramc", },
->>  	{ .compatible =3D "atmel,at91sam9g45-ddramc", },
->> -	{ .compatible =3D "atmel,sama5d3-ddramc", },
->>  	{ /* sentinel */ }
->>  };
->> =20
->>  static const struct of_device_id at91_reset_of_match[] =3D {
->>  	{ .compatible =3D "atmel,at91sam9260-rstc", .data =3D at91sam9260_=
-restart },
->>  	{ .compatible =3D "atmel,at91sam9g45-rstc", .data =3D at91sam9g45_=
-restart },
->> +	{ .compatible =3D "atmel,sama5d3-rstc", .data =3D sama5d3_restart =
-},
->>  	{ /* sentinel */ }
->>  };
->> =20
->> @@ -181,17 +189,21 @@ static int at91_reset_of_probe(struct platform=
-_device *pdev)
->>  		return -ENODEV;
->>  	}
->> =20
->> -	for_each_matching_node(np, at91_ramc_of_match) {
->> -		at91_ramc_base[idx] =3D of_iomap(np, 0);
->> -		if (!at91_ramc_base[idx]) {
->> -			dev_err(&pdev->dev, "Could not map ram controller address\n");
->> -			return -ENODEV;
->> +	match =3D of_match_node(at91_reset_of_match, pdev->dev.of_node);
->> +	at91_restart_nb.notifier_call =3D match->data;
->> +
->> +	if (match->data !=3D sama5d3_restart) {
->=20
-> Using of_device_is_compatible seems more appropriate.
->=20
-> Also, why are you changing the order of this loop and the notifier
-> registration?
+Hi Ashwin.
 
-Well, it's because the sama5d3 onwards controllers don't need ramc
-controller.
-So, reverting the order seems needed. Doesn't it address your question,
-or did I lost track?
+On 09/07/15 13:25, Ashwin Chaugule wrote:
+> Hi Sudeep,
+>
+>
+> On 9 July 2015 at 05:06, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>> Hi,
+>>
+>> On 08/07/15 21:28, Ashwin Chaugule wrote:
+>>>
+>>> On 8 July 2015 at 16:05, Ashwin Chaugule <ashwin.chaugule@linaro.org>
+>>> wrote:
+>>>>
+>>>> On 8 July 2015 at 15:55, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>> Perhaps the confusion is coming from the introduction of ACPI_CST in
+>>> this file. I could leave it as it is and just separate out the
+>>> ACPI_PSS bits. But I figured, while I'm at it, I'd introduce ACPI_CST,
+>>> since we know the LPI stuff is coming up soon as a CST alternative
+>>> anyway. So if you prefer, I can drop the CST bits and maybe Sudeep can
+>>> address that as part of his LPI patchset?
+>>>
+>>
+>> Correct, I will handle it as a prerequisite for introducing _LPI
+>> support. I had posted an RFC long back, will revive those patches and
+>> repost them soon.
+>>
+>> It's better to enable ACPI_PROCESSOR on ARM64 only after we have all
+>> these dependencies resolved. Until then we need to carry some patches
+>> locally for testing.
+>
+> With Rafaels latest suggestion of adding ACPI_PROCESSOR_IDLE, we dont
+> need to wait until all dependencies are resolved to enable
+> acpi_processor on ARM64. CPPC patchwork has been up for review for
+> quite a long time and has been validated on hardware. There is no
+> reason for it to be blocked until LPI is upstream ready.
+>
 
-Bye,
---=20
-Nicolas Ferre
+Agreed, by the way I didn't mean to block CPPC work. It can be merged
+when/if it's ready irrespective of _LPI support, what I meant is to
+enable ACPI_PROCESSOR on ARM64 when other dependencies are resolved
+rather than introducing just build fixes for time-being.
+
+I think we still have one dependency for hotplug. I don't like the weak
+definitions introduced, but don't have a better solution either.
+
+Regards,
+Sudeep
