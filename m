@@ -1,160 +1,42 @@
-From: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v6 4/4] arm64: dts: mt8173: Add mt8173 cpufreq driver support
-Date: Thu,  9 Jul 2015 18:27:41 +0800
-Message-ID: <1436437661-17606-5-git-send-email-pi-cheng.chen@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v6 2/4] dt-bindings: mediatek: Add MT8173 cpufreq driver
+ bindings
+Date: Thu, 9 Jul 2015 16:02:45 +0530
+Message-ID: <20150709103245.GB5627@linux>
 References: <1436437661-17606-1-git-send-email-pi-cheng.chen@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1436437661-17606-1-git-send-email-pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+ <1436437661-17606-3-git-send-email-pi-cheng.chen@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:34576 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750939AbbGIKcu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 06:32:50 -0400
+Received: by pabvl15 with SMTP id vl15so148425152pab.1
+        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2015 03:32:49 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1436437661-17606-3-git-send-email-pi-cheng.chen@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Cc: Michael Turquette <mturquette@baylibre.com>, Matthias Brugger <matthias.bgg@gmail.com>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-mediatek@lists.infradead.org
 
-This patch adds the required properties in device tree to enable MT8173
-cpufreq driver.
+On 09-07-15, 18:27, Pi-Cheng Chen wrote:
+> This patch adds device tree binding document for MT8173 cpufreq driver.
+> The clock and regulator consumer properties are documented in
+> Documentation/devicetree/bindings/clock/mt8173-cpu-dvfs.txt and
+> referenced by this document.
+> 
+> Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+> ---
+>  .../devicetree/bindings/cpufreq/cpufreq-mt8173.txt | 134 +++++++++++++++++++++
+>  1 file changed, 134 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-mt8173.txt
 
-Signed-off-by: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
----
-It is based on the top of Mediatek SoC maintainer's tree[1] and the
-patch that adds cpumux clocks for MT8173[2]
+NAK.
 
-[1] https://github.com/mbgg/linux-mediatek.git v4.2-next/arm64
-    commit id: 16ea61fc56144f1860f9edd5a219666ade01d3b8
-[2] http://marc.info/?l=devicetree&m=143617720314125&w=2
----
- arch/arm64/boot/dts/mediatek/mt8173-evb.dts | 18 ++++++++
- arch/arm64/boot/dts/mediatek/mt8173.dtsi    | 64 +++++++++++++++++++++++++++++
- 2 files changed, 82 insertions(+)
+There are no new bindings in this file as you have moved them to
+clock. And so this patch isn't required anymore.
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8173-evb.dts b/arch/arm64/boot/dts/mediatek/mt8173-evb.dts
-index 986f25f..c47f8d0 100644
---- a/arch/arm64/boot/dts/mediatek/mt8173-evb.dts
-+++ b/arch/arm64/boot/dts/mediatek/mt8173-evb.dts
-@@ -261,6 +261,24 @@
- 	};
- };
- 
-+&cpu0 {
-+	proc-supply = <&mt6397_vpca15_reg>;
-+};
-+
-+&cpu1 {
-+	proc-supply = <&mt6397_vpca15_reg>;
-+};
-+
-+&cpu2 {
-+	proc-supply = <&da9211_vcpu_reg>;
-+	sram-supply = <&mt6397_vsramca7_reg>;
-+};
-+
-+&cpu3 {
-+	proc-supply = <&da9211_vcpu_reg>;
-+	sram-supply = <&mt6397_vsramca7_reg>;
-+};
-+
- &uart0 {
- 	status = "okay";
- };
-diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-index 359b8b6..47a443d 100644
---- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-@@ -53,6 +53,22 @@
- 			reg = <0x000>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SLEEP_0>;
-+			clocks = <&infracfg CLK_INFRA_CA53SEL>,
-+				 <&apmixedsys CLK_APMIXED_MAINPLL>;
-+			clock-names = "cpu", "intermediate";
-+			operating-points = <
-+				507000	859000
-+				702000	908000
-+				1001000	983000
-+				1105000	1009000
-+				1183000	1028000
-+				1404000	1083000
-+				1508000	1109000
-+				1573000	1125000
-+			>;
-+			#cooling-cells = <2>;
-+			#cooling-min-level = <0>;
-+			#cooling-max-level = <7>;
- 		};
- 
- 		cpu1: cpu@1 {
-@@ -61,6 +77,22 @@
- 			reg = <0x001>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SLEEP_0>;
-+			clocks = <&infracfg CLK_INFRA_CA53SEL>,
-+				 <&apmixedsys CLK_APMIXED_MAINPLL>;
-+			clock-names = "cpu", "intermediate";
-+			operating-points = <
-+				507000	859000
-+				702000	908000
-+				1001000	983000
-+				1105000	1009000
-+				1183000	1028000
-+				1404000	1083000
-+				1508000	1109000
-+				1573000	1125000
-+			>;
-+			#cooling-cells = <2>;
-+			#cooling-min-level = <0>;
-+			#cooling-max-level = <7>;
- 		};
- 
- 		cpu2: cpu@100 {
-@@ -69,6 +101,22 @@
- 			reg = <0x100>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SLEEP_0>;
-+			clocks = <&infracfg CLK_INFRA_CA57SEL>,
-+				 <&apmixedsys CLK_APMIXED_MAINPLL>;
-+			clock-names = "cpu", "intermediate";
-+			operating-points = <
-+				507000	828000
-+				702000	867000
-+				1001000	927000
-+				1209000	968000
-+				1404000	1007000
-+				1612000	1049000
-+				1807000	1089000
-+				1989000	1125000
-+			>;
-+			#cooling-cells = <2>;
-+			#cooling-min-level = <0>;
-+			#cooling-max-level = <7>;
- 		};
- 
- 		cpu3: cpu@101 {
-@@ -77,6 +125,22 @@
- 			reg = <0x101>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SLEEP_0>;
-+			clocks = <&infracfg CLK_INFRA_CA57SEL>,
-+				 <&apmixedsys CLK_APMIXED_MAINPLL>;
-+			clock-names = "cpu", "intermediate";
-+			operating-points = <
-+				507000	828000
-+				702000	867000
-+				1001000	927000
-+				1209000	968000
-+				1404000	1007000
-+				1612000	1049000
-+				1807000	1089000
-+				1989000	1125000
-+			>;
-+			#cooling-cells = <2>;
-+			#cooling-min-level = <0>;
-+			#cooling-max-level = <7>;
- 		};
- 
- 		idle-states {
 -- 
-1.9.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+viresh
