@@ -1,151 +1,85 @@
-From: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v5 2/2] cpufreq: mediatek: Add MT8173 cpufreq driver
-Date: Thu, 9 Jul 2015 09:55:17 +0800
-Message-ID: <CALx668Xp051A-BBGwwNxpiQCt318Bh5fnA5jcAXBg-9vPcqpvg@mail.gmail.com>
-References: <1435717005-20012-1-git-send-email-pi-cheng.chen@linaro.org>
- <1435717005-20012-3-git-send-email-pi-cheng.chen@linaro.org>
- <20150708113455.GF1805@linux>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2] power_supply: rt9455_charger: Properly notify
+ userspace about charging events
+Date: Thu, 9 Jul 2015 05:27:51 +0200
+Message-ID: <20150709032751.GA13805@earth>
+References: <1436271953-24564-1-git-send-email-anda-maria.nicolae@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <20150708113455.GF1805@linux>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="J2SCkAp4GZ/dPZZf"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:41752 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753902AbbGID14 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 8 Jul 2015 23:27:56 -0400
+Content-Disposition: inline
+In-Reply-To: <1436271953-24564-1-git-send-email-anda-maria.nicolae@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
+Cc: k.kozlowski.k@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 
-Hi Viresh,
 
-On Wed, Jul 8, 2015 at 7:34 PM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> On 01-07-15, 10:16, Pi-Cheng Chen wrote:
->> This patch implements MT8173 cpufreq driver.
->
-> Now that you are going to resend this patchset, a few more comments.
->
-> Please describe your SoC a bit here, so that reviewers know what are
-> we going to implement.
+--J2SCkAp4GZ/dPZZf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes. I will add it.
+Hi,
 
->
->> +static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
->> +{
->> +     struct device *cpu_dev;
->> +     struct regulator *proc_reg = ERR_PTR(-ENODEV);
->> +     struct regulator *sram_reg = ERR_PTR(-ENODEV);
->> +     struct clk *cpu_clk = ERR_PTR(-ENODEV);
->> +     struct clk *inter_clk = ERR_PTR(-ENODEV);
->> +     struct dev_pm_opp *opp;
->> +     unsigned long rate;
->> +     int ret;
->> +
->> +     cpu_dev = get_cpu_device(cpu);
->> +     if (!cpu_dev) {
->> +             pr_err("failed to get cpu%d device\n", cpu);
->> +             return -ENODEV;
->> +     }
->> +
->> +     ret = of_init_opp_table(cpu_dev);
->> +     if (ret) {
->> +             pr_warn("no OPP table for cpu%d\n", cpu);
->> +             return ret;
->> +     }
->
-> Initialize opp table only when you know other resources are available.
-> i.e. we aren't going to abort due to EPROBE_DEFER.
+On Tue, Jul 07, 2015 at 03:25:53PM +0300, Anda-Maria Nicolae wrote:
+> Charging events this patch refers to are:
+> - charger is connected to/disconnected from the power source
+> - battery is reconnected to the charger, after it was absent.
+>=20
+> When the charger is connected to/disconnected from the power source, CHRV=
+PI
+> interrupt occurs and PWR_RDY bit is either set or cleared. PWR_RDY bit is
+> updated after 1-2 seconds CHRVPI interrupt has occurred.
+> power_supply_changed() should be called after PWR_RDY bit is updated.
+> /sys/class/power_supply/rt9455-charger/online file displays the value of
+> PWR_RDY bit.
+> This way, if the userspace is notified that a charging event has occurred
+> and the userspace reads /sys/class/power_supply/rt9455-charger/online fil=
+e,
+> this file is properly updated when the userspace reads it.
+> This is the reason why power_supply_changed() is called in
+> rt9455_pwr_rdy_work_callback(), instead of being called in interrupt
+> handler.
+>=20
+> Since no interrupt is triggered when the battery is reconnected to the
+> charger, the userspace is never notified that the battery is reconnected.
+> This is why power_supply_changed() is called in
+> rt9455_max_charging_time_work_callback(), so that the userspace is notifi=
+ed
+> that the battery is reconnected.
+>=20
+> Signed-off-by: Anda-Maria Nicolae <anda-maria.nicolae@intel.com>
 
-Will do it.
+Thanks, queued with Kzrysztof's Reviewed-By.
 
->
->> +     cpu_clk = clk_get(cpu_dev, "cpu");
->> +     if (IS_ERR(cpu_clk)) {
->> +             if (PTR_ERR(cpu_clk) == -EPROBE_DEFER)
->> +                     pr_warn("cpu clk for cpu%d not ready, retry.\n", cpu);
->> +             else
->> +                     pr_err("failed to get cpu clk for cpu%d\n", cpu);
->> +
->> +             ret = PTR_ERR(cpu_clk);
->> +             goto out_free_opp_table;
->> +     }
->> +}
->
->
->> +static int mt8173_cpufreq_probe(struct platform_device *pdev)
->> +{
->> +     int ret;
->> +
->> +     ret = cpufreq_register_driver(&mt8173_cpufreq_driver);
->> +     if (ret)
->> +             pr_err("failed to register mtk cpufreq driver\n");
->> +
->> +     return ret;
->> +}
->> +
->> +static struct platform_driver mt8173_cpufreq_platdrv = {
->> +     .driver = {
->> +             .name   = "mt8173-cpufreq",
->> +     },
->> +     .probe          = mt8173_cpufreq_probe,
->> +};
->> +
->> +static int mt8173_cpufreq_driver_init(void)
->> +{
->> +     struct platform_device *pdev;
->> +     int err;
->> +
->> +     if (!of_machine_is_compatible("mediatek,mt8173"))
->> +             return -ENODEV;
->
-> Why do you need to check this ? Its going to be the right SoC, others
-> can't even compile it.
+-- Sebastian
 
-Originally I was thinking this driver should be generic to other Mediatek
-SoCs, so I add this check to filter out those SoCs that are not yet
-confirmed with this driver supported. Since it's targeted to MT8173 only
-now, I will remove this check.
+--J2SCkAp4GZ/dPZZf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
->
->> +     err = platform_driver_register(&mt8173_cpufreq_platdrv);
->> +     if (err)
->> +             return err;
->> +
->> +     pdev = platform_device_register_simple("mt8173-cpufreq", -1, NULL, 0);
->> +     if (IS_ERR(pdev)) {
->> +             pr_err("failed to register mtk-cpufreq platform device\n");
->> +             return PTR_ERR(pdev);
->> +     }
->
-> This is simply crap. You register the driver and then its device from
-> the same function. If you are so sure that this driver is required,
-> then why to get into the shit of device-driver model ?
->
-> Just call cpufreq_register_driver() from here :), no device/driver
-> required.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-That's what I did in previous version. But the reason I use the device-
-driver model is to handle the defer probing issue. Since there's no
-arch/arm64/mach-mediatek/ directory to hold the device registration
-code anymore, no device tree way to match cpufreq driver
-(please correct me if there's any), and initcall seems not handle
-defer probing either, therefore I put both device and driver
-registration in this function. I know it's crappy. :(
-Do you have any suggestion to do it right and handle defer probing
-properly?
+iQIcBAEBCgAGBQJVneozAAoJENju1/PIO/qaEncP/3LXei9uEIJZaGDT5t2q0cgz
+uIZcpTTOWzLp1sXb6ZmLpddqjykfiwtLUnXF9k1tHy0RxlmqCD37QDZt3t+QgpyM
+ewP89J66W+BBJi5zT24UH+8om4xW6czen+RBRdADBKegaNeWp9sXLF13oOpu1Vuv
+bV2iqmoaXnsoL27nu0DO+r0bEkthd9AOh76niU9W/6OAobRHiJkIIEgYjEnETLHf
+W8Iu0pCuOxdfI6k2jto3BeuAAZU82N41LqrbTUGze1z+RTKs0AKEJEP078QyUNEd
+VgiWuBjTd8sM3Z3F1frvkcebvtdyfch3bVMyM6Fy3WxNnfEv+JLeJh8DP6ybXWwD
+1/sQyGiqJQXqtXXpVh21fJQAAplvkjRW1AKBAAxyhIVqYCtw4n1Pi011VQx4PfUG
+jlEpfv96jIEZq58Wtq/wrUyXbtutdbBRxR7GPBDLhSK1cmTOTEU6sDFwmCCvs1DR
+YOelaiT7kugt/jMPndifXQaHu3P/NGnyUhHWZ9rkmHaf6re5TvAq5tuvuzDz/gsL
+5oe1m5GUp76S3S7V4tE3HgnXnSOy8N6ULHm03XJguIjd1C2v5/CA81ULHNkWLEhC
+VZkNb9U+9CMOOxp79+SONaDG1PJG7nWu46GUEbxEl2JnQ3Muq2FnQ07tqqde5be4
+xlZf5DaXk5Nspu6t7Qkz
+=IW4j
+-----END PGP SIGNATURE-----
 
-Thanks.
-
-Best Regards,
-Pi-Cheng
-
->
-> --
-> viresh
+--J2SCkAp4GZ/dPZZf--
