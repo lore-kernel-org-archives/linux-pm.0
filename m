@@ -1,57 +1,86 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC] cpufreq: Add ->get_rate() driver callback
-Date: Thu, 9 Jul 2015 10:29:02 +0530
-Message-ID: <20150709045902.GI1805@linux>
-References: <fb44111fa7a762924661ad48a70985d597229bc4.1436351759.git.viresh.kumar@linaro.org>
- <1879392.TC0RceaKlH@vostro.rjw.lan>
+Subject: Re: [PATCH] cpufreq: Initialize the governor again while restoring
+ policy
+Date: Thu, 9 Jul 2015 10:40:24 +0530
+Message-ID: <20150709051024.GJ1805@linux>
+References: <f428ecb0927075b25cf7e2ea5fb00eab3d254fdd.1436333568.git.viresh.kumar@linaro.org>
+ <3814282.YWYCHNROVv@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:33484 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbbGIE7H (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 00:59:07 -0400
-Received: by pacws9 with SMTP id ws9so145255033pac.0
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2015 21:59:07 -0700 (PDT)
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:33057 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751525AbbGIFKa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 01:10:30 -0400
+Received: by pdbqm3 with SMTP id qm3so14721053pdb.0
+        for <linux-pm@vger.kernel.org>; Wed, 08 Jul 2015 22:10:29 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1879392.TC0RceaKlH@vostro.rjw.lan>
+In-Reply-To: <3814282.YWYCHNROVv@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Pi-Cheng Chen <pi-cheng.chen@linaro.org>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, open list <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>
 
-On 09-07-15, 01:41, Rafael J. Wysocki wrote:
-> On Wednesday, July 08, 2015 04:07:32 PM Viresh Kumar wrote:
-> > CPUFreq drivers today support a ->get(cpu) callback, which returns
-> > current rate of a CPU. The problem with ->get() is that it takes a cpu
-> > number as parameter and this unnecessarily makes things complex.
-> > 
-> > Firstly the core gets the cpu number by doing operation 'policy->cpu' on
-> > the policy and then many drivers need to get the policy back and so do
-> > cpufreq_cpu_get(cpu) on the passed cpu.
-> > 
-> > As cpufreq core works on policies, it would be better if we pass them
-> > 'policy' directly and drivers can use policy->cpu if that's all they
-> > need.
-> > 
-> > Hence, this patch adds in another callback, ->get_rate() which does
-> > exactly the same work as ->get(), just that we pass 'policy' as
-> > parameter instead of 'cpu'.
-> > 
-> > The plan is to migrate all drivers to this new callback and remove
-> > ->get() after that.
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> > Hi Rafael,
-> > 
-> > I hope you are fine with this stuff :), once you approve I will get
-> > other patches to migrate existing drivers to this interface.
+On 09-07-15, 02:33, Rafael J. Wysocki wrote:
+> > We also missed marking policy->governor as NULL while restoring the
+> > policy. Because of that, we call __cpufreq_governor(CPUFREQ_GOV_LIMITS)
 > 
-> I'm generally fine with it, but please target it at 4.4 at the earliest.
+> How exactly does that happen?
 
-Sure, but I was a bit curious on why 4.4 and not 4.3 ? as we are still
-at 4.2-rc1 today, and these patches can be done fairly quickly.
+Should have mentioned that in detail, sorry for being lazy. Hopefully
+this will look better:
 
--- 
-viresh
+---------------------------8<---------------------------
+
+Message-Id: <5f17361741c009a7f0d8488f7f94bab80d9317fd.1436418101.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Wed, 8 Jul 2015 10:45:53 +0530
+Subject: [PATCH V2] cpufreq: Initialize the governor again while restoring policy
+
+When all CPUs of a policy are hot-unplugged, we EXIT the governor but
+don't mark policy->governor as NULL. This was done in order to keep last
+used governor's information intact in sysfs, while the CPUs are offline.
+
+But we also marking policy->governor as NULL while restoring the policy.
+
+Because policy->governor still points to the last governor while policy
+is restored, following sequence of event happens:
+- cpufreq_init_policy() called while restoring policy
+- find_governor() matches last_governor string for present governors and
+  returns last used governor's pointer, say ondemand. policy->governor
+  already has the same address, unless the governor was removed in
+  between.
+- cpufreq_set_policy() is called with both old/new policies governor set
+  as ondemand.
+- Because governors matched, we skip governor initialization and return
+  after calling __cpufreq_governor(CPUFREQ_GOV_LIMITS). Because the
+  governor wasn't initialized for this policy, it returned -EBUSY.
+- cpufreq_init_policy() exits the policy on this error, but doesn't
+  destroy it properly (should be fixed separately).
+- And so we enter a scenario where the policy isn't completely
+  initialized but used.
+
+Fix this by setting policy->governor to NULL while restoring the policy.
+
+Reported-and-tested-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Reported-and-tested-by: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Tested-by: Steven Rostedt <rostedt@goodmis.org>
+Fixes: 18bf3a124ef8 ("cpufreq: Mark policy->governor = NULL for inactive policies")
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V2: Detailed changelog
+
+ drivers/cpufreq/cpufreq.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b612411655f9..2c22e3902e72 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1132,6 +1132,7 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
+ 
+ 		down_write(&policy->rwsem);
+ 		policy->cpu = cpu;
++		policy->governor = NULL;
+ 		up_write(&policy->rwsem);
+ 	}
