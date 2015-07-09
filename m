@@ -1,8 +1,8 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v2 5/7] ARM: dts: Exynos4x12: add CPU OPP and regulator supply
- property
-Date: Thu, 09 Jul 2015 17:43:39 +0200
-Message-ID: <1436456621-29839-6-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v2 6/7] ARM: Exynos: switch to using generic cpufreq driver for
+ Exynos4x12
+Date: Thu, 09 Jul 2015 17:43:40 +0200
+Message-ID: <1436456621-29839-7-git-send-email-b.zolnierkie@samsung.com>
 References: <1436456621-29839-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,279 +19,95 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Doug Anderson <dianders@chromium.org>, Lukasz Majewski <l.majewski@samsung.com>, Kevin Hilman <khilman@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-pm@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, b.zolnierkie@samsung.com, linux-samsung-soc@vger.kernel.org, Andreas Faerber <afaerber@suse.de>, Javier Martinez Canillas <javier@dowhile0.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Kevin Hilman <khilman@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-pm@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, b.zolnierkie@samsung.com, linux-samsung-soc@vger.kernel.org, Javier Martinez Canillas <javier@dowhile0.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-For Exynos4x12 platforms, add CPU operating points (using
-opp-v2 bindings) and CPU regulator supply properties for
-migrating from Exynos specific cpufreq driver to using
-generic cpufreq driver.
+The new CPU clock type allows the use of generic CPUfreq driver.
+Switch Exynos4x12 to using generic cpufreq driver.
 
-Based on the earlier work by Thomas Abraham.
+This patch also takes care of making ARM_EXYNOS_CPU_FREQ_BOOST_SW
+config option depend on cpufreq-dt driver instead of exynos-cpufreq
+one and fixes the minor issue present with the old code (support
+for 'boost' mode in the exynos-cpufreq driver was enabled for all
+supported SoCs even though 'boost' frequency was provided only for
+Exynos4x12 ones).
 
+Cc: Tomasz Figa <tomasz.figa@gmail.com>
 Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Doug Anderson <dianders@chromium.org>
 Cc: Javier Martinez Canillas <javier@dowhile0.org>
-Cc: Andreas Faerber <afaerber@suse.de>
 Cc: Thomas Abraham <thomas.ab@samsung.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- arch/arm/boot/dts/exynos4212.dtsi               | 81 ++++++++++++++++++++++++
- arch/arm/boot/dts/exynos4412-odroid-common.dtsi |  4 ++
- arch/arm/boot/dts/exynos4412-origen.dts         |  5 ++
- arch/arm/boot/dts/exynos4412-trats2.dts         |  5 ++
- arch/arm/boot/dts/exynos4412.dtsi               | 83 +++++++++++++++++++++++++
- 5 files changed, 178 insertions(+)
+ arch/arm/mach-exynos/exynos.c    | 14 ++++++++++++++
+ drivers/cpufreq/Kconfig.arm      |  2 +-
+ drivers/cpufreq/exynos-cpufreq.c |  3 ---
+ 3 files changed, 15 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos4212.dtsi b/arch/arm/boot/dts/exynos4212.dtsi
-index d9c8efee..9dc40d5 100644
---- a/arch/arm/boot/dts/exynos4212.dtsi
-+++ b/arch/arm/boot/dts/exynos4212.dtsi
-@@ -30,6 +30,9 @@
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a9";
- 			reg = <0xA00>;
-+			clocks = <&clock CLK_ARM_CLK>;
-+			clock-names = "cpu";
-+			operating-points-v2 = <&cpu0_opp_table>;
- 			cooling-min-level = <13>;
- 			cooling-max-level = <7>;
- 			#cooling-cells = <2>; /* min followed by max */
-@@ -39,6 +42,84 @@
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a9";
- 			reg = <0xA01>;
-+			operating-points-v2 = <&cpu0_opp_table>;
-+		};
-+	};
-+
-+	cpu0_opp_table: opp_table0 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp00 {
-+			opp-hz = <200000000>;
-+			opp-microvolt = <900000>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp01 {
-+			opp-hz = <300000000>;
-+			opp-microvolt = <900000>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp02 {
-+			opp-hz = <400000000>;
-+			opp-microvolt = <925000>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp03 {
-+			opp-hz = <500000000>;
-+			opp-microvolt = <950000>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp04 {
-+			opp-hz = <600000000>;
-+			opp-microvolt = <975000>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp05 {
-+			opp-hz = <700000000>;
-+			opp-microvolt = <987500>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp06 {
-+			opp-hz = <800000000>;
-+			opp-microvolt = <1000000>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp07 {
-+			opp-hz = <900000000>;
-+			opp-microvolt = <1037500>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp08 {
-+			opp-hz = <1000000000>;
-+			opp-microvolt = <1087500>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp09 {
-+			opp-hz = <1100000000>;
-+			opp-microvolt = <1137500>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp10 {
-+			opp-hz = <1200000000>;
-+			opp-microvolt = <1187500>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp11 {
-+			opp-hz = <1300000000>;
-+			opp-microvolt = <1250000>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp12 {
-+			opp-hz = <1400000000>;
-+			opp-microvolt = <1287500>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp13 {
-+			opp-hz = <1500000000>;
-+			opp-microvolt = <1350000>;
-+			clock-latency-ns = <200000>;
-+			turbo-mode;
- 		};
- 	};
- };
-diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-index ca7d168..1c7811a 100644
---- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-+++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
-@@ -507,3 +507,7 @@
- &watchdog {
- 	status = "okay";
- };
-+
-+&cpu0 {
-+	cpu0-supply = <&buck2_reg>;
-+};
-diff --git a/arch/arm/boot/dts/exynos4412-origen.dts b/arch/arm/boot/dts/exynos4412-origen.dts
-index 84c7631..21150b4 100644
---- a/arch/arm/boot/dts/exynos4412-origen.dts
-+++ b/arch/arm/boot/dts/exynos4412-origen.dts
-@@ -532,3 +532,8 @@
- &watchdog {
- 	status = "okay";
- };
-+
-+
-+&cpu0 {
-+	cpu0-supply = <&buck2_reg>;
-+};
-diff --git a/arch/arm/boot/dts/exynos4412-trats2.dts b/arch/arm/boot/dts/exynos4412-trats2.dts
-index afc199d..1ee43456 100644
---- a/arch/arm/boot/dts/exynos4412-trats2.dts
-+++ b/arch/arm/boot/dts/exynos4412-trats2.dts
-@@ -1313,3 +1313,8 @@
- 	vtmu-supply = <&ldo10_reg>;
- 	status = "okay";
- };
-+
-+
-+&cpu0 {
-+	cpu0-supply = <&buck2_reg>;
-+};
-diff --git a/arch/arm/boot/dts/exynos4412.dtsi b/arch/arm/boot/dts/exynos4412.dtsi
-index b78ada7..cead3a7 100644
---- a/arch/arm/boot/dts/exynos4412.dtsi
-+++ b/arch/arm/boot/dts/exynos4412.dtsi
-@@ -30,6 +30,9 @@
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a9";
- 			reg = <0xA00>;
-+			clocks = <&clock CLK_ARM_CLK>;
-+			clock-names = "cpu";
-+			operating-points-v2 = <&cpu0_opp_table>;
- 			cooling-min-level = <13>;
- 			cooling-max-level = <7>;
- 			#cooling-cells = <2>; /* min followed by max */
-@@ -39,18 +42,98 @@
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a9";
- 			reg = <0xA01>;
-+			operating-points-v2 = <&cpu0_opp_table>;
- 		};
+diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+index 4015ec3..0c74e90 100644
+--- a/arch/arm/mach-exynos/exynos.c
++++ b/arch/arm/mach-exynos/exynos.c
+@@ -20,6 +20,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/pm_domain.h>
+ #include <linux/irqchip.h>
++#include <linux/cpufreq-dt.h>
  
- 		cpu@A02 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a9";
- 			reg = <0xA02>;
-+			operating-points-v2 = <&cpu0_opp_table>;
- 		};
+ #include <asm/cacheflush.h>
+ #include <asm/hardware/cache-l2x0.h>
+@@ -224,6 +225,12 @@ static void __init exynos_init_irq(void)
+ 	exynos_map_pmu();
+ }
  
- 		cpu@A03 {
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a9";
- 			reg = <0xA03>;
-+			operating-points-v2 = <&cpu0_opp_table>;
-+		};
-+	};
++struct cpufreq_dt_platform_data cpufreq_dt_pd = {
++#ifdef CONFIG_ARM_EXYNOS_CPU_FREQ_BOOST_SW
++	.boost_supported = true,
++#endif
++};
 +
-+	cpu0_opp_table: opp_table0 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp00 {
-+			opp-hz = <200000000>;
-+			opp-microvolt = <900000>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp01 {
-+			opp-hz = <300000000>;
-+			opp-microvolt = <900000>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp02 {
-+			opp-hz = <400000000>;
-+			opp-microvolt = <925000>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp03 {
-+			opp-hz = <500000000>;
-+			opp-microvolt = <950000>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp04 {
-+			opp-hz = <600000000>;
-+			opp-microvolt = <975000>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp05 {
-+			opp-hz = <700000000>;
-+			opp-microvolt = <987500>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp06 {
-+			opp-hz = <800000000>;
-+			opp-microvolt = <1000000>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp07 {
-+			opp-hz = <900000000>;
-+			opp-microvolt = <1037500>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp08 {
-+			opp-hz = <1000000000>;
-+			opp-microvolt = <1087500>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp09 {
-+			opp-hz = <1100000000>;
-+			opp-microvolt = <1137500>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp10 {
-+			opp-hz = <1200000000>;
-+			opp-microvolt = <1187500>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp11 {
-+			opp-hz = <1300000000>;
-+			opp-microvolt = <1250000>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp12 {
-+			opp-hz = <1400000000>;
-+			opp-microvolt = <1287500>;
-+			clock-latency-ns = <200000>;
-+		};
-+		opp13 {
-+			opp-hz = <1500000000>;
-+			opp-microvolt = <1350000>;
-+			clock-latency-ns = <200000>;
-+			turbo-mode;
- 		};
- 	};
+ static const struct of_device_id exynos_cpufreq_matches[] = {
+ 	{ .compatible = "samsung,exynos4210", .data = "cpufreq-dt" },
+ 	{ .compatible = "samsung,exynos5250", .data = "cpufreq-dt" },
+@@ -235,6 +242,13 @@ static void __init exynos_cpufreq_init(void)
+ 	struct device_node *root = of_find_node_by_path("/");
+ 	const struct of_device_id *match;
  
++	if (of_machine_is_compatible("samsung,exynos4212") ||
++	    of_machine_is_compatible("samsung,exynos4412")) {
++		platform_device_register_data(NULL, "cpufreq-dt", -1,
++					&cpufreq_dt_pd, sizeof(cpufreq_dt_pd));
++		return;
++	}
++
+ 	match = of_match_node(exynos_cpufreq_matches, root);
+ 	if (!match) {
+ 		platform_device_register_simple("exynos-cpufreq", -1, NULL, 0);
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 9ab6388c1..5f5a15a 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -49,7 +49,7 @@ config ARM_EXYNOS4X12_CPUFREQ
+ 
+ config ARM_EXYNOS_CPU_FREQ_BOOST_SW
+ 	bool "EXYNOS Frequency Overclocking - Software"
+-	depends on ARM_EXYNOS_CPUFREQ && THERMAL
++	depends on CPUFREQ_DT && THERMAL
+ 	select CPU_FREQ_BOOST_SW
+ 	select EXYNOS_THERMAL
+ 	help
+diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
+index 71d8891..89d252e 100644
+--- a/drivers/cpufreq/exynos-cpufreq.c
++++ b/drivers/cpufreq/exynos-cpufreq.c
+@@ -150,9 +150,6 @@ static struct cpufreq_driver exynos_driver = {
+ 	.init		= exynos_cpufreq_cpu_init,
+ 	.name		= "exynos_cpufreq",
+ 	.attr		= cpufreq_generic_attr,
+-#ifdef CONFIG_ARM_EXYNOS_CPU_FREQ_BOOST_SW
+-	.boost_supported = true,
+-#endif
+ #ifdef CONFIG_PM
+ 	.suspend	= cpufreq_generic_suspend,
+ #endif
 -- 
 1.9.1
