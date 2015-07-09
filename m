@@ -1,110 +1,77 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: New suspicious RCU usage in 4.2.0-rc1 plus patch
-Date: Thu, 09 Jul 2015 02:50:25 +0200
-Message-ID: <2195797.u9FVj8R87o@vostro.rjw.lan>
+From: Pan Xinhui <xinhuix.pan@intel.com>
+Subject: Re: [PATCH V2] acpi-cpufreq: replace per_cpu with driver_data of
+ policy
+Date: Thu, 09 Jul 2015 09:28:30 +0800
+Message-ID: <559DCE3E.8050105@intel.com>
+References: <559BC96E.8020804@intel.com> <20150707143443.GT14598@linux> <12074796.mAD950pclu@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:45932 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752864AbbGIAX6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2015 20:23:58 -0400
+Received: from mga01.intel.com ([192.55.52.88]:30732 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752409AbbGIBbF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 8 Jul 2015 21:31:05 -0400
+In-Reply-To: <12074796.mAD950pclu@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "'Paul E. McKenney'" <paulmck@linux.vnet.ibm.com>
-Cc: Steven Rostedt <srostedt@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
 
-Hi Paul,
+hi, Rafael
+	thanks for your kind reply. :)
 
-Something seems to have changed in RCU in 4.2-rc1, as it is now complaining
-about a tracepoint in tick_freeze() like this:
+On 2015=E5=B9=B407=E6=9C=8809=E6=97=A5 08:20, Rafael J. Wysocki wrote:
+> On Tuesday, July 07, 2015 08:04:43 PM Viresh Kumar wrote:
+>> On 07-07-15, 20:43, Pan Xinhui wrote:
+>>>
+>>> Drivers can store their internal per-policy information in
+>>> policy->driver_data, lets use it.
+>>>
+>>> we have benefits after this replacing.
+>>> 1) memory saving.
+>>> 2) policy is shared by several cpus, per_cpu seems not correct. usi=
+ng
+>>> *driver_data* is more reasonable.
+>>> 3) fix a memory leak in acpi_cpufreq_cpu_exit. as policy->cpu might
+>>> change during cpu hotplug. So sometimes we cant't free *data*, use
+>>> *driver_data* to fix it.
+>>> 4) fix a zero return value of get_cur_freq_on_cpu. Only per_cpu of
+>>> policy->cpu is set to *data*, if we try to get cpufreq on other cpu=
+s, we
+>>> get zero instead of correct values. Use *driver_data* to fix it.
+>>>
+>>> Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
+>>> ---
+>>> Changes from V1:
+>>> 	codes style fix, comments update
+>>> 	move cpufreq_cpu_put(policy) after we get *driver_data*
+>>> ---
+>>>  drivers/cpufreq/acpi-cpufreq.c | 40 ++++++++++++++++++++++--------=
+----------
+>>>  1 file changed, 22 insertions(+), 18 deletions(-)
+>>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>=20
+> OK
+>=20
+> Does it fix any recent regressions or is it just an old bug?
+>=20
 
-[   66.340508] ===============================
-[   66.340509] [ INFO: suspicious RCU usage. ]
-[   66.340512] 4.2.0-rc1+ #1691 Not tainted
-[   66.340513] -------------------------------
-[   66.340515] /scratch/rafael/work/linux-pm/include/trace/events/power.h:193 suspicious rcu_dereference_check() usage!
-[   66.340517] 
-other info that might help us debug this:
+This patch achieve old bug fix and codes improvements. In past days, po=
+licy has no field *driver_data*, So
+acpi-cpufreq driver has to use per_cpu to store some extra information.=
+ But it did not take good care of every scenarios.
+Now cpufreq core makes awesome effort to store more per-policy informat=
+ion in policy. We can make use of this feature. So I
+cook this patch. :)
 
-[   66.340519] 
-RCU used illegally from idle CPU!
-rcu_scheduler_active = 1, debug_locks = 0
-[   66.340520] RCU used illegally from extended quiescent state!
-[   66.340522] 1 lock held by swapper/0/0:
-[   66.340538]  #0:  (tick_freeze_lock){......}, at: [<ffffffff810dcb39>] tick_freeze+0x19/0x230
-[   66.340539] 
-stack backtrace:
-[   66.340543] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.2.0-rc1+ #1691
-[   66.340544] Hardware name: TOSHIBA PORTEGE R500/Portable PC, BIOS Version 1.60 03/04/2008
-[   66.340550]  0000000000000001 ffffffff81c03e48 ffffffff817ab99d 0000000000000004
-[   66.340555]  ffffffff81c10500 ffffffff81c03e78 ffffffff810a2dd7 0000000000000003
-[   66.340560]  0000000000000000 ffffffff81a6b2c7 ffffffffa00b3090 ffffffff81c03ea8
-[   66.340561] Call Trace:
-[   66.340567]  [<ffffffff817ab99d>] dump_stack+0x4f/0x7b
-[   66.340573]  [<ffffffff810a2dd7>] lockdep_rcu_suspicious+0xe7/0x120
-[   66.340577]  [<ffffffff810dcca8>] tick_freeze+0x188/0x230
-[   66.340582]  [<ffffffff816357a0>] cpuidle_enter_freeze+0x30/0x80
-[   66.340586]  [<ffffffff8109a495>] cpu_startup_entry+0x455/0x490
-[   66.340591]  [<ffffffff8179e882>] rest_init+0x132/0x140
-[   66.340595]  [<ffffffff8179e750>] ? csum_partial_copy_generic+0x170/0x170
-[   66.340601]  [<ffffffff81d14049>] start_kernel+0x484/0x491
-[   66.340604]  [<ffffffff81d139aa>] ? set_init_arg+0x58/0x58
-[   66.340608]  [<ffffffff81d135ad>] x86_64_start_reservations+0x2a/0x2c
-[   66.340611]  [<ffffffff81d13696>] x86_64_start_kernel+0xe7/0xeb
+I am preparing two patches for other two issues in acpi-cpufreq driver =
+based on this patch.
+I will fix them step by step. :)
 
-It didn't complained about it before, AFAICS, but in any case the simplest
-way to deal with it seems to be to put tick_freeze() under RCU_NONIDLE()
-like in the patch below.
+thanks
+xinhui
 
-I wonder what you think about it?
-
-Thanks,
-Rafael
-
-
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: cpuidle / s2i: Prevent RCU from complaining about tick_freeze()
-
-Put tick_freeze() under RCU_NONIDLE() to prevent RCU from complaining
-about suspicious RCU usage in idle by trace_suspend_resume() called
-from there.
-
-While at it, fix a comment related to another usage of RCU_NONIDLE()
-in enter_freeze_proper().
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/cpuidle.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-Index: linux-pm/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/cpuidle.c
-+++ linux-pm/drivers/cpuidle/cpuidle.c
-@@ -112,7 +112,12 @@ int cpuidle_find_deepest_state(struct cp
- static void enter_freeze_proper(struct cpuidle_driver *drv,
- 				struct cpuidle_device *dev, int index)
- {
--	tick_freeze();
-+	/*
-+	 * trace_suspend_resume() called by tick_freeze() for the last CPU
-+	 * executing it contains RCU usage regarded as invalid in the idle
-+	 * context, so tell RCU about that.
-+	 */
-+	RCU_NONIDLE(tick_freeze());
- 	/*
- 	 * The state used here cannot be a "coupled" one, because the "coupled"
- 	 * cpuidle mechanism enables interrupts and doing that with timekeeping
-@@ -122,7 +127,7 @@ static void enter_freeze_proper(struct c
- 	WARN_ON(!irqs_disabled());
- 	/*
- 	 * timekeeping_resume() that will be called by tick_unfreeze() for the
--	 * last CPU executing it calls functions containing RCU read-side
-+	 * first CPU executing it calls functions containing RCU read-side
- 	 * critical sections, so tell RCU about that.
- 	 */
- 	RCU_NONIDLE(tick_unfreeze());
-
+> Rafael
+>=20
