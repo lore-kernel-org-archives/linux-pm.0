@@ -1,97 +1,46 @@
-From: Josh Wu <josh.wu@atmel.com>
-Subject: [PATCH 1/2] power: reset: at91: add sama5d3 reset function
-Date: Thu, 9 Jul 2015 18:15:46 +0800
-Message-ID: <1436436947-11210-1-git-send-email-josh.wu@atmel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 0/4] cpufreq: use generic cpufreq drivers for
+ Exynos5250 platform
+Date: Thu, 9 Jul 2015 15:52:54 +0530
+Message-ID: <20150709102254.GA5627@linux>
+References: <1435756238-845-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from nasmtp01.atmel.com ([192.199.1.246]:59652 "EHLO
-	DVREDG02.corp.atmel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752666AbbGIKL2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 06:11:28 -0400
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:35501 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751554AbbGIKW7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 06:22:59 -0400
+Received: by pactm7 with SMTP id tm7so148496297pac.2
+        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2015 03:22:59 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1435756238-845-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas Ferre <nicolas.ferre@atmel.com>, linux-arm-kernel@lists.infradead.org
-Cc: Josh Wu <josh.wu@atmel.com>, Guenter Roeck <linux@roeck-us.net>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Ben Dooks <ben.dooks@codethink.co.uk>, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Fabian Frederick <fabf@skynet.be>, linux-pm@vger.kernel.org, Maxime Ripard <maxime.ripard@free-electrons.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-As since sama5d3, to reset the chip, we don't need to shutdown the ddr
-controller.
+On 01-07-15, 15:10, Bartlomiej Zolnierkiewicz wrote:
+> This patch series removes the use of Exynos5250 specific support
+> from cpufreq-exynos driver and enables the use of cpufreq-dt driver
+> for this platform.
+> 
+> This patch series has been tested on Exynos5250 based Arndale board.
+> 
+> Changes since v1 (http://lkml.org/lkml/2015/4/13/611):
+> - rebased on top of next-20150629 branch of linux-next kernel tree
+> - dropped dependency on "[PATCH 0/6] cpufreq: use generic cpufreq
+>   drivers for Exynos4x12 platform" patch series as it needs more
+>   work (Viresh has requested porting of cpufreq-dt's boost mode
+>   support over opp-v2 patches)
+> 
+> Changes since v2 (http://lkml.org/lkml/2015/6/29/361):
+> - put the new cpu nodes in alphabetical order
+> - updated Javier's and Mike's e-mail adresses
+> - removed Cc: tag with stale Sachin's e-mail adress
+> - added Reviewed-by: tag from Krzysztof to patches #3 and #4
 
-So add a new compatible string and new restart function for sama5d3 and
-later chips. As we don't use sama5d3 ddr controller, so remove it as
-well.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Signed-off-by: Josh Wu <josh.wu@atmel.com>
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
----
-
- drivers/power/reset/at91-reset.c | 30 +++++++++++++++++++++---------
- 1 file changed, 21 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
-index 36dc52f..8944b63 100644
---- a/drivers/power/reset/at91-reset.c
-+++ b/drivers/power/reset/at91-reset.c
-@@ -123,6 +123,14 @@ static int at91sam9g45_restart(struct notifier_block *this, unsigned long mode,
- 	return NOTIFY_DONE;
- }
- 
-+static int sama5d3_restart(struct notifier_block *this, unsigned long mode,
-+			void *cmd)
-+{
-+	writel(cpu_to_le32(AT91_RSTC_KEY | AT91_RSTC_PERRST | AT91_RSTC_PROCRST),
-+				at91_rstc_base);
-+	return NOTIFY_DONE;
-+}
-+
- static void __init at91_reset_status(struct platform_device *pdev)
- {
- 	u32 reg = readl(at91_rstc_base + AT91_RSTC_SR);
-@@ -155,13 +163,13 @@ static void __init at91_reset_status(struct platform_device *pdev)
- static const struct of_device_id at91_ramc_of_match[] = {
- 	{ .compatible = "atmel,at91sam9260-sdramc", },
- 	{ .compatible = "atmel,at91sam9g45-ddramc", },
--	{ .compatible = "atmel,sama5d3-ddramc", },
- 	{ /* sentinel */ }
- };
- 
- static const struct of_device_id at91_reset_of_match[] = {
- 	{ .compatible = "atmel,at91sam9260-rstc", .data = at91sam9260_restart },
- 	{ .compatible = "atmel,at91sam9g45-rstc", .data = at91sam9g45_restart },
-+	{ .compatible = "atmel,sama5d3-rstc", .data = sama5d3_restart },
- 	{ /* sentinel */ }
- };
- 
-@@ -181,17 +189,21 @@ static int at91_reset_of_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
- 
--	for_each_matching_node(np, at91_ramc_of_match) {
--		at91_ramc_base[idx] = of_iomap(np, 0);
--		if (!at91_ramc_base[idx]) {
--			dev_err(&pdev->dev, "Could not map ram controller address\n");
--			return -ENODEV;
-+	match = of_match_node(at91_reset_of_match, pdev->dev.of_node);
-+	at91_restart_nb.notifier_call = match->data;
-+
-+	if (match->data != sama5d3_restart) {
-+		/* we need to shutdown the ddr controller, so get ramc base */
-+		for_each_matching_node(np, at91_ramc_of_match) {
-+			at91_ramc_base[idx] = of_iomap(np, 0);
-+			if (!at91_ramc_base[idx]) {
-+				dev_err(&pdev->dev, "Could not map ram controller address\n");
-+				return -ENODEV;
-+			}
-+			idx++;
- 		}
--		idx++;
- 	}
- 
--	match = of_match_node(at91_reset_of_match, pdev->dev.of_node);
--	at91_restart_nb.notifier_call = match->data;
- 	return register_restart_handler(&at91_restart_nb);
- }
- 
 -- 
-1.9.1
-
+viresh
