@@ -1,19 +1,19 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFCv5 PATCH 39/46] sched/cpufreq_sched: use static key for cpu
- frequency selection
-Date: Fri, 10 Jul 2015 10:50:12 +0100
-Message-ID: <559F9554.1080400@arm.com>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com> <1436293469-25707-40-git-send-email-morten.rasmussen@arm.com> <20150708151956.9112.52403@quantum>
+Subject: Re: [RFCv5 PATCH 44/46] sched/fair: jump to max OPP when crossing
+ UP threshold
+Date: Fri, 10 Jul 2015 11:17:52 +0100
+Message-ID: <559F9BD0.2090303@arm.com>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com> <1436293469-25707-45-git-send-email-morten.rasmussen@arm.com> <20150708164744.9112.6023@quantum>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eu-smtp-delivery-143.mimecast.com ([207.82.80.143]:62042 "EHLO
+Received: from eu-smtp-delivery-143.mimecast.com ([146.101.78.143]:45179 "EHLO
 	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752771AbbGJJuA convert rfc822-to-8bit
+	by vger.kernel.org with ESMTP id S1753380AbbGJKRl convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 10 Jul 2015 05:50:00 -0400
-In-Reply-To: <20150708151956.9112.52403@quantum>
+	Fri, 10 Jul 2015 06:17:41 -0400
+In-Reply-To: <20150708164744.9112.6023@quantum>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Michael Turquette <mturquette@baylibre.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>
@@ -21,78 +21,82 @@ Cc: "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@l
 
 Hi Mike,
 
-On 08/07/15 16:19, Michael Turquette wrote:
-> Quoting Morten Rasmussen (2015-07-07 11:24:22)
+On 08/07/15 17:47, Michael Turquette wrote:
+> Quoting Morten Rasmussen (2015-07-07 11:24:27)
 >> From: Juri Lelli <juri.lelli@arm.com>
 >>
->> Introduce a static key to only affect scheduler hot paths when sched
->> governor is enabled.
+>> Since the true utilization of a long running task is not detectable while
+>> it is running and might be bigger than the current cpu capacity, create the
+>> maximum cpu capacity head room by requesting the maximum cpu capacity once
+>> the cpu usage plus the capacity margin exceeds the current capacity. This
+>> is also done to try to harm the performance of a task the least.
 >>
 >> cc: Ingo Molnar <mingo@redhat.com>
 >> cc: Peter Zijlstra <peterz@infradead.org>
 >>
 >> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 >> ---
->>  kernel/sched/cpufreq_sched.c | 14 ++++++++++++++
->>  kernel/sched/fair.c          |  1 +
->>  kernel/sched/sched.h         |  6 ++++++
->>  3 files changed, 21 insertions(+)
+>>  kernel/sched/fair.c | 19 +++++++++++++++++++
+>>  1 file changed, 19 insertions(+)
 >>
->> diff --git a/kernel/sched/cpufreq_sched.c b/kernel/sched/cpufreq_sched.c
->> index 5020f24..2968f3a 100644
->> --- a/kernel/sched/cpufreq_sched.c
->> +++ b/kernel/sched/cpufreq_sched.c
->> @@ -203,6 +203,18 @@ void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
->>         return;
->>  }
+>> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+>> index 323331f..c2d6de4 100644
+>> --- a/kernel/sched/fair.c
+>> +++ b/kernel/sched/fair.c
+>> @@ -8586,6 +8586,25 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
 >>  
->> +static inline void set_sched_energy_freq(void)
->> +{
->> +       if (!sched_energy_freq())
->> +               static_key_slow_inc(&__sched_energy_freq);
->> +}
+>>         if (!rq->rd->overutilized && cpu_overutilized(task_cpu(curr)))
+>>                 rq->rd->overutilized = true;
 >> +
->> +static inline void clear_sched_energy_freq(void)
->> +{
->> +       if (sched_energy_freq())
->> +               static_key_slow_dec(&__sched_energy_freq);
->> +}
+>> +       /*
+>> +        * To make free room for a task that is building up its "real"
+>> +        * utilization and to harm its performance the least, request a
+>> +        * jump to max OPP as soon as get_cpu_usage() crosses the UP
+>> +        * threshold. The UP threshold is built relative to the current
+>> +        * capacity (OPP), by using same margin used to tell if a cpu
+>> +        * is overutilized (capacity_margin).
+>> +        */
+>> +       if (sched_energy_freq()) {
+>> +               int cpu = cpu_of(rq);
+>> +               unsigned long capacity_orig = capacity_orig_of(cpu);
+>> +               unsigned long capacity_curr = capacity_curr_of(cpu);
 >> +
->>  static int cpufreq_sched_start(struct cpufreq_policy *policy)
->>  {
->>         struct gov_data *gd;
->> @@ -243,6 +255,7 @@ static int cpufreq_sched_start(struct cpufreq_policy *policy)
->>  
->>         policy->governor_data = gd;
->>         gd->policy = policy;
->> +       set_sched_energy_freq();
->>         return 0;
->>  
->>  err:
->> @@ -254,6 +267,7 @@ static int cpufreq_sched_stop(struct cpufreq_policy *policy)
->>  {
->>         struct gov_data *gd = policy->governor_data;
->>  
->> +       clear_sched_energy_freq();
+>> +               if (capacity_curr < capacity_orig &&
+>> +                   (capacity_curr * SCHED_LOAD_SCALE) <
+>> +                   (get_cpu_usage(cpu) * capacity_margin))
+>> +                       cpufreq_sched_set_cap(cpu, capacity_orig);
 > 
-> <paranoia>
+> I'm sure that at some point the Product People are going to want to tune
+> the capacity value that is requested. Hard-coding the max
+> capacity/frequency in is a reasonable start, but at some point it would
+> be nice to fetch an intermediate capacity defined by the cpufreq driver
+> for this particular cpu. We have already seen that a lot in Android
+> devices using the interactive governor and it could be done from
+> cpufreq_sched_start().
 > 
-> These controls are exposed to userspace via cpufreq sysfs knobs. Should
-> we use a struct static_key_deferred and static_key_slow_dec_deferred()
-> instead? This helps avoid a possible attack vector for slowing down the
-> system.
-> 
-> </paranoia>
-> 
-> I don't really know what a sane default rate limit would be in that case
-> though.
 
-I guess we could go with HZ, as it seems to be the common default.
+Yeah, right, this bit is subject to change. The thing you are proposing
+is one possible way to please Product People. However, we are going to
+experiment with a couple of alternatives. The point is that we might
+don't want to start exposing tuning knobs from the beginning. I'm
+saying this because, IMHO, we should try hard to reduce the number of
+tuning knobs to a minimum, so that we don't end up with what other
+governors have. The whole thing should "just work" on most
+configurations, ideally. :)
 
-> Otherwise feel free to add:
-> 
-> Reviewed-by: Michael Turquette <mturquette@baylibre.com>
-> 
+So, our current thoughts are around:
+
+ - try to derive this "jump to" point by looking at the energy
+   model; if we can spot an OPP that is particularly energy
+   efficient and it also gives enough computing capacity, maybe
+   it is the right place to settle for a bit before going to max;
+   isn't this what you would tune the system to do anyway?
+
+ - we have a prototype (that we should release as an RFC somewhat
+   soon) infrastructure to let users tune both scheduling decisions
+   and OPP selection; this "jump to" point might be related in
+   some way to the tuning infrastructure; I'd say that we could
+   wait for that RFC to happen and we continue this discussion :)
 
 Thanks,
 
@@ -101,45 +105,16 @@ Thanks,
 > Regards,
 > Mike
 > 
->>         if (cpufreq_driver_might_sleep()) {
->>                 kthread_stop(gd->task);
->>         }
->> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
->> index f7cb6c9..d395bc9 100644
->> --- a/kernel/sched/fair.c
->> +++ b/kernel/sched/fair.c
->> @@ -4282,6 +4282,7 @@ static inline void hrtick_update(struct rq *rq)
->>  #endif
->>  
->>  static bool cpu_overutilized(int cpu);
->> +struct static_key __sched_energy_freq __read_mostly = STATIC_KEY_INIT_FALSE;
+>> +       }
+>>  }
 >>  
 >>  /*
->>   * The enqueue_task method is called before nr_running is
->> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
->> index 30aa0c4..b5e27d9 100644
->> --- a/kernel/sched/sched.h
->> +++ b/kernel/sched/sched.h
->> @@ -1476,6 +1476,12 @@ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
->>  }
->>  #endif
->>  
->> +extern struct static_key __sched_energy_freq;
->> +static inline bool sched_energy_freq(void)
->> +{
->> +       return static_key_false(&__sched_energy_freq);
->> +}
->> +
->>  #ifdef CONFIG_CPU_FREQ_GOV_SCHED
->>  void cpufreq_sched_set_cap(int cpu, unsigned long util);
->>  #else
 >> -- 
 >> 1.9.1
 >>
 >> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
 >> the body of a message to majordomo@vger.kernel.org
 >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
 > 
 
