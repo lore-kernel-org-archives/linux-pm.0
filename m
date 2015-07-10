@@ -1,79 +1,96 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: New suspicious RCU usage in 4.2.0-rc1 plus patch
-Date: Fri, 10 Jul 2015 01:27:07 +0200
-Message-ID: <49543292.DnkKtR9nKG@vostro.rjw.lan>
-References: <2195797.u9FVj8R87o@vostro.rjw.lan> <20150709043614.GX3717@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: Initialize the governor again while restoring policy
+Date: Fri, 10 Jul 2015 02:05:18 +0200
+Message-ID: <5369372.r4v2a9W8l1@vostro.rjw.lan>
+References: <f428ecb0927075b25cf7e2ea5fb00eab3d254fdd.1436333568.git.viresh.kumar@linaro.org> <3814282.YWYCHNROVv@vostro.rjw.lan> <20150709051024.GJ1805@linux>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64419 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:61270 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750927AbbGIXAi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 19:00:38 -0400
-In-Reply-To: <20150709043614.GX3717@linux.vnet.ibm.com>
+	with SMTP id S1750744AbbGIXit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 19:38:49 -0400
+In-Reply-To: <20150709051024.GJ1805@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: paulmck@linux.vnet.ibm.com
-Cc: Steven Rostedt <srostedt@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Pi-Cheng Chen <pi-cheng.chen@linaro.org>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, open list <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>
 
-On Wednesday, July 08, 2015 09:36:14 PM Paul E. McKenney wrote:
-> On Thu, Jul 09, 2015 at 02:50:25AM +0200, Rafael J. Wysocki wrote:
-> > Hi Paul,
+On Thursday, July 09, 2015 10:40:24 AM Viresh Kumar wrote:
+> On 09-07-15, 02:33, Rafael J. Wysocki wrote:
+> > > We also missed marking policy->governor as NULL while restoring the
+> > > policy. Because of that, we call __cpufreq_governor(CPUFREQ_GOV_LIMITS)
 > > 
-> > Something seems to have changed in RCU in 4.2-rc1, as it is now complaining
-> > about a tracepoint in tick_freeze() like this:
-> > 
-> > [   66.340508] ===============================
-> > [   66.340509] [ INFO: suspicious RCU usage. ]
-> > [   66.340512] 4.2.0-rc1+ #1691 Not tainted
-> > [   66.340513] -------------------------------
-> > [   66.340515] /scratch/rafael/work/linux-pm/include/trace/events/power.h:193 suspicious rcu_dereference_check() usage!
-> > [   66.340517] 
-> > other info that might help us debug this:
-> > 
-> > [   66.340519] 
-> > RCU used illegally from idle CPU!
-> > rcu_scheduler_active = 1, debug_locks = 0
-> > [   66.340520] RCU used illegally from extended quiescent state!
-> > [   66.340522] 1 lock held by swapper/0/0:
-> > [   66.340538]  #0:  (tick_freeze_lock){......}, at: [<ffffffff810dcb39>] tick_freeze+0x19/0x230
-> > [   66.340539] 
-> > stack backtrace:
-> > [   66.340543] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.2.0-rc1+ #1691
-> > [   66.340544] Hardware name: TOSHIBA PORTEGE R500/Portable PC, BIOS Version 1.60 03/04/2008
-> > [   66.340550]  0000000000000001 ffffffff81c03e48 ffffffff817ab99d 0000000000000004
-> > [   66.340555]  ffffffff81c10500 ffffffff81c03e78 ffffffff810a2dd7 0000000000000003
-> > [   66.340560]  0000000000000000 ffffffff81a6b2c7 ffffffffa00b3090 ffffffff81c03ea8
-> > [   66.340561] Call Trace:
-> > [   66.340567]  [<ffffffff817ab99d>] dump_stack+0x4f/0x7b
-> > [   66.340573]  [<ffffffff810a2dd7>] lockdep_rcu_suspicious+0xe7/0x120
-> > [   66.340577]  [<ffffffff810dcca8>] tick_freeze+0x188/0x230
-> > [   66.340582]  [<ffffffff816357a0>] cpuidle_enter_freeze+0x30/0x80
-> > [   66.340586]  [<ffffffff8109a495>] cpu_startup_entry+0x455/0x490
-> > [   66.340591]  [<ffffffff8179e882>] rest_init+0x132/0x140
-> > [   66.340595]  [<ffffffff8179e750>] ? csum_partial_copy_generic+0x170/0x170
-> > [   66.340601]  [<ffffffff81d14049>] start_kernel+0x484/0x491
-> > [   66.340604]  [<ffffffff81d139aa>] ? set_init_arg+0x58/0x58
-> > [   66.340608]  [<ffffffff81d135ad>] x86_64_start_reservations+0x2a/0x2c
-> > [   66.340611]  [<ffffffff81d13696>] x86_64_start_kernel+0xe7/0xeb
-> > 
-> > It didn't complained about it before, AFAICS, but in any case the simplest
-> > way to deal with it seems to be to put tick_freeze() under RCU_NONIDLE()
-> > like in the patch below.
+> > How exactly does that happen?
 > 
-> The above warning won't show up unless you have lockdep enabled, so
-> maybe that is what changed?  (Recent RCU changes could expose additional
-> uses of RCU from offline CPUs, but shouldn't be any change from idle
-> CPUs.  Famous last words!)
+> Should have mentioned that in detail, sorry for being lazy. Hopefully
+> this will look better:
+
+OK, applied (with some minor changelog fixup), thanks!
+
+
+> ---------------------------8<---------------------------
 > 
-> > I wonder what you think about it?
+> Message-Id: <5f17361741c009a7f0d8488f7f94bab80d9317fd.1436418101.git.viresh.kumar@linaro.org>
+> From: Viresh Kumar <viresh.kumar@linaro.org>
+> Date: Wed, 8 Jul 2015 10:45:53 +0530
+> Subject: [PATCH V2] cpufreq: Initialize the governor again while restoring policy
 > 
-> Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> When all CPUs of a policy are hot-unplugged, we EXIT the governor but
+> don't mark policy->governor as NULL. This was done in order to keep last
+> used governor's information intact in sysfs, while the CPUs are offline.
+> 
+> But we also marking policy->governor as NULL while restoring the policy.
+> 
+> Because policy->governor still points to the last governor while policy
+> is restored, following sequence of event happens:
+> - cpufreq_init_policy() called while restoring policy
+> - find_governor() matches last_governor string for present governors and
+>   returns last used governor's pointer, say ondemand. policy->governor
+>   already has the same address, unless the governor was removed in
+>   between.
+> - cpufreq_set_policy() is called with both old/new policies governor set
+>   as ondemand.
+> - Because governors matched, we skip governor initialization and return
+>   after calling __cpufreq_governor(CPUFREQ_GOV_LIMITS).
 
-OK, thanks!
+But this sounds fragile in principle.  What's the benefit from skipping the
+governor initialization in that case?
 
-I'm applying the patch, then.
 
-Rafael
+>   Because the
+>   governor wasn't initialized for this policy, it returned -EBUSY.
+> - cpufreq_init_policy() exits the policy on this error, but doesn't
+>   destroy it properly (should be fixed separately).
+> - And so we enter a scenario where the policy isn't completely
+>   initialized but used.
+> 
+> Fix this by setting policy->governor to NULL while restoring the policy.
+> 
+> Reported-and-tested-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+> Reported-and-tested-by: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+> Tested-by: Steven Rostedt <rostedt@goodmis.org>
+> Fixes: 18bf3a124ef8 ("cpufreq: Mark policy->governor = NULL for inactive policies")
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> V2: Detailed changelog
+> 
+>  drivers/cpufreq/cpufreq.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index b612411655f9..2c22e3902e72 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1132,6 +1132,7 @@ static struct cpufreq_policy *cpufreq_policy_restore(unsigned int cpu)
+>  
+>  		down_write(&policy->rwsem);
+>  		policy->cpu = cpu;
+> +		policy->governor = NULL;
+>  		up_write(&policy->rwsem);
+>  	}
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
