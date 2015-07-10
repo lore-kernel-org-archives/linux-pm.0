@@ -1,63 +1,68 @@
-From: Josh Wu <josh.wu@atmel.com>
-Subject: Re: [PATCH 1/2] power: reset: at91: add sama5d3 reset function
-Date: Fri, 10 Jul 2015 11:52:39 +0800
-Message-ID: <559F4187.8090803@atmel.com>
-References: <1436436947-11210-1-git-send-email-josh.wu@atmel.com> <20150709173747.GA32448@roeck-us.net> <559F2719.3060708@atmel.com> <20150710031438.GA27089@roeck-us.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH] power_supply: Drop owner assignment from i2c_driver
+Date: Fri, 10 Jul 2015 14:39:22 +0900
+Message-ID: <1436506762-29166-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eusmtp01.atmel.com ([212.144.249.243]:37022 "EHLO
-	eusmtp01.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751473AbbGJDwq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 23:52:46 -0400
-In-Reply-To: <20150710031438.GA27089@roeck-us.net>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:60390 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751990AbbGJFjX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jul 2015 01:39:23 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, linux-arm-kernel@lists.infradead.org, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Ben Dooks <ben.dooks@codethink.co.uk>, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Fabian Frederick <fabf@skynet.be>, linux-pm@vger.kernel.org, Maxime Ripard <maxime.ripard@free-electrons.com>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-Hi, Guenter
+i2c_driver does not need to set an owner because i2c_register_driver()
+will set it.
 
-On 7/10/2015 11:14 AM, Guenter Roeck wrote:
-> On Fri, Jul 10, 2015 at 09:59:53AM +0800, Josh Wu wrote:
->> Hi, Guenter
->>
->> On 7/10/2015 1:37 AM, Guenter Roeck wrote:
->>> On Thu, Jul 09, 2015 at 06:15:46PM +0800, Josh Wu wrote:
->>>> As since sama5d3, to reset the chip, we don't need to shutdown the ddr
->>>> controller.
->>>>
->>>> So add a new compatible string and new restart function for sama5d3 and
->>>> later chips. As we don't use sama5d3 ddr controller, so remove it as
->>>> well.
->>>>
->>> That sounds like it should be two separate patches, or am I missing something ?
->> I think using one patch makes more sense. Maybe the commit log is not clear
->> enough. How about put it this way:
->>
->> This patch introduces a new compatible string: "atmel,sama5d3-rstc" for the
->> reset driver of sama5d3 and later chips.
->> As in sama5d3 or later chips, we don't have to shutdown the DDR controller
->> before reset. Shutdown the DDR controller before reset is a workaround to
->> avoid DDR signal driving the bus, but since sama5d3 and later chips there is
->> no such a conflict.
->> That means:
->>    1. the sama5d3 reset function only need to write the rstc register and
->> return.
->>    2. for sama5d3, we can remove the code related with DDR controller as we
->> don't use it at all.
->>
-> Sorry, I don't get it. Doesn't that mean there are two distinct logical
-> changes, which would ask for two separate patches ?
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-The rewritten reset function for sama5d3 has no need to access the ddr 
-controller, so this patch rewrite the reset function and remove ddr 
-access for sama5d3.
-Those two changes are related and so make it as one patch is reasonable.
+---
 
-Best Regards,
-Josh Wu
->
-> Guenter
+The coccinelle script which generated the patch was sent here:
+http://www.spinics.net/lists/kernel/msg2029903.html
+---
+ drivers/power/bq24190_charger.c | 1 -
+ drivers/power/bq24735-charger.c | 1 -
+ drivers/power/pm2301_charger.c  | 1 -
+ 3 files changed, 3 deletions(-)
+
+diff --git a/drivers/power/bq24190_charger.c b/drivers/power/bq24190_charger.c
+index 052db78c3736..703ebecaf38b 100644
+--- a/drivers/power/bq24190_charger.c
++++ b/drivers/power/bq24190_charger.c
+@@ -1534,7 +1534,6 @@ static struct i2c_driver bq24190_driver = {
+ 	.id_table	= bq24190_i2c_ids,
+ 	.driver = {
+ 		.name		= "bq24190-charger",
+-		.owner		= THIS_MODULE,
+ 		.pm		= &bq24190_pm_ops,
+ 		.of_match_table	= of_match_ptr(bq24190_of_match),
+ 	},
+diff --git a/drivers/power/bq24735-charger.c b/drivers/power/bq24735-charger.c
+index 961a18930027..b0174379713c 100644
+--- a/drivers/power/bq24735-charger.c
++++ b/drivers/power/bq24735-charger.c
+@@ -409,7 +409,6 @@ MODULE_DEVICE_TABLE(of, bq24735_match_ids);
+ static struct i2c_driver bq24735_charger_driver = {
+ 	.driver = {
+ 		.name = "bq24735-charger",
+-		.owner = THIS_MODULE,
+ 		.of_match_table = bq24735_match_ids,
+ 	},
+ 	.probe = bq24735_charger_probe,
+diff --git a/drivers/power/pm2301_charger.c b/drivers/power/pm2301_charger.c
+index cc0893ffbf7e..3a45cc0c4dce 100644
+--- a/drivers/power/pm2301_charger.c
++++ b/drivers/power/pm2301_charger.c
+@@ -1244,7 +1244,6 @@ static struct i2c_driver pm2xxx_charger_driver = {
+ 	.remove = pm2xxx_wall_charger_remove,
+ 	.driver = {
+ 		.name = "pm2xxx-wall_charger",
+-		.owner = THIS_MODULE,
+ 		.pm = PM2XXX_PM_OPS,
+ 	},
+ 	.id_table = pm2xxx_id,
+-- 
+1.9.1
 
