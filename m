@@ -1,53 +1,58 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [RFCv5 PATCH 03/46] arm: vexpress: Add CPU clock-frequencies
- to TC2 device-tree
-Date: Fri, 10 Jul 2015 14:35:33 +0100
-Message-ID: <559FCA25.6040801@arm.com>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>	 <1436293469-25707-4-git-send-email-morten.rasmussen@arm.com> <1436358975.2844.30.camel@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eu-smtp-delivery-143.mimecast.com ([146.101.78.143]:7940 "EHLO
-	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753836AbbGJNfh convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 10 Jul 2015 09:35:37 -0400
-In-Reply-To: <1436358975.2844.30.camel@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Subject: [PATCH] MIPS: Loongson 2F: fix broken build due incorrect includes
+Date: Fri, 10 Jul 2015 17:09:37 +0300
+Message-ID: <1436537377-7138-1-git-send-email-aaro.koskinen@iki.fi>
+Return-path: <linux-mips-bounce@linux-mips.org>
+Sender: linux-mips-bounce@linux-mips.org
+Errors-to: linux-mips-bounce@linux-mips.org
+List-help: <mailto:ecartis@linux-mips.org?Subject=help>
+List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
+List-software: Ecartis version 1.0.0
+List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
+List-owner: <mailto:ralf@linux-mips.org>
+List-post: <mailto:linux-mips@linux-mips.org>
+List-archive: <http://www.linux-mips.org/archives/linux-mips/>
+To: Ralf Baechle <ralf@linux-mips.org>, Huacai Chen <chenhc@lemote.com>, linux-mips@linux-mips.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Aaro Koskinen <aaro.koskinen@iki.fi>
 List-Id: linux-pm@vger.kernel.org
-To: "Jon Medhurst (Tixy)" <tixy@linaro.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>
-Cc: "peterz@infradead.org" <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Juri Lelli <Juri.Lelli@arm.com>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>
 
-Hi Tixy,
+Commit 30ad29bb4888 ("MIPS: Loongson: Naming style cleanup and rework")
+renamed mach-loongson to mach-loongson64. Some files are including
+loongson.h using the asm/mach-loongson directory name, so the build
+got broken. Fix by removing the directory name; the mach directory
+is automatically in the include path.
 
-On 08/07/15 13:36, Jon Medhurst (Tixy) wrote:
-> On Tue, 2015-07-07 at 19:23 +0100, Morten Rasmussen wrote:
->> From: Dietmar Eggemann <dietmar.eggemann@arm.com>
->>
->> To enable the parsing of clock frequency and cpu efficiency values
->> inside parse_dt_topology [arch/arm/kernel/topology.c] to scale the
->> relative capacity of the cpus, this property has to be provided within
->> the cpu nodes of the dts file.
->>
->> The patch is a copy of commit 8f15973ef8c3 ("ARM: vexpress: Add CPU
->> clock-frequencies to TC2 device-tree") taken from Linaro Stable Kernel
->> (LSK) massaged into mainline.
-> 
-> Not sure you really need to mention commit hashes from outside of the
-> mainline Linux tree and the values I added to that commit were probably
-> copied from some patch originating from ARM or elsewhere anyway. So the
-> second paragraph is this commit message is probably superfluous. But
-> this is nitpicking I guess :-)
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+---
+ arch/mips/loongson64/lemote-2f/clock.c | 2 +-
+ drivers/cpufreq/loongson2_cpufreq.c    | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Agreed. In the meantime we agreed that we don't have to use the
-clock-frequency property for eas. Instead, we can derive the cpu
-capacity values directly from the energy model. This will free us from
-the dependency towards this dtb property and the cpu_efficiency for the
-arm arch.
-This patch won't be part of the next posting any more.
-
--- Dietmar
-
-> 
-
+diff --git a/arch/mips/loongson64/lemote-2f/clock.c b/arch/mips/loongson64/lemote-2f/clock.c
+index 462e34d..d241434 100644
+--- a/arch/mips/loongson64/lemote-2f/clock.c
++++ b/arch/mips/loongson64/lemote-2f/clock.c
+@@ -15,7 +15,7 @@
+ #include <linux/spinlock.h>
+ 
+ #include <asm/clock.h>
+-#include <asm/mach-loongson/loongson.h>
++#include <loongson.h>
+ 
+ static LIST_HEAD(clock_list);
+ static DEFINE_SPINLOCK(clock_lock);
+diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
+index fc897ba..2e2738b 100644
+--- a/drivers/cpufreq/loongson2_cpufreq.c
++++ b/drivers/cpufreq/loongson2_cpufreq.c
+@@ -20,7 +20,7 @@
+ #include <asm/clock.h>
+ #include <asm/idle.h>
+ 
+-#include <asm/mach-loongson/loongson.h>
++#include <loongson.h>
+ 
+ static uint nowait;
+ 
+-- 
+2.4.0
