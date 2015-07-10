@@ -1,83 +1,82 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
-Subject: Re: [PATCH v2 0/7] cpufreq: use generic cpufreq drivers for
- Exynos4x12 platform
-Date: Thu, 9 Jul 2015 17:07:04 -0700
-Message-ID: <559F0CA8.1060906@osg.samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2] acpi-cpufreq: replace per_cpu with driver_data of policy
+Date: Fri, 10 Jul 2015 03:16:49 +0200
+Message-ID: <57468987.NPFzCAAv5k@vostro.rjw.lan>
+References: <559BC96E.8020804@intel.com> <12074796.mAD950pclu@vostro.rjw.lan> <559DCE3E.8050105@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.or>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:55910 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752166AbbGJAuU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 20:50:20 -0400
+In-Reply-To: <559DCE3E.8050105@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pan Xinhui <xinhuix.pan@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
 
-Hello Bartlomiej,
+On Thursday, July 09, 2015 09:28:30 AM Pan Xinhui wrote:
+> hi, Rafael
+> 	thanks for your kind reply. :)
+>=20
+> On 2015=E5=B9=B407=E6=9C=8809=E6=97=A5 08:20, Rafael J. Wysocki wrote=
+:
+> > On Tuesday, July 07, 2015 08:04:43 PM Viresh Kumar wrote:
+> >> On 07-07-15, 20:43, Pan Xinhui wrote:
+> >>>
+> >>> Drivers can store their internal per-policy information in
+> >>> policy->driver_data, lets use it.
+> >>>
+> >>> we have benefits after this replacing.
+> >>> 1) memory saving.
+> >>> 2) policy is shared by several cpus, per_cpu seems not correct. u=
+sing
+> >>> *driver_data* is more reasonable.
+> >>> 3) fix a memory leak in acpi_cpufreq_cpu_exit. as policy->cpu mig=
+ht
+> >>> change during cpu hotplug. So sometimes we cant't free *data*, us=
+e
+> >>> *driver_data* to fix it.
+> >>> 4) fix a zero return value of get_cur_freq_on_cpu. Only per_cpu o=
+f
+> >>> policy->cpu is set to *data*, if we try to get cpufreq on other c=
+pus, we
+> >>> get zero instead of correct values. Use *driver_data* to fix it.
+> >>>
+> >>> Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
+> >>> ---
+> >>> Changes from V1:
+> >>> 	codes style fix, comments update
+> >>> 	move cpufreq_cpu_put(policy) after we get *driver_data*
+> >>> ---
+> >>>  drivers/cpufreq/acpi-cpufreq.c | 40 ++++++++++++++++++++++------=
+------------
+> >>>  1 file changed, 22 insertions(+), 18 deletions(-)
+> >>
+> >> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >=20
+> > OK
+> >=20
+> > Does it fix any recent regressions or is it just an old bug?
+> >=20
+>=20
+> This patch achieve old bug fix and codes improvements. In past days, =
+policy has no field *driver_data*, So
+> acpi-cpufreq driver has to use per_cpu to store some extra informatio=
+n. But it did not take good care of every scenarios.
+> Now cpufreq core makes awesome effort to store more per-policy inform=
+ation in policy. We can make use of this feature. So I
+> cook this patch. :)
 
-On Thu, Jul 9, 2015 at 8:43 AM, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com> wrote:
-> Hi,
->
-> This patch series removes the use of Exynos4x12 specific support
-> from cpufreq-exynos driver and enables the use of cpufreq-dt driver
-> for this platform.
->
-> In order to preserve support for Exynos4x12 'boost' mode cpufreq-dt
-> driver is made aware of cpufreq 'boost' mode infrastructure.  Once
-> it is done (+ turbo modes handling is fixed, please see below for
-> details) the driver starts to use turbo mode frequencies (defined
-> using opp-v2 bindings) as 'boost' mode frequecies.
->
-> Patches #1-2 are needed to fix handling of turbo modes in cpufreq
-> core and without them cpufreq-dt treats turbo modes as normal modes
-> (IOW they are used by default as normal modes even if they are defined
-> in DTS file as turbo modes).  Ideally these patches should be added
-> into "[PATCH 00/10] OPP: Add code to support operating-points-v2
-> bindings" patch series before patch #10 ("[PATCH 10/10] cpufreq-dt:
-> Add support for operating-points-v2 bindings").
->
-> This patch series has been tested on Exynos4412 based Odroid-U3 and
-> Trats2 boards.
->
-> Depends on:
-> - next-20150629 branch of linux-next kernel tree
-> - "[PATCH v3 0/4] cpufreq: use generic cpufreq drivers for Exynos5250
->   platform" (http://lkml.org/lkml/2015/7/1/311)
-> - "PATCH 00/10] OPP: Add code to support operating-points-v2 bindings"
->   (http://www.spinics.net/lists/arm-kernel/msg425517.html)
->
-> Changes since v1
-> (http://thread.gmane.org/gmane.linux.kernel.samsung-soc/44361):
-> - rebased on top of next-20150629 branch of linux-next kernel tree
-> - rebased on top of Exynos5250 cpufreq-dt support patch series
-> - fixed if-statement in exynos4_clk_init() (noticed by Tobias Jakobi)
-> - ported over opp-v2 bindings (requested by Viresh Kumar)
->
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
->
->
-> Bartlomiej Zolnierkiewicz (7):
->   opp: add dev_pm_opp_get_turbo_mode_setting() helper
->   cpufreq: opp: fix handling of turbo modes
->   cpufreq-dt: add turbo modes support
->   clk: samsung: exynos4x12: add cpu clock configuration data and
->     instantiate cpu clock
->   ARM: dts: Exynos4x12: add CPU OPP and regulator supply property
->   ARM: Exynos: switch to using generic cpufreq driver for Exynos4x12
->   cpufreq: exynos: remove Exynos4x12 specific cpufreq driver support
->
+OK, patch applied, thanks!
 
-I don't have access to an Exynos4x12 board to test but I've reviewed
-the patches and they look good to me. So for the complete series:
+> I am preparing two patches for other two issues in acpi-cpufreq drive=
+r based on this patch.
+> I will fix them step by step. :)
 
-Reviewed-by: Javier Martinez Canillas <javier@osg.samsung.com>
+Thanks for doing that!
 
-Best regards,
--- 
-Javier Martinez Canillas
-Sr. Linux Kernel Developer
-Open Source Group
-Samsung Research America
+Rafael
+
