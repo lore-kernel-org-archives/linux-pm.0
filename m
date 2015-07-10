@@ -1,82 +1,139 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2] acpi-cpufreq: replace per_cpu with driver_data of policy
-Date: Fri, 10 Jul 2015 03:16:49 +0200
-Message-ID: <57468987.NPFzCAAv5k@vostro.rjw.lan>
-References: <559BC96E.8020804@intel.com> <12074796.mAD950pclu@vostro.rjw.lan> <559DCE3E.8050105@intel.com>
+Subject: Re: [PATCH V4] PM / Domains: Remove intermediate states from the power off sequence
+Date: Fri, 10 Jul 2015 03:26:57 +0200
+Message-ID: <1894506.4i1rX8XdVk@vostro.rjw.lan>
+References: <1434633473-12908-1-git-send-email-ulf.hansson@linaro.org> <7htwtee84d.fsf@deeprootsystems.com> <20150709140532.GA2049@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55910 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:54934 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752166AbbGJAuU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 20:50:20 -0400
-In-Reply-To: <559DCE3E.8050105@intel.com>
+	with SMTP id S1751144AbbGJBA2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 21:00:28 -0400
+In-Reply-To: <20150709140532.GA2049@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pan Xinhui <xinhuix.pan@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <linux@arm.linux.org.uk>, linux-arm-kernel@lists.infradead.org
 
-On Thursday, July 09, 2015 09:28:30 AM Pan Xinhui wrote:
-> hi, Rafael
-> 	thanks for your kind reply. :)
->=20
-> On 2015=E5=B9=B407=E6=9C=8809=E6=97=A5 08:20, Rafael J. Wysocki wrote=
-:
-> > On Tuesday, July 07, 2015 08:04:43 PM Viresh Kumar wrote:
-> >> On 07-07-15, 20:43, Pan Xinhui wrote:
-> >>>
-> >>> Drivers can store their internal per-policy information in
-> >>> policy->driver_data, lets use it.
-> >>>
-> >>> we have benefits after this replacing.
-> >>> 1) memory saving.
-> >>> 2) policy is shared by several cpus, per_cpu seems not correct. u=
-sing
-> >>> *driver_data* is more reasonable.
-> >>> 3) fix a memory leak in acpi_cpufreq_cpu_exit. as policy->cpu mig=
-ht
-> >>> change during cpu hotplug. So sometimes we cant't free *data*, us=
-e
-> >>> *driver_data* to fix it.
-> >>> 4) fix a zero return value of get_cur_freq_on_cpu. Only per_cpu o=
-f
-> >>> policy->cpu is set to *data*, if we try to get cpufreq on other c=
-pus, we
-> >>> get zero instead of correct values. Use *driver_data* to fix it.
-> >>>
-> >>> Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
-> >>> ---
-> >>> Changes from V1:
-> >>> 	codes style fix, comments update
-> >>> 	move cpufreq_cpu_put(policy) after we get *driver_data*
-> >>> ---
-> >>>  drivers/cpufreq/acpi-cpufreq.c | 40 ++++++++++++++++++++++------=
-------------
-> >>>  1 file changed, 22 insertions(+), 18 deletions(-)
+On Thursday, July 09, 2015 08:05:32 AM Lina Iyer wrote:
+> On Wed, Jul 08 2015 at 13:56 -0600, Kevin Hilman wrote:
+> >Ulf Hansson <ulf.hansson@linaro.org> writes:
+> >
+> >> Genpd's ->runtime_suspend() (assigned to pm_genpd_runtime_suspend())
+> >> doesn't immediately walk the hierarchy of ->runtime_suspend() callbacks.
+> >> Instead, pm_genpd_runtime_suspend() calls pm_genpd_poweroff() which
+> >> postpones that until *all* the devices in the genpd are runtime suspended.
 > >>
-> >> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >=20
-> > OK
-> >=20
-> > Does it fix any recent regressions or is it just an old bug?
-> >=20
->=20
-> This patch achieve old bug fix and codes improvements. In past days, =
-policy has no field *driver_data*, So
-> acpi-cpufreq driver has to use per_cpu to store some extra informatio=
-n. But it did not take good care of every scenarios.
-> Now cpufreq core makes awesome effort to store more per-policy inform=
-ation in policy. We can make use of this feature. So I
-> cook this patch. :)
+> >> When pm_genpd_poweroff() discovers that the last device in the genpd is
+> >> about to be runtime suspended, it calls __pm_genpd_save_device() for *all*
+> >> the devices in the genpd sequentially. Furthermore,
+> >> __pm_genpd_save_device() invokes the ->start() callback, walks the
+> >> hierarchy of the ->runtime_suspend() callbacks and invokes the ->stop()
+> >> callback. This causes a "thundering herd" problem.
+> >>
+> >> Let's address this issue by having pm_genpd_runtime_suspend() immediately
+> >> walk the hierarchy of the ->runtime_suspend() callbacks, instead of
+> >> postponing that to the power off sequence via pm_genpd_poweroff(). If the
+> >> selected ->runtime_suspend() callback doesn't return an error code, call
+> >> pm_genpd_poweroff() to see if it's feasible to also power off the PM
+> >> domain.
+> >>
+> >> Adopting this change enables us to simplify parts of the code in genpd,
+> >> for example the locking mechanism. Additionally, it gives some positive
+> >> side effects, as described below.
+> >>
+> >> i)
+> >> One device's ->runtime_resume() latency is no longer affected by other
+> >> devices' latencies in a genpd.
+> >>
+> >> The complexity genpd has to support the option to abort the power off
+> >> sequence suffers from latency issues. More precisely, a device that is
+> >> requested to be runtime resumed, may end up waiting for
+> >> __pm_genpd_save_device() to complete its operations for *another* device.
+> >> That's because pm_genpd_poweroff() can't confirm an abort request while it
+> >> waits for __pm_genpd_save_device() to return.
+> >>
+> >> As this patch removes the intermediate states in pm_genpd_poweroff() while
+> >> powering off the PM domain, we no longer need the ability to abort that
+> >> sequence.
+> >>
+> >> ii)
+> >> Make pm_runtime[_status]_suspended() reliable when used with genpd.
+> >>
+> >> Until the last device in a genpd becomes idle, pm_genpd_runtime_suspend()
+> >> will return 0 without actually walking the hierarchy of the
+> >> ->runtime_suspend() callbacks. However, by returning 0 the runtime PM core
+> >> considers the device as runtime_suspended, so
+> >> pm_runtime[_status]_suspended() will return true, even though the device
+> >> isn't (yet) runtime suspended.
+> >>
+> >> After this patch, since pm_genpd_runtime_suspend() immediately walks the
+> >> hierarchy of the ->runtime_suspend() callbacks,
+> >> pm_runtime[_status]_suspended() will accurately reflect the status of the
+> >> device.
+> >>
+> >> iii)
+> >> Enable fine-grained PM through runtime PM callbacks in drivers/subsystems.
+> >>
+> >> There are currently cases were drivers/subsystems implements runtime PM
+> >> callbacks to deploy fine-grained PM (e.g. gate clocks, move pinctrl to
+> >> power-save state, etc.). While using the genpd, pm_genpd_runtime_suspend()
+> >> postpones invoking these callbacks until *all* the devices in the genpd
+> >> are runtime suspended. In essence, one runtime resumed device prevents
+> >> fine-grained PM for other devices within the same genpd.
+> >>
+> >> After this patch, since pm_genpd_runtime_suspend() immediately walks the
+> >> hierarchy of the ->runtime_suspend() callbacks, fine-grained PM is enabled
+> >> throughout all the levels of runtime PM callbacks.
+> >>
+> >> iiii)
+> >> Enable fine-grained PM for IRQ safe devices
+> >>
+> >> Per the definition for an IRQ safe device, its runtime PM callbacks must
+> >> be able to execute in atomic context. In the path while genpd walks the
+> >> hierarchy of the ->runtime_suspend() callbacks for the device, it uses a
+> >> mutex. Therefore, genpd prevents that path to be executed for IRQ safe
+> >> devices.
+> >>
+> >> As this patch changes pm_genpd_runtime_suspend() to immediately walk the
+> >> hierarchy of the ->runtime_suspend() callbacks and without needing to use
+> >> a mutex, fine-grained PM is enabled throughout all the levels of runtime
+> >> PM callbacks for IRQ safe devices.
+> >>
+> >> Unfortunately this patch also comes with a drawback, as described in the
+> >> summary below.
+> >>
+> >> Driver's/subsystem's runtime PM callbacks may be invoked even when the
+> >> genpd hasn't actually powered off the PM domain, potentially introducing
+> >> unnecessary latency.
+> >>
+> >> However, in most cases, saving/restoring register contexts for devices are
+> >> typically fast operations or can be optimized in device specific ways
+> >> (e.g. shadow copies of register contents in memory, device-specific checks
+> >> to see if context has been lost before restoring context, etc.).
+> >>
+> >> Still, in some cases the driver/subsystem may suffer from latency if
+> >> runtime PM is used in a very fine-grained manner (e.g. for each IO request
+> >> or xfer). To prevent that extra overhead, the driver/subsystem may deploy
+> >> the runtime PM autosuspend feature.
+> >>
+> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >
+> >Reviewed-by: Kevin Hilman <khilman@linaro.org>
+> >
+> >I believe Geert and Lina have both tested earlier versions, but would be
+> >nice to see their Tested-by for this one.
+> >
+> 
+> I tested verssion 4. Did not see any issues with genpd suspend/resume.
+> 
+> Tested-by: Lina Iyer <lina.iyer@linaro.org>
 
-OK, patch applied, thanks!
+OK, I'm queing this patch up for 4.3, thanks everybody!
 
-> I am preparing two patches for other two issues in acpi-cpufreq drive=
-r based on this patch.
-> I will fix them step by step. :)
 
-Thanks for doing that!
-
-Rafael
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
