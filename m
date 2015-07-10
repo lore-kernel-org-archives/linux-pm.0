@@ -1,68 +1,42 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH] power_supply: Drop owner assignment from i2c_driver
-Date: Fri, 10 Jul 2015 14:39:22 +0900
-Message-ID: <1436506762-29166-1-git-send-email-k.kozlowski@samsung.com>
+From: Pan Xinhui <xinhuix.pan@intel.com>
+Subject: [PATCH] acpi-cpufreq: Add a miss ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
+Date: Fri, 10 Jul 2015 13:50:11 +0800
+Message-ID: <559F5D13.8050104@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:60390 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751990AbbGJFjX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jul 2015 01:39:23 -0400
+Received: from mga11.intel.com ([192.55.52.93]:58581 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752236AbbGJFwq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 10 Jul 2015 01:52:46 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>, "mnipxh@163.com" <mnipxh@163.com>
 
-i2c_driver does not need to set an owner because i2c_register_driver()
-will set it.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+If CONFIG_X86_ACPI_CPUFREQ_CPB has not been defined, the placeholder for
+cpb is not needed. Add ifdef around it.
 
+Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
 ---
+ drivers/cpufreq/acpi-cpufreq.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-The coccinelle script which generated the patch was sent here:
-http://www.spinics.net/lists/kernel/msg2029903.html
----
- drivers/power/bq24190_charger.c | 1 -
- drivers/power/bq24735-charger.c | 1 -
- drivers/power/pm2301_charger.c  | 1 -
- 3 files changed, 3 deletions(-)
-
-diff --git a/drivers/power/bq24190_charger.c b/drivers/power/bq24190_charger.c
-index 052db78c3736..703ebecaf38b 100644
---- a/drivers/power/bq24190_charger.c
-+++ b/drivers/power/bq24190_charger.c
-@@ -1534,7 +1534,6 @@ static struct i2c_driver bq24190_driver = {
- 	.id_table	= bq24190_i2c_ids,
- 	.driver = {
- 		.name		= "bq24190-charger",
--		.owner		= THIS_MODULE,
- 		.pm		= &bq24190_pm_ops,
- 		.of_match_table	= of_match_ptr(bq24190_of_match),
- 	},
-diff --git a/drivers/power/bq24735-charger.c b/drivers/power/bq24735-charger.c
-index 961a18930027..b0174379713c 100644
---- a/drivers/power/bq24735-charger.c
-+++ b/drivers/power/bq24735-charger.c
-@@ -409,7 +409,6 @@ MODULE_DEVICE_TABLE(of, bq24735_match_ids);
- static struct i2c_driver bq24735_charger_driver = {
- 	.driver = {
- 		.name = "bq24735-charger",
--		.owner = THIS_MODULE,
- 		.of_match_table = bq24735_match_ids,
- 	},
- 	.probe = bq24735_charger_probe,
-diff --git a/drivers/power/pm2301_charger.c b/drivers/power/pm2301_charger.c
-index cc0893ffbf7e..3a45cc0c4dce 100644
---- a/drivers/power/pm2301_charger.c
-+++ b/drivers/power/pm2301_charger.c
-@@ -1244,7 +1244,6 @@ static struct i2c_driver pm2xxx_charger_driver = {
- 	.remove = pm2xxx_wall_charger_remove,
- 	.driver = {
- 		.name = "pm2xxx-wall_charger",
--		.owner = THIS_MODULE,
- 		.pm = PM2XXX_PM_OPS,
- 	},
- 	.id_table = pm2xxx_id,
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index e7fcaa6..314a19e 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -884,7 +884,9 @@ static int acpi_cpufreq_resume(struct cpufreq_policy *policy)
+ static struct freq_attr *acpi_cpufreq_attr[] = {
+ 	&cpufreq_freq_attr_scaling_available_freqs,
+ 	&freqdomain_cpus,
++#ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
+ 	NULL,	/* this is a placeholder for cpb, do not remove */
++#endif
+ 	NULL,
+ };
+ 
 -- 
 1.9.1
-
