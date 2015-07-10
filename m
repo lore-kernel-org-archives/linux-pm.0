@@ -1,54 +1,30 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 1/2] power: reset: at91: add sama5d3 reset function
-Date: Thu, 9 Jul 2015 20:14:38 -0700
-Message-ID: <20150710031438.GA27089@roeck-us.net>
-References: <1436436947-11210-1-git-send-email-josh.wu@atmel.com>
- <20150709173747.GA32448@roeck-us.net>
- <559F2719.3060708@atmel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC] cpufreq: Add ->get_rate() driver callback
+Date: Fri, 10 Jul 2015 09:05:42 +0530
+Message-ID: <CAKohpomhV1+B++8k29f0S7cPUOrFdezEqnNTSjfhj648QhK=9A@mail.gmail.com>
+References: <fb44111fa7a762924661ad48a70985d597229bc4.1436351759.git.viresh.kumar@linaro.org>
+	<1879392.TC0RceaKlH@vostro.rjw.lan>
+	<20150709045902.GI1805@linux>
+	<1709328.yilXR0UZlG@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:59454 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751293AbbGJDOy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 23:14:54 -0400
-Content-Disposition: inline
-In-Reply-To: <559F2719.3060708@atmel.com>
+Received: from mail-vn0-f50.google.com ([209.85.216.50]:43027 "EHLO
+	mail-vn0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751320AbbGJDfn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2015 23:35:43 -0400
+Received: by vnbf1 with SMTP id f1so25527494vnb.10
+        for <linux-pm@vger.kernel.org>; Thu, 09 Jul 2015 20:35:42 -0700 (PDT)
+In-Reply-To: <1709328.yilXR0UZlG@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Josh Wu <josh.wu@atmel.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, linux-arm-kernel@lists.infradead.org, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Ben Dooks <ben.dooks@codethink.co.uk>, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Fabian Frederick <fabf@skynet.be>, linux-pm@vger.kernel.org, Maxime Ripard <maxime.ripard@free-electrons.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On Fri, Jul 10, 2015 at 09:59:53AM +0800, Josh Wu wrote:
-> Hi, Guenter
-> 
-> On 7/10/2015 1:37 AM, Guenter Roeck wrote:
-> >On Thu, Jul 09, 2015 at 06:15:46PM +0800, Josh Wu wrote:
-> >>As since sama5d3, to reset the chip, we don't need to shutdown the ddr
-> >>controller.
-> >>
-> >>So add a new compatible string and new restart function for sama5d3 and
-> >>later chips. As we don't use sama5d3 ddr controller, so remove it as
-> >>well.
-> >>
-> >That sounds like it should be two separate patches, or am I missing something ?
-> 
-> I think using one patch makes more sense. Maybe the commit log is not clear
-> enough. How about put it this way:
-> 
-> This patch introduces a new compatible string: "atmel,sama5d3-rstc" for the
-> reset driver of sama5d3 and later chips.
-> As in sama5d3 or later chips, we don't have to shutdown the DDR controller
-> before reset. Shutdown the DDR controller before reset is a workaround to
-> avoid DDR signal driving the bus, but since sama5d3 and later chips there is
-> no such a conflict.
-> That means:
->   1. the sama5d3 reset function only need to write the rstc register and
-> return.
->   2. for sama5d3, we can remove the code related with DDR controller as we
-> don't use it at all.
-> 
-Sorry, I don't get it. Doesn't that mean there are two distinct logical
-changes, which would ask for two separate patches ?
+On 10 July 2015 at 04:56, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> *You* can do them faily quickly.  Say if all of the outstanding cpufreq
+> patches are queued up for 4.3, then it will be the time to submit more.
+> Otherwise I'll just have an ever growing queue of patches to process
+> which won't speed up things at all.
 
-Guenter
+Ack.
