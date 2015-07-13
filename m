@@ -1,126 +1,76 @@
-From: =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>
-Subject: Re: [PATCH v3 0/9] regulator: Merge max77843 into max77693
-Date: Mon, 13 Jul 2015 13:12:16 +0900
-Message-ID: <CAJKOXPc94465zp2xToXUPFMDeCU9T017F04eqhh39uxyE4xVtA@mail.gmail.com>
-References: <1436353217-1141-1-git-send-email-k.kozlowski.k@gmail.com>
+From: Pan Xinhui <xinhuix.pan@intel.com>
+Subject: Re: [PATCH] acpi-cpufreq: Add a miss ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
+Date: Mon, 13 Jul 2015 14:33:08 +0800
+Message-ID: <55A35BA4.8020800@intel.com>
+References: <559F5D13.8050104@intel.com> <CAJZ5v0jwgtgC+01p8f5a7amPcTGUfps5f2Ph9rtt77=3BEk5Cg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f49.google.com ([209.85.192.49]:33042 "EHLO
-	mail-qg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbbGMEMS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2015 00:12:18 -0400
-In-Reply-To: <1436353217-1141-1-git-send-email-k.kozlowski.k@gmail.com>
+Received: from mga02.intel.com ([134.134.136.20]:58526 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750804AbbGMGfr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 13 Jul 2015 02:35:47 -0400
+In-Reply-To: <CAJZ5v0jwgtgC+01p8f5a7amPcTGUfps5f2Ph9rtt77=3BEk5Cg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>, "mnipxh@163.com" <mnipxh@163.com>
 
-2015-07-08 20:00 GMT+09:00 Krzysztof Kozlowski <k.kozlowski.k@gmail.com>:
-> Dear Mark,
->
->
-> The patchset merges max77843 regulator driver into max77693.
->
-> It touches multiple subsystems so I think the best way would be to
-> merge it through one tree. I already got acks from extcon, input
-> mfd and power maintainers.
->
-> If there are no objections then everything could go through regulator
-> tree.
+hi, Rafeal
+	thanks for your reply. :)
 
-The rebasing was insufficient. A new driver was recently added -
-leds-nax77693 which I did not update. I will post an fixed version.
+On 2015=E5=B9=B407=E6=9C=8811=E6=97=A5 04:44, Rafael J. Wysocki wrote:
+> Hi,
+>=20
+> On Fri, Jul 10, 2015 at 7:50 AM, Pan Xinhui <xinhuix.pan@intel.com> w=
+rote:
+>>
+>> If CONFIG_X86_ACPI_CPUFREQ_CPB has not been defined, the placeholder=
+ for
+>> cpb is not needed. Add ifdef around it.
+>>
+>> Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
+>> ---
+>>  drivers/cpufreq/acpi-cpufreq.c | 2 ++
+>>  1 file changed, 2 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-c=
+pufreq.c
+>> index e7fcaa6..314a19e 100644
+>> --- a/drivers/cpufreq/acpi-cpufreq.c
+>> +++ b/drivers/cpufreq/acpi-cpufreq.c
+>> @@ -884,7 +884,9 @@ static int acpi_cpufreq_resume(struct cpufreq_po=
+licy *policy)
+>>  static struct freq_attr *acpi_cpufreq_attr[] =3D {
+>>         &cpufreq_freq_attr_scaling_available_freqs,
+>>         &freqdomain_cpus,
+>> +#ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
+>>         NULL,   /* this is a placeholder for cpb, do not remove */
+>> +#endif
+>=20
+> Adding the ifdef here doesn't change anything, because the next NULL
+> will play the role of the one you've just #ifdefed and the structure
+> will be filled with zeros from that point on anyway.
+>=20
+Yes, adding ifdef here does not change any binary codes. But I want to =
+make the codes more readable. :)
+Patch author has noticed two *NULL* here would confuse people, especial=
+ly who first read this acpi-cpufreq.c file
+=46rom code style point, it would be better to have #ifdef around it.=20
 
-Krzysztof
+> You'd need to #ifdef it in the struct freq_attr definition, but I'm
+> not sure it's worth the effort.
+>=20
 
->
->
-> Changes since v2
-> ================
-> 1. Rebase on v4.2-rc1.
-> 2. Add acks: Chanwoo Choi, Dmitry Torokhov, Lee Jones. Thanks!
->
->
-> Changes since v1
-> ================
-> 1. Drop patch "regulator: max77693: Use core code for charger's
->    is_enabled" because Mark Brown picked it up.
-> 2. Patch 2: remove some more old IRQ extcon stuff (suggested by Chanwoo
->    Choi).
-> 3. Patch 6: minor fixes over defines (suggested by Lee Jones).
-> 4. Send last patch, previously it slipped during "git send-email".
-> 5. Add acks obtained for v1. I still need more of them.
->
->
-> Rationale
-> =========
-> The recently added max77843 regulator driver is very similar to
-> its older brother: the max77693. Both devices provide two safeouts
-> and a charger.
->
-> The main difference is in charger's output capabilities and related
-> registry values.
->
-> With some code additions the max77693 regulator driver can support both
-> chipsets. This reduces overall code duplication and is a first step
-> toward integrating other drivers for these devices. I plan to merge
-> also input/haptic drivers.
->
->
-> Patchset description
-> ====================
-> Patches 1-2 do various cleanup.
-> Patch 3 prepares max77694 regulator driver for supporting different
-> devices.
-> Patch 4 switches max77693 drivers to common state container.
-> Patch 5 updates max77843 drivers to common state container.
-> Patches 6-7 do final cleanup before merging.
-> Patches 8-9 do the merge of max77843 regulator into max77693.
->
->
-> Dependencies
-> ============
-> Everything is bisectable but next patches depend on previous ones.
-> So probably the easiest way would be picking picked up by one
-> maintainer.
->
->
-> Best regards,
-> Krzysztof
->
-> Krzysztof Kozlowski (9):
->   mfd/extcon: max77693: Remove unused extern declarations and
->     max77693_dev members
->   mfd: max77693: Store I2C device type as enum and add default unknown
->   regulator: max77693: Support different register configurations
->   extcon/input/mfd/power/regulator: max77693: Move state container to
->     common header
->   extcon/input/mfd/regulator: max77843: Switch to common max77693 state
->     container
->   mfd/extcon: max77693: Rename defines to allow inclusion with max77843
->   mfd/extcon: max77843: Rename defines to allow inclusion with max77693
->   regulator: max77693: Add support for MAX77843 device
->   regulator: Remove the max77843 driver
->
->  drivers/extcon/extcon-max77693.c     |  94 +++++++---------
->  drivers/extcon/extcon-max77843.c     |  66 +++++++-----
->  drivers/input/misc/max77693-haptic.c |   1 +
->  drivers/input/misc/max77843-haptic.c |   3 +-
->  drivers/mfd/max77693.c               |  31 +++---
->  drivers/mfd/max77843.c               |  20 ++--
->  drivers/power/max77693_charger.c     |   1 +
->  drivers/regulator/Kconfig            |  16 +--
->  drivers/regulator/Makefile           |   1 -
->  drivers/regulator/max77693.c         | 161 ++++++++++++++++++++++++----
->  drivers/regulator/max77843.c         | 201 -----------------------------------
->  include/linux/mfd/max77693-common.h  |  49 +++++++++
->  include/linux/mfd/max77693-private.h | 134 +++++++++--------------
->  include/linux/mfd/max77843-private.h | 174 ++++++++++++++----------------
->  14 files changed, 432 insertions(+), 520 deletions(-)
->  delete mode 100644 drivers/regulator/max77843.c
->  create mode 100644 include/linux/mfd/max77693-common.h
->
-> --
-> 2.1.4
->
+struct freq_attr *cpb* is defined in #ifdef section. :)
+
+thanks
+xinhui
+
+>>         NULL,
+>>  };
+>=20
+> Thanks,
+> Rafael
+>=20
