@@ -1,87 +1,48 @@
-From: Nitish Ambastha <nitish.a@samsung.com>
-Subject: [PATCHv3 1/1] kernel/power/autosleep.c: check for pm_suspend() return
- before queueing suspend again
-Date: Tue, 14 Jul 2015 01:38:02 +0530
-Message-ID: <1436818082-24087-1-git-send-email-nitish.a@samsung.com>
-References: <1435604054-29711-1-git-send-email-nitish.a@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:44321 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751628AbbGMOe1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2015 10:34:27 -0400
-In-reply-to: <1435604054-29711-1-git-send-email-nitish.a@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Hanjun Guo <hanjun.guo@linaro.org>
+Subject: Re: [PATCH] x86, acpi: Handle xapic/x2apic entries in MADT
+Date: Mon, 13 Jul 2015 23:22:11 +0800
+Message-ID: <55A3D7A3.90609@linaro.org>
+References: <1436795687-18539-1-git-send-email-lukasz.anaczkowski@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1436795687-18539-1-git-send-email-lukasz.anaczkowski@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, jason@lakedaemon.net
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: cpgs@samsung.com, nitish.a@samsung.com, nits.ambastha@gmail.com
 
-Prevent tight loop for suspend-resume when some
-devices failed to suspend
-If some devices failed to suspend, we monitor this
-error in try_to_suspend(). pm_suspend() is already
-an 'int' returning function, how about checking return
-from pm_suspend() before queueing suspend again?
+Hi Lukasz,
 
-For devices which do not register for pending events,
-this will prevent tight loop for suspend-resume in
-suspend abort scenarios due to device suspend failures
+On 07/13/2015 09:54 PM, Lukasz Anaczkowski wrote:
+> This patch is based on work of "Yinghai Lu <yinghai@kernel.org>"
+> previously published at https://lkml.org/lkml/2013/1/21/563.
+>
+> In case when BIOS is populating MADT wiht both x2apic and local apic
+> entries (as per ACPI spec), kernel builds it's processor table
+> in the following order: BSP, X2APIC, local APIC, resulting in
+> processors on the same core are not separated by core count.
 
-Signed-off-by: Nitish Ambastha <nitish.a@samsung.com>
----
-v2: Rearranged code to make wait entry shared with
-    existing one as suggested by Pavel Machek <pavel@ucw.cz>
-    Corrected log level from pr_info to pr_err for failure log
-    Added return check for hibernate()
+I'm confused here, I can't figure out where is the problem, could you
+explain it in detail?
 
-v3: Restructured code as suggested by Rafael J Wysocki <rjw@rjwysocki.net>
+For me, logical CPU IDs allocated by OS will have mappings to physical
+CPU IDs, what you are saying seems CPU topology problem to me.
 
- kernel/power/autosleep.c |   20 +++++++++-----------
- 1 file changed, 9 insertions(+), 11 deletions(-)
+>
+> This patch fixes this behavior and resulting assignment is
+> correct.
+>
+> Signed-off-by: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
+> ---
+>   arch/x86/kernel/acpi/boot.c | 29 +++++++++++++-----
+>   drivers/acpi/numa.c         | 28 ++++++++++++-----
+>   drivers/acpi/tables.c       | 75 ++++++++++++++++++++++++++++-----------------
+>   drivers/irqchip/irq-gic.c   | 15 ++++++---
 
-diff --git a/kernel/power/autosleep.c b/kernel/power/autosleep.c
-index 9012ecf..e458d0c 100644
---- a/kernel/power/autosleep.c
-+++ b/kernel/power/autosleep.c
-@@ -26,6 +26,7 @@ static struct wakeup_source *autosleep_ws;
- static void try_to_suspend(struct work_struct *work)
- {
- 	unsigned int initial_count, final_count;
-+	int error;
- 
- 	if (!pm_get_wakeup_count(&initial_count, true))
- 		goto out;
-@@ -42,23 +43,20 @@ static void try_to_suspend(struct work_struct *work)
- 		mutex_unlock(&autosleep_lock);
- 		return;
- 	}
--	if (autosleep_state >= PM_SUSPEND_MAX)
--		hibernate();
--	else
--		pm_suspend(autosleep_state);
- 
--	mutex_unlock(&autosleep_lock);
-+	error = autosleep_state < PM_SUSPEND_MAX ?
-+		pm_suspend(autosleep_state) : hibernate();
- 
--	if (!pm_get_wakeup_count(&final_count, false))
--		goto out;
-+	mutex_unlock(&autosleep_lock);
- 
- 	/*
--	 * If the wakeup occured for an unknown reason, wait to prevent the
--	 * system from trying to suspend and waking up in a tight loop.
-+	 * If some devices failed to suspend or if the wakeup ocurred
-+	 * for an unknown reason, wait to prevent the system from
-+	 * trying to suspend and waking up in a tight loop.
- 	 */
--	if (final_count == initial_count)
-+	if (error || (pm_get_wakeup_count(&final_count, false)
-+		&& (final_count == initial_count)))
- 		schedule_timeout_uninterruptible(HZ / 2);
--
-  out:
- 	queue_up_suspend_work();
- }
--- 
-1.7.9.5
+Anyway, You also miss the SMP boot for ARM64 in ACPI way, which will
+cause compile error on ARM64.
 
+Thanks
+Hanjun
