@@ -1,65 +1,126 @@
-From: Josh Wu <josh.wu@atmel.com>
-Subject: Re: [PATCH 1/2] power: reset: at91: add sama5d3 reset function
-Date: Mon, 13 Jul 2015 11:21:44 +0800
-Message-ID: <55A32EC8.4080309@atmel.com>
-References: <1436436947-11210-1-git-send-email-josh.wu@atmel.com> <20150710060350.GA3127@piout.net> <559F7AC4.6050008@atmel.com> <20150710120907.GC3127@piout.net> <20150710123148.GA28632@lukather> <559FEED3.5080505@atmel.com>
+From: =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>
+Subject: Re: [PATCH v3 0/9] regulator: Merge max77843 into max77693
+Date: Mon, 13 Jul 2015 13:12:16 +0900
+Message-ID: <CAJKOXPc94465zp2xToXUPFMDeCU9T017F04eqhh39uxyE4xVtA@mail.gmail.com>
+References: <1436353217-1141-1-git-send-email-k.kozlowski.k@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from nasmtp01.atmel.com ([192.199.1.246]:4451 "EHLO
-	DVREDG02.corp.atmel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751605AbbGMDWF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Jul 2015 23:22:05 -0400
-In-Reply-To: <559FEED3.5080505@atmel.com>
+Received: from mail-qg0-f49.google.com ([209.85.192.49]:33042 "EHLO
+	mail-qg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbbGMEMS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2015 00:12:18 -0400
+In-Reply-To: <1436353217-1141-1-git-send-email-k.kozlowski.k@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas Ferre <nicolas.ferre@atmel.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: linux-arm-kernel@lists.infradead.org, Guenter Roeck <linux@roeck-us.net>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, Ben Dooks <ben.dooks@codethink.co.uk>, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Fabian Frederick <fabf@skynet.be>, linux-pm@vger.kernel.org
+To: David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 
-On 7/11/2015 12:12 AM, Nicolas Ferre wrote:
-> Le 10/07/2015 14:31, Maxime Ripard a =E9crit :
->> On Fri, Jul 10, 2015 at 02:09:07PM +0200, Alexandre Belloni wrote:
->>> Hi,
->>>
->>> On 10/07/2015 at 15:56:52 +0800, Josh Wu wrote :
->>>> I would agree with Maxime. Currently all latest chip reset functio=
-n is
->>>> compatible with the atmel,sama5d3-rstc.
->>>> So check compatible string is enough for now.
->>>> But of cause if we have other incompatible reset in future with ne=
-w chip,
->>>> the structure like you said is needed.
->>> We managed to avoid using of_machine_is_compatible() in all the at9=
-1
->>> drivers. I'd like to keep it that way. It was painful enough to rem=
-ove
->>> all those cpu_is_at91xxx calls.
->> That's your call...
->>
->>> Also, using it is trying to match strings and will result in longer=
- boot
->>> times.
->> Have you looked at the implementation of of_match_device? If that's
->> really a concern to you, you should actually avoid it.
-> I agree: let's keep it simple and use of_match_device().
+2015-07-08 20:00 GMT+09:00 Krzysztof Kozlowski <k.kozlowski.k@gmail.com>:
+> Dear Mark,
+>
+>
+> The patchset merges max77843 regulator driver into max77693.
+>
+> It touches multiple subsystems so I think the best way would be to
+> merge it through one tree. I already got acks from extcon, input
+> mfd and power maintainers.
+>
+> If there are no objections then everything could go through regulator
+> tree.
 
-Ok. I will keep it as it is now:  use the (match->data !=3D=20
-sama5d3_restart) for the condition.
+The rebasing was insufficient. A new driver was recently added -
+leds-nax77693 which I did not update. I will post an fixed version.
 
-About the of_match_device(), I prefer to keep not changing the code and=
-=20
-still use of_match_node().
-Since of_match_device() is a wrapper for the of_match_node(). And=20
-dev->of_node and at91_reset_of_match is valid, so we can just use=20
-of_match_node() directly.
-
-Is it sound okay for us?
-
-Best Regards,
-Josh Wu
+Krzysztof
 
 >
-> Bye,
-
+>
+> Changes since v2
+> ================
+> 1. Rebase on v4.2-rc1.
+> 2. Add acks: Chanwoo Choi, Dmitry Torokhov, Lee Jones. Thanks!
+>
+>
+> Changes since v1
+> ================
+> 1. Drop patch "regulator: max77693: Use core code for charger's
+>    is_enabled" because Mark Brown picked it up.
+> 2. Patch 2: remove some more old IRQ extcon stuff (suggested by Chanwoo
+>    Choi).
+> 3. Patch 6: minor fixes over defines (suggested by Lee Jones).
+> 4. Send last patch, previously it slipped during "git send-email".
+> 5. Add acks obtained for v1. I still need more of them.
+>
+>
+> Rationale
+> =========
+> The recently added max77843 regulator driver is very similar to
+> its older brother: the max77693. Both devices provide two safeouts
+> and a charger.
+>
+> The main difference is in charger's output capabilities and related
+> registry values.
+>
+> With some code additions the max77693 regulator driver can support both
+> chipsets. This reduces overall code duplication and is a first step
+> toward integrating other drivers for these devices. I plan to merge
+> also input/haptic drivers.
+>
+>
+> Patchset description
+> ====================
+> Patches 1-2 do various cleanup.
+> Patch 3 prepares max77694 regulator driver for supporting different
+> devices.
+> Patch 4 switches max77693 drivers to common state container.
+> Patch 5 updates max77843 drivers to common state container.
+> Patches 6-7 do final cleanup before merging.
+> Patches 8-9 do the merge of max77843 regulator into max77693.
+>
+>
+> Dependencies
+> ============
+> Everything is bisectable but next patches depend on previous ones.
+> So probably the easiest way would be picking picked up by one
+> maintainer.
+>
+>
+> Best regards,
+> Krzysztof
+>
+> Krzysztof Kozlowski (9):
+>   mfd/extcon: max77693: Remove unused extern declarations and
+>     max77693_dev members
+>   mfd: max77693: Store I2C device type as enum and add default unknown
+>   regulator: max77693: Support different register configurations
+>   extcon/input/mfd/power/regulator: max77693: Move state container to
+>     common header
+>   extcon/input/mfd/regulator: max77843: Switch to common max77693 state
+>     container
+>   mfd/extcon: max77693: Rename defines to allow inclusion with max77843
+>   mfd/extcon: max77843: Rename defines to allow inclusion with max77693
+>   regulator: max77693: Add support for MAX77843 device
+>   regulator: Remove the max77843 driver
+>
+>  drivers/extcon/extcon-max77693.c     |  94 +++++++---------
+>  drivers/extcon/extcon-max77843.c     |  66 +++++++-----
+>  drivers/input/misc/max77693-haptic.c |   1 +
+>  drivers/input/misc/max77843-haptic.c |   3 +-
+>  drivers/mfd/max77693.c               |  31 +++---
+>  drivers/mfd/max77843.c               |  20 ++--
+>  drivers/power/max77693_charger.c     |   1 +
+>  drivers/regulator/Kconfig            |  16 +--
+>  drivers/regulator/Makefile           |   1 -
+>  drivers/regulator/max77693.c         | 161 ++++++++++++++++++++++++----
+>  drivers/regulator/max77843.c         | 201 -----------------------------------
+>  include/linux/mfd/max77693-common.h  |  49 +++++++++
+>  include/linux/mfd/max77693-private.h | 134 +++++++++--------------
+>  include/linux/mfd/max77843-private.h | 174 ++++++++++++++----------------
+>  14 files changed, 432 insertions(+), 520 deletions(-)
+>  delete mode 100644 drivers/regulator/max77843.c
+>  create mode 100644 include/linux/mfd/max77693-common.h
+>
+> --
+> 2.1.4
+>
