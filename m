@@ -1,7 +1,7 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 1/3] dt-bindings: thermal: Add binding document for Mediatek thermal controller
-Date: Mon, 13 Jul 2015 12:34:52 +0200
-Message-ID: <1436783694-30717-2-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH 3/3] ARM64: dts: mt8173: Add thermal/auxadc device nodes
+Date: Mon, 13 Jul 2015 12:34:54 +0200
+Message-ID: <1436783694-30717-4-git-send-email-s.hauer@pengutronix.de>
 References: <1436783694-30717-1-git-send-email-s.hauer@pengutronix.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1436783694-30717-1-git-send-email-s.hauer@pengutronix.de>
@@ -12,53 +12,44 @@ List-Id: linux-pm@vger.kernel.org
 
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
- .../bindings/thermal/mediatek-thermal.txt          | 38 ++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+ arch/arm64/boot/dts/mediatek/mt8173.dtsi | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-new file mode 100644
-index 0000000..d90e4dc
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-@@ -0,0 +1,38 @@
-+* Mediatek Thermal
+diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+index 27237a1..8cd114a 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+@@ -151,6 +151,11 @@
+ 				(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
+ 		};
+ 
++		auxadc: auxadc@11001000 {
++			compatible = "mediatek,mt8173-auxadc";
++			reg = <0 0x11001000 0 0x1000>;
++		};
 +
-+This describes the device tree binding for the Mediatek thermal controller
-+which measures the on-SoC temperatures. This device does not have its own ADC,
-+instead it directly controls the AUXADC via AHB bus accesses. For this reason
-+this device needs phandles to the AUXADC. Also it controls a mux in the
-+apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
-+is also needed.
+ 		uart0: serial@11002000 {
+ 			compatible = "mediatek,mt8173-uart",
+ 				     "mediatek,mt6577-uart";
+@@ -186,6 +191,19 @@
+ 			clocks = <&uart_clk>;
+ 			status = "disabled";
+ 		};
 +
-+Required properties:
-+- compatible: "mediatek,mt8173-thermal"
-+- reg: Address range of the thermal controller
-+- interrupts: IRQ for the thermal controller
-+- clocks, clock-names: Clocks needed for the thermal controller. required
-+                       clocks are:
-+		"therm":	Main clock needed for register access
-+		"auxadc":	The AUXADC clock
-+- resets, reset-names: Reference to the reset controller controlling the thermal
-+                       controller. Required reset-names:
-+		"therm":	The main reset line
-+- auxadc: A phandle to the AUXADC which the thermal controller uses
-+- apmixedsys: A phandle to the APMIXEDSYS controller.
-+- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description
-+
-+Example:
-+
-+	thermal: thermal@1100b000 {
-+		#thermal-sensor-cells = <1>;
-+		compatible = "mediatek,mt8173-thermal";
-+		reg = <0 0x1100b000 0 0x1000>;
-+		interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
-+		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
-+		clock-names = "therm", "auxadc";
-+		resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
-+		reset-names = "therm";
-+		auxadc = <&auxadc>;
-+		apmixedsys = <&apmixedsys>;
-+	};
++		thermal: thermal@1100b000 {
++			#thermal-sensor-cells = <1>;
++			compatible = "mediatek,mt8173-thermal";
++			reg = <0 0x1100b000 0 0x1000>;
++			interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
++			clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
++			clock-names = "therm", "auxadc";
++			resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
++			reset-names = "therm";
++			auxadc = <&auxadc>;
++			apmixedsys = <&apmixedsys>;
++		};
+ 	};
+ };
+ 
 -- 
 2.1.4
