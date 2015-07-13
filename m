@@ -1,171 +1,250 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [[PATCH v2]] thermal: add available policies sysfs attribute
-Date: Mon, 13 Jul 2015 13:11:21 +0100
-Message-ID: <20150713121121.GA4289@e104805>
-References: <1431053231-3390-1-git-send-email-wni@nvidia.com>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH V3 02/19] memory: tegra: Add MC flush support
+Date: Mon, 13 Jul 2015 13:39:40 +0100
+Message-ID: <1436791197-32358-3-git-send-email-jonathanh@nvidia.com>
+References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:47191 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751866AbbGMML3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2015 08:11:29 -0400
-Content-Disposition: inline
-In-Reply-To: <1431053231-3390-1-git-send-email-wni@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1436791197-32358-1-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Wei Ni <wni@nvidia.com>
-Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Fri, May 08, 2015 at 03:47:11AM +0100, Wei Ni wrote:
-> The Linux thermal framework support to change thermal governor
-> policy in userspace, but it can't show what available policies
-> supported.
->=20
-> This patch adds available_policies attribute to the thermal
-> framework, it can list the thermal governors which can be
-> used for a particular zone. This attribute is read only.
->=20
-> Signed-off-by: Wei Ni <wni@nvidia.com>
+The Tegra memory controller implements a flush feature to flush pending
+accesses and prevent further accesses from occurring. This feature is
+used when powering down IP blocks to ensure the IP block is in a good
+state. The flushes are organised by software groups and IP blocks are
+assigned in hardware to the different software groups. Add helper
+functions for requesting a handle to an MC flush for a given
+software group and enabling/disabling the MC flush itself.
 
-It's an old thread, but I see myself coming back to this patch from
-time to time.  It would be good to have this merged and be part of the
-thermal framework.  Other subsystems with governors (like devfreq) have
-a similar entry and it's useful.
+This is based upon a change by Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>.
 
-One minor comment below.
+Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+---
+ drivers/memory/tegra/mc.c | 110 ++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/memory/tegra/mc.h |   2 +
+ include/soc/tegra/mc.h    |  34 ++++++++++++++
+ 3 files changed, 146 insertions(+)
 
-> ---
-> v2: This change had been submitted and discussed in
-> http://marc.info/?l=3Dlinux-tegra&m=3D138961183931457&w=3D2
-> https://www.marc.info/?l=3Dlinux-pm&m=3D138986468007449&w=3D1
-> cherry-picked it,and updated to this v2 version.
->=20
->  Documentation/thermal/sysfs-api.txt |  6 ++++++
->  drivers/thermal/thermal_core.c      | 28 +++++++++++++++++++++++++++=
+diff --git a/drivers/memory/tegra/mc.c b/drivers/memory/tegra/mc.c
+index c71ede67e6c8..fb8da3d4caf4 100644
+--- a/drivers/memory/tegra/mc.c
++++ b/drivers/memory/tegra/mc.c
+@@ -7,6 +7,7 @@
+  */
+ 
+ #include <linux/clk.h>
++#include <linux/delay.h>
+ #include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+@@ -71,6 +72,107 @@ static const struct of_device_id tegra_mc_of_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, tegra_mc_of_match);
+ 
++const struct tegra_mc_flush *tegra_mc_flush_get(struct tegra_mc *mc,
++						unsigned int swgroup)
++{
++	const struct tegra_mc_flush *flush = NULL;
++	int i;
 +
->  2 files changed, 34 insertions(+)
->=20
-> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/ther=
-mal/sysfs-api.txt
-> index 7d44d7f1a71b..e7d03cfafc63 100644
-> --- a/Documentation/thermal/sysfs-api.txt
-> +++ b/Documentation/thermal/sysfs-api.txt
-> @@ -180,6 +180,7 @@ Thermal zone device sys I/F, created once it's re=
-gistered:
->      |---temp:			Current temperature
->      |---mode:			Working mode of the thermal zone
->      |---policy:			Thermal governor used for this zone
-> +    |---available_policies:	Available thermal governors for this zon=
-e
->      |---trip_point_[0-*]_temp:	Trip point temperature
->      |---trip_point_[0-*]_type:	Trip point type
->      |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
-> @@ -254,6 +255,10 @@ policy
->  	One of the various thermal governors used for a particular zone.
->  	RW, Required
-> =20
-> +available_policies
-> +	Available thermal governors which can be used for a particular zone=
-=2E
-> +	RO, Required
-> +
->  trip_point_[0-*]_temp
->  	The temperature above which trip point will be fired.
->  	Unit: millidegree Celsius
-> @@ -401,6 +406,7 @@ method, the sys I/F structure will be built like =
-this:
->      |---temp:			37000
->      |---mode:			enabled
->      |---policy:			step_wise
-> +    |---available_policies:	step_wise fair_share
->      |---trip_point_0_temp:	100000
->      |---trip_point_0_type:	critical
->      |---trip_point_1_temp:	80000
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal=
-_core.c
-> index 962de1847cc0..68a603a3d4ed 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -847,6 +847,27 @@ policy_show(struct device *dev, struct device_at=
-tribute *devattr, char *buf)
->  	return sprintf(buf, "%s\n", tz->governor->name);
->  }
-> =20
-> +static ssize_t
-> +available_policies_show(struct device *dev, struct device_attribute =
-*devattr,
-> +			char *buf)
-> +{
-> +	struct thermal_governor *pos;
-> +	ssize_t count =3D 0;
-> +	ssize_t size;
-
-Initialize size to avoid this compiler warning:
-
-drivers/thermal/thermal_core.c: In function =E2=80=98available_policies=
-_show=E2=80=99:
-drivers/thermal/thermal_core.c:864:11: warning: =E2=80=98size=E2=80=99 =
-may be used
-uninitialized in this function [-Wmaybe-uninitialized]
-  count +=3D scnprintf(buf + count, size, "\n");
-
-If I understand it correctly, it should be initialized to PAGE_SIZE.
-
-Other than this, you can add my
-
-Reviewed-by: Javi Merino <javi.merino@arm.com>
-
-> +
-> +	mutex_lock(&thermal_governor_lock);
-> +
-> +	list_for_each_entry(pos, &thermal_governor_list, governor_list) {
-> +		size =3D PAGE_SIZE - count;
-> +		count +=3D scnprintf(buf + count, size, "%s ", pos->name);
-> +	}
-> +	count +=3D scnprintf(buf + count, size, "\n");
-> +
-> +	mutex_unlock(&thermal_governor_lock);
-> +
-> +	return count;
-> +}
-> +
->  #ifdef CONFIG_THERMAL_EMULATION
->  static ssize_t
->  emul_temp_store(struct device *dev, struct device_attribute *attr,
-> @@ -1028,6 +1049,7 @@ static DEVICE_ATTR(temp, 0444, temp_show, NULL)=
-;
->  static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
->  static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive=
-_store);
->  static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_st=
-ore);
-> +static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_s=
-how, NULL);
-> =20
->  /* sys I/F for cooling device */
->  #define to_cooling_device(_dev)	\
-> @@ -1813,6 +1835,11 @@ struct thermal_zone_device *thermal_zone_devic=
-e_register(const char *type,
->  	if (result)
->  		goto unregister;
-> =20
-> +	/* Create available_policies attribute */
-> +	result =3D device_create_file(&tz->device, &dev_attr_available_poli=
-cies);
-> +	if (result)
-> +		goto unregister;
-> +
->  	/* Update 'this' zone's governor information */
->  	mutex_lock(&thermal_governor_lock);
-> =20
-> @@ -1913,6 +1940,7 @@ void thermal_zone_device_unregister(struct ther=
-mal_zone_device *tz)
->  	if (tz->ops->get_mode)
->  		device_remove_file(&tz->device, &dev_attr_mode);
->  	device_remove_file(&tz->device, &dev_attr_policy);
-> +	device_remove_file(&tz->device, &dev_attr_available_policies);
->  	remove_trip_attrs(tz);
->  	thermal_set_governor(tz, NULL);
-> =20
++	mutex_lock(&mc->lock);
++
++	for (i = 0; i < mc->soc->num_flushes; i++) {
++		if (mc->soc->flushes[i].swgroup == swgroup) {
++			if (mc->flush_reserved[i] == false) {
++				mc->flush_reserved[i] = true;
++				flush = &mc->soc->flushes[i];
++			}
++			break;
++		}
++	}
++
++	mutex_unlock(&mc->lock);
++
++	return flush;
++}
++EXPORT_SYMBOL(tegra_mc_flush_get);
++
++static bool tegra_mc_flush_done(struct tegra_mc *mc,
++				const struct tegra_mc_flush *flush)
++{
++	unsigned long timeout = jiffies + msecs_to_jiffies(100);
++	int i;
++	u32 val;
++
++	while (time_before(jiffies, timeout)) {
++		val = mc_readl(mc, flush->status);
++
++		/*
++		 * If the flush bit is still set it
++		 * is not done and so wait then retry.
++		 */
++		if (val & BIT(flush->bit))
++			goto retry;
++
++		/*
++		 * Depending on the tegra SoC, it may be necessary to read
++		 * the status register multiple times to ensure the value
++		 * read is correct. Some tegra devices have a HW issue where
++		 * reading the status register shortly after writing the
++		 * control register (on the order of 5 cycles) may return
++		 * an incorrect value.
++		 */
++		for (i = 0; i < mc->soc->metastable_flush_reads; i++) {
++			if (mc_readl(mc, flush->status) != val)
++				goto retry;
++		}
++
++		/*
++		 * The flush is complete and so return.
++		 */
++		return 0;
++retry:
++		udelay(10);
++	}
++
++	return -ETIMEDOUT;
++}
++
++int tegra_mc_flush(struct tegra_mc *mc, const struct tegra_mc_flush *flush,
++		   bool enable)
++{
++	int ret = 0;
++	u32 val;
++
++	if (!mc || !flush)
++		return -EINVAL;
++
++	mutex_lock(&mc->lock);
++
++	val = mc_readl(mc, flush->ctrl);
++
++	if (enable)
++		val |= BIT(flush->bit);
++	else
++		val &= ~BIT(flush->bit);
++
++	mc_writel(mc, val, flush->ctrl);
++	mc_readl(mc, flush->ctrl);
++
++	/*
++	 * If activating the flush, poll the
++	 * status register until the flush is done.
++	 */
++	if (enable)
++		ret = tegra_mc_flush_done(mc, flush);
++
++	mutex_unlock(&mc->lock);
++
++	dev_dbg(mc->dev, "%s bit %d\n", __func__, flush->bit);
++
++	return ret;
++}
++EXPORT_SYMBOL(tegra_mc_flush);
++
+ static int tegra_mc_setup_latency_allowance(struct tegra_mc *mc)
+ {
+ 	unsigned long long tick;
+@@ -359,6 +461,12 @@ static int tegra_mc_probe(struct platform_device *pdev)
+ 	mc->soc = match->data;
+ 	mc->dev = &pdev->dev;
+ 
++	mc->flush_reserved = devm_kcalloc(&pdev->dev, mc->soc->num_flushes,
++					  sizeof(mc->flush_reserved),
++					  GFP_KERNEL);
++	if (!mc->flush_reserved)
++		return -ENOMEM;
++
+ 	/* length of MC tick in nanoseconds */
+ 	mc->tick = 30;
+ 
+@@ -410,6 +518,8 @@ static int tegra_mc_probe(struct platform_device *pdev)
+ 		return err;
+ 	}
+ 
++	mutex_init(&mc->lock);
++
+ 	value = MC_INT_DECERR_MTS | MC_INT_SECERR_SEC | MC_INT_DECERR_VPR |
+ 		MC_INT_INVALID_APB_ASID_UPDATE | MC_INT_INVALID_SMMU_PAGE |
+ 		MC_INT_SECURITY_VIOLATION | MC_INT_DECERR_EMEM;
+diff --git a/drivers/memory/tegra/mc.h b/drivers/memory/tegra/mc.h
+index b7361b0a6696..0f59d49b735b 100644
+--- a/drivers/memory/tegra/mc.h
++++ b/drivers/memory/tegra/mc.h
+@@ -14,6 +14,8 @@
+ 
+ #include <soc/tegra/mc.h>
+ 
++#define MC_FLUSH_METASTABLE_READS	5
++
+ static inline u32 mc_readl(struct tegra_mc *mc, unsigned long offset)
+ {
+ 	return readl(mc->regs + offset);
+diff --git a/include/soc/tegra/mc.h b/include/soc/tegra/mc.h
+index 1ab2813273cd..b634c6df79eb 100644
+--- a/include/soc/tegra/mc.h
++++ b/include/soc/tegra/mc.h
+@@ -45,6 +45,13 @@ struct tegra_mc_client {
+ 	struct tegra_mc_la la;
+ };
+ 
++struct tegra_mc_flush {
++	unsigned int swgroup;
++	unsigned int ctrl;
++	unsigned int status;
++	unsigned int bit;
++};
++
+ struct tegra_smmu_swgroup {
+ 	const char *name;
+ 	unsigned int swgroup;
+@@ -96,6 +103,10 @@ struct tegra_mc_soc {
+ 	const struct tegra_mc_client *clients;
+ 	unsigned int num_clients;
+ 
++	const struct tegra_mc_flush *flushes;
++	unsigned int num_flushes;
++	unsigned int metastable_flush_reads;
++
+ 	const unsigned long *emem_regs;
+ 	unsigned int num_emem_regs;
+ 
+@@ -117,9 +128,32 @@ struct tegra_mc {
+ 
+ 	struct tegra_mc_timing *timings;
+ 	unsigned int num_timings;
++
++	bool *flush_reserved;
++
++	struct mutex lock;
+ };
+ 
+ void tegra_mc_write_emem_configuration(struct tegra_mc *mc, unsigned long rate);
+ unsigned int tegra_mc_get_emem_device_count(struct tegra_mc *mc);
+ 
++#ifdef CONFIG_TEGRA_MC
++const struct tegra_mc_flush *tegra_mc_flush_get(struct tegra_mc *mc,
++						unsigned int swgroup);
++int tegra_mc_flush(struct tegra_mc *mc, const struct tegra_mc_flush *s,
++		   bool enable);
++#else
++const struct tegra_mc_flush *tegra_mc_flush_get(struct tegra_mc *mc,
++						unsigned int swgroup)
++{
++	return NULL;
++}
++
++int tegra_mc_flush(struct tegra_mc *mc, const struct tegra_mc_flush *s,
++		   bool enable)
++{
++	return -ENOTSUPP;
++}
++#endif
++
+ #endif /* __SOC_TEGRA_MC_H__ */
+-- 
+2.1.4
