@@ -1,179 +1,138 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH v2 2/4] PM / devfreq: cache the last call to get_dev_status()
-Date: Mon, 13 Jul 2015 18:33:56 +0100
-Message-ID: <1436808838-23391-3-git-send-email-javi.merino@arm.com>
+Subject: [PATCH v2 4/4] devfreq_cooling: add trace information
+Date: Mon, 13 Jul 2015 18:33:58 +0100
+Message-ID: <1436808838-23391-5-git-send-email-javi.merino@arm.com>
 References: <1436808838-23391-1-git-send-email-javi.merino@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:58794 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:58803 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751451AbbGMReW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 13 Jul 2015 13:34:22 -0400
+	id S1751748AbbGMReY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 13 Jul 2015 13:34:24 -0400
 In-Reply-To: <1436808838-23391-1-git-send-email-javi.merino@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Javi Merino <javi.merino@arm.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>
 
-The return value of get_dev_status() can be reused.  Cache it so that
-other parts of the kernel can reuse it instead of having to call the
-same function again.
+Tracing is useful for debugging and performance tuning.  Add similar
+traces to what's present in the cpu cooling device.
 
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@redhat.com>
 Signed-off-by: Javi Merino <javi.merino@arm.com>
 ---
+Changes since v1:
+  - Calculate devfreq load in the tracepoint so that it only happens
+    when the trace is enabled.  Thanks Steven Rostedt.
 
-This patch tries to let multiple components.  To summarize the
-discussion in v1[1] I can think of three alternatives:
+ drivers/thermal/devfreq_cooling.c |  6 +++++
+ include/trace/events/thermal.h    | 53 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 59 insertions(+)
 
-  1) Change get_dev_status() to return absolute values for busy_time
-     and total_time
-  2) Make core devfreq call get_dev_status() periodically (for
-     example, before calling the governor) and all the entities that
-     want access can do so via a pointer in devfreq
-  3) Make the simple ondemand governor call get_dev_status()
-     periodically and cache it, forcing all the other entities to
-     rely on that governor being active
-
-[1] http://thread.gmane.org/gmane.linux.power-management.general/61936/focus=61993
-
-This patch implements option 3)
-
- drivers/devfreq/devfreq.c                 |  5 +++++
- drivers/devfreq/governor_simpleondemand.c | 33 +++++++++++++++++--------------
- include/linux/devfreq.h                   |  7 +++++++
- 3 files changed, 30 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 5b3f2f32f1e5..83041931910f 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -810,6 +810,11 @@ unlock:
+diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+index 69f64474908a..649386a6ce7a 100644
+--- a/drivers/thermal/devfreq_cooling.c
++++ b/drivers/thermal/devfreq_cooling.c
+@@ -21,6 +21,8 @@
+ #include <linux/pm_opp.h>
+ #include <linux/thermal.h>
+ 
++#include <trace/events/thermal.h>
++
+ static int devfreq_cooling_get_max_state(struct thermal_cooling_device *cdev,
+ 					 unsigned long *state)
+ {
+@@ -142,6 +144,9 @@ static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cd
+ 	/* Get static power */
+ 	static_power = get_static_power(dfc, freq);
+ 
++	trace_thermal_power_devfreq_get_power(cdev, status, freq, dyn_power,
++					      static_power);
++
+ 	*power = dyn_power + static_power;
+ 
+ 	return 0;
+@@ -195,6 +200,7 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
+ 			break;
+ 
+ 	*state = i;
++	trace_thermal_power_devfreq_limit(cdev, freq, *state, power);
+ 	return 0;
  }
- EXPORT_SYMBOL(devfreq_set_min);
  
-+int devfreq_update_stats(struct devfreq *df)
-+{
-+	return df->profile->get_dev_status(df->dev.parent, &df->last_status);
-+}
+diff --git a/include/trace/events/thermal.h b/include/trace/events/thermal.h
+index 8b1f80682b80..5738bb3e2343 100644
+--- a/include/trace/events/thermal.h
++++ b/include/trace/events/thermal.h
+@@ -4,6 +4,7 @@
+ #if !defined(_TRACE_THERMAL_H) || defined(TRACE_HEADER_MULTI_READ)
+ #define _TRACE_THERMAL_H
+ 
++#include <linux/devfreq.h>
+ #include <linux/thermal.h>
+ #include <linux/tracepoint.h>
+ 
+@@ -135,6 +136,58 @@ TRACE_EVENT(thermal_power_cpu_limit,
+ 		__entry->power)
+ );
+ 
++TRACE_EVENT(thermal_power_devfreq_get_power,
++	TP_PROTO(struct thermal_cooling_device *cdev,
++		 struct devfreq_dev_status *status, unsigned long freq,
++		u32 dynamic_power, u32 static_power),
 +
- static ssize_t governor_show(struct device *dev,
- 			     struct device_attribute *attr, char *buf)
- {
-diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
-index 0720ba84ca92..ae72ba5e78df 100644
---- a/drivers/devfreq/governor_simpleondemand.c
-+++ b/drivers/devfreq/governor_simpleondemand.c
-@@ -21,17 +21,20 @@
- static int devfreq_simple_ondemand_func(struct devfreq *df,
- 					unsigned long *freq)
- {
--	struct devfreq_dev_status stat;
--	int err = df->profile->get_dev_status(df->dev.parent, &stat);
-+	int err;
-+	struct devfreq_dev_status *stat;
- 	unsigned long long a, b;
- 	unsigned int dfso_upthreshold = DFSO_UPTHRESHOLD;
- 	unsigned int dfso_downdifferential = DFSO_DOWNDIFFERENCTIAL;
- 	struct devfreq_simple_ondemand_data *data = df->data;
- 	unsigned long max = (df->max_freq) ? df->max_freq : UINT_MAX;
- 
-+	err = devfreq_update_stats(df);
- 	if (err)
- 		return err;
- 
-+	stat = &df->last_status;
++	TP_ARGS(cdev, status,  freq, dynamic_power, static_power),
 +
- 	if (data) {
- 		if (data->upthreshold)
- 			dfso_upthreshold = data->upthreshold;
-@@ -43,41 +46,41 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
- 		return -EINVAL;
- 
- 	/* Assume MAX if it is going to be divided by zero */
--	if (stat.total_time == 0) {
-+	if (stat->total_time == 0) {
- 		*freq = max;
- 		return 0;
- 	}
- 
- 	/* Prevent overflow */
--	if (stat.busy_time >= (1 << 24) || stat.total_time >= (1 << 24)) {
--		stat.busy_time >>= 7;
--		stat.total_time >>= 7;
-+	if (stat->busy_time >= (1 << 24) || stat->total_time >= (1 << 24)) {
-+		stat->busy_time >>= 7;
-+		stat->total_time >>= 7;
- 	}
- 
- 	/* Set MAX if it's busy enough */
--	if (stat.busy_time * 100 >
--	    stat.total_time * dfso_upthreshold) {
-+	if (stat->busy_time * 100 >
-+	    stat->total_time * dfso_upthreshold) {
- 		*freq = max;
- 		return 0;
- 	}
- 
- 	/* Set MAX if we do not know the initial frequency */
--	if (stat.current_frequency == 0) {
-+	if (stat->current_frequency == 0) {
- 		*freq = max;
- 		return 0;
- 	}
- 
- 	/* Keep the current frequency */
--	if (stat.busy_time * 100 >
--	    stat.total_time * (dfso_upthreshold - dfso_downdifferential)) {
--		*freq = stat.current_frequency;
-+	if (stat->busy_time * 100 >
-+	    stat->total_time * (dfso_upthreshold - dfso_downdifferential)) {
-+		*freq = stat->current_frequency;
- 		return 0;
- 	}
- 
- 	/* Set the desired frequency based on the load */
--	a = stat.busy_time;
--	a *= stat.current_frequency;
--	b = div_u64(a, stat.total_time);
-+	a = stat->busy_time;
-+	a *= stat->current_frequency;
-+	b = div_u64(a, stat->total_time);
- 	b *= 100;
- 	b = div_u64(b, (dfso_upthreshold - dfso_downdifferential / 2));
- 	*freq = (unsigned long) b;
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index dce82c695955..1bad6fecf285 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -161,6 +161,7 @@ struct devfreq {
- 	struct delayed_work work;
- 
- 	unsigned long previous_freq;
-+	struct devfreq_dev_status last_status;
- 
- 	void *data; /* private data for governors */
- 
-@@ -206,6 +207,7 @@ extern void devm_devfreq_unregister_opp_notifier(struct device *dev,
- 
- int devfreq_set_min(struct devfreq *df, unsigned long value);
- int devfreq_set_max(struct devfreq *df, unsigned long value);
-+int devfreq_update_stats(struct devfreq *df);
- 
- #if IS_ENABLED(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)
- /**
-@@ -302,6 +304,11 @@ static inline int devfreq_set_max(struct devfreq *df, unsigned long value)
- {
- 	return -EINVAL;
- }
++	TP_STRUCT__entry(
++		__string(type,         cdev->type    )
++		__field(unsigned long, freq          )
++		__field(u32,           load          )
++		__field(u32,           dynamic_power )
++		__field(u32,           static_power  )
++	),
 +
-+static inline int devfreq_update_stats(struct devfreq *df)
-+{
-+	return -EINVAL;
-+}
- #endif /* CONFIG_PM_DEVFREQ */
++	TP_fast_assign(
++		__assign_str(type, cdev->type);
++		__entry->freq = freq;
++		__entry->load = (100 * status->busy_time) / status->total_time;
++		__entry->dynamic_power = dynamic_power;
++		__entry->static_power = static_power;
++	),
++
++	TP_printk("type=%s freq=%lu load=%u dynamic_power=%u static_power=%u",
++		__get_str(type), __entry->freq,
++		__entry->load, __entry->dynamic_power, __entry->static_power)
++);
++
++TRACE_EVENT(thermal_power_devfreq_limit,
++	TP_PROTO(struct thermal_cooling_device *cdev, unsigned long freq,
++		unsigned long cdev_state, u32 power),
++
++	TP_ARGS(cdev, freq, cdev_state, power),
++
++	TP_STRUCT__entry(
++		__string(type,         cdev->type)
++		__field(unsigned int,  freq      )
++		__field(unsigned long, cdev_state)
++		__field(u32,           power     )
++	),
++
++	TP_fast_assign(
++		__assign_str(type, cdev->type);
++		__entry->freq = freq;
++		__entry->cdev_state = cdev_state;
++		__entry->power = power;
++	),
++
++	TP_printk("type=%s freq=%u cdev_state=%lu power=%u",
++		__get_str(type), __entry->freq, __entry->cdev_state,
++		__entry->power)
++);
+ #endif /* _TRACE_THERMAL_H */
  
- #endif /* __LINUX_DEVFREQ_H__ */
+ /* This part must be outside protection */
 -- 
 1.9.1
 
