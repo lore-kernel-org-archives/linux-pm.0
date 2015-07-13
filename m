@@ -1,22 +1,22 @@
 From: Jon Hunter <jonathanh@nvidia.com>
-Subject: [PATCH V3 11/19] PCI: tegra: Add support for generic PM domains
-Date: Mon, 13 Jul 2015 13:39:49 +0100
-Message-ID: <1436791197-32358-12-git-send-email-jonathanh@nvidia.com>
+Subject: [PATCH V3 10/19] drm/tegra: dc: Prepare for generic PM domains
+Date: Mon, 13 Jul 2015 13:39:48 +0100
+Message-ID: <1436791197-32358-11-git-send-email-jonathanh@nvidia.com>
 References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:4682 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751267AbbGMMk6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2015 08:40:58 -0400
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:11225 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751031AbbGMMkz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2015 08:40:55 -0400
 In-Reply-To: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Hans de Goede <hdegoede@redhat.com>, Tejun Heo <tj@kernel.org>
 Cc: Vince Hsu <vinceh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 
-Add support to the tegra PCI driver for generic PM domains. However,
+Add support to the tegra dc driver for generic PM domains. However,
 to ensure backward compatibility with older device tree blobs ensure
 that the driver can work with or without generic PM domains. In order
 to migrate to generic PM domain infrastructure the necessary changes
@@ -45,112 +45,147 @@ are:
    and disable these clocks before calling
    tegra_powergate_power_off_legacy().
 
-The helper functions for handling the powering on and off of the PCI
-controller have been updated to support generic PM domains. The
-tegra_pcie_power_off() was missing code to disable the clocks enabled in
-the tegra_pcie_power_on() function and so this has been added.
+Helper functions have been added to the dc driver for handling power on
+and off the power-domains with and without generic PM domain support.
 
 Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
 ---
- drivers/pci/host/pci-tegra.c | 49 +++++++++++++++++++++++++++++++++-----------
- 1 file changed, 37 insertions(+), 12 deletions(-)
+ drivers/gpu/drm/tegra/dc.c | 94 +++++++++++++++++++++++++++++-----------------
+ 1 file changed, 59 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-index 10c05718dbfd..acd1f311eee5 100644
---- a/drivers/pci/host/pci-tegra.c
-+++ b/drivers/pci/host/pci-tegra.c
-@@ -40,6 +40,7 @@
- #include <linux/pci.h>
- #include <linux/phy/phy.h>
- #include <linux/platform_device.h>
+diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
+index a287e4fec865..a5b2475a7b9c 100644
+--- a/drivers/gpu/drm/tegra/dc.c
++++ b/drivers/gpu/drm/tegra/dc.c
+@@ -10,6 +10,7 @@
+ #include <linux/clk.h>
+ #include <linux/debugfs.h>
+ #include <linux/iommu.h>
 +#include <linux/pm_runtime.h>
  #include <linux/reset.h>
- #include <linux/sizes.h>
- #include <linux/slab.h>
-@@ -908,19 +909,32 @@ static int tegra_pcie_enable_controller(struct tegra_pcie *pcie)
  
- static void tegra_pcie_power_off(struct tegra_pcie *pcie)
- {
-+	const struct tegra_pcie_soc_data *soc = pcie->soc_data;
- 	int err;
+ #include <soc/tegra/pmc.h>
+@@ -1880,6 +1881,49 @@ static int tegra_dc_parse_dt(struct tegra_dc *dc)
+ 	return 0;
+ }
  
--	/* TODO: disable and unprepare clocks? */
--
- 	err = phy_power_off(pcie->phy);
- 	if (err < 0)
- 		dev_warn(pcie->dev, "failed to power off PHY: %d\n", err);
- 
- 	reset_control_assert(pcie->pcie_xrst);
- 	reset_control_assert(pcie->afi_rst);
--	reset_control_assert(pcie->pex_rst);
- 
--	tegra_powergate_power_off(TEGRA_POWERGATE_PCIE);
-+	clk_disable_unprepare(pcie->pll_e);
-+	if (soc->has_cml_clk)
-+		clk_disable_unprepare(pcie->cml_clk);
-+	clk_disable_unprepare(pcie->afi_clk);
-+	clk_disable_unprepare(pcie->pex_clk);
++static void tegra_dc_power_off(struct tegra_dc *dc)
++{
++	if (!dc->soc->has_powergate)
++		reset_control_assert(dc->rst);
 +
-+	if (pm_runtime_enabled(pcie->dev)) {
-+		err = pm_runtime_put_sync(pcie->dev);
-+	} else {
-+		err = tegra_powergate_power_off_legacy(TEGRA_POWERGATE_PCIE,
-+						       pcie->pex_clk,
-+						       pcie->pex_rst);
++	clk_disable_unprepare(dc->clk);
++
++	if (dc->soc->has_powergate) {
++		if (pm_runtime_enabled(dc->dev))
++			pm_runtime_put_sync(dc->dev);
++		else
++			tegra_powergate_power_off_legacy(dc->powergate,
++							 dc->clk, dc->rst);
++	}
++}
++
++static int tegra_dc_power_on(struct tegra_dc *dc)
++{
++	int err;
++
++	if (dc->soc->has_powergate) {
++		if (pm_runtime_enabled(dc->dev))
++			err = pm_runtime_get_sync(dc->dev);
++		else
++			err = tegra_powergate_power_on_legacy(dc->powergate,
++							      dc->clk, dc->rst);
++		if (err < 0) {
++			dev_err(dc->dev, "failed to power partition: %d\n",
++				err);
++			return err;
++		}
 +	}
 +
++	err = clk_prepare_enable(dc->clk);
 +	if (err < 0)
-+		dev_warn(pcie->dev, "powergate power-down failed: %d\n", err);
++		dev_err(dc->dev, "failed to enable clock: %d\n", err);
++
++	if (!dc->soc->has_powergate)
++		reset_control_deassert(dc->rst);
++
++	return err;
++}
++
+ static int tegra_dc_probe(struct platform_device *pdev)
+ {
+ 	unsigned long flags = HOST1X_SYNCPT_CLIENT_MANAGED;
+@@ -1917,35 +1961,6 @@ static int tegra_dc_probe(struct platform_device *pdev)
+ 		return PTR_ERR(dc->rst);
+ 	}
  
- 	err = regulator_bulk_disable(pcie->num_supplies, pcie->supplies);
- 	if (err < 0)
-@@ -934,20 +948,28 @@ static int tegra_pcie_power_on(struct tegra_pcie *pcie)
- 
- 	reset_control_assert(pcie->pcie_xrst);
- 	reset_control_assert(pcie->afi_rst);
--	reset_control_assert(pcie->pex_rst);
+-	if (dc->soc->has_powergate) {
+-		if (dc->pipe == 0)
+-			dc->powergate = TEGRA_POWERGATE_DIS;
+-		else
+-			dc->powergate = TEGRA_POWERGATE_DISB;
 -
--	tegra_powergate_power_off(TEGRA_POWERGATE_PCIE);
+-		err = tegra_powergate_sequence_power_up(dc->powergate, dc->clk,
+-							dc->rst);
+-		if (err < 0) {
+-			dev_err(&pdev->dev, "failed to power partition: %d\n",
+-				err);
+-			return err;
+-		}
+-	} else {
+-		err = clk_prepare_enable(dc->clk);
+-		if (err < 0) {
+-			dev_err(&pdev->dev, "failed to enable clock: %d\n",
+-				err);
+-			return err;
+-		}
+-
+-		err = reset_control_deassert(dc->rst);
+-		if (err < 0) {
+-			dev_err(&pdev->dev, "failed to deassert reset: %d\n",
+-				err);
+-			return err;
+-		}
+-	}
+-
+ 	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	dc->regs = devm_ioremap_resource(&pdev->dev, regs);
+ 	if (IS_ERR(dc->regs))
+@@ -1961,6 +1976,20 @@ static int tegra_dc_probe(struct platform_device *pdev)
+ 	dc->client.ops = &dc_client_ops;
+ 	dc->client.dev = &pdev->dev;
  
- 	/* enable regulators */
- 	err = regulator_bulk_enable(pcie->num_supplies, pcie->supplies);
- 	if (err < 0)
- 		dev_err(pcie->dev, "failed to enable regulators: %d\n", err);
- 
--	err = tegra_powergate_sequence_power_up(TEGRA_POWERGATE_PCIE,
--						pcie->pex_clk,
--						pcie->pex_rst);
--	if (err) {
--		dev_err(pcie->dev, "powerup sequence failed: %d\n", err);
-+	if (pm_runtime_enabled(pcie->dev)) {
-+		err = pm_runtime_get_sync(pcie->dev);
-+	} else {
-+		err = tegra_powergate_power_on_legacy(TEGRA_POWERGATE_PCIE,
-+						      pcie->pex_clk,
-+						      pcie->pex_rst);
++	if (dc->soc->has_powergate) {
++		if (dc->pipe == 0)
++			dc->powergate = TEGRA_POWERGATE_DIS;
++		else
++			dc->powergate = TEGRA_POWERGATE_DISB;
++
++		if (of_property_read_bool(pdev->dev.of_node, "power-domains"))
++			pm_runtime_enable(&pdev->dev);
 +	}
 +
-+	if (err < 0) {
-+		dev_err(pcie->dev, "powergate power-up failed: %d\n", err);
++	err = tegra_dc_power_on(dc);
++	if (err < 0)
 +		return err;
-+	}
 +
-+	err = clk_prepare_enable(pcie->pex_clk);
-+	if (err < 0) {
-+		dev_err(pcie->dev, "failed to enable PEX clock: %d\n", err);
+ 	err = tegra_dc_rgb_probe(dc);
+ 	if (err < 0 && err != -ENODEV) {
+ 		dev_err(&pdev->dev, "failed to probe RGB output: %d\n", err);
+@@ -2003,12 +2032,7 @@ static int tegra_dc_remove(struct platform_device *pdev)
  		return err;
  	}
  
-@@ -2001,6 +2023,9 @@ static int tegra_pcie_probe(struct platform_device *pdev)
+-	reset_control_assert(dc->rst);
+-
+-	if (dc->soc->has_powergate)
+-		tegra_powergate_power_off(dc->powergate);
+-
+-	clk_disable_unprepare(dc->clk);
++	tegra_dc_power_off(dc);
  
- 	pcibios_min_mem = 0;
- 
-+	if (of_property_read_bool(pdev->dev.of_node, "power-domains"))
-+		pm_runtime_enable(&pdev->dev);
-+
- 	err = tegra_pcie_get_resources(pcie);
- 	if (err < 0) {
- 		dev_err(&pdev->dev, "failed to request resources: %d\n", err);
+ 	return 0;
+ }
 -- 
 2.1.4
 
