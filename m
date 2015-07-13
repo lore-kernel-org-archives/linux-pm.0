@@ -1,138 +1,43 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH v2 4/4] devfreq_cooling: add trace information
-Date: Mon, 13 Jul 2015 18:33:58 +0100
-Message-ID: <1436808838-23391-5-git-send-email-javi.merino@arm.com>
-References: <1436808838-23391-1-git-send-email-javi.merino@arm.com>
+From: Joseph Salisbury <joseph.salisbury@canonical.com>
+Subject: Subject:  [v3.19 Regression] x86, irq, acpi: Get rid of special handling
+ of GSI for ACPI SCI
+Date: Mon, 13 Jul 2015 15:36:11 -0400
+Message-ID: <55A4132B.4030801@canonical.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:58803 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751748AbbGMReY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 13 Jul 2015 13:34:24 -0400
-In-Reply-To: <1436808838-23391-1-git-send-email-javi.merino@arm.com>
+Received: from youngberry.canonical.com ([91.189.89.112]:53517 "EHLO
+	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752968AbbGMTgV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2015 15:36:21 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>
+To: jiang.liu@linux.intel.com
+Cc: konrad.wilk@oracle.com, tony.luck@intel.com, joro@8bytes.org, Greg KH <gregkh@linuxfoundation.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, rdunlap@infradead.org, Yinghai Lu <yinghai@kernel.org>, bp@alien8.de, len.brown@intel.com, pavel@ucw.cz, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>"Rafael J. Wysocki" <rjw@rjwysocki.net>pavel@ucw.cz, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org
 
-Tracing is useful for debugging and performance tuning.  Add similar
-traces to what's present in the cpu cooling device.
+Hello Jiang,
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
----
-Changes since v1:
-  - Calculate devfreq load in the tracepoint so that it only happens
-    when the trace is enabled.  Thanks Steven Rostedt.
+A kernel bug report was opened against Ubuntu [0]. It was found that
+reverting the following commit resolves this bug:
 
- drivers/thermal/devfreq_cooling.c |  6 +++++
- include/trace/events/thermal.h    | 53 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 59 insertions(+)
+commit cd68f6bd53cf89d1d5ed889b8af65e9c3574a079
+Author: Jiang Liu <jiang.liu@linux.intel.com>
+Date:   Mon Oct 27 16:11:52 2014 +0800
 
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index 69f64474908a..649386a6ce7a 100644
---- a/drivers/thermal/devfreq_cooling.c
-+++ b/drivers/thermal/devfreq_cooling.c
-@@ -21,6 +21,8 @@
- #include <linux/pm_opp.h>
- #include <linux/thermal.h>
- 
-+#include <trace/events/thermal.h>
-+
- static int devfreq_cooling_get_max_state(struct thermal_cooling_device *cdev,
- 					 unsigned long *state)
- {
-@@ -142,6 +144,9 @@ static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cd
- 	/* Get static power */
- 	static_power = get_static_power(dfc, freq);
- 
-+	trace_thermal_power_devfreq_get_power(cdev, status, freq, dyn_power,
-+					      static_power);
-+
- 	*power = dyn_power + static_power;
- 
- 	return 0;
-@@ -195,6 +200,7 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
- 			break;
- 
- 	*state = i;
-+	trace_thermal_power_devfreq_limit(cdev, freq, *state, power);
- 	return 0;
- }
- 
-diff --git a/include/trace/events/thermal.h b/include/trace/events/thermal.h
-index 8b1f80682b80..5738bb3e2343 100644
---- a/include/trace/events/thermal.h
-+++ b/include/trace/events/thermal.h
-@@ -4,6 +4,7 @@
- #if !defined(_TRACE_THERMAL_H) || defined(TRACE_HEADER_MULTI_READ)
- #define _TRACE_THERMAL_H
- 
-+#include <linux/devfreq.h>
- #include <linux/thermal.h>
- #include <linux/tracepoint.h>
- 
-@@ -135,6 +136,58 @@ TRACE_EVENT(thermal_power_cpu_limit,
- 		__entry->power)
- );
- 
-+TRACE_EVENT(thermal_power_devfreq_get_power,
-+	TP_PROTO(struct thermal_cooling_device *cdev,
-+		 struct devfreq_dev_status *status, unsigned long freq,
-+		u32 dynamic_power, u32 static_power),
-+
-+	TP_ARGS(cdev, status,  freq, dynamic_power, static_power),
-+
-+	TP_STRUCT__entry(
-+		__string(type,         cdev->type    )
-+		__field(unsigned long, freq          )
-+		__field(u32,           load          )
-+		__field(u32,           dynamic_power )
-+		__field(u32,           static_power  )
-+	),
-+
-+	TP_fast_assign(
-+		__assign_str(type, cdev->type);
-+		__entry->freq = freq;
-+		__entry->load = (100 * status->busy_time) / status->total_time;
-+		__entry->dynamic_power = dynamic_power;
-+		__entry->static_power = static_power;
-+	),
-+
-+	TP_printk("type=%s freq=%lu load=%u dynamic_power=%u static_power=%u",
-+		__get_str(type), __entry->freq,
-+		__entry->load, __entry->dynamic_power, __entry->static_power)
-+);
-+
-+TRACE_EVENT(thermal_power_devfreq_limit,
-+	TP_PROTO(struct thermal_cooling_device *cdev, unsigned long freq,
-+		unsigned long cdev_state, u32 power),
-+
-+	TP_ARGS(cdev, freq, cdev_state, power),
-+
-+	TP_STRUCT__entry(
-+		__string(type,         cdev->type)
-+		__field(unsigned int,  freq      )
-+		__field(unsigned long, cdev_state)
-+		__field(u32,           power     )
-+	),
-+
-+	TP_fast_assign(
-+		__assign_str(type, cdev->type);
-+		__entry->freq = freq;
-+		__entry->cdev_state = cdev_state;
-+		__entry->power = power;
-+	),
-+
-+	TP_printk("type=%s freq=%u cdev_state=%lu power=%u",
-+		__get_str(type), __entry->freq, __entry->cdev_state,
-+		__entry->power)
-+);
- #endif /* _TRACE_THERMAL_H */
- 
- /* This part must be outside protection */
--- 
-1.9.1
+    x86, irq, acpi: Get rid of special handling of GSI for ACPI SCI
+
+The regression was introduced as of v3.19-rc1.
+    
+I was hoping to get your feedback, since you are the patch author.  Do
+you think gathering any additional data will help diagnose this issue,
+or would it be best to submit a revert request?
+    
+    
+Thanks,
+
+Joe
+
+
+[0] http://pad.lv/1440072
 
