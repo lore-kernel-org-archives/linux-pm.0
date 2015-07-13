@@ -1,7 +1,7 @@
 From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V3 01/19] reset: add of_reset_control_get_by_index()
-Date: Mon, 13 Jul 2015 13:39:39 +0100
-Message-ID: <1436791197-32358-2-git-send-email-jonathanh@nvidia.com>
+Subject: [PATCH V3 03/19] memory: tegra: add flush operation for Tegra30 memory clients
+Date: Mon, 13 Jul 2015 13:39:41 +0100
+Message-ID: <1436791197-32358-4-git-send-email-jonathanh@nvidia.com>
 References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -14,116 +14,66 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-Add of_reset_control_get_by_index() to allow the drivers to get reset
-device without knowing its name.
+This patch adds the hot reset register table and flush related callback
+functions for Tegra30.
 
 Signed-off-by: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-[jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org: Updated stub function to return -ENOTSUPP instead
- of -ENOSYS which should only be used for system calls.]
+[jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org: Removed tegra_mc_ops and added
+ metastable_flush_reads.]
 Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
 ---
-v3: addressed comments from Philipp
-v2: minor changes according to Alex's comments
+v3: removal of tegra_mc_ops
 ---
- drivers/reset/core.c  | 40 +++++++++++++++++++++++++++++-----------
- include/linux/reset.h |  9 +++++++++
- 2 files changed, 38 insertions(+), 11 deletions(-)
+ drivers/memory/tegra/tegra30.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-diff --git a/drivers/reset/core.c b/drivers/reset/core.c
-index 7955e00d04d4..81ae17d15480 100644
---- a/drivers/reset/core.c
-+++ b/drivers/reset/core.c
-@@ -141,27 +141,24 @@ int reset_control_status(struct reset_control *rstc)
- EXPORT_SYMBOL_GPL(reset_control_status);
- 
- /**
-- * of_reset_control_get - Lookup and obtain a reference to a reset controller.
-+ * of_reset_control_get_by_index - Lookup and obtain a reference to a reset
-+ * controller by index.
-  * @node: device to be reset by the controller
-- * @id: reset line name
-- *
-- * Returns a struct reset_control or IS_ERR() condition containing errno.
-+ * @index: index of the reset controller
-  *
-- * Use of id names is optional.
-+ * This is to be used to perform a list of resets for a device or power domain
-+ * in whatever order. Returns a struct reset_control or IS_ERR() condition
-+ * containing errno.
+diff --git a/drivers/memory/tegra/tegra30.c b/drivers/memory/tegra/tegra30.c
+index 1abcd8f6f3ba..3b4987f39b52 100644
+--- a/drivers/memory/tegra/tegra30.c
++++ b/drivers/memory/tegra/tegra30.c
+@@ -6,6 +6,7 @@
+  * published by the Free Software Foundation.
   */
--struct reset_control *of_reset_control_get(struct device_node *node,
--					   const char *id)
-+struct reset_control *of_reset_control_get_by_index(struct device_node *node,
-+					   int index)
+ 
++#include <linux/device.h>
+ #include <linux/of.h>
+ #include <linux/mm.h>
+ 
+@@ -936,6 +937,26 @@ static const struct tegra_smmu_swgroup tegra30_swgroups[] = {
+ 	{ .name = "isp",  .swgroup = TEGRA_SWGROUP_ISP,  .reg = 0x258 },
+ };
+ 
++static struct tegra_mc_flush tegra30_mc_flush[] = {
++	{TEGRA_SWGROUP_AFI,        0x200, 0x204,  0},
++	{TEGRA_SWGROUP_AVPC,       0x200, 0x204,  1},
++	{TEGRA_SWGROUP_DC,         0x200, 0x204,  2},
++	{TEGRA_SWGROUP_DCB,        0x200, 0x204,  3},
++	{TEGRA_SWGROUP_EPP,        0x200, 0x204,  4},
++	{TEGRA_SWGROUP_G2,         0x200, 0x204,  5},
++	{TEGRA_SWGROUP_HC,         0x200, 0x204,  6},
++	{TEGRA_SWGROUP_HDA,        0x200, 0x204,  7},
++	{TEGRA_SWGROUP_ISP,        0x200, 0x204,  8},
++	{TEGRA_SWGROUP_MPCORE,     0x200, 0x204,  9},
++	{TEGRA_SWGROUP_MPCORELP,   0x200, 0x204, 10},
++	{TEGRA_SWGROUP_MPE,        0x200, 0x204, 11},
++	{TEGRA_SWGROUP_NV,         0x200, 0x204, 12},
++	{TEGRA_SWGROUP_NV2,        0x200, 0x204, 13},
++	{TEGRA_SWGROUP_PPCS,       0x200, 0x204, 14},
++	{TEGRA_SWGROUP_VDE,        0x200, 0x204, 16},
++	{TEGRA_SWGROUP_VI,         0x200, 0x204, 17},
++};
++
+ static void tegra30_flush_dcache(struct page *page, unsigned long offset,
+ 				 size_t size)
  {
- 	struct reset_control *rstc = ERR_PTR(-EPROBE_DEFER);
- 	struct reset_controller_dev *r, *rcdev;
- 	struct of_phandle_args args;
--	int index = 0;
- 	int rstc_id;
- 	int ret;
- 
--	if (id)
--		index = of_property_match_string(node,
--						 "reset-names", id);
- 	ret = of_parse_phandle_with_args(node, "resets", "#reset-cells",
- 					 index, &args);
- 	if (ret)
-@@ -202,6 +199,27 @@ struct reset_control *of_reset_control_get(struct device_node *node,
- 
- 	return rstc;
- }
-+EXPORT_SYMBOL_GPL(of_reset_control_get_by_index);
-+
-+/**
-+ * of_reset_control_get - Lookup and obtain a reference to a reset controller.
-+ * @node: device to be reset by the controller
-+ * @id: reset line name
-+ *
-+ * Returns a struct reset_control or IS_ERR() condition containing errno.
-+ *
-+ * Use of id names is optional.
-+ */
-+struct reset_control *of_reset_control_get(struct device_node *node,
-+					   const char *id)
-+{
-+	int index = 0;
-+
-+	if (id)
-+		index = of_property_match_string(node,
-+						 "reset-names", id);
-+	return of_reset_control_get_by_index(node, index);
-+}
- EXPORT_SYMBOL_GPL(of_reset_control_get);
- 
- /**
-diff --git a/include/linux/reset.h b/include/linux/reset.h
-index da5602bd77d7..26f1b53386d8 100644
---- a/include/linux/reset.h
-+++ b/include/linux/reset.h
-@@ -38,6 +38,9 @@ static inline struct reset_control *devm_reset_control_get_optional(
- struct reset_control *of_reset_control_get(struct device_node *node,
- 					   const char *id);
- 
-+struct reset_control *of_reset_control_get_by_index(
-+					struct device_node *node, int index);
-+
- #else
- 
- static inline int reset_control_reset(struct reset_control *rstc)
-@@ -92,6 +95,12 @@ static inline struct reset_control *of_reset_control_get(
- 	return ERR_PTR(-ENOSYS);
- }
- 
-+static inline struct reset_control *of_reset_control_get_by_index(
-+				struct device_node *node, int index)
-+{
-+	return ERR_PTR(-ENOTSUPP);
-+}
-+
- #endif /* CONFIG_RESET_CONTROLLER */
- 
- #endif
+@@ -967,4 +988,7 @@ const struct tegra_mc_soc tegra30_mc_soc = {
+ 	.num_address_bits = 32,
+ 	.atom_size = 16,
+ 	.smmu = &tegra30_smmu_soc,
++	.flushes = tegra30_mc_flush,
++	.num_flushes = ARRAY_SIZE(tegra30_mc_flush),
++	.metastable_flush_reads = 0,
+ };
 -- 
 2.1.4
