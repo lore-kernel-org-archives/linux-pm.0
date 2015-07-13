@@ -1,30 +1,56 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V3 19/19] ARM: tegra: select PM_GENERIC_DOMAINS
-Date: Mon, 13 Jul 2015 15:03:43 +0100
-Message-ID: <55A3C53F.8090003@nvidia.com>
-References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com> <1436791197-32358-20-git-send-email-jonathanh@nvidia.com> <20150713135047.GR6287@tbergstrom-lnx.Nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150713135047.GR6287-Rysk9IDjsxmJz7etNGeUX8VPkgjIgRvpAL8bYrjMMd8@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, =?windows-1252?Q?Terje_Bergstr?= =?windows-1252?Q?=F6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v4 0/6] powernv: cpufreq: Report frequency throttle by OCC
+Date: Mon, 13 Jul 2015 19:39:56 +0530
+Message-ID: <1436796602-10228-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:50151 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbbGMOLP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2015 10:11:15 -0400
+Received: from /spool/local
+	by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+	Tue, 14 Jul 2015 00:11:14 +1000
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: viresh.kumar@linaro.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
+This patchset intends to add frequency throttle reporting mechanism
+to powernv-cpufreq driver when OCC throttles the frequency. OCC is an
+On-Chip-Controller which takes care of the power and thermal safety of
+the chip. The CPU frequency can be throttled during an OCC reset or
+when OCC tries to limit the max allowed frequency. The patchset will
+report such conditions so as to keep the user informed about reason
+for the drop in performance of workloads when frequency is throttled.
 
+Changes from v3:
+- Rebased on top of 4.2-rc1
+- Minor changes in patch 2,3,4,6 this does not change the
+  functionality of the code
+- 594fcb9ec9e powerpc/powernv: Expose OPAL APIs required by PRD
+  interface , this patch fixes the build error due to which this
+  series was initially dropped
+  ERROR: ".opal_message_notifier_register"
+  drivers/cpufreq/powernv-cpufreq.ko] undefined!
 
-On 13/07/15 14:50, Peter De Schrijver wrote:
-> On Mon, Jul 13, 2015 at 01:39:57PM +0100, Jon Hunter wrote:
->> From: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->>
->> We have added generic power domain support for Tegra SoCs. So now the
->> option M_GENERIC_DOMAINS must be enabled by default to have proper power
-> 
-> Missing P :)
+Changes from v2:
+- Split into multiple patches
+- Semantic fixes
 
-Ooops. I think introduced that error. Will fix.
+Shilpasri G Bhat (6):
+  cpufreq: powernv: Handle throttling due to Pmax capping at chip level
+  powerpc/powernv: Add definition of OPAL_MSG_OCC message type
+  cpufreq: powernv: Register for OCC related opal_message notification
+  cpufreq: powernv: Call throttle_check() on receiving OCC_THROTTLE
+  cpufreq: powernv: Report Psafe only if PMSR.psafe_mode_active bit is
+    set
+  cpufreq: powernv: Restore cpu frequency to policy->cur on unthrottling
 
-Cheers
-Jon
+ arch/powerpc/include/asm/opal-api.h |  12 +++
+ drivers/cpufreq/powernv-cpufreq.c   | 195 +++++++++++++++++++++++++++++++++---
+ 2 files changed, 192 insertions(+), 15 deletions(-)
+
+-- 
+1.9.3
+
