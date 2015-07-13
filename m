@@ -1,142 +1,113 @@
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v4 1/6] cpufreq: powernv: Handle throttling due to Pmax capping at chip level
-Date: Mon, 13 Jul 2015 19:39:57 +0530
-Message-ID: <1436796602-10228-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v4 6/6] cpufreq: powernv: Restore cpu frequency to policy->cur on unthrottling
+Date: Mon, 13 Jul 2015 19:40:02 +0530
+Message-ID: <1436796602-10228-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 References: <1436796602-10228-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:54330 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752647AbbGMOLb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2015 10:11:31 -0400
+Received: from /spool/local
+	by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+	Tue, 14 Jul 2015 00:11:29 +1000
 In-Reply-To: <1436796602-10228-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rjw@rjwysocki.net
 Cc: viresh.kumar@linaro.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-List-Id: linux-pm@vger.kernel.org
 
-The On-Chip-Controller(OCC) can throttle cpu frequency by reducing the
-max allowed frequency for that chip if the chip exceeds its power or
-temperature limits. As Pmax capping is a chip level condition report
-this throttling behavior at chip level and also do not set the global
-'throttled' on Pmax capping instead set the per-chip throttled
-variable. Report unthrottling if Pmax is restored after throttling.
-
-This patch adds a structure to store chip id and throttled state of
-the chip.
+If frequency is throttled due to OCC reset then cpus will be in Psafe
+frequency, so restore the frequency on all cpus to policy->cur when
+OCCs are active again. And if frequency is throttled due to Pmax
+capping then restore the frequency of all the cpus  in the chip on
+unthrottling.
 
 Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 ---
-No change from v3
+Changes from v3:
+- Refer to the members of 'struct opal_occ_msg' in the patch.
+  Replace 'reason' with 'omsg.throttle_status'
 
- drivers/cpufreq/powernv-cpufreq.c | 59 ++++++++++++++++++++++++++++++++++++---
- 1 file changed, 55 insertions(+), 4 deletions(-)
+ drivers/cpufreq/powernv-cpufreq.c | 31 +++++++++++++++++++++++++++++--
+ 1 file changed, 29 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index ebef0d8..d0c18c9 100644
+index d6d7e68..824141a 100644
 --- a/drivers/cpufreq/powernv-cpufreq.c
 +++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -27,6 +27,7 @@
- #include <linux/smp.h>
- #include <linux/of.h>
- #include <linux/reboot.h>
-+#include <linux/slab.h>
+@@ -48,6 +48,7 @@ static struct chip {
+ 	bool throttled;
+ 	cpumask_t mask;
+ 	struct work_struct throttle;
++	bool restore;
+ } *chips;
  
- #include <asm/cputhreads.h>
- #include <asm/firmware.h>
-@@ -42,6 +43,13 @@
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
- static bool rebooting, throttled;
- 
-+static struct chip {
-+	unsigned int id;
-+	bool throttled;
-+} *chips;
-+
-+static int nr_chips;
-+
- /*
-  * Note: The set of pstates consists of contiguous integers, the
-  * smallest of which is indicated by powernv_pstate_info.min, the
-@@ -301,22 +309,33 @@ static inline unsigned int get_nominal_index(void)
- static void powernv_cpufreq_throttle_check(unsigned int cpu)
+ static int nr_chips;
+@@ -415,9 +416,29 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
+ void powernv_cpufreq_work_fn(struct work_struct *work)
  {
- 	unsigned long pmsr;
--	int pmsr_pmax, pmsr_lp;
-+	int pmsr_pmax, pmsr_lp, i;
+ 	struct chip *chip = container_of(work, struct chip, throttle);
++	unsigned int cpu;
++	cpumask_var_t mask;
  
- 	pmsr = get_pmspr(SPRN_PMSR);
- 
-+	for (i = 0; i < nr_chips; i++)
-+		if (chips[i].id == cpu_to_chip_id(cpu))
-+			break;
+ 	smp_call_function_any(&chip->mask,
+ 			      powernv_cpufreq_throttle_check, NULL, 0);
 +
- 	/* Check for Pmax Capping */
- 	pmsr_pmax = (s8)PMSR_MAX(pmsr);
- 	if (pmsr_pmax != powernv_pstate_info.max) {
--		throttled = true;
--		pr_info("CPU %d Pmax is reduced to %d\n", cpu, pmsr_pmax);
--		pr_info("Max allowed Pstate is capped\n");
-+		if (chips[i].throttled)
-+			goto next;
-+		chips[i].throttled = true;
-+		pr_info("CPU %d on Chip %u has Pmax reduced to %d\n", cpu,
-+			chips[i].id, pmsr_pmax);
-+	} else if (chips[i].throttled) {
-+		chips[i].throttled = false;
-+		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
-+			chips[i].id, pmsr_pmax);
- 	}
- 
- 	/*
- 	 * Check for Psafe by reading LocalPstate
- 	 * or check if Psafe_mode_active is set in PMSR.
- 	 */
-+next:
- 	pmsr_lp = (s8)PMSR_LP(pmsr);
- 	if ((pmsr_lp < powernv_pstate_info.min) ||
- 				(pmsr & PMSR_PSAFE_ENABLE)) {
-@@ -414,6 +433,33 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
- 	.attr		= powernv_cpu_freq_attr,
- };
- 
-+static int init_chip_info(void)
-+{
-+	unsigned int chip[256];
-+	unsigned int cpu, i;
-+	unsigned int prev_chip_id = UINT_MAX;
++	if (!chip->restore)
++		return;
 +
-+	for_each_possible_cpu(cpu) {
-+		unsigned int id = cpu_to_chip_id(cpu);
++	chip->restore = false;
++	cpumask_copy(mask, &chip->mask);
++	for_each_cpu_and(cpu, mask, cpu_online_mask) {
++		int index, tcpu;
++		struct cpufreq_policy policy;
 +
-+		if (prev_chip_id != id) {
-+			prev_chip_id = id;
-+			chip[nr_chips++] = id;
-+		}
++		cpufreq_get_policy(&policy, cpu);
++		cpufreq_frequency_table_target(&policy, policy.freq_table,
++					       policy.cur,
++					       CPUFREQ_RELATION_C, &index);
++		powernv_cpufreq_target_index(&policy, index);
++		for_each_cpu(tcpu, policy.cpus)
++			cpumask_clear_cpu(tcpu, mask);
 +	}
-+
-+	chips = kmalloc_array(nr_chips, sizeof(struct chip), GFP_KERNEL);
-+	if (!chips)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < nr_chips; i++) {
-+		chips[i].id = chip[i];
-+		chips[i].throttled = false;
-+	}
-+
-+	return 0;
-+}
-+
- static int __init powernv_cpufreq_init(void)
- {
- 	int rc = 0;
-@@ -429,6 +475,11 @@ static int __init powernv_cpufreq_init(void)
- 		return rc;
- 	}
- 
-+	/* Populate chip info */
-+	rc = init_chip_info();
-+	if (rc)
-+		return rc;
-+
- 	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
- 	return cpufreq_register_driver(&powernv_cpufreq_driver);
  }
+ 
+ static char throttle_reason[][30] = {
+@@ -466,8 +487,10 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+ 			throttled = false;
+ 			pr_info("OCC: Active\n");
+ 
+-			for (i = 0; i < nr_chips; i++)
++			for (i = 0; i < nr_chips; i++) {
++				chips[i].restore = true;
+ 				schedule_work(&chips[i].throttle);
++			}
+ 
+ 			return 0;
+ 		}
+@@ -484,8 +507,11 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+ 			return 0;
+ 
+ 		for (i = 0; i < nr_chips; i++)
+-			if (chips[i].id == omsg.chip)
++			if (chips[i].id == omsg.chip) {
++				if (!omsg.throttle_status)
++					chips[i].restore = true;
+ 				schedule_work(&chips[i].throttle);
++			}
+ 	}
+ 	return 0;
+ }
+@@ -539,6 +565,7 @@ static int init_chip_info(void)
+ 		chips[i].throttled = false;
+ 		cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
+ 		INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
++		chips[i].restore = false;
+ 	}
+ 
+ 	return 0;
 -- 
 1.9.3
+
