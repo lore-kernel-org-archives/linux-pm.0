@@ -1,76 +1,63 @@
-From: Pan Xinhui <xinhuix.pan@intel.com>
-Subject: Re: [PATCH] acpi-cpufreq: Add a miss ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
-Date: Mon, 13 Jul 2015 14:33:08 +0800
-Message-ID: <55A35BA4.8020800@intel.com>
-References: <559F5D13.8050104@intel.com> <CAJZ5v0jwgtgC+01p8f5a7amPcTGUfps5f2Ph9rtt77=3BEk5Cg@mail.gmail.com>
+From: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3 1/2] iio: light: DT binding docs for APDS9960 driver
+Date: Mon, 13 Jul 2015 10:42:50 +0100
+Message-ID: <73CF94B0-47DF-493D-8F2A-0BC26EB4DEBB@kernel.org>
+References: <1436754043-6232-1-git-send-email-mranostay@gmail.com> <1436754043-6232-2-git-send-email-mranostay@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:58526 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750804AbbGMGfr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 13 Jul 2015 02:35:47 -0400
-In-Reply-To: <CAJZ5v0jwgtgC+01p8f5a7amPcTGUfps5f2Ph9rtt77=3BEk5Cg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain;
+ charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1436754043-6232-2-git-send-email-mranostay-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Matt Ranostay <mranostay-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, marex-ynQEQJNshbs@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>, "mnipxh@163.com" <mnipxh@163.com>
 
-hi, Rafeal
-	thanks for your reply. :)
 
-On 2015=E5=B9=B407=E6=9C=8811=E6=97=A5 04:44, Rafael J. Wysocki wrote:
-> Hi,
->=20
-> On Fri, Jul 10, 2015 at 7:50 AM, Pan Xinhui <xinhuix.pan@intel.com> w=
-rote:
->>
->> If CONFIG_X86_ACPI_CPUFREQ_CPB has not been defined, the placeholder=
- for
->> cpb is not needed. Add ifdef around it.
->>
->> Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
->> ---
->>  drivers/cpufreq/acpi-cpufreq.c | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-c=
-pufreq.c
->> index e7fcaa6..314a19e 100644
->> --- a/drivers/cpufreq/acpi-cpufreq.c
->> +++ b/drivers/cpufreq/acpi-cpufreq.c
->> @@ -884,7 +884,9 @@ static int acpi_cpufreq_resume(struct cpufreq_po=
-licy *policy)
->>  static struct freq_attr *acpi_cpufreq_attr[] =3D {
->>         &cpufreq_freq_attr_scaling_available_freqs,
->>         &freqdomain_cpus,
->> +#ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
->>         NULL,   /* this is a placeholder for cpb, do not remove */
->> +#endif
->=20
-> Adding the ifdef here doesn't change anything, because the next NULL
-> will play the role of the one you've just #ifdefed and the structure
-> will be filled with zeros from that point on anyway.
->=20
-Yes, adding ifdef here does not change any binary codes. But I want to =
-make the codes more readable. :)
-Patch author has noticed two *NULL* here would confuse people, especial=
-ly who first read this acpi-cpufreq.c file
-=46rom code style point, it would be better to have #ifdef around it.=20
 
-> You'd need to #ifdef it in the struct freq_attr definition, but I'm
-> not sure it's worth the effort.
->=20
+On 13 July 2015 03:20:42 BST, Matt Ranostay <mranostay-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+>Document compatible string, and required DT properties for APDS9960
+>chipset driver.
+>
+>Reviewed-by: Marek Vasut <marex-ynQEQJNshbs@public.gmane.org>
+>Signed-off-by: Matt Ranostay <mranostay-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+>---
+>.../devicetree/bindings/iio/light/apds9960.txt        | 19
+>+++++++++++++++++++
+> 1 file changed, 19 insertions(+)
+>create mode 100644
+>Documentation/devicetree/bindings/iio/light/apds9960.txt
+>
+>diff --git a/Documentation/devicetree/bindings/iio/light/apds9960.txt
+>b/Documentation/devicetree/bindings/iio/light/apds9960.txt
+>new file mode 100644
+>index 0000000..7a47d28
+>--- /dev/null
+>+++ b/Documentation/devicetree/bindings/iio/light/apds9960.txt
+>@@ -0,0 +1,19 @@
+>+* Avago APDS9960 gesture/RGB/ALS/proximity sensor
+>+
+>+http://www.avagotech.com/docs/AV02-4191EN
+>+
+>+Required properties:
+>+
+>+  - compatible: must be "avago,apds9960"
+>+  - reg: the I2c address of the sensor
+>+  - interrupt-parent: should be the phandle for the interrupt
+>controller
+>+  - interrupts: interrupt mapping for GPIO IRQ
+Usual trick here is to cross reference the interrupt bindings doc to allow all the
+ complexity without duplicating docs too much.
+>+
+>+Example:
+>+
+>+apds9960@39 {
+>+	compatible = "avago,apds9960";
+>+	reg = <0x39>;
+>+	interrupt-parent = <&gpio1>;
+>+	interrupts = <16 1>;
+>+};
 
-struct freq_attr *cpb* is defined in #ifdef section. :)
-
-thanks
-xinhui
-
->>         NULL,
->>  };
->=20
-> Thanks,
-> Rafael
->=20
+-- 
+Sent from my Android device with K-9 Mail. Please excuse my brevity.
