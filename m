@@ -1,116 +1,117 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH RESEND] thermal: power_allocator: trace the real
- requested power
-Date: Mon, 13 Jul 2015 12:55:17 +0100
-Message-ID: <20150713115516.GA2809@e104805>
-References: <1435915473-7407-1-git-send-email-javi.merino@arm.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2] power/reset: zx: Register restart handler
+Date: Mon, 13 Jul 2015 14:00:19 +0200
+Message-ID: <20150713120019.GB9128@earth>
+References: <1436171730-21175-1-git-send-email-jun.nie@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="MfFXiAuoTsnnDAfZ"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:40479 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750988AbbGMLzW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2015 07:55:22 -0400
+Received: from mail.kernel.org ([198.145.29.136]:38210 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751098AbbGMMAY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 13 Jul 2015 08:00:24 -0400
 Content-Disposition: inline
-In-Reply-To: <1435915473-7407-1-git-send-email-javi.merino@arm.com>
+In-Reply-To: <1436171730-21175-1-git-send-email-jun.nie@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Jun Nie <jun.nie@linaro.org>
+Cc: haojian.zhuang@linaro.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, shawn.guo@linaro.org, wan.zhijun@zte.com.cn, jason.liu@linaro.org
 
-On Fri, Jul 03, 2015 at 10:24:33AM +0100, Javi Merino wrote:
-> The power allocator governor uses ftrace to output a bunch of internal
-> data for debugging and tuning.  Currently, the requested power it
-> outputs is the "weighted" requested power, that is, what each cooling
-> device has requested multiplied by the cooling device weight.  It is
-> more useful to trace the real request, without any weight being
-> applied.
-> 
-> This commit only affects the data traced, there is no functional change.
-> 
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Signed-off-by: Javi Merino <javi.merino@arm.com>
-> ---
->  drivers/thermal/power_allocator.c | 26 ++++++++++++++++----------
->  1 file changed, 16 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-> index 4672250b329f..63a448f9d93b 100644
-> --- a/drivers/thermal/power_allocator.c
-> +++ b/drivers/thermal/power_allocator.c
-> @@ -229,7 +229,8 @@ static int allocate_power(struct thermal_zone_device *tz,
->  	struct thermal_instance *instance;
->  	struct power_allocator_params *params = tz->governor_data;
->  	u32 *req_power, *max_power, *granted_power, *extra_actor_power;
-> -	u32 total_req_power, max_allocatable_power;
-> +	u32 *weighted_req_power;
-> +	u32 total_req_power, max_allocatable_power, total_weighted_req_power;
->  	u32 total_granted_power, power_range;
->  	int i, num_actors, total_weight, ret = 0;
->  	int trip_max_desired_temperature = params->trip_max_desired_temperature;
-> @@ -247,16 +248,17 @@ static int allocate_power(struct thermal_zone_device *tz,
->  	}
->  
->  	/*
-> -	 * We need to allocate three arrays of the same size:
-> -	 * req_power, max_power and granted_power.  They are going to
-> -	 * be needed until this function returns.  Allocate them all
-> -	 * in one go to simplify the allocation and deallocation
-> -	 * logic.
-> +	 * We need to allocate five arrays of the same size:
-> +	 * req_power, max_power, granted_power, extra_actor_power and
-> +	 * weighted_req_power.  They are going to be needed until this
-> +	 * function returns.  Allocate them all in one go to simplify
-> +	 * the allocation and deallocation logic.
->  	 */
->  	BUILD_BUG_ON(sizeof(*req_power) != sizeof(*max_power));
->  	BUILD_BUG_ON(sizeof(*req_power) != sizeof(*granted_power));
->  	BUILD_BUG_ON(sizeof(*req_power) != sizeof(*extra_actor_power));
-> -	req_power = devm_kcalloc(&tz->device, num_actors * 4,
-> +	BUILD_BUG_ON(sizeof(*req_power) != sizeof(*weighted_req_power));
-> +	req_power = devm_kcalloc(&tz->device, num_actors * 5,
->  				 sizeof(*req_power), GFP_KERNEL);
->  	if (!req_power) {
->  		ret = -ENOMEM;
-> @@ -266,8 +268,10 @@ static int allocate_power(struct thermal_zone_device *tz,
->  	max_power = &req_power[num_actors];
->  	granted_power = &req_power[2 * num_actors];
->  	extra_actor_power = &req_power[3 * num_actors];
-> +	weighted_req_power = &req_power[4 * num_actors];
->  
->  	i = 0;
-> +	total_weighted_req_power = 0;
->  	total_req_power = 0;
->  	max_allocatable_power = 0;
->  
-> @@ -289,13 +293,14 @@ static int allocate_power(struct thermal_zone_device *tz,
->  		else
->  			weight = instance->weight;
->  
-> -		req_power[i] = frac_to_int(weight * req_power[i]);
-> +		weighted_req_power[i] = frac_to_int(weight * req_power[i]);
->  
->  		if (power_actor_get_max_power(cdev, tz, &max_power[i]))
->  			continue;
->  
->  		total_req_power += req_power[i];
->  		max_allocatable_power += max_power[i];
-> +		total_weighted_req_power += weighted_req_power[i];
->  
->  		i++;
->  	}
-> @@ -303,8 +308,9 @@ static int allocate_power(struct thermal_zone_device *tz,
->  	power_range = pid_controller(tz, current_temp, control_temp,
->  				     max_allocatable_power);
->  
-> -	divvy_up_power(req_power, max_power, num_actors, total_req_power,
-> -		       power_range, granted_power, extra_actor_power);
-> +	divvy_up_power(weighted_req_power, max_power, num_actors,
-> +		       total_weighted_req_power, power_range, granted_power,
-> +		       extra_actor_power);
->  
->  	total_granted_power = 0;
->  	i = 0;
 
-Gentle ping
+--MfFXiAuoTsnnDAfZ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Mon, Jul 06, 2015 at 04:35:30PM +0800, Jun Nie wrote:
+> Register with kernel restart handler instead of setting arm_pm_restart
+> directly.
+>=20
+> [...]
+>
+> +static void __iomem *base;
+> +static void __iomem *pcu_base;
+> +
+> +static int zx_restart_handler(struct notifier_block *this,
+> +			      unsigned long mode, void *cmd)
+> +{
+> +	writel_relaxed(1, base + 0xb0);
+> +	writel_relaxed(1, pcu_base + 0x34);
+> +
+> +	while (1)
+> +		cpu_do_idle();
+
+mdelay(some_time);
+pr_emerg("Unable to restart system\n");
+
+> +
+> +	return NOTIFY_DONE;
+> +}
+> +
+>
+> [...]
+>
+> +static int zx_reboot_probe(struct platform_device *pdev)
+> +{
+> +	struct device_node *np =3D pdev->dev.of_node;
+> +	int err;
+> +
+> +	base =3D of_iomap(np, 0);
+> +	if (!base) {
+> +		WARN(1, "failed to map base address");
+> +		return -ENODEV;
+> +	}
+> +
+> +	np =3D of_find_compatible_node(NULL, NULL, "zte,zx296702-pcu");
+> +	pcu_base =3D of_iomap(np, 0);
+> +	if (!pcu_base) {
+> +		iounmap(base);
+> +		WARN(1, "failed to map pcu_base address");
+> +		return -ENODEV;
+> +	}
+> +
+> +	err =3D register_restart_handler(&zx_restart_nb);
+> +	if (err)
+> +		dev_err(&pdev->dev, "Register restart handler failed(err=3D%d)\n",
+> +			err);
+> +
+> +	return err;
+> +}
+> +
+> +static const struct of_device_id zx_reboot_of_match[] =3D {
+> +	{ .compatible =3D "zte,sysctrl" },
+> +	{}
+> +};
+
+Where's the DT Binding Documentation?
+
+> [...]
+
+-- Sebastian
+
+--MfFXiAuoTsnnDAfZ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVo6hQAAoJENju1/PIO/qa24cQAIZP1afm8saDvcZk80o+axMm
+6AwYKAUlOGlpb41EprRdDcRBCvfey0KuPvsOm13lzIMthyIvJmtzzJs3162InUv9
+V98qaYXmzNP9Nah/rZe2ldM2HwJvcn9q7zJHkq/TwEx9eDKzwAzdyg/ja1uC3geM
+xNuzgodF4c/WlUF82ISpmeaMbGQuaJsWWDsdD2tjGYKZi5G4tzJgjv1qddyql5fR
+Kb3ZlzbSTIl7sNxhzwEx1KnI6IYg8NEmqp22s4rmEv1oyjzgLZZehPOOcTl0tPqZ
+73I/zOZO1koRiLRmRJxFtjHoS9+iJ57isSPh1MeMqVqIAFh8JuF/pKCVZ3w0eVPd
+i3wrx9EbNd7PRCK+pMFC4qvUh9cUv37TMfyru3eIyqbwfjAtZ+Bdl2PaYlyiJOL/
+SF+4dsXKjEn+gRmU5bougwWC7pKH8NlvIvSe/TAz3odZXYl1a/pbeVBAEBqV4BVa
+nsrONe26ffh8h2rSAYoGrZ5TVfTOb8S9XraxtlNVgwJ+Oz6pK4yO3ADeWNSLsMUP
++hknU+lD7k2Fdz70bW4RgSzJaERXOydNJOiJUiIMh3tdngzx5KViTFHSyIPW/QD0
+NDn9Rcb6MZWfYFYx1vuYe1fb8bLvJqGE3LMVGTKE2J0QJCL23+JJ79ZJlLc/pUpJ
+FWwS1FzTxXU3Ink0B0O4
+=zrYZ
+-----END PGP SIGNATURE-----
+
+--MfFXiAuoTsnnDAfZ--
