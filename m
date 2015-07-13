@@ -1,191 +1,144 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: [PATCH V3 10/19] drm/tegra: dc: Prepare for generic PM domains
-Date: Mon, 13 Jul 2015 13:39:48 +0100
-Message-ID: <1436791197-32358-11-git-send-email-jonathanh@nvidia.com>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH V3 14/19] Documentation: DT: bindings: Add power domain info for NVIDIA PMC
+Date: Mon, 13 Jul 2015 13:39:52 +0100
+Message-ID: <1436791197-32358-15-git-send-email-jonathanh@nvidia.com>
 References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:11225 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751031AbbGMMkz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2015 08:40:55 -0400
-In-Reply-To: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1436791197-32358-1-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Hans de Goede <hdegoede@redhat.com>, Tejun Heo <tj@kernel.org>
-Cc: Vince Hsu <vinceh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 
-Add support to the tegra dc driver for generic PM domains. However,
-to ensure backward compatibility with older device tree blobs ensure
-that the driver can work with or without generic PM domains. In order
-to migrate to generic PM domain infrastructure the necessary changes
-are:
+Add power-domain binding documentation for the NVIDIA PMC driver in
+order to support generic power-domains.
 
-1. If the "power-domains" property is present in the DT device node then
-   generic PM domains is supported and pm_runtime_enable() should be
-   called for the device. Furthermore, the enabling and disabling of the
-   power-domain is handled via calling pm_runtime_get/put, respectively.
-
-2. To ensure that clocks are managed consistently when generic PM domains
-   are used and are not used, drivers should be migrated to use the
-   tegra_powergate_power_on_legacy() and tegra_powergate_power_off_legacy()
-   functions instead of the current tegra_powergate_sequence_power_up()
-   and tegra_powergate_power_off(). The purpose of the
-   tegra_powergate_power_on_legacy() and tegra_powergate_power_off_legacy()
-   APIs is to mimick the behaviour of the tegra generic power-domain code,
-   such that if generic power domains are not supported the functionality
-   is the same.
-
-3. The main difference between the tegra_powergate_sequence_power_up() API
-   and the tegra_powergate_power_on_legacy() is that the clock used to
-   enable the powergate is not kept enabled when using the
-   tegra_powergate_power_on_legacy() API. Therefore, drivers must enable
-   the clocks they need after calling tegra_powergate_power_on_legacy()
-   and disable these clocks before calling
-   tegra_powergate_power_off_legacy().
-
-Helper functions have been added to the dc driver for handling power on
-and off the power-domains with and without generic PM domain support.
-
-Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
- drivers/gpu/drm/tegra/dc.c | 94 +++++++++++++++++++++++++++++-----------------
- 1 file changed, 59 insertions(+), 35 deletions(-)
+ .../bindings/arm/tegra/nvidia,tegra20-pmc.txt      | 99 ++++++++++++++++++++++
+ 1 file changed, 99 insertions(+)
 
-diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
-index a287e4fec865..a5b2475a7b9c 100644
---- a/drivers/gpu/drm/tegra/dc.c
-+++ b/drivers/gpu/drm/tegra/dc.c
-@@ -10,6 +10,7 @@
- #include <linux/clk.h>
- #include <linux/debugfs.h>
- #include <linux/iommu.h>
-+#include <linux/pm_runtime.h>
- #include <linux/reset.h>
+diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+index 02c27004d4a8..93357a450576 100644
+--- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
++++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+@@ -1,5 +1,7 @@
+ NVIDIA Tegra Power Management Controller (PMC)
  
- #include <soc/tegra/pmc.h>
-@@ -1880,6 +1881,49 @@ static int tegra_dc_parse_dt(struct tegra_dc *dc)
- 	return 0;
- }
++== Power Management Controller Node ==
++
+ The PMC block interacts with an external Power Management Unit. The PMC
+ mostly controls the entry and exit of the system from different sleep
+ modes. It provides power-gating controllers for SoC and CPU power-islands.
+@@ -68,6 +70,10 @@ Optional properties for hardware-triggered thermal reset (inside 'i2c-thermtrip'
+                      Defaults to 0. Valid values are described in section 12.5.2
+                      "Pinmux Support" of the Tegra4 Technical Reference Manual.
  
-+static void tegra_dc_power_off(struct tegra_dc *dc)
-+{
-+	if (!dc->soc->has_powergate)
-+		reset_control_assert(dc->rst);
++Optional nodes:
++- pm-domains : This node contains a hierarchy of PM domain nodes, which should
++	       match the power-domains on the Tegra SoC.
 +
-+	clk_disable_unprepare(dc->clk);
-+
-+	if (dc->soc->has_powergate) {
-+		if (pm_runtime_enabled(dc->dev))
-+			pm_runtime_put_sync(dc->dev);
-+		else
-+			tegra_powergate_power_off_legacy(dc->powergate,
-+							 dc->clk, dc->rst);
-+	}
-+}
-+
-+static int tegra_dc_power_on(struct tegra_dc *dc)
-+{
-+	int err;
-+
-+	if (dc->soc->has_powergate) {
-+		if (pm_runtime_enabled(dc->dev))
-+			err = pm_runtime_get_sync(dc->dev);
-+		else
-+			err = tegra_powergate_power_on_legacy(dc->powergate,
-+							      dc->clk, dc->rst);
-+		if (err < 0) {
-+			dev_err(dc->dev, "failed to power partition: %d\n",
-+				err);
-+			return err;
-+		}
-+	}
-+
-+	err = clk_prepare_enable(dc->clk);
-+	if (err < 0)
-+		dev_err(dc->dev, "failed to enable clock: %d\n", err);
-+
-+	if (!dc->soc->has_powergate)
-+		reset_control_deassert(dc->rst);
-+
-+	return err;
-+}
-+
- static int tegra_dc_probe(struct platform_device *pdev)
- {
- 	unsigned long flags = HOST1X_SYNCPT_CLIENT_MANAGED;
-@@ -1917,35 +1961,6 @@ static int tegra_dc_probe(struct platform_device *pdev)
- 		return PTR_ERR(dc->rst);
- 	}
+ Example:
  
--	if (dc->soc->has_powergate) {
--		if (dc->pipe == 0)
--			dc->powergate = TEGRA_POWERGATE_DIS;
--		else
--			dc->powergate = TEGRA_POWERGATE_DISB;
--
--		err = tegra_powergate_sequence_power_up(dc->powergate, dc->clk,
--							dc->rst);
--		if (err < 0) {
--			dev_err(&pdev->dev, "failed to power partition: %d\n",
--				err);
--			return err;
--		}
--	} else {
--		err = clk_prepare_enable(dc->clk);
--		if (err < 0) {
--			dev_err(&pdev->dev, "failed to enable clock: %d\n",
--				err);
--			return err;
--		}
--
--		err = reset_control_deassert(dc->rst);
--		if (err < 0) {
--			dev_err(&pdev->dev, "failed to deassert reset: %d\n",
--				err);
--			return err;
--		}
--	}
--
- 	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	dc->regs = devm_ioremap_resource(&pdev->dev, regs);
- 	if (IS_ERR(dc->regs))
-@@ -1961,6 +1976,20 @@ static int tegra_dc_probe(struct platform_device *pdev)
- 	dc->client.ops = &dc_client_ops;
- 	dc->client.dev = &pdev->dev;
- 
-+	if (dc->soc->has_powergate) {
-+		if (dc->pipe == 0)
-+			dc->powergate = TEGRA_POWERGATE_DIS;
-+		else
-+			dc->powergate = TEGRA_POWERGATE_DISB;
+ / SoC dts including file
+@@ -113,3 +119,96 @@ pmc@7000f400 {
+ 	};
+ 	...
+ };
 +
-+		if (of_property_read_bool(pdev->dev.of_node, "power-domains"))
-+			pm_runtime_enable(&pdev->dev);
-+	}
 +
-+	err = tegra_dc_power_on(dc);
-+	if (err < 0)
-+		return err;
++== PM Domain Nodes ==
 +
- 	err = tegra_dc_rgb_probe(dc);
- 	if (err < 0 && err != -ENODEV) {
- 		dev_err(&pdev->dev, "failed to probe RGB output: %d\n", err);
-@@ -2003,12 +2032,7 @@ static int tegra_dc_remove(struct platform_device *pdev)
- 		return err;
- 	}
- 
--	reset_control_assert(dc->rst);
--
--	if (dc->soc->has_powergate)
--		tegra_powergate_power_off(dc->powergate);
--
--	clk_disable_unprepare(dc->clk);
-+	tegra_dc_power_off(dc);
- 
- 	return 0;
- }
++Each of the PM domain nodes represents a power-domain on the Tegra SoC
++that can be power-gated by the PMC and should be named appropriately.
++
++Required properties:
++  - clocks:		   Must contain an entry for each clock required by
++			   the PMC for controlling a power-gate. See
++			   ../clocks/clock-bindings.txt for details.
++  - resets:		   Must contain an entry for each reset required by
++			   the PMC for controlling a power-gate. See
++			   ../reset/reset.txt for details.
++  - nvidia,powergate:	   Integer cell that contains an identifier for the
++			   PMC power-gate that is associated with the
++			   power-domain. Please refer to the Tegra TRM for
++			   more details.
++  - #power-domain-cells:   Must be 0.
++
++Optional properties:
++  - nvidia,swgroups:	   Provides details of the software groups that are
++			   associated with a specific power-domain. The
++			   software group specifier consists of a phandle
++			   pointing to the memory controller and a list of
++			   one or more integer cells for each software group
++			   associated with the power domain. The length of
++			   the list of integer cells is specified by
++			   #nvidia,swgroup-cells.
++  - #nvidia,swgroup-cells: Must be 1 or more. See nvidia,swgroups for
++			   more details.
++
++Example:
++
++	pmc@0,7000e400 {
++		compatible = "nvidia,tegra124-pmc";
++		reg = <0x0 0x7000e400 0x0 0x400>;
++		clocks = <&tegra_car TEGRA124_CLK_PCLK>, <&clk32k_in>;
++		clock-names = "pclk", "clk32k_in";
++
++		pm-domains {
++
++			...
++
++			pd_sor: sor-power-domain {
++				clocks = <&tegra_car TEGRA124_CLK_SOR0>,
++					 <&tegra_car TEGRA124_CLK_DSIA>,
++					 <&tegra_car TEGRA124_CLK_DSIB>,
++					 <&tegra_car TEGRA124_CLK_HDMI>,
++					 <&tegra_car TEGRA124_CLK_MIPI_CAL>,
++					 <&tegra_car TEGRA124_CLK_DPAUX>;
++				resets = <&tegra_car 182>,
++					 <&tegra_car 48>,
++					 <&tegra_car 82>,
++					 <&tegra_car 51>,
++					 <&tegra_car 56>;
++				nvidia,powergate = <TEGRA_POWERGATE_SOR>;
++				#power-domain-cells = <0>;
++
++				pd_dc: dc-power-domain {
++					clocks = <&tegra_car TEGRA124_CLK_DISP1>;
++					resets = <&tegra_car 27>;
++					nvidia,powergate = <TEGRA_POWERGATE_DIS>;
++					nvidia,swgroups = <&mc TEGRA_SWGROUP_DC>;
++					#nvidia,swgroup-cells = <1>;
++					#power-domain-cells = <0>;
++
++					pd_dcb: dcb-power-domain {
++						clocks = <&tegra_car TEGRA124_CLK_DISP2>;
++						resets = <&tegra_car 26>;
++						nvidia,powergate = <TEGRA_POWERGATE_DISB>;
++						nvidia,swgroups = <&mc TEGRA_SWGROUP_DCB>;
++						#nvidia,swgroup-cells = <1>;
++						#power-domain-cells = <0>;
++					};
++				};
++			};
++		};
++	};
++
++
++== PM Domain Consumers ==
++
++Hardware blocks belonging to a PM domain should contain a "power-domains"
++property that is a phandle pointing to the corresponding PM domain node.
++
++Example:
++
++	sor@0,54540000 {
++		...
++		power-domains = <&pd_sor>;
++		...
++	};
 -- 
 2.1.4
-
