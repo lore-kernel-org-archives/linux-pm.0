@@ -1,128 +1,124 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 4/6] ARM: dts: Exynos4210: add CPU OPP and regulator supply
- property
-Date: Mon, 13 Jul 2015 13:20:41 +0200
-Message-ID: <1549704.AH5CyPJE5q@amdc1976>
-References: <'@samsung.com> <4721448.dpAUKITTdt@amdc1976>
- <CAJKOXPcX83C+=D-Fpstgu8N1y7-TFM3tXki_YfUyKkU1q3EfSA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <CAJKOXPcX83C+=D-Fpstgu8N1y7-TFM3tXki_YfUyKkU1q3EfSA@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene@kernel.org>, linux-arm-kernel@lists.infradead.org, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Kevin Hilman <khilman@linaro.org>, Sachin Kamat <sachin.kamat@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Andreas Faerber <afaerber@suse.de>, Doug Anderson <dianders@chromium.org>, Javier Martinez Canillas <javier@osg.samsung.com>, linux-samsung-soc@vger.kernel.org
+From: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+Subject: [PATCH v4 0/9] regulator: Merge max77843 into max77693
+Date: Mon, 13 Jul 2015 20:26:49 +0900
+Message-ID: <1436786818-14115-1-git-send-email-k.kozlowski.k@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:34890 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbbGML1n (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2015 07:27:43 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-pm@vger.kernel.org, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, linux-leds@vger.kernel.org
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 
-On Monday, July 13, 2015 08:10:21 PM Krzysztof Kozlowski wrote:
-> 2015-07-13 20:02 GMT+09:00 Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>:
-> >
-> > Hi,
-> >
-> > On Tuesday, June 23, 2015 09:24:40 AM Krzysztof Kozlowski wrote:
-> >> On 23.06.2015 08:46, Krzysztof Kozlowski wrote:
-> >> > On 23.06.2015 00:04, Michael Turquette wrote:
-> >> >> Quoting Kukjin Kim (2015-06-21 18:46:26)
-> >> >>> Krzysztof Kozlowski wrote:
-> >> >>>>
-> >> >>>> On 22.06.2015 10:38, Kukjin Kim wrote:
-> >> >>>>> Krzysztof Kozlowski wrote:
-> >> >>>>>> 2015-05-08 9:18 GMT+09:00 Krzysztof Kozlowski <k.kozlowski@samsung.com>:
-> >> >>>>>>> 2015-04-04 1:43 GMT+09:00 Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>:
-> >> >>>>>>>> From: Thomas Abraham <thomas.ab@samsung.com>
-> >> >>>>>>>>
-> >> >>>>>>>> For Exynos4210 platforms, add CPU operating points and CPU
-> >> >>>>>>>> regulator supply properties for migrating from Exynos specific
-> >> >>>>>>>> cpufreq driver to using generic cpufreq driver.
-> >> >>>>>>>>
-> >> >>>>>>>> Changes by Bartlomiej:
-> >> >>>>>>>> - removed Exynos5250 and Exynos5420 support for now
-> >> >>>>>>>>
-> >> >>>>>>>> Cc: Kukjin Kim <kgene.kim@samsung.com>
-> >> >>>>>>>> Cc: Doug Anderson <dianders@chromium.org>
-> >> >>>>>>>> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-> >> >>>>>>>> Cc: Andreas Faerber <afaerber@suse.de>
-> >> >>>>>>>> Cc: Sachin Kamat <sachin.kamat@linaro.org>
-> >> >>>>>>>> Cc: Andreas Farber <afaerber@suse.de>
-> >> >>>>>>>> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-> >> >>>>>>>> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-> >> >>>>>>>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> >> >>>>>>>
-> >> >>>>>>> Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> >> >>>>>>
-> >> >>>>>> Rebased and applied to my tree, I'll sent it later to Kukjin unless he
-> >> >>>>>> picks it by himself from LKML.
-> >> >>>>>>
-> >> >>>>> Hi, as far as I know, this is for v4.2 not v4.1 so it will be applied based on
-> >> >>>>> v4.2-rc1 after v4.2-rc1 release.
-> >> >>>>
-> >> >>>> You mean it is for v4.3, not v4.2?
-> >> >>>>
-> >> >>> Oops, yes v4.3.
-> >> >>>
-> >> >>> Thanks for the correction.
-> >> >>
-> >> >> Kukjin & Krzysztof,
-> >> >>
-> >> >> I'm confused on this point. I was planning to take patches 1, 2, 3, 5
-> >> >> and 6 towards 4.2 (e.g. in the pull request that I'll send out this
-> >> >> week).
-> >> >>
-> >> >> Is patch 4 going out for 4.2 or 4.3?
-> >> >
-> >> > It is quite late for sending pull request to arm-soc for 4.2.
-> >> > For example SoCFPGA pull request from last week was rejected:
-> >> > http://comments.gmane.org/gmane.linux.ports.arm.kernel/417980
-> >>
-> >> Oh, that was wrong link. Here it is:
-> >> http://www.spinics.net/lists/arm-kernel/msg425911.html
-> >>
-> >> > If you want to take it for 4.2 then I am fine with it but this will
-> >> > cause some easy but annoying conflicts. There aren't difficult - just
-> >> > most of nodes in board DTS changed their place.
-> >> >
-> >> > Example of resolution (target file after merge, with cpu nodes reordered
-> >> > alphabetically):
-> >> > https://github.com/krzk/linux/commit/2cec3cb48abaf44848c62f1c0836b772eb4680dd
-> >
-> > This patch is needed for v4.2 as other changes has been already
-> > merged.
-> >
-> > Krzysztof/Kukjin, could you please take care of it?
-> 
-> Of course! It is already in my queue. I'll send it later to Kukjin for
-> 4.3 (unless he picks it also).
+Hi,
 
-It is in your queue for v4.3 but the patch is needed for v4.2,
-without it cpufreq support will not work for Exynos4210 platforms.
+The patchset merges max77843 regulator driver into max77693.
 
-> BTW for other patchsets you still need acks from Samsung clock
-> maintainers. Did you poke Sylwester or Tomasz about it?
+I still need acks from leds subsystem for patch 4:
+drivers: max77693: Move state container to common header
 
-Sylwester, please review/ack Samsung specific clock changes in
-Exynos5250 cpufreq and Exynos4x12 cpufreq patch series.
 
-Patch series:
+The patchset touches multiple subsystems so I think the best way
+would be to merge it through one tree. I already got acks from extcon,
+input mfd and power maintainers.
 
-* [PATCH v3 0/4] cpufreq: use generic cpufreq drivers for Exynos5250 platform
-  (http://lkml.org/lkml/2015/7/1/311)
+If there are no objections then everything could go through regulator
+tree.
 
-* [PATCH v2 0/7] cpufreq: use generic cpufreq drivers for Exynos4x12 platform
-  (http://lkml.org/lkml/2015/7/9/419)
 
-Samsung clock specific changes:
+Changes since v3
+================
+1. Patch 4/9: Fix missing includei n leds driver (leds-max77693.c).
+2. Rebase on v4.2-rc2.
 
-* [PATCH v3 1/4] clk: samsung: exynos5250: add cpu clock configuration data
-  and instantiate cpu clock
-  (http://lkml.org/lkml/2015/7/1/313)
 
-* [PATCH v2 4/7] clk: samsung: exynos4x12: add cpu clock configuration data
-  and instantiate cpu clock
-  (http://lkml.org/lkml/2015/7/9/424)
+Changes since v2
+================
+1. Rebase on v4.2-rc1.
+2. Add acks: Chanwoo Choi, Dmitry Torokhov, Lee Jones. Thanks!
+
+
+Changes since v1
+================
+1. Drop patch "regulator: max77693: Use core code for charger's
+   is_enabled" because Mark Brown picked it up.
+2. Patch 2: remove some more old IRQ extcon stuff (suggested by Chanwoo
+   Choi).
+3. Patch 6: minor fixes over defines (suggested by Lee Jones).
+4. Send last patch, previously it slipped during "git send-email".
+5. Add acks obtained for v1. I still need more of them.
+
+
+Rationale
+=========
+The recently added max77843 regulator driver is very similar to
+its older brother: the max77693. Both devices provide two safeouts
+and a charger.
+
+The main difference is in charger's output capabilities and related
+registry values.
+
+With some code additions the max77693 regulator driver can support both
+chipsets. This reduces overall code duplication and is a first step
+toward integrating other drivers for these devices. I plan to merge
+also input/haptic drivers.
+
+
+Patchset description
+====================
+Patches 1-2 do various cleanup.
+Patch 3 prepares max77694 regulator driver for supporting different
+devices.
+Patch 4 switches max77693 drivers to common state container.
+Patch 5 updates max77843 drivers to common state container.
+Patches 6-7 do final cleanup before merging.
+Patches 8-9 do the merge of max77843 regulator into max77693.
+
+
+Dependencies
+============
+Everything is bisectable but next patches depend on previous ones.
+So probably the easiest way would be picking picked up by one
+maintainer.
+
 
 Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Krzysztof
+
+
+Krzysztof Kozlowski (9):
+  mfd/extcon: max77693: Remove unused extern declarations and
+    max77693_dev members
+  mfd: max77693: Store I2C device type as enum and add default unknown
+  regulator: max77693: Support different register configurations
+  drivers: max77693: Move state container to common header
+  drivers: max77843: Switch to common max77693 state container
+  mfd/extcon: max77693: Rename defines to allow inclusion with max77843
+  mfd/extcon: max77843: Rename defines to allow inclusion with max77693
+  regulator: max77693: Add support for MAX77843 device
+  regulator: Remove the max77843 driver
+
+ drivers/extcon/extcon-max77693.c     |  94 +++++++---------
+ drivers/extcon/extcon-max77843.c     |  66 +++++++-----
+ drivers/input/misc/max77693-haptic.c |   1 +
+ drivers/input/misc/max77843-haptic.c |   3 +-
+ drivers/leds/leds-max77693.c         |   1 +
+ drivers/mfd/max77693.c               |  31 +++---
+ drivers/mfd/max77843.c               |  20 ++--
+ drivers/power/max77693_charger.c     |   1 +
+ drivers/regulator/Kconfig            |  16 +--
+ drivers/regulator/Makefile           |   1 -
+ drivers/regulator/max77693.c         | 161 ++++++++++++++++++++++++----
+ drivers/regulator/max77843.c         | 201 -----------------------------------
+ include/linux/mfd/max77693-common.h  |  49 +++++++++
+ include/linux/mfd/max77693-private.h | 134 +++++++++--------------
+ include/linux/mfd/max77843-private.h | 174 ++++++++++++++----------------
+ 15 files changed, 433 insertions(+), 520 deletions(-)
+ delete mode 100644 drivers/regulator/max77843.c
+ create mode 100644 include/linux/mfd/max77693-common.h
+
+-- 
+2.1.4
+
