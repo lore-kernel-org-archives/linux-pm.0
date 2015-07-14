@@ -1,63 +1,53 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2] PM / Domains: Correct unit address in power-controller example
-Date: Tue, 14 Jul 2015 14:03:21 +0200
-Message-ID: <CAMuHMdXwOVMt2HR+Y4jB0LeCPWPfPgR4A+qEzyoWWd0hMNBj=w@mail.gmail.com>
-References: <1430748804-7586-1-git-send-email-geert+renesas@glider.be>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH pm] PM / hibernate: swsusp_page_is_valid() can be static
+Date: Tue, 14 Jul 2015 12:12:43 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402F9CE9@SHSMSX101.ccr.corp.intel.com>
+References: <201507141612.6eLYehfL%fengguang.wu@intel.com>
+ <20150714082338.GA66904@snb>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f67.google.com ([209.85.218.67]:33493 "EHLO
-	mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751776AbbGNMDW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2015 08:03:22 -0400
-Received: by oihq81 with SMTP id q81so335526oih.0
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2015 05:03:21 -0700 (PDT)
-In-Reply-To: <1430748804-7586-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150714082338.GA66904@snb>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Wu, Fengguang" <fengguang.wu@intel.com>
+Cc: "kbuild-all@01.org" <kbuild-all@01.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-ping?
-
-On Mon, May 4, 2015 at 4:13 PM, Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
-> In example 2 of the generic PM domains DT bindings, the unit address of
-> the device node representing the child power controller doesn't match
-> its "reg" property. Correct it.
->
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Acked-by: Kevin Hilman <khilman@linaro.org>
+> -----Original Message-----
+> From: Wu, Fengguang
+> Sent: Tuesday, July 14, 2015 4:24 PM
+> To: Chen, Yu C
+> Cc: kbuild-all@01.org; Rafael J. Wysocki; Lee, Chun-Yi; linux-
+> pm@vger.kernel.org; Pavel Machek; Brown, Len; linux-
+> kernel@vger.kernel.org
+> Subject: [PATCH pm] PM / hibernate: swsusp_page_is_valid() can be static
+> 
+> 
+> Signed-off-by: Fengguang Wu <fengguang.wu@intel.com>
 > ---
-> v2:
->   - Add Acked-by
-> ---
->  Documentation/devicetree/bindings/power/power_domain.txt | 2 +-
+>  snapshot.c |    2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-> index d6505bef655dc2df..32d1d3a399fe2a48 100644
-> --- a/Documentation/devicetree/bindings/power/power_domain.txt
-> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
-> @@ -56,7 +56,7 @@ Example 2:
->                 #power-domain-cells = <1>;
->         };
->
-> -       child: power-controller@12340000 {
-> +       child: power-controller@12341000 {
->                 compatible = "foo,power-controller";
->                 reg = <0x12341000 0x1000>;
->                 power-domains = <&parent 0>;
-> --
-> 1.9.1
+> 
+> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c index
+> ebbb995..0e4112f4 100644
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -925,7 +925,7 @@ static void swsusp_unset_page_forbidden(struct
+> page *page)
+>  		memory_bm_clear_bit(forbidden_pages_map,
+> page_to_pfn(page));  }
+> 
+> -int swsusp_page_is_valid(struct page *page)
+> +static int swsusp_page_is_valid(struct page *page)
+>  {
+>  	return valid_pages_map ?
+>  		memory_bm_test_bit(valid_pages_map,
+> page_to_pfn(page)) : 0;
+OK, thanks Fengguang
 
-Gr{oetje,eeting}s,
 
-                        Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Best Regards,
+Yu
