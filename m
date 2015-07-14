@@ -1,119 +1,243 @@
-From: Nitish Ambastha <nits.ambastha@gmail.com>
-Subject: Re: [PATCHv3 1/1] kernel/power/autosleep.c: check for pm_suspend()
- return before queueing suspend again
-Date: Tue, 14 Jul 2015 09:34:08 +0530
-Message-ID: <CAHWDpXj+AjD3F+8RvRFePXCXRKq=WBh0MKy-39B2emjG+Qamxw@mail.gmail.com>
-References: <1435604054-29711-1-git-send-email-nitish.a@samsung.com>
-	<1436818082-24087-1-git-send-email-nitish.a@samsung.com>
-	<1834201.LA0RYhhP7u@vostro.rjw.lan>
+From: Daniel Kurtz <djkurtz@chromium.org>
+Subject: Re: [RFC PATCH v2 1/1] drivers: cpuidle: cpuidle-arm: heterogeneous
+ systems extension
+Date: Tue, 14 Jul 2015 12:52:48 +0800
+Message-ID: <CAGS+omBtraNBH43qsFn_YgO3ePbFav9VtwgqDUinbOBMPwOGXA@mail.gmail.com>
+References: <1429200617-9546-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1429200617-9546-2-git-send-email-lorenzo.pieralisi@arm.com>
+ <554771D3.5010701@linaro.org> <20150505155615.GA23106@red-moon> <20150512130339.GB15131@red-moon>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ie0-f177.google.com ([209.85.223.177]:35714 "EHLO
-	mail-ie0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751724AbbGNEEJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2015 00:04:09 -0400
-In-Reply-To: <1834201.LA0RYhhP7u@vostro.rjw.lan>
+Received: from mail-yk0-f178.google.com ([209.85.160.178]:33719 "EHLO
+	mail-yk0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751575AbbGNExI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2015 00:53:08 -0400
+Received: by ykeo3 with SMTP id o3so213234320yke.0
+        for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2015 21:53:07 -0700 (PDT)
+In-Reply-To: <20150512130339.GB15131@red-moon>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Nitish Ambastha <nitish.a@samsung.com>, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpgs@samsung.com
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Mark Rutland <Mark.Rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Howard Chen <howard.chen@linaro.org>, Kevin Hilman <khilman@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "grant.likely@linaro.org" <grant.likely@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, Ricky Liang <jcliang@chromium.org>, =?UTF-8?B?RWRkaWUgSHVhbmcgKOm7g+aZuuWCkSk=?= <eddie.huang@mediatek.com>, Joseph Lo <josephl@nvidia.com>, Benson Leung <bleung@chromium.org>
 
-On Tue, Jul 14, 2015 at 5:13 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, July 14, 2015 01:38:02 AM Nitish Ambastha wrote:
->> Prevent tight loop for suspend-resume when some
->> devices failed to suspend
->
-> This *still* doesn't explain what problem you're *really* trying to address.
->
-> Even if a driver returns an error code from one of its suspend callbacks,
-> you should get final_count == initial_count in the final check and we'll
-> schedule the timeout.
->
-> So there is a failure scenarion you're trying to address where that check is
-> not sufficient, but you're not saying what the scenario is.
->
-As I mentioned earlier, if some driver failed to suspend, and during
-resume if *somebody* called pm_stay_awake() or pm_wakeup_event()
-meantime, and then pm_relax(), final_count and initial_count will not
-be the same in try_to_suspend(). We observed this behavior with
-battery monitor thread on being restarted
+Hi Lorenzo,
 
-In these scenarios, it will be considered a *valid wakeup* event and
-it will try to queue suspend immediately, though the actual reason of
-resume was driver returning error code.
-For such scenarios, event count may not always be safe way to identify.
+On Tue, May 12, 2015 at 9:03 PM, Lorenzo Pieralisi
+<lorenzo.pieralisi@arm.com> wrote:
+> On Tue, May 05, 2015 at 04:56:15PM +0100, Lorenzo Pieralisi wrote:
+>> On Mon, May 04, 2015 at 02:19:15PM +0100, Daniel Lezcano wrote:
+>> > On 04/16/2015 06:10 PM, Lorenzo Pieralisi wrote:
+>>
+>> <snip>
+>>
+>> > >   /*
+>> > > - * arm_idle_init
+>> > > + * Compare idle states phandle properties
+>> > >    *
+>> > > - * Registers the arm specific cpuidle driver with the cpuidle
+>> > > - * framework. It relies on core code to parse the idle states
+>> > > - * and initialize them using driver data structures accordingly.
+>> > > + * Return true if properties are valid and equal, false otherwise
+>> >
+>> > Just a detail. Would be more consistent to return zero when valid and
+>> > equal ?
+>>
+>> Consistent with memcmp you mean ? Yes, I can change it.
+>>
+>> > >    */
+>> > > -static int __init arm_idle_init(void)
+>> > > +static bool __init idle_states_cmp(struct property *states1,
+>> > > +                                struct property *states2)
+>> > > +{
+>> > > +     /*
+>> > > +      * NB: Implemented through code from drivers/of/unittest.c
+>> > > +      *     Function is generic and can be moved to generic OF code
+>> > > +      *     if needed
+>> > > +      */
+>> > > +     return states1 && states2 &&
+>> > > +            (states1->length == states2->length) &&
+>> > > +            states1->value && states2->value &&
+>> > > +            !memcmp(states1->value, states2->value, states1->length);
+>> > > +}
+>> > > +
+>> > > +static int __init arm_idle_init_driver(struct cpuidle_driver *drv)
+>> > >   {
+>> > > -     int cpu, ret;
+>> > > -     struct cpuidle_driver *drv = &arm_idle_driver;
+>> > > +     int ret, cpu;
+>> > >       struct cpuidle_device *dev;
+>> > > +     struct property *curr_idle_states, *idle_states = NULL;
+>> > > +     struct device_node *cpu_node;
+>> > > +
+>> > > +     for_each_cpu(cpu, drv->cpumask) {
+>> > > +             cpu_node = of_cpu_device_node_get(cpu);
+>> > > +             curr_idle_states = of_find_property(cpu_node,
+>> > > +                                                 "cpu-idle-states", NULL);
+>> > > +             of_node_put(cpu_node);
+>> > > +
+>> > > +             /*
+>> > > +              * Stash the first valid idle states phandle in the cpumask.
+>> > > +              * If curr_idle_states is NULL assigning it to idle_states
+>> > > +              * is harmless and it is managed by idle states comparison
+>> > > +              * code. Keep track of first valid phandle so that
+>> > > +              * subsequent cpus can compare against it.
+>> > > +              */
+>> > > +             if (!idle_states)
+>> > > +                     idle_states = curr_idle_states;
+>> > > +
+>> > > +             /*
+>> > > +              * If idle states phandles are not equal, remove the
+>> > > +              * cpu from the driver mask since a CPUidle driver
+>> > > +              * is only capable of managing uniform idle states.
+>> > > +              *
+>> > > +              * Comparison works also when idle_states and
+>> > > +              * curr_idle_states are the same property, since
+>> > > +              * they can be == NULL so the cpu must be removed from
+>> > > +              * the driver mask in that case too (ie cpu has no idle
+>> > > +              * states).
+>> > > +              */
+>> > > +             if (!idle_states_cmp(idle_states, curr_idle_states))
+>> > > +                     cpumask_clear_cpu(cpu, drv->cpumask);
+>> > > +     }
+>> > > +
+>> > > +     /*
+>> > > +      *  If there are no valid states for this driver we rely on arch
+>> > > +      *  default idle behaviour, bail out
+>> > > +      */
+>> > > +     if (!idle_states)
+>> > > +             return -ENODEV;
+>> > >
+>> > >       /*
+>> > >        * Initialize idle states data, starting at index 1.
+>> > > @@ -117,7 +173,7 @@ static int __init arm_idle_init(void)
+>> > >        * Call arch CPU operations in order to initialize
+>> > >        * idle states suspend back-end specific data
+>> > >        */
+>> > > -     for_each_possible_cpu(cpu) {
+>> > > +     for_each_cpu(cpu, drv->cpumask) {
+>> > >               ret = arm_cpuidle_init(cpu);
+>> > >
+>> > >               /*
+>> > > @@ -157,7 +213,77 @@ out_fail:
+>> > >       }
+>> > >
+>> > >       cpuidle_unregister_driver(drv);
+>> > > +     return ret;
+>> > > +}
+>> > > +
+>> > > +/*
+>> > > + * arm_idle_init
+>> > > + *
+>> > > + * Registers the arm specific cpuidle driver(s) with the cpuidle
+>> > > + * framework. It relies on core code to parse the idle states
+>> > > + * and initialize them using driver data structures accordingly.
+>> > > + */
+>> > > +static int __init arm_idle_init(void)
+>> > > +{
+>> > > +     int i, ret = -ENODEV;
+>> > > +     struct cpuidle_driver *drv;
+>> > > +     cpumask_var_t tmpmask;
+>> > > +
+>> > > +     /*
+>> > > +      * These drivers require DT idle states to be present.
+>> > > +      * If no idle states are detected there is no reason to
+>> > > +      * proceed any further hence we return early.
+>> > > +      */
+>> > > +     if (!of_find_node_by_name(NULL, "idle-states"))
+>> > > +             return -ENODEV;
+>> > > +
+>> > > +     if (!alloc_cpumask_var(&tmpmask, GFP_KERNEL))
+>> > > +             return -ENOMEM;
+>> > > +
+>> > > +     /*
+>> > > +      * We need to vet idle states to create CPUidle drivers
+>> > > +      * that share a common set of them. Create a tmp mask
+>> > > +      * that we use to keep track of initialized cpus.
+>> > > +      * Start off by initializing the mask with all possible
+>> > > +      * cpus, we clear it as we go, till either all cpus
+>> > > +      * have a CPUidle driver initialized or there are some
+>> > > +      * CPUs that have no idle states or a parsing error
+>> > > +      * occurs.
+>> > > +      */
+>> > > +     cpumask_copy(tmpmask, cpu_possible_mask);
+>> > > +
+>> > > +     for (i = 0; !cpumask_empty(tmpmask); i++) {
+>> > > +             if (i == ARM_CPUIDLE_MAX_DRIVERS) {
+>> > > +                     pr_warn("number of drivers exceeding static allocation\n");
+>> > > +                     break;
+>> > > +             }
+>> > > +
+>> > > +             drv = &arm_idle_drivers[i];
+>> > > +             drv->cpumask = kzalloc(cpumask_size(), GFP_KERNEL);
+>> > > +             if (!drv->cpumask) {
+>> > > +                     ret = -ENOMEM;
+>> > > +                     break;
+>> > > +             }
+>> > > +             /*
+>> > > +              * Force driver mask, arm_idle_init_driver()
+>> > > +              * will tweak it by vetting idle states.
+>> > > +              */
+>> > > +             cpumask_copy(drv->cpumask, tmpmask);
+>> >
+>> > Why do you need to copy tmpmask ? Isn't simpler to have a zero-ed
+>> > cpumask and let the arm_idle_init_driver function to set a bit instead
+>> > of clearing it ?
+>>
+>> No, because we need to keep track of logical cpus that have been
+>> already parsed, we need a tmpmask to keep track of that, how could
+>> we do it otherwise ? We can have more than two cpumask sets.
+>>
+>> >
+>> > > +             ret = arm_idle_init_driver(drv);
+>> > > +             if (ret) {
+>> > > +                     kfree(drv->cpumask);
+>> > > +                     break;
+>> > > +             }
+>> > > +             /*
+>> > > +              * Remove the cpus that were part of the registered
+>> > > +              * driver from the mask of cpus to be initialized
+>> > > +              * and restart.
+>> > > +              */
+>> > > +             cpumask_andnot(tmpmask, tmpmask, drv->cpumask);
+>> >
+>> > If there is a DT definition with just a cluster with the cpuidle driver
+>> > set and another one without any idle state, we will have always a
+>> > pr_warn because i == ARM_CPUIDLE_MAX_DRIVERS due to tmpmask being never
+>> > equal to a zero mask. Is it the purpose to detect such cases ?
+>>
+>> Not really, because arm_idle_init_driver() would return -ENODEV when
+>> it detects cpus with no idle states and the loop will break before warning.
+>>
+>> If we had two cluster of cpus with an idle-states set per cluster plus
+>> some cpus with no idle states the warning would be hit, because
+>> in actual facts we have more cpuidle sets than drivers (I know, a cpu
+>> set with no idle states falls back to default idle, but I think
+>> that's a detail that is easy to sort out).
+>>
+>> I can create idle drivers dynamically so that the ARM_CPUIDLE_MAX_DRIVERS
+>> check can be removed or relaxed (but the code becomes slightly more complex).
+>>
+>> Thanks for having a look, apart from these comments do we think it is
+>> a reasonable approach ?
+>
+> Any further comments ? I can post a v2 with an updated idle_states_cmp()
+> return value, if we think the multiple drivers approach is valid.
 
-> Quite frankly, it seems to me that you're trying to hide a spurious wakeup.
+Can you post v2?
+>From the silence on the list, I guess there is no strong objection to
+your approach.
+So, perhaps it is time to remove the "RFC" as well so this can get on
+track to be merged.
+
+-Dan
+
+
 >
+> Thanks a lot,
+> Lorenzo
 >
->> If some devices failed to suspend, we monitor this
->> error in try_to_suspend(). pm_suspend() is already
->> an 'int' returning function, how about checking return
->> from pm_suspend() before queueing suspend again?
->>
->> For devices which do not register for pending events,
->> this will prevent tight loop for suspend-resume in
->> suspend abort scenarios due to device suspend failures
->>
->> Signed-off-by: Nitish Ambastha <nitish.a@samsung.com>
->> ---
->> v2: Rearranged code to make wait entry shared with
->>     existing one as suggested by Pavel Machek <pavel@ucw.cz>
->>     Corrected log level from pr_info to pr_err for failure log
->>     Added return check for hibernate()
->>
->> v3: Restructured code as suggested by Rafael J Wysocki <rjw@rjwysocki.net>
->>
->>  kernel/power/autosleep.c |   20 +++++++++-----------
->>  1 file changed, 9 insertions(+), 11 deletions(-)
->>
->> diff --git a/kernel/power/autosleep.c b/kernel/power/autosleep.c
->> index 9012ecf..e458d0c 100644
->> --- a/kernel/power/autosleep.c
->> +++ b/kernel/power/autosleep.c
->> @@ -26,6 +26,7 @@ static struct wakeup_source *autosleep_ws;
->>  static void try_to_suspend(struct work_struct *work)
->>  {
->>       unsigned int initial_count, final_count;
->> +     int error;
->>
->>       if (!pm_get_wakeup_count(&initial_count, true))
->>               goto out;
->> @@ -42,23 +43,20 @@ static void try_to_suspend(struct work_struct *work)
->>               mutex_unlock(&autosleep_lock);
->>               return;
->>       }
->> -     if (autosleep_state >= PM_SUSPEND_MAX)
->> -             hibernate();
->> -     else
->> -             pm_suspend(autosleep_state);
->>
->> -     mutex_unlock(&autosleep_lock);
->> +     error = autosleep_state < PM_SUSPEND_MAX ?
->> +             pm_suspend(autosleep_state) : hibernate();
->>
->> -     if (!pm_get_wakeup_count(&final_count, false))
->> -             goto out;
->> +     mutex_unlock(&autosleep_lock);
->>
->>       /*
->> -      * If the wakeup occured for an unknown reason, wait to prevent the
->> -      * system from trying to suspend and waking up in a tight loop.
->> +      * If some devices failed to suspend or if the wakeup ocurred
->> +      * for an unknown reason, wait to prevent the system from
->> +      * trying to suspend and waking up in a tight loop.
->>        */
->> -     if (final_count == initial_count)
->> +     if (error || (pm_get_wakeup_count(&final_count, false)
->> +             && (final_count == initial_count)))
->>               schedule_timeout_uninterruptible(HZ / 2);
->> -
->>   out:
->>       queue_up_suspend_work();
->>  }
->>
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
