@@ -1,68 +1,52 @@
-From: Johannes Thumshirn <jthumshirn@suse.de>
-Subject: Re: [PATCH] power: Destroy IDRs on module exit
-Date: Tue, 14 Jul 2015 12:48:31 +0200
-Message-ID: <mqd1tgb816o.fsf@c203.arch.suse.de>
-References: <1436865374-22027-1-git-send-email-jthumshirn@suse.de>
-	<20150714101948.GA17240@earth>
+From: "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>
+Subject: RE: [PATCH] x86, acpi: Handle xapic/x2apic entries in MADT
+Date: Tue, 14 Jul 2015 11:17:36 +0000
+Message-ID: <C1C2579D7BE026428F81F41198ADB1723780EB27@irsmsx110.ger.corp.intel.com>
+References: <55A3D7A3.90609@linaro.org>
+ <1436861209-4047-1-git-send-email-lukasz.anaczkowski@intel.com>
+ <1436861209-4047-2-git-send-email-lukasz.anaczkowski@intel.com>
+ <55A4C7B2.7040707@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:48571 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752840AbbGNKsh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 14 Jul 2015 06:48:37 -0400
-In-Reply-To: <20150714101948.GA17240@earth> (Sebastian Reichel's message of
-	"Tue, 14 Jul 2015 12:19:48 +0200")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <55A4C7B2.7040707@linux.intel.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jiang Liu <jiang.liu@linux.intel.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "jason@lakedaemon.net" <jason@lakedaemon.net>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Pali =?utf-8?Q?Roh=C3=A1r?= <pali.rohar@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>, Johannes Thumshirn <jthumshirn@suse.de>
 
-Sebastian Reichel <sre@kernel.org> writes:
+> I have some concerns here about "maxcpus" and "nox2apic" kernel parameters. Say "maxcpus=72 nox2apic" is specified, user may get less than 72 CPUs with you patch applied. Original code will try to only all xapic CPUs before trying x2apic CPUs, so "maxcpus" doesn't conflict with "nox2apic".
 
-> [+CC: Tejun Heo <tj@kernel.org>, for being very active in lib/idr.c]
->
-> Hi,
->
-> On Tue, Jul 14, 2015 at 11:16:14AM +0200, Johannes Thumshirn wrote:
->> Destroy IDRs on module exit, freeing the resources for
->> * bq2415x_charger.c
->> * ds2782_battery.c
->> * ltc2941-battery-gauge.c
->
-> You missed bq27x00_battery.c. Maybe a coccinelle script should be
-> written?
+HI Gerry,
 
-I already did this one that last week (I think), it should've been in
-your INBOX (I hope).
+'nox2apic' is causing kernel panics with and w/o my patch.
+Here's the stack trace:
 
->> The drivers had to be converted to "ordinary" module_init()/module_exit()
->> style drivers instead of using module_i2c_driver.
->
-> mh I would prefer another solution. How about adding something
-> like this:
->
-> static void idr_remove_and_destroy(struct idr *idp, int id)
-> {
->     idr_remove(idp, id);
->     if (idr_is_empty(idp)
->         idr_destroy(idp);
-> }
->
-> If that is called by the drivers instead of idr_remove(), there
-> should be no need for adding idr_destroy to module_exit().
->
+#0  panic (fmt=0xffffffff818043c8 "timer doesn't work through Interrupt-remapped IO-APIC") at kernel/panic.c:72
+#1  0xffffffff813df48c in panic_if_irq_remap (msg=<optimized out>) at drivers/iommu/irq_remapping.c:152
+#2  0xffffffff81b5a705 in check_timer () at arch/x86/kernel/apic/io_apic.c:2124
+#3  0xffffffff81b5afa3 in setup_IO_APIC () at arch/x86/kernel/apic/io_apic.c:2278
+#4  0xffffffff81b59655 in apic_bsp_setup (upmode=<optimized out>) at arch/x86/kernel/apic/apic.c:2184
+#5  0xffffffff81b57370 in native_smp_prepare_cpus (max_cpus=<optimized out>) at arch/x86/kernel/smpboot.c:1201
+#6  0xffffffff81b49182 in smp_prepare_cpus (max_cpus=<optimized out>) at ./arch/x86/include/asm/smp.h:99
+#7  kernel_init_freeable () at init/main.c:999
+#8  0xffffffff8155c64e in kernel_init (unused=<optimized out>) at init/main.c:937
+#9  0xffffffff8156f51f in ret_from_fork () at arch/x86/entry/entry_64.S:526
+#10 0x0000000000000000 in ?? ()
 
-This would be an option.
+On HSW i7-4770, I'm getting 8 CPUs booted, regardless of the 'nox2apic' setting w/ my patch.
 
-[Copied a part of Palin's reply in here as well]
-Palin> I'm feeling that there is something wrong with idr API. There is no idr
-Palin> code in __init functions, so why it is needed for __exit? idr functions
-Palin> are used in devices, not in global module.
+Cheers,
+Lukasz
+--------------------------------------------------------------------
 
-but I start getting a bit puzzled about the whole IDR thing. Further
-grepping through the tree revealed even more drivers doing
-DEFINE_ID{A,R} but not all doing the destroy calls afterwards. Maybe
-Tejun can clarify on this.
+Intel Technology Poland sp. z o.o.
+ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
 
-Johannes
+Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
+przegladanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
+others is strictly prohibited.
+
