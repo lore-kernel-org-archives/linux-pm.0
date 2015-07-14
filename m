@@ -1,57 +1,129 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: Re: [PATCH] x86, acpi: Handle xapic/x2apic entries in MADT
-Date: Tue, 14 Jul 2015 16:26:26 +0800
-Message-ID: <55A4C7B2.7040707@linux.intel.com>
-References: <55A3D7A3.90609@linaro.org> <1436861209-4047-1-git-send-email-lukasz.anaczkowski@intel.com> <1436861209-4047-2-git-send-email-lukasz.anaczkowski@intel.com>
+From: Johannes Thumshirn <jthumshirn@suse.de>
+Subject: [PATCH] power: Destroy IDRs on module exit
+Date: Tue, 14 Jul 2015 11:16:14 +0200
+Message-ID: <1436865374-22027-1-git-send-email-jthumshirn@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1436861209-4047-2-git-send-email-lukasz.anaczkowski@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, jason@lakedaemon.net
-Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Johannes Thumshirn <jthumshirn@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On 2015/7/14 16:06, Lukasz Anaczkowski wrote:
-> This patch is based on work of "Yinghai Lu <yinghai@kernel.org>"
-> previously published at https://lkml.org/lkml/2013/1/21/563.
-> 
-> In case when BIOS is populating MADT wiht both x2apic and local apic
-> entries (as per ACPI spec), e.g. for Xeon Phi Knights Landing,
-> kernel builds it's processor table in the following order:
-> BSP, X2APIC, local APIC, resulting in processors on the same core
-> are not separated by core count, i.e.
-> 
-> Core LCpu   ApicId    LCpu    ApicId     LCpu    ApicId    LCpu    ApicId
-> 0    0 (  0 [0000]),   97 (  1 [0001]),  145 (  2 [0002]),  193 (  3 [0003])
-> 1   50 (  4 [0004]),   98 (  5 [0005]),  146 (  6 [0006]),  194 (  7 [0007])
-> 2   51 ( 16 [0010]),   99 ( 17 [0011]),  147 ( 18 [0012]),  195 ( 19 [0013])
-> 3   52 ( 20 [0014]),  100 ( 21 [0015]),  148 ( 22 [0016]),  196 ( 23 [0017])
-> 4   53 ( 24 [0018]),  101 ( 25 [0019]),  149 ( 26 [001a]),  197 ( 27 [001b])
-> 5   54 ( 28 [001c]),  102 ( 29 [001d]),  150 ( 30 [001e]),  198 ( 31 [001f])
-> ...
-> 
-> Please note, how LCpu are mixed for physical cores (Core).
-> 
-> This patch fixes this behavior and resulting assignment is
-> consistent with other Xeon processors, i.e.
-> 
-> Core LCpu   ApicId    LCpu    ApicId     LCpu    ApicId    LCpu    ApicId
-> 0    0 (  0 [0000]),   72 (  1 [0001]),  144 (  2 [0002]),  216 (  3 [0003])
-> 1    1 (  4 [0004]),   73 (  5 [0005]),  145 (  6 [0006]),  217 (  7 [0007])
-> 2    2 (  8 [0008]),   74 (  9 [0009]),  146 ( 10 [000a]),  218 ( 11 [000b])
-> 3    3 ( 12 [000c]),   75 ( 13 [000d]),  147 ( 14 [000e]),  219 ( 15 [000f])
-> 4    4 ( 16 [0010]),   76 ( 17 [0011]),  148 ( 18 [0012]),  220 ( 19 [0013])
-> 5    5 ( 20 [0014]),   77 ( 21 [0015]),  149 ( 22 [0016]),  221 ( 23 [0017])
-> ...
-> 
-> Signed-off-by: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
-Hi Lukasz,
-	I have some concerns here about "maxcpus" and "nox2apic" kernel
-parameters. Say "maxcpus=72 nox2apic" is specified, user may get
-less than 72 CPUs with you patch applied. Original code will try to
-only all xapic CPUs before trying x2apic CPUs, so "maxcpus" doesn't
-conflict with "nox2apic".
-Thanks!
-Gerry
+Destroy IDRs on module exit, freeing the resources for
+* bq2415x_charger.c
+* ds2782_battery.c
+* ltc2941-battery-gauge.c
+
+The drivers had to be converted to "ordinary" module_init()/module_exit=
+()
+style drivers instead of using module_i2c_driver.
+
+Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
+---
+ drivers/power/bq2415x_charger.c       | 20 +++++++++++++++++++-
+ drivers/power/ds2782_battery.c        | 20 +++++++++++++++++++-
+ drivers/power/ltc2941-battery-gauge.c | 20 +++++++++++++++++++-
+ 3 files changed, 57 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_ch=
+arger.c
+index e98dcb6..38f4208 100644
+--- a/drivers/power/bq2415x_charger.c
++++ b/drivers/power/bq2415x_charger.c
+@@ -1773,7 +1773,25 @@ static struct i2c_driver bq2415x_driver =3D {
+ 	.remove =3D bq2415x_remove,
+ 	.id_table =3D bq2415x_i2c_id_table,
+ };
+-module_i2c_driver(bq2415x_driver);
++
++static int __init bq2415x_init(void)
++{
++	int ret;
++
++	ret =3D i2c_add_driver(&bq2415x_driver);
++	if (ret)
++		printk(KERN_ERR "Unable to register bq2415x-battery driver\n");
++
++	return ret;
++}
++module_init(bq2415x_init);
++
++static void __exit bq2415x_exit(void)
++{
++	i2c_del_driver(&bq2415x_driver);
++	idr_destroy(&bq2415x_id);
++}
++module_exit(bq2415x_exit);
+=20
+ MODULE_AUTHOR("Pali Roh=C3=A1r <pali.rohar@gmail.com>");
+ MODULE_DESCRIPTION("bq2415x charger driver");
+diff --git a/drivers/power/ds2782_battery.c b/drivers/power/ds2782_batt=
+ery.c
+index ed4d756..410bc9d 100644
+--- a/drivers/power/ds2782_battery.c
++++ b/drivers/power/ds2782_battery.c
+@@ -468,7 +468,25 @@ static struct i2c_driver ds278x_battery_driver =3D=
+ {
+ 	.remove		=3D ds278x_battery_remove,
+ 	.id_table	=3D ds278x_id,
+ };
+-module_i2c_driver(ds278x_battery_driver);
++
++static int __init ds2782_init(void)
++{
++	int ret;
++
++	ret =3D i2c_add_driver(&ds278x_battery_driver);
++	if (ret)
++		printk(KERN_ERR "Unable to register ds2782-battery driver\n");
++
++	return ret;
++}
++module_init(ds2782_init);
++
++static void __exit ds2782_exit(void)
++{
++	i2c_del_driver(&ds278x_battery_driver);
++	idr_destroy(&battery_id);
++}
++module_exit(ds2782_exit);
+=20
+ MODULE_AUTHOR("Ryan Mallon");
+ MODULE_DESCRIPTION("Maxim/Dallas DS2782 Stand-Alone Fuel Gauage IC dri=
+ver");
+diff --git a/drivers/power/ltc2941-battery-gauge.c b/drivers/power/ltc2=
+941-battery-gauge.c
+index daeb086..6fbbcd2 100644
+--- a/drivers/power/ltc2941-battery-gauge.c
++++ b/drivers/power/ltc2941-battery-gauge.c
+@@ -544,7 +544,25 @@ static struct i2c_driver ltc294x_driver =3D {
+ 	.remove		=3D ltc294x_i2c_remove,
+ 	.id_table	=3D ltc294x_i2c_id,
+ };
+-module_i2c_driver(ltc294x_driver);
++
++static int __init ltc294x_init(void)
++{
++	int ret;
++
++	ret =3D i2c_add_driver(&ltc294x_driver);
++	if (ret)
++		printk(KERN_ERR "Unable to register bq2415x-battery driver\n");
++
++	return ret;
++}
++module_init(ltc294x_init);
++
++static void __exit ltc294x_exit(void)
++{
++	i2c_del_driver(&ltc294x_driver);
++	idr_destroy(&ltc294x_id);
++}
++module_exit(ltc294x_exit);
+=20
+ MODULE_AUTHOR("Auryn Verwegen, Topic Embedded Systems");
+ MODULE_AUTHOR("Mike Looijmans, Topic Embedded Products");
+--=20
+2.4.5
