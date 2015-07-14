@@ -1,131 +1,56 @@
-From: Wei Ni <wni@nvidia.com>
-Subject: [PATCH v3] thermal: add available policies sysfs attribute
-Date: Tue, 14 Jul 2015 15:40:56 +0800
-Message-ID: <1436859656-16964-1-git-send-email-wni@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
+Subject: Re: [PATCH] x86, acpi: Handle xapic/x2apic entries in MADT
+Date: Tue, 14 Jul 2015 10:06:48 +0200
+Message-ID: <1436861209-4047-1-git-send-email-lukasz.anaczkowski@intel.com>
+References: <55A3D7A3.90609@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:7177 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751843AbbGNHlA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2015 03:41:00 -0400
+Received: from mga09.intel.com ([134.134.136.24]:24020 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751558AbbGNIG4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 14 Jul 2015 04:06:56 -0400
+In-Reply-To: <55A3D7A3.90609@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: javi.merino@arm.com, rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, Wei Ni <wni@nvidia.com>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, jason@lakedaemon.net
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 
-The Linux thermal framework support to change thermal governor
-policy in userspace, but it can't show what available policies
-supported.
+On 07/13/2015 23:22 PM, Hanjun Guo wrote:
+>> In case when BIOS is populating MADT wiht both x2apic and local apic
+>> entries (as per ACPI spec), kernel builds it's processor table
+>> in the following order: BSP, X2APIC, local APIC, resulting in
+>> processors on the same core are not separated by core count.
+>
+> I'm confused here, I can't figure out where is the problem, could you
+> explain it in detail?
+>
+> For me, logical CPU IDs allocated by OS will have mappings to physical
+> CPU IDs, what you are saying seems CPU topology problem to me.
 
-This patch adds available_policies attribute to the thermal
-framework, it can list the thermal governors which can be
-used for a particular zone. This attribute is read only.
+Sorry for confusion, I'll send another patch with updated commit message
+where I'll try to put some more details and explanation. Hope that one will
+be less confusing.
 
-Signed-off-by: Wei Ni <wni@nvidia.com>
-Reviewed-by: Javi Merino <javi.merino@arm.com>
----
-v3: Initialize "size" as PAGE_SIZE.
-v2: This change had been submitted and discussed in
-http://marc.info/?l=linux-tegra&m=138961183931457&w=2
-https://www.marc.info/?l=linux-pm&m=138986468007449&w=1
-cherry-picked it,and updated to this v2 version.
+>>   arch/x86/kernel/acpi/boot.c | 29 +++++++++++++-----
+>>   drivers/acpi/numa.c         | 28 ++++++++++++-----
+>>   drivers/acpi/tables.c       | 75 ++++++++++++++++++++++++++++-----------------
+>>   drivers/irqchip/irq-gic.c   | 15 ++++++---
+>
+> Anyway, You also miss the SMP boot for ARM64 in ACPI way, which will
+> cause compile error on ARM64.
 
- Documentation/thermal/sysfs-api.txt |  6 ++++++
- drivers/thermal/thermal_core.c      | 28 ++++++++++++++++++++++++++++
- 2 files changed, 34 insertions(+)
+The only symbol that's changed is acpi_parse_entries and I don't see
+any calls to it in ARM64. I also tried compilation of arm64/defconfig
+and it compiles fine. Could yoy point me to place where it might failing?
 
-diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-index c1f6864a8c5d..10f062ea6bc2 100644
---- a/Documentation/thermal/sysfs-api.txt
-+++ b/Documentation/thermal/sysfs-api.txt
-@@ -180,6 +180,7 @@ Thermal zone device sys I/F, created once it's registered:
-     |---temp:			Current temperature
-     |---mode:			Working mode of the thermal zone
-     |---policy:			Thermal governor used for this zone
-+    |---available_policies:	Available thermal governors for this zone
-     |---trip_point_[0-*]_temp:	Trip point temperature
-     |---trip_point_[0-*]_type:	Trip point type
-     |---trip_point_[0-*]_hyst:	Hysteresis value for this trip point
-@@ -256,6 +257,10 @@ policy
- 	One of the various thermal governors used for a particular zone.
- 	RW, Required
- 
-+available_policies
-+	Available thermal governors which can be used for a particular zone.
-+	RO, Required
-+
- trip_point_[0-*]_temp
- 	The temperature above which trip point will be fired.
- 	Unit: millidegree Celsius
-@@ -417,6 +422,7 @@ method, the sys I/F structure will be built like this:
-     |---temp:			37000
-     |---mode:			enabled
-     |---policy:			step_wise
-+    |---available_policies:	step_wise fair_share
-     |---trip_point_0_temp:	100000
-     |---trip_point_0_type:	critical
-     |---trip_point_1_temp:	80000
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 04659bfb888b..c4700950e42e 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -847,6 +847,27 @@ policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
- 	return sprintf(buf, "%s\n", tz->governor->name);
- }
- 
-+static ssize_t
-+available_policies_show(struct device *dev, struct device_attribute *devattr,
-+			char *buf)
-+{
-+	struct thermal_governor *pos;
-+	ssize_t count = 0;
-+	ssize_t size = PAGE_SIZE;
-+
-+	mutex_lock(&thermal_governor_lock);
-+
-+	list_for_each_entry(pos, &thermal_governor_list, governor_list) {
-+		size = PAGE_SIZE - count;
-+		count += scnprintf(buf + count, size, "%s ", pos->name);
-+	}
-+	count += scnprintf(buf + count, size, "\n");
-+
-+	mutex_unlock(&thermal_governor_lock);
-+
-+	return count;
-+}
-+
- #ifdef CONFIG_THERMAL_EMULATION
- static ssize_t
- emul_temp_store(struct device *dev, struct device_attribute *attr,
-@@ -1032,6 +1053,7 @@ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
- static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
- static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
- static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
-+static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
- 
- /* sys I/F for cooling device */
- #define to_cooling_device(_dev)	\
-@@ -1817,6 +1839,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	if (result)
- 		goto unregister;
- 
-+	/* Create available_policies attribute */
-+	result = device_create_file(&tz->device, &dev_attr_available_policies);
-+	if (result)
-+		goto unregister;
-+
- 	/* Update 'this' zone's governor information */
- 	mutex_lock(&thermal_governor_lock);
- 
-@@ -1917,6 +1944,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 	if (tz->ops->get_mode)
- 		device_remove_file(&tz->device, &dev_attr_mode);
- 	device_remove_file(&tz->device, &dev_attr_policy);
-+	device_remove_file(&tz->device, &dev_attr_available_policies);
- 	remove_trip_attrs(tz);
- 	thermal_set_governor(tz, NULL);
- 
--- 
-1.9.1
+Thanks,
+    Lukasz
+--------------------------------------------------------------------
+
+Intel Technology Poland sp. z o.o.
+ul. Slowackiego 173 | 80-298 Gdansk | Sad Rejonowy Gdansk Polnoc | VII Wydzial Gospodarczy Krajowego Rejestru Sadowego - KRS 101882 | NIP 957-07-52-316 | Kapital zakladowy 200.000 PLN.
+
+Ta wiadomosc wraz z zalacznikami jest przeznaczona dla okreslonego adresata i moze zawierac informacje poufne. W razie przypadkowego otrzymania tej wiadomosci, prosimy o powiadomienie nadawcy oraz trwale jej usuniecie; jakiekolwiek
+przegladanie lub rozpowszechnianie jest zabronione.
+This e-mail and any attachments may contain confidential material for the sole use of the intended recipient(s). If you are not the intended recipient, please contact the sender and delete all copies; any review or distribution by
+others is strictly prohibited.
 
