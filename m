@@ -1,50 +1,75 @@
-From: Hanjun Guo <hanjun.guo@linaro.org>
-Subject: Re: [PATCH] x86, acpi: Handle xapic/x2apic entries in MADT
-Date: Tue, 14 Jul 2015 22:24:10 +0800
-Message-ID: <55A51B8A.4050702@linaro.org>
-References: <55A3D7A3.90609@linaro.org> <1436861209-4047-1-git-send-email-lukasz.anaczkowski@intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2] PM / Domains: Correct unit address in power-controller example
+Date: Tue, 14 Jul 2015 16:28:29 +0200
+Message-ID: <CAJZ5v0hTk7+ib9gHtyx4h80Pr7evDWxHx-VT_PNf75emEucH-g@mail.gmail.com>
+References: <1430748804-7586-1-git-send-email-geert+renesas@glider.be>
+	<CAMuHMdXwOVMt2HR+Y4jB0LeCPWPfPgR4A+qEzyoWWd0hMNBj=w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1436861209-4047-1-git-send-email-lukasz.anaczkowski@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, jason@lakedaemon.net
-Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f67.google.com ([74.125.82.67]:32904 "EHLO
+	mail-wg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751558AbbGNO2a (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2015 10:28:30 -0400
+Received: by wgwk7 with SMTP id k7so905107wgw.0
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2015 07:28:29 -0700 (PDT)
+In-Reply-To: <CAMuHMdXwOVMt2HR+Y4jB0LeCPWPfPgR4A+qEzyoWWd0hMNBj=w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
 
-On 07/14/2015 04:06 PM, Lukasz Anaczkowski wrote:
-> On 07/13/2015 23:22 PM, Hanjun Guo wrote:
->>> In case when BIOS is populating MADT wiht both x2apic and local apic
->>> entries (as per ACPI spec), kernel builds it's processor table
->>> in the following order: BSP, X2APIC, local APIC, resulting in
->>> processors on the same core are not separated by core count.
+Hi Geert,
+
+On Tue, Jul 14, 2015 at 2:03 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> ping?
+
+Am I supposed to take this?
+
+
+> On Mon, May 4, 2015 at 4:13 PM, Geert Uytterhoeven
+> <geert+renesas@glider.be> wrote:
+>> In example 2 of the generic PM domains DT bindings, the unit address of
+>> the device node representing the child power controller doesn't match
+>> its "reg" property. Correct it.
 >>
->> I'm confused here, I can't figure out where is the problem, could you
->> explain it in detail?
+>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> Acked-by: Kevin Hilman <khilman@linaro.org>
+>> ---
+>> v2:
+>>   - Add Acked-by
+>> ---
+>>  Documentation/devicetree/bindings/power/power_domain.txt | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
 >>
->> For me, logical CPU IDs allocated by OS will have mappings to physical
->> CPU IDs, what you are saying seems CPU topology problem to me.
->
-> Sorry for confusion, I'll send another patch with updated commit message
-> where I'll try to put some more details and explanation. Hope that one will
-> be less confusing.
->
->>>    arch/x86/kernel/acpi/boot.c | 29 +++++++++++++-----
->>>    drivers/acpi/numa.c         | 28 ++++++++++++-----
->>>    drivers/acpi/tables.c       | 75 ++++++++++++++++++++++++++++-----------------
->>>    drivers/irqchip/irq-gic.c   | 15 ++++++---
+>> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+>> index d6505bef655dc2df..32d1d3a399fe2a48 100644
+>> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+>> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+>> @@ -56,7 +56,7 @@ Example 2:
+>>                 #power-domain-cells = <1>;
+>>         };
 >>
->> Anyway, You also miss the SMP boot for ARM64 in ACPI way, which will
->> cause compile error on ARM64.
+>> -       child: power-controller@12340000 {
+>> +       child: power-controller@12341000 {
+>>                 compatible = "foo,power-controller";
+>>                 reg = <0x12341000 0x1000>;
+>>                 power-domains = <&parent 0>;
+>> --
+>> 1.9.1
 >
-> The only symbol that's changed is acpi_parse_entries and I don't see
-> any calls to it in ARM64. I also tried compilation of arm64/defconfig
-> and it compiles fine. Could yoy point me to place where it might failing?
-
-Sorry, I misread your patch that you modified acpi_table_parse_madt()
-also, but it turns out that you keep it as before, sorry for the noise.
-
-Thanks
-Hanjun
-
+> Gr{oetje,eeting}s,
+>
+>                         Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
