@@ -1,83 +1,76 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2] power/reset: zx: Register restart handler
-Date: Tue, 14 Jul 2015 08:27:26 +0200
-Message-ID: <20150714062725.GA3915@earth>
-References: <1436171730-21175-1-git-send-email-jun.nie@linaro.org>
- <20150713120019.GB9128@earth>
- <CABymUCPmXH2VhU-rtpuq2eavbb1oAzAk_6gXqSPBJCvPcF5ZrA@mail.gmail.com>
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
+Subject: Re: [RFT/RFC] power_supply: bq2415x_charger: Initialize workqueue
+ before scheduling it
+Date: Tue, 14 Jul 2015 09:18:01 +0200
+Message-ID: <20150714071801.GB12844@pali>
+References: <1436834053-2084-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="BOKacYhQ+x31HxR3"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:36586 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751848AbbGNG1b (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 14 Jul 2015 02:27:31 -0400
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CABymUCPmXH2VhU-rtpuq2eavbb1oAzAk_6gXqSPBJCvPcF5ZrA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1436834053-2084-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jun Nie <jun.nie@linaro.org>
-Cc: Haojian Zhuang <haojian.zhuang@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Shawn Guo <shawn.guo@linaro.org>, "wan.zhijun" <wan.zhijun@zte.com.cn>, Jason Liu <jason.liu@linaro.org>
 
-
---BOKacYhQ+x31HxR3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Tue, Jul 14, 2015 at 09:42:39AM +0800, Jun Nie wrote:
-> 2015-07-13 20:00 GMT+08:00 Sebastian Reichel <sre@kernel.org>:
-> > On Mon, Jul 06, 2015 at 04:35:30PM +0800, Jun Nie wrote:
-> >> Register with kernel restart handler instead of setting arm_pm_restart
-> >> directly.
-> >>
-> >> [...]
-> >>
-> >> +static int zx_restart_handler(struct notifier_block *this,
-> >> +                           unsigned long mode, void *cmd)
-> >> +{
-> >> +     writel_relaxed(1, base + 0xb0);
-> >> +     writel_relaxed(1, pcu_base + 0x34);
-> >> +
-> >> +     while (1)
-> >> +             cpu_do_idle();
-> >
-> > mdelay(some_time);
-> > pr_emerg("Unable to restart system\n");
+On Tuesday 14 July 2015 09:34:13 Krzysztof Kozlowski wrote:
+> The driver during probe registers a power supply notifier
+> (with bq2415x_notifier_call() callback) and calls it manually right
+> after. The notifier callback function schedules driver's workqueue
+> (bq->work).
 >=20
-> I do not think these code can be executed as reset will happen after
-> register writing and while loop will stop any further code execution.
-> Please point out issue if any.
+> However the workqueue was initialized after these two events (after
+> registering power supply notifier and calling manually the callback).
+>=20
+> When power supply core notified the driver (executing its
+> bq2415x_notifier_call() callback) the scheduled workqueue could be
+> still uninitialized.
+>=20
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Reported-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+>=20
+> ---
+>=20
+> I don't have the hardware, please test. Additionally I could not find
+> the commit which introduced the issue so I did not cc-stable.
 
-Please remove the while loop. Instead wait for a reasonable amount
-of time. If something goes wrong print an error message and return
-NOTIFY_DONE. You can see an example in syscon-reboot.c
+Thanks for the patch! Please wait some time (about week) and I will tes=
+t
+it on real Nokia N900 hardware.
 
--- Sebastian
+Because bq2415x depends on isp1704 on Nokia N900 and isp1704 is not
+emulated by qemu, we cannot test any bq2415x changes in qemu :-(
 
---BOKacYhQ+x31HxR3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+> ---
+>  drivers/power/bq2415x_charger.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_=
+charger.c
+> index e98dcb661cc9..527ed0f18796 100644
+> --- a/drivers/power/bq2415x_charger.c
+> +++ b/drivers/power/bq2415x_charger.c
+> @@ -1601,6 +1601,7 @@ static int bq2415x_probe(struct i2c_client *cli=
+ent,
+>  	bq->reported_mode =3D BQ2415X_MODE_OFF;
+>  	bq->autotimer =3D 0;
+>  	bq->automode =3D 0;
+> +	INIT_DELAYED_WORK(&bq->work, bq2415x_timer_work);
+> =20
+>  	if (np || ACPI_HANDLE(bq->dev)) {
+>  		ret =3D device_property_read_u32(bq->dev,
+> @@ -1677,7 +1678,6 @@ static int bq2415x_probe(struct i2c_client *cli=
+ent,
+>  		dev_info(bq->dev, "automode not supported\n");
+>  	}
+> =20
+> -	INIT_DELAYED_WORK(&bq->work, bq2415x_timer_work);
+>  	bq2415x_set_autotimer(bq, 1);
+> =20
+>  	dev_info(bq->dev, "driver registered\n");
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVpKvKAAoJENju1/PIO/qayqUP/3zul1qtm0F/SrhNsHi0OosA
-YnitmVn3DklkqGmHxX5Pcu1wFDFzvxCUp0WuUImvO93WF1rPk6bkExWkJzF+qXoE
-Rw/hzTHe5RJG5g5QCoiN8yAaTszIQfm+Hsob8hbK2PkFeBlySeb27KHCdMlsjpZc
-NfOG4HdQis4L8mOEc4OGlKdG9pXx89YJORTKdJeEbp6+Nq9mEn+q7Q4YuWAJJ8/O
-+yyJQvxHKPvX94NsP5l6v9MNYLdlJPo3hRN5gDwrPvs0ZVbQTkgt9TazRwlIDET5
-CRaYtMxBoHGteLMqV6G4e7hJiULmkb/jgt7yiNQ7PAJWwy6zyoXtN5gaHqWuN5Hy
-baEL1fuCyvTF6e/ulWTnuc6E+CJeYjkGeP7HVJR39+WwNHjq2+VJGXCV2Sliuid2
-ZGZrTDtGZU7zGrXEofeDnivwTdjkKXmY2TjWiLvMTifypqwFAYT6FNeTNFazrd0P
-gP+bJkw1fFxijKit7EjfhWIlHAIJQjO2ihMZOW9zE6pePrPivnoOyLrkSST284X4
-gdCuyN5XO+nJQYlJI8rc3OKAH692vjgRCPpBe6aRqL2y2wlewZfLkXVGW3yXfuYk
-n8RtubyGI41Wu1GKDYSj/HgKNc2G8Q18NNJLr/LBuG5XFCRF1DLC4/hsKYW6M2rV
-T3PY7d09P9+NjULgu9Z9
-=KNjD
------END PGP SIGNATURE-----
-
---BOKacYhQ+x31HxR3--
+--=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
