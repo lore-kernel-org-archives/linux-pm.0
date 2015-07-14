@@ -1,34 +1,57 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Subject: [pm:bleeding-edge 10/17] kernel/power/snapshot.c:928:5: sparse:
- symbol 'swsusp_page_is_valid' was not declared. Should it be static?
-Date: Tue, 14 Jul 2015 16:23:38 +0800
-Message-ID: <201507141612.6eLYehfL%fengguang.wu@intel.com>
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: Re: [PATCH] x86, acpi: Handle xapic/x2apic entries in MADT
+Date: Tue, 14 Jul 2015 16:26:26 +0800
+Message-ID: <55A4C7B2.7040707@linux.intel.com>
+References: <55A3D7A3.90609@linaro.org> <1436861209-4047-1-git-send-email-lukasz.anaczkowski@intel.com> <1436861209-4047-2-git-send-email-lukasz.anaczkowski@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
+In-Reply-To: <1436861209-4047-2-git-send-email-lukasz.anaczkowski@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: kbuild-all@01.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
+To: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, jason@lakedaemon.net
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-head:   4835ff4dabfa392ba9f10218231ea8b6972d9459
-commit: d09d85e88f60a6e4d9f8159556f024bd588f11f0 [10/17] PM / hibernate: make sure each resuming page is in current memory zones
-reproduce:
-  # apt-get install sparse
-  git checkout d09d85e88f60a6e4d9f8159556f024bd588f11f0
-  make ARCH=x86_64 allmodconfig
-  make C=1 CF=-D__CHECK_ENDIAN__
-
-
-sparse warnings: (new ones prefixed by >>)
-
->> kernel/power/snapshot.c:928:5: sparse: symbol 'swsusp_page_is_valid' was not declared. Should it be static?
-   kernel/power/snapshot.c:1354:14: sparse: symbol 'alloc_normal' was not declared. Should it be static?
-
-Please review and possibly fold the followup patch.
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+On 2015/7/14 16:06, Lukasz Anaczkowski wrote:
+> This patch is based on work of "Yinghai Lu <yinghai@kernel.org>"
+> previously published at https://lkml.org/lkml/2013/1/21/563.
+> 
+> In case when BIOS is populating MADT wiht both x2apic and local apic
+> entries (as per ACPI spec), e.g. for Xeon Phi Knights Landing,
+> kernel builds it's processor table in the following order:
+> BSP, X2APIC, local APIC, resulting in processors on the same core
+> are not separated by core count, i.e.
+> 
+> Core LCpu   ApicId    LCpu    ApicId     LCpu    ApicId    LCpu    ApicId
+> 0    0 (  0 [0000]),   97 (  1 [0001]),  145 (  2 [0002]),  193 (  3 [0003])
+> 1   50 (  4 [0004]),   98 (  5 [0005]),  146 (  6 [0006]),  194 (  7 [0007])
+> 2   51 ( 16 [0010]),   99 ( 17 [0011]),  147 ( 18 [0012]),  195 ( 19 [0013])
+> 3   52 ( 20 [0014]),  100 ( 21 [0015]),  148 ( 22 [0016]),  196 ( 23 [0017])
+> 4   53 ( 24 [0018]),  101 ( 25 [0019]),  149 ( 26 [001a]),  197 ( 27 [001b])
+> 5   54 ( 28 [001c]),  102 ( 29 [001d]),  150 ( 30 [001e]),  198 ( 31 [001f])
+> ...
+> 
+> Please note, how LCpu are mixed for physical cores (Core).
+> 
+> This patch fixes this behavior and resulting assignment is
+> consistent with other Xeon processors, i.e.
+> 
+> Core LCpu   ApicId    LCpu    ApicId     LCpu    ApicId    LCpu    ApicId
+> 0    0 (  0 [0000]),   72 (  1 [0001]),  144 (  2 [0002]),  216 (  3 [0003])
+> 1    1 (  4 [0004]),   73 (  5 [0005]),  145 (  6 [0006]),  217 (  7 [0007])
+> 2    2 (  8 [0008]),   74 (  9 [0009]),  146 ( 10 [000a]),  218 ( 11 [000b])
+> 3    3 ( 12 [000c]),   75 ( 13 [000d]),  147 ( 14 [000e]),  219 ( 15 [000f])
+> 4    4 ( 16 [0010]),   76 ( 17 [0011]),  148 ( 18 [0012]),  220 ( 19 [0013])
+> 5    5 ( 20 [0014]),   77 ( 21 [0015]),  149 ( 22 [0016]),  221 ( 23 [0017])
+> ...
+> 
+> Signed-off-by: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
+Hi Lukasz,
+	I have some concerns here about "maxcpus" and "nox2apic" kernel
+parameters. Say "maxcpus=72 nox2apic" is specified, user may get
+less than 72 CPUs with you patch applied. Original code will try to
+only all xapic CPUs before trying x2apic CPUs, so "maxcpus" doesn't
+conflict with "nox2apic".
+Thanks!
+Gerry
