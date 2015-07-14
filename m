@@ -1,144 +1,50 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH v3 2/2] PM / Runtime: Add pm_runtime_enable_recursive
-Date: Tue, 14 Jul 2015 15:19:16 +0200
-Message-ID: <CAAObsKA3hm4GkYbgJ1APCHvO3ZYP=bT=0cQyhxhm5VrPYn99wQ@mail.gmail.com>
-References: <9291571.JSDgNsKidJ@vostro.rjw.lan> <Pine.LNX.4.44L0.1507081617200.2243-100000@iolanthe.rowland.org>
+From: Hanjun Guo <hanjun.guo@linaro.org>
+Subject: Re: [PATCH] x86, acpi: Handle xapic/x2apic entries in MADT
+Date: Tue, 14 Jul 2015 22:24:10 +0800
+Message-ID: <55A51B8A.4050702@linaro.org>
+References: <55A3D7A3.90609@linaro.org> <1436861209-4047-1-git-send-email-lukasz.anaczkowski@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f48.google.com ([74.125.82.48]:36863 "EHLO
-	mail-wg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752054AbbGNNTi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2015 09:19:38 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1507081617200.2243-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1436861209-4047-1-git-send-email-lukasz.anaczkowski@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, jason@lakedaemon.net
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 8 July 2015 at 22:31, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Wed, 8 Jul 2015, Rafael J. Wysocki wrote:
->
->> I seem to have lost the context here, sorry about that.
+On 07/14/2015 04:06 PM, Lukasz Anaczkowski wrote:
+> On 07/13/2015 23:22 PM, Hanjun Guo wrote:
+>>> In case when BIOS is populating MADT wiht both x2apic and local apic
+>>> entries (as per ACPI spec), kernel builds it's processor table
+>>> in the following order: BSP, X2APIC, local APIC, resulting in
+>>> processors on the same core are not separated by core count.
 >>
->> The idea seems to be to rely on the fact that the RPM status for all devices
->> is initially RPM_SUSPENDED and that never changes if runtime PM is never
->> enabled for the device, so in that particular case it would be OK to treat
->> the "power.direct_complete set + RPM status == RPM_SUSPENDED" combination
->> as valid even though runtime PM has never been enabled for the device in
->> question (provided that power.direct_complete will never be set for "real"
->> devices that don't support runtime PM).  Is that correct?
+>> I'm confused here, I can't figure out where is the problem, could you
+>> explain it in detail?
+>>
+>> For me, logical CPU IDs allocated by OS will have mappings to physical
+>> CPU IDs, what you are saying seems CPU topology problem to me.
 >
-> I would have expressed it slightly differently, but yes, that's correct.
+> Sorry for confusion, I'll send another patch with updated commit message
+> where I'll try to put some more details and explanation. Hope that one will
+> be less confusing.
 >
->> That seems to be fragile, but I have no strong opinion.
+>>>    arch/x86/kernel/acpi/boot.c | 29 +++++++++++++-----
+>>>    drivers/acpi/numa.c         | 28 ++++++++++++-----
+>>>    drivers/acpi/tables.c       | 75 ++++++++++++++++++++++++++++-----------------
+>>>    drivers/irqchip/irq-gic.c   | 15 ++++++---
+>>
+>> Anyway, You also miss the SMP boot for ARM64 in ACPI way, which will
+>> cause compile error on ARM64.
 >
-> In itself it's not all that bad, I think.  In the presence of Tomeu's
-> new direct_complete_default flag, however, it does seem quite fragile.
->
-> We may want to do the direct_complete_default thing in a different way.
-> For example, the PM core could automatically set the direct_complete
-> flag if a device has _none_ of the system suspend callbacks (i.e., no
-> prepare, suspend, suspend_late, suspend_noirq, resume_noirq,
-> resume_early, resume, or complete).  Although it would be a little
-> awkward to check this, it would be safer than inheriting
-> direct_complete_default from the parent and it ought to solve Tomeu's
-> problem just as well.
+> The only symbol that's changed is acpi_parse_entries and I don't see
+> any calls to it in ARM64. I also tried compilation of arm64/defconfig
+> and it compiles fine. Could yoy point me to place where it might failing?
 
-Yeah, I think this is an improvement. Will give it a try.
+Sorry, I misread your patch that you modified acpi_table_parse_madt()
+also, but it turns out that you keep it as before, sorry for the noise.
 
->> Let's do that change if it allows us to make forward progress here.  Please
->> feel free to submit a documentation patch along the lines you've suggested.
->
-> Here's a proposed patch to illustrate what I have in mind.  Since it
-> removes the only usage of pm_runtime_suspended_if_enabled(), it also
-> removes the definition of that function.
+Thanks
+Hanjun
 
-Will this patch be picked up as-is or should I add it to my series
-with a proper changelog?
-
-Thanks,
-
-Tomeu
-
-
-> Alan Stern
->
->
->
-> Index: usb-4.1/drivers/base/power/main.c
-> ===================================================================
-> --- usb-4.1.orig/drivers/base/power/main.c
-> +++ usb-4.1/drivers/base/power/main.c
-> @@ -1374,7 +1374,7 @@ static int __device_suspend(struct devic
->         if (dev->power.direct_complete) {
->                 if (pm_runtime_status_suspended(dev)) {
->                         pm_runtime_disable(dev);
-> -                       if (pm_runtime_suspended_if_enabled(dev))
-> +                       if (pm_runtime_status_suspended(dev))
->                                 goto Complete;
->
->                         pm_runtime_enable(dev);
-> Index: usb-4.1/Documentation/power/devices.txt
-> ===================================================================
-> --- usb-4.1.orig/Documentation/power/devices.txt
-> +++ usb-4.1/Documentation/power/devices.txt
-> @@ -341,6 +341,13 @@ the phases are:
->         and is entirely responsible for bringing the device back to the
->         functional state as appropriate.
->
-> +       Note that this direct-complete procedure applies even if the device is
-> +       disabled for runtime PM; only the runtime-PM status matters.  It follows
-> +       that if a device has system-sleep callbacks but does not support runtime
-> +       PM, then its prepare callback must never return a positive value.  This
-> +       is because all devices are initially set to runtime-suspended with
-> +       runtime PM disabled.
-> +
->      2. The suspend methods should quiesce the device to stop it from performing
->         I/O.  They also may save the device registers and put it into the
->         appropriate low-power state, depending on the bus type the device is on,
-> Index: usb-4.1/Documentation/power/runtime_pm.txt
-> ===================================================================
-> --- usb-4.1.orig/Documentation/power/runtime_pm.txt
-> +++ usb-4.1/Documentation/power/runtime_pm.txt
-> @@ -445,10 +445,6 @@ drivers/base/power/runtime.c and include
->    bool pm_runtime_status_suspended(struct device *dev);
->      - return true if the device's runtime PM status is 'suspended'
->
-> -  bool pm_runtime_suspended_if_enabled(struct device *dev);
-> -    - return true if the device's runtime PM status is 'suspended' and its
-> -      'power.disable_depth' field is equal to 1
-> -
->    void pm_runtime_allow(struct device *dev);
->      - set the power.runtime_auto flag for the device and decrease its usage
->        counter (used by the /sys/devices/.../power/control interface to
-> Index: usb-4.1/include/linux/pm_runtime.h
-> ===================================================================
-> --- usb-4.1.orig/include/linux/pm_runtime.h
-> +++ usb-4.1/include/linux/pm_runtime.h
-> @@ -98,11 +98,6 @@ static inline bool pm_runtime_status_sus
->         return dev->power.runtime_status == RPM_SUSPENDED;
->  }
->
-> -static inline bool pm_runtime_suspended_if_enabled(struct device *dev)
-> -{
-> -       return pm_runtime_status_suspended(dev) && dev->power.disable_depth == 1;
-> -}
-> -
->  static inline bool pm_runtime_enabled(struct device *dev)
->  {
->         return !dev->power.disable_depth;
-> @@ -164,7 +159,6 @@ static inline void device_set_run_wake(s
->  static inline bool pm_runtime_suspended(struct device *dev) { return false; }
->  static inline bool pm_runtime_active(struct device *dev) { return true; }
->  static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
-> -static inline bool pm_runtime_suspended_if_enabled(struct device *dev) { return false; }
->  static inline bool pm_runtime_enabled(struct device *dev) { return false; }
->
->  static inline void pm_runtime_no_callbacks(struct device *dev) {}
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
