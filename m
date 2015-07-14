@@ -1,51 +1,79 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [RFC PATCH v2 1/1] drivers: cpuidle: cpuidle-arm: heterogeneous
- systems extension
-Date: Tue, 14 Jul 2015 11:04:51 +0100
-Message-ID: <20150714100451.GA16165@red-moon>
-References: <1429200617-9546-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1429200617-9546-2-git-send-email-lorenzo.pieralisi@arm.com>
- <554771D3.5010701@linaro.org>
- <20150505155615.GA23106@red-moon>
- <20150512130339.GB15131@red-moon>
- <CAGS+omBtraNBH43qsFn_YgO3ePbFav9VtwgqDUinbOBMPwOGXA@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: Destroy IDRs on module exit
+Date: Tue, 14 Jul 2015 12:19:48 +0200
+Message-ID: <20150714101948.GA17240@earth>
+References: <1436865374-22027-1-git-send-email-jthumshirn@suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="EeQfGwPcQSOJBaQU"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:53793 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752649AbbGNKTx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 14 Jul 2015 06:19:53 -0400
 Content-Disposition: inline
-In-Reply-To: <CAGS+omBtraNBH43qsFn_YgO3ePbFav9VtwgqDUinbOBMPwOGXA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Howard Chen <howard.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mathieu Poirier <mathieu.poirier-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Sudeep Holla <Sudeep.Holla-5wv7dgnIgG8@public.gmane.org>, "grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Ricky Liang <jcliang-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "Eddie Huang (?????????)" <eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Joseph Lo <josephl-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Benson Leung <bleung-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+In-Reply-To: <1436865374-22027-1-git-send-email-jthumshirn@suse.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Johannes Thumshirn <jthumshirn@suse.de>
+Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
 
-Hi Daniel,
 
-On Tue, Jul 14, 2015 at 05:52:48AM +0100, Daniel Kurtz wrote:
+--EeQfGwPcQSOJBaQU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-[...]
+[+CC: Tejun Heo <tj@kernel.org>, for being very active in lib/idr.c]
 
-> > Any further comments ? I can post a v2 with an updated idle_states_cmp()
-> > return value, if we think the multiple drivers approach is valid.
-> 
-> Can you post v2?
-> From the silence on the list, I guess there is no strong objection to
-> your approach.
+Hi,
 
-I just wanted to make sure this patch is strictly required before asking
-for a merge in the mainline, it adds to the code complexity so it should
-not be taken lightly.
+On Tue, Jul 14, 2015 at 11:16:14AM +0200, Johannes Thumshirn wrote:
+> Destroy IDRs on module exit, freeing the resources for
+> * bq2415x_charger.c
+> * ds2782_battery.c
+> * ltc2941-battery-gauge.c
 
-> So, perhaps it is time to remove the "RFC" as well so this can get on
-> track to be merged.
+You missed bq27x00_battery.c. Maybe a coccinelle script should be
+written?
 
-I will drop the RFC status and add a simple configuration to define
-a config entry to configure the max number of drivers statically so
-that we do not waste memory for nothing.
+> The drivers had to be converted to "ordinary" module_init()/module_exit()
+> style drivers instead of using module_i2c_driver.
 
-Thanks,
-Lorenzo
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+mh I would prefer another solution. How about adding something
+like this:
+
+static void idr_remove_and_destroy(struct idr *idp, int id)
+{
+    idr_remove(idp, id);
+    if (idr_is_empty(idp)
+        idr_destroy(idp);
+}
+
+If that is called by the drivers instead of idr_remove(), there
+should be no need for adding idr_destroy to module_exit().
+
+-- Sebastian
+
+--EeQfGwPcQSOJBaQU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVpOJBAAoJENju1/PIO/qa7CsP/jUDMFHTlHcD5g0AQsBUyyqa
+IZdRpn1Z2fSB+UWbGOeNJPtdrbS64/77C3PtTP09rRj3SB6cILXEw6oQqNB7UZlM
+LS1grTsPFC6SQRaC6xAbo3dnirLx4kuZ4nSvBqyusKl9pkSZBX0mxhZqCE1AVHeE
+AlCzRAtPlqgqGMG7zlsvdsZ+Z1JwHJZx5wL5ePMmiWtDTa2bb0hxBCXBfdCylYZn
+OybEEkoEBYyBRPNreGpRJi/TaRvjnR1W0c6kyYRFdoIC0mFdHwHviyEG+ZiyNAvM
++F4YX0wZS+v8nx9u8d1kTI99DaJtIXWkzGLGZlDbJ96I0kRgkVunLdNMxHHXvjUn
+1voc5n0I35nALVsrNwWk451FN8ggF8hYCFt6hc6YWzsE0rlhaevLO5M7AaWhE1SN
+UBy3y7wHmMlktjLtdyvLHv8uAzPrld0YBTkmlPkmxodJLS8cHMgrn4FHyZCeVvSs
+/PC7jyIAn9/2ZI2r3Yg+SXv8NQsn9rwuXtjXdWrACQw4Dpl3UFhNo/z+B0tsLdBB
+5ndRL+qCjZbOunerjgtbEKOU6MlIfGzMzxC1sIWoMQQupcFfJyyU7zeIJLunlnnX
+VXk9Q0T+4XAUJ1N56PBxS+RunOLa80KYw2fAINtkcZKT/8SLXV/LWi3oepLqkBrI
+9V85lYjWzqazW8cD/8X1
+=NigO
+-----END PGP SIGNATURE-----
+
+--EeQfGwPcQSOJBaQU--
