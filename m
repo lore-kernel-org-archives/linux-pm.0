@@ -1,49 +1,68 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v4 0/3]
-Date: Wed, 15 Jul 2015 14:40:05 +0200
-Message-ID: <1436964008-15151-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH v4 2/3] PM / sleep: Go direct_complete if driver has no callbacks
+Date: Wed, 15 Jul 2015 14:40:07 +0200
+Message-ID: <1436964008-15151-3-git-send-email-tomeu.vizoso@collabora.com>
+References: <1436964008-15151-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wg0-f44.google.com ([74.125.82.44]:36384 "EHLO
+	mail-wg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752216AbbGOMoK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2015 08:44:10 -0400
+In-Reply-To: <1436964008-15151-1-git-send-email-tomeu.vizoso@collabora.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
 
-Hi,
+If a suitable prepare callback cannot be found for a given device and
+its driver has no PM callbacks at all, assume that it can go direct to
+complete when the system goes to sleep.
 
-this is v4 of an attempt to make easier for devices to remain in runtime
-PM when the system ges to sleep, mainly to reduce the time spent
-resuming devices.
+The reason for this is that there's lots of devices in a system that do
+no PM at all and there's no reason for them to prevent their ancestors
+to do direct_complete if they can support it.
 
-In this version there's a patch from Alan that relaxes the conditions
-that allow a device to go directly to the complete phase, thus allowing
-its ancestors to do the same.
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+---
 
-Also, we interpret the absence of all PM callback implementations as
-being safe to do direct_complete as well.
+ drivers/base/power/main.c | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-With these changes, a uvcvideo device (for example) stays in runtime
-suspend when the system goes to sleep and is left in that state when the
-system resumes, not delaying it unnecessarily.
-
-Thanks,
-
-Tomeu
-
-
-Alan Stern (1):
-  PM / sleep: Allow devices without runtime PM to do direct-complete
-
-Tomeu Vizoso (2):
-  PM / sleep: Go direct_complete if driver has no callbacks
-  USB / PM: Allow USB devices to remain runtime-suspended when sleeping
-
- Documentation/power/devices.txt    |  7 +++++++
- Documentation/power/runtime_pm.txt |  4 ----
- drivers/base/power/main.c          | 19 ++++++++++++++++++-
- drivers/usb/core/port.c            |  6 ++++++
- drivers/usb/core/usb.c             | 11 ++++++++++-
- include/linux/pm_runtime.h         |  6 ------
- 6 files changed, 41 insertions(+), 12 deletions(-)
-
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 1710c26ba097..edda3f233c7c 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1540,6 +1540,21 @@ int dpm_suspend(pm_message_t state)
+ 	return error;
+ }
+ 
++static bool driver_has_no_pm_callbacks(struct device_driver *drv)
++{
++	if (!drv->pm)
++		return true;
++
++	return !drv->pm->prepare &&
++	       !drv->pm->suspend &&
++	       !drv->pm->suspend_late &&
++	       !drv->pm->suspend_noirq &&
++	       !drv->pm->resume_noirq &&
++	       !drv->pm->resume_early &&
++	       !drv->pm->resume &&
++	       !drv->pm->complete;
++}
++
+ /**
+  * device_prepare - Prepare a device for system power transition.
+  * @dev: Device to handle.
+@@ -1590,6 +1605,8 @@ static int device_prepare(struct device *dev, pm_message_t state)
+ 
+ 	if (callback)
+ 		ret = callback(dev);
++	else if (!dev->driver || driver_has_no_pm_callbacks(dev->driver))
++		ret = 1;	/* Let device go direct_complete */
+ 
+ 	device_unlock(dev);
+ 
 -- 
 2.4.3
+
