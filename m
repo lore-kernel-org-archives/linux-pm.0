@@ -1,321 +1,100 @@
-From: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-Subject: [PATCH v5 5/9] drivers: max77843: Switch to common max77693 state container
-Date: Wed, 15 Jul 2015 21:59:51 +0900
-Message-ID: <1436965195-8899-6-git-send-email-k.kozlowski.k@gmail.com>
-References: <1436965195-8899-1-git-send-email-k.kozlowski.k@gmail.com>
+From: Austin S Hemmelgarn <ahferroin7@gmail.com>
+Subject: Re: [PATCH 1/1] suspend: make sync() on suspend-to-RAM optional
+Date: Wed, 15 Jul 2015 10:06:54 -0400
+Message-ID: <55A668FE.80409@gmail.com>
+References: <1436927091-32520-1-git-send-email-lenb@kernel.org> <505338dbbcdce9416ac05f67288b10442fbda179.1436926113.git.len.brown@intel.com> <20150715064320.GA23713@amd>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha1; boundary="------------ms050800080505070004080604"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1436965195-8899-1-git-send-email-k.kozlowski.k@gmail.com>
+In-Reply-To: <20150715064320.GA23713@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-pm@vger.kernel.org, linux-leds@vger.kernel.org
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Switch to the same definition of state container as in MAX77693 drivers.
-This will allow usage of one regulator driver in both devices: MAX77693
-and MAX77843.
+This is a cryptographically signed message in MIME format.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Acked-by: Lee Jones <lee.jones@linaro.org>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/extcon/extcon-max77843.c     | 17 +++++++++--------
- drivers/input/misc/max77843-haptic.c |  3 ++-
- drivers/mfd/max77843.c               | 20 +++++++++++---------
- drivers/regulator/max77843.c         |  6 ++++--
- include/linux/mfd/max77693-common.h  |  5 +++++
- include/linux/mfd/max77843-private.h | 20 --------------------
- 6 files changed, 31 insertions(+), 40 deletions(-)
+--------------ms050800080505070004080604
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/extcon/extcon-max77843.c b/drivers/extcon/extcon-max77843.c
-index fac2f1417a79..4dfe0a6337d8 100644
---- a/drivers/extcon/extcon-max77843.c
-+++ b/drivers/extcon/extcon-max77843.c
-@@ -15,6 +15,7 @@
- #include <linux/i2c.h>
- #include <linux/interrupt.h>
- #include <linux/kernel.h>
-+#include <linux/mfd/max77693-common.h>
- #include <linux/mfd/max77843-private.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-@@ -32,7 +33,7 @@ enum max77843_muic_status {
- 
- struct max77843_muic_info {
- 	struct device *dev;
--	struct max77843 *max77843;
-+	struct max77693_dev *max77843;
- 	struct extcon_dev *edev;
- 
- 	struct mutex mutex;
-@@ -198,7 +199,7 @@ static const struct regmap_irq_chip max77843_muic_irq_chip = {
- static int max77843_muic_set_path(struct max77843_muic_info *info,
- 		u8 val, bool attached)
- {
--	struct max77843 *max77843 = info->max77843;
-+	struct max77693_dev *max77843 = info->max77843;
- 	int ret = 0;
- 	unsigned int ctrl1, ctrl2;
- 
-@@ -539,7 +540,7 @@ static void max77843_muic_irq_work(struct work_struct *work)
- {
- 	struct max77843_muic_info *info = container_of(work,
- 			struct max77843_muic_info, irq_work);
--	struct max77843 *max77843 = info->max77843;
-+	struct max77693_dev *max77843 = info->max77843;
- 	int ret = 0;
- 
- 	mutex_lock(&info->mutex);
-@@ -615,7 +616,7 @@ static void max77843_muic_detect_cable_wq(struct work_struct *work)
- {
- 	struct max77843_muic_info *info = container_of(to_delayed_work(work),
- 			struct max77843_muic_info, wq_detcable);
--	struct max77843 *max77843 = info->max77843;
-+	struct max77693_dev *max77843 = info->max77843;
- 	int chg_type, adc, ret;
- 	bool attached;
- 
-@@ -656,7 +657,7 @@ err_cable_wq:
- static int max77843_muic_set_debounce_time(struct max77843_muic_info *info,
- 		enum max77843_muic_adc_debounce_time time)
- {
--	struct max77843 *max77843 = info->max77843;
-+	struct max77693_dev *max77843 = info->max77843;
- 	int ret;
- 
- 	switch (time) {
-@@ -681,7 +682,7 @@ static int max77843_muic_set_debounce_time(struct max77843_muic_info *info,
- 	return 0;
- }
- 
--static int max77843_init_muic_regmap(struct max77843 *max77843)
-+static int max77843_init_muic_regmap(struct max77693_dev *max77843)
- {
- 	int ret;
- 
-@@ -720,7 +721,7 @@ err_muic_i2c:
- 
- static int max77843_muic_probe(struct platform_device *pdev)
- {
--	struct max77843 *max77843 = dev_get_drvdata(pdev->dev.parent);
-+	struct max77693_dev *max77843 = dev_get_drvdata(pdev->dev.parent);
- 	struct max77843_muic_info *info;
- 	unsigned int id;
- 	int i, ret;
-@@ -821,7 +822,7 @@ err_muic_irq:
- static int max77843_muic_remove(struct platform_device *pdev)
- {
- 	struct max77843_muic_info *info = platform_get_drvdata(pdev);
--	struct max77843 *max77843 = info->max77843;
-+	struct max77693_dev *max77843 = info->max77843;
- 
- 	cancel_work_sync(&info->irq_work);
- 	regmap_del_irq_chip(max77843->irq, max77843->irq_data_muic);
-diff --git a/drivers/input/misc/max77843-haptic.c b/drivers/input/misc/max77843-haptic.c
-index dccbb465a055..30da81ab5a21 100644
---- a/drivers/input/misc/max77843-haptic.c
-+++ b/drivers/input/misc/max77843-haptic.c
-@@ -14,6 +14,7 @@
- #include <linux/i2c.h>
- #include <linux/init.h>
- #include <linux/input.h>
-+#include <linux/mfd/max77693-common.h>
- #include <linux/mfd/max77843-private.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
-@@ -243,7 +244,7 @@ static void max77843_haptic_close(struct input_dev *dev)
- 
- static int max77843_haptic_probe(struct platform_device *pdev)
- {
--	struct max77843 *max77843 = dev_get_drvdata(pdev->dev.parent);
-+	struct max77693_dev *max77843 = dev_get_drvdata(pdev->dev.parent);
- 	struct max77843_haptic *haptic;
- 	int error;
- 
-diff --git a/drivers/mfd/max77843.c b/drivers/mfd/max77843.c
-index a354ac677ec7..c52162ea3d0a 100644
---- a/drivers/mfd/max77843.c
-+++ b/drivers/mfd/max77843.c
-@@ -17,6 +17,7 @@
- #include <linux/interrupt.h>
- #include <linux/module.h>
- #include <linux/mfd/core.h>
-+#include <linux/mfd/max77693-common.h>
- #include <linux/mfd/max77843-private.h>
- #include <linux/of_device.h>
- #include <linux/platform_device.h>
-@@ -71,7 +72,7 @@ static const struct regmap_irq_chip max77843_irq_chip = {
- };
- 
- /* Charger and Charger regulator use same regmap. */
--static int max77843_chg_init(struct max77843 *max77843)
-+static int max77843_chg_init(struct max77693_dev *max77843)
- {
- 	int ret;
- 
-@@ -101,7 +102,7 @@ err_chg_i2c:
- static int max77843_probe(struct i2c_client *i2c,
- 			  const struct i2c_device_id *id)
- {
--	struct max77843 *max77843;
-+	struct max77693_dev *max77843;
- 	unsigned int reg_data;
- 	int ret;
- 
-@@ -113,6 +114,7 @@ static int max77843_probe(struct i2c_client *i2c,
- 	max77843->dev = &i2c->dev;
- 	max77843->i2c = i2c;
- 	max77843->irq = i2c->irq;
-+	max77843->type = id->driver_data;
- 
- 	max77843->regmap = devm_regmap_init_i2c(i2c,
- 			&max77843_regmap_config);
-@@ -123,7 +125,7 @@ static int max77843_probe(struct i2c_client *i2c,
- 
- 	ret = regmap_add_irq_chip(max77843->regmap, max77843->irq,
- 			IRQF_TRIGGER_LOW | IRQF_ONESHOT | IRQF_SHARED,
--			0, &max77843_irq_chip, &max77843->irq_data);
-+			0, &max77843_irq_chip, &max77843->irq_data_topsys);
- 	if (ret) {
- 		dev_err(&i2c->dev, "Failed to add TOPSYS IRQ chip\n");
- 		return ret;
-@@ -164,18 +166,18 @@ static int max77843_probe(struct i2c_client *i2c,
- 	return 0;
- 
- err_pmic_id:
--	regmap_del_irq_chip(max77843->irq, max77843->irq_data);
-+	regmap_del_irq_chip(max77843->irq, max77843->irq_data_topsys);
- 
- 	return ret;
- }
- 
- static int max77843_remove(struct i2c_client *i2c)
- {
--	struct max77843 *max77843 = i2c_get_clientdata(i2c);
-+	struct max77693_dev *max77843 = i2c_get_clientdata(i2c);
- 
- 	mfd_remove_devices(max77843->dev);
- 
--	regmap_del_irq_chip(max77843->irq, max77843->irq_data);
-+	regmap_del_irq_chip(max77843->irq, max77843->irq_data_topsys);
- 
- 	i2c_unregister_device(max77843->i2c_chg);
- 
-@@ -188,7 +190,7 @@ static const struct of_device_id max77843_dt_match[] = {
- };
- 
- static const struct i2c_device_id max77843_id[] = {
--	{ "max77843", },
-+	{ "max77843", TYPE_MAX77843, },
- 	{ },
- };
- MODULE_DEVICE_TABLE(i2c, max77843_id);
-@@ -196,7 +198,7 @@ MODULE_DEVICE_TABLE(i2c, max77843_id);
- static int __maybe_unused max77843_suspend(struct device *dev)
- {
- 	struct i2c_client *i2c = container_of(dev, struct i2c_client, dev);
--	struct max77843 *max77843 = i2c_get_clientdata(i2c);
-+	struct max77693_dev *max77843 = i2c_get_clientdata(i2c);
- 
- 	disable_irq(max77843->irq);
- 	if (device_may_wakeup(dev))
-@@ -208,7 +210,7 @@ static int __maybe_unused max77843_suspend(struct device *dev)
- static int __maybe_unused max77843_resume(struct device *dev)
- {
- 	struct i2c_client *i2c = container_of(dev, struct i2c_client, dev);
--	struct max77843 *max77843 = i2c_get_clientdata(i2c);
-+	struct max77693_dev *max77843 = i2c_get_clientdata(i2c);
- 
- 	if (device_may_wakeup(dev))
- 		disable_irq_wake(max77843->irq);
-diff --git a/drivers/regulator/max77843.c b/drivers/regulator/max77843.c
-index f4fd0d3cfa6e..9926247aae6b 100644
---- a/drivers/regulator/max77843.c
-+++ b/drivers/regulator/max77843.c
-@@ -15,6 +15,7 @@
- #include <linux/platform_device.h>
- #include <linux/regulator/driver.h>
- #include <linux/regulator/machine.h>
-+#include <linux/mfd/max77693-common.h>
- #include <linux/mfd/max77843-private.h>
- #include <linux/regulator/of_regulator.h>
- 
-@@ -130,7 +131,8 @@ static const struct regulator_desc max77843_supported_regulators[] = {
- 	},
- };
- 
--static struct regmap *max77843_get_regmap(struct max77843 *max77843, int reg_id)
-+static struct regmap *max77843_get_regmap(struct max77693_dev *max77843,
-+					  int reg_id)
- {
- 	switch (reg_id) {
- 	case MAX77843_SAFEOUT1:
-@@ -145,7 +147,7 @@ static struct regmap *max77843_get_regmap(struct max77843 *max77843, int reg_id)
- 
- static int max77843_regulator_probe(struct platform_device *pdev)
- {
--	struct max77843 *max77843 = dev_get_drvdata(pdev->dev.parent);
-+	struct max77693_dev *max77843 = dev_get_drvdata(pdev->dev.parent);
- 	struct regulator_config config = {};
- 	int i;
- 
-diff --git a/include/linux/mfd/max77693-common.h b/include/linux/mfd/max77693-common.h
-index 7da4cc38e982..095b121aa725 100644
---- a/include/linux/mfd/max77693-common.h
-+++ b/include/linux/mfd/max77693-common.h
-@@ -15,6 +15,9 @@
- enum max77693_types {
- 	TYPE_MAX77693_UNKNOWN,
- 	TYPE_MAX77693,
-+	TYPE_MAX77843,
-+
-+	TYPE_MAX77693_NUM,
- };
- 
- /*
-@@ -25,12 +28,14 @@ struct max77693_dev {
- 	struct i2c_client *i2c;		/* 0xCC , PMIC, Charger, Flash LED */
- 	struct i2c_client *i2c_muic;	/* 0x4A , MUIC */
- 	struct i2c_client *i2c_haptic;	/* MAX77693: 0x90 , Haptic */
-+	struct i2c_client *i2c_chg;	/* MAX77843: 0xD2, Charger */
- 
- 	enum max77693_types type;
- 
- 	struct regmap *regmap;
- 	struct regmap *regmap_muic;
- 	struct regmap *regmap_haptic;	/* Only MAX77693 */
-+	struct regmap *regmap_chg;	/* Only MAX77843 */
- 
- 	struct regmap_irq_chip_data *irq_data_led;
- 	struct regmap_irq_chip_data *irq_data_topsys;
-diff --git a/include/linux/mfd/max77843-private.h b/include/linux/mfd/max77843-private.h
-index 7178ace8379e..0121d9440340 100644
---- a/include/linux/mfd/max77843-private.h
-+++ b/include/linux/mfd/max77843-private.h
-@@ -431,24 +431,4 @@ enum max77843_irq_muic {
- #define MAX77843_REG_SAFEOUTCTRL_SAFEOUT2_MASK \
- 		(0x3 << SAFEOUTCTRL_SAFEOUT2_SHIFT)
- 
--struct max77843 {
--	struct device *dev;
--
--	struct i2c_client *i2c;
--	struct i2c_client *i2c_chg;
--	struct i2c_client *i2c_fuel;
--	struct i2c_client *i2c_muic;
--
--	struct regmap *regmap;
--	struct regmap *regmap_chg;
--	struct regmap *regmap_fuel;
--	struct regmap *regmap_muic;
--
--	struct regmap_irq_chip_data *irq_data;
--	struct regmap_irq_chip_data *irq_data_chg;
--	struct regmap_irq_chip_data *irq_data_fuel;
--	struct regmap_irq_chip_data *irq_data_muic;
--
--	int irq;
--};
- #endif /* __MAX77843_H__ */
--- 
-2.1.4
+On 2015-07-15 02:43, Pavel Machek wrote:
+> On Tue 2015-07-14 22:24:51, Len Brown wrote:
+>> From: Len Brown <len.brown@intel.com>
+>>
+>> The Linux kernel suspend path has traditionally invoked sys_sync().
+>>
+>> But sys_sync() can be expensive, and some systems do not want
+>> to pay the cost of sys_sync() on every suspend.
+>
+> Have you measured how expesive it can be, and why it is expensive?
+How expensive it is can vary widely, but it pretty much boils down to=20
+how much dirty data still needs written out, and how slow the storage it =
+
+needs written to is.  There's not really much that can be done in the=20
+kernel to change this, and most userspace suspend systems call sync=20
+themselves during the suspend sequence.
+
+
+--------------ms050800080505070004080604
+Content-Type: application/pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Description: S/MIME Cryptographic Signature
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIGuDCC
+BrQwggScoAMCAQICAxBuVTANBgkqhkiG9w0BAQ0FADB5MRAwDgYDVQQKEwdSb290IENBMR4w
+HAYDVQQLExVodHRwOi8vd3d3LmNhY2VydC5vcmcxIjAgBgNVBAMTGUNBIENlcnQgU2lnbmlu
+ZyBBdXRob3JpdHkxITAfBgkqhkiG9w0BCQEWEnN1cHBvcnRAY2FjZXJ0Lm9yZzAeFw0xNTAz
+MjUxOTM0MzhaFw0xNTA5MjExOTM0MzhaMGMxGDAWBgNVBAMTD0NBY2VydCBXb1QgVXNlcjEj
+MCEGCSqGSIb3DQEJARYUYWhmZXJyb2luN0BnbWFpbC5jb20xIjAgBgkqhkiG9w0BCQEWE2Fo
+ZW1tZWxnQG9oaW9ndC5jb20wggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQCdD/zW
+2rRAFCLnDfXpWxU1+ODqRVUgzHvrRO7ADUxRo1CBDc3JSX5TIW2OGmQ3DAKGOACp8Z0sgxMc
+B05tzAZ/M7m4jajVrwwdVCdrwVGxTdAai7Kwg4ZCVfyMVhcwo8R2eW3QahBx34G0RKumK9sZ
+ZQSQ+zULAzpY6uz7T1sAk/erMoivRXF6u8WvOsLkOD1F/Xyv1ZccSUG5YeDgZgc0nZUBvyIp
+zXSHjgWerFkrxEM3y2z/Ff3eL1sgGYecV/I1F+I5S01V7Kclt/qRW10c/4JEGRcI1FmrJBPu
+BtMYPbg/3Y9LZROYN+mVIFxZxOfrmjfFZ96xt/TaMXo8vcEKtWcNEjhGBjEbfMUEm4aq8ygQ
+4MuEcpJc8DJCHBkg2KBk13DkbU2qNepTD6Uip1C+g+KMr0nd6KOJqSH27ZuNY4xqV4hIxFHp
+ex0zY7mq6fV2o6sKBGQzRdI20FDYmNjsLJwjH6qJ8laxFphZnPRpBThmu0AjuBWE72GnI1oA
+aO+bs92MQGJernt7hByCnDO82W/ykbVz+Ge3Sax8NY0m2Xdvp6WFDY/PjD9CdaJ9nwQGsUSa
+N54lrZ2qMTeCI9Vauwf6U69BA42xgk65VvxvTNqji+tZ4aZbarZ7el2/QDHOb/rRwlCFplS/
+z4l1f1nOrE6bnDl5RBJyW3zi74P6GwIDAQABo4IBWTCCAVUwDAYDVR0TAQH/BAIwADBWBglg
+hkgBhvhCAQ0ESRZHVG8gZ2V0IHlvdXIgb3duIGNlcnRpZmljYXRlIGZvciBGUkVFIGhlYWQg
+b3ZlciB0byBodHRwOi8vd3d3LkNBY2VydC5vcmcwDgYDVR0PAQH/BAQDAgOoMEAGA1UdJQQ5
+MDcGCCsGAQUFBwMEBggrBgEFBQcDAgYKKwYBBAGCNwoDBAYKKwYBBAGCNwoDAwYJYIZIAYb4
+QgQBMDIGCCsGAQUFBwEBBCYwJDAiBggrBgEFBQcwAYYWaHR0cDovL29jc3AuY2FjZXJ0Lm9y
+ZzAxBgNVHR8EKjAoMCagJKAihiBodHRwOi8vY3JsLmNhY2VydC5vcmcvcmV2b2tlLmNybDA0
+BgNVHREELTArgRRhaGZlcnJvaW43QGdtYWlsLmNvbYETYWhlbW1lbGdAb2hpb2d0LmNvbTAN
+BgkqhkiG9w0BAQ0FAAOCAgEAGvl7xb42JMRH5D/vCIDYvFY3dR2FPd5kmOqpKU/fvQ8ovmJa
+p5N/FDrsCL+YdslxPY+AAn78PYmL5pFHTdRadT++07DPIMtQyy2qd+XRmz6zP8Il7vGcEDmO
+WmMLYMq4xV9s/N7t7JJp6ftdIYUcoTVChUgilDaRWMLidtslCdRsBVfUjPb1bF5Ua31diKDP
+e0M9/e2CU36rbcTtiNCXhptMigzuL3zJXUf2B9jyUV8pnqNEQH36fqJ7YTBLcpq3aYa2XbAH
+Hgx9GehJBIqwspDmhPCFZ/QmqUXCkt+XfvinQ2NzKR6P3+OdYbwqzVX8BdMeojh7Ig8x/nIx
+mQ+/ufstL1ZYp0bg13fyK/hPYSIBpayaC76vzWovkIm70DIDRIFLi20p/qTd7rfDYy831Hjm
++lDdCECF9bIXEWFk33kA97dgQIMbf5chEmlFg8S0e4iw7LMjvRqMX3eCD8GJ2+oqyZUwzZxy
+S0Mx+rBld5rrN7LsXwZ671HsGqNeYbYeU25e7t7/Gcc6Bd/kPfA+adEuUGFcvUKH3trDYqNq
+6mOkAd8WO/mQadlc3ztS++XDMhmIpfBre9MPAr6usqf+wc+R8Nk9KLK39kEgrqVfzc/fgf8L
+MaD4rHnusdg4gca6Yi+kNrm99anw7SwaBrBvULYBp7ixNRUhaYiNW4YjTrYxggShMIIEnQIB
+ATCBgDB5MRAwDgYDVQQKEwdSb290IENBMR4wHAYDVQQLExVodHRwOi8vd3d3LmNhY2VydC5v
+cmcxIjAgBgNVBAMTGUNBIENlcnQgU2lnbmluZyBBdXRob3JpdHkxITAfBgkqhkiG9w0BCQEW
+EnN1cHBvcnRAY2FjZXJ0Lm9yZwIDEG5VMAkGBSsOAwIaBQCgggH1MBgGCSqGSIb3DQEJAzEL
+BgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1MDcxNTE0MDY1NFowIwYJKoZIhvcNAQkE
+MRYEFPTGX/pbTf7EP7kn20B4LRosXF0+MGwGCSqGSIb3DQEJDzFfMF0wCwYJYIZIAWUDBAEq
+MAsGCWCGSAFlAwQBAjAKBggqhkiG9w0DBzAOBggqhkiG9w0DAgICAIAwDQYIKoZIhvcNAwIC
+AUAwBwYFKw4DAgcwDQYIKoZIhvcNAwICASgwgZEGCSsGAQQBgjcQBDGBgzCBgDB5MRAwDgYD
+VQQKEwdSb290IENBMR4wHAYDVQQLExVodHRwOi8vd3d3LmNhY2VydC5vcmcxIjAgBgNVBAMT
+GUNBIENlcnQgU2lnbmluZyBBdXRob3JpdHkxITAfBgkqhkiG9w0BCQEWEnN1cHBvcnRAY2Fj
+ZXJ0Lm9yZwIDEG5VMIGTBgsqhkiG9w0BCRACCzGBg6CBgDB5MRAwDgYDVQQKEwdSb290IENB
+MR4wHAYDVQQLExVodHRwOi8vd3d3LmNhY2VydC5vcmcxIjAgBgNVBAMTGUNBIENlcnQgU2ln
+bmluZyBBdXRob3JpdHkxITAfBgkqhkiG9w0BCQEWEnN1cHBvcnRAY2FjZXJ0Lm9yZwIDEG5V
+MA0GCSqGSIb3DQEBAQUABIICAArsdJR5rmkW4n/T7Jpu3mDnab2dH186ehrTyxvJZImd+9TL
+bk2TQpbFc9drqzimPj/o4nf5f5A86rxdrqGSqY4JcHJwK3hLiSy9vsM4Y13a89JhZir0Jizg
+PFUlvWQ6cYgyHtcysvZGImKkEeyevV19fcCEsSA0v0OhK9Yo5JkfjJ3UhjmDUdkTIPx8a6oe
+f91PvVl2PtzIwQgCUZMPGudeZcQhNdbRu0cws4nWxLnpEAXwNQjGSJvqvNxt0j4stzjkEWfz
+gVJ/XY6F8yZfOn3D5qjMaI3sffp87OKtti9DUaNPWfEkZ5CVrg+dqX+zTaADGmkZmbSVydr0
+qp9zvxErXtp7r2vqC/zxOiVSSRRz1F5bHr4LIV81TqQxFN9BCBCJWRI7zGbCaLMGUynJa0NW
++xgT/h8Ot/tdhQJZabrphtOxDq/MG6KxZN5J3Au4Buk/9fUac028s+NPu0pt62ajEJfYr9HF
+8VpMxY6ljTsjoulWIdpL2R6Vixixte8iHclbAg9tRdCSiYgpRggmCwmckwO9ENfvvlm6SS4o
+c7KIA1Z3aJ/9xEIPV2siKhNJh4xx4Qq4kN/JUT8Jh8P4qo2xCGgcN7svK+QlcwPmsu6Mdqpl
+xJQe7pCrF5G7BcKdqh6z6Cox38IRp5F5M5cJMYDHUiyMAZGtTSCYKfwaDiMvAAAAAAAA
+--------------ms050800080505070004080604--
