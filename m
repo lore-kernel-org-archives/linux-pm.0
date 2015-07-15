@@ -1,43 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 10/10] cpufreq-dt: Add support for operating-points-v2
- bindings
-Date: Wed, 15 Jul 2015 08:29:22 +0530
-Message-ID: <20150715025922.GD18084@linux>
-References: <cover.1434369079.git.viresh.kumar@linaro.org>
- <a486d730c2c2dacd387feee13a4c800fdc641077.1434369079.git.viresh.kumar@linaro.org>
- <3095426.xc9msIINgb@amdc1976>
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: Re: Subject:  [v3.19 Regression] x86, irq, acpi: Get rid of special
+ handling of GSI for ACPI SCI
+Date: Wed, 15 Jul 2015 11:17:32 +0800
+Message-ID: <55A5D0CC.6020100@linux.intel.com>
+References: <55A4132B.4030801@canonical.com> <55A47716.9070605@linux.intel.com> <55A54540.9050300@canonical.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:34686 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751172AbbGOC71 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2015 22:59:27 -0400
-Received: by pacan13 with SMTP id an13so15702430pac.1
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2015 19:59:27 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <3095426.xc9msIINgb@amdc1976>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <55A54540.9050300@canonical.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Joseph Salisbury <joseph.salisbury@canonical.com>
+Cc: konrad.wilk@oracle.com, tony.luck@intel.com, joro@8bytes.org, Greg KH <gregkh@linuxfoundation.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, rdunlap@infradead.org, Yinghai Lu <yinghai@kernel.org>, bp@alien8.de, len.brown@intel.com, pavel@ucw.cz, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, broonie@kernel.org, mike.turquette@linaro.org, sboyd@codeaurora.org, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-On 09-07-15, 18:13, Bartlomiej Zolnierkiewicz wrote:
-> I believe that following patches:
+On 2015/7/15 1:22, Joseph Salisbury wrote:
+> On 07/13/2015 10:42 PM, Jiang Liu wrote:
+>> On 2015/7/14 3:36, Joseph Salisbury wrote:
+>>> Hello Jiang,
+>>>
+>>> A kernel bug report was opened against Ubuntu [0]. It was found that
+>>> reverting the following commit resolves this bug:
+>>>
+>>> commit cd68f6bd53cf89d1d5ed889b8af65e9c3574a079
+>>> Author: Jiang Liu <jiang.liu@linux.intel.com>
+>>> Date:   Mon Oct 27 16:11:52 2014 +0800
+>>>
+>>>     x86, irq, acpi: Get rid of special handling of GSI for ACPI SCI
+>>>
+>>> The regression was introduced as of v3.19-rc1.
+>>>     
+>>> I was hoping to get your feedback, since you are the patch author.  Do
+>>> you think gathering any additional data will help diagnose this issue,
+>>> or would it be best to submit a revert request?
+>> Hi Joseph,
+>> 	Sorry for the trouble. It would be great if we could get
+>> more information about the bug, such as bug report info, dmesg and
+>> acpidump from the reporting system.
+>> Thanks!
+>> Gerry
+> Comments 3 and 4 have the requested information in the bugzilla bug:
+> https://bugzilla.kernel.org/show_bug.cgi?id=101301
 > 
-> * [PATCH v2 1/7] opp: add dev_pm_opp_get_turbo_mode_setting() helper
->   (http://lkml.org/lkml/2015/7/9/420)
-> 
-> * [PATCH v2 2/7] cpufreq: opp: fix handling of turbo modes
->   (http://lkml.org/lkml/2015/7/9/421)
-> 
-> should be integrated into this patch series before patch #10 (the current
-> one) can be applied.
+> Thanks again for the help!
+Hi Joseph,
+	According to my investigation, it's an ACPI BIOS issue instead
+of a kernel bug. But it's actually a regression. Now we enforce stricter
+check for ACPI SCI interrupt, which exposes an implementation flaw in
+the virtual BIOS.
 
-Hi Bartlomiej,
+I have posted the analysis at
+https://bugzilla.kernel.org/show_bug.cgi?id=101301
+But I have no account at launchpad, so could you please help to copy
+the message to launchpad?
+https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1440072
 
-I haven't tried for the complete support yet, I will take care of
-boost frequencies as well, but not in this series.
-
--- 
-viresh
+Thanks!
+Gerry
