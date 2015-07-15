@@ -1,71 +1,37 @@
-From: Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V3 19/19] ARM: tegra: select PM_GENERIC_DOMAINS
-Date: Wed, 15 Jul 2015 11:17:04 +0300
-Message-ID: <20150715081704.GA6287@tbergstrom-lnx.Nvidia.com>
-References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com>
- <1436791197-32358-20-git-send-email-jonathanh@nvidia.com>
- <20150713135047.GR6287@tbergstrom-lnx.Nvidia.com>
- <55A3C53F.8090003@nvidia.com>
- <55A4F9B6.1070904@nvidia.com>
+From: Sylwester nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [PATCH v2 4/7] clk: samsung: exynos4x12: add cpu clock
+ configuration data and instantiate cpu clock
+Date: Wed, 15 Jul 2015 18:58:17 +0900
+Message-ID: <55A62EB9.7040902@samsung.com>
+References: <1436456621-29839-1-git-send-email-b.zolnierkie@samsung.com>
+ <1436456621-29839-5-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <55A4F9B6.1070904-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Terje =?iso-8859-1?Q?Bergstr=F6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1436456621-29839-5-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Thomas Abraham <thomas.ab@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 14, 2015 at 12:59:50PM +0100, Jon Hunter wrote:
-> 
-> 
-> On 13/07/15 15:03, Jon Hunter wrote:
-> > 
-> > 
-> > On 13/07/15 14:50, Peter De Schrijver wrote:
-> >> On Mon, Jul 13, 2015 at 01:39:57PM +0100, Jon Hunter wrote:
-> >>> From: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> >>>
-> >>> We have added generic power domain support for Tegra SoCs. So now the
-> >>> option M_GENERIC_DOMAINS must be enabled by default to have proper power
-> >>
-> >> Missing P :)
-> > 
-> > Ooops. I think introduced that error. Will fix.
-> 
-> Updated version ...
-> 
-
-Acked-By: Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> 
-> From f7b951cd05973d74fc25e33a1aaec5a6e77bfdc0 Mon Sep 17 00:00:00 2001
-> From: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> Date: Wed, 11 Mar 2015 13:40:46 +0800
-> Subject: [PATCH 19/19] ARM: tegra: select PM_GENERIC_DOMAINS
-> 
-> We have added generic power domain support for Tegra SoCs. So now the
-> option PM_GENERIC_DOMAINS must be enabled by default to have proper power
-> sequence.
-> 
-> Signed-off-by: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+On 07/10/2015 12:43 AM, Bartlomiej Zolnierkiewicz wrote:
+> With the addition of the new Samsung specific cpu-clock type, the
+> arm clock can be represented as a cpu-clock type. Add the CPU clock
+> configuration data and instantiate the CPU clock type for Exynos4x12.
+>
+> Based on the earlier work by Thomas Abraham.
+>
+> Cc: Tomasz Figa <tomasz.figa@gmail.com>
+> Cc: Michael Turquette <mturquette@baylibre.com>
+> Cc: Javier Martinez Canillas <javier@dowhile0.org>
+> Cc: Thomas Abraham <thomas.ab@samsung.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 > ---
->  arch/arm/mach-tegra/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/arm/mach-tegra/Kconfig b/arch/arm/mach-tegra/Kconfig
-> index 0fa4c5f8b1be..fdf86cae3b32 100644
-> --- a/arch/arm/mach-tegra/Kconfig
-> +++ b/arch/arm/mach-tegra/Kconfig
-> @@ -9,6 +9,7 @@ menuconfig ARCH_TEGRA
->  	select HAVE_ARM_TWD if SMP
->  	select PINCTRL
->  	select PM_OPP
-> +	select PM_GENERIC_DOMAINS if PM
->  	select ARCH_HAS_RESET_CONTROLLER
->  	select RESET_CONTROLLER
->  	select SOC_BUS
-> -- 
-> 2.1.4
-> 
+>   drivers/clk/samsung/clk-exynos4.c | 50 +++++++++++++++++++++++++++++++++++++++
+>   1 file changed, 50 insertions(+)
+
+I guess you prefer to have this whole series applied through one,
+e.g samsung-soc tree? If so, here is my ack.
+
+Acked-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
