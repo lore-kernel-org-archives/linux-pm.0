@@ -1,71 +1,86 @@
-From: Joseph Salisbury <joseph.salisbury@canonical.com>
-Subject: Re: Subject:  [v3.19 Regression] x86, irq, acpi: Get rid of special
- handling of GSI for ACPI SCI
-Date: Wed, 15 Jul 2015 12:05:57 -0400
-Message-ID: <55A684E5.8050109@canonical.com>
-References: <55A4132B.4030801@canonical.com> <55A47716.9070605@linux.intel.com> <55A54540.9050300@canonical.com> <55A5D0CC.6020100@linux.intel.com>
+From: Daniel Kurtz <djkurtz@chromium.org>
+Subject: Re: [PATCH 1/3] dt-bindings: thermal: Add binding document for
+ Mediatek thermal controller
+Date: Thu, 16 Jul 2015 01:41:02 +0800
+Message-ID: <CAGS+omDjXrZSns7b+NMz1pUYbDK1ndW=NOdDtUXLuzTQUtcUPg@mail.gmail.com>
+References: <1436783694-30717-1-git-send-email-s.hauer@pengutronix.de> <1436783694-30717-2-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from youngberry.canonical.com ([91.189.89.112]:49323 "EHLO
-	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751828AbbGOQGH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2015 12:06:07 -0400
-In-Reply-To: <55A5D0CC.6020100@linux.intel.com>
+Received: from mail-yk0-f181.google.com ([209.85.160.181]:32849 "EHLO
+	mail-yk0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751592AbbGORlW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2015 13:41:22 -0400
+Received: by ykeo3 with SMTP id o3so42688725yke.0
+        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2015 10:41:22 -0700 (PDT)
+In-Reply-To: <1436783694-30717-2-git-send-email-s.hauer@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jiang Liu <jiang.liu@linux.intel.com>
-Cc: konrad.wilk@oracle.com, tony.luck@intel.com, joro@8bytes.org, Greg KH <gregkh@linuxfoundation.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, rdunlap@infradead.org, Yinghai Lu <yinghai@kernel.org>, bp@alien8.de, len.brown@intel.com, pavel@ucw.cz, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sasha Hauer <kernel@pengutronix.de>, linux-mediatek@lists.infradead.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>
 
-On 07/14/2015 11:17 PM, Jiang Liu wrote:
-> On 2015/7/15 1:22, Joseph Salisbury wrote:
->> On 07/13/2015 10:42 PM, Jiang Liu wrote:
->>> On 2015/7/14 3:36, Joseph Salisbury wrote:
->>>> Hello Jiang,
->>>>
->>>> A kernel bug report was opened against Ubuntu [0]. It was found that
->>>> reverting the following commit resolves this bug:
->>>>
->>>> commit cd68f6bd53cf89d1d5ed889b8af65e9c3574a079
->>>> Author: Jiang Liu <jiang.liu@linux.intel.com>
->>>> Date:   Mon Oct 27 16:11:52 2014 +0800
->>>>
->>>>     x86, irq, acpi: Get rid of special handling of GSI for ACPI SCI
->>>>
->>>> The regression was introduced as of v3.19-rc1.
->>>>     
->>>> I was hoping to get your feedback, since you are the patch author.  Do
->>>> you think gathering any additional data will help diagnose this issue,
->>>> or would it be best to submit a revert request?
->>> Hi Joseph,
->>> 	Sorry for the trouble. It would be great if we could get
->>> more information about the bug, such as bug report info, dmesg and
->>> acpidump from the reporting system.
->>> Thanks!
->>> Gerry
->> Comments 3 and 4 have the requested information in the bugzilla bug:
->> https://bugzilla.kernel.org/show_bug.cgi?id=101301
->>
->> Thanks again for the help!
-> Hi Joseph,
-> 	According to my investigation, it's an ACPI BIOS issue instead
-> of a kernel bug. But it's actually a regression. Now we enforce stricter
-> check for ACPI SCI interrupt, which exposes an implementation flaw in
-> the virtual BIOS.
+On Mon, Jul 13, 2015 at 6:34 PM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> ---
+>  .../bindings/thermal/mediatek-thermal.txt          | 38 ++++++++++++++++++++++
+>  1 file changed, 38 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
 >
-> I have posted the analysis at
-> https://bugzilla.kernel.org/show_bug.cgi?id=101301
-> But I have no account at launchpad, so could you please help to copy
-> the message to launchpad?
-> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1440072
+> diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+> new file mode 100644
+> index 0000000..d90e4dc
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+> @@ -0,0 +1,38 @@
+> +* Mediatek Thermal
+> +
+> +This describes the device tree binding for the Mediatek thermal controller
+> +which measures the on-SoC temperatures. This device does not have its own ADC,
+> +instead it directly controls the AUXADC via AHB bus accesses. For this reason
+> +this device needs phandles to the AUXADC. Also it controls a mux in the
+> +apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
+> +is also needed.
+> +
+> +Required properties:
+> +- compatible: "mediatek,mt8173-thermal"
+> +- reg: Address range of the thermal controller
+> +- interrupts: IRQ for the thermal controller
+> +- clocks, clock-names: Clocks needed for the thermal controller. required
+> +                       clocks are:
+> +               "therm":        Main clock needed for register access
+> +               "auxadc":       The AUXADC clock
+> +- resets, reset-names: Reference to the reset controller controlling the thermal
+> +                       controller. Required reset-names:
+> +               "therm":        The main reset line
+> +- auxadc: A phandle to the AUXADC which the thermal controller uses
+> +- apmixedsys: A phandle to the APMIXEDSYS controller.
+
+Hmm, shouldn't these custom properties be prefixed with:
+  "mediatek,..."
+
+-Dan
+
+> +- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description
+> +
+> +Example:
+> +
+> +       thermal: thermal@1100b000 {
+> +               #thermal-sensor-cells = <1>;
+> +               compatible = "mediatek,mt8173-thermal";
+> +               reg = <0 0x1100b000 0 0x1000>;
+> +               interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
+> +               clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
+> +               clock-names = "therm", "auxadc";
+> +               resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
+> +               reset-names = "therm";
+> +               auxadc = <&auxadc>;
+> +               apmixedsys = <&apmixedsys>;
+> +       };
+> --
+> 2.1.4
 >
-> Thanks!
-> Gerry
-Thanks for the analysis and feedback, Gerry.  I'll update the launchpad
-bug with your info.
-
-Thanks,
-
-Joe
-
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
