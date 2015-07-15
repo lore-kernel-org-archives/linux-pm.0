@@ -1,35 +1,79 @@
-From: Sylwester nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH v3 1/4] clk: samsung: exynos5250: add cpu clock
- configuration data and instantiate cpu clock
-Date: Wed, 15 Jul 2015 19:01:37 +0900
-Message-ID: <55A62F81.3080801@samsung.com>
-References: <1435756238-845-1-git-send-email-b.zolnierkie@samsung.com>
- <1435756238-845-2-git-send-email-b.zolnierkie@samsung.com>
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4 3/6] cpufreq: powernv: Register for OCC related opal_message
+ notification
+Date: Wed, 15 Jul 2015 15:45:41 +0530
+Message-ID: <55A632CD.7060500@linux.vnet.ibm.com>
+References: <1436796602-10228-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1436796602-10228-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1436941021.17171.12.camel@jms.id.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1435756238-845-2-git-send-email-b.zolnierkie@samsung.com>
+In-Reply-To: <1436941021.17171.12.camel@jms.id.au>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Joel Stanley <joel@jms.id.au>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-On 07/01/2015 10:10 PM, Bartlomiej Zolnierkiewicz wrote:
-> From: Thomas Abraham<thomas.ab@samsung.com>
->
-> With the addition of the new Samsung specific cpu-clock type, the
-> arm clock can be represented as a cpu-clock type. Add the CPU clock
-> configuration data and instantiate the CPU clock type for Exynos5250.
->
-> Changes by Bartlomiej:
-> - split Exynos5250 support from the original patch
-> - moved E5250_CPU_DIV[0,1]() macros to clk-exynos5250.c
->
-> Cc: Tomasz Figa<tomasz.figa@gmail.com>
-> Cc: Michael Turquette<mturquette@baylibre.com>
-> Cc: Javier Martinez Canillas<javier@dowhile0.org>
-> Signed-off-by: Thomas Abraham<thomas.ab@samsung.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz<b.zolnierkie@samsung.com>
+Hi Joel,
 
-Acked-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+On 07/15/2015 11:47 AM, Joel Stanley wrote:
+> Hello,
+> 
+> On Mon, 2015-07-13 at 19:39 +0530, Shilpasri G Bhat wrote:
+>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+>> index d0c18c9..1f59958 100644
+>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>> @@ -414,6 +415,71 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
+>>  	.notifier_call = powernv_cpufreq_reboot_notifier,
+>>  };
+>>  
+>> +static char throttle_reason[][30] = {
+>> +					"No throttling",
+>> +					"Power Cap",
+>> +					"Processor Over Temperature",
+>> +					"Power Supply Failure",
+>> +					"Over Current",
+>> +					"OCC Reset"
+>> +				     };
+>> +
+>> +static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+>> +				   unsigned long msg_type, void *_msg)
+>> +{
+>> +	struct opal_msg *msg = _msg;
+>> +	struct opal_occ_msg omsg;
+>> +
+>> +	if (msg_type != OPAL_MSG_OCC)
+>> +		return 0;
+>> +
+>> +	memcpy(&omsg, msg->params, sizeof(omsg));
+> 
+> You need to ensure the of the members of struct opal_occ_msg are in the
+> correct byte order when copying them over.
+> 
+> Have you tested this code with in a little endian configuration?
+
+Ah yes this wont work in LE.
+I tested the below diff in both BE/LE configuration on Power8 box which has FSP.
+
+-       memcpy(&omsg, msg->params, sizeof(omsg));
++       omsg.type = be64_to_cpu(msg->params[0]);
++       omsg.chip = be64_to_cpu(msg->params[1]);
++       omsg.throttle_status = be64_to_cpu(msg->params[2]);
+> 
+> Do the messages you're sending make sense for a system that has a BMC
+> instead of a FSP?
+
+For a system with BMC, only OCC_THROTTLE will be received by the host. The
+remaining two (OCC_RESET and OCC_LOAD) are sent only in FSP based systems.
+OCC_THROTTLE is sent by opal which polls on the throttle_status byte in the
+OPAL-OCC shared memory region.
+
+> 
+> Cheers,
+> 
+> Joel
+> 
+
+Thanks and Regards,
+Shilpa
