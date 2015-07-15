@@ -1,105 +1,122 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v4 1/3] PM / sleep: Allow devices without runtime PM to do direct-complete
-Date: Wed, 15 Jul 2015 14:40:06 +0200
-Message-ID: <1436964008-15151-2-git-send-email-tomeu.vizoso@collabora.com>
-References: <1436964008-15151-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1436964008-15151-1-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
+From: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+Subject: [PATCH v5 0/9] regulator: Merge max77843 into max77693
+Date: Wed, 15 Jul 2015 21:59:46 +0900
+Message-ID: <1436965195-8899-1-git-send-email-k.kozlowski.k@gmail.com>
+Return-path: <linux-input-owner@vger.kernel.org>
+Sender: linux-input-owner@vger.kernel.org
+To: David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-pm@vger.kernel.org, linux-leds@vger.kernel.org
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Alan Stern <stern@rowland.harvard.edu>
+Hi,
 
-Don't unset the direct_complete flag on devices that have runtime PM
-disabled, if they are runtime suspended.
+The patchset merges max77843 regulator driver into max77693.
 
-This is needed because otherwise ancestor devices wouldn't be able to
-do direct_complete without adding runtime PM support to all its
-descendants.
+The patchset touches multiple subsystems so I think the best way
+would be to merge it through one tree. I already got acks from extcon,
+input, leds, mfd and power maintainers.
 
-Also removes pm_runtime_suspended_if_enabled() because it's now unused.
+If there are no objections then everything could go through regulator
+tree.
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
----
 
- Documentation/power/devices.txt    | 7 +++++++
- Documentation/power/runtime_pm.txt | 4 ----
- drivers/base/power/main.c          | 2 +-
- include/linux/pm_runtime.h         | 6 ------
- 4 files changed, 8 insertions(+), 11 deletions(-)
+Changes since v4
+================
+1. When adding new header inclusion (max77693-common.h) put
+   in alphabetical order (suggested by Jacek).
+2. Patch 4/9: Add Jacek Anaszewski's ack (leds).
 
-diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
-index d172bce0fd49..8ba6625fdd63 100644
---- a/Documentation/power/devices.txt
-+++ b/Documentation/power/devices.txt
-@@ -341,6 +341,13 @@ the phases are:
- 	and is entirely responsible for bringing the device back to the
- 	functional state as appropriate.
- 
-+	Note that this direct-complete procedure applies even if the device is
-+	disabled for runtime PM; only the runtime-PM status matters.  It follows
-+	that if a device has system-sleep callbacks but does not support runtime
-+	PM, then its prepare callback must never return a positive value.  This
-+	is because all devices are initially set to runtime-suspended with
-+	runtime PM disabled.
-+
-     2.	The suspend methods should quiesce the device to stop it from performing
- 	I/O.  They also may save the device registers and put it into the
- 	appropriate low-power state, depending on the bus type the device is on,
-diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-index e76dc0ad4d2b..0784bc3a2ab5 100644
---- a/Documentation/power/runtime_pm.txt
-+++ b/Documentation/power/runtime_pm.txt
-@@ -445,10 +445,6 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
-   bool pm_runtime_status_suspended(struct device *dev);
-     - return true if the device's runtime PM status is 'suspended'
- 
--  bool pm_runtime_suspended_if_enabled(struct device *dev);
--    - return true if the device's runtime PM status is 'suspended' and its
--      'power.disable_depth' field is equal to 1
--
-   void pm_runtime_allow(struct device *dev);
-     - set the power.runtime_auto flag for the device and decrease its usage
-       counter (used by the /sys/devices/.../power/control interface to
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 30b7bbfdc558..1710c26ba097 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1377,7 +1377,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	if (dev->power.direct_complete) {
- 		if (pm_runtime_status_suspended(dev)) {
- 			pm_runtime_disable(dev);
--			if (pm_runtime_suspended_if_enabled(dev))
-+			if (pm_runtime_status_suspended(dev))
- 				goto Complete;
- 
- 			pm_runtime_enable(dev);
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index 30e84d48bfea..3bdbb4189780 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -98,11 +98,6 @@ static inline bool pm_runtime_status_suspended(struct device *dev)
- 	return dev->power.runtime_status == RPM_SUSPENDED;
- }
- 
--static inline bool pm_runtime_suspended_if_enabled(struct device *dev)
--{
--	return pm_runtime_status_suspended(dev) && dev->power.disable_depth == 1;
--}
--
- static inline bool pm_runtime_enabled(struct device *dev)
- {
- 	return !dev->power.disable_depth;
-@@ -164,7 +159,6 @@ static inline void device_set_run_wake(struct device *dev, bool enable) {}
- static inline bool pm_runtime_suspended(struct device *dev) { return false; }
- static inline bool pm_runtime_active(struct device *dev) { return true; }
- static inline bool pm_runtime_status_suspended(struct device *dev) { return false; }
--static inline bool pm_runtime_suspended_if_enabled(struct device *dev) { return false; }
- static inline bool pm_runtime_enabled(struct device *dev) { return false; }
- 
- static inline void pm_runtime_no_callbacks(struct device *dev) {}
+
+Changes since v3
+================
+1. Patch 4/9: Fix missing includei n leds driver (leds-max77693.c).
+2. Rebase on v4.2-rc2.
+
+
+Changes since v2
+================
+1. Rebase on v4.2-rc1.
+2. Add acks: Chanwoo Choi, Dmitry Torokhov, Lee Jones. Thanks!
+
+
+Changes since v1
+================
+1. Drop patch "regulator: max77693: Use core code for charger's
+   is_enabled" because Mark Brown picked it up.
+2. Patch 2: remove some more old IRQ extcon stuff (suggested by Chanwoo
+   Choi).
+3. Patch 6: minor fixes over defines (suggested by Lee Jones).
+4. Send last patch, previously it slipped during "git send-email".
+5. Add acks obtained for v1. I still need more of them.
+
+
+Rationale
+=========
+The recently added max77843 regulator driver is very similar to
+its older brother: the max77693. Both devices provide two safeouts
+and a charger.
+
+The main difference is in charger's output capabilities and related
+registry values.
+
+With some code additions the max77693 regulator driver can support both
+chipsets. This reduces overall code duplication and is a first step
+toward integrating other drivers for these devices. I plan to merge
+also input/haptic drivers.
+
+
+Patchset description
+====================
+Patches 1-2 do various cleanup.
+Patch 3 prepares max77694 regulator driver for supporting different
+devices.
+Patch 4 switches max77693 drivers to common state container.
+Patch 5 updates max77843 drivers to common state container.
+Patches 6-7 do final cleanup before merging.
+Patches 8-9 do the merge of max77843 regulator into max77693.
+
+
+Dependencies
+============
+Everything is bisectable but next patches depend on previous ones.
+So probably the easiest way would be picking picked up by one
+maintainer.
+
+
+Best regards,
+Krzysztof
+
+Krzysztof Kozlowski (9):
+  mfd/extcon: max77693: Remove unused extern declarations and
+    max77693_dev members
+  mfd: max77693: Store I2C device type as enum and add default unknown
+  regulator: max77693: Support different register configurations
+  drivers: max77693: Move state container to common header
+  drivers: max77843: Switch to common max77693 state container
+  mfd/extcon: max77693: Rename defines to allow inclusion with max77843
+  mfd/extcon: max77843: Rename defines to allow inclusion with max77693
+  regulator: max77693: Add support for MAX77843 device
+  regulator: Remove the max77843 driver
+
+ drivers/extcon/extcon-max77693.c     |  94 +++++++---------
+ drivers/extcon/extcon-max77843.c     |  66 +++++++-----
+ drivers/input/misc/max77693-haptic.c |   1 +
+ drivers/input/misc/max77843-haptic.c |   3 +-
+ drivers/leds/leds-max77693.c         |   1 +
+ drivers/mfd/max77693.c               |  31 +++---
+ drivers/mfd/max77843.c               |  20 ++--
+ drivers/power/max77693_charger.c     |   1 +
+ drivers/regulator/Kconfig            |  16 +--
+ drivers/regulator/Makefile           |   1 -
+ drivers/regulator/max77693.c         | 161 ++++++++++++++++++++++++----
+ drivers/regulator/max77843.c         | 201 -----------------------------------
+ include/linux/mfd/max77693-common.h  |  49 +++++++++
+ include/linux/mfd/max77693-private.h | 134 +++++++++--------------
+ include/linux/mfd/max77843-private.h | 174 ++++++++++++++----------------
+ 15 files changed, 433 insertions(+), 520 deletions(-)
+ delete mode 100644 drivers/regulator/max77843.c
+ create mode 100644 include/linux/mfd/max77693-common.h
+
 -- 
-2.4.3
+2.1.4
+
