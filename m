@@ -1,79 +1,36 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4 3/6] cpufreq: powernv: Register for OCC related opal_message
- notification
-Date: Wed, 15 Jul 2015 15:45:41 +0530
-Message-ID: <55A632CD.7060500@linux.vnet.ibm.com>
-References: <1436796602-10228-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1436796602-10228-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1436941021.17171.12.camel@jms.id.au>
+From: yu chen <yu.chen.surf@gmail.com>
+Subject: Re: [PATCH] intel_pstate: enable hwp per cpu
+Date: Wed, 15 Jul 2015 19:17:53 +0800
+Message-ID: <CADjb_WSyVQNeeKEoC+MEUfwZTEpzuAO8-Bwae24Z49vJCKewTQ@mail.gmail.com>
+References: <1436892383-4217-1-git-send-email-kristen@linux.intel.com>
+	<20150714105832.43ef93d0@kcaccard-desk.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1436941021.17171.12.camel@jms.id.au>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Joel Stanley <joel@jms.id.au>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f178.google.com ([209.85.212.178]:34184 "EHLO
+	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752134AbbGOLRy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2015 07:17:54 -0400
+Received: by wibud3 with SMTP id ud3so78264448wib.1
+        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2015 04:17:53 -0700 (PDT)
+In-Reply-To: <20150714105832.43ef93d0@kcaccard-desk.amr.corp.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kristen Carlson Accardi <kristen@linux.intel.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org
 
-Hi Joel,
+On Wed, Jul 15, 2015 at 1:58 AM, Kristen Carlson Accardi
+<kristen@linux.intel.com> wrote:
 
-On 07/15/2015 11:47 AM, Joel Stanley wrote:
-> Hello,
-> 
-> On Mon, 2015-07-13 at 19:39 +0530, Shilpasri G Bhat wrote:
->> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
->> index d0c18c9..1f59958 100644
->> --- a/drivers/cpufreq/powernv-cpufreq.c
->> +++ b/drivers/cpufreq/powernv-cpufreq.c
->> @@ -414,6 +415,71 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
->>  	.notifier_call = powernv_cpufreq_reboot_notifier,
->>  };
->>  
->> +static char throttle_reason[][30] = {
->> +					"No throttling",
->> +					"Power Cap",
->> +					"Processor Over Temperature",
->> +					"Power Supply Failure",
->> +					"Over Current",
->> +					"OCC Reset"
->> +				     };
->> +
->> +static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->> +				   unsigned long msg_type, void *_msg)
->> +{
->> +	struct opal_msg *msg = _msg;
->> +	struct opal_occ_msg omsg;
->> +
->> +	if (msg_type != OPAL_MSG_OCC)
->> +		return 0;
->> +
->> +	memcpy(&omsg, msg->params, sizeof(omsg));
-> 
-> You need to ensure the of the members of struct opal_occ_msg are in the
-> correct byte order when copying them over.
-> 
-> Have you tested this code with in a little endian configuration?
+>
+> Oops - don't apply this one yet please.  I think I
+> might have broken S3 resume.
+>
 
-Ah yes this wont work in LE.
-I tested the below diff in both BE/LE configuration on Power8 box which has FSP.
+Hi, Kristen
+This patch will fix the S3 resume panic bug.
+We encountered panic on kernel without this patch applied last week.
+After this patch applied,  each cpu will get a chance to
+re-enable HWP in intel_pstate_cpu_init, after resuming.
 
--       memcpy(&omsg, msg->params, sizeof(omsg));
-+       omsg.type = be64_to_cpu(msg->params[0]);
-+       omsg.chip = be64_to_cpu(msg->params[1]);
-+       omsg.throttle_status = be64_to_cpu(msg->params[2]);
-> 
-> Do the messages you're sending make sense for a system that has a BMC
-> instead of a FSP?
-
-For a system with BMC, only OCC_THROTTLE will be received by the host. The
-remaining two (OCC_RESET and OCC_LOAD) are sent only in FSP based systems.
-OCC_THROTTLE is sent by opal which polls on the throttle_status byte in the
-OPAL-OCC shared memory region.
-
-> 
-> Cheers,
-> 
-> Joel
-> 
-
-Thanks and Regards,
-Shilpa
+Yu
