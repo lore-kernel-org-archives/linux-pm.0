@@ -1,70 +1,71 @@
-From: "Brown, Len" <len.brown@intel.com>
-Subject: RE: [PATCH 1/1] suspend: make sync() on suspend-to-RAM optional
-Date: Wed, 15 Jul 2015 14:58:22 +0000
-Message-ID: <1A7043D5F58CCB44A599DFD55ED4C948468A7978@fmsmsx115.amr.corp.intel.com>
-References: <1436927091-32520-1-git-send-email-lenb@kernel.org>
- <505338dbbcdce9416ac05f67288b10442fbda179.1436926113.git.len.brown@intel.com>
- <20150715064320.GA23713@amd> <55A668FE.80409@gmail.com>
+From: Joseph Salisbury <joseph.salisbury@canonical.com>
+Subject: Re: Subject:  [v3.19 Regression] x86, irq, acpi: Get rid of special
+ handling of GSI for ACPI SCI
+Date: Wed, 15 Jul 2015 12:05:57 -0400
+Message-ID: <55A684E5.8050109@canonical.com>
+References: <55A4132B.4030801@canonical.com> <55A47716.9070605@linux.intel.com> <55A54540.9050300@canonical.com> <55A5D0CC.6020100@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:8994 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752027AbbGOO6Z convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2015 10:58:25 -0400
-In-Reply-To: <55A668FE.80409@gmail.com>
-Content-Language: en-US
+Received: from youngberry.canonical.com ([91.189.89.112]:49323 "EHLO
+	youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751828AbbGOQGH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2015 12:06:07 -0400
+In-Reply-To: <55A5D0CC.6020100@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Austin S Hemmelgarn <ahferroin7@gmail.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: konrad.wilk@oracle.com, tony.luck@intel.com, joro@8bytes.org, Greg KH <gregkh@linuxfoundation.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, rdunlap@infradead.org, Yinghai Lu <yinghai@kernel.org>, bp@alien8.de, len.brown@intel.com, pavel@ucw.cz, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org
 
+On 07/14/2015 11:17 PM, Jiang Liu wrote:
+> On 2015/7/15 1:22, Joseph Salisbury wrote:
+>> On 07/13/2015 10:42 PM, Jiang Liu wrote:
+>>> On 2015/7/14 3:36, Joseph Salisbury wrote:
+>>>> Hello Jiang,
+>>>>
+>>>> A kernel bug report was opened against Ubuntu [0]. It was found that
+>>>> reverting the following commit resolves this bug:
+>>>>
+>>>> commit cd68f6bd53cf89d1d5ed889b8af65e9c3574a079
+>>>> Author: Jiang Liu <jiang.liu@linux.intel.com>
+>>>> Date:   Mon Oct 27 16:11:52 2014 +0800
+>>>>
+>>>>     x86, irq, acpi: Get rid of special handling of GSI for ACPI SCI
+>>>>
+>>>> The regression was introduced as of v3.19-rc1.
+>>>>     
+>>>> I was hoping to get your feedback, since you are the patch author.  Do
+>>>> you think gathering any additional data will help diagnose this issue,
+>>>> or would it be best to submit a revert request?
+>>> Hi Joseph,
+>>> 	Sorry for the trouble. It would be great if we could get
+>>> more information about the bug, such as bug report info, dmesg and
+>>> acpidump from the reporting system.
+>>> Thanks!
+>>> Gerry
+>> Comments 3 and 4 have the requested information in the bugzilla bug:
+>> https://bugzilla.kernel.org/show_bug.cgi?id=101301
+>>
+>> Thanks again for the help!
+> Hi Joseph,
+> 	According to my investigation, it's an ACPI BIOS issue instead
+> of a kernel bug. But it's actually a regression. Now we enforce stricter
+> check for ACPI SCI interrupt, which exposes an implementation flaw in
+> the virtual BIOS.
+>
+> I have posted the analysis at
+> https://bugzilla.kernel.org/show_bug.cgi?id=101301
+> But I have no account at launchpad, so could you please help to copy
+> the message to launchpad?
+> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1440072
+>
+> Thanks!
+> Gerry
+Thanks for the analysis and feedback, Gerry.  I'll update the launchpad
+bug with your info.
 
+Thanks,
 
-> -----Original Message-----
-> From: Austin S Hemmelgarn [mailto:ahferroin7@gmail.com]
-> Sent: Wednesday, July 15, 2015 10:07 AM
-> To: Pavel Machek; Len Brown
-> Cc: rjw@rjwysocki.net; linux-pm@vger.kernel.org; linux-
-> kernel@vger.kernel.org; Brown, Len
-> Subject: Re: [PATCH 1/1] suspend: make sync() on suspend-to-RAM optional
-> 
-> On 2015-07-15 02:43, Pavel Machek wrote:
-> > On Tue 2015-07-14 22:24:51, Len Brown wrote:
-> >> From: Len Brown <len.brown@intel.com>
-> >>
-> >> The Linux kernel suspend path has traditionally invoked sys_sync().
-> >>
-> >> But sys_sync() can be expensive, and some systems do not want
-> >> to pay the cost of sys_sync() on every suspend.
-> >
-> > Have you measured how expensive it can be, and why it is expensive?
-
-> How expensive it is can vary widely, but it pretty much boils down to
-> how much dirty data still needs written out, and how slow the storage it
-> needs written to is.  There's not really much that can be done in the
-> kernel to change this, and most userspace suspend systems call sync
-> themselves during the suspend sequence.
-
-Right.
-And now, user-space gets is no longer forced to incur that
-delay on every suspend if they do not want it.
-
-Yes, have measured this under many conditions.
-The bottom line is that sys_sync() is rarely as fast as 1ms,
-and is sometimes as slow as hundreds of ms.
-
->> Why do you need CONFIG parameter?
-
-So that an OS that doesn't want to change their user-space,
-can build a kernel that does what they want by default.
-
-Originally I had the config parameter remove this code entirely,
-which would achieve the same goal.
-But Rafael prefers the sysfs attribute always exist
-and the config simply set the default.
-
-thanks,
--Len
+Joe
 
