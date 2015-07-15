@@ -1,64 +1,52 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v4 2/3] PM / sleep: Go direct_complete if driver has no
- callbacks
-Date: Wed, 15 Jul 2015 14:47:50 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1507151444460.18896-100000@netrider.rowland.org>
-References: <1436964008-15151-3-git-send-email-tomeu.vizoso@collabora.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCHv3 1/1] kernel/power/autosleep.c: check for pm_suspend() return before queueing suspend again
+Date: Thu, 16 Jul 2015 00:29:25 +0200
+Message-ID: <1909321.djDBBPKRbt@vostro.rjw.lan>
+References: <1435604054-29711-1-git-send-email-nitish.a@samsung.com> <1834201.LA0RYhhP7u@vostro.rjw.lan> <CAHWDpXj+AjD3F+8RvRFePXCXRKq=WBh0MKy-39B2emjG+Qamxw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:47566 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752329AbbGOSrv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2015 14:47:51 -0400
-In-Reply-To: <1436964008-15151-3-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAHWDpXj+AjD3F+8RvRFePXCXRKq=WBh0MKy-39B2emjG+Qamxw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nitish Ambastha <nits.ambastha@gmail.com>
+Cc: Nitish Ambastha <nitish.a@samsung.com>, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpgs@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
 
-On Wed, 15 Jul 2015, Tomeu Vizoso wrote:
+On Tuesday, July 14, 2015 09:34:08 AM Nitish Ambastha wrote:
+> On Tue, Jul 14, 2015 at 5:13 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Tuesday, July 14, 2015 01:38:02 AM Nitish Ambastha wrote:
+> >> Prevent tight loop for suspend-resume when some
+> >> devices failed to suspend
+> >
+> > This *still* doesn't explain what problem you're *really* trying to address.
+> >
+> > Even if a driver returns an error code from one of its suspend callbacks,
+> > you should get final_count == initial_count in the final check and we'll
+> > schedule the timeout.
+> >
+> > So there is a failure scenarion you're trying to address where that check is
+> > not sufficient, but you're not saying what the scenario is.
+> >
+> As I mentioned earlier, if some driver failed to suspend, and during
+> resume if *somebody* called pm_stay_awake() or pm_wakeup_event()
+> meantime, and then pm_relax(), final_count and initial_count will not
+> be the same in try_to_suspend(). We observed this behavior with
+> battery monitor thread on being restarted
 
-> If a suitable prepare callback cannot be found for a given device and
-> its driver has no PM callbacks at all, assume that it can go direct to
-> complete when the system goes to sleep.
-> 
-> The reason for this is that there's lots of devices in a system that do
-> no PM at all and there's no reason for them to prevent their ancestors
-> to do direct_complete if they can support it.
-> 
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> ---
-> 
->  drivers/base/power/main.c | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
-> 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 1710c26ba097..edda3f233c7c 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -1540,6 +1540,21 @@ int dpm_suspend(pm_message_t state)
->  	return error;
->  }
->  
-> +static bool driver_has_no_pm_callbacks(struct device_driver *drv)
-> +{
-> +	if (!drv->pm)
-> +		return true;
-> +
-> +	return !drv->pm->prepare &&
-> +	       !drv->pm->suspend &&
-> +	       !drv->pm->suspend_late &&
-> +	       !drv->pm->suspend_noirq &&
-> +	       !drv->pm->resume_noirq &&
-> +	       !drv->pm->resume_early &&
-> +	       !drv->pm->resume &&
-> +	       !drv->pm->complete;
-> +}
+But that means there was a valid wakeup event, doesn't it?
 
-This isn't exactly what I meant.  We also need to check the dev_pm_ops 
-fields in dev->pm_domain, dev->type, dev->class, and dev->bus.  Only if 
-_all_ of these callbacks are missing should we use direct_complete.
+> In these scenarios, it will be considered a *valid wakeup* event and
+> it will try to queue suspend immediately, though the actual reason of
+> resume was driver returning error code.
 
-Alan Stern
+Even if a wakeup event occurs in addition to a driver failing the suspend, it
+is still valid.
 
+So it looks like you want to schedule the timeout unconditionally in case of
+a failed suspend, but then you need to filter out -EBUSY (which is returned
+on valid wakeup events).  Essentially, that would slow down autosleep, but
+how does that help exactly?
+
+Thanks,
+Rafael
