@@ -1,98 +1,62 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH v4 3/3] USB / PM: Allow USB devices to remain
- runtime-suspended when sleeping
-Date: Thu, 16 Jul 2015 14:09:41 +0200
-Message-ID: <CAAObsKD_pKmzCLLij3YhO8pPOqXi-z0FNiGrXXcqr6Dt+V-KXw@mail.gmail.com>
-References: <1436964008-15151-1-git-send-email-tomeu.vizoso@collabora.com>
- <1436964008-15151-4-git-send-email-tomeu.vizoso@collabora.com> <7175055.CJlfILVf3s@vostro.rjw.lan>
+From: Dave Jones <davej@codemonkey.org.uk>
+Subject: Re: cpufreq/ondemand: unpinning an unpinned lock.
+Date: Thu, 16 Jul 2015 08:42:41 -0400
+Message-ID: <20150716124241.GA20320@codemonkey.org.uk>
+References: <20150715220422.GA13789@codemonkey.org.uk>
+ <3682267.1lcDzeZuDs@vostro.rjw.lan>
+ <20150716051150.GA15404@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7175055.CJlfILVf3s@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arcturus.aphlor.org ([188.246.204.175]:58607 "EHLO
+	arcturus.aphlor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754180AbbGPMmt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jul 2015 08:42:49 -0400
+Content-Disposition: inline
+In-Reply-To: <20150716051150.GA15404@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On 16 July 2015 at 02:42, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, July 15, 2015 02:40:08 PM Tomeu Vizoso wrote:
->> Have dev_pm_ops.prepare return 1 for USB devices and ports so that USB
->> devices can remain runtime-suspended when the system goes to a sleep
->> state, if their wakeup state is correct and they have runtime PM enabled.
->>
->> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
->> ---
->>
->>  drivers/usb/core/port.c |  6 ++++++
->>  drivers/usb/core/usb.c  | 11 ++++++++++-
->>  2 files changed, 16 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
->> index 210618319f10..f49707d73b5a 100644
->> --- a/drivers/usb/core/port.c
->> +++ b/drivers/usb/core/port.c
->> @@ -168,12 +168,18 @@ static int usb_port_runtime_suspend(struct device *dev)
->>
->>       return retval;
->>  }
->> +
->> +static int usb_port_prepare(struct device *dev)
->> +{
->> +     return 1;
->> +}
->>  #endif
->>
->>  static const struct dev_pm_ops usb_port_pm_ops = {
->>  #ifdef CONFIG_PM
->>       .runtime_suspend =      usb_port_runtime_suspend,
->>       .runtime_resume =       usb_port_runtime_resume,
->> +     .prepare =              usb_port_prepare,
->>  #endif
->>  };
->>
->> diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
->> index 8d5b2f4113cd..cf4dde11db1c 100644
->> --- a/drivers/usb/core/usb.c
->> +++ b/drivers/usb/core/usb.c
->> @@ -316,7 +316,16 @@ static int usb_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
->>
->>  static int usb_dev_prepare(struct device *dev)
->>  {
->> -     return 0;               /* Implement eventually? */
->> +     struct usb_device *udev = to_usb_device(dev);
->> +
->> +     if (!pm_runtime_enabled(dev))
->
-> Why just enabled and not suspended?
+On Thu, Jul 16, 2015 at 10:41:50AM +0530, Viresh Kumar wrote:
 
-Hmm, the core checks if it's runtime suspended before going
-direct_complete, but it's true that the API docs say that it should
-return a positive value only if it's runtime suspended.
+ > > > WARNING: CPU: 1 PID: 29529 at kernel/locking/lockdep.c:3497 lock_unpin_lock+0x109/0x110()
+ > > > unpinning an unpinned lock
+ > > > CPU: 1 PID: 29529 Comm: kworker/1:1 Not tainted 4.2.0-rc2-think+ #3
+ > > > Workqueue: events od_dbs_timer
+ > > >  0000000000000009 ffff880094d5baa8 ffffffffae7f5e6f 0000000000000007
+ > > >  ffff880094d5baf8 ffff880094d5bae8 ffffffffae07b91a 0000000000000118
+ > > >  00000000000000e0 ffff880507bd5c58 0000000000000092 0000000000000004
+ > > > Call Trace:
+ > > >  [<ffffffffae7f5e6f>] dump_stack+0x4f/0x7b
+ > > >  [<ffffffffae07b91a>] warn_slowpath_common+0x8a/0xc0
+ > > >  [<ffffffffae07b996>] warn_slowpath_fmt+0x46/0x50
+ > > >  [<ffffffffae0d0ec9>] lock_unpin_lock+0x109/0x110
+ > > >  [<ffffffffae7f93cc>] __schedule+0x3ac/0xb60
+ > > >  [<ffffffffae7f9c41>] schedule+0x41/0x90
+ > > >  [<ffffffffae7f9ff8>] schedule_preempt_disabled+0x18/0x30
+ > > >  [<ffffffffae7fbcef>] mutex_lock_nested+0x16f/0x3e0
+ > > >  [<ffffffffae69207f>] ? gov_queue_work+0x2f/0xf0
+ > > >  [<ffffffffae690ec7>] ? od_check_cpu+0x57/0xd0
+ > > >  [<ffffffffae69207f>] ? gov_queue_work+0x2f/0xf0
+ > > >  [<ffffffffae69207f>] gov_queue_work+0x2f/0xf0
+ > > >  [<ffffffffae6918dd>] od_dbs_timer+0xbd/0x150
+ > 
+ > I don't know why this will happen. Just to confirm, you are getting
+ > this over 4.2-rc(1 or 2)? And you weren't getting these on 4.1 at all?
+ > And its always reproducible? How ?
 
-Is there a reason why the prepare() implementations have to check that
-instead of leaving it to the core?
+I've hit it once, on rc2.  I didn't have a lot of time for testing rc1.
 
-Thanks,
+ > There have been races in cpufreq core since sometime and what got
+ > pushed in 4.2-rc1 is just half of the fix. The other half is present
+ > here:
+ > 
+ > http://marc.info/?i=cover.1434713657.git.viresh.kumar%40linaro.org
+ > 
+ > Please try this and let us know if things work well or not.
 
-Tomeu
+Sure. Though proving the absense of a bug like this is always fun.
 
->> +             return 0;
->> +
->> +     /* Return 0 if the current wakeup setting is wrong, otherwise 1 */
->> +     if (udev->do_remote_wakeup != device_may_wakeup(dev))
->> +             return 0;
->> +
->> +     return 1;
->>  }
->>
->>  static void usb_dev_complete(struct device *dev)
->>
->
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+	Dave
