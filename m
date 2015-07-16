@@ -1,62 +1,66 @@
-From: Dave Jones <davej@codemonkey.org.uk>
-Subject: Re: cpufreq/ondemand: unpinning an unpinned lock.
-Date: Thu, 16 Jul 2015 08:42:41 -0400
-Message-ID: <20150716124241.GA20320@codemonkey.org.uk>
-References: <20150715220422.GA13789@codemonkey.org.uk>
- <3682267.1lcDzeZuDs@vostro.rjw.lan>
- <20150716051150.GA15404@linux>
+From: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH v5 0/8] mfd: introduce a driver for LPSS devices on SPT
+Date: Thu, 16 Jul 2015 18:58:08 +0530
+Message-ID: <20150716132808.GY5086@localhost>
+References: <1436185334-34275-1-git-send-email-andriy.shevchenko@linux.intel.com>
+ <1436962531.10819.135.camel@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arcturus.aphlor.org ([188.246.204.175]:58607 "EHLO
-	arcturus.aphlor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754180AbbGPMmt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jul 2015 08:42:49 -0400
+Received: from mga14.intel.com ([192.55.52.115]:65032 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751677AbbGPN01 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 16 Jul 2015 09:26:27 -0400
 Content-Disposition: inline
-In-Reply-To: <20150716051150.GA15404@linux>
+In-Reply-To: <1436962531.10819.135.camel@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, mturquette@baylibre.com
 
-On Thu, Jul 16, 2015 at 10:41:50AM +0530, Viresh Kumar wrote:
+On Wed, Jul 15, 2015 at 03:15:31PM +0300, Andy Shevchenko wrote:
+> On Mon, 2015-07-06 at 15:22 +0300, Andy Shevchenko wrote:
+> > The new coming Intel platforms such as Skylake will contain 
+> > Sunrisepoint PCH.
+> > 
+> > The driver is based on MFD framework since the main device, i.e. 
+> > serial bus
+> > controller, contains register space for itself, DMA part, and an 
+> > additional
+> > address space (convergence layer). 
+> > 
+> > The public specification of the register map is avaiable in [1].
+> > 
+> > This is fifth generation of the patch series to bring support LPSS 
+> > devices
+> > found on Intel Sunrisepoint (Intel Skylake PCH). Previous one can be 
+> > found here
+> > [2].
+> > 
+> > The series has few logical parts:
+> > - patches 1-3 prepares PM core, ACPI, and driver core (PM) to handle 
+> > our case
+> > - patches 4-6 introduce unregistering platform devices in MFD in 
+> > reversed
+> >   order
+> > - patch 7 implements iDMA 64-bit driver
+> > - patch 8 introduces an MFD driver for LPSS devices
+> > 
+> > The patch 7 can be applied independently, though it's better if it 
+> > goes before
+> > patch 8.
+> > 
+> > The driver has been tested with SPI and UART on Intel Skylake PCH.
+> > 
+> > [1] https://download.01.org/future-platform-configuration
+> > -hub/skylake/register-definitions/332219-002.pdf
+> > [2] http://www.spinics.net/lists/linux-acpi/msg58622.html
+> 
+> Gentle ping on this.
+> 
+> Vinod, can you Ack the DMA driver?
+I thought it was independent and can go thru dmaengine tree..?
 
- > > > WARNING: CPU: 1 PID: 29529 at kernel/locking/lockdep.c:3497 lock_unpin_lock+0x109/0x110()
- > > > unpinning an unpinned lock
- > > > CPU: 1 PID: 29529 Comm: kworker/1:1 Not tainted 4.2.0-rc2-think+ #3
- > > > Workqueue: events od_dbs_timer
- > > >  0000000000000009 ffff880094d5baa8 ffffffffae7f5e6f 0000000000000007
- > > >  ffff880094d5baf8 ffff880094d5bae8 ffffffffae07b91a 0000000000000118
- > > >  00000000000000e0 ffff880507bd5c58 0000000000000092 0000000000000004
- > > > Call Trace:
- > > >  [<ffffffffae7f5e6f>] dump_stack+0x4f/0x7b
- > > >  [<ffffffffae07b91a>] warn_slowpath_common+0x8a/0xc0
- > > >  [<ffffffffae07b996>] warn_slowpath_fmt+0x46/0x50
- > > >  [<ffffffffae0d0ec9>] lock_unpin_lock+0x109/0x110
- > > >  [<ffffffffae7f93cc>] __schedule+0x3ac/0xb60
- > > >  [<ffffffffae7f9c41>] schedule+0x41/0x90
- > > >  [<ffffffffae7f9ff8>] schedule_preempt_disabled+0x18/0x30
- > > >  [<ffffffffae7fbcef>] mutex_lock_nested+0x16f/0x3e0
- > > >  [<ffffffffae69207f>] ? gov_queue_work+0x2f/0xf0
- > > >  [<ffffffffae690ec7>] ? od_check_cpu+0x57/0xd0
- > > >  [<ffffffffae69207f>] ? gov_queue_work+0x2f/0xf0
- > > >  [<ffffffffae69207f>] gov_queue_work+0x2f/0xf0
- > > >  [<ffffffffae6918dd>] od_dbs_timer+0xbd/0x150
- > 
- > I don't know why this will happen. Just to confirm, you are getting
- > this over 4.2-rc(1 or 2)? And you weren't getting these on 4.1 at all?
- > And its always reproducible? How ?
+-- 
+~Vinod
 
-I've hit it once, on rc2.  I didn't have a lot of time for testing rc1.
-
- > There have been races in cpufreq core since sometime and what got
- > pushed in 4.2-rc1 is just half of the fix. The other half is present
- > here:
- > 
- > http://marc.info/?i=cover.1434713657.git.viresh.kumar%40linaro.org
- > 
- > Please try this and let us know if things work well or not.
-
-Sure. Though proving the absense of a bug like this is always fun.
-
-	Dave
