@@ -1,77 +1,38 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v5 6/6] cpufreq: powernv: Restore cpu frequency to policy->cur
- on unthrottling
-Date: Thu, 16 Jul 2015 13:34:23 +0530
-Message-ID: <1437033863-15864-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH] gpio: rcar: Fine-grained Runtime PM support
+Date: Thu, 16 Jul 2015 10:43:05 +0200
+Message-ID: <CACRpkdagkFPVvU3Ox1YHhg9edzxPQyd6XddC1vLMj20HhAyY7A@mail.gmail.com>
+References: <1435243557-7050-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, joel@jms.id.au, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1435243557-7050-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Alexandre Courbot <gnurou@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-SWYgZnJlcXVlbmN5IGlzIHRocm90dGxlZCBkdWUgdG8gT0NDIHJlc2V0IHRoZW4gY3B1cyB3aWxs
-IGJlIGluIFBzYWZlCmZyZXF1ZW5jeSwgc28gcmVzdG9yZSB0aGUgZnJlcXVlbmN5IG9uIGFsbCBj
-cHVzIHRvIHBvbGljeS0+Y3VyIHdoZW4KT0NDcyBhcmUgYWN0aXZlIGFnYWluLiBBbmQgaWYgZnJl
-cXVlbmN5IGlzIHRocm90dGxlZCBkdWUgdG8gUG1heApjYXBwaW5nIHRoZW4gcmVzdG9yZSB0aGUg
-ZnJlcXVlbmN5IG9mIGFsbCB0aGUgY3B1cyAgaW4gdGhlIGNoaXAgb24KdW50aHJvdHRsaW5nLgoK
-U2lnbmVkLW9mZi1ieTogU2hpbHBhc3JpIEcgQmhhdCA8c2hpbHBhLmJoYXRAbGludXgudm5ldC5p
-Ym0uY29tPgpBY2tlZC1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4K
-LS0tCk5vIGNoYW5nZXMgZnJvbSB2NAoKQ2hhbmdlcyBmcm9tIHYzOgotIFJlZmVyIHRvIHRoZSBt
-ZW1iZXJzIG9mICdzdHJ1Y3Qgb3BhbF9vY2NfbXNnJyBpbiB0aGUgcGF0Y2guCiAgUmVwbGFjZSAn
-cmVhc29uJyB3aXRoICdvbXNnLnRocm90dGxlX3N0YXR1cycKCiBkcml2ZXJzL2NwdWZyZXEvcG93
-ZXJudi1jcHVmcmVxLmMgfCAzMSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tCiAxIGZp
-bGUgY2hhbmdlZCwgMjkgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQg
-YS9kcml2ZXJzL2NwdWZyZXEvcG93ZXJudi1jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvcG93
-ZXJudi1jcHVmcmVxLmMKaW5kZXggOTBiNDI5My4uNTQ2ZTA1NiAxMDA2NDQKLS0tIGEvZHJpdmVy
-cy9jcHVmcmVxL3Bvd2VybnYtY3B1ZnJlcS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9wb3dlcm52
-LWNwdWZyZXEuYwpAQCAtNDgsNiArNDgsNyBAQCBzdGF0aWMgc3RydWN0IGNoaXAgewogCWJvb2wg
-dGhyb3R0bGVkOwogCWNwdW1hc2tfdCBtYXNrOwogCXN0cnVjdCB3b3JrX3N0cnVjdCB0aHJvdHRs
-ZTsKKwlib29sIHJlc3RvcmU7CiB9ICpjaGlwczsKIAogc3RhdGljIGludCBucl9jaGlwczsKQEAg
-LTQxNSw5ICs0MTYsMjkgQEAgc3RhdGljIHN0cnVjdCBub3RpZmllcl9ibG9jayBwb3dlcm52X2Nw
-dWZyZXFfcmVib290X25iID0gewogdm9pZCBwb3dlcm52X2NwdWZyZXFfd29ya19mbihzdHJ1Y3Qg
-d29ya19zdHJ1Y3QgKndvcmspCiB7CiAJc3RydWN0IGNoaXAgKmNoaXAgPSBjb250YWluZXJfb2Yo
-d29yaywgc3RydWN0IGNoaXAsIHRocm90dGxlKTsKKwl1bnNpZ25lZCBpbnQgY3B1OworCWNwdW1h
-c2tfdmFyX3QgbWFzazsKIAogCXNtcF9jYWxsX2Z1bmN0aW9uX2FueSgmY2hpcC0+bWFzaywKIAkJ
-CSAgICAgIHBvd2VybnZfY3B1ZnJlcV90aHJvdHRsZV9jaGVjaywgTlVMTCwgMCk7CisKKwlpZiAo
-IWNoaXAtPnJlc3RvcmUpCisJCXJldHVybjsKKworCWNoaXAtPnJlc3RvcmUgPSBmYWxzZTsKKwlj
-cHVtYXNrX2NvcHkobWFzaywgJmNoaXAtPm1hc2spOworCWZvcl9lYWNoX2NwdV9hbmQoY3B1LCBt
-YXNrLCBjcHVfb25saW5lX21hc2spIHsKKwkJaW50IGluZGV4LCB0Y3B1OworCQlzdHJ1Y3QgY3B1
-ZnJlcV9wb2xpY3kgcG9saWN5OworCisJCWNwdWZyZXFfZ2V0X3BvbGljeSgmcG9saWN5LCBjcHUp
-OworCQljcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZV90YXJnZXQoJnBvbGljeSwgcG9saWN5LmZyZXFf
-dGFibGUsCisJCQkJCSAgICAgICBwb2xpY3kuY3VyLAorCQkJCQkgICAgICAgQ1BVRlJFUV9SRUxB
-VElPTl9DLCAmaW5kZXgpOworCQlwb3dlcm52X2NwdWZyZXFfdGFyZ2V0X2luZGV4KCZwb2xpY3ks
-IGluZGV4KTsKKwkJZm9yX2VhY2hfY3B1KHRjcHUsIHBvbGljeS5jcHVzKQorCQkJY3B1bWFza19j
-bGVhcl9jcHUodGNwdSwgbWFzayk7CisJfQogfQogCiBzdGF0aWMgY2hhciB0aHJvdHRsZV9yZWFz
-b25bXVszMF0gPSB7CkBAIC00NjksOCArNDkwLDEwIEBAIHN0YXRpYyBpbnQgcG93ZXJudl9jcHVm
-cmVxX29jY19tc2coc3RydWN0IG5vdGlmaWVyX2Jsb2NrICpuYiwKIAkJCXRocm90dGxlZCA9IGZh
-bHNlOwogCQkJcHJfaW5mbygiT0NDOiBBY3RpdmVcbiIpOwogCi0JCQlmb3IgKGkgPSAwOyBpIDwg
-bnJfY2hpcHM7IGkrKykKKwkJCWZvciAoaSA9IDA7IGkgPCBucl9jaGlwczsgaSsrKSB7CisJCQkJ
-Y2hpcHNbaV0ucmVzdG9yZSA9IHRydWU7CiAJCQkJc2NoZWR1bGVfd29yaygmY2hpcHNbaV0udGhy
-b3R0bGUpOworCQkJfQogCiAJCQlyZXR1cm4gMDsKIAkJfQpAQCAtNDg3LDggKzUxMCwxMSBAQCBz
-dGF0aWMgaW50IHBvd2VybnZfY3B1ZnJlcV9vY2NfbXNnKHN0cnVjdCBub3RpZmllcl9ibG9jayAq
-bmIsCiAJCQlyZXR1cm4gMDsKIAogCQlmb3IgKGkgPSAwOyBpIDwgbnJfY2hpcHM7IGkrKykKLQkJ
-CWlmIChjaGlwc1tpXS5pZCA9PSBvbXNnLmNoaXApCisJCQlpZiAoY2hpcHNbaV0uaWQgPT0gb21z
-Zy5jaGlwKSB7CisJCQkJaWYgKCFvbXNnLnRocm90dGxlX3N0YXR1cykKKwkJCQkJY2hpcHNbaV0u
-cmVzdG9yZSA9IHRydWU7CiAJCQkJc2NoZWR1bGVfd29yaygmY2hpcHNbaV0udGhyb3R0bGUpOwor
-CQkJfQogCX0KIAlyZXR1cm4gMDsKIH0KQEAgLTU0Miw2ICs1NjgsNyBAQCBzdGF0aWMgaW50IGlu
-aXRfY2hpcF9pbmZvKHZvaWQpCiAJCWNoaXBzW2ldLnRocm90dGxlZCA9IGZhbHNlOwogCQljcHVt
-YXNrX2NvcHkoJmNoaXBzW2ldLm1hc2ssIGNwdW1hc2tfb2Zfbm9kZShjaGlwW2ldKSk7CiAJCUlO
-SVRfV09SSygmY2hpcHNbaV0udGhyb3R0bGUsIHBvd2VybnZfY3B1ZnJlcV93b3JrX2ZuKTsKKwkJ
-Y2hpcHNbaV0ucmVzdG9yZSA9IGZhbHNlOwogCX0KIAogCXJldHVybiAwOwotLSAKMS45LjMKCl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4cHBjLWRl
-diBtYWlsaW5nIGxpc3QKTGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0
-cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4cHBjLWRldg==
+On Thu, Jun 25, 2015 at 4:45 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+
+> Currently gpio modules are runtime-resumed at probe time. This means the
+> gpio module will be active all the time (except during system suspend,
+> if not configured as a wake-up source).
+>
+> While an R-Car Gen2 gpio module retains pins configured for output at
+> the requested level while put in standby mode, gpio registercannot be
+> accessed while suspended.  Unfortunately pm_runtime_get_sync() cannot be
+> called from all contexts where gpio register access is needed. Hence
+> move the Runtime PM handling from probe/remove time to gpio request/free
+> time, which is probably the best we can do.
+>
+> On r8a7791/koelsch, gpio modules 0, 1, 3, and 4 are now suspended during
+> normal use (gpio2 is used for LEDs and regulators, gpio5 for keys, gpio6
+> for SD-Card CD & WP, gpio7 for keys and regulators).
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Patch applied unless Magnus complains.
+
+Yours,
+Linus Walleij
