@@ -1,183 +1,95 @@
-From: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
-Subject: [RFC PATCH 03/16] x86/boot: Public getting random boot function
-Date: Thu, 16 Jul 2015 22:25:17 +0800
-Message-ID: <1437056730-15247-4-git-send-email-jlee@suse.com>
-References: <1437056730-15247-1-git-send-email-jlee@suse.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v4 3/8] clk: add support for clocks provided by SCP(System
+ Control Processor)
+Date: Thu, 16 Jul 2015 17:11:07 +0100
+Message-ID: <55A7D79B.3080305@arm.com>
+References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com> <1433760002-24120-4-git-send-email-sudeep.holla@arm.com> <20150702172310.GF4301@codeaurora.org> <5596A1B6.8020307@arm.com> <559ADC94.4080505@codeaurora.org> <559BF858.1020301@arm.com> <20150708014606.GH30412@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1437056730-15247-1-git-send-email-jlee@suse.com>
+In-Reply-To: <20150708014606.GH30412@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <matthew.garrett@nebula.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>, "Lee, Chun-Yi" <jlee@suse.com>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch moves the getting random boot function from aslr to misc
-for later used by EFI stub to generate the first entropy of hmac key
-for signing hibernate snapshot image.
+Hi Stephen,
 
-Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
----
- arch/x86/boot/compressed/aslr.c | 55 +----------------------------------------
- arch/x86/boot/compressed/misc.c | 55 +++++++++++++++++++++++++++++++++++++++++
- arch/x86/boot/compressed/misc.h |  4 +++
- 3 files changed, 60 insertions(+), 54 deletions(-)
+On 08/07/15 02:46, Stephen Boyd wrote:
+> On 07/07, Sudeep Holla wrote:
+>>
+>>
+>> On 06/07/15 20:52, Stephen Boyd wrote:
+>>>>
+>>>
+>>> If I have time I may try to start doing the clk_register() conversion,
+>>> but it will take a while so I doubt it will be in v4.3. I'm asking if
+>>> you can add a clk_hw based API that does something like
+>>> clk_set_rate_range() without requiring a struct clk pointer. i.e.
+>>> clk_hw_set_rate_range(struct clk_hw *hw, min, max) that constraints the
+>>> min/max rate of the clock. This way, the driver is only using clk
+>>> provider APIs and not clk consumer APIs.
+>>>
+>>
+>> I understand the intention of separating clk provider helpers/APIs
+>> and clk consumer APIs. Since {min,max}_rate are part of struct clk
+>> itself, I was thinking that you would have moved it to struct clk_core
+>> as part of the rework you mentioned and hence asked about the patches.
+>>
+>> IIUC, if {min,max}_rate remain part of struct clk, then how are we
+>> restricting that operation to just the clk providers ? clk consumer
+>> can still directly modify or use clk_set_rate_range.
+>>
+>> Do we continue to provide that feature for both provider and consumer ?
+>> If so I assume {min,max}_rate range requested by consumer should be
+>> within the limits set by provider and do we maintain both the limits ?
+>>
+>> Sorry if I am missing something fundamental since I don't have much
+>> knowledge of clk layer internals.
+>>
+>
+> Yes struct clk would have min/max, and struct clk_core would have
+> min/max. Then some sort of provider API (or possibly even
+> clk_init_data) would take the min/max fields and copy them over
+> to struct clk_core. Then during set_rate operations we would
+> aggregate the constraints from struct clk like we already do and
+> add in the constrains in struct clk_core.
+>
+> One downside to adding new fields to clk_init_data is that there
+> are drivers out there that aren't initializing that structure to
+> 0, and they're putting it on the stack, so stack junk can come
+> through. Furthermore, min/max would mean that every driver needs
+> to specify some large number for max or we have to special case
+> min == max == 0 and ignore it. Somehow it needs to be opt-in. If
+> we want to go down the clk_init_data route then perhaps we need
+> some sort of rate_constraint struct pointer in there that drivers
+> can optionally setup.
+>
+> 	struct clk_rate_constraint {
+> 		unsigned long min;
+> 		unsigned long max;
+> 	};
+>
+> 	struct clk_init_data {
+> 		...
+> 		struct clk_rate_constraint *rate_constraint;
+> 	};
+>
+> I haven't thought it through completely, but I can probably write
+> up some patch tomorrow after I sleep on it.
+>
 
-diff --git a/arch/x86/boot/compressed/aslr.c b/arch/x86/boot/compressed/aslr.c
-index d7b1f65..bd6550a 100644
---- a/arch/x86/boot/compressed/aslr.c
-+++ b/arch/x86/boot/compressed/aslr.c
-@@ -6,59 +6,6 @@
- 
- #include <generated/compile.h>
- #include <linux/module.h>
--#include <linux/uts.h>
--#include <linux/utsname.h>
--#include <generated/utsrelease.h>
--
--/* Simplified build-specific string for starting entropy. */
--static const char build_str[] = UTS_RELEASE " (" LINUX_COMPILE_BY "@"
--		LINUX_COMPILE_HOST ") (" LINUX_COMPILER ") " UTS_VERSION;
--
--#define I8254_PORT_CONTROL	0x43
--#define I8254_PORT_COUNTER0	0x40
--#define I8254_CMD_READBACK	0xC0
--#define I8254_SELECT_COUNTER0	0x02
--#define I8254_STATUS_NOTREADY	0x40
--static inline u16 i8254(void)
--{
--	u16 status, timer;
--
--	do {
--		outb(I8254_PORT_CONTROL,
--		     I8254_CMD_READBACK | I8254_SELECT_COUNTER0);
--		status = inb(I8254_PORT_COUNTER0);
--		timer  = inb(I8254_PORT_COUNTER0);
--		timer |= inb(I8254_PORT_COUNTER0) << 8;
--	} while (status & I8254_STATUS_NOTREADY);
--
--	return timer;
--}
--
--static unsigned long rotate_xor(unsigned long hash, const void *area,
--				size_t size)
--{
--	size_t i;
--	unsigned long *ptr = (unsigned long *)area;
--
--	for (i = 0; i < size / sizeof(hash); i++) {
--		/* Rotate by odd number of bits and XOR. */
--		hash = (hash << ((sizeof(hash) * 8) - 7)) | (hash >> 7);
--		hash ^= ptr[i];
--	}
--
--	return hash;
--}
--
--/* Attempt to create a simple but unpredictable starting entropy. */
--static unsigned long get_random_boot(void)
--{
--	unsigned long hash = 0;
--
--	hash = rotate_xor(hash, build_str, sizeof(build_str));
--	hash = rotate_xor(hash, real_mode, sizeof(*real_mode));
--
--	return hash;
--}
- 
- static unsigned long get_random_long(void)
- {
-@@ -67,7 +14,7 @@ static unsigned long get_random_long(void)
- #else
- 	const unsigned long mix_const = 0x3f39e593UL;
- #endif
--	unsigned long raw, random = get_random_boot();
-+	unsigned long raw, random = get_random_boot(real_mode);
- 	bool use_i8254 = true;
- 
- 	debug_putstr("KASLR using");
-diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/misc.c
-index a107b93..d929506 100644
---- a/arch/x86/boot/compressed/misc.c
-+++ b/arch/x86/boot/compressed/misc.c
-@@ -12,6 +12,9 @@
- #include "misc.h"
- #include "../string.h"
- 
-+#include <generated/compile.h>
-+#include <generated/utsrelease.h>
-+
- /* WARNING!!
-  * This code is compiled with -fPIC and it is relocated dynamically
-  * at run time, but no relocation processing is performed.
-@@ -435,3 +438,55 @@ asmlinkage __visible void *decompress_kernel(void *rmode, memptr heap,
- 	debug_putstr("done.\nBooting the kernel.\n");
- 	return output;
- }
-+
-+#if CONFIG_RANDOMIZE_BASE
-+#define I8254_PORT_CONTROL	0x43
-+#define I8254_PORT_COUNTER0	0x40
-+#define I8254_CMD_READBACK	0xC0
-+#define I8254_SELECT_COUNTER0	0x02
-+#define I8254_STATUS_NOTREADY	0x40
-+u16 i8254(void)
-+{
-+	u16 status, timer;
-+
-+	do {
-+		outb(I8254_PORT_CONTROL,
-+		     I8254_CMD_READBACK | I8254_SELECT_COUNTER0);
-+		status = inb(I8254_PORT_COUNTER0);
-+		timer  = inb(I8254_PORT_COUNTER0);
-+		timer |= inb(I8254_PORT_COUNTER0) << 8;
-+	} while (status & I8254_STATUS_NOTREADY);
-+
-+	return timer;
-+}
-+
-+static unsigned long rotate_xor(unsigned long hash, const void *area,
-+				size_t size)
-+{
-+	size_t i;
-+	unsigned long *ptr = (unsigned long *)area;
-+
-+	for (i = 0; i < size / sizeof(hash); i++) {
-+		/* Rotate by odd number of bits and XOR. */
-+		hash = (hash << ((sizeof(hash) * 8) - 7)) | (hash >> 7);
-+		hash ^= ptr[i];
-+	}
-+
-+	return hash;
-+}
-+
-+/* Simplified build-specific string for starting entropy. */
-+static const char build_str[] = UTS_RELEASE " (" LINUX_COMPILE_BY "@"
-+		LINUX_COMPILE_HOST ") (" LINUX_COMPILER ") " UTS_VERSION;
-+
-+/* Attempt to create a simple but unpredictable starting entropy. */
-+unsigned long get_random_boot(struct boot_params *boot_params)
-+{
-+	unsigned long hash = 0;
-+
-+	hash = rotate_xor(hash, build_str, sizeof(build_str));
-+	hash = rotate_xor(hash, boot_params, sizeof(*boot_params));
-+
-+	return hash;
-+}
-+#endif /* CONFIG_RANDOMIZE_BASE */
-diff --git a/arch/x86/boot/compressed/misc.h b/arch/x86/boot/compressed/misc.h
-index 805d25c..e10908c 100644
---- a/arch/x86/boot/compressed/misc.h
-+++ b/arch/x86/boot/compressed/misc.h
-@@ -53,6 +53,10 @@ int cmdline_find_option(const char *option, char *buffer, int bufsize);
- int cmdline_find_option_bool(const char *option);
- #endif
- 
-+#if CONFIG_RANDOMIZE_BASE
-+extern u16 i8254(void);
-+extern unsigned long get_random_boot(struct boot_params *boot_params);
-+#endif
- 
- #if CONFIG_RANDOMIZE_BASE
- /* aslr.c */
--- 
-1.8.4.5
+I am hoping to get this series for v4.3. In order to avoid using
+consumer API, I can revert back to the min,max check I had in the
+round_rate earlier if that's fine with you ? Let me know so that I can
+post the next version based on that. All the other comments are already
+addressed.
+
+Also since this series depends on SCPI, I was thinking to get it merged
+via ARM-SoC, but that might conflict with the round_rate prototype
+change. Do do plan to share a stable base with arm-soc guys or you
+expect all the changes to be contained in clk tree ?
+
+Regards,
+Sudeep
