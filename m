@@ -1,82 +1,85 @@
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v5 5/6] cpufreq: powernv: Report Psafe only if PMSR.psafe_mode_active bit is set
-Date: Thu, 16 Jul 2015 13:34:22 +0530
-Message-ID: <1437033863-15864-6-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v5 2/6] powerpc/powernv: Add definition of OPAL_MSG_OCC message type
+Date: Thu, 16 Jul 2015 13:34:19 +0530
+Message-ID: <1437033863-15864-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 References: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e28smtp04.in.ibm.com ([122.248.162.4]:47632 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754245AbbGPIFQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jul 2015 04:05:16 -0400
-Received: from /spool/local
-	by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
-	Thu, 16 Jul 2015 13:35:14 +0530
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net
-Cc: joel@jms.id.au, viresh.kumar@linaro.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: joel@jms.id.au, viresh.kumar@linaro.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>
+List-Id: linux-pm@vger.kernel.org
 
-On a reset cycle of OCC, although the system retires from safe
-frequency state the local pstate is not restored to Pmin or last
-requested pstate. Now if the cpufreq governor initiates a pstate
-change, the local pstate will be in Psafe and we will be reporting a
-false positive when we are not throttled.
+Add OPAL_MSG_OCC message definition to opal_message_type to receive
+OCC events like reset, load and throttled. Host performance can be
+affected when OCC is reset or OCC throttles the max Pstate.
+We can register to opal_message_notifier to receive OPAL_MSG_OCC type
+of message and report it to the userspace so as to keep the user
+informed about the reason for a performance drop in workloads.
 
-So in powernv_cpufreq_throttle_check() remove the condition which
-checks if local pstate is less than Pmin while checking for Psafe
-frequency. If the cpus are forced to Psafe then PMSR.psafe_mode_active
-bit will be set. So, when OCCs become active this bit will be cleared.
-Let us just rely on this bit for reporting throttling.
+The reset and load OCC events are notified to kernel when FSP sends
+OCC_RESET and OCC_LOAD commands.  Both reset and load messages are
+sent to kernel on successful completion of reset and load operation
+respectively.
 
+The throttle OCC event indicates that the Pmax of the chip is reduced.
+The chip_id and throttle reason for reducing Pmax is also queued along
+with the message.
+
+CC: Stewart Smith <stewart@linux.vnet.ibm.com>
 Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
-No changes from v4
+No change from v4
 
- drivers/cpufreq/powernv-cpufreq.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+Changes from v3:
+- '0d7cd8550d3 powerpc/powernv: Add opal-prd channel' this patch adds
+  the definition of OPAL_MSG_PRD, so remove it and update the
+  changelog.
+- Move the definitions of OCC_RESET, OCC_LOAD and OCC_THROTTLE from 
+  drivers/cpufreq/powernv-cpufreq.c to arch/powerpc/include/asm/opal-api.h
+- Define OCC_MAX_THROTTLE_STATUS 
+- Add a wrapper structure 'opal_occ_msg' to copy 'struct opal_msg.params[0..2]'
+  This structure will define the parameters received from firmware to
+  maintain compatibility for any future additions.
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 22f33ff..90b4293 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -39,7 +39,6 @@
- #define PMSR_PSAFE_ENABLE	(1UL << 30)
- #define PMSR_SPR_EM_DISABLE	(1UL << 31)
- #define PMSR_MAX(x)		((x >> 32) & 0xFF)
--#define PMSR_LP(x)		((x >> 48) & 0xFF)
+No change from v2
+
+Change from v1:
+- Update the commit changelog
+
+ arch/powerpc/include/asm/opal-api.h | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index e9e4c52..64dc9f5 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -361,6 +361,7 @@ enum opal_msg_type {
+ 	OPAL_MSG_HMI_EVT,
+ 	OPAL_MSG_DPO,
+ 	OPAL_MSG_PRD,
++	OPAL_MSG_OCC,
+ 	OPAL_MSG_TYPE_MAX,
+ };
  
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
- static bool rebooting, throttled, occ_reset;
-@@ -313,7 +312,7 @@ static void powernv_cpufreq_throttle_check(void *data)
- {
- 	unsigned int cpu = smp_processor_id();
- 	unsigned long pmsr;
--	int pmsr_pmax, pmsr_lp, i;
-+	int pmsr_pmax, i;
+@@ -700,6 +701,17 @@ struct opal_prd_msg_header {
  
- 	pmsr = get_pmspr(SPRN_PMSR);
+ struct opal_prd_msg;
  
-@@ -335,14 +334,9 @@ static void powernv_cpufreq_throttle_check(void *data)
- 			chips[i].id, pmsr_pmax);
- 	}
- 
--	/*
--	 * Check for Psafe by reading LocalPstate
--	 * or check if Psafe_mode_active is set in PMSR.
--	 */
-+	/* Check if Psafe_mode_active is set in PMSR. */
- next:
--	pmsr_lp = (s8)PMSR_LP(pmsr);
--	if ((pmsr_lp < powernv_pstate_info.min) ||
--				(pmsr & PMSR_PSAFE_ENABLE)) {
-+	if (pmsr & PMSR_PSAFE_ENABLE) {
- 		throttled = true;
- 		pr_info("Pstate set to safe frequency\n");
- 	}
++#define OCC_RESET                       0
++#define OCC_LOAD                        1
++#define OCC_THROTTLE                    2
++#define OCC_MAX_THROTTLE_STATUS         5
++
++struct opal_occ_msg {
++	__be64 type;
++	__be64 chip;
++	__be64 throttle_status;
++};
++
+ /*
+  * SG entries
+  *
 -- 
 1.9.3
-
