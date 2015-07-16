@@ -1,45 +1,59 @@
-From: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH] gpio: rcar: Fine-grained Runtime PM support
-Date: Thu, 16 Jul 2015 18:05:53 +0900
-Message-ID: <CANqRtoTfCZoH61dcDgVH9sGX76WK6OW6YPKv3XAFb31Ri=ZXPw@mail.gmail.com>
-References: <1435243557-7050-1-git-send-email-geert+renesas@glider.be>
-	<CACRpkdagkFPVvU3Ox1YHhg9edzxPQyd6XddC1vLMj20HhAyY7A@mail.gmail.com>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: Properly handle errors from
+ cpufreq_init_policy()
+Date: Thu, 16 Jul 2015 10:16:14 +0100
+Message-ID: <1437038174.2842.6.camel@linaro.org>
+References: <276debea91831d86c34079f6a40d773ce258a62c.1436348436.git.viresh.kumar@linaro.org>
+	 <1436354276.2844.20.camel@linaro.org> <20150708112023.GE1805@linux>
+	 <3547840.51rbRs871Y@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <CACRpkdagkFPVvU3Ox1YHhg9edzxPQyd6XddC1vLMj20HhAyY7A@mail.gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Alexandre Courbot <gnurou@gmail.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smarthost01b.mail.zen.net.uk ([212.23.1.3]:46456 "EHLO
+	smarthost01b.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754015AbbGPJQS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jul 2015 05:16:18 -0400
+In-Reply-To: <3547840.51rbRs871Y@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
 
-Hi Linus,
+On Thu, 2015-07-16 at 02:32 +0200, Rafael J. Wysocki wrote:
+> On Wednesday, July 08, 2015 04:50:23 PM Viresh Kumar wrote:
+> > On 08-07-15, 12:17, Jon Medhurst (Tixy) wrote:
+> > > I tried these patches without the earlier "cpufreq: Initialize the
+> > > governor again while restoring policy" patch.
+> > > 
+> > > The result is that the error when bringing a cpu online is with flagged
+> > > up with a kernel message:
+> > > 
+> > >   cpufreq: cpufreq_add_dev: Failed to initialize policy for cpu: 1 (-16)
+> > > 
+> > > and afterwards, the sysfs entries that I was poking and causing the
+> > > crash aren't present. So looks like this patch has done what we want,
+> > > and cleaned things up after an error. So...
+> > > 
+> > > Tested-by: Jon Medhurst <tixy@linaro.org>
+> > > 
+> > > Thanks for the prompt fix.
+> > 
+> > And thanks for your help in getting these tested :)
+> 
+> Both queued up for 4.3, thanks!
 
-On Thu, Jul 16, 2015 at 5:43 PM, Linus Walleij <linus.walleij@linaro.org> wrote:
-> On Thu, Jun 25, 2015 at 4:45 PM, Geert Uytterhoeven
-> <geert+renesas@glider.be> wrote:
->
->> Currently gpio modules are runtime-resumed at probe time. This means the
->> gpio module will be active all the time (except during system suspend,
->> if not configured as a wake-up source).
->>
->> While an R-Car Gen2 gpio module retains pins configured for output at
->> the requested level while put in standby mode, gpio registercannot be
->> accessed while suspended.  Unfortunately pm_runtime_get_sync() cannot be
->> called from all contexts where gpio register access is needed. Hence
->> move the Runtime PM handling from probe/remove time to gpio request/free
->> time, which is probably the best we can do.
->>
->> On r8a7791/koelsch, gpio modules 0, 1, 3, and 4 are now suspended during
->> normal use (gpio2 is used for LEDs and regulators, gpio5 for keys, gpio6
->> for SD-Card CD & WP, gpio7 for keys and regulators).
->>
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->
-> Patch applied unless Magnus complains.
+The crash I was getting was a regression caused by changes that went
+into 4.2-rc1.
 
-No complaints, just happy Magnus!
+Indeed, the first patch from Viresh is marked:
 
-Thanks,
+Fixes: 18bf3a124ef8 ("cpufreq: Mark policy->governor = NULL for inactive policies")
+For 4.2-rc
 
-/ magnus
+And I am having to carry that first patch to keep two ARM big.LITTLE
+platforms working.
+
+-- 
+Tixy
+
