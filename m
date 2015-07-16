@@ -1,38 +1,81 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH] gpio: rcar: Fine-grained Runtime PM support
-Date: Thu, 16 Jul 2015 10:43:05 +0200
-Message-ID: <CACRpkdagkFPVvU3Ox1YHhg9edzxPQyd6XddC1vLMj20HhAyY7A@mail.gmail.com>
-References: <1435243557-7050-1-git-send-email-geert+renesas@glider.be>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: Re: [PATCH v4 2/3] PM / sleep: Go direct_complete if driver has no callbacks
+Date: Thu, 16 Jul 2015 10:47:51 +0200
+Message-ID: <CAAObsKDDEi8CQQp2apARBT9pnWiGghOS-ry_sbw7-GgBhydw2g@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1507151444460.18896-100000@netrider.rowland.org> <6740752.elSTxeiQAg@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1435243557-7050-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Alexandre Courbot <gnurou@gmail.com>, Magnus Damm <magnus.damm@gmail.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <6740752.elSTxeiQAg@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 25, 2015 at 4:45 PM, Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
-
-> Currently gpio modules are runtime-resumed at probe time. This means the
-> gpio module will be active all the time (except during system suspend,
-> if not configured as a wake-up source).
+On 16 July 2015 at 02:41, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, July 15, 2015 02:47:50 PM Alan Stern wrote:
+>> On Wed, 15 Jul 2015, Tomeu Vizoso wrote:
+>>
+>> > If a suitable prepare callback cannot be found for a given device and
+>> > its driver has no PM callbacks at all, assume that it can go direct to
+>> > complete when the system goes to sleep.
+>> >
+>> > The reason for this is that there's lots of devices in a system that do
+>> > no PM at all and there's no reason for them to prevent their ancestors
+>> > to do direct_complete if they can support it.
+>> >
+>> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+>> > ---
+>> >
+>> >  drivers/base/power/main.c | 17 +++++++++++++++++
+>> >  1 file changed, 17 insertions(+)
+>> >
+>> > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>> > index 1710c26ba097..edda3f233c7c 100644
+>> > --- a/drivers/base/power/main.c
+>> > +++ b/drivers/base/power/main.c
+>> > @@ -1540,6 +1540,21 @@ int dpm_suspend(pm_message_t state)
+>> >     return error;
+>> >  }
+>> >
+>> > +static bool driver_has_no_pm_callbacks(struct device_driver *drv)
+>> > +{
+>> > +   if (!drv->pm)
+>> > +           return true;
+>> > +
+>> > +   return !drv->pm->prepare &&
+>> > +          !drv->pm->suspend &&
+>> > +          !drv->pm->suspend_late &&
+>> > +          !drv->pm->suspend_noirq &&
+>> > +          !drv->pm->resume_noirq &&
+>> > +          !drv->pm->resume_early &&
+>> > +          !drv->pm->resume &&
+>> > +          !drv->pm->complete;
+>> > +}
+>>
+>> This isn't exactly what I meant.  We also need to check the dev_pm_ops
+>> fields in dev->pm_domain, dev->type, dev->class, and dev->bus.  Only if
+>> _all_ of these callbacks are missing should we use direct_complete.
 >
-> While an R-Car Gen2 gpio module retains pins configured for output at
-> the requested level while put in standby mode, gpio registercannot be
-> accessed while suspended.  Unfortunately pm_runtime_get_sync() cannot be
-> called from all contexts where gpio register access is needed. Hence
-> move the Runtime PM handling from probe/remove time to gpio request/free
-> time, which is probably the best we can do.
->
-> On r8a7791/koelsch, gpio modules 0, 1, 3, and 4 are now suspended during
-> normal use (gpio2 is used for LEDs and regulators, gpio5 for keys, gpio6
-> for SD-Card CD & WP, gpio7 for keys and regulators).
->
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Also checking that on every suspend is kind of wasteful, because those things
+> do not change very often.
 
-Patch applied unless Magnus complains.
+Do you have any suggestion on when would be a good time to do that
+check? device_pm_sleep_init() and device_pm_add() are unfortunately
+too early.
 
-Yours,
-Linus Walleij
+Alternatively we could check once on the first suspend and cache it,
+but I'm not sure that complexity would be worth it.
+
+Thanks,
+
+Tomeu
+
+> Thanks,
+> Rafael
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
