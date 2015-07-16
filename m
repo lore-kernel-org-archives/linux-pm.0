@@ -1,173 +1,73 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v3 2/4] ARM: dts: Exynos5250: add CPU OPP and regulator
- supply property
-Date: Thu, 16 Jul 2015 10:38:51 +0900
-Message-ID: <55A70B2B.1060100@samsung.com>
-References: <1435756238-845-1-git-send-email-b.zolnierkie@samsung.com>
- <1435756238-845-3-git-send-email-b.zolnierkie@samsung.com>
- <55A70A3E.5020600@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: cpufreq/ondemand: unpinning an unpinned lock.
+Date: Thu, 16 Jul 2015 10:41:50 +0530
+Message-ID: <20150716051150.GA15404@linux>
+References: <20150715220422.GA13789@codemonkey.org.uk>
+ <3682267.1lcDzeZuDs@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <55A70A3E.5020600@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f178.google.com ([209.85.192.178]:36191 "EHLO
+	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751055AbbGPFLz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jul 2015 01:11:55 -0400
+Received: by pdjr16 with SMTP id r16so37715245pdj.3
+        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2015 22:11:55 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <3682267.1lcDzeZuDs@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Dave Jones <davej@codemonkey.org.uk>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On 16.07.2015 10:34, Krzysztof Kozlowski wrote:
-> On 01.07.2015 22:10, Bartlomiej Zolnierkiewicz wrote:
->> From: Thomas Abraham <thomas.ab@samsung.com>
->>
->> For Exynos5250 platforms, add CPU operating points and CPU
->> regulator supply properties for migrating from Exynos specific
->> cpufreq driver to using generic cpufreq driver.
->>
->> Changes by Bartlomiej:
->> - split Exynos5250 support from the original patch
->> - added CPU regulator supply property for Google Spring board
->> - put the new cpu nodes in alphabetical order
->>
->> Cc: Kukjin Kim <kgene.kim@samsung.com>
->> Cc: Doug Anderson <dianders@chromium.org>
->> Cc: Javier Martinez Canillas <javier@dowhile0.org>
->> Cc: Andreas Faerber <afaerber@suse.de>
->> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->> ---
->>  arch/arm/boot/dts/exynos5250-arndale.dts  |  4 ++++
->>  arch/arm/boot/dts/exynos5250-smdk5250.dts |  4 ++++
->>  arch/arm/boot/dts/exynos5250-snow.dts     |  4 ++++
->>  arch/arm/boot/dts/exynos5250-spring.dts   |  4 ++++
->>  arch/arm/boot/dts/exynos5250.dtsi         | 22 ++++++++++++++++++++++
->>  5 files changed, 38 insertions(+)
->>
->> diff --git a/arch/arm/boot/dts/exynos5250-arndale.dts b/arch/arm/boot/dts/exynos5250-arndale.dts
->> index 7e728a1..db3f65f 100644
->> --- a/arch/arm/boot/dts/exynos5250-arndale.dts
->> +++ b/arch/arm/boot/dts/exynos5250-arndale.dts
->> @@ -117,6 +117,10 @@
->>  	};
->>  };
->>  
->> +&cpu0 {
->> +	cpu0-supply = <&buck2_reg>;
->> +};
->> +
->>  &dp {
->>  	status = "okay";
->>  	samsung,color-space = <0>;
->> diff --git a/arch/arm/boot/dts/exynos5250-smdk5250.dts b/arch/arm/boot/dts/exynos5250-smdk5250.dts
->> index 4fe186d..15aea76 100644
->> --- a/arch/arm/boot/dts/exynos5250-smdk5250.dts
->> +++ b/arch/arm/boot/dts/exynos5250-smdk5250.dts
->> @@ -74,6 +74,10 @@
->>  	};
->>  };
->>  
->> +&cpu0 {
->> +	cpu0-supply = <&buck2_reg>;
->> +};
->> +
->>  &dp {
->>  	samsung,color-space = <0>;
->>  	samsung,dynamic-range = <0>;
->> diff --git a/arch/arm/boot/dts/exynos5250-snow.dts b/arch/arm/boot/dts/exynos5250-snow.dts
->> index b7f4122..a4133df 100644
->> --- a/arch/arm/boot/dts/exynos5250-snow.dts
->> +++ b/arch/arm/boot/dts/exynos5250-snow.dts
->> @@ -235,6 +235,10 @@
->>  	};
->>  };
->>  
->> +&cpu0 {
->> +	cpu0-supply = <&buck2_reg>;
->> +};
->> +
->>  &dp {
->>  	status = "okay";
->>  	pinctrl-names = "default";
->> diff --git a/arch/arm/boot/dts/exynos5250-spring.dts b/arch/arm/boot/dts/exynos5250-spring.dts
->> index d03f9b8..c1edd6d 100644
->> --- a/arch/arm/boot/dts/exynos5250-spring.dts
->> +++ b/arch/arm/boot/dts/exynos5250-spring.dts
->> @@ -65,6 +65,10 @@
->>  	};
->>  };
->>  
->> +&cpu0 {
->> +	cpu0-supply = <&buck2_reg>;
->> +};
->> +
->>  &dp {
->>  	status = "okay";
->>  	pinctrl-names = "default";
->> diff --git a/arch/arm/boot/dts/exynos5250.dtsi b/arch/arm/boot/dts/exynos5250.dtsi
->> index bf9bee6..0c7ef12 100644
->> --- a/arch/arm/boot/dts/exynos5250.dtsi
->> +++ b/arch/arm/boot/dts/exynos5250.dtsi
->> @@ -63,6 +63,28 @@
->>  			compatible = "arm,cortex-a15";
->>  			reg = <0>;
->>  			clock-frequency = <1700000000>;
->> +			clocks = <&clock CLK_ARM_CLK>;
->> +			clock-names = "cpu";
->> +			clock-latency = <140000>;
->> +
->> +			operating-points = <
->> +				1700000 1300000
->> +				1600000 1250000
->> +				1500000 1225000
->> +				1400000 1200000
->> +				1300000 1150000
->> +				1200000 1125000
->> +				1100000 1100000
->> +				1000000 1075000
->> +				 900000 1050000
->> +				 800000 1025000
->> +				 700000 1012500
->> +				 600000 1000000
->> +				 500000  975000
->> +				 400000  950000
->> +				 300000  937500
->> +				 200000  925000
->> +			>;
->>  			cooling-min-level = <15>;
->>  			cooling-max-level = <9>;
->>  			#cooling-cells = <2>; /* min followed by max */
->>
+On 16-07-15, 02:13, Rafael J. Wysocki wrote:
+> Cc: Viresh as he's been working on governors recently.
 > 
-> 
-> I see you have all necessary acks so this can go through samsung-soc. I
-> started applying everything. Patch 4/4 does not apply cleanly but this
-> was easy to solve (I think it is better to rebase on Linus tree not on
-> next in such case; subsystems cannot apply easily something depending on
-> next).
-> 
-> Unfortunately this patch (2/4) has build errors:
-> 
->   DTC     arch/arm/boot/dts/exynos5250-arndale.dtb
-> Error: ../arch/arm/boot/dts/exynos5250.dtsi:65.21-22 syntax error
-> FATAL ERROR: Unable to parse input tree
-> make[2]: *** [arch/arm/boot/dts/exynos5250-arndale.dtb] Error 1
-> make[1]: *** [dtbs] Error 2
-> make[1]: *** Waiting for unfinished jobs....
-> make[1]: Leaving directory `/home/kozik/dev/linux/krzk/out'
-> make: *** [sub-make] Error 2
-> Fail: Make error
-> 
-> I tried to apply this patch on my dt-for-next branch:
-> https://github.com/krzk/linux/commits/dt-for-next
-> 
-> I hold back other patches until this is clarified.
+> On Wednesday, July 15, 2015 06:04:22 PM Dave Jones wrote:
+> > WARNING: CPU: 1 PID: 29529 at kernel/locking/lockdep.c:3497 lock_unpin_lock+0x109/0x110()
+> > unpinning an unpinned lock
+> > CPU: 1 PID: 29529 Comm: kworker/1:1 Not tainted 4.2.0-rc2-think+ #3
+> > Workqueue: events od_dbs_timer
+> >  0000000000000009 ffff880094d5baa8 ffffffffae7f5e6f 0000000000000007
+> >  ffff880094d5baf8 ffff880094d5bae8 ffffffffae07b91a 0000000000000118
+> >  00000000000000e0 ffff880507bd5c58 0000000000000092 0000000000000004
+> > Call Trace:
+> >  [<ffffffffae7f5e6f>] dump_stack+0x4f/0x7b
+> >  [<ffffffffae07b91a>] warn_slowpath_common+0x8a/0xc0
+> >  [<ffffffffae07b996>] warn_slowpath_fmt+0x46/0x50
+> >  [<ffffffffae0d0ec9>] lock_unpin_lock+0x109/0x110
+> >  [<ffffffffae7f93cc>] __schedule+0x3ac/0xb60
+> >  [<ffffffffae7f9c41>] schedule+0x41/0x90
+> >  [<ffffffffae7f9ff8>] schedule_preempt_disabled+0x18/0x30
+> >  [<ffffffffae7fbcef>] mutex_lock_nested+0x16f/0x3e0
+> >  [<ffffffffae69207f>] ? gov_queue_work+0x2f/0xf0
+> >  [<ffffffffae690ec7>] ? od_check_cpu+0x57/0xd0
+> >  [<ffffffffae69207f>] ? gov_queue_work+0x2f/0xf0
+> >  [<ffffffffae69207f>] gov_queue_work+0x2f/0xf0
+> >  [<ffffffffae6918dd>] od_dbs_timer+0xbd/0x150
+> >  [<ffffffffae099613>] process_one_work+0x1f3/0x7a0
+> >  [<ffffffffae099582>] ? process_one_work+0x162/0x7a0
+> >  [<ffffffffae099cb9>] ? worker_thread+0xf9/0x470
+> >  [<ffffffffae099c29>] worker_thread+0x69/0x470
+> >  [<ffffffffae0ad993>] ? preempt_count_sub+0xa3/0xf0
+> >  [<ffffffffae099bc0>] ? process_one_work+0x7a0/0x7a0
+> >  [<ffffffffae09fddf>] kthread+0x11f/0x140
+> >  [<ffffffffae09fcc0>] ? kthread_create_on_node+0x250/0x250
+> >  [<ffffffffae80090f>] ret_from_fork+0x3f/0x70
+> >  [<ffffffffae09fcc0>] ? kthread_create_on_node+0x250/0x250
+> > ---[ end trace 86cca931caec9193 ]---
 
-Stupid me, it should not be split into separate branches as it depends
-on clock id from headers.
+I don't know why this will happen. Just to confirm, you are getting
+this over 4.2-rc(1 or 2)? And you weren't getting these on 4.1 at all?
+And its always reproducible? How ?
 
-Everything is fine, I applied patchset with respective tags (Javier's
-reviewed/tested, Sylwester's and Viresh's acks). I'll send later to
-Kukjin for v4.3 unless he picks it also.
+There have been races in cpufreq core since sometime and what got
+pushed in 4.2-rc1 is just half of the fix. The other half is present
+here:
 
-Best regards,
-Krzysztof
+http://marc.info/?i=cover.1434713657.git.viresh.kumar%40linaro.org
+
+Please try this and let us know if things work well or not.
+
+-- 
+viresh
