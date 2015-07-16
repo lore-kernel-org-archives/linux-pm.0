@@ -1,69 +1,84 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 2/3] PM / sleep: Go direct_complete if driver has no callbacks
-Date: Thu, 16 Jul 2015 02:41:34 +0200
-Message-ID: <6740752.elSTxeiQAg@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1507151444460.18896-100000@netrider.rowland.org>
+Subject: Re: [PATCH v4 3/3] USB / PM: Allow USB devices to remain runtime-suspended when sleeping
+Date: Thu, 16 Jul 2015 02:42:26 +0200
+Message-ID: <7175055.CJlfILVf3s@vostro.rjw.lan>
+References: <1436964008-15151-1-git-send-email-tomeu.vizoso@collabora.com> <1436964008-15151-4-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51908 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:51219 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752605AbbGPAO5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2015 20:14:57 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1507151444460.18896-100000@netrider.rowland.org>
+	with SMTP id S1753974AbbGPAPt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2015 20:15:49 -0400
+In-Reply-To: <1436964008-15151-4-git-send-email-tomeu.vizoso@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, July 15, 2015 02:47:50 PM Alan Stern wrote:
-> On Wed, 15 Jul 2015, Tomeu Vizoso wrote:
+On Wednesday, July 15, 2015 02:40:08 PM Tomeu Vizoso wrote:
+> Have dev_pm_ops.prepare return 1 for USB devices and ports so that USB
+> devices can remain runtime-suspended when the system goes to a sleep
+> state, if their wakeup state is correct and they have runtime PM enabled.
 > 
-> > If a suitable prepare callback cannot be found for a given device and
-> > its driver has no PM callbacks at all, assume that it can go direct to
-> > complete when the system goes to sleep.
-> > 
-> > The reason for this is that there's lots of devices in a system that do
-> > no PM at all and there's no reason for them to prevent their ancestors
-> > to do direct_complete if they can support it.
-> > 
-> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> > ---
-> > 
-> >  drivers/base/power/main.c | 17 +++++++++++++++++
-> >  1 file changed, 17 insertions(+)
-> > 
-> > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> > index 1710c26ba097..edda3f233c7c 100644
-> > --- a/drivers/base/power/main.c
-> > +++ b/drivers/base/power/main.c
-> > @@ -1540,6 +1540,21 @@ int dpm_suspend(pm_message_t state)
-> >  	return error;
-> >  }
-> >  
-> > +static bool driver_has_no_pm_callbacks(struct device_driver *drv)
-> > +{
-> > +	if (!drv->pm)
-> > +		return true;
-> > +
-> > +	return !drv->pm->prepare &&
-> > +	       !drv->pm->suspend &&
-> > +	       !drv->pm->suspend_late &&
-> > +	       !drv->pm->suspend_noirq &&
-> > +	       !drv->pm->resume_noirq &&
-> > +	       !drv->pm->resume_early &&
-> > +	       !drv->pm->resume &&
-> > +	       !drv->pm->complete;
-> > +}
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> ---
 > 
-> This isn't exactly what I meant.  We also need to check the dev_pm_ops 
-> fields in dev->pm_domain, dev->type, dev->class, and dev->bus.  Only if 
-> _all_ of these callbacks are missing should we use direct_complete.
+>  drivers/usb/core/port.c |  6 ++++++
+>  drivers/usb/core/usb.c  | 11 ++++++++++-
+>  2 files changed, 16 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
+> index 210618319f10..f49707d73b5a 100644
+> --- a/drivers/usb/core/port.c
+> +++ b/drivers/usb/core/port.c
+> @@ -168,12 +168,18 @@ static int usb_port_runtime_suspend(struct device *dev)
+>  
+>  	return retval;
+>  }
+> +
+> +static int usb_port_prepare(struct device *dev)
+> +{
+> +	return 1;
+> +}
+>  #endif
+>  
+>  static const struct dev_pm_ops usb_port_pm_ops = {
+>  #ifdef CONFIG_PM
+>  	.runtime_suspend =	usb_port_runtime_suspend,
+>  	.runtime_resume =	usb_port_runtime_resume,
+> +	.prepare =		usb_port_prepare,
+>  #endif
+>  };
+>  
+> diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
+> index 8d5b2f4113cd..cf4dde11db1c 100644
+> --- a/drivers/usb/core/usb.c
+> +++ b/drivers/usb/core/usb.c
+> @@ -316,7 +316,16 @@ static int usb_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
+>  
+>  static int usb_dev_prepare(struct device *dev)
+>  {
+> -	return 0;		/* Implement eventually? */
+> +	struct usb_device *udev = to_usb_device(dev);
+> +
+> +	if (!pm_runtime_enabled(dev))
 
-Also checking that on every suspend is kind of wasteful, because those things
-do not change very often.
+Why just enabled and not suspended?
 
-Thanks,
-Rafael
+> +		return 0;
+> +
+> +	/* Return 0 if the current wakeup setting is wrong, otherwise 1 */
+> +	if (udev->do_remote_wakeup != device_may_wakeup(dev))
+> +		return 0;
+> +
+> +	return 1;
+>  }
+>  
+>  static void usb_dev_complete(struct device *dev)
+> 
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
