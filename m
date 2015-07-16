@@ -1,85 +1,77 @@
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v5 2/6] powerpc/powernv: Add definition of OPAL_MSG_OCC message type
-Date: Thu, 16 Jul 2015 13:34:19 +0530
-Message-ID: <1437033863-15864-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v5 6/6] cpufreq: powernv: Restore cpu frequency to policy->cur
+ on unthrottling
+Date: Thu, 16 Jul 2015 13:34:23 +0530
+Message-ID: <1437033863-15864-7-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 References: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 In-Reply-To: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 To: rjw@rjwysocki.net
-Cc: joel@jms.id.au, viresh.kumar@linaro.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>
+Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, joel@jms.id.au, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add OPAL_MSG_OCC message definition to opal_message_type to receive
-OCC events like reset, load and throttled. Host performance can be
-affected when OCC is reset or OCC throttles the max Pstate.
-We can register to opal_message_notifier to receive OPAL_MSG_OCC type
-of message and report it to the userspace so as to keep the user
-informed about the reason for a performance drop in workloads.
-
-The reset and load OCC events are notified to kernel when FSP sends
-OCC_RESET and OCC_LOAD commands.  Both reset and load messages are
-sent to kernel on successful completion of reset and load operation
-respectively.
-
-The throttle OCC event indicates that the Pmax of the chip is reduced.
-The chip_id and throttle reason for reducing Pmax is also queued along
-with the message.
-
-CC: Stewart Smith <stewart@linux.vnet.ibm.com>
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-No change from v4
-
-Changes from v3:
-- '0d7cd8550d3 powerpc/powernv: Add opal-prd channel' this patch adds
-  the definition of OPAL_MSG_PRD, so remove it and update the
-  changelog.
-- Move the definitions of OCC_RESET, OCC_LOAD and OCC_THROTTLE from 
-  drivers/cpufreq/powernv-cpufreq.c to arch/powerpc/include/asm/opal-api.h
-- Define OCC_MAX_THROTTLE_STATUS 
-- Add a wrapper structure 'opal_occ_msg' to copy 'struct opal_msg.params[0..2]'
-  This structure will define the parameters received from firmware to
-  maintain compatibility for any future additions.
-
-No change from v2
-
-Change from v1:
-- Update the commit changelog
-
- arch/powerpc/include/asm/opal-api.h | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index e9e4c52..64dc9f5 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -361,6 +361,7 @@ enum opal_msg_type {
- 	OPAL_MSG_HMI_EVT,
- 	OPAL_MSG_DPO,
- 	OPAL_MSG_PRD,
-+	OPAL_MSG_OCC,
- 	OPAL_MSG_TYPE_MAX,
- };
- 
-@@ -700,6 +701,17 @@ struct opal_prd_msg_header {
- 
- struct opal_prd_msg;
- 
-+#define OCC_RESET                       0
-+#define OCC_LOAD                        1
-+#define OCC_THROTTLE                    2
-+#define OCC_MAX_THROTTLE_STATUS         5
-+
-+struct opal_occ_msg {
-+	__be64 type;
-+	__be64 chip;
-+	__be64 throttle_status;
-+};
-+
- /*
-  * SG entries
-  *
--- 
-1.9.3
+SWYgZnJlcXVlbmN5IGlzIHRocm90dGxlZCBkdWUgdG8gT0NDIHJlc2V0IHRoZW4gY3B1cyB3aWxs
+IGJlIGluIFBzYWZlCmZyZXF1ZW5jeSwgc28gcmVzdG9yZSB0aGUgZnJlcXVlbmN5IG9uIGFsbCBj
+cHVzIHRvIHBvbGljeS0+Y3VyIHdoZW4KT0NDcyBhcmUgYWN0aXZlIGFnYWluLiBBbmQgaWYgZnJl
+cXVlbmN5IGlzIHRocm90dGxlZCBkdWUgdG8gUG1heApjYXBwaW5nIHRoZW4gcmVzdG9yZSB0aGUg
+ZnJlcXVlbmN5IG9mIGFsbCB0aGUgY3B1cyAgaW4gdGhlIGNoaXAgb24KdW50aHJvdHRsaW5nLgoK
+U2lnbmVkLW9mZi1ieTogU2hpbHBhc3JpIEcgQmhhdCA8c2hpbHBhLmJoYXRAbGludXgudm5ldC5p
+Ym0uY29tPgpBY2tlZC1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4K
+LS0tCk5vIGNoYW5nZXMgZnJvbSB2NAoKQ2hhbmdlcyBmcm9tIHYzOgotIFJlZmVyIHRvIHRoZSBt
+ZW1iZXJzIG9mICdzdHJ1Y3Qgb3BhbF9vY2NfbXNnJyBpbiB0aGUgcGF0Y2guCiAgUmVwbGFjZSAn
+cmVhc29uJyB3aXRoICdvbXNnLnRocm90dGxlX3N0YXR1cycKCiBkcml2ZXJzL2NwdWZyZXEvcG93
+ZXJudi1jcHVmcmVxLmMgfCAzMSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tCiAxIGZp
+bGUgY2hhbmdlZCwgMjkgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQg
+YS9kcml2ZXJzL2NwdWZyZXEvcG93ZXJudi1jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvcG93
+ZXJudi1jcHVmcmVxLmMKaW5kZXggOTBiNDI5My4uNTQ2ZTA1NiAxMDA2NDQKLS0tIGEvZHJpdmVy
+cy9jcHVmcmVxL3Bvd2VybnYtY3B1ZnJlcS5jCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9wb3dlcm52
+LWNwdWZyZXEuYwpAQCAtNDgsNiArNDgsNyBAQCBzdGF0aWMgc3RydWN0IGNoaXAgewogCWJvb2wg
+dGhyb3R0bGVkOwogCWNwdW1hc2tfdCBtYXNrOwogCXN0cnVjdCB3b3JrX3N0cnVjdCB0aHJvdHRs
+ZTsKKwlib29sIHJlc3RvcmU7CiB9ICpjaGlwczsKIAogc3RhdGljIGludCBucl9jaGlwczsKQEAg
+LTQxNSw5ICs0MTYsMjkgQEAgc3RhdGljIHN0cnVjdCBub3RpZmllcl9ibG9jayBwb3dlcm52X2Nw
+dWZyZXFfcmVib290X25iID0gewogdm9pZCBwb3dlcm52X2NwdWZyZXFfd29ya19mbihzdHJ1Y3Qg
+d29ya19zdHJ1Y3QgKndvcmspCiB7CiAJc3RydWN0IGNoaXAgKmNoaXAgPSBjb250YWluZXJfb2Yo
+d29yaywgc3RydWN0IGNoaXAsIHRocm90dGxlKTsKKwl1bnNpZ25lZCBpbnQgY3B1OworCWNwdW1h
+c2tfdmFyX3QgbWFzazsKIAogCXNtcF9jYWxsX2Z1bmN0aW9uX2FueSgmY2hpcC0+bWFzaywKIAkJ
+CSAgICAgIHBvd2VybnZfY3B1ZnJlcV90aHJvdHRsZV9jaGVjaywgTlVMTCwgMCk7CisKKwlpZiAo
+IWNoaXAtPnJlc3RvcmUpCisJCXJldHVybjsKKworCWNoaXAtPnJlc3RvcmUgPSBmYWxzZTsKKwlj
+cHVtYXNrX2NvcHkobWFzaywgJmNoaXAtPm1hc2spOworCWZvcl9lYWNoX2NwdV9hbmQoY3B1LCBt
+YXNrLCBjcHVfb25saW5lX21hc2spIHsKKwkJaW50IGluZGV4LCB0Y3B1OworCQlzdHJ1Y3QgY3B1
+ZnJlcV9wb2xpY3kgcG9saWN5OworCisJCWNwdWZyZXFfZ2V0X3BvbGljeSgmcG9saWN5LCBjcHUp
+OworCQljcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZV90YXJnZXQoJnBvbGljeSwgcG9saWN5LmZyZXFf
+dGFibGUsCisJCQkJCSAgICAgICBwb2xpY3kuY3VyLAorCQkJCQkgICAgICAgQ1BVRlJFUV9SRUxB
+VElPTl9DLCAmaW5kZXgpOworCQlwb3dlcm52X2NwdWZyZXFfdGFyZ2V0X2luZGV4KCZwb2xpY3ks
+IGluZGV4KTsKKwkJZm9yX2VhY2hfY3B1KHRjcHUsIHBvbGljeS5jcHVzKQorCQkJY3B1bWFza19j
+bGVhcl9jcHUodGNwdSwgbWFzayk7CisJfQogfQogCiBzdGF0aWMgY2hhciB0aHJvdHRsZV9yZWFz
+b25bXVszMF0gPSB7CkBAIC00NjksOCArNDkwLDEwIEBAIHN0YXRpYyBpbnQgcG93ZXJudl9jcHVm
+cmVxX29jY19tc2coc3RydWN0IG5vdGlmaWVyX2Jsb2NrICpuYiwKIAkJCXRocm90dGxlZCA9IGZh
+bHNlOwogCQkJcHJfaW5mbygiT0NDOiBBY3RpdmVcbiIpOwogCi0JCQlmb3IgKGkgPSAwOyBpIDwg
+bnJfY2hpcHM7IGkrKykKKwkJCWZvciAoaSA9IDA7IGkgPCBucl9jaGlwczsgaSsrKSB7CisJCQkJ
+Y2hpcHNbaV0ucmVzdG9yZSA9IHRydWU7CiAJCQkJc2NoZWR1bGVfd29yaygmY2hpcHNbaV0udGhy
+b3R0bGUpOworCQkJfQogCiAJCQlyZXR1cm4gMDsKIAkJfQpAQCAtNDg3LDggKzUxMCwxMSBAQCBz
+dGF0aWMgaW50IHBvd2VybnZfY3B1ZnJlcV9vY2NfbXNnKHN0cnVjdCBub3RpZmllcl9ibG9jayAq
+bmIsCiAJCQlyZXR1cm4gMDsKIAogCQlmb3IgKGkgPSAwOyBpIDwgbnJfY2hpcHM7IGkrKykKLQkJ
+CWlmIChjaGlwc1tpXS5pZCA9PSBvbXNnLmNoaXApCisJCQlpZiAoY2hpcHNbaV0uaWQgPT0gb21z
+Zy5jaGlwKSB7CisJCQkJaWYgKCFvbXNnLnRocm90dGxlX3N0YXR1cykKKwkJCQkJY2hpcHNbaV0u
+cmVzdG9yZSA9IHRydWU7CiAJCQkJc2NoZWR1bGVfd29yaygmY2hpcHNbaV0udGhyb3R0bGUpOwor
+CQkJfQogCX0KIAlyZXR1cm4gMDsKIH0KQEAgLTU0Miw2ICs1NjgsNyBAQCBzdGF0aWMgaW50IGlu
+aXRfY2hpcF9pbmZvKHZvaWQpCiAJCWNoaXBzW2ldLnRocm90dGxlZCA9IGZhbHNlOwogCQljcHVt
+YXNrX2NvcHkoJmNoaXBzW2ldLm1hc2ssIGNwdW1hc2tfb2Zfbm9kZShjaGlwW2ldKSk7CiAJCUlO
+SVRfV09SSygmY2hpcHNbaV0udGhyb3R0bGUsIHBvd2VybnZfY3B1ZnJlcV93b3JrX2ZuKTsKKwkJ
+Y2hpcHNbaV0ucmVzdG9yZSA9IGZhbHNlOwogCX0KIAogCXJldHVybiAwOwotLSAKMS45LjMKCl9f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4cHBjLWRl
+diBtYWlsaW5nIGxpc3QKTGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0
+cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4cHBjLWRldg==
