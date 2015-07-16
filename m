@@ -1,91 +1,52 @@
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v5 4/6] cpufreq: powernv: Call throttle_check() on receiving
- OCC_THROTTLE
-Date: Thu, 16 Jul 2015 13:34:21 +0530
-Message-ID: <1437033863-15864-5-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+Subject: [PATCH v5 0/6] powernv: cpufreq: Report frequency throttle by OCC
+Date: Thu, 16 Jul 2015 13:34:17 +0530
+Message-ID: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, joel@jms.id.au, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: joel@jms.id.au, viresh.kumar@linaro.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-UmUtZXZhbHVhdGUgdGhlIGNoaXAncyB0aHJvdHRsZWQgc3RhdGUgb24gcmVjaWV2aW5nIE9DQ19U
-SFJPVFRMRQpub3RpZmljYXRpb24gYnkgZXhlY3V0aW5nICp0aHJvdHRsZV9jaGVjaygpIG9uIGFu
-eSBvbmUgb2YgdGhlIGNwdSBvbgp0aGUgY2hpcC4gVGhpcyBpcyBhIHNhbml0eSBjaGVjayB0byB2
-ZXJpZnkgaWYgd2Ugd2VyZSBpbmRlZWQKdGhyb3R0bGVkL3VudGhyb3R0bGVkIGFmdGVyIHJlY2Vp
-dmluZyBPQ0NfVEhST1RUTEUgbm90aWZpY2F0aW9uLgoKV2UgY2Fubm90IGNhbGwgKnRocm90dGxl
-X2NoZWNrKCkgZGlyZWN0bHkgZnJvbSB0aGUgbm90aWZpY2F0aW9uCmhhbmRsZXIgYmVjYXVzZSB3
-ZSBjb3VsZCBiZSBoYW5kbGluZyBjaGlwMSdzIG5vdGlmaWNhdGlvbiBpbiBjaGlwMi4gU28KaW5p
-dGlhdGUgYW4gc21wX2NhbGwgdG8gZXhlY3V0ZSAqdGhyb3R0bGVfY2hlY2soKS4gV2UgYXJlIGly
-cS1kaXNhYmxlZAppbiB0aGUgbm90aWZpY2F0aW9uIGhhbmRsZXIsIHNvIHVzZSBhIHdvcmtlciB0
-aHJlYWQgdG8gc21wX2NhbGwKdGhyb3R0bGVfY2hlY2soKSBvbiBhbnkgb2YgdGhlIGNwdSBpbiB0
-aGUgY2hpcG1hc2suCgpTaWduZWQtb2ZmLWJ5OiBTaGlscGFzcmkgRyBCaGF0IDxzaGlscGEuYmhh
-dEBsaW51eC52bmV0LmlibS5jb20+CkFja2VkLWJ5OiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1h
-ckBsaW5hcm8ub3JnPgotLS0KTm8gY2hhbmdlcyBmcm9tIHY0CgpDaGFuZ2VzIGZyb20gdjM6Ci0g
-UmVmZXIgdG8gdGhlIG1lbWJlcnMgb2YgJ3N0cnVjdCBvcGFsX29jY19tc2cnIGluIHRoZSBwYXRj
-aC4KICBSZXBsYWNlICdjaGlwX2lkJyB3aXRoICdvbXNnLmNoaXAnCgogZHJpdmVycy9jcHVmcmVx
-L3Bvd2VybnYtY3B1ZnJlcS5jIHwgMjggKysrKysrKysrKysrKysrKysrKysrKysrKystLQogMSBm
-aWxlIGNoYW5nZWQsIDI2IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0
-IGEvZHJpdmVycy9jcHVmcmVxL3Bvd2VybnYtY3B1ZnJlcS5jIGIvZHJpdmVycy9jcHVmcmVxL3Bv
-d2VybnYtY3B1ZnJlcS5jCmluZGV4IGE2MzQxOTkuLjIyZjMzZmYgMTAwNjQ0Ci0tLSBhL2RyaXZl
-cnMvY3B1ZnJlcS9wb3dlcm52LWNwdWZyZXEuYworKysgYi9kcml2ZXJzL2NwdWZyZXEvcG93ZXJu
-di1jcHVmcmVxLmMKQEAgLTQ3LDYgKzQ3LDggQEAgc3RhdGljIGJvb2wgcmVib290aW5nLCB0aHJv
-dHRsZWQsIG9jY19yZXNldDsKIHN0YXRpYyBzdHJ1Y3QgY2hpcCB7CiAJdW5zaWduZWQgaW50IGlk
-OwogCWJvb2wgdGhyb3R0bGVkOworCWNwdW1hc2tfdCBtYXNrOworCXN0cnVjdCB3b3JrX3N0cnVj
-dCB0aHJvdHRsZTsKIH0gKmNoaXBzOwogCiBzdGF0aWMgaW50IG5yX2NoaXBzOwpAQCAtMzA3LDgg
-KzMwOSw5IEBAIHN0YXRpYyBpbmxpbmUgdW5zaWduZWQgaW50IGdldF9ub21pbmFsX2luZGV4KHZv
-aWQpCiAJcmV0dXJuIHBvd2VybnZfcHN0YXRlX2luZm8ubWF4IC0gcG93ZXJudl9wc3RhdGVfaW5m
-by5ub21pbmFsOwogfQogCi1zdGF0aWMgdm9pZCBwb3dlcm52X2NwdWZyZXFfdGhyb3R0bGVfY2hl
-Y2sodW5zaWduZWQgaW50IGNwdSkKK3N0YXRpYyB2b2lkIHBvd2VybnZfY3B1ZnJlcV90aHJvdHRs
-ZV9jaGVjayh2b2lkICpkYXRhKQogeworCXVuc2lnbmVkIGludCBjcHUgPSBzbXBfcHJvY2Vzc29y
-X2lkKCk7CiAJdW5zaWduZWQgbG9uZyBwbXNyOwogCWludCBwbXNyX3BtYXgsIHBtc3JfbHAsIGk7
-CiAKQEAgLTM3MCw3ICszNzMsNyBAQCBzdGF0aWMgaW50IHBvd2VybnZfY3B1ZnJlcV90YXJnZXRf
-aW5kZXgoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3ksCiAJCXJldHVybiAwOwogCiAJaWYg
-KCF0aHJvdHRsZWQpCi0JCXBvd2VybnZfY3B1ZnJlcV90aHJvdHRsZV9jaGVjayhzbXBfcHJvY2Vz
-c29yX2lkKCkpOworCQlwb3dlcm52X2NwdWZyZXFfdGhyb3R0bGVfY2hlY2soTlVMTCk7CiAKIAlm
-cmVxX2RhdGEucHN0YXRlX2lkID0gcG93ZXJudl9mcmVxc1tuZXdfaW5kZXhdLmRyaXZlcl9kYXRh
-OwogCkBAIC00MTUsNiArNDE4LDE0IEBAIHN0YXRpYyBzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sgcG93
-ZXJudl9jcHVmcmVxX3JlYm9vdF9uYiA9IHsKIAkubm90aWZpZXJfY2FsbCA9IHBvd2VybnZfY3B1
-ZnJlcV9yZWJvb3Rfbm90aWZpZXIsCiB9OwogCit2b2lkIHBvd2VybnZfY3B1ZnJlcV93b3JrX2Zu
-KHN0cnVjdCB3b3JrX3N0cnVjdCAqd29yaykKK3sKKwlzdHJ1Y3QgY2hpcCAqY2hpcCA9IGNvbnRh
-aW5lcl9vZih3b3JrLCBzdHJ1Y3QgY2hpcCwgdGhyb3R0bGUpOworCisJc21wX2NhbGxfZnVuY3Rp
-b25fYW55KCZjaGlwLT5tYXNrLAorCQkJICAgICAgcG93ZXJudl9jcHVmcmVxX3Rocm90dGxlX2No
-ZWNrLCBOVUxMLCAwKTsKK30KKwogc3RhdGljIGNoYXIgdGhyb3R0bGVfcmVhc29uW11bMzBdID0g
-ewogCQkJCQkiTm8gdGhyb3R0bGluZyIsCiAJCQkJCSJQb3dlciBDYXAiLApAQCAtNDI5LDYgKzQ0
-MCw3IEBAIHN0YXRpYyBpbnQgcG93ZXJudl9jcHVmcmVxX29jY19tc2coc3RydWN0IG5vdGlmaWVy
-X2Jsb2NrICpuYiwKIHsKIAlzdHJ1Y3Qgb3BhbF9tc2cgKm1zZyA9IF9tc2c7CiAJc3RydWN0IG9w
-YWxfb2NjX21zZyBvbXNnOworCWludCBpOwogCiAJaWYgKG1zZ190eXBlICE9IE9QQUxfTVNHX09D
-QykKIAkJcmV0dXJuIDA7CkBAIC00NjIsNiArNDc0LDEwIEBAIHN0YXRpYyBpbnQgcG93ZXJudl9j
-cHVmcmVxX29jY19tc2coc3RydWN0IG5vdGlmaWVyX2Jsb2NrICpuYiwKIAkJCW9jY19yZXNldCA9
-IGZhbHNlOwogCQkJdGhyb3R0bGVkID0gZmFsc2U7CiAJCQlwcl9pbmZvKCJPQ0M6IEFjdGl2ZVxu
-Iik7CisKKwkJCWZvciAoaSA9IDA7IGkgPCBucl9jaGlwczsgaSsrKQorCQkJCXNjaGVkdWxlX3dv
-cmsoJmNoaXBzW2ldLnRocm90dGxlKTsKKwogCQkJcmV0dXJuIDA7CiAJCX0KIApAQCAtNDczLDYg
-KzQ4OSwxMiBAQCBzdGF0aWMgaW50IHBvd2VybnZfY3B1ZnJlcV9vY2NfbXNnKHN0cnVjdCBub3Rp
-Zmllcl9ibG9jayAqbmIsCiAJCWVsc2UgaWYgKCFvbXNnLnRocm90dGxlX3N0YXR1cykKIAkJCXBy
-X2luZm8oIk9DQzogQ2hpcCAldSAlc1xuIiwgKHVuc2lnbmVkIGludClvbXNnLmNoaXAsCiAJCQkJ
-dGhyb3R0bGVfcmVhc29uW29tc2cudGhyb3R0bGVfc3RhdHVzXSk7CisJCWVsc2UKKwkJCXJldHVy
-biAwOworCisJCWZvciAoaSA9IDA7IGkgPCBucl9jaGlwczsgaSsrKQorCQkJaWYgKGNoaXBzW2ld
-LmlkID09IG9tc2cuY2hpcCkKKwkJCQlzY2hlZHVsZV93b3JrKCZjaGlwc1tpXS50aHJvdHRsZSk7
-CiAJfQogCXJldHVybiAwOwogfQpAQCAtNTI0LDYgKzU0Niw4IEBAIHN0YXRpYyBpbnQgaW5pdF9j
-aGlwX2luZm8odm9pZCkKIAlmb3IgKGkgPSAwOyBpIDwgbnJfY2hpcHM7IGkrKykgewogCQljaGlw
-c1tpXS5pZCA9IGNoaXBbaV07CiAJCWNoaXBzW2ldLnRocm90dGxlZCA9IGZhbHNlOworCQljcHVt
-YXNrX2NvcHkoJmNoaXBzW2ldLm1hc2ssIGNwdW1hc2tfb2Zfbm9kZShjaGlwW2ldKSk7CisJCUlO
-SVRfV09SSygmY2hpcHNbaV0udGhyb3R0bGUsIHBvd2VybnZfY3B1ZnJlcV93b3JrX2ZuKTsKIAl9
-CiAKIAlyZXR1cm4gMDsKLS0gCjEuOS4zCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0CkxpbnV4cHBjLWRldkBs
-aXN0cy5vemxhYnMub3JnCmh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBw
-Yy1kZXY=
+This patchset intends to add frequency throttle reporting mechanism
+to powernv-cpufreq driver when OCC throttles the frequency. OCC is an
+On-Chip-Controller which takes care of the power and thermal safety of
+the chip. The CPU frequency can be throttled during an OCC reset or
+when OCC tries to limit the max allowed frequency. The patchset will
+report such conditions so as to keep the user informed about reason
+for the drop in performance of workloads when frequency is throttled.
+
+Changes from v4:
+- Taken care of Joel Stanley's comment, modification in patch[3].
+  This replaces memcpy() with be64_to_cpu() and no change in 
+  functionality of the patch
+
+Changes from v3:
+- Rebased on top of 4.2-rc1
+- Minor changes in patch 2,3,4,6 this does not change the
+  functionality of the code
+- 594fcb9ec9e powerpc/powernv: Expose OPAL APIs required by PRD
+  interface , this patch fixes the build error due to which this
+  series was initially dropped
+  ERROR: ".opal_message_notifier_register"
+  drivers/cpufreq/powernv-cpufreq.ko] undefined!
+
+Changes from v2:
+- Split into multiple patches
+- Semantic fixes
+
+Shilpasri G Bhat (6):
+  cpufreq: powernv: Handle throttling due to Pmax capping at chip level
+  powerpc/powernv: Add definition of OPAL_MSG_OCC message type
+  cpufreq: powernv: Register for OCC related opal_message notification
+  cpufreq: powernv: Call throttle_check() on receiving OCC_THROTTLE
+  cpufreq: powernv: Report Psafe only if PMSR.psafe_mode_active bit is
+    set
+  cpufreq: powernv: Restore cpu frequency to policy->cur on unthrottling
+
+ arch/powerpc/include/asm/opal-api.h |  12 +++
+ drivers/cpufreq/powernv-cpufreq.c   | 198 +++++++++++++++++++++++++++++++++---
+ 2 files changed, 195 insertions(+), 15 deletions(-)
+
+-- 
+1.9.3
