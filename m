@@ -1,95 +1,167 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v4 3/8] clk: add support for clocks provided by SCP(System
- Control Processor)
-Date: Thu, 16 Jul 2015 17:11:07 +0100
-Message-ID: <55A7D79B.3080305@arm.com>
-References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com> <1433760002-24120-4-git-send-email-sudeep.holla@arm.com> <20150702172310.GF4301@codeaurora.org> <5596A1B6.8020307@arm.com> <559ADC94.4080505@codeaurora.org> <559BF858.1020301@arm.com> <20150708014606.GH30412@codeaurora.org>
+From: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+Subject: [PATCH RFC] intel_pstate: play well with frequency limits set by
+ acpi
+Date: Thu, 16 Jul 2015 21:17:06 +0300
+Message-ID: <20150716181706.6500.64386.stgit@buzz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150708014606.GH30412@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@baylibre.com>
+To: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Kristen Carlson Accardi <kristen@linux.intel.com>, Len Brown <lenb@kernel.org>
+Cc: Ethan Zhao <ethan.zhao@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Stephen,
+IPMI can control CPU P-states remotely: configuration is reported via
+common ACPI interface (_PPC/_PSS/etc). This patch adds required minimal
+support in intel_pstate to receive and use these P-state limits.
 
-On 08/07/15 02:46, Stephen Boyd wrote:
-> On 07/07, Sudeep Holla wrote:
->>
->>
->> On 06/07/15 20:52, Stephen Boyd wrote:
->>>>
->>>
->>> If I have time I may try to start doing the clk_register() conversion,
->>> but it will take a while so I doubt it will be in v4.3. I'm asking if
->>> you can add a clk_hw based API that does something like
->>> clk_set_rate_range() without requiring a struct clk pointer. i.e.
->>> clk_hw_set_rate_range(struct clk_hw *hw, min, max) that constraints the
->>> min/max rate of the clock. This way, the driver is only using clk
->>> provider APIs and not clk consumer APIs.
->>>
->>
->> I understand the intention of separating clk provider helpers/APIs
->> and clk consumer APIs. Since {min,max}_rate are part of struct clk
->> itself, I was thinking that you would have moved it to struct clk_core
->> as part of the rework you mentioned and hence asked about the patches.
->>
->> IIUC, if {min,max}_rate remain part of struct clk, then how are we
->> restricting that operation to just the clk providers ? clk consumer
->> can still directly modify or use clk_set_rate_range.
->>
->> Do we continue to provide that feature for both provider and consumer ?
->> If so I assume {min,max}_rate range requested by consumer should be
->> within the limits set by provider and do we maintain both the limits ?
->>
->> Sorry if I am missing something fundamental since I don't have much
->> knowledge of clk layer internals.
->>
->
-> Yes struct clk would have min/max, and struct clk_core would have
-> min/max. Then some sort of provider API (or possibly even
-> clk_init_data) would take the min/max fields and copy them over
-> to struct clk_core. Then during set_rate operations we would
-> aggregate the constraints from struct clk like we already do and
-> add in the constrains in struct clk_core.
->
-> One downside to adding new fields to clk_init_data is that there
-> are drivers out there that aren't initializing that structure to
-> 0, and they're putting it on the stack, so stack junk can come
-> through. Furthermore, min/max would mean that every driver needs
-> to specify some large number for max or we have to special case
-> min == max == 0 and ignore it. Somehow it needs to be opt-in. If
-> we want to go down the clk_init_data route then perhaps we need
-> some sort of rate_constraint struct pointer in there that drivers
-> can optionally setup.
->
-> 	struct clk_rate_constraint {
-> 		unsigned long min;
-> 		unsigned long max;
-> 	};
->
-> 	struct clk_init_data {
-> 		...
-> 		struct clk_rate_constraint *rate_constraint;
-> 	};
->
-> I haven't thought it through completely, but I can probably write
-> up some patch tomorrow after I sleep on it.
->
+* ignore limit of top state in _PPC: it lower than turbo boost frequency
+* register intel_pstate in acpi-processor to get states from _PSS
+* link acpi_processor_get_bios_limit: this adds attribute "bios_limit"
 
-I am hoping to get this series for v4.3. In order to avoid using
-consumer API, I can revert back to the min,max check I had in the
-round_rate earlier if that's fine with you ? Let me know so that I can
-post the next version based on that. All the other comments are already
-addressed.
+Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+---
+ drivers/acpi/processor_perflib.c |    3 +-
+ drivers/cpufreq/intel_pstate.c   |   57 ++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 59 insertions(+), 1 deletion(-)
 
-Also since this series depends on SCPI, I was thinking to get it merged
-via ARM-SoC, but that might conflict with the round_rate prototype
-change. Do do plan to share a stable base with arm-soc guys or you
-expect all the changes to be contained in clk tree ?
-
-Regards,
-Sudeep
+diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+index cfc8aba72f86..781e328c9d5f 100644
+--- a/drivers/acpi/processor_perflib.c
++++ b/drivers/acpi/processor_perflib.c
+@@ -98,7 +98,8 @@ static int acpi_processor_ppc_notifier(struct notifier_block *nb,
+ 
+ 	ppc = (unsigned int)pr->performance_platform_limit;
+ 
+-	if (ppc >= pr->performance->state_count)
++	/* Ignore limit of top state: it lower than turbo boost frequency */
++	if (!ppc || ppc >= pr->performance->state_count)
+ 		goto out;
+ 
+ 	cpufreq_verify_within_limits(policy, 0,
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 15ada47bb720..4a34ddf4fa73 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -26,6 +26,7 @@
+ #include <linux/fs.h>
+ #include <linux/debugfs.h>
+ #include <linux/acpi.h>
++#include <acpi/processor.h>
+ #include <linux/vmalloc.h>
+ #include <trace/events/power.h>
+ 
+@@ -113,6 +114,9 @@ struct cpudata {
+ 	u64	prev_mperf;
+ 	u64	prev_tsc;
+ 	struct sample sample;
++#ifdef CONFIG_ACPI_PROCESSOR
++	struct acpi_processor_performance acpi_data;
++#endif
+ };
+ 
+ static struct cpudata **all_cpu_data;
+@@ -145,6 +149,7 @@ static int hwp_active;
+ 
+ struct perf_limits {
+ 	int no_turbo;
++	int no_acpi;
+ 	int turbo_disabled;
+ 	int max_perf_pct;
+ 	int min_perf_pct;
+@@ -158,6 +163,7 @@ struct perf_limits {
+ 
+ static struct perf_limits limits = {
+ 	.no_turbo = 0,
++	.no_acpi = !IS_ENABLED(CONFIG_ACPI_PROCESSOR),
+ 	.turbo_disabled = 0,
+ 	.max_perf_pct = 100,
+ 	.max_perf = int_tofp(1),
+@@ -449,6 +455,18 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
+ 	return count;
+ }
+ 
++static ssize_t store_no_acpi(struct kobject *a, struct attribute *b,
++			     const char *buf, size_t count)
++{
++#ifdef CONFIG_ACPI_PROCESSOR
++	return kstrtouint(buf, 0, &limits.no_acpi) ?: count;
++#else
++	return -ENODEV;
++#endif
++}
++show_one(no_acpi, no_acpi);
++define_one_global_rw(no_acpi);
++
+ show_one(max_perf_pct, max_perf_pct);
+ show_one(min_perf_pct, min_perf_pct);
+ 
+@@ -460,6 +478,7 @@ define_one_global_ro(num_pstates);
+ 
+ static struct attribute *intel_pstate_attributes[] = {
+ 	&no_turbo.attr,
++	&no_acpi.attr,
+ 	&max_perf_pct.attr,
+ 	&min_perf_pct.attr,
+ 	&turbo_pct.attr,
+@@ -1049,6 +1068,38 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ 	cpumask_set_cpu(policy->cpu, policy->cpus);
+ 
++#ifdef CONFIG_ACPI_PROCESSOR
++	if (!limits.no_acpi) {
++		/*
++		 * Minimum necessary to get acpi_processor_ppc_notifier() and
++		 * acpi_processor_get_bios_limit() working.
++		 */
++		if (!zalloc_cpumask_var(&cpu->acpi_data.shared_cpu_map,
++					GFP_KERNEL))
++			rc = -ENOMEM;
++		else
++			rc = acpi_processor_register_performance(
++					&cpu->acpi_data, policy->cpu);
++		if (rc) {
++			pr_err("intel_pstate: acpi init failed: %d\n", rc);
++			free_cpumask_var(cpu->acpi_data.shared_cpu_map);
++			limits.no_acpi = 1;
++		}
++	}
++#endif
++	return 0;
++}
++
++static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
++{
++#ifdef CONFIG_ACPI_PROCESSOR
++	struct cpudata *cpu = all_cpu_data[policy->cpu];
++
++	if (cpu->acpi_data.state_count)
++		acpi_processor_unregister_performance(&cpu->acpi_data,
++						      policy->cpu);
++	free_cpumask_var(cpu->acpi_data.shared_cpu_map);
++#endif
+ 	return 0;
+ }
+ 
+@@ -1057,7 +1108,11 @@ static struct cpufreq_driver intel_pstate_driver = {
+ 	.verify		= intel_pstate_verify_policy,
+ 	.setpolicy	= intel_pstate_set_policy,
+ 	.get		= intel_pstate_get,
++#ifdef CONFIG_ACPI_PROCESSOR
++	.bios_limit	= acpi_processor_get_bios_limit,
++#endif
+ 	.init		= intel_pstate_cpu_init,
++	.exit		= intel_pstate_cpu_exit,
+ 	.stop_cpu	= intel_pstate_stop_cpu,
+ 	.name		= "intel_pstate",
+ };
+@@ -1286,6 +1341,8 @@ static int __init intel_pstate_setup(char *str)
+ 		force_load = 1;
+ 	if (!strcmp(str, "hwp_only"))
+ 		hwp_only = 1;
++	if (!strcmp(str, "no_acpi"))
++		limits.no_acpi = 1;
+ 	return 0;
+ }
+ early_param("intel_pstate", intel_pstate_setup);
