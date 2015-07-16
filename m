@@ -1,103 +1,134 @@
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH v2 1/3] PM suspend/hibernate: Call notifier after
- freezing processes
-Date: Thu, 16 Jul 2015 09:33:02 +0200
-Message-ID: <20150716073302.GA10393@pali>
-References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com>
- <1434885634-19895-1-git-send-email-pali.rohar@gmail.com>
- <1434885634-19895-2-git-send-email-pali.rohar@gmail.com>
- <3729395.1oJCgMXcLU@vostro.rjw.lan>
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v5 3/6] cpufreq: powernv: Register for OCC related
+ opal_message notification
+Date: Thu, 16 Jul 2015 13:34:20 +0530
+Message-ID: <1437033863-15864-4-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3729395.1oJCgMXcLU@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>, Neil Brown <neilb@suse.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <1437033863-15864-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, joel@jms.id.au, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday 16 July 2015 03:02:03 Rafael J. Wysocki wrote:
-> On Sunday, June 21, 2015 01:20:32 PM Pali Roh=C3=A1r wrote:
-> > To prevent race conditions on userspace processes with I/O some tak=
-s must be
-> > called after processes are freezed. This patch adds new events whic=
-h are
-> > delivered by pm_notifier_call_chain() after freezing processes when=
- doing
-> > suspend or hibernate action.
-> >=20
-> > Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
-> > ---
-> >  include/linux/suspend.h  |    2 ++
-> >  kernel/power/hibernate.c |    2 ++
-> >  kernel/power/suspend.c   |    4 +++-
-> >  3 files changed, 7 insertions(+), 1 deletion(-)
-> >=20
-> > diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> > index 5efe743..bc743c8 100644
-> > --- a/include/linux/suspend.h
-> > +++ b/include/linux/suspend.h
-> > @@ -368,6 +368,8 @@ static inline bool hibernation_available(void) =
-{ return false; }
-> >  #define PM_POST_SUSPEND		0x0004 /* Suspend finished */
-> >  #define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved imag=
-e */
-> >  #define PM_POST_RESTORE		0x0006 /* Restore failed */
-> > +#define PM_HIBERNATION_AFTER_FREEZE	0x0007 /* After hibernation fr=
-eeze */
-> > +#define PM_SUSPEND_AFTER_FREEZE		0x0008 /* After suspend freeze */
-> > =20
-> >  extern struct mutex pm_mutex;
-> > =20
-> > diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> > index 2329daa..184f7ee 100644
-> > --- a/kernel/power/hibernate.c
-> > +++ b/kernel/power/hibernate.c
-> > @@ -671,6 +671,8 @@ int hibernate(void)
-> >  	if (error)
-> >  		goto Exit;
-> > =20
-> > +	pm_notifier_call_chain(PM_HIBERNATION_AFTER_FREEZE);
->=20
-> Don't we need to check errors from these?
->=20
-
-If yes, what to do in this case? Fail hibernation and goto Exit?
-
-> Also, if you're adding AFTER_FREEZE, it would be good to add BEFORE_T=
-HAW too
-> for symmetry.
->=20
-
-But there is no use case for BEFORE_THAW. At least it is not needed for=
- now.
-
-> > +
-> >  	lock_device_hotplug();
-> >  	/* Allocate memory management structures */
-> >  	error =3D create_basic_memory_bitmaps();
-> > diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-> > index 8d7a1ef..ba2a945 100644
-> > --- a/kernel/power/suspend.c
-> > +++ b/kernel/power/suspend.c
-> > @@ -277,8 +277,10 @@ static int suspend_prepare(suspend_state_t sta=
-te)
-> >  	trace_suspend_resume(TPS("freeze_processes"), 0, true);
-> >  	error =3D suspend_freeze_processes();
-> >  	trace_suspend_resume(TPS("freeze_processes"), 0, false);
-> > -	if (!error)
-> > +	if (!error) {
-> > +		pm_notifier_call_chain(PM_SUSPEND_AFTER_FREEZE);
-> >  		return 0;
-> > +	}
-> > =20
-> >  	suspend_stats.failed_freeze++;
-> >  	dpm_save_failed_step(SUSPEND_FREEZE);
-> >=20
->=20
-
---=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+T0NDIGlzIGFuIE9uLUNoaXAtQ29udHJvbGxlciB3aGljaCB0YWtlcyBjYXJlIG9mIHBvd2VyIGFu
+ZCB0aGVybWFsCnNhZmV0eSBvZiB0aGUgY2hpcC4gRHVyaW5nIHJ1bnRpbWUgZHVlIHRvIHBvd2Vy
+IGZhaWx1cmUgb3IKb3ZlcnRlbXBlcmF0dXJlIHRoZSBPQ0MgbWF5IHRocm90dGxlIHRoZSBmcmVx
+dWVuY2llcyBvZiB0aGUgQ1BVcyB0bwpyZW1haW4gd2l0aGluIHRoZSBwb3dlciBidWRnZXQuCgpX
+ZSB3YW50IHRoZSBjcHVmcmVxIGRyaXZlciB0byBiZSBhd2FyZSBvZiBzdWNoIHNpdHVhdGlvbnMg
+dG8gYmUgYWJsZQp0byByZXBvcnQgdGhlIHJlYXNvbiB0byB0aGUgdXNlci4gV2UgcmVnaXN0ZXIg
+dG8gb3BhbF9tZXNzYWdlX25vdGlmaWVyCnRvIHJlY2VpdmUgT0NDIG1lc3NhZ2VzIGZyb20gb3Bh
+bC4KCnBvd2VybnZfY3B1ZnJlcV90aHJvdHRsZV9jaGVjaygpIHJlcG9ydHMgYW55IGZyZXF1ZW5j
+eSB0aHJvdHRsaW5nIGFuZAp0aGlzIHBhdGNoIHdpbGwgcmVwb3J0IHRoZSByZWFzb24gb3IgZXZl
+bnQgdGhhdCBjYXVzZWQgdGhyb3R0bGluZy4gV2UKY2FuIGJlIHRocm90dGxlZCBpZiBPQ0MgaXMg
+cmVzZXQgb3IgT0NDIGxpbWl0cyBQbWF4IGR1ZSB0byBwb3dlciBvcgp0aGVybWFsIHJlYXNvbnMu
+IFdlIGFyZSBhbHNvIG5vdGlmaWVkIG9mIHVudGhyb3R0bGluZyBhZnRlciBhbiBPQ0MKcmVzZXQg
+b3IgaWYgT0NDIHJlc3RvcmVzIFBtYXggb24gdGhlIGNoaXAuCgpTaWduZWQtb2ZmLWJ5OiBTaGls
+cGFzcmkgRyBCaGF0IDxzaGlscGEuYmhhdEBsaW51eC52bmV0LmlibS5jb20+CkFja2VkLWJ5OiBW
+aXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnPgotLS0KQ2hhbmdlcyBmcm9tIHY0
+OgotIFJlcGxhY2UgbWVtY3B5KCkgd2l0aCBiZTY0X3RvX2NwdSgpIHRvIGNvcHkgdGhlIG1zZy0+
+cGFyYW1zW10KCkNoYW5nZXMgZnJvbSB2MzoKLSBNb3ZlIHRoZSBtYWNybyBkZWZpbml0aW9ucyBv
+ZiBPQ0NfUkVTRVQsIE9DQ19MT0FELCBPQ0NfVEhST1RUTEUgdG8KICBhcmNoL3Bvd2VycGMvaW5j
+bHVkZS9hc20vb3BhbC1hcGkuaAotIFVzZSAnc3RydWN0IG9wYWxfb2NjX21zZycgdG8gY29weSB0
+aGUgJ29wYWxfbXNnLT5wYXJhbXNbXScgYW5kIHJlZmVyCiAgdGhlIG1lbWJlcnMgb2YgdGhpcyBz
+dHJ1Y3R1cmUgaW4gdGhlIGNvZGU7IFJlcGxhY2UgJ2NoaXBfaWQnLAogICd0b2tlbicgYW5kICdy
+ZWFzb24nIHdpdGggb21zZy5jaGlwLCBvbXNnLnR5cGUsIG9tc2cudGhyb3R0bGVfc3RhdHVzCi0g
+VXNlIE9DQ19NQVhfVEhST1RUTEVfU1RBVFVTIGluc3RlYWQgb2YgdGhlIG1hZ2ljIG51bWJlci4K
+LSBBZGQgb3BhbF9tZXNzYWdlX25vdGlmaWVyX3VucmVnaXN0ZXIoKQoKQ2hhbmdlcyBmcm9tIHYy
+OgotIFBhdGNoIHNwbGl0IGluIHRvIG11bHRpcGxlIHBhdGNoZXMuCi0gVGhpcyBwYXRjaCBjb250
+YWlucyBvbmx5IHRoZSBvcGFsX21lc3NhZ2Ugbm90aWZpY2F0aW9uIGhhbmRsZXIKCkNoYW5nZXMg
+ZnJvbSB2MToKLSBBZGQgbWFjcm9zIHRvIGRlZmluZSBPQ0NfUkVTRVQsIE9DQ19MT0FEIGFuZCBP
+Q0NfVEhST1RUTEUKLSBEZWZpbmUgYSBzdHJ1Y3R1cmUgdG8gc3RvcmUgY2hpcCBpZCwgY2hpcCBt
+YXNrIHdoaWNoIGhhcyBiaXRzIHNldAogIGZvciBjcHVzIHByZXNlbnQgaW4gdGhlIGNoaXAsIHRo
+cm90dGxlZCBzdGF0ZSBhbmQgYSB3b3JrX3N0cnVjdC4KLSBNb2RpZnkgcG93ZXJudl9jcHVmcmVx
+X3Rocm90dGxlX2NoZWNrKCkgdG8gYmUgY2FsbGVkIHZpYSBzbXBfY2FsbCgpCi0gT24gUG1heCB0
+aHJvdHRsaW5nL3VudGhyb3R0bGluZyB1cGRhdGUgJ2NoaXAudGhyb3R0bGVkJyBhbmQgbm90IHRo
+ZQogIGdsb2JhbCAndGhyb3R0bGVkJyBhcyBQbWF4IGNhcHBpbmcgaXMgbG9jYWwgdG8gdGhlIGNo
+aXAuCi0gUmVtb3ZlIHRoZSBjb25kaXRpb24gd2hpY2ggY2hlY2tzIGlmIGxvY2FsIHBzdGF0ZSBp
+cyBsZXNzIHRoYW4gUG1pbgogIHdoaWxlIGNoZWNraW5nIGZvciBQc2FmZSBmcmVxdWVuY3kuIFdo
+ZW4gT0NDIGJlY29tZXMgYWN0aXZlIGFmdGVyCiAgcmVzZXQgd2UgdXBkYXRlICd0aG90dGxlZCcg
+dG8gZmFsc2UgYW5kIHdoZW4gdGhlIGNwdWZyZXEgZ292ZXJub3IKICBpbml0aWF0ZXMgYSBwc3Rh
+dGUgY2hhbmdlLCB0aGUgbG9jYWwgcHN0YXRlIHdpbGwgYmUgaW4gUHNhZmUgYW5kIHdlCiAgd2ls
+bCBiZSByZXBvcnRpbmcgYSBmYWxzZSBwb3NpdGl2ZSB3aGVuIHdlIGFyZSBub3QgdGhyb3R0bGVk
+LgotIFNjaGVkdWxlIGEga3dvcmtlciBvbiByZWNlaXZpbmcgdGhyb3R0bGluZy91bnRocm90dGxp
+bmcgT0NDIG1lc3NhZ2UKICBmb3IgdGhhdCBjaGlwIGFuZCBzY2hlZHVsZSBvbiBhbGwgY2hpcHMg
+YWZ0ZXIgcmVjZWl2aW5nIGFjdGl2ZS4KLSBBZnRlciBhbiBPQ0MgcmVzZXQgYWxsIHRoZSBjcHVz
+IHdpbGwgYmUgaW4gUHNhZmUgZnJlcXVlbmN5LiBTbyBjYWxsCiAgdGFyZ2V0KCkgYW5kIHJlc3Rv
+cmUgdGhlIGZyZXF1ZW5jeSB0byBwb2xpY3ktPmN1ciBhZnRlciBPQ0NfQUNUSVZFCiAgYW5kIFBt
+YXggdW50aHJvdHRsaW5nCi0gVGFrZW4gY2FyZSBvZiBWaXJlc2ggYW5kIFByZWV0aSdzIGNvbW1l
+bnRzLgogZHJpdmVycy9jcHVmcmVxL3Bvd2VybnYtY3B1ZnJlcS5jIHwgNzQgKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKystCiAxIGZpbGUgY2hhbmdlZCwgNzMgaW5zZXJ0aW9u
+cygrKSwgMSBkZWxldGlvbigtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9wb3dlcm52
+LWNwdWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9wb3dlcm52LWNwdWZyZXEuYwppbmRleCBkMGMx
+OGM5Li5hNjM0MTk5IDEwMDY0NAotLS0gYS9kcml2ZXJzL2NwdWZyZXEvcG93ZXJudi1jcHVmcmVx
+LmMKKysrIGIvZHJpdmVycy9jcHVmcmVxL3Bvd2VybnYtY3B1ZnJlcS5jCkBAIC0zMyw2ICszMyw3
+IEBACiAjaW5jbHVkZSA8YXNtL2Zpcm13YXJlLmg+CiAjaW5jbHVkZSA8YXNtL3JlZy5oPgogI2lu
+Y2x1ZGUgPGFzbS9zbXAuaD4gLyogUmVxdWlyZWQgZm9yIGNwdV9zaWJsaW5nX21hc2soKSBpbiBV
+UCBjb25maWdzICovCisjaW5jbHVkZSA8YXNtL29wYWwuaD4KIAogI2RlZmluZSBQT1dFUk5WX01B
+WF9QU1RBVEVTCTI1NgogI2RlZmluZSBQTVNSX1BTQUZFX0VOQUJMRQkoMVVMIDw8IDMwKQpAQCAt
+NDEsNyArNDIsNyBAQAogI2RlZmluZSBQTVNSX0xQKHgpCQkoKHggPj4gNDgpICYgMHhGRikKIAog
+c3RhdGljIHN0cnVjdCBjcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZSBwb3dlcm52X2ZyZXFzW1BPV0VS
+TlZfTUFYX1BTVEFURVMrMV07Ci1zdGF0aWMgYm9vbCByZWJvb3RpbmcsIHRocm90dGxlZDsKK3N0
+YXRpYyBib29sIHJlYm9vdGluZywgdGhyb3R0bGVkLCBvY2NfcmVzZXQ7CiAKIHN0YXRpYyBzdHJ1
+Y3QgY2hpcCB7CiAJdW5zaWduZWQgaW50IGlkOwpAQCAtNDE0LDYgKzQxNSw3NCBAQCBzdGF0aWMg
+c3RydWN0IG5vdGlmaWVyX2Jsb2NrIHBvd2VybnZfY3B1ZnJlcV9yZWJvb3RfbmIgPSB7CiAJLm5v
+dGlmaWVyX2NhbGwgPSBwb3dlcm52X2NwdWZyZXFfcmVib290X25vdGlmaWVyLAogfTsKIAorc3Rh
+dGljIGNoYXIgdGhyb3R0bGVfcmVhc29uW11bMzBdID0geworCQkJCQkiTm8gdGhyb3R0bGluZyIs
+CisJCQkJCSJQb3dlciBDYXAiLAorCQkJCQkiUHJvY2Vzc29yIE92ZXIgVGVtcGVyYXR1cmUiLAor
+CQkJCQkiUG93ZXIgU3VwcGx5IEZhaWx1cmUiLAorCQkJCQkiT3ZlciBDdXJyZW50IiwKKwkJCQkJ
+Ik9DQyBSZXNldCIKKwkJCQkgICAgIH07CisKK3N0YXRpYyBpbnQgcG93ZXJudl9jcHVmcmVxX29j
+Y19tc2coc3RydWN0IG5vdGlmaWVyX2Jsb2NrICpuYiwKKwkJCQkgICB1bnNpZ25lZCBsb25nIG1z
+Z190eXBlLCB2b2lkICpfbXNnKQoreworCXN0cnVjdCBvcGFsX21zZyAqbXNnID0gX21zZzsKKwlz
+dHJ1Y3Qgb3BhbF9vY2NfbXNnIG9tc2c7CisKKwlpZiAobXNnX3R5cGUgIT0gT1BBTF9NU0dfT0ND
+KQorCQlyZXR1cm4gMDsKKworCW9tc2cudHlwZSA9IGJlNjRfdG9fY3B1KG1zZy0+cGFyYW1zWzBd
+KTsKKworCXN3aXRjaCAob21zZy50eXBlKSB7CisJY2FzZSBPQ0NfUkVTRVQ6CisJCW9jY19yZXNl
+dCA9IHRydWU7CisJCS8qCisJCSAqIHBvd2VybnZfY3B1ZnJlcV90aHJvdHRsZV9jaGVjaygpIGlz
+IGNhbGxlZCBpbgorCQkgKiB0YXJnZXQoKSBjYWxsYmFjayB3aGljaCBjYW4gZGV0ZWN0IHRoZSB0
+aHJvdHRsZSBzdGF0ZQorCQkgKiBmb3IgZ292ZXJub3JzIGxpa2Ugb25kZW1hbmQuCisJCSAqIEJ1
+dCBzdGF0aWMgZ292ZXJub3JzIHdpbGwgbm90IGNhbGwgdGFyZ2V0KCkgb2Z0ZW4gdGh1cworCQkg
+KiByZXBvcnQgdGhyb3R0bGluZyBoZXJlLgorCQkgKi8KKwkJaWYgKCF0aHJvdHRsZWQpIHsKKwkJ
+CXRocm90dGxlZCA9IHRydWU7CisJCQlwcl9jcml0KCJDUFUgRnJlcXVlbmN5IGlzIHRocm90dGxl
+ZFxuIik7CisJCX0KKwkJcHJfaW5mbygiT0NDOiBSZXNldFxuIik7CisJCWJyZWFrOworCWNhc2Ug
+T0NDX0xPQUQ6CisJCXByX2luZm8oIk9DQzogTG9hZGVkXG4iKTsKKwkJYnJlYWs7CisJY2FzZSBP
+Q0NfVEhST1RUTEU6CisJCW9tc2cuY2hpcCA9IGJlNjRfdG9fY3B1KG1zZy0+cGFyYW1zWzFdKTsK
+KwkJb21zZy50aHJvdHRsZV9zdGF0dXMgPSBiZTY0X3RvX2NwdShtc2ctPnBhcmFtc1syXSk7CisK
+KwkJaWYgKG9jY19yZXNldCkgeworCQkJb2NjX3Jlc2V0ID0gZmFsc2U7CisJCQl0aHJvdHRsZWQg
+PSBmYWxzZTsKKwkJCXByX2luZm8oIk9DQzogQWN0aXZlXG4iKTsKKwkJCXJldHVybiAwOworCQl9
+CisKKwkJaWYgKG9tc2cudGhyb3R0bGVfc3RhdHVzICYmCisJCSAgICBvbXNnLnRocm90dGxlX3N0
+YXR1cyA8PSBPQ0NfTUFYX1RIUk9UVExFX1NUQVRVUykKKwkJCXByX2luZm8oIk9DQzogQ2hpcCAl
+dSBQbWF4IHJlZHVjZWQgZHVlIHRvICVzXG4iLAorCQkJCSh1bnNpZ25lZCBpbnQpb21zZy5jaGlw
+LAorCQkJCXRocm90dGxlX3JlYXNvbltvbXNnLnRocm90dGxlX3N0YXR1c10pOworCQllbHNlIGlm
+ICghb21zZy50aHJvdHRsZV9zdGF0dXMpCisJCQlwcl9pbmZvKCJPQ0M6IENoaXAgJXUgJXNcbiIs
+ICh1bnNpZ25lZCBpbnQpb21zZy5jaGlwLAorCQkJCXRocm90dGxlX3JlYXNvbltvbXNnLnRocm90
+dGxlX3N0YXR1c10pOworCX0KKwlyZXR1cm4gMDsKK30KKworc3RhdGljIHN0cnVjdCBub3RpZmll
+cl9ibG9jayBwb3dlcm52X2NwdWZyZXFfb3BhbF9uYiA9IHsKKwkubm90aWZpZXJfY2FsbAk9IHBv
+d2VybnZfY3B1ZnJlcV9vY2NfbXNnLAorCS5uZXh0CQk9IE5VTEwsCisJLnByaW9yaXR5CT0gMCwK
+K307CisKIHN0YXRpYyB2b2lkIHBvd2VybnZfY3B1ZnJlcV9zdG9wX2NwdShzdHJ1Y3QgY3B1ZnJl
+cV9wb2xpY3kgKnBvbGljeSkKIHsKIAlzdHJ1Y3QgcG93ZXJudl9zbXBfY2FsbF9kYXRhIGZyZXFf
+ZGF0YTsKQEAgLTQ4MSw2ICs1NTAsNyBAQCBzdGF0aWMgaW50IF9faW5pdCBwb3dlcm52X2NwdWZy
+ZXFfaW5pdCh2b2lkKQogCQlyZXR1cm4gcmM7CiAKIAlyZWdpc3Rlcl9yZWJvb3Rfbm90aWZpZXIo
+JnBvd2VybnZfY3B1ZnJlcV9yZWJvb3RfbmIpOworCW9wYWxfbWVzc2FnZV9ub3RpZmllcl9yZWdp
+c3RlcihPUEFMX01TR19PQ0MsICZwb3dlcm52X2NwdWZyZXFfb3BhbF9uYik7CiAJcmV0dXJuIGNw
+dWZyZXFfcmVnaXN0ZXJfZHJpdmVyKCZwb3dlcm52X2NwdWZyZXFfZHJpdmVyKTsKIH0KIG1vZHVs
+ZV9pbml0KHBvd2VybnZfY3B1ZnJlcV9pbml0KTsKQEAgLTQ4OCw2ICs1NTgsOCBAQCBtb2R1bGVf
+aW5pdChwb3dlcm52X2NwdWZyZXFfaW5pdCk7CiBzdGF0aWMgdm9pZCBfX2V4aXQgcG93ZXJudl9j
+cHVmcmVxX2V4aXQodm9pZCkKIHsKIAl1bnJlZ2lzdGVyX3JlYm9vdF9ub3RpZmllcigmcG93ZXJu
+dl9jcHVmcmVxX3JlYm9vdF9uYik7CisJb3BhbF9tZXNzYWdlX25vdGlmaWVyX3VucmVnaXN0ZXIo
+T1BBTF9NU0dfT0NDLAorCQkJCQkgJnBvd2VybnZfY3B1ZnJlcV9vcGFsX25iKTsKIAljcHVmcmVx
+X3VucmVnaXN0ZXJfZHJpdmVyKCZwb3dlcm52X2NwdWZyZXFfZHJpdmVyKTsKIH0KIG1vZHVsZV9l
+eGl0KHBvd2VybnZfY3B1ZnJlcV9leGl0KTsKLS0gCjEuOS4zCgpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0Ckxp
+bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnCmh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0
+aW5mby9saW51eHBwYy1kZXY=
