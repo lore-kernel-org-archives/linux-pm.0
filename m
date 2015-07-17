@@ -1,415 +1,222 @@
-From: PINTU KUMAR <pintu.k@samsung.com>
-Subject: RE: [PATCHv2 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
- feature
-Date: Fri, 17 Jul 2015 12:28:47 +0530
-Message-ID: <06c401d0c05e$663f2ee0$32bd8ca0$@samsung.com>
-References: <1435929607-3435-1-git-send-email-pintu.k@samsung.com>
- <1437114578-2502-1-git-send-email-pintu.k@samsung.com>
+From: Konstantin Khlebnikov <koct9i@gmail.com>
+Subject: Re: [PATCH RFC] intel_pstate: play well with frequency limits set by acpi
+Date: Fri, 17 Jul 2015 10:10:54 +0300
+Message-ID: <CALYGNiP1-=Rk85Ek1LXkiP8X5eC0kgbhNZYYFLimYx-k+Gcukg@mail.gmail.com>
+References: <20150716181706.6500.64386.stgit@buzz>
+	<55A899E4.4030708@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-reply-to: <1437114578-2502-1-git-send-email-pintu.k@samsung.com>
-Content-language: en-us
-Sender: linux-doc-owner@vger.kernel.org
-To: akpm@linux-foundation.org, corbet@lwn.net, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, mgorman@suse.de, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, qiuxishi@huawei.com, Valdis.Kletnieks@vt.edu
-Cc: cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com, pintu.ping@gmail.com, pintu.k@outlook.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f52.google.com ([209.85.215.52]:36589 "EHLO
+	mail-la0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752076AbbGQHK5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jul 2015 03:10:57 -0400
+In-Reply-To: <55A899E4.4030708@oracle.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: ethan zhao <ethan.zhao@oracle.com>
+Cc: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Kristen Carlson Accardi <kristen@linux.intel.com>, Len Brown <lenb@kernel.org>
 
-Sorry, correcting a small typo error below.
-
-Please review and provide your comments.
-This is the version2 of the previous patch.
-
-> -----Original Message-----
-> From: Pintu Kumar [mailto:pintu.k@samsung.com]
-> Sent: Friday, July 17, 2015 12:00 PM
-> To: akpm@linux-foundation.org; corbet@lwn.net; vbabka@suse.cz;
-> gorcunov@openvz.org; pintu.k@samsung.com; mhocko@suse.cz;
-> emunson@akamai.com; kirill.shutemov@linux.intel.com;
-> standby24x7@gmail.com; hannes@cmpxchg.org; vdavydov@parallels.com;
-> hughd@google.com; minchan@kernel.org; tj@kernel.org; rientjes@google.com;
-> xypron.glpk@gmx.de; dzickus@redhat.com; prarit@redhat.com;
-> ebiederm@xmission.com; rostedt@goodmis.org; uobergfe@redhat.com;
-> paulmck@linux.vnet.ibm.com; iamjoonsoo.kim@lge.com; ddstreet@ieee.org;
-> sasha.levin@oracle.com; koct9i@gmail.com; mgorman@suse.de; cj@linux.com;
-> opensource.ganesh@gmail.com; vinmenon@codeaurora.org; linux-
-> doc@vger.kernel.org; linux-kernel@vger.kernel.org; linux-mm@kvack.org; linux-
-> pm@vger.kernel.org; qiuxishi@huawei.com; Valdis.Kletnieks@vt.edu
-> Cc: cpgs@samsung.com; pintu_agarwal@yahoo.com; vishnu.ps@samsung.com;
-> rohit.kr@samsung.com; iqbal.ams@samsung.com; pintu.ping@gmail.com;
-> pintu.k@outlook.com
-> Subject: [PATCHv2 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
-> feature
-> 
-> This patch provides 2 things:
-> 1. Add new control called shrink_memory in /proc/sys/vm/.
-> This control can be used to aggressively reclaim memory system-wide in one
-shot
-> from the user space. A value of 1 will instruct the kernel to reclaim as much
-as
-> totalram_pages in the system.
-> Example: echo 1 > /proc/sys/vm/shrink_memory
-> 
-> If any other value than 1 is written to shrink_memory an error EINVAL occurs.
-> 
-> 2. Enable shrink_all_memory API in kernel with new CONFIG_SHRINK_MEMORY.
-> Currently, shrink_all_memory function is used only during hibernation.
-> With the new config we can make use of this API for non-hibernation case also
-> without disturbing the hibernation case.
-> 
-> The detailed paper was presented in Embedded Linux Conference, Mar-2015
-> http://events.linuxfoundation.org/sites/events/files/slides/
-> %5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
-> 
-> A sample example is shown below:
-> Device: ARMv7, Dual Core CPU 1.2GHz
-> RAM: 512MB (Without SWAP/ZRAM)
-> Linux Kernel: 3.10.17
-> Scenario: Just after boot-up finished.
-> 
-> BEFORE:
-> -------------------------------------------------------------------------
-> shell> free -tm ; cat /proc/buddyinfo
->              total       used       free     shared    buffers     cached
-> Mem:           460        440         20          0         35        154
-> -/+ buffers/cache:        250        209
-> Swap:            0          0          0
-> Total:         460        440         20
-> Node 0, zone   Normal   1037    705     92     19     19     17      4      9
-0      0      0
-> 
-> shell> vmstat 1 &
-> 
-> AFTER:
-> -------------------------------------------------------------------------
-> shell> echo 1 > /proc/sys/vm/shrink_memory
-> 
->  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
-st
->  0  0      0  20768  35876 157876    0    0     0     0   64  177  0  1 99  0
-0
+On Fri, Jul 17, 2015 at 9:00 AM, ethan zhao <ethan.zhao@oracle.com> wro=
+te:
 >
---------------------------------------------------------------------------------
-> |1  0      0  33104  34864 149808    0    0     0     0   82  221  0 12 88  0
-0|
+> On 2015/7/17 2:17, Konstantin Khlebnikov wrote:
+>>
+>> IPMI can control CPU P-states remotely: configuration is reported vi=
+a
+>> common ACPI interface (_PPC/_PSS/etc). This patch adds required mini=
+mal
+>> support in intel_pstate to receive and use these P-state limits.
+>>
+>> * ignore limit of top state in _PPC: it lower than turbo boost frequ=
+ency
+>> * register intel_pstate in acpi-processor to get states from _PSS
+>> * link acpi_processor_get_bios_limit: this adds attribute "bios_limi=
+t"
+>>
+>> Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+>> ---
+>>   drivers/acpi/processor_perflib.c |    3 +-
+>>   drivers/cpufreq/intel_pstate.c   |   57
+>> ++++++++++++++++++++++++++++++++++++++
+>>   2 files changed, 59 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/acpi/processor_perflib.c
+>> b/drivers/acpi/processor_perflib.c
+>> index cfc8aba72f86..781e328c9d5f 100644
+>> --- a/drivers/acpi/processor_perflib.c
+>> +++ b/drivers/acpi/processor_perflib.c
+>> @@ -98,7 +98,8 @@ static int acpi_processor_ppc_notifier(struct
+>> notifier_block *nb,
+>>         ppc =3D (unsigned int)pr->performance_platform_limit;
+>>   -     if (ppc >=3D pr->performance->state_count)
+>> +       /* Ignore limit of top state: it lower than turbo boost freq=
+uency
+>> */
+>> +       if (!ppc || ppc >=3D pr->performance->state_count)
 >
---------------------------------------------------------------------------------
->  0  0      0 188776   3000  54420    0    0     0     0  216  374  0 30 70  0
-0
->  0  0      0 188400   3652  54528    0    0   740     8  188  337  2  1 95  2
-0
-> 
-> shell> free -tm ; cat /proc/buddyinfo
->              total       used       free     shared    buffers     cached
-> Mem:           460        278        182          0          4         54
-> -/+ buffers/cache:        219        240
-> Swap:            0          0          0
-> Total:         460        278        182
-> Node 0, zone   Normal   5575   3158   1500    727    240     90     33     18
-10      6
-> 6
-> 
-> RESULTS:
-> -----------------------------------------------------
-> Around 160MB of memory were recovered in one shot.
-> Many higher-order pages were recovered in the process.
-> From the vmstat output the total CPU usage is: ~12% (system), when this
-> command is running, for 1 second.
-> We also measured the power consumption using H/W power monitor tool.
-> Below is the result:
-> Before - ~180mA
-> During shrink memory - ~237mA
-> Duration - ~0.5 sec
-> Consumption: ~57mA
-> 
-> FURTHER OBSERVATIONS:
-> -----------------------------------------------------
-> 37% reduction in killing of application with memory shrink calling on boot up.
-> Around ~4000 page faults are reduced.
-> Around ~43% of reduction in kswapd calls.
-> Movement to slowpath reduced dractically.
-> Combining shrink_memory with compaction shows good benefits over
-> fragmentation.
-> 
-> APPLICATION LAUNCH BEHAVIOR:
-> -----------------------------------------------------
-> During First Launch:
-> ==================================================================
-> ==========
-> Application	Before_shrink_memory	After_shrink_memory	Difference
-> Camera		1.981			1.86			0.121
-> Gallery		1.276			0.94			0.336
-> contacts	1.112			0.941			0.171
-> messaging	0.886			0.795			0.091
-> settings	1.257			1.212			0.045
-> Music		1.854			2.098			-0.244
-> Gmail		1.872			1.935			-0.063
-> Browser		2.569			2.677			-0.108
-> ==================================================================
-> ==========
-> 
-> During Re-launch:
-> ==================================================================
-> ==========
-> Application	Before_shrink_memory	After_shrink_memory	Difference
-> Camera		1.248			0.976			0.272
-> Gallery		0.697			0.633			0.064
-> contacts	0.506			0.561			-0.055
-> messaging	0.533			0.489			0.044
-> settings	0.833			0.805			0.028
-> Music		0.832			0.769			0.063
-> Gmail		0.913			0.841			0.072
-> Browser		0.579			0.57			0.009
-> ==================================================================
-> ==========
-> 
-> Various other use cases where this can be used:
-> ----------------------------------------------------------------------------
-> 1) Just after system boot-up is finished, using the sysctl configuration from
->    bootup script.
-> 2) During system suspend state, after suspend_freeze_processes()
->    [kernel/power/suspend.c]
->    Based on certain condition about fragmentation or free memory state.
-> 3) From Android ION system heap driver, when order-4 allocation starts
-failing.
->    By calling shrink_all_memory, in a separate worker thread, based on certain
->    condition.
-> 4) It can be combined with compact_memory to achieve better results on
-> memory
->    fragmentation.
-> 5) It can be helpful in debugging and tuning various vm parameters.
-> 6) It can be helpful to identify how much of maximum memory could be
->    reclaimable at any point of time.
->    And how much higher-order pages could be formed with this amount of
->    reclaimable memory.
->    Thus it can be helpful in accordingly tuning the reserved memory needs
->    of a system.
-> 7) It can be helpful in properly tuning the SWAP size in the system.
->    In shrink_all_memory, we enable may_swap = 1, that means all unused pages
->    will be swapped out.
->    Thus, running shrink_memory on a heavy loaded system, we can check how
-> much
->    swap is getting full.
->    That can be the maximum swap size with a 10% delta.
->    Also if ZRAM is used, it helps us in compressing and storing the pages for
->    later use.
-> 8) It can be helpful to allow more new applications to be launched, without
->    killing the older once.
->    And moving the least recently used pages to the SWAP area.
->    Thus user data can be retained.
-> 9) Can be part of a system system-tool to quickly defragment entire system
->    memory.
-> 10) This may also help in reducing fragmentation within CMA region.
-> 11) More use cases can be identified.
-> 
-> Most importantly, it can be more effective when applied intelligently, based
-on
-> certain conditions.
-> It should be executed always and the decision is left upto the user.
+>  Perhaps the !ppc is wrong if we check it against ACPI spec.
+>  Zero value of ppc means:
+>
+>  "0 =E2=80=93 States 0 through Nth state are available (all states av=
+ailable)"
 
-* It should _not_ be executed always. The decision is left to the user.
+Yep, also states are ordered by power - state0 must must have highest
+performance.
+This code below clamps range of available frequences to 0.._PSS[_PPC].f=
+requency.
+So if _PPC =3D 0 then there should be no limit but then turbo is enable=
+d frequency
+of state0 is actually could be lower than effective turbo frequency:
+for hardware I have it's _PSS[0] =3D 2601 Mhz, PSS[1] =3D 2600 Mhz whil=
+e turbo
+state is 3400 Mhz.
 
-> 
-> Signed-off-by: Pintu Kumar <pintu.k@samsung.com>
-> ---
-> V2: Added min,max parameter for shrink_memory, suggested by
->     Heinrich Schuchardt <xypron.glpk@gmx.de>.
->     Error handling in sysctl_shrinkmem_handler, for any value other than 1,
->     suggested by, Heinrich Schuchardt <xypron.glpk@gmx.de>.
->     Fixed HIBERNATION+SHRINK_MEMORY issue in shrink_all_memory,
->     suggested by Valdis.Kletnieks@vt.edu.
->     Restore gfp_mask to original, because of other dependencies.
->     Also adding GFP_RECLAIM_MASK, does not affect anything.
->     Verified power consumption data during shrink_memory,
->     as suggested by Johannes Weiner <hannes@cmpxchg.org>.
->     Verified application launch/re-launch scenarios before/after
-shrink_memory,
->     as suggested by Xishi Qiu <qiuxishi@huawei.com>.
->     Updates the commit messages with examples and use cases.
-> 
->  Documentation/sysctl/vm.txt |   18 ++++++++++++++++++
->  include/linux/swap.h        |    7 +++++++
->  kernel/sysctl.c             |   16 ++++++++++++++++
->  mm/Kconfig                  |    8 ++++++++
->  mm/vmscan.c                 |   34 ++++++++++++++++++++++++++++++++--
->  5 files changed, 81 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt index
-> 9832ec5..54eda3a 100644
-> --- a/Documentation/sysctl/vm.txt
-> +++ b/Documentation/sysctl/vm.txt
-> @@ -54,6 +54,7 @@ Currently, these files are in /proc/sys/vm:
->  - page-cluster
->  - panic_on_oom
->  - percpu_pagelist_fraction
-> +- shrink_memory
->  - stat_interval
->  - swappiness
->  - user_reserve_kbytes
-> @@ -718,6 +719,23 @@ sysctl, it will revert to this default behavior.
-> 
->  ==============================================================
-> 
-> +shrink_memory
-> +
-> +This control is available only when CONFIG_SHRINK_MEMORY is set. This
-> +control can be used to aggressively reclaim memory system-wide in one
-> +shot. A value of
-> +1 will instruct the kernel to reclaim as much as totalram_pages in the
-system.
-> +For example, to reclaim all memory system-wide we can do:
-> +# echo 1 > /proc/sys/vm/shrink_memory
-> +
-> +If any other value than 1 is written to shrink_memory an error EINVAL occurs.
-> +
-> +For more information about this control, please visit the following
-> +presentation in embedded linux conference, 2015.
-> +http://events.linuxfoundation.org/sites/events/files/slides/
-> +%5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
-> +
-> +==============================================================
-> +
->  stat_interval
-> 
->  The time interval between which vm statistics are updated.  The default diff
---git
-> a/include/linux/swap.h b/include/linux/swap.h index 9a7adfb..6505b0b 100644
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -333,6 +333,13 @@ extern int vm_swappiness;  extern int
-> remove_mapping(struct address_space *mapping, struct page *page);  extern
-> unsigned long vm_total_pages;
-> 
-> +#ifdef CONFIG_SHRINK_MEMORY
-> +extern int sysctl_shrink_memory;
-> +extern int sysctl_shrinkmem_handler(struct ctl_table *table, int write,
-> +		void __user *buffer, size_t *length, loff_t *ppos); #endif
-> +
-> +
->  #ifdef CONFIG_NUMA
->  extern int zone_reclaim_mode;
->  extern int sysctl_min_unmapped_ratio;
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c index c566b56..e66581b 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -275,6 +275,11 @@ static int min_extfrag_threshold;  static int
-> max_extfrag_threshold = 1000;  #endif
-> 
-> +#ifdef CONFIG_SHRINK_MEMORY
-> +static int min_shrink_memory = 1;
-> +static int max_shrink_memory = 1;
-> +#endif
-> +
->  static struct ctl_table kern_table[] = {
->  	{
->  		.procname	= "sched_child_runs_first",
-> @@ -1351,6 +1356,17 @@ static struct ctl_table vm_table[] = {
->  	},
-> 
->  #endif /* CONFIG_COMPACTION */
-> +#ifdef CONFIG_SHRINK_MEMORY
-> +	{
-> +		.procname	= "shrink_memory",
-> +		.data		= &sysctl_shrink_memory,
-> +		.maxlen		= sizeof(int),
-> +		.mode		= 0200,
-> +		.proc_handler	= sysctl_shrinkmem_handler,
-> +		.extra1         = &min_shrink_memory,
-> +		.extra2         = &max_shrink_memory,
-> +	},
-> +#endif
->  	{
->  		.procname	= "min_free_kbytes",
->  		.data		= &min_free_kbytes,
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index b3a60ee..8e04bd9 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -657,3 +657,11 @@ config DEFERRED_STRUCT_PAGE_INIT
->  	  when kswapd starts. This has a potential performance impact on
->  	  processes running early in the lifetime of the systemm until kswapd
->  	  finishes the initialisation.
-> +
-> +config SHRINK_MEMORY
-> +	bool "Allow for system-wide shrinking of memory"
-> +	default n
-> +	depends on MMU
-> +	help
-> +	  It enables support for system-wide memory reclaim in one shot using
-> +	  echo 1 > /proc/sys/vm/shrink_memory.
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index c8d8282..e802fa7 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -58,6 +58,10 @@
->  #define CREATE_TRACE_POINTS
->  #include <trace/events/vmscan.h>
-> 
-> +#ifdef CONFIG_SHRINK_MEMORY
-> +#include <linux/suspend.h>
-> +#endif
-> +
->  struct scan_control {
->  	/* How many pages shrink_list() should reclaim */
->  	unsigned long nr_to_reclaim;
-> @@ -3557,7 +3561,7 @@ void wakeup_kswapd(struct zone *zone, int order,
-> enum zone_type classzone_idx)
->  	wake_up_interruptible(&pgdat->kswapd_wait);
->  }
-> 
-> -#ifdef CONFIG_HIBERNATION
-> +#if defined CONFIG_HIBERNATION || CONFIG_SHRINK_MEMORY
->  /*
->   * Try to free `nr_to_reclaim' of memory, system-wide, and return the number
-of
->   * freed pages.
-> @@ -3576,12 +3580,16 @@ unsigned long shrink_all_memory(unsigned long
-> nr_to_reclaim)
->  		.may_writepage = 1,
->  		.may_unmap = 1,
->  		.may_swap = 1,
-> -		.hibernation_mode = 1,
->  	};
->  	struct zonelist *zonelist = node_zonelist(numa_node_id(), sc.gfp_mask);
->  	struct task_struct *p = current;
->  	unsigned long nr_reclaimed;
-> 
-> +	if (system_entering_hibernation())
-> +		sc.hibernation_mode = 1;
-> +	else
-> +		sc.hibernation_mode = 0;
-> +
->  	p->flags |= PF_MEMALLOC;
->  	lockdep_set_current_reclaim_state(sc.gfp_mask);
->  	reclaim_state.reclaimed_slab = 0;
-> @@ -3597,6 +3605,28 @@ unsigned long shrink_all_memory(unsigned long
-> nr_to_reclaim)  }  #endif /* CONFIG_HIBERNATION */
-> 
-> +#ifdef CONFIG_SHRINK_MEMORY
-> +int sysctl_shrink_memory;
-> +/* This is the entry point for system-wide shrink memory
-> ++via /proc/sys/vm/shrink_memory */
-> +int sysctl_shrinkmem_handler(struct ctl_table *table, int write,
-> +		void __user *buffer, size_t *length, loff_t *ppos) {
-> +	int ret;
-> +
-> +	ret = proc_dointvec_minmax(table, write, buffer, length, ppos);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if (write) {
-> +		if (sysctl_shrink_memory & 1)
-> +			shrink_all_memory(totalram_pages);
-> +	}
-> +
-> +	return 0;
-> +}
-> +#endif
-> +
->  /* It's optimal to keep kswapds on the same CPUs as their memory, but
->     not required for correctness.  So if the last cpu in a node goes
->     away, we get changed to run anywhere: as the first one comes back,
+>
+>
+>>                 goto out;
+>>         cpufreq_verify_within_limits(policy, 0,
+>> diff --git a/drivers/cpufreq/intel_pstate.c
+>> b/drivers/cpufreq/intel_pstate.c
+>> index 15ada47bb720..4a34ddf4fa73 100644
+>> --- a/drivers/cpufreq/intel_pstate.c
+>> +++ b/drivers/cpufreq/intel_pstate.c
+>> @@ -26,6 +26,7 @@
+>>   #include <linux/fs.h>
+>>   #include <linux/debugfs.h>
+>>   #include <linux/acpi.h>
+>> +#include <acpi/processor.h>
+>>   #include <linux/vmalloc.h>
+>>   #include <trace/events/power.h>
+>>   @@ -113,6 +114,9 @@ struct cpudata {
+>>         u64     prev_mperf;
+>>         u64     prev_tsc;
+>>         struct sample sample;
+>> +#ifdef CONFIG_ACPI_PROCESSOR
+>> +       struct acpi_processor_performance acpi_data;
+>> +#endif
+>>   };
+>>     static struct cpudata **all_cpu_data;
+>> @@ -145,6 +149,7 @@ static int hwp_active;
+>>     struct perf_limits {
+>>         int no_turbo;
+>> +       int no_acpi;
+>>         int turbo_disabled;
+>>         int max_perf_pct;
+>>         int min_perf_pct;
+>> @@ -158,6 +163,7 @@ struct perf_limits {
+>>     static struct perf_limits limits =3D {
+>>         .no_turbo =3D 0,
+>> +       .no_acpi =3D !IS_ENABLED(CONFIG_ACPI_PROCESSOR),
+>>         .turbo_disabled =3D 0,
+>>         .max_perf_pct =3D 100,
+>>         .max_perf =3D int_tofp(1),
+>> @@ -449,6 +455,18 @@ static ssize_t store_min_perf_pct(struct kobjec=
+t *a,
+>> struct attribute *b,
+>>         return count;
+>>   }
+>>   +static ssize_t store_no_acpi(struct kobject *a, struct attribute =
+*b,
+>> +                            const char *buf, size_t count)
+>> +{
+>> +#ifdef CONFIG_ACPI_PROCESSOR
+>> +       return kstrtouint(buf, 0, &limits.no_acpi) ?: count;
+>> +#else
+>> +       return -ENODEV;
+>> +#endif
+>> +}
+>> +show_one(no_acpi, no_acpi);
+>> +define_one_global_rw(no_acpi);
+>> +
+>>   show_one(max_perf_pct, max_perf_pct);
+>>   show_one(min_perf_pct, min_perf_pct);
+>>   @@ -460,6 +478,7 @@ define_one_global_ro(num_pstates);
+>>     static struct attribute *intel_pstate_attributes[] =3D {
+>>         &no_turbo.attr,
+>> +       &no_acpi.attr,
+>>         &max_perf_pct.attr,
+>>         &min_perf_pct.attr,
+>>         &turbo_pct.attr,
+>> @@ -1049,6 +1068,38 @@ static int intel_pstate_cpu_init(struct
+>> cpufreq_policy *policy)
+>>         policy->cpuinfo.transition_latency =3D CPUFREQ_ETERNAL;
+>>         cpumask_set_cpu(policy->cpu, policy->cpus);
+>>   +#ifdef CONFIG_ACPI_PROCESSOR
+>> +       if (!limits.no_acpi) {
+>> +               /*
+>> +                * Minimum necessary to get acpi_processor_ppc_notif=
+ier()
+>> and
+>> +                * acpi_processor_get_bios_limit() working.
+>> +                */
+>> +               if (!zalloc_cpumask_var(&cpu->acpi_data.shared_cpu_m=
+ap,
+>> +                                       GFP_KERNEL))
+>> +                       rc =3D -ENOMEM;
+>> +               else
+>> +                       rc =3D acpi_processor_register_performance(
+>> +                                       &cpu->acpi_data, policy->cpu=
+);
+>> +               if (rc) {
+>> +                       pr_err("intel_pstate: acpi init failed: %d\n=
+",
+>> rc);
+>> +                       free_cpumask_var(cpu->acpi_data.shared_cpu_m=
+ap);
+>> +                       limits.no_acpi =3D 1;
+>> +               }
+>> +       }
+>> +#endif
+>> +       return 0;
+>> +}
+>> +
+>> +static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
+>> +{
+>> +#ifdef CONFIG_ACPI_PROCESSOR
+>> +       struct cpudata *cpu =3D all_cpu_data[policy->cpu];
+>> +
+>> +       if (cpu->acpi_data.state_count)
+>> +               acpi_processor_unregister_performance(&cpu->acpi_dat=
+a,
+>> +                                                     policy->cpu);
+>> +       free_cpumask_var(cpu->acpi_data.shared_cpu_map);
+>> +#endif
+>>         return 0;
+>>   }
+>>   @@ -1057,7 +1108,11 @@ static struct cpufreq_driver intel_pstate_d=
+river
+>> =3D {
+>>         .verify         =3D intel_pstate_verify_policy,
+>>         .setpolicy      =3D intel_pstate_set_policy,
+>>         .get            =3D intel_pstate_get,
+>> +#ifdef CONFIG_ACPI_PROCESSOR
+>> +       .bios_limit     =3D acpi_processor_get_bios_limit,
+>> +#endif
+>>         .init           =3D intel_pstate_cpu_init,
+>> +       .exit           =3D intel_pstate_cpu_exit,
+>>         .stop_cpu       =3D intel_pstate_stop_cpu,
+>>         .name           =3D "intel_pstate",
+>>   };
+>> @@ -1286,6 +1341,8 @@ static int __init intel_pstate_setup(char *str=
+)
+>>                 force_load =3D 1;
+>>         if (!strcmp(str, "hwp_only"))
+>>                 hwp_only =3D 1;
+>> +       if (!strcmp(str, "no_acpi"))
+>> +               limits.no_acpi =3D 1;
+>>         return 0;
+>>   }
+>>   early_param("intel_pstate", intel_pstate_setup);
+>>
+>
+>
+>  Thanks,
+>  Ethan
 > --
-> 1.7.9.5
-
+> To unsubscribe from this list: send the line "unsubscribe linux-kerne=
+l" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
