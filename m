@@ -1,227 +1,95 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH V3 08/19] soc: tegra: pmc: Clean-up PMC helper functions
-Date: Fri, 17 Jul 2015 12:25:47 +0200
-Message-ID: <20150717102546.GL3057@ulmo>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V3 10/19] drm/tegra: dc: Prepare for generic PM domains
+Date: Fri, 17 Jul 2015 12:41:55 +0200
+Message-ID: <20150717104154.GM3057@ulmo>
 References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com>
- <1436791197-32358-9-git-send-email-jonathanh@nvidia.com>
+ <1436791197-32358-11-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="EEx6GiKZGZ1wKUra"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f170.google.com ([209.85.212.170]:37124 "EHLO
-	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756674AbbGQKZy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jul 2015 06:25:54 -0400
+	protocol="application/pgp-signature"; boundary="zROEGoKAXsG5UqGB"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1436791197-32358-9-git-send-email-jonathanh@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1436791197-32358-11-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Terje =?utf-8?Q?Bergstr=C3=B6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Terje =?utf-8?Q?Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Hans de Goede <hdegoede@redhat.com>, Tejun Heo <tj@kernel.org>, Vince Hsu <vinceh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
 
---EEx6GiKZGZ1wKUra
+--zROEGoKAXsG5UqGB
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jul 13, 2015 at 01:39:46PM +0100, Jon Hunter wrote:
-> The following clean-ups have been made to the PMC code:
+On Mon, Jul 13, 2015 at 01:39:48PM +0100, Jon Hunter wrote:
+> Add support to the tegra dc driver for generic PM domains. However,
+> to ensure backward compatibility with older device tree blobs ensure
+> that the driver can work with or without generic PM domains. In order
+> to migrate to generic PM domain infrastructure the necessary changes
+> are:
 >=20
-> 1. Add a macro for determining the state of a PMC powergate
-> 2. Use the readx_poll_timeout() function instead of implementing a local
->    polling loop with a timeout.
-> 3. Use a case-statement in the function that removes the powergate clamp
->    instead of multiple if-statements to improve readability.
+> 1. If the "power-domains" property is present in the DT device node then
+>    generic PM domains is supported and pm_runtime_enable() should be
+>    called for the device. Furthermore, the enabling and disabling of the
+>    power-domain is handled via calling pm_runtime_get/put, respectively.
+
+The device could be PM runtime enabled even if no power-domains property
+is set. Couldn't we check something more direct, like for example if the
+dev->pm_domain is non-NULL?
+
+Perhaps it'd be worth converting the driver to use runtime PM first, and
+move all the powergate and clock handling into suspend/resume functions,
+and then we can conditionalize whether or not we call the legacy API iff
+dev->pm_domain =3D=3D NULL?
+
+> 2. To ensure that clocks are managed consistently when generic PM domains
+>    are used and are not used, drivers should be migrated to use the
+>    tegra_powergate_power_on_legacy() and tegra_powergate_power_off_legacy=
+()
+>    functions instead of the current tegra_powergate_sequence_power_up()
+>    and tegra_powergate_power_off(). The purpose of the
+>    tegra_powergate_power_on_legacy() and tegra_powergate_power_off_legacy=
+()
+>    APIs is to mimick the behaviour of the tegra generic power-domain code,
+>    such that if generic power domains are not supported the functionality
+>    is the same.
 >=20
-> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-> ---
->  drivers/soc/tegra/pmc.c | 72 ++++++++++++++++++++++++-------------------=
-------
->  1 file changed, 35 insertions(+), 37 deletions(-)
->=20
-> diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
-> index c0635bdd4ee3..180d434deec5 100644
-> --- a/drivers/soc/tegra/pmc.c
-> +++ b/drivers/soc/tegra/pmc.c
-> @@ -28,6 +28,7 @@
->  #include <linux/export.h>
->  #include <linux/init.h>
->  #include <linux/io.h>
-> +#include <linux/iopoll.h>
->  #include <linux/of.h>
->  #include <linux/of_address.h>
->  #include <linux/platform_device.h>
-> @@ -56,6 +57,8 @@
->  #define  PWRGATE_TOGGLE_START		(1 << 8)
-> =20
->  #define REMOVE_CLAMPING			0x34
-> +#define  REMOVE_CLAMPING_VDEC		(1 << 3)
-> +#define  REMOVE_CLAMPING_PCIE		(1 << 4)
-> =20
->  #define PWRGATE_STATUS			0x38
-> =20
-> @@ -101,6 +104,8 @@
-> =20
->  #define GPU_RG_CNTRL			0x2d4
-> =20
-> +#define PMC_PWRGATE_STATE(val, id)	(!!(val & BIT(id)))
+> 3. The main difference between the tegra_powergate_sequence_power_up() API
+>    and the tegra_powergate_power_on_legacy() is that the clock used to
+>    enable the powergate is not kept enabled when using the
+>    tegra_powergate_power_on_legacy() API. Therefore, drivers must enable
+>    the clocks they need after calling tegra_powergate_power_on_legacy()
+>    and disable these clocks before calling
+>    tegra_powergate_power_off_legacy().
 
-I find double-negations very difficult to read. ((value & BIT(id)) !=3D 0)
-is clearer in my opinion. Also I'd suggest status or value as the first
-parameter name, for consistency with other parts of the driver.
-
-> +
->  struct tegra_pmc_soc {
->  	unsigned int num_powergates;
->  	const char *const *powergates;
-> @@ -177,15 +182,14 @@ static void tegra_pmc_writel(u32 value, unsigned lo=
-ng offset)
->   */
->  static int tegra_powergate_set(int id, bool new_state, bool wait)
->  {
-> -	unsigned long timeout;
-> -	bool status;
->  	int ret =3D 0;
-> +	u32 val;
-> =20
->  	mutex_lock(&pmc->powergates_lock);
-> =20
-> -	status =3D tegra_pmc_readl(PWRGATE_STATUS) & (1 << id);
-> +	val =3D tegra_pmc_readl(PWRGATE_STATUS);
-> =20
-> -	if (status =3D=3D new_state) {
-> +	if (PMC_PWRGATE_STATE(val, id) =3D=3D new_state) {
->  		mutex_unlock(&pmc->powergates_lock);
->  		return 0;
->  	}
-> @@ -193,17 +197,9 @@ static int tegra_powergate_set(int id, bool new_stat=
-e, bool wait)
->  	tegra_pmc_writel(PWRGATE_TOGGLE_START | id, PWRGATE_TOGGLE);
-> =20
->  	if (wait) {
-> -		timeout =3D jiffies + msecs_to_jiffies(100);
-> -		ret =3D -ETIMEDOUT;
-> -
-> -		while (time_before(jiffies, timeout)) {
-> -			status =3D !!(tegra_pmc_readl(PWRGATE_STATUS) & BIT(id));
-> -			if (status =3D=3D new_state) {
-> -				ret =3D 0;
-> -				break;
-> -			}
-> -			udelay(10);
-> -		}
-> +		ret =3D readx_poll_timeout(tegra_pmc_readl, PWRGATE_STATUS,
-> +				val, PMC_PWRGATE_STATE(val, id) =3D=3D new_state,
-> +				10, 100000);
->  	}
-> =20
->  	mutex_unlock(&pmc->powergates_lock);
-> @@ -242,13 +238,10 @@ EXPORT_SYMBOL(tegra_powergate_power_off);
->   */
->  int tegra_powergate_is_powered(int id)
->  {
-> -	u32 status;
-> -
->  	if (!pmc->soc || id < 0 || id >=3D pmc->soc->num_powergates)
->  		return -EINVAL;
-> =20
-> -	status =3D tegra_pmc_readl(PWRGATE_STATUS) & (1 << id);
-> -	return !!status;
-> +	return PMC_PWRGATE_STATE(tegra_pmc_readl(PWRGATE_STATUS), id);
-
-I'd prefer to keep the two steps here. As a general rule I try never to
-mix reading or writing a register with other code on the same line.
-
->  }
-> =20
->  /**
-> @@ -257,34 +250,39 @@ int tegra_powergate_is_powered(int id)
->   */
->  int tegra_powergate_remove_clamping(int id)
->  {
-> -	u32 mask;
-> +	u32 val, reg;
-
-Side note: Please use value instead of val since that's the form used
-elsewhere in the driver. Also reg would be more appropriately called
-offset or similar because that's what it really is. It would also be
-more naturally an unsized type, such as unsigned int. But...
-
-> =20
->  	if (!pmc->soc || id < 0 || id >=3D pmc->soc->num_powergates)
->  		return -EINVAL;
-> =20
->  	/*
-> -	 * On Tegra124 and later, the clamps for the GPU are controlled by a
-> -	 * separate register (with different semantics).
-> +	 * In most cases the bit for removing the IO clamping is the same as
-> +	 * the powergate partition ID, however, this is not always the case.
-> +	 * Furthermore, on Tegra124 and later, the clamps for the GPU are
-> +	 * controlled by a separate register (with different semantics). The
-> +	 * following case-statement handles these exceptions.
->  	 */
-> -	if (id =3D=3D TEGRA_POWERGATE_3D) {
-> +	val =3D 1 << id;
-> +	reg =3D REMOVE_CLAMPING;
-> +
-> +	switch (id) {
-> +	case TEGRA_POWERGATE_3D:
->  		if (pmc->soc->has_gpu_clamps) {
-> -			tegra_pmc_writel(0, GPU_RG_CNTRL);
-> -			return 0;
-> +			val =3D 0;
-> +			reg  =3D GPU_RG_CNTRL;
->  		}
-> +		break;
-> +	case TEGRA_POWERGATE_VDEC:
-> +		val =3D REMOVE_CLAMPING_VDEC;
-> +		break;
-> +	case TEGRA_POWERGATE_PCIE:
-> +		val =3D REMOVE_CLAMPING_PCIE;
-> +		break;
-> +	default:
-> +		break;
->  	}
-> =20
-> -	/*
-> -	 * Tegra 2 has a bug where PCIE and VDE clamping masks are
-> -	 * swapped relatively to the partition ids
-> -	 */
-> -	if (id =3D=3D TEGRA_POWERGATE_VDEC)
-> -		mask =3D (1 << TEGRA_POWERGATE_PCIE);
-> -	else if (id =3D=3D TEGRA_POWERGATE_PCIE)
-> -		mask =3D (1 << TEGRA_POWERGATE_VDEC);
-> -	else
-> -		mask =3D (1 << id);
-> -
-> -	tegra_pmc_writel(mask, REMOVE_CLAMPING);
-> +	tegra_pmc_writel(val, reg);
-
-=2E.. to be honest, I think the previous code was more straightforward, so
-I'd prefer if you dropped this particular hunk.
+This seems like it should go into the previous patch. I'm not sure I
+understand why this is necessary. Wouldn't it be easier to update the
+drivers to properly cope with this? We'll need to move them to runtime
+PM at some point anyway, so if we do that first, we should be able to
+hide all these details within the driver's suspend/resume functions
+but without the need for the API churn here.
 
 Thierry
 
---EEx6GiKZGZ1wKUra
+--zROEGoKAXsG5UqGB
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCAAGBQJVqNgqAAoJEN0jrNd/PrOh2IIQAKJoPVGUOCTakDDbcxEY+Dn3
-0q7FlWfmMMeU5Vqa62ilpEAXQmak4jB4+DIVq5c9+aSypq4d7HN+5LVL2u/vrILk
-GT0WsbzV3MgKXTAGFXtyFdwgj3hfV+2xKXbJAIVx1qgT6rTYdboW1wtkiSyzG6QK
-zh3Upae/lpYhK8XlZMTfcddZ5Pmq24UuAU9SDiRD4Y6t6Woogp26E4F1FYl/AbXG
-rh91EdCnxWXWYdDv2BgZonbmjhdMqLFmVAK6WZ9uxVYmBI9Lsnily/VQuhg8fMMK
-XyZeryhdXHAZ4ISMyFvJ2wmC7ZmBb/OVUgohePaKz1DcJZCSuyHoS4hhzLCXoZTA
-szFxRnNflVZR7DFPaeb92jQe71J6a5n9h0MMvU0apnf9uo7CmFmW/8+NbHxXusxl
-6R79wHSN+6LeKnZNrck0GXB1xyNotjZF51jBXG72zHOMi8QrdPMfSEjNjZbjSzK+
-nq+i/UBQjBro2lZ7OjJyhIDACLuZvVl3pZ+9YBptjjw/z3IO8Y0uBIGyTxwa5t/I
-4zlDG2fysPphBEnFcvUmSjSNynEY2OfO32pz2DM62Mju0X1XAfbAuO4iwRRYbiwP
-GLURD0X2KZg7nBDEu35dJLeP+78wT3QpypVRHvzwgl2KDgnBB7GGKe81KEH2MlLl
-Tuv0PPgCyjW6jZq2dCZ0
-=fGzw
+iQIcBAABCAAGBQJVqNvvAAoJEN0jrNd/PrOh8q0P/1wINIsYJXw7TmYgSRbyg2Dr
+U1gAvoDdAUKVIEjl8XDxesQVmKPbtQfw+PKDddbfS2QbPyg2Pv+nB4MoYBFTFbYZ
+Hr9TquIxCr7mgDugig1YQVxZ/vnwEPQBtqSCru/gUsmVOg3iAVyZ0re6CjcoiFTa
+3WpPmqkYwh8AbsfOS/M661PH8r0VOP2yU2sR0KKlKVQzFnCN1zH6z92GAZa0uxpI
+9xCPBeMaQGPsXj3rPI/317pHO3WwqDWJrzDb30Ts89doSuFKGw8j0lyyq5Qu4y51
+beLv3A57mpehbQgLb/GTGdzHVFGZ3IdkMv2mOJNXP+cmdraXWn+/qcVAreMhL+UC
+ruGBu5DqUicCM0fVkXQIdcj3PqOJe67Mb0+gW/HSNiFzBxAPDVY1VjswMXFawNDw
+9/qG9MiuKthi/pWvbFX0IoajjxMwg5D1npF+Unka4et2oKop1dz7fMbF8PsLJrA5
+kmmApSUbQVXhhqEb4LZnY4PWrTqMxpuayoFaMr1Hi89oFkU0rQFUZMjutf4QoYLl
+BsfGpBeOpoHQZtac98eLjImbgV9Y6uTons2Da5W3/ZKZpILQm5AV+5BUTE2mjlZ5
+XMa9ZM6YtjtMsGNoXNe9UFa+ZPXDzXkKuOVcEba3Iv8FHX+eZVmyuooJayLrJOw+
+nxTr2T4wIPt89oUUN+Cj
+=w6aM
 -----END PGP SIGNATURE-----
 
---EEx6GiKZGZ1wKUra--
+--zROEGoKAXsG5UqGB--
