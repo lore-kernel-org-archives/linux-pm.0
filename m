@@ -1,204 +1,111 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH V3 11/19] PCI: tegra: Add support for generic PM domains
-Date: Fri, 17 Jul 2015 12:45:48 +0200
-Message-ID: <20150717104547.GN3057@ulmo>
-References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com>
- <1436791197-32358-12-git-send-email-jonathanh@nvidia.com>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH] thermal: consistently use int for temperatures
+Date: Fri, 17 Jul 2015 12:14:36 +0100
+Message-ID: <9hhd1zrc9yb.fsf@e105922-lin.cambridge.arm.com>
+References: <1436167189-29835-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="rPgHZmYkQ+bUEpVC"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f54.google.com ([74.125.82.54]:33692 "EHLO
-	mail-wg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946008AbbGQKp4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jul 2015 06:45:56 -0400
-Content-Disposition: inline
-In-Reply-To: <1436791197-32358-12-git-send-email-jonathanh@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1436167189-29835-1-git-send-email-s.hauer@pengutronix.de>
+ (Sascha Hauer's message of "Mon, 6 Jul 2015 09:19:49 +0200")
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, linux-samsung-soc@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, lm-sensors@lm-sensors.org, Stephen Warren <swarren@wwwdotorg.org>, Peter Feuerer <peter@piie.net>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, linux-acpi@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Guenter Roeck <linux@roeck-us.net>, linux-arm-kernel@lists.infradead.org, Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>, linux-omap@vger.kernel.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Jean Delvare <jdelvare@suse.de>
 List-Id: linux-pm@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Terje =?utf-8?Q?Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Hans de Goede <hdegoede@redhat.com>, Tejun Heo <tj@kernel.org>, Vince Hsu <vinceh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-
---rPgHZmYkQ+bUEpVC
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Jul 13, 2015 at 01:39:49PM +0100, Jon Hunter wrote:
-> Add support to the tegra PCI driver for generic PM domains. However,
-> to ensure backward compatibility with older device tree blobs ensure
-> that the driver can work with or without generic PM domains. In order
-> to migrate to generic PM domain infrastructure the necessary changes
-> are:
->=20
-> 1. If the "power-domains" property is present in the DT device node then
->    generic PM domains is supported and pm_runtime_enable() should be
->    called for the device. Furthermore, the enabling and disabling of the
->    power-domain is handled via calling pm_runtime_get/put, respectively.
->=20
-> 2. To ensure that clocks are managed consistently when generic PM domains
->    are used and are not used, drivers should be migrated to use the
->    tegra_powergate_power_on_legacy() and tegra_powergate_power_off_legacy=
-()
->    functions instead of the current tegra_powergate_sequence_power_up()
->    and tegra_powergate_power_off(). The purpose of the
->    tegra_powergate_power_on_legacy() and tegra_powergate_power_off_legacy=
-()
->    APIs is to mimick the behaviour of the tegra generic power-domain code,
->    such that if generic power domains are not supported the functionality
->    is the same.
->=20
-> 3. The main difference between the tegra_powergate_sequence_power_up() API
->    and the tegra_powergate_power_on_legacy() is that the clock used to
->    enable the powergate is not kept enabled when using the
->    tegra_powergate_power_on_legacy() API. Therefore, drivers must enable
->    the clocks they need after calling tegra_powergate_power_on_legacy()
->    and disable these clocks before calling
->    tegra_powergate_power_off_legacy().
-
-This is the same comment as in the DRM patch, and it applies to all
-devices that use powergating, so it should move into the preparatory
-patch rather than be repeated in all patches.
-
->=20
-> The helper functions for handling the powering on and off of the PCI
-> controller have been updated to support generic PM domains. The
-> tegra_pcie_power_off() was missing code to disable the clocks enabled in
-> the tegra_pcie_power_on() function and so this has been added.
->=20
-> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-> ---
->  drivers/pci/host/pci-tegra.c | 49 +++++++++++++++++++++++++++++++++-----=
-------
->  1 file changed, 37 insertions(+), 12 deletions(-)
->=20
-> diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-> index 10c05718dbfd..acd1f311eee5 100644
-> --- a/drivers/pci/host/pci-tegra.c
-> +++ b/drivers/pci/host/pci-tegra.c
-> @@ -40,6 +40,7 @@
->  #include <linux/pci.h>
->  #include <linux/phy/phy.h>
->  #include <linux/platform_device.h>
-> +#include <linux/pm_runtime.h>
->  #include <linux/reset.h>
->  #include <linux/sizes.h>
->  #include <linux/slab.h>
-> @@ -908,19 +909,32 @@ static int tegra_pcie_enable_controller(struct tegr=
-a_pcie *pcie)
-> =20
->  static void tegra_pcie_power_off(struct tegra_pcie *pcie)
->  {
-> +	const struct tegra_pcie_soc_data *soc =3D pcie->soc_data;
->  	int err;
-> =20
-> -	/* TODO: disable and unprepare clocks? */
-> -
->  	err =3D phy_power_off(pcie->phy);
->  	if (err < 0)
->  		dev_warn(pcie->dev, "failed to power off PHY: %d\n", err);
-> =20
->  	reset_control_assert(pcie->pcie_xrst);
->  	reset_control_assert(pcie->afi_rst);
-> -	reset_control_assert(pcie->pex_rst);
-> =20
-> -	tegra_powergate_power_off(TEGRA_POWERGATE_PCIE);
-> +	clk_disable_unprepare(pcie->pll_e);
-> +	if (soc->has_cml_clk)
-> +		clk_disable_unprepare(pcie->cml_clk);
-> +	clk_disable_unprepare(pcie->afi_clk);
-> +	clk_disable_unprepare(pcie->pex_clk);
-> +
-> +	if (pm_runtime_enabled(pcie->dev)) {
-> +		err =3D pm_runtime_put_sync(pcie->dev);
-> +	} else {
-> +		err =3D tegra_powergate_power_off_legacy(TEGRA_POWERGATE_PCIE,
-> +						       pcie->pex_clk,
-> +						       pcie->pex_rst);
-> +	}
-> +
-> +	if (err < 0)
-> +		dev_warn(pcie->dev, "powergate power-down failed: %d\n", err);
-> =20
->  	err =3D regulator_bulk_disable(pcie->num_supplies, pcie->supplies);
->  	if (err < 0)
-> @@ -934,20 +948,28 @@ static int tegra_pcie_power_on(struct tegra_pcie *p=
-cie)
-> =20
->  	reset_control_assert(pcie->pcie_xrst);
->  	reset_control_assert(pcie->afi_rst);
-> -	reset_control_assert(pcie->pex_rst);
-> -
-> -	tegra_powergate_power_off(TEGRA_POWERGATE_PCIE);
-> =20
->  	/* enable regulators */
->  	err =3D regulator_bulk_enable(pcie->num_supplies, pcie->supplies);
->  	if (err < 0)
->  		dev_err(pcie->dev, "failed to enable regulators: %d\n", err);
-> =20
-> -	err =3D tegra_powergate_sequence_power_up(TEGRA_POWERGATE_PCIE,
-> -						pcie->pex_clk,
-> -						pcie->pex_rst);
-> -	if (err) {
-> -		dev_err(pcie->dev, "powerup sequence failed: %d\n", err);
-> +	if (pm_runtime_enabled(pcie->dev)) {
-> +		err =3D pm_runtime_get_sync(pcie->dev);
-> +	} else {
-> +		err =3D tegra_powergate_power_on_legacy(TEGRA_POWERGATE_PCIE,
-> +						      pcie->pex_clk,
-> +						      pcie->pex_rst);
-> +	}
-> +
-> +	if (err < 0) {
-> +		dev_err(pcie->dev, "powergate power-up failed: %d\n", err);
-> +		return err;
-> +	}
-> +
-> +	err =3D clk_prepare_enable(pcie->pex_clk);
-> +	if (err < 0) {
-> +		dev_err(pcie->dev, "failed to enable PEX clock: %d\n", err);
->  		return err;
->  	}
-> =20
-
-Couldn't we simply move the above code into suspend/resume functions and
-then call pm_runtime_get() and pm_runtime_put() instead of
-tegra_pcie_power_on() and tegra_pcie_power_off()?
-
-> @@ -2001,6 +2023,9 @@ static int tegra_pcie_probe(struct platform_device =
-*pdev)
-> =20
->  	pcibios_min_mem =3D 0;
-> =20
-> +	if (of_property_read_bool(pdev->dev.of_node, "power-domains"))
-> +		pm_runtime_enable(&pdev->dev);
-
-Then of course we'd have to call pm_runtime_enable() irrespective of the
-property and check for the presence of power domain support via another
-method (like the dev->pm_domain field).
-
-Thierry
-
---rPgHZmYkQ+bUEpVC
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJVqNzbAAoJEN0jrNd/PrOhDewP/AwlT+9yDNXe45bfw1qjDdUi
-JzWgkkcJeCmIvsAIMsnckPe/ww+6+HNyE86qRN1voXGlEtVHx6bqGrabdIP/HM6f
-SvQKFto4q/bPtsVC6EbyoyMqs78VZA6o/FY9bfXLpUUwaJCA8IC4sl9wOxti5VEB
-3eHGw89OSbeZ11OIeEUJbJL+N66vSivTpXGX3NKr8seEzbUzN8ea4L7K6jae/i3t
-23DiWCG2dr1zk+h5WgH77MkPMv+OeuUhXCGpdQjUEgB77KlBpBsVibZwzFViZJkA
-DpVSEV0cRnkYZ3ZHxhSjYG6kprFhWrGXKNnlEwdS+oLqOjMxDROYZRT4PV2cwR6f
-B6znA6vSbJSTYsIfrPEGzrxB2FYrkUrDyB4SCmYSazWFOZZSbUG/0naJY0LcSmY/
-BBLw10p6vPCM000om9xqBKOhqDdzbm5XLMgJLG0xa5JjILI4FcHEH0oHj5cOncZd
-EgfwAsxhOGI3KXI7NigttapoJ0vBAU78Z14D1R5iSQdIA9TXEBVQVtWfg2YwTqtN
-Pp+LtRifP83GaZsilx1qnkvciMhM6DibgGAm9Qa+KLcusP6uFr6O+rMe3lL2iNbj
-NCx7VqcYGyBgAyJhtxarrU8XXIPqF6PL6lwxCoVsC/wjaqfr+eATyzdST0JdqBFg
-EcOnAD14CJh0C9fcjGKT
-=YqwP
------END PGP SIGNATURE-----
-
---rPgHZmYkQ+bUEpVC--
+SGkgU2FzY2hhLAoKU2FzY2hhIEhhdWVyIDxzLmhhdWVyQHBlbmd1dHJvbml4LmRlPiB3cml0ZXM6
+Cgo+IFRoZSB0aGVybWFsIGNvZGUgdXNlcyBpbnQsIGxvbmcgYW5kIHVuc2lnbmVkIGxvbmcgZm9y
+IHRlbXBlcmF0dXJlcwo+IGluIGRpZmZlcmVudCBwbGFjZXMuCj4KPiBVc2luZyBhbiB1bnNpZ25l
+ZCB0eXBlIGxpbWl0cyB0aGUgdGhlcm1hbCBmcmFtZXdvcmsgdG8gcG9zaXRpdmUKPiB0ZW1wZXJh
+dHVyZXMgd2l0aG91dCBuZWVkLiBBbHNvIHNldmVyYWwgZHJpdmVycyBjdXJyZW50bHkgd2lsbCBy
+ZXBvcnQKPiB0ZW1wZXJhdHVyZXMgbmVhciBVSU5UX01BWCBmb3IgdGVtcGVyYXR1cmVzIGJlbG93
+IDDCsEMuIFRoaXMgd2lsbCBwcm9iYWJseQo+IGltbWVkaWF0ZWx5IHNodXQgdGhlIG1hY2hpbmUg
+ZG93biBkdWUgdG8gb3ZlcnRlbXBlcmF0dXJlIGlmIHN0YXJ0ZWQgYmVsb3cKPiAwwrBDLgo+Cj4g
+J2xvbmcnIGlzIDY0Yml0IG9uIHNldmVyYWwgYXJjaGl0ZWN0dXJlcy4gVGhpcyBpcyBub3QgbmVl
+ZGVkIHNpbmNlIElOVF9NQVggwrBtQwo+IGlzIGFib3ZlIHRoZSBtZWx0aW5nIHBvaW50IG9mIGFs
+bCBrbm93biBtYXRlcmlhbHMuCj4KPiBDb25zaXN0ZW50bHkgdXNlIGEgcGxhaW4gJ2ludCcgZm9y
+IHRlbXBlcmF0dXJlcyB0aHJvdWdob3V0IHRoZSB0aGVybWFsIGNvZGUgYW5kCj4gdGhlIGRyaXZl
+cnMuIFRoaXMgb25seSBjaGFuZ2VzIHRoZSBwbGFjZXMgaW4gdGhlIGRyaXZlcnMgd2hlcmUgdGhl
+IHRlbXBlcmF0dXJlCj4gaXMgcGFzc2VkIGFyb3VuZCBhcyBwb2ludGVyLCB3aGVuIGRyaXZlcnMg
+aW50ZXJuYWxseSB1c2UgYW5vdGhlciB0eXBlIHRoaXMgaXMKPiBub3QgY2hhbmdlZC4KPgo+IFNp
+Z25lZC1vZmYtYnk6IFNhc2NoYSBIYXVlciA8cy5oYXVlckBwZW5ndXRyb25peC5kZT4KClRoYW5r
+cyBmb3IgbW92aW5nIG92ZXIgdGhlIHRoZXJtYWwgc3ViLXN5c3RlbSBpbiBMaW51eCB0byBjb25z
+aXN0ZW50bHkKdXNlIGEgc2luZ2xlIHR5cGUuCgpJbiB5b3VyIHBhdGNoLCB5b3UgbWlzc2VkIG1p
+Z3JhdGluZyBvdmVyIHBvd2VyX2FsbG9jYXRvciBnb3Zlcm5vciBhbmQKaXQncyBhc3NvY2lhdGVk
+IHRyYWNlIGV2ZW50cy4gSXQgZ290IG1lcmdlZCBmb3IgdjQuMi4KCkNvdWxkIHlvdSBpbmNvcnBv
+cmF0ZSBzb21ldGhpbmcgbGlrZSBiZWxvdyBpbiB5b3VyIG5leHQgdmVyc2lvbj8KClRoYW5rcywK
+UHVuaXQKClsuLi5dCgotLS0tLS0tLS0tLS0tLS0+OC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tClN1
+YmplY3Q6IFtQQVRDSF0gVXNlIGludCBmb3IgdGVtcGVyYXR1cmUgaW4gcG93ZXJfYWxsb2NhdG9y
+IGdvdmVybm9yCgotLS0KIGRyaXZlcnMvdGhlcm1hbC9wb3dlcl9hbGxvY2F0b3IuYyAgICAgICAg
+ICAgICAgfCAxMCArKysrLS0tLS0tCiBpbmNsdWRlL3RyYWNlL2V2ZW50cy90aGVybWFsX3Bvd2Vy
+X2FsbG9jYXRvci5oIHwgIDYgKysrLS0tCiAyIGZpbGVzIGNoYW5nZWQsIDcgaW5zZXJ0aW9ucygr
+KSwgOSBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvcG93ZXJfYWxs
+b2NhdG9yLmMgYi9kcml2ZXJzL3RoZXJtYWwvcG93ZXJfYWxsb2NhdG9yLmMKaW5kZXggNDY3MjI1
+MC4uMWJiN2Q3ZiAxMDA2NDQKLS0tIGEvZHJpdmVycy90aGVybWFsL3Bvd2VyX2FsbG9jYXRvci5j
+CisrKyBiL2RyaXZlcnMvdGhlcm1hbC9wb3dlcl9hbGxvY2F0b3IuYwpAQCAtOTIsOCArOTIsNyBA
+QCBzdHJ1Y3QgcG93ZXJfYWxsb2NhdG9yX3BhcmFtcyB7CiAgKiBSZXR1cm46IFRoZSBwb3dlciBi
+dWRnZXQgZm9yIHRoZSBuZXh0IHBlcmlvZC4KICAqLwogc3RhdGljIHUzMiBwaWRfY29udHJvbGxl
+cihzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAqdHosCi0JCQkgIHVuc2lnbmVkIGxvbmcgY3Vy
+cmVudF90ZW1wLAotCQkJICB1bnNpZ25lZCBsb25nIGNvbnRyb2xfdGVtcCwKKwkJCSAgaW50IGN1
+cnJlbnRfdGVtcCwgaW50IGNvbnRyb2xfdGVtcCwKIAkJCSAgdTMyIG1heF9hbGxvY2F0YWJsZV9w
+b3dlcikKIHsKIAlzNjQgcCwgaSwgZCwgcG93ZXJfcmFuZ2U7CkBAIC0yMjMsOCArMjIyLDcgQEAg
+c3RhdGljIHZvaWQgZGl2dnlfdXBfcG93ZXIodTMyICpyZXFfcG93ZXIsIHUzMiAqbWF4X3Bvd2Vy
+LCBpbnQgbnVtX2FjdG9ycywKIH0KIAogc3RhdGljIGludCBhbGxvY2F0ZV9wb3dlcihzdHJ1Y3Qg
+dGhlcm1hbF96b25lX2RldmljZSAqdHosCi0JCQkgIHVuc2lnbmVkIGxvbmcgY3VycmVudF90ZW1w
+LAotCQkJICB1bnNpZ25lZCBsb25nIGNvbnRyb2xfdGVtcCkKKwkJCSAgaW50IGN1cnJlbnRfdGVt
+cCwgaW50IGNvbnRyb2xfdGVtcCkKIHsKIAlzdHJ1Y3QgdGhlcm1hbF9pbnN0YW5jZSAqaW5zdGFu
+Y2U7CiAJc3RydWN0IHBvd2VyX2FsbG9jYXRvcl9wYXJhbXMgKnBhcmFtcyA9IHR6LT5nb3Zlcm5v
+cl9kYXRhOwpAQCAtNDExLDcgKzQwOSw3IEBAIHN0YXRpYyBpbnQgcG93ZXJfYWxsb2NhdG9yX2Jp
+bmQoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6KQogewogCWludCByZXQ7CiAJc3RydWN0
+IHBvd2VyX2FsbG9jYXRvcl9wYXJhbXMgKnBhcmFtczsKLQl1bnNpZ25lZCBsb25nIHN3aXRjaF9v
+bl90ZW1wLCBjb250cm9sX3RlbXA7CisJaW50IHN3aXRjaF9vbl90ZW1wLCBjb250cm9sX3RlbXA7
+CiAJdTMyIHRlbXBlcmF0dXJlX3RocmVzaG9sZDsKIAogCWlmICghdHotPnR6cCB8fCAhdHotPnR6
+cC0+c3VzdGFpbmFibGVfcG93ZXIpIHsKQEAgLTQ3Niw3ICs0NzQsNyBAQCBzdGF0aWMgdm9pZCBw
+b3dlcl9hbGxvY2F0b3JfdW5iaW5kKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0eikKIHN0
+YXRpYyBpbnQgcG93ZXJfYWxsb2NhdG9yX3Rocm90dGxlKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2
+aWNlICp0eiwgaW50IHRyaXApCiB7CiAJaW50IHJldDsKLQl1bnNpZ25lZCBsb25nIHN3aXRjaF9v
+bl90ZW1wLCBjb250cm9sX3RlbXAsIGN1cnJlbnRfdGVtcDsKKwlpbnQgc3dpdGNoX29uX3RlbXAs
+IGNvbnRyb2xfdGVtcCwgY3VycmVudF90ZW1wOwogCXN0cnVjdCBwb3dlcl9hbGxvY2F0b3JfcGFy
+YW1zICpwYXJhbXMgPSB0ei0+Z292ZXJub3JfZGF0YTsKIAogCS8qCmRpZmYgLS1naXQgYS9pbmNs
+dWRlL3RyYWNlL2V2ZW50cy90aGVybWFsX3Bvd2VyX2FsbG9jYXRvci5oIGIvaW5jbHVkZS90cmFj
+ZS9ldmVudHMvdGhlcm1hbF9wb3dlcl9hbGxvY2F0b3IuaAppbmRleCAxMmUxMzIxLi41YWZhZThm
+IDEwMDY0NAotLS0gYS9pbmNsdWRlL3RyYWNlL2V2ZW50cy90aGVybWFsX3Bvd2VyX2FsbG9jYXRv
+ci5oCisrKyBiL2luY2x1ZGUvdHJhY2UvZXZlbnRzL3RoZXJtYWxfcG93ZXJfYWxsb2NhdG9yLmgK
+QEAgLTExLDcgKzExLDcgQEAgVFJBQ0VfRVZFTlQodGhlcm1hbF9wb3dlcl9hbGxvY2F0b3IsCiAJ
+CSB1MzIgdG90YWxfcmVxX3Bvd2VyLCB1MzIgKmdyYW50ZWRfcG93ZXIsCiAJCSB1MzIgdG90YWxf
+Z3JhbnRlZF9wb3dlciwgc2l6ZV90IG51bV9hY3RvcnMsCiAJCSB1MzIgcG93ZXJfcmFuZ2UsIHUz
+MiBtYXhfYWxsb2NhdGFibGVfcG93ZXIsCi0JCSB1bnNpZ25lZCBsb25nIGN1cnJlbnRfdGVtcCwg
+czMyIGRlbHRhX3RlbXApLAorCQkgaW50IGN1cnJlbnRfdGVtcCwgczMyIGRlbHRhX3RlbXApLAog
+CVRQX0FSR1ModHosIHJlcV9wb3dlciwgdG90YWxfcmVxX3Bvd2VyLCBncmFudGVkX3Bvd2VyLAog
+CQl0b3RhbF9ncmFudGVkX3Bvd2VyLCBudW1fYWN0b3JzLCBwb3dlcl9yYW5nZSwKIAkJbWF4X2Fs
+bG9jYXRhYmxlX3Bvd2VyLCBjdXJyZW50X3RlbXAsIGRlbHRhX3RlbXApLApAQCAtMjQsNyArMjQs
+NyBAQCBUUkFDRV9FVkVOVCh0aGVybWFsX3Bvd2VyX2FsbG9jYXRvciwKIAkJX19maWVsZChzaXpl
+X3QsICAgICAgICBudW1fYWN0b3JzICAgICAgICAgICAgICAgKQogCQlfX2ZpZWxkKHUzMiwgICAg
+ICAgICAgIHBvd2VyX3JhbmdlICAgICAgICAgICAgICApCiAJCV9fZmllbGQodTMyLCAgICAgICAg
+ICAgbWF4X2FsbG9jYXRhYmxlX3Bvd2VyICAgICkKLQkJX19maWVsZCh1bnNpZ25lZCBsb25nLCBj
+dXJyZW50X3RlbXAgICAgICAgICAgICAgKQorCQlfX2ZpZWxkKGludCwgICAgICAgICAgIGN1cnJl
+bnRfdGVtcCAgICAgICAgICAgICApCiAJCV9fZmllbGQoczMyLCAgICAgICAgICAgZGVsdGFfdGVt
+cCAgICAgICAgICAgICAgICkKIAkpLAogCVRQX2Zhc3RfYXNzaWduKApAQCAtNDIsNyArNDIsNyBA
+QCBUUkFDRV9FVkVOVCh0aGVybWFsX3Bvd2VyX2FsbG9jYXRvciwKIAkJX19lbnRyeS0+ZGVsdGFf
+dGVtcCA9IGRlbHRhX3RlbXA7CiAJKSwKIAotCVRQX3ByaW50aygidGhlcm1hbF96b25lX2lkPSVk
+IHJlcV9wb3dlcj17JXN9IHRvdGFsX3JlcV9wb3dlcj0ldSBncmFudGVkX3Bvd2VyPXslc30gdG90
+YWxfZ3JhbnRlZF9wb3dlcj0ldSBwb3dlcl9yYW5nZT0ldSBtYXhfYWxsb2NhdGFibGVfcG93ZXI9
+JXUgY3VycmVudF90ZW1wZXJhdHVyZT0lbHUgZGVsdGFfdGVtcGVyYXR1cmU9JWQiLAorCVRQX3By
+aW50aygidGhlcm1hbF96b25lX2lkPSVkIHJlcV9wb3dlcj17JXN9IHRvdGFsX3JlcV9wb3dlcj0l
+dSBncmFudGVkX3Bvd2VyPXslc30gdG90YWxfZ3JhbnRlZF9wb3dlcj0ldSBwb3dlcl9yYW5nZT0l
+dSBtYXhfYWxsb2NhdGFibGVfcG93ZXI9JXUgY3VycmVudF90ZW1wZXJhdHVyZT0lZCBkZWx0YV90
+ZW1wZXJhdHVyZT0lZCIsCiAJCV9fZW50cnktPnR6X2lkLAogCQlfX3ByaW50X2FycmF5KF9fZ2V0
+X2R5bmFtaWNfYXJyYXkocmVxX3Bvd2VyKSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IF9fZW50cnktPm51bV9hY3RvcnMsIDQpLAotLSAKMi4xLjIKCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0
+CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFk
+ZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
