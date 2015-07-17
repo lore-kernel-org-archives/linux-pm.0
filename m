@@ -1,111 +1,92 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH] thermal: consistently use int for temperatures
-Date: Fri, 17 Jul 2015 12:14:36 +0100
-Message-ID: <9hhd1zrc9yb.fsf@e105922-lin.cambridge.arm.com>
-References: <1436167189-29835-1-git-send-email-s.hauer@pengutronix.de>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v4 3/8] clk: add support for clocks provided by SCP(System
+ Control Processor)
+Date: Fri, 17 Jul 2015 12:17:08 +0100
+Message-ID: <55A8E434.2010709@arm.com>
+References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com> <1433760002-24120-4-git-send-email-sudeep.holla@arm.com> <20150702172310.GF4301@codeaurora.org> <5596A1B6.8020307@arm.com> <559ADC94.4080505@codeaurora.org> <559BF858.1020301@arm.com> <20150708014606.GH30412@codeaurora.org> <55A7D79B.3080305@arm.com> <20150716193114.GA17952@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1436167189-29835-1-git-send-email-s.hauer@pengutronix.de>
- (Sascha Hauer's message of "Mon, 6 Jul 2015 09:19:49 +0200")
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, linux-samsung-soc@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, lm-sensors@lm-sensors.org, Stephen Warren <swarren@wwwdotorg.org>, Peter Feuerer <peter@piie.net>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, linux-acpi@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Guenter Roeck <linux@roeck-us.net>, linux-arm-kernel@lists.infradead.org, Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>, linux-omap@vger.kernel.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Jean Delvare <jdelvare@suse.de>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150716193114.GA17952@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgU2FzY2hhLAoKU2FzY2hhIEhhdWVyIDxzLmhhdWVyQHBlbmd1dHJvbml4LmRlPiB3cml0ZXM6
-Cgo+IFRoZSB0aGVybWFsIGNvZGUgdXNlcyBpbnQsIGxvbmcgYW5kIHVuc2lnbmVkIGxvbmcgZm9y
-IHRlbXBlcmF0dXJlcwo+IGluIGRpZmZlcmVudCBwbGFjZXMuCj4KPiBVc2luZyBhbiB1bnNpZ25l
-ZCB0eXBlIGxpbWl0cyB0aGUgdGhlcm1hbCBmcmFtZXdvcmsgdG8gcG9zaXRpdmUKPiB0ZW1wZXJh
-dHVyZXMgd2l0aG91dCBuZWVkLiBBbHNvIHNldmVyYWwgZHJpdmVycyBjdXJyZW50bHkgd2lsbCBy
-ZXBvcnQKPiB0ZW1wZXJhdHVyZXMgbmVhciBVSU5UX01BWCBmb3IgdGVtcGVyYXR1cmVzIGJlbG93
-IDDCsEMuIFRoaXMgd2lsbCBwcm9iYWJseQo+IGltbWVkaWF0ZWx5IHNodXQgdGhlIG1hY2hpbmUg
-ZG93biBkdWUgdG8gb3ZlcnRlbXBlcmF0dXJlIGlmIHN0YXJ0ZWQgYmVsb3cKPiAwwrBDLgo+Cj4g
-J2xvbmcnIGlzIDY0Yml0IG9uIHNldmVyYWwgYXJjaGl0ZWN0dXJlcy4gVGhpcyBpcyBub3QgbmVl
-ZGVkIHNpbmNlIElOVF9NQVggwrBtQwo+IGlzIGFib3ZlIHRoZSBtZWx0aW5nIHBvaW50IG9mIGFs
-bCBrbm93biBtYXRlcmlhbHMuCj4KPiBDb25zaXN0ZW50bHkgdXNlIGEgcGxhaW4gJ2ludCcgZm9y
-IHRlbXBlcmF0dXJlcyB0aHJvdWdob3V0IHRoZSB0aGVybWFsIGNvZGUgYW5kCj4gdGhlIGRyaXZl
-cnMuIFRoaXMgb25seSBjaGFuZ2VzIHRoZSBwbGFjZXMgaW4gdGhlIGRyaXZlcnMgd2hlcmUgdGhl
-IHRlbXBlcmF0dXJlCj4gaXMgcGFzc2VkIGFyb3VuZCBhcyBwb2ludGVyLCB3aGVuIGRyaXZlcnMg
-aW50ZXJuYWxseSB1c2UgYW5vdGhlciB0eXBlIHRoaXMgaXMKPiBub3QgY2hhbmdlZC4KPgo+IFNp
-Z25lZC1vZmYtYnk6IFNhc2NoYSBIYXVlciA8cy5oYXVlckBwZW5ndXRyb25peC5kZT4KClRoYW5r
-cyBmb3IgbW92aW5nIG92ZXIgdGhlIHRoZXJtYWwgc3ViLXN5c3RlbSBpbiBMaW51eCB0byBjb25z
-aXN0ZW50bHkKdXNlIGEgc2luZ2xlIHR5cGUuCgpJbiB5b3VyIHBhdGNoLCB5b3UgbWlzc2VkIG1p
-Z3JhdGluZyBvdmVyIHBvd2VyX2FsbG9jYXRvciBnb3Zlcm5vciBhbmQKaXQncyBhc3NvY2lhdGVk
-IHRyYWNlIGV2ZW50cy4gSXQgZ290IG1lcmdlZCBmb3IgdjQuMi4KCkNvdWxkIHlvdSBpbmNvcnBv
-cmF0ZSBzb21ldGhpbmcgbGlrZSBiZWxvdyBpbiB5b3VyIG5leHQgdmVyc2lvbj8KClRoYW5rcywK
-UHVuaXQKClsuLi5dCgotLS0tLS0tLS0tLS0tLS0+OC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tClN1
-YmplY3Q6IFtQQVRDSF0gVXNlIGludCBmb3IgdGVtcGVyYXR1cmUgaW4gcG93ZXJfYWxsb2NhdG9y
-IGdvdmVybm9yCgotLS0KIGRyaXZlcnMvdGhlcm1hbC9wb3dlcl9hbGxvY2F0b3IuYyAgICAgICAg
-ICAgICAgfCAxMCArKysrLS0tLS0tCiBpbmNsdWRlL3RyYWNlL2V2ZW50cy90aGVybWFsX3Bvd2Vy
-X2FsbG9jYXRvci5oIHwgIDYgKysrLS0tCiAyIGZpbGVzIGNoYW5nZWQsIDcgaW5zZXJ0aW9ucygr
-KSwgOSBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvcG93ZXJfYWxs
-b2NhdG9yLmMgYi9kcml2ZXJzL3RoZXJtYWwvcG93ZXJfYWxsb2NhdG9yLmMKaW5kZXggNDY3MjI1
-MC4uMWJiN2Q3ZiAxMDA2NDQKLS0tIGEvZHJpdmVycy90aGVybWFsL3Bvd2VyX2FsbG9jYXRvci5j
-CisrKyBiL2RyaXZlcnMvdGhlcm1hbC9wb3dlcl9hbGxvY2F0b3IuYwpAQCAtOTIsOCArOTIsNyBA
-QCBzdHJ1Y3QgcG93ZXJfYWxsb2NhdG9yX3BhcmFtcyB7CiAgKiBSZXR1cm46IFRoZSBwb3dlciBi
-dWRnZXQgZm9yIHRoZSBuZXh0IHBlcmlvZC4KICAqLwogc3RhdGljIHUzMiBwaWRfY29udHJvbGxl
-cihzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAqdHosCi0JCQkgIHVuc2lnbmVkIGxvbmcgY3Vy
-cmVudF90ZW1wLAotCQkJICB1bnNpZ25lZCBsb25nIGNvbnRyb2xfdGVtcCwKKwkJCSAgaW50IGN1
-cnJlbnRfdGVtcCwgaW50IGNvbnRyb2xfdGVtcCwKIAkJCSAgdTMyIG1heF9hbGxvY2F0YWJsZV9w
-b3dlcikKIHsKIAlzNjQgcCwgaSwgZCwgcG93ZXJfcmFuZ2U7CkBAIC0yMjMsOCArMjIyLDcgQEAg
-c3RhdGljIHZvaWQgZGl2dnlfdXBfcG93ZXIodTMyICpyZXFfcG93ZXIsIHUzMiAqbWF4X3Bvd2Vy
-LCBpbnQgbnVtX2FjdG9ycywKIH0KIAogc3RhdGljIGludCBhbGxvY2F0ZV9wb3dlcihzdHJ1Y3Qg
-dGhlcm1hbF96b25lX2RldmljZSAqdHosCi0JCQkgIHVuc2lnbmVkIGxvbmcgY3VycmVudF90ZW1w
-LAotCQkJICB1bnNpZ25lZCBsb25nIGNvbnRyb2xfdGVtcCkKKwkJCSAgaW50IGN1cnJlbnRfdGVt
-cCwgaW50IGNvbnRyb2xfdGVtcCkKIHsKIAlzdHJ1Y3QgdGhlcm1hbF9pbnN0YW5jZSAqaW5zdGFu
-Y2U7CiAJc3RydWN0IHBvd2VyX2FsbG9jYXRvcl9wYXJhbXMgKnBhcmFtcyA9IHR6LT5nb3Zlcm5v
-cl9kYXRhOwpAQCAtNDExLDcgKzQwOSw3IEBAIHN0YXRpYyBpbnQgcG93ZXJfYWxsb2NhdG9yX2Jp
-bmQoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnR6KQogewogCWludCByZXQ7CiAJc3RydWN0
-IHBvd2VyX2FsbG9jYXRvcl9wYXJhbXMgKnBhcmFtczsKLQl1bnNpZ25lZCBsb25nIHN3aXRjaF9v
-bl90ZW1wLCBjb250cm9sX3RlbXA7CisJaW50IHN3aXRjaF9vbl90ZW1wLCBjb250cm9sX3RlbXA7
-CiAJdTMyIHRlbXBlcmF0dXJlX3RocmVzaG9sZDsKIAogCWlmICghdHotPnR6cCB8fCAhdHotPnR6
-cC0+c3VzdGFpbmFibGVfcG93ZXIpIHsKQEAgLTQ3Niw3ICs0NzQsNyBAQCBzdGF0aWMgdm9pZCBw
-b3dlcl9hbGxvY2F0b3JfdW5iaW5kKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0eikKIHN0
-YXRpYyBpbnQgcG93ZXJfYWxsb2NhdG9yX3Rocm90dGxlKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2
-aWNlICp0eiwgaW50IHRyaXApCiB7CiAJaW50IHJldDsKLQl1bnNpZ25lZCBsb25nIHN3aXRjaF9v
-bl90ZW1wLCBjb250cm9sX3RlbXAsIGN1cnJlbnRfdGVtcDsKKwlpbnQgc3dpdGNoX29uX3RlbXAs
-IGNvbnRyb2xfdGVtcCwgY3VycmVudF90ZW1wOwogCXN0cnVjdCBwb3dlcl9hbGxvY2F0b3JfcGFy
-YW1zICpwYXJhbXMgPSB0ei0+Z292ZXJub3JfZGF0YTsKIAogCS8qCmRpZmYgLS1naXQgYS9pbmNs
-dWRlL3RyYWNlL2V2ZW50cy90aGVybWFsX3Bvd2VyX2FsbG9jYXRvci5oIGIvaW5jbHVkZS90cmFj
-ZS9ldmVudHMvdGhlcm1hbF9wb3dlcl9hbGxvY2F0b3IuaAppbmRleCAxMmUxMzIxLi41YWZhZThm
-IDEwMDY0NAotLS0gYS9pbmNsdWRlL3RyYWNlL2V2ZW50cy90aGVybWFsX3Bvd2VyX2FsbG9jYXRv
-ci5oCisrKyBiL2luY2x1ZGUvdHJhY2UvZXZlbnRzL3RoZXJtYWxfcG93ZXJfYWxsb2NhdG9yLmgK
-QEAgLTExLDcgKzExLDcgQEAgVFJBQ0VfRVZFTlQodGhlcm1hbF9wb3dlcl9hbGxvY2F0b3IsCiAJ
-CSB1MzIgdG90YWxfcmVxX3Bvd2VyLCB1MzIgKmdyYW50ZWRfcG93ZXIsCiAJCSB1MzIgdG90YWxf
-Z3JhbnRlZF9wb3dlciwgc2l6ZV90IG51bV9hY3RvcnMsCiAJCSB1MzIgcG93ZXJfcmFuZ2UsIHUz
-MiBtYXhfYWxsb2NhdGFibGVfcG93ZXIsCi0JCSB1bnNpZ25lZCBsb25nIGN1cnJlbnRfdGVtcCwg
-czMyIGRlbHRhX3RlbXApLAorCQkgaW50IGN1cnJlbnRfdGVtcCwgczMyIGRlbHRhX3RlbXApLAog
-CVRQX0FSR1ModHosIHJlcV9wb3dlciwgdG90YWxfcmVxX3Bvd2VyLCBncmFudGVkX3Bvd2VyLAog
-CQl0b3RhbF9ncmFudGVkX3Bvd2VyLCBudW1fYWN0b3JzLCBwb3dlcl9yYW5nZSwKIAkJbWF4X2Fs
-bG9jYXRhYmxlX3Bvd2VyLCBjdXJyZW50X3RlbXAsIGRlbHRhX3RlbXApLApAQCAtMjQsNyArMjQs
-NyBAQCBUUkFDRV9FVkVOVCh0aGVybWFsX3Bvd2VyX2FsbG9jYXRvciwKIAkJX19maWVsZChzaXpl
-X3QsICAgICAgICBudW1fYWN0b3JzICAgICAgICAgICAgICAgKQogCQlfX2ZpZWxkKHUzMiwgICAg
-ICAgICAgIHBvd2VyX3JhbmdlICAgICAgICAgICAgICApCiAJCV9fZmllbGQodTMyLCAgICAgICAg
-ICAgbWF4X2FsbG9jYXRhYmxlX3Bvd2VyICAgICkKLQkJX19maWVsZCh1bnNpZ25lZCBsb25nLCBj
-dXJyZW50X3RlbXAgICAgICAgICAgICAgKQorCQlfX2ZpZWxkKGludCwgICAgICAgICAgIGN1cnJl
-bnRfdGVtcCAgICAgICAgICAgICApCiAJCV9fZmllbGQoczMyLCAgICAgICAgICAgZGVsdGFfdGVt
-cCAgICAgICAgICAgICAgICkKIAkpLAogCVRQX2Zhc3RfYXNzaWduKApAQCAtNDIsNyArNDIsNyBA
-QCBUUkFDRV9FVkVOVCh0aGVybWFsX3Bvd2VyX2FsbG9jYXRvciwKIAkJX19lbnRyeS0+ZGVsdGFf
-dGVtcCA9IGRlbHRhX3RlbXA7CiAJKSwKIAotCVRQX3ByaW50aygidGhlcm1hbF96b25lX2lkPSVk
-IHJlcV9wb3dlcj17JXN9IHRvdGFsX3JlcV9wb3dlcj0ldSBncmFudGVkX3Bvd2VyPXslc30gdG90
-YWxfZ3JhbnRlZF9wb3dlcj0ldSBwb3dlcl9yYW5nZT0ldSBtYXhfYWxsb2NhdGFibGVfcG93ZXI9
-JXUgY3VycmVudF90ZW1wZXJhdHVyZT0lbHUgZGVsdGFfdGVtcGVyYXR1cmU9JWQiLAorCVRQX3By
-aW50aygidGhlcm1hbF96b25lX2lkPSVkIHJlcV9wb3dlcj17JXN9IHRvdGFsX3JlcV9wb3dlcj0l
-dSBncmFudGVkX3Bvd2VyPXslc30gdG90YWxfZ3JhbnRlZF9wb3dlcj0ldSBwb3dlcl9yYW5nZT0l
-dSBtYXhfYWxsb2NhdGFibGVfcG93ZXI9JXUgY3VycmVudF90ZW1wZXJhdHVyZT0lZCBkZWx0YV90
-ZW1wZXJhdHVyZT0lZCIsCiAJCV9fZW50cnktPnR6X2lkLAogCQlfX3ByaW50X2FycmF5KF9fZ2V0
-X2R5bmFtaWNfYXJyYXkocmVxX3Bvd2VyKSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IF9fZW50cnktPm51bV9hY3RvcnMsIDQpLAotLSAKMi4xLjIKCl9fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0
-CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFk
-ZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+
+
+On 16/07/15 20:31, Stephen Boyd wrote:
+> On 07/16, Sudeep Holla wrote:
+>> On 08/07/15 02:46, Stephen Boyd wrote:
+>>>
+>>> Yes struct clk would have min/max, and struct clk_core would have
+>>> min/max. Then some sort of provider API (or possibly even
+>>> clk_init_data) would take the min/max fields and copy them over
+>>> to struct clk_core. Then during set_rate operations we would
+>>> aggregate the constraints from struct clk like we already do and
+>>> add in the constrains in struct clk_core.
+>>>
+>>> One downside to adding new fields to clk_init_data is that there
+>>> are drivers out there that aren't initializing that structure to
+>>> 0, and they're putting it on the stack, so stack junk can come
+>>> through. Furthermore, min/max would mean that every driver needs
+>>> to specify some large number for max or we have to special case
+>>> min == max == 0 and ignore it. Somehow it needs to be opt-in. If
+>>> we want to go down the clk_init_data route then perhaps we need
+>>> some sort of rate_constraint struct pointer in there that drivers
+>>> can optionally setup.
+>>>
+>>> 	struct clk_rate_constraint {
+>>> 		unsigned long min;
+>>> 		unsigned long max;
+>>> 	};
+>>>
+>>> 	struct clk_init_data {
+>>> 		...
+>>> 		struct clk_rate_constraint *rate_constraint;
+>>> 	};
+>>>
+>>> I haven't thought it through completely, but I can probably write
+>>> up some patch tomorrow after I sleep on it.
+>>>
+>>
+>> I am hoping to get this series for v4.3. In order to avoid using
+>> consumer API, I can revert back to the min,max check I had in the
+>> round_rate earlier if that's fine with you ? Let me know so that I can
+>> post the next version based on that. All the other comments are already
+>> addressed.
+>
+> Ok. I'm fine with the consumer API being used, but it would be
+> nice if we didn't have to do so. Try out the patch below,
+> hopefully it's good enough for your purposes. It may need to be
+> more robust, and we may still want to use the init_data structure
+> to avoid races with providers and consumers, but we can leave
+> that for later after sweeping all the structure users.
+>
+
+Agreed, I would avoid using clk consumer API or use it with TODO so that
+I remember to remove it soon. Anyways, thanks for the patch, I tested it
+and works fine to me. You can add Tested-by if you decide to push it.
+
+>>
+>> Also since this series depends on SCPI, I was thinking to get it merged
+>> via ARM-SoC, but that might conflict with the round_rate prototype
+>> change. Do do plan to share a stable base with arm-soc guys or you
+>> expect all the changes to be contained in clk tree ?
+>>
+>
+> We can share a stable branch for the determine_rate change with
+> arm-soc. We already have it on a separate branch but haven't
+> published it so far because nobody has asked.
+>
+
+determine_rate change shouldn't affect SCPI clock driver but I remember
+seeing round_rate change too on the list which returns value using the
+argument from Boris. Is that planned for v4.3 ? I would need the stable
+branch from this clk_hw_set_rate_range if you decide to push. Let me
+know your preferences. I will post the updated version of the patch
+accordingly.
+
+Regards,
+Sudeep
