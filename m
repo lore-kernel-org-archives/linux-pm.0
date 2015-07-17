@@ -1,65 +1,112 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v2 2/4] PM / devfreq: cache the last call to
- get_dev_status()
-Date: Fri, 17 Jul 2015 04:31:38 +0000 (GMT)
-Message-ID: <319181187.26291437107498063.JavaMail.weblogic@epmlwas08c>
-Reply-To: myungjoo.ham@samsung.com
+From: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH v5 7/8] dmaengine: add a driver for Intel integrated DMA
+ 64-bit
+Date: Fri, 17 Jul 2015 10:08:03 +0530
+Message-ID: <20150717043803.GE5086@localhost>
+References: <1436185334-34275-1-git-send-email-andriy.shevchenko@linux.intel.com>
+ <1436185334-34275-8-git-send-email-andriy.shevchenko@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:50033 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751321AbbGQEbk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jul 2015 00:31:40 -0400
-Received: from epcpsbgr5.samsung.com
- (u145.gpu120.samsung.co.kr [203.254.230.145])
- by mailout3.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
- 64bit (built May  5 2014))
- with ESMTP id <0NRM01NUP78QSK80@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Fri, 17 Jul 2015 13:31:38 +0900 (KST)
-MIME-version: 1.0
+Received: from mga14.intel.com ([192.55.52.115]:33659 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750735AbbGQEgZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 17 Jul 2015 00:36:25 -0400
+Content-Disposition: inline
+In-Reply-To: <1436185334-34275-8-git-send-email-andriy.shevchenko@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, mturquette@baylibre.com
 
-PiBUaGUgcmV0dXJuIHZhbHVlIG9mIGdldF9kZXZfc3RhdHVzKCkgY2FuIGJlIHJldXNlZC4gIENh
-Y2hlIGl0IHNvIHRoYXQNCj4gb3RoZXIgcGFydHMgb2YgdGhlIGtlcm5lbCBjYW4gcmV1c2UgaXQg
-aW5zdGVhZCBvZiBoYXZpbmcgdG8gY2FsbCB0aGUNCj4gc2FtZSBmdW5jdGlvbiBhZ2Fpbi4NCj4g
-DQo+IENjOiBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNvbT4NCj4gQ2M6IEt5
-dW5nbWluIFBhcmsgPGt5dW5nbWluLnBhcmtAc2Ftc3VuZy5jb20+DQo+IFNpZ25lZC1vZmYtYnk6
-IEphdmkgTWVyaW5vIDxqYXZpLm1lcmlub0Bhcm0uY29tPg0KPiAtLS0NCj4gDQo+IFRoaXMgcGF0
-Y2ggdHJpZXMgdG8gbGV0IG11bHRpcGxlIGNvbXBvbmVudHMuICBUbyBzdW1tYXJpemUgdGhlDQo+
-IGRpc2N1c3Npb24gaW4gdjFbMV0gSSBjYW4gdGhpbmsgb2YgdGhyZWUgYWx0ZXJuYXRpdmVzOg0K
-PiANCj4gICAxKSBDaGFuZ2UgZ2V0X2Rldl9zdGF0dXMoKSB0byByZXR1cm4gYWJzb2x1dGUgdmFs
-dWVzIGZvciBidXN5X3RpbWUNCj4gICAgICBhbmQgdG90YWxfdGltZQ0KPiAgIDIpIE1ha2UgY29y
-ZSBkZXZmcmVxIGNhbGwgZ2V0X2Rldl9zdGF0dXMoKSBwZXJpb2RpY2FsbHkgKGZvcg0KPiAgICAg
-IGV4YW1wbGUsIGJlZm9yZSBjYWxsaW5nIHRoZSBnb3Zlcm5vcikgYW5kIGFsbCB0aGUgZW50aXRp
-ZXMgdGhhdA0KPiAgICAgIHdhbnQgYWNjZXNzIGNhbiBkbyBzbyB2aWEgYSBwb2ludGVyIGluIGRl
-dmZyZXENCj4gICAzKSBNYWtlIHRoZSBzaW1wbGUgb25kZW1hbmQgZ292ZXJub3IgY2FsbCBnZXRf
-ZGV2X3N0YXR1cygpDQo+ICAgICAgcGVyaW9kaWNhbGx5IGFuZCBjYWNoZSBpdCwgZm9yY2luZyBh
-bGwgdGhlIG90aGVyIGVudGl0aWVzIHRvDQo+ICAgICAgcmVseSBvbiB0aGF0IGdvdmVybm9yIGJl
-aW5nIGFjdGl2ZQ0KPiANCj4gWzFdIGh0dHA6Ly90aHJlYWQuZ21hbmUub3JnL2dtYW5lLmxpbnV4
-LnBvd2VyLW1hbmFnZW1lbnQuZ2VuZXJhbC82MTkzNi9mb2N1cz02MTk5Mw0KPiANCj4gVGhpcyBw
-YXRjaCBpbXBsZW1lbnRzIG9wdGlvbiAzKQ0KPiANCj4gIGRyaXZlcnMvZGV2ZnJlcS9kZXZmcmVx
-LmMgICAgICAgICAgICAgICAgIHwgIDUgKysrKysNCj4gIGRyaXZlcnMvZGV2ZnJlcS9nb3Zlcm5v
-cl9zaW1wbGVvbmRlbWFuZC5jIHwgMzMgKysrKysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLQ0K
-PiAgaW5jbHVkZS9saW51eC9kZXZmcmVxLmggICAgICAgICAgICAgICAgICAgfCAgNyArKysrKysr
-DQo+ICAzIGZpbGVzIGNoYW5nZWQsIDMwIGluc2VydGlvbnMoKyksIDE1IGRlbGV0aW9ucygtKQ0K
-PiANCg0KRGVhciBKYXZpLA0KDQoNCkFub3RoZXIgcXVlc3Rpb24gaGFzIHJpc2VuIGFzIHNlZWlu
-ZyBDaGFud29vJ3MgUkZDIHBhdGNoZXMsDQp3aGljaCBoYXZlIGEgc2ltaWxhciBvYmplY3RpdmUg
-dG8gZGlmZmVyZW50IGRldmljZXMgd2l0aA0KbXVjaCBsZXNzIGludGVydmVudGlvbjoNCg0KW1JG
-QyBQQVRDSCAwLzJdIHRoZXJtYWw6IEFkZCBnZW5lcmljIGRldmZyZXEgY29vbGluZyBkZXZpY2UN
-Cmh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDE1LzcvMTYvMzM0DQooVGhpcyBwYXRjaCBzZXQgYWxz
-byByZXF1aXJlcyB1cGRhdGVzIGFzIGl0IGFwcGVhcnMgbm90DQp0byB1c2Ugb3BwIG5vdGlmaWVy
-cyBwcm9wZXJseSwgYnV0IGl0IHNob3dzIHRoZSBkaXJlY3Rpb24NCm9uIGhvdyB0byBpbXBsZW1l
-bnQgdGhlcm1hbC9xb3MgaW5wdXRzIHRvIGRldmZyZXEgZGV2aWNlcykNCg0KQ2FuJ3QgeW91IHNp
-bXBseSB1c2UgT1BQJ3MgZGlzYWJsZS9lbmFibGUgZnVuY3Rpb25zIGFuZA0KbGV0IGRldmZyZXEg
-YXV0b21hdGljYWxseSB1cGRhdGUgaXRzZWxmIGFjY29yZGluZ2x5Pw0KSXQgc2ltcGxpZmllcyB5
-b3VyIGNvZGVzIGFzIHdlbGwgZXNwZWNpYWxseSBpZiB5b3UgcHV0DQp5b3VyIHBvc3NpYmxlIGZy
-ZXF1ZW5jaWVzIHRvIERULg0KDQoNCkNoZWVycywNCk15dW5nSm9vDQoNCnBzLiBDaGFud29vLCBJ
-IHdpbGwgY29tbWVudCBvbiB5b3VyIHBhdGNoZXMgb24gdGhlIHVzYWdlIG9mDQpvcHAtbm90aWZp
-ZXJzIGFzIHdlbGwuDQo=
+On Mon, Jul 06, 2015 at 03:22:13PM +0300, Andy Shevchenko wrote:
+> +config IDMA64
+> +	tristate "Intel integrated DMA 64-bit support"
+> +	select DMA_ENGINE
+> +	select DMA_VIRTUAL_CHANNELS
+no help text?
 
+> +static void idma64_chan_init(struct idma64 *idma64, struct idma64_chan *idma64c)
+> +{
+> +	u32 cfghi = IDMA64C_CFGH_SRC_PER(1) | IDMA64C_CFGH_DST_PER(0);
+> +	u32 cfglo = 0;
+> +
+> +	/* Enforce FIFO drain when channel is suspended */
+> +	cfglo |= IDMA64C_CFGL_CH_DRAIN;
+> +
+> +	/* Set default burst alignment */
+> +	cfglo |= IDMA64C_CFGL_DST_BURST_ALIGN | IDMA64C_CFGL_SRC_BURST_ALIGN;
+> +
+> +	channel_writel(idma64c, CFG_LO, cfglo);
+> +	channel_writel(idma64c, CFG_HI, cfghi);
+> +
+> +	/* Enable interrupts */
+> +	channel_set_bit(idma64, MASK(XFER), idma64c->mask);
+> +	channel_set_bit(idma64, MASK(ERROR), idma64c->mask);
+> +
+> +	/*
+> +	 * Enforce the controller to be turned on.
+> +	 *
+> +	 * The iDMA is turned off in ->probe() and looses context during system
+> +	 * suspend / resume cycle. That's why we have to enable it each time we
+> +	 * use it.
+> +	 */
+> +	idma64_on(idma64);
+would it be better that you do this in resume and runtime_resume cycle. That
+way it need not be called for every channel init
+
+> +static size_t idma64_desc_size(struct idma64_desc *desc, unsigned int active)
+> +{
+> +	size_t bytes = 0;
+> +	unsigned int i;
+> +
+> +	for (i = active; i < desc->ndesc; i++)
+> +		bytes += desc->hw[i].len;
+it can help for the non active case to have this size stored in desc while
+preparing, that gets rid of runtime calculation for that case
+> +
+> +	return bytes;
+> +}
+> +
+> +static size_t idma64_pending_desc_size(struct idma64_desc *desc)
+> +{
+> +	return idma64_desc_size(desc, 0);
+> +}
+why not invoke with 0 arg from caller?
+
+> +static int idma64_terminate_all(struct dma_chan *chan)
+> +{
+> +	struct idma64_chan *idma64c = to_idma64_chan(chan);
+> +	unsigned long flags;
+> +	LIST_HEAD(head);
+> +
+> +	spin_lock_irqsave(&idma64c->vchan.lock, flags);
+> +	idma64_stop_transfer(idma64c);
+I dont think this is the right method for terminate. Can you check, it
+might be that we have to suspend the channel before terminating an active
+one. For non active case this should be okay
+
+> +static int idma64_alloc_chan_resources(struct dma_chan *chan)
+> +{
+> +	struct idma64_chan *idma64c = to_idma64_chan(chan);
+> +
+> +	/* Create a pool of consistent memory blocks for hardware descriptors */
+> +	idma64c->pool = dma_pool_create(dev_name(chan2dev(chan)),
+> +					chan->device->dev,
+> +					sizeof(struct idma64_lli), 8, 0);
+> +	if (!idma64c->pool) {
+> +		dev_err(chan2dev(chan), "No memory for descriptors\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	return 0;
+this should return the number descriptors you allocated for the pool
+
+> +
+> +static const struct dev_pm_ops idma64_dev_pm_ops = {
+> +	SET_LATE_SYSTEM_SLEEP_PM_OPS(idma64_suspend_late, idma64_resume_early)
+any reason why late ops?
+
+-- 
+~Vinod
 
