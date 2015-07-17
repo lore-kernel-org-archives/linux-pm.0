@@ -1,177 +1,112 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 07/10] opp: Add OPP sharing information to OPP library
-Date: Fri, 17 Jul 2015 15:51:09 -0700
-Message-ID: <55A986DD.3010104@codeaurora.org>
-References: <cover.1434369079.git.viresh.kumar@linaro.org> <2e1c7fcc1fb62f73c82bd57d196d054ba2607a55.1434369079.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 1/3] PM suspend/hibernate: Call notifier after freezing processes
+Date: Sat, 18 Jul 2015 01:27:15 +0200
+Message-ID: <3179448.TScsKEAuyR@vostro.rjw.lan>
+References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com> <3729395.1oJCgMXcLU@vostro.rjw.lan> <20150716073302.GA10393@pali>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:33029 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750967AbbGQWvN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jul 2015 18:51:13 -0400
-In-Reply-To: <2e1c7fcc1fb62f73c82bd57d196d054ba2607a55.1434369079.git.viresh.kumar@linaro.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:43959 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752392AbbGQXAf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jul 2015 19:00:35 -0400
+In-Reply-To: <20150716073302.GA10393@pali>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, thomas.petazzoni@free-electrons.com, kesavan.abhilash@gmail.com, linaro-kernel@lists.linaro.org, ta.omasab@gmail.com, khilman@linaro.org, linux-pm@vger.kernel.org, viswanath.puttagunta@linaro.org, santosh.shilimkar@oracle.com, broonie@kernel.org, mike.turquette@linaro.org, Sudeep.Holla@arm.com, arnd.bergmann@linaro.org, linux-arm-kernel@lists.infradead.org, l.stach@pengutronix.de
+To: Pali =?ISO-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>
+Cc: Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>, Neil Brown <neilb@suse.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 06/15/2015 04:57 AM, Viresh Kumar wrote:
-> @@ -112,12 +129,14 @@ struct dev_pm_opp {
->   struct device_opp {
->   	struct list_head node;
->   
-> -	struct device *dev;
->   	struct srcu_notifier_head srcu_head;
->   	struct rcu_head rcu_head;
-> +	struct list_head dev_list;
->   	struct list_head opp_list;
->   
-> +	struct device_node *np;
->   	unsigned long clock_latency_ns_max;
-> +	bool shared_opp;
->   };
->   
->   /*
-> @@ -137,6 +156,40 @@ do {									\
->   			   "dev_opp_list_lock protection");		\
->   } while (0)
->   
-> +static struct device_list_opp *_find_list_dev(struct device *dev,
+On Thursday, July 16, 2015 09:33:02 AM Pali Roh=C3=A1r wrote:
+> On Thursday 16 July 2015 03:02:03 Rafael J. Wysocki wrote:
+> > On Sunday, June 21, 2015 01:20:32 PM Pali Roh=C3=A1r wrote:
+> > > To prevent race conditions on userspace processes with I/O some t=
+aks must be
+> > > called after processes are freezed. This patch adds new events wh=
+ich are
+> > > delivered by pm_notifier_call_chain() after freezing processes wh=
+en doing
+> > > suspend or hibernate action.
+> > >=20
+> > > Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+> > > ---
+> > >  include/linux/suspend.h  |    2 ++
+> > >  kernel/power/hibernate.c |    2 ++
+> > >  kernel/power/suspend.c   |    4 +++-
+> > >  3 files changed, 7 insertions(+), 1 deletion(-)
+> > >=20
+> > > diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+> > > index 5efe743..bc743c8 100644
+> > > --- a/include/linux/suspend.h
+> > > +++ b/include/linux/suspend.h
+> > > @@ -368,6 +368,8 @@ static inline bool hibernation_available(void=
+) { return false; }
+> > >  #define PM_POST_SUSPEND		0x0004 /* Suspend finished */
+> > >  #define PM_RESTORE_PREPARE	0x0005 /* Going to restore a saved im=
+age */
+> > >  #define PM_POST_RESTORE		0x0006 /* Restore failed */
+> > > +#define PM_HIBERNATION_AFTER_FREEZE	0x0007 /* After hibernation =
+freeze */
+> > > +#define PM_SUSPEND_AFTER_FREEZE		0x0008 /* After suspend freeze =
+*/
+> > > =20
+> > >  extern struct mutex pm_mutex;
+> > > =20
+> > > diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> > > index 2329daa..184f7ee 100644
+> > > --- a/kernel/power/hibernate.c
+> > > +++ b/kernel/power/hibernate.c
+> > > @@ -671,6 +671,8 @@ int hibernate(void)
+> > >  	if (error)
+> > >  		goto Exit;
+> > > =20
+> > > +	pm_notifier_call_chain(PM_HIBERNATION_AFTER_FREEZE);
+> >=20
+> > Don't we need to check errors from these?
+> >=20
+>=20
+> If yes, what to do in this case? Fail hibernation and goto Exit?
 
-const device?
-
-> +					      struct device_opp *dev_opp)
-> +{
-> +	struct device_list_opp *list_dev;
-> +
-> +	list_for_each_entry(list_dev, &dev_opp->dev_list, node)
-> +		if (list_dev->dev == dev)
-> +			return list_dev;
-> +
-> +	return NULL;
-> +}
-> +
-> +static struct device_opp *_managed_opp(struct device_node *np)
-
-const device_node?
-
-> +{
-> +	struct device_opp *dev_opp;
-> +
-> +	list_for_each_entry_rcu(dev_opp, &dev_opp_list, node)
-> +		if (dev_opp->np == np) {
-> +			/*
-> +			 * Multiple devices can point to the same OPP table and
-> +			 * so will have same node-pointer, np.
-> +			 *
-> +			 * But the OPPs will be considered as shared only if the
-> +			 * OPP table contains a "opp-shared" property.
-> +			 */
-> +			if (dev_opp->shared_opp)
-> +				return dev_opp;
-> +			else
-> +				return NULL;
-> +		}
-> +
-> +	return NULL;
-> +}
-> +
->   /**
->    * _find_device_opp() - find device_opp struct using device pointer
->    * @dev:	device pointer used to lookup device OPPs
-> @@ -454,6 +504,39 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
->   }
->   EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
->   
-> +/* List-dev Helpers */
-> +static void _kfree_list_dev_rcu(struct rcu_head *head)
-> +{
-> +	struct device_list_opp *list_dev;
-> +
-> +	list_dev = container_of(head, struct device_list_opp, rcu_head);
-> +	kfree_rcu(list_dev, rcu_head);
-> +}
-> +
-> +static void _remove_list_dev(struct device_list_opp *list_dev,
-> +			     struct device_opp *dev_opp)
-> +{
-> +	list_del(&list_dev->node);
-> +	call_srcu(&dev_opp->srcu_head.srcu, &list_dev->rcu_head,
-> +		  _kfree_list_dev_rcu);
-> +}
-> +
-> +static struct device_list_opp *_add_list_dev(struct device *dev,
-
-Can dev be const here too?
-
-> +					     struct device_opp *dev_opp)
-> +{
-> +	struct device_list_opp *list_dev;
-> +
-> +	list_dev = kzalloc(sizeof(*list_dev), GFP_KERNEL);
-> +	if (!list_dev)
-> +		return NULL;
-> +
-> +	/* Initialize list-dev */
-> +	list_add_rcu(&list_dev->node, &dev_opp->dev_list);
-> +	list_dev->dev = dev;
-> +
-> +	return list_dev;
-> +}
-> +
->   /**
->    * _add_device_opp() - Returns device OPP table
->    * @dev:	device for which we do this operation
-> @@ -466,6 +549,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
->   static struct device_opp *_add_device_opp(struct device *dev)
->   {
->   	struct device_opp *dev_opp;
-> +	struct device_list_opp *list_dev;
->   
->   	/* Check for existing list for 'dev' first */
->   	dev_opp = _find_device_opp(dev);
-> @@ -621,7 +722,8 @@ static struct dev_pm_opp *_allocate_opp(struct device *dev,
->   	return opp;
->   }
->   
-> -static int _opp_add(struct dev_pm_opp *new_opp, struct device_opp *dev_opp)
-> +static int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
-> +		    struct device_opp *dev_opp)
->   {
->   	struct dev_pm_opp *opp = NULL;
->   	struct list_head *head = &dev_opp->opp_list;
->
->
->
-> @@ -1100,8 +1217,19 @@ static int _of_init_opp_table_v2(struct device *dev,
->   	if (WARN_ON(!count))
->   		goto put_opp_np;
->   
-> -	if (ret)
-> +	if (!ret) {
-> +		if (!dev_opp) {
-> +			dev_opp = _find_device_opp(dev);
-> +			if (WARN_ON(!dev_opp))
-> +				goto put_opp_np;
-> +		}
-> +
-> +		dev_opp->np = opp_np;
-> +		if (of_get_property(opp_np, "opp-shared", NULL))
-
-dev_opp->shared_opp = of_property_read_bool(opp_np, "opp-shared")?
-
-> +			dev_opp->shared_opp = true;
-> +	} else {
->   		of_free_opp_table(dev);
-> +	}
->   
->   put_opp_np:
->   	of_node_put(opp_np);
+Yes, fail the transition in progress.
 
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+> > Also, if you're adding AFTER_FREEZE, it would be good to add BEFORE=
+_THAW too
+> > for symmetry.
+> >=20
+>=20
+> But there is no use case for BEFORE_THAW. At least it is not needed f=
+or now.
 
+=46or your use case, a single function pointer would be sufficient too.
+
+
+> > > +
+> > >  	lock_device_hotplug();
+> > >  	/* Allocate memory management structures */
+> > >  	error =3D create_basic_memory_bitmaps();
+> > > diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> > > index 8d7a1ef..ba2a945 100644
+> > > --- a/kernel/power/suspend.c
+> > > +++ b/kernel/power/suspend.c
+> > > @@ -277,8 +277,10 @@ static int suspend_prepare(suspend_state_t s=
+tate)
+> > >  	trace_suspend_resume(TPS("freeze_processes"), 0, true);
+> > >  	error =3D suspend_freeze_processes();
+> > >  	trace_suspend_resume(TPS("freeze_processes"), 0, false);
+> > > -	if (!error)
+> > > +	if (!error) {
+> > > +		pm_notifier_call_chain(PM_SUSPEND_AFTER_FREEZE);
+> > >  		return 0;
+> > > +	}
+> > > =20
+> > >  	suspend_stats.failed_freeze++;
+> > >  	dpm_save_failed_step(SUSPEND_FREEZE);
+> > >=20
+> >=20
+>=20
+>=20
+
+--=20
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
