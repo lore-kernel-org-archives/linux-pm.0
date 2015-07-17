@@ -1,517 +1,653 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH] gpio: Add AMD SB8XX/SB9XX/A5X/A8X driver
-Date: Fri, 17 Jul 2015 13:34:30 +0200
-Message-ID: <CACRpkdbh6DrGZq5zbXZd_c5yBv9PTRebOdk9GbB+6Twz2omxPg@mail.gmail.com>
-References: <20150620215753.GD29802@yumi.tdiedrich.de>
+From: Junjie Mao <junjie.mao@enight.me>
+Subject: Need a pairing decrement if pm_runtime_get_sync() fails?
+Date: Fri, 17 Jul 2015 19:56:28 +0800
+Message-ID: <86io9jvvyr.fsf@enight.me>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f171.google.com ([209.85.214.171]:33927 "EHLO
-	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755962AbbGQLeb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jul 2015 07:34:31 -0400
-Received: by obre1 with SMTP id e1so64254216obr.1
-        for <linux-pm@vger.kernel.org>; Fri, 17 Jul 2015 04:34:31 -0700 (PDT)
-In-Reply-To: <20150620215753.GD29802@yumi.tdiedrich.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Alexandre Courbot <gnurou@gmail.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-tI caught this message by pure luck down in the spam filter.
+Hi all,
 
-Please send new GPIO drivers to linux-gpio@vger.kernel.org and
-also to me and Alexandre Courbot on the To: line, see MAINTAINERS.
-In this case, please also add linux-acpi and linux-pm, Mika Westerberg
-and Rafael Wysocki for info.
+While analyzing the source, I notice that many drivers use
+pm_runtime_get_sync() in the following pattern:
 
-On Sat, Jun 20, 2015 at 11:57 PM, Tobias Diedrich
-<ranma+kernel@tdiedrich.de> wrote:
+    err = pm_runtime_get_sync(...)
+    if (err < 0) {
+        dev_err(...);
+        return err;
+    }
 
-> In principle this driver could export a pinmux interface as well, but
-> since setting up the pinmux settings is the BIOS/EFI responsibility
-> I don't think it makes sense to add it
+Can this lead to the imbalance of runtime PM usage counter, as the
+counter is always incremented in __pm_runtime_resume() regardless of the
+return value? Is a pairing decrement (e.g. pm_runtime_put_sync() or
+pm_runtime_put_noidle()) a must on the error-handling path? If so, which
+is a better fix, adding a pairing decrement to each call site, or
+decrementing the usage counter in __pm_runtime_resume() if rpm_resume()
+fails?
 
-Famous last words.
+A quick grep in the source shows that there are 150 calls to
+pm_runtime_get() or pm_runtime_get_sync() (I only search for call
+sites where the return values are checked), and 102 of them lack the
+pairing decrement on the error-handling path. A list of these 102 call
+sites, along with their contexts, are attached below for reference.
 
-Surely AMD users does not want to be worse off than
-drivers/pinctrl/intel/* ?
+Best Regards
+Junjie Mao
 
-I think the Intel people are enjoying their fine-grained pinctrl interfaces
-a lot. Partly some drivers are there just to be able to label and
-browse pins in debugfs.
+--------------------------------------------------------------------------------
 
-A reason Mika added it to their driver was that (OTOMH) it turns out
-that runtime pin reconfiguration for power savings is *not* done by the
-BIOS/EFI.
-
-Of course I have heard a 100 variants of "but the BIOS should..."
-arguments about that, but it's just like that: the BIOS just doesn't,
-and pinctrl gets to deal with it. Just wait and see.
-
-> (I only read it to print
-> the current mux state in /sys/kernel/debug/gpio).
-
-That is nice.
-
-> Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-(...)
-> +++ b/drivers/gpio/gpio-sb8xx.c
-> @@ -0,0 +1,489 @@
-> +/*
-> + * GPIO driver for AMD SB8XX/SB9XX/A5X/A8X south bridges
-> + *
-> + * Copyright (c) 2015 Tobias Diedrich
-> + *
-> + * Based on the AMD 8111 GPIO driver:
-> + * Copyright (c) 2012 Dmitry Eremin-Solenikov
-> + *
-> + * Based on the AMD RNG driver:
-> + * Copyright 2005 (c) MontaVista Software, Inc.
-> + * with the majority of the code coming from:
-> + *
-> + * Hardware driver for the Intel/AMD/VIA Random Number Generators (RNG)
-> + * (c) Copyright 2003 Red Hat Inc <jgarzik@redhat.com>
-> + *
-> + * derived from
-> + *
-> + * Hardware driver for the AMD 768 Random Number Generator (RNG)
-> + * (c) Copyright 2001 Red Hat Inc
-> + *
-> + * derived from
-> + *
-> + * Hardware driver for Intel i810 Random Number Generator (RNG)
-> + * Copyright 2000,2001 Jeff Garzik <jgarzik@pobox.com>
-> + * Copyright 2000,2001 Philipp Rumpf <prumpf@mandrakesoft.com>
-
-It's kinda bizarre to have one line about the GPIO and then 10+ lines
-about random random number generators.
-
-> +#include <linux/module.h>
-> +#include <linux/kernel.h>
-> +#include <linux/io.h>
-> +#include <linux/ioport.h>
-> +#include <linux/gpio.h>
-
-#include <linux/gpio/driver.h> should be sufficient.
-
-> +#include <linux/pci.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/acpi.h>
-
-So I see you use this for PM. So in Kconfig you should depend
-on ACPI, right?
-
-> +#include <linux/platform_device.h>
-
-Why? PCI devices are not platform devices either.
-
-> +#define PM_REG_BASE    0xCD6
-> +#define PM_REG_SIZE    2
-> +#define PM_IDX_REG     (PM_REG_BASE + 0)
-> +#define PM_DATA_REG    (PM_REG_BASE + 1)
-> +#define PM_ACPI_MMIO_BAR       0x24
-> +
-> +#define GPIO_OFFSET    0x100
-> +#define GPIO_SIZE      0x100
-> +#define IOMUX_OFFSET   0xd00
-> +#define IOMUX_SIZE     0x100
-> +
-> +#define MAX_GPIO       256
-
-Some variables here have confusing names. Consider that
-CONFIG_ARCH_NR_GPIO we could use some driver-specific
-naming suffix here. Atleast AMD_MAX_GPIO or so.
-
-> +#define REG_GPIO(i)    (0x00 + (i))
-> +
-> +#define IOMUX_MASK     0x03
-> +#define IOMUX_FN0      0x00
-> +#define IOMUX_FN1      0x01
-> +#define IOMUX_FN2      0x02
-> +#define IOMUX_FN3      0x03
-> +
-> +#define GPIO_OWN_NONE  0x00 /* No owner */
-> +#define GPIO_OWN_IMC   0x01 /* OwnedByImc */
-
-What is IMC? Spell it out, quite interesting. Does this mean there
-is a coprocessor or so on the chip that may "own" pins?
-
-> +#define GPIO_OWN_HOST  0x02 /* OwnedByHost */
-> +#define GPIO_OWN_MASK  (GPIO_OWN_IMC | GPIO_OWN_HOST)
-> +#define GPIO_STICKY    0x04 /* Settings sticky across reset */
-> +#define GPIO_PULLUP_B  0x08 /* 0 to enable pull-up */
-> +#define GPIO_PULLDOWN  0x10 /* 1 to enable pull-down */
-> +#define GPIO_PULL_MASK (GPIO_PULLUP_B | GPIO_PULLDOWN)
-> +#define GPIO_PULL_UP   0x00
-> +#define GPIO_PULL_DOWN 0x18
-> +#define GPIO_PULL_NONE 0x08
-
-This may be one of those drivers that we want to put in drivers/pinctrl/*
-even if it's only implementing GPIO right now. There is no strict requirement
-that drivers in drivers/pinctrl must implement pin control interfaces, I more
-think it's for hardware of pin controller type, and this is clearly so.
-
-> +static int enable_unsafe_direction_change;
-> +module_param(enable_unsafe_direction_change, int, 0);
-> +MODULE_PARM_DESC(enable_unsafe_direction_change,
-> +                "Enable gpio direction changes. This can be unsafe!");
-
-Bah just give the users this power. If you can't shoot yourself
-in the foot in kernel space, where else should you do it?
-Just print a warning when doing it.
-
-> +struct amd_sb8xx_gpio {
-> +       struct gpio_chip        chip;
-> +       u32                     gpio_base;
-> +       u32                     iomux_base;> +/*
-> + * Explicitly register the supported PCI ids via MODULE_DEVICE_TABLE.
-> + * We do not actually register a pci_driver, because the SMBUS driver
-> + * (i2c_piix4) already does.
-> + */
-> +MODULE_DEVICE_TABLE(pci, pci_tbl);
-> +
-> +       void __iomem            *gpio;
-> +       void __iomem            *iomux;
-> +       struct device           *dev;
-> +       spinlock_t              lock; /* guards hw registers and orig table */
-> +       u8                      orig[MAX_GPIO];
-
-orig? This struct member needs documentation more than the
-spinlock above it.
-
-> +#define to_agp(chip)   container_of(chip, struct amd_sb8xx_gpio, chip)
-
-Please do a static inline instead. (See other drivers.)
-Defines are hard to read.
-
-> +static int amd_sb8xx_gpio_request(struct gpio_chip *chip, unsigned offset)
-> +{
-> +       struct amd_sb8xx_gpio *agp = to_agp(chip);
-> +       u8 orig = ioread8(agp->gpio + offset);
-> +
-> +       if (orig & GPIO_OWN_IMC) {
-> +               dev_err(agp->dev, "Requested GPIO %d is owned by IMC\n",
-> +                       offset);
-
-Spell out what IMC means, anyone seeing it is going to be as clueless
-as I am.
-
-> +static void amd_sb8xx_gpio_set(struct gpio_chip *chip, unsigned offset,
-> +                              int value)
-> +{
-> +       struct amd_sb8xx_gpio *agp = to_agp(chip);
-> +       u8 temp;
-> +       unsigned long flags;
-> +
-> +       spin_lock_irqsave(&agp->lock, flags);
-> +       temp = ioread8(agp->gpio + offset);
-> +       if ((temp & GPIO_OUT_EN_B) == 0 || enable_unsafe_direction_change) {
-> +               temp &= ~(GPIO_OUT | GPIO_OUT_EN_B);
-> +               temp |= value ? GPIO_OUT : 0;
-> +               iowrite8(temp, agp->gpio + offset);
-> +       }
-
-I think you should detect if you need to do the unsafe direction change and
-print a warning.
-
-> +static int amd_sb8xx_gpio_dirout(struct gpio_chip *chip, unsigned offset,
-> +                                int value)
-> +{
-> +       struct amd_sb8xx_gpio *agp = to_agp(chip);
-> +       u8 temp, orig;
-> +       unsigned long flags;
-> +       int ret = 0;
-> +
-> +       spin_lock_irqsave(&agp->lock, flags);
-> +       orig = ioread8(agp->gpio + offset);
-> +       temp = (orig & ~(GPIO_OUT | GPIO_OUT_EN_B)) | (value ? GPIO_OUT : 0);
-> +       if (orig != temp) {
-> +               if (!enable_unsafe_direction_change)
-> +                       ret = -EINVAL;
-
-Print a warning if you make an unsafe change.
-
-> +               else
-> +                       iowrite8(temp, agp->gpio + offset);
-> +       }
-> +       spin_unlock_irqrestore(&agp->lock, flags);
-> +
-> +       if (ret)
-> +               dev_err(agp->dev,
-> +                       "Cannot change GPIO %d to output: enable_unsafe_direction_change not set\n",
-> +                       offset);
-
-I think this should just be possible. But if you can give me some
-info on the horrors that may occur, I may change my mind :D
-
-> +static int amd_sb8xx_gpio_dirin(struct gpio_chip *chip, unsigned offset)
-> +{
-> +       struct amd_sb8xx_gpio *agp = to_agp(chip);
-> +       u8 temp, orig;
-> +       unsigned long flags;
-> +       int ret = 0;
-> +
-> +       spin_lock_irqsave(&agp->lock, flags);
-> +       orig = ioread8(agp->gpio + offset);
-> +       temp = orig | GPIO_OUT_EN_B;
-> +       if (orig != temp) {
-> +               if (!enable_unsafe_direction_change)
-> +                       ret = -EINVAL;
-
-Print.
-
-> +#ifdef CONFIG_DEBUG_FS
-> +static void amd_sb8xx_gpio_dbg_show(struct seq_file *s, struct gpio_chip *chip)
-> +{
-> +       struct amd_sb8xx_gpio *agp = to_agp(chip);
-> +       int i;
-> +
-> +       for (i = 0; i < chip->ngpio; i++) {
-> +               int gpio = i + chip->base;
-> +               u8 reg;
-> +               const char *label, *pull, *owner, *mux;
-> +
-> +               /* We report the GPIO even if it's not requested since
-> +                * we're also reporting things like alternate
-> +                * functions which apply even when the GPIO is not in
-> +                * use as a GPIO.
-> +                */
-> +               label = gpiochip_is_requested(chip, i);
-> +               if (!label) {
-> +                       label = "Unrequested";
-> +
-> +                       /* Skip known gaps in the gpio range unless they were
-> +                        * explicitly requested.
-> +                        */
-> +                       if ((i > 67 && i < 96) ||
-> +                           (i > 119 && i < 128) ||
-> +                           (i > 150 && i < 160) ||
-> +                           i > 228)
-> +                               continue;
-> +               }
-> +
-> +               seq_printf(s, " gpio-%-3d(%d) (%-20.20s) ", gpio, i, label);
-> +
-> +               reg = ioread8(agp->gpio + i);
-> +
-> +               switch (reg & GPIO_PULL_MASK) {
-> +               case GPIO_PULL_NONE:
-> +                       pull = "nopull";
-> +                       break;
-> +               case GPIO_PULL_DOWN:
-> +                       pull = "pulldown";
-> +                       break;
-> +               case GPIO_PULL_UP:
-> +                       pull = "pullup";
-> +                       break;
-> +               default:
-> +                       pull = "INVALID PULL";
-> +                       break;
-> +               }
-> +
-> +               switch (reg & GPIO_OWN_MASK) {
-> +               case GPIO_OWN_IMC:
-> +                       owner = "imc";
-> +                       break;
-> +               case GPIO_OWN_HOST:
-> +                       owner = "host";
-> +                       break;
-> +               case GPIO_OWN_NONE:
-> +                       owner = NULL;
-> +                       break;
-> +               default:
-> +                       owner = "INVALID OWNER";
-> +               }
-> +
-> +               reg = ioread8(agp->iomux + i);
-> +               switch (reg & IOMUX_MASK) {
-> +               case IOMUX_FN0:
-> +                       mux = "fn0";
-> +                       break;
-> +               case IOMUX_FN1:
-> +                       mux = "fn1";
-> +                       break;
-> +               case IOMUX_FN2:
-> +                       mux = "fn2";
-> +                       break;
-> +               case IOMUX_FN3:
-> +                       mux = "fn3";
-> +                       break;
-> +               default:
-> +                       mux = "INVALID IOMUX";
-> +                       break;
-> +               }
-> +
-> +               seq_printf(s, " %s %s %s %s",
-> +                          reg & GPIO_OUT_EN_B ? "in" : "out",
-> +                          reg & GPIO_IN ? "high" : "low",
-> +                          pull, mux);
-> +               if (i >= 96 && i <= 119)
-> +                       seq_printf(s, " gevent%d", i - 96);
-> +               if (owner)
-> +                       seq_printf(s, " %s", owner);
-> +               seq_putc(s, '\n');
-> +       }
-> +}
-> +#else
-> +#define amd_sb8xx_gpio_dbg_show NULL
-> +#endif
-
-This is nice, but proper pinctrl debugfs will enable you to name all the
-pins on the silicon package etc. It adds another dimension to it.
-The GPIO ranges in pinctrl makes it possible to see the correlation
-between the pins on the package and the GPIO lines.
-
-> +static struct amd_sb8xx_gpio gp = {
-> +       .chip = {
-> +               .label          = "AMD SB8XX/SB9XX/A5X/A8X GPIO driver",
-> +               .owner          = THIS_MODULE,
-> +               .base           = -1,
-
-This is nice. Thanks.
-
-> +static u8 amd_pm_read(u8 reg)
-> +{
-> +       outb_p(reg, PM_IDX_REG);
-> +       return inb_p(PM_DATA_REG);
-> +}
-
-Port-mapped I/O? Wowsers. Well I guess you know what is going on...
-I'm not much of an x86 person.
-
-> +static u32 amd_acpi_mmio_base(struct device *dev)
-> +{
-> +       u32 bar = 0;
-> +       struct resource *pm_region;
-> +
-> +       pm_region = devm_request_region(dev, PM_REG_BASE, PM_REG_SIZE,
-> +                                       "AMD PM IO");
-> +       if (!pm_region) {
-> +               dev_err(dev, "AMD PM IO already in use.\n");
-> +               return 0;
-> +       }
-
-This looks unsafe. Is the same PM IO used by *all* hardware?
-It seems they could collide any time, isn't a mutex more
-appropriate than failing then? (Certainly Rafael can explain this to me,
-but I'm curious.)
-
-> +out_release_pmio:
-> +       devm_release_region(dev, PM_REG_BASE, PM_REG_SIZE);
-> +
-> +       return bar & ~3;
-
-Quite magic. Can you use some #define?
-
-> +static struct pci_dev *amd_get_sb_pcidev(void)
-> +{
-> +       struct pci_dev *dev = NULL;
-> +       const struct pci_device_id *ent;
-> +
-> +       /* We look for our device - AMD South Bridge
-> +        * I don't know about a system with two such bridges,
-> +        * so we can assume that there is max. one device.
-
-Can we? Allright then.
-
-> +        *
-> +        * We can't use plain pci_driver mechanism,
-> +        * as the device is really a multiple function device,
-> +        * main driver that binds to the pci_device is an smbus
-> +        * driver and have to find & bind to the device this way.
-> +        */
-> +       for_each_pci_dev(dev) {
-> +               ent = pci_match_id(pci_tbl, dev);
-> +               if (ent)
-> +                       return dev;
-> +       }
-> +
-> +       return NULL;
-> +}
-
-What is a bit disturbing is that you autodetect this device, but
-the ACPI power thing is hard-coded in PM_REG_BASE
-which results in a confusing mix of hard-coding and detection.
-
-Can you explain how we end up like this?
-
-> +static int __init amd_sb8xx_gpio_init(void)
-> +{
-> +       int ret = -ENODEV;
-> +       struct pci_dev *pcidev = amd_get_sb_pcidev();
-> +       u32 acpi_bar = 0;
-> +
-> +       if (!pcidev)
-> +               goto err;
-> +
-> +       if (pcidev->device == PCI_DEVICE_ID_ATI_SBX00_SMBUS &&
-> +           pcidev->revision < 0x40) {
-> +               /* Southbridges before SB800 handle GPIO differently. */
-> +               goto err;
-> +       }
-> +
-> +       gp.dev = &pcidev->dev;
-> +
-> +       acpi_bar = amd_acpi_mmio_base(gp.dev);
-> +       if (!acpi_bar) {
-> +               dev_err(gp.dev, "Unable to find MMIO base address!\n");
-> +               goto err;
-> +       }
-> +
-> +       gp.gpio_base = (acpi_bar & ~3) + GPIO_OFFSET;
-> +       gp.iomux_base = (acpi_bar & ~3) + IOMUX_OFFSET;
-> +
-> +       if (!devm_request_mem_region(gp.dev, gp.gpio_base, GPIO_SIZE,
-> +                                    "AMD SB8XX GPIO")) {
-> +               dev_err(gp.dev, "GPIO region 0x%x already in use!\n",
-> +                       gp.gpio_base);
-> +               ret = -EBUSY;
-> +               goto err;
-> +       }
-> +       if (!devm_request_mem_region(gp.dev, gp.iomux_base, IOMUX_SIZE,
-> +                                    "AMD SB8XX IOMUX")) {
-> +               dev_err(gp.dev, "IOMUX region 0x%x already in use!\n",
-> +                       gp.iomux_base);
-> +               ret = -EBUSY;
-> +               goto err_release_gpio;
-> +       }
-> +
-> +       gp.gpio = devm_ioremap(gp.dev, gp.gpio_base, GPIO_SIZE);
-> +       if (!gp.gpio) {
-> +               dev_err(gp.dev, "Couldn't map GPIO region\n");
-> +               ret = -ENOMEM;
-> +               goto err_release_iomux;
-> +       }
-> +       gp.iomux = devm_ioremap(gp.dev, gp.iomux_base, IOMUX_SIZE);
-> +       if (!gp.gpio) {
-> +               dev_err(gp.dev, "Couldn't map IOMUX region\n");
-> +               ret = -ENOMEM;
-> +               goto err_release_iomux;
-> +       }
-> +
-> +
-> +       gp.dev = gp.dev;
-> +       gp.chip.dev = gp.dev;
-> +
-> +       spin_lock_init(&gp.lock);
-> +
-> +       ret = gpiochip_add(&gp.chip);
-> +       if (ret) {
-> +               dev_err(gp.dev, "Registering gpiochip failed\n");
-> +               goto err_release_iomux;
-> +       }
-> +
-> +       return 0;
-> +
-> +err_release_iomux:
-> +       devm_release_mem_region(gp.dev, gp.iomux_base, GPIO_SIZE);
-> +err_release_gpio:
-> +       devm_release_mem_region(gp.dev, gp.gpio_base, GPIO_SIZE);
-> +err:
-> +       return ret;
-> +}
-
-Looks correct to me.
-
-Yours,
-Linus Walleij
+arch/arm/common/edma.c:	ret = pm_runtime_get_sync(dev);
+arch/arm/common/edma.c-	if (ret < 0) {
+arch/arm/common/edma.c-		dev_err(dev, "pm_runtime_get_sync() failed\n");
+arch/arm/common/edma.c-		return ret;
+arch/arm/common/edma.c-	}
+--
+drivers/hsi/controllers/omap_ssi.c:	err = pm_runtime_get_sync(ssi->device.parent);
+drivers/hsi/controllers/omap_ssi.c-	if (err < 0) {
+drivers/hsi/controllers/omap_ssi.c-		dev_err(&ssi->device, "runtime PM failed %d\n", err);
+drivers/hsi/controllers/omap_ssi.c-		return err;
+drivers/hsi/controllers/omap_ssi.c-	}
+--
+drivers/usb/core/hub.c:		status = pm_runtime_get_sync(&port_dev->dev);
+drivers/usb/core/hub.c-		if (status < 0) {
+drivers/usb/core/hub.c-			dev_dbg(&udev->dev, "can't resume usb port, status %d\n",
+drivers/usb/core/hub.c-					status);
+drivers/usb/core/hub.c-			return status;
+--
+drivers/usb/musb/omap2430.c:	status = pm_runtime_get_sync(dev);
+drivers/usb/musb/omap2430.c-	if (status < 0) {
+drivers/usb/musb/omap2430.c-		dev_err(dev, "pm_runtime_get_sync FAILED %d\n", status);
+drivers/usb/musb/omap2430.c-		goto err1;
+drivers/usb/musb/omap2430.c-	}
+--
+drivers/usb/musb/musb_dsps.c:	ret = pm_runtime_get_sync(&pdev->dev);
+drivers/usb/musb/musb_dsps.c-	if (ret < 0) {
+drivers/usb/musb/musb_dsps.c-		dev_err(&pdev->dev, "pm_runtime_get_sync FAILED");
+drivers/usb/musb/musb_dsps.c-		goto err2;
+drivers/usb/musb/musb_dsps.c-	}
+--
+drivers/usb/dwc3/dwc3-omap.c:	ret = pm_runtime_get_sync(dev);
+drivers/usb/dwc3/dwc3-omap.c-	if (ret < 0) {
+drivers/usb/dwc3/dwc3-omap.c-		dev_err(dev, "get_sync failed with err %d\n", ret);
+drivers/usb/dwc3/dwc3-omap.c-		goto err0;
+drivers/usb/dwc3/dwc3-omap.c-	}
+--
+drivers/crypto/omap-sham.c:	err = pm_runtime_get_sync(dd->dev);
+drivers/crypto/omap-sham.c-	if (err < 0) {
+drivers/crypto/omap-sham.c-		dev_err(dd->dev, "failed to get sync: %d\n", err);
+drivers/crypto/omap-sham.c-		return err;
+drivers/crypto/omap-sham.c-	}
+--
+drivers/crypto/omap-sham.c:	err = pm_runtime_get_sync(dev);
+drivers/crypto/omap-sham.c-	if (err < 0) {
+drivers/crypto/omap-sham.c-		dev_err(dev, "failed to get sync: %d\n", err);
+drivers/crypto/omap-sham.c-		goto err_pm;
+drivers/crypto/omap-sham.c-	}
+--
+drivers/crypto/omap-sham.c:	int err = pm_runtime_get_sync(dev);
+drivers/crypto/omap-sham.c-	if (err < 0) {
+drivers/crypto/omap-sham.c-		dev_err(dev, "failed to get sync: %d\n", err);
+drivers/crypto/omap-sham.c-		return err;
+drivers/crypto/omap-sham.c-	}
+--
+drivers/crypto/omap-aes.c:	err = pm_runtime_get_sync(dd->dev);
+drivers/crypto/omap-aes.c-	if (err < 0) {
+drivers/crypto/omap-aes.c-		dev_err(dd->dev, "%s: failed to get_sync(%d)\n",
+drivers/crypto/omap-aes.c-			__func__, err);
+drivers/crypto/omap-aes.c-		return err;
+--
+drivers/crypto/omap-aes.c:	err = pm_runtime_get_sync(dev);
+drivers/crypto/omap-aes.c-	if (err < 0) {
+drivers/crypto/omap-aes.c-		dev_err(dev, "%s: failed to get_sync(%d)\n",
+drivers/crypto/omap-aes.c-			__func__, err);
+drivers/crypto/omap-aes.c-		goto err_res;
+--
+drivers/gpu/vga/vga_switcheroo.c:			ret = pm_runtime_get_sync(&client->pdev->dev);
+drivers/gpu/vga/vga_switcheroo.c-			if (ret) {
+drivers/gpu/vga/vga_switcheroo.c-				if (ret != 1)
+drivers/gpu/vga/vga_switcheroo.c-					return ret;
+drivers/gpu/vga/vga_switcheroo.c-			}
+--
+drivers/gpu/drm/nouveau/nouveau_drm.c:	ret = pm_runtime_get_sync(dev->dev);
+drivers/gpu/drm/nouveau/nouveau_drm.c-	if (ret < 0 && ret != -EACCES)
+drivers/gpu/drm/nouveau/nouveau_drm.c-		return ret;
+drivers/gpu/drm/nouveau/nouveau_drm.c-
+drivers/gpu/drm/nouveau/nouveau_drm.c-	get_task_comm(tmpname, current);
+--
+drivers/gpu/drm/nouveau/nouveau_drm.c:	ret = pm_runtime_get_sync(dev->dev);
+drivers/gpu/drm/nouveau/nouveau_drm.c-	if (ret < 0 && ret != -EACCES)
+drivers/gpu/drm/nouveau/nouveau_drm.c-		return ret;
+drivers/gpu/drm/nouveau/nouveau_drm.c-
+drivers/gpu/drm/nouveau/nouveau_drm.c-	switch (_IOC_NR(cmd) - DRM_COMMAND_BASE) {
+--
+drivers/gpu/drm/nouveau/nouveau_gem.c:	ret = pm_runtime_get_sync(dev);
+drivers/gpu/drm/nouveau/nouveau_gem.c-	if (WARN_ON(ret < 0 && ret != -EACCES))
+drivers/gpu/drm/nouveau/nouveau_gem.c-		return;
+drivers/gpu/drm/nouveau/nouveau_gem.c-
+drivers/gpu/drm/nouveau/nouveau_gem.c-	if (gem->import_attach)
+--
+drivers/gpu/drm/nouveau/nouveau_gem.c:		ret = pm_runtime_get_sync(dev);
+drivers/gpu/drm/nouveau/nouveau_gem.c-		if (ret < 0 && ret != -EACCES)
+drivers/gpu/drm/nouveau/nouveau_gem.c-			goto out;
+drivers/gpu/drm/nouveau/nouveau_gem.c-
+drivers/gpu/drm/nouveau/nouveau_gem.c-		ret = nouveau_bo_vma_add(nvbo, cli->vm, vma);
+--
+drivers/gpu/drm/nouveau/dispnv04/crtc.c:	ret = pm_runtime_get_sync(dev->dev);
+drivers/gpu/drm/nouveau/dispnv04/crtc.c-	if (ret < 0 && ret != -EACCES)
+drivers/gpu/drm/nouveau/dispnv04/crtc.c-		return ret;
+drivers/gpu/drm/nouveau/dispnv04/crtc.c-
+drivers/gpu/drm/nouveau/dispnv04/crtc.c-	ret = drm_crtc_helper_set_config(set);
+--
+drivers/gpu/drm/nouveau/nouveau_connector.c:	ret = pm_runtime_get_sync(connector->dev->dev);
+drivers/gpu/drm/nouveau/nouveau_connector.c-	if (ret < 0 && ret != -EACCES)
+drivers/gpu/drm/nouveau/nouveau_connector.c-		return conn_status;
+drivers/gpu/drm/nouveau/nouveau_connector.c-
+drivers/gpu/drm/nouveau/nouveau_connector.c-	nv_encoder = nouveau_connector_ddc_detect(connector);
+--
+drivers/gpu/drm/rockchip/rockchip_drm_vop.c:	ret = pm_runtime_get_sync(vop->dev);
+drivers/gpu/drm/rockchip/rockchip_drm_vop.c-	if (ret < 0) {
+drivers/gpu/drm/rockchip/rockchip_drm_vop.c-		dev_err(vop->dev, "failed to get pm runtime: %d\n", ret);
+drivers/gpu/drm/rockchip/rockchip_drm_vop.c-		return;
+drivers/gpu/drm/rockchip/rockchip_drm_vop.c-	}
+--
+drivers/gpu/drm/radeon/radeon_drv.c:	ret = pm_runtime_get_sync(dev->dev);
+drivers/gpu/drm/radeon/radeon_drv.c-	if (ret < 0)
+drivers/gpu/drm/radeon/radeon_drv.c-		return ret;
+drivers/gpu/drm/radeon/radeon_drv.c-
+drivers/gpu/drm/radeon/radeon_drv.c-	ret = drm_ioctl(filp, cmd, arg);
+--
+drivers/gpu/drm/radeon/radeon_connectors.c:	r = pm_runtime_get_sync(connector->dev->dev);
+drivers/gpu/drm/radeon/radeon_connectors.c-	if (r < 0)
+drivers/gpu/drm/radeon/radeon_connectors.c-		return connector_status_disconnected;
+drivers/gpu/drm/radeon/radeon_connectors.c-
+drivers/gpu/drm/radeon/radeon_connectors.c-	if (encoder) {
+--
+drivers/gpu/drm/radeon/radeon_connectors.c:	r = pm_runtime_get_sync(connector->dev->dev);
+drivers/gpu/drm/radeon/radeon_connectors.c-	if (r < 0)
+drivers/gpu/drm/radeon/radeon_connectors.c-		return connector_status_disconnected;
+drivers/gpu/drm/radeon/radeon_connectors.c-
+drivers/gpu/drm/radeon/radeon_connectors.c-	encoder = radeon_best_single_encoder(connector);
+--
+drivers/gpu/drm/radeon/radeon_connectors.c:	r = pm_runtime_get_sync(connector->dev->dev);
+drivers/gpu/drm/radeon/radeon_connectors.c-	if (r < 0)
+drivers/gpu/drm/radeon/radeon_connectors.c-		return connector_status_disconnected;
+drivers/gpu/drm/radeon/radeon_connectors.c-
+drivers/gpu/drm/radeon/radeon_connectors.c-	encoder = radeon_best_single_encoder(connector);
+--
+drivers/gpu/drm/radeon/radeon_connectors.c:	r = pm_runtime_get_sync(connector->dev->dev);
+drivers/gpu/drm/radeon/radeon_connectors.c-	if (r < 0)
+drivers/gpu/drm/radeon/radeon_connectors.c-		return connector_status_disconnected;
+drivers/gpu/drm/radeon/radeon_connectors.c-
+drivers/gpu/drm/radeon/radeon_connectors.c-	if (!force && radeon_check_hpd_status_unchanged(connector)) {
+--
+drivers/gpu/drm/radeon/radeon_connectors.c:	r = pm_runtime_get_sync(connector->dev->dev);
+drivers/gpu/drm/radeon/radeon_connectors.c-	if (r < 0)
+drivers/gpu/drm/radeon/radeon_connectors.c-		return connector_status_disconnected;
+drivers/gpu/drm/radeon/radeon_connectors.c-
+drivers/gpu/drm/radeon/radeon_connectors.c-	if (!force && radeon_check_hpd_status_unchanged(connector)) {
+--
+drivers/gpu/drm/radeon/radeon_kms.c:	r = pm_runtime_get_sync(dev->dev);
+drivers/gpu/drm/radeon/radeon_kms.c-	if (r < 0)
+drivers/gpu/drm/radeon/radeon_kms.c-		return r;
+drivers/gpu/drm/radeon/radeon_kms.c-
+drivers/gpu/drm/radeon/radeon_kms.c-	/* new gpu have virtual address space support */
+--
+drivers/gpu/drm/radeon/radeon_display.c:	ret = pm_runtime_get_sync(dev->dev);
+drivers/gpu/drm/radeon/radeon_display.c-	if (ret < 0)
+drivers/gpu/drm/radeon/radeon_display.c-		return ret;
+drivers/gpu/drm/radeon/radeon_display.c-
+drivers/gpu/drm/radeon/radeon_display.c-	ret = drm_crtc_helper_set_config(set);
+--
+drivers/gpu/drm/amd/amdgpu/amdgpu_display.c:	ret = pm_runtime_get_sync(dev->dev);
+drivers/gpu/drm/amd/amdgpu/amdgpu_display.c-	if (ret < 0)
+drivers/gpu/drm/amd/amdgpu/amdgpu_display.c-		return ret;
+drivers/gpu/drm/amd/amdgpu/amdgpu_display.c-
+drivers/gpu/drm/amd/amdgpu/amdgpu_display.c-	ret = drm_crtc_helper_set_config(set);
+--
+drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c:	ret = pm_runtime_get_sync(dev->dev);
+drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c-	if (ret < 0)
+drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c-		return ret;
+drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c-
+drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c-	ret = drm_ioctl(filp, cmd, arg);
+--
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c:	r = pm_runtime_get_sync(connector->dev->dev);
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-	if (r < 0)
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-		return connector_status_disconnected;
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-	if (encoder) {
+--
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c:	r = pm_runtime_get_sync(connector->dev->dev);
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-	if (r < 0)
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-		return connector_status_disconnected;
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-	encoder = amdgpu_connector_best_single_encoder(connector);
+--
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c:	r = pm_runtime_get_sync(connector->dev->dev);
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-	if (r < 0)
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-		return connector_status_disconnected;
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-	if (!force && amdgpu_connector_check_hpd_status_unchanged(connector)) {
+--
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c:	r = pm_runtime_get_sync(connector->dev->dev);
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-	if (r < 0)
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-		return connector_status_disconnected;
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-
+drivers/gpu/drm/amd/amdgpu/amdgpu_connectors.c-	if (!force && amdgpu_connector_check_hpd_status_unchanged(connector)) {
+--
+drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c:	r = pm_runtime_get_sync(dev->dev);
+drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c-	if (r < 0)
+drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c-		return r;
+drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c-
+drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c-	fpriv = kzalloc(sizeof(*fpriv), GFP_KERNEL);
+--
+drivers/gpu/drm/exynos/exynos_drm_g2d.c:	ret = pm_runtime_get_sync(g2d->dev);
+drivers/gpu/drm/exynos/exynos_drm_g2d.c-	if (ret < 0)
+drivers/gpu/drm/exynos/exynos_drm_g2d.c-		return;
+drivers/gpu/drm/exynos/exynos_drm_g2d.c-
+drivers/gpu/drm/exynos/exynos_drm_g2d.c-	writel_relaxed(node->dma_addr, g2d->regs + G2D_DMA_SFR_BASE_ADDR);
+--
+drivers/i2c/busses/i2c-omap.c:	r = pm_runtime_get_sync(dev->dev);
+drivers/i2c/busses/i2c-omap.c-	if (r < 0)
+drivers/i2c/busses/i2c-omap.c-		goto err_free_mem;
+drivers/i2c/busses/i2c-omap.c-
+drivers/i2c/busses/i2c-omap.c-	/*
+--
+drivers/i2c/busses/i2c-omap.c:	ret = pm_runtime_get_sync(&pdev->dev);
+drivers/i2c/busses/i2c-omap.c-	if (ret < 0)
+drivers/i2c/busses/i2c-omap.c-		return ret;
+drivers/i2c/busses/i2c-omap.c-
+drivers/i2c/busses/i2c-omap.c-	omap_i2c_write_reg(dev, OMAP_I2C_CON_REG, 0);
+--
+drivers/media/i2c/s5k6a3.c:	ret = pm_runtime_get(sensor->dev);
+drivers/media/i2c/s5k6a3.c-	if (ret < 0)
+drivers/media/i2c/s5k6a3.c-		return ret;
+drivers/media/i2c/s5k6a3.c-
+drivers/media/i2c/s5k6a3.c-	ret = regulator_enable(sensor->supplies[i].consumer);
+--
+drivers/media/platform/s5p-tv/sii9234_drv.c:		ret = pm_runtime_get_sync(&ctx->client->dev);
+drivers/media/platform/s5p-tv/sii9234_drv.c-	else
+drivers/media/platform/s5p-tv/sii9234_drv.c-		ret = pm_runtime_put(&ctx->client->dev);
+drivers/media/platform/s5p-tv/sii9234_drv.c-	/* only values < 0 indicate errors */
+drivers/media/platform/s5p-tv/sii9234_drv.c-	return ret < 0 ? ret : 0;
+--
+drivers/media/platform/s5p-tv/sii9234_drv.c:	ret = pm_runtime_get_sync(dev);
+drivers/media/platform/s5p-tv/sii9234_drv.c-	if (ret)
+drivers/media/platform/s5p-tv/sii9234_drv.c-		goto fail_pm;
+drivers/media/platform/s5p-tv/sii9234_drv.c-
+drivers/media/platform/s5p-tv/sii9234_drv.c-	/* verify chip version */
+--
+drivers/media/platform/s5p-tv/hdmi_drv.c:		ret = pm_runtime_get_sync(hdev->dev);
+drivers/media/platform/s5p-tv/hdmi_drv.c-	else
+drivers/media/platform/s5p-tv/hdmi_drv.c-		ret = pm_runtime_put_sync(hdev->dev);
+drivers/media/platform/s5p-tv/hdmi_drv.c-	/* only values < 0 indicate errors */
+drivers/media/platform/s5p-tv/hdmi_drv.c-	return ret < 0 ? ret : 0;
+--
+drivers/media/platform/s5p-tv/mixer_drv.c:	int ret = pm_runtime_get_sync(mdev->dev);
+drivers/media/platform/s5p-tv/mixer_drv.c-
+drivers/media/platform/s5p-tv/mixer_drv.c-	/* returning 1 means that power is already enabled,
+drivers/media/platform/s5p-tv/mixer_drv.c-	 * so zero success be returned */
+drivers/media/platform/s5p-tv/mixer_drv.c-	if (IS_ERR_VALUE(ret))
+--
+drivers/media/platform/s5p-tv/sdo_drv.c:		ret = pm_runtime_get_sync(dev);
+drivers/media/platform/s5p-tv/sdo_drv.c-	else
+drivers/media/platform/s5p-tv/sdo_drv.c-		ret = pm_runtime_put_sync(dev);
+drivers/media/platform/s5p-tv/sdo_drv.c-
+drivers/media/platform/s5p-tv/sdo_drv.c-	/* only values < 0 indicate errors */
+--
+drivers/media/platform/sti/bdisp/bdisp-debug.c:	ret = pm_runtime_get_sync(bdisp->dev);
+drivers/media/platform/sti/bdisp/bdisp-debug.c-	if (ret < 0) {
+drivers/media/platform/sti/bdisp/bdisp-debug.c-		seq_puts(s, "Cannot wake up IP\n");
+drivers/media/platform/sti/bdisp/bdisp-debug.c-		return 0;
+drivers/media/platform/sti/bdisp/bdisp-debug.c-	}
+--
+drivers/media/platform/sti/bdisp/bdisp-v4l2.c:	int ret = pm_runtime_get_sync(ctx->bdisp_dev->dev);
+drivers/media/platform/sti/bdisp/bdisp-v4l2.c-
+drivers/media/platform/sti/bdisp/bdisp-v4l2.c-	if (ret < 0) {
+drivers/media/platform/sti/bdisp/bdisp-v4l2.c-		dev_err(ctx->bdisp_dev->dev, "failed to set runtime PM\n");
+drivers/media/platform/sti/bdisp/bdisp-v4l2.c-
+--
+drivers/media/platform/sti/bdisp/bdisp-v4l2.c:	ret = pm_runtime_get_sync(dev);
+drivers/media/platform/sti/bdisp/bdisp-v4l2.c-	if (ret < 0) {
+drivers/media/platform/sti/bdisp/bdisp-v4l2.c-		dev_err(dev, "failed to set PM\n");
+drivers/media/platform/sti/bdisp/bdisp-v4l2.c-		goto err_dbg;
+drivers/media/platform/sti/bdisp/bdisp-v4l2.c-	}
+--
+drivers/media/platform/s3c-camif/camif-capture.c:	ret = pm_runtime_get_sync(camif->dev);
+drivers/media/platform/s3c-camif/camif-capture.c-	if (ret < 0)
+drivers/media/platform/s3c-camif/camif-capture.c-		goto err_pm;
+drivers/media/platform/s3c-camif/camif-capture.c-
+drivers/media/platform/s3c-camif/camif-capture.c-	ret = sensor_set_power(camif, 1);
+--
+drivers/media/platform/s3c-camif/camif-core.c:	ret = pm_runtime_get_sync(dev);
+drivers/media/platform/s3c-camif/camif-core.c-	if (ret < 0)
+drivers/media/platform/s3c-camif/camif-core.c-		goto err_pm;
+drivers/media/platform/s3c-camif/camif-core.c-
+drivers/media/platform/s3c-camif/camif-core.c-	/* Initialize contiguous memory allocator */
+--
+drivers/media/platform/s5p-jpeg/jpeg-core.c:	ret = pm_runtime_get_sync(ctx->jpeg->dev);
+drivers/media/platform/s5p-jpeg/jpeg-core.c-
+drivers/media/platform/s5p-jpeg/jpeg-core.c-	return ret > 0 ? 0 : ret;
+drivers/media/platform/s5p-jpeg/jpeg-core.c-}
+drivers/media/platform/s5p-jpeg/jpeg-core.c-
+--
+drivers/media/platform/exynos-gsc/gsc-core.c:	ret = pm_runtime_get_sync(&pdev->dev);
+drivers/media/platform/exynos-gsc/gsc-core.c-	if (ret < 0)
+drivers/media/platform/exynos-gsc/gsc-core.c-		goto err_m2m;
+drivers/media/platform/exynos-gsc/gsc-core.c-
+drivers/media/platform/exynos-gsc/gsc-core.c-	/* Initialize continious memory allocator */
+--
+drivers/media/platform/exynos-gsc/gsc-m2m.c:	ret = pm_runtime_get_sync(&ctx->gsc_dev->pdev->dev);
+drivers/media/platform/exynos-gsc/gsc-m2m.c-	return ret > 0 ? 0 : ret;
+drivers/media/platform/exynos-gsc/gsc-m2m.c-}
+drivers/media/platform/exynos-gsc/gsc-m2m.c-
+drivers/media/platform/exynos-gsc/gsc-m2m.c-static void gsc_m2m_stop_streaming(struct vb2_queue *q)
+--
+drivers/media/platform/exynos4-is/fimc-lite.c:	ret = pm_runtime_get_sync(&fimc->pdev->dev);
+drivers/media/platform/exynos4-is/fimc-lite.c-	if (ret < 0)
+drivers/media/platform/exynos4-is/fimc-lite.c-		goto unlock;
+drivers/media/platform/exynos4-is/fimc-lite.c-
+drivers/media/platform/exynos4-is/fimc-lite.c-	ret = v4l2_fh_open(file);
+--
+drivers/media/platform/exynos4-is/fimc-isp-video.c:	ret = pm_runtime_get_sync(&isp->pdev->dev);
+drivers/media/platform/exynos4-is/fimc-isp-video.c-	if (ret < 0)
+drivers/media/platform/exynos4-is/fimc-isp-video.c-		goto rel_fh;
+drivers/media/platform/exynos4-is/fimc-isp-video.c-
+drivers/media/platform/exynos4-is/fimc-isp-video.c-	if (v4l2_fh_is_singular_file(file)) {
+--
+drivers/media/platform/exynos4-is/media-dev.c:	ret = pm_runtime_get_sync(fmd->pmf);
+drivers/media/platform/exynos4-is/media-dev.c-	if (ret < 0)
+drivers/media/platform/exynos4-is/media-dev.c-		return ret;
+drivers/media/platform/exynos4-is/media-dev.c-
+drivers/media/platform/exynos4-is/media-dev.c-	fmd->num_sensors = 0;
+--
+drivers/media/platform/exynos4-is/media-dev.c:	ret = pm_runtime_get_sync(camclk->fmd->pmf);
+drivers/media/platform/exynos4-is/media-dev.c-	return ret < 0 ? ret : 0;
+drivers/media/platform/exynos4-is/media-dev.c-}
+drivers/media/platform/exynos4-is/media-dev.c-
+drivers/media/platform/exynos4-is/media-dev.c-static void cam_clk_unprepare(struct clk_hw *hw)
+--
+drivers/media/platform/exynos4-is/fimc-capture.c:	ret = pm_runtime_get_sync(&fimc->pdev->dev);
+drivers/media/platform/exynos4-is/fimc-capture.c-	if (ret < 0)
+drivers/media/platform/exynos4-is/fimc-capture.c-		goto unlock;
+drivers/media/platform/exynos4-is/fimc-capture.c-
+drivers/media/platform/exynos4-is/fimc-capture.c-	ret = v4l2_fh_open(file);
+--
+drivers/media/platform/exynos4-is/fimc-is.c:	ret = pm_runtime_get_sync(dev);
+drivers/media/platform/exynos4-is/fimc-is.c-	if (ret < 0)
+drivers/media/platform/exynos4-is/fimc-is.c-		goto err_pm;
+drivers/media/platform/exynos4-is/fimc-is.c-
+drivers/media/platform/exynos4-is/fimc-is.c-	is->alloc_ctx = vb2_dma_contig_init_ctx(dev);
+--
+drivers/media/platform/exynos4-is/fimc-m2m.c:	ret = pm_runtime_get_sync(&ctx->fimc_dev->pdev->dev);
+drivers/media/platform/exynos4-is/fimc-m2m.c-	return ret > 0 ? 0 : ret;
+drivers/media/platform/exynos4-is/fimc-m2m.c-}
+drivers/media/platform/exynos4-is/fimc-m2m.c-
+drivers/media/platform/exynos4-is/fimc-m2m.c-static void stop_streaming(struct vb2_queue *q)
+--
+drivers/media/platform/exynos4-is/mipi-csis.c:		ret = pm_runtime_get_sync(&state->pdev->dev);
+drivers/media/platform/exynos4-is/mipi-csis.c-		if (ret && ret != 1)
+drivers/media/platform/exynos4-is/mipi-csis.c-			return ret;
+drivers/media/platform/exynos4-is/mipi-csis.c-	}
+drivers/media/platform/exynos4-is/mipi-csis.c-
+--
+drivers/media/platform/exynos4-is/fimc-isp.c:		ret = pm_runtime_get_sync(&is->pdev->dev);
+drivers/media/platform/exynos4-is/fimc-isp.c-		if (ret < 0)
+drivers/media/platform/exynos4-is/fimc-isp.c-			return ret;
+drivers/media/platform/exynos4-is/fimc-isp.c-		set_bit(IS_ST_PWR_ON, &is->state);
+drivers/media/platform/exynos4-is/fimc-isp.c-
+--
+drivers/media/platform/coda/coda-common.c:	ret = pm_runtime_get_sync(&dev->plat_dev->dev);
+drivers/media/platform/coda/coda-common.c-	if (ret < 0) {
+drivers/media/platform/coda/coda-common.c-		v4l2_err(&dev->v4l2_dev, "failed to power up: %d\n", ret);
+drivers/media/platform/coda/coda-common.c-		goto err_pm_get;
+drivers/media/platform/coda/coda-common.c-	}
+--
+drivers/mfd/arizona-irq.c:	ret = pm_runtime_get_sync(arizona->dev);
+drivers/mfd/arizona-irq.c-	if (ret < 0) {
+drivers/mfd/arizona-irq.c-		dev_err(arizona->dev, "Failed to resume device: %d\n", ret);
+drivers/mfd/arizona-irq.c-		return IRQ_NONE;
+drivers/mfd/arizona-irq.c-	}
+--
+drivers/video/fbdev/omap2/dss/hdmi5.c:	r = pm_runtime_get_sync(&hdmi.pdev->dev);
+drivers/video/fbdev/omap2/dss/hdmi5.c-	WARN_ON(r < 0);
+drivers/video/fbdev/omap2/dss/hdmi5.c-	if (r < 0)
+drivers/video/fbdev/omap2/dss/hdmi5.c-		return r;
+drivers/video/fbdev/omap2/dss/hdmi5.c-
+--
+drivers/video/fbdev/omap2/dss/dispc.c:	r = pm_runtime_get_sync(&dispc.pdev->dev);
+drivers/video/fbdev/omap2/dss/dispc.c-	WARN_ON(r < 0);
+drivers/video/fbdev/omap2/dss/dispc.c-	return r < 0 ? r : 0;
+drivers/video/fbdev/omap2/dss/dispc.c-}
+drivers/video/fbdev/omap2/dss/dispc.c-EXPORT_SYMBOL(dispc_runtime_get);
+--
+drivers/video/fbdev/omap2/dss/hdmi4.c:	r = pm_runtime_get_sync(&hdmi.pdev->dev);
+drivers/video/fbdev/omap2/dss/hdmi4.c-	WARN_ON(r < 0);
+drivers/video/fbdev/omap2/dss/hdmi4.c-	if (r < 0)
+drivers/video/fbdev/omap2/dss/hdmi4.c-		return r;
+drivers/video/fbdev/omap2/dss/hdmi4.c-
+--
+drivers/video/fbdev/omap2/dss/dss.c:	r = pm_runtime_get_sync(&dss.pdev->dev);
+drivers/video/fbdev/omap2/dss/dss.c-	WARN_ON(r < 0);
+drivers/video/fbdev/omap2/dss/dss.c-	return r < 0 ? r : 0;
+drivers/video/fbdev/omap2/dss/dss.c-}
+drivers/video/fbdev/omap2/dss/dss.c-
+--
+drivers/video/fbdev/omap2/dss/venc.c:	r = pm_runtime_get_sync(&venc.pdev->dev);
+drivers/video/fbdev/omap2/dss/venc.c-	WARN_ON(r < 0);
+drivers/video/fbdev/omap2/dss/venc.c-	return r < 0 ? r : 0;
+drivers/video/fbdev/omap2/dss/venc.c-}
+drivers/video/fbdev/omap2/dss/venc.c-
+--
+drivers/video/fbdev/omap2/dss/rfbi.c:	r = pm_runtime_get_sync(&rfbi.pdev->dev);
+drivers/video/fbdev/omap2/dss/rfbi.c-	WARN_ON(r < 0);
+drivers/video/fbdev/omap2/dss/rfbi.c-	return r < 0 ? r : 0;
+drivers/video/fbdev/omap2/dss/rfbi.c-}
+drivers/video/fbdev/omap2/dss/rfbi.c-
+--
+drivers/video/fbdev/omap2/dss/dsi.c:	r = pm_runtime_get_sync(&dsi->pdev->dev);
+drivers/video/fbdev/omap2/dss/dsi.c-	WARN_ON(r < 0);
+drivers/video/fbdev/omap2/dss/dsi.c-	return r < 0 ? r : 0;
+drivers/video/fbdev/omap2/dss/dsi.c-}
+drivers/video/fbdev/omap2/dss/dsi.c-
+--
+drivers/input/misc/bma150.c:	error = pm_runtime_get_sync(&bma150->client->dev);
+drivers/input/misc/bma150.c-	if (error < 0 && error != -ENOSYS)
+drivers/input/misc/bma150.c-		return error;
+drivers/input/misc/bma150.c-
+drivers/input/misc/bma150.c-	/*
+--
+drivers/input/keyboard/omap4-keypad.c:	error = pm_runtime_get_sync(&pdev->dev);
+drivers/input/keyboard/omap4-keypad.c-	if (error) {
+drivers/input/keyboard/omap4-keypad.c-		dev_err(&pdev->dev, "pm_runtime_get_sync() failed\n");
+drivers/input/keyboard/omap4-keypad.c-		goto err_unmap;
+drivers/input/keyboard/omap4-keypad.c-	}
+--
+drivers/dma/cppi41.c:	ret = pm_runtime_get_sync(dev);
+drivers/dma/cppi41.c-	if (ret < 0)
+drivers/dma/cppi41.c-		goto err_get_sync;
+drivers/dma/cppi41.c-
+drivers/dma/cppi41.c-	cdd->queues_rx = glue_info->queues_rx;
+--
+drivers/dma/sh/rcar-dmac.c:	ret = pm_runtime_get_sync(&pdev->dev);
+drivers/dma/sh/rcar-dmac.c-	if (ret < 0) {
+drivers/dma/sh/rcar-dmac.c-		dev_err(&pdev->dev, "runtime PM get sync failed (%d)\n", ret);
+drivers/dma/sh/rcar-dmac.c-		return ret;
+drivers/dma/sh/rcar-dmac.c-	}
+--
+drivers/dma/sh/usb-dmac.c:	ret = pm_runtime_get_sync(&pdev->dev);
+drivers/dma/sh/usb-dmac.c-	if (ret < 0) {
+drivers/dma/sh/usb-dmac.c-		dev_err(&pdev->dev, "runtime PM get sync failed (%d)\n", ret);
+drivers/dma/sh/usb-dmac.c-		return ret;
+drivers/dma/sh/usb-dmac.c-	}
+--
+drivers/gpio/gpio-zynq.c:	ret = pm_runtime_get_sync(chip->dev);
+drivers/gpio/gpio-zynq.c-
+drivers/gpio/gpio-zynq.c-	/*
+drivers/gpio/gpio-zynq.c-	 * If the device is already active pm_runtime_get() will return 1 on
+drivers/gpio/gpio-zynq.c-	 * success, but gpio_request still needs to return 0.
+--
+drivers/hid/i2c-hid/i2c-hid.c:		ret = pm_runtime_get_sync(&client->dev);
+drivers/hid/i2c-hid/i2c-hid.c-		if (ret < 0) {
+drivers/hid/i2c-hid/i2c-hid.c-			hid->open--;
+drivers/hid/i2c-hid/i2c-hid.c-			goto done;
+drivers/hid/i2c-hid/i2c-hid.c-		}
+--
+drivers/pci/host/pci-dra7xx.c:	ret = pm_runtime_get_sync(dev);
+drivers/pci/host/pci-dra7xx.c-	if (IS_ERR_VALUE(ret)) {
+drivers/pci/host/pci-dra7xx.c-		dev_err(dev, "pm_runtime_get_sync failed\n");
+drivers/pci/host/pci-dra7xx.c-		goto err_phy;
+drivers/pci/host/pci-dra7xx.c-	}
+--
+drivers/soc/ti/knav_dma.c:	ret = pm_runtime_get_sync(kdev->dev);
+drivers/soc/ti/knav_dma.c-	if (ret < 0) {
+drivers/soc/ti/knav_dma.c-		dev_err(kdev->dev, "unable to enable pktdma, err %d\n", ret);
+drivers/soc/ti/knav_dma.c-		return ret;
+drivers/soc/ti/knav_dma.c-	}
+--
+drivers/soc/ti/knav_qmss_queue.c:	ret = pm_runtime_get_sync(&pdev->dev);
+drivers/soc/ti/knav_qmss_queue.c-	if (ret < 0) {
+drivers/soc/ti/knav_qmss_queue.c-		dev_err(dev, "Failed to enable QMSS\n");
+drivers/soc/ti/knav_qmss_queue.c-		return ret;
+drivers/soc/ti/knav_qmss_queue.c-	}
+--
+drivers/spi/spi-tegra114.c:	ret = pm_runtime_get_sync(tspi->dev);
+drivers/spi/spi-tegra114.c-	if (ret < 0) {
+drivers/spi/spi-tegra114.c-		dev_err(tspi->dev, "pm runtime failed, e = %d\n", ret);
+drivers/spi/spi-tegra114.c-		return ret;
+drivers/spi/spi-tegra114.c-	}
+--
+drivers/spi/spi-tegra114.c:	ret = pm_runtime_get_sync(dev);
+drivers/spi/spi-tegra114.c-	if (ret < 0) {
+drivers/spi/spi-tegra114.c-		dev_err(dev, "pm runtime failed, e = %d\n", ret);
+drivers/spi/spi-tegra114.c-		return ret;
+drivers/spi/spi-tegra114.c-	}
+--
+drivers/spi/spi-tegra20-slink.c:	ret = pm_runtime_get_sync(tspi->dev);
+drivers/spi/spi-tegra20-slink.c-	if (ret < 0) {
+drivers/spi/spi-tegra20-slink.c-		dev_err(tspi->dev, "pm runtime failed, e = %d\n", ret);
+drivers/spi/spi-tegra20-slink.c-		return ret;
+drivers/spi/spi-tegra20-slink.c-	}
+--
+drivers/spi/spi-tegra20-slink.c:	ret = pm_runtime_get_sync(dev);
+drivers/spi/spi-tegra20-slink.c-	if (ret < 0) {
+drivers/spi/spi-tegra20-slink.c-		dev_err(dev, "pm runtime failed, e = %d\n", ret);
+drivers/spi/spi-tegra20-slink.c-		return ret;
+drivers/spi/spi-tegra20-slink.c-	}
+--
+drivers/spi/spi-ti-qspi.c:	ret = pm_runtime_get_sync(qspi->dev);
+drivers/spi/spi-ti-qspi.c-	if (ret < 0) {
+drivers/spi/spi-ti-qspi.c-		dev_err(qspi->dev, "pm_runtime_get_sync() failed\n");
+drivers/spi/spi-ti-qspi.c-		return ret;
+drivers/spi/spi-ti-qspi.c-	}
+--
+drivers/spi/spi-ti-qspi.c:	ret = pm_runtime_get_sync(qspi->dev);
+drivers/spi/spi-ti-qspi.c-	if (ret < 0) {
+drivers/spi/spi-ti-qspi.c-		dev_err(qspi->dev, "pm_runtime_get_sync() failed\n");
+drivers/spi/spi-ti-qspi.c-		return ret;
+drivers/spi/spi-ti-qspi.c-	}
+--
+drivers/spi/spi-omap2-mcspi.c:	ret = pm_runtime_get_sync(mcspi->dev);
+drivers/spi/spi-omap2-mcspi.c-	if (ret < 0)
+drivers/spi/spi-omap2-mcspi.c-		return ret;
+drivers/spi/spi-omap2-mcspi.c-
+drivers/spi/spi-omap2-mcspi.c-	ret = omap2_mcspi_setup_transfer(spi, NULL);
+--
+drivers/spi/spi-omap2-mcspi.c:	ret = pm_runtime_get_sync(mcspi->dev);
+drivers/spi/spi-omap2-mcspi.c-	if (ret < 0)
+drivers/spi/spi-omap2-mcspi.c-		return ret;
+drivers/spi/spi-omap2-mcspi.c-
+drivers/spi/spi-omap2-mcspi.c-	mcspi_write_reg(master, OMAP2_MCSPI_WAKEUPENABLE,
+--
+drivers/spi/spi-tegra20-sflash.c:	ret = pm_runtime_get_sync(dev);
+drivers/spi/spi-tegra20-sflash.c-	if (ret < 0) {
+drivers/spi/spi-tegra20-sflash.c-		dev_err(dev, "pm runtime failed, e = %d\n", ret);
+drivers/spi/spi-tegra20-sflash.c-		return ret;
+drivers/spi/spi-tegra20-sflash.c-	}
+--
+drivers/spi/spi.c:		ret = pm_runtime_get_sync(master->dev.parent);
+drivers/spi/spi.c-		if (ret < 0) {
+drivers/spi/spi.c-			dev_err(&master->dev, "Failed to power device: %d\n",
+drivers/spi/spi.c-				ret);
+drivers/spi/spi.c-			return;
+--
+drivers/spi/spi-img-spfi.c:	ret = pm_runtime_get_sync(dev);
+drivers/spi/spi-img-spfi.c-	if (ret)
+drivers/spi/spi-img-spfi.c-		return ret;
+drivers/spi/spi-img-spfi.c-	spfi_reset(spfi);
+drivers/spi/spi-img-spfi.c-	pm_runtime_put(dev);
+--
+drivers/spi/spi-qup.c:	ret = pm_runtime_get_sync(&pdev->dev);
+drivers/spi/spi-qup.c-	if (ret < 0)
+drivers/spi/spi-qup.c-		return ret;
+drivers/spi/spi-qup.c-
+drivers/spi/spi-qup.c-	ret = spi_qup_set_state(controller, QUP_STATE_RESET);
+--
+drivers/net/ethernet/freescale/fec_main.c:	ret = pm_runtime_get_sync(dev);
+drivers/net/ethernet/freescale/fec_main.c-	if (IS_ERR_VALUE(ret))
+drivers/net/ethernet/freescale/fec_main.c-		return ret;
+drivers/net/ethernet/freescale/fec_main.c-
+drivers/net/ethernet/freescale/fec_main.c-	fep->mii_timeout = 0;
+--
+drivers/net/ethernet/freescale/fec_main.c:	ret = pm_runtime_get_sync(dev);
+drivers/net/ethernet/freescale/fec_main.c-	if (IS_ERR_VALUE(ret))
+drivers/net/ethernet/freescale/fec_main.c-		return ret;
+drivers/net/ethernet/freescale/fec_main.c-
+drivers/net/ethernet/freescale/fec_main.c-	fep->mii_timeout = 0;
+--
+drivers/net/ethernet/freescale/fec_main.c:	ret = pm_runtime_get_sync(&fep->pdev->dev);
+drivers/net/ethernet/freescale/fec_main.c-	if (IS_ERR_VALUE(ret))
+drivers/net/ethernet/freescale/fec_main.c-		return ret;
+drivers/net/ethernet/freescale/fec_main.c-
+drivers/net/ethernet/freescale/fec_main.c-	pinctrl_pm_select_default_state(&fep->pdev->dev);
+--
+sound/soc/tegra/tegra30_ahub.c:	ret = pm_runtime_get_sync(dev);
+sound/soc/tegra/tegra30_ahub.c-	if (ret < 0)
+sound/soc/tegra/tegra30_ahub.c-		return ret;
+sound/soc/tegra/tegra30_ahub.c-	ret = regcache_sync(ahub->regmap_ahub);
+sound/soc/tegra/tegra30_ahub.c-	ret |= regcache_sync(ahub->regmap_apbif);
+--
+sound/soc/tegra/tegra30_i2s.c:	ret = pm_runtime_get_sync(dev);
+sound/soc/tegra/tegra30_i2s.c-	if (ret < 0)
+sound/soc/tegra/tegra30_i2s.c-		return ret;
+sound/soc/tegra/tegra30_i2s.c-	ret = regcache_sync(i2s->regmap);
+sound/soc/tegra/tegra30_i2s.c-	pm_runtime_put(dev);
+--
+sound/soc/codecs/tas2552.c:	ret = pm_runtime_get_sync(codec->dev);
+sound/soc/codecs/tas2552.c-	if (ret < 0) {
+sound/soc/codecs/tas2552.c-		dev_err(codec->dev, "Enabling device failed: %d\n",
+sound/soc/codecs/tas2552.c-			ret);
+sound/soc/codecs/tas2552.c-		goto probe_fail;
+--
+sound/soc/codecs/wm8962.c:	ret = pm_runtime_get_sync(codec->dev);
+sound/soc/codecs/wm8962.c-	if (ret < 0) {
+sound/soc/codecs/wm8962.c-		dev_err(codec->dev, "Failed to resume device: %d\n", ret);
+sound/soc/codecs/wm8962.c-		return ret;
+sound/soc/codecs/wm8962.c-	}
+--
+sound/soc/codecs/wm8962.c:	ret = pm_runtime_get_sync(dev);
+sound/soc/codecs/wm8962.c-	if (ret < 0) {
+sound/soc/codecs/wm8962.c-		dev_err(dev, "Failed to resume: %d\n", ret);
+sound/soc/codecs/wm8962.c-		return IRQ_NONE;
+sound/soc/codecs/wm8962.c-	}
+--
+sound/soc/intel/atom/sst/sst_drv_interface.c:		ret = pm_runtime_get_sync(dev);
+sound/soc/intel/atom/sst/sst_drv_interface.c-
+sound/soc/intel/atom/sst/sst_drv_interface.c-		dev_dbg(ctx->dev, "Enable: pm usage count: %d\n", usage_count);
+sound/soc/intel/atom/sst/sst_drv_interface.c-		if (ret < 0) {
+sound/soc/intel/atom/sst/sst_drv_interface.c-			dev_err(ctx->dev, "Runtime get failed with err: %d\n", ret);
+--
+sound/soc/intel/atom/sst/sst_drv_interface.c:	retval = pm_runtime_get_sync(ctx->dev);
+sound/soc/intel/atom/sst/sst_drv_interface.c-	if (retval < 0)
+sound/soc/intel/atom/sst/sst_drv_interface.c-		return retval;
+sound/soc/intel/atom/sst/sst_drv_interface.c-
+sound/soc/intel/atom/sst/sst_drv_interface.c-	str_id = sst_get_stream(ctx, str_params);
+--
+sound/soc/intel/atom/sst/sst_drv_interface.c:	ret_val = pm_runtime_get_sync(ctx->dev);
+sound/soc/intel/atom/sst/sst_drv_interface.c-	if (ret_val < 0)
+sound/soc/intel/atom/sst/sst_drv_interface.c-		return ret_val;
+sound/soc/intel/atom/sst/sst_drv_interface.c-
+sound/soc/intel/atom/sst/sst_drv_interface.c-	ret_val = sst_send_byte_stream_mrfld(ctx, bytes);
