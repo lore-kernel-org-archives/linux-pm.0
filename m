@@ -1,137 +1,107 @@
-From: Mike Snitzer <snitzer@redhat.com>
-Subject: Re: [PATCH v2 2/3] dm: Export function dm_suspend_md()
-Date: Fri, 17 Jul 2015 13:31:47 -0400
-Message-ID: <20150717173147.GA5060@redhat.com>
-References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com>
- <20150717152253.GA1021@redhat.com>
- <20150717153045.GB1021@redhat.com>
- <201507171913.57104@pali>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v4 3/8] clk: add support for clocks provided by SCP(System
+ Control Processor)
+Date: Fri, 17 Jul 2015 11:13:51 -0700
+Message-ID: <55A945DF.3@codeaurora.org>
+References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com> <1433760002-24120-4-git-send-email-sudeep.holla@arm.com> <20150702172310.GF4301@codeaurora.org> <5596A1B6.8020307@arm.com> <559ADC94.4080505@codeaurora.org> <559BF858.1020301@arm.com> <20150708014606.GH30412@codeaurora.org> <55A7D79B.3080305@arm.com> <20150716193114.GA17952@codeaurora.org> <55A8E434.2010709@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <201507171913.57104@pali>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>
-Cc: Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org, dm-devel@redhat.com, Pavel Machek <pavel@ucw.cz>, Alasdair Kergon <agk@redhat.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:45852 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752409AbbGQSNz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jul 2015 14:13:55 -0400
+In-Reply-To: <55A8E434.2010709@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@baylibre.com>
 
-On Fri, Jul 17 2015 at  1:13pm -0400,
-Pali Roh=E1r <pali.rohar@gmail.com> wrote:
+On 07/17/2015 04:17 AM, Sudeep Holla wrote:
+>
+>
+> On 16/07/15 20:31, Stephen Boyd wrote:
+>> On 07/16, Sudeep Holla wrote:
+>>> On 08/07/15 02:46, Stephen Boyd wrote:
+>>>>
+>>>> Yes struct clk would have min/max, and struct clk_core would have
+>>>> min/max. Then some sort of provider API (or possibly even
+>>>> clk_init_data) would take the min/max fields and copy them over
+>>>> to struct clk_core. Then during set_rate operations we would
+>>>> aggregate the constraints from struct clk like we already do and
+>>>> add in the constrains in struct clk_core.
+>>>>
+>>>> One downside to adding new fields to clk_init_data is that there
+>>>> are drivers out there that aren't initializing that structure to
+>>>> 0, and they're putting it on the stack, so stack junk can come
+>>>> through. Furthermore, min/max would mean that every driver needs
+>>>> to specify some large number for max or we have to special case
+>>>> min == max == 0 and ignore it. Somehow it needs to be opt-in. If
+>>>> we want to go down the clk_init_data route then perhaps we need
+>>>> some sort of rate_constraint struct pointer in there that drivers
+>>>> can optionally setup.
+>>>>
+>>>>     struct clk_rate_constraint {
+>>>>         unsigned long min;
+>>>>         unsigned long max;
+>>>>     };
+>>>>
+>>>>     struct clk_init_data {
+>>>>         ...
+>>>>         struct clk_rate_constraint *rate_constraint;
+>>>>     };
+>>>>
+>>>> I haven't thought it through completely, but I can probably write
+>>>> up some patch tomorrow after I sleep on it.
+>>>>
+>>>
+>>> I am hoping to get this series for v4.3. In order to avoid using
+>>> consumer API, I can revert back to the min,max check I had in the
+>>> round_rate earlier if that's fine with you ? Let me know so that I can
+>>> post the next version based on that. All the other comments are already
+>>> addressed.
+>>
+>> Ok. I'm fine with the consumer API being used, but it would be
+>> nice if we didn't have to do so. Try out the patch below,
+>> hopefully it's good enough for your purposes. It may need to be
+>> more robust, and we may still want to use the init_data structure
+>> to avoid races with providers and consumers, but we can leave
+>> that for later after sweeping all the structure users.
+>>
+>
+> Agreed, I would avoid using clk consumer API or use it with TODO so that
+> I remember to remove it soon. Anyways, thanks for the patch, I tested it
+> and works fine to me. You can add Tested-by if you decide to push it.
 
-> On Friday 17 July 2015 17:30:45 Mike Snitzer wrote:
-> > On Fri, Jul 17 2015 at 11:22am -0400,
-> >=20
-> > Mike Snitzer <snitzer@redhat.com> wrote:
-> > > On Fri, Jul 17 2015 at 10:22am -0400,
-> > >=20
-> > > Pali Roh=E1r <pali.rohar@gmail.com> wrote:
-> > > > On Friday 17 July 2015 10:04:39 Mike Snitzer wrote:
-> > > > > On Sun, Jun 21 2015 at  7:20am -0400,
-> > > > >=20
-> > > > > Pali Roh=E1r <pali.rohar@gmail.com> wrote:
-> > > > > > This patch exports function dm_suspend_md() which suspend
-> > > > > > mapped device so other kernel drivers can use it and could
-> > > > > > suspend mapped device when needed.
-> > > > > >=20
-> > > > > > Signed-off-by: Pali Roh=E1r <pali.rohar@gmail.com>
-> > > > > > ---
-> > > > > >=20
-> > > > > >  drivers/md/dm.c |    6 ++++++
-> > > > > >  drivers/md/dm.h |    5 +++++
-> > > > > >  2 files changed, 11 insertions(+)
-> > > > > >=20
-> > > > > > diff --git a/drivers/md/dm.c b/drivers/md/dm.c
-> > > > > > index 2caf492..03298ff 100644
-> > > > > > --- a/drivers/md/dm.c
-> > > > > > +++ b/drivers/md/dm.c
-> > > > > >=20
-> > > > > > @@ -3343,6 +3343,12 @@ out:
-> > > > > >  	return r;
-> > > > > > =20
-> > > > > >  }
-> > > > > >=20
-> > > > > > +int dm_suspend_md(struct mapped_device *md)
-> > > > > > +{
-> > > > > > +	return dm_suspend(md, DM_SUSPEND_LOCKFS_FLAG);
-> > > > > > +}
-> > > > > > +EXPORT_SYMBOL_GPL(dm_suspend_md);
-> > > > > > +
-> > > > > >=20
-> > > > > >  /*
-> > > > > > =20
-> > > > > >   * Internal suspend/resume works like userspace-driven
-> > > > > >   suspend. It waits * until all bios finish and prevents
-> > > > > >   issuing new bios to the target drivers.
-> > > > >=20
-> > > > > To do this properly you should be introducing a variant of
-> > > > > dm_internal_suspend.  We currently have two variants:
-> > > > > dm_internal_suspend_fast
-> > > > > dm_internal_suspend_noflush
-> > > > >=20
-> > > > > The reason to use a dm_internal_suspend variant is this suspe=
-nd
-> > > > > was _not_ initiated by an upper level ioctl (from userspace).=
-=20
-> > > > > It was done internally from within the target.
-> > > > >=20
-> > > > > You're explicitly using DM_SUSPEND_LOCKFS_FLAG above.. meanin=
-g
-> > > > > you're interested in flushing all pending IO (in the FS
-> > > > > layered on dm-crupt, if one exists).
-> > > > >=20
-> > > > > But see the comment in __dm_internal_suspend() about
-> > > > > TASK_UNINTERRUPTIBLE. If you're OK with the dm-crypt initiate=
-d
-> > > > > suspend being TASK_UNINTERRUPTIBLE then you could just
-> > > > > introduce:
-> > > > >=20
-> > > > > void dm_internal_suspend_uninterruptible_flush(struct
-> > > > > mapped_device *md) {
-> > > > >=20
-> > > > >         mutex_lock(&md->suspend_lock);
-> > > > >         __dm_internal_suspend(md, DM_SUSPEND_LOCKFS_FLAG);
-> > > > >         mutex_unlock(&md->suspend_lock);
-> > > > >=20
-> > > > > }
-> > > > > EXPORT_SYMBOL_GPL(dm_internal_suspend_uninterruptible_flush);
-> > > > >=20
-> > > > > Otherwise, there is much more extensive DM core changes neede=
-d
-> > > > > to __dm_internal_suspend() and .presuspend to properly suppor=
-t
-> > > > > TASK_INTERRUPTIBLE.
-> > > >=20
-> > > > Hi! I will look at dm_internal_suspend. Anyway use case for
-> > > > suspend is from dm-crypt to do both operations: suspend + key
-> > > > wipe. It means that without entering key again from userspace,
-> > > > resume is not possible. So my question is: It is possible to do
-> > > > internal suspend and then using resume from userspace via ioctl=
-?
-> > >=20
-> > > Good question: no, userspace resume would block waiting for
-> > > internal resume.
-> > >=20
-> > > Soooo... I'll have to look at your patch 3 to understand why
-> > > dm-crypt is needing to initiate the suspend internally but then
-> > > userspace is initiating the resume... this imbalance is
-> > > concerning.
-> >=20
-> > Why not introduce a new message that allows you to wipe the key aft=
-er
-> > suspend?  Both initiated from userspace.
->=20
-> There is already message for wiping key and it will success only if d=
-m=20
-> is suspended.
->=20
-> But this patch series is fixing another problem: wipe key before=20
-> suspend/hibernation action happend and to have it race free it must b=
-e=20
-> done after userspace is freezed!
+Thanks. I pushed it to -next last night but it probably hasn't shown up yet.
 
-Yes, I remember now.  So it isn't even userspace initiating the
-suspend_and_wipe, it is the PM chain notifier code you're adding.
+>
+>>>
+>>> Also since this series depends on SCPI, I was thinking to get it merged
+>>> via ARM-SoC, but that might conflict with the round_rate prototype
+>>> change. Do do plan to share a stable base with arm-soc guys or you
+>>> expect all the changes to be contained in clk tree ?
+>>>
+>>
+>> We can share a stable branch for the determine_rate change with
+>> arm-soc. We already have it on a separate branch but haven't
+>> published it so far because nobody has asked.
+>>
+>
+> determine_rate change shouldn't affect SCPI clock driver but I remember
+> seeing round_rate change too on the list which returns value using the
+> argument from Boris. Is that planned for v4.3 ? I would need the stable
+> branch from this clk_hw_set_rate_range if you decide to push. Let me
+> know your preferences. I will post the updated version of the patch
+> accordingly.
+>
 
-I'll think more about your use of dm_suspend()
+We're not going to change round_rate() so it sounds like you don't need 
+a stable branch. But you would need this new consumer API. So you still 
+need a branch right?
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
+
