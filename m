@@ -1,112 +1,196 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH v5 7/8] dmaengine: add a driver for Intel integrated DMA
- 64-bit
-Date: Fri, 17 Jul 2015 10:08:03 +0530
-Message-ID: <20150717043803.GE5086@localhost>
-References: <1436185334-34275-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <1436185334-34275-8-git-send-email-andriy.shevchenko@linux.intel.com>
+From: Konstantin Khlebnikov <koct9i@gmail.com>
+Subject: Re: [PATCH RFC] intel_pstate: play well with frequency limits set by acpi
+Date: Fri, 17 Jul 2015 07:36:27 +0300
+Message-ID: <CALYGNiMOMWY2Ng9yLQ04Ghr6fKnO_6BRLCRE2b-rnvoPJmauqQ@mail.gmail.com>
+References: <20150716181706.6500.64386.stgit@buzz>
+	<1437084536.2377.117.camel@spandruv-DESK3.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:33659 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750735AbbGQEgZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 17 Jul 2015 00:36:25 -0400
-Content-Disposition: inline
-In-Reply-To: <1436185334-34275-8-git-send-email-andriy.shevchenko@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1437084536.2377.117.camel@spandruv-DESK3.jf.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Kristen Carlson Accardi <kristen@linux.intel.com>, Len Brown <lenb@kernel.org>, Ethan Zhao <ethan.zhao@oracle.com>
 List-Id: linux-pm@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, mturquette@baylibre.com
 
-On Mon, Jul 06, 2015 at 03:22:13PM +0300, Andy Shevchenko wrote:
-> +config IDMA64
-> +	tristate "Intel integrated DMA 64-bit support"
-> +	select DMA_ENGINE
-> +	select DMA_VIRTUAL_CHANNELS
-no help text?
+On Fri, Jul 17, 2015 at 1:08 AM, Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+> On Thu, 2015-07-16 at 21:17 +0300, Konstantin Khlebnikov wrote:
+>> IPMI can control CPU P-states remotely: configuration is reported via
+>> common ACPI interface (_PPC/_PSS/etc). This patch adds required minimal
+>> support in intel_pstate to receive and use these P-state limits.
+>>
+>> * ignore limit of top state in _PPC: it lower than turbo boost frequency
+>> * register intel_pstate in acpi-processor to get states from _PSS
+>> * link acpi_processor_get_bios_limit: this adds attribute "bios_limit"
+>>
+>> Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+>> ---
+>>  drivers/acpi/processor_perflib.c |    3 +-
+>>  drivers/cpufreq/intel_pstate.c   |   57 ++++++++++++++++++++++++++++++++++++++
+>>  2 files changed, 59 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+>> index cfc8aba72f86..781e328c9d5f 100644
+>> --- a/drivers/acpi/processor_perflib.c
+>> +++ b/drivers/acpi/processor_perflib.c
+>> @@ -98,7 +98,8 @@ static int acpi_processor_ppc_notifier(struct notifier_block *nb,
+>>
+>>       ppc = (unsigned int)pr->performance_platform_limit;
+>>
+>> -     if (ppc >= pr->performance->state_count)
+>> +     /* Ignore limit of top state: it lower than turbo boost frequency */
+>> +     if (!ppc || ppc >= pr->performance->state_count)
+> Why? Isn't the previous check enough?
 
-> +static void idma64_chan_init(struct idma64 *idma64, struct idma64_chan *idma64c)
-> +{
-> +	u32 cfghi = IDMA64C_CFGH_SRC_PER(1) | IDMA64C_CFGH_DST_PER(0);
-> +	u32 cfglo = 0;
-> +
-> +	/* Enforce FIFO drain when channel is suspended */
-> +	cfglo |= IDMA64C_CFGL_CH_DRAIN;
-> +
-> +	/* Set default burst alignment */
-> +	cfglo |= IDMA64C_CFGL_DST_BURST_ALIGN | IDMA64C_CFGL_SRC_BURST_ALIGN;
-> +
-> +	channel_writel(idma64c, CFG_LO, cfglo);
-> +	channel_writel(idma64c, CFG_HI, cfghi);
-> +
-> +	/* Enable interrupts */
-> +	channel_set_bit(idma64, MASK(XFER), idma64c->mask);
-> +	channel_set_bit(idma64, MASK(ERROR), idma64c->mask);
-> +
-> +	/*
-> +	 * Enforce the controller to be turned on.
-> +	 *
-> +	 * The iDMA is turned off in ->probe() and looses context during system
-> +	 * suspend / resume cycle. That's why we have to enable it each time we
-> +	 * use it.
-> +	 */
-> +	idma64_on(idma64);
-would it be better that you do this in resume and runtime_resume cycle. That
-way it need not be called for every channel init
+Zero _PPC state must be top performance state but as I see frequency in
+_PSS is lower than maximum possible turbo frequency. So, in this case
+intel_pstate cannnot get "100%"  for max bound even it there is no limit set.
 
-> +static size_t idma64_desc_size(struct idma64_desc *desc, unsigned int active)
-> +{
-> +	size_t bytes = 0;
-> +	unsigned int i;
-> +
-> +	for (i = active; i < desc->ndesc; i++)
-> +		bytes += desc->hw[i].len;
-it can help for the non active case to have this size stored in desc while
-preparing, that gets rid of runtime calculation for that case
-> +
-> +	return bytes;
-> +}
-> +
-> +static size_t idma64_pending_desc_size(struct idma64_desc *desc)
-> +{
-> +	return idma64_desc_size(desc, 0);
-> +}
-why not invoke with 0 arg from caller?
+For example: I saw _PSS[0] = 2601 Mhz, PSS[1] = 2600 Mhz while turbo
+state is 3400 Mhz.
 
-> +static int idma64_terminate_all(struct dma_chan *chan)
-> +{
-> +	struct idma64_chan *idma64c = to_idma64_chan(chan);
-> +	unsigned long flags;
-> +	LIST_HEAD(head);
-> +
-> +	spin_lock_irqsave(&idma64c->vchan.lock, flags);
-> +	idma64_stop_transfer(idma64c);
-I dont think this is the right method for terminate. Can you check, it
-might be that we have to suspend the channel before terminating an active
-one. For non active case this should be okay
-
-> +static int idma64_alloc_chan_resources(struct dma_chan *chan)
-> +{
-> +	struct idma64_chan *idma64c = to_idma64_chan(chan);
-> +
-> +	/* Create a pool of consistent memory blocks for hardware descriptors */
-> +	idma64c->pool = dma_pool_create(dev_name(chan2dev(chan)),
-> +					chan->device->dev,
-> +					sizeof(struct idma64_lli), 8, 0);
-> +	if (!idma64c->pool) {
-> +		dev_err(chan2dev(chan), "No memory for descriptors\n");
-> +		return -ENOMEM;
-> +	}
-> +
-> +	return 0;
-this should return the number descriptors you allocated for the pool
-
-> +
-> +static const struct dev_pm_ops idma64_dev_pm_ops = {
-> +	SET_LATE_SYSTEM_SLEEP_PM_OPS(idma64_suspend_late, idma64_resume_early)
-any reason why late ops?
-
--- 
-~Vinod
-
+>>               goto out;
+>>
+>>       cpufreq_verify_within_limits(policy, 0,
+>> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+>> index 15ada47bb720..4a34ddf4fa73 100644
+>> --- a/drivers/cpufreq/intel_pstate.c
+>> +++ b/drivers/cpufreq/intel_pstate.c
+>> @@ -26,6 +26,7 @@
+>>  #include <linux/fs.h>
+>>  #include <linux/debugfs.h>
+>>  #include <linux/acpi.h>
+>> +#include <acpi/processor.h>
+>>  #include <linux/vmalloc.h>
+>>  #include <trace/events/power.h>
+>>
+>> @@ -113,6 +114,9 @@ struct cpudata {
+>>       u64     prev_mperf;
+>>       u64     prev_tsc;
+>>       struct sample sample;
+>> +#ifdef CONFIG_ACPI_PROCESSOR
+>> +     struct acpi_processor_performance acpi_data;
+>> +#endif
+>>  };
+>>
+>>  static struct cpudata **all_cpu_data;
+>> @@ -145,6 +149,7 @@ static int hwp_active;
+>>
+>>  struct perf_limits {
+>>       int no_turbo;
+>> +     int no_acpi;
+>>       int turbo_disabled;
+>>       int max_perf_pct;
+>>       int min_perf_pct;
+>> @@ -158,6 +163,7 @@ struct perf_limits {
+>>
+>>  static struct perf_limits limits = {
+>>       .no_turbo = 0,
+>> +     .no_acpi = !IS_ENABLED(CONFIG_ACPI_PROCESSOR),
+>>       .turbo_disabled = 0,
+>>       .max_perf_pct = 100,
+>>       .max_perf = int_tofp(1),
+>> @@ -449,6 +455,18 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
+>>       return count;
+>>  }
+>>
+>> +static ssize_t store_no_acpi(struct kobject *a, struct attribute *b,
+>> +                          const char *buf, size_t count)
+>> +{
+>> +#ifdef CONFIG_ACPI_PROCESSOR
+>> +     return kstrtouint(buf, 0, &limits.no_acpi) ?: count;
+>> +#else
+>> +     return -ENODEV;
+>> +#endif
+>> +}
+>> +show_one(no_acpi, no_acpi);
+>> +define_one_global_rw(no_acpi);
+>> +
+>>  show_one(max_perf_pct, max_perf_pct);
+>>  show_one(min_perf_pct, min_perf_pct);
+>>
+>> @@ -460,6 +478,7 @@ define_one_global_ro(num_pstates);
+>>
+>>  static struct attribute *intel_pstate_attributes[] = {
+>>       &no_turbo.attr,
+>> +     &no_acpi.attr,
+>>       &max_perf_pct.attr,
+>>       &min_perf_pct.attr,
+>>       &turbo_pct.attr,
+>> @@ -1049,6 +1068,38 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+>>       policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+>>       cpumask_set_cpu(policy->cpu, policy->cpus);
+>>
+>> +#ifdef CONFIG_ACPI_PROCESSOR
+>> +     if (!limits.no_acpi) {
+>> +             /*
+>> +              * Minimum necessary to get acpi_processor_ppc_notifier() and
+>> +              * acpi_processor_get_bios_limit() working.
+>> +              */
+>> +             if (!zalloc_cpumask_var(&cpu->acpi_data.shared_cpu_map,
+>> +                                     GFP_KERNEL))
+>> +                     rc = -ENOMEM;
+>> +             else
+>> +                     rc = acpi_processor_register_performance(
+>> +                                     &cpu->acpi_data, policy->cpu);
+>> +             if (rc) {
+>> +                     pr_err("intel_pstate: acpi init failed: %d\n", rc);
+>> +                     free_cpumask_var(cpu->acpi_data.shared_cpu_map);
+>> +                     limits.no_acpi = 1;
+>> +             }
+>> +     }
+>> +#endif
+>> +     return 0;
+>> +}
+>> +
+>> +static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
+>> +{
+>> +#ifdef CONFIG_ACPI_PROCESSOR
+>> +     struct cpudata *cpu = all_cpu_data[policy->cpu];
+>> +
+>> +     if (cpu->acpi_data.state_count)
+>> +             acpi_processor_unregister_performance(&cpu->acpi_data,
+>> +                                                   policy->cpu);
+>> +     free_cpumask_var(cpu->acpi_data.shared_cpu_map);
+>> +#endif
+>>       return 0;
+>>  }
+>>
+>> @@ -1057,7 +1108,11 @@ static struct cpufreq_driver intel_pstate_driver = {
+>>       .verify         = intel_pstate_verify_policy,
+>>       .setpolicy      = intel_pstate_set_policy,
+>>       .get            = intel_pstate_get,
+>> +#ifdef CONFIG_ACPI_PROCESSOR
+>> +     .bios_limit     = acpi_processor_get_bios_limit,
+>> +#endif
+>>       .init           = intel_pstate_cpu_init,
+>> +     .exit           = intel_pstate_cpu_exit,
+>>       .stop_cpu       = intel_pstate_stop_cpu,
+>>       .name           = "intel_pstate",
+>>  };
+>> @@ -1286,6 +1341,8 @@ static int __init intel_pstate_setup(char *str)
+>>               force_load = 1;
+>>       if (!strcmp(str, "hwp_only"))
+>>               hwp_only = 1;
+>> +     if (!strcmp(str, "no_acpi"))
+>> +             limits.no_acpi = 1;
+>>       return 0;
+>>  }
+>>  early_param("intel_pstate", intel_pstate_setup);
+>>
+> _PPC is index into _PSS. Since intel P state doesn't follow _PSS, the
+> states may not be 1:1 matching. So we have to harmonize them.
+>
+>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
