@@ -1,51 +1,66 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 00/10] OPP: Add code to support operating-points-v2
- bindings
-Date: Fri, 17 Jul 2015 08:06:02 +0530
-Message-ID: <20150717023602.GD5828@linux>
-References: <cover.1434369079.git.viresh.kumar@linaro.org>
- <CAKohpokaiCq8kq5xALyW-q1QXvUJo2uv2ZbbFYfVFMT0XAqdzA@mail.gmail.com>
+From: Matt Ranostay <mranostay-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v3 1/2] iio: light: DT binding docs for APDS9960 driver
+Date: Thu, 16 Jul 2015 19:55:52 -0700
+Message-ID: <CAKzfze8w6PDT9oWGCSbSK70K+e3ciijdJv+AwKxwbc=uQ-iHvg@mail.gmail.com>
+References: <1436754043-6232-1-git-send-email-mranostay@gmail.com>
+	<1436754043-6232-2-git-send-email-mranostay@gmail.com>
+	<73CF94B0-47DF-493D-8F2A-0BC26EB4DEBB@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f169.google.com ([209.85.192.169]:34326 "EHLO
-	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752044AbbGQCgH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jul 2015 22:36:07 -0400
-Received: by pdbbh15 with SMTP id bh15so8408763pdb.1
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2015 19:36:06 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAKohpokaiCq8kq5xALyW-q1QXvUJo2uv2ZbbFYfVFMT0XAqdzA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <73CF94B0-47DF-493D-8F2A-0BC26EB4DEBB-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: "linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, =?UTF-8?B?TWFyZWsgVmHFoXV0?= <marex-ynQEQJNshbs@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Rob Herring <rob.herring@linaro.org>, Nishanth Menon <nm@ti.com>
-Cc: Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Mark Brown <broonie@kernel.org>, Mike Turquette <mike.turquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Lucas Stach <l.stach@pengutronix.de>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Thomas Abraham <ta.omasab@gmail.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, Kevin Hilman <khilman@linaro.org>, santosh shilimkar <santosh.shilimkar@oracle.com>
 
-On 30-06-15, 22:14, Viresh Kumar wrote:
-> On 15 June 2015 at 17:27, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > Hi Guys,
-> >
-> > This adds code to support operating-points-v2 bindings. Not everything
-> > is supported yet, but most of the basic stuff is.
-> >
-> > Tested with: Exynos 5250, dual cortex A15 board. With both old and new
-> > bindings.
-> >
-> > Bindings are already frozen:
-> > http://marc.info/?i=cover.1433434659.git.viresh.kumar%40linaro.org
-> >
-> > Pushed here as well for reference:
-> > ssh://git@git.linaro.org/people/viresh.kumar/linux.git opp/v2
-> 
-> I am really hoping to get all basic stuff pushed in for 4.3, can we have
-> some review of the code please?
+Ok will fix in v4. Please review the 2/2 patch when you get a chance :)
 
-@Stephen: Can you please review rest of the stuff?
-
-@Nishanth: Can you please review the series, now that you are back :)
-
-@Rafael: Can you please apply the patches Acked by Stephen for 4.3, so
-that I don't have to resend them again ?
-
--- 
-viresh
+On Mon, Jul 13, 2015 at 2:42 AM, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+>
+>
+> On 13 July 2015 03:20:42 BST, Matt Ranostay <mranostay-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+>>Document compatible string, and required DT properties for APDS9960
+>>chipset driver.
+>>
+>>Reviewed-by: Marek Vasut <marex-ynQEQJNshbs@public.gmane.org>
+>>Signed-off-by: Matt Ranostay <mranostay-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+>>---
+>>.../devicetree/bindings/iio/light/apds9960.txt        | 19
+>>+++++++++++++++++++
+>> 1 file changed, 19 insertions(+)
+>>create mode 100644
+>>Documentation/devicetree/bindings/iio/light/apds9960.txt
+>>
+>>diff --git a/Documentation/devicetree/bindings/iio/light/apds9960.txt
+>>b/Documentation/devicetree/bindings/iio/light/apds9960.txt
+>>new file mode 100644
+>>index 0000000..7a47d28
+>>--- /dev/null
+>>+++ b/Documentation/devicetree/bindings/iio/light/apds9960.txt
+>>@@ -0,0 +1,19 @@
+>>+* Avago APDS9960 gesture/RGB/ALS/proximity sensor
+>>+
+>>+http://www.avagotech.com/docs/AV02-4191EN
+>>+
+>>+Required properties:
+>>+
+>>+  - compatible: must be "avago,apds9960"
+>>+  - reg: the I2c address of the sensor
+>>+  - interrupt-parent: should be the phandle for the interrupt
+>>controller
+>>+  - interrupts: interrupt mapping for GPIO IRQ
+> Usual trick here is to cross reference the interrupt bindings doc to allow all the
+>  complexity without duplicating docs too much.
+>>+
+>>+Example:
+>>+
+>>+apds9960@39 {
+>>+      compatible = "avago,apds9960";
+>>+      reg = <0x39>;
+>>+      interrupt-parent = <&gpio1>;
+>>+      interrupts = <16 1>;
+>>+};
+>
+> --
+> Sent from my Android device with K-9 Mail. Please excuse my brevity.
