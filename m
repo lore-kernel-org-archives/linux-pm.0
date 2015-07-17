@@ -1,89 +1,113 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 2/3] PM / sleep: Go direct_complete if driver has no callbacks
-Date: Fri, 17 Jul 2015 02:37:53 +0200
-Message-ID: <1960688.DPHZXQdxmJ@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1507151444460.18896-100000@netrider.rowland.org> <6740752.elSTxeiQAg@vostro.rjw.lan> <CAAObsKDDEi8CQQp2apARBT9pnWiGghOS-ry_sbw7-GgBhydw2g@mail.gmail.com>
+From: Sai Gurrappadi <sgurrappadi@nvidia.com>
+Subject: Re: [RFCv5 PATCH 32/46] sched: Energy-aware wake-up task placement
+Date: Thu, 16 Jul 2015 17:10:52 -0700
+Message-ID: <55A8480C.6080806@nvidia.com>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com> <1436293469-25707-33-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61247 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751743AbbGQALO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jul 2015 20:11:14 -0400
-In-Reply-To: <CAAObsKDDEi8CQQp2apARBT9pnWiGghOS-ry_sbw7-GgBhydw2g@mail.gmail.com>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:17516 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756149AbbGQAML (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jul 2015 20:12:11 -0400
+In-Reply-To: <1436293469-25707-33-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
+To: Morten Rasmussen <morten.rasmussen@arm.com>, peterz@infradead.org, mingo@redhat.com
+Cc: vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pboonstoppel@nvidia.com
 
-On Thursday, July 16, 2015 10:47:51 AM Tomeu Vizoso wrote:
-> On 16 July 2015 at 02:41, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Wednesday, July 15, 2015 02:47:50 PM Alan Stern wrote:
-> >> On Wed, 15 Jul 2015, Tomeu Vizoso wrote:
-> >>
-> >> > If a suitable prepare callback cannot be found for a given device and
-> >> > its driver has no PM callbacks at all, assume that it can go direct to
-> >> > complete when the system goes to sleep.
-> >> >
-> >> > The reason for this is that there's lots of devices in a system that do
-> >> > no PM at all and there's no reason for them to prevent their ancestors
-> >> > to do direct_complete if they can support it.
-> >> >
-> >> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> >> > ---
-> >> >
-> >> >  drivers/base/power/main.c | 17 +++++++++++++++++
-> >> >  1 file changed, 17 insertions(+)
-> >> >
-> >> > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> >> > index 1710c26ba097..edda3f233c7c 100644
-> >> > --- a/drivers/base/power/main.c
-> >> > +++ b/drivers/base/power/main.c
-> >> > @@ -1540,6 +1540,21 @@ int dpm_suspend(pm_message_t state)
-> >> >     return error;
-> >> >  }
-> >> >
-> >> > +static bool driver_has_no_pm_callbacks(struct device_driver *drv)
-> >> > +{
-> >> > +   if (!drv->pm)
-> >> > +           return true;
-> >> > +
-> >> > +   return !drv->pm->prepare &&
-> >> > +          !drv->pm->suspend &&
-> >> > +          !drv->pm->suspend_late &&
-> >> > +          !drv->pm->suspend_noirq &&
-> >> > +          !drv->pm->resume_noirq &&
-> >> > +          !drv->pm->resume_early &&
-> >> > +          !drv->pm->resume &&
-> >> > +          !drv->pm->complete;
-> >> > +}
-> >>
-> >> This isn't exactly what I meant.  We also need to check the dev_pm_ops
-> >> fields in dev->pm_domain, dev->type, dev->class, and dev->bus.  Only if
-> >> _all_ of these callbacks are missing should we use direct_complete.
-> >
-> > Also checking that on every suspend is kind of wasteful, because those things
-> > do not change very often.
-> 
-> Do you have any suggestion on when would be a good time to do that
-> check? device_pm_sleep_init() and device_pm_add() are unfortunately
-> too early.
+Hi Morten,
 
-The time to check that is (a) when the device is registered (for the bus
-type/class/device type), (b) when it is added to (or removed from) a PM
-domain and (c) when a driver is bound to (unbound from) it.
+On 07/07/2015 11:24 AM, Morten Rasmussen wrote:
+> ---
 
-> Alternatively we could check once on the first suspend and cache it,
+> +static int energy_aware_wake_cpu(struct task_struct *p, int target)
+> +{
+> +	struct sched_domain *sd;
+> +	struct sched_group *sg, *sg_target;
+> +	int target_max_cap = INT_MAX;
+> +	int target_cpu = task_cpu(p);
+> +	int i;
+> +
+> +	sd = rcu_dereference(per_cpu(sd_ea, task_cpu(p)));
+> +
+> +	if (!sd)
+> +		return target;
+> +
+> +	sg = sd->groups;
+> +	sg_target = sg;
+> +
+> +	/*
+> +	 * Find group with sufficient capacity. We only get here if no cpu is
+> +	 * overutilized. We may end up overutilizing a cpu by adding the task,
+> +	 * but that should not be any worse than select_idle_sibling().
+> +	 * load_balance() should sort it out later as we get above the tipping
+> +	 * point.
+> +	 */
+> +	do {
+> +		/* Assuming all cpus are the same in group */
+> +		int max_cap_cpu = group_first_cpu(sg);
+> +
+> +		/*
+> +		 * Assume smaller max capacity means more energy-efficient.
+> +		 * Ideally we should query the energy model for the right
+> +		 * answer but it easily ends up in an exhaustive search.
+> +		 */
+> +		if (capacity_of(max_cap_cpu) < target_max_cap &&
+> +		    task_fits_capacity(p, max_cap_cpu)) {
+> +			sg_target = sg;
+> +			target_max_cap = capacity_of(max_cap_cpu);
+> +		}
+> +	} while (sg = sg->next, sg != sd->groups);
 
-That information may be stale by the time we suspend next time.
+Should be capacity_orig_of(max_cap_cpu) right? Might select a suboptimal
+sg_target if max_cap_cpu has a significant amount of IRQ/RT activity.
 
-> but I'm not sure that complexity would be worth it.
+> +
+> +	/* Find cpu with sufficient capacity */
+> +	for_each_cpu_and(i, tsk_cpus_allowed(p), sched_group_cpus(sg_target)) {
+> +		/*
+> +		 * p's blocked utilization is still accounted for on prev_cpu
+> +		 * so prev_cpu will receive a negative bias due the double
+> +		 * accouting. However, the blocked utilization may be zero.
+> +		 */
+> +		int new_usage = get_cpu_usage(i) + task_utilization(p);
+> +
+> +		if (new_usage >	capacity_orig_of(i))
+> +			continue;
 
-I don't think that adding extra overhead to *every* suspend can be
-justified easily, however.
+Is this supposed to be capacity_of(i) instead?
 
+> +
+> +		if (new_usage <	capacity_curr_of(i)) {
+> +			target_cpu = i;
+> +			if (cpu_rq(i)->nr_running)
+> +				break;
+> +		}
+> +
+> +		/* cpu has capacity at higher OPP, keep it as fallback */
+> +		if (target_cpu == task_cpu(p))
+> +			target_cpu = i;
+> +	}
+> +
+> +	if (target_cpu != task_cpu(p)) {
+> +		struct energy_env eenv = {
+> +			.usage_delta	= task_utilization(p),
+> +			.src_cpu	= task_cpu(p),
+> +			.dst_cpu	= target_cpu,
+> +		};
+> +
+> +		/* Not enough spare capacity on previous cpu */
+> +		if (cpu_overutilized(task_cpu(p)))
+> +			return target_cpu;
+> +
+> +		if (energy_diff(&eenv) >= 0)
+> +			return task_cpu(p);
+> +	}
+> +
+> +	return target_cpu;
+> +}
+> +
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+-Sai
