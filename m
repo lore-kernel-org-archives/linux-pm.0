@@ -1,105 +1,67 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v4 3/8] clk: add support for clocks provided by SCP(System
- Control Processor)
-Date: Fri, 17 Jul 2015 11:13:51 -0700
-Message-ID: <55A945DF.3@codeaurora.org>
-References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com> <1433760002-24120-4-git-send-email-sudeep.holla@arm.com> <20150702172310.GF4301@codeaurora.org> <5596A1B6.8020307@arm.com> <559ADC94.4080505@codeaurora.org> <559BF858.1020301@arm.com> <20150708014606.GH30412@codeaurora.org> <55A7D79B.3080305@arm.com> <20150716193114.GA17952@codeaurora.org> <55A8E434.2010709@arm.com>
+Subject: Re: [PATCH 08/10] OPP: Add support for opp-suspend
+Date: Fri, 17 Jul 2015 12:22:43 -0700
+Message-ID: <55A95603.4070607@codeaurora.org>
+References: <cover.1434369079.git.viresh.kumar@linaro.org> <6a4a0da974d5944a111af6f0b57bcba63a91fe40.1434369079.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:45852 "EHLO
+Received: from smtp.codeaurora.org ([198.145.29.96]:48542 "EHLO
 	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752409AbbGQSNz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jul 2015 14:13:55 -0400
-In-Reply-To: <55A8E434.2010709@arm.com>
+	with ESMTP id S1751725AbbGQTWq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jul 2015 15:22:46 -0400
+In-Reply-To: <6a4a0da974d5944a111af6f0b57bcba63a91fe40.1434369079.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@baylibre.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, thomas.petazzoni@free-electrons.com, kesavan.abhilash@gmail.com, linaro-kernel@lists.linaro.org, ta.omasab@gmail.com, khilman@linaro.org, linux-pm@vger.kernel.org, viswanath.puttagunta@linaro.org, santosh.shilimkar@oracle.com, broonie@kernel.org, mike.turquette@linaro.org, Sudeep.Holla@arm.com, arnd.bergmann@linaro.org, linux-arm-kernel@lists.infradead.org, l.stach@pengutronix.de
 
-On 07/17/2015 04:17 AM, Sudeep Holla wrote:
->
->
-> On 16/07/15 20:31, Stephen Boyd wrote:
->> On 07/16, Sudeep Holla wrote:
->>> On 08/07/15 02:46, Stephen Boyd wrote:
->>>>
->>>> Yes struct clk would have min/max, and struct clk_core would have
->>>> min/max. Then some sort of provider API (or possibly even
->>>> clk_init_data) would take the min/max fields and copy them over
->>>> to struct clk_core. Then during set_rate operations we would
->>>> aggregate the constraints from struct clk like we already do and
->>>> add in the constrains in struct clk_core.
->>>>
->>>> One downside to adding new fields to clk_init_data is that there
->>>> are drivers out there that aren't initializing that structure to
->>>> 0, and they're putting it on the stack, so stack junk can come
->>>> through. Furthermore, min/max would mean that every driver needs
->>>> to specify some large number for max or we have to special case
->>>> min == max == 0 and ignore it. Somehow it needs to be opt-in. If
->>>> we want to go down the clk_init_data route then perhaps we need
->>>> some sort of rate_constraint struct pointer in there that drivers
->>>> can optionally setup.
->>>>
->>>>     struct clk_rate_constraint {
->>>>         unsigned long min;
->>>>         unsigned long max;
->>>>     };
->>>>
->>>>     struct clk_init_data {
->>>>         ...
->>>>         struct clk_rate_constraint *rate_constraint;
->>>>     };
->>>>
->>>> I haven't thought it through completely, but I can probably write
->>>> up some patch tomorrow after I sleep on it.
->>>>
->>>
->>> I am hoping to get this series for v4.3. In order to avoid using
->>> consumer API, I can revert back to the min,max check I had in the
->>> round_rate earlier if that's fine with you ? Let me know so that I can
->>> post the next version based on that. All the other comments are already
->>> addressed.
->>
->> Ok. I'm fine with the consumer API being used, but it would be
->> nice if we didn't have to do so. Try out the patch below,
->> hopefully it's good enough for your purposes. It may need to be
->> more robust, and we may still want to use the init_data structure
->> to avoid races with providers and consumers, but we can leave
->> that for later after sweeping all the structure users.
->>
->
-> Agreed, I would avoid using clk consumer API or use it with TODO so that
-> I remember to remove it soon. Anyways, thanks for the patch, I tested it
-> and works fine to me. You can add Tested-by if you decide to push it.
+On 06/15/2015 04:57 AM, Viresh Kumar wrote:
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index 6b554e417b1f..0022453e4b60 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -1218,6 +1219,8 @@ static int _of_init_opp_table_v2(struct device *dev,
+>   		goto put_opp_np;
+>   
+>   	if (!ret) {
+> +		const phandle *handle;
+> +
+>   		if (!dev_opp) {
+>   			dev_opp = _find_device_opp(dev);
+>   			if (WARN_ON(!dev_opp))
+> @@ -1227,6 +1230,25 @@ static int _of_init_opp_table_v2(struct device *dev,
+>   		dev_opp->np = opp_np;
+>   		if (of_get_property(opp_np, "opp-shared", NULL))
+>   			dev_opp->shared_opp = true;
+> +
+> +		/* OPP to select on device suspend */
+> +		handle = of_get_property(opp_np, "opp-suspend", NULL);
+> +		if (handle) {
+> +			struct device_node *suspend_opp_np;
+> +			struct dev_pm_opp *opp;
+> +
+> +			suspend_opp_np = of_find_node_by_phandle(be32_to_cpup(handle));
 
-Thanks. I pushed it to -next last night but it probably hasn't shown up yet.
+Couldn't this be done with of_parse_phandle() instead? Otherwise the 
+patch looks ok.
 
->
->>>
->>> Also since this series depends on SCPI, I was thinking to get it merged
->>> via ARM-SoC, but that might conflict with the round_rate prototype
->>> change. Do do plan to share a stable base with arm-soc guys or you
->>> expect all the changes to be contained in clk tree ?
->>>
->>
->> We can share a stable branch for the determine_rate change with
->> arm-soc. We already have it on a separate branch but haven't
->> published it so far because nobody has asked.
->>
->
-> determine_rate change shouldn't affect SCPI clock driver but I remember
-> seeing round_rate change too on the list which returns value using the
-> argument from Boris. Is that planned for v4.3 ? I would need the stable
-> branch from this clk_hw_set_rate_range if you decide to push. Let me
-> know your preferences. I will post the updated version of the patch
-> accordingly.
->
+> +
+> +			list_for_each_entry_rcu(opp, &dev_opp->opp_list, node)
+> +				if (opp->np == suspend_opp_np) {
+> +					dev_opp->suspend_opp = opp;
+> +					break;
+> +				}
+> +
+> +			if (!dev_opp->suspend_opp)
+> +				dev_err(dev, "%s: Invalid opp-suspend\n",
+> +					__func__);
+> +		}
+>   	} else {
+>   		of_free_opp_table(dev);
+>   	}
 
-We're not going to change round_rate() so it sounds like you don't need 
-a stable branch. But you would need this new consumer API. So you still 
-need a branch right?
 
 -- 
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
