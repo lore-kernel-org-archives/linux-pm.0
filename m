@@ -1,439 +1,103 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 07/10] opp: Add OPP sharing information to OPP library
-Date: Sat, 18 Jul 2015 12:03:04 +0530
-Message-ID: <20150718063304.GD11802@linux>
-References: <cover.1434369079.git.viresh.kumar@linaro.org>
- <2e1c7fcc1fb62f73c82bd57d196d054ba2607a55.1434369079.git.viresh.kumar@linaro.org>
- <55A986DD.3010104@codeaurora.org>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: BUG: cpufreq on imx6solo warns
+Date: Sat, 18 Jul 2015 17:31:50 +0100
+Message-ID: <20150718163149.GP7557@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:36134 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbbGRGdJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 18 Jul 2015 02:33:09 -0400
-Received: by pachj5 with SMTP id hj5so71935830pac.3
-        for <linux-pm@vger.kernel.org>; Fri, 17 Jul 2015 23:33:08 -0700 (PDT)
+Received: from pandora.arm.linux.org.uk ([78.32.30.218]:51733 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752385AbbGRQcE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 18 Jul 2015 12:32:04 -0400
 Content-Disposition: inline
-In-Reply-To: <55A986DD.3010104@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, thomas.petazzoni@free-electrons.com, kesavan.abhilash@gmail.com, linaro-kernel@lists.linaro.org, ta.omasab@gmail.com, khilman@linaro.org, linux-pm@vger.kernel.org, viswanath.puttagunta@linaro.org, santosh.shilimkar@oracle.com, broonie@kernel.org, mike.turquette@linaro.org, Sudeep.Holla@arm.com, arnd.bergmann@linaro.org, linux-arm-kernel@lists.infradead.org, l.stach@pengutronix.de
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-On 17-07-15, 15:51, Stephen Boyd wrote:
-> >+static struct device_list_opp *_find_list_dev(struct device *dev,
-> 
-> const device?
+Post-rc1, cpufreq on iMX6 now warns at boot as per the below message.
 
-Diff:
+iMX6 solo only has one CPU, but it is treated as a SMP platform with
+two CPUs, the second one is offline.
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 1af7ceee5433..ff4a3b267ca7 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -96,7 +96,7 @@ struct dev_pm_opp {
-  */
- struct device_list_opp {
-        struct list_head node;
--       struct device *dev;
-+       const struct device *dev;
-        struct rcu_head rcu_head;
- };
- 
-@@ -152,7 +152,7 @@ do {                                                                        \
-                           "dev_opp_list_lock protection");             \
- } while (0)
- 
--static struct device_list_opp *_find_list_dev(struct device *dev,
-+static struct device_list_opp *_find_list_dev(const struct device *dev,
-                                              struct device_opp *dev_opp)
- {
-        struct device_list_opp *list_dev;
-@@ -164,7 +164,7 @@ static struct device_list_opp *_find_list_dev(struct device *dev,
-        return NULL;
- }
- 
--static struct device_opp *_managed_opp(struct device_node *np)
-+static struct device_opp *_managed_opp(const struct device_node *np)
- {
-        struct device_opp *dev_opp;
- 
-@@ -517,7 +517,7 @@ static void _remove_list_dev(struct device_list_opp *list_dev,
-                  _kfree_list_dev_rcu);
- }
- 
--static struct device_list_opp *_add_list_dev(struct device *dev,
-+static struct device_list_opp *_add_list_dev(const struct device *dev,
-                                             struct device_opp *dev_opp)
- {
-        struct device_list_opp *list_dev;
-@@ -1239,8 +1239,8 @@ static int _of_init_opp_table_v2(struct device *dev,
-                }
- 
-                dev_opp->np = opp_np;
--               if (of_get_property(opp_np, "opp-shared", NULL))
--                       dev_opp->shared_opp = true;
-+               dev_opp->shared_opp = of_property_read_bool(opp_np,
-+                                                           "opp-shared");
-        } else {
-                of_free_opp_table(dev);
-        }
+The boot state is:
+	possible: cpu 0,1
+	present: cpu 0,1
+	online: cpu 0
 
+This seems to cause cpufreq_add_dev() for CPU0 to add a symlink for
+cpu1/cpufreq pointing at ../cpu0/cpufreq.  Then cpufreq_add_dev() is
+called for CPU1, which tries also to create a symlink, which fails.
+This is clearly incorrect behaviour.
 
------------------------------8<----------------------------
+Not sure what the right fix would be for this.
 
-Message-Id: <26828cb0b4b22e5a466c066814bbe39a3c985ca9.1437200372.git.viresh.kumar@linaro.org>
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Wed, 11 Feb 2015 16:16:28 +0800
-Subject: [PATCH] opp: Add OPP sharing information to OPP library
+[    2.786733] ------------[ cut here ]------------
+[    2.794795] WARNING: CPU: 0 PID: 1 at fs/sysfs/dir.c:31 sysfs_warn_dup+0x60/0x7c()
+[    2.807930] sysfs: cannot create duplicate filename '/devices/system/cpu/cpu1/cpufreq'
+[    2.819335] Modules linked in:
+[    2.825920] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.2.0-rc2+ #1704
+[    2.835958] Hardware name: Freescale i.MX6 Quad/DualLite (Device Tree)
+[    2.845982] Backtrace:
+[    2.851920] [<c0013248>] (dump_backtrace) from [<c00133e4>] (show_stack+0x18/0x1c)
+[    2.863143]  r6:c01a1f30 r5:0000001f r4:00000000 r3:00000000
+[    2.872534] [<c00133cc>] (show_stack) from [<c076920c>] (dump_stack+0x7c/0x98)
+[    2.883339] [<c0769190>] (dump_stack) from [<c0029ab4>] (warn_slowpath_common+0x80/0xbc)
+[    2.895028]  r4:d74abbd0 r3:d74c0000
+[    2.902307] [<c0029a34>] (warn_slowpath_common) from [<c0029b94>] (warn_slowpath_fmt+0x38/0x40)
+[    2.914663]  r8:ffffffef r7:00000000 r6:d75a8960 r5:c0993280 r4:d6b4d000
+[    2.925253] [<c0029b60>] (warn_slowpath_fmt) from [<c01a1f30>] (sysfs_warn_dup+0x60/0x7c)
+[    2.937143]  r3:d6b4dfe7 r2:c0930750
+[    2.944531] [<c01a1ed0>] (sysfs_warn_dup) from [<c01a22c8>] (sysfs_do_create_link_sd+0xb8/0xc0)
+[    2.956998]  r6:d75a8960 r5:c0993280 r4:d00aba20
+[    2.965540] [<c01a2210>] (sysfs_do_create_link_sd) from [<c01a22fc>] (sysfs_create_link+0x2c/0x3c)
+[    2.978349]  r10:00000001 r8:c14db3c8 r7:d7b89010 r6:c0ae7c60 r5:d7b89010 r4:d00d1200
+[    2.990275] [<c01a22d0>] (sysfs_create_link) from [<c0506160>] (add_cpu_dev_symlink+0x34/0x5c)
+[    3.002792] [<c050612c>] (add_cpu_dev_symlink) from [<c05084d0>] (cpufreq_add_dev+0x674/0x794)
+[    3.015274]  r5:00000001 r4:00000000
+[    3.022857] [<c0507e5c>] (cpufreq_add_dev) from [<c03db114>] (subsys_interface_register+0x8c/0xd0)
+[    3.035770]  r10:00000003 r9:d7bb01f0 r8:c14db3c8 r7:00106738 r6:c0ae7c60 r5:c0acbd08
+[    3.047792]  r4:c0ae7e20
+[    3.054411] [<c03db088>] (subsys_interface_register) from [<c0508a2c>] (cpufreq_register_driver+0x104/0x1f4)
+[    3.068333]  r5:c14db254 r4:c0ae86dc
+[    3.076110] [<c0508928>] (cpufreq_register_driver) from [<c050d3f8>] (imx6q_cpufreq_probe+0x4d0/0x674)
+[    3.089610]  r6:c0b09310 r5:001312d0 r4:c14db3c8 r3:c14db3c8
+[    3.099667] [<c050cf28>] (imx6q_cpufreq_probe) from [<c03ddb68>] (platform_drv_probe+0x50/0xac)
+[    3.112613]  r10:00000000 r9:00000000 r8:00000000 r7:c0ae8694 r6:fffffdfb r5:c0a85c98
+[    3.124949]  r4:ffffffed
+[    3.131802] [<c03ddb18>] (platform_drv_probe) from [<c03dc12c>] (driver_probe_device+0x1d4/0x278)
+[    3.144973]  r7:c0ae8694 r6:00000000 r5:c14d6c3c r4:c0a85c98
+[    3.155114] [<c03dbf58>] (driver_probe_device) from [<c03dc474>] (__device_attach_driver+0x88/0x94)
+[    3.168487]  r8:c14d6bf8 r7:00000001 r6:c0a85c98 r5:d74abdd0 r4:c0ae8694 r3:00000000
+[    3.180792] [<c03dc3ec>] (__device_attach_driver) from [<c03da610>] (bus_for_each_drv+0x4c/0x94)
+[    3.193952]  r6:c03dc3ec r5:d74abdd0 r4:00000000 r3:d006c8e0
+[    3.204152] [<c03da5c4>] (bus_for_each_drv) from [<c03dbec4>] (__device_attach+0x98/0xe8)
+[    3.216707]  r6:c0acb9f0 r5:c0a85ccc r4:c0a85c98
+[    3.225857] [<c03dbe2c>] (__device_attach) from [<c03dc494>] (device_initial_probe+0x14/0x18)
+[    3.238805]  r7:c0acba80 r6:c0acb9f0 r5:c0a85c98 r4:c0a85c98
+[    3.249051] [<c03dc480>] (device_initial_probe) from [<c03db5d4>] (bus_probe_device+0x90/0x98)
+[    3.262118] [<c03db544>] (bus_probe_device) from [<c03d9868>] (device_add+0x344/0x534)
+[    3.274494]  r6:c0a85ca0 r5:00000000 r4:c0a85c98 r3:00000000
+[    3.284764] [<c03d9524>] (device_add) from [<c03ddd1c>] (platform_device_add+0xb4/0x21c)
+[    3.297315]  r10:00000000 r9:c0a688e0 r8:c0a09a20 r7:000000d5 r6:c0a85c98 r5:c0a85c88
+[    3.309859]  r4:00000000
+[    3.316890] [<c03ddc68>] (platform_device_add) from [<c03de3ac>] (platform_device_register+0x28/0x2c)
+[    3.330627]  r7:000000d5 r6:00000002 r5:e0af0000 r4:c0a85c88
+[    3.340922] [<c03de384>] (platform_device_register) from [<c0a0fdc8>] (imx6q_init_late+0x148/0x178)
+[    3.354411]  r4:d7b7c010 r3:c001e8f0
+[    3.362455] [<c0a0fc80>] (imx6q_init_late) from [<c0a09a44>] (init_machine_late+0x24/0x94)
+[    3.375078]  r6:d00c5000 r5:c0a82c18 r4:c0a82c18 r3:c0a0fc80
+[    3.385244] [<c0a09a20>] (init_machine_late) from [<c00097bc>] (do_one_initcall+0x88/0x1dc)
+[    3.397906]  r4:c0a82c18 r3:00000000
+[    3.405893] [<c0009734>] (do_one_initcall) from [<c0a06e8c>] (kernel_init_freeable+0x12c/0x1f4)
+[    3.418960]  r10:00000000 r9:c0a688e0 r8:c0a688d8 r7:000000d5 r6:c0b0db40 r5:00000007
+[    3.431397]  r4:c0a75394
+[    3.438410] [<c0a06d60>] (kernel_init_freeable) from [<c0762630>] (kernel_init+0x10/0xec)
+[    3.451074]  r10:00000000 r9:00000000 r8:00000000 r7:00000000 r6:00000000 r5:c0762620
+[    3.463650]  r4:00000000
+[    3.470759] [<c0762620>] (kernel_init) from [<c000faf8>] (ret_from_fork+0x14/0x3c)
+[    3.482860]  r4:00000000 r3:00000000
+[    3.491119] ---[ end trace 1012f24ca7aedfe5 ]---
 
-An opp can be shared by multiple devices, for example its very common
-for CPUs to share the OPPs, i.e. when they share clock/voltage rails.
-
-This patch adds support of shared OPPs to the OPP library.
-
-Instead of a single device, dev_opp will not contain a list of devices
-that use it. It also senses if the device (we are trying to initialize
-OPPs for) shares OPPs with a device added earlier and in that case we
-update the list of devices managed by OPPs instead of duplicating OPPs
-again.
-
-The same infrastructure will be used for the old OPP bindings, with
-later patches.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/base/power/opp.c | 176 ++++++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 152 insertions(+), 24 deletions(-)
-
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 940c49152b68..ff4a3b267ca7 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -86,16 +86,33 @@ struct dev_pm_opp {
- };
- 
- /**
-+ * struct device_list_opp - devices managed by 'struct device_opp'
-+ * @node:	list node
-+ * @dev:	device to which the struct object belongs
-+ * @rcu_head:	RCU callback head used for deferred freeing
-+ *
-+ * This is an internal data structure maintaining the list of devices that are
-+ * managed by 'struct device_opp'.
-+ */
-+struct device_list_opp {
-+	struct list_head node;
-+	const struct device *dev;
-+	struct rcu_head rcu_head;
-+};
-+
-+/**
-  * struct device_opp - Device opp structure
-  * @node:	list node - contains the devices with OPPs that
-  *		have been registered. Nodes once added are not modified in this
-  *		list.
-  *		RCU usage: nodes are not modified in the list of device_opp,
-  *		however addition is possible and is secured by dev_opp_list_lock
-- * @dev:	device pointer
-  * @srcu_head:	notifier head to notify the OPP availability changes.
-  * @rcu_head:	RCU callback head used for deferred freeing
-+ * @dev_list:	list of devices that share these OPPs
-  * @opp_list:	list of opps
-+ * @np:		struct device_node pointer for opp's DT node.
-+ * @shared_opp: OPP is shared between multiple devices.
-  *
-  * This is an internal data structure maintaining the link to opps attached to
-  * a device. This structure is not meant to be shared to users as it is
-@@ -108,12 +125,14 @@ struct dev_pm_opp {
- struct device_opp {
- 	struct list_head node;
- 
--	struct device *dev;
- 	struct srcu_notifier_head srcu_head;
- 	struct rcu_head rcu_head;
-+	struct list_head dev_list;
- 	struct list_head opp_list;
- 
-+	struct device_node *np;
- 	unsigned long clock_latency_ns_max;
-+	bool shared_opp;
- };
- 
- /*
-@@ -133,6 +152,40 @@ do {									\
- 			   "dev_opp_list_lock protection");		\
- } while (0)
- 
-+static struct device_list_opp *_find_list_dev(const struct device *dev,
-+					      struct device_opp *dev_opp)
-+{
-+	struct device_list_opp *list_dev;
-+
-+	list_for_each_entry(list_dev, &dev_opp->dev_list, node)
-+		if (list_dev->dev == dev)
-+			return list_dev;
-+
-+	return NULL;
-+}
-+
-+static struct device_opp *_managed_opp(const struct device_node *np)
-+{
-+	struct device_opp *dev_opp;
-+
-+	list_for_each_entry_rcu(dev_opp, &dev_opp_list, node)
-+		if (dev_opp->np == np) {
-+			/*
-+			 * Multiple devices can point to the same OPP table and
-+			 * so will have same node-pointer, np.
-+			 *
-+			 * But the OPPs will be considered as shared only if the
-+			 * OPP table contains a "opp-shared" property.
-+			 */
-+			if (dev_opp->shared_opp)
-+				return dev_opp;
-+			else
-+				return NULL;
-+		}
-+
-+	return NULL;
-+}
-+
- /**
-  * _find_device_opp() - find device_opp struct using device pointer
-  * @dev:	device pointer used to lookup device OPPs
-@@ -149,21 +202,18 @@ do {									\
-  */
- static struct device_opp *_find_device_opp(struct device *dev)
- {
--	struct device_opp *tmp_dev_opp, *dev_opp = ERR_PTR(-ENODEV);
-+	struct device_opp *dev_opp;
- 
- 	if (unlikely(IS_ERR_OR_NULL(dev))) {
- 		pr_err("%s: Invalid parameters\n", __func__);
- 		return ERR_PTR(-EINVAL);
- 	}
- 
--	list_for_each_entry_rcu(tmp_dev_opp, &dev_opp_list, node) {
--		if (tmp_dev_opp->dev == dev) {
--			dev_opp = tmp_dev_opp;
--			break;
--		}
--	}
-+	list_for_each_entry_rcu(dev_opp, &dev_opp_list, node)
-+		if (_find_list_dev(dev, dev_opp))
-+			return dev_opp;
- 
--	return dev_opp;
-+	return ERR_PTR(-ENODEV);
- }
- 
- /**
-@@ -450,6 +500,39 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
- 
-+/* List-dev Helpers */
-+static void _kfree_list_dev_rcu(struct rcu_head *head)
-+{
-+	struct device_list_opp *list_dev;
-+
-+	list_dev = container_of(head, struct device_list_opp, rcu_head);
-+	kfree_rcu(list_dev, rcu_head);
-+}
-+
-+static void _remove_list_dev(struct device_list_opp *list_dev,
-+			     struct device_opp *dev_opp)
-+{
-+	list_del(&list_dev->node);
-+	call_srcu(&dev_opp->srcu_head.srcu, &list_dev->rcu_head,
-+		  _kfree_list_dev_rcu);
-+}
-+
-+static struct device_list_opp *_add_list_dev(const struct device *dev,
-+					     struct device_opp *dev_opp)
-+{
-+	struct device_list_opp *list_dev;
-+
-+	list_dev = kzalloc(sizeof(*list_dev), GFP_KERNEL);
-+	if (!list_dev)
-+		return NULL;
-+
-+	/* Initialize list-dev */
-+	list_add_rcu(&list_dev->node, &dev_opp->dev_list);
-+	list_dev->dev = dev;
-+
-+	return list_dev;
-+}
-+
- /**
-  * _add_device_opp() - Find device OPP table or allocate a new one
-  * @dev:	device for which we do this operation
-@@ -462,6 +545,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
- static struct device_opp *_add_device_opp(struct device *dev)
- {
- 	struct device_opp *dev_opp;
-+	struct device_list_opp *list_dev;
- 
- 	/* Check for existing list for 'dev' first */
- 	dev_opp = _find_device_opp(dev);
-@@ -476,7 +560,14 @@ static struct device_opp *_add_device_opp(struct device *dev)
- 	if (!dev_opp)
- 		return NULL;
- 
--	dev_opp->dev = dev;
-+	INIT_LIST_HEAD(&dev_opp->dev_list);
-+
-+	list_dev = _add_list_dev(dev, dev_opp);
-+	if (!list_dev) {
-+		kfree(dev_opp);
-+		return NULL;
-+	}
-+
- 	srcu_init_notifier_head(&dev_opp->srcu_head);
- 	INIT_LIST_HEAD(&dev_opp->opp_list);
- 
-@@ -504,9 +595,19 @@ static void _kfree_device_rcu(struct rcu_head *head)
-  */
- static void _remove_device_opp(struct device_opp *dev_opp)
- {
-+	struct device_list_opp *list_dev;
-+
- 	if (!list_empty(&dev_opp->opp_list))
- 		return;
- 
-+	list_dev = list_first_entry(&dev_opp->dev_list, struct device_list_opp,
-+				    node);
-+
-+	_remove_list_dev(list_dev, dev_opp);
-+
-+	/* dev_list must be empty now */
-+	WARN_ON(!list_empty(&dev_opp->dev_list));
-+
- 	list_del_rcu(&dev_opp->node);
- 	call_srcu(&dev_opp->srcu_head.srcu, &dev_opp->rcu_head,
- 		  _kfree_device_rcu);
-@@ -616,7 +717,8 @@ static struct dev_pm_opp *_allocate_opp(struct device *dev,
- 	return opp;
- }
- 
--static int _opp_add(struct dev_pm_opp *new_opp, struct device_opp *dev_opp)
-+static int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
-+		    struct device_opp *dev_opp)
- {
- 	struct dev_pm_opp *opp;
- 	struct list_head *head = &dev_opp->opp_list;
-@@ -632,7 +734,7 @@ static int _opp_add(struct dev_pm_opp *new_opp, struct device_opp *dev_opp)
- 			break;
- 		} else {
- 			/* Duplicate OPPs */
--			dev_warn(dev_opp->dev,
-+			dev_warn(dev,
- 				 "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
- 				 __func__, opp->rate, opp->u_volt,
- 				 opp->available, new_opp->rate, new_opp->u_volt,
-@@ -698,7 +800,7 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
- 	new_opp->available = true;
- 	new_opp->dynamic = dynamic;
- 
--	ret = _opp_add(new_opp, dev_opp);
-+	ret = _opp_add(dev, new_opp, dev_opp);
- 	if (ret)
- 		goto free_opp;
- 
-@@ -808,7 +910,7 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
- 
- 	of_property_read_u32(np, "opp-microamp", (u32 *)&new_opp->u_amp);
- 
--	ret = _opp_add(new_opp, dev_opp);
-+	ret = _opp_add(dev, new_opp, dev_opp);
- 	if (ret)
- 		goto free_opp;
- 
-@@ -1041,6 +1143,9 @@ void of_free_opp_table(struct device *dev)
- 	struct device_opp *dev_opp;
- 	struct dev_pm_opp *opp, *tmp;
- 
-+	/* Hold our list modification lock here */
-+	mutex_lock(&dev_opp_list_lock);
-+
- 	/* Check for existing list for 'dev' */
- 	dev_opp = _find_device_opp(dev);
- 	if (IS_ERR(dev_opp)) {
-@@ -1051,18 +1156,21 @@ void of_free_opp_table(struct device *dev)
- 			     IS_ERR_OR_NULL(dev) ?
- 					"Invalid device" : dev_name(dev),
- 			     error);
--		return;
-+		goto unlock;
- 	}
- 
--	/* Hold our list modification lock here */
--	mutex_lock(&dev_opp_list_lock);
--
--	/* Free static OPPs */
--	list_for_each_entry_safe(opp, tmp, &dev_opp->opp_list, node) {
--		if (!opp->dynamic)
--			_opp_remove(dev_opp, opp, true);
-+	/* Find if dev_opp manages a single device */
-+	if (list_is_singular(&dev_opp->dev_list)) {
-+		/* Free static OPPs */
-+		list_for_each_entry_safe(opp, tmp, &dev_opp->opp_list, node) {
-+			if (!opp->dynamic)
-+				_opp_remove(dev_opp, opp, true);
-+		}
-+	} else {
-+		_remove_list_dev(_find_list_dev(dev, dev_opp), dev_opp);
- 	}
- 
-+unlock:
- 	mutex_unlock(&dev_opp_list_lock);
- }
- EXPORT_SYMBOL_GPL(of_free_opp_table);
-@@ -1088,6 +1196,7 @@ static int _of_init_opp_table_v2(struct device *dev,
- 				 const struct property *prop)
- {
- 	struct device_node *opp_np, *np;
-+	struct device_opp *dev_opp;
- 	int ret = 0, count = 0;
- 
- 	if (!prop->value)
-@@ -1098,6 +1207,14 @@ static int _of_init_opp_table_v2(struct device *dev,
- 	if (IS_ERR(opp_np))
- 		return PTR_ERR(opp_np);
- 
-+	dev_opp = _managed_opp(opp_np);
-+	if (dev_opp) {
-+		/* OPPs are already managed */
-+		if (!_add_list_dev(dev, dev_opp))
-+			ret = -ENOMEM;
-+		goto put_opp_np;
-+	}
-+
- 	/* We have opp-list node now, iterate over it and add OPPs */
- 	for_each_available_child_of_node(opp_np, np) {
- 		count++;
-@@ -1114,8 +1231,19 @@ static int _of_init_opp_table_v2(struct device *dev,
- 	if (WARN_ON(!count))
- 		goto put_opp_np;
- 
--	if (ret)
-+	if (!ret) {
-+		if (!dev_opp) {
-+			dev_opp = _find_device_opp(dev);
-+			if (WARN_ON(!dev_opp))
-+				goto put_opp_np;
-+		}
-+
-+		dev_opp->np = opp_np;
-+		dev_opp->shared_opp = of_property_read_bool(opp_np,
-+							    "opp-shared");
-+	} else {
- 		of_free_opp_table(dev);
-+	}
- 
- put_opp_np:
- 	of_node_put(opp_np);
 -- 
-viresh
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.
