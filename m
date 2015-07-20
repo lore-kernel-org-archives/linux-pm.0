@@ -1,105 +1,64 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Subject: Re: [PATCH 1/2] power: reset: at91: add sama5d3 reset function
-Date: Mon, 20 Jul 2015 09:52:31 +0200
-Message-ID: <20150720075231.GQ28632@lukather>
-References: <1436436947-11210-1-git-send-email-josh.wu@atmel.com>
- <20150710060350.GA3127@piout.net>
- <559F7AC4.6050008@atmel.com>
- <20150710120907.GC3127@piout.net>
- <20150710123148.GA28632@lukather>
- <559FEED3.5080505@atmel.com>
- <55A32EC8.4080309@atmel.com>
+From: Pan Xinhui <xinhuix.pan@intel.com>
+Subject: Re: [PATCH] cpufreq: ia64: Fix a memory leak in acpi_cpufreq_cpu_exit
+Date: Mon, 20 Jul 2015 16:13:40 +0800
+Message-ID: <55ACADB4.60102@intel.com>
+References: <55AC9424.1070304@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="VxJb6WgA6MoA+arP"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:41078 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932190AbbGTHzD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2015 03:55:03 -0400
-Content-Disposition: inline
-In-Reply-To: <55A32EC8.4080309@atmel.com>
+Received: from mga01.intel.com ([192.55.52.88]:25857 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755280AbbGTIQY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 20 Jul 2015 04:16:24 -0400
+In-Reply-To: <55AC9424.1070304@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Josh Wu <josh.wu@atmel.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Guenter Roeck <linux@roeck-us.net>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, Ben Dooks <ben.dooks@codethink.co.uk>, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Fabian Frederick <fabf@skynet.be>, linux-pm@vger.kernel.org
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>, "mnipxh@163.com" <mnipxh@163.com>
 
+hi, all
+	ia64-acpi-cpufreq has similar issues with acpi-cpufreq. Maybe we need =
+make other two patches.
+Replace struct cpufreq_acpi_io *acpi_io_data[NR_CPUS] with policy->driv=
+er_data, and Fix an acpi perf unregister issue.
 
---VxJb6WgA6MoA+arP
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+As two patches
+[1/2] Drop the unused first argument of acpi_processor_unregister_perfo=
+rmance().
+[2/2] Drop the now redundant acpi_data pointer from acpi_cpufreq_data.
+are going into the kernel tree, If I send my patches to you now, there =
+will be some conflicts.
 
-Hi Josh,
+So I may wait for a couple of days until all previous patches merged in=
+to kernel tree.
 
-On Mon, Jul 13, 2015 at 11:21:44AM +0800, Josh Wu wrote:
-> On 7/11/2015 12:12 AM, Nicolas Ferre wrote:
-> >Le 10/07/2015 14:31, Maxime Ripard a =E9crit :
-> >>On Fri, Jul 10, 2015 at 02:09:07PM +0200, Alexandre Belloni wrote:
-> >>>Hi,
-> >>>
-> >>>On 10/07/2015 at 15:56:52 +0800, Josh Wu wrote :
-> >>>>I would agree with Maxime. Currently all latest chip reset function is
-> >>>>compatible with the atmel,sama5d3-rstc.
-> >>>>So check compatible string is enough for now.
-> >>>>But of cause if we have other incompatible reset in future with new c=
-hip,
-> >>>>the structure like you said is needed.
-> >>>We managed to avoid using of_machine_is_compatible() in all the at91
-> >>>drivers. I'd like to keep it that way. It was painful enough to remove
-> >>>all those cpu_is_at91xxx calls.
-> >>That's your call...
-> >>
-> >>>Also, using it is trying to match strings and will result in longer bo=
-ot
-> >>>times.
-> >>Have you looked at the implementation of of_match_device? If that's
-> >>really a concern to you, you should actually avoid it.
-> >I agree: let's keep it simple and use of_match_device().
+thanks
+xinhui
+
+On 2015=E5=B9=B407=E6=9C=8820=E6=97=A5 14:24, Pan Xinhui wrote:
+> From: Pan Xinhui <xinhuix.pan@intel.com>
 >=20
-> Ok. I will keep it as it is now:  use the (match->data !=3D sama5d3_resta=
-rt)
-> for the condition.
-
-I'm not just that's been an option in our discussion so far.
-
-Nicolas said that he was agreeing with me, but at the same time said
-the complete opposite of what I was arguing for, so I'm not really
-sure what's really on his mind, but the two options that were
-discussed were to remove that test, and either:
-
-  - Use of_device_is_compatible to prevent the loop execution
-
-  - define a structure with a flag to say whether you need the ram
-    controller quirk or not, and test that flag.
-
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---VxJb6WgA6MoA+arP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVrKi/AAoJEBx+YmzsjxAgDSAP/3/a/DPKlVY/84A3cptvIvoH
-qrmkYoN5chZlIeLY+pkgOFQizKAYarHgnhj4Fnz3+SeIhDE7kxh1f7+Ws85VyrhN
-319qn/tofsg/GCsvpsWIkJz954QamVMlIgRDPY7LZ9g0/2t54PODaqh8OgFcn2I5
-Ut6xLGwIiwJqot+qTU41GsdvqomYG+vkR7QLxUDDx0etVs0/c7Ppy/m3NioQLUIC
-SylZYhcpFnSKULpCRJUV/ohJA9IxR4hBe+09w53SuEU4DC2N8gnyaAejZpnSwYX1
-KMK3p6lFjX5auUWfyLixJe/VXYdTsEph3kfh9noBu1LZaYrUfckTvb8Bt7XQgVHm
-G3gVzJxMoluSMmLsn9UluXfB5yXW4LxcVSYzb99wDmyAXCHckIrbrKNERmNWyJkD
-4orgI1J0dT2iUNkiSGw8fNUCcQeKtgSlg0yyvoq2lkZ/VZJKfT9sHmfl6WPG+hqq
-BEdS1u89BJosfL3HROwf40ghbEuReiVVAD7jBPS7bQqPwNEffVEVOA7L4ZuLNZxE
-KXGTSPgvG0KK/+nqrvZEQheQHOld435boDpnsujv6aL2aA9XzJ6TojlDN0xjbOZV
-DOWZzbh77coWQYIBAF3Vi+a9U+97qKi4YwhjAyMIrqw0nGkekTDC5iu8dmv8Sogk
-QoqUkWyWKtjlCKxfhje7
-=Sq48
------END PGP SIGNATURE-----
-
---VxJb6WgA6MoA+arP--
+> freq_table should be alloced in ->init and freed in ->exit. However i=
+t
+> does not be freed. Fix this memory leak in acpi_cpufreq_cpu_exit.
+>=20
+> Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
+> ---
+>  drivers/cpufreq/ia64-acpi-cpufreq.c | 1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia=
+64-acpi-cpufreq.c
+> index 27cef0c..e02bd15 100644
+> --- a/drivers/cpufreq/ia64-acpi-cpufreq.c
+> +++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
+> @@ -334,6 +334,7 @@ acpi_cpufreq_cpu_exit (
+>  		acpi_io_data[policy->cpu] =3D NULL;
+>  		acpi_processor_unregister_performance(&data->acpi_data,
+>  		                                      policy->cpu);
+> +		kfree(policy->freq_table);
+>  		kfree(data);
+>  	}
+> =20
+>=20
