@@ -1,64 +1,154 @@
-From: Pan Xinhui <xinhuix.pan@intel.com>
-Subject: Re: [PATCH] cpufreq: ia64: Fix a memory leak in acpi_cpufreq_cpu_exit
-Date: Mon, 20 Jul 2015 16:13:40 +0800
-Message-ID: <55ACADB4.60102@intel.com>
-References: <55AC9424.1070304@intel.com>
+From: Mel Gorman <mgorman@suse.de>
+Subject: Re: [PATCH v3 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
+ feature
+Date: Mon, 20 Jul 2015 09:28:10 +0100
+Message-ID: <20150720082810.GG2561@suse.de>
+References: <1437114578-2502-1-git-send-email-pintu.k@samsung.com>
+ <1437366544-32673-1-git-send-email-pintu.k@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:25857 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755280AbbGTIQY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 20 Jul 2015 04:16:24 -0400
-In-Reply-To: <55AC9424.1070304@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-15
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <1437366544-32673-1-git-send-email-pintu.k@samsung.com>
+Sender: owner-linux-mm@kvack.org
+To: Pintu Kumar <pintu.k@samsung.com>
+Cc: akpm@linux-foundation.org, corbet@lwn.net, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, qiuxishi@huawei.com, Valdis.Kletnieks@vt.edu, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com, pintu.ping@gmail.compintu
 List-Id: linux-pm@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>, "mnipxh@163.com" <mnipxh@163.com>
 
-hi, all
-	ia64-acpi-cpufreq has similar issues with acpi-cpufreq. Maybe we need =
-make other two patches.
-Replace struct cpufreq_acpi_io *acpi_io_data[NR_CPUS] with policy->driv=
-er_data, and Fix an acpi perf unregister issue.
+On Mon, Jul 20, 2015 at 09:59:04AM +0530, Pintu Kumar wrote:
+> This patch provides 2 things:
+> 1. Add new control called shrink_memory in /proc/sys/vm/.
+> This control can be used to aggressively reclaim memory system-wide
+> in one shot from the user space. A value of 1 will instruct the
+> kernel to reclaim as much as totalram_pages in the system.
+> Example: echo 1 > /proc/sys/vm/shrink_memory
+> 
+> If any other value than 1 is written to shrink_memory an error EINVAL
+> occurs.
+> 
+> 2. Enable shrink_all_memory API in kernel with new CONFIG_SHRINK_MEMORY.
+> Currently, shrink_all_memory function is used only during hibernation.
+> With the new config we can make use of this API for non-hibernation case
+> also without disturbing the hibernation case.
+> 
+> The detailed paper was presented in Embedded Linux Conference, Mar-2015
+> http://events.linuxfoundation.org/sites/events/files/slides/
+> %5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
+> 
 
-As two patches
-[1/2] Drop the unused first argument of acpi_processor_unregister_perfo=
-rmance().
-[2/2] Drop the now redundant acpi_data pointer from acpi_cpufreq_data.
-are going into the kernel tree, If I send my patches to you now, there =
-will be some conflicts.
+Johannes has already reviewed this series and explained why it's a bad
+idea. This is just a note to say that I agree the points he made and also
+think that adding an additional knob to reclaim data from user space is a bad
+idea. Even drop_caches is only intended as a debugging tool to illustrate
+cases where normal reclaim is broken. Similarly compact_node exists as a
+debugging tool to check if direct compaction is not behaving as expected.
 
-So I may wait for a couple of days until all previous patches merged in=
-to kernel tree.
+If this is invoked when high-order allocations start failing and memory is
+fragmented with unreclaimable memory then it'll potentially keep thrashing
+depending on the userspace monitor implementation.  If the latency of
+a high order allocation is important then reclaim/compaction should be
+examined and improved. If the reliability of high-order allocations are
+important then you either need to reserve the memory in advance. If that
+is undesirable due to a constrained memory environment then one approach
+is to modify how pages are grouped by mobility as described in the leader
+of the series "Remove zonelist cache and high-order watermark checking".
+There are two suggestions there for out-of-tree patches that would make
+high-order allocations more reliable that are not suitable for mainline.
 
-thanks
-xinhui
+Yes, I read your presentation but lets go through the use cases you
+list again;
 
-On 2015=E5=B9=B407=E6=9C=8820=E6=97=A5 14:24, Pan Xinhui wrote:
-> From: Pan Xinhui <xinhuix.pan@intel.com>
->=20
-> freq_table should be alloced in ->init and freed in ->exit. However i=
-t
-> does not be freed. Fix this memory leak in acpi_cpufreq_cpu_exit.
->=20
-> Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
-> ---
->  drivers/cpufreq/ia64-acpi-cpufreq.c | 1 +
->  1 file changed, 1 insertion(+)
->=20
-> diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia=
-64-acpi-cpufreq.c
-> index 27cef0c..e02bd15 100644
-> --- a/drivers/cpufreq/ia64-acpi-cpufreq.c
-> +++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
-> @@ -334,6 +334,7 @@ acpi_cpufreq_cpu_exit (
->  		acpi_io_data[policy->cpu] =3D NULL;
->  		acpi_processor_unregister_performance(&data->acpi_data,
->  		                                      policy->cpu);
-> +		kfree(policy->freq_table);
->  		kfree(data);
->  	}
-> =20
->=20
+> Various other use cases where this can be used:
+> ----------------------------------------------------------------------------
+> 1) Just after system boot-up is finished, using the sysctl configuration from
+>    bootup script.
+
+Almost no benefit. Any page cache that is active and now cold would be
+trivially reclaimed later.
+
+> 2) During system suspend state, after suspend_freeze_processes()
+>    [kernel/power/suspend.c]
+>    Based on certain condition about fragmentation or free memory state.
+
+No gain.
+
+> 3) From Android ION system heap driver, when order-4 allocation starts failing.
+>    By calling shrink_all_memory, in a separate worker thread, based on certain
+>    condition.
+
+If order-4 allocations fail when shrink_all_memory works and the order-4
+allocation is required to work then the aggressiveness of reclaim/compaction
+needs to be fixed to reclaim all system memory if necessary. Right now
+it can bail because generally it is expected that no subsystem depends on
+high order allocations succeeding for functional correctness.
+
+> 4) It can be combined with compact_memory to achieve better results on memory
+>    fragmentation.
+
+Only by reclaiming the world. In 3.0 the system behaved like this. High order
+stress tests could take hours to complete as the system was continually
+thrashed. Today the same test would complete in about 15 minutes albeit
+with lower allocation success rates. We ran into multiple issues where
+high order allocation requests caused the system to thrash and triggering
+such thrashing from userspace is not an improvement.
+
+> 5) It can be helpful in debugging and tuning various vm parameters.
+
+No more than drop_caches is.
+
+> 6) It can be helpful to identify how much of maximum memory could be
+>    reclaimable at any point of time.
+
+Only by reclaiming the world. A less destructive means is using
+MemAvailable from /proc/meminfo
+
+>    And how much higher-order pages could be formed with this amount of
+>    reclaimable memory.
+
+Only by reclaiming the world
+
+>    Thus it can be helpful in accordingly tuning the reserved memory needs
+>    of a system.
+
+By which time it's too late as a reboot will be necessary to set the
+reserve.
+
+> 7) It can be helpful in properly tuning the SWAP size in the system.
+
+Only for a single point in time as it's workload dependant. The same
+data can be inferred from smaps.
+
+>    In shrink_all_memory, we enable may_swap = 1, that means all unused pages
+>    will be swapped out.
+>    Thus, running shrink_memory on a heavy loaded system, we can check how much
+>    swap is getting full.
+>    That can be the maximum swap size with a 10% delta.
+>    Also if ZRAM is used, it helps us in compressing and storing the pages for
+>    later use.
+> 8) It can be helpful to allow more new applications to be launched, without
+>    killing the older once.
+
+Reclaim would achieve the same effect over time.
+
+>    And moving the least recently used pages to the SWAP area.
+>    Thus user data can be retained.
+> 9) Can be part of a system utility to quickly defragment entire system
+>    memory.
+
+Any memory that is not on the LRU or indirectly pinned by pages on the
+LRU are unaffected.
+
+If high-order allocation latency or reliability is important then you
+really need a different solution because unless this thing runs
+continually to keep memory unused then it'll eventually fail hard and
+the system will perform poorly in the meantime.
+
+-- 
+Mel Gorman
+SUSE Labs
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
