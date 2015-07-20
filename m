@@ -1,213 +1,57 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH RFC] intel_pstate: play well with frequency limits set
- by acpi
-Date: Mon, 20 Jul 2015 14:08:24 -0700
-Message-ID: <1437426504.2377.162.camel@spandruv-DESK3.jf.intel.com>
-References: <20150716181706.6500.64386.stgit@buzz>
-	 <1437084536.2377.117.camel@spandruv-DESK3.jf.intel.com>
-	 <CALYGNiMOMWY2Ng9yLQ04Ghr6fKnO_6BRLCRE2b-rnvoPJmauqQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 1/3] PM suspend/hibernate: Call notifier after freezing processes
+Date: Mon, 20 Jul 2015 23:46:32 +0200
+Message-ID: <1715416.hWBvT0iLvO@vostro.rjw.lan>
+References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com> <3179448.TScsKEAuyR@vostro.rjw.lan> <20150720073226.GB25910@pali>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CALYGNiMOMWY2Ng9yLQ04Ghr6fKnO_6BRLCRE2b-rnvoPJmauqQ@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Konstantin Khlebnikov <koct9i@gmail.com>
-Cc: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Kristen Carlson Accardi <kristen@linux.intel.com>, Len Brown <lenb@kernel.org>, Ethan Zhao <ethan.zhao@oracle.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:44429 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752647AbbGTVTr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2015 17:19:47 -0400
+In-Reply-To: <20150720073226.GB25910@pali>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pali =?ISO-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>
+Cc: Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>, Neil Brown <neilb@suse.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, 2015-07-17 at 07:36 +0300, Konstantin Khlebnikov wrote:
-> On Fri, Jul 17, 2015 at 1:08 AM, Srinivas Pandruvada
-> <srinivas.pandruvada@linux.intel.com> wrote:
-> > On Thu, 2015-07-16 at 21:17 +0300, Konstantin Khlebnikov wrote:
-> >> IPMI can control CPU P-states remotely: configuration is reported via
-> >> common ACPI interface (_PPC/_PSS/etc). This patch adds required minimal
-> >> support in intel_pstate to receive and use these P-state limits.
-> >>
-> >> * ignore limit of top state in _PPC: it lower than turbo boost frequency
-> >> * register intel_pstate in acpi-processor to get states from _PSS
-> >> * link acpi_processor_get_bios_limit: this adds attribute "bios_limit"
-> >>
-> >> Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
-> >> ---
-> >>  drivers/acpi/processor_perflib.c |    3 +-
-> >>  drivers/cpufreq/intel_pstate.c   |   57 ++++++++++++++++++++++++++++++++++++++
-> >>  2 files changed, 59 insertions(+), 1 deletion(-)
-> >>
-> >> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-> >> index cfc8aba72f86..781e328c9d5f 100644
-> >> --- a/drivers/acpi/processor_perflib.c
-> >> +++ b/drivers/acpi/processor_perflib.c
-> >> @@ -98,7 +98,8 @@ static int acpi_processor_ppc_notifier(struct notifier_block *nb,
-> >>
-> >>       ppc = (unsigned int)pr->performance_platform_limit;
-> >>
-> >> -     if (ppc >= pr->performance->state_count)
-> >> +     /* Ignore limit of top state: it lower than turbo boost frequency */
-> >> +     if (!ppc || ppc >= pr->performance->state_count)
-> > Why? Isn't the previous check enough?
-> 
-> Zero _PPC state must be top performance state but as I see frequency in
-> _PSS is lower than maximum possible turbo frequency. So, in this case
-> intel_pstate cannnot get "100%"  for max bound even it there is no limit set.
-> 
-> For example: I saw _PSS[0] = 2601 Mhz, PSS[1] = 2600 Mhz while turbo
-> state is 3400 Mhz.
-> 
-Have you tested dynamic _PPC modification with acpi cpufreq with this
-change (after boot)? Suppose _PPC is changed from 3 to 0, then
-cpufreq_verify_within_limits will not be called to change to new max
-turbo performance state.
+On Monday, July 20, 2015 09:32:26 AM Pali Roh=C3=A1r wrote:
+> On Saturday 18 July 2015 01:27:15 Rafael J. Wysocki wrote:
+> > On Thursday, July 16, 2015 09:33:02 AM Pali Roh=C3=A1r wrote:
+> > > On Thursday 16 July 2015 03:02:03 Rafael J. Wysocki wrote:
+> > > > Also, if you're adding AFTER_FREEZE, it would be good to add BE=
+=46ORE_THAW too
+> > > > for symmetry.
+> > > >=20
+> > >=20
+> > > But there is no use case for BEFORE_THAW. At least it is not need=
+ed for now.
+> >=20
+> > For your use case, a single function pointer would be sufficient to=
+o.
+> >=20
+>=20
+> What do you mean by single function pointer? kernel/power is part of
+> kernel image and dm-crypt is external kernel module.
+
+Well, if there is a function pointer in the core suspend code initially=
+ set to
+NULL and exported to modules such that the dm-crypt code can set it to
+something else, that should be sufficient, shouldn't it?
+
+So if you're adding new PM notifier events, that's already more than *y=
+ou* need.
+
+Anyway, I guess the "post freeze" new one should be enough for now, but=
+ please
+change the name to POST_FREEZE.
+
+Also I think we don't need separate "post freeze" events for suspend an=
+d
+hibernation.
 
 Thanks,
-Srinivas
-> >>               goto out;
-> >>
-> >>       cpufreq_verify_within_limits(policy, 0,
-> >> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> >> index 15ada47bb720..4a34ddf4fa73 100644
-> >> --- a/drivers/cpufreq/intel_pstate.c
-> >> +++ b/drivers/cpufreq/intel_pstate.c
-> >> @@ -26,6 +26,7 @@
-> >>  #include <linux/fs.h>
-> >>  #include <linux/debugfs.h>
-> >>  #include <linux/acpi.h>
-> >> +#include <acpi/processor.h>
-> >>  #include <linux/vmalloc.h>
-> >>  #include <trace/events/power.h>
-> >>
-> >> @@ -113,6 +114,9 @@ struct cpudata {
-> >>       u64     prev_mperf;
-> >>       u64     prev_tsc;
-> >>       struct sample sample;
-> >> +#ifdef CONFIG_ACPI_PROCESSOR
-> >> +     struct acpi_processor_performance acpi_data;
-> >> +#endif
-> >>  };
-> >>
-> >>  static struct cpudata **all_cpu_data;
-> >> @@ -145,6 +149,7 @@ static int hwp_active;
-> >>
-> >>  struct perf_limits {
-> >>       int no_turbo;
-> >> +     int no_acpi;
-> >>       int turbo_disabled;
-> >>       int max_perf_pct;
-> >>       int min_perf_pct;
-> >> @@ -158,6 +163,7 @@ struct perf_limits {
-> >>
-> >>  static struct perf_limits limits = {
-> >>       .no_turbo = 0,
-> >> +     .no_acpi = !IS_ENABLED(CONFIG_ACPI_PROCESSOR),
-> >>       .turbo_disabled = 0,
-> >>       .max_perf_pct = 100,
-> >>       .max_perf = int_tofp(1),
-> >> @@ -449,6 +455,18 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
-> >>       return count;
-> >>  }
-> >>
-> >> +static ssize_t store_no_acpi(struct kobject *a, struct attribute *b,
-> >> +                          const char *buf, size_t count)
-> >> +{
-> >> +#ifdef CONFIG_ACPI_PROCESSOR
-> >> +     return kstrtouint(buf, 0, &limits.no_acpi) ?: count;
-> >> +#else
-> >> +     return -ENODEV;
-> >> +#endif
-> >> +}
-> >> +show_one(no_acpi, no_acpi);
-> >> +define_one_global_rw(no_acpi);
-> >> +
-> >>  show_one(max_perf_pct, max_perf_pct);
-> >>  show_one(min_perf_pct, min_perf_pct);
-> >>
-> >> @@ -460,6 +478,7 @@ define_one_global_ro(num_pstates);
-> >>
-> >>  static struct attribute *intel_pstate_attributes[] = {
-> >>       &no_turbo.attr,
-> >> +     &no_acpi.attr,
-> >>       &max_perf_pct.attr,
-> >>       &min_perf_pct.attr,
-> >>       &turbo_pct.attr,
-> >> @@ -1049,6 +1068,38 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
-> >>       policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
-> >>       cpumask_set_cpu(policy->cpu, policy->cpus);
-> >>
-> >> +#ifdef CONFIG_ACPI_PROCESSOR
-> >> +     if (!limits.no_acpi) {
-> >> +             /*
-> >> +              * Minimum necessary to get acpi_processor_ppc_notifier() and
-> >> +              * acpi_processor_get_bios_limit() working.
-> >> +              */
-> >> +             if (!zalloc_cpumask_var(&cpu->acpi_data.shared_cpu_map,
-> >> +                                     GFP_KERNEL))
-> >> +                     rc = -ENOMEM;
-> >> +             else
-> >> +                     rc = acpi_processor_register_performance(
-> >> +                                     &cpu->acpi_data, policy->cpu);
-> >> +             if (rc) {
-> >> +                     pr_err("intel_pstate: acpi init failed: %d\n", rc);
-> >> +                     free_cpumask_var(cpu->acpi_data.shared_cpu_map);
-> >> +                     limits.no_acpi = 1;
-> >> +             }
-> >> +     }
-> >> +#endif
-> >> +     return 0;
-> >> +}
-> >> +
-> >> +static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
-> >> +{
-> >> +#ifdef CONFIG_ACPI_PROCESSOR
-> >> +     struct cpudata *cpu = all_cpu_data[policy->cpu];
-> >> +
-> >> +     if (cpu->acpi_data.state_count)
-> >> +             acpi_processor_unregister_performance(&cpu->acpi_data,
-> >> +                                                   policy->cpu);
-> >> +     free_cpumask_var(cpu->acpi_data.shared_cpu_map);
-> >> +#endif
-> >>       return 0;
-> >>  }
-> >>
-> >> @@ -1057,7 +1108,11 @@ static struct cpufreq_driver intel_pstate_driver = {
-> >>       .verify         = intel_pstate_verify_policy,
-> >>       .setpolicy      = intel_pstate_set_policy,
-> >>       .get            = intel_pstate_get,
-> >> +#ifdef CONFIG_ACPI_PROCESSOR
-> >> +     .bios_limit     = acpi_processor_get_bios_limit,
-> >> +#endif
-> >>       .init           = intel_pstate_cpu_init,
-> >> +     .exit           = intel_pstate_cpu_exit,
-> >>       .stop_cpu       = intel_pstate_stop_cpu,
-> >>       .name           = "intel_pstate",
-> >>  };
-> >> @@ -1286,6 +1341,8 @@ static int __init intel_pstate_setup(char *str)
-> >>               force_load = 1;
-> >>       if (!strcmp(str, "hwp_only"))
-> >>               hwp_only = 1;
-> >> +     if (!strcmp(str, "no_acpi"))
-> >> +             limits.no_acpi = 1;
-> >>       return 0;
-> >>  }
-> >>  early_param("intel_pstate", intel_pstate_setup);
-> >>
-> > _PPC is index into _PSS. Since intel P state doesn't follow _PSS, the
-> > states may not be 1:1 matching. So we have to harmonize them.
-> >
-> >
-> >> --
-> >> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> >> the body of a message to majordomo@vger.kernel.org
-> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Rafael
 
