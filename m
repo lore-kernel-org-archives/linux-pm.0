@@ -1,67 +1,213 @@
-From: Mel Gorman <mgorman@suse.de>
-Subject: Re: [PATCH v3 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
- feature
-Date: Mon, 20 Jul 2015 18:55:38 +0100
-Message-ID: <20150720175538.GJ2561@suse.de>
-References: <1437114578-2502-1-git-send-email-pintu.k@samsung.com>
- <1437366544-32673-1-git-send-email-pintu.k@samsung.com>
- <20150720082810.GG2561@suse.de>
- <02c601d0c306$f86d30f0$e94792d0$@samsung.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH RFC] intel_pstate: play well with frequency limits set
+ by acpi
+Date: Mon, 20 Jul 2015 14:08:24 -0700
+Message-ID: <1437426504.2377.162.camel@spandruv-DESK3.jf.intel.com>
+References: <20150716181706.6500.64386.stgit@buzz>
+	 <1437084536.2377.117.camel@spandruv-DESK3.jf.intel.com>
+	 <CALYGNiMOMWY2Ng9yLQ04Ghr6fKnO_6BRLCRE2b-rnvoPJmauqQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Return-path: <linux-doc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <02c601d0c306$f86d30f0$e94792d0$@samsung.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: PINTU KUMAR <pintu.k@samsung.com>
-Cc: akpm@linux-foundation.org, corbet@lwn.net, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, qiuxishi@huawei.com, Valdis.Kletnieks@vt.edu, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com, pintu.ping@gmail.compintu
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CALYGNiMOMWY2Ng9yLQ04Ghr6fKnO_6BRLCRE2b-rnvoPJmauqQ@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Konstantin Khlebnikov <koct9i@gmail.com>
+Cc: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Kristen Carlson Accardi <kristen@linux.intel.com>, Len Brown <lenb@kernel.org>, Ethan Zhao <ethan.zhao@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 20, 2015 at 09:43:02PM +0530, PINTU KUMAR wrote:
-> Hi,
+On Fri, 2015-07-17 at 07:36 +0300, Konstantin Khlebnikov wrote:
+> On Fri, Jul 17, 2015 at 1:08 AM, Srinivas Pandruvada
+> <srinivas.pandruvada@linux.intel.com> wrote:
+> > On Thu, 2015-07-16 at 21:17 +0300, Konstantin Khlebnikov wrote:
+> >> IPMI can control CPU P-states remotely: configuration is reported via
+> >> common ACPI interface (_PPC/_PSS/etc). This patch adds required minimal
+> >> support in intel_pstate to receive and use these P-state limits.
+> >>
+> >> * ignore limit of top state in _PPC: it lower than turbo boost frequency
+> >> * register intel_pstate in acpi-processor to get states from _PSS
+> >> * link acpi_processor_get_bios_limit: this adds attribute "bios_limit"
+> >>
+> >> Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+> >> ---
+> >>  drivers/acpi/processor_perflib.c |    3 +-
+> >>  drivers/cpufreq/intel_pstate.c   |   57 ++++++++++++++++++++++++++++++++++++++
+> >>  2 files changed, 59 insertions(+), 1 deletion(-)
+> >>
+> >> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+> >> index cfc8aba72f86..781e328c9d5f 100644
+> >> --- a/drivers/acpi/processor_perflib.c
+> >> +++ b/drivers/acpi/processor_perflib.c
+> >> @@ -98,7 +98,8 @@ static int acpi_processor_ppc_notifier(struct notifier_block *nb,
+> >>
+> >>       ppc = (unsigned int)pr->performance_platform_limit;
+> >>
+> >> -     if (ppc >= pr->performance->state_count)
+> >> +     /* Ignore limit of top state: it lower than turbo boost frequency */
+> >> +     if (!ppc || ppc >= pr->performance->state_count)
+> > Why? Isn't the previous check enough?
 > 
-> Thank you all for reviewing the patch and providing your valuable comments and
-> suggestions.
-> During the ELC conference many people suggested to release the patch to
-> mainline, so this patch, to get others opinion.
+> Zero _PPC state must be top performance state but as I see frequency in
+> _PSS is lower than maximum possible turbo frequency. So, in this case
+> intel_pstate cannnot get "100%"  for max bound even it there is no limit set.
 > 
-
-Unfortunately, in my opinion it runs the risk of creating a different
-set of problems. Either it needs to be run frequently to keep memory free
-which incurs one set of penalties or it is used too late when there are
-unmovable/unreclaimable pages preventing allocations succeeding in which
-case you are back at the original problem. I see what you did and why it
-would work in some cases but I think the main reason it works is because
-it's run frequently enough so memory is never used. Grouping pages by
-mobility actually took advantage of a similar property when it increased
-min_free_kbytes but that was much more limited than adding a giant hammer
-for userspace to reclaim the world.
-
-> If you have any more suggestions to experiment and verify please let me know.
+> For example: I saw _PSS[0] = 2601 Mhz, PSS[1] = 2600 Mhz while turbo
+> state is 3400 Mhz.
 > 
+Have you tested dynamic _PPC modification with acpi cpufreq with this
+change (after boot)? Suppose _PPC is changed from 3 to 0, then
+cpufreq_verify_within_limits will not be called to change to new max
+turbo performance state.
 
-I believe I already did. If it's high-order reliability that is important
-then you need to either reserve the memory or look at protecting the pages
-using grouping pages by mobility. I pointed out what series to look at and
-the leader explains how it could be adjusted further for the embedded case
-if necessary.
+Thanks,
+Srinivas
+> >>               goto out;
+> >>
+> >>       cpufreq_verify_within_limits(policy, 0,
+> >> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> >> index 15ada47bb720..4a34ddf4fa73 100644
+> >> --- a/drivers/cpufreq/intel_pstate.c
+> >> +++ b/drivers/cpufreq/intel_pstate.c
+> >> @@ -26,6 +26,7 @@
+> >>  #include <linux/fs.h>
+> >>  #include <linux/debugfs.h>
+> >>  #include <linux/acpi.h>
+> >> +#include <acpi/processor.h>
+> >>  #include <linux/vmalloc.h>
+> >>  #include <trace/events/power.h>
+> >>
+> >> @@ -113,6 +114,9 @@ struct cpudata {
+> >>       u64     prev_mperf;
+> >>       u64     prev_tsc;
+> >>       struct sample sample;
+> >> +#ifdef CONFIG_ACPI_PROCESSOR
+> >> +     struct acpi_processor_performance acpi_data;
+> >> +#endif
+> >>  };
+> >>
+> >>  static struct cpudata **all_cpu_data;
+> >> @@ -145,6 +149,7 @@ static int hwp_active;
+> >>
+> >>  struct perf_limits {
+> >>       int no_turbo;
+> >> +     int no_acpi;
+> >>       int turbo_disabled;
+> >>       int max_perf_pct;
+> >>       int min_perf_pct;
+> >> @@ -158,6 +163,7 @@ struct perf_limits {
+> >>
+> >>  static struct perf_limits limits = {
+> >>       .no_turbo = 0,
+> >> +     .no_acpi = !IS_ENABLED(CONFIG_ACPI_PROCESSOR),
+> >>       .turbo_disabled = 0,
+> >>       .max_perf_pct = 100,
+> >>       .max_perf = int_tofp(1),
+> >> @@ -449,6 +455,18 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
+> >>       return count;
+> >>  }
+> >>
+> >> +static ssize_t store_no_acpi(struct kobject *a, struct attribute *b,
+> >> +                          const char *buf, size_t count)
+> >> +{
+> >> +#ifdef CONFIG_ACPI_PROCESSOR
+> >> +     return kstrtouint(buf, 0, &limits.no_acpi) ?: count;
+> >> +#else
+> >> +     return -ENODEV;
+> >> +#endif
+> >> +}
+> >> +show_one(no_acpi, no_acpi);
+> >> +define_one_global_rw(no_acpi);
+> >> +
+> >>  show_one(max_perf_pct, max_perf_pct);
+> >>  show_one(min_perf_pct, min_perf_pct);
+> >>
+> >> @@ -460,6 +478,7 @@ define_one_global_ro(num_pstates);
+> >>
+> >>  static struct attribute *intel_pstate_attributes[] = {
+> >>       &no_turbo.attr,
+> >> +     &no_acpi.attr,
+> >>       &max_perf_pct.attr,
+> >>       &min_perf_pct.attr,
+> >>       &turbo_pct.attr,
+> >> @@ -1049,6 +1068,38 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+> >>       policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+> >>       cpumask_set_cpu(policy->cpu, policy->cpus);
+> >>
+> >> +#ifdef CONFIG_ACPI_PROCESSOR
+> >> +     if (!limits.no_acpi) {
+> >> +             /*
+> >> +              * Minimum necessary to get acpi_processor_ppc_notifier() and
+> >> +              * acpi_processor_get_bios_limit() working.
+> >> +              */
+> >> +             if (!zalloc_cpumask_var(&cpu->acpi_data.shared_cpu_map,
+> >> +                                     GFP_KERNEL))
+> >> +                     rc = -ENOMEM;
+> >> +             else
+> >> +                     rc = acpi_processor_register_performance(
+> >> +                                     &cpu->acpi_data, policy->cpu);
+> >> +             if (rc) {
+> >> +                     pr_err("intel_pstate: acpi init failed: %d\n", rc);
+> >> +                     free_cpumask_var(cpu->acpi_data.shared_cpu_map);
+> >> +                     limits.no_acpi = 1;
+> >> +             }
+> >> +     }
+> >> +#endif
+> >> +     return 0;
+> >> +}
+> >> +
+> >> +static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
+> >> +{
+> >> +#ifdef CONFIG_ACPI_PROCESSOR
+> >> +     struct cpudata *cpu = all_cpu_data[policy->cpu];
+> >> +
+> >> +     if (cpu->acpi_data.state_count)
+> >> +             acpi_processor_unregister_performance(&cpu->acpi_data,
+> >> +                                                   policy->cpu);
+> >> +     free_cpumask_var(cpu->acpi_data.shared_cpu_map);
+> >> +#endif
+> >>       return 0;
+> >>  }
+> >>
+> >> @@ -1057,7 +1108,11 @@ static struct cpufreq_driver intel_pstate_driver = {
+> >>       .verify         = intel_pstate_verify_policy,
+> >>       .setpolicy      = intel_pstate_set_policy,
+> >>       .get            = intel_pstate_get,
+> >> +#ifdef CONFIG_ACPI_PROCESSOR
+> >> +     .bios_limit     = acpi_processor_get_bios_limit,
+> >> +#endif
+> >>       .init           = intel_pstate_cpu_init,
+> >> +     .exit           = intel_pstate_cpu_exit,
+> >>       .stop_cpu       = intel_pstate_stop_cpu,
+> >>       .name           = "intel_pstate",
+> >>  };
+> >> @@ -1286,6 +1341,8 @@ static int __init intel_pstate_setup(char *str)
+> >>               force_load = 1;
+> >>       if (!strcmp(str, "hwp_only"))
+> >>               hwp_only = 1;
+> >> +     if (!strcmp(str, "no_acpi"))
+> >> +             limits.no_acpi = 1;
+> >>       return 0;
+> >>  }
+> >>  early_param("intel_pstate", intel_pstate_setup);
+> >>
+> > _PPC is index into _PSS. Since intel P state doesn't follow _PSS, the
+> > states may not be 1:1 matching. So we have to harmonize them.
+> >
+> >
+> >> --
+> >> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> >> the body of a message to majordomo@vger.kernel.org
+> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-If it's latency you are interested in then reclaim/compaction needs to
-be modified to be more aggressive when it is somehow detected that the
-high-order allocation must succeed for functional correctness. In that case
-the relational starting point would be to look at should_continue_reclaim
-and how it relates to compaction.
 
-> The suggestion was only to open up the shrink_all_memory API for some use cases.
-> 
-> I am not saying that it needs to be called continuously. It can be used only on
-> certain condition and only when deemed necessary.
-> The same technique is already used in hibernation to reduce the RAM snapshot
-> image size.
-
-Reducing memory usage is not the same as guaranteeing that high-order
-pages are available for allocation.
-
--- 
-Mel Gorman
-SUSE Labs
