@@ -1,207 +1,89 @@
 From: Pan Xinhui <xinhuix.pan@intel.com>
-Subject: Re: [PATCH] acpi-cpufreq: Add a miss ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
-Date: Mon, 20 Jul 2015 13:14:41 +0800
-Message-ID: <55AC83C1.2080509@intel.com>
-References: <559F5D13.8050104@intel.com> <55A46F6B.6030006@intel.com> <55A47973.5080900@intel.com> <15297094.Px11LlFYVk@vostro.rjw.lan>
+Subject: [PATCH] cpufreq: ia64: remove redundant freq_table of acpi_cpufreq_data
+Date: Mon, 20 Jul 2015 14:22:46 +0800
+Message-ID: <55AC93B6.7030305@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:8980 "EHLO mga14.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:5461 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750783AbbGTFRb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 20 Jul 2015 01:17:31 -0400
-In-Reply-To: <15297094.Px11LlFYVk@vostro.rjw.lan>
+	id S1754416AbbGTGZa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 20 Jul 2015 02:25:30 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>, "mnipxh@163.com" <mnipxh@163.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>, "mnipxh@163.com" <mnipxh@163.com>
 
-hi, Rafael
-	thanks for your reply :)
-On 2015=E5=B9=B407=E6=9C=8818=E6=97=A5 08:34, Rafael J. Wysocki wrote:
-> On Tuesday, July 14, 2015 10:52:35 AM Pan Xinhui wrote:
->> hi, Rafael,
->> 	let me do more explanation :)
->>
->> On 2015=E5=B9=B407=E6=9C=8814=E6=97=A5 10:09, Pan Xinhui wrote:
->>> hi, Rafael,
->>> 	thanks for you reply :)
->>> On 2015=E5=B9=B407=E6=9C=8814=E6=97=A5 07:26, Rafael J. Wysocki wro=
-te:
->>>> On Monday, July 13, 2015 02:33:08 PM Pan Xinhui wrote:
->>>>> hi, Rafeal
->>>>> 	thanks for your reply. :)
->>>>>
->>>>> On 2015=E5=B9=B407=E6=9C=8811=E6=97=A5 04:44, Rafael J. Wysocki w=
-rote:
->>>>>> Hi,
->>>>>>
->>>>>> On Fri, Jul 10, 2015 at 7:50 AM, Pan Xinhui <xinhuix.pan@intel.c=
-om> wrote:
->>>>>>>
->>>>>>> If CONFIG_X86_ACPI_CPUFREQ_CPB has not been defined, the placeh=
-older for
->>>>>>> cpb is not needed. Add ifdef around it.
->>>>>>>
->>>>>>> Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
->>>>>>> ---
->>>>>>>  drivers/cpufreq/acpi-cpufreq.c | 2 ++
->>>>>>>  1 file changed, 2 insertions(+)
->>>>>>>
->>>>>>> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/a=
-cpi-cpufreq.c
->>>>>>> index e7fcaa6..314a19e 100644
->>>>>>> --- a/drivers/cpufreq/acpi-cpufreq.c
->>>>>>> +++ b/drivers/cpufreq/acpi-cpufreq.c
->>>>>>> @@ -884,7 +884,9 @@ static int acpi_cpufreq_resume(struct cpufr=
-eq_policy *policy)
->>>>>>>  static struct freq_attr *acpi_cpufreq_attr[] =3D {
->>>>>>>         &cpufreq_freq_attr_scaling_available_freqs,
->>>>>>>         &freqdomain_cpus,
->>>>>>> +#ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
->>>>>>>         NULL,   /* this is a placeholder for cpb, do not remove=
- */
->>>>>>> +#endif
->>>>>>
->>>>>> Adding the ifdef here doesn't change anything, because the next =
-NULL
->>>>>> will play the role of the one you've just #ifdefed and the struc=
-ture
->>>>>> will be filled with zeros from that point on anyway.
->>>>>>
->>>>> Yes, adding ifdef here does not change any binary codes. But I wa=
-nt to make the codes more readable. :)
->>>>> Patch author has noticed two *NULL* here would confuse people, es=
-pecially who first read this acpi-cpufreq.c file
->>>>> From code style point, it would be better to have #ifdef around i=
-t.=20
->>>>
->>>> Not really.
->>>>
->>>> Why don't you simply drop *both* NULLs?
->>>>
->>> Just like string end with *NULL* :)
->>>
->>> 1021 static int cpufreq_add_dev_interface(struct cpufreq_policy *po=
-licy,
->>> 1022                      struct device *dev)
->>> 1023 {
->>> 1024     struct freq_attr **drv_attr;
->>> 1025     int ret =3D 0;
->>> 1026=20
->>> 1027     /* set up files for this cpu device */
->>> 1028     drv_attr =3D cpufreq_driver->attr;
->>> 1029     while (drv_attr && *drv_attr) {
->>> 1030         ret =3D sysfs_create_file(&policy->kobj, &((*drv_attr)=
-->attr));
->>> 1031         if (ret)
->>> 1032             return ret;
->>> 1033         drv_attr++;
->>> 1034     }
->>> If struct freq_attr *acpi_cpufreq_attr[] did not end with NULL, lin=
-e 1033 will access invalid data area.
->>> If *drv_attr(the data after struct freq_attr * array[]) happened to=
- be not NULL. panic may hit in sysfs_create_file :(
->>> So at least one *NULL* must be in the end of freq_attr *array[].
->=20
-> OK, so the array is NULL-terminated and one NULL is needed to mark th=
-e end of it.
->=20
->=20
->>>
->>> Actually in acpi-cpufreq.c, in acpi_cpufreq_init function.
->>>  957         struct freq_attr **iter;
->>>  958=20
->>>  959         pr_debug("adding sysfs entry for cpb\n");
->>>  960=20
->>>  961         for (iter =3D acpi_cpufreq_attr; *iter !=3D NULL; iter=
-++)
->>>  962             ;
->>>  963=20
->>>  964         /* make sure there is a terminator behind it */
->>>  965         if (iter[1] =3D=3D NULL)
->>>  966             *iter =3D &cpb;
->>>  967     }
->>> line965, check of iter[1] is not needed. Maybe the patch author was=
- afraid of an unexpected remove of first *NULL*.
->>> It might be a better solution to add ifdef CONFIG_X86_ACPI_CPUFREQ_=
-CPB around that *NULL*, and remove this !iter[1] check.
->=20
-> Ah, so that is an exceptionally ugly piece of code.
->=20
-> What about the patch below?
->=20
-agree, seems a little better than two-NULLs. I just have one minor ques=
-tion listed below.
+From: Pan Xinhui <xinhuix.pan@intel.com>
 
-> ---
->  drivers/cpufreq/acpi-cpufreq.c |   21 +++++++++++----------
->  1 file changed, 11 insertions(+), 10 deletions(-)
->=20
-> Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
-> +++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
-> @@ -884,7 +884,9 @@ static int acpi_cpufreq_resume(struct cp
->  static struct freq_attr *acpi_cpufreq_attr[] =3D {
->  	&cpufreq_freq_attr_scaling_available_freqs,
->  	&freqdomain_cpus,
-> -	NULL,	/* this is a placeholder for cpb, do not remove */
-> +#ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
-> +	&cpb,
-> +#endif
->  	NULL,
->  };
-> =20
-such definition may hide a fact that it might be set to NULL if cpb is =
-not supported.
-So if that happen, other member of this array whose index is large than=
- cpb might not registered.
-for example
+freq_table is now stored as policy->freq_table, so drop the redundant
+freq_table from struct cpufreq_acpi_io.
 
-+#ifdef CONFIG_X86_ACPI_CPUFREQ_CPB
-+	&cpb,
-+#endif
-+#ifdef CONFIG_NEW_XXXXXX
-	&new_cpufreq_attrs,
-#endif
-	NULL
-}
-anyway, at that time, people could work out a new solution. if they rea=
-lly have to add such new cpufreq attr. :)
+Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
+---
+ drivers/cpufreq/ia64-acpi-cpufreq.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-it seems good to me. thanks for your patch :)
-
-thanks
-xinhui
-
-> @@ -957,17 +959,16 @@ static int __init acpi_cpufreq_init(void
->  	 * only if configured. This is considered legacy code, which
->  	 * will probably be removed at some point in the future.
->  	 */
-> -	if (check_amd_hwpstate_cpu(0)) {
-> -		struct freq_attr **iter;
-> -
-> -		pr_debug("adding sysfs entry for cpb\n");
-> +	if (!check_amd_hwpstate_cpu(0)) {
-> +		struct freq_attr **attr;
-> =20
-> -		for (iter =3D acpi_cpufreq_attr; *iter !=3D NULL; iter++)
-> -			;
-> +		pr_debug("CPB unsupported, do not expose it\n");
-> =20
-> -		/* make sure there is a terminator behind it */
-> -		if (iter[1] =3D=3D NULL)
-> -			*iter =3D &cpb;
-> +		for (attr =3D acpi_cpufreq_attr; *attr; attr++)
-> +			if (*attr =3D=3D &cpb) {
-> +				*attr =3D NULL;
-> +				break;
-> +			}
->  	}
->  #endif
->  	acpi_cpufreq_boost_init();
->=20
+diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
+index c30aaa6..e02bd15 100644
+--- a/drivers/cpufreq/ia64-acpi-cpufreq.c
++++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
+@@ -29,7 +29,6 @@ MODULE_LICENSE("GPL");
+ 
+ struct cpufreq_acpi_io {
+ 	struct acpi_processor_performance	acpi_data;
+-	struct cpufreq_frequency_table		*freq_table;
+ 	unsigned int				resume;
+ };
+ 
+@@ -221,6 +220,7 @@ acpi_cpufreq_cpu_init (
+ 	unsigned int		cpu = policy->cpu;
+ 	struct cpufreq_acpi_io	*data;
+ 	unsigned int		result = 0;
++	struct cpufreq_frequency_table *freq_table;
+ 
+ 	pr_debug("acpi_cpufreq_cpu_init\n");
+ 
+@@ -254,10 +254,10 @@ acpi_cpufreq_cpu_init (
+ 	}
+ 
+ 	/* alloc freq_table */
+-	data->freq_table = kzalloc(sizeof(*data->freq_table) *
++	freq_table = kzalloc(sizeof(*freq_table) *
+ 	                           (data->acpi_data.state_count + 1),
+ 	                           GFP_KERNEL);
+-	if (!data->freq_table) {
++	if (!freq_table) {
+ 		result = -ENOMEM;
+ 		goto err_unreg;
+ 	}
+@@ -276,14 +276,14 @@ acpi_cpufreq_cpu_init (
+ 	for (i = 0; i <= data->acpi_data.state_count; i++)
+ 	{
+ 		if (i < data->acpi_data.state_count) {
+-			data->freq_table[i].frequency =
++			freq_table[i].frequency =
+ 			      data->acpi_data.states[i].core_frequency * 1000;
+ 		} else {
+-			data->freq_table[i].frequency = CPUFREQ_TABLE_END;
++			freq_table[i].frequency = CPUFREQ_TABLE_END;
+ 		}
+ 	}
+ 
+-	result = cpufreq_table_validate_and_show(policy, data->freq_table);
++	result = cpufreq_table_validate_and_show(policy, freq_table);
+ 	if (result) {
+ 		goto err_freqfree;
+ 	}
+@@ -311,7 +311,7 @@ acpi_cpufreq_cpu_init (
+ 	return (result);
+ 
+  err_freqfree:
+-	kfree(data->freq_table);
++	kfree(freq_table);
+  err_unreg:
+ 	acpi_processor_unregister_performance(&data->acpi_data, cpu);
+  err_free:
+-- 
+1.9.1
