@@ -1,49 +1,116 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v4 3/8] clk: add support for clocks provided by SCP(System
- Control Processor)
-Date: Mon, 20 Jul 2015 09:54:11 +0100
-Message-ID: <55ACB733.2080609@arm.com>
-References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com> <1433760002-24120-4-git-send-email-sudeep.holla@arm.com> <20150702172310.GF4301@codeaurora.org> <5596A1B6.8020307@arm.com> <559ADC94.4080505@codeaurora.org> <559BF858.1020301@arm.com> <20150708014606.GH30412@codeaurora.org> <55A7D79B.3080305@arm.com> <20150716193114.GA17952@codeaurora.org> <55A8E434.2010709@arm.com> <55A945DF.3@codeaurora.org>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [PATCH] idle: move latency tracing stop/start calls deeper
+ inside the idle loop
+Date: Mon, 20 Jul 2015 10:55:45 +0200
+Message-ID: <1437382545.3071.3.camel@pengutronix.de>
+References: <1435933180-5660-1-git-send-email-l.stach@pengutronix.de>
+	 <5187102.4yxZOPaqsB@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:54741 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755387AbbGTIyP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 20 Jul 2015 04:54:15 -0400
-In-Reply-To: <55A945DF.3@codeaurora.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:55184 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755936AbbGTIzw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2015 04:55:52 -0400
+In-Reply-To: <5187102.4yxZOPaqsB@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@baylibre.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de, patchwork-lst@pengutronix.de
 
+Am Samstag, den 04.07.2015, 02:08 +0200 schrieb Rafael J. Wysocki:
+> On Friday, July 03, 2015 04:19:40 PM Lucas Stach wrote:
+> > Make sure to stop tracing only once we are past a point where all
+> > latency tracing events have been processed (irqs are not enabled
+> > again). This has the slight advantage of capturing more latency
+> > related events in the idle path, but most importantly it makes sure
+> > that latency tracing doesn't get re-enabled inadvertently when
+> > new events are coming in.
+> > 
+> > This makes the irqsoff latency tracer useful again, as we stop
+> > capturing CPU sleep time as IRQ latency.
+> > 
+> > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+> > ---
+> >  drivers/cpuidle/cpuidle.c |  2 ++
+> >  kernel/sched/idle.c       | 14 +++++---------
+> >  2 files changed, 7 insertions(+), 9 deletions(-)
+> > 
+> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> > index 61c417b9e53f..d78514ac3f5d 100644
+> > --- a/drivers/cpuidle/cpuidle.c
+> > +++ b/drivers/cpuidle/cpuidle.c
+> > @@ -173,7 +173,9 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+> >  	trace_cpu_idle_rcuidle(index, dev->cpu);
+> >  	time_start = ktime_get();
+> >  
+> > +	stop_critical_timings();
+> >  	entered_state = target_state->enter(dev, drv, index);
+> > +	start_critical_timings();
+> >  
+> >  	time_end = ktime_get();
+> >  	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+> > diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> > index fefcb1fa5160..30b799bfc3c6 100644
+> > --- a/kernel/sched/idle.c
+> > +++ b/kernel/sched/idle.c
+> > @@ -93,12 +93,6 @@ static void cpuidle_idle_call(void)
+> >  	}
+> >  
+> >  	/*
+> > -	 * During the idle period, stop measuring the disabled irqs
+> > -	 * critical sections latencies
+> > -	 */
+> > -	stop_critical_timings();
+> > -
+> > -	/*
+> >  	 * Tell the RCU framework we are entering an idle section,
+> >  	 * so no more rcu read side critical sections and one more
+> >  	 * step to the grace period
+> > @@ -181,7 +175,6 @@ exit_idle:
+> >  		local_irq_enable();
+> >  
+> >  	rcu_idle_exit();
+> > -	start_critical_timings();
+> 
+> Are you sure we can safely reorder stop/start_critical_timings() with respect
+> to rcu_idle_enter/exit()?
+> 
+I'm no RCU expert, but I'm reasonably sure that this is a safe thing to
+do, as stop/start_critical_timings() does not use any RCU facilities.
 
+I've ran this patch quite some time with PROVE_RCU enabled and it didn't
+indicate any suspicious RCU usage.
 
-On 17/07/15 19:13, Stephen Boyd wrote:
-> On 07/17/2015 04:17 AM, Sudeep Holla wrote:
+> >  	return;
+> >  
+> >  use_default:
+> > @@ -189,10 +182,13 @@ use_default:
+> >  	 * We can't use the cpuidle framework, let's use the default
+> >  	 * idle routine.
+> >  	 */
+> > -	if (current_clr_polling_and_test())
+> > +	if (current_clr_polling_and_test()) {
+> >  		local_irq_enable();
+> > -	else
+> > +	} else {
+> > +		stop_critical_timings();
+> >  		arch_cpu_idle();
+> > +		start_critical_timings();
+> > +	}
+> >  
+> >  	goto exit_idle;
+> >  }
+> 
+> And what about enter_freeze_proper()?  Don't we need those in there too?
+> 
+You are right on this one. I'll spin a V2 with this fixed.
 
-[...]
+Thanks,
+Lucas
 
->>
->> determine_rate change shouldn't affect SCPI clock driver but I remember
->> seeing round_rate change too on the list which returns value using the
->> argument from Boris. Is that planned for v4.3 ? I would need the stable
->> branch from this clk_hw_set_rate_range if you decide to push. Let me
->> know your preferences. I will post the updated version of the patch
->> accordingly.
->>
->
-> We're not going to change round_rate() so it sounds like you don't need
-> a stable branch. But you would need this new consumer API. So you still
-> need a branch right?
->
+-- 
+Pengutronix e.K.             | Lucas Stach                 |
+Industrial Linux Solutions   | http://www.pengutronix.de/  |
 
-I am fine either way. If no one else need the stable branch to be shared
-with arm-soc, I prefer to use clock consumer API for now to avoid all
-the troubles to you guys and switch to provider API later. I will post
-it once the both this driver and that provider API is merged, if that's
-fine with you ?
-
-Regards,
-Sudeep
