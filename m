@@ -1,62 +1,63 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v7 3/8] ACPI: Decouple ACPI idle and ACPI processor drivers
-Date: Mon, 20 Jul 2015 15:21:43 +0100
-Message-ID: <55AD03F7.60108@arm.com>
-References: <cover.1436464513.git.ashwin.chaugule@linaro.org> <da1eb99c0e128a4c8160537295045164d8fde00d.1436464513.git.ashwin.chaugule@linaro.org>
+Subject: Re: [PATCH v7 5/8] CPPC: Add a CPUFreq driver for use with CPPC
+Date: Mon, 20 Jul 2015 15:22:09 +0100
+Message-ID: <55AD0411.4000603@arm.com>
+References: <cover.1436464513.git.ashwin.chaugule@linaro.org> <e8464849d98e4a4f64e9b23501d84b1f843aa994.1436464513.git.ashwin.chaugule@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:55954 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:55962 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753449AbbGTOVq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 20 Jul 2015 10:21:46 -0400
-In-Reply-To: <da1eb99c0e128a4c8160537295045164d8fde00d.1436464513.git.ashwin.chaugule@linaro.org>
+	id S932678AbbGTOWN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 20 Jul 2015 10:22:13 -0400
+In-Reply-To: <e8464849d98e4a4f64e9b23501d84b1f843aa994.1436464513.git.ashwin.chaugule@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
 
 
 
 On 09/07/15 19:04, Ashwin Chaugule wrote:
-> This patch introduces a new Kconfig symbol, ACPI_PROCESSOR_IDLE,
-> which is auto selected by architectures which support the ACPI
-> based C states for CPU Idle management.
->
-> The processor_idle driver in its present form contains declarations
-> specific to X86 and IA64. Since there are no reasonable defaults
-> for other architectures e.g. ARM64, the driver is selected only by
-> the arch/x86/Kconfig.
->
-> This helps in decoupling the ACPI processor_driver from the ACPI
-> processor_idle driver which is useful for the upcoming alternative
-> patchwork for controlling CPU Performance (CPPC) and CPU Idle (LPI).
+> This driver utilizes the methods introduced in the previous
+> patch - "ACPI: Introduce CPU performance controls using CPPC"
+> and enables usage with existing CPUFreq governors.
 >
 > Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+> Reviewed-by: Al Stone <al.stone@linaro.org>
 > ---
->   drivers/acpi/Kconfig     |  6 +++++-
->   drivers/acpi/Makefile    |  3 ++-
->   include/acpi/processor.h | 26 ++++++++++++++++++++++++--
->   3 files changed, 31 insertions(+), 4 deletions(-)
+>   drivers/cpufreq/Kconfig.arm    |  16 ++++
+>   drivers/cpufreq/Makefile       |   2 +
+>   drivers/cpufreq/cppc_cpufreq.c | 197 +++++++++++++++++++++++++++++++++++++++++
+>   3 files changed, 215 insertions(+)
+>   create mode 100644 drivers/cpufreq/cppc_cpufreq.c
 >
-> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-> index 00748dc..8a60b6e 100644
-> --- a/drivers/acpi/Kconfig
-> +++ b/drivers/acpi/Kconfig
-> @@ -177,9 +177,13 @@ config ACPI_CPU_FREQ_PSS
->   	  monitoring. It is required by several flavors of cpufreq
->   	  performance-state drivers.
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 4f3dbc8..578384d 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -272,3 +272,19 @@ config ARM_PXA2xx_CPUFREQ
+>   	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
 >
-> +config ACPI_PROCESSOR_IDLE
-> +	def_bool y
-> +	depends on X86 || IA64
+>   	  If in doubt, say N.
 > +
+> +config ACPI_CPPC_CPUFREQ
+> +	tristate "CPUFreq driver based on the ACPI CPPC spec"
+> +	depends on ACPI_CPPC_LIB
+> +	default n
+> +	help
+> +	  This adds a CPUFreq driver which uses CPPC methods
+> +	  as described in the ACPIv5.1 spec. CPPC stands for
+> +	  Collaborative Processor Performance Controls. It
+> +	  is based on an abstract continuous scale of CPU
+> +	  performance values which allows the remote power
+> +	  processor to flexibly optimize for power and
+> +	  performance. CPPC relies on power management firmware
+> +	  for its operation.
 
-In general, you need to split this series so that initially few patches
-deal with all the existing Kconfig fix-ups and then introduce
-PCC/PSS/CPPC related stuffs. That would help me rebase and test _LPI
-support.
+Why is this ARM specific ? It might be used only on ARM but doesn't mean
+it should be visible only on ARM ACPI systems.
 
 Regards,
 Sudeep
