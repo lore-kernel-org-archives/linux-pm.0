@@ -1,95 +1,133 @@
-From: Josh Wu <josh.wu@atmel.com>
-Subject: Re: [PATCH 1/2] power: reset: at91: add sama5d3 reset function
-Date: Mon, 20 Jul 2015 17:13:13 +0800
-Message-ID: <55ACBBA9.1090607@atmel.com>
-References: <1436436947-11210-1-git-send-email-josh.wu@atmel.com> <20150710060350.GA3127@piout.net> <559F7AC4.6050008@atmel.com> <20150710120907.GC3127@piout.net> <20150710123148.GA28632@lukather> <559FEED3.5080505@atmel.com> <55A32EC8.4080309@atmel.com> <20150720075231.GQ28632@lukather> <55ACB2C9.5070701@atmel.com> <55ACB506.9080505@atmel.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH V3 02/19] memory: tegra: Add MC flush support
+Date: Mon, 20 Jul 2015 11:17:44 +0200
+Message-ID: <20150720091743.GO29614@ulmo>
+References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com>
+ <1436791197-32358-3-git-send-email-jonathanh@nvidia.com>
+ <20150717095754.GG3057@ulmo>
+ <20150717102049.GQ6287@tbergstrom-lnx.Nvidia.com>
+ <20150717113124.GP3057@ulmo>
+ <55ACB54A.4080103@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="PtLnLSExlPr13a2X"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eusmtp01.atmel.com ([212.144.249.242]:41124 "EHLO
-	eusmtp01.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755323AbbGTJOp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2015 05:14:45 -0400
-In-Reply-To: <55ACB506.9080505@atmel.com>
+Received: from mail-wi0-f172.google.com ([209.85.212.172]:37504 "EHLO
+	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753232AbbGTJR6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2015 05:17:58 -0400
+Content-Disposition: inline
+In-Reply-To: <55ACB54A.4080103@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Fabian Frederick <fabf@skynet.be>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, Ben Dooks <ben.dooks@codethink.co.uk>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>, Guenter Roeck <linux@roeck-us.net>
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: Peter De Schrijver <pdeschrijver@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Prashant Gaikwad <pgaikwad@nvidia.com>, Terje =?utf-8?Q?Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Hans de Goede <hdegoede@redhat.com>, Tejun Heo <tj@kernel.org>, Vince Hsu <vinceh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On 7/20/2015 4:44 PM, Josh Wu wrote:
-> On 7/20/2015 4:35 PM, Josh Wu wrote:
->> Hi, Maxime
->>
->> On 7/20/2015 3:52 PM, Maxime Ripard wrote:
->>> Hi Josh,
->>>
->>> On Mon, Jul 13, 2015 at 11:21:44AM +0800, Josh Wu wrote:
->>>> On 7/11/2015 12:12 AM, Nicolas Ferre wrote:
->>>>> Le 10/07/2015 14:31, Maxime Ripard a =E9crit :
->>>>>> On Fri, Jul 10, 2015 at 02:09:07PM +0200, Alexandre Belloni wrot=
-e:
->>>>>>> Hi,
->>>>>>>
->>>>>>> On 10/07/2015 at 15:56:52 +0800, Josh Wu wrote :
->>>>>>>> I would agree with Maxime. Currently all latest chip reset=20
->>>>>>>> function is
->>>>>>>> compatible with the atmel,sama5d3-rstc.
->>>>>>>> So check compatible string is enough for now.
->>>>>>>> But of cause if we have other incompatible reset in future wit=
-h=20
->>>>>>>> new chip,
->>>>>>>> the structure like you said is needed.
->>>>>>> We managed to avoid using of_machine_is_compatible() in all the=
-=20
->>>>>>> at91
->>>>>>> drivers. I'd like to keep it that way. It was painful enough to=
-=20
->>>>>>> remove
->>>>>>> all those cpu_is_at91xxx calls.
->>>>>> That's your call...
->>>>>>
->>>>>>> Also, using it is trying to match strings and will result in=20
->>>>>>> longer boot
->>>>>>> times.
->>>>>> Have you looked at the implementation of of_match_device? If tha=
-t's
->>>>>> really a concern to you, you should actually avoid it.
->>>>> I agree: let's keep it simple and use of_match_device().
->>>> Ok. I will keep it as it is now:  use the (match->data !=3D=20
->>>> sama5d3_restart)
->>>> for the condition.
->>> I'm not just that's been an option in our discussion so far.
->>>
->>> Nicolas said that he was agreeing with me, but at the same time sai=
-d
->>> the complete opposite of what I was arguing for, so I'm not really
->>> sure what's really on his mind, but the two options that were
->>> discussed were to remove that test, and either:
->>>
->>>    - Use of_device_is_compatible to prevent the loop execution
->>
->> Thank you for explaining, it is clear to me.
->>
->> I'll take this above option. As the of_device_is_compatible() almost=
-=20
->> same as of_match_node()/of_match_device(). Except that=20
->> of_device_is_compatible() is more efficient (in this case It calls=20
->> __of_device_is_compatible() directly) than=20
->> of_match_node/of_match_device.
->
-> Sorry, after checking the code a little, I'd say use the of_match_nod=
-e=20
-> instead of of_device_is_compatible() is better. Since After check the=
-=20
-> of_device_is_compatible() we also need to call of_match_node() again.
 
-Okay, Please forget above reply. As Maxime said test the pointer is not=
-=20
-good solution here.
-So I'll sent out v2 which use of_device_is_compatible().
+--PtLnLSExlPr13a2X
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Best Regards,
-Josh Wu
+On Mon, Jul 20, 2015 at 09:46:02AM +0100, Jon Hunter wrote:
+>=20
+> On 17/07/15 12:31, Thierry Reding wrote:
+> > * PGP Signed by an unknown key
+> >=20
+> > On Fri, Jul 17, 2015 at 01:20:49PM +0300, Peter De Schrijver wrote:
+> >> On Fri, Jul 17, 2015 at 11:57:55AM +0200, Thierry Reding wrote:
+> >>>> Old Signed by an unknown key
+> >>>
+> >>> On Mon, Jul 13, 2015 at 01:39:40PM +0100, Jon Hunter wrote:
+> >>>> The Tegra memory controller implements a flush feature to flush pend=
+ing
+> >>>> accesses and prevent further accesses from occurring. This feature is
+> >>>> used when powering down IP blocks to ensure the IP block is in a good
+> >>>> state. The flushes are organised by software groups and IP blocks are
+> >>>> assigned in hardware to the different software groups. Add helper
+> >>>> functions for requesting a handle to an MC flush for a given
+> >>>> software group and enabling/disabling the MC flush itself.
+> >>>>
+> >>>> This is based upon a change by Vince Hsu <vinceh@nvidia.com>.
+> >>>>
+> >>>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+> >>>> ---
+> >>>>  drivers/memory/tegra/mc.c | 110 +++++++++++++++++++++++++++++++++++=
++++++++++++
+> >>>>  drivers/memory/tegra/mc.h |   2 +
+> >>>>  include/soc/tegra/mc.h    |  34 ++++++++++++++
+> >>>>  3 files changed, 146 insertions(+)
+> >>>
+> >>> Do we know if this is actually necessary? I remember having a discuss=
+ion
+> >>> with Arnd Bergmann a while ago, and the Linux driver model kind of
+> >>> assumes that by the time a device is disabled all outstanding accesses
+> >>> will have stopped.
+> >>>
+> >>> Do we have a way to determine that this even makes a difference? Can =
+we
+> >>> trigger a case where not doing this would cause breakage and see that
+> >>> adding this fixes that particular issue?
+> >>>
+> >>
+> >> Most likely it is. The memory controller can still be processing reque=
+sts
+> >> when the peripheral domain is powergated. This would mean the response=
+ cannot
+> >> be delivered in that case. So we need to be sure there are no outstand=
+ing
+> >> requests before shutting down the domain.
+> >=20
+> > My point is that that's the driver's responsibility anyway, hence making
+> > the explicit flush unnecessary.
+>=20
+> I see your point and it is interesting. The trouble is that we would
+> need to test every memory client in every power domain to prove this. So
+> I don't think that is a trivial thing to do. Furthermore, looking at
+> what we have done in kernel used for android products (which probably
+> stress PM the most) this is done and so I don't know of any shipping
+> product that stresses PM that does not do this. May be someone else
+> might. I personally would not be comfortable removing this without
+> testing, but as I mentioned it is not a trivial thing to test correctly.
+> However, I will let you and the other maintainers decide what's best here.
 
+Quite frankly, I'm fairly sure most of this is untested anyway. There
+isn't a good way to test gr3d for example.
+
+Generally I lean towards not merging any code that we don't know is
+needed. Merely because Android kernels do something doesn't mean it is
+necessary to do it (or even sane in some cases).
+
+Now I understand that it might be difficult to test this, but that's all
+the more reason not to include the code. If we find that we have bugs
+that this can fix, then we can come up with tests to trigger it and
+validate that the fix actually fixes something.
+
+In other words, I don't think it makes sense to implement mechanisms to
+recover from situations that we have no way of triggering in the first
+place.
+
+Thierry
+
+--PtLnLSExlPr13a2X
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJVrLy3AAoJEN0jrNd/PrOh31wQAJpwTPNXAqx7R2U81qsD1bbx
+ZliI4G4AzcwyXf4nUStUe4WVzVfkP2LcbPEBhIqGmLxUJc+xsucf8Wa2nOR6qVp1
+rMuwfgyif0IUulADDeMGRH511KGo/vHOYC4vtmYpnBIod9kqPIglYaO1tyNBVZV1
+GSjuOj14Shu/8y5I4wxOYsGi9cOu5BmM4dfzCk1Yj5AXXFN3Zg96WpJD+Sa9hY9f
+aCEfpIS9aFhapQEs4SltkelJgFYk3obLbdphGm2uGiV5sg9gVRjBiCrYLyzKAiQL
+6Nrw2IKKz5cDVBzX/689PJTAGqN6N4oWJQWf6YxvglNd5DFEvuE73qw6Idk5hGhK
+ztI+V2ydVb7OMwLWM9N6UeAPy+30YCm4vUNlSRjBhPUIYQ9+vx3XGaIP7y/6ersP
+mo1jJSgY5NCNkLC0iF3hldrlF1TIr+0Bc2XnttSYH/sJIMLuGf7miaTz/9Q96MQI
+8M+okZIxJxkXF0OetWryR2Q5qq8EKPoJoar2fTi/dooum1KFsM9OOLm6VZ6lc4Bl
+l+jbMRdqJP5in3HDxWL0f0GAxQ4M6hsz0jfmjdD93EEOCYPOhLoaRziwwb2k5MkI
+eU4FLv25TDh1YZ3Z+oQrMM23WBquanLGzFoRiP0rLGt6mepixxVTvCs606M4PecK
+7MVmurI74wgthBR9f+X9
+=l9OW
+-----END PGP SIGNATURE-----
+
+--PtLnLSExlPr13a2X--
