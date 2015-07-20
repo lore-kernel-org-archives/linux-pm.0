@@ -1,154 +1,82 @@
-From: Mel Gorman <mgorman@suse.de>
-Subject: Re: [PATCH v3 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
- feature
-Date: Mon, 20 Jul 2015 09:28:10 +0100
-Message-ID: <20150720082810.GG2561@suse.de>
-References: <1437114578-2502-1-git-send-email-pintu.k@samsung.com>
- <1437366544-32673-1-git-send-email-pintu.k@samsung.com>
+From: Josh Wu <josh.wu@atmel.com>
+Subject: Re: [PATCH 1/2] power: reset: at91: add sama5d3 reset function
+Date: Mon, 20 Jul 2015 16:35:21 +0800
+Message-ID: <55ACB2C9.5070701@atmel.com>
+References: <1436436947-11210-1-git-send-email-josh.wu@atmel.com> <20150710060350.GA3127@piout.net> <559F7AC4.6050008@atmel.com> <20150710120907.GC3127@piout.net> <20150710123148.GA28632@lukather> <559FEED3.5080505@atmel.com> <55A32EC8.4080309@atmel.com> <20150720075231.GQ28632@lukather>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <1437366544-32673-1-git-send-email-pintu.k@samsung.com>
-Sender: owner-linux-mm@kvack.org
-To: Pintu Kumar <pintu.k@samsung.com>
-Cc: akpm@linux-foundation.org, corbet@lwn.net, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, qiuxishi@huawei.com, Valdis.Kletnieks@vt.edu, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com, pintu.ping@gmail.compintu
+Content-Type: text/plain; charset=windows-1252;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from eusmtp01.atmel.com ([212.144.249.243]:39304 "EHLO
+	eusmtp01.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932295AbbGTIfc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2015 04:35:32 -0400
+In-Reply-To: <20150720075231.GQ28632@lukather>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Guenter Roeck <linux@roeck-us.net>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, Ben Dooks <ben.dooks@codethink.co.uk>, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Fabian Frederick <fabf@skynet.be>, linux-pm@vger.kernel.org
 
-On Mon, Jul 20, 2015 at 09:59:04AM +0530, Pintu Kumar wrote:
-> This patch provides 2 things:
-> 1. Add new control called shrink_memory in /proc/sys/vm/.
-> This control can be used to aggressively reclaim memory system-wide
-> in one shot from the user space. A value of 1 will instruct the
-> kernel to reclaim as much as totalram_pages in the system.
-> Example: echo 1 > /proc/sys/vm/shrink_memory
-> 
-> If any other value than 1 is written to shrink_memory an error EINVAL
-> occurs.
-> 
-> 2. Enable shrink_all_memory API in kernel with new CONFIG_SHRINK_MEMORY.
-> Currently, shrink_all_memory function is used only during hibernation.
-> With the new config we can make use of this API for non-hibernation case
-> also without disturbing the hibernation case.
-> 
-> The detailed paper was presented in Embedded Linux Conference, Mar-2015
-> http://events.linuxfoundation.org/sites/events/files/slides/
-> %5BELC-2015%5D-System-wide-Memory-Defragmenter.pdf
-> 
+Hi, Maxime
 
-Johannes has already reviewed this series and explained why it's a bad
-idea. This is just a note to say that I agree the points he made and also
-think that adding an additional knob to reclaim data from user space is a bad
-idea. Even drop_caches is only intended as a debugging tool to illustrate
-cases where normal reclaim is broken. Similarly compact_node exists as a
-debugging tool to check if direct compaction is not behaving as expected.
+On 7/20/2015 3:52 PM, Maxime Ripard wrote:
+> Hi Josh,
+>
+> On Mon, Jul 13, 2015 at 11:21:44AM +0800, Josh Wu wrote:
+>> On 7/11/2015 12:12 AM, Nicolas Ferre wrote:
+>>> Le 10/07/2015 14:31, Maxime Ripard a =E9crit :
+>>>> On Fri, Jul 10, 2015 at 02:09:07PM +0200, Alexandre Belloni wrote:
+>>>>> Hi,
+>>>>>
+>>>>> On 10/07/2015 at 15:56:52 +0800, Josh Wu wrote :
+>>>>>> I would agree with Maxime. Currently all latest chip reset funct=
+ion is
+>>>>>> compatible with the atmel,sama5d3-rstc.
+>>>>>> So check compatible string is enough for now.
+>>>>>> But of cause if we have other incompatible reset in future with =
+new chip,
+>>>>>> the structure like you said is needed.
+>>>>> We managed to avoid using of_machine_is_compatible() in all the a=
+t91
+>>>>> drivers. I'd like to keep it that way. It was painful enough to r=
+emove
+>>>>> all those cpu_is_at91xxx calls.
+>>>> That's your call...
+>>>>
+>>>>> Also, using it is trying to match strings and will result in long=
+er boot
+>>>>> times.
+>>>> Have you looked at the implementation of of_match_device? If that'=
+s
+>>>> really a concern to you, you should actually avoid it.
+>>> I agree: let's keep it simple and use of_match_device().
+>> Ok. I will keep it as it is now:  use the (match->data !=3D sama5d3_=
+restart)
+>> for the condition.
+> I'm not just that's been an option in our discussion so far.
+>
+> Nicolas said that he was agreeing with me, but at the same time said
+> the complete opposite of what I was arguing for, so I'm not really
+> sure what's really on his mind, but the two options that were
+> discussed were to remove that test, and either:
+>
+>    - Use of_device_is_compatible to prevent the loop execution
 
-If this is invoked when high-order allocations start failing and memory is
-fragmented with unreclaimable memory then it'll potentially keep thrashing
-depending on the userspace monitor implementation.  If the latency of
-a high order allocation is important then reclaim/compaction should be
-examined and improved. If the reliability of high-order allocations are
-important then you either need to reserve the memory in advance. If that
-is undesirable due to a constrained memory environment then one approach
-is to modify how pages are grouped by mobility as described in the leader
-of the series "Remove zonelist cache and high-order watermark checking".
-There are two suggestions there for out-of-tree patches that would make
-high-order allocations more reliable that are not suitable for mainline.
+Thank you for explaining, it is clear to me.
 
-Yes, I read your presentation but lets go through the use cases you
-list again;
+I'll take this above option. As the of_device_is_compatible() almost=20
+same as of_match_node()/of_match_device(). Except that=20
+of_device_is_compatible() is more efficient (in this case It calls=20
+__of_device_is_compatible() directly) than of_match_node/of_match_devic=
+e.
 
-> Various other use cases where this can be used:
-> ----------------------------------------------------------------------------
-> 1) Just after system boot-up is finished, using the sysctl configuration from
->    bootup script.
+>
+>    - define a structure with a flag to say whether you need the ram
+>      controller quirk or not, and test that flag.
+>
+> Maxime
+>
 
-Almost no benefit. Any page cache that is active and now cold would be
-trivially reclaimed later.
-
-> 2) During system suspend state, after suspend_freeze_processes()
->    [kernel/power/suspend.c]
->    Based on certain condition about fragmentation or free memory state.
-
-No gain.
-
-> 3) From Android ION system heap driver, when order-4 allocation starts failing.
->    By calling shrink_all_memory, in a separate worker thread, based on certain
->    condition.
-
-If order-4 allocations fail when shrink_all_memory works and the order-4
-allocation is required to work then the aggressiveness of reclaim/compaction
-needs to be fixed to reclaim all system memory if necessary. Right now
-it can bail because generally it is expected that no subsystem depends on
-high order allocations succeeding for functional correctness.
-
-> 4) It can be combined with compact_memory to achieve better results on memory
->    fragmentation.
-
-Only by reclaiming the world. In 3.0 the system behaved like this. High order
-stress tests could take hours to complete as the system was continually
-thrashed. Today the same test would complete in about 15 minutes albeit
-with lower allocation success rates. We ran into multiple issues where
-high order allocation requests caused the system to thrash and triggering
-such thrashing from userspace is not an improvement.
-
-> 5) It can be helpful in debugging and tuning various vm parameters.
-
-No more than drop_caches is.
-
-> 6) It can be helpful to identify how much of maximum memory could be
->    reclaimable at any point of time.
-
-Only by reclaiming the world. A less destructive means is using
-MemAvailable from /proc/meminfo
-
->    And how much higher-order pages could be formed with this amount of
->    reclaimable memory.
-
-Only by reclaiming the world
-
->    Thus it can be helpful in accordingly tuning the reserved memory needs
->    of a system.
-
-By which time it's too late as a reboot will be necessary to set the
-reserve.
-
-> 7) It can be helpful in properly tuning the SWAP size in the system.
-
-Only for a single point in time as it's workload dependant. The same
-data can be inferred from smaps.
-
->    In shrink_all_memory, we enable may_swap = 1, that means all unused pages
->    will be swapped out.
->    Thus, running shrink_memory on a heavy loaded system, we can check how much
->    swap is getting full.
->    That can be the maximum swap size with a 10% delta.
->    Also if ZRAM is used, it helps us in compressing and storing the pages for
->    later use.
-> 8) It can be helpful to allow more new applications to be launched, without
->    killing the older once.
-
-Reclaim would achieve the same effect over time.
-
->    And moving the least recently used pages to the SWAP area.
->    Thus user data can be retained.
-> 9) Can be part of a system utility to quickly defragment entire system
->    memory.
-
-Any memory that is not on the LRU or indirectly pinned by pages on the
-LRU are unaffected.
-
-If high-order allocation latency or reliability is important then you
-really need a different solution because unless this thing runs
-continually to keep memory unused then it'll eventually fail hard and
-the system will perform poorly in the meantime.
-
--- 
-Mel Gorman
-SUSE Labs
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Best Regards,
+Josh Wu
