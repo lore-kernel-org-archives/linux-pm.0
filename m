@@ -1,133 +1,143 @@
-From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v2 1/2] PM: devfreq: Add the prototype of update_devfreq() to
- export
-Date: Mon, 20 Jul 2015 10:13:38 +0900
-Message-ID: <1437354819-6108-2-git-send-email-cw00.choi@samsung.com>
-References: <1437354819-6108-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <1437354819-6108-1-git-send-email-cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
-Cc: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, punit.agrawal-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v2 0/2] thermal: Add generic devfreq cooling device
+Date: Mon, 20 Jul 2015 10:13:37 +0900
+Message-ID: <1437354819-6108-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com, myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: ulf.hansson@linaro.org, khilman@linaro.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, inki.dae@samsung.com, l.majewski@samsung.com, cw00.choi@samsung.com, punit.agrawal@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch add simply the protoptye of update_devfreq() to devfreq.h header
-file to export it. The some device driver (e.g., thermal cooling device) may
-use the update_devfreq() to update the range of supported frequency of devfreq
-device.
+This patchset introduce the generic devfreq cooling device for generic thermal
+framework. The devfreq devices are used ad cooling device to reduce the
+overheating temperature. This patch is based on drivers/thermal/cpu_cooling.c.
+The devfreq cooling device can change the ragne of the frequency table of
+devfreq device according to cooling level in device tree file.
 
-Cc: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Signed-off-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
----
- drivers/devfreq/devfreq.c | 22 +++++++++++-----------
- include/linux/devfreq.h   |  7 +++++++
- 2 files changed, 18 insertions(+), 11 deletions(-)
+To verify the devfreq cooling device driver, I testd it with following platform:
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index ca1b362d77e2..2aa5e4e9df36 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -163,18 +163,17 @@ int update_devfreq(struct devfreq *devfreq)
- 	int err = 0;
- 	u32 flags = 0;
- 
--	if (!mutex_is_locked(&devfreq->lock)) {
--		WARN(true, "devfreq->lock must be locked by the caller.\n");
--		return -EINVAL;
--	}
--
- 	if (!devfreq->governor)
- 		return -EINVAL;
- 
-+	mutex_lock(&devfreq->lock);
-+
- 	/* Reevaluate the proper frequency */
- 	err = devfreq->governor->get_target_freq(devfreq, &freq);
--	if (err)
-+	if (err) {
-+		mutex_unlock(&devfreq->lock);
- 		return err;
-+	}
- 
- 	/*
- 	 * Adjust the freuqency with user freq and QoS.
-@@ -194,8 +193,10 @@ int update_devfreq(struct devfreq *devfreq)
- 	}
- 
- 	err = devfreq->profile->target(devfreq->dev.parent, &freq, flags);
--	if (err)
-+	if (err) {
-+		mutex_unlock(&devfreq->lock);
- 		return err;
-+	}
- 
- 	if (devfreq->profile->freq_table)
- 		if (devfreq_update_status(devfreq, freq))
-@@ -203,6 +204,9 @@ int update_devfreq(struct devfreq *devfreq)
- 				"Couldn't update frequency transition information.\n");
- 
- 	devfreq->previous_freq = freq;
-+
-+	mutex_unlock(&devfreq->lock);
-+
- 	return err;
- }
- EXPORT_SYMBOL(update_devfreq);
-@@ -218,14 +222,12 @@ static void devfreq_monitor(struct work_struct *work)
- 	struct devfreq *devfreq = container_of(work,
- 					struct devfreq, work.work);
- 
--	mutex_lock(&devfreq->lock);
- 	err = update_devfreq(devfreq);
- 	if (err)
- 		dev_err(&devfreq->dev, "dvfs failed with (%d) error\n", err);
- 
- 	queue_delayed_work(devfreq_wq, &devfreq->work,
- 				msecs_to_jiffies(devfreq->profile->polling_ms));
--	mutex_unlock(&devfreq->lock);
- }
- 
- /**
-@@ -382,9 +384,7 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
- 	struct devfreq *devfreq = container_of(nb, struct devfreq, nb);
- 	int ret;
- 
--	mutex_lock(&devfreq->lock);
- 	ret = update_devfreq(devfreq);
--	mutex_unlock(&devfreq->lock);
- 
- 	return ret;
- }
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index ce447f0f1bad..07da551f2709 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -204,6 +204,8 @@ extern int devm_devfreq_register_opp_notifier(struct device *dev,
- extern void devm_devfreq_unregister_opp_notifier(struct device *dev,
- 						struct devfreq *devfreq);
- 
-+extern int update_devfreq(struct devfreq *devfreq);
-+
- #if IS_ENABLED(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)
- /**
-  * struct devfreq_simple_ondemand_data - void *data fed to struct devfreq
-@@ -289,6 +291,11 @@ static inline void devm_devfreq_unregister_opp_notifier(struct device *dev,
- 							struct devfreq *devfreq)
- {
- }
-+
-+static inline int update_devfreq(struct devfreq *devfreq)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_PM_DEVFREQ */
- 
- #endif /* __LINUX_DEVFREQ_H__ */
+For example,
+- The Mali GPU of Exynos5433 SoC uses the devfreq framework to support the DVFS
+feature and Exynos5433 contains the G3D (GPU) thermal sensor. Following example
+explain the correlation between mali dt node and thermal sensor/zone.
+: thermal sensor : G3D sensor of Samsung Exynos5433 [1][2]
+: devfreq cooling device : Mali GPU [3]
+
+According to the temperature of g3d thermal sensor inclued in Exynos5433,
+devfreq cooling device can change the maximum frequency of Mali GPU.
+
+1. In Exynos5433-based board dts file, Mali GPU dt node uses the devfreq
+framework to suppot the DVFS feature. Following dt node includes the
+both 'cooling-cells' and 'operating-points' which means the supported
+frequency entries:
+
+	mali: mali@14AC0000 {
+		compatible = "arm,mali-midgard";
+		reg = <0x14AC0000 0x5000>;
+		interrupts = <0 282 0>, <0 283 0>, <0 281 0>;
+		interrupt-names = "JOB", "MMU", "GPU";
+		clocks = <&cmu_g3d CLK_ACLK_G3D>;
+		clock-names = "clk_mali";
+		power-domains = <&pd_g3d>;
+		status = "disabled";
+
+		#cooling-cells = <2>;
+
+		operating-points = <
+			700000 1150000
+			600000 1150000
+			550000 1125000
+			500000 1075000
+			420000 1025000
+			350000 1025000
+			266000 1000000
+			160000 1000000
+		>;
+	};
+
+2. In exynos5433.dtsi, G3D thermal sensor measure the temperature of Mali GPU:
+
+	tmu_g3d: tmu@10070000 {
+		compatible = "samsung,exynos5433-tmu";
+		reg = <0x10070000 0x200>;
+		interrupts = <0 99 0>;
+		clocks = <&cmu_peris CLK_PCLK_TMU1_APBIF>,
+			 <&cmu_peris CLK_SCLK_TMU1>;
+		clock-names = "tmu_apbif", "tmu_sclk";
+		#include "exynos5433-tmu-sensor-conf.dtsi"
+		status = "disabled";
+	};
+
+3. In exynos5433-tmu.dtsi, thermal-zones includes both trip points and
+cooling-maps of g3d thermal sensor. Following cooling-maps show the match
+between each trip point and each cooling device (devfreq device of mali):
+
+	thermal-zones {
+		/* ...... */
+		g3d_thermal: g3d-thermal {
+			thermal-sensors = <&tmu_g3d>;
+			polling-delay-passive = <0>;
+			polling-delay = <0>;
+			trips {
+				g3d_alert_0: g3d-alert-0 {
+					temperature = <30000>;	/* millicelsius */
+					hysteresis = <10000>;	/* millicelsius */
+					type = "active";
+				};
+				g3d_alert_1: g3d-alert-1 {
+					temperature = <40000>;	/* millicelsius */
+					hysteresis = <10000>;	/* millicelsius */
+					type = "active";
+				};
+
+				/* ...... */
+			};
+
+			cooling-maps {
+				map0 {
+					/* Set maximum frequency as 550MHz  */
+					trip = <&g3d_alert_0>;
+					cooling-device = <&mali 2 2>;
+				};
+				map1 {
+					/* Set maximum frequency as 420MHz  */
+					trip = <&g3d_alert_1>;
+					cooling-device = <&mali 4 4>;
+				};
+
+				/* ...... */
+			};
+		};
+
+		......
+	};
+
+[1] https://git.kernel.org/cgit/linux/kernel/git/kgene/linux-samsung.git/commit/?h=v4.3-next/dt64-samsung&id=ac008f6b537703bb9a6fcc3882ca4af3331aa24f
+[2] https://git.kernel.org/cgit/linux/kernel/git/kgene/linux-samsung.git/commit/?h=v4.3-next/dt64-samsung&id=bcddc3a84e49ca1c646cf2081687a544a15f9218
+[3] malideveloper.arm.com/downloads/drivers/TX041/r5p0-06rel0/TX041-SW-99002-r5p0-06rel0.tgz
+
+
+Changelog:
+Changes from v1:
+(https://lkml.org/lkml/2015/7/16/334)
+- Add missing update_devfreq() to devfreq_set_cur_state().
+- Move the initialization code of devfreq_dev->max_state right after getting
+  the opp count.
+
+Chanwoo Choi (2):
+  PM: devfreq: Add the prototype of update_devfreq() to export
+  thermal: devfreq_cooling: Add generic devfreq cooling device implementaion
+
+ .../devicetree/bindings/thermal/thermal.txt        |   8 +-
+ drivers/devfreq/devfreq.c                          |  22 +-
+ drivers/thermal/Kconfig                            |  11 +
+ drivers/thermal/Makefile                           |   3 +
+ drivers/thermal/devfreq-cooling.c                  | 310 +++++++++++++++++++++
+ include/linux/devfreq-cooling.h                    |  80 ++++++
+ include/linux/devfreq.h                            |   7 +
+ 7 files changed, 426 insertions(+), 15 deletions(-)
+ create mode 100644 drivers/thermal/devfreq-cooling.c
+ create mode 100644 include/linux/devfreq-cooling.h
+
 -- 
 1.8.5.5
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
