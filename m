@@ -1,30 +1,49 @@
-From: Michal Hocko <mhocko@kernel.org>
-Subject: Re: [PATCH v3 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
- feature
-Date: Mon, 20 Jul 2015 10:49:32 +0200
-Message-ID: <20150720084932.GC1211@dhcp22.suse.cz>
-References: <1437114578-2502-1-git-send-email-pintu.k@samsung.com>
- <1437366544-32673-1-git-send-email-pintu.k@samsung.com>
- <20150720082810.GG2561@suse.de>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v4 3/8] clk: add support for clocks provided by SCP(System
+ Control Processor)
+Date: Mon, 20 Jul 2015 09:54:11 +0100
+Message-ID: <55ACB733.2080609@arm.com>
+References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com> <1433760002-24120-4-git-send-email-sudeep.holla@arm.com> <20150702172310.GF4301@codeaurora.org> <5596A1B6.8020307@arm.com> <559ADC94.4080505@codeaurora.org> <559BF858.1020301@arm.com> <20150708014606.GH30412@codeaurora.org> <55A7D79B.3080305@arm.com> <20150716193114.GA17952@codeaurora.org> <55A8E434.2010709@arm.com> <55A945DF.3@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-doc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150720082810.GG2561@suse.de>
-Sender: linux-doc-owner@vger.kernel.org
-To: Mel Gorman <mgorman@suse.de>
-Cc: Pintu Kumar <pintu.k@samsung.com>, akpm@linux-foundation.org, corbet@lwn.net, vbabka@suse.cz, gorcunov@openvz.org, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, qiuxishi@huawei.com, Valdis.Kletnieks@vt.edu, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com, pintu.p
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:54741 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755387AbbGTIyP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 20 Jul 2015 04:54:15 -0400
+In-Reply-To: <55A945DF.3@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@baylibre.com>
 
-On Mon 20-07-15 09:28:10, Mel Gorman wrote:
+
+
+On 17/07/15 19:13, Stephen Boyd wrote:
+> On 07/17/2015 04:17 AM, Sudeep Holla wrote:
+
 [...]
-> If high-order allocation latency or reliability is important then you
-> really need a different solution because unless this thing runs
-> continually to keep memory unused then it'll eventually fail hard and
-> the system will perform poorly in the meantime.
 
-Completely agreed. E.g. Vlastimil was suggesting a background compaction
-daemon which might be a way to go.
--- 
-Michal Hocko
-SUSE Labs
+>>
+>> determine_rate change shouldn't affect SCPI clock driver but I remember
+>> seeing round_rate change too on the list which returns value using the
+>> argument from Boris. Is that planned for v4.3 ? I would need the stable
+>> branch from this clk_hw_set_rate_range if you decide to push. Let me
+>> know your preferences. I will post the updated version of the patch
+>> accordingly.
+>>
+>
+> We're not going to change round_rate() so it sounds like you don't need
+> a stable branch. But you would need this new consumer API. So you still
+> need a branch right?
+>
+
+I am fine either way. If no one else need the stable branch to be shared
+with arm-soc, I prefer to use clock consumer API for now to avoid all
+the troubles to you guys and switch to provider API later. I will post
+it once the both this driver and that provider API is merged, if that's
+fine with you ?
+
+Regards,
+Sudeep
