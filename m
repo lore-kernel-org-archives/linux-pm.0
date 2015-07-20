@@ -1,41 +1,44 @@
-From: Pan Xinhui <xinhuix.pan@intel.com>
-Subject: [PATCH] cpufreq: ia64: Fix a memory leak in acpi_cpufreq_cpu_exit
-Date: Mon, 20 Jul 2015 14:24:36 +0800
-Message-ID: <55AC9424.1070304@intel.com>
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
+Subject: Re: [PATCH v2 1/3] PM suspend/hibernate: Call notifier after
+ freezing processes
+Date: Mon, 20 Jul 2015 09:32:26 +0200
+Message-ID: <20150720073226.GB25910@pali>
+References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com>
+ <3729395.1oJCgMXcLU@vostro.rjw.lan>
+ <20150716073302.GA10393@pali>
+ <3179448.TScsKEAuyR@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:53787 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753574AbbGTG11 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 20 Jul 2015 02:27:27 -0400
+Received: from mail-wi0-f180.google.com ([209.85.212.180]:38665 "EHLO
+	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753669AbbGTHca (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2015 03:32:30 -0400
+Content-Disposition: inline
+In-Reply-To: <3179448.TScsKEAuyR@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>, "mnipxh@163.com" <mnipxh@163.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>, Neil Brown <neilb@suse.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-From: Pan Xinhui <xinhuix.pan@intel.com>
+On Saturday 18 July 2015 01:27:15 Rafael J. Wysocki wrote:
+> On Thursday, July 16, 2015 09:33:02 AM Pali Roh=C3=A1r wrote:
+> > On Thursday 16 July 2015 03:02:03 Rafael J. Wysocki wrote:
+> > > Also, if you're adding AFTER_FREEZE, it would be good to add BEFO=
+RE_THAW too
+> > > for symmetry.
+> > >=20
+> >=20
+> > But there is no use case for BEFORE_THAW. At least it is not needed=
+ for now.
+>=20
+> For your use case, a single function pointer would be sufficient too.
+>=20
 
-freq_table should be alloced in ->init and freed in ->exit. However it
-does not be freed. Fix this memory leak in acpi_cpufreq_cpu_exit.
+What do you mean by single function pointer? kernel/power is part of
+kernel image and dm-crypt is external kernel module.
 
-Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
----
- drivers/cpufreq/ia64-acpi-cpufreq.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
-index 27cef0c..e02bd15 100644
---- a/drivers/cpufreq/ia64-acpi-cpufreq.c
-+++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
-@@ -334,6 +334,7 @@ acpi_cpufreq_cpu_exit (
- 		acpi_io_data[policy->cpu] = NULL;
- 		acpi_processor_unregister_performance(&data->acpi_data,
- 		                                      policy->cpu);
-+		kfree(policy->freq_table);
- 		kfree(data);
- 	}
- 
--- 
-1.9.1
+--=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
