@@ -1,68 +1,67 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 07/10] opp: Add OPP sharing information to OPP library
-Date: Mon, 20 Jul 2015 10:46:27 -0700
-Message-ID: <55AD33F3.4000302@codeaurora.org>
-References: <cover.1434369079.git.viresh.kumar@linaro.org> <2e1c7fcc1fb62f73c82bd57d196d054ba2607a55.1434369079.git.viresh.kumar@linaro.org> <55A986DD.3010104@codeaurora.org> <20150718063304.GD11802@linux>
+From: Mel Gorman <mgorman@suse.de>
+Subject: Re: [PATCH v3 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
+ feature
+Date: Mon, 20 Jul 2015 18:55:38 +0100
+Message-ID: <20150720175538.GJ2561@suse.de>
+References: <1437114578-2502-1-git-send-email-pintu.k@samsung.com>
+ <1437366544-32673-1-git-send-email-pintu.k@samsung.com>
+ <20150720082810.GG2561@suse.de>
+ <02c601d0c306$f86d30f0$e94792d0$@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:49078 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755775AbbGTRqa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2015 13:46:30 -0400
-In-Reply-To: <20150718063304.GD11802@linux>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-15
+Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <02c601d0c306$f86d30f0$e94792d0$@samsung.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: PINTU KUMAR <pintu.k@samsung.com>
+Cc: akpm@linux-foundation.org, corbet@lwn.net, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, qiuxishi@huawei.com, Valdis.Kletnieks@vt.edu, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com, pintu.ping@gmail.compintu
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, thomas.petazzoni@free-electrons.com, kesavan.abhilash@gmail.com, linaro-kernel@lists.linaro.org, ta.omasab@gmail.com, khilman@linaro.org, linux-pm@vger.kernel.org, viswanath.puttagunta@linaro.org, santosh.shilimkar@oracle.com, broonie@kernel.org, mike.turquette@linaro.org, Sudeep.Holla@arm.com, arnd.bergmann@linaro.org, linux-arm-kernel@lists.infradead.org, l.stach@pengutronix.de
 
-On 07/17/2015 11:33 PM, Viresh Kumar wrote:
-> From: Viresh Kumar <viresh.kumar@linaro.org>
-> Date: Wed, 11 Feb 2015 16:16:28 +0800
-> Subject: [PATCH] opp: Add OPP sharing information to OPP library
->
-> An opp can be shared by multiple devices, for example its very common
-> for CPUs to share the OPPs, i.e. when they share clock/voltage rails.
->
-> This patch adds support of shared OPPs to the OPP library.
->
-> Instead of a single device, dev_opp will not contain a list of devices
-> that use it. It also senses if the device (we are trying to initialize
-> OPPs for) shares OPPs with a device added earlier and in that case we
-> update the list of devices managed by OPPs instead of duplicating OPPs
-> again.
->
-> The same infrastructure will be used for the old OPP bindings, with
-> later patches.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Mon, Jul 20, 2015 at 09:43:02PM +0530, PINTU KUMAR wrote:
+> Hi,
+> 
+> Thank you all for reviewing the patch and providing your valuable comments and
+> suggestions.
+> During the ELC conference many people suggested to release the patch to
+> mainline, so this patch, to get others opinion.
+> 
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Unfortunately, in my opinion it runs the risk of creating a different
+set of problems. Either it needs to be run frequently to keep memory free
+which incurs one set of penalties or it is used too late when there are
+unmovable/unreclaimable pages preventing allocations succeeding in which
+case you are back at the original problem. I see what you did and why it
+would work in some cases but I think the main reason it works is because
+it's run frequently enough so memory is never used. Grouping pages by
+mobility actually took advantage of a similar property when it increased
+min_free_kbytes but that was much more limited than adding a giant hammer
+for userspace to reclaim the world.
 
-> +static struct device_opp *_managed_opp(const struct device_node *np)
-> +{
-> +	struct device_opp *dev_opp;
-> +
-> +	list_for_each_entry_rcu(dev_opp, &dev_opp_list, node)
-> +		if (dev_opp->np == np) {
-> +			/*
-> +			 * Multiple devices can point to the same OPP table and
-> +			 * so will have same node-pointer, np.
-> +			 *
-> +			 * But the OPPs will be considered as shared only if the
-> +			 * OPP table contains a "opp-shared" property.
-> +			 */
-> +			if (dev_opp->shared_opp)
-> +				return dev_opp;
-> +			else
-> +				return NULL;
-> +		
+> If you have any more suggestions to experiment and verify please let me know.
+> 
 
-The janitors will probably find this and say that it could be simplified 
-to an if () and a return without the else.
+I believe I already did. If it's high-order reliability that is important
+then you need to either reserve the memory or look at protecting the pages
+using grouping pages by mobility. I pointed out what series to look at and
+the leader explains how it could be adjusted further for the embedded case
+if necessary.
+
+If it's latency you are interested in then reclaim/compaction needs to
+be modified to be more aggressive when it is somehow detected that the
+high-order allocation must succeed for functional correctness. In that case
+the relational starting point would be to look at should_continue_reclaim
+and how it relates to compaction.
+
+> The suggestion was only to open up the shrink_all_memory API for some use cases.
+> 
+> I am not saying that it needs to be called continuously. It can be used only on
+> certain condition and only when deemed necessary.
+> The same technique is already used in hibernation to reduce the RAM snapshot
+> image size.
+
+Reducing memory usage is not the same as guaranteeing that high-order
+pages are available for allocation.
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+Mel Gorman
+SUSE Labs
