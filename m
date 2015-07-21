@@ -1,91 +1,68 @@
-From: Radivoje Jovanovic <radivoje.jovanovic@linux.intel.com>
-Subject: [PATCH] thermal/cpu_cooling: remove local cooling state variable
-Date: Tue, 21 Jul 2015 15:13:55 -0700
-Message-ID: <1437516835-198750-1-git-send-email-radivoje.jovanovic@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 1/3] PM suspend/hibernate: Call notifier after freezing processes
+Date: Wed, 22 Jul 2015 01:00:10 +0200
+Message-ID: <CAJZ5v0h-0Jo7A0hmPSfHcZbkRU7wKwVtSqTCCwX1rs=iBE9G5g@mail.gmail.com>
+References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com>
+	<3179448.TScsKEAuyR@vostro.rjw.lan>
+	<20150720073226.GB25910@pali>
+	<1715416.hWBvT0iLvO@vostro.rjw.lan>
+	<20150722080827.5adcf5f1@noble>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150722080827.5adcf5f1@noble>
 Sender: linux-kernel-owner@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Radivoje Jovanovic <radivoje.jovanovic@intel.com>
+To: NeilBrown <neilb@suse.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>, Neil Brown <neilb@suse.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com, linux-raid@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Radivoje Jovanovic <radivoje.jovanovic@intel.com>
+Hi Neil,
 
-there is no need to keep local state variable. if another driver
-changes the policy under our feet the cpu_cooling driver will
-have the wrong state. Get current state from the policy directly instead
+On Wed, Jul 22, 2015 at 12:08 AM, NeilBrown <neilb@suse.com> wrote:
+> On Mon, 20 Jul 2015 23:46:32 +0200 "Rafael J. Wysocki"
+> <rjw@rjwysocki.net> wrote:
+>
+>> On Monday, July 20, 2015 09:32:26 AM Pali Roh=C3=A1r wrote:
+>> > On Saturday 18 July 2015 01:27:15 Rafael J. Wysocki wrote:
+>> > > On Thursday, July 16, 2015 09:33:02 AM Pali Roh=C3=A1r wrote:
+>> > > > On Thursday 16 July 2015 03:02:03 Rafael J. Wysocki wrote:
+>> > > > > Also, if you're adding AFTER_FREEZE, it would be good to add=
+ BEFORE_THAW too
+>> > > > > for symmetry.
+>> > > > >
+>> > > >
+>> > > > But there is no use case for BEFORE_THAW. At least it is not n=
+eeded for now.
+>> > >
+>> > > For your use case, a single function pointer would be sufficient=
+ too.
+>> > >
+>> >
+>> > What do you mean by single function pointer? kernel/power is part =
+of
+>> > kernel image and dm-crypt is external kernel module.
+>>
+>> Well, if there is a function pointer in the core suspend code initia=
+lly set to
+>> NULL and exported to modules such that the dm-crypt code can set it =
+to
+>> something else, that should be sufficient, shouldn't it?
+>
+> As long as the dm-crypt module is never unloaded.
 
-Signed-off-by: Radivoje Jovanovic <radivoje.jovanovic@intel.com>
----
- drivers/thermal/cpu_cooling.c | 27 ++++++++++++++++++---------
- 1 file changed, 18 insertions(+), 9 deletions(-)
+OK, there is a race related to that.
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 6509c61..94ba2da 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -66,8 +66,6 @@ struct power_table {
-  *	registered.
-  * @cool_dev: thermal_cooling_device pointer to keep track of the
-  *	registered cooling device.
-- * @cpufreq_state: integer value representing the current state of cpufreq
-- *	cooling	devices.
-  * @cpufreq_val: integer value representing the absolute value of the clipped
-  *	frequency.
-  * @max_level: maximum cooling level. One less than total number of valid
-@@ -90,7 +88,6 @@ struct power_table {
- struct cpufreq_cooling_device {
- 	int id;
- 	struct thermal_cooling_device *cool_dev;
--	unsigned int cpufreq_state;
- 	unsigned int cpufreq_val;
- 	unsigned int max_level;
- 	unsigned int *freq_table;	/* In descending order */
-@@ -486,10 +483,19 @@ static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
- 				 unsigned long *state)
- {
- 	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
--
--	*state = cpufreq_device->cpufreq_state;
--
--	return 0;
-+	struct cpufreq_policy policy;
-+	struct cpumask *mask = &cpufreq_device->allowed_cpus;
-+	unsigned int cpu = cpumask_any(mask);
-+	unsigned int cur_state;
-+
-+	if (!cpufreq_get_policy(&policy, cpu)) {
-+			cur_state = get_level(cpufreq_device, policy.max);
-+			if (cur_state != THERMAL_CSTATE_INVALID) {
-+				*state = cur_state;
-+				return 0;
-+			}
-+	}
-+	return -EINVAL;
- }
- 
- /**
-@@ -508,17 +514,20 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
- 	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
- 	unsigned int cpu = cpumask_any(&cpufreq_device->allowed_cpus);
- 	unsigned int clip_freq;
-+	unsigned long cur_state;
- 
- 	/* Request state should be less than max_level */
- 	if (WARN_ON(state > cpufreq_device->max_level))
- 		return -EINVAL;
- 
-+	if (cpufreq_get_cur_state(cpufreq_device->cool_dev, &cur_state))
-+		return -EINVAL;
-+
- 	/* Check if the old cooling action is same as new cooling action */
--	if (cpufreq_device->cpufreq_state == state)
-+	if (cur_state == state)
- 		return 0;
- 
- 	clip_freq = cpufreq_device->freq_table[state];
--	cpufreq_device->cpufreq_state = state;
- 	cpufreq_device->cpufreq_val = clip_freq;
- 
- 	cpufreq_update_policy(cpu);
--- 
-1.9.1
+> And as long as no other module could very possible want functionality=
+ like this. Ever.
+
+The point was that there were no other users currently, so dm-crypt is
+going to be the only user for the time being.
+
+> If a module wants to be notified - the providing a notifier chain
+> really seems like the right thing to do...
+
+Well, so please see my last response in this thread. :-)
+
+Thanks,
+Rafael
