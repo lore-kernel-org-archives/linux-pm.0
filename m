@@ -1,193 +1,87 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V3 08/19] soc: tegra: pmc: Clean-up PMC helper functions
-Date: Tue, 21 Jul 2015 10:38:32 +0100
-Message-ID: <55AE1318.4030503@nvidia.com>
-References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com> <1436791197-32358-9-git-send-email-jonathanh@nvidia.com> <20150717102546.GL3057@ulmo>
+From: Sylvain Munaut <246tnt@gmail.com>
+Subject: Discrete Nvidia GPU shutdown with recent kernel / BIOS (on T440s
+ laptop) - Should be automatic with runtime pm now ?
+Date: Tue, 21 Jul 2015 11:57:38 +0200
+Message-ID: <CAHL+j0-Nf4rgCrUHbtZ0d2bpW3hX57Mz5jUwhckv8endScA29g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150717102546.GL3057@ulmo>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, =?windows-1252?Q?Terje_Bergstr?= =?windows-1252?Q?=F6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
-On 17/07/15 11:25, Thierry Reding wrote:
-> * PGP Signed by an unknown key
-> 
-> On Mon, Jul 13, 2015 at 01:39:46PM +0100, Jon Hunter wrote:
->> The following clean-ups have been made to the PMC code:
->>
->> 1. Add a macro for determining the state of a PMC powergate
->> 2. Use the readx_poll_timeout() function instead of implementing a local
->>    polling loop with a timeout.
->> 3. Use a case-statement in the function that removes the powergate clamp
->>    instead of multiple if-statements to improve readability.
->>
->> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
->> ---
->>  drivers/soc/tegra/pmc.c | 72 ++++++++++++++++++++++++-------------------------
->>  1 file changed, 35 insertions(+), 37 deletions(-)
->>
->> diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
->> index c0635bdd4ee3..180d434deec5 100644
->> --- a/drivers/soc/tegra/pmc.c
->> +++ b/drivers/soc/tegra/pmc.c
->> @@ -28,6 +28,7 @@
->>  #include <linux/export.h>
->>  #include <linux/init.h>
->>  #include <linux/io.h>
->> +#include <linux/iopoll.h>
->>  #include <linux/of.h>
->>  #include <linux/of_address.h>
->>  #include <linux/platform_device.h>
->> @@ -56,6 +57,8 @@
->>  #define  PWRGATE_TOGGLE_START		(1 << 8)
->>  
->>  #define REMOVE_CLAMPING			0x34
->> +#define  REMOVE_CLAMPING_VDEC		(1 << 3)
->> +#define  REMOVE_CLAMPING_PCIE		(1 << 4)
->>  
->>  #define PWRGATE_STATUS			0x38
->>  
->> @@ -101,6 +104,8 @@
->>  
->>  #define GPU_RG_CNTRL			0x2d4
->>  
->> +#define PMC_PWRGATE_STATE(val, id)	(!!(val & BIT(id)))
-> 
-> I find double-negations very difficult to read. ((value & BIT(id)) != 0)
-> is clearer in my opinion. Also I'd suggest status or value as the first
-> parameter name, for consistency with other parts of the driver.
-> 
->> +
->>  struct tegra_pmc_soc {
->>  	unsigned int num_powergates;
->>  	const char *const *powergates;
->> @@ -177,15 +182,14 @@ static void tegra_pmc_writel(u32 value, unsigned long offset)
->>   */
->>  static int tegra_powergate_set(int id, bool new_state, bool wait)
->>  {
->> -	unsigned long timeout;
->> -	bool status;
->>  	int ret = 0;
->> +	u32 val;
->>  
->>  	mutex_lock(&pmc->powergates_lock);
->>  
->> -	status = tegra_pmc_readl(PWRGATE_STATUS) & (1 << id);
->> +	val = tegra_pmc_readl(PWRGATE_STATUS);
->>  
->> -	if (status == new_state) {
->> +	if (PMC_PWRGATE_STATE(val, id) == new_state) {
->>  		mutex_unlock(&pmc->powergates_lock);
->>  		return 0;
->>  	}
->> @@ -193,17 +197,9 @@ static int tegra_powergate_set(int id, bool new_state, bool wait)
->>  	tegra_pmc_writel(PWRGATE_TOGGLE_START | id, PWRGATE_TOGGLE);
->>  
->>  	if (wait) {
->> -		timeout = jiffies + msecs_to_jiffies(100);
->> -		ret = -ETIMEDOUT;
->> -
->> -		while (time_before(jiffies, timeout)) {
->> -			status = !!(tegra_pmc_readl(PWRGATE_STATUS) & BIT(id));
->> -			if (status == new_state) {
->> -				ret = 0;
->> -				break;
->> -			}
->> -			udelay(10);
->> -		}
->> +		ret = readx_poll_timeout(tegra_pmc_readl, PWRGATE_STATUS,
->> +				val, PMC_PWRGATE_STATE(val, id) == new_state,
->> +				10, 100000);
->>  	}
->>  
->>  	mutex_unlock(&pmc->powergates_lock);
->> @@ -242,13 +238,10 @@ EXPORT_SYMBOL(tegra_powergate_power_off);
->>   */
->>  int tegra_powergate_is_powered(int id)
->>  {
->> -	u32 status;
->> -
->>  	if (!pmc->soc || id < 0 || id >= pmc->soc->num_powergates)
->>  		return -EINVAL;
->>  
->> -	status = tegra_pmc_readl(PWRGATE_STATUS) & (1 << id);
->> -	return !!status;
->> +	return PMC_PWRGATE_STATE(tegra_pmc_readl(PWRGATE_STATUS), id);
-> 
-> I'd prefer to keep the two steps here. As a general rule I try never to
-> mix reading or writing a register with other code on the same line.
-> 
->>  }
->>  
->>  /**
->> @@ -257,34 +250,39 @@ int tegra_powergate_is_powered(int id)
->>   */
->>  int tegra_powergate_remove_clamping(int id)
->>  {
->> -	u32 mask;
->> +	u32 val, reg;
-> 
-> Side note: Please use value instead of val since that's the form used
-> elsewhere in the driver. Also reg would be more appropriately called
-> offset or similar because that's what it really is. It would also be
-> more naturally an unsized type, such as unsigned int. But...
-> 
->>  
->>  	if (!pmc->soc || id < 0 || id >= pmc->soc->num_powergates)
->>  		return -EINVAL;
->>  
->>  	/*
->> -	 * On Tegra124 and later, the clamps for the GPU are controlled by a
->> -	 * separate register (with different semantics).
->> +	 * In most cases the bit for removing the IO clamping is the same as
->> +	 * the powergate partition ID, however, this is not always the case.
->> +	 * Furthermore, on Tegra124 and later, the clamps for the GPU are
->> +	 * controlled by a separate register (with different semantics). The
->> +	 * following case-statement handles these exceptions.
->>  	 */
->> -	if (id == TEGRA_POWERGATE_3D) {
->> +	val = 1 << id;
->> +	reg = REMOVE_CLAMPING;
->> +
->> +	switch (id) {
->> +	case TEGRA_POWERGATE_3D:
->>  		if (pmc->soc->has_gpu_clamps) {
->> -			tegra_pmc_writel(0, GPU_RG_CNTRL);
->> -			return 0;
->> +			val = 0;
->> +			reg  = GPU_RG_CNTRL;
->>  		}
->> +		break;
->> +	case TEGRA_POWERGATE_VDEC:
->> +		val = REMOVE_CLAMPING_VDEC;
->> +		break;
->> +	case TEGRA_POWERGATE_PCIE:
->> +		val = REMOVE_CLAMPING_PCIE;
->> +		break;
->> +	default:
->> +		break;
->>  	}
->>  
->> -	/*
->> -	 * Tegra 2 has a bug where PCIE and VDE clamping masks are
->> -	 * swapped relatively to the partition ids
->> -	 */
->> -	if (id == TEGRA_POWERGATE_VDEC)
->> -		mask = (1 << TEGRA_POWERGATE_PCIE);
->> -	else if (id == TEGRA_POWERGATE_PCIE)
->> -		mask = (1 << TEGRA_POWERGATE_VDEC);
->> -	else
->> -		mask = (1 << id);
->> -
->> -	tegra_pmc_writel(mask, REMOVE_CLAMPING);
->> +	tegra_pmc_writel(val, reg);
-> 
-> ... to be honest, I think the previous code was more straightforward, so
-> I'd prefer if you dropped this particular hunk.
 
-Ok, I will drop that part. Jon
+tl;dr : Should device allowed to do runtime pm that have no driver go
+to D3 on their own ?  And should pci root bridge go to D3 when all the
+device on them are on D3 ?
+
+
+The whole story:
+
+Modern kernel ( > 3.15 ) report "Windows 2013" as an OSI string, even
+newer ones report "Windows 2015" as well. This triggers some changes
+in the ACPI code of the T440s laptop (and in others as well, but this
+is the one I'm using as reference here).
+
+This changes breaks the method used by Bumbblebee's bbswitch module
+and by the nouveau driver to shutdown the card (to save power). No
+error is reported, and some power is saved, but not as much as
+previously (hence users might not notice at all).
+
+The usual "solution" given to users is to use acpi_osi="!Windows 2013"
+ (and now they'll have to add acpi_osi="!Windows 2015" as well), but I
+was interested to find out exactly what was causing that behavior and
+whathttps://bugs.freedesktop.org/attachment.cgi?id=117267 new method
+Win 8.1 and Win 10 were using to shutdown the card.
+
+The DSDT of the T440s running the latest 2.33 bios can be found here :
+https://bugs.freedesktop.org/attachment.cgi?id=117267
+
+The current method used to shutdown the card relies on two actions :
+ - Making a _DSM call to the video acpi node, this will prepare the
+shutdown and instructs ACPI to do the actual power down on the next
+device state transition to D3. This is just preparaton and just sets
+some variable but doesn't actually do the power off.
+ - Actually make the device go to D3 with pci_set_power_state. This
+then executes the _PS3 method in ACPI and if the proper variable have
+been set by the DSM above, this will call the GPOF method which will
+turn off power.
+
+I looked at what changed when "Windows 2013" was present vs "Windows
+2012". And here's what's triggered :
+ - OSYS is set to 0x07DD.
+ - This in turn cause VMSH to be set to 1.
+ - This in turn causes _SB_.PCI0.PEG_.VID_.PS3 to _NOT call GPOF when
+the device is set to D3.
+ - and so the card is never really turned off completely
+
+Now I looked at what other path could be taken to reach the GPOF method.
+And if you look at the table you can see that it can be called as part
+of the NVP3 power resource which is PR3 ... but on the node
+_SB.PCI0.PEG_ and not _SB.PCI0.PEG_.VID_ !
+
+So the GPU gets turned off when the PCIe bridge/port it's connected to
+gets transitionned to D3hot. I did confirm this by manually patching
+bbswitch to put the pci_upstream_bridge(...) of the device to D3hot
+after putting the card itself in D3cold. Power saving measured matches
+what's expected, but I have no idea if it's the "right" thing to do.
+
+The DSM call doesn't seem to be required now, so everything is done
+with pure PM state which I guess is good.
+
+What I expected is that now that everything is purely PM, then linux
+should be able to do all of this automatically without the need for
+bbswitch at all.
+If no driver is loaded for the card (so obviously no users), then
+doing an "echo auto > .../power/control" on both the card node and the
+bridge port node it's attached to should allow runtime PM. And shince
+they're unused, everything should go to D3 on its own.
+
+But that doesn't seem to happen ? Are my expectations wrong ?
+
+
+Cheers,
+
+    Sylvain
