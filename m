@@ -1,117 +1,51 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: [PATCH v3 1/1] dt: cpufreq: st: Provide bindings for ST's CPUFreq implementation
-Date: Tue, 21 Jul 2015 12:33:40 +0100
-Message-ID: <1437478420-26419-1-git-send-email-lee.jones@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:34332 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbbGULdq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2015 07:33:46 -0400
-Received: by wibud3 with SMTP id ud3so111515376wib.1
-        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2015 04:33:45 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Mason <slash.tmp@free.fr>
+Subject: Re: Using a temperature sensor with 1-bit output for CPU throttling
+Date: Tue, 21 Jul 2015 13:49:24 +0200
+Message-ID: <55AE31C4.9030100@free.fr>
+References: <553F6E85.5090402@free.fr> <5540E0E1.6080504@free.fr> <20150429163605.GM3054@e104805> <55AE0C7F.40506@free.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <cpufreq-owner@vger.kernel.org>
+In-Reply-To: <55AE0C7F.40506@free.fr>
+Sender: cpufreq-owner@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, cpufreq <cpufreq@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Amit Daniel <amit.daniel@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Andrew Lunn <andrew@lunn.ch>
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, ajitpal.singh@st.com
-Cc: kernel@stlinux.com, Lee Jones <lee.jones@linaro.org>
 
-Cc: devicetree@vger.kernel.org
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
----
+On 21/07/2015 11:10, Mason wrote:
 
-Only submitting the binding document as requested by Viresh.
+> I don't understand this behavior from the governor:
+>=20
+> [   27.557494] thermal thermal_zone0: last_temperature=3D0, current_t=
+emperature=3D51000
+> [   27.583626] thermal thermal_zone0: Trip0[type=3D1,temp=3D70000]:tr=
+end=3D1,throttle=3D0
+> [   27.590961] thermal cooling_device0: cur_state=3D0
+> [   27.595672] thermal cooling_device0: old_target=3D-1, target=3D-1
+> [   27.601473] thermal cooling_device0: zone0->target=3D4294967295
+> [   27.607263] thermal cooling_device0: set to state 0
+>=20
+> [   40.643340] thermal thermal_zone0: last_temperature=3D51000, curre=
+nt_temperature=3D46000
+> [   40.669930] thermal thermal_zone0: Trip0[type=3D1,temp=3D70000]:tr=
+end=3D2,throttle=3D0
+> [   40.677217] thermal cooling_device0: cur_state=3D0
+> [   40.681873] thermal cooling_device0: old_target=3D-1, target=3D4
+> [   40.687579] thermal cooling_device0: zone0->target=3D4
+> [   40.692669] thermal cooling_device0: set to state 4
+>=20
+> The first temperature read =3D 51=C2=B0C (below the 70=C2=B0C trip po=
+int).
+> Next read =3D 46=C2=B0C (still below the trip point) and even though
+> the governor claims throttle=3D0, it sets the cooling state to 4
+> (so minimal frequency if I understand correctly).
 
-v2 => v3:
- - Using OPP v2
- - Moved OPPs out of the CPU node into their own one
- - Using generic 'opp-hz' property
+Never mind. This is due to a bug that was fixed almost a year ago.
+(commit 26bb0e9a1a938ec98ee07aa76533f1a711fba706)
 
- .../devicetree/bindings/cpufreq/cpufreq-st.txt     | 77 ++++++++++++++++++++++
- 1 file changed, 77 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
+I've requested the fix be back-ported to linux-3.14.y
+http://thread.gmane.org/gmane.linux.kernel.stable/143070
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
-new file mode 100644
-index 0000000..a478eec
---- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
-@@ -0,0 +1,77 @@
-+Binding for ST's CPUFreq driver
-+===============================
-+
-+Required properties [for working voltage scaling]:
-+-------------------------------------------------
-+
-+Located in CPU's node:
-+
-+- st,syscfg		: Phandle to Major number register
-+				First cell: offset to major number
-+- st,syscfg-eng		: Phandle to Minor number and Pcode registers
-+				First cell: offset to process code
-+				Second cell: offset to minor number
-+
-+Located in 'cpu0-opp-list' node [to be provided ONLY by the bootloader]:
-+
-+ - opp{1..N} 		: Each 'oppX' subnode will contain the following properties:
-+  - opp-hz		: CPU frequency [Hz] for this OPP
-+  - st,avs		: List of available voltages [uV] indexed by process code
-+  - st,cuts		: Cut version this OPP is suitable for [0xFF means ALL]
-+  - st,substrate	: Substrate version this OPP is suitable for [0xFF means ALL]
-+
-+WARNING: The cpu0-opp-list will be provided by the bootloader.  Do not attempt to
-+	 artificially synthesise the cpu0-opp-list node or any of its descendants.
-+	 They are very platform specific and may damage the hardware if created
-+	 incorrectly.
-+
-+Required properties [if voltage scaling properties are missing]:
-+-------------------------------------------------------------------
-+
-+Located in CPU's node:
-+
-+- operating-points	: [See: ../power/opp.txt]
-+
-+Example [safe]:
-+--------------
-+
-+cpus {
-+	cpu@0 {
-+				 /* kHz     uV   */
-+		operating-points = <1500000 0
-+				    1200000 0
-+				    800000  0
-+				    500000  0>;
-+	};
-+};
-+
-+Example [unsafe]:
-+----------------
-+
-+cpus {
-+	cpu@0 {
-+		st,syscfg		= <&syscfg [major_offset]>;
-+		st,syscfg-eng   	= <&syscfg_eng [pcode_offset] [minor_offset]>;
-+		operating-points-v2	= <&cpu0_opp_list>;
-+	};
-+};
-+
-+/* ############################################################ */
-+/* # WARNING: Do not attempt to copy/replicate this node,     # */
-+/* #          it is only to be supplied by the bootloader !!! # */
-+/* ############################################################ */
-+cpu0-opp-list {
-+	compatible = "operating-points-v2-sti";
-+	opp0 {
-+		opp-hz		= <1200000000>;
-+		st,avs		= <1110 1150 1100 1080 1040 1020 980 930>;
-+		st,substrate	= <0xff>;
-+		st,cuts		= <0xff>;
-+	};
-+	opp1 {
-+		opp-hz		= <1500000000>;
-+		st,avs		= <1200 1200 1200 1200 1170 1140 1100 1070>;
-+		st,substrate	= <0xff>;
-+		st,cuts		= <0x2>;
-+	};
-+};
--- 
-1.9.1
+Regards.
 
