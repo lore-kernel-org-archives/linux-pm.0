@@ -1,78 +1,85 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH] thermal: consistently use int for temperatures
-Date: Tue, 21 Jul 2015 09:31:11 +0200
-Message-ID: <20150721073111.GH5161@pengutronix.de>
-References: <1436167189-29835-1-git-send-email-s.hauer@pengutronix.de>
- <9hhd1zrc9yb.fsf@e105922-lin.cambridge.arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Subject: [PATCH v2] Add Mediatek thermal support
+Date: Tue, 21 Jul 2015 09:59:23 +0200
+Message-ID: <1437465566-16299-1-git-send-email-s.hauer@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:60058 "EHLO
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:37580 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752797AbbGUHb1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2015 03:31:27 -0400
-Content-Disposition: inline
-In-Reply-To: <9hhd1zrc9yb.fsf@e105922-lin.cambridge.arm.com>
+	with ESMTP id S1751236AbbGUH7b (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2015 03:59:31 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Jean Delvare <jdelvare@suse.de>, Peter Feuerer <peter@piie.net>, Heiko Stuebner <heiko@sntech.de>, Lukasz Majewski <l.majewski@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, linux-acpi@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Ripard <maxime.ripard@free-electrons.com>, Darren Hart <dvhart@infradead.org>, lm-sensors@lm-sensors.org
+To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>
 
-Hi Punit,
+This series adds support for the thermal sensors included in the
+MT8173 SoC. Currently only basic temperature reading is supported
+without any interrupt support.
 
-On Fri, Jul 17, 2015 at 12:14:36PM +0100, Punit Agrawal wrote:
-> Hi Sascha,
->=20
-> Sascha Hauer <s.hauer@pengutronix.de> writes:
->=20
-> > The thermal code uses int, long and unsigned long for temperatures
-> > in different places.
-> >
-> > Using an unsigned type limits the thermal framework to positive
-> > temperatures without need. Also several drivers currently will repo=
-rt
-> > temperatures near UINT_MAX for temperatures below 0=B0C. This will =
-probably
-> > immediately shut the machine down due to overtemperature if started=
- below
-> > 0=B0C.
-> >
-> > 'long' is 64bit on several architectures. This is not needed since =
-INT_MAX =B0mC
-> > is above the melting point of all known materials.
-> >
-> > Consistently use a plain 'int' for temperatures throughout the ther=
-mal code and
-> > the drivers. This only changes the places in the drivers where the =
-temperature
-> > is passed around as pointer, when drivers internally use another ty=
-pe this is
-> > not changed.
-> >
-> > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
->=20
-> Thanks for moving over the thermal sub-system in Linux to consistentl=
-y
-> use a single type.
->=20
-> In your patch, you missed migrating over power_allocator governor and
-> it's associated trace events. It got merged for v4.2.
->=20
-> Could you incorporate something like below in your next version?
+The cpufreq driver for MT8173 is currently under review, so there's no
+real cooling device available in mainline. Until this is available the
+thermal driver can be tested with the following dts snippet. It creates
+a fake gpio fan and a fake trip point which is so low that it can easily
+be reached with a "cat /dev/zero > /dev/null" on the command line.
 
-It seems I have changed drivers/thermal/power_allocator.c but missed
-include/trace/events/thermal_power_allocator.h. Please check out the v2
-patch I just sent.
+Please review and let me know what's missing to be included in mainline.
+
+Changes since v1:
+- Use "mediatek," prefix for custom properties
+- Drop "thermal: consistently use int for temperatures" dependency
 
 Sascha
 
---=20
-Pengutronix e.K.                           |                           =
-  |
-Industrial Linux Solutions                 | http://www.pengutronix.de/=
-  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0  =
-  |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-555=
-5 |
+	fan: gpio_fan {
+		compatible = "gpio-fan";
+		gpios = <&pio 24 0>;
+		gpio-fan,speed-map = <0    0
+				      4500 1>;
+		#cooling-cells = <2>;
+	};
+
+	thermal-zones {
+		cpu_thermal: cpu_thermal {
+			polling-delay-passive = <1000>; /* milliseconds */
+			polling-delay = <1000>; /* milliseconds */
+
+			thermal-sensors = <&thermal 0>;
+
+			trips {
+				cpu_passive: cpu_passive {
+					temperature = <47000>; /* millicelsius */
+					hysteresis = <2000>; /* millicelsius */
+					type = "passive";
+				};
+
+				cpu_crit {
+					temperature = <90000>; /* millicelsius */
+					hysteresis = <2000>; /* millicelsius */
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0 {
+					trip = <&cpu_passive>;
+					cooling-device = <&fan THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+	};
+
+----------------------------------------------------------------
+Sascha Hauer (3):
+      dt-bindings: thermal: Add binding document for Mediatek thermal controller
+      thermal: Add Mediatek thermal controller support
+      ARM64: dts: mt8173: Add thermal/auxadc device nodes
+
+ .../bindings/thermal/mediatek-thermal.txt          |  38 ++
+ arch/arm64/boot/dts/mediatek/mt8173.dtsi           |  18 +
+ drivers/thermal/Kconfig                            |   8 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/mtk_thermal.c                      | 602 +++++++++++++++++++++
+ 5 files changed, 667 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+ create mode 100644 drivers/thermal/mtk_thermal.c
+
