@@ -1,89 +1,32 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH RFC] intel_pstate: play well with frequency limits set
- by acpi
-Date: Tue, 21 Jul 2015 11:53:42 -0700
-Message-ID: <1437504822.2377.181.camel@spandruv-DESK3.jf.intel.com>
-References: <20150716181706.6500.64386.stgit@buzz>
-	 <1437084536.2377.117.camel@spandruv-DESK3.jf.intel.com>
-	 <CALYGNiMOMWY2Ng9yLQ04Ghr6fKnO_6BRLCRE2b-rnvoPJmauqQ@mail.gmail.com>
-	 <1437426504.2377.162.camel@spandruv-DESK3.jf.intel.com>
-	 <55AE1DFC.3090209@yandex-team.ru>
-	 <1437493051.2377.170.camel@spandruv-DESK3.jf.intel.com>
-	 <55AE7557.5010605@yandex-team.ru>
+From: "Brown, Len" <len.brown@intel.com>
+Subject: RE: [PATCH 1/1] suspend: make sync() on suspend-to-RAM optional
+Date: Tue, 21 Jul 2015 20:01:15 +0000
+Message-ID: <1A7043D5F58CCB44A599DFD55ED4C948468A923D@fmsmsx115.amr.corp.intel.com>
+References: <1436927091-32520-1-git-send-email-lenb@kernel.org>
+ <55A668FE.80409@gmail.com>
+ <1A7043D5F58CCB44A599DFD55ED4C948468A7978@fmsmsx115.amr.corp.intel.com>
+ <1684935.fYtBRJbzgO@vostro.rjw.lan> <20150721093806.GA23841@amd>
+ <CAJZ5v0gNKRRaXvfqvj4YEjb+7X1aEobfvWuWyAnAcKArcxtZPA@mail.gmail.com>
+ <20150721151941.GA19581@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <55AE7557.5010605@yandex-team.ru>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
-Cc: Konstantin Khlebnikov <koct9i@gmail.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Kristen Carlson Accardi <kristen@linux.intel.com>, Len Brown <lenb@kernel.org>, Ethan Zhao <ethan.zhao@oracle.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150721151941.GA19581@amd>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Austin S Hemmelgarn <ahferroin7@gmail.com>, Len Brown <lenb@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2015-07-21 at 19:37 +0300, Konstantin Khlebnikov wrote:
-> On 21.07.2015 18:37, Srinivas Pandruvada wrote:
-> > On Tue, 2015-07-21 at 13:25 +0300, Konstantin Khlebnikov wrote:
-> >> On 21.07.2015 00:08, Srinivas Pandruvada wrote:
-> >>> On Fri, 2015-07-17 at 07:36 +0300, Konstantin Khlebnikov wrote:
-> >>>> On Fri, Jul 17, 2015 at 1:08 AM, Srinivas Pandruvada
-> >>>> <srinivas.pandruvada@linux.intel.com> wrote:
-> >>>>> On Thu, 2015-07-16 at 21:17 +0300, Konstantin Khlebnikov wrote:
-> >>>>>> IPMI can control CPU P-states remotely: configuration is reported via
-> >>>>>> common ACPI interface (_PPC/_PSS/etc). This patch adds required minimal
-> >>>>>> support in intel_pstate to receive and use these P-state limits.
-> >>>>>>
-> >>>>>> * ignore limit of top state in _PPC: it lower than turbo boost frequency
-> >>>>>> * register intel_pstate in acpi-processor to get states from _PSS
-> >>>>>> * link acpi_processor_get_bios_limit: this adds attribute "bios_limit"
-> >>>>>>
-> >>>>>> Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
-> >>>>>> ---
-> >>>>>>    drivers/acpi/processor_perflib.c |    3 +-
-> >>>>>>    drivers/cpufreq/intel_pstate.c   |   57 ++++++++++++++++++++++++++++++++++++++
-> >>>>>>    2 files changed, 59 insertions(+), 1 deletion(-)
-> >>>>>>
-> >>>>>> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
-> >>>>>> index cfc8aba72f86..781e328c9d5f 100644
-> >>>>>> --- a/drivers/acpi/processor_perflib.c
-> >>>>>> +++ b/drivers/acpi/processor_perflib.c
-> >>>>>> @@ -98,7 +98,8 @@ static int acpi_processor_ppc_notifier(struct notifier_block *nb,
-> >>>>>>
-> >>>>>>         ppc = (unsigned int)pr->performance_platform_limit;
-> >>>>>>
-> >>>>>> -     if (ppc >= pr->performance->state_count)
-> >>>>>> +     /* Ignore limit of top state: it lower than turbo boost frequency */
-> >>>>>> +     if (!ppc || ppc >= pr->performance->state_count)
-> >>>>> Why? Isn't the previous check enough?
-> >>>>
-> >>>> Zero _PPC state must be top performance state but as I see frequency in
-> >>>> _PSS is lower than maximum possible turbo frequency. So, in this case
-> >>>> intel_pstate cannnot get "100%"  for max bound even it there is no limit set.
-> >>>>
-> >>>> For example: I saw _PSS[0] = 2601 Mhz, PSS[1] = 2600 Mhz while turbo
-> >>>> state is 3400 Mhz.
-> >>>>
-> >>> Have you tested dynamic _PPC modification with acpi cpufreq with this
-> >>> change (after boot)? Suppose _PPC is changed from 3 to 0, then
-> >>> cpufreq_verify_within_limits will not be called to change to new max
-> >>> turbo performance state.
-> >>>
-> >>
-> >> I haven't checked that but as I see acpi_processor_ppc_notifier()
-> >> can only reduce maximum frequency. So, there should be no problem
-> >> in this case.
-> > No, it can also be used in both ways. Once reduced, it can increase as
-> > well. _PPC can be dynamically modified by BIOS to reduce and also to
-> > increase.
-> 
-> Well, in this case BIOS will trigger ACPI_PROCESSOR_NOTIFY_PERFORMANCE:
-> kernel evaluate new _PPC and call cpufreq_update_policy()
-> which set initial frequency min/max range according to user setup and
-> apply all limits after that. Initial policy->user_policy.min/max stay
-> unchanged. So, that dynamic modification works in both ways.
-> 
-Fair enough. We need to take account for _PSS. We have some changes for
-this, but not gone through test cycle. I will post them as RFC, please
-check. Thanks for your patience.
+> Who does enter suspend to ram multiple times a second? Only android
 
-- Srinivas
+One significant customer for fast suspend/resume
+is sufficient to justify Linux supporting fast suspend/resume.
 
+> Can you run android on mainline kernel? No
+
+This is something we need to work together to help fix.
+
+thanks,
+-Len
