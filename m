@@ -1,92 +1,117 @@
-From: Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V3 02/19] memory: tegra: Add MC flush support
-Date: Tue, 21 Jul 2015 13:57:51 +0300
-Message-ID: <20150721105751.GK6287@tbergstrom-lnx.Nvidia.com>
-References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com>
- <1436791197-32358-3-git-send-email-jonathanh@nvidia.com>
- <20150717095754.GG3057@ulmo>
- <20150717102049.GQ6287@tbergstrom-lnx.Nvidia.com>
- <20150717113124.GP3057@ulmo>
- <20150720095941.GZ6287@tbergstrom-lnx.Nvidia.com>
- <20150720131410.GA1098@ulmo>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20150720131410.GA1098@ulmo>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Terje =?iso-8859-1?Q?Bergstr=F6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Lee Jones <lee.jones@linaro.org>
+Subject: [PATCH v3 1/1] dt: cpufreq: st: Provide bindings for ST's CPUFreq implementation
+Date: Tue, 21 Jul 2015 12:33:40 +0100
+Message-ID: <1437478420-26419-1-git-send-email-lee.jones@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f171.google.com ([209.85.212.171]:34332 "EHLO
+	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750973AbbGULdq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2015 07:33:46 -0400
+Received: by wibud3 with SMTP id ud3so111515376wib.1
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2015 04:33:45 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, ajitpal.singh@st.com
+Cc: kernel@stlinux.com, Lee Jones <lee.jones@linaro.org>
 
-On Mon, Jul 20, 2015 at 03:14:25PM +0200, Thierry Reding wrote:
-> * PGP Signed by an unknown key
-> 
-> On Mon, Jul 20, 2015 at 12:59:41PM +0300, Peter De Schrijver wrote:
-> > On Fri, Jul 17, 2015 at 01:31:24PM +0200, Thierry Reding wrote:
-> > > > Old Signed by an unknown key
-> > > 
-> > > On Fri, Jul 17, 2015 at 01:20:49PM +0300, Peter De Schrijver wrote:
-> > > > On Fri, Jul 17, 2015 at 11:57:55AM +0200, Thierry Reding wrote:
-> > > > > > Old Signed by an unknown key
-> > > > > 
-> > > > > On Mon, Jul 13, 2015 at 01:39:40PM +0100, Jon Hunter wrote:
-> > > > > > The Tegra memory controller implements a flush feature to flush pending
-> > > > > > accesses and prevent further accesses from occurring. This feature is
-> > > > > > used when powering down IP blocks to ensure the IP block is in a good
-> > > > > > state. The flushes are organised by software groups and IP blocks are
-> > > > > > assigned in hardware to the different software groups. Add helper
-> > > > > > functions for requesting a handle to an MC flush for a given
-> > > > > > software group and enabling/disabling the MC flush itself.
-> > > > > > 
-> > > > > > This is based upon a change by Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>.
-> > > > > > 
-> > > > > > Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> > > > > > ---
-> > > > > >  drivers/memory/tegra/mc.c | 110 ++++++++++++++++++++++++++++++++++++++++++++++
-> > > > > >  drivers/memory/tegra/mc.h |   2 +
-> > > > > >  include/soc/tegra/mc.h    |  34 ++++++++++++++
-> > > > > >  3 files changed, 146 insertions(+)
-> > > > > 
-> > > > > Do we know if this is actually necessary? I remember having a discussion
-> > > > > with Arnd Bergmann a while ago, and the Linux driver model kind of
-> > > > > assumes that by the time a device is disabled all outstanding accesses
-> > > > > will have stopped.
-> > > > > 
-> > > > > Do we have a way to determine that this even makes a difference? Can we
-> > > > > trigger a case where not doing this would cause breakage and see that
-> > > > > adding this fixes that particular issue?
-> > > > > 
-> > > > 
-> > > > Most likely it is. The memory controller can still be processing requests
-> > > > when the peripheral domain is powergated. This would mean the response cannot
-> > > > be delivered in that case. So we need to be sure there are no outstanding
-> > > > requests before shutting down the domain.
-> > > 
-> > > My point is that that's the driver's responsibility anyway, hence making
-> > > the explicit flush unnecessary.
-> > > 
-> > 
-> > The peripheral driver doesn't know how long a request is queued in the memory
-> > controller. So it can't be responsible for ensuring this.
-> 
-> Surely whenever the peripheral reports that the operation is done (be
-> that via some DMA controller interrupt or syncpoint increment) the
-> operation would have flushed from the memory controller. Drivers are
-> already supposed to make sure this is the case when they are removed or
-> suspended, so this would mean that we'd be adding all this code for no
-> real gain.
-> 
+Cc: devicetree@vger.kernel.org
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+---
 
-That highly depends on how the peripheral is implemented. I'm not sure we
-can assume things work this way.
+Only submitting the binding document as requested by Viresh.
 
-> It would also explain why we're currently not seeing any such problems.
-> 
+v2 => v3:
+ - Using OPP v2
+ - Moved OPPs out of the CPU node into their own one
+ - Using generic 'opp-hz' property
 
-I don't think we are doing agressive enough powergating today to see any
-problems. That might also mean we're just lucky.
+ .../devicetree/bindings/cpufreq/cpufreq-st.txt     | 77 ++++++++++++++++++++++
+ 1 file changed, 77 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
 
-Cheers,
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
+new file mode 100644
+index 0000000..a478eec
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
+@@ -0,0 +1,77 @@
++Binding for ST's CPUFreq driver
++===============================
++
++Required properties [for working voltage scaling]:
++-------------------------------------------------
++
++Located in CPU's node:
++
++- st,syscfg		: Phandle to Major number register
++				First cell: offset to major number
++- st,syscfg-eng		: Phandle to Minor number and Pcode registers
++				First cell: offset to process code
++				Second cell: offset to minor number
++
++Located in 'cpu0-opp-list' node [to be provided ONLY by the bootloader]:
++
++ - opp{1..N} 		: Each 'oppX' subnode will contain the following properties:
++  - opp-hz		: CPU frequency [Hz] for this OPP
++  - st,avs		: List of available voltages [uV] indexed by process code
++  - st,cuts		: Cut version this OPP is suitable for [0xFF means ALL]
++  - st,substrate	: Substrate version this OPP is suitable for [0xFF means ALL]
++
++WARNING: The cpu0-opp-list will be provided by the bootloader.  Do not attempt to
++	 artificially synthesise the cpu0-opp-list node or any of its descendants.
++	 They are very platform specific and may damage the hardware if created
++	 incorrectly.
++
++Required properties [if voltage scaling properties are missing]:
++-------------------------------------------------------------------
++
++Located in CPU's node:
++
++- operating-points	: [See: ../power/opp.txt]
++
++Example [safe]:
++--------------
++
++cpus {
++	cpu@0 {
++				 /* kHz     uV   */
++		operating-points = <1500000 0
++				    1200000 0
++				    800000  0
++				    500000  0>;
++	};
++};
++
++Example [unsafe]:
++----------------
++
++cpus {
++	cpu@0 {
++		st,syscfg		= <&syscfg [major_offset]>;
++		st,syscfg-eng   	= <&syscfg_eng [pcode_offset] [minor_offset]>;
++		operating-points-v2	= <&cpu0_opp_list>;
++	};
++};
++
++/* ############################################################ */
++/* # WARNING: Do not attempt to copy/replicate this node,     # */
++/* #          it is only to be supplied by the bootloader !!! # */
++/* ############################################################ */
++cpu0-opp-list {
++	compatible = "operating-points-v2-sti";
++	opp0 {
++		opp-hz		= <1200000000>;
++		st,avs		= <1110 1150 1100 1080 1040 1020 980 930>;
++		st,substrate	= <0xff>;
++		st,cuts		= <0xff>;
++	};
++	opp1 {
++		opp-hz		= <1500000000>;
++		st,avs		= <1200 1200 1200 1200 1170 1140 1100 1070>;
++		st,substrate	= <0xff>;
++		st,cuts		= <0x2>;
++	};
++};
+-- 
+1.9.1
 
-Peter.
