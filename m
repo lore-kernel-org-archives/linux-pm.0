@@ -1,77 +1,60 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v7 8/8] PCC: Enable PCC only when needed
-Date: Tue, 21 Jul 2015 16:34:50 +0200
-Message-ID: <CAJZ5v0j-_QB1U-A0F2YSoDa_71nyEGR=yn8Kb5qe-FSqDPevOA@mail.gmail.com>
-References: <cover.1436464513.git.ashwin.chaugule@linaro.org>
-	<f88f374b4e09f23d5601a2081d1d3d9322e3caf5.1436464513.git.ashwin.chaugule@linaro.org>
-	<55AD042D.9040204@arm.com>
-	<4609299.WWrJ4WHTsa@vostro.rjw.lan>
-	<55AE0F7B.8010804@arm.com>
+Subject: Re: [PATCH 1/1] suspend: make sync() on suspend-to-RAM optional
+Date: Tue, 21 Jul 2015 16:41:12 +0200
+Message-ID: <CAJZ5v0gNKRRaXvfqvj4YEjb+7X1aEobfvWuWyAnAcKArcxtZPA@mail.gmail.com>
+References: <1436927091-32520-1-git-send-email-lenb@kernel.org>
+	<55A668FE.80409@gmail.com>
+	<1A7043D5F58CCB44A599DFD55ED4C948468A7978@fmsmsx115.amr.corp.intel.com>
+	<1684935.fYtBRJbzgO@vostro.rjw.lan>
+	<20150721093806.GA23841@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <55AE0F7B.8010804@arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f173.google.com ([209.85.212.173]:36272 "EHLO
+	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106AbbGUOlN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2015 10:41:13 -0400
+In-Reply-To: <20150721093806.GA23841@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, Austin S Hemmelgarn <ahferroin7@gmail.com>, Len Brown <lenb@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Sudeep,
+Hi Pavel,
 
-On Tue, Jul 21, 2015 at 11:23 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
->
-> On 20/07/15 23:04, Rafael J. Wysocki wrote:
+On Tue, Jul 21, 2015 at 11:38 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Sat 2015-07-18 01:54:09, Rafael J. Wysocki wrote:
+>> On Wednesday, July 15, 2015 02:58:22 PM Brown, Len wrote:
+
+[cut]
+
+>> > >> Why do you need CONFIG parameter?
+>> >
+>> > So that an OS that doesn't want to change their user-space,
+>> > can build a kernel that does what they want by default.
+>> >
+>> > Originally I had the config parameter remove this code entirely,
+>> > which would achieve the same goal.
+>> > But Rafael prefers the sysfs attribute always exist
+>> > and the config simply set the default.
 >>
->> On Monday, July 20, 2015 03:22:37 PM Sudeep Holla wrote:
->>>
->>>
->>> On 09/07/15 19:04, Ashwin Chaugule wrote:
->>>>
->>>> CPPC is the first client to make use of the PCC Mailbox channel. So
->>>> enable it only when CPPC is also enabled.
->>>>
->>> This sounds like a reverse dependency to me. So if there's some client
->>> unrelated to CPPC using PCC, CPPC_LIB needs to be selected to enable PCC
->>> ?
+>> Indeed.
 >>
->>
->> No.  The other client will need to select PCC too.
+>> And so I'm queuing this patch up for 4.3 (with a couple of minor fixups).
 >
+> Please don't.
 >
-> Yes the PCC users/clients selecting PCC is fine and that's already
-> done(i.e. ACPI_CPPC_LIB selects PCC). I still don't understand the need
-> for this change, also how will other clients possibly select PCC which
-> now depends on CPPC_LIB ? e.g. if we have
->
-> config ACPI_XYZ_LIB
->         select PCC
->
-> config ACPI_XYZ
->         select ACPI_XYZ_LIB
->
-> Won't this shout warning: (ACPI_XYZ_LIB && ACPI_CPPC_LIB) selects PCC
-> which has unmet direct dependencies (MAILBOX && ACPI && ACPI_CPPC_LIB)
-> if ACPI_CPPC_LIB is not selected ?
+> "OS that doesn't want to change the user-space to speed up suspend by
+> few milliseconds" is not a valid reason for asking about million users
+> one more config question.
 
-That depends on the "depends on" clauses used.  Selecting itself
-doesn't cause any dependencies to appear.
+That's your opinion and I beg to differ.
 
-> OK, for now we enable ACPI_CPPC_LIB on ARM64 and not on x86. When x86
-> has a PCC client how will that select PCC without ACPI_CPPC_LIB. Sorry
-> if I am missing to understand something.
+> Affected users can't run mainline kernel
+> anyway, and will have to change their userland in non-trivial ways to
+> get there.
 
-Presumably, the new feature will have a Kconfig option associated with
-it and it will do "select PCC" too.
+And I'm not sure what you're talking about here.  Who are the
+"affected users" in particular?
 
->>
->> I requested that change, because I'm slightly bothered by the fact that we
->> build code used by no one by default.
->>
->
-> I understand, but will keeping them default off should suffice ? No ?
-
-Yes, it should.  But is it the case now?
-
-Thanks,
 Rafael
