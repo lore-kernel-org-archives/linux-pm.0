@@ -1,122 +1,120 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: Avoid double addition/removal of sysfs links
-Date: Tue, 21 Jul 2015 03:14:34 +0200
-Message-ID: <CAJZ5v0gHz5cEmX23uXESTmWbx5S+XsXMvxUp4ikTTpgdVy9N3w@mail.gmail.com>
-References: <20150718163149.GP7557@n2100.arm.linux.org.uk>
-	<a8a3c524facf3b2c1621a54d09c7022f4267d2e5.1437385355.git.viresh.kumar@linaro.org>
-	<20150720103623.GQ7557@n2100.arm.linux.org.uk>
-	<CAJZ5v0i4-F1XO1ioSLZpYToGWvzM+xLh1-QS6j5zEdOQ8itRfA@mail.gmail.com>
+From: chenyu5 <yu.c.chen@intel.com>
+Subject: Re: [RFC PATCH] PM / hibernate: make sure each resuming page is in
+ current memory zones
+Date: Tue, 21 Jul 2015 09:28:32 +0800
+Message-ID: <55ADA040.7050408@intel.com>
+References: <1435679668-13806-1-git-send-email-yu.c.chen@intel.com> <5594EFAA.1000905@intel.com> <20150706083739.GA29021@linux-rxt1.site> <1613617.2K941pjbyO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wg0-f43.google.com ([74.125.82.43]:34218 "EHLO
-	mail-wg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755995AbbGUBOf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2015 21:14:35 -0400
-In-Reply-To: <CAJZ5v0i4-F1XO1ioSLZpYToGWvzM+xLh1-QS6j5zEdOQ8itRfA@mail.gmail.com>
+Received: from mga01.intel.com ([192.55.52.88]:56824 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757204AbbGUBZ1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 20 Jul 2015 21:25:27 -0400
+In-Reply-To: <1613617.2K941pjbyO@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, joeyli <jlee@suse.com>, yex.tian@intel.com
 
-On Tue, Jul 21, 2015 at 2:47 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> Hi Russell,
->
-> On Mon, Jul 20, 2015 at 12:36 PM, Russell King - ARM Linux
-> <linux@arm.linux.org.uk> wrote:
->> On Mon, Jul 20, 2015 at 03:17:10PM +0530, Viresh Kumar wrote:
->>> Consider a dual core (0/1) system with two CPUs:
->>> - sharing clock/voltage rails and hence cpufreq-policy
->>> - CPU1 is offline while the cpufreq driver is registered
->>>
->>> - cpufreq_add_dev() is called from subsys callback for CPU0 and we
->>>   create the policy for the CPUs and create link for CPU1.
->>> - cpufreq_add_dev() is called from subsys callback for CPU1, we find
->>>   that the cpu is offline and we try to create a sysfs link for CPU1.
->>> - This results in double addition of the sysfs link and we get this:
->>>
->>>       WARNING: CPU: 0 PID: 1 at fs/sysfs/dir.c:31 sysfs_warn_dup+0x60/0x7c()
->>>       sysfs: cannot create duplicate filename '/devices/system/cpu/cpu1/cpufreq'
->>>       Modules linked in:
->>>       CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.2.0-rc2+ #1704
->>>       Hardware name: Freescale i.MX6 Quad/DualLite (Device Tree)
->>>       Backtrace:
->>>       [<c0013248>] (dump_backtrace) from [<c00133e4>] (show_stack+0x18/0x1c)
->>>        r6:c01a1f30 r5:0000001f r4:00000000 r3:00000000
->>>       [<c00133cc>] (show_stack) from [<c076920c>] (dump_stack+0x7c/0x98)
->>>       [<c0769190>] (dump_stack) from [<c0029ab4>] (warn_slowpath_common+0x80/0xbc)
->>>        r4:d74abbd0 r3:d74c0000
->>>       [<c0029a34>] (warn_slowpath_common) from [<c0029b94>] (warn_slowpath_fmt+0x38/0x40)
->>>        r8:ffffffef r7:00000000 r6:d75a8960 r5:c0993280 r4:d6b4d000
->>>       [<c0029b60>] (warn_slowpath_fmt) from [<c01a1f30>] (sysfs_warn_dup+0x60/0x7c)
->>>        r3:d6b4dfe7 r2:c0930750
->>>       [<c01a1ed0>] (sysfs_warn_dup) from [<c01a22c8>] (sysfs_do_create_link_sd+0xb8/0xc0)
->>>        r6:d75a8960 r5:c0993280 r4:d00aba20
->>>       [<c01a2210>] (sysfs_do_create_link_sd) from [<c01a22fc>] (sysfs_create_link+0x2c/0x3c)
->>>        r10:00000001 r8:c14db3c8 r7:d7b89010 r6:c0ae7c60 r5:d7b89010 r4:d00d1200
->>>       [<c01a22d0>] (sysfs_create_link) from [<c0506160>] (add_cpu_dev_symlink+0x34/0x5c)
->>>       [<c050612c>] (add_cpu_dev_symlink) from [<c05084d0>] (cpufreq_add_dev+0x674/0x794)
->>>        r5:00000001 r4:00000000
->>>       [<c0507e5c>] (cpufreq_add_dev) from [<c03db114>] (subsys_interface_register+0x8c/0xd0)
->>>        r10:00000003 r9:d7bb01f0 r8:c14db3c8 r7:00106738 r6:c0ae7c60 r5:c0acbd08
->>>        r4:c0ae7e20
->>>       [<c03db088>] (subsys_interface_register) from [<c0508a2c>] (cpufreq_register_driver+0x104/0x1f4)
->>>
->>>
->>> The check for offline-cpu in cpufreq_add_dev() is present to ensure that
->>> link gets added for the CPUs, that weren't physically present earlier
->>> and we missed the case where a CPU is offline while registering the
->>> driver.
->>>
->>> Fix this by keeping track of CPUs for which link is already created, and
->>> avoiding duplicate sysfs entries.
+On 2015=E5=B9=B407=E6=9C=8816=E6=97=A5 08:30, Rafael J. Wysocki wrote:
+> On Monday, July 06, 2015 04:37:39 PM joeyli wrote:
+>> Hi Chen Yu,
 >>
->> Why do we try to create the symlink for CPU devices which we haven't
->> "detected" yet (iow, we haven't had cpufreq_add_dev() called for)?
->> Surely we are guaranteed to have cpufreq_add_dev() called for every
->> CPU which exists in sysfs?  So why not _only_ create the sysfs symlinks
->> when cpufreq_add_dev() is notified that a CPU subsys interface is
->> present?
->
-> That's something I've overlooked.
->
-> Yes, we should be doing exactly that.
->
->> Sure, if the policy changes, we need to do maintanence on these symlinks,
->> but I see only one path down into cpufreq_add_dev_symlink(), which is:
+>> On Thu, Jul 02, 2015 at 04:00:42PM +0800, chenyu5 wrote:
+>>> Hi, Joey
+>>> thanks for your reply,
+>>>
+>>> On 2015=E5=B9=B407=E6=9C=8802=E6=97=A5 14:19, joeyli wrote:
+>>>> Hi Chen Yu,
+>>>>
+>>>> On Tue, Jun 30, 2015 at 11:54:28PM +0800, Chen Yu wrote:
+>>>>> Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820 =
+reserved
+>>>>> regions") was reverted, because this patch makes resume from hibe=
+rnation
+>>>>> on Lenovo x230 unreliable. But reverting may bring back the kerne=
+l
+>>>>> exception firstly reported in former patch. In general, there are=
+ three
+>>>>> problems in current code when resuming from hibernation:
+>>>>>
+>>>>> 1.Resuming page may also be in second kernel's e820 reserved regi=
+on.
+>>>>> BIOS-e820: [mem 0x0000000069d4f000-0x0000000069e12fff] reserved
+>>>>> this causes kernel exception described in Commit 84c91b7ae07c
+>>>>> ("PM / hibernate: avoid unsafe pages in e820 reserved regions")
+>>>>>
+>>>>> 2.If Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in =
+e820
+>>>>> reserved regions") is applied to fix problem 1, and if E820_RESER=
+VED_KERN
+>>>>> regions causes some regions at e820 table not page aligned,
+>>>>> e820_mark_nosave_regions will misjudgment the non-page aligned sp=
+ace to
+>>>>> be "hole" space and add to nosave regions, this causes resuming f=
+ailed.
+>>>>> Refer to https://bugzilla.kernel.org/show_bug.cgi?id=3D96111 for =
+detail.
+>>>>>
+>>>>
+>>>> Sorry for I am not fully understand why checking pfn_valid could a=
+void
+>>>> the above 2. issue?
+>>>>
+>>> [Yu] According to e820_mark_nosave_regions, two kinds of e820
+>>> regions will be regarded as nosave:
+>>> a.e820.map holes between each e820entry
+>>> b.e820entry with (!E820_RAM && !E820_RESERVED_KERN)
+>>> dmesg in
+>>> https://bugzilla.kernel.org/show_bug.cgi?id=3D96111
+>>> shows that:
+>>>
+>>> BIOS-e820: [mem 0x000000005baff000-0x00000000d684ffff] usable
+>>> reserve setup_data: [mem 0x000000009d3e0018-0x000000009d3f0057] usa=
+ble
+>>> PM: Registered nosave memory: [mem 0x9d3e0000-0x9d3e0fff]
+>>>
+>>> e820 map was changed by situation a, but it should not be added to
+>>> nosave list, right?
+>>>
+>>> and according to saveable_page, only pages in the zone will be save=
+d:
+>>> if (page_zone(page_ !=3D zone)
+>>> 	return NULL;
+>>>
+>>> The function of is_valid_orig_page in this patch treats setup_data =
+as
+>>> valid page, so I think this workaround issue 2.
+>>>
+>>>
+>>>> Per my understood should waiting Yinghai Lu's patches for killing
+>>>> E820_RESERVED_KERN to avoid the aligned problem.
+>>> [Yu] yes, it is a graceful solution, but I don't see that in 4.1? A=
+nd
+>>> we encountered problem 3 in our testing enviroment, so I wrote a pa=
+tch
+>>> to deal with it first.
+>>>>
+>>>>
+>>>> Thanks a lot!
+>>>> Joey Lee
+>>>>
 >>
->>         cpufreq_add_dev() -> cpufreq_add_dev_interface() ->
->>                 cpufreq_add_dev_symlink()
+>> Thanks for your explanation, then your patch makes sense to me.
 >>
->> In other words, only when we see a new CPU interface appears, not when
->> the policy changes.  If the set of related CPUs is policy independent,
->> why is this information carried in the cpufreq_policy struct?
->
-> It is not policy-dependent, but the way that information is gathered
-> is not exactly straightforward.  It generally depends on what the
-> platform firmware tells us about the topology.
->
->> If it is policy dependent, then I see no code which handles the effect
->> of a policy change where the policy->related_cpus is different.  To me,
->> that sounds like a rather huge design hole.
+>> Please feel free to add tag:
 >>
->> Things get worse.  Reading drivers/base/cpu.c, CPU interface nodes are
->> only ever created - they're created for the set of _possible_ CPUs in
->> the system, not those which are possible and present, and there is no
->> unregister_cpu() API, only a register_cpu() API.
+>> Reviewed-by: Lee, Chun-Yi <joeyli.kernel@gmail.com>
 >
-> There is unregister_cpu() API too, but it is called from
-> arch_unregister_cpu().  And it calls device_unregister() and all of
-> the appropriate things happen AFAICS.  Eventually,
-> cpufreq_remove_dev() is called from that path.
+> Patch queued up for 4.3, thanks!
+>
+Hi Rafeal,
+Please help drop this patch for now, QA has
+found some problems with this patch applied,
+we're working on it now. Sorry for inconvenience.
+Regards,
+Yu
 
-That said, cpu_present_mask may only be updated after calling
-arch_unregister_cpu(), so checking it in cpufreq_remove_dev() doesn't
-really help.
-
-It looks like using cpufreq_remove_dev() as the subsys ->remove_dev
-callback is a mistake as it cannot really tell the difference between
-that code path and the CPU offline one.
-
-Thanks,
-Rafael
