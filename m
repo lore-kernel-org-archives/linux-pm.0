@@ -1,71 +1,91 @@
-From: NeilBrown <neilb@suse.com>
-Subject: Re: [PATCH v2 1/3] PM suspend/hibernate: Call notifier after
- freezing processes
-Date: Wed, 22 Jul 2015 08:08:27 +1000
-Message-ID: <20150722080827.5adcf5f1@noble>
-References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com>
-	<3179448.TScsKEAuyR@vostro.rjw.lan>
-	<20150720073226.GB25910@pali>
-	<1715416.hWBvT0iLvO@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Radivoje Jovanovic <radivoje.jovanovic@linux.intel.com>
+Subject: [PATCH] thermal/cpu_cooling: remove local cooling state variable
+Date: Tue, 21 Jul 2015 15:13:55 -0700
+Message-ID: <1437516835-198750-1-git-send-email-radivoje.jovanovic@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1715416.hWBvT0iLvO@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pali =?UTF-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>, Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>, Neil Brown <neilb@suse.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Radivoje Jovanovic <radivoje.jovanovic@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 20 Jul 2015 23:46:32 +0200 "Rafael J. Wysocki"
-<rjw@rjwysocki.net> wrote:
+From: Radivoje Jovanovic <radivoje.jovanovic@intel.com>
 
-> On Monday, July 20, 2015 09:32:26 AM Pali Roh=C3=A1r wrote:
-> > On Saturday 18 July 2015 01:27:15 Rafael J. Wysocki wrote:
-> > > On Thursday, July 16, 2015 09:33:02 AM Pali Roh=C3=A1r wrote:
-> > > > On Thursday 16 July 2015 03:02:03 Rafael J. Wysocki wrote:
-> > > > > Also, if you're adding AFTER_FREEZE, it would be good to add =
-BEFORE_THAW too
-> > > > > for symmetry.
-> > > > >=20
-> > > >=20
-> > > > But there is no use case for BEFORE_THAW. At least it is not ne=
-eded for now.
-> > >=20
-> > > For your use case, a single function pointer would be sufficient =
-too.
-> > >=20
-> >=20
-> > What do you mean by single function pointer? kernel/power is part o=
-f
-> > kernel image and dm-crypt is external kernel module.
->=20
-> Well, if there is a function pointer in the core suspend code initial=
-ly set to
-> NULL and exported to modules such that the dm-crypt code can set it t=
-o
-> something else, that should be sufficient, shouldn't it?
+there is no need to keep local state variable. if another driver
+changes the policy under our feet the cpu_cooling driver will
+have the wrong state. Get current state from the policy directly instead
 
-As long as the dm-crypt module is never unloaded.  And as long as no
-other module could very possible want functionality like this. Ever.
+Signed-off-by: Radivoje Jovanovic <radivoje.jovanovic@intel.com>
+---
+ drivers/thermal/cpu_cooling.c | 27 ++++++++++++++++++---------
+ 1 file changed, 18 insertions(+), 9 deletions(-)
 
-If a module wants to be notified - the providing a notifier chain
-really seems like the right thing to do...
-
-NeilBrown
-
-
->=20
-> So if you're adding new PM notifier events, that's already more than =
-*you* need.
->=20
-> Anyway, I guess the "post freeze" new one should be enough for now, b=
-ut please
-> change the name to POST_FREEZE.
->=20
-> Also I think we don't need separate "post freeze" events for suspend =
-and
-> hibernation.
->=20
-> Thanks,
-> Rafael
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 6509c61..94ba2da 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -66,8 +66,6 @@ struct power_table {
+  *	registered.
+  * @cool_dev: thermal_cooling_device pointer to keep track of the
+  *	registered cooling device.
+- * @cpufreq_state: integer value representing the current state of cpufreq
+- *	cooling	devices.
+  * @cpufreq_val: integer value representing the absolute value of the clipped
+  *	frequency.
+  * @max_level: maximum cooling level. One less than total number of valid
+@@ -90,7 +88,6 @@ struct power_table {
+ struct cpufreq_cooling_device {
+ 	int id;
+ 	struct thermal_cooling_device *cool_dev;
+-	unsigned int cpufreq_state;
+ 	unsigned int cpufreq_val;
+ 	unsigned int max_level;
+ 	unsigned int *freq_table;	/* In descending order */
+@@ -486,10 +483,19 @@ static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
+ 				 unsigned long *state)
+ {
+ 	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+-
+-	*state = cpufreq_device->cpufreq_state;
+-
+-	return 0;
++	struct cpufreq_policy policy;
++	struct cpumask *mask = &cpufreq_device->allowed_cpus;
++	unsigned int cpu = cpumask_any(mask);
++	unsigned int cur_state;
++
++	if (!cpufreq_get_policy(&policy, cpu)) {
++			cur_state = get_level(cpufreq_device, policy.max);
++			if (cur_state != THERMAL_CSTATE_INVALID) {
++				*state = cur_state;
++				return 0;
++			}
++	}
++	return -EINVAL;
+ }
+ 
+ /**
+@@ -508,17 +514,20 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
+ 	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+ 	unsigned int cpu = cpumask_any(&cpufreq_device->allowed_cpus);
+ 	unsigned int clip_freq;
++	unsigned long cur_state;
+ 
+ 	/* Request state should be less than max_level */
+ 	if (WARN_ON(state > cpufreq_device->max_level))
+ 		return -EINVAL;
+ 
++	if (cpufreq_get_cur_state(cpufreq_device->cool_dev, &cur_state))
++		return -EINVAL;
++
+ 	/* Check if the old cooling action is same as new cooling action */
+-	if (cpufreq_device->cpufreq_state == state)
++	if (cur_state == state)
+ 		return 0;
+ 
+ 	clip_freq = cpufreq_device->freq_table[state];
+-	cpufreq_device->cpufreq_state = state;
+ 	cpufreq_device->cpufreq_val = clip_freq;
+ 
+ 	cpufreq_update_policy(cpu);
+-- 
+1.9.1
