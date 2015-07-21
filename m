@@ -1,69 +1,89 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v7 5/8] CPPC: Add a CPUFreq driver for use with CPPC
-Date: Tue, 21 Jul 2015 09:52:14 +0100
-Message-ID: <55AE083E.80303@arm.com>
-References: <cover.1436464513.git.ashwin.chaugule@linaro.org> <e8464849d98e4a4f64e9b23501d84b1f843aa994.1436464513.git.ashwin.chaugule@linaro.org> <55AD0411.4000603@arm.com> <3774934.MfIr66XDWO@vostro.rjw.lan>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH V3 03/19] memory: tegra: add flush operation for Tegra30
+ memory clients
+Date: Tue, 21 Jul 2015 09:54:03 +0100
+Message-ID: <55AE08AB.6060903@nvidia.com>
+References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com> <1436791197-32358-4-git-send-email-jonathanh@nvidia.com> <20150717100337.GH3057@ulmo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <3774934.MfIr66XDWO@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150717100337.GH3057@ulmo>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, =?windows-1252?Q?Terje_Bergstr?= =?windows-1252?Q?=F6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
 
-
-On 20/07/15 23:07, Rafael J. Wysocki wrote:
-> On Monday, July 20, 2015 03:22:09 PM Sudeep Holla wrote:
+On 17/07/15 11:03, Thierry Reding wrote:
+> * PGP Signed by an unknown key
+> 
+> On Mon, Jul 13, 2015 at 01:39:41PM +0100, Jon Hunter wrote:
+>> From: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 >>
->> On 09/07/15 19:04, Ashwin Chaugule wrote:
->>> This driver utilizes the methods introduced in the previous
->>> patch - "ACPI: Introduce CPU performance controls using CPPC"
->>> and enables usage with existing CPUFreq governors.
->>>
->>> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
->>> Reviewed-by: Al Stone <al.stone@linaro.org>
->>> ---
->>>    drivers/cpufreq/Kconfig.arm    |  16 ++++
->>>    drivers/cpufreq/Makefile       |   2 +
->>>    drivers/cpufreq/cppc_cpufreq.c | 197 +++++++++++++++++++++++++++++++++++++++++
->>>    3 files changed, 215 insertions(+)
->>>    create mode 100644 drivers/cpufreq/cppc_cpufreq.c
->>>
->>> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
->>> index 4f3dbc8..578384d 100644
->>> --- a/drivers/cpufreq/Kconfig.arm
->>> +++ b/drivers/cpufreq/Kconfig.arm
->>> @@ -272,3 +272,19 @@ config ARM_PXA2xx_CPUFREQ
->>>    	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
->>>
->>>    	  If in doubt, say N.
->>> +
->>> +config ACPI_CPPC_CPUFREQ
->>> +	tristate "CPUFreq driver based on the ACPI CPPC spec"
->>> +	depends on ACPI_CPPC_LIB
->>> +	default n
->>> +	help
->>> +	  This adds a CPUFreq driver which uses CPPC methods
->>> +	  as described in the ACPIv5.1 spec. CPPC stands for
->>> +	  Collaborative Processor Performance Controls. It
->>> +	  is based on an abstract continuous scale of CPU
->>> +	  performance values which allows the remote power
->>> +	  processor to flexibly optimize for power and
->>> +	  performance. CPPC relies on power management firmware
->>> +	  for its operation.
+>> This patch adds the hot reset register table and flush related callback
+>> functions for Tegra30.
 >>
->> Why is this ARM specific ? It might be used only on ARM but doesn't mean
->> it should be visible only on ARM ACPI systems.
->
-> Why bother people with considering Kconfig options that are useless to them?
->
+>> Signed-off-by: Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>> [jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org: Removed tegra_mc_ops and added
+>>  metastable_flush_reads.]
+>> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>>
+>> ---
+>> v3: removal of tegra_mc_ops
+>> ---
+>>  drivers/memory/tegra/tegra30.c | 24 ++++++++++++++++++++++++
+>>  1 file changed, 24 insertions(+)
+>>
+>> diff --git a/drivers/memory/tegra/tegra30.c b/drivers/memory/tegra/tegra30.c
+>> index 1abcd8f6f3ba..3b4987f39b52 100644
+>> --- a/drivers/memory/tegra/tegra30.c
+>> +++ b/drivers/memory/tegra/tegra30.c
+>> @@ -6,6 +6,7 @@
+>>   * published by the Free Software Foundation.
+>>   */
+>>  
+>> +#include <linux/device.h>
+> 
+> What do you need this for?
 
-I agree to some extent, but main worry is that we are then making these
-features architecture specific while ACPI is supposed to be architecture
-agnostic. I was just trying to avoid doing so.
+Looks like I forgot to remove this, when removing the tegra_mc_ops.
+Thanks, will remove.
 
-Regards,
-Sudeep
+>>  #include <linux/of.h>
+>>  #include <linux/mm.h>
+>>  
+>> @@ -936,6 +937,26 @@ static const struct tegra_smmu_swgroup tegra30_swgroups[] = {
+>>  	{ .name = "isp",  .swgroup = TEGRA_SWGROUP_ISP,  .reg = 0x258 },
+>>  };
+>>  
+>> +static struct tegra_mc_flush tegra30_mc_flush[] = {
+> 
+> const
+
+Yes, will fix.
+
+>> +	{TEGRA_SWGROUP_AFI,        0x200, 0x204,  0},
+>> +	{TEGRA_SWGROUP_AVPC,       0x200, 0x204,  1},
+>> +	{TEGRA_SWGROUP_DC,         0x200, 0x204,  2},
+>> +	{TEGRA_SWGROUP_DCB,        0x200, 0x204,  3},
+>> +	{TEGRA_SWGROUP_EPP,        0x200, 0x204,  4},
+>> +	{TEGRA_SWGROUP_G2,         0x200, 0x204,  5},
+>> +	{TEGRA_SWGROUP_HC,         0x200, 0x204,  6},
+>> +	{TEGRA_SWGROUP_HDA,        0x200, 0x204,  7},
+>> +	{TEGRA_SWGROUP_ISP,        0x200, 0x204,  8},
+>> +	{TEGRA_SWGROUP_MPCORE,     0x200, 0x204,  9},
+>> +	{TEGRA_SWGROUP_MPCORELP,   0x200, 0x204, 10},
+>> +	{TEGRA_SWGROUP_MPE,        0x200, 0x204, 11},
+>> +	{TEGRA_SWGROUP_NV,         0x200, 0x204, 12},
+>> +	{TEGRA_SWGROUP_NV2,        0x200, 0x204, 13},
+>> +	{TEGRA_SWGROUP_PPCS,       0x200, 0x204, 14},
+>> +	{TEGRA_SWGROUP_VDE,        0x200, 0x204, 16},
+>> +	{TEGRA_SWGROUP_VI,         0x200, 0x204, 17},
+> 
+> Spaces around { and }, please.
+
+Ok.
+
+Cheers
+Jon
