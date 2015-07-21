@@ -1,33 +1,34 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 07/10] opp: Add OPP sharing information to OPP library
-Date: Tue, 21 Jul 2015 07:48:51 +0530
-Message-ID: <20150721021851.GA4994@linux>
-References: <cover.1434369079.git.viresh.kumar@linaro.org>
- <2e1c7fcc1fb62f73c82bd57d196d054ba2607a55.1434369079.git.viresh.kumar@linaro.org>
- <55A986DD.3010104@codeaurora.org>
- <20150718063304.GD11802@linux>
- <55AD33F3.4000302@codeaurora.org>
+Subject: Re: [PATCH v2 0/3] ACPI / cpufreq: ACPI processor driver and ACPI
+ cpufreq driver cleanups
+Date: Tue, 21 Jul 2015 08:03:30 +0530
+Message-ID: <20150721023330.GE4994@linux>
+References: <10273534.kyzK8rhvUz@vostro.rjw.lan>
+ <1504169.B7TvYS4CS0@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f171.google.com ([209.85.192.171]:35221 "EHLO
-	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751580AbbGUCS5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2015 22:18:57 -0400
-Received: by pdrg1 with SMTP id g1so110770168pdr.2
-        for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2015 19:18:56 -0700 (PDT)
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <55AD33F3.4000302@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1504169.B7TvYS4CS0@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Pan Xinhui <xinhuix.pan@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, thomas.petazzoni@free-electrons.com, kesavan.abhilash@gmail.com, linaro-kernel@lists.linaro.org, ta.omasab@gmail.com, khilman@linaro.org, linux-pm@vger.kernel.org, viswanath.puttagunta@linaro.org, santosh.shilimkar@oracle.com, broonie@kernel.org, mike.turquette@linaro.org, Sudeep.Holla@arm.com, arnd.bergmann@linaro.org, linux-arm-kernel@lists.infradead.org, l.stach@pengutronix.de
 
-On 20-07-15, 10:46, Stephen Boyd wrote:
-> The janitors will probably find this and say that it could be
-> simplified to an if () and a return without the else.
+On 21-07-15, 00:12, Rafael J. Wysocki wrote:
+> On Saturday, July 18, 2015 03:13:41 AM Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > The following two patches clean up a couple of things in the ACPI processor
+> > driver and the ACPI cpufreq driver:
+> > 
+> > [1/2] Drop the unused first argument of acpi_processor_unregister_performance().
+> > [2/2] Drop the now redundant acpi_data pointer from acpi_cpufreq_data.
+> 
+> New versios of the two above (as [2/3] and [3/3], respectively) plus one
+> more ACPI cpufreq driver cleanup (discussed on linux-pm previously).
 
-Ack.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
