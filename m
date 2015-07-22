@@ -1,145 +1,148 @@
 From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [PATCH 5/9] firmware: arm_scpi: Extend to support sensors
-Date: Wed, 22 Jul 2015 15:02:39 +0100
-Message-ID: <1437573763-6525-6-git-send-email-punit.agrawal@arm.com>
+Subject: [PATCH 3/9] cpufreq: arm_big_little: Add support to register a cpufreq cooling device
+Date: Wed, 22 Jul 2015 15:02:37 +0100
+Message-ID: <1437573763-6525-4-git-send-email-punit.agrawal@arm.com>
 References: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Punit Agrawal <punit.agrawal@arm.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>
+Cc: Punit Agrawal <punit.agrawal@arm.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-ARM System Control Processor (SCP) provides an API to query and use
-the sensors available in the system. Extend the SCPI driver to support
- sensor messages.
+Register passive cooling devices when initialising cpufreq on
+big.LITTLE systems. If the device tree provides a dynamic power
+coefficient for the CPUs then the bound cooling device will support
+the extensions that allow it to be used with all the existing thermal
+governors including the power allocator governor.
+
+A cooling device will be created per individual frequency domain and
+can be bound to thermal zones via the thermal DT bindings.
 
 Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/firmware/arm_scpi.c   | 60 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/scpi_protocol.h | 17 ++++++++++++
- 2 files changed, 77 insertions(+)
+ drivers/cpufreq/arm_big_little.c | 52 ++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 50 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/firmware/arm_scpi.c b/drivers/firmware/arm_scpi.c
-index a70b7ba..478c5c5 100644
---- a/drivers/firmware/arm_scpi.c
-+++ b/drivers/firmware/arm_scpi.c
-@@ -219,6 +219,21 @@ struct dvfs_set {
- 	u8 index;
- } __packed;
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index f1e42f8..72a2777 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -23,6 +23,7 @@
+ #include <linux/cpu.h>
+ #include <linux/cpufreq.h>
+ #include <linux/cpumask.h>
++#include <linux/cpu_cooling.h>
+ #include <linux/export.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+@@ -55,6 +56,10 @@ static bool bL_switching_enabled;
+ #define ACTUAL_FREQ(cluster, freq)  ((cluster == A7_CLUSTER) ? freq << 1 : freq)
+ #define VIRT_FREQ(cluster, freq)    ((cluster == A7_CLUSTER) ? freq >> 1 : freq)
  
-+struct sensor_capabilities {
-+	__le16 sensors;
-+} __packed;
-+
-+struct _scpi_sensor_info {
-+	__le16 sensor_id;
-+	u8 class;
-+	u8 trigger_type;
-+	char name[20];
++struct private_data {
++	struct thermal_cooling_device *cdev;
 +};
 +
-+struct sensor_value {
-+	__le32 val;
-+} __packed;
-+
- static struct scpi_drvinfo *scpi_info;
+ static struct cpufreq_arm_bL_ops *arm_bL_ops;
+ static struct clk *clk[MAX_CLUSTERS];
+ static struct cpufreq_frequency_table *freq_table[MAX_CLUSTERS + 1];
+@@ -440,6 +445,7 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
+ {
+ 	u32 cur_cluster = cpu_to_cluster(policy->cpu);
+ 	struct device *cpu_dev;
++	struct private_data *priv;
+ 	int ret;
  
- static int scpi_linux_errmap[SCPI_ERR_MAX] = {
-@@ -481,6 +496,48 @@ static struct scpi_dvfs_info *scpi_dvfs_get_info(u8 domain)
- 	return info;
- }
- 
-+static int scpi_sensor_get_capability(u16 *sensors)
-+{
-+	struct sensor_capabilities cap_buf;
-+	int ret;
-+
-+	ret = scpi_send_message(SCPI_CMD_SENSOR_CAPABILITIES, NULL, 0, &cap_buf,
-+				sizeof(cap_buf));
-+	if (!ret)
-+		*sensors = le16_to_cpu(cap_buf.sensors);
-+
-+	return ret;
-+}
-+
-+static int scpi_sensor_get_info(u16 sensor_id, struct scpi_sensor_info *info)
-+{
-+	__le16 id = cpu_to_le16(sensor_id);
-+	struct _scpi_sensor_info _info;
-+	int ret;
-+
-+	ret = scpi_send_message(SCPI_CMD_SENSOR_INFO, &id,
-+				 sizeof(id), &_info, sizeof(_info));
-+	if (!ret) {
-+		memcpy(info, &_info, sizeof(*info));
-+		info->sensor_id = le16_to_cpu(_info.sensor_id);
+ 	cpu_dev = get_cpu_device(policy->cpu);
+@@ -457,9 +463,15 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
+ 	if (ret) {
+ 		dev_err(cpu_dev, "CPU %d, cluster: %d invalid freq table\n",
+ 				policy->cpu, cur_cluster);
+-		put_cluster_clk_and_freq_table(cpu_dev);
+-		return ret;
++		goto out_free_cpufreq_table;
 +	}
 +
-+	return ret;
-+}
++	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
++	if (!priv) {
++		ret = -ENOMEM;
++		goto out_free_cpufreq_table;
+ 	}
++	policy->driver_data = priv;
+ 
+ 	if (cur_cluster < MAX_CLUSTERS) {
+ 		int cpu;
+@@ -484,12 +496,19 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
+ 
+ 	dev_info(cpu_dev, "%s: CPU %d initialized\n", __func__, policy->cpu);
+ 	return 0;
 +
-+int scpi_sensor_get_value(u16 sensor, u32 *val)
++out_free_cpufreq_table:
++	put_cluster_clk_and_freq_table(cpu_dev);
++
++	return ret;
+ }
+ 
+ static int bL_cpufreq_exit(struct cpufreq_policy *policy)
+ {
+ 	struct device *cpu_dev;
++	struct private_data *priv = policy->driver_data;
+ 
++	cpufreq_cooling_unregister(priv->cdev);
+ 	cpu_dev = get_cpu_device(policy->cpu);
+ 	if (!cpu_dev) {
+ 		pr_err("%s: failed to get cpu%d device\n", __func__,
+@@ -498,11 +517,39 @@ static int bL_cpufreq_exit(struct cpufreq_policy *policy)
+ 	}
+ 
+ 	put_cluster_clk_and_freq_table(cpu_dev);
++	kfree(priv);
+ 	dev_dbg(cpu_dev, "%s: Exited, cpu: %d\n", __func__, policy->cpu);
+ 
+ 	return 0;
+ }
+ 
++static void bL_cpufreq_ready(struct cpufreq_policy *policy)
 +{
-+	struct sensor_value buf;
-+	int ret;
++	struct device *cpu_dev = get_cpu_device(policy->cpu);
++	struct device_node *np = of_node_get(cpu_dev->of_node);
++	struct private_data *priv = policy->driver_data;
 +
-+	ret = scpi_send_message(SCPI_CMD_SENSOR_VALUE, &sensor, sizeof(sensor),
-+				&buf, sizeof(buf));
-+	if (!ret)
-+		*val = le32_to_cpu(buf.val);
++	if (WARN_ON(!np))
++		return;
 +
-+	return ret;
++	if (of_find_property(np, "#cooling-cells", NULL)) {
++		u32 power_coefficient = 0;
++
++		of_property_read_u32(np, "dynamic-power-coefficient",
++				     &power_coefficient);
++
++		priv->cdev = of_cpufreq_power_cooling_register(np,
++				policy->related_cpus, power_coefficient, NULL);
++		if (IS_ERR(priv->cdev)) {
++			dev_err(cpu_dev,
++				"running cpufreq without cooling device: %ld\n",
++				PTR_ERR(priv->cdev));
++			priv->cdev = NULL;
++		}
++	}
++	of_node_put(np);
 +}
 +
- static struct scpi_ops scpi_ops = {
- 	.get_version = scpi_get_version,
- 	.clk_get_range = scpi_clk_get_range,
-@@ -489,6 +546,9 @@ static struct scpi_ops scpi_ops = {
- 	.dvfs_get_idx = scpi_dvfs_get_idx,
- 	.dvfs_set_idx = scpi_dvfs_set_idx,
- 	.dvfs_get_info = scpi_dvfs_get_info,
-+	.sensor_get_capability = scpi_sensor_get_capability,
-+	.sensor_get_info = scpi_sensor_get_info,
-+	.sensor_get_value = scpi_sensor_get_value,
+ static struct cpufreq_driver bL_cpufreq_driver = {
+ 	.name			= "arm-big-little",
+ 	.flags			= CPUFREQ_STICKY |
+@@ -513,6 +560,7 @@ static struct cpufreq_driver bL_cpufreq_driver = {
+ 	.get			= bL_cpufreq_get_rate,
+ 	.init			= bL_cpufreq_init,
+ 	.exit			= bL_cpufreq_exit,
++	.ready			= bL_cpufreq_ready,
+ 	.attr			= cpufreq_generic_attr,
  };
  
- struct scpi_ops *get_scpi_ops(void)
-diff --git a/include/linux/scpi_protocol.h b/include/linux/scpi_protocol.h
-index e7169cd..80af3cd 100644
---- a/include/linux/scpi_protocol.h
-+++ b/include/linux/scpi_protocol.h
-@@ -28,6 +28,20 @@ struct scpi_dvfs_info {
- 	struct scpi_opp *opps;
- };
- 
-+enum scpi_sensor_class {
-+	TEMPERATURE,
-+	VOLTAGE,
-+	CURRENT,
-+	POWER,
-+};
-+
-+struct scpi_sensor_info {
-+	u16 sensor_id;
-+	u8 class;
-+	u8 trigger_type;
-+	char name[20];
-+} __packed;
-+
- /**
-  * struct scpi_ops - represents the various operations provided
-  *	by SCP through SCPI message protocol
-@@ -52,6 +66,9 @@ struct scpi_ops {
- 	int (*dvfs_get_idx)(u8);
- 	int (*dvfs_set_idx)(u8, u8);
- 	struct scpi_dvfs_info *(*dvfs_get_info)(u8);
-+	int (*sensor_get_capability)(u16 *sensors);
-+	int (*sensor_get_info)(u16 sensor_id, struct scpi_sensor_info *);
-+	int (*sensor_get_value)(u16, u32 *);
- };
- 
- #if IS_ENABLED(CONFIG_ARM_SCPI_PROTOCOL)
 -- 
 2.1.4
