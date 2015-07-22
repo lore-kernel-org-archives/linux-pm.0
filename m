@@ -1,177 +1,436 @@
-From: PINTU KUMAR <pintu.k@samsung.com>
-Subject: RE: [PATCH v3 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
- feature
-Date: Wed, 22 Jul 2015 18:33:26 +0530
-Message-ID: <05af01d0c47f$3337ccd0$99a76670$@samsung.com>
-References: <1437114578-2502-1-git-send-email-pintu.k@samsung.com>
- <1437366544-32673-1-git-send-email-pintu.k@samsung.com>
- <20150720082810.GG2561@suse.de> <02c601d0c306$f86d30f0$e94792d0$@samsung.com>
- <20150720175538.GJ2561@suse.de>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH V2] cpufreq: Fix double addition of sysfs links
+Date: Wed, 22 Jul 2015 14:15:39 +0100
+Message-ID: <20150722131539.GU7557@n2100.arm.linux.org.uk>
+References: <20150718163149.GP7557@n2100.arm.linux.org.uk>
+ <35d0bb6829c6c8a5fec7c55e45d9293946c0221b.1437566548.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-reply-to: <20150720175538.GJ2561@suse.de>
-Content-language: en-us
-Sender: owner-linux-mm@kvack.org
-To: 'Mel Gorman' <mgorman@suse.de>
-Cc: akpm@linux-foundation.org, corbet@lwn.net, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, qiuxishi@huawei.com, Valdis.Kletnieks@vt.edu, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com, pintu.ping@gmail.compintu.
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <35d0bb6829c6c8a5fec7c55e45d9293946c0221b.1437566548.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Dear Mel, thank you very much for your comments and suggestions.
-I will drop this one and look on further improving direct_reclaim and
-compaction.
-Just few more comments below before I close.
-
-Also, during this patch, I feel that the hibernation_mode part in
-shrink_all_memory can be corrected.
-So, can I separately submit the below patch?
-That is instead of hard-coding the hibernation_mode, we can get hibernation
-status using:
-system_entering_hibernation()
-
-Please let me know your suggestion about this changes.
-
--#ifdef CONFIG_HIBERNATION
-+#if defined CONFIG_HIBERNATION || CONFIG_SHRINK_MEMORY
- /*
-  * Try to free `nr_to_reclaim' of memory, system-wide, and return the number of
-  * freed pages.
-@@ -3576,12 +3580,16 @@ unsigned long shrink_all_memory(unsigned long
-nr_to_reclaim)
-                .may_writepage = 1,
-                .may_unmap = 1,
-                .may_swap = 1,
--               .hibernation_mode = 1,
-        };
-        struct zonelist *zonelist = node_zonelist(numa_node_id(), sc.gfp_mask);
-        struct task_struct *p = current;
-        unsigned long nr_reclaimed;
-
-+       if (system_entering_hibernation())
-+               sc.hibernation_mode = 1;
-+       else
-+               sc.hibernation_mode = 0;
-+
-        p->flags |= PF_MEMALLOC;
-        lockdep_set_current_reclaim_state(sc.gfp_mask);
-        reclaim_state.reclaimed_slab = 0;
-@@ -3597,6 +3605,28 @@ unsigned long shrink_all_memory(unsigned long
-nr_to_reclaim)
- }
- #endif /* CONFIG_HIBERNATION */
-
-
-> -----Original Message-----
-> From: Mel Gorman [mailto:mgorman@suse.de]
-> Sent: Monday, July 20, 2015 11:26 PM
-> To: PINTU KUMAR
-> Cc: akpm@linux-foundation.org; corbet@lwn.net; vbabka@suse.cz;
-> gorcunov@openvz.org; mhocko@suse.cz; emunson@akamai.com;
-> kirill.shutemov@linux.intel.com; standby24x7@gmail.com;
-> hannes@cmpxchg.org; vdavydov@parallels.com; hughd@google.com;
-> minchan@kernel.org; tj@kernel.org; rientjes@google.com;
-> xypron.glpk@gmx.de; dzickus@redhat.com; prarit@redhat.com;
-> ebiederm@xmission.com; rostedt@goodmis.org; uobergfe@redhat.com;
-> paulmck@linux.vnet.ibm.com; iamjoonsoo.kim@lge.com; ddstreet@ieee.org;
-> sasha.levin@oracle.com; koct9i@gmail.com; cj@linux.com;
-> opensource.ganesh@gmail.com; vinmenon@codeaurora.org; linux-
-> doc@vger.kernel.org; linux-kernel@vger.kernel.org; linux-mm@kvack.org; linux-
-> pm@vger.kernel.org; qiuxishi@huawei.com; Valdis.Kletnieks@vt.edu;
-> cpgs@samsung.com; pintu_agarwal@yahoo.com; vishnu.ps@samsung.com;
-> rohit.kr@samsung.com; iqbal.ams@samsung.com; pintu.ping@gmail.com;
-> pintu.k@outlook.com
-> Subject: Re: [PATCH v3 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
-> feature
+On Wed, Jul 22, 2015 at 05:37:18PM +0530, Viresh Kumar wrote:
+> Consider a dual core (0/1) system with two CPUs:
+> - sharing clock/voltage rails and hence cpufreq-policy
+> - CPU1 is offline while the cpufreq driver is registered
+> - cpufreq_add_dev() is called from subsys callback for CPU0 and we
+>   create the policy for the group of CPUs and create links for all
+>   present CPUs, i.e. CPU1 as well.
+> - cpufreq_add_dev() is called from subsys callback for CPU1, we find
+>   that the cpu is offline and we try to create a sysfs link for CPU1.
 > 
-> On Mon, Jul 20, 2015 at 09:43:02PM +0530, PINTU KUMAR wrote:
-> > Hi,
-> >
-> > Thank you all for reviewing the patch and providing your valuable
-> > comments and suggestions.
-> > During the ELC conference many people suggested to release the patch
-> > to mainline, so this patch, to get others opinion.
-> >
+> This results in double addtion of the sysfs link and we will get this:
 > 
-> Unfortunately, in my opinion it runs the risk of creating a different set of
-> problems. Either it needs to be run frequently to keep memory free which
-incurs
-> one set of penalties or it is used too late when there are
-> unmovable/unreclaimable pages preventing allocations succeeding in which case
-> you are back at the original problem. 
-
-Yes, I completely agree with you that it needs to be invoked at the right time.
-Running it too late is of no benefit.
-
-> I see what you did and why it would work in  some cases 
-> but I think the main reason it works is because it's run frequently
-> enough so memory is never used. 
-
-Yes, we ran frequently, but not so frequently and only when required.
-Actually, it gives us best result when calling shrink_memory plus compaction
-together,
-once after boot, and once during order-4 failure from kernel, or during suspend
-state.
-It reduced the slowpath count drastically (during 30 application launch test).
-VMSTAT		WITHOUT	WITH
-slowpath_entered	16659		1859
-allocstall		298		149
-pageoutrun		2699		1108
-compact_stall		244		37
-nr_free_cma		2560		2505
-
-Anyways, I agree that if reclaimable pages or SWAP free is not enough, it does
-not 
-yield good results.
-
-> Grouping pages by mobility actually took
-> advantage of a similar property when it increased min_free_kbytes but that was
-> much more limited than adding a giant hammer for userspace to reclaim the
-> world.
+> WARNING: CPU: 0 PID: 1 at fs/sysfs/dir.c:31 sysfs_warn_dup+0x60/0x7c()
+> sysfs: cannot create duplicate filename '/devices/system/cpu/cpu1/cpufreq'
+> Modules linked in:
+> CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.2.0-rc2+ #1704
+> Hardware name: Freescale i.MX6 Quad/DualLite (Device Tree)
+> Backtrace:
+> [<c0013248>] (dump_backtrace) from [<c00133e4>] (show_stack+0x18/0x1c)
+>  r6:c01a1f30 r5:0000001f r4:00000000 r3:00000000
+> [<c00133cc>] (show_stack) from [<c076920c>] (dump_stack+0x7c/0x98)
+> [<c0769190>] (dump_stack) from [<c0029ab4>] (warn_slowpath_common+0x80/0xbc)
+>  r4:d74abbd0 r3:d74c0000
+> [<c0029a34>] (warn_slowpath_common) from [<c0029b94>] (warn_slowpath_fmt+0x38/0x40)
+>  r8:ffffffef r7:00000000 r6:d75a8960 r5:c0993280 r4:d6b4d000
+> [<c0029b60>] (warn_slowpath_fmt) from [<c01a1f30>] (sysfs_warn_dup+0x60/0x7c)
+>  r3:d6b4dfe7 r2:c0930750
+> [<c01a1ed0>] (sysfs_warn_dup) from [<c01a22c8>] (sysfs_do_create_link_sd+0xb8/0xc0)
+>  r6:d75a8960 r5:c0993280 r4:d00aba20
+> [<c01a2210>] (sysfs_do_create_link_sd) from [<c01a22fc>] (sysfs_create_link+0x2c/0x3c)
+>  r10:00000001 r8:c14db3c8 r7:d7b89010 r6:c0ae7c60 r5:d7b89010 r4:d00d1200
+> [<c01a22d0>] (sysfs_create_link) from [<c0506160>] (add_cpu_dev_symlink+0x34/0x5c)
+> [<c050612c>] (add_cpu_dev_symlink) from [<c05084d0>] (cpufreq_add_dev+0x674/0x794)
+>  r5:00000001 r4:00000000
+> [<c0507e5c>] (cpufreq_add_dev) from [<c03db114>] (subsys_interface_register+0x8c/0xd0)
+>  r10:00000003 r9:d7bb01f0 r8:c14db3c8 r7:00106738 r6:c0ae7c60 r5:c0acbd08
+>  r4:c0ae7e20
+> [<c03db088>] (subsys_interface_register) from [<c0508a2c>] (cpufreq_register_driver+0x104/0x1f4)
 > 
-> > If you have any more suggestions to experiment and verify please let me
-know.
-> >
+> The check for offline-cpu in cpufreq_add_dev() is to ensure that link
+> gets added for the CPUs which weren't physically present earlier and
+> that misses the case where a CPU is offline while registering the
+> driver.
 > 
-> I believe I already did. If it's high-order reliability that is important then
-you need
-> to either reserve the memory or look at protecting the pages using grouping
-> pages by mobility. I pointed out what series to look at and the leader
-explains
-> how it could be adjusted further for the embedded case if necessary.
+> To fix this properly, don't create these links when the policy get
+> initialized. Rather wait for individual subsys callback for CPUs to
+> add/remove these links. This simplifies most of the code leaving
+> cpufreq_remove_dev().
+> 
+> The problem is that, we might remove cpu which was owner of policy->kobj
+> in sysfs, before other CPUs are removed. Fix this by the solution we
+> have been using until very recently, in which we move the kobject to any
+> other CPU, for which remove is yet to be called.
+> 
+> Tested on dual core exynos board with cpufreq-dt driver. The driver was
+> compiled as module and inserted/removed multiple times on a running
+> kernel.
+> 
+> Fixes: 87549141d516 ("cpufreq: Stop migrating sysfs files on hotplug")
+> Reported-and-suggested-by: Russell King <linux@arm.linux.org.uk>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> V1->V2: Completely changed, please review again :)
+> 
+> @Rafael: I didn't review your solution and gave this one because I
+> thought Russell suggested the right thing. i.e. don't create links in
+> the beginning.
+> 
+> This is based of 4.2-rc3 and so your other patch,
+> https://patchwork.kernel.org/patch/6839031/ has to be rebased over it.
+> 
+> I didn't rebase this patch over yours for two reasons:
+> - Yours wasn't necessarily 4.2 material.
+> - I already mentioned a problem in that patch.
+> 
+> @Russell: I hope this will look much better than V1 to you. Please give
+> it a try once you get some time.
+> 
+>  drivers/cpufreq/cpufreq.c | 165 ++++++++++++++++++----------------------------
+>  include/linux/cpufreq.h   |   1 +
+>  2 files changed, 65 insertions(+), 101 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 26063afb3eba..81c2417e52f4 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -966,67 +966,6 @@ void cpufreq_sysfs_remove_file(const struct attribute *attr)
+>  }
+>  EXPORT_SYMBOL(cpufreq_sysfs_remove_file);
+>  
+> -static int add_cpu_dev_symlink(struct cpufreq_policy *policy, int cpu)
+> -{
+> -	struct device *cpu_dev;
+> -
+> -	pr_debug("%s: Adding symlink for CPU: %u\n", __func__, cpu);
+> -
+> -	if (!policy)
+> -		return 0;
+> -
+> -	cpu_dev = get_cpu_device(cpu);
+> -	if (WARN_ON(!cpu_dev))
+> -		return 0;
+> -
+> -	return sysfs_create_link(&cpu_dev->kobj, &policy->kobj, "cpufreq");
+> -}
+> -
+> -static void remove_cpu_dev_symlink(struct cpufreq_policy *policy, int cpu)
+> -{
+> -	struct device *cpu_dev;
+> -
+> -	pr_debug("%s: Removing symlink for CPU: %u\n", __func__, cpu);
+> -
+> -	cpu_dev = get_cpu_device(cpu);
+> -	if (WARN_ON(!cpu_dev))
+> -		return;
+> -
+> -	sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
+> -}
+> -
+> -/* Add/remove symlinks for all related CPUs */
+> -static int cpufreq_add_dev_symlink(struct cpufreq_policy *policy)
+> -{
+> -	unsigned int j;
+> -	int ret = 0;
+> -
+> -	/* Some related CPUs might not be present (physically hotplugged) */
+> -	for_each_cpu_and(j, policy->related_cpus, cpu_present_mask) {
+> -		if (j == policy->kobj_cpu)
+> -			continue;
+> -
+> -		ret = add_cpu_dev_symlink(policy, j);
+> -		if (ret)
+> -			break;
+> -	}
+> -
+> -	return ret;
+> -}
+> -
+> -static void cpufreq_remove_dev_symlink(struct cpufreq_policy *policy)
+> -{
+> -	unsigned int j;
+> -
+> -	/* Some related CPUs might not be present (physically hotplugged) */
+> -	for_each_cpu_and(j, policy->related_cpus, cpu_present_mask) {
+> -		if (j == policy->kobj_cpu)
+> -			continue;
+> -
+> -		remove_cpu_dev_symlink(policy, j);
+> -	}
+> -}
+> -
+>  static int cpufreq_add_dev_interface(struct cpufreq_policy *policy,
+>  				     struct device *dev)
+>  {
+> @@ -1057,7 +996,7 @@ static int cpufreq_add_dev_interface(struct cpufreq_policy *policy,
+>  			return ret;
+>  	}
+>  
+> -	return cpufreq_add_dev_symlink(policy);
+> +	return 0;
+>  }
+>  
+>  static void cpufreq_init_policy(struct cpufreq_policy *policy)
+> @@ -1163,11 +1102,14 @@ static struct cpufreq_policy *cpufreq_policy_alloc(struct device *dev)
+>  	if (!zalloc_cpumask_var(&policy->related_cpus, GFP_KERNEL))
+>  		goto err_free_cpumask;
+>  
+> +	if (!zalloc_cpumask_var(&policy->symlinks, GFP_KERNEL))
+> +		goto err_free_related_cpumask;
+> +
+>  	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq, &dev->kobj,
+>  				   "cpufreq");
+>  	if (ret) {
+>  		pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
+> -		goto err_free_rcpumask;
+> +		goto err_free_symlink_cpumask;
+>  	}
+>  
+>  	INIT_LIST_HEAD(&policy->policy_list);
+> @@ -1184,7 +1126,9 @@ static struct cpufreq_policy *cpufreq_policy_alloc(struct device *dev)
+>  
+>  	return policy;
+>  
+> -err_free_rcpumask:
+> +err_free_symlink_cpumask:
+> +	free_cpumask_var(policy->symlinks);
+> +err_free_related_cpumask:
+>  	free_cpumask_var(policy->related_cpus);
+>  err_free_cpumask:
+>  	free_cpumask_var(policy->cpus);
+> @@ -1204,7 +1148,6 @@ static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy, bool notify)
+>  					     CPUFREQ_REMOVE_POLICY, policy);
+>  
+>  	down_write(&policy->rwsem);
+> -	cpufreq_remove_dev_symlink(policy);
+>  	kobj = &policy->kobj;
+>  	cmp = &policy->kobj_unregister;
+>  	up_write(&policy->rwsem);
+> @@ -1234,6 +1177,7 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy, bool notify)
+>  	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>  
+>  	cpufreq_policy_put_kobj(policy, notify);
+> +	free_cpumask_var(policy->symlinks);
+>  	free_cpumask_var(policy->related_cpus);
+>  	free_cpumask_var(policy->cpus);
+>  	kfree(policy);
+> @@ -1252,26 +1196,37 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>  {
+>  	unsigned int j, cpu = dev->id;
+>  	int ret = -ENOMEM;
+> -	struct cpufreq_policy *policy;
+> +	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+>  	unsigned long flags;
+>  	bool recover_policy = !sif;
+>  
+>  	pr_debug("adding CPU %u\n", cpu);
+>  
+> +	/* sysfs links are only created on subsys callback */
+> +	if (sif && policy) {
+> +		pr_debug("%s: Adding symlink for CPU: %u\n", __func__, cpu);
 
-Thanks. I would definitely look into grouping pages by mobility and those
-series.
+dev_dbg() ?
 
-> 
-> If it's latency you are interested in then reclaim/compaction needs to be
-modified
-> to be more aggressive when it is somehow detected that the high-order
-> allocation must succeed for functional correctness. In that case the
-relational
-> starting point would be to look at should_continue_reclaim and how it relates
-to
-> compaction.
-> 
-Thanks. Definitely I will do a deep dive into should_continue_reclaim.
+> +		ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+> +		if (ret) {
+> +			dev_err(dev, "%s: Failed to create link for cpu %d (%d)\n",
+> +				__func__, cpu, ret);
 
-> > The suggestion was only to open up the shrink_all_memory API for some use
-> cases.
-> >
-> > I am not saying that it needs to be called continuously. It can be
-> > used only on certain condition and only when deemed necessary.
-> > The same technique is already used in hibernation to reduce the RAM
-> > snapshot image size.
-> 
-> Reducing memory usage is not the same as guaranteeing that high-order pages
-> are available for allocation.
-> 
-> --
-> Mel Gorman
-> SUSE Labs
+I wonder why we print the CPU number - since it's from dev->id, isn't it
+included in the struct device name printed by dev_err() already?
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> +			return ret;
+> +		}
+> +
+> +		/* Track CPUs for which sysfs links are created */
+> +		cpumask_set_cpu(cpu, policy->symlinks);
+> +	}
+> +
+
+I guess this will do for -rc, but it's not particularly nice.  Can I
+suggest splitting the two operations here - the add_dev callback from
+the subsys interface, and the handling of hotplug online/offline
+notifications.
+
+You only need to do the above for the subsys interface, and you only
+need to do the remainder if the CPU was online.
+
+Also, what about the CPU "owning" the policy?
+
+So, this would become:
+
+static int cpufreq_cpu_online(struct device *dev)
+{
+	pr_debug("bringing CPU%d online\n", dev->id);
+	... stuff to do when CPU is online ...
+}
+
+static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+{
+	unsigned int cpu = dev->id;
+	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+
+	pr_debug("adding CPU %u\n", cpu);
+
+	if (policy && policy->kobj_cpu != cpu) {
+		dev_dbg(dev, "%s: Adding cpufreq symlink\n", __func__);
+		ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+		if (ret) {
+			dev_err(dev,
+				"%s: Failed to create cpufreq symlink (%d)\n",
+				__func__, ret);
+			return ret;
+		}
+
+		/* Track CPUs for which sysfs links are created */
+		cpumask_set_cpu(cpu, policy->symlinks);
+	}
+
+	/* Now do the remainder if the CPU is already online */
+	if (cpu_online(cpu))
+		return cpufreq_cpu_online(dev);
+
+	return 0;
+}
+
+Next, change the cpufreq_add_dev(dev, NULL) in the hotplug notifier call
+to cpufreq_cpu_online(dev) instead.
+
+Doing the similar thing for the cpufreq_remove_dev() path would also make
+sense.
+
+>  	/*
+> -	 * Only possible if 'cpu' wasn't physically present earlier and we are
+> -	 * here from subsys_interface add callback. A hotplug notifier will
+> -	 * follow and we will handle it like logical CPU hotplug then. For now,
+> -	 * just create the sysfs link.
+> +	 * A hotplug notifier will follow and we will take care of rest
+> +	 * of the initialization then.
+>  	 */
+>  	if (cpu_is_offline(cpu))
+> -		return add_cpu_dev_symlink(per_cpu(cpufreq_cpu_data, cpu), cpu);
+> +		return 0;
+>  
+>  	if (!down_read_trylock(&cpufreq_rwsem))
+>  		return 0;
+>  
+>  	/* Check if this CPU already has a policy to manage it */
+> -	policy = per_cpu(cpufreq_cpu_data, cpu);
+>  	if (policy && !policy_is_inactive(policy)) {
+>  		WARN_ON(!cpumask_test_cpu(cpu, policy->related_cpus));
+>  		ret = cpufreq_add_policy_cpu(policy, cpu, dev);
+> @@ -1506,10 +1461,6 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>  	if (cpufreq_driver->exit)
+>  		cpufreq_driver->exit(policy);
+>  
+> -	/* Free the policy only if the driver is getting removed. */
+> -	if (sif)
+> -		cpufreq_policy_free(policy, true);
+> -
+>  	return 0;
+>  }
+>  
+> @@ -1521,42 +1472,54 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+>  static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+>  {
+>  	unsigned int cpu = dev->id;
+> +	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+>  	int ret;
+>  
+> -	/*
+> -	 * Only possible if 'cpu' is getting physically removed now. A hotplug
+> -	 * notifier should have already been called and we just need to remove
+> -	 * link or free policy here.
+> -	 */
+> -	if (cpu_is_offline(cpu)) {
+> -		struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+> -		struct cpumask mask;
+> +	if (!policy)
+> +		return 0;
+>  
+> -		if (!policy)
+> -			return 0;
+> +	if (cpu_online(cpu)) {
+> +		ret = __cpufreq_remove_dev_prepare(dev, sif);
+> +		if (!ret)
+> +			ret = __cpufreq_remove_dev_finish(dev, sif);
+> +		if (ret)
+> +			return ret;
+
+Here, I have to wonder about this.  If you look at the code in
+drivers/base/bus.c, you'll notice that the ->remove_dev return code is
+not used (personally, I hate interfaces which are created with an int
+return type for a removal operation, but then ignore the return code.
+Either have the return code and use it, or don't confuse driver authors
+by having one.)
+
+What this means is that in the remove path, the device _is_ going away,
+whether you like it or not.  So, if you have an error early in your
+remove path, returning that error does you no good - you end up leaking
+memory because subsequent cleanup doesn't get done.
+
+It's better to either ensure that your removal path can't fail, or if it
+can, to reasonably clean up as much as you can (which here, means
+continuing to remove the symlink.)
+
+If you adopt my suggestion above, then cpufreq_remove_dev() becomes
+something like:
+
+static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+{
+	unsigned int cpu = dev->id;
+	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+
+	if (cpu_is_online(cpu))
+		cpufreq_cpu_offline(dev);
+
+	if (policy) {
+		if (cpumask_test_cpu(cpu, policy->symlinks)) {
+			dev_dbg(dev, "%s: Removing cpufreq symlink\n",
+				__func__);
+			cpumask_clear_cpu(cpu, policy->symlinks);
+			sysfs_remove_link(&dev->kobj, "cpufreq");
+		}
+
+		if (policy->kobj_cpu == cpu) {
+			... migration code and final CPU deletion code ...
+		}
+	}
+
+	return 0;
+}
+
+which IMHO is easier to read and follow, and more symetrical with
+cpufreq_add_dev().
+
+Now, I'm left wondering about a few things:
+
+1. whether having a CPU "own" the policy, and having the cpufreq/ directory
+   beneath the cpuN node is a good idea, or whether it would be better to
+   place this in the /sys/devices/system/cpufreq/ subdirectory and always
+   symlink to there.  It strikes me that would simplify the code a little.
+
+2. whether using a kref to track the usage of the policy would be better
+   than tracking symlink weight (or in the case of (1) being adopted,
+   whether the symlink cpumask becomes empty.)  Note that the symlink
+   weight becoming zero without (1) (in other words, no symlinks) is not
+   the correct condition for freeing the policy - we still have one CPU,
+   that being the CPU for policy->kobj_cpu.
+
+3. what happens when 'policy' is NULL at the point when the first (few) CPUs
+   are added - how do the symlinks get created later if/when policy becomes
+   non-NULL (can it?)
+
+4. what about policy->related_cpus ?  What if one of the CPUs being added is
+   not in policy->related_cpus?  Should we still go ahead and create the
+   symlink?
+
+-- 
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.
