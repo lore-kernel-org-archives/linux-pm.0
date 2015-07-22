@@ -1,63 +1,145 @@
 From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [PATCH 4/9] Documentation: add DT bindings for ARM SCPI sensors
-Date: Wed, 22 Jul 2015 15:02:38 +0100
-Message-ID: <1437573763-6525-5-git-send-email-punit.agrawal@arm.com>
+Subject: [PATCH 5/9] firmware: arm_scpi: Extend to support sensors
+Date: Wed, 22 Jul 2015 15:02:39 +0100
+Message-ID: <1437573763-6525-6-git-send-email-punit.agrawal@arm.com>
 References: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Punit Agrawal <punit.agrawal@arm.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>
+Cc: Punit Agrawal <punit.agrawal@arm.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-The System Control Processor (SCP) provides access to SoC sensors via
-the System Control and Power Interface (SCPI) Message Protocol. Add
-bindings to allow probing of these sensors. Also support referencing
-of the sensors for setting up thermal zones via the thermal DT
-bindings.
+ARM System Control Processor (SCP) provides an API to query and use
+the sensors available in the system. Extend the SCPI driver to support
+ sensor messages.
 
 Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>
 Cc: Sudeep Holla <sudeep.holla@arm.com>
 ---
- Documentation/devicetree/bindings/arm/arm,scpi.txt | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ drivers/firmware/arm_scpi.c   | 60 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/scpi_protocol.h | 17 ++++++++++++
+ 2 files changed, 77 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/arm,scpi.txt b/Documentation/devicetree/bindings/arm/arm,scpi.txt
-index e3757bc..5cb2b18 100644
---- a/Documentation/devicetree/bindings/arm/arm,scpi.txt
-+++ b/Documentation/devicetree/bindings/arm/arm,scpi.txt
-@@ -74,8 +74,18 @@ Required sub-node properties:
- - compatible : should be "arm,juno-scp-shmem" for Non-secure SRAM based
- 	       shared memory on Juno platforms
+diff --git a/drivers/firmware/arm_scpi.c b/drivers/firmware/arm_scpi.c
+index a70b7ba..478c5c5 100644
+--- a/drivers/firmware/arm_scpi.c
++++ b/drivers/firmware/arm_scpi.c
+@@ -219,6 +219,21 @@ struct dvfs_set {
+ 	u8 index;
+ } __packed;
  
-+Sensor bindings for the sensors based on SCPI Message Protocol
-+--------------------------------------------------------------
-+SCPI provides an API to access the various sensors on the SoC.
++struct sensor_capabilities {
++	__le16 sensors;
++} __packed;
 +
-+Required properties:
-+- compatible : should be "arm,scpi-sensors".
-+- #thermal-sensor-cells: should be set to 1. This property follows the
-+			 thermal device tree bindings[2].
++struct _scpi_sensor_info {
++	__le16 sensor_id;
++	u8 class;
++	u8 trigger_type;
++	char name[20];
++};
 +
- [0] http://community.arm.com/servlet/JiveServlet/download/8401-45-18326/DUI0922B_scp_message_interface.pdf
- [1] Documentation/devicetree/bindings/clock/clock-bindings.txt
-+[2] Documentation/devicetree/bindings/thermal/thermal.txt
++struct sensor_value {
++	__le32 val;
++} __packed;
++
+ static struct scpi_drvinfo *scpi_info;
  
- Example:
+ static int scpi_linux_errmap[SCPI_ERR_MAX] = {
+@@ -481,6 +496,48 @@ static struct scpi_dvfs_info *scpi_dvfs_get_info(u8 domain)
+ 	return info;
+ }
  
-@@ -124,6 +134,11 @@ scpi_protocol: scpi@2e000000 {
- 			clock-output-names = "pxlclk0", "pxlclk1";
- 		};
- 	};
++static int scpi_sensor_get_capability(u16 *sensors)
++{
++	struct sensor_capabilities cap_buf;
++	int ret;
 +
-+	scpi_sensors0: sensors {
-+		compatible = "arm,scpi-sensors";
-+		#thermal-sensor-cells = <1>;
-+	};
++	ret = scpi_send_message(SCPI_CMD_SENSOR_CAPABILITIES, NULL, 0, &cap_buf,
++				sizeof(cap_buf));
++	if (!ret)
++		*sensors = le16_to_cpu(cap_buf.sensors);
++
++	return ret;
++}
++
++static int scpi_sensor_get_info(u16 sensor_id, struct scpi_sensor_info *info)
++{
++	__le16 id = cpu_to_le16(sensor_id);
++	struct _scpi_sensor_info _info;
++	int ret;
++
++	ret = scpi_send_message(SCPI_CMD_SENSOR_INFO, &id,
++				 sizeof(id), &_info, sizeof(_info));
++	if (!ret) {
++		memcpy(info, &_info, sizeof(*info));
++		info->sensor_id = le16_to_cpu(_info.sensor_id);
++	}
++
++	return ret;
++}
++
++int scpi_sensor_get_value(u16 sensor, u32 *val)
++{
++	struct sensor_value buf;
++	int ret;
++
++	ret = scpi_send_message(SCPI_CMD_SENSOR_VALUE, &sensor, sizeof(sensor),
++				&buf, sizeof(buf));
++	if (!ret)
++		*val = le32_to_cpu(buf.val);
++
++	return ret;
++}
++
+ static struct scpi_ops scpi_ops = {
+ 	.get_version = scpi_get_version,
+ 	.clk_get_range = scpi_clk_get_range,
+@@ -489,6 +546,9 @@ static struct scpi_ops scpi_ops = {
+ 	.dvfs_get_idx = scpi_dvfs_get_idx,
+ 	.dvfs_set_idx = scpi_dvfs_set_idx,
+ 	.dvfs_get_info = scpi_dvfs_get_info,
++	.sensor_get_capability = scpi_sensor_get_capability,
++	.sensor_get_info = scpi_sensor_get_info,
++	.sensor_get_value = scpi_sensor_get_value,
  };
  
- cpu@0 {
+ struct scpi_ops *get_scpi_ops(void)
+diff --git a/include/linux/scpi_protocol.h b/include/linux/scpi_protocol.h
+index e7169cd..80af3cd 100644
+--- a/include/linux/scpi_protocol.h
++++ b/include/linux/scpi_protocol.h
+@@ -28,6 +28,20 @@ struct scpi_dvfs_info {
+ 	struct scpi_opp *opps;
+ };
+ 
++enum scpi_sensor_class {
++	TEMPERATURE,
++	VOLTAGE,
++	CURRENT,
++	POWER,
++};
++
++struct scpi_sensor_info {
++	u16 sensor_id;
++	u8 class;
++	u8 trigger_type;
++	char name[20];
++} __packed;
++
+ /**
+  * struct scpi_ops - represents the various operations provided
+  *	by SCP through SCPI message protocol
+@@ -52,6 +66,9 @@ struct scpi_ops {
+ 	int (*dvfs_get_idx)(u8);
+ 	int (*dvfs_set_idx)(u8, u8);
+ 	struct scpi_dvfs_info *(*dvfs_get_info)(u8);
++	int (*sensor_get_capability)(u16 *sensors);
++	int (*sensor_get_info)(u16 sensor_id, struct scpi_sensor_info *);
++	int (*sensor_get_value)(u16, u32 *);
+ };
+ 
+ #if IS_ENABLED(CONFIG_ARM_SCPI_PROTOCOL)
 -- 
 2.1.4
