@@ -1,52 +1,39 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: cpufreq/ondemand: unpinning an unpinned lock.
-Date: Wed, 22 Jul 2015 11:02:56 +0200
-Message-ID: <20150722090256.GP25159@twins.programming.kicks-ass.net>
-References: <20150715220422.GA13789@codemonkey.org.uk>
- <3682267.1lcDzeZuDs@vostro.rjw.lan>
- <20150716051150.GA15404@linux>
- <20150716124241.GA20320@codemonkey.org.uk>
- <55AEE7D8.3000507@codeaurora.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v4 1/8] Documentation: add DT binding for ARM System Control
+ and Power Interface(SCPI) protocol
+Date: Wed, 22 Jul 2015 10:25:10 +0100
+Message-ID: <55AF6176.5010405@arm.com>
+References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com> <1433760002-24120-2-git-send-email-sudeep.holla@arm.com> <20150722084312.GB14923@e106497-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:59739 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932731AbbGVJDI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jul 2015 05:03:08 -0400
-Content-Disposition: inline
-In-Reply-To: <55AEE7D8.3000507@codeaurora.org>
+Received: from foss.arm.com ([217.140.101.70]:35056 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932748AbbGVJZO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 22 Jul 2015 05:25:14 -0400
+In-Reply-To: <20150722084312.GB14923@e106497-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Dave Jones <davej@codemonkey.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+To: Liviu Dudau <Liviu.Dudau@arm.com>, Mark Rutland <Mark.Rutland@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Rob Herring <robh+dt@kernel.org>, Jassi Brar <jassisinghbrar@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On Tue, Jul 21, 2015 at 05:46:16PM -0700, Stephen Boyd wrote:
-> On 07/16/2015 05:42 AM, Dave Jones wrote:
-> >On Thu, Jul 16, 2015 at 10:41:50AM +0530, Viresh Kumar wrote:
-> >
-> >  > > > WARNING: CPU: 1 PID: 29529 at kernel/locking/lockdep.c:3497 lock_unpin_lock+0x109/0x110()
-> >  > > > unpinning an unpinned lock
-> >  > > > Call Trace:
+Hi Liviu,
 
-> >  > > >  [<ffffffffae0d0ec9>] lock_unpin_lock+0x109/0x110
-> >  > > >  [<ffffffffae7f93cc>] __schedule+0x3ac/0xb60
-> >  > > >  [<ffffffffae7f9c41>] schedule+0x41/0x90
-> >  > > >  [<ffffffffae7f9ff8>] schedule_preempt_disabled+0x18/0x30
+On 22/07/15 09:43, Liviu Dudau wrote:
+> Hi Sudeep,
+>
+> Minor spelling/phrasing corrections:
+>
 
-> Lock pinning is new in v4.2-rc1. Adding Peter just in case there's some
-> insight.
+Thanks for the review, all fixed locally now. I will soon post new
+version. Can you provide ACKs on the Juno DTS files if you are happy
+with it ?
 
-Hmm, weird. I've not seen it happen before.
+Hi Mark,
 
-There's potentially 3 unpin's in __schedule():
+Sorry for the nag, but I would like to get feedback(if any) before I
+post new version.
 
-  - the obvious one in the prev == next case,
-  - the on in context_switch(),
-  - the on in try_to_wake_up_local().
-
-All 3 appear to be balanced; the first and second against the pin_lock()
-at the start of __schedule() and the third against that and it repins
-the lock against the first two.
-
-Most curious.
+Regards,
+Sudeep
