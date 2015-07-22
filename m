@@ -1,65 +1,62 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [RFCv5 PATCH 11/46] sched: Remove blocked load and utilization
- contributions of dying tasks
-Date: Wed, 22 Jul 2015 14:45:23 +0100
-Message-ID: <20150722134523.GB21785@e105550-lin.cambridge.arm.com>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-12-git-send-email-morten.rasmussen@arm.com>
- <20150722065101.GA719@leoy-linaro>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:35991 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752203AbbGVNma (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 22 Jul 2015 09:42:30 -0400
-Content-Disposition: inline
-In-Reply-To: <20150722065101.GA719@leoy-linaro>
-Sender: linux-pm-owner@vger.kernel.org
+From: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+Subject: [PATCH 1/9] devicetree: bindings: Add optional dynamic-power-coefficient property
+Date: Wed, 22 Jul 2015 15:02:35 +0100
+Message-ID: <1437573763-6525-2-git-send-email-punit.agrawal@arm.com>
+References: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1437573763-6525-1-git-send-email-punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, Jul 22, 2015 at 02:51:01PM +0800, Leo Yan wrote:
-> On Tue, Jul 07, 2015 at 07:23:54PM +0100, Morten Rasmussen wrote:
-> > Tasks being dequeued for the last time (state == TASK_DEAD) are dequeued
-> > with the DEQUEUE_SLEEP flag which causes their load and utilization
-> > contributions to be added to the runqueue blocked load and utilization.
-> > Hence they will contain load or utilization that is gone away. The issue
-> > only exists for the root cfs_rq as cgroup_exit() doesn't set
-> > DEQUEUE_SLEEP for task group exits.
-> > 
-> > If runnable+blocked load is to be used as a better estimate for cpu
-> > load the dead task contributions need to be removed to prevent
-> > load_balance() (idle_balance() in particular) from over-estimating the
-> > cpu load.
-> > 
-> > cc: Ingo Molnar <mingo@redhat.com>
-> > cc: Peter Zijlstra <peterz@infradead.org>
-> > 
-> > Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
-> > ---
-> >  kernel/sched/fair.c | 2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > index 775b0c7..fa12ce5 100644
-> > --- a/kernel/sched/fair.c
-> > +++ b/kernel/sched/fair.c
-> > @@ -3217,6 +3217,8 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
-> >  	 * Update run-time statistics of the 'current'.
-> >  	 */
-> >  	update_curr(cfs_rq);
-> > +	if (entity_is_task(se) && task_of(se)->state == TASK_DEAD)
-> > +		flags &= !DEQUEUE_SLEEP;
-> 
-> So flags will be set to zero? Could be replaced by "flags &= ~DEQUEUE_SLEEP"?
+The dynamic power consumption of a device is proportional to the
+square of voltage (V) and the clock frequency (f). It can be expressed as
 
-Not could, should :)
+Pdyn = dynamic-power-coefficient * V^2 * f.
 
-I meant to clear the flag, but used the wrong operator. We only have
-DEQUEUE_SLEEP and 0 at the moment so it doesn't matter, but it might
-later.
+The dynamic-power-coefficient property represents an indicative
+running time dynamic power coefficient in fundamental units of
+mw/MHz/uVolt^2 and can be used in the above formula to calculate the
+dynamic power in mW.
 
-Thanks,
-Morten
+Signed-off-by: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+---
+ Documentation/devicetree/bindings/arm/cpus.txt | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
+index d6b794c..c32bfac 100644
+--- a/Documentation/devicetree/bindings/arm/cpus.txt
++++ b/Documentation/devicetree/bindings/arm/cpus.txt
+@@ -239,6 +239,21 @@ nodes to be present and contain the properties described below.
+ 		Definition: Specifies the syscon node controlling the cpu core
+ 			    power domains.
+ 
++	- dynamic-power-coefficient
++		Usage: optional
++		Value type: <prop-encoded-array>
++		Definition: A u32 value that represents an indicative
++			    running time dynamic power coefficient in
++			    fundamental units of mW/MHz/uVolt^2.
++
++			    The dynamic energy consumption of the CPU
++			    is proportional to the square of the
++			    Voltage (V) and the clock frequency (f).
++
++			    Pdyn = dynamic-power-coefficient * V^2 * f
++
++			    where voltage is in uV, frequency is in MHz.
++
+ Example 1 (dual-cluster big.LITTLE system 32-bit):
+ 
+ 	cpus {
+-- 
+2.1.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
