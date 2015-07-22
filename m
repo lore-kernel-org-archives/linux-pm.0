@@ -1,238 +1,231 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v4 1/8] Documentation: add DT binding for ARM System
- Control and Power Interface(SCPI) protocol
-Date: Wed, 22 Jul 2015 10:55:01 +0100
-Message-ID: <20150722095501.GA15809@leverpostej>
-References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com>
- <1433760002-24120-2-git-send-email-sudeep.holla@arm.com>
+From: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+Subject: Re: [RFC PATCH] cpufreq: intel_pstate: Use ACPI perf configuration
+Date: Wed, 22 Jul 2015 13:09:06 +0300
+Message-ID: <55AF6BC2.4010407@yandex-team.ru>
+References: <1437542867-32559-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:35190 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932429AbbGVJzq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 22 Jul 2015 05:55:46 -0400
-Content-Disposition: inline
-In-Reply-To: <1433760002-24120-2-git-send-email-sudeep.holla@arm.com>
+Received: from forward-corp1m.cmail.yandex.net ([5.255.216.100]:39526 "EHLO
+	forward-corp1m.cmail.yandex.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933007AbbGVKJM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jul 2015 06:09:12 -0400
+In-Reply-To: <1437542867-32559-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Rob Herring <robh+dt@kernel.org>, Jassi Brar <jassisinghbrar@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com
+Cc: linux-pm@vger.kernel.org
 
-Hi,
+On 22.07.2015 08:27, Srinivas Pandruvada wrote:
+> Use ACPI _PSS to limit the Intel P State turbo, max and min ratios. This driver
+> uses acpi processor perf lib calls to register performance. The following
+> logic is used to adjust Intel P state driver limits:
+> - If there is no turbo entry in _PSS, then disable Intel P state turbo and limit
+> to non turbo max
+> - If the non turbo max ratio is more than _PSS max non turbo value, then
+> set the max non turbo ratio to _PSS non turbo max
+> - If the min ratio is less than _PSS min then change the min ratio matching
+> _PSS min
+> - Scale the _PSS turbo frequency to max turbo frequency based on control value.
 
-This generally looks fine, but I believe you've misunderstood the usage
-of clock-indices, and I think that your usage of clock-specifiers is
-somewhat confusing.
+Well. This patch does exactly the same thing as mine so
+this should  work for my case too. Some notes below.
 
-More on that below.
-
-On Mon, Jun 08, 2015 at 11:39:55AM +0100, Sudeep Holla wrote:
-> This patch adds devicetree binding for System Control and Power
-> Interface (SCPI) Message Protocol used between the Application Cores(AP)
-> and the System Control Processor(SCP). The MHU peripheral provides a
-> mechanism for inter-processor communication between SCP's M3 processor
-> and AP.
-> 
-> SCP offers control and management of the core/cluster power states,
-> various power domain DVFS including the core/cluster, certain system
-> clocks configuration, thermal sensors and many others.
-> 
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> CC: Jassi Brar <jassisinghbrar@gmail.com>
-> Cc: Liviu Dudau <Liviu.Dudau@arm.com>
-> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> Cc: Jon Medhurst (Tixy) <tixy@linaro.org>
-> Cc: devicetree@vger.kernel.org
+>
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 > ---
->  Documentation/devicetree/bindings/arm/arm,scpi.txt | 156 +++++++++++++++++++++
->  1 file changed, 156 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/arm/arm,scpi.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/arm,scpi.txt b/Documentation/devicetree/bindings/arm/arm,scpi.txt
-> new file mode 100644
-> index 000000000000..f5f9684e23b3
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/arm,scpi.txt
-> @@ -0,0 +1,156 @@
-> +System Control and Power Interface (SCPI) Message Protocol
-> +----------------------------------------------------------
+>   drivers/cpufreq/intel_pstate.c | 115 +++++++++++++++++++++++++++++++++++++++++
+>   1 file changed, 115 insertions(+)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 6414661..576aec0 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -33,6 +33,8 @@
+>   #include <asm/cpu_device_id.h>
+>   #include <asm/cpufeature.h>
+>
+> +#include <acpi/processor.h>
 > +
-> +Firmware implementing the SCPI described in ARM document number ARM DUI 0922B
-> +("ARM Compute Subsystem SCP: Message Interface Protocols")[0] can be used
-> +by Linux to initiate various system control and power operations.
+>   #define BYT_RATIOS		0x66a
+>   #define BYT_VIDS		0x66b
+>   #define BYT_TURBO_RATIOS	0x66c
+> @@ -110,6 +112,9 @@ struct cpudata {
+>   	u64	prev_aperf;
+>   	u64	prev_mperf;
+>   	struct sample sample;
+> +#if IS_ENABLED(CONFIG_ACPI)
+> +	struct acpi_processor_performance acpi_perf_data;
+> +#endif
+>   };
+>
+>   static struct cpudata **all_cpu_data;
+> @@ -166,6 +171,109 @@ static struct perf_limits limits = {
+>   	.min_sysfs_pct = 0,
+>   };
+>
+> +#if IS_ENABLED(CONFIG_ACPI)
+> +static int intel_pstate_init_perf_limits(struct cpufreq_policy *policy)
+> +{
+> +	struct cpudata *cpu;
+> +	int ret;
+> +	int min_perf;
+> +	bool turbo_absent = false;
+> +	int i;
 > +
-> +Required properties:
+> +	cpu = all_cpu_data[policy->cpu];
 > +
-> +- compatible : should be "arm,scpi"
-> +- mboxes: List of phandle and mailbox channel specifiers
-> +	  All the channels reserved by remote SCP firmware for use by
-> +	  SCPI message protocol should be specified in any order
-> +- shmem : List of phandle pointing to the shared memory(SHM) area between the
-> +	  processors using these mailboxes for IPC, one for each mailbox
-> +	  SHM can be any memory reserved for the purpose of this communication
-> +	  between the processors.
+> +	if (!cpu->acpi_perf_data.shared_cpu_map &&
+> +	    zalloc_cpumask_var_node(&cpu->acpi_perf_data.shared_cpu_map,
+> +				    GFP_KERNEL, cpu_to_node(policy->cpu))) {
+> +		return -ENOMEM;
+> +	}
 > +
-> +See Documentation/devicetree/bindings/mailbox/mailbox.txt
-> +for more details about the generic mailbox controller and
-> +client driver bindings.
+> +	ret = acpi_processor_register_performance(&cpu->acpi_perf_data,
+> +						  policy->cpu);
+> +	if (ret)
+> +		return ret;
 > +
-> +Clock bindings for the clocks based on SCPI Message Protocol
-> +------------------------------------------------------------
+> +	pr_debug("CPU%u - ACPI _PSS perf data\n", policy->cpu);
+> +	for (i = 0; i < cpu->acpi_perf_data.state_count; i++)
+> +		pr_debug("     %cP%d: %d MHz, %d mW, 0x%x\n",
+> +			 (i == cpu->acpi_perf_data.state ? '*' : ' '), i,
+> +			 (u32) cpu->acpi_perf_data.states[i].core_frequency,
+> +			 (u32) cpu->acpi_perf_data.states[i].power,
+> +			 (u32) cpu->acpi_perf_data.states[i].control);
 > +
-> +This binding uses the common clock binding[1].
+> +	if (cpu->acpi_perf_data.state_count < 2)
+> +		return 0;
 > +
-> +Container Node
-> +==============
-> +Required properties:
-> +- compatible : should be "arm,scpi-clocks"
-> +	       All the clocks provided by SCP firmware via SCPI message
-> +	       protocol much be listed as sub-nodes under this node.
-> +
-> +Sub-nodes
-> +=========
-> +Required properties:
-> +- compatible : shall include one of the following
-> +	"arm,scpi-dvfs-clocks" - all the clocks that are variable and index based.
-> +		These clocks don't provide the full range between the limits
-> +		but only discrete points within the range. The firmware
-> +		provides the mapping for each such operating frequency and the
-> +		index associated with it. The firmware also manages the
-> +		voltage scaling appropriately with the clock scaling.
-> +	"arm,scpi-variable-clocks" - all the clocks that are variable and provide full
-> +		range within the specified range. The firmware provides the
-> +		supported range for each clock.
-> +
-> +Other required properties for all clocks(all from common clock binding):
-> +- #clock-cells : should be set to 1 as each of the SCPI clocks have multiple
-> +	outputs. The clock specifier will be the index to an entry in the list
-> +	of output clocks.
+> +	/* Check if there is a turbo freq in _PSS */
+> +	if ((cpu->acpi_perf_data.states[0].core_frequency % 2) == 0) {
 
-Huh? That's somewhat a circular definition.
+_PSS state with odd frequency is a turbo state?
+This is empirical fact or this's documented somewhere?
 
-What does that number correspond to in the HW? If it's just the number
-that the FW expects, that's a reasonable definition.
+> +		pr_debug("no turbo range exists in _PSS\n");
+> +		limits.no_turbo = limits.turbo_disabled = 1;
 
-> +- clock-output-names : shall be the corresponding names of the outputs.
+Disabled once turbo ever returns back automatically?
 
-This is mandatory? What is it used for?
+> +		cpu->pstate.turbo_pstate = cpu->pstate.max_pstate;
+> +		turbo_absent = true;
+> +	}
 
-> +- clock-indices: The identifyng number for the clocks(clock_id) in the node as
+This is really required?
+If bios disables turbo then it also clears turbo bit in 
+MSR_IA32_MISC_ENABLE. No? Checking it there is much easier.
 
-s/identifyng/identifying/
+> +
+> +	/* Check if the max non turbo p state < Intel P state max */
+> +	for (i = 0; i < cpu->acpi_perf_data.state_count; i++) {
+> +		if ((cpu->acpi_perf_data.states[i].core_frequency % 2) == 0) {
+> +			int perf_max_ctl =
+> +				cpu->acpi_perf_data.states[i].control >> 8;
+> +			if (cpu->pstate.max_pstate > perf_max_ctl)
+> +				cpu->pstate.max_pstate = perf_max_ctl;
+> +			break;
+> +		}
+> +	}
 
-> +	expected by the firmware. It can be non linear and hence provide the
-> +	mapping	of identifiers into the clock-output-names array.
-> +
-> +SRAM and Shared Memory for SCPI
-> +-------------------------------
-> +
-> +A small area of SRAM is reserved for SCPI communication between application
-> +processors and SCP.
-> +
-> +Required properties:
-> +- compatible : should be "arm,juno-sram-ns" for Non-secure SRAM on Juno
-> +
-> +The rest of the properties should follow the generic mmio-sram discription
-> +found in ../../misc/sysram.txt
-> +
-> +Each sub-node represents the reserved area for SCPI.
-> +
-> +Required sub-node properties:
-> +- reg : The base offset and size of the reserved area with the SRAM
-> +- compatible : should be "arm,juno-scp-shmem" for Non-secure SRAM based
-> +	       shared memory on Juno platforms
-> +
-> +[0] http://community.arm.com/servlet/JiveServlet/download/8401-45-18326/DUI0922B_scp_message_interface.pdf
-> +[1] Documentation/devicetree/bindings/clock/clock-bindings.txt
-> +
-> +Example:
-> +
-> +sram: sram@50000000 {
-> +	compatible = "arm,juno-sram-ns", "mmio-sram";
-> +	reg = <0x0 0x50000000 0x0 0x10000>;
-> +
-> +	#address-cells = <1>;
-> +	#size-cells = <1>;
-> +	ranges = <0 0x0 0x50000000 0x10000>;
-> +
-> +	cpu_scp_lpri: scp-shmem@0 {
-> +		compatible = "arm,juno-scp-shmem";
-> +		reg = <0x0 0x200>;
-> +	};
-> +
-> +	cpu_scp_hpri: scp-shmem@200 {
-> +		compatible = "arm,juno-scp-shmem";
-> +		reg = <0x200 0x200>;
-> +	};
-> +};
-> +
-> +mailbox: mailbox0@40000000 {
-> +	....
-> +	#mbox-cells = <1>;
-> +};
-> +
-> +scpi_protocol: scpi@2e000000 {
-> +	compatible = "arm,scpi";
-> +	mboxes = <&mailbox 0 &mailbox 1>;
-> +	shmem = <&cpu_scp_lpri &cpu_scp_hpri>;
-> +
-> +	clocks {
-> +		compatible = "arm,scpi-clocks";
-> +
-> +		scpi_dvfs: scpi_clocks@0 {
-> +			compatible = "arm,scpi-dvfs-clocks";
-> +			#clock-cells = <1>;
-> +			clock-indices = <0>, <1>, <2>;
-> +			clock-output-names = "vbig", "vlittle", "vgpu";
-> +		};
-> +		scpi_clk: scpi_clocks@3 {
-> +			compatible = "arm,scpi-variable-clocks";
-> +			#clock-cells = <1>;
-> +			clock-indices = <3>, <4>;
-> +			clock-output-names = "pxlclk0", "pxlclk1";
-> +		};
-> +	};
-> +};
-> +
-> +cpu@0 {
-> +	...
-> +	reg = <0 0>;
-> +	clocks = <&scpi_dvfs 0>;
-> +	clock-names = "vbig";
-> +};
-> +
-> +hdlcd@7ff60000 {
-> +	...
-> +	reg = <0 0x7ff60000 0 0x1000>;
-> +	clocks = <&scpi_clk 1>;
-> +	clock-names = "pxlclk";
-> +};
-> +
-> +In the above example, the #clock-cells is set to 1 as required.
-> +scpi_dvfs has 3 output clocks namely: vbig, vlittle and vgpu with 0, 1
-> +and 2 as clock-indices. scpi_clk has 2 output clocks namely: pxlclk0 and
-> +pxlclk1 with 3 and 4 as clock-indices.
-> +
-> +The first consumer in the example is cpu@0 and it has vbig as input clock.
-> +The index '0' in the clock specifier here points to the first entry in the
-> +output clocks of scpi_dvfs for which clock_id asrequired by the firmware
-> +is 0.
-> +
-> +Similarly the second example is hdlcd@7ff60000 and it has pxlclk0 as input
-> +clock. The index '1' in the clock specifier here points to the second entry
-> +in the output clocks of scpi_clocks for which clock_id as required by the
-> +firmware is 4.
+I think you should first verify that ACPI control_register really
+points to MSR_IA32_PERF_CTL before doing that magic with opaque
+control value. Also format of pstate bits in control register is
+cpu-model specific.
 
-To the best of my knowledge, this is wrong. Per the example in
-Documentation/devicetree/bindings/clock/clock-bindings.txt, the
-clock-indices apply to the logical value in the clock-specifier.
+> +
+> +	/* check If min perf > Intel P State min */
+> +	min_perf = cpu->acpi_perf_data.states[
+> +			cpu->acpi_perf_data.state_count - 1].control >> 8;
+> +	if (min_perf > cpu->pstate.min_pstate) {
+> +		cpu->pstate.min_pstate = min_perf;
+> +		policy->cpuinfo.min_freq = cpu->pstate.min_pstate *
+> +						cpu->pstate.scaling;
+> +	}
+> +
+> +	if (turbo_absent)
+> +		policy->cpuinfo.max_freq =
+> +			cpu->pstate.max_pstate * cpu->pstate.scaling;
+> +	else {
+> +		policy->cpuinfo.max_freq =
+> +			cpu->pstate.turbo_pstate * cpu->pstate.scaling;
+> +		/* scale freq to intel pstate turbo scale */
+> +		cpu->acpi_perf_data.states[0].core_frequency =
+> +				cpu->pstate.scaling *
+> +				(cpu->acpi_perf_data.states[0].control >> 8);
 
-So <&scpi_clk 3>, <&scpi_clk 4> exist, (and are named "pxlclk0",
-"pxlclk1" respectively), but <&scpi_clk 0>, <&scpi_clk 1> do not (or at
-least don't have names).
+So, you hack _PSS top frequency instead of just ignoring it.
+This should work but max_freq might be still out of sync with
+_PSS[0] frequency: pstate in states[0].control could be lower than
+cpu->pstate.turbo_pstate.
 
-Thanks,
-Mark.
+> +	}
+> +
+> +	pr_debug("Updated limits 0x%x 0x%x 0x %x\n", cpu->pstate.min_pstate,
+> +		 cpu->pstate.max_pstate, cpu->pstate.turbo_pstate);
+> +	pr_debug("policy max_freq=%d Mhz min_freq = %d MHz\n",
+> +		 policy->cpuinfo.max_freq, policy->cpuinfo.min_freq);
+> +
+> +	return 0;
+> +}
+> +
+> +static int intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
+> +{
+> +	struct cpudata *cpu;
+> +
+> +	cpu = all_cpu_data[policy->cpu];
+> +	acpi_processor_unregister_performance(&cpu->acpi_perf_data,
+> +						      policy->cpu);
+> +	return 0;
+> +}
+> +
+> +#else
+> +static int intel_pstate_init_perf_limits(struct cpufreq_policy *policy)
+> +{
+> +	return 0;
+> +}
+> +
+> +static int intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
+> +{
+> +	return 0;
+> +}
+> +#endif
+> +
+>   static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
+>   			     int deadband, int integral) {
+>   	pid->setpoint = setpoint;
+> @@ -1033,18 +1141,25 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+>   	policy->cpuinfo.min_freq = cpu->pstate.min_pstate * cpu->pstate.scaling;
+>   	policy->cpuinfo.max_freq =
+>   		cpu->pstate.turbo_pstate * cpu->pstate.scaling;
+> +	intel_pstate_init_perf_limits(policy);
+
+Here you silently ignore possible errors.
+
+>   	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+>   	cpumask_set_cpu(policy->cpu, policy->cpus);
+>
+>   	return 0;
+>   }
+>
+> +static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
+> +{
+> +	return intel_pstate_exit_perf_limits(policy);
+> +}
+> +
+>   static struct cpufreq_driver intel_pstate_driver = {
+>   	.flags		= CPUFREQ_CONST_LOOPS,
+>   	.verify		= intel_pstate_verify_policy,
+>   	.setpolicy	= intel_pstate_set_policy,
+>   	.get		= intel_pstate_get,
+>   	.init		= intel_pstate_cpu_init,
+> +	.exit		= intel_pstate_cpu_exit,
+>   	.stop_cpu	= intel_pstate_stop_cpu,
+>   	.name		= "intel_pstate",
+>   };
+>
+
+
+-- 
+Konstantin
