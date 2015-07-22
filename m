@@ -1,71 +1,63 @@
 From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [PATCH 0/9] Platform support for thermal management on Junoe
-Date: Wed, 22 Jul 2015 15:02:34 +0100
-Message-ID: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
+Subject: [PATCH 4/9] Documentation: add DT bindings for ARM SCPI sensors
+Date: Wed, 22 Jul 2015 15:02:38 +0100
+Message-ID: <1437573763-6525-5-git-send-email-punit.agrawal@arm.com>
+References: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Punit Agrawal <punit.agrawal@arm.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, edubezval@gmail.com, mark.rutland@arm.com, sudeep.holla@arm.com, linux@roeck-us.net, viresh.kumar@linaro.org
+Cc: Punit Agrawal <punit.agrawal@arm.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+The System Control Processor (SCP) provides access to SoC sensors via
+the System Control and Power Interface (SCPI) Message Protocol. Add
+bindings to allow probing of these sensors. Also support referencing
+of the sensors for setting up thermal zones via the thermal DT
+bindings.
 
-The series adds support for thermal management on ARM Juno development
-platform. As part of this development, common infrastructure is added
-to support registering cpu cooling devices that work with the power
-allocator thermal governor.
+Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
+---
+ Documentation/devicetree/bindings/arm/arm,scpi.txt | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-Patch 1 extends the CPU nodes binding to provide an optional dynamic
-power coefficient which can be used to create a dynamic power model
-for the CPUs. This model is used to constrain device power consumption
-(using power_allocator governor) when the system is thermally
-constrained.
-
-Patches 2-3 extends the cpufreq-dt and arm_big_little driver to
-register cpu cooling devices with the dynamic coefficient when
-provided.
-
-Patches 4-7 create a hwmon sensor driver for sensors provided by SCPI
-firmware. Patch 7 adds support for the temperature sensors to register
-with the thermal framework. This allows setting up platform thermals
-using OF thermal bindings.
-
-The last two patches add support for the sensors and the thermal zones
-in the Juno device tree.
-
-The Juno specific patches depend on SCPI and cpufreq patches[0] from Sudeep.
-
-Thanks,
-Punit
-
-[0] http://thread.gmane.org/gmane.linux.power-management.general/61073
-
-Punit Agrawal (9):
-  devicetree: bindings: Add optional dynamic-power-coefficient property
-  cpufreq-dt: Supply power coefficient when registering cooling devices
-  cpufreq: arm_big_little: Add support to register a cpufreq cooling
-    device
-  Documentation: add DT bindings for ARM SCPI sensors
-  firmware: arm_scpi: Extend to support sensors
-  hwmon: Support sensors exported via ARM SCP interface
-  hwmon: Support registration of thermal zones for SCP temperature
-    sensors
-  arm64: dts: Add sensor node to Juno dt
-  arm64: dts: Create SoC thermal zone for Juno
-
- Documentation/devicetree/bindings/arm/arm,scpi.txt |  15 ++
- Documentation/devicetree/bindings/arm/cpus.txt     |  15 ++
- arch/arm64/boot/dts/arm/juno-base.dtsi             |   5 +
- arch/arm64/boot/dts/arm/juno.dts                   |  50 ++++
- drivers/cpufreq/arm_big_little.c                   |  52 +++-
- drivers/cpufreq/cpufreq-dt.c                       |   9 +-
- drivers/firmware/arm_scpi.c                        |  60 +++++
- drivers/hwmon/Kconfig                              |   8 +
- drivers/hwmon/Makefile                             |   1 +
- drivers/hwmon/scpi-hwmon.c                         | 265 +++++++++++++++++++++
- include/linux/scpi_protocol.h                      |  17 ++
- 11 files changed, 493 insertions(+), 4 deletions(-)
- create mode 100644 drivers/hwmon/scpi-hwmon.c
-
+diff --git a/Documentation/devicetree/bindings/arm/arm,scpi.txt b/Documentation/devicetree/bindings/arm/arm,scpi.txt
+index e3757bc..5cb2b18 100644
+--- a/Documentation/devicetree/bindings/arm/arm,scpi.txt
++++ b/Documentation/devicetree/bindings/arm/arm,scpi.txt
+@@ -74,8 +74,18 @@ Required sub-node properties:
+ - compatible : should be "arm,juno-scp-shmem" for Non-secure SRAM based
+ 	       shared memory on Juno platforms
+ 
++Sensor bindings for the sensors based on SCPI Message Protocol
++--------------------------------------------------------------
++SCPI provides an API to access the various sensors on the SoC.
++
++Required properties:
++- compatible : should be "arm,scpi-sensors".
++- #thermal-sensor-cells: should be set to 1. This property follows the
++			 thermal device tree bindings[2].
++
+ [0] http://community.arm.com/servlet/JiveServlet/download/8401-45-18326/DUI0922B_scp_message_interface.pdf
+ [1] Documentation/devicetree/bindings/clock/clock-bindings.txt
++[2] Documentation/devicetree/bindings/thermal/thermal.txt
+ 
+ Example:
+ 
+@@ -124,6 +134,11 @@ scpi_protocol: scpi@2e000000 {
+ 			clock-output-names = "pxlclk0", "pxlclk1";
+ 		};
+ 	};
++
++	scpi_sensors0: sensors {
++		compatible = "arm,scpi-sensors";
++		#thermal-sensor-cells = <1>;
++	};
+ };
+ 
+ cpu@0 {
 -- 
 2.1.4
