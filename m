@@ -1,148 +1,136 @@
 From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [PATCH 3/9] cpufreq: arm_big_little: Add support to register a cpufreq cooling device
-Date: Wed, 22 Jul 2015 15:02:37 +0100
-Message-ID: <1437573763-6525-4-git-send-email-punit.agrawal@arm.com>
+Subject: [PATCH 9/9] arm64: dts: Create SoC thermal zone for Juno
+Date: Wed, 22 Jul 2015 15:02:43 +0100
+Message-ID: <1437573763-6525-10-git-send-email-punit.agrawal@arm.com>
 References: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Punit Agrawal <punit.agrawal@arm.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Punit Agrawal <punit.agrawal@arm.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Register passive cooling devices when initialising cpufreq on
-big.LITTLE systems. If the device tree provides a dynamic power
-coefficient for the CPUs then the bound cooling device will support
-the extensions that allow it to be used with all the existing thermal
-governors including the power allocator governor.
-
-A cooling device will be created per individual frequency domain and
-can be bound to thermal zones via the thermal DT bindings.
+Setup a thermal zone driven by the SoC temperature sensor on Juno
+r0. Create passive trip points and bind them to cpufreq cooling
+devices that support the power extensions.
 
 Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Liviu Dudau <liviu.dudau@arm.com>
 Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/cpufreq/arm_big_little.c | 52 ++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 50 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/arm/juno.dts | 50 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index f1e42f8..72a2777 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -23,6 +23,7 @@
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
-+#include <linux/cpu_cooling.h>
- #include <linux/export.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-@@ -55,6 +56,10 @@ static bool bL_switching_enabled;
- #define ACTUAL_FREQ(cluster, freq)  ((cluster == A7_CLUSTER) ? freq << 1 : freq)
- #define VIRT_FREQ(cluster, freq)    ((cluster == A7_CLUSTER) ? freq >> 1 : freq)
+diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
+index d2e67f3..664961c 100644
+--- a/arch/arm64/boot/dts/arm/juno.dts
++++ b/arch/arm64/boot/dts/arm/juno.dts
+@@ -9,6 +9,7 @@
+ /dts-v1/;
  
-+struct private_data {
-+	struct thermal_cooling_device *cdev;
-+};
-+
- static struct cpufreq_arm_bL_ops *arm_bL_ops;
- static struct clk *clk[MAX_CLUSTERS];
- static struct cpufreq_frequency_table *freq_table[MAX_CLUSTERS + 1];
-@@ -440,6 +445,7 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
- {
- 	u32 cur_cluster = cpu_to_cluster(policy->cpu);
- 	struct device *cpu_dev;
-+	struct private_data *priv;
- 	int ret;
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
++#include <dt-bindings/thermal/thermal.h>
  
- 	cpu_dev = get_cpu_device(policy->cpu);
-@@ -457,9 +463,15 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
- 	if (ret) {
- 		dev_err(cpu_dev, "CPU %d, cluster: %d invalid freq table\n",
- 				policy->cpu, cur_cluster);
--		put_cluster_clk_and_freq_table(cpu_dev);
--		return ret;
-+		goto out_free_cpufreq_table;
-+	}
-+
-+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-+	if (!priv) {
-+		ret = -ENOMEM;
-+		goto out_free_cpufreq_table;
- 	}
-+	policy->driver_data = priv;
+ / {
+ 	model = "ARM Juno development board (r0)";
+@@ -90,6 +91,8 @@
+ 			next-level-cache = <&A57_L2>;
+ 			clocks = <&scpi_dvfs 0>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			#cooling-cells = <2>;
++			dynamic-power-coefficient = <530>;
+ 		};
  
- 	if (cur_cluster < MAX_CLUSTERS) {
- 		int cpu;
-@@ -484,12 +496,19 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
+ 		A57_1: cpu@1 {
+@@ -100,6 +103,8 @@
+ 			next-level-cache = <&A57_L2>;
+ 			clocks = <&scpi_dvfs 0>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			#cooling-cells = <2>;
++			dynamic-power-coefficient = <530>;
+ 		};
  
- 	dev_info(cpu_dev, "%s: CPU %d initialized\n", __func__, policy->cpu);
- 	return 0;
-+
-+out_free_cpufreq_table:
-+	put_cluster_clk_and_freq_table(cpu_dev);
-+
-+	return ret;
- }
+ 		A53_0: cpu@100 {
+@@ -110,6 +115,8 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			#cooling-cells = <2>;
++			dynamic-power-coefficient = <140>;
+ 		};
  
- static int bL_cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	struct device *cpu_dev;
-+	struct private_data *priv = policy->driver_data;
+ 		A53_1: cpu@101 {
+@@ -120,6 +127,8 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			#cooling-cells = <2>;
++			dynamic-power-coefficient = <140>;
+ 		};
  
-+	cpufreq_cooling_unregister(priv->cdev);
- 	cpu_dev = get_cpu_device(policy->cpu);
- 	if (!cpu_dev) {
- 		pr_err("%s: failed to get cpu%d device\n", __func__,
-@@ -498,11 +517,39 @@ static int bL_cpufreq_exit(struct cpufreq_policy *policy)
- 	}
+ 		A53_2: cpu@102 {
+@@ -130,6 +139,8 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			#cooling-cells = <2>;
++			dynamic-power-coefficient = <140>;
+ 		};
  
- 	put_cluster_clk_and_freq_table(cpu_dev);
-+	kfree(priv);
- 	dev_dbg(cpu_dev, "%s: Exited, cpu: %d\n", __func__, policy->cpu);
+ 		A53_3: cpu@103 {
+@@ -140,6 +151,8 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			#cooling-cells = <2>;
++			dynamic-power-coefficient = <140>;
+ 		};
  
- 	return 0;
- }
+ 		A57_L2: l2-cache0 {
+@@ -167,5 +180,42 @@
+ 				     <&A53_3>;
+ 	};
  
-+static void bL_cpufreq_ready(struct cpufreq_policy *policy)
-+{
-+	struct device *cpu_dev = get_cpu_device(policy->cpu);
-+	struct device_node *np = of_node_get(cpu_dev->of_node);
-+	struct private_data *priv = policy->driver_data;
++	thermal-zones {
++		soc_thermal {
++			polling-delay = <1000>;
++			polling-delay-passive = <100>;
++			sustainable-power = <2500>;
 +
-+	if (WARN_ON(!np))
-+		return;
++			thermal-sensors = <&scpi_sensors0 3>;
 +
-+	if (of_find_property(np, "#cooling-cells", NULL)) {
-+		u32 power_coefficient = 0;
++			trips {
++				threshold: trip-point@0 {
++					temperature = <55000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++				target: trip-point@1 {
++					temperature = <65000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
 +
-+		of_property_read_u32(np, "dynamic-power-coefficient",
-+				     &power_coefficient);
++			cooling-maps {
++				map0 {
++					trip = <&target>;
++					cooling-device = <&A53_0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++					contribution = <2048>;
++				};
++				map1 {
++					trip = <&target>;
++					cooling-device = <&A57_0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++					contribution = <1024>;
++				};
 +
-+		priv->cdev = of_cpufreq_power_cooling_register(np,
-+				policy->related_cpus, power_coefficient, NULL);
-+		if (IS_ERR(priv->cdev)) {
-+			dev_err(cpu_dev,
-+				"running cpufreq without cooling device: %ld\n",
-+				PTR_ERR(priv->cdev));
-+			priv->cdev = NULL;
-+		}
-+	}
-+	of_node_put(np);
-+}
++			};
++		};
++	};
 +
- static struct cpufreq_driver bL_cpufreq_driver = {
- 	.name			= "arm-big-little",
- 	.flags			= CPUFREQ_STICKY |
-@@ -513,6 +560,7 @@ static struct cpufreq_driver bL_cpufreq_driver = {
- 	.get			= bL_cpufreq_get_rate,
- 	.init			= bL_cpufreq_init,
- 	.exit			= bL_cpufreq_exit,
-+	.ready			= bL_cpufreq_ready,
- 	.attr			= cpufreq_generic_attr,
+ 	#include "juno-base.dtsi"
  };
- 
 -- 
 2.1.4
