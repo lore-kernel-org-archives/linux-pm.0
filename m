@@ -1,52 +1,161 @@
-From: Mel Gorman <mgorman@suse.de>
-Subject: Re: [PATCH v3 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
- feature
-Date: Wed, 22 Jul 2015 15:05:30 +0100
-Message-ID: <20150722140530.GK2561@suse.de>
-References: <1437114578-2502-1-git-send-email-pintu.k@samsung.com>
- <1437366544-32673-1-git-send-email-pintu.k@samsung.com>
- <20150720082810.GG2561@suse.de>
- <02c601d0c306$f86d30f0$e94792d0$@samsung.com>
- <20150720175538.GJ2561@suse.de>
- <05af01d0c47f$3337ccd0$99a76670$@samsung.com>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: [PATCH 7/9] hwmon: Support registration of thermal
+	zones for SCP temperature sensors
+Date: Wed, 22 Jul 2015 15:02:41 +0100
+Message-ID: <1437573763-6525-8-git-send-email-punit.agrawal@arm.com>
+References: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <05af01d0c47f$3337ccd0$99a76670$@samsung.com>
-Sender: owner-linux-mm@kvack.org
-To: PINTU KUMAR <pintu.k@samsung.com>
-Cc: akpm@linux-foundation.org, corbet@lwn.net, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, qiuxishi@huawei.com, Valdis.Kletnieks@vt.edu, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com, pintu.ping@gmail.compintu
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <lm-sensors-bounces@lm-sensors.org>
+In-Reply-To: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
+List-Unsubscribe: <http://lists.lm-sensors.org/mailman/options/lm-sensors>,
+	<mailto:lm-sensors-request@lm-sensors.org?subject=unsubscribe>
+List-Archive: <http://lists.lm-sensors.org/pipermail/lm-sensors/>
+List-Post: <mailto:lm-sensors@lm-sensors.org>
+List-Help: <mailto:lm-sensors-request@lm-sensors.org?subject=help>
+List-Subscribe: <http://lists.lm-sensors.org/mailman/listinfo/lm-sensors>,
+	<mailto:lm-sensors-request@lm-sensors.org?subject=subscribe>
+Sender: lm-sensors-bounces@lm-sensors.org
+Errors-To: lm-sensors-bounces@lm-sensors.org
+To: linux-pm@vger.kernel.org
+Cc: devicetree@vger.kernel.org, Punit Agrawal <punit.agrawal@arm.com>, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 22, 2015 at 06:33:26PM +0530, PINTU KUMAR wrote:
-> Dear Mel, thank you very much for your comments and suggestions.
-> I will drop this one and look on further improving direct_reclaim and
-> compaction.
-> Just few more comments below before I close.
-> 
-> Also, during this patch, I feel that the hibernation_mode part in
-> shrink_all_memory can be corrected.
-> So, can I separately submit the below patch?
-> That is instead of hard-coding the hibernation_mode, we can get hibernation
-> status using:
-> system_entering_hibernation()
-> 
-> Please let me know your suggestion about this changes.
-> 
-> -#ifdef CONFIG_HIBERNATION
-> +#if defined CONFIG_HIBERNATION || CONFIG_SHRINK_MEMORY
+Add support to create thermal zones based on the temperature sensors
+provided by the SCP. The thermal zones can be defined using the
+thermal DT bindings and should refer to the SCP sensor id to select
+the sensor.
 
-This appears to be a patch on top of "Add /proc/sys/vm/shrink_memory
-feature" so I do not see what would be separately submitted that would
-make sense.
+Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+Cc: Jean Delvare <jdelvare@suse.de>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+---
+ drivers/hwmon/scpi-hwmon.c | 53 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 53 insertions(+)
 
+diff --git a/drivers/hwmon/scpi-hwmon.c b/drivers/hwmon/scpi-hwmon.c
+index dd0a6f1..1e52ced 100644
+--- a/drivers/hwmon/scpi-hwmon.c
++++ b/drivers/hwmon/scpi-hwmon.c
+@@ -22,6 +22,7 @@
+ #include <linux/scpi_protocol.h>
+ #include <linux/slab.h>
+ #include <linux/sysfs.h>
++#include <linux/thermal.h>
+ 
+ static struct scpi_ops *scpi_ops;
+ 
+@@ -33,12 +34,18 @@ struct sensor_dev {
+ 	char label[20];
+ };
+ 
++struct scpi_thermal_zone {
++	struct list_head list;
++	struct thermal_zone_device *tzd;
++};
++
+ struct scpi_sensors {
+ 	int num_volt;
+ 	int num_temp;
+ 	int num_current;
+ 	int num_power;
+ 	struct sensor_dev *device;
++	struct list_head thermal_zones;
+ 	struct device *hwdev;
+ };
+ struct scpi_sensors scpi_sensors;
+@@ -54,6 +61,20 @@ static int scpi_read_sensor(struct sensor_dev *sensor, u32 *value)
+ 	return 0;
+ }
+ 
++static int scpi_read_temp(void *dev, long *temp)
++{
++	struct sensor_dev *sensor = dev;
++	u32 value;
++	int ret;
++
++	ret = scpi_read_sensor(sensor, &value);
++	if (ret)
++		return ret;
++
++	*temp = value;
++	return 0;
++}
++
+ /* hwmon callback functions */
+ static ssize_t
+ scpi_hwmon_show_sensor(struct device *dev,
+@@ -90,6 +111,10 @@ struct attribute *scpi_attrs[24] = { 0 };
+ struct attribute_group scpi_group;
+ const struct attribute_group *scpi_groups[2] = { 0 };
+ 
++struct thermal_zone_of_device_ops scpi_sensor_ops = {
++	.get_temp = scpi_read_temp,
++};
++
+ static int scpi_hwmon_probe(struct platform_device *pdev)
+ {
+ 	u16 sensors, i;
+@@ -108,9 +133,12 @@ static int scpi_hwmon_probe(struct platform_device *pdev)
+ 	if (!scpi_sensors.device)
+ 		return -ENOMEM;
+ 
++	INIT_LIST_HEAD(&scpi_sensors.thermal_zones);
++
+ 	dev_info(&pdev->dev, "Found %d sensors\n", sensors);
+ 	for (i = 0; i < sensors; i++) {
+ 		struct sensor_dev *dev = &scpi_sensors.device[i];
++		struct scpi_thermal_zone *zone;
+ 
+ 		ret = scpi_ops->sensor_get_info(i, &dev->info);
+ 		if (ret) {
+@@ -130,6 +158,20 @@ static int scpi_hwmon_probe(struct platform_device *pdev)
+ 			snprintf(dev->label, 20,
+ 				 "temp%d_label", scpi_sensors.num_temp);
+ 			scpi_sensors.num_temp++;
++
++			zone = devm_kmalloc(&pdev->dev, sizeof(*zone),
++					    GFP_KERNEL);
++			if (!zone)
++				return -ENOMEM;
++
++			zone->tzd = thermal_zone_of_sensor_register(&pdev->dev,
++						    i, dev, &scpi_sensor_ops);
++			if (!IS_ERR(zone->tzd))
++				list_add(&zone->list,
++					 &scpi_sensors.thermal_zones);
++			else
++				devm_kfree(&pdev->dev, zone);
++
+ 			break;
+ 		case VOLTAGE:
+ 			snprintf(dev->input, 20,
+@@ -187,7 +229,18 @@ static int scpi_hwmon_probe(struct platform_device *pdev)
+ 
+ static int scpi_hwmon_remove(struct platform_device *pdev)
+ {
++	struct list_head *pos;
++
+ 	scpi_ops = NULL;
++
++	list_for_each(pos, &scpi_sensors.thermal_zones) {
++		struct scpi_thermal_zone *zone;
++
++		zone = list_entry(pos, struct scpi_thermal_zone, list);
++		thermal_zone_of_sensor_unregister(scpi_sensors.hwdev,
++						  zone->tzd);
++	}
++
+ 	return 0;
+ }
+ 
 -- 
-Mel Gorman
-SUSE Labs
+2.1.4
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
+_______________________________________________
+lm-sensors mailing list
+lm-sensors@lm-sensors.org
+http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
