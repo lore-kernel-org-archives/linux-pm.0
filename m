@@ -1,75 +1,52 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v6 13/13] arm: dts: qcom: Add #power-domain-cells property
-Date: Wed, 22 Jul 2015 12:41:09 +0530
-Message-ID: <1437549069-29655-14-git-send-email-rnayak@codeaurora.org>
-References: <1437549069-29655-1-git-send-email-rnayak@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Avoid double addition/removal of sysfs links
+Date: Wed, 22 Jul 2015 12:42:40 +0530
+Message-ID: <20150722071240.GD30970@linux>
+References: <20150718163149.GP7557@n2100.arm.linux.org.uk>
+ <a8a3c524facf3b2c1621a54d09c7022f4267d2e5.1437385355.git.viresh.kumar@linaro.org>
+ <CAJZ5v0hXkEbRqd1ZWGABxbofQ+Y8yjn_JknVUXPGKy=kkE=Xhw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:60536 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756228AbbGVHMV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jul 2015 03:12:21 -0400
-In-Reply-To: <1437549069-29655-1-git-send-email-rnayak@codeaurora.org>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:34617 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755777AbbGVHMp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jul 2015 03:12:45 -0400
+Received: by pacan13 with SMTP id an13so135207244pac.1
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2015 00:12:44 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hXkEbRqd1ZWGABxbofQ+Y8yjn_JknVUXPGKy=kkE=Xhw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sboyd@codeaurora.org, mturquette@baylibre.com
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, Rajendra Nayak <rnayak@codeaurora.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-msm8974 has gcc and mmcc nodes, and apq8084 has a gcc node which
-implement gdsc powerdomains. Add the #power-domain-cells property
-to them.
+On 22-07-15, 01:15, Rafael J. Wysocki wrote:
+> So the problem is that the cpu_is_offline(cpu) check in
+> cpufreq_add_dev() matches two distinct cases: (1) the CPU was not
+> present before and it is just being hot-added and (2) the CPU is
+> initially offline, but present, and this is the first time its device
+> is registered.  In the first case we can expect that the CPU will
+> become online shortly (although that is not guaranteed too), but in
+> the second case that very well may not happen.
 
-Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
----
- arch/arm/boot/dts/qcom-apq8084.dtsi   | 1 +
- arch/arm/boot/dts/qcom-msm8974.dtsi   | 2 ++
- arch/arm64/boot/dts/qcom/msm8916.dtsi | 1 +
- 3 files changed, 4 insertions(+)
+Yeah.
 
-diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
-index 7084010..1cdb568 100644
---- a/arch/arm/boot/dts/qcom-apq8084.dtsi
-+++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
-@@ -221,6 +221,7 @@
- 			compatible = "qcom,gcc-apq8084";
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
-+			#power-domain-cells = <1>;
- 			reg = <0xfc400000 0x4000>;
- 		};
- 
-diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index 37b47b5..8a2dfa6 100644
---- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-+++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-@@ -217,6 +217,7 @@
- 			compatible = "qcom,gcc-msm8974";
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
-+			#power-domain-cells = <1>;
- 			reg = <0xfc400000 0x4000>;
- 		};
- 
-@@ -224,6 +225,7 @@
- 			compatible = "qcom,mmcc-msm8974";
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
-+			#power-domain-cells = <1>;
- 			reg = <0xfd8c0000 0x6000>;
- 		};
- 
-diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-index 0f49ebd..3b0645a 100644
---- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
-+++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-@@ -120,6 +120,7 @@
- 			compatible = "qcom,gcc-msm8916";
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
-+			#power-domain-cells = <1>;
- 			reg = <0x1800000 0x80000>;
- 		};
- 
+> We need to be able to distinguish between those two cases and your
+> patch does that, but I'm not sure if this really is the most
+> straightforward way to do it.
+
+Maybe yeah. I will take another look into that after considering
+Russell's input.
+
+> I'm also unsure why you're changing the removal code paths.  Is there
+> any particular failure scenario you're concerned about?
+
+The same issue is present here too. The problem was that cpu_offline()
+check was getting hit for a CPU that is present in related_cpus mask.
+While allocating/freeing the policy, we create links for all
+related_cpus and the cpu_offline() check was adding/removing the link
+again.
+
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
-
+viresh
