@@ -1,106 +1,52 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [RFC PATCH] PM / hibernate: make sure each resuming page is in
- current memory zones
-Date: Wed, 22 Jul 2015 08:58:11 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402FC8C2@SHSMSX101.ccr.corp.intel.com>
-References: <1435679668-13806-1-git-send-email-yu.c.chen@intel.com>
- <1613617.2K941pjbyO@vostro.rjw.lan> <55ADA040.7050408@intel.com>
- <2662645.fpATfiHLLF@vostro.rjw.lan>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: cpufreq/ondemand: unpinning an unpinned lock.
+Date: Wed, 22 Jul 2015 11:02:56 +0200
+Message-ID: <20150722090256.GP25159@twins.programming.kicks-ass.net>
+References: <20150715220422.GA13789@codemonkey.org.uk>
+ <3682267.1lcDzeZuDs@vostro.rjw.lan>
+ <20150716051150.GA15404@linux>
+ <20150716124241.GA20320@codemonkey.org.uk>
+ <55AEE7D8.3000507@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:9612 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933343AbbGVJAv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 22 Jul 2015 05:00:51 -0400
-In-Reply-To: <2662645.fpATfiHLLF@vostro.rjw.lan>
-Content-Language: en-US
+Received: from bombadil.infradead.org ([198.137.202.9]:59739 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932731AbbGVJDI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jul 2015 05:03:08 -0400
+Content-Disposition: inline
+In-Reply-To: <55AEE7D8.3000507@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, joeyli <jlee@suse.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "Tian, YeX" <yex.tian@intel.com>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Dave Jones <davej@codemonkey.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5c29j
-a2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gU2VudDogV2VkbmVzZGF5LCBKdWx5IDIy
-LCAyMDE1IDk6MDQgQU0NCj4gVG86IENoZW4sIFl1IEMNCj4gQ2M6IGxpbnV4LXBtQHZnZXIua2Vy
-bmVsLm9yZzsgV3lzb2NraSwgUmFmYWVsIEo7IGpvZXlsaTsgVGlhbiwgWWVYDQo+IFN1YmplY3Q6
-IFJlOiBbUkZDIFBBVENIXSBQTSAvIGhpYmVybmF0ZTogbWFrZSBzdXJlIGVhY2ggcmVzdW1pbmcg
-cGFnZSBpcw0KPiBpbiBjdXJyZW50IG1lbW9yeSB6b25lcw0KPiANCj4gT24gVHVlc2RheSwgSnVs
-eSAyMSwgMjAxNSAwOToyODozMiBBTSBjaGVueXU1IHdyb3RlOg0KPiA+IE9uIDIwMTXlubQwN+ac
-iDE25pelIDA4OjMwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToNCj4gPiA+IE9uIE1vbmRheSwg
-SnVseSAwNiwgMjAxNSAwNDozNzozOSBQTSBqb2V5bGkgd3JvdGU6DQo+ID4gPj4gSGkgQ2hlbiBZ
-dSwNCj4gPiA+Pg0KPiA+ID4+IE9uIFRodSwgSnVsIDAyLCAyMDE1IGF0IDA0OjAwOjQyUE0gKzA4
-MDAsIGNoZW55dTUgd3JvdGU6DQo+ID4gPj4+IEhpLCBKb2V5DQo+ID4gPj4+IHRoYW5rcyBmb3Ig
-eW91ciByZXBseSwNCj4gPiA+Pj4NCj4gPiA+Pj4gT24gMjAxNeW5tDA35pyIMDLml6UgMTQ6MTks
-IGpvZXlsaSB3cm90ZToNCj4gPiA+Pj4+IEhpIENoZW4gWXUsDQo+ID4gPj4+Pg0KPiA+ID4+Pj4g
-T24gVHVlLCBKdW4gMzAsIDIwMTUgYXQgMTE6NTQ6MjhQTSArMDgwMCwgQ2hlbiBZdSB3cm90ZToN
-Cj4gPiA+Pj4+PiBDb21taXQgODRjOTFiN2FlMDdjICgiUE0gLyBoaWJlcm5hdGU6IGF2b2lkIHVu
-c2FmZSBwYWdlcyBpbiBlODIwDQo+ID4gPj4+Pj4gcmVzZXJ2ZWQNCj4gPiA+Pj4+PiByZWdpb25z
-Iikgd2FzIHJldmVydGVkLCBiZWNhdXNlIHRoaXMgcGF0Y2ggbWFrZXMgcmVzdW1lIGZyb20NCj4g
-PiA+Pj4+PiBoaWJlcm5hdGlvbiBvbiBMZW5vdm8geDIzMCB1bnJlbGlhYmxlLiBCdXQgcmV2ZXJ0
-aW5nIG1heSBicmluZw0KPiA+ID4+Pj4+IGJhY2sgdGhlIGtlcm5lbCBleGNlcHRpb24gZmlyc3Rs
-eSByZXBvcnRlZCBpbiBmb3JtZXIgcGF0Y2guIEluDQo+ID4gPj4+Pj4gZ2VuZXJhbCwgdGhlcmUg
-YXJlIHRocmVlIHByb2JsZW1zIGluIGN1cnJlbnQgY29kZSB3aGVuIHJlc3VtaW5nDQo+IGZyb20g
-aGliZXJuYXRpb246DQo+ID4gPj4+Pj4NCj4gPiA+Pj4+PiAxLlJlc3VtaW5nIHBhZ2UgbWF5IGFs
-c28gYmUgaW4gc2Vjb25kIGtlcm5lbCdzIGU4MjAgcmVzZXJ2ZWQNCj4gcmVnaW9uLg0KPiA+ID4+
-Pj4+IEJJT1MtZTgyMDogW21lbSAweDAwMDAwMDAwNjlkNGYwMDAtMHgwMDAwMDAwMDY5ZTEyZmZm
-XQ0KPiByZXNlcnZlZA0KPiA+ID4+Pj4+IHRoaXMgY2F1c2VzIGtlcm5lbCBleGNlcHRpb24gZGVz
-Y3JpYmVkIGluIENvbW1pdCA4NGM5MWI3YWUwN2MNCj4gPiA+Pj4+PiAoIlBNIC8gaGliZXJuYXRl
-OiBhdm9pZCB1bnNhZmUgcGFnZXMgaW4gZTgyMCByZXNlcnZlZCByZWdpb25zIikNCj4gPiA+Pj4+
-Pg0KPiA+ID4+Pj4+IDIuSWYgQ29tbWl0IDg0YzkxYjdhZTA3YyAoIlBNIC8gaGliZXJuYXRlOiBh
-dm9pZCB1bnNhZmUgcGFnZXMgaW4NCj4gPiA+Pj4+PiBlODIwIHJlc2VydmVkIHJlZ2lvbnMiKSBp
-cyBhcHBsaWVkIHRvIGZpeCBwcm9ibGVtIDEsIGFuZCBpZg0KPiA+ID4+Pj4+IEU4MjBfUkVTRVJW
-RURfS0VSTiByZWdpb25zIGNhdXNlcyBzb21lIHJlZ2lvbnMgYXQgZTgyMCB0YWJsZQ0KPiBub3QN
-Cj4gPiA+Pj4+PiBwYWdlIGFsaWduZWQsIGU4MjBfbWFya19ub3NhdmVfcmVnaW9ucyB3aWxsIG1p
-c2p1ZGdtZW50IHRoZQ0KPiA+ID4+Pj4+IG5vbi1wYWdlIGFsaWduZWQgc3BhY2UgdG8gYmUgImhv
-bGUiIHNwYWNlIGFuZCBhZGQgdG8gbm9zYXZlDQo+IHJlZ2lvbnMsIHRoaXMgY2F1c2VzIHJlc3Vt
-aW5nIGZhaWxlZC4NCj4gPiA+Pj4+PiBSZWZlciB0byBodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5v
-cmcvc2hvd19idWcuY2dpP2lkPTk2MTExIGZvcg0KPiBkZXRhaWwuDQo+ID4gPj4+Pj4NCj4gPiA+
-Pj4+DQo+ID4gPj4+PiBTb3JyeSBmb3IgSSBhbSBub3QgZnVsbHkgdW5kZXJzdGFuZCB3aHkgY2hl
-Y2tpbmcgcGZuX3ZhbGlkIGNvdWxkDQo+ID4gPj4+PiBhdm9pZCB0aGUgYWJvdmUgMi4gaXNzdWU/
-DQo+ID4gPj4+Pg0KPiA+ID4+PiBbWXVdIEFjY29yZGluZyB0byBlODIwX21hcmtfbm9zYXZlX3Jl
-Z2lvbnMsIHR3byBraW5kcyBvZiBlODIwDQo+ID4gPj4+IHJlZ2lvbnMgd2lsbCBiZSByZWdhcmRl
-ZCBhcyBub3NhdmU6DQo+ID4gPj4+IGEuZTgyMC5tYXAgaG9sZXMgYmV0d2VlbiBlYWNoIGU4MjBl
-bnRyeSBiLmU4MjBlbnRyeSB3aXRoDQo+ID4gPj4+ICghRTgyMF9SQU0gJiYgIUU4MjBfUkVTRVJW
-RURfS0VSTikgZG1lc2cgaW4NCj4gPiA+Pj4gaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
-b3dfYnVnLmNnaT9pZD05NjExMQ0KPiA+ID4+PiBzaG93cyB0aGF0Og0KPiA+ID4+Pg0KPiA+ID4+
-PiBCSU9TLWU4MjA6IFttZW0gMHgwMDAwMDAwMDViYWZmMDAwLTB4MDAwMDAwMDBkNjg0ZmZmZl0g
-dXNhYmxlDQo+ID4gPj4+IHJlc2VydmUgc2V0dXBfZGF0YTogW21lbSAweDAwMDAwMDAwOWQzZTAw
-MTgtMHgwMDAwMDAwMDlkM2YwMDU3XQ0KPiA+ID4+PiB1c2FibGUNCj4gPiA+Pj4gUE06IFJlZ2lz
-dGVyZWQgbm9zYXZlIG1lbW9yeTogW21lbSAweDlkM2UwMDAwLTB4OWQzZTBmZmZdDQo+ID4gPj4+
-DQo+ID4gPj4+IGU4MjAgbWFwIHdhcyBjaGFuZ2VkIGJ5IHNpdHVhdGlvbiBhLCBidXQgaXQgc2hv
-dWxkIG5vdCBiZSBhZGRlZCB0bw0KPiA+ID4+PiBub3NhdmUgbGlzdCwgcmlnaHQ/DQo+ID4gPj4+
-DQo+ID4gPj4+IGFuZCBhY2NvcmRpbmcgdG8gc2F2ZWFibGVfcGFnZSwgb25seSBwYWdlcyBpbiB0
-aGUgem9uZSB3aWxsIGJlIHNhdmVkOg0KPiA+ID4+PiBpZiAocGFnZV96b25lKHBhZ2VfICE9IHpv
-bmUpDQo+ID4gPj4+IAlyZXR1cm4gTlVMTDsNCj4gPiA+Pj4NCj4gPiA+Pj4gVGhlIGZ1bmN0aW9u
-IG9mIGlzX3ZhbGlkX29yaWdfcGFnZSBpbiB0aGlzIHBhdGNoIHRyZWF0cyBzZXR1cF9kYXRhDQo+
-ID4gPj4+IGFzIHZhbGlkIHBhZ2UsIHNvIEkgdGhpbmsgdGhpcyB3b3JrYXJvdW5kIGlzc3VlIDIu
-DQo+ID4gPj4+DQo+ID4gPj4+DQo+ID4gPj4+PiBQZXIgbXkgdW5kZXJzdG9vZCBzaG91bGQgd2Fp
-dGluZyBZaW5naGFpIEx1J3MgcGF0Y2hlcyBmb3Iga2lsbGluZw0KPiA+ID4+Pj4gRTgyMF9SRVNF
-UlZFRF9LRVJOIHRvIGF2b2lkIHRoZSBhbGlnbmVkIHByb2JsZW0uDQo+ID4gPj4+IFtZdV0geWVz
-LCBpdCBpcyBhIGdyYWNlZnVsIHNvbHV0aW9uLCBidXQgSSBkb24ndCBzZWUgdGhhdCBpbiA0LjE/
-DQo+ID4gPj4+IEFuZCB3ZSBlbmNvdW50ZXJlZCBwcm9ibGVtIDMgaW4gb3VyIHRlc3RpbmcgZW52
-aXJvbWVudCwgc28gSSB3cm90ZQ0KPiA+ID4+PiBhIHBhdGNoIHRvIGRlYWwgd2l0aCBpdCBmaXJz
-dC4NCj4gPiA+Pj4+DQo+ID4gPj4+Pg0KPiA+ID4+Pj4gVGhhbmtzIGEgbG90IQ0KPiA+ID4+Pj4g
-Sm9leSBMZWUNCj4gPiA+Pj4+DQo+ID4gPj4NCj4gPiA+PiBUaGFua3MgZm9yIHlvdXIgZXhwbGFu
-YXRpb24sIHRoZW4geW91ciBwYXRjaCBtYWtlcyBzZW5zZSB0byBtZS4NCj4gPiA+Pg0KPiA+ID4+
-IFBsZWFzZSBmZWVsIGZyZWUgdG8gYWRkIHRhZzoNCj4gPiA+Pg0KPiA+ID4+IFJldmlld2VkLWJ5
-OiBMZWUsIENodW4tWWkgPGpvZXlsaS5rZXJuZWxAZ21haWwuY29tPg0KPiA+ID4NCj4gPiA+IFBh
-dGNoIHF1ZXVlZCB1cCBmb3IgNC4zLCB0aGFua3MhDQo+ID4gPg0KPiA+IEhpIFJhZmVhbCwNCj4g
-PiBQbGVhc2UgaGVscCBkcm9wIHRoaXMgcGF0Y2ggZm9yIG5vdywgUUEgaGFzIGZvdW5kIHNvbWUg
-cHJvYmxlbXMgd2l0aA0KPiA+IHRoaXMgcGF0Y2ggYXBwbGllZCwgd2UncmUgd29ya2luZyBvbiBp
-dCBub3cuIFNvcnJ5IGZvciBpbmNvbnZlbmllbmNlLg0KPiANCj4gRHJvcHBpbmcsIHRoYW5rcyBm
-b3IgdGhlIGhlYWRzIHVwIQ0KPiANCkhpLFJhZmVhbCwgSm9leQ0KSSd2ZSBzZW50IG91dCBhbm90
-aGVyIHBhdGNoLCBpdCBpcyBiYXNlZCBvbiBKb2V5J3MgDQpvcmlnaW5hbCBwYXRjaCwgYW5kIGl0
-IHRyZWF0cyBhbnkgYWRqYWNlbnQgRTgyMF9SQU0vRTgyMF9SRVNFUlZFRF9LRVJOIHJlZ2lvbnMg
-YXMNCm9uZS4gSW4gdGhpcyB3YXksICBub24tcGFnZS1hbGlnbmVkIHNldHVwX2RhdGEgYWRkcmVz
-cyB3b3VsZCBub3QgYmUgYWRkZWQgDQp0byBub3NhdmUgcmVnaW9ucywgdGh1cyB3b3JrYXJvdW5k
-IHRoZSBoaWJlcm5hdGlvbiBmYWlsb3IgbWVudGlvbmVzIGluDQpodHRwczovL2J1Z3ppbGxhLmtl
-cm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTk2MTExDQoNClYxIHBhdGNoIGhhcyBhIHByb2JsZW0g
-dGhhdCwgTk9UIGV2ZXJ5IHBhZ2UgaW4gcGFnZSB6b25lIGhhcyBhIHZhbGlkIG1hcHBpbmcgYWRk
-cmVzcyAsIHRodXMNCmFjY2Vzc2luZyB0aGVzZSBwYWdlcyB3b3VsZCBjYXVzZSBwcm9ibGVtLiBT
-byBJIHJld3JpdGUgdGhpcyBwYXRoIGFuZCBzZW5kIG91dCBhbm90aGVyIFYyIHZlcnNpb24uDQpU
-aGFua3MgZm9yIHlvdXIgdGltZS4NCg0KIFl1DQo+IA0KPiAtLQ0KPiBJIHNwZWFrIG9ubHkgZm9y
-IG15c2VsZi4NCj4gUmFmYWVsIEouIFd5c29ja2ksIEludGVsIE9wZW4gU291cmNlIFRlY2hub2xv
-Z3kgQ2VudGVyLg0K
+On Tue, Jul 21, 2015 at 05:46:16PM -0700, Stephen Boyd wrote:
+> On 07/16/2015 05:42 AM, Dave Jones wrote:
+> >On Thu, Jul 16, 2015 at 10:41:50AM +0530, Viresh Kumar wrote:
+> >
+> >  > > > WARNING: CPU: 1 PID: 29529 at kernel/locking/lockdep.c:3497 lock_unpin_lock+0x109/0x110()
+> >  > > > unpinning an unpinned lock
+> >  > > > Call Trace:
+
+> >  > > >  [<ffffffffae0d0ec9>] lock_unpin_lock+0x109/0x110
+> >  > > >  [<ffffffffae7f93cc>] __schedule+0x3ac/0xb60
+> >  > > >  [<ffffffffae7f9c41>] schedule+0x41/0x90
+> >  > > >  [<ffffffffae7f9ff8>] schedule_preempt_disabled+0x18/0x30
+
+> Lock pinning is new in v4.2-rc1. Adding Peter just in case there's some
+> insight.
+
+Hmm, weird. I've not seen it happen before.
+
+There's potentially 3 unpin's in __schedule():
+
+  - the obvious one in the prev == next case,
+  - the on in context_switch(),
+  - the on in try_to_wake_up_local().
+
+All 3 appear to be balanced; the first and second against the pin_lock()
+at the start of __schedule() and the third against that and it repins
+the lock against the first two.
+
+Most curious.
