@@ -1,189 +1,151 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Avoid double addition/removal of sysfs links
-Date: Wed, 22 Jul 2015 05:00:05 +0200
-Message-ID: <10898142.yiJePgsQ3c@vostro.rjw.lan>
-References: <20150718163149.GP7557@n2100.arm.linux.org.uk> <CAJZ5v0hXkEbRqd1ZWGABxbofQ+Y8yjn_JknVUXPGKy=kkE=Xhw@mail.gmail.com> <6175136.CkGk6PGZKa@vostro.rjw.lan>
+From: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH v5 7/8] dmaengine: add a driver for Intel integrated DMA
+ 64-bit
+Date: Wed, 22 Jul 2015 10:27:00 +0530
+Message-ID: <20150722045700.GO23525@localhost>
+References: <1436185334-34275-1-git-send-email-andriy.shevchenko@linux.intel.com>
+ <1436185334-34275-8-git-send-email-andriy.shevchenko@linux.intel.com>
+ <20150717043803.GE5086@localhost>
+ <CAHp75VcMej=a0pLT61hbnHmTvY7Mn_aBrrk0Rq0nYbU7e_C67A@mail.gmail.com>
+ <20150721045055.GG23525@localhost>
+ <CAHp75VeC=LzvZ0UbZ_uagW8M80aFoXD5h8v3kQEC2vKX3AjNww@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57713 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753422AbbGVCdT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2015 22:33:19 -0400
-In-Reply-To: <6175136.CkGk6PGZKa@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAHp75VeC=LzvZ0UbZ_uagW8M80aFoXD5h8v3kQEC2vKX3AjNww@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine <dmaengine@vger.kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On Wednesday, July 22, 2015 03:56:21 AM Rafael J. Wysocki wrote:
-> On Wednesday, July 22, 2015 01:15:01 AM Rafael J. Wysocki wrote:
-> > Hi VIresh,
-> > 
-> > On Mon, Jul 20, 2015 at 11:47 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > > Consider a dual core (0/1) system with two CPUs:
-> > > - sharing clock/voltage rails and hence cpufreq-policy
-> > > - CPU1 is offline while the cpufreq driver is registered
-> > >
-> > > - cpufreq_add_dev() is called from subsys callback for CPU0 and we
-> > >   create the policy for the CPUs and create link for CPU1.
-> > > - cpufreq_add_dev() is called from subsys callback for CPU1, we find
-> > >   that the cpu is offline and we try to create a sysfs link for CPU1.
-> > 
-> > So the problem is that the cpu_is_offline(cpu) check in
-> > cpufreq_add_dev() matches two distinct cases: (1) the CPU was not
-> > present before and it is just being hot-added and (2) the CPU is
-> > initially offline, but present, and this is the first time its device
-> > is registered.  In the first case we can expect that the CPU will
-> > become online shortly (although that is not guaranteed too), but in
-> > the second case that very well may not happen.
-> > 
-> > We need to be able to distinguish between those two cases and your
-> > patch does that, but I'm not sure if this really is the most
-> > straightforward way to do it.
+On Tue, Jul 21, 2015 at 10:08:28AM +0300, Andy Shevchenko wrote:
+> On Tue, Jul 21, 2015 at 7:50 AM, Vinod Koul <vinod.koul@intel.com> wrote:
+> > On Mon, Jul 20, 2015 at 11:46:28AM +0300, Andy Shevchenko wrote:
+> >> >> +static void idma64_chan_init(struct idma64 *idma64, struct idma64_chan *idma64c)
+> >> >> +{
+> >> >> +     u32 cfghi = IDMA64C_CFGH_SRC_PER(1) | IDMA64C_CFGH_DST_PER(0);
+> >> >> +     u32 cfglo = 0;
+> >> >> +
+> >> >> +     /* Enforce FIFO drain when channel is suspended */
+> >> >> +     cfglo |= IDMA64C_CFGL_CH_DRAIN;
+> >> >> +
+> >> >> +     /* Set default burst alignment */
+> >> >> +     cfglo |= IDMA64C_CFGL_DST_BURST_ALIGN | IDMA64C_CFGL_SRC_BURST_ALIGN;
+> >> >> +
+> >> >> +     channel_writel(idma64c, CFG_LO, cfglo);
+> >> >> +     channel_writel(idma64c, CFG_HI, cfghi);
+> >> >> +
+> >> >> +     /* Enable interrupts */
+> >> >> +     channel_set_bit(idma64, MASK(XFER), idma64c->mask);
+> >> >> +     channel_set_bit(idma64, MASK(ERROR), idma64c->mask);
+> >> >> +
+> >> >> +     /*
+> >> >> +      * Enforce the controller to be turned on.
+> >> >> +      *
+> >> >> +      * The iDMA is turned off in ->probe() and looses context during system
+> >> >> +      * suspend / resume cycle. That's why we have to enable it each time we
+> >> >> +      * use it.
+> >> >> +      */
+> >> >> +     idma64_on(idma64);
+> >> > would it be better that you do this in resume and runtime_resume cycle. That
+> >> > way it need not be called for every channel init
+> >>
+> >> Mika, I don't remember details here, but this piece came from you. Can
+> >> you shed a light?
+> >>
+> >> My understanding that DMA IP is private to the host controller and has
+> >> the same power rail. Thus, there is no need to do separate power
+> >> management for it, which makes things more complicated for no profit.
+> >> It is also needed for time period from probe till first transfer
+> >> (otherwise we have to check the status of DMA anyway and enable it if
+> >> required), which currently remains DMA off.
+> > so who does runtime management of this power rail and whosoever does that
+> > how do they ensure the dma is not active at that time?
 > 
-> It looks like we need a mask of related CPUs that are present.  Or,
-> alternatively, a mask of CPUs that would have been related had they
-> been present.
+> The host controller driver knows this and it makes it so.
+> Anyway, even if we introduce PM callbacks in this driver how to solve
+> the issue to run very first transfer in a neat way?
+
+And how does it know?
+
+In PM callback case, your runtime resume should enable the controller
+
+> >> >> +static size_t idma64_desc_size(struct idma64_desc *desc, unsigned int active)
+> >> >> +{
+> >> >> +     size_t bytes = 0;
+> >> >> +     unsigned int i;
+> >> >> +
+> >> >> +     for (i = active; i < desc->ndesc; i++)
+> >> >> +             bytes += desc->hw[i].len;
+> >> > it can help for the non active case to have this size stored in desc while
+> >> > preparing, that gets rid of runtime calculation for that case
+> >>
+> >> I don't see much improvement, since it's a rare cases, but waste of
+> >> memory. If you consider that should be done I can implement it.
+> > The users of timing information will invoke this in non sleeping context so
+> > it will help in using one more variable, maybe a good trade off. Also if
+> > this is a rare case do you have use of this calculation and code?
 > 
-> That's sort of what your patch is adding, but not quite.
+> I have no calculations done, but the residue check is used only in one
+> case for now, i.e. in the UART driver (see 8250_dma.c). That code
+> serializes requests, so it will not ask for pending descriptor size.
+> The case when we start the DMA and immediately ask for residue is
+> unlike (when UART RX timeout happens).
+> 
+> >> >> +static int idma64_terminate_all(struct dma_chan *chan)
+> >> >> +{
+> >> >> +     struct idma64_chan *idma64c = to_idma64_chan(chan);
+> >> >> +     unsigned long flags;
+> >> >> +     LIST_HEAD(head);
+> >> >> +
+> >> >> +     spin_lock_irqsave(&idma64c->vchan.lock, flags);
+> >> >> +     idma64_stop_transfer(idma64c);
+> >> > I dont think this is the right method for terminate. Can you check, it
+> >> > might be that we have to suspend the channel before terminating an active
+> >> > one. For non active case this should be okay
+> >>
+> >> Do you mean hardware can become into wrong state?
+> > Yes at least that was true for 32bit version of this IP
+> 
+> Can you elaborate what exactly is happening? We can do a test then and
+> check. For now on we experienced no problems.
 
-OK, below is my take on this (untested), on top of https://patchwork.kernel.org/patch/6839031/
+While you are doing transfers, try terminating. After that doesnt next
+transaction on same channel work well, if not then please try suspending
+first before terminating
 
-We still only create policies for online CPUs which may be confusing in some
-cases, but that's because drivers may not be able to handle CPUs that aren't
-online.
+> >> Only what can actually happen is the data loss which is in DMA FIFO,
+> >> but we already know we would like to terminate the transfer we don't
+> >> care about any data loss since that.
+> > The terminate flow expect you to suspend the channel first and then terminate
+> 
+> Hm... I didn't see anything in the specification. Can you point out
+> where it's described?
 
+I dont have specs to point, but we did see this issue on 32bit BYT
+iDMA and designer told us to follow this flow
 
----
- drivers/cpufreq/cpufreq.c |   41 +++++++++++++++++++++++++----------------
- include/linux/cpufreq.h   |    1 +
- 2 files changed, 26 insertions(+), 16 deletions(-)
+> >> >> +static const struct dev_pm_ops idma64_dev_pm_ops = {
+> >> >> +     SET_LATE_SYSTEM_SLEEP_PM_OPS(idma64_suspend_late, idma64_resume_early)
+> >> > any reason why late ops?
+> >>
+> >> We already discussed this several times. There is no dependency
+> >> between DMA and its users during PM cycles. We have to be sure that
+> >> device (host controller) is quiescent before we stop DMA.
+> > And the realities change! you should be looking at deferred probing for this
+> > rather than using late ops.
+> 
+> > Clients should be suspended first which means
+> > they should be probed last and in the probe ensure all the resources (dma)
+> > are available if not defer the probe.
+> 
+> Ah, deferred probe here makes no sense. We have set probing ordering
+> in the MFD driver (for our drivers).
+> Looks like we may use normal calls.
 
-Index: linux-pm/include/linux/cpufreq.h
-===================================================================
---- linux-pm.orig/include/linux/cpufreq.h
-+++ linux-pm/include/linux/cpufreq.h
-@@ -62,6 +62,7 @@ struct cpufreq_policy {
- 	/* CPUs sharing clock, require sw coordination */
- 	cpumask_var_t		cpus;	/* Online CPUs only */
- 	cpumask_var_t		related_cpus; /* Online + Offline CPUs */
-+	cpumask_var_t		real_cpus; /* Related and present */
- 
- 	unsigned int		shared_type; /* ACPI: ANY or ALL affected CPUs
- 						should set cpufreq */
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -1002,7 +1002,7 @@ static int cpufreq_add_dev_symlink(struc
- 	int ret = 0;
- 
- 	/* Some related CPUs might not be present (physically hotplugged) */
--	for_each_cpu_and(j, policy->related_cpus, cpu_present_mask) {
-+	for_each_cpu(j, policy->real_cpus) {
- 		if (j == policy->kobj_cpu)
- 			continue;
- 
-@@ -1019,7 +1019,7 @@ static void cpufreq_remove_dev_symlink(s
- 	unsigned int j;
- 
- 	/* Some related CPUs might not be present (physically hotplugged) */
--	for_each_cpu_and(j, policy->related_cpus, cpu_present_mask) {
-+	for_each_cpu(j, policy->real_cpus) {
- 		if (j == policy->kobj_cpu)
- 			continue;
- 
-@@ -1157,11 +1157,14 @@ static struct cpufreq_policy *cpufreq_po
- 	if (!zalloc_cpumask_var(&policy->related_cpus, GFP_KERNEL))
- 		goto err_free_cpumask;
- 
-+	if (!zalloc_cpumask_var(&policy->real_cpus, GFP_KERNEL))
-+		goto err_free_rcpumask;
-+
- 	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq, &dev->kobj,
- 				   "cpufreq");
- 	if (ret) {
- 		pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
--		goto err_free_rcpumask;
-+		goto err_free_real_cpus;
- 	}
- 
- 	INIT_LIST_HEAD(&policy->policy_list);
-@@ -1178,6 +1181,8 @@ static struct cpufreq_policy *cpufreq_po
- 
- 	return policy;
- 
-+err_free_real_cpus:
-+	free_cpumask_var(policy->real_cpus);
- err_free_rcpumask:
- 	free_cpumask_var(policy->related_cpus);
- err_free_cpumask:
-@@ -1228,6 +1233,7 @@ static void cpufreq_policy_free(struct c
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	cpufreq_policy_put_kobj(policy, notify);
-+	free_cpumask_var(policy->real_cpus);
- 	free_cpumask_var(policy->related_cpus);
- 	free_cpumask_var(policy->cpus);
- 	kfree(policy);
-@@ -1252,14 +1258,17 @@ static int cpufreq_add_dev(struct device
- 
- 	pr_debug("adding CPU %u\n", cpu);
- 
--	/*
--	 * Only possible if 'cpu' wasn't physically present earlier and we are
--	 * here from subsys_interface add callback. A hotplug notifier will
--	 * follow and we will handle it like logical CPU hotplug then. For now,
--	 * just create the sysfs link.
--	 */
--	if (cpu_is_offline(cpu))
--		return add_cpu_dev_symlink(per_cpu(cpufreq_cpu_data, cpu), cpu);
-+	if (cpu_is_offline(cpu)) {
-+		/*
-+		 * Only possible if we are here from the subsys_interface add
-+		 * callback.  A hotplug notifier will follow and we will handle
-+		 * it as logical CPU hotplug then.  For now, just create the
-+		 * sysfs link, unless there is no policy.
-+		 */
-+		policy = per_cpu(cpufreq_cpu_data, cpu);
-+		return policy && !cpumask_test_and_set_cpu(cpu, policy->real_cpus)
-+			? add_cpu_dev_symlink(policy, cpu) : 0;
-+	}
- 
- 	if (!down_read_trylock(&cpufreq_rwsem))
- 		return 0;
-@@ -1301,6 +1310,9 @@ static int cpufreq_add_dev(struct device
- 	/* related cpus should atleast have policy->cpus */
- 	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
- 
-+	cpumask_and(policy->cpus, policy->cpus, cpu_present_mask);
-+	cpumask_or(policy->real_cpus, policy->real_cpus, policy->cpus);
-+
- 	/*
- 	 * affected cpus must always be the one, which are online. We aren't
- 	 * managing offline cpus here.
-@@ -1525,19 +1537,16 @@ static int cpufreq_remove_dev(struct dev
- 	 * link or free policy here.
- 	 */
- 	if (cpu_is_offline(cpu)) {
--		struct cpumask mask;
--
- 		if (!policy)
- 			return 0;
- 
--		cpumask_copy(&mask, policy->related_cpus);
--		cpumask_clear_cpu(cpu, &mask);
-+		cpumask_clear_cpu(cpu, policy->real_cpus);
- 
- 		/*
- 		 * Free policy only if all policy->related_cpus are removed
- 		 * physically.
- 		 */
--		if (cpumask_intersects(&mask, cpu_present_mask)) {
-+		if (!cpumask_empty(policy->real_cpus)) {
- 			remove_cpu_dev_symlink(policy, cpu);
- 			return 0;
- 		}
+Most of the cases where people use last ops doesnt warrant them so checking
+is always a good idea :)
 
+-- 
+~Vinod
