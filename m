@@ -1,89 +1,81 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] suspend: make sync() on suspend-to-RAM optional
-Date: Wed, 22 Jul 2015 03:25:41 +0200
-Message-ID: <7453812.eRsb3OQU2z@vostro.rjw.lan>
-References: <1436927091-32520-1-git-send-email-lenb@kernel.org> <CAJZ5v0gNKRRaXvfqvj4YEjb+7X1aEobfvWuWyAnAcKArcxtZPA@mail.gmail.com> <20150721151941.GA19581@amd>
+Subject: Re: [PATCH v7 8/8] PCC: Enable PCC only when needed
+Date: Wed, 22 Jul 2015 03:28:04 +0200
+Message-ID: <1583446.GxfV2z2IW5@vostro.rjw.lan>
+References: <cover.1436464513.git.ashwin.chaugule@linaro.org> <CAJZ5v0j-_QB1U-A0F2YSoDa_71nyEGR=yn8Kb5qe-FSqDPevOA@mail.gmail.com> <55AE652B.7030409@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:48555 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S934008AbbGVA64 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2015 20:58:56 -0400
-In-Reply-To: <20150721151941.GA19581@amd>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <55AE652B.7030409@arm.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Brown, Len" <len.brown@intel.com>, Austin S Hemmelgarn <ahferroin7@gmail.com>, Len Brown <lenb@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Tuesday, July 21, 2015 05:19:41 PM Pavel Machek wrote:
-> On Tue 2015-07-21 16:41:12, Rafael J. Wysocki wrote:
-> > Hi Pavel,
-> > 
-> > On Tue, Jul 21, 2015 at 11:38 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > > On Sat 2015-07-18 01:54:09, Rafael J. Wysocki wrote:
-> > >> On Wednesday, July 15, 2015 02:58:22 PM Brown, Len wrote:
-> > 
-> > [cut]
-> > 
-> > >> > >> Why do you need CONFIG parameter?
-> > >> >
-> > >> > So that an OS that doesn't want to change their user-space,
-> > >> > can build a kernel that does what they want by default.
-> > >> >
-> > >> > Originally I had the config parameter remove this code entirely,
-> > >> > which would achieve the same goal.
-> > >> > But Rafael prefers the sysfs attribute always exist
-> > >> > and the config simply set the default.
-> > >>
-> > >> Indeed.
-> > >>
-> > >> And so I'm queuing this patch up for 4.3 (with a couple of minor fixups).
-> > >
-> > > Please don't.
-> > >
-> > > "OS that doesn't want to change the user-space to speed up suspend by
-> > > few milliseconds" is not a valid reason for asking about million users
-> > > one more config question.
-> > 
-> > That's your opinion and I beg to differ.
+On Tuesday, July 21, 2015 04:28:43 PM Sudeep Holla wrote:
+> Hi Rafael,
 > 
-> Perhaps explaining your opinion would help here? Having to echo value
-> to file to improve performance over reliability does not look too
-> burdensome on the users.
-
-That's for the people for whom changing the kernel is easier than messing
-up with user space.
-
-Also if your user space does the sync before suspending, it's better to
-make "no kernel sync" the default, because that saves you some overhead
-and energy too (either on the extra redundant sync on every suspend or
-on the write to the sysfs attribute on every boot).
-
+> On 21/07/15 15:34, Rafael J. Wysocki wrote:
+> > Hi Sudeep,
+> >
+> > On Tue, Jul 21, 2015 at 11:23 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> >>
+> >>
+> >> On 20/07/15 23:04, Rafael J. Wysocki wrote:
+> >>>
+> >>> On Monday, July 20, 2015 03:22:37 PM Sudeep Holla wrote:
+> >>>>
+> >>>>
+> >>>> On 09/07/15 19:04, Ashwin Chaugule wrote:
+> >>>>>
+> >>>>> CPPC is the first client to make use of the PCC Mailbox channel. So
+> >>>>> enable it only when CPPC is also enabled.
+> >>>>>
+> >>>> This sounds like a reverse dependency to me. So if there's some client
+> >>>> unrelated to CPPC using PCC, CPPC_LIB needs to be selected to enable PCC
+> >>>> ?
+> >>>
+> >>>
+> >>> No.  The other client will need to select PCC too.
+> >>
+> >>
+> >> Yes the PCC users/clients selecting PCC is fine and that's already
+> >> done(i.e. ACPI_CPPC_LIB selects PCC). I still don't understand the need
+> >> for this change, also how will other clients possibly select PCC which
+> >> now depends on CPPC_LIB ? e.g. if we have
+> >>
+> >> config ACPI_XYZ_LIB
+> >>          select PCC
+> >>
+> >> config ACPI_XYZ
+> >>          select ACPI_XYZ_LIB
+> >>
+> >> Won't this shout warning: (ACPI_XYZ_LIB && ACPI_CPPC_LIB) selects PCC
+> >> which has unmet direct dependencies (MAILBOX && ACPI && ACPI_CPPC_LIB)
+> >> if ACPI_CPPC_LIB is not selected ?
+> >
+> > That depends on the "depends on" clauses used.  Selecting itself
+> > doesn't cause any dependencies to appear.
+> >
 > 
-> > > Affected users can't run mainline kernel
-> > > anyway, and will have to change their userland in non-trivial ways to
-> > > get there.
-> > 
-> > And I'm not sure what you're talking about here.  Who are the
-> > "affected users" in particular?
+> Agreed and I am absolutely fine with that. But if you look at this 
+> patch, it does
 > 
-> Who does enter suspend to ram multiple times a second? Only android,
-> AFAICT. Can you run android on mainline kernel? No. Can you run
-> android on kernel with less that 100k lines of patches? No.
-> 
-> So who benefits from the new config option? No one.
+> config PCC
+> 	bool "Platform Communication Channel Driver"
+> 	depends on ACPI && ACPI_CPPC_LIB
 
-I am, for one.  None of the systems I use actually needs the sync in the
-kernel.  I bet there are more people like me, because I have a stock
-distro installed on my systems.
+My bad, I've evidently overlooked that.
 
-And it is more pain for me to change the user space on each of them to
-write to the new sysfs file on every boot than to set a kernel Kconfig
-option once.
+If PPC is selected from ACPI_CPPC_LIB, the "depends on" above is
+obviously not needed.
+
+> I am fine with ACPI_CPPC_LIB selecting PCC which is already done in
+> earlier patch. I am against making PCC depend on ACPI_CPPC_LIB.
+
+OK, makes sense.  Sorry for the misunderstanding.
 
 Thanks,
 Rafael
-
 
