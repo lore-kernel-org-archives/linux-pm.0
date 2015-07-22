@@ -1,64 +1,99 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Avoid double addition/removal of sysfs links
-Date: Wed, 22 Jul 2015 12:34:48 +0530
-Message-ID: <20150722070448.GC30970@linux>
-References: <20150718163149.GP7557@n2100.arm.linux.org.uk>
- <a8a3c524facf3b2c1621a54d09c7022f4267d2e5.1437385355.git.viresh.kumar@linaro.org>
- <20150720103623.GQ7557@n2100.arm.linux.org.uk>
- <CAJZ5v0i4-F1XO1ioSLZpYToGWvzM+xLh1-QS6j5zEdOQ8itRfA@mail.gmail.com>
- <CAJZ5v0gHz5cEmX23uXESTmWbx5S+XsXMvxUp4ikTTpgdVy9N3w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f180.google.com ([209.85.192.180]:36382 "EHLO
-	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754083AbbGVHEx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jul 2015 03:04:53 -0400
-Received: by pdjr16 with SMTP id r16so136373598pdj.3
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2015 00:04:52 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gHz5cEmX23uXESTmWbx5S+XsXMvxUp4ikTTpgdVy9N3w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: [PATCH v6 00/13] qcom: Add support for GDSCs
+Date: Wed, 22 Jul 2015 12:40:56 +0530
+Message-ID: <1437549069-29655-1-git-send-email-rnayak@codeaurora.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: sboyd@codeaurora.org, mturquette@baylibre.com
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, Rajendra Nayak <rnayak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On 21-07-15, 03:14, Rafael J. Wysocki wrote:
-> That said, cpu_present_mask may only be updated after calling
-> arch_unregister_cpu(), so checking it in cpufreq_remove_dev() doesn't
-> really help.
+GDSCs (Global Distributed Switch Controllers) control switches
+that supply power to an on-chip power domain and hence can be
+programmed in SW to safely power collapse and restore power to the
+respective PDs. They are part of a considerable number of recent QCOM
+SoCs (This series adds support for msm8974, msm8916 and apq8084 devices)
+and are part of the Clock control block.
 
-No, it is indeed useful. This is a snippet from the latest code we
-have:
+The series implements support for GDSC using the genpd framework
+modelling these as SW controllable power domains and uses PM clocks
+to control clocks within the gdsc.
 
-		cpumask_copy(&mask, policy->related_cpus);
-		cpumask_clear_cpu(cpu, &mask);
+* Client drivers which plan to use GDSC can refer to
+  Documentation/devicetree/bindings/power/power_domain.txt to know
+  how to hook up the power domain for the device through DT
+* Runtime PM specific documentation can be found in
+  Documentation/power/runtime_pm.txt
+* Patches are based of 4.2-rc3
 
-		/*
-		 * Free policy only if all policy->related_cpus are removed
-		 * physically.
-		 */
-		if (cpumask_intersects(&mask, cpu_present_mask)) {
-			remove_cpu_dev_symlink(policy, cpu);
-			return 0;
-		}
+Changes since v5:
+* Added support to manage clocks with !CONFIG_PM
+* Added RET/OFF support
+* Added support to assert/deassert reset while the GDSC is ON
 
-		cpufreq_policy_free(policy, true);
+Changes since v4:
+* Added clock control support using PM clocks
+* Included WA to enable an RCG (needed for Oxili gdsc in 8916)
 
+Changes since v3:
+* static inline'd gdsc_register/unregister stubs
+* error check fixes in gdsc_register
+* dropped oxili_gdsc for 8916 as its broken and needs additional
+WA's not part of this series
+* split dts and driver changes into seperate patches
+* Updated and included Stephanes patch to add gdscs to apq8084 mmcc
+in the series
 
+Changes since v2:
+* gdsc_unregister added
+* gdsc_register/unregister introduced in patch 1/6
 
-So what we are checking in the 'if' block is: "Is any CPU from
-related_cpus, apart from the one getting removed now, present in the
-system."
+Changes since v1:
+* added err checks for regmap apis
+* added gdsc_register() in gdsc.c
 
-If not, then free the policy.
+Rajendra Nayak (9):
+  clk: qcom: gdsc: Prepare common clk probe to register gdscs
+  clk: qcom: gdsc: Use PM clocks to control gdsc clocks
+  clk: qcom: gdsc: Manage clocks with !CONFIG_PM
+  clk: qcom: gdsc: Enable an RCG before turing on the gdsc
+  clk: qcom: gdsc: Add support for Memory RET/OFF
+  clk: qcom: gdsc: Add support for ON only state
+  clk: qcom: gdsc: Add GDSCs in msm8916 GCC
+  clk: qcom: gdsc: Add GDSCs in apq8084 GCC
+  arm: dts: qcom: Add #power-domain-cells property
 
-> It looks like using cpufreq_remove_dev() as the subsys ->remove_dev
-> callback is a mistake as it cannot really tell the difference between
-> that code path and the CPU offline one.
+Stephane Viau (1):
+  clk: qcom: gdsc: Add GDSCs in apq8084 MMCC
 
-What do you mean by this? Doesn't the sif parameter confirms that its
-called from subsys path ?
+Stephen Boyd (3):
+  clk: qcom: Add support for GDSCs
+  clk: qcom: gdsc: Add GDSCs in msm8974 GCC
+  clk: qcom: gdsc: Add GDSCs in msm8974 MMCC
+
+ arch/arm/boot/dts/qcom-apq8084.dtsi           |   1 +
+ arch/arm/boot/dts/qcom-msm8974.dtsi           |   2 +
+ arch/arm64/boot/dts/qcom/msm8916.dtsi         |   1 +
+ drivers/clk/qcom/Kconfig                      |  10 +
+ drivers/clk/qcom/Makefile                     |   1 +
+ drivers/clk/qcom/common.c                     |  17 +-
+ drivers/clk/qcom/common.h                     |   2 +
+ drivers/clk/qcom/gcc-apq8084.c                |  42 ++++
+ drivers/clk/qcom/gcc-msm8916.c                |  52 ++++
+ drivers/clk/qcom/gcc-msm8974.c                |  15 ++
+ drivers/clk/qcom/gdsc.c                       | 343 ++++++++++++++++++++++++++
+ drivers/clk/qcom/gdsc.h                       |  72 ++++++
+ drivers/clk/qcom/mmcc-apq8084.c               |  68 ++++-
+ drivers/clk/qcom/mmcc-msm8974.c               |  72 ++++++
+ include/dt-bindings/clock/qcom,gcc-apq8084.h  |   6 +
+ include/dt-bindings/clock/qcom,gcc-msm8916.h  |   8 +
+ include/dt-bindings/clock/qcom,gcc-msm8974.h  |   3 +
+ include/dt-bindings/clock/qcom,mmcc-apq8084.h |   8 +
+ include/dt-bindings/clock/qcom,mmcc-msm8974.h |   8 +
+ 19 files changed, 729 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/clk/qcom/gdsc.c
+ create mode 100644 drivers/clk/qcom/gdsc.h
 
 -- 
-viresh
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
