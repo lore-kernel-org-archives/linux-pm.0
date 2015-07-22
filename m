@@ -1,174 +1,274 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [RFC PATCH V2] PM / hibernate: Fix hibernation panic caused by inconsistent e820 memory map
-Date: Wed, 22 Jul 2015 16:29:08 +0800
-Message-ID: <1437553748-7344-1-git-send-email-yu.c.chen@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:2208 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756083AbbGVIZd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 22 Jul 2015 04:25:33 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Liviu Dudau <Liviu.Dudau-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v4 1/8] Documentation: add DT binding for ARM System
+ Control and Power Interface(SCPI) protocol
+Date: Wed, 22 Jul 2015 09:43:12 +0100
+Message-ID: <20150722084312.GB14923@e106497-lin.cambridge.arm.com>
+References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com>
+ <1433760002-24120-2-git-send-email-sudeep.holla@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1433760002-24120-2-git-send-email-sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Content-Disposition: inline
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi-5wv7dgnIgG8@public.gmane.org>, "Jon Medhurst (Tixy)" <tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: jlee@suse.com, rafael.j.wysocki@intel.com, yinghai@kernel.org, rui.zhang@intel.com, yex.tian@intel.com, Chen Yu <yu.c.chen@intel.com>
 
-Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820 reserved
-regions") was reverted, because this patch makes resume from hibernation
-on Lenovo x230 unreliable. But reverting may bring back the kernel
-exception firstly reported in former patch. In general, there are three
-problems in current code when resuming from hibernation:
+Hi Sudeep,
 
-1.Resuming page may also be in second kernel's e820 reserved region.
-BIOS-e820: [mem 0x0000000069d4f000-0x0000000069e12fff] reserved
-this causes kernel exception described in Commit 84c91b7ae07c
-("PM / hibernate: avoid unsafe pages in e820 reserved regions")
+Minor spelling/phrasing corrections:
 
-2.If Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820
-reserved regions") is applied to fix problem 1, and if E820_RESERVED_KERN
-regions causes some regions at e820 table not page aligned,
-e820_mark_nosave_regions will misjudgment the non-page aligned space to
-be "hole" space and add to nosave regions, this causes resuming failed.
-Refer to https://bugzilla.kernel.org/show_bug.cgi?id=96111 for detail.
+On Mon, Jun 08, 2015 at 11:39:55AM +0100, Sudeep Holla wrote:
+> This patch adds devicetree binding for System Control and Power
+> Interface (SCPI) Message Protocol used between the Application Cores(=
+AP)
+> and the System Control Processor(SCP). The MHU peripheral provides a
+> mechanism for inter-processor communication between SCP's M3 processo=
+r
+> and AP.
+>=20
+> SCP offers control and management of the core/cluster power states,
+> various power domain DVFS including the core/cluster, certain system
+> clocks configuration, thermal sensors and many others.
+>=20
+> Signed-off-by: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+> Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+> CC: Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> Cc: Liviu Dudau <Liviu.Dudau-5wv7dgnIgG8@public.gmane.org>
+> Cc: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+> Cc: Jon Medhurst (Tixy) <tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> ---
+>  Documentation/devicetree/bindings/arm/arm,scpi.txt | 156 +++++++++++=
+++++++++++
+>  1 file changed, 156 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/arm/arm,scpi.tx=
+t
+>=20
+> diff --git a/Documentation/devicetree/bindings/arm/arm,scpi.txt b/Doc=
+umentation/devicetree/bindings/arm/arm,scpi.txt
+> new file mode 100644
+> index 000000000000..f5f9684e23b3
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/arm/arm,scpi.txt
+> @@ -0,0 +1,156 @@
+> +System Control and Power Interface (SCPI) Message Protocol
+> +----------------------------------------------------------
+> +
+> +Firmware implementing the SCPI described in ARM document number ARM =
+DUI 0922B
+> +("ARM Compute Subsystem SCP: Message Interface Protocols")[0] can be=
+ used
+> +by Linux to initiate various system control and power operations.
+> +
+> +Required properties:
+> +
+> +- compatible : should be "arm,scpi"
+> +- mboxes: List of phandle and mailbox channel specifiers
+> +	  All the channels reserved by remote SCP firmware for use by
+> +	  SCPI message protocol should be specified in any order
+> +- shmem : List of phandle pointing to the shared memory(SHM) area be=
+tween the
+> +	  processors using these mailboxes for IPC, one for each mailbox
+> +	  SHM can be any memory reserved for the purpose of this communicat=
+ion
+> +	  between the processors.
+> +
+> +See Documentation/devicetree/bindings/mailbox/mailbox.txt
+> +for more details about the generic mailbox controller and
+> +client driver bindings.
+> +
+> +Clock bindings for the clocks based on SCPI Message Protocol
+> +------------------------------------------------------------
+> +
+> +This binding uses the common clock binding[1].
+> +
+> +Container Node
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +Required properties:
+> +- compatible : should be "arm,scpi-clocks"
+> +	       All the clocks provided by SCP firmware via SCPI message
+> +	       protocol much be listed as sub-nodes under this node.
+> +
+> +Sub-nodes
+> +=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> +Required properties:
+> +- compatible : shall include one of the following
+> +	"arm,scpi-dvfs-clocks" - all the clocks that are variable and index=
+ based.
+> +		These clocks don't provide the full range between the limits
+=2E.. don't provide an entire range of values between the limits
+> +		but only discrete points within the range. The firmware
+> +		provides the mapping for each such operating frequency and the
+> +		index associated with it. The firmware also manages the
+> +		voltage scaling appropriately with the clock scaling.
+> +	"arm,scpi-variable-clocks" - all the clocks that are variable and p=
+rovide full
+> +		range within the specified range. The firmware provides the
+		range of values within a specified range. .....
+> +		supported range for each clock.
+> +
+> +Other required properties for all clocks(all from common clock bindi=
+ng):
+> +- #clock-cells : should be set to 1 as each of the SCPI clocks have =
+multiple
+> +	outputs. The clock specifier will be the index to an entry in the l=
+ist
+> +	of output clocks.
+> +- clock-output-names : shall be the corresponding names of the outpu=
+ts.
+> +- clock-indices: The identifyng number for the clocks(clock_id) in t=
+he node as
 
-3.e820 memory map inconsistence. Sometimes resuming system may have
-larger memory capacity than the one before hibernation. If a strict
-superset relationship is satisfied, it should be allowed to resume.
-For example,  use case of memory hotplug after hibernation.
+s/identifyng/identifying/=20
 
-e820 memory map before hibernation:
-BIOS-e820: [mem 0x0000000020200000-0x0000000077517fff] usable
-BIOS-e820: [mem 0x0000000077518000-0x0000000077567fff] reserved
+> +	expected by the firmware. It can be non linear and hence provide th=
+e
+> +	mapping	of identifiers into the clock-output-names array.
+> +
+> +SRAM and Shared Memory for SCPI
+> +-------------------------------
+> +
+> +A small area of SRAM is reserved for SCPI communication between appl=
+ication
+> +processors and SCP.
+> +
+> +Required properties:
+> +- compatible : should be "arm,juno-sram-ns" for Non-secure SRAM on J=
+uno
+> +
+> +The rest of the properties should follow the generic mmio-sram discr=
+iption
 
-e820 memory map during resuming:
-BIOS-e820: [mem 0x0000000020200000-0x000000007753ffff] usable
-BIOS-e820: [mem 0x0000000077540000-0x0000000077567fff] reserved
+s/discription/description/
 
-This patch is based on Lee, Chun-Yi's original patch
-Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820 reserved
-regions"), then treats any ajacent E820_RAM/E820_RESERVED_KERN regions
-as one region, this can prevent any non-page aligned address in
-ajacent E820_RAM/E820_RESERVED regions, from being added to nosave regions,
-thus allow system to restore the hibernation image, for example:
-three E820_RAM/E820_RESERVED_KERN regions,
-[a,b] [b+1,c] [c+1,d], should be treated as a whole:
-[a,d].
-For the bug reported at https://bugzilla.kernel.org/show_bug.cgi?id=96111
-reserve setup_data: [mem 0x000000005baff000-0x000000009d3e0017] usable
-reserve setup_data: [mem 0x000000009d3e0018-0x000000009d3f0057] usable
-reserve setup_data: [mem 0x000000009d3f0058-0x00000000d684ffff] usable
-these regions will be treated as one:
-[mem 0x000000005baff000-0x00000000d684ffff] usable.
+> +found in ../../misc/sysram.txt
+> +
+> +Each sub-node represents the reserved area for SCPI.
+> +
+> +Required sub-node properties:
+> +- reg : The base offset and size of the reserved area with the SRAM
+> +- compatible : should be "arm,juno-scp-shmem" for Non-secure SRAM ba=
+sed
+> +	       shared memory on Juno platforms
+> +
+> +[0] http://community.arm.com/servlet/JiveServlet/download/8401-45-18=
+326/DUI0922B_scp_message_interface.pdf
+> +[1] Documentation/devicetree/bindings/clock/clock-bindings.txt
+> +
+> +Example:
+> +
+> +sram: sram@50000000 {
+> +	compatible =3D "arm,juno-sram-ns", "mmio-sram";
+> +	reg =3D <0x0 0x50000000 0x0 0x10000>;
+> +
+> +	#address-cells =3D <1>;
+> +	#size-cells =3D <1>;
+> +	ranges =3D <0 0x0 0x50000000 0x10000>;
+> +
+> +	cpu_scp_lpri: scp-shmem@0 {
+> +		compatible =3D "arm,juno-scp-shmem";
+> +		reg =3D <0x0 0x200>;
+> +	};
+> +
+> +	cpu_scp_hpri: scp-shmem@200 {
+> +		compatible =3D "arm,juno-scp-shmem";
+> +		reg =3D <0x200 0x200>;
+> +	};
+> +};
+> +
+> +mailbox: mailbox0@40000000 {
+> +	....
+> +	#mbox-cells =3D <1>;
+> +};
+> +
+> +scpi_protocol: scpi@2e000000 {
+> +	compatible =3D "arm,scpi";
+> +	mboxes =3D <&mailbox 0 &mailbox 1>;
+> +	shmem =3D <&cpu_scp_lpri &cpu_scp_hpri>;
+> +
+> +	clocks {
+> +		compatible =3D "arm,scpi-clocks";
+> +
+> +		scpi_dvfs: scpi_clocks@0 {
+> +			compatible =3D "arm,scpi-dvfs-clocks";
+> +			#clock-cells =3D <1>;
+> +			clock-indices =3D <0>, <1>, <2>;
+> +			clock-output-names =3D "vbig", "vlittle", "vgpu";
+> +		};
+> +		scpi_clk: scpi_clocks@3 {
+> +			compatible =3D "arm,scpi-variable-clocks";
+> +			#clock-cells =3D <1>;
+> +			clock-indices =3D <3>, <4>;
+> +			clock-output-names =3D "pxlclk0", "pxlclk1";
+> +		};
+> +	};
+> +};
+> +
+> +cpu@0 {
+> +	...
+> +	reg =3D <0 0>;
+> +	clocks =3D <&scpi_dvfs 0>;
+> +	clock-names =3D "vbig";
+> +};
+> +
+> +hdlcd@7ff60000 {
+> +	...
+> +	reg =3D <0 0x7ff60000 0 0x1000>;
+> +	clocks =3D <&scpi_clk 1>;
+> +	clock-names =3D "pxlclk";
+> +};
+> +
+> +In the above example, the #clock-cells is set to 1 as required.
+> +scpi_dvfs has 3 output clocks namely: vbig, vlittle and vgpu with 0,=
+ 1
+> +and 2 as clock-indices. scpi_clk has 2 output clocks namely: pxlclk0=
+ and
+> +pxlclk1 with 3 and 4 as clock-indices.
+> +
+> +The first consumer in the example is cpu@0 and it has vbig as input =
+clock.
+> +The index '0' in the clock specifier here points to the first entry =
+in the
+> +output clocks of scpi_dvfs for which clock_id asrequired by the firm=
+ware
 
-Tested-by: Tian Ye <yex.tian@intel.com>
-Tested-by: Wendy, Wang <wendy.wang@intel.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- arch/x86/kernel/e820.c  | 32 +++++++++++++++++++++++++++++++-
- kernel/power/snapshot.c | 26 +++++++++++++++++++++++---
- 2 files changed, 54 insertions(+), 4 deletions(-)
+s/asrequired/as required/
 
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index a102564..ac2da40 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -672,6 +672,11 @@ void __init parse_e820_ext(u64 phys_addr, u32 data_len)
- 
- #if defined(CONFIG_X86_64) || \
- 	(defined(CONFIG_X86_32) && defined(CONFIG_HIBERNATION))
-+static int e820_is_ram_region(struct e820entry *ei)
-+{
-+	return (((ei->type == E820_RAM) ||
-+		(ei->type == E820_RESERVED_KERN)) ? 1 : 0);
-+}
- /**
-  * Find the ranges of physical addresses that do not correspond to
-  * e820 RAM areas and mark the corresponding pages as nosave for
-@@ -693,8 +698,33 @@ void __init e820_mark_nosave_regions(unsigned long limit_pfn)
- 
- 		pfn = PFN_DOWN(ei->addr + ei->size);
- 
--		if (ei->type != E820_RAM && ei->type != E820_RESERVED_KERN)
-+		if (!e820_is_ram_region(ei))
- 			register_nosave_region(PFN_UP(ei->addr), pfn);
-+		else {
-+			/**
-+			* Treat any ajacent E820_RAM/E820_RESERVED_KERN
-+			* regions as one region, because the algorithm
-+			* to check the holes between regions may split
-+			* non-page-aligned address into nosave region,
-+			* which is not expected when resuming from hibernation.
-+			* With following code,
-+			* [a,b][b+1,c][c+1,d] will be manipulated as [a,d].
-+			* thus workaround this problem.
-+			*/
-+			struct e820entry *ei_next;
-+
-+			while (i < (e820.nr_map - 1)) {
-+				ei_next = &(e820.map[i+1]);
-+				if (!e820_is_ram_region(ei_next))
-+					break;
-+				if (ei->addr + ei->size + 1 == ei_next->addr) {
-+					pfn =
-+					PFN_DOWN(ei_next->addr + ei_next->size);
-+					ei = &e820.map[++i];
-+				} else
-+					break;
-+			}
-+		}
- 
- 		if (pfn >= limit_pfn)
- 			break;
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 5235dd4..26ddb2f 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -955,6 +955,25 @@ static void mark_nosave_pages(struct memory_bitmap *bm)
- 	}
- }
- 
-+static bool is_nosave_page(unsigned long pfn)
-+{
-+	struct nosave_region *region;
-+
-+	list_for_each_entry(region, &nosave_regions, list) {
-+		if (pfn >= region->start_pfn && pfn < region->end_pfn) {
-+			pr_err(
-+		  "PM: %#010llx in e820 nosave region: [mem %#010llx-%#010llx]\n",
-+		  (unsigned long long) pfn << PAGE_SHIFT,
-+		  (unsigned long long) region->start_pfn << PAGE_SHIFT,
-+		  ((unsigned long long) region->end_pfn << PAGE_SHIFT)
-+		  - 1);
-+			return true;
-+		}
-+	}
-+
-+	return false;
-+}
-+
- /**
-  *	create_basic_memory_bitmaps - create bitmaps needed for marking page
-  *	frames that should not be saved and free page frames.  The pointers
-@@ -2023,7 +2042,7 @@ static int mark_unsafe_pages(struct memory_bitmap *bm)
- 	do {
- 		pfn = memory_bm_next_pfn(bm);
- 		if (likely(pfn != BM_END_OF_MAP)) {
--			if (likely(pfn_valid(pfn)))
-+			if (likely(pfn_valid(pfn)) && !is_nosave_page(pfn))
- 				swsusp_set_page_free(pfn_to_page(pfn));
- 			else
- 				return -EFAULT;
-@@ -2053,8 +2072,9 @@ static int check_header(struct swsusp_info *info)
- 	char *reason;
- 
- 	reason = check_image_kernel(info);
--	if (!reason && info->num_physpages != get_num_physpages())
--		reason = "memory size";
-+	/* No need to check num_physpages because is_nosave_page
-+	 * will ensure each page is safe to restore.
-+	 */
- 	if (reason) {
- 		printk(KERN_ERR "PM: Image mismatch: %s\n", reason);
- 		return -EPERM;
--- 
-1.9.1
+> +is 0.
+> +
+> +Similarly the second example is hdlcd@7ff60000 and it has pxlclk0 as=
+ input
+> +clock. The index '1' in the clock specifier here points to the secon=
+d entry
+> +in the output clocks of scpi_clocks for which clock_id as required b=
+y the
+> +firmware is 4.
 
+This paragraph doesn't match the example. pxlclk0 is index '0'.
+
+Best regards,
+Liviu
+
+> --=20
+> 1.9.1
+>=20
+
+--=20
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+| I would like to |
+| fix the world,  |
+| but they're not |
+| giving me the   |
+ \ source code!  /
+  ---------------
+    =C2=AF\_(=E3=83=84)_/=C2=AF
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
