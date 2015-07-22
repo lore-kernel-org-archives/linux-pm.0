@@ -1,99 +1,85 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v6 00/13] qcom: Add support for GDSCs
-Date: Wed, 22 Jul 2015 12:40:56 +0530
-Message-ID: <1437549069-29655-1-git-send-email-rnayak@codeaurora.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
+Subject: [PATCH v6 02/13] clk: qcom: gdsc: Prepare common clk probe to register gdscs
+Date: Wed, 22 Jul 2015 12:40:58 +0530
+Message-ID: <1437549069-29655-3-git-send-email-rnayak@codeaurora.org>
+References: <1437549069-29655-1-git-send-email-rnayak@codeaurora.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:60295 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755889AbbGVHLg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jul 2015 03:11:36 -0400
+In-Reply-To: <1437549069-29655-1-git-send-email-rnayak@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: sboyd@codeaurora.org, mturquette@baylibre.com
 Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, Rajendra Nayak <rnayak@codeaurora.org>
-List-Id: linux-pm@vger.kernel.org
 
-GDSCs (Global Distributed Switch Controllers) control switches
-that supply power to an on-chip power domain and hence can be
-programmed in SW to safely power collapse and restore power to the
-respective PDs. They are part of a considerable number of recent QCOM
-SoCs (This series adds support for msm8974, msm8916 and apq8084 devices)
-and are part of the Clock control block.
+The common clk probe registers a clk provider and a reset controller.
+Update it to register a genpd provider using the gdsc data provided
+by each platform.
 
-The series implements support for GDSC using the genpd framework
-modelling these as SW controllable power domains and uses PM clocks
-to control clocks within the gdsc.
+Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+---
+ drivers/clk/qcom/common.c | 16 +++++++++++++++-
+ drivers/clk/qcom/common.h |  2 ++
+ 2 files changed, 17 insertions(+), 1 deletion(-)
 
-* Client drivers which plan to use GDSC can refer to
-  Documentation/devicetree/bindings/power/power_domain.txt to know
-  how to hook up the power domain for the device through DT
-* Runtime PM specific documentation can be found in
-  Documentation/power/runtime_pm.txt
-* Patches are based of 4.2-rc3
-
-Changes since v5:
-* Added support to manage clocks with !CONFIG_PM
-* Added RET/OFF support
-* Added support to assert/deassert reset while the GDSC is ON
-
-Changes since v4:
-* Added clock control support using PM clocks
-* Included WA to enable an RCG (needed for Oxili gdsc in 8916)
-
-Changes since v3:
-* static inline'd gdsc_register/unregister stubs
-* error check fixes in gdsc_register
-* dropped oxili_gdsc for 8916 as its broken and needs additional
-WA's not part of this series
-* split dts and driver changes into seperate patches
-* Updated and included Stephanes patch to add gdscs to apq8084 mmcc
-in the series
-
-Changes since v2:
-* gdsc_unregister added
-* gdsc_register/unregister introduced in patch 1/6
-
-Changes since v1:
-* added err checks for regmap apis
-* added gdsc_register() in gdsc.c
-
-Rajendra Nayak (9):
-  clk: qcom: gdsc: Prepare common clk probe to register gdscs
-  clk: qcom: gdsc: Use PM clocks to control gdsc clocks
-  clk: qcom: gdsc: Manage clocks with !CONFIG_PM
-  clk: qcom: gdsc: Enable an RCG before turing on the gdsc
-  clk: qcom: gdsc: Add support for Memory RET/OFF
-  clk: qcom: gdsc: Add support for ON only state
-  clk: qcom: gdsc: Add GDSCs in msm8916 GCC
-  clk: qcom: gdsc: Add GDSCs in apq8084 GCC
-  arm: dts: qcom: Add #power-domain-cells property
-
-Stephane Viau (1):
-  clk: qcom: gdsc: Add GDSCs in apq8084 MMCC
-
-Stephen Boyd (3):
-  clk: qcom: Add support for GDSCs
-  clk: qcom: gdsc: Add GDSCs in msm8974 GCC
-  clk: qcom: gdsc: Add GDSCs in msm8974 MMCC
-
- arch/arm/boot/dts/qcom-apq8084.dtsi           |   1 +
- arch/arm/boot/dts/qcom-msm8974.dtsi           |   2 +
- arch/arm64/boot/dts/qcom/msm8916.dtsi         |   1 +
- drivers/clk/qcom/Kconfig                      |  10 +
- drivers/clk/qcom/Makefile                     |   1 +
- drivers/clk/qcom/common.c                     |  17 +-
- drivers/clk/qcom/common.h                     |   2 +
- drivers/clk/qcom/gcc-apq8084.c                |  42 ++++
- drivers/clk/qcom/gcc-msm8916.c                |  52 ++++
- drivers/clk/qcom/gcc-msm8974.c                |  15 ++
- drivers/clk/qcom/gdsc.c                       | 343 ++++++++++++++++++++++++++
- drivers/clk/qcom/gdsc.h                       |  72 ++++++
- drivers/clk/qcom/mmcc-apq8084.c               |  68 ++++-
- drivers/clk/qcom/mmcc-msm8974.c               |  72 ++++++
- include/dt-bindings/clock/qcom,gcc-apq8084.h  |   6 +
- include/dt-bindings/clock/qcom,gcc-msm8916.h  |   8 +
- include/dt-bindings/clock/qcom,gcc-msm8974.h  |   3 +
- include/dt-bindings/clock/qcom,mmcc-apq8084.h |   8 +
- include/dt-bindings/clock/qcom,mmcc-msm8974.h |   8 +
- 19 files changed, 729 insertions(+), 2 deletions(-)
- create mode 100644 drivers/clk/qcom/gdsc.c
- create mode 100644 drivers/clk/qcom/gdsc.h
-
+diff --git a/drivers/clk/qcom/common.c b/drivers/clk/qcom/common.c
+index f7101e3..2776679 100644
+--- a/drivers/clk/qcom/common.c
++++ b/drivers/clk/qcom/common.c
+@@ -21,6 +21,7 @@
+ #include "clk-rcg.h"
+ #include "clk-regmap.h"
+ #include "reset.h"
++#include "gdsc.h"
+ 
+ struct qcom_cc {
+ 	struct qcom_reset_controller reset;
+@@ -120,8 +121,20 @@ int qcom_cc_really_probe(struct platform_device *pdev,
+ 
+ 	ret = reset_controller_register(&reset->rcdev);
+ 	if (ret)
+-		of_clk_del_provider(dev->of_node);
++		goto err_reset;
+ 
++	if (desc->gdscs && desc->num_gdscs) {
++		ret = gdsc_register(dev, desc->gdscs, desc->num_gdscs, regmap);
++		if (ret)
++			goto err_pd;
++	}
++
++	return 0;
++err_pd:
++	dev_err(dev, "Failed to register power domains\n");
++	reset_controller_unregister(&reset->rcdev);
++err_reset:
++	of_clk_del_provider(dev->of_node);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(qcom_cc_really_probe);
+@@ -140,6 +153,7 @@ EXPORT_SYMBOL_GPL(qcom_cc_probe);
+ 
+ void qcom_cc_remove(struct platform_device *pdev)
+ {
++	gdsc_unregister(&pdev->dev);
+ 	of_clk_del_provider(pdev->dev.of_node);
+ 	reset_controller_unregister(platform_get_drvdata(pdev));
+ }
+diff --git a/drivers/clk/qcom/common.h b/drivers/clk/qcom/common.h
+index 7a0e737..2892b71f 100644
+--- a/drivers/clk/qcom/common.h
++++ b/drivers/clk/qcom/common.h
+@@ -28,6 +28,8 @@ struct qcom_cc_desc {
+ 	size_t num_clks;
+ 	const struct qcom_reset_map *resets;
+ 	size_t num_resets;
++	struct gdsc **gdscs;
++	size_t num_gdscs;
+ };
+ 
+ extern const struct freq_tbl *qcom_find_freq(const struct freq_tbl *f,
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
+
