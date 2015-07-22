@@ -1,42 +1,52 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [PATCH 8/9] arm64: dts: Add sensor node to Juno dt
-Date: Wed, 22 Jul 2015 15:02:42 +0100
-Message-ID: <1437573763-6525-9-git-send-email-punit.agrawal@arm.com>
-References: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Punit Agrawal <punit.agrawal@arm.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@arm.com>
+From: Mel Gorman <mgorman@suse.de>
+Subject: Re: [PATCH v3 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
+ feature
+Date: Wed, 22 Jul 2015 15:05:30 +0100
+Message-ID: <20150722140530.GK2561@suse.de>
+References: <1437114578-2502-1-git-send-email-pintu.k@samsung.com>
+ <1437366544-32673-1-git-send-email-pintu.k@samsung.com>
+ <20150720082810.GG2561@suse.de>
+ <02c601d0c306$f86d30f0$e94792d0$@samsung.com>
+ <20150720175538.GJ2561@suse.de>
+ <05af01d0c47f$3337ccd0$99a76670$@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <05af01d0c47f$3337ccd0$99a76670$@samsung.com>
+Sender: owner-linux-mm@kvack.org
+To: PINTU KUMAR <pintu.k@samsung.com>
+Cc: akpm@linux-foundation.org, corbet@lwn.net, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, qiuxishi@huawei.com, Valdis.Kletnieks@vt.edu, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com, pintu.ping@gmail.compintu
 List-Id: linux-pm@vger.kernel.org
 
-The SCP firmware on Juno provides access to SoC sensors via the
-SCPI. Add the sensor nodes to the device tree to enable this support.
+On Wed, Jul 22, 2015 at 06:33:26PM +0530, PINTU KUMAR wrote:
+> Dear Mel, thank you very much for your comments and suggestions.
+> I will drop this one and look on further improving direct_reclaim and
+> compaction.
+> Just few more comments below before I close.
+> 
+> Also, during this patch, I feel that the hibernation_mode part in
+> shrink_all_memory can be corrected.
+> So, can I separately submit the below patch?
+> That is instead of hard-coding the hibernation_mode, we can get hibernation
+> status using:
+> system_entering_hibernation()
+> 
+> Please let me know your suggestion about this changes.
+> 
+> -#ifdef CONFIG_HIBERNATION
+> +#if defined CONFIG_HIBERNATION || CONFIG_SHRINK_MEMORY
 
-Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Liviu Dudau <liviu.dudau@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
----
- arch/arm64/boot/dts/arm/juno-base.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
+This appears to be a patch on top of "Add /proc/sys/vm/shrink_memory
+feature" so I do not see what would be separately submitted that would
+make sense.
 
-diff --git a/arch/arm64/boot/dts/arm/juno-base.dtsi b/arch/arm64/boot/dts/arm/juno-base.dtsi
-index c624208..dd5158e 100644
---- a/arch/arm64/boot/dts/arm/juno-base.dtsi
-+++ b/arch/arm64/boot/dts/arm/juno-base.dtsi
-@@ -96,6 +96,11 @@
- 				clock-output-names = "pxlclk0", "pxlclk1";
- 			};
- 		};
-+
-+		scpi_sensors0: sensors {
-+			compatible = "arm,scpi-sensors";
-+			#thermal-sensor-cells = <1>;
-+		};
- 	};
- 
- 	/include/ "juno-clocks.dtsi"
 -- 
-2.1.4
+Mel Gorman
+SUSE Labs
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
