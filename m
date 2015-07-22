@@ -1,151 +1,192 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH v5 7/8] dmaengine: add a driver for Intel integrated DMA
- 64-bit
-Date: Wed, 22 Jul 2015 10:27:00 +0530
-Message-ID: <20150722045700.GO23525@localhost>
-References: <1436185334-34275-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <1436185334-34275-8-git-send-email-andriy.shevchenko@linux.intel.com>
- <20150717043803.GE5086@localhost>
- <CAHp75VcMej=a0pLT61hbnHmTvY7Mn_aBrrk0Rq0nYbU7e_C67A@mail.gmail.com>
- <20150721045055.GG23525@localhost>
- <CAHp75VeC=LzvZ0UbZ_uagW8M80aFoXD5h8v3kQEC2vKX3AjNww@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAHp75VeC=LzvZ0UbZ_uagW8M80aFoXD5h8v3kQEC2vKX3AjNww@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine <dmaengine@vger.kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Michael Turquette <mturquette@baylibre.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [RFC PATCH] cpufreq: intel_pstate: Use ACPI perf configuration
+Date: Tue, 21 Jul 2015 22:27:47 -0700
+Message-ID: <1437542867-32559-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:4170 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751589AbbGVFaS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 22 Jul 2015 01:30:18 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com, khlebnikov@yandex-team.ru
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Tue, Jul 21, 2015 at 10:08:28AM +0300, Andy Shevchenko wrote:
-> On Tue, Jul 21, 2015 at 7:50 AM, Vinod Koul <vinod.koul@intel.com> wrote:
-> > On Mon, Jul 20, 2015 at 11:46:28AM +0300, Andy Shevchenko wrote:
-> >> >> +static void idma64_chan_init(struct idma64 *idma64, struct idma64_chan *idma64c)
-> >> >> +{
-> >> >> +     u32 cfghi = IDMA64C_CFGH_SRC_PER(1) | IDMA64C_CFGH_DST_PER(0);
-> >> >> +     u32 cfglo = 0;
-> >> >> +
-> >> >> +     /* Enforce FIFO drain when channel is suspended */
-> >> >> +     cfglo |= IDMA64C_CFGL_CH_DRAIN;
-> >> >> +
-> >> >> +     /* Set default burst alignment */
-> >> >> +     cfglo |= IDMA64C_CFGL_DST_BURST_ALIGN | IDMA64C_CFGL_SRC_BURST_ALIGN;
-> >> >> +
-> >> >> +     channel_writel(idma64c, CFG_LO, cfglo);
-> >> >> +     channel_writel(idma64c, CFG_HI, cfghi);
-> >> >> +
-> >> >> +     /* Enable interrupts */
-> >> >> +     channel_set_bit(idma64, MASK(XFER), idma64c->mask);
-> >> >> +     channel_set_bit(idma64, MASK(ERROR), idma64c->mask);
-> >> >> +
-> >> >> +     /*
-> >> >> +      * Enforce the controller to be turned on.
-> >> >> +      *
-> >> >> +      * The iDMA is turned off in ->probe() and looses context during system
-> >> >> +      * suspend / resume cycle. That's why we have to enable it each time we
-> >> >> +      * use it.
-> >> >> +      */
-> >> >> +     idma64_on(idma64);
-> >> > would it be better that you do this in resume and runtime_resume cycle. That
-> >> > way it need not be called for every channel init
-> >>
-> >> Mika, I don't remember details here, but this piece came from you. Can
-> >> you shed a light?
-> >>
-> >> My understanding that DMA IP is private to the host controller and has
-> >> the same power rail. Thus, there is no need to do separate power
-> >> management for it, which makes things more complicated for no profit.
-> >> It is also needed for time period from probe till first transfer
-> >> (otherwise we have to check the status of DMA anyway and enable it if
-> >> required), which currently remains DMA off.
-> > so who does runtime management of this power rail and whosoever does that
-> > how do they ensure the dma is not active at that time?
-> 
-> The host controller driver knows this and it makes it so.
-> Anyway, even if we introduce PM callbacks in this driver how to solve
-> the issue to run very first transfer in a neat way?
+Use ACPI _PSS to limit the Intel P State turbo, max and min ratios. This driver
+uses acpi processor perf lib calls to register performance. The following
+logic is used to adjust Intel P state driver limits:
+- If there is no turbo entry in _PSS, then disable Intel P state turbo and limit
+to non turbo max
+- If the non turbo max ratio is more than _PSS max non turbo value, then
+set the max non turbo ratio to _PSS non turbo max
+- If the min ratio is less than _PSS min then change the min ratio matching
+_PSS min
+- Scale the _PSS turbo frequency to max turbo frequency based on control value.
 
-And how does it know?
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 115 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 115 insertions(+)
 
-In PM callback case, your runtime resume should enable the controller
-
-> >> >> +static size_t idma64_desc_size(struct idma64_desc *desc, unsigned int active)
-> >> >> +{
-> >> >> +     size_t bytes = 0;
-> >> >> +     unsigned int i;
-> >> >> +
-> >> >> +     for (i = active; i < desc->ndesc; i++)
-> >> >> +             bytes += desc->hw[i].len;
-> >> > it can help for the non active case to have this size stored in desc while
-> >> > preparing, that gets rid of runtime calculation for that case
-> >>
-> >> I don't see much improvement, since it's a rare cases, but waste of
-> >> memory. If you consider that should be done I can implement it.
-> > The users of timing information will invoke this in non sleeping context so
-> > it will help in using one more variable, maybe a good trade off. Also if
-> > this is a rare case do you have use of this calculation and code?
-> 
-> I have no calculations done, but the residue check is used only in one
-> case for now, i.e. in the UART driver (see 8250_dma.c). That code
-> serializes requests, so it will not ask for pending descriptor size.
-> The case when we start the DMA and immediately ask for residue is
-> unlike (when UART RX timeout happens).
-> 
-> >> >> +static int idma64_terminate_all(struct dma_chan *chan)
-> >> >> +{
-> >> >> +     struct idma64_chan *idma64c = to_idma64_chan(chan);
-> >> >> +     unsigned long flags;
-> >> >> +     LIST_HEAD(head);
-> >> >> +
-> >> >> +     spin_lock_irqsave(&idma64c->vchan.lock, flags);
-> >> >> +     idma64_stop_transfer(idma64c);
-> >> > I dont think this is the right method for terminate. Can you check, it
-> >> > might be that we have to suspend the channel before terminating an active
-> >> > one. For non active case this should be okay
-> >>
-> >> Do you mean hardware can become into wrong state?
-> > Yes at least that was true for 32bit version of this IP
-> 
-> Can you elaborate what exactly is happening? We can do a test then and
-> check. For now on we experienced no problems.
-
-While you are doing transfers, try terminating. After that doesnt next
-transaction on same channel work well, if not then please try suspending
-first before terminating
-
-> >> Only what can actually happen is the data loss which is in DMA FIFO,
-> >> but we already know we would like to terminate the transfer we don't
-> >> care about any data loss since that.
-> > The terminate flow expect you to suspend the channel first and then terminate
-> 
-> Hm... I didn't see anything in the specification. Can you point out
-> where it's described?
-
-I dont have specs to point, but we did see this issue on 32bit BYT
-iDMA and designer told us to follow this flow
-
-> >> >> +static const struct dev_pm_ops idma64_dev_pm_ops = {
-> >> >> +     SET_LATE_SYSTEM_SLEEP_PM_OPS(idma64_suspend_late, idma64_resume_early)
-> >> > any reason why late ops?
-> >>
-> >> We already discussed this several times. There is no dependency
-> >> between DMA and its users during PM cycles. We have to be sure that
-> >> device (host controller) is quiescent before we stop DMA.
-> > And the realities change! you should be looking at deferred probing for this
-> > rather than using late ops.
-> 
-> > Clients should be suspended first which means
-> > they should be probed last and in the probe ensure all the resources (dma)
-> > are available if not defer the probe.
-> 
-> Ah, deferred probe here makes no sense. We have set probing ordering
-> in the MFD driver (for our drivers).
-> Looks like we may use normal calls.
-
-Most of the cases where people use last ops doesnt warrant them so checking
-is always a good idea :)
-
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 6414661..576aec0 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -33,6 +33,8 @@
+ #include <asm/cpu_device_id.h>
+ #include <asm/cpufeature.h>
+ 
++#include <acpi/processor.h>
++
+ #define BYT_RATIOS		0x66a
+ #define BYT_VIDS		0x66b
+ #define BYT_TURBO_RATIOS	0x66c
+@@ -110,6 +112,9 @@ struct cpudata {
+ 	u64	prev_aperf;
+ 	u64	prev_mperf;
+ 	struct sample sample;
++#if IS_ENABLED(CONFIG_ACPI)
++	struct acpi_processor_performance acpi_perf_data;
++#endif
+ };
+ 
+ static struct cpudata **all_cpu_data;
+@@ -166,6 +171,109 @@ static struct perf_limits limits = {
+ 	.min_sysfs_pct = 0,
+ };
+ 
++#if IS_ENABLED(CONFIG_ACPI)
++static int intel_pstate_init_perf_limits(struct cpufreq_policy *policy)
++{
++	struct cpudata *cpu;
++	int ret;
++	int min_perf;
++	bool turbo_absent = false;
++	int i;
++
++	cpu = all_cpu_data[policy->cpu];
++
++	if (!cpu->acpi_perf_data.shared_cpu_map &&
++	    zalloc_cpumask_var_node(&cpu->acpi_perf_data.shared_cpu_map,
++				    GFP_KERNEL, cpu_to_node(policy->cpu))) {
++		return -ENOMEM;
++	}
++
++	ret = acpi_processor_register_performance(&cpu->acpi_perf_data,
++						  policy->cpu);
++	if (ret)
++		return ret;
++
++	pr_debug("CPU%u - ACPI _PSS perf data\n", policy->cpu);
++	for (i = 0; i < cpu->acpi_perf_data.state_count; i++)
++		pr_debug("     %cP%d: %d MHz, %d mW, 0x%x\n",
++			 (i == cpu->acpi_perf_data.state ? '*' : ' '), i,
++			 (u32) cpu->acpi_perf_data.states[i].core_frequency,
++			 (u32) cpu->acpi_perf_data.states[i].power,
++			 (u32) cpu->acpi_perf_data.states[i].control);
++
++	if (cpu->acpi_perf_data.state_count < 2)
++		return 0;
++
++	/* Check if there is a turbo freq in _PSS */
++	if ((cpu->acpi_perf_data.states[0].core_frequency % 2) == 0) {
++		pr_debug("no turbo range exists in _PSS\n");
++		limits.no_turbo = limits.turbo_disabled = 1;
++		cpu->pstate.turbo_pstate = cpu->pstate.max_pstate;
++		turbo_absent = true;
++	}
++
++	/* Check if the max non turbo p state < Intel P state max */
++	for (i = 0; i < cpu->acpi_perf_data.state_count; i++) {
++		if ((cpu->acpi_perf_data.states[i].core_frequency % 2) == 0) {
++			int perf_max_ctl =
++				cpu->acpi_perf_data.states[i].control >> 8;
++			if (cpu->pstate.max_pstate > perf_max_ctl)
++				cpu->pstate.max_pstate = perf_max_ctl;
++			break;
++		}
++	}
++
++	/* check If min perf > Intel P State min */
++	min_perf = cpu->acpi_perf_data.states[
++			cpu->acpi_perf_data.state_count - 1].control >> 8;
++	if (min_perf > cpu->pstate.min_pstate) {
++		cpu->pstate.min_pstate = min_perf;
++		policy->cpuinfo.min_freq = cpu->pstate.min_pstate *
++						cpu->pstate.scaling;
++	}
++
++	if (turbo_absent)
++		policy->cpuinfo.max_freq =
++			cpu->pstate.max_pstate * cpu->pstate.scaling;
++	else {
++		policy->cpuinfo.max_freq =
++			cpu->pstate.turbo_pstate * cpu->pstate.scaling;
++		/* scale freq to intel pstate turbo scale */
++		cpu->acpi_perf_data.states[0].core_frequency =
++				cpu->pstate.scaling *
++				(cpu->acpi_perf_data.states[0].control >> 8);
++	}
++
++	pr_debug("Updated limits 0x%x 0x%x 0x %x\n", cpu->pstate.min_pstate,
++		 cpu->pstate.max_pstate, cpu->pstate.turbo_pstate);
++	pr_debug("policy max_freq=%d Mhz min_freq = %d MHz\n",
++		 policy->cpuinfo.max_freq, policy->cpuinfo.min_freq);
++
++	return 0;
++}
++
++static int intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
++{
++	struct cpudata *cpu;
++
++	cpu = all_cpu_data[policy->cpu];
++	acpi_processor_unregister_performance(&cpu->acpi_perf_data,
++						      policy->cpu);
++	return 0;
++}
++
++#else
++static int intel_pstate_init_perf_limits(struct cpufreq_policy *policy)
++{
++	return 0;
++}
++
++static int intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
++{
++	return 0;
++}
++#endif
++
+ static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
+ 			     int deadband, int integral) {
+ 	pid->setpoint = setpoint;
+@@ -1033,18 +1141,25 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.min_freq = cpu->pstate.min_pstate * cpu->pstate.scaling;
+ 	policy->cpuinfo.max_freq =
+ 		cpu->pstate.turbo_pstate * cpu->pstate.scaling;
++	intel_pstate_init_perf_limits(policy);
+ 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ 	cpumask_set_cpu(policy->cpu, policy->cpus);
+ 
+ 	return 0;
+ }
+ 
++static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
++{
++	return intel_pstate_exit_perf_limits(policy);
++}
++
+ static struct cpufreq_driver intel_pstate_driver = {
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+ 	.verify		= intel_pstate_verify_policy,
+ 	.setpolicy	= intel_pstate_set_policy,
+ 	.get		= intel_pstate_get,
+ 	.init		= intel_pstate_cpu_init,
++	.exit		= intel_pstate_cpu_exit,
+ 	.stop_cpu	= intel_pstate_stop_cpu,
+ 	.name		= "intel_pstate",
+ };
 -- 
-~Vinod
+2.1.4
+
