@@ -1,122 +1,114 @@
 From: "Andrew F. Davis" <afd@ti.com>
-Subject: [PATCH 8/8] power: bq27xxx_battery: Cleanup health checking
-Date: Wed, 22 Jul 2015 16:52:00 -0500
-Message-ID: <1437601920-13045-9-git-send-email-afd@ti.com>
+Subject: [PATCH 2/8] power: bq27x00_battery: Fix lines over 80 characters long
+Date: Wed, 22 Jul 2015 16:51:54 -0500
+Message-ID: <1437601920-13045-3-git-send-email-afd@ti.com>
 References: <1437601920-13045-1-git-send-email-afd@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:34001 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753376AbbGVWAt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 22 Jul 2015 18:00:49 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1437601920-13045-1-git-send-email-afd@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F. Davis" <afd@ti.com>
+List-Id: linux-pm@vger.kernel.org
 
-Reorganize the logic checking battery health and under temperature
-condition checking.
+Shorted lines over 80 characters long by reducing tab count.
 
 Signed-off-by: Andrew F. Davis <afd@ti.com>
 ---
- drivers/power/bq27xxx_battery.c | 62 +++++++++++++++++++++++++++--------------
- 1 file changed, 41 insertions(+), 21 deletions(-)
+ drivers/power/bq27x00_battery.c | 74 ++++++++++++++++++++---------------------
+ 1 file changed, 37 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
-index f148222..6775f65 100644
---- a/drivers/power/bq27xxx_battery.c
-+++ b/drivers/power/bq27xxx_battery.c
-@@ -54,6 +54,8 @@
- #define BQ27XXX_FLAG_FC		BIT(9)
- #define BQ27XXX_FLAG_OTD	BIT(14)
- #define BQ27XXX_FLAG_OTC	BIT(15)
-+#define BQ27XXX_FLAG_UT		BIT(14)
-+#define BQ27XXX_FLAG_OT		BIT(15)
+diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_battery.c
+index 2257bd4..203cf61 100644
+--- a/drivers/power/bq27x00_battery.c
++++ b/drivers/power/bq27x00_battery.c
+@@ -39,49 +39,49 @@
  
- /* BQ27000 has different layout for Flags register */
- #define BQ27000_FLAG_EDVF	BIT(0) /* Final End-of-Discharge-Voltage flag */
-@@ -624,10 +626,34 @@ static int bq27xxx_battery_read_pwr_avg(struct bq27xxx_device_info *di)
-  */
- static int bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
- {
--	if (di->chip == BQ27500 || di->chip == BQ27541)
-+	if (di->chip == BQ27500 || di->chip == BQ27541 || di->chip == BQ27545)
- 		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
-+	if (di->chip == BQ27530 || di->chip == BQ27421)
-+		return flags & BQ27XXX_FLAG_OT;
+ #include <linux/power/bq27x00_battery.h>
+ 
+-#define DRIVER_VERSION			"1.2.0"
++#define DRIVER_VERSION		"1.2.0"
+ 
+ #define BQ27XXX_MANUFACTURER	"Texas Instruments"
+ 
+-#define BQ27x00_REG_TEMP		0x06
+-#define BQ27x00_REG_VOLT		0x08
+-#define BQ27x00_REG_AI			0x14
+-#define BQ27x00_REG_FLAGS		0x0A
+-#define BQ27x00_REG_TTE			0x16
+-#define BQ27x00_REG_TTF			0x18
+-#define BQ27x00_REG_TTECP		0x26
+-#define BQ27x00_REG_NAC			0x0C /* Nominal available capacity */
+-#define BQ27x00_REG_LMD			0x12 /* Last measured discharge */
+-#define BQ27x00_REG_CYCT		0x2A /* Cycle count total */
+-#define BQ27x00_REG_AE			0x22 /* Available energy */
+-#define BQ27x00_POWER_AVG		0x24
+-
+-#define BQ27000_REG_RSOC		0x0B /* Relative State-of-Charge */
+-#define BQ27000_REG_ILMD		0x76 /* Initial last measured discharge */
+-#define BQ27000_FLAG_EDVF		BIT(0) /* Final End-of-Discharge-Voltage flag */
+-#define BQ27000_FLAG_EDV1		BIT(1) /* First End-of-Discharge-Voltage flag */
+-#define BQ27000_FLAG_CI			BIT(4) /* Capacity Inaccurate flag */
+-#define BQ27000_FLAG_FC			BIT(5)
+-#define BQ27000_FLAG_CHGS		BIT(7) /* Charge state flag */
+-
+-#define BQ27500_REG_SOC			0x2C
+-#define BQ27500_REG_DCAP		0x3C /* Design capacity */
+-#define BQ27500_FLAG_DSC		BIT(0)
+-#define BQ27500_FLAG_SOCF		BIT(1) /* State-of-Charge threshold final */
+-#define BQ27500_FLAG_SOC1		BIT(2) /* State-of-Charge threshold 1 */
+-#define BQ27500_FLAG_FC			BIT(9)
+-#define BQ27500_FLAG_OTC		BIT(15)
+-
+-#define BQ27742_POWER_AVG		0x76
+-
+-#define BQ27510_REG_SOC			0x20
+-#define BQ27510_REG_DCAP		0x2E /* Design capacity */
+-#define BQ27510_REG_CYCT		0x1E /* Cycle count total */
++#define BQ27x00_REG_TEMP	0x06
++#define BQ27x00_REG_VOLT	0x08
++#define BQ27x00_REG_AI		0x14
++#define BQ27x00_REG_FLAGS	0x0A
++#define BQ27x00_REG_TTE		0x16
++#define BQ27x00_REG_TTF		0x18
++#define BQ27x00_REG_TTECP	0x26
++#define BQ27x00_REG_NAC		0x0C /* Nominal available capacity */
++#define BQ27x00_REG_LMD		0x12 /* Last measured discharge */
++#define BQ27x00_REG_CYCT	0x2A /* Cycle count total */
++#define BQ27x00_REG_AE		0x22 /* Available energy */
++#define BQ27x00_POWER_AVG	0x24
 +
-+	return false;
-+}
++#define BQ27000_REG_RSOC	0x0B /* Relative State-of-Charge */
++#define BQ27000_REG_ILMD	0x76 /* Initial last measured discharge */
++#define BQ27000_FLAG_EDVF	BIT(0) /* Final End-of-Discharge-Voltage flag */
++#define BQ27000_FLAG_EDV1	BIT(1) /* First End-of-Discharge-Voltage flag */
++#define BQ27000_FLAG_CI		BIT(4) /* Capacity Inaccurate flag */
++#define BQ27000_FLAG_FC		BIT(5)
++#define BQ27000_FLAG_CHGS	BIT(7) /* Charge state flag */
 +
-+/*
-+ * Returns true if a battery under temperature condition is detected
-+ */
-+static int bq27xxx_battery_undertemp(struct bq27xxx_device_info *di, u16 flags)
-+{
-+	if (di->chip == BQ27530 || di->chip == BQ27421)
-+			return flags & BQ27XXX_FLAG_UT;
++#define BQ27500_REG_SOC		0x2C
++#define BQ27500_REG_DCAP	0x3C /* Design capacity */
++#define BQ27500_FLAG_DSC	BIT(0)
++#define BQ27500_FLAG_SOCF	BIT(1) /* State-of-Charge threshold final */
++#define BQ27500_FLAG_SOC1	BIT(2) /* State-of-Charge threshold 1 */
++#define BQ27500_FLAG_FC		BIT(9)
++#define BQ27500_FLAG_OTC	BIT(15)
 +
-+	return false;
-+}
++#define BQ27742_POWER_AVG	0x76
 +
-+/*
-+ * Returns true if a low state of charge condition is detected
-+ */
-+static int bq27xxx_battery_dead(struct bq27xxx_device_info *di, u16 flags)
-+{
-+	if (di->chip == BQ27000 || di->chip == BQ27010)
-+		return flags & (BQ27000_FLAG_EDV1 | BQ27000_FLAG_EDVF);
- 	else
--		return flags & BQ27XXX_FLAG_OTC;
-+		return flags & (BQ27XXX_FLAG_SOC1 | BQ27XXX_FLAG_SOCF);
- }
++#define BQ27510_REG_SOC		0x20
++#define BQ27510_REG_DCAP	0x2E /* Design capacity */
++#define BQ27510_REG_CYCT	0x1E /* Cycle count total */
  
- /*
-@@ -636,29 +662,23 @@ static int bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
-  */
- static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
- {
--	u16 tval;
-+	u16 flags;
+ /* bq27425 register addresses are same as bq27x00 addresses minus 4 */
+-#define BQ27425_REG_OFFSET		0x04
++#define BQ27425_REG_OFFSET	0x04
+ #define BQ27425_REG_SOC		(0x1C + BQ27425_REG_OFFSET)
+-#define BQ27425_REG_DCAP		(0x3C + BQ27425_REG_OFFSET)
++#define BQ27425_REG_DCAP	(0x3C + BQ27425_REG_OFFSET)
  
--	tval = bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
--	if (tval < 0) {
--		dev_err(di->dev, "error reading flag register:%d\n", tval);
--		return tval;
-+	flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
-+	if (flags < 0) {
-+		dev_err(di->dev, "error reading flag register:%d\n", flags);
-+		return flags;
- 	}
- 
--	if (di->chip == BQ27000 || di->chip == BQ27010) {
--		if (tval & BQ27000_FLAG_EDV1)
--			tval = POWER_SUPPLY_HEALTH_DEAD;
--		else
--			tval = POWER_SUPPLY_HEALTH_GOOD;
--	} else {
--		if (tval & BQ27XXX_FLAG_SOCF)
--			tval = POWER_SUPPLY_HEALTH_DEAD;
--		else if (bq27xxx_battery_overtemp(di, tval))
--			tval = POWER_SUPPLY_HEALTH_OVERHEAT;
--		else
--			tval = POWER_SUPPLY_HEALTH_GOOD;
--	}
-+	/* Unlikely but important to return first */
-+	if (bq27xxx_battery_overtemp(di, flags))
-+		return POWER_SUPPLY_HEALTH_OVERHEAT;
-+	if (bq27xxx_battery_undertemp(di, flags))
-+		return POWER_SUPPLY_HEALTH_COLD;
-+	if (bq27xxx_battery_dead(di, flags))
-+		return POWER_SUPPLY_HEALTH_DEAD;
- 
--	return tval;
-+	return POWER_SUPPLY_HEALTH_GOOD;
- }
- 
- static void bq27xxx_battery_update(struct bq27xxx_device_info *di)
+ #define BQ27000_RS			20 /* Resistor sense */
+ #define BQ27x00_POWER_CONSTANT		(256 * 29200 / 1000)
 -- 
 1.9.1
-
