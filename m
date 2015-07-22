@@ -1,168 +1,122 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [RFCv5, 01/46] arm: Frequency invariant scheduler load-tracking
- support
-Date: Wed, 22 Jul 2015 14:31:04 +0100
-Message-ID: <20150722133103.GA21785@e105550-lin.cambridge.arm.com>
-References: <1436293469-25707-2-git-send-email-morten.rasmussen@arm.com>
- <20150721154145.GA23852@leoy-linaro>
+From: Liviu Dudau <Liviu.Dudau@arm.com>
+Subject: Re: [PATCH v4 7/8] arm64: dts: add CPU topology on Juno
+Date: Wed, 22 Jul 2015 14:31:36 +0100
+Message-ID: <20150722133136.GH14923@e106497-lin.cambridge.arm.com>
+References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com>
+ <1433760002-24120-8-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1433760002-24120-8-git-send-email-sudeep.holla@arm.com>
 Content-Disposition: inline
-In-Reply-To: <20150721154145.GA23852@leoy-linaro>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Russell King <linux@arm.linux.org.uk>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 21, 2015 at 11:41:45PM +0800, Leo Yan wrote:
-> Hi Morten,
-> 
-> On Tue, Jul 07, 2015 at 07:23:44PM +0100, Morten Rasmussen wrote:
-> > From: Morten Rasmussen <Morten.Rasmussen@arm.com>
-> > 
-> > Implements arch-specific function to provide the scheduler with a
-> > frequency scaling correction factor for more accurate load-tracking.
-> > The factor is:
-> > 
-> > 	current_freq(cpu) << SCHED_CAPACITY_SHIFT / max_freq(cpu)
-> > 
-> > This implementation only provides frequency invariance. No cpu
-> > invariance yet.
-> > 
-> > Cc: Russell King <linux@arm.linux.org.uk>
-> > 
-> > Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
-> > 
-> > ---
-> > arch/arm/include/asm/topology.h |  7 +++++
-> >  arch/arm/kernel/smp.c           | 57 +++++++++++++++++++++++++++++++++++++++--
-> >  arch/arm/kernel/topology.c      | 17 ++++++++++++
-> >  3 files changed, 79 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
-> > index 370f7a7..c31096f 100644
-> > --- a/arch/arm/include/asm/topology.h
-> > +++ b/arch/arm/include/asm/topology.h
-> > @@ -24,6 +24,13 @@ void init_cpu_topology(void);
-> >  void store_cpu_topology(unsigned int cpuid);
-> >  const struct cpumask *cpu_coregroup_mask(int cpu);
-> >  
-> > +#define arch_scale_freq_capacity arm_arch_scale_freq_capacity
-> > +struct sched_domain;
-> > +extern
-> > +unsigned long arm_arch_scale_freq_capacity(struct sched_domain *sd, int cpu);
-> > +
-> > +DECLARE_PER_CPU(atomic_long_t, cpu_freq_capacity);
-> > +
-> >  #else
-> >  
-> >  static inline void init_cpu_topology(void) { }
-> > diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
-> > index cca5b87..a32539c 100644
-> > --- a/arch/arm/kernel/smp.c
-> > +++ b/arch/arm/kernel/smp.c
-> > @@ -677,12 +677,34 @@ static DEFINE_PER_CPU(unsigned long, l_p_j_ref);
-> >  static DEFINE_PER_CPU(unsigned long, l_p_j_ref_freq);
-> >  static unsigned long global_l_p_j_ref;
-> >  static unsigned long global_l_p_j_ref_freq;
-> > +static DEFINE_PER_CPU(atomic_long_t, cpu_max_freq);
-> > +DEFINE_PER_CPU(atomic_long_t, cpu_freq_capacity);
-> > +
-> > +/*
-> > + * Scheduler load-tracking scale-invariance
-> > + *
-> > + * Provides the scheduler with a scale-invariance correction factor that
-> > + * compensates for frequency scaling through arch_scale_freq_capacity()
-> > + * (implemented in topology.c).
-> > + */
-> > +static inline
-> > +void scale_freq_capacity(int cpu, unsigned long curr, unsigned long max)
-> > +{
-> > +	unsigned long capacity;
-> > +
-> > +	if (!max)
-> > +		return;
-> > +
-> > +	capacity = (curr << SCHED_CAPACITY_SHIFT) / max;
-> > +	atomic_long_set(&per_cpu(cpu_freq_capacity, cpu), capacity);
-> > +}
-> >  
-> >  static int cpufreq_callback(struct notifier_block *nb,
-> >  					unsigned long val, void *data)
-> >  {
-> >  	struct cpufreq_freqs *freq = data;
-> >  	int cpu = freq->cpu;
-> > +	unsigned long max = atomic_long_read(&per_cpu(cpu_max_freq, cpu));
-> >  
-> >  	if (freq->flags & CPUFREQ_CONST_LOOPS)
-> >  		return NOTIFY_OK;
-> > @@ -707,6 +729,10 @@ static int cpufreq_callback(struct notifier_block *nb,
-> >  					per_cpu(l_p_j_ref_freq, cpu),
-> >  					freq->new);
-> >  	}
-> > +
-> > +	if (val == CPUFREQ_PRECHANGE)
-> > +		scale_freq_capacity(cpu, freq->new, max);
-> > +
-> >  	return NOTIFY_OK;
-> >  }
-> >  
-> > @@ -714,11 +740,38 @@ static struct notifier_block cpufreq_notifier = {
-> >  	.notifier_call  = cpufreq_callback,
-> >  };
-> >  
-> > +static int cpufreq_policy_callback(struct notifier_block *nb,
-> > +						unsigned long val, void *data)
-> > +{
-> > +	struct cpufreq_policy *policy = data;
-> > +	int i;
-> > +
-> > +	if (val != CPUFREQ_NOTIFY)
-> > +		return NOTIFY_OK;
-> > +
-> > +	for_each_cpu(i, policy->cpus) {
-> > +		scale_freq_capacity(i, policy->cur, policy->max);
-> > +		atomic_long_set(&per_cpu(cpu_max_freq, i), policy->max);
-> > +	}
-> > +
-> > +	return NOTIFY_OK;
-> > +}
-> > +
-> > +static struct notifier_block cpufreq_policy_notifier = {
-> > +	.notifier_call	= cpufreq_policy_callback,
-> > +};
-> > +
-> >  static int __init register_cpufreq_notifier(void)
-> >  {
-> > -	return cpufreq_register_notifier(&cpufreq_notifier,
-> > +	int ret;
-> > +
-> > +	ret = cpufreq_register_notifier(&cpufreq_notifier,
-> >  						CPUFREQ_TRANSITION_NOTIFIER);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	return cpufreq_register_notifier(&cpufreq_policy_notifier,
-> > +						CPUFREQ_POLICY_NOTIFIER);
-> >  }
-> >  core_initcall(register_cpufreq_notifier);
-> 
-> For "cpu_freq_capacity" structure, could move it into driver/cpufreq
-> so that it can be shared by all architectures? Otherwise, every
-> architecture's smp.c need register notifier for themselves.
+On Mon, Jun 08, 2015 at 11:40:01AM +0100, Sudeep Holla wrote:
+> This patch adds CPU topology on Juno. It will be useful for ther othe=
+r
+> IP blocks depending on this topology.
+>=20
+> Cc: Liviu Dudau <Liviu.Dudau@arm.com>
+> Cc: Jon Medhurst (Tixy) <tixy@linaro.org>
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  arch/arm64/boot/dts/arm/juno-r1.dts | 26 ++++++++++++++++++++++++++
+>  arch/arm64/boot/dts/arm/juno.dts    | 26 ++++++++++++++++++++++++++
+>  2 files changed, 52 insertions(+)
+>=20
+> diff --git a/arch/arm64/boot/dts/arm/juno-r1.dts b/arch/arm64/boot/dt=
+s/arm/juno-r1.dts
+> index c62751153a4f..69130840c6cd 100644
+> --- a/arch/arm64/boot/dts/arm/juno-r1.dts
+> +++ b/arch/arm64/boot/dts/arm/juno-r1.dts
+> @@ -34,6 +34,32 @@
+>  		#address-cells =3D <2>;
+>  		#size-cells =3D <0>;
+> =20
+> +		cpu-map {
+> +			cluster0 {
+> +				core0 {
+> +					cpu =3D <&A57_0>;
+> +				};
+> +				core1 {
+> +					cpu =3D <&A57_1>;
+> +				};
+> +			};
+> +
+> +			cluster1 {
+> +				core0 {
+> +					cpu =3D <&A53_0>;
+> +				};
+> +				core1 {
+> +					cpu =3D <&A53_1>;
+> +				};
+> +				core2 {
+> +					cpu =3D <&A53_2>;
+> +				};
+> +				core3 {
+> +					cpu =3D <&A53_3>;
+> +				};
+> +			};
+> +		};
+> +
+>  		A57_0: cpu@0 {
+>  			compatible =3D "arm,cortex-a57","arm,armv8";
+>  			reg =3D <0x0 0x0>;
+> diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/a=
+rm/juno.dts
+> index d7cbdd482a61..ce1128a54c8d 100644
+> --- a/arch/arm64/boot/dts/arm/juno.dts
+> +++ b/arch/arm64/boot/dts/arm/juno.dts
+> @@ -34,6 +34,32 @@
+>  		#address-cells =3D <2>;
+>  		#size-cells =3D <0>;
+> =20
+> +		cpu-map {
+> +			cluster0 {
+> +				core0 {
+> +					cpu =3D <&A57_0>;
+> +				};
+> +				core1 {
+> +					cpu =3D <&A57_1>;
+> +				};
+> +			};
+> +
+> +			cluster1 {
+> +				core0 {
+> +					cpu =3D <&A53_0>;
+> +				};
+> +				core1 {
+> +					cpu =3D <&A53_1>;
+> +				};
+> +				core2 {
+> +					cpu =3D <&A53_2>;
+> +				};
+> +				core3 {
+> +					cpu =3D <&A53_3>;
+> +				};
+> +			};
+> +		};
+> +
 
-We could, but I put it in arch/arm/* as not all architectures might want
-this notifier. The frequency scaling factor could be provided based on
-architecture specific performance counters instead. AFAIK, the Intel
-p-state driver does not even fire the notifiers so the notifier
-solution would be redundant code for those platforms.
+Acked-by: Liviu Dudau <Liviu.Dudau@arm.com>
 
-That said, the above solution is not handling changes to policy->max
-very well. Basically, we don't inform the scheduler if it has changed
-which means that the OPP represented by "100%" might change. We need
-cpufreq to keep track of the true max frequency when policy->max is
-changed to work out the correct scaling factor instead of having it
-relative to policy->max.
+>  		A57_0: cpu@0 {
+>  			compatible =3D "arm,cortex-a57","arm,armv8";
+>  			reg =3D <0x0 0x0>;
+> --=20
+> 1.9.1
+>=20
 
-Morten
+--=20
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+| I would like to |
+| fix the world,  |
+| but they're not |
+| giving me the   |
+ \ source code!  /
+  ---------------
+    =C2=AF\_(=E3=83=84)_/=C2=AF
