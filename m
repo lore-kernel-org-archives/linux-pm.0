@@ -1,41 +1,105 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH] regulator: rk808: make better use of the gpiod API
-Date: Wed, 22 Jul 2015 09:13:29 +0200
-Message-ID: <20150722071329.GM9981@pengutronix.de>
-References: <20150721132945.7ffc443b@canb.auug.org.au>
- <1437461993-14860-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <CAJKOXPfY4zYtWKa6U4mzBjtS87HZepOV_hHodU2QJaJrLcr9qQ@mail.gmail.com>
- <20150721143524.GD9981@pengutronix.de>
- <20150721144100.GU11162@sirena.org.uk>
- <55AEE03F.8060100@samsung.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/1] suspend: make sync() on suspend-to-RAM optional
+Date: Wed, 22 Jul 2015 09:23:23 +0200
+Message-ID: <20150722072322.GA18401@amd>
+References: <1436927091-32520-1-git-send-email-lenb@kernel.org>
+ <CAJZ5v0gNKRRaXvfqvj4YEjb+7X1aEobfvWuWyAnAcKArcxtZPA@mail.gmail.com>
+ <20150721151941.GA19581@amd>
+ <7453812.eRsb3OQU2z@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-next-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54943 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753882AbbGVHXZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jul 2015 03:23:25 -0400
 Content-Disposition: inline
-In-Reply-To: <55AEE03F.8060100@samsung.com>
-Sender: linux-next-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linus Walleij <linus.walleij@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Chris Zhong <zyw@rock-chips.com>, kernel@pengutronix.de, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>
+In-Reply-To: <7453812.eRsb3OQU2z@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Brown, Len" <len.brown@intel.com>, Austin S Hemmelgarn <ahferroin7@gmail.com>, Len Brown <lenb@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hello,
+On Wed 2015-07-22 03:25:41, Rafael J. Wysocki wrote:
+> On Tuesday, July 21, 2015 05:19:41 PM Pavel Machek wrote:
+> > On Tue 2015-07-21 16:41:12, Rafael J. Wysocki wrote:
+> > > Hi Pavel,
+> > > 
+> > > On Tue, Jul 21, 2015 at 11:38 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > > > On Sat 2015-07-18 01:54:09, Rafael J. Wysocki wrote:
+> > > >> On Wednesday, July 15, 2015 02:58:22 PM Brown, Len wrote:
+> > > 
+> > > [cut]
+> > > 
+> > > >> > >> Why do you need CONFIG parameter?
+> > > >> >
+> > > >> > So that an OS that doesn't want to change their user-space,
+> > > >> > can build a kernel that does what they want by default.
+> > > >> >
+> > > >> > Originally I had the config parameter remove this code entirely,
+> > > >> > which would achieve the same goal.
+> > > >> > But Rafael prefers the sysfs attribute always exist
+> > > >> > and the config simply set the default.
+> > > >>
+> > > >> Indeed.
+> > > >>
+> > > >> And so I'm queuing this patch up for 4.3 (with a couple of minor fixups).
+> > > >
+> > > > Please don't.
+> > > >
+> > > > "OS that doesn't want to change the user-space to speed up suspend by
+> > > > few milliseconds" is not a valid reason for asking about million users
+> > > > one more config question.
+> > > 
+> > > That's your opinion and I beg to differ.
+> > 
+> > Perhaps explaining your opinion would help here? Having to echo value
+> > to file to improve performance over reliability does not look too
+> > burdensome on the users.
+> 
+> That's for the people for whom changing the kernel is easier than messing
+> up with user space.
 
-On Wed, Jul 22, 2015 at 09:13:51AM +0900, Krzysztof Kozlowski wrote:
-> On 21.07.2015 23:41, Mark Brown wrote:
-> > That looks like a bug, yes.
->=20
-> Cc: linux-pm, Kevin, Rafael, Ulf
-Good idea. Note I already sent a patch to Greg that you might want to
-look at, too:
-	http://article.gmane.org/gmane.linux.kernel/2001345
+You are maintainer of s2ram package, IIRC. If you don't like extra
+syncs, you should remove them from the user part (where they are racy,
+unlike in kernel).
 
-Best regards
-Uwe
+Unfortunately, it will be harder to do that if CONFIG_ option is
+introduced, because now s2ram will need extra work to determine if
+kernel will sync or not.
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig        =
-    |
-Industrial Linux Solutions                 | http://www.pengutronix.de/=
-  |
+> Also if your user space does the sync before suspending, it's better to
+> make "no kernel sync" the default, because that saves you some overhead
+> and energy too (either on the extra redundant sync on every suspend or
+> on the write to the sysfs attribute on every boot).
+
+So you want to "save the overhead of writing to sysfs file on boot" (30usec?)
+but are happy to "add overhead of extra config question" (5 seconds
+_user_ has to decide what is going on)...? What about overhead of
+reading longer config file on each kernel compile?
+
+> > > > Affected users can't run mainline kernel
+> > > > anyway, and will have to change their userland in non-trivial ways to
+> > > > get there.
+> > > 
+> > > And I'm not sure what you're talking about here.  Who are the
+> > > "affected users" in particular?
+> > 
+> > Who does enter suspend to ram multiple times a second? Only android,
+> > AFAICT. Can you run android on mainline kernel? No. Can you run
+> > android on kernel with less that 100k lines of patches? No.
+> > 
+> > So who benefits from the new config option? No one.
+> 
+> I am, for one.  None of the systems I use actually needs the sync in the
+> kernel.  I bet there are more people like me, because I have a stock
+> distro installed on my systems.
+
+If the bug is in distro (extra syncs) it should be solved in distro
+(remove the extra syncs, keep the in-kernel one that works). CONFIG_
+option actually makes that harder.
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
