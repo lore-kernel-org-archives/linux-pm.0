@@ -1,131 +1,122 @@
 From: "Andrew F. Davis" <afd@ti.com>
-Subject: [PATCH 4/8] power: bq27x00_battery: Checkpatch fixes
-Date: Wed, 22 Jul 2015 16:51:56 -0500
-Message-ID: <1437601920-13045-5-git-send-email-afd@ti.com>
+Subject: [PATCH 8/8] power: bq27xxx_battery: Cleanup health checking
+Date: Wed, 22 Jul 2015 16:52:00 -0500
+Message-ID: <1437601920-13045-9-git-send-email-afd@ti.com>
 References: <1437601920-13045-1-git-send-email-afd@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:34001 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753376AbbGVWAt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 22 Jul 2015 18:00:49 -0400
 In-Reply-To: <1437601920-13045-1-git-send-email-afd@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F. Davis" <afd@ti.com>
-List-Id: linux-pm@vger.kernel.org
 
-Remove space before tab.
-Remove unnecessary line continuations.
-Add braces to else statement.
-Remove unnecessary parentheses.
-Remove unneeded blank lines.
-Remove unnecessary 'out of memory' message.
-Add missing line after declarations.
-Change use of printk to pr_err.
+Reorganize the logic checking battery health and under temperature
+condition checking.
 
 Signed-off-by: Andrew F. Davis <afd@ti.com>
 ---
- drivers/power/bq27x00_battery.c | 24 +++++++++++-------------
- 1 file changed, 11 insertions(+), 13 deletions(-)
+ drivers/power/bq27xxx_battery.c | 62 +++++++++++++++++++++++++++--------------
+ 1 file changed, 41 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_battery.c
-index 9cdad19..8287261f 100644
---- a/drivers/power/bq27x00_battery.c
-+++ b/drivers/power/bq27x00_battery.c
-@@ -108,7 +108,7 @@ struct bq27x00_reg_cache {
- };
+diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
+index f148222..6775f65 100644
+--- a/drivers/power/bq27xxx_battery.c
++++ b/drivers/power/bq27xxx_battery.c
+@@ -54,6 +54,8 @@
+ #define BQ27XXX_FLAG_FC		BIT(9)
+ #define BQ27XXX_FLAG_OTD	BIT(14)
+ #define BQ27XXX_FLAG_OTC	BIT(15)
++#define BQ27XXX_FLAG_UT		BIT(14)
++#define BQ27XXX_FLAG_OT		BIT(15)
  
- struct bq27x00_device_info {
--	struct device 		*dev;
-+	struct device		*dev;
- 	int			id;
- 	enum bq27x00_chip	chip;
- 
-@@ -202,8 +202,8 @@ static enum power_supply_property bq27510_battery_props[] = {
- 
- static unsigned int poll_interval = 360;
- module_param(poll_interval, uint, 0644);
--MODULE_PARM_DESC(poll_interval, "battery poll interval in seconds - " \
--				"0 disables polling");
-+MODULE_PARM_DESC(poll_interval,
-+		 "battery poll interval in seconds - 0 disables polling");
+ /* BQ27000 has different layout for Flags register */
+ #define BQ27000_FLAG_EDVF	BIT(0) /* Final End-of-Discharge-Voltage flag */
+@@ -624,10 +626,34 @@ static int bq27xxx_battery_read_pwr_avg(struct bq27xxx_device_info *di)
+  */
+ static int bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
+ {
+-	if (di->chip == BQ27500 || di->chip == BQ27541)
++	if (di->chip == BQ27500 || di->chip == BQ27541 || di->chip == BQ27545)
+ 		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
++	if (di->chip == BQ27530 || di->chip == BQ27421)
++		return flags & BQ27XXX_FLAG_OT;
++
++	return false;
++}
++
++/*
++ * Returns true if a battery under temperature condition is detected
++ */
++static int bq27xxx_battery_undertemp(struct bq27xxx_device_info *di, u16 flags)
++{
++	if (di->chip == BQ27530 || di->chip == BQ27421)
++			return flags & BQ27XXX_FLAG_UT;
++
++	return false;
++}
++
++/*
++ * Returns true if a low state of charge condition is detected
++ */
++static int bq27xxx_battery_dead(struct bq27xxx_device_info *di, u16 flags)
++{
++	if (di->chip == BQ27000 || di->chip == BQ27010)
++		return flags & (BQ27000_FLAG_EDV1 | BQ27000_FLAG_EDVF);
+ 	else
+-		return flags & BQ27XXX_FLAG_OTC;
++		return flags & (BQ27XXX_FLAG_SOC1 | BQ27XXX_FLAG_SOCF);
+ }
  
  /*
-  * Common code for BQ27x00 devices
-@@ -319,8 +319,9 @@ static int bq27x00_battery_read_ilmd(struct bq27x00_device_info *di)
- 			ilmd = bq27x00_read(di, BQ27510_REG_DCAP, false);
- 		else
- 			ilmd = bq27x00_read(di, BQ27500_REG_DCAP, false);
--	} else
-+	} else {
- 		ilmd = bq27x00_read(di, BQ27000_REG_ILMD, true);
-+	}
- 
- 	if (ilmd < 0) {
- 		dev_dbg(di->dev, "error reading initial last measured discharge\n");
-@@ -451,7 +452,7 @@ static int bq27x00_battery_read_health(struct bq27x00_device_info *di)
- 		return tval;
- 	}
- 
--	if ((di->chip == BQ27500)) {
-+	if (di->chip == BQ27500) {
- 		if (tval & BQ27500_FLAG_SOCF)
- 			tval = POWER_SUPPLY_HEALTH_DEAD;
- 		else if (tval & BQ27500_FLAG_OTC)
-@@ -836,7 +837,6 @@ static void bq27x00_powersupply_unregister(struct bq27x00_device_info *di)
- 	mutex_destroy(&di->lock);
- }
- 
--
- /* i2c specific code */
- #ifdef CONFIG_BATTERY_BQ27X00_I2C
- 
-@@ -897,14 +897,12 @@ static int bq27x00_battery_probe(struct i2c_client *client,
- 
- 	name = devm_kasprintf(&client->dev, GFP_KERNEL, "%s-%d", id->name, num);
- 	if (!name) {
--		dev_err(&client->dev, "failed to allocate device name\n");
- 		retval = -ENOMEM;
- 		goto batt_failed;
- 	}
- 
- 	di = devm_kzalloc(&client->dev, sizeof(*di), GFP_KERNEL);
- 	if (!di) {
--		dev_err(&client->dev, "failed to allocate device info data\n");
- 		retval = -ENOMEM;
- 		goto batt_failed;
- 	}
-@@ -965,8 +963,9 @@ static struct i2c_driver bq27x00_battery_driver = {
- static inline int bq27x00_battery_i2c_init(void)
+@@ -636,29 +662,23 @@ static int bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
+  */
+ static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
  {
- 	int ret = i2c_add_driver(&bq27x00_battery_driver);
-+
- 	if (ret)
--		printk(KERN_ERR "Unable to register BQ27x00 i2c driver\n");
-+		pr_err("Unable to register BQ27x00 i2c driver\n");
+-	u16 tval;
++	u16 flags;
  
- 	return ret;
- }
-@@ -1037,10 +1036,8 @@ static int bq27000_battery_probe(struct platform_device *pdev)
+-	tval = bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
+-	if (tval < 0) {
+-		dev_err(di->dev, "error reading flag register:%d\n", tval);
+-		return tval;
++	flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
++	if (flags < 0) {
++		dev_err(di->dev, "error reading flag register:%d\n", flags);
++		return flags;
  	}
  
- 	di = devm_kzalloc(&pdev->dev, sizeof(*di), GFP_KERNEL);
--	if (!di) {
--		dev_err(&pdev->dev, "failed to allocate device info data\n");
-+	if (!di)
- 		return -ENOMEM;
+-	if (di->chip == BQ27000 || di->chip == BQ27010) {
+-		if (tval & BQ27000_FLAG_EDV1)
+-			tval = POWER_SUPPLY_HEALTH_DEAD;
+-		else
+-			tval = POWER_SUPPLY_HEALTH_GOOD;
+-	} else {
+-		if (tval & BQ27XXX_FLAG_SOCF)
+-			tval = POWER_SUPPLY_HEALTH_DEAD;
+-		else if (bq27xxx_battery_overtemp(di, tval))
+-			tval = POWER_SUPPLY_HEALTH_OVERHEAT;
+-		else
+-			tval = POWER_SUPPLY_HEALTH_GOOD;
 -	}
++	/* Unlikely but important to return first */
++	if (bq27xxx_battery_overtemp(di, flags))
++		return POWER_SUPPLY_HEALTH_OVERHEAT;
++	if (bq27xxx_battery_undertemp(di, flags))
++		return POWER_SUPPLY_HEALTH_COLD;
++	if (bq27xxx_battery_dead(di, flags))
++		return POWER_SUPPLY_HEALTH_DEAD;
  
- 	platform_set_drvdata(pdev, di);
- 
-@@ -1073,8 +1070,9 @@ static struct platform_driver bq27000_battery_driver = {
- static inline int bq27x00_battery_platform_init(void)
- {
- 	int ret = platform_driver_register(&bq27000_battery_driver);
-+
- 	if (ret)
--		printk(KERN_ERR "Unable to register BQ27000 platform driver\n");
-+		pr_err("Unable to register BQ27000 platform driver\n");
- 
- 	return ret;
+-	return tval;
++	return POWER_SUPPLY_HEALTH_GOOD;
  }
+ 
+ static void bq27xxx_battery_update(struct bq27xxx_device_info *di)
 -- 
 1.9.1
+
