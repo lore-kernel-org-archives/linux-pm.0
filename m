@@ -1,126 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH] PM / hibernate: make sure each resuming page is in current memory zones
-Date: Wed, 22 Jul 2015 03:03:30 +0200
-Message-ID: <2662645.fpATfiHLLF@vostro.rjw.lan>
-References: <1435679668-13806-1-git-send-email-yu.c.chen@intel.com> <1613617.2K941pjbyO@vostro.rjw.lan> <55ADA040.7050408@intel.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: cpufreq/ondemand: unpinning an unpinned lock.
+Date: Tue, 21 Jul 2015 17:46:16 -0700
+Message-ID: <55AEE7D8.3000507@codeaurora.org>
+References: <20150715220422.GA13789@codemonkey.org.uk> <3682267.1lcDzeZuDs@vostro.rjw.lan> <20150716051150.GA15404@linux> <20150716124241.GA20320@codemonkey.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53816 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933999AbbGVAgp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2015 20:36:45 -0400
-In-Reply-To: <55ADA040.7050408@intel.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:45507 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934190AbbGVAqS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2015 20:46:18 -0400
+In-Reply-To: <20150716124241.GA20320@codemonkey.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: chenyu5 <yu.c.chen@intel.com>
-Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, joeyli <jlee@suse.com>, yex.tian@intel.com
+To: Dave Jones <davej@codemonkey.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On Tuesday, July 21, 2015 09:28:32 AM chenyu5 wrote:
-> On 2015=E5=B9=B407=E6=9C=8816=E6=97=A5 08:30, Rafael J. Wysocki wrote=
-:
-> > On Monday, July 06, 2015 04:37:39 PM joeyli wrote:
-> >> Hi Chen Yu,
-> >>
-> >> On Thu, Jul 02, 2015 at 04:00:42PM +0800, chenyu5 wrote:
-> >>> Hi, Joey
-> >>> thanks for your reply,
-> >>>
-> >>> On 2015=E5=B9=B407=E6=9C=8802=E6=97=A5 14:19, joeyli wrote:
-> >>>> Hi Chen Yu,
-> >>>>
-> >>>> On Tue, Jun 30, 2015 at 11:54:28PM +0800, Chen Yu wrote:
-> >>>>> Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e82=
-0 reserved
-> >>>>> regions") was reverted, because this patch makes resume from hi=
-bernation
-> >>>>> on Lenovo x230 unreliable. But reverting may bring back the ker=
-nel
-> >>>>> exception firstly reported in former patch. In general, there a=
-re three
-> >>>>> problems in current code when resuming from hibernation:
-> >>>>>
-> >>>>> 1.Resuming page may also be in second kernel's e820 reserved re=
-gion.
-> >>>>> BIOS-e820: [mem 0x0000000069d4f000-0x0000000069e12fff] reserved
-> >>>>> this causes kernel exception described in Commit 84c91b7ae07c
-> >>>>> ("PM / hibernate: avoid unsafe pages in e820 reserved regions")
-> >>>>>
-> >>>>> 2.If Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages i=
-n e820
-> >>>>> reserved regions") is applied to fix problem 1, and if E820_RES=
-ERVED_KERN
-> >>>>> regions causes some regions at e820 table not page aligned,
-> >>>>> e820_mark_nosave_regions will misjudgment the non-page aligned =
-space to
-> >>>>> be "hole" space and add to nosave regions, this causes resuming=
- failed.
-> >>>>> Refer to https://bugzilla.kernel.org/show_bug.cgi?id=3D96111 fo=
-r detail.
-> >>>>>
-> >>>>
-> >>>> Sorry for I am not fully understand why checking pfn_valid could=
- avoid
-> >>>> the above 2. issue?
-> >>>>
-> >>> [Yu] According to e820_mark_nosave_regions, two kinds of e820
-> >>> regions will be regarded as nosave:
-> >>> a.e820.map holes between each e820entry
-> >>> b.e820entry with (!E820_RAM && !E820_RESERVED_KERN)
-> >>> dmesg in
-> >>> https://bugzilla.kernel.org/show_bug.cgi?id=3D96111
-> >>> shows that:
-> >>>
-> >>> BIOS-e820: [mem 0x000000005baff000-0x00000000d684ffff] usable
-> >>> reserve setup_data: [mem 0x000000009d3e0018-0x000000009d3f0057] u=
-sable
-> >>> PM: Registered nosave memory: [mem 0x9d3e0000-0x9d3e0fff]
-> >>>
-> >>> e820 map was changed by situation a, but it should not be added t=
-o
-> >>> nosave list, right?
-> >>>
-> >>> and according to saveable_page, only pages in the zone will be sa=
-ved:
-> >>> if (page_zone(page_ !=3D zone)
-> >>> 	return NULL;
-> >>>
-> >>> The function of is_valid_orig_page in this patch treats setup_dat=
-a as
-> >>> valid page, so I think this workaround issue 2.
-> >>>
-> >>>
-> >>>> Per my understood should waiting Yinghai Lu's patches for killin=
-g
-> >>>> E820_RESERVED_KERN to avoid the aligned problem.
-> >>> [Yu] yes, it is a graceful solution, but I don't see that in 4.1?=
- And
-> >>> we encountered problem 3 in our testing enviroment, so I wrote a =
-patch
-> >>> to deal with it first.
-> >>>>
-> >>>>
-> >>>> Thanks a lot!
-> >>>> Joey Lee
-> >>>>
-> >>
-> >> Thanks for your explanation, then your patch makes sense to me.
-> >>
-> >> Please feel free to add tag:
-> >>
-> >> Reviewed-by: Lee, Chun-Yi <joeyli.kernel@gmail.com>
-> >
-> > Patch queued up for 4.3, thanks!
-> >
-> Hi Rafeal,
-> Please help drop this patch for now, QA has
-> found some problems with this patch applied,
-> we're working on it now. Sorry for inconvenience.
+On 07/16/2015 05:42 AM, Dave Jones wrote:
+> On Thu, Jul 16, 2015 at 10:41:50AM +0530, Viresh Kumar wrote:
+>
+>   > > > WARNING: CPU: 1 PID: 29529 at kernel/locking/lockdep.c:3497 lock_unpin_lock+0x109/0x110()
+>   > > > unpinning an unpinned lock
+>   > > > CPU: 1 PID: 29529 Comm: kworker/1:1 Not tainted 4.2.0-rc2-think+ #3
+>   > > > Workqueue: events od_dbs_timer
+>   > > >  0000000000000009 ffff880094d5baa8 ffffffffae7f5e6f 0000000000000007
+>   > > >  ffff880094d5baf8 ffff880094d5bae8 ffffffffae07b91a 0000000000000118
+>   > > >  00000000000000e0 ffff880507bd5c58 0000000000000092 0000000000000004
+>   > > > Call Trace:
+>   > > >  [<ffffffffae7f5e6f>] dump_stack+0x4f/0x7b
+>   > > >  [<ffffffffae07b91a>] warn_slowpath_common+0x8a/0xc0
+>   > > >  [<ffffffffae07b996>] warn_slowpath_fmt+0x46/0x50
+>   > > >  [<ffffffffae0d0ec9>] lock_unpin_lock+0x109/0x110
+>   > > >  [<ffffffffae7f93cc>] __schedule+0x3ac/0xb60
+>   > > >  [<ffffffffae7f9c41>] schedule+0x41/0x90
+>   > > >  [<ffffffffae7f9ff8>] schedule_preempt_disabled+0x18/0x30
+>   > > >  [<ffffffffae7fbcef>] mutex_lock_nested+0x16f/0x3e0
+>   > > >  [<ffffffffae69207f>] ? gov_queue_work+0x2f/0xf0
+>   > > >  [<ffffffffae690ec7>] ? od_check_cpu+0x57/0xd0
+>   > > >  [<ffffffffae69207f>] ? gov_queue_work+0x2f/0xf0
+>   > > >  [<ffffffffae69207f>] gov_queue_work+0x2f/0xf0
+>   > > >  [<ffffffffae6918dd>] od_dbs_timer+0xbd/0x150
+>   >
+>   > I don't know why this will happen. Just to confirm, you are getting
+>   > this over 4.2-rc(1 or 2)? And you weren't getting these on 4.1 at all?
+>   > And its always reproducible? How ?
+>
+> I've hit it once, on rc2.  I didn't have a lot of time for testing rc1.
 
-Dropping, thanks for the heads up!
+Lock pinning is new in v4.2-rc1. Adding Peter just in case there's some 
+insight.
 
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
 
---=20
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
