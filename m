@@ -1,161 +1,96 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [PATCH 7/9] hwmon: Support registration of thermal
-	zones for SCP temperature sensors
-Date: Wed, 22 Jul 2015 15:02:41 +0100
-Message-ID: <1437573763-6525-8-git-send-email-punit.agrawal@arm.com>
-References: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v4 3/8] clk: add support for clocks provided by SCP(System
+ Control Processor)
+Date: Wed, 22 Jul 2015 15:19:17 +0100
+Message-ID: <55AFA665.4020906@arm.com>
+References: <1433760002-24120-1-git-send-email-sudeep.holla@arm.com> <1433760002-24120-4-git-send-email-sudeep.holla@arm.com> <20150702172310.GF4301@codeaurora.org> <5596A1B6.8020307@arm.com> <559ADC94.4080505@codeaurora.org> <559BF858.1020301@arm.com> <20150708014606.GH30412@codeaurora.org> <55A7D79B.3080305@arm.com> <20150716193114.GA17952@codeaurora.org> <55A8E434.2010709@arm.com> <55A945DF.3@codeaurora.org> <55ACB733.2080609@arm.com> <55AE8A02.9070801@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <lm-sensors-bounces@lm-sensors.org>
-In-Reply-To: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
-List-Unsubscribe: <http://lists.lm-sensors.org/mailman/options/lm-sensors>,
-	<mailto:lm-sensors-request@lm-sensors.org?subject=unsubscribe>
-List-Archive: <http://lists.lm-sensors.org/pipermail/lm-sensors/>
-List-Post: <mailto:lm-sensors@lm-sensors.org>
-List-Help: <mailto:lm-sensors-request@lm-sensors.org?subject=help>
-List-Subscribe: <http://lists.lm-sensors.org/mailman/listinfo/lm-sensors>,
-	<mailto:lm-sensors-request@lm-sensors.org?subject=subscribe>
-Sender: lm-sensors-bounces@lm-sensors.org
-Errors-To: lm-sensors-bounces@lm-sensors.org
-To: linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org, Punit Agrawal <punit.agrawal@arm.com>, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, Eduardo Valentin <edubezval@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <55AE8A02.9070801@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, Olof Johansson <olof@lixom.net>, Mike Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add support to create thermal zones based on the temperature sensors
-provided by the SCP. The thermal zones can be defined using the
-thermal DT bindings and should refer to the SCP sensor id to select
-the sensor.
 
-Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-Cc: Jean Delvare <jdelvare@suse.de>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Cc: Eduardo Valentin <edubezval@gmail.com>
+
+On 21/07/15 19:05, Stephen Boyd wrote:
+> On 07/20/2015 01:54 AM, Sudeep Holla wrote:
+>>
+>>
+>> On 17/07/15 19:13, Stephen Boyd wrote:
+>>> On 07/17/2015 04:17 AM, Sudeep Holla wrote:
+>>
+>> [...]
+>>
+>>>>
+>>>> determine_rate change shouldn't affect SCPI clock driver but I remember
+>>>> seeing round_rate change too on the list which returns value using the
+>>>> argument from Boris. Is that planned for v4.3 ? I would need the stable
+>>>> branch from this clk_hw_set_rate_range if you decide to push. Let me
+>>>> know your preferences. I will post the updated version of the patch
+>>>> accordingly.
+>>>>
+>>>
+>>> We're not going to change round_rate() so it sounds like you don't need
+>>> a stable branch. But you would need this new consumer API. So you still
+>>> need a branch right?
+>>>
+>>
+>> I am fine either way. If no one else need the stable branch to be shared
+>> with arm-soc, I prefer to use clock consumer API for now to avoid all
+>> the troubles to you guys and switch to provider API later. I will post
+>> it once the both this driver and that provider API is merged, if that's
+>> fine with you ?
+>
+> Ok. Sounds fine as long as we don't forget.
+>
+
+It's ready indeed :), will post it when everything is in place.
+
+Regards,
+Sudeep
+
+--->8
+
+ From 3ddf7fe5b1286efa712d4f2ba8108ce1855f3e74 Mon Sep 17 00:00:00 2001
+From: Sudeep Holla <sudeep.holla@arm.com>
+Date: Fri, 17 Jul 2015 12:19:54 +0100
+Subject: [PATCH] clk: scpi: use provider clk_hw_set_rate_range API 
+instead of
+  consumer API
+
+SCPI clock provider uses the consumer API clk_set_rate_range to set
+min/max rate constraints on the clocks it provides.
+
+Commit c87c640f915a ("clk: Allow providers to configure min/max rates")
+added a separate provider API clk_hw_set_rate_range to set the min/max
+rate of a clock.
+
+This patch switches away from clk_set_rate_range consumer API to
+clk_hw_set_rate_range provider API.
+
+Cc: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/hwmon/scpi-hwmon.c | 53 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 53 insertions(+)
+  drivers/clk/clk-scpi.c | 2 +-
+  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/hwmon/scpi-hwmon.c b/drivers/hwmon/scpi-hwmon.c
-index dd0a6f1..1e52ced 100644
---- a/drivers/hwmon/scpi-hwmon.c
-+++ b/drivers/hwmon/scpi-hwmon.c
-@@ -22,6 +22,7 @@
- #include <linux/scpi_protocol.h>
- #include <linux/slab.h>
- #include <linux/sysfs.h>
-+#include <linux/thermal.h>
- 
- static struct scpi_ops *scpi_ops;
- 
-@@ -33,12 +34,18 @@ struct sensor_dev {
- 	char label[20];
- };
- 
-+struct scpi_thermal_zone {
-+	struct list_head list;
-+	struct thermal_zone_device *tzd;
-+};
-+
- struct scpi_sensors {
- 	int num_volt;
- 	int num_temp;
- 	int num_current;
- 	int num_power;
- 	struct sensor_dev *device;
-+	struct list_head thermal_zones;
- 	struct device *hwdev;
- };
- struct scpi_sensors scpi_sensors;
-@@ -54,6 +61,20 @@ static int scpi_read_sensor(struct sensor_dev *sensor, u32 *value)
- 	return 0;
- }
- 
-+static int scpi_read_temp(void *dev, long *temp)
-+{
-+	struct sensor_dev *sensor = dev;
-+	u32 value;
-+	int ret;
-+
-+	ret = scpi_read_sensor(sensor, &value);
-+	if (ret)
-+		return ret;
-+
-+	*temp = value;
-+	return 0;
-+}
-+
- /* hwmon callback functions */
- static ssize_t
- scpi_hwmon_show_sensor(struct device *dev,
-@@ -90,6 +111,10 @@ struct attribute *scpi_attrs[24] = { 0 };
- struct attribute_group scpi_group;
- const struct attribute_group *scpi_groups[2] = { 0 };
- 
-+struct thermal_zone_of_device_ops scpi_sensor_ops = {
-+	.get_temp = scpi_read_temp,
-+};
-+
- static int scpi_hwmon_probe(struct platform_device *pdev)
- {
- 	u16 sensors, i;
-@@ -108,9 +133,12 @@ static int scpi_hwmon_probe(struct platform_device *pdev)
- 	if (!scpi_sensors.device)
- 		return -ENOMEM;
- 
-+	INIT_LIST_HEAD(&scpi_sensors.thermal_zones);
-+
- 	dev_info(&pdev->dev, "Found %d sensors\n", sensors);
- 	for (i = 0; i < sensors; i++) {
- 		struct sensor_dev *dev = &scpi_sensors.device[i];
-+		struct scpi_thermal_zone *zone;
- 
- 		ret = scpi_ops->sensor_get_info(i, &dev->info);
- 		if (ret) {
-@@ -130,6 +158,20 @@ static int scpi_hwmon_probe(struct platform_device *pdev)
- 			snprintf(dev->label, 20,
- 				 "temp%d_label", scpi_sensors.num_temp);
- 			scpi_sensors.num_temp++;
-+
-+			zone = devm_kmalloc(&pdev->dev, sizeof(*zone),
-+					    GFP_KERNEL);
-+			if (!zone)
-+				return -ENOMEM;
-+
-+			zone->tzd = thermal_zone_of_sensor_register(&pdev->dev,
-+						    i, dev, &scpi_sensor_ops);
-+			if (!IS_ERR(zone->tzd))
-+				list_add(&zone->list,
-+					 &scpi_sensors.thermal_zones);
-+			else
-+				devm_kfree(&pdev->dev, zone);
-+
- 			break;
- 		case VOLTAGE:
- 			snprintf(dev->input, 20,
-@@ -187,7 +229,18 @@ static int scpi_hwmon_probe(struct platform_device *pdev)
- 
- static int scpi_hwmon_remove(struct platform_device *pdev)
- {
-+	struct list_head *pos;
-+
- 	scpi_ops = NULL;
-+
-+	list_for_each(pos, &scpi_sensors.thermal_zones) {
-+		struct scpi_thermal_zone *zone;
-+
-+		zone = list_entry(pos, struct scpi_thermal_zone, list);
-+		thermal_zone_of_sensor_unregister(scpi_sensors.hwdev,
-+						  zone->tzd);
-+	}
-+
- 	return 0;
- }
- 
+diff --git a/drivers/clk/clk-scpi.c b/drivers/clk/clk-scpi.c
+index 06d0558e8f46..f7c8b7a03cfe 100644
+--- a/drivers/clk/clk-scpi.c
++++ b/drivers/clk/clk-scpi.c
+@@ -174,7 +174,7 @@ scpi_clk_ops_init(struct device *dev, const struct 
+of_device_id *match,
+
+  	clk = devm_clk_register(dev, &sclk->hw);
+  	if (!IS_ERR(clk) && max)
+-		clk_set_rate_range(clk, min, max);
++		clk_hw_set_rate_range(&sclk->hw, min, max);
+  	return clk;
+  }
+
 -- 
-2.1.4
-
-
-_______________________________________________
-lm-sensors mailing list
-lm-sensors@lm-sensors.org
-http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
+1.9.1
