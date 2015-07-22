@@ -1,62 +1,45 @@
-From: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
-Subject: [PATCH 1/9] devicetree: bindings: Add optional dynamic-power-coefficient property
-Date: Wed, 22 Jul 2015 15:02:35 +0100
-Message-ID: <1437573763-6525-2-git-send-email-punit.agrawal@arm.com>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: [PATCH 2/9] cpufreq-dt: Supply power coefficient when registering cooling devices
+Date: Wed, 22 Jul 2015 15:02:36 +0100
+Message-ID: <1437573763-6525-3-git-send-email-punit.agrawal@arm.com>
 References: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1437573763-6525-1-git-send-email-punit.agrawal-5wv7dgnIgG8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Punit Agrawal <punit.agrawal@arm.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-The dynamic power consumption of a device is proportional to the
-square of voltage (V) and the clock frequency (f). It can be expressed as
+Support registering cooling devices with dynamic power coefficient
+where provided by the device tree. This allows OF registered cooling
+devices driver to be used with the power_allocator thermal governor.
 
-Pdyn = dynamic-power-coefficient * V^2 * f.
-
-The dynamic-power-coefficient property represents an indicative
-running time dynamic power coefficient in fundamental units of
-mw/MHz/uVolt^2 and can be used in the above formula to calculate the
-dynamic power in mW.
-
-Signed-off-by: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>
 ---
- Documentation/devicetree/bindings/arm/cpus.txt | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ drivers/cpufreq/cpufreq-dt.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
-index d6b794c..c32bfac 100644
---- a/Documentation/devicetree/bindings/arm/cpus.txt
-+++ b/Documentation/devicetree/bindings/arm/cpus.txt
-@@ -239,6 +239,21 @@ nodes to be present and contain the properties described below.
- 		Definition: Specifies the syscon node controlling the cpu core
- 			    power domains.
- 
-+	- dynamic-power-coefficient
-+		Usage: optional
-+		Value type: <prop-encoded-array>
-+		Definition: A u32 value that represents an indicative
-+			    running time dynamic power coefficient in
-+			    fundamental units of mW/MHz/uVolt^2.
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index 528a82bf..1d1f61a 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -344,8 +344,13 @@ static void cpufreq_ready(struct cpufreq_policy *policy)
+ 	 * thermal DT code takes care of matching them.
+ 	 */
+ 	if (of_find_property(np, "#cooling-cells", NULL)) {
+-		priv->cdev = of_cpufreq_cooling_register(np,
+-							 policy->related_cpus);
++		u32 power_coefficient = 0;
 +
-+			    The dynamic energy consumption of the CPU
-+			    is proportional to the square of the
-+			    Voltage (V) and the clock frequency (f).
++		of_property_read_u32(np, "dynamic-power-coefficient",
++				     &power_coefficient);
 +
-+			    Pdyn = dynamic-power-coefficient * V^2 * f
-+
-+			    where voltage is in uV, frequency is in MHz.
-+
- Example 1 (dual-cluster big.LITTLE system 32-bit):
- 
- 	cpus {
++		priv->cdev = of_cpufreq_power_cooling_register(np,
++				policy->related_cpus, power_coefficient, NULL);
+ 		if (IS_ERR(priv->cdev)) {
+ 			dev_err(priv->cpu_dev,
+ 				"running cpufreq without cooling device: %ld\n",
 -- 
 2.1.4
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
