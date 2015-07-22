@@ -1,33 +1,81 @@
-From: Oliver Neukum <oneukum@suse.com>
-Subject: Re: [PATCH 1/1] suspend: make sync() on suspend-to-RAM optional
-Date: Wed, 22 Jul 2015 10:55:22 +0200
-Message-ID: <1437555322.5445.2.camel@suse.com>
-References: <1436927091-32520-1-git-send-email-lenb@kernel.org>
-	 <CAJZ5v0gNKRRaXvfqvj4YEjb+7X1aEobfvWuWyAnAcKArcxtZPA@mail.gmail.com>
-	 <20150721151941.GA19581@amd> <7453812.eRsb3OQU2z@vostro.rjw.lan>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v7 8/8] PCC: Enable PCC only when needed
+Date: Wed, 22 Jul 2015 09:59:19 +0100
+Message-ID: <55AF5B67.4030101@arm.com>
+References: <cover.1436464513.git.ashwin.chaugule@linaro.org> <CAJZ5v0j-_QB1U-A0F2YSoDa_71nyEGR=yn8Kb5qe-FSqDPevOA@mail.gmail.com> <55AE652B.7030409@arm.com> <1583446.GxfV2z2IW5@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cantor2.suse.de ([195.135.220.15]:57486 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932481AbbGVI4b (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 22 Jul 2015 04:56:31 -0400
-In-Reply-To: <7453812.eRsb3OQU2z@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1583446.GxfV2z2IW5@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael@kernel.org>, "Brown, Len" <len.brown@intel.com>, Austin S Hemmelgarn <ahferroin7@gmail.com>, Len Brown <lenb@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-
-On Wed, 2015-07-22 at 03:25 +0200, Rafael J. Wysocki wrote:
-> And it is more pain for me to change the user space on each of them to
-> write to the new sysfs file on every boot than to set a kernel Kconfig
-> option once.
-
-So why at all? If you really need this in sysfs, why not write
-something like "memfast" into /sys/power/state ?
-
-	Regards
-		Oliver
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
 
+
+On 22/07/15 02:28, Rafael J. Wysocki wrote:
+> On Tuesday, July 21, 2015 04:28:43 PM Sudeep Holla wrote:
+>> Hi Rafael,
+>>
+>> On 21/07/15 15:34, Rafael J. Wysocki wrote:
+>>> Hi Sudeep,
+>>>
+>>> On Tue, Jul 21, 2015 at 11:23 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>>>>
+>>>>
+>>>> On 20/07/15 23:04, Rafael J. Wysocki wrote:
+
+[..]
+
+>>>>>
+>>>>>
+>>>>> No.  The other client will need to select PCC too.
+>>>>
+>>>>
+>>>> Yes the PCC users/clients selecting PCC is fine and that's already
+>>>> done(i.e. ACPI_CPPC_LIB selects PCC). I still don't understand the need
+>>>> for this change, also how will other clients possibly select PCC which
+>>>> now depends on CPPC_LIB ? e.g. if we have
+>>>>
+>>>> config ACPI_XYZ_LIB
+>>>>           select PCC
+>>>>
+>>>> config ACPI_XYZ
+>>>>           select ACPI_XYZ_LIB
+>>>>
+>>>> Won't this shout warning: (ACPI_XYZ_LIB && ACPI_CPPC_LIB) selects PCC
+>>>> which has unmet direct dependencies (MAILBOX && ACPI && ACPI_CPPC_LIB)
+>>>> if ACPI_CPPC_LIB is not selected ?
+>>>
+>>> That depends on the "depends on" clauses used.  Selecting itself
+>>> doesn't cause any dependencies to appear.
+>>>
+>>
+>> Agreed and I am absolutely fine with that. But if you look at this
+>> patch, it does
+>>
+>> config PCC
+>> 	bool "Platform Communication Channel Driver"
+>> 	depends on ACPI && ACPI_CPPC_LIB
+>
+> My bad, I've evidently overlooked that.
+>
+> If PPC is selected from ACPI_CPPC_LIB, the "depends on" above is
+> obviously not needed.
+>
+
+Thanks for the confirmation.
+
+>> I am fine with ACPI_CPPC_LIB selecting PCC which is already done in
+>> earlier patch. I am against making PCC depend on ACPI_CPPC_LIB.
+>
+> OK, makes sense.  Sorry for the misunderstanding.
+>
+
+It's okay, I just wanted to make sure that I am not missing to
+understand some kind of dependency.
+
+Regards,
+Sudeep
