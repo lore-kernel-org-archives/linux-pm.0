@@ -1,118 +1,86 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: Fix possible memory leak during CPU removal
-Date: Wed, 22 Jul 2015 22:18:41 +0200
-Message-ID: <3005422.83Yq8KhGHU@vostro.rjw.lan>
+From: Nitish Ambastha <nits.ambastha@gmail.com>
+Subject: Re: [PATCHv3 1/1] kernel/power/autosleep.c: check for pm_suspend()
+ return before queueing suspend again
+Date: Thu, 23 Jul 2015 01:41:51 +0530
+Message-ID: <CAHWDpXiVRrwuVy=0_w_YkYySWyaC7CrJ5b3jY0atD4WxBZM-=g@mail.gmail.com>
+References: <1435604054-29711-1-git-send-email-nitish.a@samsung.com>
+	<1834201.LA0RYhhP7u@vostro.rjw.lan>
+	<CAHWDpXj+AjD3F+8RvRFePXCXRKq=WBh0MKy-39B2emjG+Qamxw@mail.gmail.com>
+	<1909321.djDBBPKRbt@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64104 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752815AbbGVTvz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jul 2015 15:51:55 -0400
+Received: from mail-ie0-f180.google.com ([209.85.223.180]:33409 "EHLO
+	mail-ie0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751756AbbGVULw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jul 2015 16:11:52 -0400
+In-Reply-To: <1909321.djDBBPKRbt@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Nitish Ambastha <nitish.a@samsung.com>, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpgs@samsung.com
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Rafael,
 
-After commit 9b07109f06a1 (cpufreq: Fix double addition of sysfs
-links) the second sif argument of __cpufreq_remove_dev_prepare()
-and __cpufreq_remove_dev_finish() is not used by them any more.
+Thank you very much for your comments and feedback
+I have planned to drop this one now. Before I close, I would just
+share few more comments and idea behind this.
 
-However, there also is a problem in cpufreq_remove_dev() that if
-any of the above functions returns an error, we'll fail to
-clean up after a CPU that is going away (and it is going away
-no matter what).
+Before queueing next suspend, we track wakeup event counts
+consistently for drivers registered to wakeup events, to know if
+events are pending or completed. However we cannot identify or track
+the same for other drivers which are not registered with wakeup
+events.
+Since we can't track the events and behavior of these drivers, we
+cannot predict if the next attempt of suspend will be successful on
+those drivers, while the current attempt failed. This resulting in a
+possibility of tight suspend resume if there is suspend failures by
+these drivers more frequently.
+So, my opinion was to prevent immediate suspend requests when some
+drivers (which are not registered to wakeup events) failed to suspend
+in current attempt. I might be wrong, but this is how I understand it.
 
-For this reason, replace the sif argument of __cpufreq_remove_dev_prepare()
-and __cpufreq_remove_dev_finish() with a bool force argument that
-will tell each of them to avoid aborting in case of a governor
-callback failure and do the cleanup regardless.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+Regards
+Nitish Ambastha
 
-On top of:
-http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=bleeding-edge&id=9b07109f06a1edd6e636b1e7397157eae0e6baa4
 
-Note: The above commit is on a testing branch only at the moment.
-
----
- drivers/cpufreq/cpufreq.c |   23 ++++++++++-------------
- 1 file changed, 10 insertions(+), 13 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -1376,8 +1376,7 @@ out_release_rwsem:
- 	return ret;
- }
- 
--static int __cpufreq_remove_dev_prepare(struct device *dev,
--					struct subsys_interface *sif)
-+static int __cpufreq_remove_dev_prepare(struct device *dev, bool force)
- {
- 	unsigned int cpu = dev->id;
- 	int ret = 0;
-@@ -1395,7 +1394,8 @@ static int __cpufreq_remove_dev_prepare(
- 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
- 		if (ret) {
- 			pr_err("%s: Failed to stop governor\n", __func__);
--			return ret;
-+			if (!force)
-+				return ret;
- 		}
- 	}
- 
-@@ -1429,8 +1429,7 @@ static int __cpufreq_remove_dev_prepare(
- 	return ret;
- }
- 
--static int __cpufreq_remove_dev_finish(struct device *dev,
--				       struct subsys_interface *sif)
-+static int __cpufreq_remove_dev_finish(struct device *dev, bool force)
- {
- 	unsigned int cpu = dev->id;
- 	int ret;
-@@ -1450,7 +1449,8 @@ static int __cpufreq_remove_dev_finish(s
- 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
- 		if (ret) {
- 			pr_err("%s: Failed to exit governor\n", __func__);
--			return ret;
-+			if (!force)
-+				return ret;
- 		}
- 	}
- 
-@@ -1480,11 +1480,8 @@ static int cpufreq_remove_dev(struct dev
- 		return 0;
- 
- 	if (cpu_online(cpu)) {
--		ret = __cpufreq_remove_dev_prepare(dev, sif);
--		if (!ret)
--			ret = __cpufreq_remove_dev_finish(dev, sif);
--		if (ret)
--			return ret;
-+		__cpufreq_remove_dev_prepare(dev, true);
-+		__cpufreq_remove_dev_finish(dev, true);
- 	}
- 
- 	/* sysfs links are removed only on subsys callback */
-@@ -2376,11 +2373,11 @@ static int cpufreq_cpu_callback(struct n
- 			break;
- 
- 		case CPU_DOWN_PREPARE:
--			__cpufreq_remove_dev_prepare(dev, NULL);
-+			__cpufreq_remove_dev_prepare(dev, false);
- 			break;
- 
- 		case CPU_POST_DEAD:
--			__cpufreq_remove_dev_finish(dev, NULL);
-+			__cpufreq_remove_dev_finish(dev, false);
- 			break;
- 
- 		case CPU_DOWN_FAILED:
-
+On Thu, Jul 16, 2015 at 3:59 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, July 14, 2015 09:34:08 AM Nitish Ambastha wrote:
+>> On Tue, Jul 14, 2015 at 5:13 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > On Tuesday, July 14, 2015 01:38:02 AM Nitish Ambastha wrote:
+>> >> Prevent tight loop for suspend-resume when some
+>> >> devices failed to suspend
+>> >
+>> > This *still* doesn't explain what problem you're *really* trying to address.
+>> >
+>> > Even if a driver returns an error code from one of its suspend callbacks,
+>> > you should get final_count == initial_count in the final check and we'll
+>> > schedule the timeout.
+>> >
+>> > So there is a failure scenarion you're trying to address where that check is
+>> > not sufficient, but you're not saying what the scenario is.
+>> >
+>> As I mentioned earlier, if some driver failed to suspend, and during
+>> resume if *somebody* called pm_stay_awake() or pm_wakeup_event()
+>> meantime, and then pm_relax(), final_count and initial_count will not
+>> be the same in try_to_suspend(). We observed this behavior with
+>> battery monitor thread on being restarted
+>
+> But that means there was a valid wakeup event, doesn't it?
+>
+>> In these scenarios, it will be considered a *valid wakeup* event and
+>> it will try to queue suspend immediately, though the actual reason of
+>> resume was driver returning error code.
+>
+> Even if a wakeup event occurs in addition to a driver failing the suspend, it
+> is still valid.
+>
+> So it looks like you want to schedule the timeout unconditionally in case of
+> a failed suspend, but then you need to filter out -EBUSY (which is returned
+> on valid wakeup events).  Essentially, that would slow down autosleep, but
+> how does that help exactly?
+>
+> Thanks,
+> Rafael
+>
