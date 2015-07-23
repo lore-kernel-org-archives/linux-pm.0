@@ -1,36 +1,49 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH v6 01/13] clk: qcom: Add support for GDSCs
-Date: Thu, 23 Jul 2015 14:07:32 +0530
-Message-ID: <55B0A7CC.3040607@codeaurora.org>
-References: <1437549069-29655-1-git-send-email-rnayak@codeaurora.org> <1437549069-29655-2-git-send-email-rnayak@codeaurora.org> <55B03495.8050902@codeaurora.org>
+From: Nicolas Boichat <drinkcat@chromium.org>
+Subject: Re: [PATCHv2 0/3] regmap: Use different lockdep class for each regmap
+ init call
+Date: Thu, 23 Jul 2015 16:45:53 +0800
+Message-ID: <CANMq1KD8rOHjtWA1Eiw9GATdTeq1Ch4bga4ZAty26auvWyX7Og@mail.gmail.com>
+References: <1436337018-32464-1-git-send-email-drinkcat@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <55B03495.8050902@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: mturquette@baylibre.com, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f49.google.com ([209.85.218.49]:35763 "EHLO
+	mail-oi0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752080AbbGWIpy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 04:45:54 -0400
+Received: by oihq81 with SMTP id q81so161000344oih.2
+        for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2015 01:45:54 -0700 (PDT)
+In-Reply-To: <1436337018-32464-1-git-send-email-drinkcat@chromium.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Antti Palosaari <crope@iki.fi>, Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@linux.intel.com>, Lars-Peter Clausen <lars@metafoo.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Bard Liao <bardliao@realtek.com>, Oder Chiou <oder_chiou@realtek.com>, Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>, alsa-devel@alsa-project.org, Anatol Pomozov <anatol.pomozov@gmail.com>, Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Nicolas Boichat <drinkcat@chromium.org>, linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lee Jones <lee.jones@linaro.org>, Maxime Coquelin <maxime.coquelin@st.com>, Ajit
 
+Hi Mark,
 
-On 07/23/2015 05:55 AM, Stephen Boyd wrote:
-> On 07/22/2015 12:10 AM, Rajendra Nayak wrote:
->> diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
->> index 59d1666..a7c2eea 100644
->> --- a/drivers/clk/qcom/Kconfig
->> +++ b/drivers/clk/qcom/Kconfig
->> @@ -39,6 +39,11 @@ config IPQ_LCC_806X
->>         Say Y if you want to use audio devices such as i2s, pcm,
->>         S/PDIF, etc.
->> +config QCOM_GDSC
->> +    bool
->> +    select PM_GENERIC_DOMAINS if PM
->> +    depends on COMMON_CLK_QCOM
->>
+On Wed, Jul 8, 2015 at 2:30 PM, Nicolas Boichat <drinkcat@chromium.org> wrote:
+> Second version. Small fixup in the regmap patch itself [3/3] (the
+> declaration of __devm_regmap_init_ac97 was missing lock_key/name
+> parameters).
 >
-> We can drop this depends because it should only be selected if
-> COMMON_CLK_QCOM anyway.
+> Also, there are 2 drivers that are using function pointers named
+> "regmap_init", which causes problems as it is now a macro: put these
+> in parentheses to prevent the preprocessor from substituting them.
+>
+> Patches 1+2 should be pushed first to avoid breaking git bissect.
+>
+> Compile tested with allyesconfig on x86_64 and arm.
+>
+> Nicolas Boichat (3):
+>   mfd: vexpress: Add parentheses around bridge->ops->regmap_init call
+>   thermal: sti: Add parentheses around bridge->ops->regmap_init call
+>   regmap: Use different lockdep class for each regmap init call
 
-Stephen, thanks for the review. I'll fix up this and others you pointed 
-to in this patch and others in the series.
+What's the status of this series (and the additional documentation
+fix: https://lkml.org/lkml/2015/7/8/385)?
+
+Do we need acks from the mfd/vexpress and thermal maintainers?
+(mfd/vexpress maintainers are Liviu Dudau, Sudeep Holla, and Lorenzo
+Pieralisi, I'm less clear about thermal, maybe Eduardo Valentin?)
+
+Thanks!
