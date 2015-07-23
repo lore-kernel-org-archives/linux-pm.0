@@ -1,39 +1,52 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH v6 03/13] clk: qcom: gdsc: Use PM clocks to control gdsc
- clocks
-Date: Thu, 23 Jul 2015 14:04:24 +0530
-Message-ID: <55B0A710.9080209@codeaurora.org>
-References: <1437549069-29655-1-git-send-email-rnayak@codeaurora.org> <1437549069-29655-4-git-send-email-rnayak@codeaurora.org> <55B03CE9.4050903@codeaurora.org>
+Subject: Re: [PATCH v6 04/13] clk: qcom: gdsc: Manage clocks with !CONFIG_PM
+Date: Thu, 23 Jul 2015 14:05:48 +0530
+Message-ID: <55B0A764.6010708@codeaurora.org>
+References: <1437549069-29655-1-git-send-email-rnayak@codeaurora.org> <1437549069-29655-5-git-send-email-rnayak@codeaurora.org> <55B03D65.8040207@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <55B03CE9.4050903@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:38692 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751833AbbGWIfz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 04:35:55 -0400
+In-Reply-To: <55B03D65.8040207@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Stephen Boyd <sboyd@codeaurora.org>
 Cc: mturquette@baylibre.com, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org
-List-Id: linux-pm@vger.kernel.org
 
-On 07/23/2015 06:31 AM, Stephen Boyd wrote:
-> On 07/22/2015 12:10 AM, Rajendra Nayak wrote:
->> @@ -104,6 +105,37 @@ static int gdsc_disable(struct generic_pm_domain
->> *domain)
->>       return gdsc_toggle_logic(sc, false);
->>   }
->> +static int gdsc_attach(struct generic_pm_domain *domain, struct
->> device *dev)
+[]..
+
+>> +
+>> +#ifndef CONFIG_PM
+>> +static void enable_clock(struct device *dev, const char *con_id)
 >> +{
->> +    int ret;
->> +    struct gdsc *sc = domain_to_gdsc(domain);
->> +    char **con_id, *con_ids[] = { "core", "iface", NULL };
+>> +    struct clk *clk;
+>> +
+>> +    clk = clk_get(dev, con_id);
+>> +    if (!IS_ERR(clk)) {
+>> +        clk_prepare_enable(clk);
+>> +        clk_put(clk);
+>> +    }
+>> +}
+>> +
+>> +static void disable_clock(struct device *dev, const char *con_id)
+>> +{
+>> +    struct clk *clk;
+>> +
+>> +    clk = clk_get(dev, con_id);
+>> +    if (!IS_ERR(clk)) {
+>> +        clk_disable_unprepare(clk);
+>> +        clk_put(clk);
+>> +    }
+>> +}
 >
-> const?
->
-> This is where I get scared of sniffing too much SoC glue. What's to
-> enforce the "core", and "iface" naming scheme? What's to enforce there
-> being two clocks vs. one? Maybe a better approach would be to use
-> of_clk_get() and iterate through all clocks of the device, or to encode
-> the clock names in the gdsc structure.
+> Is there a reason why this whole patch isn't generic code? I recall some
+> discussion but I forgot now and there isn't any mention of why this
+> isn't generic code in the commit text.
 
-I had the clock names in the gdsc structure in v5. I should probably go
-back to having it that way.
+If by generic code, you mean using PM clocks, then this thread should
+give some context..
+http://www.spinics.net/lists/arm-kernel/msg414072.html
