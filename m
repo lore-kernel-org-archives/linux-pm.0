@@ -1,80 +1,219 @@
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [RFC PATCH V2] PM / hibernate: Fix hibernation panic caused by
- inconsistent e820 memory map
-Date: Wed, 22 Jul 2015 16:56:31 -0700
-Message-ID: <CAE9FiQVM6p0+yLj5JJ9H_tUeX6S1r-E3hMSZg+JSyguUhLDouA@mail.gmail.com>
-References: <1437553748-7344-1-git-send-email-yu.c.chen@intel.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v6 01/13] clk: qcom: Add support for GDSCs
+Date: Wed, 22 Jul 2015 17:25:57 -0700
+Message-ID: <55B03495.8050902@codeaurora.org>
+References: <1437549069-29655-1-git-send-email-rnayak@codeaurora.org> <1437549069-29655-2-git-send-email-rnayak@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f177.google.com ([209.85.213.177]:35230 "EHLO
-	mail-ig0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752586AbbGVX4c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jul 2015 19:56:32 -0400
-Received: by igr7 with SMTP id 7so80908946igr.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2015 16:56:31 -0700 (PDT)
-In-Reply-To: <1437553748-7344-1-git-send-email-yu.c.chen@intel.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:45527 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752125AbbGWA0A (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jul 2015 20:26:00 -0400
+In-Reply-To: <1437549069-29655-2-git-send-email-rnayak@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Lee, Chun-Yi" <jlee@suse.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, ZhangRui <rui.zhang@intel.com>, yex.tian@intel.com
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: mturquette@baylibre.com, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org
 
-On Wed, Jul 22, 2015 at 1:29 AM, Chen Yu <yu.c.chen@intel.com> wrote:
-> Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820 reserved
-> regions") was reverted, because this patch makes resume from hibernation
-> on Lenovo x230 unreliable. But reverting may bring back the kernel
-> exception firstly reported in former patch. In general, there are three
-> problems in current code when resuming from hibernation:
+On 07/22/2015 12:10 AM, Rajendra Nayak wrote:
+> diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
+> index 59d1666..a7c2eea 100644
+> --- a/drivers/clk/qcom/Kconfig
+> +++ b/drivers/clk/qcom/Kconfig
+> @@ -39,6 +39,11 @@ config IPQ_LCC_806X
+>   	  Say Y if you want to use audio devices such as i2s, pcm,
+>   	  S/PDIF, etc.
+>   
+> +config QCOM_GDSC
+> +	bool
+> +	select PM_GENERIC_DOMAINS if PM
+> +	depends on COMMON_CLK_QCOM
 >
-> 1.Resuming page may also be in second kernel's e820 reserved region.
-> BIOS-e820: [mem 0x0000000069d4f000-0x0000000069e12fff] reserved
-> this causes kernel exception described in Commit 84c91b7ae07c
-> ("PM / hibernate: avoid unsafe pages in e820 reserved regions")
->
-> 2.If Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820
-> reserved regions") is applied to fix problem 1, and if E820_RESERVED_KERN
-> regions causes some regions at e820 table not page aligned,
-> e820_mark_nosave_regions will misjudgment the non-page aligned space to
-> be "hole" space and add to nosave regions, this causes resuming failed.
-> Refer to https://bugzilla.kernel.org/show_bug.cgi?id=96111 for detail.
->
-> 3.e820 memory map inconsistence. Sometimes resuming system may have
-> larger memory capacity than the one before hibernation. If a strict
-> superset relationship is satisfied, it should be allowed to resume.
-> For example,  use case of memory hotplug after hibernation.
->
-> e820 memory map before hibernation:
-> BIOS-e820: [mem 0x0000000020200000-0x0000000077517fff] usable
-> BIOS-e820: [mem 0x0000000077518000-0x0000000077567fff] reserved
->
-> e820 memory map during resuming:
-> BIOS-e820: [mem 0x0000000020200000-0x000000007753ffff] usable
-> BIOS-e820: [mem 0x0000000077540000-0x0000000077567fff] reserved
->
-> This patch is based on Lee, Chun-Yi's original patch
-> Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820 reserved
-> regions"), then treats any ajacent E820_RAM/E820_RESERVED_KERN regions
-> as one region, this can prevent any non-page aligned address in
-> ajacent E820_RAM/E820_RESERVED regions, from being added to nosave regions,
-> thus allow system to restore the hibernation image, for example:
-> three E820_RAM/E820_RESERVED_KERN regions,
-> [a,b] [b+1,c] [c+1,d], should be treated as a whole:
-> [a,d].
-> For the bug reported at https://bugzilla.kernel.org/show_bug.cgi?id=96111
-> reserve setup_data: [mem 0x000000005baff000-0x000000009d3e0017] usable
-> reserve setup_data: [mem 0x000000009d3e0018-0x000000009d3f0057] usable
-> reserve setup_data: [mem 0x000000009d3f0058-0x00000000d684ffff] usable
-> these regions will be treated as one:
-> [mem 0x000000005baff000-0x00000000d684ffff] usable.
->
-> Tested-by: Tian Ye <yex.tian@intel.com>
-> Tested-by: Wendy, Wang <wendy.wang@intel.com>
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 
-Is this same as:
+We can drop this depends because it should only be selected if 
+COMMON_CLK_QCOM anyway.
 
-https://bugzilla.opensuse.org/show_bug.cgi?id=913885
+> +
+>   config MSM_GCC_8660
+>   	tristate "MSM8660 Global Clock Controller"
+>   	depends on COMMON_CLK_QCOM
+> diff --git a/drivers/clk/qcom/gdsc.c b/drivers/clk/qcom/gdsc.c
+> new file mode 100644
+> index 0000000..a59655b
+> --- /dev/null
+> +++ b/drivers/clk/qcom/gdsc.c
+> @@ -0,0 +1,167 @@
+> +/*
+> + * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 and
+> + * only version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#include <linux/delay.h>
+> +#include <linux/err.h>
+> +#include <linux/jiffies.h>
+> +#include <linux/slab.h>
 
-that could be fixed by:
+#include <linux/bitops.h> for BIT?
+#include <linux/kernel.h> for container_of?
 
-https://lkml.org/lkml/2015/7/7/982
+Please include linux/pm_domain.h here and linux/regmap.h as well for 
+completeness even though gdsc.h includes it.
+
+> +#include "gdsc.h"
+> +
+> +#define PWR_ON_MASK		BIT(31)
+> +#define EN_REST_WAIT_MASK	GENMASK(23, 20)
+> +#define EN_FEW_WAIT_MASK	GENMASK(19, 16)
+> +#define CLK_DIS_WAIT_MASK	GENMASK(15, 12)
+> +#define SW_OVERRIDE_MASK	BIT(2)
+> +#define HW_CONTROL_MASK		BIT(1)
+> +#define SW_COLLAPSE_MASK	BIT(0)
+> [...]
+> +
+> +static int gdsc_toggle_logic(struct gdsc *sc, bool en)
+> +{
+> +	int ret;
+> +	u32 val = en ? 0 : SW_COLLAPSE_MASK;
+> +	u32 check = en ? PWR_ON_MASK : 0;
+> +	unsigned long timeout;
+> +
+> +	ret = regmap_update_bits(sc->regmap, sc->gdscr, SW_COLLAPSE_MASK, val);
+> +	if (ret)
+> +		return ret;
+> +
+> +	timeout = jiffies + usecs_to_jiffies(TIMEOUT_US);
+> +	do {
+> +		ret = regmap_read(sc->regmap, sc->gdscr, &val);
+> +		if (ret)
+> +			return ret;
+> +
+> +		if ((val & PWR_ON_MASK) == check)
+> +			return 0;
+> +	} while (time_before(jiffies, timeout));
+> +
+> +	ret =  regmap_read(sc->regmap, sc->gdscr, &val);
+
+Weird double space here.
+
+> +	if (ret)
+> +		return ret;
+> +
+> +	if ((val & PWR_ON_MASK) == check)
+> +		return 0;
+> +
+> +	return -ETIMEDOUT;
+> +}
+> +
+> [...]
+> +
+> +int gdsc_register(struct device *dev, struct gdsc **scs, size_t num,
+> +		  struct regmap *regmap)
+> +{
+> +	int i, ret;
+> +	struct genpd_onecell_data *data;
+> +
+> +	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
+> +	if (!data)
+> +		return -ENOMEM;
+> +
+> +	data->domains = devm_kcalloc(dev, num, sizeof(*data->domains),
+> +				     GFP_KERNEL);
+> +	if (!data->domains)
+> +		return -ENOMEM;
+> +
+> +	data->num_domains = num;
+> +	for (i = 0; i < num; i++) {
+> +		if (!scs[i])
+> +			continue;
+> +		scs[i]->regmap = regmap;
+> +		ret = gdsc_init(scs[i]);
+> +		if (ret)
+> +			return ret;
+> +		data->domains[i] = &scs[i]->pd;
+> +	}
+> +
+> +	return of_genpd_add_provider_onecell(dev->of_node, data);
+> +}
+
+EXPORT_SYMBOL?
+
+> +
+> +void gdsc_unregister(struct device *dev)
+> +{
+> +	of_genpd_del_provider(dev->of_node);
+> +}
+
+EXPORT_SYMBOL?
+
+> diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
+> new file mode 100644
+> index 0000000..e26a496
+> --- /dev/null
+> +++ b/drivers/clk/qcom/gdsc.h
+> @@ -0,0 +1,45 @@
+> +/*
+> + * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 and
+> + * only version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#ifndef __QCOM_GDSC_H__
+> +#define __QCOM_GDSC_H__
+> +
+> +#include <linux/pm_domain.h>
+> +#include <linux/regmap.h>
+
+Drop this include and forward declare struct regmap.
+
+> +
+> +/**
+> + * struct gdsc - Globally Distributed Switch Controller
+> + * @pd: generic power domain
+> + * @regmap: regmap for MMIO accesses
+> + * @gdscr: gsdc control register
+> + */
+> +struct gdsc {
+> +	struct generic_pm_domain	pd;
+> +	struct regmap			*regmap;
+> +	unsigned int			gdscr;
+> +};
+> +
+> +#ifdef CONFIG_QCOM_GDSC
+> +int gdsc_register(struct device *, struct gdsc **, size_t n, struct regmap *);
+> +void gdsc_unregister(struct device *);
+> +#else
+> +static inline int gdsc_register(struct device *d, struct gdsc **g, size_t n,
+> +				struct regmap *r)
+> +{
+> +	return -ENOSYS;
+
+We need err.h for this one...
+
+> +}
+> +
+> +static inline void gdsc_unregister(struct device *d)
+> +{};
+
+one line instead of two for this?
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
+
