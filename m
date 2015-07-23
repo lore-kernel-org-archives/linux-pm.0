@@ -1,258 +1,217 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [RFCv5, 01/46] arm: Frequency invariant scheduler load-tracking
- support
-Date: Thu, 23 Jul 2015 12:06:26 +0100
-Message-ID: <20150723110626.GC21785@e105550-lin.cambridge.arm.com>
-References: <1436293469-25707-2-git-send-email-morten.rasmussen@arm.com>
- <20150721154145.GA23852@leoy-linaro>
- <20150722133103.GA21785@e105550-lin.cambridge.arm.com>
- <20150722145904.GA18354@leoy-linaro>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:39896 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752613AbbGWLDc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 23 Jul 2015 07:03:32 -0400
-Content-Disposition: inline
-In-Reply-To: <20150722145904.GA18354@leoy-linaro>
-Sender: linux-pm-owner@vger.kernel.org
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH v5 5/8] cpufreq: arm_big_little: add SCPI interface driver
+Date: Thu, 23 Jul 2015 12:10:25 +0100
+Message-ID: <1437649828-14540-6-git-send-email-sudeep.holla@arm.com>
+References: <1437649828-14540-1-git-send-email-sudeep.holla@arm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1437649828-14540-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Liviu Dudau <liviu.dudau@arm.com>, Punit Agrawal <punit.agrawal@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Russell King <linux@arm.linux.org.uk>
 
-On Wed, Jul 22, 2015 at 10:59:04PM +0800, Leo Yan wrote:
-> On Wed, Jul 22, 2015 at 02:31:04PM +0100, Morten Rasmussen wrote:
-> > On Tue, Jul 21, 2015 at 11:41:45PM +0800, Leo Yan wrote:
-> > > Hi Morten,
-> > > 
-> > > On Tue, Jul 07, 2015 at 07:23:44PM +0100, Morten Rasmussen wrote:
-> > > > From: Morten Rasmussen <Morten.Rasmussen@arm.com>
-> > > > 
-> > > > Implements arch-specific function to provide the scheduler with a
-> > > > frequency scaling correction factor for more accurate load-tracking.
-> > > > The factor is:
-> > > > 
-> > > > 	current_freq(cpu) << SCHED_CAPACITY_SHIFT / max_freq(cpu)
-> > > > 
-> > > > This implementation only provides frequency invariance. No cpu
-> > > > invariance yet.
-> > > > 
-> > > > Cc: Russell King <linux@arm.linux.org.uk>
-> > > > 
-> > > > Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
-> > > > 
-> > > > ---
-> > > > arch/arm/include/asm/topology.h |  7 +++++
-> > > >  arch/arm/kernel/smp.c           | 57 +++++++++++++++++++++++++++++++++++++++--
-> > > >  arch/arm/kernel/topology.c      | 17 ++++++++++++
-> > > >  3 files changed, 79 insertions(+), 2 deletions(-)
-> > > > 
-> > > > diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
-> > > > index 370f7a7..c31096f 100644
-> > > > --- a/arch/arm/include/asm/topology.h
-> > > > +++ b/arch/arm/include/asm/topology.h
-> > > > @@ -24,6 +24,13 @@ void init_cpu_topology(void);
-> > > >  void store_cpu_topology(unsigned int cpuid);
-> > > >  const struct cpumask *cpu_coregroup_mask(int cpu);
-> > > >  
-> > > > +#define arch_scale_freq_capacity arm_arch_scale_freq_capacity
-> > > > +struct sched_domain;
-> > > > +extern
-> > > > +unsigned long arm_arch_scale_freq_capacity(struct sched_domain *sd, int cpu);
-> > > > +
-> > > > +DECLARE_PER_CPU(atomic_long_t, cpu_freq_capacity);
-> > > > +
-> > > >  #else
-> > > >  
-> > > >  static inline void init_cpu_topology(void) { }
-> > > > diff --git a/arch/arm/kernel/smp.c b/arch/arm/kernel/smp.c
-> > > > index cca5b87..a32539c 100644
-> > > > --- a/arch/arm/kernel/smp.c
-> > > > +++ b/arch/arm/kernel/smp.c
-> > > > @@ -677,12 +677,34 @@ static DEFINE_PER_CPU(unsigned long, l_p_j_ref);
-> > > >  static DEFINE_PER_CPU(unsigned long, l_p_j_ref_freq);
-> > > >  static unsigned long global_l_p_j_ref;
-> > > >  static unsigned long global_l_p_j_ref_freq;
-> > > > +static DEFINE_PER_CPU(atomic_long_t, cpu_max_freq);
-> > > > +DEFINE_PER_CPU(atomic_long_t, cpu_freq_capacity);
-> > > > +
-> > > > +/*
-> > > > + * Scheduler load-tracking scale-invariance
-> > > > + *
-> > > > + * Provides the scheduler with a scale-invariance correction factor that
-> > > > + * compensates for frequency scaling through arch_scale_freq_capacity()
-> > > > + * (implemented in topology.c).
-> > > > + */
-> > > > +static inline
-> > > > +void scale_freq_capacity(int cpu, unsigned long curr, unsigned long max)
-> > > > +{
-> > > > +	unsigned long capacity;
-> > > > +
-> > > > +	if (!max)
-> > > > +		return;
-> > > > +
-> > > > +	capacity = (curr << SCHED_CAPACITY_SHIFT) / max;
-> > > > +	atomic_long_set(&per_cpu(cpu_freq_capacity, cpu), capacity);
-> > > > +}
-> > > >  
-> > > >  static int cpufreq_callback(struct notifier_block *nb,
-> > > >  					unsigned long val, void *data)
-> > > >  {
-> > > >  	struct cpufreq_freqs *freq = data;
-> > > >  	int cpu = freq->cpu;
-> > > > +	unsigned long max = atomic_long_read(&per_cpu(cpu_max_freq, cpu));
-> > > >  
-> > > >  	if (freq->flags & CPUFREQ_CONST_LOOPS)
-> > > >  		return NOTIFY_OK;
-> > > > @@ -707,6 +729,10 @@ static int cpufreq_callback(struct notifier_block *nb,
-> > > >  					per_cpu(l_p_j_ref_freq, cpu),
-> > > >  					freq->new);
-> > > >  	}
-> > > > +
-> > > > +	if (val == CPUFREQ_PRECHANGE)
-> > > > +		scale_freq_capacity(cpu, freq->new, max);
-> > > > +
-> > > >  	return NOTIFY_OK;
-> > > >  }
-> > > >  
-> > > > @@ -714,11 +740,38 @@ static struct notifier_block cpufreq_notifier = {
-> > > >  	.notifier_call  = cpufreq_callback,
-> > > >  };
-> > > >  
-> > > > +static int cpufreq_policy_callback(struct notifier_block *nb,
-> > > > +						unsigned long val, void *data)
-> > > > +{
-> > > > +	struct cpufreq_policy *policy = data;
-> > > > +	int i;
-> > > > +
-> > > > +	if (val != CPUFREQ_NOTIFY)
-> > > > +		return NOTIFY_OK;
-> > > > +
-> > > > +	for_each_cpu(i, policy->cpus) {
-> > > > +		scale_freq_capacity(i, policy->cur, policy->max);
-> > > > +		atomic_long_set(&per_cpu(cpu_max_freq, i), policy->max);
-> > > > +	}
-> > > > +
-> > > > +	return NOTIFY_OK;
-> > > > +}
-> > > > +
-> > > > +static struct notifier_block cpufreq_policy_notifier = {
-> > > > +	.notifier_call	= cpufreq_policy_callback,
-> > > > +};
-> > > > +
-> > > >  static int __init register_cpufreq_notifier(void)
-> > > >  {
-> > > > -	return cpufreq_register_notifier(&cpufreq_notifier,
-> > > > +	int ret;
-> > > > +
-> > > > +	ret = cpufreq_register_notifier(&cpufreq_notifier,
-> > > >  						CPUFREQ_TRANSITION_NOTIFIER);
-> > > > +	if (ret)
-> > > > +		return ret;
-> > > > +
-> > > > +	return cpufreq_register_notifier(&cpufreq_policy_notifier,
-> > > > +						CPUFREQ_POLICY_NOTIFIER);
-> > > >  }
-> > > >  core_initcall(register_cpufreq_notifier);
-> > > 
-> > > For "cpu_freq_capacity" structure, could move it into driver/cpufreq
-> > > so that it can be shared by all architectures? Otherwise, every
-> > > architecture's smp.c need register notifier for themselves.
-> > 
-> > We could, but I put it in arch/arm/* as not all architectures might want
-> > this notifier. The frequency scaling factor could be provided based on
-> > architecture specific performance counters instead. AFAIK, the Intel
-> > p-state driver does not even fire the notifiers so the notifier
-> > solution would be redundant code for those platforms.
-> 
-> When i tried to enable EAS on Hikey, i found it's absent related code
-> for arm64; actually this code section can also be reused by arm64,
-> so just brought up this question.
+On some ARM based systems, a separate Cortex-M based System Control
+Processor(SCP) provides the overall power, clock, reset and system
+control including CPU DVFS. SCPI Message Protocol is used to
+communicate with the SCPI.
 
-Yes. We have patches for arm64 if you are interested. We are using them
-for the Juno platforms.
+This patch adds a interface driver for adding OPPs and registering
+the arm_big_little cpufreq driver for such systems.
 
-> Just now roughly went through the driver
-> "drivers/cpufreq/intel_pstate.c"; that's true it has different
-> implementation comparing to usual ARM SoCs. So i'd like to ask this
-> question with another way: should cpufreq framework provides helper
-> functions for getting related cpu frequency scaling info? If the
-> architecture has specific performance counters then it can ignore
-> these helper functions.
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
+---
+ MAINTAINERS                    |   1 +
+ drivers/cpufreq/Kconfig.arm    |   9 +++
+ drivers/cpufreq/Makefile       |   1 +
+ drivers/cpufreq/scpi-cpufreq.c | 124 +++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 135 insertions(+)
+ create mode 100644 drivers/cpufreq/scpi-cpufreq.c
 
-That is the idea with the notifiers. If the architecture code a specific
-architecture wants to be poked by cpufreq when the frequency is changed
-it should have a way to subscribe to those. Another way of implementing
-it is to let the architecture code call a helper function in cpufreq
-every time the scheduler calls into the architecture code to get the
-scaling factor (arch_scale_freq_capacity()). We actually did it that way
-a couple of versions back using weak functions. It wasn't as clean as
-using the notifiers, but if we make the necessary changes to cpufreq to
-let the architecture code call into cpufreq that could be even better.
+Hi Rafael,
 
-> 
-> > That said, the above solution is not handling changes to policy->max
-> > very well. Basically, we don't inform the scheduler if it has changed
-> > which means that the OPP represented by "100%" might change. We need
-> > cpufreq to keep track of the true max frequency when policy->max is
-> > changed to work out the correct scaling factor instead of having it
-> > relative to policy->max.
-> 
-> i'm not sure understand correctly here. For example, when thermal
-> framework limits the cpu frequency, it will update the value for
-> policy->max, so scheduler will get the correct scaling factor, right?
-> So i don't know what's the issue at here.
-> 
-> Further more, i noticed in the later patches for
-> arch_scale_cpu_capacity(); the cpu capacity is calculated by the
-> property passed by DT, so it's a static value. In some cases, system
-> may constraint the maximum frequency for CPUs, so in this case, will
-> scheduler get misknowledge from arch_scale_cpu_capacity after system
-> has imposed constraint for maximum frequency?
+Viresh has already ACKed, since I plan to push this as a series via arm-soc,
+can you provide your ACK if the patch looks fine to you ?
 
-The issue is first of all to define what 100% means. Is it
-policy->cur/policy->max or policy->cur/uncapped_max? Where uncapped max
-is the max frequency supported by the hardware when not capped in any
-way by governors or thermal framework.
+Regards,
+Sudeep
 
-If we choose the first definition then we have to recalculate the cpu
-capacity scaling factor (arch_scale_cpu_capacity()) too whenever
-policy->max changes such that capacity_orig is updated appropriately.
-
-The scale-invariance code in the scheduler assumes:
-
-arch_scale_cpu_capacity()*arch_scale_freq_capacity() = current capacity
-
-...and that capacity_orig = arch_scale_cpu_capacity() is the max
-available capacity. If we cap the frequency to say, 50%, by setting
-policy->max then we have to reduce arch_scale_cpu_capacity() to 50% to
-still get the right current capacity using the expression above.
-
-Using the second definition arch_scale_cpu_capacity() can be a static
-value and arch_scale_freq_capacity() is always relative to uncapped_max.
-It seems simpler, but capacity_orig could then be an unavailable
-capacity and hence we would need to introduce a third capacity to track
-the current max capacity and use that for scheduling decisions.
-
-As you have already discovered the current code is a combination of both
-which is broken when policy->max is reduced.
-
-Thinking more about it, I would suggest to go with the first definition.
-The scheduler doesn't need to know about currently unavailable compute
-capacity it should balance based on the current situation, so it seems
-to make sense to let capacity_orig reflect the current max capacity.
-
-I would suggest that we fix arch_scale_cpu_capacity() to take
-policy->max changes into account. We need to know the uncapped max
-frequency somehow to do that. I haven't looked into if we can get that
-from cpufreq. Also, we need to make sure that no load-balance code
-assumes that cpus have a capacity of 1024.
-
-> Sorry if these questions have been discussed before :)
-
-No problem. I don't think we have discussed it to this detail before and
-it is very valid points.
-
-Thanks,
-Morten
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 16a7612fee4a..74e5c80c7db9 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8961,6 +8961,7 @@ L:	linux-arm-kernel@lists.infradead.org
+ S:	Maintained
+ F:	Documentation/devicetree/bindings/arm/arm,scpi.txt
+ F:	drivers/clk/clk-scpi.c
++F:	drivers/cpufreq/scpi-cpufreq.c
+ F:	drivers/firmware/arm_scpi.c
+ F:	include/linux/scpi_protocol.h
+ 
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index cc8a71c267b8..c46b495169af 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -24,6 +24,15 @@ config ARM_VEXPRESS_SPC_CPUFREQ
+           This add the CPUfreq driver support for Versatile Express
+ 	  big.LITTLE platforms using SPC for power management.
+ 
++config ARM_SCPI_CPUFREQ
++        tristate "SCPI based CPUfreq driver"
++	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL
++        help
++	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
++	  using SCPI protocol for CPU power management.
++
++	  This driver uses SCPI Message Protocol driver to interact with the
++	  firmware providing the CPU DVFS functionality.
+ 
+ config ARM_EXYNOS_CPUFREQ
+ 	tristate "SAMSUNG EXYNOS CPUfreq Driver"
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 2169bf792db7..7e07f5535c3a 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -78,6 +78,7 @@ obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
+ obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA_CPUFREQ)		+= tegra-cpufreq.o
+ obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
++obj-$(CONFIG_ARM_SCPI_CPUFREQ)		+= scpi-cpufreq.o
+ 
+ ##################################################################################
+ # PowerPC platform drivers
+diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
+new file mode 100644
+index 000000000000..2c3b16fd3a01
+--- /dev/null
++++ b/drivers/cpufreq/scpi-cpufreq.c
+@@ -0,0 +1,124 @@
++/*
++ * System Control and Power Interface (SCPI) based CPUFreq Interface driver
++ *
++ * It provides necessary ops to arm_big_little cpufreq driver.
++ *
++ * Copyright (C) 2015 ARM Ltd.
++ * Sudeep Holla <sudeep.holla@arm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/cpufreq.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/pm_opp.h>
++#include <linux/scpi_protocol.h>
++#include <linux/types.h>
++
++#include "arm_big_little.h"
++
++static struct scpi_ops *scpi_ops;
++
++static struct scpi_dvfs_info *scpi_get_dvfs_info(struct device *cpu_dev)
++{
++	u8 domain = topology_physical_package_id(cpu_dev->id);
++
++	if (domain < 0)
++		return ERR_PTR(-EINVAL);
++	return scpi_ops->dvfs_get_info(domain);
++}
++
++static int scpi_opp_table_ops(struct device *cpu_dev, bool remove)
++{
++	int idx, ret = 0;
++	struct scpi_opp *opp;
++	struct scpi_dvfs_info *info = scpi_get_dvfs_info(cpu_dev);
++
++	if (IS_ERR(info))
++		return PTR_ERR(info);
++
++	if (!info->opps)
++		return -EIO;
++
++	for (opp = info->opps, idx = 0; idx < info->count; idx++, opp++) {
++		if (remove)
++			dev_pm_opp_remove(cpu_dev, opp->freq);
++		else
++			ret = dev_pm_opp_add(cpu_dev, opp->freq,
++					     opp->m_volt * 1000);
++		if (ret) {
++			dev_warn(cpu_dev, "failed to add opp %uHz %umV\n",
++				 opp->freq, opp->m_volt);
++			while (idx-- > 0)
++				dev_pm_opp_remove(cpu_dev, (--opp)->freq);
++			return ret;
++		}
++	}
++	return ret;
++}
++
++static int scpi_get_transition_latency(struct device *cpu_dev)
++{
++	struct scpi_dvfs_info *info = scpi_get_dvfs_info(cpu_dev);
++
++	if (IS_ERR(info))
++		return PTR_ERR(info);
++	return info->latency;
++}
++
++static int scpi_init_opp_table(struct device *cpu_dev)
++{
++	return scpi_opp_table_ops(cpu_dev, false);
++}
++
++static void scpi_free_opp_table(struct device *cpu_dev)
++{
++	scpi_opp_table_ops(cpu_dev, true);
++}
++
++static struct cpufreq_arm_bL_ops scpi_cpufreq_ops = {
++	.name	= "scpi",
++	.get_transition_latency = scpi_get_transition_latency,
++	.init_opp_table = scpi_init_opp_table,
++	.free_opp_table = scpi_free_opp_table,
++};
++
++static int scpi_cpufreq_probe(struct platform_device *pdev)
++{
++	scpi_ops = get_scpi_ops();
++	if (!scpi_ops)
++		return -EIO;
++
++	return bL_cpufreq_register(&scpi_cpufreq_ops);
++}
++
++static int scpi_cpufreq_remove(struct platform_device *pdev)
++{
++	bL_cpufreq_unregister(&scpi_cpufreq_ops);
++	scpi_ops = NULL;
++	return 0;
++}
++
++static struct platform_driver scpi_cpufreq_platdrv = {
++	.driver = {
++		.name	= "scpi-cpufreq",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= scpi_cpufreq_probe,
++	.remove		= scpi_cpufreq_remove,
++};
++module_platform_driver(scpi_cpufreq_platdrv);
++
++MODULE_AUTHOR("Sudeep Holla <sudeep.holla@arm.com>");
++MODULE_DESCRIPTION("ARM SCPI CPUFreq interface driver");
++MODULE_LICENSE("GPL v2");
+-- 
+1.9.1
