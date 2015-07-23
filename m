@@ -1,76 +1,143 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH 5/8] power: bq27x00_battery: Renaming for consistency
-Date: Thu, 23 Jul 2015 22:15:35 +0200
-Message-ID: <201507232215.35603@pali>
-References: <1437601920-13045-1-git-send-email-afd@ti.com> <20150723161240.GF29125@pali> <55B11E4C.6000006@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/2] cpufreq: Separate CPU device removal from CPU online
+Date: Thu, 23 Jul 2015 22:56:34 +0200
+Message-ID: <1532128.uWbA5iRc7E@vostro.rjw.lan>
+References: <7868353.pEStq1MJ2a@vostro.rjw.lan> <15986005.VczafT3nkj@vostro.rjw.lan> <20150723063942.GF5322@linux>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4898944.EvpSPCHOL9";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f179.google.com ([209.85.212.179]:34402 "EHLO
-	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753591AbbGWUPj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 16:15:39 -0400
-In-Reply-To: <55B11E4C.6000006@ti.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:52477 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754046AbbGWU3p (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 16:29:45 -0400
+In-Reply-To: <20150723063942.GF5322@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Marek Belisko <marek@goldelico.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
 
---nextPart4898944.EvpSPCHOL9
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+On Thursday, July 23, 2015 12:09:42 PM Viresh Kumar wrote:
+> On 23-07-15, 02:04, Rafael J. Wysocki wrote:
+> > +static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+> > +{
+> > +	unsigned int cpu = dev->id;
+> > +	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+> > +
+> > +	pr_debug("%s: adding CPU %u\n", __func__, cpu);
+> > +
+> > +	if (policy && policy->kobj_cpu != cpu) {
+> 
+> Why are you comparing cpu against kobj_cpu ? I don't think it can ever
+> be false.
 
-On Thursday 23 July 2015 19:03:08 Andrew F. Davis wrote:
-> >> -#ifdef CONFIG_BATTERY_BQ27X00_I2C
-> >> -MODULE_ALIAS("i2c:bq27000-battery");
-> >> +#ifdef CONFIG_BATTERY_BQ27XXX_I2C
-> >> +MODULE_ALIAS("i2c:bq27xxx-battery");
-> >>=20
-> >>  #endif
-> >=20
-> > Why is this MODULE_ALIAS needed? Some lines upper there is
-> >=20
-> >  MODULE_DEVICE_TABLE(i2c, bq27xxx_id);
-> >=20
-> > which add proper i2c: module alias...
->=20
-> Not sure, looks like it was added in commit
-> 8ebb7e9c1a502cfc300618c19c3c6f06fc76d237 which claims that the
-> "module won't get loaded automatically" without it, but I have not
-> had this problem, so I'm not sure why it's there.
->=20
+It can.  When we're adding a CPU that has a policy already, because it is
+"related" to a previously registered CPU.
 
-git grep bq27000-battery show me that only one driver uses that name:
-drivers/w1/slaves/w1_bq27000.c
 
-And more over, it is platform device, not i2c device. So that commit=20
-8ebb7e9c1a502cfc300618c19c3c6f06fc76d237 is wrong! CCing Marek.
+> > +		int ret;
+> > +
+> > +		pr_debug("%s: Adding symlink for CPU: %u\n", __func__, cpu);
+> 
+> dev_dbg
 
-MODULE_ALIAS("platform:bq27000-battery") is really needed for=20
-w1_bq27000.c but MODULE_ALIAS("i2c:bq27000-battery") should be removed.=20
-It is not used by any board platform code or DT.
+OK
 
-Marek, correct me if I'm wrong.
+> > +		ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+> > +		if (ret) {
+> > +			dev_dbg(dev, "%s: Failed to create link (%d)\n",
+> 
+> dev_err
 
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+Well, I'm wondering about this.  Why does this have to be dev_err()?
 
---nextPart4898944.EvpSPCHOL9
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+> > +				__func__, ret);
+> > +			return ret;
+> > +		}
+> > +
+> > +		/* Track CPUs for which sysfs links are created */
+> > +		cpumask_set_cpu(cpu, policy->linked_cpus);
+> > +	}
+> > +
+> > +	return cpu_online(cpu) ? cpufreq_dev_online(dev, false) : 0;
+> > +}
+> 
+> Looks fine otherwise. Thanks for getting your hands dirty :)
+> 
+> >  static void cpufreq_offline_prepare(unsigned int cpu)
+> >  {
+> >  	struct cpufreq_policy *policy;
+> > @@ -2344,31 +2343,35 @@ unlock:
+> >  }
+> >  EXPORT_SYMBOL(cpufreq_update_policy);
+> >  
+> > +static void cpufreq_cpu_online(unsigned int cpu)
+> > +{
+> > +	struct device *dev = get_cpu_device(cpu);
+> > +
+> > +	if (dev)
+> > +		cpufreq_dev_online(dev, true);
+> > +}
+> 
+> What about dropping this wrapper function and ...
+> 
+> >  static int cpufreq_cpu_callback(struct notifier_block *nfb,
+> >  					unsigned long action, void *hcpu)
+> >  {
+> >  	unsigned int cpu = (unsigned long)hcpu;
+> > -	struct device *dev;
+> >  
+> > -	dev = get_cpu_device(cpu);
+> 
+> ... keeping this as is? And then we can do
+> s/cpufreq_dev_online/cpufreq_cpu_online which suits better.
 
-iEYEABECAAYFAlWxS2cACgkQi/DJPQPkQ1LwIQCgpDoDJuTOb9KyJmkebj9oAazE
-N+4AoKiBJWgE8OEyUFhnPYnecuyw+evq
-=mWRw
------END PGP SIGNATURE-----
+Well, we don't need the dev things for DOWN_PREPARE and POST_DEAD.
 
---nextPart4898944.EvpSPCHOL9--
+We actually only need it in a few places in cpufreq_dev_online(), or
+maybe simply cpufreq_online(), so it can take the cpu argument too.
+
+> > -	if (dev) {
+> > -		switch (action & ~CPU_TASKS_FROZEN) {
+> > -		case CPU_ONLINE:
+> > -			cpufreq_add_dev(dev, NULL);
+> > -			break;
+> > -
+> > -		case CPU_DOWN_PREPARE:
+> > -			cpufreq_offline_prepare(cpu);
+> > -			break;
+> > -
+> > -		case CPU_POST_DEAD:
+> > -			cpufreq_offline_finish(cpu);
+> > -			break;
+> > -
+> > -		case CPU_DOWN_FAILED:
+> > -			cpufreq_add_dev(dev, NULL);
+> > -			break;
+> > -		}
+> > +	switch (action & ~CPU_TASKS_FROZEN) {
+> > +	case CPU_ONLINE:
+> > +		cpufreq_cpu_online(cpu);
+> > +		break;
+> > +
+> > +	case CPU_DOWN_PREPARE:
+> > +		cpufreq_offline_prepare(cpu);
+> > +		break;
+> > +
+> > +	case CPU_POST_DEAD:
+> > +		cpufreq_offline_finish(cpu);
+> > +		break;
+> > +
+> > +	case CPU_DOWN_FAILED:
+> > +		cpufreq_cpu_online(cpu);
+> > +		break;
+> >  	}
+> >  	return NOTIFY_OK;
+> >  }
+> 
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
