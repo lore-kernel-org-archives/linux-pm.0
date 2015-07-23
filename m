@@ -1,72 +1,116 @@
-From: Liviu Dudau <Liviu.Dudau@arm.com>
-Subject: Re: [PATCHv2 0/3] regmap: Use different lockdep class for each
- regmap init call
-Date: Thu, 23 Jul 2015 17:12:50 +0100
-Message-ID: <20150723161250.GA19124@e106497-lin.cambridge.arm.com>
-References: <1436337018-32464-1-git-send-email-drinkcat@chromium.org>
- <CANMq1KD8rOHjtWA1Eiw9GATdTeq1Ch4bga4ZAty26auvWyX7Og@mail.gmail.com>
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
+Subject: Re: [PATCH 6/8] power: bq27xxx_battery: Fix typos and change naming
+ for state of charge functions
+Date: Thu, 23 Jul 2015 18:15:34 +0200
+Message-ID: <20150723161534.GG29125@pali>
+References: <1437601920-13045-1-git-send-email-afd@ti.com>
+ <1437601920-13045-7-git-send-email-afd@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CANMq1KD8rOHjtWA1Eiw9GATdTeq1Ch4bga4ZAty26auvWyX7Og@mail.gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f177.google.com ([209.85.212.177]:36411 "EHLO
+	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752923AbbGWQPi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 12:15:38 -0400
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nicolas Boichat <drinkcat@chromium.org>
-Cc: Mark Brown <broonie@kernel.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Antti Palosaari <crope@iki.fi>, Ingo Molnar <mingo@redhat.com>, Arjan van de Ven <arjan@linux.intel.com>, Lars-Peter Clausen <lars@metafoo.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Bard Liao <bardliao@realtek.com>, Oder Chiou <oder_chiou@realtek.com>, Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, Anatol Pomozov <anatol.pomozov@gmail.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lee Jones <lee.jones@linar>
+In-Reply-To: <1437601920-13045-7-git-send-email-afd@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Jul 23, 2015 at 09:45:53AM +0100, Nicolas Boichat wrote:
-> Hi Mark,
+On Wednesday 22 July 2015 16:51:58 Andrew F. Davis wrote:
+> Fix typos and change "relative state of charge" to "state of charge" =
+as not
+> all supported devices use relative state of charge.
 >=20
-> On Wed, Jul 8, 2015 at 2:30 PM, Nicolas Boichat <drinkcat@chromium.or=
-g> wrote:
-> > Second version. Small fixup in the regmap patch itself [3/3] (the
-> > declaration of __devm_regmap_init_ac97 was missing lock_key/name
-> > parameters).
-> >
-> > Also, there are 2 drivers that are using function pointers named
-> > "regmap_init", which causes problems as it is now a macro: put thes=
-e
-> > in parentheses to prevent the preprocessor from substituting them.
-> >
-> > Patches 1+2 should be pushed first to avoid breaking git bissect.
-> >
-> > Compile tested with allyesconfig on x86_64 and arm.
-> >
-> > Nicolas Boichat (3):
-> >   mfd: vexpress: Add parentheses around bridge->ops->regmap_init ca=
-ll
-> >   thermal: sti: Add parentheses around bridge->ops->regmap_init cal=
-l
-> >   regmap: Use different lockdep class for each regmap init call
+> Signed-off-by: Andrew F. Davis <afd@ti.com>
+> ---
+>  drivers/power/bq27xxx_battery.c | 26 +++++++++++++-------------
+>  1 file changed, 13 insertions(+), 13 deletions(-)
 >=20
-> What's the status of this series (and the additional documentation
-> fix: https://lkml.org/lkml/2015/7/8/385)?
->=20
-> Do we need acks from the mfd/vexpress and thermal maintainers?
-> (mfd/vexpress maintainers are Liviu Dudau, Sudeep Holla, and Lorenzo
-> Pieralisi, I'm less clear about thermal, maybe Eduardo Valentin?)
+> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_=
+battery.c
+> index f5d7a137..5686da6 100644
+> --- a/drivers/power/bq27xxx_battery.c
+> +++ b/drivers/power/bq27xxx_battery.c
+> @@ -231,26 +231,26 @@ static bool bq27xxx_is_chip_version_higher(stru=
+ct bq27xxx_device_info *di)
+>  }
+> =20
+>  /*
+> - * Return the battery Relative State-of-Charge
+> + * Return the battery State-of-Charge
+>   * Or < 0 if something fails.
+>   */
+> -static int bq27xxx_battery_read_rsoc(struct bq27xxx_device_info *di)
+> +static int bq27xxx_battery_read_soc(struct bq27xxx_device_info *di)
+>  {
+> -	int rsoc;
+> +	int soc;
+> =20
+>  	if (di->chip =3D=3D BQ27500 || di->chip =3D=3D BQ27742)
+> -		rsoc =3D bq27xxx_read(di, BQ27500_REG_SOC, false);
+> +		soc =3D bq27xxx_read(di, BQ27500_REG_SOC, false);
+>  	else if (di->chip =3D=3D BQ27510)
+> -		rsoc =3D bq27xxx_read(di, BQ27510_REG_SOC, false);
+> +		soc =3D bq27xxx_read(di, BQ27510_REG_SOC, false);
+>  	else if (di->chip =3D=3D BQ27425)
+> -		rsoc =3D bq27xxx_read(di, BQ27425_REG_SOC, false);
+> +		soc =3D bq27xxx_read(di, BQ27425_REG_SOC, false);
+>  	else
+> -		rsoc =3D bq27xxx_read(di, BQ27000_REG_RSOC, true);
+> +		soc =3D bq27xxx_read(di, BQ27000_REG_RSOC, true);
+> =20
+> -	if (rsoc < 0)
+> -		dev_dbg(di->dev, "error reading relative State-of-Charge\n");
+> +	if (soc < 0)
+> +		dev_dbg(di->dev, "error reading State-of-Charge\n");
+> =20
+> -	return rsoc;
+> +	return soc;
+>  }
+> =20
 
-Hi Nicolas,
+It is good idea to have name function name "read_soc" with description
+"Return State-of-Charge" and for some chips that function returns RSOC
+(Relative)? For me it is quite misleading.
 
-Me and Lorenzo are currently tied with other tasks this week, hope to b=
-e
-able to review your patches next week.
-
-Best regards,
-Liviu
-
->=20
-> Thanks!
->=20
+>  /*
+> @@ -277,7 +277,7 @@ static int bq27xxx_battery_read_charge(struct bq2=
+7xxx_device_info *di, u8 reg)
+>  }
+> =20
+>  /*
+> - * Return the battery Nominal available capaciy in =C2=B5Ah
+> + * Return the battery Nominal available capacity in =C2=B5Ah
+>   * Or < 0 if something fails.
+>   */
+>  static inline int bq27xxx_battery_read_nac(struct bq27xxx_device_inf=
+o *di)
+> @@ -418,7 +418,7 @@ static int bq27xxx_battery_read_time(struct bq27x=
+xx_device_info *di, u8 reg)
+>  }
+> =20
+>  /*
+> - * Read a power avg register.
+> + * Read an average power register.
+>   * Return < 0 if something fails.
+>   */
+>  static int bq27xxx_battery_read_pwr_avg(struct bq27xxx_device_info *=
+di, u8 reg)
+> @@ -500,7 +500,7 @@ static void bq27xxx_battery_update(struct bq27xxx=
+_device_info *di)
+>  			cache.charge_full =3D -ENODATA;
+>  			cache.health =3D -ENODATA;
+>  		} else {
+> -			cache.capacity =3D bq27xxx_battery_read_rsoc(di);
+> +			cache.capacity =3D bq27xxx_battery_read_soc(di);
+>  			if (is_bq27742 || is_bq27510)
+>  				cache.time_to_empty =3D
+>  					bq27xxx_battery_read_time(di,
 
 --=20
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-| I would like to |
-| fix the world,  |
-| but they're not |
-| giving me the   |
- \ source code!  /
-  ---------------
-    =C2=AF\_(=E3=83=84)_/=C2=AF
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
