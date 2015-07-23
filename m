@@ -1,118 +1,97 @@
 From: Dan Murphy <dmurphy@ti.com>
-Subject: Re: [PATCH 2/8] power: bq27x00_battery: Fix lines over 80 characters
- long
-Date: Thu, 23 Jul 2015 11:02:15 -0500
-Message-ID: <55B11007.10504@ti.com>
-References: <1437601920-13045-1-git-send-email-afd@ti.com> <1437601920-13045-3-git-send-email-afd@ti.com>
+Subject: Re: [PATCH 3/8] power: bq27x00_battery: Fix function parameter alignment
+Date: Thu, 23 Jul 2015 11:02:21 -0500
+Message-ID: <55B1100D.7080306@ti.com>
+References: <1437601920-13045-1-git-send-email-afd@ti.com> <1437601920-13045-4-git-send-email-afd@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1437601920-13045-3-git-send-email-afd@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:45348 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753732AbbGWQCp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 23 Jul 2015 12:02:45 -0400
+In-Reply-To: <1437601920-13045-4-git-send-email-afd@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "Andrew F. Davis" <afd@ti.com>, =?windows-1252?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
 On 07/22/2015 04:51 PM, Andrew F. Davis wrote:
-> Shorted lines over 80 characters long by reducing tab count.
+> Fix the alignment of function parameters on new lines.
 >
 > Signed-off-by: Andrew F. Davis <afd@ti.com>
 > ---
->  drivers/power/bq27x00_battery.c | 74 ++++++++++++++++++++---------------------
->  1 file changed, 37 insertions(+), 37 deletions(-)
+>  drivers/power/bq27x00_battery.c | 14 +++++++-------
+>  1 file changed, 7 insertions(+), 7 deletions(-)
 >
 > diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_battery.c
-> index 2257bd4..203cf61 100644
+> index 203cf61..9cdad19 100644
 > --- a/drivers/power/bq27x00_battery.c
 > +++ b/drivers/power/bq27x00_battery.c
-> @@ -39,49 +39,49 @@
+> @@ -210,7 +210,7 @@ MODULE_PARM_DESC(poll_interval, "battery poll interval in seconds - " \
+>   */
 >  
->  #include <linux/power/bq27x00_battery.h>
+>  static inline int bq27x00_read(struct bq27x00_device_info *di, u8 reg,
+> -		bool single)
+> +			       bool single)
+>  {
+>  	if (di->chip == BQ27425)
+>  		return di->bus.read(di, reg - BQ27425_REG_OFFSET, single);
+> @@ -565,7 +565,7 @@ static void bq27x00_battery_poll(struct work_struct *work)
+>   * Or 0 if something fails.
+>   */
+>  static int bq27x00_battery_current(struct bq27x00_device_info *di,
+> -	union power_supply_propval *val)
+> +				   union power_supply_propval *val)
+>  {
+>  	int curr;
+>  	int flags;
+> @@ -593,7 +593,7 @@ static int bq27x00_battery_current(struct bq27x00_device_info *di,
+>  }
 >  
-> -#define DRIVER_VERSION			"1.2.0"
-> +#define DRIVER_VERSION		"1.2.0"
+>  static int bq27x00_battery_status(struct bq27x00_device_info *di,
+> -	union power_supply_propval *val)
+> +				  union power_supply_propval *val)
+>  {
+>  	int status;
 >  
->  #define BQ27XXX_MANUFACTURER	"Texas Instruments"
+> @@ -621,7 +621,7 @@ static int bq27x00_battery_status(struct bq27x00_device_info *di,
+>  }
 >  
-> -#define BQ27x00_REG_TEMP		0x06
-> -#define BQ27x00_REG_VOLT		0x08
-> -#define BQ27x00_REG_AI			0x14
-> -#define BQ27x00_REG_FLAGS		0x0A
-> -#define BQ27x00_REG_TTE			0x16
-> -#define BQ27x00_REG_TTF			0x18
-> -#define BQ27x00_REG_TTECP		0x26
-> -#define BQ27x00_REG_NAC			0x0C /* Nominal available capacity */
-> -#define BQ27x00_REG_LMD			0x12 /* Last measured discharge */
-> -#define BQ27x00_REG_CYCT		0x2A /* Cycle count total */
-> -#define BQ27x00_REG_AE			0x22 /* Available energy */
-> -#define BQ27x00_POWER_AVG		0x24
-> -
-> -#define BQ27000_REG_RSOC		0x0B /* Relative State-of-Charge */
-> -#define BQ27000_REG_ILMD		0x76 /* Initial last measured discharge */
-> -#define BQ27000_FLAG_EDVF		BIT(0) /* Final End-of-Discharge-Voltage flag */
-> -#define BQ27000_FLAG_EDV1		BIT(1) /* First End-of-Discharge-Voltage flag */
-> -#define BQ27000_FLAG_CI			BIT(4) /* Capacity Inaccurate flag */
-> -#define BQ27000_FLAG_FC			BIT(5)
-> -#define BQ27000_FLAG_CHGS		BIT(7) /* Charge state flag */
-> -
-> -#define BQ27500_REG_SOC			0x2C
-> -#define BQ27500_REG_DCAP		0x3C /* Design capacity */
-> -#define BQ27500_FLAG_DSC		BIT(0)
-> -#define BQ27500_FLAG_SOCF		BIT(1) /* State-of-Charge threshold final */
-> -#define BQ27500_FLAG_SOC1		BIT(2) /* State-of-Charge threshold 1 */
-> -#define BQ27500_FLAG_FC			BIT(9)
-> -#define BQ27500_FLAG_OTC		BIT(15)
-> -
-> -#define BQ27742_POWER_AVG		0x76
-> -
-> -#define BQ27510_REG_SOC			0x20
-> -#define BQ27510_REG_DCAP		0x2E /* Design capacity */
-> -#define BQ27510_REG_CYCT		0x1E /* Cycle count total */
-> +#define BQ27x00_REG_TEMP	0x06
-> +#define BQ27x00_REG_VOLT	0x08
-> +#define BQ27x00_REG_AI		0x14
-> +#define BQ27x00_REG_FLAGS	0x0A
-> +#define BQ27x00_REG_TTE		0x16
-> +#define BQ27x00_REG_TTF		0x18
-> +#define BQ27x00_REG_TTECP	0x26
-> +#define BQ27x00_REG_NAC		0x0C /* Nominal available capacity */
-> +#define BQ27x00_REG_LMD		0x12 /* Last measured discharge */
-> +#define BQ27x00_REG_CYCT	0x2A /* Cycle count total */
-> +#define BQ27x00_REG_AE		0x22 /* Available energy */
-> +#define BQ27x00_POWER_AVG	0x24
-> +
-> +#define BQ27000_REG_RSOC	0x0B /* Relative State-of-Charge */
-> +#define BQ27000_REG_ILMD	0x76 /* Initial last measured discharge */
-> +#define BQ27000_FLAG_EDVF	BIT(0) /* Final End-of-Discharge-Voltage flag */
-> +#define BQ27000_FLAG_EDV1	BIT(1) /* First End-of-Discharge-Voltage flag */
-> +#define BQ27000_FLAG_CI		BIT(4) /* Capacity Inaccurate flag */
-> +#define BQ27000_FLAG_FC		BIT(5)
-> +#define BQ27000_FLAG_CHGS	BIT(7) /* Charge state flag */
-> +
-> +#define BQ27500_REG_SOC		0x2C
-> +#define BQ27500_REG_DCAP	0x3C /* Design capacity */
-> +#define BQ27500_FLAG_DSC	BIT(0)
-> +#define BQ27500_FLAG_SOCF	BIT(1) /* State-of-Charge threshold final */
-> +#define BQ27500_FLAG_SOC1	BIT(2) /* State-of-Charge threshold 1 */
-> +#define BQ27500_FLAG_FC		BIT(9)
-> +#define BQ27500_FLAG_OTC	BIT(15)
-> +
-> +#define BQ27742_POWER_AVG	0x76
-> +
-> +#define BQ27510_REG_SOC		0x20
-> +#define BQ27510_REG_DCAP	0x2E /* Design capacity */
-> +#define BQ27510_REG_CYCT	0x1E /* Cycle count total */
+>  static int bq27x00_battery_capacity_level(struct bq27x00_device_info *di,
+> -	union power_supply_propval *val)
+> +					  union power_supply_propval *val)
+>  {
+>  	int level;
 >  
->  /* bq27425 register addresses are same as bq27x00 addresses minus 4 */
-> -#define BQ27425_REG_OFFSET		0x04
-> +#define BQ27425_REG_OFFSET	0x04
->  #define BQ27425_REG_SOC		(0x1C + BQ27425_REG_OFFSET)
-> -#define BQ27425_REG_DCAP		(0x3C + BQ27425_REG_OFFSET)
-> +#define BQ27425_REG_DCAP	(0x3C + BQ27425_REG_OFFSET)
+> @@ -655,7 +655,7 @@ static int bq27x00_battery_capacity_level(struct bq27x00_device_info *di,
+>   * Or < 0 if something fails.
+>   */
+>  static int bq27x00_battery_voltage(struct bq27x00_device_info *di,
+> -	union power_supply_propval *val)
+> +				   union power_supply_propval *val)
+>  {
+>  	int volt;
 >  
->  #define BQ27000_RS			20 /* Resistor sense */
->  #define BQ27x00_POWER_CONSTANT		(256 * 29200 / 1000)
+> @@ -671,7 +671,7 @@ static int bq27x00_battery_voltage(struct bq27x00_device_info *di,
+>  }
+>  
+>  static int bq27x00_simple_value(int value,
+> -	union power_supply_propval *val)
+> +				union power_supply_propval *val)
+>  {
+>  	if (value < 0)
+>  		return value;
+> @@ -987,7 +987,7 @@ static inline void bq27x00_battery_i2c_exit(void) {};
+>  #ifdef CONFIG_BATTERY_BQ27X00_PLATFORM
+>  
+>  static int bq27000_read_platform(struct bq27x00_device_info *di, u8 reg,
+> -			bool single)
+> +				 bool single)
+>  {
+>  	struct device *dev = di->dev;
+>  	struct bq27000_platform_data *pdata = dev->platform_data;
 
 Acked-by: Dan Murphy <dmurphy@ti.com>
 
@@ -120,3 +99,4 @@ Acked-by: Dan Murphy <dmurphy@ti.com>
 -- 
 ------------------
 Dan Murphy
+
