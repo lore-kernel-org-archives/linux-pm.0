@@ -1,37 +1,40 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v6 01/13] clk: qcom: Add support for GDSCs
-Date: Thu, 23 Jul 2015 11:04:14 -0700
-Message-ID: <55B12C9E.6070208@codeaurora.org>
-References: <1437549069-29655-1-git-send-email-rnayak@codeaurora.org> <1437549069-29655-2-git-send-email-rnayak@codeaurora.org> <55B03495.8050902@codeaurora.org> <55B0AF34.2000706@mm-sol.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/3] cpufreq: Create links for offline CPUs that got added earlier
+Date: Thu, 23 Jul 2015 21:28:06 +0200
+Message-ID: <CAJZ5v0ghdYavo6AQvga65w+8FMvm+8cx0C4-_xvF=a6gtPOuYQ@mail.gmail.com>
+References: <20150723060938.GD5322@linux>
+	<e6d358cd9a19b6da6326deb05f9be2594904fad2.1437639021.git.viresh.kumar@linaro.org>
+	<7e3b8b132812be7d8b80b065517d115a121b3c48.1437639021.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <55B0AF34.2000706@mm-sol.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Stanimir Varbanov <svarbanov@mm-sol.com>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, mturquette@baylibre.com, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, srinivas.kandagatla@linaro.org, sviau@codeaurora.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f178.google.com ([209.85.212.178]:35804 "EHLO
+	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753295AbbGWT2I (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 15:28:08 -0400
+In-Reply-To: <7e3b8b132812be7d8b80b065517d115a121b3c48.1437639021.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, open list <linux-kernel@vger.kernel.org>
 
-On 07/23/2015 02:09 AM, Stanimir Varbanov wrote:
-> <snip>
+Hi Viresh,
+
+On Thu, Jul 23, 2015 at 10:13 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> If subsys callback ->add_dev() is called for an offline CPU, before its
+> policy is allocated, we will miss adding its sysfs symlink.
 >
->>
->> +
->> +void gdsc_unregister(struct device *dev)
->> +{
->> +    of_genpd_del_provider(dev->of_node);
->> +}
->> EXPORT_SYMBOL?
-> Stephen, gdsc_register/unregister are internal to the qcom clk driver
-> why to export them?
+> Fix this by tracking such CPUs in a separate mask.
 >
+> Fixes: 9b07109f06a1 ("cpufreq: Fix double addition of sysfs links")
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Ah, I thought this was being called from outside the clk-qcom.ko module. 
-As long as we don't call them from a SoC specific driver then it should 
-be ok to leave them unexported. Perhaps we should remove the export on 
-qcom_find_freq() too?
+No, we need to go to back to square one.
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+No fixes of fixes of fixes etc please.
+
+Let me prepare a patch for -rc that won't introduce *new* problems and
+we can make major changes as 4.3 material, OK?
+
+Thanks,
+Rafael
