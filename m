@@ -1,123 +1,117 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH 6/8] power: bq27xxx_battery: Fix typos and change naming
- for state of charge functions
-Date: Thu, 23 Jul 2015 12:19:16 -0500
-Message-ID: <55B12214.7070103@ti.com>
-References: <1437601920-13045-1-git-send-email-afd@ti.com> <1437601920-13045-7-git-send-email-afd@ti.com> <20150723161534.GG29125@pali>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V2] cpufreq: Fix double addition of sysfs links
+Date: Thu, 23 Jul 2015 19:22:17 +0200
+Message-ID: <CAJZ5v0g-f_80Cg2QV0_2vu5+PtOuvA60T7R5Vsxyf1vp9w-n1w@mail.gmail.com>
+References: <20150718163149.GP7557@n2100.arm.linux.org.uk>
+	<35d0bb6829c6c8a5fec7c55e45d9293946c0221b.1437566548.git.viresh.kumar@linaro.org>
+	<20150722131539.GU7557@n2100.arm.linux.org.uk>
+	<CAJZ5v0jGPHq0P90pTbWGSnydgCQ5TcSxQ-KFuRjZ=qT6gNp_cg@mail.gmail.com>
+	<20150723060938.GD5322@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150723161534.GG29125@pali>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?B?UGFsaSBSb2jDoXI=?= <pali.rohar@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f178.google.com ([209.85.212.178]:38580 "EHLO
+	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753746AbbGWRWT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 13:22:19 -0400
+In-Reply-To: <20150723060938.GD5322@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On 07/23/2015 11:15 AM, Pali Roh=C3=A1r wrote:
-> On Wednesday 22 July 2015 16:51:58 Andrew F. Davis wrote:
->> Fix typos and change "relative state of charge" to "state of charge"=
- as not
->> all supported devices use relative state of charge.
+Hi Viresh,
+
+On Thu, Jul 23, 2015 at 8:09 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 22-07-15, 18:42, Rafael J. Wysocki wrote:
+>> > 3. what happens when 'policy' is NULL at the point when the first (few) CPUs
+>> >    are added - how do the symlinks get created later if/when policy becomes
+>> >    non-NULL (can it?)
 >>
->> Signed-off-by: Andrew F. Davis <afd@ti.com>
->> ---
->>  drivers/power/bq27xxx_battery.c | 26 +++++++++++++-------------
->>  1 file changed, 13 insertions(+), 13 deletions(-)
->>
->> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx=
-_battery.c
->> index f5d7a137..5686da6 100644
->> --- a/drivers/power/bq27xxx_battery.c
->> +++ b/drivers/power/bq27xxx_battery.c
->> @@ -231,26 +231,26 @@ static bool bq27xxx_is_chip_version_higher(str=
-uct bq27xxx_device_info *di)
->>  }
->> =20
->>  /*
->> - * Return the battery Relative State-of-Charge
->> + * Return the battery State-of-Charge
->>   * Or < 0 if something fails.
->>   */
->> -static int bq27xxx_battery_read_rsoc(struct bq27xxx_device_info *di=
-)
->> +static int bq27xxx_battery_read_soc(struct bq27xxx_device_info *di)
->>  {
->> -	int rsoc;
->> +	int soc;
->> =20
->>  	if (di->chip =3D=3D BQ27500 || di->chip =3D=3D BQ27742)
->> -		rsoc =3D bq27xxx_read(di, BQ27500_REG_SOC, false);
->> +		soc =3D bq27xxx_read(di, BQ27500_REG_SOC, false);
->>  	else if (di->chip =3D=3D BQ27510)
->> -		rsoc =3D bq27xxx_read(di, BQ27510_REG_SOC, false);
->> +		soc =3D bq27xxx_read(di, BQ27510_REG_SOC, false);
->>  	else if (di->chip =3D=3D BQ27425)
->> -		rsoc =3D bq27xxx_read(di, BQ27425_REG_SOC, false);
->> +		soc =3D bq27xxx_read(di, BQ27425_REG_SOC, false);
->>  	else
->> -		rsoc =3D bq27xxx_read(di, BQ27000_REG_RSOC, true);
->> +		soc =3D bq27xxx_read(di, BQ27000_REG_RSOC, true);
->> =20
->> -	if (rsoc < 0)
->> -		dev_dbg(di->dev, "error reading relative State-of-Charge\n");
->> +	if (soc < 0)
->> +		dev_dbg(di->dev, "error reading State-of-Charge\n");
->> =20
->> -	return rsoc;
->> +	return soc;
->>  }
->> =20
->=20
-> It is good idea to have name function name "read_soc" with descriptio=
-n
-> "Return State-of-Charge" and for some chips that function returns RSO=
-C
-> (Relative)? For me it is quite misleading.
->=20
+>> Yes, it can, and we have a design issue here that bothers me a bit.
+>
+> I replied to Russell with a NO here as the first CPU should have
+> created the policy. BUT...
+>
+>> Namley, we need a driver's ->init callback to populate policy->cpus
+>> for us, but this is not the only thing it is doing, so the concern is
+>> that it may not be able to deal with CPUs that aren't online.
+>
+> ... the first few CPUs could have been offline and so we might not
+> have tried to add the policy at all.. Need to fix that for sure.
 
-Most of the chips only return one type of SOC, and the docs refer to th=
-is
-as just "State-of-Charge". The bq27000 has "Relative" and " Compensated=
-"
-but we only return one (Relative). So I figured this would be the more
-correct way to describe the general SOC reading function even when the
-chips may expose other types.
+Wait here.
 
->>  /*
->> @@ -277,7 +277,7 @@ static int bq27xxx_battery_read_charge(struct bq=
-27xxx_device_info *di, u8 reg)
->>  }
->> =20
->>  /*
->> - * Return the battery Nominal available capaciy in =C2=B5Ah
->> + * Return the battery Nominal available capacity in =C2=B5Ah
->>   * Or < 0 if something fails.
->>   */
->>  static inline int bq27xxx_battery_read_nac(struct bq27xxx_device_in=
-fo *di)
->> @@ -418,7 +418,7 @@ static int bq27xxx_battery_read_time(struct bq27=
-xxx_device_info *di, u8 reg)
->>  }
->> =20
->>  /*
->> - * Read a power avg register.
->> + * Read an average power register.
->>   * Return < 0 if something fails.
->>   */
->>  static int bq27xxx_battery_read_pwr_avg(struct bq27xxx_device_info =
-*di, u8 reg)
->> @@ -500,7 +500,7 @@ static void bq27xxx_battery_update(struct bq27xx=
-x_device_info *di)
->>  			cache.charge_full =3D -ENODATA;
->>  			cache.health =3D -ENODATA;
->>  		} else {
->> -			cache.capacity =3D bq27xxx_battery_read_rsoc(di);
->> +			cache.capacity =3D bq27xxx_battery_read_soc(di);
->>  			if (is_bq27742 || is_bq27510)
->>  				cache.time_to_empty =3D
->>  					bq27xxx_battery_read_time(di,
->=20
+The current Linus' tree doesn't have that problem as far as I can say.
 
---=20
-Andrew F. Davis
+Say cpufreq_interface->add_dev() is called for an offline CPU (say
+CPU2).  It points to cpufreq_add_dev(), so we see that the CPU is
+offline and call add_cpu_dev_symlink() for it.  But the first argument
+we pass to that is per_cpu(cpufreq_cpu_data, cpu) and that is NULL,
+because the policy is not there yet.  So we just return 0 (and the CPU
+has no policy and no link).
+
+Now say cpufreq_interface->add_dev() is called for an online CPU (say
+CPU3).  It goes and creates the policy for it and the driver's
+->init() tells us that CPU2 is related to it.  So
+cpufreq_add_dev_interface() creates the link for CPU2 and we're fine.
+
+Now say CPU3 was offline too when cpufreq_interface->add_dev() was
+called for it.  We don't create a policy or a link for it.  Now say
+CPU2 becomes online.  cpufreq_cpu_callback() calls cpufreq_add_dev()
+for it and we land in the previous case.
+
+The *broken* case is when CPU2 is online to start with and it had
+created the link for CPU3, so when an offline CPU3 is now being added,
+we try to create the link for it again.  That is the case we need to
+address in -rc without introducing new problems.  The $subject patch
+adresses that issue, but it introduces the above problem.  On the
+other hand, my patch at https://patchwork.kernel.org/patch/6839151/
+should take care of this too (unless it is broken in a way I'm not
+seeing now).
+
+>> I was thinking about an additional driver callback that would *only*
+>> populate a mask of CPUs that should use the same policy as the given
+>> one.
+>
+> Why so ? Drivers today are required to set policy->cpus with all CPUs
+> that should be managed by that policy. i.e. all online+offline. So,
+> actually ->init() fills policy->cpus with the value of
+> policy->related_cpus.
+
+So the problem is that the setting of policy->cpus is not the *only*
+thing that ->init() is supposed to do.  It can go and write to
+registers etc and is that guaranteed to work with offline CPUs?  I
+honestly don't think so.
+
+> Yes, I thought earlier to change that by setting policy->related_cpus
+> from drivers, instead of policy->cpus and wasn't sure if I should do
+> that :)
+>
+>> We'd be able to call that from cpufreq_add_dev() for offline
+>> CPUs too and this way the policy object could be created for the first
+>> CPU using the policy that is registered instead of being added for the
+>> first CPU using that policy that becomes online (which happens today).
+>
+> Creating policy for offline CPUs doesn't look that great to me.
+
+Then we have a problem that CPUs that are not initially online do not
+have policies, but if they go online and *then* offline subsequently,
+the policies will be there.  So there are two different "offline"
+statuses for a CPU as far as cpufreq is concerned, depending on
+whether or not the CPU has ever been online.  That's weird and IMO we
+should avoid it.
+
+> What we can do to fix the problem in hand, is to update a global mask
+> of CPUs (with policy == NULL) which were offline when
+> cpufreq_add_dev() was called for them. And when we create the policy,
+> we can add links for all such CPUs.
+
+For -rc, why don't we have a mask of CPUs that are both "related" and
+present and create links only for those?  Which is what the patch at
+https://patchwork.kernel.org/patch/6839151/ is doing?
+
+And then we can target a major rework at the next merge window.
+
+Thanks,
+Rafael
