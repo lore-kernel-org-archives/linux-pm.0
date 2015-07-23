@@ -1,176 +1,249 @@
-From: chenyu5 <yu.c.chen@intel.com>
-Subject: Re: [RFC PATCH] PM / hibernate: make sure each resuming page is in
- current memory zones
-Date: Thu, 23 Jul 2015 13:42:35 +0800
-Message-ID: <55B07ECB.9070200@intel.com>
-References: <1435679668-13806-1-git-send-email-yu.c.chen@intel.com> <1613617.2K941pjbyO@vostro.rjw.lan> <55ADA040.7050408@intel.com> <2662645.fpATfiHLLF@vostro.rjw.lan> <36DF59CE26D8EE47B0655C516E9CE6402FC8C2@SHSMSX101.ccr.corp.intel.com> <20150723053432.GI23137@linux-rxt1.site>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] cpufreq: Fix double addition of sysfs links
+Date: Thu, 23 Jul 2015 11:24:57 +0530
+Message-ID: <20150723055457.GC5322@linux>
+References: <20150718163149.GP7557@n2100.arm.linux.org.uk>
+ <35d0bb6829c6c8a5fec7c55e45d9293946c0221b.1437566548.git.viresh.kumar@linaro.org>
+ <20150722131539.GU7557@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:17261 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750771AbbGWFja (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 23 Jul 2015 01:39:30 -0400
-In-Reply-To: <20150723053432.GI23137@linux-rxt1.site>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:32941 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751000AbbGWFzD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 01:55:03 -0400
+Received: by pdbnt7 with SMTP id nt7so80411698pdb.0
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2015 22:55:02 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20150722131539.GU7557@n2100.arm.linux.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: joeyli <jlee@suse.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "Tian, YeX" <yex.tian@intel.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
 
-On 2015=E5=B9=B407=E6=9C=8823=E6=97=A5 13:34, joeyli wrote:
-> Hi Chen Yu,
->
-> On Wed, Jul 22, 2015 at 08:58:11AM +0000, Chen, Yu C wrote:
->>
->>
->>> -----Original Message-----
->>> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
->>> Sent: Wednesday, July 22, 2015 9:04 AM
->>> To: Chen, Yu C
->>> Cc: linux-pm@vger.kernel.org; Wysocki, Rafael J; joeyli; Tian, YeX
->>> Subject: Re: [RFC PATCH] PM / hibernate: make sure each resuming pa=
-ge is
->>> in current memory zones
->>>
->>> On Tuesday, July 21, 2015 09:28:32 AM chenyu5 wrote:
->>>> On 2015=E5=B9=B407=E6=9C=8816=E6=97=A5 08:30, Rafael J. Wysocki wr=
-ote:
->>>>> On Monday, July 06, 2015 04:37:39 PM joeyli wrote:
->>>>>> Hi Chen Yu,
->>>>>>
->>>>>> On Thu, Jul 02, 2015 at 04:00:42PM +0800, chenyu5 wrote:
->>>>>>> Hi, Joey
->>>>>>> thanks for your reply,
->>>>>>>
->>>>>>> On 2015=E5=B9=B407=E6=9C=8802=E6=97=A5 14:19, joeyli wrote:
->>>>>>>> Hi Chen Yu,
->>>>>>>>
->>>>>>>> On Tue, Jun 30, 2015 at 11:54:28PM +0800, Chen Yu wrote:
->>>>>>>>> Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e=
-820
->>>>>>>>> reserved
->>>>>>>>> regions") was reverted, because this patch makes resume from
->>>>>>>>> hibernation on Lenovo x230 unreliable. But reverting may brin=
-g
->>>>>>>>> back the kernel exception firstly reported in former patch. I=
-n
->>>>>>>>> general, there are three problems in current code when resumi=
-ng
->>> from hibernation:
->>>>>>>>>
->>>>>>>>> 1.Resuming page may also be in second kernel's e820 reserved
->>> region.
->>>>>>>>> BIOS-e820: [mem 0x0000000069d4f000-0x0000000069e12fff]
->>> reserved
->>>>>>>>> this causes kernel exception described in Commit 84c91b7ae07c
->>>>>>>>> ("PM / hibernate: avoid unsafe pages in e820 reserved regions=
-")
->>>>>>>>>
->>>>>>>>> 2.If Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages=
- in
->>>>>>>>> e820 reserved regions") is applied to fix problem 1, and if
->>>>>>>>> E820_RESERVED_KERN regions causes some regions at e820 table
->>> not
->>>>>>>>> page aligned, e820_mark_nosave_regions will misjudgment the
->>>>>>>>> non-page aligned space to be "hole" space and add to nosave
->>> regions, this causes resuming failed.
->>>>>>>>> Refer to https://bugzilla.kernel.org/show_bug.cgi?id=3D96111 =
-for
->>> detail.
->>>>>>>>>
->>>>>>>>
->>>>>>>> Sorry for I am not fully understand why checking pfn_valid cou=
-ld
->>>>>>>> avoid the above 2. issue?
->>>>>>>>
->>>>>>> [Yu] According to e820_mark_nosave_regions, two kinds of e820
->>>>>>> regions will be regarded as nosave:
->>>>>>> a.e820.map holes between each e820entry b.e820entry with
->>>>>>> (!E820_RAM && !E820_RESERVED_KERN) dmesg in
->>>>>>> https://bugzilla.kernel.org/show_bug.cgi?id=3D96111
->>>>>>> shows that:
->>>>>>>
->>>>>>> BIOS-e820: [mem 0x000000005baff000-0x00000000d684ffff] usable
->>>>>>> reserve setup_data: [mem 0x000000009d3e0018-0x000000009d3f0057]
->>>>>>> usable
->>>>>>> PM: Registered nosave memory: [mem 0x9d3e0000-0x9d3e0fff]
->>>>>>>
->>>>>>> e820 map was changed by situation a, but it should not be added=
- to
->>>>>>> nosave list, right?
->>>>>>>
->>>>>>> and according to saveable_page, only pages in the zone will be =
-saved:
->>>>>>> if (page_zone(page_ !=3D zone)
->>>>>>> 	return NULL;
->>>>>>>
->>>>>>> The function of is_valid_orig_page in this patch treats setup_d=
-ata
->>>>>>> as valid page, so I think this workaround issue 2.
->>>>>>>
->>>>>>>
->>>>>>>> Per my understood should waiting Yinghai Lu's patches for kill=
-ing
->>>>>>>> E820_RESERVED_KERN to avoid the aligned problem.
->>>>>>> [Yu] yes, it is a graceful solution, but I don't see that in 4.=
-1?
->>>>>>> And we encountered problem 3 in our testing enviroment, so I wr=
-ote
->>>>>>> a patch to deal with it first.
->>>>>>>>
->>>>>>>>
->>>>>>>> Thanks a lot!
->>>>>>>> Joey Lee
->>>>>>>>
->>>>>>
->>>>>> Thanks for your explanation, then your patch makes sense to me.
->>>>>>
->>>>>> Please feel free to add tag:
->>>>>>
->>>>>> Reviewed-by: Lee, Chun-Yi <joeyli.kernel@gmail.com>
->>>>>
->>>>> Patch queued up for 4.3, thanks!
->>>>>
->>>> Hi Rafeal,
->>>> Please help drop this patch for now, QA has found some problems wi=
-th
->>>> this patch applied, we're working on it now. Sorry for inconvenien=
-ce.
->>>
->>> Dropping, thanks for the heads up!
->>>
->> Hi,Rafeal, Joey
->> I've sent out another patch, it is based on Joey's
->> original patch, and it treats any adjacent E820_RAM/E820_RESERVED_KE=
-RN regions as
->> one. In this way,  non-page-aligned setup_data address would not be =
-added
->> to nosave regions, thus workaround the hibernation failor mentiones =
-in
->> https://bugzilla.kernel.org/show_bug.cgi?id=3D96111
->>
->> V1 patch has a problem that, NOT every page in page zone has a valid=
- mapping address , thus
->> accessing these pages would cause problem. So I rewrite this path an=
-d send out another V2 version.
->> Thanks for your time.
->>
->>   Yu
->>>
->
-> Thanks for your work on this patch, but the E820_RESERVED_KERN will b=
-e removed
-> anyhow. So I prefer waiting Yinghai Lu's patch for killing E820_RESER=
-VED_KERN.
->
-OK. I'll wait for Yinghai's patch and yours.
-Thanks.
+On 22-07-15, 14:15, Russell King - ARM Linux wrote:
+> > +	/* sysfs links are only created on subsys callback */
+> > +	if (sif && policy) {
+> > +		pr_debug("%s: Adding symlink for CPU: %u\n", __func__, cpu);
+> 
+> dev_dbg() ?
 
-Yu
->
-> Regards
-> Joey Lee
->
+Hmm, right.
 
+> > +		ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+> > +		if (ret) {
+> > +			dev_err(dev, "%s: Failed to create link for cpu %d (%d)\n",
+
+Rafael updated this instead with dev_dbg :), I am sending separate
+patches to fix that now.
+
+> > +				__func__, cpu, ret);
+> 
+> I wonder why we print the CPU number - since it's from dev->id, isn't it
+> included in the struct device name printed by dev_err() already?
+
+:(
+
+> > +			return ret;
+> > +		}
+> > +
+> > +		/* Track CPUs for which sysfs links are created */
+> > +		cpumask_set_cpu(cpu, policy->symlinks);
+> > +	}
+> > +
+> 
+> I guess this will do for -rc, but it's not particularly nice.  Can I
+> suggest splitting the two operations here - the add_dev callback from
+> the subsys interface, and the handling of hotplug online/offline
+> notifications.
+> 
+> You only need to do the above for the subsys interface, and you only
+> need to do the remainder if the CPU was online.
+> 
+> Also, what about the CPU "owning" the policy?
+> 
+> So, this would become:
+> 
+> static int cpufreq_cpu_online(struct device *dev)
+> {
+> 	pr_debug("bringing CPU%d online\n", dev->id);
+> 	... stuff to do when CPU is online ...
+> }
+> 
+> static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+> {
+> 	unsigned int cpu = dev->id;
+> 	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+> 
+> 	pr_debug("adding CPU %u\n", cpu);
+> 
+> 	if (policy && policy->kobj_cpu != cpu) {
+> 		dev_dbg(dev, "%s: Adding cpufreq symlink\n", __func__);
+> 		ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+> 		if (ret) {
+> 			dev_err(dev,
+> 				"%s: Failed to create cpufreq symlink (%d)\n",
+> 				__func__, ret);
+> 			return ret;
+> 		}
+> 
+> 		/* Track CPUs for which sysfs links are created */
+> 		cpumask_set_cpu(cpu, policy->symlinks);
+> 	}
+> 
+> 	/* Now do the remainder if the CPU is already online */
+> 	if (cpu_online(cpu))
+> 		return cpufreq_cpu_online(dev);
+> 
+> 	return 0;
+> }
+> 
+> Next, change the cpufreq_add_dev(dev, NULL) in the hotplug notifier call
+> to cpufreq_cpu_online(dev) instead.
+> 
+> Doing the similar thing for the cpufreq_remove_dev() path would also make
+> sense.
+
+Hmmm, Looks better ofcourse.
+
+> > @@ -1521,42 +1472,54 @@ static int __cpufreq_remove_dev_finish(struct device *dev,
+> >  static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+> >  {
+> >  	unsigned int cpu = dev->id;
+> > +	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+> >  	int ret;
+> >  
+> > -	/*
+> > -	 * Only possible if 'cpu' is getting physically removed now. A hotplug
+> > -	 * notifier should have already been called and we just need to remove
+> > -	 * link or free policy here.
+> > -	 */
+> > -	if (cpu_is_offline(cpu)) {
+> > -		struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+> > -		struct cpumask mask;
+> > +	if (!policy)
+> > +		return 0;
+> >  
+> > -		if (!policy)
+> > -			return 0;
+> > +	if (cpu_online(cpu)) {
+> > +		ret = __cpufreq_remove_dev_prepare(dev, sif);
+> > +		if (!ret)
+> > +			ret = __cpufreq_remove_dev_finish(dev, sif);
+> > +		if (ret)
+> > +			return ret;
+> 
+> Here, I have to wonder about this.  If you look at the code in
+> drivers/base/bus.c, you'll notice that the ->remove_dev return code is
+> not used
+
+Its not even using the return type of ->add_dev :), I have send an
+update for that recently as that was required for cpufreq-drivers.
+Greg must be applying that for 4.3 I hope :)
+
+> (personally, I hate interfaces which are created with an int
+> return type for a removal operation, but then ignore the return code.
+> Either have the return code and use it, or don't confuse driver authors
+> by having one.)
+
++1
+
+> What this means is that in the remove path, the device _is_ going away,
+> whether you like it or not.  So, if you have an error early in your
+> remove path, returning that error does you no good - you end up leaking
+> memory because subsequent cleanup doesn't get done.
+> 
+> It's better to either ensure that your removal path can't fail, or if it
+> can, to reasonably clean up as much as you can (which here, means
+> continuing to remove the symlink.)
+> 
+> If you adopt my suggestion above, then cpufreq_remove_dev() becomes
+> something like:
+> 
+> static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+> {
+> 	unsigned int cpu = dev->id;
+> 	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+> 
+> 	if (cpu_is_online(cpu))
+> 		cpufreq_cpu_offline(dev);
+> 
+> 	if (policy) {
+> 		if (cpumask_test_cpu(cpu, policy->symlinks)) {
+> 			dev_dbg(dev, "%s: Removing cpufreq symlink\n",
+> 				__func__);
+> 			cpumask_clear_cpu(cpu, policy->symlinks);
+> 			sysfs_remove_link(&dev->kobj, "cpufreq");
+> 		}
+> 
+> 		if (policy->kobj_cpu == cpu) {
+> 			... migration code and final CPU deletion code ...
+> 		}
+> 	}
+> 
+> 	return 0;
+> }
+> 
+> which IMHO is easier to read and follow, and more symetrical with
+> cpufreq_add_dev().
+
+Ack.
+
+> Now, I'm left wondering about a few things:
+> 
+> 1. whether having a CPU "own" the policy, and having the cpufreq/ directory
+>    beneath the cpuN node is a good idea, or whether it would be better to
+>    place this in the /sys/devices/system/cpufreq/ subdirectory and always
+>    symlink to there.  It strikes me that would simplify the code a little.
+
+Hmm, but there can be multiple policies in a system and that would
+surely confuse people.
+
+> 2. whether using a kref to track the usage of the policy would be better
+>    than tracking symlink weight (or in the case of (1) being adopted,
+>    whether the symlink cpumask becomes empty.)
+
+
+>    Note that the symlink
+>    weight becoming zero without (1) (in other words, no symlinks) is not
+>    the correct condition for freeing the policy - we still have one CPU,
+>    that being the CPU for policy->kobj_cpu.
+
+But that's the cpu which is getting removed now, so it was really the
+last cpu and we can free the policy.
+
+> 3. what happens when 'policy' is NULL at the point when the first (few) CPUs
+>    are added
+
+The first CPU that comes up has to create the policy.
+
+>    - how do the symlinks get created later if/when policy becomes
+>    non-NULL (can it?)
+
+It can't.
+
+> 4. what about policy->related_cpus ?  What if one of the CPUs being added is
+>    not in policy->related_cpus?  Should we still go ahead and create the
+>    symlink?
+
+Let me explain a bit around how policy are managed, you might already
+know this but I got a bit confused by your question.
+
+Consider a octa-core big LITTLE platform. All big core share
+clock/voltage rails and all LITTLE too..
+
+The system will have two policies:
+- big: This will manage four CPUs (0-3)
+  - policy->related_cpus = 0 1 2 3
+  - policy->cpus = all online CPUs from 0-3
+- LITTLE: This will manage four CPUs (4-7)
+  - policy->related_cpus = 4 5 6 7
+  - policy->cpus = all online CPUs from 4-7
+
+So if a CPU (say 5) doesn't find a place in big cluster's
+policy->related_cpus, then it must belong to a different policy.
+
+Does that clear your query? Or did I completely miss your concern ?
+
+-- 
+viresh
