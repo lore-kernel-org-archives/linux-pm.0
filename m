@@ -1,148 +1,75 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v5 7/8] dmaengine: add a driver for Intel integrated DMA
- 64-bit
-Date: Thu, 23 Jul 2015 11:50:19 +0300
-Message-ID: <1437641419.29746.16.camel@linux.intel.com>
-References: <1436185334-34275-1-git-send-email-andriy.shevchenko@linux.intel.com>
-	 <1436185334-34275-8-git-send-email-andriy.shevchenko@linux.intel.com>
-	 <20150717043803.GE5086@localhost>
-	 <CAHp75VcMej=a0pLT61hbnHmTvY7Mn_aBrrk0Rq0nYbU7e_C67A@mail.gmail.com>
-	 <20150721045055.GG23525@localhost>
-	 <CAHp75VeC=LzvZ0UbZ_uagW8M80aFoXD5h8v3kQEC2vKX3AjNww@mail.gmail.com>
-	 <20150722045700.GO23525@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20150722045700.GO23525@localhost>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Vinod Koul <vinod.koul@intel.com>, Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lee Jones <lee.jones@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dmaengine <dmaengine@vger.kernel.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Michael Turquette <mturquette@baylibre.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] thermal: remove dangling 'weight_attr' device file
+Date: Thu, 23 Jul 2015 14:32:32 +0530
+Message-ID: <874682c7b1ab8b0fcc2abc905c71bc2bc041aaeb.1437642037.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:34515 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752080AbbGWJCs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 05:02:48 -0400
+Received: by pacan13 with SMTP id an13so155972376pac.1
+        for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2015 02:02:47 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com
+Cc: linaro-kernel@lists.linaro.org, javi.merino@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
 
-On Wed, 2015-07-22 at 10:27 +0530, Vinod Koul wrote:
-> On Tue, Jul 21, 2015 at 10:08:28AM +0300, Andy Shevchenko wrote:
-> > On Tue, Jul 21, 2015 at 7:50 AM, Vinod Koul <vinod.koul@intel.com> 
-> > wrote:
-> > > On Mon, Jul 20, 2015 at 11:46:28AM +0300, Andy Shevchenko wrote:
-> > > > > > +static void idma64_chan_init(struct idma64 *idma64, struct 
-> > > > > > idma64_chan *idma64c)
-> > > > > > +{
-> > > > > > +     u32 cfghi = IDMA64C_CFGH_SRC_PER(1) | 
-> > > > > > IDMA64C_CFGH_DST_PER(0);
-> > > > > > +     u32 cfglo = 0;
-> > > > > > +
-> > > > > > +     /* Enforce FIFO drain when channel is suspended */
-> > > > > > +     cfglo |= IDMA64C_CFGL_CH_DRAIN;
-> > > > > > +
-> > > > > > +     /* Set default burst alignment */
-> > > > > > +     cfglo |= IDMA64C_CFGL_DST_BURST_ALIGN | 
-> > > > > > IDMA64C_CFGL_SRC_BURST_ALIGN;
-> > > > > > +
-> > > > > > +     channel_writel(idma64c, CFG_LO, cfglo);
-> > > > > > +     channel_writel(idma64c, CFG_HI, cfghi);
-> > > > > > +
-> > > > > > +     /* Enable interrupts */
-> > > > > > +     channel_set_bit(idma64, MASK(XFER), idma64c->mask);
-> > > > > > +     channel_set_bit(idma64, MASK(ERROR), idma64c->mask);
-> > > > > > +
-> > > > > > +     /*
-> > > > > > +      * Enforce the controller to be turned on.
-> > > > > > +      *
-> > > > > > +      * The iDMA is turned off in ->probe() and looses 
-> > > > > > context during system
-> > > > > > +      * suspend / resume cycle. That's why we have to 
-> > > > > > enable it each time we
-> > > > > > +      * use it.
-> > > > > > +      */
-> > > > > > +     idma64_on(idma64);
-> > > > > would it be better that you do this in resume and 
-> > > > > runtime_resume cycle. That
-> > > > > way it need not be called for every channel init
-> > > > 
-> > > > Mika, I don't remember details here, but this piece came from 
-> > > > you. Can
-> > > > you shed a light?
-> > > > 
-> > > > My understanding that DMA IP is private to the host controller 
-> > > > and has
-> > > > the same power rail. Thus, there is no need to do separate 
-> > > > power
-> > > > management for it, which makes things more complicated for no 
-> > > > profit.
-> > > > It is also needed for time period from probe till first 
-> > > > transfer
-> > > > (otherwise we have to check the status of DMA anyway and enable 
-> > > > it if
-> > > > required), which currently remains DMA off.
-> > > so who does runtime management of this power rail and whosoever 
-> > > does that
-> > > how do they ensure the dma is not active at that time?
-> > 
-> > The host controller driver knows this and it makes it so.
-> > Anyway, even if we introduce PM callbacks in this driver how to 
-> > solve
-> > the issue to run very first transfer in a neat way?
-> 
-> And how does it know?
+This file isn't getting removed while we unbind a device from thermal
+zone. And this causes following messages when the device is registered
+again:
 
-It should not start any transfer when system goes suspend (and
-terminates on going ones). It might be that not all drivers currently
-implement the described work flow.
+WARNING: CPU: 0 PID: 2228 at /home/viresh/linux/fs/sysfs/dir.c:31 sysfs_warn_dup+0x60/0x70()
+sysfs: cannot create duplicate filename '/devices/virtual/thermal/thermal_zone0/cdev0_weight'
+Modules linked in: cpufreq_dt(+) [last unloaded: cpufreq_dt]
+CPU: 0 PID: 2228 Comm: insmod Not tainted 4.2.0-rc3-00059-g44fffd9473eb #272
+Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
+[<c00153e8>] (unwind_backtrace) from [<c0012368>] (show_stack+0x10/0x14)
+[<c0012368>] (show_stack) from [<c053a684>] (dump_stack+0x84/0xc4)
+[<c053a684>] (dump_stack) from [<c002284c>] (warn_slowpath_common+0x80/0xb0)
+[<c002284c>] (warn_slowpath_common) from [<c00228ac>] (warn_slowpath_fmt+0x30/0x40)
+[<c00228ac>] (warn_slowpath_fmt) from [<c012d524>] (sysfs_warn_dup+0x60/0x70)
+[<c012d524>] (sysfs_warn_dup) from [<c012d244>] (sysfs_add_file_mode_ns+0x13c/0x190)
+[<c012d244>] (sysfs_add_file_mode_ns) from [<c012d2d4>] (sysfs_create_file_ns+0x3c/0x48)
+[<c012d2d4>] (sysfs_create_file_ns) from [<c03c04a8>] (thermal_zone_bind_cooling_device+0x260/0x358)
+[<c03c04a8>] (thermal_zone_bind_cooling_device) from [<c03c2e70>] (of_thermal_bind+0x88/0xb4)
+[<c03c2e70>] (of_thermal_bind) from [<c03c10d0>] (__thermal_cooling_device_register+0x17c/0x2e0)
+[<c03c10d0>] (__thermal_cooling_device_register) from [<c03c3f50>] (__cpufreq_cooling_register+0x3a0/0x51c)
+[<c03c3f50>] (__cpufreq_cooling_register) from [<bf00505c>] (cpufreq_ready+0x44/0x88 [cpufreq_dt])
+[<bf00505c>] (cpufreq_ready [cpufreq_dt]) from [<c03d6c30>] (cpufreq_add_dev+0x4a0/0x7dc)
+[<c03d6c30>] (cpufreq_add_dev) from [<c02cd3ec>] (subsys_interface_register+0x94/0xd8)
+[<c02cd3ec>] (subsys_interface_register) from [<c03d785c>] (cpufreq_register_driver+0x10c/0x1f0)
+[<c03d785c>] (cpufreq_register_driver) from [<bf0057d4>] (dt_cpufreq_probe+0x60/0x8c [cpufreq_dt])
+[<bf0057d4>] (dt_cpufreq_probe [cpufreq_dt]) from [<c02d03e4>] (platform_drv_probe+0x44/0xa4)
+[<c02d03e4>] (platform_drv_probe) from [<c02cead8>] (driver_probe_device+0x174/0x2b4)
+[<c02cead8>] (driver_probe_device) from [<c02ceca4>] (__driver_attach+0x8c/0x90)
+[<c02ceca4>] (__driver_attach) from [<c02cd078>] (bus_for_each_dev+0x68/0x9c)
+[<c02cd078>] (bus_for_each_dev) from [<c02ce2f0>] (bus_add_driver+0x19c/0x214)
+[<c02ce2f0>] (bus_add_driver) from [<c02cf490>] (driver_register+0x78/0xf8)
+[<c02cf490>] (driver_register) from [<c0009710>] (do_one_initcall+0x8c/0x1d4)
+[<c0009710>] (do_one_initcall) from [<c05396b0>] (do_init_module+0x5c/0x1b8)
+[<c05396b0>] (do_init_module) from [<c0086490>] (load_module+0xd34/0xed8)
+[<c0086490>] (load_module) from [<c0086704>] (SyS_init_module+0xd0/0x120)
+[<c0086704>] (SyS_init_module) from [<c000f480>] (ret_fast_syscall+0x0/0x3c)
+---[ end trace 3be0e7b7dc6e3c4f ]---
 
-> 
-> In PM callback case, your runtime resume should enable the controller
+Fixes: db91651311c8 ("thermal: export weight to sysfs")
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/thermal/thermal_core.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-PM runtime is an overkill here because it's not exactly turning power
-rail off on the device, though reference counting would makes sense.
-
-> 
-> > > > > > +static int idma64_terminate_all(struct dma_chan *chan)
-> > > > > > +{
-> > > > > > +     struct idma64_chan *idma64c = to_idma64_chan(chan);
-> > > > > > +     unsigned long flags;
-> > > > > > +     LIST_HEAD(head);
-> > > > > > +
-> > > > > > +     spin_lock_irqsave(&idma64c->vchan.lock, flags);
-> > > > > > +     idma64_stop_transfer(idma64c);
-> > > > > I dont think this is the right method for terminate. Can you 
-> > > > > check, it
-> > > > > might be that we have to suspend the channel before 
-> > > > > terminating an active
-> > > > > one. For non active case this should be okay
-> > > > 
-> > > > Do you mean hardware can become into wrong state?
-> > > Yes at least that was true for 32bit version of this IP
-> > 
-> > Can you elaborate what exactly is happening? We can do a test then 
-> > and
-> > check. For now on we experienced no problems.
-> 
-> While you are doing transfers, try terminating. After that doesnt 
-> next
-> transaction on same channel work well, if not then please try 
-> suspending
-> first before terminating
-
-I will think how to test this. Meanwhile do you think it's a show
-stopper for driver right now?
-
-> 
-> > > > Only what can actually happen is the data loss which is in DMA 
-> > > > FIFO,
-> > > > but we already know we would like to terminate the transfer we 
-> > > > don't
-> > > > care about any data loss since that.
-> > > The terminate flow expect you to suspend the channel first and 
-> > > then terminate
-> > 
-> > Hm... I didn't see anything in the specification. Can you point out
-> > where it's described?
-> 
-> I dont have specs to point, but we did see this issue on 32bit BYT
-> iDMA and designer told us to follow this flow
-
-
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 04659bfb888b..4ca211be4c0f 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1333,6 +1333,7 @@ int thermal_zone_unbind_cooling_device(struct thermal_zone_device *tz,
+ 	return -ENODEV;
+ 
+ unbind:
++	device_remove_file(&tz->device, &pos->weight_attr);
+ 	device_remove_file(&tz->device, &pos->attr);
+ 	sysfs_remove_link(&tz->device.kobj, pos->name);
+ 	release_idr(&tz->idr, &tz->lock, pos->id);
 -- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+2.4.0
+
