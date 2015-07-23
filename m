@@ -1,69 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: Remove cpufreq_rwsem
-Date: Thu, 23 Jul 2015 22:59:53 +0200
-Message-ID: <3827470.2xPx8lfogL@vostro.rjw.lan>
-References: <1437560730-31756-1-git-send-email-bigeasy@linutronix.de> <20150722155911.GB8704@linutronix.de>
+Subject: Re: [PATCH V3 0/5] cpufreq: governor: Avoid invalid state-transitions
+Date: Thu, 23 Jul 2015 23:00:28 +0200
+Message-ID: <1750316.G8rvNjkg1G@vostro.rjw.lan>
+References: <2874468.iRvuV1Y9DI@vostro.rjw.lan> <cover.1437199001.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150722155911.GB8704@linutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tglx@linutronix.de, Viresh Kumar <viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:46614 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754018AbbGWUdk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 16:33:40 -0400
+In-Reply-To: <cover.1437199001.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 
-On Wednesday, July 22, 2015 05:59:11 PM Sebastian Andrzej Siewior wrote:
-> cpufreq_rwsem was introduced in commit 6eed9404ab3c4 ("cpufreq: Use
-> rwsem for protecting critical sections) in order to replace
-> try_module_get() on the cpu-freq driver. That try_module_get() worked
-> well until the refcount was so heavily used that module removal became
-> more or less impossible.
+On Saturday, July 18, 2015 11:30:58 AM Viresh Kumar wrote:
+> Hi Rafael,
 > 
-> Though when looking at the various (undocumented) protection
-> mechanisms in that code, the randomly sprinkeled around cpufreq_rwsem
-> locking sites are superfluous.
+> These are rest of the patches after replacing 'ccdbs' with 'shared' as
+> you suggested.
 > 
-> The policy, which is acquired in cpufreq_cpu_get() and released in
-> cpufreq_cpu_put() is sufficiently protected already.
+> Viresh Kumar (5):
+>   cpufreq: governor: Keep single copy of information common to
+>     policy->cpus
+>   cpufreq: governor: split out common part of {cs|od}_dbs_timer()
+>   cpufreq: governor: Avoid invalid states with additional checks
+>   cpufreq: governor: Don't WARN on invalid states
+>   cpufreq: propagate errors returned from __cpufreq_governor()
 > 
->   cpufreq_cpu_get(cpu)
->     /* Protects against concurrent driver removal */
->     read_lock_irqsave(&cpufreq_driver_lock, flags);
->     policy = per_cpu(cpufreq_cpu_data, cpu);
->     kobject_get(&policy->kobj);
->     read_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> 
-> The reference on the policy serializes versus module unload already:
-> 
->   cpufreq_unregister_driver()
->     subsys_interface_unregister()
->       __cpufreq_remove_dev_finish()
->         per_cpu(cpufreq_cpu_data) = NULL;
-> 	cpufreq_policy_put_kobj()
-> 
-> If there is a reference held on the policy, i.e. obtained prior to the
-> unregister call, then cpufreq_policy_put_kobj() will wait until that
-> reference is dropped. So once subsys_interface_unregister() returns
-> there is no policy pointer in flight and no new reference can be
-> obtained. So that rwsem protection is useless.
-> 
-> The other usage of cpufreq_rwsem in show()/store() of the sysfs
-> interface is redundant as well because sysfs already does the proper
-> kobject_get()/put() pairs.
-> 
-> That leaves CPU hotplug versus module removal. The current
-> down_write() around the write_lock() in cpufreq_unregister_driver() is
-> silly at best as it protects actually nothing.
-> 
-> The trivial solution to this is to prevent hotplug across
-> cpufreq_unregister_driver completely.
-> 
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+>  drivers/cpufreq/cpufreq.c              |  31 ++++--
+>  drivers/cpufreq/cpufreq_conservative.c |  25 ++---
+>  drivers/cpufreq/cpufreq_governor.c     | 174 ++++++++++++++++++++++++++-------
+>  drivers/cpufreq/cpufreq_governor.h     |  26 +++--
+>  drivers/cpufreq/cpufreq_ondemand.c     |  58 +++++------
+>  5 files changed, 210 insertions(+), 104 deletions(-)
 
-Makes sense.
-
-Queued up for 4.3, thanks!
+All queued up for 4.3, thanks!
 
 
 -- 
