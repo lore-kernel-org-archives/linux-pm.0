@@ -1,55 +1,81 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v6 07/13] clk: qcom: gdsc: Add support for ON only state
-Date: Wed, 22 Jul 2015 18:11:50 -0700
-Message-ID: <55B03F56.8030503@codeaurora.org>
-References: <1437549069-29655-1-git-send-email-rnayak@codeaurora.org> <1437549069-29655-8-git-send-email-rnayak@codeaurora.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: Discrete Nvidia GPU shutdown with recent kernel / BIOS (on T440s
+ laptop) - Should be automatic with runtime pm now ?
+Date: Wed, 22 Jul 2015 21:21:36 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1507222116430.12068-100000@netrider.rowland.org>
+References: <CAHL+j09=tc4ytFmzuhw5K_AvQ6aDsViREkwCY6re4A-iJTnTUw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:48918 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752203AbbGWBLx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jul 2015 21:11:53 -0400
-In-Reply-To: <1437549069-29655-8-git-send-email-rnayak@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAHL+j09=tc4ytFmzuhw5K_AvQ6aDsViREkwCY6re4A-iJTnTUw@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Sylvain Munaut <246tnt@gmail.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: mturquette@baylibre.com, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org
 
-On 07/22/2015 12:11 AM, Rajendra Nayak wrote:
-> @@ -200,6 +224,12 @@ static int gdsc_init(struct gdsc *sc)
->   	if (ret)
->   		return ret;
->   
-> +	/* Force gdsc ON if only ON state is supported */
-> +	if (sc->pwrsts == PWRSTS_ON)
-> +		ret = gdsc_toggle_logic(sc, true);
-> +		if (ret)
-> +			return ret;
+On Wed, 22 Jul 2015, Sylvain Munaut wrote:
 
-This is missing braces. Please test :)
+> Hi Alan,
+> 
+> 
+> Thanks for the details.
+> 
+> 
+> >> tl;dr : Should device allowed to do runtime pm that have no driver go
+> >> to D3 on their own ?
+> >
+> > Quick answer: See the comments at the start of local_pci_probe() in
+> > drivers/pci/pci-driver.c.  PCI devices without a kernel driver are
+> > always left in D0, regardless of the runtime PM status.  This is
+> > because userspace may try to use the device, and the kernel wouldn't
+> > know to take the device out of D3 when that happens.
+> 
+> Does linux expose some way for userspace to transition the device to
+> another power state without the need for a driver ?
 
-> +
->   	on = gdsc_is_enabled(sc);
->   	if (on < 0)
->   		return on;
->
-> diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
-> index 87c4ace..0d1c4fb 100644
-> --- a/drivers/clk/qcom/gdsc.h
-> +++ b/drivers/clk/qcom/gdsc.h
-> @@ -17,6 +17,7 @@
->   #include <linux/clk.h>
->   #include <linux/pm_domain.h>
->   #include <linux/regmap.h>
-> +#include <linux/reset-controller.h>
+I don't think so.  Of course, such a thing could be added.  One simple 
+way to do it would be to create a "do-nothing" driver that would allow 
+userspace to access the device directly and would include runtime PM 
+suport.
 
-Do we need this include either? Just forward declare stuff. Same comment 
-goes for the clk include.
+> I looked at the docs and tried poking some of the sysfs files, but
+> except enabling/disabling the runtme pm, I couldn't really change
+> anything, but maybe I missed something.
 
+You probably didn't miss anything.
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+> >>  And should pci root bridge go to D3 when all the
+> >> device on them are on D3 ?
+> >
+> > I don't know the answer to that.  It's probably closely related to the
+> > issue of whether PCI bridges need to have a kernel driver.
+> 
+> OK.
+> 
+> Do you know if there could be any adverse effect of transitioning it myself ?
+> 
+> Basically I'm doing this when turning off the card :
+> 
+> struct pci_dev *port_dev = pci_upstream_bridge(pdev);
+> 
+> pci_save_state(port_dev);
+> pci_clear_master(port_dev);
+> pci_disable_device(port_dev);
+> pci_set_power_state(port_dev, PCI_D3hot);
+> 
+> 
+> And this when waking it up :
+> 
+> pci_set_power_state(port_dev, PCI_D0);
+> pci_restore_state(port_dev);
+> pci_enable_device(port_dev);
+> pci_set_master(port_dev);
+> 
+> (I removed the return value checking to make the code more concise here).
+
+That seems reasonable.  But I am far from an expert on PCI or Linux's
+PCI subsystem.  You really should address this sort of question to the
+linux-pci mailing list.
+
+Alan Stern
 
