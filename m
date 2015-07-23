@@ -1,32 +1,71 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RESEND PATCH] cpupower: Do not change the frequency of offline cpu
-Date: Thu, 23 Jul 2015 22:58:38 +0200
-Message-ID: <1838455.HBmItYYPC0@vostro.rjw.lan>
-References: <1437553249-25400-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1437634227-12555-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] cpufreq: Remove cpufreq_rwsem
+Date: Thu, 23 Jul 2015 22:59:53 +0200
+Message-ID: <3827470.2xPx8lfogL@vostro.rjw.lan>
+References: <1437560730-31756-1-git-send-email-bigeasy@linutronix.de> <20150722155911.GB8704@linutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56890 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753544AbbGWUbu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 16:31:50 -0400
-In-Reply-To: <1437634227-12555-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150722155911.GB8704@linutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tglx@linutronix.de, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: rafael.j.wysocki@intel.com, trenn@suse.com, ego@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thursday, July 23, 2015 12:20:27 PM Shilpasri G Bhat wrote:
-> Check if the cpu is online before changing the frequency/governor of
-> the cpu.
+On Wednesday, July 22, 2015 05:59:11 PM Sebastian Andrzej Siewior wrote:
+> cpufreq_rwsem was introduced in commit 6eed9404ab3c4 ("cpufreq: Use
+> rwsem for protecting critical sections) in order to replace
+> try_module_get() on the cpu-freq driver. That try_module_get() worked
+> well until the refcount was so heavily used that module removal became
+> more or less impossible.
 > 
-> Reported-by: Pavaman Subramaniyam <pavsubra@linux.vnet.ibm.com>
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Acked-by: Thomas Renninger <trenn@suse.com>
+> Though when looking at the various (undocumented) protection
+> mechanisms in that code, the randomly sprinkeled around cpufreq_rwsem
+> locking sites are superfluous.
+> 
+> The policy, which is acquired in cpufreq_cpu_get() and released in
+> cpufreq_cpu_put() is sufficiently protected already.
+> 
+>   cpufreq_cpu_get(cpu)
+>     /* Protects against concurrent driver removal */
+>     read_lock_irqsave(&cpufreq_driver_lock, flags);
+>     policy = per_cpu(cpufreq_cpu_data, cpu);
+>     kobject_get(&policy->kobj);
+>     read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> 
+> The reference on the policy serializes versus module unload already:
+> 
+>   cpufreq_unregister_driver()
+>     subsys_interface_unregister()
+>       __cpufreq_remove_dev_finish()
+>         per_cpu(cpufreq_cpu_data) = NULL;
+> 	cpufreq_policy_put_kobj()
+> 
+> If there is a reference held on the policy, i.e. obtained prior to the
+> unregister call, then cpufreq_policy_put_kobj() will wait until that
+> reference is dropped. So once subsys_interface_unregister() returns
+> there is no policy pointer in flight and no new reference can be
+> obtained. So that rwsem protection is useless.
+> 
+> The other usage of cpufreq_rwsem in show()/store() of the sysfs
+> interface is redundant as well because sysfs already does the proper
+> kobject_get()/put() pairs.
+> 
+> That leaves CPU hotplug versus module removal. The current
+> down_write() around the write_lock() in cpufreq_unregister_driver() is
+> silly at best as it protects actually nothing.
+> 
+> The trivial solution to this is to prevent hotplug across
+> cpufreq_unregister_driver completely.
+> 
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+
+Makes sense.
 
 Queued up for 4.3, thanks!
 
-Rafael
 
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
