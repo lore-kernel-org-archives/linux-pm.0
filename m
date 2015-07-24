@@ -1,136 +1,42 @@
-From: Radivoje Jovanovic <radivoje.jovanovic@linux.intel.com>
-Subject: Re: [PATCH] thermal/cpu_cooling: remove local cooling state
- variable
-Date: Fri, 24 Jul 2015 10:09:05 -0700
-Message-ID: <20150724100905.7e2e53f4@radivoje-desk2>
-References: <1437516835-198750-1-git-send-email-radivoje.jovanovic@linux.intel.com>
-	<9hhegjxbmqz.fsf@e105922-lin.cambridge.arm.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH 02/10] OPP: Create _remove_device_opp() for freeing dev_opp
+Date: Fri, 24 Jul 2015 19:13:16 +0200
+Message-ID: <1832978.kMhxfEVYzD@amdc1976>
+References: <cover.1434369079.git.viresh.kumar@linaro.org>
+ <fba1ec728e2ecf9303e13372a2557d886aa7e49c.1434369079.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:39318 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753897AbbGXRL1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 24 Jul 2015 13:11:27 -0400
-In-Reply-To: <9hhegjxbmqz.fsf@e105922-lin.cambridge.arm.com>
+Received: from mailout2.samsung.com ([203.254.224.25]:58325 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752638AbbGXRNo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 13:13:44 -0400
+Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout2.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0NS000J0756U5N30@mailout2.samsung.com> for
+ linux-pm@vger.kernel.org; Sat, 25 Jul 2015 02:13:43 +0900 (KST)
+In-reply-to: <fba1ec728e2ecf9303e13372a2557d886aa7e49c.1434369079.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Radivoje Jovanovic <radivoje.jovanovic@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, broonie@kernel.org, mturquette@baylibre.com, sboyd@codeaurora.org, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-Hi Agarwal,
 
-On Fri, 24 Jul 2015 16:26:12 +0100
-Punit Agrawal <punit.agrawal@arm.com> wrote:
+Hi,
 
-> Radivoje Jovanovic <radivoje.jovanovic@linux.intel.com> writes:
+On Monday, June 15, 2015 05:27:28 PM Viresh Kumar wrote:
+> This will be used from multiple places later. Lets create a separate
+> routine for that.
 > 
-> > From: Radivoje Jovanovic <radivoje.jovanovic@intel.com>
-> >
-> > there is no need to keep local state variable. if another driver
-> > changes the policy under our feet the cpu_cooling driver will
-> > have the wrong state. Get current state from the policy directly
-> > instead
-> >
-> 
-> Although the patch below looks good, it does add additional
-> processing. I was wondering in what situation do you observe the
-> problem $SUBJECT solves?
-> 
-> Presumably, the policy caps are tighter than those imposed by the cpu
-> cooling device (cpufreq_thermal_notifier should take care of this).
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-we are using this solution on the platfrom which has user space
-component control cpufreq throttling. However, user space 
-component has its limitations so we are using cpu_cooling as a 
-critical backup. Due to this cpu_cooling does not have correct state
-as a current state so when the change is needed cpu_cooling does
-not make the change since it believes it is in the "correct" state.
-I agree that there is slight increase in processing, but in the case 
-when user space is changing the policy the notifier will not have
-access to the current state of the cpu_cooling to change it
-appropriately.
+Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-> 
-> > Signed-off-by: Radivoje Jovanovic <radivoje.jovanovic@intel.com>
-> > ---
-> >  drivers/thermal/cpu_cooling.c | 27 ++++++++++++++++++---------
-> >  1 file changed, 18 insertions(+), 9 deletions(-)
-> >
-> > diff --git a/drivers/thermal/cpu_cooling.c
-> > b/drivers/thermal/cpu_cooling.c index 6509c61..94ba2da 100644
-> > --- a/drivers/thermal/cpu_cooling.c
-> > +++ b/drivers/thermal/cpu_cooling.c
-> > @@ -66,8 +66,6 @@ struct power_table {
-> >   *	registered.
-> >   * @cool_dev: thermal_cooling_device pointer to keep track of the
-> >   *	registered cooling device.
-> > - * @cpufreq_state: integer value representing the current state of
-> > cpufreq
-> > - *	cooling	devices.
-> >   * @cpufreq_val: integer value representing the absolute value of
-> > the clipped
-> >   *	frequency.
-> >   * @max_level: maximum cooling level. One less than total number
-> > of valid @@ -90,7 +88,6 @@ struct power_table {
-> >  struct cpufreq_cooling_device {
-> >  	int id;
-> >  	struct thermal_cooling_device *cool_dev;
-> > -	unsigned int cpufreq_state;
-> >  	unsigned int cpufreq_val;
-> >  	unsigned int max_level;
-> >  	unsigned int *freq_table;	/* In descending order */
-> > @@ -486,10 +483,19 @@ static int cpufreq_get_cur_state(struct
-> > thermal_cooling_device *cdev, unsigned long *state)
-> >  {
-> >  	struct cpufreq_cooling_device *cpufreq_device =
-> > cdev->devdata; -
-> > -	*state = cpufreq_device->cpufreq_state;
-> > -
-> > -	return 0;
-> > +	struct cpufreq_policy policy;
-> > +	struct cpumask *mask = &cpufreq_device->allowed_cpus;
-> > +	unsigned int cpu = cpumask_any(mask);
-> > +	unsigned int cur_state;
-> > +
-> > +	if (!cpufreq_get_policy(&policy, cpu)) {
-> > +			cur_state = get_level(cpufreq_device,
-> > policy.max);
-> > +			if (cur_state != THERMAL_CSTATE_INVALID) {
-> > +				*state = cur_state;
-> > +				return 0;
-> > +			}
-> > +	}
-> > +	return -EINVAL;
-> >  }
-> >  
-> >  /**
-> > @@ -508,17 +514,20 @@ static int cpufreq_set_cur_state(struct
-> > thermal_cooling_device *cdev, struct cpufreq_cooling_device
-> > *cpufreq_device = cdev->devdata; unsigned int cpu =
-> > cpumask_any(&cpufreq_device->allowed_cpus); unsigned int clip_freq;
-> > +	unsigned long cur_state;
-> >  
-> >  	/* Request state should be less than max_level */
-> >  	if (WARN_ON(state > cpufreq_device->max_level))
-> >  		return -EINVAL;
-> >  
-> > +	if (cpufreq_get_cur_state(cpufreq_device->cool_dev,
-> > &cur_state))
-> > +		return -EINVAL;
-> > +
-> >  	/* Check if the old cooling action is same as new cooling
-> > action */
-> > -	if (cpufreq_device->cpufreq_state == state)
-> > +	if (cur_state == state)
-> >  		return 0;
-> >  
-> >  	clip_freq = cpufreq_device->freq_table[state];
-> > -	cpufreq_device->cpufreq_state = state;
-> >  	cpufreq_device->cpufreq_val = clip_freq;
-> >  
-> >  	cpufreq_update_policy(cpu);
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-Thanks
-Ogi
