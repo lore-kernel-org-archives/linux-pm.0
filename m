@@ -1,58 +1,41 @@
-From: Kukjin Kim <kgene@kernel.org>
-Subject: Re: [PATCH v3 1/4] clk: samsung: exynos5250: add cpu clock configuration
- data and instantiate cpu clock
-Date: Fri, 24 Jul 2015 12:48:37 +0900
-Message-ID: <55B1B595.4040906@kernel.org>
-References: <1435756238-845-1-git-send-email-b.zolnierkie@samsung.com> <1435756238-845-2-git-send-email-b.zolnierkie@samsung.com> <20150724003918.642.78653@quantum>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20150724003918.642.78653@quantum>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v2 0/2] PM / devfreq: exynos-ppmu: Add the support of PPMUv2
+Date: Fri, 24 Jul 2015 13:17:23 +0900
+Message-ID: <1437711445-7386-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:56965 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751102AbbGXER3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 00:17:29 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: kgene@kernel.org, k.kozlowski@samsung.com, cw00.choi@samsung.com, dan.carpenter@oracle.com, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 07/24/15 09:39, Michael Turquette wrote:
-> Quoting Bartlomiej Zolnierkiewicz (2015-07-01 06:10:35)
->> From: Thomas Abraham <thomas.ab@samsung.com>
->>
->> With the addition of the new Samsung specific cpu-clock type, the
->> arm clock can be represented as a cpu-clock type. Add the CPU clock
->> configuration data and instantiate the CPU clock type for Exynos5250.
->>
->> Changes by Bartlomiej:
->> - split Exynos5250 support from the original patch
->> - moved E5250_CPU_DIV[0,1]() macros to clk-exynos5250.c
->>
->> Cc: Tomasz Figa <tomasz.figa@gmail.com>
->> Cc: Michael Turquette <mturquette@baylibre.com>
->> Cc: Javier Martinez Canillas <javier@dowhile0.org>
->> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> 
-> Acked-by: Michael Turquette <mturquette@baylibre.com>
-> 
-Thanks, Mike.
+This patch-set add the support of PPMU ((Platform Performance Monitoring Unit)
+version 2.0 which is used on Exynos5433. The exynos-ppmu.c driver supports
+both PPMUv1.1 and PPMUv2. This patch-set is testd on Exynos5433-based board.
 
-> If Kukjin wants to merge this through the samsung tree then an immutable
-> branch would be much appreciated.
-> 
-Here is the topic branch for clk tree and it will not be rebased.
+The SoC list using PPMUv1.1
+- Exynos4210/4212/4412, Exynos3250, Exynos5260
+The SoC list using PPMUv2
+- Exynos5433, Exynos7420
 
-git://git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git
-v4.3-topic/clk-samsung
+Changes from v1:
+(https://lkml.org/lkml/2015/7/22/834)
+- Add const keyword to the instance of struct devfreq_event_ops/of_device_id
+- Modify the register name of PPMU v2 ('PPMUv2_*' -> 'PPMU_V2_*')
+- Reduce the unneed call function of exynos_bus_get_ops()
 
-If any problems, please kindly let me know.
+Chanwoo Choi (2):
+  PM / devfreq: exynos-ppmu: Add the support of PPMUv2 for Exynos5433
+  PM / devfreq: exynos-ppmu: Update documentation to support PPMUv2
 
-Thanks,
-Kukjin
+ .../bindings/devfreq/event/exynos-ppmu.txt         |  42 ++++-
+ drivers/devfreq/event/exynos-ppmu.c                | 170 ++++++++++++++++++++-
+ drivers/devfreq/event/exynos-ppmu.h                |  70 +++++++++
+ 3 files changed, 273 insertions(+), 9 deletions(-)
 
-> Regards,
-> Mike
-> 
->> ---
->>  drivers/clk/samsung/clk-exynos5250.c   | 31 +++++++++++++++++++++++++++++++
->>  include/dt-bindings/clock/exynos5250.h |  1 +
->>  2 files changed, 32 insertions(+)
+-- 
+1.8.5.5
+
