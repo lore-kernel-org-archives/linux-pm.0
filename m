@@ -1,60 +1,136 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH v2] thermal: consistently use int for temperatures
-Date: Fri, 24 Jul 2015 08:29:48 +0200
-Message-ID: <20150724062948.GK18700@pengutronix.de>
-References: <1437463292-24844-1-git-send-email-s.hauer@pengutronix.de>
- <20150723120759.GA17690@amd>
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
+Subject: Re: [PATCH 5/8] power: bq27x00_battery: Renaming for consistency
+Date: Fri, 24 Jul 2015 09:44:06 +0200
+Message-ID: <20150724074406.GA10476@pali>
+References: <1437601920-13045-1-git-send-email-afd@ti.com>
+ <201507232215.35603@pali>
+ <CAAfyv342rHGazCqZ19oYfwR5E2NO65VhhstXBHdDVfjd7USbFQ@mail.gmail.com>
+ <201507232315.16467@pali>
+ <CAAfyv35qsZzfWuJxgLbii_05Za6X3zcPgrt9hhHDoGnAoeWKpw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:35921 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751849AbbGXGaC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 02:30:02 -0400
+Received: from mail-wi0-f180.google.com ([209.85.212.180]:33157 "EHLO
+	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753114AbbGXHoO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 03:44:14 -0400
 Content-Disposition: inline
-In-Reply-To: <20150723120759.GA17690@amd>
+In-Reply-To: <CAAfyv35qsZzfWuJxgLbii_05Za6X3zcPgrt9hhHDoGnAoeWKpw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Punit Agrawal <punit.agrawal@arm.com>, Jean Delvare <jdelvare@suse.de>, Peter Feuerer <peter@piie.net>, Heiko Stuebner <heiko@sntech.de>, Lukasz Majewski <l.majewski@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, linux-acpi@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Ripard <maxime.ripard@free-electrons.com>, Darren Hart <dvhart@infradead.org>, lm-sensors@lm-sensors.org
+To: Belisko Marek <marek.belisko@gmail.com>
+Cc: "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Thu, Jul 23, 2015 at 02:07:59PM +0200, Pavel Machek wrote:
-> On Tue 2015-07-21 09:21:32, Sascha Hauer wrote:
-> > The thermal code uses int, long and unsigned long for temperatures
-> > in different places.
-> >=20
-> > Using an unsigned type limits the thermal framework to positive
-> > temperatures without need. Also several drivers currently will repo=
-rt
-> > temperatures near UINT_MAX for temperatures below 0=B0C. This will =
-probably
-> > immediately shut the machine down due to overtemperature if started=
- below
-> > 0=B0C.
-> >=20
-> > 'long' is 64bit on several architectures. This is not needed since =
-INT_MAX =B0mC
-> > is above the melting point of all known materials.
->=20
-> Can we do something like
->=20
-> typedef millicelsius_t int;
->=20
-> ...to document the units?
+On Thursday 23 July 2015 23:36:24 Belisko Marek wrote:
+> On Thu, Jul 23, 2015 at 11:15 PM, Pali Roh=C3=A1r <pali.rohar@gmail.c=
+om> wrote:
+> > On Thursday 23 July 2015 22:56:26 Belisko Marek wrote:
+> >> Hi Pali,
+> >>
+> >> On Thu, Jul 23, 2015 at 10:15 PM, Pali Roh=C3=A1r <pali.rohar@gmai=
+l.com>
+> >> wrote:
+> >> > On Thursday 23 July 2015 19:03:08 Andrew F. Davis wrote:
+> >> >> >> -#ifdef CONFIG_BATTERY_BQ27X00_I2C
+> >> >> >> -MODULE_ALIAS("i2c:bq27000-battery");
+> >> >> >> +#ifdef CONFIG_BATTERY_BQ27XXX_I2C
+> >> >> >> +MODULE_ALIAS("i2c:bq27xxx-battery");
+> >> >> >>
+> >> >> >>  #endif
+> >> >> >
+> >> >> > Why is this MODULE_ALIAS needed? Some lines upper there is
+> >> >> >
+> >> >> >  MODULE_DEVICE_TABLE(i2c, bq27xxx_id);
+> >> >> >
+> >> >> > which add proper i2c: module alias...
+> >> >>
+> >> >> Not sure, looks like it was added in commit
+> >> >> 8ebb7e9c1a502cfc300618c19c3c6f06fc76d237 which claims that the
+> >> >> "module won't get loaded automatically" without it, but I have =
+not
+> >> >> had this problem, so I'm not sure why it's there.
+> >> >
+> >> > git grep bq27000-battery show me that only one driver uses that
+> >> > name: drivers/w1/slaves/w1_bq27000.c
+> >> >
+> >> > And more over, it is platform device, not i2c device. So that
+> >> > commit 8ebb7e9c1a502cfc300618c19c3c6f06fc76d237 is wrong! CCing
+> >> > Marek.
+> >>
+> >> If you look to power/bq27x00 driver then there is I2C part and
+> >> platform part only
+> >> both selectable by config. In
+> >> 8ebb7e9c1a502cfc300618c19c3c6f06fc76d237 was added MODULE_ALIAS to
+> >> have this driver working as module for both buses. Even if I2C isn=
+'t
+> >> used anywhere
+> >> I add MODULE_ALIAS also for that.
+> >>
+> >> > MODULE_ALIAS("platform:bq27000-battery") is really needed for
+> >> > w1_bq27000.c but MODULE_ALIAS("i2c:bq27000-battery") should be
+> >> > removed. It is not used by any board platform code or DT.
+> >>
+> >> Not sure if it's good idea to remove it. Somebody outside can use =
+it.
+> >>
+> >> > Marek, correct me if I'm wrong.
+> >> >
+> >> > --
+> >> > Pali Roh=C3=A1r
+> >> > pali.rohar@gmail.com
+> >>
+> >> BR,
+> >>
+> >> marek
+> >
+> > Who, where any why is using alias i2c:bq27000-battery??
+> >
+> > It is obviously wrong to add that alias. MODULE_DEVICE_TABLE(i2c, .=
+=2E.
+> > macro automatically adds all MODULE_ALIASes for all i2c devices.
+> Hmm are you sure? I think it's not true if you look to include/linux/=
+module.h
+> Those 2 macros have completely other purposes.
 
-I am not very fond of typedefs and I am not sure this adds any value. I
-could change it when more people ask for it, but I just sent the new
-version without this.
+This is some magic which is generated to autogenerated c file when
+compiling driver as module. Look at output from modinfo bq27x00_battery
 
-Sascha
+Anyway, alias i2c:bq27000-battery is wrong and not only because it is
+added by MODULE_ALIAS but also because bq27000 chip is HDQ and not i2c.
+
+> >
+> > If there is such device with needs i2c:bq27000-battery is should be
+> > fixed to use i2c:bq27??? identifier exported by MODULE_DEVICE_TABLE=
+=2E
+> Look if you don't like it remove i2c part from driver and post patch.
+
+I'm for removing i2c part and it can be done as part of Andrew's cleanu=
+p
+patch.
+
+> But as I said
+> somebody can use it (not talking about vanilla tree).
+
+Then they should fix their code.
+
+> >
+> > git grep on kernel tree did not return anything, so there is no usa=
+ge.
+> >
+> > Of course alias for platform:bq27000-battery is needed.
+> >
+> > --
+> > Pali Roh=C3=A1r
+> > pali.rohar@gmail.com
+>=20
+> BR,
+>=20
+> marek
+>=20
+>=20
+>=20
 
 --=20
-Pengutronix e.K.                           |                           =
-  |
-Industrial Linux Solutions                 | http://www.pengutronix.de/=
-  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0  =
-  |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-555=
-5 |
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
