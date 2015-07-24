@@ -1,59 +1,39 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH 8/8] power: bq27xxx_battery: Cleanup health checking
-Date: Fri, 24 Jul 2015 22:53:37 +0200
-Message-ID: <201507242253.37997@pali>
-References: <1437601920-13045-1-git-send-email-afd@ti.com> <20150723162212.GI29125@pali> <55B29FBB.8080500@ti.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1490877.vom1oeGrgu";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <55B29FBB.8080500@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Sebastian Reichel <sre@kernel.org>
+Subject: [PATCH] MAINTAINERS: AVS is not maintained via power supply tree
+Date: Fri, 24 Jul 2015 23:11:28 +0200
+Message-ID: <1437772288-22825-1-git-send-email-sre@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ring0.de ([5.45.105.125]:47502 "EHLO ring0.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754552AbbGXVLu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 24 Jul 2015 17:11:50 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Kevin Hilman <khilman@kernel.org>, Nishanth Menon <nm@ti.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
---nextPart1490877.vom1oeGrgu
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+The adaptive voltage scaling framework is not maintained
+via the power supply tree and has its own entry in the
+MAINTAINERS file, so add an exception in the power supply
+entry.
 
-On Friday 24 July 2015 22:27:39 Andrew F. Davis wrote:
-> On 07/23/2015 11:22 AM, Pali Roh=C3=A1r wrote:
-> > On Wednesday 22 July 2015 16:52:00 Andrew F. Davis wrote:
-> >> +	/* Unlikely but important to return first */
-> >> +	if (bq27xxx_battery_overtemp(di, flags))
-> >> +		return POWER_SUPPLY_HEALTH_OVERHEAT;
-> >> +	if (bq27xxx_battery_undertemp(di, flags))
-> >> +		return POWER_SUPPLY_HEALTH_COLD;
-> >> +	if (bq27xxx_battery_dead(di, flags))
-> >> +		return POWER_SUPPLY_HEALTH_DEAD;
-> >=20
-> > Good candidates for "if (unlikely(...))" ?
->=20
-> I wasn't sure, but I don't see why not. Added.
->=20
+Signed-off-by: Sebastian Reichel <sre@kernel.org>
+---
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
 
-You wrote "Unlikely" in comment, so I thought that unlikely macro sounds=20
-reasonable here...
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 8133cef..243f76f 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -8049,6 +8049,7 @@ T:	git git://git.infradead.org/battery-2.6.git
+ S:	Maintained
+ F:	include/linux/power_supply.h
+ F:	drivers/power/
++X:	drivers/power/avs/
+ 
+ PNP SUPPORT
+ M:	"Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+-- 
+2.1.4
 
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
-
---nextPart1490877.vom1oeGrgu
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAlWypdEACgkQi/DJPQPkQ1LhdwCbBxfM9HbmGr5+YWQFjkhuJ9R9
-Hl4An3YzXUxF6QNw0Al5HwARJ3uyXhC7
-=TBaX
------END PGP SIGNATURE-----
-
---nextPart1490877.vom1oeGrgu--
