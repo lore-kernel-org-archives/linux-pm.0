@@ -1,128 +1,76 @@
-From: Michael Turquette <mturquette@baylibre.com>
-Subject: Re: [PATCH v3 1/4] clk: samsung: exynos5250: add cpu clock configuration
- data and instantiate cpu clock
-Date: Thu, 23 Jul 2015 17:39:18 -0700
-Message-ID: <20150724003918.642.78653@quantum>
-References: <1435756238-845-1-git-send-email-b.zolnierkie@samsung.com>
- <1435756238-845-2-git-send-email-b.zolnierkie@samsung.com>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: [PATCH v2] thermal: consistently use int for temperatures
+Date: Fri, 24 Jul 2015 01:31:36 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B9092631DD16EED@SHSMSX101.ccr.corp.intel.com>
+References: <1437463292-24844-1-git-send-email-s.hauer@pengutronix.de>
+ <9hhk2tteqb3.fsf@e105922-lin.cambridge.arm.com>
+ <744357E9AAD1214791ACBA4B0B9092630153E699@SHSMSX101.ccr.corp.intel.com>
+ <20150723103758.GI18700@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:36316 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752532AbbGXAjW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 20:39:22 -0400
-Received: by pachj5 with SMTP id hj5so4497735pac.3
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2015 17:39:22 -0700 (PDT)
-In-Reply-To: <1435756238-845-2-git-send-email-b.zolnierkie@samsung.com>
+Received: from mga03.intel.com ([134.134.136.65]:55830 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753333AbbGXBbp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 23 Jul 2015 21:31:45 -0400
+In-Reply-To: <20150723103758.GI18700@pengutronix.de>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Punit Agrawal <punit.agrawal@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jean Delvare <jdelvare@suse.de>, Peter Feuerer <peter@piie.net>, Heiko Stuebner <heiko@sntech.de>, Lukasz Majewski <l.majewski@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Ripard <maxime.ripard>
 
-Quoting Bartlomiej Zolnierkiewicz (2015-07-01 06:10:35)
-> From: Thomas Abraham <thomas.ab@samsung.com>
-> 
-> With the addition of the new Samsung specific cpu-clock type, the
-> arm clock can be represented as a cpu-clock type. Add the CPU clock
-> configuration data and instantiate the CPU clock type for Exynos5250.
-> 
-> Changes by Bartlomiej:
-> - split Exynos5250 support from the original patch
-> - moved E5250_CPU_DIV[0,1]() macros to clk-exynos5250.c
-> 
-> Cc: Tomasz Figa <tomasz.figa@gmail.com>
-> Cc: Michael Turquette <mturquette@baylibre.com>
-> Cc: Javier Martinez Canillas <javier@dowhile0.org>
-> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
-Acked-by: Michael Turquette <mturquette@baylibre.com>
-
-If Kukjin wants to merge this through the samsung tree then an immutable
-branch would be much appreciated.
-
-Regards,
-Mike
-
-> ---
->  drivers/clk/samsung/clk-exynos5250.c   | 31 +++++++++++++++++++++++++++++++
->  include/dt-bindings/clock/exynos5250.h |  1 +
->  2 files changed, 32 insertions(+)
-> 
-> diff --git a/drivers/clk/samsung/clk-exynos5250.c b/drivers/clk/samsung/clk-exynos5250.c
-> index 70ec3d2..d87f34d 100644
-> --- a/drivers/clk/samsung/clk-exynos5250.c
-> +++ b/drivers/clk/samsung/clk-exynos5250.c
-> @@ -19,6 +19,7 @@
->  #include <linux/syscore_ops.h>
->  
->  #include "clk.h"
-> +#include "clk-cpu.h"
->  
->  #define APLL_LOCK              0x0
->  #define APLL_CON0              0x100
-> @@ -748,6 +749,32 @@ static struct samsung_pll_clock exynos5250_plls[nr_plls] __initdata = {
->                 VPLL_LOCK, VPLL_CON0, NULL),
->  };
->  
-> +#define E5250_CPU_DIV0(apll, pclk_dbg, atb, periph, acp, cpud)         \
-> +               ((((apll) << 24) | ((pclk_dbg) << 20) | ((atb) << 16) | \
-> +                ((periph) << 12) | ((acp) << 8) | ((cpud) << 4)))
-> +#define E5250_CPU_DIV1(hpm, copy)                                      \
-> +               (((hpm) << 4) | (copy))
-> +
-> +static const struct exynos_cpuclk_cfg_data exynos5250_armclk_d[] __initconst = {
-> +       { 1700000, E5250_CPU_DIV0(5, 3, 7, 7, 7, 3), E5250_CPU_DIV1(2, 0), },
-> +       { 1600000, E5250_CPU_DIV0(4, 1, 7, 7, 7, 3), E5250_CPU_DIV1(2, 0), },
-> +       { 1500000, E5250_CPU_DIV0(4, 1, 7, 7, 7, 2), E5250_CPU_DIV1(2, 0), },
-> +       { 1400000, E5250_CPU_DIV0(4, 1, 6, 7, 7, 2), E5250_CPU_DIV1(2, 0), },
-> +       { 1300000, E5250_CPU_DIV0(3, 1, 6, 7, 7, 2), E5250_CPU_DIV1(2, 0), },
-> +       { 1200000, E5250_CPU_DIV0(3, 1, 5, 7, 7, 2), E5250_CPU_DIV1(2, 0), },
-> +       { 1100000, E5250_CPU_DIV0(3, 1, 5, 7, 7, 3), E5250_CPU_DIV1(2, 0), },
-> +       { 1000000, E5250_CPU_DIV0(2, 1, 4, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
-> +       {  900000, E5250_CPU_DIV0(2, 1, 4, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
-> +       {  800000, E5250_CPU_DIV0(2, 1, 4, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
-> +       {  700000, E5250_CPU_DIV0(1, 1, 3, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
-> +       {  600000, E5250_CPU_DIV0(1, 1, 3, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
-> +       {  500000, E5250_CPU_DIV0(1, 1, 2, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
-> +       {  400000, E5250_CPU_DIV0(1, 1, 2, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
-> +       {  300000, E5250_CPU_DIV0(1, 1, 1, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
-> +       {  200000, E5250_CPU_DIV0(1, 1, 1, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
-> +       {  0 },
-> +};
-> +
->  static const struct of_device_id ext_clk_match[] __initconst = {
->         { .compatible = "samsung,clock-xxti", .data = (void *)0, },
->         { },
-> @@ -797,6 +824,10 @@ static void __init exynos5250_clk_init(struct device_node *np)
->                         ARRAY_SIZE(exynos5250_div_clks));
->         samsung_clk_register_gate(ctx, exynos5250_gate_clks,
->                         ARRAY_SIZE(exynos5250_gate_clks));
-> +       exynos_register_cpu_clock(ctx, CLK_ARM_CLK, "armclk",
-> +                       mout_cpu_p[0], mout_cpu_p[1], 0x200,
-> +                       exynos5250_armclk_d, ARRAY_SIZE(exynos5250_armclk_d),
-> +                       CLK_CPU_HAS_DIV1);
->  
->         /*
->          * Enable arm clock down (in idle) and set arm divider
-> diff --git a/include/dt-bindings/clock/exynos5250.h b/include/dt-bindings/clock/exynos5250.h
-> index 4273891d..8183d1c 100644
-> --- a/include/dt-bindings/clock/exynos5250.h
-> +++ b/include/dt-bindings/clock/exynos5250.h
-> @@ -21,6 +21,7 @@
->  #define CLK_FOUT_CPLL          6
->  #define CLK_FOUT_EPLL          7
->  #define CLK_FOUT_VPLL          8
-> +#define CLK_ARM_CLK            9
->  
->  /* gate for special clocks (sclk) */
->  #define CLK_SCLK_CAM_BAYER     128
-> -- 
-> 1.9.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+QXMgdGhlIG9yaWdpbmFsIHBhdGNoIGhhcyBub3QgYmVlbiBpbiB1cHN0cmVhbSwgSSdkIHByZWZl
+ciBhIHJlZnJlc2hlZCBwYXRjaCwgcmF0aGVyIHRoYW4gYW4gaW5jcmVtZW50YWwgZml4Lg0KDQpU
+aGFua3MsDQpydWkNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTYXNj
+aGEgSGF1ZXIgW21haWx0bzpzLmhhdWVyQHBlbmd1dHJvbml4LmRlXQ0KPiBTZW50OiBUaHVyc2Rh
+eSwgSnVseSAyMywgMjAxNSA2OjM4IFBNDQo+IFRvOiBaaGFuZywgUnVpDQo+IENjOiBQdW5pdCBB
+Z3Jhd2FsOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IEVkdWFyZG8gVmFsZW50aW47IGxpbnV4
+LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBKZWFuIERlbHZhcmU7IFBldGVyIEZldWVyZXI7
+IEhlaWtvIFN0dWVibmVyOw0KPiBMdWthc3ogTWFqZXdza2k7IFN0ZXBoZW4gV2FycmVuOyBUaGll
+cnJ5IFJlZGluZzsgbGludXgtDQo+IGFjcGlAdmdlci5rZXJuZWwub3JnOyBwbGF0Zm9ybS1kcml2
+ZXIteDg2QHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJtLQ0KPiBrZXJuZWxAbGlzdHMuaW5mcmFk
+ZWFkLm9yZzsgbGludXgtb21hcEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXNhbXN1bmctDQo+IHNv
+Y0B2Z2VyLmtlcm5lbC5vcmc7IEd1ZW50ZXIgUm9lY2s7IFJhZmFlbCBKLiBXeXNvY2tpOyBNYXhp
+bWUgUmlwYXJkOw0KPiBEYXJyZW4gSGFydDsgbG0tc2Vuc29yc0BsbS1zZW5zb3JzLm9yZw0KPiBT
+dWJqZWN0OiBSZTogW1BBVENIIHYyXSB0aGVybWFsOiBjb25zaXN0ZW50bHkgdXNlIGludCBmb3Ig
+dGVtcGVyYXR1cmVzDQo+IEltcG9ydGFuY2U6IEhpZ2gNCj4gDQo+IEhpIFpoYW5nLA0KPiANCj4g
+T24gVHVlLCBKdWwgMjEsIDIwMTUgYXQgMDE6MzU6MzFQTSArMDAwMCwgWmhhbmcsIFJ1aSB3cm90
+ZToNCj4gPiA+ID4NCj4gPiBQYXRjaCBhcHBsaWVkLg0KPiANCj4gVGhhbmtzIGZvciBhcHBseWlu
+Zy4gSSBtaXNzZWQgdG8gY29udmVydCBhbm90aGVyIHBsYWNlLCBzbyB3ZSBnZXQgYSBuZXcNCj4g
+Y29tcGlsZXIgd2FybmluZy4gVGhlIGF0dGFjaGVkIHBhdGNoIGZpeGVzIHRoaXMgKHN1aXRhYmxl
+IGZvciBnaXQgcmViYXNlIC0tDQo+IGF1dG9zcXVhc2gpLiBQbGVhc2UgbGV0IG1lIGtub3cgaWYg
+eW91IGNhbiBoYW5kbGUgdGhpcyBvciBpZiB5b3UgcHJlZmVyIGEgbmV3DQo+IHBhdGNoIGluc3Rl
+YWQuDQo+IA0KPiBUaGFua3MNCj4gIFNhc2NoYQ0KPiANCj4gDQo+IC0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tODwtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+IA0K
+PiBGcm9tIDQ5MDdhN2MzMmZkMTZlYWY5ZjMxZDlmOTA0Mjc2YzlhMDE3NmI3MTcgTW9uIFNlcCAx
+NyAwMDowMDowMCAyMDAxDQo+IEZyb206IFNhc2NoYSBIYXVlciA8cy5oYXVlckBwZW5ndXRyb25p
+eC5kZT4NCj4gRGF0ZTogVGh1LCAyMyBKdWwgMjAxNSAxMjozMjozMSArMDIwMA0KPiBTdWJqZWN0
+OiBbUEFUQ0hdIGZpeHVwISB0aGVybWFsOiBjb25zaXN0ZW50bHkgdXNlIGludCBmb3IgdGVtcGVy
+YXR1cmVzDQo+IE1JTUUtVmVyc2lvbjogMS4wDQo+IENvbnRlbnQtVHlwZTogdGV4dC9wbGFpbjsg
+Y2hhcnNldD1VVEYtOA0KPiBDb250ZW50LVRyYW5zZmVyLUVuY29kaW5nOiA4Yml0DQo+IA0KPiBm
+aXhlczoNCj4gZHJpdmVycy9wb3dlci9jaGFyZ2VyLW1hbmFnZXIuYzogSW4gZnVuY3Rpb24NCj4g
+4oCYY21fZ2V0X2JhdHRlcnlfdGVtcGVyYXR1cmXigJk6DQo+IGRyaXZlcnMvcG93ZXIvY2hhcmdl
+ci1tYW5hZ2VyLmM6NjIyOjQ1OiB3YXJuaW5nOiBwYXNzaW5nIGFyZ3VtZW50IDIgb2YNCj4g4oCY
+dGhlcm1hbF96b25lX2dldF90ZW1w4oCZIGZyb20gaW5jb21wYXRpYmxlIHBvaW50ZXIgdHlwZQ0K
+PiAgICByZXQgPSB0aGVybWFsX3pvbmVfZ2V0X3RlbXAoY20tPnR6ZF9iYXR0LCAodW5zaWduZWQg
+bG9uZyAqKXRlbXApOw0KPiANCj4gU2lnbmVkLW9mZi1ieTogU2FzY2hhIEhhdWVyIDxzLmhhdWVy
+QHBlbmd1dHJvbml4LmRlPg0KPiAtLS0NCj4gIGRyaXZlcnMvcG93ZXIvY2hhcmdlci1tYW5hZ2Vy
+LmMgfCAyICstDQo+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24o
+LSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3Bvd2VyL2NoYXJnZXItbWFuYWdlci5jIGIv
+ZHJpdmVycy9wb3dlci9jaGFyZ2VyLQ0KPiBtYW5hZ2VyLmMgaW5kZXggMWMyMDJjYy4uOTA3Mjkz
+ZSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9wb3dlci9jaGFyZ2VyLW1hbmFnZXIuYw0KPiArKysg
+Yi9kcml2ZXJzL3Bvd2VyL2NoYXJnZXItbWFuYWdlci5jDQo+IEBAIC02MTksNyArNjE5LDcgQEAg
+c3RhdGljIGludCBjbV9nZXRfYmF0dGVyeV90ZW1wZXJhdHVyZShzdHJ1Y3QNCj4gY2hhcmdlcl9t
+YW5hZ2VyICpjbSwNCj4gDQo+ICAjaWZkZWYgQ09ORklHX1RIRVJNQUwNCj4gIAlpZiAoY20tPnR6
+ZF9iYXR0KSB7DQo+IC0JCXJldCA9IHRoZXJtYWxfem9uZV9nZXRfdGVtcChjbS0+dHpkX2JhdHQs
+ICh1bnNpZ25lZCBsb25nDQo+ICopdGVtcCk7DQo+ICsJCXJldCA9IHRoZXJtYWxfem9uZV9nZXRf
+dGVtcChjbS0+dHpkX2JhdHQsIHRlbXApOw0KPiAgCQlpZiAoIXJldCkNCj4gIAkJCS8qIENhbGli
+cmF0ZSB0ZW1wZXJhdHVyZSB1bml0ICovDQo+ICAJCQkqdGVtcCAvPSAxMDA7DQo+IC0tDQo+IDIu
+MS40DQo+IA0KPiANCj4gLS0NCj4gUGVuZ3V0cm9uaXggZS5LLiAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIHwgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwNCj4gSW5kdXN0cmlhbCBMaW51
+eCBTb2x1dGlvbnMgICAgICAgICAgICAgICAgIHwgaHR0cDovL3d3dy5wZW5ndXRyb25peC5kZS8g
+IHwNCj4gUGVpbmVyIFN0ci4gNi04LCAzMTEzNyBIaWxkZXNoZWltLCBHZXJtYW55IHwgUGhvbmU6
+ICs0OS01MTIxLTIwNjkxNy0wICAgIHwNCj4gQW10c2dlcmljaHQgSGlsZGVzaGVpbSwgSFJBIDI2
+ODYgICAgICAgICAgIHwgRmF4OiAgICs0OS01MTIxLTIwNjkxNy01NTU1IHwNCg==
