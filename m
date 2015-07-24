@@ -1,130 +1,74 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [RFCv5, 01/46] arm: Frequency invariant scheduler load-tracking
- support
-Date: Fri, 24 Jul 2015 10:43:28 +0100
-Message-ID: <20150724094327.GD21785@e105550-lin.cambridge.arm.com>
-References: <1436293469-25707-2-git-send-email-morten.rasmussen@arm.com>
- <20150721154145.GA23852@leoy-linaro>
- <20150722133103.GA21785@e105550-lin.cambridge.arm.com>
- <20150722145904.GA18354@leoy-linaro>
- <20150723110626.GC21785@e105550-lin.cambridge.arm.com>
- <20150723142216.GA21773@leoy-linaro>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCHv2 0/3] regmap: Use different lockdep class
+ for each regmap init call
+Date: Fri, 24 Jul 2015 11:32:47 +0100
+Message-ID: <20150724103247.GG11162@sirena.org.uk>
+References: <1436337018-32464-1-git-send-email-drinkcat@chromium.org>
+ <CANMq1KD8rOHjtWA1Eiw9GATdTeq1Ch4bga4ZAty26auvWyX7Og@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:43817 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753502AbbGXJkc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 24 Jul 2015 05:40:32 -0400
-Content-Disposition: inline
-In-Reply-To: <20150723142216.GA21773@leoy-linaro>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============9040278964220330294=="
+Return-path: <alsa-devel-bounces@alsa-project.org>
+In-Reply-To: <CANMq1KD8rOHjtWA1Eiw9GATdTeq1Ch4bga4ZAty26auvWyX7Og@mail.gmail.com>
+List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
+List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
+List-Post: <mailto:alsa-devel@alsa-project.org>
+List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
+List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
+Errors-To: alsa-devel-bounces@alsa-project.org
+Sender: alsa-devel-bounces@alsa-project.org
+To: Nicolas Boichat <drinkcat@chromium.org>
+Cc: alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>, Liviu Dudau <liviu.dudau@arm.com>, Liam Girdwood <lgirdwood@gmail.com>, Bard Liao <bardliao@realtek.com>, Lee Jones <lee.jones@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, linux-pm@vger.kernel.org, Antti Palosaari <crope@iki.fi>, Zhang Rui <rui.zhang@intel.com>, Anatol Pomozov <anatol.pomozov@gmail.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Eduardo Valentin <edubezval@gmail.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org, Maxime Coquelin <maxime.coquelin@st.com>, Oder Chiou <oder_chiou@realtek.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>, Ajit Pal Singh <ajitpal.singh@st.com>
 List-Id: linux-pm@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Russell King <linux@arm.linux.org.uk>
 
-On Thu, Jul 23, 2015 at 10:22:16PM +0800, Leo Yan wrote:
-> On Thu, Jul 23, 2015 at 12:06:26PM +0100, Morten Rasmussen wrote:
-> > Yes. We have patches for arm64 if you are interested. We are using them
-> > for the Juno platforms.
-> 
-> If convenience, please share with me related patches, so i can
-> directly apply them and do some profiling works.
 
-Will do.
+--===============9040278964220330294==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="cWQnRBNUz/XQASfL"
+Content-Disposition: inline
 
-> 
-> > > Just now roughly went through the driver
-> > > "drivers/cpufreq/intel_pstate.c"; that's true it has different
-> > > implementation comparing to usual ARM SoCs. So i'd like to ask this
-> > > question with another way: should cpufreq framework provides helper
-> > > functions for getting related cpu frequency scaling info? If the
-> > > architecture has specific performance counters then it can ignore
-> > > these helper functions.
-> > 
-> > That is the idea with the notifiers. If the architecture code a specific
-> > architecture wants to be poked by cpufreq when the frequency is changed
-> > it should have a way to subscribe to those. Another way of implementing
-> > it is to let the architecture code call a helper function in cpufreq
-> > every time the scheduler calls into the architecture code to get the
-> > scaling factor (arch_scale_freq_capacity()). We actually did it that way
-> > a couple of versions back using weak functions. It wasn't as clean as
-> > using the notifiers, but if we make the necessary changes to cpufreq to
-> > let the architecture code call into cpufreq that could be even better.
-> > 
-> > > 
-> > > > That said, the above solution is not handling changes to policy->max
-> > > > very well. Basically, we don't inform the scheduler if it has changed
-> > > > which means that the OPP represented by "100%" might change. We need
-> > > > cpufreq to keep track of the true max frequency when policy->max is
-> > > > changed to work out the correct scaling factor instead of having it
-> > > > relative to policy->max.
-> > > 
-> > > i'm not sure understand correctly here. For example, when thermal
-> > > framework limits the cpu frequency, it will update the value for
-> > > policy->max, so scheduler will get the correct scaling factor, right?
-> > > So i don't know what's the issue at here.
-> > > 
-> > > Further more, i noticed in the later patches for
-> > > arch_scale_cpu_capacity(); the cpu capacity is calculated by the
-> > > property passed by DT, so it's a static value. In some cases, system
-> > > may constraint the maximum frequency for CPUs, so in this case, will
-> > > scheduler get misknowledge from arch_scale_cpu_capacity after system
-> > > has imposed constraint for maximum frequency?
-> > 
-> > The issue is first of all to define what 100% means. Is it
-> > policy->cur/policy->max or policy->cur/uncapped_max? Where uncapped max
-> > is the max frequency supported by the hardware when not capped in any
-> > way by governors or thermal framework.
-> > 
-> > If we choose the first definition then we have to recalculate the cpu
-> > capacity scaling factor (arch_scale_cpu_capacity()) too whenever
-> > policy->max changes such that capacity_orig is updated appropriately.
-> > 
-> > The scale-invariance code in the scheduler assumes:
-> > 
-> > arch_scale_cpu_capacity()*arch_scale_freq_capacity() = current capacity
-> 
-> This is an important concept, thanks for the explaining.
 
-No problem, thanks for reviewing the patches.
+--cWQnRBNUz/XQASfL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> > ...and that capacity_orig = arch_scale_cpu_capacity() is the max
-> > available capacity. If we cap the frequency to say, 50%, by setting
-> > policy->max then we have to reduce arch_scale_cpu_capacity() to 50% to
-> > still get the right current capacity using the expression above.
-> > 
-> > Using the second definition arch_scale_cpu_capacity() can be a static
-> > value and arch_scale_freq_capacity() is always relative to uncapped_max.
-> > It seems simpler, but capacity_orig could then be an unavailable
-> > capacity and hence we would need to introduce a third capacity to track
-> > the current max capacity and use that for scheduling decisions.
-> > As you have already discovered the current code is a combination of both
-> > which is broken when policy->max is reduced.
-> > 
-> > Thinking more about it, I would suggest to go with the first definition.
-> > The scheduler doesn't need to know about currently unavailable compute
-> > capacity it should balance based on the current situation, so it seems
-> > to make sense to let capacity_orig reflect the current max capacity.
-> 
-> Agree.
-> 
-> > I would suggest that we fix arch_scale_cpu_capacity() to take
-> > policy->max changes into account. We need to know the uncapped max
-> > frequency somehow to do that. I haven't looked into if we can get that
-> > from cpufreq. Also, we need to make sure that no load-balance code
-> > assumes that cpus have a capacity of 1024.
-> 
-> Cpufreq framework provides API *cpufreq_quick_get_max()* and
-> *cpufreq_quick_get()* for inquiry current frequency and max frequency,
-> but i'm curious if these two functions can be directly called by
-> scheduler, due they acquire and release locks internally.
+On Thu, Jul 23, 2015 at 04:45:53PM +0800, Nicolas Boichat wrote:
 
-The arch_scale_{cpu,freq}_capacity() functions are called from contexts
-where blocking/sleeping is not allowed, so that rules out calling
-function that takes locks. We currently avoid that by using atomics.
+> What's the status of this series (and the additional documentation
+> fix: https://lkml.org/lkml/2015/7/8/385)?
 
-However, even if we had non-sleeping functions to call into cpufreq, we
-would still need some code in arch/* to make that call so it is only the
-variables storing the current frequencies that we can move into cpufreq.
-But it would naturally belong there, so I guess it is worth it.
+> Do we need acks from the mfd/vexpress and thermal maintainers?
+> (mfd/vexpress maintainers are Liviu Dudau, Sudeep Holla, and Lorenzo
+> Pieralisi, I'm less clear about thermal, maybe Eduardo Valentin?)
+
+Well, I was leaving it on the off chance someone would get round to
+looking at it yes.  I might get bored at some point since it's just
+mechanical changes outside of regmap.
+
+--cWQnRBNUz/XQASfL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJVshROAAoJECTWi3JdVIfQi+cH/3xKIYXsPgIvpmxhYmVqCRz/
+4Bcd8mID1EUzlAB5LLgUOJBeQKUrhZ/4QEdIkyJa1ZK3wlb1LSM9PRNtBdtnZl1/
+LTuKm2QdHz/kgybNCbTG6m9zM23UknN7icfm05PAqANzuN7nSm5Xqvkrc5GSpX9j
+EzkEm6RkEvjsN047GMAtf1elpfv8SbfVnTM9Vcjlo6uPUUfVJIYGg6Rn7PYLxIul
+MLBaYJ+MJdJJ05F+Vo3TDkQ5cUOxohQ8pUWn7PwAaPjg1ktaT45TmRRj6QswmC1m
+J01ASYbHET1f7JQNyAb6kDKtpONerm6HKgfXDxPHE5j4gSJVNk1qiwmxd9hjND4=
+=Gz38
+-----END PGP SIGNATURE-----
+
+--cWQnRBNUz/XQASfL--
+
+--===============9040278964220330294==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============9040278964220330294==--
