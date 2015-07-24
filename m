@@ -1,108 +1,103 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH] thermal/cpu_cooling: remove local cooling state variable
-Date: Fri, 24 Jul 2015 16:26:12 +0100
-Message-ID: <9hhegjxbmqz.fsf@e105922-lin.cambridge.arm.com>
-References: <1437516835-198750-1-git-send-email-radivoje.jovanovic@linux.intel.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: power_supply: Making "enum power_supply_type type" dynamic
+Date: Fri, 24 Jul 2015 17:26:47 +0200
+Message-ID: <20150724152647.GI27569@earth>
+References: <D854C92F57B1B347B57E531E78D05EAD578645A4@BGSMSX104.gar.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="IR1Y5IvQhrKgS4e6"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:44796 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753256AbbGXPZD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 11:25:03 -0400
-In-Reply-To: <1437516835-198750-1-git-send-email-radivoje.jovanovic@linux.intel.com>
-	(Radivoje Jovanovic's message of "Tue, 21 Jul 2015 15:13:55 -0700")
+Received: from mail.kernel.org ([198.145.29.136]:36802 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751895AbbGXP0v (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 24 Jul 2015 11:26:51 -0400
+Content-Disposition: inline
+In-Reply-To: <D854C92F57B1B347B57E531E78D05EAD578645A4@BGSMSX104.gar.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Radivoje Jovanovic <radivoje.jovanovic@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Radivoje Jovanovic <radivoje.jovanovic@intel.com>
+To: "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-Radivoje Jovanovic <radivoje.jovanovic@linux.intel.com> writes:
 
-> From: Radivoje Jovanovic <radivoje.jovanovic@intel.com>
+--IR1Y5IvQhrKgS4e6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Thu, Jul 02, 2015 at 05:56:17PM +0000, Pallala, Ramakrishna wrote:
+> Currently 'enum power_supply_type type' is part of 'struct
+> power_supply_desc' which is again defined as a 'const *' in
+> 'struct power_supply'
+>=20
+> Can we move the 'enum power_supply_type type' to 'struct
+> power_supply' itself?
+>=20
+> Rational behind this is, if you take any mobile or tablet device
+> it comes with one USB charging port but it can support multiple
+> charging cables like SDP, CDP and DCP etc.. So whenever we connect
+> any of these cables we need to adjust the charger parameters
+> accordingly.
 >
-> there is no need to keep local state variable. if another driver
-> changes the policy under our feet the cpu_cooling driver will
-> have the wrong state. Get current state from the policy directly instead
->
+> So the point here is, If we are using same physical charging port
+> and the same charger IC for setting up the charging we can have
+> one power supply class registration from the charger driver and
+> change the power supply type based on the cable detection at
+> runtime.
+>=20
+> The current implementation forces us to create multiple power
+> supply objects for each cable type which is not optimal as all
+> these objects set/get methods operate on the same set of
+> registers.
 
-Although the patch below looks good, it does add additional
-processing. I was wondering in what situation do you observe the
-problem $SUBJECT solves?
+Sounds legit. I would prefer not to modify all existing drivers, though.
+Instead of 'moving' the type field I suggest the following strategy:
 
-Presumably, the policy caps are tighter than those imposed by the cpu
-cooling device (cpufreq_thermal_notifier should take care of this).
+struct power_supply_desc {
+    ...
+    enum power_supply_type type;
+    ...
+}
 
-> Signed-off-by: Radivoje Jovanovic <radivoje.jovanovic@intel.com>
-> ---
->  drivers/thermal/cpu_cooling.c | 27 ++++++++++++++++++---------
->  1 file changed, 18 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 6509c61..94ba2da 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -66,8 +66,6 @@ struct power_table {
->   *	registered.
->   * @cool_dev: thermal_cooling_device pointer to keep track of the
->   *	registered cooling device.
-> - * @cpufreq_state: integer value representing the current state of cpufreq
-> - *	cooling	devices.
->   * @cpufreq_val: integer value representing the absolute value of the clipped
->   *	frequency.
->   * @max_level: maximum cooling level. One less than total number of valid
-> @@ -90,7 +88,6 @@ struct power_table {
->  struct cpufreq_cooling_device {
->  	int id;
->  	struct thermal_cooling_device *cool_dev;
-> -	unsigned int cpufreq_state;
->  	unsigned int cpufreq_val;
->  	unsigned int max_level;
->  	unsigned int *freq_table;	/* In descending order */
-> @@ -486,10 +483,19 @@ static int cpufreq_get_cur_state(struct thermal_cooling_device *cdev,
->  				 unsigned long *state)
->  {
->  	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
-> -
-> -	*state = cpufreq_device->cpufreq_state;
-> -
-> -	return 0;
-> +	struct cpufreq_policy policy;
-> +	struct cpumask *mask = &cpufreq_device->allowed_cpus;
-> +	unsigned int cpu = cpumask_any(mask);
-> +	unsigned int cur_state;
-> +
-> +	if (!cpufreq_get_policy(&policy, cpu)) {
-> +			cur_state = get_level(cpufreq_device, policy.max);
-> +			if (cur_state != THERMAL_CSTATE_INVALID) {
-> +				*state = cur_state;
-> +				return 0;
-> +			}
-> +	}
-> +	return -EINVAL;
->  }
->  
->  /**
-> @@ -508,17 +514,20 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
->  	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
->  	unsigned int cpu = cpumask_any(&cpufreq_device->allowed_cpus);
->  	unsigned int clip_freq;
-> +	unsigned long cur_state;
->  
->  	/* Request state should be less than max_level */
->  	if (WARN_ON(state > cpufreq_device->max_level))
->  		return -EINVAL;
->  
-> +	if (cpufreq_get_cur_state(cpufreq_device->cool_dev, &cur_state))
-> +		return -EINVAL;
-> +
->  	/* Check if the old cooling action is same as new cooling action */
-> -	if (cpufreq_device->cpufreq_state == state)
-> +	if (cur_state == state)
->  		return 0;
->  
->  	clip_freq = cpufreq_device->freq_table[state];
-> -	cpufreq_device->cpufreq_state = state;
->  	cpufreq_device->cpufreq_val = clip_freq;
->  
->  	cpufreq_update_policy(cpu);
+struct power_supply {
+    ...
+    enum power_supply_type type;
+    ...
+}
+
+struct power_supply * power_supply_register(...) {
+    ...
+    psy.type =3D psy_desc.type;
+    ...
+}
+
+This way chargers with static type, batteries, ... do not have
+to be changed at all and runtime changeable chargers have a
+nice default value.
+
+-- Sebastian
+
+--IR1Y5IvQhrKgS4e6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVslkvAAoJENju1/PIO/qaFpoP/2no838Qj3/O6X4CIki3zWod
+gbGClJFrRid0WrQ+cIEIJmsVmKHG1k9UojkJ36D9iWsEGdxkwOwgXv349j/ihRwg
+AkB3tTg6d8n/8+k+puTONX4czDIe+dSAcwiXYrComXlVPVVFJ3KMK4w8v6S0FbTI
+imJIMFHOgt560rYioQGXJmUiHICYmsu1+l+znNZXDLS/ojJE8sqrI1Yt7eKT4saN
+m7xLbDDeuFkmE3W/UHgM+JvlApZ9I4FrUaQV7EfKlhH3nI6YzzcVMTzdAhFwCGrC
+EYHIZDajoMAW5y7qnQ4BBzbfXyG+COYWHmHca8/evj9FUz5ElFKTVSMZzw6L7pW1
+zi3EZZ2LL16b2TCxFmdQ/af4ISKlgMjUonS/PYQwQC0V3U+0SDxetoYrGKdM80UN
+VckfQlGCftxBI0y9/5dPZNButctfZ6+G5y5qZbPH1GFD0GVQzV7KNzHu9lhJkMT7
+Vduf/VFScGVOV/N+0sZtgpcgAHxpoOfeYU3WiDmMz7sN9Jtfk1gitLUVMpyot9h8
+Is19Hp2eAa/aGC94UOMZvMeV594crsxw3lBijIS//kEbT+w1LeAhxO40BPfQ/mnk
+n3aUBYWHZlf0xMwHE2+zB3IzMwq9Du7AQ4GCsLIdWuNvoq545/xg8tmJ0TK0b+Ro
+CO2sybem9Mejkjv5OMLy
+=UMHS
+-----END PGP SIGNATURE-----
+
+--IR1Y5IvQhrKgS4e6--
