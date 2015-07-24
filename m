@@ -1,74 +1,110 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCHv2 0/3] regmap: Use different lockdep class
- for each regmap init call
-Date: Fri, 24 Jul 2015 11:32:47 +0100
-Message-ID: <20150724103247.GG11162@sirena.org.uk>
-References: <1436337018-32464-1-git-send-email-drinkcat@chromium.org>
- <CANMq1KD8rOHjtWA1Eiw9GATdTeq1Ch4bga4ZAty26auvWyX7Og@mail.gmail.com>
+From: Vaishali Thakkar <vthakkar1994@gmail.com>
+Subject: [PATCH] power_supply: Adjust devm usage
+Date: Fri, 24 Jul 2015 17:28:13 +0530
+Message-ID: <20150724115813.GA3004@vaishali-Ideapad-Z570>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============9040278964220330294=="
-Return-path: <alsa-devel-bounces@alsa-project.org>
-In-Reply-To: <CANMq1KD8rOHjtWA1Eiw9GATdTeq1Ch4bga4ZAty26auvWyX7Og@mail.gmail.com>
-List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
-List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
-List-Post: <mailto:alsa-devel@alsa-project.org>
-List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
-List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
-Errors-To: alsa-devel-bounces@alsa-project.org
-Sender: alsa-devel-bounces@alsa-project.org
-To: Nicolas Boichat <drinkcat@chromium.org>
-Cc: alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>, Liviu Dudau <liviu.dudau@arm.com>, Liam Girdwood <lgirdwood@gmail.com>, Bard Liao <bardliao@realtek.com>, Lee Jones <lee.jones@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, linux-pm@vger.kernel.org, Antti Palosaari <crope@iki.fi>, Zhang Rui <rui.zhang@intel.com>, Anatol Pomozov <anatol.pomozov@gmail.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Eduardo Valentin <edubezval@gmail.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org, Maxime Coquelin <maxime.coquelin@st.com>, Oder Chiou <oder_chiou@realtek.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>, Ajit Pal Singh <ajitpal.singh@st.com>
-List-Id: linux-pm@vger.kernel.org
-
-
---===============9040278964220330294==
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="cWQnRBNUz/XQASfL"
-Content-Disposition: inline
-
-
---cWQnRBNUz/XQASfL
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:33389 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752266AbbGXL6U (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 07:58:20 -0400
 Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Jul 23, 2015 at 04:45:53PM +0800, Nicolas Boichat wrote:
+Use devm_kasprintf instead of kasprintf. Also, remove various
+gotos by direct returns and drop unneeded label err_free_name.
 
-> What's the status of this series (and the additional documentation
-> fix: https://lkml.org/lkml/2015/7/8/385)?
+Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
+---
+ drivers/power/bq24735-charger.c | 25 ++++++++++---------------
+ 1 file changed, 10 insertions(+), 15 deletions(-)
 
-> Do we need acks from the mfd/vexpress and thermal maintainers?
-> (mfd/vexpress maintainers are Liviu Dudau, Sudeep Holla, and Lorenzo
-> Pieralisi, I'm less clear about thermal, maybe Eduardo Valentin?)
+diff --git a/drivers/power/bq24735-charger.c b/drivers/power/bq24735-charger.c
+index b017437..b2bb67e 100644
+--- a/drivers/power/bq24735-charger.c
++++ b/drivers/power/bq24735-charger.c
+@@ -267,8 +267,9 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 
+ 	name = (char *)charger->pdata->name;
+ 	if (!name) {
+-		name = kasprintf(GFP_KERNEL, "bq24735@%s",
+-				 dev_name(&client->dev));
++		name = devm_kasprintf(&client->dev, GFP_KERNEL,
++				      "bq24735@%s",
++				      dev_name(&client->dev));
+ 		if (!name) {
+ 			dev_err(&client->dev, "Failed to alloc device name\n");
+ 			return -ENOMEM;
+@@ -296,23 +297,21 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 	if (ret < 0) {
+ 		dev_err(&client->dev, "Failed to read manufacturer id : %d\n",
+ 			ret);
+-		goto err_free_name;
++		return ret;
+ 	} else if (ret != 0x0040) {
+ 		dev_err(&client->dev,
+ 			"manufacturer id mismatch. 0x0040 != 0x%04x\n", ret);
+-		ret = -ENODEV;
+-		goto err_free_name;
++		return -ENODEV;
+ 	}
+ 
+ 	ret = bq24735_read_word(client, BQ24735_DEVICE_ID);
+ 	if (ret < 0) {
+ 		dev_err(&client->dev, "Failed to read device id : %d\n", ret);
+-		goto err_free_name;
++		return ret;
+ 	} else if (ret != 0x000B) {
+ 		dev_err(&client->dev,
+ 			"device id mismatch. 0x000b != 0x%04x\n", ret);
+-		ret = -ENODEV;
+-		goto err_free_name;
++		return -ENODEV;
+ 	}
+ 
+ 	if (gpio_is_valid(charger->pdata->status_gpio)) {
+@@ -331,7 +330,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 	ret = bq24735_config_charger(charger);
+ 	if (ret < 0) {
+ 		dev_err(&client->dev, "failed in configuring charger");
+-		goto err_free_name;
++		return ret;
+ 	}
+ 
+ 	/* check for AC adapter presence */
+@@ -339,7 +338,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 		ret = bq24735_enable_charging(charger);
+ 		if (ret < 0) {
+ 			dev_err(&client->dev, "Failed to enable charging\n");
+-			goto err_free_name;
++			return ret;
+ 		}
+ 	}
+ 
+@@ -349,7 +348,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 		ret = PTR_ERR(charger->charger);
+ 		dev_err(&client->dev, "Failed to register power supply: %d\n",
+ 			ret);
+-		goto err_free_name;
++		return ret;
+ 	}
+ 
+ 	if (client->irq) {
+@@ -371,10 +370,6 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 	return 0;
+ err_unregister_supply:
+ 	power_supply_unregister(charger->charger);
+-err_free_name:
+-	if (name != charger->pdata->name)
+-		kfree(name);
+-
+ 	return ret;
+ }
+ 
+-- 
+1.9.1
 
-Well, I was leaving it on the off chance someone would get round to
-looking at it yes.  I might get bored at some point since it's just
-mechanical changes outside of regmap.
-
---cWQnRBNUz/XQASfL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJVshROAAoJECTWi3JdVIfQi+cH/3xKIYXsPgIvpmxhYmVqCRz/
-4Bcd8mID1EUzlAB5LLgUOJBeQKUrhZ/4QEdIkyJa1ZK3wlb1LSM9PRNtBdtnZl1/
-LTuKm2QdHz/kgybNCbTG6m9zM23UknN7icfm05PAqANzuN7nSm5Xqvkrc5GSpX9j
-EzkEm6RkEvjsN047GMAtf1elpfv8SbfVnTM9Vcjlo6uPUUfVJIYGg6Rn7PYLxIul
-MLBaYJ+MJdJJ05F+Vo3TDkQ5cUOxohQ8pUWn7PwAaPjg1ktaT45TmRRj6QswmC1m
-J01ASYbHET1f7JQNyAb6kDKtpONerm6HKgfXDxPHE5j4gSJVNk1qiwmxd9hjND4=
-=Gz38
------END PGP SIGNATURE-----
-
---cWQnRBNUz/XQASfL--
-
---===============9040278964220330294==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-
---===============9040278964220330294==--
