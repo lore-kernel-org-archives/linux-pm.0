@@ -1,62 +1,46 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power/ltc2941-battery-gauge.c: Use the devicetree node
- name as supply name
-Date: Fri, 24 Jul 2015 16:54:49 +0200
-Message-ID: <20150724145449.GF27569@earth>
-References: <1435743653-13967-1-git-send-email-mike.looijmans@topic.nl>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3 1/4] ARM: dts: Add binding documentation
+ for AXP20x pmic usb power supply
+Date: Fri, 24 Jul 2015 16:59:28 +0200
+Message-ID: <20150724145928.GG27569@earth>
+References: <1435316357-26606-1-git-send-email-hdegoede@redhat.com>
+Reply-To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="8TaQrIeukR7mmbKf"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:34327 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751071AbbGXOyx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 24 Jul 2015 10:54:53 -0400
+	protocol="application/pgp-signature"; boundary="c7hkjup166d4FzgN"
+Return-path: <linux-sunxi+bncBDXMLNOH5ANRBVFFZGWQKGQE57KFNSY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1435743653-13967-1-git-send-email-mike.looijmans@topic.nl>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1435316357-26606-1-git-send-email-hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Looijmans <mike.looijmans@topic.nl>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-
---8TaQrIeukR7mmbKf
-Content-Type: text/plain; charset=us-ascii
+--c7hkjup166d4FzgN
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
 
 Hi,
 
-On Wed, Jul 01, 2015 at 11:40:53AM +0200, Mike Looijmans wrote:
-> Make it possible to set the name of the supply from the devicetree.
-> Like other power supply drivers just use the node name. This makes
-> the code smaller as well, as it doesn't need to allocate memory to
-> hold the name and allocate a unique ID.
-
-Thanks, queued. It also fixes the missing idr_remove and kfree in
-ltc294x_i2c_remove(), btw.
+On Fri, Jun 26, 2015 at 12:59:14PM +0200, Hans de Goede wrote:
+> Add binding documentation for the usb power supply part of the AXP20x pmic.
+> [...]
+> +Example:
+> +
+> [...]
+> +
+> +	usb_power_supply: usb_power_supply {
+                      ^^^^^^^^^^^^^^^^
+                      use usb-power-supply here.
+> +		compatible = "x-powers,axp202-usb-power-supply";
+> +	};
+> +};
 
 -- Sebastian
-
---8TaQrIeukR7mmbKf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVslG5AAoJENju1/PIO/qaw2QP+wcGv3rMfwHr6Kd+Gbrkq20K
-8uhSkfccowi94Oclqw+BfzW1n+daS4vaV6cCyDUMYex5VRDlmk/qigGHxreh8EWM
-A7HZSmX6bY4sZUTKZkM/FuB+Ywy9X76ggLKksV66PXMausHbrPYf6iel2RzDkwrO
-EKMYqIWcm/qt57b5Eff+TSzm+gowAl3XhnV8a37aN6iLVSIIj0pKcZB0Yb4Xhjcz
-HIWBXvEnOsIN1IvhPDq12AgZLMW63ERxwBTqfL7rpfxZXD/dynNMiiZWb9szROoA
-muIeUdTKJoefHhgtR16OfdmeL5OtiRXHf6wzBeN8z2J97EwJTkQcxDFVnauo2WvO
-POgMdT/RrXbzP3Nrs0oXbZ/R1VbtQ3jnUM7pesfmN9neyjwXhg/+gLtDA95FHoyH
-NFRV/IHsXChQ/NJoXaAHe18oUW5Sk1vLK62ZQ3W3cJjGxi0lJav+Ln9PVUbL+H3z
-Vb2BkH2lgoU4QrOH2xYfjs+QEDEK4ksn8V2U8UMzyGuQ8sNIjfjZ8P3q3stGSQIE
-bUMr91G7F7oIKcPF0UPRkfwe9x4Nz6QkmpxU8IVkdn+T9OVuLDLGgyhwg/5+4AtW
-cXX0zgZwX+6pG7dPObrsFMENMPu0gQ70VQJ+YQ/dGDQ0MXqeh27hedy0hud9hV8h
-TrCFSrP9jXHCIv0HXUfF
-=x8Sj
------END PGP SIGNATURE-----
-
---8TaQrIeukR7mmbKf--
+--c7hkjup166d4FzgN--
