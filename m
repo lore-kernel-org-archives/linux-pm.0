@@ -1,58 +1,50 @@
 From: Vaishali Thakkar <vthakkar1994@gmail.com>
 Subject: Re: [PATCH] power_supply: Adjust devm usage
-Date: Fri, 24 Jul 2015 18:03:38 +0530
-Message-ID: <CAK-LDbKk5wYAKVJ9eE5Kr6iOW1ah6VxAxBWcZjbufHp8WZXW=g@mail.gmail.com>
+Date: Fri, 24 Jul 2015 18:05:35 +0530
+Message-ID: <CAK-LDbKzzNGvRs7GNi9vNT5wP+zV0PfJtWbg622h5vS4HYLThg@mail.gmail.com>
 References: <20150724115813.GA3004@vaishali-Ideapad-Z570>
-	<20150724122622.GA22105@earth>
+	<CAH6sp9MXP2=naPtovJTrTAm9SgGcG5qZQs+ee34YPQ4t1mbi0w@mail.gmail.com>
+	<CAJKOXPd+6jqQ-+kJSAmHqH=OLnELQ9k6WyZiTz2ZaYRNdfUAHg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f173.google.com ([209.85.212.173]:37640 "EHLO
-	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751833AbbGXMdj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 08:33:39 -0400
-In-Reply-To: <20150724122622.GA22105@earth>
+Received: from mail-wi0-f181.google.com ([209.85.212.181]:37205 "EHLO
+	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750769AbbGXMfg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 08:35:36 -0400
+In-Reply-To: <CAJKOXPd+6jqQ-+kJSAmHqH=OLnELQ9k6WyZiTz2ZaYRNdfUAHg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Frans Klaver <fransklaver@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Fri, Jul 24, 2015 at 5:56 PM, Sebastian Reichel <sre@kernel.org> wrote:
-> Hi,
+On Fri, Jul 24, 2015 at 5:59 PM, Krzysztof Kozlowski
+<k.kozlowski@samsung.com> wrote:
+> 2015-07-24 21:17 GMT+09:00 Frans Klaver <fransklaver@gmail.com>:
+>> Hi,
 
 Hi
 
-> Thanks for the cleanup patch.
-> I have a couple of comments inlined.
->
->> Subject: Re: [PATCH] power_supply: Adjust devm usage
->
-> Please make this "power_supply: bq24735: ...".
+>> On Fri, Jul 24, 2015 at 1:58 PM, Vaishali Thakkar
+>> <vthakkar1994@gmail.com> wrote:
+>>> Use devm_kasprintf instead of kasprintf. Also, remove various
+>>> gotos by direct returns and drop unneeded label err_free_name.
+>>
+>> If there's to be a respin, reword this so that it becomes clearer that
+>> removing the various gotos and the label is an effect of using
+>> devm_kasprintf here. I started out thinking that this patch did two
+>> things.
 
-Ok. Sure.
+Ok. Sure. I will change the commit log.
 
-> On Fri, Jul 24, 2015 at 05:28:13PM +0530, Vaishali Thakkar wrote:
->> Use devm_kasprintf instead of kasprintf. Also, remove various
->> gotos by direct returns and drop unneeded label err_free_name.
->
-> Please also use devm_power_supply_unregister() instead
-> of power_supply_unregister() to further simplify the driver.
+> And please put a driver prefix in the subject (like in rest of
+> commits). Beside of that:
+> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
 Ok.
 
->> @@ -267,8 +267,9 @@ static int bq24735_charger_probe() {}
->> [...]
->
-> Your patch is missing removal of the
-> kfree(charger->charger_desc.name) in bq24735_charger_remove().
-
-Yes. Because it seems that this kfree is freeing some other data which
-is not related to devm_kzalloc. I was not sure about removing it.
-So, I was about to discuss it in a separate thread. Also, in the remove function
-we have devm_free_irq. I am unsure it too. Because normally remove functions
-do not use devm counterparts.
-
-> -- Sebastian
+> Best regards,
+> Krzysztof
 
 
 
