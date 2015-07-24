@@ -1,65 +1,41 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH] PM / Domains: Return -EPROBE_DEFER if we fail to init or turn-on domain
-Date: Fri, 24 Jul 2015 22:04:54 +0200
-Message-ID: <13712803.ErFak1Toxn@vostro.rjw.lan>
-References: <1434649967-21135-1-git-send-email-jonathanh@nvidia.com> <55A3B7E0.8040401@nvidia.com> <55B239C6.2010003@nvidia.com>
+Subject: Re: [RFC PATCH 00/16] Signature verification of hibernate snapshot
+Date: Fri, 24 Jul 2015 22:08:49 +0200
+Message-ID: <7508149.lVtoIPoiay@vostro.rjw.lan>
+References: <1437056730-15247-1-git-send-email-jlee@suse.com> <alpine.LNX.2.00.1507241527410.1141@pobox.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59901 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:43582 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753632AbbGXTiE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 15:38:04 -0400
-In-Reply-To: <55B239C6.2010003@nvidia.com>
+	with SMTP id S1750934AbbGXTl7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 15:41:59 -0400
+In-Reply-To: <alpine.LNX.2.00.1507241527410.1141@pobox.suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Jiri Kosina <jkosina@suse.com>, Matt Fleming <matt.fleming@intel.com>
+Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <matthew.garrett@nebula.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>, "Lee, Chun-Yi" <jlee@suse.com>
 
-On Friday, July 24, 2015 02:12:38 PM Jon Hunter wrote:
+On Friday, July 24, 2015 07:08:18 PM Jiri Kosina wrote:
+> On Thu, 16 Jul 2015, Lee, Chun-Yi wrote:
 > 
-> On 13/07/15 14:06, Jon Hunter wrote:
-> > 
-> > On 24/06/15 11:18, Ulf Hansson wrote:
-> >> On 18 June 2015 at 19:52, Jon Hunter <jonathanh@nvidia.com> wrote:
-> >>> When a device is probed, the function dev_pm_domain_attach() is called
-> >>> to see if there is a power-domain that is associated with the device and
-> >>> needs to be turned on. If dev_pm_domain_attach() does not return
-> >>> -EPROBE_DEFER then the device will be probed.
-> >>>
-> >>> For devices using genpd, dev_pm_domain_attach() will call
-> >>> genpd_dev_pm_attach(). If genpd_dev_pm_attach() does not find a power
-> >>> domain associated with the device then it returns an error code not
-> >>> equal to -EPROBE_DEFER to allow the device to be probed. However, if
-> >>> genpd_dev_pm_attach() does find a power-domain that is associated with
-> >>> the device, then it does not return -EPROBE_DEFER on failure and hence
-> >>> the device will still be probed. Furthermore, genpd_dev_pm_attach() does
-> >>> not check the error code returned by pm_genpd_poweron() to see if the
-> >>> power-domain was turned on successfully.
-> >>>
-> >>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-> >>
-> >> This is a clear improvement for genpd and as a short-term solution I
-> >> am fine with this!
-> >>
-> >> The long term solution should be to implement the
-> >> pm_domain->activate|dismiss() callbacks, but that requires a bigger
-> >> effort.
-> >>
-> >> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
-> > 
-> > Thanks Ulf.
-> > 
-> > Kevin, Rafael, are you ok with this?
+> > This patchset is the implementation of signature verification of hibernate
+> > snapshot image. The origin idea is from Jiri Kosina: Let EFI bootloader
+> > generate key-pair in UEFI secure boot environment, then forward it to kernel
+> > for sign/verify hibernate image.
 > 
-> I have still not heard back about this.
+> I've finally managed to fully go through the series and test it on my 
+> secure boot testing setup.
 > 
-> Ulf, not sure if you can help here.
+> 	Reviewed-by: Jiri Kosina <jkosina@suse.com>
+> 	Tested-by: Jiri Kosina <jkosina@suse.com>
+> 
+> for the whole series. Thanks,
 
-Well, if you want me to pick up a patch, please don't send it as an RFC.
+Thanks Jiri, much appreciated!
 
-Can you please resend it with the Ulf's ACK?
+I'd like to hear from Matt, though, and it looks like Ingo han't been CCed ...
 
 Thanks,
 Rafael
