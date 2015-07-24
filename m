@@ -1,122 +1,128 @@
-From: Belisko Marek <marek.belisko@gmail.com>
-Subject: Re: [PATCH 5/8] power: bq27x00_battery: Renaming for consistency
-Date: Thu, 23 Jul 2015 23:36:24 +0200
-Message-ID: <CAAfyv35qsZzfWuJxgLbii_05Za6X3zcPgrt9hhHDoGnAoeWKpw@mail.gmail.com>
-References: <1437601920-13045-1-git-send-email-afd@ti.com>
-	<201507232215.35603@pali>
-	<CAAfyv342rHGazCqZ19oYfwR5E2NO65VhhstXBHdDVfjd7USbFQ@mail.gmail.com>
-	<201507232315.16467@pali>
+From: Michael Turquette <mturquette@baylibre.com>
+Subject: Re: [PATCH v3 1/4] clk: samsung: exynos5250: add cpu clock configuration
+ data and instantiate cpu clock
+Date: Thu, 23 Jul 2015 17:39:18 -0700
+Message-ID: <20150724003918.642.78653@quantum>
+References: <1435756238-845-1-git-send-email-b.zolnierkie@samsung.com>
+ <1435756238-845-2-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:33777 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753682AbbGWVgZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 17:36:25 -0400
-In-Reply-To: <201507232315.16467@pali>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:36316 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752532AbbGXAjW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 20:39:22 -0400
+Received: by pachj5 with SMTP id hj5so4497735pac.3
+        for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2015 17:39:22 -0700 (PDT)
+In-Reply-To: <1435756238-845-2-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>
-Cc: "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 
-On Thu, Jul 23, 2015 at 11:15 PM, Pali Roh=C3=A1r <pali.rohar@gmail.com=
-> wrote:
-> On Thursday 23 July 2015 22:56:26 Belisko Marek wrote:
->> Hi Pali,
->>
->> On Thu, Jul 23, 2015 at 10:15 PM, Pali Roh=C3=A1r <pali.rohar@gmail.=
-com>
->> wrote:
->> > On Thursday 23 July 2015 19:03:08 Andrew F. Davis wrote:
->> >> >> -#ifdef CONFIG_BATTERY_BQ27X00_I2C
->> >> >> -MODULE_ALIAS("i2c:bq27000-battery");
->> >> >> +#ifdef CONFIG_BATTERY_BQ27XXX_I2C
->> >> >> +MODULE_ALIAS("i2c:bq27xxx-battery");
->> >> >>
->> >> >>  #endif
->> >> >
->> >> > Why is this MODULE_ALIAS needed? Some lines upper there is
->> >> >
->> >> >  MODULE_DEVICE_TABLE(i2c, bq27xxx_id);
->> >> >
->> >> > which add proper i2c: module alias...
->> >>
->> >> Not sure, looks like it was added in commit
->> >> 8ebb7e9c1a502cfc300618c19c3c6f06fc76d237 which claims that the
->> >> "module won't get loaded automatically" without it, but I have no=
-t
->> >> had this problem, so I'm not sure why it's there.
->> >
->> > git grep bq27000-battery show me that only one driver uses that
->> > name: drivers/w1/slaves/w1_bq27000.c
->> >
->> > And more over, it is platform device, not i2c device. So that
->> > commit 8ebb7e9c1a502cfc300618c19c3c6f06fc76d237 is wrong! CCing
->> > Marek.
->>
->> If you look to power/bq27x00 driver then there is I2C part and
->> platform part only
->> both selectable by config. In
->> 8ebb7e9c1a502cfc300618c19c3c6f06fc76d237 was added MODULE_ALIAS to
->> have this driver working as module for both buses. Even if I2C isn't
->> used anywhere
->> I add MODULE_ALIAS also for that.
->>
->> > MODULE_ALIAS("platform:bq27000-battery") is really needed for
->> > w1_bq27000.c but MODULE_ALIAS("i2c:bq27000-battery") should be
->> > removed. It is not used by any board platform code or DT.
->>
->> Not sure if it's good idea to remove it. Somebody outside can use it=
-=2E
->>
->> > Marek, correct me if I'm wrong.
->> >
->> > --
->> > Pali Roh=C3=A1r
->> > pali.rohar@gmail.com
->>
->> BR,
->>
->> marek
->
-> Who, where any why is using alias i2c:bq27000-battery??
->
-> It is obviously wrong to add that alias. MODULE_DEVICE_TABLE(i2c, ...
-> macro automatically adds all MODULE_ALIASes for all i2c devices.
-Hmm are you sure? I think it's not true if you look to include/linux/mo=
-dule.h
-Those 2 macros have completely other purposes.
->
-> If there is such device with needs i2c:bq27000-battery is should be
-> fixed to use i2c:bq27??? identifier exported by MODULE_DEVICE_TABLE.
-Look if you don't like it remove i2c part from driver and post patch.
-But as I said
-somebody can use it (not talking about vanilla tree).
->
-> git grep on kernel tree did not return anything, so there is no usage=
-=2E
->
-> Of course alias for platform:bq27000-battery is needed.
->
+Quoting Bartlomiej Zolnierkiewicz (2015-07-01 06:10:35)
+> From: Thomas Abraham <thomas.ab@samsung.com>
+> 
+> With the addition of the new Samsung specific cpu-clock type, the
+> arm clock can be represented as a cpu-clock type. Add the CPU clock
+> configuration data and instantiate the CPU clock type for Exynos5250.
+> 
+> Changes by Bartlomiej:
+> - split Exynos5250 support from the original patch
+> - moved E5250_CPU_DIV[0,1]() macros to clk-exynos5250.c
+> 
+> Cc: Tomasz Figa <tomasz.figa@gmail.com>
+> Cc: Michael Turquette <mturquette@baylibre.com>
+> Cc: Javier Martinez Canillas <javier@dowhile0.org>
+> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+
+Acked-by: Michael Turquette <mturquette@baylibre.com>
+
+If Kukjin wants to merge this through the samsung tree then an immutable
+branch would be much appreciated.
+
+Regards,
+Mike
+
+> ---
+>  drivers/clk/samsung/clk-exynos5250.c   | 31 +++++++++++++++++++++++++++++++
+>  include/dt-bindings/clock/exynos5250.h |  1 +
+>  2 files changed, 32 insertions(+)
+> 
+> diff --git a/drivers/clk/samsung/clk-exynos5250.c b/drivers/clk/samsung/clk-exynos5250.c
+> index 70ec3d2..d87f34d 100644
+> --- a/drivers/clk/samsung/clk-exynos5250.c
+> +++ b/drivers/clk/samsung/clk-exynos5250.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/syscore_ops.h>
+>  
+>  #include "clk.h"
+> +#include "clk-cpu.h"
+>  
+>  #define APLL_LOCK              0x0
+>  #define APLL_CON0              0x100
+> @@ -748,6 +749,32 @@ static struct samsung_pll_clock exynos5250_plls[nr_plls] __initdata = {
+>                 VPLL_LOCK, VPLL_CON0, NULL),
+>  };
+>  
+> +#define E5250_CPU_DIV0(apll, pclk_dbg, atb, periph, acp, cpud)         \
+> +               ((((apll) << 24) | ((pclk_dbg) << 20) | ((atb) << 16) | \
+> +                ((periph) << 12) | ((acp) << 8) | ((cpud) << 4)))
+> +#define E5250_CPU_DIV1(hpm, copy)                                      \
+> +               (((hpm) << 4) | (copy))
+> +
+> +static const struct exynos_cpuclk_cfg_data exynos5250_armclk_d[] __initconst = {
+> +       { 1700000, E5250_CPU_DIV0(5, 3, 7, 7, 7, 3), E5250_CPU_DIV1(2, 0), },
+> +       { 1600000, E5250_CPU_DIV0(4, 1, 7, 7, 7, 3), E5250_CPU_DIV1(2, 0), },
+> +       { 1500000, E5250_CPU_DIV0(4, 1, 7, 7, 7, 2), E5250_CPU_DIV1(2, 0), },
+> +       { 1400000, E5250_CPU_DIV0(4, 1, 6, 7, 7, 2), E5250_CPU_DIV1(2, 0), },
+> +       { 1300000, E5250_CPU_DIV0(3, 1, 6, 7, 7, 2), E5250_CPU_DIV1(2, 0), },
+> +       { 1200000, E5250_CPU_DIV0(3, 1, 5, 7, 7, 2), E5250_CPU_DIV1(2, 0), },
+> +       { 1100000, E5250_CPU_DIV0(3, 1, 5, 7, 7, 3), E5250_CPU_DIV1(2, 0), },
+> +       { 1000000, E5250_CPU_DIV0(2, 1, 4, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
+> +       {  900000, E5250_CPU_DIV0(2, 1, 4, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
+> +       {  800000, E5250_CPU_DIV0(2, 1, 4, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
+> +       {  700000, E5250_CPU_DIV0(1, 1, 3, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
+> +       {  600000, E5250_CPU_DIV0(1, 1, 3, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
+> +       {  500000, E5250_CPU_DIV0(1, 1, 2, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
+> +       {  400000, E5250_CPU_DIV0(1, 1, 2, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
+> +       {  300000, E5250_CPU_DIV0(1, 1, 1, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
+> +       {  200000, E5250_CPU_DIV0(1, 1, 1, 7, 7, 1), E5250_CPU_DIV1(2, 0), },
+> +       {  0 },
+> +};
+> +
+>  static const struct of_device_id ext_clk_match[] __initconst = {
+>         { .compatible = "samsung,clock-xxti", .data = (void *)0, },
+>         { },
+> @@ -797,6 +824,10 @@ static void __init exynos5250_clk_init(struct device_node *np)
+>                         ARRAY_SIZE(exynos5250_div_clks));
+>         samsung_clk_register_gate(ctx, exynos5250_gate_clks,
+>                         ARRAY_SIZE(exynos5250_gate_clks));
+> +       exynos_register_cpu_clock(ctx, CLK_ARM_CLK, "armclk",
+> +                       mout_cpu_p[0], mout_cpu_p[1], 0x200,
+> +                       exynos5250_armclk_d, ARRAY_SIZE(exynos5250_armclk_d),
+> +                       CLK_CPU_HAS_DIV1);
+>  
+>         /*
+>          * Enable arm clock down (in idle) and set arm divider
+> diff --git a/include/dt-bindings/clock/exynos5250.h b/include/dt-bindings/clock/exynos5250.h
+> index 4273891d..8183d1c 100644
+> --- a/include/dt-bindings/clock/exynos5250.h
+> +++ b/include/dt-bindings/clock/exynos5250.h
+> @@ -21,6 +21,7 @@
+>  #define CLK_FOUT_CPLL          6
+>  #define CLK_FOUT_EPLL          7
+>  #define CLK_FOUT_VPLL          8
+> +#define CLK_ARM_CLK            9
+>  
+>  /* gate for special clocks (sclk) */
+>  #define CLK_SCLK_CAM_BAYER     128
+> -- 
+> 1.9.1
+> 
 > --
-> Pali Roh=C3=A1r
-> pali.rohar@gmail.com
-
-BR,
-
-marek
-
-
-
---=20
-as simple and primitive as possible
--------------------------------------------------
-Marek Belisko - OPEN-NANDRA
-=46reelance Developer
-
-Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
-Tel: +421 915 052 184
-skype: marekwhite
-twitter: #opennandra
-web: http://open-nandra.com
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
