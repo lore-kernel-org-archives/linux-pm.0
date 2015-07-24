@@ -1,53 +1,58 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: Separate CPU device removal from CPU online
-Date: Fri, 24 Jul 2015 07:49:16 +0530
-Message-ID: <20150724021916.GA11315@linux>
-References: <7868353.pEStq1MJ2a@vostro.rjw.lan>
- <15986005.VczafT3nkj@vostro.rjw.lan>
- <20150723063942.GF5322@linux>
- <1532128.uWbA5iRc7E@vostro.rjw.lan>
+From: Kukjin Kim <kgene@kernel.org>
+Subject: Re: [PATCH v3 1/4] clk: samsung: exynos5250: add cpu clock configuration
+ data and instantiate cpu clock
+Date: Fri, 24 Jul 2015 12:48:37 +0900
+Message-ID: <55B1B595.4040906@kernel.org>
+References: <1435756238-845-1-git-send-email-b.zolnierkie@samsung.com> <1435756238-845-2-git-send-email-b.zolnierkie@samsung.com> <20150724003918.642.78653@quantum>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f182.google.com ([209.85.192.182]:36231 "EHLO
-	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752899AbbGXCTV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jul 2015 22:19:21 -0400
-Received: by pdjr16 with SMTP id r16so5602310pdj.3
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jul 2015 19:19:21 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1532128.uWbA5iRc7E@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20150724003918.642.78653@quantum>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Michael Turquette <mturquette@baylibre.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
 
-On 23-07-15, 22:56, Rafael J. Wysocki wrote:
-> > > +	if (policy && policy->kobj_cpu != cpu) {
-> > 
-> > Why are you comparing cpu against kobj_cpu ? I don't think it can ever
-> > be false.
-
-So what I meant was that the expression 'policy->kobj_cpu != cpu' will
-never return 'false'. Because policy->kobj_cpu is going to get set to
-the cpu for which we allocated the policy. And so it wouldn't match
-for any other CPU.
-
-> It can.  When we're adding a CPU that has a policy already, because it is
-> "related" to a previously registered CPU.
-
-In this case also the expression will return true.
-
-> > > +		ret = sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
-> > > +		if (ret) {
-> > > +			dev_dbg(dev, "%s: Failed to create link (%d)\n",
-> > 
-> > dev_err
+On 07/24/15 09:39, Michael Turquette wrote:
+> Quoting Bartlomiej Zolnierkiewicz (2015-07-01 06:10:35)
+>> From: Thomas Abraham <thomas.ab@samsung.com>
+>>
+>> With the addition of the new Samsung specific cpu-clock type, the
+>> arm clock can be represented as a cpu-clock type. Add the CPU clock
+>> configuration data and instantiate the CPU clock type for Exynos5250.
+>>
+>> Changes by Bartlomiej:
+>> - split Exynos5250 support from the original patch
+>> - moved E5250_CPU_DIV[0,1]() macros to clk-exynos5250.c
+>>
+>> Cc: Tomasz Figa <tomasz.figa@gmail.com>
+>> Cc: Michael Turquette <mturquette@baylibre.com>
+>> Cc: Javier Martinez Canillas <javier@dowhile0.org>
+>> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 > 
-> Well, I'm wondering about this.  Why does this have to be dev_err()?
+> Acked-by: Michael Turquette <mturquette@baylibre.com>
+> 
+Thanks, Mike.
 
-Isn't this an error? We need to create a symlink, we failed and
-atleast the user should know about it. Why hide such failures ?
+> If Kukjin wants to merge this through the samsung tree then an immutable
+> branch would be much appreciated.
+> 
+Here is the topic branch for clk tree and it will not be rebased.
 
--- 
-viresh
+git://git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git
+v4.3-topic/clk-samsung
+
+If any problems, please kindly let me know.
+
+Thanks,
+Kukjin
+
+> Regards,
+> Mike
+> 
+>> ---
+>>  drivers/clk/samsung/clk-exynos5250.c   | 31 +++++++++++++++++++++++++++++++
+>>  include/dt-bindings/clock/exynos5250.h |  1 +
+>>  2 files changed, 32 insertions(+)
