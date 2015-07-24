@@ -1,945 +1,163 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v5 8/8] mfd: Add support for Intel Sunrisepoint LPSS
- devices
-Date: Fri, 24 Jul 2015 16:14:19 +0100
-Message-ID: <20150724151419.GJ3436@x1>
+Subject: Re: [PATCH v5 0/8] mfd: introduce a driver for LPSS devices on SPT
+Date: Fri, 24 Jul 2015 16:16:13 +0100
+Message-ID: <20150724151613.GK3436@x1>
 References: <1436185334-34275-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <1436185334-34275-9-git-send-email-andriy.shevchenko@linux.intel.com>
+ <1437651621.29746.24.camel@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f173.google.com ([209.85.212.173]:35840 "EHLO
-	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752120AbbGXPOY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 11:14:24 -0400
-Received: by wicgb10 with SMTP id gb10so33238869wic.1
-        for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2015 08:14:23 -0700 (PDT)
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1436185334-34275-9-git-send-email-andriy.shevchenko@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1437651621.29746.24.camel@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, mturquette@baylibre.com, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, sboyd@codeaurora.org
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, mturquette@baylibre.com
 
-Stephen,
+On Thu, 23 Jul 2015, Andy Shevchenko wrote:
 
-Can you review the clock implementation please?  It looks fragile to
-me as it relies heavily on device names constructed of MFD cell names
-and IDA numbers cat'ed together!
+> On Mon, 2015-07-06 at 15:22 +0300, Andy Shevchenko wrote:
+> > The new coming Intel platforms such as Skylake will contain=20
+> > Sunrisepoint PCH.
+> >=20
+> > The driver is based on MFD framework since the main device, i.e.=20
+> > serial bus
+> > controller, contains register space for itself, DMA part, and an=20
+> > additional
+> > address space (convergence layer).=20
+> >=20
+> > The public specification of the register map is avaiable in [1].
+> >=20
+> > This is fifth generation of the patch series to bring support LPSS=20
+> > devices
+> > found on Intel Sunrisepoint (Intel Skylake PCH). Previous one can b=
+e=20
+> > found here
+> > [2].
+> >=20
+> > The series has few logical parts:
+> > - patches 1-3 prepares PM core, ACPI, and driver core (PM) to handl=
+e=20
+> > our case
+> > - patches 4-6 introduce unregistering platform devices in MFD in=20
+> > reversed
+> >   order
+> > - patch 7 implements iDMA 64-bit driver
+> > - patch 8 introduces an MFD driver for LPSS devices
+> >=20
+> > The patch 7 can be applied independently, though it's better if it=20
+> > goes before
+> > patch 8.
+> >=20
+> > The driver has been tested with SPI and UART on Intel Skylake PCH.
+> >=20
+> > [1] https://download.01.org/future-platform-configuration
+> > -hub/skylake/register-definitions/332219-002.pdf
+> > [2] http://www.spinics.net/lists/linux-acpi/msg58622.html
+>=20
+> Lee, can we move forward this thing somehow?
+>=20
+> We may create a topic branch for you where we apply already Acked
+> patches (1-5) to reduce burden on reviewers. Would it help?
 
-> The new coming Intel platforms such as Skylake will contain Sunrisepo=
-int PCH.
-> The main difference to the previous platforms is that the LPSS device=
-s are
-> compound devices where usually main (SPI, HSUART, or I2C) and DMA IPs=
- are
-> present.
+I just need one of the clock guys to take a look at the MFD patch
+before I apply the set.
+
+What other Acks are you waiting on?
+
+NB: I don't need a branch, it's easier for me to apply patches from my
+mbox.
+
+> > Changelog v5:
+> >   - rebase on top of v4.2-rc1
+> >   - patch 3 is modified accordingly to new changes in=20
+> > drivers/base/dd.c
+> >   - correct Rafael's email in patch 3
+> >=20
+> > Changelog v4:
+> >   - replace patch 3 by Rafael's suggession
+> >   - append ACKs from Rafael
+> >   - rebase on top of v4.1-rc8
+> >=20
+> > Changelog v3:
+> >   - rework patch 3 to be used for all kind of devices (address Alan=
+=20
+> > comment)
+> >   - iDMA 64-bit driver improvements:
+> >     - fix burst-to-register conversion
+> >     - remove excessive locking
+> >   - do not expose core part to the user (Kconfig)
+> >   - address most of Lee's comments
+> >   - append ACKs
+> >   - rebase on top of v4.1-rc6
+> >=20
+> > Changelog v2:
+> >   - new DMA driver to fully support iDMA 64-bit IP
+> >   - patch 3 is added to wake up parent devices when ->probe(),=20
+> > ->remove(), or
+> >     ->shutdown()
+> >   - MFD core is unregistering devices in reversed order
+> >   - address few Lee's comments on v1
+> >   - address Russel's comment, therefore use clkdev_create() helper
+> >   - intel-lpss{,-acpi,-pci} are modified regarding to above changes
+> >=20
+> > Andy Shevchenko (5):
+> >   klist: implement klist_prev()
+> >   driver core: implement device_for_each_child_reverse()
+> >   mfd: make mfd_remove_devices() iterate in reverse order
+> >   dmaengine: add a driver for Intel integrated DMA 64-bit
+> >   mfd: Add support for Intel Sunrisepoint LPSS devices
+> >=20
+> > Mika Westerberg (2):
+> >   PM / QoS: Make it possible to expose device latency tolerance to
+> >     userspace
+> >   ACPI / PM: Attach ACPI power domain only once
+> >=20
+> > Rafael J. Wysocki (1):
+> >   Driver core: wakeup the parent device before trying probe
+> >=20
+> >  drivers/acpi/device_pm.c      |   8 +
+> >  drivers/acpi/internal.h       |   2 +
+> >  drivers/acpi/scan.c           |  46 ++-
+> >  drivers/base/core.c           |  43 +++
+> >  drivers/base/dd.c             |  20 ++
+> >  drivers/base/power/power.h    |   2 +
+> >  drivers/base/power/qos.c      |  37 +++
+> >  drivers/base/power/sysfs.c    |  11 +
+> >  drivers/dma/Kconfig           |   5 +
+> >  drivers/dma/Makefile          |   1 +
+> >  drivers/dma/idma64.c          | 724=20
+> > ++++++++++++++++++++++++++++++++++++++++++
+> >  drivers/dma/idma64.h          | 232 ++++++++++++++
+> >  drivers/mfd/Kconfig           |  23 ++
+> >  drivers/mfd/Makefile          |   3 +
+> >  drivers/mfd/intel-lpss-acpi.c |  84 +++++
+> >  drivers/mfd/intel-lpss-pci.c  | 113 +++++++
+> >  drivers/mfd/intel-lpss.c      | 524 ++++++++++++++++++++++++++++++
+> >  drivers/mfd/intel-lpss.h      |  62 ++++
+> >  drivers/mfd/mfd-core.c        |   2 +-
+> >  include/linux/device.h        |   2 +
+> >  include/linux/klist.h         |   1 +
+> >  include/linux/pm_qos.h        |   5 +
+> >  lib/klist.c                   |  41 +++
+> >  23 files changed, 1974 insertions(+), 17 deletions(-)
+> >  create mode 100644 drivers/dma/idma64.c
+> >  create mode 100644 drivers/dma/idma64.h
+> >  create mode 100644 drivers/mfd/intel-lpss-acpi.c
+> >  create mode 100644 drivers/mfd/intel-lpss-pci.c
+> >  create mode 100644 drivers/mfd/intel-lpss.c
+> >  create mode 100644 drivers/mfd/intel-lpss.h
+> >=20
 >=20
-> This patch brings the driver for such devices found on Sunrisepoint P=
-CH.
->=20
-> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
->  drivers/mfd/Kconfig           |  23 ++
->  drivers/mfd/Makefile          |   3 +
->  drivers/mfd/intel-lpss-acpi.c |  84 +++++++
->  drivers/mfd/intel-lpss-pci.c  | 113 +++++++++
->  drivers/mfd/intel-lpss.c      | 524 ++++++++++++++++++++++++++++++++=
-++++++++++
->  drivers/mfd/intel-lpss.h      |  62 +++++
->  6 files changed, 809 insertions(+)
->  create mode 100644 drivers/mfd/intel-lpss-acpi.c
->  create mode 100644 drivers/mfd/intel-lpss-pci.c
->  create mode 100644 drivers/mfd/intel-lpss.c
->  create mode 100644 drivers/mfd/intel-lpss.h
->=20
-> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-> index 6538159..268b6dd 100644
-> --- a/drivers/mfd/Kconfig
-> +++ b/drivers/mfd/Kconfig
-> @@ -328,6 +328,29 @@ config INTEL_SOC_PMIC
->  	  thermal, charger and related power management functions
->  	  on these systems.
-> =20
-> +config MFD_INTEL_LPSS
-> +	tristate
-> +	select COMMON_CLK
-> +	select MFD_CORE
-> +
-> +config MFD_INTEL_LPSS_ACPI
-> +	tristate "Intel Low Power Subsystem support in ACPI mode"
-> +	select MFD_INTEL_LPSS
-> +	depends on X86 && ACPI
-> +	help
-> +	  This driver supports Intel Low Power Subsystem (LPSS) devices suc=
-h as
-> +	  I2C, SPI and HS-UART starting from Intel Sunrisepoint (Intel Skyl=
-ake
-> +	  PCH) in ACPI mode.
-> +
-> +config MFD_INTEL_LPSS_PCI
-> +	tristate "Intel Low Power Subsystem support in PCI mode"
-> +	select MFD_INTEL_LPSS
-> +	depends on X86 && PCI
-> +	help
-> +	  This driver supports Intel Low Power Subsystem (LPSS) devices suc=
-h as
-> +	  I2C, SPI and HS-UART starting from Intel Sunrisepoint (Intel Skyl=
-ake
-> +	  PCH) in PCI mode.
-> +
->  config MFD_INTEL_MSIC
->  	bool "Intel MSIC"
->  	depends on INTEL_SCU_IPC
-> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-> index ea40e07..9d730a2 100644
-> --- a/drivers/mfd/Makefile
-> +++ b/drivers/mfd/Makefile
-> @@ -161,6 +161,9 @@ obj-$(CONFIG_TPS65911_COMPARATOR)	+=3D tps65911-c=
-omparator.o
->  obj-$(CONFIG_MFD_TPS65090)	+=3D tps65090.o
->  obj-$(CONFIG_MFD_AAT2870_CORE)	+=3D aat2870-core.o
->  obj-$(CONFIG_MFD_ATMEL_HLCDC)	+=3D atmel-hlcdc.o
-> +obj-$(CONFIG_MFD_INTEL_LPSS)	+=3D intel-lpss.o
-> +obj-$(CONFIG_MFD_INTEL_LPSS_PCI)	+=3D intel-lpss-pci.o
-> +obj-$(CONFIG_MFD_INTEL_LPSS_ACPI)	+=3D intel-lpss-acpi.o
->  obj-$(CONFIG_MFD_INTEL_MSIC)	+=3D intel_msic.o
->  obj-$(CONFIG_MFD_PALMAS)	+=3D palmas.o
->  obj-$(CONFIG_MFD_VIPERBOARD)    +=3D viperboard.o
-> diff --git a/drivers/mfd/intel-lpss-acpi.c b/drivers/mfd/intel-lpss-a=
-cpi.c
-> new file mode 100644
-> index 0000000..0d92d73
-> --- /dev/null
-> +++ b/drivers/mfd/intel-lpss-acpi.c
-> @@ -0,0 +1,84 @@
-> +/*
-> + * Intel LPSS ACPI support.
-> + *
-> + * Copyright (C) 2015, Intel Corporation
-> + *
-> + * Authors: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> + *          Mika Westerberg <mika.westerberg@linux.intel.com>
-> + *
-> + * This program is free software; you can redistribute it and/or mod=
-ify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/acpi.h>
-> +#include <linux/ioport.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/pm.h>
-> +#include <linux/pm_runtime.h>
-> +#include <linux/platform_device.h>
-> +
-> +#include "intel-lpss.h"
-> +
-> +static const struct intel_lpss_platform_info spt_info =3D {
-> +	.clk_rate =3D 120000000,
-> +};
-> +
-> +static const struct acpi_device_id intel_lpss_acpi_ids[] =3D {
-> +	/* SPT */
-> +	{ "INT3446", (kernel_ulong_t)&spt_info },
-> +	{ "INT3447", (kernel_ulong_t)&spt_info },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(acpi, intel_lpss_acpi_ids);
-> +
-> +static int intel_lpss_acpi_probe(struct platform_device *pdev)
-> +{
-> +	struct intel_lpss_platform_info *info;
-> +	const struct acpi_device_id *id;
-> +
-> +	id =3D acpi_match_device(intel_lpss_acpi_ids, &pdev->dev);
-> +	if (!id)
-> +		return -ENODEV;
-> +
-> +	info =3D devm_kmemdup(&pdev->dev, (void *)id->driver_data, sizeof(*=
-info),
-> +			    GFP_KERNEL);
-> +	if (!info)
-> +		return -ENOMEM;
-> +
-> +	info->mem =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	info->irq =3D platform_get_irq(pdev, 0);
-> +
-> +	pm_runtime_set_active(&pdev->dev);
-> +	pm_runtime_enable(&pdev->dev);
-> +
-> +	return intel_lpss_probe(&pdev->dev, info);
-> +}
-> +
-> +static int intel_lpss_acpi_remove(struct platform_device *pdev)
-> +{
-> +	intel_lpss_remove(&pdev->dev);
-> +	pm_runtime_disable(&pdev->dev);
-> +
-> +	return 0;
-> +}
-> +
-> +static INTEL_LPSS_PM_OPS(intel_lpss_acpi_pm_ops);
-> +
-> +static struct platform_driver intel_lpss_acpi_driver =3D {
-> +	.probe =3D intel_lpss_acpi_probe,
-> +	.remove =3D intel_lpss_acpi_remove,
-> +	.driver =3D {
-> +		.name =3D "intel-lpss",
-> +		.acpi_match_table =3D intel_lpss_acpi_ids,
-> +		.pm =3D &intel_lpss_acpi_pm_ops,
-> +	},
-> +};
-> +
-> +module_platform_driver(intel_lpss_acpi_driver);
-> +
-> +MODULE_AUTHOR("Andy Shevchenko <andriy.shevchenko@linux.intel.com>")=
-;
-> +MODULE_AUTHOR("Mika Westerberg <mika.westerberg@linux.intel.com>");
-> +MODULE_DESCRIPTION("Intel LPSS ACPI driver");
-> +MODULE_LICENSE("GPL v2");
-> diff --git a/drivers/mfd/intel-lpss-pci.c b/drivers/mfd/intel-lpss-pc=
-i.c
-> new file mode 100644
-> index 0000000..9236dff
-> --- /dev/null
-> +++ b/drivers/mfd/intel-lpss-pci.c
-> @@ -0,0 +1,113 @@
-> +/*
-> + * Intel LPSS PCI support.
-> + *
-> + * Copyright (C) 2015, Intel Corporation
-> + *
-> + * Authors: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> + *          Mika Westerberg <mika.westerberg@linux.intel.com>
-> + *
-> + * This program is free software; you can redistribute it and/or mod=
-ify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/ioport.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/pci.h>
-> +#include <linux/pm.h>
-> +#include <linux/pm_runtime.h>
-> +
-> +#include "intel-lpss.h"
-> +
-> +static int intel_lpss_pci_probe(struct pci_dev *pdev,
-> +				const struct pci_device_id *id)
-> +{
-> +	struct intel_lpss_platform_info *info;
-> +	int ret;
-> +
-> +	ret =3D pcim_enable_device(pdev);
-> +	if (ret)
-> +		return ret;
-> +
-> +	info =3D devm_kmemdup(&pdev->dev, (void *)id->driver_data, sizeof(*=
-info),
-> +			    GFP_KERNEL);
-> +	if (!info)
-> +		return -ENOMEM;
-> +
-> +	info->mem =3D &pdev->resource[0];
-> +	info->irq =3D pdev->irq;
-> +
-> +	/* Probably it is enough to set this for iDMA capable devices only =
-*/
-> +	pci_set_master(pdev);
-> +
-> +	ret =3D intel_lpss_probe(&pdev->dev, info);
-> +	if (ret)
-> +		return ret;
-> +
-> +	pm_runtime_put(&pdev->dev);
-> +	pm_runtime_allow(&pdev->dev);
-> +
-> +	return 0;
-> +}
-> +
-> +static void intel_lpss_pci_remove(struct pci_dev *pdev)
-> +{
-> +	pm_runtime_forbid(&pdev->dev);
-> +	pm_runtime_get_sync(&pdev->dev);
-> +
-> +	intel_lpss_remove(&pdev->dev);
-> +}
-> +
-> +static INTEL_LPSS_PM_OPS(intel_lpss_pci_pm_ops);
-> +
-> +static const struct intel_lpss_platform_info spt_info =3D {
-> +	.clk_rate =3D 120000000,
-> +};
-> +
-> +static const struct intel_lpss_platform_info spt_uart_info =3D {
-> +	.clk_rate =3D 120000000,
-> +	.clk_con_id =3D "baudclk",
-> +};
-> +
-> +static const struct pci_device_id intel_lpss_pci_ids[] =3D {
-> +	/* SPT-LP */
-> +	{ PCI_VDEVICE(INTEL, 0x9d27), (kernel_ulong_t)&spt_uart_info },
-> +	{ PCI_VDEVICE(INTEL, 0x9d28), (kernel_ulong_t)&spt_uart_info },
-> +	{ PCI_VDEVICE(INTEL, 0x9d29), (kernel_ulong_t)&spt_info },
-> +	{ PCI_VDEVICE(INTEL, 0x9d2a), (kernel_ulong_t)&spt_info },
-> +	{ PCI_VDEVICE(INTEL, 0x9d60), (kernel_ulong_t)&spt_info },
-> +	{ PCI_VDEVICE(INTEL, 0x9d61), (kernel_ulong_t)&spt_info },
-> +	{ PCI_VDEVICE(INTEL, 0x9d62), (kernel_ulong_t)&spt_info },
-> +	{ PCI_VDEVICE(INTEL, 0x9d63), (kernel_ulong_t)&spt_info },
-> +	{ PCI_VDEVICE(INTEL, 0x9d64), (kernel_ulong_t)&spt_info },
-> +	{ PCI_VDEVICE(INTEL, 0x9d65), (kernel_ulong_t)&spt_info },
-> +	{ PCI_VDEVICE(INTEL, 0x9d66), (kernel_ulong_t)&spt_uart_info },
-> +	/* SPT-H */
-> +	{ PCI_VDEVICE(INTEL, 0xa127), (kernel_ulong_t)&spt_uart_info },
-> +	{ PCI_VDEVICE(INTEL, 0xa128), (kernel_ulong_t)&spt_uart_info },
-> +	{ PCI_VDEVICE(INTEL, 0xa129), (kernel_ulong_t)&spt_info },
-> +	{ PCI_VDEVICE(INTEL, 0xa12a), (kernel_ulong_t)&spt_info },
-> +	{ PCI_VDEVICE(INTEL, 0xa160), (kernel_ulong_t)&spt_info },
-> +	{ PCI_VDEVICE(INTEL, 0xa161), (kernel_ulong_t)&spt_info },
-> +	{ PCI_VDEVICE(INTEL, 0xa166), (kernel_ulong_t)&spt_uart_info },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(pci, intel_lpss_pci_ids);
-> +
-> +static struct pci_driver intel_lpss_pci_driver =3D {
-> +	.name =3D "intel-lpss",
-> +	.id_table =3D intel_lpss_pci_ids,
-> +	.probe =3D intel_lpss_pci_probe,
-> +	.remove =3D intel_lpss_pci_remove,
-> +	.driver =3D {
-> +		.pm =3D &intel_lpss_pci_pm_ops,
-> +	},
-> +};
-> +
-> +module_pci_driver(intel_lpss_pci_driver);
-> +
-> +MODULE_AUTHOR("Andy Shevchenko <andriy.shevchenko@linux.intel.com>")=
-;
-> +MODULE_AUTHOR("Mika Westerberg <mika.westerberg@linux.intel.com>");
-> +MODULE_DESCRIPTION("Intel LPSS PCI driver");
-> +MODULE_LICENSE("GPL v2");
-> diff --git a/drivers/mfd/intel-lpss.c b/drivers/mfd/intel-lpss.c
-> new file mode 100644
-> index 0000000..fdf4d5c
-> --- /dev/null
-> +++ b/drivers/mfd/intel-lpss.c
-> @@ -0,0 +1,524 @@
-> +/*
-> + * Intel Sunrisepoint LPSS core support.
-> + *
-> + * Copyright (C) 2015, Intel Corporation
-> + *
-> + * Authors: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> + *          Mika Westerberg <mika.westerberg@linux.intel.com>
-> + *          Heikki Krogerus <heikki.krogerus@linux.intel.com>
-> + *          Jarkko Nikula <jarkko.nikula@linux.intel.com>
-> + *
-> + * This program is free software; you can redistribute it and/or mod=
-ify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/clk.h>
-> +#include <linux/clkdev.h>
-> +#include <linux/clk-provider.h>
-> +#include <linux/debugfs.h>
-> +#include <linux/idr.h>
-> +#include <linux/ioport.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/mfd/core.h>
-> +#include <linux/pm_qos.h>
-> +#include <linux/pm_runtime.h>
-> +#include <linux/seq_file.h>
-> +
-> +#include "intel-lpss.h"
-> +
-> +#define LPSS_DEV_OFFSET		0x000
-> +#define LPSS_DEV_SIZE		0x200
-> +#define LPSS_PRIV_OFFSET	0x200
-> +#define LPSS_PRIV_SIZE		0x100
-> +#define LPSS_IDMA64_OFFSET	0x800
-> +#define LPSS_IDMA64_SIZE	0x800
-> +
-> +/* Offsets from lpss->priv */
-> +#define LPSS_PRIV_RESETS		0x04
-> +#define LPSS_PRIV_RESETS_FUNC		BIT(2)
-> +#define LPSS_PRIV_RESETS_IDMA		0x3
-> +
-> +#define LPSS_PRIV_ACTIVELTR		0x10
-> +#define LPSS_PRIV_IDLELTR		0x14
-> +
-> +#define LPSS_PRIV_LTR_REQ		BIT(15)
-> +#define LPSS_PRIV_LTR_SCALE_MASK	0xc00
-> +#define LPSS_PRIV_LTR_SCALE_1US		0x800
-> +#define LPSS_PRIV_LTR_SCALE_32US	0xc00
-> +#define LPSS_PRIV_LTR_VALUE_MASK	0x3ff
-> +
-> +#define LPSS_PRIV_SSP_REG		0x20
-> +#define LPSS_PRIV_SSP_REG_DIS_DMA_FIN	BIT(0)
-> +
-> +#define LPSS_PRIV_REMAP_ADDR_LO		0x40
-> +#define LPSS_PRIV_REMAP_ADDR_HI		0x44
-> +
-> +#define LPSS_PRIV_CAPS			0xfc
-> +#define LPSS_PRIV_CAPS_NO_IDMA		BIT(8)
-> +#define LPSS_PRIV_CAPS_TYPE_SHIFT	4
-> +#define LPSS_PRIV_CAPS_TYPE_MASK	(0xf << LPSS_PRIV_CAPS_TYPE_SHIFT)
-> +
-> +/* This matches the type field in CAPS register */
-> +enum intel_lpss_dev_type {
-> +	LPSS_DEV_I2C =3D 0,
-> +	LPSS_DEV_UART,
-> +	LPSS_DEV_SPI,
-> +};
-> +
-> +struct intel_lpss {
-> +	const struct intel_lpss_platform_info *info;
-> +	enum intel_lpss_dev_type type;
-> +	struct clk *clk;
-> +	struct clk_lookup *clock;
-> +	const struct mfd_cell *cell;
-> +	struct device *dev;
-> +	void __iomem *priv;
-> +	int devid;
-> +	u32 caps;
-> +	u32 active_ltr;
-> +	u32 idle_ltr;
-> +	struct dentry *debugfs;
-> +};
-> +
-> +static const struct resource intel_lpss_dev_resources[] =3D {
-> +	DEFINE_RES_MEM_NAMED(LPSS_DEV_OFFSET, LPSS_DEV_SIZE, "lpss_dev"),
-> +	DEFINE_RES_MEM_NAMED(LPSS_PRIV_OFFSET, LPSS_PRIV_SIZE, "lpss_priv")=
-,
-> +	DEFINE_RES_IRQ(0),
-> +};
-> +
-> +static const struct resource intel_lpss_idma64_resources[] =3D {
-> +	DEFINE_RES_MEM(LPSS_IDMA64_OFFSET, LPSS_IDMA64_SIZE),
-> +	DEFINE_RES_IRQ(0),
-> +};
-> +
-> +#define LPSS_IDMA64_DRIVER_NAME		"idma64"
-> +
-> +/*
-> + * Cells needs to be ordered so that the iDMA is created first. This=
- is
-> + * because we need to be sure the DMA is available when the host con=
-troller
-> + * driver is probed.
-> + */
-> +static const struct mfd_cell intel_lpss_idma64_cell =3D {
-> +	.name =3D LPSS_IDMA64_DRIVER_NAME,
-> +	.num_resources =3D ARRAY_SIZE(intel_lpss_idma64_resources),
-> +	.resources =3D intel_lpss_idma64_resources,
-> +};
-> +
-> +static const struct mfd_cell intel_lpss_i2c_cell =3D {
-> +	.name =3D "i2c_designware",
-> +	.num_resources =3D ARRAY_SIZE(intel_lpss_dev_resources),
-> +	.resources =3D intel_lpss_dev_resources,
-> +};
-> +
-> +static const struct mfd_cell intel_lpss_uart_cell =3D {
-> +	.name =3D "dw-apb-uart",
-> +	.num_resources =3D ARRAY_SIZE(intel_lpss_dev_resources),
-> +	.resources =3D intel_lpss_dev_resources,
-> +};
-> +
-> +static const struct mfd_cell intel_lpss_spi_cell =3D {
-> +	.name =3D "pxa2xx-spi",
-> +	.num_resources =3D ARRAY_SIZE(intel_lpss_dev_resources),
-> +	.resources =3D intel_lpss_dev_resources,
-> +};
-> +
-> +static DEFINE_IDA(intel_lpss_devid_ida);
-> +static struct dentry *intel_lpss_debugfs;
-> +
-> +static int intel_lpss_request_dma_module(const char *name)
-> +{
-> +	static bool intel_lpss_dma_requested;
-> +
-> +	if (intel_lpss_dma_requested)
-> +		return 0;
-> +
-> +	intel_lpss_dma_requested =3D true;
-> +	return request_module("%s", name);
-> +}
-> +
-> +static void intel_lpss_cache_ltr(struct intel_lpss *lpss)
-> +{
-> +	lpss->active_ltr =3D readl(lpss->priv + LPSS_PRIV_ACTIVELTR);
-> +	lpss->idle_ltr =3D readl(lpss->priv + LPSS_PRIV_IDLELTR);
-> +}
-> +
-> +static int intel_lpss_debugfs_add(struct intel_lpss *lpss)
-> +{
-> +	struct dentry *dir;
-> +
-> +	dir =3D debugfs_create_dir(dev_name(lpss->dev), intel_lpss_debugfs)=
-;
-> +	if (IS_ERR(dir))
-> +		return PTR_ERR(dir);
-> +
-> +	/* Cache the values into lpss structure */
-> +	intel_lpss_cache_ltr(lpss);
-> +
-> +	debugfs_create_x32("capabilities", S_IRUGO, dir, &lpss->caps);
-> +	debugfs_create_x32("active_ltr", S_IRUGO, dir, &lpss->active_ltr);
-> +	debugfs_create_x32("idle_ltr", S_IRUGO, dir, &lpss->idle_ltr);
-> +
-> +	lpss->debugfs =3D dir;
-> +	return 0;
-> +}
-> +
-> +static void intel_lpss_debugfs_remove(struct intel_lpss *lpss)
-> +{
-> +	debugfs_remove_recursive(lpss->debugfs);
-> +}
-> +
-> +static void intel_lpss_ltr_set(struct device *dev, s32 val)
-> +{
-> +	struct intel_lpss *lpss =3D dev_get_drvdata(dev);
-> +	u32 ltr;
-> +
-> +	/*
-> +	 * Program latency tolerance (LTR) accordingly what has been asked
-> +	 * by the PM QoS layer or disable it in case we were passed
-> +	 * negative value or PM_QOS_LATENCY_ANY.
-> +	 */
-> +	ltr =3D readl(lpss->priv + LPSS_PRIV_ACTIVELTR);
-> +
-> +	if (val =3D=3D PM_QOS_LATENCY_ANY || val < 0) {
-> +		ltr &=3D ~LPSS_PRIV_LTR_REQ;
-> +	} else {
-> +		ltr |=3D LPSS_PRIV_LTR_REQ;
-> +		ltr &=3D ~LPSS_PRIV_LTR_SCALE_MASK;
-> +		ltr &=3D ~LPSS_PRIV_LTR_VALUE_MASK;
-> +
-> +		if (val > LPSS_PRIV_LTR_VALUE_MASK)
-> +			ltr |=3D LPSS_PRIV_LTR_SCALE_32US | val >> 5;
-> +		else
-> +			ltr |=3D LPSS_PRIV_LTR_SCALE_1US | val;
-> +	}
-> +
-> +	if (ltr =3D=3D lpss->active_ltr)
-> +		return;
-> +
-> +	writel(ltr, lpss->priv + LPSS_PRIV_ACTIVELTR);
-> +	writel(ltr, lpss->priv + LPSS_PRIV_IDLELTR);
-> +
-> +	/* Cache the values into lpss structure */
-> +	intel_lpss_cache_ltr(lpss);
-> +}
-> +
-> +static void intel_lpss_ltr_expose(struct intel_lpss *lpss)
-> +{
-> +	lpss->dev->power.set_latency_tolerance =3D intel_lpss_ltr_set;
-> +	dev_pm_qos_expose_latency_tolerance(lpss->dev);
-> +}
-> +
-> +static void intel_lpss_ltr_hide(struct intel_lpss *lpss)
-> +{
-> +	dev_pm_qos_hide_latency_tolerance(lpss->dev);
-> +	lpss->dev->power.set_latency_tolerance =3D NULL;
-> +}
-> +
-> +static int intel_lpss_assign_devs(struct intel_lpss *lpss)
-> +{
-> +	unsigned int type;
-> +
-> +	type =3D lpss->caps & LPSS_PRIV_CAPS_TYPE_MASK;
-> +	type >>=3D LPSS_PRIV_CAPS_TYPE_SHIFT;
-> +
-> +	switch (type) {
-> +	case LPSS_DEV_I2C:
-> +		lpss->cell =3D &intel_lpss_i2c_cell;
-> +		break;
-> +	case LPSS_DEV_UART:
-> +		lpss->cell =3D &intel_lpss_uart_cell;
-> +		break;
-> +	case LPSS_DEV_SPI:
-> +		lpss->cell =3D &intel_lpss_spi_cell;
-> +		break;
-> +	default:
-> +		return -ENODEV;
-> +	}
-> +
-> +	lpss->type =3D type;
-> +
-> +	return 0;
-> +}
-> +
-> +static bool intel_lpss_has_idma(const struct intel_lpss *lpss)
-> +{
-> +	return (lpss->caps & LPSS_PRIV_CAPS_NO_IDMA) =3D=3D 0;
-> +}
-> +
-> +static void intel_lpss_set_remap_addr(const struct intel_lpss *lpss)
-> +{
-> +	resource_size_t addr =3D lpss->info->mem->start;
-> +
-> +	writel(addr, lpss->priv + LPSS_PRIV_REMAP_ADDR_LO);
-> +#if BITS_PER_LONG > 32
-> +	writel(addr >> 32, lpss->priv + LPSS_PRIV_REMAP_ADDR_HI);
-> +#else
-> +	writel(0, lpss->priv + LPSS_PRIV_REMAP_ADDR_HI);
-> +#endif
-> +}
-> +
-> +static void intel_lpss_deassert_reset(const struct intel_lpss *lpss)
-> +{
-> +	u32 value =3D LPSS_PRIV_RESETS_FUNC | LPSS_PRIV_RESETS_IDMA;
-> +
-> +	/* Bring out the device from reset */
-> +	writel(value, lpss->priv + LPSS_PRIV_RESETS);
-> +}
-> +
-> +static void intel_lpss_init_dev(const struct intel_lpss *lpss)
-> +{
-> +	u32 value =3D LPSS_PRIV_SSP_REG_DIS_DMA_FIN;
-> +
-> +	intel_lpss_deassert_reset(lpss);
-> +
-> +	if (!intel_lpss_has_idma(lpss))
-> +		return;
-> +
-> +	intel_lpss_set_remap_addr(lpss);
-> +
-> +	/* Make sure that SPI multiblock DMA transfers are re-enabled */
-> +	if (lpss->type =3D=3D LPSS_DEV_SPI)
-> +		writel(value, lpss->priv + LPSS_PRIV_SSP_REG);
-> +}
-> +
-> +static void intel_lpss_unregister_clock_tree(struct clk *clk)
-> +{
-> +	struct clk *parent;
-> +
-> +	while (clk) {
-> +		parent =3D clk_get_parent(clk);
-> +		clk_unregister(clk);
-> +		clk =3D parent;
-> +	}
-> +}
-> +
-> +static int intel_lpss_register_clock_divider(struct intel_lpss *lpss=
-,
-> +					     const char *devname,
-> +					     struct clk **clk)
-> +{
-> +	char name[32];
-> +	struct clk *tmp =3D *clk;
-> +
-> +	snprintf(name, sizeof(name), "%s-enable", devname);
-> +	tmp =3D clk_register_gate(NULL, name, __clk_get_name(tmp), 0,
-> +				lpss->priv, 0, 0, NULL);
-> +	if (IS_ERR(tmp))
-> +		return PTR_ERR(tmp);
-> +
-> +	snprintf(name, sizeof(name), "%s-div", devname);
-> +	tmp =3D clk_register_fractional_divider(NULL, name, __clk_get_name(=
-tmp),
-> +					      0, lpss->priv, 1, 15, 16, 15, 0,
-> +					      NULL);
-> +	if (IS_ERR(tmp))
-> +		return PTR_ERR(tmp);
-> +	*clk =3D tmp;
-> +
-> +	snprintf(name, sizeof(name), "%s-update", devname);
-> +	tmp =3D clk_register_gate(NULL, name, __clk_get_name(tmp),
-> +				CLK_SET_RATE_PARENT, lpss->priv, 31, 0, NULL);
-> +	if (IS_ERR(tmp))
-> +		return PTR_ERR(tmp);
-> +	*clk =3D tmp;
-> +
-> +	return 0;
-> +}
-> +
-> +static int intel_lpss_register_clock(struct intel_lpss *lpss)
-> +{
-> +	const struct mfd_cell *cell =3D lpss->cell;
-> +	struct clk *clk;
-> +	char devname[24];
-> +	int ret;
-> +
-> +	if (!lpss->info->clk_rate)
-> +		return 0;
-> +
-> +	/* Root clock */
-> +	clk =3D clk_register_fixed_rate(NULL, dev_name(lpss->dev), NULL,
-> +				      CLK_IS_ROOT, lpss->info->clk_rate);
-> +	if (IS_ERR(clk))
-> +		return PTR_ERR(clk);
-> +
-> +	snprintf(devname, sizeof(devname), "%s.%d", cell->name, lpss->devid=
-);
-> +
-> +	/*
-> +	 * Support for clock divider only if it has some preset value.
-> +	 * Otherwise we assume that the divider is not used.
-> +	 */
-> +	if (lpss->type !=3D LPSS_DEV_I2C) {
-> +		ret =3D intel_lpss_register_clock_divider(lpss, devname, &clk);
-> +		if (ret)
-> +			goto err_clk_register;
-> +	}
-> +
-> +	ret =3D -ENOMEM;
-> +
-> +	/* Clock for the host controller */
-> +	lpss->clock =3D clkdev_create(clk, lpss->info->clk_con_id, "%s", de=
-vname);
-> +	if (!lpss->clock)
-> +		goto err_clk_register;
-> +
-> +	lpss->clk =3D clk;
-> +
-> +	return 0;
-> +
-> +err_clk_register:
-> +	intel_lpss_unregister_clock_tree(clk);
-> +
-> +	return ret;
-> +}
-> +
-> +static void intel_lpss_unregister_clock(struct intel_lpss *lpss)
-> +{
-> +	if (IS_ERR_OR_NULL(lpss->clk))
-> +		return;
-> +
-> +	clkdev_drop(lpss->clock);
-> +	intel_lpss_unregister_clock_tree(lpss->clk);
-> +}
-> +
-> +int intel_lpss_probe(struct device *dev,
-> +		     const struct intel_lpss_platform_info *info)
-> +{
-> +	struct intel_lpss *lpss;
-> +	int ret;
-> +
-> +	if (!info || !info->mem || info->irq <=3D 0)
-> +		return -EINVAL;
-> +
-> +	lpss =3D devm_kzalloc(dev, sizeof(*lpss), GFP_KERNEL);
-> +	if (!lpss)
-> +		return -ENOMEM;
-> +
-> +	lpss->priv =3D devm_ioremap(dev, info->mem->start + LPSS_PRIV_OFFSE=
-T,
-> +				  LPSS_PRIV_SIZE);
-> +	if (!lpss->priv)
-> +		return -ENOMEM;
-> +
-> +	lpss->info =3D info;
-> +	lpss->dev =3D dev;
-> +	lpss->caps =3D readl(lpss->priv + LPSS_PRIV_CAPS);
-> +
-> +	dev_set_drvdata(dev, lpss);
-> +
-> +	ret =3D intel_lpss_assign_devs(lpss);
-> +	if (ret)
-> +		return ret;
-> +
-> +	intel_lpss_init_dev(lpss);
-> +
-> +	lpss->devid =3D ida_simple_get(&intel_lpss_devid_ida, 0, 0, GFP_KER=
-NEL);
-> +	if (lpss->devid < 0)
-> +		return lpss->devid;
-> +
-> +	ret =3D intel_lpss_register_clock(lpss);
-> +	if (ret)
-> +		goto err_clk_register;
-> +
-> +	intel_lpss_ltr_expose(lpss);
-> +
-> +	ret =3D intel_lpss_debugfs_add(lpss);
-> +	if (ret)
-> +		dev_warn(dev, "Failed to create debugfs entries\n");
-> +
-> +	if (intel_lpss_has_idma(lpss)) {
-> +		/*
-> +		 * Ensure the DMA driver is loaded before the host
-> +		 * controller device appears, so that the host controller
-> +		 * driver can request its DMA channels as early as
-> +		 * possible.
-> +		 *
-> +		 * If the DMA module is not there that's OK as well.
-> +		 */
-> +		intel_lpss_request_dma_module(LPSS_IDMA64_DRIVER_NAME);
-> +
-> +		ret =3D mfd_add_devices(dev, lpss->devid, &intel_lpss_idma64_cell,
-> +				      1, info->mem, info->irq, NULL);
-> +		if (ret)
-> +			dev_warn(dev, "Failed to add %s, fallback to PIO\n",
-> +				 LPSS_IDMA64_DRIVER_NAME);
-> +	}
-> +
-> +	ret =3D mfd_add_devices(dev, lpss->devid, lpss->cell,
-> +			      1, info->mem, info->irq, NULL);
-> +	if (ret)
-> +		goto err_remove_ltr;
-> +
-> +	return 0;
-> +
-> +err_remove_ltr:
-> +	intel_lpss_debugfs_remove(lpss);
-> +	intel_lpss_ltr_hide(lpss);
-> +
-> +err_clk_register:
-> +	ida_simple_remove(&intel_lpss_devid_ida, lpss->devid);
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(intel_lpss_probe);
-> +
-> +void intel_lpss_remove(struct device *dev)
-> +{
-> +	struct intel_lpss *lpss =3D dev_get_drvdata(dev);
-> +
-> +	mfd_remove_devices(dev);
-> +	intel_lpss_debugfs_remove(lpss);
-> +	intel_lpss_ltr_hide(lpss);
-> +	intel_lpss_unregister_clock(lpss);
-> +	ida_simple_remove(&intel_lpss_devid_ida, lpss->devid);
-> +}
-> +EXPORT_SYMBOL_GPL(intel_lpss_remove);
-> +
-> +static int resume_lpss_device(struct device *dev, void *data)
-> +{
-> +	pm_runtime_resume(dev);
-> +	return 0;
-> +}
-> +
-> +int intel_lpss_prepare(struct device *dev)
-> +{
-> +	/*
-> +	 * Resume both child devices before entering system sleep. This
-> +	 * ensures that they are in proper state before they get suspended.
-> +	 */
-> +	device_for_each_child_reverse(dev, NULL, resume_lpss_device);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(intel_lpss_prepare);
-> +
-> +int intel_lpss_suspend(struct device *dev)
-> +{
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(intel_lpss_suspend);
-> +
-> +int intel_lpss_resume(struct device *dev)
-> +{
-> +	struct intel_lpss *lpss =3D dev_get_drvdata(dev);
-> +
-> +	intel_lpss_init_dev(lpss);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(intel_lpss_resume);
-> +
-> +static int __init intel_lpss_init(void)
-> +{
-> +	intel_lpss_debugfs =3D debugfs_create_dir("intel_lpss", NULL);
-> +	return 0;
-> +}
-> +module_init(intel_lpss_init);
-> +
-> +static void __exit intel_lpss_exit(void)
-> +{
-> +	debugfs_remove(intel_lpss_debugfs);
-> +}
-> +module_exit(intel_lpss_exit);
-> +
-> +MODULE_AUTHOR("Andy Shevchenko <andriy.shevchenko@linux.intel.com>")=
-;
-> +MODULE_AUTHOR("Mika Westerberg <mika.westerberg@linux.intel.com>");
-> +MODULE_AUTHOR("Heikki Krogerus <heikki.krogerus@linux.intel.com>");
-> +MODULE_AUTHOR("Jarkko Nikula <jarkko.nikula@linux.intel.com>");
-> +MODULE_DESCRIPTION("Intel LPSS core driver");
-> +MODULE_LICENSE("GPL v2");
-> diff --git a/drivers/mfd/intel-lpss.h b/drivers/mfd/intel-lpss.h
-> new file mode 100644
-> index 0000000..f28cb28a
-> --- /dev/null
-> +++ b/drivers/mfd/intel-lpss.h
-> @@ -0,0 +1,62 @@
-> +/*
-> + * Intel LPSS core support.
-> + *
-> + * Copyright (C) 2015, Intel Corporation
-> + *
-> + * Authors: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> + *          Mika Westerberg <mika.westerberg@linux.intel.com>
-> + *
-> + * This program is free software; you can redistribute it and/or mod=
-ify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#ifndef __MFD_INTEL_LPSS_H
-> +#define __MFD_INTEL_LPSS_H
-> +
-> +struct device;
-> +struct resource;
-> +
-> +struct intel_lpss_platform_info {
-> +	struct resource *mem;
-> +	int irq;
-> +	unsigned long clk_rate;
-> +	const char *clk_con_id;
-> +};
-> +
-> +int intel_lpss_probe(struct device *dev,
-> +		     const struct intel_lpss_platform_info *info);
-> +void intel_lpss_remove(struct device *dev);
-> +
-> +#ifdef CONFIG_PM
-> +int intel_lpss_prepare(struct device *dev);
-> +int intel_lpss_suspend(struct device *dev);
-> +int intel_lpss_resume(struct device *dev);
-> +
-> +#ifdef CONFIG_PM_SLEEP
-> +#define INTEL_LPSS_SLEEP_PM_OPS			\
-> +	.prepare =3D intel_lpss_prepare,		\
-> +	.suspend =3D intel_lpss_suspend,		\
-> +	.resume =3D intel_lpss_resume,		\
-> +	.freeze =3D intel_lpss_suspend,		\
-> +	.thaw =3D intel_lpss_resume,		\
-> +	.poweroff =3D intel_lpss_suspend,		\
-> +	.restore =3D intel_lpss_resume,
-> +#endif
-> +
-> +#define INTEL_LPSS_RUNTIME_PM_OPS		\
-> +	.runtime_suspend =3D intel_lpss_suspend,	\
-> +	.runtime_resume =3D intel_lpss_resume,
-> +
-> +#else /* !CONFIG_PM */
-> +#define INTEL_LPSS_SLEEP_PM_OPS
-> +#define INTEL_LPSS_RUNTIME_PM_OPS
-> +#endif /* CONFIG_PM */
-> +
-> +#define INTEL_LPSS_PM_OPS(name)			\
-> +const struct dev_pm_ops name =3D {		\
-> +	INTEL_LPSS_SLEEP_PM_OPS			\
-> +	INTEL_LPSS_RUNTIME_PM_OPS		\
-> +}
-> +
-> +#endif /* __MFD_INTEL_LPSS_H */
 
 --=20
 Lee Jones
 Linaro STMicroelectronics Landing Team Lead
 Linaro.org =E2=94=82 Open source software for ARM SoCs
 =46ollow Linaro: Facebook | Twitter | Blog
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
