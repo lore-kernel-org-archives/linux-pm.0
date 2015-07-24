@@ -1,95 +1,66 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v3 4/6] power: da9150: Add DT bindings documentation for
- Fuel-Gauge
-Date: Sat, 25 Jul 2015 00:00:53 +0200
-Message-ID: <20150724220053.GA24362@earth>
-References: <cover.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
- <3f9095a583c26cdb4a6dd7b749d7f6b33c87b8f7.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2] thermal: consistently use int for temperatures
+Date: Sat, 25 Jul 2015 00:11:02 +0200
+Message-ID: <20150724221102.GA31517@amd>
+References: <1437463292-24844-1-git-send-email-s.hauer@pengutronix.de>
+ <20150723120759.GA17690@amd>
+ <20150724062948.GK18700@pengutronix.de>
+ <55B244BE.1060203@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="AqsLC8rIMeq19msA"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:57077 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752539AbbGXWBF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 24 Jul 2015 18:01:05 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40526 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754322AbbGXWLK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 18:11:10 -0400
 Content-Disposition: inline
-In-Reply-To: <3f9095a583c26cdb4a6dd7b749d7f6b33c87b8f7.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
+In-Reply-To: <55B244BE.1060203@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Punit Agrawal <punit.agrawal@arm.com>, Jean Delvare <jdelvare@suse.de>, Peter Feuerer <peter@piie.net>, Heiko Stuebner <heiko@sntech.de>, Lukasz Majewski <l.majewski@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, linux-acpi@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Ripard <maxime.ripard@free-electrons.com>, Darren Hart <dvhart@infradead.org>, lm-sensors@lm-sensors.org
 
+On Fri 2015-07-24 06:59:26, Guenter Roeck wrote:
+> On 07/23/2015 11:29 PM, Sascha Hauer wrote:
+> >On Thu, Jul 23, 2015 at 02:07:59PM +0200, Pavel Machek wrote:
+> >>On Tue 2015-07-21 09:21:32, Sascha Hauer wrote:
+> >>>The thermal code uses int, long and unsigned long for temperatures
+> >>>in different places.
+> >>>
+> >>>Using an unsigned type limits the thermal framework to positive
+> >>>temperatures without need. Also several drivers currently will rep=
+ort
+> >>>temperatures near UINT_MAX for temperatures below 0=B0C. This will=
+ probably
+> >>>immediately shut the machine down due to overtemperature if starte=
+d below
+> >>>0=B0C.
+> >>>
+> >>>'long' is 64bit on several architectures. This is not needed since=
+ INT_MAX =B0mC
+> >>>is above the melting point of all known materials.
+> >>
+> >>Can we do something like
+> >>
+> >>typedef millicelsius_t int;
+> >>
+> >>...to document the units?
+> >
+> >I am not very fond of typedefs and I am not sure this adds any value=
+=2E I
+> >could change it when more people ask for it, but I just sent the new
+> >version without this.
+> >
+>=20
+> I thought we are supposed to not introduce new typedefs anyway.
 
---AqsLC8rIMeq19msA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-Hi,
-
-On Tue, Jul 07, 2015 at 05:34:21PM +0100, Adam Thomson wrote:
-> diff --git a/Documentation/devicetree/bindings/power/da9150-fg.txt b/Documentation/devicetree/bindings/power/da9150-fg.txt
-> new file mode 100644
-> index 0000000..c3c76eb
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/da9150-fg.txt
-> @@ -0,0 +1,23 @@
-> +Dialog Semiconductor DA9150 Fuel-Gauge Power Supply bindings
-> +
-> +Required properties:
-> +- compatible: "dlg,da9150-fg" for DA9150 Fuel-Gauge Power Supply
-                  ^^^^^^^^^^^^^
-
-s/dlg,da9150-fg/dlg,da9150-fuel-gauge/g
-
-> +Optional properties:
-> +- dlg,update-interval: Interval time (milliseconds) between battery level checks.
-> +- dlg,warn-soc-level: Battery discharge level (%) where warning event raised.
-> +      [1 - 100]
-> +- dlg,crit-soc-level: Battery discharge level (%) where critical event raised.
-> +  This value should be lower than the warning level.
-> +      [1 - 100]
-> +
-> +
-> +Example:
-> +
-> +	da9150-fg {
-
-Make this just "fuel-gauge".
-
-> +		compatible = "dlg,da9150-fg";
-                      ^^^^^^^^^^^^^
-
-here too ;)
-
-> +
-> +		dlg,update-interval = <10000>;
-> +		dlg,warn-soc-level = /bits/ 8 <15>;
-> +		dlg,crit-soc-level = /bits/ 8 <5>;
-> +	};
-
--- Sebastian
-
---AqsLC8rIMeq19msA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVsrWSAAoJENju1/PIO/qaf/AP/A6TIswbIMR+x9zkFyeRYXNt
-v772UA+fRwr8aLGnGRnOPZ3KBjcwvtIRsAf8F1V3KXoUSsFetkJoHYq0hVNOVV0k
-vb7yyhs2C+LPsnt3bM+r9iCcTCP0VcWcTTrZa97gAvQ2/6PMFF8cu5G3cmXAXkLL
-YcsUX5ehITR99Tu0xAlCDqX/abBP3L5YRlu8OuiPzQLKw1Z9T7Iw72901+FyRMAM
-nEFk8xis4U+y8SR5JZgie2k0sGHkObVh1dUPWL4YGu4t2NcBoZBAREL0D9cfi03V
-E4JZgUAuPT6sSftWLT3mYf9Jo6s0/pyHl/yZ3P/i49BxSu0UdvzBU2YordBAElBD
-ORfbcsQSZD5NJY3pR2qg+HMe7F6/u7mKepHhxXmt//dxKRa82w5ZAECtXVLUDD3O
-2H+uiBmW/SVQAeyhexgEyrCAh8LpKBWtsI8rTSIuwpwzyjXsWewhmtP1bZ9ca9Uc
-Vcgdx/y/kQqQ2L14bqLjPRsp9DTdb9QjJ9c9SLkVuir7eq0YwPaPh8mXyqjWQHfh
-Gbwg437ITzXUWh9rCN0+Tb0nQ4O5j6aJaAK1vwSotsuYCIiai1NX46bVTm7qVuLu
-VYgl+XJlG4K2izSz0grf3umY8jyFczam/zw7RVPPerl5NSeekU/sb3FZdQTeu8Zx
-Q8JnEMK2Kjmyh2zwCqPN
-=TNkJ
------END PGP SIGNATURE-----
-
---AqsLC8rIMeq19msA--
+You are not supposed to typedef struct, but typedef for millicelsius_t
+would be ok. And it is your only chance if you want people to pay
+attention. If you make it int, someone will pass it to long or
+something else..
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
+/blog.html
