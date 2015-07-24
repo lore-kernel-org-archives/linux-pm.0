@@ -1,507 +1,133 @@
-From: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH 6/9] hwmon: Support sensors exported via ARM SCP interface
-Date: Fri, 24 Jul 2015 15:08:11 +0100
-Message-ID: <9hhr3nxbqd0.fsf@e105922-lin.cambridge.arm.com>
-References: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
-	<1437573763-6525-7-git-send-email-punit.agrawal@arm.com>
-	<55AFB7BC.6090802@roeck-us.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Avoid attempts to create duplicate symbolic
+ links
+Date: Fri, 24 Jul 2015 19:39:43 +0530
+Message-ID: <20150724140943.GC16336@linux>
+References: <1660815.CyKx9SEI9c@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <55AFB7BC.6090802-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org> (Guenter Roeck's message of "Wed,
-	22 Jul 2015 08:33:16 -0700")
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:34630 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753937AbbGXOJt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 10:09:49 -0400
+Received: by pacan13 with SMTP id an13so15361600pac.1
+        for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2015 07:09:48 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1660815.CyKx9SEI9c@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>
 
-Hi Guenter,
+On 23-07-15, 23:14, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> After commit 87549141d516 (cpufreq: Stop migrating sysfs files on
+> hotplug) there is a problem with CPUs that share cpufreq policy
+> objects with other CPUs and are initially offline.
+> 
+> Say CPU1 shares a policy with CPU0 which is online and is registered
+> first.  As part of the registration process, cpufreq_add_dev() is
+> called for it.  It creates the policy object and a symbolic link
+> to it from the CPU1's sysfs directory.  If CPU1 is registered
+> subsequently and it is offline at that time, cpufreq_add_dev() will
+> attempt to create a symbolic link to the policy object for it, but
+> that link is present already, so a warning about that will be
+> triggered.
+> 
+> To avoid that warning, make cpufreq use an additional CPU mask
+> containing related CPUs that are actually present for each policy
+> object.  That mask is initialized when the policy object is populated
+> after its creation (for the first online CPU using it) and it includes
+> CPUs from the "policy CPUs" mask returned by the cpufreq driver's
+> ->init() callback that are physically present at that time.  Symbolic
+> links to the policy are created only for the CPUs in that mask.
+> 
+> If cpufreq_add_dev() is invoked for an offline CPU, it checks the
+> new mask and only creates the symlink if the CPU was not in it (the
+> CPU is added to the mask at the same time).
+> 
+> In turn, cpufreq_remove_dev() drops the given CPU from the new mask,
+> removes its symlink to the policy object and returns, unless it is
+> the CPU owning the policy object.  In that case, the policy object
+> is moved to a new CPU's sysfs directory or deleted if the CPU being
+> removed was the last user of the policy.
+> 
+> While at it, notice that cpufreq_remove_dev() can't fail, because
+> its return value is ignored, so make it ignore return values from
+> __cpufreq_remove_dev_prepare() and __cpufreq_remove_dev_finish()
+> and prevent these functions from aborting on errors returned by
+> __cpufreq_governor().
+> 
+> Fixes: 87549141d516 (cpufreq: Stop migrating sysfs files on hotplug)
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Reported-by: Russell King <linux@arm.linux.org.uk>
+> ---
+> 
+> This is supposed to replace the other patches sent so far to address the issue
+> at hand.
 
-Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org> writes:
+Lets take this one and leave my patches. They are generating more
+diff and actually doing part of the general improvements Russell
+suggested.
 
-> On 07/22/2015 07:02 AM, Punit Agrawal wrote:
->> Create a driver to add support for SoC sensors exported by the System
->> Control Processor (SCP) via the System Control and Power Interface
->> (SCPI). The supported sensor types is one of voltage, temperature,
->> current, and power.
->>
->> The sensor labels and values provided by the SCP are exported via the
->> hwmon sysfs interface.
->>
->> Signed-off-by: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
->> Cc: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>
->> Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
->> Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
->> ---
->>   drivers/hwmon/Kconfig      |   8 ++
->>   drivers/hwmon/Makefile     |   1 +
->>   drivers/hwmon/scpi-hwmon.c | 212 +++++++++++++++++++++++++++++++++++++++++++++
->
-> Please also provide Documentation/hwmon/scpi-hwmon.
->
+> +	if (!zalloc_cpumask_var(&policy->real_cpus, GFP_KERNEL))
 
-Added documentation in the above location.
+I was wondering if we should use cpumask_t type variables, so that we
+don't have to allocate these masks. They are always with policies.
 
->>   3 files changed, 221 insertions(+)
->>   create mode 100644 drivers/hwmon/scpi-hwmon.c
->>
->> diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
->> index 4943c3c..f5e0862 100644
->> --- a/drivers/hwmon/Kconfig
->> +++ b/drivers/hwmon/Kconfig
->> @@ -1551,6 +1551,14 @@ config SENSORS_VEXPRESS
->>   	  the ARM Ltd's Versatile Express platform. It can provide wide
->>   	  range of information like temperature, power, energy.
->>
->> +config SENSORS_ARM_SCPI
->> +	tristate "ARM SCPI Sensors"
->> +	depends on ARM_SCPI_PROTOCOL
->> +	help
->> +	  This driver provides support for hardware sensors available on
->> +	  the ARM Ltd's SCP based platforms. It can provide temperature
->
-> can provide or provides ?
+> @@ -1307,6 +1316,9 @@ static int cpufreq_add_dev(struct device
+>  	/* related cpus should atleast have policy->cpus */
+>  	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
+>  
+> +	cpumask_and(policy->cpus, policy->cpus, cpu_present_mask);
+> +	cpumask_or(policy->real_cpus, policy->real_cpus, policy->cpus);
+> +
 
-The actual sensors exported are dependent on the platform and the
-firmware. But the above wording can be improved. I've updated it to
+I will do this differently:
+        cpumask_and(policy->real_cpus, policy->cpus, cpu_present_mask);
 
-  This driver provides support for temperature, voltage, current
-  and power sensors available on ARM Ltd's SCP based platforms. The
-  actual number and type of sensors exported depend the platform.
+policy->cpus is anyway going to be anded with online mask.
 
-
->> +	  and voltage for range of devices on the SoC.
->
-> current, power ?
->
->> +
->>   config SENSORS_VIA_CPUTEMP
->>   	tristate "VIA CPU temperature sensor"
->>   	depends on X86
->> diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
->> index 8aba87f..4961710 100644
->> --- a/drivers/hwmon/Makefile
->> +++ b/drivers/hwmon/Makefile
->> @@ -150,6 +150,7 @@ obj-$(CONFIG_SENSORS_TMP421)	+= tmp421.o
->>   obj-$(CONFIG_SENSORS_TWL4030_MADC)+= twl4030-madc-hwmon.o
->>   obj-$(CONFIG_SENSORS_V2M_JUNO)	+= v2m-juno.o
->>   obj-$(CONFIG_SENSORS_VEXPRESS)	+= vexpress.o
->> +obj-$(CONFIG_SENSORS_ARM_SCPI)	+= scpi-hwmon.o
->>   obj-$(CONFIG_SENSORS_VIA_CPUTEMP)+= via-cputemp.o
->>   obj-$(CONFIG_SENSORS_VIA686A)	+= via686a.o
->>   obj-$(CONFIG_SENSORS_VT1211)	+= vt1211.o
->> diff --git a/drivers/hwmon/scpi-hwmon.c b/drivers/hwmon/scpi-hwmon.c
->> new file mode 100644
->> index 0000000..dd0a6f1
->> --- /dev/null
->> +++ b/drivers/hwmon/scpi-hwmon.c
->> @@ -0,0 +1,212 @@
->> +/*
->> + * System Control and Power Interface(SCPI) based hwmon sensor driver
->> + *
->> + * Copyright (C) 2015 ARM Ltd.
->> + * Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 as
->> + * published by the Free Software Foundation.
->> + *
->> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
->> + * kind, whether express or implied; without even the implied warranty
->> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
->> + * GNU General Public License for more details.
->> + */
->> +
->> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
->
-> Not needed since there are no pr_xxx() messages in this driver.
->
-
-Dropped it.
-
->> +
->> +#include <linux/hwmon.h>
->> +#include <linux/module.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/scpi_protocol.h>
->> +#include <linux/slab.h>
->> +#include <linux/sysfs.h>
->> +
->> +static struct scpi_ops *scpi_ops;
->> +
-> This variable should be kept in a local data structure (scpi_sensors).
->
-
-Moved now.
-
->> +struct sensor_dev {
->> +	struct scpi_sensor_info info;
->> +	struct device_attribute dev_attr_input;
->> +	struct device_attribute dev_attr_label;
->> +	char input[20];
->> +	char label[20];
->> +};
->> +
->> +struct scpi_sensors {
->> +	int num_volt;
->> +	int num_temp;
->> +	int num_current;
->> +	int num_power;
->
-> num_volt, num_temp, num_current, and num_power are not used
-> outside the probe function and are thus not needed in this structure.
->
-
-Moved to the probe function.
-
->> +	struct sensor_dev *device;
->
-> 'device' is a bit misleading here. It might be better to use
-> something like sensor_data (and maybe struct sensor_data),
-> or just 'data'.
->
-
-Now renamed as -
-
-	struct sensor_data *data
-
-That makes it a lot more readable elsewhere as well. Thanks.
-
->> +	struct device *hwdev;
->
-> hwdev is not used and thus not needed in this structure.
->
-
-Moved to the probe function.
-
->> +};
->> +struct scpi_sensors scpi_sensors;
->
-> This variable should be allocated in the probe function (and either case not be global).
->
->> +
->> +static int scpi_read_sensor(struct sensor_dev *sensor, u32 *value)
->> +{
->> +	int ret;
->> +
->> +	ret = scpi_ops->sensor_get_value(sensor->info.sensor_id, value);
->> +	if (ret)
->> +		return ret;
->> +
->> +	return 0;
->
-> This can be reduced to
-> 	return scpi_ops->sensor_get_value(sensor->info.sensor_id, value);
->
-> which makes me wonder if the function is that useful to start with,
-> but I leave that up to you.
->
-
-I added the indirection to use common code for reading temperatures for
-sensors connected to the thermal zones in the next patch. But you're
-right - the function can be dropped without any loss.
-
->> +}
->> +
->> +/* hwmon callback functions */
->> +static ssize_t
->> +scpi_hwmon_show_sensor(struct device *dev,
->> +		       struct device_attribute *attr, char *buf)
->
-> _hwmon in the function names do not really add value.
->
-
-Dropped.
-
->> +{
->> +	struct sensor_dev *sensor;
->> +	u32 value;
->> +	int ret;
->> +
->> +	sensor = container_of(attr, struct sensor_dev, dev_attr_input);
->> +
->> +	ret = scpi_read_sensor(sensor, &value);
->> +	if (ret) {
->> +		dev_warn(dev, "error (ret=%d) reading sensor (id=%u) value\n",
->> +			 ret, sensor->info.sensor_id);
->> +		return 0;
->
-> Please no error message (it can get noisy), and return the error.
->
-
-Done.
-
->> +	}
->> +
->> +	return sprintf(buf, "%u\n", value);
->> +}
->> +
->> +static ssize_t
->> +scpi_hwmon_show_label(struct device *dev,
->> +		      struct device_attribute *attr, char *buf)
->> +{
->> +	struct sensor_dev *sensor;
->> +
->> +	sensor = container_of(attr, struct sensor_dev, dev_attr_label);
->> +
->> +	return sprintf(buf, "%s\n", sensor->info.name);
->> +}
->> +
->> +struct attribute *scpi_attrs[24] = { 0 };
->
-> This creates an unnecessary (hard) limit on the number of supported
-> sensors (12). I would suggest to allocate the array based on the number
-> of reported sensors.
->
->> +struct attribute_group scpi_group;
->> +const struct attribute_group *scpi_groups[2] = { 0 };
->
-> Please move those variables into struct scpi_sensors.
->
-
-The attributes are now dynamically allocated and the above structures
-have been moved to struct scpi_sensors.
-
-> Note that you don't have to initialize globale variables with 0,
-> and that globale variables should be static. It does not matter here
-> since you should not have those variables to start with (they should
-> be in struct scpi_sensors and be allocated), just mentioning it.
->
-
-I'll keep this in mind for future code.
-
->> +
->> +static int scpi_hwmon_probe(struct platform_device *pdev)
->> +{
->> +	u16 sensors, i;
->> +	int ret;
->> +
->> +	scpi_ops = get_scpi_ops();
->> +	if (!scpi_ops)
->> +		return -EPROBE_DEFER;
->> +
-> Is this appropriate ? I am a bit concerned that we might get a lot
-> of "requests probe deferral" if the underlying infrastructure is
-> not there at all.
->
-
-This driver depends on SCPI protocol driver which in turn depends on the
-mailbox driver (arm_mhu) each of which can be built as a
-module. Requesting probe deferral avoids having to explicitly impose
-ordering for loading these drivers.
-
-IIUC, a driver requesting probe deferral is re-tried only if some other
-driver probes successfully which might cause this driver to be
-re-probeable (for lack of a better word).
-
->> +	ret = scpi_ops->sensor_get_capability(&sensors);
->> +	if (ret)
->> +		return ret;
->> +
->> +	scpi_sensors.device = devm_kcalloc(&pdev->dev, sensors,
->> +				   sizeof(*scpi_sensors.device), GFP_KERNEL);
->
-> What if sensors == 0 ?
->
-
-I've now handled the case of 0 sensors.
-
-> It might be useful to introduce a local variable
-> 	struct device *dev = &pdev->dev;
-> and use it in this function.
->
-
-Done.
-
->> +	if (!scpi_sensors.device)
->> +		return -ENOMEM;
->> +
->> +	dev_info(&pdev->dev, "Found %d sensors\n", sensors);
->
-> Please drop this message and the other info messages below (too noisy).
-> If you think you need those messages for debugging, make it dev_dbg().
->
->> +	for (i = 0; i < sensors; i++) {
->> +		struct sensor_dev *dev = &scpi_sensors.device[i];
->> +
->> +		ret = scpi_ops->sensor_get_info(i, &dev->info);
->> +		if (ret) {
->> +			dev_info(&pdev->dev,
->> +				 "Error ret=%d when querying for sensor %d\n",
->> +				 ret, i);
->
-> If this is an error, it should be dev_err().
->
-
-I've dropped the message and just return the error now.
-
->> +			return ret;
->> +		}
->> +
->> +		dev_info(&pdev->dev, "Probed \'%s\' sensor.\n",
->> +			 dev->info.name);
->> +
->> +		switch (dev->info.class) {
->> +		case TEMPERATURE:
->> +			snprintf(dev->input, 20,
->
-> Can you use sizeof() to determine the string length ?
->
-
-Done.
-
->> +				 "temp%d_input", scpi_sensors.num_temp);
->> +			snprintf(dev->label, 20,
->> +				 "temp%d_label", scpi_sensors.num_temp);
->> +			scpi_sensors.num_temp++;
->
-> temp sensor numbering starts with 1.
->
->> +			break;
->> +		case VOLTAGE:
->> +			snprintf(dev->input, 20,
->> +				 "in%d_input", scpi_sensors.num_volt);
->> +			snprintf(dev->label, 20,
->> +				 "in%d_label", scpi_sensors.num_volt);
->> +			scpi_sensors.num_volt++;
->> +			break;
->> +		case CURRENT:
->> +			snprintf(dev->input, 20,
->> +				 "curr%d_input", scpi_sensors.num_current);
->> +			snprintf(dev->label, 20,
->> +				 "curr%d_label", scpi_sensors.num_current);
->> +			scpi_sensors.num_current++;
->
-> current sensor numbering starts with 1.
->
->> +			break;
->> +		case POWER:
->> +			snprintf(dev->input, 20,
->> +				 "power%d_input", scpi_sensors.num_power);
->> +			snprintf(dev->label, 20,
->> +				 "power%d_label", scpi_sensors.num_power);
->> +			scpi_sensors.num_power++;
->
-> power sensor numbering starts with 1.
->
-
-Corrected the numbering for all of the above.
-
->> +			break;
->> +		default:
->> +			break;
->> +		}
->> +
->> +		dev->dev_attr_input.attr.mode = S_IRUGO;
->> +		dev->dev_attr_input.store = NULL;
->
-> kcalloc() initializes the allocated memory, so this assignment is unnecessary.
->
->> +		dev->dev_attr_input.show = scpi_hwmon_show_sensor;
->> +		dev->dev_attr_input.attr.name = dev->input;
->> +
->> +		dev->dev_attr_label.attr.mode = S_IRUGO;
->> +		dev->dev_attr_label.store = NULL;
->
-> Same as above.
->
-
-Fixed.
-
->> +		dev->dev_attr_label.show = scpi_hwmon_show_label;
->> +		dev->dev_attr_label.attr.name = dev->label;
->> +
->> +		scpi_attrs[i << 1] = &dev->dev_attr_input.attr;
->> +		scpi_attrs[(i << 1) + 1] = &dev->dev_attr_label.attr;
->
-> You need to call sysfs_attr_init() for each of the attributes.
->
-
-Now done.
-
->> +	}
->> +
->> +	scpi_group.attrs = scpi_attrs;
->> +	scpi_groups[0] = &scpi_group;
->> +
->> +	scpi_sensors.hwdev = devm_hwmon_device_register_with_groups(&pdev->dev,
->> +				    "scpi_sensors", &scpi_sensors, scpi_groups);
->
-> Please allocate scpi_sensors and pass a pointer to it.
-> All local variables should be kept in scpi_sensors (and can then be accessed
-> with dev_get_drvdata).
->
-
-Done.
-
->> +
->> +	if (IS_ERR(scpi_sensors.hwdev)) {
->> +		dev_err(&pdev->dev, "Error registering scpi_sensors hwmon device\n");
->> +		return PTR_ERR(scpi_sensors.hwdev);
->> +	}
->> +
->> +	dev_info(&pdev->dev, "SCPI hwmon driver initialised.\n");
->
-> Please consider just returning
-> 	return PTR_ERR_OR_ZERO(hwdev);
-> without the noise.
->
-
-Done.
-
->> +	return 0;
->> +}
->> +
->> +static int scpi_hwmon_remove(struct platform_device *pdev)
->> +{
->> +	scpi_ops = NULL;
->> +	return 0;
->> +}
->
-> Not needed.
->
-
-Dropped.
+>  	/*
+>  	 * affected cpus must always be the one, which are online. We aren't
+>  	 * managing offline cpus here.
 
 
-I've incorporated all your commments on this patch locally.
+>  static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+>  {
 
-Thanks a lot for the review. Much appreciated.
+> -	ret = __cpufreq_remove_dev_prepare(dev, sif);
+> +	if (cpu != policy->kobj_cpu) {
+> +		remove_cpu_dev_symlink(policy, cpu);
+> +	} else {
+> +		/*
+> +		 * This is the CPU owning the policy object.  Move it to another
+> +		 * suitable CPU.
+> +		 */
+> +		unsigned int new_cpu = cpumask_first(policy->real_cpus);
+> +		struct device *new_dev = get_cpu_device(new_cpu);
+>  
+> -	if (!ret)
+> -		ret = __cpufreq_remove_dev_finish(dev, sif);
+> +		dev_dbg(dev, "%s: Moving policy object to CPU%u\n", __func__, new_cpu);
+>  
+> -	return ret;
+> +		policy->kobj_cpu = new_cpu;
 
-I'll post an update once some of the other patches have had some review
-as well.
+You need to remove the link for the target cpu, like what I did in my
+patch:
 
-Cheers,
-Punit
+               sysfs_remove_link(&new_dev->kobj, "cpufreq");
 
->> +
->> +static const struct of_device_id scpi_of_match[] = {
->> +	{.compatible = "arm,scpi-sensors"},
->> +	{},
->> +};
->> +
->> +static struct platform_driver scpi_hwmon_platdrv = {
->> +	.driver = {
->> +		.name	= "scpi-hwmon",
->> +		.owner	= THIS_MODULE,
->> +		.of_match_table = scpi_of_match,
->> +	},
->> +	.probe		= scpi_hwmon_probe,
->> +	.remove	= scpi_hwmon_remove,
->> +};
->> +module_platform_driver(scpi_hwmon_platdrv);
->> +
->> +MODULE_AUTHOR("Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>");
->> +MODULE_DESCRIPTION("ARM SCPI HWMON interface driver");
->> +MODULE_LICENSE("GPL v2");
->>
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> +		WARN_ON(kobject_move(&policy->kobj, &new_dev->kobj));
+> +	}
+> +
+> +	return 0;
+>  }
+>  
+>  static void handle_update(struct work_struct *work)
+
+-- 
+viresh
