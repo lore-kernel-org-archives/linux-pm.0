@@ -1,68 +1,69 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [RFC][PATCH] PM / Domains: Return -EPROBE_DEFER if we fail to
- init or turn-on domain
-Date: Fri, 24 Jul 2015 14:12:38 +0100
-Message-ID: <55B239C6.2010003@nvidia.com>
-References: <1434649967-21135-1-git-send-email-jonathanh@nvidia.com> <CAPDyKFrH_LFcLm_nbuu9z0=Q6eEV2SRF82nXKUPpF-CZgmR81Q@mail.gmail.com> <55A3B7E0.8040401@nvidia.com>
+From: Vaishali Thakkar <vthakkar1994@gmail.com>
+Subject: Re: [PATCH] power_supply: Adjust devm usage
+Date: Fri, 24 Jul 2015 18:44:41 +0530
+Message-ID: <CAK-LDbJQ07fi3YOEOJ+8Qwm3jbqA7L8tFNF9U9=_QO0B0gg_UA@mail.gmail.com>
+References: <20150724115813.GA3004@vaishali-Ideapad-Z570>
+	<20150724122622.GA22105@earth>
+	<CAK-LDbKk5wYAKVJ9eE5Kr6iOW1ah6VxAxBWcZjbufHp8WZXW=g@mail.gmail.com>
+	<20150724125951.GA25447@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:12537 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753389AbbGXNMo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 09:12:44 -0400
-In-Reply-To: <55A3B7E0.8040401@nvidia.com>
+Received: from mail-wi0-f169.google.com ([209.85.212.169]:35057 "EHLO
+	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752299AbbGXNOm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 09:14:42 -0400
+In-Reply-To: <20150724125951.GA25447@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Frans Klaver <fransklaver@gmail.com>
 
-
-On 13/07/15 14:06, Jon Hunter wrote:
-> 
-> On 24/06/15 11:18, Ulf Hansson wrote:
->> On 18 June 2015 at 19:52, Jon Hunter <jonathanh@nvidia.com> wrote:
->>> When a device is probed, the function dev_pm_domain_attach() is called
->>> to see if there is a power-domain that is associated with the device and
->>> needs to be turned on. If dev_pm_domain_attach() does not return
->>> -EPROBE_DEFER then the device will be probed.
->>>
->>> For devices using genpd, dev_pm_domain_attach() will call
->>> genpd_dev_pm_attach(). If genpd_dev_pm_attach() does not find a power
->>> domain associated with the device then it returns an error code not
->>> equal to -EPROBE_DEFER to allow the device to be probed. However, if
->>> genpd_dev_pm_attach() does find a power-domain that is associated with
->>> the device, then it does not return -EPROBE_DEFER on failure and hence
->>> the device will still be probed. Furthermore, genpd_dev_pm_attach() does
->>> not check the error code returned by pm_genpd_poweron() to see if the
->>> power-domain was turned on successfully.
->>>
->>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+On Fri, Jul 24, 2015 at 6:29 PM, Sebastian Reichel <sre@kernel.org> wrote:
+> Hi,
+>
+> On Fri, Jul 24, 2015 at 06:03:38PM +0530, Vaishali Thakkar wrote:
+>> On Fri, Jul 24, 2015 at 5:56 PM, Sebastian Reichel <sre@kernel.org> wrote:
+>> > On Fri, Jul 24, 2015 at 05:28:13PM +0530, Vaishali Thakkar wrote:
+>> >> @@ -267,8 +267,9 @@ static int bq24735_charger_probe() {}
+>> >> [...]
+>> >
+>> > Your patch is missing removal of the
+>> > kfree(charger->charger_desc.name) in bq24735_charger_remove().
 >>
->> This is a clear improvement for genpd and as a short-term solution I
->> am fine with this!
->>
->> The long term solution should be to implement the
->> pm_domain->activate|dismiss() callbacks, but that requires a bigger
->> effort.
->>
->> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
-> 
-> Thanks Ulf.
-> 
-> Kevin, Rafael, are you ok with this?
+>> Yes. Because it seems that this kfree is freeing some other data which
+>> is not related to devm_kzalloc. I was not sure about removing it.
+>> So, I was about to discuss it in a separate thread.s
+>
+> it's assigned in the probe function:
+>
+>     name = kasprintf(...);
+>     ...
+>     supply_desc->name = name;
+>     ...
+>     power_supply_register(..., supply_desc, ...);
+>
 
-I have still not heard back about this.
+Oh. Yes. I missed that.
 
-Ulf, not sure if you can help here.
+>> Also, in the remove function we have devm_free_irq. I am unsure it
+>> too. Because normally remove functions do not use devm
+>> counterparts.
+>
+> It's required to free the irq before removing the power supply
+> device.
+>
+> If the power supply is registered with devm, that should happen
+> automatically, since it is requested before the irq.  Thus the
+> remove function can be removed completely at that point :)
 
-Cheers
-Jon
+This makes sense. Thanks for explanation and review :)
+So, can I send all changes along with getting rid of remove
+function here in a single patch?
 
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+> -- Sebastian
+
+
+
+-- 
+Vaishali
