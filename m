@@ -1,23 +1,24 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 04/10] OPP: Break _opp_add_dynamic() into smaller functions
-Date: Fri, 24 Jul 2015 19:42:28 +0200
-Message-ID: <1576308.d9Ji59vHD1@amdc1976>
+Subject: Re: [PATCH 05/10] opp: Add support to parse "operating-points-v2"
+ bindings
+Date: Fri, 24 Jul 2015 20:02:33 +0200
+Message-ID: <9723014.v9tt0Yn4CZ@amdc1976>
 References: <cover.1434369079.git.viresh.kumar@linaro.org>
- <15b69640a8672d983f2233e16e52ca275d36c816.1434369079.git.viresh.kumar@linaro.org>
+ <2910042.ys2zsBBKt2@amdc1976> <20150709051845.GM1805@linux>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:49875 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753197AbbGXRm6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 13:42:58 -0400
+Received: from mailout4.samsung.com ([203.254.224.34]:47374 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753566AbbGXSDD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 14:03:03 -0400
 Received: from epcpsbgm1.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout2.samsung.com
+ by mailout4.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0NS000JBF6JJ5N30@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Sat, 25 Jul 2015 02:42:55 +0900 (KST)
-In-reply-to: <15b69640a8672d983f2233e16e52ca275d36c816.1434369079.git.viresh.kumar@linaro.org>
+ with ESMTP id <0NS001J9D7H0SX40@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Sat, 25 Jul 2015 03:03:00 +0900 (KST)
+In-reply-to: <20150709051845.GM1805@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
@@ -26,18 +27,18 @@ Cc: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, linar
 
 Hi,
 
-On Monday, June 15, 2015 05:27:30 PM Viresh Kumar wrote:
-> Later commits would add support for new OPP bindings and this would be
-> required then. So, lets do it in a separate patch to make it easily
-> reviewable.
+On Thursday, July 09, 2015 10:48:46 AM Viresh Kumar wrote:
+> On 08-07-15, 15:41, Bartlomiej Zolnierkiewicz wrote:
+> > Isn't using u32 for storing frequency (in Hz) too small by today's
+> > standards?
+> > 
+> > [ Please note that the old v1 binding uses kHz not Hz. ]
 > 
-> Another change worth noticing is INIT_LIST_HEAD(&opp->node). We weren't
-> doing it earlier as we never tried to delete a list node before it is
-> added to list. But this wouldn't be the case anymore. We might try to
-> delete a node (just to reuse the same code paths), without it being
-> getting added to the list.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Hmm, probably yes we need it to be u64. Thanks for pointing out.
+
+There is also a minor issue with of_init_opp_table() documentation
+(the function can now return -EINVAL in some cases).  Except these
+two things the patch looks fine and once it is fixed you can add:
 
 Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
