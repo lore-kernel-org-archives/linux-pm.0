@@ -1,51 +1,56 @@
-From: Vaishali Thakkar <vthakkar1994@gmail.com>
-Subject: Re: [PATCH] power_supply: Adjust devm usage
-Date: Fri, 24 Jul 2015 19:12:23 +0530
-Message-ID: <CAK-LDbKYx3mFP_hLx1xc6s+2dHgk8Hwd8d6sMn40TjHTZX35jw@mail.gmail.com>
-References: <20150724115813.GA3004@vaishali-Ideapad-Z570>
-	<20150724122622.GA22105@earth>
-	<CAK-LDbKk5wYAKVJ9eE5Kr6iOW1ah6VxAxBWcZjbufHp8WZXW=g@mail.gmail.com>
-	<20150724125951.GA25447@earth>
-	<CAK-LDbJQ07fi3YOEOJ+8Qwm3jbqA7L8tFNF9U9=_QO0B0gg_UA@mail.gmail.com>
-	<20150724133843.GA27569@earth>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v2] thermal: consistently use int for temperatures
+Date: Fri, 24 Jul 2015 06:59:26 -0700
+Message-ID: <55B244BE.1060203@roeck-us.net>
+References: <1437463292-24844-1-git-send-email-s.hauer@pengutronix.de> <20150723120759.GA17690@amd> <20150724062948.GK18700@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-15;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:38333 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753253AbbGXNmY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 09:42:24 -0400
-In-Reply-To: <20150724133843.GA27569@earth>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:46271 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752941AbbGXN7e (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 09:59:34 -0400
+In-Reply-To: <20150724062948.GK18700@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Frans Klaver <fransklaver@gmail.com>
+To: Sascha Hauer <s.hauer@pengutronix.de>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Punit Agrawal <punit.agrawal@arm.com>, Jean Delvare <jdelvare@suse.de>, Peter Feuerer <peter@piie.net>, Heiko Stuebner <heiko@sntech.de>, Lukasz Majewski <l.majewski@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, linux-acpi@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Ripard <maxime.ripard@free-electrons.com>, Darren Hart <dvhart@infradead.org>, lm-sensors@lm-sensors.org
 
-On Fri, Jul 24, 2015 at 7:08 PM, Sebastian Reichel <sre@kernel.org> wrote:
-> Hi,
-
-Hi,
-
-> On Fri, Jul 24, 2015 at 06:44:41PM +0530, Vaishali Thakkar wrote:
->> [...]
+On 07/23/2015 11:29 PM, Sascha Hauer wrote:
+> On Thu, Jul 23, 2015 at 02:07:59PM +0200, Pavel Machek wrote:
+>> On Tue 2015-07-21 09:21:32, Sascha Hauer wrote:
+>>> The thermal code uses int, long and unsigned long for temperatures
+>>> in different places.
+>>>
+>>> Using an unsigned type limits the thermal framework to positive
+>>> temperatures without need. Also several drivers currently will repo=
+rt
+>>> temperatures near UINT_MAX for temperatures below 0=B0C. This will =
+probably
+>>> immediately shut the machine down due to overtemperature if started=
+ below
+>>> 0=B0C.
+>>>
+>>> 'long' is 64bit on several architectures. This is not needed since =
+INT_MAX =B0mC
+>>> is above the melting point of all known materials.
 >>
->> This makes sense. Thanks for explanation and review :)
->> So, can I send all changes along with getting rid of remove
->> function here in a single patch?
+>> Can we do something like
+>>
+>> typedef millicelsius_t int;
+>>
+>> ...to document the units?
 >
-> A single patch is fine for me. Use something like the
-> following patch subject then:
+> I am not very fond of typedefs and I am not sure this adds any value.=
+ I
+> could change it when more people ask for it, but I just sent the new
+> version without this.
 >
-> "power_supply: bq24735: Convert to using managed resources"
 
-Ok. Sure. I'll send version 2 of a patch with this subject line and detailed
-commit log.
+I thought we are supposed to not introduce new typedefs anyway.
 
-Thank You.
-
-> -- Sebastian
+Guenter
 
 
-
--- 
-Vaishali
