@@ -1,90 +1,62 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2] power: max17042_battery: add HEALTH and TEMP_*
- properties support
-Date: Fri, 24 Jul 2015 16:46:51 +0200
-Message-ID: <20150724144651.GE27569@earth>
-References: <1432438918-31002-1-git-send-email-ramakrishna.pallala@intel.com>
- <CAJKOXPeUvdC5LwRLgsFfxz2=SZwkjq2soGius+j6kb76Ea940A@mail.gmail.com>
- <CAJKOXPepZ9gKtnKk7Z4BFjUk=_kv6j010dZWhhu9bf_OuVmrgQ@mail.gmail.com>
+Subject: Re: [PATCH] power/ltc2941-battery-gauge.c: Use the devicetree node
+ name as supply name
+Date: Fri, 24 Jul 2015 16:54:49 +0200
+Message-ID: <20150724145449.GF27569@earth>
+References: <1435743653-13967-1-git-send-email-mike.looijmans@topic.nl>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="Yb+qhiCg54lqZFXW"
+	protocol="application/pgp-signature"; boundary="8TaQrIeukR7mmbKf"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:33902 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:34327 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753151AbbGXOq4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 24 Jul 2015 10:46:56 -0400
+	id S1751071AbbGXOyx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 24 Jul 2015 10:54:53 -0400
 Content-Disposition: inline
-In-Reply-To: <CAJKOXPepZ9gKtnKk7Z4BFjUk=_kv6j010dZWhhu9bf_OuVmrgQ@mail.gmail.com>
+In-Reply-To: <1435743653-13967-1-git-send-email-mike.looijmans@topic.nl>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>
+To: Mike Looijmans <mike.looijmans@topic.nl>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---Yb+qhiCg54lqZFXW
+--8TaQrIeukR7mmbKf
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Jun 23, 2015 at 09:58:41AM +0900, Krzysztof Kozlowski wrote:
-> 2015-06-08 10:22 GMT+09:00 Krzysztof Kozlowski <k.kozlowski@samsung.com>:
-> > 2015-05-24 12:41 GMT+09:00 Ramakrishna Pallala <ramakrishna.pallala@int=
-el.com>:
-> >> This patch adds the support for following battery properties
-> >> to max17042 fuel gauge driver.
-> >>
-> >> POWER_SUPPLY_PROP_TEMP_ALERT_MIN
-> >> POWER_SUPPLY_PROP_TEMP_ALERT_MAX
-> >> POWER_SUPPLY_PROP_TEMP_MIN
-> >> POWER_SUPPLY_PROP_TEMP_MAX
-> >> POWER_SUPPLY_PROP_HEALTH
-> >
-> > I wonder, have you tested the patch? After booting on Trats2 device
-> > (max77693 which identifies itself as 17047-like) the values are:
-> > POWER_SUPPLY_TEMP_ALERT_MIN=3D1280
-> > POWER_SUPPLY_TEMP_ALERT_MAX=3D1270
-> > POWER_SUPPLY_TEMP=3D257
-> > This is okay, datasheet says that register after booting will have
-> > value of 0x7f80.
-> >
-> > However setting them to some value which should trigger interrupts
-> > (like 300 for MIN or 200 for MAX) does not trigger the interrupt. I
-> > added a printk in max17042_thread_handler().
-> >
-> > Is the temperature alert feature working?
->=20
-> Can you reply to my question above?
-> If this feature is not working, then it should be removed.
+On Wed, Jul 01, 2015 at 11:40:53AM +0200, Mike Looijmans wrote:
+> Make it possible to set the name of the supply from the devicetree.
+> Like other power supply drivers just use the node name. This makes
+> the code smaller as well, as it doesn't need to allocate memory to
+> hold the name and allocate a unique ID.
 
-What's the status of this? I cannot test the feature, since
-I don't have the hardware. I agree, that this should be
-removed, if it's not working.
+Thanks, queued. It also fixes the missing idr_remove and kfree in
+ltc294x_i2c_remove(), btw.
 
 -- Sebastian
 
---Yb+qhiCg54lqZFXW
+--8TaQrIeukR7mmbKf
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJVsk/bAAoJENju1/PIO/qannoQAJjO7qym/hthTLsEEzuw3FbU
-xaOcorXwfaXWZCdYSYXe2SUCnoYCNy0PnDszrBgap1GIe8dpICVuK0lICddSpi+u
-K/7WEnBEd3sMubHckNLsQJ2wKFHawC+MAtYNvsFBj/8OGeQ/1+qxlm+NpGZ1WNiE
-d0nPa6TckJPyiCfnsvjrwdudrvW41rHOQLyyuxLHQS6+ZHFMrxaSdtZdGNKvMgYA
-P5sEjFU6n6WYGgdlMY3WF2oL7/dI8Sb7X4DqwwkC7VpjnR3hqXILRsClJ9QnFcwu
-lF8fzwunQeohK5TD2Ho5x8+T6qB8d6XArpMDjtBuUiKdt4lJdj/MaIVqS/hozN4y
-h2eUBt/mpxHmoxpybXrgZf29Xovop25svt3pPiIBXoWNg+GJ/vX1zwspfAQ3sW+O
-IQD/nslirOr8Cw8Y87uMoa6pD14NRAxWvJOnA3aUloh/EyLZiBN3tfnl1mK3kPKd
-5qVkzQmhX+YkFoibn6o5ossy6j5DrUz29NmYJ+xMnT8dsWzhDBFT+p2sdXhq+3Xk
-L3i4wc38HAv7bkiKEPo8c8jdKY5EFrbY5q+6ItJS3aemAakUSNE9NRlPs9YU08hb
-fZxTO4zY++WUshMrPqsFPcJW5AhgC07Q9BpOLVapGBucgeDmE2fmuh1xbi/1X3Bi
-HltBoDCjo8stCGJFujZs
-=rI7H
+iQIcBAEBCgAGBQJVslG5AAoJENju1/PIO/qaw2QP+wcGv3rMfwHr6Kd+Gbrkq20K
+8uhSkfccowi94Oclqw+BfzW1n+daS4vaV6cCyDUMYex5VRDlmk/qigGHxreh8EWM
+A7HZSmX6bY4sZUTKZkM/FuB+Ywy9X76ggLKksV66PXMausHbrPYf6iel2RzDkwrO
+EKMYqIWcm/qt57b5Eff+TSzm+gowAl3XhnV8a37aN6iLVSIIj0pKcZB0Yb4Xhjcz
+HIWBXvEnOsIN1IvhPDq12AgZLMW63ERxwBTqfL7rpfxZXD/dynNMiiZWb9szROoA
+muIeUdTKJoefHhgtR16OfdmeL5OtiRXHf6wzBeN8z2J97EwJTkQcxDFVnauo2WvO
+POgMdT/RrXbzP3Nrs0oXbZ/R1VbtQ3jnUM7pesfmN9neyjwXhg/+gLtDA95FHoyH
+NFRV/IHsXChQ/NJoXaAHe18oUW5Sk1vLK62ZQ3W3cJjGxi0lJav+Ln9PVUbL+H3z
+Vb2BkH2lgoU4QrOH2xYfjs+QEDEK4ksn8V2U8UMzyGuQ8sNIjfjZ8P3q3stGSQIE
+bUMr91G7F7oIKcPF0UPRkfwe9x4Nz6QkmpxU8IVkdn+T9OVuLDLGgyhwg/5+4AtW
+cXX0zgZwX+6pG7dPObrsFMENMPu0gQ70VQJ+YQ/dGDQ0MXqeh27hedy0hud9hV8h
+TrCFSrP9jXHCIv0HXUfF
+=x8Sj
 -----END PGP SIGNATURE-----
 
---Yb+qhiCg54lqZFXW--
+--8TaQrIeukR7mmbKf--
