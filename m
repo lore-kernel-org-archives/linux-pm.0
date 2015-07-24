@@ -1,81 +1,59 @@
-From: "Andrew F. Davis" <afd@ti.com>
+From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
 Subject: Re: [PATCH 8/8] power: bq27xxx_battery: Cleanup health checking
-Date: Fri, 24 Jul 2015 15:32:01 -0500
-Message-ID: <55B2A0C1.4000906@ti.com>
-References: <1437601920-13045-1-git-send-email-afd@ti.com>	 <1437601920-13045-9-git-send-email-afd@ti.com>	 <20150723162212.GI29125@pali> <1437671193.26573.10.camel@perches.com>
+Date: Fri, 24 Jul 2015 22:53:37 +0200
+Message-ID: <201507242253.37997@pali>
+References: <1437601920-13045-1-git-send-email-afd@ti.com> <20150723162212.GI29125@pali> <55B29FBB.8080500@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:45545 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753504AbbGXUc1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 16:32:27 -0400
-In-Reply-To: <1437671193.26573.10.camel@perches.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>, =?windows-1252?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>
+Content-Type: multipart/signed;
+  boundary="nextPart1490877.vom1oeGrgu";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <55B29FBB.8080500@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>
 Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On 07/23/2015 12:06 PM, Joe Perches wrote:
-> On Thu, 2015-07-23 at 18:22 +0200, Pali Roh=E1r wrote:
->> On Wednesday 22 July 2015 16:52:00 Andrew F. Davis wrote:
->>> Reorganize the logic checking battery health and under temperature
->>> condition checking.
-> []
->>> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xx=
-x_battery.c
-> []
->>> @@ -624,10 +626,34 @@ static int bq27xxx_battery_read_pwr_avg(struc=
-t bq27xxx_device_info *di)
->>>   */
->>>  static int bq27xxx_battery_overtemp(struct bq27xxx_device_info *di=
-, u16 flags)
->>>  {
->>> -	if (di->chip =3D=3D BQ27500 || di->chip =3D=3D BQ27541)
->>> +	if (di->chip =3D=3D BQ27500 || di->chip =3D=3D BQ27541 || di->chi=
-p =3D=3D BQ27545)
->>>  		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
->>> +	if (di->chip =3D=3D BQ27530 || di->chip =3D=3D BQ27421)
->>> +		return flags & BQ27XXX_FLAG_OT;
->>> +
->>> +	return false;
+--nextPart1490877.vom1oeGrgu
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Friday 24 July 2015 22:27:39 Andrew F. Davis wrote:
+> On 07/23/2015 11:22 AM, Pali Roh=C3=A1r wrote:
+> > On Wednesday 22 July 2015 16:52:00 Andrew F. Davis wrote:
+> >> +	/* Unlikely but important to return first */
+> >> +	if (bq27xxx_battery_overtemp(di, flags))
+> >> +		return POWER_SUPPLY_HEALTH_OVERHEAT;
+> >> +	if (bq27xxx_battery_undertemp(di, flags))
+> >> +		return POWER_SUPPLY_HEALTH_COLD;
+> >> +	if (bq27xxx_battery_dead(di, flags))
+> >> +		return POWER_SUPPLY_HEALTH_DEAD;
+> >=20
+> > Good candidates for "if (unlikely(...))" ?
 >=20
-> Maybe this int function should be bool or return 0
-> instead of false.
->=20
->>> +static int bq27xxx_battery_undertemp(struct bq27xxx_device_info *d=
-i, u16 flags)
->>> +{
->>> +	if (di->chip =3D=3D BQ27530 || di->chip =3D=3D BQ27421)
->>> +			return flags & BQ27XXX_FLAG_UT;
->>> +
->>> +	return false;
->>> +}
->=20
-> Here too
->=20
->>> +
->>> +/*
->>> + * Returns true if a low state of charge condition is detected
->>> + */
->>> +static int bq27xxx_battery_dead(struct bq27xxx_device_info *di, u1=
-6 flags)
->>> +{
->>> +	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
->>> +		return flags & (BQ27000_FLAG_EDV1 | BQ27000_FLAG_EDVF);
->>>  	else
->>> -		return flags & BQ27XXX_FLAG_OTC;
->>> +		return flags & (BQ27XXX_FLAG_SOC1 | BQ27XXX_FLAG_SOCF);
->>>  }
->=20
-> and here
->=20
+> I wasn't sure, but I don't see why not. Added.
 >=20
 
-I think I'll change the return to bool as these functions are only used=
- in an if
-statement checking for true/false.
+You wrote "Unlikely" in comment, so I thought that unlikely macro sounds=20
+reasonable here...
 
-Thanks,
-Andrew
+=2D-=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
+
+--nextPart1490877.vom1oeGrgu
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iEYEABECAAYFAlWypdEACgkQi/DJPQPkQ1LhdwCbBxfM9HbmGr5+YWQFjkhuJ9R9
+Hl4An3YzXUxF6QNw0Al5HwARJ3uyXhC7
+=TBaX
+-----END PGP SIGNATURE-----
+
+--nextPart1490877.vom1oeGrgu--
