@@ -1,94 +1,82 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: [RFT/RFC] power_supply: bq2415x_charger: Initialize workqueue before scheduling it
-Date: Sat, 25 Jul 2015 23:49:06 +0200
-Message-ID: <201507252349.06519@pali>
-References: <1436834053-2084-1-git-send-email-k.kozlowski@samsung.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2] cpufreq: Avoid attempts to create duplicate symbolic links
+Date: Sun, 26 Jul 2015 00:46:41 +0200
+Message-ID: <CAJZ5v0i6t36Nr7nFOKjGY5fBjzR=h+rNHcHWYd=eEdapMWQEGQ@mail.gmail.com>
+References: <1660815.CyKx9SEI9c@vostro.rjw.lan>
+	<20150724140943.GC16336@linux>
+	<1509688.KKhdi8M36y@vostro.rjw.lan>
+	<11080992.c5Q5Du7n5n@vostro.rjw.lan>
+	<20150725130002.GC1691@linux>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart23202602.oVPU8x2pus";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:33127 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964868AbbGYVtK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 25 Jul 2015 17:49:10 -0400
-In-Reply-To: <1436834053-2084-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150725130002.GC1691@linux>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
---nextPart23202602.oVPU8x2pus
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Hi Viresh,
 
-On Tuesday 14 July 2015 02:34:13 Krzysztof Kozlowski wrote:
-> The driver during probe registers a power supply notifier
-> (with bq2415x_notifier_call() callback) and calls it manually right
-> after. The notifier callback function schedules driver's workqueue
-> (bq->work).
->=20
-> However the workqueue was initialized after these two events (after
-> registering power supply notifier and calling manually the callback).
->=20
-> When power supply core notified the driver (executing its
-> bq2415x_notifier_call() callback) the scheduled workqueue could be
-> still uninitialized.
->=20
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Reported-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
->=20
-> ---
->=20
-> I don't have the hardware, please test. Additionally I could not find
-> the commit which introduced the issue so I did not cc-stable.
-> ---
->  drivers/power/bq2415x_charger.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/bq2415x_charger.c
-> b/drivers/power/bq2415x_charger.c index e98dcb661cc9..527ed0f18796
-> 100644
-> --- a/drivers/power/bq2415x_charger.c
-> +++ b/drivers/power/bq2415x_charger.c
-> @@ -1601,6 +1601,7 @@ static int bq2415x_probe(struct i2c_client
-> *client, bq->reported_mode =3D BQ2415X_MODE_OFF;
->  	bq->autotimer =3D 0;
->  	bq->automode =3D 0;
-> +	INIT_DELAYED_WORK(&bq->work, bq2415x_timer_work);
->=20
->  	if (np || ACPI_HANDLE(bq->dev)) {
->  		ret =3D device_property_read_u32(bq->dev,
-> @@ -1677,7 +1678,6 @@ static int bq2415x_probe(struct i2c_client
-> *client, dev_info(bq->dev, "automode not supported\n");
->  	}
->=20
-> -	INIT_DELAYED_WORK(&bq->work, bq2415x_timer_work);
->  	bq2415x_set_autotimer(bq, 1);
->=20
->  	dev_info(bq->dev, "driver registered\n");
+On Sat, Jul 25, 2015 at 3:00 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 25-07-15, 00:17, Rafael J. Wysocki wrote:
+>> To avoid that warning, use the observation that cpufreq doesn't
+>> need to care about CPUs that have never been online.
+>
+> I have concerns over the very philosophy behind the patch and so
+> wanted to discuss more on that.
+>
+> It will be really confusing to have a scenario where:
+> - we have a four related CPUs: 0-3.
+> - 0-1 are online and have /sys/devices/system/cpu/cpuX/cpufreq directory
+> - 2 is offline but was once online and so still has a directory
+> - 3 never came online after the cpufreq driver is registered (we need
+>   to think about cpufreq driver being a module here, its possible CPU
+>   was online earlier) and so it doesn't have a directory.
+>
+> How will the user distinguish between cpu 3 and 4, both being offline
+> and user may not know one of them was never online. And the related
+> CPUs of 0-2 will include CPU 3 as well..
 
-Looks like this is really problem. I sent alternative patch to mailing=20
-list which should fix this problem too plus allows to load=20
-bq2415x_charger.ko in n900 qemu.
+So the problem is that a CPU (which is present) listed by related_cpus
+does not have a symbolic link to the policy, right?
 
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+That is a valid point, although related_cpus can list CPUs that aren't
+present even in theory.  That is a super corner case, however.
 
---nextPart23202602.oVPU8x2pus
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+> I think, we just moved into the wrong direction. We have a valid
+> policy for CPU4, with all valid data. Why not show it up in sysfs?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+And why do we care?  The CPU is offline and may never go online before
+the cpufreq driver is unloaded.
 
-iEYEABECAAYFAlW0BFIACgkQi/DJPQPkQ1JYjACgpGDJ1Lq1jFfNJ/uegNIbxnx5
-0AAAnR9JwEAJlpRaONkA4TTpAO6MVvaw
-=yluO
------END PGP SIGNATURE-----
+> So, what we discussed over IRC earlier was, cpufreq shouldn't care
+> about CPUs, which are offline and that don't have a policy allocated
+> for them. So if all the CPUs of a policy never came online after the
+> driver is registered, we shouldn't care about them.
 
---nextPart23202602.oVPU8x2pus--
+That's an alternative really.  Either we don't care about offline CPUs
+and only preserve their sysfs stuff once it's been created (just in
+case we need it again when the CPU goes online), or we do care about
+offline CPUs that share a policy object wirh at least one online CPU.
+The code is slightly simpler in the former case and the information
+seen by user space is slightly more consistent in the latter case.
+
+We need to make a choice and you seem to be preferring the second
+option.  I'm fine with that, if we choose this one, it really only
+makes sense to create all of the links from present CPUs to the policy
+object at the time that object is created to avoid havig a (presumably
+small) window in which inconsistent information may be seen by user
+space.
+
+> I think, for know your earlier version of the patch was just fine,
+> with the improvements I suggested. And we should go ahead with
+> solution like what I gave, the diff of that was quite big for an rc
+> fix and so I said your patch looks better.
+
+OK, I'll prepare a new version of that patch then, but as I said this
+choice means that we'll be creating the links to the policy at the
+policy creation time going forward.
+
+Thanks,
+Rafael
