@@ -1,53 +1,63 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: Avoid attempts to create duplicate symbolic
- links
-Date: Sat, 25 Jul 2015 18:30:02 +0530
-Message-ID: <20150725130002.GC1691@linux>
-References: <1660815.CyKx9SEI9c@vostro.rjw.lan>
- <20150724140943.GC16336@linux>
- <1509688.KKhdi8M36y@vostro.rjw.lan>
- <11080992.c5Q5Du7n5n@vostro.rjw.lan>
+From: "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>
+Subject: RE: [PATCH v2] power: max17042_battery: add HEALTH and TEMP_*
+ properties support
+Date: Sat, 25 Jul 2015 13:23:30 +0000
+Message-ID: <D854C92F57B1B347B57E531E78D05EAD578B35A6@BGSMSX104.gar.corp.intel.com>
+References: <1432438918-31002-1-git-send-email-ramakrishna.pallala@intel.com>
+ <CAJKOXPeUvdC5LwRLgsFfxz2=SZwkjq2soGius+j6kb76Ea940A@mail.gmail.com>
+ <CAJKOXPepZ9gKtnKk7Z4BFjUk=_kv6j010dZWhhu9bf_OuVmrgQ@mail.gmail.com>
+ <20150724144651.GE27569@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <11080992.c5Q5Du7n5n@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:56598 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754331AbbGYNXf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 25 Jul 2015 09:23:35 -0400
+In-Reply-To: <20150724144651.GE27569@earth>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
 
-On 25-07-15, 00:17, Rafael J. Wysocki wrote:
-> To avoid that warning, use the observation that cpufreq doesn't
-> need to care about CPUs that have never been online.
+Hi Krzysztof Kozlowski,
 
-I have concerns over the very philosophy behind the patch and so
-wanted to discuss more on that.
+>On Tue, Jun 23, 2015 at 09:58:41AM +0900, Krzysztof Kozlowski wrote:
+>> 2015-06-08 10:22 GMT+09:00 Krzysztof Kozlowski <k.kozlowski@samsung.com>:
+>> > 2015-05-24 12:41 GMT+09:00 Ramakrishna Pallala <ramakrishna.pallala@intel.com>:
+>> >> This patch adds the support for following battery properties to 
+> >> max17042 fuel gauge driver.
+>> >>
+>> >> POWER_SUPPLY_PROP_TEMP_ALERT_MIN
+> >> POWER_SUPPLY_PROP_TEMP_ALERT_MAX
+>> >> POWER_SUPPLY_PROP_TEMP_MIN
+>> >> POWER_SUPPLY_PROP_TEMP_MAX
+>> >> POWER_SUPPLY_PROP_HEALTH
+>> >
+>> > I wonder, have you tested the patch? After booting on Trats2 device
+>> > (max77693 which identifies itself as 17047-like) the values are:
+>> > POWER_SUPPLY_TEMP_ALERT_MIN=1280
+>> > POWER_SUPPLY_TEMP_ALERT_MAX=1270
+>> > POWER_SUPPLY_TEMP=257
+>> > This is okay, datasheet says that register after booting will have 
+>> > value of 0x7f80.
+>> >
+>> > However setting them to some value which should trigger interrupts 
+>> > (like 300 for MIN or 200 for MAX) does not trigger the interrupt. I 
+>> > added a printk in max17042_thread_handler().
+>> >
+>> > Is the temperature alert feature working?
+>> 
+>> Can you reply to my question above?
+>> If this feature is not working, then it should be removed.
 
-It will be really confusing to have a scenario where:
-- we have a four related CPUs: 0-3.
-- 0-1 are online and have /sys/devices/system/cpu/cpuX/cpufreq directory
-- 2 is offline but was once online and so still has a directory
-- 3 never came online after the cpufreq driver is registered (we need
-  to think about cpufreq driver being a module here, its possible CPU
-  was online earlier) and so it doesn't have a directory.
+>What's the status of this? I cannot test the feature, since I don't have the hardware. I agree, that this should be removed, if it's not working.
 
-How will the user distinguish between cpu 3 and 4, both being offline
-and user may not know one of them was never online. And the related
-CPUs of 0-2 will include CPU 3 as well..
+I missed this email (may be overlooked it). To have the interrupts enabled we need the config registers(0x1Dh) bit's BIT(9), BIT(4) and BIT92) should be 1 and  BIT(8) should be 0.
 
-I think, we just moved into the wrong direction. We have a valid
-policy for CPU4, with all valid data. Why not show it up in sysfs?
+Can you dump the status(00h), Talrt(02H) Temp(08h) and config(1Dh) registers values and share?
 
-So, what we discussed over IRC earlier was, cpufreq shouldn't care
-about CPUs, which are offline and that don't have a policy allocated
-for them. So if all the CPUs of a policy never came online after the
-driver is registered, we shouldn't care about them.
-
-I think, for know your earlier version of the patch was just fine,
-with the improvements I suggested. And we should go ahead with
-solution like what I gave, the diff of that was quite big for an rc
-fix and so I said your patch looks better.
-
--- 
-viresh
+Thanks,
+Ram
