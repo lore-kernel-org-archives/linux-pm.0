@@ -1,81 +1,107 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH v2 0/4] Add standby support for the recent mvebu SoCs
-Date: Sat, 25 Jul 2015 17:20:07 +0200
-Message-ID: <55B3A927.6070906@free-electrons.com>
-References: <1435684740-24912-1-git-send-email-gregory.clement@free-electrons.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 3/4] power: Add Qualcomm SMBB driver
+Date: Sat, 25 Jul 2015 17:42:00 +0200
+Message-ID: <20150725154159.GA17373@earth>
+References: <1434662025-9485-1-git-send-email-bjorn.andersson@sonymobile.com>
+ <1434662025-9485-4-git-send-email-bjorn.andersson@sonymobile.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1435684740-24912-1-git-send-email-gregory.clement@free-electrons.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="vtzGhvizbBRQ85DL"
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1434662025-9485-4-git-send-email-bjorn.andersson@sonymobile.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Courtney Cavin <courtney.cavin@sonymobile.com>
 List-Id: linux-pm@vger.kernel.org
+
+
+--vtzGhvizbBRQ85DL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
 Hi,
 
-On 30/06/2015 19:18, Gregory CLEMENT wrote:
-> Hi,
-> 
-> Until now only few mvebu v7 based board supported suspend to ram. This
-> suspend to ram mode was unusual because it involved shutting down the
-> SoC and relied on a PIC to wake up the system.
-> 
-> However, most of the recent mvebu SoCs can support the standby
-> mode. Unlike for the suspend to ram, nothing special have to be done
-> for these SoCs. In this mode the SoCs go in idle mode (but they remain
-> powered up) and the devices enter in suspend mode. The support itself
-> was added in the patch 2.
-> 
-> In order to wake-up the interrupt controller driver have been
-> updated. As in standby mode the interrupt controller is not shutdown,
-> any interrupt can be a wake-up source. So the GIC (patch 3) now used
-> the flags IRQCHIP_SKIP_SET_WAKE and IRQCHIP_MASK_ON_SUSPEND.
-> 
-> A wake up source is supposed to work in suspend _and_ in standby mode
-> but for the mvebu SoCs, no interrupt can wake up the system. The last
-> patch warns the user about it.
-> 
-> The first patch is a clean-up found while working on this series
-> 
-> This series was applied on top of Thomas' series "ARM: mvebu: add
-> suspend to RAM support for Armada 38x":
-> http://thread.gmane.org/gmane.linux.ports.arm.kernel/420458
-> 
-> It has been either using rtcwake or by setting the serial line as a
-> wake-up source through the sysfs interface.
+On Thu, Jun 18, 2015 at 02:13:44PM -0700, Bjorn Andersson wrote:
+> Add the Qualcomm Switch-Mode Battery Charger and Boost driver, found in
+> pm8941.
 
+The driver's sourcecode looks fine to me. I'm not convinced by all
+those new DT properties, though. I think "watermark" should be
+replaced with "threshold" and "control" with "current" for all
+properties. Additionally some comments. Note, that I only used the
+driver's sourcecode as reference, since the DT binding document
+was neither send to me, nor to linux-pm mailinglist.
 
-I applied the series on mvebu/soc
+ * battery-charge-control-limit
 
-Thanks,
+It's unclear, what this property is used for. Is the limit only
+for "normal" charging or also for fast charging?
 
-Gregory
+ * fast-charge-low-watermark
+ * fast-charge-high-watermark
 
-> 
-> Thanks,
-> 
-> Gregory
-> 
-> 
-> Gregory CLEMENT (4):
->   ARM: mvebu: Use __init for the PM initialization functions
->   ARM: mvebu: Add standby support
->   ARM: mvebu: Allow using the GIC for wakeup in standby mode
->   ARM: mvebu: Warn about the wake-up sources not taken into account in
->     suspend
-> 
->  arch/arm/mach-mvebu/board-v7.c |  7 +++++
->  arch/arm/mach-mvebu/common.h   |  5 ++--
->  arch/arm/mach-mvebu/pm-board.c | 19 +++++++++-----
->  arch/arm/mach-mvebu/pm.c       | 58 +++++++++++++++++++++++++++++++++++++-----
->  4 files changed, 73 insertions(+), 16 deletions(-)
-> 
+Add a unit to this property. Maybe "fast-charge-start-voltage"
+and "fast-charge-stop-voltage"?
 
+ * fast-charge-safe-voltage
+ * fast-charge-safe-current
 
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+These properties are fine to me. I wonder if they should be named
+fast-charge-max-*, though.
+
+ * auto-recharge-low-watermark
+
+I think the "low" can be dropped. Instead a -voltage
+should be appended, since it could also be a percentage.
+
+ * minimum-input-voltage
+
+Add a vendor prefix to this property.
+
+ * usb-charge-control-limit
+
+I suggest to remove this from DT. If no USB detection is
+implemented, the default should be 100mA according to USB
+standard.
+
+ * dc-charge-control-limit
+
+Please add a vendor prefix and I think "dc-current-limit"
+is a more fitting name.
+
+ * disable-dc
+
+Please add a vendor prefix.
+
+ * jeita-extended-temp-range
+
+Looks ok to me.
+
+-- Sebastian
+
+smbb_charger_attr_parse
+
+--vtzGhvizbBRQ85DL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVs65FAAoJENju1/PIO/qac0MP/2Mc2g/pUHMxFdtnm7vMXGgj
+LPj98qiR9JxjowFp2+BUsPq8yeC2gCZyU8ZbUpf2R71IVfTivLDdGoRtcJhHCljQ
+fSOafBUDd1UByWRGhljzQHctb0ERO/zHDo3JvBAqY32LW89FAqNAoRPtz/Ljz/tS
+i3kvRls/4jx7mUdzHKxCZN+YgjzTrrjLHtnCWSEdy65Qfe8qap9gGe9NDdtSD0v1
+AhptI4I4kh4NlwSO/+POWM/LnPXoTzQsxvcysKPL67FHNYYgVq7QUUk8MkzIygZ0
+zs8ig8ncdkWEKXtaol9g4C1IJF6o/E5i++rSu57B6fbCm1H+6FwZvtwakF5YAwOj
+RLOQJaA73jaaOUKSEB3c0xFAXLGIzRBuVvTlECBPjuzhmOLoD9WmUTh5xaRcDdPG
+4IWXb3ANWEHus9HqRBeRqN9ICiOiB6CcYbf9AQ3/+t0BNefO7zgcTU20jEsPDSnq
+8BDqXHPDHshcJcKCg0JmhorLyaqYr9Q86QciBoHCafVPIsss0WyxPe0By3UoA4yS
+RoX2AVBs5oTdYv9gjL0yx4oCUURgb1Lp+Ix1JLEcwDY7ro/qNjbcS4tU6msOarqB
+Rw64WwaJJpryMPolrQgfEvT7/nC7eZEuWXzQdInaWo3EAbA9AFYbZMRPf02Q4+xp
+9VfJMBJUtM5SQibYu01m
+=P7sw
+-----END PGP SIGNATURE-----
+
+--vtzGhvizbBRQ85DL--
