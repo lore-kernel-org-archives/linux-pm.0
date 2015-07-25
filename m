@@ -1,63 +1,41 @@
-From: "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>
-Subject: RE: [PATCH v2] power: max17042_battery: add HEALTH and TEMP_*
- properties support
-Date: Sat, 25 Jul 2015 13:23:30 +0000
-Message-ID: <D854C92F57B1B347B57E531E78D05EAD578B35A6@BGSMSX104.gar.corp.intel.com>
-References: <1432438918-31002-1-git-send-email-ramakrishna.pallala@intel.com>
- <CAJKOXPeUvdC5LwRLgsFfxz2=SZwkjq2soGius+j6kb76Ea940A@mail.gmail.com>
- <CAJKOXPepZ9gKtnKk7Z4BFjUk=_kv6j010dZWhhu9bf_OuVmrgQ@mail.gmail.com>
- <20150724144651.GE27569@earth>
+From: joeyli <jlee-IBi9RG/b67k@public.gmane.org>
+Subject: Re: [RFC PATCH 00/16] Signature verification of hibernate snapshot
+Date: Sat, 25 Jul 2015 22:32:03 +0800
+Message-ID: <20150725143203.GA19009@linux-rxt1.site>
+References: <1437056730-15247-1-git-send-email-jlee@suse.com>
+ <alpine.LNX.2.00.1507241527410.1141@pobox.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:56598 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754331AbbGYNXf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 25 Jul 2015 09:23:35 -0400
-In-Reply-To: <20150724144651.GE27569@earth>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.00.1507241527410.1141-ztGlSCb7Y1iN3ZZ/Hiejyg@public.gmane.org>
+Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jiri Kosina <jkosina-IBi9RG/b67k@public.gmane.org>
+Cc: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <matthew.garrett-05XSO3Yj/JvQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
 
-Hi Krzysztof Kozlowski,
+Hi Jiri,
 
->On Tue, Jun 23, 2015 at 09:58:41AM +0900, Krzysztof Kozlowski wrote:
->> 2015-06-08 10:22 GMT+09:00 Krzysztof Kozlowski <k.kozlowski@samsung.com>:
->> > 2015-05-24 12:41 GMT+09:00 Ramakrishna Pallala <ramakrishna.pallala@intel.com>:
->> >> This patch adds the support for following battery properties to 
-> >> max17042 fuel gauge driver.
->> >>
->> >> POWER_SUPPLY_PROP_TEMP_ALERT_MIN
-> >> POWER_SUPPLY_PROP_TEMP_ALERT_MAX
->> >> POWER_SUPPLY_PROP_TEMP_MIN
->> >> POWER_SUPPLY_PROP_TEMP_MAX
->> >> POWER_SUPPLY_PROP_HEALTH
->> >
->> > I wonder, have you tested the patch? After booting on Trats2 device
->> > (max77693 which identifies itself as 17047-like) the values are:
->> > POWER_SUPPLY_TEMP_ALERT_MIN=1280
->> > POWER_SUPPLY_TEMP_ALERT_MAX=1270
->> > POWER_SUPPLY_TEMP=257
->> > This is okay, datasheet says that register after booting will have 
->> > value of 0x7f80.
->> >
->> > However setting them to some value which should trigger interrupts 
->> > (like 300 for MIN or 200 for MAX) does not trigger the interrupt. I 
->> > added a printk in max17042_thread_handler().
->> >
->> > Is the temperature alert feature working?
->> 
->> Can you reply to my question above?
->> If this feature is not working, then it should be removed.
+On Fri, Jul 24, 2015 at 07:08:18PM +0200, Jiri Kosina wrote:
+> On Thu, 16 Jul 2015, Lee, Chun-Yi wrote:
+> 
+> > This patchset is the implementation of signature verification of hibernate
+> > snapshot image. The origin idea is from Jiri Kosina: Let EFI bootloader
+> > generate key-pair in UEFI secure boot environment, then forward it to kernel
+> > for sign/verify hibernate image.
+> 
+> I've finally managed to fully go through the series and test it on my 
+> secure boot testing setup.
+> 
+> 	Reviewed-by: Jiri Kosina <jkosina-IBi9RG/b67k@public.gmane.org>
+> 	Tested-by: Jiri Kosina <jkosina-IBi9RG/b67k@public.gmane.org>
+> 
+> for the whole series. Thanks,
+> 
+> -- 
+> Jiri Kosina
+> SUSE Labs
 
->What's the status of this? I cannot test the feature, since I don't have the hardware. I agree, that this should be removed, if it's not working.
+Thanks for your review and test.
 
-I missed this email (may be overlooked it). To have the interrupts enabled we need the config registers(0x1Dh) bit's BIT(9), BIT(4) and BIT92) should be 1 and  BIT(8) should be 0.
-
-Can you dump the status(00h), Talrt(02H) Temp(08h) and config(1Dh) registers values and share?
-
-Thanks,
-Ram
+Joey Lee
