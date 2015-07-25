@@ -1,156 +1,79 @@
-From: Vaishali Thakkar <vthakkar1994@gmail.com>
-Subject: [PATCH v2] power_supply: bq24735: Convert to using managed resources
-Date: Sat, 25 Jul 2015 09:23:16 +0530
-Message-ID: <20150725035316.GA10621@vaishali-Ideapad-Z570>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2] thermal: consistently use int for temperatures
+Date: Sat, 25 Jul 2015 09:01:32 +0200
+Message-ID: <20150725070132.GA18328@amd>
+References: <1437463292-24844-1-git-send-email-s.hauer@pengutronix.de>
+ <20150723120759.GA17690@amd>
+ <20150724062948.GK18700@pengutronix.de>
+ <55B244BE.1060203@roeck-us.net>
+ <20150724221102.GA31517@amd>
+ <55B2C105.3040600@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:36022 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754731AbbGYDxX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 23:53:23 -0400
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <55B2C105.3040600@roeck-us.net>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Punit Agrawal <punit.agrawal@arm.com>, Jean Delvare <jdelvare@suse.de>, Peter Feuerer <peter@piie.net>, Heiko Stuebner <heiko@sntech.de>, Lukasz Majewski <l.majewski@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, linux-acpi@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Ripard <maxime.ripard@free-electrons.com>, Darren Hart <dvhart@infradead.org>, lm-sensors@lm-sensors.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Frans Klaver <fransklaver@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Use managed resource functions like devm_kasprintf and
-devm_power_supply_register in bq24735_charger_probe. To be
-compatible with the change, replace various gotos by direct
-returns and drop unneeded labels.
+On Fri 2015-07-24 15:49:41, Guenter Roeck wrote:
+> On 07/24/2015 03:11 PM, Pavel Machek wrote:
+> >On Fri 2015-07-24 06:59:26, Guenter Roeck wrote:
+> >>On 07/23/2015 11:29 PM, Sascha Hauer wrote:
+> >>>On Thu, Jul 23, 2015 at 02:07:59PM +0200, Pavel Machek wrote:
+> >>>>On Tue 2015-07-21 09:21:32, Sascha Hauer wrote:
+> >>>>>The thermal code uses int, long and unsigned long for temperatur=
+es
+> >>>>>in different places.
+> >>>>>
+> >>>>>Using an unsigned type limits the thermal framework to positive
+> >>>>>temperatures without need. Also several drivers currently will r=
+eport
+> >>>>>temperatures near UINT_MAX for temperatures below 0=B0C. This wi=
+ll probably
+> >>>>>immediately shut the machine down due to overtemperature if star=
+ted below
+> >>>>>0=B0C.
+> >>>>>
+> >>>>>'long' is 64bit on several architectures. This is not needed sin=
+ce INT_MAX =B0mC
+> >>>>>is above the melting point of all known materials.
+> >>>>
+> >>>>Can we do something like
+> >>>>
+> >>>>typedef millicelsius_t int;
+> >>>>
+> >>>>...to document the units?
+> >>>
+> >>>I am not very fond of typedefs and I am not sure this adds any val=
+ue. I
+> >>>could change it when more people ask for it, but I just sent the n=
+ew
+> >>>version without this.
+> >>>
+> >>
+> >>I thought we are supposed to not introduce new typedefs anyway.
+> >
+> >You are not supposed to typedef struct, but typedef for millicelsius=
+_t
+> >would be ok. And it is your only chance if you want people to pay
+> >attention. If you make it int, someone will pass it to long or
+> >something else..
+>=20
+> Seems to me that would be just lazyness. The same person might use 'l=
+ong'
+> even if millicelsius_t is defined. A typedef doesn't preclude people
+> from ignoring it.
 
-Also, remove bq24735_charger_remove as it is now redundant.
-
-Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
----
-Changes since v2:
-	- Use devm_power_supply_register
-	- Remove bq24735_charger_remove
-	- Improve commit log
----
- drivers/power/bq24735-charger.c | 51 +++++++++++------------------------------
- 1 file changed, 13 insertions(+), 38 deletions(-)
-
-diff --git a/drivers/power/bq24735-charger.c b/drivers/power/bq24735-charger.c
-index b017437..eb2b368 100644
---- a/drivers/power/bq24735-charger.c
-+++ b/drivers/power/bq24735-charger.c
-@@ -267,8 +267,9 @@ static int bq24735_charger_probe(struct i2c_client *client,
- 
- 	name = (char *)charger->pdata->name;
- 	if (!name) {
--		name = kasprintf(GFP_KERNEL, "bq24735@%s",
--				 dev_name(&client->dev));
-+		name = devm_kasprintf(&client->dev, GFP_KERNEL,
-+				      "bq24735@%s",
-+				      dev_name(&client->dev));
- 		if (!name) {
- 			dev_err(&client->dev, "Failed to alloc device name\n");
- 			return -ENOMEM;
-@@ -296,23 +297,21 @@ static int bq24735_charger_probe(struct i2c_client *client,
- 	if (ret < 0) {
- 		dev_err(&client->dev, "Failed to read manufacturer id : %d\n",
- 			ret);
--		goto err_free_name;
-+		return ret;
- 	} else if (ret != 0x0040) {
- 		dev_err(&client->dev,
- 			"manufacturer id mismatch. 0x0040 != 0x%04x\n", ret);
--		ret = -ENODEV;
--		goto err_free_name;
-+		return -ENODEV;
- 	}
- 
- 	ret = bq24735_read_word(client, BQ24735_DEVICE_ID);
- 	if (ret < 0) {
- 		dev_err(&client->dev, "Failed to read device id : %d\n", ret);
--		goto err_free_name;
-+		return ret;
- 	} else if (ret != 0x000B) {
- 		dev_err(&client->dev,
- 			"device id mismatch. 0x000b != 0x%04x\n", ret);
--		ret = -ENODEV;
--		goto err_free_name;
-+		return -ENODEV;
- 	}
- 
- 	if (gpio_is_valid(charger->pdata->status_gpio)) {
-@@ -331,7 +330,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
- 	ret = bq24735_config_charger(charger);
- 	if (ret < 0) {
- 		dev_err(&client->dev, "failed in configuring charger");
--		goto err_free_name;
-+		return ret;
- 	}
- 
- 	/* check for AC adapter presence */
-@@ -339,17 +338,17 @@ static int bq24735_charger_probe(struct i2c_client *client,
- 		ret = bq24735_enable_charging(charger);
- 		if (ret < 0) {
- 			dev_err(&client->dev, "Failed to enable charging\n");
--			goto err_free_name;
-+			return ret;
- 		}
- 	}
- 
--	charger->charger = power_supply_register(&client->dev, supply_desc,
--						 &psy_cfg);
-+	charger->charger = devm_power_supply_register(&client->dev, supply_desc,
-+						      &psy_cfg);
- 	if (IS_ERR(charger->charger)) {
- 		ret = PTR_ERR(charger->charger);
- 		dev_err(&client->dev, "Failed to register power supply: %d\n",
- 			ret);
--		goto err_free_name;
-+		return ret;
- 	}
- 
- 	if (client->irq) {
-@@ -364,34 +363,11 @@ static int bq24735_charger_probe(struct i2c_client *client,
- 			dev_err(&client->dev,
- 				"Unable to register IRQ %d err %d\n",
- 				client->irq, ret);
--			goto err_unregister_supply;
-+			return ret;
- 		}
- 	}
- 
- 	return 0;
--err_unregister_supply:
--	power_supply_unregister(charger->charger);
--err_free_name:
--	if (name != charger->pdata->name)
--		kfree(name);
--
--	return ret;
--}
--
--static int bq24735_charger_remove(struct i2c_client *client)
--{
--	struct bq24735 *charger = i2c_get_clientdata(client);
--
--	if (charger->client->irq)
--		devm_free_irq(&charger->client->dev, charger->client->irq,
--			      &charger->charger);
--
--	power_supply_unregister(charger->charger);
--
--	if (charger->charger_desc.name != charger->pdata->name)
--		kfree(charger->charger_desc.name);
--
--	return 0;
- }
- 
- static const struct i2c_device_id bq24735_charger_id[] = {
-@@ -412,7 +388,6 @@ static struct i2c_driver bq24735_charger_driver = {
- 		.of_match_table = bq24735_match_ids,
- 	},
- 	.probe = bq24735_charger_probe,
--	.remove = bq24735_charger_remove,
- 	.id_table = bq24735_charger_id,
- };
- 
--- 
-1.9.1
-
+Well,  millicelsius_t will tell people that this is temperature, and
+being "special" type, they'll try to preserve it. (And you could check
+with sparse if you really wanted). int and long are common enough so
+that people will not notice...
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
+/blog.html
