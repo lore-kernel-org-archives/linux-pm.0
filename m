@@ -1,71 +1,44 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v2] thermal: consistently use int for temperatures
-Date: Fri, 24 Jul 2015 15:49:41 -0700
-Message-ID: <55B2C105.3040600@roeck-us.net>
-References: <1437463292-24844-1-git-send-email-s.hauer@pengutronix.de> <20150723120759.GA17690@amd> <20150724062948.GK18700@pengutronix.de> <55B244BE.1060203@roeck-us.net> <20150724221102.GA31517@amd>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/9] Platform support for thermal management on Junoe
+Date: Sat, 25 Jul 2015 06:57:27 +0530
+Message-ID: <20150725012727.GB14916@linux>
+References: <1437573763-6525-1-git-send-email-punit.agrawal@arm.com>
+ <20150723092930.GM5322@linux>
+ <9hhk2tpbpzf.fsf@e105922-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20150724221102.GA31517@amd>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, Punit Agrawal <punit.agrawal@arm.com>, Jean Delvare <jdelvare@suse.de>, Peter Feuerer <peter@piie.net>, Heiko Stuebner <heiko@sntech.de>, Lukasz Majewski <l.majewski@samsung.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, linux-acpi@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-samsung-soc@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maxime Ripard <maxime.ripard@free-electrons.com>, Darren Hart <dvhart@infradead.org>, lm-sensors@lm-sensors.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f179.google.com ([209.85.192.179]:35291 "EHLO
+	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753145AbbGYB1c (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jul 2015 21:27:32 -0400
+Received: by pdrg1 with SMTP id g1so21254996pdr.2
+        for <linux-pm@vger.kernel.org>; Fri, 24 Jul 2015 18:27:31 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <9hhk2tpbpzf.fsf@e105922-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Punit Agrawal <punit.agrawal@arm.com>, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, edubezval@gmail.com, mark.rutland@arm.com, sudeep.holla@arm.com, linux@roeck-us.net
 
-On 07/24/2015 03:11 PM, Pavel Machek wrote:
-> On Fri 2015-07-24 06:59:26, Guenter Roeck wrote:
->> On 07/23/2015 11:29 PM, Sascha Hauer wrote:
->>> On Thu, Jul 23, 2015 at 02:07:59PM +0200, Pavel Machek wrote:
->>>> On Tue 2015-07-21 09:21:32, Sascha Hauer wrote:
->>>>> The thermal code uses int, long and unsigned long for temperature=
-s
->>>>> in different places.
->>>>>
->>>>> Using an unsigned type limits the thermal framework to positive
->>>>> temperatures without need. Also several drivers currently will re=
-port
->>>>> temperatures near UINT_MAX for temperatures below 0=B0C. This wil=
-l probably
->>>>> immediately shut the machine down due to overtemperature if start=
-ed below
->>>>> 0=B0C.
->>>>>
->>>>> 'long' is 64bit on several architectures. This is not needed sinc=
-e INT_MAX =B0mC
->>>>> is above the melting point of all known materials.
->>>>
->>>> Can we do something like
->>>>
->>>> typedef millicelsius_t int;
->>>>
->>>> ...to document the units?
->>>
->>> I am not very fond of typedefs and I am not sure this adds any valu=
-e. I
->>> could change it when more people ask for it, but I just sent the ne=
-w
->>> version without this.
->>>
->>
->> I thought we are supposed to not introduce new typedefs anyway.
->
-> You are not supposed to typedef struct, but typedef for millicelsius_=
-t
-> would be ok. And it is your only chance if you want people to pay
-> attention. If you make it int, someone will pass it to long or
-> something else..
+On 24-07-15, 15:16, Punit Agrawal wrote:
+> Hi Viresh,
+> 
+> Viresh Kumar <viresh.kumar@linaro.org> writes:
+> 
+> > On 22-07-15, 15:02, Punit Agrawal wrote:
+> >>   cpufreq-dt: Supply power coefficient when registering cooling devices
+> >>   cpufreq: arm_big_little: Add support to register a cpufreq cooling
+> >>     device
+> >
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Thanks for the acks.
+> 
+> Once the device tree property is agreed upon, will you be picking up these
+> patches?
 
-Seems to me that would be just lazyness. The same person might use 'lon=
-g'
-even if millicelsius_t is defined. A typedef doesn't preclude people
-from ignoring it.
+Since it is already present in patchwork, Rafael can apply these.
 
-Guenter
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+viresh
