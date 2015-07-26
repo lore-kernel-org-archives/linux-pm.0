@@ -1,82 +1,315 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2] cpufreq: Avoid attempts to create duplicate symbolic links
-Date: Sun, 26 Jul 2015 00:46:41 +0200
-Message-ID: <CAJZ5v0i6t36Nr7nFOKjGY5fBjzR=h+rNHcHWYd=eEdapMWQEGQ@mail.gmail.com>
-References: <1660815.CyKx9SEI9c@vostro.rjw.lan>
-	<20150724140943.GC16336@linux>
-	<1509688.KKhdi8M36y@vostro.rjw.lan>
-	<11080992.c5Q5Du7n5n@vostro.rjw.lan>
-	<20150725130002.GC1691@linux>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v3] cpufreq: Avoid attempts to create duplicate symbolic links
+Date: Sun, 26 Jul 2015 02:28:36 +0200
+Message-ID: <2161701.diIE0m8ocR@vostro.rjw.lan>
+References: <1660815.CyKx9SEI9c@vostro.rjw.lan> <20150725130002.GC1691@linux> <CAJZ5v0i6t36Nr7nFOKjGY5fBjzR=h+rNHcHWYd=eEdapMWQEGQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150725130002.GC1691@linux>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:63448 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754997AbbGZABq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 25 Jul 2015 20:01:46 -0400
+In-Reply-To: <CAJZ5v0i6t36Nr7nFOKjGY5fBjzR=h+rNHcHWYd=eEdapMWQEGQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>
 
-Hi Viresh,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Sat, Jul 25, 2015 at 3:00 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 25-07-15, 00:17, Rafael J. Wysocki wrote:
->> To avoid that warning, use the observation that cpufreq doesn't
->> need to care about CPUs that have never been online.
->
-> I have concerns over the very philosophy behind the patch and so
-> wanted to discuss more on that.
->
-> It will be really confusing to have a scenario where:
-> - we have a four related CPUs: 0-3.
-> - 0-1 are online and have /sys/devices/system/cpu/cpuX/cpufreq directory
-> - 2 is offline but was once online and so still has a directory
-> - 3 never came online after the cpufreq driver is registered (we need
->   to think about cpufreq driver being a module here, its possible CPU
->   was online earlier) and so it doesn't have a directory.
->
-> How will the user distinguish between cpu 3 and 4, both being offline
-> and user may not know one of them was never online. And the related
-> CPUs of 0-2 will include CPU 3 as well..
+After commit 87549141d516 (cpufreq: Stop migrating sysfs files on
+hotplug) there is a problem with CPUs that share cpufreq policy
+objects with other CPUs and are initially offline.
 
-So the problem is that a CPU (which is present) listed by related_cpus
-does not have a symbolic link to the policy, right?
+Say CPU1 shares a policy with CPU0 which is online and is registered
+first.  As part of the registration process, cpufreq_add_dev() is
+called for it.  It creates the policy object and a symbolic link
+to it from the CPU1's sysfs directory.  If CPU1 is registered
+subsequently and it is offline at that time, cpufreq_add_dev() will
+attempt to create a symbolic link to the policy object for it, but
+that link is present already, so a warning about that will be
+triggered.
 
-That is a valid point, although related_cpus can list CPUs that aren't
-present even in theory.  That is a super corner case, however.
+To avoid that warning, make cpufreq use an additional CPU mask
+containing related CPUs that are actually present for each policy
+object.  That mask is initialized when the policy object is populated
+after its creation (for the first online CPU using it) and it includes
+CPUs from the "policy CPUs" mask returned by the cpufreq driver's
+->init() callback that are physically present at that time.  Symbolic
+links to the policy are created only for the CPUs in that mask.
 
-> I think, we just moved into the wrong direction. We have a valid
-> policy for CPU4, with all valid data. Why not show it up in sysfs?
+If cpufreq_add_dev() is invoked for an offline CPU, it checks the
+new mask and only creates the symlink if the CPU was not in it (the
+CPU is added to the mask at the same time).
 
-And why do we care?  The CPU is offline and may never go online before
-the cpufreq driver is unloaded.
+In turn, cpufreq_remove_dev() drops the given CPU from the new mask,
+removes its symlink to the policy object and returns, unless it is
+the CPU owning the policy object.  In that case, the policy object
+is moved to a new CPU's sysfs directory or deleted if the CPU being
+removed was the last user of the policy.
 
-> So, what we discussed over IRC earlier was, cpufreq shouldn't care
-> about CPUs, which are offline and that don't have a policy allocated
-> for them. So if all the CPUs of a policy never came online after the
-> driver is registered, we shouldn't care about them.
+While at it, notice that cpufreq_remove_dev() can't fail, because
+its return value is ignored, so make it ignore return values from
+__cpufreq_remove_dev_prepare() and __cpufreq_remove_dev_finish()
+and prevent these functions from aborting on errors returned by
+__cpufreq_governor().  Also drop the now unused sif argument from
+them.
 
-That's an alternative really.  Either we don't care about offline CPUs
-and only preserve their sysfs stuff once it's been created (just in
-case we need it again when the CPU goes online), or we do care about
-offline CPUs that share a policy object wirh at least one online CPU.
-The code is slightly simpler in the former case and the information
-seen by user space is slightly more consistent in the latter case.
+Fixes: 87549141d516 (cpufreq: Stop migrating sysfs files on hotplug)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reported-by: Russell King <linux@arm.linux.org.uk>
+---
 
-We need to make a choice and you seem to be preferring the second
-option.  I'm fine with that, if we choose this one, it really only
-makes sense to create all of the links from present CPUs to the policy
-object at the time that object is created to avoid havig a (presumably
-small) window in which inconsistent information may be seen by user
-space.
+This goes back to the https://patchwork.kernel.org/patch/6856011/
+idea, but has a couple of bugs fixed and goes a it further with
+cleaning things up.
 
-> I think, for know your earlier version of the patch was just fine,
-> with the improvements I suggested. And we should go ahead with
-> solution like what I gave, the diff of that was quite big for an rc
-> fix and so I said your patch looks better.
+---
+ drivers/cpufreq/cpufreq.c |  108 +++++++++++++++++++++++-----------------------
+ include/linux/cpufreq.h   |    1 
+ 2 files changed, 56 insertions(+), 53 deletions(-)
 
-OK, I'll prepare a new version of that patch then, but as I said this
-choice means that we'll be creating the links to the policy at the
-policy creation time going forward.
+Index: linux-pm/include/linux/cpufreq.h
+===================================================================
+--- linux-pm.orig/include/linux/cpufreq.h
++++ linux-pm/include/linux/cpufreq.h
+@@ -62,6 +62,7 @@ struct cpufreq_policy {
+ 	/* CPUs sharing clock, require sw coordination */
+ 	cpumask_var_t		cpus;	/* Online CPUs only */
+ 	cpumask_var_t		related_cpus; /* Online + Offline CPUs */
++	cpumask_var_t		real_cpus; /* Related and present */
+ 
+ 	unsigned int		shared_type; /* ACPI: ANY or ALL affected CPUs
+ 						should set cpufreq */
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -1002,7 +1002,7 @@ static int cpufreq_add_dev_symlink(struc
+ 	int ret = 0;
+ 
+ 	/* Some related CPUs might not be present (physically hotplugged) */
+-	for_each_cpu_and(j, policy->related_cpus, cpu_present_mask) {
++	for_each_cpu(j, policy->real_cpus) {
+ 		if (j == policy->kobj_cpu)
+ 			continue;
+ 
+@@ -1019,7 +1019,7 @@ static void cpufreq_remove_dev_symlink(s
+ 	unsigned int j;
+ 
+ 	/* Some related CPUs might not be present (physically hotplugged) */
+-	for_each_cpu_and(j, policy->related_cpus, cpu_present_mask) {
++	for_each_cpu(j, policy->real_cpus) {
+ 		if (j == policy->kobj_cpu)
+ 			continue;
+ 
+@@ -1163,11 +1163,14 @@ static struct cpufreq_policy *cpufreq_po
+ 	if (!zalloc_cpumask_var(&policy->related_cpus, GFP_KERNEL))
+ 		goto err_free_cpumask;
+ 
++	if (!zalloc_cpumask_var(&policy->real_cpus, GFP_KERNEL))
++		goto err_free_rcpumask;
++
+ 	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq, &dev->kobj,
+ 				   "cpufreq");
+ 	if (ret) {
+ 		pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
+-		goto err_free_rcpumask;
++		goto err_free_real_cpus;
+ 	}
+ 
+ 	INIT_LIST_HEAD(&policy->policy_list);
+@@ -1184,6 +1187,8 @@ static struct cpufreq_policy *cpufreq_po
+ 
+ 	return policy;
+ 
++err_free_real_cpus:
++	free_cpumask_var(policy->real_cpus);
+ err_free_rcpumask:
+ 	free_cpumask_var(policy->related_cpus);
+ err_free_cpumask:
+@@ -1234,6 +1239,7 @@ static void cpufreq_policy_free(struct c
+ 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
+ 	cpufreq_policy_put_kobj(policy, notify);
++	free_cpumask_var(policy->real_cpus);
+ 	free_cpumask_var(policy->related_cpus);
+ 	free_cpumask_var(policy->cpus);
+ 	kfree(policy);
+@@ -1258,14 +1264,17 @@ static int cpufreq_add_dev(struct device
+ 
+ 	pr_debug("adding CPU %u\n", cpu);
+ 
+-	/*
+-	 * Only possible if 'cpu' wasn't physically present earlier and we are
+-	 * here from subsys_interface add callback. A hotplug notifier will
+-	 * follow and we will handle it like logical CPU hotplug then. For now,
+-	 * just create the sysfs link.
+-	 */
+-	if (cpu_is_offline(cpu))
+-		return add_cpu_dev_symlink(per_cpu(cpufreq_cpu_data, cpu), cpu);
++	if (cpu_is_offline(cpu)) {
++		/*
++		 * Only possible if we are here from the subsys_interface add
++		 * callback.  A hotplug notifier will follow and we will handle
++		 * it as CPU online then.  For now, just create the sysfs link,
++		 * unless there is no policy or the link is already present.
++		 */
++		policy = per_cpu(cpufreq_cpu_data, cpu);
++		return policy && !cpumask_test_and_set_cpu(cpu, policy->real_cpus)
++			? add_cpu_dev_symlink(policy, cpu) : 0;
++	}
+ 
+ 	if (!down_read_trylock(&cpufreq_rwsem))
+ 		return 0;
+@@ -1307,6 +1316,10 @@ static int cpufreq_add_dev(struct device
+ 	/* related cpus should atleast have policy->cpus */
+ 	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
+ 
++	/* Remember which CPUs have been present at the policy creation time. */
++	if (!recover_policy)
++		cpumask_and(policy->real_cpus, policy->cpus, cpu_present_mask);
++
+ 	/*
+ 	 * affected cpus must always be the one, which are online. We aren't
+ 	 * managing offline cpus here.
+@@ -1420,8 +1433,7 @@ nomem_out:
+ 	return ret;
+ }
+ 
+-static int __cpufreq_remove_dev_prepare(struct device *dev,
+-					struct subsys_interface *sif)
++static int __cpufreq_remove_dev_prepare(struct device *dev)
+ {
+ 	unsigned int cpu = dev->id;
+ 	int ret = 0;
+@@ -1437,10 +1449,8 @@ static int __cpufreq_remove_dev_prepare(
+ 
+ 	if (has_target()) {
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+-		if (ret) {
++		if (ret)
+ 			pr_err("%s: Failed to stop governor\n", __func__);
+-			return ret;
+-		}
+ 	}
+ 
+ 	down_write(&policy->rwsem);
+@@ -1473,8 +1483,7 @@ static int __cpufreq_remove_dev_prepare(
+ 	return ret;
+ }
+ 
+-static int __cpufreq_remove_dev_finish(struct device *dev,
+-				       struct subsys_interface *sif)
++static int __cpufreq_remove_dev_finish(struct device *dev)
+ {
+ 	unsigned int cpu = dev->id;
+ 	int ret;
+@@ -1492,10 +1501,8 @@ static int __cpufreq_remove_dev_finish(s
+ 	/* If cpu is last user of policy, free policy */
+ 	if (has_target()) {
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+-		if (ret) {
++		if (ret)
+ 			pr_err("%s: Failed to exit governor\n", __func__);
+-			return ret;
+-		}
+ 	}
+ 
+ 	/*
+@@ -1506,10 +1513,6 @@ static int __cpufreq_remove_dev_finish(s
+ 	if (cpufreq_driver->exit)
+ 		cpufreq_driver->exit(policy);
+ 
+-	/* Free the policy only if the driver is getting removed. */
+-	if (sif)
+-		cpufreq_policy_free(policy, true);
+-
+ 	return 0;
+ }
+ 
+@@ -1521,42 +1524,41 @@ static int __cpufreq_remove_dev_finish(s
+ static int cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+ {
+ 	unsigned int cpu = dev->id;
+-	int ret;
+-
+-	/*
+-	 * Only possible if 'cpu' is getting physically removed now. A hotplug
+-	 * notifier should have already been called and we just need to remove
+-	 * link or free policy here.
+-	 */
+-	if (cpu_is_offline(cpu)) {
+-		struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+-		struct cpumask mask;
++	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+ 
+-		if (!policy)
+-			return 0;
++	if (!policy)
++		return 0;
+ 
+-		cpumask_copy(&mask, policy->related_cpus);
+-		cpumask_clear_cpu(cpu, &mask);
++	if (cpu_online(cpu)) {
++		__cpufreq_remove_dev_prepare(dev);
++		__cpufreq_remove_dev_finish(dev);
++	}
+ 
+-		/*
+-		 * Free policy only if all policy->related_cpus are removed
+-		 * physically.
+-		 */
+-		if (cpumask_intersects(&mask, cpu_present_mask)) {
+-			remove_cpu_dev_symlink(policy, cpu);
+-			return 0;
+-		}
++	cpumask_clear_cpu(cpu, policy->real_cpus);
+ 
++	if (cpumask_empty(policy->real_cpus)) {
+ 		cpufreq_policy_free(policy, true);
+ 		return 0;
+ 	}
+ 
+-	ret = __cpufreq_remove_dev_prepare(dev, sif);
++	if (cpu != policy->kobj_cpu) {
++		remove_cpu_dev_symlink(policy, cpu);
++	} else {
++		/*
++		 * The CPU owning the policy object is going away.  Move it to
++		 * another suitable CPU.
++		 */
++		unsigned int new_cpu = cpumask_first(policy->real_cpus);
++		struct device *new_dev = get_cpu_device(new_cpu);
++
++		dev_dbg(dev, "%s: Moving policy object to CPU%u\n", __func__, new_cpu);
+ 
+-	if (!ret)
+-		ret = __cpufreq_remove_dev_finish(dev, sif);
++		sysfs_remove_link(&new_dev->kobj, "cpufreq");
++		policy->kobj_cpu = new_cpu;
++		WARN_ON(kobject_move(&policy->kobj, &new_dev->kobj));
++	}
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static void handle_update(struct work_struct *work)
+@@ -2395,11 +2397,11 @@ static int cpufreq_cpu_callback(struct n
+ 			break;
+ 
+ 		case CPU_DOWN_PREPARE:
+-			__cpufreq_remove_dev_prepare(dev, NULL);
++			__cpufreq_remove_dev_prepare(dev);
+ 			break;
+ 
+ 		case CPU_POST_DEAD:
+-			__cpufreq_remove_dev_finish(dev, NULL);
++			__cpufreq_remove_dev_finish(dev);
+ 			break;
+ 
+ 		case CPU_DOWN_FAILED:
 
-Thanks,
-Rafael
