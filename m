@@ -1,7 +1,7 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v6 1/8] PM / QoS: Make it possible to expose device latency tolerance to userspace
-Date: Mon, 27 Jul 2015 18:03:56 +0300
-Message-ID: <1438009443-55317-2-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v6 5/8] driver core: implement device_for_each_child_reverse()
+Date: Mon, 27 Jul 2015 18:04:00 +0300
+Message-ID: <1438009443-55317-6-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1438009443-55317-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1438009443-55317-1-git-send-email-andriy.shevchenko@linux.intel.com>
@@ -10,130 +10,91 @@ To: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gr
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
+The new function device_for_each_child_reverse() is helpful to traverse the
+registered devices in a reversed order, e.g. in the case when an operation on
+each device should be done first on the last added device, then on one before
+last and so on.
 
-Typically when a device is created the bus core it belongs to (for example
-PCI) does not know if the device supports things like latency tolerance.
-This is left to the driver that binds to the device in question. However,
-at that time the device has already been created and there is no way to set
-its dev->power.set_latency_tolerance anymore.
-
-So follow what has been done for other PM QoS attributes as well and allow
-drivers to expose and hide latency tolerance from userspace, if the device
-supports it.
-
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/base/power/power.h |  2 ++
- drivers/base/power/qos.c   | 37 +++++++++++++++++++++++++++++++++++++
- drivers/base/power/sysfs.c | 11 +++++++++++
- include/linux/pm_qos.h     |  5 +++++
- 4 files changed, 55 insertions(+)
+ drivers/base/core.c    | 43 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/device.h |  2 ++
+ 2 files changed, 45 insertions(+)
 
-diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-index f1a5d95..998fa6b 100644
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -73,6 +73,8 @@ extern int pm_qos_sysfs_add_resume_latency(struct device *dev);
- extern void pm_qos_sysfs_remove_resume_latency(struct device *dev);
- extern int pm_qos_sysfs_add_flags(struct device *dev);
- extern void pm_qos_sysfs_remove_flags(struct device *dev);
-+extern int pm_qos_sysfs_add_latency_tolerance(struct device *dev);
-+extern void pm_qos_sysfs_remove_latency_tolerance(struct device *dev);
- 
- #else /* CONFIG_PM */
- 
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index e56d538..7f3646e 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -883,3 +883,40 @@ int dev_pm_qos_update_user_latency_tolerance(struct device *dev, s32 val)
- 	mutex_unlock(&dev_pm_qos_mtx);
- 	return ret;
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index dafae6d..7d62795 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1252,6 +1252,19 @@ void device_unregister(struct device *dev)
  }
+ EXPORT_SYMBOL_GPL(device_unregister);
+ 
++static struct device *prev_device(struct klist_iter *i)
++{
++	struct klist_node *n = klist_prev(i);
++	struct device *dev = NULL;
++	struct device_private *p;
++
++	if (n) {
++		p = to_device_private_parent(n);
++		dev = p->device;
++	}
++	return dev;
++}
++
+ static struct device *next_device(struct klist_iter *i)
+ {
+ 	struct klist_node *n = klist_next(i);
+@@ -1341,6 +1354,36 @@ int device_for_each_child(struct device *parent, void *data,
+ EXPORT_SYMBOL_GPL(device_for_each_child);
+ 
+ /**
++ * device_for_each_child_reverse - device child iterator in reversed order.
++ * @parent: parent struct device.
++ * @fn: function to be called for each device.
++ * @data: data for the callback.
++ *
++ * Iterate over @parent's child devices, and call @fn for each,
++ * passing it @data.
++ *
++ * We check the return of @fn each time. If it returns anything
++ * other than 0, we break out and return that value.
++ */
++int device_for_each_child_reverse(struct device *parent, void *data,
++				  int (*fn)(struct device *dev, void *data))
++{
++	struct klist_iter i;
++	struct device *child;
++	int error = 0;
++
++	if (!parent->p)
++		return 0;
++
++	klist_iter_init(&parent->p->klist_children, &i);
++	while ((child = prev_device(&i)) && !error)
++		error = fn(child, data);
++	klist_iter_exit(&i);
++	return error;
++}
++EXPORT_SYMBOL_GPL(device_for_each_child_reverse);
 +
 +/**
-+ * dev_pm_qos_expose_latency_tolerance - Expose latency tolerance to userspace
-+ * @dev: Device whose latency tolerance to expose
-+ */
-+int dev_pm_qos_expose_latency_tolerance(struct device *dev)
-+{
-+	int ret;
-+
-+	if (!dev->power.set_latency_tolerance)
-+		return -EINVAL;
-+
-+	mutex_lock(&dev_pm_qos_sysfs_mtx);
-+	ret = pm_qos_sysfs_add_latency_tolerance(dev);
-+	mutex_unlock(&dev_pm_qos_sysfs_mtx);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_qos_expose_latency_tolerance);
-+
-+/**
-+ * dev_pm_qos_hide_latency_tolerance - Hide latency tolerance from userspace
-+ * @dev: Device whose latency tolerance to hide
-+ */
-+void dev_pm_qos_hide_latency_tolerance(struct device *dev)
-+{
-+	mutex_lock(&dev_pm_qos_sysfs_mtx);
-+	pm_qos_sysfs_remove_latency_tolerance(dev);
-+	mutex_unlock(&dev_pm_qos_sysfs_mtx);
-+
-+	/* Remove the request from user space now */
-+	pm_runtime_get_sync(dev);
-+	dev_pm_qos_update_user_latency_tolerance(dev,
-+		PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT);
-+	pm_runtime_put(dev);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_qos_hide_latency_tolerance);
-diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
-index d2be3f9..a7b4679 100644
---- a/drivers/base/power/sysfs.c
-+++ b/drivers/base/power/sysfs.c
-@@ -738,6 +738,17 @@ void pm_qos_sysfs_remove_flags(struct device *dev)
- 	sysfs_unmerge_group(&dev->kobj, &pm_qos_flags_attr_group);
- }
- 
-+int pm_qos_sysfs_add_latency_tolerance(struct device *dev)
-+{
-+	return sysfs_merge_group(&dev->kobj,
-+				 &pm_qos_latency_tolerance_attr_group);
-+}
-+
-+void pm_qos_sysfs_remove_latency_tolerance(struct device *dev)
-+{
-+	sysfs_unmerge_group(&dev->kobj, &pm_qos_latency_tolerance_attr_group);
-+}
-+
- void rpm_sysfs_remove(struct device *dev)
- {
- 	sysfs_unmerge_group(&dev->kobj, &pm_runtime_attr_group);
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 7b3ae0c..0f65d36 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -161,6 +161,8 @@ void dev_pm_qos_hide_flags(struct device *dev);
- int dev_pm_qos_update_flags(struct device *dev, s32 mask, bool set);
- s32 dev_pm_qos_get_user_latency_tolerance(struct device *dev);
- int dev_pm_qos_update_user_latency_tolerance(struct device *dev, s32 val);
-+int dev_pm_qos_expose_latency_tolerance(struct device *dev);
-+void dev_pm_qos_hide_latency_tolerance(struct device *dev);
- 
- static inline s32 dev_pm_qos_requested_resume_latency(struct device *dev)
- {
-@@ -229,6 +231,9 @@ static inline s32 dev_pm_qos_get_user_latency_tolerance(struct device *dev)
- 			{ return PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT; }
- static inline int dev_pm_qos_update_user_latency_tolerance(struct device *dev, s32 val)
- 			{ return 0; }
-+static inline int dev_pm_qos_expose_latency_tolerance(struct device *dev)
-+			{ return 0; }
-+static inline void dev_pm_qos_hide_latency_tolerance(struct device *dev) {}
- 
- static inline s32 dev_pm_qos_requested_resume_latency(struct device *dev) { return 0; }
- static inline s32 dev_pm_qos_requested_flags(struct device *dev) { return 0; }
+  * device_find_child - device iterator for locating a particular device.
+  * @parent: parent struct device
+  * @match: Callback function to check device
+diff --git a/include/linux/device.h b/include/linux/device.h
+index a2b4ea7..9d212fe 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -959,6 +959,8 @@ extern int __must_check device_add(struct device *dev);
+ extern void device_del(struct device *dev);
+ extern int device_for_each_child(struct device *dev, void *data,
+ 		     int (*fn)(struct device *dev, void *data));
++extern int device_for_each_child_reverse(struct device *dev, void *data,
++		     int (*fn)(struct device *dev, void *data));
+ extern struct device *device_find_child(struct device *dev, void *data,
+ 				int (*match)(struct device *dev, void *data));
+ extern int device_rename(struct device *dev, const char *new_name);
 -- 
 2.4.6
