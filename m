@@ -1,61 +1,83 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 7/7] cpufreq: Separate CPU device removal from CPU online
-Date: Mon, 27 Jul 2015 23:56:09 +0200
-Message-ID: <CAJZ5v0hJYpY7k1+zM41oG=sSM=Zhf4LXZH9FBJFL4O7H2cTJfg@mail.gmail.com>
-References: <7868353.pEStq1MJ2a@vostro.rjw.lan>
-	<3874727.Jpay9zgokc@vostro.rjw.lan>
-	<1739669.kedIsxdRK2@vostro.rjw.lan>
-	<20150727150655.GI18535@linux>
-	<CAJZ5v0gT4e2=VRPcF5S2fSBUiNZ3+dAeOrt5rRy_PAT5-+Y4Ow@mail.gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [pm:bleeding-edge 79/80] drivers/acpi/acpica/evgpeinit.c:380:2:
+ error: implicit declaration of function 'strtoul'
+Date: Mon, 27 Jul 2015 16:43:53 -0700
+Message-ID: <55B6C239.2050802@roeck-us.net>
+References: <201507280737.vtbTBRH2%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f180.google.com ([209.85.212.180]:37171 "EHLO
-	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752843AbbG0V4L (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 17:56:11 -0400
-In-Reply-To: <CAJZ5v0gT4e2=VRPcF5S2fSBUiNZ3+dAeOrt5rRy_PAT5-+Y4Ow@mail.gmail.com>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:41381 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932266AbbG0Xnz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 19:43:55 -0400
+In-Reply-To: <201507280737.vtbTBRH2%fengguang.wu@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
 
-On Mon, Jul 27, 2015 at 10:56 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Mon, Jul 27, 2015 at 5:06 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 27-07-15, 16:09, Rafael J. Wysocki wrote:
->>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>
->>> To separate the CPU online interface from the CPU device removal
->>> one,
->>
->> Why do you call this cpu device removal code?
+On 07/27/2015 04:12 PM, kbuild test robot wrote:
+> tree:   git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+> head:   020ed5eff1ad8a4fb606c35dafa81151b74e7f3c
+> commit: f86187ce938721c4ae1422276ef92248fa99b8f8 [79/80] ACPI / sysfs: Use kstrtoul() instead of strtoul()/simple_strtoul()
+> config: x86_64-acpi-redef (attached as .config)
+> reproduce:
+>    git checkout f86187ce938721c4ae1422276ef92248fa99b8f8
+>    # save the attached .config to linux build tree
+>    make ARCH=x86_64
 >
-> By mistake.
+> All error/warnings (new ones prefixed by >>):
 >
-> Of course, that should be addition/registration.
+>     drivers/acpi/acpica/evgpeinit.c: In function 'acpi_ev_match_gpe_method':
+>>> drivers/acpi/acpica/evgpeinit.c:380:2: error: implicit declaration of function 'strtoul' [-Werror=implicit-function-declaration]
+>       gpe_number = strtoul(&name[2], NULL, 16);
+>       ^
+>     cc1: some warnings being treated as errors
 >
->>> split cpufreq_online() out of cpufreq_add_dev() and make
->>> cpufreq_cpu_callback() call the former, while the latter will only
->>> be used as the CPU device removal subsystem interface callback.
->>>
->>> While at it, notice that the return value of sif->add_dev() is
->>> ignored in bus_probe_device(), so (the new) cpufreq_add_dev()
->>> doesn't need to bother with returning anything different from 0
->>> and cpufreq_online() may be a void function.
->>
->> That is going to change in 4.3:
->>
->> https://lkml.org/lkml/2015/6/26/132
->
-> There are some problems with access to klml.org today and I'm not sure
-> what you mean.
->
-> Can you explain your points in addition to sending links to stuff, please?
 
-OK, I've just seen that patch, but it doesn't modify bus_probe_device() AFAICS.
+Looks like my tree missed commit 4fa4616e for some reason.
+Sorry for that; I'll send an updated version of my patch.
 
-Plus we also ignore the return value of cpufreq_add_dev() in the
-hotplug notifier callback.
+Guenter
 
-Thanks,
-Rafael
+> vim +/strtoul +380 drivers/acpi/acpica/evgpeinit.c
+>
+> 1d1ea1b7 Chao Guan 2013-06-08  364
+> 3fe50208 Bob Moore 2010-04-27  365  		type = ACPI_GPE_EDGE_TRIGGERED;
+> 3fe50208 Bob Moore 2010-04-27  366  		break;
+> 3fe50208 Bob Moore 2010-04-27  367
+> 3fe50208 Bob Moore 2010-04-27  368  	default:
+> 1d1ea1b7 Chao Guan 2013-06-08  369
+> 3fe50208 Bob Moore 2010-04-27  370  		/* Unknown method type, just ignore it */
+> 3fe50208 Bob Moore 2010-04-27  371
+> 3fe50208 Bob Moore 2010-04-27  372  		ACPI_DEBUG_PRINT((ACPI_DB_LOAD,
+> 3fe50208 Bob Moore 2010-04-27  373  				  "Ignoring unknown GPE method type: %s "
+> 3fe50208 Bob Moore 2010-04-27  374  				  "(name not of form _Lxx or _Exx)", name));
+> 3fe50208 Bob Moore 2010-04-27  375  		return_ACPI_STATUS(AE_OK);
+> 3fe50208 Bob Moore 2010-04-27  376  	}
+> 3fe50208 Bob Moore 2010-04-27  377
+> 3fe50208 Bob Moore 2010-04-27  378  	/* 4) The last two characters of the name are the hex GPE Number */
+> 3fe50208 Bob Moore 2010-04-27  379
+> 4fa4616e Bob Moore 2015-07-01 @380  	gpe_number = strtoul(&name[2], NULL, 16);
+> 3fe50208 Bob Moore 2010-04-27  381  	if (gpe_number == ACPI_UINT32_MAX) {
+> 3fe50208 Bob Moore 2010-04-27  382
+> 3fe50208 Bob Moore 2010-04-27  383  		/* Conversion failed; invalid method, just ignore it */
+> 3fe50208 Bob Moore 2010-04-27  384
+> 3fe50208 Bob Moore 2010-04-27  385  		ACPI_DEBUG_PRINT((ACPI_DB_LOAD,
+> 3fe50208 Bob Moore 2010-04-27  386  				  "Could not extract GPE number from name: %s "
+> 3fe50208 Bob Moore 2010-04-27  387  				  "(name is not of form _Lxx or _Exx)", name));
+> 3fe50208 Bob Moore 2010-04-27  388  		return_ACPI_STATUS(AE_OK);
+>
+> :::::: The code at line 380 was first introduced by commit
+> :::::: 4fa4616e279df89baeb36287bbee83ab272edaed ACPICA: De-macroize calls to standard C library functions
+>
+> :::::: TO: Bob Moore <robert.moore@intel.com>
+> :::::: CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> ---
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+>
+
