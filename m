@@ -1,81 +1,108 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 7/7] cpufreq: Separate CPU device removal from CPU online
-Date: Mon, 27 Jul 2015 20:36:55 +0530
-Message-ID: <20150727150655.GI18535@linux>
-References: <7868353.pEStq1MJ2a@vostro.rjw.lan>
- <3874727.Jpay9zgokc@vostro.rjw.lan>
- <1739669.kedIsxdRK2@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Lee Jones <lee.jones@linaro.org>
+Subject: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
+Date: Mon, 27 Jul 2015 16:20:30 +0100
+Message-ID: <1438010430-5802-2-git-send-email-lee.jones@linaro.org>
+References: <1438010430-5802-1-git-send-email-lee.jones@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1739669.kedIsxdRK2@vostro.rjw.lan>
+In-Reply-To: <1438010430-5802-1-git-send-email-lee.jones@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: kernel@stlinux.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, ajitpal.singh@st.com, sre@kernel.org, dbaryshkov@gmail.com, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 27-07-15, 16:09, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> To separate the CPU online interface from the CPU device removal
-> one,
+These OPPs are used in ST's CPUFreq implementation.
 
-Why do you call this cpu device removal code?
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+---
 
-> split cpufreq_online() out of cpufreq_add_dev() and make
-> cpufreq_cpu_callback() call the former, while the latter will only
-> be used as the CPU device removal subsystem interface callback.
-> 
-> While at it, notice that the return value of sif->add_dev() is
-> ignored in bus_probe_device(), so (the new) cpufreq_add_dev()
-> doesn't need to bother with returning anything different from 0
-> and cpufreq_online() may be a void function.
+Changelog:
+ - None, new patch
 
-That is going to change in 4.3:
+ Documentation/devicetree/bindings/power/opp-st.txt | 76 ++++++++++++++++++++++
+ 1 file changed, 76 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/opp-st.txt
 
-https://lkml.org/lkml/2015/6/26/132
-
-> 
-> Moreover, since the return value of cpufreq_add_policy_cpu() is
-> going to be ignored now too, make a void function of it as well.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Suggested-by: Russell King <linux@arm.linux.org.uk>
-> ---
->  drivers/cpufreq/cpufreq.c |  125 ++++++++++++++++++++++------------------------
->  1 file changed, 61 insertions(+), 64 deletions(-)
-> 
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -1056,19 +1056,17 @@ static int cpufreq_init_policy(struct cp
->  	return cpufreq_set_policy(policy, &new_policy);
->  }
->  
-> -static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
-> +static void cpufreq_add_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
->  {
-> -	int ret = 0;
-> -
->  	/* Has this CPU been taken care of already? */
->  	if (cpumask_test_cpu(cpu, policy->cpus))
-> -		return 0;
-> +		return;
->  
->  	if (has_target()) {
-> -		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-> +		int ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
-
-Why should we move the definition of ret here and ...
-
->  		if (ret) {
->  			pr_err("%s: Failed to stop governor\n", __func__);
-> -			return ret;
-> +			return;
->  		}
->  	}
-
+diff --git a/Documentation/devicetree/bindings/power/opp-st.txt b/Documentation/devicetree/bindings/power/opp-st.txt
+new file mode 100644
+index 0000000..6eb2a91
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/opp-st.txt
+@@ -0,0 +1,76 @@
++STMicroelectronics OPP (Operating Performance Points) Bindings
++--------------------------------------------------------------
++
++Frequency Scaling only
++----------------------
++
++Located in CPU's node:
++
++- operating-points	: [See: ./opp.txt]
++
++Example [safe]
++--------------
++
++cpus {
++	cpu@0 {
++				 /* kHz     uV   */
++		operating-points = <1500000 0
++				    1200000 0
++				    800000  0
++				    500000  0>;
++	};
++};
++
++Dynamic Voltage and Frequency Scaling (DVFS)
++--------------------------------------------
++
++Located in 'cpu0-opp-list' node [to be provided ONLY by the bootloader]:
++
++- compatible		: Should be "operating-points-v2-sti"
++- opp{1..N} 		: Each 'oppX' subnode will contain the following properties:
++ - opp-hz		: CPU frequency [Hz] for this OPP [See: ./opp.txt]
++ - st,avs		: List of available voltages [uV] indexed by process code
++ - st,cuts		: Cut version this OPP is suitable for [0xFF means ALL]
++ - st,substrate		: Substrate version this OPP is suitable for [0xFF means ALL]
++- st,syscfg		: Phandle to Major number register
++				First cell: offset to major number
++- st,syscfg-eng		: Phandle to Minor number and Pcode registers
++				First cell: offset to process code
++				Second cell: offset to minor number
++
++WARNING: The opp{1..N} nodes will be provided by the bootloader.  Do not attempt to
++	 artificially synthesise the opp{1..N} nodes or any of their descendants.
++	 They are very platform specific and may damage the hardware if created
++	 incorrectly.
++
++Example [unsafe]
++----------------
++
++cpus {
++	cpu@0 {
++		operating-points-v2	= <&cpu0_opp_list>;
++	};
++};
++
++/* ############################################################ */
++/* # WARNING: Do not attempt to copy/replicate this node,     # */
++/* #          it is only to be supplied by the bootloader !!! # */
++/* ############################################################ */
++cpu0-opp-list {
++	compatible	= "operating-points-v2-sti";
++	st,syscfg	= <&syscfg [major_offset]>;
++	st,syscfg-eng   = <&syscfg_eng [pcode_offset] [minor_offset]>;
++
++	opp0 {
++		opp-hz		= <1200000000>;
++		st,avs		= <1110 1150 1100 1080 1040 1020 980 930>;
++		st,substrate	= <0xff>;
++		st,cuts		= <0xff>;
++	};
++	opp1 {
++		opp-hz		= <1500000000>;
++		st,avs		= <1200 1200 1200 1200 1170 1140 1100 1070>;
++		st,substrate	= <0xff>;
++		st,cuts		= <0x2>;
++	};
++};
 -- 
-viresh
+1.9.1
