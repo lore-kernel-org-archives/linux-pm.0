@@ -1,19 +1,18 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH V2 06/11] opp: Add support to parse "operating-points-v2"
- bindings
-Date: Mon, 27 Jul 2015 16:23:12 +0200
-Message-ID: <1447859.StpgrO19qi@amdc1976>
+Subject: Re: [PATCH V2 07/11] OPP: Add clock-latency-ns support
+Date: Mon, 27 Jul 2015 16:27:08 +0200
+Message-ID: <1509464.37oR9zhrb7@amdc1976>
 References: <cover.1437972635.git.viresh.kumar@linaro.org>
- <f2267207114646280c5fd0e066d2b99f59a3c2e8.1437972635.git.viresh.kumar@linaro.org>
+ <7598a88f9de8d8dbd96de40b4ecdf30f68cfca8a.1437972635.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:37514 "EHLO
+Received: from mailout4.samsung.com ([203.254.224.34]:50572 "EHLO
 	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754131AbbG0OXs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 10:23:48 -0400
-In-reply-to: <f2267207114646280c5fd0e066d2b99f59a3c2e8.1437972635.git.viresh.kumar@linaro.org>
+	with ESMTP id S1751262AbbG0O1n (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 10:27:43 -0400
+In-reply-to: <7598a88f9de8d8dbd96de40b4ecdf30f68cfca8a.1437972635.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
@@ -22,21 +21,13 @@ Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm
 
 Hi,
 
-On Monday, July 27, 2015 10:32:36 AM Viresh Kumar wrote:
-> This adds support in OPP library to parse and create list of OPPs from
-> operating-points-v2 bindings. It takes care of most of the properties of
-> new bindings (except shared-opp, which will be handled separately).
+On Monday, July 27, 2015 10:32:37 AM Viresh Kumar wrote:
+> With "operating-points-v2" bindings, clock-latency is defined per OPP.
+> Users of this value expect a single value which defines the latency to
+> switch to any clock rate. Find maximum clock-latency-ns from the OPP
+> table to service requests from such users.
 > 
-> For backward compatibility, we keep supporting earlier bindings. We try
-> to search for the new bindings first, in case they aren't present we
-> look for the old deprecated ones.
-> 
-> There are few things marked as TODO:
-> - Support for multiple OPP tables
-> - Support for multiple regulators
-> 
-> They should be fixed separately.
-> 
+> Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
