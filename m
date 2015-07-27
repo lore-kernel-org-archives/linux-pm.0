@@ -1,35 +1,55 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 3/7] cpufreq-dt: add turbo modes support
-Date: Mon, 27 Jul 2015 17:31:37 +0530
-Message-ID: <20150727120137.GD10181@linux>
-References: <1436456621-29839-1-git-send-email-b.zolnierkie@samsung.com>
- <15810554.2OjPyuYJBt@amdc1976>
- <20150727113340.GA10181@linux>
- <2522396.6jWphaZxGp@amdc1976>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH V2 0/9] CPUFreq: governors: further cleanups
+Date: Mon, 27 Jul 2015 17:58:05 +0530
+Message-ID: <cover.1437999691.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:33618 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752508AbbG0MBp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 08:01:45 -0400
-Received: by padck2 with SMTP id ck2so50744354pad.0
-        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2015 05:01:45 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <2522396.6jWphaZxGp@amdc1976>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:34907 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668AbbG0M2c (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 08:28:32 -0400
+Received: by pabkd10 with SMTP id kd10so51125307pab.2
+        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2015 05:28:31 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, preeti.lkml@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 27-07-15, 13:58, Bartlomiej Zolnierkiewicz wrote:
-> Thank you.  This is exactly the case here (I would like to get
-> Exynos4x12 conversion to use cpufreq-dt + exynos-cpufreq removal
-> in v4.3 if possible and adding new DT bindings will most likely
-> slow down the process considerably).
+Hi Rafael,
 
-Heh, I never asked you to add new DT bindings, I said we can solve it
-with DT. We already have turbo properties in DT.
+This series fixes few more possible race conditions. Over that there is
+some non-trivial cleanup, in order to simplify code.
+
+Preeti did review some of them before she left and shared concerns on
+others, all that is sorted out now.
+
+V1->V2:
+- Dropped 2/10 from V1 as it wasn't required
+- 3/10 saw some changes due to above patch being dropped
+- 7/10 changed a bit as we check for pending work items by looking at
+  shared->policy, rather than calling delayed_work_pending. We wanted to
+  check if governor is operational or not and the new check is enough
+  for that.
+
+Viresh Kumar (9):
+  cpufreq: Use __func__ to print function's name
+  cpufreq: conservative: remove 'enable' field
+  cpufreq: ondemand: only queue canceled works from
+    update_sampling_rate()
+  cpufreq: governor: Drop __gov_queue_work()
+  cpufreq: ondemand: Drop unnecessary locks from update_sampling_rate()
+  cpufreq: ondemand: queue work for policy->cpus together
+  cpufreq: ondemand: update sampling rate immidiately
+  cpufreq: governor: Quit work-handlers early if governor is stopped
+  cpufreq: Get rid of ->governor_enabled and its lock
+
+ drivers/cpufreq/cpufreq.c              | 27 +----------
+ drivers/cpufreq/cpufreq_conservative.c | 38 +++++++++------
+ drivers/cpufreq/cpufreq_governor.c     | 86 +++++++++++++++-------------------
+ drivers/cpufreq/cpufreq_governor.h     |  5 +-
+ drivers/cpufreq/cpufreq_ondemand.c     | 54 +++++++--------------
+ include/linux/cpufreq.h                |  1 -
+ 6 files changed, 81 insertions(+), 130 deletions(-)
 
 -- 
-viresh
+2.4.0
+
