@@ -1,340 +1,210 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 02/11] opp: Relocate few routines
-Date: Mon, 27 Jul 2015 10:32:32 +0530
-Message-ID: <1f43ce4bd97433c41d379daac005d71cf771d15a.1437972635.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 05/11] OPP: Break _opp_add_dynamic() into smaller functions
+Date: Mon, 27 Jul 2015 10:32:35 +0530
+Message-ID: <87cd2aebefc834f92b75c5bc4e64a83646998fae.1437972635.git.viresh.kumar@linaro.org>
 References: <cover.1437972635.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:35319 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750760AbbG0FDZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 01:03:25 -0400
-Received: by pabkd10 with SMTP id kd10so45115198pab.2
-        for <linux-pm@vger.kernel.org>; Sun, 26 Jul 2015 22:03:25 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1437972635.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1437972635.git.viresh.kumar@linaro.org>
 References: <cover.1437972635.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mturquette@baylibre.com, sboyd@codeaurora.org, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, b.zolnierkie@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+List-Id: linux-pm@vger.kernel.org
 
-In order to prepare for the later commits, this relocates few routines
-towards the top as they will be used earlier in the code.
+Later commits would add support for new OPP bindings and this would be
+required then. So, lets do it in a separate patch to make it easily
+reviewable.
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Another change worth noticing is INIT_LIST_HEAD(&opp->node). We weren't
+doing it earlier as we never tried to delete a list node before it is
+added to list. But this wouldn't be the case anymore. We might try to
+delete a node (just to reuse the same code paths), without it being
+getting added to the list.
+
 Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp.c | 277 ++++++++++++++++++++++++-----------------------
- 1 file changed, 139 insertions(+), 138 deletions(-)
+ drivers/base/power/opp.c | 109 ++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 69 insertions(+), 40 deletions(-)
 
 diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 677fb2843553..8c3fd57975fb 100644
+index 901b6c77a791..962d62316b80 100644
 --- a/drivers/base/power/opp.c
 +++ b/drivers/base/power/opp.c
-@@ -438,6 +438,102 @@ static struct device_opp *_add_device_opp(struct device *dev)
- }
+@@ -484,6 +484,7 @@ static void _kfree_opp_rcu(struct rcu_head *head)
+  * _opp_remove()  - Remove an OPP from a table definition
+  * @dev_opp:	points back to the device_opp struct this opp belongs to
+  * @opp:	pointer to the OPP to remove
++ * @notify:	OPP_EVENT_REMOVE notification should be sent or not
+  *
+  * This function removes an opp definition from the opp list.
+  *
+@@ -492,13 +493,14 @@ static void _kfree_opp_rcu(struct rcu_head *head)
+  * strategy.
+  */
+ static void _opp_remove(struct device_opp *dev_opp,
+-			struct dev_pm_opp *opp)
++			struct dev_pm_opp *opp, bool notify)
+ {
+ 	/*
+ 	 * Notify the changes in the availability of the operable
+ 	 * frequency/voltage list.
+ 	 */
+-	srcu_notifier_call_chain(&dev_opp->srcu_head, OPP_EVENT_REMOVE, opp);
++	if (notify)
++		srcu_notifier_call_chain(&dev_opp->srcu_head, OPP_EVENT_REMOVE, opp);
+ 	list_del_rcu(&opp->node);
+ 	call_srcu(&dev_opp->srcu_head.srcu, &opp->rcu_head, _kfree_opp_rcu);
  
- /**
-+ * _kfree_device_rcu() - Free device_opp RCU handler
-+ * @head:	RCU head
-+ */
-+static void _kfree_device_rcu(struct rcu_head *head)
-+{
-+	struct device_opp *device_opp = container_of(head, struct device_opp, rcu_head);
-+
-+	kfree_rcu(device_opp, rcu_head);
-+}
-+
-+/**
-+ * _kfree_opp_rcu() - Free OPP RCU handler
-+ * @head:	RCU head
-+ */
-+static void _kfree_opp_rcu(struct rcu_head *head)
-+{
-+	struct dev_pm_opp *opp = container_of(head, struct dev_pm_opp, rcu_head);
-+
-+	kfree_rcu(opp, rcu_head);
-+}
-+
-+/**
-+ * _opp_remove()  - Remove an OPP from a table definition
-+ * @dev_opp:	points back to the device_opp struct this opp belongs to
-+ * @opp:	pointer to the OPP to remove
-+ *
-+ * This function removes an opp definition from the opp list.
-+ *
-+ * Locking: The internal device_opp and opp structures are RCU protected.
-+ * It is assumed that the caller holds required mutex for an RCU updater
-+ * strategy.
-+ */
-+static void _opp_remove(struct device_opp *dev_opp,
-+			struct dev_pm_opp *opp)
-+{
-+	/*
-+	 * Notify the changes in the availability of the operable
-+	 * frequency/voltage list.
-+	 */
-+	srcu_notifier_call_chain(&dev_opp->srcu_head, OPP_EVENT_REMOVE, opp);
-+	list_del_rcu(&opp->node);
-+	call_srcu(&dev_opp->srcu_head.srcu, &opp->rcu_head, _kfree_opp_rcu);
-+
-+	if (list_empty(&dev_opp->opp_list)) {
-+		list_del_rcu(&dev_opp->node);
-+		call_srcu(&dev_opp->srcu_head.srcu, &dev_opp->rcu_head,
-+			  _kfree_device_rcu);
-+	}
-+}
-+
-+/**
-+ * dev_pm_opp_remove()  - Remove an OPP from OPP list
-+ * @dev:	device for which we do this operation
-+ * @freq:	OPP to remove with matching 'freq'
-+ *
-+ * This function removes an opp from the opp list.
-+ *
-+ * Locking: The internal device_opp and opp structures are RCU protected.
-+ * Hence this function internally uses RCU updater strategy with mutex locks
-+ * to keep the integrity of the internal data structures. Callers should ensure
-+ * that this function is *NOT* called under RCU protection or in contexts where
-+ * mutex cannot be locked.
-+ */
-+void dev_pm_opp_remove(struct device *dev, unsigned long freq)
+@@ -544,12 +546,63 @@ void dev_pm_opp_remove(struct device *dev, unsigned long freq)
+ 		goto unlock;
+ 	}
+ 
+-	_opp_remove(dev_opp, opp);
++	_opp_remove(dev_opp, opp, true);
+ unlock:
+ 	mutex_unlock(&dev_opp_list_lock);
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
+ 
++static struct dev_pm_opp *_allocate_opp(struct device *dev,
++					struct device_opp **dev_opp)
 +{
 +	struct dev_pm_opp *opp;
-+	struct device_opp *dev_opp;
-+	bool found = false;
 +
-+	/* Hold our list modification lock here */
-+	mutex_lock(&dev_opp_list_lock);
++	/* allocate new OPP node */
++	opp = kzalloc(sizeof(*opp), GFP_KERNEL);
++	if (!opp)
++		return NULL;
 +
-+	dev_opp = _find_device_opp(dev);
-+	if (IS_ERR(dev_opp))
-+		goto unlock;
++	INIT_LIST_HEAD(&opp->node);
 +
-+	list_for_each_entry(opp, &dev_opp->opp_list, node) {
-+		if (opp->rate == freq) {
-+			found = true;
-+			break;
-+		}
++	*dev_opp = _add_device_opp(dev);
++	if (!*dev_opp) {
++		kfree(opp);
++		return NULL;
 +	}
 +
-+	if (!found) {
-+		dev_warn(dev, "%s: Couldn't find OPP with freq: %lu\n",
-+			 __func__, freq);
-+		goto unlock;
-+	}
-+
-+	_opp_remove(dev_opp, opp);
-+unlock:
-+	mutex_unlock(&dev_opp_list_lock);
++	return opp;
 +}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
 +
-+/**
++static int _opp_add(struct dev_pm_opp *new_opp, struct device_opp *dev_opp)
++{
++	struct dev_pm_opp *opp;
++	struct list_head *head = &dev_opp->opp_list;
++
++	/*
++	 * Insert new OPP in order of increasing frequency
++	 * and discard if already present.
++	 */
++	list_for_each_entry_rcu(opp, head, node) {
++		if (new_opp->rate > opp->rate)
++			head = &opp->node;
++		else if (new_opp->rate < opp->rate)
++			break;
++
++		/* Duplicate OPPs */
++		dev_warn(dev_opp->dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
++			 __func__, opp->rate, opp->u_volt, opp->available,
++			 new_opp->rate, new_opp->u_volt, new_opp->available);
++
++		return opp->available && new_opp->u_volt == opp->u_volt ?
++			0 : -EEXIST;
++	}
++
++	new_opp->dev_opp = dev_opp;
++	list_add_rcu(&new_opp->node, head);
++
++	return 0;
++}
++
+ /**
   * _opp_add_dynamic() - Allocate a dynamic OPP.
   * @dev:	device for which we do this operation
-  * @freq:	Frequency in Hz for this OPP
-@@ -570,102 +666,6 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
- EXPORT_SYMBOL_GPL(dev_pm_opp_add);
+@@ -581,53 +634,28 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
+ 			    long u_volt, bool dynamic)
+ {
+ 	struct device_opp *dev_opp;
+-	struct dev_pm_opp *opp, *new_opp;
+-	struct list_head *head;
++	struct dev_pm_opp *new_opp;
+ 	int ret;
  
- /**
-- * _kfree_opp_rcu() - Free OPP RCU handler
-- * @head:	RCU head
-- */
--static void _kfree_opp_rcu(struct rcu_head *head)
--{
--	struct dev_pm_opp *opp = container_of(head, struct dev_pm_opp, rcu_head);
+-	/* allocate new OPP node */
+-	new_opp = kzalloc(sizeof(*new_opp), GFP_KERNEL);
+-	if (!new_opp)
+-		return -ENOMEM;
 -
--	kfree_rcu(opp, rcu_head);
--}
+ 	/* Hold our list modification lock here */
+ 	mutex_lock(&dev_opp_list_lock);
+ 
++	new_opp = _allocate_opp(dev, &dev_opp);
++	if (!new_opp) {
++		ret = -ENOMEM;
++		goto unlock;
++	}
++
+ 	/* populate the opp table */
+ 	new_opp->rate = freq;
+ 	new_opp->u_volt = u_volt;
+ 	new_opp->available = true;
++	new_opp->dynamic = dynamic;
+ 
+-	dev_opp = _add_device_opp(dev);
+-	if (!dev_opp) {
+-		ret = -ENOMEM;
+-		goto free_opp;
+-	}
 -
--/**
-- * _kfree_device_rcu() - Free device_opp RCU handler
-- * @head:	RCU head
-- */
--static void _kfree_device_rcu(struct rcu_head *head)
--{
--	struct device_opp *device_opp = container_of(head, struct device_opp, rcu_head);
--
--	kfree_rcu(device_opp, rcu_head);
--}
--
--/**
-- * _opp_remove()  - Remove an OPP from a table definition
-- * @dev_opp:	points back to the device_opp struct this opp belongs to
-- * @opp:	pointer to the OPP to remove
-- *
-- * This function removes an opp definition from the opp list.
-- *
-- * Locking: The internal device_opp and opp structures are RCU protected.
-- * It is assumed that the caller holds required mutex for an RCU updater
-- * strategy.
-- */
--static void _opp_remove(struct device_opp *dev_opp,
--			struct dev_pm_opp *opp)
--{
 -	/*
--	 * Notify the changes in the availability of the operable
--	 * frequency/voltage list.
+-	 * Insert new OPP in order of increasing frequency
+-	 * and discard if already present
 -	 */
--	srcu_notifier_call_chain(&dev_opp->srcu_head, OPP_EVENT_REMOVE, opp);
--	list_del_rcu(&opp->node);
--	call_srcu(&dev_opp->srcu_head.srcu, &opp->rcu_head, _kfree_opp_rcu);
--
--	if (list_empty(&dev_opp->opp_list)) {
--		list_del_rcu(&dev_opp->node);
--		call_srcu(&dev_opp->srcu_head.srcu, &dev_opp->rcu_head,
--			  _kfree_device_rcu);
--	}
--}
--
--/**
-- * dev_pm_opp_remove()  - Remove an OPP from OPP list
-- * @dev:	device for which we do this operation
-- * @freq:	OPP to remove with matching 'freq'
-- *
-- * This function removes an opp from the opp list.
-- *
-- * Locking: The internal device_opp and opp structures are RCU protected.
-- * Hence this function internally uses RCU updater strategy with mutex locks
-- * to keep the integrity of the internal data structures. Callers should ensure
-- * that this function is *NOT* called under RCU protection or in contexts where
-- * mutex cannot be locked.
-- */
--void dev_pm_opp_remove(struct device *dev, unsigned long freq)
--{
--	struct dev_pm_opp *opp;
--	struct device_opp *dev_opp;
--	bool found = false;
--
--	/* Hold our list modification lock here */
--	mutex_lock(&dev_opp_list_lock);
--
--	dev_opp = _find_device_opp(dev);
--	if (IS_ERR(dev_opp))
--		goto unlock;
--
--	list_for_each_entry(opp, &dev_opp->opp_list, node) {
--		if (opp->rate == freq) {
--			found = true;
+-	head = &dev_opp->opp_list;
+-	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
+-		if (new_opp->rate > opp->rate)
+-			head = &opp->node;
+-		else if (new_opp->rate < opp->rate)
 -			break;
--		}
+-
+-		/* Duplicate OPPs */
+-		ret = opp->available && new_opp->u_volt == opp->u_volt ?
+-			0 : -EEXIST;
+-
+-		dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
+-			 __func__, opp->rate, opp->u_volt, opp->available,
+-			 new_opp->rate, new_opp->u_volt, new_opp->available);
++	ret = _opp_add(new_opp, dev_opp);
++	if (ret)
+ 		goto free_opp;
 -	}
--
--	if (!found) {
--		dev_warn(dev, "%s: Couldn't find OPP with freq: %lu\n",
--			 __func__, freq);
--		goto unlock;
--	}
--
--	_opp_remove(dev_opp, opp);
--unlock:
--	mutex_unlock(&dev_opp_list_lock);
--}
--EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
--
--/**
-  * _opp_set_availability() - helper to set the availability of an opp
-  * @dev:		device for which we do this operation
-  * @freq:		OPP frequency to modify availability
-@@ -825,6 +825,49 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_get_notifier);
  
- #ifdef CONFIG_OF
- /**
-+ * of_free_opp_table() - Free OPP table entries created from static DT entries
-+ * @dev:	device pointer used to lookup device OPPs.
-+ *
-+ * Free OPPs created using static entries present in DT.
-+ *
-+ * Locking: The internal device_opp and opp structures are RCU protected.
-+ * Hence this function indirectly uses RCU updater strategy with mutex locks
-+ * to keep the integrity of the internal data structures. Callers should ensure
-+ * that this function is *NOT* called under RCU protection or in contexts where
-+ * mutex cannot be locked.
-+ */
-+void of_free_opp_table(struct device *dev)
-+{
-+	struct device_opp *dev_opp;
-+	struct dev_pm_opp *opp, *tmp;
-+
-+	/* Check for existing list for 'dev' */
-+	dev_opp = _find_device_opp(dev);
-+	if (IS_ERR(dev_opp)) {
-+		int error = PTR_ERR(dev_opp);
-+
-+		if (error != -ENODEV)
-+			WARN(1, "%s: dev_opp: %d\n",
-+			     IS_ERR_OR_NULL(dev) ?
-+					"Invalid device" : dev_name(dev),
-+			     error);
-+		return;
-+	}
-+
-+	/* Hold our list modification lock here */
-+	mutex_lock(&dev_opp_list_lock);
-+
-+	/* Free static OPPs */
-+	list_for_each_entry_safe(opp, tmp, &dev_opp->opp_list, node) {
-+		if (!opp->dynamic)
-+			_opp_remove(dev_opp, opp);
-+	}
-+
-+	mutex_unlock(&dev_opp_list_lock);
-+}
-+EXPORT_SYMBOL_GPL(of_free_opp_table);
-+
-+/**
-  * of_init_opp_table() - Initialize opp table from device tree
-  * @dev:	device pointer used to lookup device OPPs.
-  *
-@@ -882,46 +925,4 @@ int of_init_opp_table(struct device *dev)
+-	new_opp->dynamic = dynamic;
+-	new_opp->dev_opp = dev_opp;
+-	list_add_rcu(&new_opp->node, head);
+ 	mutex_unlock(&dev_opp_list_lock);
+ 
+ 	/*
+@@ -638,8 +666,9 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
  	return 0;
+ 
+ free_opp:
++	_opp_remove(dev_opp, new_opp, false);
++unlock:
+ 	mutex_unlock(&dev_opp_list_lock);
+-	kfree(new_opp);
+ 	return ret;
  }
- EXPORT_SYMBOL_GPL(of_init_opp_table);
--
--/**
-- * of_free_opp_table() - Free OPP table entries created from static DT entries
-- * @dev:	device pointer used to lookup device OPPs.
-- *
-- * Free OPPs created using static entries present in DT.
-- *
-- * Locking: The internal device_opp and opp structures are RCU protected.
-- * Hence this function indirectly uses RCU updater strategy with mutex locks
-- * to keep the integrity of the internal data structures. Callers should ensure
-- * that this function is *NOT* called under RCU protection or in contexts where
-- * mutex cannot be locked.
-- */
--void of_free_opp_table(struct device *dev)
--{
--	struct device_opp *dev_opp;
--	struct dev_pm_opp *opp, *tmp;
--
--	/* Check for existing list for 'dev' */
--	dev_opp = _find_device_opp(dev);
--	if (IS_ERR(dev_opp)) {
--		int error = PTR_ERR(dev_opp);
--		if (error != -ENODEV)
--			WARN(1, "%s: dev_opp: %d\n",
--			     IS_ERR_OR_NULL(dev) ?
--					"Invalid device" : dev_name(dev),
--			     error);
--		return;
--	}
--
--	/* Hold our list modification lock here */
--	mutex_lock(&dev_opp_list_lock);
--
--	/* Free static OPPs */
--	list_for_each_entry_safe(opp, tmp, &dev_opp->opp_list, node) {
--		if (!opp->dynamic)
+ 
+@@ -867,7 +896,7 @@ void of_free_opp_table(struct device *dev)
+ 	/* Free static OPPs */
+ 	list_for_each_entry_safe(opp, tmp, &dev_opp->opp_list, node) {
+ 		if (!opp->dynamic)
 -			_opp_remove(dev_opp, opp);
--	}
--
--	mutex_unlock(&dev_opp_list_lock);
--}
--EXPORT_SYMBOL_GPL(of_free_opp_table);
- #endif
++			_opp_remove(dev_opp, opp, true);
+ 	}
+ 
+ 	mutex_unlock(&dev_opp_list_lock);
 -- 
 2.4.0
-
