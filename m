@@ -1,48 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: Avoid attempts to create duplicate symbolic links
-Date: Mon, 27 Jul 2015 15:45:10 +0200
-Message-ID: <4080510.IQ60sVQvbL@vostro.rjw.lan>
-References: <1660815.CyKx9SEI9c@vostro.rjw.lan> <CAJZ5v0i6t36Nr7nFOKjGY5fBjzR=h+rNHcHWYd=eEdapMWQEGQ@mail.gmail.com> <20150727022718.GE19944@linux>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power/reset: zx: Remove unnecessary include file
+Date: Mon, 27 Jul 2015 15:34:32 +0200
+Message-ID: <20150727133432.GA12993@earth>
+References: <1437980346-1966-1-git-send-email-jun.nie@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63180 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752533AbbG0NSQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 09:18:16 -0400
-In-Reply-To: <20150727022718.GE19944@linux>
+Received: from mail.kernel.org ([198.145.29.136]:43335 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750931AbbG0Nej (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 27 Jul 2015 09:34:39 -0400
+Content-Disposition: inline
+In-Reply-To: <1437980346-1966-1-git-send-email-jun.nie@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>
+To: Jun Nie <jun.nie@linaro.org>
+Cc: sfr@canb.auug.org.au, linux-pm@vger.kernel.org
 
-On Monday, July 27, 2015 07:57:18 AM Viresh Kumar wrote:
-> On 26-07-15, 00:46, Rafael J. Wysocki wrote:
-> > OK, I'll prepare a new version of that patch then, but as I said this
-> > choice means that we'll be creating the links to the policy at the
-> > policy creation time going forward.
-> 
-> Atleast for the rc fix, we should do exactly this. Right.
-> 
-> But we can rethink about getting both my earlier patches merged for
-> 4.3, which did this:
-> 
-> - Keep adding CPUs to a global mask, which didn't had a existing
->   policy and were offline when subsys-callback for called for them.
-> - And then create the links only when the subsys callback is called
->   for CPUs, for which policy already exist, as Russell suggested.
 
-Say the subsys add callback runs for a CPU and it doesn't have a policy.
-If it is offline, we ignore it and the add callback won't be executed
-for it again.
+--PEIAKu/WMn1b1Hv9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-In turn, if it is online, we create a policy for it and we should (right
-away) link the policy to all of the CPUs that were offline when the subsys add
-callback was called for them.  That's what we do today.
+Hi Jun,
 
-Is there anything missing in that?
+On Mon, Jul 27, 2015 at 02:59:06PM +0800, Jun Nie wrote:
+> Including ARM related header file cause build failure
+> in i386 build because COMILE_TEST also involve building
+> zx driver. Remove the unnecessary include file.
 
-Thanks,
-Rafael
+Thanks for taking care of this, queued.
 
+-- Sebastian
+
+--PEIAKu/WMn1b1Hv9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVtjNlAAoJENju1/PIO/qazMwQAJ4QnWDrR7PNpXwnC8gCmkZd
+VCgbiiRZF7GEZRm8ww/Xr/Y7yaFzalSQRNTRrdeV2rYdyZ+f/xjrqBlzml+S78pq
+2zy7lWV8vpqW0SOL33iOzl4WqItTiQky7DGLA1Wt+ns+aOJ/YqiRz18ws+nw/0Ug
+rTvLR5J6x3VBzuFme8ubE7Ap/8DV1hQCWo+Fm4XUP/ZWsrtbBqQl3pppP6KvC3nQ
+aGYtS5lVOz+v9Bw3hCKMB9jcr6aOM/YYmBUCMohQ+jyBFt/1NMK8w4qjBsERfNJD
+w3Co6jDMA/AA59UQl1Ub/K3Yx66hH+LT9Ew0DMANsjrJwSC9xd/wgfokAutBSZJf
+4ZaIC7ud0AW9jvVdcFfO5AuczrykjhViXGpUeMhJFVZTRdMum80MoIkV6JVUNGKT
+1Jm3nQ4+3TE4SP3b00/eCem3wnk5Oc3+WNO2nIRtjiOpuoeOq9VxBJiU+a3JnE0Z
+4jad6PPCLBONyID5bPw2DWXJ8Exjc0nALeScHNzKeNFxTTeuXJmHxVEgAIqhJtcW
+K/aL8yS20VE5Sj5VI0ClXuhELZhSl1ADPToF6v/bRKJe6EZShxpykEHWvY4NGZYd
+NLnUi/S7UHEiY7IHJPozSlfyoEaLth5cEIh5WP1hpD8/IL2+PZnYP7WtCGonLzxb
+J2CFeAQOI5w5VGjzpq03
+=GQ51
+-----END PGP SIGNATURE-----
+
+--PEIAKu/WMn1b1Hv9--
