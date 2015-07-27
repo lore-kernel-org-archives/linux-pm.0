@@ -1,84 +1,61 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v6 0/8] mfd: introduce a driver for LPSS devices on SPT
-Date: Tue, 28 Jul 2015 00:03:37 +0200
-Message-ID: <2258476.9C4JjWNs6u@vostro.rjw.lan>
-References: <1438009443-55317-1-git-send-email-andriy.shevchenko@linux.intel.com> <20150727212748.GF21114@x1> <20150727212934.GH21114@x1>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 7/7] cpufreq: Separate CPU device removal from CPU online
+Date: Mon, 27 Jul 2015 23:56:09 +0200
+Message-ID: <CAJZ5v0hJYpY7k1+zM41oG=sSM=Zhf4LXZH9FBJFL4O7H2cTJfg@mail.gmail.com>
+References: <7868353.pEStq1MJ2a@vostro.rjw.lan>
+	<3874727.Jpay9zgokc@vostro.rjw.lan>
+	<1739669.kedIsxdRK2@vostro.rjw.lan>
+	<20150727150655.GI18535@linux>
+	<CAJZ5v0gT4e2=VRPcF5S2fSBUiNZ3+dAeOrt5rRy_PAT5-+Y4Ow@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20150727212934.GH21114@x1>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, mturquette@baylibre.com, sboyd@codeaurora.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f180.google.com ([209.85.212.180]:37171 "EHLO
+	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752843AbbG0V4L (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 17:56:11 -0400
+In-Reply-To: <CAJZ5v0gT4e2=VRPcF5S2fSBUiNZ3+dAeOrt5rRy_PAT5-+Y4Ow@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
 
-On Monday, July 27, 2015 10:29:34 PM Lee Jones wrote:
-> On Mon, 27 Jul 2015, Lee Jones wrote:
-> 
-> > On Mon, 27 Jul 2015, Rafael J. Wysocki wrote:
-> > 
-> > > On Monday, July 27, 2015 05:24:13 PM Lee Jones wrote:
-> > > > On Mon, 27 Jul 2015, Mika Westerberg wrote:
-> > > > 
-> > > > > On Mon, Jul 27, 2015 at 04:27:33PM +0100, Lee Jones wrote:
-> > > > > > FAO Stephen Boyd,
-> > > > > > 
-> > > > > > > Stephen, can you, please, have a look into patch 8 regarding to clock name
-> > > > > > > matching and other stuff Lee asked?
-> > > > > > 
-> > > > > > Patch 8:
-> > > > > > 
-> > > > > >       "Can you review the clock implementation please?  It looks
-> > > > > >       fragile to me as it relies heavily on device names constructed
-> > > > > >       of MFD cell names and IDA numbers cat'ed together!"
-> > > > > 
-> > > > > Lee, can you suggest an alternative then?
-> > > > > 
-> > > > > Why we are doing it like this is that number of different LPSS devices
-> > > > > changes from SoC to SoC. In addition to that the device (called "slice")
-> > > > > might have iDMA block or not.
-> > > > > 
-> > > > > Since the drivers in question (pxa2xx-spi, i2c-designware and 8250_dw)
-> > > > > use standard clk framework to request their clocks the Linux device must
-> > > > > have clock registered which matches the device in advance.
-> > > > > 
-> > > > > Because we add the host controller device dynamically (from the MFD
-> > > > > driver) based on how many devices are actually present, we need somehow
-> > > > > predict what would be the correct name and instance number for that
-> > > > > device to get the clock for it. That's the reason we use IDA here along
-> > > > > with the cell name (or driver name).
-> > > > 
-> > > > I'm sure there are perfectly viable reasons for you doing this.  And I
-> > > > don't know the CCF well enough to know whether it's the best idea or
-> > > > not, or else I would have made a suggestion rather than waiting all
-> > > > this time.
-> > > > 
-> > > > It's for this reason that I needed Mike (now Stephen) to take a look
-> > > > and give me either an Ack, to say it's the best solution, or to
-> > > > provide a better alternative.
-> > > > 
-> > > > Until that happens, I'm stuck!
-> > > 
-> > > Well, what if we had no one at hand to review that code?  Would that mean it
-> > > would not be applicable forever?
-> > 
-> > No, but that's not the case is it?
-> > 
-> > I don't understand why Mike and Stephen aren't helping!
-> 
-> I'll wait until tomorrow and if we haven't heard anything I'll make a
-> decision.
+On Mon, Jul 27, 2015 at 10:56 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Mon, Jul 27, 2015 at 5:06 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 27-07-15, 16:09, Rafael J. Wysocki wrote:
+>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>
+>>> To separate the CPU online interface from the CPU device removal
+>>> one,
+>>
+>> Why do you call this cpu device removal code?
+>
+> By mistake.
+>
+> Of course, that should be addition/registration.
+>
+>>> split cpufreq_online() out of cpufreq_add_dev() and make
+>>> cpufreq_cpu_callback() call the former, while the latter will only
+>>> be used as the CPU device removal subsystem interface callback.
+>>>
+>>> While at it, notice that the return value of sif->add_dev() is
+>>> ignored in bus_probe_device(), so (the new) cpufreq_add_dev()
+>>> doesn't need to bother with returning anything different from 0
+>>> and cpufreq_online() may be a void function.
+>>
+>> That is going to change in 4.3:
+>>
+>> https://lkml.org/lkml/2015/6/26/132
+>
+> There are some problems with access to klml.org today and I'm not sure
+> what you mean.
+>
+> Can you explain your points in addition to sending links to stuff, please?
 
-OK, thanks!
+OK, I've just seen that patch, but it doesn't modify bus_probe_device() AFAICS.
 
-BTW, I don't have the time to review every single patch using ACPI
-or one of the PM frameworks.  If people who use them make mistakes,
-it is their burden to fix those mistakes when they show up in testing.
+Plus we also ignore the return value of cpufreq_add_dev() in the
+hotplug notifier callback.
 
-What's happening here is that Andy and Mika are taking the responsibility
-for fixing the new code if it turns out to be buggy and so it's their
-problem if it happens to be broken.
-
-And you can still revert commits that introduce bugs as a last resort.
-
+Thanks,
+Rafael
