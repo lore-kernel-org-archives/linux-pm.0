@@ -1,37 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 2/7] cpufreq: opp: fix handling of turbo modes
-Date: Mon, 27 Jul 2015 16:05:21 +0530
-Message-ID: <20150727103521.GA4103@linux>
-References: <1436456621-29839-1-git-send-email-b.zolnierkie@samsung.com>
- <1436456621-29839-3-git-send-email-b.zolnierkie@samsung.com>
- <20150727083531.GC31611@linux>
- <1595601.YD6UTxy5Qg@amdc1976>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v2 3/4] ARM: mvebu: Allow using the GIC for wakeup in
+ standby mode
+Date: Mon, 27 Jul 2015 12:02:22 +0100
+Message-ID: <55B60FBE.7060606@arm.com>
+References: <1435684740-24912-1-git-send-email-gregory.clement@free-electrons.com> <1435684740-24912-4-git-send-email-gregory.clement@free-electrons.com> <20150701175436.7dff0754@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1595601.YD6UTxy5Qg@amdc1976>
+In-Reply-To: <20150701175436.7dff0754@free-electrons.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Lior Amsalem <alior@marvell.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, Tawfik Bayouk <tawfik@marvell.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Nadav Haklai <nadavh@marvell.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 27-07-15, 12:24, Bartlomiej Zolnierkiewicz wrote:
-> Have you read my explanation of the issue?
-> 
-> With your OPP-v2 patches cpufreq-dt picks turbo frequencies and uses
-> them as normal ones.
-> 
-> (More at: http://www.spinics.net/lists/arm-kernel/msg430397.html)
+Hi Thomas/Gregory,
 
-Yes I did. I understand that the turbo frequencies are not considered
-as such by OPP/cpufreq core and it requires your changes to get it
-working.
+On 01/07/15 16:54, Thomas Petazzoni wrote:
+> Dear Gregory CLEMENT,
+>
+> On Tue, 30 Jun 2015 19:18:59 +0200, Gregory CLEMENT wrote:
+>
+>>   static void __init mvebu_init_irq(void)
+>>   {
+>> +	if (of_machine_is_compatible("marvell,armada375") ||
+>> +	    of_machine_is_compatible("marvell,armada380") ||
+>> +	    of_machine_is_compatible("marvell,armada390"))
+>
+> What we really want to know is if we're using the GIC, so what about
+> instead:
+>
+> 	np = of_find_compatible_node(NULL, NULL, "arm,cortex-a9-gic");
+> 	if (np)
+> 		gic_set_irqchip_flags(IRQCHIP_SKIP_SET_WAKE |
+> 				      IRQCHIP_MASK_ON_SUSPEND);
 
-But its not an issue or bug we are fixing, the problem is that the
-code for opp-v2 isn't complete yet and your patches is putting things
-in place. So, we are still doing the bring up here and not fixing a
-bug really.
+As I had mentioned before, this function was planned to be removed. tglx
+has now pulled in the patch into tip/core[1]. If this patch is already
+pulled in, it's better to revert so that it won't break the build in
+linux-next. Since the flags are now moved to GIC driver, this patch is
+no longer required. Sorry for the trouble.
 
--- 
-viresh
+Regards,
+Sudeep
+
+[1] 
+https://git.kernel.org/cgit/linux/kernel/git/tip/tip.git/commit/?h=irq/core&id=0d3f2c92e004c67404fabea19728c1962b777bd6
