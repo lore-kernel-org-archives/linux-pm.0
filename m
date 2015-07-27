@@ -1,55 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 0/9] CPUFreq: governors: further cleanups
-Date: Mon, 27 Jul 2015 17:58:05 +0530
-Message-ID: <cover.1437999691.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 1/9] cpufreq: Use __func__ to print function's name
+Date: Mon, 27 Jul 2015 17:58:06 +0530
+Message-ID: <a131c99933f5dd7eefbd39358a2dc2b13663ca7b.1437999691.git.viresh.kumar@linaro.org>
+References: <cover.1437999691.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:34907 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751668AbbG0M2c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 08:28:32 -0400
-Received: by pabkd10 with SMTP id kd10so51125307pab.2
-        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2015 05:28:31 -0700 (PDT)
+Received: from mail-pd0-f175.google.com ([209.85.192.175]:36523 "EHLO
+	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751293AbbG0M2g (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 08:28:36 -0400
+Received: by pdjr16 with SMTP id r16so52371456pdj.3
+        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2015 05:28:35 -0700 (PDT)
+In-Reply-To: <cover.1437999691.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1437999691.git.viresh.kumar@linaro.org>
+References: <cover.1437999691.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, preeti.lkml@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, preeti.lkml@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
 
-Hi Rafael,
+Its better to use __func__ to print functions name instead of writing
+the name in the print statement. This also has the advantage that a
+change in function's name doesn't force us to change the print message
+as well.
 
-This series fixes few more possible race conditions. Over that there is
-some non-trivial cleanup, in order to simplify code.
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Preeti did review some of them before she left and shared concerns on
-others, all that is sorted out now.
-
-V1->V2:
-- Dropped 2/10 from V1 as it wasn't required
-- 3/10 saw some changes due to above patch being dropped
-- 7/10 changed a bit as we check for pending work items by looking at
-  shared->policy, rather than calling delayed_work_pending. We wanted to
-  check if governor is operational or not and the new check is enough
-  for that.
-
-Viresh Kumar (9):
-  cpufreq: Use __func__ to print function's name
-  cpufreq: conservative: remove 'enable' field
-  cpufreq: ondemand: only queue canceled works from
-    update_sampling_rate()
-  cpufreq: governor: Drop __gov_queue_work()
-  cpufreq: ondemand: Drop unnecessary locks from update_sampling_rate()
-  cpufreq: ondemand: queue work for policy->cpus together
-  cpufreq: ondemand: update sampling rate immidiately
-  cpufreq: governor: Quit work-handlers early if governor is stopped
-  cpufreq: Get rid of ->governor_enabled and its lock
-
- drivers/cpufreq/cpufreq.c              | 27 +----------
- drivers/cpufreq/cpufreq_conservative.c | 38 +++++++++------
- drivers/cpufreq/cpufreq_governor.c     | 86 +++++++++++++++-------------------
- drivers/cpufreq/cpufreq_governor.h     |  5 +-
- drivers/cpufreq/cpufreq_ondemand.c     | 54 +++++++--------------
- include/linux/cpufreq.h                |  1 -
- 6 files changed, 81 insertions(+), 130 deletions(-)
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 46251e8d30f2..f620055279f3 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2074,8 +2074,7 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ 		if (!try_module_get(policy->governor->owner))
+ 			return -EINVAL;
+ 
+-	pr_debug("__cpufreq_governor for CPU %u, event %u\n",
+-		 policy->cpu, event);
++	pr_debug("%s: for CPU %u, event %u\n", __func__, policy->cpu, event);
+ 
+ 	mutex_lock(&cpufreq_governor_lock);
+ 	if ((policy->governor_enabled && event == CPUFREQ_GOV_START)
 -- 
 2.4.0
 
