@@ -1,53 +1,90 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 5/7] cpufreq: Do not update related_cpus on every policy activation
-Date: Mon, 27 Jul 2015 16:06:54 +0200
-Message-ID: <3102455.P3lingtaHD@vostro.rjw.lan>
-References: <7868353.pEStq1MJ2a@vostro.rjw.lan> <3874727.Jpay9zgokc@vostro.rjw.lan>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 3/4] power: Add Qualcomm SMBB driver
+Date: Mon, 27 Jul 2015 16:06:22 +0200
+Message-ID: <20150727140622.GB12993@earth>
+References: <1434662025-9485-1-git-send-email-bjorn.andersson@sonymobile.com>
+ <1434662025-9485-4-git-send-email-bjorn.andersson@sonymobile.com>
+ <20150725154159.GA17373@earth>
+ <20150726010414.GK4753@usrtlx11787.corpusers.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="FkmkrVfFsRoUs1wW"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3874727.Jpay9zgokc@vostro.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <20150726010414.GK4753@usrtlx11787.corpusers.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "Cavin, Courtney" <Courtney.Cavin@sonymobile.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The related_cpus mask includes CPUs whose cpufreq_cpu_data per-CPU
-pointers have been set to the given policy.  Since those pointers
-are only set at the policy creation time and unset when the policy
-is deleted, the related_cpus should not be updated between those
-two operations.
+--FkmkrVfFsRoUs1wW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-For this reason, avoid updating it whenever the first of the
-"related" CPUs goes online.
+Hi,
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+On Sat, Jul 25, 2015 at 06:04:14PM -0700, Bjorn Andersson wrote:
+> On Sat 25 Jul 08:42 PDT 2015, Sebastian Reichel wrote:
+> >  * battery-charge-control-limit
+> >=20
+> > It's unclear, what this property is used for. Is the limit only
+> > for "normal" charging or also for fast charging?
+> >=20
+>=20
+> This is described as the current limit during fast charging. However,
+> "fast charging" is the normal state.
+>=20
+> I think the most consistent (regards documentation and other properties)
+> would be:
+>=20
+>  qcom,fast-charge-current-limit
 
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -1251,12 +1251,12 @@ static int cpufreq_add_dev(struct device
- 
- 	down_write(&policy->rwsem);
- 
--	/* related cpus should atleast have policy->cpus */
--	cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
--
--	/* Remember which CPUs have been present at the policy creation time. */
--	if (!recover_policy)
-+	if (!recover_policy) {
-+		/* related_cpus should at least include policy->cpus. */
-+		cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
-+		/* Remember CPUs present at the policy creation time. */
- 		cpumask_and(policy->real_cpus, policy->cpus, cpu_present_mask);
-+	}
- 
- 	/*
- 	 * affected cpus must always be the one, which are online. We aren't
+So what's the difference to "fast-charge-safe-current"?
+
+> >  * minimum-input-voltage
+> >=20
+> > Add a vendor prefix to this property.
+> >=20
+>=20
+> Shouldn't they all have a vendor prefix?
+
+Some of the properties are quite generic and used on multiple
+chips, so we may create a power_supply/battery-fuel-gauge.txt
+and power_supply/battery-charger.txt with generic bindings.
+
+I'm fine with just adding vendor prefixed properties for all
+instances, though.
+
+> Thanks for the review, I'll update the patches accordingly and
+> will send out v2 (and make sure you get the dt binding document
+> as well).
+
+OK, thanks.
+
+-- Sebastian
+
+--FkmkrVfFsRoUs1wW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVtjrbAAoJENju1/PIO/qa7eAP/i3ZBGawaby2Nx7cbY9Fp5r/
+Dtc+E2Yc8qVjm03X7Agmje3Z8vrv+WxHxd4KVQykbQFS7UvBIsvICn41YwbmdwjP
+SMcTiT0Y/q6VQMmkTh+9lX6CpsHFMWeDd3u5qgl4gPbZir5p+pgz5lfLJBM72VTt
+ynstkojKjds2FeU2Dvj2m4yegtI8l/KUDBlQCIYqX+Knb/D5aIeSjFTJWHESbjRD
+N3qnFKWupVUozmLlpwF+/RWYwRHRDywI5YoztNlumQMWZFgZVckf5dsI/UOt2s+m
+M/Xk43PtWvZWQ89erdUfznaguhGPa+le09gXJ7VZXwzGlyfql3jkeCCmIsENK+U8
+cNEChMKk8gS0B4c1skAR0kCVxKxEtsQlul6Qtwuv1g2KMf8OY/9RioTAzaZcQAXv
+FIRoLd56a1SavQxun0R7wbYD77MrHKcqaibGvKHSp+mYyAPlSKVYKijxqkZ/tAAH
+tpE2Nc+I6Jw5aBIbj+l0u4ymDNjbH4BDQibI1PrwDmSRuM/TDmyvhX5qXRfAxGLq
+Jcm2/zFDPuVPtdjB0rOSXXtysvhMzlC7KEVuZ+ABXZ75wBBX0Obuil68gFklMQa4
+7ejjyLRYm+t7ui+GNZIOCyQ0fyGl3maf5QAeqXkEQq2MJ9ziHHl9wq63izmsADq1
+ipPGubvYfId8iwjN37nl
+=hOzE
+-----END PGP SIGNATURE-----
+
+--FkmkrVfFsRoUs1wW--
