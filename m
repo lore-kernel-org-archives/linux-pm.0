@@ -1,139 +1,85 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 8/9] cpufreq: governor: Quit work-handlers early if governor is stopped
-Date: Mon, 27 Jul 2015 17:58:13 +0530
-Message-ID: <fec14dd72428a3940d367cb365d55a5a35921b83.1437999691.git.viresh.kumar@linaro.org>
-References: <cover.1437999691.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1437999691.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1437999691.git.viresh.kumar@linaro.org>
-References: <cover.1437999691.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, preeti.lkml@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v3] cpufreq: Avoid attempts to create duplicate symbolic links
+Date: Mon, 27 Jul 2015 14:39:14 +0200
+Message-ID: <CAJZ5v0j=rLMNOspVSub7MZ4PxrMoo5kao_B226-Lx4UjPb4wCw@mail.gmail.com>
+References: <1660815.CyKx9SEI9c@vostro.rjw.lan>
+	<20150725130002.GC1691@linux>
+	<CAJZ5v0i6t36Nr7nFOKjGY5fBjzR=h+rNHcHWYd=eEdapMWQEGQ@mail.gmail.com>
+	<2161701.diIE0m8ocR@vostro.rjw.lan>
+	<20150727022952.GF19944@linux>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f181.google.com ([209.85.212.181]:36661 "EHLO
+	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751857AbbG0MjP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 08:39:15 -0400
+In-Reply-To: <20150727022952.GF19944@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-cpufreq_governor_lock is abused by using it outside of cpufreq core,
-i.e. in cpufreq-governors. But we didn't had a solution at that point of
-time, and so doing that was the only acceptable solution:
+On Mon, Jul 27, 2015 at 4:29 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 26-07-15, 02:28, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> After commit 87549141d516 (cpufreq: Stop migrating sysfs files on
+>> hotplug) there is a problem with CPUs that share cpufreq policy
+>> objects with other CPUs and are initially offline.
+>>
+>> Say CPU1 shares a policy with CPU0 which is online and is registered
+>> first.  As part of the registration process, cpufreq_add_dev() is
+>> called for it.  It creates the policy object and a symbolic link
+>> to it from the CPU1's sysfs directory.  If CPU1 is registered
+>> subsequently and it is offline at that time, cpufreq_add_dev() will
+>> attempt to create a symbolic link to the policy object for it, but
+>> that link is present already, so a warning about that will be
+>> triggered.
+>>
+>> To avoid that warning, make cpufreq use an additional CPU mask
+>> containing related CPUs that are actually present for each policy
+>> object.  That mask is initialized when the policy object is populated
+>> after its creation (for the first online CPU using it) and it includes
+>> CPUs from the "policy CPUs" mask returned by the cpufreq driver's
+>> ->init() callback that are physically present at that time.  Symbolic
+>> links to the policy are created only for the CPUs in that mask.
+>>
+>> If cpufreq_add_dev() is invoked for an offline CPU, it checks the
+>> new mask and only creates the symlink if the CPU was not in it (the
+>> CPU is added to the mask at the same time).
+>>
+>> In turn, cpufreq_remove_dev() drops the given CPU from the new mask,
+>> removes its symlink to the policy object and returns, unless it is
+>> the CPU owning the policy object.  In that case, the policy object
+>> is moved to a new CPU's sysfs directory or deleted if the CPU being
+>> removed was the last user of the policy.
+>>
+>> While at it, notice that cpufreq_remove_dev() can't fail, because
+>> its return value is ignored, so make it ignore return values from
+>> __cpufreq_remove_dev_prepare() and __cpufreq_remove_dev_finish()
+>> and prevent these functions from aborting on errors returned by
+>> __cpufreq_governor().  Also drop the now unused sif argument from
+>> them.
+>>
+>> Fixes: 87549141d516 (cpufreq: Stop migrating sysfs files on hotplug)
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Reported-by: Russell King <linux@arm.linux.org.uk>
+>> ---
+>>
+>> This goes back to the https://patchwork.kernel.org/patch/6856011/
+>> idea, but has a couple of bugs fixed and goes a it further with
+>> cleaning things up.
+>>
+>> ---
+>>  drivers/cpufreq/cpufreq.c |  108 +++++++++++++++++++++++-----------------------
+>>  include/linux/cpufreq.h   |    1
+>>  2 files changed, 56 insertions(+), 53 deletions(-)
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-6f1e4efd882e ("cpufreq: Fix timer/workqueue corruption by protecting
-reading governor_enabled")
+Thanks!
 
-The cpufreq governor core is fixed now against possible races and things
-are in much better shape.
+Russell, can you test this one, please?
 
-cpufreq core is checking for invalid state-transitions of governors in
-__cpufreq_governor() with help of governor_enabled flag. The governor
-core is already taking care of that now and so we can get rid of those
-extra checks in __cpufreq_governor().
-
-To do that, we first need to get rid of the dependency on
-governor_enabled flag in governor core, in gov_queue_work.
-
-This patch is about getting rid of this dependency.
-
-When a CPU is hot removed we'll cancel all the delayed work items via
-gov_cancel_work(). Normally this will just cancels a delayed timer on
-each CPU that the policy is managing and the work won't run. But if the
-work is already running, the workqueue code will wait for the work to
-finish before continuing to prevent the work items from re-queuing
-themselves like they normally do.
-
-This scheme will work most of the time, except for the case where the
-work function determines that it should adjust the delay for all other
-CPUs that the policy is managing. If this scenario occurs, the canceling
-CPU will cancel its own work but queue up the other CPUs works to run.
-
-And we will enter a situation where gov_cancel_work() has returned with
-work being queued on few CPUs.
-
-To fix that in a different (non-hacky) way, set set shared->policy to
-false before trying to cancel the work. It should be updated within
-timer_mutex, which will prevent the work-handlers to start. Once the
-work-handlers finds that we are already trying to stop the governor, it
-will exit early. And that will prevent queuing of works again as well.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq_governor.c | 33 +++++++++++++++++++++++----------
- 1 file changed, 23 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 3ddc27764e10..bb12acff3ba6 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -164,17 +164,10 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
- 	struct cpu_dbs_info *cdbs;
- 	int cpu;
- 
--	mutex_lock(&cpufreq_governor_lock);
--	if (!policy->governor_enabled)
--		goto out_unlock;
--
- 	for_each_cpu(cpu, cpus) {
- 		cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
- 		mod_delayed_work_on(cpu, system_wq, &cdbs->dwork, delay);
- 	}
--
--out_unlock:
--	mutex_unlock(&cpufreq_governor_lock);
- }
- EXPORT_SYMBOL_GPL(gov_queue_work);
- 
-@@ -213,14 +206,25 @@ static void dbs_timer(struct work_struct *work)
- 	struct cpu_dbs_info *cdbs = container_of(work, struct cpu_dbs_info,
- 						 dwork.work);
- 	struct cpu_common_dbs_info *shared = cdbs->shared;
--	struct cpufreq_policy *policy = shared->policy;
--	struct dbs_data *dbs_data = policy->governor_data;
-+	struct cpufreq_policy *policy;
-+	struct dbs_data *dbs_data;
- 	unsigned int sampling_rate, delay;
- 	const struct cpumask *cpus;
- 	bool load_eval;
- 
- 	mutex_lock(&shared->timer_mutex);
- 
-+	policy = shared->policy;
-+
-+	/*
-+	 * Governor might already be disabled and there is no point continuing
-+	 * with the work-handler.
-+	 */
-+	if (!policy)
-+		goto unlock;
-+
-+	dbs_data = policy->governor_data;
-+
- 	if (dbs_data->cdata->governor == GOV_CONSERVATIVE) {
- 		struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
- 
-@@ -237,6 +241,7 @@ static void dbs_timer(struct work_struct *work)
- 	delay = dbs_data->cdata->gov_dbs_timer(cdbs, dbs_data, load_eval);
- 	gov_queue_work(dbs_data, policy, delay, cpus);
- 
-+unlock:
- 	mutex_unlock(&shared->timer_mutex);
- }
- 
-@@ -473,9 +478,17 @@ static int cpufreq_governor_stop(struct cpufreq_policy *policy,
- 	if (!shared || !shared->policy)
- 		return -EBUSY;
- 
-+	/*
-+	 * Work-handler must see this updated, as it should not proceed any
-+	 * further after governor is disabled. And so timer_mutex is taken while
-+	 * updating this value.
-+	 */
-+	mutex_lock(&shared->timer_mutex);
-+	shared->policy = NULL;
-+	mutex_unlock(&shared->timer_mutex);
-+
- 	gov_cancel_work(dbs_data, policy);
- 
--	shared->policy = NULL;
- 	mutex_destroy(&shared->timer_mutex);
- 	return 0;
- }
--- 
-2.4.0
+Rafael
