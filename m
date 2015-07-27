@@ -1,59 +1,241 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power/reset: zx: Remove unnecessary include file
-Date: Mon, 27 Jul 2015 15:34:32 +0200
-Message-ID: <20150727133432.GA12993@earth>
-References: <1437980346-1966-1-git-send-email-jun.nie@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 7/7] cpufreq: Separate CPU device removal from CPU online
+Date: Mon, 27 Jul 2015 16:09:44 +0200
+Message-ID: <1739669.kedIsxdRK2@vostro.rjw.lan>
+References: <7868353.pEStq1MJ2a@vostro.rjw.lan> <3874727.Jpay9zgokc@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:43335 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750931AbbG0Nej (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 Jul 2015 09:34:39 -0400
-Content-Disposition: inline
-In-Reply-To: <1437980346-1966-1-git-send-email-jun.nie@linaro.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:60393 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750803AbbG0Nm4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 09:42:56 -0400
+In-Reply-To: <3874727.Jpay9zgokc@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jun Nie <jun.nie@linaro.org>
-Cc: sfr@canb.auug.org.au, linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---PEIAKu/WMn1b1Hv9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+To separate the CPU online interface from the CPU device removal
+one, split cpufreq_online() out of cpufreq_add_dev() and make
+cpufreq_cpu_callback() call the former, while the latter will only
+be used as the CPU device removal subsystem interface callback.
 
-Hi Jun,
+While at it, notice that the return value of sif->add_dev() is
+ignored in bus_probe_device(), so (the new) cpufreq_add_dev()
+doesn't need to bother with returning anything different from 0
+and cpufreq_online() may be a void function.
 
-On Mon, Jul 27, 2015 at 02:59:06PM +0800, Jun Nie wrote:
-> Including ARM related header file cause build failure
-> in i386 build because COMILE_TEST also involve building
-> zx driver. Remove the unnecessary include file.
+Moreover, since the return value of cpufreq_add_policy_cpu() is
+going to be ignored now too, make a void function of it as well.
 
-Thanks for taking care of this, queued.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Suggested-by: Russell King <linux@arm.linux.org.uk>
+---
+ drivers/cpufreq/cpufreq.c |  125 ++++++++++++++++++++++------------------------
+ 1 file changed, 61 insertions(+), 64 deletions(-)
 
--- Sebastian
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -1056,19 +1056,17 @@ static int cpufreq_init_policy(struct cp
+ 	return cpufreq_set_policy(policy, &new_policy);
+ }
+ 
+-static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
++static void cpufreq_add_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+ {
+-	int ret = 0;
+-
+ 	/* Has this CPU been taken care of already? */
+ 	if (cpumask_test_cpu(cpu, policy->cpus))
+-		return 0;
++		return;
+ 
+ 	if (has_target()) {
+-		ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
++		int ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+ 		if (ret) {
+ 			pr_err("%s: Failed to stop governor\n", __func__);
+-			return ret;
++			return;
+ 		}
+ 	}
+ 
+@@ -1077,17 +1075,13 @@ static int cpufreq_add_policy_cpu(struct
+ 	up_write(&policy->rwsem);
+ 
+ 	if (has_target()) {
+-		ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
++		int ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+ 		if (!ret)
+ 			ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+ 
+-		if (ret) {
++		if (ret)
+ 			pr_err("%s: Failed to start governor\n", __func__);
+-			return ret;
+-		}
+ 	}
+-
+-	return 0;
+ }
+ 
+ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+@@ -1191,44 +1185,24 @@ static void cpufreq_policy_free(struct c
+ 	kfree(policy);
+ }
+ 
+-/**
+- * cpufreq_add_dev - add a CPU device
+- *
+- * Adds the cpufreq interface for a CPU device.
+- *
+- * The Oracle says: try running cpufreq registration/unregistration concurrently
+- * with with cpu hotplugging and all hell will break loose. Tried to clean this
+- * mess up, but more thorough testing is needed. - Mathieu
+- */
+-static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
++static void cpufreq_online(unsigned int cpu)
+ {
+-	unsigned int j, cpu = dev->id;
+-	int ret = -ENOMEM;
+ 	struct cpufreq_policy *policy;
+-	unsigned long flags;
+ 	bool recover_policy;
++	unsigned long flags;
++	unsigned int j;
++	int ret;
+ 
+-	pr_debug("adding CPU %u\n", cpu);
+-
+-	if (cpu_is_offline(cpu)) {
+-		/*
+-		 * Only possible if we are here from the subsys_interface add
+-		 * callback.  A hotplug notifier will follow and we will handle
+-		 * it as CPU online then.  For now, just create the sysfs link,
+-		 * unless there is no policy or the link is already present.
+-		 */
+-		policy = per_cpu(cpufreq_cpu_data, cpu);
+-		return policy && !cpumask_test_and_set_cpu(cpu, policy->real_cpus)
+-			? add_cpu_dev_symlink(policy, cpu) : 0;
+-	}
++	pr_debug("%s: bringing CPU%u online\n", __func__, cpu);
+ 
+ 	/* Check if this CPU already has a policy to manage it */
+ 	policy = per_cpu(cpufreq_cpu_data, cpu);
+ 	if (policy) {
+ 		WARN_ON(!cpumask_test_cpu(cpu, policy->related_cpus));
+-		if (!policy_is_inactive(policy))
+-			return cpufreq_add_policy_cpu(policy, cpu);
+-
++		if (!policy_is_inactive(policy)) {
++			cpufreq_add_policy_cpu(policy, cpu);
++			return;
++		}
+ 		/* This is the only online CPU for the policy.  Start over. */
+ 		recover_policy = true;
+ 		down_write(&policy->rwsem);
+@@ -1239,7 +1213,7 @@ static int cpufreq_add_dev(struct device
+ 		recover_policy = false;
+ 		policy = cpufreq_policy_alloc(cpu);
+ 		if (!policy)
+-			return -ENOMEM;
++			return;
+ 	}
+ 
+ 	cpumask_copy(policy->cpus, cpumask_of(cpu));
+@@ -1362,7 +1336,7 @@ static int cpufreq_add_dev(struct device
+ 
+ 	pr_debug("initialization complete\n");
+ 
+-	return 0;
++	return;
+ 
+ out_remove_policy_notify:
+ 	/* cpufreq_policy_free() will notify based on this */
+@@ -1374,7 +1348,34 @@ out_exit_policy:
+ 		cpufreq_driver->exit(policy);
+ out_free_policy:
+ 	cpufreq_policy_free(policy, recover_policy);
+-	return ret;
++}
++
++/**
++ * cpufreq_add_dev - the cpufreq interface for a CPU device.
++ * @dev: CPU device.
++ * @sif: Subsystem interface structure pointer (not used)
++ */
++static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
++{
++	unsigned cpu = dev->id;
++
++	dev_dbg(dev, "%s: adding CPU%u\n", __func__, cpu);
++
++	if (cpu_online(cpu)) {
++		cpufreq_online(cpu);
++	} else {
++		/*
++		 * A hotplug notifier will follow and we will handle it as CPU
++		 * online then.  For now, just create the sysfs link, unless
++		 * there is no policy or the link is already present.
++		 */
++		struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
++
++		if (policy && !cpumask_test_and_set_cpu(cpu, policy->real_cpus))
++			WARN_ON(add_cpu_dev_symlink(policy, cpu));
++	}
++
++	return 0;
+ }
+ 
+ static void cpufreq_offline_prepare(unsigned int cpu)
+@@ -2340,27 +2341,23 @@ static int cpufreq_cpu_callback(struct n
+ 					unsigned long action, void *hcpu)
+ {
+ 	unsigned int cpu = (unsigned long)hcpu;
+-	struct device *dev;
+ 
+-	dev = get_cpu_device(cpu);
+-	if (dev) {
+-		switch (action & ~CPU_TASKS_FROZEN) {
+-		case CPU_ONLINE:
+-			cpufreq_add_dev(dev, NULL);
+-			break;
+-
+-		case CPU_DOWN_PREPARE:
+-			cpufreq_offline_prepare(cpu);
+-			break;
+-
+-		case CPU_POST_DEAD:
+-			cpufreq_offline_finish(cpu);
+-			break;
+-
+-		case CPU_DOWN_FAILED:
+-			cpufreq_add_dev(dev, NULL);
+-			break;
+-		}
++	switch (action & ~CPU_TASKS_FROZEN) {
++	case CPU_ONLINE:
++		cpufreq_online(cpu);
++		break;
++
++	case CPU_DOWN_PREPARE:
++		cpufreq_offline_prepare(cpu);
++		break;
++
++	case CPU_POST_DEAD:
++		cpufreq_offline_finish(cpu);
++		break;
++
++	case CPU_DOWN_FAILED:
++		cpufreq_online(cpu);
++		break;
+ 	}
+ 	return NOTIFY_OK;
+ }
 
---PEIAKu/WMn1b1Hv9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVtjNlAAoJENju1/PIO/qazMwQAJ4QnWDrR7PNpXwnC8gCmkZd
-VCgbiiRZF7GEZRm8ww/Xr/Y7yaFzalSQRNTRrdeV2rYdyZ+f/xjrqBlzml+S78pq
-2zy7lWV8vpqW0SOL33iOzl4WqItTiQky7DGLA1Wt+ns+aOJ/YqiRz18ws+nw/0Ug
-rTvLR5J6x3VBzuFme8ubE7Ap/8DV1hQCWo+Fm4XUP/ZWsrtbBqQl3pppP6KvC3nQ
-aGYtS5lVOz+v9Bw3hCKMB9jcr6aOM/YYmBUCMohQ+jyBFt/1NMK8w4qjBsERfNJD
-w3Co6jDMA/AA59UQl1Ub/K3Yx66hH+LT9Ew0DMANsjrJwSC9xd/wgfokAutBSZJf
-4ZaIC7ud0AW9jvVdcFfO5AuczrykjhViXGpUeMhJFVZTRdMum80MoIkV6JVUNGKT
-1Jm3nQ4+3TE4SP3b00/eCem3wnk5Oc3+WNO2nIRtjiOpuoeOq9VxBJiU+a3JnE0Z
-4jad6PPCLBONyID5bPw2DWXJ8Exjc0nALeScHNzKeNFxTTeuXJmHxVEgAIqhJtcW
-K/aL8yS20VE5Sj5VI0ClXuhELZhSl1ADPToF6v/bRKJe6EZShxpykEHWvY4NGZYd
-NLnUi/S7UHEiY7IHJPozSlfyoEaLth5cEIh5WP1hpD8/IL2+PZnYP7WtCGonLzxb
-J2CFeAQOI5w5VGjzpq03
-=GQ51
------END PGP SIGNATURE-----
-
---PEIAKu/WMn1b1Hv9--
