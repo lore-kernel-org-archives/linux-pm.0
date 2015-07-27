@@ -1,42 +1,46 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
-Date: Mon, 27 Jul 2015 16:20:30 +0100
-Message-ID: <1438010430-5802-2-git-send-email-lee.jones@linaro.org>
-References: <1438010430-5802-1-git-send-email-lee.jones@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1438010430-5802-1-git-send-email-lee.jones@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH v4 1/2] dt: cpufreq: st: Provide bindings for ST's CPUFreq implementation
+Date: Mon, 27 Jul 2015 16:20:29 +0100
+Message-ID: <1438010430-5802-1-git-send-email-lee.jones@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f172.google.com ([209.85.212.172]:33557 "EHLO
+	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753682AbbG0PUh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 11:20:37 -0400
+Received: by wicmv11 with SMTP id mv11so143872068wic.0
+        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2015 08:20:36 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 Cc: kernel@stlinux.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, ajitpal.singh@st.com, sre@kernel.org, dbaryshkov@gmail.com, Lee Jones <lee.jones@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-These OPPs are used in ST's CPUFreq implementation.
-
+Cc: devicetree@vger.kernel.org
 Signed-off-by: Lee Jones <lee.jones@linaro.org>
 ---
 
 Changelog:
- - None, new patch
+ - Using OPP-v2
+ - Moved (and linked) a bunch of documentation to ../power/
 
- Documentation/devicetree/bindings/power/opp-st.txt | 76 ++++++++++++++++++++++
- 1 file changed, 76 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/opp-st.txt
+ .../devicetree/bindings/cpufreq/cpufreq-st.txt     | 40 ++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
 
-diff --git a/Documentation/devicetree/bindings/power/opp-st.txt b/Documentation/devicetree/bindings/power/opp-st.txt
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
 new file mode 100644
-index 0000000..6eb2a91
+index 0000000..79add9d
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/opp-st.txt
-@@ -0,0 +1,76 @@
-+STMicroelectronics OPP (Operating Performance Points) Bindings
-+--------------------------------------------------------------
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
+@@ -0,0 +1,40 @@
++Binding for ST's CPUFreq driver
++===============================
 +
 +Frequency Scaling only
 +----------------------
 +
 +Located in CPU's node:
 +
-+- operating-points	: [See: ./opp.txt]
++- operating-points		: [See: ../power/opp.txt]
 +
 +Example [safe]
 +--------------
@@ -54,55 +58,20 @@ index 0000000..6eb2a91
 +Dynamic Voltage and Frequency Scaling (DVFS)
 +--------------------------------------------
 +
-+Located in 'cpu0-opp-list' node [to be provided ONLY by the bootloader]:
++Located in CPU's node:
 +
-+- compatible		: Should be "operating-points-v2-sti"
-+- opp{1..N} 		: Each 'oppX' subnode will contain the following properties:
-+ - opp-hz		: CPU frequency [Hz] for this OPP [See: ./opp.txt]
-+ - st,avs		: List of available voltages [uV] indexed by process code
-+ - st,cuts		: Cut version this OPP is suitable for [0xFF means ALL]
-+ - st,substrate		: Substrate version this OPP is suitable for [0xFF means ALL]
-+- st,syscfg		: Phandle to Major number register
-+				First cell: offset to major number
-+- st,syscfg-eng		: Phandle to Minor number and Pcode registers
-+				First cell: offset to process code
-+				Second cell: offset to minor number
-+
-+WARNING: The opp{1..N} nodes will be provided by the bootloader.  Do not attempt to
-+	 artificially synthesise the opp{1..N} nodes or any of their descendants.
-+	 They are very platform specific and may damage the hardware if created
-+	 incorrectly.
++- operating-points-v2-sti	: [See ../power/opp-st.txt]
 +
 +Example [unsafe]
 +----------------
 +
 +cpus {
 +	cpu@0 {
-+		operating-points-v2	= <&cpu0_opp_list>;
++		operating-points-v2	= <[OPP list phandle]>;
 +	};
 +};
 +
-+/* ############################################################ */
-+/* # WARNING: Do not attempt to copy/replicate this node,     # */
-+/* #          it is only to be supplied by the bootloader !!! # */
-+/* ############################################################ */
-+cpu0-opp-list {
-+	compatible	= "operating-points-v2-sti";
-+	st,syscfg	= <&syscfg [major_offset]>;
-+	st,syscfg-eng   = <&syscfg_eng [pcode_offset] [minor_offset]>;
-+
-+	opp0 {
-+		opp-hz		= <1200000000>;
-+		st,avs		= <1110 1150 1100 1080 1040 1020 980 930>;
-+		st,substrate	= <0xff>;
-+		st,cuts		= <0xff>;
-+	};
-+	opp1 {
-+		opp-hz		= <1500000000>;
-+		st,avs		= <1200 1200 1200 1200 1170 1140 1100 1070>;
-+		st,substrate	= <0xff>;
-+		st,cuts		= <0x2>;
-+	};
-+};
++For an example of an OPP list, see ../power/opp-st.txt.
 -- 
 1.9.1
+
