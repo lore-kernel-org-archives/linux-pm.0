@@ -1,90 +1,60 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 3/4] power: Add Qualcomm SMBB driver
-Date: Mon, 27 Jul 2015 16:06:22 +0200
-Message-ID: <20150727140622.GB12993@earth>
-References: <1434662025-9485-1-git-send-email-bjorn.andersson@sonymobile.com>
- <1434662025-9485-4-git-send-email-bjorn.andersson@sonymobile.com>
- <20150725154159.GA17373@earth>
- <20150726010414.GK4753@usrtlx11787.corpusers.net>
+Subject: Re: [PATCH v2] power_supply: bq24735: Convert to using managed
+ resources
+Date: Mon, 27 Jul 2015 16:12:03 +0200
+Message-ID: <20150727141202.GC12993@earth>
+References: <20150725035316.GA10621@vaishali-Ideapad-Z570>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="FkmkrVfFsRoUs1wW"
+	protocol="application/pgp-signature"; boundary="dkEUBIird37B8yKS"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20150726010414.GK4753@usrtlx11787.corpusers.net>
+In-Reply-To: <20150725035316.GA10621@vaishali-Ideapad-Z570>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@sonymobile.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "Cavin, Courtney" <Courtney.Cavin@sonymobile.com>
+To: Vaishali Thakkar <vthakkar1994@gmail.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Frans Klaver <fransklaver@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---FkmkrVfFsRoUs1wW
+--dkEUBIird37B8yKS
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Sat, Jul 25, 2015 at 06:04:14PM -0700, Bjorn Andersson wrote:
-> On Sat 25 Jul 08:42 PDT 2015, Sebastian Reichel wrote:
-> >  * battery-charge-control-limit
-> >=20
-> > It's unclear, what this property is used for. Is the limit only
-> > for "normal" charging or also for fast charging?
-> >=20
+On Sat, Jul 25, 2015 at 09:23:16AM +0530, Vaishali Thakkar wrote:
+> Use managed resource functions like devm_kasprintf and
+> devm_power_supply_register in bq24735_charger_probe. To be
+> compatible with the change, replace various gotos by direct
+> returns and drop unneeded labels.
 >=20
-> This is described as the current limit during fast charging. However,
-> "fast charging" is the normal state.
->=20
-> I think the most consistent (regards documentation and other properties)
-> would be:
->=20
->  qcom,fast-charge-current-limit
+> Also, remove bq24735_charger_remove as it is now redundant.
 
-So what's the difference to "fast-charge-safe-current"?
-
-> >  * minimum-input-voltage
-> >=20
-> > Add a vendor prefix to this property.
-> >=20
->=20
-> Shouldn't they all have a vendor prefix?
-
-Some of the properties are quite generic and used on multiple
-chips, so we may create a power_supply/battery-fuel-gauge.txt
-and power_supply/battery-charger.txt with generic bindings.
-
-I'm fine with just adding vendor prefixed properties for all
-instances, though.
-
-> Thanks for the review, I'll update the patches accordingly and
-> will send out v2 (and make sure you get the dt binding document
-> as well).
-
-OK, thanks.
+Thanks, queued.
 
 -- Sebastian
 
---FkmkrVfFsRoUs1wW
+--dkEUBIird37B8yKS
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJVtjrbAAoJENju1/PIO/qa7eAP/i3ZBGawaby2Nx7cbY9Fp5r/
-Dtc+E2Yc8qVjm03X7Agmje3Z8vrv+WxHxd4KVQykbQFS7UvBIsvICn41YwbmdwjP
-SMcTiT0Y/q6VQMmkTh+9lX6CpsHFMWeDd3u5qgl4gPbZir5p+pgz5lfLJBM72VTt
-ynstkojKjds2FeU2Dvj2m4yegtI8l/KUDBlQCIYqX+Knb/D5aIeSjFTJWHESbjRD
-N3qnFKWupVUozmLlpwF+/RWYwRHRDywI5YoztNlumQMWZFgZVckf5dsI/UOt2s+m
-M/Xk43PtWvZWQ89erdUfznaguhGPa+le09gXJ7VZXwzGlyfql3jkeCCmIsENK+U8
-cNEChMKk8gS0B4c1skAR0kCVxKxEtsQlul6Qtwuv1g2KMf8OY/9RioTAzaZcQAXv
-FIRoLd56a1SavQxun0R7wbYD77MrHKcqaibGvKHSp+mYyAPlSKVYKijxqkZ/tAAH
-tpE2Nc+I6Jw5aBIbj+l0u4ymDNjbH4BDQibI1PrwDmSRuM/TDmyvhX5qXRfAxGLq
-Jcm2/zFDPuVPtdjB0rOSXXtysvhMzlC7KEVuZ+ABXZ75wBBX0Obuil68gFklMQa4
-7ejjyLRYm+t7ui+GNZIOCyQ0fyGl3maf5QAeqXkEQq2MJ9ziHHl9wq63izmsADq1
-ipPGubvYfId8iwjN37nl
-=hOzE
+iQIcBAEBCgAGBQJVtjwyAAoJENju1/PIO/qaoqMP/A0Sh6Zk1l7kZpAH9L5bJNjb
+wfQ/wYLIKsautphuaSomNsPWcmoB0n3nZkVQaMZKBljhm4s+O/h+Xa0VNnIB+xh1
+una9+h2OECcUnOC+JpN3DZ8Uu/d+H9u3sEGvnH0PnFnx9B+UTSswuHr9kE7wDLoI
+W0jd+7qAwh/kEquogJmS+MrDJdxaJbOpgevzS3h6oNpNpD7hQug7PyMY4sVkCZNf
+ZVd90jPMaoq5cegVKMHMiAQ90ObSiR/4gfkjzp+R7hgMYTUNTOSGu1kXWlsnIttg
+rC8lhh77OUunhLPip8XUmp/tUSERNdMerHzTxvnv1rtXNWiYbFXBISWJvSpr5a1F
+wQRnauDYFFltS2qi7bboocFf0GKFMALfm496+5W9FvppfucnZPdCBZBpxo83AyoV
+j10ts75felM/dMKyFsK32d/jrs5U+P595h5E3YL2UhMo7G9dN3xpKlUNh9oNCLtI
+AyAv8KlNKPL18luMK8sgjlPaijhuo4aCmRhQ0p/SX2rtraSK0eVqzfkIJ5f31YK5
+BuAixhrGcubpNWGU2KZt8mQYUPSx2yXRcrB0WpH6XwjArh0Ge4yXiqEoGE0suXpp
+Z8cdKtH8zqfrtP84SiuZzAbX9xrlfWm9ESEu/PhqYkA+68ciTcPoFAvYSF5T+sfq
+lR+OkHTc5WHtakSbOT2z
+=HymS
 -----END PGP SIGNATURE-----
 
---FkmkrVfFsRoUs1wW--
+--dkEUBIird37B8yKS--
