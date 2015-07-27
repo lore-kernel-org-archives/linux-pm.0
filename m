@@ -1,85 +1,74 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v3] cpufreq: Avoid attempts to create duplicate symbolic links
-Date: Mon, 27 Jul 2015 14:39:14 +0200
-Message-ID: <CAJZ5v0j=rLMNOspVSub7MZ4PxrMoo5kao_B226-Lx4UjPb4wCw@mail.gmail.com>
-References: <1660815.CyKx9SEI9c@vostro.rjw.lan>
-	<20150725130002.GC1691@linux>
-	<CAJZ5v0i6t36Nr7nFOKjGY5fBjzR=h+rNHcHWYd=eEdapMWQEGQ@mail.gmail.com>
-	<2161701.diIE0m8ocR@vostro.rjw.lan>
-	<20150727022952.GF19944@linux>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2 00/11] OPP: Add code to support operating-points-v2 bindings
+Date: Mon, 27 Jul 2015 15:39:24 +0200
+Message-ID: <3834037.XRjxlAtlMq@vostro.rjw.lan>
+References: <cover.1437972635.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f181.google.com ([209.85.212.181]:36661 "EHLO
-	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751857AbbG0MjP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 08:39:15 -0400
-In-Reply-To: <20150727022952.GF19944@linux>
+Received: from v094114.home.net.pl ([79.96.170.134]:42893 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750789AbbG0NMb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 09:12:31 -0400
+In-Reply-To: <cover.1437972635.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mturquette@baylibre.com, sboyd@codeaurora.org, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, b.zolnierkie@samsung.com
 
-On Mon, Jul 27, 2015 at 4:29 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 26-07-15, 02:28, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> After commit 87549141d516 (cpufreq: Stop migrating sysfs files on
->> hotplug) there is a problem with CPUs that share cpufreq policy
->> objects with other CPUs and are initially offline.
->>
->> Say CPU1 shares a policy with CPU0 which is online and is registered
->> first.  As part of the registration process, cpufreq_add_dev() is
->> called for it.  It creates the policy object and a symbolic link
->> to it from the CPU1's sysfs directory.  If CPU1 is registered
->> subsequently and it is offline at that time, cpufreq_add_dev() will
->> attempt to create a symbolic link to the policy object for it, but
->> that link is present already, so a warning about that will be
->> triggered.
->>
->> To avoid that warning, make cpufreq use an additional CPU mask
->> containing related CPUs that are actually present for each policy
->> object.  That mask is initialized when the policy object is populated
->> after its creation (for the first online CPU using it) and it includes
->> CPUs from the "policy CPUs" mask returned by the cpufreq driver's
->> ->init() callback that are physically present at that time.  Symbolic
->> links to the policy are created only for the CPUs in that mask.
->>
->> If cpufreq_add_dev() is invoked for an offline CPU, it checks the
->> new mask and only creates the symlink if the CPU was not in it (the
->> CPU is added to the mask at the same time).
->>
->> In turn, cpufreq_remove_dev() drops the given CPU from the new mask,
->> removes its symlink to the policy object and returns, unless it is
->> the CPU owning the policy object.  In that case, the policy object
->> is moved to a new CPU's sysfs directory or deleted if the CPU being
->> removed was the last user of the policy.
->>
->> While at it, notice that cpufreq_remove_dev() can't fail, because
->> its return value is ignored, so make it ignore return values from
->> __cpufreq_remove_dev_prepare() and __cpufreq_remove_dev_finish()
->> and prevent these functions from aborting on errors returned by
->> __cpufreq_governor().  Also drop the now unused sif argument from
->> them.
->>
->> Fixes: 87549141d516 (cpufreq: Stop migrating sysfs files on hotplug)
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> Reported-by: Russell King <linux@arm.linux.org.uk>
->> ---
->>
->> This goes back to the https://patchwork.kernel.org/patch/6856011/
->> idea, but has a couple of bugs fixed and goes a it further with
->> cleaning things up.
->>
->> ---
->>  drivers/cpufreq/cpufreq.c |  108 +++++++++++++++++++++++-----------------------
->>  include/linux/cpufreq.h   |    1
->>  2 files changed, 56 insertions(+), 53 deletions(-)
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Monday, July 27, 2015 10:32:30 AM Viresh Kumar wrote:
+> Hi Rafael,
+> 
+> This is mostly reviewed and its been out on the lists for around one and
+> half month. We can get it pushed for 4.3 now. Resending the series
+> because of minor updates in few patches, which were also sent as replies
+> to earlier version.
+> 
+> I have tested this on dual-core exynos board with the driver inbuilt as
+> well as a module. Tried multiple insertion/removals of the module. Have
+> tested cpufreq-dt driver with both old and new bindings.
+> 
+> ----------x-----------------x-------------
+> 
+> This adds code to support operating-points-v2 bindings. Not everything
+> is supported yet, but most of the basic stuff is.
+> 
+> Pushed here as well for reference:
+> ssh://git@git.linaro.org/people/viresh.kumar/linux.git opp/v2
+> 
+> V1->V2:
+> - 1/11 is a new patch which moves the bindings file into opp specific
+>   folder.
+> - 'opp-suspend' binding got updated and is part of individual OPPs now,
+>   instead of a phandle present in the opp table.
+> - Some more minor reformatting as suggested by Bartlomiej and Stephen,
+>   they were already posted as reply to earlier patches in V1.
+> 
+> Viresh Kumar (11):
+>   opp: Create a directory for opp bindings
+>   opp: Relocate few routines
+>   OPP: Create _remove_device_opp() for freeing dev_opp
+>   OPP: Allocate dev_opp from _add_device_opp()
+>   OPP: Break _opp_add_dynamic() into smaller functions
+>   opp: Add support to parse "operating-points-v2" bindings
+>   OPP: Add clock-latency-ns support
+>   opp: Add OPP sharing information to OPP library
+>   OPP: Add support for opp-suspend
+>   opp: Add helpers for initializing CPU OPPs
+>   cpufreq-dt: Add support for operating-points-v2 bindings
+> 
+>  .../devicetree/bindings/power/{ => opp}/opp.txt    |    0
+>  drivers/base/power/opp.c                           | 1072 +++++++++++++++-----
+>  drivers/cpufreq/cpufreq-dt.c                       |   56 +-
+>  include/linux/pm_opp.h                             |   29 +
+>  4 files changed, 905 insertions(+), 252 deletions(-)
+>  rename Documentation/devicetree/bindings/power/{ => opp}/opp.txt (100%)
 
-Thanks!
+Looks OK to me overall, but there seem to be some patches in the series that
+haven't been reviewed by the OPP people.  I'd prefer these to get some ACKs
+before they go in.
 
-Russell, can you test this one, please?
-
+Thanks,
 Rafael
+
