@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 5/9] cpufreq: ondemand: Drop unnecessary locks from update_sampling_rate()
-Date: Mon, 27 Jul 2015 17:58:10 +0530
-Message-ID: <e0795dfc4f83b6cfeabe856dcf4e5f8f2f5b3538.1437999691.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 6/9] cpufreq: ondemand: queue work for policy->cpus together
+Date: Mon, 27 Jul 2015 17:58:11 +0530
+Message-ID: <d2760eca0b3fd5e427d004120bdb82c1aed215ca.1437999691.git.viresh.kumar@linaro.org>
 References: <cover.1437999691.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1437999691.git.viresh.kumar@linaro.org>
@@ -12,53 +12,79 @@ To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, preeti.lkml@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-'timer_mutex' is required to sync work-handlers of policy->cpus.
-update_sampling_rate() is just canceling the works and queuing them
-again. This isn't protecting anything at all in update_sampling_rate()
-and is not gonna be of any use.
+Currently update_sampling_rate() runs over each online CPU and
+cancels/queues work on it. Its very inefficient for the case where a
+single policy manages multiple CPUs, as they can be processed together.
 
-Even if a work-handler is already running for a CPU,
-cancel_delayed_work_sync() will wait for it to finish.
+Also drop the unnecessary cancel_delayed_work_sync() as we are doing a
+mod_delayed_work_on() in gov_queue_work(), which will take care of
+pending works for us.
 
-Drop these unnecessary locks.
-
-Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq_ondemand.c | 10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
+ drivers/cpufreq/cpufreq_ondemand.c | 31 ++++++++++++++++++-------------
+ 1 file changed, 18 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 2474c9c34022..f1551fc7b4fd 100644
+index f1551fc7b4fd..a6f579e40ce2 100644
 --- a/drivers/cpufreq/cpufreq_ondemand.c
 +++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -267,28 +267,20 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
+@@ -247,40 +247,45 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
+ 		unsigned int new_rate)
+ {
+ 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
++	struct cpufreq_policy *policy;
++	struct od_cpu_dbs_info_s *dbs_info;
++	unsigned long next_sampling, appointed_at;
++	struct cpumask cpumask;
+ 	int cpu;
+ 
++	cpumask_copy(&cpumask, cpu_online_mask);
++
+ 	od_tuners->sampling_rate = new_rate = max(new_rate,
+ 			dbs_data->min_sampling_rate);
+ 
+-	for_each_online_cpu(cpu) {
+-		struct cpufreq_policy *policy;
+-		struct od_cpu_dbs_info_s *dbs_info;
+-		unsigned long next_sampling, appointed_at;
+-
++	for_each_cpu(cpu, &cpumask) {
+ 		policy = cpufreq_cpu_get(cpu);
+ 		if (!policy)
+ 			continue;
++
++		/* clear all CPUs of this policy */
++		cpumask_andnot(&cpumask, &cpumask, policy->cpus);
++
+ 		if (policy->governor != &cpufreq_gov_ondemand) {
+ 			cpufreq_cpu_put(policy);
+ 			continue;
+ 		}
++
  		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
  		cpufreq_cpu_put(policy);
  
--		mutex_lock(&dbs_info->cdbs.shared->timer_mutex);
--
--		if (!delayed_work_pending(&dbs_info->cdbs.dwork)) {
--			mutex_unlock(&dbs_info->cdbs.shared->timer_mutex);
-+		if (!delayed_work_pending(&dbs_info->cdbs.dwork))
+-		if (!delayed_work_pending(&dbs_info->cdbs.dwork))
++		/* Make sure the work is not canceled on policy->cpus */
++		if (!dbs_info->cdbs.shared->policy)
  			continue;
--		}
  
  		next_sampling = jiffies + usecs_to_jiffies(new_rate);
  		appointed_at = dbs_info->cdbs.dwork.timer.expires;
  
- 		if (time_before(next_sampling, appointed_at)) {
+-		if (time_before(next_sampling, appointed_at)) {
+-			cancel_delayed_work_sync(&dbs_info->cdbs.dwork);
 -
--			mutex_unlock(&dbs_info->cdbs.shared->timer_mutex);
- 			cancel_delayed_work_sync(&dbs_info->cdbs.dwork);
--			mutex_lock(&dbs_info->cdbs.shared->timer_mutex);
+-			gov_queue_work(dbs_data, policy,
+-				       usecs_to_jiffies(new_rate),
+-				       cpumask_of(cpu));
++		if (!time_before(next_sampling, appointed_at))
++			continue;
  
- 			gov_queue_work(dbs_data, policy,
- 				       usecs_to_jiffies(new_rate),
- 				       cpumask_of(cpu));
- 
- 		}
--		mutex_unlock(&dbs_info->cdbs.shared->timer_mutex);
+-		}
++		gov_queue_work(dbs_data, policy, usecs_to_jiffies(new_rate),
++			       policy->cpus);
  	}
  }
  
