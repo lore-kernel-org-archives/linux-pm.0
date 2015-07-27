@@ -1,62 +1,100 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 0/3] power: clean up bin attribute read/write functions
-Date: Mon, 27 Jul 2015 16:43:54 +0200
-Message-ID: <20150727144353.GE12993@earth>
-References: <1437946009-6743-1-git-send-email-vz@mleia.com>
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
+Subject: Re: [RFT/RFC] power_supply: bq2415x_charger: Initialize workqueue
+ before scheduling it
+Date: Mon, 27 Jul 2015 16:48:00 +0200
+Message-ID: <20150727144800.GD28038@pali>
+References: <1436834053-2084-1-git-send-email-k.kozlowski@samsung.com>
+ <201507252349.06519@pali>
+ <20150727142229.GD12993@earth>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="ryJZkp9/svQ58syV"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:50028 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751399AbbG0On7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 Jul 2015 10:43:59 -0400
+Received: from mail-wi0-f179.google.com ([209.85.212.179]:35768 "EHLO
+	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668AbbG0OsF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 10:48:05 -0400
 Content-Disposition: inline
-In-Reply-To: <1437946009-6743-1-git-send-email-vz@mleia.com>
+In-Reply-To: <20150727142229.GD12993@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vladimir Zapolskiy <vz@mleia.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-
---ryJZkp9/svQ58syV
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Mon, Jul 27, 2015 at 12:26:46AM +0300, Vladimir Zapolskiy wrote:
-> This change removes a number of redundant checks on bin attribute
-> client's side, the same checks are done by sysfs_kf_bin_read() or
-> sysfs_kf_bin_write() caller from fs/sysfs/file.c.
+On Monday 27 July 2015 16:22:29 Sebastian Reichel wrote:
+> Hi,
 >=20
-> No functional change, hopefully.
+> On Sat, Jul 25, 2015 at 11:49:06PM +0200, Pali Roh=C3=A1r wrote:
+> > On Tuesday 14 July 2015 02:34:13 Krzysztof Kozlowski wrote:
+> > > The driver during probe registers a power supply notifier
+> > > (with bq2415x_notifier_call() callback) and calls it manually rig=
+ht
+> > > after. The notifier callback function schedules driver's workqueu=
+e
+> > > (bq->work).
+> > >=20
+> > > However the workqueue was initialized after these two events (aft=
+er
+> > > registering power supply notifier and calling manually the callba=
+ck).
+> > >=20
+> > > When power supply core notified the driver (executing its
+> > > bq2415x_notifier_call() callback) the scheduled workqueue could b=
+e
+> > > still uninitialized.
+> > >=20
+> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > > Reported-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+> > >=20
+> > > ---
+> > >=20
+> > > I don't have the hardware, please test. Additionally I could not =
+find
+> > > the commit which introduced the issue so I did not cc-stable.
+> > > ---
+> > >  drivers/power/bq2415x_charger.c | 2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > >=20
+> > > diff --git a/drivers/power/bq2415x_charger.c
+> > > b/drivers/power/bq2415x_charger.c index e98dcb661cc9..527ed0f1879=
+6
+> > > 100644
+> > > --- a/drivers/power/bq2415x_charger.c
+> > > +++ b/drivers/power/bq2415x_charger.c
+> > > @@ -1601,6 +1601,7 @@ static int bq2415x_probe(struct i2c_client
+> > > *client, bq->reported_mode =3D BQ2415X_MODE_OFF;
+> > >  	bq->autotimer =3D 0;
+> > >  	bq->automode =3D 0;
+> > > +	INIT_DELAYED_WORK(&bq->work, bq2415x_timer_work);
+> > >=20
+> > >  	if (np || ACPI_HANDLE(bq->dev)) {
+> > >  		ret =3D device_property_read_u32(bq->dev,
+> > > @@ -1677,7 +1678,6 @@ static int bq2415x_probe(struct i2c_client
+> > > *client, dev_info(bq->dev, "automode not supported\n");
+> > >  	}
+> > >=20
+> > > -	INIT_DELAYED_WORK(&bq->work, bq2415x_timer_work);
+> > >  	bq2415x_set_autotimer(bq, 1);
+> > >=20
+> > >  	dev_info(bq->dev, "driver registered\n");
+> >=20
+> > Looks like this is really problem. I sent alternative patch to mail=
+ing=20
+> > list which should fix this problem too plus allows to load=20
+> > bq2415x_charger.ko in n900 qemu.
+>=20
+> I have not yet reviewed your patch (just skipped over it), but the
+> qemu changes are a bit intrusive for -rc. I suggest to apply this
+> patch for 4.2-rc. The extended patch can then be added in 4.3.
+>=20
+> -- Sebastian
 
-Thanks, queued.
+I'm not sure if this patch is enough... as timer_work should be called
+after that init bq2415x_set_autotimer call.
 
--- Sebastian
+I'm ok with postponing my patch later for 4.3. So if you think apply
+this one for 4.2...
 
---ryJZkp9/svQ58syV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVtkOmAAoJENju1/PIO/qaMTkP/A+H1okdQx+28cWpPCIc2mz7
-RW18GrQXIxk1Iu3jen/ISwQxwp1YLWAhmcf5Oed+PabefrIzTvuqRj4R1cvxgTZD
-wjJ+o/XJGdQpQnyCqu1NkTquwKv+CeUw8zsHQSYjYDZwwcApwsrk+1j6wl+tUXKG
-BqbgyBuR39mFC7I0x8uf4si8TQJp1HIGXwnDYlJWoBLg1umaFzxfNrMCBM6yr+j3
-JMFhqHwGiCF6nJyZ84jZLp2UMD0IfsUpb+7MCync+c5ddoiadX3yoTkRyIWoSay7
-+11kI6Hrio9TJ4jrrSJMS5RGeI1815VoIiuD0QipXJTxaaJgqGaHz3/tgtUERmzN
-537V5AyPLc4XGSWwwKFvsvY71EiDvvuBIgEtcQSYPSzZ9k58IrWSPHiqp4I9ajCt
-NIVHq8RLvwkrhwwoN8X3dAZeqa6yM0bIdKjR3GollfNE6UtoguDMA9KAWd1VO51E
-jBeNvpQFo9sjyi3o0gxdXiEaU+aauNPWuM/9v+nNUczL4Uo45glJU3SmOODldHPm
-4eNhXh79ixKdDTyTwuPXCqFNBD5nylGLqgBzQ8V/HRxSyDDHBzUdkuI/u2UeRAwz
-40Cs1WeatwdNqy3Chuyq2MWW08LhnwFkfa9YSn3gk8E0pNID1u25fGQWDCj37avl
-OCz4zCJSlJKcVKzhumVE
-=n1E0
------END PGP SIGNATURE-----
-
---ryJZkp9/svQ58syV--
+--=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
