@@ -1,81 +1,41 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH] thermal: remove dangling 'weight_attr' device file
-Date: Mon, 27 Jul 2015 12:37:40 +0100
-Message-ID: <20150727113740.GA2640@e104805>
-References: <874682c7b1ab8b0fcc2abc905c71bc2bc041aaeb.1437642037.git.viresh.kumar@linaro.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v2 2/7] cpufreq: opp: fix handling of turbo modes
+Date: Mon, 27 Jul 2015 13:47:41 +0200
+Message-ID: <2681271.3UazeZ9PAQ@amdc1976>
+References: <1436456621-29839-1-git-send-email-b.zolnierkie@samsung.com>
+ <3141301.RS9TLygaba@amdc1976> <20150727113641.GB10181@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:45945 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752909AbbG0Lht (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 07:37:49 -0400
-Content-Disposition: inline
-In-Reply-To: <874682c7b1ab8b0fcc2abc905c71bc2bc041aaeb.1437642037.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <20150727113641.GB10181@linux>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, open list <linux-kernel@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 23, 2015 at 10:02:32AM +0100, Viresh Kumar wrote:
-> This file isn't getting removed while we unbind a device from thermal
-> zone. And this causes following messages when the device is registered
-> again:
+On Monday, July 27, 2015 05:06:41 PM Viresh Kumar wrote:
+> On 27-07-15, 13:14, Bartlomiej Zolnierkiewicz wrote:
+> > Sorry but you don't seem to understand the issue.
 > 
-> WARNING: CPU: 0 PID: 2228 at /home/viresh/linux/fs/sysfs/dir.c:31 sysfs_warn_dup+0x60/0x70()
-> sysfs: cannot create duplicate filename '/devices/virtual/thermal/thermal_zone0/cdev0_weight'
-> Modules linked in: cpufreq_dt(+) [last unloaded: cpufreq_dt]
-> CPU: 0 PID: 2228 Comm: insmod Not tainted 4.2.0-rc3-00059-g44fffd9473eb #272
-> Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
-> [<c00153e8>] (unwind_backtrace) from [<c0012368>] (show_stack+0x10/0x14)
-> [<c0012368>] (show_stack) from [<c053a684>] (dump_stack+0x84/0xc4)
-> [<c053a684>] (dump_stack) from [<c002284c>] (warn_slowpath_common+0x80/0xb0)
-> [<c002284c>] (warn_slowpath_common) from [<c00228ac>] (warn_slowpath_fmt+0x30/0x40)
-> [<c00228ac>] (warn_slowpath_fmt) from [<c012d524>] (sysfs_warn_dup+0x60/0x70)
-> [<c012d524>] (sysfs_warn_dup) from [<c012d244>] (sysfs_add_file_mode_ns+0x13c/0x190)
-> [<c012d244>] (sysfs_add_file_mode_ns) from [<c012d2d4>] (sysfs_create_file_ns+0x3c/0x48)
-> [<c012d2d4>] (sysfs_create_file_ns) from [<c03c04a8>] (thermal_zone_bind_cooling_device+0x260/0x358)
-> [<c03c04a8>] (thermal_zone_bind_cooling_device) from [<c03c2e70>] (of_thermal_bind+0x88/0xb4)
-> [<c03c2e70>] (of_thermal_bind) from [<c03c10d0>] (__thermal_cooling_device_register+0x17c/0x2e0)
-> [<c03c10d0>] (__thermal_cooling_device_register) from [<c03c3f50>] (__cpufreq_cooling_register+0x3a0/0x51c)
-> [<c03c3f50>] (__cpufreq_cooling_register) from [<bf00505c>] (cpufreq_ready+0x44/0x88 [cpufreq_dt])
-> [<bf00505c>] (cpufreq_ready [cpufreq_dt]) from [<c03d6c30>] (cpufreq_add_dev+0x4a0/0x7dc)
-> [<c03d6c30>] (cpufreq_add_dev) from [<c02cd3ec>] (subsys_interface_register+0x94/0xd8)
-> [<c02cd3ec>] (subsys_interface_register) from [<c03d785c>] (cpufreq_register_driver+0x10c/0x1f0)
-> [<c03d785c>] (cpufreq_register_driver) from [<bf0057d4>] (dt_cpufreq_probe+0x60/0x8c [cpufreq_dt])
-> [<bf0057d4>] (dt_cpufreq_probe [cpufreq_dt]) from [<c02d03e4>] (platform_drv_probe+0x44/0xa4)
-> [<c02d03e4>] (platform_drv_probe) from [<c02cead8>] (driver_probe_device+0x174/0x2b4)
-> [<c02cead8>] (driver_probe_device) from [<c02ceca4>] (__driver_attach+0x8c/0x90)
-> [<c02ceca4>] (__driver_attach) from [<c02cd078>] (bus_for_each_dev+0x68/0x9c)
-> [<c02cd078>] (bus_for_each_dev) from [<c02ce2f0>] (bus_add_driver+0x19c/0x214)
-> [<c02ce2f0>] (bus_add_driver) from [<c02cf490>] (driver_register+0x78/0xf8)
-> [<c02cf490>] (driver_register) from [<c0009710>] (do_one_initcall+0x8c/0x1d4)
-> [<c0009710>] (do_one_initcall) from [<c05396b0>] (do_init_module+0x5c/0x1b8)
-> [<c05396b0>] (do_init_module) from [<c0086490>] (load_module+0xd34/0xed8)
-> [<c0086490>] (load_module) from [<c0086704>] (SyS_init_module+0xd0/0x120)
-> [<c0086704>] (SyS_init_module) from [<c000f480>] (ret_fast_syscall+0x0/0x3c)
-> ---[ end trace 3be0e7b7dc6e3c4f ]---
+> :)
 > 
-> Fixes: db91651311c8 ("thermal: export weight to sysfs")
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-Sorry for that.  FWIW,
-
-Acked-by: Javi Merino <javi.merino@arm.com>
-
-> ---
->  drivers/thermal/thermal_core.c | 1 +
->  1 file changed, 1 insertion(+)
+> No, I did. I understand that if someone uses opp bindings today with
+> some entries as turbo OPPs, cpufreq will use them as normal
+> frequencies. And that may harm the board.
 > 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 04659bfb888b..4ca211be4c0f 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1333,6 +1333,7 @@ int thermal_zone_unbind_cooling_device(struct thermal_zone_device *tz,
->  	return -ENODEV;
->  
->  unbind:
-> +	device_remove_file(&tz->device, &pos->weight_attr);
->  	device_remove_file(&tz->device, &pos->attr);
->  	sysfs_remove_link(&tz->device.kobj, pos->name);
->  	release_idr(&tz->idr, &tz->lock, pos->id);
+> BUT, opp-v2 code isn't ready to be used yet. And platforms should see
+> what all is implemented before trying to use them.
+
+OK.
+
+> All I was saying is, this isn't a FIX as we haven't introduced the
+> feature yet. Otherwise I had no issues with the patch.
+
+I will update the description for the next patchset revision.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
