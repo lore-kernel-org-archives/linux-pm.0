@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 7/9] cpufreq: ondemand: update sampling rate immidiately
-Date: Mon, 27 Jul 2015 17:58:12 +0530
-Message-ID: <d6363924f02d389ce50ed1a08450d2ff2d1800c1.1437999691.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 9/9] cpufreq: Get rid of ->governor_enabled and its lock
+Date: Mon, 27 Jul 2015 17:58:14 +0530
+Message-ID: <3667769d0c2fe326f89171d87cfe1d5eb8686115.1437999691.git.viresh.kumar@linaro.org>
 References: <cover.1437999691.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1437999691.git.viresh.kumar@linaro.org>
@@ -12,64 +12,78 @@ To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, preeti.lkml@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-We are immediately updating sampling rate for already queued-works, only
-if the new expiry is lesser than the old one.
+Invalid state-transitions is verified by governor core now and there is
+no need to replicate that in cpufreq core.
 
-But what about the case, where the user doesn't want frequent events and
-want to increase sampling time? Shouldn't we cancel the works (and so
-their interrupts) on all policy->cpus (which might occur very shortly).
-
-This patch removes this special case and simplifies code by immediately
-updating the expiry.
+Stop verifying the same in cpufreq core. That will get rid of
+policy->governor_enabled and cpufreq_governor_lock.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq_ondemand.c | 18 +-----------------
- 1 file changed, 1 insertion(+), 17 deletions(-)
+ drivers/cpufreq/cpufreq.c | 24 ------------------------
+ include/linux/cpufreq.h   |  1 -
+ 2 files changed, 25 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index a6f579e40ce2..1a6f84b42441 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -231,17 +231,8 @@ static unsigned int od_dbs_timer(struct cpu_dbs_info *cdbs,
- static struct common_dbs_data od_dbs_cdata;
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index f620055279f3..c0d49950db01 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -102,7 +102,6 @@ static LIST_HEAD(cpufreq_governor_list);
+ static struct cpufreq_driver *cpufreq_driver;
+ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
+ static DEFINE_RWLOCK(cpufreq_driver_lock);
+-DEFINE_MUTEX(cpufreq_governor_lock);
  
- /**
-- * update_sampling_rate - update sampling rate effective immediately if needed.
-+ * update_sampling_rate - update sampling rate immediately.
-  * @new_rate: new sampling rate
-- *
-- * If new rate is smaller than the old, simply updating
-- * dbs_tuners_int.sampling_rate might not be appropriate. For example, if the
-- * original sampling_rate was 1 second and the requested new sampling rate is 10
-- * ms because the user needs immediate reaction from ondemand governor, but not
-- * sure if higher frequency will be required or not, then, the governor may
-- * change the sampling rate too late; up to 1 second later. Thus, if we are
-- * reducing the sampling rate, we need to make the new value effective
-- * immediately.
-  */
- static void update_sampling_rate(struct dbs_data *dbs_data,
- 		unsigned int new_rate)
-@@ -249,7 +240,6 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
- 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
- 	struct cpufreq_policy *policy;
- 	struct od_cpu_dbs_info_s *dbs_info;
--	unsigned long next_sampling, appointed_at;
- 	struct cpumask cpumask;
- 	int cpu;
+ /* Flag to suspend/resume CPUFreq governors */
+ static bool cpufreq_suspended;
+@@ -2076,21 +2075,6 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
  
-@@ -278,12 +268,6 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
- 		if (!dbs_info->cdbs.shared->policy)
- 			continue;
+ 	pr_debug("%s: for CPU %u, event %u\n", __func__, policy->cpu, event);
  
--		next_sampling = jiffies + usecs_to_jiffies(new_rate);
--		appointed_at = dbs_info->cdbs.dwork.timer.expires;
+-	mutex_lock(&cpufreq_governor_lock);
+-	if ((policy->governor_enabled && event == CPUFREQ_GOV_START)
+-	    || (!policy->governor_enabled
+-	    && (event == CPUFREQ_GOV_LIMITS || event == CPUFREQ_GOV_STOP))) {
+-		mutex_unlock(&cpufreq_governor_lock);
+-		return -EBUSY;
+-	}
 -
--		if (!time_before(next_sampling, appointed_at))
--			continue;
+-	if (event == CPUFREQ_GOV_STOP)
+-		policy->governor_enabled = false;
+-	else if (event == CPUFREQ_GOV_START)
+-		policy->governor_enabled = true;
 -
- 		gov_queue_work(dbs_data, policy, usecs_to_jiffies(new_rate),
- 			       policy->cpus);
+-	mutex_unlock(&cpufreq_governor_lock);
+-
+ 	ret = policy->governor->governor(policy, event);
+ 
+ 	if (!ret) {
+@@ -2098,14 +2082,6 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ 			policy->governor->initialized++;
+ 		else if (event == CPUFREQ_GOV_POLICY_EXIT)
+ 			policy->governor->initialized--;
+-	} else {
+-		/* Restore original values */
+-		mutex_lock(&cpufreq_governor_lock);
+-		if (event == CPUFREQ_GOV_STOP)
+-			policy->governor_enabled = true;
+-		else if (event == CPUFREQ_GOV_START)
+-			policy->governor_enabled = false;
+-		mutex_unlock(&cpufreq_governor_lock);
  	}
+ 
+ 	if (((event == CPUFREQ_GOV_POLICY_INIT) && ret) ||
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index bde1e567b3a9..5930c6b3a1d8 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -82,7 +82,6 @@ struct cpufreq_policy {
+ 	unsigned int		policy; /* see above */
+ 	struct cpufreq_governor	*governor; /* see below */
+ 	void			*governor_data;
+-	bool			governor_enabled; /* governor start/stop flag */
+ 	char			last_governor[CPUFREQ_NAME_LEN]; /* last governor used */
+ 
+ 	struct work_struct	update; /* if update_policy() needs to be
 -- 
 2.4.0
