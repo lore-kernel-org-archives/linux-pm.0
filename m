@@ -1,32 +1,74 @@
-From: Vladimir Zapolskiy <vz@mleia.com>
-Subject: [PATCH 0/3] power: clean up bin attribute read/write functions
-Date: Mon, 27 Jul 2015 00:26:46 +0300
-Message-ID: <1437946009-6743-1-git-send-email-vz@mleia.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v2] power: max17042_battery: add HEALTH and TEMP_*
+ properties support
+Date: Mon, 27 Jul 2015 09:34:13 +0900
+Message-ID: <55B57C85.4070309@samsung.com>
+References: <1432438918-31002-1-git-send-email-ramakrishna.pallala@intel.com>
+ <CAJKOXPeUvdC5LwRLgsFfxz2=SZwkjq2soGius+j6kb76Ea940A@mail.gmail.com>
+ <CAJKOXPepZ9gKtnKk7Z4BFjUk=_kv6j010dZWhhu9bf_OuVmrgQ@mail.gmail.com>
+ <20150724144651.GE27569@earth>
+ <D854C92F57B1B347B57E531E78D05EAD578B35A6@BGSMSX104.gar.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from li271-223.members.linode.com ([178.79.152.223]:55745 "EHLO
-	mail.mleia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753528AbbGZVgB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 26 Jul 2015 17:36:01 -0400
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:24958 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755232AbbG0AeV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 26 Jul 2015 20:34:21 -0400
+In-reply-to: <D854C92F57B1B347B57E531E78D05EAD578B35A6@BGSMSX104.gar.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>, Sebastian Reichel <sre@kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
 
-This change removes a number of redundant checks on bin attribute
-client's side, the same checks are done by sysfs_kf_bin_read() or
-sysfs_kf_bin_write() caller from fs/sysfs/file.c.
+On 25.07.2015 22:23, Pallala, Ramakrishna wrote:
+> Hi Krzysztof Kozlowski,
+> 
+>> On Tue, Jun 23, 2015 at 09:58:41AM +0900, Krzysztof Kozlowski wrote:
+>>> 2015-06-08 10:22 GMT+09:00 Krzysztof Kozlowski <k.kozlowski@samsung.com>:
+>>>> 2015-05-24 12:41 GMT+09:00 Ramakrishna Pallala <ramakrishna.pallala@intel.com>:
+>>>>> This patch adds the support for following battery properties to 
+>>>> max17042 fuel gauge driver.
+>>>>>
+>>>>> POWER_SUPPLY_PROP_TEMP_ALERT_MIN
+>>>> POWER_SUPPLY_PROP_TEMP_ALERT_MAX
+>>>>> POWER_SUPPLY_PROP_TEMP_MIN
+>>>>> POWER_SUPPLY_PROP_TEMP_MAX
+>>>>> POWER_SUPPLY_PROP_HEALTH
+>>>>
+>>>> I wonder, have you tested the patch? After booting on Trats2 device
+>>>> (max77693 which identifies itself as 17047-like) the values are:
+>>>> POWER_SUPPLY_TEMP_ALERT_MIN=1280
+>>>> POWER_SUPPLY_TEMP_ALERT_MAX=1270
+>>>> POWER_SUPPLY_TEMP=257
+>>>> This is okay, datasheet says that register after booting will have 
+>>>> value of 0x7f80.
+>>>>
+>>>> However setting them to some value which should trigger interrupts 
+>>>> (like 300 for MIN or 200 for MAX) does not trigger the interrupt. I 
+>>>> added a printk in max17042_thread_handler().
+>>>>
+>>>> Is the temperature alert feature working?
+>>>
+>>> Can you reply to my question above?
+>>> If this feature is not working, then it should be removed.
+> 
+>> What's the status of this? I cannot test the feature, since I don't have the hardware. I agree, that this should be removed, if it's not working.
+> 
+> I missed this email (may be overlooked it). To have the interrupts enabled we need the config registers(0x1Dh) bit's BIT(9), BIT(4) and BIT92) should be 1 and  BIT(8) should be 0.
+> 
+> Can you dump the status(00h), Talrt(02H) Temp(08h) and config(1Dh) registers values and share?
 
-No functional change, hopefully.
+Thanks for responding. The issue was in BIT(8) which was set to default
+value of 0x1. This would mean to use external sensor but the board does
+not have it.
 
-Vladimir Zapolskiy (3):
-  power: ds2780_battery: clean up eeprom read/write functions
-  power: ds2781_battery: clean up eeprom read/write functions
-  power: olpc_battery: clean up eeprom read function
+This is a DT platform and there is no initial config data so all
+registers are set to default values.
 
- drivers/power/ds2780_battery.c | 20 ++------------------
- drivers/power/ds2781_battery.c |  8 --------
- drivers/power/olpc_battery.c   |  7 +------
- 3 files changed, 3 insertions(+), 32 deletions(-)
+Anyway everything seems to work as expected, thanks for explanation.
 
--- 
-2.1.4
+Best regards,
+Krzysztof
+
