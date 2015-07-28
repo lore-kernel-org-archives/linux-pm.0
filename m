@@ -1,48 +1,62 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: Add scaling frequency range support
-Date: Tue, 28 Jul 2015 12:39:30 +0530
-Message-ID: <20150728070930.GA2857@linux>
-References: <55B6F7C3.8040405@intel.com>
- <55B72923.7030101@intel.com>
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Subject: Re: [PATCH v2 1/2] power: reset: at91: add sama5d3 reset function
+Date: Tue, 28 Jul 2015 09:27:38 +0200
+Message-ID: <55B72EEA.5020600@atmel.com>
+References: <1437384726-24927-1-git-send-email-josh.wu@atmel.com> <20150720164241.GA5930@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:35023 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751187AbbG1HJh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 03:09:37 -0400
-Received: by pabkd10 with SMTP id kd10so65211041pab.2
-        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2015 00:09:37 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <55B72923.7030101@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150720164241.GA5930@earth>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Josh Wu <josh.wu@atmel.com>, linux-arm-kernel@lists.infradead.org, Guenter Roeck <linux@roeck-us.net>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Herring <robh+dt@kernel.org>, Ben Dooks <ben.dooks@codethink.co.uk>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Pawel Moll <pawel.moll@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, Fabian Frederick <fabf@skynet.be>, linux-kernel@vger.kernel.org, Boris Brezillon <boris.brezillon@free-electrons.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Mark Rutland <mark.rutland@arm.com>, Maxime Ripard <maxime.ripard@free-electrons.com>
 List-Id: linux-pm@vger.kernel.org
-To: Pan Xinhui <xinhuix.pan@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
 
-On 28-07-15, 15:02, Pan Xinhui wrote:
-> From: Pan Xinhui <xinhuix.pan@intel.com>
-> 
-> Userspace at most time do cpufreq tests very much inconveniently.
-> Currently they have to echo min and max cpu freq separately like below:
-> echo 480000  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-> echo 2240000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-> 
-> Add scaling_freq_range cpufreq attr to support userspace's demand.
-> Therefore it's easier for testers to write readable scripts like below:
-> echo 480000-2240000 >
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_freq_range
-> 
-> Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
-> ---
-> Change from V1:
-> 	update cpu-freq documentation.
-> ---
->  Documentation/cpu-freq/user-guide.txt |  7 +++++++
->  drivers/cpufreq/cpufreq.c             | 31 +++++++++++++++++++++++++++++++
->  2 files changed, 38 insertions(+)
+Le 20/07/2015 18:42, Sebastian Reichel a =E9crit :
+> Hi,
+>=20
+> On Mon, Jul 20, 2015 at 05:32:05PM +0800, Josh Wu wrote:
+>> This patch introduces a new compatible string: "atmel,sama5d3-rstc" =
+and
+>> new reset function for sama5d3 and later chips.
+>>
+>> As in sama5d3 or later chips, we don't have to shutdown the DDR
+>> controller before reset. Shutdown the DDR controller before reset is=
+ a
+>> workaround to avoid DDR signal driving the bus, but since sama5d3 an=
+d
+>> later chips there is no such a conflict.
+>>
+>> So in this patch:
+>>    1. the sama5d3 reset function only need to write the rstc registe=
+r
+>> and return.
+>>    2. we can remove the code related with sama5d3 DDR controller as
+>> we don't use it at all.
+>>
+>> Signed-off-by: Josh Wu <josh.wu@atmel.com>
+>> Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+>=20
+> queued.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Sebastian,
 
--- 
-viresh
+As my Device Tree changes depend on this modification, we can
+synchronize in tree ways:
+
+1/ you provide me a stable branch so that I can pull it before applying
+my changes that can go through arm-soc.
+
+2/ you let me take the driver's modifications with me and the two
+patches of the series would go through arm-soc.
+
+3/ you take the second patch of my series with my Acked-by tag and carr=
+y
+both of them up to Linus' tree.
+
+Please tell me your preference.
+
+Thanks, bye,
+--=20
+Nicolas Ferre
