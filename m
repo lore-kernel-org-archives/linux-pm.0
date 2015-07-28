@@ -1,84 +1,70 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: [PATCH] PM / Domains: Return -EPROBE_DEFER if we fail to init or turn-on domain
-Date: Tue, 28 Jul 2015 09:04:28 +0100
-Message-ID: <1438070668-19956-1-git-send-email-jonathanh@nvidia.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v6 7/8] dmaengine: add a driver for Intel integrated DMA
+ 64-bit
+Date: Tue, 28 Jul 2015 11:14:20 +0300
+Message-ID: <1438071260.29746.95.camel@linux.intel.com>
+References: <1438009443-55317-1-git-send-email-andriy.shevchenko@linux.intel.com>
+	 <1438009443-55317-8-git-send-email-andriy.shevchenko@linux.intel.com>
+	 <20150728074829.GU21114@x1> <20150728075329.GW21114@x1>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:13313 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754904AbbG1IEr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 04:04:47 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150728075329.GW21114@x1>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, mturquette@baylibre.com, sboyd@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>
-Cc: linux-pm@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 
-When a device is probed, the function dev_pm_domain_attach() is called
-to see if there is a power-domain that is associated with the device and
-needs to be turned on. If dev_pm_domain_attach() does not return
--EPROBE_DEFER then the device will be probed.
+On Tue, 2015-07-28 at 08:53 +0100, Lee Jones wrote:
+> FAO Vinod,
+> 
+> On Tue, 28 Jul 2015, Lee Jones wrote:
+> > On Mon, 27 Jul 2015, Andy Shevchenko wrote:
+> > 
+> > > Intel integrated DMA (iDMA) 64-bit is a specific IP that is used 
+> > > as a part of
+> > > LPSS devices such as HSUART or SPI. The iDMA IP is attached for 
+> > > private
+> > > usage on each host controller independently.
+> > > 
+> > > While it has similarities with Synopsys DesignWare DMA, the 
+> > > following
+> > > distinctions doesn't allow to use the existing driver:
+> > > - 64-bit mode with corresponding changes in Hardware Linked List 
+> > > data structure
+> > > - many slight differences in the channel registers
+> > > 
+> > > Moreover this driver is based on the DMA virtual channels 
+> > > framework that helps
+> > > to make the driver cleaner and easy to understand.
+> > > 
+> > > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com
+> > > >
+> > > ---
+> > >  drivers/dma/Kconfig  |   8 +
+> > >  drivers/dma/Makefile |   1 +
+> > >  drivers/dma/idma64.c | 710 
+> > > +++++++++++++++++++++++++++++++++++++++++++++++++++
+> > >  drivers/dma/idma64.h | 233 +++++++++++++++++
+> > >  4 files changed, 952 insertions(+)
+> > >  create mode 100644 drivers/dma/idma64.c
+> > >  create mode 100644 drivers/dma/idma64.h
+> > 
+> > Applied, thanks.  Pull request to follow.
+> 
+> Will send out a pull request when I have Vinod's Ack.
 
-For devices using genpd, dev_pm_domain_attach() will call
-genpd_dev_pm_attach(). If genpd_dev_pm_attach() does not find a power
-domain associated with the device then it returns an error code not
-equal to -EPROBE_DEFER to allow the device to be probed. However, if
-genpd_dev_pm_attach() does find a power-domain that is associated with
-the device, then it does not return -EPROBE_DEFER on failure and hence
-the device will still be probed. Furthermore, genpd_dev_pm_attach() does
-not check the error code returned by pm_genpd_poweron() to see if the
-power-domain was turned on successfully.
+Vinod, could you have a look at this once again?
 
-Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain.c | 14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
+> 
+> [...]
+> 
+> Patches will still be applied to -next for soak testing though.
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index a1abe16dfe16..7666a1cbaf95 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1947,7 +1947,10 @@ static void genpd_dev_pm_sync(struct device *dev)
-  * Both generic and legacy Samsung-specific DT bindings are supported to keep
-  * backwards compatibility with existing DTBs.
-  *
-- * Returns 0 on successfully attached PM domain or negative error code.
-+ * Returns 0 on successfully attached PM domain or negative error code. Note
-+ * that if a power-domain exists for the device, but it cannot be found or
-+ * turned on, then return -EPROBE_DEFER to ensure that the device is not
-+ * probed and to re-try again later.
-  */
- int genpd_dev_pm_attach(struct device *dev)
- {
-@@ -1984,7 +1987,7 @@ int genpd_dev_pm_attach(struct device *dev)
- 		dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
- 			__func__, PTR_ERR(pd));
- 		of_node_put(dev->of_node);
--		return PTR_ERR(pd);
-+		return -EPROBE_DEFER;
- 	}
- 
- 	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
-@@ -2002,14 +2005,15 @@ int genpd_dev_pm_attach(struct device *dev)
- 		dev_err(dev, "failed to add to PM domain %s: %d",
- 			pd->name, ret);
- 		of_node_put(dev->of_node);
--		return ret;
-+		goto out;
- 	}
- 
- 	dev->pm_domain->detach = genpd_dev_pm_detach;
- 	dev->pm_domain->sync = genpd_dev_pm_sync;
--	pm_genpd_poweron(pd);
-+	ret = pm_genpd_poweron(pd);
- 
--	return 0;
-+out:
-+	return ret ? -EPROBE_DEFER : 0;
- }
- EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
- #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
+Thanks!
+
+
 -- 
-2.1.4
-
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
