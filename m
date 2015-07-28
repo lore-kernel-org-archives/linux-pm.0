@@ -1,157 +1,107 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH V3 10/19] drm/tegra: dc: Prepare for generic PM domains
-Date: Tue, 28 Jul 2015 16:30:54 +0100
-Message-ID: <55B7A02E.40506@nvidia.com>
-References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com> <1436791197-32358-11-git-send-email-jonathanh@nvidia.com> <20150717104154.GM3057@ulmo> <55B73D8C.103@nvidia.com> <20150728112030.GA10949@ulmo.nvidia.com>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
+Date: Tue, 28 Jul 2015 10:35:41 -0500
+Message-ID: <CAL_JsqL8YLeo2TvT=WwjBhNaXXGGFGxkhXdjuEHfs8TN7KLpTA@mail.gmail.com>
+References: <1438010430-5802-1-git-send-email-lee.jones@linaro.org>
+ <1438010430-5802-2-git-send-email-lee.jones@linaro.org> <CAL_JsqL=e+fL_67_GPKjt_7wJ81GfFx7m9gjxmBDvW_JBXWpfQ@mail.gmail.com>
+ <20150728143919.GW14943@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150728112030.GA10949-AwZRO8vwLAwmlAP/+Wk3EA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, =?windows-1252?Q?Terje_Bergstr?= =?windows-1252?Q?=F6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yk0-f170.google.com ([209.85.160.170]:35362 "EHLO
+	mail-yk0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750783AbbG1PgB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 11:36:01 -0400
+In-Reply-To: <20150728143919.GW14943@x1>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Sebastian Reichel <sre@kernel.org>, ajitpal.singh@st.com
 
+On Tue, Jul 28, 2015 at 9:39 AM, Lee Jones <lee.jones@linaro.org> wrote:
+> On Tue, 28 Jul 2015, Rob Herring wrote:
+>
+>> On Mon, Jul 27, 2015 at 10:20 AM, Lee Jones <lee.jones@linaro.org> wrote:
+>> > These OPPs are used in ST's CPUFreq implementation.
+>> >
+>> > Signed-off-by: Lee Jones <lee.jones@linaro.org>
+>> > ---
+>> >
+>> > Changelog:
+>> >  - None, new patch
+>> >
+>> >  Documentation/devicetree/bindings/power/opp-st.txt | 76 ++++++++++++++++++++++
+>> >  1 file changed, 76 insertions(+)
+>> >  create mode 100644 Documentation/devicetree/bindings/power/opp-st.txt
+>> >
+>> > diff --git a/Documentation/devicetree/bindings/power/opp-st.txt b/Documentation/devicetree/bindings/power/opp-st.txt
+>> > new file mode 100644
+>> > index 0000000..6eb2a91
+>> > --- /dev/null
+>> > +++ b/Documentation/devicetree/bindings/power/opp-st.txt
+>> > @@ -0,0 +1,76 @@
+>> > +STMicroelectronics OPP (Operating Performance Points) Bindings
+>> > +--------------------------------------------------------------
+>> > +
+>> > +Frequency Scaling only
+>> > +----------------------
+>> > +
+>> > +Located in CPU's node:
+>> > +
+>> > +- operating-points     : [See: ./opp.txt]
+>> > +
+>> > +Example [safe]
+>> > +--------------
+>> > +
+>> > +cpus {
+>> > +       cpu@0 {
+>> > +                                /* kHz     uV   */
+>> > +               operating-points = <1500000 0
+>> > +                                   1200000 0
+>> > +                                   800000  0
+>> > +                                   500000  0>;
+>> > +       };
+>> > +};
+>> > +
+>> > +Dynamic Voltage and Frequency Scaling (DVFS)
+>> > +--------------------------------------------
+>> > +
+>> > +Located in 'cpu0-opp-list' node [to be provided ONLY by the bootloader]:
+>> > +
+>> > +- compatible           : Should be "operating-points-v2-sti"
+>> > +- opp{1..N}            : Each 'oppX' subnode will contain the following properties:
+>> > + - opp-hz              : CPU frequency [Hz] for this OPP [See: ./opp.txt]
+>> > + - st,avs              : List of available voltages [uV] indexed by process code
+>>
+>> Add a unit suffix (-microvolt).
+>
+> Sure.
+>
+>> > + - st,cuts             : Cut version this OPP is suitable for [0xFF means ALL]
+>> > + - st,substrate                : Substrate version this OPP is suitable for [0xFF means ALL]
+>>
+>> How about not present means all?
+>
+> I think that would be an unsafe assumption.  If it's forgotten, then
+> we may try to run an invalid/dangerous voltage/frequency combination.
+>
+> I'd really like 'all' to be defined an deliberate.
 
-On 28/07/15 12:20, Thierry Reding wrote:
-> On Tue, Jul 28, 2015 at 09:30:04AM +0100, Jon Hunter wrote:
->> May be that would be a cleaner transition than trying to do it all in
->> one go.
-> 
-> I have a couple of patches in my tree to do this for DRM as part of an
-> effort to restore DPMS. It's fairly tricky to get right in DRM and
-> requires all sorts of changes to the driver.
+Okay.
 
-Hmmm ... I was just thinking about moving what is currently there in the pm-runtime helpers ...
+>> > +- st,syscfg            : Phandle to Major number register
+>> > +                               First cell: offset to major number
+>> > +- st,syscfg-eng                : Phandle to Minor number and Pcode registers
+>> > +                               First cell: offset to process code
+>> > +                               Second cell: offset to minor number
+>>
+>> Would the proposed nvmem binding work for this?
+>
+> We already use sysconf for all of this type of stuff, as this
+> information is contained in ST's Sysconf banks.  Moving over to a new
+> API would be a huge move and would require lots of planning
+> discussions with ST.
 
-diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
-index a287e4fec865..0f1dc01215b1 100644
---- a/drivers/gpu/drm/tegra/dc.c
-+++ b/drivers/gpu/drm/tegra/dc.c
-@@ -10,6 +10,7 @@
- #include <linux/clk.h>
- #include <linux/debugfs.h>
- #include <linux/iommu.h>
-+#include <linux/pm_runtime.h>
- #include <linux/reset.h>
- 
- #include <soc/tegra/pmc.h>
-@@ -1922,29 +1923,12 @@ static int tegra_dc_probe(struct platform_device *pdev)
- 			dc->powergate = TEGRA_POWERGATE_DIS;
- 		else
- 			dc->powergate = TEGRA_POWERGATE_DISB;
-+	}
- 
--		err = tegra_powergate_sequence_power_up(dc->powergate, dc->clk,
--							dc->rst);
--		if (err < 0) {
--			dev_err(&pdev->dev, "failed to power partition: %d\n",
--				err);
--			return err;
--		}
--	} else {
--		err = clk_prepare_enable(dc->clk);
--		if (err < 0) {
--			dev_err(&pdev->dev, "failed to enable clock: %d\n",
--				err);
--			return err;
--		}
-+	platform_set_drvdata(pdev, dc);
- 
--		err = reset_control_deassert(dc->rst);
--		if (err < 0) {
--			dev_err(&pdev->dev, "failed to deassert reset: %d\n",
--				err);
--			return err;
--		}
--	}
-+	pm_runtime_enable(&pdev->dev);
-+	pm_runtime_get_sync(&pdev->dev);
- 
- 	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	dc->regs = devm_ioremap_resource(&pdev->dev, regs);
-@@ -1978,8 +1962,6 @@ static int tegra_dc_probe(struct platform_device *pdev)
- 	if (!dc->syncpt)
- 		dev_warn(&pdev->dev, "failed to allocate syncpoint\n");
- 
--	platform_set_drvdata(pdev, dc);
--
- 	return 0;
- }
- 
-@@ -2003,6 +1985,17 @@ static int tegra_dc_remove(struct platform_device *pdev)
- 		return err;
- 	}
- 
-+	pm_runtime_put(&pdev->dev);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+static int tegra_dc_runtime_suspend(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct tegra_dc *dc = platform_get_drvdata(pdev);
-+
- 	reset_control_assert(dc->rst);
- 
- 	if (dc->soc->has_powergate)
-@@ -2013,11 +2006,54 @@ static int tegra_dc_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static int tegra_dc_runtime_resume(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct tegra_dc *dc = platform_get_drvdata(pdev);
-+	int err;
-+
-+	if (dc->soc->has_powergate) {
-+		err = tegra_powergate_sequence_power_up(dc->powergate, dc->clk,
-+							dc->rst);
-+		if (err < 0) {
-+			dev_err(&pdev->dev, "failed to power partition: %d\n",
-+				err);
-+			return err;
-+		}
-+	} else {
-+		err = clk_prepare_enable(dc->clk);
-+		if (err < 0) {
-+			dev_err(&pdev->dev, "failed to enable clock: %d\n",
-+				err);
-+			return err;
-+		}
-+
-+		err = reset_control_deassert(dc->rst);
-+		if (err < 0) {
-+			dev_err(&pdev->dev, "failed to deassert reset: %d\n",
-+				err);
-+			return err;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static struct dev_pm_ops tegra_dc_pm_ops = {
-+	SET_RUNTIME_PM_OPS(tegra_dc_runtime_suspend,
-+			   tegra_dc_runtime_resume, NULL)
-+};
-+#define TEGRA_DC_PM_OPS (&tegra_dc_pm_ops)
-+#else
-+#define TEGRA_DC_PM_OPS NULL
-+#endif /* CONFIG_PM */
-+
- struct platform_driver tegra_dc_driver = {
- 	.driver = {
- 		.name = "tegra-dc",
- 		.owner = THIS_MODULE,
- 		.of_match_table = tegra_dc_of_match,
-+		.pm = TEGRA_DC_PM_OPS,
- 	},
- 	.probe = tegra_dc_probe,
- 	.remove = tegra_dc_remove,
--- 
-2.1.4
+Okay.
+
+Rob
