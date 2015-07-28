@@ -1,7 +1,7 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v7 10/13] clk: qcom: gdsc: Add GDSCs in msm8974 MMCC
-Date: Tue, 28 Jul 2015 15:04:03 +0530
-Message-ID: <1438076046-4706-11-git-send-email-rnayak@codeaurora.org>
+Subject: [PATCH v7 03/13] clk: qcom: gdsc: Use PM clocks to control gdsc clocks
+Date: Tue, 28 Jul 2015 15:03:56 +0530
+Message-ID: <1438076046-4706-4-git-send-email-rnayak@codeaurora.org>
 References: <1438076046-4706-1-git-send-email-rnayak@codeaurora.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1438076046-4706-1-git-send-email-rnayak@codeaurora.org>
@@ -10,157 +10,106 @@ To: sboyd@codeaurora.org, mturquette@baylibre.com
 Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, Rajendra Nayak <rnayak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Stephen Boyd <sboyd@codeaurora.org>
+The devices within a gdsc power domain, quite often have additional
+clocks to be turned on/off along with the power domain itself.
+Once the drivers for these devices are converted to use runtime PM,
+it would be possible to remove all clock handling from the drivers if
+the gdsc driver can handle it.
+Use PM clocks to add support for this. A list of con_ids[] specified
+per gdsc would be the clocks turned on/off on every device start/stop
+callbacks.
 
-Add the GDSC instances that exist as part of msm8974 MMCC block
-
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 ---
- drivers/clk/qcom/Kconfig                      |  1 +
- drivers/clk/qcom/mmcc-msm8974.c               | 78 +++++++++++++++++++++++++++
- include/dt-bindings/clock/qcom,mmcc-msm8974.h |  8 +++
- 3 files changed, 87 insertions(+)
+ drivers/clk/qcom/gdsc.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/clk/qcom/gdsc.h |  2 ++
+ 2 files changed, 44 insertions(+)
 
-diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-index a6fcb1d..edab172 100644
---- a/drivers/clk/qcom/Kconfig
-+++ b/drivers/clk/qcom/Kconfig
-@@ -98,6 +98,7 @@ config MSM_GCC_8974
- config MSM_MMCC_8974
- 	tristate "MSM8974 Multimedia Clock Controller"
- 	select MSM_GCC_8974
-+	select QCOM_GDSC
- 	depends on COMMON_CLK_QCOM
- 	help
- 	  Support for the multimedia clock controller on msm8974 devices.
-diff --git a/drivers/clk/qcom/mmcc-msm8974.c b/drivers/clk/qcom/mmcc-msm8974.c
-index 07f4cc1..018d4c7 100644
---- a/drivers/clk/qcom/mmcc-msm8974.c
-+++ b/drivers/clk/qcom/mmcc-msm8974.c
-@@ -31,6 +31,7 @@
- #include "clk-rcg.h"
- #include "clk-branch.h"
- #include "reset.h"
-+#include "gdsc.h"
+diff --git a/drivers/clk/qcom/gdsc.c b/drivers/clk/qcom/gdsc.c
+index 3b11f4d..68b810a 100644
+--- a/drivers/clk/qcom/gdsc.c
++++ b/drivers/clk/qcom/gdsc.c
+@@ -16,6 +16,7 @@
+ #include <linux/err.h>
+ #include <linux/jiffies.h>
+ #include <linux/kernel.h>
++#include <linux/pm_clock.h>
+ #include <linux/pm_domain.h>
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
+@@ -108,6 +109,44 @@ static int gdsc_disable(struct generic_pm_domain *domain)
+ 	return gdsc_toggle_logic(sc, false);
+ }
  
- enum {
- 	P_XO,
-@@ -2349,6 +2350,72 @@ static struct pll_config mmpll3_config = {
- 	.aux_output_mask = BIT(1),
++static int gdsc_attach(struct generic_pm_domain *domain, struct device *dev)
++{
++	int ret;
++	struct gdsc *sc = domain_to_gdsc(domain);
++	const char **con_id;
++
++	if (!sc->con_ids[0])
++		return 0;
++
++	ret = pm_clk_create(dev);
++	if (ret) {
++		dev_dbg(dev, "pm_clk_create failed %d\n", ret);
++		return ret;
++	}
++
++	for (con_id = sc->con_ids; *con_id; con_id++) {
++		ret = pm_clk_add(dev, *con_id);
++		if (ret) {
++			dev_dbg(dev, "pm_clk_add failed %d\n", ret);
++			goto fail;
++		}
++	}
++	return 0;
++fail:
++	pm_clk_destroy(dev);
++	return ret;
++};
++
++static void gdsc_detach(struct generic_pm_domain *domain, struct device *dev)
++{
++	struct gdsc *sc = domain_to_gdsc(domain);
++
++	if (!sc->con_ids[0])
++		return;
++
++	pm_clk_destroy(dev);
++};
++
+ static int gdsc_init(struct gdsc *sc)
+ {
+ 	u32 mask, val;
+@@ -131,6 +170,9 @@ static int gdsc_init(struct gdsc *sc)
+ 
+ 	sc->pd.power_off = gdsc_disable;
+ 	sc->pd.power_on = gdsc_enable;
++	sc->pd.attach_dev = gdsc_attach;
++	sc->pd.detach_dev = gdsc_detach;
++	sc->pd.flags = GENPD_FLAG_PM_CLK;
+ 	pm_genpd_init(&sc->pd, NULL, !on);
+ 
+ 	return 0;
+diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
+index f578a0c..68bcda3 100644
+--- a/drivers/clk/qcom/gdsc.h
++++ b/drivers/clk/qcom/gdsc.h
+@@ -24,11 +24,13 @@ struct regmap;
+  * @pd: generic power domain
+  * @regmap: regmap for MMIO accesses
+  * @gdscr: gsdc control register
++ * @con_ids: List of clocks to be controlled for the gdsc
+  */
+ struct gdsc {
+ 	struct generic_pm_domain	pd;
+ 	struct regmap			*regmap;
+ 	unsigned int			gdscr;
++	const char			*con_ids[];
  };
  
-+static struct gdsc venus0_gdsc = {
-+	.gdscr = 0x1024,
-+	.cxcs = (unsigned int []){ 0x1028 },
-+	.cxc_count = 1,
-+	.resets = (unsigned int []){ VENUS0_RESET },
-+	.reset_count = 1,
-+	.pd = {
-+		.name = "venus0",
-+	},
-+	.pwrsts = PWRSTS_ON,
-+	.con_ids = { NULL },
-+};
-+
-+static struct gdsc mdss_gdsc = {
-+	.gdscr = 0x2304,
-+	.cxcs = (unsigned int []){ 0x231c, 0x2320 },
-+	.cxc_count = 2,
-+	.pd = {
-+		.name = "mdss",
-+	},
-+	.pwrsts = PWRSTS_RET_ON,
-+	.con_ids = { NULL },
-+};
-+
-+static struct gdsc camss_jpeg_gdsc = {
-+	.gdscr = 0x35a4,
-+	.cxcs = (unsigned int []){ 0x35a8, 0x35ac, 0x35b0 },
-+	.cxc_count = 3,
-+	.pd = {
-+		.name = "camss_jpeg",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+	.con_ids = { NULL },
-+};
-+
-+static struct gdsc camss_vfe_gdsc = {
-+	.gdscr = 0x36a4,
-+	.cxcs = (unsigned int []){ 0x36a8, 0x36ac, 0x3704, 0x3714, 0x36b0 },
-+	.cxc_count = 5,
-+	.pd = {
-+		.name = "camss_vfe",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+	.con_ids = { NULL },
-+};
-+
-+static struct gdsc oxili_gdsc = {
-+	.gdscr = 0x4024,
-+	.cxcs = (unsigned int []){ 0x4028 },
-+	.cxc_count = 1,
-+	.pd = {
-+		.name = "oxili",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+	.con_ids = { NULL },
-+};
-+
-+static struct gdsc oxilicx_gdsc = {
-+	.gdscr = 0x4034,
-+	.pd = {
-+		.name = "oxilicx",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+	.con_ids = { NULL },
-+};
-+
- static struct clk_regmap *mmcc_msm8974_clocks[] = {
- 	[MMSS_AHB_CLK_SRC] = &mmss_ahb_clk_src.clkr,
- 	[MMSS_AXI_CLK_SRC] = &mmss_axi_clk_src.clkr,
-@@ -2525,6 +2592,15 @@ static const struct qcom_reset_map mmcc_msm8974_resets[] = {
- 	[OCMEMNOC_RESET] = { 0x50b0 },
- };
- 
-+static struct gdsc *mmcc_msm8974_gdscs[] = {
-+	[VENUS0_GDSC] = &venus0_gdsc,
-+	[MDSS_GDSC] = &mdss_gdsc,
-+	[CAMSS_JPEG_GDSC] = &camss_jpeg_gdsc,
-+	[CAMSS_VFE_GDSC] = &camss_vfe_gdsc,
-+	[OXILI_GDSC] = &oxili_gdsc,
-+	[OXILICX_GDSC] = &oxilicx_gdsc,
-+};
-+
- static const struct regmap_config mmcc_msm8974_regmap_config = {
- 	.reg_bits	= 32,
- 	.reg_stride	= 4,
-@@ -2539,6 +2615,8 @@ static const struct qcom_cc_desc mmcc_msm8974_desc = {
- 	.num_clks = ARRAY_SIZE(mmcc_msm8974_clocks),
- 	.resets = mmcc_msm8974_resets,
- 	.num_resets = ARRAY_SIZE(mmcc_msm8974_resets),
-+	.gdscs = mmcc_msm8974_gdscs,
-+	.num_gdscs = ARRAY_SIZE(mmcc_msm8974_gdscs),
- };
- 
- static const struct of_device_id mmcc_msm8974_match_table[] = {
-diff --git a/include/dt-bindings/clock/qcom,mmcc-msm8974.h b/include/dt-bindings/clock/qcom,mmcc-msm8974.h
-index 032ed87..28651e5 100644
---- a/include/dt-bindings/clock/qcom,mmcc-msm8974.h
-+++ b/include/dt-bindings/clock/qcom,mmcc-msm8974.h
-@@ -158,4 +158,12 @@
- #define SPDM_RM_AXI					141
- #define SPDM_RM_OCMEMNOC				142
- 
-+/* gdscs */
-+#define VENUS0_GDSC					0
-+#define MDSS_GDSC					1
-+#define CAMSS_JPEG_GDSC					2
-+#define CAMSS_VFE_GDSC					3
-+#define OXILI_GDSC					4
-+#define OXILICX_GDSC					5
-+
- #endif
+ #ifdef CONFIG_QCOM_GDSC
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
