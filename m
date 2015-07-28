@@ -1,70 +1,82 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v7 13/13] arm: dts: qcom: Add #power-domain-cells property
-Date: Tue, 28 Jul 2015 15:04:06 +0530
-Message-ID: <1438076046-4706-14-git-send-email-rnayak@codeaurora.org>
-References: <1438076046-4706-1-git-send-email-rnayak@codeaurora.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1438076046-4706-1-git-send-email-rnayak@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: sboyd@codeaurora.org, mturquette@baylibre.com
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, Rajendra Nayak <rnayak@codeaurora.org>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH v3 3/4] ARM: mvebu: Allow using the GIC for wakeup in
+ standby mode
+Date: Tue, 28 Jul 2015 11:41:53 +0200
+Message-ID: <55B74E61.80406@free-electrons.com>
+References: <1435924553-22428-1-git-send-email-gregory.clement@free-electrons.com> <1435924553-22428-4-git-send-email-gregory.clement@free-electrons.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from down.free-electrons.com ([37.187.137.238]:52104 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751447AbbG1Jl4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 05:41:56 -0400
+In-Reply-To: <1435924553-22428-4-git-send-email-gregory.clement@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, linux-kernel@vger.kernel.org
 
-msm8974 has gcc and mmcc nodes, and apq8084 has a gcc node which
-implement gdsc powerdomains. Add the #power-domain-cells property
-to them.
+Hi,
 
-Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
----
- arch/arm/boot/dts/qcom-apq8084.dtsi   | 1 +
- arch/arm/boot/dts/qcom-msm8974.dtsi   | 2 ++
- arch/arm64/boot/dts/qcom/msm8916.dtsi | 1 +
- 3 files changed, 4 insertions(+)
+On 03/07/2015 13:55, Gregory CLEMENT wrote:
+> On the Armada 375/38x/39x SoCs, in standby mode the SoCs stay powered
+> and it is possible to wake-up from any interrupt sources. This patch
+> adds flag to the GIC irqchip driver to let linux know this.
+> 
+> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 
-diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
-index 7084010..1cdb568 100644
---- a/arch/arm/boot/dts/qcom-apq8084.dtsi
-+++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
-@@ -221,6 +221,7 @@
- 			compatible = "qcom,gcc-apq8084";
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
-+			#power-domain-cells = <1>;
- 			reg = <0xfc400000 0x4000>;
- 		};
- 
-diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index 37b47b5..8a2dfa6 100644
---- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-+++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-@@ -217,6 +217,7 @@
- 			compatible = "qcom,gcc-msm8974";
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
-+			#power-domain-cells = <1>;
- 			reg = <0xfc400000 0x4000>;
- 		};
- 
-@@ -224,6 +225,7 @@
- 			compatible = "qcom,mmcc-msm8974";
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
-+			#power-domain-cells = <1>;
- 			reg = <0xfd8c0000 0x6000>;
- 		};
- 
-diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-index 0f49ebd..3b0645a 100644
---- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
-+++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-@@ -120,6 +120,7 @@
- 			compatible = "qcom,gcc-msm8916";
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
-+			#power-domain-cells = <1>;
- 			reg = <0x1800000 0x80000>;
- 		};
- 
+I eventually remove this patch, as now these two flags are part of the GIC driver:
+https://git.kernel.org/cgit/linux/kernel/git/tip/tip.git/commit/?h=irq/core&id=0d3f2c92e004c67404fabea19728c1962b777bd6
+
+
+Gregory
+
+
+> ---
+>  arch/arm/mach-mvebu/board-v7.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+> 
+> diff --git a/arch/arm/mach-mvebu/board-v7.c b/arch/arm/mach-mvebu/board-v7.c
+> index e5911defccac..b789f7037445 100644
+> --- a/arch/arm/mach-mvebu/board-v7.c
+> +++ b/arch/arm/mach-mvebu/board-v7.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/of_address.h>
+>  #include <linux/of_fdt.h>
+>  #include <linux/of_platform.h>
+> +#include <linux/irq.h>
+>  #include <linux/io.h>
+>  #include <linux/clocksource.h>
+>  #include <linux/dma-mapping.h>
+> @@ -26,6 +27,7 @@
+>  #include <linux/signal.h>
+>  #include <linux/slab.h>
+>  #include <linux/irqchip.h>
+> +#include <linux/irqchip/arm-gic.h>
+>  #include <asm/hardware/cache-l2x0.h>
+>  #include <asm/mach/arch.h>
+>  #include <asm/mach/map.h>
+> @@ -129,6 +131,13 @@ static int armada_375_external_abort_wa(unsigned long addr, unsigned int fsr,
+>  
+>  static void __init mvebu_init_irq(void)
+>  {
+> +	struct device_node *np;
+> +
+> +	np = of_find_compatible_node(NULL, NULL, "arm,cortex-a9-gic");
+> +	if (np)
+> +		gic_set_irqchip_flags(IRQCHIP_SKIP_SET_WAKE |
+> +				      IRQCHIP_MASK_ON_SUSPEND);
+> +	of_node_put(np);
+>  	irqchip_init();
+>  	mvebu_scu_enable();
+>  	coherency_init();
+> 
+
+
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
