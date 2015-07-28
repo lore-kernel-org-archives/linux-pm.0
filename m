@@ -1,135 +1,92 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
-Date: Tue, 28 Jul 2015 07:59:36 +0530
-Message-ID: <20150728022936.GB1229@linux>
-References: <1438010430-5802-1-git-send-email-lee.jones@linaro.org>
- <1438010430-5802-2-git-send-email-lee.jones@linaro.org>
+From: Pan Xinhui <xinhuix.pan@intel.com>
+Subject: [PATCH] cpufreq: Add scaling frequency range support
+Date: Tue, 28 Jul 2015 11:32:19 +0800
+Message-ID: <55B6F7C3.8040405@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:36681 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754446AbbG1C3k (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 22:29:40 -0400
-Received: by pachj5 with SMTP id hj5so61269813pac.3
-        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2015 19:29:40 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1438010430-5802-2-git-send-email-lee.jones@linaro.org>
+Received: from mga11.intel.com ([192.55.52.93]:16319 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753934AbbG1Der (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 27 Jul 2015 23:34:47 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, rob.herring@linaro.org, nm@ti.com, arnd.bergmann@linaro.org, sboyd@codeaurora.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, ajitpal.singh@st.com, sre@kernel.org, dbaryshkov@gmail.com
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
 
-Cc'ing few people (whom I cc'd last time as well :)).
+From: Pan Xinhui <xinhuix.pan@intel.com>
 
-On 27-07-15, 16:20, Lee Jones wrote:
-> These OPPs are used in ST's CPUFreq implementation.
-> 
-> Signed-off-by: Lee Jones <lee.jones@linaro.org>
-> ---
-> 
-> Changelog:
->  - None, new patch
-> 
->  Documentation/devicetree/bindings/power/opp-st.txt | 76 ++++++++++++++++++++++
->  1 file changed, 76 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/opp-st.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/power/opp-st.txt b/Documentation/devicetree/bindings/power/opp-st.txt
-> new file mode 100644
-> index 0000000..6eb2a91
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/opp-st.txt
-> @@ -0,0 +1,76 @@
-> +STMicroelectronics OPP (Operating Performance Points) Bindings
-> +--------------------------------------------------------------
-> +
-> +Frequency Scaling only
-> +----------------------
-> +
-> +Located in CPU's node:
-> +
-> +- operating-points	: [See: ./opp.txt]
-> +
-> +Example [safe]
-> +--------------
-> +
-> +cpus {
-> +	cpu@0 {
-> +				 /* kHz     uV   */
-> +		operating-points = <1500000 0
-> +				    1200000 0
-> +				    800000  0
-> +				    500000  0>;
-> +	};
-> +};
-> +
-> +Dynamic Voltage and Frequency Scaling (DVFS)
-> +--------------------------------------------
-> +
-> +Located in 'cpu0-opp-list' node [to be provided ONLY by the bootloader]:
-> +
-> +- compatible		: Should be "operating-points-v2-sti"
-> +- opp{1..N} 		: Each 'oppX' subnode will contain the following properties:
+Userspace at most time do cpufreq tests very much inconveniently.
+Currently they have to echo min and max cpu freq separately like below:
+echo 480000  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 2240000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
 
-Or should we mention:
-- opp{1..N} 		: Each 'oppX' subnode shall contain below properties,
-                          over what ./opp.txt defines:
+Add scaling_freq_range cpufreq attr to support userspace's demand.
+Therefore it's easier for testers to write readable scripts like below: 
+echo 480000-2240000 >
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_freq_range
 
-?
+Signed-off-by: Pan Xinhui <xinhuix.pan@intel.com>
+---
+ drivers/cpufreq/cpufreq.c | 31 +++++++++++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
 
-
-> + - opp-hz		: CPU frequency [Hz] for this OPP [See: ./opp.txt]
-> + - st,avs		: List of available voltages [uV] indexed by process code
-> + - st,cuts		: Cut version this OPP is suitable for [0xFF means ALL]
-> + - st,substrate		: Substrate version this OPP is suitable for [0xFF means ALL]
-> +- st,syscfg		: Phandle to Major number register
-> +				First cell: offset to major number
-> +- st,syscfg-eng		: Phandle to Minor number and Pcode registers
-> +				First cell: offset to process code
-> +				Second cell: offset to minor number
-> +
-> +WARNING: The opp{1..N} nodes will be provided by the bootloader.  Do not attempt to
-> +	 artificially synthesise the opp{1..N} nodes or any of their descendants.
-> +	 They are very platform specific and may damage the hardware if created
-> +	 incorrectly.
-> +
-> +Example [unsafe]
-> +----------------
-> +
-> +cpus {
-> +	cpu@0 {
-> +		operating-points-v2	= <&cpu0_opp_list>;
-> +	};
-> +};
-> +
-> +/* ############################################################ */
-> +/* # WARNING: Do not attempt to copy/replicate this node,     # */
-> +/* #          it is only to be supplied by the bootloader !!! # */
-> +/* ############################################################ */
-> +cpu0-opp-list {
-> +	compatible	= "operating-points-v2-sti";
-> +	st,syscfg	= <&syscfg [major_offset]>;
-> +	st,syscfg-eng   = <&syscfg_eng [pcode_offset] [minor_offset]>;
-> +
-> +	opp0 {
-> +		opp-hz		= <1200000000>;
-> +		st,avs		= <1110 1150 1100 1080 1040 1020 980 930>;
-> +		st,substrate	= <0xff>;
-> +		st,cuts		= <0xff>;
-> +	};
-> +	opp1 {
-> +		opp-hz		= <1500000000>;
-> +		st,avs		= <1200 1200 1200 1200 1170 1140 1100 1070>;
-> +		st,substrate	= <0xff>;
-> +		st,cuts		= <0x2>;
-> +	};
-> +};
-
-I don't see more problems here, unless we can move some of this to the
-generic bindings.
-
-@Rob/Stephen: Please respond before it is late :)
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 26063af..6424e05 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -812,6 +812,35 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
+ 	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
+ }
+ 
++static ssize_t store_scaling_freq_range(struct cpufreq_policy *policy,
++					char *buf, size_t count)
++{
++	int ret, temp_min, temp_max;
++	struct cpufreq_policy new_policy;
++
++	ret = cpufreq_get_policy(&new_policy, policy->cpu);
++	if (ret)
++		return -EINVAL;
++
++	ret = sscanf(buf, "%u-%u", &new_policy.min, &new_policy.max);
++	if (ret != 2)
++		return -EINVAL;
++
++	temp_min = new_policy.min;
++	temp_max = new_policy.max;
++	ret = cpufreq_set_policy(policy, &new_policy);
++	if (!ret) {
++		policy->user_policy.min = temp_min;
++		policy->user_policy.max = temp_max;
++	}
++	return ret ? ret : count;
++}
++
++static ssize_t show_scaling_freq_range(struct cpufreq_policy *policy, char *buf)
++{
++	return sprintf(buf, "%u-%u\n", policy->min, policy->max);
++}
++
+ cpufreq_freq_attr_ro_perm(cpuinfo_cur_freq, 0400);
+ cpufreq_freq_attr_ro(cpuinfo_min_freq);
+ cpufreq_freq_attr_ro(cpuinfo_max_freq);
+@@ -826,6 +855,7 @@ cpufreq_freq_attr_rw(scaling_min_freq);
+ cpufreq_freq_attr_rw(scaling_max_freq);
+ cpufreq_freq_attr_rw(scaling_governor);
+ cpufreq_freq_attr_rw(scaling_setspeed);
++cpufreq_freq_attr_rw(scaling_freq_range);
+ 
+ static struct attribute *default_attrs[] = {
+ 	&cpuinfo_min_freq.attr,
+@@ -839,6 +869,7 @@ static struct attribute *default_attrs[] = {
+ 	&scaling_driver.attr,
+ 	&scaling_available_governors.attr,
+ 	&scaling_setspeed.attr,
++	&scaling_freq_range.attr,
+ 	NULL
+ };
+ 
 -- 
-viresh
+1.9.1
