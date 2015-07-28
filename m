@@ -1,86 +1,66 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 0/4] cpufreq/opp: Turbo/boost mode support
-Date: Tue, 28 Jul 2015 13:55:41 +0200
-Message-ID: <2445844.9YDNy0YEZL@amdc1976>
-References: <cover.1438081962.git.viresh.kumar@linaro.org>
+From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Subject: Re: [RFC PATCH 04/16] x86/efi: Generating random number in EFI stub
+Date: Tue, 28 Jul 2015 14:01:12 +0200
+Message-ID: <20150728120112.GA9518@amd>
+References: <1437056730-15247-1-git-send-email-jlee@suse.com>
+ <1437056730-15247-5-git-send-email-jlee@suse.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:59989 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752913AbbG1L40 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 07:56:26 -0400
-Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout4.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0NS701LSU55TNV70@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 28 Jul 2015 20:56:24 +0900 (KST)
-In-reply-to: <cover.1438081962.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1437056730-15247-5-git-send-email-jlee-IBi9RG/b67k@public.gmane.org>
+Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <matthew.garrett-05XSO3Yj/JvQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, "Lee, Chun-Yi" <jlee-IBi9RG/b67k@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, sboyd@codeaurora.org
 
+Hi!
 
-Hi,
-
-On Tuesday, July 28, 2015 04:49:59 PM Viresh Kumar wrote:
-> Hi Rafael,
+> This patch adds the codes for generating random number array as the
+> HMAC key that will used by later EFI stub codes.
 > 
-> This is based of my opp-v2 series and so is sent as reply to that one.
+> The original codes in efi_random copied from aslr and add the codes
+> to accept input entropy and EFI debugging. In later patch will add
+> the codes to get random number by EFI protocol. The separate codes
+> can avoid impacting aslr function.
 > 
-> Bartlomiej had few patches that he wanted to get into 4.3. I have picked
-> two of those and dropped one (the one that adds another field to
-> platform data). The dropped one is replaced with two patches from me.
-> There are minor modifications done in first two patches, based on the
-> review comments I gave to him earlier.
+> Signed-off-by: Lee, Chun-Yi <jlee-IBi9RG/b67k@public.gmane.org>
 
-Thanks for working on this.
+> +#define X86_FEATURE_EDX_TSC	(1 << 4)
+> +#define X86_FEATURE_ECX_RDRAND	(1 << 30)
 
-> Completely Untested.
-> 
-> @Bartlomiej: Can you please give them some testing ?
+Can you pull it from existing includes somewhere?
 
-Could you please tell me first how do you want me to fix the issue
-with setting boost_supported flag in cpufreq driver structure?
+> +static bool rdrand_feature(void)
+> +{
+> +	return (cpuid_ecx(0x1) & X86_FEATURE_ECX_RDRAND);
+> +}
+> +
+> +static bool rdtsc_feature(void)
+> +{
+> +	return (cpuid_edx(0x1) & X86_FEATURE_EDX_TSC);
+> +}
 
-For exynos-cpufreq driver we currently have:
+Are these helpers neccessary?
 
-#ifdef CONFIG_ARM_EXYNOS_CPU_FREQ_BOOST_SW
-	.boost_supported = true,
-#endif
+> +	if (rdrand_feature()) {
+> +		efi_printk(sys_table, " RDRAND");
+> +		if (rdrand_long(&raw)) {
+> +			random ^= raw;
+> +			use_i8254 = false;
+> +		}
+> +	}
+> +
+> +	if (rdtsc_feature()) {
+> +		efi_printk(sys_table, " RDTSC");
+> +		rdtscll(raw);
+> +
+> +		random ^= raw;
+> +		use_i8254 = false;
+> +	}
 
-With my original patches the config option stayed the same and
-the flag was enabled if necessary in Exynos platform code and
-passed through platform data to cpufreq-dt driver.  This is no
-longer possible with your changes.
+You'll do two (expensive) cpuids calls here.
 
-Should I enable it unconditionally in cpufreq-dt driver or add new
-config option for cpufreq-dt driver (CONFIG_CPUFREQ_DT_BOOST_SW?)
-for enabling boost_supported flag if necessary?
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> Bartlomiej Zolnierkiewicz (2):
->   opp: add dev_pm_opp_is_turbo() helper
->   cpufreq: Update boost flag while initializing freq table from OPPs
-> 
-> Viresh Kumar (2):
->   cpufreq: Allow drivers to enable boost support after registering
->     driver
->   cpufreq: dt: Add support for turbo/boost mode
-> 
->  drivers/base/power/opp.c      | 30 ++++++++++++++++++++
->  drivers/cpufreq/cpufreq-dt.c  |  8 ++++++
->  drivers/cpufreq/cpufreq.c     | 66 ++++++++++++++++++++++++++++++-------------
->  drivers/cpufreq/cpufreq_opp.c |  4 +++
->  drivers/cpufreq/freq_table.c  | 15 ++++++++++
->  include/linux/cpufreq.h       | 12 ++++++++
->  include/linux/pm_opp.h        |  7 +++++
->  7 files changed, 122 insertions(+), 20 deletions(-)
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
