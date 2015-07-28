@@ -1,47 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/4] cpufreq/opp: Turbo/boost mode support
-Date: Tue, 28 Jul 2015 17:48:43 +0530
-Message-ID: <20150728121843.GA23710@linux>
-References: <cover.1438081962.git.viresh.kumar@linaro.org>
- <2445844.9YDNy0YEZL@amdc1976>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC PATCH 03/16] x86/boot: Public getting random boot function
+Date: Tue, 28 Jul 2015 14:21:33 +0200
+Message-ID: <20150728122133.GA12681@amd>
+References: <1437056730-15247-1-git-send-email-jlee@suse.com>
+ <1437056730-15247-4-git-send-email-jlee@suse.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f177.google.com ([209.85.192.177]:34461 "EHLO
-	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755346AbbG1MSv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 08:18:51 -0400
-Received: by pdbbh15 with SMTP id bh15so70076544pdb.1
-        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2015 05:18:51 -0700 (PDT)
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43212 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752683AbbG1MVg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 08:21:36 -0400
 Content-Disposition: inline
-In-Reply-To: <2445844.9YDNy0YEZL@amdc1976>
+In-Reply-To: <1437056730-15247-4-git-send-email-jlee@suse.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, sboyd@codeaurora.org
+To: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <matthew.garrett@nebula.com>, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>, "Lee, Chun-Yi" <jlee@suse.com>
 
-On 28-07-15, 13:55, Bartlomiej Zolnierkiewicz wrote:
-> Could you please tell me first how do you want me to fix the issue
-> with setting boost_supported flag in cpufreq driver structure?
-> 
-> For exynos-cpufreq driver we currently have:
-> 
-> #ifdef CONFIG_ARM_EXYNOS_CPU_FREQ_BOOST_SW
-> 	.boost_supported = true,
-> #endif
-> 
-> With my original patches the config option stayed the same and
-> the flag was enabled if necessary in Exynos platform code and
-> passed through platform data to cpufreq-dt driver.  This is no
-> longer possible with your changes.
-> 
-> Should I enable it unconditionally in cpufreq-dt driver or add new
-> config option for cpufreq-dt driver (CONFIG_CPUFREQ_DT_BOOST_SW?)
-> for enabling boost_supported flag if necessary?
+Hi!
 
-Look at my implementation, last two patches are already doing that.
-You don't need another change to get this working for you, neither are
-those config options required. Get rid of them :)
+>  int cmdline_find_option_bool(const char *option);
+>  #endif
+>  
+> +#if CONFIG_RANDOMIZE_BASE
 
+Not ifdef?
+
+> +extern u16 i8254(void);
+
+That's rather poor name for global function...
+
+>  #if CONFIG_RANDOMIZE_BASE
+
+Ok, maybe not, but I'm confused.
+									Pavel
 -- 
-viresh
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
