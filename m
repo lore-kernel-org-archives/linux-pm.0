@@ -1,49 +1,51 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v5 5/8] cpufreq: arm_big_little: add SCPI interface driver
-Date: Tue, 28 Jul 2015 11:20:32 +0100
-Message-ID: <55B75770.6080403@arm.com>
-References: <1437649828-14540-1-git-send-email-sudeep.holla@arm.com> <1437649828-14540-6-git-send-email-sudeep.holla@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1437649828-14540-6-git-send-email-sudeep.holla@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Liviu Dudau <Liviu.Dudau@arm.com>, Punit Agrawal <Punit.Agrawal@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/4] cpufreq/opp: Turbo/boost mode support
+Date: Tue, 28 Jul 2015 16:49:59 +0530
+Message-ID: <cover.1438081962.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:34370 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755601AbbG1LUQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 07:20:16 -0400
+Received: by pacan13 with SMTP id an13so69851276pac.1
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2015 04:20:15 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
+Hi Rafael,
 
+This is based of my opp-v2 series and so is sent as reply to that one.
 
-On 23/07/15 12:10, Sudeep Holla wrote:
-> On some ARM based systems, a separate Cortex-M based System Control
-> Processor(SCP) provides the overall power, clock, reset and system
-> control including CPU DVFS. SCPI Message Protocol is used to
-> communicate with the SCPI.
->
-> This patch adds a interface driver for adding OPPs and registering
-> the arm_big_little cpufreq driver for such systems.
->
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: linux-pm@vger.kernel.org
-> ---
->   MAINTAINERS                    |   1 +
->   drivers/cpufreq/Kconfig.arm    |   9 +++
->   drivers/cpufreq/Makefile       |   1 +
->   drivers/cpufreq/scpi-cpufreq.c | 124 +++++++++++++++++++++++++++++++++++++++++
->   4 files changed, 135 insertions(+)
->   create mode 100644 drivers/cpufreq/scpi-cpufreq.c
->
-> Hi Rafael,
->
-> Viresh has already ACKed, since I plan to push this as a series via arm-soc,
-> can you provide your ACK if the patch looks fine to you ?
->
+Bartlomiej had few patches that he wanted to get into 4.3. I have picked
+two of those and dropped one (the one that adds another field to
+platform data). The dropped one is replaced with two patches from me.
+There are minor modifications done in first two patches, based on the
+review comments I gave to him earlier.
 
-Any objections to take it via ARM-SoC ? If not can you please provide ACK ?
+Completely Untested.
 
-Regards,
-Sudeep
+@Bartlomiej: Can you please give them some testing ?
+
+Bartlomiej Zolnierkiewicz (2):
+  opp: add dev_pm_opp_is_turbo() helper
+  cpufreq: Update boost flag while initializing freq table from OPPs
+
+Viresh Kumar (2):
+  cpufreq: Allow drivers to enable boost support after registering
+    driver
+  cpufreq: dt: Add support for turbo/boost mode
+
+ drivers/base/power/opp.c      | 30 ++++++++++++++++++++
+ drivers/cpufreq/cpufreq-dt.c  |  8 ++++++
+ drivers/cpufreq/cpufreq.c     | 66 ++++++++++++++++++++++++++++++-------------
+ drivers/cpufreq/cpufreq_opp.c |  4 +++
+ drivers/cpufreq/freq_table.c  | 15 ++++++++++
+ include/linux/cpufreq.h       | 12 ++++++++
+ include/linux/pm_opp.h        |  7 +++++
+ 7 files changed, 122 insertions(+), 20 deletions(-)
+
+-- 
+2.4.0
+
