@@ -1,44 +1,47 @@
-From: Matt Fleming <matt.fleming@intel.com>
-Subject: Re: [RFC PATCH 00/16] Signature verification of hibernate snapshot
-Date: Tue, 28 Jul 2015 13:09:23 +0100
-Message-ID: <1438085363.2923.8.camel@intel.com>
-References: <1437056730-15247-1-git-send-email-jlee@suse.com>
-	 <alpine.LNX.2.00.1507241527410.1141@pobox.suse.cz>
-	 <7508149.lVtoIPoiay@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/4] cpufreq/opp: Turbo/boost mode support
+Date: Tue, 28 Jul 2015 17:48:43 +0530
+Message-ID: <20150728121843.GA23710@linux>
+References: <cover.1438081962.git.viresh.kumar@linaro.org>
+ <2445844.9YDNy0YEZL@amdc1976>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:7443 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755340AbbG1MJq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 28 Jul 2015 08:09:46 -0400
-In-Reply-To: <7508149.lVtoIPoiay@vostro.rjw.lan>
+Received: from mail-pd0-f177.google.com ([209.85.192.177]:34461 "EHLO
+	mail-pd0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755346AbbG1MSv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 08:18:51 -0400
+Received: by pdbbh15 with SMTP id bh15so70076544pdb.1
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2015 05:18:51 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <2445844.9YDNy0YEZL@amdc1976>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Jiri Kosina <jkosina@suse.com>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <matthew.garrett@nebula.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>, "Lee, Chun-Yi" <jlee@suse.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, sboyd@codeaurora.org
 
-On Fri, 2015-07-24 at 22:08 +0200, Rafael J. Wysocki wrote:
-> On Friday, July 24, 2015 07:08:18 PM Jiri Kosina wrote:
-> > On Thu, 16 Jul 2015, Lee, Chun-Yi wrote:
-> > 
-> > > This patchset is the implementation of signature verification of hibernate
-> > > snapshot image. The origin idea is from Jiri Kosina: Let EFI bootloader
-> > > generate key-pair in UEFI secure boot environment, then forward it to kernel
-> > > for sign/verify hibernate image.
-> > 
-> > I've finally managed to fully go through the series and test it on my 
-> > secure boot testing setup.
-> > 
-> > 	Reviewed-by: Jiri Kosina <jkosina@suse.com>
-> > 	Tested-by: Jiri Kosina <jkosina@suse.com>
-> > 
-> > for the whole series. Thanks,
+On 28-07-15, 13:55, Bartlomiej Zolnierkiewicz wrote:
+> Could you please tell me first how do you want me to fix the issue
+> with setting boost_supported flag in cpufreq driver structure?
 > 
-> Thanks Jiri, much appreciated!
+> For exynos-cpufreq driver we currently have:
 > 
-> I'd like to hear from Matt, though, and it looks like Ingo han't been CCed ...
+> #ifdef CONFIG_ARM_EXYNOS_CPU_FREQ_BOOST_SW
+> 	.boost_supported = true,
+> #endif
+> 
+> With my original patches the config option stayed the same and
+> the flag was enabled if necessary in Exynos platform code and
+> passed through platform data to cpufreq-dt driver.  This is no
+> longer possible with your changes.
+> 
+> Should I enable it unconditionally in cpufreq-dt driver or add new
+> config option for cpufreq-dt driver (CONFIG_CPUFREQ_DT_BOOST_SW?)
+> for enabling boost_supported flag if necessary?
 
-I'm hoping to get time to review this series this week.
+Look at my implementation, last two patches are already doing that.
+You don't need another change to get this working for you, neither are
+those config options required. Get rid of them :)
 
+-- 
+viresh
