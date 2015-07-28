@@ -1,106 +1,290 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v7 00/13] qcom: Add support for GDSCs
-Date: Tue, 28 Jul 2015 15:03:53 +0530
-Message-ID: <1438076046-4706-1-git-send-email-rnayak@codeaurora.org>
+Subject: [PATCH v7 01/13] clk: qcom: Add support for GDSCs
+Date: Tue, 28 Jul 2015 15:03:54 +0530
+Message-ID: <1438076046-4706-2-git-send-email-rnayak@codeaurora.org>
+References: <1438076046-4706-1-git-send-email-rnayak@codeaurora.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1438076046-4706-1-git-send-email-rnayak@codeaurora.org>
 Sender: linux-arm-msm-owner@vger.kernel.org
 To: sboyd@codeaurora.org, mturquette@baylibre.com
 Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, Rajendra Nayak <rnayak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-GDSCs (Global Distributed Switch Controllers) control switches
-that supply power to an on-chip power domain and hence can be
-programmed in SW to safely power collapse and restore power to the
-respective PDs. They are part of a considerable number of recent QCOM
-SoCs (This series adds support for msm8974, msm8916 and apq8084 devices)
-and are part of the Clock control block.
+From: Stephen Boyd <sboyd@codeaurora.org>
 
-The series implements support for GDSC using the genpd framework
-modelling these as SW controllable power domains and uses PM clocks
-to control clocks within the gdsc.
+GDSCs (Global Distributed Switch Controllers) are responsible for
+safely collapsing and restoring power to peripherals in the SoC.
+These are best modelled as power domains using genpd and given
+the registers are scattered throughout the clock controller register
+space, its best to have the support added through the clock driver.
 
-* Client drivers which plan to use GDSC can refer to
-  Documentation/devicetree/bindings/power/power_domain.txt to know
-  how to hook up the power domain for the device through DT
-* Runtime PM specific documentation can be found in
-  Documentation/power/runtime_pm.txt
-* Patches are based of 4.2-rc4
-
-Tested with and without CONFIG_PM on db8074, IFC6540 and
-db410c (arm64)
-
-Changes since v6:
-* removed hardcoded con_ids, now part of gdsc struct
-* other minor review fixes
-
-Changes since v5:
-* Added support to manage clocks with !CONFIG_PM
-* Added RET/OFF support
-* Added support to assert/deassert reset while the GDSC is ON
-
-Changes since v4:
-* Added clock control support using PM clocks
-* Included WA to enable an RCG (needed for Oxili gdsc in 8916)
-
-Changes since v3:
-* static inline'd gdsc_register/unregister stubs
-* error check fixes in gdsc_register
-* dropped oxili_gdsc for 8916 as its broken and needs additional
-WA's not part of this series
-* split dts and driver changes into seperate patches
-* Updated and included Stephanes patch to add gdscs to apq8084 mmcc
-in the series
-
-Changes since v2:
-* gdsc_unregister added
-* gdsc_register/unregister introduced in patch 1/6
-
-Changes since v1:
-* added err checks for regmap apis
-* added gdsc_register() in gdsc.c
-
-Rajendra Nayak (9):
-  clk: qcom: gdsc: Prepare common clk probe to register gdscs
-  clk: qcom: gdsc: Use PM clocks to control gdsc clocks
-  clk: qcom: gdsc: Manage clocks with !CONFIG_PM
-  clk: qcom: gdsc: Enable an RCG before turing on the gdsc
-  clk: qcom: gdsc: Add support for Memory RET/OFF
-  clk: qcom: gdsc: Add support for ON only state
-  clk: qcom: gdsc: Add GDSCs in msm8916 GCC
-  clk: qcom: gdsc: Add GDSCs in apq8084 GCC
-  arm: dts: qcom: Add #power-domain-cells property
-
-Stephane Viau (1):
-  clk: qcom: gdsc: Add GDSCs in apq8084 MMCC
-
-Stephen Boyd (3):
-  clk: qcom: Add support for GDSCs
-  clk: qcom: gdsc: Add GDSCs in msm8974 GCC
-  clk: qcom: gdsc: Add GDSCs in msm8974 MMCC
-
- arch/arm/boot/dts/qcom-apq8084.dtsi           |   1 +
- arch/arm/boot/dts/qcom-msm8974.dtsi           |   2 +
- arch/arm64/boot/dts/qcom/msm8916.dtsi         |   1 +
- drivers/clk/qcom/Kconfig                      |   9 +
- drivers/clk/qcom/Makefile                     |   1 +
- drivers/clk/qcom/common.c                     |  16 +-
- drivers/clk/qcom/common.h                     |   2 +
- drivers/clk/qcom/gcc-apq8084.c                |  46 ++++
- drivers/clk/qcom/gcc-msm8916.c                |  57 ++++
- drivers/clk/qcom/gcc-msm8974.c                |  16 ++
- drivers/clk/qcom/gdsc.c                       | 368 ++++++++++++++++++++++++++
- drivers/clk/qcom/gdsc.h                       |  75 ++++++
- drivers/clk/qcom/mmcc-apq8084.c               |  74 +++++-
- drivers/clk/qcom/mmcc-msm8974.c               |  78 ++++++
- include/dt-bindings/clock/qcom,gcc-apq8084.h  |   6 +
- include/dt-bindings/clock/qcom,gcc-msm8916.h  |   8 +
- include/dt-bindings/clock/qcom,gcc-msm8974.h  |   3 +
- include/dt-bindings/clock/qcom,mmcc-apq8084.h |   8 +
- include/dt-bindings/clock/qcom,mmcc-msm8974.h |   8 +
- 19 files changed, 777 insertions(+), 2 deletions(-)
+Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+---
+ drivers/clk/qcom/Kconfig  |   4 ++
+ drivers/clk/qcom/Makefile |   1 +
+ drivers/clk/qcom/gdsc.c   | 171 ++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/clk/qcom/gdsc.h   |  46 +++++++++++++
+ 4 files changed, 222 insertions(+)
  create mode 100644 drivers/clk/qcom/gdsc.c
  create mode 100644 drivers/clk/qcom/gdsc.h
 
+diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
+index 59d1666..d3a695b 100644
+--- a/drivers/clk/qcom/Kconfig
++++ b/drivers/clk/qcom/Kconfig
+@@ -39,6 +39,10 @@ config IPQ_LCC_806X
+ 	  Say Y if you want to use audio devices such as i2s, pcm,
+ 	  S/PDIF, etc.
+ 
++config QCOM_GDSC
++	bool
++	select PM_GENERIC_DOMAINS if PM
++
+ config MSM_GCC_8660
+ 	tristate "MSM8660 Global Clock Controller"
+ 	depends on COMMON_CLK_QCOM
+diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
+index 50b337a..fe62523 100644
+--- a/drivers/clk/qcom/Makefile
++++ b/drivers/clk/qcom/Makefile
+@@ -9,6 +9,7 @@ clk-qcom-y += clk-branch.o
+ clk-qcom-y += clk-regmap-divider.o
+ clk-qcom-y += clk-regmap-mux.o
+ clk-qcom-y += reset.o
++clk-qcom-$(CONFIG_QCOM_GDSC) += gdsc.o
+ 
+ obj-$(CONFIG_APQ_GCC_8084) += gcc-apq8084.o
+ obj-$(CONFIG_APQ_MMCC_8084) += mmcc-apq8084.o
+diff --git a/drivers/clk/qcom/gdsc.c b/drivers/clk/qcom/gdsc.c
+new file mode 100644
+index 0000000..3b11f4d
+--- /dev/null
++++ b/drivers/clk/qcom/gdsc.c
+@@ -0,0 +1,171 @@
++/*
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 and
++ * only version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/bitops.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/jiffies.h>
++#include <linux/kernel.h>
++#include <linux/pm_domain.h>
++#include <linux/regmap.h>
++#include <linux/slab.h>
++#include "gdsc.h"
++
++#define PWR_ON_MASK		BIT(31)
++#define EN_REST_WAIT_MASK	GENMASK(23, 20)
++#define EN_FEW_WAIT_MASK	GENMASK(19, 16)
++#define CLK_DIS_WAIT_MASK	GENMASK(15, 12)
++#define SW_OVERRIDE_MASK	BIT(2)
++#define HW_CONTROL_MASK		BIT(1)
++#define SW_COLLAPSE_MASK	BIT(0)
++
++/* Wait 2^n CXO cycles between all states. Here, n=2 (4 cycles). */
++#define EN_REST_WAIT_VAL	(0x2 << 20)
++#define EN_FEW_WAIT_VAL		(0x8 << 16)
++#define CLK_DIS_WAIT_VAL	(0x2 << 12)
++
++#define TIMEOUT_US		100
++
++#define domain_to_gdsc(domain) container_of(domain, struct gdsc, pd)
++
++static int gdsc_is_enabled(struct gdsc *sc)
++{
++	u32 val;
++	int ret;
++
++	ret = regmap_read(sc->regmap, sc->gdscr, &val);
++	if (ret)
++		return ret;
++
++	return !!(val & PWR_ON_MASK);
++}
++
++static int gdsc_toggle_logic(struct gdsc *sc, bool en)
++{
++	int ret;
++	u32 val = en ? 0 : SW_COLLAPSE_MASK;
++	u32 check = en ? PWR_ON_MASK : 0;
++	unsigned long timeout;
++
++	ret = regmap_update_bits(sc->regmap, sc->gdscr, SW_COLLAPSE_MASK, val);
++	if (ret)
++		return ret;
++
++	timeout = jiffies + usecs_to_jiffies(TIMEOUT_US);
++	do {
++		ret = regmap_read(sc->regmap, sc->gdscr, &val);
++		if (ret)
++			return ret;
++
++		if ((val & PWR_ON_MASK) == check)
++			return 0;
++	} while (time_before(jiffies, timeout));
++
++	ret = regmap_read(sc->regmap, sc->gdscr, &val);
++	if (ret)
++		return ret;
++
++	if ((val & PWR_ON_MASK) == check)
++		return 0;
++
++	return -ETIMEDOUT;
++}
++
++static int gdsc_enable(struct generic_pm_domain *domain)
++{
++	struct gdsc *sc = domain_to_gdsc(domain);
++	int ret;
++
++	ret = gdsc_toggle_logic(sc, true);
++	if (ret)
++		return ret;
++	/*
++	 * If clocks to this power domain were already on, they will take an
++	 * additional 4 clock cycles to re-enable after the power domain is
++	 * enabled. Delay to account for this. A delay is also needed to ensure
++	 * clocks are not enabled within 400ns of enabling power to the
++	 * memories.
++	 */
++	udelay(1);
++
++	return 0;
++}
++
++static int gdsc_disable(struct generic_pm_domain *domain)
++{
++	struct gdsc *sc = domain_to_gdsc(domain);
++
++	return gdsc_toggle_logic(sc, false);
++}
++
++static int gdsc_init(struct gdsc *sc)
++{
++	u32 mask, val;
++	int on, ret;
++
++	/*
++	 * Disable HW trigger: collapse/restore occur based on registers writes.
++	 * Disable SW override: Use hardware state-machine for sequencing.
++	 * Configure wait time between states.
++	 */
++	mask = HW_CONTROL_MASK | SW_OVERRIDE_MASK |
++	       EN_REST_WAIT_MASK | EN_FEW_WAIT_MASK | CLK_DIS_WAIT_MASK;
++	val = EN_REST_WAIT_VAL | EN_FEW_WAIT_VAL | CLK_DIS_WAIT_VAL;
++	ret = regmap_update_bits(sc->regmap, sc->gdscr, mask, val);
++	if (ret)
++		return ret;
++
++	on = gdsc_is_enabled(sc);
++	if (on < 0)
++		return on;
++
++	sc->pd.power_off = gdsc_disable;
++	sc->pd.power_on = gdsc_enable;
++	pm_genpd_init(&sc->pd, NULL, !on);
++
++	return 0;
++}
++
++int gdsc_register(struct device *dev, struct gdsc **scs, size_t num,
++		  struct regmap *regmap)
++{
++	int i, ret;
++	struct genpd_onecell_data *data;
++
++	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->domains = devm_kcalloc(dev, num, sizeof(*data->domains),
++				     GFP_KERNEL);
++	if (!data->domains)
++		return -ENOMEM;
++
++	data->num_domains = num;
++	for (i = 0; i < num; i++) {
++		if (!scs[i])
++			continue;
++		scs[i]->regmap = regmap;
++		ret = gdsc_init(scs[i]);
++		if (ret)
++			return ret;
++		data->domains[i] = &scs[i]->pd;
++	}
++
++	return of_genpd_add_provider_onecell(dev->of_node, data);
++}
++
++void gdsc_unregister(struct device *dev)
++{
++	of_genpd_del_provider(dev->of_node);
++}
+diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
+new file mode 100644
+index 0000000..f578a0c
+--- /dev/null
++++ b/drivers/clk/qcom/gdsc.h
+@@ -0,0 +1,46 @@
++/*
++ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 and
++ * only version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef __QCOM_GDSC_H__
++#define __QCOM_GDSC_H__
++
++#include <linux/err.h>
++#include <linux/pm_domain.h>
++
++struct regmap;
++
++/**
++ * struct gdsc - Globally Distributed Switch Controller
++ * @pd: generic power domain
++ * @regmap: regmap for MMIO accesses
++ * @gdscr: gsdc control register
++ */
++struct gdsc {
++	struct generic_pm_domain	pd;
++	struct regmap			*regmap;
++	unsigned int			gdscr;
++};
++
++#ifdef CONFIG_QCOM_GDSC
++int gdsc_register(struct device *, struct gdsc **, size_t n, struct regmap *);
++void gdsc_unregister(struct device *);
++#else
++static inline int gdsc_register(struct device *d, struct gdsc **g, size_t n,
++				struct regmap *r)
++{
++	return -ENOSYS;
++}
++
++static inline void gdsc_unregister(struct device *d) {};
++#endif /* CONFIG_QCOM_GDSC */
++#endif /* __QCOM_GDSC_H__ */
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
