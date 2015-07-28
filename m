@@ -1,94 +1,125 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v6 7/8] dmaengine: add a driver for Intel integrated DMA
- 64-bit
-Date: Tue, 28 Jul 2015 08:48:29 +0100
-Message-ID: <20150728074829.GU21114@x1>
+Subject: Re: [PATCH v6 8/8] mfd: Add support for Intel Sunrisepoint LPSS
+ devices
+Date: Tue, 28 Jul 2015 08:48:43 +0100
+Message-ID: <20150728074843.GV21114@x1>
 References: <1438009443-55317-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <1438009443-55317-8-git-send-email-andriy.shevchenko@linux.intel.com>
+ <1438009443-55317-9-git-send-email-andriy.shevchenko@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f173.google.com ([209.85.212.173]:37861 "EHLO
+	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755286AbbG1Hss (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 03:48:48 -0400
+Received: by wibud3 with SMTP id ud3so146766126wib.0
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2015 00:48:46 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1438009443-55317-8-git-send-email-andriy.shevchenko@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <1438009443-55317-9-git-send-email-andriy.shevchenko@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, mturquette@baylibre.com, sboyd@codeaurora.org
-List-Id: linux-pm@vger.kernel.org
 
 On Mon, 27 Jul 2015, Andy Shevchenko wrote:
 
-> Intel integrated DMA (iDMA) 64-bit is a specific IP that is used as a=
- part of
-> LPSS devices such as HSUART or SPI. The iDMA IP is attached for priva=
-te
-> usage on each host controller independently.
+> The new coming Intel platforms such as Skylake will contain Sunrisepo=
+int PCH.
+> The main difference to the previous platforms is that the LPSS device=
+s are
+> compound devices where usually main (SPI, HSUART, or I2C) and DMA IPs=
+ are
+> present.
 >=20
-> While it has similarities with Synopsys DesignWare DMA, the following
-> distinctions doesn't allow to use the existing driver:
-> - 64-bit mode with corresponding changes in Hardware Linked List data=
- structure
-> - many slight differences in the channel registers
+> This patch brings the driver for such devices found on Sunrisepoint P=
+CH.
 >=20
-> Moreover this driver is based on the DMA virtual channels framework t=
-hat helps
-> to make the driver cleaner and easy to understand.
->=20
+> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 > ---
->  drivers/dma/Kconfig  |   8 +
->  drivers/dma/Makefile |   1 +
->  drivers/dma/idma64.c | 710 +++++++++++++++++++++++++++++++++++++++++=
+>  drivers/mfd/Kconfig           |  23 ++
+>  drivers/mfd/Makefile          |   3 +
+>  drivers/mfd/intel-lpss-acpi.c |  84 +++++++
+>  drivers/mfd/intel-lpss-pci.c  | 113 +++++++++
+>  drivers/mfd/intel-lpss.c      | 524 ++++++++++++++++++++++++++++++++=
 ++++++++++
->  drivers/dma/idma64.h | 233 +++++++++++++++++
->  4 files changed, 952 insertions(+)
->  create mode 100644 drivers/dma/idma64.c
->  create mode 100644 drivers/dma/idma64.h
+>  drivers/mfd/intel-lpss.h      |  62 +++++
+>  6 files changed, 809 insertions(+)
+>  create mode 100644 drivers/mfd/intel-lpss-acpi.c
+>  create mode 100644 drivers/mfd/intel-lpss-pci.c
+>  create mode 100644 drivers/mfd/intel-lpss.c
+>  create mode 100644 drivers/mfd/intel-lpss.h
 
 Applied, thanks.  Pull request to follow.
 
-> diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-> index 88d474b..bdbbe5b 100644
-> --- a/drivers/dma/Kconfig
-> +++ b/drivers/dma/Kconfig
-> @@ -85,6 +85,14 @@ config INTEL_IOP_ADMA
->  	help
->  	  Enable support for the Intel(R) IOP Series RAID engines.
+> diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+> index 6538159..268b6dd 100644
+> --- a/drivers/mfd/Kconfig
+> +++ b/drivers/mfd/Kconfig
+> @@ -328,6 +328,29 @@ config INTEL_SOC_PMIC
+>  	  thermal, charger and related power management functions
+>  	  on these systems.
 > =20
-> +config IDMA64
-> +	tristate "Intel integrated DMA 64-bit support"
-> +	select DMA_ENGINE
-> +	select DMA_VIRTUAL_CHANNELS
-> +	help
-> +	  Enable DMA support for Intel Low Power Subsystem such as found on
-> +	  Intel Skylake PCH.
+> +config MFD_INTEL_LPSS
+> +	tristate
+> +	select COMMON_CLK
+> +	select MFD_CORE
 > +
->  source "drivers/dma/dw/Kconfig"
-> =20
->  config AT_HDMAC
-> diff --git a/drivers/dma/Makefile b/drivers/dma/Makefile
-> index 6a4d6f2..56ff8c7 100644
-> --- a/drivers/dma/Makefile
-> +++ b/drivers/dma/Makefile
-> @@ -14,6 +14,7 @@ obj-$(CONFIG_HSU_DMA) +=3D hsu/
->  obj-$(CONFIG_MPC512X_DMA) +=3D mpc512x_dma.o
->  obj-$(CONFIG_PPC_BESTCOMM) +=3D bestcomm/
->  obj-$(CONFIG_MV_XOR) +=3D mv_xor.o
-> +obj-$(CONFIG_IDMA64) +=3D idma64.o
->  obj-$(CONFIG_DW_DMAC_CORE) +=3D dw/
->  obj-$(CONFIG_AT_HDMAC) +=3D at_hdmac.o
->  obj-$(CONFIG_AT_XDMAC) +=3D at_xdmac.o
-> diff --git a/drivers/dma/idma64.c b/drivers/dma/idma64.c
+> +config MFD_INTEL_LPSS_ACPI
+> +	tristate "Intel Low Power Subsystem support in ACPI mode"
+> +	select MFD_INTEL_LPSS
+> +	depends on X86 && ACPI
+> +	help
+> +	  This driver supports Intel Low Power Subsystem (LPSS) devices suc=
+h as
+> +	  I2C, SPI and HS-UART starting from Intel Sunrisepoint (Intel Skyl=
+ake
+> +	  PCH) in ACPI mode.
+> +
+> +config MFD_INTEL_LPSS_PCI
+> +	tristate "Intel Low Power Subsystem support in PCI mode"
+> +	select MFD_INTEL_LPSS
+> +	depends on X86 && PCI
+> +	help
+> +	  This driver supports Intel Low Power Subsystem (LPSS) devices suc=
+h as
+> +	  I2C, SPI and HS-UART starting from Intel Sunrisepoint (Intel Skyl=
+ake
+> +	  PCH) in PCI mode.
+> +
+>  config MFD_INTEL_MSIC
+>  	bool "Intel MSIC"
+>  	depends on INTEL_SCU_IPC
+> diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+> index ea40e07..9d730a2 100644
+> --- a/drivers/mfd/Makefile
+> +++ b/drivers/mfd/Makefile
+> @@ -161,6 +161,9 @@ obj-$(CONFIG_TPS65911_COMPARATOR)	+=3D tps65911-c=
+omparator.o
+>  obj-$(CONFIG_MFD_TPS65090)	+=3D tps65090.o
+>  obj-$(CONFIG_MFD_AAT2870_CORE)	+=3D aat2870-core.o
+>  obj-$(CONFIG_MFD_ATMEL_HLCDC)	+=3D atmel-hlcdc.o
+> +obj-$(CONFIG_MFD_INTEL_LPSS)	+=3D intel-lpss.o
+> +obj-$(CONFIG_MFD_INTEL_LPSS_PCI)	+=3D intel-lpss-pci.o
+> +obj-$(CONFIG_MFD_INTEL_LPSS_ACPI)	+=3D intel-lpss-acpi.o
+>  obj-$(CONFIG_MFD_INTEL_MSIC)	+=3D intel_msic.o
+>  obj-$(CONFIG_MFD_PALMAS)	+=3D palmas.o
+>  obj-$(CONFIG_MFD_VIPERBOARD)    +=3D viperboard.o
+> diff --git a/drivers/mfd/intel-lpss-acpi.c b/drivers/mfd/intel-lpss-a=
+cpi.c
 > new file mode 100644
-> index 0000000..18c14e1
+> index 0000000..0d92d73
 > --- /dev/null
-> +++ b/drivers/dma/idma64.c
-> @@ -0,0 +1,710 @@
+> +++ b/drivers/mfd/intel-lpss-acpi.c
+> @@ -0,0 +1,84 @@
 > +/*
-> + * Core driver for the Intel integrated DMA 64-bit
+> + * Intel LPSS ACPI support.
 > + *
-> + * Copyright (C) 2015 Intel Corporation
-> + * Author: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> + * Copyright (C) 2015, Intel Corporation
+> + *
+> + * Authors: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> + *          Mika Westerberg <mika.westerberg@linux.intel.com>
 > + *
 > + * This program is free software; you can redistribute it and/or mod=
 ify
@@ -96,739 +127,93 @@ ify
 > + * published by the Free Software Foundation.
 > + */
 > +
-> +#include <linux/bitops.h>
-> +#include <linux/delay.h>
-> +#include <linux/dmaengine.h>
-> +#include <linux/dma-mapping.h>
-> +#include <linux/dmapool.h>
-> +#include <linux/init.h>
+> +#include <linux/acpi.h>
+> +#include <linux/ioport.h>
+> +#include <linux/kernel.h>
 > +#include <linux/module.h>
+> +#include <linux/pm.h>
+> +#include <linux/pm_runtime.h>
 > +#include <linux/platform_device.h>
-> +#include <linux/slab.h>
 > +
-> +#include "idma64.h"
+> +#include "intel-lpss.h"
 > +
-> +/* Platform driver name */
-> +#define DRV_NAME		"idma64"
-> +
-> +/* For now we support only two channels */
-> +#define IDMA64_NR_CHAN		2
-> +
-> +/* -----------------------------------------------------------------=
------ */
-> +
-> +static struct device *chan2dev(struct dma_chan *chan)
-> +{
-> +	return &chan->dev->device;
-> +}
-> +
-> +/* -----------------------------------------------------------------=
------ */
-> +
-> +static void idma64_off(struct idma64 *idma64)
-> +{
-> +	unsigned short count =3D 100;
-> +
-> +	dma_writel(idma64, CFG, 0);
-> +
-> +	channel_clear_bit(idma64, MASK(XFER), idma64->all_chan_mask);
-> +	channel_clear_bit(idma64, MASK(BLOCK), idma64->all_chan_mask);
-> +	channel_clear_bit(idma64, MASK(SRC_TRAN), idma64->all_chan_mask);
-> +	channel_clear_bit(idma64, MASK(DST_TRAN), idma64->all_chan_mask);
-> +	channel_clear_bit(idma64, MASK(ERROR), idma64->all_chan_mask);
-> +
-> +	do {
-> +		cpu_relax();
-> +	} while (dma_readl(idma64, CFG) & IDMA64_CFG_DMA_EN && --count);
-> +}
-> +
-> +static void idma64_on(struct idma64 *idma64)
-> +{
-> +	dma_writel(idma64, CFG, IDMA64_CFG_DMA_EN);
-> +}
-> +
-> +/* -----------------------------------------------------------------=
------ */
-> +
-> +static void idma64_chan_init(struct idma64 *idma64, struct idma64_ch=
-an *idma64c)
-> +{
-> +	u32 cfghi =3D IDMA64C_CFGH_SRC_PER(1) | IDMA64C_CFGH_DST_PER(0);
-> +	u32 cfglo =3D 0;
-> +
-> +	/* Enforce FIFO drain when channel is suspended */
-> +	cfglo |=3D IDMA64C_CFGL_CH_DRAIN;
-> +
-> +	/* Set default burst alignment */
-> +	cfglo |=3D IDMA64C_CFGL_DST_BURST_ALIGN | IDMA64C_CFGL_SRC_BURST_AL=
-IGN;
-> +
-> +	channel_writel(idma64c, CFG_LO, cfglo);
-> +	channel_writel(idma64c, CFG_HI, cfghi);
-> +
-> +	/* Enable interrupts */
-> +	channel_set_bit(idma64, MASK(XFER), idma64c->mask);
-> +	channel_set_bit(idma64, MASK(ERROR), idma64c->mask);
-> +
-> +	/*
-> +	 * Enforce the controller to be turned on.
-> +	 *
-> +	 * The iDMA is turned off in ->probe() and looses context during sy=
-stem
-> +	 * suspend / resume cycle. That's why we have to enable it each tim=
-e we
-> +	 * use it.
-> +	 */
-> +	idma64_on(idma64);
-> +}
-> +
-> +static void idma64_chan_stop(struct idma64 *idma64, struct idma64_ch=
-an *idma64c)
-> +{
-> +	channel_clear_bit(idma64, CH_EN, idma64c->mask);
-> +}
-> +
-> +static void idma64_chan_start(struct idma64 *idma64, struct idma64_c=
-han *idma64c)
-> +{
-> +	struct idma64_desc *desc =3D idma64c->desc;
-> +	struct idma64_hw_desc *hw =3D &desc->hw[0];
-> +
-> +	channel_writeq(idma64c, SAR, 0);
-> +	channel_writeq(idma64c, DAR, 0);
-> +
-> +	channel_writel(idma64c, CTL_HI, IDMA64C_CTLH_BLOCK_TS(~0UL));
-> +	channel_writel(idma64c, CTL_LO, IDMA64C_CTLL_LLP_S_EN | IDMA64C_CTL=
-L_LLP_D_EN);
-> +
-> +	channel_writeq(idma64c, LLP, hw->llp);
-> +
-> +	channel_set_bit(idma64, CH_EN, idma64c->mask);
-> +}
-> +
-> +static void idma64_stop_transfer(struct idma64_chan *idma64c)
-> +{
-> +	struct idma64 *idma64 =3D to_idma64(idma64c->vchan.chan.device);
-> +
-> +	idma64_chan_stop(idma64, idma64c);
-> +}
-> +
-> +static void idma64_start_transfer(struct idma64_chan *idma64c)
-> +{
-> +	struct idma64 *idma64 =3D to_idma64(idma64c->vchan.chan.device);
-> +	struct virt_dma_desc *vdesc;
-> +
-> +	/* Get the next descriptor */
-> +	vdesc =3D vchan_next_desc(&idma64c->vchan);
-> +	if (!vdesc) {
-> +		idma64c->desc =3D NULL;
-> +		return;
-> +	}
-> +
-> +	list_del(&vdesc->node);
-> +	idma64c->desc =3D to_idma64_desc(vdesc);
-> +
-> +	/* Configure the channel */
-> +	idma64_chan_init(idma64, idma64c);
-> +
-> +	/* Start the channel with a new descriptor */
-> +	idma64_chan_start(idma64, idma64c);
-> +}
-> +
-> +/* -----------------------------------------------------------------=
------ */
-> +
-> +static void idma64_chan_irq(struct idma64 *idma64, unsigned short c,
-> +		u32 status_err, u32 status_xfer)
-> +{
-> +	struct idma64_chan *idma64c =3D &idma64->chan[c];
-> +	struct idma64_desc *desc;
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&idma64c->vchan.lock, flags);
-> +	desc =3D idma64c->desc;
-> +	if (desc) {
-> +		if (status_err & (1 << c)) {
-> +			dma_writel(idma64, CLEAR(ERROR), idma64c->mask);
-> +			desc->status =3D DMA_ERROR;
-> +		} else if (status_xfer & (1 << c)) {
-> +			dma_writel(idma64, CLEAR(XFER), idma64c->mask);
-> +			desc->status =3D DMA_COMPLETE;
-> +			vchan_cookie_complete(&desc->vdesc);
-> +			idma64_start_transfer(idma64c);
-> +		}
-> +
-> +		/* idma64_start_transfer() updates idma64c->desc */
-> +		if (idma64c->desc =3D=3D NULL || desc->status =3D=3D DMA_ERROR)
-> +			idma64_stop_transfer(idma64c);
-> +	}
-> +	spin_unlock_irqrestore(&idma64c->vchan.lock, flags);
-> +}
-> +
-> +static irqreturn_t idma64_irq(int irq, void *dev)
-> +{
-> +	struct idma64 *idma64 =3D dev;
-> +	u32 status =3D dma_readl(idma64, STATUS_INT);
-> +	u32 status_xfer;
-> +	u32 status_err;
-> +	unsigned short i;
-> +
-> +	dev_vdbg(idma64->dma.dev, "%s: status=3D%#x\n", __func__, status);
-> +
-> +	/* Check if we have any interrupt from the DMA controller */
-> +	if (!status)
-> +		return IRQ_NONE;
-> +
-> +	/* Disable interrupts */
-> +	channel_clear_bit(idma64, MASK(XFER), idma64->all_chan_mask);
-> +	channel_clear_bit(idma64, MASK(ERROR), idma64->all_chan_mask);
-> +
-> +	status_xfer =3D dma_readl(idma64, RAW(XFER));
-> +	status_err =3D dma_readl(idma64, RAW(ERROR));
-> +
-> +	for (i =3D 0; i < idma64->dma.chancnt; i++)
-> +		idma64_chan_irq(idma64, i, status_err, status_xfer);
-> +
-> +	/* Re-enable interrupts */
-> +	channel_set_bit(idma64, MASK(XFER), idma64->all_chan_mask);
-> +	channel_set_bit(idma64, MASK(ERROR), idma64->all_chan_mask);
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +/* -----------------------------------------------------------------=
------ */
-> +
-> +static struct idma64_desc *idma64_alloc_desc(unsigned int ndesc)
-> +{
-> +	struct idma64_desc *desc;
-> +
-> +	desc =3D kzalloc(sizeof(*desc), GFP_NOWAIT);
-> +	if (!desc)
-> +		return NULL;
-> +
-> +	desc->hw =3D kcalloc(ndesc, sizeof(*desc->hw), GFP_NOWAIT);
-> +	if (!desc->hw) {
-> +		kfree(desc);
-> +		return NULL;
-> +	}
-> +
-> +	return desc;
-> +}
-> +
-> +static void idma64_desc_free(struct idma64_chan *idma64c,
-> +		struct idma64_desc *desc)
-> +{
-> +	struct idma64_hw_desc *hw;
-> +
-> +	if (desc->ndesc) {
-> +		unsigned int i =3D desc->ndesc;
-> +
-> +		do {
-> +			hw =3D &desc->hw[--i];
-> +			dma_pool_free(idma64c->pool, hw->lli, hw->llp);
-> +		} while (i);
-> +	}
-> +
-> +	kfree(desc->hw);
-> +	kfree(desc);
-> +}
-> +
-> +static void idma64_vdesc_free(struct virt_dma_desc *vdesc)
-> +{
-> +	struct idma64_chan *idma64c =3D to_idma64_chan(vdesc->tx.chan);
-> +
-> +	idma64_desc_free(idma64c, to_idma64_desc(vdesc));
-> +}
-> +
-> +static u64 idma64_hw_desc_fill(struct idma64_hw_desc *hw,
-> +		struct dma_slave_config *config,
-> +		enum dma_transfer_direction direction, u64 llp)
-> +{
-> +	struct idma64_lli *lli =3D hw->lli;
-> +	u64 sar, dar;
-> +	u32 ctlhi =3D IDMA64C_CTLH_BLOCK_TS(hw->len);
-> +	u32 ctllo =3D IDMA64C_CTLL_LLP_S_EN | IDMA64C_CTLL_LLP_D_EN;
-> +	u32 src_width, dst_width;
-> +
-> +	if (direction =3D=3D DMA_MEM_TO_DEV) {
-> +		sar =3D hw->phys;
-> +		dar =3D config->dst_addr;
-> +		ctllo |=3D IDMA64C_CTLL_DST_FIX | IDMA64C_CTLL_SRC_INC |
-> +			 IDMA64C_CTLL_FC_M2P;
-> +		src_width =3D min_t(u32, 2, __fls(sar | hw->len));
-> +		dst_width =3D __fls(config->dst_addr_width);
-> +	} else {	/* DMA_DEV_TO_MEM */
-> +		sar =3D config->src_addr;
-> +		dar =3D hw->phys;
-> +		ctllo |=3D IDMA64C_CTLL_DST_INC | IDMA64C_CTLL_SRC_FIX |
-> +			 IDMA64C_CTLL_FC_P2M;
-> +		src_width =3D __fls(config->src_addr_width);
-> +		dst_width =3D min_t(u32, 2, __fls(dar | hw->len));
-> +	}
-> +
-> +	lli->sar =3D sar;
-> +	lli->dar =3D dar;
-> +
-> +	lli->ctlhi =3D ctlhi;
-> +	lli->ctllo =3D ctllo |
-> +		     IDMA64C_CTLL_SRC_MSIZE(config->src_maxburst) |
-> +		     IDMA64C_CTLL_DST_MSIZE(config->dst_maxburst) |
-> +		     IDMA64C_CTLL_DST_WIDTH(dst_width) |
-> +		     IDMA64C_CTLL_SRC_WIDTH(src_width);
-> +
-> +	lli->llp =3D llp;
-> +	return hw->llp;
-> +}
-> +
-> +static void idma64_desc_fill(struct idma64_chan *idma64c,
-> +		struct idma64_desc *desc)
-> +{
-> +	struct dma_slave_config *config =3D &idma64c->config;
-> +	struct idma64_hw_desc *hw =3D &desc->hw[desc->ndesc - 1];
-> +	struct idma64_lli *lli =3D hw->lli;
-> +	u64 llp =3D 0;
-> +	unsigned int i =3D desc->ndesc;
-> +
-> +	/* Fill the hardware descriptors and link them to a list */
-> +	do {
-> +		hw =3D &desc->hw[--i];
-> +		llp =3D idma64_hw_desc_fill(hw, config, desc->direction, llp);
-> +		desc->length +=3D hw->len;
-> +	} while (i);
-> +
-> +	/* Trigger interrupt after last block */
-> +	lli->ctllo |=3D IDMA64C_CTLL_INT_EN;
-> +}
-> +
-> +static struct dma_async_tx_descriptor *idma64_prep_slave_sg(
-> +		struct dma_chan *chan, struct scatterlist *sgl,
-> +		unsigned int sg_len, enum dma_transfer_direction direction,
-> +		unsigned long flags, void *context)
-> +{
-> +	struct idma64_chan *idma64c =3D to_idma64_chan(chan);
-> +	struct idma64_desc *desc;
-> +	struct scatterlist *sg;
-> +	unsigned int i;
-> +
-> +	desc =3D idma64_alloc_desc(sg_len);
-> +	if (!desc)
-> +		return NULL;
-> +
-> +	for_each_sg(sgl, sg, sg_len, i) {
-> +		struct idma64_hw_desc *hw =3D &desc->hw[i];
-> +
-> +		/* Allocate DMA capable memory for hardware descriptor */
-> +		hw->lli =3D dma_pool_alloc(idma64c->pool, GFP_NOWAIT, &hw->llp);
-> +		if (!hw->lli) {
-> +			desc->ndesc =3D i;
-> +			idma64_desc_free(idma64c, desc);
-> +			return NULL;
-> +		}
-> +
-> +		hw->phys =3D sg_dma_address(sg);
-> +		hw->len =3D sg_dma_len(sg);
-> +	}
-> +
-> +	desc->ndesc =3D sg_len;
-> +	desc->direction =3D direction;
-> +	desc->status =3D DMA_IN_PROGRESS;
-> +
-> +	idma64_desc_fill(idma64c, desc);
-> +	return vchan_tx_prep(&idma64c->vchan, &desc->vdesc, flags);
-> +}
-> +
-> +static void idma64_issue_pending(struct dma_chan *chan)
-> +{
-> +	struct idma64_chan *idma64c =3D to_idma64_chan(chan);
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&idma64c->vchan.lock, flags);
-> +	if (vchan_issue_pending(&idma64c->vchan) && !idma64c->desc)
-> +		idma64_start_transfer(idma64c);
-> +	spin_unlock_irqrestore(&idma64c->vchan.lock, flags);
-> +}
-> +
-> +static size_t idma64_active_desc_size(struct idma64_chan *idma64c)
-> +{
-> +	struct idma64_desc *desc =3D idma64c->desc;
-> +	struct idma64_hw_desc *hw;
-> +	size_t bytes =3D desc->length;
-> +	u64 llp;
-> +	u32 ctlhi;
-> +	unsigned int i =3D 0;
-> +
-> +	llp =3D channel_readq(idma64c, LLP);
-> +	do {
-> +		hw =3D &desc->hw[i];
-> +	} while ((hw->llp !=3D llp) && (++i < desc->ndesc));
-> +
-> +	if (!i)
-> +		return bytes;
-> +
-> +	do {
-> +		bytes -=3D desc->hw[--i].len;
-> +	} while (i);
-> +
-> +	ctlhi =3D channel_readl(idma64c, CTL_HI);
-> +	return bytes - IDMA64C_CTLH_BLOCK_TS(ctlhi);
-> +}
-> +
-> +static enum dma_status idma64_tx_status(struct dma_chan *chan,
-> +		dma_cookie_t cookie, struct dma_tx_state *state)
-> +{
-> +	struct idma64_chan *idma64c =3D to_idma64_chan(chan);
-> +	struct virt_dma_desc *vdesc;
-> +	enum dma_status status;
-> +	size_t bytes;
-> +	unsigned long flags;
-> +
-> +	status =3D dma_cookie_status(chan, cookie, state);
-> +	if (status =3D=3D DMA_COMPLETE)
-> +		return status;
-> +
-> +	spin_lock_irqsave(&idma64c->vchan.lock, flags);
-> +	vdesc =3D vchan_find_desc(&idma64c->vchan, cookie);
-> +	if (idma64c->desc && cookie =3D=3D idma64c->desc->vdesc.tx.cookie) =
-{
-> +		bytes =3D idma64_active_desc_size(idma64c);
-> +		dma_set_residue(state, bytes);
-> +		status =3D idma64c->desc->status;
-> +	} else if (vdesc) {
-> +		bytes =3D to_idma64_desc(vdesc)->length;
-> +		dma_set_residue(state, bytes);
-> +	}
-> +	spin_unlock_irqrestore(&idma64c->vchan.lock, flags);
-> +
-> +	return status;
-> +}
-> +
-> +static void convert_burst(u32 *maxburst)
-> +{
-> +	if (*maxburst)
-> +		*maxburst =3D __fls(*maxburst);
-> +	else
-> +		*maxburst =3D 0;
-> +}
-> +
-> +static int idma64_slave_config(struct dma_chan *chan,
-> +		struct dma_slave_config *config)
-> +{
-> +	struct idma64_chan *idma64c =3D to_idma64_chan(chan);
-> +
-> +	/* Check if chan will be configured for slave transfers */
-> +	if (!is_slave_direction(config->direction))
-> +		return -EINVAL;
-> +
-> +	memcpy(&idma64c->config, config, sizeof(idma64c->config));
-> +
-> +	convert_burst(&idma64c->config.src_maxburst);
-> +	convert_burst(&idma64c->config.dst_maxburst);
-> +
-> +	return 0;
-> +}
-> +
-> +static void idma64_chan_deactivate(struct idma64_chan *idma64c)
-> +{
-> +	unsigned short count =3D 100;
-> +	u32 cfglo;
-> +
-> +	cfglo =3D channel_readl(idma64c, CFG_LO);
-> +	channel_writel(idma64c, CFG_LO, cfglo | IDMA64C_CFGL_CH_SUSP);
-> +	do {
-> +		udelay(1);
-> +		cfglo =3D channel_readl(idma64c, CFG_LO);
-> +	} while (!(cfglo & IDMA64C_CFGL_FIFO_EMPTY) && --count);
-> +}
-> +
-> +static void idma64_chan_activate(struct idma64_chan *idma64c)
-> +{
-> +	u32 cfglo;
-> +
-> +	cfglo =3D channel_readl(idma64c, CFG_LO);
-> +	channel_writel(idma64c, CFG_LO, cfglo & ~IDMA64C_CFGL_CH_SUSP);
-> +}
-> +
-> +static int idma64_pause(struct dma_chan *chan)
-> +{
-> +	struct idma64_chan *idma64c =3D to_idma64_chan(chan);
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&idma64c->vchan.lock, flags);
-> +	if (idma64c->desc && idma64c->desc->status =3D=3D DMA_IN_PROGRESS) =
-{
-> +		idma64_chan_deactivate(idma64c);
-> +		idma64c->desc->status =3D DMA_PAUSED;
-> +	}
-> +	spin_unlock_irqrestore(&idma64c->vchan.lock, flags);
-> +
-> +	return 0;
-> +}
-> +
-> +static int idma64_resume(struct dma_chan *chan)
-> +{
-> +	struct idma64_chan *idma64c =3D to_idma64_chan(chan);
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&idma64c->vchan.lock, flags);
-> +	if (idma64c->desc && idma64c->desc->status =3D=3D DMA_PAUSED) {
-> +		idma64c->desc->status =3D DMA_IN_PROGRESS;
-> +		idma64_chan_activate(idma64c);
-> +	}
-> +	spin_unlock_irqrestore(&idma64c->vchan.lock, flags);
-> +
-> +	return 0;
-> +}
-> +
-> +static int idma64_terminate_all(struct dma_chan *chan)
-> +{
-> +	struct idma64_chan *idma64c =3D to_idma64_chan(chan);
-> +	unsigned long flags;
-> +	LIST_HEAD(head);
-> +
-> +	spin_lock_irqsave(&idma64c->vchan.lock, flags);
-> +	idma64_chan_deactivate(idma64c);
-> +	idma64_stop_transfer(idma64c);
-> +	if (idma64c->desc) {
-> +		idma64_vdesc_free(&idma64c->desc->vdesc);
-> +		idma64c->desc =3D NULL;
-> +	}
-> +	vchan_get_all_descriptors(&idma64c->vchan, &head);
-> +	spin_unlock_irqrestore(&idma64c->vchan.lock, flags);
-> +
-> +	vchan_dma_desc_free_list(&idma64c->vchan, &head);
-> +	return 0;
-> +}
-> +
-> +static int idma64_alloc_chan_resources(struct dma_chan *chan)
-> +{
-> +	struct idma64_chan *idma64c =3D to_idma64_chan(chan);
-> +
-> +	/* Create a pool of consistent memory blocks for hardware descripto=
-rs */
-> +	idma64c->pool =3D dma_pool_create(dev_name(chan2dev(chan)),
-> +					chan->device->dev,
-> +					sizeof(struct idma64_lli), 8, 0);
-> +	if (!idma64c->pool) {
-> +		dev_err(chan2dev(chan), "No memory for descriptors\n");
-> +		return -ENOMEM;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static void idma64_free_chan_resources(struct dma_chan *chan)
-> +{
-> +	struct idma64_chan *idma64c =3D to_idma64_chan(chan);
-> +
-> +	vchan_free_chan_resources(to_virt_chan(chan));
-> +	dma_pool_destroy(idma64c->pool);
-> +	idma64c->pool =3D NULL;
-> +}
-> +
-> +/* -----------------------------------------------------------------=
------ */
-> +
-> +#define IDMA64_BUSWIDTHS				\
-> +	BIT(DMA_SLAVE_BUSWIDTH_1_BYTE)		|	\
-> +	BIT(DMA_SLAVE_BUSWIDTH_2_BYTES)		|	\
-> +	BIT(DMA_SLAVE_BUSWIDTH_4_BYTES)
-> +
-> +static int idma64_probe(struct idma64_chip *chip)
-> +{
-> +	struct idma64 *idma64;
-> +	unsigned short nr_chan =3D IDMA64_NR_CHAN;
-> +	unsigned short i;
-> +	int ret;
-> +
-> +	idma64 =3D devm_kzalloc(chip->dev, sizeof(*idma64), GFP_KERNEL);
-> +	if (!idma64)
-> +		return -ENOMEM;
-> +
-> +	idma64->regs =3D chip->regs;
-> +	chip->idma64 =3D idma64;
-> +
-> +	idma64->chan =3D devm_kcalloc(chip->dev, nr_chan, sizeof(*idma64->c=
-han),
-> +				    GFP_KERNEL);
-> +	if (!idma64->chan)
-> +		return -ENOMEM;
-> +
-> +	idma64->all_chan_mask =3D (1 << nr_chan) - 1;
-> +
-> +	/* Turn off iDMA controller */
-> +	idma64_off(idma64);
-> +
-> +	ret =3D devm_request_irq(chip->dev, chip->irq, idma64_irq, IRQF_SHA=
-RED,
-> +			       dev_name(chip->dev), idma64);
-> +	if (ret)
-> +		return ret;
-> +
-> +	INIT_LIST_HEAD(&idma64->dma.channels);
-> +	for (i =3D 0; i < nr_chan; i++) {
-> +		struct idma64_chan *idma64c =3D &idma64->chan[i];
-> +
-> +		idma64c->vchan.desc_free =3D idma64_vdesc_free;
-> +		vchan_init(&idma64c->vchan, &idma64->dma);
-> +
-> +		idma64c->regs =3D idma64->regs + i * IDMA64_CH_LENGTH;
-> +		idma64c->mask =3D BIT(i);
-> +	}
-> +
-> +	dma_cap_set(DMA_SLAVE, idma64->dma.cap_mask);
-> +	dma_cap_set(DMA_PRIVATE, idma64->dma.cap_mask);
-> +
-> +	idma64->dma.device_alloc_chan_resources =3D idma64_alloc_chan_resou=
-rces;
-> +	idma64->dma.device_free_chan_resources =3D idma64_free_chan_resourc=
-es;
-> +
-> +	idma64->dma.device_prep_slave_sg =3D idma64_prep_slave_sg;
-> +
-> +	idma64->dma.device_issue_pending =3D idma64_issue_pending;
-> +	idma64->dma.device_tx_status =3D idma64_tx_status;
-> +
-> +	idma64->dma.device_config =3D idma64_slave_config;
-> +	idma64->dma.device_pause =3D idma64_pause;
-> +	idma64->dma.device_resume =3D idma64_resume;
-> +	idma64->dma.device_terminate_all =3D idma64_terminate_all;
-> +
-> +	idma64->dma.src_addr_widths =3D IDMA64_BUSWIDTHS;
-> +	idma64->dma.dst_addr_widths =3D IDMA64_BUSWIDTHS;
-> +	idma64->dma.directions =3D BIT(DMA_DEV_TO_MEM) | BIT(DMA_MEM_TO_DEV=
-);
-> +	idma64->dma.residue_granularity =3D DMA_RESIDUE_GRANULARITY_BURST;
-> +
-> +	idma64->dma.dev =3D chip->dev;
-> +
-> +	ret =3D dma_async_device_register(&idma64->dma);
-> +	if (ret)
-> +		return ret;
-> +
-> +	dev_info(chip->dev, "Found Intel integrated DMA 64-bit\n");
-> +	return 0;
-> +}
-> +
-> +static int idma64_remove(struct idma64_chip *chip)
-> +{
-> +	struct idma64 *idma64 =3D chip->idma64;
-> +	unsigned short i;
-> +
-> +	dma_async_device_unregister(&idma64->dma);
-> +
-> +	/*
-> +	 * Explicitly call devm_request_irq() to avoid the side effects wit=
-h
-> +	 * the scheduled tasklets.
-> +	 */
-> +	devm_free_irq(chip->dev, chip->irq, idma64);
-> +
-> +	for (i =3D 0; i < idma64->dma.chancnt; i++) {
-> +		struct idma64_chan *idma64c =3D &idma64->chan[i];
-> +
-> +		tasklet_kill(&idma64c->vchan.task);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +/* -----------------------------------------------------------------=
------ */
-> +
-> +static int idma64_platform_probe(struct platform_device *pdev)
-> +{
-> +	struct idma64_chip *chip;
-> +	struct device *dev =3D &pdev->dev;
-> +	struct resource *mem;
-> +	int ret;
-> +
-> +	chip =3D devm_kzalloc(dev, sizeof(*chip), GFP_KERNEL);
-> +	if (!chip)
-> +		return -ENOMEM;
-> +
-> +	chip->irq =3D platform_get_irq(pdev, 0);
-> +	if (chip->irq < 0)
-> +		return chip->irq;
-> +
-> +	mem =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	chip->regs =3D devm_ioremap_resource(dev, mem);
-> +	if (IS_ERR(chip->regs))
-> +		return PTR_ERR(chip->regs);
-> +
-> +	ret =3D dma_coerce_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
-> +	if (ret)
-> +		return ret;
-> +
-> +	chip->dev =3D dev;
-> +
-> +	ret =3D idma64_probe(chip);
-> +	if (ret)
-> +		return ret;
-> +
-> +	platform_set_drvdata(pdev, chip);
-> +	return 0;
-> +}
-> +
-> +static int idma64_platform_remove(struct platform_device *pdev)
-> +{
-> +	struct idma64_chip *chip =3D platform_get_drvdata(pdev);
-> +
-> +	return idma64_remove(chip);
-> +}
-> +
-> +#ifdef CONFIG_PM_SLEEP
-> +
-> +static int idma64_pm_suspend(struct device *dev)
-> +{
-> +	struct platform_device *pdev =3D to_platform_device(dev);
-> +	struct idma64_chip *chip =3D platform_get_drvdata(pdev);
-> +
-> +	idma64_off(chip->idma64);
-> +	return 0;
-> +}
-> +
-> +static int idma64_pm_resume(struct device *dev)
-> +{
-> +	struct platform_device *pdev =3D to_platform_device(dev);
-> +	struct idma64_chip *chip =3D platform_get_drvdata(pdev);
-> +
-> +	idma64_on(chip->idma64);
-> +	return 0;
-> +}
-> +
-> +#endif /* CONFIG_PM_SLEEP */
-> +
-> +static const struct dev_pm_ops idma64_dev_pm_ops =3D {
-> +	SET_SYSTEM_SLEEP_PM_OPS(idma64_pm_suspend, idma64_pm_resume)
+> +static const struct intel_lpss_platform_info spt_info =3D {
+> +	.clk_rate =3D 120000000,
 > +};
 > +
-> +static struct platform_driver idma64_platform_driver =3D {
-> +	.probe		=3D idma64_platform_probe,
-> +	.remove		=3D idma64_platform_remove,
+> +static const struct acpi_device_id intel_lpss_acpi_ids[] =3D {
+> +	/* SPT */
+> +	{ "INT3446", (kernel_ulong_t)&spt_info },
+> +	{ "INT3447", (kernel_ulong_t)&spt_info },
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(acpi, intel_lpss_acpi_ids);
+> +
+> +static int intel_lpss_acpi_probe(struct platform_device *pdev)
+> +{
+> +	struct intel_lpss_platform_info *info;
+> +	const struct acpi_device_id *id;
+> +
+> +	id =3D acpi_match_device(intel_lpss_acpi_ids, &pdev->dev);
+> +	if (!id)
+> +		return -ENODEV;
+> +
+> +	info =3D devm_kmemdup(&pdev->dev, (void *)id->driver_data, sizeof(*=
+info),
+> +			    GFP_KERNEL);
+> +	if (!info)
+> +		return -ENOMEM;
+> +
+> +	info->mem =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	info->irq =3D platform_get_irq(pdev, 0);
+> +
+> +	pm_runtime_set_active(&pdev->dev);
+> +	pm_runtime_enable(&pdev->dev);
+> +
+> +	return intel_lpss_probe(&pdev->dev, info);
+> +}
+> +
+> +static int intel_lpss_acpi_remove(struct platform_device *pdev)
+> +{
+> +	intel_lpss_remove(&pdev->dev);
+> +	pm_runtime_disable(&pdev->dev);
+> +
+> +	return 0;
+> +}
+> +
+> +static INTEL_LPSS_PM_OPS(intel_lpss_acpi_pm_ops);
+> +
+> +static struct platform_driver intel_lpss_acpi_driver =3D {
+> +	.probe =3D intel_lpss_acpi_probe,
+> +	.remove =3D intel_lpss_acpi_remove,
 > +	.driver =3D {
-> +		.name	=3D DRV_NAME,
-> +		.pm	=3D &idma64_dev_pm_ops,
+> +		.name =3D "intel-lpss",
+> +		.acpi_match_table =3D intel_lpss_acpi_ids,
+> +		.pm =3D &intel_lpss_acpi_pm_ops,
 > +	},
 > +};
 > +
-> +module_platform_driver(idma64_platform_driver);
+> +module_platform_driver(intel_lpss_acpi_driver);
 > +
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_DESCRIPTION("iDMA64 core driver");
 > +MODULE_AUTHOR("Andy Shevchenko <andriy.shevchenko@linux.intel.com>")=
 ;
-> +MODULE_ALIAS("platform:" DRV_NAME);
-> diff --git a/drivers/dma/idma64.h b/drivers/dma/idma64.h
+> +MODULE_AUTHOR("Mika Westerberg <mika.westerberg@linux.intel.com>");
+> +MODULE_DESCRIPTION("Intel LPSS ACPI driver");
+> +MODULE_LICENSE("GPL v2");
+> diff --git a/drivers/mfd/intel-lpss-pci.c b/drivers/mfd/intel-lpss-pc=
+i.c
 > new file mode 100644
-> index 0000000..a4d9968
+> index 0000000..9236dff
 > --- /dev/null
-> +++ b/drivers/dma/idma64.h
-> @@ -0,0 +1,233 @@
+> +++ b/drivers/mfd/intel-lpss-pci.c
+> @@ -0,0 +1,113 @@
 > +/*
-> + * Driver for the Intel integrated DMA 64-bit
+> + * Intel LPSS PCI support.
 > + *
-> + * Copyright (C) 2015 Intel Corporation
+> + * Copyright (C) 2015, Intel Corporation
+> + *
+> + * Authors: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> + *          Mika Westerberg <mika.westerberg@linux.intel.com>
 > + *
 > + * This program is free software; you can redistribute it and/or mod=
 ify
@@ -836,242 +221,720 @@ ify
 > + * published by the Free Software Foundation.
 > + */
 > +
-> +#ifndef __DMA_IDMA64_H__
-> +#define __DMA_IDMA64_H__
+> +#include <linux/ioport.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/pci.h>
+> +#include <linux/pm.h>
+> +#include <linux/pm_runtime.h>
 > +
-> +#include <linux/device.h>
-> +#include <linux/io.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/types.h>
+> +#include "intel-lpss.h"
 > +
-> +#include "virt-dma.h"
+> +static int intel_lpss_pci_probe(struct pci_dev *pdev,
+> +				const struct pci_device_id *id)
+> +{
+> +	struct intel_lpss_platform_info *info;
+> +	int ret;
 > +
-> +/* Channel registers */
+> +	ret =3D pcim_enable_device(pdev);
+> +	if (ret)
+> +		return ret;
 > +
-> +#define IDMA64_CH_SAR		0x00	/* Source Address Register */
-> +#define IDMA64_CH_DAR		0x08	/* Destination Address Register */
-> +#define IDMA64_CH_LLP		0x10	/* Linked List Pointer */
-> +#define IDMA64_CH_CTL_LO	0x18	/* Control Register Low */
-> +#define IDMA64_CH_CTL_HI	0x1c	/* Control Register High */
-> +#define IDMA64_CH_SSTAT		0x20
-> +#define IDMA64_CH_DSTAT		0x28
-> +#define IDMA64_CH_SSTATAR	0x30
-> +#define IDMA64_CH_DSTATAR	0x38
-> +#define IDMA64_CH_CFG_LO	0x40	/* Configuration Register Low */
-> +#define IDMA64_CH_CFG_HI	0x44	/* Configuration Register High */
-> +#define IDMA64_CH_SGR		0x48
-> +#define IDMA64_CH_DSR		0x50
+> +	info =3D devm_kmemdup(&pdev->dev, (void *)id->driver_data, sizeof(*=
+info),
+> +			    GFP_KERNEL);
+> +	if (!info)
+> +		return -ENOMEM;
 > +
-> +#define IDMA64_CH_LENGTH	0x58
+> +	info->mem =3D &pdev->resource[0];
+> +	info->irq =3D pdev->irq;
 > +
-> +/* Bitfields in CTL_LO */
-> +#define IDMA64C_CTLL_INT_EN		(1 << 0)	/* irqs enabled? */
-> +#define IDMA64C_CTLL_DST_WIDTH(x)	((x) << 1)	/* bytes per element */
-> +#define IDMA64C_CTLL_SRC_WIDTH(x)	((x) << 4)
-> +#define IDMA64C_CTLL_DST_INC		(0 << 8)	/* DAR update/not */
-> +#define IDMA64C_CTLL_DST_FIX		(1 << 8)
-> +#define IDMA64C_CTLL_SRC_INC		(0 << 10)	/* SAR update/not */
-> +#define IDMA64C_CTLL_SRC_FIX		(1 << 10)
-> +#define IDMA64C_CTLL_DST_MSIZE(x)	((x) << 11)	/* burst, #elements */
-> +#define IDMA64C_CTLL_SRC_MSIZE(x)	((x) << 14)
-> +#define IDMA64C_CTLL_FC_M2P		(1 << 20)	/* mem-to-periph */
-> +#define IDMA64C_CTLL_FC_P2M		(2 << 20)	/* periph-to-mem */
-> +#define IDMA64C_CTLL_LLP_D_EN		(1 << 27)	/* dest block chain */
-> +#define IDMA64C_CTLL_LLP_S_EN		(1 << 28)	/* src block chain */
-> +
-> +/* Bitfields in CTL_HI */
-> +#define IDMA64C_CTLH_BLOCK_TS(x)	((x) & ((1 << 17) - 1))
-> +#define IDMA64C_CTLH_DONE		(1 << 17)
-> +
-> +/* Bitfields in CFG_LO */
-> +#define IDMA64C_CFGL_DST_BURST_ALIGN	(1 << 0)	/* dst burst align */
-> +#define IDMA64C_CFGL_SRC_BURST_ALIGN	(1 << 1)	/* src burst align */
-> +#define IDMA64C_CFGL_CH_SUSP		(1 << 8)
-> +#define IDMA64C_CFGL_FIFO_EMPTY		(1 << 9)
-> +#define IDMA64C_CFGL_CH_DRAIN		(1 << 10)	/* drain FIFO */
-> +#define IDMA64C_CFGL_DST_OPT_BL		(1 << 20)	/* optimize dst burst len=
-gth */
-> +#define IDMA64C_CFGL_SRC_OPT_BL		(1 << 21)	/* optimize src burst len=
-gth */
-> +
-> +/* Bitfields in CFG_HI */
-> +#define IDMA64C_CFGH_SRC_PER(x)		((x) << 0)	/* src peripheral */
-> +#define IDMA64C_CFGH_DST_PER(x)		((x) << 4)	/* dst peripheral */
-> +#define IDMA64C_CFGH_RD_ISSUE_THD(x)	((x) << 8)
-> +#define IDMA64C_CFGH_RW_ISSUE_THD(x)	((x) << 18)
-> +
-> +/* Interrupt registers */
-> +
-> +#define IDMA64_INT_XFER		0x00
-> +#define IDMA64_INT_BLOCK	0x08
-> +#define IDMA64_INT_SRC_TRAN	0x10
-> +#define IDMA64_INT_DST_TRAN	0x18
-> +#define IDMA64_INT_ERROR	0x20
-> +
-> +#define IDMA64_RAW(x)		(0x2c0 + IDMA64_INT_##x)	/* r */
-> +#define IDMA64_STATUS(x)	(0x2e8 + IDMA64_INT_##x)	/* r (raw & mask) =
+> +	/* Probably it is enough to set this for iDMA capable devices only =
 */
-> +#define IDMA64_MASK(x)		(0x310 + IDMA64_INT_##x)	/* rw (set =3D irq =
-enabled) */
-> +#define IDMA64_CLEAR(x)		(0x338 + IDMA64_INT_##x)	/* w (ack, affects=
- "raw") */
+> +	pci_set_master(pdev);
 > +
-> +/* Common registers */
+> +	ret =3D intel_lpss_probe(&pdev->dev, info);
+> +	if (ret)
+> +		return ret;
 > +
-> +#define IDMA64_STATUS_INT	0x360	/* r */
-> +#define IDMA64_CFG		0x398
-> +#define IDMA64_CH_EN		0x3a0
+> +	pm_runtime_put(&pdev->dev);
+> +	pm_runtime_allow(&pdev->dev);
 > +
-> +/* Bitfields in CFG */
-> +#define IDMA64_CFG_DMA_EN		(1 << 0)
+> +	return 0;
+> +}
 > +
-> +/* Hardware descriptor for Linked LIst transfers */
-> +struct idma64_lli {
-> +	u64		sar;
-> +	u64		dar;
-> +	u64		llp;
-> +	u32		ctllo;
-> +	u32		ctlhi;
-> +	u32		sstat;
-> +	u32		dstat;
+> +static void intel_lpss_pci_remove(struct pci_dev *pdev)
+> +{
+> +	pm_runtime_forbid(&pdev->dev);
+> +	pm_runtime_get_sync(&pdev->dev);
+> +
+> +	intel_lpss_remove(&pdev->dev);
+> +}
+> +
+> +static INTEL_LPSS_PM_OPS(intel_lpss_pci_pm_ops);
+> +
+> +static const struct intel_lpss_platform_info spt_info =3D {
+> +	.clk_rate =3D 120000000,
 > +};
 > +
-> +struct idma64_hw_desc {
-> +	struct idma64_lli *lli;
-> +	dma_addr_t llp;
-> +	dma_addr_t phys;
-> +	unsigned int len;
+> +static const struct intel_lpss_platform_info spt_uart_info =3D {
+> +	.clk_rate =3D 120000000,
+> +	.clk_con_id =3D "baudclk",
 > +};
 > +
-> +struct idma64_desc {
-> +	struct virt_dma_desc vdesc;
-> +	enum dma_transfer_direction direction;
-> +	struct idma64_hw_desc *hw;
-> +	unsigned int ndesc;
-> +	size_t length;
-> +	enum dma_status status;
+> +static const struct pci_device_id intel_lpss_pci_ids[] =3D {
+> +	/* SPT-LP */
+> +	{ PCI_VDEVICE(INTEL, 0x9d27), (kernel_ulong_t)&spt_uart_info },
+> +	{ PCI_VDEVICE(INTEL, 0x9d28), (kernel_ulong_t)&spt_uart_info },
+> +	{ PCI_VDEVICE(INTEL, 0x9d29), (kernel_ulong_t)&spt_info },
+> +	{ PCI_VDEVICE(INTEL, 0x9d2a), (kernel_ulong_t)&spt_info },
+> +	{ PCI_VDEVICE(INTEL, 0x9d60), (kernel_ulong_t)&spt_info },
+> +	{ PCI_VDEVICE(INTEL, 0x9d61), (kernel_ulong_t)&spt_info },
+> +	{ PCI_VDEVICE(INTEL, 0x9d62), (kernel_ulong_t)&spt_info },
+> +	{ PCI_VDEVICE(INTEL, 0x9d63), (kernel_ulong_t)&spt_info },
+> +	{ PCI_VDEVICE(INTEL, 0x9d64), (kernel_ulong_t)&spt_info },
+> +	{ PCI_VDEVICE(INTEL, 0x9d65), (kernel_ulong_t)&spt_info },
+> +	{ PCI_VDEVICE(INTEL, 0x9d66), (kernel_ulong_t)&spt_uart_info },
+> +	/* SPT-H */
+> +	{ PCI_VDEVICE(INTEL, 0xa127), (kernel_ulong_t)&spt_uart_info },
+> +	{ PCI_VDEVICE(INTEL, 0xa128), (kernel_ulong_t)&spt_uart_info },
+> +	{ PCI_VDEVICE(INTEL, 0xa129), (kernel_ulong_t)&spt_info },
+> +	{ PCI_VDEVICE(INTEL, 0xa12a), (kernel_ulong_t)&spt_info },
+> +	{ PCI_VDEVICE(INTEL, 0xa160), (kernel_ulong_t)&spt_info },
+> +	{ PCI_VDEVICE(INTEL, 0xa161), (kernel_ulong_t)&spt_info },
+> +	{ PCI_VDEVICE(INTEL, 0xa166), (kernel_ulong_t)&spt_uart_info },
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(pci, intel_lpss_pci_ids);
+> +
+> +static struct pci_driver intel_lpss_pci_driver =3D {
+> +	.name =3D "intel-lpss",
+> +	.id_table =3D intel_lpss_pci_ids,
+> +	.probe =3D intel_lpss_pci_probe,
+> +	.remove =3D intel_lpss_pci_remove,
+> +	.driver =3D {
+> +		.pm =3D &intel_lpss_pci_pm_ops,
+> +	},
 > +};
 > +
-> +static inline struct idma64_desc *to_idma64_desc(struct virt_dma_des=
-c *vdesc)
-> +{
-> +	return container_of(vdesc, struct idma64_desc, vdesc);
-> +}
+> +module_pci_driver(intel_lpss_pci_driver);
 > +
-> +struct idma64_chan {
-> +	struct virt_dma_chan vchan;
-> +
-> +	void __iomem *regs;
-> +
-> +	/* hardware configuration */
-> +	enum dma_transfer_direction direction;
-> +	unsigned int mask;
-> +	struct dma_slave_config config;
-> +
-> +	void *pool;
-> +	struct idma64_desc *desc;
-> +};
-> +
-> +static inline struct idma64_chan *to_idma64_chan(struct dma_chan *ch=
-an)
-> +{
-> +	return container_of(chan, struct idma64_chan, vchan.chan);
-> +}
-> +
-> +#define channel_set_bit(idma64, reg, mask)	\
-> +	dma_writel(idma64, reg, ((mask) << 8) | (mask))
-> +#define channel_clear_bit(idma64, reg, mask)	\
-> +	dma_writel(idma64, reg, ((mask) << 8) | 0)
-> +
-> +static inline u32 idma64c_readl(struct idma64_chan *idma64c, int off=
-set)
-> +{
-> +	return readl(idma64c->regs + offset);
-> +}
-> +
-> +static inline void idma64c_writel(struct idma64_chan *idma64c, int o=
-ffset,
-> +				  u32 value)
-> +{
-> +	writel(value, idma64c->regs + offset);
-> +}
-> +
-> +#define channel_readl(idma64c, reg)		\
-> +	idma64c_readl(idma64c, IDMA64_CH_##reg)
-> +#define channel_writel(idma64c, reg, value)	\
-> +	idma64c_writel(idma64c, IDMA64_CH_##reg, (value))
-> +
-> +static inline u64 idma64c_readq(struct idma64_chan *idma64c, int off=
-set)
-> +{
-> +	u64 l, h;
-> +
-> +	l =3D idma64c_readl(idma64c, offset);
-> +	h =3D idma64c_readl(idma64c, offset + 4);
-> +
-> +	return l | (h << 32);
-> +}
-> +
-> +static inline void idma64c_writeq(struct idma64_chan *idma64c, int o=
-ffset,
-> +				  u64 value)
-> +{
-> +	idma64c_writel(idma64c, offset, value);
-> +	idma64c_writel(idma64c, offset + 4, value >> 32);
-> +}
-> +
-> +#define channel_readq(idma64c, reg)		\
-> +	idma64c_readq(idma64c, IDMA64_CH_##reg)
-> +#define channel_writeq(idma64c, reg, value)	\
-> +	idma64c_writeq(idma64c, IDMA64_CH_##reg, (value))
-> +
-> +struct idma64 {
-> +	struct dma_device dma;
-> +
-> +	void __iomem *regs;
-> +
-> +	/* channels */
-> +	unsigned short all_chan_mask;
-> +	struct idma64_chan *chan;
-> +};
-> +
-> +static inline struct idma64 *to_idma64(struct dma_device *ddev)
-> +{
-> +	return container_of(ddev, struct idma64, dma);
-> +}
-> +
-> +static inline u32 idma64_readl(struct idma64 *idma64, int offset)
-> +{
-> +	return readl(idma64->regs + offset);
-> +}
-> +
-> +static inline void idma64_writel(struct idma64 *idma64, int offset, =
-u32 value)
-> +{
-> +	writel(value, idma64->regs + offset);
-> +}
-> +
-> +#define dma_readl(idma64, reg)			\
-> +	idma64_readl(idma64, IDMA64_##reg)
-> +#define dma_writel(idma64, reg, value)		\
-> +	idma64_writel(idma64, IDMA64_##reg, (value))
-> +
-> +/**
-> + * struct idma64_chip - representation of DesignWare DMA controller =
-hardware
-> + * @dev:		struct device of the DMA controller
-> + * @irq:		irq line
-> + * @regs:		memory mapped I/O space
-> + * @idma64:		struct idma64 that is filed by idma64_probe()
+> +MODULE_AUTHOR("Andy Shevchenko <andriy.shevchenko@linux.intel.com>")=
+;
+> +MODULE_AUTHOR("Mika Westerberg <mika.westerberg@linux.intel.com>");
+> +MODULE_DESCRIPTION("Intel LPSS PCI driver");
+> +MODULE_LICENSE("GPL v2");
+> diff --git a/drivers/mfd/intel-lpss.c b/drivers/mfd/intel-lpss.c
+> new file mode 100644
+> index 0000000..fdf4d5c
+> --- /dev/null
+> +++ b/drivers/mfd/intel-lpss.c
+> @@ -0,0 +1,524 @@
+> +/*
+> + * Intel Sunrisepoint LPSS core support.
+> + *
+> + * Copyright (C) 2015, Intel Corporation
+> + *
+> + * Authors: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> + *          Mika Westerberg <mika.westerberg@linux.intel.com>
+> + *          Heikki Krogerus <heikki.krogerus@linux.intel.com>
+> + *          Jarkko Nikula <jarkko.nikula@linux.intel.com>
+> + *
+> + * This program is free software; you can redistribute it and/or mod=
+ify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
 > + */
-> +struct idma64_chip {
-> +	struct device	*dev;
-> +	int		irq;
-> +	void __iomem	*regs;
-> +	struct idma64	*idma64;
+> +
+> +#include <linux/clk.h>
+> +#include <linux/clkdev.h>
+> +#include <linux/clk-provider.h>
+> +#include <linux/debugfs.h>
+> +#include <linux/idr.h>
+> +#include <linux/ioport.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/mfd/core.h>
+> +#include <linux/pm_qos.h>
+> +#include <linux/pm_runtime.h>
+> +#include <linux/seq_file.h>
+> +
+> +#include "intel-lpss.h"
+> +
+> +#define LPSS_DEV_OFFSET		0x000
+> +#define LPSS_DEV_SIZE		0x200
+> +#define LPSS_PRIV_OFFSET	0x200
+> +#define LPSS_PRIV_SIZE		0x100
+> +#define LPSS_IDMA64_OFFSET	0x800
+> +#define LPSS_IDMA64_SIZE	0x800
+> +
+> +/* Offsets from lpss->priv */
+> +#define LPSS_PRIV_RESETS		0x04
+> +#define LPSS_PRIV_RESETS_FUNC		BIT(2)
+> +#define LPSS_PRIV_RESETS_IDMA		0x3
+> +
+> +#define LPSS_PRIV_ACTIVELTR		0x10
+> +#define LPSS_PRIV_IDLELTR		0x14
+> +
+> +#define LPSS_PRIV_LTR_REQ		BIT(15)
+> +#define LPSS_PRIV_LTR_SCALE_MASK	0xc00
+> +#define LPSS_PRIV_LTR_SCALE_1US		0x800
+> +#define LPSS_PRIV_LTR_SCALE_32US	0xc00
+> +#define LPSS_PRIV_LTR_VALUE_MASK	0x3ff
+> +
+> +#define LPSS_PRIV_SSP_REG		0x20
+> +#define LPSS_PRIV_SSP_REG_DIS_DMA_FIN	BIT(0)
+> +
+> +#define LPSS_PRIV_REMAP_ADDR_LO		0x40
+> +#define LPSS_PRIV_REMAP_ADDR_HI		0x44
+> +
+> +#define LPSS_PRIV_CAPS			0xfc
+> +#define LPSS_PRIV_CAPS_NO_IDMA		BIT(8)
+> +#define LPSS_PRIV_CAPS_TYPE_SHIFT	4
+> +#define LPSS_PRIV_CAPS_TYPE_MASK	(0xf << LPSS_PRIV_CAPS_TYPE_SHIFT)
+> +
+> +/* This matches the type field in CAPS register */
+> +enum intel_lpss_dev_type {
+> +	LPSS_DEV_I2C =3D 0,
+> +	LPSS_DEV_UART,
+> +	LPSS_DEV_SPI,
 > +};
 > +
-> +#endif /* __DMA_IDMA64_H__ */
+> +struct intel_lpss {
+> +	const struct intel_lpss_platform_info *info;
+> +	enum intel_lpss_dev_type type;
+> +	struct clk *clk;
+> +	struct clk_lookup *clock;
+> +	const struct mfd_cell *cell;
+> +	struct device *dev;
+> +	void __iomem *priv;
+> +	int devid;
+> +	u32 caps;
+> +	u32 active_ltr;
+> +	u32 idle_ltr;
+> +	struct dentry *debugfs;
+> +};
+> +
+> +static const struct resource intel_lpss_dev_resources[] =3D {
+> +	DEFINE_RES_MEM_NAMED(LPSS_DEV_OFFSET, LPSS_DEV_SIZE, "lpss_dev"),
+> +	DEFINE_RES_MEM_NAMED(LPSS_PRIV_OFFSET, LPSS_PRIV_SIZE, "lpss_priv")=
+,
+> +	DEFINE_RES_IRQ(0),
+> +};
+> +
+> +static const struct resource intel_lpss_idma64_resources[] =3D {
+> +	DEFINE_RES_MEM(LPSS_IDMA64_OFFSET, LPSS_IDMA64_SIZE),
+> +	DEFINE_RES_IRQ(0),
+> +};
+> +
+> +#define LPSS_IDMA64_DRIVER_NAME		"idma64"
+> +
+> +/*
+> + * Cells needs to be ordered so that the iDMA is created first. This=
+ is
+> + * because we need to be sure the DMA is available when the host con=
+troller
+> + * driver is probed.
+> + */
+> +static const struct mfd_cell intel_lpss_idma64_cell =3D {
+> +	.name =3D LPSS_IDMA64_DRIVER_NAME,
+> +	.num_resources =3D ARRAY_SIZE(intel_lpss_idma64_resources),
+> +	.resources =3D intel_lpss_idma64_resources,
+> +};
+> +
+> +static const struct mfd_cell intel_lpss_i2c_cell =3D {
+> +	.name =3D "i2c_designware",
+> +	.num_resources =3D ARRAY_SIZE(intel_lpss_dev_resources),
+> +	.resources =3D intel_lpss_dev_resources,
+> +};
+> +
+> +static const struct mfd_cell intel_lpss_uart_cell =3D {
+> +	.name =3D "dw-apb-uart",
+> +	.num_resources =3D ARRAY_SIZE(intel_lpss_dev_resources),
+> +	.resources =3D intel_lpss_dev_resources,
+> +};
+> +
+> +static const struct mfd_cell intel_lpss_spi_cell =3D {
+> +	.name =3D "pxa2xx-spi",
+> +	.num_resources =3D ARRAY_SIZE(intel_lpss_dev_resources),
+> +	.resources =3D intel_lpss_dev_resources,
+> +};
+> +
+> +static DEFINE_IDA(intel_lpss_devid_ida);
+> +static struct dentry *intel_lpss_debugfs;
+> +
+> +static int intel_lpss_request_dma_module(const char *name)
+> +{
+> +	static bool intel_lpss_dma_requested;
+> +
+> +	if (intel_lpss_dma_requested)
+> +		return 0;
+> +
+> +	intel_lpss_dma_requested =3D true;
+> +	return request_module("%s", name);
+> +}
+> +
+> +static void intel_lpss_cache_ltr(struct intel_lpss *lpss)
+> +{
+> +	lpss->active_ltr =3D readl(lpss->priv + LPSS_PRIV_ACTIVELTR);
+> +	lpss->idle_ltr =3D readl(lpss->priv + LPSS_PRIV_IDLELTR);
+> +}
+> +
+> +static int intel_lpss_debugfs_add(struct intel_lpss *lpss)
+> +{
+> +	struct dentry *dir;
+> +
+> +	dir =3D debugfs_create_dir(dev_name(lpss->dev), intel_lpss_debugfs)=
+;
+> +	if (IS_ERR(dir))
+> +		return PTR_ERR(dir);
+> +
+> +	/* Cache the values into lpss structure */
+> +	intel_lpss_cache_ltr(lpss);
+> +
+> +	debugfs_create_x32("capabilities", S_IRUGO, dir, &lpss->caps);
+> +	debugfs_create_x32("active_ltr", S_IRUGO, dir, &lpss->active_ltr);
+> +	debugfs_create_x32("idle_ltr", S_IRUGO, dir, &lpss->idle_ltr);
+> +
+> +	lpss->debugfs =3D dir;
+> +	return 0;
+> +}
+> +
+> +static void intel_lpss_debugfs_remove(struct intel_lpss *lpss)
+> +{
+> +	debugfs_remove_recursive(lpss->debugfs);
+> +}
+> +
+> +static void intel_lpss_ltr_set(struct device *dev, s32 val)
+> +{
+> +	struct intel_lpss *lpss =3D dev_get_drvdata(dev);
+> +	u32 ltr;
+> +
+> +	/*
+> +	 * Program latency tolerance (LTR) accordingly what has been asked
+> +	 * by the PM QoS layer or disable it in case we were passed
+> +	 * negative value or PM_QOS_LATENCY_ANY.
+> +	 */
+> +	ltr =3D readl(lpss->priv + LPSS_PRIV_ACTIVELTR);
+> +
+> +	if (val =3D=3D PM_QOS_LATENCY_ANY || val < 0) {
+> +		ltr &=3D ~LPSS_PRIV_LTR_REQ;
+> +	} else {
+> +		ltr |=3D LPSS_PRIV_LTR_REQ;
+> +		ltr &=3D ~LPSS_PRIV_LTR_SCALE_MASK;
+> +		ltr &=3D ~LPSS_PRIV_LTR_VALUE_MASK;
+> +
+> +		if (val > LPSS_PRIV_LTR_VALUE_MASK)
+> +			ltr |=3D LPSS_PRIV_LTR_SCALE_32US | val >> 5;
+> +		else
+> +			ltr |=3D LPSS_PRIV_LTR_SCALE_1US | val;
+> +	}
+> +
+> +	if (ltr =3D=3D lpss->active_ltr)
+> +		return;
+> +
+> +	writel(ltr, lpss->priv + LPSS_PRIV_ACTIVELTR);
+> +	writel(ltr, lpss->priv + LPSS_PRIV_IDLELTR);
+> +
+> +	/* Cache the values into lpss structure */
+> +	intel_lpss_cache_ltr(lpss);
+> +}
+> +
+> +static void intel_lpss_ltr_expose(struct intel_lpss *lpss)
+> +{
+> +	lpss->dev->power.set_latency_tolerance =3D intel_lpss_ltr_set;
+> +	dev_pm_qos_expose_latency_tolerance(lpss->dev);
+> +}
+> +
+> +static void intel_lpss_ltr_hide(struct intel_lpss *lpss)
+> +{
+> +	dev_pm_qos_hide_latency_tolerance(lpss->dev);
+> +	lpss->dev->power.set_latency_tolerance =3D NULL;
+> +}
+> +
+> +static int intel_lpss_assign_devs(struct intel_lpss *lpss)
+> +{
+> +	unsigned int type;
+> +
+> +	type =3D lpss->caps & LPSS_PRIV_CAPS_TYPE_MASK;
+> +	type >>=3D LPSS_PRIV_CAPS_TYPE_SHIFT;
+> +
+> +	switch (type) {
+> +	case LPSS_DEV_I2C:
+> +		lpss->cell =3D &intel_lpss_i2c_cell;
+> +		break;
+> +	case LPSS_DEV_UART:
+> +		lpss->cell =3D &intel_lpss_uart_cell;
+> +		break;
+> +	case LPSS_DEV_SPI:
+> +		lpss->cell =3D &intel_lpss_spi_cell;
+> +		break;
+> +	default:
+> +		return -ENODEV;
+> +	}
+> +
+> +	lpss->type =3D type;
+> +
+> +	return 0;
+> +}
+> +
+> +static bool intel_lpss_has_idma(const struct intel_lpss *lpss)
+> +{
+> +	return (lpss->caps & LPSS_PRIV_CAPS_NO_IDMA) =3D=3D 0;
+> +}
+> +
+> +static void intel_lpss_set_remap_addr(const struct intel_lpss *lpss)
+> +{
+> +	resource_size_t addr =3D lpss->info->mem->start;
+> +
+> +	writel(addr, lpss->priv + LPSS_PRIV_REMAP_ADDR_LO);
+> +#if BITS_PER_LONG > 32
+> +	writel(addr >> 32, lpss->priv + LPSS_PRIV_REMAP_ADDR_HI);
+> +#else
+> +	writel(0, lpss->priv + LPSS_PRIV_REMAP_ADDR_HI);
+> +#endif
+> +}
+> +
+> +static void intel_lpss_deassert_reset(const struct intel_lpss *lpss)
+> +{
+> +	u32 value =3D LPSS_PRIV_RESETS_FUNC | LPSS_PRIV_RESETS_IDMA;
+> +
+> +	/* Bring out the device from reset */
+> +	writel(value, lpss->priv + LPSS_PRIV_RESETS);
+> +}
+> +
+> +static void intel_lpss_init_dev(const struct intel_lpss *lpss)
+> +{
+> +	u32 value =3D LPSS_PRIV_SSP_REG_DIS_DMA_FIN;
+> +
+> +	intel_lpss_deassert_reset(lpss);
+> +
+> +	if (!intel_lpss_has_idma(lpss))
+> +		return;
+> +
+> +	intel_lpss_set_remap_addr(lpss);
+> +
+> +	/* Make sure that SPI multiblock DMA transfers are re-enabled */
+> +	if (lpss->type =3D=3D LPSS_DEV_SPI)
+> +		writel(value, lpss->priv + LPSS_PRIV_SSP_REG);
+> +}
+> +
+> +static void intel_lpss_unregister_clock_tree(struct clk *clk)
+> +{
+> +	struct clk *parent;
+> +
+> +	while (clk) {
+> +		parent =3D clk_get_parent(clk);
+> +		clk_unregister(clk);
+> +		clk =3D parent;
+> +	}
+> +}
+> +
+> +static int intel_lpss_register_clock_divider(struct intel_lpss *lpss=
+,
+> +					     const char *devname,
+> +					     struct clk **clk)
+> +{
+> +	char name[32];
+> +	struct clk *tmp =3D *clk;
+> +
+> +	snprintf(name, sizeof(name), "%s-enable", devname);
+> +	tmp =3D clk_register_gate(NULL, name, __clk_get_name(tmp), 0,
+> +				lpss->priv, 0, 0, NULL);
+> +	if (IS_ERR(tmp))
+> +		return PTR_ERR(tmp);
+> +
+> +	snprintf(name, sizeof(name), "%s-div", devname);
+> +	tmp =3D clk_register_fractional_divider(NULL, name, __clk_get_name(=
+tmp),
+> +					      0, lpss->priv, 1, 15, 16, 15, 0,
+> +					      NULL);
+> +	if (IS_ERR(tmp))
+> +		return PTR_ERR(tmp);
+> +	*clk =3D tmp;
+> +
+> +	snprintf(name, sizeof(name), "%s-update", devname);
+> +	tmp =3D clk_register_gate(NULL, name, __clk_get_name(tmp),
+> +				CLK_SET_RATE_PARENT, lpss->priv, 31, 0, NULL);
+> +	if (IS_ERR(tmp))
+> +		return PTR_ERR(tmp);
+> +	*clk =3D tmp;
+> +
+> +	return 0;
+> +}
+> +
+> +static int intel_lpss_register_clock(struct intel_lpss *lpss)
+> +{
+> +	const struct mfd_cell *cell =3D lpss->cell;
+> +	struct clk *clk;
+> +	char devname[24];
+> +	int ret;
+> +
+> +	if (!lpss->info->clk_rate)
+> +		return 0;
+> +
+> +	/* Root clock */
+> +	clk =3D clk_register_fixed_rate(NULL, dev_name(lpss->dev), NULL,
+> +				      CLK_IS_ROOT, lpss->info->clk_rate);
+> +	if (IS_ERR(clk))
+> +		return PTR_ERR(clk);
+> +
+> +	snprintf(devname, sizeof(devname), "%s.%d", cell->name, lpss->devid=
+);
+> +
+> +	/*
+> +	 * Support for clock divider only if it has some preset value.
+> +	 * Otherwise we assume that the divider is not used.
+> +	 */
+> +	if (lpss->type !=3D LPSS_DEV_I2C) {
+> +		ret =3D intel_lpss_register_clock_divider(lpss, devname, &clk);
+> +		if (ret)
+> +			goto err_clk_register;
+> +	}
+> +
+> +	ret =3D -ENOMEM;
+> +
+> +	/* Clock for the host controller */
+> +	lpss->clock =3D clkdev_create(clk, lpss->info->clk_con_id, "%s", de=
+vname);
+> +	if (!lpss->clock)
+> +		goto err_clk_register;
+> +
+> +	lpss->clk =3D clk;
+> +
+> +	return 0;
+> +
+> +err_clk_register:
+> +	intel_lpss_unregister_clock_tree(clk);
+> +
+> +	return ret;
+> +}
+> +
+> +static void intel_lpss_unregister_clock(struct intel_lpss *lpss)
+> +{
+> +	if (IS_ERR_OR_NULL(lpss->clk))
+> +		return;
+> +
+> +	clkdev_drop(lpss->clock);
+> +	intel_lpss_unregister_clock_tree(lpss->clk);
+> +}
+> +
+> +int intel_lpss_probe(struct device *dev,
+> +		     const struct intel_lpss_platform_info *info)
+> +{
+> +	struct intel_lpss *lpss;
+> +	int ret;
+> +
+> +	if (!info || !info->mem || info->irq <=3D 0)
+> +		return -EINVAL;
+> +
+> +	lpss =3D devm_kzalloc(dev, sizeof(*lpss), GFP_KERNEL);
+> +	if (!lpss)
+> +		return -ENOMEM;
+> +
+> +	lpss->priv =3D devm_ioremap(dev, info->mem->start + LPSS_PRIV_OFFSE=
+T,
+> +				  LPSS_PRIV_SIZE);
+> +	if (!lpss->priv)
+> +		return -ENOMEM;
+> +
+> +	lpss->info =3D info;
+> +	lpss->dev =3D dev;
+> +	lpss->caps =3D readl(lpss->priv + LPSS_PRIV_CAPS);
+> +
+> +	dev_set_drvdata(dev, lpss);
+> +
+> +	ret =3D intel_lpss_assign_devs(lpss);
+> +	if (ret)
+> +		return ret;
+> +
+> +	intel_lpss_init_dev(lpss);
+> +
+> +	lpss->devid =3D ida_simple_get(&intel_lpss_devid_ida, 0, 0, GFP_KER=
+NEL);
+> +	if (lpss->devid < 0)
+> +		return lpss->devid;
+> +
+> +	ret =3D intel_lpss_register_clock(lpss);
+> +	if (ret)
+> +		goto err_clk_register;
+> +
+> +	intel_lpss_ltr_expose(lpss);
+> +
+> +	ret =3D intel_lpss_debugfs_add(lpss);
+> +	if (ret)
+> +		dev_warn(dev, "Failed to create debugfs entries\n");
+> +
+> +	if (intel_lpss_has_idma(lpss)) {
+> +		/*
+> +		 * Ensure the DMA driver is loaded before the host
+> +		 * controller device appears, so that the host controller
+> +		 * driver can request its DMA channels as early as
+> +		 * possible.
+> +		 *
+> +		 * If the DMA module is not there that's OK as well.
+> +		 */
+> +		intel_lpss_request_dma_module(LPSS_IDMA64_DRIVER_NAME);
+> +
+> +		ret =3D mfd_add_devices(dev, lpss->devid, &intel_lpss_idma64_cell,
+> +				      1, info->mem, info->irq, NULL);
+> +		if (ret)
+> +			dev_warn(dev, "Failed to add %s, fallback to PIO\n",
+> +				 LPSS_IDMA64_DRIVER_NAME);
+> +	}
+> +
+> +	ret =3D mfd_add_devices(dev, lpss->devid, lpss->cell,
+> +			      1, info->mem, info->irq, NULL);
+> +	if (ret)
+> +		goto err_remove_ltr;
+> +
+> +	return 0;
+> +
+> +err_remove_ltr:
+> +	intel_lpss_debugfs_remove(lpss);
+> +	intel_lpss_ltr_hide(lpss);
+> +
+> +err_clk_register:
+> +	ida_simple_remove(&intel_lpss_devid_ida, lpss->devid);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(intel_lpss_probe);
+> +
+> +void intel_lpss_remove(struct device *dev)
+> +{
+> +	struct intel_lpss *lpss =3D dev_get_drvdata(dev);
+> +
+> +	mfd_remove_devices(dev);
+> +	intel_lpss_debugfs_remove(lpss);
+> +	intel_lpss_ltr_hide(lpss);
+> +	intel_lpss_unregister_clock(lpss);
+> +	ida_simple_remove(&intel_lpss_devid_ida, lpss->devid);
+> +}
+> +EXPORT_SYMBOL_GPL(intel_lpss_remove);
+> +
+> +static int resume_lpss_device(struct device *dev, void *data)
+> +{
+> +	pm_runtime_resume(dev);
+> +	return 0;
+> +}
+> +
+> +int intel_lpss_prepare(struct device *dev)
+> +{
+> +	/*
+> +	 * Resume both child devices before entering system sleep. This
+> +	 * ensures that they are in proper state before they get suspended.
+> +	 */
+> +	device_for_each_child_reverse(dev, NULL, resume_lpss_device);
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(intel_lpss_prepare);
+> +
+> +int intel_lpss_suspend(struct device *dev)
+> +{
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(intel_lpss_suspend);
+> +
+> +int intel_lpss_resume(struct device *dev)
+> +{
+> +	struct intel_lpss *lpss =3D dev_get_drvdata(dev);
+> +
+> +	intel_lpss_init_dev(lpss);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(intel_lpss_resume);
+> +
+> +static int __init intel_lpss_init(void)
+> +{
+> +	intel_lpss_debugfs =3D debugfs_create_dir("intel_lpss", NULL);
+> +	return 0;
+> +}
+> +module_init(intel_lpss_init);
+> +
+> +static void __exit intel_lpss_exit(void)
+> +{
+> +	debugfs_remove(intel_lpss_debugfs);
+> +}
+> +module_exit(intel_lpss_exit);
+> +
+> +MODULE_AUTHOR("Andy Shevchenko <andriy.shevchenko@linux.intel.com>")=
+;
+> +MODULE_AUTHOR("Mika Westerberg <mika.westerberg@linux.intel.com>");
+> +MODULE_AUTHOR("Heikki Krogerus <heikki.krogerus@linux.intel.com>");
+> +MODULE_AUTHOR("Jarkko Nikula <jarkko.nikula@linux.intel.com>");
+> +MODULE_DESCRIPTION("Intel LPSS core driver");
+> +MODULE_LICENSE("GPL v2");
+> diff --git a/drivers/mfd/intel-lpss.h b/drivers/mfd/intel-lpss.h
+> new file mode 100644
+> index 0000000..f28cb28a
+> --- /dev/null
+> +++ b/drivers/mfd/intel-lpss.h
+> @@ -0,0 +1,62 @@
+> +/*
+> + * Intel LPSS core support.
+> + *
+> + * Copyright (C) 2015, Intel Corporation
+> + *
+> + * Authors: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> + *          Mika Westerberg <mika.westerberg@linux.intel.com>
+> + *
+> + * This program is free software; you can redistribute it and/or mod=
+ify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#ifndef __MFD_INTEL_LPSS_H
+> +#define __MFD_INTEL_LPSS_H
+> +
+> +struct device;
+> +struct resource;
+> +
+> +struct intel_lpss_platform_info {
+> +	struct resource *mem;
+> +	int irq;
+> +	unsigned long clk_rate;
+> +	const char *clk_con_id;
+> +};
+> +
+> +int intel_lpss_probe(struct device *dev,
+> +		     const struct intel_lpss_platform_info *info);
+> +void intel_lpss_remove(struct device *dev);
+> +
+> +#ifdef CONFIG_PM
+> +int intel_lpss_prepare(struct device *dev);
+> +int intel_lpss_suspend(struct device *dev);
+> +int intel_lpss_resume(struct device *dev);
+> +
+> +#ifdef CONFIG_PM_SLEEP
+> +#define INTEL_LPSS_SLEEP_PM_OPS			\
+> +	.prepare =3D intel_lpss_prepare,		\
+> +	.suspend =3D intel_lpss_suspend,		\
+> +	.resume =3D intel_lpss_resume,		\
+> +	.freeze =3D intel_lpss_suspend,		\
+> +	.thaw =3D intel_lpss_resume,		\
+> +	.poweroff =3D intel_lpss_suspend,		\
+> +	.restore =3D intel_lpss_resume,
+> +#endif
+> +
+> +#define INTEL_LPSS_RUNTIME_PM_OPS		\
+> +	.runtime_suspend =3D intel_lpss_suspend,	\
+> +	.runtime_resume =3D intel_lpss_resume,
+> +
+> +#else /* !CONFIG_PM */
+> +#define INTEL_LPSS_SLEEP_PM_OPS
+> +#define INTEL_LPSS_RUNTIME_PM_OPS
+> +#endif /* CONFIG_PM */
+> +
+> +#define INTEL_LPSS_PM_OPS(name)			\
+> +const struct dev_pm_ops name =3D {		\
+> +	INTEL_LPSS_SLEEP_PM_OPS			\
+> +	INTEL_LPSS_RUNTIME_PM_OPS		\
+> +}
+> +
+> +#endif /* __MFD_INTEL_LPSS_H */
 
 --=20
 Lee Jones
