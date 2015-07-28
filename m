@@ -1,87 +1,194 @@
-From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V3 10/19] drm/tegra: dc: Prepare for generic PM domains
-Date: Tue, 28 Jul 2015 13:20:32 +0200
-Message-ID: <20150728112030.GA10949@ulmo.nvidia.com>
-References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com>
- <1436791197-32358-11-git-send-email-jonathanh@nvidia.com>
- <20150717104154.GM3057@ulmo>
- <55B73D8C.103@nvidia.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="Kj7319i9nmIyA2yE"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <55B73D8C.103-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Peter De Schrijver <pdeschrijver-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Prashant Gaikwad <pgaikwad-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Terje =?utf-8?Q?Bergstr=C3=B6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 3/4] cpufreq: Allow drivers to enable boost support after registering driver
+Date: Tue, 28 Jul 2015 16:50:02 +0530
+Message-ID: <fd2832885281ef61815fd24660356ca4aabf10d0.1438081962.git.viresh.kumar@linaro.org>
+References: <cover.1438081962.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1438081962.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1438081962.git.viresh.kumar@linaro.org>
+References: <cover.1438081962.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+In some cases it wouldn't be known at time of driver registration, if
+the driver needs to support boost/turbo frequencies.
 
---Kj7319i9nmIyA2yE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+For example, while getting boost information from DT with opp-v2
+bindings, we need to parse the bindings for all the CPUs to know if
+turbo/boost OPPs are supported or not.
 
-On Tue, Jul 28, 2015 at 09:30:04AM +0100, Jon Hunter wrote:
->=20
-> On 17/07/15 11:41, Thierry Reding wrote:
-> > * PGP Signed by an unknown key
-> >=20
-> > On Mon, Jul 13, 2015 at 01:39:48PM +0100, Jon Hunter wrote:
-> >> Add support to the tegra dc driver for generic PM domains. However,
-> >> to ensure backward compatibility with older device tree blobs ensure
-> >> that the driver can work with or without generic PM domains. In order
-> >> to migrate to generic PM domain infrastructure the necessary changes
-> >> are:
-> >>
-> >> 1. If the "power-domains" property is present in the DT device node th=
-en
-> >>    generic PM domains is supported and pm_runtime_enable() should be
-> >>    called for the device. Furthermore, the enabling and disabling of t=
-he
-> >>    power-domain is handled via calling pm_runtime_get/put, respectivel=
-y.
-> >=20
-> > The device could be PM runtime enabled even if no power-domains property
-> > is set. Couldn't we check something more direct, like for example if the
-> > dev->pm_domain is non-NULL?
->=20
-> Yes could do that instead.
->=20
-> > Perhaps it'd be worth converting the driver to use runtime PM first, and
-> > move all the powergate and clock handling into suspend/resume functions,
-> > and then we can conditionalize whether or not we call the legacy API iff
-> > dev->pm_domain =3D=3D NULL?
->=20
-> May be that would be a cleaner transition than trying to do it all in
-> one go.
+One way out to do that efficiently is to delay supporting boost mode
+(i.e. creating /sys/devices/system/cpu/cpufreq/boost file), until the
+time OPP bindings are parsed.
 
-I have a couple of patches in my tree to do this for DRM as part of an
-effort to restore DPMS. It's fairly tricky to get right in DRM and
-requires all sorts of changes to the driver.
+At that point, the driver can enable boost support. This can be done at
+->init(), where the frequency table is created.
 
-Thierry
+To do that, the driver requires few APIs from cpufreq core. This patch
+provides these APIs.
 
---Kj7319i9nmIyA2yE
-Content-Type: application/pgp-signature; name="signature.asc"
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c    | 66 ++++++++++++++++++++++++++++++--------------
+ drivers/cpufreq/freq_table.c | 15 ++++++++++
+ include/linux/cpufreq.h      | 12 ++++++++
+ 3 files changed, 73 insertions(+), 20 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJVt2V8AAoJEN0jrNd/PrOhp7MQAJHgAvjhigg/VOM7XE1Rm4jR
-B+aBEzaaI6KOToKsFP48aSe62njCJDMS/5iuFUcf8nRQJY4+sAEn9q82okgOdAfq
-lzvYclRKymA6oQjM8QurhmLc7dKT4zMCu4YtM3Pkft7Qcqhryc4g2TqVrDzu2geU
-2Aq0IXR5Feud270X5jjVZ67g8+rSfJ4T/RO0aacz+7Qq5jmJeryL8766T2OMHXHN
-zE11C9vyqrLqcHIsJ3kMfCEoRSjCj8+B3RLgWJEqZj47kkbeZyO0dW0yJFDwyYjG
-uiisT0YezbPbuuEgYxx1YGjmLFwWVkAiBu3+gTMMyF48OB1KCBTNWzXrR4gtCKeR
-jd2fGGcKdsj1Nra4uIdHg603i0lgsk1trV/Fvovl31NDc+EoVciT5q6j4c1Lp0p4
-nPDigbPexMxKt241Tf12smYgkoM2H++UJsJaMMaYOOhEK8xC437a1Kx0sYnBT2z/
-xccK20sfwFuhel1qTKkGwM5XKivqSN03XUCi/icgo/4b+Z9i0tj/Zp1ChJolapwB
-38KhhTYLb7QOp37HjCtreKdI5QcHOK9mFlR8QLDBdWEzizy6+fmngHHbeIZxx7zX
-rJtfAZB2B8Qo5utzoAQ/7V1i6d05pgow1eUVamafn3OdsV2ZjyUtLS6xrLsDX/Ei
-KKd3t9ea4f1FEZjYkMn7
-=VKtG
------END PGP SIGNATURE-----
-
---Kj7319i9nmIyA2yE--
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 46251e8d30f2..217928de2f0e 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2459,6 +2459,47 @@ int cpufreq_boost_supported(void)
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_boost_supported);
+ 
++static int create_boost_sysfs_file(void)
++{
++	int ret;
++
++	if (!cpufreq_boost_supported())
++		return 0;
++
++	/*
++	 * Check if driver provides function to enable boost -
++	 * if not, use cpufreq_boost_set_sw as default
++	 */
++	if (!cpufreq_driver->set_boost)
++		cpufreq_driver->set_boost = cpufreq_boost_set_sw;
++
++	ret = cpufreq_sysfs_create_file(&boost.attr);
++	if (ret)
++		pr_err("%s: cannot register global BOOST sysfs file\n",
++		       __func__);
++
++	return ret;
++}
++
++static void remove_boost_sysfs_file(void)
++{
++	if (cpufreq_boost_supported())
++		cpufreq_sysfs_remove_file(&boost.attr);
++}
++
++int cpufreq_enable_boost_support(void)
++{
++	if (!cpufreq_driver)
++		return -EINVAL;
++
++	if (cpufreq_boost_supported())
++		return 0;
++
++	/* This will get removed on driver unregister */
++	return create_boost_sysfs_file();
++}
++EXPORT_SYMBOL_GPL(cpufreq_enable_boost_support);
++
+ int cpufreq_boost_enabled(void)
+ {
+ 	return cpufreq_driver->boost_enabled;
+@@ -2508,21 +2549,9 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+ 	if (driver_data->setpolicy)
+ 		driver_data->flags |= CPUFREQ_CONST_LOOPS;
+ 
+-	if (cpufreq_boost_supported()) {
+-		/*
+-		 * Check if driver provides function to enable boost -
+-		 * if not, use cpufreq_boost_set_sw as default
+-		 */
+-		if (!cpufreq_driver->set_boost)
+-			cpufreq_driver->set_boost = cpufreq_boost_set_sw;
+-
+-		ret = cpufreq_sysfs_create_file(&boost.attr);
+-		if (ret) {
+-			pr_err("%s: cannot register global BOOST sysfs file\n",
+-			       __func__);
+-			goto err_null_driver;
+-		}
+-	}
++	ret = create_boost_sysfs_file();
++	if (ret)
++		goto err_null_driver;
+ 
+ 	ret = subsys_interface_register(&cpufreq_interface);
+ 	if (ret)
+@@ -2543,8 +2572,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+ err_if_unreg:
+ 	subsys_interface_unregister(&cpufreq_interface);
+ err_boost_unreg:
+-	if (cpufreq_boost_supported())
+-		cpufreq_sysfs_remove_file(&boost.attr);
++	remove_boost_sysfs_file();
+ err_null_driver:
+ 	write_lock_irqsave(&cpufreq_driver_lock, flags);
+ 	cpufreq_driver = NULL;
+@@ -2573,9 +2601,7 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
+ 	/* Protect against concurrent cpu hotplug */
+ 	get_online_cpus();
+ 	subsys_interface_unregister(&cpufreq_interface);
+-	if (cpufreq_boost_supported())
+-		cpufreq_sysfs_remove_file(&boost.attr);
+-
++	remove_boost_sysfs_file();
+ 	unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
+ 
+ 	write_lock_irqsave(&cpufreq_driver_lock, flags);
+diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+index dfbbf981ed56..a8f1daffc9bc 100644
+--- a/drivers/cpufreq/freq_table.c
++++ b/drivers/cpufreq/freq_table.c
+@@ -18,6 +18,21 @@
+  *                     FREQUENCY TABLE HELPERS                       *
+  *********************************************************************/
+ 
++bool policy_has_boost_freq(struct cpufreq_policy *policy)
++{
++	struct cpufreq_frequency_table *pos, *table = policy->freq_table;
++
++	if (!table)
++		return false;
++
++	cpufreq_for_each_valid_entry(pos, table)
++		if (pos->flags & CPUFREQ_BOOST_FREQ)
++			return true;
++
++	return false;
++}
++EXPORT_SYMBOL_GPL(policy_has_boost_freq);
++
+ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
+ 				    struct cpufreq_frequency_table *table)
+ {
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index bde1e567b3a9..95f018649abf 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -578,6 +578,8 @@ ssize_t cpufreq_show_cpus(const struct cpumask *mask, char *buf);
+ int cpufreq_boost_trigger_state(int state);
+ int cpufreq_boost_supported(void);
+ int cpufreq_boost_enabled(void);
++int cpufreq_enable_boost_support(void);
++bool policy_has_boost_freq(struct cpufreq_policy *policy);
+ #else
+ static inline int cpufreq_boost_trigger_state(int state)
+ {
+@@ -591,6 +593,16 @@ static inline int cpufreq_boost_enabled(void)
+ {
+ 	return 0;
+ }
++
++static inline int cpufreq_enable_boost_support(void)
++{
++	return -EINVAL;
++}
++
++static inline bool policy_has_boost_freq(struct cpufreq_policy *policy)
++{
++	return false;
++}
+ #endif
+ /* the following funtion is for cpufreq core use only */
+ struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu);
+-- 
+2.4.0
