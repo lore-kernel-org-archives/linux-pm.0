@@ -1,98 +1,101 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: [PATCH v2 3/6] power: bq27xxx_battery: Platform initialization must declare a device
-Date: Tue, 28 Jul 2015 14:39:10 -0500
-Message-ID: <1438112353-19704-4-git-send-email-afd@ti.com>
-References: <1438112353-19704-1-git-send-email-afd@ti.com>
+From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
+Subject: Re: [PATCH v2 5/6] power: bq27xxx_battery: Add support for additional bq27xxx family devices
+Date: Tue, 28 Jul 2015 21:59:29 +0200
+Message-ID: <201507282159.30013@pali>
+References: <1438112353-19704-1-git-send-email-afd@ti.com> <1438112353-19704-6-git-send-email-afd@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1438112353-19704-1-git-send-email-afd@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F. Davis" <afd@ti.com>
+Content-Type: multipart/signed;
+  boundary="nextPart5087847.R1AYbf9tm4";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f171.google.com ([209.85.212.171]:36985 "EHLO
+	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751942AbbG1T7d (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 15:59:33 -0400
+In-Reply-To: <1438112353-19704-6-git-send-email-afd@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-When initialized as a platform device the initializer must now specify
-a device. An empty device name is no longer valid.
+--nextPart5087847.R1AYbf9tm4
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Andrew F. Davis <afd@ti.com>
----
- drivers/power/bq27xxx_battery.c       | 9 ++++++---
- drivers/w1/slaves/w1_bq27000.c        | 1 +
- include/linux/power/bq27xxx_battery.h | 6 +++++-
- 3 files changed, 12 insertions(+), 4 deletions(-)
+On Tuesday 28 July 2015 21:39:12 Andrew F. Davis wrote:
+> Add support for additional devices and register equivalent family
+> devices including the bq27010, bq27210, bq272500, bq27510, bq27520,
+                                            ^^^^^^
+                                            maybe incorrect number?
+> bq27530, bq27531, bq27541, bq27542, bq27546, bq27545, bq27441,
+> bq27421, and the bq27641.
+>=20
+> To facilitate this process the register mapings have been moved to
+> tables and other small cleanups have been made.
+>=20
+> Signed-off-by: Andrew F. Davis <afd@ti.com>
+> ---
 
-diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
-index e72055c..0734413 100644
---- a/drivers/power/bq27xxx_battery.c
-+++ b/drivers/power/bq27xxx_battery.c
-@@ -91,8 +91,6 @@ struct bq27xxx_access_methods {
- 	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
- };
- 
--enum bq27xxx_chip { BQ27000, BQ27500, BQ27425, BQ27742, BQ27510};
--
- struct bq27xxx_reg_cache {
- 	int temperature;
- 	int time_to_empty;
-@@ -1036,6 +1034,11 @@ static int bq27xxx_battery_platform_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
-+	if (!pdata->chip) {
-+		dev_err(&pdev->dev, "no device supplied\n");
-+		return -EINVAL;
-+	}
-+
- 	di = devm_kzalloc(&pdev->dev, sizeof(*di), GFP_KERNEL);
- 	if (!di)
- 		return -ENOMEM;
-@@ -1043,7 +1046,7 @@ static int bq27xxx_battery_platform_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, di);
- 
- 	di->dev = &pdev->dev;
--	di->chip = BQ27000;
-+	di->chip = pdata->chip;
- 
- 	name = pdata->name ?: dev_name(&pdev->dev);
- 	di->bus.read = &bq27xxx_battery_platform_read;
-diff --git a/drivers/w1/slaves/w1_bq27000.c b/drivers/w1/slaves/w1_bq27000.c
-index 8480531..ba8bf3d 100644
---- a/drivers/w1/slaves/w1_bq27000.c
-+++ b/drivers/w1/slaves/w1_bq27000.c
-@@ -42,6 +42,7 @@ static int w1_bq27000_read(struct device *dev, unsigned int reg)
- static struct bq27xxx_platform_data bq27000_battery_info = {
- 	.read   = w1_bq27000_read,
- 	.name   = "bq27000-battery",
-+	.chip	= BQ27000,
- };
- 
- static int w1_bq27000_add_slave(struct w1_slave *sl)
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index e70a93a..70d3865 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -3,7 +3,8 @@
- 
- /**
-  * struct bq27xxx_plaform_data - Platform data for bq27xxx devices
-- * @name: Name of the battery. If NULL the driver will fallback to "bq27000".
-+ * @name: Name of the battery.
-+ * @chip: Chip class number of this device.
-  * @read: HDQ read callback.
-  *	This function should provide access to the HDQ bus the battery is
-  *	connected to.
-@@ -11,8 +12,11 @@
-  *	register to be read. The return value should either be the content of
-  *	the passed register or an error value.
-  */
-+enum bq27xxx_chip { BQ27000, BQ27500, BQ27425, BQ27742, BQ27510 };
-+
- struct bq27xxx_platform_data {
- 	const char *name;
-+	enum bq27xxx_chip chip;
- 	int (*read)(struct device *dev, unsigned int);
- };
- 
--- 
-1.9.1
+>  static const struct i2c_device_id bq27xxx_id[] =3D {
+> -	{ "bq27200", BQ27000 },	/* bq27200 is same as bq27000, but with i2c
+> */ +	{ "bq27200", BQ27000 },
+> +	{ "bq27210", BQ27010 },
+>  	{ "bq27500", BQ27500 },
+> -	{ "bq27425", BQ27425 },
+> -	{ "bq27742", BQ27742 },
+> -	{ "bq27510", BQ27510 },
+> +	{ "bq27510", BQ27500 },
+> +	{ "bq27520", BQ27500 },
+> +	{ "bq27530", BQ27530 },
+> +	{ "bq27531", BQ27530 },
+> +	{ "bq27541", BQ27541 },
+> +	{ "bq27542", BQ27541 },
+> +	{ "bq27546", BQ27541 },
+> +	{ "bq27742", BQ27541 },
+> +	{ "bq27545", BQ27545 },
+> +	{ "bq27421", BQ27421 },
+> +	{ "bq27425", BQ27421 },
+> +	{ "bq27441", BQ27421 },
+> +	{ "bq27621", BQ27421 },
+>  	{},
+>  };
+
+I'm trying to understand comparator which you used for sorting these=20
+values... but I do not see any logic here. What about sorting list by=20
+first value? Now it is long list of device names and for better ability=20
+to read it, it would be better to have it in some order.
+
+> -enum bq27xxx_chip { BQ27000, BQ27500, BQ27425, BQ27742, BQ27510 };
+> +enum bq27xxx_chip {
+> +	BQ27000, /* bq27000, bq27200 */
+> +	BQ27010, /* bq27010, bq27210 */
+> +	BQ27500, /* bq27500, bq27510, bq27520 */
+> +	BQ27530, /* bq27530, bq27531 */
+> +	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+> +	BQ27545, /* bq27545 */
+> +	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
+> +};
+>=20
+
+Maybe same here? Putting BQ27421 before BQ27500?
+
+=2D-=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
+
+--nextPart5087847.R1AYbf9tm4
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iEYEABECAAYFAlW33yIACgkQi/DJPQPkQ1KrEQCfSKtNbvg/gMsJlG5ZDPdicvbl
+lmQAn1Y13owJGYCgqTnL+Sn6Wa+B4Zbj
+=sFEf
+-----END PGP SIGNATURE-----
+
+--nextPart5087847.R1AYbf9tm4--
