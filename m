@@ -1,78 +1,43 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH] HID: hid-input: Fix accessing freed memory during driver unbind
-Date: Tue, 28 Jul 2015 09:16:30 +0900
-Message-ID: <1438042590-17719-1-git-send-email-k.kozlowski@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 7/7] cpufreq: Separate CPU device removal from CPU online
+Date: Tue, 28 Jul 2015 07:36:44 +0530
+Message-ID: <20150728020644.GL18535@linux>
+References: <7868353.pEStq1MJ2a@vostro.rjw.lan>
+ <3874727.Jpay9zgokc@vostro.rjw.lan>
+ <1739669.kedIsxdRK2@vostro.rjw.lan>
+ <20150727150655.GI18535@linux>
+ <CAJZ5v0gT4e2=VRPcF5S2fSBUiNZ3+dAeOrt5rRy_PAT5-+Y4Ow@mail.gmail.com>
+ <CAJZ5v0hJYpY7k1+zM41oG=sSM=Zhf4LXZH9FBJFL4O7H2cTJfg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:18851 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754638AbbG1AQq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 20:16:46 -0400
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:35376 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754483AbbG1CGs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 22:06:48 -0400
+Received: by pdrg1 with SMTP id g1so61603770pdr.2
+        for <linux-pm@vger.kernel.org>; Mon, 27 Jul 2015 19:06:48 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hJYpY7k1+zM41oG=sSM=Zhf4LXZH9FBJFL4O7H2cTJfg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jiri Kosina <jkosina@suse.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: sre@kernel.org, linux-pm@vger.kernel.org, "H.J. Lu" <hjl.tools@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
 
-During unbinding the driver was dereferencing a pointer to memory
-already freed by power_supply_unregister().
+On 27-07-15, 23:56, Rafael J. Wysocki wrote:
+> OK, I've just seen that patch, but it doesn't modify bus_probe_device() AFAICS.
 
-Driver was freeing its internal description of battery through pointers
-stored in power_supply structure. However, because the core owns the
-power supply instance, after calling power_supply_unregister() the
-driver cannot access these members.
+Why is bus_probe_device() required to be modified?
 
-Fix this by using resource-managed allocations so internal data will be
-freed by pointers stored in resource-managed core.
+I wrote this patch to propagate -EPROBE_DEFER from the ->init()
+callback, which is called from cpufreq_register_driver().
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Reported-by: H.J. Lu <hjl.tools@gmail.com>
-Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
-Cc: <stable@vger.kernel.org>
----
- drivers/hid/hid-input.c | 13 ++++---------
- 1 file changed, 4 insertions(+), 9 deletions(-)
+And that worked after my patch..
 
-diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
-index 14aebe483219..5429a8497d51 100644
---- a/drivers/hid/hid-input.c
-+++ b/drivers/hid/hid-input.c
-@@ -408,15 +408,14 @@ static bool hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
- 	if (dev->battery != NULL)
- 		goto out;	/* already initialized? */
- 
--	psy_desc = kzalloc(sizeof(*psy_desc), GFP_KERNEL);
-+	psy_desc = devm_kzalloc(&dev->dev, sizeof(*psy_desc), GFP_KERNEL);
- 	if (psy_desc == NULL)
- 		goto out;
- 
--	psy_desc->name = kasprintf(GFP_KERNEL, "hid-%s-battery", dev->uniq);
--	if (psy_desc->name == NULL) {
--		kfree(psy_desc);
-+	psy_desc->name = devm_kasprintf(&dev->dev, GFP_KERNEL,
-+					"hid-%s-battery", dev->uniq);
-+	if (psy_desc->name == NULL)
- 		goto out;
--	}
- 
- 	psy_desc->type = POWER_SUPPLY_TYPE_BATTERY;
- 	psy_desc->properties = hidinput_battery_props;
-@@ -449,8 +448,6 @@ static bool hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
- 	if (IS_ERR(dev->battery)) {
- 		hid_warn(dev, "can't register power supply: %ld\n",
- 				PTR_ERR(dev->battery));
--		kfree(psy_desc->name);
--		kfree(psy_desc);
- 		dev->battery = NULL;
- 	} else {
- 		power_supply_powers(dev->battery, &dev->dev);
-@@ -466,8 +463,6 @@ static void hidinput_cleanup_battery(struct hid_device *dev)
- 		return;
- 
- 	power_supply_unregister(dev->battery);
--	kfree(dev->battery->desc->name);
--	kfree(dev->battery->desc);
- 	dev->battery = NULL;
- }
- #else  /* !CONFIG_HID_BATTERY_STRENGTH */
+> Plus we also ignore the return value of cpufreq_add_dev() in the
+> hotplug notifier callback.
+
+My use case needed it for the subsys callback.
+
 -- 
-1.9.1
-
+viresh
