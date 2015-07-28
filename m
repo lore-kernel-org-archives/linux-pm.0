@@ -1,49 +1,58 @@
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH v2 3/3] dm-crypt: Adds support for wiping key when doing
- suspend/hibernation
-Date: Tue, 28 Jul 2015 16:48:12 +0200
-Message-ID: <20150728144812.GS13765@pali>
-References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com>
- <1434885634-19895-1-git-send-email-pali.rohar@gmail.com>
- <1434885634-19895-4-git-send-email-pali.rohar@gmail.com>
- <20150728144419.GA19760@amd>
+From: Javi Merino <javi.merino@arm.com>
+Subject: [PATCH v3 0/3] Devfreq cooling device
+Date: Tue, 28 Jul 2015 16:17:49 +0100
+Message-ID: <1438096672-10867-1-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150728144419.GA19760@amd>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>, Neil Brown <neilb@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, dm-devel@redhat.com, linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:59975 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751181AbbG1PSJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 28 Jul 2015 11:18:09 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: cw00.choi@samsung.com, Javi Merino <javi.merino@arm.com>
 
-On Tuesday 28 July 2015 16:44:19 Pavel Machek wrote:
-> On Sun 2015-06-21 13:20:34, Pali Roh=C3=A1r wrote:
-> > This patch adds dm message commands and option strings to optionall=
-y wipe key
-> > from dm-crypt device before entering suspend or hibernate state.
-> >=20
-> > Before key is wiped dm device must be suspended. To prevent race co=
-nditions with
-> > I/O and userspace processes, wiping action must be called after pro=
-cesses are
-> > freezed. Otherwise userspace processes could start reading/writing =
-to disk after
-> > dm device is suspened and freezing processes before suspend/hiberna=
-te action
-> > will fail.
->=20
-> Are you sure this is enough?
->=20
-> We still may need to allocate memory after userspace is frozen, and
-> that could mean writing dirty buffers out to make some memory free...
->=20
-> 								Pavel
-> 							=09
+This series introduces a devfreq cooling device in the thermal
+framework.  Devfreq is used for DVFS for devices other than the CPUs.
+With a devfreq cooling device, the thermal framework can throttle them
+to control temperature.  The cooling device has the power extensions,
+so it can be used by all governors in the thermal framework, including
+the power allocator governor.
 
-Hm... good question. Maybe it is needed to also flush all buffers?
+Changes since v2:
+  - Use the opp library to enable/disable opps instead of exporting
+    devfreq_set_{max,min}
+  - Use idr API to get a unique name for each devfreq cooling device
+    registered.
+Changes since v1:
+  - Rename devfreq_qos_set_[max|min] to devfreq_set_[max|min] as
+    suggested by MyungJoo Ham
+  - Calculate devfreq load in the tracepoint so that it only happens
+    when the trace is enabled.  Thanks Steven Rostedt.
+
+Javi Merino (2):
+  PM / devfreq: cache the last call to get_dev_status()
+  devfreq_cooling: add trace information
+
+=C3=98rjan Eide (1):
+  thermal: Add devfreq cooling
+
+ drivers/devfreq/devfreq.c                 |   5 +
+ drivers/devfreq/governor_simpleondemand.c |  33 ++-
+ drivers/thermal/Kconfig                   |  10 +
+ drivers/thermal/Makefile                  |   3 +
+ drivers/thermal/devfreq_cooling.c         | 472 ++++++++++++++++++++++=
+++++++++
+ include/linux/devfreq.h                   |   8 +
+ include/linux/devfreq_cooling.h           |  93 ++++++
+ include/trace/events/thermal.h            |  53 ++++
+ 8 files changed, 662 insertions(+), 15 deletions(-)
+ create mode 100644 drivers/thermal/devfreq_cooling.c
+ create mode 100644 include/linux/devfreq_cooling.h
 
 --=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+1.9.1
+
