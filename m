@@ -1,123 +1,58 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v6 0/8] mfd: introduce a driver for LPSS devices on SPT
-Date: Tue, 28 Jul 2015 08:46:25 +0100
-Message-ID: <20150728074625.GN21114@x1>
-References: <1438009443-55317-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <20150727212748.GF21114@x1>
- <20150727212934.GH21114@x1>
- <2258476.9C4JjWNs6u@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
+Date: Tue, 28 Jul 2015 13:17:09 +0530
+Message-ID: <20150728074709.GA13710@linux>
+References: <1438010430-5802-1-git-send-email-lee.jones@linaro.org>
+ <1438010430-5802-2-git-send-email-lee.jones@linaro.org>
+ <20150728022936.GB1229@linux>
+ <20150728073439.GK21114@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:34712 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753927AbbG1HrO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 03:47:14 -0400
+Received: by pdbbh15 with SMTP id bh15so66383868pdb.1
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2015 00:47:14 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <2258476.9C4JjWNs6u@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, mturquette@baylibre.com, sboyd@codeaurora.org
+In-Reply-To: <20150728073439.GK21114@x1>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: rob.herring@linaro.org, nm@ti.com, arnd.bergmann@linaro.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, ajitpal.singh@st.com, sre@kernel.org, dbaryshkov@gmail.com
 
-On Tue, 28 Jul 2015, Rafael J. Wysocki wrote:
+On 28-07-15, 08:34, Lee Jones wrote:
+> I disagree.  For one, only 'opp-hz' is defined in ./opp.tx.  Secondly
 
-> On Monday, July 27, 2015 10:29:34 PM Lee Jones wrote:
-> > On Mon, 27 Jul 2015, Lee Jones wrote:
-> >=20
-> > > On Mon, 27 Jul 2015, Rafael J. Wysocki wrote:
-> > >=20
-> > > > On Monday, July 27, 2015 05:24:13 PM Lee Jones wrote:
-> > > > > On Mon, 27 Jul 2015, Mika Westerberg wrote:
-> > > > >=20
-> > > > > > On Mon, Jul 27, 2015 at 04:27:33PM +0100, Lee Jones wrote:
-> > > > > > > FAO Stephen Boyd,
-> > > > > > >=20
-> > > > > > > > Stephen, can you, please, have a look into patch 8 rega=
-rding to clock name
-> > > > > > > > matching and other stuff Lee asked?
-> > > > > > >=20
-> > > > > > > Patch 8:
-> > > > > > >=20
-> > > > > > >       "Can you review the clock implementation please?  I=
-t looks
-> > > > > > >       fragile to me as it relies heavily on device names =
-constructed
-> > > > > > >       of MFD cell names and IDA numbers cat'ed together!"
-> > > > > >=20
-> > > > > > Lee, can you suggest an alternative then?
-> > > > > >=20
-> > > > > > Why we are doing it like this is that number of different L=
-PSS devices
-> > > > > > changes from SoC to SoC. In addition to that the device (ca=
-lled "slice")
-> > > > > > might have iDMA block or not.
-> > > > > >=20
-> > > > > > Since the drivers in question (pxa2xx-spi, i2c-designware a=
-nd 8250_dw)
-> > > > > > use standard clk framework to request their clocks the Linu=
-x device must
-> > > > > > have clock registered which matches the device in advance.
-> > > > > >=20
-> > > > > > Because we add the host controller device dynamically (from=
- the MFD
-> > > > > > driver) based on how many devices are actually present, we =
-need somehow
-> > > > > > predict what would be the correct name and instance number =
-for that
-> > > > > > device to get the clock for it. That's the reason we use ID=
-A here along
-> > > > > > with the cell name (or driver name).
-> > > > >=20
-> > > > > I'm sure there are perfectly viable reasons for you doing thi=
-s.  And I
-> > > > > don't know the CCF well enough to know whether it's the best =
-idea or
-> > > > > not, or else I would have made a suggestion rather than waiti=
-ng all
-> > > > > this time.
-> > > > >=20
-> > > > > It's for this reason that I needed Mike (now Stephen) to take=
- a look
-> > > > > and give me either an Ack, to say it's the best solution, or =
-to
-> > > > > provide a better alternative.
-> > > > >=20
-> > > > > Until that happens, I'm stuck!
-> > > >=20
-> > > > Well, what if we had no one at hand to review that code?  Would=
- that mean it
-> > > > would not be applicable forever?
-> > >=20
-> > > No, but that's not the case is it?
-> > >=20
-> > > I don't understand why Mike and Stephen aren't helping!
-> >=20
-> > I'll wait until tomorrow and if we haven't heard anything I'll make=
- a
-> > decision.
->=20
-> OK, thanks!
->=20
-> BTW, I don't have the time to review every single patch using ACPI
-> or one of the PM frameworks.  If people who use them make mistakes,
-> it is their burden to fix those mistakes when they show up in testing=
-=2E
->=20
-> What's happening here is that Andy and Mika are taking the responsibi=
-lity
-> for fixing the new code if it turns out to be buggy and so it's their
-> problem if it happens to be broken.
->=20
-> And you can still revert commits that introduce bugs as a last resort=
-=2E
+There are other properties in op.txt like turbo, opp-suspend, latency,
+etc.. which can be useful for your platform to. Its not used for now
+is a different thing.
 
-I'm fine with that in principle.  My issue here was that it looks
-wrong to me.  I just don't know enough about the inner workings of the
-CCF to be able to say that for sure, or to provide a suitable
-alternative.  I think, probably the correct thing to do is to have an
-accompanying clock driver, but who knows (I guess Stephen and Mike to,
-but are seemingly unwilling to help).
+> it would be annoying to have to have to keep jumping between documents
+> to obtain the whole picture.  Finally, generic bindings are repeated
+> in platform/device specific documentation all the time.  Grep for
+> 'clocks' or 'regulator-* or 'interrupts' or 'reg' or 'clock-frequency'
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Yeah, I agree. I am not against that. What I meant to say was that its
+an extension to opp-v2. So whatever is present in opp-v2 can be used
+by ST's driver, without mentioning that here as well.
+
+> (which IMHO I think you should have used instead of 'opp-hz', but
+> that's by the by), or any number of other generic properties.
+
+Hmm, probably yes. See I don't know everything :)
+
+> > @Rob/Stephen: Please respond before it is late :)
+> 
+> No one knows this stuff better than you.  If you can't think of an
+> already existing binding that could suit to portray our 'cuts' and
+> 'substrate' information (with a similar way to support our "all cuts"
+> and "all substrates" options, then there probably isn't one. ;)
+
+Oh, I wasn't saying that there is an existing binding for supporting
+your case. But if we want to move the cuts property to the generic
+bindings so that others can use it. :)
+
+-- 
+viresh
