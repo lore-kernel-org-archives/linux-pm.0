@@ -1,187 +1,136 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH V3 11/19] PCI: tegra: Add support for generic PM domains
-Date: Tue, 28 Jul 2015 09:35:57 +0100
-Message-ID: <55B73EED.1080404@nvidia.com>
-References: <1436791197-32358-1-git-send-email-jonathanh@nvidia.com> <1436791197-32358-12-git-send-email-jonathanh@nvidia.com> <20150717104547.GN3057@ulmo>
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
+Subject: Re: [PATCH 6/8] power: bq27xxx_battery: Fix typos and change naming
+ for state of charge functions
+Date: Tue, 28 Jul 2015 10:41:50 +0200
+Message-ID: <20150728084150.GE13765@pali>
+References: <1437601920-13045-1-git-send-email-afd@ti.com>
+ <1437601920-13045-7-git-send-email-afd@ti.com>
+ <20150723161534.GG29125@pali>
+ <55B12214.7070103@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:8701 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755248AbbG1IgF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 04:36:05 -0400
-In-Reply-To: <20150717104547.GN3057@ulmo>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <55B12214.7070103@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Stephen Warren <swarren@wwwdotorg.org>, Alexandre Courbot <gnurou@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, =?windows-1252?Q?Terje_Bergstr?= =?windows-1252?Q?=F6m?= <tbergstrom@nvidia.com>, Hans de Goede <hdegoede@redhat.com>, Tejun Heo <tj@kernel.org>, Vince Hsu <vinceh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
+On Thursday 23 July 2015 12:19:16 Andrew F. Davis wrote:
+> On 07/23/2015 11:15 AM, Pali Roh=C3=A1r wrote:
+> > On Wednesday 22 July 2015 16:51:58 Andrew F. Davis wrote:
+> >> Fix typos and change "relative state of charge" to "state of charg=
+e" as not
+> >> all supported devices use relative state of charge.
+> >>
+> >> Signed-off-by: Andrew F. Davis <afd@ti.com>
+> >> ---
+> >>  drivers/power/bq27xxx_battery.c | 26 +++++++++++++-------------
+> >>  1 file changed, 13 insertions(+), 13 deletions(-)
+> >>
+> >> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27x=
+xx_battery.c
+> >> index f5d7a137..5686da6 100644
+> >> --- a/drivers/power/bq27xxx_battery.c
+> >> +++ b/drivers/power/bq27xxx_battery.c
+> >> @@ -231,26 +231,26 @@ static bool bq27xxx_is_chip_version_higher(s=
+truct bq27xxx_device_info *di)
+> >>  }
+> >> =20
+> >>  /*
+> >> - * Return the battery Relative State-of-Charge
+> >> + * Return the battery State-of-Charge
+> >>   * Or < 0 if something fails.
+> >>   */
+> >> -static int bq27xxx_battery_read_rsoc(struct bq27xxx_device_info *=
+di)
+> >> +static int bq27xxx_battery_read_soc(struct bq27xxx_device_info *d=
+i)
+> >>  {
+> >> -	int rsoc;
+> >> +	int soc;
+> >> =20
+> >>  	if (di->chip =3D=3D BQ27500 || di->chip =3D=3D BQ27742)
+> >> -		rsoc =3D bq27xxx_read(di, BQ27500_REG_SOC, false);
+> >> +		soc =3D bq27xxx_read(di, BQ27500_REG_SOC, false);
+> >>  	else if (di->chip =3D=3D BQ27510)
+> >> -		rsoc =3D bq27xxx_read(di, BQ27510_REG_SOC, false);
+> >> +		soc =3D bq27xxx_read(di, BQ27510_REG_SOC, false);
+> >>  	else if (di->chip =3D=3D BQ27425)
+> >> -		rsoc =3D bq27xxx_read(di, BQ27425_REG_SOC, false);
+> >> +		soc =3D bq27xxx_read(di, BQ27425_REG_SOC, false);
+> >>  	else
+> >> -		rsoc =3D bq27xxx_read(di, BQ27000_REG_RSOC, true);
+> >> +		soc =3D bq27xxx_read(di, BQ27000_REG_RSOC, true);
+> >> =20
+> >> -	if (rsoc < 0)
+> >> -		dev_dbg(di->dev, "error reading relative State-of-Charge\n");
+> >> +	if (soc < 0)
+> >> +		dev_dbg(di->dev, "error reading State-of-Charge\n");
+> >> =20
+> >> -	return rsoc;
+> >> +	return soc;
+> >>  }
+> >> =20
+> >=20
+> > It is good idea to have name function name "read_soc" with descript=
+ion
+> > "Return State-of-Charge" and for some chips that function returns R=
+SOC
+> > (Relative)? For me it is quite misleading.
+> >=20
+>=20
+> Most of the chips only return one type of SOC, and the docs refer to =
+this
+> as just "State-of-Charge". The bq27000 has "Relative" and " Compensat=
+ed"
+> but we only return one (Relative). So I figured this would be the mor=
+e
+> correct way to describe the general SOC reading function even when th=
+e
+> chips may expose other types.
+>=20
 
-On 17/07/15 11:45, Thierry Reding wrote:
-> * PGP Signed by an unknown key
-> 
-> On Mon, Jul 13, 2015 at 01:39:49PM +0100, Jon Hunter wrote:
->> Add support to the tegra PCI driver for generic PM domains. However,
->> to ensure backward compatibility with older device tree blobs ensure
->> that the driver can work with or without generic PM domains. In order
->> to migrate to generic PM domain infrastructure the necessary changes
->> are:
->>
->> 1. If the "power-domains" property is present in the DT device node then
->>    generic PM domains is supported and pm_runtime_enable() should be
->>    called for the device. Furthermore, the enabling and disabling of the
->>    power-domain is handled via calling pm_runtime_get/put, respectively.
->>
->> 2. To ensure that clocks are managed consistently when generic PM domains
->>    are used and are not used, drivers should be migrated to use the
->>    tegra_powergate_power_on_legacy() and tegra_powergate_power_off_legacy()
->>    functions instead of the current tegra_powergate_sequence_power_up()
->>    and tegra_powergate_power_off(). The purpose of the
->>    tegra_powergate_power_on_legacy() and tegra_powergate_power_off_legacy()
->>    APIs is to mimick the behaviour of the tegra generic power-domain code,
->>    such that if generic power domains are not supported the functionality
->>    is the same.
->>
->> 3. The main difference between the tegra_powergate_sequence_power_up() API
->>    and the tegra_powergate_power_on_legacy() is that the clock used to
->>    enable the powergate is not kept enabled when using the
->>    tegra_powergate_power_on_legacy() API. Therefore, drivers must enable
->>    the clocks they need after calling tegra_powergate_power_on_legacy()
->>    and disable these clocks before calling
->>    tegra_powergate_power_off_legacy().
-> 
-> This is the same comment as in the DRM patch, and it applies to all
-> devices that use powergating, so it should move into the preparatory
-> patch rather than be repeated in all patches.
-> 
->>
->> The helper functions for handling the powering on and off of the PCI
->> controller have been updated to support generic PM domains. The
->> tegra_pcie_power_off() was missing code to disable the clocks enabled in
->> the tegra_pcie_power_on() function and so this has been added.
->>
->> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
->> ---
->>  drivers/pci/host/pci-tegra.c | 49 +++++++++++++++++++++++++++++++++-----------
->>  1 file changed, 37 insertions(+), 12 deletions(-)
->>
->> diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
->> index 10c05718dbfd..acd1f311eee5 100644
->> --- a/drivers/pci/host/pci-tegra.c
->> +++ b/drivers/pci/host/pci-tegra.c
->> @@ -40,6 +40,7 @@
->>  #include <linux/pci.h>
->>  #include <linux/phy/phy.h>
->>  #include <linux/platform_device.h>
->> +#include <linux/pm_runtime.h>
->>  #include <linux/reset.h>
->>  #include <linux/sizes.h>
->>  #include <linux/slab.h>
->> @@ -908,19 +909,32 @@ static int tegra_pcie_enable_controller(struct tegra_pcie *pcie)
->>  
->>  static void tegra_pcie_power_off(struct tegra_pcie *pcie)
->>  {
->> +	const struct tegra_pcie_soc_data *soc = pcie->soc_data;
->>  	int err;
->>  
->> -	/* TODO: disable and unprepare clocks? */
->> -
->>  	err = phy_power_off(pcie->phy);
->>  	if (err < 0)
->>  		dev_warn(pcie->dev, "failed to power off PHY: %d\n", err);
->>  
->>  	reset_control_assert(pcie->pcie_xrst);
->>  	reset_control_assert(pcie->afi_rst);
->> -	reset_control_assert(pcie->pex_rst);
->>  
->> -	tegra_powergate_power_off(TEGRA_POWERGATE_PCIE);
->> +	clk_disable_unprepare(pcie->pll_e);
->> +	if (soc->has_cml_clk)
->> +		clk_disable_unprepare(pcie->cml_clk);
->> +	clk_disable_unprepare(pcie->afi_clk);
->> +	clk_disable_unprepare(pcie->pex_clk);
->> +
->> +	if (pm_runtime_enabled(pcie->dev)) {
->> +		err = pm_runtime_put_sync(pcie->dev);
->> +	} else {
->> +		err = tegra_powergate_power_off_legacy(TEGRA_POWERGATE_PCIE,
->> +						       pcie->pex_clk,
->> +						       pcie->pex_rst);
->> +	}
->> +
->> +	if (err < 0)
->> +		dev_warn(pcie->dev, "powergate power-down failed: %d\n", err);
->>  
->>  	err = regulator_bulk_disable(pcie->num_supplies, pcie->supplies);
->>  	if (err < 0)
->> @@ -934,20 +948,28 @@ static int tegra_pcie_power_on(struct tegra_pcie *pcie)
->>  
->>  	reset_control_assert(pcie->pcie_xrst);
->>  	reset_control_assert(pcie->afi_rst);
->> -	reset_control_assert(pcie->pex_rst);
->> -
->> -	tegra_powergate_power_off(TEGRA_POWERGATE_PCIE);
->>  
->>  	/* enable regulators */
->>  	err = regulator_bulk_enable(pcie->num_supplies, pcie->supplies);
->>  	if (err < 0)
->>  		dev_err(pcie->dev, "failed to enable regulators: %d\n", err);
->>  
->> -	err = tegra_powergate_sequence_power_up(TEGRA_POWERGATE_PCIE,
->> -						pcie->pex_clk,
->> -						pcie->pex_rst);
->> -	if (err) {
->> -		dev_err(pcie->dev, "powerup sequence failed: %d\n", err);
->> +	if (pm_runtime_enabled(pcie->dev)) {
->> +		err = pm_runtime_get_sync(pcie->dev);
->> +	} else {
->> +		err = tegra_powergate_power_on_legacy(TEGRA_POWERGATE_PCIE,
->> +						      pcie->pex_clk,
->> +						      pcie->pex_rst);
->> +	}
->> +
->> +	if (err < 0) {
->> +		dev_err(pcie->dev, "powergate power-up failed: %d\n", err);
->> +		return err;
->> +	}
->> +
->> +	err = clk_prepare_enable(pcie->pex_clk);
->> +	if (err < 0) {
->> +		dev_err(pcie->dev, "failed to enable PEX clock: %d\n", err);
->>  		return err;
->>  	}
->>  
-> 
-> Couldn't we simply move the above code into suspend/resume functions and
-> then call pm_runtime_get() and pm_runtime_put() instead of
-> tegra_pcie_power_on() and tegra_pcie_power_off()?
+Can you add short comment for bq27000 if-branch about it?
 
-Possibly, however, the tricky part here is the regulators. We cannot put
-the regulators into the runtime resume/suspend hooks, because this would
-mean that the regulators are turned on after and turned off before the
-power domain. We need to have the regulator on before turning on the
-power domain.
+> >>  /*
+> >> @@ -277,7 +277,7 @@ static int bq27xxx_battery_read_charge(struct =
+bq27xxx_device_info *di, u8 reg)
+> >>  }
+> >> =20
+> >>  /*
+> >> - * Return the battery Nominal available capaciy in =C2=B5Ah
+> >> + * Return the battery Nominal available capacity in =C2=B5Ah
+> >>   * Or < 0 if something fails.
+> >>   */
+> >>  static inline int bq27xxx_battery_read_nac(struct bq27xxx_device_=
+info *di)
+> >> @@ -418,7 +418,7 @@ static int bq27xxx_battery_read_time(struct bq=
+27xxx_device_info *di, u8 reg)
+> >>  }
+> >> =20
+> >>  /*
+> >> - * Read a power avg register.
+> >> + * Read an average power register.
+> >>   * Return < 0 if something fails.
+> >>   */
+> >>  static int bq27xxx_battery_read_pwr_avg(struct bq27xxx_device_inf=
+o *di, u8 reg)
+> >> @@ -500,7 +500,7 @@ static void bq27xxx_battery_update(struct bq27=
+xxx_device_info *di)
+> >>  			cache.charge_full =3D -ENODATA;
+> >>  			cache.health =3D -ENODATA;
+> >>  		} else {
+> >> -			cache.capacity =3D bq27xxx_battery_read_rsoc(di);
+> >> +			cache.capacity =3D bq27xxx_battery_read_soc(di);
+> >>  			if (is_bq27742 || is_bq27510)
+> >>  				cache.time_to_empty =3D
+> >>  					bq27xxx_battery_read_time(di,
+> >=20
+>=20
 
-So there are two options here AFAICT:
-1. Move everything above after the regulators are turned on in the
-   runtime resume function.
-2. Move handling of all the regulators in the generic power domain
-   code.
-
-What do you think?
-
->> @@ -2001,6 +2023,9 @@ static int tegra_pcie_probe(struct platform_device *pdev)
->>  
->>  	pcibios_min_mem = 0;
->>  
->> +	if (of_property_read_bool(pdev->dev.of_node, "power-domains"))
->> +		pm_runtime_enable(&pdev->dev);
-> 
-> Then of course we'd have to call pm_runtime_enable() irrespective of the
-> property and check for the presence of power domain support via another
-> method (like the dev->pm_domain field).
-
-Ok.
-
-Jon
+--=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
