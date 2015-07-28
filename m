@@ -1,106 +1,127 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v6 4/8] klist: implement klist_prev()
-Date: Tue, 28 Jul 2015 08:47:55 +0100
-Message-ID: <20150728074755.GR21114@x1>
+Subject: Re: [PATCH v6 5/8] driver core: implement
+ device_for_each_child_reverse()
+Date: Tue, 28 Jul 2015 08:48:06 +0100
+Message-ID: <20150728074806.GS21114@x1>
 References: <1438009443-55317-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <1438009443-55317-5-git-send-email-andriy.shevchenko@linux.intel.com>
+ <1438009443-55317-6-git-send-email-andriy.shevchenko@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f170.google.com ([209.85.212.170]:34439 "EHLO
+	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755450AbbG1HsL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 03:48:11 -0400
+Received: by wibud3 with SMTP id ud3so168933125wib.1
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2015 00:48:09 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1438009443-55317-5-git-send-email-andriy.shevchenko@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <1438009443-55317-6-git-send-email-andriy.shevchenko@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, mturquette@baylibre.com, sboyd@codeaurora.org
-List-Id: linux-pm@vger.kernel.org
 
 On Mon, 27 Jul 2015, Andy Shevchenko wrote:
 
-> klist_prev() gets the previous element in the list. It is useful to t=
-raverse
-> through the list in reverse order, for example, to provide LIFO (last=
- in first
-> out) variant of access.
+> The new function device_for_each_child_reverse() is helpful to traver=
+se the
+> registered devices in a reversed order, e.g. in the case when an oper=
+ation on
+> each device should be done first on the last added device, then on on=
+e before
+> last and so on.
 >=20
 > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 > Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 > ---
->  include/linux/klist.h |  1 +
->  lib/klist.c           | 41 +++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 42 insertions(+)
+>  drivers/base/core.c    | 43 ++++++++++++++++++++++++++++++++++++++++=
++++
+>  include/linux/device.h |  2 ++
+>  2 files changed, 45 insertions(+)
 
 Applied, thanks.  Pull request to follow.
 
-> diff --git a/include/linux/klist.h b/include/linux/klist.h
-> index 61e5b72..953f283 100644
-> --- a/include/linux/klist.h
-> +++ b/include/linux/klist.h
-> @@ -63,6 +63,7 @@ extern void klist_iter_init(struct klist *k, struct=
- klist_iter *i);
->  extern void klist_iter_init_node(struct klist *k, struct klist_iter =
-*i,
->  				 struct klist_node *n);
->  extern void klist_iter_exit(struct klist_iter *i);
-> +extern struct klist_node *klist_prev(struct klist_iter *i);
->  extern struct klist_node *klist_next(struct klist_iter *i);
-> =20
->  #endif
-> diff --git a/lib/klist.c b/lib/klist.c
-> index 89b485a..d74cf7a 100644
-> --- a/lib/klist.c
-> +++ b/lib/klist.c
-> @@ -324,6 +324,47 @@ static struct klist_node *to_klist_node(struct l=
-ist_head *n)
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index dafae6d..7d62795 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -1252,6 +1252,19 @@ void device_unregister(struct device *dev)
 >  }
+>  EXPORT_SYMBOL_GPL(device_unregister);
+> =20
+> +static struct device *prev_device(struct klist_iter *i)
+> +{
+> +	struct klist_node *n =3D klist_prev(i);
+> +	struct device *dev =3D NULL;
+> +	struct device_private *p;
+> +
+> +	if (n) {
+> +		p =3D to_device_private_parent(n);
+> +		dev =3D p->device;
+> +	}
+> +	return dev;
+> +}
+> +
+>  static struct device *next_device(struct klist_iter *i)
+>  {
+>  	struct klist_node *n =3D klist_next(i);
+> @@ -1341,6 +1354,36 @@ int device_for_each_child(struct device *paren=
+t, void *data,
+>  EXPORT_SYMBOL_GPL(device_for_each_child);
 > =20
 >  /**
-> + * klist_prev - Ante up prev node in list.
-> + * @i: Iterator structure.
+> + * device_for_each_child_reverse - device child iterator in reversed=
+ order.
+> + * @parent: parent struct device.
+> + * @fn: function to be called for each device.
+> + * @data: data for the callback.
 > + *
-> + * First grab list lock. Decrement the reference count of the previo=
-us
-> + * node, if there was one. Grab the prev node, increment its referen=
-ce
-> + * count, drop the lock, and return that prev node.
+> + * Iterate over @parent's child devices, and call @fn for each,
+> + * passing it @data.
+> + *
+> + * We check the return of @fn each time. If it returns anything
+> + * other than 0, we break out and return that value.
 > + */
-> +struct klist_node *klist_prev(struct klist_iter *i)
+> +int device_for_each_child_reverse(struct device *parent, void *data,
+> +				  int (*fn)(struct device *dev, void *data))
 > +{
-> +	void (*put)(struct klist_node *) =3D i->i_klist->put;
-> +	struct klist_node *last =3D i->i_cur;
-> +	struct klist_node *prev;
+> +	struct klist_iter i;
+> +	struct device *child;
+> +	int error =3D 0;
 > +
-> +	spin_lock(&i->i_klist->k_lock);
+> +	if (!parent->p)
+> +		return 0;
 > +
-> +	if (last) {
-> +		prev =3D to_klist_node(last->n_node.prev);
-> +		if (!klist_dec_and_del(last))
-> +			put =3D NULL;
-> +	} else
-> +		prev =3D to_klist_node(i->i_klist->k_list.prev);
-> +
-> +	i->i_cur =3D NULL;
-> +	while (prev !=3D to_klist_node(&i->i_klist->k_list)) {
-> +		if (likely(!knode_dead(prev))) {
-> +			kref_get(&prev->n_ref);
-> +			i->i_cur =3D prev;
-> +			break;
-> +		}
-> +		prev =3D to_klist_node(prev->n_node.prev);
-> +	}
-> +
-> +	spin_unlock(&i->i_klist->k_lock);
-> +
-> +	if (put && last)
-> +		put(last);
-> +	return i->i_cur;
+> +	klist_iter_init(&parent->p->klist_children, &i);
+> +	while ((child =3D prev_device(&i)) && !error)
+> +		error =3D fn(child, data);
+> +	klist_iter_exit(&i);
+> +	return error;
 > +}
-> +EXPORT_SYMBOL_GPL(klist_prev);
+> +EXPORT_SYMBOL_GPL(device_for_each_child_reverse);
 > +
 > +/**
->   * klist_next - Ante up next node in list.
->   * @i: Iterator structure.
->   *
+>   * device_find_child - device iterator for locating a particular dev=
+ice.
+>   * @parent: parent struct device
+>   * @match: Callback function to check device
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index a2b4ea7..9d212fe 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -959,6 +959,8 @@ extern int __must_check device_add(struct device =
+*dev);
+>  extern void device_del(struct device *dev);
+>  extern int device_for_each_child(struct device *dev, void *data,
+>  		     int (*fn)(struct device *dev, void *data));
+> +extern int device_for_each_child_reverse(struct device *dev, void *d=
+ata,
+> +		     int (*fn)(struct device *dev, void *data));
+>  extern struct device *device_find_child(struct device *dev, void *da=
+ta,
+>  				int (*match)(struct device *dev, void *data));
+>  extern int device_rename(struct device *dev, const char *new_name);
 
 --=20
 Lee Jones
