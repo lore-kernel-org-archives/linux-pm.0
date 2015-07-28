@@ -1,62 +1,120 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/4] opp: add dev_pm_opp_is_turbo() helper
-Date: Tue, 28 Jul 2015 16:27:13 +0200
-Message-ID: <20150728142713.GB17745@amd>
-References: <cover.1438081962.git.viresh.kumar@linaro.org>
- <e7e8c272f85df846466e9b57d7c9eef74109c081.1438081962.git.viresh.kumar@linaro.org>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
+Date: Tue, 28 Jul 2015 15:39:19 +0100
+Message-ID: <20150728143919.GW14943@x1>
+References: <1438010430-5802-1-git-send-email-lee.jones@linaro.org>
+ <1438010430-5802-2-git-send-email-lee.jones@linaro.org>
+ <CAL_JsqL=e+fL_67_GPKjt_7wJ81GfFx7m9gjxmBDvW_JBXWpfQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45417 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbbG1O1Q (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 10:27:16 -0400
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <e7e8c272f85df846466e9b57d7c9eef74109c081.1438081962.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAL_JsqL=e+fL_67_GPKjt_7wJ81GfFx7m9gjxmBDvW_JBXWpfQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, kernel-F5mvAk5X5gdBDgjK7y7TUQ@public.gmane.org, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, ajitpal.singh-qxv4g6HH51o@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, nm@ti.com, sboyd@codeaurora.org, Tomasz Figa <tomasz.figa@gmail.com>, Michael Turquette <mturquette@baylibre.com>, Javier Martinez Canillas <javier@dowhile0.org>, Thomas Abraham <thomas.ab@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>
 
-On Tue 2015-07-28 16:50:00, Viresh Kumar wrote:
-> From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> 
-> Add dev_pm_opp_is_turbo() helper to verify if an opp is to be used only
-> for turbo mode or not.
-> 
-> Cc: Tomasz Figa <tomasz.figa@gmail.com>
-> Cc: Michael Turquette <mturquette@baylibre.com>
-> Cc: Javier Martinez Canillas <javier@dowhile0.org>
-> Cc: Thomas Abraham <thomas.ab@samsung.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/base/power/opp.c | 30 ++++++++++++++++++++++++++++++
->  include/linux/pm_opp.h   |  7 +++++++
->  2 files changed, 37 insertions(+)
-> 
-> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> index b38f2600d797..a0c54058c4dd 100644
-> --- a/drivers/base/power/opp.c
-> +++ b/drivers/base/power/opp.c
-> @@ -281,6 +281,36 @@ unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp)
->  EXPORT_SYMBOL_GPL(dev_pm_opp_get_freq);
->  
->  /**
-> + * dev_pm_opp_is_turbo() - Returns true if opp was trubo OPP
+On Tue, 28 Jul 2015, Rob Herring wrote:
 
-Typo.
+> On Mon, Jul 27, 2015 at 10:20 AM, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wr=
+ote:
+> > These OPPs are used in ST's CPUFreq implementation.
+> >
+> > Signed-off-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> > ---
+> >
+> > Changelog:
+> >  - None, new patch
+> >
+> >  Documentation/devicetree/bindings/power/opp-st.txt | 76 ++++++++++=
+++++++++++++
+> >  1 file changed, 76 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/power/opp-st.=
+txt
+> >
+> > diff --git a/Documentation/devicetree/bindings/power/opp-st.txt b/D=
+ocumentation/devicetree/bindings/power/opp-st.txt
+> > new file mode 100644
+> > index 0000000..6eb2a91
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/power/opp-st.txt
+> > @@ -0,0 +1,76 @@
+> > +STMicroelectronics OPP (Operating Performance Points) Bindings
+> > +--------------------------------------------------------------
+> > +
+> > +Frequency Scaling only
+> > +----------------------
+> > +
+> > +Located in CPU's node:
+> > +
+> > +- operating-points     : [See: ./opp.txt]
+> > +
+> > +Example [safe]
+> > +--------------
+> > +
+> > +cpus {
+> > +       cpu@0 {
+> > +                                /* kHz     uV   */
+> > +               operating-points =3D <1500000 0
+> > +                                   1200000 0
+> > +                                   800000  0
+> > +                                   500000  0>;
+> > +       };
+> > +};
+> > +
+> > +Dynamic Voltage and Frequency Scaling (DVFS)
+> > +--------------------------------------------
+> > +
+> > +Located in 'cpu0-opp-list' node [to be provided ONLY by the bootlo=
+ader]:
+> > +
+> > +- compatible           : Should be "operating-points-v2-sti"
+> > +- opp{1..N}            : Each 'oppX' subnode will contain the foll=
+owing properties:
+> > + - opp-hz              : CPU frequency [Hz] for this OPP [See: ./o=
+pp.txt]
+> > + - st,avs              : List of available voltages [uV] indexed b=
+y process code
+>=20
+> Add a unit suffix (-microvolt).
 
-And this is not exactly most helpful comment. opp is turbo... returns
-if opp was turbo. Explanation what "turbo" means in this context would
-be nice. I'm pretty sure it is not about air compression :-).
+Sure.
 
-> + * Return: true if opp is turbo opp, else false.
+> > + - st,cuts             : Cut version this OPP is suitable for [0xF=
+=46 means ALL]
+> > + - st,substrate                : Substrate version this OPP is sui=
+table for [0xFF means ALL]
+>=20
+> How about not present means all?
 
-Duplicate from above.
+I think that would be an unsafe assumption.  If it's forgotten, then
+we may try to run an invalid/dangerous voltage/frequency combination.
 
-Best regards,
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I'd really like 'all' to be defined an deliberate.
+
+> > +- st,syscfg            : Phandle to Major number register
+> > +                               First cell: offset to major number
+> > +- st,syscfg-eng                : Phandle to Minor number and Pcode=
+ registers
+> > +                               First cell: offset to process code
+> > +                               Second cell: offset to minor number
+>=20
+> Would the proposed nvmem binding work for this?
+
+We already use sysconf for all of this type of stuff, as this
+information is contained in ST's Sysconf banks.  Moving over to a new
+API would be a huge move and would require lots of planning
+discussions with ST.
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
