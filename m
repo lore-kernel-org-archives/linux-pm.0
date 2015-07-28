@@ -1,134 +1,692 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH v3 3/3] devfreq_cooling: add trace information
-Date: Tue, 28 Jul 2015 16:17:52 +0100
-Message-ID: <1438096672-10867-4-git-send-email-javi.merino@arm.com>
+Subject: [PATCH v3 2/3] thermal: Add devfreq cooling
+Date: Tue, 28 Jul 2015 16:17:51 +0100
+Message-ID: <1438096672-10867-3-git-send-email-javi.merino@arm.com>
 References: <1438096672-10867-1-git-send-email-javi.merino@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:59996 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:59987 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752076AbbG1PSY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 28 Jul 2015 11:18:24 -0400
+	id S1752481AbbG1PSW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 28 Jul 2015 11:18:22 -0400
 In-Reply-To: <1438096672-10867-1-git-send-email-javi.merino@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: cw00.choi@samsung.com, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>
+Cc: cw00.choi@samsung.com, =?UTF-8?q?=C3=98rjan=20Eide?= <orjan.eide@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@arm.com>
 
-Tracing is useful for debugging and performance tuning.  Add similar
-traces to what's present in the cpu cooling device.
+=46rom: =C3=98rjan Eide <orjan.eide@arm.com>
+
+Add a generic thermal cooling device for devfreq, that is similar to
+cpu_cooling.
+
+The device must use devfreq.  In order to use the power extension of th=
+e
+cooling device, it must have registered its OPPs using the OPP library.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@redhat.com>
 Signed-off-by: Javi Merino <javi.merino@arm.com>
+Signed-off-by: =C3=98rjan Eide <orjan.eide@arm.com>
 ---
- drivers/thermal/devfreq_cooling.c |  6 +++++
- include/trace/events/thermal.h    | 53 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 59 insertions(+)
+Changes since v2:
+  - Use the opp library to enable/disable opps instead of exporting
+    devfreq_set_{max,min}
+  - Use idr API to get a unique name for each devfreq cooling device
+    registered.
 
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index 81e357fce751..bd067545ad60 100644
---- a/drivers/thermal/devfreq_cooling.c
+ drivers/thermal/Kconfig           |  10 +
+ drivers/thermal/Makefile          |   3 +
+ drivers/thermal/devfreq_cooling.c | 466 ++++++++++++++++++++++++++++++=
+++++++++
+ include/linux/devfreq_cooling.h   |  93 ++++++++
+ 4 files changed, 572 insertions(+)
+ create mode 100644 drivers/thermal/devfreq_cooling.c
+ create mode 100644 include/linux/devfreq_cooling.h
+
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 118938ee8552..da339ff7c3c9 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -147,6 +147,16 @@ config CLOCK_THERMAL
+ 	  device that is configured to use this cooling mechanism will be
+ 	  controlled to reduce clock frequency whenever temperature is high.
+=20
++config DEVFREQ_THERMAL
++	bool "Generic device cooling support"
++	depends on PM_DEVFREQ
++	help
++	  This implements the generic devfreq cooling mechanism through
++	  frequency reduction for devices using devfreq.
++
++	  This will throttle the device by limiting the maximum allowed DVFS
++	  frequency corresponding to the cooling level.
++
+ 	  If you want this support, you should say Y here.
+=20
+ config THERMAL_EMULATION
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 535dfee1496f..45f26978ff74 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -22,6 +22,9 @@ thermal_sys-$(CONFIG_CPU_THERMAL)	+=3D cpu_cooling.o
+ # clock cooling
+ thermal_sys-$(CONFIG_CLOCK_THERMAL)	+=3D clock_cooling.o
+=20
++# devfreq cooling
++thermal_sys-$(CONFIG_DEVFREQ_THERMAL) +=3D devfreq_cooling.o
++
+ # platform thermal drivers
+ obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+=3D qcom-spmi-temp-alarm.o
+ obj-$(CONFIG_SPEAR_THERMAL)	+=3D spear_thermal.o
+diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfre=
+q_cooling.c
+new file mode 100644
+index 000000000000..81e357fce751
+--- /dev/null
 +++ b/drivers/thermal/devfreq_cooling.c
-@@ -21,6 +21,8 @@
- #include <linux/pm_opp.h>
- #include <linux/thermal.h>
- 
-+#include <trace/events/thermal.h>
+@@ -0,0 +1,466 @@
++/*
++ * devfreq_cooling: Thermal cooling device implementation for devices =
+using
++ *                  devfreq
++ *
++ * Copyright (C) 2014-2015 ARM Limited
++ *
++ * This program is free software; you can redistribute it and/or modif=
+y
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
 +
- static DEFINE_MUTEX(devfreq_lock);
- static DEFINE_IDR(devfreq_idr);
- 
-@@ -210,6 +212,9 @@ static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cd
- 	/* Get static power */
- 	static_power = get_static_power(dfc, freq);
- 
-+	trace_thermal_power_devfreq_get_power(cdev, status, freq, dyn_power,
-+					      static_power);
-+
- 	*power = dyn_power + static_power;
- 
- 	return 0;
-@@ -263,6 +268,7 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
- 			break;
- 
- 	*state = i;
-+	trace_thermal_power_devfreq_limit(cdev, freq, *state, power);
- 	return 0;
- }
- 
-diff --git a/include/trace/events/thermal.h b/include/trace/events/thermal.h
-index 8b1f80682b80..5738bb3e2343 100644
---- a/include/trace/events/thermal.h
-+++ b/include/trace/events/thermal.h
-@@ -4,6 +4,7 @@
- #if !defined(_TRACE_THERMAL_H) || defined(TRACE_HEADER_MULTI_READ)
- #define _TRACE_THERMAL_H
- 
 +#include <linux/devfreq.h>
- #include <linux/thermal.h>
- #include <linux/tracepoint.h>
- 
-@@ -135,6 +136,58 @@ TRACE_EVENT(thermal_power_cpu_limit,
- 		__entry->power)
- );
- 
-+TRACE_EVENT(thermal_power_devfreq_get_power,
-+	TP_PROTO(struct thermal_cooling_device *cdev,
-+		 struct devfreq_dev_status *status, unsigned long freq,
-+		u32 dynamic_power, u32 static_power),
++#include <linux/devfreq_cooling.h>
++#include <linux/export.h>
++#include <linux/slab.h>
++#include <linux/pm_opp.h>
++#include <linux/thermal.h>
 +
-+	TP_ARGS(cdev, status,  freq, dynamic_power, static_power),
++static DEFINE_MUTEX(devfreq_lock);
++static DEFINE_IDR(devfreq_idr);
 +
-+	TP_STRUCT__entry(
-+		__string(type,         cdev->type    )
-+		__field(unsigned long, freq          )
-+		__field(u32,           load          )
-+		__field(u32,           dynamic_power )
-+		__field(u32,           static_power  )
-+	),
++/**
++ * get_idr - function to get a unique id.
++ * @idr: struct idr * handle used to create a id.
++ * @id: int * value generated by this function.
++ *
++ * This function will populate @id with an unique
++ * id, using the idr API.
++ *
++ * Return: 0 on success, an error code on failure.
++ */
++static int get_idr(struct idr *idr, int *id)
++{
++	int ret;
 +
-+	TP_fast_assign(
-+		__assign_str(type, cdev->type);
-+		__entry->freq = freq;
-+		__entry->load = (100 * status->busy_time) / status->total_time;
-+		__entry->dynamic_power = dynamic_power;
-+		__entry->static_power = static_power;
-+	),
++	mutex_lock(&devfreq_lock);
++	ret =3D idr_alloc(idr, NULL, 0, 0, GFP_KERNEL);
++	mutex_unlock(&devfreq_lock);
++	if (unlikely(ret < 0))
++		return ret;
++	*id =3D ret;
 +
-+	TP_printk("type=%s freq=%lu load=%u dynamic_power=%u static_power=%u",
-+		__get_str(type), __entry->freq,
-+		__entry->load, __entry->dynamic_power, __entry->static_power)
-+);
++	return 0;
++}
 +
-+TRACE_EVENT(thermal_power_devfreq_limit,
-+	TP_PROTO(struct thermal_cooling_device *cdev, unsigned long freq,
-+		unsigned long cdev_state, u32 power),
++/**
++ * release_idr - function to free the unique id.
++ * @idr: struct idr * handle used for creating the id.
++ * @id: int value representing the unique id.
++ */
++static void release_idr(struct idr *idr, int id)
++{
++	mutex_lock(&devfreq_lock);
++	idr_remove(idr, id);
++	mutex_unlock(&devfreq_lock);
++}
 +
-+	TP_ARGS(cdev, freq, cdev_state, power),
++static int enable_disable_opps(struct devfreq *df, int max_enabled_sta=
+te)
++{
++	int i;
++	struct device *dev =3D df->dev.parent;
 +
-+	TP_STRUCT__entry(
-+		__string(type,         cdev->type)
-+		__field(unsigned int,  freq      )
-+		__field(unsigned long, cdev_state)
-+		__field(u32,           power     )
-+	),
++	for (i =3D 0; i < df->profile->max_state; i++) {
++		struct dev_pm_opp *opp;
++		unsigned int freq =3D df->profile->freq_table[i] * 1000;
++		bool want_enable =3D i <=3D max_enabled_state ? true : false;
 +
-+	TP_fast_assign(
-+		__assign_str(type, cdev->type);
-+		__entry->freq = freq;
-+		__entry->cdev_state = cdev_state;
-+		__entry->power = power;
-+	),
++		rcu_read_lock();
++		opp =3D dev_pm_opp_find_freq_exact(dev, freq, !want_enable);
++		rcu_read_unlock();
 +
-+	TP_printk("type=%s freq=%u cdev_state=%lu power=%u",
-+		__get_str(type), __entry->freq, __entry->cdev_state,
-+		__entry->power)
-+);
- #endif /* _TRACE_THERMAL_H */
- 
- /* This part must be outside protection */
--- 
++		if (PTR_ERR(opp) =3D=3D -ERANGE)
++			continue;
++		else if (IS_ERR(opp))
++			return PTR_ERR(opp);
++
++		if (want_enable)
++			dev_pm_opp_enable(dev, freq);
++		else
++			dev_pm_opp_disable(dev, freq);
++	}
++
++	return 0;
++}
++
++static int devfreq_cooling_get_max_state(struct thermal_cooling_device=
+ *cdev,
++					 unsigned long *state)
++{
++	struct devfreq_cooling_device *dfc =3D cdev->devdata;
++	struct devfreq *df =3D dfc->devfreq;
++
++	*state =3D df->profile->max_state - 1;
++
++	return 0;
++}
++
++static int devfreq_cooling_get_cur_state(struct thermal_cooling_device=
+ *cdev,
++					 unsigned long *state)
++{
++	struct devfreq_cooling_device *dfc =3D cdev->devdata;
++
++	*state =3D dfc->cooling_state;
++
++	return 0;
++}
++
++static int devfreq_cooling_set_cur_state(struct thermal_cooling_device=
+ *cdev,
++					 unsigned long state)
++{
++	struct devfreq_cooling_device *dfc =3D cdev->devdata;
++	struct devfreq *df =3D dfc->devfreq;
++	struct device *dev =3D df->dev.parent;
++	unsigned long index;
++	unsigned long max_state =3D df->profile->max_state;
++	int ret;
++
++	if (state =3D=3D dfc->cooling_state)
++		return 0;
++
++	dev_dbg(dev, "Setting cooling state %lu\n", state);
++
++	if (state >=3D max_state)
++		return -EINVAL;
++
++	index =3D (max_state - 1) - state;
++
++	ret =3D enable_disable_opps(df, index);
++	if (ret)
++		return ret;
++
++	dfc->cooling_state =3D state;
++
++	return 0;
++}
++
++static unsigned long
++freq_get_state(struct devfreq *df, unsigned long freq)
++{
++	unsigned long state =3D THERMAL_CSTATE_INVALID;
++	int i;
++
++	for (i =3D 0; i < df->profile->max_state; i++) {
++		if (df->profile->freq_table[i] =3D=3D freq)
++			state =3D (df->profile->max_state - 1) - i;
++	}
++
++	return state;
++}
++
++static unsigned long
++state_get_freq(struct devfreq *df, unsigned long state)
++{
++	unsigned long index =3D (df->profile->max_state - 1) - state;
++
++	if (index >=3D df->profile->max_state)
++		return 0;
++
++	return df->profile->freq_table[index];
++}
++
++static unsigned long
++get_static_power(struct devfreq_cooling_device *dfc, unsigned long fre=
+q)
++{
++	struct devfreq *df =3D dfc->devfreq;
++	struct device *dev =3D df->dev.parent;
++	unsigned long voltage;
++	struct dev_pm_opp *opp;
++
++	rcu_read_lock();
++	opp =3D dev_pm_opp_find_freq_exact(dev, freq * 1000, true);
++	voltage =3D dev_pm_opp_get_voltage(opp) / 1000; /* mV */
++	rcu_read_unlock();
++
++	if (voltage =3D=3D 0) {
++		dev_warn_ratelimited(dev,
++				     "Failed to get voltage for frequency %lu: %ld\n",
++				     freq, IS_ERR(opp) ? PTR_ERR(opp) : 0);
++		return 0;
++	}
++
++	return dfc->power_ops->get_static_power(voltage);
++}
++
++static int devfreq_cooling_get_requested_power(struct thermal_cooling_=
+device *cdev,
++					       struct thermal_zone_device *tz,
++					       u32 *power)
++{
++	struct devfreq_cooling_device *dfc =3D cdev->devdata;
++	struct devfreq *df =3D dfc->devfreq;
++	struct devfreq_dev_status *status =3D &df->last_status;
++	unsigned long state;
++	unsigned long freq =3D status->current_frequency;
++	u32 dyn_power, static_power;
++
++	/* Get dynamic power for state */
++	state =3D freq_get_state(df, freq);
++	if (state =3D=3D THERMAL_CSTATE_INVALID)
++		return -EAGAIN;
++
++	dyn_power =3D dfc->power_table[state];
++
++	/* Scale dynamic power for utilization */
++	dyn_power =3D (dyn_power * status->busy_time) / status->total_time;
++
++	/* Get static power */
++	static_power =3D get_static_power(dfc, freq);
++
++	*power =3D dyn_power + static_power;
++
++	return 0;
++}
++
++static int devfreq_cooling_state2power(struct thermal_cooling_device *=
+cdev,
++				       struct thermal_zone_device *tz,
++				       unsigned long state,
++				       u32 *power)
++{
++	struct devfreq_cooling_device *dfc =3D cdev->devdata;
++	struct devfreq *df =3D dfc->devfreq;
++	unsigned long freq;
++	u32 static_power;
++
++	freq =3D state_get_freq(df, state);
++	static_power =3D get_static_power(dfc, freq);
++
++	*power =3D dfc->power_table[state] + static_power;
++	return 0;
++}
++
++static int devfreq_cooling_power2state(struct thermal_cooling_device *=
+cdev,
++				       struct thermal_zone_device *tz,
++				       u32 power, unsigned long *state)
++{
++	struct devfreq_cooling_device *dfc =3D cdev->devdata;
++	struct devfreq *df =3D dfc->devfreq;
++	struct devfreq_dev_status *status =3D &df->last_status;
++	unsigned long freq =3D status->current_frequency;
++	unsigned long busy_time;
++	s32 dyn_power;
++	u32 static_power;
++	int i;
++
++	static_power =3D get_static_power(dfc, freq);
++
++	dyn_power =3D power - static_power;
++	dyn_power =3D dyn_power > 0 ? dyn_power : 0;
++
++	/* Scale dynamic power for utilization */
++	busy_time =3D status->busy_time ?: 1;
++	dyn_power =3D (dyn_power * status->total_time) / busy_time;
++
++	/*
++	 * Find the first cooling state that is within the power
++	 * budget for dynamic power.
++	 */
++	for (i =3D 0; i < df->profile->max_state - 1; i++)
++		if (dyn_power >=3D dfc->power_table[i])
++			break;
++
++	*state =3D i;
++	return 0;
++}
++
++static struct thermal_cooling_device_ops devfreq_cooling_ops =3D {
++	.get_max_state =3D devfreq_cooling_get_max_state,
++	.get_cur_state =3D devfreq_cooling_get_cur_state,
++	.set_cur_state =3D devfreq_cooling_set_cur_state,
++};
++
++/**
++ * devfreq_cooling_gen_power_table(): - Generate power table.
++ * @dfc: Pointer to devfreq cooling device.
++ *
++ * Generate a table with the device's maximum power usage at each cool=
+ing
++ * state (OPP). The static and dynamic powerm using the appropriate vo=
+ltage and
++ * frequency for the state, is acquired from the struct devfreq_coolin=
+g_ops, and
++ * summed to make the maximum power draw.
++ *
++ * The table is malloced, and a pointer put in dfc->power_table. This =
+must be
++ * freed when unregistering the devfreq cooling device.
++ *
++ * Return: 0 on success, negative error code on failure.
++ */
++static int devfreq_cooling_gen_power_table(struct devfreq_cooling_devi=
+ce *dfc)
++{
++	struct devfreq *df =3D dfc->devfreq;
++	struct device *dev =3D df->dev.parent;
++	int num_opps;
++	struct devfreq_cooling_ops *callbacks =3D dfc->power_ops;
++	unsigned long freq;
++	u32 *table;
++	int i;
++
++	if (!IS_ENABLED(CONFIG_PM_OPP)) {
++		dev_warn(dev, "Can't use power extensions of the devfreq cooling dev=
+ice without CONFIG_PM_OPP\n");
++		return -EINVAL;
++	}
++
++	rcu_read_lock();
++	num_opps =3D dev_pm_opp_get_opp_count(dev);
++
++	if (num_opps !=3D dfc->devfreq->profile->max_state) {
++		rcu_read_unlock();
++		return -ERANGE;
++	}
++
++	table =3D devm_kcalloc(dev, num_opps, sizeof(*table), GFP_KERNEL);
++	if (!table) {
++		rcu_read_unlock();
++		return -ENOMEM;
++	}
++
++	for (i =3D 0, freq =3D ULONG_MAX; i < num_opps; i++, freq--) {
++		unsigned long power_dyn, voltage;
++		struct dev_pm_opp *opp;
++
++		opp =3D dev_pm_opp_find_freq_floor(dev, &freq);
++		if (IS_ERR(opp))
++			break;
++
++		voltage =3D dev_pm_opp_get_voltage(opp) / 1000; /* mV */
++
++		power_dyn =3D callbacks->get_dynamic_power(freq, voltage);
++
++		dev_info(dev, "Dynamic power table: %lu MHz @ %lu mV: %lu =3D %lu mW=
+\n",
++			 freq / 1000000, voltage, power_dyn, power_dyn);
++
++		table[i] =3D power_dyn;
++	}
++	rcu_read_unlock();
++
++	if (i !=3D num_opps) {
++		devm_kfree(dev, table);
++		return -EFAULT;
++	}
++
++	dfc->power_table =3D table;
++
++	return 0;
++}
++
++/**
++ * of_devfreq_cooling_register_power(): - Register devfreq cooling dev=
+ice,
++ *                                      with OF and power information.
++ * @np: Pointer to OF device_node.
++ * @df: Pointer to devfreq device.
++ * @ops: Pointer to power ops.
++ */
++struct devfreq_cooling_device *
++of_devfreq_cooling_register_power(struct device_node *np, struct devfr=
+eq *df,
++				  struct devfreq_cooling_ops *ops)
++{
++	struct thermal_cooling_device *cdev;
++	struct devfreq_cooling_device *dfc;
++	struct device *dev =3D df->dev.parent;
++	char dev_name[THERMAL_NAME_LENGTH];
++	int err;
++
++	/* freq_table is required to look map state index to frequency. */
++	if (!df->profile->max_state || !df->profile->freq_table)
++		return ERR_PTR(-EINVAL);
++
++	dfc =3D devm_kzalloc(dev, sizeof(*dfc), GFP_KERNEL);
++	if (!dfc)
++		return ERR_PTR(-ENOMEM);
++
++	dfc->devfreq =3D df;
++
++	if (ops) {
++		if (!ops->get_static_power || !ops->get_dynamic_power) {
++			err =3D -EINVAL;
++			goto free_dfc;
++		}
++		dfc->power_ops =3D ops;
++
++		err =3D devfreq_cooling_gen_power_table(dfc);
++		if (err)
++			goto free_dfc;
++
++		devfreq_cooling_ops.get_requested_power =3D
++			devfreq_cooling_get_requested_power;
++		devfreq_cooling_ops.state2power =3D devfreq_cooling_state2power;
++		devfreq_cooling_ops.power2state =3D devfreq_cooling_power2state;
++	}
++
++	err =3D get_idr(&devfreq_idr, &dfc->id);
++	if (err)
++		goto free_power_table;
++
++	snprintf(dev_name, sizeof(dev_name), "devfreq-%d", dfc->id);
++
++	cdev =3D thermal_of_cooling_device_register(np, dev_name, dfc,
++						  &devfreq_cooling_ops);
++	if (IS_ERR(cdev)) {
++		err =3D PTR_ERR(cdev);
++		dev_err(df->dev.parent,
++			"Failed to register devfreq cooling device (%d)\n",
++			err);
++		goto release_idr;
++	}
++
++	dfc->cdev =3D cdev;
++
++	return dfc;
++
++release_idr:
++	release_idr(&devfreq_idr, dfc->id);
++free_power_table:
++	if (dfc->power_table)
++		devm_kfree(dev, dfc->power_table);
++free_dfc:
++	devm_kfree(dev, dfc);
++
++	return ERR_PTR(err);
++}
++EXPORT_SYMBOL(of_devfreq_cooling_register_power);
++
++/**
++ * of_devfreq_cooling_register(): - Register devfreq cooling device,
++ *                                with OF information.
++ * @np: Pointer to OF device_node.
++ * @df: Pointer to devfreq device.
++ */
++struct devfreq_cooling_device *
++of_devfreq_cooling_register(struct device_node *np, struct devfreq *df=
+)
++{
++	return of_devfreq_cooling_register_power(np, df, NULL);
++}
++EXPORT_SYMBOL(of_devfreq_cooling_register);
++
++/**
++ * devfreq_cooling_register(): - Register devfreq cooling device.
++ * @df: Pointer to devfreq device.
++ */
++struct devfreq_cooling_device *devfreq_cooling_register(struct devfreq=
+ *df)
++{
++	return of_devfreq_cooling_register(NULL, df);
++}
++EXPORT_SYMBOL(devfreq_cooling_register);
++
++/**
++ * devfreq_cooling_unregister(): - Unregister devfreq cooling device.
++ * @dfc: Pointer to devfreq cooling device to unregister.
++ */
++void devfreq_cooling_unregister(struct devfreq_cooling_device *dfc)
++{
++	struct device *dev;
++
++	if (!dfc)
++		return;
++
++	dev =3D dfc->devfreq->dev.parent;
++
++	thermal_cooling_device_unregister(dfc->cdev);
++
++	release_idr(&devfreq_idr, dfc->id);
++	if (dfc->power_table)
++		devm_kfree(dev, dfc->power_table);
++	devm_kfree(dev, dfc);
++}
++EXPORT_SYMBOL(devfreq_cooling_unregister);
+diff --git a/include/linux/devfreq_cooling.h b/include/linux/devfreq_co=
+oling.h
+new file mode 100644
+index 000000000000..8e7346ebbeb2
+--- /dev/null
++++ b/include/linux/devfreq_cooling.h
+@@ -0,0 +1,93 @@
++/*
++ * devfreq_cooling: Thermal cooling device implementation for devices =
+using
++ *                  devfreq
++ *
++ * Copyright (C) 2014 ARM Limited
++ *
++ * This program is free software; you can redistribute it and/or modif=
+y
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef __DEVFREQ_COOLING_H__
++#define __DEVFREQ_COOLING_H__
++
++#include <linux/devfreq.h>
++#include <linux/thermal.h>
++
++#ifdef CONFIG_DEVFREQ_THERMAL
++
++/**
++ * struct devfreq_cooling_ops - Devfreq cooling power ops
++ * @get_static_power: Take voltage, in mV, and return the static power=
+ in mW.
++ * @get_dynamic_power: Take voltage, in mV, and frequency, in HZ, and =
+return
++ * the dynamic power draw in mW.
++ */
++struct devfreq_cooling_ops {
++	unsigned long (*get_static_power)(unsigned long voltage);
++	unsigned long (*get_dynamic_power)(unsigned long freq,
++					   unsigned long voltage);
++};
++
++/**
++ * struct devfreq_cooling_device - Devfreq cooling device
++ * @id:            unique integer value corresponding to each
++ *                 devfreq_cooling_device registered.
++ * @cdev:          Pointer to associated thermal cooling device.
++ * @devfreq:       Pointer to associated devfreq device.
++ * @cooling_state: Current cooling state.
++ * @power_table:   Pointer to table with maximum power draw for each c=
+ooling
++ *                 state. State is the index into the table, and the p=
+ower is
++ *                 stated in mW.
++ * @power_ops:     Pointer to power operations, used to generate @powe=
+r_table.
++ */
++struct devfreq_cooling_device {
++	int id;
++	struct thermal_cooling_device *cdev;
++	struct devfreq *devfreq;
++	unsigned long cooling_state;
++	u32 *power_table;
++	struct devfreq_cooling_ops *power_ops;
++};
++
++struct devfreq_cooling_device *
++of_devfreq_cooling_register_power(struct device_node *np, struct devfr=
+eq *df,
++				  struct devfreq_cooling_ops *ops);
++struct devfreq_cooling_device *
++of_devfreq_cooling_register(struct device_node *np, struct devfreq *df=
+);
++struct devfreq_cooling_device *devfreq_cooling_register(struct devfreq=
+ *df);
++void devfreq_cooling_unregister(struct devfreq_cooling_device *dfc);
++
++#else /* !CONFIG_DEVFREQ_THERMAL */
++
++struct devfreq_cooling_device *
++of_devfreq_cooling_register_power(struct device_node *np, struct devfr=
+eq *df,
++				  struct devfreq_cooling_ops *ops)
++{
++	return ERR_PTR(-EINVAL);
++}
++
++static inline struct devfreq_cooling_device *
++of_devfreq_cooling_register(struct device_node *np, struct devfreq *df=
+)
++{
++	return ERR_PTR(-EINVAL);
++}
++
++static inline struct devfreq_cooling_device *
++devfreq_cooling_register(struct devfreq *df)
++{
++	return ERR_PTR(-EINVAL);
++}
++
++static inline void
++devfreq_cooling_unregister(struct devfreq_cooling_device *dfc)
++{
++}
++
++#endif /* CONFIG_DEVFREQ_THERMAL */
++#endif /* __DEVFREQ_COOLING_H__ */
+--=20
 1.9.1
 
