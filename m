@@ -1,62 +1,78 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: Bad change in commit 297d716f6260cc9421d971b124ca196b957ee458?
-Date: Tue, 28 Jul 2015 08:46:24 +0900
-Message-ID: <55B6C2D0.1050101@samsung.com>
-References: <CAMe9rOrFxj3o6TgUAvthQLwR58-JPKO7top8w81FADjKTd5t3A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH] HID: hid-input: Fix accessing freed memory during driver unbind
+Date: Tue, 28 Jul 2015 09:16:30 +0900
+Message-ID: <1438042590-17719-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:12169 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754891AbbG0Xqa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 19:46:30 -0400
-In-reply-to: <CAMe9rOrFxj3o6TgUAvthQLwR58-JPKO7top8w81FADjKTd5t3A@mail.gmail.com>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:18851 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754638AbbG1AQq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2015 20:16:46 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "H.J. Lu" <hjl.tools@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Cc: Jiri Kosina <jkosina@suse.com>, linux-input@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Jiri Kosina <jkosina@suse.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: sre@kernel.org, linux-pm@vger.kernel.org, "H.J. Lu" <hjl.tools@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
 
-On 27.07.2015 22:10, H.J. Lu wrote:
-> Hi,
-> 
-> This commit:
-> 
-> commit 297d716f6260cc9421d971b124ca196b957ee458
-> Author: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Date:   Thu Mar 12 08:44:11 2015 +0100
-> 
->     power_supply: Change ownership from driver to core
-> 
->     Change the ownership of power_supply structure from each driver
->     implementing the class to the power supply core.
-> 
-> has
-> 
-> static void hidinput_cleanup_battery(struct hid_device *dev)
->  {
-> -       if (!dev->battery.name)
-> +       if (!dev->battery)
->                 return;
-> 
-> -       power_supply_unregister(&dev->battery);
-> -       kfree(dev->battery.name);
-> -       dev->battery.name = NULL;
-> +       power_supply_unregister(dev->battery);
-> +       kfree(dev->battery->desc->name);
-> +       kfree(dev->battery->desc);
-> +       dev->battery = NULL;
->  }
-> 
-> Is this OK to access dev->battery after calling power_supply_unregister?
+During unbinding the driver was dereferencing a pointer to memory
+already freed by power_supply_unregister().
 
-(+Cc Jiri, linux-input, linux-pm, Sebastian)
+Driver was freeing its internal description of battery through pointers
+stored in power_supply structure. However, because the core owns the
+power supply instance, after calling power_supply_unregister() the
+driver cannot access these members.
 
-Good catch, it is not safe. The final device_unregister() will free the
-structure.
+Fix this by using resource-managed allocations so internal data will be
+freed by pointers stored in resource-managed core.
 
-We should access directly psy_desc here. I'll sent a proposal of fixing
-this and check other drivers for this pattern.
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Reported-by: H.J. Lu <hjl.tools@gmail.com>
+Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
+Cc: <stable@vger.kernel.org>
+---
+ drivers/hid/hid-input.c | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
-Best regards,
-Krzysztof
+diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+index 14aebe483219..5429a8497d51 100644
+--- a/drivers/hid/hid-input.c
++++ b/drivers/hid/hid-input.c
+@@ -408,15 +408,14 @@ static bool hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
+ 	if (dev->battery != NULL)
+ 		goto out;	/* already initialized? */
+ 
+-	psy_desc = kzalloc(sizeof(*psy_desc), GFP_KERNEL);
++	psy_desc = devm_kzalloc(&dev->dev, sizeof(*psy_desc), GFP_KERNEL);
+ 	if (psy_desc == NULL)
+ 		goto out;
+ 
+-	psy_desc->name = kasprintf(GFP_KERNEL, "hid-%s-battery", dev->uniq);
+-	if (psy_desc->name == NULL) {
+-		kfree(psy_desc);
++	psy_desc->name = devm_kasprintf(&dev->dev, GFP_KERNEL,
++					"hid-%s-battery", dev->uniq);
++	if (psy_desc->name == NULL)
+ 		goto out;
+-	}
+ 
+ 	psy_desc->type = POWER_SUPPLY_TYPE_BATTERY;
+ 	psy_desc->properties = hidinput_battery_props;
+@@ -449,8 +448,6 @@ static bool hidinput_setup_battery(struct hid_device *dev, unsigned report_type,
+ 	if (IS_ERR(dev->battery)) {
+ 		hid_warn(dev, "can't register power supply: %ld\n",
+ 				PTR_ERR(dev->battery));
+-		kfree(psy_desc->name);
+-		kfree(psy_desc);
+ 		dev->battery = NULL;
+ 	} else {
+ 		power_supply_powers(dev->battery, &dev->dev);
+@@ -466,8 +463,6 @@ static void hidinput_cleanup_battery(struct hid_device *dev)
+ 		return;
+ 
+ 	power_supply_unregister(dev->battery);
+-	kfree(dev->battery->desc->name);
+-	kfree(dev->battery->desc);
+ 	dev->battery = NULL;
+ }
+ #else  /* !CONFIG_HID_BATTERY_STRENGTH */
+-- 
+1.9.1
+
