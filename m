@@ -1,194 +1,32 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 3/4] cpufreq: Allow drivers to enable boost support after registering driver
-Date: Tue, 28 Jul 2015 16:50:02 +0530
-Message-ID: <fd2832885281ef61815fd24660356ca4aabf10d0.1438081962.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/4] cpufreq/opp: Turbo/boost mode support
+Date: Tue, 28 Jul 2015 16:52:43 +0530
+Message-ID: <20150728112243.GC26276@linux>
 References: <cover.1438081962.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:34782 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932094AbbG1LWt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 07:22:49 -0400
+Received: by pacan13 with SMTP id an13so69883141pac.1
+        for <linux-pm@vger.kernel.org>; Tue, 28 Jul 2015 04:22:49 -0700 (PDT)
+Content-Disposition: inline
 In-Reply-To: <cover.1438081962.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1438081962.git.viresh.kumar@linaro.org>
-References: <cover.1438081962.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, nm@ti.com, sboyd@codeaurora.org
 
-In some cases it wouldn't be known at time of driver registration, if
-the driver needs to support boost/turbo frequencies.
+On 28-07-15, 16:49, Viresh Kumar wrote:
+> Hi Rafael,
+> 
+> This is based of my opp-v2 series and so is sent as reply to that one.
 
-For example, while getting boost information from DT with opp-v2
-bindings, we need to parse the bindings for all the CPUs to know if
-turbo/boost OPPs are supported or not.
+Forgot to add --in-reply-to, here is the series I was talking about:
 
-One way out to do that efficiently is to delay supporting boost mode
-(i.e. creating /sys/devices/system/cpu/cpufreq/boost file), until the
-time OPP bindings are parsed.
+http://marc.info/?l=linux-pm&m=143797340316115&w=2
 
-At that point, the driver can enable boost support. This can be done at
-->init(), where the frequency table is created.
-
-To do that, the driver requires few APIs from cpufreq core. This patch
-provides these APIs.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c    | 66 ++++++++++++++++++++++++++++++--------------
- drivers/cpufreq/freq_table.c | 15 ++++++++++
- include/linux/cpufreq.h      | 12 ++++++++
- 3 files changed, 73 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 46251e8d30f2..217928de2f0e 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2459,6 +2459,47 @@ int cpufreq_boost_supported(void)
- }
- EXPORT_SYMBOL_GPL(cpufreq_boost_supported);
- 
-+static int create_boost_sysfs_file(void)
-+{
-+	int ret;
-+
-+	if (!cpufreq_boost_supported())
-+		return 0;
-+
-+	/*
-+	 * Check if driver provides function to enable boost -
-+	 * if not, use cpufreq_boost_set_sw as default
-+	 */
-+	if (!cpufreq_driver->set_boost)
-+		cpufreq_driver->set_boost = cpufreq_boost_set_sw;
-+
-+	ret = cpufreq_sysfs_create_file(&boost.attr);
-+	if (ret)
-+		pr_err("%s: cannot register global BOOST sysfs file\n",
-+		       __func__);
-+
-+	return ret;
-+}
-+
-+static void remove_boost_sysfs_file(void)
-+{
-+	if (cpufreq_boost_supported())
-+		cpufreq_sysfs_remove_file(&boost.attr);
-+}
-+
-+int cpufreq_enable_boost_support(void)
-+{
-+	if (!cpufreq_driver)
-+		return -EINVAL;
-+
-+	if (cpufreq_boost_supported())
-+		return 0;
-+
-+	/* This will get removed on driver unregister */
-+	return create_boost_sysfs_file();
-+}
-+EXPORT_SYMBOL_GPL(cpufreq_enable_boost_support);
-+
- int cpufreq_boost_enabled(void)
- {
- 	return cpufreq_driver->boost_enabled;
-@@ -2508,21 +2549,9 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- 	if (driver_data->setpolicy)
- 		driver_data->flags |= CPUFREQ_CONST_LOOPS;
- 
--	if (cpufreq_boost_supported()) {
--		/*
--		 * Check if driver provides function to enable boost -
--		 * if not, use cpufreq_boost_set_sw as default
--		 */
--		if (!cpufreq_driver->set_boost)
--			cpufreq_driver->set_boost = cpufreq_boost_set_sw;
--
--		ret = cpufreq_sysfs_create_file(&boost.attr);
--		if (ret) {
--			pr_err("%s: cannot register global BOOST sysfs file\n",
--			       __func__);
--			goto err_null_driver;
--		}
--	}
-+	ret = create_boost_sysfs_file();
-+	if (ret)
-+		goto err_null_driver;
- 
- 	ret = subsys_interface_register(&cpufreq_interface);
- 	if (ret)
-@@ -2543,8 +2572,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- err_if_unreg:
- 	subsys_interface_unregister(&cpufreq_interface);
- err_boost_unreg:
--	if (cpufreq_boost_supported())
--		cpufreq_sysfs_remove_file(&boost.attr);
-+	remove_boost_sysfs_file();
- err_null_driver:
- 	write_lock_irqsave(&cpufreq_driver_lock, flags);
- 	cpufreq_driver = NULL;
-@@ -2573,9 +2601,7 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
- 	/* Protect against concurrent cpu hotplug */
- 	get_online_cpus();
- 	subsys_interface_unregister(&cpufreq_interface);
--	if (cpufreq_boost_supported())
--		cpufreq_sysfs_remove_file(&boost.attr);
--
-+	remove_boost_sysfs_file();
- 	unregister_hotcpu_notifier(&cpufreq_cpu_notifier);
- 
- 	write_lock_irqsave(&cpufreq_driver_lock, flags);
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index dfbbf981ed56..a8f1daffc9bc 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -18,6 +18,21 @@
-  *                     FREQUENCY TABLE HELPERS                       *
-  *********************************************************************/
- 
-+bool policy_has_boost_freq(struct cpufreq_policy *policy)
-+{
-+	struct cpufreq_frequency_table *pos, *table = policy->freq_table;
-+
-+	if (!table)
-+		return false;
-+
-+	cpufreq_for_each_valid_entry(pos, table)
-+		if (pos->flags & CPUFREQ_BOOST_FREQ)
-+			return true;
-+
-+	return false;
-+}
-+EXPORT_SYMBOL_GPL(policy_has_boost_freq);
-+
- int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
- 				    struct cpufreq_frequency_table *table)
- {
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index bde1e567b3a9..95f018649abf 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -578,6 +578,8 @@ ssize_t cpufreq_show_cpus(const struct cpumask *mask, char *buf);
- int cpufreq_boost_trigger_state(int state);
- int cpufreq_boost_supported(void);
- int cpufreq_boost_enabled(void);
-+int cpufreq_enable_boost_support(void);
-+bool policy_has_boost_freq(struct cpufreq_policy *policy);
- #else
- static inline int cpufreq_boost_trigger_state(int state)
- {
-@@ -591,6 +593,16 @@ static inline int cpufreq_boost_enabled(void)
- {
- 	return 0;
- }
-+
-+static inline int cpufreq_enable_boost_support(void)
-+{
-+	return -EINVAL;
-+}
-+
-+static inline bool policy_has_boost_freq(struct cpufreq_policy *policy)
-+{
-+	return false;
-+}
- #endif
- /* the following funtion is for cpufreq core use only */
- struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu);
 -- 
-2.4.0
+viresh
