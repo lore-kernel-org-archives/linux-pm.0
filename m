@@ -1,37 +1,38 @@
-From: Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [PATCH v3 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
- feature
-Date: Wed, 29 Jul 2015 08:07:38 -0400
-Message-ID: <20150729120738.GA10001@cmpxchg.org>
-References: <1437114578-2502-1-git-send-email-pintu.k@samsung.com>
- <1437366544-32673-1-git-send-email-pintu.k@samsung.com>
- <20150720082810.GG2561@suse.de>
- <02c601d0c306$f86d30f0$e94792d0$@samsung.com>
- <20150720175538.GJ2561@suse.de>
- <05af01d0c47f$3337ccd0$99a76670$@samsung.com>
- <20150722140530.GK2561@suse.de>
- <030e01d0c9bd$20e1df60$62a59e20$@samsung.com>
+From: Jiri Kosina <jkosina@suse.com>
+Subject: Re: [PATCH] HID: hid-input: Fix accessing freed memory during driver
+ unbind
+Date: Wed, 29 Jul 2015 15:07:04 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1507291506500.925@pobox.suse.cz>
+References: <1438042590-17719-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <030e01d0c9bd$20e1df60$62a59e20$@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: PINTU KUMAR <pintu.k@samsung.com>
-Cc: 'Mel Gorman' <mgorman@suse.de>, akpm@linux-foundation.org, corbet@lwn.net, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, qiuxishi@huawei.com, Valdis.Kletnieks@vt.edu, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com, pintu.ping@gma
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1438042590-17719-1-git-send-email-k.kozlowski@samsung.com>
+Sender: stable-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, sre@kernel.org, linux-pm@vger.kernel.org, "H.J. Lu" <hjl.tools@gmail.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 29, 2015 at 10:41:10AM +0530, PINTU KUMAR wrote:
-> I was talking about only the following case.
-> Instead of hard coding the hibernation_mode in shrink_all_memory, 
-> We can set it at runtime.
-> 
-> -               .hibernation_mode = 1,
-> 
-> +       if (system_entering_hibernation())
-> +               sc.hibernation_mode = 1;
-> +       else
-> +               sc.hibernation_mode = 0;
+On Tue, 28 Jul 2015, Krzysztof Kozlowski wrote:
 
-Nobody outside hibernation uses this function (and likely never will).
-The hardcoding is fine.
+> During unbinding the driver was dereferencing a pointer to memory
+> already freed by power_supply_unregister().
+> 
+> Driver was freeing its internal description of battery through pointers
+> stored in power_supply structure. However, because the core owns the
+> power supply instance, after calling power_supply_unregister() the
+> driver cannot access these members.
+> 
+> Fix this by using resource-managed allocations so internal data will be
+> freed by pointers stored in resource-managed core.
+> 
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Reported-by: H.J. Lu <hjl.tools@gmail.com>
+> Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
+> Cc: <stable@vger.kernel.org>
+
+Applied to for-4.2/upstream-fixes, thanks.
+
+-- 
+Jiri Kosina
+SUSE Labs
