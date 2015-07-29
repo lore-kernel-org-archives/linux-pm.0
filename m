@@ -1,35 +1,53 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/4] opp: add dev_pm_opp_is_turbo() helper
-Date: Wed, 29 Jul 2015 16:26:22 +0530
-Message-ID: <20150729105622.GA5100@linux>
-References: <cover.1438081962.git.viresh.kumar@linaro.org>
- <e7e8c272f85df846466e9b57d7c9eef74109c081.1438081962.git.viresh.kumar@linaro.org>
- <20150728142713.GB17745@amd>
- <20150729102435.GB9584@linux>
- <20150729105347.GA23865@amd>
+Subject: Re: [PATCH] cpufreq: Add scaling frequency range support
+Date: Wed, 29 Jul 2015 16:31:46 +0530
+Message-ID: <20150729110146.GB5100@linux>
+References: <55B6F7C3.8040405@intel.com>
+ <20150728042945.GE1229@linux>
+ <55B70ACD.9010402@intel.com>
+ <15808229.KgKF05ecju@vostro.rjw.lan>
+ <55B8A3F2.8030809@intel.com>
+ <55B8A548.4060104@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20150729105347.GA23865@amd>
+In-Reply-To: <55B8A548.4060104@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, b.zolnierkie@samsung.com, nm@ti.com, sboyd@codeaurora.org, Tomasz Figa <tomasz.figa@gmail.com>, Michael Turquette <mturquette@baylibre.com>, Javier Martinez Canillas <javier@dowhile0.org>, Thomas Abraham <thomas.ab@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>
+To: Pan Xinhui <xinhuix.pan@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 29-07-15, 12:53, Pavel Machek wrote:
-> So any combination of normal OPPs can be sustained for arbitrary time
-> within the temperature range?
+On 29-07-15, 18:04, Pan Xinhui wrote:
+> > @@ -622,21 +630,20 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+> >  static ssize_t store_##file_name                                       \
+> >  (struct cpufreq_policy *policy, const char *buf, size_t count)         \
+> >  {                                                                      \
+> > -       int ret, temp;                                                  \
+> > +       int ret;                                                        \
+> >         struct cpufreq_policy new_policy;                               \
+> >                                                                         \
+> >         ret = cpufreq_get_policy(&new_policy, policy->cpu);             \
+> >         if (ret)                                                        \
+> >                 return -EINVAL;                                         \
+> >                                                                         \
+> > +       cpufreq_get_user_policy_freq(&policy->user_policy, &new_policy);\
+> >         ret = sscanf(buf, "%u", &new_policy.object);                    \
+> >         if (ret != 1)                                                   \
+> >                 return -EINVAL;                                         \
+> >                                                                         \
+> > -       temp = new_policy.object;                                       \
+> > -       ret = cpufreq_set_policy(policy, &new_policy);          \
+> > -       if (!ret)                                                       \
+> > -               policy->user_policy.object = temp;                      \
+> > +       policy->user_policy.object = policy->object;                    \
+> should be 
+> +	policy->user_policy.object = new_policy.object;		\
+> sorry for that.
+> > +       ret = cpufreq_set_policy(policy, &new_policy);                  \
 
-Maybe not. That's why we user thermal framework to sense such
-situations and react accordingly.
-
-> And as soon as any turbo OPP is enabled, we produce more heat than
-> TDP?
-
-But yeah, this will cross all limits. Shall generate more heat or may
-consume lots of power for very small benefit in performance. And so
-very short duration bursts of this are used by very few platforms.
+This is wrong because we save user-preference, even when we failed. So that's
+surely bad.
 
 -- 
 viresh
