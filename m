@@ -1,145 +1,139 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 15/16] cpufreq: dt: Add support for operating-points-v2 bindings
-Date: Wed, 29 Jul 2015 16:23:10 +0530
-Message-ID: <c7e42623089a04f1d607f0912736aa1ec1d5c48a.1438166099.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 05/16] PM / OPP: Allocate dev_opp from _add_device_opp()
+Date: Wed, 29 Jul 2015 16:23:00 +0530
+Message-ID: <532b81932a18771d53c529ea80cb035b540cd68c.1438166099.git.viresh.kumar@linaro.org>
 References: <cover.1438166099.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:33003 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753123AbbG2KzA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jul 2015 06:55:00 -0400
-Received: by padck2 with SMTP id ck2so3997205pad.0
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2015 03:55:00 -0700 (PDT)
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <cover.1438166099.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1438166099.git.viresh.kumar@linaro.org>
 References: <cover.1438166099.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, sboyd@codeaurora.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mturquette@baylibre.com, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, b.zolnierkie@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
+Cc: nm@ti.com, ta.omasab@gmail.com, Viresh Kumar <viresh.kumar@linaro.org>, mturquette@baylibre.com, khilman@linaro.org, Pavel Machek <pavel@ucw.cz>, rob.herring@linaro.org, kesavan.abhilash@gmail.com, b.zolnierkie@samsung.com, arnd.bergmann@linaro.org, Len Brown <len.brown@intel.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, santosh.shilimkar@oracle.com, broonie@kernel.org, linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com, viswanath.puttagunta@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>, Sudeep.Holla@arm.com, l.stach@pengutronix.de
+List-Id: linux-pm@vger.kernel.org
 
-Support for parsing operating-points-v2 bindings is in place now, lets
-modify cpufreq-dt driver to use them.
+There is no need to complicate _opp_add_dynamic() with allocation of
+dev_opp as well. Allocate it from _add_device_opp() instead.
 
-For backward compatibility we will continue to support earlier bindings.
-Special handling for that is required, to make sure OPPs are initialized
-for all the CPUs.
-
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq-dt.c | 56 ++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 46 insertions(+), 10 deletions(-)
+ drivers/base/power/opp.c | 50 ++++++++++++++++++++++++++----------------------
+ 1 file changed, 27 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 528a82bf5038..c6e7033076de 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -184,7 +184,6 @@ static int allocate_resources(int cpu, struct device **cdev,
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 7895fdd64192..28d70c9f86ed 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -408,11 +408,11 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
+ EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
  
- static int cpufreq_init(struct cpufreq_policy *policy)
+ /**
+- * _add_device_opp() - Allocate a new device OPP table
++ * _add_device_opp() - Find device OPP table or allocate a new one
+  * @dev:	device for which we do this operation
+  *
+- * New device node which uses OPPs - used when multiple devices with OPP tables
+- * are maintained.
++ * It tries to find an existing table first, if it couldn't find one, it
++ * allocates a new OPP table and returns that.
+  *
+  * Return: valid device_opp pointer if success, else NULL.
+  */
+@@ -420,6 +420,11 @@ static struct device_opp *_add_device_opp(struct device *dev)
  {
--	struct cpufreq_dt_platform_data *pd;
- 	struct cpufreq_frequency_table *freq_table;
- 	struct device_node *np;
- 	struct private_data *priv;
-@@ -193,6 +192,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	struct clk *cpu_clk;
- 	unsigned long min_uV = ~0, max_uV = 0;
- 	unsigned int transition_latency;
-+	bool need_update = false;
- 	int ret;
+ 	struct device_opp *dev_opp;
  
- 	ret = allocate_resources(policy->cpu, &cpu_dev, &cpu_reg, &cpu_clk);
-@@ -208,8 +208,47 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 		goto out_put_reg_clk;
++	/* Check for existing list for 'dev' first */
++	dev_opp = _find_device_opp(dev);
++	if (!IS_ERR(dev_opp))
++		return dev_opp;
++
+ 	/*
+ 	 * Allocate a new device OPP table. In the infrequent case where a new
+ 	 * device is needed to be added, we pay this penalty.
+@@ -575,7 +580,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
+ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
+ 			    long u_volt, bool dynamic)
+ {
+-	struct device_opp *dev_opp = NULL;
++	struct device_opp *dev_opp;
+ 	struct dev_pm_opp *opp, *new_opp;
+ 	struct list_head *head;
+ 	int ret;
+@@ -592,19 +597,11 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
+ 	new_opp->rate = freq;
+ 	new_opp->u_volt = u_volt;
+ 	new_opp->available = true;
+-	new_opp->dynamic = dynamic;
+-
+-	/* Check for existing list for 'dev' */
+-	dev_opp = _find_device_opp(dev);
+-	if (IS_ERR(dev_opp)) {
+-		dev_opp = _add_device_opp(dev);
+-		if (!dev_opp) {
+-			ret = -ENOMEM;
+-			goto free_opp;
+-		}
+ 
+-		head = &dev_opp->opp_list;
+-		goto list_add;
++	dev_opp = _add_device_opp(dev);
++	if (!dev_opp) {
++		ret = -ENOMEM;
++		goto free_opp;
  	}
  
--	/* OPPs might be populated at runtime, don't check for error here */
--	of_init_opp_table(cpu_dev);
-+	/* Get OPP-sharing information from "operating-points-v2" bindings */
-+	ret = of_get_cpus_sharing_opps(cpu_dev, policy->cpus);
-+	if (ret) {
-+		/*
-+		 * operating-points-v2 not supported, fallback to old method of
-+		 * finding shared-OPPs for backward compatibility.
-+		 */
-+		if (ret == -ENOENT)
-+			need_update = true;
-+		else
-+			goto out_node_put;
-+	}
+ 	/*
+@@ -612,15 +609,22 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
+ 	 * and discard if already present
+ 	 */
+ 	head = &dev_opp->opp_list;
 +
 +	/*
-+	 * Initialize OPP tables for all policy->cpus. They will be shared by
-+	 * all CPUs which have marked their CPUs shared with OPP bindings.
-+	 *
-+	 * For platforms not using operating-points-v2 bindings, we do this
-+	 * before updating policy->cpus. Otherwise, we will end up creating
-+	 * duplicate OPPs for policy->cpus.
-+	 *
-+	 * OPPs might be populated at runtime, don't check for error here
++	 * Need to use &dev_opp->opp_list in the condition part of the 'for'
++	 * loop, don't replace it with head otherwise it will become an infinite
++	 * loop.
 +	 */
-+	of_cpumask_init_opp_table(policy->cpus);
+ 	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
+-		if (new_opp->rate <= opp->rate)
+-			break;
+-		else
++		if (new_opp->rate > opp->rate) {
+ 			head = &opp->node;
+-	}
++			continue;
++		}
 +
-+	if (need_update) {
-+		struct cpufreq_dt_platform_data *pd = cpufreq_get_driver_data();
-+
-+		if (!pd || !pd->independent_clocks)
-+			cpumask_setall(policy->cpus);
-+
-+		/*
-+		 * OPP tables are initialized only for policy->cpu, do it for
-+		 * others as well.
-+		 */
-+		set_cpus_sharing_opps(cpu_dev, policy->cpus);
-+
-+		of_property_read_u32(np, "clock-latency", &transition_latency);
-+	} else {
-+		transition_latency = dev_pm_opp_get_max_clock_latency(cpu_dev);
-+	}
++		if (new_opp->rate < opp->rate)
++			break;
  
- 	/*
- 	 * But we need OPP table to function so if it is not there let's
-@@ -230,7 +269,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+-	/* Duplicate OPPs ? */
+-	if (new_opp->rate == opp->rate) {
++		/* Duplicate OPPs */
+ 		ret = opp->available && new_opp->u_volt == opp->u_volt ?
+ 			0 : -EEXIST;
  
- 	of_property_read_u32(np, "voltage-tolerance", &priv->voltage_tolerance);
+@@ -630,7 +634,7 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
+ 		goto free_opp;
+ 	}
  
--	if (of_property_read_u32(np, "clock-latency", &transition_latency))
-+	if (!transition_latency)
- 		transition_latency = CPUFREQ_ETERNAL;
- 
- 	if (!IS_ERR(cpu_reg)) {
-@@ -293,10 +332,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 
- 	policy->cpuinfo.transition_latency = transition_latency;
- 
--	pd = cpufreq_get_driver_data();
--	if (!pd || !pd->independent_clocks)
--		cpumask_setall(policy->cpus);
--
- 	of_node_put(np);
- 
- 	return 0;
-@@ -306,7 +341,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- out_free_priv:
- 	kfree(priv);
- out_free_opp:
--	of_free_opp_table(cpu_dev);
-+	of_cpumask_free_opp_table(policy->cpus);
-+out_node_put:
- 	of_node_put(np);
- out_put_reg_clk:
- 	clk_put(cpu_clk);
-@@ -322,7 +358,7 @@ static int cpufreq_exit(struct cpufreq_policy *policy)
- 
- 	cpufreq_cooling_unregister(priv->cdev);
- 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
--	of_free_opp_table(priv->cpu_dev);
-+	of_cpumask_free_opp_table(policy->related_cpus);
- 	clk_put(policy->clk);
- 	if (!IS_ERR(priv->cpu_reg))
- 		regulator_put(priv->cpu_reg);
+-list_add:
++	new_opp->dynamic = dynamic;
+ 	new_opp->dev_opp = dev_opp;
+ 	list_add_rcu(&new_opp->node, head);
+ 	mutex_unlock(&dev_opp_list_lock);
 -- 
 2.4.0
-
