@@ -1,168 +1,132 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Update 2x][PATCH 7/7] cpufreq: Separate CPU device registration from CPU online
-Date: Wed, 29 Jul 2015 03:03:44 +0200
-Message-ID: <3091538.g8dYBumqSx@vostro.rjw.lan>
-References: <7868353.pEStq1MJ2a@vostro.rjw.lan> <1739669.kedIsxdRK2@vostro.rjw.lan> <1702607.RH80fBCN6J@vostro.rjw.lan>
+Subject: [PATCH] cpufreq: Replace recover_policy with new_policy in cpufreq_online()
+Date: Wed, 29 Jul 2015 03:08:57 +0200
+Message-ID: <2952411.gjDWaFdOqs@vostro.rjw.lan>
+References: <7868353.pEStq1MJ2a@vostro.rjw.lan> <1702607.RH80fBCN6J@vostro.rjw.lan> <3091538.g8dYBumqSx@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:46662 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:64657 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751131AbbG2Agt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 20:36:49 -0400
-In-Reply-To: <1702607.RH80fBCN6J@vostro.rjw.lan>
+	with SMTP id S1751246AbbG2AmB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 20:42:01 -0400
+In-Reply-To: <3091538.g8dYBumqSx@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-To separate the CPU online interface from the CPU device
-registration, split cpufreq_online() out of cpufreq_add_dev()
-and make cpufreq_cpu_callback() call the former, while
-cpufreq_add_dev() itself will only be used as the CPU device
-addition subsystem interface callback.
+The recover_policy is unsed in cpufreq_online() to indicate whether
+a new policy object is created or an existing one is reinitialized.
+
+The "recover" part of the name is slightly confusing (it should be
+"reinitialization" rather than "recovery") and the logical not (!)
+operator is applied to it in almost all of the checks it is used in,
+so replace that variable with a new one called "new_policy" that
+will be true in the case of a new policy creation.
+
+While at it, drop one of the labels that is jumped to from only
+one spot.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Suggested-by: Russell King <linux@arm.linux.org.uk>
 ---
 
-cpufreq_online() returns an int and cpufreq_add_dev() propagates that to the
-caller in this version.
-
-That said I don't agree with using that to defer the platform device probing
-in cpufreq-dt.  That's just over the top to me.
+One extra cleanup on top of https://patchwork.kernel.org/patch/6888751/
 
 ---
- drivers/cpufreq/cpufreq.c |   96 +++++++++++++++++++++++-----------------------
- 1 file changed, 50 insertions(+), 46 deletions(-)
+ drivers/cpufreq/cpufreq.c |   23 +++++++++++------------
+ 1 file changed, 11 insertions(+), 12 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/cpufreq.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/cpufreq.c
 +++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -1191,36 +1191,15 @@ static void cpufreq_policy_free(struct c
- 	kfree(policy);
- }
- 
--/**
-- * cpufreq_add_dev - add a CPU device
-- *
-- * Adds the cpufreq interface for a CPU device.
-- *
-- * The Oracle says: try running cpufreq registration/unregistration concurrently
-- * with with cpu hotplugging and all hell will break loose. Tried to clean this
-- * mess up, but more thorough testing is needed. - Mathieu
-- */
--static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
-+static int cpufreq_online(unsigned int cpu)
+@@ -1194,7 +1194,7 @@ static void cpufreq_policy_free(struct c
+ static int cpufreq_online(unsigned int cpu)
  {
--	unsigned int j, cpu = dev->id;
--	int ret;
  	struct cpufreq_policy *policy;
--	unsigned long flags;
- 	bool recover_policy;
-+	unsigned long flags;
-+	unsigned int j;
-+	int ret;
+-	bool recover_policy;
++	bool new_policy;
+ 	unsigned long flags;
+ 	unsigned int j;
+ 	int ret;
+@@ -1209,13 +1209,13 @@ static int cpufreq_online(unsigned int c
+ 			return cpufreq_add_policy_cpu(policy, cpu);
  
--	pr_debug("adding CPU %u\n", cpu);
--
--	if (cpu_is_offline(cpu)) {
--		/*
--		 * Only possible if we are here from the subsys_interface add
--		 * callback.  A hotplug notifier will follow and we will handle
--		 * it as CPU online then.  For now, just create the sysfs link,
--		 * unless there is no policy or the link is already present.
--		 */
--		policy = per_cpu(cpufreq_cpu_data, cpu);
--		return policy && !cpumask_test_and_set_cpu(cpu, policy->real_cpus)
--			? add_cpu_dev_symlink(policy, cpu) : 0;
--	}
-+	pr_debug("%s: bringing CPU%u online\n", __func__, cpu);
+ 		/* This is the only online CPU for the policy.  Start over. */
+-		recover_policy = true;
++		new_policy = false;
+ 		down_write(&policy->rwsem);
+ 		policy->cpu = cpu;
+ 		policy->governor = NULL;
+ 		up_write(&policy->rwsem);
+ 	} else {
+-		recover_policy = false;
++		new_policy = true;
+ 		policy = cpufreq_policy_alloc(cpu);
+ 		if (!policy)
+ 			return -ENOMEM;
+@@ -1234,7 +1234,7 @@ static int cpufreq_online(unsigned int c
  
- 	/* Check if this CPU already has a policy to manage it */
- 	policy = per_cpu(cpufreq_cpu_data, cpu);
-@@ -1377,6 +1356,35 @@ out_free_policy:
+ 	down_write(&policy->rwsem);
+ 
+-	if (!recover_policy) {
++	if (new_policy) {
+ 		/* related_cpus should at least include policy->cpus. */
+ 		cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
+ 		/* Remember CPUs present at the policy creation time. */
+@@ -1247,7 +1247,7 @@ static int cpufreq_online(unsigned int c
+ 	 */
+ 	cpumask_and(policy->cpus, policy->cpus, cpu_online_mask);
+ 
+-	if (!recover_policy) {
++	if (new_policy) {
+ 		policy->user_policy.min = policy->min;
+ 		policy->user_policy.max = policy->max;
+ 
+@@ -1308,7 +1308,7 @@ static int cpufreq_online(unsigned int c
+ 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+ 				     CPUFREQ_START, policy);
+ 
+-	if (!recover_policy) {
++	if (new_policy) {
+ 		ret = cpufreq_add_dev_interface(policy);
+ 		if (ret)
+ 			goto out_exit_policy;
+@@ -1324,10 +1324,12 @@ static int cpufreq_online(unsigned int c
+ 	if (ret) {
+ 		pr_err("%s: Failed to initialize policy for cpu: %d (%d)\n",
+ 		       __func__, cpu, ret);
+-		goto out_remove_policy_notify;
++		/* cpufreq_policy_free() will notify based on this */
++		new_policy = false;
++		goto out_exit_policy;
+ 	}
+ 
+-	if (!recover_policy) {
++	if (new_policy) {
+ 		policy->user_policy.policy = policy->policy;
+ 		policy->user_policy.governor = policy->governor;
+ 	}
+@@ -1343,16 +1345,13 @@ static int cpufreq_online(unsigned int c
+ 
+ 	return 0;
+ 
+-out_remove_policy_notify:
+-	/* cpufreq_policy_free() will notify based on this */
+-	recover_policy = true;
+ out_exit_policy:
+ 	up_write(&policy->rwsem);
+ 
+ 	if (cpufreq_driver->exit)
+ 		cpufreq_driver->exit(policy);
+ out_free_policy:
+-	cpufreq_policy_free(policy, recover_policy);
++	cpufreq_policy_free(policy, !new_policy);
  	return ret;
  }
  
-+/**
-+ * cpufreq_add_dev - the cpufreq interface for a CPU device.
-+ * @dev: CPU device.
-+ * @sif: Subsystem interface structure pointer (not used)
-+ */
-+static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
-+{
-+	unsigned cpu = dev->id;
-+	int ret;
-+
-+	dev_dbg(dev, "%s: adding CPU%u\n", __func__, cpu);
-+
-+	if (cpu_online(cpu)) {
-+		ret = cpufreq_online(cpu);
-+	} else {
-+		/*
-+		 * A hotplug notifier will follow and we will handle it as CPU
-+		 * online then.  For now, just create the sysfs link, unless
-+		 * there is no policy or the link is already present.
-+		 */
-+		struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
-+
-+		ret = policy && !cpumask_test_and_set_cpu(cpu, policy->real_cpus)
-+			? add_cpu_dev_symlink(policy, cpu) : 0;
-+	}
-+
-+	return ret;
-+}
-+
- static void cpufreq_offline_prepare(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy;
-@@ -2340,27 +2348,23 @@ static int cpufreq_cpu_callback(struct n
- 					unsigned long action, void *hcpu)
- {
- 	unsigned int cpu = (unsigned long)hcpu;
--	struct device *dev;
- 
--	dev = get_cpu_device(cpu);
--	if (dev) {
--		switch (action & ~CPU_TASKS_FROZEN) {
--		case CPU_ONLINE:
--			cpufreq_add_dev(dev, NULL);
--			break;
--
--		case CPU_DOWN_PREPARE:
--			cpufreq_offline_prepare(cpu);
--			break;
--
--		case CPU_POST_DEAD:
--			cpufreq_offline_finish(cpu);
--			break;
--
--		case CPU_DOWN_FAILED:
--			cpufreq_add_dev(dev, NULL);
--			break;
--		}
-+	switch (action & ~CPU_TASKS_FROZEN) {
-+	case CPU_ONLINE:
-+		cpufreq_online(cpu);
-+		break;
-+
-+	case CPU_DOWN_PREPARE:
-+		cpufreq_offline_prepare(cpu);
-+		break;
-+
-+	case CPU_POST_DEAD:
-+		cpufreq_offline_finish(cpu);
-+		break;
-+
-+	case CPU_DOWN_FAILED:
-+		cpufreq_online(cpu);
-+		break;
- 	}
- 	return NOTIFY_OK;
- }
 
