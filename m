@@ -1,67 +1,41 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Add scaling frequency range support
-Date: Wed, 29 Jul 2015 02:18:28 +0200
-Message-ID: <15808229.KgKF05ecju@vostro.rjw.lan>
-References: <55B6F7C3.8040405@intel.com> <20150728042945.GE1229@linux> <55B70ACD.9010402@intel.com>
+Subject: Re: [PATCH v6 0/8] mfd: introduce a driver for LPSS devices on SPT
+Date: Wed, 29 Jul 2015 02:30:28 +0200
+Message-ID: <34245799.iU5VrzWmKR@vostro.rjw.lan>
+References: <1438009443-55317-1-git-send-email-andriy.shevchenko@linux.intel.com> <20150728085930.GR14943@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:41289 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:63425 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750827AbbG1Xvd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 19:51:33 -0400
-In-Reply-To: <55B70ACD.9010402@intel.com>
+	with SMTP id S1750843AbbG2ADc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2015 20:03:32 -0400
+In-Reply-To: <20150728085930.GR14943@x1>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pan Xinhui <xinhuix.pan@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, mturquette@baylibre.com, sboyd@codeaurora.org
 
-On Tuesday, July 28, 2015 12:53:33 PM Pan Xinhui wrote:
-> hi, Viresh
-> 	thanks for your reply :)
-> On 2015=E5=B9=B407=E6=9C=8828=E6=97=A5 12:29, Viresh Kumar wrote:
-> > On 28-07-15, 11:32, Pan Xinhui wrote:
-> >> From: Pan Xinhui <xinhuix.pan@intel.com>
-> >>
-> >> Userspace at most time do cpufreq tests very much inconveniently.
-> >> Currently they have to echo min and max cpu freq separately like b=
-elow:
-> >> echo 480000  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_fr=
-eq
-> >> echo 2240000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_fr=
-eq
-> >>
-> >> Add scaling_freq_range cpufreq attr to support userspace's demand.
-> >> Therefore it's easier for testers to write readable scripts like b=
-elow:=20
-> >> echo 480000-2240000 >
-> >> /sys/devices/system/cpu/cpu0/cpufreq/scaling_freq_range
-> >=20
-> > I don't think this brings any good change, we already have support =
-for
-> > that with min/max freqs and I don't see how scripts can be less
-> > readable with that.
-> >=20
-> yes, min/max are supported, however it is inconvenient. sometime it's=
- very easy to cause obscure bugs.
-> For example, some one might write a script like below.
-> echo 480000  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-> echo 960000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-> .....//other works
-> echo 1120000  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-> echo 2240000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-> ...//other works
->=20
-> But it did not work when we echo 112000 to min-freq, as the current m=
-ax freq is smaller than it.
-> It's hard to figure it out in a big script... we have many such scrip=
-ts.
+On Tuesday, July 28, 2015 09:59:30 AM Lee Jones wrote:
+> Enjoy,
+> 
+> The following changes since commit bc0195aad0daa2ad5b0d76cce22b167bc3435590:
+> 
+>   Linux 4.2-rc2 (2015-07-12 15:10:30 -0700)
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/lee/mfd.git tags/ib-mfd-base-acpi-dma-v4.3
+> 
+> for you to fetch changes up to 4b45efe8526359a11ca60a299bef3aebf413fd77:
+> 
+>   mfd: Add support for Intel Sunrisepoint LPSS devices (2015-07-28 09:56:47 +0100)
+> 
+> ----------------------------------------------------------------
+> Immutable branch between MFD, Base, ACPI and DMA due for v4.3
 
-=46ix them, then, pretty please.
+Thanks, much appreciated!
 
-And adding this attribute is not going to magically fix them, is it?
-
-Thanks,
 Rafael
 
