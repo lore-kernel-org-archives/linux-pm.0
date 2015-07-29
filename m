@@ -1,43 +1,66 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: Avoid attempts to create duplicate symbolic links
-Date: Wed, 29 Jul 2015 03:38:03 +0200
-Message-ID: <2112385.YuDJ7h1x56@vostro.rjw.lan>
-References: <1660815.CyKx9SEI9c@vostro.rjw.lan> <4080510.IQ60sVQvbL@vostro.rjw.lan> <20150727143935.GB18535@linux>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH v6 04/13] clk: qcom: gdsc: Manage clocks with !CONFIG_PM
+Date: Wed, 29 Jul 2015 10:07:04 +0530
+Message-ID: <55B85870.7060900@codeaurora.org>
+References: <1437549069-29655-1-git-send-email-rnayak@codeaurora.org> <1437549069-29655-5-git-send-email-rnayak@codeaurora.org> <55B03D65.8040207@codeaurora.org> <55B0A764.6010708@codeaurora.org> <55B826B0.2090705@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150727143935.GB18535@linux>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <55B826B0.2090705@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: mturquette@baylibre.com, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, July 27, 2015 08:09:35 PM Viresh Kumar wrote:
-> On 27-07-15, 15:45, Rafael J. Wysocki wrote:
-> > Say the subsys add callback runs for a CPU and it doesn't have a policy.
-> > If it is offline, we ignore it and the add callback won't be executed
-> > for it again.
-> > 
-> > In turn, if it is online, we create a policy for it and we should (right
-> > away) link the policy to all of the CPUs that were offline when the subsys add
-> > callback was called for them.  That's what we do today.
-> > 
-> > Is there anything missing in that?
-> 
-> So the code is working properly after your patch, but I was talking
-> on the lines of what Russell suggested.
-> 
-> We should play with the links only when we receive add-dev/remove-dev
-> from subsys callbacks. The exception to that will be the offline CPUs
-> for which add-dev is called before their policy existed.
 
-The rule is supposed to be "all of the present CPUs which do not own
-a policy should point to one, unless it doesn't exist".  The right
-approach is then to create links from them to a policy object as soon
-as we create one for them.  Waiting for something else to happen is just
-pointless and this approach covers both the offline and online CPUs, so
-I don't think that changing it would improve things really.
+On 07/29/2015 06:34 AM, Stephen Boyd wrote:
+> On 07/23/2015 01:35 AM, Rajendra Nayak wrote:
+>> []..
+>>
+>>>> +
+>>>> +#ifndef CONFIG_PM
+>>>> +static void enable_clock(struct device *dev, const char *con_id)
+>>>> +{
+>>>> +    struct clk *clk;
+>>>> +
+>>>> +    clk = clk_get(dev, con_id);
+>>>> +    if (!IS_ERR(clk)) {
+>>>> +        clk_prepare_enable(clk);
+>>>> +        clk_put(clk);
+>>>> +    }
+>>>> +}
+>>>> +
+>>>> +static void disable_clock(struct device *dev, const char *con_id)
+>>>> +{
+>>>> +    struct clk *clk;
+>>>> +
+>>>> +    clk = clk_get(dev, con_id);
+>>>> +    if (!IS_ERR(clk)) {
+>>>> +        clk_disable_unprepare(clk);
+>>>> +        clk_put(clk);
+>>>> +    }
+>>>> +}
+>>>
+>>> Is there a reason why this whole patch isn't generic code? I recall some
+>>> discussion but I forgot now and there isn't any mention of why this
+>>> isn't generic code in the commit text.
+>>
+>> If by generic code, you mean using PM clocks, then this thread should
+>> give some context..
+>> http://www.spinics.net/lists/arm-kernel/msg414072.html
+>
+> Sorry, I read the thread and I tried to understand what was going on but
+> I'm still lost. Can you clarify further in the commit text somehow?
 
-Thanks,
-Rafael
+So I can add this in the commit text, if it seems fine
+
+"The use of pm_clk_add_notifier() isn't appropriate here since we need
+to only manage clocks with valid power domain associations done via
+DT, instead of what pm_clk_add_notifier() does, which is manage clocks
+for all on SoC/off SoC devices associating all of them to a dummy power 
+domain instead"
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
