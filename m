@@ -1,126 +1,138 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Add scaling frequency range support
-Date: Thu, 30 Jul 2015 00:40:49 +0200
-Message-ID: <1790068.BlHXJRIr9a@vostro.rjw.lan>
-References: <55B6F7C3.8040405@intel.com> <15808229.KgKF05ecju@vostro.rjw.lan> <55B8A3F2.8030809@intel.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
+Date: Wed, 29 Jul 2015 15:15:26 -0700
+Message-ID: <20150729221526.GE3159@codeaurora.org>
+References: <1438010430-5802-1-git-send-email-lee.jones@linaro.org>
+ <1438010430-5802-2-git-send-email-lee.jones@linaro.org>
+ <20150728022936.GB1229@linux>
+ <20150728225510.GB3159@codeaurora.org>
+ <20150729081403.GH2284@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59304 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752483AbbG2WNw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jul 2015 18:13:52 -0400
-In-Reply-To: <55B8A3F2.8030809@intel.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:42532 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbbG2WP2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jul 2015 18:15:28 -0400
+Content-Disposition: inline
+In-Reply-To: <20150729081403.GH2284@x1>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pan Xinhui <xinhuix.pan@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, rob.herring@linaro.org, nm@ti.com, arnd.bergmann@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, ajitpal.singh@st.com, sre@kernel.org, dbaryshkov@gmail.com
 
-On Wednesday, July 29, 2015 05:59:14 PM Pan Xinhui wrote:
-> hi, Rafael
-> 	thanks for you reply.
->=20
-> On 2015=E5=B9=B407=E6=9C=8829=E6=97=A5 08:18, Rafael J. Wysocki wrote=
-:
-> > On Tuesday, July 28, 2015 12:53:33 PM Pan Xinhui wrote:
-> >> hi, Viresh
-> >> 	thanks for your reply :)
-> >> On 2015=E5=B9=B407=E6=9C=8828=E6=97=A5 12:29, Viresh Kumar wrote:
-> >>> On 28-07-15, 11:32, Pan Xinhui wrote:
-> >>>> From: Pan Xinhui <xinhuix.pan@intel.com>
-> >>>>
-> >>>> Userspace at most time do cpufreq tests very much inconveniently=
-=2E
-> >>>> Currently they have to echo min and max cpu freq separately like=
- below:
-> >>>> echo 480000  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_=
-freq
-> >>>> echo 2240000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_=
-freq
-> >>>>
-> >>>> Add scaling_freq_range cpufreq attr to support userspace's deman=
-d.
-> >>>> Therefore it's easier for testers to write readable scripts like=
- below:=20
-> >>>> echo 480000-2240000 >
-> >>>> /sys/devices/system/cpu/cpu0/cpufreq/scaling_freq_range
-> >>>
-> >>> I don't think this brings any good change, we already have suppor=
-t for
-> >>> that with min/max freqs and I don't see how scripts can be less
-> >>> readable with that.
-> >>>
-> >> yes, min/max are supported, however it is inconvenient. sometime i=
-t's very easy to cause obscure bugs.
-> >> For example, some one might write a script like below.
-> >> echo 480000  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_fr=
-eq
-> >> echo 960000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_fre=
-q
-> >> .....//other works
-> >> echo 1120000  > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_f=
-req
-> >> echo 2240000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_fr=
-eq
-> >> ...//other works
-> >>
-> >> But it did not work when we echo 112000 to min-freq, as the curren=
-t max freq is smaller than it.
-> >> It's hard to figure it out in a big script... we have many such sc=
-ripts.
-> >=20
-> > Fix them, then, pretty please.
-> >=20
-> of course we will fix them. :)
->=20
-> > And adding this attribute is not going to magically fix them, is it=
-?
-> >=20
-> yes, this patch can not fix them without changing the script. BUT I h=
-ave another patch which could magically fix them. :)
->=20
-> These two attribute files are very tricky. they are related with each=
- other.
-> Not like some other attribute file in other part of kernel, for examp=
-le, proc/sys/fs/file-max.
-> As the file-min is always zero. It's very reasonable to only support =
-file-max attribute file.
->=20
-> The sequence we echoing value to min/max_freq is very important. Mayb=
-e we can also assume they have *state*.
-> Just like a developer writes a buf to a file. he should do in this wa=
-y below.
-> fp =3D fopen(..)
->  =3D> fwrite(...)
->   =3D> fclose(...)
->=20
-> The script I mentioned above did not follow the right sequence. when =
-script wants to set the min higher, we need set the max first to avoid =
-min > max issue...
-> So max/min_freq have *state*. just like TCP Three-way handshake, SYN,=
- ACK&SYN, ACK. the sequence(this is so-called state) is very important.
+On 07/29, Lee Jones wrote:
+> On Tue, 28 Jul 2015, Stephen Boyd wrote:
+> 
+> > On 07/28, Viresh Kumar wrote:
+> > > Cc'ing few people (whom I cc'd last time as well :)).
+> > > 
+> > > On 27-07-15, 16:20, Lee Jones wrote:
+> > > > + - opp-hz		: CPU frequency [Hz] for this OPP [See: ./opp.txt]
+> > > > + - st,avs		: List of available voltages [uV] indexed by process code
+> > > > + - st,cuts		: Cut version this OPP is suitable for [0xFF means ALL]
+> > > > + - st,substrate		: Substrate version this OPP is suitable for [0xFF means ALL]
+[...]
+> > > > +cpu0-opp-list {
+> > > > +	compatible	= "operating-points-v2-sti";
+> > > > +	st,syscfg	= <&syscfg [major_offset]>;
+> > > > +	st,syscfg-eng   = <&syscfg_eng [pcode_offset] [minor_offset]>;
+> > > > +
+> > > > +	opp0 {
+> > > > +		opp-hz		= <1200000000>;
+> > > > +		st,avs		= <1110 1150 1100 1080 1040 1020 980 930>;
+> > > > +		st,substrate	= <0xff>;
+> > > > +		st,cuts		= <0xff>;
+> > > > +	};
+> > > > +	opp1 {
+> > > > +		opp-hz		= <1500000000>;
+> > > > +		st,avs		= <1200 1200 1200 1200 1170 1140 1100 1070>;
+> > > > +		st,substrate	= <0xff>;
+> > > > +		st,cuts		= <0x2>;
+> > > > +	};
+> > > > +};
+> > > 
+> > > I don't see more problems here, unless we can move some of this to the
+> > > generic bindings.
+> > > 
+> > > @Rob/Stephen: Please respond before it is late :)
+> > 
+> > It's interesting to have vendor specific properties like avs,
+> > cuts, and substrate. That could replace our planned usage of the
+> > opp-names property where we encode similar information (speed
+> > bin, revision, etc.) into a string that we look for.
+> > 
+> > So I wonder why the avs/cut/substrate information can't be
+> > encoded into the opp name? That would make these properties
+> > obsolete, given that all they're used for is to pick out the
+> > correct OPP?
+> 
+> You could hack the substrate and cut version into a string, but that's
+> exactly what it would be, a hack.  I'm struggling how you would do the
+> same for 'st,avs', which is an array of u32s.
+> 
 
-No, this isn't like that.  The rule is simple: whatever is in one of th=
-e
-attributes needs to be a smaller value than the one from the other attr=
-ibute
-at any time.  So there is a correlation between them, but the only "sta=
-te" is
-those numbers written to them previously (which they preserve quite as =
-expected).
 
-And the algorithm is: look for what's in min and write a number which i=
-s not
-less then that to max.  And the other way around.
+(I don't understand the st,avs property to begin with, so feel
+free to ignore the rest of this mail.)
 
-Again, please fix your scripts and don't litter the kernel with stuff w=
-hich
-only is needed because user space developers can't get their act togeth=
-er.
+For qcom platforms we have the pvs bin and speed bin, and
+sometimes a revision number. Each one of these properties
+corresponds to a different set of OPPs (opp table). So we might
+have speed1-pvs2-v0 for speed bin 1, pvs bin 2 and version 0. We
+fill out an opp table for this and then point the opps property
+at the table and have a corresponding opp-name "speed1-pvs2-v0"
+in the "consumer" node.
 
-Case dismissed.
+	operating-points-v2 = <&speed1_pvs2_v0>;
+	operating-points-names = "speed1-pvs2-v0";
 
-Thanks,
-Rafael
+We have quite a few of these tables because the values are
+always different. If the values were the same then we could use
+the same table with different names I suppose, but we're not
+doing that.
 
+>From a quick read of the st properties (that I admit I don't
+understand), it looks like we're trying to compress the OPP
+tables by listing all the voltages that could be used for a
+particular frequency depending on which avs is present on the
+device? And then limiting the frequency voltage pairs depending
+on which cut and substrate is present?
+
+So we'd probably have to expand out the tables to be unique per
+avs/cut/substrate parameter. Something like:
+
+avs0-cut2 {
+	compatible = "operating-points-v2";
+
+	opp0 {
+		opp-hz = <1200000000>;
+		opp-microvolt = <1100>;
+	};
+
+	opp1 {
+		opp-hz = <1500000000>;
+		opp-microvolt = <1200>;
+	};
+};
+
+avs1-cut2 {
+	compatible = "operating-points-v2";
+
+	opp0 {
+		opp-hz = <1200000000>;
+		opp-microvolt = <1150>;
+	};
+
+	opp1 {
+		opp-hz = <1500000000>;
+		opp-microvolt = <1200>;
+	};
+};
+
+And then another copy of these for the devices without cuts != 2
+where the top frequency is gone?
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
