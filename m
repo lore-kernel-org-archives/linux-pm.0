@@ -1,41 +1,55 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: Avoid attempts to create duplicate symbolic
- links
-Date: Wed, 29 Jul 2015 19:51:48 +0530
-Message-ID: <20150729142148.GF5100@linux>
-References: <1660815.CyKx9SEI9c@vostro.rjw.lan>
- <4080510.IQ60sVQvbL@vostro.rjw.lan>
- <20150727143935.GB18535@linux>
- <2112385.YuDJ7h1x56@vostro.rjw.lan>
- <20150729091136.GN7557@n2100.arm.linux.org.uk>
- <CAJZ5v0iUn0rSVSqyXscCfGgujpM7r9o9xjQgDOk+JQ=y6seRgQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [RFC PATCH] intel_pstate: Fix possible overflow complained by Coverity
+Date: Wed, 29 Jul 2015 23:53:10 +0800
+Message-ID: <1438185190-12805-1-git-send-email-yu.c.chen@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:35636 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751846AbbG2OVy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jul 2015 10:21:54 -0400
-Received: by pabkd10 with SMTP id kd10so6550742pab.2
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2015 07:21:53 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0iUn0rSVSqyXscCfGgujpM7r9o9xjQgDOk+JQ=y6seRgQ@mail.gmail.com>
+Received: from mga11.intel.com ([192.55.52.93]:32029 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751550AbbG2Ptj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 29 Jul 2015 11:49:39 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: kristen.c.accardi@intel.com, rui.zhang@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com, Chen Yu <yu.c.chen@intel.com>
 
-On 29-07-15, 15:57, Rafael J. Wysocki wrote:
-> In practice, this means a cpufreq driver registration done in parallel
-> with CPU hotplug.
+Coverity scanning performed on intel_pstate.c shows possible
+overflow when doing left shifting:
+val = pstate << 8;
+since pstate is of type integer, while val is of u64, left shifting
+pstate might lead to potential loss of upper bits. Say, if pstate equals
+0x4000 0000, after pstate << 8 we will get zero assigned to val.
+Although pstate will not likely be that big, this patch cast the left
+operand to u64 before performing the left shift, to avoid complaining
+from Coverity.
 
-Not necessarily. Also consider the case where cpufreq driver is already working
-for a set of CPUs. And a new set of CPUs (that will share the policy) are
-getting physically added to the system.
+Reported-by: Coquard, Christophe <christophe.coquard@intel.com>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Anyway, even if there is no problem at all, I do agree with Russell that it will
-be better to do operations on behalf of the devices only when we are requested
-for those devices.
-
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 15ada47..6effe81 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -522,7 +522,7 @@ static void byt_set_pstate(struct cpudata *cpudata, int pstate)
+ 	int32_t vid_fp;
+ 	u32 vid;
+ 
+-	val = pstate << 8;
++	val = (u64)pstate << 8;
+ 	if (limits.no_turbo && !limits.turbo_disabled)
+ 		val |= (u64)1 << 32;
+ 
+@@ -611,7 +611,7 @@ static void core_set_pstate(struct cpudata *cpudata, int pstate)
+ {
+ 	u64 val;
+ 
+-	val = pstate << 8;
++	val = (u64)pstate << 8;
+ 	if (limits.no_turbo && !limits.turbo_disabled)
+ 		val |= (u64)1 << 32;
+ 
 -- 
-viresh
+1.9.1
+
