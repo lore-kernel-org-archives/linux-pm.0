@@ -1,95 +1,56 @@
-From: PINTU KUMAR <pintu.k@samsung.com>
-Subject: RE: [PATCH v3 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
- feature
-Date: Wed, 29 Jul 2015 10:41:10 +0530
-Message-ID: <030e01d0c9bd$20e1df60$62a59e20$@samsung.com>
-References: <1437114578-2502-1-git-send-email-pintu.k@samsung.com>
- <1437366544-32673-1-git-send-email-pintu.k@samsung.com>
- <20150720082810.GG2561@suse.de> <02c601d0c306$f86d30f0$e94792d0$@samsung.com>
- <20150720175538.GJ2561@suse.de> <05af01d0c47f$3337ccd0$99a76670$@samsung.com>
- <20150722140530.GK2561@suse.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [Update 2x][PATCH 7/7] cpufreq: Separate CPU device registration
+ from CPU online
+Date: Wed, 29 Jul 2015 11:02:48 +0530
+Message-ID: <20150729053248.GC21493@linux>
+References: <7868353.pEStq1MJ2a@vostro.rjw.lan>
+ <1739669.kedIsxdRK2@vostro.rjw.lan>
+ <1702607.RH80fBCN6J@vostro.rjw.lan>
+ <3091538.g8dYBumqSx@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <owner-linux-mm@kvack.org>
-In-reply-to: <20150722140530.GK2561@suse.de>
-Content-language: en-us
-Sender: owner-linux-mm@kvack.org
-To: 'Mel Gorman' <mgorman@suse.de>
-Cc: akpm@linux-foundation.org, corbet@lwn.net, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, hannes@cmpxchg.org, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, qiuxishi@huawei.com, Valdis.Kletnieks@vt.edu, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com, pintu.ping@gmail.compintu.
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <3091538.g8dYBumqSx@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-Sorry, for late reply.
+On 29-07-15, 03:03, Rafael J. Wysocki wrote:
+> +static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+> +{
+> +	unsigned cpu = dev->id;
+> +	int ret;
+> +
+> +	dev_dbg(dev, "%s: adding CPU%u\n", __func__, cpu);
+> +
+> +	if (cpu_online(cpu)) {
+> +		ret = cpufreq_online(cpu);
 
-> -----Original Message-----
-> From: Mel Gorman [mailto:mgorman@suse.de]
-> Sent: Wednesday, July 22, 2015 7:36 PM
-> To: PINTU KUMAR
-> Cc: akpm@linux-foundation.org; corbet@lwn.net; vbabka@suse.cz;
-> gorcunov@openvz.org; mhocko@suse.cz; emunson@akamai.com;
-> kirill.shutemov@linux.intel.com; standby24x7@gmail.com;
-> hannes@cmpxchg.org; vdavydov@parallels.com; hughd@google.com;
-> minchan@kernel.org; tj@kernel.org; rientjes@google.com;
-> xypron.glpk@gmx.de; dzickus@redhat.com; prarit@redhat.com;
-> ebiederm@xmission.com; rostedt@goodmis.org; uobergfe@redhat.com;
-> paulmck@linux.vnet.ibm.com; iamjoonsoo.kim@lge.com; ddstreet@ieee.org;
-> sasha.levin@oracle.com; koct9i@gmail.com; cj@linux.com;
-> opensource.ganesh@gmail.com; vinmenon@codeaurora.org; linux-
-> doc@vger.kernel.org; linux-kernel@vger.kernel.org; linux-mm@kvack.org; linux-
-> pm@vger.kernel.org; qiuxishi@huawei.com; Valdis.Kletnieks@vt.edu;
-> cpgs@samsung.com; pintu_agarwal@yahoo.com; vishnu.ps@samsung.com;
-> rohit.kr@samsung.com; iqbal.ams@samsung.com; pintu.ping@gmail.com;
-> pintu.k@outlook.com
-> Subject: Re: [PATCH v3 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
-> feature
-> 
-> On Wed, Jul 22, 2015 at 06:33:26PM +0530, PINTU KUMAR wrote:
-> > Dear Mel, thank you very much for your comments and suggestions.
-> > I will drop this one and look on further improving direct_reclaim and
-> > compaction.
-> > Just few more comments below before I close.
-> >
-> > Also, during this patch, I feel that the hibernation_mode part in
-> > shrink_all_memory can be corrected.
-> > So, can I separately submit the below patch?
-> > That is instead of hard-coding the hibernation_mode, we can get
-> > hibernation status using:
-> > system_entering_hibernation()
-> >
-> > Please let me know your suggestion about this changes.
-> >
-> > -#ifdef CONFIG_HIBERNATION
-> > +#if defined CONFIG_HIBERNATION || CONFIG_SHRINK_MEMORY
-> 
-I was talking about only the following case.
-Instead of hard coding the hibernation_mode in shrink_all_memory, 
-We can set it at runtime.
+I will do return right here ...
 
--               .hibernation_mode = 1,
+> +	} else {
 
-+       if (system_entering_hibernation())
-+               sc.hibernation_mode = 1;
-+       else
-+               sc.hibernation_mode = 0;
+... and this else will not be required anymore.
 
-The PM owners should confirm if this is ok.
-Once confirmed, I will submit the full patch set.
+> +		/*
+> +		 * A hotplug notifier will follow and we will handle it as CPU
+> +		 * online then.  For now, just create the sysfs link, unless
+> +		 * there is no policy or the link is already present.
+> +		 */
+> +		struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+> +
+> +		ret = policy && !cpumask_test_and_set_cpu(cpu, policy->real_cpus)
+> +			? add_cpu_dev_symlink(policy, cpu) : 0;
+> +	}
+> +
+> +	return ret;
+> +}
 
-+> This appears to be a patch on top of "Add /proc/sys/vm/shrink_memory feature"
-> so I do not see what would be separately submitted that would make sense.
-> 
-And we don't need to have /proc/sys/vm/shrink_memory patch for this.
+Looks good otherwise.
 
-However, if required, we can also expose shrink_all_memory() outside the
-hibernation using the CONFIG_SHRINK_MEMORY.
-Otherwise, we can neglect other changes.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-> --
-> Mel Gorman
-> SUSE Labs
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+-- 
+viresh
