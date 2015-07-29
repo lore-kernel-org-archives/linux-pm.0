@@ -1,53 +1,37 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Add scaling frequency range support
-Date: Wed, 29 Jul 2015 16:31:46 +0530
-Message-ID: <20150729110146.GB5100@linux>
-References: <55B6F7C3.8040405@intel.com>
- <20150728042945.GE1229@linux>
- <55B70ACD.9010402@intel.com>
- <15808229.KgKF05ecju@vostro.rjw.lan>
- <55B8A3F2.8030809@intel.com>
- <55B8A548.4060104@intel.com>
+From: Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [PATCH v3 1/1] kernel/sysctl.c: Add /proc/sys/vm/shrink_memory
+ feature
+Date: Wed, 29 Jul 2015 08:07:38 -0400
+Message-ID: <20150729120738.GA10001@cmpxchg.org>
+References: <1437114578-2502-1-git-send-email-pintu.k@samsung.com>
+ <1437366544-32673-1-git-send-email-pintu.k@samsung.com>
+ <20150720082810.GG2561@suse.de>
+ <02c601d0c306$f86d30f0$e94792d0$@samsung.com>
+ <20150720175538.GJ2561@suse.de>
+ <05af01d0c47f$3337ccd0$99a76670$@samsung.com>
+ <20150722140530.GK2561@suse.de>
+ <030e01d0c9bd$20e1df60$62a59e20$@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <55B8A548.4060104@intel.com>
+In-Reply-To: <030e01d0c9bd$20e1df60$62a59e20$@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pan Xinhui <xinhuix.pan@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mnipxh@163.com" <mnipxh@163.com>, "yanmin_zhang@linux.intel.com" <yanmin_zhang@linux.intel.com>
+To: PINTU KUMAR <pintu.k@samsung.com>
+Cc: 'Mel Gorman' <mgorman@suse.de>, akpm@linux-foundation.org, corbet@lwn.net, vbabka@suse.cz, gorcunov@openvz.org, mhocko@suse.cz, emunson@akamai.com, kirill.shutemov@linux.intel.com, standby24x7@gmail.com, vdavydov@parallels.com, hughd@google.com, minchan@kernel.org, tj@kernel.org, rientjes@google.com, xypron.glpk@gmx.de, dzickus@redhat.com, prarit@redhat.com, ebiederm@xmission.com, rostedt@goodmis.org, uobergfe@redhat.com, paulmck@linux.vnet.ibm.com, iamjoonsoo.kim@lge.com, ddstreet@ieee.org, sasha.levin@oracle.com, koct9i@gmail.com, cj@linux.com, opensource.ganesh@gmail.com, vinmenon@codeaurora.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-pm@vger.kernel.org, qiuxishi@huawei.com, Valdis.Kletnieks@vt.edu, cpgs@samsung.com, pintu_agarwal@yahoo.com, vishnu.ps@samsung.com, rohit.kr@samsung.com, iqbal.ams@samsung.com, pintu.ping@gma
 List-Id: linux-pm@vger.kernel.org
 
-On 29-07-15, 18:04, Pan Xinhui wrote:
-> > @@ -622,21 +630,20 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
-> >  static ssize_t store_##file_name                                       \
-> >  (struct cpufreq_policy *policy, const char *buf, size_t count)         \
-> >  {                                                                      \
-> > -       int ret, temp;                                                  \
-> > +       int ret;                                                        \
-> >         struct cpufreq_policy new_policy;                               \
-> >                                                                         \
-> >         ret = cpufreq_get_policy(&new_policy, policy->cpu);             \
-> >         if (ret)                                                        \
-> >                 return -EINVAL;                                         \
-> >                                                                         \
-> > +       cpufreq_get_user_policy_freq(&policy->user_policy, &new_policy);\
-> >         ret = sscanf(buf, "%u", &new_policy.object);                    \
-> >         if (ret != 1)                                                   \
-> >                 return -EINVAL;                                         \
-> >                                                                         \
-> > -       temp = new_policy.object;                                       \
-> > -       ret = cpufreq_set_policy(policy, &new_policy);          \
-> > -       if (!ret)                                                       \
-> > -               policy->user_policy.object = temp;                      \
-> > +       policy->user_policy.object = policy->object;                    \
-> should be 
-> +	policy->user_policy.object = new_policy.object;		\
-> sorry for that.
-> > +       ret = cpufreq_set_policy(policy, &new_policy);                  \
+On Wed, Jul 29, 2015 at 10:41:10AM +0530, PINTU KUMAR wrote:
+> I was talking about only the following case.
+> Instead of hard coding the hibernation_mode in shrink_all_memory, 
+> We can set it at runtime.
+> 
+> -               .hibernation_mode = 1,
+> 
+> +       if (system_entering_hibernation())
+> +               sc.hibernation_mode = 1;
+> +       else
+> +               sc.hibernation_mode = 0;
 
-This is wrong because we save user-preference, even when we failed. So that's
-surely bad.
-
--- 
-viresh
+Nobody outside hibernation uses this function (and likely never will).
+The hardcoding is fine.
