@@ -1,95 +1,204 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 00/16] OPP: Add code to support operating-points-v2 bindings
-Date: Wed, 29 Jul 2015 16:22:55 +0530
-Message-ID: <cover.1438166099.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 01/16] PM / OPP: Update bindings to make opp-hz a 64 bit value
+Date: Wed, 29 Jul 2015 16:22:56 +0530
+Message-ID: <f87ca786bca8abce6261dbd79a34218550355684.1438166099.git.viresh.kumar@linaro.org>
+References: <cover.1438166099.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:36246 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbbG2KxT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jul 2015 06:53:19 -0400
-Received: by pdjr16 with SMTP id r16so4107210pdj.3
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2015 03:53:19 -0700 (PDT)
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:36352 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750898AbbG2Kx3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jul 2015 06:53:29 -0400
+Received: by pachj5 with SMTP id hj5so3892057pac.3
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2015 03:53:28 -0700 (PDT)
+In-Reply-To: <cover.1438166099.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1438166099.git.viresh.kumar@linaro.org>
+References: <cover.1438166099.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, sboyd@codeaurora.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mturquette@baylibre.com, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, b.zolnierkie@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mturquette@baylibre.com, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, b.zolnierkie@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, open list <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Rob Herring <robh+dt@kernel.org>
 
-Hi Guys,
+With a 32 bit value, the maximum frequency that the bindings can
+support is ~ 4 GHz. And that might fall short of what newer systems may
+have.
 
-Resending this again because:
-- opp-hz is now 64 bit long and so that required a binding update.
-- There is another 4 patch series that as updating turbo OPP support,
-  along with updates to cpufreq core and cpufreq-dt driver.
-- A minor bug-fix in V2 4/11, which caused false positive for duplicate
-  OPPs in some cases.
+Allow opp-hz to be a 64 bit big-endian value.
 
-Tested this on dual-core exynos board with the driver inbuilt as well as
-a module. Tried multiple insertion/removals of the module. Have tested
-cpufreq-dt driver with both old and new bindings.
+Cc: Rob Herring <rob.herring@linaro.org>
+Cc: devicetree@vger.kernel.org
+Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
+Suggested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ Documentation/devicetree/bindings/power/opp.txt | 40 ++++++++++++-------------
+ 1 file changed, 20 insertions(+), 20 deletions(-)
 
-Also tried by sending some dummy OPPs that contained opp-hz greater than
-what can be captured by u32, to test the u64 updates.
-
-----------x-----------------x-------------
-
-This adds code to support operating-points-v2 bindings. Not everything
-is supported yet, but most of the basic stuff is.
-
-Pushed here as well for reference:
-ssh://git@git.linaro.org/people/viresh.kumar/linux.git opp/v2
-
-V2->V3:
-- Update to opp-hz binding to make it pass u64 value instead of 32 bit
-  value. This is done to support clock rates greater than 4 GHz.
-- Merged two inter-related series, opp-v2 and turbo mode updates.
-- Fixed 4/11 from opp-v2 series, which cased false positive for
-  duplicate OPPs in some cases.
-- Add a separate comment in _opp_add_dynamic() (5/16), to clearly
-  specify that we pass &dev_opp->opp_list to list_for_each_entry_rcu()
-  and not pass 'head' which contains the same value. Because head will
-  get modified by the code and that may result in an infinite loop.
-- Accumulate more RBY tags.
-
-V1->V2:
-- 1/11 is a new patch which moves the bindings file into opp specific
-  folder.
-- 'opp-suspend' binding got updated and is part of individual OPPs now,
-  instead of a phandle present in the opp table.
-- Some more minor reformatting as suggested by Bartlomiej and Stephen,
-  they were already posted as reply to earlier patches in V1.
-
-Bartlomiej Zolnierkiewicz (2):
-  PM / OPP: add dev_pm_opp_is_turbo() helper
-  cpufreq: Update boost flag while initializing freq table from OPPs
-
-Viresh Kumar (14):
-  PM / OPP: Update bindings to make opp-hz a 64 bit value
-  PM / OPP: Create a directory for opp bindings
-  PM / OPP: Relocate few routines
-  PM / OPP: Create _remove_device_opp() for freeing dev_opp
-  PM / OPP: Allocate dev_opp from _add_device_opp()
-  PM / OPP: Break _opp_add_dynamic() into smaller functions
-  PM / OPP: Add support to parse "operating-points-v2" bindings
-  PM / OPP: Add clock-latency-ns support
-  PM / OPP: Add OPP sharing information to OPP library
-  PM / OPP: Add support for opp-suspend
-  PM / OPP: Add helpers for initializing CPU OPPs
-  cpufreq: Allow drivers to enable boost support after registering
-    driver
-  cpufreq: dt: Add support for operating-points-v2 bindings
-  cpufreq: dt: Add support for turbo/boost mode
-
- .../devicetree/bindings/power/{ => opp}/opp.txt    |   40 +-
- drivers/base/power/opp.c                           | 1084 ++++++++++++++++----
- drivers/cpufreq/cpufreq-dt.c                       |   64 +-
- drivers/cpufreq/cpufreq.c                          |   68 +-
- drivers/cpufreq/cpufreq_opp.c                      |    4 +
- drivers/cpufreq/freq_table.c                       |   15 +
- include/linux/cpufreq.h                            |   12 +
- include/linux/pm_opp.h                             |   36 +
- 8 files changed, 1049 insertions(+), 274 deletions(-)
- rename Documentation/devicetree/bindings/power/{ => opp}/opp.txt (93%)
-
+diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp.txt
+index 0d5e7c978121..0cb44dc21f97 100644
+--- a/Documentation/devicetree/bindings/power/opp.txt
++++ b/Documentation/devicetree/bindings/power/opp.txt
+@@ -88,7 +88,7 @@ This defines voltage-current-frequency combinations along with other related
+ properties.
+ 
+ Required properties:
+-- opp-hz: Frequency in Hz
++- opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer.
+ 
+ Optional properties:
+ - opp-microvolt: voltage in micro Volts.
+@@ -158,20 +158,20 @@ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+ 		opp-shared;
+ 
+ 		opp00 {
+-			opp-hz = <1000000000>;
++			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>;
+ 			opp-microamp = <70000>;
+ 			clock-latency-ns = <300000>;
+ 			opp-suspend;
+ 		};
+ 		opp01 {
+-			opp-hz = <1100000000>;
++			opp-hz = /bits/ 64 <1100000000>;
+ 			opp-microvolt = <980000 1000000 1010000>;
+ 			opp-microamp = <80000>;
+ 			clock-latency-ns = <310000>;
+ 		};
+ 		opp02 {
+-			opp-hz = <1200000000>;
++			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt = <1025000>;
+ 			clock-latency-ns = <290000>;
+ 			turbo-mode;
+@@ -237,20 +237,20 @@ independently.
+ 		 */
+ 
+ 		opp00 {
+-			opp-hz = <1000000000>;
++			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>;
+ 			opp-microamp = <70000>;
+ 			clock-latency-ns = <300000>;
+ 			opp-suspend;
+ 		};
+ 		opp01 {
+-			opp-hz = <1100000000>;
++			opp-hz = /bits/ 64 <1100000000>;
+ 			opp-microvolt = <980000 1000000 1010000>;
+ 			opp-microamp = <80000>;
+ 			clock-latency-ns = <310000>;
+ 		};
+ 		opp02 {
+-			opp-hz = <1200000000>;
++			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt = <1025000>;
+ 			opp-microamp = <90000;
+ 			lock-latency-ns = <290000>;
+@@ -313,20 +313,20 @@ DVFS state together.
+ 		opp-shared;
+ 
+ 		opp00 {
+-			opp-hz = <1000000000>;
++			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>;
+ 			opp-microamp = <70000>;
+ 			clock-latency-ns = <300000>;
+ 			opp-suspend;
+ 		};
+ 		opp01 {
+-			opp-hz = <1100000000>;
++			opp-hz = /bits/ 64 <1100000000>;
+ 			opp-microvolt = <980000 1000000 1010000>;
+ 			opp-microamp = <80000>;
+ 			clock-latency-ns = <310000>;
+ 		};
+ 		opp02 {
+-			opp-hz = <1200000000>;
++			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt = <1025000>;
+ 			opp-microamp = <90000>;
+ 			clock-latency-ns = <290000>;
+@@ -339,20 +339,20 @@ DVFS state together.
+ 		opp-shared;
+ 
+ 		opp10 {
+-			opp-hz = <1300000000>;
++			opp-hz = /bits/ 64 <1300000000>;
+ 			opp-microvolt = <1045000 1050000 1055000>;
+ 			opp-microamp = <95000>;
+ 			clock-latency-ns = <400000>;
+ 			opp-suspend;
+ 		};
+ 		opp11 {
+-			opp-hz = <1400000000>;
++			opp-hz = /bits/ 64 <1400000000>;
+ 			opp-microvolt = <1075000>;
+ 			opp-microamp = <100000>;
+ 			clock-latency-ns = <400000>;
+ 		};
+ 		opp12 {
+-			opp-hz = <1500000000>;
++			opp-hz = /bits/ 64 <1500000000>;
+ 			opp-microvolt = <1010000 1100000 1110000>;
+ 			opp-microamp = <95000>;
+ 			clock-latency-ns = <400000>;
+@@ -379,7 +379,7 @@ Example 4: Handling multiple regulators
+ 		opp-shared;
+ 
+ 		opp00 {
+-			opp-hz = <1000000000>;
++			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <970000>, /* Supply 0 */
+ 					<960000>, /* Supply 1 */
+ 					<960000>; /* Supply 2 */
+@@ -392,7 +392,7 @@ Example 4: Handling multiple regulators
+ 		/* OR */
+ 
+ 		opp00 {
+-			opp-hz = <1000000000>;
++			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>, /* Supply 0 */
+ 					<960000 965000 975000>, /* Supply 1 */
+ 					<960000 965000 975000>; /* Supply 2 */
+@@ -405,7 +405,7 @@ Example 4: Handling multiple regulators
+ 		/* OR */
+ 
+ 		opp00 {
+-			opp-hz = <1000000000>;
++			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>, /* Supply 0 */
+ 					<960000 965000 975000>, /* Supply 1 */
+ 					<960000 965000 975000>; /* Supply 2 */
+@@ -437,12 +437,12 @@ Example 5: Multiple OPP tables
+ 		opp-shared;
+ 
+ 		opp00 {
+-			opp-hz = <600000000>;
++			opp-hz = /bits/ 64 <600000000>;
+ 			...
+ 		};
+ 
+ 		opp01 {
+-			opp-hz = <800000000>;
++			opp-hz = /bits/ 64 <800000000>;
+ 			...
+ 		};
+ 	};
+@@ -453,12 +453,12 @@ Example 5: Multiple OPP tables
+ 		opp-shared;
+ 
+ 		opp10 {
+-			opp-hz = <1000000000>;
++			opp-hz = /bits/ 64 <1000000000>;
+ 			...
+ 		};
+ 
+ 		opp11 {
+-			opp-hz = <1100000000>;
++			opp-hz = /bits/ 64 <1100000000>;
+ 			...
+ 		};
+ 	};
 -- 
 2.4.0
 
