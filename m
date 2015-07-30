@@ -1,38 +1,147 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 resend] PM / OPP: Create a directory for opp bindings
-Date: Thu, 30 Jul 2015 22:27:19 +0530
-Message-ID: <29597667e2c8afdbf396c5fcc9269fb27794131c.1438274711.git.viresh.kumar@linaro.org>
-References: <20150730165240.GF17794@linux>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v2 3/6] power: bq27xxx_battery: Platform initialization
+ must declare a device
+Date: Thu, 30 Jul 2015 12:01:11 -0500
+Message-ID: <55BA5857.9030301@ti.com>
+References: <1438112353-19704-1-git-send-email-afd@ti.com> <1438112353-19704-4-git-send-email-afd@ti.com> <201507282213.37788@pali>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f172.google.com ([209.85.192.172]:34743 "EHLO
-	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751382AbbG3Q5t (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 12:57:49 -0400
-Received: by pdbbh15 with SMTP id bh15so27201847pdb.1
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2015 09:57:48 -0700 (PDT)
-In-Reply-To: <20150730165240.GF17794@linux>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:50572 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753645AbbG3RBq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 30 Jul 2015 13:01:46 -0400
+In-Reply-To: <201507282213.37788@pali>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mturquette@baylibre.com, sboyd@codeaurora.org, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, b.zolnierkie@samsung.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, devicetree@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+To: =?UTF-8?B?UGFsaSBSb2jDoXI=?= <pali.rohar@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-More platform specific extended opp bindings will follow and it would be
-easy to manage them with a directory for opp. Lets create that and move
-the existing opp bindings into it.
+On 07/28/2015 03:13 PM, Pali Roh=C3=A1r wrote:
+> On Tuesday 28 July 2015 21:39:10 Andrew F. Davis wrote:
+>> When initialized as a platform device the initializer must now speci=
+fy
+>> a device. An empty device name is no longer valid.
+>>
+>> Signed-off-by: Andrew F. Davis <afd@ti.com>
+>> ---
+>>   drivers/power/bq27xxx_battery.c       | 9 ++++++---
+>>   drivers/w1/slaves/w1_bq27000.c        | 1 +
+>>   include/linux/power/bq27xxx_battery.h | 6 +++++-
+>>   3 files changed, 12 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx=
+_battery.c
+>> index e72055c..0734413 100644
+>> --- a/drivers/power/bq27xxx_battery.c
+>> +++ b/drivers/power/bq27xxx_battery.c
+>> @@ -91,8 +91,6 @@ struct bq27xxx_access_methods {
+>>   	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
+>>   };
+>>
+>> -enum bq27xxx_chip { BQ27000, BQ27500, BQ27425, BQ27742, BQ27510};
+>> -
+>>   struct bq27xxx_reg_cache {
+>>   	int temperature;
+>>   	int time_to_empty;
+>> @@ -1036,6 +1034,11 @@ static int bq27xxx_battery_platform_probe(str=
+uct platform_device *pdev)
+>>   		return -EINVAL;
+>>   	}
+>>
+>> +	if (!pdata->chip) {
+>
+> Will this work?
+>
+> Is not first value of enum equal to zero? BQ27000 =3D=3D 0 ?
+>
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Resending to get cc list fixed, which isn't getting populated due to a
-bug with get_maintainers.
+We could set the enum to start at 1, but I'm not sure if this check is=20
+really necessary at all as we can just assume if the platform info has=20
+been supplied then the chip has been set.
 
- Documentation/devicetree/bindings/{power => opp}/opp.txt | 0
- 1 file changed, 0 insertions(+), 0 deletions(-)
- rename Documentation/devicetree/bindings/{power => opp}/opp.txt (100%)
+>> +		dev_err(&pdev->dev, "no device supplied\n");
+>> +		return -EINVAL;
+>> +	}
+>> +
+>>   	di =3D devm_kzalloc(&pdev->dev, sizeof(*di), GFP_KERNEL);
+>>   	if (!di)
+>>   		return -ENOMEM;
+>> @@ -1043,7 +1046,7 @@ static int bq27xxx_battery_platform_probe(stru=
+ct platform_device *pdev)
+>>   	platform_set_drvdata(pdev, di);
+>>
+>>   	di->dev =3D &pdev->dev;
+>> -	di->chip =3D BQ27000;
+>> +	di->chip =3D pdata->chip;
+>>
+>>   	name =3D pdata->name ?: dev_name(&pdev->dev);
+>>   	di->bus.read =3D &bq27xxx_battery_platform_read;
+>> diff --git a/drivers/w1/slaves/w1_bq27000.c b/drivers/w1/slaves/w1_b=
+q27000.c
+>> index 8480531..ba8bf3d 100644
+>> --- a/drivers/w1/slaves/w1_bq27000.c
+>> +++ b/drivers/w1/slaves/w1_bq27000.c
+>> @@ -42,6 +42,7 @@ static int w1_bq27000_read(struct device *dev, uns=
+igned int reg)
+>>   static struct bq27xxx_platform_data bq27000_battery_info =3D {
+>>   	.read   =3D w1_bq27000_read,
+>>   	.name   =3D "bq27000-battery",
+>> +	.chip	=3D BQ27000,
+>            ^
+> Just small problem, but for me visible different spacing of previous =
+lines
+>
 
-diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power/opp.txt
-rename to Documentation/devicetree/bindings/opp/opp.txt
--- 
-2.4.0
+=46ixed.
 
+>>   };
+>>
+>>   static int w1_bq27000_add_slave(struct w1_slave *sl)
+>> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/p=
+ower/bq27xxx_battery.h
+>> index e70a93a..70d3865 100644
+>> --- a/include/linux/power/bq27xxx_battery.h
+>> +++ b/include/linux/power/bq27xxx_battery.h
+>> @@ -3,7 +3,8 @@
+>>
+>>   /**
+>>    * struct bq27xxx_plaform_data - Platform data for bq27xxx devices
+>> - * @name: Name of the battery. If NULL the driver will fallback to =
+"bq27000".
+>> + * @name: Name of the battery.
+>
+> Now I'm trying to understand what name =3D NULL will do...
+>
+> It is this above code?
+>
+>    	name =3D pdata->name ?: dev_name(&pdev->dev);
+>
+> Then it looks like it just set device name. Maybe stupid question, bu=
+t do we need such property? What other people think?
+>
+
+It doesn't look necessary to me.
+
+>> + * @chip: Chip class number of this device.
+>>    * @read: HDQ read callback.
+>>    *	This function should provide access to the HDQ bus the battery =
+is
+>>    *	connected to.
+>> @@ -11,8 +12,11 @@
+>>    *	register to be read. The return value should either be the cont=
+ent of
+>>    *	the passed register or an error value.
+>>    */
+>> +enum bq27xxx_chip { BQ27000, BQ27500, BQ27425, BQ27742, BQ27510 };
+>> +
+>>   struct bq27xxx_platform_data {
+>>   	const char *name;
+>> +	enum bq27xxx_chip chip;
+>>   	int (*read)(struct device *dev, unsigned int);
+>>   };
+>>
+>>
+>
