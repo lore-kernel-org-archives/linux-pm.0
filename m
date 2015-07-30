@@ -1,75 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 02/16] PM / OPP: Create a directory for opp bindings
-Date: Thu, 30 Jul 2015 19:19:59 +0530
-Message-ID: <20150730134959.GB17794@linux>
-References: <cover.1438166099.git.viresh.kumar@linaro.org>
- <4dfe565ff17766b7df127d475d84958e96fdab1b.1438166099.git.viresh.kumar@linaro.org>
- <CAL_Jsq+J41c7qx11L13-g0UyD+hY9W36Wu9P+6O3cnDv7ysY6Q@mail.gmail.com>
+From: Kukjin Kim <kgene@kernel.org>
+Subject: Re: [PATCH v2 2/7] cpufreq: opp: fix handling of turbo modes
+Date: Thu, 30 Jul 2015 23:37:27 +0900
+Message-ID: <55BA36A7.3050107@kernel.org>
+References: <1436456621-29839-1-git-send-email-b.zolnierkie@samsung.com> <3141301.RS9TLygaba@amdc1976> <20150727113641.GB10181@linux> <2681271.3UazeZ9PAQ@amdc1976>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f173.google.com ([209.85.192.173]:33509 "EHLO
-	mail-pd0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750977AbbG3NuG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 09:50:06 -0400
-Received: by pdbnt7 with SMTP id nt7so25026667pdb.0
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2015 06:50:06 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAL_Jsq+J41c7qx11L13-g0UyD+hY9W36Wu9P+6O3cnDv7ysY6Q@mail.gmail.com>
+Received: from mail.kernel.org ([198.145.29.136]:60557 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752901AbbG3Ohe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 30 Jul 2015 10:37:34 -0400
+In-Reply-To: <2681271.3UazeZ9PAQ@amdc1976>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Santosh Shilimkar <santosh.shilimkar@oracle.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mark Brown <broonie@kernel.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lucas Stach <l.stach@pengutronix.de>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On 30-07-15, 08:18, Rob Herring wrote:
-> On Wed, Jul 29, 2015 at 5:52 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > More platform specific extended opp bindings will follow and it would be
-> > easy to manage them with a directory for opp. Lets create that and move
-> > the existing opp bindings into it.
-> >
-> > Cc: Rob Herring <rob.herring@linaro.org>
+On 07/27/15 20:47, Bartlomiej Zolnierkiewicz wrote:
+> On Monday, July 27, 2015 05:06:41 PM Viresh Kumar wrote:
+>> On 27-07-15, 13:14, Bartlomiej Zolnierkiewicz wrote:
+>>> Sorry but you don't seem to understand the issue.
+>>
+>> :)
+>>
+>> No, I did. I understand that if someone uses opp bindings today with
+>> some entries as turbo OPPs, cpufreq will use them as normal
+>> frequencies. And that may harm the board.
+>>
+>> BUT, opp-v2 code isn't ready to be used yet. And platforms should see
+>> what all is implemented before trying to use them.
 > 
-> Use get_maintainers.pl please so you send to right people and right email.
-
-Already done, you were just cc'd as an extra guy :)
-
-> > Cc: devicetree@vger.kernel.org
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  Documentation/devicetree/bindings/power/{ => opp}/opp.txt | 0
-> >  1 file changed, 0 insertions(+), 0 deletions(-)
-> >  rename Documentation/devicetree/bindings/power/{ => opp}/opp.txt (100%)
-> >
-> > diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp/opp.txt
-> > similarity index 100%
-> > rename from Documentation/devicetree/bindings/power/opp.txt
-> > rename to Documentation/devicetree/bindings/power/opp/opp.txt
+> OK.
 > 
-> "power" seems to be a random collection of things. I'd prefer you move
-> this to .../bindings/opp/opp.txt.
+>> All I was saying is, this isn't a FIX as we haven't introduced the
+>> feature yet. Otherwise I had no issues with the patch.
+> 
+> I will update the description for the next patchset revision.
+> 
+Hi Bart,
 
-Hmm, sure. That would be better I think.
+When will you re-post v3? Because I have a plan to send a pull-request
+to arm-soc until this weekend...
 
---------------8<-------------------
-
-Message-Id: <29597667e2c8afdbf396c5fcc9269fb27794131c.1438264123.git.viresh.kumar@linaro.org>
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Mon, 27 Jul 2015 10:04:21 +0530
-Subject: [PATCH] PM / OPP: Create a directory for opp bindings
-
-More platform specific extended opp bindings will follow and it would be
-easy to manage them with a directory for opp. Lets create that and move
-the existing opp bindings into it.
-
-Cc: Rob Herring <rob.herring@linaro.org>
-Cc: devicetree@vger.kernel.org
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- Documentation/devicetree/bindings/{power => opp}/opp.txt | 0
- 1 file changed, 0 insertions(+), 0 deletions(-)
- rename Documentation/devicetree/bindings/{power => opp}/opp.txt (100%)
-
-diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power/opp.txt
-rename to Documentation/devicetree/bindings/opp/opp.txt
+- Kukjin
