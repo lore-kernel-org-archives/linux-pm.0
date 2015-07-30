@@ -1,41 +1,61 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] bus: subsys: update return type of ->remove_dev() to void
-Date: Thu, 30 Jul 2015 16:31:10 +0530
-Message-ID: <20150730110110.GA24546@linux>
-References: <02c0569741812b655edde5124c3e2937bb79f9f8.1438248445.git.viresh.kumar@linaro.org>
- <20150730105917.GA25460@nazgul.tnic>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150730105917.GA25460@nazgul.tnic>
-Sender: linux-sh-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rafael Wysocki <rjw@rjwysocki.net>, Chris Metcalf <cmetcalf@ezchip.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, Joe Perches <joe@perches.com>, Joerg Roedel <jroedel@suse.de>, open list <linux-kernel@vger.kernel.org>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>, "open list:SUPERH" <linux-sh@vger.kernel.org>, "Luis R. Rodriguez" <mcgrof@suse.com>, "open list:NETWORKING DRIVERS" <netdev@vger.kernel.org>, Nicolas Iooss <nicolas.iooss_linux@m4x.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Thomas Gleixner <tglx@linutronix.de>, "maintainer:X86 ARCHITECTURE (32-BIT AND 64-BIT)" <x86@kernel.org>
+From: Antoine Tenart <antoine.tenart@free-electrons.com>
+Subject: [PATCH 2/3] ARM: berlin: register cpufreq-dt for the BG2Q
+Date: Thu, 30 Jul 2015 14:35:51 +0200
+Message-ID: <1438259752-16320-3-git-send-email-antoine.tenart@free-electrons.com>
+References: <1438259752-16320-1-git-send-email-antoine.tenart@free-electrons.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from down.free-electrons.com ([37.187.137.238]:36023 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751992AbbG3Mf4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 08:35:56 -0400
+In-Reply-To: <1438259752-16320-1-git-send-email-antoine.tenart@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sebastian.hesselbarth@gmail.com
+Cc: Antoine Tenart <antoine.tenart@free-electrons.com>, zmxu@marvell.com, jszhang@marvell.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 30-07-15, 12:59, Borislav Petkov wrote:
-> On Thu, Jul 30, 2015 at 03:04:01PM +0530, Viresh Kumar wrote:
-> > Its return value is not used by the subsys core and nothing meaning=
-ful
-> > can be done with it, even if we want to use it. The subsys device i=
-s
-> > anyway getting removed.
->=20
-> I'm assuming sysfs paths covered by it, will remain intact... ? For t=
-he
-> microcode loader case that's this hierarchy here:
->=20
-> $ tree /sys/devices/system/cpu/cpu?/microcode/
-> /sys/devices/system/cpu/cpu0/microcode/
-> =E2=94=9C=E2=94=80=E2=94=80 processor_flags
-> =E2=94=94=E2=94=80=E2=94=80 version
-> /sys/devices/system/cpu/cpu1/microcode/
-> =E2=94=9C=E2=94=80=E2=94=80 processor_flags
-> =E2=94=94=E2=94=80=E2=94=80 version
+The BG2Q SoC uses cpufreq-dt for cpufreq. Register a platform device for
+this.
 
-Yeah, Its not touching the sysfs path at all.
+Signed-off-by: Antoine Tenart <antoine.tenart@free-electrons.com>
+---
+ arch/arm/mach-berlin/berlin.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
---=20
-viresh
+diff --git a/arch/arm/mach-berlin/berlin.c b/arch/arm/mach-berlin/berlin.c
+index ac181c6797ee..0de906374994 100644
+--- a/arch/arm/mach-berlin/berlin.c
++++ b/arch/arm/mach-berlin/berlin.c
+@@ -15,9 +15,21 @@
+ #include <linux/io.h>
+ #include <linux/kernel.h>
+ #include <linux/of_platform.h>
++#include <linux/platform_device.h>
+ #include <asm/hardware/cache-l2x0.h>
+ #include <asm/mach/arch.h>
+ 
++static const struct of_device_id berlin2q_match[] = {
++	{ .compatible = "marvell,berlin2q" },
++	{ },
++};
++
++static void __init berlin_init_late(void)
++{
++	if (of_find_matching_node(NULL, berlin2q_match))
++		platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
++}
++
+ static const char * const berlin_dt_compat[] = {
+ 	"marvell,berlin",
+ 	NULL,
+@@ -25,6 +37,7 @@ static const char * const berlin_dt_compat[] = {
+ 
+ DT_MACHINE_START(BERLIN_DT, "Marvell Berlin")
+ 	.dt_compat	= berlin_dt_compat,
++	.init_late	= berlin_init_late,
+ 	/*
+ 	 * with DT probing for L2CCs, berlin_init_machine can be removed.
+ 	 * Note: 88DE3005 (Armada 1500-mini) uses pl310 l2cc
+-- 
+2.5.0
+
