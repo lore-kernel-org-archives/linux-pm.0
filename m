@@ -1,89 +1,77 @@
 From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH 01/20] Documentation: dt: atmel-at91: add clocks to system
- timer, rstc and shdwc
-Date: Thu, 30 Jul 2015 02:21:47 +0200
-Message-ID: <1438215726-27452-2-git-send-email-alexandre.belloni@free-electrons.com>
+Subject: [PATCH 16/20] power/reset: at91-reset: remove useless at91_reset_platform_probe()
+Date: Thu, 30 Jul 2015 02:22:02 +0200
+Message-ID: <1438215726-27452-17-git-send-email-alexandre.belloni@free-electrons.com>
 References: <1438215726-27452-1-git-send-email-alexandre.belloni@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1438215726-27452-1-git-send-email-alexandre.belloni@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The system timer (at91rm9200), the reset controller and the shutdown
-controller need an input clock. This is the slow clock and they will not
-function without it.
-
-Also fix the shutdown controller example.
+Since all the at91 platforms are now DT only, at91_reset_platform_probe()
+is now useless, remove it.
 
 Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
 Cc: Sebastian Reichel <sre@kernel.org>
 Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 Cc: linux-pm@vger.kernel.org
- Documentation/devicetree/bindings/arm/atmel-at91.txt | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ drivers/power/reset/at91-reset.c | 36 +-----------------------------------
+ 1 file changed, 1 insertion(+), 35 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/atmel-at91.txt b/Documentation/devicetree/bindings/arm/atmel-at91.txt
-index 424ac8cbfa08..209710cdf3aa 100644
---- a/Documentation/devicetree/bindings/arm/atmel-at91.txt
-+++ b/Documentation/devicetree/bindings/arm/atmel-at91.txt
-@@ -50,6 +50,7 @@ System Timer (ST) required properties:
- - reg: Should contain registers location and length
- - interrupts: Should contain interrupt for the ST which is the IRQ line
-   shared across all System Controller members.
-+- clocks: phandle to input clock.
- Its subnodes can be:
- - watchdog: compatible should be "atmel,at91rm9200-wdt"
+diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
+index 36dc52fb2ec8..3e8f478385c1 100644
+--- a/drivers/power/reset/at91-reset.c
++++ b/drivers/power/reset/at91-reset.c
+@@ -195,46 +195,12 @@ static int at91_reset_of_probe(struct platform_device *pdev)
+ 	return register_restart_handler(&at91_restart_nb);
+ }
  
-@@ -89,12 +90,14 @@ RSTC Reset Controller required properties:
- - compatible: Should be "atmel,<chip>-rstc".
-   <chip> can be "at91sam9260" or "at91sam9g45"
- - reg: Should contain registers location and length
-+- clocks: phandle to input clock.
+-static int at91_reset_platform_probe(struct platform_device *pdev)
+-{
+-	const struct platform_device_id *match;
+-	struct resource *res;
+-	int idx = 0;
+-
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	at91_rstc_base = devm_ioremap_resource(&pdev->dev, res);
+-	if (IS_ERR(at91_rstc_base)) {
+-		dev_err(&pdev->dev, "Could not map reset controller address\n");
+-		return PTR_ERR(at91_rstc_base);
+-	}
+-
+-	for (idx = 0; idx < 2; idx++) {
+-		res = platform_get_resource(pdev, IORESOURCE_MEM, idx + 1 );
+-		at91_ramc_base[idx] = devm_ioremap(&pdev->dev, res->start,
+-						   resource_size(res));
+-		if (!at91_ramc_base[idx]) {
+-			dev_err(&pdev->dev, "Could not map ram controller address\n");
+-			return -ENOMEM;
+-		}
+-	}
+-
+-	match = platform_get_device_id(pdev);
+-	at91_restart_nb.notifier_call =
+-		(int (*)(struct notifier_block *,
+-			 unsigned long, void *)) match->driver_data;
+-
+-	return register_restart_handler(&at91_restart_nb);
+-}
+-
+ static int at91_reset_probe(struct platform_device *pdev)
+ {
+ 	int ret;
  
- Example:
+-	if (pdev->dev.of_node)
+-		ret = at91_reset_of_probe(pdev);
+-	else
+-		ret = at91_reset_platform_probe(pdev);
  
- 	rstc@fffffd00 {
- 		compatible = "atmel,at91sam9260-rstc";
- 		reg = <0xfffffd00 0x10>;
-+		clocks = <&clk32k>;
- 	};
++	ret = at91_reset_of_probe(pdev);
+ 	if (ret)
+ 		return ret;
  
- RAMC SDRAM/DDR Controller required properties:
-@@ -117,6 +120,7 @@ required properties:
- - compatible: Should be "atmel,<chip>-shdwc".
-   <chip> can be "at91sam9260", "at91sam9rl" or "at91sam9x5".
- - reg: Should contain registers location and length
-+- clocks: phandle to input clock.
- 
- optional properties:
- - atmel,wakeup-mode: String, operation mode of the wakeup mode.
-@@ -135,9 +139,10 @@ optional at91sam9x5 properties:
- 
- Example:
- 
--	rstc@fffffd00 {
--		compatible = "atmel,at91sam9260-rstc";
--		reg = <0xfffffd00 0x10>;
-+	shdwc@fffffd10 {
-+		compatible = "atmel,at91sam9260-shdwc";
-+		reg = <0xfffffd10 0x10>;
-+		clocks = <&clk32k>;
- 	};
- 
- Special Function Registers (SFR)
 -- 
 2.1.4
