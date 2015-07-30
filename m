@@ -1,73 +1,50 @@
-From: Matt Fleming <matt.fleming@intel.com>
-Subject: Re: [RFC PATCH 08/16] x86/efi: Carrying swsusp key by setup data
-Date: Thu, 30 Jul 2015 17:30:09 +0100
-Message-ID: <1438273809.11322.21.camel@intel.com>
-References: <1437056730-15247-1-git-send-email-jlee@suse.com>
-	 <1437056730-15247-9-git-send-email-jlee@suse.com>
+From: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 00/27] Export I2C and OF module aliases in missing drivers
+Date: Thu, 30 Jul 2015 09:35:17 -0700
+Message-ID: <20150730163517.GA13165@dtor-ws>
+References: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1437056730-15247-9-git-send-email-jlee@suse.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Matthew Garrett <matthew.garrett@nebula.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>, "Lee, Chun-Yi" <jlee@suse.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1438273132-20926-1-git-send-email-javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>
+Sender: linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mauro Carvalho Chehab <mchehab-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Takashi Iwai <tiwai-IBi9RG/b67k@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sjoe
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2015-07-16 at 22:25 +0800, Lee, Chun-Yi wrote:
-> For forwarding swsusp key from EFI stub to boot kernel, this patch
-> allocates setup data for carrying swsusp key, size and the status
-> of efi operating.
+Hi Javier,
+
+On Thu, Jul 30, 2015 at 06:18:25PM +0200, Javier Martinez Canillas wrote:
+> Hello,
 > 
-> Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
-> ---
->  arch/x86/boot/compressed/eboot.c      | 29 +++++++++++++++++++++++++----
->  arch/x86/include/uapi/asm/bootparam.h |  1 +
->  2 files changed, 26 insertions(+), 4 deletions(-)
+> Short version:
 > 
-> diff --git a/arch/x86/boot/compressed/eboot.c b/arch/x86/boot/compressed/eboot.c
-> index 97b356f..5e1476e 100644
-> --- a/arch/x86/boot/compressed/eboot.c
-> +++ b/arch/x86/boot/compressed/eboot.c
-> @@ -1392,19 +1392,23 @@ free_mem_map:
->  
->  static void setup_swsusp_keys(struct boot_params *params)
->  {
-> -	unsigned long key_size, attributes;
-> +	struct setup_data *setup_data, *swsusp_setup_data;
->  	struct swsusp_keys *swsusp_keys;
-> +	int size = 0;
-> +	unsigned long key_size, attributes;
->  	efi_status_t status;
+> This series add the missing MODULE_DEVICE_TABLE() for OF and I2C tables
+> to export that information so modules have the correct aliases built-in
+> and autoloading works correctly.
+> 
+> Longer version:
+> 
+> Currently it's mandatory for I2C drivers to have an I2C device ID table
+> regardless if the device was registered using platform data or OF. This
+> is because the I2C core needs an I2C device ID table for two reasons:
+> 
+> 1) Match the I2C client with a I2C device ID so a struct i2c_device_id
+>    is passed to the I2C driver probe() function.
+> 
+> 2) Export the module aliases from the I2C device ID table so userspace
+>    can auto-load the correct module. This is because i2c_device_uevent
+>    always reports a MODALIAS of the form i2c:<client->name>.
 
-Why the local variable shuffling? It'd be better to leave key_size and
-attributes alone.
+Why are we not fixing this? We emit specially carved uevent for
+ACPI-based devices, why not the same for OF? Platform bus does this...
 
-Also, 'size' doesn't look like it should be int. If you're passing it to
-allocate_pool it really wants to be 'unsigned long'.
+Thanks.
 
->  	/* Allocate setup_data to carry keys */
-> +	size = sizeof(struct setup_data) + sizeof(struct swsusp_keys);
->  	status = efi_call_early(allocate_pool, EFI_LOADER_DATA,
-> -				sizeof(struct swsusp_keys), &swsusp_keys);
-> +				size, &swsusp_setup_data);
->  	if (status != EFI_SUCCESS) {
->  		efi_printk(sys_table, "Failed to alloc mem for swsusp_keys\n");
->  		return;
->  	}
->  
-> -	memset(swsusp_keys, 0, sizeof(struct swsusp_keys));
-> +	memset(swsusp_setup_data, 0, size);
-> +	swsusp_keys = (struct swsusp_keys *)swsusp_setup_data->data;
->  
->  	status = efi_call_early(get_variable, SWSUSP_KEY, &EFI_SWSUSP_GUID,
->  				&attributes, &key_size, swsusp_keys->swsusp_key);
-> @@ -1413,7 +1417,9 @@ static void setup_swsusp_keys(struct boot_params *params)
->  		memset(swsusp_keys->swsusp_key, 0, SWSUSP_DIGEST_SIZE);
->  		status = efi_call_early(set_variable, SWSUSP_KEY,
->  					&EFI_SWSUSP_GUID, attributes, 0, NULL);
-> -		if (status == EFI_SUCCESS) {
-> +		if (status)
-> +			goto clean_fail;
-
-Please use the EFI status codes explicitly.
+-- 
+Dmitry
+--
+To unsubscribe from this list: send the line "unsubscribe linux-spi" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
