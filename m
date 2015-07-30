@@ -1,31 +1,49 @@
-From: Matt Fleming <matt.fleming@intel.com>
-Subject: Re: [RFC PATCH 02/16] x86/efi: Add get and set variable to EFI
- services pointer table
-Date: Thu, 30 Jul 2015 16:19:58 +0100
-Message-ID: <1438269598.11322.2.camel@intel.com>
-References: <1437056730-15247-1-git-send-email-jlee@suse.com>
-	 <1437056730-15247-3-git-send-email-jlee@suse.com>
+From: Liberman Igal <Igal.Liberman-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Subject: RE: [RFC PATCH 8/8] powerpc/fsl: Use new clockgen binding
+Date: Thu, 30 Jul 2015 15:32:32 +0000
+Message-ID: <DM2PR03MB50986F3471DF3DD74494002E68B0@DM2PR03MB509.namprd03.prod.outlook.com>
+References: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
+ <1434682158-7243-9-git-send-email-scottwood@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1437056730-15247-3-git-send-email-jlee@suse.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <matthew.garrett@nebula.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>, "Lee, Chun-Yi" <jlee@suse.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1434682158-7243-9-git-send-email-scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Content-Language: en-US
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Scott Wood <scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Yuantian Tang <Yuantian.Tang-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Madalin-Cristian Bucur <madalin.bucur-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, "linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org" <linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2015-07-16 at 22:25 +0800, Lee, Chun-Yi wrote:
-> Add get variable and set variable function to EFI services pointer
-> table for supporting later functions of hibernate signature
-> verification to keep the HMAC key in efi boot service veriable.
+
+Regards,
+Igal Liberman.
+
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Friday, June 19, 2015 5:49 AM
+> To: Mike Turquette; Tang Yuantian-B29983
+> Cc: Rafael J. Wysocki; Liberman Igal-B31950; Bucur Madalin-Cristian-B32716;
+> linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; linuxppc-
+> dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org; linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org;
+> devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; Wood Scott-B07421
+> Subject: [RFC PATCH 8/8] powerpc/fsl: Use new clockgen binding
 > 
-> Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
+> The driver retains compatibility with old device trees, but we don't want the
+> old nodes lying around to be copied, or used as a reference (some of the
+> mux options are incorrect), or even just being clutter.
+> 
+> We will also need the #clock-cells in the clockgen node in order to add fman
+> nodes.
+> 
+> Signed-off-by: Scott Wood <scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+> ---
 
-Maybe mention that we want to be able to read/write variables from
-within the EFI boot stub? That's really why you want to add
-{get,set}_variable pointers.
+Tested on: several e500mc, e5500 and e6500 platforms.
 
-s/veriable/variable/
+Tested-by: Igal Liberman <Igal.Liberman-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
 
-Rest of the patch looks good.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
