@@ -1,44 +1,69 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/6] thermal/cpu_cooling: quit early after updating policy
-Date: Thu, 30 Jul 2015 12:40:31 +0530
-Message-ID: <47594802e96dc2b1e727fd88f92b3fa4459b4d09.1438239727.git.viresh.kumar@linaro.org>
+Subject: [PATCH 3/6] thermal/cpu_cooling: convert 'switch' block to 'if' block in notifier
+Date: Thu, 30 Jul 2015 12:40:32 +0530
+Message-ID: <46d2492a9e665e05ec03124ffcebbe663846ff37.1438239727.git.viresh.kumar@linaro.org>
 References: <cover.1438239727.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:33894 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753289AbbG3HK5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 03:10:57 -0400
-Received: by pacan13 with SMTP id an13so19150174pac.1
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2015 00:10:56 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1438239727.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1438239727.git.viresh.kumar@linaro.org>
 References: <cover.1438239727.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: edubezval@gmail.com
 Cc: linaro-kernel@lists.linaro.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, radivoje.jovanovic@linux.intel.com, punit.agrawal@arm.com, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-If a valid cpufreq_dev is found for policy->cpu, we should update the
-policy and quit the for loop. There is no need to keep traversing the
-list of cpufreq_dev's.
+We just need to take care of single event here and there is no need to
+increase indentation level of most of the code (which causes lines
+longer that 80 columns to break).
+
+Kill the switch block.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/thermal/cpu_cooling.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/thermal/cpu_cooling.c | 26 ++++++++++----------------
+ 1 file changed, 10 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index d010c6d0d722..276cec5a1fb7 100644
+index 276cec5a1fb7..bf2673bb3cf5 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -232,6 +232,7 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
- 			if (policy->max != max_freq)
- 				cpufreq_verify_within_limits(policy, 0,
- 							     max_freq);
-+			break;
- 		}
- 		mutex_unlock(&cooling_cpufreq_lock);
+@@ -218,27 +218,21 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+ 	unsigned long max_freq;
+ 	struct cpufreq_cooling_device *cpufreq_dev;
+ 
+-	switch (event) {
++	if (event != CPUFREQ_ADJUST)
++		return NOTIFY_DONE;
+ 
+-	case CPUFREQ_ADJUST:
+-		mutex_lock(&cooling_cpufreq_lock);
+-		list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
+-			if (!cpumask_test_cpu(policy->cpu,
+-					      &cpufreq_dev->allowed_cpus))
+-				continue;
++	mutex_lock(&cooling_cpufreq_lock);
++	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
++		if (!cpumask_test_cpu(policy->cpu, &cpufreq_dev->allowed_cpus))
++			continue;
+ 
+-			max_freq = cpufreq_dev->cpufreq_val;
++		max_freq = cpufreq_dev->cpufreq_val;
+ 
+-			if (policy->max != max_freq)
+-				cpufreq_verify_within_limits(policy, 0,
+-							     max_freq);
+-			break;
+-		}
+-		mutex_unlock(&cooling_cpufreq_lock);
++		if (policy->max != max_freq)
++			cpufreq_verify_within_limits(policy, 0, max_freq);
  		break;
+-	default:
+-		return NOTIFY_DONE;
+ 	}
++	mutex_unlock(&cooling_cpufreq_lock);
+ 
+ 	return NOTIFY_OK;
+ }
 -- 
 2.4.0
-
