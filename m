@@ -1,97 +1,70 @@
-From: NeilBrown <neil@brown.name>
-Subject: [PATCH 05/13] twl4030_charger: split uA calculation into a function.
-Date: Thu, 30 Jul 2015 10:11:24 +1000
-Message-ID: <20150730001124.4012.45948.stgit@noble>
-References: <20150730001113.4012.18086.stgit@noble>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management and ACPI fixes for v4.2-rc5
+Date: Thu, 30 Jul 2015 02:52:01 +0200
+Message-ID: <CAJZ5v0hXpNnxFzfz7Gdp7k4_S=y3S=iYgRwGVRoxtXZBcqormw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150730001113.4012.18086.stgit@noble>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-We will need this calculation in other places, so
-create functions to map between register value and uA value.
+Hi Linus,
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Signed-off-by: NeilBrown <neil@brown.name>
----
- drivers/power/twl4030_charger.c |   48 ++++++++++++++++++++++++++++-----------
- 1 file changed, 35 insertions(+), 13 deletions(-)
+Please pull from
 
-diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
-index a075216d65ed..29984b263a35 100644
---- a/drivers/power/twl4030_charger.c
-+++ b/drivers/power/twl4030_charger.c
-@@ -178,6 +178,40 @@ static int twl4030_is_battery_present(struct twl4030_bci *bci)
- }
- 
- /*
-+ * TI provided formulas:
-+ * CGAIN == 0: ICHG = (BCIICHG * 1.7) / (2^10 - 1) - 0.85
-+ * CGAIN == 1: ICHG = (BCIICHG * 3.4) / (2^10 - 1) - 1.7
-+ * Here we use integer approximation of:
-+ * CGAIN == 0: val * 1.6618 - 0.85 * 1000
-+ * CGAIN == 1: (val * 1.6618 - 0.85 * 1000) * 2
-+ */
-+/*
-+ * convert twl register value for currents into uA
-+ */
-+static int regval2ua(int regval, bool cgain)
-+{
-+	if (cgain)
-+		return (regval * 16618 - 8500 * 1000) / 5;
-+	else
-+		return (regval * 16618 - 8500 * 1000) / 10;
-+}
-+
-+/*
-+ * convert uA currents into twl register value
-+ */
-+static int ua2regval(int ua, bool cgain)
-+{
-+	int ret;
-+	if (cgain)
-+		ua /= 2;
-+	ret = (ua * 10 + 8500 * 1000) / 16618;
-+	/* rounding problems */
-+	if (ret < 512)
-+		ret = 512;
-+	return ret;
-+}
-+
-+/*
-  * Enable/Disable USB Charge functionality.
-  */
- static int twl4030_charger_enable_usb(struct twl4030_bci *bci, bool enable)
-@@ -366,14 +400,6 @@ static int twl4030_bci_usb_ncb(struct notifier_block *nb, unsigned long val,
- 	return NOTIFY_OK;
- }
- 
--/*
-- * TI provided formulas:
-- * CGAIN == 0: ICHG = (BCIICHG * 1.7) / (2^10 - 1) - 0.85
-- * CGAIN == 1: ICHG = (BCIICHG * 3.4) / (2^10 - 1) - 1.7
-- * Here we use integer approximation of:
-- * CGAIN == 0: val * 1.6618 - 0.85
-- * CGAIN == 1: (val * 1.6618 - 0.85) * 2
-- */
- static int twl4030_charger_get_current(void)
- {
- 	int curr;
-@@ -388,11 +414,7 @@ static int twl4030_charger_get_current(void)
- 	if (ret)
- 		return ret;
- 
--	ret = (curr * 16618 - 850 * 10000) / 10;
--	if (bcictl1 & TWL4030_CGAIN)
--		ret *= 2;
--
--	return ret;
-+	return regval2ua(curr, bcictl1 & TWL4030_CGAIN);
- }
- 
- /*
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-4.2-rc5
+
+to receive power management and ACPI fixes for v4.2-rc5 with
+top-most commit d29809b8eb12d291d7b507fdaaa5e44707641685
+
+ Merge branches 'pm-cpufreq' and 'acpi-pm'
+
+on top of commit cbfe8fa6cd672011c755c3cd85c9ffd4e2d10a6f
+
+ Linux 4.2-rc4
+
+These fix three regressions, two recent ones (cpufreq core and
+ACPI device power management) and one introduced during the 4.1
+cycle (intel_pstate).
+
+Specifics:
+
+ - Fix a recently introduced issue in the cpufreq core causing
+   it to attempt to create duplicate symbolic links to the policy
+   directory in sysfs for CPUs that are offline when the cpufreq
+   driver is being registered (Rafael J Wysocki).
+
+ - Fix a recently introduced problem in the ACPI device power
+   management core code causing it to store an incorrect value
+   in the device object's power.state field in some cases which
+   in turn leads to attempts to turn power resources off while
+   they should still be on going forward (Mika Westerberg).
+
+ - Fix an intel_pstate driver issue introduced during the 4.1 cycle
+   which leads to kernel panics on boot on Knights Landing chips due
+   to incomplete support for them in that driver (Lukasz Anaczkowski).
+
+Thanks!
+
+
+---------------
+
+Lukasz Anaczkowski (1):
+      intel_pstate: Add get_scaling cpu_defaults param to Knights Landing
+
+Mika Westerberg (1):
+      ACPI / PM: Use target_state to set the device power state
+
+Rafael J. Wysocki (1):
+      cpufreq: Avoid attempts to create duplicate symbolic links
+
+---------------
+
+ drivers/acpi/device_pm.c       |   2 +-
+ drivers/cpufreq/cpufreq.c      | 108 +++++++++++++++++++++--------------------
+ drivers/cpufreq/intel_pstate.c |   1 +
+ include/linux/cpufreq.h        |   1 +
+ 4 files changed, 58 insertions(+), 54 deletions(-)
