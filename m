@@ -1,80 +1,53 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH V3 02/16] PM / OPP: Create a directory for opp bindings
-Date: Thu, 30 Jul 2015 11:24:03 -0500
-Message-ID: <CAL_JsqLeBcaaJ05AtW+tyD5Uxuo5uVYLrq3_oKzrv94xhNpZGg@mail.gmail.com>
-References: <cover.1438166099.git.viresh.kumar@linaro.org> <4dfe565ff17766b7df127d475d84958e96fdab1b.1438166099.git.viresh.kumar@linaro.org>
- <CAL_Jsq+J41c7qx11L13-g0UyD+hY9W36Wu9P+6O3cnDv7ysY6Q@mail.gmail.com> <20150730134959.GB17794@linux>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f179.google.com ([209.85.160.179]:34208 "EHLO
-	mail-yk0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754033AbbG3QYX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 12:24:23 -0400
-In-Reply-To: <20150730134959.GB17794@linux>
-Sender: linux-pm-owner@vger.kernel.org
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: [PATCH 08/27] power: Export I2C module alias information in missing drivers
+Date: Thu, 30 Jul 2015 18:18:33 +0200
+Message-ID: <1438273132-20926-9-git-send-email-javier@osg.samsung.com>
+References: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Santosh Shilimkar <santosh.shilimkar@oracle.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mark Brown <broonie@kernel.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lucas Stach <l.stach@pengutronix.de>
 
-On Thu, Jul 30, 2015 at 8:49 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 30-07-15, 08:18, Rob Herring wrote:
->> On Wed, Jul 29, 2015 at 5:52 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> > More platform specific extended opp bindings will follow and it would be
->> > easy to manage them with a directory for opp. Lets create that and move
->> > the existing opp bindings into it.
->> >
->> > Cc: Rob Herring <rob.herring@linaro.org>
->>
->> Use get_maintainers.pl please so you send to right people and right email.
->
-> Already done, you were just cc'd as an extra guy :)
+The I2C core always reports the MODALIAS uevent as "i2c:<client name"
+regardless if the driver was matched using the I2C id_table or the
+of_match_table. So the driver needs to export the I2C table and this
+be built into the module or udev won't have the necessary information
+to auto load the correct module when the device is added.
 
-No, because no one that is a maintainer of
-Documentation/devicetree/bindings is cc'ed here. You did on the other
-patch, but not here as neither Ian, Mark, Kumar nor Pawel are cc'ed.
+Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
 
->> > Cc: devicetree@vger.kernel.org
->> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> > ---
->> >  Documentation/devicetree/bindings/power/{ => opp}/opp.txt | 0
->> >  1 file changed, 0 insertions(+), 0 deletions(-)
->> >  rename Documentation/devicetree/bindings/power/{ => opp}/opp.txt (100%)
->> >
->> > diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/power/opp/opp.txt
->> > similarity index 100%
->> > rename from Documentation/devicetree/bindings/power/opp.txt
->> > rename to Documentation/devicetree/bindings/power/opp/opp.txt
->>
->> "power" seems to be a random collection of things. I'd prefer you move
->> this to .../bindings/opp/opp.txt.
->
-> Hmm, sure. That would be better I think.
->
-> --------------8<-------------------
->
-> Message-Id: <29597667e2c8afdbf396c5fcc9269fb27794131c.1438264123.git.viresh.kumar@linaro.org>
-> From: Viresh Kumar <viresh.kumar@linaro.org>
-> Date: Mon, 27 Jul 2015 10:04:21 +0530
-> Subject: [PATCH] PM / OPP: Create a directory for opp bindings
->
-> More platform specific extended opp bindings will follow and it would be
-> easy to manage them with a directory for opp. Lets create that and move
-> the existing opp bindings into it.
->
-> Cc: Rob Herring <rob.herring@linaro.org>
+---
 
-Still wrong...
+ drivers/power/bq24190_charger.c | 1 +
+ drivers/power/rt5033_battery.c  | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-
-> Cc: devicetree@vger.kernel.org
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  Documentation/devicetree/bindings/{power => opp}/opp.txt | 0
->  1 file changed, 0 insertions(+), 0 deletions(-)
->  rename Documentation/devicetree/bindings/{power => opp}/opp.txt (100%)
->
-> diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-> similarity index 100%
-> rename from Documentation/devicetree/bindings/power/opp.txt
-> rename to Documentation/devicetree/bindings/opp/opp.txt
+diff --git a/drivers/power/bq24190_charger.c b/drivers/power/bq24190_charger.c
+index 703ebecaf38b..bb6d85bd6e56 100644
+--- a/drivers/power/bq24190_charger.c
++++ b/drivers/power/bq24190_charger.c
+@@ -1515,6 +1515,7 @@ static const struct i2c_device_id bq24190_i2c_ids[] = {
+ 	{ "bq24190", BQ24190_REG_VPRS_PN_24190 },
+ 	{ },
+ };
++MODULE_DEVICE_TABLE(i2c, bq24190_i2c_ids);
+ 
+ #ifdef CONFIG_OF
+ static const struct of_device_id bq24190_of_match[] = {
+diff --git a/drivers/power/rt5033_battery.c b/drivers/power/rt5033_battery.c
+index a7a6877b4e16..bcdd83048492 100644
+--- a/drivers/power/rt5033_battery.c
++++ b/drivers/power/rt5033_battery.c
+@@ -165,7 +165,7 @@ static const struct i2c_device_id rt5033_battery_id[] = {
+ 	{ "rt5033-battery", },
+ 	{ }
+ };
+-MODULE_DEVICE_TABLE(platform, rt5033_battery_id);
++MODULE_DEVICE_TABLE(i2c, rt5033_battery_id);
+ 
+ static struct i2c_driver rt5033_battery_driver = {
+ 	.driver = {
+-- 
+2.4.3
