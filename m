@@ -1,75 +1,58 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
-Subject: Re: [PATCH 00/27] Export I2C and OF module aliases in missing drivers
-Date: Thu, 30 Jul 2015 19:13:44 +0200
-Message-ID: <55BA5B48.1050005@osg.samsung.com>
-References: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
- <20150730163517.GA13165@dtor-ws> <20150730163708.GB13165@dtor-ws>
+From: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Subject: Re: [PATCH 3/4] power: Add Qualcomm SMBB driver
+Date: Thu, 30 Jul 2015 10:17:05 -0700
+Message-ID: <20150730171705.GF6519@usrtlx11787.corpusers.net>
+References: <1434662025-9485-1-git-send-email-bjorn.andersson@sonymobile.com>
+ <1434662025-9485-4-git-send-email-bjorn.andersson@sonymobile.com>
+ <20150725154159.GA17373@earth>
+ <20150726010414.GK4753@usrtlx11787.corpusers.net>
+ <20150727140622.GB12993@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-leds-owner@vger.kernel.org>
-In-Reply-To: <20150730163708.GB13165@dtor-ws>
-Sender: linux-leds-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org, Mark Brown <broonie@kernel.org>, linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-i2c@vger.kernel.org, linux-leds@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Chanwoo Choi <cw00.choi@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, lm-sensors@lm-sensors.org, Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean Delvare <jdelvare@suse.com>, Jonathan Cameron <jic23@kernel.org>, linux-media@vger.kernel.org, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Guenter Roeck <linux@roeck-us.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Wolfram Sang <wsa@the-dreams.de>, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, Sjoe
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from seldrel01.sonyericsson.com ([37.139.156.2]:7201 "EHLO
+	seldrel01.sonyericsson.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754460AbbG3RRL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 13:17:11 -0400
+Content-Disposition: inline
+In-Reply-To: <20150727140622.GB12993@earth>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "Cavin, Courtney" <Courtney.Cavin@sonymobile.com>
 
-Hello Dmitry,
+On Mon 27 Jul 07:06 PDT 2015, Sebastian Reichel wrote:
 
-Thanks a lot for your feedback.
-
-On 07/30/2015 06:37 PM, Dmitry Torokhov wrote:
-> On Thu, Jul 30, 2015 at 09:35:17AM -0700, Dmitry Torokhov wrote:
->> Hi Javier,
->>
->> On Thu, Jul 30, 2015 at 06:18:25PM +0200, Javier Martinez Canillas wrote:
->>> Hello,
->>>
->>> Short version:
->>>
->>> This series add the missing MODULE_DEVICE_TABLE() for OF and I2C tables
->>> to export that information so modules have the correct aliases built-in
->>> and autoloading works correctly.
->>>
->>> Longer version:
->>>
->>> Currently it's mandatory for I2C drivers to have an I2C device ID table
->>> regardless if the device was registered using platform data or OF. This
->>> is because the I2C core needs an I2C device ID table for two reasons:
->>>
->>> 1) Match the I2C client with a I2C device ID so a struct i2c_device_id
->>>    is passed to the I2C driver probe() function.
->>>
->>> 2) Export the module aliases from the I2C device ID table so userspace
->>>    can auto-load the correct module. This is because i2c_device_uevent
->>>    always reports a MODALIAS of the form i2c:<client->name>.
->>
->> Why are we not fixing this? We emit specially carved uevent for
->> ACPI-based devices, why not the same for OF? Platform bus does this...
+> Hi,
 > 
-> Ah, now I see the 27/27 patch. I think it is exactly what we need. And
+> On Sat, Jul 25, 2015 at 06:04:14PM -0700, Bjorn Andersson wrote:
+> > On Sat 25 Jul 08:42 PDT 2015, Sebastian Reichel wrote:
+> > >  * battery-charge-control-limit
+> > > 
+> > > It's unclear, what this property is used for. Is the limit only
+> > > for "normal" charging or also for fast charging?
+> > > 
+> > 
+> > This is described as the current limit during fast charging. However,
+> > "fast charging" is the normal state.
+> > 
+> > I think the most consistent (regards documentation and other properties)
+> > would be:
+> > 
+> >  qcom,fast-charge-current-limit
 
-Yes, patch 27/27 is needed but the problem is as I explained before that
-there are drivers relying on the current behavior. The item c) in the list
-of issues that I mentioned. So those drivers need to be fixed before that
-patch is merged...
+I spoke with Courtney about this and he pointed out that it really is
+the limit of the current flowing into the battery, hence his original
+naming.
 
-> probably for SPI bus as well.
->
-
-Yes, I didn't mention SPI because the cover letter became too long
-already but it does indeed have the same issue and I discussed this
-with  Mark already some time ago [0].
-
-Once I2C uevent report is fixed, I plan to do the same for SPI.
-
-> Thanks.
+> 
+> So what's the difference to "fast-charge-safe-current"?
 > 
 
-[0]: https://lkml.org/lkml/2014/9/11/458
+The "safe" values are write-once values that should be set once during
+boot to protect the hardware. The fast-charge-current-limit can be
+modified in runtime by e.g. userspace or a thermal mitigation solution -
+but will never be allowed to go above the safe limit.
 
-Best regards,
--- 
-Javier Martinez Canillas
-Open Source Group
-Samsung Research America
+Regards,
+Bjorn
