@@ -1,30 +1,131 @@
-From: Jeremy Eder <jeder@redhat.com>
-Subject: turbostat: change to default output
-Date: Thu, 30 Jul 2015 14:04:08 -0400
-Message-ID: <CABxNGQaAA_sbqp_DfbjFxMFUDwnRVPXqKFOUcxUa18bGSpuicQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] bus: subsys: propagate errors from subsys interface's ->add_dev()
+Date: Thu, 30 Jul 2015 20:53:04 +0200
+Message-ID: <8139001.Q4eV8YG1Il@vostro.rjw.lan>
+References: <aff842c23841a8e61ac17e58fc27c99e052e338b.1435308918.git.viresh.kumar@linaro.org> <2113628.vmLC8GdsGl@vostro.rjw.lan> <20150730034431.GH5100@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f171.google.com ([209.85.223.171]:34548 "EHLO
-	mail-io0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750744AbbG3SEJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 14:04:09 -0400
-Received: by ioea135 with SMTP id a135so61724622ioe.1
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2015 11:04:09 -0700 (PDT)
+Received: from v094114.home.net.pl ([79.96.170.134]:55336 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751649AbbG3S0I (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 14:26:08 -0400
+In-Reply-To: <20150730034431.GH5100@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, lenb@intel.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Greg KH <gregkh@linuxfoundation.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, pi-cheng.chen@linaro.org
 
-Len, commit 1cc21f7b6b747220c29b42cfd1c84b5648d12407
-https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/tools/power/x86/turbostat/turbostat.c?id=1cc21f7b6b747220c29b42cfd1c84b5648d12407
+On Thursday, July 30, 2015 09:14:31 AM Viresh Kumar wrote:
+> On 30-07-15, 01:29, Rafael J. Wysocki wrote:
+> > > > There is a small problem with it that I've already pointed out to Viresh.
+> > > > 
+> > > > Namely, while changing subsys_interface_(un)register() to handle return
+> > > > values from ->add_dev(), it doesn't do the same thing in bus_probe_device()
+> > > > which I believe it should for consistency at least.
+> > > 
+> > > Oops, sorry, missed that response.  I'll go drop this patch then, thanks
+> > > for letting me know.
+> 
+> It was discussed in last 2-3 days over a cpufreq related thread, no way you
+> could have caught that :)
+> 
+> But, I think we should keep this patch until the time we find a better solution
+> to our problem.
+> 
+> You are the driver core maintainer and probably no one can give a better
+> suggestion to fix our problem, so lemme explain that again here :)
+> 
+> A platform specific cpufreq driver may depend on a external driver (say i2c
+> which may control access to regulators) for its working, and until the time
+> regulator is up along with i2c we need to defer cpufreq driver from being
+> registered. We already have an EPROBE_DEFER mechanism to handle such situations
+> nicely.
+> 
+> cpufreq core calling sequence at a glance:
+> cpufreq_register_driver()
+>  -> subsys_interface_register()
+>    -> subsys->add_dev() for all present CPUs one by one
+>      -> cpufreq_add_dev()
+>        -> cpufreq_driver->init()
+> 
+> 	  Now init() is the only location where the drivers initialize per
+> 	  policy (group of CPUs that share clock/voltage rails) stuff and can
+> 	  check if all the resources like clk/regulator are available or not.
+> 	  And so -EPROBE_DEFER will be returned from here.
 
-The commit message mentions "Casual turbostat users generally just
-want to know MHz."
+No, this is not the only place (see below).
 
-Disagree; we don't think there are any casual users of turbostat that
-_don't_ care about c-states.
 
-Any chance you can revert this ?  If someone needs a more concise
-output, you might offer a --compact flag or so.
+> The only broken part here is the return value of subsys->add_dev() and that I
+> tried to fix.
+> 
+> Another important part here is that the cpufreq driver isn't probed against a
+> cpu device, but a dummy platform device to get the EPROBE_DEFER story right,
 
-Thoughts ?
+So the big question here is: why?  Why is that done the way it is done?
+
+
+> plus there are few other issues that it solves, like probing the right cpufreq
+> driver.
+> 
+> Now, please explain a sane way to get things working for such platforms.
+
+Well, on ACPI systems we actually do probe CPU devices.  We have a processor
+driver there that binds to CPU devices and the cpufreq driver is just a
+frontend to that.
+
+So question is what prevents DT-based systems from doing it analogously.
+
+
+Now, even if you use a fake platform device for that (I'm sure there are
+reasons for doing that, but I'd very much like them to be explained), then
+all of the information on dependencies should already be available to the
+->probe callback of that device's driver, so it can check them before
+registering the cpufreq interface, can't it?
+
+
+Essentially, what you're suggesting to do is something like: Make the ->probe
+of one device's driver register a subsys interface for a specific bus type
+and check what ->add_dev of that interface returns for each device on that
+bus and if that is -EPROBE_DEFER, return it as its own return value.  Do you
+honestly think this is a good design?
+
+
+> > > > But then, the question is whether or not the probing should fail and
+> > > > what if device_attach() returns 0 and one of the ->add_dev() callbacks
+> > > > returns an error.
+> > > 
+> > > That's a total mess...
+> 
+> Right and so modifying that to propagate return value wouldn't be that straight
+> forward.
+
+That's the point.  Doing it in one place only just because that covers your
+particular use case (which is questionable at best) is not exactly correct in
+my view.
+
+
+> > > Given that there are almost no uses of this api, I think people should
+> > > work it out before any more start to pop up :)
+> > 
+> > cpufreq is one of the users and that's where the problem is, but in my opinion
+> > it should be addressed in a different way.
+> > 
+> > But while we are at it, should the ->add_dev and ->remove_dev callbacks in
+> > struct subsys_interface return an int if their return values are always
+> > ignored?  Maybe it would be better to redefine them to be void to make it clear
+> > that they can't fail?
+> 
+> For remove_dev(), surely a void return type will make sense. I can put some
+> effort to get that done. But not sure about add_dev() yet.
+
+The way ->add_dev is used by the core today, it should be void as well.
+
+Changing the way the core uses it would require figuring out how it should
+interact with device_attach().
+
+Thanks,
+Rafael
+
