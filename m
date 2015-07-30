@@ -1,121 +1,169 @@
-From: Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: Re: [RFC PATCH 05/16] x86/efi: Get entropy through EFI random
- number generator protocol
-Date: Thu, 30 Jul 2015 17:11:44 +0100
-Message-ID: <1438272704.11322.13.camel@intel.com>
-References: <1437056730-15247-1-git-send-email-jlee@suse.com>
-	 <1437056730-15247-6-git-send-email-jlee@suse.com>
+From: Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
+Date: Thu, 30 Jul 2015 11:16:41 -0500
+Message-ID: <CAL_JsqKQLQ15qSt95zBZykzzPhcUrtZzhk29a76n+r_3719AiA@mail.gmail.com>
+References: <1438010430-5802-1-git-send-email-lee.jones@linaro.org>
+ <1438010430-5802-2-git-send-email-lee.jones@linaro.org> <20150728022936.GB1229@linux>
+ <20150728225510.GB3159@codeaurora.org> <20150729081403.GH2284@x1>
+ <20150729221526.GE3159@codeaurora.org> <20150730084634.GD9319@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1437056730-15247-6-git-send-email-jlee-IBi9RG/b67k@public.gmane.org>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <matthew.garrett-05XSO3Yj/JvQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, "Lee, Chun-Yi" <jlee-IBi9RG/b67k@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150730084634.GD9319@x1>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, kernel-F5mvAk5X5gdBDgjK7y7TUQ@public.gmane.org, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Arnd Bergmann <arnd.bergmann-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Ajit Pal Singh <ajitpal.singh-qxv4g6HH51o@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2015-07-16 at 22:25 +0800, Lee, Chun-Yi wrote:
-> To grab random numbers through EFI protocol as one of the entropies
-> source of swsusp key, this patch adds the logic for accessing EFI RNG
-> (random number generator) protocol that's introduced since UEFI 2.4.
-> 
-> Signed-off-by: Lee, Chun-Yi <jlee-IBi9RG/b67k@public.gmane.org>
-> ---
->  arch/x86/boot/compressed/efi_random.c | 193 ++++++++++++++++++++++++++++++++++
->  include/linux/efi.h                   |  46 ++++++++
->  2 files changed, 239 insertions(+)
+On Thu, Jul 30, 2015 at 3:46 AM, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> On Wed, 29 Jul 2015, Stephen Boyd wrote:
+>
+>> On 07/29, Lee Jones wrote:
+>> > On Tue, 28 Jul 2015, Stephen Boyd wrote:
+>> >
+>> > > On 07/28, Viresh Kumar wrote:
+>> > > > Cc'ing few people (whom I cc'd last time as well :)).
+>> > > >
+>> > > > On 27-07-15, 16:20, Lee Jones wrote:
+>> > > > > + - opp-hz            : CPU frequency [Hz] for this OPP [See: ./opp.txt]
+>> > > > > + - st,avs            : List of available voltages [uV] indexed by process code
+>> > > > > + - st,cuts           : Cut version this OPP is suitable for [0xFF means ALL]
+>> > > > > + - st,substrate              : Substrate version this OPP is suitable for [0xFF means ALL]
+>> [...]
+>> > > > > +cpu0-opp-list {
+>> > > > > +     compatible      = "operating-points-v2-sti";
+>> > > > > +     st,syscfg       = <&syscfg [major_offset]>;
+>> > > > > +     st,syscfg-eng   = <&syscfg_eng [pcode_offset] [minor_offset]>;
+>> > > > > +
+>> > > > > +     opp0 {
+>> > > > > +             opp-hz          = <1200000000>;
+>> > > > > +             st,avs          = <1110 1150 1100 1080 1040 1020 980 930>;
+>> > > > > +             st,substrate    = <0xff>;
+>> > > > > +             st,cuts         = <0xff>;
+>> > > > > +     };
+>> > > > > +     opp1 {
+>> > > > > +             opp-hz          = <1500000000>;
+>> > > > > +             st,avs          = <1200 1200 1200 1200 1170 1140 1100 1070>;
+>> > > > > +             st,substrate    = <0xff>;
+>> > > > > +             st,cuts         = <0x2>;
+>> > > > > +     };
+>> > > > > +};
+>> > > >
+>> > > > I don't see more problems here, unless we can move some of this to the
+>> > > > generic bindings.
+>> > > >
+>> > > > @Rob/Stephen: Please respond before it is late :)
+>> > >
+>> > > It's interesting to have vendor specific properties like avs,
+>> > > cuts, and substrate. That could replace our planned usage of the
+>> > > opp-names property where we encode similar information (speed
+>> > > bin, revision, etc.) into a string that we look for.
+>> > >
+>> > > So I wonder why the avs/cut/substrate information can't be
+>> > > encoded into the opp name? That would make these properties
+>> > > obsolete, given that all they're used for is to pick out the
+>> > > correct OPP?
+>> >
+>> > You could hack the substrate and cut version into a string, but that's
+>> > exactly what it would be, a hack.  I'm struggling how you would do the
+>> > same for 'st,avs', which is an array of u32s.
+>> >
+>>
+>>
+>> (I don't understand the st,avs property to begin with, so feel
+>> free to ignore the rest of this mail.)
+>>
+>> For qcom platforms we have the pvs bin and speed bin, and
+>> sometimes a revision number. Each one of these properties
+>> corresponds to a different set of OPPs (opp table). So we might
+>> have speed1-pvs2-v0 for speed bin 1, pvs bin 2 and version 0. We
+>> fill out an opp table for this and then point the opps property
+>> at the table and have a corresponding opp-name "speed1-pvs2-v0"
+>> in the "consumer" node.
+>>
+>>       operating-points-v2 = <&speed1_pvs2_v0>;
+>>       operating-points-names = "speed1-pvs2-v0";
+>>
+>> We have quite a few of these tables because the values are
+>> always different. If the values were the same then we could use
+>> the same table with different names I suppose, but we're not
+>> doing that.
+>>
+>> From a quick read of the st properties (that I admit I don't
+>> understand), it looks like we're trying to compress the OPP
+>> tables by listing all the voltages that could be used for a
+>> particular frequency depending on which avs is present on the
+>> device? And then limiting the frequency voltage pairs depending
+>> on which cut and substrate is present?
+>>
+>> So we'd probably have to expand out the tables to be unique per
+>> avs/cut/substrate parameter. Something like:
+>>
+>> avs0-cut2 {
+>>       compatible = "operating-points-v2";
+>>
+>>       opp0 {
+>>               opp-hz = <1200000000>;
+>>               opp-microvolt = <1100>;
+>>       };
+>>
+>>       opp1 {
+>>               opp-hz = <1500000000>;
+>>               opp-microvolt = <1200>;
+>>       };
+>> };
+>>
+>> avs1-cut2 {
+>>       compatible = "operating-points-v2";
+>>
+>>       opp0 {
+>>               opp-hz = <1200000000>;
+>>               opp-microvolt = <1150>;
+>>       };
+>>
+>>       opp1 {
+>>               opp-hz = <1500000000>;
+>>               opp-microvolt = <1200>;
+>>       };
+>> };
+>>
+>> And then another copy of these for the devices without cuts != 2
+>> where the top frequency is gone?
+>
+> There is nothing stopping us from representing the data in this way.
+> On the plus side, it would mean that we wouldn't need any vendor
+> specific properties.  However, far outweighing the positives are the
+> fact that, even in our very simple example provided, where we only
+> have 2 frequencies, differ between only 1 cut and support all
+> substrates, we would still need 16 OPP tables.  When any one of those
+> variables increase (and they will), we would then have a large number
+> of permutations and subsequently and unruly amount of OPP tables.
+>
+> (... and we haven't even provided the body-biasing information yet.)
+>
+> The way we've chosen to represent our circumstance is the least
+> intrusive and the most succinct way we can think of.  Which IMHO
+> outweighs the fact that we have to introduce a couple of vendor
+> properties by a country mile.
 
-[...]
+Regardless of which is better or worse, you are both doing essentially
+the same thing. You are selecting OPPs based on some Si parameters. We
+should not really be doing this 2 different ways. I'd be fine with 2
+ways if it was 2 for all SOCs, but right now it is 2 for 2 SOCs.
+Really, I'd like to see most if not all the selection or fixup of OPPs
+be done in the bootloader and the kernel just deals with the correct
+OPP table.
 
-> @@ -2,6 +2,191 @@
->  
->  #include <linux/efi.h>
->  #include <asm/archrandom.h>
-> +#include <asm/efi.h>
-> +
-> +static efi_status_t efi_locate_rng(efi_system_table_t *sys_table,
-> +				   void ***rng_handle)
-> +{
-> +	efi_guid_t rng_proto = EFI_RNG_PROTOCOL_GUID;
-> +	unsigned long size = 0;
-> +	efi_status_t status;
-> +
-> +	status = efi_call_early(locate_handle,
-> +				EFI_LOCATE_BY_PROTOCOL,
-> +				&rng_proto, NULL, &size, *rng_handle);
-> +
-> +	if (status == EFI_BUFFER_TOO_SMALL) {
-> +		status = efi_call_early(allocate_pool,
-> +					EFI_LOADER_DATA,
-> +					size, (void **)rng_handle);
-> +
-> +		if (status != EFI_SUCCESS) {
-> +			efi_printk(sys_table, " Failed to alloc mem for rng_handle");
-> +			return status;
-> +		}
-> +
-> +		status = efi_call_early(locate_handle,
-> +					EFI_LOCATE_BY_PROTOCOL, &rng_proto,
-> +					NULL, &size, *rng_handle);
-> +	}
-> +
-> +	if (status != EFI_SUCCESS) {
-> +		efi_printk(sys_table, " Failed to locate EFI_RNG_PROTOCOL");
-> +		goto free_handle;
-> +	}
-> +
-> +	return EFI_SUCCESS;
-> +
-> +free_handle:
-> +	efi_call_early(free_pool, *rng_handle);
-> +
-> +	return status;
-> +}
+Where are you storing the data that gets selected to fill into these
+properties? Is it just look-up tables or is there some kind of
+algorithm to generate the values? If the former, then DT is as good a
+data struct as any to store the tables. There is a lot of duplication
+though with only a single property varying in each set. If you both
+have that problem, then perhaps we can come up with a generic way to
+list all possible values more concisely.
 
-I would suggest setting *rng_handle = NULL at the beginning of this
-function just because if we ever forget to set it that way in the caller
-this free_pool call might do screwy things.
-
-
-> +static bool efi_rng_supported(efi_system_table_t *sys_table)
-> +{
-> +	const struct efi_config *efi_early = __efi_early();
-> +	u32 random = 0;
-> +	efi_status_t status;
-> +	void **rng_handle = NULL;
-> +
-> +	status = efi_locate_rng(sys_table, &rng_handle);
-> +	if (status != EFI_SUCCESS)
-> +		return false;
-> +
-> +	if (efi_early->is64)
-> +		random = efi_rng_supported64(sys_table, rng_handle);
-> +	else
-> +		random = efi_rng_supported32(sys_table, rng_handle);
-> +
-> +	efi_call_early(free_pool, rng_handle);
-> +
-> +	return random;
-
-Oops, 'random' isn't a bool but it should be.
-
-> @@ -51,6 +236,14 @@ static unsigned long get_random_long(unsigned long entropy,
->  		use_i8254 = false;
->  	}
->  
-> +	if (efi_rng_supported(sys_table)) {
-> +		efi_printk(sys_table, " EFI_RNG");
-> +		raw = efi_get_rng(sys_table);
-> +		if (raw)
-> +			random ^= raw;
-> +		use_i8254 = false;
-> +	}
-> +
->  	if (use_i8254) {
->  		efi_printk(sys_table, " i8254");
->  		random ^= i8254();
-
-Have you looked at the tradeoff in terms of boot time for building a key
-array in 'unsigned long' chunks as opposed to passing the array and size
-directly for the RNG protocol?
+Rob
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
