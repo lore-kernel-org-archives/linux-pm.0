@@ -1,515 +1,170 @@
-From: Hongtao Jia <hongtao.jia@freescale.com>
-Subject: RE: [PATCH V2] QorIQ/TMU: add thermal management support based on TMU
-Date: Thu, 30 Jul 2015 08:13:09 +0000
-Message-ID: <BLUPR03MB14917AE1F5EDBF5949F6DECE18B0@BLUPR03MB149.namprd03.prod.outlook.com>
-References: <1438150779-22923-1-git-send-email-hongtao.jia@freescale.com>
- <20150730065543.GB6157@localhost.localdomain>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
+Date: Thu, 30 Jul 2015 09:46:34 +0100
+Message-ID: <20150730084634.GD9319@x1>
+References: <1438010430-5802-1-git-send-email-lee.jones@linaro.org>
+ <1438010430-5802-2-git-send-email-lee.jones@linaro.org>
+ <20150728022936.GB1229@linux>
+ <20150728225510.GB3159@codeaurora.org>
+ <20150729081403.GH2284@x1>
+ <20150729221526.GE3159@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-by2on0125.outbound.protection.outlook.com ([207.46.100.125]:13546
-	"EHLO na01-by2-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750838AbbG3INL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 04:13:11 -0400
-In-Reply-To: <20150730065543.GB6157@localhost.localdomain>
-Content-Language: en-US
+Received: from mail-wi0-f172.google.com ([209.85.212.172]:37821 "EHLO
+	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752542AbbG3Iqj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 04:46:39 -0400
+Received: by wibud3 with SMTP id ud3so58278715wib.0
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2015 01:46:38 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20150729221526.GE3159@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Scott Wood <scottwood@freescale.com>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, rob.herring@linaro.org, nm@ti.com, arnd.bergmann@linaro.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, ajitpal.singh@st.com, sre@kernel.org, dbaryshkov@gmail.com
 
-- "Any specific reason why not using OF thermal?"
-- No, actually.
+On Wed, 29 Jul 2015, Stephen Boyd wrote:
 
-I'd like to use OF thermal after some clarification.
+> On 07/29, Lee Jones wrote:
+> > On Tue, 28 Jul 2015, Stephen Boyd wrote:
+> >=20
+> > > On 07/28, Viresh Kumar wrote:
+> > > > Cc'ing few people (whom I cc'd last time as well :)).
+> > > >=20
+> > > > On 27-07-15, 16:20, Lee Jones wrote:
+> > > > > + - opp-hz		: CPU frequency [Hz] for this OPP [See: ./opp.txt=
+]
+> > > > > + - st,avs		: List of available voltages [uV] indexed by proc=
+ess code
+> > > > > + - st,cuts		: Cut version this OPP is suitable for [0xFF mea=
+ns ALL]
+> > > > > + - st,substrate		: Substrate version this OPP is suitable fo=
+r [0xFF means ALL]
+> [...]
+> > > > > +cpu0-opp-list {
+> > > > > +	compatible	=3D "operating-points-v2-sti";
+> > > > > +	st,syscfg	=3D <&syscfg [major_offset]>;
+> > > > > +	st,syscfg-eng   =3D <&syscfg_eng [pcode_offset] [minor_offs=
+et]>;
+> > > > > +
+> > > > > +	opp0 {
+> > > > > +		opp-hz		=3D <1200000000>;
+> > > > > +		st,avs		=3D <1110 1150 1100 1080 1040 1020 980 930>;
+> > > > > +		st,substrate	=3D <0xff>;
+> > > > > +		st,cuts		=3D <0xff>;
+> > > > > +	};
+> > > > > +	opp1 {
+> > > > > +		opp-hz		=3D <1500000000>;
+> > > > > +		st,avs		=3D <1200 1200 1200 1200 1170 1140 1100 1070>;
+> > > > > +		st,substrate	=3D <0xff>;
+> > > > > +		st,cuts		=3D <0x2>;
+> > > > > +	};
+> > > > > +};
+> > > >=20
+> > > > I don't see more problems here, unless we can move some of this=
+ to the
+> > > > generic bindings.
+> > > >=20
+> > > > @Rob/Stephen: Please respond before it is late :)
+> > >=20
+> > > It's interesting to have vendor specific properties like avs,
+> > > cuts, and substrate. That could replace our planned usage of the
+> > > opp-names property where we encode similar information (speed
+> > > bin, revision, etc.) into a string that we look for.
+> > >=20
+> > > So I wonder why the avs/cut/substrate information can't be
+> > > encoded into the opp name? That would make these properties
+> > > obsolete, given that all they're used for is to pick out the
+> > > correct OPP?
+> >=20
+> > You could hack the substrate and cut version into a string, but tha=
+t's
+> > exactly what it would be, a hack.  I'm struggling how you would do =
+the
+> > same for 'st,avs', which is an array of u32s.
+> >=20
+>=20
+>=20
+> (I don't understand the st,avs property to begin with, so feel
+> free to ignore the rest of this mail.)
+>=20
+> For qcom platforms we have the pvs bin and speed bin, and
+> sometimes a revision number. Each one of these properties
+> corresponds to a different set of OPPs (opp table). So we might
+> have speed1-pvs2-v0 for speed bin 1, pvs bin 2 and version 0. We
+> fill out an opp table for this and then point the opps property
+> at the table and have a corresponding opp-name "speed1-pvs2-v0"
+> in the "consumer" node.
+>=20
+> 	operating-points-v2 =3D <&speed1_pvs2_v0>;
+> 	operating-points-names =3D "speed1-pvs2-v0";
+>=20
+> We have quite a few of these tables because the values are
+> always different. If the values were the same then we could use
+> the same table with different names I suppose, but we're not
+> doing that.
+>=20
+> From a quick read of the st properties (that I admit I don't
+> understand), it looks like we're trying to compress the OPP
+> tables by listing all the voltages that could be used for a
+> particular frequency depending on which avs is present on the
+> device? And then limiting the frequency voltage pairs depending
+> on which cut and substrate is present?
+>=20
+> So we'd probably have to expand out the tables to be unique per
+> avs/cut/substrate parameter. Something like:
+>=20
+> avs0-cut2 {
+> 	compatible =3D "operating-points-v2";
+>=20
+> 	opp0 {
+> 		opp-hz =3D <1200000000>;
+> 		opp-microvolt =3D <1100>;
+> 	};
+>=20
+> 	opp1 {
+> 		opp-hz =3D <1500000000>;
+> 		opp-microvolt =3D <1200>;
+> 	};
+> };
+>=20
+> avs1-cut2 {
+> 	compatible =3D "operating-points-v2";
+>=20
+> 	opp0 {
+> 		opp-hz =3D <1200000000>;
+> 		opp-microvolt =3D <1150>;
+> 	};
+>=20
+> 	opp1 {
+> 		opp-hz =3D <1500000000>;
+> 		opp-microvolt =3D <1200>;
+> 	};
+> };
+>=20
+> And then another copy of these for the devices without cuts !=3D 2
+> where the top frequency is gone?
 
-Regarding to "cooling-maps". For some cases there should be more than one cpus
-as cooling device and they are independent.
-1. Let's say 4. So we need to provide 4 maps like map0-map3. Right?
-2. "cooling-max-level" may vary depend on switch settings or firmware. Is that
-   OK if I do not provide "cooling-min-level" and "cooling-max-level" property?
-   
-Thanks.
--Hongtao
+There is nothing stopping us from representing the data in this way.
+On the plus side, it would mean that we wouldn't need any vendor
+specific properties.  However, far outweighing the positives are the
+fact that, even in our very simple example provided, where we only
+have 2 frequencies, differ between only 1 cut and support all
+substrates, we would still need 16 OPP tables.  When any one of those
+variables increase (and they will), we would then have a large number
+of permutations and subsequently and unruly amount of OPP tables.
 
+(... and we haven't even provided the body-biasing information yet.)
 
-> -----Original Message-----
-> From: Eduardo Valentin [mailto:edubezval@gmail.com]
-> Sent: Thursday, July 30, 2015 2:56 PM
-> To: Jia Hongtao-B38951
-> Cc: linux-pm@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Wood Scott-
-> B07421
-> Subject: Re: [PATCH V2] QorIQ/TMU: add thermal management support based
-> on TMU
-> 
-> On Wed, Jul 29, 2015 at 02:19:39PM +0800, Jia Hongtao wrote:
-> > It supports one critical trip point and one passive trip point.
-> > The cpufreq is used as the cooling device to throttle CPUs when the
-> > passive trip is crossed.
-> >
-> > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-> > ---
-> > This patch based on:
-> > http://patchwork.ozlabs.org/patch/482987/
-> >
-> > Changes for V2:
-> > * Add tmu-range parse.
-> > * Use default trend hook.
-> > * Using latest thermal_zone_bind_cooling_device API.
-> > * Add calibration check during initialization.
-> > * Disable/enalbe device when suspend/resume.
-> >
-> >  drivers/thermal/Kconfig         |  11 ++
-> >  drivers/thermal/Makefile        |   1 +
-> >  drivers/thermal/qoriq_thermal.c | 406
-> > ++++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 418 insertions(+)
-> >  create mode 100644 drivers/thermal/qoriq_thermal.c
-> >
-> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig index
-> > 118938e..a200745 100644
-> > --- a/drivers/thermal/Kconfig
-> > +++ b/drivers/thermal/Kconfig
-> > @@ -180,6 +180,17 @@ config IMX_THERMAL
-> >  	  cpufreq is used as the cooling device to throttle CPUs when the
-> >  	  passive trip is crossed.
-> >
-> > +config QORIQ_THERMAL
-> > +	tristate "Freescale QorIQ Thermal Monitoring Unit"
-> > +	depends on CPU_THERMAL
-> > +	depends on OF
-> > +	default n
-> > +	help
-> > +	  Enable thermal management based on Freescale QorIQ Thermal
-> Monitoring
-> > +	  Unit (TMU). It supports one critical trip point and one passive
-> trip
-> > +	  point. The cpufreq is used as the cooling device to throttle CPUs
-> when
-> > +	  the passive trip is crossed.
-> > +
-> >  config SPEAR_THERMAL
-> >  	bool "SPEAr thermal sensor driver"
-> >  	depends on PLAT_SPEAR
-> > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile index
-> > 535dfee..8c25859 100644
-> > --- a/drivers/thermal/Makefile
-> > +++ b/drivers/thermal/Makefile
-> > @@ -33,6 +33,7 @@ obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
-> >  obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
-> >  obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
-> >  obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
-> > +obj-$(CONFIG_QORIQ_THERMAL)	+= qoriq_thermal.o
-> >  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
-> >  obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
-> >  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
-> > diff --git a/drivers/thermal/qoriq_thermal.c
-> > b/drivers/thermal/qoriq_thermal.c new file mode 100644 index
-> > 0000000..0694f42
-> > --- /dev/null
-> > +++ b/drivers/thermal/qoriq_thermal.c
-> > @@ -0,0 +1,406 @@
-> > +/*
-> > + * Copyright 2015 Freescale Semiconductor, Inc.
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-> > +modify it
-> > + * under the terms and conditions of the GNU General Public License,
-> > + * version 2, as published by the Free Software Foundation.
-> > + *
-> > + * This program is distributed in the hope it will be useful, but
-> > +WITHOUT
-> > + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-> > +or
-> > + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-> > +License for
-> > + * more details.
-> > + *
-> > + */
-> > +
-> > +/*
-> > + * Based on Freescale QorIQ Thermal Monitoring Unit (TMU)  */
-> > +#include <linux/cpufreq.h> #include <linux/cpu_cooling.h> #include
-> > +<linux/module.h> #include <linux/platform_device.h> #include
-> > +<linux/err.h> #include <linux/io.h> #include <linux/of.h> #include
-> > +<linux/of_address.h> #include <linux/thermal.h>
-> > +
-> > +#define SITES_MAX		16
-> > +
-> > +#define TMU_TEMP_PASSIVE	85000
-> > +#define TMU_TEMP_CRITICAL	95000
-> > +
-> > +#define TMU_PASSIVE_DELAY	1000	/* Milliseconds */
-> > +#define TMU_POLLING_DELAY	5000
-> > +
-> > +/* The driver supports 1 passive trip point and 1 critical trip point
-> > +*/ enum tmu_thermal_trip {
-> > +	TMU_TRIP_PASSIVE,
-> > +	TMU_TRIP_CRITICAL,
-> > +	TMU_TRIP_NUM,
-> > +};
-> > +
-> > +/*
-> > + * QorIQ TMU Registers
-> > + */
-> > +struct qoriq_tmu_site_regs {
-> > +	__be32 tritsr;		/* Immediate Temperature Site Register */
-> > +	__be32 tratsr;		/* Average Temperature Site Register */
-> > +	u8 res0[0x8];
-> > +} __packed;
-> > +
-> > +struct qoriq_tmu_regs {
-> > +	__be32 tmr;		/* Mode Register */
-> > +#define TMR_DISABLE	0x0
-> > +#define TMR_ME		0x80000000
-> > +#define TMR_ALPF	0x0c000000
-> > +#define TMR_MSITE	0x00008000
-> > +#define TMR_ALL		(TMR_ME | TMR_ALPF | TMR_MSITE)
-> > +	__be32 tsr;		/* Status Register */
-> > +	__be32 tmtmir;		/* Temperature measurement interval
-> Register */
-> > +#define TMTMIR_DEFAULT	0x00000007
-> > +	u8 res0[0x14];
-> > +	__be32 tier;		/* Interrupt Enable Register */
-> > +#define TIER_DISABLE	0x0
-> > +	__be32 tidr;		/* Interrupt Detect Register */
-> > +	__be32 tiscr;		/* Interrupt Site Capture Register */
-> > +	__be32 ticscr;		/* Interrupt Critical Site Capture Register
-> */
-> > +	u8 res1[0x10];
-> > +	__be32 tmhtcrh;		/* High Temperature Capture Register */
-> > +	__be32 tmhtcrl;		/* Low Temperature Capture Register */
-> > +	u8 res2[0x8];
-> > +	__be32 tmhtitr;		/* High Temperature Immediate Threshold */
-> > +	__be32 tmhtatr;		/* High Temperature Average Threshold */
-> > +	__be32 tmhtactr;	/* High Temperature Average Crit Threshold */
-> > +	u8 res3[0x24];
-> > +	__be32 ttcfgr;		/* Temperature Configuration Register */
-> > +	__be32 tscfgr;		/* Sensor Configuration Register */
-> > +	u8 res4[0x78];
-> > +	struct qoriq_tmu_site_regs site[SITES_MAX];
-> > +	u8 res5[0x9f8];
-> > +	__be32 ipbrr0;		/* IP Block Revision Register 0 */
-> > +	__be32 ipbrr1;		/* IP Block Revision Register 1 */
-> > +	u8 res6[0x310];
-> > +	__be32 ttr0cr;		/* Temperature Range 0 Control Register */
-> > +	__be32 ttr1cr;		/* Temperature Range 1 Control Register */
-> > +	__be32 ttr2cr;		/* Temperature Range 2 Control Register */
-> > +	__be32 ttr3cr;		/* Temperature Range 3 Control Register */
-> > +};
-> > +
-> > +/*
-> > + * Thermal zone data
-> > + */
-> > +struct qoriq_tmu_data {
-> > +	struct thermal_zone_device *tz;
-> > +	struct thermal_cooling_device *cdev;
-> > +	enum thermal_device_mode mode;
-> > +	unsigned long temp_passive;
-> > +	unsigned long temp_critical;
-> > +	struct qoriq_tmu_regs __iomem *regs; };
-> > +
-> > +static int tmu_get_mode(struct thermal_zone_device *tz,
-> > +			enum thermal_device_mode *mode)
-> > +{
-> > +	struct qoriq_tmu_data *data = tz->devdata;
-> > +
-> > +	*mode = data->mode;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int tmu_set_mode(struct thermal_zone_device *tz,
-> > +			enum thermal_device_mode mode)
-> > +{
-> > +	struct qoriq_tmu_data *data = tz->devdata;
-> > +
-> > +	if (mode == THERMAL_DEVICE_ENABLED) {
-> > +		tz->polling_delay = TMU_POLLING_DELAY;
-> > +		tz->passive_delay = TMU_PASSIVE_DELAY;
-> > +		thermal_zone_device_update(tz);
-> > +	} else {
-> > +		tz->polling_delay = 0;
-> > +		tz->passive_delay = 0;
-> > +	}
-> > +
-> > +	data->mode = mode;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int tmu_get_temp(struct thermal_zone_device *tz, unsigned long
-> > +*temp) {
-> > +	u8 val;
-> > +	struct qoriq_tmu_data *data = tz->devdata;
-> > +
-> > +	val = ioread32be(&data->regs->site[0].tritsr);
-> > +	*temp = (unsigned long)val * 1000;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int tmu_get_trip_type(struct thermal_zone_device *tz, int trip,
-> > +			     enum thermal_trip_type *type) {
-> > +	*type = (trip == TMU_TRIP_PASSIVE) ? THERMAL_TRIP_PASSIVE :
-> > +					     THERMAL_TRIP_CRITICAL;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int tmu_get_trip_temp(struct thermal_zone_device *tz, int trip,
-> > +			     unsigned long *temp)
-> > +{
-> > +	struct qoriq_tmu_data *data = tz->devdata;
-> > +
-> > +	*temp = (trip == TMU_TRIP_PASSIVE) ? data->temp_passive :
-> > +					     data->temp_critical;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int tmu_get_crit_temp(struct thermal_zone_device *tz,
-> > +			     unsigned long *temp)
-> > +{
-> > +	struct qoriq_tmu_data *data = tz->devdata;
-> > +
-> > +	*temp = data->temp_critical;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int tmu_bind(struct thermal_zone_device *tz,
-> > +		    struct thermal_cooling_device *cdev) {
-> > +	int ret;
-> > +
-> > +	ret = thermal_zone_bind_cooling_device(tz, TMU_TRIP_PASSIVE, cdev,
-> > +					       THERMAL_NO_LIMIT,
-> > +					       THERMAL_NO_LIMIT,
-> > +					       THERMAL_WEIGHT_DEFAULT);
-> > +	if (ret) {
-> > +		dev_err(&tz->device,
-> > +			"Binding zone %s with cdev %s failed:%d\n",
-> > +			tz->type, cdev->type, ret);
-> > +	}
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +static int tmu_unbind(struct thermal_zone_device *tz,
-> > +		      struct thermal_cooling_device *cdev) {
-> > +	int ret;
-> > +
-> > +	ret = thermal_zone_unbind_cooling_device(tz, TMU_TRIP_PASSIVE,
-> cdev);
-> > +	if (ret) {
-> > +		dev_err(&tz->device,
-> > +			"Unbinding zone %s with cdev %s failed:%d\n",
-> > +			tz->type, cdev->type, ret);
-> > +	}
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +static int qoriq_tmu_calibration(struct platform_device *pdev) {
-> > +	int i, val, len;
-> > +	u32 range[4];
-> > +	const __be32 *calibration;
-> > +	struct device_node *node = pdev->dev.of_node;
-> > +	struct qoriq_tmu_data *data = dev_get_drvdata(&pdev->dev);
-> > +
-> > +	/* Disable monitoring before calibration */
-> > +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
-> > +
-> > +	if (of_property_read_u32_array(node, "fsl,tmu-range", range, 4))
-> > +		return -1;
-> > +
-> > +	/* Init temperature range registers */
-> > +	iowrite32be(range[0], &data->regs->ttr0cr);
-> > +	iowrite32be(range[1], &data->regs->ttr1cr);
-> > +	iowrite32be(range[2], &data->regs->ttr2cr);
-> > +	iowrite32be(range[3], &data->regs->ttr3cr);
-> > +
-> > +	calibration = of_get_property(node, "fsl,tmu-calibration", &len);
-> > +	if (calibration == NULL)
-> > +		return -1;
-> > +
-> > +	for (i = 0; i < len; i += 8, calibration += 2) {
-> > +		val = (int)of_read_number(calibration, 1);
-> > +		iowrite32be(val, &data->regs->ttcfgr);
-> > +		val = (int)of_read_number(calibration + 1, 1);
-> > +		iowrite32be(val, &data->regs->tscfgr);
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static void qoriq_tmu_init_device(struct qoriq_tmu_data *data) {
-> > +	/* Disable interrupt, using polling instead */
-> > +	iowrite32be(TIER_DISABLE, &data->regs->tier);
-> > +
-> > +	/* Set update_interval */
-> > +	iowrite32be(TMTMIR_DEFAULT, &data->regs->tmtmir);
-> > +
-> > +	/* Enable monitoring */
-> > +	iowrite32be(TMR_ALL, &data->regs->tmr); }
-> > +
-> > +static struct thermal_zone_device_ops tmu_tz_ops = {
-> > +	.bind = tmu_bind,
-> > +	.unbind = tmu_unbind,
-> > +	.get_temp = tmu_get_temp,
-> > +	.get_mode = tmu_get_mode,
-> > +	.set_mode = tmu_set_mode,
-> > +	.get_trip_type = tmu_get_trip_type,
-> > +	.get_trip_temp = tmu_get_trip_temp,
-> > +	.get_crit_temp = tmu_get_crit_temp,
-> > +};
-> > +
-> > +static int qoriq_tmu_probe(struct platform_device *pdev) {
-> > +	int ret;
-> > +	struct cpumask clip_cpus;
-> > +	struct qoriq_tmu_data *data;
-> > +
-> > +	if (!cpufreq_get_current_driver()) {
-> > +		dev_dbg(&pdev->dev, "No cpufreq driver yet\n");
-> > +		return -EPROBE_DEFER;
-> > +	}
-> > +
-> > +	if (!pdev->dev.of_node) {
-> > +		dev_err(&pdev->dev, "Device OF-Node is NULL");
-> > +		return -EFAULT;
-> > +	}
-> > +
-> > +	data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
-> > +			    GFP_KERNEL);
-> > +	if (!data)
-> > +		return -ENOMEM;
-> > +
-> > +	dev_set_drvdata(&pdev->dev, data);
-> > +	data->regs = of_iomap(pdev->dev.of_node, 0);
-> > +
-> > +	if (!data->regs) {
-> > +		dev_err(&pdev->dev, "Failed to get memory region\n");
-> > +		ret = -ENODEV;
-> > +		goto err_iomap;
-> > +	}
-> > +
-> > +	ret = qoriq_tmu_calibration(pdev);	/* TMU calibration */
-> > +	if (ret < 0) {
-> > +		dev_err(&pdev->dev, "TMU calibration failed.\n");
-> > +		ret = -ENODEV;
-> > +		goto err_iomap;
-> > +	}
-> > +
-> > +	qoriq_tmu_init_device(data);	/* TMU initialization */
-> > +
-> > +	cpumask_setall(&clip_cpus);
-> > +	data->cdev = cpufreq_cooling_register(&clip_cpus);
-> > +	if (IS_ERR(data->cdev)) {
-> > +		ret = PTR_ERR(data->cdev);
-> > +		dev_err(&data->cdev->device,
-> > +			"Failed to register cpufreq cooling device: %d\n", ret);
-> > +		goto err_cooling;
-> > +	}
-> > +
-> > +	data->temp_passive = TMU_TEMP_PASSIVE;
-> > +	data->temp_critical = TMU_TEMP_CRITICAL;
-> > +	data->tz = thermal_zone_device_register("tmu_thermal_zone",
-> 
-> Any specific reason why not using OF thermal?
-> 
-> > +						TMU_TRIP_NUM,
-> > +						0, data,
-> > +						&tmu_tz_ops, NULL,
-> > +						TMU_PASSIVE_DELAY,
-> > +						TMU_POLLING_DELAY);
-> > +
-> > +	if (IS_ERR(data->tz)) {
-> > +		ret = PTR_ERR(data->tz);
-> > +		dev_err(&pdev->dev,
-> > +			"Failed to register thermal zone device %d\n", ret);
-> > +		goto err_thermal;
-> > +	}
-> > +
-> > +	data->mode = THERMAL_DEVICE_ENABLED;
-> > +
-> > +	return 0;
-> > +
-> > +err_thermal:
-> > +	cpufreq_cooling_unregister(data->cdev);
-> > +
-> > +err_cooling:
-> > +	iounmap(data->regs);
-> > +
-> > +err_iomap:
-> > +	dev_set_drvdata(&pdev->dev, NULL);
-> > +	devm_kfree(&pdev->dev, data);
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +static int qoriq_tmu_remove(struct platform_device *pdev) {
-> > +	struct qoriq_tmu_data *data = dev_get_drvdata(&pdev->dev);
-> > +
-> > +	/* Disable monitoring */
-> > +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
-> > +
-> > +	thermal_zone_device_unregister(data->tz);
-> > +	cpufreq_cooling_unregister(data->cdev);
-> > +	iounmap(data->regs);
-> > +
-> > +	dev_set_drvdata(&pdev->dev, NULL);
-> > +	devm_kfree(&pdev->dev, data);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +#ifdef CONFIG_PM_SLEEP
-> > +static int qoriq_tmu_suspend(struct device *dev) {
-> > +	struct qoriq_tmu_data *data = dev_get_drvdata(dev);
-> > +
-> > +	/* Disable monitoring */
-> > +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
-> > +	data->mode = THERMAL_DEVICE_DISABLED;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int qoriq_tmu_resume(struct device *dev) {
-> > +	struct qoriq_tmu_data *data = dev_get_drvdata(dev);
-> > +
-> > +	/* Enable monitoring */
-> > +	iowrite32be(TMR_ALL, &data->regs->tmr);
-> > +	data->mode = THERMAL_DEVICE_ENABLED;
-> > +
-> > +	return 0;
-> > +}
-> > +#endif
-> > +
-> > +static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
-> > +			 qoriq_tmu_suspend, qoriq_tmu_resume);
-> > +
-> > +static const struct of_device_id qoriq_tmu_match[] = {
-> > +	{ .compatible = "fsl,qoriq-tmu", },
-> > +	{},
-> > +};
-> > +
-> > +static struct platform_driver qoriq_tmu = {
-> > +	.driver	= {
-> > +		.owner		= THIS_MODULE,
-> > +		.name		= "qoriq_thermal",
-> > +		.pm = &qoriq_tmu_pm_ops,
-> > +		.of_match_table	= qoriq_tmu_match,
-> > +	},
-> > +	.probe	= qoriq_tmu_probe,
-> > +	.remove	= qoriq_tmu_remove,
-> > +};
-> > +module_platform_driver(qoriq_tmu);
-> > +
-> > +MODULE_AUTHOR("Jia Hongtao <hongtao.jia@freescale.com>");
-> > +MODULE_DESCRIPTION("Freescale QorIQ Thermal Monitoring Unit driver");
-> > +MODULE_LICENSE("GPL v2");
-> > --
-> > 2.1.0.27.g96db324
-> >
+The way we've chosen to represent our circumstance is the least
+intrusive and the most succinct way we can think of.  Which IMHO
+outweighs the fact that we have to introduce a couple of vendor
+properties by a country mile.
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
