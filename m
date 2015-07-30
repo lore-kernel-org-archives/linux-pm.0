@@ -1,102 +1,183 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH 00/20] ARM: at91: Properly handle slow clock
-Date: Thu, 30 Jul 2015 02:21:46 +0200
-Message-ID: <1438215726-27452-1-git-send-email-alexandre.belloni@free-electrons.com>
+From: NeilBrown <neil@brown.name>
+Subject: [PATCH 12/13] twl4030_charger: Increase current carefully while
+ watching voltage.
+Date: Thu, 30 Jul 2015 10:11:24 +1000
+Message-ID: <20150730001124.4012.20451.stgit@noble>
+References: <20150730001113.4012.18086.stgit@noble>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-watchdog@vger.kernel.org, rtc-linux@googlegroups.com, Alessandro Zummo <a.zummo@towertech.it>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Michael Turquette <mturquette@baylibre.com>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-clk@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150730001113.4012.18086.stgit@noble>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-It was discovered that all the slow clock user were not properly claiming it.
-This can end up in a system hang because the last registered user is releasing
-it, and it gets disabled.
+The USB Battery Charging spec (BC1.2) suggests a dedicated
+charging port can deliver from 0.5 to 5.0A at between 4.75 and 5.25
+volts.
 
-commit dca1a4b5ff6e ("clk: at91: keep slow clk enabled to prevent system hang")
-was a workaround. This series is adding the slow clock to the necessary drivers
-to avoid the issue and then removes that workaround.
+To choose the "correct" current voltage setting requires a trial
+and error approach: try to draw current and see if the voltage drops
+too low.
 
-The Documentation updates and DT patches should probably go through the AT91
-tree this cycle to avoid breakage.
+Even with a configured Standard Downstream Port, it may not be possible
+to reliably pull 500mA - depending on cable quality and source
+quality I have reports of charging failure due to the voltage dropping
+too low.
 
-Then the other patches can go through each subsystem tree. They are trivial
-enough to also go in this cycle.
+To address both these concerns, this patch introduce incremental
+current setting.
+The current pull from VBUS is increased in steps of 20mA every 100ms
+until the target is reached or until the measure voltage drops below
+4.75V.  If the voltage does go too low, the target current is reduced
+by 20mA and kept there.
 
-The final clk patch depends on the other ones and may be taken for the next
-cycle to avoid synchronization issues.
+This applies to currents selected automatically, or to values
+set via sysfs.  So setting a large value will cause the maximum
+available to be used - up to the limit of 1.7A imposed by the
+hardware.
 
-I've thrown in a cleanup for at91-reset as it avoids adding support for that
-clock to the platform data initialization
+Signed-off-by: NeilBrown <neil@brown.name>
+---
+ drivers/power/twl4030_charger.c |   67 ++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 61 insertions(+), 6 deletions(-)
 
-Cc: Alessandro Zummo <a.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com
-Cc: Wim Van Sebroeck <wim@iguana.be>
-Cc: linux-watchdog@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: linux-pm@vger.kernel.org
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Michael Turquette <mturquette@baylibre.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>
-Cc: linux-clk@vger.kernel.org
-
-Alexandre Belloni (20):
-  Documentation: dt: atmel-at91: add clocks to system timer, rstc and
-    shdwc
-  Documentation: watchdog: at91sam9_wdt: add clocks property
-  Documentation: dt: rtc: at91rm9200: add clocks property
-  ARM: at91/dt: at91rm9200: use slow clock where necessary
-  ARM: at91/dt: at91sam9260: use slow clock where necessary
-  ARM: at91/dt: at91sam9261: use slow clock where necessary
-  ARM: at91/dt: at91sam9263: use slow clock where necessary
-  ARM: at91/dt: at91sam9g45: use slow clock where necessary
-  ARM: at91/dt: at91sam9n12: use slow clock where necessary
-  ARM: at91/dt: at91sam9rl: use slow clock where necessary
-  ARM: at91/dt: at91sam9x5: use slow clock where necessary
-  ARM: at91/dt: sama5d3: use slow clock where necessary
-  ARM: at91/dt: sama5d4: use slow clock where necessary
-  rtc: at91rm9200: get and use slow clock
-  watchdog: at91sam9: get and use slow clock
-  power/reset: at91-reset: remove useless at91_reset_platform_probe()
-  power/reset: at91-reset: get and use slow clock
-  power/reset: at91-poweroff: get and use slow clock
-  clocksource: atmel-st: get and use slow clock
-  clk: at91: Revert "keep slow clk enabled to prevent system hang"
-
- .../devicetree/bindings/arm/atmel-at91.txt         | 11 +++--
- .../bindings/rtc/atmel,at91rm9200-rtc.txt          |  2 +
- .../devicetree/bindings/watchdog/atmel-wdt.txt     |  2 +
- arch/arm/boot/dts/at91rm9200.dtsi                  |  2 +
- arch/arm/boot/dts/at91sam9260.dtsi                 |  3 ++
- arch/arm/boot/dts/at91sam9261.dtsi                 |  3 ++
- arch/arm/boot/dts/at91sam9263.dtsi                 |  3 ++
- arch/arm/boot/dts/at91sam9g45.dtsi                 |  4 ++
- arch/arm/boot/dts/at91sam9n12.dtsi                 |  4 ++
- arch/arm/boot/dts/at91sam9rl.dtsi                  |  4 ++
- arch/arm/boot/dts/at91sam9x5.dtsi                  |  4 ++
- arch/arm/boot/dts/sama5d3.dtsi                     |  4 ++
- arch/arm/boot/dts/sama5d4.dtsi                     |  4 ++
- drivers/clk/at91/clk-slow.c                        | 27 -------------
- drivers/clocksource/timer-atmel-st.c               | 31 +++++++++-----
- drivers/power/reset/at91-poweroff.c                | 13 ++++++
- drivers/power/reset/at91-reset.c                   | 47 ++++++----------------
- drivers/rtc/rtc-at91rm9200.c                       | 27 +++++++++++--
- drivers/watchdog/at91sam9_wdt.c                    | 22 +++++++++-
- 19 files changed, 138 insertions(+), 79 deletions(-)
-
--- 
-2.1.4
+diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
+index 68117ad23564..2c537ee11bbe 100644
+--- a/drivers/power/twl4030_charger.c
++++ b/drivers/power/twl4030_charger.c
+@@ -119,6 +119,18 @@ struct twl4030_bci {
+ #define	CHARGE_AUTO	1
+ #define	CHARGE_LINEAR	2
+ 
++	/* When setting the USB current we slowly increase the
++	 * requested current until target is reached or the voltage
++	 * drops below 4.75V.  In the latter case we step back one
++	 * step.
++	 */
++	unsigned int		usb_cur_target;
++	struct delayed_work	current_worker;
++#define	USB_CUR_STEP	20000	/* 20mA at a time */
++#define	USB_MIN_VOLT	4750000	/* 4.75V */
++#define	USB_CUR_DELAY	msecs_to_jiffies(100)
++#define	USB_MAX_CURRENT	1700000 /* TWL4030 caps at 1.7A */
++
+ 	unsigned long		event;
+ };
+ 
+@@ -257,6 +269,12 @@ static int twl4030_charger_update_current(struct twl4030_bci *bci)
+ 	} else {
+ 		cur = bci->usb_cur;
+ 		bci->ac_is_active = false;
++		if (cur > bci->usb_cur_target) {
++			cur = bci->usb_cur_target;
++			bci->usb_cur = cur;
++		}
++		if (cur < bci->usb_cur_target)
++			schedule_delayed_work(&bci->current_worker, USB_CUR_DELAY);
+ 	}
+ 
+ 	/* First, check thresholds and see if cgain is needed */
+@@ -391,6 +409,41 @@ static int twl4030_charger_update_current(struct twl4030_bci *bci)
+ 	return 0;
+ }
+ 
++static int twl4030_charger_get_current(void);
++
++static void twl4030_current_worker(struct work_struct *data)
++{
++	int v, curr;
++	int res;
++	struct twl4030_bci *bci = container_of(data, struct twl4030_bci,
++					       current_worker.work);
++
++	res = twl4030bci_read_adc_val(TWL4030_BCIVBUS);
++	if (res < 0)
++		v = 0;
++	else
++		/* BCIVBUS uses ADCIN8, 7/1023 V/step */
++		v = res * 6843;
++	curr = twl4030_charger_get_current();
++
++	dev_dbg(bci->dev, "v=%d cur=%d limit=%d target=%d\n", v, curr,
++		bci->usb_cur, bci->usb_cur_target);
++
++	if (v < USB_MIN_VOLT) {
++		/* Back up and stop adjusting. */
++		bci->usb_cur -= USB_CUR_STEP;
++		bci->usb_cur_target = bci->usb_cur;
++	} else if (bci->usb_cur >= bci->usb_cur_target ||
++		   bci->usb_cur + USB_CUR_STEP > USB_MAX_CURRENT) {
++		/* Reached target and voltage is OK - stop */
++		return;
++	} else {
++		bci->usb_cur += USB_CUR_STEP;
++		schedule_delayed_work(&bci->current_worker, USB_CUR_DELAY);
++	}
++	twl4030_charger_update_current(bci);
++}
++
+ /*
+  * Enable/Disable USB Charge functionality.
+  */
+@@ -451,6 +504,7 @@ static int twl4030_charger_enable_usb(struct twl4030_bci *bci, bool enable)
+ 			pm_runtime_put_autosuspend(bci->transceiver->dev);
+ 			bci->usb_enabled = 0;
+ 		}
++		bci->usb_cur = 0;
+ 	}
+ 
+ 	return ret;
+@@ -599,7 +653,7 @@ twl4030_bci_max_current_store(struct device *dev, struct device_attribute *attr,
+ 	if (dev == &bci->ac->dev)
+ 		bci->ac_cur = cur;
+ 	else
+-		bci->usb_cur = cur;
++		bci->usb_cur_target = cur;
+ 
+ 	twl4030_charger_update_current(bci);
+ 	return n;
+@@ -621,7 +675,7 @@ static ssize_t twl4030_bci_max_current_show(struct device *dev,
+ 			cur = bci->ac_cur;
+ 	} else {
+ 		if (bci->ac_is_active)
+-			cur = bci->usb_cur;
++			cur = bci->usb_cur_target;
+ 	}
+ 	if (cur < 0) {
+ 		cur = twl4030bci_read_adc_val(TWL4030_BCIIREF1);
+@@ -662,9 +716,9 @@ static int twl4030_bci_usb_ncb(struct notifier_block *nb, unsigned long val,
+ 
+ 	/* reset current on each 'plug' event */
+ 	if (allow_usb)
+-		bci->usb_cur = 500000;
++		bci->usb_cur_target = 500000;
+ 	else
+-		bci->usb_cur = 100000;
++		bci->usb_cur_target = 100000;
+ 
+ 	bci->event = val;
+ 	schedule_work(&bci->work);
+@@ -927,9 +981,9 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+ 	bci->ichg_hi = 500000; /* High threshold */
+ 	bci->ac_cur = 500000; /* 500mA */
+ 	if (allow_usb)
+-		bci->usb_cur = 500000;  /* 500mA */
++		bci->usb_cur_target = 500000;  /* 500mA */
+ 	else
+-		bci->usb_cur = 100000;  /* 100mA */
++		bci->usb_cur_target = 100000;  /* 100mA */
+ 	bci->usb_mode = CHARGE_AUTO;
+ 	bci->ac_mode = CHARGE_AUTO;
+ 
+@@ -980,6 +1034,7 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	INIT_WORK(&bci->work, twl4030_bci_usb_work);
++	INIT_DELAYED_WORK(&bci->current_worker, twl4030_current_worker);
+ 
+ 	bci->usb_nb.notifier_call = twl4030_bci_usb_ncb;
+ 	if (bci->dev->of_node) {
