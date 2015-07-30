@@ -1,90 +1,75 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH v2 5/6] power: bq27xxx_battery: Add support for additional
- bq27xxx family devices
-Date: Thu, 30 Jul 2015 12:07:18 -0500
-Message-ID: <55BA59C6.4010604@ti.com>
-References: <1438112353-19704-1-git-send-email-afd@ti.com> <1438112353-19704-6-git-send-email-afd@ti.com> <201507282159.30013@pali>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: Re: [PATCH 00/27] Export I2C and OF module aliases in missing drivers
+Date: Thu, 30 Jul 2015 19:13:44 +0200
+Message-ID: <55BA5B48.1050005@osg.samsung.com>
+References: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
+ <20150730163517.GA13165@dtor-ws> <20150730163708.GB13165@dtor-ws>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <201507282159.30013@pali>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?B?UGFsaSBSb2jDoXI=?= <pali.rohar@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-leds-owner@vger.kernel.org>
+In-Reply-To: <20150730163708.GB13165@dtor-ws>
+Sender: linux-leds-owner@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org, Mark Brown <broonie@kernel.org>, linux-iio@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-i2c@vger.kernel.org, linux-leds@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Chanwoo Choi <cw00.choi@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, lm-sensors@lm-sensors.org, Sebastian Reichel <sre@kernel.org>, linux-input@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jean Delvare <jdelvare@suse.com>, Jonathan Cameron <jic23@kernel.org>, linux-media@vger.kernel.org, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Guenter Roeck <linux@roeck-us.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Wolfram Sang <wsa@the-dreams.de>, Takashi Iwai <tiwai@suse.com>, Liam Girdwood <lgirdwood@gmail.com>, Sjoe
 List-Id: linux-pm@vger.kernel.org
 
+Hello Dmitry,
 
+Thanks a lot for your feedback.
 
-On 07/28/2015 02:59 PM, Pali Roh=C3=A1r wrote:
-> On Tuesday 28 July 2015 21:39:12 Andrew F. Davis wrote:
->> Add support for additional devices and register equivalent family
->> devices including the bq27010, bq27210, bq272500, bq27510, bq27520,
->                                              ^^^^^^
->                                              maybe incorrect number?
-
-Yeah, that's what I get for not copy/pasting :)
-
->> bq27530, bq27531, bq27541, bq27542, bq27546, bq27545, bq27441,
->> bq27421, and the bq27641.
+On 07/30/2015 06:37 PM, Dmitry Torokhov wrote:
+> On Thu, Jul 30, 2015 at 09:35:17AM -0700, Dmitry Torokhov wrote:
+>> Hi Javier,
 >>
->> To facilitate this process the register mapings have been moved to
->> tables and other small cleanups have been made.
+>> On Thu, Jul 30, 2015 at 06:18:25PM +0200, Javier Martinez Canillas wrote:
+>>> Hello,
+>>>
+>>> Short version:
+>>>
+>>> This series add the missing MODULE_DEVICE_TABLE() for OF and I2C tables
+>>> to export that information so modules have the correct aliases built-in
+>>> and autoloading works correctly.
+>>>
+>>> Longer version:
+>>>
+>>> Currently it's mandatory for I2C drivers to have an I2C device ID table
+>>> regardless if the device was registered using platform data or OF. This
+>>> is because the I2C core needs an I2C device ID table for two reasons:
+>>>
+>>> 1) Match the I2C client with a I2C device ID so a struct i2c_device_id
+>>>    is passed to the I2C driver probe() function.
+>>>
+>>> 2) Export the module aliases from the I2C device ID table so userspace
+>>>    can auto-load the correct module. This is because i2c_device_uevent
+>>>    always reports a MODALIAS of the form i2c:<client->name>.
 >>
->> Signed-off-by: Andrew F. Davis <afd@ti.com>
->> ---
->
->>   static const struct i2c_device_id bq27xxx_id[] =3D {
->> -	{ "bq27200", BQ27000 },	/* bq27200 is same as bq27000, but with i2=
-c
->> */ +	{ "bq27200", BQ27000 },
->> +	{ "bq27210", BQ27010 },
->>   	{ "bq27500", BQ27500 },
->> -	{ "bq27425", BQ27425 },
->> -	{ "bq27742", BQ27742 },
->> -	{ "bq27510", BQ27510 },
->> +	{ "bq27510", BQ27500 },
->> +	{ "bq27520", BQ27500 },
->> +	{ "bq27530", BQ27530 },
->> +	{ "bq27531", BQ27530 },
->> +	{ "bq27541", BQ27541 },
->> +	{ "bq27542", BQ27541 },
->> +	{ "bq27546", BQ27541 },
->> +	{ "bq27742", BQ27541 },
->> +	{ "bq27545", BQ27545 },
->> +	{ "bq27421", BQ27421 },
->> +	{ "bq27425", BQ27421 },
->> +	{ "bq27441", BQ27421 },
->> +	{ "bq27621", BQ27421 },
->>   	{},
->>   };
->
-> I'm trying to understand comparator which you used for sorting these
-> values... but I do not see any logic here. What about sorting list by
-> first value? Now it is long list of device names and for better abili=
-ty
-> to read it, it would be better to have it in some order.
+>> Why are we not fixing this? We emit specially carved uevent for
+>> ACPI-based devices, why not the same for OF? Platform bus does this...
+> 
+> Ah, now I see the 27/27 patch. I think it is exactly what we need. And
+
+Yes, patch 27/27 is needed but the problem is as I explained before that
+there are drivers relying on the current behavior. The item c) in the list
+of issues that I mentioned. So those drivers need to be fixed before that
+patch is merged...
+
+> probably for SPI bus as well.
 >
 
-It is sorted first by the family release date, then numerically within=20
-family. The BQ27421 family seems out of order but it appears to be the=20
-newest line.
+Yes, I didn't mention SPI because the cover letter became too long
+already but it does indeed have the same issue and I discussed this
+with  Mark already some time ago [0].
 
->> -enum bq27xxx_chip { BQ27000, BQ27500, BQ27425, BQ27742, BQ27510 };
->> +enum bq27xxx_chip {
->> +	BQ27000, /* bq27000, bq27200 */
->> +	BQ27010, /* bq27010, bq27210 */
->> +	BQ27500, /* bq27500, bq27510, bq27520 */
->> +	BQ27530, /* bq27530, bq27531 */
->> +	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
->> +	BQ27545, /* bq27545 */
->> +	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
->> +};
->>
->
-> Maybe same here? Putting BQ27421 before BQ27500?
->
+Once I2C uevent report is fixed, I plan to do the same for SPI.
 
---=20
-Andrew F. Davis
+> Thanks.
+> 
+
+[0]: https://lkml.org/lkml/2014/9/11/458
+
+Best regards,
+-- 
+Javier Martinez Canillas
+Open Source Group
+Samsung Research America
