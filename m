@@ -1,65 +1,102 @@
 From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH 17/20] power/reset: at91-reset: get and use slow clock
-Date: Thu, 30 Jul 2015 02:22:03 +0200
-Message-ID: <1438215726-27452-18-git-send-email-alexandre.belloni@free-electrons.com>
-References: <1438215726-27452-1-git-send-email-alexandre.belloni@free-electrons.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1438215726-27452-1-git-send-email-alexandre.belloni@free-electrons.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH 00/20] ARM: at91: Properly handle slow clock
+Date: Thu, 30 Jul 2015 02:21:46 +0200
+Message-ID: <1438215726-27452-1-git-send-email-alexandre.belloni@free-electrons.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-watchdog@vger.kernel.org, rtc-linux@googlegroups.com, Alessandro Zummo <a.zummo@towertech.it>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Michael Turquette <mturquette@baylibre.com>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-clk@vger.kernel.org, Wim Van Sebroeck <wim@iguana.be>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Commit dca1a4b5ff6e ("clk: at91: keep slow clk enabled to prevent system
-hang") added a workaround for the slow clock as it is not properly handled
-by its users.
+Hi,
 
-Get and use the slow clock as it is necessary for the at91 reset
-controller.
+It was discovered that all the slow clock user were not properly claiming it.
+This can end up in a system hang because the last registered user is releasing
+it, and it gets disabled.
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
----
+commit dca1a4b5ff6e ("clk: at91: keep slow clk enabled to prevent system hang")
+was a workaround. This series is adding the slow clock to the necessary drivers
+to avoid the issue and then removes that workaround.
+
+The Documentation updates and DT patches should probably go through the AT91
+tree this cycle to avoid breakage.
+
+Then the other patches can go through each subsystem tree. They are trivial
+enough to also go in this cycle.
+
+The final clk patch depends on the other ones and may be taken for the next
+cycle to avoid synchronization issues.
+
+I've thrown in a cleanup for at91-reset as it avoids adding support for that
+clock to the platform data initialization
+
+Cc: Alessandro Zummo <a.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com
+Cc: Wim Van Sebroeck <wim@iguana.be>
+Cc: linux-watchdog@vger.kernel.org
 Cc: Sebastian Reichel <sre@kernel.org>
 Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 Cc: linux-pm@vger.kernel.org
- drivers/power/reset/at91-reset.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Michael Turquette <mturquette@baylibre.com>
+Cc: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-clk@vger.kernel.org
 
-diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
-index 3e8f478385c1..cd277570af6e 100644
---- a/drivers/power/reset/at91-reset.c
-+++ b/drivers/power/reset/at91-reset.c
-@@ -11,6 +11,7 @@
-  * warranty of any kind, whether express or implied.
-  */
- 
-+#include <linux/clk.h>
- #include <linux/io.h>
- #include <linux/module.h>
- #include <linux/of_address.h>
-@@ -46,6 +47,7 @@ enum reset_type {
- };
- 
- static void __iomem *at91_ramc_base[2], *at91_rstc_base;
-+static struct clk *sclk;
- 
- /*
- * unless the SDRAM is cleanly shutdown before we hit the
-@@ -199,6 +201,15 @@ static int at91_reset_probe(struct platform_device *pdev)
- {
- 	int ret;
- 
-+	sclk = devm_clk_get(&pdev->dev, NULL);
-+	if (IS_ERR(sclk))
-+		return PTR_ERR(sclk);
-+
-+	ret = clk_prepare_enable(sclk);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Could not enable slow clock\n");
-+		return ret;
-+	}
- 
- 	ret = at91_reset_of_probe(pdev);
- 	if (ret)
+Alexandre Belloni (20):
+  Documentation: dt: atmel-at91: add clocks to system timer, rstc and
+    shdwc
+  Documentation: watchdog: at91sam9_wdt: add clocks property
+  Documentation: dt: rtc: at91rm9200: add clocks property
+  ARM: at91/dt: at91rm9200: use slow clock where necessary
+  ARM: at91/dt: at91sam9260: use slow clock where necessary
+  ARM: at91/dt: at91sam9261: use slow clock where necessary
+  ARM: at91/dt: at91sam9263: use slow clock where necessary
+  ARM: at91/dt: at91sam9g45: use slow clock where necessary
+  ARM: at91/dt: at91sam9n12: use slow clock where necessary
+  ARM: at91/dt: at91sam9rl: use slow clock where necessary
+  ARM: at91/dt: at91sam9x5: use slow clock where necessary
+  ARM: at91/dt: sama5d3: use slow clock where necessary
+  ARM: at91/dt: sama5d4: use slow clock where necessary
+  rtc: at91rm9200: get and use slow clock
+  watchdog: at91sam9: get and use slow clock
+  power/reset: at91-reset: remove useless at91_reset_platform_probe()
+  power/reset: at91-reset: get and use slow clock
+  power/reset: at91-poweroff: get and use slow clock
+  clocksource: atmel-st: get and use slow clock
+  clk: at91: Revert "keep slow clk enabled to prevent system hang"
+
+ .../devicetree/bindings/arm/atmel-at91.txt         | 11 +++--
+ .../bindings/rtc/atmel,at91rm9200-rtc.txt          |  2 +
+ .../devicetree/bindings/watchdog/atmel-wdt.txt     |  2 +
+ arch/arm/boot/dts/at91rm9200.dtsi                  |  2 +
+ arch/arm/boot/dts/at91sam9260.dtsi                 |  3 ++
+ arch/arm/boot/dts/at91sam9261.dtsi                 |  3 ++
+ arch/arm/boot/dts/at91sam9263.dtsi                 |  3 ++
+ arch/arm/boot/dts/at91sam9g45.dtsi                 |  4 ++
+ arch/arm/boot/dts/at91sam9n12.dtsi                 |  4 ++
+ arch/arm/boot/dts/at91sam9rl.dtsi                  |  4 ++
+ arch/arm/boot/dts/at91sam9x5.dtsi                  |  4 ++
+ arch/arm/boot/dts/sama5d3.dtsi                     |  4 ++
+ arch/arm/boot/dts/sama5d4.dtsi                     |  4 ++
+ drivers/clk/at91/clk-slow.c                        | 27 -------------
+ drivers/clocksource/timer-atmel-st.c               | 31 +++++++++-----
+ drivers/power/reset/at91-poweroff.c                | 13 ++++++
+ drivers/power/reset/at91-reset.c                   | 47 ++++++----------------
+ drivers/rtc/rtc-at91rm9200.c                       | 27 +++++++++++--
+ drivers/watchdog/at91sam9_wdt.c                    | 22 +++++++++-
+ 19 files changed, 138 insertions(+), 79 deletions(-)
+
 -- 
 2.1.4
