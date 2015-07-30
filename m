@@ -1,93 +1,74 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC] cpufreq: Add ->get_rate() driver callback
-Date: Thu, 30 Jul 2015 15:17:21 +0530
-Message-ID: <20150730094721.GA9121@linux>
-References: <fb44111fa7a762924661ad48a70985d597229bc4.1436351759.git.viresh.kumar@linaro.org>
- <1879392.TC0RceaKlH@vostro.rjw.lan>
- <20150709045902.GI1805@linux>
- <1709328.yilXR0UZlG@vostro.rjw.lan>
+Subject: Re: [PATCH 05/10] opp: Add support to parse "operating-points-v2"
+ bindings
+Date: Thu, 30 Jul 2015 15:47:37 +0530
+Message-ID: <20150730101737.GB9121@linux>
+References: <cover.1434369079.git.viresh.kumar@linaro.org>
+ <1b5a393f2162752cbb773956dff15739e7525a1d.1434369079.git.viresh.kumar@linaro.org>
+ <2910042.ys2zsBBKt2@amdc1976>
+ <20150727030239.GG19944@linux>
+ <55B80A34.1010805@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:35104 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754753AbbG3Jr2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 05:47:28 -0400
-Received: by pabkd10 with SMTP id kd10so20925339pab.2
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2015 02:47:27 -0700 (PDT)
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:32935 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750762AbbG3KRo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 06:17:44 -0400
+Received: by padck2 with SMTP id ck2so21429588pad.0
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2015 03:17:43 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1709328.yilXR0UZlG@vostro.rjw.lan>
+In-Reply-To: <55B80A34.1010805@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, mturquette@baylibre.com, Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, broonie@kernel.org, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
 
-On 10-07-15, 01:26, Rafael J. Wysocki wrote:
-> *You* can do them faily quickly.  Say if all of the outstanding cpufreq
-> patches are queued up for 4.3, then it will be the time to submit more.
-> Otherwise I'll just have an ever growing queue of patches to process
-> which won't speed up things at all.
+On 28-07-15, 16:03, Stephen Boyd wrote:
+> There is talk about moving to 64 bits for the frequency in the clk API.
+> It's not actively being developed though and I'm not sure when we'll get
+> there. From a DT perspective though, I don't see why it would be bad to
+> have two cells instead of one cell for the frequency here. It would
+> allow up to 64 bits of frequency so that when we change the clk API we
+> won't need to do anything in the OPP bindings to handle it. Just because
+> we have problems in the kernel doesn't mean we should put the same
+> problems into DT.
 
-Lots of pending stuff is already committed. Would you like me to send
-these now?
+Updated the code as:
 
-Also, how should I send them? I mean, you want separate patches for
-drivers? Or all of them in a single patch. This is how stats may look:
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index d9ebbd739b23..73e4e1ce60a1 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -743,6 +743,7 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
+ {
+        struct device_opp *dev_opp;
+        struct dev_pm_opp *new_opp;
++       u64 rate;
+        int ret;
+ 
+        /* Hold our list modification lock here */
+@@ -754,12 +755,18 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
+                goto unlock;
+        }
+ 
+-       ret = of_property_read_u32(np, "opp-hz", (u32 *)&new_opp->rate);
++       ret = of_property_read_u64(np, "opp-hz", &rate);
+        if (ret < 0) {
+                dev_err(dev, "%s: opp-hz not found\n", __func__);
+                goto free_opp;
+        }
+ 
++       /*
++        * Rate is defined as an unsigned long in clk API, and so casting
++        * explicitly to its type. Must be fixed once rate is 64 bit
++        * guaranteed in clk API.
++        */
++       new_opp->rate = (unsigned long)rate;
+        new_opp->turbo = of_property_read_bool(np, "turbo-mode");
+ 
+        new_opp->np = np;
 
- drivers/cpufreq/acpi-cpufreq.c         |  7 ++++---
- drivers/cpufreq/arm_big_little.c       | 11 ++++++++---
- drivers/cpufreq/at32ap-cpufreq.c       |  2 +-
- drivers/cpufreq/blackfin-cpufreq.c     |  6 +++---
- drivers/cpufreq/cpufreq-dt.c           |  2 +-
- drivers/cpufreq/cpufreq-nforce2.c      |  8 ++++----
- drivers/cpufreq/cris-artpec3-cpufreq.c |  4 ++--
- drivers/cpufreq/cris-etraxfs-cpufreq.c |  4 ++--
- drivers/cpufreq/davinci-cpufreq.c      |  2 +-
- drivers/cpufreq/dbx500-cpufreq.c       |  2 +-
- drivers/cpufreq/e_powersaver.c         |  5 +++--
- drivers/cpufreq/elanfreq.c             |  6 +++---
- drivers/cpufreq/exynos-cpufreq.c       |  2 +-
- drivers/cpufreq/exynos5440-cpufreq.c   |  2 +-
- drivers/cpufreq/gx-suspmod.c           |  6 +++---
- drivers/cpufreq/ia64-acpi-cpufreq.c    |  5 +++--
- drivers/cpufreq/imx6q-cpufreq.c        |  2 +-
- drivers/cpufreq/integrator-cpufreq.c   |  5 +++--
- drivers/cpufreq/intel_pstate.c         |  6 +++---
- drivers/cpufreq/kirkwood-cpufreq.c     |  5 +++--
- drivers/cpufreq/longhaul.c             |  6 +++---
- drivers/cpufreq/longrun.c              |  6 +++---
- drivers/cpufreq/loongson2_cpufreq.c    |  2 +-
- drivers/cpufreq/ls1x-cpufreq.c         |  2 +-
- drivers/cpufreq/maple-cpufreq.c        |  4 ++--
- drivers/cpufreq/omap-cpufreq.c         |  2 +-
- drivers/cpufreq/p4-clockmod.c          |  7 +++----
- drivers/cpufreq/pcc-cpufreq.c          |  5 +++--
- drivers/cpufreq/pmac32-cpufreq.c       |  4 ++--
- drivers/cpufreq/pmac64-cpufreq.c       |  4 ++--
- drivers/cpufreq/powernow-k6.c          |  4 ++--
- drivers/cpufreq/powernow-k7.c          |  6 +++---
- drivers/cpufreq/powernow-k8.c          |  5 +++--
- drivers/cpufreq/powernv-cpufreq.c      |  8 ++++----
- drivers/cpufreq/pxa2xx-cpufreq.c       |  4 ++--
- drivers/cpufreq/pxa3xx-cpufreq.c       |  4 ++--
- drivers/cpufreq/qoriq-cpufreq.c        |  2 +-
- drivers/cpufreq/s3c2416-cpufreq.c      |  6 +++---
- drivers/cpufreq/s3c24xx-cpufreq.c      |  2 +-
- drivers/cpufreq/s3c64xx-cpufreq.c      |  2 +-
- drivers/cpufreq/s5pv210-cpufreq.c      |  2 +-
- drivers/cpufreq/sa1100-cpufreq.c       |  7 ++++++-
- drivers/cpufreq/sa1110-cpufreq.c       |  7 ++++++-
- drivers/cpufreq/sc520_freq.c           |  4 ++--
- drivers/cpufreq/sh-cpufreq.c           |  8 ++++----
- drivers/cpufreq/sparc-us2e-cpufreq.c   |  5 +++--
- drivers/cpufreq/sparc-us3-cpufreq.c    |  5 +++--
- drivers/cpufreq/spear-cpufreq.c        |  2 +-
- drivers/cpufreq/speedstep-centrino.c   |  5 +++--
- drivers/cpufreq/speedstep-ich.c        |  7 ++++---
- drivers/cpufreq/speedstep-smi.c        |  6 +++---
- drivers/cpufreq/tegra-cpufreq.c        |  2 +-
- drivers/cpufreq/unicore2-cpufreq.c     |  2 +-
- 53 files changed, 132 insertions(+), 107 deletions(-)
 
 -- 
 viresh
