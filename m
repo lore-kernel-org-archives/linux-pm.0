@@ -1,55 +1,80 @@
-From: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH 00/27] Export I2C and OF module aliases in missing drivers
-Date: Thu, 30 Jul 2015 09:37:08 -0700
-Message-ID: <20150730163708.GB13165@dtor-ws>
-References: <1438273132-20926-1-git-send-email-javier@osg.samsung.com>
- <20150730163517.GA13165@dtor-ws>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 02/16] PM / OPP: Create a directory for opp bindings
+Date: Thu, 30 Jul 2015 22:22:40 +0530
+Message-ID: <20150730165240.GF17794@linux>
+References: <cover.1438166099.git.viresh.kumar@linaro.org>
+ <4dfe565ff17766b7df127d475d84958e96fdab1b.1438166099.git.viresh.kumar@linaro.org>
+ <CAL_Jsq+J41c7qx11L13-g0UyD+hY9W36Wu9P+6O3cnDv7ysY6Q@mail.gmail.com>
+ <20150730134959.GB17794@linux>
+ <CAL_JsqLeBcaaJ05AtW+tyD5Uxuo5uVYLrq3_oKzrv94xhNpZGg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:33008 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752890AbbG3Qwr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 12:52:47 -0400
+Received: by pdbnt7 with SMTP id nt7so27346967pdb.0
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2015 09:52:47 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20150730163517.GA13165@dtor-ws>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mauro Carvalho Chehab <mchehab-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Takashi Iwai <tiwai-IBi9RG/b67k@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sjoe
+In-Reply-To: <CAL_JsqLeBcaaJ05AtW+tyD5Uxuo5uVYLrq3_oKzrv94xhNpZGg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>, Joe Perches <joe@perches.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Santosh Shilimkar <santosh.shilimkar@oracle.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mark Brown <broonie@kernel.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lucas Stach <l.stach@pengutronix.de>
 
-On Thu, Jul 30, 2015 at 09:35:17AM -0700, Dmitry Torokhov wrote:
-> Hi Javier,
+On 30-07-15, 11:24, Rob Herring wrote:
+> On Thu, Jul 30, 2015 at 8:49 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 30-07-15, 08:18, Rob Herring wrote:
+> >> On Wed, Jul 29, 2015 at 5:52 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >> > More platform specific extended opp bindings will follow and it would be
+> >> > easy to manage them with a directory for opp. Lets create that and move
+> >> > the existing opp bindings into it.
+> >> >
+> >> > Cc: Rob Herring <rob.herring@linaro.org>
+> >>
+> >> Use get_maintainers.pl please so you send to right people and right email.
+> >
+> > Already done, you were just cc'd as an extra guy :)
 > 
-> On Thu, Jul 30, 2015 at 06:18:25PM +0200, Javier Martinez Canillas wrote:
-> > Hello,
-> > 
-> > Short version:
-> > 
-> > This series add the missing MODULE_DEVICE_TABLE() for OF and I2C tables
-> > to export that information so modules have the correct aliases built-in
-> > and autoloading works correctly.
-> > 
-> > Longer version:
-> > 
-> > Currently it's mandatory for I2C drivers to have an I2C device ID table
-> > regardless if the device was registered using platform data or OF. This
-> > is because the I2C core needs an I2C device ID table for two reasons:
-> > 
-> > 1) Match the I2C client with a I2C device ID so a struct i2c_device_id
-> >    is passed to the I2C driver probe() function.
-> > 
-> > 2) Export the module aliases from the I2C device ID table so userspace
-> >    can auto-load the correct module. This is because i2c_device_uevent
-> >    always reports a MODALIAS of the form i2c:<client->name>.
+> No, because no one that is a maintainer of
+> Documentation/devicetree/bindings is cc'ed here. You did on the other
+> patch, but not here as neither Ian, Mark, Kumar nor Pawel are cc'ed.
+
+No. I sent all of them together and get_maintainers is invoked for all
+of them. I checked again and its a bug with get_maintainers.
+
+@Joe: Can you please take a look at that?
+
+Problem description: Because my patch only had this:
+
+-----------8<-------------
+
+---
+ Documentation/devicetree/bindings/{power => opp}/opp.txt | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ rename Documentation/devicetree/bindings/{power => opp}/opp.txt (100%)
+
+diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/power/opp.txt
+rename to Documentation/devicetree/bindings/opp/opp.txt
+
+------------>8------------
+
+get_maintainers reports this for the patch:
+
+scripts/get_maintainer.pl: file
+'0001-PM-OPP-Create-a-directory-for-opp-bindings.patch' doesn't appear
+to be a patch.  Add -f to options?
+
+ 
+> > Cc: Rob Herring <rob.herring@linaro.org>
 > 
-> Why are we not fixing this? We emit specially carved uevent for
-> ACPI-based devices, why not the same for OF? Platform bus does this...
+> Still wrong...
 
-Ah, now I see the 27/27 patch. I think it is exactly what we need. And
-probably for SPI bus as well.
-
-Thanks.
+Let me send the patch as reply to this one, with personally cc'ing all
+people you want me to.
 
 -- 
-Dmitry
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+viresh
