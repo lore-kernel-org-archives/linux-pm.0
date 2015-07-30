@@ -1,147 +1,90 @@
 From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH v2 3/6] power: bq27xxx_battery: Platform initialization
- must declare a device
-Date: Thu, 30 Jul 2015 12:01:11 -0500
-Message-ID: <55BA5857.9030301@ti.com>
-References: <1438112353-19704-1-git-send-email-afd@ti.com> <1438112353-19704-4-git-send-email-afd@ti.com> <201507282213.37788@pali>
+Subject: Re: [PATCH v2 5/6] power: bq27xxx_battery: Add support for additional
+ bq27xxx family devices
+Date: Thu, 30 Jul 2015 12:07:18 -0500
+Message-ID: <55BA59C6.4010604@ti.com>
+References: <1438112353-19704-1-git-send-email-afd@ti.com> <1438112353-19704-6-git-send-email-afd@ti.com> <201507282159.30013@pali>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:50572 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753645AbbG3RBq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 30 Jul 2015 13:01:46 -0400
-In-Reply-To: <201507282213.37788@pali>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <201507282159.30013@pali>
+Sender: linux-kernel-owner@vger.kernel.org
 To: =?UTF-8?B?UGFsaSBSb2jDoXI=?= <pali.rohar@gmail.com>
 Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On 07/28/2015 03:13 PM, Pali Roh=C3=A1r wrote:
-> On Tuesday 28 July 2015 21:39:10 Andrew F. Davis wrote:
->> When initialized as a platform device the initializer must now speci=
-fy
->> a device. An empty device name is no longer valid.
+
+
+On 07/28/2015 02:59 PM, Pali Roh=C3=A1r wrote:
+> On Tuesday 28 July 2015 21:39:12 Andrew F. Davis wrote:
+>> Add support for additional devices and register equivalent family
+>> devices including the bq27010, bq27210, bq272500, bq27510, bq27520,
+>                                              ^^^^^^
+>                                              maybe incorrect number?
+
+Yeah, that's what I get for not copy/pasting :)
+
+>> bq27530, bq27531, bq27541, bq27542, bq27546, bq27545, bq27441,
+>> bq27421, and the bq27641.
+>>
+>> To facilitate this process the register mapings have been moved to
+>> tables and other small cleanups have been made.
 >>
 >> Signed-off-by: Andrew F. Davis <afd@ti.com>
 >> ---
->>   drivers/power/bq27xxx_battery.c       | 9 ++++++---
->>   drivers/w1/slaves/w1_bq27000.c        | 1 +
->>   include/linux/power/bq27xxx_battery.h | 6 +++++-
->>   3 files changed, 12 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx=
-_battery.c
->> index e72055c..0734413 100644
->> --- a/drivers/power/bq27xxx_battery.c
->> +++ b/drivers/power/bq27xxx_battery.c
->> @@ -91,8 +91,6 @@ struct bq27xxx_access_methods {
->>   	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
+>
+>>   static const struct i2c_device_id bq27xxx_id[] =3D {
+>> -	{ "bq27200", BQ27000 },	/* bq27200 is same as bq27000, but with i2=
+c
+>> */ +	{ "bq27200", BQ27000 },
+>> +	{ "bq27210", BQ27010 },
+>>   	{ "bq27500", BQ27500 },
+>> -	{ "bq27425", BQ27425 },
+>> -	{ "bq27742", BQ27742 },
+>> -	{ "bq27510", BQ27510 },
+>> +	{ "bq27510", BQ27500 },
+>> +	{ "bq27520", BQ27500 },
+>> +	{ "bq27530", BQ27530 },
+>> +	{ "bq27531", BQ27530 },
+>> +	{ "bq27541", BQ27541 },
+>> +	{ "bq27542", BQ27541 },
+>> +	{ "bq27546", BQ27541 },
+>> +	{ "bq27742", BQ27541 },
+>> +	{ "bq27545", BQ27545 },
+>> +	{ "bq27421", BQ27421 },
+>> +	{ "bq27425", BQ27421 },
+>> +	{ "bq27441", BQ27421 },
+>> +	{ "bq27621", BQ27421 },
+>>   	{},
 >>   };
->>
->> -enum bq27xxx_chip { BQ27000, BQ27500, BQ27425, BQ27742, BQ27510};
->> -
->>   struct bq27xxx_reg_cache {
->>   	int temperature;
->>   	int time_to_empty;
->> @@ -1036,6 +1034,11 @@ static int bq27xxx_battery_platform_probe(str=
-uct platform_device *pdev)
->>   		return -EINVAL;
->>   	}
->>
->> +	if (!pdata->chip) {
 >
-> Will this work?
->
-> Is not first value of enum equal to zero? BQ27000 =3D=3D 0 ?
+> I'm trying to understand comparator which you used for sorting these
+> values... but I do not see any logic here. What about sorting list by
+> first value? Now it is long list of device names and for better abili=
+ty
+> to read it, it would be better to have it in some order.
 >
 
-We could set the enum to start at 1, but I'm not sure if this check is=20
-really necessary at all as we can just assume if the platform info has=20
-been supplied then the chip has been set.
+It is sorted first by the family release date, then numerically within=20
+family. The BQ27421 family seems out of order but it appears to be the=20
+newest line.
 
->> +		dev_err(&pdev->dev, "no device supplied\n");
->> +		return -EINVAL;
->> +	}
->> +
->>   	di =3D devm_kzalloc(&pdev->dev, sizeof(*di), GFP_KERNEL);
->>   	if (!di)
->>   		return -ENOMEM;
->> @@ -1043,7 +1046,7 @@ static int bq27xxx_battery_platform_probe(stru=
-ct platform_device *pdev)
->>   	platform_set_drvdata(pdev, di);
+>> -enum bq27xxx_chip { BQ27000, BQ27500, BQ27425, BQ27742, BQ27510 };
+>> +enum bq27xxx_chip {
+>> +	BQ27000, /* bq27000, bq27200 */
+>> +	BQ27010, /* bq27010, bq27210 */
+>> +	BQ27500, /* bq27500, bq27510, bq27520 */
+>> +	BQ27530, /* bq27530, bq27531 */
+>> +	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+>> +	BQ27545, /* bq27545 */
+>> +	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
+>> +};
 >>
->>   	di->dev =3D &pdev->dev;
->> -	di->chip =3D BQ27000;
->> +	di->chip =3D pdata->chip;
->>
->>   	name =3D pdata->name ?: dev_name(&pdev->dev);
->>   	di->bus.read =3D &bq27xxx_battery_platform_read;
->> diff --git a/drivers/w1/slaves/w1_bq27000.c b/drivers/w1/slaves/w1_b=
-q27000.c
->> index 8480531..ba8bf3d 100644
->> --- a/drivers/w1/slaves/w1_bq27000.c
->> +++ b/drivers/w1/slaves/w1_bq27000.c
->> @@ -42,6 +42,7 @@ static int w1_bq27000_read(struct device *dev, uns=
-igned int reg)
->>   static struct bq27xxx_platform_data bq27000_battery_info =3D {
->>   	.read   =3D w1_bq27000_read,
->>   	.name   =3D "bq27000-battery",
->> +	.chip	=3D BQ27000,
->            ^
-> Just small problem, but for me visible different spacing of previous =
-lines
+>
+> Maybe same here? Putting BQ27421 before BQ27500?
 >
 
-=46ixed.
-
->>   };
->>
->>   static int w1_bq27000_add_slave(struct w1_slave *sl)
->> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/p=
-ower/bq27xxx_battery.h
->> index e70a93a..70d3865 100644
->> --- a/include/linux/power/bq27xxx_battery.h
->> +++ b/include/linux/power/bq27xxx_battery.h
->> @@ -3,7 +3,8 @@
->>
->>   /**
->>    * struct bq27xxx_plaform_data - Platform data for bq27xxx devices
->> - * @name: Name of the battery. If NULL the driver will fallback to =
-"bq27000".
->> + * @name: Name of the battery.
->
-> Now I'm trying to understand what name =3D NULL will do...
->
-> It is this above code?
->
->    	name =3D pdata->name ?: dev_name(&pdev->dev);
->
-> Then it looks like it just set device name. Maybe stupid question, bu=
-t do we need such property? What other people think?
->
-
-It doesn't look necessary to me.
-
->> + * @chip: Chip class number of this device.
->>    * @read: HDQ read callback.
->>    *	This function should provide access to the HDQ bus the battery =
-is
->>    *	connected to.
->> @@ -11,8 +12,11 @@
->>    *	register to be read. The return value should either be the cont=
-ent of
->>    *	the passed register or an error value.
->>    */
->> +enum bq27xxx_chip { BQ27000, BQ27500, BQ27425, BQ27742, BQ27510 };
->> +
->>   struct bq27xxx_platform_data {
->>   	const char *name;
->> +	enum bq27xxx_chip chip;
->>   	int (*read)(struct device *dev, unsigned int);
->>   };
->>
->>
->
+--=20
+Andrew F. Davis
