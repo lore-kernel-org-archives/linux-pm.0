@@ -1,91 +1,78 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] bus: subsys: propagate errors from subsys interface's
- ->add_dev()
-Date: Thu, 30 Jul 2015 09:14:31 +0530
-Message-ID: <20150730034431.GH5100@linux>
-References: <aff842c23841a8e61ac17e58fc27c99e052e338b.1435308918.git.viresh.kumar@linaro.org>
- <2867166.mZBGleMS1o@vostro.rjw.lan>
- <20150729223743.GA17250@kroah.com>
- <2113628.vmLC8GdsGl@vostro.rjw.lan>
+Subject: Re: [PATCH] cpufreq: Lock CPU online/offline in
+ cpufreq_register_driver()
+Date: Thu, 30 Jul 2015 11:18:01 +0530
+Message-ID: <20150730054801.GJ5100@linux>
+References: <2126034.7irFieEIfi@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:34515 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741AbbG3FsH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 01:48:07 -0400
+Received: by pacan13 with SMTP id an13so17969559pac.1
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2015 22:48:07 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <2113628.vmLC8GdsGl@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Greg KH <gregkh@linuxfoundation.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, pi-cheng.chen@linaro.org
+In-Reply-To: <2126034.7irFieEIfi@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Russell King <linux@arm.linux.org.co.uk>
 
-On 30-07-15, 01:29, Rafael J. Wysocki wrote:
-> > > There is a small problem with it that I've already pointed out to Viresh.
-> > > 
-> > > Namely, while changing subsys_interface_(un)register() to handle return
-> > > values from ->add_dev(), it doesn't do the same thing in bus_probe_device()
-> > > which I believe it should for consistency at least.
-> > 
-> > Oops, sorry, missed that response.  I'll go drop this patch then, thanks
-> > for letting me know.
-
-It was discussed in last 2-3 days over a cpufreq related thread, no way you
-could have caught that :)
-
-But, I think we should keep this patch until the time we find a better solution
-to our problem.
-
-You are the driver core maintainer and probably no one can give a better
-suggestion to fix our problem, so lemme explain that again here :)
-
-A platform specific cpufreq driver may depend on a external driver (say i2c
-which may control access to regulators) for its working, and until the time
-regulator is up along with i2c we need to defer cpufreq driver from being
-registered. We already have an EPROBE_DEFER mechanism to handle such situations
-nicely.
-
-cpufreq core calling sequence at a glance:
-cpufreq_register_driver()
- -> subsys_interface_register()
-   -> subsys->add_dev() for all present CPUs one by one
-     -> cpufreq_add_dev()
-       -> cpufreq_driver->init()
-
-	  Now init() is the only location where the drivers initialize per
-	  policy (group of CPUs that share clock/voltage rails) stuff and can
-	  check if all the resources like clk/regulator are available or not.
-	  And so -EPROBE_DEFER will be returned from here.
-
-The only broken part here is the return value of subsys->add_dev() and that I
-tried to fix.
-
-Another important part here is that the cpufreq driver isn't probed against a
-cpu device, but a dummy platform device to get the EPROBE_DEFER story right,
-plus there are few other issues that it solves, like probing the right cpufreq
-driver.
-
-Now, please explain a sane way to get things working for such platforms.
-
-> > > But then, the question is whether or not the probing should fail and
-> > > what if device_attach() returns 0 and one of the ->add_dev() callbacks
-> > > returns an error.
-> > 
-> > That's a total mess...
-
-Right and so modifying that to propagate return value wouldn't be that straight
-forward.
-
-> > Given that there are almost no uses of this api, I think people should
-> > work it out before any more start to pop up :)
+On 30-07-15, 01:45, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> cpufreq is one of the users and that's where the problem is, but in my opinion
-> it should be addressed in a different way.
+> To protect against races with concurrent CPU online/offline, call
+> get_online_cpus() before registering a cpufreq driver.
 > 
-> But while we are at it, should the ->add_dev and ->remove_dev callbacks in
-> struct subsys_interface return an int if their return values are always
-> ignored?  Maybe it would be better to redefine them to be void to make it clear
-> that they can't fail?
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq.c |   13 ++++++++++---
+>  1 file changed, 10 insertions(+), 3 deletions(-)
+> 
+> Index: linux-pm/drivers/cpufreq/cpufreq.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
+> +++ linux-pm/drivers/cpufreq/cpufreq.c
+> @@ -2471,10 +2471,14 @@ int cpufreq_register_driver(struct cpufr
+>  
+>  	pr_debug("trying to register driver %s\n", driver_data->name);
+>  
+> +	/* Protect against concurrent CPU online/offline. */
+> +	get_online_cpus();
+> +
+>  	write_lock_irqsave(&cpufreq_driver_lock, flags);
+>  	if (cpufreq_driver) {
+>  		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> -		return -EEXIST;
+> +		ret = -EEXIST;
+> +		goto out;
+>  	}
+>  	cpufreq_driver = driver_data;
+>  	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> @@ -2513,7 +2517,10 @@ int cpufreq_register_driver(struct cpufr
+>  	register_hotcpu_notifier(&cpufreq_cpu_notifier);
+>  	pr_debug("driver %s up and running\n", driver_data->name);
+>  
+> -	return 0;
+> +out:
+> +	put_online_cpus();
+> +	return ret;
+> +
+>  err_if_unreg:
+>  	subsys_interface_unregister(&cpufreq_interface);
+>  err_boost_unreg:
+> @@ -2523,7 +2530,7 @@ err_null_driver:
+>  	write_lock_irqsave(&cpufreq_driver_lock, flags);
+>  	cpufreq_driver = NULL;
+>  	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> -	return ret;
+> +	goto out;
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_register_driver);
 
-For remove_dev(), surely a void return type will make sense. I can put some
-effort to get that done. But not sure about add_dev() yet.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
