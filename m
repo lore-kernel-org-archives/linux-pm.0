@@ -1,56 +1,30 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 02/16] PM / OPP: Create a directory for opp bindings
-Date: Thu, 30 Jul 2015 22:22:40 +0530
-Message-ID: <20150730165240.GF17794@linux>
-References: <cover.1438166099.git.viresh.kumar@linaro.org>
- <4dfe565ff17766b7df127d475d84958e96fdab1b.1438166099.git.viresh.kumar@linaro.org>
- <CAL_Jsq+J41c7qx11L13-g0UyD+hY9W36Wu9P+6O3cnDv7ysY6Q@mail.gmail.com>
- <20150730134959.GB17794@linux>
- <CAL_JsqLeBcaaJ05AtW+tyD5Uxuo5uVYLrq3_oKzrv94xhNpZGg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH V3 resend] PM / OPP: Create a directory for opp bindings
+Date: Thu, 30 Jul 2015 22:27:19 +0530
+Message-ID: <29597667e2c8afdbf396c5fcc9269fb27794131c.1438274711.git.viresh.kumar@linaro.org>
+References: <20150730165240.GF17794@linux>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f180.google.com ([209.85.192.180]:33008 "EHLO
-	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752890AbbG3Qwr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 12:52:47 -0400
-Received: by pdbnt7 with SMTP id nt7so27346967pdb.0
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2015 09:52:47 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAL_JsqLeBcaaJ05AtW+tyD5Uxuo5uVYLrq3_oKzrv94xhNpZGg@mail.gmail.com>
+Received: from mail-pd0-f172.google.com ([209.85.192.172]:34743 "EHLO
+	mail-pd0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751382AbbG3Q5t (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 12:57:49 -0400
+Received: by pdbbh15 with SMTP id bh15so27201847pdb.1
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2015 09:57:48 -0700 (PDT)
+In-Reply-To: <20150730165240.GF17794@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>, Joe Perches <joe@perches.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Abhilash Kesavan <kesavan.abhilash@gmail.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viswanath Puttagunta <viswanath.puttagunta@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Santosh Shilimkar <santosh.shilimkar@oracle.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mark Brown <broonie@kernel.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lucas Stach <l.stach@pengutronix.de>
+To: Rafael Wysocki <rjw@rjwysocki.net>, rob.herring@linaro.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mturquette@baylibre.com, sboyd@codeaurora.org, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, b.zolnierkie@samsung.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, devicetree@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 30-07-15, 11:24, Rob Herring wrote:
-> On Thu, Jul 30, 2015 at 8:49 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 30-07-15, 08:18, Rob Herring wrote:
-> >> On Wed, Jul 29, 2015 at 5:52 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >> > More platform specific extended opp bindings will follow and it would be
-> >> > easy to manage them with a directory for opp. Lets create that and move
-> >> > the existing opp bindings into it.
-> >> >
-> >> > Cc: Rob Herring <rob.herring@linaro.org>
-> >>
-> >> Use get_maintainers.pl please so you send to right people and right email.
-> >
-> > Already done, you were just cc'd as an extra guy :)
-> 
-> No, because no one that is a maintainer of
-> Documentation/devicetree/bindings is cc'ed here. You did on the other
-> patch, but not here as neither Ian, Mark, Kumar nor Pawel are cc'ed.
+More platform specific extended opp bindings will follow and it would be
+easy to manage them with a directory for opp. Lets create that and move
+the existing opp bindings into it.
 
-No. I sent all of them together and get_maintainers is invoked for all
-of them. I checked again and its a bug with get_maintainers.
-
-@Joe: Can you please take a look at that?
-
-Problem description: Because my patch only had this:
-
------------8<-------------
-
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
+Resending to get cc list fixed, which isn't getting populated due to a
+bug with get_maintainers.
+
  Documentation/devicetree/bindings/{power => opp}/opp.txt | 0
  1 file changed, 0 insertions(+), 0 deletions(-)
  rename Documentation/devicetree/bindings/{power => opp}/opp.txt (100%)
@@ -59,22 +33,6 @@ diff --git a/Documentation/devicetree/bindings/power/opp.txt b/Documentation/dev
 similarity index 100%
 rename from Documentation/devicetree/bindings/power/opp.txt
 rename to Documentation/devicetree/bindings/opp/opp.txt
-
------------->8------------
-
-get_maintainers reports this for the patch:
-
-scripts/get_maintainer.pl: file
-'0001-PM-OPP-Create-a-directory-for-opp-bindings.patch' doesn't appear
-to be a patch.  Add -f to options?
-
- 
-> > Cc: Rob Herring <rob.herring@linaro.org>
-> 
-> Still wrong...
-
-Let me send the patch as reply to this one, with personally cc'ing all
-people you want me to.
-
 -- 
-viresh
+2.4.0
+
