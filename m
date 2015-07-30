@@ -1,50 +1,77 @@
-From: "Rajendra Nayak" <rnayak@codeaurora.org>
-Subject: Re: [PATCH v6 04/13] clk: qcom: gdsc: Manage clocks with !CONFIG_PM
-Date: Thu, 30 Jul 2015 01:39:02 -0000
-Message-ID: <6e298dc64bccec3aabe4914fd7835129.squirrel@www.codeaurora.org>
-References: <1437549069-29655-1-git-send-email-rnayak@codeaurora.org>
-    <1437549069-29655-5-git-send-email-rnayak@codeaurora.org>
-    <55B03D65.8040207@codeaurora.org> <55B0A764.6010708@codeaurora.org>
-    <55B826B0.2090705@codeaurora.org> <55B85870.7060900@codeaurora.org>
-    <20150730001357.GF3159@codeaurora.org>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH v2 0/22] On-demand device probing
+Date: Wed, 29 Jul 2015 22:06:02 -0500
+Message-ID: <CAL_Jsq+2q=c6JbER8EMOGFtR=a6gvHermb8DRo9dKyj6fvdnXg@mail.gmail.com>
+References: <1438089593-7696-1-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20150730001357.GF3159@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, mturquette@baylibre.com, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1438089593-7696-1-git-send-email-tomeu.vizoso@collabora.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux PWM List <linux-pwm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Stephen Boyd <sboyd@codeaurora.org>, Linus Walleij <linus.walleij@linaro.org>, Linux-ALSA <alsa-devel@alsa-project.org>, dri-devel <dri-devel@lists.freedesktop.org>, Sebastian Reichel <sre@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, linux-clk@vger.kernel.org, Alexandre Courbot <gnurou@gmail.com>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Javier Martinez Canillas <javier@osg.samsung.com>, Vinod Koul <vinod.koul@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-> On 07/29, Rajendra Nayak wrote:
->>
->> On 07/29/2015 06:34 AM, Stephen Boyd wrote:
->> >
->> >Sorry, I read the thread and I tried to understand what was going on
->> but
->> >I'm still lost. Can you clarify further in the commit text somehow?
->>
->> So I can add this in the commit text, if it seems fine
->>
->> "The use of pm_clk_add_notifier() isn't appropriate here since we need
->> to only manage clocks with valid power domain associations done via
->> DT, instead of what pm_clk_add_notifier() does, which is manage clocks
->> for all on SoC/off SoC devices associating all of them to a dummy
->> power domain instead"
->>
->
-> Yes that's good, thanks. But I still wonder why the code isn't
-> generic so that we don't have lots of drivers duplicating the
-> same logic. I guess we can consolidate another day.
-
-Yes, the code is quite generic and probably needs to be some
-place so it can be resued across drivers. For now I don;t
-see anyone else needing it, maybe sh mobile might plan to use
-something like it at a later time which is when we should probably
-consolidate.
-
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+T24gVHVlLCBKdWwgMjgsIDIwMTUgYXQgODoxOSBBTSwgVG9tZXUgVml6b3NvCjx0b21ldS52aXpv
+c29AY29sbGFib3JhLmNvbT4gd3JvdGU6Cj4gSGVsbG8sCj4KPiBJIGhhdmUgYSBwcm9ibGVtIHdp
+dGggdGhlIHBhbmVsIG9uIG15IFRlZ3JhIENocm9tZWJvb2sgdGFraW5nIGxvbmdlcgo+IHRoYW4g
+ZXhwZWN0ZWQgdG8gYmUgcmVhZHkgZHVyaW5nIGJvb3QgKFN0w6lwaGFuZSBNYXJjaGVzaW4gcmVw
+b3J0ZWQgd2hhdAo+IGlzIGJhc2ljYWxseSB0aGUgc2FtZSBpc3N1ZSBpbiBbMF0pLCBhbmQgaGF2
+ZSBsb29rZWQgaW50byBvcmRlcmVkCj4gcHJvYmluZyBhcyBhIGJldHRlciB3YXkgb2Ygc29sdmlu
+ZyB0aGlzIHRoYW4gbW92aW5nIG5vZGVzIGFyb3VuZCBpbiB0aGUKPiBEVCBvciBwbGF5aW5nIHdp
+dGggaW5pdGNhbGwgbGV2ZWxzIGFuZCBsaW5raW5nIG9yZGVyLgo+Cj4gV2hpbGUgcmVhZGluZyB0
+aGUgdGhyZWFkIFsxXSB0aGF0IEFsZXhhbmRlciBIb2xsZXIgc3RhcnRlZCB3aXRoIGhpcwo+IHNl
+cmllcyB0byBtYWtlIHByb2Jpbmcgb3JkZXIgZGV0ZXJtaW5pc3RpYywgaXQgb2NjdXJyZWQgdG8g
+bWUgdGhhdCBpdAo+IHNob3VsZCBiZSBwb3NzaWJsZSB0byBhY2hpZXZlIHRoZSBzYW1lIGJ5IHBy
+b2JpbmcgZGV2aWNlcyBhcyB0aGV5IGFyZQo+IHJlZmVyZW5jZWQgYnkgb3RoZXIgZGV2aWNlcy4K
+Pgo+IFRoaXMgYmFzaWNhbGx5IHJldXNlcyB0aGUgaW5mb3JtYXRpb24gdGhhdCBpcyBhbHJlYWR5
+IGltcGxpY2l0IGluIHRoZQo+IHByb2JlKCkgaW1wbGVtZW50YXRpb25zLCBzYXZpbmcgdXMgZnJv
+bSByZWZhY3RvcmluZyBleGlzdGluZyBkcml2ZXJzIG9yCj4gYWRkaW5nIGluZm9ybWF0aW9uIHRv
+IERUQnMuCj4KPiBEdXJpbmcgcmV2aWV3IG9mIHYxIG9mIHRoaXMgc2VyaWVzIExpbnVzIFdhbGxl
+aWogc3VnZ2VzdGVkIHRoYXQgaXQKPiBzaG91bGQgYmUgdGhlIGRldmljZSBkcml2ZXIgY29yZSB0
+byBtYWtlIHN1cmUgdGhhdCBkZXBlbmRlbmNpZXMgYXJlCj4gcmVhZHkgYmVmb3JlIHByb2Jpbmcg
+YSBkZXZpY2UuIEkgZ2F2ZSB0aGlzIGlkZWEgYSB0cnkgWzJdIGJ1dCBNYXJrIEJyb3duCj4gcG9p
+bnRlZCBvdXQgdG8gdGhlIGxvZ2ljIGR1cGxpY2F0aW9uIGJldHdlZW4gdGhlIHJlc291cmNlIGFj
+cXVpc2l0aW9uCj4gYW5kIGRlcGVuZGVuY3kgZGlzY292ZXJ5IGNvZGUgcGF0aHMgKHRob3VnaCBJ
+IHRoaW5rIGl0J3MgZmFpcmx5IG1pbm9yKS4KPgo+IFRvIGFkZHJlc3MgdGhhdCBjb2RlIGR1cGxp
+Y2F0aW9uIEkgZXhwZXJpbWVudGVkIHdpdGggQXJuZCdzIGRldm1fcHJvYmUKPiBbM10gY29uY2Vw
+dCBvZiBoYXZpbmcgZHJpdmVycyBkZWNsYXJlIHRoZWlyIGRlcGVuZGVuY2llcyBpbnN0ZWFkIG9m
+Cj4gYWNxdWlyaW5nIHRoZW0gZHVyaW5nIHByb2JlLCBhbmQgd2hpbGUgaXQgd29ya2VkIFs0XSwg
+SSBkb24ndCB0aGluayB3ZQo+IGVuZCB1cCB3aW5uaW5nIGFueXRoaW5nIHdoZW4gY29tcGFyZWQg
+dG8ganVzdCBwcm9iaW5nIGRldmljZXMgb24tZGVtYW5kCj4gZnJvbSByZXNvdXJjZSBnZXR0ZXJz
+Lgo+Cj4gT25lIHJlbWFpbmluZyBvYmplY3Rpb24gaXMgdG8gdGhlICJzcHJpbmtsaW5nIiBvZiBj
+YWxscyB0bwo+IGZ3bm9kZV9lbnN1cmVfZGV2aWNlKCkgaW4gdGhlIHJlc291cmNlIGdldHRlcnMg
+b2YgZWFjaCBzdWJzeXN0ZW0sIGJ1dCBJCj4gdGhpbmsgaXQncyB0aGUgcmlnaHQgdGhpbmcgdG8g
+ZG8gZ2l2ZW4gdGhhdCB0aGUgc3RvcmFnZSBvZiByZXNvdXJjZXMgaXMKPiBjdXJyZW50bHkgc3Vi
+c3lzdGVtLXNwZWNpZmljLgoKU2VlbXMgbGlrZSBhIG1pbm9yIGNoYW5nZSB0byBtZS4KCj4gV2Ug
+Y291bGQgYXZvaWQgdGhlIGFib3ZlIGJ5IG1vdmluZyByZXNvdXJjZSBzdG9yYWdlIGludG8gdGhl
+IGNvcmUsIGJ1dCBJCj4gZG9uJ3QgdGhpbmsgdGhlcmUncyBhIGNvbXBlbGxpbmcgY2FzZSBmb3Ig
+dGhhdC4KPgo+IEkgaGF2ZSB0ZXN0ZWQgdGhpcyBvbiBib2FyZHMgd2l0aCBUZWdyYSwgaU1YLjYs
+IEV4eW5vcyBhbmQgT01BUCBTb0NzLAo+IGFuZCB0aGVzZSBwYXRjaGVzIHdlcmUgZW5vdWdoIHRv
+IGVsaW1pbmF0ZSBhbGwgdGhlIGRlZmVycmVkIHByb2Jlcwo+IChleGNlcHQgb25lIGluIFBhbmRh
+Qm9hcmQgYmVjYXVzZSBvbWFwX2RtYV9zeXN0ZW0gZG9lc24ndCBoYXZlIGEKPiBmaXJtd2FyZSBu
+b2RlIGFzIG9mIHlldCkuCj4KPiBXaXRoIHRoaXMgc2VyaWVzIEkgZ2V0IHRoZSBrZXJuZWwgdG8g
+b3V0cHV0IHRvIHRoZSBwYW5lbCBpbiAwLjVzLAo+IGluc3RlYWQgb2YgMi44cy4KCkdlbmVyYWxs
+eSwgSSB0aGluayB0aGlzIGxvb2tzIHByZXR0eSBnb29kLiBJdCBpcyBzaW1wbGUgYW5kIHRoZSBl
+cnJvcgpwYXRoIGlzIHNpbXBseSBmYWxsaW5nIGJhY2sgdG8gZGVmZXJyZWQgcHJvYmUuCgpPbmUg
+b3ZlcmFsbCBjb21tZW50IGlzIEknbSBub3Qgc28gc3VyZSBpZiBmd25vZGVfZW5zdXJlX2Rldmlj
+ZQpzaG91bGRuJ3QganVzdCBiZSBvZl9lbnN1cmVfZGV2aWNlLiBBdCBsZWFzdCBjdXJyZW50bHks
+IGl0IGxvb2tzIGxpa2UKYWxsIHRoZSBjYWxsaW5nIGxvY2F0aW9ucyBhcmUgRFQgc3BlY2lmaWMg
+ZnVuY3Rpb25zIGFueXdheS4gVGhlcmUncwp2ZXJ5IGxpdHRsZSBsb2dpYyB3aXRoaW4gdGhlIGZ1
+bmN0aW9uIHRvIHJlYWxseSBiZW5lZml0IHNoYXJpbmcgd2l0aApBQ1BJLiBJdCBpcyBiYXNpY2Fs
+bHkganVzdCBhIGNhbGwgdG8gb2ZfcGxhdGZvcm1fZGV2aWNlX2ZpbmQgYW5kIHRoZW4KYnVzX3By
+b2JlX2RldmljZS4gSSBleHBlY3QgdGhlIGdldCBmdW5jdGlvbnMgd2lsbCBhbHdheXMgY2FsbCBp
+bnRvCkRUL0FDUEkgc3BlY2lmaWMgZnVuY3Rpb25zIHdoaWNoIGNhbiB0aGVuIGNhbGwgdGhlIGZp
+cm13YXJlIHNwZWNpZmljCmRldmljZSBmaW5kIGZ1bmN0aW9uLgoKUm9iCgpfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxp
+bmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
+LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
