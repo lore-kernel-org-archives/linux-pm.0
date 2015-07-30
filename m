@@ -1,61 +1,44 @@
 From: Antoine Tenart <antoine.tenart@free-electrons.com>
-Subject: [PATCH 2/3] ARM: berlin: register cpufreq-dt for the BG2Q
-Date: Thu, 30 Jul 2015 14:35:51 +0200
-Message-ID: <1438259752-16320-3-git-send-email-antoine.tenart@free-electrons.com>
+Subject: [PATCH 3/3] ARM: berlin: dts: add the cpufreq-dt bindings on the BG2Q
+Date: Thu, 30 Jul 2015 14:35:52 +0200
+Message-ID: <1438259752-16320-4-git-send-email-antoine.tenart@free-electrons.com>
 References: <1438259752-16320-1-git-send-email-antoine.tenart@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:36023 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751992AbbG3Mf4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2015 08:35:56 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1438259752-16320-1-git-send-email-antoine.tenart@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: sebastian.hesselbarth@gmail.com
 Cc: Antoine Tenart <antoine.tenart@free-electrons.com>, zmxu@marvell.com, jszhang@marvell.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-The BG2Q SoC uses cpufreq-dt for cpufreq. Register a platform device for
-this.
+The BG2Q uses cpugreq-dt. Add the corresponding bindings. The operating
+points can be updated by the bootloader.
 
 Signed-off-by: Antoine Tenart <antoine.tenart@free-electrons.com>
 ---
- arch/arm/mach-berlin/berlin.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ arch/arm/boot/dts/berlin2q.dtsi | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/arch/arm/mach-berlin/berlin.c b/arch/arm/mach-berlin/berlin.c
-index ac181c6797ee..0de906374994 100644
---- a/arch/arm/mach-berlin/berlin.c
-+++ b/arch/arm/mach-berlin/berlin.c
-@@ -15,9 +15,21 @@
- #include <linux/io.h>
- #include <linux/kernel.h>
- #include <linux/of_platform.h>
-+#include <linux/platform_device.h>
- #include <asm/hardware/cache-l2x0.h>
- #include <asm/mach/arch.h>
- 
-+static const struct of_device_id berlin2q_match[] = {
-+	{ .compatible = "marvell,berlin2q" },
-+	{ },
-+};
+diff --git a/arch/arm/boot/dts/berlin2q.dtsi b/arch/arm/boot/dts/berlin2q.dtsi
+index 63a48490e2f9..58f6792c0d77 100644
+--- a/arch/arm/boot/dts/berlin2q.dtsi
++++ b/arch/arm/boot/dts/berlin2q.dtsi
+@@ -53,6 +53,17 @@
+ 			device_type = "cpu";
+ 			next-level-cache = <&l2>;
+ 			reg = <0>;
 +
-+static void __init berlin_init_late(void)
-+{
-+	if (of_find_matching_node(NULL, berlin2q_match))
-+		platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
-+}
-+
- static const char * const berlin_dt_compat[] = {
- 	"marvell,berlin",
- 	NULL,
-@@ -25,6 +37,7 @@ static const char * const berlin_dt_compat[] = {
++			clocks = <&chip_clk CLKID_CPU>;
++			clock-latency = <100000>;
++			/* Can be modified by the bootloader */
++			operating-points = <
++				/* kHz    uV */
++				1200000 1200000
++				1000000 1200000
++				800000  1200000
++				600000  1200000
++			>;
+ 		};
  
- DT_MACHINE_START(BERLIN_DT, "Marvell Berlin")
- 	.dt_compat	= berlin_dt_compat,
-+	.init_late	= berlin_init_late,
- 	/*
- 	 * with DT probing for L2CCs, berlin_init_machine can be removed.
- 	 * Note: 88DE3005 (Armada 1500-mini) uses pl310 l2cc
+ 		cpu@1 {
 -- 
 2.5.0
-
