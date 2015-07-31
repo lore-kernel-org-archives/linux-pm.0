@@ -1,72 +1,41 @@
-From: Jisheng Zhang <jszhang@marvell.com>
-Subject: Re: [PATCH 2/3] ARM: berlin: register cpufreq-dt for the BG2Q
-Date: Fri, 31 Jul 2015 14:16:02 +0800
-Message-ID: <20150731141602.28b28f21@xhacker>
-References: <1438259752-16320-1-git-send-email-antoine.tenart@free-electrons.com>
-	<1438259752-16320-3-git-send-email-antoine.tenart@free-electrons.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V3 07/16] PM / OPP: Add support to parse
+ "operating-points-v2" bindings
+Date: Thu, 30 Jul 2015 23:20:13 -0700
+Message-ID: <20150731062013.GR3159@codeaurora.org>
+References: <cover.1438166099.git.viresh.kumar@linaro.org>
+ <6d8d9cd0c3ae2d3fa8c3aadedb5ac403785b7675.1438166099.git.viresh.kumar@linaro.org>
+ <20150731055106.GJ3159@codeaurora.org>
+ <20150731055806.GN17794@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:14729 "EHLO
-	mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751179AbbGaGUB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 02:20:01 -0400
-In-Reply-To: <1438259752-16320-3-git-send-email-antoine.tenart@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150731055806.GN17794@linux>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mturquette@baylibre.com, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, b.zolnierkie@samsung.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
-To: Antoine Tenart <antoine.tenart@free-electrons.com>
-Cc: sebastian.hesselbarth@gmail.com, zmxu@marvell.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Antoine, 
-
-On Thu, 30 Jul 2015 14:35:51 +0200
-Antoine Tenart <antoine.tenart@free-electrons.com> wrote:
-
-> The BG2Q SoC uses cpufreq-dt for cpufreq. Register a platform device for
-> this.
+On 07/31, Viresh Kumar wrote:
+> On 30-07-15, 22:51, Stephen Boyd wrote:
+> > > +	opp->u_volt = microvolt[0];
+> > > +	opp->u_volt_min = microvolt[1];
+> > > +	opp->u_volt_max = microvolt[2];
+> > 
+> > Should the default be 0 and ULONG_MAX for volt_min/volt_max when
+> > there's on element?
 > 
-> Signed-off-by: Antoine Tenart <antoine.tenart@free-electrons.com>
-> ---
->  arch/arm/mach-berlin/berlin.c | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
+> I am not still sure how the regulator API is going to look like for
+> this target/min/max thing. So, lets defer it until that is resolved.
+> For now they are initialized to 0.
 > 
-> diff --git a/arch/arm/mach-berlin/berlin.c b/arch/arm/mach-berlin/berlin.c
-> index ac181c6797ee..0de906374994 100644
-> --- a/arch/arm/mach-berlin/berlin.c
-> +++ b/arch/arm/mach-berlin/berlin.c
-> @@ -15,9 +15,21 @@
->  #include <linux/io.h>
->  #include <linux/kernel.h>
->  #include <linux/of_platform.h>
-> +#include <linux/platform_device.h>
->  #include <asm/hardware/cache-l2x0.h>
->  #include <asm/mach/arch.h>
->  
-> +static const struct of_device_id berlin2q_match[] = {
-> +	{ .compatible = "marvell,berlin2q" },
-> +	{ },
-> +};
-> +
-> +static void __init berlin_init_late(void)
-> +{
-> +	if (of_find_matching_node(NULL, berlin2q_match))
-> +		platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+> And, because the user has just passed in a target voltage, maybe all
+> three must be == u_volt. :)
+> 
 
-I'm not sure is it acceptable to always register cpufreq-dt platform device.
-In cpufreq-dt driver, the probe will exit if there's no cpuclk node.
+Ok. Sounds fair enough.
 
-> +}
-> +
->  static const char * const berlin_dt_compat[] = {
->  	"marvell,berlin",
->  	NULL,
-> @@ -25,6 +37,7 @@ static const char * const berlin_dt_compat[] = {
->  
->  DT_MACHINE_START(BERLIN_DT, "Marvell Berlin")
->  	.dt_compat	= berlin_dt_compat,
-> +	.init_late	= berlin_init_late,
->  	/*
->  	 * with DT probing for L2CCs, berlin_init_machine can be removed.
->  	 * Note: 88DE3005 (Armada 1500-mini) uses pl310 l2cc
-
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
