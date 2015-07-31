@@ -1,66 +1,36 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] bus: subsys: propagate errors from subsys interface's
- ->add_dev()
-Date: Fri, 31 Jul 2015 11:39:07 +0530
-Message-ID: <20150731060907.GO17794@linux>
-References: <aff842c23841a8e61ac17e58fc27c99e052e338b.1435308918.git.viresh.kumar@linaro.org>
- <2113628.vmLC8GdsGl@vostro.rjw.lan>
- <20150730034431.GH5100@linux>
- <8139001.Q4eV8YG1Il@vostro.rjw.lan>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V3 12/16] PM / OPP: add dev_pm_opp_is_turbo() helper
+Date: Thu, 30 Jul 2015 23:10:23 -0700
+Message-ID: <20150731061023.GL3159@codeaurora.org>
+References: <cover.1438166099.git.viresh.kumar@linaro.org>
+ <1e1445bc7f79eb4adc5bf1a0f5eddf118dc60345.1438166099.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <8139001.Q4eV8YG1Il@vostro.rjw.lan>
+In-Reply-To: <1e1445bc7f79eb4adc5bf1a0f5eddf118dc60345.1438166099.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Greg KH <gregkh@linuxfoundation.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, pi-cheng.chen@linaro.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mturquette@baylibre.com, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, b.zolnierkie@samsung.com, Tomasz Figa <tomasz.figa@gmail.com>, Javier Martinez Canillas <javier@dowhile0.org>, Thomas Abraham <thomas.ab@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On 30-07-15, 20:53, Rafael J. Wysocki wrote:
-> Well, on ACPI systems we actually do probe CPU devices.  We have a processor
-> driver there that binds to CPU devices and the cpufreq driver is just a
-> frontend to that.
+On 07/29, Viresh Kumar wrote:
+> +bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp)
+> +{
+> +	struct dev_pm_opp *tmp_opp;
+> +
+> +	opp_rcu_lockdep_assert();
+> +
+> +	tmp_opp = rcu_dereference(opp);
+> +	if (unlikely(IS_ERR_OR_NULL(tmp_opp)) || !tmp_opp->available) {
 
-Hmm, maybe I need to look at that in detail..
+IS_ERR_OR_NULL already has unlikely inside it on the error
+pointer path so it seems redundant here.
 
-> So question is what prevents DT-based systems from doing it analogously.
+Otherwise
 
-Don't have an answer to it yet.
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
-> Now, even if you use a fake platform device for that (I'm sure there are
-> reasons for doing that, but I'd very much like them to be explained),
-
-The other reason apart from the EPROBE_DEFER thing was to identify the
-right driver for a platform. For multiplatform kernels, there can be
-multiple cpufreq drivers present in the kernel and there was no other
-way to identify the right driver platform wants to probe.
-
-> then
-> all of the information on dependencies should already be available to the
-> ->probe callback of that device's driver, so it can check them before
-> registering the cpufreq interface, can't it?
-
-That's what we try to do today for cpufreq-dt, for example. But that
-has to be done for every possible policy the system can have as all
-might have separate resources to allocate. For cpufreq-dt, we do it
-only for cpu0 today, and assume others will work as well if cpu0 can.
-
-The real deal is that we need a probe() per policy here, for which
-init() fitted well :)
-
-> Essentially, what you're suggesting to do is something like: Make the ->probe
-> of one device's driver register a subsys interface for a specific bus type
-> and check what ->add_dev of that interface returns for each device on that
-> bus and if that is -EPROBE_DEFER, return it as its own return value.  Do you
-> honestly think this is a good design?
-
-No. I don't really thing so. That's why I was asking for suggestions
-to do it proper. Maybe processor driver is the way to look for, I will
-investigate further on that.
-
-But until the time that is done, and I expect that to take some time,
-can't we check the return value of ->add_dev()?
- 
 -- 
-viresh
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
