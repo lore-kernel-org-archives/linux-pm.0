@@ -1,50 +1,53 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH V3 00/16] OPP: Add code to support operating-points-v2
- bindings
-Date: Fri, 31 Jul 2015 20:55:13 +0200
-Message-ID: <26644874.9clcJiszPI@amdc1976>
-References: <cover.1438166099.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 2/7] cpufreq: opp: fix handling of turbo modes
+Date: Fri, 31 Jul 2015 20:58:06 +0200
+Message-ID: <55330300.1udBI120uH@amdc1976>
+References: <1436456621-29839-1-git-send-email-b.zolnierkie@samsung.com>
+ <2681271.3UazeZ9PAQ@amdc1976> <55BA36A7.3050107@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:45762 "EHLO
+Received: from mailout4.samsung.com ([203.254.224.34]:60594 "EHLO
 	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750789AbbGaS4A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 14:56:00 -0400
-Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout4.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0NSD00XGB8LALUA0@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Sat, 01 Aug 2015 03:55:58 +0900 (KST)
-In-reply-to: <cover.1438166099.git.viresh.kumar@linaro.org>
+	with ESMTP id S1750948AbbGaS6w (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 14:58:52 -0400
+In-reply-to: <55BA36A7.3050107@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mturquette@baylibre.com, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com
+To: Kukjin Kim <kgene@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
+On Thursday, July 30, 2015 11:37:27 PM Kukjin Kim wrote:
+> On 07/27/15 20:47, Bartlomiej Zolnierkiewicz wrote:
+> > On Monday, July 27, 2015 05:06:41 PM Viresh Kumar wrote:
+> >> On 27-07-15, 13:14, Bartlomiej Zolnierkiewicz wrote:
+> >>> Sorry but you don't seem to understand the issue.
+> >>
+> >> :)
+> >>
+> >> No, I did. I understand that if someone uses opp bindings today with
+> >> some entries as turbo OPPs, cpufreq will use them as normal
+> >> frequencies. And that may harm the board.
+> >>
+> >> BUT, opp-v2 code isn't ready to be used yet. And platforms should see
+> >> what all is implemented before trying to use them.
+> > 
+> > OK.
+> > 
+> >> All I was saying is, this isn't a FIX as we haven't introduced the
+> >> feature yet. Otherwise I had no issues with the patch.
+> > 
+> > I will update the description for the next patchset revision.
+> > 
+> Hi Bart,
 
 Hi,
 
-On Wednesday, July 29, 2015 04:22:55 PM Viresh Kumar wrote:
-> Hi Guys,
-> 
-> Resending this again because:
-> - opp-hz is now 64 bit long and so that required a binding update.
-> - There is another 4 patch series that as updating turbo OPP support,
->   along with updates to cpufreq core and cpufreq-dt driver.
-> - A minor bug-fix in V2 4/11, which caused false positive for duplicate
->   OPPs in some cases.
-> 
-> Tested this on dual-core exynos board with the driver inbuilt as well as
-> a module. Tried multiple insertion/removals of the module. Have tested
-> cpufreq-dt driver with both old and new bindings.
+> When will you re-post v3? Because I have a plan to send a pull-request
+> to arm-soc until this weekend...
 
-I have tested these patches (including boost support) together with my
-cpufreq-dt conversion patches for Exynos4x12 platforms on Odroid-U3 and
-Trats2 boards.
-
-Tested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+I have just posted v3.  I hope that it is not too late..
 
 Best regards,
 --
