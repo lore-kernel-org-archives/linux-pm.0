@@ -1,76 +1,82 @@
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
-Subject: Re: [PATCH 6/8] ARM: dts: axp209: Add usb_power_supply
- child node to the ax209 node
-Date: Fri, 31 Jul 2015 07:51:04 +0200
-Message-ID: <20150731075104.48c467e6@pluto.restena.lu>
-References: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
-	<1433885881-19809-7-git-send-email-hdegoede@redhat.com>
-	<CAGb2v66X79dK84hG8NVTho-kPPMNcKXQspvT2pCM8Zbmnme53A@mail.gmail.com>
-Reply-To: bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V3 07/16] PM / OPP: Add support to parse
+ "operating-points-v2" bindings
+Date: Thu, 30 Jul 2015 22:51:06 -0700
+Message-ID: <20150731055106.GJ3159@codeaurora.org>
+References: <cover.1438166099.git.viresh.kumar@linaro.org>
+ <6d8d9cd0c3ae2d3fa8c3aadedb5ac403785b7675.1438166099.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sunxi+bncBDCZ5GUK4UNRBSUZ5SWQKGQESFLA4ZA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-In-Reply-To: <CAGb2v66X79dK84hG8NVTho-kPPMNcKXQspvT2pCM8Zbmnme53A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <http://groups.google.com/group/linux-sunxi
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <http://groups.google.com/group/linux-sunxi/subscribe>
-To: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Cc: Hans De Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:35567 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751120AbbGaFvI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 01:51:08 -0400
+Content-Disposition: inline
+In-Reply-To: <6d8d9cd0c3ae2d3fa8c3aadedb5ac403785b7675.1438166099.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mturquette@baylibre.com, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, b.zolnierkie@samsung.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-Hi ChenYu,
-
-On Fri, 31 Jul 2015 13:31:53 +0800 Chen-Yu Tsai wrote:
-> Hi Hans,
+On 07/29, Viresh Kumar wrote:
+> This adds support in OPP library to parse and create list of OPPs from
+> operating-points-v2 bindings. It takes care of most of the properties of
+> new bindings (except shared-opp, which will be handled separately).
 > 
-> On Wed, Jun 10, 2015 at 5:37 AM, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org> wrote:
-> > Add a node representing the usb power supply part of the axp209 pmic, note
-> > that the usb power supply and the (to be added later) ac power supply will
-> > each have their own child-node, so that they can be separately specified
-> > as power-supply for other nodes using a power-supply property with a
-> > phandle pointing to the right axp209 child-node.
-> >
-> > Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-> > ---
-> >  arch/arm/boot/dts/axp209.dtsi | 5 +++++
-> >  1 file changed, 5 insertions(+)
-> >
-> > diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
-> > index 24c935c..051ab3b 100644
-> > --- a/arch/arm/boot/dts/axp209.dtsi
-> > +++ b/arch/arm/boot/dts/axp209.dtsi
-> > @@ -89,4 +89,9 @@
-> >                         regulator-name = "ldo5";
-> >                 };
-> >         };
-> > +
-> > +       usb_power_supply: usb_power_supply {
-> > +               compatible = "x-powers,axp202-usb-power-supply";
-> > +               status = "disabled";
+> For backward compatibility, we keep supporting earlier bindings. We try
+> to search for the new bindings first, in case they aren't present we
+> look for the old deprecated ones.
 > 
-> Is there any reason to have this disabled by default?
-> AFAIK this is not something configurable in hardware,
-> and the driver just gives readouts and status updates.
-
-There are some devices that only have 'AC-IN' instead of usb/otg power
-(set-top boxes) so having the devices tell what power sources they
-have makes sense (otherwise those that have ac-in instead of otg would
-have to disable usb_power_supply) and avoids confusion by explicitly
-stating presence in device dts.
-
-NB: I should hopefully get my battery supply driver ported this WE,
-ac-in/rtc are done, this WE. I'm going to default-off for them as well
-(note that for some extra details should be provided in dts).
-
-Bruno
-
-> ChenYu
+> There are few things marked as TODO:
+> - Support for multiple OPP tables
+> - Support for multiple regulators
 > 
-> > +       };
-> >  };
-> > --
-> > 2.3.6
+> They should be fixed separately.
+> 
+> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+
+One question below:
+
+> @@ -679,6 +691,125 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
+>  	return ret;
+>  }
+>  
+> +/* TODO: Support multiple regulators */
+> +static int opp_get_microvolt(struct dev_pm_opp *opp, struct device *dev)
+> +{
+> +	u32 microvolt[3] = {0};
+> +	int count, ret;
+> +
+> +	count = of_property_count_u32_elems(opp->np, "opp-microvolt");
+> +	if (!count)
+> +		return 0;
+> +
+> +	/* There can be one or three elements here */
+> +	if (count != 1 && count != 3) {
+> +		dev_err(dev, "%s: Invalid number of elements in opp-microvolt property (%d)\n",
+> +			__func__, count);
+> +		return -EINVAL;
+> +	}
+> +
+> +	ret = of_property_read_u32_array(opp->np, "opp-microvolt", microvolt,
+> +					 count);
+> +	if (ret) {
+> +		dev_err(dev, "%s: error parsing opp-microvolt: %d\n", __func__,
+> +			ret);
+> +		return -EINVAL;
+> +	}
+> +
+> +	opp->u_volt = microvolt[0];
+> +	opp->u_volt_min = microvolt[1];
+> +	opp->u_volt_max = microvolt[2];
+
+Should the default be 0 and ULONG_MAX for volt_min/volt_max when
+there's on element?
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
