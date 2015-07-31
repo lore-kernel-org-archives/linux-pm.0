@@ -1,111 +1,88 @@
-From: Bjorn Andersson <bjorn.andersson@sonymobile.com>
-Subject: Re: [PATCH v7 01/13] clk: qcom: Add support for GDSCs
-Date: Fri, 31 Jul 2015 09:22:40 -0700
-Message-ID: <20150731162240.GG6519@usrtlx11787.corpusers.net>
-References: <1438076046-4706-1-git-send-email-rnayak@codeaurora.org>
- <1438076046-4706-2-git-send-email-rnayak@codeaurora.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
+Date: Fri, 31 Jul 2015 09:37:15 -0700
+Message-ID: <20150731163715.GV3159@codeaurora.org>
+References: <1438010430-5802-1-git-send-email-lee.jones@linaro.org>
+ <1438010430-5802-2-git-send-email-lee.jones@linaro.org>
+ <20150728022936.GB1229@linux>
+ <20150728225510.GB3159@codeaurora.org>
+ <20150729081403.GH2284@x1>
+ <20150729221526.GE3159@codeaurora.org>
+ <20150730084634.GD9319@x1>
+ <CAL_JsqKQLQ15qSt95zBZykzzPhcUrtZzhk29a76n+r_3719AiA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from seldrel01.sonyericsson.com ([37.139.156.2]:10790 "EHLO
-	seldrel01.sonyericsson.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751250AbbGaQWr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 12:22:47 -0400
+Received: from smtp.codeaurora.org ([198.145.29.96]:39305 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbbGaQhS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 12:37:18 -0400
 Content-Disposition: inline
-In-Reply-To: <1438076046-4706-2-git-send-email-rnayak@codeaurora.org>
+In-Reply-To: <CAL_JsqKQLQ15qSt95zBZykzzPhcUrtZzhk29a76n+r_3719AiA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: sboyd@codeaurora.org, mturquette@baylibre.com, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, georgi.djakov@linaro.org, linux-arm-kernel@lists.infradead.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Nishanth Menon <nm@ti.com>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Ajit Pal Singh <ajitpal.singh@st.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Tue 28 Jul 02:33 PDT 2015, Rajendra Nayak wrote:
+On 07/30, Rob Herring wrote:
+> On Thu, Jul 30, 2015 at 3:46 AM, Lee Jones <lee.jones@linaro.org> wrote:
+> >
+> > There is nothing stopping us from representing the data in this way.
+> > On the plus side, it would mean that we wouldn't need any vendor
+> > specific properties.  However, far outweighing the positives are the
+> > fact that, even in our very simple example provided, where we only
+> > have 2 frequencies, differ between only 1 cut and support all
+> > substrates, we would still need 16 OPP tables.  When any one of those
+> > variables increase (and they will), we would then have a large number
+> > of permutations and subsequently and unruly amount of OPP tables.
+> >
+> > (... and we haven't even provided the body-biasing information yet.)
+> >
+> > The way we've chosen to represent our circumstance is the least
+> > intrusive and the most succinct way we can think of.  Which IMHO
+> > outweighs the fact that we have to introduce a couple of vendor
+> > properties by a country mile.
+> 
+> Regardless of which is better or worse, you are both doing essentially
+> the same thing. You are selecting OPPs based on some Si parameters. We
+> should not really be doing this 2 different ways. I'd be fine with 2
+> ways if it was 2 for all SOCs, but right now it is 2 for 2 SOCs.
+> Really, I'd like to see most if not all the selection or fixup of OPPs
+> be done in the bootloader and the kernel just deals with the correct
+> OPP table.
+> 
+> Where are you storing the data that gets selected to fill into these
+> properties? Is it just look-up tables or is there some kind of
+> algorithm to generate the values? If the former, then DT is as good a
+> data struct as any to store the tables. There is a lot of duplication
+> though with only a single property varying in each set. If you both
+> have that problem, then perhaps we can come up with a generic way to
+> list all possible values more concisely.
 
-[..]
-> diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-[..]
-> +static int gdsc_init(struct gdsc *sc)
-> +{
-> +	u32 mask, val;
-> +	int on, ret;
-> +
-> +	/*
-> +	 * Disable HW trigger: collapse/restore occur based on registers writes.
-> +	 * Disable SW override: Use hardware state-machine for sequencing.
-> +	 * Configure wait time between states.
-> +	 */
-> +	mask = HW_CONTROL_MASK | SW_OVERRIDE_MASK |
-> +	       EN_REST_WAIT_MASK | EN_FEW_WAIT_MASK | CLK_DIS_WAIT_MASK;
-> +	val = EN_REST_WAIT_VAL | EN_FEW_WAIT_VAL | CLK_DIS_WAIT_VAL;
-> +	ret = regmap_update_bits(sc->regmap, sc->gdscr, mask, val);
-> +	if (ret)
-> +		return ret;
-> +
-> +	on = gdsc_is_enabled(sc);
-> +	if (on < 0)
-> +		return on;
-> +
-> +	sc->pd.power_off = gdsc_disable;
-> +	sc->pd.power_on = gdsc_enable;
-> +	pm_genpd_init(&sc->pd, NULL, !on);
-> +
-> +	return 0;
-> +}
-> +
-> +int gdsc_register(struct device *dev, struct gdsc **scs, size_t num,
-> +		  struct regmap *regmap)
-> +{
-> +	int i, ret;
-> +	struct genpd_onecell_data *data;
-> +
-> +	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
-> +	data->domains = devm_kcalloc(dev, num, sizeof(*data->domains),
-> +				     GFP_KERNEL);
-> +	if (!data->domains)
-> +		return -ENOMEM;
-> +
-> +	data->num_domains = num;
-> +	for (i = 0; i < num; i++) {
-> +		if (!scs[i])
-> +			continue;
-> +		scs[i]->regmap = regmap;
-> +		ret = gdsc_init(scs[i]);
-> +		if (ret)
-> +			return ret;
+For qcom platforms, the frequency is almost always constant.
+There may be some tables where we have a couple higher
+frequencies than others because the speed bin is different.
+Otherwise the voltage/current is changing based on the silicon
+characteristics. So the biggest duplication is the frequency
+property.
 
-By this time we have disabled the HW control and here we just leave it
-as that, do you expect any interesting consequences of this?
-Or do we just not care (this shouldn't happen anyways).
+As far as I know there isn't any algorithm to generate the
+voltage values. It's all hand tuned tables based on the silicon
+characterization, so we're left to store these tables in DT and
+pick the right one at runtime. With regards to the table
+explosion, on qcom platforms we haven't worried that we have ~40
+tables, but I'm not opposed to expressing it in a smaller set of
+nodes, tables, etc. if that's what's desired.
 
-> +		data->domains[i] = &scs[i]->pd;
-> +	}
-> +
-> +	return of_genpd_add_provider_onecell(dev->of_node, data);
-> +}
-> +
-> +void gdsc_unregister(struct device *dev)
-> +{
-> +	of_genpd_del_provider(dev->of_node);
-> +}
-> diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
-[..]
-> +#ifdef CONFIG_QCOM_GDSC
-> +int gdsc_register(struct device *, struct gdsc **, size_t n, struct regmap *);
-> +void gdsc_unregister(struct device *);
-> +#else
-> +static inline int gdsc_register(struct device *d, struct gdsc **g, size_t n,
-> +				struct regmap *r)
-> +{
-> +	return -ENOSYS;
+Do we need vendor specific properties for that though? Or do we
+need some sort of extended frequency/voltage properties that are
+arrays of values that we can index into based on some silicon
+characteristics? I like the name based approach because it's
+simple. Use this OPP table because it's called
+x-y-z-characteristics and be done. Cramming the tables into less
+lines may save us some typing and dtb space, but I'm not sure
+what else it does.
 
-This will cause qcom_cc_really_probe() to abort and unregister both its
-resets and clocks. I think you should just pretend that everything went
-fine and return 0...
-
-> +}
-> +
-
-Regards,
-Bjorn
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
