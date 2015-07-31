@@ -1,45 +1,30 @@
-From: joeyli <jlee-IBi9RG/b67k@public.gmane.org>
-Subject: Re: [RFC PATCH 02/16] x86/efi: Add get and set variable to EFI
- services pointer table
-Date: Fri, 31 Jul 2015 18:14:52 +0800
-Message-ID: <20150731101452.GE13113@linux-rxt1.site>
-References: <1437056730-15247-1-git-send-email-jlee@suse.com>
- <1437056730-15247-3-git-send-email-jlee@suse.com>
- <1438269598.11322.2.camel@intel.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: Re: [PATCH 00/23] ARM: at91: Properly handle slow clock
+Date: Fri, 31 Jul 2015 12:20:09 +0200
+Message-ID: <20150731102009.GH27985@piout.net>
+References: <1438335599-3301-1-git-send-email-alexandre.belloni@free-electrons.com>
+ <20150731115903.4ef23e83@bbrezillon>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1438269598.11322.2.camel-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-KKrjLPT3xs0@public.gmane.org>, Matthew Garrett <matthew.garrett-05XSO3Yj/JvQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>
+In-Reply-To: <20150731115903.4ef23e83@bbrezillon>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Boris Brezillon <boris.brezillon@free-electrons.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, Arnd Bergmann <arnd@arndb.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org, linux-watchdog@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, rtc-linux@googlegroups.com, Sebastian Reichel <sre@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Thierry Reding <thierry.reding@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Wim Van Sebroeck <wim@iguana.be>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 30, 2015 at 04:19:58PM +0100, Matt Fleming wrote:
-> On Thu, 2015-07-16 at 22:25 +0800, Lee, Chun-Yi wrote:
-> > Add get variable and set variable function to EFI services pointer
-> > table for supporting later functions of hibernate signature
-> > verification to keep the HMAC key in efi boot service veriable.
-> > 
-> > Signed-off-by: Lee, Chun-Yi <jlee-IBi9RG/b67k@public.gmane.org>
-> 
-> Maybe mention that we want to be able to read/write variables from
-> within the EFI boot stub? That's really why you want to add
-> {get,set}_variable pointers.
->
+Hi,
 
-I will add more detail for accessing efi boot service
-variable is because that will not touched by unauthenticated
-codes.
- 
-> s/veriable/variable/
+On 31/07/2015 at 11:59:03 +0200, Boris Brezillon wrote :
+> I would have squashed commit 5 to 14 into a single patch, but apart
+> from that it looks good to me.
 > 
 
-I will fix the typo.
+I wanted to clearly list were the slow clock was needed for each soc. It
+actually allowed me to find one that was missing.
 
-> Rest of the patch looks good.
-> 
-
-Thanks a lot!
-Joey Lee
+-- 
+Alexandre Belloni, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
