@@ -1,97 +1,90 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 1/1] x86: replace RDRAND forced-reseed with simple sanity check
-Date: Fri, 31 Jul 2015 11:27:39 -0400
-Message-ID: <001e354e9435443b1720838a111620c4eec12a61.1438356386.git.len.brown@intel.com>
-Reply-To: Len Brown <lenb@kernel.org>
+From: joeyli <jlee@suse.com>
+Subject: Re: [RFC PATCH 08/16] x86/efi: Carrying swsusp key by setup data
+Date: Fri, 31 Jul 2015 23:31:47 +0800
+Message-ID: <20150731153147.GE2067@linux-rxt1.site>
+References: <1437056730-15247-1-git-send-email-jlee@suse.com>
+ <1437056730-15247-9-git-send-email-jlee@suse.com>
+ <1438273809.11322.21.camel@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f182.google.com ([209.85.220.182]:35453 "EHLO
-	mail-qk0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751369AbbGaP2T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 11:28:19 -0400
+Received: from smtp.nue.novell.com ([195.135.221.5]:60968 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753555AbbGaPcC (ORCPT
+	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+	Fri, 31 Jul 2015 11:32:02 -0400
+Content-Disposition: inline
+In-Reply-To: <1438273809.11322.21.camel@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
+To: Matt Fleming <matt.fleming@intel.com>
+Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Matthew Garrett <matthew.garrett@nebula.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>
 
-From: Len Brown <len.brown@intel.com>
+On Thu, Jul 30, 2015 at 05:30:09PM +0100, Matt Fleming wrote:
+> On Thu, 2015-07-16 at 22:25 +0800, Lee, Chun-Yi wrote:
+> > For forwarding swsusp key from EFI stub to boot kernel, this patch
+> > allocates setup data for carrying swsusp key, size and the status
+> > of efi operating.
+> > 
+> > Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
+> > ---
+> >  arch/x86/boot/compressed/eboot.c      | 29 +++++++++++++++++++++++++----
+> >  arch/x86/include/uapi/asm/bootparam.h |  1 +
+> >  2 files changed, 26 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/arch/x86/boot/compressed/eboot.c b/arch/x86/boot/compressed/eboot.c
+> > index 97b356f..5e1476e 100644
+> > --- a/arch/x86/boot/compressed/eboot.c
+> > +++ b/arch/x86/boot/compressed/eboot.c
+> > @@ -1392,19 +1392,23 @@ free_mem_map:
+> >  
+> >  static void setup_swsusp_keys(struct boot_params *params)
+> >  {
+> > -	unsigned long key_size, attributes;
+> > +	struct setup_data *setup_data, *swsusp_setup_data;
+> >  	struct swsusp_keys *swsusp_keys;
+> > +	int size = 0;
+> > +	unsigned long key_size, attributes;
+> >  	efi_status_t status;
+> 
+> Why the local variable shuffling? It'd be better to leave key_size and
+> attributes alone.
+>
+> Also, 'size' doesn't look like it should be int. If you're passing it to
+> allocate_pool it really wants to be 'unsigned long'.
+> 
 
-x86_init_rdrand() was added with 2 goals:
+I see, I will change that.
 
-1. Sanity check that the built-in-self-test circuit on the Digital
-   Random Number Generator (DRNG) is not complaining.  As RDRAND
-   HW self-checks on every invocation, this goal is achieved
-   by simply invoking RDRAND and checking its return code.
+> >  	/* Allocate setup_data to carry keys */
+> > +	size = sizeof(struct setup_data) + sizeof(struct swsusp_keys);
+> >  	status = efi_call_early(allocate_pool, EFI_LOADER_DATA,
+> > -				sizeof(struct swsusp_keys), &swsusp_keys);
+> > +				size, &swsusp_setup_data);
+> >  	if (status != EFI_SUCCESS) {
+> >  		efi_printk(sys_table, "Failed to alloc mem for swsusp_keys\n");
+> >  		return;
+> >  	}
+> >  
+> > -	memset(swsusp_keys, 0, sizeof(struct swsusp_keys));
+> > +	memset(swsusp_setup_data, 0, size);
+> > +	swsusp_keys = (struct swsusp_keys *)swsusp_setup_data->data;
+> >  
+> >  	status = efi_call_early(get_variable, SWSUSP_KEY, &EFI_SWSUSP_GUID,
+> >  				&attributes, &key_size, swsusp_keys->swsusp_key);
+> > @@ -1413,7 +1417,9 @@ static void setup_swsusp_keys(struct boot_params *params)
+> >  		memset(swsusp_keys->swsusp_key, 0, SWSUSP_DIGEST_SIZE);
+> >  		status = efi_call_early(set_variable, SWSUSP_KEY,
+> >  					&EFI_SWSUSP_GUID, attributes, 0, NULL);
+> > -		if (status == EFI_SUCCESS) {
+> > +		if (status)
+> > +			goto clean_fail;
+> 
+> Please use the EFI status codes explicitly.
+>
 
-2. Force a full re-seed of the random number generator.
-   This was done out of paranoia to benefit the most un-sophisticated
-   DRNG implementation conceivable in the architecture,
-   an implementation that does not exist, and unlikely ever will.
-   This worst-case full-re-seed is achieved by invoking
-   a 64-bit RDRAND 8192 times.
+Here also, I will check status explicitly. 
 
-Unfortunately, this worst-case re-seed costs O(1,000us).
-Magnifying this cost, it is done from identify_cpu(), which is the
-synchronous critical path to bring a processor on-line -- repeated
-for every logical processor in the system at boot and resume from S3.
 
-As it is very expensive, and of highly dubious value,
-we delete the worst-case re-seed from the kernel.
-
-We keep the 1st goal -- sanity check the hardware,
-and mark it absent if it complains.
-
-This change reduces the cost of x86_init_rdrand() by a factor of 1,000x,
-to O(1us) from O(1,000us).
-
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/kernel/cpu/rdrand.c | 24 +++++++++++-------------
- 1 file changed, 11 insertions(+), 13 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/rdrand.c b/arch/x86/kernel/cpu/rdrand.c
-index 136ac74..b86817e 100644
---- a/arch/x86/kernel/cpu/rdrand.c
-+++ b/arch/x86/kernel/cpu/rdrand.c
-@@ -33,28 +33,26 @@ static int __init x86_rdrand_setup(char *s)
- __setup("nordrand", x86_rdrand_setup);
- 
- /*
-- * Force a reseed cycle; we are architecturally guaranteed a reseed
-- * after no more than 512 128-bit chunks of random data.  This also
-- * acts as a test of the CPU capability.
-+ * RDRAND has Built-In-Self-Test (BIST) that runs on every invocation.
-+ * Run the instruction a few times as a sanity check.
-+ * If it fails, it is simple to disable RDRAND here.
-  */
--#define RESEED_LOOP ((512*128)/sizeof(unsigned long))
-+#define SANITY_CHECK_LOOPS 8
- 
- void x86_init_rdrand(struct cpuinfo_x86 *c)
- {
- #ifdef CONFIG_ARCH_RANDOM
- 	unsigned long tmp;
--	int i, count, ok;
-+	int i;
- 
- 	if (!cpu_has(c, X86_FEATURE_RDRAND))
--		return;		/* Nothing to do */
-+		return;
- 
--	for (count = i = 0; i < RESEED_LOOP; i++) {
--		ok = rdrand_long(&tmp);
--		if (ok)
--			count++;
-+	for (i = 0; i < SANITY_CHECK_LOOPS; i++) {
-+		if (!rdrand_long(&tmp)) {
-+			clear_cpu_cap(c, X86_FEATURE_RDRAND);
-+			return;
-+		}
- 	}
--
--	if (count != RESEED_LOOP)
--		clear_cpu_cap(c, X86_FEATURE_RDRAND);
- #endif
- }
--- 
-2.5.0
-
+Thanks a lot!
+Joey Lee
