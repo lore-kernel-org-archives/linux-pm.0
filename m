@@ -1,209 +1,81 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH v6 5/8] cpufreq: arm_big_little: add SCPI interface driver
-Date: Fri, 31 Jul 2015 18:43:08 +0100
-Message-ID: <1438364591-1144-6-git-send-email-sudeep.holla@arm.com>
-References: <1438364591-1144-1-git-send-email-sudeep.holla@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1438364591-1144-1-git-send-email-sudeep.holla@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: arm@kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Olof Johansson <olof@lixom.net>, Kevin Hilman <khilman@kernel.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Liviu Dudau <liviu.dudau@arm.com>, Punit Agrawal <punit.agrawal@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arnd Bergmann <arnd@arndb.de>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v3 0/5] cpufreq: use generic cpufreq drivers for Exynos4x12
+ platform
+Date: Fri, 31 Jul 2015 20:49:12 +0200
+Message-ID: <1438368557-2352-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:53896 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750856AbbGaSuV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 14:50:21 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 
-On some ARM based systems, a separate Cortex-M based System Control
-Processor(SCP) provides the overall power, clock, reset and system
-control including CPU DVFS. SCPI Message Protocol is used to
-communicate with the SCPI.
+Hi,
 
-This patch adds a interface driver for adding OPPs and registering
-the arm_big_little cpufreq driver for such systems.
+This patch series removes the use of Exynos4x12 specific support
+from cpufreq-exynos driver and enables the use of cpufreq-dt driver
+for this platform.
 
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org
----
- MAINTAINERS                    |   1 +
- drivers/cpufreq/Kconfig.arm    |   9 +++
- drivers/cpufreq/Makefile       |   1 +
- drivers/cpufreq/scpi-cpufreq.c | 124 +++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 135 insertions(+)
- create mode 100644 drivers/cpufreq/scpi-cpufreq.c
+This patch series has been tested on Exynos4412 based Odroid-U3 and
+Trats2 boards.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 690122bb4426..d4b912664a93 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -8966,6 +8966,7 @@ L:	linux-arm-kernel@lists.infradead.org
- S:	Maintained
- F:	Documentation/devicetree/bindings/arm/arm,scpi.txt
- F:	drivers/clk/clk-scpi.c
-+F:	drivers/cpufreq/scpi-cpufreq.c
- F:	drivers/firmware/arm_scpi.c
- F:	include/linux/scpi_protocol.h
- 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index cc8a71c267b8..c46b495169af 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -24,6 +24,15 @@ config ARM_VEXPRESS_SPC_CPUFREQ
-           This add the CPUfreq driver support for Versatile Express
- 	  big.LITTLE platforms using SPC for power management.
- 
-+config ARM_SCPI_CPUFREQ
-+        tristate "SCPI based CPUfreq driver"
-+	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL
-+        help
-+	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
-+	  using SCPI protocol for CPU power management.
-+
-+	  This driver uses SCPI Message Protocol driver to interact with the
-+	  firmware providing the CPU DVFS functionality.
- 
- config ARM_EXYNOS_CPUFREQ
- 	tristate "SAMSUNG EXYNOS CPUfreq Driver"
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 2169bf792db7..7e07f5535c3a 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -78,6 +78,7 @@ obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
- obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
- obj-$(CONFIG_ARM_TEGRA_CPUFREQ)		+= tegra-cpufreq.o
- obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
-+obj-$(CONFIG_ARM_SCPI_CPUFREQ)		+= scpi-cpufreq.o
- 
- ##################################################################################
- # PowerPC platform drivers
-diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-new file mode 100644
-index 000000000000..2c3b16fd3a01
---- /dev/null
-+++ b/drivers/cpufreq/scpi-cpufreq.c
-@@ -0,0 +1,124 @@
-+/*
-+ * System Control and Power Interface (SCPI) based CPUFreq Interface driver
-+ *
-+ * It provides necessary ops to arm_big_little cpufreq driver.
-+ *
-+ * Copyright (C) 2015 ARM Ltd.
-+ * Sudeep Holla <sudeep.holla@arm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-+ * kind, whether express or implied; without even the implied warranty
-+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/cpufreq.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_opp.h>
-+#include <linux/scpi_protocol.h>
-+#include <linux/types.h>
-+
-+#include "arm_big_little.h"
-+
-+static struct scpi_ops *scpi_ops;
-+
-+static struct scpi_dvfs_info *scpi_get_dvfs_info(struct device *cpu_dev)
-+{
-+	u8 domain = topology_physical_package_id(cpu_dev->id);
-+
-+	if (domain < 0)
-+		return ERR_PTR(-EINVAL);
-+	return scpi_ops->dvfs_get_info(domain);
-+}
-+
-+static int scpi_opp_table_ops(struct device *cpu_dev, bool remove)
-+{
-+	int idx, ret = 0;
-+	struct scpi_opp *opp;
-+	struct scpi_dvfs_info *info = scpi_get_dvfs_info(cpu_dev);
-+
-+	if (IS_ERR(info))
-+		return PTR_ERR(info);
-+
-+	if (!info->opps)
-+		return -EIO;
-+
-+	for (opp = info->opps, idx = 0; idx < info->count; idx++, opp++) {
-+		if (remove)
-+			dev_pm_opp_remove(cpu_dev, opp->freq);
-+		else
-+			ret = dev_pm_opp_add(cpu_dev, opp->freq,
-+					     opp->m_volt * 1000);
-+		if (ret) {
-+			dev_warn(cpu_dev, "failed to add opp %uHz %umV\n",
-+				 opp->freq, opp->m_volt);
-+			while (idx-- > 0)
-+				dev_pm_opp_remove(cpu_dev, (--opp)->freq);
-+			return ret;
-+		}
-+	}
-+	return ret;
-+}
-+
-+static int scpi_get_transition_latency(struct device *cpu_dev)
-+{
-+	struct scpi_dvfs_info *info = scpi_get_dvfs_info(cpu_dev);
-+
-+	if (IS_ERR(info))
-+		return PTR_ERR(info);
-+	return info->latency;
-+}
-+
-+static int scpi_init_opp_table(struct device *cpu_dev)
-+{
-+	return scpi_opp_table_ops(cpu_dev, false);
-+}
-+
-+static void scpi_free_opp_table(struct device *cpu_dev)
-+{
-+	scpi_opp_table_ops(cpu_dev, true);
-+}
-+
-+static struct cpufreq_arm_bL_ops scpi_cpufreq_ops = {
-+	.name	= "scpi",
-+	.get_transition_latency = scpi_get_transition_latency,
-+	.init_opp_table = scpi_init_opp_table,
-+	.free_opp_table = scpi_free_opp_table,
-+};
-+
-+static int scpi_cpufreq_probe(struct platform_device *pdev)
-+{
-+	scpi_ops = get_scpi_ops();
-+	if (!scpi_ops)
-+		return -EIO;
-+
-+	return bL_cpufreq_register(&scpi_cpufreq_ops);
-+}
-+
-+static int scpi_cpufreq_remove(struct platform_device *pdev)
-+{
-+	bL_cpufreq_unregister(&scpi_cpufreq_ops);
-+	scpi_ops = NULL;
-+	return 0;
-+}
-+
-+static struct platform_driver scpi_cpufreq_platdrv = {
-+	.driver = {
-+		.name	= "scpi-cpufreq",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= scpi_cpufreq_probe,
-+	.remove		= scpi_cpufreq_remove,
-+};
-+module_platform_driver(scpi_cpufreq_platdrv);
-+
-+MODULE_AUTHOR("Sudeep Holla <sudeep.holla@arm.com>");
-+MODULE_DESCRIPTION("ARM SCPI CPUFreq interface driver");
-+MODULE_LICENSE("GPL v2");
+Depends on:
+- next-20150730 branch of linux-next kernel tree
+- "[PATCH V3 00/16] OPP: Add code to support operating-points-v2 bindings"
+  (http://www.spinics.net/lists/arm-kernel/msg435408.html)
+
+Changes since v2
+(http://thread.gmane.org/gmane.linux.kernel.samsung-soc/46653):
+- rebased on top of next-20150730 branch of linux-next kernel tree
+- ported over V3 of opp-v2 bindings support patch series
+- put cpu0 nodes in alphabetical order in dts files
+- added Reviewed-by tags from Javier and Krzysztof
+- added Acked-by tag from Sylwester
+
+Changes since v1
+(http://thread.gmane.org/gmane.linux.kernel.samsung-soc/44361):
+- rebased on top of next-20150629 branch of linux-next kernel tree
+- rebased on top of Exynos5250 cpufreq-dt support patch series
+- fixed if-statement in exynos4_clk_init() (noticed by Tobias Jakobi)
+- ported over opp-v2 bindings (requested by Viresh Kumar)
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+Bartlomiej Zolnierkiewicz (5):
+  clk: samsung: exynos4x12: add cpu clock configuration data and
+    instantiate cpu clock
+  ARM: dts: Exynos4x12: add CPU OPP and regulator supply property
+  ARM: Exynos: switch to using generic cpufreq driver for Exynos4x12
+  cpufreq: exynos: remove Exynos4x12 specific cpufreq driver support
+  cpufreq: remove no longer needed CPU_FREQ_BOOST_SW config option
+
+ arch/arm/boot/dts/exynos4212.dtsi               |  81 ++++++++
+ arch/arm/boot/dts/exynos4412-odroid-common.dtsi |   4 +
+ arch/arm/boot/dts/exynos4412-origen.dts         |   4 +
+ arch/arm/boot/dts/exynos4412-trats2.dts         |   4 +
+ arch/arm/boot/dts/exynos4412.dtsi               |  83 +++++++++
+ arch/arm/mach-exynos/exynos.c                   |   2 +
+ drivers/clk/samsung/clk-exynos4.c               |  50 +++++
+ drivers/cpufreq/Kconfig                         |   5 +-
+ drivers/cpufreq/Kconfig.arm                     |  38 ----
+ drivers/cpufreq/Makefile                        |   2 -
+ drivers/cpufreq/exynos-cpufreq.c                | 236 ------------------------
+ drivers/cpufreq/exynos-cpufreq.h                |  72 --------
+ drivers/cpufreq/exynos4x12-cpufreq.c            | 236 ------------------------
+ drivers/cpufreq/freq_table.c                    |   2 -
+ 14 files changed, 229 insertions(+), 590 deletions(-)
+ delete mode 100644 drivers/cpufreq/exynos-cpufreq.c
+ delete mode 100644 drivers/cpufreq/exynos-cpufreq.h
+ delete mode 100644 drivers/cpufreq/exynos4x12-cpufreq.c
+
 -- 
 1.9.1
+
