@@ -1,78 +1,110 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 1/1] suspend: make sync() on suspend-to-RAM build-time optional
-Date: Fri, 31 Jul 2015 12:46:17 -0400
-Message-ID: <674dcf60fc85324b41479fcec930d64126c09fb1.1438360540.git.len.brown@intel.com>
-References: <1438361177-23201-1-git-send-email-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f176.google.com ([209.85.220.176]:33730 "EHLO
-	mail-qk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753482AbbGaQqp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 12:46:45 -0400
-In-Reply-To: <1438361177-23201-1-git-send-email-lenb@kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH v6 0/8] ARM64: juno: add SCPI mailbox protocol, clock and CPUFreq support
+Date: Fri, 31 Jul 2015 18:43:03 +0100
+Message-ID: <1438364591-1144-1-git-send-email-sudeep.holla@arm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: arm@kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Olof Johansson <olof@lixom.net>, Kevin Hilman <khilman@kernel.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Liviu Dudau <liviu.dudau@arm.com>, Punit Agrawal <punit.agrawal@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arnd Bergmann <arnd@arndb.de>, devicetree@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-From: Len Brown <len.brown@intel.com>
+Hi ARM-SoC guys,
 
-The Linux kernel suspend path has traditionally invoked sys_sync()
-before freezing user threads.
+It has been on the list for a while and have got all the necessary ACKs.
+Can you please pull this series for v4.3 ?
 
-But sys_sync() can be expensive, and some user-space OS's do not want
-the kernel to pay the cost of sys_sync() on every suspend -- preferring
-invoke sync() from user-space if/when they want it.
+Regards,
+Sudeep
 
-So make sys_sync on suspend build-time optional.
+This patch series adds support for:
+  1. SCPI(System Control and Power Interface) mailbox protocol driver.
+     It uses ARM MHU mailbox controller driver on Juno but can work with
+     any mailbox controllers using standard mailbox APIs
+  2. Add support for clocks provided by SCP firmware through the SCPI
+     interface
+  3. Using the existing arm_big_little cpufreq driver and the newly
+     added SCPI clock driver, it also adds support for CPU DVFS on
+     ARM64 JUNO development platforms.
 
-The default is unchanged.
+The SCPI protocol document is available @[1],[2]
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- kernel/power/Kconfig   | 10 ++++++++++
- kernel/power/suspend.c |  2 ++
- 2 files changed, 12 insertions(+)
+Changes v5->v6:
+	- Minor review comments on clock bindings and clock driver
+	- Added all the ACKs necessary
 
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 7e01f78..80afa8a 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -18,6 +18,16 @@ config SUSPEND_FREEZER
- 
- 	  Turning OFF this setting is NOT recommended! If in doubt, say Y.
- 
-+config SUSPEND_SKIP_SYNC
-+	bool "Skip kernel's sys_sync() on suspend to RAM/standby"
-+	depends on SUSPEND
-+	depends on EXPERT
-+	help
-+	  Delete the kernel sys_sync() before freezing user processes.
-+	  Some operating systems prefer not to pay this cost on every
-+	  invocation of suspend, or they are content with invoking sync()
-+	  from user-space before invoking suspend.
-+
- config HIBERNATE_CALLBACKS
- 	bool
- 
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 8d7a1ef..4a942ee 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -482,11 +482,13 @@ static int enter_state(suspend_state_t state)
- 	if (state == PM_SUSPEND_FREEZE)
- 		freeze_begin();
- 
-+#ifndef	CONFIG_SUSPEND_SKIP_SYNC
- 	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
- 	printk(KERN_INFO "PM: Syncing filesystems ... ");
- 	sys_sync();
- 	printk("done.\n");
- 	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
-+#endif
- 
- 	pr_debug("PM: Preparing system for %s sleep\n", pm_states[state]);
- 	error = suspend_prepare(state);
+Changes v4->v5:
+	- Updated the SCPI clock bindings to correct the clock specifier
+	  usage and other minor updates as per review feedback
+	- Updated clock driver to use SCPI specifier clock specifier
+	  decode function
+	- Minor reshuffling in Juno DTS files, no functionality change
+
+Changes v3->v4:
+	- Updated the SCPI binding based on MarkR's feedback
+	- Updated SCPI clock driver to incorporate Stephen Boyd's review
+	  comments + used clk_set_rate_range to limit the clock range
+	- Since no major changes are expected in SCPI DT, updated the
+	  Juno DTS to support SCPI and dependent device nodes.
+
+Changes v2->v3:
+	- Minor fix in SCPI driver and added Tixy's reviewed-by tag
+	- Updated scpi clock driver to incorporate all the comments from
+	  Stephen
+	- Added Viresh's ack
+
+Changes v1->v2:
+	- Updated the token handling in scpi driver as per Tixy's
+	  suggestion along with other review comments
+	- Removed multiple drivers in scpi clock as Lorenzo suggested
+	- Added free_opp_table in scpi-cpufreq as Viresh suggested
+	- Separated the DT binding document
+	- Moved SCPI protocol driver to drivers/firmware
+
+[1] http://community.arm.com/servlet/JiveServlet/download/8401-45-18326/DUI0922B_scp_message_interface.pdf
+[2] https://wiki.linaro.org/ARM/Juno?action=AttachFile&do=get&target=DUI0922B_scp_message_interface.pdf
+v1: https://lkml.org/lkml/2015/4/27/232
+v2: https://lkml.org/lkml/2015/5/14/470
+v3: https://lkml.org/lkml/2015/5/27/220
+v4: https://lkml.org/lkml/2015/6/8/178
+v5: https://lkml.org/lkml/2015/7/23/270
+
+Cc: devicetree@vger.kernel.org
+Cc: linux-clk@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+
+Sudeep Holla (8):
+  Documentation: add DT binding for ARM System Control and Power
+    Interface(SCPI) protocol
+  firmware: add support for ARM System Control and Power Interface(SCPI)
+    protocol
+  clk: add support for clocks provided by SCP(System Control Processor)
+  clk: scpi: add support for cpufreq virtual device
+  cpufreq: arm_big_little: add SCPI interface driver
+  arm64: dts: add SRAM, MHU mailbox and SCPI support on Juno
+  arm64: dts: add CPU topology on Juno
+  arm64: dts: add clock support for all the cpus
+
+ Documentation/devicetree/bindings/arm/arm,scpi.txt | 150 +++++
+ MAINTAINERS                                        |  10 +
+ arch/arm64/boot/dts/arm/juno-base.dtsi             |  54 ++
+ arch/arm64/boot/dts/arm/juno-r1.dts                |  32 +
+ arch/arm64/boot/dts/arm/juno.dts                   |  32 +
+ drivers/clk/Kconfig                                |  10 +
+ drivers/clk/Makefile                               |   1 +
+ drivers/clk/clk-scpi.c                             | 325 ++++++++++
+ drivers/cpufreq/Kconfig.arm                        |   9 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/scpi-cpufreq.c                     | 124 ++++
+ drivers/firmware/Kconfig                           |  19 +
+ drivers/firmware/Makefile                          |   1 +
+ drivers/firmware/arm_scpi.c                        | 711 +++++++++++++++++++++
+ include/linux/scpi_protocol.h                      |  61 ++
+ 15 files changed, 1540 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/arm/arm,scpi.txt
+ create mode 100644 drivers/clk/clk-scpi.c
+ create mode 100644 drivers/cpufreq/scpi-cpufreq.c
+ create mode 100644 drivers/firmware/arm_scpi.c
+ create mode 100644 include/linux/scpi_protocol.h
+
 -- 
-2.5.0
-
+1.9.1
