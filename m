@@ -1,89 +1,72 @@
 From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH 01/23] Documentation: dt: atmel-at91: add clocks to system
- timer, rstc and shdwc
-Date: Fri, 31 Jul 2015 11:39:37 +0200
-Message-ID: <1438335599-3301-2-git-send-email-alexandre.belloni@free-electrons.com>
+Subject: [PATCH 18/23] power/reset: at91-reset: get and use slow clock
+Date: Fri, 31 Jul 2015 11:39:54 +0200
+Message-ID: <1438335599-3301-19-git-send-email-alexandre.belloni@free-electrons.com>
 References: <1438335599-3301-1-git-send-email-alexandre.belloni@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1438335599-3301-1-git-send-email-alexandre.belloni@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Nicolas Ferre <nicolas.ferre@atmel.com>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-arm-kernel@lists.infradead.org
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The system timer (at91rm9200), the reset controller and the shutdown
-controller need an input clock. This is the slow clock and they will not
-function without it.
+Commit dca1a4b5ff6e ("clk: at91: keep slow clk enabled to prevent system
+hang") added a workaround for the slow clock as it is not properly handled
+by its users.
 
-Also fix the shutdown controller example.
+Get and use the slow clock as it is necessary for the at91 reset
+controller.
 
 Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
 Cc: Sebastian Reichel <sre@kernel.org>
 Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 Cc: linux-pm@vger.kernel.org
- Documentation/devicetree/bindings/arm/atmel-at91.txt | 11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
+ drivers/power/reset/at91-reset.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/atmel-at91.txt b/Documentation/devicetree/bindings/arm/atmel-at91.txt
-index 424ac8cbfa08..209710cdf3aa 100644
---- a/Documentation/devicetree/bindings/arm/atmel-at91.txt
-+++ b/Documentation/devicetree/bindings/arm/atmel-at91.txt
-@@ -50,6 +50,7 @@ System Timer (ST) required properties:
- - reg: Should contain registers location and length
- - interrupts: Should contain interrupt for the ST which is the IRQ line
-   shared across all System Controller members.
-+- clocks: phandle to input clock.
- Its subnodes can be:
- - watchdog: compatible should be "atmel,at91rm9200-wdt"
+diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
+index 3225c8590ed0..19fdd4c107dc 100644
+--- a/drivers/power/reset/at91-reset.c
++++ b/drivers/power/reset/at91-reset.c
+@@ -11,6 +11,7 @@
+  * warranty of any kind, whether express or implied.
+  */
  
-@@ -89,12 +90,14 @@ RSTC Reset Controller required properties:
- - compatible: Should be "atmel,<chip>-rstc".
-   <chip> can be "at91sam9260" or "at91sam9g45"
- - reg: Should contain registers location and length
-+- clocks: phandle to input clock.
++#include <linux/clk.h>
+ #include <linux/io.h>
+ #include <linux/module.h>
+ #include <linux/of_address.h>
+@@ -46,6 +47,7 @@ enum reset_type {
+ };
  
- Example:
+ static void __iomem *at91_ramc_base[2], *at91_rstc_base;
++static struct clk *sclk;
  
- 	rstc@fffffd00 {
- 		compatible = "atmel,at91sam9260-rstc";
- 		reg = <0xfffffd00 0x10>;
-+		clocks = <&clk32k>;
- 	};
+ /*
+ * unless the SDRAM is cleanly shutdown before we hit the
+@@ -193,9 +195,21 @@ static int at91_reset_probe(struct platform_device *pdev)
+ 	match = of_match_node(at91_reset_of_match, pdev->dev.of_node);
+ 	at91_restart_nb.notifier_call = match->data;
  
- RAMC SDRAM/DDR Controller required properties:
-@@ -117,6 +120,7 @@ required properties:
- - compatible: Should be "atmel,<chip>-shdwc".
-   <chip> can be "at91sam9260", "at91sam9rl" or "at91sam9x5".
- - reg: Should contain registers location and length
-+- clocks: phandle to input clock.
++	sclk = devm_clk_get(&pdev->dev, NULL);
++	if (IS_ERR(sclk))
++		return PTR_ERR(sclk);
++
++	ret = clk_prepare_enable(sclk);
++	if (ret) {
++		dev_err(&pdev->dev, "Could not enable slow clock\n");
++		return ret;
++	}
++
+ 	ret = register_restart_handler(&at91_restart_nb);
+-	if (ret)
++	if (ret) {
++		clk_disable_unprepare(sclk);
+ 		return ret;
++	}
  
- optional properties:
- - atmel,wakeup-mode: String, operation mode of the wakeup mode.
-@@ -135,9 +139,10 @@ optional at91sam9x5 properties:
+ 	at91_reset_status(pdev);
  
- Example:
- 
--	rstc@fffffd00 {
--		compatible = "atmel,at91sam9260-rstc";
--		reg = <0xfffffd00 0x10>;
-+	shdwc@fffffd10 {
-+		compatible = "atmel,at91sam9260-shdwc";
-+		reg = <0xfffffd10 0x10>;
-+		clocks = <&clk32k>;
- 	};
- 
- Special Function Registers (SFR)
 -- 
 2.1.4
