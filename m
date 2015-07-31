@@ -1,140 +1,173 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Subject: Re: [PATCH 00/23] ARM: at91: Properly handle slow clock
-Date: Fri, 31 Jul 2015 11:59:03 +0200
-Message-ID: <20150731115903.4ef23e83@bbrezillon>
-References: <1438335599-3301-1-git-send-email-alexandre.belloni@free-electrons.com>
+From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Subject: Re: [PATCH 6/8] ARM: dts: axp209: Add usb_power_supply
+ child node to the ax209 node
+Date: Fri, 31 Jul 2015 18:06:37 +0800
+Message-ID: <CAGb2v67AodUYJiTSn=vx3M0xhM1FfzFDUjKfiR_xnwHJq88fCg@mail.gmail.com>
+References: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
+ <1433885881-19809-7-git-send-email-hdegoede@redhat.com> <CAGb2v66X79dK84hG8NVTho-kPPMNcKXQspvT2pCM8Zbmnme53A@mail.gmail.com>
+ <20150731075104.48c467e6@pluto.restena.lu> <CAGb2v67nM7pauyjyhBdfgX7p_Rud6TEsNqphB+gx4ROekVqtbw@mail.gmail.com>
+ <20150731083541.5f2c683a@pluto.restena.lu> <55BB3262.5000403@redhat.com>
+ <CAGb2v66+CZe0v=CuYOLfnNwkX70kwPOP28Nya2Y8xw8yrg4-8Q@mail.gmail.com> <55BB3BCB.6080608@redhat.com>
+Reply-To: wens-jdAy2FN1RRM@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:34822 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751925AbbGaJ7I (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 05:59:08 -0400
-In-Reply-To: <1438335599-3301-1-git-send-email-alexandre.belloni@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-sunxi+bncBCMILY6JWQBBBSER5WWQKGQEUZTQTTA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+In-Reply-To: <55BB3BCB.6080608-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Cc: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Alessandro Zummo <a.zummo@towertech.it>, Arnd Bergmann <arnd@arndb.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org, linux-watchdog@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, rtc-linux@googlegroups.com, Sebastian Reichel <sre@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Thierry Reding <thierry.reding@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Wim Van Sebroeck <wim@iguana.be>
 
-Hi Alexandre,
-
-On Fri, 31 Jul 2015 11:39:36 +0200
-Alexandre Belloni <alexandre.belloni@free-electrons.com> wrote:
-
+On Fri, Jul 31, 2015 at 5:11 PM, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org> wrote:
 > Hi,
-> 
-> It was discovered that all the slow clock user were not properly claiming it.
-> This can end up in a system hang because the last registered user is releasing
-> it, and it gets disabled.
-> 
-> commit dca1a4b5ff6e ("clk: at91: keep slow clk enabled to prevent system hang")
-> was a workaround. This series is adding the slow clock to the necessary drivers
-> to avoid the issue and then removes that workaround.
-> 
-> The Documentation updates and DT patches should probably go through the AT91
-> tree this cycle to avoid breakage.
-> 
-> Then the other patches can go through each subsystem tree. They are trivial
-> enough to also go in this cycle.
-> 
-> The final clk patch depends on the other ones and may be taken for the next
-> cycle to avoid synchronization issues.
-> 
-> I've thrown in a cleanup for at91-reset as it avoids adding support for that
-> clock to the platform data initialization
+>
+>
+> On 31-07-15 11:00, Chen-Yu Tsai wrote:
+>>
+>> On Fri, Jul 31, 2015 at 4:31 PM, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+>> wrote:
+>>>
+>>> Hi,
+>>>
+>>>
+>>> On 31-07-15 08:35, Bruno Pr=C3=A9mont wrote:
+>>>>
+>>>>
+>>>> On Fri, 31 Jul 2015 14:14:28 +0800 Chen-Yu Tsai wrote:
+>>>>>
+>>>>>
+>>>>> On Fri, Jul 31, 2015 at 1:51 PM, Bruno Pr=C3=A9mont wrote:
+>>>>>>
+>>>>>>
+>>>>>> Hi ChenYu,
+>>>>>>
+>>>>>> On Fri, 31 Jul 2015 13:31:53 +0800 Chen-Yu Tsai wrote:
+>>>>>>>
+>>>>>>>
+>>>>>>> Hi Hans,
+>>>>>>>
+>>>>>>> On Wed, Jun 10, 2015 at 5:37 AM, Hans de Goede wrote:
+>>>>>>>>
+>>>>>>>>
+>>>>>>>> Add a node representing the usb power supply part of the axp209
+>>>>>>>> pmic,
+>>>>>>>> note
+>>>>>>>> that the usb power supply and the (to be added later) ac power
+>>>>>>>> supply
+>>>>>>>> will
+>>>>>>>> each have their own child-node, so that they can be separately
+>>>>>>>> specified
+>>>>>>>> as power-supply for other nodes using a power-supply property with=
+ a
+>>>>>>>> phandle pointing to the right axp209 child-node.
+>>>>>>>>
+>>>>>>>> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+>>>>>>>> ---
+>>>>>>>>    arch/arm/boot/dts/axp209.dtsi | 5 +++++
+>>>>>>>>    1 file changed, 5 insertions(+)
+>>>>>>>>
+>>>>>>>> diff --git a/arch/arm/boot/dts/axp209.dtsi
+>>>>>>>> b/arch/arm/boot/dts/axp209.dtsi
+>>>>>>>> index 24c935c..051ab3b 100644
+>>>>>>>> --- a/arch/arm/boot/dts/axp209.dtsi
+>>>>>>>> +++ b/arch/arm/boot/dts/axp209.dtsi
+>>>>>>>> @@ -89,4 +89,9 @@
+>>>>>>>>                           regulator-name =3D "ldo5";
+>>>>>>>>                   };
+>>>>>>>>           };
+>>>>>>>> +
+>>>>>>>> +       usb_power_supply: usb_power_supply {
+>>>>>>>> +               compatible =3D "x-powers,axp202-usb-power-supply";
+>>>>>>>> +               status =3D "disabled";
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> Is there any reason to have this disabled by default?
+>>>>>>> AFAIK this is not something configurable in hardware,
+>>>>>>> and the driver just gives readouts and status updates.
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> There are some devices that only have 'AC-IN' instead of usb/otg pow=
+er
+>>>>>> (set-top boxes) so having the devices tell what power sources they
+>>>>>> have makes sense (otherwise those that have ac-in instead of otg wou=
+ld
+>>>>>> have to disable usb_power_supply) and avoids confusion by explicitly
+>>>>>> stating presence in device dts.
+>>>>>
+>>>>>
+>>>>>
+>>>>> That's true. But this is a bit of hardware inside the AXP.
+>>>>> If it's power isn't routed, it should report it, shouldn't it?
+>>>>
+>>>>
+>>>>
+>>>> If the device does not use the input there are two cases:
+>>>> - ac-in and usb/otg in short-circuited (there is a bit in AXP register=
+s
+>>>>     to provide this indication)
+>>>> - the unused one is just not connected/connectable
+>>>>
+>>>> In either case the voltage of the unused/unusable branch is not really
+>>>> useful, nor is it useful to have it show up in sysfs.
+>>>
+>>>
+>>>
+>>> Exactly my thinking on this, +1 .
+>>>
+>>>>> And normal users would probably expect to read the input
+>>>>> voltage/current/status through sysfs (or maybe hwmon?),
+>>>>> instead of not finding the device and having to look through
+>>>>> the DTS.
+>>>>
+>>>>
+>>>>
+>>>> Only those supplies effectively present (in-use or with connectors
+>>>> to eventually use them) should be visible in sysfs.
+>>>> Having more of them will just confuse the users, they would be searchi=
+ng
+>>>> how they can connect the supply while there is no means to do so
+>>>> except soldering to the tiny AXP pins.
+>>>
+>>>
+>>>
+>>> +1
+>>
+>>
+>> OK. So mostly tablets and dev boards would benefit from having both
+>> power supplies. Is there a preference for usb-power-supply over
+>> vbus-det-gpio if both are available? Or just list them both and
+>> let the driver sort it out?
+>
+>
+> So far I've simply stuck with whatever the fex file uses, if both
+> are specified the driver will prefer the gpio, but that is not
+> documented behavior. IMHO it would be better to pick and specify
+> only one.
 
-I would have squashed commit 5 to 14 into a single patch, but apart
-from that it looks good to me.
+>From a functional standpoint, if usb-power-supply is available,
+using it would be better because:
 
-Acked-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+a) VBUS detection should be much better (IIRC cutoff at 4.4V)
+b) Controllable max current draw
+c) Can see the current draw
 
-Thanks,
+Of course not all boards would work. I think I even have a board
+that is only half powered on when only USB VBUS is used.
 
-Boris
+ChenYu
 
-> 
-> Changes in v2:
->  - statisticize the global in the atmel-st change
->  - merge at91_reset_of_probe() in at91_reset_probe()
->  - added patches from Boris for the TCB
->  - added the slow clock to the TCB
-> 
-> Cc: Alessandro Zummo <a.zummo@towertech.it>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: linux-clk@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-pwm@vger.kernel.org
-> Cc: linux-watchdog@vger.kernel.org
-> Cc: Michael Turquette <mturquette@baylibre.com>
-> Cc: rtc-linux@googlegroups.com
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: Stephen Boyd <sboyd@codeaurora.org>
-> Cc: Thierry Reding <thierry.reding@gmail.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Wim Van Sebroeck <wim@iguana.be>
-> 
-> Alexandre Belloni (20):
->   Documentation: dt: atmel-at91: add clocks to system timer, rstc and
->     shdwc
->   Documentation: watchdog: at91sam9_wdt: add clocks property
->   Documentation: dt: rtc: at91rm9200: add clocks property
->   ARM: at91/dt: at91rm9200: use slow clock where necessary
->   ARM: at91/dt: at91sam9260: use slow clock where necessary
->   ARM: at91/dt: at91sam9261: use slow clock where necessary
->   ARM: at91/dt: at91sam9263: use slow clock where necessary
->   ARM: at91/dt: at91sam9g45: use slow clock where necessary
->   ARM: at91/dt: at91sam9n12: use slow clock where necessary
->   ARM: at91/dt: at91sam9rl: use slow clock where necessary
->   ARM: at91/dt: at91sam9x5: use slow clock where necessary
->   ARM: at91/dt: sama5d3: use slow clock where necessary
->   ARM: at91/dt: sama5d4: use slow clock where necessary
->   rtc: at91rm9200: get and use slow clock
->   watchdog: at91sam9: get and use slow clock
->   power/reset: at91-reset: remove useless at91_reset_platform_probe()
->   power/reset: at91-reset: get and use slow clock
->   power/reset: at91-poweroff: get and use slow clock
->   clocksource: atmel-st: get and use slow clock
->   clk: at91: Revert "keep slow clk enabled to prevent system hang"
-> 
-> Boris Brezillon (3):
->   Documentation: dt: atmel-at91: add slow clock to tcb
->   clocksource: tcb_clksrc: fix setup_clkevents error path
->   misc: atmel_tclib: get and use slow clock
-> 
->  .../devicetree/bindings/arm/atmel-at91.txt         | 13 +++--
->  .../bindings/rtc/atmel,at91rm9200-rtc.txt          |  2 +
->  .../devicetree/bindings/watchdog/atmel-wdt.txt     |  2 +
->  arch/arm/boot/dts/at91rm9200.dtsi                  | 10 ++--
->  arch/arm/boot/dts/at91sam9260.dtsi                 | 11 +++--
->  arch/arm/boot/dts/at91sam9261.dtsi                 |  7 ++-
->  arch/arm/boot/dts/at91sam9263.dtsi                 |  7 ++-
->  arch/arm/boot/dts/at91sam9g45.dtsi                 | 12 +++--
->  arch/arm/boot/dts/at91sam9n12.dtsi                 | 12 +++--
->  arch/arm/boot/dts/at91sam9rl.dtsi                  |  8 ++-
->  arch/arm/boot/dts/at91sam9x5.dtsi                  | 12 +++--
->  arch/arm/boot/dts/sama5d3.dtsi                     |  8 ++-
->  arch/arm/boot/dts/sama5d3_tcb1.dtsi                |  4 +-
->  arch/arm/boot/dts/sama5d4.dtsi                     | 12 +++--
->  drivers/clk/at91/clk-slow.c                        | 27 ----------
->  drivers/clocksource/tcb_clksrc.c                   | 10 +++-
->  drivers/clocksource/timer-atmel-st.c               | 31 ++++++++----
->  drivers/misc/atmel_tclib.c                         |  4 ++
->  drivers/power/reset/at91-poweroff.c                | 13 +++++
->  drivers/power/reset/at91-reset.c                   | 57 ++++++----------------
->  drivers/pwm/pwm-atmel-tcb.c                        | 23 ++++++---
->  drivers/rtc/rtc-at91rm9200.c                       | 27 ++++++++--
->  drivers/watchdog/at91sam9_wdt.c                    | 22 ++++++++-
->  include/linux/atmel_tc.h                           |  1 +
->  24 files changed, 206 insertions(+), 129 deletions(-)
-> 
-
-
-
--- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+--=20
+You received this message because you are subscribed to the Google Groups "=
+linux-sunxi" group.
+To unsubscribe from this group and stop receiving emails from it, send an e=
+mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
