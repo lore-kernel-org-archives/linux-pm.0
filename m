@@ -1,57 +1,53 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v2 2/7] cpufreq: opp: fix handling of turbo modes
-Date: Fri, 31 Jul 2015 20:58:06 +0200
-Message-ID: <55330300.1udBI120uH@amdc1976>
-References: <1436456621-29839-1-git-send-email-b.zolnierkie@samsung.com>
- <2681271.3UazeZ9PAQ@amdc1976> <55BA36A7.3050107@kernel.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/1] suspend: make sync() on suspend-to-RAM optional
+Date: Sat, 01 Aug 2015 01:56:19 +0200
+Message-ID: <1708156.vTh2kYamEW@vostro.rjw.lan>
+References: <1436927091-32520-1-git-send-email-lenb@kernel.org> <1437555322.5445.2.camel@suse.com> <CAJvTdKmAvygm9dt4qJetvRLeh-6pmPKP_rBd-xfFW-30_sQpXg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:60594 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbbGaS6w (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 14:58:52 -0400
-In-reply-to: <55BA36A7.3050107@kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:57187 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751413AbbGaX3U (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 19:29:20 -0400
+In-Reply-To: <CAJvTdKmAvygm9dt4qJetvRLeh-6pmPKP_rBd-xfFW-30_sQpXg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kukjin Kim <kgene@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Len Brown <lenb@kernel.org>, Oliver Neukum <oneukum@suse.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael@kernel.org>, "Brown, Len" <len.brown@intel.com>, Austin S Hemmelgarn <ahferroin7@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Thursday, July 30, 2015 11:37:27 PM Kukjin Kim wrote:
-> On 07/27/15 20:47, Bartlomiej Zolnierkiewicz wrote:
-> > On Monday, July 27, 2015 05:06:41 PM Viresh Kumar wrote:
-> >> On 27-07-15, 13:14, Bartlomiej Zolnierkiewicz wrote:
-> >>> Sorry but you don't seem to understand the issue.
-> >>
-> >> :)
-> >>
-> >> No, I did. I understand that if someone uses opp bindings today with
-> >> some entries as turbo OPPs, cpufreq will use them as normal
-> >> frequencies. And that may harm the board.
-> >>
-> >> BUT, opp-v2 code isn't ready to be used yet. And platforms should see
-> >> what all is implemented before trying to use them.
-> > 
-> > OK.
-> > 
-> >> All I was saying is, this isn't a FIX as we haven't introduced the
-> >> feature yet. Otherwise I had no issues with the patch.
-> > 
-> > I will update the description for the next patchset revision.
-> > 
-> Hi Bart,
+On Friday, July 31, 2015 12:02:36 PM Len Brown wrote:
+> On Wed, Jul 22, 2015 at 4:55 AM, Oliver Neukum <oneukum@suse.com> wrote:
+> > On Wed, 2015-07-22 at 03:25 +0200, Rafael J. Wysocki wrote:
+> >> And it is more pain for me to change the user space on each of them to
+> >> write to the new sysfs file on every boot than to set a kernel Kconfig
+> >> option once.
+> >
+> > So why at all? If you really need this in sysfs, why not write
+> > something like "memfast" into /sys/power/state ?
+> 
+> We fought this battle, and lost.
+> 
+> When we came out with "freeze", which is faster than "mem",
+> no user-space changed to take advantage of it.
 
-Hi,
+I do think that Chrome is going to use "freeze", so maybe it's not a lost
+battle after all?
 
-> When will you re-post v3? Because I have a plan to send a pull-request
-> to arm-soc until this weekend...
+The problem with "memfast" and similar things is we'd also need "freezefast"
+and "standbyfast" then, for consistency if nothing else, which makes a little
+sense to me.
 
-I have just posted v3.  I hope that it is not too late..
+BTW, it should be noted that the whole "sync in the kernel is better, because
+it doesn't race with user space writing to disks" argument was completely
+bogus and useless, because in fact the sync in the kernel is done before
+freezing user space and which means that it is susceptible to the very same
+race condition as the sync from user space.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+So if your user space does the sync before suspending, the next one in the
+kernel is completely useless.
+
+Thanks,
+Rafael
 
