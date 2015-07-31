@@ -1,46 +1,56 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 03/15] drivers: devfreq: Drop unlikely before IS_ERR(_OR_NULL)
-Date: Fri, 31 Jul 2015 14:08:23 +0530
-Message-ID: <f5b5229d0c8de64d9afb8663280c7b661d681438.1438331416.git.viresh.kumar@linaro.org>
-References: <cover.1438331416.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1438331416.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1438331416.git.viresh.kumar@linaro.org>
-References: <cover.1438331416.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: akpm@linux-foundation.org
-Cc: linaro-kernel@lists.linaro.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, "open list:DEVICE FREQUENCY DEVFREQ" <linux-pm@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 1/4] thermal: trivial: fix typo in comment
+Date: Fri, 31 Jul 2015 10:46:35 +0200
+Message-ID: <20150731084635.GM5161@pengutronix.de>
+References: <1436168777-10463-1-git-send-email-s.hauer@pengutronix.de>
+ <1436168777-10463-2-git-send-email-s.hauer@pengutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:37907 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbbGaIqk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 04:46:40 -0400
+Content-Disposition: inline
+In-Reply-To: <1436168777-10463-2-git-send-email-s.hauer@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>
 
-IS_ERR(_OR_NULL) already contain an 'unlikely' compiler flag and there
-is no need to do that again from its callers. Drop it.
+Hi Rui,
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/devfreq/devfreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Any input to this series? Could you apply it?
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index ca1b362d77e2..f28a1fae5691 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -53,7 +53,7 @@ static struct devfreq *find_device_devfreq(struct device *dev)
- {
- 	struct devfreq *tmp_devfreq;
- 
--	if (unlikely(IS_ERR_OR_NULL(dev))) {
-+	if (IS_ERR_OR_NULL(dev)) {
- 		pr_err("DEVFREQ: %s: Invalid parameters\n", __func__);
- 		return ERR_PTR(-EINVAL);
- 	}
-@@ -133,7 +133,7 @@ static struct devfreq_governor *find_devfreq_governor(const char *name)
- {
- 	struct devfreq_governor *tmp_governor;
- 
--	if (unlikely(IS_ERR_OR_NULL(name))) {
-+	if (IS_ERR_OR_NULL(name)) {
- 		pr_err("DEVFREQ: %s: Invalid parameters\n", __func__);
- 		return ERR_PTR(-EINVAL);
- 	}
+Sascha
+
+On Mon, Jul 06, 2015 at 09:46:14AM +0200, Sascha Hauer wrote:
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Acked-by: Eduardo Valentin <edubezval@gmail.com>
+> ---
+>  drivers/thermal/thermal_core.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 04659bf..34ce9e4 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -465,7 +465,7 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
+>  }
+>  
+>  /**
+> - * thermal_zone_get_temp() - returns its the temperature of thermal zone
+> + * thermal_zone_get_temp() - returns the temperature of a thermal zone
+>   * @tz: a valid pointer to a struct thermal_zone_device
+>   * @temp: a valid pointer to where to store the resulting temperature.
+>   *
+> -- 
+> 2.1.4
+> 
+> 
+
 -- 
-2.4.0
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
