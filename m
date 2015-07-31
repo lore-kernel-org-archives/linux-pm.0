@@ -1,68 +1,89 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 1/1] suspend: make sync() on suspend-to-RAM optional
-Date: Fri, 31 Jul 2015 12:02:36 -0400
-Message-ID: <CAJvTdKmAvygm9dt4qJetvRLeh-6pmPKP_rBd-xfFW-30_sQpXg@mail.gmail.com>
-References: <1436927091-32520-1-git-send-email-lenb@kernel.org>
-	<CAJZ5v0gNKRRaXvfqvj4YEjb+7X1aEobfvWuWyAnAcKArcxtZPA@mail.gmail.com>
-	<20150721151941.GA19581@amd>
-	<7453812.eRsb3OQU2z@vostro.rjw.lan>
-	<1437555322.5445.2.camel@suse.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [RFC PATCH 05/16] x86/efi: Get entropy through EFI random number
+ generator protocol
+Date: Sat, 1 Aug 2015 00:05:36 +0800
+Message-ID: <20150731160536.GH2067@linux-rxt1.site>
+References: <1437056730-15247-1-git-send-email-jlee@suse.com>
+ <1437056730-15247-6-git-send-email-jlee@suse.com>
+ <20150728122853.GB12681@amd>
+ <20150731095854.GC13113@linux-rxt1.site>
+ <1438344078.11322.46.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f172.google.com ([209.85.217.172]:34703 "EHLO
-	mail-lb0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752798AbbGaQCi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 12:02:38 -0400
-In-Reply-To: <1437555322.5445.2.camel@suse.com>
+Received: from smtp.nue.novell.com ([195.135.221.5]:49958 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751371AbbGaQFu (ORCPT
+	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+	Fri, 31 Jul 2015 12:05:50 -0400
+Content-Disposition: inline
+In-Reply-To: <1438344078.11322.46.camel@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael@kernel.org>, "Brown, Len" <len.brown@intel.com>, Austin S Hemmelgarn <ahferroin7@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Matt Fleming <matt.fleming@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <matthew.garrett@nebula.com>, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>
 
-On Wed, Jul 22, 2015 at 4:55 AM, Oliver Neukum <oneukum@suse.com> wrote:
-> On Wed, 2015-07-22 at 03:25 +0200, Rafael J. Wysocki wrote:
->> And it is more pain for me to change the user space on each of them to
->> write to the new sysfs file on every boot than to set a kernel Kconfig
->> option once.
+On Fri, Jul 31, 2015 at 01:01:18PM +0100, Matt Fleming wrote:
+> On Fri, 2015-07-31 at 17:58 +0800, joeyli wrote:
+> > > 
+> > > Can you do something to avoid each function having two very similar
+> > > versions of these functions?
+> > >
+> > 
+> > They are similar but I want follow the style in eboot.c.
+> > On the other hand, it's earlier to locate problem on 32-bit or 64-bit EFI.
+> > 
+> > So, I will keep the above codes.
+> 
+> FWIW, I think that's fine. I would happily accept a patch to cleanup the
+> duplication, but I don't think that needs to be a prerequisite for this
+> support.
+> 
+> I've no problem with the duplication right now.
 >
-> So why at all? If you really need this in sysfs, why not write
-> something like "memfast" into /sys/power/state ?
 
-We fought this battle, and lost.
+Thanks
+ 
+> > > 
+> > > > --- a/include/linux/efi.h
+> > > > +++ b/include/linux/efi.h
+> > > > @@ -427,6 +427,16 @@ typedef struct {
+> > > >  #define EFI_PCI_IO_ATTRIBUTE_VGA_PALETTE_IO_16 0x20000
+> > > >  #define EFI_PCI_IO_ATTRIBUTE_VGA_IO_16 0x40000
+> > > >  
+> > > > +typedef struct {
+> > > > +	u32 get_info;
+> > > > +	u32 get_rng;
+> > > > +} efi_rng_protocol_32;
+> > > > +
+> > > > +typedef struct {
+> > > > +	u64 get_info;
+> > > > +	u64 get_rng;
+> > > > +} efi_rng_protocol_64;
+> > > 
+> > > We don't typedef structs usually...
+> > > 
+> > > Make it union so you can have just one
+> > >
+> > 
+> > I want to follow the style as efi_pci_io_protocolxxx in efi.h.
+> > So I will keep it.
+> 
+> Yeah, consistency is better here than sticking with the general Linux
+> coding style rules.
+> 
+> > > > +	switch (status) {
+> > > > +	case EFI_SUCCESS:
+> > > > +		str = "EFI_SUCCESS";
+> > > > +		break;
+> > > 
+> > > Can you use macros to reduce code duplication here?
+> > > 									Pavel
+> > I will try to reduce duplicate code.
+> 
+> Take a look at __stringify().
+>
 
-When we came out with "freeze", which is faster than "mem",
-no user-space changed to take advantage of it.
-"mem" is what they use on all platforms, and they simply want it to be fast.
+Thanks for suggestion, I will look at it.
 
-I don't like the run-time sysfs attribute in this patch.
-There are only 4 use-cases, and we can handle the 3 that matter
-without a sysfs attribute:
-
-1. OS wants sync, run-time never changes mind
-    compile kernel with sync
-    this is default, and what everybody is accustomed to.
-
-2. OS does not want sync, run-time never changes mind
-    compile kernel without sync
-    This gives OS' that care about suspend/resume latency what they want.
-    I'm fine with Austin's suggestion "depends on EXPERT"
-
-3. OS  wants sync, run-time wants to opt-OUT
-    Sorry, we'll not support his case.
-    If your run a distro kernel that builds in the sync, you are stuck with it.
-    If you care, then build a kernel from scratch, or run a different distro.
-
-4. OS does not want sync, run-time sometimes wants to opt-IN
-    As it turns out, Linux kernel has always invoked sync before freezing
-    user-threads.  Sorry, invoking sync in kernel suspend path does not close
-    a race that isn't also currently present by invoking sync from user-space.
-
-   (yes, as discussed, the proper long term fix involves notifying file systems)
-
-    As this user will not have a sysfs attribute to tweak to tell the
-kernel to sync,
-    they can simply invoke sync from user-space.
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+Joey Lee
