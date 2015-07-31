@@ -1,8 +1,8 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
+From: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 Subject: Re: [linux-sunxi] [PATCH 6/8] ARM: dts: axp209: Add usb_power_supply
  child node to the ax209 node
-Date: Fri, 31 Jul 2015 09:57:18 +0200
-Message-ID: <20150731075718.GW2564@lukather>
+Date: Fri, 31 Jul 2015 10:31:30 +0200
+Message-ID: <55BB3262.5000403@redhat.com>
 References: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
  <1433885881-19809-7-git-send-email-hdegoede@redhat.com>
  <CAGb2v66X79dK84hG8NVTho-kPPMNcKXQspvT2pCM8Zbmnme53A@mail.gmail.com>
@@ -10,75 +10,104 @@ References: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
  <CAGb2v67nM7pauyjyhBdfgX7p_Rud6TEsNqphB+gx4ROekVqtbw@mail.gmail.com>
  <20150731083541.5f2c683a@pluto.restena.lu>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="QNuYedFeXxEqrKRj"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:58119 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751272AbbGaH6E (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 03:58:04 -0400
-Content-Disposition: inline
-In-Reply-To: <20150731083541.5f2c683a@pluto.restena.lu>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20150731083541.5f2c683a-I2t2yFIzmohO7ya8xxV06g@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>
-Cc: Chen-Yu Tsai <wens@csie.org>, Hans De Goede <hdegoede@redhat.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Kishon Vijay Abraham I <kishon@ti.com>, Felipe Balbi <balbi@ti.com>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, devicetree <devicetree@vger.kernel.org>, linux-sunxi <linux-sunxi@googlegroups.com>
 
+Hi,
 
---QNuYedFeXxEqrKRj
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 31-07-15 08:35, Bruno Pr=C3=A9mont wrote:
+> On Fri, 31 Jul 2015 14:14:28 +0800 Chen-Yu Tsai wrote:
+>> On Fri, Jul 31, 2015 at 1:51 PM, Bruno Pr=C3=A9mont wrote:
+>>> Hi ChenYu,
+>>>
+>>> On Fri, 31 Jul 2015 13:31:53 +0800 Chen-Yu Tsai wrote:
+>>>> Hi Hans,
+>>>>
+>>>> On Wed, Jun 10, 2015 at 5:37 AM, Hans de Goede wrote:
+>>>>> Add a node representing the usb power supply part of the axp209 p=
+mic, note
+>>>>> that the usb power supply and the (to be added later) ac power su=
+pply will
+>>>>> each have their own child-node, so that they can be separately sp=
+ecified
+>>>>> as power-supply for other nodes using a power-supply property wit=
+h a
+>>>>> phandle pointing to the right axp209 child-node.
+>>>>>
+>>>>> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+>>>>> ---
+>>>>>   arch/arm/boot/dts/axp209.dtsi | 5 +++++
+>>>>>   1 file changed, 5 insertions(+)
+>>>>>
+>>>>> diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/ax=
+p209.dtsi
+>>>>> index 24c935c..051ab3b 100644
+>>>>> --- a/arch/arm/boot/dts/axp209.dtsi
+>>>>> +++ b/arch/arm/boot/dts/axp209.dtsi
+>>>>> @@ -89,4 +89,9 @@
+>>>>>                          regulator-name =3D "ldo5";
+>>>>>                  };
+>>>>>          };
+>>>>> +
+>>>>> +       usb_power_supply: usb_power_supply {
+>>>>> +               compatible =3D "x-powers,axp202-usb-power-supply"=
+;
+>>>>> +               status =3D "disabled";
+>>>>
+>>>> Is there any reason to have this disabled by default?
+>>>> AFAIK this is not something configurable in hardware,
+>>>> and the driver just gives readouts and status updates.
+>>>
+>>> There are some devices that only have 'AC-IN' instead of usb/otg po=
+wer
+>>> (set-top boxes) so having the devices tell what power sources they
+>>> have makes sense (otherwise those that have ac-in instead of otg wo=
+uld
+>>> have to disable usb_power_supply) and avoids confusion by explicitl=
+y
+>>> stating presence in device dts.
+>>
+>> That's true. But this is a bit of hardware inside the AXP.
+>> If it's power isn't routed, it should report it, shouldn't it?
+>
+> If the device does not use the input there are two cases:
+> - ac-in and usb/otg in short-circuited (there is a bit in AXP registe=
+rs
+>    to provide this indication)
+> - the unused one is just not connected/connectable
+>
+> In either case the voltage of the unused/unusable branch is not reall=
+y
+> useful, nor is it useful to have it show up in sysfs.
 
-On Fri, Jul 31, 2015 at 08:35:41AM +0200, Bruno Pr=E9mont wrote:
-> > > NB: I should hopefully get my battery supply driver ported this WE,
-> > > ac-in/rtc are done, this WE. I'm going to default-off for them as well
-> > > (note that for some extra details should be provided in dts).
-> >=20
-> > I'm guessing we won't be using the axp288 one?
->=20
-> In a first step I won't be using it.
->=20
-> There are a few reasons for that:
-> - axp288 is based on ACPI/platform to provide configuration information
->   instead of dts
+Exactly my thinking on this, +1 .
 
-That's not an issue. You have an API to handle lookup in both DT and
-ACPI (the fwnode_* stuff).
+>> And normal users would probably expect to read the input
+>> voltage/current/status through sysfs (or maybe hwmon?),
+>> instead of not finding the device and having to look through
+>> the DTS.
+>
+> Only those supplies effectively present (in-use or with connectors
+> to eventually use them) should be visible in sysfs.
+> Having more of them will just confuse the users, they would be search=
+ing
+> how they can connect the supply while there is no means to do so
+> except soldering to the tiny AXP pins.
 
-> - it makes extensive use of OCV and registers that are possibly present
->   on axp20x but undocumented there.
++1
 
-That will be more problematic. Still I don't see why we wouldn't use a
-similar setup to what they did.
+Regards,
 
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---QNuYedFeXxEqrKRj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVuypeAAoJEBx+YmzsjxAgMRYP/jRcntuhrR3bgOyETzFm8RVG
-qwWaigkjz2Vrk2C6hERbWNLC07NjXOje+N5c//iZp0ObYkQZi1uiPZbNFKfW2Nhw
-9lAwKK6Pbp0lRhEmKHO5Ta0n5GVP7zOxc2ZxnGR1Kgi2AIWVJidlCSZ0Zdv3hcQy
-4P1GoHTpaLWKhIoraykVEb35JHhWHsCaCfe3ReE/oC3dxDsKAXqqaEmL3h+/bpqy
-N11yodDhVMoSXo2Eak0GBJG1TCkcE1h71braBTMSfNEd4DiwcafSeqc+oZst0Hkf
-AJtaCBQX+Y/NrHmZpIEKpphkPvcnBdwXP/eGr8OHKrx5J0ZhdRvx1GgsHEnEykf2
-FdaxBLAzD9Xado2pzAAj72mNaRaw8o184re+0J5WjhZtE11OOUSfgCsgmi+UvDGB
-FWmwZBd8j2YOVN8RZmcSDr4SXogpn4HSGldoRd+ZnmbQAU8CAiKRLyCdm1ew2Q8e
-VdnDx/Zmj+8jqdoxscozf+PQM8XMHJxkpT63b3uRiPAa0wBGc051t/TamMZp0/UH
-AdVGEISX38ppHZ4Wmv7SlEqfTRA6TOjEw7BbJYng9KRKG693jxc0+9F74n9nOmBp
-ft3klnufvw+OIwQ0N6hCCMkBIvFxrKXPJDbxbcWEXKVPfI/2JCwJHy8aeNIowPlN
-HbIgjIq5N88S2HYArHhq
-=9g5t
------END PGP SIGNATURE-----
-
---QNuYedFeXxEqrKRj--
+Hans
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
