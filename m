@@ -1,87 +1,129 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 10/16] PM / OPP: Add support for opp-suspend
-Date: Fri, 31 Jul 2015 11:56:30 +0530
-Message-ID: <20150731062630.GR17794@linux>
-References: <cover.1438166099.git.viresh.kumar@linaro.org>
- <3d1b8d7de9f2ad34d979540e367ed691bcb7bb77.1438166099.git.viresh.kumar@linaro.org>
- <20150731062406.GS3159@codeaurora.org>
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
+Subject: Re: [PATCH 6/8] ARM: dts: axp209: Add usb_power_supply
+ child node to the ax209 node
+Date: Fri, 31 Jul 2015 08:35:41 +0200
+Message-ID: <20150731083541.5f2c683a@pluto.restena.lu>
+References: <1433885881-19809-1-git-send-email-hdegoede@redhat.com>
+	<1433885881-19809-7-git-send-email-hdegoede@redhat.com>
+	<CAGb2v66X79dK84hG8NVTho-kPPMNcKXQspvT2pCM8Zbmnme53A@mail.gmail.com>
+	<20150731075104.48c467e6@pluto.restena.lu>
+	<CAGb2v67nM7pauyjyhBdfgX7p_Rud6TEsNqphB+gx4ROekVqtbw@mail.gmail.com>
+Reply-To: bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:35113 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751978AbbGaG0g (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 02:26:36 -0400
-Received: by pabkd10 with SMTP id kd10so35690154pab.2
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jul 2015 23:26:35 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20150731062406.GS3159@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-sunxi+bncBDCZ5GUK4UNRBPVO5SWQKGQEH4OUHTY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+In-Reply-To: <CAGb2v67nM7pauyjyhBdfgX7p_Rud6TEsNqphB+gx4ROekVqtbw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Cc: Hans De Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, arnd.bergmann@linaro.org, nm@ti.com, broonie@kernel.org, mturquette@baylibre.com, Sudeep.Holla@arm.com, viswanath.puttagunta@linaro.org, l.stach@pengutronix.de, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org, ta.omasab@gmail.com, kesavan.abhilash@gmail.com, khilman@linaro.org, santosh.shilimkar@oracle.com, b.zolnierkie@samsung.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On 30-07-15, 23:24, Stephen Boyd wrote:
-> On 07/29, Viresh Kumar wrote:
-> > With "operating-points-v2" bindings, its possible to specify the OPP to
-> 
-> s/its/it's/ ?
-> 
-> > which the device must be switched, before suspending.
-> > 
-> > This patch adds support for getting that information.
-> > 
-> > Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> 
-> Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+On Fri, 31 Jul 2015 14:14:28 +0800 Chen-Yu Tsai wrote:
+> On Fri, Jul 31, 2015 at 1:51 PM, Bruno Pr=C3=A9mont wrote:
+> > Hi ChenYu,
+> >
+> > On Fri, 31 Jul 2015 13:31:53 +0800 Chen-Yu Tsai wrote:
+> >> Hi Hans,
+> >>
+> >> On Wed, Jun 10, 2015 at 5:37 AM, Hans de Goede wrote:
+> >> > Add a node representing the usb power supply part of the axp209 pmic=
+, note
+> >> > that the usb power supply and the (to be added later) ac power suppl=
+y will
+> >> > each have their own child-node, so that they can be separately speci=
+fied
+> >> > as power-supply for other nodes using a power-supply property with a
+> >> > phandle pointing to the right axp209 child-node.
+> >> >
+> >> > Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+> >> > ---
+> >> >  arch/arm/boot/dts/axp209.dtsi | 5 +++++
+> >> >  1 file changed, 5 insertions(+)
+> >> >
+> >> > diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp20=
+9.dtsi
+> >> > index 24c935c..051ab3b 100644
+> >> > --- a/arch/arm/boot/dts/axp209.dtsi
+> >> > +++ b/arch/arm/boot/dts/axp209.dtsi
+> >> > @@ -89,4 +89,9 @@
+> >> >                         regulator-name =3D "ldo5";
+> >> >                 };
+> >> >         };
+> >> > +
+> >> > +       usb_power_supply: usb_power_supply {
+> >> > +               compatible =3D "x-powers,axp202-usb-power-supply";
+> >> > +               status =3D "disabled";
+> >>
+> >> Is there any reason to have this disabled by default?
+> >> AFAIK this is not something configurable in hardware,
+> >> and the driver just gives readouts and status updates.
+> >
+> > There are some devices that only have 'AC-IN' instead of usb/otg power
+> > (set-top boxes) so having the devices tell what power sources they
+> > have makes sense (otherwise those that have ac-in instead of otg would
+> > have to disable usb_power_supply) and avoids confusion by explicitly
+> > stating presence in device dts.
+>=20
+> That's true. But this is a bit of hardware inside the AXP.
+> If it's power isn't routed, it should report it, shouldn't it?
 
----------------------8<-------------------
+If the device does not use the input there are two cases:
+- ac-in and usb/otg in short-circuited (there is a bit in AXP registers
+  to provide this indication)
+- the unused one is just not connected/connectable
 
-Message-Id: <5e0cf40cc78bfa327cbbccae016d03a1dfbd1a84.1438323941.git.viresh.kumar@linaro.org>
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Sat, 13 Jun 2015 15:10:21 +0530
-Subject: [PATCH] PM / OPP: Add support for opp-suspend
+In either case the voltage of the unused/unusable branch is not really
+useful, nor is it useful to have it show up in sysfs.
 
-With "operating-points-v2" bindings, it's possible to specify the OPP to
-which the device must be switched, before suspending.
+> And normal users would probably expect to read the input
+> voltage/current/status through sysfs (or maybe hwmon?),
+> instead of not finding the device and having to look through
+> the DTS.
 
-This patch adds support for getting that information.
+Only those supplies effectively present (in-use or with connectors
+to eventually use them) should be visible in sysfs.
+Having more of them will just confuse the users, they would be searching
+how they can connect the supply while there is no means to do so
+except soldering to the tiny AXP pins.
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
-Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/base/power/opp.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+hwmon makes more sense for output voltages of the AXP or temperature
+of AXP chip itself, not so much for the input side if that side is
+covered by power_supply devices (otherwise the information is being
+duplicated and if so should only be via power_supply class, not
+individual drivers).
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 5d699e3ec136..0ebcea49145a 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -133,6 +133,7 @@ struct device_opp {
- 	struct device_node *np;
- 	unsigned long clock_latency_ns_max;
- 	bool shared_opp;
-+	struct dev_pm_opp *suspend_opp;
- };
- 
- /*
-@@ -923,6 +924,16 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
- 	if (ret)
- 		goto free_opp;
- 
-+	/* OPP to select on device suspend */
-+	if (of_property_read_bool(np, "opp-suspend")) {
-+		if (dev_opp->suspend_opp)
-+			dev_warn(dev, "%s: Multiple suspend OPPs found (%lu %lu)\n",
-+				 __func__, dev_opp->suspend_opp->rate,
-+				 new_opp->rate);
-+		else
-+			dev_opp->suspend_opp = new_opp;
-+	}
-+
- 	if (new_opp->clock_latency_ns > dev_opp->clock_latency_ns_max)
- 		dev_opp->clock_latency_ns_max = new_opp->clock_latency_ns;
- 
+> If you're using a distro, you might not have the kernel sources
+> around, and digging through the in-system device tree isn't that
+> straightforward if you don't know where to look.
+
+If the dts is incomplete that's another issue.
+
+> > NB: I should hopefully get my battery supply driver ported this WE,
+> > ac-in/rtc are done, this WE. I'm going to default-off for them as well
+> > (note that for some extra details should be provided in dts).
+>=20
+> I'm guessing we won't be using the axp288 one?
+
+In a first step I won't be using it.
+
+There are a few reasons for that:
+- axp288 is based on ACPI/platform to provide configuration information
+  instead of dts
+- it makes extensive use of OCV and registers that are possibly present
+  on axp20x but undocumented there.
+
+Bruno
+
+--=20
+You received this message because you are subscribed to the Google Groups "=
+linux-sunxi" group.
+To unsubscribe from this group and stop receiving emails from it, send an e=
+mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
