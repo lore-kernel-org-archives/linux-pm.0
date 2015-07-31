@@ -1,89 +1,111 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [RFC PATCH 05/16] x86/efi: Get entropy through EFI random number
- generator protocol
-Date: Sat, 1 Aug 2015 00:05:36 +0800
-Message-ID: <20150731160536.GH2067@linux-rxt1.site>
-References: <1437056730-15247-1-git-send-email-jlee@suse.com>
- <1437056730-15247-6-git-send-email-jlee@suse.com>
- <20150728122853.GB12681@amd>
- <20150731095854.GC13113@linux-rxt1.site>
- <1438344078.11322.46.camel@intel.com>
+From: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Subject: Re: [PATCH v7 01/13] clk: qcom: Add support for GDSCs
+Date: Fri, 31 Jul 2015 09:22:40 -0700
+Message-ID: <20150731162240.GG6519@usrtlx11787.corpusers.net>
+References: <1438076046-4706-1-git-send-email-rnayak@codeaurora.org>
+ <1438076046-4706-2-git-send-email-rnayak@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.nue.novell.com ([195.135.221.5]:49958 "EHLO
-	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751371AbbGaQFu (ORCPT
-	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
-	Fri, 31 Jul 2015 12:05:50 -0400
+Received: from seldrel01.sonyericsson.com ([37.139.156.2]:10790 "EHLO
+	seldrel01.sonyericsson.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751250AbbGaQWr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2015 12:22:47 -0400
 Content-Disposition: inline
-In-Reply-To: <1438344078.11322.46.camel@intel.com>
+In-Reply-To: <1438076046-4706-2-git-send-email-rnayak@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Matt Fleming <matt.fleming@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>, "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Garrett <matthew.garrett@nebula.com>, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: sboyd@codeaurora.org, mturquette@baylibre.com, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, georgi.djakov@linaro.org, linux-arm-kernel@lists.infradead.org
 
-On Fri, Jul 31, 2015 at 01:01:18PM +0100, Matt Fleming wrote:
-> On Fri, 2015-07-31 at 17:58 +0800, joeyli wrote:
-> > > 
-> > > Can you do something to avoid each function having two very similar
-> > > versions of these functions?
-> > >
-> > 
-> > They are similar but I want follow the style in eboot.c.
-> > On the other hand, it's earlier to locate problem on 32-bit or 64-bit EFI.
-> > 
-> > So, I will keep the above codes.
-> 
-> FWIW, I think that's fine. I would happily accept a patch to cleanup the
-> duplication, but I don't think that needs to be a prerequisite for this
-> support.
-> 
-> I've no problem with the duplication right now.
->
+On Tue 28 Jul 02:33 PDT 2015, Rajendra Nayak wrote:
 
-Thanks
- 
-> > > 
-> > > > --- a/include/linux/efi.h
-> > > > +++ b/include/linux/efi.h
-> > > > @@ -427,6 +427,16 @@ typedef struct {
-> > > >  #define EFI_PCI_IO_ATTRIBUTE_VGA_PALETTE_IO_16 0x20000
-> > > >  #define EFI_PCI_IO_ATTRIBUTE_VGA_IO_16 0x40000
-> > > >  
-> > > > +typedef struct {
-> > > > +	u32 get_info;
-> > > > +	u32 get_rng;
-> > > > +} efi_rng_protocol_32;
-> > > > +
-> > > > +typedef struct {
-> > > > +	u64 get_info;
-> > > > +	u64 get_rng;
-> > > > +} efi_rng_protocol_64;
-> > > 
-> > > We don't typedef structs usually...
-> > > 
-> > > Make it union so you can have just one
-> > >
-> > 
-> > I want to follow the style as efi_pci_io_protocolxxx in efi.h.
-> > So I will keep it.
-> 
-> Yeah, consistency is better here than sticking with the general Linux
-> coding style rules.
-> 
-> > > > +	switch (status) {
-> > > > +	case EFI_SUCCESS:
-> > > > +		str = "EFI_SUCCESS";
-> > > > +		break;
-> > > 
-> > > Can you use macros to reduce code duplication here?
-> > > 									Pavel
-> > I will try to reduce duplicate code.
-> 
-> Take a look at __stringify().
->
+[..]
+> diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
+[..]
+> +static int gdsc_init(struct gdsc *sc)
+> +{
+> +	u32 mask, val;
+> +	int on, ret;
+> +
+> +	/*
+> +	 * Disable HW trigger: collapse/restore occur based on registers writes.
+> +	 * Disable SW override: Use hardware state-machine for sequencing.
+> +	 * Configure wait time between states.
+> +	 */
+> +	mask = HW_CONTROL_MASK | SW_OVERRIDE_MASK |
+> +	       EN_REST_WAIT_MASK | EN_FEW_WAIT_MASK | CLK_DIS_WAIT_MASK;
+> +	val = EN_REST_WAIT_VAL | EN_FEW_WAIT_VAL | CLK_DIS_WAIT_VAL;
+> +	ret = regmap_update_bits(sc->regmap, sc->gdscr, mask, val);
+> +	if (ret)
+> +		return ret;
+> +
+> +	on = gdsc_is_enabled(sc);
+> +	if (on < 0)
+> +		return on;
+> +
+> +	sc->pd.power_off = gdsc_disable;
+> +	sc->pd.power_on = gdsc_enable;
+> +	pm_genpd_init(&sc->pd, NULL, !on);
+> +
+> +	return 0;
+> +}
+> +
+> +int gdsc_register(struct device *dev, struct gdsc **scs, size_t num,
+> +		  struct regmap *regmap)
+> +{
+> +	int i, ret;
+> +	struct genpd_onecell_data *data;
+> +
+> +	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
+> +	if (!data)
+> +		return -ENOMEM;
+> +
+> +	data->domains = devm_kcalloc(dev, num, sizeof(*data->domains),
+> +				     GFP_KERNEL);
+> +	if (!data->domains)
+> +		return -ENOMEM;
+> +
+> +	data->num_domains = num;
+> +	for (i = 0; i < num; i++) {
+> +		if (!scs[i])
+> +			continue;
+> +		scs[i]->regmap = regmap;
+> +		ret = gdsc_init(scs[i]);
+> +		if (ret)
+> +			return ret;
 
-Thanks for suggestion, I will look at it.
+By this time we have disabled the HW control and here we just leave it
+as that, do you expect any interesting consequences of this?
+Or do we just not care (this shouldn't happen anyways).
 
-Joey Lee
+> +		data->domains[i] = &scs[i]->pd;
+> +	}
+> +
+> +	return of_genpd_add_provider_onecell(dev->of_node, data);
+> +}
+> +
+> +void gdsc_unregister(struct device *dev)
+> +{
+> +	of_genpd_del_provider(dev->of_node);
+> +}
+> diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
+[..]
+> +#ifdef CONFIG_QCOM_GDSC
+> +int gdsc_register(struct device *, struct gdsc **, size_t n, struct regmap *);
+> +void gdsc_unregister(struct device *);
+> +#else
+> +static inline int gdsc_register(struct device *d, struct gdsc **g, size_t n,
+> +				struct regmap *r)
+> +{
+> +	return -ENOSYS;
+
+This will cause qcom_cc_really_probe() to abort and unregister both its
+resets and clocks. I think you should just pretend that everything went
+fine and return 0...
+
+> +}
+> +
+
+Regards,
+Bjorn
