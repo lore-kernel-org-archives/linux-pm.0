@@ -1,44 +1,38 @@
-From: Jiri Kosina <jkosina@suse.com>
-Subject: Re: [PATCH] HID: hid-input: Fix accessing freed memory during driver
- unbind
-Date: Sat, 1 Aug 2015 14:11:40 +0200 (CEST)
-Message-ID: <alpine.LNX.2.00.1508011410170.925@pobox.suse.cz>
-References: <1438042590-17719-1-git-send-email-k.kozlowski@samsung.com> <alpine.LNX.2.00.1507291506500.925@pobox.suse.cz> <20150729174619.GC23178@dtor-ws> <CAJKOXPcsHAj7_pggVw9eeU-C1_zKuZJA7oUodtXp=ZJH4AWg9w@mail.gmail.com> <20150730001026.GH23178@dtor-ws>
+From: Ran Shalit <ranshalit@gmail.com>
+Subject: Q: cpuidle results in degredation in ethernet performance ?
+Date: Sat, 1 Aug 2015 22:34:50 +0300
+Message-ID: <CAJ2oMhKw0gpFMKOd-iYe_hYh56Q62XgpW+MJmyiGhdkGn1RTMg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:52253 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751235AbbHAMLm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 1 Aug 2015 08:11:42 -0400
-In-Reply-To: <20150730001026.GH23178@dtor-ws>
+Received: from mail-io0-f170.google.com ([209.85.223.170]:36177 "EHLO
+	mail-io0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751373AbbHATev (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Aug 2015 15:34:51 -0400
+Received: by ioeg141 with SMTP id g141so114049176ioe.3
+        for <linux-pm@vger.kernel.org>; Sat, 01 Aug 2015 12:34:50 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, sre@kernel.org, linux-pm@vger.kernel.org, "H.J. Lu" <hjl.tools@gmail.com>, stable@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Wed, 29 Jul 2015, Dmitry Torokhov wrote:
+Hello,
 
-> > Another and less intrusive fix would be:
-> > 
-> >     char *name = dev->battery->desc->name;
-> >     struct power_supply_desc *psy_desc = dev->battery->desc;
-> >     power_supply_unregister(dev->battery);
-> >     kfree(name);
-> >     kfree(psy_desc);
-> 
-> I would much rather prefer this to the other version as it does not
-> leave memory hanging around, potentially indefinitely, but ultimately it
-> is up to Jiri. 
+Maybe if someone here understands cpuidel he can help me...
 
-I must have been in some broken state of mind when applying the original 
-one, thanks a lot for catching my brainfart, Dmitry!
+I am using omap, with cpuidel and I have some strange behaviour only
+when cpuidle is used:
+1.  I test ethernet bandwidth with iperf
+2. With large packet test (16k), I get same bandwidth in version with
+cpuidle support as in version without cpuidel supported.
+3. With small packet test (<2000 bytes), I get high degredation in
+performance in version with cpuidle. On viewing statistics I see that
+the cpu gets into cpu inactive state (C3 state -  not retention yet,
+only cpu not active). I guess this is the cuase of the degredation.
+With large packets I get no increment in C3 state usage.
+4. I think that menu governer behaviour might explain this, but I
+don't understand it deeply enough.
 
-Kryzstof, could you please send me properly formatted patch with the 
-above, on top of your previous fix?
+Can anyone shed a light on this ? Is there anything I can do to overcome this ?
 
-Thanks.
-
--- 
-Jiri Kosina
-SUSE Labs
+Thank you!
+Ran
