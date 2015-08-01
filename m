@@ -1,60 +1,77 @@
-From: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v3 4/4] power: Add an axp20x-usb-power driver
-Date: Sat, 1 Aug 2015 09:44:05 +0200
-Message-ID: <55BC78C5.8090400@redhat.com>
-References: <1435316357-26606-1-git-send-email-hdegoede@redhat.com>
- <1435316357-26606-4-git-send-email-hdegoede@redhat.com>
- <20150724151020.GH27569@earth>
-Reply-To: hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v3 3/5] ARM: Exynos: switch to using generic cpufreq driver
+ for Exynos4x12
+Date: Sat, 01 Aug 2015 16:43:58 +0900
+Message-ID: <55BC78BE.5020102@samsung.com>
+References: <1438368557-2352-1-git-send-email-b.zolnierkie@samsung.com> <1438368557-2352-4-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDRZXY4CYYORBSXR6GWQKGQEQG4ZQRI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-In-Reply-To: <20150724151020.GH27569@earth>
-List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <http://groups.google.com/group/linux-sunxi
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <http://groups.google.com/group/linux-sunxi/subscribe>
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f178.google.com ([209.85.192.178]:35761 "EHLO
+	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751023AbbHAHoH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 1 Aug 2015 03:44:07 -0400
+In-Reply-To: <1438368557-2352-4-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier@osg.samsung.com>
 
-Hi,
+W dniu 01.08.2015 o 03:49, Bartlomiej Zolnierkiewicz pisze:
+> The new CPU clock type allows the use of generic CPUfreq driver.
+> Switch Exynos4x12 to using generic cpufreq driver.
+> 
+> Also make CPUFREQ_DT config option select Exynos thermal driver
+> if Exynos platform support is enabled.
 
-On 24-07-15 17:10, Sebastian Reichel wrote:
-> Hi,
->
-> On Fri, Jun 26, 2015 at 12:59:17PM +0200, Hans de Goede wrote:
->> This adds a driver for the usb power_supply bits of the axp20x PMICs.
->>
->> I initially started writing my own driver, before coming aware of
->> Bruno Pr=C3=A9mont's excellent earlier RFC with a driver for this.
->>
->> My driver was lacking CURRENT_MAX and VOLTAGE_MIN support Bruno's
->> drvier has, so I've copied the code for those from his driver.
->>
->> Note that the AC-power-supply and battery charger bits will need separat=
-e
->> drivers. Each one needs its own devictree child-node so that other
->> devicetree nodes can reference the right power-supply, and thus each one
->> will get its own mfd-cell / platform_device and platform-driver.
->
-> Once the other comments have been taken care of, the driver looks ok
-> to me.
+Why? I think this wasn't in your previous patch.
 
-Ok, I will do a v4 of the power-supply part of this patch set, with the
-various remarks on this patch fixed.
+Best regards,
+Krzysztof
 
-Thanks & Regards,
 
-Hans
+> 
+> Please also note that the switch to use the generic cpufreq-dt
+> driver fixes the minor issue present with the old code (support
+> for 'boost' mode in the exynos-cpufreq driver was enabled for
+> all supported SoCs even though 'boost' frequency was provided
+> only for Exynos4x12 ones).
+> 
+> Cc: Tomasz Figa <tomasz.figa@gmail.com>
+> Cc: Kukjin Kim <kgene.kim@samsung.com>
+> Cc: Thomas Abraham <thomas.ab@samsung.com>
+> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+>  arch/arm/mach-exynos/exynos.c | 2 ++
+>  drivers/cpufreq/Kconfig       | 1 +
+>  2 files changed, 3 insertions(+)
+> 
+> diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+> index 77ac021..1c47aee 100644
+> --- a/arch/arm/mach-exynos/exynos.c
+> +++ b/arch/arm/mach-exynos/exynos.c
+> @@ -227,6 +227,8 @@ static void __init exynos_init_irq(void)
+>  static const struct of_device_id exynos_cpufreq_matches[] = {
+>  	{ .compatible = "samsung,exynos3250", .data = "cpufreq-dt" },
+>  	{ .compatible = "samsung,exynos4210", .data = "cpufreq-dt" },
+> +	{ .compatible = "samsung,exynos4212", .data = "cpufreq-dt" },
+> +	{ .compatible = "samsung,exynos4412", .data = "cpufreq-dt" },
+>  	{ .compatible = "samsung,exynos5250", .data = "cpufreq-dt" },
+>  	{ /* sentinel */ }
+>  };
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index 659879a..bf6d596 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -191,6 +191,7 @@ config CPUFREQ_DT
+>  	# if CPU_THERMAL is on and THERMAL=m, CPUFREQ_DT cannot be =y:
+>  	depends on !CPU_THERMAL || THERMAL
+>  	select PM_OPP
+> +	select EXYNOS_THERMAL if ARCH_EXYNOS
+>  	help
+>  	  This adds a generic DT based cpufreq driver for frequency management.
+>  	  It supports both uniprocessor (UP) and symmetric multiprocessor (SMP)
+> 
 
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
