@@ -1,46 +1,42 @@
-From: Radivoje Jovanovic <radivoje.jovanovic@linux.intel.com>
-Subject: Re: [PATCH 4/4] thermal/powerclamp: add cpu id for Skylake u/y
-Date: Fri, 31 Jul 2015 17:06:59 -0700
-Message-ID: <20150731170659.3a2218c0@radivoje-desk2>
-References: <1438355274-124552-1-git-send-email-radivoje.jovanovic@linux.intel.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v3 1/4] ARM: dts: Add binding documentation for AXP20x
+ pmic usb power supply
+Date: Sat, 1 Aug 2015 09:43:24 +0200
+Message-ID: <55BC789C.4020205@redhat.com>
+References: <1435316357-26606-1-git-send-email-hdegoede@redhat.com>
+ <20150724145928.GG27569@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:37301 "EHLO mga09.intel.com"
+Received: from mx1.redhat.com ([209.132.183.28]:36054 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752107AbbHAAJh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 31 Jul 2015 20:09:37 -0400
-In-Reply-To: <1438355274-124552-1-git-send-email-radivoje.jovanovic@linux.intel.com>
+	id S1751023AbbHAHn2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 1 Aug 2015 03:43:28 -0400
+In-Reply-To: <20150724145928.GG27569@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Radivoje Jovanovic <radivoje.jovanovic@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Radivoje Jovanovic <radivoje.jovanovic@intel.com>, rui.zhang@intel.com
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Lee Jones <lee.jones@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons@linux-vserver.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree <devicetree@vger.kernel.org>, linux-sunxi@googlegroups.com
 
-+Rui
+Hi,
 
-On Fri, 31 Jul 2015 08:07:54 -0700
-Radivoje Jovanovic <radivoje.jovanovic@linux.intel.com> wrote:
+On 24-07-15 16:59, Sebastian Reichel wrote:
+> Hi,
+>
+> On Fri, Jun 26, 2015 at 12:59:14PM +0200, Hans de Goede wrote:
+>> Add binding documentation for the usb power supply part of the AXP20x pmic.
+>> [...]
+>> +Example:
+>> +
+>> [...]
+>> +
+>> +	usb_power_supply: usb_power_supply {
+>                        ^^^^^^^^^^^^^^^^
+>                        use usb-power-supply here.
 
-> From: Radivoje Jovanovic <radivoje.jovanovic@intel.com>
-> 
-> Add support for Intel Skylake u/y
-> 
-> Signed-off-by: Radivoje Jovanovic <radivoje.jovanovic@intel.com>
-> ---
->  drivers/thermal/intel_powerclamp.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/thermal/intel_powerclamp.c
-> b/drivers/thermal/intel_powerclamp.c index 63879a1..6e01723 100644
-> --- a/drivers/thermal/intel_powerclamp.c
-> +++ b/drivers/thermal/intel_powerclamp.c
-> @@ -695,6 +695,7 @@ static const struct x86_cpu_id
-> intel_powerclamp_ids[] __initconst = { { X86_VENDOR_INTEL, 6, 0x46},
->  	{ X86_VENDOR_INTEL, 6, 0x4c},
->  	{ X86_VENDOR_INTEL, 6, 0x4d},
-> +	{ X86_VENDOR_INTEL, 6, 0x4e},
->  	{ X86_VENDOR_INTEL, 6, 0x4f},
->  	{ X86_VENDOR_INTEL, 6, 0x56},
->  	{ X86_VENDOR_INTEL, 6, 0x57},
+Ok, fixed for the upcoming v4 of the power-supply part of this patch set.
 
+Regards,
+
+Hans
