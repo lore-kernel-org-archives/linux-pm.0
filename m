@@ -1,38 +1,30 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH v2 5/6] power: bq27xxx_battery: Add support for additional
- bq27xxx family devices
-Date: Sun, 2 Aug 2015 12:43:17 -0500
-Message-ID: <55BE56B5.6040608@ti.com>
-References: <1438112353-19704-1-git-send-email-afd@ti.com> <1438112353-19704-6-git-send-email-afd@ti.com> <20150802073853.GD3720@amd>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/1] x86: replace RDRAND forced-reseed with simple sanity
+ check
+Date: Sun, 2 Aug 2015 20:50:21 +0200 (CEST)
+Message-ID: <alpine.DEB.2.11.1508022050010.3825@nanos>
+References: <001e354e9435443b1720838a111620c4eec12a61.1438356386.git.len.brown@intel.com> <20150802174239.GD58373@unpythonic.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:37445 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750972AbbHBRnr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 2 Aug 2015 13:43:47 -0400
-In-Reply-To: <20150802073853.GD3720@amd>
+Received: from www.linutronix.de ([62.245.132.108]:58260 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750972AbbHBSup (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 2 Aug 2015 14:50:45 -0400
+In-Reply-To: <20150802174239.GD58373@unpythonic.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: =?windows-1252?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Jeff Epler <jepler@unpythonic.net>
+Cc: Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-On 08/02/2015 02:38 AM, Pavel Machek wrote:
->
->> +#define INVALID_REG_ADDR	0xff
->
->> +static u8 bq27000_regs[] = {
->> +	0x00,	/* CONTROL	*/
->> +	0x06,	/* TEMP		*/
->> +	0xff,	/* INT TEMP - NA*/
->
-> I'd use the INVALID_REG_ADDR macro here.. Makes it more clear what is
-> going on (and you may change it to -1 in future, for example).
->
+On Sun, 2 Aug 2015, Jeff Epler wrote:
 
-That works, I'll do that.
+> On Fri, Jul 31, 2015 at 11:27:39AM -0400, Len Brown wrote:
+> >  	if (!cpu_has(c, X86_FEATURE_RDRAND))
+> > -		return;		/* Nothing to do */
+> > +		return;
+> 
+> Why remove this comment?
 
-Thanks,
--- 
-Andrew F. Davis
+Because it's pointless.
+ 
