@@ -1,56 +1,115 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] thermal: kconfig: select THERMAL_WRITABLE_TRIPS for x86 thermal
-Date: Sat,  1 Aug 2015 22:46:41 -0700
-Message-ID: <1438494401-3984-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:64141 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751640AbbHBFq7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 2 Aug 2015 01:46:59 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] power_supply: Adjust devm usage
+Date: Sun, 2 Aug 2015 08:53:43 +0200
+Message-ID: <20150802065343.GA32270@amd>
+References: <20150724115813.GA3004@vaishali-Ideapad-Z570>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150724115813.GA3004@vaishali-Ideapad-Z570>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Vaishali Thakkar <vthakkar1994@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-After the commit "thermal: core: Add Kconfig option to enable writable trips",
-user space tools like thermal daemon and Chrome OS DPTF thermal controller
-can no longer receive async events for thermal thresholds. Since we need to
-enable the new config introduced by above commit to allow writable trips.
-Selecting CONFIG_THERMAL_WRITABLE_TRIPS for x86 thermal drivers.
+On Fri 2015-07-24 17:28:13, Vaishali Thakkar wrote:
+> Use devm_kasprintf instead of kasprintf. Also, remove various
+> gotos by direct returns and drop unneeded label err_free_name.
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/thermal/Kconfig | 3 +++
- 1 file changed, 3 insertions(+)
+What happens if some /sys file is still open when the device is
+removed?
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 118938e..0e3b576 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -275,6 +275,7 @@ config X86_PKG_TEMP_THERMAL
- 	tristate "X86 package temperature thermal driver"
- 	depends on X86_THERMAL_VECTOR
- 	select THERMAL_GOV_USER_SPACE
-+	select THERMAL_WRITABLE_TRIPS
- 	default m
- 	help
- 	  Enable this to register CPU digital sensor for package temperature as
-@@ -296,6 +297,7 @@ config INTEL_SOC_DTS_THERMAL
- 	tristate "Intel SoCs DTS thermal driver"
- 	depends on X86
- 	select INTEL_SOC_DTS_IOSF_CORE
-+	select THERMAL_WRITABLE_TRIPS
- 	help
- 	  Enable this to register Intel SoCs (e.g. Bay Trail) platform digital
- 	  temperature sensor (DTS). These SoCs have two additional DTSs in
-@@ -322,6 +324,7 @@ config INT340X_THERMAL
- 	select ACPI_THERMAL_REL
- 	select ACPI_FAN
- 	select INTEL_SOC_DTS_IOSF_CORE
-+	select THERMAL_WRITABLE_TRIPS
- 	help
- 	  Newer laptops and tablets that use ACPI may have thermal sensors and
- 	  other devices with thermal control capabilities outside the core
+
+
+> Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
+> ---
+>  drivers/power/bq24735-charger.c | 25 ++++++++++---------------
+>  1 file changed, 10 insertions(+), 15 deletions(-)
+> 
+> diff --git a/drivers/power/bq24735-charger.c b/drivers/power/bq24735-charger.c
+> index b017437..b2bb67e 100644
+> --- a/drivers/power/bq24735-charger.c
+> +++ b/drivers/power/bq24735-charger.c
+> @@ -267,8 +267,9 @@ static int bq24735_charger_probe(struct i2c_client *client,
+>  
+>  	name = (char *)charger->pdata->name;
+>  	if (!name) {
+> -		name = kasprintf(GFP_KERNEL, "bq24735@%s",
+> -				 dev_name(&client->dev));
+> +		name = devm_kasprintf(&client->dev, GFP_KERNEL,
+> +				      "bq24735@%s",
+> +				      dev_name(&client->dev));
+>  		if (!name) {
+>  			dev_err(&client->dev, "Failed to alloc device name\n");
+>  			return -ENOMEM;
+> @@ -296,23 +297,21 @@ static int bq24735_charger_probe(struct i2c_client *client,
+>  	if (ret < 0) {
+>  		dev_err(&client->dev, "Failed to read manufacturer id : %d\n",
+>  			ret);
+> -		goto err_free_name;
+> +		return ret;
+>  	} else if (ret != 0x0040) {
+>  		dev_err(&client->dev,
+>  			"manufacturer id mismatch. 0x0040 != 0x%04x\n", ret);
+> -		ret = -ENODEV;
+> -		goto err_free_name;
+> +		return -ENODEV;
+>  	}
+>  
+>  	ret = bq24735_read_word(client, BQ24735_DEVICE_ID);
+>  	if (ret < 0) {
+>  		dev_err(&client->dev, "Failed to read device id : %d\n", ret);
+> -		goto err_free_name;
+> +		return ret;
+>  	} else if (ret != 0x000B) {
+>  		dev_err(&client->dev,
+>  			"device id mismatch. 0x000b != 0x%04x\n", ret);
+> -		ret = -ENODEV;
+> -		goto err_free_name;
+> +		return -ENODEV;
+>  	}
+>  
+>  	if (gpio_is_valid(charger->pdata->status_gpio)) {
+> @@ -331,7 +330,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
+>  	ret = bq24735_config_charger(charger);
+>  	if (ret < 0) {
+>  		dev_err(&client->dev, "failed in configuring charger");
+> -		goto err_free_name;
+> +		return ret;
+>  	}
+>  
+>  	/* check for AC adapter presence */
+> @@ -339,7 +338,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
+>  		ret = bq24735_enable_charging(charger);
+>  		if (ret < 0) {
+>  			dev_err(&client->dev, "Failed to enable charging\n");
+> -			goto err_free_name;
+> +			return ret;
+>  		}
+>  	}
+>  
+> @@ -349,7 +348,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
+>  		ret = PTR_ERR(charger->charger);
+>  		dev_err(&client->dev, "Failed to register power supply: %d\n",
+>  			ret);
+> -		goto err_free_name;
+> +		return ret;
+>  	}
+>  
+>  	if (client->irq) {
+> @@ -371,10 +370,6 @@ static int bq24735_charger_probe(struct i2c_client *client,
+>  	return 0;
+>  err_unregister_supply:
+>  	power_supply_unregister(charger->charger);
+> -err_free_name:
+> -	if (name != charger->pdata->name)
+> -		kfree(name);
+> -
+>  	return ret;
+>  }
+>  
+
 -- 
-2.4.3
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
