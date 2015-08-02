@@ -1,45 +1,56 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH] HID: hid-input: Fix accessing freed memory during driver unbind
-Date: Sun, 2 Aug 2015 14:09:23 +0900
-Message-ID: <CAJKOXPdrpkdpJcW+qiMx6FUmMdDMFuSsbGfE0NmNzC-pEBe3vw@mail.gmail.com>
-References: <1438042590-17719-1-git-send-email-k.kozlowski@samsung.com>
-	<alpine.LNX.2.00.1507291506500.925@pobox.suse.cz>
-	<20150729174619.GC23178@dtor-ws>
-	<CAJKOXPcsHAj7_pggVw9eeU-C1_zKuZJA7oUodtXp=ZJH4AWg9w@mail.gmail.com>
-	<20150730001026.GH23178@dtor-ws>
-	<alpine.LNX.2.00.1508011410170.925@pobox.suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <alpine.LNX.2.00.1508011410170.925@pobox.suse.cz>
-Sender: linux-input-owner@vger.kernel.org
-To: Jiri Kosina <jkosina@suse.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, sre@kernel.org, linux-pm@vger.kernel.org, "H.J. Lu" <hjl.tools@gmail.com>, stable@vger.kernel.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] thermal: kconfig: select THERMAL_WRITABLE_TRIPS for x86 thermal
+Date: Sat,  1 Aug 2015 22:46:41 -0700
+Message-ID: <1438494401-3984-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:64141 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751640AbbHBFq7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 2 Aug 2015 01:46:59 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-2015-08-01 21:11 GMT+09:00 Jiri Kosina <jkosina@suse.com>:
-> On Wed, 29 Jul 2015, Dmitry Torokhov wrote:
->
->> > Another and less intrusive fix would be:
->> >
->> >     char *name = dev->battery->desc->name;
->> >     struct power_supply_desc *psy_desc = dev->battery->desc;
->> >     power_supply_unregister(dev->battery);
->> >     kfree(name);
->> >     kfree(psy_desc);
->>
->> I would much rather prefer this to the other version as it does not
->> leave memory hanging around, potentially indefinitely, but ultimately it
->> is up to Jiri.
->
-> I must have been in some broken state of mind when applying the original
-> one, thanks a lot for catching my brainfart, Dmitry!
->
-> Kryzstof, could you please send me properly formatted patch with the
-> above, on top of your previous fix?
+After the commit "thermal: core: Add Kconfig option to enable writable trips",
+user space tools like thermal daemon and Chrome OS DPTF thermal controller
+can no longer receive async events for thermal thresholds. Since we need to
+enable the new config introduced by above commit to allow writable trips.
+Selecting CONFIG_THERMAL_WRITABLE_TRIPS for x86 thermal drivers.
 
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/thermal/Kconfig | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Of course, I'll send next version.
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 118938e..0e3b576 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -275,6 +275,7 @@ config X86_PKG_TEMP_THERMAL
+ 	tristate "X86 package temperature thermal driver"
+ 	depends on X86_THERMAL_VECTOR
+ 	select THERMAL_GOV_USER_SPACE
++	select THERMAL_WRITABLE_TRIPS
+ 	default m
+ 	help
+ 	  Enable this to register CPU digital sensor for package temperature as
+@@ -296,6 +297,7 @@ config INTEL_SOC_DTS_THERMAL
+ 	tristate "Intel SoCs DTS thermal driver"
+ 	depends on X86
+ 	select INTEL_SOC_DTS_IOSF_CORE
++	select THERMAL_WRITABLE_TRIPS
+ 	help
+ 	  Enable this to register Intel SoCs (e.g. Bay Trail) platform digital
+ 	  temperature sensor (DTS). These SoCs have two additional DTSs in
+@@ -322,6 +324,7 @@ config INT340X_THERMAL
+ 	select ACPI_THERMAL_REL
+ 	select ACPI_FAN
+ 	select INTEL_SOC_DTS_IOSF_CORE
++	select THERMAL_WRITABLE_TRIPS
+ 	help
+ 	  Newer laptops and tablets that use ACPI may have thermal sensors and
+ 	  other devices with thermal control capabilities outside the core
+-- 
+2.4.3
 
-Best regards,
-Krzysztof
