@@ -1,30 +1,33 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/1] x86: replace RDRAND forced-reseed with simple sanity
- check
-Date: Sun, 2 Aug 2015 20:50:21 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1508022050010.3825@nanos>
-References: <001e354e9435443b1720838a111620c4eec12a61.1438356386.git.len.brown@intel.com> <20150802174239.GD58373@unpythonic.net>
+From: Ran Shalit <ranshalit@gmail.com>
+Subject: cpuidle - control minimum idle time before getting into sleep ?
+Date: Sun, 2 Aug 2015 22:38:05 +0300
+Message-ID: <CAJ2oMhLriFNr=kmgCS=0nf13QMgrRbJZVTq7a3xpxa+dguO8gw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:58260 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750972AbbHBSup (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 2 Aug 2015 14:50:45 -0400
-In-Reply-To: <20150802174239.GD58373@unpythonic.net>
+Received: from mail-io0-f176.google.com ([209.85.223.176]:35262 "EHLO
+	mail-io0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750972AbbHBTiH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 2 Aug 2015 15:38:07 -0400
+Received: by iodd187 with SMTP id d187so126957512iod.2
+        for <linux-pm@vger.kernel.org>; Sun, 02 Aug 2015 12:38:05 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jeff Epler <jepler@unpythonic.net>
-Cc: Len Brown <lenb@kernel.org>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+To: linux-pm@vger.kernel.org
 
-On Sun, 2 Aug 2015, Jeff Epler wrote:
+Hello,
 
-> On Fri, Jul 31, 2015 at 11:27:39AM -0400, Len Brown wrote:
-> >  	if (!cpu_has(c, X86_FEATURE_RDRAND))
-> > -		return;		/* Nothing to do */
-> > +		return;
-> 
-> Why remove this comment?
+I am using tickless kernel, and cpuidle using menu governer.
+Is there a way to control minimum idle time before getting into sleep ?
+I noticed that sometimes there is degredation in performance becuase
+cpuidle gets into sleep.
+I've noticed this behaviour with iperf bandwidth test with small packet only.
 
-Because it's pointless.
- 
+Is there a way to control the minimum time of idle before deciding of sleep.
+I assume that if I have such control, I can enlarge this time, and so
+the iperf bandwidth test with small packets shall never get into sleep
+state.
+
+
+Thank you!
+Ran
