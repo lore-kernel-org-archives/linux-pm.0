@@ -1,33 +1,62 @@
-From: Ran Shalit <ranshalit@gmail.com>
-Subject: cpuidle - control minimum idle time before getting into sleep ?
-Date: Sun, 2 Aug 2015 22:38:05 +0300
-Message-ID: <CAJ2oMhLriFNr=kmgCS=0nf13QMgrRbJZVTq7a3xpxa+dguO8gw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f176.google.com ([209.85.223.176]:35262 "EHLO
-	mail-io0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750972AbbHBTiH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 2 Aug 2015 15:38:07 -0400
-Received: by iodd187 with SMTP id d187so126957512iod.2
-        for <linux-pm@vger.kernel.org>; Sun, 02 Aug 2015 12:38:05 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH v2] HID: hid-input: Fix accessing freed memory during device
+ disconnect
+Date: Mon, 03 Aug 2015 09:01:21 +0900
+Message-ID: <1438560081-23055-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-input-owner@vger.kernel.org>
+Sender: linux-input-owner@vger.kernel.org
+To: Jiri Kosina <jkosina@suse.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, sre@kernel.org, linux-pm@vger.kernel.org, "H.J. Lu" <hjl.tools@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-Hello,
+During unbinding the driver was dereferencing a pointer to memory
+already freed by power_supply_unregister().
 
-I am using tickless kernel, and cpuidle using menu governer.
-Is there a way to control minimum idle time before getting into sleep ?
-I noticed that sometimes there is degredation in performance becuase
-cpuidle gets into sleep.
-I've noticed this behaviour with iperf bandwidth test with small packet only.
+Driver was freeing its internal description of battery through pointers
+stored in power_supply structure. However, because the core owns the
+power supply instance, after calling power_supply_unregister() this
+memory is freed and the driver cannot access these members.
 
-Is there a way to control the minimum time of idle before deciding of sleep.
-I assume that if I have such control, I can enlarge this time, and so
-the iperf bandwidth test with small packets shall never get into sleep
-state.
+Fix this by storing the pointer to internal description of battery in a
+local variable before calling power_supply_unregister(), so the pointer
+remains valid.
 
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Reported-by: H.J. Lu <hjl.tools@gmail.com>
+Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
+Cc: <stable@vger.kernel.org>
 
-Thank you!
-Ran
+---
+Changes since v1:
+1. Re-work idea, use local variable instead of devm-like functions
+   (pointed out by Dmitry Torokhov).
+2. Adjusted subject and commit message.
+---
+ drivers/hid/hid-input.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+index 14aebe483219..460faaebaa2c 100644
+--- a/drivers/hid/hid-input.c
++++ b/drivers/hid/hid-input.c
+@@ -462,12 +462,15 @@ out:
+ 
+ static void hidinput_cleanup_battery(struct hid_device *dev)
+ {
++	struct power_supply_desc *psy_desc;
++
+ 	if (!dev->battery)
+ 		return;
+ 
++	psy_desc = dev->battery->desc;
+ 	power_supply_unregister(dev->battery);
+-	kfree(dev->battery->desc->name);
+-	kfree(dev->battery->desc);
++	kfree(psy_desc->name);
++	kfree(psy_desc);
+ 	dev->battery = NULL;
+ }
+ #else  /* !CONFIG_HID_BATTERY_STRENGTH */
+-- 
+1.9.1
+
