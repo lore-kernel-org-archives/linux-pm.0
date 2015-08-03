@@ -1,49 +1,97 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v3 00/16] ARM: shmobile: Add CPG/MSTP Clock Domain
-Date: Mon, 3 Aug 2015 19:20:47 +0200
-Message-ID: <CAMuHMdUxCgXnF6AM=LefR7ZHX0d8XNcn-O=eA7o4C18O4kJbAg@mail.gmail.com>
-References: <1435766290-3005-1-git-send-email-geert+renesas@glider.be>
-	<CAPDyKFp=zoo1OY9K-dYh9e2OV-OFVp36MbXX83vT19uFWB+0Yg@mail.gmail.com>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: [PATCH v7 2/8] ACPI: Split out ACPI PSS from ACPI Processor driver
+Date: Mon, 3 Aug 2015 13:24:20 -0400
+Message-ID: <CAJ5Y-easSpFEpyOVT0YxDAZujXHEnWC1v34gKLMMo5Qz9f+cLA@mail.gmail.com>
+References: <cover.1436464513.git.ashwin.chaugule@linaro.org>
+	<09d1b5cf25ed3117b9e1b8feeb40ddf801557039.1436464513.git.ashwin.chaugule@linaro.org>
+	<3655608.oFpclyKJ6p@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f52.google.com ([209.85.218.52]:36722 "EHLO
-	mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753971AbbHCRUr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Aug 2015 13:20:47 -0400
-In-Reply-To: <CAPDyKFp=zoo1OY9K-dYh9e2OV-OFVp36MbXX83vT19uFWB+0Yg@mail.gmail.com>
+Received: from mail-la0-f47.google.com ([209.85.215.47]:36446 "EHLO
+	mail-la0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754306AbbHCRYW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Aug 2015 13:24:22 -0400
+Received: by labgo9 with SMTP id go9so32644158lab.3
+        for <linux-pm@vger.kernel.org>; Mon, 03 Aug 2015 10:24:21 -0700 (PDT)
+In-Reply-To: <3655608.oFpclyKJ6p@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, linux-clk@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Jaswinder Singh <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux acpi <linux-acpi@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
 
-On Wed, Jul 22, 2015 at 3:00 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 1 July 2015 at 17:57, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
->> This patch series adds Clock Domain support to the Clock Pulse Generator
->> (CPG) Module Stop (MSTP) Clocks driver using the generic PM Domain, to
->> be used on shmobile SoCs without device power domains (R-Car Gen1 and
->> Gen2, RZ).  This allows to power-manage the module clocks of SoC devices
->> that are part of the CPG/MSTP Clock Domain using Runtime PM, or for
->> system suspend/resume, similar to SoCs with device power domains
->> (SH-Mobile and R-Mobile).
-
-[...]
-
-> Unless it's too late; for the series - feel free to add:
+On 17 July 2015 at 20:01, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, July 09, 2015 02:04:18 PM Ashwin Chaugule wrote:
+>> The ACPI processor driver is currently tied too closely
+>> to the ACPI P-states (PSS) and other related constructs
+>> for controlling CPU performance.
+>>
+>> The newer ACPI specification (v5.1 onwards) introduces
+>> alternative methods to PSS. These new mechanisms are
+>> described within each ACPI Processor object and so they
+>> need to be scanned whenever a new Processor object is detected.
+>> This patch introduces a new Kconfig symbol to allow for
+>> finer configurability among the two options for controlling
+>> performance states. There is no change in functionality and
+>> the option is auto-selected by the architecture Kconfig files.
+>>
+>> The following patchwork introduces CPPC: A newer method of
+>> controlling CPU performance. The OS is not expected to support
+>> CPPC and PSS at runtime. So the kconfig option lets us make
+>> these two mutually exclusive at compile time.
+>>
+>> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+>> ---
+>>  arch/x86/Kconfig                |  1 +
+>>  drivers/acpi/Kconfig            | 19 ++++++---
+>>  drivers/acpi/Makefile           |  6 +--
+>>  drivers/acpi/processor_driver.c | 86 +++++++++++++++++++++++++------------
+>>  drivers/cpufreq/Kconfig         |  2 +-
+>>  drivers/cpufreq/Kconfig.x86     |  2 +
+>>  include/acpi/processor.h        | 94 +++++++++++++++++++++++++++--------------
+>>  7 files changed, 142 insertions(+), 68 deletions(-)
+>>
+>> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+>> index 226d569..93d150d 100644
+>> --- a/arch/x86/Kconfig
+>> +++ b/arch/x86/Kconfig
+>> @@ -143,6 +143,7 @@ config X86
+>>       select ACPI_LEGACY_TABLES_LOOKUP if ACPI
+>>       select X86_FEATURE_NAMES if PROC_FS
+>>       select SRCU
+>> +     select ACPI_CPU_FREQ_PSS if ACPI
+>>
+>>  config INSTRUCTION_DECODER
+>>       def_bool y
+>> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+>> index ab2cbb5..00748dc 100644
+>> --- a/drivers/acpi/Kconfig
+>> +++ b/drivers/acpi/Kconfig
+>> @@ -166,17 +166,26 @@ config ACPI_DOCK
+>>         This driver supports ACPI-controlled docking stations and removable
+>>         drive bays such as the IBM Ultrabay and the Dell Module Bay.
+>>
+>> +config ACPI_CPU_FREQ_PSS
+>> +     bool
+>> +     depends on ACPI_PROCESSOR && CPU_FREQ
+>> +     select THERMAL
+>> +     help
+>> +       This driver implements ACPI methods for controlling CPU performance
+>> +       using PSS methods as described in the ACPI spec. It also enables support
+>> +       for ACPI based performance throttling (TSS) and ACPI based thermal
+>> +       monitoring. It is required by several flavors of cpufreq
+>> +       performance-state drivers.
 >
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> So are you not agreeing with what I've said for a few times already or are you
+> just not listening?
+>
+> This option should *not* be user-selectable.  So please drop the help part
+> and make it look like ACPI_SLEEP, for example.
 
-Thank you.
+Fine. I followed some other examples in the kernel. As long as there
+is no text after the 'bool', it doesn't show up as a user configurable
+option in the menuconfig. Having some help text even in such cases
+seemed helpful to me.
 
-I have to respin anyway, as new nodes have been added to various .dtsi files.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Thanks,
+Ashwin.
