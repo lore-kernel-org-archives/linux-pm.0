@@ -1,61 +1,141 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [PATCH v3 5/5] cpufreq: remove no longer needed
- CPU_FREQ_BOOST_SW config option
-Date: Mon, 3 Aug 2015 17:12:03 +0000
-Message-ID: <1438621775.17718.22.camel@spandruv-DESK3.jf.intel.com>
-References: <1438368557-2352-1-git-send-email-b.zolnierkie@samsung.com>
-	 <1438368557-2352-6-git-send-email-b.zolnierkie@samsung.com>
-	 <20150801111537.GH899@linux>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: kconfig: select THERMAL_WRITABLE_TRIPS for x86
+ thermal
+Date: Mon, 3 Aug 2015 10:19:35 -0700
+Message-ID: <20150803171932.GA4118@localhost.localdomain>
+References: <1438494401-3984-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <20150803031033.GA25688@localhost.localdomain>
+ <1438616943.17718.2.camel@spandruv-DESK3.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150801111537.GH899@linux>
-Content-Language: en-US
-Content-ID: <D7F6D62146BE8B4A8330BF97ECD48FD4@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
-Cc: "heiko@sntech.de" <heiko@sntech.de>, "s.nawrocki@samsung.com" <s.nawrocki@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "javier@osg.samsung.com" <javier@osg.samsung.com>, "linux.amoon@gmail.com" <linux.amoon@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "tjakobi@math.uni-bielefeld.de" <tjakobi@math.uni-bielefeld.de>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "cw00.choi@samsung.com" <cw00.choi@samsung.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "kgene@kernel.org" <kgene@kernel.org>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-clk@vger.
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f182.google.com ([209.85.192.182]:36149 "EHLO
+	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752171AbbHCRTq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Aug 2015 13:19:46 -0400
+Received: by pdco4 with SMTP id o4so10859762pdc.3
+        for <linux-pm@vger.kernel.org>; Mon, 03 Aug 2015 10:19:46 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1438616943.17718.2.camel@spandruv-DESK3.jf.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org
 
-T24gU2F0LCAyMDE1LTA4LTAxIGF0IDE2OjQ1ICswNTMwLCBWaXJlc2ggS3VtYXIgd3JvdGU6DQo+
-IE9uIDMxLTA3LTE1LCAyMDo0OSwgQmFydGxvbWllaiBab2xuaWVya2lld2ljeiB3cm90ZToNCj4g
-PiBSZW1vdmUgbm8gbG9uZ2VyIG5lZWRlZCBDUFVfRlJFUV9CT09TVF9TVyBjb25maWcgb3B0aW9u
-Lg0KPiA+IA0KPiA+IEFzIGEgcmVzdWx0IHNjYWxpbmdfYm9vc3RfZnJlcXMgc3lzZnMgYXR0cmli
-dXRlIGlzIGF2YWlsYWJsZQ0KPiA+IHdoZW4gY3B1ZnJlcS1kdCBkcml2ZXIgaXMgdXNlZCBhbmQg
-Ym9vc3Qgc3VwcG9ydCBpcyBlbmFibGVkLg0KPiA+IA0KPiA+IENjOiBWaXJlc2ggS3VtYXIgPHZp
-cmVzaC5rdW1hckBsaW5hcm8ub3JnPg0KPiA+IENjOiBUaG9tYXMgQWJyYWhhbSA8dGhvbWFzLmFi
-QHNhbXN1bmcuY29tPg0KPiA+IENjOiBKYXZpZXIgTWFydGluZXogQ2FuaWxsYXMgPGphdmllckBv
-c2cuc2Ftc3VuZy5jb20+DQo+ID4gQ2M6IEtyenlzenRvZiBLb3psb3dza2kgPGsua296bG93c2tp
-QHNhbXN1bmcuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IEJhcnRsb21pZWogWm9sbmllcmtpZXdp
-Y3ogPGIuem9sbmllcmtpZUBzYW1zdW5nLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy9jcHVm
-cmVxL0tjb25maWcgICAgICB8IDQgLS0tLQ0KPiA+ICBkcml2ZXJzL2NwdWZyZXEvZnJlcV90YWJs
-ZS5jIHwgMiAtLQ0KPiA+ICAyIGZpbGVzIGNoYW5nZWQsIDYgZGVsZXRpb25zKC0pDQo+ID4gDQo+
-ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9LY29uZmlnIGIvZHJpdmVycy9jcHVmcmVx
-L0tjb25maWcNCj4gPiBpbmRleCBiZjZkNTk2Li5kZTAwYTUyIDEwMDY0NA0KPiA+IC0tLSBhL2Ry
-aXZlcnMvY3B1ZnJlcS9LY29uZmlnDQo+ID4gKysrIGIvZHJpdmVycy9jcHVmcmVxL0tjb25maWcN
-Cj4gPiBAQCAtMjEsMTAgKzIxLDYgQEAgaWYgQ1BVX0ZSRVENCj4gPiAgY29uZmlnIENQVV9GUkVR
-X0dPVl9DT01NT04NCj4gPiAgCWJvb2wNCj4gPiAgDQo+ID4gLWNvbmZpZyBDUFVfRlJFUV9CT09T
-VF9TVw0KPiA+IC0JYm9vbA0KPiA+IC0JZGVwZW5kcyBvbiBUSEVSTUFMDQo+ID4gLQ0KPiA+ICBj
-b25maWcgQ1BVX0ZSRVFfU1RBVA0KPiA+ICAJdHJpc3RhdGUgIkNQVSBmcmVxdWVuY3kgdHJhbnNs
-YXRpb24gc3RhdGlzdGljcyINCj4gPiAgCWRlZmF1bHQgeQ0KPiA+IGRpZmYgLS1naXQgYS9kcml2
-ZXJzL2NwdWZyZXEvZnJlcV90YWJsZS5jIGIvZHJpdmVycy9jcHVmcmVxL2ZyZXFfdGFibGUuYw0K
-PiA+IGluZGV4IGE4ZjFkYWYuLjRjNWRlNWIgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9jcHVm
-cmVxL2ZyZXFfdGFibGUuYw0KPiA+ICsrKyBiL2RyaXZlcnMvY3B1ZnJlcS9mcmVxX3RhYmxlLmMN
-Cj4gPiBAQCAtMjkzLDkgKzI5Myw3IEBAIEVYUE9SVF9TWU1CT0xfR1BMKGNwdWZyZXFfZnJlcV9h
-dHRyX3NjYWxpbmdfYm9vc3RfZnJlcXMpOw0KPiA+ICANCj4gPiAgc3RydWN0IGZyZXFfYXR0ciAq
-Y3B1ZnJlcV9nZW5lcmljX2F0dHJbXSA9IHsNCj4gPiAgCSZjcHVmcmVxX2ZyZXFfYXR0cl9zY2Fs
-aW5nX2F2YWlsYWJsZV9mcmVxcywNCj4gPiAtI2lmZGVmIENPTkZJR19DUFVfRlJFUV9CT09TVF9T
-Vw0KPiA+ICAJJmNwdWZyZXFfZnJlcV9hdHRyX3NjYWxpbmdfYm9vc3RfZnJlcXMsDQo+ID4gLSNl
-bmRpZg0KPiA+ICAJTlVMTCwNCj4gPiAgfTsNCj4gPiAgRVhQT1JUX1NZTUJPTF9HUEwoY3B1ZnJl
-cV9nZW5lcmljX2F0dHIpOw0KPiANCj4gU28sIHRoaXMgd2lsbCBzdGFydCBhcHBlYXJpbmcgZm9y
-IGFsbCBwbGF0Zm9ybXMgdGhhdCB1c2UgY3B1ZnJlcV9nZW5lcmljX2F0dHINCj4gYW5kIHRoYXQg
-bWF5IG5vdCBiZSB0aGUgcmlnaHQgdGhpbmcuIFdlIG1heSBvbmx5IHdhbnQgdG8gc2hvdyBib29z
-dCBmcmVxdWVuY2llcw0KPiBvbmx5IGlmIHRoZSBkcml2ZXIgc3VwcG9ydHMgaXQuDQpJIGFncmVl
-LiBBbHRob3VnaCBhY3BpLWNwdWZyZXEgb3IgSW50ZWwgUCBzdGF0ZSBkcml2ZXIgaXMgbm90IHVz
-aW5nDQpnZW5lcmljX2F0dHIsIGJ1dCB3ZSBoYXZlIGEgcGxhbiB0byBzaG93IGJvb3N0IGZyZXF1
-ZW5jaWVzIG9uIHBsYXRmb3JtcywNCndoZXJlIHdlIGhhdmUgc29tZSBjb250cm9sLiBTdXBwb3J0
-IG9mIGJvb3N0IG1vZGUgZG9lc24ndCBtZWFuIHRoYXQgd2UNCmNhbiBzZWxlY3QgdGhlIGJvb3N0
-IGZyZXF1ZW5jeSwgc28gaW4gdGhhdCBjYXNlIHdlIHdpbGwgYXZvaWQgc2hvd2luZw0KdGhlbS4N
-Cg0KVGhhbmtzLA0KU3Jpbml2YXMNCj4gDQo+IEBSYWZhZWw6IFdoYXQgZG8geW91IHNheT8NCj4g
-DQoNCg==
+
+--huq684BweRXVnRxX
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Aug 03, 2015 at 08:49:03AM -0700, Srinivas Pandruvada wrote:
+> On Sun, 2015-08-02 at 20:10 -0700, Eduardo Valentin wrote:
+> > Srinivas,
+> >=20
+> > On Sat, Aug 01, 2015 at 10:46:41PM -0700, Srinivas Pandruvada wrote:
+> > > After the commit "thermal: core: Add Kconfig option to enable writabl=
+e trips",
+> > > user space tools like thermal daemon and Chrome OS DPTF thermal contr=
+oller
+> > > can no longer receive async events for thermal thresholds. Since we n=
+eed to
+> > > enable the new config introduced by above commit to allow writable tr=
+ips.
+> > > Selecting CONFIG_THERMAL_WRITABLE_TRIPS for x86 thermal drivers.
+> >=20
+> > I am fine with enabling the config on x86 drivers. However the
+> > description is somewhat confusing. Are you sure you are not receiving
+> > async events or you are not able to write on trip point files?
+> >=20
+> > Because that's all this option does (quoting thermal_core.c):
+> >                 if (IS_ENABLED(CONFIG_THERMAL_WRITABLE_TRIPS) &&
+> >                     mask & (1 << indx)) {
+> >                         tz->trip_temp_attrs[indx].attr.attr.mode |=3D S=
+_IWUSR;
+> >                         tz->trip_temp_attrs[indx].attr.store =3D
+> >                                                         trip_point_temp=
+_store;
+> >                 }
+> >=20
+> >=20
+> > I am not really sure if this change is going to give your events back.
+> >=20
+> >=20
+> > can you please confirm what you are trying to achieve here?
+> >=20
+> Sorry for the confusion. Since we can't write thresholds, we can't get
+> asynchronous events for thresholds. This config prevents writable trips,
+> hence we need to select this config.
+
+OK... Can you then please rephrase your commit log? I don't see why the
+kernel would not send you the events, even if you cannot write the
+threshold. The events will go for the thresholds set by the kernel.
+If you are not allowed to change the threshold, you are going to receive
+the events at the wrong time, probably, right? Or did I miss something?
+
+>=20
+> Thanks,
+> Srinivas
+>=20
+> > >=20
+> > > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.c=
+om>
+> > > ---
+> > >  drivers/thermal/Kconfig | 3 +++
+> > >  1 file changed, 3 insertions(+)
+> > >=20
+> > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > > index 118938e..0e3b576 100644
+> > > --- a/drivers/thermal/Kconfig
+> > > +++ b/drivers/thermal/Kconfig
+> > > @@ -275,6 +275,7 @@ config X86_PKG_TEMP_THERMAL
+> > >  	tristate "X86 package temperature thermal driver"
+> > >  	depends on X86_THERMAL_VECTOR
+> > >  	select THERMAL_GOV_USER_SPACE
+> > > +	select THERMAL_WRITABLE_TRIPS
+> > >  	default m
+> > >  	help
+> > >  	  Enable this to register CPU digital sensor for package temperatur=
+e as
+> > > @@ -296,6 +297,7 @@ config INTEL_SOC_DTS_THERMAL
+> > >  	tristate "Intel SoCs DTS thermal driver"
+> > >  	depends on X86
+> > >  	select INTEL_SOC_DTS_IOSF_CORE
+> > > +	select THERMAL_WRITABLE_TRIPS
+> > >  	help
+> > >  	  Enable this to register Intel SoCs (e.g. Bay Trail) platform digi=
+tal
+> > >  	  temperature sensor (DTS). These SoCs have two additional DTSs in
+> > > @@ -322,6 +324,7 @@ config INT340X_THERMAL
+> > >  	select ACPI_THERMAL_REL
+> > >  	select ACPI_FAN
+> > >  	select INTEL_SOC_DTS_IOSF_CORE
+> > > +	select THERMAL_WRITABLE_TRIPS
+> > >  	help
+> > >  	  Newer laptops and tablets that use ACPI may have thermal sensors =
+and
+> > >  	  other devices with thermal control capabilities outside the core
+> > > --=20
+> > > 2.4.3
+> > >=20
+>=20
+>=20
+
+--huq684BweRXVnRxX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQEcBAEBAgAGBQJVv6KfAAoJEMLUO4d9pOJWeZAH/iguIHSJcMd8+qhSIiu5KAY8
+rfiqj4F1s18Ekvk2vRxQfUpURC0Ol3k3Xds1iOm8KeEWFBxO0mnnXGmX75VvlJSr
+tlXzul3prciowGpLYFf2JDD+FBWbczfDSxpNnIt6WnMVqjQUHi4uYU1oxHe6iehR
++Rl4XNTRCaBsjJYJQ/XtOi5LTwHujogoxd66/AxWhPrqZeLHcb4mSIWbhDo6gDRT
+y8sdW2xlP6Vdm57Om6NyGzQ5rrNWDrziHh3wtRVxmRNmTQRFeMFm1y3viu1HLQzx
+CEHNws2Q3QQHnCabXhteAx9yvxgsAQqqhvZT51j4uQyS+EISjc/LDevPKg9ux2A=
+=yAhQ
+-----END PGP SIGNATURE-----
+
+--huq684BweRXVnRxX--
