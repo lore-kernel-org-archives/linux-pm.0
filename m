@@ -1,50 +1,68 @@
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH] cpupower tools: Fix error when running cpupower monitor
-Date: Mon,  3 Aug 2015 11:46:00 +0530
-Message-ID: <1438582560-13352-1-git-send-email-shreyas@linux.vnet.ibm.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PULL REQUEST] PM / devfreq, for Next-RC (fix, drv update)
+Date: Mon, 03 Aug 2015 06:32:12 +0000 (GMT)
+Message-ID: <569864407.347861438583532089.JavaMail.weblogic@epmlwas06d>
+Reply-To: myungjoo.ham@samsung.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e34.co.us.ibm.com ([32.97.110.152]:52033 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751925AbbHCGRF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Aug 2015 02:17:05 -0400
-Received: from /spool/local
-	by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
-	Mon, 3 Aug 2015 00:17:04 -0600
+Received: from mailout4.samsung.com ([203.254.224.34]:45880 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752629AbbHCGcO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Aug 2015 02:32:14 -0400
+Received: from epcpsbgr2.samsung.com
+ (u142.gpu120.samsung.co.kr [203.254.230.142])
+ by mailout4.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
+ 64bit (built May  5 2014))
+ with ESMTP id <0NSH002Z7U5OQB10@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Mon, 03 Aug 2015 15:32:12 +0900 (KST)
+MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, trenn@suse.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, pavsubra@linux.vnet.ibm.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+To: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org
+Cc: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, Javier Martinez Canillas <j.canillas@partner.samsung.com>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>
 
-get_cpu_topology() tries to get topology info from all cpus by reading
-files in the topology sysfs dir. If a cpu is offlined, since it doesn't
-have topology dir, this function fails and returns -1. This causes
-functions relying on get_cpu_topology() to fail. For example-
+RGVhciBSYWZhZWwsDQoNCkhlcmUgZ29lcyBhIHB1bGwgcmVxdWVzdCBmcm9tIGRldmZyZXE6DQox
+LiBBZGRlZCBQUE1VdjIgaGFyZHdhcmUgc3VwcG9ydCAoZm9yIHJlY2VudCBFeHlub3Mgc2VyaWVz
+KQ0KMi4gQ29ycmVjdGVkIGRvY3VtZW50YXRpb24NCg0KDQpDaGVlcnMsDQpNeXVuZ0pvbw0KLS0t
+LS1CRUdJTiBQR1AgU0lHTkVEIE1FU1NBR0UtLS0tLQ0KSGFzaDogU0hBMQ0KDQpUaGUgZm9sbG93
+aW5nIGNoYW5nZXMgc2luY2UgY29tbWl0IDc0ZDMzMjkzZTQ2N2RmNjFkZTFiMWQ4YjJmYmUyOWU1
+NTBkZWMzM2I6DQoNCiAgTGludXggNC4yLXJjNSAoMjAxNS0wOC0wMiAxODozNDo1NSAtMDcwMCkN
+Cg0KYXJlIGF2YWlsYWJsZSBpbiB0aGUgZ2l0IHJlcG9zaXRvcnkgYXQ6DQoNCiAgaHR0cHM6Ly9n
+aXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvbXp4L2RldmZyZXEuZ2l0IHRh
+Z3MvcHVsbF9yZXFfMjAxNTA4MDMNCg0KZm9yIHlvdSB0byBmZXRjaCBjaGFuZ2VzIHVwIHRvIGE2
+MjI3ODlhZWViZGVhYTUyZDY4YmJjMzkzMGVkYmMzZTgyMGI1NGE6DQoNCiAgUE0gLyBkZXZmcmVx
+OiBleHlub3MtcHBtdTogVXBkYXRlIGRvY3VtZW50YXRpb24gdG8gc3VwcG9ydCBQUE1VdjIgKDIw
+MTUtMDgtMDMgMTQ6MzM6NTIgKzA5MDApDQoNCi0gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KUHVsbCBSZXF1ZXN0IG9mIERl
+dmZyZXEgVHJlZSB0byBSYWZhZWwgZnJvbSBNeXVuZ0pvbw0KDQotIC0gRGV2aWNlIGRyaXZlciB1
+cGRhdGUgdG8gc3VwcG9ydCBhZGRpdGlvbmFsIGhhcmRhcmUNCi0gLSBEb2N1bWVudGF0aW9uIGVy
+cm9yIGZpeA0KDQotIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0NCkNoYW53b28gQ2hvaSAoMik6DQogICAgICBQTSAvIGRldmZy
+ZXE6IGV4eW5vcy1wcG11OiBBZGQgdGhlIHN1cHBvcnQgb2YgUFBNVXYyIGZvciBFeHlub3M1NDMz
+DQogICAgICBQTSAvIGRldmZyZXE6IGV4eW5vcy1wcG11OiBVcGRhdGUgZG9jdW1lbnRhdGlvbiB0
+byBzdXBwb3J0IFBQTVV2Mg0KDQpKYXZpZXIgTWFydGluZXogQ2FuaWxsYXMgKDEpOg0KICAgICAg
+UE0gLyBkZXZmcmVxOiBldmVudDogUmVtb3ZlIGluY29ycmVjdCBwcm9wZXJ0eSBpbiBleHlub3Mt
+cHBtdSBEVCBiaW5kaW5nDQoNCiAuLi4vYmluZGluZ3MvZGV2ZnJlcS9ldmVudC9leHlub3MtcHBt
+dS50eHQgICAgICAgICB8ICA0MyArKysrKy0NCiBkcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9z
+LXBwbXUuYyAgICAgICAgICAgICAgICB8IDE3MCArKysrKysrKysrKysrKysrKysrKy0NCiBkcml2
+ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLXBwbXUuaCAgICAgICAgICAgICAgICB8ICA3MCArKysr
+KysrKysNCiAzIGZpbGVzIGNoYW5nZWQsIDI3MyBpbnNlcnRpb25zKCspLCAxMCBkZWxldGlvbnMo
+LSkNCi0tLS0tQkVHSU4gUEdQIFNJR05BVFVSRS0tLS0tDQpWZXJzaW9uOiBHbnVQRyB2MQ0KDQpp
+UUljQkFFQkFnQUdCUUpWdnduTUFBb0pFQk9odXJ2V0JvQ0tmVzRRQUt1VWF0UWw0Z0UzWElBczFV
+aGt6NkxRDQpVNEhvdE9nWFNGYmVIaGorN1EyWUx2MWRFOFI3bDBDWHhXa2tnNmorL2FpeTJrZG5z
+aFVOazA3engzYXNETHZhDQpnQXdiMVJoS0dSQ0dEYTczUUw3bmY0WmxKdVp2a3BzWWZ5aXI3azBX
+cEdLbUw0NzkzRmJ0eG1hWFNsdldXaWRnDQpVMkYwT1grUCtRa2d3REtoVy9ubnlLY3lpMm1LeUJl
+WCtma1AzRzNaMUFHSTJmTWFHQXZCUUJUQU43RGxBS09HDQpwU2VTcFpTeCtESlVBYjUvV3hiTC9u
+M0p5WFV3dWFJUDRBWFJpR3o1SnhpQVVMdk1xYWYwczlZd2JRcldGRHlODQpuWHAvT2FNZHFnSnpK
+VnozdHBOWkdBQ3VJcEZtbEZhSmFXRTZKWHI3QXZuN2VycVEyZUFja1pyUWJhbXF6WEFoDQo0N1dE
+YWZnUjlDaFM1amFWejFyK0plT25hMEo5Qko1UUtndmlQQWErUXY1ZEZwUS84NDRmSXBtR21NZ1lD
+REZ6DQpFRFk4MUtaMlJLZlIxa3dVczc0emNmRkZOVFp3V1A3cFRKWWRUdHpOV1l6OFpRVGNzenkz
+NkVEUkJGVjgrd05uDQpTRFhkR2RVbG1zalBkY1EyaFYrclUzbXhEdmNVSHpQNnlsUjlYTlVGbzBo
+YkdjMDF2MXRmNTh1NFBsZzExTzlxDQp2YVJrM013dkduOWFoakxCdm5BdTh6SCtrSEd5STFZVk1B
+YS9IRU1LMGZyOVJrR3FESGdzSXhEazh1TDh6REtEDQo5eDg0bTlGRlMrWllrSGJBamxZVmhnZ2lX
+aWJUejlFWHRDUklaQ205d3pYcmJrWkR4a0xzaHZQYTFQMHVCcStKDQp5NklNRWwzZVRtNkF2MmJZ
+QkdiWg0KPThORm4NCi0tLS0tRU5EIFBHUCBTSUdOQVRVUkUtLS0tLQ0K
 
-$ cpupower monitor
-Cannot read number of available processors
-
-Fix this by skipping fetching topology info for offline cpus.
-
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-Reported-by: Pavaman Subramaniyam <pavsubra@linux.vnet.ibm.com>
----
- tools/power/cpupower/utils/helpers/topology.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/tools/power/cpupower/utils/helpers/topology.c b/tools/power/cpupower/utils/helpers/topology.c
-index c13120af519b..cea398c176e7 100644
---- a/tools/power/cpupower/utils/helpers/topology.c
-+++ b/tools/power/cpupower/utils/helpers/topology.c
-@@ -73,6 +73,8 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
- 	for (cpu = 0; cpu < cpus; cpu++) {
- 		cpu_top->core_info[cpu].cpu = cpu;
- 		cpu_top->core_info[cpu].is_online = sysfs_is_cpu_online(cpu);
-+		if (!cpu_top->core_info[cpu].is_online)
-+			continue;
- 		if(sysfs_topology_read_file(
- 			cpu,
- 			"physical_package_id",
--- 
-1.9.3
 
