@@ -1,295 +1,145 @@
 From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [PATCH v2 07/10] hwmon: Support sensors exported via ARM SCP interface
-Date: Mon,  3 Aug 2015 16:22:55 +0100
-Message-ID: <1438615378-14241-8-git-send-email-punit.agrawal@arm.com>
+Subject: [PATCH v2 06/10] firmware: arm_scpi: Extend to support sensors
+Date: Mon,  3 Aug 2015 16:22:54 +0100
+Message-ID: <1438615378-14241-7-git-send-email-punit.agrawal@arm.com>
 References: <1438615378-14241-1-git-send-email-punit.agrawal@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1438615378-14241-1-git-send-email-punit.agrawal@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Punit Agrawal <punit.agrawal@arm.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, liviu.dudau@arm.com, Jean Delvare <jdelvare@suse.de>, Guenter Roeck <linux@roeck-us.net>, Sudeep Holla <sudeep.holla@arm.com>
+Cc: Punit Agrawal <punit.agrawal@arm.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, liviu.dudau@arm.com, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Create a driver to add support for SoC sensors exported by the System
-Control Processor (SCP) via the System Control and Power Interface
-(SCPI). The supported sensor types is one of voltage, temperature,
-current, and power.
-
-The sensor labels and values provided by the SCP are exported via the
-hwmon sysfs interface.
+ARM System Control Processor (SCP) provides an API to query and use
+the sensors available in the system. Extend the SCPI driver to support
+ sensor messages.
 
 Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-Cc: Jean Delvare <jdelvare@suse.de>
-Cc: Guenter Roeck <linux@roeck-us.net>
 Cc: Sudeep Holla <sudeep.holla@arm.com>
 ---
- Documentation/hwmon/scpi-hwmon |  33 ++++++++
- drivers/hwmon/Kconfig          |   8 ++
- drivers/hwmon/Makefile         |   1 +
- drivers/hwmon/scpi-hwmon.c     | 183 +++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 225 insertions(+)
- create mode 100644 Documentation/hwmon/scpi-hwmon
- create mode 100644 drivers/hwmon/scpi-hwmon.c
+ drivers/firmware/arm_scpi.c   | 60 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/scpi_protocol.h | 17 ++++++++++++
+ 2 files changed, 77 insertions(+)
 
-diff --git a/Documentation/hwmon/scpi-hwmon b/Documentation/hwmon/scpi-hwmon
-new file mode 100644
-index 0000000..4cfcdf2d
---- /dev/null
-+++ b/Documentation/hwmon/scpi-hwmon
-@@ -0,0 +1,33 @@
-+Kernel driver scpi-hwmon
-+========================
-+
-+Supported chips:
-+ * Chips based on ARM System Control Processor Interface
-+   Addresses scanned: -
-+   Datasheet: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0922b/index.html
-+
-+Author: Punit Agrawal <punit.agrawal@arm.com>
-+
-+Description
-+-----------
-+
-+This driver supports hardware monitoring for SoC's based on the ARM
-+System Control Processor (SCP) implementing the System Control
-+Processor Interface (SCPI). The following sensor types are supported
-+by the SCP -
-+
-+  * temperature
-+  * voltage
-+  * current
-+  * power
-+
-+The SCP interface provides an API to query the available sensors and
-+their values which are then exported to userspace by this driver.
-+
-+Usage Notes
-+-----------
-+
-+The driver relies on device tree node to indicate the presence of SCPI
-+support in the kernel. See
-+Documentation/devicetree/bindings/arm/arm,scpi.txt for details of the
-+devicetree node.
-\ No newline at end of file
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index 4943c3c..c9714b0 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -1551,6 +1551,14 @@ config SENSORS_VEXPRESS
- 	  the ARM Ltd's Versatile Express platform. It can provide wide
- 	  range of information like temperature, power, energy.
+diff --git a/drivers/firmware/arm_scpi.c b/drivers/firmware/arm_scpi.c
+index cb75c75..321680e 100644
+--- a/drivers/firmware/arm_scpi.c
++++ b/drivers/firmware/arm_scpi.c
+@@ -219,6 +219,21 @@ struct dvfs_set {
+ 	u8 index;
+ } __packed;
  
-+config SENSORS_ARM_SCPI
-+	tristate "ARM SCPI Sensors"
-+	depends on ARM_SCPI_PROTOCOL
-+	help
-+	  This driver provides support for temperature, voltage, current
-+	  and power sensors available on ARM Ltd's SCP based platforms. The
-+	  actual number and type of sensors exported depend the platform.
++struct sensor_capabilities {
++	__le16 sensors;
++} __packed;
 +
- config SENSORS_VIA_CPUTEMP
- 	tristate "VIA CPU temperature sensor"
- 	depends on X86
-diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index 8aba87f..4961710 100644
---- a/drivers/hwmon/Makefile
-+++ b/drivers/hwmon/Makefile
-@@ -150,6 +150,7 @@ obj-$(CONFIG_SENSORS_TMP421)	+= tmp421.o
- obj-$(CONFIG_SENSORS_TWL4030_MADC)+= twl4030-madc-hwmon.o
- obj-$(CONFIG_SENSORS_V2M_JUNO)	+= v2m-juno.o
- obj-$(CONFIG_SENSORS_VEXPRESS)	+= vexpress.o
-+obj-$(CONFIG_SENSORS_ARM_SCPI)	+= scpi-hwmon.o
- obj-$(CONFIG_SENSORS_VIA_CPUTEMP)+= via-cputemp.o
- obj-$(CONFIG_SENSORS_VIA686A)	+= via686a.o
- obj-$(CONFIG_SENSORS_VT1211)	+= vt1211.o
-diff --git a/drivers/hwmon/scpi-hwmon.c b/drivers/hwmon/scpi-hwmon.c
-new file mode 100644
-index 0000000..7e7e06b
---- /dev/null
-+++ b/drivers/hwmon/scpi-hwmon.c
-@@ -0,0 +1,183 @@
-+/*
-+ * System Control and Power Interface(SCPI) based hwmon sensor driver
-+ *
-+ * Copyright (C) 2015 ARM Ltd.
-+ * Punit Agrawal <punit.agrawal@arm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-+ * kind, whether express or implied; without even the implied warranty
-+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/hwmon.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/scpi_protocol.h>
-+#include <linux/slab.h>
-+#include <linux/sysfs.h>
-+
-+struct sensor_data {
-+	struct scpi_sensor_info info;
-+	struct device_attribute dev_attr_input;
-+	struct device_attribute dev_attr_label;
-+	char input[20];
-+	char label[20];
++struct _scpi_sensor_info {
++	__le16 sensor_id;
++	u8 class;
++	u8 trigger_type;
++	char name[20];
 +};
 +
-+struct scpi_sensors {
-+	struct scpi_ops *scpi_ops;
-+	struct sensor_data *data;
-+	struct attribute **attrs;
-+	struct attribute_group group;
-+	const struct attribute_group *groups[2];
-+};
++struct sensor_value {
++	__le32 val;
++} __packed;
 +
-+/* hwmon callback functions */
-+static ssize_t
-+scpi_show_sensor(struct device *dev, struct device_attribute *attr, char *buf)
+ static struct scpi_drvinfo *scpi_info;
+ 
+ static int scpi_linux_errmap[SCPI_ERR_MAX] = {
+@@ -481,6 +496,48 @@ static struct scpi_dvfs_info *scpi_dvfs_get_info(u8 domain)
+ 	return info;
+ }
+ 
++static int scpi_sensor_get_capability(u16 *sensors)
 +{
-+	struct scpi_sensors *scpi_sensors = dev_get_drvdata(dev);
-+	struct scpi_ops *scpi_ops = scpi_sensors->scpi_ops;
-+	struct sensor_data *sensor;
-+	u32 value;
++	struct sensor_capabilities cap_buf;
 +	int ret;
 +
-+	sensor = container_of(attr, struct sensor_data, dev_attr_input);
++	ret = scpi_send_message(SCPI_CMD_SENSOR_CAPABILITIES, NULL, 0, &cap_buf,
++				sizeof(cap_buf));
++	if (!ret)
++		*sensors = le16_to_cpu(cap_buf.sensors);
 +
-+	ret = scpi_ops->sensor_get_value(sensor->info.sensor_id, &value);
-+	if (ret)
-+		return ret;
-+
-+	return sprintf(buf, "%u\n", value);
++	return ret;
 +}
 +
-+static ssize_t
-+scpi_show_label(struct device *dev, struct device_attribute *attr, char *buf)
++static int scpi_sensor_get_info(u16 sensor_id, struct scpi_sensor_info *info)
 +{
-+	struct sensor_data *sensor;
-+
-+	sensor = container_of(attr, struct sensor_data, dev_attr_label);
-+
-+	return sprintf(buf, "%s\n", sensor->info.name);
-+}
-+
-+static int scpi_hwmon_probe(struct platform_device *pdev)
-+{
-+	u16 nr_sensors, i;
-+	int num_temp = 0, num_volt = 0, num_current = 0, num_power = 0;
-+	struct scpi_ops *scpi_ops;
-+	struct device *hwdev, *dev = &pdev->dev;
-+	struct scpi_sensors *scpi_sensors;
++	__le16 id = cpu_to_le16(sensor_id);
++	struct _scpi_sensor_info _info;
 +	int ret;
 +
-+	scpi_ops = get_scpi_ops();
-+	if (!scpi_ops)
-+		return -EPROBE_DEFER;
-+
-+	ret = scpi_ops->sensor_get_capability(&nr_sensors);
-+	if (ret || !nr_sensors)
-+		return ret;
-+
-+	scpi_sensors = devm_kzalloc(dev, sizeof(*scpi_sensors), GFP_KERNEL);
-+	if (!scpi_sensors)
-+		return -ENOMEM;
-+
-+	scpi_sensors->data = devm_kcalloc(dev, nr_sensors,
-+				   sizeof(*scpi_sensors->data), GFP_KERNEL);
-+	if (!scpi_sensors->data)
-+		return -ENOMEM;
-+
-+	scpi_sensors->attrs = devm_kcalloc(dev, (nr_sensors * 2) + 1,
-+				   sizeof(*scpi_sensors->attrs), GFP_KERNEL);
-+	if (!scpi_sensors->attrs)
-+		return -ENOMEM;
-+
-+	scpi_sensors->scpi_ops = scpi_ops;
-+
-+	for (i = 0; i < nr_sensors; i++) {
-+		struct sensor_data *sensor = &scpi_sensors->data[i];
-+
-+		ret = scpi_ops->sensor_get_info(i, &sensor->info);
-+		if (ret)
-+			return ret;
-+
-+		switch (sensor->info.class) {
-+		case TEMPERATURE:
-+			snprintf(sensor->input, sizeof(sensor->input),
-+				 "temp%d_input", num_temp + 1);
-+			snprintf(sensor->label, sizeof(sensor->input),
-+				 "temp%d_label", num_temp + 1);
-+			num_temp++;
-+			break;
-+		case VOLTAGE:
-+			snprintf(sensor->input, sizeof(sensor->input),
-+				 "in%d_input", num_volt);
-+			snprintf(sensor->label, sizeof(sensor->input),
-+				 "in%d_label", num_volt);
-+			num_volt++;
-+			break;
-+		case CURRENT:
-+			snprintf(sensor->input, sizeof(sensor->input),
-+				 "curr%d_input", num_current + 1);
-+			snprintf(sensor->label, sizeof(sensor->input),
-+				 "curr%d_label", num_current + 1);
-+			num_current++;
-+			break;
-+		case POWER:
-+			snprintf(sensor->input, sizeof(sensor->input),
-+				 "power%d_input", num_power + 1);
-+			snprintf(sensor->label, sizeof(sensor->input),
-+				 "power%d_label", num_power + 1);
-+			num_power++;
-+			break;
-+		default:
-+			break;
-+		}
-+
-+		sensor->dev_attr_input.attr.mode = S_IRUGO;
-+		sensor->dev_attr_input.show = scpi_show_sensor;
-+		sensor->dev_attr_input.attr.name = sensor->input;
-+
-+		sensor->dev_attr_label.attr.mode = S_IRUGO;
-+		sensor->dev_attr_label.show = scpi_show_label;
-+		sensor->dev_attr_label.attr.name = sensor->label;
-+
-+		scpi_sensors->attrs[i << 1] = &sensor->dev_attr_input.attr;
-+		scpi_sensors->attrs[(i << 1) + 1] = &sensor->dev_attr_label.attr;
-+
-+		sysfs_attr_init(scpi_sensors->attrs[i << 1]);
-+		sysfs_attr_init(scpi_sensors->attrs[(i << 1) + 1]);
++	ret = scpi_send_message(SCPI_CMD_SENSOR_INFO, &id,
++				 sizeof(id), &_info, sizeof(_info));
++	if (!ret) {
++		memcpy(info, &_info, sizeof(*info));
++		info->sensor_id = le16_to_cpu(_info.sensor_id);
 +	}
 +
-+	scpi_sensors->group.attrs = scpi_sensors->attrs;
-+	scpi_sensors->groups[0] = &scpi_sensors->group;
-+
-+	hwdev = devm_hwmon_device_register_with_groups(dev,
-+			"scpi_sensors", scpi_sensors, scpi_sensors->groups);
-+
-+	return PTR_ERR_OR_ZERO(hwdev);
++	return ret;
 +}
 +
-+static const struct of_device_id scpi_of_match[] = {
-+	{.compatible = "arm,scpi-sensors"},
-+	{},
++int scpi_sensor_get_value(u16 sensor, u32 *val)
++{
++	struct sensor_value buf;
++	int ret;
++
++	ret = scpi_send_message(SCPI_CMD_SENSOR_VALUE, &sensor, sizeof(sensor),
++				&buf, sizeof(buf));
++	if (!ret)
++		*val = le32_to_cpu(buf.val);
++
++	return ret;
++}
++
+ static struct scpi_ops scpi_ops = {
+ 	.get_version = scpi_get_version,
+ 	.clk_get_range = scpi_clk_get_range,
+@@ -489,6 +546,9 @@ static struct scpi_ops scpi_ops = {
+ 	.dvfs_get_idx = scpi_dvfs_get_idx,
+ 	.dvfs_set_idx = scpi_dvfs_set_idx,
+ 	.dvfs_get_info = scpi_dvfs_get_info,
++	.sensor_get_capability = scpi_sensor_get_capability,
++	.sensor_get_info = scpi_sensor_get_info,
++	.sensor_get_value = scpi_sensor_get_value,
+ };
+ 
+ struct scpi_ops *get_scpi_ops(void)
+diff --git a/include/linux/scpi_protocol.h b/include/linux/scpi_protocol.h
+index e7169cd..80af3cd 100644
+--- a/include/linux/scpi_protocol.h
++++ b/include/linux/scpi_protocol.h
+@@ -28,6 +28,20 @@ struct scpi_dvfs_info {
+ 	struct scpi_opp *opps;
+ };
+ 
++enum scpi_sensor_class {
++	TEMPERATURE,
++	VOLTAGE,
++	CURRENT,
++	POWER,
 +};
 +
-+static struct platform_driver scpi_hwmon_platdrv = {
-+	.driver = {
-+		.name	= "scpi-hwmon",
-+		.owner	= THIS_MODULE,
-+		.of_match_table = scpi_of_match,
-+	},
-+	.probe		= scpi_hwmon_probe,
-+};
-+module_platform_driver(scpi_hwmon_platdrv);
++struct scpi_sensor_info {
++	u16 sensor_id;
++	u8 class;
++	u8 trigger_type;
++	char name[20];
++} __packed;
 +
-+MODULE_AUTHOR("Punit Agrawal <punit.agrawal@arm.com>");
-+MODULE_DESCRIPTION("ARM SCPI HWMON interface driver");
-+MODULE_LICENSE("GPL v2");
+ /**
+  * struct scpi_ops - represents the various operations provided
+  *	by SCP through SCPI message protocol
+@@ -52,6 +66,9 @@ struct scpi_ops {
+ 	int (*dvfs_get_idx)(u8);
+ 	int (*dvfs_set_idx)(u8, u8);
+ 	struct scpi_dvfs_info *(*dvfs_get_info)(u8);
++	int (*sensor_get_capability)(u16 *sensors);
++	int (*sensor_get_info)(u16 sensor_id, struct scpi_sensor_info *);
++	int (*sensor_get_value)(u16, u32 *);
+ };
+ 
+ #if IS_ENABLED(CONFIG_ARM_SCPI_PROTOCOL)
 -- 
 2.1.4
