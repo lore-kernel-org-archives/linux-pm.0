@@ -1,141 +1,35 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: kconfig: select THERMAL_WRITABLE_TRIPS for x86
- thermal
-Date: Mon, 3 Aug 2015 10:19:35 -0700
-Message-ID: <20150803171932.GA4118@localhost.localdomain>
-References: <1438494401-3984-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <20150803031033.GA25688@localhost.localdomain>
- <1438616943.17718.2.camel@spandruv-DESK3.jf.intel.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 1/1] x86: replace RDRAND forced-reseed with simple sanity check
+Date: Mon, 3 Aug 2015 13:20:15 -0400
+Message-ID: <CAJvTdKnW8oxksSZRf8X19vDG3SwnkOfQC601Bcc5odJ9FFETzA@mail.gmail.com>
+References: <001e354e9435443b1720838a111620c4eec12a61.1438356386.git.len.brown@intel.com>
+	<20150802160332.GB28860@amd>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f182.google.com ([209.85.192.182]:36149 "EHLO
-	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752171AbbHCRTq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Aug 2015 13:19:46 -0400
-Received: by pdco4 with SMTP id o4so10859762pdc.3
-        for <linux-pm@vger.kernel.org>; Mon, 03 Aug 2015 10:19:46 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1438616943.17718.2.camel@spandruv-DESK3.jf.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150802160332.GB28860@amd>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org
 
+> If we trust built-in-self-test...
+> why do we need to do this at all? We
+> should check the return value at every call, anyway...
 
---huq684BweRXVnRxX
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, we do trust built-in-self-test.
+Yes, we do check for errors on on every call, not just here in boot.
 
-On Mon, Aug 03, 2015 at 08:49:03AM -0700, Srinivas Pandruvada wrote:
-> On Sun, 2015-08-02 at 20:10 -0700, Eduardo Valentin wrote:
-> > Srinivas,
-> >=20
-> > On Sat, Aug 01, 2015 at 10:46:41PM -0700, Srinivas Pandruvada wrote:
-> > > After the commit "thermal: core: Add Kconfig option to enable writabl=
-e trips",
-> > > user space tools like thermal daemon and Chrome OS DPTF thermal contr=
-oller
-> > > can no longer receive async events for thermal thresholds. Since we n=
-eed to
-> > > enable the new config introduced by above commit to allow writable tr=
-ips.
-> > > Selecting CONFIG_THERMAL_WRITABLE_TRIPS for x86 thermal drivers.
-> >=20
-> > I am fine with enabling the config on x86 drivers. However the
-> > description is somewhat confusing. Are you sure you are not receiving
-> > async events or you are not able to write on trip point files?
-> >=20
-> > Because that's all this option does (quoting thermal_core.c):
-> >                 if (IS_ENABLED(CONFIG_THERMAL_WRITABLE_TRIPS) &&
-> >                     mask & (1 << indx)) {
-> >                         tz->trip_temp_attrs[indx].attr.attr.mode |=3D S=
-_IWUSR;
-> >                         tz->trip_temp_attrs[indx].attr.store =3D
-> >                                                         trip_point_temp=
-_store;
-> >                 }
-> >=20
-> >=20
-> > I am not really sure if this change is going to give your events back.
-> >=20
-> >=20
-> > can you please confirm what you are trying to achieve here?
-> >=20
-> Sorry for the confusion. Since we can't write thresholds, we can't get
-> asynchronous events for thresholds. This config prevents writable trips,
-> hence we need to select this config.
+The sanity check at boot from the kernel allows Linux to disable
+the feature, preventing user-space from thrashing trying to use it.
 
-OK... Can you then please rephrase your commit log? I don't see why the
-kernel would not send you the events, even if you cannot write the
-threshold. The events will go for the thresholds set by the kernel.
-If you are not allowed to change the threshold, you are going to receive
-the events at the wrong time, probably, right? Or did I miss something?
+There is also a line of reasoning that if the circuit is going to fail,
+chances are that it will fail immediately.
+I have no reason to believe that the circuit will fail in the field
+either at run-time or at boot-time.  But that line of reasoning
+suggests that O(1 usec) to check at boot is a prudent investment --
+it is certainly a better investment per time than may of the other
+things Linux does.
 
->=20
-> Thanks,
-> Srinivas
->=20
-> > >=20
-> > > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.c=
-om>
-> > > ---
-> > >  drivers/thermal/Kconfig | 3 +++
-> > >  1 file changed, 3 insertions(+)
-> > >=20
-> > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > > index 118938e..0e3b576 100644
-> > > --- a/drivers/thermal/Kconfig
-> > > +++ b/drivers/thermal/Kconfig
-> > > @@ -275,6 +275,7 @@ config X86_PKG_TEMP_THERMAL
-> > >  	tristate "X86 package temperature thermal driver"
-> > >  	depends on X86_THERMAL_VECTOR
-> > >  	select THERMAL_GOV_USER_SPACE
-> > > +	select THERMAL_WRITABLE_TRIPS
-> > >  	default m
-> > >  	help
-> > >  	  Enable this to register CPU digital sensor for package temperatur=
-e as
-> > > @@ -296,6 +297,7 @@ config INTEL_SOC_DTS_THERMAL
-> > >  	tristate "Intel SoCs DTS thermal driver"
-> > >  	depends on X86
-> > >  	select INTEL_SOC_DTS_IOSF_CORE
-> > > +	select THERMAL_WRITABLE_TRIPS
-> > >  	help
-> > >  	  Enable this to register Intel SoCs (e.g. Bay Trail) platform digi=
-tal
-> > >  	  temperature sensor (DTS). These SoCs have two additional DTSs in
-> > > @@ -322,6 +324,7 @@ config INT340X_THERMAL
-> > >  	select ACPI_THERMAL_REL
-> > >  	select ACPI_FAN
-> > >  	select INTEL_SOC_DTS_IOSF_CORE
-> > > +	select THERMAL_WRITABLE_TRIPS
-> > >  	help
-> > >  	  Newer laptops and tablets that use ACPI may have thermal sensors =
-and
-> > >  	  other devices with thermal control capabilities outside the core
-> > > --=20
-> > > 2.4.3
-> > >=20
->=20
->=20
-
---huq684BweRXVnRxX
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQEcBAEBAgAGBQJVv6KfAAoJEMLUO4d9pOJWeZAH/iguIHSJcMd8+qhSIiu5KAY8
-rfiqj4F1s18Ekvk2vRxQfUpURC0Ol3k3Xds1iOm8KeEWFBxO0mnnXGmX75VvlJSr
-tlXzul3prciowGpLYFf2JDD+FBWbczfDSxpNnIt6WnMVqjQUHi4uYU1oxHe6iehR
-+Rl4XNTRCaBsjJYJQ/XtOi5LTwHujogoxd66/AxWhPrqZeLHcb4mSIWbhDo6gDRT
-y8sdW2xlP6Vdm57Om6NyGzQ5rrNWDrziHh3wtRVxmRNmTQRFeMFm1y3viu1HLQzx
-CEHNws2Q3QQHnCabXhteAx9yvxgsAQqqhvZT51j4uQyS+EISjc/LDevPKg9ux2A=
-=yAhQ
------END PGP SIGNATURE-----
-
---huq684BweRXVnRxX--
+thanks,
+Len Brown, Intel Open Source Technology Center
