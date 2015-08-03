@@ -1,166 +1,56 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [PATCH v2 03/10] cpufreq: arm_big_little: Add support
-	to register a cpufreq cooling device
-Date: Mon,  3 Aug 2015 16:22:51 +0100
-Message-ID: <1438615378-14241-4-git-send-email-punit.agrawal@arm.com>
-References: <1438615378-14241-1-git-send-email-punit.agrawal@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 3/5] ARM: Exynos: switch to using generic cpufreq
+ driver for Exynos4x12
+Date: Mon, 3 Aug 2015 21:20:41 +0530
+Message-ID: <20150803155041.GE21529@linux>
+References: <1438368557-2352-1-git-send-email-b.zolnierkie@samsung.com>
+ <4532306.AVvo5hem3c@amdc1976>
+ <55BF4D41.1060903@samsung.com>
+ <2347616.SxxJmTVssu@amdc1976>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <lm-sensors-bounces@lm-sensors.org>
-In-Reply-To: <1438615378-14241-1-git-send-email-punit.agrawal@arm.com>
-List-Unsubscribe: <http://lists.lm-sensors.org/mailman/options/lm-sensors>,
-	<mailto:lm-sensors-request@lm-sensors.org?subject=unsubscribe>
-List-Archive: <http://lists.lm-sensors.org/pipermail/lm-sensors/>
-List-Post: <mailto:lm-sensors@lm-sensors.org>
-List-Help: <mailto:lm-sensors-request@lm-sensors.org?subject=help>
-List-Subscribe: <http://lists.lm-sensors.org/mailman/listinfo/lm-sensors>,
-	<mailto:lm-sensors-request@lm-sensors.org?subject=subscribe>
-Sender: lm-sensors-bounces@lm-sensors.org
-Errors-To: lm-sensors-bounces@lm-sensors.org
-To: linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org, Punit Agrawal <punit.agrawal@arm.com>, liviu.dudau@arm.com, linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org, Eduardo Valentin <edubezval@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2347616.SxxJmTVssu@amdc1976>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier@osg.samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Register passive cooling devices when initialising cpufreq on
-big.LITTLE systems. If the device tree provides a dynamic power
-coefficient for the CPUs then the bound cooling device will support
-the extensions that allow it to be used with all the existing thermal
-governors including the power allocator governor.
+On 03-08-15, 15:55, Bartlomiej Zolnierkiewicz wrote:
+> diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
+> index 81064cd..491914c 100644
+> --- a/arch/arm/mach-exynos/Kconfig
+> +++ b/arch/arm/mach-exynos/Kconfig
+> @@ -25,6 +25,8 @@ menuconfig ARCH_EXYNOS
+>  	select S5P_DEV_MFC
+>  	select SRAM
+>  	select MFD_SYSCON
+> +	select THERMAL
+> +	select EXYNOS_THERMAL
 
-A cooling device will be created per individual frequency domain and
-can be bound to thermal zones via the thermal DT bindings.
+Why do you need to select both of them?
 
-Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+>  	help
+>  	  Support for SAMSUNG EXYNOS SoCs (EXYNOS4/5)
+>  
+> diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
+> index 77ac021..1c47aee 100644
+> --- a/arch/arm/mach-exynos/exynos.c
+> +++ b/arch/arm/mach-exynos/exynos.c
+> @@ -227,6 +227,8 @@ static void __init exynos_init_irq(void)
+>  static const struct of_device_id exynos_cpufreq_matches[] = {
+>  	{ .compatible = "samsung,exynos3250", .data = "cpufreq-dt" },
+>  	{ .compatible = "samsung,exynos4210", .data = "cpufreq-dt" },
+> +	{ .compatible = "samsung,exynos4212", .data = "cpufreq-dt" },
+> +	{ .compatible = "samsung,exynos4412", .data = "cpufreq-dt" },
+>  	{ .compatible = "samsung,exynos5250", .data = "cpufreq-dt" },
+>  	{ /* sentinel */ }
+>  };
+
+Otherwise looks fine:
+
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
----
- drivers/cpufreq/arm_big_little.c | 52 ++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 50 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index f1e42f8..72a2777 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -23,6 +23,7 @@
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
-+#include <linux/cpu_cooling.h>
- #include <linux/export.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-@@ -55,6 +56,10 @@ static bool bL_switching_enabled;
- #define ACTUAL_FREQ(cluster, freq)  ((cluster == A7_CLUSTER) ? freq << 1 : freq)
- #define VIRT_FREQ(cluster, freq)    ((cluster == A7_CLUSTER) ? freq >> 1 : freq)
- 
-+struct private_data {
-+	struct thermal_cooling_device *cdev;
-+};
-+
- static struct cpufreq_arm_bL_ops *arm_bL_ops;
- static struct clk *clk[MAX_CLUSTERS];
- static struct cpufreq_frequency_table *freq_table[MAX_CLUSTERS + 1];
-@@ -440,6 +445,7 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
- {
- 	u32 cur_cluster = cpu_to_cluster(policy->cpu);
- 	struct device *cpu_dev;
-+	struct private_data *priv;
- 	int ret;
- 
- 	cpu_dev = get_cpu_device(policy->cpu);
-@@ -457,9 +463,15 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
- 	if (ret) {
- 		dev_err(cpu_dev, "CPU %d, cluster: %d invalid freq table\n",
- 				policy->cpu, cur_cluster);
--		put_cluster_clk_and_freq_table(cpu_dev);
--		return ret;
-+		goto out_free_cpufreq_table;
-+	}
-+
-+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-+	if (!priv) {
-+		ret = -ENOMEM;
-+		goto out_free_cpufreq_table;
- 	}
-+	policy->driver_data = priv;
- 
- 	if (cur_cluster < MAX_CLUSTERS) {
- 		int cpu;
-@@ -484,12 +496,19 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
- 
- 	dev_info(cpu_dev, "%s: CPU %d initialized\n", __func__, policy->cpu);
- 	return 0;
-+
-+out_free_cpufreq_table:
-+	put_cluster_clk_and_freq_table(cpu_dev);
-+
-+	return ret;
- }
- 
- static int bL_cpufreq_exit(struct cpufreq_policy *policy)
- {
- 	struct device *cpu_dev;
-+	struct private_data *priv = policy->driver_data;
- 
-+	cpufreq_cooling_unregister(priv->cdev);
- 	cpu_dev = get_cpu_device(policy->cpu);
- 	if (!cpu_dev) {
- 		pr_err("%s: failed to get cpu%d device\n", __func__,
-@@ -498,11 +517,39 @@ static int bL_cpufreq_exit(struct cpufreq_policy *policy)
- 	}
- 
- 	put_cluster_clk_and_freq_table(cpu_dev);
-+	kfree(priv);
- 	dev_dbg(cpu_dev, "%s: Exited, cpu: %d\n", __func__, policy->cpu);
- 
- 	return 0;
- }
- 
-+static void bL_cpufreq_ready(struct cpufreq_policy *policy)
-+{
-+	struct device *cpu_dev = get_cpu_device(policy->cpu);
-+	struct device_node *np = of_node_get(cpu_dev->of_node);
-+	struct private_data *priv = policy->driver_data;
-+
-+	if (WARN_ON(!np))
-+		return;
-+
-+	if (of_find_property(np, "#cooling-cells", NULL)) {
-+		u32 power_coefficient = 0;
-+
-+		of_property_read_u32(np, "dynamic-power-coefficient",
-+				     &power_coefficient);
-+
-+		priv->cdev = of_cpufreq_power_cooling_register(np,
-+				policy->related_cpus, power_coefficient, NULL);
-+		if (IS_ERR(priv->cdev)) {
-+			dev_err(cpu_dev,
-+				"running cpufreq without cooling device: %ld\n",
-+				PTR_ERR(priv->cdev));
-+			priv->cdev = NULL;
-+		}
-+	}
-+	of_node_put(np);
-+}
-+
- static struct cpufreq_driver bL_cpufreq_driver = {
- 	.name			= "arm-big-little",
- 	.flags			= CPUFREQ_STICKY |
-@@ -513,6 +560,7 @@ static struct cpufreq_driver bL_cpufreq_driver = {
- 	.get			= bL_cpufreq_get_rate,
- 	.init			= bL_cpufreq_init,
- 	.exit			= bL_cpufreq_exit,
-+	.ready			= bL_cpufreq_ready,
- 	.attr			= cpufreq_generic_attr,
- };
- 
 -- 
-2.1.4
-
-
-_______________________________________________
-lm-sensors mailing list
-lm-sensors@lm-sensors.org
-http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
+viresh
