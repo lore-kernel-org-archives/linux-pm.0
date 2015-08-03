@@ -1,79 +1,93 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v3] HID: hid-input: Fix accessing freed memory during
- device disconnect
-Date: Mon, 3 Aug 2015 13:31:32 -0700
-Message-ID: <20150803203132.GE38878@dtor-ws>
-References: <1438581450-20728-1-git-send-email-k.kozlowski@samsung.com>
+From: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+Subject: Re: [PATCH v3 0/5] cpufreq: use generic cpufreq drivers for
+ Exynos4x12 platform
+Date: Mon, 03 Aug 2015 22:55:00 +0200
+Message-ID: <55BFD524.6080102@math.uni-bielefeld.de>
+References: <1438368557-2352-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-input-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1438581450-20728-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Jiri Kosina <jkosina@suse.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, sre@kernel.org, linux-pm@vger.kernel.org, "H.J. Lu" <hjl.tools@gmail.com>, stable@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1438368557-2352-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 03, 2015 at 02:57:30PM +0900, Krzysztof Kozlowski wrote:
-> During unbinding the driver was dereferencing a pointer to memory
-> already freed by power_supply_unregister().
-> 
-> Driver was freeing its internal description of battery through pointers
-> stored in power_supply structure. However, because the core owns the
-> power supply instance, after calling power_supply_unregister() this
-> memory is freed and the driver cannot access these members.
-> 
-> Fix this by storing the pointer to internal description of battery in a
-> local variable before calling power_supply_unregister(), so the pointer
-> remains valid.
-> 
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Reported-by: H.J. Lu <hjl.tools@gmail.com>
-> Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
-> Cc: <stable@vger.kernel.org>
-> 
+Hello,
 
-FWIW:
-
-Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
-> ---
-> Changes since v2:
-> 1. Add missing 'const'.
+Bartlomiej Zolnierkiewicz wrote:
+> Hi,
 > 
-> Changes since v1:
-> 1. Re-work idea, use local variable instead of devm-like functions
->    (pointed out by Dmitry Torokhov).
-> 2. Adjusted subject and commit message.
-> ---
->  drivers/hid/hid-input.c | 7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
+> This patch series removes the use of Exynos4x12 specific support
+> from cpufreq-exynos driver and enables the use of cpufreq-dt driver
+> for this platform.
 > 
-> diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
-> index 14aebe483219..53aeaf6252c7 100644
-> --- a/drivers/hid/hid-input.c
-> +++ b/drivers/hid/hid-input.c
-> @@ -462,12 +462,15 @@ out:
->  
->  static void hidinput_cleanup_battery(struct hid_device *dev)
->  {
-> +	const struct power_supply_desc *psy_desc;
-> +
->  	if (!dev->battery)
->  		return;
->  
-> +	psy_desc = dev->battery->desc;
->  	power_supply_unregister(dev->battery);
-> -	kfree(dev->battery->desc->name);
-> -	kfree(dev->battery->desc);
-> +	kfree(psy_desc->name);
-> +	kfree(psy_desc);
->  	dev->battery = NULL;
->  }
->  #else  /* !CONFIG_HID_BATTERY_STRENGTH */
-> -- 
-> 1.9.1
-> 
+> This patch series has been tested on Exynos4412 based Odroid-U3 and
+> Trats2 boards.
+I've tested this series on my Odroid-X2 (also Exynos4412) with
+powersave, performance and ondemand governor. Scaling works like
+expected, so no issues to report!
 
--- 
-Dmitry
+Tested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+
+
+With best wishes,
+Tobias
+
+
+> 
+> Depends on:
+> - next-20150730 branch of linux-next kernel tree
+> - "[PATCH V3 00/16] OPP: Add code to support operating-points-v2 bindings"
+>   (http://www.spinics.net/lists/arm-kernel/msg435408.html)
+> 
+> Changes since v2
+> (http://thread.gmane.org/gmane.linux.kernel.samsung-soc/46653):
+> - rebased on top of next-20150730 branch of linux-next kernel tree
+> - ported over V3 of opp-v2 bindings support patch series
+> - put cpu0 nodes in alphabetical order in dts files
+> - added Reviewed-by tags from Javier and Krzysztof
+> - added Acked-by tag from Sylwester
+> 
+> Changes since v1
+> (http://thread.gmane.org/gmane.linux.kernel.samsung-soc/44361):
+> - rebased on top of next-20150629 branch of linux-next kernel tree
+> - rebased on top of Exynos5250 cpufreq-dt support patch series
+> - fixed if-statement in exynos4_clk_init() (noticed by Tobias Jakobi)
+> - ported over opp-v2 bindings (requested by Viresh Kumar)
+> 
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+> 
+> 
+> Bartlomiej Zolnierkiewicz (5):
+>   clk: samsung: exynos4x12: add cpu clock configuration data and
+>     instantiate cpu clock
+>   ARM: dts: Exynos4x12: add CPU OPP and regulator supply property
+>   ARM: Exynos: switch to using generic cpufreq driver for Exynos4x12
+>   cpufreq: exynos: remove Exynos4x12 specific cpufreq driver support
+>   cpufreq: remove no longer needed CPU_FREQ_BOOST_SW config option
+> 
+>  arch/arm/boot/dts/exynos4212.dtsi               |  81 ++++++++
+>  arch/arm/boot/dts/exynos4412-odroid-common.dtsi |   4 +
+>  arch/arm/boot/dts/exynos4412-origen.dts         |   4 +
+>  arch/arm/boot/dts/exynos4412-trats2.dts         |   4 +
+>  arch/arm/boot/dts/exynos4412.dtsi               |  83 +++++++++
+>  arch/arm/mach-exynos/exynos.c                   |   2 +
+>  drivers/clk/samsung/clk-exynos4.c               |  50 +++++
+>  drivers/cpufreq/Kconfig                         |   5 +-
+>  drivers/cpufreq/Kconfig.arm                     |  38 ----
+>  drivers/cpufreq/Makefile                        |   2 -
+>  drivers/cpufreq/exynos-cpufreq.c                | 236 ------------------------
+>  drivers/cpufreq/exynos-cpufreq.h                |  72 --------
+>  drivers/cpufreq/exynos4x12-cpufreq.c            | 236 ------------------------
+>  drivers/cpufreq/freq_table.c                    |   2 -
+>  14 files changed, 229 insertions(+), 590 deletions(-)
+>  delete mode 100644 drivers/cpufreq/exynos-cpufreq.c
+>  delete mode 100644 drivers/cpufreq/exynos-cpufreq.h
+>  delete mode 100644 drivers/cpufreq/exynos4x12-cpufreq.c
+> 
