@@ -1,66 +1,88 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power_supply: Adjust devm usage
-Date: Mon, 3 Aug 2015 19:29:51 +0200
-Message-ID: <20150803172951.GE4856@earth>
-References: <20150724115813.GA3004@vaishali-Ideapad-Z570>
- <20150802065343.GA32270@amd>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: [PATCH v7 8/8] PCC: Enable PCC only when needed
+Date: Mon, 3 Aug 2015 13:35:49 -0400
+Message-ID: <CAJ5Y-eb5HOtStDztU+AYj264dRGbqa5OrVo-VHRBcnfHK-2a3w@mail.gmail.com>
+References: <cover.1436464513.git.ashwin.chaugule@linaro.org>
+	<CAJZ5v0j-_QB1U-A0F2YSoDa_71nyEGR=yn8Kb5qe-FSqDPevOA@mail.gmail.com>
+	<55AE652B.7030409@arm.com>
+	<1583446.GxfV2z2IW5@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="zS7rBR6csb6tI2e1"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:33493 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751974AbbHCR35 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 3 Aug 2015 13:29:57 -0400
-Content-Disposition: inline
-In-Reply-To: <20150802065343.GA32270@amd>
+Received: from mail-lb0-f181.google.com ([209.85.217.181]:34330 "EHLO
+	mail-lb0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932231AbbHCRfv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Aug 2015 13:35:51 -0400
+Received: by lbqc9 with SMTP id c9so56406317lbq.1
+        for <linux-pm@vger.kernel.org>; Mon, 03 Aug 2015 10:35:49 -0700 (PDT)
+In-Reply-To: <1583446.GxfV2z2IW5@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Vaishali Thakkar <vthakkar1994@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
 
+On 21 July 2015 at 21:28, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, July 21, 2015 04:28:43 PM Sudeep Holla wrote:
+>> Hi Rafael,
+>>
+>> On 21/07/15 15:34, Rafael J. Wysocki wrote:
+>> > Hi Sudeep,
+>> >
+>> > On Tue, Jul 21, 2015 at 11:23 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>> >>
+>> >>
+>> >> On 20/07/15 23:04, Rafael J. Wysocki wrote:
+>> >>>
+>> >>> On Monday, July 20, 2015 03:22:37 PM Sudeep Holla wrote:
+>> >>>>
+>> >>>>
+>> >>>> On 09/07/15 19:04, Ashwin Chaugule wrote:
+>> >>>>>
+>> >>>>> CPPC is the first client to make use of the PCC Mailbox channel. So
+>> >>>>> enable it only when CPPC is also enabled.
+>> >>>>>
+>> >>>> This sounds like a reverse dependency to me. So if there's some client
+>> >>>> unrelated to CPPC using PCC, CPPC_LIB needs to be selected to enable PCC
+>> >>>> ?
+>> >>>
+>> >>>
+>> >>> No.  The other client will need to select PCC too.
+>> >>
+>> >>
+>> >> Yes the PCC users/clients selecting PCC is fine and that's already
+>> >> done(i.e. ACPI_CPPC_LIB selects PCC). I still don't understand the need
+>> >> for this change, also how will other clients possibly select PCC which
+>> >> now depends on CPPC_LIB ? e.g. if we have
+>> >>
+>> >> config ACPI_XYZ_LIB
+>> >>          select PCC
+>> >>
+>> >> config ACPI_XYZ
+>> >>          select ACPI_XYZ_LIB
+>> >>
+>> >> Won't this shout warning: (ACPI_XYZ_LIB && ACPI_CPPC_LIB) selects PCC
+>> >> which has unmet direct dependencies (MAILBOX && ACPI && ACPI_CPPC_LIB)
+>> >> if ACPI_CPPC_LIB is not selected ?
+>> >
+>> > That depends on the "depends on" clauses used.  Selecting itself
+>> > doesn't cause any dependencies to appear.
+>> >
+>>
+>> Agreed and I am absolutely fine with that. But if you look at this
+>> patch, it does
+>>
+>> config PCC
+>>       bool "Platform Communication Channel Driver"
+>>       depends on ACPI && ACPI_CPPC_LIB
+>
+> My bad, I've evidently overlooked that.
+>
+> If PPC is selected from ACPI_CPPC_LIB, the "depends on" above is
+> obviously not needed.
 
---zS7rBR6csb6tI2e1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks Sudeep.
+So I'll take this dependency out and default PCC to 'n'. Think that
+should work for all cases. Agree?
 
-Hi,
-
-On Sun, Aug 02, 2015 at 08:53:43AM +0200, Pavel Machek wrote:
-> On Fri 2015-07-24 17:28:13, Vaishali Thakkar wrote:
-> > Use devm_kasprintf instead of kasprintf. Also, remove various
-> > gotos by direct returns and drop unneeded label err_free_name.
->=20
-> What happens if some /sys file is still open when the device is
-> removed?
-
-There is currently discussion about this on LKML:
-
-https://lkml.org/lkml/2015/7/15/731
-
--- Sebastian
-
---zS7rBR6csb6tI2e1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVv6UPAAoJENju1/PIO/qatagP/iEWwgG8T0HM20mzQs7StBNK
-T8LP4WLa9Zz2GuBb0SOw7sXQIKgfzFYzV+fWDzsuxdJGmkFjtXjGo11/NCf5BLXG
-LkDG5TSgHqGYpq5SiXJWVtlJVS/rhl/ZnocjxVpepuHKgZhBDep2t3FZxwb2vWCF
-fIt3OP7kIliSa7UxBOUs43qxPLu9PlhYgI6Q+f8rRDbZTty46TZJSxjEUuMullFs
-mPRsCZ5dOqWOT6mmTIlUXbwBd9Tj0f8Bd9ppmkSOXJkvyr/3VHQPvxIfr9GR7lpN
-mdpdo2DFRUZj/Hez0LKYNpTjm1PQZ94OhPysoJCXgq7Dp954vMraRUCmX+EKtln8
-AVIjlxYQCgPGCRus0/GvU73Y6vBVs2GpfYmkcxZ/9sV6ijhLd/npwYyhbI0/dsxg
-7sinSTE7ObgV3qJEBw7UuhS/SPMnyHXfv+4dV/+RoScGLDnruQNEFuBmf5syu6VE
-DBCB6A++e3hM1hTyk3U33PD8nudrejuzQBJE4eANCdcBJTDpJHfEU2I9nAg0zJQJ
-k66nMS4afp/Tsyv4shUvEu5td4mqoLeXkqxkrOBTN38V1qZH7aWA05RGPYrAFQmA
-OB0TICP/+lrOJv35jtkU0HJ8mf6jlgI/cVAn1PW3o96n4ALWMpd0gOilSl5TS7JQ
-jB16RdfW1uLeStS5VwXA
-=woUg
------END PGP SIGNATURE-----
-
---zS7rBR6csb6tI2e1--
+Thanks,
+Ashwin.
