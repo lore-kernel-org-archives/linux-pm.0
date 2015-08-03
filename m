@@ -1,33 +1,65 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Re: [PATCH 03/15] drivers: devfreq: Drop unlikely before
- IS_ERR(_OR_NULL)
-Date: Mon, 3 Aug 2015 11:25:09 +0530
-Message-ID: <20150803055509.GB16589@linux>
-References: <1197027641.344961438581016329.JavaMail.weblogic@epmlwas06d>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f169.google.com ([209.85.192.169]:34362 "EHLO
-	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752341AbbHCFzN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Aug 2015 01:55:13 -0400
-Received: by pdbbo16 with SMTP id bo16so12009297pdb.1
-        for <linux-pm@vger.kernel.org>; Sun, 02 Aug 2015 22:55:12 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1197027641.344961438581016329.JavaMail.weblogic@epmlwas06d>
-Sender: linux-pm-owner@vger.kernel.org
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH v3] HID: hid-input: Fix accessing freed memory during device
+ disconnect
+Date: Mon, 03 Aug 2015 14:57:30 +0900
+Message-ID: <1438581450-20728-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-input-owner@vger.kernel.org>
+Sender: linux-input-owner@vger.kernel.org
+To: Jiri Kosina <jkosina@suse.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, sre@kernel.org, linux-pm@vger.kernel.org, "H.J. Lu" <hjl.tools@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, =?utf-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, "open list:DEVICE FREQUENCY (DEVFREQ)" <linux-pm@vger.kernel.org>
 
-On 03-08-15, 05:50, MyungJoo Ham wrote:
-> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> 
-> 
-> please let me know when the series is ready to go.
+During unbinding the driver was dereferencing a pointer to memory
+already freed by power_supply_unregister().
 
-It wouldn't harm even if you apply it without 1/15. So, just go on and
-apply :)
+Driver was freeing its internal description of battery through pointers
+stored in power_supply structure. However, because the core owns the
+power supply instance, after calling power_supply_unregister() this
+memory is freed and the driver cannot access these members.
 
+Fix this by storing the pointer to internal description of battery in a
+local variable before calling power_supply_unregister(), so the pointer
+remains valid.
+
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Reported-by: H.J. Lu <hjl.tools@gmail.com>
+Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
+Cc: <stable@vger.kernel.org>
+
+---
+Changes since v2:
+1. Add missing 'const'.
+
+Changes since v1:
+1. Re-work idea, use local variable instead of devm-like functions
+   (pointed out by Dmitry Torokhov).
+2. Adjusted subject and commit message.
+---
+ drivers/hid/hid-input.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+index 14aebe483219..53aeaf6252c7 100644
+--- a/drivers/hid/hid-input.c
++++ b/drivers/hid/hid-input.c
+@@ -462,12 +462,15 @@ out:
+ 
+ static void hidinput_cleanup_battery(struct hid_device *dev)
+ {
++	const struct power_supply_desc *psy_desc;
++
+ 	if (!dev->battery)
+ 		return;
+ 
++	psy_desc = dev->battery->desc;
+ 	power_supply_unregister(dev->battery);
+-	kfree(dev->battery->desc->name);
+-	kfree(dev->battery->desc);
++	kfree(psy_desc->name);
++	kfree(psy_desc);
+ 	dev->battery = NULL;
+ }
+ #else  /* !CONFIG_HID_BATTERY_STRENGTH */
 -- 
-viresh
+1.9.1
+
