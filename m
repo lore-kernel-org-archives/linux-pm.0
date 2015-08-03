@@ -1,62 +1,113 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: [PATCH v7 1/8] PCC: Initialize PCC Mailbox earlier at boot
-Date: Mon, 3 Aug 2015 13:37:36 -0400
-Message-ID: <CAJ5Y-eZOswi9RTd-NFJ1kaJ85GDws___aCRhpWhQfwUf5Bzkbw@mail.gmail.com>
-References: <cover.1436464513.git.ashwin.chaugule@linaro.org>
-	<e5f53a07775cfb896688051b31acb2261ec1d3a2.1436464513.git.ashwin.chaugule@linaro.org>
-	<55AD0391.2040504@arm.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] thermal: kconfig: select THERMAL_WRITABLE_TRIPS for x86
+ thermal
+Date: Mon, 03 Aug 2015 10:36:12 -0700
+Message-ID: <1438623372.17718.28.camel@spandruv-DESK3.jf.intel.com>
+References: <1438494401-3984-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <20150803031033.GA25688@localhost.localdomain>
+	 <1438616943.17718.2.camel@spandruv-DESK3.jf.intel.com>
+	 <20150803171932.GA4118@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <55AD0391.2040504@arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:14148 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754468AbbHCRil (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 3 Aug 2015 13:38:41 -0400
+In-Reply-To: <20150803171932.GA4118@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org
 
-On 20 July 2015 at 10:20, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
->
-> On 09/07/15 19:04, Ashwin Chaugule wrote:
->>
->> This change initializes the PCC Mailbox earlier than
->> the ACPI processor driver. This enables drivers introduced
->> in follow up patches (e.g. CPPC) to be probed via the ACPI
->> processor driver interface. The CPPC probe requires the PCC
->> channel to be initialized for it to query each CPUs performance
->> capabilities.
->>
->> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
->> Reviewed-by: Al Stone <al.stone@linaro.org>
->> ---
->>   drivers/mailbox/pcc.c | 8 +++++++-
->>   1 file changed, 7 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/mailbox/pcc.c b/drivers/mailbox/pcc.c
->> index 7e91d68..fcda63e 100644
->> --- a/drivers/mailbox/pcc.c
->> +++ b/drivers/mailbox/pcc.c
->> @@ -352,4 +352,10 @@ static int __init pcc_init(void)
->>
->>         return 0;
->>   }
->> -device_initcall(pcc_init);
->> +
->> +/*
->> + * Make pcc init postcore so that users of this mailbox
->> + * such as the ACPI Processor driver have it available
->> + * at their init.
->> + */
->> +postcore_initcall(pcc_init);
->>
->
-> I assumed you have explored other options like deferred probe and
-> finally resorted to this as they are not feasible ?
+On Mon, 2015-08-03 at 10:19 -0700, Eduardo Valentin wrote:
+> On Mon, Aug 03, 2015 at 08:49:03AM -0700, Srinivas Pandruvada wrote:
+> > On Sun, 2015-08-02 at 20:10 -0700, Eduardo Valentin wrote:
+> > > Srinivas,
+> > > 
+> > > On Sat, Aug 01, 2015 at 10:46:41PM -0700, Srinivas Pandruvada wrote:
+> > > > After the commit "thermal: core: Add Kconfig option to enable writable trips",
+> > > > user space tools like thermal daemon and Chrome OS DPTF thermal controller
+> > > > can no longer receive async events for thermal thresholds. Since we need to
+> > > > enable the new config introduced by above commit to allow writable trips.
+> > > > Selecting CONFIG_THERMAL_WRITABLE_TRIPS for x86 thermal drivers.
+> > > 
+> > > I am fine with enabling the config on x86 drivers. However the
+> > > description is somewhat confusing. Are you sure you are not receiving
+> > > async events or you are not able to write on trip point files?
+> > > 
+> > > Because that's all this option does (quoting thermal_core.c):
+> > >                 if (IS_ENABLED(CONFIG_THERMAL_WRITABLE_TRIPS) &&
+> > >                     mask & (1 << indx)) {
+> > >                         tz->trip_temp_attrs[indx].attr.attr.mode |= S_IWUSR;
+> > >                         tz->trip_temp_attrs[indx].attr.store =
+> > >                                                         trip_point_temp_store;
+> > >                 }
+> > > 
+> > > 
+> > > I am not really sure if this change is going to give your events back.
+> > > 
+> > > 
+> > > can you please confirm what you are trying to achieve here?
+> > > 
+> > Sorry for the confusion. Since we can't write thresholds, we can't get
+> > asynchronous events for thresholds. This config prevents writable trips,
+> > hence we need to select this config.
+> 
+> OK... Can you then please rephrase your commit log? I don't see why the
+> kernel would not send you the events, even if you cannot write the
+> threshold. The events will go for the thresholds set by the kernel.
+> If you are not allowed to change the threshold, you are going to receive
+> the events at the wrong time, probably, right? Or did I miss something?
+> 
+The EC/FW allows us to set a temperature threshold, where the user space
+thermal controller will take some action (and not poll for temperature).
+On these platforms there is no thermal control at kernel level (user
+space governor only).
 
-Yes, and this is the only one that works as expected. :)
+> > 
+> > Thanks,
+> > Srinivas
+> > 
+> > > > 
+> > > > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> > > > ---
+> > > >  drivers/thermal/Kconfig | 3 +++
+> > > >  1 file changed, 3 insertions(+)
+> > > > 
+> > > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > > > index 118938e..0e3b576 100644
+> > > > --- a/drivers/thermal/Kconfig
+> > > > +++ b/drivers/thermal/Kconfig
+> > > > @@ -275,6 +275,7 @@ config X86_PKG_TEMP_THERMAL
+> > > >  	tristate "X86 package temperature thermal driver"
+> > > >  	depends on X86_THERMAL_VECTOR
+> > > >  	select THERMAL_GOV_USER_SPACE
+> > > > +	select THERMAL_WRITABLE_TRIPS
+> > > >  	default m
+> > > >  	help
+> > > >  	  Enable this to register CPU digital sensor for package temperature as
+> > > > @@ -296,6 +297,7 @@ config INTEL_SOC_DTS_THERMAL
+> > > >  	tristate "Intel SoCs DTS thermal driver"
+> > > >  	depends on X86
+> > > >  	select INTEL_SOC_DTS_IOSF_CORE
+> > > > +	select THERMAL_WRITABLE_TRIPS
+> > > >  	help
+> > > >  	  Enable this to register Intel SoCs (e.g. Bay Trail) platform digital
+> > > >  	  temperature sensor (DTS). These SoCs have two additional DTSs in
+> > > > @@ -322,6 +324,7 @@ config INT340X_THERMAL
+> > > >  	select ACPI_THERMAL_REL
+> > > >  	select ACPI_FAN
+> > > >  	select INTEL_SOC_DTS_IOSF_CORE
+> > > > +	select THERMAL_WRITABLE_TRIPS
+> > > >  	help
+> > > >  	  Newer laptops and tablets that use ACPI may have thermal sensors and
+> > > >  	  other devices with thermal control capabilities outside the core
+> > > > -- 
+> > > > 2.4.3
+> > > > 
+> > 
+> > 
 
-> Because setting up
-> these kind of dependency are prone to create issues later on.
->
-> Regards,
-> Sudeep
+
