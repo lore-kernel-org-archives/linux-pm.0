@@ -1,70 +1,71 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3 3/6] power: Add support for DA9150 Fuel-Gauge
-Date: Mon, 3 Aug 2015 19:25:42 +0200
-Message-ID: <20150803172542.GD4856@earth>
-References: <cover.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
- <d122a6ffc20fca836847016895e5181f5d2248e7.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
- <20150725172715.GA1697@earth>
- <2E89032DDAA8B9408CB92943514A0337AB5690C3@SW-EX-MBX01.diasemi.com>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: [PATCH v7 2/8] ACPI: Split out ACPI PSS from ACPI Processor driver
+Date: Mon, 3 Aug 2015 13:26:08 -0400
+Message-ID: <CAJ5Y-ebBRrFq2gqXxb8RDXXxBkdhYbxHaEOFEWwoj9cWntQ10Q@mail.gmail.com>
+References: <cover.1436464513.git.ashwin.chaugule@linaro.org>
+	<09d1b5cf25ed3117b9e1b8feeb40ddf801557039.1436464513.git.ashwin.chaugule@linaro.org>
+	<3655608.oFpclyKJ6p@vostro.rjw.lan>
+	<2977324.30XrlQvi3H@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="0vzXIDBeUiKkjNJl"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <2E89032DDAA8B9408CB92943514A0337AB5690C3-68WUHU125fLLPO1uwJ3ImwLouzNaz+3S@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Samuel Ortiz <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-la0-f42.google.com ([209.85.215.42]:33692 "EHLO
+	mail-la0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932346AbbHCR0J (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Aug 2015 13:26:09 -0400
+Received: by labix3 with SMTP id ix3so4909565lab.0
+        for <linux-pm@vger.kernel.org>; Mon, 03 Aug 2015 10:26:08 -0700 (PDT)
+In-Reply-To: <2977324.30XrlQvi3H@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Jaswinder Singh <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux acpi <linux-acpi@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
 
+On 17 July 2015 at 20:03, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Saturday, July 18, 2015 02:01:40 AM Rafael J. Wysocki wrote:
+>> On Thursday, July 09, 2015 02:04:18 PM Ashwin Chaugule wrote:
+>> > The ACPI processor driver is currently tied too closely
+>> > to the ACPI P-states (PSS) and other related constructs
+>> > for controlling CPU performance.
+>> >
+>> > The newer ACPI specification (v5.1 onwards) introduces
+>> > alternative methods to PSS. These new mechanisms are
+>> > described within each ACPI Processor object and so they
+>> > need to be scanned whenever a new Processor object is detected.
+>> > This patch introduces a new Kconfig symbol to allow for
+>> > finer configurability among the two options for controlling
+>> > performance states. There is no change in functionality and
+>> > the option is auto-selected by the architecture Kconfig files.
+>> >
+>> > The following patchwork introduces CPPC: A newer method of
+>> > controlling CPU performance. The OS is not expected to support
+>> > CPPC and PSS at runtime. So the kconfig option lets us make
+>> > these two mutually exclusive at compile time.
+>> >
+>> > Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+>> > ---
+>> >  arch/x86/Kconfig                |  1 +
+>> >  drivers/acpi/Kconfig            | 19 ++++++---
+>> >  drivers/acpi/Makefile           |  6 +--
+>> >  drivers/acpi/processor_driver.c | 86 +++++++++++++++++++++++++------------
+>> >  drivers/cpufreq/Kconfig         |  2 +-
+>> >  drivers/cpufreq/Kconfig.x86     |  2 +
+>> >  include/acpi/processor.h        | 94 +++++++++++++++++++++++++++--------------
+>> >  7 files changed, 142 insertions(+), 68 deletions(-)
+>> >
+>> > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+>> > index 226d569..93d150d 100644
+>> > --- a/arch/x86/Kconfig
+>> > +++ b/arch/x86/Kconfig
+>> > @@ -143,6 +143,7 @@ config X86
+>> >     select ACPI_LEGACY_TABLES_LOOKUP if ACPI
+>> >     select X86_FEATURE_NAMES if PROC_FS
+>> >     select SRCU
+>> > +   select ACPI_CPU_FREQ_PSS if ACPI
+>
+> Also, does ia64 not use _PSS-based cpufreq?
 
---0vzXIDBeUiKkjNJl
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+True. Will add to the IA64 Kconfig.
 
-Hi,
-
-On Mon, Aug 03, 2015 at 03:23:11PM +0000, Opensource [Adam Thomson] wrote:
-> > > +MODULE_LICENSE("GPL");
-> >=20
-> > MODULE_LICENSE("GPL v2");
->=20
-> If I do this then I need to update the file license disclaimer at the top=
-, as
-> right now they match and are correct as far as I can tell. Is this change=
- needed
-> and if so is this the intention for other drivers as well, just so I'm cl=
-ear?
-
-The header states GPL v2+.
-
--- Sebastian
-
---0vzXIDBeUiKkjNJl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVv6QSAAoJENju1/PIO/qaGqoP/jHLHPJPLJPpmAUzrlQ4zTQs
-aMG9McADJ1lSJhmQz1LEuNUVBvLWFdhvI8y9LegzBESGfaozcssTD08y10o8uD8t
-3NDTC9oaVmr0oWp47lMXd3+1u5q0/BTUSeY1AAcBcAtHO8zDQN1dMDgJtF+kEr5x
-8G96cj174lqIeYAjJpp5AesZs6kmG3l0pgy0983f5y5Bf4zfJgawaf9dHKXZqxPq
-u31sggkuIoY76zNe00XCh0x/bHzBfgmGQSYUY225D87jKPxgSu60VLvdGHNcaxVr
-7HAdqBl2atHMH4PgYvaJudLcpaOgANctAu5MCB9is/Eh5KTPiNXQTfJ5eFQ1yrmp
-+iSDktGZcJD0CU19gbDuFkXqpC0shn1BAFsTBEFrJ+wQA+KfxhFOpp65mhlh7xDj
-Zl2cjVnslKTzfzsBbDCz/r3C5MAZjVm85d5Rh2EdihHoKjii4dqJFvoBjKfU08Y2
-jmdLIxF3rpZXRs4StFV9SwoTgSusNiG3QMMOmDLqI0j/NXIxlX9QHVpcDtojwwXp
-qYRSlWNEQ9gYLyybAXEaNE8UuNquE88o+S6y16NQ0LJnXzMim3S3+1iUd6Pjy8lr
-ZIMqQSSSGBtCdYbhjREb08d50YiCwlDFTNBT774EuewCebLxCacvWQVld77Ho7Oi
-vgieflGH2Z/Md79JrOYg
-=SGaf
------END PGP SIGNATURE-----
-
---0vzXIDBeUiKkjNJl--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Ashwin.
