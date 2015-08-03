@@ -1,66 +1,61 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v3 3/5] ARM: Exynos: switch to using generic cpufreq driver
- for Exynos4x12
-Date: Mon, 03 Aug 2015 17:57:36 +0200
-Message-ID: <1560319.pWyQuLxb1l@amdc1976>
-References: <1438368557-2352-1-git-send-email-b.zolnierkie@samsung.com>
- <2347616.SxxJmTVssu@amdc1976> <20150803155041.GE21529@linux>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] cpuidle/coupled: Init cpuidle_device::safe_state_index
+Date: Mon, 03 Aug 2015 18:22:54 +0200
+Message-ID: <55BF955E.1030801@linaro.org>
+References: <1437654681-20893-1-git-send-email-xlpang@126.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20150803155041.GE21529@linux>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier@osg.samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f178.google.com ([209.85.212.178]:33082 "EHLO
+	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754433AbbHCQW6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Aug 2015 12:22:58 -0400
+Received: by wicmv11 with SMTP id mv11so142359722wic.0
+        for <linux-pm@vger.kernel.org>; Mon, 03 Aug 2015 09:22:57 -0700 (PDT)
+In-Reply-To: <1437654681-20893-1-git-send-email-xlpang@126.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Xunlei Pang <xlpang@126.com>, linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Xunlei Pang <pang.xunlei@zte.com.cn>
 
-On Monday, August 03, 2015 09:20:41 PM Viresh Kumar wrote:
-> On 03-08-15, 15:55, Bartlomiej Zolnierkiewicz wrote:
-> > diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
-> > index 81064cd..491914c 100644
-> > --- a/arch/arm/mach-exynos/Kconfig
-> > +++ b/arch/arm/mach-exynos/Kconfig
-> > @@ -25,6 +25,8 @@ menuconfig ARCH_EXYNOS
-> >  	select S5P_DEV_MFC
-> >  	select SRAM
-> >  	select MFD_SYSCON
-> > +	select THERMAL
-> > +	select EXYNOS_THERMAL
-> 
-> Why do you need to select both of them?
+On 07/23/2015 02:31 PM, Xunlei Pang wrote:
+> From: Xunlei Pang <pang.xunlei@zte.com.cn>
+>
+> cpuidle_device::safe_state_index need to be initialized before use,
+> so assign the driver's safe_state_index to it.
+>
+> Signed-off-by: Xunlei Pang <pang.xunlei@zte.com.cn>
+> ---
+>   drivers/cpuidle/cpuidle.c | 2 ++
+>   1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index e8e2775..ed5c8efe 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -585,6 +585,8 @@ int cpuidle_register(struct cpuidle_driver *drv,
+>   		 */
+>   		if (coupled_cpus)
+>   			device->coupled_cpus =3D *coupled_cpus;
+> +
+> +		device->safe_state_index =3D drv->safe_state_index;
 
-Because otherwise you can disable the whole THERMAL subsystem support
-(effectively disabling EXYNOS_THERMAL in the process).
+Hey, good catch. We are lucky the safe_state_index is always zero.
 
-This is the same way in which ARCH_EXYNOS handles PINCTRL_EXYNOS
-support currently (it also selects PINCTRL subsystem).
+I think we can simplify the code by removing the safe_state_index from=20
+the cpuidle_device structure and use the one in the cpuidle_driver=20
+structure in coupled.c
 
-> >  	help
-> >  	  Support for SAMSUNG EXYNOS SoCs (EXYNOS4/5)
-> >  
-> > diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
-> > index 77ac021..1c47aee 100644
-> > --- a/arch/arm/mach-exynos/exynos.c
-> > +++ b/arch/arm/mach-exynos/exynos.c
-> > @@ -227,6 +227,8 @@ static void __init exynos_init_irq(void)
-> >  static const struct of_device_id exynos_cpufreq_matches[] = {
-> >  	{ .compatible = "samsung,exynos3250", .data = "cpufreq-dt" },
-> >  	{ .compatible = "samsung,exynos4210", .data = "cpufreq-dt" },
-> > +	{ .compatible = "samsung,exynos4212", .data = "cpufreq-dt" },
-> > +	{ .compatible = "samsung,exynos4412", .data = "cpufreq-dt" },
-> >  	{ .compatible = "samsung,exynos5250", .data = "cpufreq-dt" },
-> >  	{ /* sentinel */ }
-> >  };
-> 
-> Otherwise looks fine:
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Thanks!
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
