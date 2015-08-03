@@ -1,151 +1,185 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v3 3/5] ARM: Exynos: switch to using generic cpufreq driver
- for Exynos4x12
-Date: Mon, 03 Aug 2015 15:55:17 +0200
-Message-ID: <2347616.SxxJmTVssu@amdc1976>
-References: <1438368557-2352-1-git-send-email-b.zolnierkie@samsung.com>
- <4532306.AVvo5hem3c@amdc1976> <55BF4D41.1060903@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:48499 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752848AbbHCN4Q (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Aug 2015 09:56:16 -0400
-In-reply-to: <55BF4D41.1060903@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+Subject: [PATCH v2 08/10] hwmon: Support registration of thermal zones for SCP temperature sensors
+Date: Mon,  3 Aug 2015 16:22:56 +0100
+Message-ID: <1438615378-14241-9-git-send-email-punit.agrawal@arm.com>
+References: <1438615378-14241-1-git-send-email-punit.agrawal@arm.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1438615378-14241-1-git-send-email-punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, liviu.dudau-5wv7dgnIgG8@public.gmane.org, Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier@osg.samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
+Add support to create thermal zones based on the temperature sensors
+provided by the SCP. The thermal zones can be defined using the
+thermal DT bindings and should refer to the SCP sensor id to select
+the sensor.
 
-Hi,
-
-On Monday, August 03, 2015 08:15:13 PM Krzysztof Kozlowski wrote:
-> W dniu 03.08.2015 o 19:36, Bartlomiej Zolnierkiewicz pisze:
-> > On Monday, August 03, 2015 03:59:26 PM Viresh Kumar wrote:
-> >> On 03-08-15, 12:17, Bartlomiej Zolnierkiewicz wrote:
-> >>>
-> >>> Hi,
-> >>>
-> >>> On Saturday, August 01, 2015 04:47:21 PM Viresh Kumar wrote:
-> >>>> On 31-07-15, 20:49, Bartlomiej Zolnierkiewicz wrote:
-> >>>>> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> >>>>> index 659879a..bf6d596 100644
-> >>>>> --- a/drivers/cpufreq/Kconfig
-> >>>>> +++ b/drivers/cpufreq/Kconfig
-> >>>>> @@ -191,6 +191,7 @@ config CPUFREQ_DT
-> >>>>>  	# if CPU_THERMAL is on and THERMAL=m, CPUFREQ_DT cannot be =y:
-> >>>>>  	depends on !CPU_THERMAL || THERMAL
-> >>>>>  	select PM_OPP
-> >>>>> +	select EXYNOS_THERMAL if ARCH_EXYNOS
-> >>>>>  	help
-> >>>>>  	  This adds a generic DT based cpufreq driver for frequency management.
-> >>>>>  	  It supports both uniprocessor (UP) and symmetric multiprocessor (SMP)
-> >>>>
-> >>>> No, we shouldn't pollute generic Kconfig options with platform specific stuff.
-> >>>
-> >>> The old code depended on this.  You couldn't enable boost support
-> >>> without enabling thermal support (ARM_EXYNOS_CPU_FREQ_BOOST_SW
-> >>> config option selected EXYNOS_THERMAL).
-> >>>
-> >>>> Why don't you enable thermal in your .config?
-> >>>
-> >>> It is enabled in exynos_defconfig but without the above change it
-> >>> can disabled manually which is something that we don't want.
-> >>
-> >> You are not getting it. I am not asking you to not select thermal, but
-> >> to select it from within your architecture Kconfig option if you want.
-> > 
-> > OK.  Krzysztof/Kukjin do you agree with selecting EXYNOS_THERMAL
-> > from ARCH_EXYNOS in the platform code?
-> 
-> I agree, with your explanation it seems good. Can you just add this
-> justification to the commit message?
-
-Updated patch below (I'm not resending the whole series as all other
-patches remain unchanged).
-
-> > 
-> >> Over that, thermal is really an option, not a dependency. So, if
-> >> someone manually disables it, its his problem not yours :)
-> > 
-> > I would really like it to be dependency not an option (+ I think
-> > that ideally it should be checked at runtime, IOW we should be
-> > checking from cpufreq-dt driver if the thermal support is enabled
-> > before enabling boost support).
-> 
-> That would be the best. It is fine with me if you want to do this in
-> consecutive patches (after applying patch selecting/depending on it in
-> mach-exynos code).
-
----------------------8<-------------------
-
->From 2595b5e6164a2d1b76626e14302b148b7af5e050 Mon Sep 17 00:00:00 2001
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 3 Aug 2015 15:49:06 +0200
-Subject: [PATCH] ARM: Exynos: switch to using generic cpufreq driver for
- Exynos4x12
-
-The new CPU clock type allows the use of generic CPUfreq driver.
-Switch Exynos4x12 to using generic cpufreq driver.
-
-Previously (when exynos-cpufreq driver was used with boost
-functionality) ARM_EXYNOS_CPU_FREQ_BOOST_SW config option
-(which enabled boost functionality) selected EXYNOS_THERMAL
-one.  After switching Exynos4x12 platforms to use cpufreq-dt
-driver boost support is enabled in the cpufreq-dt driver
-itself (because there are turbo OPPs defined in the board's
-DTS file).  However we still would like to allow enabling
-boost support only if thermal support is also enabled for
-Exynos platforms.  To achieve this make ARCH_EXYNOS config
-option select THERMAL and EXYNOS_THERMAL ones.
-
-Please also note that the switch to use the generic cpufreq-dt
-driver fixes the minor issue present with the old code (support
-for 'boost' mode in the exynos-cpufreq driver was enabled for
-all supported SoCs even though 'boost' frequency was provided
-only for Exynos4x12 ones).
-
-Cc: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Thomas Abraham <thomas.ab@samsung.com>
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+Cc: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>
+Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 ---
- arch/arm/mach-exynos/Kconfig  | 2 ++
- arch/arm/mach-exynos/exynos.c | 2 ++
- 2 files changed, 4 insertions(+)
+ drivers/hwmon/scpi-hwmon.c | 103 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 102 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
-index 81064cd..491914c 100644
---- a/arch/arm/mach-exynos/Kconfig
-+++ b/arch/arm/mach-exynos/Kconfig
-@@ -25,6 +25,8 @@ menuconfig ARCH_EXYNOS
- 	select S5P_DEV_MFC
- 	select SRAM
- 	select MFD_SYSCON
-+	select THERMAL
-+	select EXYNOS_THERMAL
- 	help
- 	  Support for SAMSUNG EXYNOS SoCs (EXYNOS4/5)
+diff --git a/drivers/hwmon/scpi-hwmon.c b/drivers/hwmon/scpi-hwmon.c
+index 7e7e06b..d96a3e5 100644
+--- a/drivers/hwmon/scpi-hwmon.c
++++ b/drivers/hwmon/scpi-hwmon.c
+@@ -20,6 +20,7 @@
+ #include <linux/scpi_protocol.h>
+ #include <linux/slab.h>
+ #include <linux/sysfs.h>
++#include <linux/thermal.h>
  
-diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
-index 77ac021..1c47aee 100644
---- a/arch/arm/mach-exynos/exynos.c
-+++ b/arch/arm/mach-exynos/exynos.c
-@@ -227,6 +227,8 @@ static void __init exynos_init_irq(void)
- static const struct of_device_id exynos_cpufreq_matches[] = {
- 	{ .compatible = "samsung,exynos3250", .data = "cpufreq-dt" },
- 	{ .compatible = "samsung,exynos4210", .data = "cpufreq-dt" },
-+	{ .compatible = "samsung,exynos4212", .data = "cpufreq-dt" },
-+	{ .compatible = "samsung,exynos4412", .data = "cpufreq-dt" },
- 	{ .compatible = "samsung,exynos5250", .data = "cpufreq-dt" },
- 	{ /* sentinel */ }
+ struct sensor_data {
+ 	struct scpi_sensor_info info;
+@@ -29,14 +30,39 @@ struct sensor_data {
+ 	char label[20];
  };
+ 
++struct scpi_thermal_zone {
++	struct list_head list;
++	int sensor_id;
++	struct scpi_sensors *scpi_sensors;
++	struct thermal_zone_device *tzd;
++};
++
+ struct scpi_sensors {
+ 	struct scpi_ops *scpi_ops;
+ 	struct sensor_data *data;
++	struct list_head thermal_zones;
+ 	struct attribute **attrs;
+ 	struct attribute_group group;
+ 	const struct attribute_group *groups[2];
+ };
+ 
++static int scpi_read_temp(void *dev, long *temp)
++{
++	struct scpi_thermal_zone *zone = dev;
++	struct scpi_sensors *scpi_sensors = zone->scpi_sensors;
++	struct scpi_ops *scpi_ops = scpi_sensors->scpi_ops;
++	struct sensor_data *sensor = &scpi_sensors->data[zone->sensor_id];
++	u32 value;
++	int ret;
++
++	ret = scpi_ops->sensor_get_value(sensor->info.sensor_id, &value);
++	if (ret)
++		return ret;
++
++	*temp = value;
++	return 0;
++}
++
+ /* hwmon callback functions */
+ static ssize_t
+ scpi_show_sensor(struct device *dev, struct device_attribute *attr, char *buf)
+@@ -66,6 +92,24 @@ scpi_show_label(struct device *dev, struct device_attribute *attr, char *buf)
+ 	return sprintf(buf, "%s\n", sensor->info.name);
+ }
+ 
++static void
++unregister_thermal_zones(struct platform_device *pdev,
++			 struct scpi_sensors *scpi_sensors)
++{
++	struct list_head *pos;
++
++	list_for_each(pos, &scpi_sensors->thermal_zones) {
++		struct scpi_thermal_zone *zone;
++
++		zone = list_entry(pos, struct scpi_thermal_zone, list);
++		thermal_zone_of_sensor_unregister(&pdev->dev, zone->tzd);
++	}
++}
++
++static struct thermal_zone_of_device_ops scpi_sensor_ops = {
++	.get_temp = scpi_read_temp,
++};
++
+ static int scpi_hwmon_probe(struct platform_device *pdev)
+ {
+ 	u16 nr_sensors, i;
+@@ -157,10 +201,66 @@ static int scpi_hwmon_probe(struct platform_device *pdev)
+ 	scpi_sensors->group.attrs = scpi_sensors->attrs;
+ 	scpi_sensors->groups[0] = &scpi_sensors->group;
+ 
++	platform_set_drvdata(pdev, scpi_sensors);
++
+ 	hwdev = devm_hwmon_device_register_with_groups(dev,
+ 			"scpi_sensors", scpi_sensors, scpi_sensors->groups);
+ 
+-	return PTR_ERR_OR_ZERO(hwdev);
++	if (IS_ERR(hwdev))
++		return PTR_ERR(hwdev);
++
++	/*
++	 * Register the temperature sensors with the thermal framework
++	 * to allow their usage in setting up the thermal zones from
++	 * device tree.
++	 *
++	 * NOTE: Not all temperature sensors maybe used for thermal
++	 * control
++	 */
++	INIT_LIST_HEAD(&scpi_sensors->thermal_zones);
++	for (i = 0; i < nr_sensors; i++) {
++		struct sensor_data *sensor = &scpi_sensors->data[i];
++		struct scpi_thermal_zone *zone;
++
++		if (sensor->info.class != TEMPERATURE)
++			continue;
++
++		zone = devm_kzalloc(&pdev->dev, sizeof(*zone), GFP_KERNEL);
++		if (!zone) {
++			ret = -ENOMEM;
++			goto unregister_tzd;
++		}
++
++		zone->sensor_id = i;
++		zone->scpi_sensors = scpi_sensors;
++		zone->tzd = thermal_zone_of_sensor_register(dev, i, zone,
++							    &scpi_sensor_ops);
++		/*
++		 * The call to thermal_zone_of_sensor_register returns
++		 * an error for sensors that are not associated with
++		 * any thermal zones.
++		 */
++		if (IS_ERR(zone->tzd)) {
++			devm_kfree(dev, zone);
++			continue;
++		}
++		list_add(&zone->list, &scpi_sensors->thermal_zones);
++	}
++
++	return 0;
++
++unregister_tzd:
++	unregister_thermal_zones(pdev, scpi_sensors);
++	return ret;
++}
++
++static int scpi_hwmon_remove(struct platform_device *pdev)
++{
++	struct scpi_sensors *scpi_sensors = platform_get_drvdata(pdev);
++
++	unregister_thermal_zones(pdev, scpi_sensors);
++
++	return 0;
+ }
+ 
+ static const struct of_device_id scpi_of_match[] = {
+@@ -175,6 +275,7 @@ static struct platform_driver scpi_hwmon_platdrv = {
+ 		.of_match_table = scpi_of_match,
+ 	},
+ 	.probe		= scpi_hwmon_probe,
++	.remove		= scpi_hwmon_remove,
+ };
+ module_platform_driver(scpi_hwmon_platdrv);
+ 
 -- 
-1.9.1
+2.1.4
 
-
-
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
