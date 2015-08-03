@@ -1,119 +1,94 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: [PATCH v7 2/8] ACPI: Split out ACPI PSS from ACPI Processor driver
-Date: Mon, 3 Aug 2015 13:49:46 -0400
-Message-ID: <CAJ5Y-eaJBFyyzoByd4EGT3pbMcyJJUvVOigAvK5CEAmBDi+B8w@mail.gmail.com>
-References: <cover.1436464513.git.ashwin.chaugule@linaro.org>
-	<09d1b5cf25ed3117b9e1b8feeb40ddf801557039.1436464513.git.ashwin.chaugule@linaro.org>
-	<55AD03BE.4070209@arm.com>
-	<3246914.4VE12D1ENi@vostro.rjw.lan>
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH] net: fec: fix initial runtime PM refcount
+Date: Mon, 3 Aug 2015 20:05:39 +0200
+Message-ID: <20150803180539.GF9999@pengutronix.de>
+References: <1438617011-19073-1-git-send-email-l.stach@pengutronix.de>
+ <20150803161554.GK3467@lunn.ch>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <3246914.4VE12D1ENi@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <netdev-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150803161554.GK3467@lunn.ch>
+Sender: netdev-owner@vger.kernel.org
+To: Andrew Lunn <andrew@lunn.ch>
+Cc: Lucas Stach <l.stach@pengutronix.de>, netdev@vger.kernel.org, patchwork-lst@pengutronix.de, "David S. Miller" <davem@davemloft.net>, kernel@pengutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 20 July 2015 at 17:59, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Monday, July 20, 2015 03:20:46 PM Sudeep Holla wrote:
->>
->> On 09/07/15 19:04, Ashwin Chaugule wrote:
->> > The ACPI processor driver is currently tied too closely
->> > to the ACPI P-states (PSS) and other related constructs
->> > for controlling CPU performance.
->> >
->> > The newer ACPI specification (v5.1 onwards) introduces
->> > alternative methods to PSS. These new mechanisms are
->> > described within each ACPI Processor object and so they
->> > need to be scanned whenever a new Processor object is detected.
->> > This patch introduces a new Kconfig symbol to allow for
->> > finer configurability among the two options for controlling
->> > performance states. There is no change in functionality and
->> > the option is auto-selected by the architecture Kconfig files.
->> >
->> > The following patchwork introduces CPPC: A newer method of
->> > controlling CPU performance. The OS is not expected to support
->> > CPPC and PSS at runtime. So the kconfig option lets us make
->> > these two mutually exclusive at compile time.
->> >
->> > Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
->> > ---
->> >   arch/x86/Kconfig                |  1 +
->> >   drivers/acpi/Kconfig            | 19 ++++++---
->> >   drivers/acpi/Makefile           |  6 +--
->> >   drivers/acpi/processor_driver.c | 86 +++++++++++++++++++++++++------------
->> >   drivers/cpufreq/Kconfig         |  2 +-
->> >   drivers/cpufreq/Kconfig.x86     |  2 +
->> >   include/acpi/processor.h        | 94 +++++++++++++++++++++++++++--------------
->> >   7 files changed, 142 insertions(+), 68 deletions(-)
->> >
->> > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
->> > index 226d569..93d150d 100644
->> > --- a/arch/x86/Kconfig
->> > +++ b/arch/x86/Kconfig
->> > @@ -143,6 +143,7 @@ config X86
->> >          select ACPI_LEGACY_TABLES_LOOKUP if ACPI
->> >          select X86_FEATURE_NAMES if PROC_FS
->> >          select SRCU
->> > +       select ACPI_CPU_FREQ_PSS if ACPI
->> >
->> >   config INSTRUCTION_DECODER
->> >          def_bool y
->> > diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
->> > index ab2cbb5..00748dc 100644
->> > --- a/drivers/acpi/Kconfig
->> > +++ b/drivers/acpi/Kconfig
->> > @@ -166,17 +166,26 @@ config ACPI_DOCK
->> >            This driver supports ACPI-controlled docking stations and removable
->> >            drive bays such as the IBM Ultrabay and the Dell Module Bay.
->> >
->> > +config ACPI_CPU_FREQ_PSS
->> > +       bool
->> > +       depends on ACPI_PROCESSOR && CPU_FREQ
->> > +       select THERMAL
->> > +       help
->> > +         This driver implements ACPI methods for controlling CPU performance
->> > +         using PSS methods as described in the ACPI spec. It also enables support
->> > +         for ACPI based performance throttling (TSS) and ACPI based thermal
->> > +         monitoring. It is required by several flavors of cpufreq
->> > +         performance-state drivers.
->> > +
->>
->> Though I agree CPUFreq and the thermal control are related, having _PSS
->> in config name shouldn't match well IMO. You can have more generic name.
->>
->> You are selecting one config while depending on the other, any
->> particular reason ?
->>
->> I don't like adding these, but I leave it to Rafael.
->
-> My opinion is analogous. :-)
+Hello,
 
-I dont like bloating Kconfigs either, but its slim pickings in this case.
+I have no clue about runtime-pm, but I added a few people to Cc: who
+should know better ...
 
->
-> I *guess* the idea was to avoid selecting ACPI_CPU_FREQ_PSS withouth
-> ACPI_PROCESSOR so we don't build unnecessary code.  That's a good point,
-> but I would also like to keep they way ACPI_PROCESSOR works on x86 and
-> ia64 without adding new user-selectable Kconfig options.
->
-> So, what about this:
->
->  config ACPI_PROCESSOR
->         tristate "Processor"
->         select THERMAL
->         select CPU_IDLE
-> -       depends on X86 || IA64
-> +       select ACPI_CPU_FREQ_PSS if X86 || IA64
->         default y
->         help
->           This driver installs ACPI as the idle handler for Linux and uses
->
-> and define ACPI_CPU_FREQ_PSS in analogy with ACPI_CCA_REQUIRED for example?
+Best regards
+Uwe
 
-Seems better. I'll respin this series with the feedback so far.
+On Mon, Aug 03, 2015 at 06:15:54PM +0200, Andrew Lunn wrote:
+> On Mon, Aug 03, 2015 at 05:50:11PM +0200, Lucas Stach wrote:
+> > The clocks are initially active and thus the device is marked activ=
+e.
+> > This still keeps the PM refcount at 0, the pm_runtime_put_autosuspe=
+nd()
+> > call at the end of probe then leaves us with an invalid refcount of=
+ -1,
+> > which in turn leads to the device staying in suspended state even t=
+hough
+> > netdev open had been called.
+> >=20
+> > Fix this by initializing the refcount to be coherent with the initi=
+al
+> > device status.
+> >=20
+> > Fixes:
+> > 8fff755e9f8 (net: fec: Ensure clocks are enabled while using mdio b=
+us)
+> >=20
+> > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+> > ---
+> > Please apply this as a fix for 4.2
+> > ---
+> >  drivers/net/ethernet/freescale/fec_main.c | 1 +
+> >  1 file changed, 1 insertion(+)
+> >=20
+> > diff --git a/drivers/net/ethernet/freescale/fec_main.c b/drivers/ne=
+t/ethernet/freescale/fec_main.c
+> > index 32e3807c650e..271bb5862346 100644
+> > --- a/drivers/net/ethernet/freescale/fec_main.c
+> > +++ b/drivers/net/ethernet/freescale/fec_main.c
+> > @@ -3433,6 +3433,7 @@ fec_probe(struct platform_device *pdev)
+> > =20
+> >  	pm_runtime_set_autosuspend_delay(&pdev->dev, FEC_MDIO_PM_TIMEOUT)=
+;
+> >  	pm_runtime_use_autosuspend(&pdev->dev);
+> > +	pm_runtime_get_noresume(&pdev->dev);
+> >  	pm_runtime_set_active(&pdev->dev);
+> >  	pm_runtime_enable(&pdev->dev);
+>=20
+> This might work, but is it the correct fix?
+>=20
+> Documentation/power/runtime_pm.txt says:
+>=20
+> 534 In addition to that, the initial runtime PM status of all devices=
+ is
+> 535 'suspended', but it need not reflect the actual physical state of=
+ the device.
+> 536 Thus, if the device is initially active (i.e. it is able to proce=
+ss I/O), its
+> 537 runtime PM status must be changed to 'active', with the help of
+> 538 pm_runtime_set_active(), before pm_runtime_enable() is called for=
+ the device.
+>=20
+> At the point we call the pm_runtime_ functions above, all the clocks
+> are ticking. So according to the documentation pm_runtime_set_active(=
+)
+> is the right thing to do. But it makes no mention of have to call
+> pm_runtime_get_noresume(). I would of expected pm_runtime_set_active(=
+)
+> to set the count to the correct value.
 
-
-Thanks,
-Ashwin.
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig        =
+    |
+Industrial Linux Solutions                 | http://www.pengutronix.de/=
+  |
