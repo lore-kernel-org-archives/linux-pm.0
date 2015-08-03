@@ -1,63 +1,79 @@
-From: Radivoje Jovanovic <radivoje.jovanovic@linux.intel.com>
-Subject: Re: [PATCH] thermal/cpu_cooling: remove local cooling state
- variable
-Date: Mon, 3 Aug 2015 12:28:39 -0700
-Message-ID: <20150803122839.5fb1d472@radivoje-desk2>
-References: <1437516835-198750-1-git-send-email-radivoje.jovanovic@linux.intel.com>
-	<9hhegjxbmqz.fsf@e105922-lin.cambridge.arm.com>
-	<20150724100905.7e2e53f4@radivoje-desk2>
-	<9hhoaiuap3m.fsf@e105922-lin.cambridge.arm.com>
-	<20150730080541.GD31351@linux>
-	<20150730132130.3c957267@radivoje-desk2>
-	<20150731031841.GH17794@linux>
-	<20150731083003.2f47ca5f@radivoje-desk2>
-	<20150801113405.GL899@linux>
-	<20150803031325.GU899@linux>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v3] HID: hid-input: Fix accessing freed memory during
+ device disconnect
+Date: Mon, 3 Aug 2015 13:31:32 -0700
+Message-ID: <20150803203132.GE38878@dtor-ws>
+References: <1438581450-20728-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:46329 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752171AbbHCTbX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 3 Aug 2015 15:31:23 -0400
-In-Reply-To: <20150803031325.GU899@linux>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-input-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1438581450-20728-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Jiri Kosina <jkosina@suse.com>, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, sre@kernel.org, linux-pm@vger.kernel.org, "H.J. Lu" <hjl.tools@gmail.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Punit Agrawal <punit.agrawal@arm.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Radivoje Jovanovic <radivoje.jovanovic@intel.com>
 
-On Mon, 3 Aug 2015 08:43:25 +0530
-Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Mon, Aug 03, 2015 at 02:57:30PM +0900, Krzysztof Kozlowski wrote:
+> During unbinding the driver was dereferencing a pointer to memory
+> already freed by power_supply_unregister().
+> 
+> Driver was freeing its internal description of battery through pointers
+> stored in power_supply structure. However, because the core owns the
+> power supply instance, after calling power_supply_unregister() this
+> memory is freed and the driver cannot access these members.
+> 
+> Fix this by storing the pointer to internal description of battery in a
+> local variable before calling power_supply_unregister(), so the pointer
+> remains valid.
+> 
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Reported-by: H.J. Lu <hjl.tools@gmail.com>
+> Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
+> Cc: <stable@vger.kernel.org>
+> 
 
-> On 01-08-15, 17:04, Viresh Kumar wrote:
-> > On 31-07-15, 08:30, Radivoje Jovanovic wrote:
-> 
-> > > I agree with you that this patch is trivial for the current
-> > > implementation since the notifier, as it is currently, will
-> > > enforce cpu_cooling policy change at every CPUFREQ_ADJUST which
-> > > would cause problems in our current implementation. In our
-> > > implementation there is a cpufreq driver that will also change
-> > > policies during CPUFREQ_ADJUST, once the request comes from the
-> > > underlying FW so there would be a fight who gets there first
-> > > since cpu_cooling will change the policy in CPUFREQ_ADJUST
-> > > notifier_chain and the driver would do the same thing.
-> 
-> Okay, I had a detailed look this morning. cpufreq-notifier is designed
-> this way that policy->max can be updated by drivers.. So, that's fine.
-> 
-> Now coming to your problem. So, there are two users: fw and thermal,
-> which can affect policy->max. Now, both of them need to respect the
-> limits set by others and only decrease policy->max from the notifier
-> if it doesn't suit them.
-> 
-> I think it should work pretty well, unless you know you have triggered
-> a corner case somewhere, that I am not able to imagine.
-> 
-> Please let me know in case I am wrong.
->
-I will port the upstream driver to our platfrom, test for all corner
-cases and update this thread once I have the data
-Thank you for all the help
- 
+FWIW:
 
+Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+
+> ---
+> Changes since v2:
+> 1. Add missing 'const'.
+> 
+> Changes since v1:
+> 1. Re-work idea, use local variable instead of devm-like functions
+>    (pointed out by Dmitry Torokhov).
+> 2. Adjusted subject and commit message.
+> ---
+>  drivers/hid/hid-input.c | 7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+> index 14aebe483219..53aeaf6252c7 100644
+> --- a/drivers/hid/hid-input.c
+> +++ b/drivers/hid/hid-input.c
+> @@ -462,12 +462,15 @@ out:
+>  
+>  static void hidinput_cleanup_battery(struct hid_device *dev)
+>  {
+> +	const struct power_supply_desc *psy_desc;
+> +
+>  	if (!dev->battery)
+>  		return;
+>  
+> +	psy_desc = dev->battery->desc;
+>  	power_supply_unregister(dev->battery);
+> -	kfree(dev->battery->desc->name);
+> -	kfree(dev->battery->desc);
+> +	kfree(psy_desc->name);
+> +	kfree(psy_desc);
+>  	dev->battery = NULL;
+>  }
+>  #else  /* !CONFIG_HID_BATTERY_STRENGTH */
+> -- 
+> 1.9.1
+> 
+
+-- 
+Dmitry
