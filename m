@@ -1,145 +1,42 @@
 From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [PATCH v2 06/10] firmware: arm_scpi: Extend to support sensors
-Date: Mon,  3 Aug 2015 16:22:54 +0100
-Message-ID: <1438615378-14241-7-git-send-email-punit.agrawal@arm.com>
+Subject: [PATCH v2 04/10] thermal: Fix thermal_zone_of_sensor_register to match documentation
+Date: Mon,  3 Aug 2015 16:22:52 +0100
+Message-ID: <1438615378-14241-5-git-send-email-punit.agrawal@arm.com>
 References: <1438615378-14241-1-git-send-email-punit.agrawal@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1438615378-14241-1-git-send-email-punit.agrawal@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Punit Agrawal <punit.agrawal@arm.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, liviu.dudau@arm.com, Sudeep Holla <sudeep.holla@arm.com>
+Cc: Punit Agrawal <punit.agrawal@arm.com>, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, liviu.dudau@arm.com, Guenter Roeck <linux@roeck-us.net>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-ARM System Control Processor (SCP) provides an API to query and use
-the sensors available in the system. Extend the SCPI driver to support
- sensor messages.
+thermal_zone_of_sensor_register is documented as returning a pointer
+to either a valid thermal_zone_device on success, or a corresponding
+ERR_PTR() value.
+
+In contrast, the function returns NULL when THERMAL_OF is configured
+off. Fix this.
 
 Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
 ---
- drivers/firmware/arm_scpi.c   | 60 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/scpi_protocol.h | 17 ++++++++++++
- 2 files changed, 77 insertions(+)
+ include/linux/thermal.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/firmware/arm_scpi.c b/drivers/firmware/arm_scpi.c
-index cb75c75..321680e 100644
---- a/drivers/firmware/arm_scpi.c
-+++ b/drivers/firmware/arm_scpi.c
-@@ -219,6 +219,21 @@ struct dvfs_set {
- 	u8 index;
- } __packed;
- 
-+struct sensor_capabilities {
-+	__le16 sensors;
-+} __packed;
-+
-+struct _scpi_sensor_info {
-+	__le16 sensor_id;
-+	u8 class;
-+	u8 trigger_type;
-+	char name[20];
-+};
-+
-+struct sensor_value {
-+	__le32 val;
-+} __packed;
-+
- static struct scpi_drvinfo *scpi_info;
- 
- static int scpi_linux_errmap[SCPI_ERR_MAX] = {
-@@ -481,6 +496,48 @@ static struct scpi_dvfs_info *scpi_dvfs_get_info(u8 domain)
- 	return info;
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 037e9df..a47b34a 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -364,7 +364,7 @@ static inline struct thermal_zone_device *
+ thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
+ 				const struct thermal_zone_of_device_ops *ops)
+ {
+-	return NULL;
++	return ERR_PTR(-ENOSYS);
  }
  
-+static int scpi_sensor_get_capability(u16 *sensors)
-+{
-+	struct sensor_capabilities cap_buf;
-+	int ret;
-+
-+	ret = scpi_send_message(SCPI_CMD_SENSOR_CAPABILITIES, NULL, 0, &cap_buf,
-+				sizeof(cap_buf));
-+	if (!ret)
-+		*sensors = le16_to_cpu(cap_buf.sensors);
-+
-+	return ret;
-+}
-+
-+static int scpi_sensor_get_info(u16 sensor_id, struct scpi_sensor_info *info)
-+{
-+	__le16 id = cpu_to_le16(sensor_id);
-+	struct _scpi_sensor_info _info;
-+	int ret;
-+
-+	ret = scpi_send_message(SCPI_CMD_SENSOR_INFO, &id,
-+				 sizeof(id), &_info, sizeof(_info));
-+	if (!ret) {
-+		memcpy(info, &_info, sizeof(*info));
-+		info->sensor_id = le16_to_cpu(_info.sensor_id);
-+	}
-+
-+	return ret;
-+}
-+
-+int scpi_sensor_get_value(u16 sensor, u32 *val)
-+{
-+	struct sensor_value buf;
-+	int ret;
-+
-+	ret = scpi_send_message(SCPI_CMD_SENSOR_VALUE, &sensor, sizeof(sensor),
-+				&buf, sizeof(buf));
-+	if (!ret)
-+		*val = le32_to_cpu(buf.val);
-+
-+	return ret;
-+}
-+
- static struct scpi_ops scpi_ops = {
- 	.get_version = scpi_get_version,
- 	.clk_get_range = scpi_clk_get_range,
-@@ -489,6 +546,9 @@ static struct scpi_ops scpi_ops = {
- 	.dvfs_get_idx = scpi_dvfs_get_idx,
- 	.dvfs_set_idx = scpi_dvfs_set_idx,
- 	.dvfs_get_info = scpi_dvfs_get_info,
-+	.sensor_get_capability = scpi_sensor_get_capability,
-+	.sensor_get_info = scpi_sensor_get_info,
-+	.sensor_get_value = scpi_sensor_get_value,
- };
- 
- struct scpi_ops *get_scpi_ops(void)
-diff --git a/include/linux/scpi_protocol.h b/include/linux/scpi_protocol.h
-index e7169cd..80af3cd 100644
---- a/include/linux/scpi_protocol.h
-+++ b/include/linux/scpi_protocol.h
-@@ -28,6 +28,20 @@ struct scpi_dvfs_info {
- 	struct scpi_opp *opps;
- };
- 
-+enum scpi_sensor_class {
-+	TEMPERATURE,
-+	VOLTAGE,
-+	CURRENT,
-+	POWER,
-+};
-+
-+struct scpi_sensor_info {
-+	u16 sensor_id;
-+	u8 class;
-+	u8 trigger_type;
-+	char name[20];
-+} __packed;
-+
- /**
-  * struct scpi_ops - represents the various operations provided
-  *	by SCP through SCPI message protocol
-@@ -52,6 +66,9 @@ struct scpi_ops {
- 	int (*dvfs_get_idx)(u8);
- 	int (*dvfs_set_idx)(u8, u8);
- 	struct scpi_dvfs_info *(*dvfs_get_info)(u8);
-+	int (*sensor_get_capability)(u16 *sensors);
-+	int (*sensor_get_info)(u16 sensor_id, struct scpi_sensor_info *);
-+	int (*sensor_get_value)(u16, u32 *);
- };
- 
- #if IS_ENABLED(CONFIG_ARM_SCPI_PROTOCOL)
+ static inline
 -- 
 2.1.4
