@@ -1,61 +1,61 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle/coupled: Init cpuidle_device::safe_state_index
-Date: Mon, 03 Aug 2015 18:22:54 +0200
-Message-ID: <55BF955E.1030801@linaro.org>
-References: <1437654681-20893-1-git-send-email-xlpang@126.com>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [PATCH v3 5/5] cpufreq: remove no longer needed
+ CPU_FREQ_BOOST_SW config option
+Date: Mon, 3 Aug 2015 17:12:03 +0000
+Message-ID: <1438621775.17718.22.camel@spandruv-DESK3.jf.intel.com>
+References: <1438368557-2352-1-git-send-email-b.zolnierkie@samsung.com>
+	 <1438368557-2352-6-git-send-email-b.zolnierkie@samsung.com>
+	 <20150801111537.GH899@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f178.google.com ([209.85.212.178]:33082 "EHLO
-	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754433AbbHCQW6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 3 Aug 2015 12:22:58 -0400
-Received: by wicmv11 with SMTP id mv11so142359722wic.0
-        for <linux-pm@vger.kernel.org>; Mon, 03 Aug 2015 09:22:57 -0700 (PDT)
-In-Reply-To: <1437654681-20893-1-git-send-email-xlpang@126.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150801111537.GH899@linux>
+Content-Language: en-US
+Content-ID: <D7F6D62146BE8B4A8330BF97ECD48FD4@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Cc: "heiko@sntech.de" <heiko@sntech.de>, "s.nawrocki@samsung.com" <s.nawrocki@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "javier@osg.samsung.com" <javier@osg.samsung.com>, "linux.amoon@gmail.com" <linux.amoon@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "tjakobi@math.uni-bielefeld.de" <tjakobi@math.uni-bielefeld.de>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "cw00.choi@samsung.com" <cw00.choi@samsung.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "kgene@kernel.org" <kgene@kernel.org>, "l.majewski@samsung.com" <l.majewski@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-clk@vger.
 List-Id: linux-pm@vger.kernel.org
-To: Xunlei Pang <xlpang@126.com>, linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Xunlei Pang <pang.xunlei@zte.com.cn>
 
-On 07/23/2015 02:31 PM, Xunlei Pang wrote:
-> From: Xunlei Pang <pang.xunlei@zte.com.cn>
->
-> cpuidle_device::safe_state_index need to be initialized before use,
-> so assign the driver's safe_state_index to it.
->
-> Signed-off-by: Xunlei Pang <pang.xunlei@zte.com.cn>
-> ---
->   drivers/cpuidle/cpuidle.c | 2 ++
->   1 file changed, 2 insertions(+)
->
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index e8e2775..ed5c8efe 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -585,6 +585,8 @@ int cpuidle_register(struct cpuidle_driver *drv,
->   		 */
->   		if (coupled_cpus)
->   			device->coupled_cpus =3D *coupled_cpus;
-> +
-> +		device->safe_state_index =3D drv->safe_state_index;
-
-Hey, good catch. We are lucky the safe_state_index is always zero.
-
-I think we can simplify the code by removing the safe_state_index from=20
-the cpuidle_device structure and use the one in the cpuidle_driver=20
-structure in coupled.c
-
-
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+T24gU2F0LCAyMDE1LTA4LTAxIGF0IDE2OjQ1ICswNTMwLCBWaXJlc2ggS3VtYXIgd3JvdGU6DQo+
+IE9uIDMxLTA3LTE1LCAyMDo0OSwgQmFydGxvbWllaiBab2xuaWVya2lld2ljeiB3cm90ZToNCj4g
+PiBSZW1vdmUgbm8gbG9uZ2VyIG5lZWRlZCBDUFVfRlJFUV9CT09TVF9TVyBjb25maWcgb3B0aW9u
+Lg0KPiA+IA0KPiA+IEFzIGEgcmVzdWx0IHNjYWxpbmdfYm9vc3RfZnJlcXMgc3lzZnMgYXR0cmli
+dXRlIGlzIGF2YWlsYWJsZQ0KPiA+IHdoZW4gY3B1ZnJlcS1kdCBkcml2ZXIgaXMgdXNlZCBhbmQg
+Ym9vc3Qgc3VwcG9ydCBpcyBlbmFibGVkLg0KPiA+IA0KPiA+IENjOiBWaXJlc2ggS3VtYXIgPHZp
+cmVzaC5rdW1hckBsaW5hcm8ub3JnPg0KPiA+IENjOiBUaG9tYXMgQWJyYWhhbSA8dGhvbWFzLmFi
+QHNhbXN1bmcuY29tPg0KPiA+IENjOiBKYXZpZXIgTWFydGluZXogQ2FuaWxsYXMgPGphdmllckBv
+c2cuc2Ftc3VuZy5jb20+DQo+ID4gQ2M6IEtyenlzenRvZiBLb3psb3dza2kgPGsua296bG93c2tp
+QHNhbXN1bmcuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IEJhcnRsb21pZWogWm9sbmllcmtpZXdp
+Y3ogPGIuem9sbmllcmtpZUBzYW1zdW5nLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy9jcHVm
+cmVxL0tjb25maWcgICAgICB8IDQgLS0tLQ0KPiA+ICBkcml2ZXJzL2NwdWZyZXEvZnJlcV90YWJs
+ZS5jIHwgMiAtLQ0KPiA+ICAyIGZpbGVzIGNoYW5nZWQsIDYgZGVsZXRpb25zKC0pDQo+ID4gDQo+
+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9LY29uZmlnIGIvZHJpdmVycy9jcHVmcmVx
+L0tjb25maWcNCj4gPiBpbmRleCBiZjZkNTk2Li5kZTAwYTUyIDEwMDY0NA0KPiA+IC0tLSBhL2Ry
+aXZlcnMvY3B1ZnJlcS9LY29uZmlnDQo+ID4gKysrIGIvZHJpdmVycy9jcHVmcmVxL0tjb25maWcN
+Cj4gPiBAQCAtMjEsMTAgKzIxLDYgQEAgaWYgQ1BVX0ZSRVENCj4gPiAgY29uZmlnIENQVV9GUkVR
+X0dPVl9DT01NT04NCj4gPiAgCWJvb2wNCj4gPiAgDQo+ID4gLWNvbmZpZyBDUFVfRlJFUV9CT09T
+VF9TVw0KPiA+IC0JYm9vbA0KPiA+IC0JZGVwZW5kcyBvbiBUSEVSTUFMDQo+ID4gLQ0KPiA+ICBj
+b25maWcgQ1BVX0ZSRVFfU1RBVA0KPiA+ICAJdHJpc3RhdGUgIkNQVSBmcmVxdWVuY3kgdHJhbnNs
+YXRpb24gc3RhdGlzdGljcyINCj4gPiAgCWRlZmF1bHQgeQ0KPiA+IGRpZmYgLS1naXQgYS9kcml2
+ZXJzL2NwdWZyZXEvZnJlcV90YWJsZS5jIGIvZHJpdmVycy9jcHVmcmVxL2ZyZXFfdGFibGUuYw0K
+PiA+IGluZGV4IGE4ZjFkYWYuLjRjNWRlNWIgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9jcHVm
+cmVxL2ZyZXFfdGFibGUuYw0KPiA+ICsrKyBiL2RyaXZlcnMvY3B1ZnJlcS9mcmVxX3RhYmxlLmMN
+Cj4gPiBAQCAtMjkzLDkgKzI5Myw3IEBAIEVYUE9SVF9TWU1CT0xfR1BMKGNwdWZyZXFfZnJlcV9h
+dHRyX3NjYWxpbmdfYm9vc3RfZnJlcXMpOw0KPiA+ICANCj4gPiAgc3RydWN0IGZyZXFfYXR0ciAq
+Y3B1ZnJlcV9nZW5lcmljX2F0dHJbXSA9IHsNCj4gPiAgCSZjcHVmcmVxX2ZyZXFfYXR0cl9zY2Fs
+aW5nX2F2YWlsYWJsZV9mcmVxcywNCj4gPiAtI2lmZGVmIENPTkZJR19DUFVfRlJFUV9CT09TVF9T
+Vw0KPiA+ICAJJmNwdWZyZXFfZnJlcV9hdHRyX3NjYWxpbmdfYm9vc3RfZnJlcXMsDQo+ID4gLSNl
+bmRpZg0KPiA+ICAJTlVMTCwNCj4gPiAgfTsNCj4gPiAgRVhQT1JUX1NZTUJPTF9HUEwoY3B1ZnJl
+cV9nZW5lcmljX2F0dHIpOw0KPiANCj4gU28sIHRoaXMgd2lsbCBzdGFydCBhcHBlYXJpbmcgZm9y
+IGFsbCBwbGF0Zm9ybXMgdGhhdCB1c2UgY3B1ZnJlcV9nZW5lcmljX2F0dHINCj4gYW5kIHRoYXQg
+bWF5IG5vdCBiZSB0aGUgcmlnaHQgdGhpbmcuIFdlIG1heSBvbmx5IHdhbnQgdG8gc2hvdyBib29z
+dCBmcmVxdWVuY2llcw0KPiBvbmx5IGlmIHRoZSBkcml2ZXIgc3VwcG9ydHMgaXQuDQpJIGFncmVl
+LiBBbHRob3VnaCBhY3BpLWNwdWZyZXEgb3IgSW50ZWwgUCBzdGF0ZSBkcml2ZXIgaXMgbm90IHVz
+aW5nDQpnZW5lcmljX2F0dHIsIGJ1dCB3ZSBoYXZlIGEgcGxhbiB0byBzaG93IGJvb3N0IGZyZXF1
+ZW5jaWVzIG9uIHBsYXRmb3JtcywNCndoZXJlIHdlIGhhdmUgc29tZSBjb250cm9sLiBTdXBwb3J0
+IG9mIGJvb3N0IG1vZGUgZG9lc24ndCBtZWFuIHRoYXQgd2UNCmNhbiBzZWxlY3QgdGhlIGJvb3N0
+IGZyZXF1ZW5jeSwgc28gaW4gdGhhdCBjYXNlIHdlIHdpbGwgYXZvaWQgc2hvd2luZw0KdGhlbS4N
+Cg0KVGhhbmtzLA0KU3Jpbml2YXMNCj4gDQo+IEBSYWZhZWw6IFdoYXQgZG8geW91IHNheT8NCj4g
+DQoNCg==
