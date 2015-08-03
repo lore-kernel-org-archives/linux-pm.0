@@ -1,30 +1,24 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v1] thermal: kconfig: select THERMAL_WRITABLE_TRIPS for x86 thermal
-Date: Mon,  3 Aug 2015 04:13:15 -0700
-Message-ID: <1438600396-3482-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:50806 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753402AbbHCSNq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 3 Aug 2015 14:13:46 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
+Subject: Re: [PATCH] x86, acpi: Handle lapic/x2apic entries in MADT
+Date: Mon,  3 Aug 2015 20:26:04 +0200
+Message-ID: <1438626365-23709-1-git-send-email-lukasz.anaczkowski@intel.com>
+References: <20150802134014.380415cd@arm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150802134014.380415cd@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, jason@lakedaemon.net
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-v1
-Amended commit message to be clear that RW trips are required for the user space
-thermal tools for x86.
+Hi Marc,
 
-v0
-base version
+> You haven't ever tried compiling this, have you?
 
-Srinivas Pandruvada (1):
-  thermal: kconfig: select THERMAL_WRITABLE_TRIPS for x86 thermal
+I *thought* I tried, but obviously I did it wrong.
+This time I made sure it compiles. Thanks for poiting
+this out.
 
- drivers/thermal/Kconfig | 3 +++
- 1 file changed, 3 insertions(+)
+Sending v2 of the patch with fixed arm64 compilation.
 
--- 
-2.4.3
-
+Cheers,
+Lukasz
