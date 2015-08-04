@@ -1,67 +1,75 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH RESEND] power: bq24190_charger: Fix charge type sysfs
- property
-Date: Tue, 4 Aug 2015 11:54:45 -0500
-Message-ID: <55C0EE55.4050103@ti.com>
-References: <1438706177-8115-1-git-send-email-dannenberg@ti.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v7 3/8] ACPI: Decouple ACPI idle and ACPI processor drivers
+Date: Tue, 04 Aug 2015 18:00:19 +0100
+Message-ID: <55C0EFA3.2040006@arm.com>
+References: <cover.1436464513.git.ashwin.chaugule@linaro.org>	<da1eb99c0e128a4c8160537295045164d8fde00d.1436464513.git.ashwin.chaugule@linaro.org>	<55AD03F7.60108@arm.com>	<CAJ5Y-eYqfpdC2EvEO5gRm7zRbzr0+KwhiL4MUY23uXM91y=MJA@mail.gmail.com>	<55C0D156.9090808@arm.com>	<CAJ5Y-eaibuK0c_wSsRjM68vOfuRdRSChRdzR=2qtwVYwQcAzVQ@mail.gmail.com>	<55C0D7DC.2060709@arm.com> <CAJ5Y-eZo07qVMS37eo=OShCLcgpURfyRA=dOQhtF0Y6_fvR=1Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:49374 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754163AbbHDQzQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 4 Aug 2015 12:55:16 -0400
-In-Reply-To: <1438706177-8115-1-git-send-email-dannenberg@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJ5Y-eZo07qVMS37eo=OShCLcgpURfyRA=dOQhtF0Y6_fvR=1Q@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, Dan Murphy <dmurphy@ti.com>
 
-On 08/04/2015 11:36 AM, Andreas Dannenberg wrote:
-> Access to the BQ24190's configurable charge type property (none, trickle,
-> fast) is being masked by an incorrect power_supply_property entry. After
-> applying this patch a new 'charge_type' property will appear in the
-> bq24190-charger sysfs folder backed up by getters/setters already
-> present in the driver.
+
+
+On 04/08/15 16:44, Ashwin Chaugule wrote:
+> On 4 August 2015 at 11:18, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>>
+>>
+>> On 04/08/15 15:58, Ashwin Chaugule wrote:
+>>>
+>>> On 4 August 2015 at 10:51, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>>>>
+>>>> On 03/08/15 18:40, Ashwin Chaugule wrote:
+>>>>>
+>>>>>
+>>>>> On 20 July 2015 at 10:21, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>>>>>>
+>>>>>> On 09/07/15 19:04, Ashwin Chaugule wrote:
+>>>>>>>
+>>>>>>>
+>>>>>>
+>>>>>> In general, you need to split this series so that initially few patches
+>>>>>> deal with all the existing Kconfig fix-ups and then introduce
+>>>>>> PCC/PSS/CPPC related stuffs. That would help me rebase and test _LPI
+>>>>>> support.
+>>>>>
+>>>>>
+>>>>>
+>>>>> Hm. I tried to maintain bisectability and make it easier for you to
+>>>>> rebase LPI patchwork too. Let me see if I can revisit now that I'm
+>>>>> back from vacation. :)
+>>>>>
+>>>>
+>>>> How about you just drop any idle related changes so that I will handle
+>>>> that to keep it simple.
+>>>
+>>>
+>>> Unfortunately I can't skip idle changes completely since it is tightly
+>>> coupled with the acpi_processor driver as well.
+>>>
+>>
+>> True, but only for ARM64 where we haven't enabled ACPI_PROCESSOR yet in
+>> mainline. So from that perspective, it should not cause any issue for
+>> keeping changes bisectable on x86/ia64. You can keep these idle changes
+>> locally for your testing. Trying to get everything at once will
+>> definitely be problematic IMO.
 >
-> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
-> ---
-> This is a RESEND of yesterday's patch that for some reason did not seem to
-> have gotten picked up correctly...
->
-> The current driver incorrectly tries to declare the charge type property
-> using POWER_SUPPLY_PROP_TYPE which is the wrong declaration for this
-> (actually POWER_SUPPLY_PROP_TYPE itself has been superseeded by
-> power_supply.type and isn't even used anymore as part of the power
-> supply property declarations).
->
-> After implementing the fix tested this aspect of the driver using an
-> actual BQ24190 device and could witness the impact the change of charge
-> type has on the battery (writing '1' to the new sysfs property means
-> charging off, '2' will do trickle charging, and '3' will result in
-> fast charging).
->
->
->   drivers/power/bq24190_charger.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/power/bq24190_charger.c b/drivers/power/bq24190_charger.c
-> index 052db78..40ae47c 100644
-> --- a/drivers/power/bq24190_charger.c
-> +++ b/drivers/power/bq24190_charger.c
-> @@ -902,7 +902,7 @@ static int bq24190_charger_property_is_writeable(struct power_supply *psy,
->   }
->
->   static enum power_supply_property bq24190_charger_properties[] = {
-> -	POWER_SUPPLY_PROP_TYPE,
-> +	POWER_SUPPLY_PROP_CHARGE_TYPE,
->   	POWER_SUPPLY_PROP_HEALTH,
->   	POWER_SUPPLY_PROP_ONLINE,
->   	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
+> Bisectability aside, without the idle changes to decouple it from
+> ACPI_PROCESSOR, the CPPC code will be non-functional. CPPC code has
+> been around for review publicly for almost a year and we need it to be
+> mainlined soon. So, given that we've converged on a solution for new
+> Kconfigs for Idle and PSS and that they're separate patches, why not
+> let it progress forwards as part of this series?
 >
 
-Acked-by: Andrew F. Davis <afd@ti.com>
+Sorry, I didn't mean to block this series in anyway. I was just thinking
+on how to post the preparatory changes to introduce _LPI. I prefer to
+base it on mainline rather than this patch series and hence I made that
+request.
 
--- 
-Andrew F. Davis
+Regards,
+Sudeep
