@@ -1,116 +1,60 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH V2] PM / Domains: Return -EPROBE_DEFER if we fail to init
- or turn-on domain
-Date: Tue, 4 Aug 2015 15:03:54 +0200
-Message-ID: <CAMuHMdX7ia09PtnKRCWPBfwb9aMnewvXheHADm+5U=d0rpguQA@mail.gmail.com>
-References: <1438334400-26367-1-git-send-email-jonathanh@nvidia.com>
+From: Sergei Shtylyov <sergei.shtylyov-M4DtvfQ/ZS1MRgGoP+s0PdBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH v4 15/16] clk: shmobile: mstp: Consider "zb_clk" suitable
+ for power management
+Date: Tue, 4 Aug 2015 16:20:17 +0300
+Message-ID: <55C0BC11.3030509@cogentembedded.com>
+References: <1438691297-29235-1-git-send-email-geert+renesas@glider.be>
+ <1438691297-29235-16-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:33716 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933574AbbHDND5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Aug 2015 09:03:57 -0400
-Received: by obdeg2 with SMTP id eg2so6372153obd.0
-        for <linux-pm@vger.kernel.org>; Tue, 04 Aug 2015 06:03:54 -0700 (PDT)
-In-Reply-To: <1438334400-26367-1-git-send-email-jonathanh@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1438691297-29235-16-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Laurent Pinchart <Laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Jon,
+Hello.
 
-Now this ended up in pm/linux-next, I gave it a try, also with a special
-test case.
+On 08/04/2015 03:28 PM, Geert Uytterhoeven wrote:
 
-On Fri, Jul 31, 2015 at 11:20 AM, Jon Hunter <jonathanh@nvidia.com> wrote:
-> When a device is probed, the function dev_pm_domain_attach() is called
-> to see if there is a power-domain that is associated with the device and
-> needs to be turned on. If dev_pm_domain_attach() does not return
-> -EPROBE_DEFER then the device will be probed.
+> Currently the CPG/MSTP Clock Domain code looks for MSTP clocks to power
+> manage a device.
+
+> Unfortunately, on R-Mobile APE6 (r8a73a4) and SH-Mobile AG5 (sh73a0),
+> the Bus State Controller (BSC) is not power-managed by an MSTP clock,
+> but by a plain CPG clock (zb_clk).  Add a special case to handle this,
+> so the clock is properly managed, and devices connected to the BSC work
+> as expected.
+
+> Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+> Reviewed-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+[...]
+
+> diff --git a/drivers/clk/shmobile/clk-mstp.c b/drivers/clk/shmobile/clk-mstp.c
+> index b1df7b2f1e970adb..a117c3f0f257b5e1 100644
+> --- a/drivers/clk/shmobile/clk-mstp.c
+> +++ b/drivers/clk/shmobile/clk-mstp.c
+> @@ -259,6 +259,10 @@ int cpg_mstp_attach_dev(struct generic_pm_domain *domain, struct device *dev)
+>   					    "renesas,cpg-mstp-clocks"))
+>   			goto found;
 >
-> For devices using genpd, dev_pm_domain_attach() will call
-> genpd_dev_pm_attach(). If genpd_dev_pm_attach() does not find a power
-> domain associated with the device then it returns an error code not
-> equal to -EPROBE_DEFER to allow the device to be probed. However, if
+> +		/* BSC on r8a73a4/sh73a0 uses zb_clk instead of an mstp clock*/
 
-Your patch description doesn't say this behavior was changed...
+    Please add a space before */.
 
-> genpd_dev_pm_attach() does find a power-domain that is associated with
-> the device, then it does not return -EPROBE_DEFER on failure and hence
-> the device will still be probed. Furthermore, genpd_dev_pm_attach() does
-> not check the error code returned by pm_genpd_poweron() to see if the
-> power-domain was turned on successfully.
->
-> Fix this by checking the return code from pm_genpd_poweron() and
-> returning -EPROBE_DEFER from genpd_dev_pm_attach on failure, if there
-> is a power-domain associated with the device.
->
-> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Acked-by: Kevin Hilman <khilman@linaro.org>
-> ---
-> V2 changes:
-> - Updated description per Kevin's feedback and added Kevin's ACK.
->
->  drivers/base/power/domain.c | 14 +++++++++-----
->  1 file changed, 9 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index a1abe16dfe16..7666a1cbaf95 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1947,7 +1947,10 @@ static void genpd_dev_pm_sync(struct device *dev)
->   * Both generic and legacy Samsung-specific DT bindings are supported to keep
->   * backwards compatibility with existing DTBs.
->   *
-> - * Returns 0 on successfully attached PM domain or negative error code.
-> + * Returns 0 on successfully attached PM domain or negative error code. Note
-> + * that if a power-domain exists for the device, but it cannot be found or
+> +		if (!strcmp(clkspec.np->name, "zb_clk"))
+> +			goto found;
+> +
+>   		of_node_put(clkspec.np);
+>   		i++;
+>   	}
 
-... but here it does.
+MBR, Sergei
 
-> + * turned on, then return -EPROBE_DEFER to ensure that the device is not
-> + * probed and to re-try again later.
->   */
->  int genpd_dev_pm_attach(struct device *dev)
->  {
-> @@ -1984,7 +1987,7 @@ int genpd_dev_pm_attach(struct device *dev)
->                 dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
->                         __func__, PTR_ERR(pd));
->                 of_node_put(dev->of_node);
-> -               return PTR_ERR(pd);
-> +               return -EPROBE_DEFER;
-
-And it really does.
-
-This causes a regression for platforms where:
-  1. DT describes the hardware power domains, and
-  2. The boot loader or reset state has enabled all power domains, and
-  3. Linux doesn't have a driver for the power controller yet.
-
-Before, devices for which the PM domain couldn't be found just probed and
-worked, Now, these devices don't probe anymore, and the kernel fails to boot.
-
-Note that I only managed to trigger this by explicitly disabling my power
-controller driver (the platforms I'm interested in already have power
-controller drivers). But I think it will hamper bring-up of new boards, as you
-can no longer write a "perfect and stable" .dts first, and implement kernel
-support incrementally.
-
-Hence I think it's worthwhile to revert just this hunk.
-If you agree, I can send a patch.
-
-Thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
