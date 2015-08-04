@@ -1,73 +1,51 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v7 3/8] ACPI: Decouple ACPI idle and ACPI processor drivers
-Date: Tue, 04 Aug 2015 15:51:02 +0100
-Message-ID: <55C0D156.9090808@arm.com>
-References: <cover.1436464513.git.ashwin.chaugule@linaro.org>	<da1eb99c0e128a4c8160537295045164d8fde00d.1436464513.git.ashwin.chaugule@linaro.org>	<55AD03F7.60108@arm.com> <CAJ5Y-eYqfpdC2EvEO5gRm7zRbzr0+KwhiL4MUY23uXM91y=MJA@mail.gmail.com>
+Subject: Re: [PATCH v7 8/8] PCC: Enable PCC only when needed
+Date: Tue, 04 Aug 2015 15:53:38 +0100
+Message-ID: <55C0D1F2.9050505@arm.com>
+References: <cover.1436464513.git.ashwin.chaugule@linaro.org>	<CAJZ5v0j-_QB1U-A0F2YSoDa_71nyEGR=yn8Kb5qe-FSqDPevOA@mail.gmail.com>	<55AE652B.7030409@arm.com>	<1583446.GxfV2z2IW5@vostro.rjw.lan> <CAJ5Y-eb5HOtStDztU+AYj264dRGbqa5OrVo-VHRBcnfHK-2a3w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJ5Y-eYqfpdC2EvEO5gRm7zRbzr0+KwhiL4MUY23uXM91y=MJA@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:58402 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934437AbbHDOxn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 4 Aug 2015 10:53:43 -0400
+In-Reply-To: <CAJ5Y-eb5HOtStDztU+AYj264dRGbqa5OrVo-VHRBcnfHK-2a3w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
 
 
 
-On 03/08/15 18:40, Ashwin Chaugule wrote:
-> On 20 July 2015 at 10:21, Sudeep Holla <sudeep.holla@arm.com> wrote:
+On 03/08/15 18:35, Ashwin Chaugule wrote:
+> On 21 July 2015 at 21:28, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Tuesday, July 21, 2015 04:28:43 PM Sudeep Holla wrote:
+>>> Hi Rafael,
+>>>
+
+[...]
+
+>>>
+>>> Agreed and I am absolutely fine with that. But if you look at this
+>>> patch, it does
+>>>
+>>> config PCC
+>>>        bool "Platform Communication Channel Driver"
+>>>        depends on ACPI && ACPI_CPPC_LIB
 >>
+>> My bad, I've evidently overlooked that.
 >>
->> On 09/07/15 19:04, Ashwin Chaugule wrote:
->>>
->>> This patch introduces a new Kconfig symbol, ACPI_PROCESSOR_IDLE,
->>> which is auto selected by architectures which support the ACPI
->>> based C states for CPU Idle management.
->>>
->>> The processor_idle driver in its present form contains declarations
->>> specific to X86 and IA64. Since there are no reasonable defaults
->>> for other architectures e.g. ARM64, the driver is selected only by
->>> the arch/x86/Kconfig.
->>>
->>> This helps in decoupling the ACPI processor_driver from the ACPI
->>> processor_idle driver which is useful for the upcoming alternative
->>> patchwork for controlling CPU Performance (CPPC) and CPU Idle (LPI).
->>>
->>> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
->>> ---
->>>    drivers/acpi/Kconfig     |  6 +++++-
->>>    drivers/acpi/Makefile    |  3 ++-
->>>    include/acpi/processor.h | 26 ++++++++++++++++++++++++--
->>>    3 files changed, 31 insertions(+), 4 deletions(-)
->>>
->>> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
->>> index 00748dc..8a60b6e 100644
->>> --- a/drivers/acpi/Kconfig
->>> +++ b/drivers/acpi/Kconfig
->>> @@ -177,9 +177,13 @@ config ACPI_CPU_FREQ_PSS
->>>            monitoring. It is required by several flavors of cpufreq
->>>            performance-state drivers.
->>>
->>> +config ACPI_PROCESSOR_IDLE
->>> +       def_bool y
->>> +       depends on X86 || IA64
->>> +
->>
->>
->> In general, you need to split this series so that initially few patches
->> deal with all the existing Kconfig fix-ups and then introduce
->> PCC/PSS/CPPC related stuffs. That would help me rebase and test _LPI
->> support.
+>> If PPC is selected from ACPI_CPPC_LIB, the "depends on" above is
+>> obviously not needed.
 >
-> Hm. I tried to maintain bisectability and make it easier for you to
-> rebase LPI patchwork too. Let me see if I can revisit now that I'm
-> back from vacation. :)
+> Thanks Sudeep.
+> So I'll take this dependency out and default PCC to 'n'. Think that
+> should work for all cases. Agree?
 >
 
-How about you just drop any idle related changes so that I will handle
-that to keep it simple.
+Yes
 
 Regards,
 Sudeep
-
