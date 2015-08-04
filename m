@@ -1,82 +1,34 @@
-From: Kukjin Kim <kgene@kernel.org>
-Subject: [PATCH] cpufreq: exynos: Fix for memory leak in case SoC name does not
- match
-Date: Tue, 04 Aug 2015 16:45:16 +0900
-Message-ID: <04f401d0ce89$81073900$8315ab00$@kernel.org>
+From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v3 3/6] power: Add support for DA9150 Fuel-Gauge
+Date: Tue, 4 Aug 2015 08:21:36 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337AB56930C@SW-EX-MBX01.diasemi.com>
+References: <cover.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
+ <d122a6ffc20fca836847016895e5181f5d2248e7.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
+ <20150725172715.GA1697@earth>
+ <2E89032DDAA8B9408CB92943514A0337AB5690C3@SW-EX-MBX01.diasemi.com>
+ <20150803172542.GD4856@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:34263 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754432AbbHDHpT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Aug 2015 03:45:19 -0400
-Content-language: ko
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150803172542.GD4856@earth>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Lukasz Majewski <l.majewski@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-samsung-soc@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, shailendra.capricorn@gmail.com
 
-From: Shailendra Verma <shailendra.capricorn@gmail.com>
-
-During probe free the memory allocated to "exynos_info" in case of
-unknown SoC type.
-
-Signed-off-by: Shailendra Verma <shailendra.capricorn@gmail.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Lukasz Majewski <l.majewski@samsung.com>
-[k.kozlowski: Rebased the patch around if(of_machine_is_compatible)]
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Signed-off-by: Kukjin Kim <kgene@kernel.org>
----
-Hi Rafael and Viresh,
-
-Since this is a fix to prevent memory leak, it would be better if
-this could be sent to linus during -rc via cpufreq tree.
-
-Thanks,
-Kukjin
-
- drivers/cpufreq/exynos-cpufreq.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/exynos-cpufreq.c b/drivers/cpufreq/exynos-cpufreq.c
-index ae5b2bd..fa3dd84 100644
---- a/drivers/cpufreq/exynos-cpufreq.c
-+++ b/drivers/cpufreq/exynos-cpufreq.c
-@@ -180,7 +180,7 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
- 		ret = exynos5250_cpufreq_init(exynos_info);
- 	} else {
- 		pr_err("%s: Unknown SoC type\n", __func__);
--		return -ENODEV;
-+		ret = -ENODEV;
- 	}
- 
- 	if (ret)
-@@ -188,12 +188,14 @@ static int exynos_cpufreq_probe(struct platform_device *pdev)
- 
- 	if (exynos_info->set_freq == NULL) {
- 		dev_err(&pdev->dev, "No set_freq function (ERR)\n");
-+		ret = -EINVAL;
- 		goto err_vdd_arm;
- 	}
- 
- 	arm_regulator = regulator_get(NULL, "vdd_arm");
- 	if (IS_ERR(arm_regulator)) {
- 		dev_err(&pdev->dev, "failed to get resource vdd_arm\n");
-+		ret = -EINVAL;
- 		goto err_vdd_arm;
- 	}
- 
-@@ -225,7 +227,7 @@ err_cpufreq_reg:
- 	regulator_put(arm_regulator);
- err_vdd_arm:
- 	kfree(exynos_info);
--	return -EINVAL;
-+	return ret;
- }
- 
- static struct platform_driver exynos_cpufreq_platdrv = {
--- 
-2.0.0
-
+T24gQXVndXN0IDAzLCAyMDE1IDE4OjI2LCBTZWJhc3RpYW4gUmVpY2hlbCB3cm90ZToNCg0KPiA+
+ID4gPiArTU9EVUxFX0xJQ0VOU0UoIkdQTCIpOw0KPiA+ID4NCj4gPiA+IE1PRFVMRV9MSUNFTlNF
+KCJHUEwgdjIiKTsNCj4gPg0KPiA+IElmIEkgZG8gdGhpcyB0aGVuIEkgbmVlZCB0byB1cGRhdGUg
+dGhlIGZpbGUgbGljZW5zZSBkaXNjbGFpbWVyIGF0IHRoZSB0b3AsIGFzDQo+ID4gcmlnaHQgbm93
+IHRoZXkgbWF0Y2ggYW5kIGFyZSBjb3JyZWN0IGFzIGZhciBhcyBJIGNhbiB0ZWxsLiBJcyB0aGlz
+IGNoYW5nZSBuZWVkZWQNCj4gPiBhbmQgaWYgc28gaXMgdGhpcyB0aGUgaW50ZW50aW9uIGZvciBv
+dGhlciBkcml2ZXJzIGFzIHdlbGwsIGp1c3Qgc28gSSdtIGNsZWFyPw0KPiANCj4gVGhlIGhlYWRl
+ciBzdGF0ZXMgR1BMIHYyKy4NCj4gDQo+IC0tIFNlYmFzdGlhbg0KDQpZZXMsIGFuZCB0aGlzIG1h
+dGNoZXMgdGhlICJHUEwiIHN0cmluZyBhcyBJIHVuZGVyc3RhbmQgaXQuIFRoZSBmb2xsb3dpbmcg
+aXMNCnRha2VuIGZyb20gImluY2x1ZGUvbGludXgvbW9kdWxlLmgiOg0KDQotLS0NCi8qDQogKiBU
+aGUgZm9sbG93aW5nIGxpY2Vuc2UgaWRlbnRzIGFyZSBjdXJyZW50bHkgYWNjZXB0ZWQgYXMgaW5k
+aWNhdGluZyBmcmVlDQogKiBzb2Z0d2FyZSBtb2R1bGVzDQogKg0KICoJIkdQTCIJCQkJW0dOVSBQ
+dWJsaWMgTGljZW5zZSB2MiBvciBsYXRlcl0NCiAqCSJHUEwgdjIiCQkJW0dOVSBQdWJsaWMgTGlj
+ZW5zZSB2Ml0NCg==
