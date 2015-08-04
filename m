@@ -1,27 +1,27 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v4 02/16] clk: shmobile: r8a7778: Add CPG/MSTP Clock Domain support
-Date: Tue,  4 Aug 2015 14:28:03 +0200
-Message-ID: <1438691297-29235-3-git-send-email-geert+renesas@glider.be>
+From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Subject: [PATCH v4 05/16] clk: shmobile: rz: Add CPG/MSTP Clock Domain support
+Date: Tue,  4 Aug 2015 14:28:06 +0200
+Message-ID: <1438691297-29235-6-git-send-email-geert+renesas@glider.be>
 References: <1438691297-29235-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1438691297-29235-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1438691297-29235-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Laurent Pinchart <Laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add Clock Domain support to the R-Car M1A Clock Pulse Generator (CPG)
-driver using the generic PM Domain.  This allows to power-manage the
-module clocks of SoC devices that are part of the CPG/MSTP Clock Domain
-using Runtime PM, or for system suspend/resume.
+Add Clock Domain support to the RZ Clock Pulse Generator (CPG) driver
+using the generic PM Domain.  This allows to power-manage the module
+clocks of SoC devices that are part of the CPG/MSTP Clock Domain using
+Runtime PM, or for system suspend/resume.
 
 SoC devices that are part of the CPG/MSTP Clock Domain and can be
 power-managed through an MSTP clock should be tagged in DT with a proper
 "power-domains" property.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Stephen Boyd <sboyd@codeaurora.org>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Acked-by: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Reviewed-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
 v4:
   - Add Reviewed-by,
@@ -33,30 +33,28 @@ v3:
 v2:
   - New.
 ---
- .../bindings/clock/renesas,r8a7778-cpg-clocks.txt  | 29 +++++++++++++++++++---
+ .../bindings/clock/renesas,rz-cpg-clocks.txt       | 29 ++++++++++++++++++++--
  arch/arm/mach-shmobile/Kconfig                     |  1 +
- drivers/clk/shmobile/clk-r8a7778.c                 |  2 ++
- 3 files changed, 29 insertions(+), 3 deletions(-)
+ drivers/clk/shmobile/clk-rz.c                      |  3 +++
+ 3 files changed, 31 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/clock/renesas,r8a7778-cpg-clocks.txt b/Documentation/devicetree/bindings/clock/renesas,r8a7778-cpg-clocks.txt
-index 2f3747fdcf1c5305..e4cdaf1cb3333012 100644
---- a/Documentation/devicetree/bindings/clock/renesas,r8a7778-cpg-clocks.txt
-+++ b/Documentation/devicetree/bindings/clock/renesas,r8a7778-cpg-clocks.txt
-@@ -1,7 +1,9 @@
- * Renesas R8A7778 Clock Pulse Generator (CPG)
+diff --git a/Documentation/devicetree/bindings/clock/renesas,rz-cpg-clocks.txt b/Documentation/devicetree/bindings/clock/renesas,rz-cpg-clocks.txt
+index b0f7ddb8cdb13750..bb51a33a1fbfbc97 100644
+--- a/Documentation/devicetree/bindings/clock/renesas,rz-cpg-clocks.txt
++++ b/Documentation/devicetree/bindings/clock/renesas,rz-cpg-clocks.txt
+@@ -2,6 +2,8 @@
  
- The CPG generates core clocks for the R8A7778. It includes two PLLs and
--several fixed ratio dividers
-+several fixed ratio dividers.
+ The CPG generates core clocks for the RZ SoCs. It includes the PLL, variable
+ CPU and GPU clocks, and several fixed ratio dividers.
 +The CPG also provides a Clock Domain for SoC devices, in combination with the
 +CPG Module Stop (MSTP) Clocks.
  
  Required Properties:
  
-@@ -10,10 +12,18 @@ Required Properties:
+@@ -14,10 +16,18 @@ Required Properties:
    - #clock-cells: Must be 1
-   - clock-output-names: The names of the clocks. Supported clocks are
-     "plla", "pllb", "b", "out", "p", "s", and "s1".
+   - clock-output-names: The names of the clocks. Supported clocks are "pll",
+     "i", and "g"
 +  - #power-domain-cells: Must be 0
  
 +SoC devices that are part of the CPG/MSTP Clock Domain and can be power-managed
@@ -72,51 +70,64 @@ index 2f3747fdcf1c5305..e4cdaf1cb3333012 100644
 +
 +  - CPG device node:
  
- 	cpg_clocks: cpg_clocks@ffc80000 {
- 		compatible = "renesas,r8a7778-cpg-clocks";
-@@ -22,4 +32,17 @@ Example
- 		clocks = <&extal_clk>;
- 		clock-output-names = "plla", "pllb", "b",
- 				     "out", "p", "s", "s1";
+ 	cpg_clocks: cpg_clocks@fcfe0000 {
+ 		#clock-cells = <1>;
+@@ -26,4 +36,19 @@ Example
+ 		reg = <0xfcfe0000 0x18>;
+ 		clocks = <&extal_clk>, <&usb_x1_clk>;
+ 		clock-output-names = "pll", "i", "g";
 +		#power-domain-cells = <0>;
 +	};
 +
 +
 +  - CPG/MSTP Clock Domain member device node:
 +
-+	sdhi0: sd@ffe4c000 {
-+		compatible = "renesas,sdhi-r8a7778";
-+		reg = <0xffe4c000 0x100>;
-+		interrupts = <0 87 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&mstp3_clks R8A7778_CLK_SDHI0>;
++	mtu2: timer@fcff0000 {
++		compatible = "renesas,mtu2-r7s72100", "renesas,mtu2";
++		reg = <0xfcff0000 0x400>;
++		interrupts = <0 107 IRQ_TYPE_LEVEL_HIGH>;
++		interrupt-names = "tgi0a";
++		clocks = <&mstp3_clks R7S72100_CLK_MTU2>;
++		clock-names = "fck";
 +		power-domains = <&cpg_clocks>;
 +		status = "disabled";
  	};
 diff --git a/arch/arm/mach-shmobile/Kconfig b/arch/arm/mach-shmobile/Kconfig
-index aa38a438af8990ef..5b1f9eca7c871aee 100644
+index 5b1f9eca7c871aee..926e336d6aeb7181 100644
 --- a/arch/arm/mach-shmobile/Kconfig
 +++ b/arch/arm/mach-shmobile/Kconfig
-@@ -4,6 +4,7 @@ config ARCH_SHMOBILE
+@@ -51,6 +51,7 @@ config ARCH_EMEV2
  
- config PM_RCAR
- 	bool
+ config ARCH_R7S72100
+ 	bool "RZ/A1H (R7S72100)"
 +	select PM_GENERIC_DOMAINS if PM
+ 	select SYS_SUPPORTS_SH_MTU2
  
- config PM_RMOBILE
- 	bool
-diff --git a/drivers/clk/shmobile/clk-r8a7778.c b/drivers/clk/shmobile/clk-r8a7778.c
-index e97e28fcfc13d102..87c1d2f2fb57a46c 100644
---- a/drivers/clk/shmobile/clk-r8a7778.c
-+++ b/drivers/clk/shmobile/clk-r8a7778.c
-@@ -124,6 +124,8 @@ static void __init r8a7778_cpg_clocks_init(struct device_node *np)
+ config ARCH_R8A73A4
+diff --git a/drivers/clk/shmobile/clk-rz.c b/drivers/clk/shmobile/clk-rz.c
+index 7e68e86309625c9e..9766e3cb595fd257 100644
+--- a/drivers/clk/shmobile/clk-rz.c
++++ b/drivers/clk/shmobile/clk-rz.c
+@@ -10,6 +10,7 @@
+  */
+ 
+ #include <linux/clk-provider.h>
++#include <linux/clk/shmobile.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/of.h>
+@@ -99,5 +100,7 @@ static void __init rz_cpg_clocks_init(struct device_node *np)
  	}
  
  	of_clk_add_provider(np, of_clk_src_onecell_get, &cpg->data);
 +
 +	cpg_mstp_add_clk_domain(np);
  }
- 
- CLK_OF_DECLARE(r8a7778_cpg_clks, "renesas,r8a7778-cpg-clocks",
+ CLK_OF_DECLARE(rz_cpg_clks, "renesas,rz-cpg-clocks", rz_cpg_clocks_init);
 -- 
 1.9.1
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
