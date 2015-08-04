@@ -1,51 +1,55 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v7 3/8] ACPI: Decouple ACPI idle and ACPI processor drivers
-Date: Tue, 04 Aug 2015 16:18:52 +0100
-Message-ID: <55C0D7DC.2060709@arm.com>
-References: <cover.1436464513.git.ashwin.chaugule@linaro.org>	<da1eb99c0e128a4c8160537295045164d8fde00d.1436464513.git.ashwin.chaugule@linaro.org>	<55AD03F7.60108@arm.com>	<CAJ5Y-eYqfpdC2EvEO5gRm7zRbzr0+KwhiL4MUY23uXM91y=MJA@mail.gmail.com>	<55C0D156.9090808@arm.com> <CAJ5Y-eaibuK0c_wSsRjM68vOfuRdRSChRdzR=2qtwVYwQcAzVQ@mail.gmail.com>
+From: Ran Shalit <ranshalit@gmail.com>
+Subject: Re: Q: cpuidle results in degredation in ethernet performance ?
+Date: Tue, 4 Aug 2015 18:24:29 +0300
+Message-ID: <CAJ2oMhJgj02yzGQEqBZW1Fbdc1GEv0-4-NBOt97Mfdiz=tDXSg@mail.gmail.com>
+References: <CAJ2oMhKw0gpFMKOd-iYe_hYh56Q62XgpW+MJmyiGhdkGn1RTMg@mail.gmail.com>
+	<55C0CC17.604@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJ5Y-eaibuK0c_wSsRjM68vOfuRdRSChRdzR=2qtwVYwQcAzVQ@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f172.google.com ([209.85.223.172]:33375 "EHLO
+	mail-io0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757589AbbHDPYa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Aug 2015 11:24:30 -0400
+Received: by ioii16 with SMTP id i16so20372478ioi.0
+        for <linux-pm@vger.kernel.org>; Tue, 04 Aug 2015 08:24:29 -0700 (PDT)
+In-Reply-To: <55C0CC17.604@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
 
-
-
-On 04/08/15 15:58, Ashwin Chaugule wrote:
-> On 4 August 2015 at 10:51, Sudeep Holla <sudeep.holla@arm.com> wrote:
->> On 03/08/15 18:40, Ashwin Chaugule wrote:
->>>
->>> On 20 July 2015 at 10:21, Sudeep Holla <sudeep.holla@arm.com> wrote:
->>>> On 09/07/15 19:04, Ashwin Chaugule wrote:
->>>>>
->>>>
->>>> In general, you need to split this series so that initially few patches
->>>> deal with all the existing Kconfig fix-ups and then introduce
->>>> PCC/PSS/CPPC related stuffs. That would help me rebase and test _LPI
->>>> support.
->>>
->>>
->>> Hm. I tried to maintain bisectability and make it easier for you to
->>> rebase LPI patchwork too. Let me see if I can revisit now that I'm
->>> back from vacation. :)
->>>
+On Tue, Aug 4, 2015 at 5:28 PM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+> On 08/01/2015 09:34 PM, Ran Shalit wrote:
 >>
->> How about you just drop any idle related changes so that I will handle
->> that to keep it simple.
+>> Hello,
+>>
+>> Maybe if someone here understands cpuidel he can help me...
+>>
+>> I am using omap, with cpuidel and I have some strange behaviour only
+>> when cpuidle is used:
+>> 1.  I test ethernet bandwidth with iperf
+>> 2. With large packet test (16k), I get same bandwidth in version with
+>> cpuidle support as in version without cpuidel supported.
+>> 3. With small packet test (<2000 bytes), I get high degredation in
+>> performance in version with cpuidle. On viewing statistics I see that
+>> the cpu gets into cpu inactive state (C3 state -  not retention yet,
+>> only cpu not active). I guess this is the cuase of the degredation.
+>> With large packets I get no increment in C3 state usage.
+>> 4. I think that menu governer behaviour might explain this, but I
+>> don't understand it deeply enough.
+>>
+>> Can anyone shed a light on this ? Is there anything I can do to overcome
+>> this ?
 >
-> Unfortunately I can't skip idle changes completely since it is tightly
-> coupled with the acpi_processor driver as well.
 >
+> Is an omap3 or omap4 ?
+>
+>
+Hi,
 
-True, but only for ARM64 where we haven't enabled ACPI_PROCESSOR yet in
-mainline. So from that perspective, it should not cause any issue for
-keeping changes bisectable on x86/ia64. You can keep these idle changes
-locally for your testing. Trying to get everything at once will
-definitely be problematic IMO.
+It is omap3530.
 
-Regards,
-Sudeep
+Thanks,
+Ran
