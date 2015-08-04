@@ -1,54 +1,364 @@
-From: pang.xunlei@zte.com.cn
-Subject: Re: [PATCH] cpuidle/coupled: Init cpuidle_device::safe_state_index
-Date: Tue, 4 Aug 2015 13:19:09 +0800
-Message-ID: <OFA0431BB2.32FC38F1-ON48257E97.001AEA8F-48257E97.001D3D28@zte.com.cn>
-References: <1437654681-20893-1-git-send-email-xlpang@126.com> <55BF955E.1030801@linaro.org>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH V2] thermal: Add Intel PCH thermal driver
+Date: Tue, 04 Aug 2015 13:29:07 +0800
+Message-ID: <1438666147.20305.1.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <55BF955E.1030801@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-kernel-owner@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:37428 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753260AbbHDF3L (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 4 Aug 2015 01:29:11 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: "Dave, Tushar N" <tushar.n.dave@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Wu, Fengguang" <fengguang.wu@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>
 
-Hi Daniel,
+>From d0a12625d2ff2c63321b3cf48c48184748ab577a Mon Sep 17 00:00:00 2001
+From: Tushar Dave <tushar.n.dave@intel.com>
+Date: Wed, 10 Jun 2015 13:34:24 -0700
+Subject: [PATCH V2] thermal: Add Intel PCH thermal driver
 
-Daniel Lezcano <daniel.lezcano@linaro.org> wrote 2015-08-04 AM 12:22:54:
-> Re: [PATCH] cpuidle/coupled: Init cpuidle_device::safe_state_index
-> 
-> On 07/23/2015 02:31 PM, Xunlei Pang wrote:
-> > From: Xunlei Pang <pang.xunlei@zte.com.cn>
-> >
-> > cpuidle_device::safe_state_index need to be initialized before use,
-> > so assign the driver's safe_state_index to it.
-> >
-> > Signed-off-by: Xunlei Pang <pang.xunlei@zte.com.cn>
-> > ---
-> >   drivers/cpuidle/cpuidle.c | 2 ++
-> >   1 file changed, 2 insertions(+)
-> >
-> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> > index e8e2775..ed5c8efe 100644
-> > --- a/drivers/cpuidle/cpuidle.c
-> > +++ b/drivers/cpuidle/cpuidle.c
-> > @@ -585,6 +585,8 @@ int cpuidle_register(struct cpuidle_driver *drv,
-> >          */
-> >         if (coupled_cpus)
-> >            device->coupled_cpus = *coupled_cpus;
-> > +
-> > +      device->safe_state_index = drv->safe_state_index;
-> 
-> Hey, good catch. We are lucky the safe_state_index is always zero.
-> 
-> I think we can simplify the code by removing the safe_state_index from 
-> the cpuidle_device structure and use the one in the cpuidle_driver 
-> structure in coupled.c
+This change adds a thermal driver for Wildcat Point platform controller
+hub. This driver register PCH thermal sensor as a thermal zone and
+associate critical and hot trips if present.
 
-Will do, thanks!
+Signed-off-by: Tushar Dave <tushar.n.dave@intel.com>
+Reviewed-by: Pandruvada, Srinivas <srinivas.pandruvada@intel.com>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ drivers/thermal/Kconfig             |   8 +
+ drivers/thermal/Makefile            |   1 +
+ drivers/thermal/intel_pch_thermal.c | 286 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 295 insertions(+)
+ create mode 100644 drivers/thermal/intel_pch_thermal.c
 
-Regards,
--Xunlei
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 118938e..0390044 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -340,6 +340,14 @@ config ACPI_THERMAL_REL
+ 	tristate
+ 	depends on ACPI
+ 
++config INTEL_PCH_THERMAL
++	tristate "Intel PCH Thermal Reporting Driver"
++	depends on X86 && PCI
++	help
++	  Enable this to support thermal reporting on certain intel PCHs.
++	  Thermal reporting device will provide temperature reading,
++	  programmable trip points and other information.
++
+ menu "Texas Instruments thermal drivers"
+ source "drivers/thermal/ti-soc-thermal/Kconfig"
+ endmenu
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 535dfee..26f1608 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -41,6 +41,7 @@ obj-$(CONFIG_INTEL_SOC_DTS_THERMAL)	+= intel_soc_dts_thermal.o
+ obj-$(CONFIG_INTEL_QUARK_DTS_THERMAL)	+= intel_quark_dts_thermal.o
+ obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
+ obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
++obj-$(CONFIG_INTEL_PCH_THERMAL)	+= intel_pch_thermal.o
+ obj-$(CONFIG_ST_THERMAL)	+= st/
+ obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra_soctherm.o
+ obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
+diff --git a/drivers/thermal/intel_pch_thermal.c b/drivers/thermal/intel_pch_thermal.c
+new file mode 100644
+index 0000000..1650a62
+--- /dev/null
++++ b/drivers/thermal/intel_pch_thermal.c
+@@ -0,0 +1,286 @@
++/* intel_pch_thermal.c - Intel PCH Thermal driver
++ *
++ * Copyright (c) 2015, Intel Corporation.
++ *
++ * Authors:
++ *     Tushar Dave <tushar.n.dave@intel.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/types.h>
++#include <linux/init.h>
++#include <linux/pci.h>
++#include <linux/thermal.h>
++
++/* Intel PCH thermal Device IDs */
++#define PCH_THERMAL_DID_WPT	0x9CA4 /* Wildcat Point */
++
++/* Wildcat Point-LP  PCH Thermal registers */
++#define WPT_TEMP	0x0000	/* Temperature */
++#define WPT_TSC	0x04	/* Thermal Sensor Control */
++#define WPT_TSS	0x06	/* Thermal Sensor Status */
++#define WPT_TSEL	0x08	/* Thermal Sensor Enable and Lock */
++#define WPT_TSREL	0x0A	/* Thermal Sensor Report Enable and Lock */
++#define WPT_TSMIC	0x0C	/* Thermal Sensor SMI Control */
++#define WPT_CTT	0x0010	/* Catastrophic Trip Point */
++#define WPT_TAHV	0x0014	/* Thermal Alert High Value */
++#define WPT_TALV	0x0018	/* Thermal Alert Low Value */
++#define WPT_TL		0x00000040	/* Throttle Value */
++#define WPT_PHL	0x0060	/* PCH Hot Level */
++#define WPT_PHLC	0x62	/* PHL Control */
++#define WPT_TAS	0x80	/* Thermal Alert Status */
++#define WPT_TSPIEN	0x82	/* PCI Interrupt Event Enables */
++#define WPT_TSGPEN	0x84	/* General Purpose Event Enables */
++
++/*  Wildcat Point-LP  PCH Thermal Register bit definitions */
++#define WPT_TEMP_TSR	0x00ff	/* Temp TS Reading */
++#define WPT_TSC_CPDE	0x01	/* Catastrophic Power-Down Enable */
++#define WPT_TSS_TSDSS	0x10	/* Thermal Sensor Dynamic Shutdown Status */
++#define WPT_TSS_GPES	0x08	/* GPE status */
++#define WPT_TSEL_ETS	0x01    /* Enable TS */
++#define WPT_TSEL_PLDB	0x80	/* TSEL Policy Lock-Down Bit */
++#define WPT_TL_TOL	0x000001FF	/* T0 Level */
++#define WPT_TL_T1L	0x1ff00000	/* T1 Level */
++#define WPT_TL_TTEN	0x20000000	/* TT Enable */
++
++static char driver_name[] = "Intel PCH thermal driver";
++
++struct pch_thermal_device {
++	void __iomem *hw_base;
++	const struct pch_dev_ops *ops;
++	struct pci_dev *pdev;
++	struct thermal_zone_device *tzd;
++	int crt_trip_id;
++	unsigned long crt_temp;
++	int hot_trip_id;
++	unsigned long hot_temp;
++};
++
++static int pch_wpt_init(struct pch_thermal_device *ptd, int *nr_trips)
++{
++	u8 tsel;
++	u16 trip_temp;
++
++	*nr_trips = 0;
++
++	/* Check if BIOS has already enabled thermal sensor */
++	if (WPT_TSS_TSDSS & readb(ptd->hw_base + WPT_TSS))
++		goto read_trips;
++
++	tsel = readb(ptd->hw_base + WPT_TSEL);
++	/*
++	 * When TSEL's Policy Lock-Down bit is 1, TSEL become RO.
++	 * If so, thermal sensor cannot enable. Bail out.
++	 */
++	if (tsel & WPT_TSEL_PLDB) {
++		dev_err(&ptd->pdev->dev, "Sensor can't be enabled\n");
++		return -ENODEV;
++	}
++
++	writeb(tsel|WPT_TSEL_ETS, ptd->hw_base + WPT_TSEL);
++	if (!(WPT_TSS_TSDSS & readb(ptd->hw_base + WPT_TSS))) {
++		dev_err(&ptd->pdev->dev, "Sensor can't be enabled\n");
++		return -ENODEV;
++	}
++
++read_trips:
++	ptd->crt_trip_id = -1;
++	trip_temp = readw(ptd->hw_base + WPT_CTT);
++	trip_temp &= 0x1FF;
++	if (trip_temp) {
++		/* Resolution of 1/2 degree C and an offset of -50C */
++		ptd->crt_temp = trip_temp * 1000 / 2 - 50000;
++		ptd->crt_trip_id = 0;
++		++(*nr_trips);
++	}
++
++	ptd->hot_trip_id = -1;
++	trip_temp = readw(ptd->hw_base + WPT_PHL);
++	trip_temp &= 0x1FF;
++	if (trip_temp) {
++		/* Resolution of 1/2 degree C and an offset of -50C */
++		ptd->hot_temp = trip_temp * 1000 / 2 - 50000;
++		ptd->hot_trip_id = *nr_trips;
++		++(*nr_trips);
++	}
++
++	return 0;
++}
++
++static int pch_wpt_get_temp(struct pch_thermal_device *ptd,
++			    unsigned long *temp)
++{
++	u8 wpt_temp;
++
++	wpt_temp = WPT_TEMP_TSR & readl(ptd->hw_base + WPT_TEMP);
++
++	/* Resolution of 1/2 degree C and an offset of -50C */
++	*temp = (wpt_temp * 1000 / 2 - 50000);
++
++	return 0;
++}
++
++struct pch_dev_ops {
++	int (*hw_init)(struct pch_thermal_device *ptd, int *nr_trips);
++	int (*get_temp)(struct pch_thermal_device *ptd, unsigned long *temp);
++};
++
++
++/* dev ops for Wildcat Point */
++static struct pch_dev_ops pch_dev_ops_wpt = {
++	.hw_init = pch_wpt_init,
++	.get_temp = pch_wpt_get_temp,
++};
++
++static int pch_thermal_get_temp(struct thermal_zone_device *tzd,
++				unsigned long *temp)
++{
++	struct pch_thermal_device *ptd = tzd->devdata;
++
++	return	ptd->ops->get_temp(ptd, temp);
++}
++
++static int pch_get_trip_type(struct thermal_zone_device *tzd, int trip,
++			     enum thermal_trip_type *type)
++{
++	struct pch_thermal_device *ptd = tzd->devdata;
++
++	if (ptd->crt_trip_id == trip)
++		*type = THERMAL_TRIP_CRITICAL;
++	else if (ptd->hot_trip_id == trip)
++		*type = THERMAL_TRIP_HOT;
++	else
++		return -EINVAL;
++
++	return 0;
++}
++
++static int pch_get_trip_temp(struct thermal_zone_device *tzd, int trip,
++			     unsigned long *temp)
++{
++	struct pch_thermal_device *ptd = tzd->devdata;
++
++	if (ptd->crt_trip_id == trip)
++		*temp = ptd->crt_temp;
++	else if (ptd->hot_trip_id == trip)
++		*temp = ptd->hot_temp;
++	else
++		return -EINVAL;
++
++	return 0;
++}
++
++static struct thermal_zone_device_ops tzd_ops = {
++	.get_temp = pch_thermal_get_temp,
++	.get_trip_type = pch_get_trip_type,
++	.get_trip_temp = pch_get_trip_temp,
++};
++
++
++static int intel_pch_thermal_probe(struct pci_dev *pdev,
++				   const struct pci_device_id *id)
++{
++	struct pch_thermal_device *ptd;
++	int err;
++	int nr_trips;
++	char *dev_name;
++
++	ptd = devm_kzalloc(&pdev->dev, sizeof(*ptd), GFP_KERNEL);
++	if (!ptd)
++		return -ENOMEM;
++
++	switch (pdev->device) {
++	case PCH_THERMAL_DID_WPT:
++		ptd->ops = &pch_dev_ops_wpt;
++		dev_name = "pch_wildcat_point";
++		break;
++	default:
++		dev_err(&pdev->dev, "unknown pch thermal device\n");
++		return -ENODEV;
++	}
++
++	pci_set_drvdata(pdev, ptd);
++	ptd->pdev = pdev;
++
++	err = pci_enable_device(pdev);
++	if (err) {
++		dev_err(&pdev->dev, "failed to enable pci device\n");
++		return err;
++	}
++
++	err = pci_request_regions(pdev, driver_name);
++	if (err) {
++		dev_err(&pdev->dev, "failed to request pci region\n");
++		goto error_disable;
++	}
++
++	ptd->hw_base = pci_ioremap_bar(pdev, 0);
++	if (!ptd->hw_base) {
++		err = -ENOMEM;
++		dev_err(&pdev->dev, "failed to map mem base\n");
++		goto error_release;
++	}
++
++	err = ptd->ops->hw_init(ptd, &nr_trips);
++	if (err)
++		goto error_cleanup;
++
++	ptd->tzd = thermal_zone_device_register(dev_name, nr_trips, 0, ptd,
++						&tzd_ops, NULL, 0, 0);
++	if (IS_ERR(ptd->tzd)) {
++		dev_err(&pdev->dev, "Failed to register thermal zone %s\n",
++			dev_name);
++		err = PTR_ERR(ptd->tzd);
++		goto error_cleanup;
++	}
++
++	return 0;
++
++error_cleanup:
++	iounmap(ptd->hw_base);
++error_release:
++	pci_release_regions(pdev);
++error_disable:
++	pci_disable_device(pdev);
++	dev_err(&pdev->dev, "pci device failed to probe\n");
++	return err;
++}
++
++static void intel_pch_thermal_remove(struct pci_dev *pdev)
++{
++	struct pch_thermal_device *ptd = pci_get_drvdata(pdev);
++
++	thermal_zone_device_unregister(ptd->tzd);
++	iounmap(ptd->hw_base);
++	pci_set_drvdata(pdev, NULL);
++	pci_release_region(pdev, 0);
++	pci_disable_device(pdev);
++}
++
++static struct pci_device_id intel_pch_thermal_id[] = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_WPT) },
++	{ 0, },
++};
++MODULE_DEVICE_TABLE(pci, intel_pch_thermal_id);
++
++static struct pci_driver intel_pch_thermal_driver = {
++	.name		= "intel_pch_thermal",
++	.id_table	= intel_pch_thermal_id,
++	.probe		= intel_pch_thermal_probe,
++	.remove		= intel_pch_thermal_remove,
++};
++
++module_pci_driver(intel_pch_thermal_driver);
++
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("Intel PCH Thermal driver");
+-- 
+1.9.1
 
---------------------------------------------------------
-ZTE Information Security Notice: The information contained in this mail (and any attachment transmitted herewith) is privileged and confidential and is intended for the exclusive use of the addressee(s).  If you are not an intended recipient, any disclosure, reproduction, distribution or other dissemination or use of the information contained is strictly prohibited.  If you have received this mail in error, please delete it and notify us immediately.
+
+
