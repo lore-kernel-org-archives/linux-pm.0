@@ -1,22 +1,22 @@
-From: Dan Murphy <dmurphy@ti.com>
+From: "Andrew F. Davis" <afd@ti.com>
 Subject: Re: [PATCH RESEND] power: bq24190_charger: Fix charge type sysfs
  property
-Date: Tue, 4 Aug 2015 11:45:36 -0500
-Message-ID: <55C0EC30.8000006@ti.com>
+Date: Tue, 4 Aug 2015 11:54:45 -0500
+Message-ID: <55C0EE55.4050103@ti.com>
 References: <1438706177-8115-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:49057 "EHLO arroyo.ext.ti.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:49374 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751992AbbHDQp7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 4 Aug 2015 12:45:59 -0400
+	id S1754163AbbHDQzQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 4 Aug 2015 12:55:16 -0400
 In-Reply-To: <1438706177-8115-1-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Andreas Dannenberg <dannenberg@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, Andrew Davis <afd@ti.com>
+Cc: linux-pm@vger.kernel.org, Dan Murphy <dmurphy@ti.com>
 
 On 08/04/2015 11:36 AM, Andreas Dannenberg wrote:
 > Access to the BQ24190's configurable charge type property (none, trickle,
@@ -43,26 +43,25 @@ On 08/04/2015 11:36 AM, Andreas Dannenberg wrote:
 > fast charging).
 >
 >
->  drivers/power/bq24190_charger.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>   drivers/power/bq24190_charger.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 >
 > diff --git a/drivers/power/bq24190_charger.c b/drivers/power/bq24190_charger.c
 > index 052db78..40ae47c 100644
 > --- a/drivers/power/bq24190_charger.c
 > +++ b/drivers/power/bq24190_charger.c
 > @@ -902,7 +902,7 @@ static int bq24190_charger_property_is_writeable(struct power_supply *psy,
->  }
->  
->  static enum power_supply_property bq24190_charger_properties[] = {
+>   }
+>
+>   static enum power_supply_property bq24190_charger_properties[] = {
 > -	POWER_SUPPLY_PROP_TYPE,
 > +	POWER_SUPPLY_PROP_CHARGE_TYPE,
->  	POWER_SUPPLY_PROP_HEALTH,
->  	POWER_SUPPLY_PROP_ONLINE,
->  	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
+>   	POWER_SUPPLY_PROP_HEALTH,
+>   	POWER_SUPPLY_PROP_ONLINE,
+>   	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
+>
 
-Acked-by: Dan Murphy <dmurphy@ti.com>
+Acked-by: Andrew F. Davis <afd@ti.com>
 
 -- 
-------------------
-Dan Murphy
-
+Andrew F. Davis
