@@ -1,71 +1,34 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: Re: [PATCH v7 3/8] ACPI: Decouple ACPI idle and ACPI processor drivers
-Date: Tue, 4 Aug 2015 11:44:57 -0400
-Message-ID: <CAJ5Y-eZo07qVMS37eo=OShCLcgpURfyRA=dOQhtF0Y6_fvR=1Q@mail.gmail.com>
-References: <cover.1436464513.git.ashwin.chaugule@linaro.org>
-	<da1eb99c0e128a4c8160537295045164d8fde00d.1436464513.git.ashwin.chaugule@linaro.org>
-	<55AD03F7.60108@arm.com>
-	<CAJ5Y-eYqfpdC2EvEO5gRm7zRbzr0+KwhiL4MUY23uXM91y=MJA@mail.gmail.com>
-	<55C0D156.9090808@arm.com>
-	<CAJ5Y-eaibuK0c_wSsRjM68vOfuRdRSChRdzR=2qtwVYwQcAzVQ@mail.gmail.com>
-	<55C0D7DC.2060709@arm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] net: fec: fix initial runtime PM refcount
+Date: Tue, 4 Aug 2015 11:59:36 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1508041159100.1577-100000@iolanthe.rowland.org>
+References: <20150804143555.GQ9999@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <55C0D7DC.2060709@arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:55103 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751808AbbHDP7h (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Aug 2015 11:59:37 -0400
+In-Reply-To: <20150804143555.GQ9999@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: Lucas Stach <l.stach@pengutronix.de>, Andrew Lunn <andrew@lunn.ch>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, netdev@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, patchwork-lst@pengutronix.de, kernel@pengutronix.de, "David S. Miller" <davem@davemloft.net>
 
-On 4 August 2015 at 11:18, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
->
-> On 04/08/15 15:58, Ashwin Chaugule wrote:
->>
->> On 4 August 2015 at 10:51, Sudeep Holla <sudeep.holla@arm.com> wrote:
->>>
->>> On 03/08/15 18:40, Ashwin Chaugule wrote:
->>>>
->>>>
->>>> On 20 July 2015 at 10:21, Sudeep Holla <sudeep.holla@arm.com> wrote:
->>>>>
->>>>> On 09/07/15 19:04, Ashwin Chaugule wrote:
->>>>>>
->>>>>>
->>>>>
->>>>> In general, you need to split this series so that initially few patches
->>>>> deal with all the existing Kconfig fix-ups and then introduce
->>>>> PCC/PSS/CPPC related stuffs. That would help me rebase and test _LPI
->>>>> support.
->>>>
->>>>
->>>>
->>>> Hm. I tried to maintain bisectability and make it easier for you to
->>>> rebase LPI patchwork too. Let me see if I can revisit now that I'm
->>>> back from vacation. :)
->>>>
->>>
->>> How about you just drop any idle related changes so that I will handle
->>> that to keep it simple.
->>
->>
->> Unfortunately I can't skip idle changes completely since it is tightly
->> coupled with the acpi_processor driver as well.
->>
->
-> True, but only for ARM64 where we haven't enabled ACPI_PROCESSOR yet in
-> mainline. So from that perspective, it should not cause any issue for
-> keeping changes bisectable on x86/ia64. You can keep these idle changes
-> locally for your testing. Trying to get everything at once will
-> definitely be problematic IMO.
+On Tue, 4 Aug 2015, Uwe [iso-8859-1] Kleine-K=F6nig wrote:
 
-Bisectability aside, without the idle changes to decouple it from
-ACPI_PROCESSOR, the CPPC code will be non-functional. CPPC code has
-been around for review publicly for almost a year and we need it to be
-mainlined soon. So, given that we've converged on a solution for new
-Kconfigs for Idle and PSS and that they're separate patches, why not
-let it progress forwards as part of this series?
+> Hello,
+>=20
+> On Tue, Aug 04, 2015 at 10:20:55AM -0400, Alan Stern wrote:
+> > In that case, adding a call pm_runtime_get_noresume() is the right=20
+> > thing to do.
+> Is this an ack for Lucas' patch?
 
-Thanks,
-Ashwin.
+Yes:
+
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
+
+Alan Stern
+
