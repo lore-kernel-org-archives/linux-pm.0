@@ -1,55 +1,151 @@
 From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: [PATCH 1/2 RESEND] PM / AVS: rockchip-io: depend on CONFIG_POWER_AVS
-Date: Tue, 04 Aug 2015 21:36:12 +0200
-Message-ID: <3371948.nX6iqYbHnA@diego>
+Subject: [PATCH 2/2] PM / AVS: rockchip-io: add io selectors and supplies for rk3368
+Date: Tue, 04 Aug 2015 21:37:01 +0200
+Message-ID: <1481228.KhoIt654ID@diego>
+References: <3371948.nX6iqYbHnA@diego>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:38925 "EHLO gloria.sntech.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752290AbbHDTgQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 4 Aug 2015 15:36:16 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3371948.nX6iqYbHnA@diego>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-The rockchip io-domain driver currently only depends on ARCH_ROCKCHIP
-itself. This makes it possible to select the power-domain driver, but
-not the POWER_AVS class and results in the iodomain-driver not getting
-build in this case.
+This adds the necessary data for handling io voltage domains on the rk3368.
+As interesting tidbit, the rk3368 contains two separate iodomain areas.
+One in the regular General Register Files (GRF) and one in PMUGRF in the
+pmu power domain.
 
-So add the additional dependency, which also results in the driver
-config option now being placed nicely into the AVS submenu.
-
-Fixes: 662a958638bd ("PM / AVS: rockchip-io: add driver handling Rockchip io domains")
 Signed-off-by: Heiko Stuebner <heiko@sntech.de>
-Acked-by: Kevin Hilman <khilman@linaro.org>
 ---
-Kevin wrote when he Acked the patch: "Rafael, feel free to queue this
-up as a fix.  I don't have any other drivers/power/avs stuff queued up."
+ .../bindings/power/rockchip-io-domain.txt          | 14 +++++
+ drivers/power/avs/rockchip-io-domain.c             | 59 ++++++++++++++++++++++
+ 2 files changed, 73 insertions(+)
 
-Although I don't know if this is the case anymore.
-
-
- drivers/power/avs/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/power/avs/Kconfig b/drivers/power/avs/Kconfig
-index 7f3d389..a67eeac 100644
---- a/drivers/power/avs/Kconfig
-+++ b/drivers/power/avs/Kconfig
-@@ -13,7 +13,7 @@ menuconfig POWER_AVS
+diff --git a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+index 8b70db1..b8627e7 100644
+--- a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
++++ b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+@@ -33,6 +33,8 @@ Required properties:
+ - compatible: should be one of:
+   - "rockchip,rk3188-io-voltage-domain" for rk3188
+   - "rockchip,rk3288-io-voltage-domain" for rk3288
++  - "rockchip,rk3368-io-voltage-domain" for rk3368
++  - "rockchip,rk3368-pmu-io-voltage-domain" for rk3368 pmu-domains
+ - rockchip,grf: phandle to the syscon managing the "general register files"
  
- config ROCKCHIP_IODOMAIN
-         tristate "Rockchip IO domain support"
--        depends on ARCH_ROCKCHIP && OF
-+        depends on POWER_AVS && ARCH_ROCKCHIP && OF
-         help
-           Say y here to enable support io domains on Rockchip SoCs. It is
-           necessary for the io domain setting of the SoC to match the
+ 
+@@ -64,6 +66,18 @@ Possible supplies for rk3288:
+ - sdcard-supply: The supply connected to SDMMC0_VDD.
+ - wifi-supply:   The supply connected to APIO3_VDD.  Also known as SDIO0.
+ 
++Possible supplies for rk3368:
++- audio-supply:  The supply connected to APIO3_VDD.
++- dvp-supply:    The supply connected to DVPIO_VDD.
++- flash0-supply: The supply connected to FLASH0_VDD.  Typically for eMMC
++- gpio30-supply: The supply connected to APIO1_VDD.
++- gpio1830       The supply connected to APIO4_VDD.
++- sdcard-supply: The supply connected to SDMMC0_VDD.
++- wifi-supply:   The supply connected to APIO2_VDD.  Also known as SDIO0.
++
++Possible supplies for rk3368 pmu-domains:
++- pmu-supply:    The supply connected to PMUIO_VDD.
++- vop-supply:    The supply connected to LCDC_VDD.
+ 
+ Example:
+ 
+diff --git a/drivers/power/avs/rockchip-io-domain.c b/drivers/power/avs/rockchip-io-domain.c
+index 3ae35d0..2e30002 100644
+--- a/drivers/power/avs/rockchip-io-domain.c
++++ b/drivers/power/avs/rockchip-io-domain.c
+@@ -43,6 +43,10 @@
+ #define RK3288_SOC_CON2_FLASH0		BIT(7)
+ #define RK3288_SOC_FLASH_SUPPLY_NUM	2
+ 
++#define RK3368_SOC_CON15		0x43c
++#define RK3368_SOC_CON15_FLASH0		BIT(14)
++#define RK3368_SOC_FLASH_SUPPLY_NUM	2
++
+ struct rockchip_iodomain;
+ 
+ /**
+@@ -158,6 +162,25 @@ static void rk3288_iodomain_init(struct rockchip_iodomain *iod)
+ 		dev_warn(iod->dev, "couldn't update flash0 ctrl\n");
+ }
+ 
++static void rk3368_iodomain_init(struct rockchip_iodomain *iod)
++{
++	int ret;
++	u32 val;
++
++	/* if no flash supply we should leave things alone */
++	if (!iod->supplies[RK3368_SOC_FLASH_SUPPLY_NUM].reg)
++		return;
++
++	/*
++	 * set flash0 iodomain to also use this framework
++	 * instead of a special gpio.
++	 */
++	val = RK3368_SOC_CON15_FLASH0 | (RK3368_SOC_CON15_FLASH0 << 16);
++	ret = regmap_write(iod->grf, RK3368_SOC_CON15, val);
++	if (ret < 0)
++		dev_warn(iod->dev, "couldn't update flash0 ctrl\n");
++}
++
+ /*
+  * On the rk3188 the io-domains are handled by a shared register with the
+  * lower 8 bits being still being continuing drive-strength settings.
+@@ -201,6 +224,34 @@ static const struct rockchip_iodomain_soc_data soc_data_rk3288 = {
+ 	.init = rk3288_iodomain_init,
+ };
+ 
++static const struct rockchip_iodomain_soc_data soc_data_rk3368 = {
++	.grf_offset = 0x900,
++	.supply_names = {
++		NULL,		/* reserved */
++		"dvp",		/* DVPIO_VDD */
++		"flash0",	/* FLASH0_VDD (emmc) */
++		"wifi",		/* APIO2_VDD (sdio0) */
++		NULL,
++		"audio",	/* APIO3_VDD */
++		"sdcard",	/* SDMMC0_VDD (sdmmc) */
++		"gpio30",	/* APIO1_VDD */
++		"gpio1830",	/* APIO4_VDD (gpujtag) */
++	},
++	.init = rk3368_iodomain_init,
++};
++
++static const struct rockchip_iodomain_soc_data soc_data_rk3368_pmu = {
++	.grf_offset = 0x100,
++	.supply_names = {
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		"pmu",	        /*PMU IO domain*/
++		"vop",	        /*LCDC IO domain*/
++	},
++};
++
+ static const struct of_device_id rockchip_iodomain_match[] = {
+ 	{
+ 		.compatible = "rockchip,rk3188-io-voltage-domain",
+@@ -210,6 +261,14 @@ static const struct of_device_id rockchip_iodomain_match[] = {
+ 		.compatible = "rockchip,rk3288-io-voltage-domain",
+ 		.data = (void *)&soc_data_rk3288
+ 	},
++	{
++		.compatible = "rockchip,rk3368-io-voltage-domain",
++		.data = (void *)&soc_data_rk3368
++	},
++	{
++		.compatible = "rockchip,rk3368-pmu-io-voltage-domain",
++		.data = (void *)&soc_data_rk3368_pmu
++	},
+ 	{ /* sentinel */ },
+ };
+ 
 -- 
 2.1.4
-
-
