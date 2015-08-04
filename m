@@ -1,8 +1,8 @@
 From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v4 6/6] mfd: da9150: Use DEFINE_RES_IRQ_NAMED() help macro for
- IRQ resource
-Date: Tue, 4 Aug 2015 17:16:38 +0100
-Message-ID: <ab8e02c022c8b90d4b65bf13e2f2c402e54f2cf5.1438692348.git.Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v4 4/6] power: da9150: Add DT bindings documentation for
+ Fuel-Gauge
+Date: Tue, 4 Aug 2015 17:16:34 +0100
+Message-ID: <452f38e63bfffe1cfd3873cdf5d0c9d263020001.1438692348.git.Adam.Thomson.Opensource@diasemi.com>
 References: <cover.1438692348.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -17,65 +17,47 @@ Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
 ---
 
 Changes in v4:
- - N/A
+ - Update compatible string of fuel-gauge to "dlg,da9150-fuel-gauge".
+ - Changed example node name to "fuel-gauge".
 
 Changes in v3:
- - Initial version.
+ - N/A
 
 Changes in v2:
  - N/A
 
- drivers/mfd/da9150-core.c | 35 +++++------------------------------
- 1 file changed, 5 insertions(+), 30 deletions(-)
+ .../devicetree/bindings/power/da9150-fg.txt        | 23 ++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/da9150-fg.txt
 
-diff --git a/drivers/mfd/da9150-core.c b/drivers/mfd/da9150-core.c
-index 85ca4b5..195fdcf 100644
---- a/drivers/mfd/da9150-core.c
-+++ b/drivers/mfd/da9150-core.c
-@@ -355,39 +355,14 @@ static const struct regmap_irq_chip da9150_regmap_irq_chip = {
- };
-
- static struct resource da9150_gpadc_resources[] = {
--	{
--		.name = "GPADC",
--		.start = DA9150_IRQ_GPADC,
--		.end = DA9150_IRQ_GPADC,
--		.flags = IORESOURCE_IRQ,
--	},
-+	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_GPADC, "GPADC"),
- };
-
- static struct resource da9150_charger_resources[] = {
--	{
--		.name = "CHG_STATUS",
--		.start = DA9150_IRQ_CHG,
--		.end = DA9150_IRQ_CHG,
--		.flags = IORESOURCE_IRQ,
--	},
--	{
--		.name = "CHG_TJUNC",
--		.start = DA9150_IRQ_TJUNC,
--		.end = DA9150_IRQ_TJUNC,
--		.flags = IORESOURCE_IRQ,
--	},
--	{
--		.name = "CHG_VFAULT",
--		.start = DA9150_IRQ_VFAULT,
--		.end = DA9150_IRQ_VFAULT,
--		.flags = IORESOURCE_IRQ,
--	},
--	{
--		.name = "CHG_VBUS",
--		.start = DA9150_IRQ_VBUS,
--		.end = DA9150_IRQ_VBUS,
--		.flags = IORESOURCE_IRQ,
--	},
-+	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_CHG, "CHG_STATUS"),
-+	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_TJUNC, "CHG_TJUNC"),
-+	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_VFAULT, "CHG_VFAULT"),
-+	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_VBUS, "CHG_VBUS"),
- };
-
- static struct resource da9150_fg_resources[] = {
+diff --git a/Documentation/devicetree/bindings/power/da9150-fg.txt b/Documentation/devicetree/bindings/power/da9150-fg.txt
+new file mode 100644
+index 0000000..00236fe
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/da9150-fg.txt
+@@ -0,0 +1,23 @@
++Dialog Semiconductor DA9150 Fuel-Gauge Power Supply bindings
++
++Required properties:
++- compatible: "dlg,da9150-fuel-gauge" for DA9150 Fuel-Gauge Power Supply
++
++Optional properties:
++- dlg,update-interval: Interval time (milliseconds) between battery level checks.
++- dlg,warn-soc-level: Battery discharge level (%) where warning event raised.
++      [1 - 100]
++- dlg,crit-soc-level: Battery discharge level (%) where critical event raised.
++  This value should be lower than the warning level.
++      [1 - 100]
++
++
++Example:
++
++	fuel-gauge {
++		compatible = "dlg,da9150-fuel-gauge";
++
++		dlg,update-interval = <10000>;
++		dlg,warn-soc-level = /bits/ 8 <15>;
++		dlg,crit-soc-level = /bits/ 8 <5>;
++	};
 --
 1.9.3
