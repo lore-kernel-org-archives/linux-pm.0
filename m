@@ -1,51 +1,68 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: [PATCH] thermal: remove power allocator from list of default
- governors
-Date: Tue, 4 Aug 2015 09:39:21 -0700
-Message-ID: <20150804163921.GA36852@dtor-ws>
+From: Dan Murphy <dmurphy@ti.com>
+Subject: Re: [PATCH RESEND] power: bq24190_charger: Fix charge type sysfs
+ property
+Date: Tue, 4 Aug 2015 11:45:36 -0500
+Message-ID: <55C0EC30.8000006@ti.com>
+References: <1438706177-8115-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Javi Merino <javi.merino@arm.com>, Tushar Dave <tushar.n.dave@intel.com>, Lan Tianyu <tianyu.lan@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:49057 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751992AbbHDQp7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 4 Aug 2015 12:45:59 -0400
+In-Reply-To: <1438706177-8115-1-git-send-email-dannenberg@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andreas Dannenberg <dannenberg@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, Andrew Davis <afd@ti.com>
 
-As it currently stands the power allocator governor can not handle
-thermal zones that are not specifically crafted and therefore can not be
-used as a default governor.
+On 08/04/2015 11:36 AM, Andreas Dannenberg wrote:
+> Access to the BQ24190's configurable charge type property (none, trickle,
+> fast) is being masked by an incorrect power_supply_property entry. After
+> applying this patch a new 'charge_type' property will appear in the
+> bq24190-charger sysfs folder backed up by getters/setters already
+> present in the driver.
+>
+> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+> ---
+> This is a RESEND of yesterday's patch that for some reason did not seem to
+> have gotten picked up correctly...
+>
+> The current driver incorrectly tries to declare the charge type property
+> using POWER_SUPPLY_PROP_TYPE which is the wrong declaration for this
+> (actually POWER_SUPPLY_PROP_TYPE itself has been superseeded by
+> power_supply.type and isn't even used anymore as part of the power
+> supply property declarations).
+>
+> After implementing the fix tested this aspect of the driver using an
+> actual BQ24190 device and could witness the impact the change of charge
+> type has on the battery (writing '1' to the new sysfs property means
+> charging off, '2' will do trickle charging, and '3' will result in
+> fast charging).
+>
+>
+>  drivers/power/bq24190_charger.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/power/bq24190_charger.c b/drivers/power/bq24190_charger.c
+> index 052db78..40ae47c 100644
+> --- a/drivers/power/bq24190_charger.c
+> +++ b/drivers/power/bq24190_charger.c
+> @@ -902,7 +902,7 @@ static int bq24190_charger_property_is_writeable(struct power_supply *psy,
+>  }
+>  
+>  static enum power_supply_property bq24190_charger_properties[] = {
+> -	POWER_SUPPLY_PROP_TYPE,
+> +	POWER_SUPPLY_PROP_CHARGE_TYPE,
+>  	POWER_SUPPLY_PROP_HEALTH,
+>  	POWER_SUPPLY_PROP_ONLINE,
+>  	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
 
-Users need to explicitly enable this governor for thermal zones that do
-have enough information for its operation.
+Acked-by: Dan Murphy <dmurphy@ti.com>
 
-Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
----
- drivers/thermal/Kconfig | 8 --------
- 1 file changed, 8 deletions(-)
-
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 0390044..34d05d3 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -82,14 +82,6 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
- 	  Select this if you want to let the user space manage the
- 	  platform thermals.
- 
--config THERMAL_DEFAULT_GOV_POWER_ALLOCATOR
--	bool "power_allocator"
--	select THERMAL_GOV_POWER_ALLOCATOR
--	help
--	  Select this if you want to control temperature based on
--	  system and device power allocation. This governor can only
--	  operate on cooling devices that implement the power API.
--
- endchoice
- 
- config THERMAL_GOV_FAIR_SHARE
 -- 
-2.5.0.rc2.392.g76e840b
+------------------
+Dan Murphy
 
-
--- 
-Dmitry
