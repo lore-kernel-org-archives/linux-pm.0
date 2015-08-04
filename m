@@ -1,86 +1,54 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] net: fec: fix initial runtime PM refcount
-Date: Tue, 4 Aug 2015 10:20:55 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1508041019380.1577-100000@iolanthe.rowland.org>
-References: <1438674216.2458.24.camel@pengutronix.de>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: Q: cpuidle results in degredation in ethernet performance ?
+Date: Tue, 04 Aug 2015 16:28:39 +0200
+Message-ID: <55C0CC17.604@linaro.org>
+References: <CAJ2oMhKw0gpFMKOd-iYe_hYh56Q62XgpW+MJmyiGhdkGn1RTMg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:55027 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751884AbbHDOU4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Aug 2015 10:20:56 -0400
-In-Reply-To: <1438674216.2458.24.camel@pengutronix.de>
+Received: from mail-wi0-f180.google.com ([209.85.212.180]:33219 "EHLO
+	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756382AbbHDO2m (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Aug 2015 10:28:42 -0400
+Received: by wijp15 with SMTP id p15so8617547wij.0
+        for <linux-pm@vger.kernel.org>; Tue, 04 Aug 2015 07:28:41 -0700 (PDT)
+In-Reply-To: <CAJ2oMhKw0gpFMKOd-iYe_hYh56Q62XgpW+MJmyiGhdkGn1RTMg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org, patchwork-lst@pengutronix.de, "David S. Miller" <davem@davemloft.net>, kernel@pengutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+To: Ran Shalit <ranshalit@gmail.com>, linux-pm@vger.kernel.org
 
-On Tue, 4 Aug 2015, Lucas Stach wrote:
+On 08/01/2015 09:34 PM, Ran Shalit wrote:
+> Hello,
+>
+> Maybe if someone here understands cpuidel he can help me...
+>
+> I am using omap, with cpuidel and I have some strange behaviour only
+> when cpuidle is used:
+> 1.  I test ethernet bandwidth with iperf
+> 2. With large packet test (16k), I get same bandwidth in version with
+> cpuidle support as in version without cpuidel supported.
+> 3. With small packet test (<2000 bytes), I get high degredation in
+> performance in version with cpuidle. On viewing statistics I see that
+> the cpu gets into cpu inactive state (C3 state -  not retention yet,
+> only cpu not active). I guess this is the cuase of the degredation.
+> With large packets I get no increment in C3 state usage.
+> 4. I think that menu governer behaviour might explain this, but I
+> don't understand it deeply enough.
+>
+> Can anyone shed a light on this ? Is there anything I can do to overc=
+ome this ?
 
-> Am Montag, den 03.08.2015, 14:28 -0400 schrieb Alan Stern:
-> > On Mon, 3 Aug 2015, Uwe [iso-8859-1] Kleine-Knig wrote:
-> > 
-> > > Hello,
-> > > 
-> > > I have no clue about runtime-pm, but I added a few people to Cc: who
-> > > should know better ...
-> > > 
-> > > Best regards
-> > > Uwe
-> > > 
-> > > On Mon, Aug 03, 2015 at 06:15:54PM +0200, Andrew Lunn wrote:
-> > > > On Mon, Aug 03, 2015 at 05:50:11PM +0200, Lucas Stach wrote:
-> > > > > The clocks are initially active and thus the device is marked active.
-> > > > > This still keeps the PM refcount at 0, the pm_runtime_put_autosuspend()
-> > > > > call at the end of probe then leaves us with an invalid refcount of -1,
-> > > > > which in turn leads to the device staying in suspended state even though
-> > > > > netdev open had been called.
-> > > > > 
-> > > > > Fix this by initializing the refcount to be coherent with the initial
-> > > > > device status.
-> > > > > 
-> > > > > Fixes:
-> > > > > 8fff755e9f8 (net: fec: Ensure clocks are enabled while using mdio bus)
-> > > > > 
-> > > > > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
-> > > > > ---
-> > > > > Please apply this as a fix for 4.2
-> > > > > ---
-> > > > >  drivers/net/ethernet/freescale/fec_main.c | 1 +
-> > > > >  1 file changed, 1 insertion(+)
-> > > > > 
-> > > > > diff --git a/drivers/net/ethernet/freescale/fec_main.c b/drivers/net/ethernet/freescale/fec_main.c
-> > > > > index 32e3807c650e..271bb5862346 100644
-> > > > > --- a/drivers/net/ethernet/freescale/fec_main.c
-> > > > > +++ b/drivers/net/ethernet/freescale/fec_main.c
-> > > > > @@ -3433,6 +3433,7 @@ fec_probe(struct platform_device *pdev)
-> > > > >  
-> > > > >  	pm_runtime_set_autosuspend_delay(&pdev->dev, FEC_MDIO_PM_TIMEOUT);
-> > > > >  	pm_runtime_use_autosuspend(&pdev->dev);
-> > > > > +	pm_runtime_get_noresume(&pdev->dev);
-> > > > >  	pm_runtime_set_active(&pdev->dev);
-> > > > >  	pm_runtime_enable(&pdev->dev);
-> > > > 
-> > > > This might work, but is it the correct fix?
-> > 
-> > It looks reasonable to me.  It might also make sense to move all of
-> > that pm_runtime_* stuff to the end of the probe routine.  Notice that
-> > they don't get undone if register_netdev() fails.
-> > 
-> Unfortunately we can not move RPM enabling to the end of probe, as the
-> MDIO read/write functions that rely on RPM are already called while we
-> are still in the middle of the probe function.
+Is an omap3 or omap4 ?
 
-In that case, adding a call pm_runtime_get_noresume() is the right 
-thing to do.
 
-> I agree that we need better error handling here, but that comment
-> applies to the whole FEC probe function. I think that this might be
-> invasive enough to justify a delay to the next merge window, not really
-> material for the late RCs.
 
-That's entirely up to you, of course.
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-Alan Stern
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
