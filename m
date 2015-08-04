@@ -1,75 +1,184 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v3 3/6] power: Add support for DA9150 Fuel-Gauge
-Date: Tue, 4 Aug 2015 17:29:26 +0200
-Message-ID: <20150804152925.GA2848@earth>
-References: <cover.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
- <d122a6ffc20fca836847016895e5181f5d2248e7.1436284659.git.Adam.Thomson.Opensource@diasemi.com>
- <20150725172715.GA1697@earth>
- <2E89032DDAA8B9408CB92943514A0337AB5690C3@SW-EX-MBX01.diasemi.com>
- <20150803172542.GD4856@earth>
- <2E89032DDAA8B9408CB92943514A0337AB56930C@SW-EX-MBX01.diasemi.com>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: [PATCH v7 4/8] ACPI: Introduce CPU performance controls using CPPC
+Date: Tue, 4 Aug 2015 11:38:46 -0400
+Message-ID: <CAJ5Y-eZSO3UT34FYFyAo5WYS5sXfvYFXkJMV9NDcv7PsOFfEmg@mail.gmail.com>
+References: <cover.1436464513.git.ashwin.chaugule@linaro.org>
+	<e83e47153db1e41b9e45701fc14a4fac266cb782.1436464513.git.ashwin.chaugule@linaro.org>
+	<55C0D50B.6060101@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:44980 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752180AbbHDP3h (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 4 Aug 2015 11:29:37 -0400
-Content-Disposition: inline
-In-Reply-To: <2E89032DDAA8B9408CB92943514A0337AB56930C@SW-EX-MBX01.diasemi.com>
+Received: from mail-lb0-f171.google.com ([209.85.217.171]:35759 "EHLO
+	mail-lb0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752900AbbHDPis (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Aug 2015 11:38:48 -0400
+Received: by lbbpo9 with SMTP id po9so8462899lbb.2
+        for <linux-pm@vger.kernel.org>; Tue, 04 Aug 2015 08:38:46 -0700 (PDT)
+In-Reply-To: <55C0D50B.6060101@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jaswinder.singh@linaro.org" <jaswinder.singh@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>
 
+On 4 August 2015 at 11:06, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> Hi Ashwin,
+>
+> On 09/07/15 19:04, Ashwin Chaugule wrote:
+>>
+>> CPPC stands for Collaborative Processor Performance Controls
+>> and is defined in the ACPI v5.0+ spec. It describes CPU
+>> performance controls on an abstract and continuous scale
+>> allowing the platform (e.g. remote power processor) to flexibly
+>> optimize CPU performance with its knowledge of power budgets
+>> and other architecture specific knowledge.
+>>
+>> This patch adds a shim which exports commonly used functions
+>> to get and set CPPC specific controls for each CPU. This enables
+>> CPUFreq drivers to gather per CPU performance data and use
+>> with exisiting governors or even allows for customized governors
+>> which are implemented inside CPUFreq drivers.
+>>
+>> Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+>> Reviewed-by: Al Stone <al.stone@linaro.org>
+>> ---
+>>   drivers/acpi/Kconfig     |  14 +
+>>   drivers/acpi/Makefile    |   1 +
+>>   drivers/acpi/cppc_acpi.c | 812
+>> +++++++++++++++++++++++++++++++++++++++++++++++
+>>   include/acpi/cppc_acpi.h | 137 ++++++++
+>>   4 files changed, 964 insertions(+)
+>>   create mode 100644 drivers/acpi/cppc_acpi.c
+>>   create mode 100644 include/acpi/cppc_acpi.h
+>>
+>
+> [..]
+>
+>
+>> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+>> new file mode 100644
+>> index 0000000..9c89767
+>> --- /dev/null
+>> +++ b/drivers/acpi/cppc_acpi.c
+>> @@ -0,0 +1,812 @@
+>> +/*
+>> + * CPPC (Collaborative Processor Performance Control) methods used
+>> + * by CPUfreq drivers.
+>> + *
+>> + * (C) Copyright 2014, 2015 Linaro Ltd.
+>> + * Author: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public License
+>> + * as published by the Free Software Foundation; version 2
+>> + * of the License.
+>> + *
+>> + * CPPC describes a few methods for controlling CPU performance using
+>> + * information from a per CPU table called CPC. This table is described
+>> in
+>> + * the ACPI v5.0+ specification. The table consists of a list of
+>> + * registers which may be memory mapped or hardware registers and also
+>> may
+>> + * include some static integer values.
+>> + *
+>> + * CPU performance is on an abstract continuous scale as against a
+>> discretized
+>> + * P-state scale which is tied to CPU frequency only. In brief, the basic
+>> + * operation involves:
+>> + *
+>> + * - OS makes a CPU performance request. (Can provide min and max bounds)
+>> + *
+>> + * - Platform (such as BMC) is free to optimize request within requested
+>> bounds
+>> + *   depending on power/thermal budgets etc.
+>> + *
+>> + * - Platform conveys its decision back to OS
+>> + *
+>> + * The communication between OS and platform occurs through another
+>> medium
+>> + * called (PCC) Platform Communication Channel. This is a generic mailbox
+>> like
+>> + * mechanism which includes doorbell semantics to indicate register
+>> updates.
+>> + * See drivers/mailbox/pcc.c for details on PCC.
+>> + *
+>> + * Finer details about the PCC and CPPC spec are available in the latest
+>> + * ACPI 5.1 specification.
+>> + */
+>> +
+>> +#define pr_fmt(fmt)    "ACPI CPPC: " fmt
+>> +
+>> +#include <linux/cpufreq.h>
+>> +#include <linux/delay.h>
+>> +
+>> +#include <acpi/cppc_acpi.h>
+>> +/*
+>> + * Lock to provide mutually exclusive access to the PCC
+>> + * channel. e.g. When the remote updates the shared region
+>> + * with new data, the reader needs to be protected from
+>> + * other CPUs activity on the same channel.
+>> + */
+>> +static DEFINE_SPINLOCK(pcc_lock);
+>> +
+>> +static DEFINE_PER_CPU(struct cpc_desc *, cpc_desc_ptr);
+>> +
+>> +/* This layer handles all the PCC specifics for CPPC. */
+>> +static struct mbox_chan *pcc_channel;
+>> +static void __iomem *pcc_comm_addr;
+>> +static u64 comm_base_addr;
+>> +static int pcc_subspace_idx = -1;
+>> +static u16 pcc_cmd_delay;
+>> +static int pcc_channel_acquired;
+>> +
+>> +#define NUM_RETRIES 500
+>> +
+>> +static int send_pcc_cmd(u16 cmd)
+>> +{
+>> +       int err, result = 0;
+>> +       int retries = NUM_RETRIES;
+>> +       struct acpi_pcct_hw_reduced *pcct_ss = pcc_channel->con_priv;
+>> +       struct acpi_pcct_shared_memory *generic_comm_base =
+>> +               (struct acpi_pcct_shared_memory *) pcc_comm_addr;
+>> +       u32 cmd_latency = pcct_ss->latency;
+>> +
+>> +       /* Write to the shared comm region. */
+>> +       writew(cmd, &generic_comm_base->command);
+>> +
+>> +       /* Flip CMD COMPLETE bit */
+>> +       writew(0, &generic_comm_base->status);
+>> +
+>> +       err = mbox_send_message(pcc_channel, &cmd);
+>> +       if (err < 0) {
+>> +               pr_err("Err sending PCC mbox message. cmd:%d, ret:%d\n",
+>> +                               cmd, err);
+>> +               return err;
+>> +       }
+>> +
+>> +       /* Wait for a nominal time to let platform processes command. */
+>> +       udelay(cmd_latency);
+>
+>
+> I don't think above delay belongs here. It should be part of PCC driver.
 
---rwEMma7ioTxnRzrJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This delay is PCC subspace specific, so I think it belongs to a client
+(subspace).
 
-Hi,
+> I need to go through PCC again, initially I objected that some part of
+> client code was in PCC driver which seems to be fixed now with commit
+> 33350e6b1833 ("Mailbox: Restructure and simplify PCC mailbox code").
+>
+> But now I think the controller code is getting into the client side.
+> Ideally you shouldn't access anything related to PCC controller here.
 
-On Tue, Aug 04, 2015 at 08:21:36AM +0000, Opensource [Adam Thomson] wrote:
-> > The header states GPL v2+.
->=20
-> Yes, and this matches the "GPL" string as I understand it. The following =
-is
-> taken from "include/linux/module.h":
->=20
-> ---
-> /*
->  * The following license idents are currently accepted as indicating free
->  * software modules
->  *
->  *	"GPL"				[GNU Public License v2 or later]
->  *	"GPL v2"			[GNU Public License v2]
+I think its fair to address all PCC details specific to the client in
+the client side code. Moreover this makes it much cleaner to handle
+multiple users of one subspace. e.g. multiple CPUs trying to
+concurrently access the CPPC subspace.
 
-Right, my mistake.
+>
+> As I started looking at PCC, I found few issue there. I will post them
+> separately for discussion.
 
--- Sebastian
+Ok.
 
---rwEMma7ioTxnRzrJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVwNpRAAoJENju1/PIO/qaE8QP/2p4rKggNdEAAUsGJ9c7JG0r
-YrRW8MGkareGc01Zr8nzM3QJdcpH8H5SHzmZDYd0wuBZIgd/hGMQ2eqcJK4jo2Kl
-jCIgNj/NdE8pwabs0Noaz+9SSBE8GwUFqqDSy6dT7eqQPqYumaJ/7xyMIR6UiBzV
-n/LHTjsHnT+PtHTf7wocTa2O0cNpU/t/DBVoyF5eppDgjJVlDN50ZFVVKXjpJSQG
-Qhdu7wTA230yI/vEBHvUNdUuGGBhd0kP57BfYKMBCetTGJsDlVTHHw+YXlMLg492
-mdK8e4xOiOJaXmqNZ6SPZLFVfknxOKmTJrwQZC41GfTu7yXofvzIKd6U5VEMc2JU
-03tqn8gNQvAyjcMhVIa0wCVOfkvQWHbXJLEVQEP57FP8D78HfVV7JTcrMCcPFCZu
-CSYsIkd+giaCdmoelZ6YHOdQxLHSAR3r5f0+YvPy4AjdpWwLeTaNbody2hby9DNF
-wLE9IhVGhpgnLWzswbvL7ZIO0Lqo/RtVfscL/NB3ETdV0Fa3AiKOyvcHJ60sRu8G
-3u7LCy3UxbsAo7nsZSPr4PhpYNmi08dBJBhTSd9Ok1UMp3Um8y1fNdqV6TEB5cdq
-stX9Fk8yZd7gwhEvJZjFqYpLAQ4Zf21R3B3qjKOQFrx0mWsDxckqDlSSpVQoCHEO
-lrK6Xb945r0ZILR7k99l
-=L90t
------END PGP SIGNATURE-----
-
---rwEMma7ioTxnRzrJ--
+Regards,
+Ashwin.
