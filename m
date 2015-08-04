@@ -1,90 +1,80 @@
-From: Xunlei Pang <xlpang@126.com>
-Subject: [PATCH v2 2/3] cpuidle/coupled: Remove redundant 'dev' argument of cpuidle_state_is_coupled()
-Date: Tue,  4 Aug 2015 13:48:56 +0800
-Message-ID: <1438667337-16903-2-git-send-email-xlpang@126.com>
-References: <1438667337-16903-1-git-send-email-xlpang@126.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1438667337-16903-1-git-send-email-xlpang@126.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Xunlei Pang <pang.xunlei@linaro.org>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [PATCH] net: fec: fix initial runtime PM refcount
+Date: Tue, 04 Aug 2015 09:43:36 +0200
+Message-ID: <1438674216.2458.24.camel@pengutronix.de>
+References: <Pine.LNX.4.44L0.1508031416250.1667-100000@iolanthe.rowland.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <netdev-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1508031416250.1667-100000@iolanthe.rowland.org>
+Sender: netdev-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Andrew Lunn <andrew@lunn.ch>, netdev@vger.kernel.org, patchwork-lst@pengutronix.de, "David S. Miller" <davem@davemloft.net>, kernel@pengutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Xunlei Pang <pang.xunlei@linaro.org>
+Am Montag, den 03.08.2015, 14:28 -0400 schrieb Alan Stern:
+> On Mon, 3 Aug 2015, Uwe [iso-8859-1] Kleine-Knig wrote:
+> 
+> > Hello,
+> > 
+> > I have no clue about runtime-pm, but I added a few people to Cc: who
+> > should know better ...
+> > 
+> > Best regards
+> > Uwe
+> > 
+> > On Mon, Aug 03, 2015 at 06:15:54PM +0200, Andrew Lunn wrote:
+> > > On Mon, Aug 03, 2015 at 05:50:11PM +0200, Lucas Stach wrote:
+> > > > The clocks are initially active and thus the device is marked active.
+> > > > This still keeps the PM refcount at 0, the pm_runtime_put_autosuspend()
+> > > > call at the end of probe then leaves us with an invalid refcount of -1,
+> > > > which in turn leads to the device staying in suspended state even though
+> > > > netdev open had been called.
+> > > > 
+> > > > Fix this by initializing the refcount to be coherent with the initial
+> > > > device status.
+> > > > 
+> > > > Fixes:
+> > > > 8fff755e9f8 (net: fec: Ensure clocks are enabled while using mdio bus)
+> > > > 
+> > > > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+> > > > ---
+> > > > Please apply this as a fix for 4.2
+> > > > ---
+> > > >  drivers/net/ethernet/freescale/fec_main.c | 1 +
+> > > >  1 file changed, 1 insertion(+)
+> > > > 
+> > > > diff --git a/drivers/net/ethernet/freescale/fec_main.c b/drivers/net/ethernet/freescale/fec_main.c
+> > > > index 32e3807c650e..271bb5862346 100644
+> > > > --- a/drivers/net/ethernet/freescale/fec_main.c
+> > > > +++ b/drivers/net/ethernet/freescale/fec_main.c
+> > > > @@ -3433,6 +3433,7 @@ fec_probe(struct platform_device *pdev)
+> > > >  
+> > > >  	pm_runtime_set_autosuspend_delay(&pdev->dev, FEC_MDIO_PM_TIMEOUT);
+> > > >  	pm_runtime_use_autosuspend(&pdev->dev);
+> > > > +	pm_runtime_get_noresume(&pdev->dev);
+> > > >  	pm_runtime_set_active(&pdev->dev);
+> > > >  	pm_runtime_enable(&pdev->dev);
+> > > 
+> > > This might work, but is it the correct fix?
+> 
+> It looks reasonable to me.  It might also make sense to move all of
+> that pm_runtime_* stuff to the end of the probe routine.  Notice that
+> they don't get undone if register_netdev() fails.
+> 
+Unfortunately we can not move RPM enabling to the end of probe, as the
+MDIO read/write functions that rely on RPM are already called while we
+are still in the middle of the probe function.
 
-For cpuidle_state_is_coupled(), 'dev' is not used, so remove it.
+I agree that we need better error handling here, but that comment
+applies to the whole FEC probe function. I think that this might be
+invasive enough to justify a delay to the next merge window, not really
+material for the late RCs.
 
-Signed-off-by: Xunlei Pang <pang.xunlei@linaro.org>
----
- drivers/cpuidle/coupled.c | 4 +---
- drivers/cpuidle/cpuidle.c | 4 ++--
- drivers/cpuidle/cpuidle.h | 7 +++----
- 3 files changed, 6 insertions(+), 9 deletions(-)
+Regards,
+Lucas
 
-diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
-index 6493e40..1523e2d 100644
---- a/drivers/cpuidle/coupled.c
-+++ b/drivers/cpuidle/coupled.c
-@@ -176,14 +176,12 @@ void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, atomic_t *a)
- 
- /**
-  * cpuidle_state_is_coupled - check if a state is part of a coupled set
-- * @dev: struct cpuidle_device for the current cpu
-  * @drv: struct cpuidle_driver for the platform
-  * @state: index of the target state in drv->states
-  *
-  * Returns true if the target state is coupled with cpus besides this one
-  */
--bool cpuidle_state_is_coupled(struct cpuidle_device *dev,
--	struct cpuidle_driver *drv, int state)
-+bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state)
- {
- 	return drv->states[state].flags & CPUIDLE_FLAG_COUPLED;
- }
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 3325393..17a6dc0 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -214,7 +214,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 		tick_broadcast_exit();
- 	}
- 
--	if (!cpuidle_state_is_coupled(dev, drv, entered_state))
-+	if (!cpuidle_state_is_coupled(drv, entered_state))
- 		local_irq_enable();
- 
- 	diff = ktime_to_us(ktime_sub(time_end, time_start));
-@@ -263,7 +263,7 @@ int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- int cpuidle_enter(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 		  int index)
- {
--	if (cpuidle_state_is_coupled(dev, drv, index))
-+	if (cpuidle_state_is_coupled(drv, index))
- 		return cpuidle_enter_state_coupled(dev, drv, index);
- 	return cpuidle_enter_state(dev, drv, index);
- }
-diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
-index ee97e96..178c5ad 100644
---- a/drivers/cpuidle/cpuidle.h
-+++ b/drivers/cpuidle/cpuidle.h
-@@ -34,15 +34,14 @@ extern int cpuidle_add_sysfs(struct cpuidle_device *dev);
- extern void cpuidle_remove_sysfs(struct cpuidle_device *dev);
- 
- #ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
--bool cpuidle_state_is_coupled(struct cpuidle_device *dev,
--		struct cpuidle_driver *drv, int state);
-+bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state);
- int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
- 		struct cpuidle_driver *drv, int next_state);
- int cpuidle_coupled_register_device(struct cpuidle_device *dev);
- void cpuidle_coupled_unregister_device(struct cpuidle_device *dev);
- #else
--static inline bool cpuidle_state_is_coupled(struct cpuidle_device *dev,
--		struct cpuidle_driver *drv, int state)
-+static inline
-+bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state)
- {
- 	return false;
- }
 -- 
-1.9.1
+Pengutronix e.K.             | Lucas Stach                 |
+Industrial Linux Solutions   | http://www.pengutronix.de/  |
