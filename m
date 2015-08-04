@@ -1,8 +1,8 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v4 16/16] ARM: shmobile: R-Mobile: Use CPG/MSTP Clock Domain
- attach/detach helpers
-Date: Tue,  4 Aug 2015 14:28:17 +0200
-Message-ID: <1438691297-29235-17-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v4 13/16] drivers: sh: Disable legacy default PM Domain on
+ emev2
+Date: Tue,  4 Aug 2015 14:28:14 +0200
+Message-ID: <1438691297-29235-14-git-send-email-geert+renesas@glider.be>
 References: <1438691297-29235-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,21 +22,9 @@ To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Mich
 Cc: devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The R-Mobile PM Domain driver manages both power domains and a clock
-domain.
-
-The clock domain part is very similar to the CPG/MSTP Clock Domain,
-which is used on shmobile SoCs without device power domains, except for
-the way how clocks suitable for power management are selected:
-  - The former uses the first clock tied to the device through the NULL
-    con_id, which is a relic from the legacy pm_clk_notifier-based
-    method in drivers/sh/pm_runtime.c,
-  - The latter looks for suitable clocks in DT, which is more
-    future-proof.
-
-All platforms using this driver are now supported in DT-based ARM
-multi-platform builds only, hence switch to using the CPG/MSTP Clock
-Domain helpers.
+EMMA Mobile EV2 doesn't have MSTP clocks. All its device drivers manage
+clocks explicitly, without relying on Runtime PM, so it doesn't need the
+legacy default PM Domain.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
@@ -45,75 +33,25 @@ v4:
   - Add Reviewed-by,
 
 v3:
-  - Drop -legacy support, hence this patch depends on r8a7740/sh73a0
-    legacy removal,
-  - Use "CPG/MSTP Clock Domain" instead of "CPG Clock Domain",
-
-v2:
-  - New.
+  - New, extracted from "[PATCH v2 12/14] drivers: sh: Stop using
+    pm_runtime.c for multi-platform shmobile with genpd".
 ---
- arch/arm/mach-shmobile/pm-rmobile.c | 35 +++--------------------------------
- 1 file changed, 3 insertions(+), 32 deletions(-)
+ drivers/sh/pm_runtime.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
-index a5b96b990aea8dfc..89068c8ec50f2c76 100644
---- a/arch/arm/mach-shmobile/pm-rmobile.c
-+++ b/arch/arm/mach-shmobile/pm-rmobile.c
-@@ -12,6 +12,7 @@
-  * License.  See the file "COPYING" in the main directory of this archive
-  * for more details.
-  */
-+#include <linux/clk/shmobile.h>
- #include <linux/console.h>
- #include <linux/delay.h>
- #include <linux/of.h>
-@@ -124,36 +125,6 @@ static bool rmobile_pd_active_wakeup(struct device *dev)
- 	return true;
- }
- 
--static int rmobile_pd_attach_dev(struct generic_pm_domain *domain,
--				 struct device *dev)
--{
--	int error;
--
--	error = pm_clk_create(dev);
--	if (error) {
--		dev_err(dev, "pm_clk_create failed %d\n", error);
--		return error;
--	}
--
--	error = pm_clk_add(dev, NULL);
--	if (error) {
--		dev_err(dev, "pm_clk_add failed %d\n", error);
--		goto fail;
--	}
--
--	return 0;
--
--fail:
--	pm_clk_destroy(dev);
--	return error;
--}
--
--static void rmobile_pd_detach_dev(struct generic_pm_domain *domain,
--				  struct device *dev)
--{
--	pm_clk_destroy(dev);
--}
--
- static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
+diff --git a/drivers/sh/pm_runtime.c b/drivers/sh/pm_runtime.c
+index d3d1891cda3cf9a8..ad9188138ed56ffb 100644
+--- a/drivers/sh/pm_runtime.c
++++ b/drivers/sh/pm_runtime.c
+@@ -35,8 +35,7 @@ static struct pm_clk_notifier_block platform_bus_notifier = {
+ static int __init sh_pm_runtime_init(void)
  {
- 	struct generic_pm_domain *genpd = &rmobile_pd->genpd;
-@@ -164,8 +135,8 @@ static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
- 	genpd->dev_ops.active_wakeup	= rmobile_pd_active_wakeup;
- 	genpd->power_off		= rmobile_pd_power_down;
- 	genpd->power_on			= rmobile_pd_power_up;
--	genpd->attach_dev		= rmobile_pd_attach_dev;
--	genpd->detach_dev		= rmobile_pd_detach_dev;
-+	genpd->attach_dev		= cpg_mstp_attach_dev;
-+	genpd->detach_dev		= cpg_mstp_detach_dev;
- 	__rmobile_pd_power_up(rmobile_pd, false);
- }
- 
+ 	if (IS_ENABLED(CONFIG_ARCH_SHMOBILE_MULTI)) {
+-		if (!of_machine_is_compatible("renesas,emev2") &&
+-		    !of_machine_is_compatible("renesas,r7s72100") &&
++		if (!of_machine_is_compatible("renesas,r7s72100") &&
+ #ifndef CONFIG_PM_GENERIC_DOMAINS_OF
+ 		    !of_machine_is_compatible("renesas,r8a73a4") &&
+ 		    !of_machine_is_compatible("renesas,r8a7740") &&
 -- 
 1.9.1
