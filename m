@@ -1,71 +1,59 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: [PATCH] thermal: power_allocator: do not use devm* interfaces
-Date: Tue, 4 Aug 2015 09:33:40 -0700
-Message-ID: <20150804163340.GA33245@dtor-ws>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: [PATCH RESEND] power: bq24190_charger: Fix charge type sysfs property
+Date: Tue, 4 Aug 2015 11:36:17 -0500
+Message-ID: <1438706177-8115-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f176.google.com ([209.85.192.176]:36685 "EHLO
-	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752998AbbHDQdo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Aug 2015 12:33:44 -0400
-Content-Disposition: inline
+Received: from arroyo.ext.ti.com ([192.94.94.40]:48679 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752542AbbHDQgx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 4 Aug 2015 12:36:53 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Javi Merino <javi.merino@arm.com>, Lukasz Majewski <l.majewski@samsung.com>, Peter Feuerer <peter@piie.net>, Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, Dan Murphy <dmurphy@ti.com>, Andrew Davis <afd@ti.com>, Andreas Dannenberg <dannenberg@ti.com>
 
-The code in question is called outside of standard driver
-probe()/remove() callbacks and thus will not benefit from use of devm*
-infrastructure.
+Access to the BQ24190's configurable charge type property (none, trickle,
+fast) is being masked by an incorrect power_supply_property entry. After
+applying this patch a new 'charge_type' property will appear in the
+bq24190-charger sysfs folder backed up by getters/setters already
+present in the driver.
 
-Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
 ---
- drivers/thermal/power_allocator.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+This is a RESEND of yesterday's patch that for some reason did not seem to
+have gotten picked up correctly...
 
-diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-index 13ccf00..e9ba29f 100644
---- a/drivers/thermal/power_allocator.c
-+++ b/drivers/thermal/power_allocator.c
-@@ -334,7 +334,7 @@ static int allocate_power(struct thermal_zone_device *tz,
- 				      max_allocatable_power, current_temp,
- 				      control_temp - current_temp);
- 
--	devm_kfree(&tz->device, req_power);
-+	kfree(req_power);
- unlock:
- 	mutex_unlock(&tz->lock);
- 
-@@ -426,7 +426,7 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
- 		return -EINVAL;
- 	}
- 
--	params = devm_kzalloc(&tz->device, sizeof(*params), GFP_KERNEL);
-+	params = kzalloc(sizeof(*params), GFP_KERNEL);
- 	if (!params)
- 		return -ENOMEM;
- 
-@@ -468,14 +468,14 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
- 	return 0;
- 
- free:
--	devm_kfree(&tz->device, params);
-+	kfree(params);
- 	return ret;
+The current driver incorrectly tries to declare the charge type property
+using POWER_SUPPLY_PROP_TYPE which is the wrong declaration for this
+(actually POWER_SUPPLY_PROP_TYPE itself has been superseeded by
+power_supply.type and isn't even used anymore as part of the power
+supply property declarations).
+
+After implementing the fix tested this aspect of the driver using an
+actual BQ24190 device and could witness the impact the change of charge
+type has on the battery (writing '1' to the new sysfs property means
+charging off, '2' will do trickle charging, and '3' will result in
+fast charging).
+
+
+ drivers/power/bq24190_charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/power/bq24190_charger.c b/drivers/power/bq24190_charger.c
+index 052db78..40ae47c 100644
+--- a/drivers/power/bq24190_charger.c
++++ b/drivers/power/bq24190_charger.c
+@@ -902,7 +902,7 @@ static int bq24190_charger_property_is_writeable(struct power_supply *psy,
  }
  
- static void power_allocator_unbind(struct thermal_zone_device *tz)
- {
- 	dev_dbg(&tz->device, "Unbinding from thermal zone %d\n", tz->id);
--	devm_kfree(&tz->device, tz->governor_data);
-+	kfree(tz->governor_data);
- 	tz->governor_data = NULL;
- }
- 
+ static enum power_supply_property bq24190_charger_properties[] = {
+-	POWER_SUPPLY_PROP_TYPE,
++	POWER_SUPPLY_PROP_CHARGE_TYPE,
+ 	POWER_SUPPLY_PROP_HEALTH,
+ 	POWER_SUPPLY_PROP_ONLINE,
+ 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
 -- 
-2.5.0.rc2.392.g76e840b
+1.9.1
 
-
--- 
-Dmitry
