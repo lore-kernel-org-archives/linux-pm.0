@@ -1,72 +1,45 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] thermal: remove power allocator from list of default
- governors
-Date: Wed, 05 Aug 2015 09:18:39 -0700
-Message-ID: <1438791519.17718.77.camel@spandruv-DESK3.jf.intel.com>
-References: <20150804163921.GA36852@dtor-ws> <20150805083755.GC2688@e104805>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: [RFC] TI BQ242xx Battery Charger Development/Consolidation Plans
+Date: Wed, 5 Aug 2015 11:28:39 -0500
+Message-ID: <55C239B7.4000902@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:59678 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752379AbbHEQVK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 5 Aug 2015 12:21:10 -0400
-In-Reply-To: <20150805083755.GC2688@e104805>
+Received: from devils.ext.ti.com ([198.47.26.153]:55082 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752673AbbHEQ3J (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 12:29:09 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Tushar Dave <tushar.n.dave@intel.com>, Lan Tianyu <tianyu.lan@intel.com>, Punit Agrawal <Punit.Agrawal@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, =?UTF-8?B?UGFsaSBSb2jDoXI=?= <pali.rohar@gmail.com>, Laurentiu Palcu <laurentiu.palcu@intel.com>
+Cc: linux-pm@vger.kernel.org
 
-On Wed, 2015-08-05 at 09:37 +0100, Javi Merino wrote:
-> On Tue, Aug 04, 2015 at 05:39:21PM +0100, Dmitry Torokhov wrote:
-> > As it currently stands the power allocator governor can not handle
-> > thermal zones that are not specifically crafted and therefore can not be
-> > used as a default governor.
-> > 
-> > Users need to explicitly enable this governor for thermal zones that do
-> > have enough information for its operation.
-> > 
-> > Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> > ---
-> >  drivers/thermal/Kconfig | 8 --------
-> >  1 file changed, 8 deletions(-)
-> > 
-> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > index 0390044..34d05d3 100644
-> > --- a/drivers/thermal/Kconfig
-> > +++ b/drivers/thermal/Kconfig
-> > @@ -82,14 +82,6 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
-> >  	  Select this if you want to let the user space manage the
-> >  	  platform thermals.
-> >  
-> > -config THERMAL_DEFAULT_GOV_POWER_ALLOCATOR
-> > -	bool "power_allocator"
-> > -	select THERMAL_GOV_POWER_ALLOCATOR
-> > -	help
-> > -	  Select this if you want to control temperature based on
-> > -	  system and device power allocation. This governor can only
-> > -	  operate on cooling devices that implement the power API.
-> > -
-> 
-> Currently the only way we have for a thermal zone configured from
-> device tree to use a governor from the kernel boot is by using
-> THERMAL_DEFAULT_GOV_*.  If we remove this option some devices won't
-> have a workable thermal framework until userspace is up and running.
-> 
-> Would you rather have the power allocator governor accept every
-> thermal zone?
-May be allow to select when the binded cooling device can support this
-governor.
+Not too long I ago started working on a new driver called bq242xx_charger.c 
+that will add support for TI's BQ24250, BQ24251, BQ24261M, and BQ24262 Li-Ion
+battery charger/power-path management ICs and that work is about 50% done. I 
+chose a working name of bq242xx_charger.c in the hopes that in addition to
+providing immediate support for said devices that this driver can later be used
+as a platform to add other devices of the BQ242xx sub-family in an effort to
+re-use/consolidate and help keep drivers/power organized.
 
-Thanks,
-Srinivas
+Long story short I also realized that we just got a new bq24257_charger.c
+driver (for the BQ24257) already in the Linux 4.2 tree which creates somewhat
+of a conflict with the bq242xx_charger.c work in progress.
 
-> Cheers,
-> Javi
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I would like to solicit ideas/comments regarding the following plan of attack:
 
+- Continue bq242xx_charger.c development as scoped in the first paragraph
+- Work on getting it accepted into upstream
+- As future work, absorb the already existing bq24257_charger.c driver into the
+  bq242xx_charger.c driver, and deprecate its usage
 
+There might be a potential risk for user confusion for a transitional time if
+somebody was just looking at the filenames to select their driver due to part
+number overlap. However I argue folks are more likely to go the Kconfig route
+to select their driver so this may not be a problem after all.
+
+Thanks!
+
+--
+Andreas Dannenberg Texas Instruments Inc.
