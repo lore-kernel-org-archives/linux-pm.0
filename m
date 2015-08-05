@@ -1,84 +1,71 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH RFC 05/10] arm: dts: Add power domain device bindings for
- APQ8084
-Date: Wed,  5 Aug 2015 10:32:41 -0600
-Message-ID: <1438792366-2737-6-git-send-email-lina.iyer@linaro.org>
-References: <438731339-58317-1-git-send-email-lina.iyer@linaro.org>
- <1438792366-2737-1-git-send-email-lina.iyer@linaro.org>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] thermal: remove power allocator from list of default
+ governors
+Date: Wed, 5 Aug 2015 09:35:39 -0700
+Message-ID: <20150805163539.GA3603@dtor-ws>
+References: <20150804163921.GA36852@dtor-ws>
+ <20150805083755.GC2688@e104805>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1438792366-2737-1-git-send-email-lina.iyer@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: msivasub@codeaurora.org, robh@kernel.org, sboyd@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>, agross@codeaurora.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150805083755.GC2688@e104805>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Tushar Dave <tushar.n.dave@intel.com>, Lan Tianyu <tianyu.lan@intel.com>, Punit Agrawal <Punit.Agrawal@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Define L2 SAW as the power domain provider and individual cpus are the
-power domain consumers.
+On Wed, Aug 05, 2015 at 09:37:55AM +0100, Javi Merino wrote:
+> On Tue, Aug 04, 2015 at 05:39:21PM +0100, Dmitry Torokhov wrote:
+> > As it currently stands the power allocator governor can not handle
+> > thermal zones that are not specifically crafted and therefore can not be
+> > used as a default governor.
+> > 
+> > Users need to explicitly enable this governor for thermal zones that do
+> > have enough information for its operation.
+> > 
+> > Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> > ---
+> >  drivers/thermal/Kconfig | 8 --------
+> >  1 file changed, 8 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > index 0390044..34d05d3 100644
+> > --- a/drivers/thermal/Kconfig
+> > +++ b/drivers/thermal/Kconfig
+> > @@ -82,14 +82,6 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
+> >  	  Select this if you want to let the user space manage the
+> >  	  platform thermals.
+> >  
+> > -config THERMAL_DEFAULT_GOV_POWER_ALLOCATOR
+> > -	bool "power_allocator"
+> > -	select THERMAL_GOV_POWER_ALLOCATOR
+> > -	help
+> > -	  Select this if you want to control temperature based on
+> > -	  system and device power allocation. This governor can only
+> > -	  operate on cooling devices that implement the power API.
+> > -
+> 
+> Currently the only way we have for a thermal zone configured from
+> device tree to use a governor from the kernel boot is by using
+> THERMAL_DEFAULT_GOV_*.  If we remove this option some devices won't
+> have a workable thermal framework until userspace is up and running.
 
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
----
- arch/arm/boot/dts/qcom-apq8084.dtsi | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+Why would step wise, or fair share be not workable (even if not optimal)
+thermal frameworks? It doe snot take that long to get to [early]
+userspace. Half of the boot time the thermal framework is not working
+anyway because half of the devices that can act as colling devices are
+not yet logically there.
 
-diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
-index 900ef1f..4a61f8d 100644
---- a/arch/arm/boot/dts/qcom-apq8084.dtsi
-+++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
-@@ -23,6 +23,7 @@
- 			qcom,acc = <&acc0>;
- 			qcom,saw = <&saw0>;
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&saw_l2>;
- 		};
- 
- 		cpu@1 {
-@@ -34,6 +35,7 @@
- 			qcom,acc = <&acc1>;
- 			qcom,saw = <&saw1>;
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&saw_l2>;
- 		};
- 
- 		cpu@2 {
-@@ -45,6 +47,7 @@
- 			qcom,acc = <&acc2>;
- 			qcom,saw = <&saw2>;
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&saw_l2>;
- 		};
- 
- 		cpu@3 {
-@@ -56,6 +59,7 @@
- 			qcom,acc = <&acc3>;
- 			qcom,saw = <&saw3>;
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&saw_l2>;
- 		};
- 
- 		L2: l2-cache {
-@@ -183,9 +187,11 @@
- 		};
- 
- 		saw_l2: power-controller@f9012000 {
--			compatible = "qcom,apq8084-saw2-v2.1-l2", "qcom,saw2";
-+			compatible = "qcom,apq8084-saw2-v2.1-l2", "qcom,saw2",
-+					 "arm,pd";
- 			reg = <0xf9012000 0x1000>;
- 			regulator;
-+			#power-domain-cells = <0>;
- 		};
- 
- 		acc0: clock-controller@f9088000 {
+> 
+> Would you rather have the power allocator governor accept every
+> thermal zone?
+
+If it is to be one of default governors then yes, it needs to be able to
+manage all thermal zones, the same way as the other 3 governors can, as
+far as I know.
+
+Thanks.
+
 -- 
-2.1.4
+Dmitry
