@@ -1,49 +1,138 @@
-From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: [RFC] TI BQ242xx Battery Charger Development/Consolidation Plans
-Date: Wed, 5 Aug 2015 11:05:21 -0500
-Message-ID: <55C23441.2030305@ti.com>
-References: <1438706177-8115-1-git-send-email-dannenberg@ti.com>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: [PATCH v3 6/6] power: bq27xxx_battery: Cleanup health checking
+Date: Wed, 5 Aug 2015 11:05:40 -0500
+Message-ID: <1438790740-29856-7-git-send-email-afd@ti.com>
+References: <1438790740-29856-1-git-send-email-afd@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:49162 "EHLO comal.ext.ti.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:49260 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752668AbbHEQFx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 5 Aug 2015 12:05:53 -0400
-In-Reply-To: <1438706177-8115-1-git-send-email-dannenberg@ti.com>
+	id S1752698AbbHEQHw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 5 Aug 2015 12:07:52 -0400
+In-Reply-To: <1438790740-29856-1-git-send-email-afd@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, =?windows-1252?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>, Laurentiu Palcu <laurentiu.palcu@intel.com>
-Cc: linux-pm@vger.kernel.org
+To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F. Davis" <afd@ti.com>
 
-Not too long I ago started working on a new driver called bq242xx_charger.c 
-that will add support for TI's BQ24250, BQ24251, BQ24261M, and BQ24262 Li-Ion
-battery charger/power-path management ICs and that work is about 50% done. I 
-chose a working name of bq242xx_charger.c in the hopes that in addition to
-providing immediate support for said devices that this driver can later be used
-as a platform to add other devices of the BQ242xx sub-family in an effort to
-re-use/consolidate and help keep drivers/power organized.
+Reorganize the logic checking battery health and add under temperature
+condition checking.
 
-Long story short I also realized that we just got a new bq24257_charger.c
-driver (for the BQ24257) already in the Linux 4.2 tree which creates somewhat
-of a conflict with the bq242xx_charger.c work in progress.
+Signed-off-by: Andrew F. Davis <afd@ti.com>
+Acked-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+ drivers/power/bq27xxx_battery.c | 64 +++++++++++++++++++++++++++------=
+--------
+ 1 file changed, 42 insertions(+), 22 deletions(-)
 
-I would like to solicit ideas/comments regarding the following plan of attack:
-
-- Continue bq242xx_charger.c development as scoped in the first paragraph
-- Work on getting it accepted into upstream
-- As future work, absorb the already existing bq24257_charger.c driver into the
-  bq242xx_charger.c driver, and deprecate its usage
-
-There might be a potential risk for user confusion for a transitional time if
-somebody was just looking at the filenames to select their driver due to part
-number overlap. However I argue folks are more likely to go the Kconfig route
-to select their driver so this may not be a problem after all.
-
-Thanks!
-
--- 
-Andreas Dannenberg
-Texas Instruments Inc.
+diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_ba=
+ttery.c
+index 3098609..ef5b9a3 100644
+--- a/drivers/power/bq27xxx_battery.c
++++ b/drivers/power/bq27xxx_battery.c
+@@ -63,6 +63,8 @@
+ #define BQ27XXX_FLAG_FC		BIT(9)
+ #define BQ27XXX_FLAG_OTD	BIT(14)
+ #define BQ27XXX_FLAG_OTC	BIT(15)
++#define BQ27XXX_FLAG_UT		BIT(14)
++#define BQ27XXX_FLAG_OT		BIT(15)
+=20
+ /* BQ27000 has different layout for Flags register */
+ #define BQ27000_FLAG_EDVF	BIT(0) /* Final End-of-Discharge-Voltage fla=
+g */
+@@ -621,12 +623,36 @@ static int bq27xxx_battery_read_pwr_avg(struct bq=
+27xxx_device_info *di)
+ /*
+  * Returns true if a battery over temperature condition is detected
+  */
+-static int bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u1=
+6 flags)
++static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u=
+16 flags)
+ {
+-	if (di->chip =3D=3D BQ27500 || di->chip =3D=3D BQ27541)
++	if (di->chip =3D=3D BQ27500 || di->chip =3D=3D BQ27541 || di->chip =3D=
+=3D BQ27545)
+ 		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
++	if (di->chip =3D=3D BQ27530 || di->chip =3D=3D BQ27421)
++		return flags & BQ27XXX_FLAG_OT;
++
++	return false;
++}
++
++/*
++ * Returns true if a battery under temperature condition is detected
++ */
++static bool bq27xxx_battery_undertemp(struct bq27xxx_device_info *di, =
+u16 flags)
++{
++	if (di->chip =3D=3D BQ27530 || di->chip =3D=3D BQ27421)
++			return flags & BQ27XXX_FLAG_UT;
++
++	return false;
++}
++
++/*
++ * Returns true if a low state of charge condition is detected
++ */
++static bool bq27xxx_battery_dead(struct bq27xxx_device_info *di, u16 f=
+lags)
++{
++	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
++		return flags & (BQ27000_FLAG_EDV1 | BQ27000_FLAG_EDVF);
+ 	else
+-		return flags & BQ27XXX_FLAG_OTC;
++		return flags & (BQ27XXX_FLAG_SOC1 | BQ27XXX_FLAG_SOCF);
+ }
+=20
+ /*
+@@ -635,29 +661,23 @@ static int bq27xxx_battery_overtemp(struct bq27xx=
+x_device_info *di, u16 flags)
+  */
+ static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
+ {
+-	u16 tval;
++	u16 flags;
+=20
+-	tval =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
+-	if (tval < 0) {
+-		dev_err(di->dev, "error reading flag register:%d\n", tval);
+-		return tval;
++	flags =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
++	if (flags < 0) {
++		dev_err(di->dev, "error reading flag register:%d\n", flags);
++		return flags;
+ 	}
+=20
+-	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010) {
+-		if (tval & BQ27000_FLAG_EDV1)
+-			tval =3D POWER_SUPPLY_HEALTH_DEAD;
+-		else
+-			tval =3D POWER_SUPPLY_HEALTH_GOOD;
+-	} else {
+-		if (tval & BQ27XXX_FLAG_SOCF)
+-			tval =3D POWER_SUPPLY_HEALTH_DEAD;
+-		else if (bq27xxx_battery_overtemp(di, tval))
+-			tval =3D POWER_SUPPLY_HEALTH_OVERHEAT;
+-		else
+-			tval =3D POWER_SUPPLY_HEALTH_GOOD;
+-	}
++	/* Unlikely but important to return first */
++	if (unlikely(bq27xxx_battery_overtemp(di, flags)))
++		return POWER_SUPPLY_HEALTH_OVERHEAT;
++	if (unlikely(bq27xxx_battery_undertemp(di, flags)))
++		return POWER_SUPPLY_HEALTH_COLD;
++	if (unlikely(bq27xxx_battery_dead(di, flags)))
++		return POWER_SUPPLY_HEALTH_DEAD;
+=20
+-	return tval;
++	return POWER_SUPPLY_HEALTH_GOOD;
+ }
+=20
+ static void bq27xxx_battery_update(struct bq27xxx_device_info *di)
+--=20
+1.9.1
 
