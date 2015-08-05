@@ -1,54 +1,65 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: exynos-ppmu: bit-wise operation bugfix.
-Date: Wed, 05 Aug 2015 11:19:08 +0900
-Message-ID: <55C1729C.3090408@samsung.com>
-References: <1139776636.447211438740931685.JavaMail.weblogic@epmlwas03c>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 00/13] Enhance twl4030_charger functionality. - V3
+Date: Wed, 5 Aug 2015 05:35:18 +0200
+Message-ID: <20150805033518.GA16139@earth>
+References: <20150730001113.4012.18086.stgit@noble>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:48644 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751233AbbHECTK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 4 Aug 2015 22:19:10 -0400
-Received: from epcpsbgr5.samsung.com
- (u145.gpu120.samsung.co.kr [203.254.230.145])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
- 64bit (built May  5 2014))
- with ESMTP id <0NSL02BT97RWEP30@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 05 Aug 2015 11:19:08 +0900 (KST)
-In-reply-to: <1139776636.447211438740931685.JavaMail.weblogic@epmlwas03c>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="FCuugMFkClbJLl1L"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150730001113.4012.18086.stgit@noble>
+Sender: linux-kernel-owner@vger.kernel.org
+To: NeilBrown <neil@brown.name>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 08/05/2015 11:15 AM, MyungJoo Ham wrote:
-> 
-> Make it u64 before left-shifting 32bits.
-> 
-> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> ---
->  drivers/devfreq/event/exynos-ppmu.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
-> index f9901f5..f312485 100644
-> --- a/drivers/devfreq/event/exynos-ppmu.c
-> +++ b/drivers/devfreq/event/exynos-ppmu.c
-> @@ -319,7 +319,8 @@ static int exynos_ppmu_v2_get_event(struct devfreq_event_dev *edev,
->  	case PPMU_PMNCNT3:
->  		pmcnt_high = __raw_readl(info->ppmu.base + PPMU_V2_PMCNT3_HIGH);
->  		pmcnt_low = __raw_readl(info->ppmu.base + PPMU_V2_PMCNT3_LOW);
-> -		load_count = (u64)((pmcnt_high & 0xff) << 32) + (u64)pmcnt_low;
-> +		load_count = ((u64)((pmcnt_high & 0xff)) << 32)
-> +			   + (u64)pmcnt_low;
->  		break;
->  	}
->  	edata->load_count = load_count;
-> 
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+--FCuugMFkClbJLl1L
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Chanwoo Choi
+Hi,
+
+On Thu, Jul 30, 2015 at 10:11:24AM +1000, NeilBrown wrote:
+> Following is most of my twl4030_charger patches, rebased against
+>  git://git.infradead.org/battery-2.6
+>=20
+> Since the previous set I have added the conversion to
+> module_platform_driver so EPROBE_DEFER can be used, and fixed
+> a few minor typos.
+>=20
+> This does not include the changes to add extcon support, in part
+> because extcon has seen some changes lately which leave me even more
+> confused about how best to use it than before.
+> I need to sort that out before I can resolve the rest of my usb phy
+> patches and then add a few more charger patches.
+
+Thanks, queued.
+
+-- Sebastian
+
+--FCuugMFkClbJLl1L
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVwYRzAAoJENju1/PIO/qamp0P/3MjpidjsVjMZqUzPrdl5R73
+QnbZ/xJ23WuKJzvNsDs66gu1og6yEIPPy4IzprWlPl/Gq0eFw082hy0M/xE8/HlR
+tzb6F4pqeGHqHCxQWy5SrYaGprLrg/9rk/GnVxOjzDOnKhW6dfiDlUJyiDVmLgY1
+UlD+5E5WYvKQyPL1TtfdnoPutd9yPqzY7vxyNtO8Bxr+bYMVu9RoVAdPLQkWEf9v
+JAY8UEIqfE3alGIrmifJ9ixt4dogQZCgqGRm3TdhjDLYTIK30Rn2hM3NXAlflSLc
+Qip9y9MP/zCGr1Z8QzBEzQb/rIIESncCHPEu0v1DYNumbo+Oawxf58UhXD2s1aE3
+n9e8m0o3ihnxrStkEaPh6c5XA2/g7Ga6yDvEDtUQR0Mlg0e5rWaAy3V0+Y6Fp4Ys
+qvnAScGC41qTv5jcMQOKoNTZOGBH3mrXQ6Ts3l8be90PNNSG30mLRI87NJ01EY4D
+cwezk+A+9M13LVKXrfZydLLSov+TTnN8GWLVXm3iJBZ6P7ZcMUC+ruNdUoMPndD5
+MZ8/sVi3eaFo9vM7TatRLtTHisT9HQEsGTXO8muh5V7z44W1AqfFYC4bfhonjTYI
+GtzSdL3qJqNUWg2qkAS7MLBhjRgM8UzINz5ZBhKFim+MoXEkPKCydsIpYXvQ9Nyi
+3aeUpX7MhAocMK1yHm7b
+=ZGn0
+-----END PGP SIGNATURE-----
+
+--FCuugMFkClbJLl1L--
