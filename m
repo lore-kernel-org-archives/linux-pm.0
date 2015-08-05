@@ -1,137 +1,86 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH V2] PM / Domains: Return -EPROBE_DEFER if we fail to init
- or turn-on domain
-Date: Wed, 5 Aug 2015 16:06:12 +0200
-Message-ID: <CAMuHMdW8H-mxG9poJpjijBCUHWs+Q4Xe3muXeTqnd7npBEzXRA@mail.gmail.com>
-References: <1438334400-26367-1-git-send-email-jonathanh@nvidia.com>
-	<CAMuHMdX7ia09PtnKRCWPBfwb9aMnewvXheHADm+5U=d0rpguQA@mail.gmail.com>
-	<55C0C4D3.2050600@nvidia.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 6/9] ARM: domain: Add platform handlers for CPU PM domains
+Date: Wed, 5 Aug 2015 09:45:22 -0500
+Message-ID: <CAL_JsqKWekSGiFbZz6++3ibAzY_8Y6+0nOBQinFVw4cBk6JvEw@mail.gmail.com>
+References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org> <1438731339-58317-7-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f44.google.com ([209.85.218.44]:33471 "EHLO
-	mail-oi0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752438AbbHEOGN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 10:06:13 -0400
-Received: by oio137 with SMTP id 137so19392316oio.0
-        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2015 07:06:13 -0700 (PDT)
-In-Reply-To: <55C0C4D3.2050600@nvidia.com>
+Received: from mail-yk0-f171.google.com ([209.85.160.171]:32961 "EHLO
+	mail-yk0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750968AbbHEOpn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 10:45:43 -0400
+Received: by ykoo205 with SMTP id o205so37118534yko.0
+        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2015 07:45:42 -0700 (PDT)
+In-Reply-To: <1438731339-58317-7-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-Hi Jon,
-
-On Tue, Aug 4, 2015 at 3:57 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
-> On 04/08/15 14:03, Geert Uytterhoeven wrote:
->> Now this ended up in pm/linux-next, I gave it a try, also with a special
->> test case.
->>
->> On Fri, Jul 31, 2015 at 11:20 AM, Jon Hunter <jonathanh@nvidia.com> wrote:
->>> When a device is probed, the function dev_pm_domain_attach() is called
->>> to see if there is a power-domain that is associated with the device and
->>> needs to be turned on. If dev_pm_domain_attach() does not return
->>> -EPROBE_DEFER then the device will be probed.
->>>
->>> For devices using genpd, dev_pm_domain_attach() will call
->>> genpd_dev_pm_attach(). If genpd_dev_pm_attach() does not find a power
->>> domain associated with the device then it returns an error code not
->>> equal to -EPROBE_DEFER to allow the device to be probed. However, if
->>
->> Your patch description doesn't say this behavior was changed...
+On Tue, Aug 4, 2015 at 6:35 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+> In addition to the common power up/down actions of CPU PM domain core,
+> platforms may have additional configuration before the CPU domain can be
+> powered off or considered active. Allow platform drivers to register
+> handlers for CPU PM domains.
 >
-> Sorry if this was not clear, but ...
+> Platform drivers may register their callbacks against a compatible
+> string defined by their PM domain provider device node in the DT. At
+> domain init, the platform driver can initialize the platform specific
+> genpd attributes. The init callback would need to return successfully,
+> for the platform power_on/off handlers to be registered with the CPU PM
+> domain.
 >
->>> genpd_dev_pm_attach() does find a power-domain that is associated with
->>> the device, then it does not return -EPROBE_DEFER on failure and hence
->>> the device will still be probed. Furthermore, genpd_dev_pm_attach() does
->>> not check the error code returned by pm_genpd_poweron() to see if the
->>> power-domain was turned on successfully.
->>>
->>> Fix this by checking the return code from pm_genpd_poweron() and
->>> returning -EPROBE_DEFER from genpd_dev_pm_attach on failure, if there
->>> is a power-domain associated with the device.
->
-> ... does the above not state the behaviour was changed?
->
->>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
->>> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
->>> Acked-by: Kevin Hilman <khilman@linaro.org>
->>> ---
->>> V2 changes:
->>> - Updated description per Kevin's feedback and added Kevin's ACK.
->>>
->>>  drivers/base/power/domain.c | 14 +++++++++-----
->>>  1 file changed, 9 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->>> index a1abe16dfe16..7666a1cbaf95 100644
->>> --- a/drivers/base/power/domain.c
->>> +++ b/drivers/base/power/domain.c
->>> @@ -1947,7 +1947,10 @@ static void genpd_dev_pm_sync(struct device *dev)
->>>   * Both generic and legacy Samsung-specific DT bindings are supported to keep
->>>   * backwards compatibility with existing DTBs.
->>>   *
->>> - * Returns 0 on successfully attached PM domain or negative error code.
->>> + * Returns 0 on successfully attached PM domain or negative error code. Note
->>> + * that if a power-domain exists for the device, but it cannot be found or
->>
->> ... but here it does.
->>
->>> + * turned on, then return -EPROBE_DEFER to ensure that the device is not
->>> + * probed and to re-try again later.
->>>   */
->>>  int genpd_dev_pm_attach(struct device *dev)
->>>  {
->>> @@ -1984,7 +1987,7 @@ int genpd_dev_pm_attach(struct device *dev)
->>>                 dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
->>>                         __func__, PTR_ERR(pd));
->>>                 of_node_put(dev->of_node);
->>> -               return PTR_ERR(pd);
->>> +               return -EPROBE_DEFER;
->>
->> And it really does.
->>
->> This causes a regression for platforms where:
->>   1. DT describes the hardware power domains, and
->>   2. The boot loader or reset state has enabled all power domains, and
->>   3. Linux doesn't have a driver for the power controller yet.
->>
->> Before, devices for which the PM domain couldn't be found just probed and
->> worked, Now, these devices don't probe anymore, and the kernel fails to boot.
->
-> I see. Sounds like a chicken or the egg scenario. Why not just disable
-> PM_GENERIC_DOMAINS in the config in that case?
+> The code uses __init section to reduce memory needed for platform
+> handlers and therefore can be freed after the driver is initialized, a
+> desirable outcome for single kernel image.
 
-Because it may be enabled for another platform in multi-platform kernels.
+[...]
 
->> Note that I only managed to trigger this by explicitly disabling my power
->> controller driver (the platforms I'm interested in already have power
->> controller drivers). But I think it will hamper bring-up of new boards, as you
->> can no longer write a "perfect and stable" .dts first, and implement kernel
->> support incrementally.
->>
->> Hence I think it's worthwhile to revert just this hunk.
->> If you agree, I can send a patch.
->
-> But what about the case where we do have device that does have a power
-> controller driver? Don't we want to defer in case it has not been probed
-> yet? I am concerned we could try to probe a device before the power
-> controller has been probed.
+> diff --git a/arch/arm/include/asm/arm-pd.h b/arch/arm/include/asm/arm-pd.h
+> new file mode 100644
+> index 0000000..fc44abf
+> --- /dev/null
+> +++ b/arch/arm/include/asm/arm-pd.h
+> @@ -0,0 +1,30 @@
+> +/*
+> + * linux/arch/arm/include/asm/arm-pd.h
+> + *
+> + * Copyright (C) 2015 Linaro Ltd.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#ifndef __ARM_PD_H__
+> +#define __ARM_PD_H__
+> +
+> +struct of_arm_pd_ops {
+> +       int (*init)(struct device_node *dn, struct generic_pm_domain *d);
+> +       int (*power_on)(struct generic_pm_domain *d);
+> +       int (*power_off)(struct generic_pm_domain *d);
+> +};
+> +
+> +struct of_arm_pd_method {
+> +       const char *handle;
+> +       struct of_arm_pd_ops *ops;
+> +};
+> +
+> +#define ARM_PD_METHOD_OF_DECLARE(_name, _handle, _ops) \
+> +       static const struct of_arm_pd_method __arm_pd_method_of_table_##_name \
+> +       __used __section(__arm_pd_method_of_table)              \
+> +       = { .handle = _handle, .ops = _ops }
 
-That's indeed an issue.
+AFAICT, you are not using this in this series. You should add it when
+you have a user.
 
-There's a similar problem with "dmas" properties and the (non)presence
-of the DMA controller.
+Ideally, we keep some amount of uniformity across various *_OF_DECLARE
+which is why we have OF_DECLARE_1 and OF_DECLARE_2. This makes all the
+sections just arrays of struct of_device_id. Not all users follow
+this, but most do. So instead of putting the ops in here, platforms
+can provide a function callback which can then set the ops. Then you
+also don't need the .init() ops function as the callback function can
+do any initialization too.
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Rob
