@@ -1,106 +1,79 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Wed, 5 Aug 2015 12:20:39 +0200
-Message-ID: <20150805102039.GH18700@pengutronix.de>
-References: <1437465566-16299-1-git-send-email-s.hauer@pengutronix.de>
- <1437465566-16299-3-git-send-email-s.hauer@pengutronix.de>
- <CAGS+omAsTBMhfLPs5V68Ou1E5WXnQzZ3_E5+9qCCbAja3dgY-w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH v3] Add Mediatek thermal support
+Date: Wed,  5 Aug 2015 14:25:35 +0200
+Message-ID: <1438777538-1269-1-git-send-email-s.hauer@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:39307 "EHLO
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:58971 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750794AbbHEKUs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 06:20:48 -0400
-Content-Disposition: inline
-In-Reply-To: <CAGS+omAsTBMhfLPs5V68Ou1E5WXnQzZ3_E5+9qCCbAja3dgY-w@mail.gmail.com>
+	with ESMTP id S1751935AbbHEMZn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 08:25:43 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Kurtz <djkurtz@chromium.org>
-Cc: "Hanyi.Wu" <hanyi.wu@mediatek.com>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sasha Hauer <kernel@pengutronix.de>, linux-mediatek@lists.infradead.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>
+To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, Daniel Kurtz <djkurtz@chromium.org>, kernel@pengutronix.de, Matthias Brugger <matthias.bgg@gmail.com>
 
-On Tue, Jul 21, 2015 at 11:13:22PM +0800, Daniel Kurtz wrote:
-> Hi Sascha,
-> 
-> Review comments inline...
-> 
-> > + *
-> > + * This converts the raw ADC value to mcelsius using the SoC specific
-> > + * calibration constants
-> > + */
-> > +static int raw_to_mcelsius(struct mtk_thermal *mt, u32 raw)
-> > +{
-> > +       s32 format_1, format_2, format_3, format_4;
-> 
-> The formula would be easier to follow with better variable names than
-> "format_X".
-> 
-> > +       s32 xtoomt;
-> 
-> What does "xtoomt" mean?
-> 
-> > +       s32 gain;
-> > +
-> > +       raw &= 0xfff;
-> > +
-> > +       gain = (10000 + mt->adc_ge);
-> 
-> no outer ()
-> 
-> > +
-> > +       xtoomt = ((((mt->vts + 3350 - mt->adc_oe) * 10000) / 4096) * 10000) /
-> > +               gain;
-> > +
-> > +       format_1 = ((mt->degc_cali * 10) >> 1);
-> 
-> When doing computations, I think "A / 2" is preferred over "A >> 1".
-> Also, no outer ().
-> 
-> > +       format_2 = (raw - mt->adc_oe);
-> > +       format_3 = (((((format_2) * 10000) >> 12) * 10000) / gain) - xtoomt;
-> 
-> This is just:
->   format_3 = ((((raw - mt->vts - 3350) * 10000) / 4096) * 10000) / gain;
-> 
-> No wonder mt->adc_oe = 512-512 = 0... it just cancels itself out here, anyway.
-> 
-> > +       format_3 = format_3 * 15 / 18;
-> 
-> Of course we should multiply by 15/18!
-> What is going on here?  Why this magic 5/6 ratio?
-> 
-> > +       format_4 = ((format_3 * 100) / (165 + mt->o_slope));
-> 
-> no outer ()
-> 
-> > +       format_4 = format_4 - (format_4 << 1);
-> 
-> Hmm...
->  A = X - 2*X;
-> otherwise known as:
->  A = -X;
-> 
-> > +       return (format_1 + format_4) * 100;
-> 
-> Or just:
->   return (format_1 - format_4) * 100;
+This series adds support for the thermal sensors included in the
+MT8173 SoC. Currently only basic temperature reading is supported
+without any interrupt support.
 
-I must admit I took this calculation from the original driver and never
-looked at it. Simplifying this further this goes down to:
+The cpufreq driver for MT8173 is currently under review, so there's no
+real cooling device available in mainline. Until this is available the
+thermal driver can be tested with the following dts snippet. It creates
+a fake gpio fan and a fake trip point which is so low that it can easily
+be reached with a "cat /dev/zero > /dev/null" on the command line.
 
-static int raw_to_mcelsius(struct mtk_thermal *mt, u32 raw)
-{
-	return mt->calib_b + mt->calib_a * (raw & 0xfff);
-}
+Please review and let me know what's missing to be included in mainline.
 
-with calib_a = -123 and calib_b = 465124.
+Changes since v2:
+- sort #includes alphabetically
+- Add prefix to register defines
+- drop some members from struct mtk_thermal
+- simplify raw_to_mcelsius()
+- add and use more register bit defines
+- use device_reset() instead of devm_reset_control_get()/reset_control_reset()
+- misc other stuff
 
-I'll address this and the other comments in v2.
+Changes since v1:
+- Use "mediatek," prefix for custom properties
+- Drop "thermal: consistently use int for temperatures" dependency
 
 Sascha
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+	fan: gpio_fan {
+		compatible = "gpio-fan";
+		gpios = <&pio 24 0>;
+		gpio-fan,speed-map = <0    0
+				      4500 1>;
+		#cooling-cells = <2>;
+	};
+
+	thermal-zones {
+		cpu_thermal: cpu_thermal {
+			polling-delay-passive = <1000>; /* milliseconds */
+			polling-delay = <1000>; /* milliseconds */
+
+			thermal-sensors = <&thermal 0>;
+
+			trips {
+				cpu_passive: cpu_passive {
+					temperature = <47000>; /* millicelsius */
+					hysteresis = <2000>; /* millicelsius */
+					type = "passive";
+				};
+
+				cpu_crit {
+					temperature = <90000>; /* millicelsius */
+					hysteresis = <2000>; /* millicelsius */
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0 {
+					trip = <&cpu_passive>;
+					cooling-device = <&fan THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+	};
+
