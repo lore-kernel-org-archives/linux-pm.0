@@ -1,64 +1,65 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 01/23] Documentation: dt: atmel-at91: add clocks to
- system timer, rstc and shdwc
-Date: Wed, 5 Aug 2015 20:11:38 +0200
-Message-ID: <20150805181137.GB11315@earth>
+Subject: Re: [PATCH 18/23] power/reset: at91-reset: get and use slow clock
+Date: Wed, 5 Aug 2015 20:22:20 +0200
+Message-ID: <20150805182220.GC11315@earth>
 References: <1438335599-3301-1-git-send-email-alexandre.belloni@free-electrons.com>
- <1438335599-3301-2-git-send-email-alexandre.belloni@free-electrons.com>
+ <1438335599-3301-19-git-send-email-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="uQr8t48UFsdbeI+V"
+	protocol="application/pgp-signature"; boundary="mvpLiMfbWzRoNl4x"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:38503 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:39019 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752036AbbHESLl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 5 Aug 2015 14:11:41 -0400
+	id S1751712AbbHESWY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 5 Aug 2015 14:22:24 -0400
 Content-Disposition: inline
-In-Reply-To: <1438335599-3301-2-git-send-email-alexandre.belloni@free-electrons.com>
+In-Reply-To: <1438335599-3301-19-git-send-email-alexandre.belloni@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org
 
 
---uQr8t48UFsdbeI+V
+--mvpLiMfbWzRoNl4x
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Jul 31, 2015 at 11:39:37AM +0200, Alexandre Belloni wrote:
-> The system timer (at91rm9200), the reset controller and the shutdown
-> controller need an input clock. This is the slow clock and they will not
-> function without it.
+On Fri, Jul 31, 2015 at 11:39:54AM +0200, Alexandre Belloni wrote:
+> Commit dca1a4b5ff6e ("clk: at91: keep slow clk enabled to prevent system
+> hang") added a workaround for the slow clock as it is not properly handled
+> by its users.
 >=20
-> Also fix the shutdown controller example.
+> Get and use the slow clock as it is necessary for the at91 reset
+> controller.
 
-Acked-By: Sebastian Reichel <sre@kernel.org>
+You call clk_prepare_enable during probe without a matching
+clk_disable_unprepare on module removal.
 
 -- Sebastian
 
---uQr8t48UFsdbeI+V
+--mvpLiMfbWzRoNl4x
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJVwlHZAAoJENju1/PIO/qaProP/1+bgPN5vWWoyLQ1CqRvTXDc
-QYktd95NiivRzO5NtFn/NkPgdTNsy7wQxkxgqNjr+qiaeedvo04ThYmGtpn1qf3i
-IcqxiGQUmVOqWr1GJSpyUfDCA/2I6YEXHyJqr4NNukxfntZ33AonXVVbc01H23Tu
-1kfHe2HccanvjR1jpBiE51vLSS2Hj73vW3hoPEQVPjmvpttPyjPs4NVg6KQ/YSRs
-43/sZPEIRzY9hIRudJIEbahc4aa+TZs6nmjVEiQ5pnH8kg/lnIZlatG4LTcIj52p
-xz4UtZecoYOzwWOn6xQi7PKHzT4pQo8k8VB5TmOoPh4erDK+uVpaI24b6TaVaLUH
-dwo/W81y2t9bJthMWu/Wjc1dEVvsywApxe0hKm7G8T1IFzMwzxk2mcpR75dIEkSt
-bADGxWwxXrYigyqmAcrvAXm8wUF5YbOGpkXKHkd9ztO95druAf1Gsr2b5xBp2vmX
-S3z/BH7keCFG97Hl1HwDsIHOQ3deSQdJChddmKWt19XX92B3ajh65kpQBUyp6qe8
-TOyOqIZ6TzReGeVN1sSBklruY1X3vJBKVwrXH3ZayPEqGV3VPnD+4va5KyeSZhg5
-KPOsrY5v9y3BU/NEqHAG1uHloAqroj2pKMS4s4vd+hZsmjwxiCUrgfGJtE7DtrBL
-JNJMFdaXJyMf1BhiFIVQ
-=WQ+E
+iQIcBAEBCgAGBQJVwlRZAAoJENju1/PIO/qaPsgP/jODPMqUypCcjxBPcfWPu8Cj
+lvH8bQgvvAmXvr3LwoL6EOfLgTGbhF9DTT0qk95sF0OakVP0/o6AkxfJFC4hwRyG
+GMVJqMAo5SuTqVtpLjHBKyJVrr0lB+k1ptcJ2g3QV5yz0JJLDiW4XeeJi0zGNe/S
+pMZg8/teO3G86gURzDpoRvmsQnijx/ecLnbhq85VyDdkYobKIZcZgfh8TTm5YN9C
+leedFsWCdPT72Yzf15IXsPi9hRSH50V/MYe8GVpwLfut0ws6V8vHoGcfWE+6XkH5
+smJdaKbkbMNKDs3SYBLGgzUaSrABPyI0u5hLceuBQsEs+TQasMSSepMDSS535mp4
+x8oqaH2J+Yf8rdUdGeDnTolovgIS/4+G1PujJ6nfTstPPYhTKbjRHCFl8o4QBxyL
+qaF9x/E518nBE7DTqy+P7fRbwjMNPgjFntvEpNDocRZV/gavN4d8AIu9X+Mqd3f/
+IMXl55Fpbbapkbbg8AqizvdAxZ/nhWfhE9WtsjhUQhpLTqTlYMhC3kunDGj0MyVr
+aTBFtMR99X8OeRNgUKbTnE0g5ZisdF9S1ka20KqVL5pGX8ogxkJmbgbShPB1UW59
+pK400YzwKlV/dpzhV8FbKDWRzH1e1RqFOACHZaS2zC2CnfPGiubEiCxw8XduN89p
+WqYB4P/OsBzvjGgR8isx
+=GHg9
 -----END PGP SIGNATURE-----
 
---uQr8t48UFsdbeI+V--
+--mvpLiMfbWzRoNl4x--
