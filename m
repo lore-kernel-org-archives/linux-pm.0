@@ -1,7 +1,7 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH RFC 01/10] drivers: qcom: spm: Support cache SPMs
-Date: Wed,  5 Aug 2015 10:32:37 -0600
-Message-ID: <1438792366-2737-2-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH RFC 02/10] drivers: qcom: spm: Add 8084 L2 SPM register data
+Date: Wed,  5 Aug 2015 10:32:38 -0600
+Message-ID: <1438792366-2737-3-git-send-email-lina.iyer@linaro.org>
 References: <438731339-58317-1-git-send-email-lina.iyer@linaro.org>
  <1438792366-2737-1-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
@@ -22,115 +22,77 @@ To: linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, devicet
 Cc: msivasub@codeaurora.org, robh@kernel.org, sboyd@codeaurora.org, Lina Iyer <lina.iyer@linaro.org>, agross@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-Recognize cache SPM devices defined in the DT and configure the
-corresponding SPM hardware. SPM controllers for L2 controls the cache's
-idle low power state and may also be used to turn off the CPU power
-rail.
+Add register data and configure L2 SAW to support voltage control and L2
+idle states for QCOM APQ8084 SoC.
 
-Cc: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Andy Gross <agross@codeaurora.org>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/soc/qcom/spm.c | 45 ++++++++++++++++++++++++++++++---------------
- 1 file changed, 30 insertions(+), 15 deletions(-)
+ .../devicetree/bindings/arm/msm/qcom,saw2.txt         |  1 +
+ drivers/soc/qcom/spm.c                                | 19 +++++++++++++++++++
+ 2 files changed, 20 insertions(+)
 
+diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt b/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
+index ae4afc6..91430ff 100644
+--- a/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
++++ b/Documentation/devicetree/bindings/arm/msm/qcom,saw2.txt
+@@ -27,6 +27,7 @@ PROPERTIES
+ 			"qcom,apq8064-saw2-v1.1-cpu"
+ 			"qcom,msm8974-saw2-v2.1-cpu"
+ 			"qcom,apq8084-saw2-v2.1-cpu"
++			"qcom,apq8084-saw2-v2.1-l2"
+ 
+ - reg:
+ 	Usage: required
 diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
-index b04b05a..9f5edaa27 100644
+index 9f5edaa27..efbf5e5 100644
 --- a/drivers/soc/qcom/spm.c
 +++ b/drivers/soc/qcom/spm.c
-@@ -115,6 +115,7 @@ static const struct spm_reg_data spm_reg_8064_cpu = {
+@@ -78,6 +78,8 @@ static const u8 spm_reg_offset_v2_1[SPM_REG_NR] = {
+ 	[SPM_REG_SPM_CTL]	= 0x30,
+ 	[SPM_REG_DLY]		= 0x34,
+ 	[SPM_REG_SEQ_ENTRY]	= 0x80,
++	[SPM_REG_PMIC_DATA_0]	= 0x40,
++	[SPM_REG_PMIC_DATA_1]	= 0x44,
  };
  
- static DEFINE_PER_CPU(struct spm_driver_data *, cpu_spm_drv);
-+static struct spm_driver_data *domain_spm;
+ /* SPM register data for 8974, 8084 */
+@@ -92,6 +94,20 @@ static const struct spm_reg_data spm_reg_8974_8084_cpu  = {
+ 	.start_index[PM_SLEEP_MODE_SPC] = 3,
+ };
  
- typedef int (*idle_fn)(int);
- static DEFINE_PER_CPU(idle_fn*, qcom_idle_ops);
-@@ -283,13 +284,18 @@ CPUIDLE_METHOD_OF_DECLARE(qcom_idle_v1, "qcom,kpss-acc-v1", &qcom_cpuidle_ops);
- CPUIDLE_METHOD_OF_DECLARE(qcom_idle_v2, "qcom,kpss-acc-v2", &qcom_cpuidle_ops);
- 
- static struct spm_driver_data *spm_get_drv(struct platform_device *pdev,
--		int *spm_cpu)
-+		int *index, bool *is_domain_spm)
- {
- 	struct spm_driver_data *drv = NULL;
- 	struct device_node *cpu_node, *saw_node;
- 	int cpu;
- 	bool found;
- 
-+	drv = devm_kzalloc(&pdev->dev, sizeof(*drv), GFP_KERNEL);
-+	if (!drv)
-+		return ERR_PTR(-ENOMEM);
++static const struct spm_reg_data spm_reg_8084_l2  = {
++	.reg_offset = spm_reg_offset_v2_1,
++	.spm_cfg = 0x14,
++	.spm_dly = 0x3C102800,
++	.pmic_data[0] = 0x02030080,
++	.pmic_data[1] = 0x00030000,
++	.seq = { 0x1F, 0x00, 0x20, 0x03, 0x22, 0x00, 0x0F, 0x00, 0x10, 0x22,
++		0x12, 0x32, 0x60, 0x70, 0x80, 0xB0, 0x11, 0x42, 0x03, 0x01,
++		0xB0, 0x78, 0x80, 0x12, 0x22, 0x44, 0x50, 0x3B, 0x60, 0x02,
++		0x32, 0x50, 0x0F },
++	.start_index[PM_SLEEP_MODE_STBY] = 0,
++	.start_index[PM_SLEEP_MODE_SPC] = 7,
++};
 +
-+	/* Check for a CPU SPM, if found we are done */
- 	for_each_possible_cpu(cpu) {
- 		cpu_node = of_cpu_device_node_get(cpu);
- 		if (!cpu_node)
-@@ -302,11 +308,14 @@ static struct spm_driver_data *spm_get_drv(struct platform_device *pdev,
- 			break;
- 	}
+ static const u8 spm_reg_offset_v1_1[SPM_REG_NR] = {
+ 	[SPM_REG_CFG]		= 0x08,
+ 	[SPM_REG_SPM_CTL]	= 0x20,
+@@ -186,6 +202,7 @@ static int qcom_cpu_spc(int cpu)
+ 	struct spm_driver_data *drv = per_cpu(cpu_spm_drv, cpu);
  
--	if (found) {
--		drv = devm_kzalloc(&pdev->dev, sizeof(*drv), GFP_KERNEL);
--		if (drv)
--			*spm_cpu = cpu;
--	}
-+	/* 
-+	 * If found, we have a CPU SPM, if not,
-+	 * we have a cache SPM
-+	 */
-+	if (found)
-+		*index = cpu;
+ 	spm_set_low_power_mode(drv, PM_SLEEP_MODE_SPC);
 +
-+	*is_domain_spm = !found;
- 
- 	return drv;
- }
-@@ -327,21 +336,22 @@ static int spm_dev_probe(struct platform_device *pdev)
- 	struct resource *res;
- 	const struct of_device_id *match_id;
- 	void __iomem *addr;
--	int cpu;
-+	int index;
-+	bool is_domain_spm;
- 
--	drv = spm_get_drv(pdev, &cpu);
--	if (!drv)
--		return -EINVAL;
-+	match_id = of_match_node(spm_match_table, pdev->dev.of_node);
-+	if (!match_id)
-+		return -ENODEV;
-+
-+	drv = spm_get_drv(pdev, &index, &is_domain_spm);
-+	if (IS_ERR(drv))
-+		return PTR_ERR(drv);
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	drv->reg_base = devm_ioremap_resource(&pdev->dev, res);
- 	if (IS_ERR(drv->reg_base))
- 		return PTR_ERR(drv->reg_base);
- 
--	match_id = of_match_node(spm_match_table, pdev->dev.of_node);
--	if (!match_id)
--		return -ENODEV;
--
- 	drv->reg_data = match_id->data;
- 
- 	/* Write the SPM sequences first.. */
-@@ -366,8 +376,13 @@ static int spm_dev_probe(struct platform_device *pdev)
- 	/* Set up Standby as the default low power mode */
- 	spm_set_low_power_mode(drv, PM_SLEEP_MODE_STBY);
- 
--	per_cpu(cpu_spm_drv, cpu) = drv;
-+	/* We are ready to use the CPU/Cache SPM. */
-+	if (is_domain_spm)
-+		domain_spm = drv;
-+	else
-+		per_cpu(cpu_spm_drv, index) = drv;
- 
-+	dev_dbg(&pdev->dev, "SPM device probed.\n");
- 	return 0;
- }
+ 	ret = cpu_suspend(0, qcom_pm_collapse);
+ 	/*
+ 	 * ARM common code executes WFI without calling into our driver and
+@@ -327,6 +344,8 @@ static const struct of_device_id spm_match_table[] = {
+ 	  .data = &spm_reg_8974_8084_cpu },
+ 	{ .compatible = "qcom,apq8064-saw2-v1.1-cpu",
+ 	  .data = &spm_reg_8064_cpu },
++	{ .compatible = "qcom,apq8084-saw2-v2.1-l2",
++	  .data = &spm_reg_8084_l2 },
+ 	{ },
+ };
  
 -- 
 2.1.4
