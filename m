@@ -1,327 +1,106 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH v2 07/10] hwmon: Support sensors exported via ARM SCP interface
-Date: Wed, 05 Aug 2015 11:17:32 +0100
-Message-ID: <9hhwpxakpj7.fsf@e105922-lin.cambridge.arm.com>
-References: <1438615378-14241-1-git-send-email-punit.agrawal@arm.com>
-	<1438615378-14241-8-git-send-email-punit.agrawal@arm.com>
-	<55C12F5A.5080705@roeck-us.net>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
+Date: Wed, 5 Aug 2015 12:20:39 +0200
+Message-ID: <20150805102039.GH18700@pengutronix.de>
+References: <1437465566-16299-1-git-send-email-s.hauer@pengutronix.de>
+ <1437465566-16299-3-git-send-email-s.hauer@pengutronix.de>
+ <CAGS+omAsTBMhfLPs5V68Ou1E5WXnQzZ3_E5+9qCCbAja3dgY-w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <55C12F5A.5080705@roeck-us.net> (Guenter Roeck's message of "Tue,
-	04 Aug 2015 14:32:10 -0700")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-pm@vger.kernel.org, lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, liviu.dudau@arm.com, Jean Delvare <jdelvare@suse.de>, Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:39307 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750794AbbHEKUs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 06:20:48 -0400
+Content-Disposition: inline
+In-Reply-To: <CAGS+omAsTBMhfLPs5V68Ou1E5WXnQzZ3_E5+9qCCbAja3dgY-w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Kurtz <djkurtz@chromium.org>
+Cc: "Hanyi.Wu" <hanyi.wu@mediatek.com>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sasha Hauer <kernel@pengutronix.de>, linux-mediatek@lists.infradead.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>
 
-Guenter Roeck <linux@roeck-us.net> writes:
+On Tue, Jul 21, 2015 at 11:13:22PM +0800, Daniel Kurtz wrote:
+> Hi Sascha,
+> 
+> Review comments inline...
+> 
+> > + *
+> > + * This converts the raw ADC value to mcelsius using the SoC specific
+> > + * calibration constants
+> > + */
+> > +static int raw_to_mcelsius(struct mtk_thermal *mt, u32 raw)
+> > +{
+> > +       s32 format_1, format_2, format_3, format_4;
+> 
+> The formula would be easier to follow with better variable names than
+> "format_X".
+> 
+> > +       s32 xtoomt;
+> 
+> What does "xtoomt" mean?
+> 
+> > +       s32 gain;
+> > +
+> > +       raw &= 0xfff;
+> > +
+> > +       gain = (10000 + mt->adc_ge);
+> 
+> no outer ()
+> 
+> > +
+> > +       xtoomt = ((((mt->vts + 3350 - mt->adc_oe) * 10000) / 4096) * 10000) /
+> > +               gain;
+> > +
+> > +       format_1 = ((mt->degc_cali * 10) >> 1);
+> 
+> When doing computations, I think "A / 2" is preferred over "A >> 1".
+> Also, no outer ().
+> 
+> > +       format_2 = (raw - mt->adc_oe);
+> > +       format_3 = (((((format_2) * 10000) >> 12) * 10000) / gain) - xtoomt;
+> 
+> This is just:
+>   format_3 = ((((raw - mt->vts - 3350) * 10000) / 4096) * 10000) / gain;
+> 
+> No wonder mt->adc_oe = 512-512 = 0... it just cancels itself out here, anyway.
+> 
+> > +       format_3 = format_3 * 15 / 18;
+> 
+> Of course we should multiply by 15/18!
+> What is going on here?  Why this magic 5/6 ratio?
+> 
+> > +       format_4 = ((format_3 * 100) / (165 + mt->o_slope));
+> 
+> no outer ()
+> 
+> > +       format_4 = format_4 - (format_4 << 1);
+> 
+> Hmm...
+>  A = X - 2*X;
+> otherwise known as:
+>  A = -X;
+> 
+> > +       return (format_1 + format_4) * 100;
+> 
+> Or just:
+>   return (format_1 - format_4) * 100;
 
-> On 08/03/2015 08:22 AM, Punit Agrawal wrote:
->> Create a driver to add support for SoC sensors exported by the System
->> Control Processor (SCP) via the System Control and Power Interface
->> (SCPI). The supported sensor types is one of voltage, temperature,
->> current, and power.
->>
->> The sensor labels and values provided by the SCP are exported via the
->> hwmon sysfs interface.
->>
->> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
->> Cc: Jean Delvare <jdelvare@suse.de>
->> Cc: Guenter Roeck <linux@roeck-us.net>
->> Cc: Sudeep Holla <sudeep.holla@arm.com>
->
-> Looks good for the most part. Single comment below.
-> Assuming you fix it up, feel free to add
->
-> Acked-by: Guenter Roeck <linux@roeck-us.net>
->
-> for v3.
->
-> Thanks,
-> Guenter
->
->> ---
->>   Documentation/hwmon/scpi-hwmon |  33 ++++++++
->>   drivers/hwmon/Kconfig          |   8 ++
->>   drivers/hwmon/Makefile         |   1 +
->>   drivers/hwmon/scpi-hwmon.c     | 183 +++++++++++++++++++++++++++++++++++++++++
->>   4 files changed, 225 insertions(+)
->>   create mode 100644 Documentation/hwmon/scpi-hwmon
->>   create mode 100644 drivers/hwmon/scpi-hwmon.c
->>
->> diff --git a/Documentation/hwmon/scpi-hwmon b/Documentation/hwmon/scpi-hwmon
->> new file mode 100644
->> index 0000000..4cfcdf2d
->> --- /dev/null
->> +++ b/Documentation/hwmon/scpi-hwmon
->> @@ -0,0 +1,33 @@
->> +Kernel driver scpi-hwmon
->> +========================
->> +
->> +Supported chips:
->> + * Chips based on ARM System Control Processor Interface
->> +   Addresses scanned: -
->> +   Datasheet: http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0922b/index.html
->> +
->> +Author: Punit Agrawal <punit.agrawal@arm.com>
->> +
->> +Description
->> +-----------
->> +
->> +This driver supports hardware monitoring for SoC's based on the ARM
->> +System Control Processor (SCP) implementing the System Control
->> +Processor Interface (SCPI). The following sensor types are supported
->> +by the SCP -
->> +
->> +  * temperature
->> +  * voltage
->> +  * current
->> +  * power
->> +
->> +The SCP interface provides an API to query the available sensors and
->> +their values which are then exported to userspace by this driver.
->> +
->> +Usage Notes
->> +-----------
->> +
->> +The driver relies on device tree node to indicate the presence of SCPI
->> +support in the kernel. See
->> +Documentation/devicetree/bindings/arm/arm,scpi.txt for details of the
->> +devicetree node.
->> \ No newline at end of file
->> diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
->> index 4943c3c..c9714b0 100644
->> --- a/drivers/hwmon/Kconfig
->> +++ b/drivers/hwmon/Kconfig
->> @@ -1551,6 +1551,14 @@ config SENSORS_VEXPRESS
->>   	  the ARM Ltd's Versatile Express platform. It can provide wide
->>   	  range of information like temperature, power, energy.
->>
->> +config SENSORS_ARM_SCPI
->> +	tristate "ARM SCPI Sensors"
->> +	depends on ARM_SCPI_PROTOCOL
->> +	help
->> +	  This driver provides support for temperature, voltage, current
->> +	  and power sensors available on ARM Ltd's SCP based platforms. The
->> +	  actual number and type of sensors exported depend the platform.
->> +
->>   config SENSORS_VIA_CPUTEMP
->>   	tristate "VIA CPU temperature sensor"
->>   	depends on X86
->> diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
->> index 8aba87f..4961710 100644
->> --- a/drivers/hwmon/Makefile
->> +++ b/drivers/hwmon/Makefile
->> @@ -150,6 +150,7 @@ obj-$(CONFIG_SENSORS_TMP421)	+= tmp421.o
->>   obj-$(CONFIG_SENSORS_TWL4030_MADC)+= twl4030-madc-hwmon.o
->>   obj-$(CONFIG_SENSORS_V2M_JUNO)	+= v2m-juno.o
->>   obj-$(CONFIG_SENSORS_VEXPRESS)	+= vexpress.o
->> +obj-$(CONFIG_SENSORS_ARM_SCPI)	+= scpi-hwmon.o
->>   obj-$(CONFIG_SENSORS_VIA_CPUTEMP)+= via-cputemp.o
->>   obj-$(CONFIG_SENSORS_VIA686A)	+= via686a.o
->>   obj-$(CONFIG_SENSORS_VT1211)	+= vt1211.o
->> diff --git a/drivers/hwmon/scpi-hwmon.c b/drivers/hwmon/scpi-hwmon.c
->> new file mode 100644
->> index 0000000..7e7e06b
->> --- /dev/null
->> +++ b/drivers/hwmon/scpi-hwmon.c
->> @@ -0,0 +1,183 @@
->> +/*
->> + * System Control and Power Interface(SCPI) based hwmon sensor driver
->> + *
->> + * Copyright (C) 2015 ARM Ltd.
->> + * Punit Agrawal <punit.agrawal@arm.com>
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 as
->> + * published by the Free Software Foundation.
->> + *
->> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
->> + * kind, whether express or implied; without even the implied warranty
->> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
->> + * GNU General Public License for more details.
->> + */
->> +
->> +#include <linux/hwmon.h>
->> +#include <linux/module.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/scpi_protocol.h>
->> +#include <linux/slab.h>
->> +#include <linux/sysfs.h>
->> +
->> +struct sensor_data {
->> +	struct scpi_sensor_info info;
->> +	struct device_attribute dev_attr_input;
->> +	struct device_attribute dev_attr_label;
->> +	char input[20];
->> +	char label[20];
->> +};
->> +
->> +struct scpi_sensors {
->> +	struct scpi_ops *scpi_ops;
->> +	struct sensor_data *data;
->> +	struct attribute **attrs;
->> +	struct attribute_group group;
->> +	const struct attribute_group *groups[2];
->> +};
->> +
->> +/* hwmon callback functions */
->> +static ssize_t
->> +scpi_show_sensor(struct device *dev, struct device_attribute *attr, char *buf)
->> +{
->> +	struct scpi_sensors *scpi_sensors = dev_get_drvdata(dev);
->> +	struct scpi_ops *scpi_ops = scpi_sensors->scpi_ops;
->> +	struct sensor_data *sensor;
->> +	u32 value;
->> +	int ret;
->> +
->> +	sensor = container_of(attr, struct sensor_data, dev_attr_input);
->> +
->> +	ret = scpi_ops->sensor_get_value(sensor->info.sensor_id, &value);
->> +	if (ret)
->> +		return ret;
->> +
->> +	return sprintf(buf, "%u\n", value);
->> +}
->> +
->> +static ssize_t
->> +scpi_show_label(struct device *dev, struct device_attribute *attr, char *buf)
->> +{
->> +	struct sensor_data *sensor;
->> +
->> +	sensor = container_of(attr, struct sensor_data, dev_attr_label);
->> +
->> +	return sprintf(buf, "%s\n", sensor->info.name);
->> +}
->> +
->> +static int scpi_hwmon_probe(struct platform_device *pdev)
->> +{
->> +	u16 nr_sensors, i;
->> +	int num_temp = 0, num_volt = 0, num_current = 0, num_power = 0;
->> +	struct scpi_ops *scpi_ops;
->> +	struct device *hwdev, *dev = &pdev->dev;
->> +	struct scpi_sensors *scpi_sensors;
->> +	int ret;
->> +
->> +	scpi_ops = get_scpi_ops();
->> +	if (!scpi_ops)
->> +		return -EPROBE_DEFER;
->> +
->> +	ret = scpi_ops->sensor_get_capability(&nr_sensors);
->> +	if (ret || !nr_sensors)
->> +		return ret;
->> +
-> This will return 0 if nr_sensors == 0. Should it be -ENODEV ?
->
+I must admit I took this calculation from the original driver and never
+looked at it. Simplifying this further this goes down to:
 
-Good catch. I've fixed this up to return -ENODEV.
+static int raw_to_mcelsius(struct mtk_thermal *mt, u32 raw)
+{
+	return mt->calib_b + mt->calib_a * (raw & 0xfff);
+}
 
-Thanks for the ack.
+with calib_a = -123 and calib_b = 465124.
 
-Punit
+I'll address this and the other comments in v2.
 
->> +	scpi_sensors = devm_kzalloc(dev, sizeof(*scpi_sensors), GFP_KERNEL);
->> +	if (!scpi_sensors)
->> +		return -ENOMEM;
->> +
->> +	scpi_sensors->data = devm_kcalloc(dev, nr_sensors,
->> +				   sizeof(*scpi_sensors->data), GFP_KERNEL);
->> +	if (!scpi_sensors->data)
->> +		return -ENOMEM;
->> +
->> +	scpi_sensors->attrs = devm_kcalloc(dev, (nr_sensors * 2) + 1,
->> +				   sizeof(*scpi_sensors->attrs), GFP_KERNEL);
->> +	if (!scpi_sensors->attrs)
->> +		return -ENOMEM;
->> +
->> +	scpi_sensors->scpi_ops = scpi_ops;
->> +
->> +	for (i = 0; i < nr_sensors; i++) {
->> +		struct sensor_data *sensor = &scpi_sensors->data[i];
->> +
->> +		ret = scpi_ops->sensor_get_info(i, &sensor->info);
->> +		if (ret)
->> +			return ret;
->> +
->> +		switch (sensor->info.class) {
->> +		case TEMPERATURE:
->> +			snprintf(sensor->input, sizeof(sensor->input),
->> +				 "temp%d_input", num_temp + 1);
->> +			snprintf(sensor->label, sizeof(sensor->input),
->> +				 "temp%d_label", num_temp + 1);
->> +			num_temp++;
->> +			break;
->> +		case VOLTAGE:
->> +			snprintf(sensor->input, sizeof(sensor->input),
->> +				 "in%d_input", num_volt);
->> +			snprintf(sensor->label, sizeof(sensor->input),
->> +				 "in%d_label", num_volt);
->> +			num_volt++;
->> +			break;
->> +		case CURRENT:
->> +			snprintf(sensor->input, sizeof(sensor->input),
->> +				 "curr%d_input", num_current + 1);
->> +			snprintf(sensor->label, sizeof(sensor->input),
->> +				 "curr%d_label", num_current + 1);
->> +			num_current++;
->> +			break;
->> +		case POWER:
->> +			snprintf(sensor->input, sizeof(sensor->input),
->> +				 "power%d_input", num_power + 1);
->> +			snprintf(sensor->label, sizeof(sensor->input),
->> +				 "power%d_label", num_power + 1);
->> +			num_power++;
->> +			break;
->> +		default:
->> +			break;
->> +		}
->> +
->> +		sensor->dev_attr_input.attr.mode = S_IRUGO;
->> +		sensor->dev_attr_input.show = scpi_show_sensor;
->> +		sensor->dev_attr_input.attr.name = sensor->input;
->> +
->> +		sensor->dev_attr_label.attr.mode = S_IRUGO;
->> +		sensor->dev_attr_label.show = scpi_show_label;
->> +		sensor->dev_attr_label.attr.name = sensor->label;
->> +
->> +		scpi_sensors->attrs[i << 1] = &sensor->dev_attr_input.attr;
->> +		scpi_sensors->attrs[(i << 1) + 1] = &sensor->dev_attr_label.attr;
->> +
->> +		sysfs_attr_init(scpi_sensors->attrs[i << 1]);
->> +		sysfs_attr_init(scpi_sensors->attrs[(i << 1) + 1]);
->> +	}
->> +
->> +	scpi_sensors->group.attrs = scpi_sensors->attrs;
->> +	scpi_sensors->groups[0] = &scpi_sensors->group;
->> +
->> +	hwdev = devm_hwmon_device_register_with_groups(dev,
->> +			"scpi_sensors", scpi_sensors, scpi_sensors->groups);
->> +
->> +	return PTR_ERR_OR_ZERO(hwdev);
->> +}
->> +
->> +static const struct of_device_id scpi_of_match[] = {
->> +	{.compatible = "arm,scpi-sensors"},
->> +	{},
->> +};
->> +
->> +static struct platform_driver scpi_hwmon_platdrv = {
->> +	.driver = {
->> +		.name	= "scpi-hwmon",
->> +		.owner	= THIS_MODULE,
->> +		.of_match_table = scpi_of_match,
->> +	},
->> +	.probe		= scpi_hwmon_probe,
->> +};
->> +module_platform_driver(scpi_hwmon_platdrv);
->> +
->> +MODULE_AUTHOR("Punit Agrawal <punit.agrawal@arm.com>");
->> +MODULE_DESCRIPTION("ARM SCPI HWMON interface driver");
->> +MODULE_LICENSE("GPL v2");
->>
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Sascha
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
