@@ -1,116 +1,83 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: remove power allocator from list of default
- governors
-Date: Wed, 5 Aug 2015 11:49:41 -0700
-Message-ID: <20150805184938.GC4161@localhost.localdomain>
-References: <20150804163921.GA36852@dtor-ws>
- <20150805083755.GC2688@e104805>
- <20150805163539.GA3603@dtor-ws>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH 6/9] ARM: domain: Add platform handlers for CPU PM domains
+Date: Wed, 5 Aug 2015 13:23:41 -0600
+Message-ID: <20150805192341.GB52339@linaro.org>
+References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
+ <1438731339-58317-7-git-send-email-lina.iyer@linaro.org>
+ <CAL_JsqKWekSGiFbZz6++3ibAzY_8Y6+0nOBQinFVw4cBk6JvEw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="E/DnYTRukya0zdZ1"
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:33623 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751686AbbHEStp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 14:49:45 -0400
+Received: from mail-pd0-f171.google.com ([209.85.192.171]:34435 "EHLO
+	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752622AbbHETXc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 15:23:32 -0400
+Received: by pdber20 with SMTP id er20so22123467pdb.1
+        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2015 12:23:32 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20150805163539.GA3603@dtor-ws>
+In-Reply-To: <CAL_JsqKWekSGiFbZz6++3ibAzY_8Y6+0nOBQinFVw4cBk6JvEw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Tushar Dave <tushar.n.dave@intel.com>, Lan Tianyu <tianyu.lan@intel.com>, Punit Agrawal <Punit.Agrawal@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Rob Herring <robh@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
+On Wed, Aug 05 2015 at 08:45 -0600, Rob Herring wrote:
+>On Tue, Aug 4, 2015 at 6:35 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> In addition to the common power up/down actions of CPU PM domain core,
+>> platforms may have additional configuration before the CPU domain can be
+>> powered off or considered active. Allow platform drivers to register
+>> handlers for CPU PM domains.
+>>
+>> Platform drivers may register their callbacks against a compatible
+>> string defined by their PM domain provider device node in the DT. At
+>> domain init, the platform driver can initialize the platform specific
+>> genpd attributes. The init callback would need to return successfully,
+>> for the platform power_on/off handlers to be registered with the CPU PM
+>> domain.
+>>
+>> The code uses __init section to reduce memory needed for platform
+>> handlers and therefore can be freed after the driver is initialized, a
+>> desirable outcome for single kernel image.
+>
+>[...]
+>
+>> diff --git a/arch/arm/include/asm/arm-pd.h b/arch/arm/include/asm/arm-pd.h
+>> new file mode 100644
+>> index 0000000..fc44abf
 
---E/DnYTRukya0zdZ1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+[...]
 
-On Wed, Aug 05, 2015 at 09:35:39AM -0700, Dmitry Torokhov wrote:
-> On Wed, Aug 05, 2015 at 09:37:55AM +0100, Javi Merino wrote:
-> > On Tue, Aug 04, 2015 at 05:39:21PM +0100, Dmitry Torokhov wrote:
-> > > As it currently stands the power allocator governor can not handle
-> > > thermal zones that are not specifically crafted and therefore can not=
- be
-> > > used as a default governor.
-> > >=20
-> > > Users need to explicitly enable this governor for thermal zones that =
-do
-> > > have enough information for its operation.
-> > >=20
-> > > Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> > > ---
-> > >  drivers/thermal/Kconfig | 8 --------
-> > >  1 file changed, 8 deletions(-)
-> > >=20
-> > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > > index 0390044..34d05d3 100644
-> > > --- a/drivers/thermal/Kconfig
-> > > +++ b/drivers/thermal/Kconfig
-> > > @@ -82,14 +82,6 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
-> > >  	  Select this if you want to let the user space manage the
-> > >  	  platform thermals.
-> > > =20
-> > > -config THERMAL_DEFAULT_GOV_POWER_ALLOCATOR
-> > > -	bool "power_allocator"
-> > > -	select THERMAL_GOV_POWER_ALLOCATOR
-> > > -	help
-> > > -	  Select this if you want to control temperature based on
-> > > -	  system and device power allocation. This governor can only
-> > > -	  operate on cooling devices that implement the power API.
-> > > -
-> >=20
-> > Currently the only way we have for a thermal zone configured from
-> > device tree to use a governor from the kernel boot is by using
-> > THERMAL_DEFAULT_GOV_*.  If we remove this option some devices won't
-> > have a workable thermal framework until userspace is up and running.
->=20
-> Why would step wise, or fair share be not workable (even if not optimal)
-> thermal frameworks? It doe snot take that long to get to [early]
-> userspace. Half of the boot time the thermal framework is not working
-> anyway because half of the devices that can act as colling devices are
-> not yet logically there.
->=20
-> >=20
-> > Would you rather have the power allocator governor accept every
-> > thermal zone?
->=20
-> If it is to be one of default governors then yes, it needs to be able to
-> manage all thermal zones, the same way as the other 3 governors can, as
-> far as I know.
+>> +#define ARM_PD_METHOD_OF_DECLARE(_name, _handle, _ops) \
+>> +       static const struct of_arm_pd_method __arm_pd_method_of_table_##_name \
+>> +       __used __section(__arm_pd_method_of_table)              \
+>> +       = { .handle = _handle, .ops = _ops }
+>
+>AFAICT, you are not using this in this series. You should add it when
+>you have a user.
+>
+>Ideally, we keep some amount of uniformity across various *_OF_DECLARE
+>which is why we have OF_DECLARE_1 and OF_DECLARE_2. This makes all the
+>sections just arrays of struct of_device_id. Not all users follow
+>this, but most do. So instead of putting the ops in here, platforms
+>can provide a function callback which can then set the ops. Then you
+>also don't need the .init() ops function as the callback function can
+>do any initialization too.
+>
+I looked through these and I can switch over to _OF_DECLARE() without any
+issues, but using OF_DECLARE_1 or OF_DECLARE_2 is pretty limiting.
 
-I believe fairshare also relies on platform data to be properly set,
-otherwise, it would not be functional. That's probably why I overlooked
-this point. That said, I would say, if we follow this logic, a similar
-patch is needed for fairshare.
+If I could set up my own function type for the .data member, then its a
+lot more easier on the code. Like this -
 
-Javi, ideally, the governor would need to have a workable
-default settings for any thermal zone that miss the platform settings.
-Do you think it would be doable for power allocator?
+typedef int (*arm_pd_init)(struct device_node *dn, struct
+		generic_pm_domain *genpd, struct of_arm_pd_ops *ops);
 
-BR,
+ #define ARM_PD_METHOD_OF_DECLARE(name, compat, fn)     \
+	        _OF_DECLARE(arm_pd, name, compat, fn, arm_pd_init)
 
->=20
-> Thanks.
->=20
-> --=20
-> Dmitry
+Its still in the of_device_id array.
 
---E/DnYTRukya0zdZ1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Is that acceptable?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQEcBAEBAgAGBQJVwlq+AAoJEMLUO4d9pOJW1qoIAI3m2rK2JSjUyEKEBCFpjfhU
-WZdJyHTXDC/u3HcwmZIevA5LAm8AQnTZw/khrXP5E4anzuw3Q4zhPmfSlCUEyYhp
-kQMEMVGcGlfh7bfWzfu5Uc73gTDYmMMWtg0gFjBB251cZXfmxyuHS/FhOPqo9uFe
-1ocbZacJlPSlCEMRoGsan3xLAta5dZ/RcrYHeCfs8mUwkvHEvjeddoDwcf4vJ010
-eEQlmqWOWWgoPjxV7DHQBzLjmOSgAs/aViZUkDWNhd2eXJDOMB7WiV3SrLSHYPqJ
-lPBvpy9Hw3Xuk3q94Zn8/rxkn6B4NHVtlxJm6Oat9Qb3sVAHTEa0zwGUKUj0g7g=
-=UfiG
------END PGP SIGNATURE-----
-
---E/DnYTRukya0zdZ1--
+Thanks,
+Lina
