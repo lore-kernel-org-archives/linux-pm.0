@@ -1,54 +1,88 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] intel_pstate: append more Oracle OEM table id to vendor
- bypass list
-Date: Wed, 5 Aug 2015 10:40:05 +0530
-Message-ID: <20150805051005.GC15655@linux>
-References: <1438734530-5855-1-git-send-email-ethan.zhao@oracle.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH v7 01/13] clk: qcom: Add support for GDSCs
+Date: Wed, 05 Aug 2015 10:58:15 +0530
+Message-ID: <55C19EEF.40505@codeaurora.org>
+References: <1438076046-4706-1-git-send-email-rnayak@codeaurora.org> <1438076046-4706-2-git-send-email-rnayak@codeaurora.org> <20150731162240.GG6519@usrtlx11787.corpusers.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:34433 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750881AbbHEFKN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 01:10:13 -0400
-Received: by pawu10 with SMTP id u10so25979196paw.1
-        for <linux-pm@vger.kernel.org>; Tue, 04 Aug 2015 22:10:13 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1438734530-5855-1-git-send-email-ethan.zhao@oracle.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <20150731162240.GG6519@usrtlx11787.corpusers.net>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Cc: sboyd@codeaurora.org, mturquette@baylibre.com, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, georgi.djakov@linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Ethan Zhao <ethan.zhao@oracle.com>
-Cc: kristen@linux.intel.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 05-08-15, 09:28, Ethan Zhao wrote:
-> Append more Oracle X86 servers that have their own power management,
-> 
-> SUN FIRE X4275 M3
-> SUN FIRE X4170 M3
-> and
-> SUN FIRE X6-2
-> 
-> Signed-off-by: Ethan Zhao <ethan.zhao@oracle.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index c45d274..c57b011 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -1156,6 +1156,10 @@ static struct hw_vendor_info vendor_info[] = {
->  	{1, "ORACLE", "X4270M3 ", PPC},
->  	{1, "ORACLE", "X4270M2 ", PPC},
->  	{1, "ORACLE", "X4170M2 ", PPC},
-> +	{1, "ORACLE", "X4170 M3", PPC},
-> +	{1, "ORACLE", "X4275 M3", PPC},
-> +	{1, "ORACLE", "X6-2    ", PPC},
-> +	{1, "ORACLE", "Sudbury ", PPC},
->  	{0, "", ""},
->  };
+[]..
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> +int gdsc_register(struct device *dev, struct gdsc **scs, size_t num,
+>> +		  struct regmap *regmap)
+>> +{
+>> +	int i, ret;
+>> +	struct genpd_onecell_data *data;
+>> +
+>> +	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
+>> +	if (!data)
+>> +		return -ENOMEM;
+>> +
+>> +	data->domains = devm_kcalloc(dev, num, sizeof(*data->domains),
+>> +				     GFP_KERNEL);
+>> +	if (!data->domains)
+>> +		return -ENOMEM;
+>> +
+>> +	data->num_domains = num;
+>> +	for (i = 0; i < num; i++) {
+>> +		if (!scs[i])
+>> +			continue;
+>> +		scs[i]->regmap = regmap;
+>> +		ret = gdsc_init(scs[i]);
+>> +		if (ret)
+>> +			return ret;
+>
+> By this time we have disabled the HW control and here we just leave it
+> as that, do you expect any interesting consequences of this?
+> Or do we just not care (this shouldn't happen anyways).
 
--- 
-viresh
+The only cases where this could happen are when the regmap apis fail,
+which ideally should not if the data passed is correct. Besides if
+regmap apis do end up failing, the one which disables HW control would
+probably fail as well?
+
+>
+>> +		data->domains[i] = &scs[i]->pd;
+>> +	}
+>> +
+>> +	return of_genpd_add_provider_onecell(dev->of_node, data);
+>> +}
+>> +
+>> +void gdsc_unregister(struct device *dev)
+>> +{
+>> +	of_genpd_del_provider(dev->of_node);
+>> +}
+>> diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
+> [..]
+>> +#ifdef CONFIG_QCOM_GDSC
+>> +int gdsc_register(struct device *, struct gdsc **, size_t n, struct regmap *);
+>> +void gdsc_unregister(struct device *);
+>> +#else
+>> +static inline int gdsc_register(struct device *d, struct gdsc **g, size_t n,
+>> +				struct regmap *r)
+>> +{
+>> +	return -ENOSYS;
+>
+> This will cause qcom_cc_really_probe() to abort and unregister both its
+> resets and clocks. I think you should just pretend that everything went
+> fine and return 0...
+
+qcom_cc_really_probe() ends up calling gdsc_register() only in cases
+there are valid gdscs to be registered..
+
+from drivers/clk/qcom/common.c
+--
+if (desc->gdscs && desc->num_gdscs)
+	gdsc_register(...
+--
+
+..in which case I guess its fair to expect the platform with valid gdscs
+to be registered has CONFIG_QCOM_GDSC enabled, and pretending everything
+went fine might not be the right thing to do?
