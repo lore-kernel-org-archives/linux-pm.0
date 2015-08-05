@@ -1,30 +1,49 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v6 0/8] ARM64: juno: add SCPI mailbox protocol, clock
- and CPUFreq support
-Date: Wed, 05 Aug 2015 10:59:27 +0100
-Message-ID: <55C1DE7F.5040002@arm.com>
-References: <1438364591-1144-1-git-send-email-sudeep.holla@arm.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH 1/1] x86: replace RDRAND forced-reseed with simple sanity
+ check
+Date: Wed, 5 Aug 2015 12:07:28 +0200
+Message-ID: <20150805100728.GA572@gmail.com>
+References: <001e354e9435443b1720838a111620c4eec12a61.1438356386.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1438364591-1144-1-git-send-email-sudeep.holla@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "arm@kernel.org" <arm@kernel.org>, Olof Johansson <olof@lixom.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@kernel.org>, Sudeep Holla <Sudeep.Holla@arm.com>, Liviu Dudau <Liviu.Dudau@arm.com>, Punit Agrawal <Punit.Agrawal@arm.com>, "Jon Medhurst (Tixy)" <tixy@linaro.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arnd Bergmann <arnd@arndb.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f170.google.com ([209.85.212.170]:34844 "EHLO
+	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751132AbbHEKHd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 06:07:33 -0400
+Content-Disposition: inline
+In-Reply-To: <001e354e9435443b1720838a111620c4eec12a61.1438356386.git.len.brown@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-Hi Olof,
 
-On 31/07/15 18:43, Sudeep Holla wrote:
-> Hi ARM-SoC guys,
->
-> It has been on the list for a while and have got all the necessary
-> ACKs. Can you please pull this series for v4.3 ?
->
+* Len Brown <lenb@kernel.org> wrote:
 
-Can you pull this patch series directly from the mail or do you prefer
-pull-request ?
+>  void x86_init_rdrand(struct cpuinfo_x86 *c)
+>  {
+>  #ifdef CONFIG_ARCH_RANDOM
+>  	unsigned long tmp;
+> -	int i, count, ok;
+> +	int i;
+>  
+>  	if (!cpu_has(c, X86_FEATURE_RDRAND))
+> -		return;		/* Nothing to do */
+> +		return;
+>  
+> -	for (count = i = 0; i < RESEED_LOOP; i++) {
+> -		ok = rdrand_long(&tmp);
+> -		if (ok)
+> -			count++;
+> +	for (i = 0; i < SANITY_CHECK_LOOPS; i++) {
+> +		if (!rdrand_long(&tmp)) {
+> +			clear_cpu_cap(c, X86_FEATURE_RDRAND);
+> +			return;
 
-Regards,
-Sudeep
+So here we should emit a printk_once() warning that something's fishy, instead of 
+silently disabling a CPU feature.
+
+Thanks,
+
+	Ingo
