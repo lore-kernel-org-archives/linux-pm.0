@@ -1,58 +1,45 @@
-From: Andy Gross <agross@codeaurora.org>
-Subject: Re: [PATCH RFC 06/10] drivers: qcom: Enable genpd on selecting
- QCOM_PM
-Date: Wed, 5 Aug 2015 11:38:37 -0500
-Message-ID: <20150805163837.GB14198@qualcomm.com>
-References: <438731339-58317-1-git-send-email-lina.iyer@linaro.org>
- <1438792366-2737-1-git-send-email-lina.iyer@linaro.org>
- <1438792366-2737-7-git-send-email-lina.iyer@linaro.org>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] thermal: power_allocator: do not use devm* interfaces
+Date: Wed, 5 Aug 2015 09:50:20 -0700
+Message-ID: <20150805165020.GB3603@dtor-ws>
+References: <20150804163340.GA33245@dtor-ws>
+ <20150805082910.GB2688@e104805>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:54780 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752487AbbHEQij (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 12:38:39 -0400
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:33138 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752494AbbHEQuX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 12:50:23 -0400
 Content-Disposition: inline
-In-Reply-To: <1438792366-2737-7-git-send-email-lina.iyer@linaro.org>
+In-Reply-To: <20150805082910.GB2688@e104805>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, msivasub@codeaurora.org, sboyd@codeaurora.org, robh@kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Lukasz Majewski <l.majewski@samsung.com>, Peter Feuerer <peter@piie.net>, Sascha Hauer <s.hauer@pengutronix.de>, Punit Agrawal <Punit.Agrawal@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Wed, Aug 05, 2015 at 10:32:42AM -0600, Lina Iyer wrote:
-> Enable PM_CPU_DOMAIN and its PM_GENERIC_DOMAINS dependenciesd to provide
-> cpu domain support for QCOM SoCs.
+On Wed, Aug 05, 2015 at 09:29:11AM +0100, Javi Merino wrote:
+> On Tue, Aug 04, 2015 at 05:33:40PM +0100, Dmitry Torokhov wrote:
+> > The code in question is called outside of standard driver
+> > probe()/remove() callbacks and thus will not benefit from use of devm*
+> > infrastructure.
+> > 
+> > Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> 
+> We added the devm* calls because Eduardo asked for them in the review.
+> I don't have a strong opinion regarding this, I'll leave the decision
+> to Eduardo.
 
-Fix dependencies <sic>
+I tried to look for his reasons, if any, but even in earliest posted
+versions use devm* for allocating memory
 
-> 
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> ---
->  drivers/soc/qcom/Kconfig | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/soc/qcom/Kconfig b/drivers/soc/qcom/Kconfig
-> index ba47b70..b6c2e5d 100644
-> --- a/drivers/soc/qcom/Kconfig
-> +++ b/drivers/soc/qcom/Kconfig
-> @@ -14,6 +14,10 @@ config QCOM_PM
->  	bool "Qualcomm Power Management"
->  	depends on ARCH_QCOM && !ARM64
->  	select QCOM_SCM
-> +	select ARM_CPU_SUSPEND
-> +	select PM_GENERIC_DOMAINS
-> +	select PM_GENERIC_DOMAINS_SLEEP
-> +	select PM_GENERIC_DOMAINS_OF
->  	help
->  	  QCOM Platform specific power driver to manage cores and L2 low power
->  	  modes. It interface with various system drivers to put the cores in
-> -- 
-> 2.1.4
-> 
+I guess this is one of examples of devm* usage in wrong context. Given
+that you, as you have to, because this is not a device driver, manually
+freeing that memory with devm_kfree(), the only thing that devm_kzalloc
+and friends buy you here is extra memory allocations for devres
+structures and few extra cycles for maintaining them.
+
+Thanks.
 
 -- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+Dmitry
