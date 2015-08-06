@@ -1,181 +1,75 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v8 09/13] clk: qcom: gdsc: Add GDSCs in apq8084 MMCC
-Date: Thu,  6 Aug 2015 16:07:50 +0530
-Message-ID: <1438857474-20262-10-git-send-email-rnayak@codeaurora.org>
+Subject: [PATCH v8 10/13] arm: dts: qcom: Add #power-domain-cells property
+Date: Thu,  6 Aug 2015 16:07:51 +0530
+Message-ID: <1438857474-20262-11-git-send-email-rnayak@codeaurora.org>
 References: <1438857474-20262-1-git-send-email-rnayak@codeaurora.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:38912 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932253AbbHFKkD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Aug 2015 06:40:03 -0400
 In-Reply-To: <1438857474-20262-1-git-send-email-rnayak@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: sboyd@codeaurora.org, mturquette@baylibre.com
 Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, Rajendra Nayak <rnayak@codeaurora.org>
-List-Id: linux-pm@vger.kernel.org
 
-From: Stephane Viau <sviau@codeaurora.org>
+msm8974 has gcc and mmcc nodes, and apq8084 has a gcc node which
+implement gdsc powerdomains. Add the #power-domain-cells property
+to them.
 
-Add the GDSC instances that exist as part of apq8084 MMCC block.
-
-Signed-off-by: Stephane Viau <sviau@codeaurora.org>
 Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 ---
- drivers/clk/qcom/Kconfig                      |  1 +
- drivers/clk/qcom/mmcc-apq8084.c               | 86 ++++++++++++++++++++++++++-
- include/dt-bindings/clock/qcom,mmcc-apq8084.h | 10 ++++
- 3 files changed, 96 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/qcom-apq8084.dtsi   | 1 +
+ arch/arm/boot/dts/qcom-msm8974.dtsi   | 2 ++
+ arch/arm64/boot/dts/qcom/msm8916.dtsi | 1 +
+ 3 files changed, 4 insertions(+)
 
-diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-index fe00dd6..47b988f 100644
---- a/drivers/clk/qcom/Kconfig
-+++ b/drivers/clk/qcom/Kconfig
-@@ -17,6 +17,7 @@ config APQ_GCC_8084
- config APQ_MMCC_8084
- 	tristate "APQ8084 Multimedia Clock Controller"
- 	select APQ_GCC_8084
-+	select QCOM_GDSC
- 	depends on COMMON_CLK_QCOM
- 	help
- 	  Support for the multimedia clock controller on apq8084 devices.
-diff --git a/drivers/clk/qcom/mmcc-apq8084.c b/drivers/clk/qcom/mmcc-apq8084.c
-index 1b17df2..6498eaa 100644
---- a/drivers/clk/qcom/mmcc-apq8084.c
-+++ b/drivers/clk/qcom/mmcc-apq8084.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
-+ * Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
-  *
-  * This software is licensed under the terms of the GNU General Public
-  * License version 2, as published by the Free Software Foundation, and
-@@ -26,6 +26,7 @@
- #include "clk-rcg.h"
- #include "clk-branch.h"
- #include "reset.h"
-+#include "gdsc.h"
+diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
+index 7084010..1cdb568 100644
+--- a/arch/arm/boot/dts/qcom-apq8084.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
+@@ -221,6 +221,7 @@
+ 			compatible = "qcom,gcc-apq8084";
+ 			#clock-cells = <1>;
+ 			#reset-cells = <1>;
++			#power-domain-cells = <1>;
+ 			reg = <0xfc400000 0x4000>;
+ 		};
  
- enum {
- 	P_XO,
-@@ -3077,6 +3078,76 @@ static const struct pll_config mmpll3_config = {
- 	.aux_output_mask = BIT(1),
- };
+diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
+index 37b47b5..8a2dfa6 100644
+--- a/arch/arm/boot/dts/qcom-msm8974.dtsi
++++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
+@@ -217,6 +217,7 @@
+ 			compatible = "qcom,gcc-msm8974";
+ 			#clock-cells = <1>;
+ 			#reset-cells = <1>;
++			#power-domain-cells = <1>;
+ 			reg = <0xfc400000 0x4000>;
+ 		};
  
-+static struct gdsc venus0_gdsc = {
-+	.gdscr = 0x1024,
-+	.pd = {
-+		.name = "venus0",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+};
-+
-+static struct gdsc venus0_core0_gdsc = {
-+	.gdscr = 0x1040,
-+	.pd = {
-+		.name = "venus0_core0",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+};
-+
-+static struct gdsc venus0_core1_gdsc = {
-+	.gdscr = 0x1044,
-+	.pd = {
-+		.name = "venus0_core1",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+};
-+
-+static struct gdsc mdss_gdsc = {
-+	.gdscr = 0x2304,
-+	.cxcs = (unsigned int []){ 0x231c, 0x2320 },
-+	.cxc_count = 2,
-+	.pd = {
-+		.name = "mdss",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+};
-+
-+static struct gdsc camss_jpeg_gdsc = {
-+	.gdscr = 0x35a4,
-+	.pd = {
-+		.name = "camss_jpeg",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+};
-+
-+static struct gdsc camss_vfe_gdsc = {
-+	.gdscr = 0x36a4,
-+	.cxcs = (unsigned int []){ 0x36a8, 0x36ac, 0x36b0 },
-+	.cxc_count = 3,
-+	.pd = {
-+		.name = "camss_vfe",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+};
-+
-+static struct gdsc oxili_gdsc = {
-+	.gdscr = 0x4024,
-+	.cxcs = (unsigned int []){ 0x4028 },
-+	.cxc_count = 1,
-+	.pd = {
-+		.name = "oxili",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+};
-+
-+static struct gdsc oxilicx_gdsc = {
-+	.gdscr = 0x4034,
-+	.pd = {
-+		.name = "oxilicx",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+};
-+
- static struct clk_regmap *mmcc_apq8084_clocks[] = {
- 	[MMSS_AHB_CLK_SRC] = &mmss_ahb_clk_src.clkr,
- 	[MMSS_AXI_CLK_SRC] = &mmss_axi_clk_src.clkr,
-@@ -3294,6 +3365,17 @@ static const struct qcom_reset_map mmcc_apq8084_resets[] = {
- 	[MMSSNOCAXI_RESET] = { 0x5060 },
- };
+@@ -224,6 +225,7 @@
+ 			compatible = "qcom,mmcc-msm8974";
+ 			#clock-cells = <1>;
+ 			#reset-cells = <1>;
++			#power-domain-cells = <1>;
+ 			reg = <0xfd8c0000 0x6000>;
+ 		};
  
-+static struct gdsc *mmcc_apq8084_gdscs[] = {
-+	[VENUS0_GDSC] = &venus0_gdsc,
-+	[VENUS0_CORE0_GDSC] = &venus0_core0_gdsc,
-+	[VENUS0_CORE1_GDSC] = &venus0_core1_gdsc,
-+	[MDSS_GDSC] = &mdss_gdsc,
-+	[CAMSS_JPEG_GDSC] = &camss_jpeg_gdsc,
-+	[CAMSS_VFE_GDSC] = &camss_vfe_gdsc,
-+	[OXILI_GDSC] = &oxili_gdsc,
-+	[OXILICX_GDSC] = &oxilicx_gdsc,
-+};
-+
- static const struct regmap_config mmcc_apq8084_regmap_config = {
- 	.reg_bits	= 32,
- 	.reg_stride	= 4,
-@@ -3308,6 +3390,8 @@ static const struct qcom_cc_desc mmcc_apq8084_desc = {
- 	.num_clks = ARRAY_SIZE(mmcc_apq8084_clocks),
- 	.resets = mmcc_apq8084_resets,
- 	.num_resets = ARRAY_SIZE(mmcc_apq8084_resets),
-+	.gdscs = mmcc_apq8084_gdscs,
-+	.num_gdscs = ARRAY_SIZE(mmcc_apq8084_gdscs),
- };
+diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+index 0f49ebd..3b0645a 100644
+--- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+@@ -120,6 +120,7 @@
+ 			compatible = "qcom,gcc-msm8916";
+ 			#clock-cells = <1>;
+ 			#reset-cells = <1>;
++			#power-domain-cells = <1>;
+ 			reg = <0x1800000 0x80000>;
+ 		};
  
- static const struct of_device_id mmcc_apq8084_match_table[] = {
-diff --git a/include/dt-bindings/clock/qcom,mmcc-apq8084.h b/include/dt-bindings/clock/qcom,mmcc-apq8084.h
-index d72b5b3..03861e3 100644
---- a/include/dt-bindings/clock/qcom,mmcc-apq8084.h
-+++ b/include/dt-bindings/clock/qcom,mmcc-apq8084.h
-@@ -180,4 +180,14 @@
- #define VPU_SLEEP_CLK			163
- #define VPU_VDP_CLK			164
- 
-+/* GDSCs */
-+#define VENUS0_GDSC			0
-+#define VENUS0_CORE0_GDSC		1
-+#define VENUS0_CORE1_GDSC		2
-+#define MDSS_GDSC			3
-+#define CAMSS_JPEG_GDSC			4
-+#define CAMSS_VFE_GDSC			5
-+#define OXILI_GDSC			6
-+#define OXILICX_GDSC			7
-+
- #endif
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
+
