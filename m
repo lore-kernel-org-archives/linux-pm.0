@@ -1,109 +1,113 @@
-From: Al Stone <al.stone@linaro.org>
-Subject: [PATCH 3/5] ACPI / IA64: remove usage of BAD_MADT_ENTRY
-Date: Thu,  6 Aug 2015 14:59:28 -0600
-Message-ID: <1438894770-31163-4-git-send-email-al.stone@linaro.org>
-References: <1438894770-31163-1-git-send-email-al.stone@linaro.org>
+From: Kukjin Kim <kgene@kernel.org>
+Subject: RE: [PATCH v4 0/6] cpufreq: use generic cpufreq drivers for Exynos4x12
+ platform
+Date: Fri, 07 Aug 2015 08:53:18 +0900
+Message-ID: <015301d0d0a3$1396c900$3ac45b00$@kernel.org>
+References: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1438894770-31163-1-git-send-email-al.stone@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Fenghua Yu <fenghua.yu@intel.com>, linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, Al Stone <al.stone@linaro.org>, patches@linaro.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-kernel@vger.kernel.org, Tony Luck <tony.luck@intel.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com>
+Content-language: ko
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Michael Turquette' <mturquette@baylibre.com>, 'Kukjin Kim' <kgene@kernel.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Krzysztof Kozlowski' <k.kozlowski@samsung.com>
+Cc: 'Tomasz Figa' <tomasz.figa@gmail.com>, 'Lukasz Majewski' <l.majewski@samsung.com>, 'Heiko Stuebner' <heiko@sntech.de>, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Kevin Hilman' <khilman@linaro.org>, 'Javier Martinez Canillas' <javier@dowhile0.org>, 'Tobias Jakobi' <tjakobi@math.uni-bielefeld.de>, 'Anand Moon' <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Now that we have introduced the bad_madt_entry() function, and that
-function is being invoked in acpi_table_parse_madt() for us, there
-is no longer any need to use the BAD_MADT_ENTRY macro.
+Bartlomiej Zolnierkiewicz wrote:
+> 
+> Hi,
+> 
+Hi Bart,
 
-Signed-off-by: Al Stone <al.stone@linaro.org>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
----
- arch/ia64/kernel/acpi.c | 20 --------------------
- 1 file changed, 20 deletions(-)
+> This patch series removes the use of Exynos4x12 specific support
+> from cpufreq-exynos driver and enables the use of cpufreq-dt driver
+> for this platform.
+> 
+Thanks for this series.
 
-diff --git a/arch/ia64/kernel/acpi.c b/arch/ia64/kernel/acpi.c
-index b1698bc..efa3f0a 100644
---- a/arch/ia64/kernel/acpi.c
-+++ b/arch/ia64/kernel/acpi.c
-@@ -184,9 +184,6 @@ acpi_parse_lapic_addr_ovr(struct acpi_subtable_header * header,
- 
- 	lapic = (struct acpi_madt_local_apic_override *)header;
- 
--	if (BAD_MADT_ENTRY(lapic, end))
--		return -EINVAL;
--
- 	if (lapic->address) {
- 		iounmap(ipi_base_addr);
- 		ipi_base_addr = ioremap(lapic->address, 0);
-@@ -201,8 +198,6 @@ acpi_parse_lsapic(struct acpi_subtable_header * header, const unsigned long end)
- 
- 	lsapic = (struct acpi_madt_local_sapic *)header;
- 
--	/*Skip BAD_MADT_ENTRY check, as lsapic size could vary */
--
- 	if (lsapic->lapic_flags & ACPI_MADT_ENABLED) {
- #ifdef CONFIG_SMP
- 		smp_boot_data.cpu_phys_id[available_cpus] =
-@@ -222,9 +217,6 @@ acpi_parse_lapic_nmi(struct acpi_subtable_header * header, const unsigned long e
- 
- 	lacpi_nmi = (struct acpi_madt_local_apic_nmi *)header;
- 
--	if (BAD_MADT_ENTRY(lacpi_nmi, end))
--		return -EINVAL;
--
- 	/* TBD: Support lapic_nmi entries */
- 	return 0;
- }
-@@ -236,9 +228,6 @@ acpi_parse_iosapic(struct acpi_subtable_header * header, const unsigned long end
- 
- 	iosapic = (struct acpi_madt_io_sapic *)header;
- 
--	if (BAD_MADT_ENTRY(iosapic, end))
--		return -EINVAL;
--
- 	return iosapic_init(iosapic->address, iosapic->global_irq_base);
- }
- 
-@@ -253,9 +242,6 @@ acpi_parse_plat_int_src(struct acpi_subtable_header * header,
- 
- 	plintsrc = (struct acpi_madt_interrupt_source *)header;
- 
--	if (BAD_MADT_ENTRY(plintsrc, end))
--		return -EINVAL;
--
- 	/*
- 	 * Get vector assignment for this interrupt, set attributes,
- 	 * and program the IOSAPIC routing table.
-@@ -336,9 +322,6 @@ acpi_parse_int_src_ovr(struct acpi_subtable_header * header,
- 
- 	p = (struct acpi_madt_interrupt_override *)header;
- 
--	if (BAD_MADT_ENTRY(p, end))
--		return -EINVAL;
--
- 	iosapic_override_isa_irq(p->source_irq, p->global_irq,
- 				 ((p->inti_flags & ACPI_MADT_POLARITY_MASK) ==
- 				  ACPI_MADT_POLARITY_ACTIVE_LOW) ?
-@@ -356,9 +339,6 @@ acpi_parse_nmi_src(struct acpi_subtable_header * header, const unsigned long end
- 
- 	nmi_src = (struct acpi_madt_nmi_source *)header;
- 
--	if (BAD_MADT_ENTRY(nmi_src, end))
--		return -EINVAL;
--
- 	/* TBD: Support nimsrc entries */
- 	return 0;
- }
--- 
-2.4.3
+> This patch series has been tested on Exynos4412 based Odroid-U3 and
+> Trats2 boards.
+> 
+Sounds good.
+
+> Depends on:
+> - next-20150806 branch of linux-next kernel tree
+> - "[PATCH V3 00/16] OPP: Add code to support operating-points-v2 bindings"
+>   (http://www.spinics.net/lists/arm-kernel/msg435408.html)
+> 
+BTW, hmm...how can we see this series in v4.3?...to be honest, I don't think it
+can be done in v4.3 because of dependencies with PM / OPP series and previous
+exynos CPU OPP series in each cross trees...maybe that's why you created based
+on linux-next...any idea?
+
+Thanks,
+Kukjin
+
+> Changes since v3
+> (http://thread.gmane.org/gmane.linux.power-management.general/63464):
+> - rebased on top of next-20150806 branch of linux-next kernel tree
+> - made ARCH_EXYNOS config option select thermal support
+> - made scaling_boost_freqs sysfs attribute available only when boost
+>   support is enabled
+> - added Acked-by tag from Viresh to patches #3, #4 and #5
+> - added Tested-by tag from Tobias to patches #2-5
+> - added Reviewed-by tag from Krzysztof to patch #4
+> 
+> Changes since v2
+> (http://thread.gmane.org/gmane.linux.kernel.samsung-soc/46653):
+> - rebased on top of next-20150730 branch of linux-next kernel tree
+> - ported over V3 of opp-v2 bindings support patch series
+> - put cpu0 nodes in alphabetical order in dts files
+> - added Reviewed-by tags from Javier and Krzysztof
+> - added Acked-by tag from Sylwester
+> 
+> Changes since v1
+> (http://thread.gmane.org/gmane.linux.kernel.samsung-soc/44361):
+> - rebased on top of next-20150629 branch of linux-next kernel tree
+> - rebased on top of Exynos5250 cpufreq-dt support patch series
+> - fixed if-statement in exynos4_clk_init() (noticed by Tobias Jakobi)
+> - ported over opp-v2 bindings (requested by Viresh Kumar)
+> 
+> Best regards,
+> --
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+> 
+> 
+> Bartlomiej Zolnierkiewicz (6):
+>   cpufreq: make scaling_boost_freqs sysfs attr available when boost is
+>     enabled
+>   clk: samsung: exynos4x12: add cpu clock configuration data and
+>     instantiate cpu clock
+>   ARM: dts: Exynos4x12: add CPU OPP and regulator supply property
+>   ARM: Exynos: switch to using generic cpufreq driver for Exynos4x12
+>   cpufreq: exynos: remove Exynos4x12 specific cpufreq driver support
+>   cpufreq: remove no longer needed CPU_FREQ_BOOST_SW config option
+> 
+>  arch/arm/boot/dts/exynos4212.dtsi               |  81 ++++++++
+>  arch/arm/boot/dts/exynos4412-odroid-common.dtsi |   4 +
+>  arch/arm/boot/dts/exynos4412-origen.dts         |   4 +
+>  arch/arm/boot/dts/exynos4412-trats2.dts         |   4 +
+>  arch/arm/boot/dts/exynos4412.dtsi               |  83 +++++++++
+>  arch/arm/mach-exynos/Kconfig                    |   2 +
+>  arch/arm/mach-exynos/exynos.c                   |   2 +
+>  drivers/clk/samsung/clk-exynos4.c               |  50 +++++
+>  drivers/cpufreq/Kconfig                         |   4 -
+>  drivers/cpufreq/Kconfig.arm                     |  38 ----
+>  drivers/cpufreq/Makefile                        |   2 -
+>  drivers/cpufreq/cpufreq-dt.c                    |   3 +
+>  drivers/cpufreq/exynos-cpufreq.c                | 236 ------------------------
+>  drivers/cpufreq/exynos-cpufreq.h                |  72 --------
+>  drivers/cpufreq/exynos4x12-cpufreq.c            | 236 ------------------------
+>  drivers/cpufreq/freq_table.c                    |  10 +-
+>  include/linux/cpufreq.h                         |   1 +
+>  17 files changed, 241 insertions(+), 591 deletions(-)
+>  delete mode 100644 drivers/cpufreq/exynos-cpufreq.c
+>  delete mode 100644 drivers/cpufreq/exynos-cpufreq.h
+>  delete mode 100644 drivers/cpufreq/exynos4x12-cpufreq.c
+> 
+> --
+> 1.9.1
