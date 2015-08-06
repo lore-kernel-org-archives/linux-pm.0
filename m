@@ -1,178 +1,181 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v8 04/13] clk: qcom: gdsc: Add support for ON only state
-Date: Thu,  6 Aug 2015 16:07:45 +0530
-Message-ID: <1438857474-20262-5-git-send-email-rnayak@codeaurora.org>
+Subject: [PATCH v8 09/13] clk: qcom: gdsc: Add GDSCs in apq8084 MMCC
+Date: Thu,  6 Aug 2015 16:07:50 +0530
+Message-ID: <1438857474-20262-10-git-send-email-rnayak@codeaurora.org>
 References: <1438857474-20262-1-git-send-email-rnayak@codeaurora.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:38650 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755383AbbHFKj2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Aug 2015 06:39:28 -0400
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1438857474-20262-1-git-send-email-rnayak@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: sboyd@codeaurora.org, mturquette@baylibre.com
 Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, Rajendra Nayak <rnayak@codeaurora.org>
+List-Id: linux-pm@vger.kernel.org
 
-Certain devices can have GDSCs' which support ON as the only state.
-They can't be power collapsed to either hit RET or OFF.
-The clients drivers for these GDSCs' however would expect the state
-of the core to be reset following a GDSC disable and re-enable.
-To do this assert/deassert reset lines every time the client
-driver would request the GDSC to be powered on/off instead.
+From: Stephane Viau <sviau@codeaurora.org>
 
+Add the GDSC instances that exist as part of apq8084 MMCC block.
+
+Signed-off-by: Stephane Viau <sviau@codeaurora.org>
 Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 ---
- drivers/clk/qcom/common.c |  3 ++-
- drivers/clk/qcom/gdsc.c   | 35 ++++++++++++++++++++++++++++++++++-
- drivers/clk/qcom/gdsc.h   | 11 ++++++++++-
- 3 files changed, 46 insertions(+), 3 deletions(-)
+ drivers/clk/qcom/Kconfig                      |  1 +
+ drivers/clk/qcom/mmcc-apq8084.c               | 86 ++++++++++++++++++++++++++-
+ include/dt-bindings/clock/qcom,mmcc-apq8084.h | 10 ++++
+ 3 files changed, 96 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/clk/qcom/common.c b/drivers/clk/qcom/common.c
-index a319aa8..4bc87e1 100644
---- a/drivers/clk/qcom/common.c
-+++ b/drivers/clk/qcom/common.c
-@@ -124,7 +124,8 @@ int qcom_cc_really_probe(struct platform_device *pdev,
- 		goto err_reset;
+diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
+index fe00dd6..47b988f 100644
+--- a/drivers/clk/qcom/Kconfig
++++ b/drivers/clk/qcom/Kconfig
+@@ -17,6 +17,7 @@ config APQ_GCC_8084
+ config APQ_MMCC_8084
+ 	tristate "APQ8084 Multimedia Clock Controller"
+ 	select APQ_GCC_8084
++	select QCOM_GDSC
+ 	depends on COMMON_CLK_QCOM
+ 	help
+ 	  Support for the multimedia clock controller on apq8084 devices.
+diff --git a/drivers/clk/qcom/mmcc-apq8084.c b/drivers/clk/qcom/mmcc-apq8084.c
+index 1b17df2..6498eaa 100644
+--- a/drivers/clk/qcom/mmcc-apq8084.c
++++ b/drivers/clk/qcom/mmcc-apq8084.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2014, The Linux Foundation. All rights reserved.
++ * Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
+  *
+  * This software is licensed under the terms of the GNU General Public
+  * License version 2, as published by the Free Software Foundation, and
+@@ -26,6 +26,7 @@
+ #include "clk-rcg.h"
+ #include "clk-branch.h"
+ #include "reset.h"
++#include "gdsc.h"
  
- 	if (desc->gdscs && desc->num_gdscs) {
--		ret = gdsc_register(dev, desc->gdscs, desc->num_gdscs, regmap);
-+		ret = gdsc_register(dev, desc->gdscs, desc->num_gdscs,
-+				    &reset->rcdev, regmap);
- 		if (ret)
- 			goto err_pd;
- 	}
-diff --git a/drivers/clk/qcom/gdsc.c b/drivers/clk/qcom/gdsc.c
-index e6bbb76..da9fad8 100644
---- a/drivers/clk/qcom/gdsc.c
-+++ b/drivers/clk/qcom/gdsc.c
-@@ -18,6 +18,7 @@
- #include <linux/kernel.h>
- #include <linux/pm_domain.h>
- #include <linux/regmap.h>
-+#include <linux/reset-controller.h>
- #include <linux/slab.h>
- #include "gdsc.h"
- 
-@@ -84,6 +85,24 @@ static int gdsc_toggle_logic(struct gdsc *sc, bool en)
- 	return -ETIMEDOUT;
- }
- 
-+static inline int gdsc_deassert_reset(struct gdsc *sc)
-+{
-+	int i;
-+
-+	for (i = 0; i < sc->reset_count; i++)
-+		sc->rcdev->ops->deassert(sc->rcdev, sc->resets[i]);
-+	return 0;
-+}
-+
-+static inline int gdsc_assert_reset(struct gdsc *sc)
-+{
-+	int i;
-+
-+	for (i = 0; i < sc->reset_count; i++)
-+		sc->rcdev->ops->assert(sc->rcdev, sc->resets[i]);
-+	return 0;
-+}
-+
- static inline void gdsc_force_mem_on(struct gdsc *sc)
- {
- 	int i;
-@@ -107,6 +126,9 @@ static int gdsc_enable(struct generic_pm_domain *domain)
- 	struct gdsc *sc = domain_to_gdsc(domain);
- 	int ret;
- 
-+	if (sc->pwrsts == PWRSTS_ON)
-+		return gdsc_deassert_reset(sc);
-+
- 	ret = gdsc_toggle_logic(sc, true);
- 	if (ret)
- 		return ret;
-@@ -130,6 +152,9 @@ static int gdsc_disable(struct generic_pm_domain *domain)
- {
- 	struct gdsc *sc = domain_to_gdsc(domain);
- 
-+	if (sc->pwrsts == PWRSTS_ON)
-+		return gdsc_assert_reset(sc);
-+
- 	if (sc->pwrsts & PWRSTS_OFF)
- 		gdsc_clear_mem_on(sc);
- 
-@@ -153,6 +178,13 @@ static int gdsc_init(struct gdsc *sc)
- 	if (ret)
- 		return ret;
- 
-+	/* Force gdsc ON if only ON state is supported */
-+	if (sc->pwrsts == PWRSTS_ON) {
-+		ret = gdsc_toggle_logic(sc, true);
-+		if (ret)
-+			return ret;
-+	}
-+
- 	on = gdsc_is_enabled(sc);
- 	if (on < 0)
- 		return on;
-@@ -170,7 +202,7 @@ static int gdsc_init(struct gdsc *sc)
- }
- 
- int gdsc_register(struct device *dev, struct gdsc **scs, size_t num,
--		  struct regmap *regmap)
-+		  struct reset_controller_dev *rcdev, struct regmap *regmap)
- {
- 	int i, ret;
- 	struct genpd_onecell_data *data;
-@@ -189,6 +221,7 @@ int gdsc_register(struct device *dev, struct gdsc **scs, size_t num,
- 		if (!scs[i])
- 			continue;
- 		scs[i]->regmap = regmap;
-+		scs[i]->rcdev = rcdev;
- 		ret = gdsc_init(scs[i]);
- 		if (ret)
- 			return ret;
-diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
-index 0ff251a..5ded268 100644
---- a/drivers/clk/qcom/gdsc.h
-+++ b/drivers/clk/qcom/gdsc.h
-@@ -18,6 +18,7 @@
- #include <linux/pm_domain.h>
- 
- struct regmap;
-+struct reset_controller_dev;
- 
- /* Powerdomain allowable state bitfields */
- #define PWRSTS_OFF		BIT(0)
-@@ -34,6 +35,9 @@ struct regmap;
-  * @cxcs: offsets of branch registers to toggle mem/periph bits in
-  * @cxc_count: number of @cxcs
-  * @pwrsts: Possible powerdomain power states
-+ * @resets: ids of resets associated with this gdsc
-+ * @reset_count: number of @resets
-+ * @rcdev: reset controller
-  */
- struct gdsc {
- 	struct generic_pm_domain	pd;
-@@ -42,13 +46,18 @@ struct gdsc {
- 	unsigned int			*cxcs;
- 	unsigned int			cxc_count;
- 	const u8			pwrsts;
-+	struct reset_controller_dev	*rcdev;
-+	unsigned int			*resets;
-+	unsigned int			reset_count;
+ enum {
+ 	P_XO,
+@@ -3077,6 +3078,76 @@ static const struct pll_config mmpll3_config = {
+ 	.aux_output_mask = BIT(1),
  };
  
- #ifdef CONFIG_QCOM_GDSC
--int gdsc_register(struct device *, struct gdsc **, size_t n, struct regmap *);
-+int gdsc_register(struct device *, struct gdsc **, size_t n,
-+		  struct reset_controller_dev *, struct regmap *);
- void gdsc_unregister(struct device *);
- #else
- static inline int gdsc_register(struct device *d, struct gdsc **g, size_t n,
-+				struct reset_controller_dev *rcdev,
- 				struct regmap *r)
- {
- 	return -ENOSYS;
++static struct gdsc venus0_gdsc = {
++	.gdscr = 0x1024,
++	.pd = {
++		.name = "venus0",
++	},
++	.pwrsts = PWRSTS_OFF_ON,
++};
++
++static struct gdsc venus0_core0_gdsc = {
++	.gdscr = 0x1040,
++	.pd = {
++		.name = "venus0_core0",
++	},
++	.pwrsts = PWRSTS_OFF_ON,
++};
++
++static struct gdsc venus0_core1_gdsc = {
++	.gdscr = 0x1044,
++	.pd = {
++		.name = "venus0_core1",
++	},
++	.pwrsts = PWRSTS_OFF_ON,
++};
++
++static struct gdsc mdss_gdsc = {
++	.gdscr = 0x2304,
++	.cxcs = (unsigned int []){ 0x231c, 0x2320 },
++	.cxc_count = 2,
++	.pd = {
++		.name = "mdss",
++	},
++	.pwrsts = PWRSTS_OFF_ON,
++};
++
++static struct gdsc camss_jpeg_gdsc = {
++	.gdscr = 0x35a4,
++	.pd = {
++		.name = "camss_jpeg",
++	},
++	.pwrsts = PWRSTS_OFF_ON,
++};
++
++static struct gdsc camss_vfe_gdsc = {
++	.gdscr = 0x36a4,
++	.cxcs = (unsigned int []){ 0x36a8, 0x36ac, 0x36b0 },
++	.cxc_count = 3,
++	.pd = {
++		.name = "camss_vfe",
++	},
++	.pwrsts = PWRSTS_OFF_ON,
++};
++
++static struct gdsc oxili_gdsc = {
++	.gdscr = 0x4024,
++	.cxcs = (unsigned int []){ 0x4028 },
++	.cxc_count = 1,
++	.pd = {
++		.name = "oxili",
++	},
++	.pwrsts = PWRSTS_OFF_ON,
++};
++
++static struct gdsc oxilicx_gdsc = {
++	.gdscr = 0x4034,
++	.pd = {
++		.name = "oxilicx",
++	},
++	.pwrsts = PWRSTS_OFF_ON,
++};
++
+ static struct clk_regmap *mmcc_apq8084_clocks[] = {
+ 	[MMSS_AHB_CLK_SRC] = &mmss_ahb_clk_src.clkr,
+ 	[MMSS_AXI_CLK_SRC] = &mmss_axi_clk_src.clkr,
+@@ -3294,6 +3365,17 @@ static const struct qcom_reset_map mmcc_apq8084_resets[] = {
+ 	[MMSSNOCAXI_RESET] = { 0x5060 },
+ };
+ 
++static struct gdsc *mmcc_apq8084_gdscs[] = {
++	[VENUS0_GDSC] = &venus0_gdsc,
++	[VENUS0_CORE0_GDSC] = &venus0_core0_gdsc,
++	[VENUS0_CORE1_GDSC] = &venus0_core1_gdsc,
++	[MDSS_GDSC] = &mdss_gdsc,
++	[CAMSS_JPEG_GDSC] = &camss_jpeg_gdsc,
++	[CAMSS_VFE_GDSC] = &camss_vfe_gdsc,
++	[OXILI_GDSC] = &oxili_gdsc,
++	[OXILICX_GDSC] = &oxilicx_gdsc,
++};
++
+ static const struct regmap_config mmcc_apq8084_regmap_config = {
+ 	.reg_bits	= 32,
+ 	.reg_stride	= 4,
+@@ -3308,6 +3390,8 @@ static const struct qcom_cc_desc mmcc_apq8084_desc = {
+ 	.num_clks = ARRAY_SIZE(mmcc_apq8084_clocks),
+ 	.resets = mmcc_apq8084_resets,
+ 	.num_resets = ARRAY_SIZE(mmcc_apq8084_resets),
++	.gdscs = mmcc_apq8084_gdscs,
++	.num_gdscs = ARRAY_SIZE(mmcc_apq8084_gdscs),
+ };
+ 
+ static const struct of_device_id mmcc_apq8084_match_table[] = {
+diff --git a/include/dt-bindings/clock/qcom,mmcc-apq8084.h b/include/dt-bindings/clock/qcom,mmcc-apq8084.h
+index d72b5b3..03861e3 100644
+--- a/include/dt-bindings/clock/qcom,mmcc-apq8084.h
++++ b/include/dt-bindings/clock/qcom,mmcc-apq8084.h
+@@ -180,4 +180,14 @@
+ #define VPU_SLEEP_CLK			163
+ #define VPU_VDP_CLK			164
+ 
++/* GDSCs */
++#define VENUS0_GDSC			0
++#define VENUS0_CORE0_GDSC		1
++#define VENUS0_CORE1_GDSC		2
++#define MDSS_GDSC			3
++#define CAMSS_JPEG_GDSC			4
++#define CAMSS_VFE_GDSC			5
++#define OXILI_GDSC			6
++#define OXILICX_GDSC			7
++
+ #endif
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
-
