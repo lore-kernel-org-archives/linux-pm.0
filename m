@@ -1,46 +1,176 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v6 0/8] ARM64: juno: add SCPI mailbox protocol, clock
- and CPUFreq support
-Date: Thu, 06 Aug 2015 09:42:47 +0100
-Message-ID: <55C31E07.4090307@arm.com>
-References: <1438364591-1144-1-git-send-email-sudeep.holla@arm.com>
- <55C1DE7F.5040002@arm.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH V2] PM / Domains: Return -EPROBE_DEFER if we fail to init
+ or turn-on domain
+Date: Thu, 6 Aug 2015 10:46:35 +0200
+Message-ID: <CAMuHMdU3y-wn5W3-9BD8epkqdWu+0_16pYwktVhqBHku+Mo2mg@mail.gmail.com>
+References: <1438334400-26367-1-git-send-email-jonathanh@nvidia.com>
+	<55C0C4D3.2050600@nvidia.com>
+	<CAMuHMdW8H-mxG9poJpjijBCUHWs+Q4Xe3muXeTqnd7npBEzXRA@mail.gmail.com>
+	<1911839.6SetkcFuZL@vostro.rjw.lan>
+	<55C30FE4.9080206@nvidia.com>
+	<55C31AA9.8050202@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <55C1DE7F.5040002@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "arm@kernel.org" <arm@kernel.org>, Olof Johansson <olof@lixom.net>
-Cc: "Jon Medhurst (Tixy)" <tixy@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Arnd Bergmann <arnd@arndb.de>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Liviu Dudau <Liviu.Dudau@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sudeep Holla <Sudeep.Holla@arm.com>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f182.google.com ([209.85.214.182]:35534 "EHLO
+	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755406AbbHFIqg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Aug 2015 04:46:36 -0400
+Received: by obbop1 with SMTP id op1so50885803obb.2
+        for <linux-pm@vger.kernel.org>; Thu, 06 Aug 2015 01:46:35 -0700 (PDT)
+In-Reply-To: <55C31AA9.8050202@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Olof,
+Hi Jon,
 
-On 05/08/15 10:59, Sudeep Holla wrote:
-> Hi Olof,
->
-> On 31/07/15 18:43, Sudeep Holla wrote:
->> Hi ARM-SoC guys,
+On Thu, Aug 6, 2015 at 10:28 AM, Jon Hunter <jonathanh@nvidia.com> wrote:
+> On 06/08/15 08:42, Jon Hunter wrote:
+>> On 06/08/15 00:59, Rafael J. Wysocki wrote:
+>>> On Wednesday, August 05, 2015 04:06:12 PM Geert Uytterhoeven wrote:
+>>>> On Tue, Aug 4, 2015 at 3:57 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
+>>>>> On 04/08/15 14:03, Geert Uytterhoeven wrote:
+>>>>>> Now this ended up in pm/linux-next, I gave it a try, also with a special
+>>>>>> test case.
+>>>>>>
+>>>>>> On Fri, Jul 31, 2015 at 11:20 AM, Jon Hunter <jonathanh@nvidia.com> wrote:
+>>>>>>> When a device is probed, the function dev_pm_domain_attach() is called
+>>>>>>> to see if there is a power-domain that is associated with the device and
+>>>>>>> needs to be turned on. If dev_pm_domain_attach() does not return
+>>>>>>> -EPROBE_DEFER then the device will be probed.
+>>>>>>>
+>>>>>>> For devices using genpd, dev_pm_domain_attach() will call
+>>>>>>> genpd_dev_pm_attach(). If genpd_dev_pm_attach() does not find a power
+>>>>>>> domain associated with the device then it returns an error code not
+>>>>>>> equal to -EPROBE_DEFER to allow the device to be probed. However, if
+>>>>>>
+>>>>>> Your patch description doesn't say this behavior was changed...
+>>>>>
+>>>>> Sorry if this was not clear, but ...
+>>>>>
+>>>>>>> genpd_dev_pm_attach() does find a power-domain that is associated with
+>>>>>>> the device, then it does not return -EPROBE_DEFER on failure and hence
+>>>>>>> the device will still be probed. Furthermore, genpd_dev_pm_attach() does
+>>>>>>> not check the error code returned by pm_genpd_poweron() to see if the
+>>>>>>> power-domain was turned on successfully.
+>>>>>>>
+>>>>>>> Fix this by checking the return code from pm_genpd_poweron() and
+>>>>>>> returning -EPROBE_DEFER from genpd_dev_pm_attach on failure, if there
+>>>>>>> is a power-domain associated with the device.
+>>>>>
+>>>>> ... does the above not state the behaviour was changed?
+>>>>>
+>>>>>>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+>>>>>>> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>>>>>> Acked-by: Kevin Hilman <khilman@linaro.org>
+>>>>>>> ---
+>>>>>>> V2 changes:
+>>>>>>> - Updated description per Kevin's feedback and added Kevin's ACK.
+>>>>>>>
+>>>>>>>  drivers/base/power/domain.c | 14 +++++++++-----
+>>>>>>>  1 file changed, 9 insertions(+), 5 deletions(-)
+>>>>>>>
+>>>>>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>>>>>>> index a1abe16dfe16..7666a1cbaf95 100644
+>>>>>>> --- a/drivers/base/power/domain.c
+>>>>>>> +++ b/drivers/base/power/domain.c
+>>>>>>> @@ -1947,7 +1947,10 @@ static void genpd_dev_pm_sync(struct device *dev)
+>>>>>>>   * Both generic and legacy Samsung-specific DT bindings are supported to keep
+>>>>>>>   * backwards compatibility with existing DTBs.
+>>>>>>>   *
+>>>>>>> - * Returns 0 on successfully attached PM domain or negative error code.
+>>>>>>> + * Returns 0 on successfully attached PM domain or negative error code. Note
+>>>>>>> + * that if a power-domain exists for the device, but it cannot be found or
+>>>>>>
+>>>>>> ... but here it does.
+>>>>>>
+>>>>>>> + * turned on, then return -EPROBE_DEFER to ensure that the device is not
+>>>>>>> + * probed and to re-try again later.
+>>>>>>>   */
+>>>>>>>  int genpd_dev_pm_attach(struct device *dev)
+>>>>>>>  {
+>>>>>>> @@ -1984,7 +1987,7 @@ int genpd_dev_pm_attach(struct device *dev)
+>>>>>>>                 dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
+>>>>>>>                         __func__, PTR_ERR(pd));
+>>>>>>>                 of_node_put(dev->of_node);
+>>>>>>> -               return PTR_ERR(pd);
+>>>>>>> +               return -EPROBE_DEFER;
+>>>>>>
+>>>>>> And it really does.
+>>>>>>
+>>>>>> This causes a regression for platforms where:
+>>>>>>   1. DT describes the hardware power domains, and
+>>>>>>   2. The boot loader or reset state has enabled all power domains, and
+>>>>>>   3. Linux doesn't have a driver for the power controller yet.
+>>>>>>
+>>>>>> Before, devices for which the PM domain couldn't be found just probed and
+>>>>>> worked, Now, these devices don't probe anymore, and the kernel fails to boot.
+>>>>>
+>>>>> I see. Sounds like a chicken or the egg scenario. Why not just disable
+>>>>> PM_GENERIC_DOMAINS in the config in that case?
+>>>>
+>>>> Because it may be enabled for another platform in multi-platform kernels.
+>>>>
+>>>>>> Note that I only managed to trigger this by explicitly disabling my power
+>>>>>> controller driver (the platforms I'm interested in already have power
+>>>>>> controller drivers). But I think it will hamper bring-up of new boards, as you
+>>>>>> can no longer write a "perfect and stable" .dts first, and implement kernel
+>>>>>> support incrementally.
+>>>>>>
+>>>>>> Hence I think it's worthwhile to revert just this hunk.
+>>>>>> If you agree, I can send a patch.
+>>>>>
+>>>>> But what about the case where we do have device that does have a power
+>>>>> controller driver? Don't we want to defer in case it has not been probed
+>>>>> yet? I am concerned we could try to probe a device before the power
+>>>>> controller has been probed.
+>>>>
+>>>> That's indeed an issue.
+>>>>
+>>>> There's a similar problem with "dmas" properties and the (non)presence
+>>>> of the DMA controller.
+>>>
+>>> Well, should I drop the patch, then?
+
+No, I wouldn't drop the whole patch.
+
+>> Although I respect Geert's opinion, I am still not convinced that we
+>> should drop this because of the scenario that Geert is describing.
 >>
->> It has been on the list for a while and have got all the necessary
->> ACKs. Can you please pull this series for v4.3 ?
+>> IMO, the scenario would only impact early development and usually you
+>> may need to hack the kernel a bit to get things up a running initially
+>> anyway. Furthermore, I don't think that the kernel should make any
+>> assumptions about what a bootloader may or may not do.
 >>
+>> I think that it is best for the kernel to behave as we would want in a
+>> production environment and that is if the device has associated
+>> power-domains then we should defer the probe until the gpd provider is
+>> available.
 >
-> Can you pull this patch series directly from the mail or do you prefer
-> pull-request ?
->
+> Furthermore, without this change, it means I need to ensure that the gpd
+> provider(s) is always probed before any device that is dependent upon
+> that provider (ie. faff with initcalls). Otherwise a device can be
+> probed before the provider and potentially crash/hang the system when
+> accessing the hardware. That's the real problem I am trying to solve
+> here. Sorry if that was not clear.
 
-Any issue with this series ? Let me know. I did send a pull request also
-but I haven't got any response so far. Sorry for the nag.
+I had already realized your probe order issue before.
 
-Regards,
-Sudeep
+On Renesas SoCs, we have to initialize the PM Domain very early, as even
+critical infrastructure can be part of a power or clock domain.
+And as these days most critical infrastructure is initialized from some
+OF_DECLARE() variant (which doesn't support retry on EPROBE_DEFER!), we don't
+have much of a choice...
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
