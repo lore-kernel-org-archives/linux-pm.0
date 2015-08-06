@@ -1,85 +1,99 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH] thermal: remove power allocator from list of default
- governors
-Date: Thu, 6 Aug 2015 09:30:45 +0100
-Message-ID: <20150806083045.GB2640@e104805>
-References: <20150804163921.GA36852@dtor-ws>
- <20150805083755.GC2688@e104805>
- <20150805163539.GA3603@dtor-ws>
- <20150805184938.GC4161@localhost.localdomain>
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=
+	<u.kleine-koenig@pengutronix.de>
+Subject: [PATCH v2] base/platform: assert that dev_pm_domain callbacks are called unconditionally
+Date: Thu,  6 Aug 2015 10:31:00 +0200
+Message-ID: <1438849860-18504-1-git-send-email-u.kleine-koenig@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150805184938.GC4161@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Tushar Dave <tushar.n.dave@intel.com>, Lan Tianyu <tianyu.lan@intel.com>, Punit Agrawal <Punit.Agrawal@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>
+Cc: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>, linux-kernel@vger.kernel.org, kernel@pengutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 05, 2015 at 07:49:41PM +0100, Eduardo Valentin wrote:
-> On Wed, Aug 05, 2015 at 09:35:39AM -0700, Dmitry Torokhov wrote:
-> > On Wed, Aug 05, 2015 at 09:37:55AM +0100, Javi Merino wrote:
-> > > On Tue, Aug 04, 2015 at 05:39:21PM +0100, Dmitry Torokhov wrote:
-> > > > As it currently stands the power allocator governor can not handle
-> > > > thermal zones that are not specifically crafted and therefore can not be
-> > > > used as a default governor.
-> > > > 
-> > > > Users need to explicitly enable this governor for thermal zones that do
-> > > > have enough information for its operation.
-> > > > 
-> > > > Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> > > > ---
-> > > >  drivers/thermal/Kconfig | 8 --------
-> > > >  1 file changed, 8 deletions(-)
-> > > > 
-> > > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > > > index 0390044..34d05d3 100644
-> > > > --- a/drivers/thermal/Kconfig
-> > > > +++ b/drivers/thermal/Kconfig
-> > > > @@ -82,14 +82,6 @@ config THERMAL_DEFAULT_GOV_USER_SPACE
-> > > >  	  Select this if you want to let the user space manage the
-> > > >  	  platform thermals.
-> > > >  
-> > > > -config THERMAL_DEFAULT_GOV_POWER_ALLOCATOR
-> > > > -	bool "power_allocator"
-> > > > -	select THERMAL_GOV_POWER_ALLOCATOR
-> > > > -	help
-> > > > -	  Select this if you want to control temperature based on
-> > > > -	  system and device power allocation. This governor can only
-> > > > -	  operate on cooling devices that implement the power API.
-> > > > -
-> > > 
-> > > Currently the only way we have for a thermal zone configured from
-> > > device tree to use a governor from the kernel boot is by using
-> > > THERMAL_DEFAULT_GOV_*.  If we remove this option some devices won't
-> > > have a workable thermal framework until userspace is up and running.
-> > 
-> > Why would step wise, or fair share be not workable (even if not optimal)
-> > thermal frameworks? It doe snot take that long to get to [early]
-> > userspace. Half of the boot time the thermal framework is not working
-> > anyway because half of the devices that can act as colling devices are
-> > not yet logically there.
-> > 
-> > > 
-> > > Would you rather have the power allocator governor accept every
-> > > thermal zone?
-> > 
-> > If it is to be one of default governors then yes, it needs to be able to
-> > manage all thermal zones, the same way as the other 3 governors can, as
-> > far as I know.
-> 
-> I believe fairshare also relies on platform data to be properly set,
-> otherwise, it would not be functional. That's probably why I overlooked
-> this point. That said, I would say, if we follow this logic, a similar
-> patch is needed for fairshare.
-> 
-> Javi, ideally, the governor would need to have a workable
-> default settings for any thermal zone that miss the platform settings.
-> Do you think it would be doable for power allocator?
+=46rom: Uwe Kleine-K=C3=B6nig <uwe@kleine-koenig.org>
 
-Yes, we can come up with something that accepts any thermal zone.
-I'll send a patch soon.
+When a platform driver doesn't provide a .remove callback the function
+platform_drv_remove isn't called and so the call to dev_pm_domain_attac=
+h
+called at probe time isn't paired by dev_pm_domain_detach at remove
+time.
 
-Cheers,
-Javi
+To fix this (and similar issues if different callbacks are missing) hoo=
+k
+up the driver callbacks unconditionally and make them aware that the
+platform callbacks might be missing.
+
+Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+---
+Changes since (implicit) v1, sent with
+Message-Id: 1437491315-2370-1-git-send-email-uwe@kleine-koenig.org:
+
+- initialize ret in platform_drv_remove
+- change my email to the right one
+- adding some more people to Cc
+
+Best regards
+Uwe
+
+ drivers/base/platform.c | 19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index 063f0ab15259..58cea3ea00f8 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -517,7 +517,7 @@ static int platform_drv_probe(struct device *_dev)
+ 		return ret;
+=20
+ 	ret =3D dev_pm_domain_attach(_dev, true);
+-	if (ret !=3D -EPROBE_DEFER) {
++	if (ret !=3D -EPROBE_DEFER && drv->probe) {
+ 		ret =3D drv->probe(dev);
+ 		if (ret)
+ 			dev_pm_domain_detach(_dev, true);
+@@ -540,9 +540,10 @@ static int platform_drv_remove(struct device *_dev=
+)
+ {
+ 	struct platform_driver *drv =3D to_platform_driver(_dev->driver);
+ 	struct platform_device *dev =3D to_platform_device(_dev);
+-	int ret;
++	int ret =3D 0;
+=20
+-	ret =3D drv->remove(dev);
++	if (drv->remove)
++		ret =3D drv->remove(dev);
+ 	dev_pm_domain_detach(_dev, true);
+=20
+ 	return ret;
+@@ -553,7 +554,8 @@ static void platform_drv_shutdown(struct device *_d=
+ev)
+ 	struct platform_driver *drv =3D to_platform_driver(_dev->driver);
+ 	struct platform_device *dev =3D to_platform_device(_dev);
+=20
+-	drv->shutdown(dev);
++	if (drv->shutdown)
++		drv->shutdown(dev);
+ 	dev_pm_domain_detach(_dev, true);
+ }
+=20
+@@ -567,12 +569,9 @@ int __platform_driver_register(struct platform_dri=
+ver *drv,
+ {
+ 	drv->driver.owner =3D owner;
+ 	drv->driver.bus =3D &platform_bus_type;
+-	if (drv->probe)
+-		drv->driver.probe =3D platform_drv_probe;
+-	if (drv->remove)
+-		drv->driver.remove =3D platform_drv_remove;
+-	if (drv->shutdown)
+-		drv->driver.shutdown =3D platform_drv_shutdown;
++	drv->driver.probe =3D platform_drv_probe;
++	drv->driver.remove =3D platform_drv_remove;
++	drv->driver.shutdown =3D platform_drv_shutdown;
+=20
+ 	return driver_register(&drv->driver);
+ }
+--=20
+2.4.6
