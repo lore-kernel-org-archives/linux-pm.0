@@ -1,92 +1,73 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 6/9] ARM: domain: Add platform handlers for CPU PM domains
-Date: Wed, 5 Aug 2015 22:01:01 -0500
-Message-ID: <CAL_JsqJ_AK6M5WmyFrGVLtpGg=MdAafxX=1873Je_uB_sQkpiA@mail.gmail.com>
-References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
- <1438731339-58317-7-git-send-email-lina.iyer@linaro.org> <CAL_JsqKWekSGiFbZz6++3ibAzY_8Y6+0nOBQinFVw4cBk6JvEw@mail.gmail.com>
- <20150805192341.GB52339@linaro.org>
+From: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH 5/9] ARM: common: Introduce PM domains for CPUs/clusters
+Date: Wed, 5 Aug 2015 22:14:51 -0500
+Message-ID: <CAL_JsqK67=DTtjZwwnonObLDjLbahkREfm0RvyXVV95bhR-d4Q@mail.gmail.com>
+References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org> <1438731339-58317-6-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f177.google.com ([209.85.160.177]:34584 "EHLO
-	mail-yk0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753808AbbHFDBV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 23:01:21 -0400
-Received: by ykax123 with SMTP id x123so52441878yka.1
-        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2015 20:01:20 -0700 (PDT)
-In-Reply-To: <20150805192341.GB52339@linaro.org>
+Received: from mail-yk0-f175.google.com ([209.85.160.175]:32919 "EHLO
+	mail-yk0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752637AbbHFDPL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 23:15:11 -0400
+Received: by ykoo205 with SMTP id o205so52469050yko.0
+        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2015 20:15:10 -0700 (PDT)
+In-Reply-To: <1438731339-58317-6-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, msivasub@codeaurora.org, Geert Uytterhoeven <geert@linux-m68k.org>, Andy Gross <agross@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Aug 5, 2015 at 2:23 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
-> On Wed, Aug 05 2015 at 08:45 -0600, Rob Herring wrote:
->>
->> On Tue, Aug 4, 2015 at 6:35 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
->>>
->>> In addition to the common power up/down actions of CPU PM domain core,
->>> platforms may have additional configuration before the CPU domain can be
->>> powered off or considered active. Allow platform drivers to register
->>> handlers for CPU PM domains.
->>>
->>> Platform drivers may register their callbacks against a compatible
->>> string defined by their PM domain provider device node in the DT. At
->>> domain init, the platform driver can initialize the platform specific
->>> genpd attributes. The init callback would need to return successfully,
->>> for the platform power_on/off handlers to be registered with the CPU PM
->>> domain.
->>>
->>> The code uses __init section to reduce memory needed for platform
->>> handlers and therefore can be freed after the driver is initialized, a
->>> desirable outcome for single kernel image.
->>
->>
->> [...]
->>
->>> diff --git a/arch/arm/include/asm/arm-pd.h
->>> b/arch/arm/include/asm/arm-pd.h
->>> new file mode 100644
->>> index 0000000..fc44abf
+On Tue, Aug 4, 2015 at 6:35 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+> Define and add Generic PM domains (genpd) for ARM CPU clusters. Many new
+> SoCs group CPUs as clusters. Clusters share common resources like GIC,
+> power rail, caches, VFP, Coresight etc. When all CPUs in the cluster are
+> idle, these shared resources may also be put in their idle state.
 >
+> The idle time between the last CPU entering idle and a CPU resuming
+> execution is an opportunity for these shared resources to be powered
+> down. Generic PM domain provides a framework for defining such power
+> domains and attach devices to the domain. When the devices in the domain
+> are idle at runtime, the domain would also be suspended and resumed
+> before the first of the devices resume execution.
 >
-> [...]
->
->>> +#define ARM_PD_METHOD_OF_DECLARE(_name, _handle, _ops) \
->>> +       static const struct of_arm_pd_method
->>> __arm_pd_method_of_table_##_name \
->>> +       __used __section(__arm_pd_method_of_table)              \
->>> +       = { .handle = _handle, .ops = _ops }
->>
->>
->> AFAICT, you are not using this in this series. You should add it when
->> you have a user.
->>
->> Ideally, we keep some amount of uniformity across various *_OF_DECLARE
->> which is why we have OF_DECLARE_1 and OF_DECLARE_2. This makes all the
->> sections just arrays of struct of_device_id. Not all users follow
->> this, but most do. So instead of putting the ops in here, platforms
->> can provide a function callback which can then set the ops. Then you
->> also don't need the .init() ops function as the callback function can
->> do any initialization too.
->>
-> I looked through these and I can switch over to _OF_DECLARE() without any
-> issues, but using OF_DECLARE_1 or OF_DECLARE_2 is pretty limiting.
+> We define a generic PM domain for each cluster and attach CPU devices in
+> the cluster to that PM domain. The DT definitions for the SoC describe
+> this relationship. Genpd callbacks for power_on and power_off can then
+> be used to power up/down the shared resources for the domain.
 
-Well yes, but then we only want to use it for things that will never
-use the driver model.
+[...]
 
-> If I could set up my own function type for the .data member, then its a
-> lot more easier on the code. Like this -
->
-> typedef int (*arm_pd_init)(struct device_node *dn, struct
->                 generic_pm_domain *genpd, struct of_arm_pd_ops *ops);
+> +ARM CPU Power domains
+> +
+> +The device tree allows describing of CPU power domains in a SoC. In ARM SoC,
+> +CPUs may be grouped as clusters. A cluster may have CPUs, GIC, Coresight,
+> +caches, VFP and power controller and other peripheral hardware. Generally,
+> +when the CPUs in the cluster are idle/suspended, the shared resources may also
+> +be suspended and resumed before any of the CPUs resume execution.
+> +
+> +CPUs are the defined as the PM domain consumers and there is a PM domain
+> +provider for the CPUs. Bindings for generic PM domains (genpd) is described in
+> +[1].
+> +
+> +The ARM CPU PM domain follows the same binding convention as any generic PM
+> +domain. Additional binding properties are -
+> +
+> +- compatible:
+> +       Usage: required
+> +       Value type: <string>
+> +       Definition: Must also have
+> +                       "arm,pd"
+> +               inorder to initialize the genpd provider as ARM CPU PM domain.
 
-You alloc the genpd struct just before calling init. You can just as
-easily have the platform specific code call an allocation function and
-a function to set the ops functions. This is more inline with how a
-driver would work when registering with a subsystem. I also don't
-think "arm,pd" is a good compatible string to be matching on. I'll
-comment on that more in patch 5.
+A compatible string should represent a particular h/w block. If it is
+generic, it should represent some sort of standard programming
+interface (e.g, AHCI, EHCI, etc.). This doesn't seem to be either and
+is rather just a mapping of what "driver" you want to use.
+
+I would expect that identifying a cpu's or cluster's power domain
+would be done by a phandle between the cpu/cluster node and power
+domain node. But I've not really looked at the power domain bindings
+so who knows.
 
 Rob
