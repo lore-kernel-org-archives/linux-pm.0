@@ -1,74 +1,129 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v8 10/13] arm: dts: qcom: Add #power-domain-cells property
-Date: Thu,  6 Aug 2015 16:07:51 +0530
-Message-ID: <1438857474-20262-11-git-send-email-rnayak@codeaurora.org>
+Subject: [PATCH v8 08/13] clk: qcom: gdsc: Add GDSCs in apq8084 GCC
+Date: Thu,  6 Aug 2015 16:07:49 +0530
+Message-ID: <1438857474-20262-9-git-send-email-rnayak@codeaurora.org>
 References: <1438857474-20262-1-git-send-email-rnayak@codeaurora.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:38912 "EHLO
+Received: from smtp.codeaurora.org ([198.145.29.96]:38804 "EHLO
 	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932253AbbHFKkD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Aug 2015 06:40:03 -0400
+	with ESMTP id S1755483AbbHFKjq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Aug 2015 06:39:46 -0400
 In-Reply-To: <1438857474-20262-1-git-send-email-rnayak@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: sboyd@codeaurora.org, mturquette@baylibre.com
 Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, Rajendra Nayak <rnayak@codeaurora.org>
 
-msm8974 has gcc and mmcc nodes, and apq8084 has a gcc node which
-implement gdsc powerdomains. Add the #power-domain-cells property
-to them.
+Add the GDSC instances that exist as part of apq8084 GCC block
 
 Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 ---
- arch/arm/boot/dts/qcom-apq8084.dtsi   | 1 +
- arch/arm/boot/dts/qcom-msm8974.dtsi   | 2 ++
- arch/arm64/boot/dts/qcom/msm8916.dtsi | 1 +
- 3 files changed, 4 insertions(+)
+ drivers/clk/qcom/Kconfig                     |  1 +
+ drivers/clk/qcom/gcc-apq8084.c               | 42 ++++++++++++++++++++++++++++
+ include/dt-bindings/clock/qcom,gcc-apq8084.h |  6 ++++
+ 3 files changed, 49 insertions(+)
 
-diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
-index 7084010..1cdb568 100644
---- a/arch/arm/boot/dts/qcom-apq8084.dtsi
-+++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
-@@ -221,6 +221,7 @@
- 			compatible = "qcom,gcc-apq8084";
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
-+			#power-domain-cells = <1>;
- 			reg = <0xfc400000 0x4000>;
- 		};
+diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
+index edab172..fe00dd6 100644
+--- a/drivers/clk/qcom/Kconfig
++++ b/drivers/clk/qcom/Kconfig
+@@ -7,6 +7,7 @@ config COMMON_CLK_QCOM
  
-diff --git a/arch/arm/boot/dts/qcom-msm8974.dtsi b/arch/arm/boot/dts/qcom-msm8974.dtsi
-index 37b47b5..8a2dfa6 100644
---- a/arch/arm/boot/dts/qcom-msm8974.dtsi
-+++ b/arch/arm/boot/dts/qcom-msm8974.dtsi
-@@ -217,6 +217,7 @@
- 			compatible = "qcom,gcc-msm8974";
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
-+			#power-domain-cells = <1>;
- 			reg = <0xfc400000 0x4000>;
- 		};
+ config APQ_GCC_8084
+ 	tristate "APQ8084 Global Clock Controller"
++	select QCOM_GDSC
+ 	depends on COMMON_CLK_QCOM
+ 	help
+ 	  Support for the global clock controller on apq8084 devices.
+diff --git a/drivers/clk/qcom/gcc-apq8084.c b/drivers/clk/qcom/gcc-apq8084.c
+index 54a756b9..91c6bd9c 100644
+--- a/drivers/clk/qcom/gcc-apq8084.c
++++ b/drivers/clk/qcom/gcc-apq8084.c
+@@ -31,6 +31,7 @@
+ #include "clk-rcg.h"
+ #include "clk-branch.h"
+ #include "reset.h"
++#include "gdsc.h"
  
-@@ -224,6 +225,7 @@
- 			compatible = "qcom,mmcc-msm8974";
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
-+			#power-domain-cells = <1>;
- 			reg = <0xfd8c0000 0x6000>;
- 		};
+ enum {
+ 	P_XO,
+@@ -3253,6 +3254,38 @@ static struct clk_branch gcc_usb_hsic_system_clk = {
+ 	},
+ };
  
-diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-index 0f49ebd..3b0645a 100644
---- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
-+++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-@@ -120,6 +120,7 @@
- 			compatible = "qcom,gcc-msm8916";
- 			#clock-cells = <1>;
- 			#reset-cells = <1>;
-+			#power-domain-cells = <1>;
- 			reg = <0x1800000 0x80000>;
- 		};
++static struct gdsc usb_hs_hsic_gdsc = {
++	.gdscr = 0x404,
++	.pd = {
++		.name = "usb_hs_hsic",
++	},
++	.pwrsts = PWRSTS_OFF_ON,
++};
++
++static struct gdsc pcie0_gdsc = {
++	.gdscr = 0x1ac4,
++	.pd = {
++		.name = "pcie0",
++	},
++	.pwrsts = PWRSTS_OFF_ON,
++};
++
++static struct gdsc pcie1_gdsc = {
++	.gdscr = 0x1b44,
++	.pd = {
++		.name = "pcie1",
++	},
++	.pwrsts = PWRSTS_OFF_ON,
++};
++
++static struct gdsc usb30_gdsc = {
++	.gdscr = 0x1e84,
++	.pd = {
++		.name = "usb30",
++	},
++	.pwrsts = PWRSTS_OFF_ON,
++};
++
+ static struct clk_regmap *gcc_apq8084_clocks[] = {
+ 	[GPLL0] = &gpll0.clkr,
+ 	[GPLL0_VOTE] = &gpll0_vote,
+@@ -3446,6 +3479,13 @@ static struct clk_regmap *gcc_apq8084_clocks[] = {
+ 	[GCC_USB_HSIC_SYSTEM_CLK] = &gcc_usb_hsic_system_clk.clkr,
+ };
  
++static struct gdsc *gcc_apq8084_gdscs[] = {
++	[USB_HS_HSIC_GDSC] = &usb_hs_hsic_gdsc,
++	[PCIE0_GDSC] = &pcie0_gdsc,
++	[PCIE1_GDSC] = &pcie1_gdsc,
++	[USB30_GDSC] = &usb30_gdsc,
++};
++
+ static const struct qcom_reset_map gcc_apq8084_resets[] = {
+ 	[GCC_SYSTEM_NOC_BCR] = { 0x0100 },
+ 	[GCC_CONFIG_NOC_BCR] = { 0x0140 },
+@@ -3554,6 +3594,8 @@ static const struct qcom_cc_desc gcc_apq8084_desc = {
+ 	.num_clks = ARRAY_SIZE(gcc_apq8084_clocks),
+ 	.resets = gcc_apq8084_resets,
+ 	.num_resets = ARRAY_SIZE(gcc_apq8084_resets),
++	.gdscs = gcc_apq8084_gdscs,
++	.num_gdscs = ARRAY_SIZE(gcc_apq8084_gdscs),
+ };
+ 
+ static const struct of_device_id gcc_apq8084_match_table[] = {
+diff --git a/include/dt-bindings/clock/qcom,gcc-apq8084.h b/include/dt-bindings/clock/qcom,gcc-apq8084.h
+index 2c0da56..5aa7ebe 100644
+--- a/include/dt-bindings/clock/qcom,gcc-apq8084.h
++++ b/include/dt-bindings/clock/qcom,gcc-apq8084.h
+@@ -348,4 +348,10 @@
+ #define GCC_PCIE_1_PIPE_CLK				331
+ #define GCC_PCIE_1_SLV_AXI_CLK				332
+ 
++/* gdscs */
++#define USB_HS_HSIC_GDSC				0
++#define PCIE0_GDSC					1
++#define PCIE1_GDSC					2
++#define USB30_GDSC					3
++
+ #endif
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
