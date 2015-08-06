@@ -1,132 +1,160 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Thu, 6 Aug 2015 10:10:11 +0200
-Message-ID: <20150806081011.GM18700@pengutronix.de>
-References: <1438777538-1269-1-git-send-email-s.hauer@pengutronix.de>
- <1438777538-1269-3-git-send-email-s.hauer@pengutronix.de>
- <CAGS+omBvkS4tZirsPp2L=vQaV7aWheEL0Nov1Yvu81dVbWdz-g@mail.gmail.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH V2] PM / Domains: Return -EPROBE_DEFER if we fail to init
+ or turn-on domain
+Date: Thu, 6 Aug 2015 09:28:25 +0100
+Message-ID: <55C31AA9.8050202@nvidia.com>
+References: <1438334400-26367-1-git-send-email-jonathanh@nvidia.com> <55C0C4D3.2050600@nvidia.com> <CAMuHMdW8H-mxG9poJpjijBCUHWs+Q4Xe3muXeTqnd7npBEzXRA@mail.gmail.com> <1911839.6SetkcFuZL@vostro.rjw.lan> <55C30FE4.9080206@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAGS+omBvkS4tZirsPp2L=vQaV7aWheEL0Nov1Yvu81dVbWdz-g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Kurtz <djkurtz@chromium.org>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mediatek@lists.infradead.org, Sasha Hauer <kernel@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:4008 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754620AbbHFI2c (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Aug 2015 04:28:32 -0400
+In-Reply-To: <55C30FE4.9080206@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thu, Aug 06, 2015 at 02:02:30AM +0800, Daniel Kurtz wrote:
-> 
-> > +
-> > +#define THERMAL_NAME    "mtk-thermal"
-> > +
-> > +struct mtk_thermal;
-> > +
-> > +struct mtk_thermal_bank {
-> > +       struct mtk_thermal *mt;
-> > +       struct thermal_zone_device *tz;
-> 
-> A better name for this field is "tzd" - that is what is used in
-> drivers/thermal/of-thermal.c.
-> 
-> > +       int id;
-> 
-> nit: we don't need both *mt and id, since "id" here is always just the
-> index into the mtk_thermal->banks[] array, given either mt or id and
-> our bank pointer, we can derive the other.
-> 
-> I think something like this would work:
-> 
-> static inline struct mtk_thermal *to_mtk_thermal(struct mtk_thermal_bank* bank)
-> {
->   struct mtk_thermal_bank *banks = bank - bank->id;
->   return container_of(banks, struct mtk_thermal_bank, banks);
-> }
-> 
-> or:
-> 
-> static inline int mtk_thermal_bank_id(struct mtk_thermal_bank* bank)
-> {
->   return bank - bank->mt->banks;
-> }
 
-Yes, probably both work. I don't think though that any of these makes
-the code clearer.
-
-> > +static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
-> > +               u32 apmixed_phys_base, u32 auxadc_phys_base)
-> > +{
-> > +       struct mtk_thermal_bank *bank = &mt->banks[num];
-> > +       const struct mtk_thermal_bank_cfg *cfg = &bank_data[num];
-> > +       int i;
-> > +
-> > +       bank->id = num;
-> > +       bank->mt = mt;
-> > +
-> > +       mtk_thermal_get_bank(bank);
-> > +
-> > +       /* bus clock 66M counting unit is 12 * 15.15ns * 256 = 46.540us */
-> > +       writel(TEMP_MONCTL1_PERIOD_UNIT(12), mt->thermal_base + TEMP_MONCTL1);
-> > +
+On 06/08/15 08:42, Jon Hunter wrote:
 > 
-> The only things that look zone specific here are the following:
+> On 06/08/15 00:59, Rafael J. Wysocki wrote:
+>> On Wednesday, August 05, 2015 04:06:12 PM Geert Uytterhoeven wrote:
+>>> Hi Jon,
+>>>
+>>> On Tue, Aug 4, 2015 at 3:57 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
+>>>> On 04/08/15 14:03, Geert Uytterhoeven wrote:
+>>>>> Now this ended up in pm/linux-next, I gave it a try, also with a special
+>>>>> test case.
+>>>>>
+>>>>> On Fri, Jul 31, 2015 at 11:20 AM, Jon Hunter <jonathanh@nvidia.com> wrote:
+>>>>>> When a device is probed, the function dev_pm_domain_attach() is called
+>>>>>> to see if there is a power-domain that is associated with the device and
+>>>>>> needs to be turned on. If dev_pm_domain_attach() does not return
+>>>>>> -EPROBE_DEFER then the device will be probed.
+>>>>>>
+>>>>>> For devices using genpd, dev_pm_domain_attach() will call
+>>>>>> genpd_dev_pm_attach(). If genpd_dev_pm_attach() does not find a power
+>>>>>> domain associated with the device then it returns an error code not
+>>>>>> equal to -EPROBE_DEFER to allow the device to be probed. However, if
+>>>>>
+>>>>> Your patch description doesn't say this behavior was changed...
+>>>>
+>>>> Sorry if this was not clear, but ...
+>>>>
+>>>>>> genpd_dev_pm_attach() does find a power-domain that is associated with
+>>>>>> the device, then it does not return -EPROBE_DEFER on failure and hence
+>>>>>> the device will still be probed. Furthermore, genpd_dev_pm_attach() does
+>>>>>> not check the error code returned by pm_genpd_poweron() to see if the
+>>>>>> power-domain was turned on successfully.
+>>>>>>
+>>>>>> Fix this by checking the return code from pm_genpd_poweron() and
+>>>>>> returning -EPROBE_DEFER from genpd_dev_pm_attach on failure, if there
+>>>>>> is a power-domain associated with the device.
+>>>>
+>>>> ... does the above not state the behaviour was changed?
+>>>>
+>>>>>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+>>>>>> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>>>>> Acked-by: Kevin Hilman <khilman@linaro.org>
+>>>>>> ---
+>>>>>> V2 changes:
+>>>>>> - Updated description per Kevin's feedback and added Kevin's ACK.
+>>>>>>
+>>>>>>  drivers/base/power/domain.c | 14 +++++++++-----
+>>>>>>  1 file changed, 9 insertions(+), 5 deletions(-)
+>>>>>>
+>>>>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>>>>>> index a1abe16dfe16..7666a1cbaf95 100644
+>>>>>> --- a/drivers/base/power/domain.c
+>>>>>> +++ b/drivers/base/power/domain.c
+>>>>>> @@ -1947,7 +1947,10 @@ static void genpd_dev_pm_sync(struct device *dev)
+>>>>>>   * Both generic and legacy Samsung-specific DT bindings are supported to keep
+>>>>>>   * backwards compatibility with existing DTBs.
+>>>>>>   *
+>>>>>> - * Returns 0 on successfully attached PM domain or negative error code.
+>>>>>> + * Returns 0 on successfully attached PM domain or negative error code. Note
+>>>>>> + * that if a power-domain exists for the device, but it cannot be found or
+>>>>>
+>>>>> ... but here it does.
+>>>>>
+>>>>>> + * turned on, then return -EPROBE_DEFER to ensure that the device is not
+>>>>>> + * probed and to re-try again later.
+>>>>>>   */
+>>>>>>  int genpd_dev_pm_attach(struct device *dev)
+>>>>>>  {
+>>>>>> @@ -1984,7 +1987,7 @@ int genpd_dev_pm_attach(struct device *dev)
+>>>>>>                 dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
+>>>>>>                         __func__, PTR_ERR(pd));
+>>>>>>                 of_node_put(dev->of_node);
+>>>>>> -               return PTR_ERR(pd);
+>>>>>> +               return -EPROBE_DEFER;
+>>>>>
+>>>>> And it really does.
+>>>>>
+>>>>> This causes a regression for platforms where:
+>>>>>   1. DT describes the hardware power domains, and
+>>>>>   2. The boot loader or reset state has enabled all power domains, and
+>>>>>   3. Linux doesn't have a driver for the power controller yet.
+>>>>>
+>>>>> Before, devices for which the PM domain couldn't be found just probed and
+>>>>> worked, Now, these devices don't probe anymore, and the kernel fails to boot.
+>>>>
+>>>> I see. Sounds like a chicken or the egg scenario. Why not just disable
+>>>> PM_GENERIC_DOMAINS in the config in that case?
+>>>
+>>> Because it may be enabled for another platform in multi-platform kernels.
+>>>
+>>>>> Note that I only managed to trigger this by explicitly disabling my power
+>>>>> controller driver (the platforms I'm interested in already have power
+>>>>> controller drivers). But I think it will hamper bring-up of new boards, as you
+>>>>> can no longer write a "perfect and stable" .dts first, and implement kernel
+>>>>> support incrementally.
+>>>>>
+>>>>> Hence I think it's worthwhile to revert just this hunk.
+>>>>> If you agree, I can send a patch.
+>>>>
+>>>> But what about the case where we do have device that does have a power
+>>>> controller driver? Don't we want to defer in case it has not been probed
+>>>> yet? I am concerned we could try to probe a device before the power
+>>>> controller has been probed.
+>>>
+>>> That's indeed an issue.
+>>>
+>>> There's a similar problem with "dmas" properties and the (non)presence
+>>> of the DMA controller.
+>>
+>> Well, should I drop the patch, then?
 > 
->   mtk_thermal_get_bank(bank);
->   for (i = 0; i < cfg->num_sensors; i++)
->     writel(sensor_mux_values[cfg->sensors[i]], mt->thermal_base +
-> sensing_points[i].adcpnp);
->   writel((1 << cfg->num_sensors) - 1, mt->thermal_base + TEMP_MONCTL0);
->   mtk_thermal_put_bank(bank);
+> Although I respect Geert's opinion, I am still not convinced that we
+> should drop this because of the scenario that Geert is describing.
 > 
-> The rest is just rewriting the same constants to the same fixed
-> register addresses.
+> IMO, the scenario would only impact early development and usually you
+> may need to hack the kernel a bit to get things up a running initially
+> anyway. Furthermore, I don't think that the kernel should make any
+> assumptions about what a bootloader may or may not do.
 > 
-> But maybe that get/put zone thing does some magic shadow register selecting?
+> I think that it is best for the kernel to behave as we would want in a
+> production environment and that is if the device has associated
+> power-domains then we should defer the probe until the gpd provider is
+> available.
 
-Yes. The comment above mtk_thermal_get_bank() explains that.
+Furthermore, without this change, it means I need to ensure that the gpd
+provider(s) is always probed before any device that is dependent upon
+that provider (ie. faff with initcalls). Otherwise a device can be
+probed before the provider and potentially crash/hang the system when
+accessing the hardware. That's the real problem I am trying to solve
+here. Sorry if that was not clear.
 
-> > +
-> > +       ret = clk_prepare_enable(mt->clk_peri_therm);
-> > +       if (ret) {
-> > +               dev_err(&pdev->dev, "Can't enable peri clk: %d\n", ret);
-> > +               goto err_disable_clk_auxadc;
-> > +       }
-> > +
-> > +       /*
-> > +        * These calibration values should finally be provided by the
-> > +        * firmware or fuses. For now use default values.
-> > +        */
-> > +       mt->calib_a = -123;
-> > +       mt->calib_b = 465124;
-> > +
-> > +       for (i = 0; i < MT8173_NUM_BANKS; i++)
-> > +               mtk_thermal_init_bank(mt, i, apmixed_phys_base, auxadc_phys_base);
-> > +
-> > +       platform_set_drvdata(pdev, mt);
-> > +
-> > +       for (i = 0; i < MT8173_NUM_BANKS; i++) {
-> > +               struct mtk_thermal_bank *bank = &mt->banks[i];
-> > +
-> > +               bank->tz = thermal_zone_of_sensor_register(&pdev->dev, i, bank,
-> > +                               &mtk_thermal_ops);
-> 
-> Hmm..  the 'i' passed here to thermal_zone_of_sensor_register is the
-> id that a .dts thermal-zone will use to select one of the sensors
-> provided by our "mediatek,mt8173-thermal" compatible thermal node.
-> So, I think it is really ABI and should be some label defined in a
-> header file as part of the of binding for the sensor node.  Each label
-> would then be encoded somehow in mtk_thermal_bank_cfg[] (or perhaps
-> used as the index when initializing the array, like you did for scpsys
-> in
+Cheers
+Jon
 
-Makes sense. I'll add that for the next version.
-
-Thanks for reviewing,
-
-Sascha
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------
