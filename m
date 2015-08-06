@@ -1,83 +1,101 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v4 1/6] cpufreq: make scaling_boost_freqs sysfs attr available
- when boost is enabled
-Date: Thu, 06 Aug 2015 15:41:49 +0200
-Message-ID: <1438868514-8814-2-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v4 2/6] clk: samsung: exynos4x12: add cpu clock configuration
+ data and instantiate cpu clock
+Date: Thu, 06 Aug 2015 15:41:50 +0200
+Message-ID: <1438868514-8814-3-git-send-email-b.zolnierkie@samsung.com>
 References: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Add cpufreq_boost_enabled_generic_attr table and use it in
-cpufreq-dt driver instead of cpufreq_generic_attr one when
-boost support is enabled.  As a result scaling_boost_freqs
-sysfs attribute is available when cpufreq-dt driver is
-used and boost support is enabled.
+With the addition of the new Samsung specific cpu-clock type, the
+arm clock can be represented as a cpu-clock type. Add the CPU clock
+configuration data and instantiate the CPU clock type for Exynos4x12.
 
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Based on the earlier work by Thomas Abraham.
+
+Cc: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Michael Turquette <mturquette@baylibre.com>
 Cc: Thomas Abraham <thomas.ab@samsung.com>
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Reviewed-by: Javier Martinez Canillas <javier@osg.samsung.com>
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Acked-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Tested-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/cpufreq/cpufreq-dt.c | 3 +++
- drivers/cpufreq/freq_table.c | 7 +++++++
- include/linux/cpufreq.h      | 1 +
- 3 files changed, 11 insertions(+)
+ drivers/clk/samsung/clk-exynos4.c | 50 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 50 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index b9259ab..7b091c0 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -182,6 +182,8 @@ try_again:
- 	return ret;
- }
+diff --git a/drivers/clk/samsung/clk-exynos4.c b/drivers/clk/samsung/clk-exynos4.c
+index 251f48d..7f370d3 100644
+--- a/drivers/clk/samsung/clk-exynos4.c
++++ b/drivers/clk/samsung/clk-exynos4.c
+@@ -1398,6 +1398,45 @@ static const struct exynos_cpuclk_cfg_data e4210_armclk_d[] __initconst = {
+ 	{  0 },
+ };
  
-+static struct cpufreq_driver dt_cpufreq_driver;
++static const struct exynos_cpuclk_cfg_data e4212_armclk_d[] __initconst = {
++	{ 1500000, E4210_CPU_DIV0(2, 1, 6, 0, 7, 3), E4210_CPU_DIV1(2, 6), },
++	{ 1400000, E4210_CPU_DIV0(2, 1, 6, 0, 7, 3), E4210_CPU_DIV1(2, 6), },
++	{ 1300000, E4210_CPU_DIV0(2, 1, 5, 0, 7, 3), E4210_CPU_DIV1(2, 5), },
++	{ 1200000, E4210_CPU_DIV0(2, 1, 5, 0, 7, 3), E4210_CPU_DIV1(2, 5), },
++	{ 1100000, E4210_CPU_DIV0(2, 1, 4, 0, 6, 3), E4210_CPU_DIV1(2, 4), },
++	{ 1000000, E4210_CPU_DIV0(1, 1, 4, 0, 5, 2), E4210_CPU_DIV1(2, 4), },
++	{  900000, E4210_CPU_DIV0(1, 1, 3, 0, 5, 2), E4210_CPU_DIV1(2, 3), },
++	{  800000, E4210_CPU_DIV0(1, 1, 3, 0, 5, 2), E4210_CPU_DIV1(2, 3), },
++	{  700000, E4210_CPU_DIV0(1, 1, 3, 0, 4, 2), E4210_CPU_DIV1(2, 3), },
++	{  600000, E4210_CPU_DIV0(1, 1, 3, 0, 4, 2), E4210_CPU_DIV1(2, 3), },
++	{  500000, E4210_CPU_DIV0(1, 1, 3, 0, 4, 2), E4210_CPU_DIV1(2, 3), },
++	{  400000, E4210_CPU_DIV0(1, 1, 3, 0, 4, 2), E4210_CPU_DIV1(2, 3), },
++	{  300000, E4210_CPU_DIV0(1, 1, 2, 0, 4, 2), E4210_CPU_DIV1(2, 3), },
++	{  200000, E4210_CPU_DIV0(1, 1, 1, 0, 3, 1), E4210_CPU_DIV1(2, 3), },
++	{  0 },
++};
 +
- static int cpufreq_init(struct cpufreq_policy *policy)
- {
- 	struct cpufreq_frequency_table *freq_table;
-@@ -336,6 +338,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 		ret = cpufreq_enable_boost_support();
- 		if (ret)
- 			goto out_free_cpufreq_table;
-+		dt_cpufreq_driver.attr = cpufreq_boost_enabled_generic_attr;
++#define E4412_CPU_DIV1(cores, hpm, copy)				\
++		(((cores) << 8) | ((hpm) << 4) | ((copy) << 0))
++
++static const struct exynos_cpuclk_cfg_data e4412_armclk_d[] __initconst = {
++	{ 1500000, E4210_CPU_DIV0(2, 1, 6, 0, 7, 3), E4412_CPU_DIV1(7, 0, 6), },
++	{ 1400000, E4210_CPU_DIV0(2, 1, 6, 0, 7, 3), E4412_CPU_DIV1(6, 0, 6), },
++	{ 1300000, E4210_CPU_DIV0(2, 1, 5, 0, 7, 3), E4412_CPU_DIV1(6, 0, 5), },
++	{ 1200000, E4210_CPU_DIV0(2, 1, 5, 0, 7, 3), E4412_CPU_DIV1(5, 0, 5), },
++	{ 1100000, E4210_CPU_DIV0(2, 1, 4, 0, 6, 3), E4412_CPU_DIV1(5, 0, 4), },
++	{ 1000000, E4210_CPU_DIV0(1, 1, 4, 0, 5, 2), E4412_CPU_DIV1(4, 0, 4), },
++	{  900000, E4210_CPU_DIV0(1, 1, 3, 0, 5, 2), E4412_CPU_DIV1(4, 0, 3), },
++	{  800000, E4210_CPU_DIV0(1, 1, 3, 0, 5, 2), E4412_CPU_DIV1(3, 0, 3), },
++	{  700000, E4210_CPU_DIV0(1, 1, 3, 0, 4, 2), E4412_CPU_DIV1(3, 0, 3), },
++	{  600000, E4210_CPU_DIV0(1, 1, 3, 0, 4, 2), E4412_CPU_DIV1(2, 0, 3), },
++	{  500000, E4210_CPU_DIV0(1, 1, 3, 0, 4, 2), E4412_CPU_DIV1(2, 0, 3), },
++	{  400000, E4210_CPU_DIV0(1, 1, 3, 0, 4, 2), E4412_CPU_DIV1(1, 0, 3), },
++	{  300000, E4210_CPU_DIV0(1, 1, 2, 0, 4, 2), E4412_CPU_DIV1(1, 0, 3), },
++	{  200000, E4210_CPU_DIV0(1, 1, 1, 0, 3, 1), E4412_CPU_DIV1(0, 0, 3), },
++	{  0 },
++};
++
+ /* register exynos4 clocks */
+ static void __init exynos4_clk_init(struct device_node *np,
+ 				    enum exynos4_soc soc)
+@@ -1491,6 +1530,17 @@ static void __init exynos4_clk_init(struct device_node *np,
+ 		samsung_clk_register_fixed_factor(ctx,
+ 			exynos4x12_fixed_factor_clks,
+ 			ARRAY_SIZE(exynos4x12_fixed_factor_clks));
++		if (of_machine_is_compatible("samsung,exynos4412")) {
++			exynos_register_cpu_clock(ctx, CLK_ARM_CLK, "armclk",
++				mout_core_p4x12[0], mout_core_p4x12[1], 0x14200,
++				e4412_armclk_d, ARRAY_SIZE(e4412_armclk_d),
++				CLK_CPU_NEEDS_DEBUG_ALT_DIV | CLK_CPU_HAS_DIV1);
++		} else {
++			exynos_register_cpu_clock(ctx, CLK_ARM_CLK, "armclk",
++				mout_core_p4x12[0], mout_core_p4x12[1], 0x14200,
++				e4212_armclk_d, ARRAY_SIZE(e4212_armclk_d),
++				CLK_CPU_NEEDS_DEBUG_ALT_DIV | CLK_CPU_HAS_DIV1);
++		}
  	}
  
- 	policy->cpuinfo.transition_latency = transition_latency;
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index a8f1daf..5a00a09 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -300,6 +300,13 @@ struct freq_attr *cpufreq_generic_attr[] = {
- };
- EXPORT_SYMBOL_GPL(cpufreq_generic_attr);
- 
-+struct freq_attr *cpufreq_boost_enabled_generic_attr[] = {
-+	&cpufreq_freq_attr_scaling_available_freqs,
-+	&cpufreq_freq_attr_scaling_boost_freqs,
-+	NULL,
-+};
-+EXPORT_SYMBOL_GPL(cpufreq_boost_enabled_generic_attr);
-+
- int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
- 				      struct cpufreq_frequency_table *table)
- {
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 95f0186..25937ff 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -610,6 +610,7 @@ struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu);
- /* the following are really really optional */
- extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
- extern struct freq_attr *cpufreq_generic_attr[];
-+extern struct freq_attr *cpufreq_boost_enabled_generic_attr[];
- int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
- 				      struct cpufreq_frequency_table *table);
- 
+ 	samsung_clk_register_alias(ctx, exynos4_aliases,
 -- 
 1.9.1
