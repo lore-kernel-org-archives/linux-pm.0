@@ -1,47 +1,32 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH] thermal: armada: Fix possible overflow in the Armada 380 thermal sensor formula
-Date: Thu,  6 Aug 2015 18:03:49 +0200
-Message-ID: <1438877029-32514-1-git-send-email-gregory.clement@free-electrons.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v2] base/platform: assert that dev_pm_domain callbacks
+ are called unconditionally
+Date: Thu, 6 Aug 2015 10:40:35 -0700
+Message-ID: <20150806174035.GA8463@kroah.com>
+References: <1438849860-18504-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <20150806083255.GE9999@pengutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:38685 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754313AbbHFQEA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Aug 2015 12:04:00 -0400
+Received: from mail.linuxfoundation.org ([140.211.169.12]:34680 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753293AbbHFRkg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Aug 2015 13:40:36 -0400
+Content-Disposition: inline
+In-Reply-To: <20150806083255.GE9999@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: Mark Brown <broonie@kernel.org>, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <uwe@kleine-koenig.org>, linux-kernel@vger.kernel.org, kernel@pengutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 
-From: Nadav Haklai <nadavh@marvell.com>
+On Thu, Aug 06, 2015 at 10:32:55AM +0200, Uwe Kleine-K=F6nig wrote:
+> Hello,
+>=20
+> On Thu, Aug 06, 2015 at 10:31:00AM +0200, Uwe Kleine-K=F6nig wrote:
+> > From: Uwe Kleine-K=F6nig <uwe@kleine-koenig.org>
+> grumpf, I forgot to fix the author, only adapted the s-o-b-line. Greg=
+,
+> can you fix this on application?
 
-Update the coefficients so the calculation will not overrun the
-unsigned long 32bits boundary
-
-Signed-off-by: Nadav Haklai <nadavh@marvell.com>
-Reviewed-by: Victor Axelrod <victora@marvell.com>
-Reviewed-by: Neta Zur Hershkovits <neta@marvell.com>
-Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
----
- drivers/thermal/armada_thermal.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 01255fd65135..363bf91c32a3 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -224,9 +224,9 @@ static const struct armada_thermal_data armada380_data = {
- 	.is_valid_shift = 10,
- 	.temp_shift = 0,
- 	.temp_mask = 0x3ff,
--	.coef_b = 2931108200UL,
--	.coef_m = 5000000UL,
--	.coef_div = 10502,
-+	.coef_b = 1172499100UL,
-+	.coef_m = 2000096UL,
-+	.coef_div = 4201,
- 	.inverted = true,
- };
- 
--- 
-2.1.0
-
+No, please resend.
