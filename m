@@ -1,86 +1,92 @@
-From: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
-Subject: Re: [PATCH v4 00/16] ARM: shmobile: Add CPG/MSTP Clock Domain
-Date: Thu, 6 Aug 2015 09:50:30 +0900
-Message-ID: <20150806005029.GE17231@verge.net.au>
-References: <1438691297-29235-1-git-send-email-geert+renesas@glider.be>
- <20150804134824.GA10194@verge.net.au>
- <20150805005543.GC20726@verge.net.au>
- <CAMuHMdUFjgVWBc0hdm_L0Z0Os1OT8H4NzwQyQTGZQt8Bu7-9PQ@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 6/9] ARM: domain: Add platform handlers for CPU PM domains
+Date: Wed, 5 Aug 2015 22:01:01 -0500
+Message-ID: <CAL_JsqJ_AK6M5WmyFrGVLtpGg=MdAafxX=1873Je_uB_sQkpiA@mail.gmail.com>
+References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
+ <1438731339-58317-7-git-send-email-lina.iyer@linaro.org> <CAL_JsqKWekSGiFbZz6++3ibAzY_8Y6+0nOBQinFVw4cBk6JvEw@mail.gmail.com>
+ <20150805192341.GB52339@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdUFjgVWBc0hdm_L0Z0Os1OT8H4NzwQyQTGZQt8Bu7-9PQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Cc: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Laurent Pinchart <Laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux-sh list <linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yk0-f177.google.com ([209.85.160.177]:34584 "EHLO
+	mail-yk0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753808AbbHFDBV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2015 23:01:21 -0400
+Received: by ykax123 with SMTP id x123so52441878yka.1
+        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2015 20:01:20 -0700 (PDT)
+In-Reply-To: <20150805192341.GB52339@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-On Wed, Aug 05, 2015 at 08:58:29AM +0200, Geert Uytterhoeven wrote:
-> Hi Simon,
-> 
-> On Wed, Aug 5, 2015 at 2:55 AM, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org> wrote:
-> > On Tue, Aug 04, 2015 at 10:48:28PM +0900, Simon Horman wrote:
-> >> I have tentatively queued this up in its own branch,
-> >> cpg-mstp-clock-domain-for-v4.3.
-> >
-> > Where possible I prefer not to apply non-DTS/DTSI patches on top of
-> > DTS/DTSI patches, I believe this is in keeping with how the ARM SoC
-> > maintainers like things handled.  With this in mind I have shuffled things
-> > around a little, the result is:
-> >
-> > 1. The following are (still) queued up for v4.3 in their own
-> >    cpg-mstp-clock-domain-for-v4.3 branch:
-> >
-> >    clk: shmobile: Add CPG/MSTP Clock Domain support
-> >    clk: shmobile: r8a7778: Add CPG/MSTP Clock Domain support
-> >    clk: shmobile: r8a7779: Add CPG/MSTP Clock Domain support
-> >    clk: shmobile: rcar-gen2: Add CPG/MSTP Clock Domain support
-> >    clk: shmobile: rz: Add CPG/MSTP Clock Domain support
-> >    ARM: shmobile: r7s72100 dtsi: Add CPG/MSTP Clock Domain
-> >    ARM: shmobile: r8a7778 dtsi: Add CPG/MSTP Clock Domain
-> >    ARM: shmobile: r8a7779 dtsi: Add CPG/MSTP Clock Domain
-> >    ARM: shmobile: r8a7790 dtsi: Add CPG/MSTP Clock Domain
-> >    ARM: shmobile: r8a7791 dtsi: Add CPG/MSTP Clock Domain
-> >    ARM: shmobile: r8a7793 dtsi: Add CPG/MSTP Clock Domain
-> >    ARM: shmobile: r8a7794 dtsi: Add CPG/MSTP Clock Domain
-> 
-> OK.
-> 
-> > 2. The following are now queued up for v4.3 in a separate
-> >    sh-drivers-for-v4.3 branch. That branch is on top of the
-> >    cpg-mstp-clock-domain-for-v4.3 branch and I intend to send it directly
-> >    to Linus if/when a v4.3-rc has been released with the patches
-> >    listed in 1. present.
-> >
-> >    drivers: sh: Disable legacy default PM Domain on emev2
-> >    drivers: sh: Disable PM runtime for multi-platform ARM with genpd
-> 
-> OK
-> 
-> > 3. I have deferred the remaining two patches, listed below, for v4.4.
-> >    they currently reside in cpg-mstp-clock-domain-for-v4.4. That
-> >    branch is based on the sh-drivers-for-v4.3 branch.
-> >
-> >    clk: shmobile: mstp: Consider "zb_clk" suitable for power management
-> >    ARM: shmobile: R-Mobile: Use CPG/MSTP Clock Domain attach/detach helpers
-> >
-> > This means that the last two patches will disappear from next until
-> > after v4.3-rc1 is released but they, along with all the other patches,
-> > will be present in the renesas devel branch.
-> 
-> OK.
-> 
-> Note that as the last two depend on patch 1 only, you could e.g. queue
-> them up in group 1, between the clk and dtsi patches.
-> But it's up to you to reconsider.
-> I'm happy as-is, as the last two patches are just a code duplication clean up.
+On Wed, Aug 5, 2015 at 2:23 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+> On Wed, Aug 05 2015 at 08:45 -0600, Rob Herring wrote:
+>>
+>> On Tue, Aug 4, 2015 at 6:35 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>>>
+>>> In addition to the common power up/down actions of CPU PM domain core,
+>>> platforms may have additional configuration before the CPU domain can be
+>>> powered off or considered active. Allow platform drivers to register
+>>> handlers for CPU PM domains.
+>>>
+>>> Platform drivers may register their callbacks against a compatible
+>>> string defined by their PM domain provider device node in the DT. At
+>>> domain init, the platform driver can initialize the platform specific
+>>> genpd attributes. The init callback would need to return successfully,
+>>> for the platform power_on/off handlers to be registered with the CPU PM
+>>> domain.
+>>>
+>>> The code uses __init section to reduce memory needed for platform
+>>> handlers and therefore can be freed after the driver is initialized, a
+>>> desirable outcome for single kernel image.
+>>
+>>
+>> [...]
+>>
+>>> diff --git a/arch/arm/include/asm/arm-pd.h
+>>> b/arch/arm/include/asm/arm-pd.h
+>>> new file mode 100644
+>>> index 0000000..fc44abf
+>
+>
+> [...]
+>
+>>> +#define ARM_PD_METHOD_OF_DECLARE(_name, _handle, _ops) \
+>>> +       static const struct of_arm_pd_method
+>>> __arm_pd_method_of_table_##_name \
+>>> +       __used __section(__arm_pd_method_of_table)              \
+>>> +       = { .handle = _handle, .ops = _ops }
+>>
+>>
+>> AFAICT, you are not using this in this series. You should add it when
+>> you have a user.
+>>
+>> Ideally, we keep some amount of uniformity across various *_OF_DECLARE
+>> which is why we have OF_DECLARE_1 and OF_DECLARE_2. This makes all the
+>> sections just arrays of struct of_device_id. Not all users follow
+>> this, but most do. So instead of putting the ops in here, platforms
+>> can provide a function callback which can then set the ops. Then you
+>> also don't need the .init() ops function as the callback function can
+>> do any initialization too.
+>>
+> I looked through these and I can switch over to _OF_DECLARE() without any
+> issues, but using OF_DECLARE_1 or OF_DECLARE_2 is pretty limiting.
 
-Thanks, and sorry for not realising that.
+Well yes, but then we only want to use it for things that will never
+use the driver model.
 
-For now I will keep things as-is because I would like to stabilise my
-branches.
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> If I could set up my own function type for the .data member, then its a
+> lot more easier on the code. Like this -
+>
+> typedef int (*arm_pd_init)(struct device_node *dn, struct
+>                 generic_pm_domain *genpd, struct of_arm_pd_ops *ops);
+
+You alloc the genpd struct just before calling init. You can just as
+easily have the platform specific code call an allocation function and
+a function to set the ops functions. This is more inline with how a
+driver would work when registering with a subsystem. I also don't
+think "arm,pd" is a good compatible string to be matching on. I'll
+comment on that more in patch 5.
+
+Rob
