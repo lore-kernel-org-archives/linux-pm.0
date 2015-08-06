@@ -1,160 +1,70 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v8 07/13] clk: qcom: gdsc: Add GDSCs in msm8974 MMCC
-Date: Thu,  6 Aug 2015 16:07:48 +0530
-Message-ID: <1438857474-20262-8-git-send-email-rnayak@codeaurora.org>
-References: <1438857474-20262-1-git-send-email-rnayak@codeaurora.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1438857474-20262-1-git-send-email-rnayak@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: sboyd@codeaurora.org, mturquette@baylibre.com
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, Rajendra Nayak <rnayak@codeaurora.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH V2] PM / Domains: Return -EPROBE_DEFER if we fail to init
+ or turn-on domain
+Date: Thu, 6 Aug 2015 13:26:49 +0200
+Message-ID: <CAMuHMdV7AMQD564AgUSACAJFTdqtmMxU9yoefuZ2CXEEhR57RQ@mail.gmail.com>
+References: <1438334400-26367-1-git-send-email-jonathanh@nvidia.com>
+	<55C0C4D3.2050600@nvidia.com>
+	<CAMuHMdW8H-mxG9poJpjijBCUHWs+Q4Xe3muXeTqnd7npBEzXRA@mail.gmail.com>
+	<1911839.6SetkcFuZL@vostro.rjw.lan>
+	<55C30FE4.9080206@nvidia.com>
+	<55C31AA9.8050202@nvidia.com>
+	<CAMuHMdU3y-wn5W3-9BD8epkqdWu+0_16pYwktVhqBHku+Mo2mg@mail.gmail.com>
+	<55C3284F.8070305@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:32858 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754376AbbHFL0u (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Aug 2015 07:26:50 -0400
+Received: by obdeg2 with SMTP id eg2so53327540obd.0
+        for <linux-pm@vger.kernel.org>; Thu, 06 Aug 2015 04:26:49 -0700 (PDT)
+In-Reply-To: <55C3284F.8070305@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-From: Stephen Boyd <sboyd@codeaurora.org>
+Hi Jon,
 
-Add the GDSC instances that exist as part of msm8974 MMCC block
+On Thu, Aug 6, 2015 at 11:26 AM, Jon Hunter <jonathanh@nvidia.com> wrote:
 
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
-Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
----
- drivers/clk/qcom/Kconfig                      |  1 +
- drivers/clk/qcom/mmcc-msm8974.c               | 72 +++++++++++++++++++++++++++
- include/dt-bindings/clock/qcom,mmcc-msm8974.h |  8 +++
- 3 files changed, 81 insertions(+)
+[...]
 
-diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-index a6fcb1d..edab172 100644
---- a/drivers/clk/qcom/Kconfig
-+++ b/drivers/clk/qcom/Kconfig
-@@ -98,6 +98,7 @@ config MSM_GCC_8974
- config MSM_MMCC_8974
- 	tristate "MSM8974 Multimedia Clock Controller"
- 	select MSM_GCC_8974
-+	select QCOM_GDSC
- 	depends on COMMON_CLK_QCOM
- 	help
- 	  Support for the multimedia clock controller on msm8974 devices.
-diff --git a/drivers/clk/qcom/mmcc-msm8974.c b/drivers/clk/qcom/mmcc-msm8974.c
-index 07f4cc1..0b95063 100644
---- a/drivers/clk/qcom/mmcc-msm8974.c
-+++ b/drivers/clk/qcom/mmcc-msm8974.c
-@@ -31,6 +31,7 @@
- #include "clk-rcg.h"
- #include "clk-branch.h"
- #include "reset.h"
-+#include "gdsc.h"
- 
- enum {
- 	P_XO,
-@@ -2349,6 +2350,66 @@ static struct pll_config mmpll3_config = {
- 	.aux_output_mask = BIT(1),
- };
- 
-+static struct gdsc venus0_gdsc = {
-+	.gdscr = 0x1024,
-+	.cxcs = (unsigned int []){ 0x1028 },
-+	.cxc_count = 1,
-+	.resets = (unsigned int []){ VENUS0_RESET },
-+	.reset_count = 1,
-+	.pd = {
-+		.name = "venus0",
-+	},
-+	.pwrsts = PWRSTS_ON,
-+};
-+
-+static struct gdsc mdss_gdsc = {
-+	.gdscr = 0x2304,
-+	.cxcs = (unsigned int []){ 0x231c, 0x2320 },
-+	.cxc_count = 2,
-+	.pd = {
-+		.name = "mdss",
-+	},
-+	.pwrsts = PWRSTS_RET_ON,
-+};
-+
-+static struct gdsc camss_jpeg_gdsc = {
-+	.gdscr = 0x35a4,
-+	.cxcs = (unsigned int []){ 0x35a8, 0x35ac, 0x35b0 },
-+	.cxc_count = 3,
-+	.pd = {
-+		.name = "camss_jpeg",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+};
-+
-+static struct gdsc camss_vfe_gdsc = {
-+	.gdscr = 0x36a4,
-+	.cxcs = (unsigned int []){ 0x36a8, 0x36ac, 0x3704, 0x3714, 0x36b0 },
-+	.cxc_count = 5,
-+	.pd = {
-+		.name = "camss_vfe",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+};
-+
-+static struct gdsc oxili_gdsc = {
-+	.gdscr = 0x4024,
-+	.cxcs = (unsigned int []){ 0x4028 },
-+	.cxc_count = 1,
-+	.pd = {
-+		.name = "oxili",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+};
-+
-+static struct gdsc oxilicx_gdsc = {
-+	.gdscr = 0x4034,
-+	.pd = {
-+		.name = "oxilicx",
-+	},
-+	.pwrsts = PWRSTS_OFF_ON,
-+};
-+
- static struct clk_regmap *mmcc_msm8974_clocks[] = {
- 	[MMSS_AHB_CLK_SRC] = &mmss_ahb_clk_src.clkr,
- 	[MMSS_AXI_CLK_SRC] = &mmss_axi_clk_src.clkr,
-@@ -2525,6 +2586,15 @@ static const struct qcom_reset_map mmcc_msm8974_resets[] = {
- 	[OCMEMNOC_RESET] = { 0x50b0 },
- };
- 
-+static struct gdsc *mmcc_msm8974_gdscs[] = {
-+	[VENUS0_GDSC] = &venus0_gdsc,
-+	[MDSS_GDSC] = &mdss_gdsc,
-+	[CAMSS_JPEG_GDSC] = &camss_jpeg_gdsc,
-+	[CAMSS_VFE_GDSC] = &camss_vfe_gdsc,
-+	[OXILI_GDSC] = &oxili_gdsc,
-+	[OXILICX_GDSC] = &oxilicx_gdsc,
-+};
-+
- static const struct regmap_config mmcc_msm8974_regmap_config = {
- 	.reg_bits	= 32,
- 	.reg_stride	= 4,
-@@ -2539,6 +2609,8 @@ static const struct qcom_cc_desc mmcc_msm8974_desc = {
- 	.num_clks = ARRAY_SIZE(mmcc_msm8974_clocks),
- 	.resets = mmcc_msm8974_resets,
- 	.num_resets = ARRAY_SIZE(mmcc_msm8974_resets),
-+	.gdscs = mmcc_msm8974_gdscs,
-+	.num_gdscs = ARRAY_SIZE(mmcc_msm8974_gdscs),
- };
- 
- static const struct of_device_id mmcc_msm8974_match_table[] = {
-diff --git a/include/dt-bindings/clock/qcom,mmcc-msm8974.h b/include/dt-bindings/clock/qcom,mmcc-msm8974.h
-index 032ed87..28651e5 100644
---- a/include/dt-bindings/clock/qcom,mmcc-msm8974.h
-+++ b/include/dt-bindings/clock/qcom,mmcc-msm8974.h
-@@ -158,4 +158,12 @@
- #define SPDM_RM_AXI					141
- #define SPDM_RM_OCMEMNOC				142
- 
-+/* gdscs */
-+#define VENUS0_GDSC					0
-+#define MDSS_GDSC					1
-+#define CAMSS_JPEG_GDSC					2
-+#define CAMSS_VFE_GDSC					3
-+#define OXILI_GDSC					4
-+#define OXILICX_GDSC					5
-+
- #endif
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+>>>>>>>> This causes a regression for platforms where:
+>>>>>>>>   1. DT describes the hardware power domains, and
+>>>>>>>>   2. The boot loader or reset state has enabled all power domains, and
+>>>>>>>>   3. Linux doesn't have a driver for the power controller yet.
+>>>>>>>>
+>>>>>>>> Before, devices for which the PM domain couldn't be found just probed and
+>>>>>>>> worked, Now, these devices don't probe anymore, and the kernel fails to boot.
+
+[...]
+
+> It still sounds to me that the nodes should be disabled/removed from the
+> dtb. Having a dynamic way to do this would be useful, I can see.
+
+I had a quick look, and it already seem to exist..
+Hence on platforms not implementing power controllers yet, the early platform
+code could do:
+
+        struct device_node *np;
+        for_each_node_with_property(dn, "power-domains")
+                of_remove_property(np, "power-domains");
+
+Haven't tested that yet, though...
+
+Heck, even the core power domain code could do that, if
+CONFIG_PM_GENERIC_DOMAINS=n ;-)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
