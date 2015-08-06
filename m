@@ -1,42 +1,125 @@
 From: Al Stone <al.stone@linaro.org>
-Subject: [PATCH 5/5] ACPI: remove definition of BAD_MADT_ENTRY macro
-Date: Thu,  6 Aug 2015 14:59:30 -0600
-Message-ID: <1438894770-31163-6-git-send-email-al.stone@linaro.org>
+Subject: [PATCH 4/5] ACPI / X86: remove usage of BAD_MADT_ENTRY
+Date: Thu,  6 Aug 2015 14:59:29 -0600
+Message-ID: <1438894770-31163-5-git-send-email-al.stone@linaro.org>
 References: <1438894770-31163-1-git-send-email-al.stone@linaro.org>
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1438894770-31163-1-git-send-email-al.stone@linaro.org>
 Sender: linux-acpi-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Al Stone <al.stone@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Al Stone <al.stone@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Now that we have introduced to bad_madt_entry(), and we have removed
-all the usages of the BAD_MADT_ENTRY macro from all of the various
-architectures that use it (arm64, ia64, x86), we can remove the macro
-definition since it is no longer used.
+Now that we have introduced the bad_madt_entry() function, and that
+function is being invoked in acpi_table_parse_madt() for us, there
+is no longer any need to use the BAD_MADT_ENTRY macro.
 
 Signed-off-by: Al Stone <al.stone@linaro.org>
 Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Len Brown <lenb@kernel.org>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: x86@kernel.org
 ---
- include/linux/acpi.h | 4 ----
- 1 file changed, 4 deletions(-)
+ arch/x86/kernel/acpi/boot.c | 27 ---------------------------
+ 1 file changed, 27 deletions(-)
 
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index d2445fa..06072d8 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -131,10 +131,6 @@ static inline void acpi_initrd_override(void *data, size_t size)
- }
- #endif
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index e49ee24..9bdf786 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -194,9 +194,6 @@ acpi_parse_x2apic(struct acpi_subtable_header *header, const unsigned long end)
  
--#define BAD_MADT_ENTRY(entry, end) (					    \
--		(!entry) || (unsigned long)entry + sizeof(*entry) > end ||  \
--		((struct acpi_subtable_header *)entry)->length < sizeof(*entry))
+ 	processor = (struct acpi_madt_local_x2apic *)header;
+ 
+-	if (BAD_MADT_ENTRY(processor, end))
+-		return -EINVAL;
 -
- char * __acpi_map_table (unsigned long phys_addr, unsigned long size);
- void __acpi_unmap_table(char *map, unsigned long size);
- int early_acpi_boot_init(void);
+ 	acpi_table_print_madt_entry(header);
+ 
+ 	apic_id = processor->local_apic_id;
+@@ -227,9 +224,6 @@ acpi_parse_lapic(struct acpi_subtable_header * header, const unsigned long end)
+ 
+ 	processor = (struct acpi_madt_local_apic *)header;
+ 
+-	if (BAD_MADT_ENTRY(processor, end))
+-		return -EINVAL;
+-
+ 	acpi_table_print_madt_entry(header);
+ 
+ 	/*
+@@ -252,9 +246,6 @@ acpi_parse_sapic(struct acpi_subtable_header *header, const unsigned long end)
+ 
+ 	processor = (struct acpi_madt_local_sapic *)header;
+ 
+-	if (BAD_MADT_ENTRY(processor, end))
+-		return -EINVAL;
+-
+ 	acpi_table_print_madt_entry(header);
+ 
+ 	acpi_register_lapic((processor->id << 8) | processor->eid,/* APIC ID */
+@@ -271,9 +262,6 @@ acpi_parse_lapic_addr_ovr(struct acpi_subtable_header * header,
+ 
+ 	lapic_addr_ovr = (struct acpi_madt_local_apic_override *)header;
+ 
+-	if (BAD_MADT_ENTRY(lapic_addr_ovr, end))
+-		return -EINVAL;
+-
+ 	acpi_lapic_addr = lapic_addr_ovr->address;
+ 
+ 	return 0;
+@@ -287,9 +275,6 @@ acpi_parse_x2apic_nmi(struct acpi_subtable_header *header,
+ 
+ 	x2apic_nmi = (struct acpi_madt_local_x2apic_nmi *)header;
+ 
+-	if (BAD_MADT_ENTRY(x2apic_nmi, end))
+-		return -EINVAL;
+-
+ 	acpi_table_print_madt_entry(header);
+ 
+ 	if (x2apic_nmi->lint != 1)
+@@ -305,9 +290,6 @@ acpi_parse_lapic_nmi(struct acpi_subtable_header * header, const unsigned long e
+ 
+ 	lapic_nmi = (struct acpi_madt_local_apic_nmi *)header;
+ 
+-	if (BAD_MADT_ENTRY(lapic_nmi, end))
+-		return -EINVAL;
+-
+ 	acpi_table_print_madt_entry(header);
+ 
+ 	if (lapic_nmi->lint != 1)
+@@ -411,9 +393,6 @@ acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)
+ 
+ 	ioapic = (struct acpi_madt_io_apic *)header;
+ 
+-	if (BAD_MADT_ENTRY(ioapic, end))
+-		return -EINVAL;
+-
+ 	acpi_table_print_madt_entry(header);
+ 
+ 	/* Statically assign IRQ numbers for IOAPICs hosting legacy IRQs */
+@@ -462,9 +441,6 @@ acpi_parse_int_src_ovr(struct acpi_subtable_header * header,
+ 
+ 	intsrc = (struct acpi_madt_interrupt_override *)header;
+ 
+-	if (BAD_MADT_ENTRY(intsrc, end))
+-		return -EINVAL;
+-
+ 	acpi_table_print_madt_entry(header);
+ 
+ 	if (intsrc->source_irq == acpi_gbl_FADT.sci_interrupt) {
+@@ -503,9 +479,6 @@ acpi_parse_nmi_src(struct acpi_subtable_header * header, const unsigned long end
+ 
+ 	nmi_src = (struct acpi_madt_nmi_source *)header;
+ 
+-	if (BAD_MADT_ENTRY(nmi_src, end))
+-		return -EINVAL;
+-
+ 	acpi_table_print_madt_entry(header);
+ 
+ 	/* TBD: Support nimsrc entries? */
 -- 
 2.4.3
 
