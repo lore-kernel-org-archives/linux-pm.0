@@ -1,60 +1,91 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH V2] PM / Domains: Return -EPROBE_DEFER if we fail to init
- or turn-on domain
-Date: Thu, 6 Aug 2015 14:10:57 +0200
-Message-ID: <CAMuHMdXyUaFrT_ec556iR1zuUzcrB_seb9xZy=pabCpjFfWkwA@mail.gmail.com>
-References: <1438334400-26367-1-git-send-email-jonathanh@nvidia.com>
-	<55C0C4D3.2050600@nvidia.com>
-	<CAMuHMdW8H-mxG9poJpjijBCUHWs+Q4Xe3muXeTqnd7npBEzXRA@mail.gmail.com>
-	<1911839.6SetkcFuZL@vostro.rjw.lan>
-	<55C30FE4.9080206@nvidia.com>
-	<55C31AA9.8050202@nvidia.com>
-	<CAMuHMdU3y-wn5W3-9BD8epkqdWu+0_16pYwktVhqBHku+Mo2mg@mail.gmail.com>
-	<55C3284F.8070305@nvidia.com>
-	<CAMuHMdV7AMQD564AgUSACAJFTdqtmMxU9yoefuZ2CXEEhR57RQ@mail.gmail.com>
-	<55C3490F.20307@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f54.google.com ([209.85.218.54]:36258 "EHLO
-	mail-oi0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755551AbbHFMK6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 6 Aug 2015 08:10:58 -0400
-Received: by oiev193 with SMTP id v193so7529513oie.3
-        for <linux-pm@vger.kernel.org>; Thu, 06 Aug 2015 05:10:57 -0700 (PDT)
-In-Reply-To: <55C3490F.20307@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v4 0/6] cpufreq: use generic cpufreq drivers for Exynos4x12
+ platform
+Date: Thu, 06 Aug 2015 15:41:48 +0200
+Message-ID: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thu, Aug 6, 2015 at 1:46 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
->>> It still sounds to me that the nodes should be disabled/removed from the
->>> dtb. Having a dynamic way to do this would be useful, I can see.
->>
->> I had a quick look, and it already seem to exist..
->> Hence on platforms not implementing power controllers yet, the early platform
->> code could do:
->>
->>         struct device_node *np;
->>         for_each_node_with_property(dn, "power-domains")
->>                 of_remove_property(np, "power-domains");
->>
->> Haven't tested that yet, though...
->
-> Yes that could be an option, however, it would mean doing this type of
-> thing for various types of nodes. You mentioned dma was another case.
+Hi,
 
-DMA is different, as many drivers can fall back to PIO if the DMA engine
-driver is mssing (not implemented/not enabled/module not loaded).
+This patch series removes the use of Exynos4x12 specific support
+from cpufreq-exynos driver and enables the use of cpufreq-dt driver
+for this platform.
 
-Gr{oetje,eeting}s,
+This patch series has been tested on Exynos4412 based Odroid-U3 and
+Trats2 boards.
 
-                        Geert
+Depends on:
+- next-20150806 branch of linux-next kernel tree
+- "[PATCH V3 00/16] OPP: Add code to support operating-points-v2 bindings"
+  (http://www.spinics.net/lists/arm-kernel/msg435408.html)
 
+Changes since v3
+(http://thread.gmane.org/gmane.linux.power-management.general/63464):
+- rebased on top of next-20150806 branch of linux-next kernel tree
+- made ARCH_EXYNOS config option select thermal support
+- made scaling_boost_freqs sysfs attribute available only when boost
+  support is enabled
+- added Acked-by tag from Viresh to patches #3, #4 and #5
+- added Tested-by tag from Tobias to patches #2-5
+- added Reviewed-by tag from Krzysztof to patch #4
+
+Changes since v2
+(http://thread.gmane.org/gmane.linux.kernel.samsung-soc/46653):
+- rebased on top of next-20150730 branch of linux-next kernel tree
+- ported over V3 of opp-v2 bindings support patch series
+- put cpu0 nodes in alphabetical order in dts files
+- added Reviewed-by tags from Javier and Krzysztof
+- added Acked-by tag from Sylwester
+
+Changes since v1
+(http://thread.gmane.org/gmane.linux.kernel.samsung-soc/44361):
+- rebased on top of next-20150629 branch of linux-next kernel tree
+- rebased on top of Exynos5250 cpufreq-dt support patch series
+- fixed if-statement in exynos4_clk_init() (noticed by Tobias Jakobi)
+- ported over opp-v2 bindings (requested by Viresh Kumar)
+
+Best regards,
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+
+Bartlomiej Zolnierkiewicz (6):
+  cpufreq: make scaling_boost_freqs sysfs attr available when boost is
+    enabled
+  clk: samsung: exynos4x12: add cpu clock configuration data and
+    instantiate cpu clock
+  ARM: dts: Exynos4x12: add CPU OPP and regulator supply property
+  ARM: Exynos: switch to using generic cpufreq driver for Exynos4x12
+  cpufreq: exynos: remove Exynos4x12 specific cpufreq driver support
+  cpufreq: remove no longer needed CPU_FREQ_BOOST_SW config option
+
+ arch/arm/boot/dts/exynos4212.dtsi               |  81 ++++++++
+ arch/arm/boot/dts/exynos4412-odroid-common.dtsi |   4 +
+ arch/arm/boot/dts/exynos4412-origen.dts         |   4 +
+ arch/arm/boot/dts/exynos4412-trats2.dts         |   4 +
+ arch/arm/boot/dts/exynos4412.dtsi               |  83 +++++++++
+ arch/arm/mach-exynos/Kconfig                    |   2 +
+ arch/arm/mach-exynos/exynos.c                   |   2 +
+ drivers/clk/samsung/clk-exynos4.c               |  50 +++++
+ drivers/cpufreq/Kconfig                         |   4 -
+ drivers/cpufreq/Kconfig.arm                     |  38 ----
+ drivers/cpufreq/Makefile                        |   2 -
+ drivers/cpufreq/cpufreq-dt.c                    |   3 +
+ drivers/cpufreq/exynos-cpufreq.c                | 236 ------------------------
+ drivers/cpufreq/exynos-cpufreq.h                |  72 --------
+ drivers/cpufreq/exynos4x12-cpufreq.c            | 236 ------------------------
+ drivers/cpufreq/freq_table.c                    |  10 +-
+ include/linux/cpufreq.h                         |   1 +
+ 17 files changed, 241 insertions(+), 591 deletions(-)
+ delete mode 100644 drivers/cpufreq/exynos-cpufreq.c
+ delete mode 100644 drivers/cpufreq/exynos-cpufreq.h
+ delete mode 100644 drivers/cpufreq/exynos4x12-cpufreq.c
+
+-- 
+1.9.1
