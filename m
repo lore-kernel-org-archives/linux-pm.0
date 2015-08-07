@@ -1,45 +1,112 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v4 0/6] cpufreq: use generic cpufreq drivers for Exynos4x12
- platform
-Date: Fri, 07 Aug 2015 13:52:01 +0900
-Message-ID: <55C43971.5010504@samsung.com>
-References: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com>
- <015301d0d0a3$1396c900$3ac45b00$@kernel.org> <20150807035018.GF6325@linux>
- <20150807035156.GG6325@linux> <55C43085.8090506@samsung.com>
- <20150807043037.GH6325@linux>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 07/13] twl4030_charger: distinguish between USB current
+ and 'AC' current
+Date: Fri, 7 Aug 2015 07:13:09 +0200
+Message-ID: <20150807051309.GA24702@earth>
+References: <20150730001113.4012.18086.stgit@noble>
+ <20150730001124.4012.48552.stgit@noble>
+ <20150807031116.GH4215@atomide.com>
+ <20150807134525.251528ab@home.neil.brown.name>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:18185 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbbHGEwG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Aug 2015 00:52:06 -0400
-In-reply-to: <20150807043037.GH6325@linux>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="jI8keyz6grp/JLjh"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150807134525.251528ab@home.neil.brown.name>
+Sender: linux-kernel-owner@vger.kernel.org
+To: NeilBrown <neil@brown.name>
+Cc: Tony Lindgren <tony@atomide.com>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Michael Turquette' <mturquette@baylibre.com>, 'Tomasz Figa' <tomasz.figa@gmail.com>, 'Lukasz Majewski' <l.majewski@samsung.com>, 'Heiko Stuebner' <heiko@sntech.de>, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Kevin Hilman' <khilman@linaro.org>, 'Javier Martinez Canillas' <javier@dowhile0.org>, 'Tobias Jakobi' <tjakobi@math.uni-bielefeld.de>, 'Anand Moon' <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On 07.08.2015 13:30, Viresh Kumar wrote:
-> On 07-08-15, 13:13, Krzysztof Kozlowski wrote:
->> Still patches 1/6 and 6/6 need your acks. Is the patch 1/6 a
->> prerequisite for others? It does not look like a prerequisite... but it
->> was put at the beginning of the patchset.
-> 
-> Patch 1/6 is required to get boost working, that's all.. Not sure how
-> important is that. Anyway, that will work without 1/6 as well, all you
-> need to do is enable CONFIG_CPU_FREQ_BOOST_SW in you .config.
-> 
-> Anyway, it should go via pm tree and can be sent separately.
 
-Thanks for explanation. As fair as I understand, Bartlomiej wanted to
-merge this in a way which would avoid loosing the boost mode. Kukjin
-prepared topic branches for previous cpu-freq/clk stuff so maybe
-everything could go through PM?
+--jI8keyz6grp/JLjh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Kukjin, are you fine with that?
+Hi,
 
-Best regards,
-Krzysztof
+This actually slipped through my review. IMHO madc should be
+accessed through IIO, as already done for twl4030-madc-battery
+and rx51-battery. That way the custom API can be removed at
+some point.
 
+Anyway, I queued the below patch with Tony's ACK to fix the build
+issue in next.
+
+On Fri, Aug 07, 2015 at 01:45:25PM +1000, NeilBrown wrote:
+> From: NeilBrown <neil@brown.name>
+> Date: Fri, 7 Aug 2015 13:44:37 +1000
+> Subject: [PATCH] twl4030_charger: fix compile error when TWL4030_MADC not
+>  available.
+>=20
+> We can only use the madc to check for 'ac' availability
+> if the madc has been compiled in.
+> If not: assume always using USB.
+>=20
+> Reported-by: Tony Lindgren <tony@atomide.com>
+> Signed-off-by: NeilBrown <neil@brown.name>
+>=20
+> diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_char=
+ger.c
+> index c7432f532a83..265fd236f4c0 100644
+> --- a/drivers/power/twl4030_charger.c
+> +++ b/drivers/power/twl4030_charger.c
+> @@ -91,6 +91,21 @@
+>  #define TWL4030_MSTATEC_COMPLETE1	0x0b
+>  #define TWL4030_MSTATEC_COMPLETE4	0x0e
+> =20
+> +#if IS_ENABLED(CONFIG_TWL4030_MADC)
+> +/*
+> + * If AC (Accessory Charger) voltage exceeds 4.5V (MADC 11)
+> + * then AC is available.
+> + */
+> +static inline int ac_available(void)
+> +{
+> +	return twl4030_get_madc_conversion(11) > 4500;
+> +}
+> +#else
+> +static inline int ac_available(void)
+> +{
+> +	return 0;
+> +}
+> +#endif
+>  static bool allow_usb;
+>  module_param(allow_usb, bool, 0644);
+>  MODULE_PARM_DESC(allow_usb, "Allow USB charge drawing default current");
+> @@ -263,7 +278,7 @@ static int twl4030_charger_update_current(struct twl4=
+030_bci *bci)
+>  	 * If AC (Accessory Charger) voltage exceeds 4.5V (MADC 11)
+>  	 * and AC is enabled, set current for 'ac'
+>  	 */
+> -	if (twl4030_get_madc_conversion(11) > 4500) {
+> +	if (ac_available()) {
+>  		cur =3D bci->ac_cur;
+>  		bci->ac_is_active =3D true;
+>  	} else {
+
+-- Sebastian
+
+--jI8keyz6grp/JLjh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJVxD5iAAoJENju1/PIO/qaRyQQAIlGrGohr1hZZwPeFiureWNY
+MRTT6ylhlnuPul1OAkMs/xq0FEvL+/y/vgbCCGwgF7V5K4T0dUvymBQm9jdmnENK
+mXhephHiNGOPYLQaFrL6iBAjl2+1o7rINfCW5xOh8QKcmOepEtXfALcu+Q54cUXb
+zyxUEwLb+TDBkdMHnTYO4zAJxGSqsFlVRxzzOKmBcQ31ydZBIXomjMuvEAnUW+Lu
+15h8Dm8uYGiNwjpU/e92zYX4j2Lwup6sB29XE038PG330UTMBUzfgA+GOGFabYwb
+LPssLUjbf+9EAUL2xywe2dLixTTLS+edvfXdpCTQXbCcCZuJNLR2tqs41lNJSAzN
+Cnb0y7PPXOYoFK77Ny+rD5G4GTsyYpydNyX3r9ry+Sf3r4WzGAPXTPSUa3+CVzt4
+7ZOZ4MZOkYm4IaZXogTXW37hV4tNZtGqmfMugr6XnyLdvZHTakB2nxEsrIJ36aIZ
+IamQMB3PUEWiIwuafAr/hLnK/ANEUo/T/2R3sAPFjOuXcWeolHeI0PtMkQd4Zsf+
+/MG6g8pflUPJgNESgGQp+cIVM3B5bcrtddDyUE06Hrk5nBZ4in5ISu3dLODe6H4c
+B8y6cqrwweyG6PKTlGZ7Hz+l9NVgdgay7PbtEDdE/OuYOtoXWYnGutACe0xkua4W
+i7kvaOsNoYOEW8ypYkJZ
+=j89x
+-----END PGP SIGNATURE-----
+
+--jI8keyz6grp/JLjh--
