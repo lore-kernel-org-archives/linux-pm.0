@@ -1,204 +1,116 @@
-From: Alexandra Yates <alexandra.yates@linux.intel.com>
-Subject: [PATCH v5] Report interrupt(s) that caused system wakeup
-Date: Thu,  6 Aug 2015 20:47:04 -0700
-Message-ID: <1438919224-7003-2-git-send-email-alexandra.yates@linux.intel.com>
-References: <[PATCH V5] Report interrupt(s) that caused a system wakeup>
- <1438919224-7003-1-git-send-email-alexandra.yates@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:10121 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752544AbbHGDpZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 6 Aug 2015 23:45:25 -0400
-In-Reply-To: <1438919224-7003-1-git-send-email-alexandra.yates@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: NeilBrown <neil@brown.name>
+Subject: Re: [PATCH 07/13] twl4030_charger: distinguish between USB current
+ and 'AC' current
+Date: Fri, 7 Aug 2015 13:45:25 +1000
+Message-ID: <20150807134525.251528ab@home.neil.brown.name>
+References: <20150730001113.4012.18086.stgit@noble>
+	<20150730001124.4012.48552.stgit@noble>
+	<20150807031116.GH4215@atomide.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150807031116.GH4215@atomide.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org
-Cc: Alexandra Yates <alexandra.yates@linux.intel.com>
 
-Add a new IRQ flag named IRQD_WAKEUP_TRIGGERED.  This flag is set
-when a given IRQ fires after it has been armed for system wakeup.
-The flag is cleared before arming the IRQ for system wakeup
-during the next system suspend. This feature makes possible to
-check which IRQs might have woken the system up from sleep last
-time it was suspended.
+On Thu, 6 Aug 2015 20:11:16 -0700 Tony Lindgren <tony@atomide.com>
+wrote:
 
-Add a new sysfs attribute under /sys/power/ named:pm_last_wakeup_irqs
-when read, will return a list of IRQs with the new flag set.  That
-will be useful for system wakeup diagnostics.
+> * NeilBrown <neil@brown.name> [150729 17:28]:
+> > --- a/drivers/power/twl4030_charger.c
+> > +++ b/drivers/power/twl4030_charger.c
+> >  static int twl4030_charger_update_current(struct twl4030_bci *bci)
+> >  {
+> >  	int status;
+> > +	int cur;
+> >  	unsigned reg, cur_reg;
+> >  	u8 bcictl1, oldreg, fullreg;
+> >  	bool cgain = false;
+> >  	u8 boot_bci;
+> >  
+> > +	/*
+> > +	 * If AC (Accessory Charger) voltage exceeds 4.5V (MADC 11)
+> > +	 * and AC is enabled, set current for 'ac'
+> > +	 */
+> > +	if (twl4030_get_madc_conversion(11) > 4500) {
+> > +		cur = bci->ac_cur;
+> > +		bci->ac_is_active = true;
+> > +	} else {
+> > +		cur = bci->usb_cur;
+> > +		bci->ac_is_active = false;
+> > +	}
+> > +
+> >  	/* First, check thresholds and see if cgain is needed */
+> >  	if (bci->ichg_eoc >= 200000)
+> >  		cgain = true;
+> 
+> Neil, you need a stub or something for twl4030_get_madc_conversion
+> if madc is not selected. Now at least omap2plus_defconfig and
+> ARM allmodconfig fails in Linux next.
+> 
+> Regards,
+> 
+> Tony
 
-Signed-off-by: Alexandra Yates <alexandra.yates@linux.intel.com>
----
- Documentation/ABI/testing/sysfs-power | 11 +++++++++++
- drivers/base/power/wakeup.c           | 31 +++++++++++++++++++++++++++++++
- include/linux/irq.h                   |  7 +++++++
- include/linux/suspend.h               |  1 +
- kernel/irq/pm.c                       |  2 ++
- kernel/power/main.c                   | 23 +++++++++++++++++++++++
- 6 files changed, 75 insertions(+)
+Thanks, I did get notified about that by Fengguang's test robot, but
+it's still on my list....
 
-diff --git a/Documentation/ABI/testing/sysfs-power b/Documentation/ABI/testing/sysfs-power
-index f455181..4f9cc3a 100644
---- a/Documentation/ABI/testing/sysfs-power
-+++ b/Documentation/ABI/testing/sysfs-power
-@@ -256,3 +256,14 @@ Description:
- 		Writing a "1" enables this printing while writing a "0"
- 		disables it.  The default value is "0".  Reading from this file
- 		will display the current value.
-+
-+What:		/sys/power/pm_last_wakeup_irqs
-+Date:		April 2015
-+Contact:	Alexandra Yates <alexandra.yates@linux.intel.org>
-+Description:
-+		The /sys/power/pm_last_wakeup_irqs file allows user space
-+		to identify and report the IRQs responsible for waking the
-+		system up from sleep. The IRQD_WAKEUP_TRIGGERED flag is set and
-+		reported when the given IRQ fires after it has been armed for
-+		system wakeup. This output is useful for system wakeup
-+		diagnostics.
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 51f15bc..1a2d13b 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -870,6 +870,37 @@ void pm_wakeup_clear(void)
- 	pm_abort_suspend = false;
- }
+I guess making CHARGER_TWL4030 auto-select TWL4030_MADC would not be
+acceptable?  That would pull in IIO (it didn't use to...).
+
+If this OK?
+
+Thanks,
+NeilBrown
+
+
+From: NeilBrown <neil@brown.name>
+Date: Fri, 7 Aug 2015 13:44:37 +1000
+Subject: [PATCH] twl4030_charger: fix compile error when TWL4030_MADC not
+ available.
+
+We can only use the madc to check for 'ac' availability
+if the madc has been compiled in.
+If not: assume always using USB.
+
+Reported-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: NeilBrown <neil@brown.name>
+
+diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
+index c7432f532a83..265fd236f4c0 100644
+--- a/drivers/power/twl4030_charger.c
++++ b/drivers/power/twl4030_charger.c
+@@ -91,6 +91,21 @@
+ #define TWL4030_MSTATEC_COMPLETE1	0x0b
+ #define TWL4030_MSTATEC_COMPLETE4	0x0e
  
-+#ifdef CONFIG_PM_SLEEP_DEBUG
++#if IS_ENABLED(CONFIG_TWL4030_MADC)
 +/*
-+ * pm_get_last_wakeup_irqs - Parses interrupts to identify which one
-+ * caused the system to wake up from suspend-to-idle.
-+ * @buf: keeps track of the irqs that casued the system to wakeup
++ * If AC (Accessory Charger) voltage exceeds 4.5V (MADC 11)
++ * then AC is available.
 + */
-+ssize_t pm_get_last_wakeup_irqs(char *buf, size_t size)
++static inline int ac_available(void)
 +{
-+	struct irq_desc *desc;
-+	int irq;
-+	char *str = buf;
-+	char *end = buf + size;
-+
-+	if (!pm_abort_suspend)
-+		return 0;
-+
-+	/* If pm_abort_suspend is not set, the previous suspend was aborted
-+	 * before arming the wakeup IRQs, so avoid printing stale information
-+	 * in that case.
-+	 */
-+	for_each_irq_desc(irq, desc)
-+		if (irqd_triggered_wakeup(&desc->irq_data))
-+			str += scnprintf(str, end - str, "%d ", irq);
-+
-+	if (str != buf)
-+		str--;
-+
-+	return (str - buf);
++	return twl4030_get_madc_conversion(11) > 4500;
 +}
-+#endif /* CONFIG_PM_SLEEP_DEBUG */
-+
- /**
-  * pm_get_wakeup_count - Read the number of registered wakeup events.
-  * @count: Address to store the value at.
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 92188b0..7935e95 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -190,6 +190,7 @@ struct irq_data {
-  * IRQD_IRQ_MASKED		- Masked state of the interrupt
-  * IRQD_IRQ_INPROGRESS		- In progress state of the interrupt
-  * IRQD_WAKEUP_ARMED		- Wakeup mode armed
-+ * IRQD_WAKEUP_TRIGGERED	- Triggered system wakeup
-  */
- enum {
- 	IRQD_TRIGGER_MASK		= 0xf,
-@@ -204,10 +205,16 @@ enum {
- 	IRQD_IRQ_MASKED			= (1 << 17),
- 	IRQD_IRQ_INPROGRESS		= (1 << 18),
- 	IRQD_WAKEUP_ARMED		= (1 << 19),
-+	IRQD_WAKEUP_TRIGGERED		= (1 << 20),
- };
- 
- #define __irqd_to_state(d)		((d)->common->state_use_accessors)
- 
-+static inline bool irqd_triggered_wakeup(struct irq_data *d)
++#else
++static inline int ac_available(void)
 +{
-+	return __irqd_to_state(d) & IRQD_WAKEUP_TRIGGERED;
++	return 0;
 +}
-+
- static inline bool irqd_is_setaffinity_pending(struct irq_data *d)
- {
- 	return __irqd_to_state(d) & IRQD_SETAFFINITY_PENDING;
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 5efe743..7cadded 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -378,6 +378,7 @@ void restore_processor_state(void);
- /* kernel/power/main.c */
- extern int register_pm_notifier(struct notifier_block *nb);
- extern int unregister_pm_notifier(struct notifier_block *nb);
-+extern ssize_t pm_get_last_wakeup_irqs(char *buf, size_t size);
- 
- #define pm_notifier(fn, pri) {				\
- 	static struct notifier_block fn##_nb =			\
-diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-index d22786a..1f16aea 100644
---- a/kernel/irq/pm.c
-+++ b/kernel/irq/pm.c
-@@ -22,6 +22,7 @@ bool irq_pm_check_wakeup(struct irq_desc *desc)
- 		desc->depth++;
- 		irq_disable(desc);
- 		pm_system_wakeup();
-+		irqd_set(&desc->irq_data, IRQD_WAKEUP_TRIGGERED);
- 		return true;
- 	}
- 	return false;
-@@ -73,6 +74,7 @@ static bool suspend_device_irq(struct irq_desc *desc, int irq)
- 	if (!desc->action || desc->no_suspend_depth)
- 		return false;
- 
-+	irqd_clear(&desc->irq_data, IRQD_WAKEUP_TRIGGERED);
- 	if (irqd_is_wakeup_set(&desc->irq_data)) {
- 		irqd_set(&desc->irq_data, IRQD_WAKEUP_ARMED);
- 		/*
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 63d395b..6e550c0 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -272,6 +272,28 @@ static inline void pm_print_times_init(void)
- {
- 	pm_print_times_enabled = !!initcall_debug;
- }
-+
-+static ssize_t pm_last_wakeup_irqs_show(struct kobject *kobj,
-+					struct kobj_attribute *attr,
-+					char *buf)
-+{
-+	size_t ret;
-+
-+	ret = pm_get_last_wakeup_irqs(buf, PAGE_SIZE);
-+	if (ret)
-+		buf[ret++] = '\n';
-+
-+	return ret;
-+}
-+
-+static ssize_t pm_last_wakeup_irqs_store(struct kobject *kobj,
-+					struct kobj_attribute *attr,
-+					const char *buf, size_t n)
-+{
-+	return -EINVAL;
-+}
-+power_attr(pm_last_wakeup_irqs);
-+
- #else /* !CONFIG_PM_SLEEP_DEBUG */
- static inline void pm_print_times_init(void) {}
- #endif /* CONFIG_PM_SLEEP_DEBUG */
-@@ -604,6 +626,7 @@ static struct attribute * g[] = {
- #endif
- #ifdef CONFIG_PM_SLEEP_DEBUG
- 	&pm_print_times_attr.attr,
-+	&pm_last_wakeup_irqs_attr.attr,
- #endif
- #endif
- #ifdef CONFIG_FREEZER
--- 
-1.9.1
-
++#endif
+ static bool allow_usb;
+ module_param(allow_usb, bool, 0644);
+ MODULE_PARM_DESC(allow_usb, "Allow USB charge drawing default current");
+@@ -263,7 +278,7 @@ static int twl4030_charger_update_current(struct twl4030_bci *bci)
+ 	 * If AC (Accessory Charger) voltage exceeds 4.5V (MADC 11)
+ 	 * and AC is enabled, set current for 'ac'
+ 	 */
+-	if (twl4030_get_madc_conversion(11) > 4500) {
++	if (ac_available()) {
+ 		cur = bci->ac_cur;
+ 		bci->ac_is_active = true;
+ 	} else {
