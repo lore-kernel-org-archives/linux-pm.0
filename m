@@ -1,66 +1,54 @@
-From: Laurentiu Palcu <lpalcu@gmail.com>
-Subject: Re: [RFC] TI BQ242xx Battery Charger Development/Consolidation Plans
-Date: Fri, 7 Aug 2015 11:58:17 +0300
-Message-ID: <CAD03FC+DqSdg_LZ-SNaCNLsh9eZS9hSeJL5Q+8aWU+bGVcVPDQ@mail.gmail.com>
-References: <1438706177-8115-1-git-send-email-dannenberg@ti.com>
-	<55C23441.2030305@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 11/31] cpufreq/sfi: use kmemdup rather than duplicating
+ its implementation
+Date: Fri, 7 Aug 2015 14:28:57 +0530
+Message-ID: <20150807085857.GA6939@linux>
+References: <1438934377-4922-1-git-send-email-a.hajda@samsung.com>
+ <1438934377-4922-12-git-send-email-a.hajda@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f180.google.com ([209.85.217.180]:34826 "EHLO
-	mail-lb0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750953AbbHGI6T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Aug 2015 04:58:19 -0400
-Received: by lbbpo9 with SMTP id po9so57348895lbb.2
-        for <linux-pm@vger.kernel.org>; Fri, 07 Aug 2015 01:58:17 -0700 (PDT)
-In-Reply-To: <55C23441.2030305@ti.com>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:34015 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750853AbbHGI7D (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Aug 2015 04:59:03 -0400
+Received: by pawu10 with SMTP id u10so84211186paw.1
+        for <linux-pm@vger.kernel.org>; Fri, 07 Aug 2015 01:59:02 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1438934377-4922-12-git-send-email-a.hajda@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Andrzej Hajda <a.hajda@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Andreas,
+On 07-08-15, 09:59, Andrzej Hajda wrote:
+> The patch was generated using fixed coccinelle semantic patch
+> scripts/coccinelle/api/memdup.cocci [1].
+> 
+> [1]: http://permalink.gmane.org/gmane.linux.kernel/2014320
+> 
+> Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
+> ---
+>  drivers/cpufreq/sfi-cpufreq.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/sfi-cpufreq.c b/drivers/cpufreq/sfi-cpufreq.c
+> index ffa3389..992ce6f 100644
+> --- a/drivers/cpufreq/sfi-cpufreq.c
+> +++ b/drivers/cpufreq/sfi-cpufreq.c
+> @@ -45,12 +45,10 @@ static int sfi_parse_freq(struct sfi_table_header *table)
+>  	pentry = (struct sfi_freq_table_entry *)sb->pentry;
+>  	totallen = num_freq_table_entries * sizeof(*pentry);
+>  
+> -	sfi_cpufreq_array = kzalloc(totallen, GFP_KERNEL);
+> +	sfi_cpufreq_array = kmemdup(pentry, totallen, GFP_KERNEL);
+>  	if (!sfi_cpufreq_array)
+>  		return -ENOMEM;
+>  
+> -	memcpy(sfi_cpufreq_array, pentry, totallen);
+> -
 
-On 5 Aug 2015 19:11, "Andreas Dannenberg" <dannenberg@ti.com> wrote:
->
-> Not too long I ago started working on a new driver called bq242xx_charger.c
-> that will add support for TI's BQ24250, BQ24251, BQ24261M, and BQ24262 Li-Ion
-> battery charger/power-path management ICs and that work is about 50% done. I
-> chose a working name of bq242xx_charger.c in the hopes that in addition to
-> providing immediate support for said devices that this driver can later be used
-> as a platform to add other devices of the BQ242xx sub-family in an effort to
-> re-use/consolidate and help keep drivers/power organized.
->
-> Long story short I also realized that we just got a new bq24257_charger.c
-> driver (for the BQ24257) already in the Linux 4.2 tree which creates somewhat
-> of a conflict with the bq242xx_charger.c work in progress.
->
-> I would like to solicit ideas/comments regarding the following plan of attack:
->
-> - Continue bq242xx_charger.c development as scoped in the first paragraph
-> - Work on getting it accepted into upstream
-> - As future work, absorb the already existing bq24257_charger.c driver into the
->   bq242xx_charger.c driver, and deprecate its usage
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Using wildcards in the driver name looks like a good idea until a new
-part that fits the naming scheme appears but it's a totally different
-product... Assuming those chips have a similar register layout as
-BQ24257, why don't you start with the existing bq24257_charger driver
-and build on that? Then, in Kconfig, make it clear what parts are
-supported by the driver. This practice is quite common in Linux
-kernel.
-
->
-> There might be a potential risk for user confusion for a transitional time if
-> somebody was just looking at the filenames to select their driver due to part
-> number overlap. However I argue folks are more likely to go the Kconfig route
-> to select their driver so this may not be a problem after all.
-
-This one is tricky. If the BQ24257 chip became part of a commercial
-product, then the customers will have to change the .config after
-doing a kernel upgrade. Customers are not keen on doing that for a
-commercially released product.
-
-Sebastian, what do you think?
-
-laurentiu
+-- 
+viresh
