@@ -1,69 +1,89 @@
-From: NeilBrown <neil@brown.name>
-Subject: Re: [PATCH 07/13] twl4030_charger: distinguish between USB current
- and 'AC' current
-Date: Fri, 7 Aug 2015 15:29:09 +1000
-Message-ID: <20150807152909.77603f47@home.neil.brown.name>
-References: <20150730001113.4012.18086.stgit@noble>
-	<20150730001124.4012.48552.stgit@noble>
-	<20150807031116.GH4215@atomide.com>
-	<20150807134525.251528ab@home.neil.brown.name>
-	<20150807051309.GA24702@earth>
+From: =?UTF-8?B?Q2h1bmctWWloIFdhbmcgKOeOi+W0h+aHvyk=?=
+	<cywang@chromium.org>
+Subject: [PATCH] thermal: of: Introduce governor selection in dts
+Date: Fri, 7 Aug 2015 15:09:39 +0800
+Message-ID: <CAM2ehZYXsqCoS9ygXNfPHxt9-b5cFxH_ovrgjvM-BfDO6REcUg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/QjdZNJ7FBx5MmMlsKFN5zKT"; protocol="application/pgp-signature"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150807051309.GA24702@earth>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Tony Lindgren <tony@atomide.com>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yk0-f175.google.com ([209.85.160.175]:36839 "EHLO
+	mail-yk0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752261AbbHGHKA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Aug 2015 03:10:00 -0400
+Received: by ykeo23 with SMTP id o23so82050409yke.3
+        for <linux-pm@vger.kernel.org>; Fri, 07 Aug 2015 00:09:59 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Chung-yih Wang <cywang@chromium.org>
 
---Sig_/QjdZNJ7FBx5MmMlsKFN5zKT
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+As there could be more thermal zones on a system and
+more variety in thermal governors provided in kernel,
+this patch provides flexibility of governor selection
+for a thermal zone declared in device tree.
 
-On Fri, 7 Aug 2015 07:13:09 +0200 Sebastian Reichel <sre@kernel.org>
-wrote:
+Change-Id: Ie4a75d762709cbbe9f1806dae325d13f71982e78
+Signed-off-by: Chung-yih Wang <cywang@chromium.org>
+---
+ Documentation/devicetree/bindings/thermal/thermal.txt |  9 +++++++++
+ drivers/thermal/of-thermal.c                          | 10 ++++++++++
+ 2 files changed, 19 insertions(+)
 
-> Hi,
->=20
-> This actually slipped through my review. IMHO madc should be
-> accessed through IIO, as already done for twl4030-madc-battery
-> and rx51-battery. That way the custom API can be removed at
-> some point.
->=20
-> Anyway, I queued the below patch with Tony's ACK to fix the build
-> issue in next.
->=20
+diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt
+b/Documentation/devicetree/bindings/thermal/thermal.txt
+index 8a49362..30a5d41 100644
+--- a/Documentation/devicetree/bindings/thermal/thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+@@ -174,6 +174,13 @@ Optional property:
+                        2000mW, while on a 10'' tablet is around
+                        4500mW.
 
-OK, thanks.
++- thermal-governor-name:       The name of governor used to control the
++                               thermal zone instead of the default one
++                               specified in kernel config. For reference, if
++                               default governor is step_wise, one could
++                               select power_allocator for cpu_thermal zone
++                               in dts.
++
+ Note: The delay properties are bound to the maximum dT/dt (temperature
+ derivative over time) in two situations for a thermal zone:
+ (i)  - when passive cooling is activated (polling-delay-passive); and
+@@ -555,6 +562,8 @@ thermal-zones {
 
-I'll try to figure out are more proper approach ... might be a week or
-so though.
+                sustainable-power = <2500>;
 
-Thanks,
-NeilBrown
++               thermal-governor-name = "power_allocator";
++
+                trips {
+                        /* Trips are based on resulting linear equation */
+                        cpu_trip: cpu-trip {
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index b295b2b..45570ac 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -882,6 +882,7 @@ int __init of_parse_thermal_zones(void)
+        }
 
---Sig_/QjdZNJ7FBx5MmMlsKFN5zKT
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+        for_each_child_of_node(np, child) {
++               const char *governor_name;
+                struct thermal_zone_device *zone;
+                struct thermal_zone_params *tzp;
+                int i, mask = 0;
+@@ -909,6 +910,15 @@ int __init of_parse_thermal_zones(void)
+                        goto exit_free;
+                }
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
++               /* Select a preferred governor if declared */
++               if (!of_property_read_string(child,
++                                            "thermal-governor-name",
++                                            &governor_name)) {
++                       strncpy(tzp->governor_name,
++                               governor_name,
++                               sizeof(tzp->governor_name) - 1);
++               }
++
+                /* No hwmon because there might be hwmon drivers registering */
+                tzp->no_hwmon = true;
 
-iQIcBAEBCAAGBQJVxEIlAAoJEDnsnt1WYoG5fcsP/0s0RvbvSrJOxlVaQ5HSs24L
-6ZUYi1Enlb/Mz2wTP1F86TwFX0/1dT85A5hC3LIXEj3EmBTWL4ZXjqoy5oBTD2bH
-WqnpFUU2tEd0a2bZhEk6KyjvZXQZphRWqf03DA5iVJXh06uvBVgsCi3tSWSZKqEU
-t1Bp2XqK0WXSCZDXuCFqTENDqdCY/mNuvp/Tjc1vMBLmR2Ia4wXfsOhRDNbNDsAx
-Ek+afZvpjqvMc6LnkTOkzluOqwlrH65rPpNzhwwPgYJQ1q58AyXuZFfKCK9iJAHy
-cZTw75jCYLvGZjlAwt08hX3duKKq1lkrDqhPhkwJZG/dR4SwS+T7x1kWfLuz8Pzj
-QIhpPyhXofquYPlckUOCjXxv5uei5VJqjBN9wH6scrEJQfvv51myOR9D0CUAJlnT
-BMO+LXVoBTT6hITVw01uk2bXWVnCMSV2M6bwWtoWrwvjF/1T0ghy80pEOPjciYZ/
-B7G0b8A8IydOsRKTxjWhX1H9oM0fRLj0kSC+5eYd3esQJD1IAHOqqhKh/r5c5TPl
-lN/joCIMhYKCU5etORAWNmwpDN0HP37twJIO7uJZ0zgO8gQJfzFYhYQ/ZEXYapPj
-6I2PfdudiUFT3XRPR6TqH34DeN5g0MEXaaByzwnHGyPnAmYydW2lKjXY3M65dG2b
-kP4t2H1O4k85tuhw8PZF
-=90c5
------END PGP SIGNATURE-----
-
---Sig_/QjdZNJ7FBx5MmMlsKFN5zKT--
+--
+2.1.2
