@@ -1,54 +1,101 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 11/31] cpufreq/sfi: use kmemdup rather than duplicating
- its implementation
-Date: Fri, 7 Aug 2015 14:28:57 +0530
-Message-ID: <20150807085857.GA6939@linux>
-References: <1438934377-4922-1-git-send-email-a.hajda@samsung.com>
- <1438934377-4922-12-git-send-email-a.hajda@samsung.com>
+From: Marc Zyngier <marc.zyngier@arm.com>
+Subject: Re: [PATCH 2/5] ACPI / ARM64: remove usage of BAD_MADT_ENTRY/BAD_MADT_GICC_ENTRY
+Date: Fri, 07 Aug 2015 10:04:22 +0100
+Message-ID: <55C47496.5070902@arm.com>
+References: <1438894770-31163-1-git-send-email-al.stone@linaro.org> <1438894770-31163-3-git-send-email-al.stone@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:34015 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750853AbbHGI7D (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Aug 2015 04:59:03 -0400
-Received: by pawu10 with SMTP id u10so84211186paw.1
-        for <linux-pm@vger.kernel.org>; Fri, 07 Aug 2015 01:59:02 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1438934377-4922-12-git-send-email-a.hajda@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1438894770-31163-3-git-send-email-al.stone@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Al Stone <al.stone@linaro.org>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, patches@linaro.org, Catalin Marinas <catalin.marinas@arm.com>, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Andrzej Hajda <a.hajda@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 07-08-15, 09:59, Andrzej Hajda wrote:
-> The patch was generated using fixed coccinelle semantic patch
-> scripts/coccinelle/api/memdup.cocci [1].
+Hi Al,
+
+On 06/08/15 21:59, Al Stone wrote:
+> Now that we have introduced the bad_madt_entry() function, and that
+> function is being invoked in acpi_table_parse_madt() for us, there
+> is no longer any need to use the BAD_MADT_ENTRY macro, or in the case
+> of arm64, the BAD_MADT_GICC_ENTRY, too.
 > 
-> [1]: http://permalink.gmane.org/gmane.linux.kernel/2014320
-> 
-> Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
+> Signed-off-by: Al Stone <al.stone@linaro.org>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Jason Cooper <jason@lakedaemon.net>
+> Cc: Marc Zyngier <marc.zyngier@arm.com>
 > ---
->  drivers/cpufreq/sfi-cpufreq.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
+>  arch/arm64/include/asm/acpi.h | 8 --------
+>  arch/arm64/kernel/smp.c       | 2 --
+>  drivers/irqchip/irq-gic.c     | 6 ------
+>  3 files changed, 16 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/sfi-cpufreq.c b/drivers/cpufreq/sfi-cpufreq.c
-> index ffa3389..992ce6f 100644
-> --- a/drivers/cpufreq/sfi-cpufreq.c
-> +++ b/drivers/cpufreq/sfi-cpufreq.c
-> @@ -45,12 +45,10 @@ static int sfi_parse_freq(struct sfi_table_header *table)
->  	pentry = (struct sfi_freq_table_entry *)sb->pentry;
->  	totallen = num_freq_table_entries * sizeof(*pentry);
+> diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
+> index 406485e..39248d3 100644
+> --- a/arch/arm64/include/asm/acpi.h
+> +++ b/arch/arm64/include/asm/acpi.h
+> @@ -19,14 +19,6 @@
+>  #include <asm/psci.h>
+>  #include <asm/smp_plat.h>
 >  
-> -	sfi_cpufreq_array = kzalloc(totallen, GFP_KERNEL);
-> +	sfi_cpufreq_array = kmemdup(pentry, totallen, GFP_KERNEL);
->  	if (!sfi_cpufreq_array)
->  		return -ENOMEM;
->  
-> -	memcpy(sfi_cpufreq_array, pentry, totallen);
+> -/* Macros for consistency checks of the GICC subtable of MADT */
+> -#define ACPI_MADT_GICC_LENGTH	\
+> -	(acpi_gbl_FADT.header.revision < 6 ? 76 : 80)
 > -
+> -#define BAD_MADT_GICC_ENTRY(entry, end)						\
+> -	(!(entry) || (unsigned long)(entry) + sizeof(*(entry)) > (end) ||	\
+> -	 (entry)->header.length != ACPI_MADT_GICC_LENGTH)
+> -
+>  /* Basic configuration for ACPI */
+>  #ifdef	CONFIG_ACPI
+>  /* ACPI table mapping after acpi_gbl_permanent_mmap is set */
+> diff --git a/arch/arm64/kernel/smp.c b/arch/arm64/kernel/smp.c
+> index 50fb469..acd3b27 100644
+> --- a/arch/arm64/kernel/smp.c
+> +++ b/arch/arm64/kernel/smp.c
+> @@ -438,8 +438,6 @@ acpi_parse_gic_cpu_interface(struct acpi_subtable_header *header,
+>  	struct acpi_madt_generic_interrupt *processor;
+>  
+>  	processor = (struct acpi_madt_generic_interrupt *)header;
+> -	if (BAD_MADT_GICC_ENTRY(processor, end))
+> -		return -EINVAL;
+>  
+>  	acpi_table_print_madt_entry(header);
+>  
+> diff --git a/drivers/irqchip/irq-gic.c b/drivers/irqchip/irq-gic.c
+> index 4dd8826..2735611 100644
+> --- a/drivers/irqchip/irq-gic.c
+> +++ b/drivers/irqchip/irq-gic.c
+> @@ -1055,9 +1055,6 @@ gic_acpi_parse_madt_cpu(struct acpi_subtable_header *header,
+>  
+>  	processor = (struct acpi_madt_generic_interrupt *)header;
+>  
+> -	if (BAD_MADT_GICC_ENTRY(processor, end))
+> -		return -EINVAL;
+> -
+>  	/*
+>  	 * There is no support for non-banked GICv1/2 register in ACPI spec.
+>  	 * All CPU interface addresses have to be the same.
+> @@ -1079,9 +1076,6 @@ gic_acpi_parse_madt_distributor(struct acpi_subtable_header *header,
+>  
+>  	dist = (struct acpi_madt_generic_distributor *)header;
+>  
+> -	if (BAD_MADT_ENTRY(dist, end))
+> -		return -EINVAL;
+> -
+>  	dist_phy_base = dist->base_address;
+>  	return 0;
+>  }
+> 
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Thanks a lot for doing this - the proliferation of this macro has been
+driving me insane.
 
+Acked-by: Marc Zyngier <marc.zyngier@arm.com>
+
+	M.
 -- 
-viresh
+Jazz is not dead. It just smells funny...
