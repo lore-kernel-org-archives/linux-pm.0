@@ -1,649 +1,1092 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Fri,  7 Aug 2015 15:55:50 +0200
-Message-ID: <1438955751-20778-3-git-send-email-s.hauer@pengutronix.de>
-References: <1438955751-20778-1-git-send-email-s.hauer@pengutronix.de>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v3 5/6] power: bq27xxx_battery: Add support for additional
+ bq27xxx family devices
+Date: Fri, 7 Aug 2015 10:08:57 -0500
+Message-ID: <55C4CA09.4090903@ti.com>
+References: <1438790740-29856-1-git-send-email-afd@ti.com> <1438790740-29856-6-git-send-email-afd@ti.com> <20150806082839.GE12070@pali>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:58477 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753511AbbHGN4E (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Aug 2015 09:56:04 -0400
-In-Reply-To: <1438955751-20778-1-git-send-email-s.hauer@pengutronix.de>
+Received: from comal.ext.ti.com ([198.47.26.152]:40653 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753828AbbHGPJ3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 7 Aug 2015 11:09:29 -0400
+In-Reply-To: <20150806082839.GE12070@pali>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, Daniel Kurtz <djkurtz@chromium.org>, kernel@pengutronix.de, Matthias Brugger <matthias.bgg@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
+To: =?UTF-8?B?UGFsaSBSb2jDoXI=?= <pali.rohar@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This adds support for the Mediatek thermal controller found on MT8173
-and likely other SoCs.
-The controller is a bit special. It does not have its own ADC, instead
-it controls the on-SoC AUXADC via AHB bus accesses. For this reason
-we need the physical address of the AUXADC. Also it controls a mux
-using AHB bus accesses, so we need the APMIXEDSYS physical address aswell.
+On 08/06/2015 03:28 AM, Pali Roh=C3=A1r wrote:
+> On Wednesday 05 August 2015 11:05:39 Andrew F. Davis wrote:
+>> Add support for additional devices and register equivalent family de=
+vices
+>> including the bq27010, bq27210, bq27500, bq27510, bq27520, bq27530,
+>> bq27531, bq27541, bq27542, bq27546, bq27545, bq27441, bq27421, and t=
+he
+>> bq27641.
+>>
+>> To facilitate this process the register mapings have been moved to t=
+ables
+>> and other small cleanups have been made.
+>>
+>> Signed-off-by: Andrew F. Davis <afd@ti.com>
+>> ---
+>>   drivers/power/bq27xxx_battery.c       | 627 ++++++++++++++++++++++=
++-----------
+>>   include/linux/power/bq27xxx_battery.h |  10 +-
+>>   2 files changed, 428 insertions(+), 209 deletions(-)
+>>
+>> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx=
+_battery.c
+>> index 1ff88ad..3098609 100644
+>> --- a/drivers/power/bq27xxx_battery.c
+>> +++ b/drivers/power/bq27xxx_battery.c
+>> @@ -17,11 +17,24 @@
+>>    * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURP=
+OSE.
+>>    *
+>>    * Datasheets:
+>> - * http://focus.ti.com/docs/prod/folders/print/bq27000.html
+>> - * http://focus.ti.com/docs/prod/folders/print/bq27500.html
+>> + * http://www.ti.com/product/bq27000
+>> + * http://www.ti.com/product/bq27200
+>> + * http://www.ti.com/product/bq27010
+>> + * http://www.ti.com/product/bq27210
+>> + * http://www.ti.com/product/bq27500
+>> + * http://www.ti.com/product/bq27510-g3
+>> + * http://www.ti.com/product/bq27520-g4
+>> + * http://www.ti.com/product/bq27530-g1
+>> + * http://www.ti.com/product/bq27531-g1
+>> + * http://www.ti.com/product/bq27541-g1
+>> + * http://www.ti.com/product/bq27542-g1
+>> + * http://www.ti.com/product/bq27546-g1
+>> + * http://www.ti.com/product/bq27742-g1
+>> + * http://www.ti.com/product/bq27545-g1
+>> + * http://www.ti.com/product/bq27421-g1
+>>    * http://www.ti.com/product/bq27425-g1
+>> - * http://www.ti.com/product/BQ27742-G1
+>> - * http://www.ti.com/product/BQ27510-G3
+>> + * http://www.ti.com/product/bq27411-g1
+>> + * http://www.ti.com/product/bq27621-g1
+>>    */
+>>
+>>   #include <linux/device.h>
+>> @@ -43,54 +56,57 @@
+>>
+>>   #define BQ27XXX_MANUFACTURER	"Texas Instruments"
+>>
+>> -#define BQ27x00_REG_TEMP	0x06
+>> -#define BQ27x00_REG_VOLT	0x08
+>> -#define BQ27x00_REG_AI		0x14
+>> -#define BQ27x00_REG_FLAGS	0x0A
+>> -#define BQ27x00_REG_TTE		0x16
+>> -#define BQ27x00_REG_TTF		0x18
+>> -#define BQ27x00_REG_TTECP	0x26
+>> -#define BQ27x00_REG_NAC		0x0C /* Nominal available capacity */
+>> -#define BQ27x00_REG_LMD		0x12 /* Last measured discharge */
+>> -#define BQ27x00_REG_CYCT	0x2A /* Cycle count total */
+>> -#define BQ27x00_REG_AE		0x22 /* Available energy */
+>> -#define BQ27x00_POWER_AVG	0x24
+>> -
+>> -#define BQ27000_REG_RSOC	0x0B /* Relative State-of-Charge */
+>> -#define BQ27000_REG_ILMD	0x76 /* Initial last measured discharge */
+>> +/* BQ27XXX Flags */
+>> +#define BQ27XXX_FLAG_DSC	BIT(0)
+>> +#define BQ27XXX_FLAG_SOCF	BIT(1) /* State-of-Charge threshold final=
+ */
+>> +#define BQ27XXX_FLAG_SOC1	BIT(2) /* State-of-Charge threshold 1 */
+>> +#define BQ27XXX_FLAG_FC		BIT(9)
+>> +#define BQ27XXX_FLAG_OTD	BIT(14)
+>> +#define BQ27XXX_FLAG_OTC	BIT(15)
+>> +
+>> +/* BQ27000 has different layout for Flags register */
+>>   #define BQ27000_FLAG_EDVF	BIT(0) /* Final End-of-Discharge-Voltage=
+ flag */
+>>   #define BQ27000_FLAG_EDV1	BIT(1) /* First End-of-Discharge-Voltage=
+ flag */
+>>   #define BQ27000_FLAG_CI		BIT(4) /* Capacity Inaccurate flag */
+>>   #define BQ27000_FLAG_FC		BIT(5)
+>>   #define BQ27000_FLAG_CHGS	BIT(7) /* Charge state flag */
+>>
+>> -#define BQ27500_REG_SOC		0x2C
+>> -#define BQ27500_REG_DCAP	0x3C /* Design capacity */
+>> -#define BQ27500_FLAG_DSC	BIT(0)
+>> -#define BQ27500_FLAG_SOCF	BIT(1) /* State-of-Charge threshold final=
+ */
+>> -#define BQ27500_FLAG_SOC1	BIT(2) /* State-of-Charge threshold 1 */
+>> -#define BQ27500_FLAG_FC		BIT(9)
+>> -#define BQ27500_FLAG_OTC	BIT(15)
+>> -
+>> -#define BQ27742_POWER_AVG	0x76
+>> -
+>> -#define BQ27510_REG_SOC		0x20
+>> -#define BQ27510_REG_DCAP	0x2E /* Design capacity */
+>> -#define BQ27510_REG_CYCT	0x1E /* Cycle count total */
+>> -
+>> -/* bq27425 register addresses are same as bq27x00 addresses minus 4=
+ */
+>> -#define BQ27425_REG_OFFSET	0x04
+>> -#define BQ27425_REG_SOC		(0x1C + BQ27425_REG_OFFSET)
+>> -#define BQ27425_REG_DCAP	(0x3C + BQ27425_REG_OFFSET)
+>> -
+>> -#define BQ27XXX_RS			20 /* Resistor sense */
+>> -#define BQ27XXX_POWER_CONSTANT		(256 * 29200 / 1000)
+>> +#define BQ27XXX_RS			(20) /* Resistor sense mOhm */
+>> +#define BQ27XXX_POWER_CONSTANT		(29200) /* 29.2 =C2=B5V^2 * 1000 */
+>> +#define BQ27XXX_CURRENT_CONSTANT	(3570) /* 3.57 =C2=B5V * 1000 */
+>>
+>>   struct bq27xxx_device_info;
+>>   struct bq27xxx_access_methods {
+>>   	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
+>>   };
+>>
+>> +#define INVALID_REG_ADDR	0xff
+>> +
+>> +/*
+>> + * bq27xxx_reg_index - Register names
+>> + *
+>> + * These are indexes into a device's register mapping array.
+>> + */
+>> +enum bq27xxx_reg_index {
+>> +	BQ27XXX_REG_CTRL =3D 0,	/* Control */
+>> +	BQ27XXX_REG_TEMP,	/* Temperature */
+>> +	BQ27XXX_REG_INT_TEMP,	/* Internal Temperature */
+>> +	BQ27XXX_REG_VOLT,	/* Voltage */
+>> +	BQ27XXX_REG_AI,		/* Average Current */
+>> +	BQ27XXX_REG_FLAGS,	/* Flags */
+>> +	BQ27XXX_REG_TTE,	/* Time-to-Empty */
+>> +	BQ27XXX_REG_TTF,	/* Time-to-Full */
+>> +	BQ27XXX_REG_TTES,	/* Time-to-Empty Standby */
+>> +	BQ27XXX_REG_TTECP,	/* Time-to-Empty at Constant Power */
+>> +	BQ27XXX_REG_NAC,	/* Nominal Available Capacity */
+>> +	BQ27XXX_REG_FCC,	/* Full Charge Capacity */
+>> +	BQ27XXX_REG_CYCT,	/* Cycle Count */
+>> +	BQ27XXX_REG_AE,		/* Available Energy */
+>> +	BQ27XXX_REG_SOC,	/* State-of-Charge */
+>> +	BQ27XXX_REG_DCAP,	/* Design Capacity */
+>> +	BQ27XXX_REG_AP,		/* Average Power */
+>> +};
+>> +
+>>   struct bq27xxx_reg_cache {
+>>   	int temperature;
+>>   	int time_to_empty;
+>> @@ -121,9 +137,152 @@ struct bq27xxx_device_info {
+>>   	struct bq27xxx_access_methods bus;
+>>
+>>   	struct mutex lock;
+>> +
+>> +	u8 *regs;
+>> +};
+>> +
+>> +/* Register mappings */
+>> +static u8 bq27000_regs[] =3D {
+>> +	0x00,	/* CONTROL	*/
+>> +	0x06,	/* TEMP		*/
+>> +	INVALID_REG_ADDR,	/* INT TEMP - NA*/
+>> +	0x08,	/* VOLT		*/
+>> +	0x14,	/* AVG CURR	*/
+>> +	0x0a,	/* FLAGS	*/
+>> +	0x16,	/* TTE		*/
+>> +	0x18,	/* TTF		*/
+>> +	0x1c,	/* TTES		*/
+>> +	0x26,	/* TTECP	*/
+>> +	0x0c,	/* NAC		*/
+>> +	0x12,	/* LMD(FCC)	*/
+>> +	0x2a,	/* CYCT		*/
+>> +	0x22,	/* AE		*/
+>> +	0x0b,	/* SOC(RSOC)	*/
+>> +	0x76,	/* DCAP(ILMD)	*/
+>> +	0x24,	/* AP		*/
+>> +};
+>> +
+>> +static u8 bq27010_regs[] =3D {
+>> +	0x00,	/* CONTROL	*/
+>> +	0x06,	/* TEMP		*/
+>> +	INVALID_REG_ADDR,	/* INT TEMP - NA*/
+>> +	0x08,	/* VOLT		*/
+>> +	0x14,	/* AVG CURR	*/
+>> +	0x0a,	/* FLAGS	*/
+>> +	0x16,	/* TTE		*/
+>> +	0x18,	/* TTF		*/
+>> +	0x1c,	/* TTES		*/
+>> +	0x26,	/* TTECP	*/
+>> +	0x0c,	/* NAC		*/
+>> +	0x12,	/* LMD(FCC)	*/
+>> +	0x2a,	/* CYCT		*/
+>> +	INVALID_REG_ADDR,	/* AE - NA	*/
+>> +	0x0b,	/* SOC(RSOC)	*/
+>> +	0x76,	/* DCAP(ILMD)	*/
+>> +	INVALID_REG_ADDR,	/* AP - NA	*/
+>> +};
+>> +
+>> +static u8 bq27500_regs[] =3D {
+>> +	0x00,	/* CONTROL	*/
+>> +	0x06,	/* TEMP		*/
+>> +	0x28,	/* INT TEMP	*/
+>> +	0x08,	/* VOLT		*/
+>> +	0x14,	/* AVG CURR	*/
+>> +	0x0a,	/* FLAGS	*/
+>> +	0x16,	/* TTE		*/
+>> +	INVALID_REG_ADDR,	/* TTF - NA	*/
+>> +	0x1a,	/* TTES		*/
+>> +	INVALID_REG_ADDR,	/* TTECP - NA	*/
+>> +	0x0c,	/* NAC		*/
+>> +	0x12,	/* LMD(FCC)	*/
+>> +	0x1e,	/* CYCT		*/
+>> +	INVALID_REG_ADDR,	/* AE - NA	*/
+>> +	0x20,	/* SOC(RSOC)	*/
+>> +	0x2e,	/* DCAP(ILMD)	*/
+>> +	INVALID_REG_ADDR,	/* AP - NA	*/
+>>   };
+>>
+>> -static enum power_supply_property bq27x00_battery_props[] =3D {
+>> +static u8 bq27530_regs[] =3D {
+>> +	0x00,	/* CONTROL	*/
+>> +	0x06,	/* TEMP		*/
+>> +	0x32,	/* INT TEMP	*/
+>> +	0x08,	/* VOLT		*/
+>> +	0x14,	/* AVG CURR	*/
+>> +	0x0a,	/* FLAGS	*/
+>> +	0x16,	/* TTE		*/
+>> +	INVALID_REG_ADDR,	/* TTF - NA	*/
+>> +	INVALID_REG_ADDR,	/* TTES - NA	*/
+>> +	INVALID_REG_ADDR,	/* TTECP - NA	*/
+>> +	0x0c,	/* NAC		*/
+>> +	0x12,	/* LMD(FCC)	*/
+>> +	0x2a,	/* CYCT		*/
+>> +	INVALID_REG_ADDR,	/* AE - NA	*/
+>> +	0x2c,	/* SOC(RSOC)	*/
+>> +	INVALID_REG_ADDR,	/* DCAP - NA	*/
+>> +	0x24,	/* AP		*/
+>> +};
+>> +
+>> +static u8 bq27541_regs[] =3D {
+>> +	0x00,	/* CONTROL	*/
+>> +	0x06,	/* TEMP		*/
+>> +	0x28,	/* INT TEMP	*/
+>> +	0x08,	/* VOLT		*/
+>> +	0x14,	/* AVG CURR	*/
+>> +	0x0a,	/* FLAGS	*/
+>> +	0x16,	/* TTE		*/
+>> +	INVALID_REG_ADDR,	/* TTF - NA	*/
+>> +	INVALID_REG_ADDR,	/* TTES - NA	*/
+>> +	INVALID_REG_ADDR,	/* TTECP - NA	*/
+>> +	0x0c,	/* NAC		*/
+>> +	0x12,	/* LMD(FCC)	*/
+>> +	0x2a,	/* CYCT		*/
+>> +	INVALID_REG_ADDR,	/* AE - NA	*/
+>> +	0x2c,	/* SOC(RSOC)	*/
+>> +	0x3c,	/* DCAP		*/
+>> +	0x76,	/* AP		*/
+>> +};
+>> +
+>> +static u8 bq27545_regs[] =3D {
+>> +	0x00,	/* CONTROL	*/
+>> +	0x06,	/* TEMP		*/
+>> +	0x28,	/* INT TEMP	*/
+>> +	0x08,	/* VOLT		*/
+>> +	0x14,	/* AVG CURR	*/
+>> +	0x0a,	/* FLAGS	*/
+>> +	0x16,	/* TTE		*/
+>> +	INVALID_REG_ADDR,	/* TTF - NA	*/
+>> +	INVALID_REG_ADDR,	/* TTES - NA	*/
+>> +	INVALID_REG_ADDR,	/* TTECP - NA	*/
+>> +	0x0c,	/* NAC		*/
+>> +	0x12,	/* LMD(FCC)	*/
+>> +	0x2a,	/* CYCT		*/
+>> +	INVALID_REG_ADDR,	/* AE - NA	*/
+>> +	0x2c,	/* SOC(RSOC)	*/
+>> +	INVALID_REG_ADDR,	/* DCAP - NA */
+>> +	0x24,	/* AP		*/
+>> +};
+>> +
+>> +static u8 bq27421_regs[] =3D {
+>> +	0x00,	/* CONTROL	*/
+>> +	0x02,	/* TEMP		*/
+>> +	0x1e,	/* INT TEMP	*/
+>> +	0x04,	/* VOLT		*/
+>> +	0x10,	/* AVG CURR	*/
+>> +	0x06,	/* FLAGS	*/
+>> +	INVALID_REG_ADDR,	/* TTE - NA	*/
+>> +	INVALID_REG_ADDR,	/* TTF - NA	*/
+>> +	INVALID_REG_ADDR,	/* TTES - NA	*/
+>> +	INVALID_REG_ADDR,	/* TTECP - NA	*/
+>> +	0x08,	/* NAC		*/
+>> +	0x0e,	/* FCC		*/
+>> +	INVALID_REG_ADDR,	/* CYCT - NA	*/
+>> +	INVALID_REG_ADDR,	/* AE - NA	*/
+>> +	0x1c,	/* SOC		*/
+>> +	0x3c,	/* DCAP		*/
+>> +	0x18,	/* AP		*/
+>> +};
+>> +
+>> +static enum power_supply_property bq27000_battery_props[] =3D {
+>>   	POWER_SUPPLY_PROP_STATUS,
+>>   	POWER_SUPPLY_PROP_PRESENT,
+>>   	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>> @@ -145,7 +304,7 @@ static enum power_supply_property bq27x00_batter=
+y_props[] =3D {
+>>   	POWER_SUPPLY_PROP_MANUFACTURER,
+>>   };
+>>
+>> -static enum power_supply_property bq27425_battery_props[] =3D {
+>> +static enum power_supply_property bq27010_battery_props[] =3D {
+>>   	POWER_SUPPLY_PROP_STATUS,
+>>   	POWER_SUPPLY_PROP_PRESENT,
+>>   	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>> @@ -153,14 +312,19 @@ static enum power_supply_property bq27425_batt=
+ery_props[] =3D {
+>>   	POWER_SUPPLY_PROP_CAPACITY,
+>>   	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
+>>   	POWER_SUPPLY_PROP_TEMP,
+>> +	POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
+>> +	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
+>> +	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
+>>   	POWER_SUPPLY_PROP_TECHNOLOGY,
+>>   	POWER_SUPPLY_PROP_CHARGE_FULL,
+>>   	POWER_SUPPLY_PROP_CHARGE_NOW,
+>>   	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+>> +	POWER_SUPPLY_PROP_CYCLE_COUNT,
+>> +	POWER_SUPPLY_PROP_HEALTH,
+>>   	POWER_SUPPLY_PROP_MANUFACTURER,
+>>   };
+>>
+>> -static enum power_supply_property bq27742_battery_props[] =3D {
+>> +static enum power_supply_property bq27500_battery_props[] =3D {
+>>   	POWER_SUPPLY_PROP_STATUS,
+>>   	POWER_SUPPLY_PROP_PRESENT,
+>>   	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>> @@ -174,12 +338,29 @@ static enum power_supply_property bq27742_batt=
+ery_props[] =3D {
+>>   	POWER_SUPPLY_PROP_CHARGE_NOW,
+>>   	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+>>   	POWER_SUPPLY_PROP_CYCLE_COUNT,
+>> +	POWER_SUPPLY_PROP_HEALTH,
+>> +	POWER_SUPPLY_PROP_MANUFACTURER,
+>> +};
+>> +
+>> +static enum power_supply_property bq27530_battery_props[] =3D {
+>> +	POWER_SUPPLY_PROP_STATUS,
+>> +	POWER_SUPPLY_PROP_PRESENT,
+>> +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>> +	POWER_SUPPLY_PROP_CURRENT_NOW,
+>> +	POWER_SUPPLY_PROP_CAPACITY,
+>> +	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
+>> +	POWER_SUPPLY_PROP_TEMP,
+>> +	POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
+>> +	POWER_SUPPLY_PROP_TECHNOLOGY,
+>> +	POWER_SUPPLY_PROP_CHARGE_FULL,
+>> +	POWER_SUPPLY_PROP_CHARGE_NOW,
+>>   	POWER_SUPPLY_PROP_POWER_AVG,
+>>   	POWER_SUPPLY_PROP_HEALTH,
+>> +	POWER_SUPPLY_PROP_CYCLE_COUNT,
+>>   	POWER_SUPPLY_PROP_MANUFACTURER,
+>>   };
+>>
+>> -static enum power_supply_property bq27510_battery_props[] =3D {
+>> +static enum power_supply_property bq27541_battery_props[] =3D {
+>>   	POWER_SUPPLY_PROP_STATUS,
+>>   	POWER_SUPPLY_PROP_PRESENT,
+>>   	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>> @@ -198,6 +379,39 @@ static enum power_supply_property bq27510_batte=
+ry_props[] =3D {
+>>   	POWER_SUPPLY_PROP_MANUFACTURER,
+>>   };
+>>
+>> +static enum power_supply_property bq27545_battery_props[] =3D {
+>> +	POWER_SUPPLY_PROP_STATUS,
+>> +	POWER_SUPPLY_PROP_PRESENT,
+>> +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>> +	POWER_SUPPLY_PROP_CURRENT_NOW,
+>> +	POWER_SUPPLY_PROP_CAPACITY,
+>> +	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
+>> +	POWER_SUPPLY_PROP_TEMP,
+>> +	POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
+>> +	POWER_SUPPLY_PROP_TECHNOLOGY,
+>> +	POWER_SUPPLY_PROP_CHARGE_FULL,
+>> +	POWER_SUPPLY_PROP_CHARGE_NOW,
+>> +	POWER_SUPPLY_PROP_HEALTH,
+>> +	POWER_SUPPLY_PROP_CYCLE_COUNT,
+>> +	POWER_SUPPLY_PROP_POWER_AVG,
+>> +	POWER_SUPPLY_PROP_MANUFACTURER,
+>> +};
+>> +
+>> +static enum power_supply_property bq27421_battery_props[] =3D {
+>> +	POWER_SUPPLY_PROP_STATUS,
+>> +	POWER_SUPPLY_PROP_PRESENT,
+>> +	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>> +	POWER_SUPPLY_PROP_CURRENT_NOW,
+>> +	POWER_SUPPLY_PROP_CAPACITY,
+>> +	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
+>> +	POWER_SUPPLY_PROP_TEMP,
+>> +	POWER_SUPPLY_PROP_TECHNOLOGY,
+>> +	POWER_SUPPLY_PROP_CHARGE_FULL,
+>> +	POWER_SUPPLY_PROP_CHARGE_NOW,
+>> +	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+>> +	POWER_SUPPLY_PROP_MANUFACTURER,
+>> +};
+>> +
+>>   static unsigned int poll_interval =3D 360;
+>>   module_param(poll_interval, uint, 0644);
+>>   MODULE_PARM_DESC(poll_interval,
+>> @@ -207,25 +421,14 @@ MODULE_PARM_DESC(poll_interval,
+>>    * Common code for BQ27xxx devices
+>>    */
+>>
+>> -static inline int bq27xxx_read(struct bq27xxx_device_info *di, u8 r=
+eg,
+>> +static inline int bq27xxx_read(struct bq27xxx_device_info *di, int =
+reg_index,
+>>   			       bool single)
+>>   {
+>> -	if (di->chip =3D=3D BQ27425)
+>> -		return di->bus.read(di, reg - BQ27425_REG_OFFSET, single);
+>> -	return di->bus.read(di, reg, single);
+>> -}
+>> +	/* Reports EINVAL for invalid/missing registers */
+>> +	if (!di || di->regs[reg_index] =3D=3D INVALID_REG_ADDR)
+>> +		return -EINVAL;
+>>
+>> -/*
+>> - * Higher versions of the chip like BQ27425 and BQ27500
+>> - * differ from BQ27000 and BQ27200 in calculation of certain
+>> - * parameters. Hence we need to check for the chip type.
+>> - */
+>> -static bool bq27xxx_is_chip_version_higher(struct bq27xxx_device_in=
+fo *di)
+>> -{
+>> -	if (di->chip =3D=3D BQ27425 || di->chip =3D=3D BQ27500 || di->chip=
+ =3D=3D BQ27742
+>> -	    || di->chip =3D=3D BQ27510)
+>> -		return true;
+>> -	return false;
+>> +	return di->bus.read(di, di->regs[reg_index], single);
+>>   }
+>>
+>>   /*
+>> @@ -236,14 +439,7 @@ static int bq27xxx_battery_read_soc(struct bq27=
+xxx_device_info *di)
+>>   {
+>>   	int soc;
+>>
+>> -	if (di->chip =3D=3D BQ27500 || di->chip =3D=3D BQ27742)
+>> -		soc =3D bq27xxx_read(di, BQ27500_REG_SOC, false);
+>> -	else if (di->chip =3D=3D BQ27510)
+>> -		soc =3D bq27xxx_read(di, BQ27510_REG_SOC, false);
+>> -	else if (di->chip =3D=3D BQ27425)
+>> -		soc =3D bq27xxx_read(di, BQ27425_REG_SOC, false);
+>> -	else /* for the bq27000 we read the "relative" SoC register */
+>> -		soc =3D bq27xxx_read(di, BQ27000_REG_RSOC, true);
+>> +	soc =3D bq27xxx_read(di, BQ27XXX_REG_SOC, false);
+>>
+>>   	if (soc < 0)
+>>   		dev_dbg(di->dev, "error reading State-of-Charge\n");
+>> @@ -266,10 +462,10 @@ static int bq27xxx_battery_read_charge(struct =
+bq27xxx_device_info *di, u8 reg)
+>>   		return charge;
+>>   	}
+>>
+>> -	if (bq27xxx_is_chip_version_higher(di))
+>> -		charge *=3D 1000;
+>> +	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
+>> +		charge *=3D BQ27XXX_CURRENT_CONSTANT / BQ27XXX_RS;
+>>   	else
+>> -		charge =3D charge * 3570 / BQ27XXX_RS;
+>> +		charge *=3D 1000;
+>>
+>>   	return charge;
+>>   }
+>> @@ -281,57 +477,46 @@ static int bq27xxx_battery_read_charge(struct =
+bq27xxx_device_info *di, u8 reg)
+>>   static inline int bq27xxx_battery_read_nac(struct bq27xxx_device_i=
+nfo *di)
+>>   {
+>>   	int flags;
+>> -	bool is_bq27500 =3D di->chip =3D=3D BQ27500;
+>> -	bool is_bq27742 =3D di->chip =3D=3D BQ27742;
+>> -	bool is_higher =3D bq27xxx_is_chip_version_higher(di);
+>> -	bool flags_1b =3D !(is_bq27500 || is_bq27742);
+>>
+>> -	flags =3D bq27xxx_read(di, BQ27x00_REG_FLAGS, flags_1b);
+>> -	if (flags >=3D 0 && !is_higher && (flags & BQ27000_FLAG_CI))
+>> -		return -ENODATA;
+>> +	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010) {
+>> +		flags =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, true);
+>> +		if (flags >=3D 0 && (flags & BQ27000_FLAG_CI))
+>> +			return -ENODATA;
+>> +	}
+>>
+>> -	return bq27xxx_battery_read_charge(di, BQ27x00_REG_NAC);
+>> +	return bq27xxx_battery_read_charge(di, BQ27XXX_REG_NAC);
+>>   }
+>>
+>>   /*
+>> - * Return the battery Last measured discharge in =C2=B5Ah
+>> + * Return the battery Full Charge Capacity in =C2=B5Ah
+>>    * Or < 0 if something fails.
+>>    */
+>> -static inline int bq27xxx_battery_read_lmd(struct bq27xxx_device_in=
+fo *di)
+>> +static inline int bq27xxx_battery_read_fcc(struct bq27xxx_device_in=
+fo *di)
+>>   {
+>> -	return bq27xxx_battery_read_charge(di, BQ27x00_REG_LMD);
+>> +	return bq27xxx_battery_read_charge(di, BQ27XXX_REG_FCC);
+>>   }
+>>
+>>   /*
+>> - * Return the battery Initial last measured discharge in =C2=B5Ah
+>> + * Return the Design Capacity in =C2=B5Ah
+>>    * Or < 0 if something fails.
+>>    */
+>> -static int bq27xxx_battery_read_ilmd(struct bq27xxx_device_info *di=
+)
+>> +static int bq27xxx_battery_read_dcap(struct bq27xxx_device_info *di=
+)
+>>   {
+>> -	int ilmd;
+>> +	int dcap;
+>>
+>> -	if (bq27xxx_is_chip_version_higher(di)) {
+>> -		if (di->chip =3D=3D BQ27425)
+>> -			ilmd =3D bq27xxx_read(di, BQ27425_REG_DCAP, false);
+>> -		else if (di->chip =3D=3D BQ27510)
+>> -			ilmd =3D bq27xxx_read(di, BQ27510_REG_DCAP, false);
+>> -		else
+>> -			ilmd =3D bq27xxx_read(di, BQ27500_REG_DCAP, false);
+>> -	} else {
+>> -		ilmd =3D bq27xxx_read(di, BQ27000_REG_ILMD, true);
+>> -	}
+>> +	dcap =3D bq27xxx_read(di, BQ27XXX_REG_DCAP, false);
+>>
+>> -	if (ilmd < 0) {
+>> +	if (dcap < 0) {
+>>   		dev_dbg(di->dev, "error reading initial last measured discharge\=
+n");
+>> -		return ilmd;
+>> +		return dcap;
+>>   	}
+>>
+>> -	if (bq27xxx_is_chip_version_higher(di))
+>> -		ilmd *=3D 1000;
+>> +	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
+>> +		dcap *=3D BQ27XXX_CURRENT_CONSTANT / BQ27XXX_RS;
+>>   	else
+>> -		ilmd =3D ilmd * 256 * 3570 / BQ27XXX_RS;
+>> +		dcap *=3D 1000;
+>>
+>> -	return ilmd;
+>> +	return dcap;
+>>   }
+>>
+>>   /*
+>> @@ -342,16 +527,16 @@ static int bq27xxx_battery_read_energy(struct =
+bq27xxx_device_info *di)
+>>   {
+>>   	int ae;
+>>
+>> -	ae =3D bq27xxx_read(di, BQ27x00_REG_AE, false);
+>> +	ae =3D bq27xxx_read(di, BQ27XXX_REG_AE, false);
+>>   	if (ae < 0) {
+>>   		dev_dbg(di->dev, "error reading available energy\n");
+>>   		return ae;
+>>   	}
+>>
+>> -	if (di->chip =3D=3D BQ27500)
+>> -		ae *=3D 1000;
+>> +	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
+>> +		ae *=3D BQ27XXX_POWER_CONSTANT / BQ27XXX_RS;
+>>   	else
+>> -		ae =3D ae * 29200 / BQ27XXX_RS;
+>> +		ae *=3D 1000;
+>>
+>>   	return ae;
+>>   }
+>> @@ -364,13 +549,13 @@ static int bq27xxx_battery_read_temperature(st=
+ruct bq27xxx_device_info *di)
+>>   {
+>>   	int temp;
+>>
+>> -	temp =3D bq27xxx_read(di, BQ27x00_REG_TEMP, false);
+>> +	temp =3D bq27xxx_read(di, BQ27XXX_REG_TEMP, false);
+>>   	if (temp < 0) {
+>>   		dev_err(di->dev, "error reading temperature\n");
+>>   		return temp;
+>>   	}
+>>
+>> -	if (!bq27xxx_is_chip_version_higher(di))
+>> +	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
+>>   		temp =3D 5 * temp / 2;
+>>
+>>   	return temp;
+>> @@ -384,10 +569,7 @@ static int bq27xxx_battery_read_cyct(struct bq2=
+7xxx_device_info *di)
+>>   {
+>>   	int cyct;
+>>
+>> -	if (di->chip =3D=3D BQ27510)
+>> -		cyct =3D bq27xxx_read(di, BQ27510_REG_CYCT, false);
+>> -	else
+>> -		cyct =3D bq27xxx_read(di, BQ27x00_REG_CYCT, false);
+>> +	cyct =3D bq27xxx_read(di, BQ27XXX_REG_CYCT, false);
+>>   	if (cyct < 0)
+>>   		dev_err(di->dev, "error reading cycle count total\n");
+>>
+>> @@ -419,21 +601,32 @@ static int bq27xxx_battery_read_time(struct bq=
+27xxx_device_info *di, u8 reg)
+>>    * Read an average power register.
+>>    * Return < 0 if something fails.
+>>    */
+>> -static int bq27xxx_battery_read_pwr_avg(struct bq27xxx_device_info =
+*di, u8 reg)
+>> +static int bq27xxx_battery_read_pwr_avg(struct bq27xxx_device_info =
+*di)
+>>   {
+>>   	int tval;
+>>
+>> -	tval =3D bq27xxx_read(di, reg, false);
+>> +	tval =3D bq27xxx_read(di, BQ27XXX_REG_AP, false);
+>>   	if (tval < 0) {
+>> -		dev_err(di->dev, "error reading power avg rgister  %02x: %d\n",
+>> -			reg, tval);
+>> +		dev_err(di->dev, "error reading average power register  %02x: %d\=
+n",
+>> +			BQ27XXX_REG_AP, tval);
+>>   		return tval;
+>>   	}
+>>
+>> -	if (di->chip =3D=3D BQ27500)
+>> +	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
+>> +		return (tval * BQ27XXX_POWER_CONSTANT) / BQ27XXX_RS;
+>> +	else
+>>   		return tval;
+>> +}
+>> +
+>> +/*
+>> + * Returns true if a battery over temperature condition is detected
+>> + */
+>> +static int bq27xxx_battery_overtemp(struct bq27xxx_device_info *di,=
+ u16 flags)
+>> +{
+>> +	if (di->chip =3D=3D BQ27500 || di->chip =3D=3D BQ27541)
+>> +		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
+>>   	else
+>> -		return (tval * BQ27XXX_POWER_CONSTANT) / BQ27XXX_RS;
+>> +		return flags & BQ27XXX_FLAG_OTC;
+>>   }
+>>
+>>   /*
+>> @@ -442,53 +635,43 @@ static int bq27xxx_battery_read_pwr_avg(struct=
+ bq27xxx_device_info *di, u8 reg)
+>>    */
+>>   static int bq27xxx_battery_read_health(struct bq27xxx_device_info =
+*di)
+>>   {
+>> -	int tval;
+>> +	u16 tval;
+>>
+>> -	tval =3D bq27xxx_read(di, BQ27x00_REG_FLAGS, false);
+>> +	tval =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
+>>   	if (tval < 0) {
+>>   		dev_err(di->dev, "error reading flag register:%d\n", tval);
+>>   		return tval;
+>>   	}
+>>
+>> -	if (di->chip =3D=3D BQ27500) {
+>> -		if (tval & BQ27500_FLAG_SOCF)
+>> +	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010) {
+>> +		if (tval & BQ27000_FLAG_EDV1)
+>>   			tval =3D POWER_SUPPLY_HEALTH_DEAD;
+>> -		else if (tval & BQ27500_FLAG_OTC)
+>> -			tval =3D POWER_SUPPLY_HEALTH_OVERHEAT;
+>>   		else
+>>   			tval =3D POWER_SUPPLY_HEALTH_GOOD;
+>> -		return tval;
+>> -	} else if (di->chip =3D=3D BQ27510) {
+>> -		if (tval & BQ27500_FLAG_OTC)
+>> -			return POWER_SUPPLY_HEALTH_OVERHEAT;
+>> -		return POWER_SUPPLY_HEALTH_GOOD;
+>>   	} else {
+>> -		if (tval & BQ27000_FLAG_EDV1)
+>> +		if (tval & BQ27XXX_FLAG_SOCF)
+>>   			tval =3D POWER_SUPPLY_HEALTH_DEAD;
+>> +		else if (bq27xxx_battery_overtemp(di, tval))
+>> +			tval =3D POWER_SUPPLY_HEALTH_OVERHEAT;
+>>   		else
+>>   			tval =3D POWER_SUPPLY_HEALTH_GOOD;
+>> -		return tval;
+>>   	}
+>>
+>> -	return -1;
+>> +	return tval;
+>>   }
+>>
+>>   static void bq27xxx_battery_update(struct bq27xxx_device_info *di)
+>>   {
+>>   	struct bq27xxx_reg_cache cache =3D {0, };
+>> -	bool is_bq27500 =3D di->chip =3D=3D BQ27500;
+>> -	bool is_bq27510 =3D di->chip =3D=3D BQ27510;
+>> -	bool is_bq27425 =3D di->chip =3D=3D BQ27425;
+>> -	bool is_bq27742 =3D di->chip =3D=3D BQ27742;
+>> -	bool flags_1b =3D !(is_bq27500 || is_bq27742);
+>> +	bool has_ci_flag =3D di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ=
+27010;
+>> +	bool has_singe_flag =3D di->chip =3D=3D BQ27000 || di->chip =3D=3D=
+ BQ27010;
+>>
+>> -	cache.flags =3D bq27xxx_read(di, BQ27x00_REG_FLAGS, flags_1b);
+>> +	cache.flags =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, has_singe_flag=
+);
+>>   	if ((cache.flags & 0xff) =3D=3D 0xff)
+>> -		/* read error */
+>> -		cache.flags =3D -1;
+>> +		cache.flags =3D -1; /* read error */
+>>   	if (cache.flags >=3D 0) {
+>> -		if (!is_bq27500 && !is_bq27425 && !is_bq27742 && !is_bq27510
+>> -				&& (cache.flags & BQ27000_FLAG_CI)) {
+>> +		cache.temperature =3D bq27xxx_battery_read_temperature(di);
+>> +		if (has_ci_flag && (cache.flags & BQ27000_FLAG_CI)) {
+>>   			dev_info(di->dev, "battery is not calibrated! ignoring capacity=
+ values\n");
+>>   			cache.capacity =3D -ENODATA;
+>>   			cache.energy =3D -ENODATA;
+>> @@ -498,41 +681,26 @@ static void bq27xxx_battery_update(struct bq27=
+xxx_device_info *di)
+>>   			cache.charge_full =3D -ENODATA;
+>>   			cache.health =3D -ENODATA;
+>>   		} else {
+>> +			if (di->regs[BQ27XXX_REG_TTE] !=3D INVALID_REG_ADDR)
+>> +				cache.time_to_empty =3D bq27xxx_battery_read_time(di, BQ27XXX_R=
+EG_TTE);
+>> +			if (di->regs[BQ27XXX_REG_TTECP] !=3D INVALID_REG_ADDR)
+>> +				cache.time_to_empty_avg =3D bq27xxx_battery_read_time(di, BQ27X=
+XX_REG_TTECP);
+>> +			if (di->regs[BQ27XXX_REG_TTF] !=3D INVALID_REG_ADDR)
+>> +				cache.time_to_full =3D bq27xxx_battery_read_time(di, BQ27XXX_RE=
+G_TTF);
+>> +			cache.charge_full =3D bq27xxx_battery_read_fcc(di);
+>>   			cache.capacity =3D bq27xxx_battery_read_soc(di);
+>> -			if (is_bq27742 || is_bq27510)
+>> -				cache.time_to_empty =3D
+>> -					bq27xxx_battery_read_time(di,
+>> -							BQ27x00_REG_TTE);
+>> -			else if (!is_bq27425) {
+>> +			if (di->regs[BQ27XXX_REG_AE] !=3D INVALID_REG_ADDR)
+>>   				cache.energy =3D bq27xxx_battery_read_energy(di);
+>> -				cache.time_to_empty =3D
+>> -					bq27xxx_battery_read_time(di,
+>> -							BQ27x00_REG_TTE);
+>> -				cache.time_to_empty_avg =3D
+>> -					bq27xxx_battery_read_time(di,
+>> -							BQ27x00_REG_TTECP);
+>> -				cache.time_to_full =3D
+>> -					bq27xxx_battery_read_time(di,
+>> -							BQ27x00_REG_TTF);
+>> -			}
+>> -			cache.charge_full =3D bq27xxx_battery_read_lmd(di);
+>>   			cache.health =3D bq27xxx_battery_read_health(di);
+>>   		}
+>> -		cache.temperature =3D bq27xxx_battery_read_temperature(di);
+>> -		if (!is_bq27425)
+>> +		if (di->regs[BQ27XXX_REG_CYCT] !=3D INVALID_REG_ADDR)
+>>   			cache.cycle_count =3D bq27xxx_battery_read_cyct(di);
+>> -		if (is_bq27742)
+>> -			cache.power_avg =3D
+>> -				bq27xxx_battery_read_pwr_avg(di,
+>> -						BQ27742_POWER_AVG);
+>> -		else
+>> -			cache.power_avg =3D
+>> -				bq27xxx_battery_read_pwr_avg(di,
+>> -						BQ27x00_POWER_AVG);
+>> +		if (di->regs[BQ27XXX_REG_AP] !=3D INVALID_REG_ADDR)
+>> +			cache.power_avg =3D bq27xxx_battery_read_pwr_avg(di);
+>>
+>>   		/* We only have to read charge design full once */
+>>   		if (di->charge_design_full <=3D 0)
+>> -			di->charge_design_full =3D bq27xxx_battery_read_ilmd(di);
+>> +			di->charge_design_full =3D bq27xxx_battery_read_dcap(di);
+>>   	}
+>>
+>>   	if (di->cache.capacity !=3D cache.capacity)
+>> @@ -547,7 +715,8 @@ static void bq27xxx_battery_update(struct bq27xx=
+x_device_info *di)
+>>   static void bq27xxx_battery_poll(struct work_struct *work)
+>>   {
+>>   	struct bq27xxx_device_info *di =3D
+>> -		container_of(work, struct bq27xxx_device_info, work.work);
+>> +			container_of(work, struct bq27xxx_device_info,
+>> +				     work.work);
+>>
+>>   	bq27xxx_battery_update(di);
+>>
+>> @@ -569,23 +738,23 @@ static int bq27xxx_battery_current(struct bq27=
+xxx_device_info *di,
+>>   	int curr;
+>>   	int flags;
+>>
+>> -	curr =3D bq27xxx_read(di, BQ27x00_REG_AI, false);
+>> +	curr =3D bq27xxx_read(di, BQ27XXX_REG_AI, false);
+>>   	if (curr < 0) {
+>>   		dev_err(di->dev, "error reading current\n");
+>>   		return curr;
+>>   	}
+>>
+>> -	if (bq27xxx_is_chip_version_higher(di)) {
+>> -		/* bq27500 returns signed value */
+>> -		val->intval =3D (int)((s16)curr) * 1000;
+>> -	} else {
+>> -		flags =3D bq27xxx_read(di, BQ27x00_REG_FLAGS, false);
+>> +	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010) {
+>> +		flags =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
+>>   		if (flags & BQ27000_FLAG_CHGS) {
+>>   			dev_dbg(di->dev, "negative current!\n");
+>>   			curr =3D -curr;
+>>   		}
+>>
+>> -		val->intval =3D curr * 3570 / BQ27XXX_RS;
+>> +		val->intval =3D curr * BQ27XXX_CURRENT_CONSTANT / BQ27XXX_RS;
+>> +	} else {
+>> +		/* Other gauges return signed value */
+>> +		val->intval =3D (int)((s16)curr) * 1000;
+>>   	}
+>>
+>>   	return 0;
+>> @@ -596,14 +765,7 @@ static int bq27xxx_battery_status(struct bq27xx=
+x_device_info *di,
+>>   {
+>>   	int status;
+>>
+>> -	if (bq27xxx_is_chip_version_higher(di)) {
+>> -		if (di->cache.flags & BQ27500_FLAG_FC)
+>> -			status =3D POWER_SUPPLY_STATUS_FULL;
+>> -		else if (di->cache.flags & BQ27500_FLAG_DSC)
+>> -			status =3D POWER_SUPPLY_STATUS_DISCHARGING;
+>> -		else
+>> -			status =3D POWER_SUPPLY_STATUS_CHARGING;
+>> -	} else {
+>> +	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010) {
+>>   		if (di->cache.flags & BQ27000_FLAG_FC)
+>>   			status =3D POWER_SUPPLY_STATUS_FULL;
+>>   		else if (di->cache.flags & BQ27000_FLAG_CHGS)
+>> @@ -612,6 +774,13 @@ static int bq27xxx_battery_status(struct bq27xx=
+x_device_info *di,
+>>   			status =3D POWER_SUPPLY_STATUS_NOT_CHARGING;
+>>   		else
+>>   			status =3D POWER_SUPPLY_STATUS_DISCHARGING;
+>> +	} else {
+>> +		if (di->cache.flags & BQ27XXX_FLAG_FC)
+>> +			status =3D POWER_SUPPLY_STATUS_FULL;
+>> +		else if (di->cache.flags & BQ27XXX_FLAG_DSC)
+>> +			status =3D POWER_SUPPLY_STATUS_DISCHARGING;
+>> +		else
+>> +			status =3D POWER_SUPPLY_STATUS_CHARGING;
+>>   	}
+>>
+>>   	val->intval =3D status;
+>> @@ -624,21 +793,21 @@ static int bq27xxx_battery_capacity_level(stru=
+ct bq27xxx_device_info *di,
+>>   {
+>>   	int level;
+>>
+>> -	if (bq27xxx_is_chip_version_higher(di)) {
+>> -		if (di->cache.flags & BQ27500_FLAG_FC)
+>> +	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010) {
+>> +		if (di->cache.flags & BQ27000_FLAG_FC)
+>>   			level =3D POWER_SUPPLY_CAPACITY_LEVEL_FULL;
+>> -		else if (di->cache.flags & BQ27500_FLAG_SOC1)
+>> +		else if (di->cache.flags & BQ27000_FLAG_EDV1)
+>>   			level =3D POWER_SUPPLY_CAPACITY_LEVEL_LOW;
+>> -		else if (di->cache.flags & BQ27500_FLAG_SOCF)
+>> +		else if (di->cache.flags & BQ27000_FLAG_EDVF)
+>>   			level =3D POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
+>>   		else
+>>   			level =3D POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
+>>   	} else {
+>> -		if (di->cache.flags & BQ27000_FLAG_FC)
+>> +		if (di->cache.flags & BQ27XXX_FLAG_FC)
+>>   			level =3D POWER_SUPPLY_CAPACITY_LEVEL_FULL;
+>> -		else if (di->cache.flags & BQ27000_FLAG_EDV1)
+>> +		else if (di->cache.flags & BQ27XXX_FLAG_SOC1)
+>>   			level =3D POWER_SUPPLY_CAPACITY_LEVEL_LOW;
+>> -		else if (di->cache.flags & BQ27000_FLAG_EDVF)
+>> +		else if (di->cache.flags & BQ27XXX_FLAG_SOCF)
+>>   			level =3D POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
+>>   		else
+>>   			level =3D POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
+>> @@ -658,7 +827,7 @@ static int bq27xxx_battery_voltage(struct bq27xx=
+x_device_info *di,
+>>   {
+>>   	int volt;
+>>
+>> -	volt =3D bq27xxx_read(di, BQ27x00_REG_VOLT, false);
+>> +	volt =3D bq27xxx_read(di, BQ27XXX_REG_VOLT, false);
+>>   	if (volt < 0) {
+>>   		dev_err(di->dev, "error reading voltage\n");
+>>   		return volt;
+>> @@ -719,7 +888,7 @@ static int bq27xxx_battery_get_property(struct p=
+ower_supply *psy,
+>>   	case POWER_SUPPLY_PROP_TEMP:
+>>   		ret =3D bq27xxx_simple_value(di->cache.temperature, val);
+>>   		if (ret =3D=3D 0)
+>> -			val->intval -=3D 2731;
+>> +			val->intval -=3D 2731; /* convert decidegree k to c */
+>>   		break;
+>>   	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW:
+>>   		ret =3D bq27xxx_simple_value(di->cache.time_to_empty, val);
+>> @@ -785,18 +954,27 @@ static int bq27xxx_powersupply_init(struct bq2=
+7xxx_device_info *di,
+>>
+>>   	psy_desc->name =3D name;
+>>   	psy_desc->type =3D POWER_SUPPLY_TYPE_BATTERY;
+>> -	if (di->chip =3D=3D BQ27425) {
+>> -		psy_desc->properties =3D bq27425_battery_props;
+>> -		psy_desc->num_properties =3D ARRAY_SIZE(bq27425_battery_props);
+>> -	} else if (di->chip =3D=3D BQ27742) {
+>> -		psy_desc->properties =3D bq27742_battery_props;
+>> -		psy_desc->num_properties =3D ARRAY_SIZE(bq27742_battery_props);
+>> -	} else if (di->chip =3D=3D BQ27510) {
+>> -		psy_desc->properties =3D bq27510_battery_props;
+>> -		psy_desc->num_properties =3D ARRAY_SIZE(bq27510_battery_props);
+>> +	if (di->chip =3D=3D BQ27000) {
+>> +		psy_desc->properties =3D bq27000_battery_props;
+>> +		psy_desc->num_properties =3D ARRAY_SIZE(bq27000_battery_props);
+>> +	} else if (di->chip =3D=3D BQ27010) {
+>> +		psy_desc->properties =3D bq27010_battery_props;
+>> +		psy_desc->num_properties =3D ARRAY_SIZE(bq27010_battery_props);
+>> +	} else if (di->chip =3D=3D BQ27500) {
+>> +		psy_desc->properties =3D bq27500_battery_props;
+>> +		psy_desc->num_properties =3D ARRAY_SIZE(bq27500_battery_props);
+>> +	} else if (di->chip =3D=3D BQ27530) {
+>> +		psy_desc->properties =3D bq27530_battery_props;
+>> +		psy_desc->num_properties =3D ARRAY_SIZE(bq27530_battery_props);
+>> +	} else if (di->chip =3D=3D BQ27541) {
+>> +		psy_desc->properties =3D bq27541_battery_props;
+>> +		psy_desc->num_properties =3D ARRAY_SIZE(bq27541_battery_props);
+>> +	} else if (di->chip =3D=3D BQ27545) {
+>> +		psy_desc->properties =3D bq27545_battery_props;
+>> +		psy_desc->num_properties =3D ARRAY_SIZE(bq27545_battery_props);
+>>   	} else {
+>> -		psy_desc->properties =3D bq27x00_battery_props;
+>> -		psy_desc->num_properties =3D ARRAY_SIZE(bq27x00_battery_props);
+>> +		psy_desc->properties =3D bq27421_battery_props;
+>> +		psy_desc->num_properties =3D ARRAY_SIZE(bq27421_battery_props);
+>>   	}
+>>   	psy_desc->get_property =3D bq27xxx_battery_get_property;
+>>   	psy_desc->external_power_changed =3D bq27xxx_external_power_chang=
+ed;
+>> @@ -911,10 +1089,32 @@ static int bq27xxx_battery_i2c_probe(struct i=
+2c_client *client,
+>>   	di->chip =3D id->driver_data;
+>>   	di->bus.read =3D &bq27xxx_battery_i2c_read;
+>>
+>> +	if (di->chip =3D=3D BQ27000) {
+>> +		di->regs =3D bq27000_regs;
+>> +	} else if (di->chip =3D=3D BQ27010) {
+>> +		di->regs =3D bq27010_regs;
+>> +	} else if (di->chip =3D=3D BQ27500) {
+>> +		di->regs =3D bq27500_regs;
+>> +	} else if (di->chip =3D=3D BQ27530) {
+>> +		di->regs =3D bq27530_regs;
+>> +	} else if (di->chip =3D=3D BQ27541) {
+>> +		di->regs =3D bq27541_regs;
+>> +	} else if (di->chip =3D=3D BQ27545) {
+>> +		di->regs =3D bq27545_regs;
+>> +	} else if (di->chip =3D=3D BQ27421) {
+>> +		di->regs =3D bq27421_regs;
+>> +	} else {
+>> +		dev_err(&client->dev, "Unexpected gas gauge: %d\n", di->chip);
+>> +		di->regs =3D bq27000_regs;
+>> +	}
+>> +
+>>   	retval =3D bq27xxx_powersupply_init(di, name);
+>>   	if (retval)
+>>   		goto batt_failed;
+>>
+>> +	/* Schedule a polling after about 1 min */
+>> +	schedule_delayed_work(&di->work, 60 * HZ);
+>> +
+>>   	i2c_set_clientdata(client, di);
+>>
+>>   	return 0;
+>> @@ -941,11 +1141,22 @@ static int bq27xxx_battery_i2c_remove(struct =
+i2c_client *client)
+>>   }
+>>
+>>   static const struct i2c_device_id bq27xxx_id[] =3D {
+>> -	{ "bq27200", BQ27000 },	/* bq27200 is same as bq27000, but with i2=
+c */
+>> +	{ "bq27200", BQ27000 },
+>> +	{ "bq27210", BQ27010 },
+>>   	{ "bq27500", BQ27500 },
+>> -	{ "bq27425", BQ27425 },
+>> -	{ "bq27742", BQ27742 },
+>> -	{ "bq27510", BQ27510 },
+>> +	{ "bq27510", BQ27500 },
+>> +	{ "bq27520", BQ27500 },
+>> +	{ "bq27530", BQ27530 },
+>> +	{ "bq27531", BQ27530 },
+>> +	{ "bq27541", BQ27541 },
+>> +	{ "bq27542", BQ27541 },
+>> +	{ "bq27546", BQ27541 },
+>> +	{ "bq27742", BQ27541 },
+>> +	{ "bq27545", BQ27545 },
+>> +	{ "bq27421", BQ27421 },
+>> +	{ "bq27425", BQ27421 },
+>> +	{ "bq27441", BQ27421 },
+>> +	{ "bq27621", BQ27421 },
+>>   	{},
+>>   };
+>>   MODULE_DEVICE_TABLE(i2c, bq27xxx_id);
+>> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/p=
+ower/bq27xxx_battery.h
+>> index a4efb10..45f6a7b 100644
+>> --- a/include/linux/power/bq27xxx_battery.h
+>> +++ b/include/linux/power/bq27xxx_battery.h
+>> @@ -12,7 +12,15 @@
+>>    *	register to be read. The return value should either be the cont=
+ent of
+>>    *	the passed register or an error value.
+>>    */
+>> -enum bq27xxx_chip { BQ27000 =3D 1, BQ27500, BQ27425, BQ27742, BQ275=
+10 };
+>> +enum bq27xxx_chip {
+>> +	BQ27000 =3D 1, /* bq27000, bq27200 */
+>> +	BQ27010, /* bq27010, bq27210 */
+>> +	BQ27500, /* bq27500, bq27510, bq27520 */
+>> +	BQ27530, /* bq27530, bq27531 */
+>> +	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+>> +	BQ27545, /* bq27545 */
+>> +	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
+>> +};
+>>
+>>   struct bq27xxx_platform_data {
+>>   	const char *name;
+>
+> In whole patch I see this usage pattern:
+>
+>   if (chip =3D=3D 1)
+>     ...
+>   else if (chip =3D=3D 2)
+>     ...
+>   else if (chip =3D=3D 3)
+>     ...
+>
+> Maybe it is just syntax taste, but it is not better to use switch
+> instead lot of if-else construction? What other people prefer? I thou=
+ght
+> that in kernel we prefer switch-case instead big if-else. I would lik=
+e
+> to know what to use for *new* code/patches so we will same syntax sty=
+le.
+>
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
----
- drivers/thermal/Kconfig       |   8 +
- drivers/thermal/Makefile      |   1 +
- drivers/thermal/mtk_thermal.c | 581 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 590 insertions(+)
- create mode 100644 drivers/thermal/mtk_thermal.c
+I would prefer the switch-case myself, I chose the if-else to match the=
+=20
+existing style in this driver, I can change it if needed or I can do=20
+that in a later patch series.
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 118938e..07ad114 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -340,6 +340,14 @@ config ACPI_THERMAL_REL
- 	tristate
- 	depends on ACPI
- 
-+config MTK_THERMAL
-+	tristate "Temperature sensor driver for mediatek SoCs"
-+	depends on ARCH_MEDIATEK || COMPILE_TEST
-+	default y
-+	help
-+	  Enable this option if you want to have support for thermal management
-+	  controller present in Mediatek SoCs
-+
- menu "Texas Instruments thermal drivers"
- source "drivers/thermal/ti-soc-thermal/Kconfig"
- endmenu
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 535dfee..cc1cab3 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -44,3 +44,4 @@ obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
- obj-$(CONFIG_ST_THERMAL)	+= st/
- obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra_soctherm.o
- obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
-+obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
-diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-new file mode 100644
-index 0000000..1a3829a
---- /dev/null
-+++ b/drivers/thermal/mtk_thermal.c
-@@ -0,0 +1,581 @@
-+/*
-+ * Copyright (c) 2014 MediaTek Inc.
-+ * Author: Hanyi.Wu <hanyi.wu@mediatek.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/of_irq.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+#include <linux/thermal.h>
-+#include <linux/reset.h>
-+#include <linux/time.h>
-+#include <linux/types.h>
-+
-+/* AUXADC Registers */
-+#define AUXADC_CON0_V		0x000
-+#define AUXADC_CON1_V		0x004
-+#define AUXADC_CON1_SET_V	0x008
-+#define AUXADC_CON1_CLR_V	0x00c
-+#define AUXADC_CON2_V		0x010
-+#define AUXADC_DATA(channel)	(0x14 + (channel) * 4)
-+#define AUXADC_MISC_V		0x094
-+
-+#define AUXADC_CON1_CHANNEL(x)	BIT(x)
-+
-+#define APMIXED_SYS_TS_CON1	0x604
-+
-+/* Thermal Controller Registers */
-+#define TEMP_MONCTL0		0x000
-+#define TEMP_MONCTL1		0x004
-+#define TEMP_MONCTL2		0x008
-+#define TEMP_MONINT		0x00c
-+#define TEMP_MONINTSTS		0x010
-+#define TEMP_MONIDET0		0x014
-+#define TEMP_MONIDET1		0x018
-+#define TEMP_MONIDET2		0x01c
-+#define TEMP_H2NTHRE		0x024
-+#define TEMP_HTHRE		0x028
-+#define TEMP_CTHRE		0x02c
-+#define TEMP_OFFSETH		0x030
-+#define TEMP_OFFSETL		0x034
-+#define TEMP_MSRCTL0		0x038
-+#define TEMP_MSRCTL1		0x03c
-+#define TEMP_AHBPOLL		0x040
-+#define TEMP_AHBTO		0x044
-+#define TEMP_ADCPNP0		0x048
-+#define TEMP_ADCPNP1		0x04c
-+#define TEMP_ADCPNP2		0x050
-+#define TEMP_ADCPNP3		0x0b4
-+
-+#define TEMP_ADCMUX		0x054
-+#define TEMP_ADCEXT		0x058
-+#define TEMP_ADCEXT1		0x05c
-+#define TEMP_ADCEN		0x060
-+#define TEMP_PNPMUXADDR		0x064
-+#define TEMP_ADCMUXADDR		0x068
-+#define TEMP_ADCEXTADDR		0x06c
-+#define TEMP_ADCEXT1ADDR	0x070
-+#define TEMP_ADCENADDR		0x074
-+#define TEMP_ADCVALIDADDR	0x078
-+#define TEMP_ADCVOLTADDR	0x07c
-+#define TEMP_RDCTRL		0x080
-+#define TEMP_ADCVALIDMASK	0x084
-+#define TEMP_ADCVOLTAGESHIFT	0x088
-+#define TEMP_ADCWRITECTRL	0x08c
-+#define TEMP_MSR0		0x090
-+#define TEMP_MSR1		0x094
-+#define TEMP_MSR2		0x098
-+#define TEMP_MSR3		0x0B8
-+
-+#define TEMP_IMMD0		0x0a0
-+#define TEMP_IMMD1		0x0a4
-+#define TEMP_IMMD2		0x0a8
-+
-+#define TEMP_PROTCTL		0x0c0
-+#define TEMP_PROTTA		0x0c4
-+#define TEMP_PROTTB		0x0c8
-+#define TEMP_PROTTC		0x0cc
-+
-+#define TEMP_SPARE0		0x0f0
-+#define TEMP_SPARE1		0x0f4
-+#define TEMP_SPARE2		0x0f8
-+#define TEMP_SPARE3		0x0fc
-+
-+#define PTPCORESEL		0x400
-+#define THERMINTST		0x404
-+#define PTPODINTST		0x408
-+#define THSTAGE0ST		0x40c
-+#define THSTAGE1ST		0x410
-+#define THSTAGE2ST		0x414
-+#define THAHBST0		0x418
-+#define THAHBST1		0x41c	/* Only for DE debug */
-+#define PTPSPARE0		0x420
-+#define PTPSPARE1		0x424
-+#define PTPSPARE2		0x428
-+#define PTPSPARE3		0x42c
-+#define THSLPEVEB		0x430
-+
-+#define TEMP_MONCTL1_PERIOD_UNIT(x)	((x) & 0x3ff)
-+
-+#define TEMP_MONCTL2_FILTER_INTERVAL(x)	(((x) & 0x3ff)) << 16
-+#define TEMP_MONCTL2_SENSOR_INTERVAL(x)	((x) & 0x3ff)
-+
-+#define TEMP_AHBPOLL_ADC_POLL_INTERVAL(x)	(x)
-+
-+#define TEMP_MONINT_COLD(sp)			(BIT(0) << ((sp) * 5))
-+#define TEMP_MONINT_HOT(sp)			(BIT(1) << ((sp) * 5))
-+#define TEMP_MONINT_LOW_OFS(sp)			(BIT(2) << ((sp) * 5))
-+#define TEMP_MONINT_HIGH_OFS(sp)		(BIT(3) << ((sp) * 5))
-+#define TEMP_MONINT_HOT_TO_NORM(sp)		(BIT(4) << ((sp) * 5))
-+#define TEMP_MONINT_TIMEOUT			BIT(15)
-+#define TEMP_MONINT_IMMEDIATE_SENSE(sp)		BIT(16 + (sp))
-+#define TEMP_MONINT_FILTER_SENSE(sp)		BIT(19 + (sp))
-+
-+#define TEMP_ADCWRITECTRL_ADC_PNP_WRITE		BIT(0)
-+#define TEMP_ADCWRITECTRL_ADC_MUX_WRITE		BIT(1)
-+#define TEMP_ADCWRITECTRL_ADC_EXTRA_WRITE	BIT(2)
-+#define TEMP_ADCWRITECTRL_ADC_EXTRA1_WRITE	BIT(3)
-+
-+#define TEMP_ADCVALIDMASK_VALID_HIGH		BIT(5)
-+#define TEMP_ADCVALIDMASK_VALID_POS(bit)	(bit)
-+
-+#define TEMP_PROTCTL_AVERAGE			(0 << 16)
-+#define TEMP_PROTCTL_MAXIMUM			(1 << 16)
-+#define TEMP_PROTCTL_SELECTED			(2 << 16)
-+
-+#define MT8173_TS1	0
-+#define MT8173_TS2	1
-+#define MT8173_TS3	2
-+#define MT8173_TS4	3
-+#define MT8173_TSABB	4
-+
-+/* AUXADC channel 11 is used for the temperature sensors */
-+#define MT8173_TEMP_AUXADC_CHANNEL	11
-+
-+/* The total number of temperature sensors in the MT8173 */
-+#define MT8173_NUM_SENSORS		5
-+
-+/* The number of banks in the MT8173 */
-+#define MT8173_NUM_ZONES		4
-+
-+/* The number of sensing points per bank */
-+#define MT8173_NUM_SENSORS_PER_ZONE	4
-+
-+#define THERMAL_NAME    "mtk-thermal"
-+
-+struct mtk_thermal;
-+
-+struct mtk_thermal_bank {
-+	struct mtk_thermal *mt;
-+	struct thermal_zone_device *tzd;
-+	int id;
-+};
-+
-+struct mtk_thermal {
-+	struct device *dev;
-+	void __iomem *thermal_base;
-+
-+	struct clk *clk_peri_therm;
-+	struct clk *clk_auxadc;
-+
-+	struct mtk_thermal_bank banks[MT8173_NUM_ZONES];
-+
-+	struct mutex lock;
-+
-+	/* Calibration values */
-+	int calib_a;
-+	int calib_b;
-+};
-+
-+struct mtk_thermal_bank_cfg {
-+	unsigned int num_sensors;
-+	unsigned int sensors[MT8173_NUM_SENSORS_PER_ZONE];
-+};
-+
-+static const int sensor_mux_values[MT8173_NUM_SENSORS] = { 0, 1, 2, 3, 16 };
-+
-+/*
-+ * The MT8173 thermal controller has four banks. Each bank can read up to
-+ * four temperature sensors simultaneously. The MT8173 has a total of 5
-+ * temperature sensors. We use each bank to measure a certain area of the
-+ * SoC. Since TS2 is located centrally in the SoC it is influenced by multiple
-+ * areas, hence is used in different banks.
-+ */
-+static const struct mtk_thermal_bank_cfg bank_data[] = {
-+	{
-+		.num_sensors = 2,
-+		.sensors = { MT8173_TS2, MT8173_TS3 },
-+	}, {
-+		.num_sensors = 2,
-+		.sensors = { MT8173_TS2, MT8173_TS4 },
-+	}, {
-+		.num_sensors = 3,
-+		.sensors = { MT8173_TS1, MT8173_TS2, MT8173_TSABB },
-+	}, {
-+		.num_sensors = 1,
-+		.sensors = { MT8173_TS2 },
-+	},
-+};
-+
-+struct mtk_thermal_sense_point {
-+	int msr;
-+	int adcpnp;
-+};
-+
-+static const struct mtk_thermal_sense_point
-+		sensing_points[MT8173_NUM_SENSORS_PER_ZONE] = {
-+	{
-+		.msr = TEMP_MSR0,
-+		.adcpnp = TEMP_ADCPNP0,
-+	}, {
-+		.msr = TEMP_MSR1,
-+		.adcpnp = TEMP_ADCPNP1,
-+	}, {
-+		.msr = TEMP_MSR2,
-+		.adcpnp = TEMP_ADCPNP2,
-+	}, {
-+		.msr = TEMP_MSR3,
-+		.adcpnp = TEMP_ADCPNP3,
-+	},
-+};
-+
-+/**
-+ * raw_to_mcelsius - convert a raw ADC value to mcelsius
-+ * @mt:		The thermal controller
-+ * @raw:	raw ADC value
-+ *
-+ * This converts the raw ADC value to mcelsius using the SoC specific
-+ * calibration constants
-+ */
-+static int raw_to_mcelsius(struct mtk_thermal *mt, u32 raw)
-+{
-+	return mt->calib_b + mt->calib_a * (raw & 0xfff);
-+}
-+
-+/**
-+ * mtk_thermal_get_bank - get bank
-+ * @bank:	The bank
-+ *
-+ * The bank registers are banked, we have to select a bank in the
-+ * PTPCORESEL register to access it.
-+ */
-+static void mtk_thermal_get_bank(struct mtk_thermal_bank *bank)
-+{
-+	struct mtk_thermal *mt = bank->mt;
-+	u32 val;
-+
-+	mutex_lock(&mt->lock);
-+
-+	val = readl(mt->thermal_base + PTPCORESEL);
-+	val &= ~0xf;
-+	val |= bank->id;
-+	writel(val, mt->thermal_base + PTPCORESEL);
-+}
-+
-+/**
-+ * mtk_thermal_put_bank - release bank
-+ * @bank:	The bank
-+ *
-+ * release a bank previously taken with mtk_thermal_get_bank,
-+ */
-+static void mtk_thermal_put_bank(struct mtk_thermal_bank *bank)
-+{
-+	struct mtk_thermal *mt = bank->mt;
-+
-+	mutex_unlock(&mt->lock);
-+}
-+
-+/**
-+ * mtk_thermal_bank_temperature - get the temperature of a bank
-+ * @bank:	The bank
-+ *
-+ * The temperature of a bank is considered the maximum temperature of
-+ * the sensors associated to the bank.
-+ */
-+static int mtk_thermal_bank_temperature(struct mtk_thermal_bank *bank)
-+{
-+	struct mtk_thermal *mt = bank->mt;
-+	int temp, i, max;
-+	u32 raw;
-+
-+	temp = max = INT_MIN;
-+
-+	for (i = 0; i < bank_data[bank->id].num_sensors; i++) {
-+		raw = readl(mt->thermal_base + sensing_points[i].msr);
-+
-+		temp = raw_to_mcelsius(mt, raw);
-+
-+		/*
-+		 * The first read of a sensor often contains very high bogus
-+		 * temperature value. Filter these out so that the system does
-+		 * not immediately shut down.
-+		 */
-+		if (temp > 200000)
-+			temp = 0;
-+
-+		if (temp > max)
-+			max = temp;
-+	}
-+
-+	return max;
-+}
-+
-+static int mtk_read_temp(void *data, long *temp)
-+{
-+	struct mtk_thermal_bank *bank = data;
-+
-+	mtk_thermal_get_bank(bank);
-+
-+	*temp = mtk_thermal_bank_temperature(bank);
-+
-+	mtk_thermal_put_bank(bank);
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_of_device_ops mtk_thermal_ops = {
-+	.get_temp = mtk_read_temp,
-+};
-+
-+static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
-+		u32 apmixed_phys_base, u32 auxadc_phys_base)
-+{
-+	struct mtk_thermal_bank *bank = &mt->banks[num];
-+	const struct mtk_thermal_bank_cfg *cfg = &bank_data[num];
-+	int i;
-+
-+	bank->id = num;
-+	bank->mt = mt;
-+
-+	mtk_thermal_get_bank(bank);
-+
-+	/* bus clock 66M counting unit is 12 * 15.15ns * 256 = 46.540us */
-+	writel(TEMP_MONCTL1_PERIOD_UNIT(12), mt->thermal_base + TEMP_MONCTL1);
-+
-+	/*
-+	 * filt interval is 1 * 46.540us = 46.54us,
-+	 * sen interval is 429 * 46.540us = 19.96ms
-+	 */
-+	writel(TEMP_MONCTL2_FILTER_INTERVAL(1) |
-+			TEMP_MONCTL2_SENSOR_INTERVAL(429),
-+			mt->thermal_base + TEMP_MONCTL2);
-+
-+	/* poll is set to 10u */
-+	writel(TEMP_AHBPOLL_ADC_POLL_INTERVAL(768),
-+			mt->thermal_base + TEMP_AHBPOLL);
-+
-+	/* temperature sampling control, 1 sample */
-+	writel(0x00000000, mt->thermal_base + TEMP_MSRCTL0);
-+
-+	/* exceed this polling time, IRQ would be inserted */
-+	writel(0xffffffff, mt->thermal_base + TEMP_AHBTO);
-+
-+	/* number of interrupts per event, 1 is enough */
-+	writel(0x0, mt->thermal_base + TEMP_MONIDET0);
-+	writel(0x0, mt->thermal_base + TEMP_MONIDET1);
-+
-+	/*
-+	 * The MT8173 thermal controller does not have its own ADC. Instead it
-+	 * uses AHB bus accesses to control the AUXADC. To do this the thermal
-+	 * controller has to be programmed with the physical addresses of the
-+	 * AUXADC registers and with the various bit positions in the AUXADC.
-+	 * Also the thermal controller controls a mux in the APMIXEDSYS register
-+	 * space.
-+	 */
-+
-+	/*
-+	 * this value will be stored to TEMP_PNPMUXADDR (TEMP_SPARE0)
-+	 * automatically by hw
-+	 */
-+	writel(BIT(MT8173_TEMP_AUXADC_CHANNEL), mt->thermal_base + TEMP_ADCMUX);
-+
-+	/* AHB address for auxadc mux selection */
-+	writel(auxadc_phys_base + 0x00c, mt->thermal_base + TEMP_ADCMUXADDR);
-+
-+	/* AHB address for pnp sensor mux selection */
-+	writel(apmixed_phys_base + APMIXED_SYS_TS_CON1,
-+			mt->thermal_base + TEMP_PNPMUXADDR);
-+
-+	/* AHB value for auxadc enable */
-+	writel(BIT(MT8173_TEMP_AUXADC_CHANNEL), mt->thermal_base + TEMP_ADCEN);
-+
-+	/* AHB address for auxadc enable (channel 0 immediate mode selected) */
-+	writel(auxadc_phys_base + AUXADC_CON1_SET_V,
-+			mt->thermal_base + TEMP_ADCENADDR);
-+
-+	/* AHB address for auxadc valid bit */
-+	writel(auxadc_phys_base + AUXADC_DATA(MT8173_TEMP_AUXADC_CHANNEL),
-+			mt->thermal_base + TEMP_ADCVALIDADDR);
-+
-+	/* AHB address for auxadc voltage output */
-+	writel(auxadc_phys_base + AUXADC_DATA(MT8173_TEMP_AUXADC_CHANNEL),
-+			mt->thermal_base + TEMP_ADCVOLTADDR);
-+
-+	/* read valid & voltage are at the same register */
-+	writel(0x0, mt->thermal_base + TEMP_RDCTRL);
-+
-+	/* indicate where the valid bit is */
-+	writel(TEMP_ADCVALIDMASK_VALID_HIGH | TEMP_ADCVALIDMASK_VALID_POS(12),
-+			mt->thermal_base + TEMP_ADCVALIDMASK);
-+
-+	/* no shift */
-+	writel(0x0, mt->thermal_base + TEMP_ADCVOLTAGESHIFT);
-+
-+	/* enable auxadc mux write transaction */
-+	writel(TEMP_ADCWRITECTRL_ADC_MUX_WRITE,
-+			mt->thermal_base + TEMP_ADCWRITECTRL);
-+
-+	for (i = 0; i < cfg->num_sensors; i++)
-+		writel(sensor_mux_values[cfg->sensors[i]],
-+				mt->thermal_base + sensing_points[i].adcpnp);
-+
-+	writel((1 << cfg->num_sensors) - 1, mt->thermal_base + TEMP_MONCTL0);
-+
-+	writel(TEMP_ADCWRITECTRL_ADC_PNP_WRITE | TEMP_ADCWRITECTRL_ADC_MUX_WRITE,
-+			mt->thermal_base + TEMP_ADCWRITECTRL);
-+
-+	mtk_thermal_put_bank(bank);
-+}
-+
-+static u64 of_get_phys_base(struct device_node *np)
-+{
-+	u64 size64;
-+	const __be32 *regaddr_p;
-+
-+	regaddr_p = of_get_address(np, 0, &size64, NULL);
-+	if (!regaddr_p)
-+		return OF_BAD_ADDR;
-+
-+	return of_translate_address(np, regaddr_p);
-+}
-+
-+static int mtk_thermal_probe(struct platform_device *pdev)
-+{
-+	int ret, i;
-+	struct device_node *auxadc, *apmixedsys, *np = pdev->dev.of_node;
-+	struct mtk_thermal *mt;
-+	struct resource *res;
-+	u64 auxadc_phys_base, apmixed_phys_base;
-+
-+	mt = devm_kzalloc(&pdev->dev, sizeof(*mt), GFP_KERNEL);
-+	if (!mt)
-+		return -ENOMEM;
-+
-+	mt->clk_peri_therm = devm_clk_get(&pdev->dev, "therm");
-+	if (IS_ERR(mt->clk_peri_therm))
-+		return PTR_ERR(mt->clk_peri_therm);
-+
-+	mt->clk_auxadc = devm_clk_get(&pdev->dev, "auxadc");
-+	if (IS_ERR(mt->clk_auxadc))
-+		return PTR_ERR(mt->clk_auxadc);
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	mt->thermal_base = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(mt->thermal_base))
-+		return PTR_ERR(mt->thermal_base);
-+
-+	mutex_init(&mt->lock);
-+
-+	mt->dev = &pdev->dev;
-+
-+	auxadc = of_parse_phandle(np, "mediatek,auxadc", 0);
-+	if (!auxadc) {
-+		dev_err(&pdev->dev, "missing auxadc node\n");
-+		return -ENODEV;
-+	}
-+
-+	auxadc_phys_base = of_get_phys_base(auxadc);
-+	if (auxadc_phys_base == OF_BAD_ADDR) {
-+		dev_err(&pdev->dev, "Can't get auxadc phys address\n");
-+		return -EINVAL;
-+	}
-+
-+	apmixedsys = of_parse_phandle(np, "mediatek,apmixedsys", 0);
-+	if (!apmixedsys) {
-+		dev_err(&pdev->dev, "missing apmixedsys node\n");
-+		return -ENODEV;
-+	}
-+
-+	apmixed_phys_base = of_get_phys_base(apmixedsys);
-+	if (apmixed_phys_base == OF_BAD_ADDR) {
-+		dev_err(&pdev->dev, "Can't get auxadc phys address\n");
-+		return -EINVAL;
-+	}
-+
-+	ret = clk_prepare_enable(mt->clk_auxadc);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Can't enable auxadc clk: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = device_reset(&pdev->dev);
-+	if (ret)
-+		goto err_disable_clk_auxadc;
-+
-+	ret = clk_prepare_enable(mt->clk_peri_therm);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Can't enable peri clk: %d\n", ret);
-+		goto err_disable_clk_auxadc;
-+	}
-+
-+	/*
-+	 * These calibration values should finally be provided by the
-+	 * firmware or fuses. For now use default values.
-+	 */
-+	mt->calib_a = -123;
-+	mt->calib_b = 465124;
-+
-+	for (i = 0; i < MT8173_NUM_ZONES; i++)
-+		mtk_thermal_init_bank(mt, i, apmixed_phys_base, auxadc_phys_base);
-+
-+	platform_set_drvdata(pdev, mt);
-+
-+	for (i = 0; i < MT8173_NUM_ZONES; i++) {
-+		struct mtk_thermal_bank *bank = &mt->banks[i];
-+
-+		bank->tzd = thermal_zone_of_sensor_register(&pdev->dev, i, bank,
-+				&mtk_thermal_ops);
-+	}
-+
-+	return 0;
-+
-+err_disable_clk_auxadc:
-+	clk_disable_unprepare(mt->clk_auxadc);
-+
-+	return ret;
-+}
-+
-+static int mtk_thermal_remove(struct platform_device *pdev)
-+{
-+	struct mtk_thermal *mt = platform_get_drvdata(pdev);
-+	int i;
-+
-+	for (i = 0; i < MT8173_NUM_ZONES; i++) {
-+		struct mtk_thermal_bank *bank = &mt->banks[i];
-+
-+		thermal_zone_of_sensor_unregister(&pdev->dev, bank->tzd);
-+	}
-+
-+	clk_disable_unprepare(mt->clk_peri_therm);
-+	clk_disable_unprepare(mt->clk_auxadc);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id mtk_thermal_of_match[] = {
-+	{
-+		.compatible = "mediatek,mt8173-thermal",
-+	}, {
-+	},
-+};
-+
-+static struct platform_driver mtk_thermal_driver = {
-+	.probe = mtk_thermal_probe,
-+	.remove = mtk_thermal_remove,
-+	.driver = {
-+		.name = THERMAL_NAME,
-+		.of_match_table = mtk_thermal_of_match,
-+	},
-+};
-+
-+module_platform_driver(mtk_thermal_driver);
-+
-+MODULE_AUTHOR("Sascha Hauer <s.hauer@pengutronix.de");
-+MODULE_DESCRIPTION("Mediatek thermal driver");
-+MODULE_LICENSE("GPL v2");
--- 
-2.4.6
-
+--=20
+Andrew F. Davis
