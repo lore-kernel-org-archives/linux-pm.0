@@ -1,36 +1,33 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 07/13] twl4030_charger: distinguish between USB current
- and 'AC' current
-Date: Thu, 6 Aug 2015 21:21:19 -0700
-Message-ID: <20150807042118.GJ4215@atomide.com>
-References: <20150730001113.4012.18086.stgit@noble>
- <20150730001124.4012.48552.stgit@noble>
- <20150807031116.GH4215@atomide.com>
- <20150807134525.251528ab@home.neil.brown.name>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 0/6] cpufreq: use generic cpufreq drivers for
+ Exynos4x12 platform
+Date: Fri, 7 Aug 2015 10:00:37 +0530
+Message-ID: <20150807043037.GH6325@linux>
+References: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com>
+ <015301d0d0a3$1396c900$3ac45b00$@kernel.org>
+ <20150807035018.GF6325@linux>
+ <20150807035156.GG6325@linux>
+ <55C43085.8090506@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:42188 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750853AbbHGEVY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 7 Aug 2015 00:21:24 -0400
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20150807134525.251528ab@home.neil.brown.name>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <55C43085.8090506@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Michael Turquette' <mturquette@baylibre.com>, 'Tomasz Figa' <tomasz.figa@gmail.com>, 'Lukasz Majewski' <l.majewski@samsung.com>, 'Heiko Stuebner' <heiko@sntech.de>, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Kevin Hilman' <khilman@linaro.org>, 'Javier Martinez Canillas' <javier@dowhile0.org>, 'Tobias Jakobi' <tjakobi@math.uni-bielefeld.de>, 'Anand Moon' <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: NeilBrown <neil@brown.name>
-Cc: Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 
-* NeilBrown <neil@brown.name> [150806 20:48]:
-> 
-> Thanks, I did get notified about that by Fengguang's test robot, but
-> it's still on my list....
-> 
-> I guess making CHARGER_TWL4030 auto-select TWL4030_MADC would not be
-> acceptable?  That would pull in IIO (it didn't use to...).
-> 
-> If this OK?
+On 07-08-15, 13:13, Krzysztof Kozlowski wrote:
+> Still patches 1/6 and 6/6 need your acks. Is the patch 1/6 a
+> prerequisite for others? It does not look like a prerequisite... but it
+> was put at the beginning of the patchset.
 
-Looks OK to me thanks:
+Patch 1/6 is required to get boost working, that's all.. Not sure how
+important is that. Anyway, that will work without 1/6 as well, all you
+need to do is enable CONFIG_CPU_FREQ_BOOST_SW in you .config.
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+Anyway, it should go via pm tree and can be sent separately.
+
+-- 
+viresh
