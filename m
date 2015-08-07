@@ -1,112 +1,55 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 07/13] twl4030_charger: distinguish between USB current
- and 'AC' current
-Date: Fri, 7 Aug 2015 07:13:09 +0200
-Message-ID: <20150807051309.GA24702@earth>
-References: <20150730001113.4012.18086.stgit@noble>
- <20150730001124.4012.48552.stgit@noble>
- <20150807031116.GH4215@atomide.com>
- <20150807134525.251528ab@home.neil.brown.name>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 0/6] cpufreq: use generic cpufreq drivers for
+ Exynos4x12 platform
+Date: Fri, 7 Aug 2015 10:48:26 +0530
+Message-ID: <20150807051826.GJ6325@linux>
+References: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com>
+ <015301d0d0a3$1396c900$3ac45b00$@kernel.org>
+ <20150807035018.GF6325@linux>
+ <20150807035156.GG6325@linux>
+ <55C43085.8090506@samsung.com>
+ <20150807043037.GH6325@linux>
+ <55C43971.5010504@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="jI8keyz6grp/JLjh"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150807134525.251528ab@home.neil.brown.name>
-Sender: linux-kernel-owner@vger.kernel.org
-To: NeilBrown <neil@brown.name>
-Cc: Tony Lindgren <tony@atomide.com>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
-List-Id: linux-pm@vger.kernel.org
-
-
---jI8keyz6grp/JLjh
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:33879 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752883AbbHGFTD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Aug 2015 01:19:03 -0400
+Received: by pawu10 with SMTP id u10so79886703paw.1
+        for <linux-pm@vger.kernel.org>; Thu, 06 Aug 2015 22:19:02 -0700 (PDT)
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <55C43971.5010504@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Michael Turquette' <mturquette@baylibre.com>, 'Tomasz Figa' <tomasz.figa@gmail.com>, 'Lukasz Majewski' <l.majewski@samsung.com>, 'Heiko Stuebner' <heiko@sntech.de>, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Kevin Hilman' <khilman@linaro.org>, 'Javier Martinez Canillas' <javier@dowhile0.org>, 'Tobias Jakobi' <tjakobi@math.uni-bielefeld.de>, 'Anand Moon' <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-Hi,
+On 07-08-15, 13:52, Krzysztof Kozlowski wrote:
+> Thanks for explanation. As fair as I understand, Bartlomiej wanted to
+> merge this in a way which would avoid loosing the boost mode. Kukjin
+> prepared topic branches for previous cpu-freq/clk stuff so maybe
+> everything could go through PM?
 
-This actually slipped through my review. IMHO madc should be
-accessed through IIO, as already done for twl4030-madc-battery
-and rx51-battery. That way the custom API can be removed at
-some point.
+We aren't loosing anything at all. There can be two cases here:
 
-Anyway, I queued the below patch with Tony's ACK to fix the build
-issue in next.
+1. Patch 1/6 and 6/6 make it to 4.3 (with suggested changes) via PM tree:
+- All will work fine in this case, no issues at all..
 
-On Fri, Aug 07, 2015 at 01:45:25PM +1000, NeilBrown wrote:
-> From: NeilBrown <neil@brown.name>
-> Date: Fri, 7 Aug 2015 13:44:37 +1000
-> Subject: [PATCH] twl4030_charger: fix compile error when TWL4030_MADC not
->  available.
->=20
-> We can only use the madc to check for 'ac' availability
-> if the madc has been compiled in.
-> If not: assume always using USB.
->=20
-> Reported-by: Tony Lindgren <tony@atomide.com>
-> Signed-off-by: NeilBrown <neil@brown.name>
->=20
-> diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_char=
-ger.c
-> index c7432f532a83..265fd236f4c0 100644
-> --- a/drivers/power/twl4030_charger.c
-> +++ b/drivers/power/twl4030_charger.c
-> @@ -91,6 +91,21 @@
->  #define TWL4030_MSTATEC_COMPLETE1	0x0b
->  #define TWL4030_MSTATEC_COMPLETE4	0x0e
-> =20
-> +#if IS_ENABLED(CONFIG_TWL4030_MADC)
-> +/*
-> + * If AC (Accessory Charger) voltage exceeds 4.5V (MADC 11)
-> + * then AC is available.
-> + */
-> +static inline int ac_available(void)
-> +{
-> +	return twl4030_get_madc_conversion(11) > 4500;
-> +}
-> +#else
-> +static inline int ac_available(void)
-> +{
-> +	return 0;
-> +}
-> +#endif
->  static bool allow_usb;
->  module_param(allow_usb, bool, 0644);
->  MODULE_PARM_DESC(allow_usb, "Allow USB charge drawing default current");
-> @@ -263,7 +278,7 @@ static int twl4030_charger_update_current(struct twl4=
-030_bci *bci)
->  	 * If AC (Accessory Charger) voltage exceeds 4.5V (MADC 11)
->  	 * and AC is enabled, set current for 'ac'
->  	 */
-> -	if (twl4030_get_madc_conversion(11) > 4500) {
-> +	if (ac_available()) {
->  		cur =3D bci->ac_cur;
->  		bci->ac_is_active =3D true;
->  	} else {
+2. They don't make it:
+- Even in this case, nothing will break. Users can just enable a
+  config option and that's all..
 
--- Sebastian
+So, no need to divert things into another tree this late.
 
---jI8keyz6grp/JLjh
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Over that, Rafael will not be around for 2 weeks now (Plumbers and
+other stuff) ..
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+So, just target the cpufreq core changes via PM tree.. rest is just
+fine.
 
-iQIcBAEBCgAGBQJVxD5iAAoJENju1/PIO/qaRyQQAIlGrGohr1hZZwPeFiureWNY
-MRTT6ylhlnuPul1OAkMs/xq0FEvL+/y/vgbCCGwgF7V5K4T0dUvymBQm9jdmnENK
-mXhephHiNGOPYLQaFrL6iBAjl2+1o7rINfCW5xOh8QKcmOepEtXfALcu+Q54cUXb
-zyxUEwLb+TDBkdMHnTYO4zAJxGSqsFlVRxzzOKmBcQ31ydZBIXomjMuvEAnUW+Lu
-15h8Dm8uYGiNwjpU/e92zYX4j2Lwup6sB29XE038PG330UTMBUzfgA+GOGFabYwb
-LPssLUjbf+9EAUL2xywe2dLixTTLS+edvfXdpCTQXbCcCZuJNLR2tqs41lNJSAzN
-Cnb0y7PPXOYoFK77Ny+rD5G4GTsyYpydNyX3r9ry+Sf3r4WzGAPXTPSUa3+CVzt4
-7ZOZ4MZOkYm4IaZXogTXW37hV4tNZtGqmfMugr6XnyLdvZHTakB2nxEsrIJ36aIZ
-IamQMB3PUEWiIwuafAr/hLnK/ANEUo/T/2R3sAPFjOuXcWeolHeI0PtMkQd4Zsf+
-/MG6g8pflUPJgNESgGQp+cIVM3B5bcrtddDyUE06Hrk5nBZ4in5ISu3dLODe6H4c
-B8y6cqrwweyG6PKTlGZ7Hz+l9NVgdgay7PbtEDdE/OuYOtoXWYnGutACe0xkua4W
-i7kvaOsNoYOEW8ypYkJZ
-=j89x
------END PGP SIGNATURE-----
+I hope that makes sense :)
 
---jI8keyz6grp/JLjh--
+-- 
+viresh
