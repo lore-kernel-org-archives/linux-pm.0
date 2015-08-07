@@ -1,55 +1,110 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 0/6] cpufreq: use generic cpufreq drivers for
- Exynos4x12 platform
-Date: Fri, 7 Aug 2015 10:48:26 +0530
-Message-ID: <20150807051826.GJ6325@linux>
-References: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com>
- <015301d0d0a3$1396c900$3ac45b00$@kernel.org>
- <20150807035018.GF6325@linux>
- <20150807035156.GG6325@linux>
- <55C43085.8090506@samsung.com>
- <20150807043037.GH6325@linux>
- <55C43971.5010504@samsung.com>
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=
+	<u.kleine-koenig@pengutronix.de>
+Subject: [PATCH v3] base/platform: assert that dev_pm_domain callbacks are called unconditionally
+Date: Fri,  7 Aug 2015 07:19:22 +0200
+Message-ID: <1438924762-4548-1-git-send-email-u.kleine-koenig@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:33879 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752883AbbHGFTD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Aug 2015 01:19:03 -0400
-Received: by pawu10 with SMTP id u10so79886703paw.1
-        for <linux-pm@vger.kernel.org>; Thu, 06 Aug 2015 22:19:02 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <55C43971.5010504@samsung.com>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50179 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753911AbbHGFTj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Aug 2015 01:19:39 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Michael Turquette' <mturquette@baylibre.com>, 'Tomasz Figa' <tomasz.figa@gmail.com>, 'Lukasz Majewski' <l.majewski@samsung.com>, 'Heiko Stuebner' <heiko@sntech.de>, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Kevin Hilman' <khilman@linaro.org>, 'Javier Martinez Canillas' <javier@dowhile0.org>, 'Tobias Jakobi' <tjakobi@math.uni-bielefeld.de>, 'Anand Moon' <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>
+Cc: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>, linux-kernel@vger.kernel.org, kernel@pengutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 
-On 07-08-15, 13:52, Krzysztof Kozlowski wrote:
-> Thanks for explanation. As fair as I understand, Bartlomiej wanted to
-> merge this in a way which would avoid loosing the boost mode. Kukjin
-> prepared topic branches for previous cpu-freq/clk stuff so maybe
-> everything could go through PM?
+When a platform driver doesn't provide a .remove callback the function
+platform_drv_remove isn't called and so the call to dev_pm_domain_attac=
+h
+called at probe time isn't paired by dev_pm_domain_detach at remove
+time.
 
-We aren't loosing anything at all. There can be two cases here:
+To fix this (and similar issues if different callbacks are missing) hoo=
+k
+up the driver callbacks unconditionally and make them aware that the
+platform callbacks might be missing.
 
-1. Patch 1/6 and 6/6 make it to 4.3 (with suggested changes) via PM tree:
-- All will work fine in this case, no issues at all..
+Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+---
+Hello,
 
-2. They don't make it:
-- Even in this case, nothing will break. Users can just enable a
-  config option and that's all..
+Changes since (implicit) v1, sent with
+Message-Id: 1437491315-2370-1-git-send-email-uwe@kleine-koenig.org:
 
-So, no need to divert things into another tree this late.
+- initialize ret in platform_drv_remove
+- change my email to the right one (only in the S-o-B) :-(
+- adding some more people to Cc
 
-Over that, Rafael will not be around for 2 weeks now (Plumbers and
-other stuff) ..
+Changes since v2, sent with
+Message-Id: 1438849860-18504-1-git-send-email-u.kleine-koenig@pengutron=
+ix.de
 
-So, just target the cpufreq core changes via PM tree.. rest is just
-fine.
+- change my email to the right one also in the author spec
 
-I hope that makes sense :)
+Best regards
+Uwe
 
--- 
-viresh
+ drivers/base/platform.c | 19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/base/platform.c b/drivers/base/platform.c
+index 063f0ab15259..58cea3ea00f8 100644
+--- a/drivers/base/platform.c
++++ b/drivers/base/platform.c
+@@ -517,7 +517,7 @@ static int platform_drv_probe(struct device *_dev)
+ 		return ret;
+=20
+ 	ret =3D dev_pm_domain_attach(_dev, true);
+-	if (ret !=3D -EPROBE_DEFER) {
++	if (ret !=3D -EPROBE_DEFER && drv->probe) {
+ 		ret =3D drv->probe(dev);
+ 		if (ret)
+ 			dev_pm_domain_detach(_dev, true);
+@@ -540,9 +540,10 @@ static int platform_drv_remove(struct device *_dev=
+)
+ {
+ 	struct platform_driver *drv =3D to_platform_driver(_dev->driver);
+ 	struct platform_device *dev =3D to_platform_device(_dev);
+-	int ret;
++	int ret =3D 0;
+=20
+-	ret =3D drv->remove(dev);
++	if (drv->remove)
++		ret =3D drv->remove(dev);
+ 	dev_pm_domain_detach(_dev, true);
+=20
+ 	return ret;
+@@ -553,7 +554,8 @@ static void platform_drv_shutdown(struct device *_d=
+ev)
+ 	struct platform_driver *drv =3D to_platform_driver(_dev->driver);
+ 	struct platform_device *dev =3D to_platform_device(_dev);
+=20
+-	drv->shutdown(dev);
++	if (drv->shutdown)
++		drv->shutdown(dev);
+ 	dev_pm_domain_detach(_dev, true);
+ }
+=20
+@@ -567,12 +569,9 @@ int __platform_driver_register(struct platform_dri=
+ver *drv,
+ {
+ 	drv->driver.owner =3D owner;
+ 	drv->driver.bus =3D &platform_bus_type;
+-	if (drv->probe)
+-		drv->driver.probe =3D platform_drv_probe;
+-	if (drv->remove)
+-		drv->driver.remove =3D platform_drv_remove;
+-	if (drv->shutdown)
+-		drv->driver.shutdown =3D platform_drv_shutdown;
++	drv->driver.probe =3D platform_drv_probe;
++	drv->driver.remove =3D platform_drv_remove;
++	drv->driver.shutdown =3D platform_drv_shutdown;
+=20
+ 	return driver_register(&drv->driver);
+ }
+--=20
+2.4.6
+
