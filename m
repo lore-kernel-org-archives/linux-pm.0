@@ -1,110 +1,69 @@
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=
-	<u.kleine-koenig@pengutronix.de>
-Subject: [PATCH v3] base/platform: assert that dev_pm_domain callbacks are called unconditionally
-Date: Fri,  7 Aug 2015 07:19:22 +0200
-Message-ID: <1438924762-4548-1-git-send-email-u.kleine-koenig@pengutronix.de>
+From: NeilBrown <neil@brown.name>
+Subject: Re: [PATCH 07/13] twl4030_charger: distinguish between USB current
+ and 'AC' current
+Date: Fri, 7 Aug 2015 15:29:09 +1000
+Message-ID: <20150807152909.77603f47@home.neil.brown.name>
+References: <20150730001113.4012.18086.stgit@noble>
+	<20150730001124.4012.48552.stgit@noble>
+	<20150807031116.GH4215@atomide.com>
+	<20150807134525.251528ab@home.neil.brown.name>
+	<20150807051309.GA24702@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:50179 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753911AbbHGFTj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Aug 2015 01:19:39 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/QjdZNJ7FBx5MmMlsKFN5zKT"; protocol="application/pgp-signature"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150807051309.GA24702@earth>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Tony Lindgren <tony@atomide.com>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>
-Cc: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <uwe@kleine-koenig.org>, linux-kernel@vger.kernel.org, kernel@pengutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 
-When a platform driver doesn't provide a .remove callback the function
-platform_drv_remove isn't called and so the call to dev_pm_domain_attac=
-h
-called at probe time isn't paired by dev_pm_domain_detach at remove
-time.
+--Sig_/QjdZNJ7FBx5MmMlsKFN5zKT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-To fix this (and similar issues if different callbacks are missing) hoo=
-k
-up the driver callbacks unconditionally and make them aware that the
-platform callbacks might be missing.
+On Fri, 7 Aug 2015 07:13:09 +0200 Sebastian Reichel <sre@kernel.org>
+wrote:
 
-Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
----
-Hello,
+> Hi,
+>=20
+> This actually slipped through my review. IMHO madc should be
+> accessed through IIO, as already done for twl4030-madc-battery
+> and rx51-battery. That way the custom API can be removed at
+> some point.
+>=20
+> Anyway, I queued the below patch with Tony's ACK to fix the build
+> issue in next.
+>=20
 
-Changes since (implicit) v1, sent with
-Message-Id: 1437491315-2370-1-git-send-email-uwe@kleine-koenig.org:
+OK, thanks.
 
-- initialize ret in platform_drv_remove
-- change my email to the right one (only in the S-o-B) :-(
-- adding some more people to Cc
+I'll try to figure out are more proper approach ... might be a week or
+so though.
 
-Changes since v2, sent with
-Message-Id: 1438849860-18504-1-git-send-email-u.kleine-koenig@pengutron=
-ix.de
+Thanks,
+NeilBrown
 
-- change my email to the right one also in the author spec
+--Sig_/QjdZNJ7FBx5MmMlsKFN5zKT
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
-Best regards
-Uwe
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
- drivers/base/platform.c | 19 +++++++++----------
- 1 file changed, 9 insertions(+), 10 deletions(-)
+iQIcBAEBCAAGBQJVxEIlAAoJEDnsnt1WYoG5fcsP/0s0RvbvSrJOxlVaQ5HSs24L
+6ZUYi1Enlb/Mz2wTP1F86TwFX0/1dT85A5hC3LIXEj3EmBTWL4ZXjqoy5oBTD2bH
+WqnpFUU2tEd0a2bZhEk6KyjvZXQZphRWqf03DA5iVJXh06uvBVgsCi3tSWSZKqEU
+t1Bp2XqK0WXSCZDXuCFqTENDqdCY/mNuvp/Tjc1vMBLmR2Ia4wXfsOhRDNbNDsAx
+Ek+afZvpjqvMc6LnkTOkzluOqwlrH65rPpNzhwwPgYJQ1q58AyXuZFfKCK9iJAHy
+cZTw75jCYLvGZjlAwt08hX3duKKq1lkrDqhPhkwJZG/dR4SwS+T7x1kWfLuz8Pzj
+QIhpPyhXofquYPlckUOCjXxv5uei5VJqjBN9wH6scrEJQfvv51myOR9D0CUAJlnT
+BMO+LXVoBTT6hITVw01uk2bXWVnCMSV2M6bwWtoWrwvjF/1T0ghy80pEOPjciYZ/
+B7G0b8A8IydOsRKTxjWhX1H9oM0fRLj0kSC+5eYd3esQJD1IAHOqqhKh/r5c5TPl
+lN/joCIMhYKCU5etORAWNmwpDN0HP37twJIO7uJZ0zgO8gQJfzFYhYQ/ZEXYapPj
+6I2PfdudiUFT3XRPR6TqH34DeN5g0MEXaaByzwnHGyPnAmYydW2lKjXY3M65dG2b
+kP4t2H1O4k85tuhw8PZF
+=90c5
+-----END PGP SIGNATURE-----
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index 063f0ab15259..58cea3ea00f8 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -517,7 +517,7 @@ static int platform_drv_probe(struct device *_dev)
- 		return ret;
-=20
- 	ret =3D dev_pm_domain_attach(_dev, true);
--	if (ret !=3D -EPROBE_DEFER) {
-+	if (ret !=3D -EPROBE_DEFER && drv->probe) {
- 		ret =3D drv->probe(dev);
- 		if (ret)
- 			dev_pm_domain_detach(_dev, true);
-@@ -540,9 +540,10 @@ static int platform_drv_remove(struct device *_dev=
-)
- {
- 	struct platform_driver *drv =3D to_platform_driver(_dev->driver);
- 	struct platform_device *dev =3D to_platform_device(_dev);
--	int ret;
-+	int ret =3D 0;
-=20
--	ret =3D drv->remove(dev);
-+	if (drv->remove)
-+		ret =3D drv->remove(dev);
- 	dev_pm_domain_detach(_dev, true);
-=20
- 	return ret;
-@@ -553,7 +554,8 @@ static void platform_drv_shutdown(struct device *_d=
-ev)
- 	struct platform_driver *drv =3D to_platform_driver(_dev->driver);
- 	struct platform_device *dev =3D to_platform_device(_dev);
-=20
--	drv->shutdown(dev);
-+	if (drv->shutdown)
-+		drv->shutdown(dev);
- 	dev_pm_domain_detach(_dev, true);
- }
-=20
-@@ -567,12 +569,9 @@ int __platform_driver_register(struct platform_dri=
-ver *drv,
- {
- 	drv->driver.owner =3D owner;
- 	drv->driver.bus =3D &platform_bus_type;
--	if (drv->probe)
--		drv->driver.probe =3D platform_drv_probe;
--	if (drv->remove)
--		drv->driver.remove =3D platform_drv_remove;
--	if (drv->shutdown)
--		drv->driver.shutdown =3D platform_drv_shutdown;
-+	drv->driver.probe =3D platform_drv_probe;
-+	drv->driver.remove =3D platform_drv_remove;
-+	drv->driver.shutdown =3D platform_drv_shutdown;
-=20
- 	return driver_register(&drv->driver);
- }
---=20
-2.4.6
-
+--Sig_/QjdZNJ7FBx5MmMlsKFN5zKT--
