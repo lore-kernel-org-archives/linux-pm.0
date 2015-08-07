@@ -1,53 +1,93 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v4 0/6] cpufreq: use generic cpufreq drivers for Exynos4x12
- platform
-Date: Fri, 07 Aug 2015 13:47:26 +0200
-Message-ID: <2359635.Hxe4cb8zKm@amdc1976>
-References: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com>
- <2061119.GBaoSb4YSL@amdc1976> <20150807113950.GG6939@linux>
+Subject: [PATCH] cpufreq-dt: make scaling_boost_freqs sysfs attr available when
+ boost is enabled
+Date: Fri, 07 Aug 2015 13:50:30 +0200
+Message-ID: <4591050.xDpgbpsIAB@amdc1976>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20150807113950.GG6939@linux>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, 'Thomas Abraham' <thomas.ab@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Michael Turquette' <mturquette@baylibre.com>, 'Tomasz Figa' <tomasz.figa@gmail.com>, 'Lukasz Majewski' <l.majewski@samsung.com>, 'Heiko Stuebner' <heiko@sntech.de>, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Kevin Hilman' <khilman@linaro.org>, 'Javier Martinez Canillas' <javier@dowhile0.org>, 'Tobias Jakobi' <tjakobi@math.uni-bielefeld.de>, 'Anand Moon' <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:53243 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752292AbbHGLve (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Aug 2015 07:51:34 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier@osg.samsung.com>
 
-On Friday, August 07, 2015 05:09:50 PM Viresh Kumar wrote:
-> On 07-08-15, 13:31, Bartlomiej Zolnierkiewicz wrote:
-> > Users don't need to enable the config option to get boost
-> > functionality working.  It is only needed to get scaling_boost_freqs
-> > sysfs attribute visible (which lists available boost freqs) when
-> > using cpufreq-dt driver.  Also the config option in question is not
-> > user visible.
-> 
-> By users I meant the people who will prepare the build images for the
-> release. They can just enable the config option :)
+Make scaling_boost_freqs sysfs attribute is available when
+cpufreq-dt driver is used and boost support is enabled.
 
-OK.
+Cc: Thomas Abraham <thomas.ab@samsung.com>
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+Rafael, please apply for v4.3.  Thanks!
 
-> > The worst thing that happens if these 2 PM patches don't make it
-> > in time is that there will be no scaling_boost_freqs available
-> > when using cpufreq-dt driver.  Which is not very important from
-> > Exynos4x12 POV as it only supports single boost freq currently.
-> 
-> Right. So, now that your patch is Acked, send 1/6 and 6/6 separately
-> to pm-list and Rafael can get them merged himself..
-> 
-> I hope, your 6/6 patch will change a bit now ?
+ drivers/cpufreq/cpufreq-dt.c | 11 ++++++++++-
+ include/linux/cpufreq.h      |  1 +
+ 2 files changed, 11 insertions(+), 1 deletion(-)
 
-Hmm, wait.  Patch 6/6 depends on earlier changes.  I cannot remove
-the config option in question now as it is currently used by
-exynos-cpufreq specific boost support.  Patch 1/6 can be applied
-now but 6/6 needs to wait for patches 2-5 to be applied first.
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index b9259ab..c6a3b98 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -36,6 +36,12 @@ struct private_data {
+ 	unsigned int voltage_tolerance; /* in percentage */
+ };
+ 
++static struct freq_attr *cpufreq_dt_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	NULL,   /* Extra space for boost-attr if required */
++	NULL,
++};
++
+ static int set_target(struct cpufreq_policy *policy, unsigned int index)
+ {
+ 	struct dev_pm_opp *opp;
+@@ -182,6 +188,8 @@ try_again:
+ 	return ret;
+ }
+ 
++static struct cpufreq_driver dt_cpufreq_driver;
++
+ static int cpufreq_init(struct cpufreq_policy *policy)
+ {
+ 	struct cpufreq_frequency_table *freq_table;
+@@ -336,6 +344,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 		ret = cpufreq_enable_boost_support();
+ 		if (ret)
+ 			goto out_free_cpufreq_table;
++		cpufreq_dt_attr[1] = &cpufreq_freq_attr_scaling_boost_freqs;
+ 	}
+ 
+ 	policy->cpuinfo.transition_latency = transition_latency;
+@@ -411,7 +420,7 @@ static struct cpufreq_driver dt_cpufreq_driver = {
+ 	.exit = cpufreq_exit,
+ 	.ready = cpufreq_ready,
+ 	.name = "cpufreq-dt",
+-	.attr = cpufreq_generic_attr,
++	.attr = cpufreq_dt_attr,
+ };
+ 
+ static int dt_cpufreq_probe(struct platform_device *pdev)
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 95f0186..657542d 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -609,6 +609,7 @@ struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu);
+ 
+ /* the following are really really optional */
+ extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
++extern struct freq_attr cpufreq_freq_attr_scaling_boost_freqs;
+ extern struct freq_attr *cpufreq_generic_attr[];
+ int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
+ 				      struct cpufreq_frequency_table *table);
+-- 
+1.9.1
 
-Actually 6/6 is trivial and can be applied later in v4.3 cycle or
-even in v4.4 one.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
