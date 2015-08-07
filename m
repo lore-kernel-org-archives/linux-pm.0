@@ -1,81 +1,99 @@
-From: Dmitry Torokhov <dtor@chromium.org>
-Subject: [PATCH] thermal: rockhip: fix setting thermal shutdown polarity
-Date: Fri, 7 Aug 2015 14:00:52 -0700
-Message-ID: <20150807210052.GA34032@dtor-ws>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v4 1/6] cpufreq: make scaling_boost_freqs sysfs attr available when boost is enabled
+Date: Sat, 08 Aug 2015 00:21:04 +0200
+Message-ID: <11605783.uxKCOKbq1D@vostro.rjw.lan>
+References: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com> <1594902.Dv5JKhve0y@amdc1976> <20150807113739.GF6939@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:34569 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753837AbbHGVA4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Aug 2015 17:00:56 -0400
-Received: by pawu10 with SMTP id u10so96233601paw.1
-        for <linux-pm@vger.kernel.org>; Fri, 07 Aug 2015 14:00:54 -0700 (PDT)
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20150807113739.GF6939@linux>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier@osg.samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Caesar Wang <wxt@rock-chips.com>, dianders@chromium.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org
 
-When requested thermal shutdown signal polarity is low we need to make
-sure that the bit representing high level of signal is reset, and not
-set all other bits in that register.
+On Friday, August 07, 2015 05:07:39 PM Viresh Kumar wrote:
+> On 07-08-15, 13:12, Bartlomiej Zolnierkiewicz wrote:
+> > >From 993ebb6fc632ec7b61654c9610c90ff4dca4be34 Mon Sep 17 00:00:00 2001
+> > From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > Date: Fri, 7 Aug 2015 13:07:51 +0200
+> > Subject: [PATCH] cpufreq-dt: make scaling_boost_freqs sysfs attr available
+> >  when boost is enabled
+> > 
+> > Make scaling_boost_freqs sysfs attribute is available when
+> > cpufreq-dt driver is used and boost support is enabled.
+> > 
+> > Cc: Thomas Abraham <thomas.ab@samsung.com>
+> > Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+> > Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > ---
+> >  drivers/cpufreq/cpufreq-dt.c | 11 ++++++++++-
+> >  include/linux/cpufreq.h      |  1 +
+> >  2 files changed, 11 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> > index b9259ab..c6a3b98 100644
+> > --- a/drivers/cpufreq/cpufreq-dt.c
+> > +++ b/drivers/cpufreq/cpufreq-dt.c
+> > @@ -36,6 +36,12 @@ struct private_data {
+> >  	unsigned int voltage_tolerance; /* in percentage */
+> >  };
+> >  
+> > +static struct freq_attr *cpufreq_dt_attr[] = {
+> > +	&cpufreq_freq_attr_scaling_available_freqs,
+> > +	NULL,   /* Extra space for boost-attr if required */
+> > +	NULL,
+> > +};
+> > +
+> >  static int set_target(struct cpufreq_policy *policy, unsigned int index)
+> >  {
+> >  	struct dev_pm_opp *opp;
+> > @@ -182,6 +188,8 @@ try_again:
+> >  	return ret;
+> >  }
+> >  
+> > +static struct cpufreq_driver dt_cpufreq_driver;
+> > +
+> >  static int cpufreq_init(struct cpufreq_policy *policy)
+> >  {
+> >  	struct cpufreq_frequency_table *freq_table;
+> > @@ -336,6 +344,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+> >  		ret = cpufreq_enable_boost_support();
+> >  		if (ret)
+> >  			goto out_free_cpufreq_table;
+> > +		cpufreq_dt_attr[1] = &cpufreq_freq_attr_scaling_boost_freqs;
+> >  	}
+> >  
+> >  	policy->cpuinfo.transition_latency = transition_latency;
+> > @@ -411,7 +420,7 @@ static struct cpufreq_driver dt_cpufreq_driver = {
+> >  	.exit = cpufreq_exit,
+> >  	.ready = cpufreq_ready,
+> >  	.name = "cpufreq-dt",
+> > -	.attr = cpufreq_generic_attr,
+> > +	.attr = cpufreq_dt_attr,
+> >  };
+> >  
+> >  static int dt_cpufreq_probe(struct platform_device *pdev)
+> > diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> > index 95f0186..657542d 100644
+> > --- a/include/linux/cpufreq.h
+> > +++ b/include/linux/cpufreq.h
+> > @@ -609,6 +609,7 @@ struct cpufreq_frequency_table *cpufreq_frequency_get_table(unsigned int cpu);
+> >  
+> >  /* the following are really really optional */
+> >  extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
+> > +extern struct freq_attr cpufreq_freq_attr_scaling_boost_freqs;
+> >  extern struct freq_attr *cpufreq_generic_attr[];
+> >  int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
+> >  				      struct cpufreq_frequency_table *table);
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Also rename TSADCV2_INT_PD_CLEAR to TSADCV2_INT_PD_CLEAR_MASK to better
-reflect its nature.
+And what exactly am I supposed to do with this?
 
-Signed-off-by: Dmitry Torokhov <dtor@chromium.org>
----
- drivers/thermal/rockchip_thermal.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+Have a robot that will pick up all patches ACKed by you magically or what?
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 93ee307..4d5b7d4 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -106,16 +106,14 @@ struct rockchip_thermal_data {
- #define TSADCV2_AUTO_PERIOD_HT			0x6c
- 
- #define TSADCV2_AUTO_EN				BIT(0)
--#define TSADCV2_AUTO_DISABLE			~BIT(0)
- #define TSADCV2_AUTO_SRC_EN(chn)		BIT(4 + (chn))
- #define TSADCV2_AUTO_TSHUT_POLARITY_HIGH	BIT(8)
--#define TSADCV2_AUTO_TSHUT_POLARITY_LOW		~BIT(8)
- 
- #define TSADCV2_INT_SRC_EN(chn)			BIT(chn)
- #define TSADCV2_SHUT_2GPIO_SRC_EN(chn)		BIT(4 + (chn))
- #define TSADCV2_SHUT_2CRU_SRC_EN(chn)		BIT(8 + (chn))
- 
--#define TSADCV2_INT_PD_CLEAR			~BIT(8)
-+#define TSADCV2_INT_PD_CLEAR_MASK		~BIT(8)
- 
- #define TSADCV2_DATA_MASK			0xfff
- #define TSADCV2_HIGHT_INT_DEBOUNCE_COUNT	4
-@@ -244,10 +242,10 @@ static void rk_tsadcv2_initialize(void __iomem *regs,
- 				  enum tshut_polarity tshut_polarity)
- {
- 	if (tshut_polarity == TSHUT_HIGH_ACTIVE)
--		writel_relaxed(0 | (TSADCV2_AUTO_TSHUT_POLARITY_HIGH),
-+		writel_relaxed(0U | TSADCV2_AUTO_TSHUT_POLARITY_HIGH,
- 			       regs + TSADCV2_AUTO_CON);
- 	else
--		writel_relaxed(0 | (TSADCV2_AUTO_TSHUT_POLARITY_LOW),
-+		writel_relaxed(0U & ~TSADCV2_AUTO_TSHUT_POLARITY_HIGH,
- 			       regs + TSADCV2_AUTO_CON);
- 
- 	writel_relaxed(TSADCV2_AUTO_PERIOD_TIME, regs + TSADCV2_AUTO_PERIOD);
-@@ -264,7 +262,7 @@ static void rk_tsadcv2_irq_ack(void __iomem *regs)
- 	u32 val;
- 
- 	val = readl_relaxed(regs + TSADCV2_INT_PD);
--	writel_relaxed(val & TSADCV2_INT_PD_CLEAR, regs + TSADCV2_INT_PD);
-+	writel_relaxed(val & TSADCV2_INT_PD_CLEAR_MASK, regs + TSADCV2_INT_PD);
- }
- 
- static void rk_tsadcv2_control(void __iomem *regs, bool enable)
--- 
-2.5.0.rc2.392.g76e840b
-
-
--- 
-Dmitry
+Rafael
