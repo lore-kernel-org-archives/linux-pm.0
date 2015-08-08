@@ -1,80 +1,33 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal Management updates for v4.2-rc6
-Date: Sat, 08 Aug 2015 15:07:40 +0800
-Message-ID: <1439017660.14585.13.camel@rzhang1-mobl4>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v4 0/6] cpufreq: use generic cpufreq drivers for Exynos4x12
+ platform
+Date: Sat, 08 Aug 2015 16:27:10 +0900
+Message-ID: <55C5AF4E.3010500@samsung.com>
+References: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com> <2359635.Hxe4cb8zKm@amdc1976> <20150807115627.GH6939@linux> <1525406.7aXvVQzEDd@vostro.rjw.lan> <20150808020740.GM6939@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:59822 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751165AbbHHHHr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 8 Aug 2015 03:07:47 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150808020740.GM6939@linux>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kukjin Kim <kgene@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, 'Anand Moon' <linux.amoon@gmail.com>, 'Kevin Hilman' <khilman@linaro.org>, linux-kernel@vger.kernel.org, 'Heiko Stuebner' <heiko@sntech.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, 'Tobias Jakobi' <tjakobi@math.uni-bielefeld.de>, 'Lukasz Majewski' <l.majewski@samsung.com>, 'Michael Turquette' <mturquette@baylibre.com>, linux-pm@vger.kernel.org, 'Tomasz Figa' <tomasz.figa@gmail.com>, linux-clk@vger.kernel.org, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, 'Javier Martinez Canillas' <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>
 
-Hi, Linus,
+W dniu 08.08.2015 o 11:07, Viresh Kumar pisze:
+> On 08-08-15, 00:24, Rafael J. Wysocki wrote:
+>> OK, so please let me know which patches you want me to pick up.
+>>
+>> Ideally, I'd prefer them to be resent in a separate series with ACKs and all
+>> with a cover letter clearly stating whose tree they are being targeted at.
+> 
+> He already sent it separately, let me send a confirmatory mail in
+> reply to that.
 
-Please pull from
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git for-rc
+Dear Kukjin,
 
-to receive the latest Thermal Management updates for 4.2-rc6 with
-top-most commit 8bf93f2476cede84e6d7e7de5da9a55aeb196f9e:
+Can you apply the 2-5 of this series to v4.3? It's getting late but
+maybe they still could go?
 
-  Merge branch 'fixes' of
-git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal
-into for-rc
-
-on top of commit 74d33293e467df61de1b1d8b2fbe29e550dec33b:
-
-  Linux 4.2-rc5
-
-Specifics:
-
-- Fix an error that "weight_attr" sysfs attribute is not removed while
-unbinding. From: Viresh Kumar.
-- Fix power allocator governor tracing to return the real request. From
-Javi Merino.
-- Remove redundant owner assignment of hisi platform thermal driver.
->From Krzysztof Kozlowski.
-- A couple of small fixes of Exynos thermal driver. From Krzysztof
-Kozlowski and Chanwoo Choi.
-
-thanks,
-rui
-----------------------------------------------------------------
-
-Chanwoo Choi (2):
-      thermal: exynos: Add the dependency of CONFIG_THERMAL_OF instead
-of CONFIG_OF
-      thermal: exynos: Remove unused code related to platform_data on
-probe()
-
-Javi Merino (1):
-      thermal: power_allocator: trace the real requested power
-
-Krzysztof Kozlowski (2):
-      thermal: exynos: Disable the regulator on probe failure
-      thermal: Drop owner assignment from platform_driver
-
-Viresh Kumar (1):
-      thermal: remove dangling 'weight_attr' device file
-
-Zhang Rui (1):
-      Merge branch 'fixes' of
-git://git.kernel.org/.../evalenti/linux-soc-thermal into for-rc
-
- drivers/thermal/hisi_thermal.c       |  1 -
- drivers/thermal/power_allocator.c    | 26 ++++++++++++++++----------
- drivers/thermal/samsung/Kconfig      |  2 +-
- drivers/thermal/samsung/exynos_tmu.c |  5 ++---
- drivers/thermal/thermal_core.c       |  1 +
- 5 files changed, 20 insertions(+), 15 deletions(-)
-
-
-
-
-
-
+Best regards,
+Krzysztof
