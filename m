@@ -1,50 +1,36 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH] cpufreq: exynos: Fix for memory leak in case SoC name
  does not match
-Date: Sat, 08 Aug 2015 16:36:34 +0900
-Message-ID: <55C5B182.6000509@samsung.com>
-References: <04f401d0ce89$81073900$8315ab00$@kernel.org> <9283770.jQmuxWnYst@vostro.rjw.lan>
+Date: Sat, 8 Aug 2015 18:59:15 +0530
+Message-ID: <20150808132915.GP6939@linux>
+References: <04f401d0ce89$81073900$8315ab00$@kernel.org>
+ <9283770.jQmuxWnYst@vostro.rjw.lan>
+ <55C5B182.6000509@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <9283770.jQmuxWnYst@vostro.rjw.lan>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>, linux-samsung-soc@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, shailendra.capricorn@gmail.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f170.google.com ([209.85.192.170]:35348 "EHLO
+	mail-pd0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932740AbbHHN3T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 8 Aug 2015 09:29:19 -0400
+Received: by pdrg1 with SMTP id g1so55058043pdr.2
+        for <linux-pm@vger.kernel.org>; Sat, 08 Aug 2015 06:29:19 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <55C5B182.6000509@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>, Lukasz Majewski <l.majewski@samsung.com>, linux-samsung-soc@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, shailendra.capricorn@gmail.com
 
-W dniu 06.08.2015 o 09:23, Rafael J. Wysocki pisze:
-> On Tuesday, August 04, 2015 04:45:16 PM Kukjin Kim wrote:
->> From: Shailendra Verma <shailendra.capricorn@gmail.com>
->>
->> During probe free the memory allocated to "exynos_info" in case of
->> unknown SoC type.
->>
->> Signed-off-by: Shailendra Verma <shailendra.capricorn@gmail.com>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> Acked-by: Lukasz Majewski <l.majewski@samsung.com>
->> [k.kozlowski: Rebased the patch around if(of_machine_is_compatible)]
->> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->> Signed-off-by: Kukjin Kim <kgene@kernel.org>
->> ---
->> Hi Rafael and Viresh,
->>
->> Since this is a fix to prevent memory leak, it would be better if
->> this could be sent to linus during -rc via cpufreq tree.
+On 08-08-15, 16:36, Krzysztof Kozlowski wrote:
+> The cpufreq driver will be removed completely in v4.3 or v4.4 with
+> patchset adding cpufreq-dt support for Exynos 4x12. This means that this
+> patch makes sense only for 4.2 and as a stable backport (but it was not
+> marked as such).
 > 
-> I'm not planning more pull requests for 4.2 and this one doesn't seem to be
-> a good enough reason for a pull request of its own, though.
-> 
-> Of course, if there are more urgent fixes, I can push it along with them,
-> but there are none so far.
+> Anyone thinks that the patch will be worth stable back-porting?
 
-The cpufreq driver will be removed completely in v4.3 or v4.4 with
-patchset adding cpufreq-dt support for Exynos 4x12. This means that this
-patch makes sense only for 4.2 and as a stable backport (but it was not
-marked as such).
+Doesn't look worth enough to me..
 
-Anyone thinks that the patch will be worth stable back-porting?
-
-Best regards,
-Krzysztof
+-- 
+viresh
