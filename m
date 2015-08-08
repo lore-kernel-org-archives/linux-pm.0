@@ -1,33 +1,50 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v4 0/6] cpufreq: use generic cpufreq drivers for Exynos4x12
- platform
-Date: Sat, 08 Aug 2015 16:27:10 +0900
-Message-ID: <55C5AF4E.3010500@samsung.com>
-References: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com> <2359635.Hxe4cb8zKm@amdc1976> <20150807115627.GH6939@linux> <1525406.7aXvVQzEDd@vostro.rjw.lan> <20150808020740.GM6939@linux>
+Subject: Re: [PATCH] cpufreq: exynos: Fix for memory leak in case SoC name
+ does not match
+Date: Sat, 08 Aug 2015 16:36:34 +0900
+Message-ID: <55C5B182.6000509@samsung.com>
+References: <04f401d0ce89$81073900$8315ab00$@kernel.org> <9283770.jQmuxWnYst@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150808020740.GM6939@linux>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kukjin Kim <kgene@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, 'Anand Moon' <linux.amoon@gmail.com>, 'Kevin Hilman' <khilman@linaro.org>, linux-kernel@vger.kernel.org, 'Heiko Stuebner' <heiko@sntech.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, 'Tobias Jakobi' <tjakobi@math.uni-bielefeld.de>, 'Lukasz Majewski' <l.majewski@samsung.com>, 'Michael Turquette' <mturquette@baylibre.com>, linux-pm@vger.kernel.org, 'Tomasz Figa' <tomasz.figa@gmail.com>, linux-clk@vger.kernel.org, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd.bergmann@linaro.org>, 'Javier Martinez Canillas' <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <9283770.jQmuxWnYst@vostro.rjw.lan>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Lukasz Majewski <l.majewski@samsung.com>, linux-samsung-soc@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, shailendra.capricorn@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-W dniu 08.08.2015 o 11:07, Viresh Kumar pisze:
-> On 08-08-15, 00:24, Rafael J. Wysocki wrote:
->> OK, so please let me know which patches you want me to pick up.
+W dniu 06.08.2015 o 09:23, Rafael J. Wysocki pisze:
+> On Tuesday, August 04, 2015 04:45:16 PM Kukjin Kim wrote:
+>> From: Shailendra Verma <shailendra.capricorn@gmail.com>
 >>
->> Ideally, I'd prefer them to be resent in a separate series with ACKs and all
->> with a cover letter clearly stating whose tree they are being targeted at.
+>> During probe free the memory allocated to "exynos_info" in case of
+>> unknown SoC type.
+>>
+>> Signed-off-by: Shailendra Verma <shailendra.capricorn@gmail.com>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> Acked-by: Lukasz Majewski <l.majewski@samsung.com>
+>> [k.kozlowski: Rebased the patch around if(of_machine_is_compatible)]
+>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>> Signed-off-by: Kukjin Kim <kgene@kernel.org>
+>> ---
+>> Hi Rafael and Viresh,
+>>
+>> Since this is a fix to prevent memory leak, it would be better if
+>> this could be sent to linus during -rc via cpufreq tree.
 > 
-> He already sent it separately, let me send a confirmatory mail in
-> reply to that.
+> I'm not planning more pull requests for 4.2 and this one doesn't seem to be
+> a good enough reason for a pull request of its own, though.
+> 
+> Of course, if there are more urgent fixes, I can push it along with them,
+> but there are none so far.
 
-Dear Kukjin,
+The cpufreq driver will be removed completely in v4.3 or v4.4 with
+patchset adding cpufreq-dt support for Exynos 4x12. This means that this
+patch makes sense only for 4.2 and as a stable backport (but it was not
+marked as such).
 
-Can you apply the 2-5 of this series to v4.3? It's getting late but
-maybe they still could go?
+Anyone thinks that the patch will be worth stable back-porting?
 
 Best regards,
 Krzysztof
