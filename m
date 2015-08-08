@@ -1,54 +1,37 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v7 01/13] clk: qcom: Add support for GDSCs
-Date: Fri, 7 Aug 2015 16:52:31 -0700
-Message-ID: <20150807235230.GE16477@codeaurora.org>
-References: <1438076046-4706-1-git-send-email-rnayak@codeaurora.org>
- <1438076046-4706-2-git-send-email-rnayak@codeaurora.org>
- <20150803192427.GA7096@codeaurora.org>
- <55C19FA4.4070402@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/2] PM / AVS: rockchip-io: add io selectors and supplies for rk3368
+Date: Sat, 08 Aug 2015 03:35:34 +0200
+Message-ID: <47967648.T4i5CCNGtq@vostro.rjw.lan>
+References: <3371948.nX6iqYbHnA@diego> <1481228.KhoIt654ID@diego> <7hlhdmwvhm.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <55C19FA4.4070402@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, mturquette@baylibre.com, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org, georgi.djakov@linaro.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <7hlhdmwvhm.fsf@deeprootsystems.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 08/05, Rajendra Nayak wrote:
-> 
-> 
-> On 08/04/2015 12:54 AM, Stephen Boyd wrote:
-> >On 07/28, Rajendra Nayak wrote:
-> >>+
-> >>+#define PWR_ON_MASK		BIT(31)
-> >>+#define EN_REST_WAIT_MASK	GENMASK(23, 20)
-> >>+#define EN_FEW_WAIT_MASK	GENMASK(19, 16)
-> >>+#define CLK_DIS_WAIT_MASK	GENMASK(15, 12)
+On Friday, August 07, 2015 04:04:53 PM Kevin Hilman wrote:
+> Heiko St=C3=BCbner <heiko@sntech.de> writes:
+>=20
+> > This adds the necessary data for handling io voltage domains on the=
+ rk3368.
+> > As interesting tidbit, the rk3368 contains two separate iodomain ar=
+eas.
+> > One in the regular General Register Files (GRF) and one in PMUGRF i=
+n the
+> > pmu power domain.
 > >
-> >This trips up some static checker...
-> >
-> >drivers/clk/qcom/gdsc.c:234:53: warning: cast truncates bits from
-> >constant value (fffffffffff006 becomes fffff006)
-> >
-> >So I think we can use GENMASK_ULL here instead.
-> 
-> Sure. btw, what static checker is this? I did not see it with sparse.
+> > Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+>=20
+> Acked-by: Kevin Hilman <khilman@linaro.org>
+>=20
+> Rafael, feel free to take this series directly, or let me know if you
+> want a pull request.  I don't have anything other AVS stuff queued up
+> for v4.3.
 
-Pretty sure this was with sparse. Which now has me concerned that
-my sparse is old!
+I'll take it directly, thanks!
 
-$ sparse --version
-v0.5.0-47-g0f71312959ed
-
-But I updated to
-
-$ sparse --version
-v0.5.0-51-ga53cea28f0db
-
-And I still see it.
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Rafael
