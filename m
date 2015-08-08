@@ -1,42 +1,80 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq-dt: make scaling_boost_freqs sysfs attr
- available when boost is enabled
-Date: Sat, 8 Aug 2015 07:39:00 +0530
-Message-ID: <20150808020900.GN6939@linux>
-References: <2130756.euuUs9t9I5@amdc1976>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal Management updates for v4.2-rc6
+Date: Sat, 08 Aug 2015 15:07:40 +0800
+Message-ID: <1439017660.14585.13.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:34127 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946746AbbHHCJH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 7 Aug 2015 22:09:07 -0400
-Received: by pawu10 with SMTP id u10so100151548paw.1
-        for <linux-pm@vger.kernel.org>; Fri, 07 Aug 2015 19:09:04 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <2130756.euuUs9t9I5@amdc1976>
+Received: from mga02.intel.com ([134.134.136.20]:59822 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751165AbbHHHHr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 8 Aug 2015 03:07:47 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Javier Martinez Canillas <javier@osg.samsung.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>
 
-On 07-08-15, 13:59, Bartlomiej Zolnierkiewicz wrote:
-> Make scaling_boost_freqs sysfs attribute is available when
-> cpufreq-dt driver is used and boost support is enabled.
-> 
-> Cc: Thomas Abraham <thomas.ab@samsung.com>
-> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
-> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
-> v2: Removed leftover prototype.
-> v3: added missing Acked-by
-> Sorry for two resends, this is not my day..
-> Rafael, please apply for v4.3.
+Hi, Linus,
 
-Yeah, please apply only this patch from the series.
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git for-rc
 
--- 
-viresh
+to receive the latest Thermal Management updates for 4.2-rc6 with
+top-most commit 8bf93f2476cede84e6d7e7de5da9a55aeb196f9e:
+
+  Merge branch 'fixes' of
+git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal
+into for-rc
+
+on top of commit 74d33293e467df61de1b1d8b2fbe29e550dec33b:
+
+  Linux 4.2-rc5
+
+Specifics:
+
+- Fix an error that "weight_attr" sysfs attribute is not removed while
+unbinding. From: Viresh Kumar.
+- Fix power allocator governor tracing to return the real request. From
+Javi Merino.
+- Remove redundant owner assignment of hisi platform thermal driver.
+>From Krzysztof Kozlowski.
+- A couple of small fixes of Exynos thermal driver. From Krzysztof
+Kozlowski and Chanwoo Choi.
+
+thanks,
+rui
+----------------------------------------------------------------
+
+Chanwoo Choi (2):
+      thermal: exynos: Add the dependency of CONFIG_THERMAL_OF instead
+of CONFIG_OF
+      thermal: exynos: Remove unused code related to platform_data on
+probe()
+
+Javi Merino (1):
+      thermal: power_allocator: trace the real requested power
+
+Krzysztof Kozlowski (2):
+      thermal: exynos: Disable the regulator on probe failure
+      thermal: Drop owner assignment from platform_driver
+
+Viresh Kumar (1):
+      thermal: remove dangling 'weight_attr' device file
+
+Zhang Rui (1):
+      Merge branch 'fixes' of
+git://git.kernel.org/.../evalenti/linux-soc-thermal into for-rc
+
+ drivers/thermal/hisi_thermal.c       |  1 -
+ drivers/thermal/power_allocator.c    | 26 ++++++++++++++++----------
+ drivers/thermal/samsung/Kconfig      |  2 +-
+ drivers/thermal/samsung/exynos_tmu.c |  5 ++---
+ drivers/thermal/thermal_core.c       |  1 +
+ 5 files changed, 20 insertions(+), 15 deletions(-)
+
+
+
+
+
+
