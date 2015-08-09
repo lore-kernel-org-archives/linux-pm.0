@@ -1,105 +1,116 @@
-From: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH v4 2/2] mfd: axp20x: Add a cell for the usb power_supply part of the axp20x PMICs
-Date: Sat,  8 Aug 2015 17:58:41 +0200
-Message-ID: <1439049521-30766-2-git-send-email-hdegoede@redhat.com>
-References: <1439049521-30766-1-git-send-email-hdegoede@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1439049521-30766-1-git-send-email-hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?UTF-8?q?Bruno=20Pr=C3=A9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [Patch v1] x86, ACPI, irq: Fix a regression caused by
+Date: Sun,  9 Aug 2015 16:58:29 +0800
+Message-ID: <1439110710-26498-1-git-send-email-jiang.liu@linux.intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Nick Meier <nmeier@microsoft.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Cc: Jiang Liu <jiang.liu@linux.intel.com>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add a cell for the usb power_supply part of the axp20x PMICs.
+Nick Meier reported a regression with HyperV that "
+  After rebooting the VM, the following messages are logged in syslog
+  when trying to load the tulip driver:
+    tulip: Linux Tulip drivers version 1.1.15 (Feb 27, 2007)
+    tulip: 0000:00:0a.0: PCI INT A: failed to register GSI
+    tulip: Cannot enable tulip board #0, aborting
+    tulip: probe of 0000:00:0a.0 failed with error -16
+  Errors occur in 3.19.0 kernel
+  Works in 3.17 kernel.
+"
 
-Note that this cell is only for the usb power_supply part and not the
-ac-power / battery-charger / rtc-backup-bat-charger bits.
+According to the ACPI dump file posted by Nick at
+https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1440072
 
-Depending on the board each of those must be enabled / disabled separat=
-ely
-in devicetree as most boards do not use all 4. So in dt each one needs =
-its
-own child-node of the axp20x node. Another reason for using separate ch=
-ild
-nodes for each is so that other devicetree nodes can have a power-suppl=
-y
-property with a phandle referencing a node representing a single
-power-supply.
+The ACPI MADT table includes an interrupt source overridden entry for
+ACPI SCI:
+[236h 0566  1]                Subtable Type : 02 <Interrupt Source Override>
+[237h 0567  1]                       Length : 0A
+[238h 0568  1]                          Bus : 00
+[239h 0569  1]                       Source : 09
+[23Ah 0570  4]                    Interrupt : 00000009
+[23Eh 0574  2]        Flags (decoded below) : 000D
+                                   Polarity : 1
+                               Trigger Mode : 3
+That means ACPI SCI interrupt(Interrupt : 00000009) works in
+level(Trigger Mode : 3), high(Polarity : 1) mode.
 
-The decision to use a separate devicetree node for each is reflected on
-the kernel side by each getting its own mfd-cell / platform_device and
-platform-driver.
+And in DSDT table, we have _PRT method to define PCI interrupts, which
+eventually goes to:
+        Name (PRSA, ResourceTemplate ()
+        {
+            IRQ (Level, ActiveLow, Shared, )
+                {3,4,5,7,9,10,11,12,14,15}
+        })
+        Name (PRSB, ResourceTemplate ()
+        {
+            IRQ (Level, ActiveLow, Shared, )
+                {3,4,5,7,9,10,11,12,14,15}
+        })
+        Name (PRSC, ResourceTemplate ()
+        {
+            IRQ (Level, ActiveLow, Shared, )
+                {3,4,5,7,9,10,11,12,14,15}
+        })
+        Name (PRSD, ResourceTemplate ()
+        {
+            IRQ (Level, ActiveLow, Shared, )
+                {3,4,5,7,9,10,11,12,14,15}
+        })
+which means it's also possible to use IRQ9 for PCI interrupt, but works
+in Level, ActiveLow mode. So it conflicts with ACPI SCI interrupt source
+overriddern.
 
-Note this commit also makes some whitespace changes to the intializatio=
-n
-of existing cells in axp20x_cells, these are pure whitespace changes,
-functionally nothing changes.
+So implement a quirk to correct interrupt attribute for HyperV SCI
+interrupt. Nick reports the proposed patch fixes the regression as "
+  Applied the above proposed patch with the DMI values substituted.
+  The tulip driver loaded, and an address was assigned via DHCP.
+"
+Please refer to following links for more information:
+https://bugzilla.kernel.org/show_bug.cgi?id=101301
+https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1440072
 
-Cc: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
-Signed-off-by: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
-Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Fixes: cd68f6bd53cf ("x86, irq, acpi: Get rid of special handling of GSI for ACPI SCI")
+Reported-and-tested-by: Nick Meier <nmeier@microsoft.com>
+Cc: <stable@vger.kernel.org> # 3.19
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
 ---
-Changes in v2:
--Use DEFINE_RES_IRQ_NAMED
--Change indentation of axp20x_cells initializers to avoid line wrapping
-Changes in v3:
--Improve commit message
--Add Bruno's S-o-b
----
- drivers/mfd/axp20x.c | 20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+ arch/x86/kernel/acpi/boot.c |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index d9f2f96..3f576b7 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -140,6 +140,13 @@ static struct resource axp20x_pek_resources[] =3D =
-{
- 	},
- };
-=20
-+static struct resource axp20x_usb_power_supply_resources[] =3D {
-+	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
-+	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
-+	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_VALID, "VBUS_VALID"),
-+	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_NOT_VALID, "VBUS_NOT_VALID"),
-+};
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index e49ee24da85e..47d95a86d56d 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -1308,6 +1308,13 @@ static int __init dmi_ignore_irq0_timer_override(const struct dmi_system_id *d)
+ 	return 0;
+ }
+ 
++static int __init acpi_force_hyperv_sci_attr(const struct dmi_system_id *d)
++{
++	acpi_sci_flags = ACPI_MADT_POLARITY_ACTIVE_LOW |
++		(acpi_sci_flags & ~ACPI_MADT_POLARITY_MASK);
++	return 0;
++}
 +
- static struct resource axp22x_pek_resources[] =3D {
- 	{
- 		.name   =3D "PEK_DBR",
-@@ -432,11 +439,16 @@ static const struct regmap_irq_chip axp288_regmap=
-_irq_chip =3D {
-=20
- static struct mfd_cell axp20x_cells[] =3D {
- 	{
--		.name			=3D "axp20x-pek",
--		.num_resources		=3D ARRAY_SIZE(axp20x_pek_resources),
--		.resources		=3D axp20x_pek_resources,
-+		.name		=3D "axp20x-pek",
-+		.num_resources	=3D ARRAY_SIZE(axp20x_pek_resources),
-+		.resources	=3D axp20x_pek_resources,
- 	}, {
--		.name			=3D "axp20x-regulator",
-+		.name		=3D "axp20x-regulator",
-+	}, {
-+		.name		=3D "axp20x-usb-power-supply",
-+		.of_compatible	=3D "x-powers,axp202-usb-power-supply",
-+		.num_resources	=3D ARRAY_SIZE(axp20x_usb_power_supply_resources),
-+		.resources	=3D axp20x_usb_power_supply_resources,
- 	},
+ /*
+  * ACPI offers an alternative platform interface model that removes
+  * ACPI hardware requirements for platforms that do not implement
+@@ -1458,6 +1465,14 @@ static struct dmi_system_id __initdata acpi_dmi_table_late[] = {
+ 		     DMI_MATCH(DMI_PRODUCT_NAME, "AMILO PRO V2030"),
+ 		     },
+ 	 },
++	{
++	 .callback = acpi_force_hyperv_sci_attr,
++	 .ident = "HyperV",
++	 .matches = {
++		     DMI_MATCH(DMI_SYS_VENDOR, "Microsoft Corporation"),
++		     DMI_MATCH(DMI_PRODUCT_NAME, "Virtual Machine"),
++		     },
++	 },
+ 	{}
  };
-=20
---=20
-2.4.3
+ 
+-- 
+1.7.10.4
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
