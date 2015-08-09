@@ -1,57 +1,93 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 0/8] serial: imx: rework pm support and add runtime pm
-Date: Sun,  9 Aug 2015 11:19:01 -0700
-Message-ID: <1439144349-10494-1-git-send-email-edubezval@gmail.com>
+Subject: [PATCH 1/8] serial: imx: remove unbalanced clk_prepare
+Date: Sun,  9 Aug 2015 11:19:02 -0700
+Message-ID: <1439144349-10494-2-git-send-email-edubezval@gmail.com>
+References: <1439144349-10494-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:36210 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933143AbbHISTP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Aug 2015 14:19:15 -0400
-Received: by pacrr5 with SMTP id rr5so87087349pac.3
-        for <linux-pm@vger.kernel.org>; Sun, 09 Aug 2015 11:19:14 -0700 (PDT)
+Received: from mail-pd0-f174.google.com ([209.85.192.174]:33884 "EHLO
+	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933143AbbHISTQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Aug 2015 14:19:16 -0400
+In-Reply-To: <1439144349-10494-1-git-send-email-edubezval@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Fabio Stevam <festevam@gmail.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hello,
+The current code attempts to prepare clk_per and clk_ipg
+before using the device. However, the result is an extra
+prepare call on each clock. Here is the output of uart
+clocks (only uart enabled and used as console):
 
-This is a patch series to introduce runtime pm in the imx serial driver.
-The work is pretty straight forward. The idea is to get runtime pm
-to handle ipg and per clocks, idling the device when possible,
-configuring wakeups, and saving and restoring context when needed.
+$  grep uart /sys/kernel/debug/clk/clk_summary
+ uart_serial           1            2    80000000          0 0
+       uart           1            2    66000000          0 0
 
-A minor refactoring was needed to get things done. Mainly because
-the suspend and resume path shares several needed steps with
-the runtime pm path. Therefore, several common helper functions
-were created to avoid code duplication between these two pm features.
+This patch balances the calls of prepares. The result is:
 
-On top of this, I am also adding a simple pm qos requirement. The idea
-is to skip deeper c-states when we know the uart port is going to have
-latency requirements. The latency is computed based on baud rate and
-buffer size.
+$  grep uart /sys/kernel/debug/clk/clk_summary
+ uart_serial           1            1    80000000          0 0
+       uart           1            1    66000000          0 0
 
-Most of the code is a design copy of existing serial drivers.
+Cc: Fabio Stevam <festevam@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jiri Slaby <jslaby@suse.com>
+Cc: linux-serial@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+---
+ drivers/tty/serial/imx.c | 20 ++++++--------------
+ 1 file changed, 6 insertions(+), 14 deletions(-)
 
-This code has been tested with IMX6SL, mainly with UART1 used as console.
-
-Comments and suggestions of improvements are welcome.
-
-BR,
-
-Eduardo Valentin (8):
-  serial: imx: remove unbalanced clk_prepare
-  serial: imx: introduce serial_imx_enable_wakeup()
-  serial: imx: allow waking up on RTSD
-  serial: imx: use dev_pm_ops
-  serial: imx: save and restore context in the suspend path
-  serial: imx: add a flag to indicate we are in the suspend path
-  serial: imx: add runtime pm support
-  serial: imx: add pm_qos request
-
- drivers/tty/serial/imx.c | 342 ++++++++++++++++++++++++++++++++++++++---------
- 1 file changed, 276 insertions(+), 66 deletions(-)
-
+diff --git a/drivers/tty/serial/imx.c b/drivers/tty/serial/imx.c
+index 54fdc78..b53455d 100644
+--- a/drivers/tty/serial/imx.c
++++ b/drivers/tty/serial/imx.c
+@@ -1624,12 +1624,12 @@ imx_console_write(struct console *co, const char *s, unsigned int count)
+ 	int locked = 1;
+ 	int retval;
+ 
+-	retval = clk_enable(sport->clk_per);
++	retval = clk_prepare_enable(sport->clk_per);
+ 	if (retval)
+ 		return;
+-	retval = clk_enable(sport->clk_ipg);
++	retval = clk_prepare_enable(sport->clk_ipg);
+ 	if (retval) {
+-		clk_disable(sport->clk_per);
++		clk_disable_unprepare(sport->clk_per);
+ 		return;
+ 	}
+ 
+@@ -1668,8 +1668,8 @@ imx_console_write(struct console *co, const char *s, unsigned int count)
+ 	if (locked)
+ 		spin_unlock_irqrestore(&sport->port.lock, flags);
+ 
+-	clk_disable(sport->clk_ipg);
+-	clk_disable(sport->clk_per);
++	clk_disable_unprepare(sport->clk_ipg);
++	clk_disable_unprepare(sport->clk_per);
+ }
+ 
+ /*
+@@ -1770,15 +1770,7 @@ imx_console_setup(struct console *co, char *options)
+ 
+ 	retval = uart_set_options(&sport->port, co, baud, parity, bits, flow);
+ 
+-	clk_disable(sport->clk_ipg);
+-	if (retval) {
+-		clk_unprepare(sport->clk_ipg);
+-		goto error_console;
+-	}
+-
+-	retval = clk_prepare(sport->clk_per);
+-	if (retval)
+-		clk_disable_unprepare(sport->clk_ipg);
++	clk_disable_unprepare(sport->clk_ipg);
+ 
+ error_console:
+ 	return retval;
 -- 
 2.5.0
 
