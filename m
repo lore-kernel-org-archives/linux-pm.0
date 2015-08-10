@@ -1,176 +1,109 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFCv5 PATCH 41/46] sched/fair: add triggers for OPP change requests
-Date: Mon, 10 Aug 2015 17:07:07 +0200
-Message-ID: <CAKfTPtAJY5zH4YeFibLSg7BbCwV76++fJ_f+uNz8=0t8V8TJWA@mail.gmail.com>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-42-git-send-email-morten.rasmussen@arm.com>
- <CAKfTPtBfNV=K+gwb7dfQXqBEbByMWRoFDb0FtfeeY1hh33j4XA@mail.gmail.com> <55C8AA92.8000201@arm.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH 6/9] ARM: domain: Add platform handlers for CPU PM domains
+Date: Mon, 10 Aug 2015 09:36:24 -0600
+Message-ID: <20150810153624.GD52339@linaro.org>
+References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
+ <1438731339-58317-7-git-send-email-lina.iyer@linaro.org>
+ <CAL_JsqKWekSGiFbZz6++3ibAzY_8Y6+0nOBQinFVw4cBk6JvEw@mail.gmail.com>
+ <20150805192341.GB52339@linaro.org>
+ <CAL_JsqJ_AK6M5WmyFrGVLtpGg=MdAafxX=1873Je_uB_sQkpiA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f170.google.com ([209.85.217.170]:34281 "EHLO
-	mail-lb0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753037AbbHJPH3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Aug 2015 11:07:29 -0400
-Received: by lbbtg9 with SMTP id tg9so59004942lbb.1
-        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2015 08:07:27 -0700 (PDT)
-In-Reply-To: <55C8AA92.8000201@arm.com>
+Received: from mail-pd0-f171.google.com ([209.85.192.171]:33484 "EHLO
+	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753247AbbHJPgD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Aug 2015 11:36:03 -0400
+Received: by pdrh1 with SMTP id h1so54701864pdr.0
+        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2015 08:36:03 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAL_JsqJ_AK6M5WmyFrGVLtpGg=MdAafxX=1873Je_uB_sQkpiA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Morten Rasmussen <Morten.Rasmussen@arm.com>, Peter Zijlstra <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, Yuyang Du <yuyang.du@intel.com>, Michael Turquette <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Sai Charan Gurrappadi <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Rob Herring <robh@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-On 10 August 2015 at 15:43, Juri Lelli <juri.lelli@arm.com> wrote:
+On Wed, Aug 05 2015 at 21:01 -0600, Rob Herring wrote:
+>On Wed, Aug 5, 2015 at 2:23 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> On Wed, Aug 05 2015 at 08:45 -0600, Rob Herring wrote:
+>>>
+>>> On Tue, Aug 4, 2015 at 6:35 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>>>>
+>>>> In addition to the common power up/down actions of CPU PM domain core,
+>>>> platforms may have additional configuration before the CPU domain can be
+>>>> powered off or considered active. Allow platform drivers to register
+>>>> handlers for CPU PM domains.
+>>>>
+>>>> Platform drivers may register their callbacks against a compatible
+>>>> string defined by their PM domain provider device node in the DT. At
+>>>> domain init, the platform driver can initialize the platform specific
+>>>> genpd attributes. The init callback would need to return successfully,
+>>>> for the platform power_on/off handlers to be registered with the CPU PM
+>>>> domain.
+>>>>
+>>>> The code uses __init section to reduce memory needed for platform
+>>>> handlers and therefore can be freed after the driver is initialized, a
+>>>> desirable outcome for single kernel image.
+>>>
+>>>
+>>> [...]
+>>>
+>>>> diff --git a/arch/arm/include/asm/arm-pd.h
+>>>> b/arch/arm/include/asm/arm-pd.h
+>>>> new file mode 100644
+>>>> index 0000000..fc44abf
+>>
+>>
+>> [...]
+>>
+>>>> +#define ARM_PD_METHOD_OF_DECLARE(_name, _handle, _ops) \
+>>>> +       static const struct of_arm_pd_method
+>>>> __arm_pd_method_of_table_##_name \
+>>>> +       __used __section(__arm_pd_method_of_table)              \
+>>>> +       = { .handle = _handle, .ops = _ops }
+>>>
+>>>
+>>> AFAICT, you are not using this in this series. You should add it when
+>>> you have a user.
+>>>
+>>> Ideally, we keep some amount of uniformity across various *_OF_DECLARE
+>>> which is why we have OF_DECLARE_1 and OF_DECLARE_2. This makes all the
+>>> sections just arrays of struct of_device_id. Not all users follow
+>>> this, but most do. So instead of putting the ops in here, platforms
+>>> can provide a function callback which can then set the ops. Then you
+>>> also don't need the .init() ops function as the callback function can
+>>> do any initialization too.
+>>>
+>> I looked through these and I can switch over to _OF_DECLARE() without any
+>> issues, but using OF_DECLARE_1 or OF_DECLARE_2 is pretty limiting.
 >
-> Hi Vincent,
+>Well yes, but then we only want to use it for things that will never
+>use the driver model.
 >
-> On 04/08/15 14:41, Vincent Guittot wrote:
-> > Hi Juri,
-> >
-> > On 7 July 2015 at 20:24, Morten Rasmussen <morten.rasmussen@arm.com> wrote:
-> >> From: Juri Lelli <juri.lelli@arm.com>
-> >>
-> >> Each time a task is {en,de}queued we might need to adapt the current
-> >> frequency to the new usage. Add triggers on {en,de}queue_task_fair() for
-> >> this purpose.  Only trigger a freq request if we are effectively waking up
-> >> or going to sleep.  Filter out load balancing related calls to reduce the
-> >> number of triggers.
-> >>
-> >> cc: Ingo Molnar <mingo@redhat.com>
-> >> cc: Peter Zijlstra <peterz@infradead.org>
-> >>
-> >> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> >> ---
-> >>  kernel/sched/fair.c | 42 ++++++++++++++++++++++++++++++++++++++++--
-> >>  1 file changed, 40 insertions(+), 2 deletions(-)
-> >>
-> >> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> >> index f74e9d2..b8627c6 100644
-> >> --- a/kernel/sched/fair.c
-> >> +++ b/kernel/sched/fair.c
-> >> @@ -4281,7 +4281,10 @@ static inline void hrtick_update(struct rq *rq)
-> >>  }
-> >>  #endif
-> >>
-> >> +static unsigned int capacity_margin = 1280; /* ~20% margin */
-> >> +
-> >>  static bool cpu_overutilized(int cpu);
-> >> +static unsigned long get_cpu_usage(int cpu);
-> >>  struct static_key __sched_energy_freq __read_mostly = STATIC_KEY_INIT_FALSE;
-> >>
-> >>  /*
-> >> @@ -4332,6 +4335,26 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> >>                 if (!task_new && !rq->rd->overutilized &&
-> >>                     cpu_overutilized(rq->cpu))
-> >>                         rq->rd->overutilized = true;
-> >> +               /*
-> >> +                * We want to trigger a freq switch request only for tasks that
-> >> +                * are waking up; this is because we get here also during
-> >> +                * load balancing, but in these cases it seems wise to trigger
-> >> +                * as single request after load balancing is done.
-> >> +                *
-> >> +                * XXX: how about fork()? Do we need a special flag/something
-> >> +                *      to tell if we are here after a fork() (wakeup_task_new)?
-> >> +                *
-> >> +                * Also, we add a margin (same ~20% used for the tipping point)
-> >> +                * to our request to provide some head room if p's utilization
-> >> +                * further increases.
-> >> +                */
-> >> +               if (sched_energy_freq() && !task_new) {
-> >> +                       unsigned long req_cap = get_cpu_usage(cpu_of(rq));
-> >> +
-> >> +                       req_cap = req_cap * capacity_margin
-> >> +                                       >> SCHED_CAPACITY_SHIFT;
-> >> +                       cpufreq_sched_set_cap(cpu_of(rq), req_cap);
-> >> +               }
-> >>         }
-> >>         hrtick_update(rq);
-> >>  }
-> >> @@ -4393,6 +4416,23 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
-> >>         if (!se) {
-> >>                 sub_nr_running(rq, 1);
-> >>                 update_rq_runnable_avg(rq, 1);
-> >> +               /*
-> >> +                * We want to trigger a freq switch request only for tasks that
-> >> +                * are going to sleep; this is because we get here also during
-> >> +                * load balancing, but in these cases it seems wise to trigger
-> >> +                * as single request after load balancing is done.
-> >> +                *
-> >> +                * Also, we add a margin (same ~20% used for the tipping point)
-> >> +                * to our request to provide some head room if p's utilization
-> >> +                * further increases.
-> >> +                */
-> >> +               if (sched_energy_freq() && task_sleep) {
-> >> +                       unsigned long req_cap = get_cpu_usage(cpu_of(rq));
-> >> +
-> >> +                       req_cap = req_cap * capacity_margin
-> >> +                                       >> SCHED_CAPACITY_SHIFT;
-> >> +                       cpufreq_sched_set_cap(cpu_of(rq), req_cap);
-> >
-> > Could you clarify why you want to trig a freq switch for tasks that
-> > are going to sleep ?
-> > The cpu_usage should not changed that much as the se_utilization of
-> > the entity moves from utilization_load_avg to utilization_blocked_avg
-> > of the rq and the usage and the freq are updated periodically.
+>> If I could set up my own function type for the .data member, then its a
+>> lot more easier on the code. Like this -
+>>
+>> typedef int (*arm_pd_init)(struct device_node *dn, struct
+>>                 generic_pm_domain *genpd, struct of_arm_pd_ops *ops);
 >
-> I think we still need to cover multiple back-to-back dequeues. Suppose
-> that you have, let's say, 3 tasks that get enqueued at the same time.
-> After some time the first one goes to sleep and its utilization, as you
-> say, gets moved to utilization_blocked_avg. So, nothing changes, and
-> the trigger is superfluous (even if no freq change I guess will be
-> issued as we are already servicing enough capacity). However, after a
-> while, the second task goes to sleep. Now we still use get_cpu_usage()
-> and the first task contribution in utilization_blocked_avg should have
-> been decayed by this time. Same thing may than happen for the third task
-> as well. So, if we don't check if we need to scale down in
-> dequeue_task_fair, it seems to me that we might miss some opportunities,
-> as blocked contribution of other tasks could have been successively
-> decayed.
+>You alloc the genpd struct just before calling init. You can just as
+>easily have the platform specific code call an allocation function and
+>a function to set the ops functions. This is more inline with how a
+>driver would work when registering with a subsystem.
 >
-> What you think?
+OK. That would mean I have a way of mapping the device_node to the
+of_arm_pd_ops, which I currently dont. Was trying to avoid a list. But,
+I was able to use list and use OF_DECLARE_1. The platform driver, shall
+call up separate API to register the ops or ge the Genpd and modify it.
 
-The tick is used to monitor such variation of the usage (in both way,
-decay of the usage of sleeping tasks and increase of the usage of
-running tasks). So in your example, if the duration between the sleep
-of the 2 tasks is significant enough, the tick will handle this
-variation
+Will submit it in the next spin, following the discussion on arm,pd.
 
-Regards,
-Vincent
+Thanks,
+Lina
+
+
+>I also don't
+>think "arm,pd" is a good compatible string to be matching on. I'll
+>comment on that more in patch 5.
 >
-> Thanks,
->
-> - Juri
->
-> > It should be the same for the wake up of a task in enqueue_task_fair
-> > above, even if it's less obvious for this latter use case because the
-> > cpu might wake up from a long idle phase during which its
-> > utilization_blocked_avg has not been updated. Nevertheless, a trig of
-> > the freq switch at wake up of the cpu once its usage has been updated
-> > should do the job.
-> >
-> > So tick, migration of tasks, new tasks, entering/leaving idle state of
-> > cpu should be enough to trig freq switch
-> >
-> > Regards,
-> > Vincent
-> >
-> >
-> >> +               }
-> >>         }
-> >>         hrtick_update(rq);
-> >>  }
-> >> @@ -4959,8 +4999,6 @@ static int find_new_capacity(struct energy_env *eenv,
-> >>         return idx;
-> >>  }
-> >>
-> >> -static unsigned int capacity_margin = 1280; /* ~20% margin */
-> >> -
-> >>  static bool cpu_overutilized(int cpu)
-> >>  {
-> >>         return (capacity_of(cpu) * 1024) <
-> >> --
-> >> 1.9.1
-> >>
-> >
->
+>Rob
