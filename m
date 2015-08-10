@@ -1,119 +1,82 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: re: PM / OPP: Add OPP sharing information to OPP library
-Date: Mon, 10 Aug 2015 19:40:09 +0300
-Message-ID: <20150810164009.GB10496@mwanda>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 18/23] power/reset: at91-reset: get and use slow clock
+Date: Mon, 10 Aug 2015 19:11:49 +0200
+Message-ID: <20150810171148.GA21858@earth>
+References: <1438335599-3301-1-git-send-email-alexandre.belloni@free-electrons.com>
+ <1438335599-3301-19-git-send-email-alexandre.belloni@free-electrons.com>
+ <20150805182220.GC11315@earth>
+ <20150810155005.GH3411@piout.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="LQksG6bCIzRHxTLp"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp1040.oracle.com ([156.151.31.81]:16386 "EHLO
-	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752957AbbHJQkb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Aug 2015 12:40:31 -0400
+Received: from mail.kernel.org ([198.145.29.136]:34330 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753178AbbHJRLz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 10 Aug 2015 13:11:55 -0400
 Content-Disposition: inline
+In-Reply-To: <20150810155005.GH3411@piout.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org
 
-Hello Viresh Kumar,
 
-The patch 064416586190: "PM / OPP: Add OPP sharing information to OPP
-library" from Jul 29, 2015, leads to the following static checker
-warning:
+--LQksG6bCIzRHxTLp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	drivers/base/power/opp.c:1341 _of_init_opp_table_v2()
-	error: 'dev_opp' dereferencing possible ERR_PTR()
+Hi,
 
-drivers/base/power/opp.c
-  1328          }
-  1329  
-  1330          /* There should be one of more OPP defined */
-  1331          if (WARN_ON(!count))
-  1332                  goto put_opp_np;
+On Mon, Aug 10, 2015 at 05:50:05PM +0200, Alexandre Belloni wrote:
+> On 05/08/2015 at 20:22:20 +0200, Sebastian Reichel wrote :
+> > On Fri, Jul 31, 2015 at 11:39:54AM +0200, Alexandre Belloni wrote:
+> > > Commit dca1a4b5ff6e ("clk: at91: keep slow clk enabled to prevent sys=
+tem
+> > > hang") added a workaround for the slow clock as it is not properly ha=
+ndled
+> > > by its users.
+> > >=20
+> > > Get and use the slow clock as it is necessary for the at91 reset
+> > > controller.
+> >=20
+> > You call clk_prepare_enable during probe without a matching
+> > clk_disable_unprepare on module removal.
+>=20
+> They will never be compiled as modules as the Kconfig option is a
+> bool so we don't have a .remove and the module will never be removed.
 
-Should we set "ret" here?
+In that case the module_platform_driver() statement at the bottom
+should be replaced with builtin_platform_driver().
 
-  1333  
-  1334          if (!ret) {
-  1335                  if (!dev_opp) {
-                             ^^^^^^^
-No need to test this, we tested at the start of the function.
+> Do you want me to change at91-reset and at91-poweroff to work as
+> modules?
 
-  1336                          dev_opp = _find_device_opp(dev);
-  1337                          if (WARN_ON(!dev_opp))
+That would also be fine.
 
-This should be checking for IS_ERR().  We probably want to set "ret =
-PTR_ERR(dev_opp) as well.
+-- Sebastian
 
-  1338                                  goto put_opp_np;
-  1339                  }
-  1340  
-  1341                  dev_opp->np = opp_np;
-  1342                  dev_opp->shared_opp = of_property_read_bool(opp_np,
-  1343                                                              "opp-shared");
-  1344          } else {
-  1345                  of_free_opp_table(dev);
-  1346          }
-  1347  
-  1348  put_opp_np:
-  1349          of_node_put(opp_np);
-  1350  
-  1351          return ret;
-  1352  }
+--LQksG6bCIzRHxTLp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Checking for "!ret" on line 1334 is "success handling" style code.
-Success handling leads to multiple indent levels and is more twisted and
-confusing.  I generally prefer to keep my error handling paths separate
-from the success path although in this case we call of_node_put() on
-both paths, so maybe a shared exit path makes sense.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-To me boils down to a question of, "How much is shared and how much is
-different.  Also should we call of_free_opp_table() if _find_device_opp()
-fails?"  If not then I would use a common exit path, otherwise I would
-split them apart.
+iQIcBAEBCgAGBQJVyNtNAAoJENju1/PIO/qa3YcP/0i2FxRQ68UuPKdk1ixH7G/R
+s+aXmhNFr3YhujvoIyXfYaPE1J2mMZ5rli5N42lZL2yohj0o0xKg0kb41OA6bvL4
+NkIIHySVVlw8FSJKzOaBPUoewsu3HdKZVIF2sHbsv+vlCoPczVaa05hrvKjSLGl5
+nvwmcms6UkaksHkuPuYS033L7mN80cOM3RBfbWTGiVJLK6SdNfxQCtCjRbEcEpBj
+cTIM5mSC0TbKA0bMxlLS4aaD7JpqHFxbgwuOeKk4uXAo4Y25AbxXxCQiA6y45e3F
+rROzeLFsKjCJ4qxNGQFV1t1RXBmNzX2e9y06ZkF1VzSrA1Q8v3uxlphjNqsUMzFt
+HeP0yIf5x9TzV5kJNpyKahR1TdowUg3NE4KQa75mhkXJBDOge9KhpCqjQ50bEm3p
+s7ULE9AAm+S+MXtbt2Z3OTpD70nm9259LLp6QQadXLrJHBdNJ2NgCmN8mC5SDtol
+DRy998FrE2GaVIKqV9OPG0ByIVB2t+4IOTkVWClSYLmb6CCzSFhPs8AHVKhv/0XP
+Y39DQdLad1k5C5IJglaegu0whPetFNNZCwTocl+DeaG4jWOdvdB4OI0jEmxAHKS1
+WSTYv0tbtISKxuNPEtvrFCWo9gypTypuxb/isPQ4EgWEG8JBoM00NHcjKhM5Vlnu
+OTwFUSLfviwiCnzeVRL0
+=v6XF
+-----END PGP SIGNATURE-----
 
-Shared:
-
-	if (ret) {
-		of_free_opp_table(dev);
-		goto put_opp_npl;
-	}
-
-	dev_opp = _find_device_opp(dev);
-	if (WARN_ON(IS_ERR(dev_opp))) {
-		ret = PTR_ERR(dev_opp);
-		goto put_opp_np;
-	}
-
-	dev_opp->np = opp_np;
-	dev_opp->shared_opp = of_property_read_bool(opp_np, "opp-shared");
-
-put_opp_np:
-	of_node_put(opp_np);
-	return ret;
-
-Split apart:
-
-	if (ret)
-		goto free_opp_table;
-
-	dev_opp = _find_device_opp(dev);
-	if (WARN_ON(IS_ERR(dev_opp))) {
-		ret = PTR_ERR(dev_opp);
-		goto free_opp_table;
-	}
-
-	dev_opp->np = opp_np;
-	dev_opp->shared_opp = of_property_read_bool(opp_np, "opp-shared");
-
-	of_node_put(opp_np);
-	return 0;
-
-free_opp_table:
-	of_free_opp_table(dev);
-put_opp_np:
-	of_node_put(opp_np);
-	return ret;
-
-regards,
-dan carpenter
+--LQksG6bCIzRHxTLp--
