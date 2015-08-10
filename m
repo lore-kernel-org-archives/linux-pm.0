@@ -1,166 +1,120 @@
-From: Dmitry Torokhov <dtor@chromium.org>
-Subject: Re: [PATCH] thermal: rockchip: fix handling of invalid readings
-Date: Mon, 10 Aug 2015 00:59:04 -0700
-Message-ID: <CAE_wzQ_xhh17tsVj28W5Z=mgomnz1nOMPMN15Sozb8KcMjo=wA@mail.gmail.com>
-References: <20150807205923.GA33949@dtor-ws>
-	<55C84521.5040007@rock-chips.com>
+From: =?UTF-8?B?Q2h1bmctWWloIFdhbmcgKOeOi+W0h+aHvyk=?=
+	<cywang@google.com>
+Subject: Re: [PATCH] thermal: of: Introduce governor selection in dts
+Date: Mon, 10 Aug 2015 16:00:49 +0800
+Message-ID: <CAM2ehZYy3SNKhXvF0XyQsoPFab2JqrVq3wLKadPVxBsVG3E7jw@mail.gmail.com>
+References: <CAM2ehZYXsqCoS9ygXNfPHxt9-b5cFxH_ovrgjvM-BfDO6REcUg@mail.gmail.com>
+ <20150807103121.GC7646@leverpostej>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f175.google.com ([209.85.223.175]:35859 "EHLO
-	mail-io0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752876AbbHJH7H convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Aug 2015 03:59:07 -0400
-Received: by ioeg141 with SMTP id g141so161920151ioe.3
-        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2015 00:59:07 -0700 (PDT)
-Received: from mail-ig0-f178.google.com (mail-ig0-f178.google.com. [209.85.213.178])
-        by smtp.gmail.com with ESMTPSA id 38sm12689740ior.17.2015.08.10.00.59.05
-        for <linux-pm@vger.kernel.org>
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 10 Aug 2015 00:59:05 -0700 (PDT)
-Received: by igr7 with SMTP id 7so64686201igr.0
-        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2015 00:59:05 -0700 (PDT)
-In-Reply-To: <55C84521.5040007@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150807103121.GC7646@leverpostej>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mark Rutland <mark.rutland@arm.com>, javi.merino@arm.com
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <wxt@rock-chips.com>
-Cc: Dmitry Torokhov <dtor@chromium.org>, Heiko Stuebner <heiko@sntech.de>, Eduardo Valentin <edubezval@gmail.com>, Doug Anderson <dianders@chromium.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Caesar,
+This patch was originally introduced when we made power_allocator the
+default governor where we had issues in binding a thermal zone w/o
+parameters to. Then we came out this facility for binding a specific
+governor to a thermal zone in dts instead of the default governor.
+Javi seems like this idea much.
 
-On Sun, Aug 9, 2015 at 11:30 PM, Caesar Wang <wxt@rock-chips.com> wrote=
-:
-> Dear Dmitry,
->
-> Thanks your patch.
->
-> The code looks like fine,but I don't think the TS-ADC will work on rk=
-3288
-> SoC.
-
-What do you mean? It seems to work when I ran it...
-
->
->
-> =E5=9C=A8 2015=E5=B9=B408=E6=9C=8808=E6=97=A5 04:59, Dmitry Torokhov =
-=E5=86=99=E9=81=93:
+On Fri, Aug 7, 2015 at 6:31 PM, Mark Rutland <mark.rutland@arm.com> wro=
+te:
+> On Fri, Aug 07, 2015 at 08:09:39AM +0100, Chung-Yih Wang (=E7=8E=8B=E5=
+=B4=87=E6=87=BF) wrote:
+>> As there could be more thermal zones on a system and
+>> more variety in thermal governors provided in kernel,
+>> this patch provides flexibility of governor selection
+>> for a thermal zone declared in device tree.
 >>
->> We attempted to signal invalid code by returning -EAGAIN from
->> rk_tsadcv2_code_to_temp(), unfortunately the return value was stuffe=
-d
->> directly into the temperature pointer, potentially confusing upper
->> layers with temperature of -EINVAL.
->>
->> Let's split temperature from error/success indicator to avoid such
->> confusion.
->>
->> Also change the way we scan the temperature table to start with the =
-2nd
->> element so that we do not need to worry that we may reference out of
->> bounds element while doing binary search and keep checking that we e=
-nd
->> up with 'mid' equal to 0 (since we are looking for the temperature t=
-hat
->> would fall into interval between the 'mid' and 'mid - 1') .
->>
->> Signed-off-by: Dmitry Torokhov <dtor@chromium.org>
+>> Change-Id: Ie4a75d762709cbbe9f1806dae325d13f71982e78
+>> Signed-off-by: Chung-yih Wang <cywang@chromium.org>
 >> ---
->>   drivers/thermal/rockchip_thermal.c | 28 +++++++++++++-------------=
---
->>   1 file changed, 13 insertions(+), 15 deletions(-)
+>>  Documentation/devicetree/bindings/thermal/thermal.txt |  9 ++++++++=
++
+>>  drivers/thermal/of-thermal.c                          | 10 ++++++++=
+++
+>>  2 files changed, 19 insertions(+)
 >>
->> diff --git a/drivers/thermal/rockchip_thermal.c
->> b/drivers/thermal/rockchip_thermal.c
->> index c89ffb2..93ee307 100644
->> --- a/drivers/thermal/rockchip_thermal.c
->> +++ b/drivers/thermal/rockchip_thermal.c
->> @@ -124,7 +124,7 @@ struct rockchip_thermal_data {
->>   #define TSADCV2_AUTO_PERIOD_HT_TIME           50  /* msec */
->>     struct tsadc_table {
->> -       unsigned long code;
->> +       u32 code;
->>         long temp;
->>   };
->>   @@ -164,7 +164,6 @@ static const struct tsadc_table v2_code_table[=
-] =3D {
->>         {3452, 115000},
->>         {3437, 120000},
->>         {3421, 125000},
->> -       {0, 125000},
->>   };
->>     static u32 rk_tsadcv2_temp_to_code(long temp)
->> @@ -191,19 +190,21 @@ static u32 rk_tsadcv2_temp_to_code(long temp)
->>         return 0;
->>   }
->>   -static int rk_tsadcv2_code_to_temp(u32 code)
->> +static int rk_tsadcv2_code_to_temp(u32 code, int *temp)
->>   {
->> -       unsigned int low =3D 0;
->> +       unsigned int low =3D 1;
->>         unsigned int high =3D ARRAY_SIZE(v2_code_table) - 1;
->>         unsigned int mid =3D (low + high) / 2;
->>         unsigned int num;
->>         unsigned long denom;
->>   -     /* Invalid code, return -EAGAIN */
->> -       if (code > TSADCV2_DATA_MASK)
->> -               return -EAGAIN;
->> +       BUILD_BUG_ON(ARRAY_SIZE(v2_code_table) < 2);
->>   -     while (low <=3D high && mid) {
->> +       code &=3D TSADCV2_DATA_MASK;
->> +       if (code < v2_code_table[high].code)
->> +               return -EAGAIN;         /* Incorrect reading */
+>> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt
+>> b/Documentation/devicetree/bindings/thermal/thermal.txt
+>> index 8a49362..30a5d41 100644
+>> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
+>> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+>> @@ -174,6 +174,13 @@ Optional property:
+>>                         2000mW, while on a 10'' tablet is around
+>>                         4500mW.
+>>
+>> +- thermal-governor-name:       The name of governor used to control=
+ the
+>> +                               thermal zone instead of the default =
+one
+>> +                               specified in kernel config. For refe=
+rence, if
+>> +                               default governor is step_wise, one c=
+ould
+>> +                               select power_allocator for cpu_therm=
+al zone
+>> +                               in dts.
+>
+>
+> This is not a hardware or system property, but rather a Linux
+> implementation detail.
+>
+> This really shouldn't go in the DT.
+>
+> Mark.
+>
 >> +
->> +       while (low <=3D high) {
->>                 if (code >=3D v2_code_table[mid].code &&
->>                     code < v2_code_table[mid - 1].code)
->>                         break;
->> @@ -223,7 +224,9 @@ static int rk_tsadcv2_code_to_temp(u32 code)
->>         num =3D v2_code_table[mid].temp - v2_code_table[mid - 1].tem=
-p;
->>         num *=3D v2_code_table[mid - 1].code - code;
->>         denom =3D v2_code_table[mid - 1].code - v2_code_table[mid].c=
-ode;
->> -       return v2_code_table[mid - 1].temp + (num / denom);
->> +       *temp =3D v2_code_table[mid - 1].temp + (num / denom);
+>>  Note: The delay properties are bound to the maximum dT/dt (temperat=
+ure
+>>  derivative over time) in two situations for a thermal zone:
+>>  (i)  - when passive cooling is activated (polling-delay-passive); a=
+nd
+>> @@ -555,6 +562,8 @@ thermal-zones {
+>>
+>>                 sustainable-power =3D <2500>;
+>>
+>> +               thermal-governor-name =3D "power_allocator";
 >> +
->> +       return 0;
->>   }
->>     /**
->> @@ -281,14 +284,9 @@ static int rk_tsadcv2_get_temp(int chn, void __=
-iomem
->> *regs, int *temp)
->>   {
->>         u32 val;
->>   -     /* the A/D value of the channel last conversion need some ti=
-me */
->>         val =3D readl_relaxed(regs + TSADCV2_DATA(chn));
->> -       if (val =3D=3D 0)
->> -               return -EAGAIN;
->> -
->
->
-> if we reserve the above code, that will get the ADC value.
-
-But if we pass  0 into rk_tsadcv2_code_to_temp() it will trigger:
-
->> +       if (code < v2_code_table[high].code)
->> +               return -EAGAIN;         /* Incorrect reading */
-
-and still return -EAGAIN, as it was. There is no behavior change as
-far as I can see.
-
->
->
->> -       *temp =3D rk_tsadcv2_code_to_temp(val);
->>   -     return 0;
->> +       return rk_tsadcv2_code_to_temp(val, temp);
->>   }
->>     static void rk_tsadcv2_tshut_temp(int chn, void __iomem *regs, l=
-ong
->> temp)
->
->
-
-Thanks,
-Dmitry
+>>                 trips {
+>>                         /* Trips are based on resulting linear equat=
+ion */
+>>                         cpu_trip: cpu-trip {
+>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-therm=
+al.c
+>> index b295b2b..45570ac 100644
+>> --- a/drivers/thermal/of-thermal.c
+>> +++ b/drivers/thermal/of-thermal.c
+>> @@ -882,6 +882,7 @@ int __init of_parse_thermal_zones(void)
+>>         }
+>>
+>>         for_each_child_of_node(np, child) {
+>> +               const char *governor_name;
+>>                 struct thermal_zone_device *zone;
+>>                 struct thermal_zone_params *tzp;
+>>                 int i, mask =3D 0;
+>> @@ -909,6 +910,15 @@ int __init of_parse_thermal_zones(void)
+>>                         goto exit_free;
+>>                 }
+>>
+>> +               /* Select a preferred governor if declared */
+>> +               if (!of_property_read_string(child,
+>> +                                            "thermal-governor-name"=
+,
+>> +                                            &governor_name)) {
+>> +                       strncpy(tzp->governor_name,
+>> +                               governor_name,
+>> +                               sizeof(tzp->governor_name) - 1);
+>> +               }
+>> +
+>>                 /* No hwmon because there might be hwmon drivers reg=
+istering */
+>>                 tzp->no_hwmon =3D true;
+>>
+>> --
+>> 2.1.2
+>>
