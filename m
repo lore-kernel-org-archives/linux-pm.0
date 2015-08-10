@@ -1,140 +1,69 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH] thermal: of: Introduce governor selection in dts
-Date: Mon, 10 Aug 2015 18:47:23 +0100
-Message-ID: <20150810174723.GC2747@e104805>
-References: <CAM2ehZYXsqCoS9ygXNfPHxt9-b5cFxH_ovrgjvM-BfDO6REcUg@mail.gmail.com>
- <20150807103121.GC7646@leverpostej>
- <CAM2ehZYy3SNKhXvF0XyQsoPFab2JqrVq3wLKadPVxBsVG3E7jw@mail.gmail.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 2/6] PM / OPP: restructure _of_init_opp_table_v2()
+Date: Mon, 10 Aug 2015 12:23:37 -0700
+Message-ID: <20150810192336.GC9678@codeaurora.org>
+References: <cover.1439187821.git.viresh.kumar@linaro.org>
+ <804c420eb23e70448c3c2c93f867a0eab3536bfd.1439187821.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:40539 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753472AbbHJRrl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Aug 2015 13:47:41 -0400
+Received: from smtp.codeaurora.org ([198.145.29.96]:32825 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754360AbbHJTXj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Aug 2015 15:23:39 -0400
 Content-Disposition: inline
-In-Reply-To: <CAM2ehZYy3SNKhXvF0XyQsoPFab2JqrVq3wLKadPVxBsVG3E7jw@mail.gmail.com>
+In-Reply-To: <804c420eb23e70448c3c2c93f867a0eab3536bfd.1439187821.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chung-Yih Wang =?utf-8?B?KOeOi+W0h+aHvyk=?= <cywang@google.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Mark Rutland <Mark.Rutland@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On Mon, Aug 10, 2015 at 09:00:49AM +0100, Chung-Yih Wang (=E7=8E=8B=E5=B4=
-=87=E6=87=BF) wrote:
-> This patch was originally introduced when we made power_allocator the
-> default governor where we had issues in binding a thermal zone w/o
-> parameters to. Then we came out this facility for binding a specific
-> governor to a thermal zone in dts instead of the default governor.
-> Javi seems like this idea much.
+On 08/10, Viresh Kumar wrote:
+> 'dev_opp' will always be NULL in _of_init_opp_table_v2() after creating
+> OPPs for a device. There is no point comparing it against NULL there.
+> 
+> Restructure code a bit to make it more efficient.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-While I can understand why this is not suitable for devicetree, we
-should have a way in the kernel to configure different governors for
-different thermal zones defined in device tree.  Thermal zones defined
-from platform code can choose the thermal governor when they are
-registered.
+Curious if these are a response to the static checker mails? If
+so it would be good to add a reported-by tag.
 
-If this information can't go in device tree, where can we put it? As
-an additional parameter to thermal_zone_of_sensor_register()?
+> ---
+>  drivers/base/power/opp.c | 21 ++++++++++-----------
+>  1 file changed, 10 insertions(+), 11 deletions(-)
+> 
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index 1daaa1a418a2..c9747fb192b1 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -1295,20 +1295,19 @@ static int _of_init_opp_table_v2(struct device *dev,
+>  	if (WARN_ON(!count))
+>  		goto out;
+>  
+> -	if (!ret) {
+> -		if (!dev_opp) {
+> -			dev_opp = _find_device_opp(dev);
+> -			if (WARN_ON(!dev_opp))
+> -				goto out;
+> -		}
+> -
+> -		dev_opp->np = opp_np;
+> -		dev_opp->shared_opp = of_property_read_bool(opp_np,
+> -							    "opp-shared");
+> -	} else {
+> +	if (ret) {
+>  		of_free_opp_table(dev);
+> +		goto out;
+>  	}
+>  
+> +	dev_opp = _find_device_opp(dev);
+> +	if (WARN_ON(!dev_opp))
+> +		goto out;
 
-Cheers,
-Javi
+Doesn't ret = 0 in this case? Why not drop the goto and just
+return some error code. Same for the goto out up above.
 
-> On Fri, Aug 7, 2015 at 6:31 PM, Mark Rutland <mark.rutland@arm.com> w=
-rote:
-> > On Fri, Aug 07, 2015 at 08:09:39AM +0100, Chung-Yih Wang (=E7=8E=8B=
-=E5=B4=87=E6=87=BF) wrote:
-> >> As there could be more thermal zones on a system and
-> >> more variety in thermal governors provided in kernel,
-> >> this patch provides flexibility of governor selection
-> >> for a thermal zone declared in device tree.
-> >>
-> >> Change-Id: Ie4a75d762709cbbe9f1806dae325d13f71982e78
-> >> Signed-off-by: Chung-yih Wang <cywang@chromium.org>
-> >> ---
-> >>  Documentation/devicetree/bindings/thermal/thermal.txt |  9 ++++++=
-+++
-> >>  drivers/thermal/of-thermal.c                          | 10 ++++++=
-++++
-> >>  2 files changed, 19 insertions(+)
-> >>
-> >> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt
-> >> b/Documentation/devicetree/bindings/thermal/thermal.txt
-> >> index 8a49362..30a5d41 100644
-> >> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
-> >> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-> >> @@ -174,6 +174,13 @@ Optional property:
-> >>                         2000mW, while on a 10'' tablet is around
-> >>                         4500mW.
-> >>
-> >> +- thermal-governor-name:       The name of governor used to contr=
-ol the
-> >> +                               thermal zone instead of the defaul=
-t one
-> >> +                               specified in kernel config. For re=
-ference, if
-> >> +                               default governor is step_wise, one=
- could
-> >> +                               select power_allocator for cpu_the=
-rmal zone
-> >> +                               in dts.
-> >
-> >
-> > This is not a hardware or system property, but rather a Linux
-> > implementation detail.
-> >
-> > This really shouldn't go in the DT.
-> >
-> > Mark.
-> >
-> >> +
-> >>  Note: The delay properties are bound to the maximum dT/dt (temper=
-ature
-> >>  derivative over time) in two situations for a thermal zone:
-> >>  (i)  - when passive cooling is activated (polling-delay-passive);=
- and
-> >> @@ -555,6 +562,8 @@ thermal-zones {
-> >>
-> >>                 sustainable-power =3D <2500>;
-> >>
-> >> +               thermal-governor-name =3D "power_allocator";
-> >> +
-> >>                 trips {
-> >>                         /* Trips are based on resulting linear equ=
-ation */
-> >>                         cpu_trip: cpu-trip {
-> >> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-the=
-rmal.c
-> >> index b295b2b..45570ac 100644
-> >> --- a/drivers/thermal/of-thermal.c
-> >> +++ b/drivers/thermal/of-thermal.c
-> >> @@ -882,6 +882,7 @@ int __init of_parse_thermal_zones(void)
-> >>         }
-> >>
-> >>         for_each_child_of_node(np, child) {
-> >> +               const char *governor_name;
-> >>                 struct thermal_zone_device *zone;
-> >>                 struct thermal_zone_params *tzp;
-> >>                 int i, mask =3D 0;
-> >> @@ -909,6 +910,15 @@ int __init of_parse_thermal_zones(void)
-> >>                         goto exit_free;
-> >>                 }
-> >>
-> >> +               /* Select a preferred governor if declared */
-> >> +               if (!of_property_read_string(child,
-> >> +                                            "thermal-governor-nam=
-e",
-> >> +                                            &governor_name)) {
-> >> +                       strncpy(tzp->governor_name,
-> >> +                               governor_name,
-> >> +                               sizeof(tzp->governor_name) - 1);
-> >> +               }
-> >> +
-> >>                 /* No hwmon because there might be hwmon drivers r=
-egistering */
-> >>                 tzp->no_hwmon =3D true;
-> >>
-> >> --
-> >> 2.1.2
-> >>
->=20
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
