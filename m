@@ -1,118 +1,97 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq setting before suspend-to-idle
-Date: Mon, 10 Aug 2015 10:11:26 +0800
-Message-ID: <1439172686-16360-1-git-send-email-yu.c.chen@intel.com>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: [PATCH 5/8] serial: imx: save and restore context in the suspend path
+Date: Mon, 10 Aug 2015 00:30:18 -0300
+Message-ID: <CAOMZO5D18DCBXYLA8Z36ZY3wezzS9Nh64d0KWZ==zcFMHaBpsA@mail.gmail.com>
+References: <1439144349-10494-1-git-send-email-edubezval@gmail.com>
+	<1439144349-10494-6-git-send-email-edubezval@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:34580 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752170AbbHJCIG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 9 Aug 2015 22:08:06 -0400
+Received: from mail-oi0-f51.google.com ([209.85.218.51]:34118 "EHLO
+	mail-oi0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752312AbbHJDaT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 9 Aug 2015 23:30:19 -0400
+In-Reply-To: <1439144349-10494-6-git-send-email-edubezval@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rafael.j.wysocki@intel.com, jiang.liu@linux.intel.com
-Cc: rui.zhang@intel.com, len.brown@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Linux PM <linux-pm@vger.kernel.org>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Shenwei Wang <shenwei.wang@freescale.com>
 
-For ACPI compatible system, SCI(ACPI System Control
-Interrupt) is used to wake system up from suspend-to-idle.
-Once CPU is woken up by SCI, interrupt handler will
-firstly checks if current interrupt is legal to wake up
-the whole system, thus irq_pm_check_wakeup is invoked
-to validate the irq number. However, before suspend-to-idle,
-acpi_gbl_FADT.sci_interrupt is marked rather than actual
-irq number in acpi_freeze_prepare, this might lead to unable
-to wake up the system.
+Hi Eduardo,
 
-This patch fixes this problem by marking the irq number
-return by acpi_gsi_to_irq as IRQD_WAKEUP_STATE, rather than
-marking the acpi_gbl_FADT.sci_interrupt.
+On Sun, Aug 9, 2015 at 3:19 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
+> This change teaches the imx serial driver to save its
+> context and restore it across suspend and resume path.
+> To do so, it introduces serial_imx_restore_context()
+> and serial_imx_save_context() functions. They use
+> a shadow set of registers to save key registers
+> and restore them accordingly. These functions can
+> be reused on other situations, when the device
+> context is lost.
+>
+> Cc: Fabio Stevam <festevam@gmail.com>
 
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- drivers/acpi/osl.c   |  5 ++++-
- drivers/acpi/sleep.c | 20 ++++++++++++++++++--
- drivers/acpi/sleep.h |  5 +++++
- 3 files changed, 27 insertions(+), 3 deletions(-)
+s/Stevam/Estevam (applies to all the patches)
 
-diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
-index 3b8963f..8e1420a 100644
---- a/drivers/acpi/osl.c
-+++ b/drivers/acpi/osl.c
-@@ -49,6 +49,7 @@
- #include <asm/uaccess.h>
- 
- #include "internal.h"
-+#include "sleep.h"
- 
- #define _COMPONENT		ACPI_OS_SERVICES
- ACPI_MODULE_NAME("osl");
-@@ -850,7 +851,9 @@ acpi_os_install_interrupt_handler(u32 gsi, acpi_osd_handler handler,
- 		       gsi);
- 		return AE_OK;
- 	}
--
-+#ifdef CONFIG_SUSPEND
-+	set_wake_irq_freeze(irq);
-+#endif
- 	acpi_irq_handler = handler;
- 	acpi_irq_context = context;
- 	if (request_irq(irq, acpi_irq, IRQF_SHARED, "acpi", acpi_irq)) {
-diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-index 2f0d4db..9e7b54e 100644
---- a/drivers/acpi/sleep.c
-+++ b/drivers/acpi/sleep.c
-@@ -620,6 +620,22 @@ static const struct platform_suspend_ops acpi_suspend_ops_old = {
- 	.end = acpi_pm_end,
- 	.recover = acpi_pm_finish,
- };
-+static int wake_irq_freeze = -EINVAL;
-+
-+int get_wake_irq_freeze(void)
-+{
-+	if (IS_ERR_VALUE(wake_irq_freeze))
-+		return acpi_gbl_FADT.sci_interrupt;
-+	else
-+		return wake_irq_freeze;
-+}
-+EXPORT_SYMBOL_GPL(get_wake_irq_freeze);
-+
-+void set_wake_irq_freeze(unsigned int irq)
-+{
-+	wake_irq_freeze = (int)irq;
-+}
-+EXPORT_SYMBOL_GPL(set_wake_irq_freeze);
- 
- static int acpi_freeze_begin(void)
- {
-@@ -632,14 +648,14 @@ static int acpi_freeze_prepare(void)
- 	acpi_enable_wakeup_devices(ACPI_STATE_S0);
- 	acpi_enable_all_wakeup_gpes();
- 	acpi_os_wait_events_complete();
--	enable_irq_wake(acpi_gbl_FADT.sci_interrupt);
-+	enable_irq_wake(get_wake_irq_freeze());
- 	return 0;
- }
- 
- static void acpi_freeze_restore(void)
- {
- 	acpi_disable_wakeup_devices(ACPI_STATE_S0);
--	disable_irq_wake(acpi_gbl_FADT.sci_interrupt);
-+	disable_irq_wake(get_wake_irq_freeze());
- 	acpi_enable_all_runtime_gpes();
- }
- 
-diff --git a/drivers/acpi/sleep.h b/drivers/acpi/sleep.h
-index c797ffa..eca4fda 100644
---- a/drivers/acpi/sleep.h
-+++ b/drivers/acpi/sleep.h
-@@ -6,3 +6,8 @@ extern struct list_head acpi_wakeup_device_list;
- extern struct mutex acpi_device_lock;
- 
- extern void acpi_resume_power_resources(void);
-+
-+#ifdef CONFIG_SUSPEND
-+extern int get_wake_irq_freeze(void);
-+extern void set_wake_irq_freeze(unsigned int irq);
-+#endif
--- 
-2.1.4
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Jiri Slaby <jslaby@suse.com>
+> Cc: linux-serial@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> ---
+>  drivers/tty/serial/imx.c | 34 ++++++++++++++++++++++++++++++++++
+>  1 file changed, 34 insertions(+)
+>
+> diff --git a/drivers/tty/serial/imx.c b/drivers/tty/serial/imx.c
+> index a03855d..494b182 100644
+> --- a/drivers/tty/serial/imx.c
+> +++ b/drivers/tty/serial/imx.c
+> @@ -217,6 +217,8 @@ struct imx_port {
+>         unsigned int            tx_bytes;
+>         unsigned int            dma_tx_nents;
+>         wait_queue_head_t       dma_wait;
+> +       unsigned int            saved_reg[8];
+> +       bool                    context_saved;
+>  };
+>
+>  struct imx_port_ucrs {
+> @@ -1803,6 +1805,36 @@ static struct uart_driver imx_reg = {
+>         .cons           = IMX_CONSOLE,
+>  };
+>
+> +static void serial_imx_restore_context(struct imx_port *sport)
+> +{
+> +       if (!sport->context_saved)
+> +               return;
+> +
+> +       writel(sport->saved_reg[4], sport->port.membase + UFCR);
+> +       writel(sport->saved_reg[5], sport->port.membase + UBIR);
+> +       writel(sport->saved_reg[6], sport->port.membase + UBMR);
+> +       writel(sport->saved_reg[7], sport->port.membase + IMX21_UTS);
+> +       writel(sport->saved_reg[0], sport->port.membase + UCR1);
+> +       writel(sport->saved_reg[1] | 0x1, sport->port.membase + UCR2);
+> +       writel(sport->saved_reg[2], sport->port.membase + UCR3);
+> +       writel(sport->saved_reg[3], sport->port.membase + UCR4);
+> +       sport->context_saved = false;
+> +}
+> +
+> +static void serial_imx_save_context(struct imx_port *sport)
+> +{
+> +       /* Save necessary regs */
+> +       sport->saved_reg[0] = readl(sport->port.membase + UCR1);
+> +       sport->saved_reg[1] = readl(sport->port.membase + UCR2);
+> +       sport->saved_reg[2] = readl(sport->port.membase + UCR3);
+> +       sport->saved_reg[3] = readl(sport->port.membase + UCR4);
+> +       sport->saved_reg[4] = readl(sport->port.membase + UFCR);
+> +       sport->saved_reg[5] = readl(sport->port.membase + UBIR);
+> +       sport->saved_reg[6] = readl(sport->port.membase + UBMR);
+> +       sport->saved_reg[7] = readl(sport->port.membase + IMX21_UTS);
+> +       sport->context_saved = true;
+> +}
 
+This seems to be similar to what Shenwei posted earlier:
+http://lists.infradead.org/pipermail/linux-arm-kernel/2015-July/360841.html
+
+Regards,
+
+Fabio Estevam
