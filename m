@@ -1,366 +1,70 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 6/6] PM / OPP: Add debugfs support
-Date: Mon, 10 Aug 2015 12:02:02 +0530
-Message-ID: <8a238dcc3bdef28aa9fc3f68787a84449c6ff17a.1439187821.git.viresh.kumar@linaro.org>
-References: <cover.1439187821.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1439187821.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1439187821.git.viresh.kumar@linaro.org>
-References: <cover.1439187821.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: Re: [PATCH] thermal: rockhip: fix setting thermal shutdown polarity
+Date: Mon, 10 Aug 2015 14:34:57 +0800
+Message-ID: <55C84611.10904@rock-chips.com>
+References: <20150807210052.GA34032@dtor-ws>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <20150807210052.GA34032@dtor-ws>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Dmitry Torokhov <dtor-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds debugfs support to OPP layer to export OPPs and their
-properties for all the devices.
-
-This creates a top level directory: /sys/kernel/debug/opp and then
-device specific directories (based on device names) inside it. For
-example: 'cpu0', 'cpu1', etc..
-
-If multiple devices share the OPP table, then the real directory is
-created only for the first device. For all others, links are created to
-the real directory.
-
-Inside the device specific directory, a separate directory is created
-for each OPP. And within that files per opp property.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/base/power/opp/Makefile  |   1 +
- drivers/base/power/opp/core.c    |  15 ++++
- drivers/base/power/opp/debugfs.c | 165 +++++++++++++++++++++++++++++++++++++++
- drivers/base/power/opp/opp.h     |  36 +++++++++
- 4 files changed, 217 insertions(+)
- create mode 100644 drivers/base/power/opp/debugfs.c
-
-diff --git a/drivers/base/power/opp/Makefile b/drivers/base/power/opp/Makefile
-index 33c1e18c41a4..19837ef04d8e 100644
---- a/drivers/base/power/opp/Makefile
-+++ b/drivers/base/power/opp/Makefile
-@@ -1,2 +1,3 @@
- ccflags-$(CONFIG_DEBUG_DRIVER)	:= -DDEBUG
- obj-y				+= core.o cpu.o
-+obj-$(CONFIG_DEBUG_FS)		+= debugfs.o
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index b1f72b4cad24..84b084f60d60 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -429,6 +429,7 @@ static void _kfree_list_dev_rcu(struct rcu_head *head)
- static void _remove_list_dev(struct device_list_opp *list_dev,
- 			     struct device_opp *dev_opp)
- {
-+	opp_debug_unregister(list_dev, dev_opp);
- 	list_del(&list_dev->node);
- 	call_srcu(&dev_opp->srcu_head.srcu, &list_dev->rcu_head,
- 		  _kfree_list_dev_rcu);
-@@ -438,6 +439,7 @@ struct device_list_opp *_add_list_dev(const struct device *dev,
- 				      struct device_opp *dev_opp)
- {
- 	struct device_list_opp *list_dev;
-+	int ret;
- 
- 	list_dev = kzalloc(sizeof(*list_dev), GFP_KERNEL);
- 	if (!list_dev)
-@@ -447,6 +449,12 @@ struct device_list_opp *_add_list_dev(const struct device *dev,
- 	list_dev->dev = dev;
- 	list_add_rcu(&list_dev->node, &dev_opp->dev_list);
- 
-+	/* Create debugfs entries for the dev_opp */
-+	ret = opp_debug_register(list_dev, dev_opp);
-+	if (ret)
-+		dev_err(dev, "%s: Failed to register opp debugfs (%d)\n",
-+			__func__, ret);
-+
- 	return list_dev;
- }
- 
-@@ -562,6 +570,7 @@ static void _opp_remove(struct device_opp *dev_opp,
- 	 */
- 	if (notify)
- 		srcu_notifier_call_chain(&dev_opp->srcu_head, OPP_EVENT_REMOVE, opp);
-+	opp_debug_remove_one(opp);
- 	list_del_rcu(&opp->node);
- 	call_srcu(&dev_opp->srcu_head.srcu, &opp->rcu_head, _kfree_opp_rcu);
- 
-@@ -639,6 +648,7 @@ static int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
- {
- 	struct dev_pm_opp *opp;
- 	struct list_head *head = &dev_opp->opp_list;
-+	int ret;
- 
- 	/*
- 	 * Insert new OPP in order of increasing frequency and discard if
-@@ -669,6 +679,11 @@ static int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
- 	new_opp->dev_opp = dev_opp;
- 	list_add_rcu(&new_opp->node, head);
- 
-+	ret = opp_debug_create_one(new_opp, dev_opp->dentry);
-+	if (ret)
-+		dev_err(dev, "%s: Failed to register opp to debugfs (%d)\n",
-+			__func__, ret);
-+
- 	return 0;
- }
- 
-diff --git a/drivers/base/power/opp/debugfs.c b/drivers/base/power/opp/debugfs.c
-new file mode 100644
-index 000000000000..d4e18eac8278
---- /dev/null
-+++ b/drivers/base/power/opp/debugfs.c
-@@ -0,0 +1,165 @@
-+/*
-+ * Generic OPP debugfs interface
-+ *
-+ * Copyright (C) 2015-2016 Viresh Kumar <viresh.kumar@linaro.org>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/debugfs.h>
-+#include <linux/err.h>
-+
-+#include "opp.h"
-+
-+static struct dentry *rootdir;
-+
-+void opp_debug_remove_one(struct dev_pm_opp *opp)
-+{
-+	debugfs_remove_recursive(opp->dentry);
-+}
-+
-+int opp_debug_create_one(struct dev_pm_opp *opp, struct dentry *pdentry)
-+{
-+	struct dentry *d;
-+	char name[15];
-+
-+	/* Rate is unique to each OPP, use it to give opp-name */
-+	sprintf(name, "opp:%lu", opp->rate);
-+
-+	/* Create per-opp directory */
-+	d = debugfs_create_dir(name, pdentry);
-+	if (!d)
-+		return -ENOMEM;
-+
-+	if (!debugfs_create_bool("available", S_IRUGO, d,
-+				 (u32 *)&opp->available))
-+		return -ENOMEM;
-+
-+	if (!debugfs_create_bool("dynamic", S_IRUGO, d, (u32 *)&opp->dynamic))
-+		return -ENOMEM;
-+
-+	if (!debugfs_create_bool("turbo", S_IRUGO, d, (u32 *)&opp->turbo))
-+		return -ENOMEM;
-+
-+	if (!debugfs_create_u32("rate_hz", S_IRUGO, d, (u32 *)&opp->rate))
-+		return -ENOMEM;
-+
-+	if (!debugfs_create_u32("u_volt_target", S_IRUGO, d,
-+				(u32 *)&opp->u_volt))
-+		return -ENOMEM;
-+
-+	if (!debugfs_create_u32("u_volt_min", S_IRUGO, d,
-+				(u32 *)&opp->u_volt_min))
-+		return -ENOMEM;
-+
-+	if (!debugfs_create_u32("u_volt_max", S_IRUGO, d,
-+				(u32 *)&opp->u_volt_max))
-+		return -ENOMEM;
-+
-+	if (!debugfs_create_u32("u_amp", S_IRUGO, d, (u32 *)&opp->u_amp))
-+		return -ENOMEM;
-+
-+	if (!debugfs_create_u32("clock_latency_ns", S_IRUGO, d,
-+				(u32 *)&opp->clock_latency_ns))
-+		return -ENOMEM;
-+
-+	opp->dentry = d;
-+	return 0;
-+}
-+
-+static int device_opp_debug_create_dir(struct device_list_opp *list_dev,
-+				       struct device_opp *dev_opp)
-+{
-+	const struct device *dev = list_dev->dev;
-+	struct dentry *d = NULL;
-+
-+	/* Create device specific directory */
-+	d = debugfs_create_dir(dev_name(dev), rootdir);
-+	if (!d) {
-+		dev_err(dev, "%s: Failed to create debugfs dir\n", __func__);
-+		return -ENOMEM;
-+	}
-+
-+	list_dev->dentry = d;
-+	dev_opp->dentry = d;
-+	dev_opp->debugfs_dev = dev;
-+
-+	return 0;
-+}
-+
-+static int device_opp_debug_create_link(struct device_list_opp *list_dev,
-+					struct device_opp *dev_opp)
-+{
-+	const struct device *dev = list_dev->dev;
-+	struct dentry *d = NULL;
-+
-+	/* Create device specific directory link */
-+	d = debugfs_create_symlink(dev_name(dev), rootdir,
-+				   dev_name(dev_opp->debugfs_dev));
-+	if (!d) {
-+		dev_err(dev, "%s: Failed to create link\n", __func__);
-+		return -ENOMEM;
-+	}
-+
-+	list_dev->dentry = d;
-+
-+	return 0;
-+}
-+
-+/**
-+ * opp_debug_register - add a device opp node to the debugfs 'opp' directory
-+ * @list_dev: list-dev pointer for device
-+ * @dev_opp: the device-opp being added
-+ *
-+ * Dynamically adds device specific directory in debugfs 'opp' directory. If the
-+ * device-opp is shared with other devices, then links will be created for all
-+ * devices except the first.
-+ *
-+ * Return: 0 on success, otherwise negative error.
-+ */
-+int opp_debug_register(struct device_list_opp *list_dev,
-+		       struct device_opp *dev_opp)
-+{
-+	if (!rootdir) {
-+		pr_debug("%s: Uninitialized rootdir\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	if (dev_opp->dentry)
-+		return device_opp_debug_create_link(list_dev, dev_opp);
-+
-+	return device_opp_debug_create_dir(list_dev, dev_opp);
-+}
-+
-+/**
-+ * opp_debug_unregister - remove a device opp node from debugfs opp directory
-+ * @list_dev: list-dev pointer for device
-+ * @dev_opp: the device-opp being removed
-+ *
-+ * Dynamically removes device specific directory from debugfs 'opp' directory.
-+ */
-+void opp_debug_unregister(struct device_list_opp *list_dev,
-+			  struct device_opp *dev_opp)
-+{
-+	debugfs_remove_recursive(list_dev->dentry);
-+	if (list_dev->dentry == dev_opp->dentry)
-+		dev_opp->dentry = NULL;
-+	list_dev->dentry = NULL;
-+}
-+
-+static int __init opp_debug_init(void)
-+{
-+	/* Create /sys/kernel/debug/opp directory */
-+	rootdir = debugfs_create_dir("opp", NULL);
-+	if (!rootdir) {
-+		pr_err("%s: Failed to create root directory\n", __func__);
-+		return -ENOMEM;
-+	}
-+
-+	return 0;
-+}
-+core_initcall(opp_debug_init);
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index dcb38f78dae4..8eb6a9a098a1 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -60,6 +60,7 @@
-  * @dev_opp:	points back to the device_opp struct this opp belongs to
-  * @rcu_head:	RCU callback head used for deferred freeing
-  * @np:		OPP's device node.
-+ * @dentry:	debugfs dentry pointer (per opp)
-  *
-  * This structure stores the OPP information for a given device.
-  */
-@@ -81,6 +82,9 @@ struct dev_pm_opp {
- 	struct rcu_head rcu_head;
- 
- 	struct device_node *np;
-+
-+	/* debugfs */
-+	struct dentry *dentry;
- };
- 
- /**
-@@ -88,6 +92,7 @@ struct dev_pm_opp {
-  * @node:	list node
-  * @dev:	device to which the struct object belongs
-  * @rcu_head:	RCU callback head used for deferred freeing
-+ * @dentry:	debugfs dentry pointer (per device)
-  *
-  * This is an internal data structure maintaining the list of devices that are
-  * managed by 'struct device_opp'.
-@@ -96,6 +101,9 @@ struct device_list_opp {
- 	struct list_head node;
- 	const struct device *dev;
- 	struct rcu_head rcu_head;
-+
-+	/* debugfs */
-+	struct dentry *dentry;
- };
- 
- /**
-@@ -111,6 +119,8 @@ struct device_list_opp {
-  * @opp_list:	list of opps
-  * @np:		struct device_node pointer for opp's DT node.
-  * @shared_opp: OPP is shared between multiple devices.
-+ * @dentry:	debugfs dentry pointer of the real device directory (not links).
-+ * @debugfs_dev: Pointer to device for which the real directory was created.
-  *
-  * This is an internal data structure maintaining the link to opps attached to
-  * a device. This structure is not meant to be shared to users as it is
-@@ -132,6 +142,10 @@ struct device_opp {
- 	unsigned long clock_latency_ns_max;
- 	bool shared_opp;
- 	struct dev_pm_opp *suspend_opp;
-+
-+	/* debugfs */
-+	struct dentry *dentry;
-+	const struct device *debugfs_dev;
- };
- 
- /* Routines internal to opp core */
-@@ -140,4 +154,26 @@ struct device_list_opp *_add_list_dev(const struct device *dev,
- 				      struct device_opp *dev_opp);
- struct device_node *_of_get_opp_desc_node(struct device *dev);
- 
-+#ifdef CONFIG_DEBUG_FS
-+void opp_debug_remove_one(struct dev_pm_opp *opp);
-+int opp_debug_create_one(struct dev_pm_opp *opp, struct dentry *pdentry);
-+int opp_debug_register(struct device_list_opp *list_dev,
-+		       struct device_opp *dev_opp);
-+void opp_debug_unregister(struct device_list_opp *list_dev,
-+			  struct device_opp *dev_opp);
-+#else
-+static inline void opp_debug_remove_one(struct dev_pm_opp *opp) {}
-+
-+static inline int opp_debug_create_one(struct dev_pm_opp *opp,
-+				       struct dentry *pdentry)
-+{ return 0; }
-+static inline int opp_debug_register(struct device_list_opp *list_dev,
-+				     struct device_opp *dev_opp)
-+{ return 0; }
-+
-+static inline void opp_debug_unregister(struct device_list_opp *list_dev,
-+					struct device_opp *dev_opp)
-+{ }
-+#endif		/* DEBUG_FS */
-+
- #endif		/* __DRIVER_OPP_H__ */
--- 
-2.4.0
+RGVhciBEbWl0cnksCgpUaGFua3MgdG8gd29yayBmb3IgaXQuCgrlnKggMjAxNeW5tDA45pyIMDjm
+l6UgMDU6MDAsIERtaXRyeSBUb3Jva2hvdiDlhpnpgZM6Cj4gV2hlbiByZXF1ZXN0ZWQgdGhlcm1h
+bCBzaHV0ZG93biBzaWduYWwgcG9sYXJpdHkgaXMgbG93IHdlIG5lZWQgdG8gbWFrZQo+IHN1cmUg
+dGhhdCB0aGUgYml0IHJlcHJlc2VudGluZyBoaWdoIGxldmVsIG9mIHNpZ25hbCBpcyByZXNldCwg
+YW5kIG5vdAo+IHNldCBhbGwgb3RoZXIgYml0cyBpbiB0aGF0IHJlZ2lzdGVyLgo+Cj4gQWxzbyBy
+ZW5hbWUgVFNBRENWMl9JTlRfUERfQ0xFQVIgdG8gVFNBRENWMl9JTlRfUERfQ0xFQVJfTUFTSyB0
+byBiZXR0ZXIKPiByZWZsZWN0IGl0cyBuYXR1cmUuCj4KPiBTaWduZWQtb2ZmLWJ5OiBEbWl0cnkg
+VG9yb2tob3YgPGR0b3JAY2hyb21pdW0ub3JnPgoKICBBY2tlZC1ieTogQ2Flc2FyIFdhbmcgPHd4
+dEByb2NrLWNoaXBzLmNvbT4KCi0tClRoYW5rcywKQ2Flc2FyCgo+IC0tLQo+ICAgZHJpdmVycy90
+aGVybWFsL3JvY2tjaGlwX3RoZXJtYWwuYyB8IDEwICsrKystLS0tLS0KPiAgIDEgZmlsZSBjaGFu
+Z2VkLCA0IGluc2VydGlvbnMoKyksIDYgZGVsZXRpb25zKC0pCj4KPiBkaWZmIC0tZ2l0IGEvZHJp
+dmVycy90aGVybWFsL3JvY2tjaGlwX3RoZXJtYWwuYyBiL2RyaXZlcnMvdGhlcm1hbC9yb2NrY2hp
+cF90aGVybWFsLmMKPiBpbmRleCA5M2VlMzA3Li40ZDViN2Q0IDEwMDY0NAo+IC0tLSBhL2RyaXZl
+cnMvdGhlcm1hbC9yb2NrY2hpcF90aGVybWFsLmMKPiArKysgYi9kcml2ZXJzL3RoZXJtYWwvcm9j
+a2NoaXBfdGhlcm1hbC5jCj4gQEAgLTEwNiwxNiArMTA2LDE0IEBAIHN0cnVjdCByb2NrY2hpcF90
+aGVybWFsX2RhdGEgewo+ICAgI2RlZmluZSBUU0FEQ1YyX0FVVE9fUEVSSU9EX0hUCQkJMHg2Ywo+
+ICAgCj4gICAjZGVmaW5lIFRTQURDVjJfQVVUT19FTgkJCQlCSVQoMCkKPiAtI2RlZmluZSBUU0FE
+Q1YyX0FVVE9fRElTQUJMRQkJCX5CSVQoMCkKPiAgICNkZWZpbmUgVFNBRENWMl9BVVRPX1NSQ19F
+TihjaG4pCQlCSVQoNCArIChjaG4pKQo+ICAgI2RlZmluZSBUU0FEQ1YyX0FVVE9fVFNIVVRfUE9M
+QVJJVFlfSElHSAlCSVQoOCkKPiAtI2RlZmluZSBUU0FEQ1YyX0FVVE9fVFNIVVRfUE9MQVJJVFlf
+TE9XCQl+QklUKDgpCj4gICAKPiAgICNkZWZpbmUgVFNBRENWMl9JTlRfU1JDX0VOKGNobikJCQlC
+SVQoY2huKQo+ICAgI2RlZmluZSBUU0FEQ1YyX1NIVVRfMkdQSU9fU1JDX0VOKGNobikJCUJJVCg0
+ICsgKGNobikpCj4gICAjZGVmaW5lIFRTQURDVjJfU0hVVF8yQ1JVX1NSQ19FTihjaG4pCQlCSVQo
+OCArIChjaG4pKQo+ICAgCj4gLSNkZWZpbmUgVFNBRENWMl9JTlRfUERfQ0xFQVIJCQl+QklUKDgp
+Cj4gKyNkZWZpbmUgVFNBRENWMl9JTlRfUERfQ0xFQVJfTUFTSwkJfkJJVCg4KQo+ICAgCj4gICAj
+ZGVmaW5lIFRTQURDVjJfREFUQV9NQVNLCQkJMHhmZmYKPiAgICNkZWZpbmUgVFNBRENWMl9ISUdI
+VF9JTlRfREVCT1VOQ0VfQ09VTlQJNAo+IEBAIC0yNDQsMTAgKzI0MiwxMCBAQCBzdGF0aWMgdm9p
+ZCBya190c2FkY3YyX2luaXRpYWxpemUodm9pZCBfX2lvbWVtICpyZWdzLAo+ICAgCQkJCSAgZW51
+bSB0c2h1dF9wb2xhcml0eSB0c2h1dF9wb2xhcml0eSkKPiAgIHsKPiAgIAlpZiAodHNodXRfcG9s
+YXJpdHkgPT0gVFNIVVRfSElHSF9BQ1RJVkUpCj4gLQkJd3JpdGVsX3JlbGF4ZWQoMCB8IChUU0FE
+Q1YyX0FVVE9fVFNIVVRfUE9MQVJJVFlfSElHSCksCj4gKwkJd3JpdGVsX3JlbGF4ZWQoMFUgfCBU
+U0FEQ1YyX0FVVE9fVFNIVVRfUE9MQVJJVFlfSElHSCwKPiAgIAkJCSAgICAgICByZWdzICsgVFNB
+RENWMl9BVVRPX0NPTik7Cj4gICAJZWxzZQo+IC0JCXdyaXRlbF9yZWxheGVkKDAgfCAoVFNBRENW
+Ml9BVVRPX1RTSFVUX1BPTEFSSVRZX0xPVyksCj4gKwkJd3JpdGVsX3JlbGF4ZWQoMFUgJiB+VFNB
+RENWMl9BVVRPX1RTSFVUX1BPTEFSSVRZX0hJR0gsCj4gICAJCQkgICAgICAgcmVncyArIFRTQURD
+VjJfQVVUT19DT04pOwo+ICAgCj4gICAJd3JpdGVsX3JlbGF4ZWQoVFNBRENWMl9BVVRPX1BFUklP
+RF9USU1FLCByZWdzICsgVFNBRENWMl9BVVRPX1BFUklPRCk7Cj4gQEAgLTI2NCw3ICsyNjIsNyBA
+QCBzdGF0aWMgdm9pZCBya190c2FkY3YyX2lycV9hY2sodm9pZCBfX2lvbWVtICpyZWdzKQo+ICAg
+CXUzMiB2YWw7Cj4gICAKPiAgIAl2YWwgPSByZWFkbF9yZWxheGVkKHJlZ3MgKyBUU0FEQ1YyX0lO
+VF9QRCk7Cj4gLQl3cml0ZWxfcmVsYXhlZCh2YWwgJiBUU0FEQ1YyX0lOVF9QRF9DTEVBUiwgcmVn
+cyArIFRTQURDVjJfSU5UX1BEKTsKPiArCXdyaXRlbF9yZWxheGVkKHZhbCAmIFRTQURDVjJfSU5U
+X1BEX0NMRUFSX01BU0ssIHJlZ3MgKyBUU0FEQ1YyX0lOVF9QRCk7Cj4gICB9Cj4gICAKPiAgIHN0
+YXRpYyB2b2lkIHJrX3RzYWRjdjJfY29udHJvbCh2b2lkIF9faW9tZW0gKnJlZ3MsIGJvb2wgZW5h
+YmxlKQoKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpM
+aW51eC1yb2NrY2hpcCBtYWlsaW5nIGxpc3QKTGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFk
+Lm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXJv
+Y2tjaGlwCg==
