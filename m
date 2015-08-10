@@ -1,102 +1,176 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 6/6] mfd: da9150: Use DEFINE_RES_IRQ_NAMED() help
- macro for IRQ resource
-Date: Mon, 10 Aug 2015 14:58:36 +0100
-Message-ID: <20150810135836.GM3249@x1>
-References: <cover.1438692348.git.Adam.Thomson.Opensource@diasemi.com>
- <ab8e02c022c8b90d4b65bf13e2f2c402e54f2cf5.1438692348.git.Adam.Thomson.Opensource@diasemi.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFCv5 PATCH 41/46] sched/fair: add triggers for OPP change requests
+Date: Mon, 10 Aug 2015 17:07:07 +0200
+Message-ID: <CAKfTPtAJY5zH4YeFibLSg7BbCwV76++fJ_f+uNz8=0t8V8TJWA@mail.gmail.com>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-42-git-send-email-morten.rasmussen@arm.com>
+ <CAKfTPtBfNV=K+gwb7dfQXqBEbByMWRoFDb0FtfeeY1hh33j4XA@mail.gmail.com> <55C8AA92.8000201@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:32802 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752827AbbHJN6m (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Aug 2015 09:58:42 -0400
-Received: by wijp15 with SMTP id p15so136800968wij.0
-        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2015 06:58:41 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <ab8e02c022c8b90d4b65bf13e2f2c402e54f2cf5.1438692348.git.Adam.Thomson.Opensource@diasemi.com>
+Received: from mail-lb0-f170.google.com ([209.85.217.170]:34281 "EHLO
+	mail-lb0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753037AbbHJPH3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Aug 2015 11:07:29 -0400
+Received: by lbbtg9 with SMTP id tg9so59004942lbb.1
+        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2015 08:07:27 -0700 (PDT)
+In-Reply-To: <55C8AA92.8000201@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: Morten Rasmussen <Morten.Rasmussen@arm.com>, Peter Zijlstra <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, Yuyang Du <yuyang.du@intel.com>, Michael Turquette <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Sai Charan Gurrappadi <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, 04 Aug 2015, Adam Thomson wrote:
+On 10 August 2015 at 15:43, Juri Lelli <juri.lelli@arm.com> wrote:
+>
+> Hi Vincent,
+>
+> On 04/08/15 14:41, Vincent Guittot wrote:
+> > Hi Juri,
+> >
+> > On 7 July 2015 at 20:24, Morten Rasmussen <morten.rasmussen@arm.com> wrote:
+> >> From: Juri Lelli <juri.lelli@arm.com>
+> >>
+> >> Each time a task is {en,de}queued we might need to adapt the current
+> >> frequency to the new usage. Add triggers on {en,de}queue_task_fair() for
+> >> this purpose.  Only trigger a freq request if we are effectively waking up
+> >> or going to sleep.  Filter out load balancing related calls to reduce the
+> >> number of triggers.
+> >>
+> >> cc: Ingo Molnar <mingo@redhat.com>
+> >> cc: Peter Zijlstra <peterz@infradead.org>
+> >>
+> >> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> >> ---
+> >>  kernel/sched/fair.c | 42 ++++++++++++++++++++++++++++++++++++++++--
+> >>  1 file changed, 40 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> >> index f74e9d2..b8627c6 100644
+> >> --- a/kernel/sched/fair.c
+> >> +++ b/kernel/sched/fair.c
+> >> @@ -4281,7 +4281,10 @@ static inline void hrtick_update(struct rq *rq)
+> >>  }
+> >>  #endif
+> >>
+> >> +static unsigned int capacity_margin = 1280; /* ~20% margin */
+> >> +
+> >>  static bool cpu_overutilized(int cpu);
+> >> +static unsigned long get_cpu_usage(int cpu);
+> >>  struct static_key __sched_energy_freq __read_mostly = STATIC_KEY_INIT_FALSE;
+> >>
+> >>  /*
+> >> @@ -4332,6 +4335,26 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+> >>                 if (!task_new && !rq->rd->overutilized &&
+> >>                     cpu_overutilized(rq->cpu))
+> >>                         rq->rd->overutilized = true;
+> >> +               /*
+> >> +                * We want to trigger a freq switch request only for tasks that
+> >> +                * are waking up; this is because we get here also during
+> >> +                * load balancing, but in these cases it seems wise to trigger
+> >> +                * as single request after load balancing is done.
+> >> +                *
+> >> +                * XXX: how about fork()? Do we need a special flag/something
+> >> +                *      to tell if we are here after a fork() (wakeup_task_new)?
+> >> +                *
+> >> +                * Also, we add a margin (same ~20% used for the tipping point)
+> >> +                * to our request to provide some head room if p's utilization
+> >> +                * further increases.
+> >> +                */
+> >> +               if (sched_energy_freq() && !task_new) {
+> >> +                       unsigned long req_cap = get_cpu_usage(cpu_of(rq));
+> >> +
+> >> +                       req_cap = req_cap * capacity_margin
+> >> +                                       >> SCHED_CAPACITY_SHIFT;
+> >> +                       cpufreq_sched_set_cap(cpu_of(rq), req_cap);
+> >> +               }
+> >>         }
+> >>         hrtick_update(rq);
+> >>  }
+> >> @@ -4393,6 +4416,23 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+> >>         if (!se) {
+> >>                 sub_nr_running(rq, 1);
+> >>                 update_rq_runnable_avg(rq, 1);
+> >> +               /*
+> >> +                * We want to trigger a freq switch request only for tasks that
+> >> +                * are going to sleep; this is because we get here also during
+> >> +                * load balancing, but in these cases it seems wise to trigger
+> >> +                * as single request after load balancing is done.
+> >> +                *
+> >> +                * Also, we add a margin (same ~20% used for the tipping point)
+> >> +                * to our request to provide some head room if p's utilization
+> >> +                * further increases.
+> >> +                */
+> >> +               if (sched_energy_freq() && task_sleep) {
+> >> +                       unsigned long req_cap = get_cpu_usage(cpu_of(rq));
+> >> +
+> >> +                       req_cap = req_cap * capacity_margin
+> >> +                                       >> SCHED_CAPACITY_SHIFT;
+> >> +                       cpufreq_sched_set_cap(cpu_of(rq), req_cap);
+> >
+> > Could you clarify why you want to trig a freq switch for tasks that
+> > are going to sleep ?
+> > The cpu_usage should not changed that much as the se_utilization of
+> > the entity moves from utilization_load_avg to utilization_blocked_avg
+> > of the rq and the usage and the freq are updated periodically.
+>
+> I think we still need to cover multiple back-to-back dequeues. Suppose
+> that you have, let's say, 3 tasks that get enqueued at the same time.
+> After some time the first one goes to sleep and its utilization, as you
+> say, gets moved to utilization_blocked_avg. So, nothing changes, and
+> the trigger is superfluous (even if no freq change I guess will be
+> issued as we are already servicing enough capacity). However, after a
+> while, the second task goes to sleep. Now we still use get_cpu_usage()
+> and the first task contribution in utilization_blocked_avg should have
+> been decayed by this time. Same thing may than happen for the third task
+> as well. So, if we don't check if we need to scale down in
+> dequeue_task_fair, it seems to me that we might miss some opportunities,
+> as blocked contribution of other tasks could have been successively
+> decayed.
+>
+> What you think?
 
-> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> ---
->=20
-> Changes in v4:
->  - N/A
->=20
-> Changes in v3:
->  - Initial version.
->=20
-> Changes in v2:
->  - N/A
->=20
->  drivers/mfd/da9150-core.c | 35 +++++------------------------------
->  1 file changed, 5 insertions(+), 30 deletions(-)
+The tick is used to monitor such variation of the usage (in both way,
+decay of the usage of sleeping tasks and increase of the usage of
+running tasks). So in your example, if the duration between the sleep
+of the 2 tasks is significant enough, the tick will handle this
+variation
 
-Perhaps a Suggested-by for this and the relative paths patch wouldn't
-go amiss, but it's not a show stopper.
-
-Acked-by: Lee Jones <lee.jones@linaro.org>
-
-> diff --git a/drivers/mfd/da9150-core.c b/drivers/mfd/da9150-core.c
-> index 85ca4b5..195fdcf 100644
-> --- a/drivers/mfd/da9150-core.c
-> +++ b/drivers/mfd/da9150-core.c
-> @@ -355,39 +355,14 @@ static const struct regmap_irq_chip da9150_regm=
-ap_irq_chip =3D {
->  };
->=20
->  static struct resource da9150_gpadc_resources[] =3D {
-> -	{
-> -		.name =3D "GPADC",
-> -		.start =3D DA9150_IRQ_GPADC,
-> -		.end =3D DA9150_IRQ_GPADC,
-> -		.flags =3D IORESOURCE_IRQ,
-> -	},
-> +	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_GPADC, "GPADC"),
->  };
->=20
->  static struct resource da9150_charger_resources[] =3D {
-> -	{
-> -		.name =3D "CHG_STATUS",
-> -		.start =3D DA9150_IRQ_CHG,
-> -		.end =3D DA9150_IRQ_CHG,
-> -		.flags =3D IORESOURCE_IRQ,
-> -	},
-> -	{
-> -		.name =3D "CHG_TJUNC",
-> -		.start =3D DA9150_IRQ_TJUNC,
-> -		.end =3D DA9150_IRQ_TJUNC,
-> -		.flags =3D IORESOURCE_IRQ,
-> -	},
-> -	{
-> -		.name =3D "CHG_VFAULT",
-> -		.start =3D DA9150_IRQ_VFAULT,
-> -		.end =3D DA9150_IRQ_VFAULT,
-> -		.flags =3D IORESOURCE_IRQ,
-> -	},
-> -	{
-> -		.name =3D "CHG_VBUS",
-> -		.start =3D DA9150_IRQ_VBUS,
-> -		.end =3D DA9150_IRQ_VBUS,
-> -		.flags =3D IORESOURCE_IRQ,
-> -	},
-> +	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_CHG, "CHG_STATUS"),
-> +	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_TJUNC, "CHG_TJUNC"),
-> +	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_VFAULT, "CHG_VFAULT"),
-> +	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_VBUS, "CHG_VBUS"),
->  };
->=20
->  static struct resource da9150_fg_resources[] =3D {
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Regards,
+Vincent
+>
+> Thanks,
+>
+> - Juri
+>
+> > It should be the same for the wake up of a task in enqueue_task_fair
+> > above, even if it's less obvious for this latter use case because the
+> > cpu might wake up from a long idle phase during which its
+> > utilization_blocked_avg has not been updated. Nevertheless, a trig of
+> > the freq switch at wake up of the cpu once its usage has been updated
+> > should do the job.
+> >
+> > So tick, migration of tasks, new tasks, entering/leaving idle state of
+> > cpu should be enough to trig freq switch
+> >
+> > Regards,
+> > Vincent
+> >
+> >
+> >> +               }
+> >>         }
+> >>         hrtick_update(rq);
+> >>  }
+> >> @@ -4959,8 +4999,6 @@ static int find_new_capacity(struct energy_env *eenv,
+> >>         return idx;
+> >>  }
+> >>
+> >> -static unsigned int capacity_margin = 1280; /* ~20% margin */
+> >> -
+> >>  static bool cpu_overutilized(int cpu)
+> >>  {
+> >>         return (capacity_of(cpu) * 1024) <
+> >> --
+> >> 1.9.1
+> >>
+> >
+>
